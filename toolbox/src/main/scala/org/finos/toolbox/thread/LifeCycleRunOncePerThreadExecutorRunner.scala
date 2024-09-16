@@ -35,7 +35,7 @@ abstract class LifeCycleRunOncePerThreadExecutorRunner[T](val name: String, val 
   private final val setOfWork = new ConcurrentSkipListSet[WorkItem[T]]()
 
   override def doStart(): Unit = {
-    logger.info(s"Starting up executor runner [$name]...")
+    logger.debug(s"Starting up executor runner [$name]...")
     retryExecutor = Some(new ResubmitExecutor[T](name, countOfThreads, countOfThreads, 1000, TimeUnit.SECONDS, workQueue){
       override def newCallable(r: FutureTask[T], t: Throwable): Callable[T] = {
         selfRef.newCallable(r)
@@ -63,11 +63,11 @@ abstract class LifeCycleRunOncePerThreadExecutorRunner[T](val name: String, val 
 
           removedWork.foreach( item => {
             setOfWork.remove(item)
-            logger.info("Removed work item from viewport threadpool:" + item)
+            logger.debug("Removed work item from viewport threadpool:" + item)
           })
 
           addedWork.foreach(item => {
-            println("Adding:" + item)
+            logger.debug("Adding:" + item)
             setOfWork.add(item)
           })
 
@@ -76,7 +76,7 @@ abstract class LifeCycleRunOncePerThreadExecutorRunner[T](val name: String, val 
               addedWork.foreach(work => {
                 executor.submit(new Callable[T] {
                   override def call(): T = {
-                    logger.info("Adding work to vp threadpool.." + work)
+                    logger.debug("Adding work to vp threadpool.." + work)
                     work.doWork()
                   }
                 })
@@ -104,7 +104,7 @@ abstract class LifeCycleRunOncePerThreadExecutorRunner[T](val name: String, val 
         executor.shutdown()
       case None => //all good
     }
-    logger.info(s"[$name] is exiting....")
+    logger.debug(s"[$name] is exiting....")
   }
 
   override def doInitialize(): Unit = {}

@@ -40,7 +40,7 @@ abstract class ResubmitExecutor[T](name: String, corePoolSize: Int, maxPoolSize:
       if(shouldResubmit(futureTask, t)){
         retry(futureTask, t)
         if(logEvery.shouldLog()){
-          logger.info("Finished runnable:" + futureTask.get() + " resubmitting...")
+          logger.debug("Finished runnable:" + futureTask.get() + " resubmitting...")
         }
       }
 

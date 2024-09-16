@@ -111,7 +111,7 @@ export const useViewportRowModel = ({
 }: ViewportRowModelHookProps) => {
   const menuRef = useRef<VuuMenu>();
   const getTypeaheadSuggestionsRef = useRef<SuggestionFetcher>(
-    NullSuggestionFetcher
+    NullSuggestionFetcher,
   );
   const groupByRef = useRef<VuuGroupBy>([]);
   const [groupBy, setGroupBy] = useState<VuuGroupBy>(groupByRef.current);
@@ -135,11 +135,11 @@ export const useViewportRowModel = ({
         return menuRef.current;
       },
     }),
-    []
+    [],
   );
   const handleRpcResponse = useCallback<RpcResponseHandler>(
     (response) => onRpcResponse?.(response) ?? false,
-    [onRpcResponse]
+    [onRpcResponse],
   );
 
   const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
@@ -162,7 +162,7 @@ export const useViewportRowModel = ({
       }
       onFeatureEnabled?.(message);
     },
-    [onFeatureEnabled]
+    [onFeatureEnabled],
   );
 
   const viewportDatasource: ViewportRowModelDataSource = useMemo(() => {
@@ -220,7 +220,7 @@ export const useViewportRowModel = ({
         viewportDatasource.setRowGroups(vuuGroupBy);
       }
     },
-    [viewportDatasource]
+    [viewportDatasource],
   );
 
   const handleRowGroupOpened = useCallback(
@@ -231,17 +231,17 @@ export const useViewportRowModel = ({
         viewportDatasource.setExpanded(groupKey, !expanded);
       }
     },
-    [viewportDatasource]
+    [viewportDatasource],
   );
 
   const handleSortChanged = useCallback(
     (evt: unknown) => {
       const sortDefs = agSortChangedEventToVuuSortDef(
-        evt as AgSortChangedEvent
+        evt as AgSortChangedEvent,
       );
       viewportDatasource.sort({ sortDefs: sortDefs });
     },
-    [viewportDatasource]
+    [viewportDatasource],
   );
 
   const handleFilterChanged = useCallback(
@@ -252,7 +252,7 @@ export const useViewportRowModel = ({
         agGridFilterModelToVuuFilter(filterModel);
       viewportDatasource.filter(vuuFilter, filterQuery);
     },
-    [viewportDatasource]
+    [viewportDatasource],
   );
 
   const menuHandler = useCallback(
@@ -272,7 +272,7 @@ export const useViewportRowModel = ({
         row,
       });
     },
-    [handleMenuAction]
+    [handleMenuAction],
   );
 
   const getContextMenuItems = useCallback(
@@ -293,6 +293,7 @@ export const useViewportRowModel = ({
           row: toVuuDataSourceRow(data, columnMap),
           selectedRows: [],
           viewport: dataSource.viewport,
+          columns: [],
         };
         const menuOptions = buildViewserverMenuOptions("grid", options);
         console.log({ menuOptions });
@@ -303,7 +304,7 @@ export const useViewportRowModel = ({
 
       return ["copy", "copyWithHeaders", "copyWithGroupHeaders"];
     },
-    [buildViewserverMenuOptions, dataSource, menuHandler]
+    [buildViewserverMenuOptions, dataSource, menuHandler],
   );
 
   const autoGroupColumnDef: AgGridColDef = useMemo(
@@ -313,13 +314,13 @@ export const useViewportRowModel = ({
       minWidth: 250,
       sortable: false,
     }),
-    []
+    [],
   );
 
   const handleGridColumnsChanged = useCallback((evt) => {
     const allColumns = evt.api.getAllGridColumns();
     const colDefs = allColumns.map(
-      (col: { colDef: AgGridColDef }) => col.colDef
+      (col: { colDef: AgGridColDef }) => col.colDef,
     );
     const colState = evt.api.getColumnState();
     // An issue we see when switching dataSource is that AgGrid changes the

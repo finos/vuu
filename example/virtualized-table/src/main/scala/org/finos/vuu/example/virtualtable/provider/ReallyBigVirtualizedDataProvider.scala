@@ -62,7 +62,7 @@ class ReallyBigVirtualizedDataProvider(implicit clock: Clock) extends Virtualize
         val (millisSetKeys, _ ) = timeIt { viewPort.setKeys(new VirtualizedViewPortKeys(tableKeys)) }
 
         if(logAt.shouldLog()){
-          logger.info(s"[ReallyBigVirtualizedDataProvider] Complete runOnce millisRange = ${millisRange} millisSize=$millisSize millisRows=$millisRows millisGetKeys=$millisGetKeys millisSetKeys=$millisSetKeys")
+          logger.debug(s"[ReallyBigVirtualizedDataProvider] Complete runOnce millisRange = ${millisRange} millisSize=$millisSize millisRows=$millisRows millisGetKeys=$millisGetKeys millisSetKeys=$millisSetKeys")
         }
     }
   }

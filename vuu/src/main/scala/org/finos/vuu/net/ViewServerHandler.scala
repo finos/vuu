@@ -29,7 +29,7 @@ class ViewServerHandlerFactoryImpl(authenticator: Authenticator,
 class ViewServerHandler(serializer: Serializer[String, MessageBody], processor: RequestProcessor) extends StrictLogging {
 
   def close(): Unit = {
-    logger.info("closing session on disconnect")
+    logger.debug("closing session on disconnect")
     //processor.close()
   }
 

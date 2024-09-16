@@ -84,7 +84,7 @@ class TestChannel() extends Channel with StrictLogging {
     msg match {
       case frame: TextWebSocketFrame =>
         queue.add(frame.text())
-        logger.info(frame.text())
+        logger.trace(frame.text())
     }
     null
   }
@@ -93,7 +93,7 @@ class TestChannel() extends Channel with StrictLogging {
     msg match {
       case frame: TextWebSocketFrame =>
         queue.add(frame.text())
-        logger.info(frame.text())
+        logger.trace(frame.text())
     }
     null
   }
@@ -102,7 +102,7 @@ class TestChannel() extends Channel with StrictLogging {
     msg match {
       case frame: TextWebSocketFrame =>
         queue.add(frame.text())
-        logger.info(frame.text())
+        logger.trace(frame.text())
     }
     null
   }
@@ -111,7 +111,7 @@ class TestChannel() extends Channel with StrictLogging {
     msg match {
       case frame:TextWebSocketFrame =>
         queue.add(frame.text())
-        logger.info(frame.text())
+        logger.trace(frame.text())
     }
     null
   }

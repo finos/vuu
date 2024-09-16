@@ -41,7 +41,7 @@ class DefaultMessageHandler(val channel: Channel,
   val closeFuture: ChannelFuture = channel.closeFuture()
 
   closeFuture.addListener((f: ChannelFuture) => {
-    logger.info("Calling disconnect() from future callback")
+    logger.trace("Calling disconnect() from future callback")
     disconnect()
   })
 
@@ -217,7 +217,7 @@ class ClientSessionContainerImpl() extends ClientSessionContainer with StrictLog
   override def getSessions(): List[ClientSessionId] = CollectionHasAsScala(sessions.keySet()).asScala.toList
 
   override def remove(sessionId: ClientSessionId): Unit = {
-    logger.info(s"Removing client session $sessionId")
+    logger.debug(s"Removing client session $sessionId")
     sessions.remove(sessionId)
   }
 

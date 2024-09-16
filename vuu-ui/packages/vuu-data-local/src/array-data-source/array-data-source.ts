@@ -49,6 +49,7 @@ import {
   DataSourceConfigChanges,
   selectionCount,
   isEditCellRequest,
+  rangesAreSame,
 } from "@finos/vuu-utils";
 import { aggregateData } from "./aggregate-utils";
 import { buildDataToClientMap, toClientRow } from "./array-data-utils";
@@ -114,7 +115,8 @@ export class ArrayDataSource
 
   /** Map reflecting positions of columns in client data sent to user */
   #columnMap: ColumnMap;
-  #config: WithFullConfig = vanillaConfig;
+  protected _config: WithFullConfig & { visualLink?: LinkDescriptorWithLabel } =
+    vanillaConfig;
   #data: DataSourceRow[];
   #keys = new KeySet(NULL_RANGE);
   #links: LinkDescriptorWithLabel[] | undefined;
@@ -147,7 +149,7 @@ export class ArrayDataSource
     viewport,
   }: ArrayDataSourceConstructorProps) {
     super();
-
+    console.log(`ArrayDataSource #${viewport}`);
     if (!data || !columnDescriptors) {
       throw Error(
         "ArrayDataSource constructor called without data or without columnDescriptors",
@@ -171,12 +173,12 @@ export class ArrayDataSource
     this.#data = data.map<DataSourceRow>(toDataSourceRow(this.key));
 
     this.config = {
-      ...this.#config,
-      aggregations: aggregations || this.#config.aggregations,
+      ...this._config,
+      aggregations: aggregations || this._config.aggregations,
       columns,
-      filterSpec: filterSpec || this.#config.filterSpec,
-      groupBy: groupBy || this.#config.groupBy,
-      sort: sort || this.#config.sort,
+      filterSpec: filterSpec || this._config.filterSpec,
+      groupBy: groupBy || this._config.groupBy,
+      sort: sort || this._config.sort,
     };
 
     debug?.(`columnMap: ${JSON.stringify(this.#columnMap)}`);
@@ -199,7 +201,7 @@ export class ArrayDataSource
     this.#status = "subscribed";
     this.lastRangeServed = { from: 0, to: 0 };
 
-    let config = this.#config;
+    let config = this._config;
 
     const hasConfigProps =
       aggregations || columns || filterSpec || groupBy || sort;
@@ -209,11 +211,11 @@ export class ArrayDataSource
       }
       config = {
         ...config,
-        aggregations: aggregations || this.#config.aggregations,
-        columns: columns || this.#config.columns,
-        filterSpec: filterSpec || this.#config.filterSpec,
-        groupBy: groupBy || this.#config.groupBy,
-        sort: sort || this.#config.sort,
+        aggregations: aggregations || this._config.aggregations,
+        columns: columns || this._config.columns,
+        filterSpec: filterSpec || this._config.filterSpec,
+        groupBy: groupBy || this._config.groupBy,
+        sort: sort || this._config.sort,
       };
     }
 
@@ -237,7 +239,7 @@ export class ArrayDataSource
         type: "viewport-update",
         size: this.#data.length,
       });
-      if (range) {
+      if (range && !rangesAreSame(this.#range, range)) {
         this.range = range;
       } else if (this.#range !== NULL_RANGE) {
         this.sendRowsToClient();
@@ -287,7 +289,7 @@ export class ArrayDataSource
     this.processedData = expandGroup(
       this.openTreeNodes,
       this.#data,
-      this.#config.groupBy,
+      this._config.groupBy,
       this.#columnMap,
       this.groupMap as GroupMap,
       this.processedData as DataSourceRow[],
@@ -333,14 +335,14 @@ export class ArrayDataSource
   }
 
   get config() {
-    return this.#config;
+    return this._config;
   }
 
   set config(config: DataSourceConfig) {
     const configChanges = this.applyConfig(config);
     if (configChanges) {
       if (config) {
-        const originalConfig = this.#config;
+        const originalConfig = this._config;
         const newConfig: DataSourceConfig =
           config?.filterSpec?.filter &&
           config?.filterSpec.filterStruct === undefined
@@ -353,7 +355,7 @@ export class ArrayDataSource
               }
             : config;
 
-        this.#config = withConfigDefaults(newConfig);
+        this._config = withConfigDefaults(newConfig);
 
         let processedData: DataSourceRow[] | undefined;
 
@@ -380,7 +382,7 @@ export class ArrayDataSource
           this.openTreeNodes.length > 0 &&
           isGroupByChanged(originalConfig, config)
         ) {
-          if (this.#config.groupBy.length === 0) {
+          if (this._config.groupBy.length === 0) {
             this.openTreeNodes.length = 0;
           } else {
             //TODO purge any openTreeNodes for a no-longer-present groupBy col
@@ -404,7 +406,7 @@ export class ArrayDataSource
             processedData = expandGroup(
               this.openTreeNodes,
               this.#data,
-              this.#config.groupBy,
+              this._config.groupBy,
               this.#columnMap,
               this.groupMap as GroupMap,
               processedData as DataSourceRow[],
@@ -422,13 +424,13 @@ export class ArrayDataSource
 
       this.setRange(resetRange(this.#range), true);
 
-      this.emit("config", this.#config, undefined, configChanges);
+      this.emit("config", this._config, undefined, configChanges);
     }
   }
 
   applyConfig(config: DataSourceConfig): DataSourceConfigChanges | undefined {
     const { noChanges, ...otherChanges } = isConfigChanged(
-      this.#config,
+      this._config,
       config,
     );
 
@@ -445,7 +447,7 @@ export class ArrayDataSource
                 },
               }
             : config;
-        this.#config = withConfigDefaults(newConfig);
+        this._config = withConfigDefaults(newConfig);
         return otherChanges;
       }
     }
@@ -609,7 +611,7 @@ export class ArrayDataSource
   }
 
   get columns() {
-    return this.#config.columns;
+    return this._config.columns;
   }
 
   set columns(columns: string[]) {
@@ -628,18 +630,18 @@ export class ArrayDataSource
     this.dataIndices = buildDataToClientMap(this.#columnMap, this.dataMap);
 
     this.config = {
-      ...this.#config,
+      ...this._config,
       columns,
     };
   }
 
   get aggregations() {
-    return this.#config.aggregations;
+    return this._config.aggregations;
   }
 
   set aggregations(aggregations: VuuAggregation[]) {
-    this.#config = {
-      ...this.#config,
+    this._config = {
+      ...this._config,
       aggregations,
     };
 
@@ -649,48 +651,48 @@ export class ArrayDataSource
     aggregateData(
       aggregations,
       targetData,
-      this.#config.groupBy,
+      this._config.groupBy,
       leafData,
       this.#columnMap,
       this.groupMap as GroupMap,
     );
     this.setRange(resetRange(this.#range), true);
 
-    this.emit("config", this.#config);
+    this.emit("config", this._config);
   }
 
   get sort() {
-    return this.#config.sort;
+    return this._config.sort;
   }
 
   set sort(sort: VuuSort) {
     debug?.(`sort ${JSON.stringify(sort)}`);
     this.config = {
-      ...this.#config,
+      ...this._config,
       sort,
     };
   }
 
   get filter() {
-    return this.#config.filterSpec;
+    return this._config.filterSpec;
   }
 
   set filter(filter: DataSourceFilter) {
     debug?.(`filter ${JSON.stringify(filter)}`);
     // TODO check that filter has changed
     this.config = {
-      ...this.#config,
+      ...this._config,
       filterSpec: filter,
     };
   }
 
   get groupBy() {
-    return this.#config.groupBy;
+    return this._config.groupBy;
   }
 
   set groupBy(groupBy: VuuGroupBy) {
     this.config = {
-      ...this.#config,
+      ...this._config,
       groupBy,
     };
   }
@@ -699,8 +701,9 @@ export class ArrayDataSource
     return this.#title ?? `${this.table.module} ${this.table.table}`;
   }
 
-  set title(title: string | undefined) {
+  set title(title: string) {
     this.#title = title;
+    this.emit("title-changed", this.viewport, title);
   }
 
   get _clientCallback() {

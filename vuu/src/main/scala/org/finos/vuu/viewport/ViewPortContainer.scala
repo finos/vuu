@@ -10,7 +10,7 @@ import org.finos.toolbox.time.TimeIt.{timeIt, timeItThen}
 import org.finos.toolbox.time.{Clock, TimeIt}
 import org.finos.vuu.api.{Link, ViewPortDef}
 import org.finos.vuu.client.messages.ViewPortId
-import org.finos.vuu.core.filter.{Filter, FilterSpecParser, NoFilter}
+import org.finos.vuu.core.filter.{Filter, FilterOutEverythingFilter, FilterSpecParser, NoFilter}
 import org.finos.vuu.core.sort._
 import org.finos.vuu.core.table.{DataTable, SessionTable, TableContainer}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
@@ -290,7 +290,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       case null =>
         logger.error(s"Could not find viewport to remove $vpId")
       case vp: ViewPort =>
-        logger.info(s"Removing $vpId from container")
+        logger.debug(s"Removing $vpId from container")
         viewPortHistograms.remove(vpId)
         vp.delete()
         this.viewPorts.remove(vp.id)
@@ -303,7 +303,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         logger.error(s"Could not find viewport to disable $vpId")
       case vp: ViewPort =>
         vp.setEnabled(false)
-        logger.info(s"Disabled $vpId in container")
+        logger.debug(s"Disabled $vpId in container")
     }
   }
 
@@ -313,7 +313,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         logger.error(s"Could not find viewport to enable $vpId")
       case vp: ViewPort =>
         vp.setEnabled(true)
-        logger.info(s"Enabled $vpId in container")
+        logger.debug(s"Enabled $vpId in container")
     }
   }
 
@@ -431,7 +431,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
           AntlrBasedFilter(clause)
         case Failure(err) =>
           logger.error(s"could not parse filter ${filterSpec.filter}", err)
-          NoFilter
+          FilterOutEverythingFilter
       }
     }
   }
@@ -464,7 +464,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     //we are not grouped by, but we want to change to a group by
     if (viewPort.getGroupBy == NoGroupBy && groupBy != NoGroupBy) {
 
-      logger.info("[VP] was flat (or diff), now tree'd, building...")
+      logger.trace("[VP] was flat (or diff), now tree'd, building...")
 
       val sourceTable = viewPort.table
 
@@ -490,7 +490,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       //we are groupBy but we want to revert to no groupBy
     } else if (viewPort.getGroupBy != NoGroupBy && groupBy == NoGroupBy) {
 
-      logger.info("[VP] was tree'd, now not tree'd, removing tree info")
+      logger.trace("[VP] was tree'd, now not tree'd, removing tree info")
 
       val groupByTable = viewPort.table.asTable.asInstanceOf[TreeSessionTableImpl]
       val sourceTable = viewPort.table.asTable.asInstanceOf[TreeSessionTableImpl].sourceTable
@@ -512,7 +512,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     } else if (viewPort.getGroupBy != NoGroupBy && groupBy != NoGroupBy && viewPort.getGroupBy.columns != groupBy.columns) {
 
-      logger.info("[VP] was tree'd, now tree'd also but differently, building...")
+      logger.trace("[VP] was tree'd, now tree'd also but differently, building...")
 
       val groupByTable = viewPort.table.asTable.asInstanceOf[TreeSessionTableImpl]
       val sourceTable = viewPort.table.asTable.asInstanceOf[TreeSessionTableImpl].sourceTable
@@ -526,7 +526,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       viewPort.setKeys(EmptyViewPortKeys)
       sessionTable.setTree(EmptyTree, InMemTablePrimaryKeys(keys))
 
-      logger.info("[VP] complete setKeys() " + keys.length + "new group by table:" + sessionTable.name)
+      logger.debug("[VP] complete setKeys() " + keys.length + "new group by table:" + sessionTable.name)
 
       val structure = viewport.ViewPortStructuralFields(table = sessionTable,
         columns = columns,
@@ -547,7 +547,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       groupByTable.delete()
 
     } else {
-      logger.info("[VP] default else condition in change() call")
+      logger.trace("[VP] default else condition in change() call")
       val structure = viewport.ViewPortStructuralFields(table = viewPort.table,
         columns = columns,
         viewPortDef = viewPort.getStructure.viewPortDef,
@@ -607,14 +607,14 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       vp.setRange(range)
     }
 
-    logger.info("VP Change Range [{}] {}->{}, was {}->{}, took: {} millis", vpId, range.from, range.to, old.from, old.to, millis)
+    logger.trace("VP Change Range [{}] {}->{}, was {}->{}, took: {} millis", vpId, range.from, range.to, old.from, old.to, millis)
 
     vp
   }
 
   def openNode(viewPortId: String, treeKey: String): Unit = {
 
-    logger.info(s"Had request to change vp $viewPortId node state $treeKey")
+    logger.debug(s"Had request to change vp $viewPortId node state $treeKey")
 
     val viewPort = viewPorts.get(viewPortId)
     val treeNodeStateStore = treeNodeStatesByVp.getOrDefault(viewPortId, TreeNodeStateStore(Map()))
@@ -625,7 +625,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   }
 
   def closeNode(viewPortId: String, treeKey: String): Unit = {
-    logger.info(s"Had request to change vp $viewPortId node state $treeKey")
+    logger.debug(s"Had request to change vp $viewPortId node state $treeKey")
 
     val viewPort = viewPorts.get(viewPortId)
     val treeNodeStateStore = treeNodeStatesByVp.getOrDefault(viewPortId, TreeNodeStateStore(Map()))
@@ -903,7 +903,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       .asScala
       .filter(entry => entry.getValue.session == clientSession).toArray
 
-    logger.info(s"Removing ${viewports.length} on disconnect of $clientSession")
+    logger.debug(s"Removing ${viewports.length} on disconnect of $clientSession")
 
     viewports.foreach(entry => {
       this.removeViewPort(entry.getKey)

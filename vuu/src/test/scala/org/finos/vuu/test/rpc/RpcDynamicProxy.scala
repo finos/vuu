@@ -24,13 +24,13 @@ class RpcDynamicProxy(viewport: ViewPort,
 
       val packet = serializer.serialize(vpMsg)
 
-      logger.info("Calling RPC with packet:" + packet)
+      logger.trace("Calling RPC with packet:" + packet)
 
       handler.handle(packet, channel)
 
       channel.popMsg match {
         case Some(packet) =>
-          logger.info("Got RPC response packet:" + packet)
+          logger.trace("Got RPC response packet:" + packet)
           val responseMsg = serializer.deserialize(packet)
           //responseMsg.body.asInstanceOf[ViewPort]
           null
@@ -49,13 +49,13 @@ class RpcDynamicProxy(viewport: ViewPort,
 
       val packet = serializer.serialize(vpMsg)
 
-      logger.info("Calling RPC with packet:" + packet)
+      logger.trace("Calling RPC with packet:" + packet)
 
       handler.handle(packet, channel)
 
       channel.popMsg match {
         case Some(packet) =>
-          logger.info("Got RPC response packet:" + packet)
+          logger.trace("Got RPC response packet:" + packet)
           val responseMsg = serializer.deserialize(packet)
           //responseMsg.body.asInstanceOf[ViewPort]
           null
@@ -74,13 +74,13 @@ class RpcDynamicProxy(viewport: ViewPort,
 
       val packet = serializer.serialize(vpMsg)
 
-      logger.info("Calling RPC with packet:" + packet)
+      logger.trace("Calling RPC with packet:" + packet)
 
       handler.handle(packet, channel)
 
       channel.popMsg match {
         case Some(packet) =>
-          logger.info("Got RPC response packet:" + packet)
+          logger.trace("Got RPC response packet:" + packet)
           val responseMsg = serializer.deserialize(packet)
           //responseMsg.body.asInstanceOf[ViewPort]
           null
@@ -100,13 +100,13 @@ class RpcDynamicProxy(viewport: ViewPort,
 
       val packet = serializer.serialize(vpMsg)
 
-      logger.info("Calling RPC with packet:" + packet)
+      logger.trace("Calling RPC with packet:" + packet)
 
       handler.handle(packet, channel)
 
       channel.popMsg match {
         case Some(packet) =>
-          logger.info("Got RPC response packet:" + packet)
+          logger.trace("Got RPC response packet:" + packet)
           val responseMsg = serializer.deserialize(packet)
           //responseMsg.body.asInstanceOf[ViewPort]
           null
@@ -125,13 +125,13 @@ class RpcDynamicProxy(viewport: ViewPort,
 
       val packet = serializer.serialize(vpMsg)
 
-      logger.info("Calling RPC with packet:" + packet)
+      logger.trace("Calling RPC with packet:" + packet)
 
       handler.handle(packet, channel)
 
       channel.popMsg match {
         case Some(packet) =>
-          logger.info("Got RPC response packet:" + packet)
+          logger.trace("Got RPC response packet:" + packet)
           val responseMsg = serializer.deserialize(packet)
           //responseMsg.body.asInstanceOf[ViewPort]
           null
@@ -150,13 +150,13 @@ class RpcDynamicProxy(viewport: ViewPort,
 
       val packet = serializer.serialize(vpMsg)
 
-      logger.info("Calling RPC with packet:" + packet)
+      logger.trace("Calling RPC with packet:" + packet)
 
       handler.handle(packet, channel)
 
       channel.popMsg match {
         case Some(packet) =>
-          logger.info("Got RPC response packet:" + packet)
+          logger.trace("Got RPC response packet:" + packet)
           val responseMsg = serializer.deserialize(packet)
           //responseMsg.body.asInstanceOf[ViewPort]
           null
@@ -178,13 +178,13 @@ class RpcDynamicProxy(viewport: ViewPort,
 
     val packet = serializer.serialize(msg)
 
-    logger.info("Calling RPC with packet:" + packet)
+    logger.trace("Calling RPC with packet:" + packet)
 
     handler.handle(packet, channel)
 
     channel.popMsg match {
       case Some(packet) =>
-        logger.info("Got RPC response packet:" + packet)
+        logger.trace("Got RPC response packet:" + packet)
         val responseMsg = serializer.deserialize(packet)
         responseMsg.body.asInstanceOf[ViewPortRpcResponse].action
       case None =>

@@ -56,7 +56,7 @@ object IgniteVuuMain extends App with StrictLogging {
   val certPath = defaultConfig.getString("vuu.certPath")
   val keyPath = defaultConfig.getString("vuu.keyPath")
 
-  logger.info(s"[Ignite] Starting ignite in ${if(runAsIgniteServer) "Server" else "Client"} mode")
+  logger.debug(s"[Ignite] Starting ignite in ${if(runAsIgniteServer) "Server" else "Client"} mode")
   private val igniteOrderStore = IgniteOrderStore(clientMode = !runAsIgniteServer)
   if(runAsIgniteServer)
     SaveOrdersInIgnite()

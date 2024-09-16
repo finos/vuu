@@ -39,7 +39,7 @@ const getProps = (state?: Props, props?: Props) => {
  */
 const View = forwardRef(function View(
   props: ViewProps,
-  forwardedRef: ForwardedRef<HTMLDivElement>
+  forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
   const {
     Header = VuuHeader,
@@ -73,6 +73,7 @@ const View = forwardRef(function View(
   });
 
   const id = useId(idProp);
+
   const rootRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLDivElement>(null);
   const [componentProps, _setComponentProps] = useState<Props>();
@@ -106,7 +107,7 @@ const View = forwardRef(function View(
     if (React.isValidElement(children) && (restoredState || componentProps)) {
       return React.cloneElement(
         children,
-        getProps(restoredState, componentProps)
+        getProps(restoredState, componentProps),
       );
     }
     return children;
@@ -138,7 +139,7 @@ const View = forwardRef(function View(
       saveSession,
       setComponentProps,
       title,
-    ]
+    ],
   );
 
   const headerProps = typeof header === "object" ? header : {};
@@ -185,7 +186,7 @@ interface ViewComponentType {
   (
     props: ViewProps & {
       ref?: ForwardedRef<HTMLDivElement>;
-    }
+    },
   ): ReactElement<ViewProps>;
   displayName?: string;
 }

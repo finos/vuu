@@ -4,14 +4,16 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.client.messages.{RequestId, TokenId}
 import org.finos.vuu.net._
 import org.scalatest.concurrent.TimeLimits.failAfter
+import org.scalatest.concurrent.{Signaler, ThreadSignaler}
 import org.scalatest.time.Span
 import org.scalatest.time.SpanSugar._
 
 import java.util.concurrent.ConcurrentHashMap
+import scala.annotation.tailrec
 import scala.language.postfixOps
 import scala.reflect.ClassTag
 
-class TestVuuClient(vsClient: ViewServerClient) extends StrictLogging{
+class TestVuuClient(vsClient: ViewServerClient) extends StrictLogging {
 
   type SessionId = String
   type Token = String
@@ -29,43 +31,63 @@ class TestVuuClient(vsClient: ViewServerClient) extends StrictLogging{
   def awaitForMsgWithBody[T <: AnyRef](implicit t: ClassTag[T]): Option[T] =
     awaitForMsg.map(msg => msg.body.asInstanceOf[T])
 
+
+  implicit val signaler: Signaler = ThreadSignaler
+
   def awaitForMsg[T <: AnyRef](implicit t: ClassTag[T]): Option[ViewServerMessage] = {
-    failAfter(timeout){
-      val msg = vsClient.awaitMsg
-      if (msg != null) { //null indicate error or timeout
-        if (isExpectedBodyType(t, msg))
-          Some(msg)
-        else
-          awaitForMsg
+    failAfter(timeout) {
+      getNextMessageUntilBodyIsExpectedType()
+    }
+  }
+
+  @tailrec
+  private def getNextMessageUntilBodyIsExpectedType[T <: AnyRef]()(implicit t: ClassTag[T]): Option[ViewServerMessage] = {
+    val msg = vsClient.awaitMsg
+    if (msg != null) { //null indicate error or timeout
+      if (isExpectedBodyType(t, msg)) {
+        Some(msg)
+      } else {
+        logger.whenDebugEnabled(
+          logger.debug(s"Received ${msg.body.getClass} but was expecting ${t.runtimeClass}. Dismissing message and waiting for next one.")
+        )
+        getNextMessageUntilBodyIsExpectedType()
       }
-      else
-        None
+    }
+    else {
+      logger.debug(s"Did not receive any message in response. Try waiting again.")
+      getNextMessageUntilBodyIsExpectedType()
     }
   }
 
   val responsesMap: ConcurrentHashMap[String, ViewServerMessage] = new ConcurrentHashMap
 
   def awaitForResponse(requestId: String): Option[ViewServerMessage] = {
+    failAfter(timeout) {
+      getNextMessageUntilResponseForRequestId(requestId)
+    }
+  }
 
+  @tailrec
+  private def getNextMessageUntilResponseForRequestId(requestId: String): Option[ViewServerMessage] = {
     lookupFromReceivedResponses(requestId)
       .map(msg => {
-        logger.info(s"Found response for $requestId in cache")
-        return Some(msg)
+        logger.debug(s"Found response for $requestId in cache")
+        Some(msg)
       })
 
     val msg = vsClient.awaitMsg
     if (msg != null)
       if (msg.requestId == requestId) {
-        logger.info(s"Received response for $requestId")
+        logger.debug(s"Received response for $requestId")
         Some(msg)
       } else {
         responsesMap.put(msg.requestId, msg)
-        logger.info(s"Added response for $requestId in cache")
-        awaitForResponse(requestId)
+        logger.debug(s"Added response for $requestId in cache")
+        getNextMessageUntilResponseForRequestId(requestId)
       }
     else {
       logger.error(s"Failed or timed out while waiting for response for $requestId")
-      None
+      getNextMessageUntilResponseForRequestId(requestId)
     }
   }
 

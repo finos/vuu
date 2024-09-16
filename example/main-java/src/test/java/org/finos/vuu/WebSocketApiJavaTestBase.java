@@ -24,12 +24,16 @@ public abstract class WebSocketApiJavaTestBase {
     protected String tokenId;
     protected String sessionId;
 
-    protected Clock clock = new DefaultClock();
-    protected LifecycleContainer lifecycle  = new LifecycleContainer(clock);
-    protected TableDefContainer tableDefContainer  = new TableDefContainer();
+    protected Clock clock;
+    protected LifecycleContainer lifecycle;
+    protected TableDefContainer tableDefContainer;
 
     @BeforeAll
     public void setUp() {
+        clock = new DefaultClock();
+        lifecycle  = new LifecycleContainer(clock);
+        tableDefContainer  = new TableDefContainer();
+
         vuuClient = testStartUp();
         tokenId = vuuClient.createAuthToken();
         var sessionOption = OptionConverters.toJava(vuuClient.login(tokenId, "testUser"));

@@ -114,7 +114,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
   lifecycle(groupByRunner).dependsOn(server)
 
   def createTable(tableDef: TableDef): DataTable = {
-    logger.info(s"Creating table ${tableDef.name}")
+    logger.debug(s"Creating table ${tableDef.name}")
     pluginRegistry.withPlugin(tableDef.pluginType) {
       plugin =>
         plugin.tableFactory.createTable(tableDef, tableContainer, joinProvider)
@@ -122,7 +122,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
   }
 
   def createJoinTable(joinDef: JoinTableDef): DataTable = {
-    logger.info(s"Creating joinTable ${joinDef.name}")
+    logger.debug(s"Creating joinTable ${joinDef.name}")
     pluginRegistry.withPlugin(joinDef.pluginType) {
       plugin =>
         plugin.joinTableFactory.createJoinTable(joinDef, tableContainer, joinProvider)
@@ -130,7 +130,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
   }
 
   def createAutoSubscribeTable(tableDef: TableDef): DataTable = {
-    logger.info(s"Creating autoSubTable ${tableDef.name}")
+    logger.debug(s"Creating autoSubTable ${tableDef.name}")
     tableContainer.createAutoSubscribeTable(tableDef)
   }
 
@@ -162,7 +162,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
     moduleContainer.register(realized)
 
-    logger.info(s"[VIEW SERVER] registering module ${module.name} which contains ${module.tableDefs.size} tables")
+    logger.debug(s"[VIEW SERVER] registering module ${module.name} which contains ${module.tableDefs.size} tables")
 
     module.tableDefs.foreach {
 
@@ -179,7 +179,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
       case tableDef: TableDef if !tableDef.autosubscribe =>
         tableDef.setModule(module)
         val table = createTable(tableDef)
-        logger.info(s"Loading provider for table ${table.name}...")
+        logger.debug(s"Loading provider for table ${table.name}...")
         val provider = module.getProviderForTable(table, this)
         registerProvider(table, provider)
     }

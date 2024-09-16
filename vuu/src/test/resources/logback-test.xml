@@ -12,7 +12,7 @@
     <logger name="org.finos.vuu.provider.VuuJoinTableProvider" level="DEBUG">
     </logger>
 
-    <root level="INFO">
+    <root level="DEBUG">
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>

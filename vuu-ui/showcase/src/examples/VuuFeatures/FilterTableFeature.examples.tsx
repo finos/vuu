@@ -2,7 +2,7 @@ import { getSchema } from "@finos/vuu-data-test";
 import { FlexboxLayout, LayoutProvider, View } from "@finos/vuu-layout";
 import { Feature, useWorkspace } from "@finos/vuu-shell";
 import { useCallback, useState } from "react";
-import { FilterTableFeature } from "../../features/FilterTable.feature";
+import FilterTableFeature from "../../features/FilterTable.feature";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
 import { JsonTable } from "@finos/vuu-datatable";
 import {

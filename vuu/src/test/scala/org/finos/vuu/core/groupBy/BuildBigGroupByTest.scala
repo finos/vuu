@@ -47,7 +47,7 @@ class BuildBigGroupByTestScenario() extends StrictLogging {
       "ric"
     )
 
-    logger.info("[PERF] Starting perf test, building flat table....")
+    logger.trace("[PERF] Starting perf test, building flat table....")
 
     val table = new InMemDataTable(pricesDef, joinProvider)
 
@@ -65,7 +65,7 @@ class BuildBigGroupByTestScenario() extends StrictLogging {
       table.processUpdate(ric, row, 1l)
     })
 
-    logger.info("[PERF] Complete Table Build")
+    logger.trace("[PERF] Complete Table Build")
 
     val client = ClientSessionId("A", "B")
 
@@ -77,23 +77,23 @@ class BuildBigGroupByTestScenario() extends StrictLogging {
 
     val builder = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), columns, TreeNodeStateStore(Map()), None, None, buildAction = BuildEntireTree(groupByTable, None), None)
 
-    logger.info("[PERF] Starting tree build")
+    logger.trace("[PERF] Starting tree build")
 
     val (millis, tree) = timeIt {
       builder.buildEntireTree()
     }
 
-    logger.info(s"[PERF] Complete tree build in $millis ms")
+    logger.trace(s"[PERF] Complete tree build in $millis ms")
 
     val builder3 = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), columns, TreeNodeStateStore(Map()), Some(tree), None, buildAction = BuildEntireTree(groupByTable, None), None)
 
-    logger.info("[PERF] Starting tree build 3")
+    logger.trace("[PERF] Starting tree build 3")
 
     val (millis3, tree3) = timeIt {
       builder3.buildEntireTree()
     }
 
-    logger.info(s"[PERF] Complete tree build in $millis3 ms")
+    logger.trace(s"[PERF] Complete tree build in $millis3 ms")
 
     val builder2 = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec("exchange = \"A\""), columns, TreeNodeStateStore(Map()), Some(tree3), None, buildAction = BuildEntireTree(groupByTable, None), None)
 
@@ -101,15 +101,15 @@ class BuildBigGroupByTestScenario() extends StrictLogging {
       groupByTable.size()
     }
 
-    logger.info(s"[PERF] Calling size on groupBy: $sizeMillis ms")
+    logger.trace(s"[PERF] Calling size on groupBy: $sizeMillis ms")
 
-    logger.info("[PERF] Starting tree build")
+    logger.trace("[PERF] Starting tree build")
 
     val (millis2, tree2) = timeIt {
       builder2.buildEntireTree()
     }
 
-    logger.info(s"[PERF] Complete tree build 2 in $millis2 ms done")
+    logger.trace(s"[PERF] Complete tree build 2 in $millis2 ms done")
 
   }
 

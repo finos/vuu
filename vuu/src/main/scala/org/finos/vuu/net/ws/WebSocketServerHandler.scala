@@ -82,7 +82,7 @@ class WebSocketServerHandler(handler: ViewServerHandler,
 
     // Check for closing frame
     if (frame.isInstanceOf[CloseWebSocketFrame]) {
-      logger.info("Got web socket close frame")
+      logger.trace("Got web socket close frame")
       handshaker.close(ctx.channel(), frame.retain().asInstanceOf[CloseWebSocketFrame]);
       return;
     }
@@ -96,7 +96,7 @@ class WebSocketServerHandler(handler: ViewServerHandler,
     }
 
     val request = (frame.asInstanceOf[TextWebSocketFrame]).text();
-    logger.debug("[WS SERVER] on msg " + request)
+    logger.trace("[WS SERVER] on msg " + request)
     handler.handle(request, ctx.channel())
     //System.err.printf("%s received %s%n", ctx.channel(), request);
     //ctx.channel().write(new TextWebSocketFrame(request.toUpperCase()));
@@ -120,8 +120,7 @@ class WebSocketServerHandler(handler: ViewServerHandler,
   }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
-    logger.info("Exception: Closing context")
-    cause.printStackTrace();
+    logger.warn("Exception: Closing context", cause)
     ctx.close();
   }
 

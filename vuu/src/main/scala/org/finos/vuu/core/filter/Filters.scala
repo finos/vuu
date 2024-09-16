@@ -1,8 +1,7 @@
 package org.finos.vuu.core.filter
 
+import org.finos.vuu.core.table.{EmptyTablePrimaryKeys, TablePrimaryKeys}
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
-import org.finos.toolbox.collection.array.ImmutableArray
-import org.finos.vuu.core.table.TablePrimaryKeys
 
 trait Filter {
   def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns:ViewPortColumns): TablePrimaryKeys
@@ -10,6 +9,10 @@ trait Filter {
 
 object NoFilter extends Filter {
   override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns:ViewPortColumns): TablePrimaryKeys = primaryKeys
+}
+
+object FilterOutEverythingFilter extends Filter {
+  override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = EmptyTablePrimaryKeys
 }
 
 

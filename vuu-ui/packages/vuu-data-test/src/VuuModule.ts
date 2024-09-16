@@ -1,5 +1,7 @@
 import {
   DataSource,
+  DataSourceConfig,
+  DataSourceVisualLinkCreatedMessage,
   OpenDialogActionWithSchema,
   SuggestionFetcher,
   TableSchema,
@@ -20,13 +22,12 @@ import {
   VuuRpcViewportResponse,
   VuuCreateVisualLink,
   VuuRemoveVisualLink,
-  VuuCreateVisualLinkResponse,
-  VuuRemoveVisualLinkResponse,
 } from "@finos/vuu-protocol-types";
 import { isViewportRpcRequest, uuid } from "@finos/vuu-utils";
 import { Table, buildDataColumnMapFromSchema } from "./Table";
 import { TickingArrayDataSource } from "./TickingArrayDataSource";
 import { makeSuggestions } from "./makeSuggestions";
+import { RuntimeVisualLink } from "./RuntimeVisualLink";
 
 export interface IVuuModule<T extends string = string> {
   createDataSource: (tableName: T) => DataSource;
@@ -78,6 +79,7 @@ type Subscription = {
 export class VuuModule<T extends string = string> implements IVuuModule<T> {
   #menus: Record<T, VuuMenu | undefined> | undefined;
   #name: string;
+  #runtimeVisualLinks = new Map<string, RuntimeVisualLink>();
   #schemas: Record<T, Readonly<TableSchema>>;
   #sessionTableMap: SessionTableMap = {};
   #tables: Record<T, Table>;
@@ -102,8 +104,6 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
   }
 
   private unregisterViewport = (viewportId: string) => {
-    console.log(`<subscription-closed> unregister viewport ${viewportId}`);
-
     for (const [tableName, subscriptions] of this.#subscriptionMap) {
       if (subscriptions[0].viewportId.toString() === viewportId) {
         this.#subscriptionMap.delete(tableName);
@@ -132,47 +132,77 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     throw Error(`getSubscribedDataSource #${vpId} not in subscriptionMap`);
   }
 
-  getLink = (
+  getLinks = (
     subscriptionMap: Map<string, Subscription[]>,
     vuuLinks: VuuLink[],
   ) => {
     const visualLinks: LinkDescriptorWithLabel[] = [];
     for (let i = 0; i < vuuLinks.length; i++) {
-      if (subscriptionMap.get(vuuLinks[i].toTable)) {
-        const newLink: LinkDescriptorWithLabel = {
-          parentClientVpId: subscriptionMap.get(vuuLinks[i].toTable)?.[0]
-            .viewportId as string,
-          parentVpId: subscriptionMap.get(vuuLinks[i].toTable)?.[0]
-            .viewportId as string,
-          link: vuuLinks[i],
-        };
-        visualLinks.push(newLink);
+      const subscriptions = subscriptionMap.get(vuuLinks[i].toTable);
+      if (subscriptions) {
+        subscriptions.forEach(({ viewportId }) => {
+          const newLink: LinkDescriptorWithLabel = {
+            parentClientVpId: viewportId,
+            parentVpId: viewportId,
+            link: vuuLinks[i],
+          };
+          visualLinks.push(newLink);
+        });
       }
     }
     return visualLinks;
   };
 
-  createVisualLink = (
+  visualLinkService = (
     message: VuuCreateVisualLink | VuuRemoveVisualLink,
-  ): Promise<VuuCreateVisualLinkResponse | VuuRemoveVisualLinkResponse> =>
+  ): Promise<DataSourceVisualLinkCreatedMessage | void> =>
     new Promise((resolve) => {
       if (message.type === "CREATE_VISUAL_LINK") {
-        // const { parentVpId } = message;
-        // const dataSource = this.getSubscribedDataSource(parentVpId);
-        // register a selection listener on this datasource
-        // create a visual link which connects selection to filter on child
-        resolve({} as VuuCreateVisualLinkResponse);
+        const { childColumnName, childVpId, parentColumnName, parentVpId } =
+          message;
+        const childDataSource = this.getSubscribedDataSource(childVpId);
+        const parentDataSource = this.getSubscribedDataSource(parentVpId);
+        const runtimeVisualLink = new RuntimeVisualLink(
+          childDataSource,
+          parentDataSource,
+          childColumnName,
+          parentColumnName,
+        );
+
+        this.#runtimeVisualLinks.set(childVpId, runtimeVisualLink);
+
+        resolve({
+          clientViewportId: childVpId,
+          colName: childColumnName,
+          parentColName: parentColumnName,
+          parentViewportId: parentVpId,
+          type: "vuu-link-created",
+        } as DataSourceVisualLinkCreatedMessage);
       } else {
-        console.log("remove visual link");
-        resolve({} as VuuRemoveVisualLinkResponse);
+        const runtimeVisualLink = this.#runtimeVisualLinks.get(
+          message.childVpId,
+        );
+        if (runtimeVisualLink) {
+          runtimeVisualLink.remove();
+          this.#runtimeVisualLinks.delete(message.childVpId);
+        } else {
+          throw Error(
+            `visualLinkService no visual link found for viewport #${message.childVpId}`,
+          );
+        }
+        resolve();
       }
     });
 
-  createDataSource = (tableName: T, viewport?: string) => {
+  createDataSource = (
+    tableName: T,
+    viewport?: string,
+    config?: DataSourceConfig,
+  ) => {
     const visualLinks =
       this.#visualLinks?.[tableName] === undefined
         ? undefined
-        : this.getLink(
+        : this.getLinks(
             this.#subscriptionMap,
             this.#visualLinks[tableName] as VuuLink[],
           );
@@ -181,6 +211,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     const sessionTable = this.#sessionTableMap[tableName];
 
     const dataSource: DataSource = new TickingArrayDataSource({
+      ...config,
       columnDescriptors,
       keyColumn:
         this.#schemas[tableName] === undefined
@@ -192,18 +223,25 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
       sessionTables: this.#sessionTableMap,
       viewport,
       visualLinks,
-      visualLinkService: this.createVisualLink,
+      visualLinkService: this.visualLinkService,
     });
 
     dataSource.on("unsubscribed", this.unregisterViewport);
 
-    this.#subscriptionMap.set(tableName, [
-      { viewportId: dataSource.viewport as string, dataSource },
-    ]);
+    const existingSubscriptions = this.#subscriptionMap.get(tableName);
+    const subscription = {
+      viewportId: dataSource.viewport as string,
+      dataSource,
+    };
+    if (existingSubscriptions) {
+      existingSubscriptions.push(subscription);
+    } else {
+      this.#subscriptionMap.set(tableName, [subscription]);
+    }
 
     for (const key of this.#subscriptionMap.keys()) {
       if (this.#visualLinks?.[key as T] && key !== tableName) {
-        const vLink = this.getLink(
+        const vLink = this.getLinks(
           this.#subscriptionMap,
           this.#visualLinks?.[key as T] as VuuLink[],
         );

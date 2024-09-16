@@ -28,11 +28,11 @@ class ConstituentInstrumentPricesRpcService(val tableContainer: TableContainer)(
   }
 
   def sendToMarket()(ctx: RequestContext): ViewPortAction = {
-    logger.info("Calling sendToMarket()")
+    logger.trace("Calling sendToMarket()")
     ViewPortEditSuccess()
   }
   def createBasket(name: String)(ctx: RequestContext): ViewPortAction = {
-    logger.info("Calling createBasket()")
+    logger.trace("Calling createBasket()")
     ViewPortEditSuccess()
   }
 
@@ -49,7 +49,7 @@ class ConstituentInstrumentPricesRpcService(val tableContainer: TableContainer)(
     val sequencerNumber = table.pullRow(headKey).get("sequenceNumber").asInstanceOf[Long]
 
     if (sequencerNumber > 0) {
-      logger.info("I would now send this fix seq to a fix engine to reset, we're all good:" + sequencerNumber)
+      logger.debug("I would now send this fix seq to a fix engine to reset, we're all good:" + sequencerNumber)
       CloseDialogViewPortAction(vp.id)
     } else {
       logger.error("Seq number not set, returning error")

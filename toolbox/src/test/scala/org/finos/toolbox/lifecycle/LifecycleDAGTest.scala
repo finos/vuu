@@ -9,11 +9,11 @@ class LifecycleDAGTest extends AnyFeatureSpec with Matchers {
 
   class CompA()(implicit val lifecycle: LifecycleContainer) extends DefaultLifecycleEnabled with StrictLogging{
     override def doStart(): Unit = {
-      logger.info("Starting A")
+      logger.debug("Starting A")
     }
 
     override def doInitialize(): Unit = {
-      logger.info("Initializing A")
+      logger.debug("Initializing A")
     }
 
     override val lifecycleId: String = "A"
@@ -24,7 +24,7 @@ class LifecycleDAGTest extends AnyFeatureSpec with Matchers {
     lifecycle(this).dependsOn(compA)
 
     override def doStart(): Unit = {
-      logger.info("Starting B")
+      logger.debug("Starting B")
     }
 
     override def doStop(): Unit = {
@@ -32,7 +32,7 @@ class LifecycleDAGTest extends AnyFeatureSpec with Matchers {
     }
 
     override def doInitialize(): Unit = {
-      logger.info("Initializing B")
+      logger.debug("Initializing B")
     }
 
     override def doDestroy(): Unit = ???
@@ -45,12 +45,12 @@ class LifecycleDAGTest extends AnyFeatureSpec with Matchers {
     lifecycle(this).dependsOn(compA, compB)
     //lifecycle(this).dependsOn(compB)
 
-    override def doStart(): Unit = logger.info("Starting C")
+    override def doStart(): Unit = logger.debug("Starting C")
 
     override val lifecycleId: String = "C"
 
     override def doInitialize(): Unit = {
-      logger.info("Initializing C")
+      logger.debug("Initializing C")
     }
   }
 

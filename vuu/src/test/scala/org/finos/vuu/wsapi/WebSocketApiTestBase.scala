@@ -11,15 +11,19 @@ import org.scalatest.{BeforeAndAfterAll, GivenWhenThen}
 
 abstract class WebSocketApiTestBase extends AnyFeatureSpec with BeforeAndAfterAll with GivenWhenThen with Matchers {
 
-  implicit val timeProvider: Clock = new DefaultClock
-  implicit val lifecycle: LifecycleContainer = new LifecycleContainer
-  implicit val tableDefContainer: TableDefContainer = new TableDefContainer
+  implicit var timeProvider: Clock = _
+  implicit var lifecycle: LifecycleContainer = _
+  implicit var tableDefContainer: TableDefContainer = _
   var viewServerClient: ViewServerClient = _
   var vuuClient: TestVuuClient = _
   var tokenId: String = _
   var sessionId: String = _
 
   override def beforeAll(): Unit = {
+    timeProvider =  new DefaultClock
+    lifecycle = new LifecycleContainer
+    tableDefContainer = new TableDefContainer
+
     vuuClient = testStartUp()
 
     tokenId = vuuClient.createAuthToken()

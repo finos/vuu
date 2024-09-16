@@ -1,4 +1,5 @@
 import type {
+  DataSourceConfig,
   DataSourceConstructorProps,
   TableSchema,
 } from "@finos/vuu-data-types";
@@ -37,11 +38,29 @@ const serverAPI: ServerAPI = {
 const getServerAPI = async () => serverAPI;
 
 class VuuDataSource {
-  constructor({ table, viewport }: DataSourceConstructorProps) {
+  constructor({
+    aggregations,
+    columns,
+    filterSpec,
+    groupBy,
+    sort,
+    table,
+    viewport,
+    visualLink,
+  }: DataSourceConstructorProps) {
+    const config: DataSourceConfig = {
+      aggregations,
+      columns,
+      filterSpec,
+      groupBy,
+      sort,
+      visualLink,
+    };
+
     if (isSimulTable(table)) {
-      return simulModule.createDataSource(table.table, viewport);
+      return simulModule.createDataSource(table.table, viewport, config);
     } else if (isBasketTable(table)) {
-      return basketModule.createDataSource(table.table, viewport);
+      return basketModule.createDataSource(table.table, viewport, config);
     } else {
       throw Error(`unsupported module/table ${table.module}/${table.table}`);
     }

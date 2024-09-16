@@ -19,7 +19,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSessionDataSource } from "./useSessionDataSource";
 import { FilterMode } from "@finos/vuu-filters/src/filter-bar/useFilterBar";
-import { useVisualLinks } from "@finos/vuu-data-react/src/hooks/useVisualLinks";
+import { useVisualLinks } from "@finos/vuu-data-react";
 
 const NO_CONFIG: FilterTableConfig = {};
 
@@ -162,7 +162,7 @@ export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
   );
 
   useEffect(() => {
-    if (dataSource.title !== title) {
+    if (title && dataSource.title !== title) {
       dataSource.title = title;
     }
   }, [dataSource, title]);

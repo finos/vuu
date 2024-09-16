@@ -1,10 +1,10 @@
+import { SuggestionProvider, TableSchemaTable } from "@finos/vuu-data-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
   VuuDatePicker,
   VuuInput,
   VuuTypeaheadInput
 } from "@finos/vuu-ui-controls";
-import { SuggestionProvider, TableSchemaTable } from "@finos/vuu-data-types";
 import { CommitHandler, isDateTimeColumn } from "@finos/vuu-utils";
 import { InputProps } from "@salt-ds/core";
 
@@ -39,13 +39,5 @@ export const getDataItemEditControl = ({
       />
     );
   }
-
-  return (
-    <VuuInput
-      variant="secondary"
-      {...InputProps}
-      data-field={column.name}
-      onCommit={onCommit}
-    />
-  );
+  return <VuuInput variant="secondary" {...InputProps} onCommit={onCommit} />;
 };

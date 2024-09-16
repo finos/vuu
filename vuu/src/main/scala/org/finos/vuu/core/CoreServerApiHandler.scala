@@ -19,10 +19,10 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   override def process(msg: ViewPortRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.callRpcService(msg.vpId, msg.rpcName, msg.params, msg.namedParams, ctx.session)(ctx)) match {
       case Success(action) =>
-        logger.info("Processed VP RPC call" + msg)
+        logger.debug("Processed VP RPC call " + msg)
         vsMsg(ViewPortRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
       case Failure(e) =>
-        logger.info("Failed to process VP RPC call", e)
+        logger.warn("Failed to process VP RPC call", e)
         vsMsg(ViewPortMenuRpcReject(msg.vpId, msg.rpcName, e.getMessage))(ctx)
     }
   }
@@ -30,10 +30,10 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   override def process(msg: ViewPortMenuCellRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.callRpcCell(msg.vpId, msg.rpcName, ctx.session, msg.rowKey, msg.field, msg.value)) match {
       case Success(action) =>
-        logger.info("Processed VP Menu Cell RPC call" + msg)
+        logger.debug("Processed VP Menu Cell RPC call" + msg)
         vsMsg(ViewPortMenuRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
       case Failure(e) =>
-        logger.info("Failed to process VP Menu Cell RPC call", e)
+        logger.warn("Failed to process VP Menu Cell RPC call", e)
         vsMsg(ViewPortMenuRpcReject(msg.vpId, msg.rpcName, e.getMessage))(ctx)
     }
   }
@@ -41,10 +41,10 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   override def process(msg: ViewPortMenuRowRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.callRpcRow(msg.vpId, msg.rpcName, ctx.session, msg.rowKey, msg.row)) match {
       case Success(action) =>
-        logger.info("Processed VP Menu Row RPC call" + msg)
+        logger.debug("Processed VP Menu Row RPC call" + msg)
         vsMsg(ViewPortMenuRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
       case Failure(e) =>
-        logger.info("Failed to process VP Menu Row RPC call", e)
+        logger.warn("Failed to process VP Menu Row RPC call", e)
         vsMsg(ViewPortMenuRpcReject(msg.vpId, msg.rpcName, e.getMessage))(ctx)
     }
   }
@@ -52,10 +52,10 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   override def process(msg: ViewPortMenuTableRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.callRpcTable(msg.vpId, msg.rpcName, ctx.session)) match {
       case Success(action) =>
-        logger.info("Processed VP Menu Table RPC call" + msg)
+        logger.debug("Processed VP Menu Table RPC call" + msg)
         vsMsg(ViewPortMenuRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
       case Failure(e) =>
-        logger.info("Failed to process VP Menu Table RPC call", e)
+        logger.warn("Failed to process VP Menu Table RPC call", e)
         vsMsg(ViewPortMenuRpcReject(msg.vpId, msg.rpcName, e.getMessage))(ctx)
     }
   }
@@ -63,10 +63,10 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   override def process(msg: ViewPortMenuSelectionRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.callRpcSelection(msg.vpId, msg.rpcName, ctx.session)) match {
       case Success(action) =>
-        logger.info("Processed VP Menu Selection RPC call" + msg)
+        logger.debug("Processed VP Menu Selection RPC call" + msg)
         vsMsg(ViewPortMenuRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
       case Failure(e) =>
-        logger.info("Failed to process VP Menu Selection RPC call", e)
+        logger.warn("Failed to process VP Menu Selection RPC call", e)
         vsMsg(ViewPortMenuRpcReject(msg.vpId, msg.rpcName, e.getMessage))(ctx)
     }
   }
@@ -74,10 +74,10 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   override def process(msg: ViewPortEditCellRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.callRpcEditCell(msg.vpId, msg.rowKey, msg.field, msg.value, ctx.session)) match {
       case Success(action) =>
-        logger.info("Processed VP Edit Cell RPC call" + msg)
+        logger.debug("Processed VP Edit Cell RPC call" + msg)
         vsMsg(ViewPortMenuRpcResponse(msg.vpId, "VP_EDIT_CELL_RPC", action))(ctx)
       case Failure(e) =>
-        logger.info("Failed to process VP Edit Cell RPC call", e)
+        logger.warn("Failed to process VP Edit Cell RPC call", e)
         vsMsg(ViewPortMenuRpcReject(msg.vpId, "VP_EDIT_CELL_RPC", e.getMessage))(ctx)
     }
   }
@@ -85,10 +85,10 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   override def process(msg: ViewPortEditRowRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.callRpcEditRow(msg.vpId, msg.rowKey, msg.data, ctx.session)) match {
       case Success(action) =>
-        logger.info("Processed VP Edit Row RPC call" + msg)
+        logger.debug("Processed VP Edit Row RPC call" + msg)
         vsMsg(ViewPortEditRpcResponse(msg.vpId, "VP_EDIT_ROW_RPC", action))(ctx)
       case Failure(e) =>
-        logger.info("Failed to process VP Edit Row RPC call", e)
+        logger.warn("Failed to process VP Edit Row RPC call", e)
         vsMsg(ViewPortMenuRpcReject(msg.vpId, "VP_EDIT_ROW_RPC", e.getMessage))(ctx)
     }
   }
@@ -96,10 +96,10 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   override def process(msg: ViewPortEditSubmitFormRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.callRpcEditFormSubmit(msg.vpId, ctx.session)) match {
       case Success(action) =>
-        logger.info("Processed VP Edit Submit From RPC call" + msg)
+        logger.debug("Processed VP Edit Submit From RPC call" + msg)
         vsMsg(ViewPortEditRpcResponse(msg.vpId, "VP_EDIT_SUBMIT_FORM_RPC", action))(ctx)
       case Failure(e) =>
-        logger.info("Failed to process VP Edit Submit From RPC call", e)
+        logger.warn("Failed to process VP Edit Submit From RPC call", e)
         vsMsg(ViewPortEditRpcReject(msg.vpId, "VP_EDIT_SUBMIT_FORM_RPC", e.getMessage))(ctx)
     }
   }
@@ -107,10 +107,10 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   override def process(msg: ViewPortDeleteCellRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.callRpcEditDeleteCell(msg.vpId, msg.rowKey, msg.field, ctx.session)) match {
       case Success(action) =>
-        logger.info("Processed VP Edit Delete Cell RPC call" + msg)
+        logger.debug("Processed VP Edit Delete Cell RPC call" + msg)
         vsMsg(ViewPortEditRpcResponse(msg.vpId, "VP_EDIT_DELETE_CELL_RPC", action))(ctx)
       case Failure(e) =>
-        logger.info("Failed to process VP Edit Delete Cell RPC call", e)
+        logger.warn("Failed to process VP Edit Delete Cell RPC call", e)
         vsMsg(ViewPortEditRpcReject(msg.vpId, "VP_EDIT_DELETE_CELL_RPC", e.getMessage))(ctx)
     }
   }
@@ -118,10 +118,10 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   override def process(msg: ViewPortDeleteRowRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.callRpcEditDeleteRow(msg.vpId, msg.rowKey, ctx.session)) match {
       case Success(action) =>
-        logger.info("Processed VP Edit Delete Row RPC call" + msg)
+        logger.debug("Processed VP Edit Delete Row RPC call" + msg)
         vsMsg(ViewPortEditRpcResponse(msg.vpId, "VP_EDIT_DELETE_ROW_RPC", action))(ctx)
       case Failure(e) =>
-        logger.info("Failed to process VP Edit Delete Row RPC call", e)
+        logger.warn("Failed to process VP Edit Delete Row RPC call", e)
         vsMsg(ViewPortEditRpcReject(msg.vpId, "VP_EDIT_DELETE_ROW_RPC", e.getMessage))(ctx)
     }
   }
@@ -129,10 +129,10 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   override def process(msg: ViewPortAddRowRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.callRpcAddRow(msg.vpId, msg.rowKey, msg.data, ctx.session)) match {
       case Success(action) =>
-        logger.info("Processed VP Edit Add Row RPC call" + msg)
+        logger.debug("Processed VP Edit Add Row RPC call" + msg)
         vsMsg(ViewPortEditRpcResponse(msg.vpId, "VP_EDIT_ADD_ROW_RPC", action))(ctx)
       case Failure(e) =>
-        logger.info("Failed to process VP Edit Add Row RPC call", e)
+        logger.warn("Failed to process VP Edit Add Row RPC call", e)
         vsMsg(ViewPortEditRpcReject(msg.vpId, "VP_EDIT_ADD_ROW_RPC", e.getMessage))(ctx)
     }
   }
@@ -140,10 +140,10 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   override def process(msg: RemoveViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.removeViewPort(msg.viewPortId)) match {
       case Success(_) =>
-        logger.info("View port removed")
+        logger.debug("View port removed")
         vsMsg(RemoveViewPortSuccess(msg.viewPortId))(ctx)
       case Failure(e) =>
-        logger.info("Failed to remove viewport", e)
+        logger.warn("Failed to remove viewport", e)
         vsMsg(RemoveViewPortReject(msg.viewPortId))(ctx)
     }
   }
@@ -151,10 +151,10 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   override def process(msg: EnableViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.enableViewPort(msg.viewPortId)) match {
       case Success(_) =>
-        logger.info("View port enabled")
+        logger.debug("View port enabled")
         vsMsg(EnableViewPortSuccess(msg.viewPortId))(ctx)
       case Failure(e) =>
-        logger.info("Failed to enable viewport", e)
+        logger.warn("Failed to enable viewport", e)
         vsMsg(RemoveViewPortReject(msg.viewPortId))(ctx)
     }
   }
@@ -162,10 +162,10 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   override def process(msg: DisableViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.disableViewPort(msg.viewPortId)) match {
       case Success(_) =>
-        logger.info("View port disabled")
+        logger.debug("View port disabled")
         vsMsg(DisableViewPortSuccess(msg.viewPortId))(ctx)
       case Failure(e) =>
-        logger.info("Failed to disable viewport", e)
+        logger.warn("Failed to disable viewport", e)
         vsMsg(DisableViewPortReject(msg.viewPortId))(ctx)
     }
   }
@@ -186,7 +186,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
     else {
       Try(providers.getProviderForTable(msg.table.table).get.asInstanceOf[RpcProvider].tick(msg.key, msg.data)) match {
         case Success(_) =>
-          logger.info(s"Rpc update success ${msg.table} ${msg.key}")
+          logger.debug(s"Rpc update success ${msg.table} ${msg.key}")
           vsMsg(RpcSuccess(msg.table, msg.key))(ctx)
         case Failure(e) =>
           logger.error(s"Rpc update reject ${msg.table} ${msg.key}", e)
@@ -196,12 +196,12 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: HeartBeatResponse)(ctx: RequestContext): Option[ViewServerMessage] = {
-    logger.info("HB [" + (timeProvider.now() - msg.ts) + "]")
+    logger.trace("HB [" + (timeProvider.now() - msg.ts) + "]")
     None
   }
 
   override def disconnect(session: ClientSessionId): Unit = {
-    logger.info("On Disconnect")
+    logger.trace("On Disconnect")
     viewPortContainer.removeForSession(session)
     tableContainer.removeSessionTables(session)
   }
@@ -248,7 +248,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
         val table = viewport.table.asTable
 
         val columns = if (msg.columns.length == 1 && msg.columns(0) == "*") {
-          logger.info("[ChangeViewPortRequest] Wildcard specified for columns, going to return all")
+          logger.trace("[ChangeViewPortRequest] Wildcard specified for columns, going to return all")
           table.getTableDef.columns.toList
         }
         else {
@@ -310,7 +310,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
     else {
 
       val columns = if (msg.columns.length == 1 && msg.columns(0) == "*") {
-        logger.info("[CreateViewPortRequest] Wildcard specified for columns, going to return all")
+        logger.trace("[CreateViewPortRequest] Wildcard specified for columns, going to return all")
         table.getTableDef.columns.toList
       }
       else {
@@ -418,7 +418,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   private def handleViewPortRpcRequest(msg: RpcRequest, viewPortId: String, ctx: RequestContext) = {
     val response = Try(viewPortContainer.handleRpcRequest(viewPortId, msg.rpcName, msg.params)(ctx)) match {
       case Success(functionResult) =>
-        logger.info(s"Processed VP RPC call ${ctx.requestId}" + msg)
+        logger.debug(s"Processed Rpc Request ${ctx.requestId} " + msg)
         functionResult match {
           case RpcFunctionSuccess(data) =>
             RpcResponseNew(rpcName = msg.rpcName, result = RpcSuccessResult(data), NoneAction())
@@ -426,7 +426,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
             createErrorRpcResponse(msg, error)
         }
       case Failure(e) =>
-        logger.info(s"Failed to process VP RPC call ${ctx.requestId}", e)
+        logger.warn(s"Failed to process Rpc Request ${ctx.requestId}", e)
         createErrorRpcResponse(msg, e.toString)
     }
     vsMsg(response)(ctx)

@@ -45,6 +45,7 @@ import {
   VuuRow,
   VuuSort,
   VuuTable,
+  VuuGroupDataRow,
 } from "@finos/vuu-protocol-types";
 import {
   expandSelection,
@@ -989,7 +990,7 @@ const toClientRowTree = (
   selectedRows: Selection,
 ) => {
   const [depth, isExpanded /* path */, , isLeaf /* label */, , count, ...rest] =
-    data;
+    data as VuuGroupDataRow;
 
   return [
     rowIndex,

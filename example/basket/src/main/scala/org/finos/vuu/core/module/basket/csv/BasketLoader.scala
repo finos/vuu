@@ -21,10 +21,10 @@ class BasketLoader(resourcePath: Option[String] = None) extends StrictLogging {
       }
       else {
         val csvFile = csvFiles(0)
-        logger.info("Loading basket static:" + basketId + "(" + csvFile + ")")
+        logger.debug("Loading basket static:" + basketId + "(" + csvFile + ")")
         val csvContent = FileLoader.readCsvContent(csvFile)
 
-        logger.info(s"Found ${csvContent.dataRows.length} constituents for basket $basketId")
+        logger.debug(s"Found ${csvContent.dataRows.length} constituents for basket $basketId")
 
         csvContent.dataRows.map(row => toConstituentMap(csvContent, row))
       }

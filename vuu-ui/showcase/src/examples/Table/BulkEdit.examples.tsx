@@ -1,11 +1,12 @@
 import { useVuuMenuActions } from "@finos/vuu-data-react";
 import { getSchema, vuuModule, VuuTableName } from "@finos/vuu-data-test";
+import { LocalDataSourceProvider } from "@finos/vuu-data-test/src/local-datasource-provider/LocalDatasourceProvider";
 import { ContextMenuProvider, DialogProvider } from "@finos/vuu-popups";
 import { Table, TableProps } from "@finos/vuu-table";
 import { applyDefaultColumnConfig } from "@finos/vuu-utils";
 import { useMemo } from "react";
+import { getDefaultColumnConfig } from "./columnMetaData";
 import { DemoTableContainer } from "./DemoTableContainer";
-import { LocalDataSourceProvider } from "@finos/vuu-data-test/src/local-datasource-provider/LocalDatasourceProvider";
 
 let displaySequence = 1;
 
@@ -19,7 +20,7 @@ const BulkEditTableTemplate = ({
   const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(
     () => ({
       config: {
-        columns: applyDefaultColumnConfig(schema),
+        columns: applyDefaultColumnConfig(schema, getDefaultColumnConfig),
         rowSeparators: true
       },
       dataSource: vuuModule("SIMUL").createDataSource(table)

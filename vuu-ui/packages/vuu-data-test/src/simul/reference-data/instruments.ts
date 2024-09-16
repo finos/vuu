@@ -13,6 +13,7 @@ export type description = string;
 export type exchange = string;
 // seed for price generation
 export type price = number;
+export type date = number;
 
 export type InstrumentsDataRow = [
   bbg,
@@ -22,7 +23,8 @@ export type InstrumentsDataRow = [
   string,
   number,
   ric,
-  price
+  price,
+  date
 ];
 
 export const InstrumentColumnMap = {
@@ -34,6 +36,7 @@ export const InstrumentColumnMap = {
   number: 5,
   ric: 6,
   price: 7,
+  date: 8
 } as const;
 
 const instrumentsData: InstrumentsDataRow[] = [];
@@ -66,6 +69,7 @@ for (const char1 of chars1) {
 
         const exchange = locations[suffix][1];
         const price = randomPrice();
+        const date = new Date().getTime();
 
         instrumentsData.push([
           bbg,
@@ -76,6 +80,7 @@ for (const char1 of chars1) {
           lotSize,
           ric,
           price,
+          date
         ]);
         count++;
       }

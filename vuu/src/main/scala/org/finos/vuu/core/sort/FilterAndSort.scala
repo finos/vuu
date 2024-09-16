@@ -3,14 +3,14 @@ package org.finos.vuu.core.sort
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.filter.{Filter, FilterClause, NoFilter}
 import org.finos.vuu.core.index._
-import org.finos.vuu.core.table.{Column, DataType, TablePrimaryKeys, ViewPortColumnCreator}
+import org.finos.vuu.core.table.{Column, DataType, EmptyTablePrimaryKeys, TablePrimaryKeys, ViewPortColumnCreator}
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns, ViewPortVisualLink}
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.core.auths.RowPermissionChecker
 import org.finos.vuu.core.table.column.{Error, Success}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 
-case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Filter {
+case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Filter with StrictLogging {
 
   private def doFilterByIndexIfPossible(parentSelectionKeys: Map[String, Int], parentColumn: Column,
                                         childColumn: Column, source: RowSource, primaryKeys: TablePrimaryKeys): TablePrimaryKeys = {
@@ -64,18 +64,26 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Fi
     val parentColumn = viewPortVisualLink.parentColumn
     val childColumn = viewPortVisualLink.childColumn
 
-
-    val filtered = doFilterByIndexIfPossible(parentSelectionKeys, parentColumn, childColumn, source, primaryKeys)
-    filtered
-
-
+    try {
+      doFilterByIndexIfPossible(parentSelectionKeys, parentColumn, childColumn, source, primaryKeys)
+    } catch {
+      case e: Exception =>
+        logger.error(s"Error while filtering by visual link $viewPortVisualLink", e)
+        InMemTablePrimaryKeys(ImmutableArray.empty[String])
+    }
   }
 }
 
-case class RowPermissionFilter(checker: RowPermissionChecker) extends Filter {
+case class RowPermissionFilter(checker: RowPermissionChecker) extends Filter with StrictLogging {
   override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     val filtered = primaryKeys.filter(key => {
+      try {
       checker.canSeeRow(source.pullRow(key, vpColumns))
+      } catch {
+        case e: Exception =>
+          logger.error(s"Error while checking row permission for keys $primaryKeys with checker $checker", e)
+          false
+      }
     }).toArray
 
     InMemTablePrimaryKeys(ImmutableArray.from[String](filtered))
@@ -120,6 +128,11 @@ trait FilterAndSort {
 case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAndSort with StrictLogging {
 
   override def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, checkerOption: Option[RowPermissionChecker]): TablePrimaryKeys = {
+    if(primaryKeys == null || primaryKeys.length == 0) {
+      // nothing to filter or sort
+      return primaryKeys
+    }
+
     try {
       val realizedFilter = checkerOption match {
         case Some(checker) => TwoStepCompoundFilter(RowPermissionFilter(checker), filter)
@@ -129,27 +142,16 @@ case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAn
       val filteredKeys = realizedFilter.dofilter(source, primaryKeys, vpColumns)
 
       val sortedKeys = sort.doSort(source, filteredKeys, vpColumns)
-      logger.debug("sorted")
+      logger.trace("sorted")
       sortedKeys
     } catch {
       case e: Throwable =>
-        logger.error("went bad", e)
+        logger.error("Error during filtering and sorting", e)
         //debugData(source, primaryKeys)
-        primaryKeys
+        EmptyTablePrimaryKeys
     }
   }
 
-}
-
-class NoFilterNoSort() extends FilterAndSort {
-
-  override def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, viewPortColumns: ViewPortColumns, checkerOption: Option[RowPermissionChecker]): TablePrimaryKeys = {
-    primaryKeys
-  }
-
-  override def filter: Filter = NoFilter
-
-  override def sort: Sort = NoSort
 }
 
 

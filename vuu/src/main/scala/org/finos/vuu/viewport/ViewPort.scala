@@ -129,6 +129,7 @@ trait ViewPort {
   def getTreeNodeStateStore: TreeNodeState
 
   def getStructure: ViewPortStructuralFields
+
   def getStructuralHashCode(): Int
 
   def getTableUpdateCount(): Long
@@ -167,12 +168,12 @@ case class ViewPortStructuralFields(table: RowSource, columns: ViewPortColumns,
                                     permissionChecker: Option[RowPermissionChecker])
 
 class ViewPortImpl(val id: String,
-                        //table: RowSource,
-                        val session: ClientSessionId,
-                        val outboundQ: PublishQueue[ViewPortUpdate],
-                        val structuralFields: AtomicReference[ViewPortStructuralFields],
-                        val range: AtomicReference[ViewPortRange]
-                       )(implicit timeProvider: Clock) extends ViewPort with KeyObserver[RowKeyUpdate] with LazyLogging {
+                   //table: RowSource,
+                   val session: ClientSessionId,
+                   val outboundQ: PublishQueue[ViewPortUpdate],
+                   val structuralFields: AtomicReference[ViewPortStructuralFields],
+                   val range: AtomicReference[ViewPortRange]
+                  )(implicit timeProvider: Clock) extends ViewPort with KeyObserver[RowKeyUpdate] with LazyLogging {
 
   private val viewPortLock = new Object
 
@@ -219,7 +220,10 @@ class ViewPortImpl(val id: String,
 
     val onlySortOrFilterChange = onlyFilterOrSortChanged(newStructuralFields, structuralFields.get())
 
-    logger.info(s"changeStructure(..) onlySortOrFilterChange=$onlySortOrFilterChange")
+    logger.whenDebugEnabled(
+      logger.debug(s"changeStructure(..) onlySortOrFilterChange=$onlySortOrFilterChange")
+    )
+
 
     structuralFields.set(newStructuralFields)
 
@@ -274,6 +278,7 @@ class ViewPortImpl(val id: String,
 
   //def setColumns(columns: List[Column])
   override def filterSpec: FilterSpec = structuralFields.get().filterSpec
+
   override def sortSpecInternal: SortSpecInternal = structuralFields.get().sortSpec
 
   def sendUpdatesOnChange(currentRange: ViewPortRange): Unit = {
@@ -285,7 +290,7 @@ class ViewPortImpl(val id: String,
 
     val inrangeKeys = keys.sliceToArray(from, to)
 
-    logger.info(s"Sending updates on ${inrangeKeys.length} inrangeKeys")
+    logger.debug(s"Sending updates on ${inrangeKeys.length} inrangeKeys")
 
     inrangeKeys.zip(from to to).foreach({ case (key, index) => publishHighPriorityUpdate(key, index) })
   }
@@ -384,7 +389,7 @@ class ViewPortImpl(val id: String,
   }
 
   override def setKeys(newKeys: ViewPortKeys): Unit = {
-    val sendSizeUpdate = (newKeys.length != keys.length ) || newKeys.length == 0
+    val sendSizeUpdate = (newKeys.length != keys.length) || newKeys.length == 0
     setKeysPre(newKeys)
     setKeysInternal(newKeys)
     setKeysPost(sendSizeUpdate, newKeys)
@@ -425,13 +430,13 @@ class ViewPortImpl(val id: String,
 
     val keyAdded = scala.collection.mutable.Set[String]()
 
-    for(index <- range.from until Math.min(newKeys.length, range.to)){
+    for (index <- range.from until Math.min(newKeys.length, range.to)) {
 
       val key = newKeys.get(index)
 
       //logger.info(s"In subscribeToNewKeys: index = $index, key = $key")
 
-      if(key != null) {
+      if (key != null) {
 
         val oldIndex = rowKeyToIndex.put(key, index)
 
@@ -451,15 +456,14 @@ class ViewPortImpl(val id: String,
             publishHighPriorityUpdate(key, index)
           }
         }
-      }else{
+      } else {
         logger.warn("Key is null@Index=" + index)
       }
 
     }
 
 
-
-    existingSubs.foreach({case(key, value) => {
+    existingSubs.foreach({ case (key, value) => {
       val index = rowKeyToIndex.getOrDefault(key, -1)
 
       if (key != null && index != -1 && !keyAdded.contains(key)) {
@@ -468,42 +472,42 @@ class ViewPortImpl(val id: String,
       }
     }
     })
-//      val item = existingSubs.next()
-//      val key = item.getKey
+    //      val item = existingSubs.next()
+    //      val key = item.getKey
 
     //}
 
-//    while (index < newKeys.length) {
-//
-//
-//      //with virtualized tables, we can have null keys as they are pending to be loaded.
-//      //we should just ignore them until they are loaded.
-//      if(key != null){
-//
-//        val oldIndex = rowKeyToIndex.put(key, index)
-//
-//        if (isInRange(index)) {
-//
-//          if (!isObservedAlready(key)) {
-//
-//            subscribeForKey(key, index)
-//
-//            newlyAddedObs += 1
-//
-//            publishHighPriorityUpdate(key, index)
-//
-//          } else if (hasChangedIndex(oldIndex, index)) {
-//            publishHighPriorityUpdate(key, index)
-//          }
-//
-//        } else {
-//          unsubscribeForKey(key)
-//          removedObs += 1
-//        }
-//      }
-//
-//      index += 1
-//    }
+    //    while (index < newKeys.length) {
+    //
+    //
+    //      //with virtualized tables, we can have null keys as they are pending to be loaded.
+    //      //we should just ignore them until they are loaded.
+    //      if(key != null){
+    //
+    //        val oldIndex = rowKeyToIndex.put(key, index)
+    //
+    //        if (isInRange(index)) {
+    //
+    //          if (!isObservedAlready(key)) {
+    //
+    //            subscribeForKey(key, index)
+    //
+    //            newlyAddedObs += 1
+    //
+    //            publishHighPriorityUpdate(key, index)
+    //
+    //          } else if (hasChangedIndex(oldIndex, index)) {
+    //            publishHighPriorityUpdate(key, index)
+    //          }
+    //
+    //        } else {
+    //          unsubscribeForKey(key)
+    //          removedObs += 1
+    //        }
+    //      }
+    //
+    //      index += 1
+    //    }
 
     if (newlyAddedObs > 0)
       logger.debug(s"[VP] ${this.id} Added $newlyAddedObs Removed $removedObs Obs ${this.table}, Range ${this.range}")
@@ -513,7 +517,7 @@ class ViewPortImpl(val id: String,
   protected def removeNoLongerSubscribedKeys(newKeys: ViewPortKeys): Unit = {
     val newKeySet = new util.HashSet[String]()
 
-    newKeys.foreach( key => {
+    newKeys.foreach(key => {
       newKeySet.add(key)
     })
 
