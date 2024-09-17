@@ -2,13 +2,13 @@ type Listener = (...args: any[]) => void;
 export type EmittedEvents = Record<string, Listener>;
 
 function isArrayOfListeners(
-  listeners: EventListener | EventListener[]
+  listeners: EventListener | EventListener[],
 ): listeners is EventListener[] {
   return Array.isArray(listeners);
 }
 
 function isOnlyListener(
-  listeners: EventListener | EventListener[]
+  listeners: EventListener | EventListener[],
 ): listeners is EventListener {
   return !Array.isArray(listeners);
 }
@@ -49,7 +49,7 @@ export class EventEmitter<Events extends EmittedEvents>
     if (listenerOrListeners === listener) {
       this.#events.delete(event);
     } else if (Array.isArray(listenerOrListeners)) {
-      for (let i = length; i-- > 0; ) {
+      for (let i = listenerOrListeners.length; i-- > 0; ) {
         if (listenerOrListeners[i] === listener) {
           position = i;
           break;
