@@ -140,13 +140,15 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     for (let i = 0; i < vuuLinks.length; i++) {
       const subscriptions = subscriptionMap.get(vuuLinks[i].toTable);
       if (subscriptions) {
-        subscriptions.forEach(({ viewportId }) => {
-          const newLink: LinkDescriptorWithLabel = {
-            parentClientVpId: viewportId,
-            parentVpId: viewportId,
-            link: vuuLinks[i],
-          };
-          visualLinks.push(newLink);
+        subscriptions.forEach(({ viewportId, dataSource: { status } }) => {
+          if (status !== "suspended") {
+            const newLink: LinkDescriptorWithLabel = {
+              parentClientVpId: viewportId,
+              parentVpId: viewportId,
+              link: vuuLinks[i],
+            };
+            visualLinks.push(newLink);
+          }
         });
       }
     }
@@ -199,13 +201,13 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     viewport?: string,
     config?: DataSourceConfig,
   ) => {
-    const visualLinks =
-      this.#visualLinks?.[tableName] === undefined
+    const getVisualLinks = (tableName: string) => {
+      const linksForTable = this.#visualLinks?.[tableName as T] as VuuLink[];
+      return linksForTable === undefined
         ? undefined
-        : this.getLinks(
-            this.#subscriptionMap,
-            this.#visualLinks[tableName] as VuuLink[],
-          );
+        : this.getLinks(this.#subscriptionMap, linksForTable);
+    };
+
     const columnDescriptors = this.getColumnDescriptors(tableName);
     const table = this.#tables[tableName];
     const sessionTable = this.#sessionTableMap[tableName];
@@ -213,6 +215,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     const dataSource: DataSource = new TickingArrayDataSource({
       ...config,
       columnDescriptors,
+      getVisualLinks,
       keyColumn:
         this.#schemas[tableName] === undefined
           ? this.#sessionTableMap[tableName].schema.key
@@ -222,7 +225,6 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
       rpcServices: this.getServices(tableName),
       sessionTables: this.#sessionTableMap,
       viewport,
-      visualLinks,
       visualLinkService: this.visualLinkService,
     });
 
@@ -237,19 +239,6 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
       existingSubscriptions.push(subscription);
     } else {
       this.#subscriptionMap.set(tableName, [subscription]);
-    }
-
-    for (const key of this.#subscriptionMap.keys()) {
-      if (this.#visualLinks?.[key as T] && key !== tableName) {
-        const vLink = this.getLinks(
-          this.#subscriptionMap,
-          this.#visualLinks?.[key as T] as VuuLink[],
-        );
-        const ds = this.#subscriptionMap.get(key)?.[0].dataSource;
-        if (ds?.links) {
-          ds.links = vLink;
-        }
-      }
     }
 
     return dataSource;

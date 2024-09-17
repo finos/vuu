@@ -39,12 +39,12 @@ export type VisualLinkHandler = (
 export interface TickingArrayDataSourceConstructorProps
   extends Omit<ArrayDataSourceConstructorProps, "data"> {
   data?: Array<VuuRowDataItemType[]>;
+  getVisualLinks?: (tableName: string) => LinkDescriptorWithLabel[] | undefined;
   menu?: VuuMenu;
   menuRpcServices?: RpcService[];
   rpcServices?: RpcService[];
   sessionTables?: SessionTableMap;
   table?: Table;
-  visualLinks?: LinkDescriptorWithLabel[];
   visualLinkService?: VisualLinkHandler;
 }
 
@@ -63,16 +63,19 @@ export class TickingArrayDataSource extends ArrayDataSource {
   #table?: Table;
   #selectionLinkSubscribers: Map<string, LinkSubscription> | undefined;
   #visualLinkService?: VisualLinkHandler;
+  #getVisualLinks?: (
+    tableName: string,
+  ) => LinkDescriptorWithLabel[] | undefined;
 
   constructor({
     data,
+    getVisualLinks,
     menuRpcServices,
     rpcServices,
     sessionTables,
     table,
     menu,
     visualLink,
-    visualLinks,
     visualLinkService,
     ...arrayDataSourceProps
   }: TickingArrayDataSourceConstructorProps) {
@@ -91,8 +94,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
     this.#sessionTables = sessionTables;
     this.#table = table;
     this.#visualLinkService = visualLinkService;
-
-    this.links = visualLinks;
+    this.#getVisualLinks = getVisualLinks;
 
     if (table) {
       this.tableSchema = table.schema;
@@ -125,6 +127,10 @@ export class TickingArrayDataSource extends ArrayDataSource {
   }
   get range() {
     return super.range;
+  }
+
+  get links() {
+    return this.#getVisualLinks?.(this.table.table);
   }
 
   private getSelectedRowIds() {

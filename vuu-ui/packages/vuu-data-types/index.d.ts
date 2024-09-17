@@ -341,6 +341,8 @@ export type DataSourceEvents = {
   "row-selection": RowSelectionEventHandler;
   subscribed: (subscription: DataSourceSubscribedMessage) => void;
   unsubscribed: DataSourceEventHandler;
+  suspended: DataSourceEventHandler;
+  resumed: DataSourceEventHandler;
   disabled: DataSourceEventHandler;
   enabled: DataSourceEventHandler;
   "title-changed": (id: string, title: string) => void;
