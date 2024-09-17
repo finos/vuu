@@ -255,16 +255,17 @@ export class ArrayDataSource
     if (this.#status !== "unsubscribed") {
       info?.(`suspend #${this.viewport}, current status ${this.#status}`);
       this.#status = "suspended";
+      this.emit("suspended", this.viewport);
     }
   }
 
   resume() {
-    // const isDisabled = this.#status.startsWith("disabl");
     const isSuspended = this.#status === "suspended";
     info?.(`resume #${this.viewport}, current status ${this.#status}`);
     if (isSuspended) {
       this.#status = "subscribed";
     }
+    this.emit("resumed", this.viewport);
   }
 
   disable() {

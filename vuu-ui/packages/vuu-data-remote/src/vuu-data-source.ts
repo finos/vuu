@@ -267,6 +267,7 @@ export class VuuDataSource
           type: "suspend",
           viewport: this.viewport,
         });
+        this.emit("suspended", this.viewport);
       }
     }
   }
@@ -284,6 +285,7 @@ export class VuuDataSource
           viewport: this.viewport,
         });
         this.#status = "subscribed";
+        this.emit("resumed", this.viewport);
       }
     }
   }
