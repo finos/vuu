@@ -1,5 +1,6 @@
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
-import { queryClosest, Settings } from "@finos/vuu-utils";
+import { VuuInput } from "@finos/vuu-ui-controls";
+import { getFieldName, Settings } from "@finos/vuu-utils";
 import {
   Dropdown,
   DropdownProps,
@@ -11,7 +12,9 @@ import {
   ToggleButtonGroup,
   ToggleButtonGroupProps,
 } from "@salt-ds/core";
-import { VuuInput } from "@finos/vuu-ui-controls";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+import cx from "clsx";
 import {
   FormEventHandler,
   HTMLAttributes,
@@ -19,17 +22,11 @@ import {
   useCallback,
   useState,
 } from "react";
+
+import settingsFormCss from "./SettingsForm.css";
+
 export interface SettingsSchema {
   properties: SettingsProperty[];
-}
-
-export interface SettingsProps {
-  settingsSchema: SettingsSchema;
-  settings: Settings;
-  onSettingChanged: (
-    propertyName: string,
-    value: string | number | boolean,
-  ) => void;
 }
 
 export type Option<T> = { label: string; value: T };
@@ -82,6 +79,8 @@ const defaultPropertyValue: Record<
   number: 0,
   string: "",
 };
+
+const classBase = "vuuSettingsForm";
 
 // Determine the form control type to be displayed
 export function FormControl({
@@ -189,28 +188,34 @@ function getTooltipContent(type: string, valid: string | undefined) {
   }
 }
 
-export type SettingsFormProps = SettingsProps & HTMLAttributes<HTMLDivElement>;
+export interface SettingsFormProps extends HTMLAttributes<HTMLDivElement> {
+  settingsSchema: SettingsSchema;
+  settings: Settings;
+  onSettingChanged: (
+    propertyName: string,
+    value: string | number | boolean,
+  ) => void;
+}
 
 // Generates application settings form component
 export const SettingsForm = ({
+  className,
   settingsSchema,
   settings,
   onSettingChanged,
   ...htmlAttributes
 }: SettingsFormProps) => {
-  const getFieldNameFromEventTarget = (evt: SyntheticEvent) => {
-    const fieldElement = queryClosest(evt.target, "[data-field]");
-    if (fieldElement && fieldElement.dataset.field) {
-      return fieldElement.dataset.field;
-    } else {
-      throw Error("data-field attribute not defined");
-    }
-  };
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-settings-form",
+    css: settingsFormCss,
+    window: targetWindow,
+  });
 
   // Change Handler for toggle and switch buttons
   const changeHandler = useCallback<FormEventHandler>(
     (event) => {
-      const fieldName = getFieldNameFromEventTarget(event);
+      const fieldName = getFieldName(event.target);
       const { checked, value } = event.target as HTMLInputElement;
       onSettingChanged(fieldName, checked ?? value);
     },
@@ -220,7 +225,7 @@ export const SettingsForm = ({
   // Change handler for selection form controls
   const selectHandler = useCallback(
     (event: SyntheticEvent, [selected]: string[]) => {
-      const fieldName = getFieldNameFromEventTarget(event);
+      const fieldName = getFieldName(event.target);
       onSettingChanged(fieldName, selected);
     },
     [onSettingChanged],
@@ -229,7 +234,7 @@ export const SettingsForm = ({
   // Change Handler for input boxes
   const inputHandler = useCallback<FormEventHandler>(
     (event) => {
-      const fieldName = getFieldNameFromEventTarget(event);
+      const fieldName = getFieldName(event.target);
       const { value } = event.target as HTMLInputElement;
       if (!Number.isNaN(Number(value)) && value != "") {
         const numValue = Number(value);
@@ -241,7 +246,7 @@ export const SettingsForm = ({
     [onSettingChanged],
   );
   return (
-    <div {...htmlAttributes}>
+    <div {...htmlAttributes} className={cx(classBase, className)}>
       {settingsSchema.properties.map((property) => (
         <FormField data-field={property.name} key={property.name}>
           <FormFieldLabel>{property.label}</FormFieldLabel>

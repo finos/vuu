@@ -1,0 +1,11 @@
+.vuuAppStatusBar {
+  align-items: center;
+  background-color: var(--salt-container-secondary-background);
+  display: flex;
+  height: 24px;
+  justify-content: flex-end;
+}
+
+.vuuAppStatusBar-hidden {
+  display: none;
+}

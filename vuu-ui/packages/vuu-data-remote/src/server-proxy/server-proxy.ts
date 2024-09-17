@@ -661,6 +661,8 @@ export class ServerProxy {
       );
     } else if (isVuuMenuRpcRequest(message as VuuRpcRequest)) {
       return this.menuRpcCall(message as WithRequestId<VuuRpcMenuRequest>);
+    } else if (message.type === "disconnect") {
+      console.log(">>>>>>>>>>>>>  DISCONNECT");
     } else {
       const { type, requestId } = message;
       switch (type) {

@@ -1,4 +1,5 @@
 import {
+  ConnectionStatus,
   ConnectionStatusMessage,
   DataSourceCallbackMessage,
   ServerProxySubscribeMessage,
@@ -78,23 +79,23 @@ const viewports = new Map<
 >();
 const pendingRequests = new Map();
 
-type WorkerOptions = {
+interface WorkerOptions {
   protocol: WebSocketProtocol;
   retryLimitDisconnect?: number;
   retryLimitStartup?: number;
   url: string;
   token?: string;
   username: string | undefined;
-  handleConnectionStatusChange: (msg: {
-    data: ConnectionStatusMessage;
-  }) => void;
-};
+  onConnectionStatusChange?: (
+    msg: ConnectionStatusMessage | ConnectionQualityMetrics,
+  ) => void;
+}
 
 // We do not resolve the worker until we have a connection, but we will get
 // connection status messages before that, so we forward them to caller
 // while they wait for worker.
 const getWorker = async ({
-  handleConnectionStatusChange,
+  onConnectionStatusChange,
   protocol,
   retryLimitDisconnect,
   retryLimitStartup,
@@ -120,7 +121,7 @@ const getWorker = async ({
         reject(Error("timed out waiting for worker to load"));
       }, 1000);
 
-      // This is the inial message handler only, it processes messages whilst we are
+      // This is the initial message handler only, it processes messages whilst we are
       // establishing a connection. When we resolve the worker, a runtime message
       // handler will replace this (see below)
       worker.onmessage = (msg: MessageEvent<VuuUIMessageIn>) => {
@@ -143,8 +144,11 @@ const getWorker = async ({
             pendingWorkerRequest.resolve(worker);
           }
           pendingWorkerNoToken.length = 0;
-        } else if (isConnectionStatusMessage(message)) {
-          handleConnectionStatusChange({ data: message });
+        } else if (
+          isConnectionStatusMessage(message) ||
+          isConnectionQualityMetrics(message)
+        ) {
+          onConnectionStatusChange?.(message);
         } else if (message.type === "connection-failed") {
           reject(message.reason);
           for (const pendingWorkerRequest of pendingWorkerNoToken) {
@@ -159,6 +163,20 @@ const getWorker = async ({
     }))
   );
 };
+
+function handleConnectionStatusChange(
+  message: ConnectionStatusMessage | ConnectionQualityMetrics,
+) {
+  console.log(`handleConnectionStatusChange `, {
+    message,
+  });
+  if (isConnectionStatusMessage(message)) {
+    _ConnectionManager.connectionStatus = message.status;
+    ConnectionManager.emit("connection-status", message);
+  } else {
+    ConnectionManager.emit("connection-metrics", message);
+  }
+}
 
 function handleMessageFromWorker({
   data: message,
@@ -311,6 +329,7 @@ export type ConnectOptions = {
 };
 
 class _ConnectionManager extends EventEmitter<ConnectionEvents> {
+  static connectionStatus: ConnectionStatus | undefined = undefined;
   // The first request must have the token. We can change this to block others until
   // the request with token is received.
   async connect({
@@ -321,20 +340,25 @@ class _ConnectionManager extends EventEmitter<ConnectionEvents> {
     retryLimitDisconnect,
     retryLimitStartup,
   }: ConnectOptions): Promise<ServerAPI> {
-    // By passing handleMessageFromWorker here, we can get connection status
-    //messages while we wait for worker to resolve.
     worker = await getWorker({
+      onConnectionStatusChange: handleConnectionStatusChange,
       protocol,
-      url,
-      token: authToken,
-      username,
       retryLimitDisconnect,
       retryLimitStartup,
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      handleConnectionStatusChange: handleMessageFromWorker,
+      token: authToken,
+      url,
+      username,
     });
     return connectedServerAPI;
+  }
+
+  get connectionStatus() {
+    return _ConnectionManager.connectionStatus;
+  }
+
+  disconnect() {
+    console.log("disconnect");
+    return "rejected" as const;
   }
 
   destroy() {
@@ -373,6 +397,21 @@ export const connectToServer = async ({
     });
     resolveServer(serverAPI);
     return "connected";
+  } catch (err: unknown) {
+    rejectServer(err);
+    return "rejected";
+  }
+};
+
+/**
+ * Close the websocket connection to Vuu server. All subscriptions will be closed.
+ */
+export const disconnectFromServer = async (): Promise<
+  "disconnected" | "rejected"
+> => {
+  try {
+    connectedServerAPI.send({ type: "disconnect" });
+    return ConnectionManager.disconnect();
   } catch (err: unknown) {
     rejectServer(err);
     return "rejected";

@@ -782,6 +782,10 @@ export interface VuuUIMessageOutConnect {
   retryLimitStartup?: number;
 }
 
+export interface VuuUIMessageOutDisconnect {
+  type: "disconnect";
+}
+
 export interface VuuUIMessageOutSubscribe extends ServerProxySubscribeMessage {
   type: "subscribe";
 }
@@ -900,6 +904,7 @@ export type WithRequestId<T> = T & { requestId: string };
 
 export type VuuUIMessageOut =
   | VuuUIMessageOutConnect
+  | VuuUIMessageOutDisconnect
   | VuuUIMessageOutSubscribe
   | VuuUIMessageOutUnsubscribe
   | VuuUIMessageOutViewport

@@ -34,7 +34,6 @@ async function connectToServer(
     protocol,
     // if this was called during connect, we would get a ReferenceError, but it will
     // never be called until subscriptions have been made, so this is safe.
-    //TODO do we need to listen in to the connection messages here so we can lock back in, in the event of a reconnenct ?
     (msg) => {
       if (isConnectionQualityMetrics(msg)) {
         // console.log("post connection metrics");

@@ -67,7 +67,7 @@ async function reconnect(_: WebsocketConnection) {
   //   connection[connectionCallback],
   //   connection
   // );
-  throw Error("connection broken");
+  //throw Error("connection broken");
 }
 
 async function makeConnection(
@@ -159,6 +159,10 @@ const createWebsocket = (
     }
 
     const ws = new WebSocket(websocketUrl, protocol);
+    // TODO do not resolve until we get first message acked. When operating
+    // via a proxy we may get a successful initial open, followed by an
+    // unexpected close, if the proxy fails to open a socket to the remote
+    // endpoint.
     ws.onopen = () => resolve(ws);
     ws.onerror = (evt) => reject(evt);
   });
@@ -216,6 +220,8 @@ export class WebsocketConnection implements Connection<VuuClientMessage> {
 
   [setWebsocket](ws: WebSocket) {
     const callback = this[connectionCallback];
+    // TODO we need a special first time message handler, that will signal a
+    // definitive socket open status. This will be used to resolve.
     ws.onmessage = (evt) => {
       this.status = "connected";
       ws.onmessage = this.handleWebsocketMessage;

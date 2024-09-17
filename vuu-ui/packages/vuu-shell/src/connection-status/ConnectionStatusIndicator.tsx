@@ -1,29 +1,40 @@
-import React, { useEffect, useState } from "react";
+import { ConnectionManager } from "@finos/vuu-data-remote";
+import type { ConnectionStatus } from "@finos/vuu-data-types";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-
-import cx from "clsx";
+import { type RagStatus, TrafficLightControl } from "./TrafficLightControl";
 
 import connectionStatusIndicatorCss from "./ConnectionStatusIndicator.css";
+import { useMemo, useState } from "react";
 
-type connectionStatus =
-  | "connected"
-  | "reconnected"
-  | "connecting"
-  | "disconnected";
+const classBase = "vuuConnectionStatusIndicator";
 
 interface ConnectionStatusProps {
-  connectionStatus: connectionStatus;
+  connectionStatus?: ConnectionStatus;
   className?: string;
-  props?: unknown;
-  element?: string;
+  showText?: boolean;
 }
 
+const ragStatus: Record<ConnectionStatus, RagStatus> = {
+  connecting: "amber",
+  connected: "green",
+  reconnected: "green",
+  disconnected: "red",
+  failed: "red",
+  "connection-open-awaiting-session": "green",
+};
+
+const getRagStatus = (connectionStstus?: ConnectionStatus) => {
+  if (connectionStstus) {
+    return ragStatus[connectionStstus];
+  } else {
+    return "unknown";
+  }
+};
+
 export const ConnectionStatusIndicator = ({
-  connectionStatus,
-  className,
-  element = "span",
-  ...props
+  connectionStatus = ConnectionManager.connectionStatus,
+  showText = true,
 }: ConnectionStatusProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -31,38 +42,20 @@ export const ConnectionStatusIndicator = ({
     css: connectionStatusIndicatorCss,
     window: targetWindow,
   });
+  const [status, setStatus] = useState(connectionStatus);
 
-  const [classBase, setClassBase] = useState<string>("vuuConnectingStatus");
-  useEffect(() => {
-    switch (connectionStatus) {
-      case "connected":
-      case "reconnected":
-        setClassBase("vuuActiveStatus");
-        break;
-      case "connecting":
-        setClassBase("vuuConnectingStatus");
-        break;
-      case "disconnected":
-        setClassBase("vuuDisconnectedStatus");
-        break;
-      default:
-        break;
-    }
-  }, [connectionStatus]);
-
-  const statusIcon = React.createElement(element, {
-    ...props,
-    className: cx("vuuStatus vuuIcon", classBase, className),
-  });
+  useMemo(() => {
+    ConnectionManager.on("connection-status", ({ status }) => {
+      setStatus(status);
+    });
+  }, []);
 
   return (
-    <>
-      <div className="vuuStatus-container salt-theme">
-        {statusIcon}
-        <div className="vuuStatus-text">
-          Status: {connectionStatus.toUpperCase()}
-        </div>
-      </div>
-    </>
+    <div className={classBase}>
+      {showText ? (
+        <div className={`${classBase}-text`}>{status ?? ""}</div>
+      ) : null}
+      <TrafficLightControl ragStatus={getRagStatus(status)} />
+    </div>
   );
 };

@@ -1,0 +1,48 @@
+.vuuTrafficLightControl {
+  align-items: center;
+  background-color: var(--vuuTrafficLight-background, inherit);
+  display: flex;
+  gap: var(--salt-spacing-100);
+  padding: 0 var(--salt-spacing-100);
+  width: fit-content;
+
+  --traffic-light-red: var(--salt-selectable-foreground-disabled);
+  --traffic-light-amber: var(--salt-selectable-foreground-disabled);
+  --traffic-light-green: var(--salt-selectable-foreground-disabled);
+
+  &.vuuTrafficLightControl-red {
+    --traffic-light-red: var(--vuu-color-red-50);
+  }
+  &.vuuTrafficLightControl-amber {
+    --traffic-light-amber: var(--vuu-color-yellow-20);
+  }
+  &.vuuTrafficLightControl-green {
+    --traffic-light-green: var(--vuu-color-green-50);
+  }
+
+  .vuuTrafficLightControl-indicator {
+    border-radius: 8px;
+    height: 16px;
+    width: 16px;
+
+    &:nth-child(1) {
+      background-color: var(--traffic-light-red);
+    }
+    &:nth-child(2) {
+      background-color: var(--traffic-light-amber);
+    }
+    &:nth-child(3) {
+      background-color: var(--traffic-light-green);
+    }
+  }
+
+  .vuuTrafficLightControl-red {
+    background-color: red;
+  }
+  .vuuTrafficLightControl-amber {
+    background-color: orange;
+  }
+  .vuuTrafficLightControl-green {
+    background-color: green;
+  }
+}
