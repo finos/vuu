@@ -71,7 +71,7 @@ const getMaxScroll = (container: HTMLElement) => {
 
 const getScrollDirection = (
   prevScrollPositions: ScrollPos | undefined,
-  scrollPos: number
+  scrollPos: number,
 ) => {
   if (prevScrollPositions === undefined) {
     return undefined;
@@ -141,7 +141,7 @@ const useCallbackRef = <T = HTMLElement>({
         onDetach?.(originalRef);
       }
     },
-    [onAttach, onDetach]
+    [onAttach, onDetach],
   );
   return callbackRef;
 };
@@ -200,6 +200,7 @@ export const useTableScroll = ({
     isVirtualScroll,
     rowCount: viewportRowCount,
     totalHeaderHeight,
+    usesMeasuredHeaderHeight,
     viewportWidth,
   } = viewportMeasurements;
 
@@ -214,7 +215,7 @@ export const useTableScroll = ({
       contentContainerPosRef.current.scrollLeft,
       contentContainerPosRef.current.scrollLeft +
         viewportWidth +
-        HORIZONTAL_SCROLL_BUFFER
+        HORIZONTAL_SCROLL_BUFFER,
     );
     preSpanRef.current = offset;
     columnsWithinViewportRef.current = visibleColumns;
@@ -234,7 +235,7 @@ export const useTableScroll = ({
         const [visibleColumns, pre] = getColumnsInViewport(
           columns,
           scrollLeft,
-          scrollLeft + viewportWidth + HORIZONTAL_SCROLL_BUFFER
+          scrollLeft + viewportWidth + HORIZONTAL_SCROLL_BUFFER,
         );
 
         if (itemsChanged(columnsWithinViewportRef.current, visibleColumns)) {
@@ -244,7 +245,7 @@ export const useTableScroll = ({
         }
       }
     },
-    [columns, onHorizontalScroll, viewportWidth]
+    [columns, onHorizontalScroll, viewportWidth],
   );
   const handleVerticalScroll = useCallback(
     (scrollTop: number, pctScrollTop: number) => {
@@ -264,7 +265,7 @@ export const useTableScroll = ({
       onVerticalScrollInSitu,
       setRange,
       viewportRowCount,
-    ]
+    ],
   );
 
   const handleScrollbarContainerScroll = useCallback(() => {
@@ -319,7 +320,7 @@ export const useTableScroll = ({
         scrollbarContainerScrolledRef.current = false;
       } else {
         scrollbarContainer.scrollLeft = Math.round(
-          pctScrollLeft * maxScrollLeft
+          pctScrollLeft * maxScrollLeft,
         );
         scrollbarContainer.scrollTop = pctScrollTop * maxScrollTop;
       }
@@ -340,7 +341,7 @@ export const useTableScroll = ({
         passive: true,
       });
     },
-    [handleScrollbarContainerScroll]
+    [handleScrollbarContainerScroll],
   );
 
   const handleDetachScrollbarContainer = useCallback(
@@ -348,7 +349,7 @@ export const useTableScroll = ({
       scrollbarContainerRef.current = null;
       el.removeEventListener("scroll", handleScrollbarContainerScroll);
     },
-    [handleScrollbarContainerScroll]
+    [handleScrollbarContainerScroll],
   );
 
   const handleAttachContentContainer = useCallback(
@@ -358,7 +359,7 @@ export const useTableScroll = ({
         passive: true,
       });
     },
-    [handleContentContainerScroll]
+    [handleContentContainerScroll],
   );
 
   const handleDetachContentContainer = useCallback(
@@ -366,7 +367,7 @@ export const useTableScroll = ({
       contentContainerRef.current = null;
       el.removeEventListener("scroll", handleContentContainerScroll);
     },
-    [handleContentContainerScroll]
+    [handleContentContainerScroll],
   );
 
   const contentContainerCallbackRef = useCallbackRef({
@@ -389,13 +390,13 @@ export const useTableScroll = ({
         if (scrollRequest.type === "scroll-row") {
           const activeRow = getRowElementAtIndex(
             contentContainer,
-            scrollRequest.rowIndex
+            scrollRequest.rowIndex,
           );
 
           if (activeRow !== null) {
             const [direction, distance] = howFarIsRowOutsideViewport(
               activeRow,
-              totalHeaderHeight
+              totalHeaderHeight,
             );
             if (direction && distance) {
               if (isVirtualScroll) {
@@ -413,12 +414,12 @@ export const useTableScroll = ({
                 if (direction === "up" || direction === "down") {
                   newScrollTop = Math.min(
                     Math.max(0, scrollTop + distance),
-                    maxScrollTop
+                    maxScrollTop,
                   );
                 } else {
                   newScrollLeft = Math.min(
                     Math.max(0, scrollLeft + distance),
-                    maxScrollLeft
+                    maxScrollLeft,
                   );
                 }
                 contentContainer.scrollTo({
@@ -443,7 +444,7 @@ export const useTableScroll = ({
               direction === "down" ? appliedPageSize : -appliedPageSize;
             const newScrollTop = Math.min(
               Math.max(0, scrollTop + scrollBy),
-              maxScrollTop
+              maxScrollTop,
             );
             contentContainer.scrollTo({
               top: newScrollTop,
@@ -469,7 +470,7 @@ export const useTableScroll = ({
       setRange,
       totalHeaderHeight,
       viewportRowCount,
-    ]
+    ],
   );
 
   const scrollHandles: ScrollingAPI = useMemo(
@@ -486,20 +487,16 @@ export const useTableScroll = ({
         console.log(`scrollToKey ${rowKey}`);
       },
     }),
-    []
+    [],
   );
 
-  useImperativeHandle(
-    scrollingApiRef,
-    () => {
-      if (scrollbarContainerRef.current) {
-        return scrollHandles;
-      } else {
-        return noScrolling;
-      }
-    },
-    [scrollHandles]
-  );
+  useImperativeHandle(scrollingApiRef, () => {
+    if (scrollbarContainerRef.current) {
+      return scrollHandles;
+    } else {
+      return noScrolling;
+    }
+  }, [scrollHandles]);
 
   useEffect(() => {
     if (rowHeight !== rowHeightRef.current) {
@@ -509,12 +506,12 @@ export const useTableScroll = ({
           contentContainerRef.current.scrollTop = 0;
         }
       }
-    } else {
+    } else if (usesMeasuredHeaderHeight) {
       const { current: from } = firstRowRef;
       const rowRange = { from, to: from + viewportRowCount };
       setRange(rowRange);
     }
-  }, [rowHeight, setRange, viewportRowCount]);
+  }, [rowHeight, setRange, usesMeasuredHeaderHeight, viewportRowCount]);
 
   return {
     columnsWithinViewport: columnsWithinViewportRef.current,

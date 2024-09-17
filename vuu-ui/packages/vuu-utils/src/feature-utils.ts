@@ -186,9 +186,6 @@ export const getCustomAndTableFeatures = (
   dynamicFeatures: DynamicFeatureProps[];
   tableFeatures: DynamicFeatureProps<FilterTableFeatureProps>[];
 } => {
-  console.log(`getCustomAndTableFeatures`, {
-    vuuTables,
-  });
   const [customFeatureConfig, tableFeaturesConfig] = partition(
     dynamicFeatures,
     isCustomFeature,

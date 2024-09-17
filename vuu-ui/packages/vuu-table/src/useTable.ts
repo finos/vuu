@@ -145,14 +145,20 @@ export const useTable = ({
   useMemo(() => {
     tableConfigRef.current = config;
   }, [config]);
-  const [headerHeight, setHeaderHeight] = useState(0);
+
+  const [headerHeight, setHeaderHeight] = useState(-1);
   const [rowCount, setRowCount] = useState<number>(dataSource.size);
   if (dataSource === undefined) {
     throw Error("no data source provided to Vuu Table");
   }
 
+  const onDataRowcountChange = useCallback((size: number) => {
+    setRowCount(size);
+  }, []);
+
   const virtualContentHeight = rowHeight * rowCount;
-  const viewportBodyHeight = size.height - headerHeight;
+  const viewportBodyHeight =
+    size.height - (headerHeight === -1 ? 0 : headerHeight);
   const verticalScrollbarWidth =
     virtualContentHeight > viewportBodyHeight ? 10 : 0;
   const availableWidth = size.width - (verticalScrollbarWidth + 8);
@@ -165,10 +171,6 @@ export const useTable = ({
     () => buildContextMenuDescriptors(dataSource),
     [dataSource],
   );
-
-  const onDataRowcountChange = useCallback((size: number) => {
-    setRowCount(size);
-  }, []);
 
   const {
     columns,

@@ -12,7 +12,7 @@ export type ExamplesModule = Module<VuuExample>;
 export type VuuTuple = [string, VuuExample | ExamplesModule];
 
 export const isVuuExample = (
-  item: VuuExample | ExamplesModule
+  item: VuuExample | ExamplesModule,
 ): item is VuuExample => typeof item === "function";
 
 export const byDisplaySequence = ([, f1]: VuuTuple, [, f2]: VuuTuple) => {
@@ -58,7 +58,7 @@ export const pathToExample = (path: string): [string[], string] => {
 
 export const getComponent = <T = ReactComponent>(
   module: Module,
-  paths: string[]
+  paths: string[],
 ): T | undefined => {
   let importedEntity = module;
   while (paths.length > 0) {
@@ -79,7 +79,6 @@ export const getComponent = <T = ReactComponent>(
 
 export const loadTheme = (themeName: string): Promise<void> =>
   new Promise((resolve) => {
-    console.log(`load theme ${themeName} ${env}`);
     if (env === "development") {
       import(`./themes/${themeName}.ts`).then(() => {
         resolve();

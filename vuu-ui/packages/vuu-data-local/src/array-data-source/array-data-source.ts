@@ -149,7 +149,6 @@ export class ArrayDataSource
     viewport,
   }: ArrayDataSourceConstructorProps) {
     super();
-    console.log(`ArrayDataSource #${viewport}`);
     if (!data || !columnDescriptors) {
       throw Error(
         "ArrayDataSource constructor called without data or without columnDescriptors",
@@ -490,7 +489,6 @@ export class ArrayDataSource
   };
 
   private validateDataValue(columnName: string, value: VuuRowDataItemType) {
-    console.log(`validate data value ${columnName} ${value}`);
     const columnDescriptor = this.columnDescriptors.find(
       (col) => col.name === columnName,
     );
