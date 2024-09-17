@@ -40,8 +40,8 @@ import {
   TableSchema,
 } from "@finos/vuu-data-types";
 import { VuuColumnDataType, VuuTable } from "@finos/vuu-protocol-types";
-import { buildValidationChecker } from "@finos/vuu-ui-controls";
 import { Reducer, useReducer } from "react";
+import { buildValidationChecker } from "@finos/vuu-data-react";
 
 const { info } = logger("useTableModel");
 

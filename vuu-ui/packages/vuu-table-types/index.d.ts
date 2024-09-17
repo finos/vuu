@@ -4,7 +4,10 @@ import type {
   DataValueTypeSimple,
   EditValidationRule,
 } from "@finos/vuu-data-types";
-import { DataSourceRow } from "@finos/vuu-data-types";
+import type {
+  DataValueValidationChecker,
+  DataSourceRow,
+} from "@finos/vuu-data-types";
 import type { Filter } from "@finos/vuu-filter-types";
 import type {
   VuuAggType,
@@ -13,7 +16,6 @@ import type {
   VuuSortType,
   VuuTable,
 } from "@finos/vuu-protocol-types";
-import type { ClientSideValidationChecker } from "@finos/vuu-ui-controls";
 import type {
   ColumnMap,
   DateTimePattern,
@@ -33,10 +35,6 @@ export type TableHeading = { label: string; width: number };
 export type TableHeadings = TableHeading[][];
 
 export type ValueFormatter = (value: unknown) => string;
-
-export type ClientSideValidationChecker = (
-  value?: VuuRowDataItemType,
-) => string | false | undefined;
 
 export type DataCellEditHandler = (
   row: DataSourceRow,
@@ -258,7 +256,7 @@ export interface RuntimeColumnDescriptor extends ColumnDescriptor {
   HeaderCellContentRenderer?: FunctionComponent<HeaderCellProps>;
   canStretch?: boolean;
   className?: string;
-  clientSideEditValidationCheck?: ClientSideValidationChecker;
+  clientSideEditValidationCheck?: DataValueValidationChecker;
   endPin?: true | undefined;
   filter?: Filter;
   flex?: number;

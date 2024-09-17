@@ -33,6 +33,34 @@ import type {
 } from "@finos/vuu-protocol-types";
 import { DataValueTypeDescriptor } from "@finos/vuu-table-types";
 
+export declare type DataValueValidationSuccessResult = {
+  ok: true;
+};
+export declare type DataValueValidationFailResult = {
+  ok: false;
+  messages: string[];
+};
+export declare type DataValueValidationResult =
+  | DataValueValidationSuccessResult
+  | DataValueValidationFailResult;
+
+export declare type DataValueValidationChecker = (
+  value?: VuuRowDataItemType,
+) => DataValueValidationResult;
+
+export declare type EditRuleValidationSuccessResult = {
+  ok: true;
+};
+
+export declare type EditRuleValidationFailResult = {
+  ok: false;
+  message: string;
+};
+
+export declare type EditRuleValidationResult =
+  | EditRuleValidationSuccessResult
+  | EditRuleValidationFailResult;
+
 /**
  * EditRuleValidator is a function registered with component registry. It can then
  * be referenced in editRules applied to table columns or form fields.
@@ -42,10 +70,10 @@ import { DataValueTypeDescriptor } from "@finos/vuu-table-types";
  * - false value fails validation
  * - string value fails validation, this message described failure
  */
-export type EditRuleValidator = (
+export declare type EditRuleValidator = (
   editRule: EditValidationRule,
   value?: VuuRowDataItemType,
-) => boolean | string;
+) => EditRuleValidationResult;
 
 /**
  * Edit validation functions (EditRuleValidator) must be registered with the component registry.

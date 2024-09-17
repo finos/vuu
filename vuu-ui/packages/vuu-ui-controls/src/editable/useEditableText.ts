@@ -1,7 +1,5 @@
-import {
-  ClientSideValidationChecker,
-  DataItemCommitHandler,
-} from "@finos/vuu-table-types";
+import { DataValueValidationChecker } from "@finos/vuu-data-types";
+import { DataItemCommitHandler } from "@finos/vuu-table-types";
 import { useLayoutEffectSkipFirst } from "@finos/vuu-utils";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { dispatchCustomEvent } from "@finos/vuu-utils";
@@ -16,15 +14,15 @@ import {
 
 export const WarnCommit = (): Promise<true> => {
   console.warn(
-    "onCommit handler has not been provided to InputCell cell renderer"
+    "onCommit handler has not been provided to InputCell cell renderer",
   );
   return Promise.resolve(true);
 };
 
 export interface EditableTextHookProps<
-  T extends VuuRowDataItemType = VuuRowDataItemType
+  T extends VuuRowDataItemType = VuuRowDataItemType,
 > {
-  clientSideEditValidationCheck?: ClientSideValidationChecker;
+  clientSideEditValidationCheck?: DataValueValidationChecker;
   initialValue?: T;
   onCommit: DataItemCommitHandler<T>;
   type?: "string" | "number" | "boolean";
@@ -51,9 +49,9 @@ export const useEditableText = <T extends string | number = string>({
     (target: HTMLElement) => {
       if (isDirtyRef.current) {
         hasCommittedRef.current = true;
-        const warningMessage = clientSideEditValidationCheck?.(value);
-        if (warningMessage) {
-          setMessage(warningMessage);
+        const result = clientSideEditValidationCheck?.(value);
+        if (result?.ok === false) {
+          setMessage(result?.messages?.join(","));
         } else {
           setMessage(undefined);
           console.log(`commit value ${value}`);
@@ -72,7 +70,7 @@ export const useEditableText = <T extends string | number = string>({
         hasCommittedRef.current = false;
       }
     },
-    [clientSideEditValidationCheck, onCommit, value]
+    [clientSideEditValidationCheck, onCommit, value],
   );
 
   const handleKeyDown = useCallback(
@@ -94,7 +92,7 @@ export const useEditableText = <T extends string | number = string>({
         }
       }
     },
-    [commit]
+    [commit],
   );
 
   const handleBlur = useCallback<FocusEventHandler<HTMLElement>>(
@@ -103,7 +101,7 @@ export const useEditableText = <T extends string | number = string>({
         commit(evt.target as HTMLElement);
       }
     },
-    [commit]
+    [commit],
   );
 
   const handleChange = useCallback<FormEventHandler>(
@@ -116,13 +114,13 @@ export const useEditableText = <T extends string | number = string>({
       isDirtyRef.current = value !== initialValueRef.current;
       setValue(typedValue as T);
       if (hasCommittedRef.current && value !== undefined) {
-        const warningMessage = clientSideEditValidationCheck?.(value);
-        if (warningMessage !== message && warningMessage !== false) {
-          setMessage(warningMessage);
+        const result = clientSideEditValidationCheck?.(value);
+        if (result?.ok === false) {
+          setMessage(result.messages?.join(","));
         }
       }
     },
-    [clientSideEditValidationCheck, message, type, value]
+    [clientSideEditValidationCheck, type, value],
   );
 
   return {

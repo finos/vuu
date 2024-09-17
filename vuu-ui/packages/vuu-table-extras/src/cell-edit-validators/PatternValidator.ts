@@ -1,6 +1,7 @@
 import { registerComponent } from "@finos/vuu-utils";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { EditRuleValidator } from "@finos/vuu-data-types";
+import { OK } from "@finos/vuu-data-react";
 
 const isString = (value?: VuuRowDataItemType): value is string =>
   typeof value === "string";
@@ -13,14 +14,18 @@ export const PatternValidator: EditRuleValidator = (rule, value) => {
   }
   if (isString(value)) {
     if (value === "") {
-      return true;
+      return OK;
     } else {
       const { message = defaultMessage } = rule;
       const pattern = new RegExp(rule.value);
-      return pattern.test(value) || message;
+      if (pattern.test(value)) {
+        return OK;
+      } else {
+        return { ok: false, message };
+      }
     }
   } else {
-    return "value must be a string";
+    return { ok: false, message: "value must be a string" };
   }
 };
 
