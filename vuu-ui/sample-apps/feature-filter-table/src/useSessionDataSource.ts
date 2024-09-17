@@ -23,8 +23,6 @@ export const useSessionDataSource = ({
   const { id, load, save, loadSession, saveSession, title } = useViewContext();
   const { VuuDataSource } = useDataSource();
 
-  console.log(`useSessionDataSource #${id}`);
-
   const { "datasource-config": dataSourceConfigFromState } =
     useMemo<SessionDataSourceConfig>(() => load?.() ?? NO_CONFIG, [load]);
 

@@ -21,8 +21,8 @@ export interface FeatureContextProps {
   staticFeatures?: StaticFeatureDescriptor[];
 }
 
-export interface LayoutContextProps{
-  systemLayouts?: SystemLayoutMetadata[]
+export interface LayoutContextProps {
+  systemLayouts?: SystemLayoutMetadata[];
 }
 
 const NO_FEATURES: DynamicFeatureDescriptor[] = [];
@@ -41,10 +41,11 @@ const FeatureContext = createContext<FeatureContextProps>({
 });
 
 const LayoutContext = createContext<LayoutContextProps>({
-  systemLayouts: NO_SYSTEMLAYOUTS
-})
+  systemLayouts: NO_SYSTEMLAYOUTS,
+});
 
-export interface FeatureAndLayoutProviderProps extends Partial<FeatureContextProps> {
+export interface FeatureAndLayoutProviderProps
+  extends Partial<FeatureContextProps> {
   children: ReactNode;
   dynamicFeatures?: DynamicFeatureDescriptor[];
   staticFeatures?: StaticFeatureDescriptor[];
@@ -55,7 +56,7 @@ export const FeatureAndLayoutProvider = ({
   children,
   dynamicFeatures: dynamicFeaturesProp = [],
   staticFeatures,
-  systemLayouts
+  systemLayouts,
 }: FeatureAndLayoutProviderProps): ReactElement => {
   const vuuTables = useVuuTables();
   const { dynamicFeatures, tableFeatures } = useMemo<{
@@ -69,9 +70,6 @@ export const FeatureAndLayoutProvider = ({
     [dynamicFeaturesProp, vuuTables],
   );
 
-  console.log({ tableFeatures });
-  console.log(systemLayouts)
-
   return (
     <FeatureContext.Provider
       value={{
@@ -82,11 +80,11 @@ export const FeatureAndLayoutProvider = ({
     >
       <LayoutContext.Provider
         value={{
-          systemLayouts
+          systemLayouts,
         }}
-      > 
+      >
         {children}
-      </LayoutContext.Provider> 
+      </LayoutContext.Provider>
     </FeatureContext.Provider>
   );
 };

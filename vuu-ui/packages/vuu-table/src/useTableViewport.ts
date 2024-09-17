@@ -37,6 +37,7 @@ export interface ViewportMeasurements {
   rowCount: number;
   contentWidth: number;
   totalHeaderHeight: number;
+  usesMeasuredHeaderHeight: boolean;
   verticalScrollbarWidth: number;
   viewportBodyHeight: number;
   viewportWidth: number;
@@ -66,6 +67,7 @@ const UNMEASURED_VIEWPORT: TableViewportHookResult = {
   setInSituRowOffset: () => undefined,
   setScrollTop: () => undefined,
   totalHeaderHeight: 0,
+  usesMeasuredHeaderHeight: false,
   verticalScrollbarWidth: 0,
   viewportBodyHeight: 0,
   viewportWidth: 0,
@@ -88,7 +90,7 @@ export const useTableViewport = ({
 
   const { pinnedWidthLeft, pinnedWidthRight, unpinnedWidth } = useMemo(
     () => measurePinnedColumns(columns, selectionEndSize),
-    [columns, selectionEndSize]
+    [columns, selectionEndSize],
   );
 
   const [getRowOffset, getRowAtPosition, isVirtualScroll] =
@@ -121,7 +123,7 @@ export const useTableViewport = ({
     } else {
       inSituRowOffsetRef.current = Math.max(
         0,
-        inSituRowOffsetRef.current + rowIndexOffset
+        inSituRowOffsetRef.current + rowIndexOffset,
       );
     }
   }, []);
@@ -133,11 +135,12 @@ export const useTableViewport = ({
       const contentWidth = pinnedWidthLeft + unpinnedWidth + pinnedWidthRight;
       const horizontalScrollbarHeight =
         contentWidth > size.width ? scrollbarSize : 0;
-      const visibleRows = (size.height - headerHeight) / rowHeight;
+      const measuredHeaderHeight = headerHeight === -1 ? 0 : headerHeight;
+      const visibleRows = (size.height - measuredHeaderHeight) / rowHeight;
       const count = Number.isInteger(visibleRows)
         ? visibleRows
         : Math.ceil(visibleRows);
-      const viewportBodyHeight = size.height - headerHeight;
+      const viewportBodyHeight = size.height - measuredHeaderHeight;
       const verticalScrollbarWidth =
         pixelContentHeight > viewportBodyHeight ? scrollbarSize : 0;
 
@@ -147,6 +150,7 @@ export const useTableViewport = ({
       const viewportWidth = size.width;
 
       return {
+        usesMeasuredHeaderHeight: headerHeight !== -1,
         appliedPageSize,
         contentHeight: pixelContentHeight,
         contentWidth,
