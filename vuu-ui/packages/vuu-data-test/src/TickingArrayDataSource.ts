@@ -63,7 +63,9 @@ export class TickingArrayDataSource extends ArrayDataSource {
   #table?: Table;
   #selectionLinkSubscribers: Map<string, LinkSubscription> | undefined;
   #visualLinkService?: VisualLinkHandler;
-  #getVisualLinks: (tableName: string) => LinkDescriptorWithLabel[] | undefined;
+  #getVisualLinks?: (
+    tableName: string,
+  ) => LinkDescriptorWithLabel[] | undefined;
 
   constructor({
     data,
@@ -128,7 +130,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
   }
 
   get links() {
-    return this.#getVisualLinks(this.table.table);
+    return this.#getVisualLinks?.(this.table.table);
   }
 
   private getSelectedRowIds() {
