@@ -39,7 +39,7 @@ export type VisualLinkHandler = (
 export interface TickingArrayDataSourceConstructorProps
   extends Omit<ArrayDataSourceConstructorProps, "data"> {
   data?: Array<VuuRowDataItemType[]>;
-  getVisualLinks: (tableName: string) => LinkDescriptorWithLabel[] | undefined;
+  getVisualLinks?: (tableName: string) => LinkDescriptorWithLabel[] | undefined;
   menu?: VuuMenu;
   menuRpcServices?: RpcService[];
   rpcServices?: RpcService[];
