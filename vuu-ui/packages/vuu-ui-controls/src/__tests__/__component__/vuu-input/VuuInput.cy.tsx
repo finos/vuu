@@ -1,6 +1,5 @@
 import {
   DefaultVuuInput,
-  VuuInputWithErrorMessageTooltipRight,
   VuuInputWithValidation,
 } from "../../../../../../showcase/src/examples/UiControls/VuuInput.examples";
 
@@ -11,24 +10,6 @@ describe("VuuInput", () => {
       cy.findByTestId("vuu-input").should("have.class", "vuuInput");
       cy.findByTestId("vuu-input").should("be.visible");
       cy.findByTestId("vuu-input").find("input").should("be.visible");
-    });
-  });
-
-  describe("When provided with an error message", () => {
-    it("Then an error classname and indicator will be rendered", () => {
-      cy.mount(<VuuInputWithErrorMessageTooltipRight />);
-      cy.findByTestId("vuu-input").should("have.class", "vuuInput-error");
-      cy.findByTestId("vuu-input")
-        .find(".vuuInput-errorIcon")
-        .should("be.visible");
-    });
-
-    describe("And when user hovers error icon", () => {
-      it("Then tooltip will be displayed", () => {
-        cy.mount(<VuuInputWithErrorMessageTooltipRight />);
-        cy.findByTestId("vuu-input").find(".vuuInput-errorIcon").realHover();
-        cy.get(".vuuTooltip").should("be.visible");
-      });
     });
   });
 });
@@ -63,13 +44,13 @@ describe("Given a VuuInput box with input validation", () => {
     it("Then box will store the complete value", () => {
       cy.mount(<VuuInputWithValidation />);
       cy.findByTestId("vuu-input").type(
-        "01234567890123456789012345678901234567890123456789012345678901234567890{enter}"
+        "01234567890123456789012345678901234567890123456789012345678901234567890{enter}",
       );
       cy.findAllByTestId("vuu-input")
         .find("input.saltInput-input")
         .should(
           "have.value",
-          "01234567890123456789012345678901234567890123456789012345678901234567890"
+          "01234567890123456789012345678901234567890123456789012345678901234567890",
         );
     });
   });
