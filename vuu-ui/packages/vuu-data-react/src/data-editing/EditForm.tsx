@@ -1,12 +1,10 @@
 import { getDataItemEditControl } from "@finos/vuu-data-react";
-import { DataValueDescriptor } from "@finos/vuu-data-types";
-import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
-import { Entity } from "@finos/vuu-utils";
+import { DataSource, DataValueDescriptor } from "@finos/vuu-data-types";
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { HTMLAttributes, SyntheticEvent } from "react";
+import { HTMLAttributes } from "react";
 import { registerRules } from "./edit-validation-rules";
 import { useEditForm } from "./useEditForm";
 
@@ -16,24 +14,19 @@ const classBase = "EditForm";
 
 registerRules();
 
-export interface EditFormProps<T extends Entity>
-  extends HTMLAttributes<HTMLDivElement> {
-  editEntity?: T;
+export interface EditFormProps extends HTMLAttributes<HTMLDivElement> {
+  dataSource?: DataSource;
   formFieldDescriptors: DataValueDescriptor[];
-  onChangeFormField: (evt: SyntheticEvent) => void;
-  onCommitFieldValue: (fieldName: string, value: VuuRowDataItemType) => void;
-  onSubmit: () => void;
+  onSubmit?: () => void;
 }
 
-export const EditForm = <T extends Entity = Entity>({
+export const EditForm = ({
   className,
-  editEntity,
+  dataSource,
   formFieldDescriptors,
-  onChangeFormField,
-  onCommitFieldValue,
-  onSubmit,
+  onSubmit: onSubmitProp,
   ...htmlAttributes
-}: EditFormProps<T>) => {
+}: EditFormProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-edit-form",
@@ -41,37 +34,61 @@ export const EditForm = <T extends Entity = Entity>({
     window: targetWindow,
   });
 
-  const { errorMessages, ok, onChange, onCommit } = useEditForm({
+  const {
+    editedFields,
+    editEntity,
+    errorMessages,
+    isClean,
+    ok,
+    onCancel,
+    onChange,
+    onCommit,
+    onSubmit,
+  } = useEditForm({
+    dataSource,
     formFieldDescriptors,
-    onChangeFormField,
-    onCommitFieldValue,
+    onSubmit: onSubmitProp,
   });
+
+  console.log(
+    `edit form isClean ${isClean} fields edited ${editedFields.join(",")}`,
+  );
 
   return (
     <div {...htmlAttributes} className={cx(classBase, className)}>
       {formFieldDescriptors.map((dataDescriptor) => {
         const { name, label = name } = dataDescriptor;
         const errorMessage = errorMessages[name];
+        const isEdited = !isClean && editedFields.includes(name);
 
         return (
-          <FormField data-field={name} key={name}>
-            <FormFieldLabel>{label}</FormFieldLabel>
-            {getDataItemEditControl({
-              InputProps: {
-                onChange,
-                value: editEntity?.[name]?.toString() ?? "",
-              },
-              dataDescriptor,
-              errorMessage,
-              onCommit,
-            })}
-          </FormField>
+          <div
+            className={`${classBase}-field`}
+            key={name}
+            data-edited={isEdited}
+          >
+            <FormField data-field={name}>
+              <FormFieldLabel>{label}</FormFieldLabel>
+              {getDataItemEditControl({
+                InputProps: {
+                  onChange,
+                  value: editEntity?.[name]?.toString() ?? "",
+                },
+                dataDescriptor,
+                errorMessage,
+                onCommit,
+              })}
+            </FormField>
+            <div className={`${classBase}-edit-indicator`} />
+          </div>
         );
       })}
 
       <div className={`${classBase}-buttons`}>
-        <Button>Cancel</Button>
-        <Button onClick={onSubmit} disabled={!ok}>
+        <Button disabled={isClean} onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button onClick={onSubmit} disabled={!ok || isClean}>
           Save
         </Button>
       </div>

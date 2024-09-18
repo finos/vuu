@@ -7,7 +7,7 @@ import { EditForm } from "@finos/vuu-data-react";
 import { useTableEditManager } from "./useTableEditManager";
 import { LocalDataSourceProvider } from "@finos/vuu-data-test";
 import { DataValueDescriptor } from "@finos/vuu-data-types";
-import { Instrument } from "./instrument-editing";
+import { DialogProvider } from "@finos/vuu-popups";
 
 let displaySequence = 0;
 
@@ -45,15 +45,8 @@ const formFieldDescriptors: DataValueDescriptor[] = [
 ];
 
 const TableWithInlineEditForm = () => {
-  const {
-    dataSource,
-    entity,
-    open,
-    onChangeFormField,
-    onCommitFieldValue,
-    onSelectionChange,
-    onSubmit,
-  } = useTableEditManager(instrumentsTable);
+  const { dataSource, open, onSelectionChange, sessionDataSource } =
+    useTableEditManager(instrumentsTable);
 
   const refCallback = useCallback<RefCallback<HTMLDivElement>>((el) => {
     console.log(`el =>`, {
@@ -71,27 +64,26 @@ const TableWithInlineEditForm = () => {
   }, []);
 
   return (
-    <DockLayout style={{ height: 700 }}>
-      <Drawer inline={true} open={open} position="right" defaultOpen={false}>
-        <EditForm<Instrument>
-          editEntity={entity}
-          formFieldDescriptors={formFieldDescriptors}
-          onChangeFormField={onChangeFormField}
-          onCommitFieldValue={onCommitFieldValue}
-          onSubmit={onSubmit}
+    <DialogProvider>
+      <DockLayout style={{ height: 700 }}>
+        <Drawer inline={true} open={open} position="right" defaultOpen={false}>
+          <EditForm
+            dataSource={sessionDataSource}
+            formFieldDescriptors={formFieldDescriptors}
+          />
+        </Drawer>
+        <Table
+          config={tableConfig}
+          dataSource={dataSource}
+          height={500}
+          ref={refCallback}
+          renderBufferSize={20}
+          navigationStyle="row"
+          onSelectionChange={onSelectionChange}
+          width="100%"
         />
-      </Drawer>
-      <Table
-        config={tableConfig}
-        dataSource={dataSource}
-        height={500}
-        ref={refCallback}
-        renderBufferSize={20}
-        navigationStyle="row"
-        onSelectionChange={onSelectionChange}
-        width="100%"
-      />
-    </DockLayout>
+      </DockLayout>
+    </DialogProvider>
   );
 };
 
