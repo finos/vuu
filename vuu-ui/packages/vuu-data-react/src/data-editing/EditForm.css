@@ -8,6 +8,12 @@
   width: 100%;
 }
 
+.EditForm-form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-400);
+}
+
 .EditForm-buttons {
   align-items: center;
   display: flex;

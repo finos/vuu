@@ -113,7 +113,7 @@ export const useQuickFilters = ({
   );
 
   const handleCommit = useCallback<
-    CommitHandler<HTMLInputElement, string | number | undefined>
+    CommitHandler<HTMLElement, string | number | undefined>
   >(
     (e, value) => {
       const field = queryClosest(e.target, "[data-field]");

@@ -52,9 +52,7 @@ export const BulkEditRow = ({
 
   const { columns, virtualColSpan = 0 } = useHeaderProps();
 
-  const onCommit = useCallback<
-    CommitHandler<HTMLInputElement, string | undefined>
-  >(
+  const onCommit = useCallback<CommitHandler<HTMLElement, string | undefined>>(
     (evt, value) => {
       if (value !== undefined && String(value).trim() !== "") {
         const columnName = fieldRef.current;

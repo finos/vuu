@@ -53,11 +53,10 @@ export const useDropdownBase = ({
 
   const hideDropdown = useCallback(
     (reason: CloseReason) => {
-      console.log(`hide dropdown ${reason}`);
       setIsOpen(false);
       onOpenChange?.(false, reason);
     },
-    [onOpenChange, setIsOpen]
+    [onOpenChange, setIsOpen],
   );
 
   // Focus is not usually applied to the popped up component, we
@@ -82,7 +81,7 @@ export const useDropdownBase = ({
         }
       }
     },
-    [hideDropdown]
+    [hideDropdown],
   );
 
   const popperCallbackRef = useCallback(
@@ -92,12 +91,12 @@ export const useDropdownBase = ({
       } else if (popperRef.current) {
         popperRef.current.removeEventListener(
           "focusout",
-          handleComponentFocusOut
+          handleComponentFocusOut,
         );
       }
       popperRef.current = element;
     },
-    [handleComponentFocusOut]
+    [handleComponentFocusOut],
   );
 
   useClickAway({
@@ -125,7 +124,7 @@ export const useDropdownBase = ({
       // Do not trigger menu open for 'Enter' and 'SPACE' key as they're handled in `handleKeyDown`
       if (
         ["Enter", " "].indexOf(
-          (e as unknown as KeyboardEvent<HTMLDivElement>).key
+          (e as unknown as KeyboardEvent<HTMLDivElement>).key,
         ) === -1
       ) {
         const newIsOpen = !isOpen;
@@ -133,7 +132,7 @@ export const useDropdownBase = ({
         onOpenChange?.(newIsOpen);
       }
     },
-    [isOpen, setIsOpen, onOpenChange]
+    [isOpen, setIsOpen, onOpenChange],
   );
 
   const handleKeydown = useCallback(
@@ -152,7 +151,7 @@ export const useDropdownBase = ({
         onKeyDownProp?.(evt);
       }
     },
-    [hideDropdown, isOpen, onKeyDownProp, openKeys, showDropdown]
+    [hideDropdown, isOpen, onKeyDownProp, openKeys, showDropdown],
   );
 
   const handleBlur = useCallback<FocusEventHandler<HTMLElement>>(
@@ -165,7 +164,7 @@ export const useDropdownBase = ({
         }
       }
     },
-    [hideDropdown, isOpen]
+    [hideDropdown, isOpen],
   );
 
   const fullWidth = fullWidthProp ?? false;

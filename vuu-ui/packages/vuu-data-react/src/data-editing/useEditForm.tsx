@@ -1,3 +1,6 @@
+import { DataSource, DataValueDescriptor } from "@finos/vuu-data-types";
+import { useDialogContext } from "@finos/vuu-popups";
+import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import {
   Entity,
   buildColumnMap,
@@ -6,16 +9,26 @@ import {
   queryClosest,
   viewportRpcRequest,
 } from "@finos/vuu-utils";
+import { Button } from "@salt-ds/core";
+import {
+  FocusEventHandler,
+  SyntheticEvent,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { EditFormProps } from "./EditForm";
-import { SyntheticEvent, useCallback, useMemo, useRef, useState } from "react";
-import { DataSource, DataValueDescriptor } from "@finos/vuu-data-types";
-import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import { UnsavedChangesReport } from "./UnsavedChangesReport";
 import {
   buildValidationChecker,
   getEditValidationRules,
 } from "./edit-rule-validation-checker";
-import { useDialogContext } from "@finos/vuu-popups";
-import { Button } from "@salt-ds/core";
+import {
+  CLEAN_FORM,
+  FormEditState,
+  buildFormEditState,
+} from "./form-edit-state";
 
 export type EditFormHookProps = Pick<
   EditFormProps,
@@ -25,16 +38,6 @@ export type EditFormHookProps = Pick<
 type ValidationState = {
   ok: boolean;
   messages: Record<string, string>;
-};
-
-type FormEditState = {
-  isClean: boolean;
-  editedFields: string[];
-};
-
-const CLEAN_FORM: FormEditState = {
-  isClean: true,
-  editedFields: [],
 };
 
 const getValidationChecker = (
@@ -85,27 +88,6 @@ const nextValidationState = (
   return state;
 };
 
-const buildFormEditState = (
-  entity: Entity | undefined,
-  newEntity: Entity,
-): FormEditState => {
-  if (entity === undefined) {
-    return CLEAN_FORM;
-  } else {
-    const editedFields: string[] = [];
-    for (const [fieldName, value] of Object.entries(entity)) {
-      if (value !== newEntity[fieldName]) {
-        editedFields.push(fieldName);
-      }
-    }
-
-    return {
-      isClean: editedFields.length === 0,
-      editedFields,
-    };
-  }
-};
-
 function find(descriptors: DataValueDescriptor[], fieldname: string) {
   const d = descriptors.find(({ name }) => name === fieldname);
   if (d) {
@@ -133,7 +115,10 @@ export const useEditForm = ({
   const { showDialog, closeDialog } = useDialogContext();
 
   const currentDataSource = useRef<DataSource>();
-  const originalEntity = useRef<Entity>();
+  const formFieldsContainerRef = useRef<HTMLDivElement>(null);
+  const entityRef = useRef<Entity>();
+  const focusedFieldRef = useRef("");
+  const originalEntityRef = useRef<Entity>();
   const formEditStateRef = useRef<FormEditState>(CLEAN_FORM);
   const validationStateRef = useRef<ValidationState>({
     ok: true,
@@ -149,7 +134,10 @@ export const useEditForm = ({
 
   const setEntity = useCallback(
     (newEntity: Entity) => {
-      setFormEditState(buildFormEditState(originalEntity.current, newEntity));
+      setFormEditState(
+        buildFormEditState(originalEntityRef.current, newEntity),
+      );
+      entityRef.current = newEntity;
       _setEntity(newEntity);
     },
     [setFormEditState],
@@ -163,6 +151,8 @@ export const useEditForm = ({
   }, []);
 
   const showSaveOrDiscardPrompt = useCallback(async () => {
+    const { current: currentEntity } = entityRef;
+    const { current: originalEntity } = originalEntityRef;
     let resolver: Resolver | undefined = undefined;
     const save = async () => {
       await submitChanges();
@@ -175,14 +165,24 @@ export const useEditForm = ({
       resolver?.("discarded");
     };
 
-    showDialog(<div>Are you </div>, "Unsaved changes", [
-      <Button key="cancel" onClick={discard}>
-        Discard Changes
-      </Button>,
-      <Button key="submit" onClick={save}>
-        Save Changes
-      </Button>,
-    ]);
+    requestAnimationFrame(() => {
+      showDialog(
+        <UnsavedChangesReport
+          entity={originalEntity as Entity}
+          editedEntity={currentEntity as Entity}
+        />,
+        "Unsaved Changes",
+        [
+          <Button key="cancel" onClick={discard}>
+            Discard Changes
+          </Button>,
+          <Button key="submit" onClick={save}>
+            Save Changes
+          </Button>,
+        ],
+        true, // hideCloseButton
+      );
+    });
 
     return new Promise((resolve) => {
       resolver = resolve;
@@ -191,18 +191,13 @@ export const useEditForm = ({
 
   useMemo(async () => {
     if (dataSource) {
-      console.log(`subscribe to dataSource`, {
-        dataSource,
-      });
-
       if (formEditStateRef.current.isClean === false) {
         await showSaveOrDiscardPrompt();
       }
 
       currentDataSource.current = dataSource;
 
-      console.log(`change of dataSource, reset originalEntity`);
-      originalEntity.current = undefined;
+      originalEntityRef.current = undefined;
 
       const columnMap = buildColumnMap(dataSource.columns);
 
@@ -211,11 +206,22 @@ export const useEditForm = ({
           const [row] = message.rows;
           if (row) {
             const entity = dataSourceRowToEntity(row, columnMap);
-            if (originalEntity.current === undefined) {
-              console.log(`first time in, set the entity from dataSourceRow`);
-              originalEntity.current = entity;
+            if (originalEntityRef.current === undefined) {
+              originalEntityRef.current = entity;
               setEntity(entity);
             }
+
+            const { editedFields } = buildFormEditState(
+              entityRef.current,
+              entity,
+            );
+
+            // for controls which do not yield incremental changes, e.g dropdown, calendar
+            // we apply the server update to our entity.
+            if (editedFields.length === 1) {
+              setEntity(entity);
+            }
+
             // Do not overwrite entity here, just check that values returned by server
             // match whats expected
           }
@@ -225,14 +231,13 @@ export const useEditForm = ({
   }, [dataSource, setEntity, showSaveOrDiscardPrompt]);
 
   const setValidationState = useCallback((state: ValidationState) => {
-    console.log(`set new state ${JSON.stringify(state, null, 2)}`);
     validationStateRef.current = state;
     forceUpdate({});
   }, []);
 
-  const commitHandler = useCallback(
+  const handleFieldCommit = useCallback(
     (evt, value) => {
-      const fieldName = getField(evt.target);
+      const { current: fieldName } = focusedFieldRef;
       const dataDescriptor = find(formFieldDescriptors, fieldName);
 
       const { current: state } = validationStateRef;
@@ -254,39 +259,53 @@ export const useEditForm = ({
     [dataSource, entity, formFieldDescriptors, setValidationState],
   );
 
-  const handleChange = useCallback(
+  const handleFieldChange = useCallback(
     (evt: SyntheticEvent<HTMLInputElement>) => {
-      const input = queryClosest<HTMLInputElement>(evt.target, "input", true);
-      const fieldName = getField(evt.target);
-      const dataDescriptor = find(formFieldDescriptors, fieldName);
-      const value = input.value as string;
-      const { current: state } = validationStateRef;
-      const newState = nextValidationState(state, dataDescriptor, value);
-      if (newState !== state) {
-        setValidationState(newState);
-      }
+      const { current: fieldName } = focusedFieldRef;
+      if (fieldName) {
+        const input = queryClosest<HTMLInputElement>(evt.target, "input", true);
+        const dataDescriptor = find(formFieldDescriptors, fieldName);
+        const value = input.value as string;
+        const { current: state } = validationStateRef;
+        const newState = nextValidationState(state, dataDescriptor, value);
+        if (newState !== state) {
+          setValidationState(newState);
+        }
 
-      setEntity({ ...entity, [fieldName]: value });
+        setEntity({ ...entity, [fieldName]: value });
+      }
     },
     [entity, formFieldDescriptors, setEntity, setValidationState],
   );
 
-  const handleSubmit = useCallback(async () => {
+  const handleFormSubmit = useCallback(async () => {
     submitChanges();
     setFormEditState(CLEAN_FORM);
-    originalEntity.current = entity;
+    originalEntityRef.current = entity;
     onSubmit?.();
     forceUpdate({});
   }, [entity, onSubmit, setFormEditState, submitChanges]);
 
-  const handleCancel = useCallback(async () => {
+  const handleFormCancel = useCallback(async () => {
     // const rpcResponse = await dataSource?.rpcCall?.(
     //   viewportRpcRequest("VP_BULK_EDIT_CANCEL_RPC"),
     // );
     setFormEditState(CLEAN_FORM);
     // console.log({ rpcResponse });
-    setEntity(originalEntity.current as Entity);
+    setEntity(originalEntityRef.current as Entity);
   }, [setEntity, setFormEditState]);
+
+  const handleFocus = useCallback<FocusEventHandler>((evt) => {
+    // Ignore focus on popup Calendars, Lists etc
+    if (formFieldsContainerRef.current?.contains(evt.target)) {
+      const fieldName = getField(evt.target);
+      if (fieldName) {
+        if (fieldName) {
+          focusedFieldRef.current = fieldName;
+        }
+      }
+    }
+  }, []);
 
   const {
     current: { ok, messages: errorMessages },
@@ -300,11 +319,13 @@ export const useEditForm = ({
     editedFields,
     editEntity: entity,
     errorMessages,
+    formFieldsContainerRef,
     isClean,
     ok,
-    onCancel: handleCancel,
-    onChange: handleChange,
-    onCommit: commitHandler,
-    onSubmit: handleSubmit,
+    onCancel: handleFormCancel,
+    onChange: handleFieldChange,
+    onCommit: handleFieldCommit,
+    onFocus: handleFocus,
+    onSubmit: handleFormSubmit,
   };
 };

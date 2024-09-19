@@ -39,7 +39,7 @@ export const InlineFilter = ({
   const { columns, virtualColSpan = 0 } = useHeaderProps();
 
   const onCommit = useCallback<
-    CommitHandler<HTMLInputElement, string | number | undefined>
+    CommitHandler<HTMLElement, string | number | undefined>
   >(
     (evt, value = "") => {
       const fieldName = getFieldName(evt.target);

@@ -38,11 +38,13 @@ export const EditForm = ({
     editedFields,
     editEntity,
     errorMessages,
+    formFieldsContainerRef,
     isClean,
     ok,
     onCancel,
     onChange,
     onCommit,
+    onFocus,
     onSubmit,
   } = useEditForm({
     dataSource,
@@ -50,40 +52,41 @@ export const EditForm = ({
     onSubmit: onSubmitProp,
   });
 
-  console.log(
-    `edit form isClean ${isClean} fields edited ${editedFields.join(",")}`,
-  );
-
   return (
-    <div {...htmlAttributes} className={cx(classBase, className)}>
-      {formFieldDescriptors.map((dataDescriptor) => {
-        const { name, label = name } = dataDescriptor;
-        const errorMessage = errorMessages[name];
-        const isEdited = !isClean && editedFields.includes(name);
+    <div
+      {...htmlAttributes}
+      className={cx(classBase, className)}
+      onFocus={onFocus}
+    >
+      <div className={`${classBase}-form-fields`} ref={formFieldsContainerRef}>
+        {formFieldDescriptors.map((dataDescriptor) => {
+          const { name, label = name } = dataDescriptor;
+          const errorMessage = errorMessages[name];
+          const isEdited = !isClean && editedFields.includes(name);
 
-        return (
-          <div
-            className={`${classBase}-field`}
-            key={name}
-            data-edited={isEdited}
-          >
-            <FormField data-field={name}>
-              <FormFieldLabel>{label}</FormFieldLabel>
-              {getDataItemEditControl({
-                InputProps: {
-                  onChange,
-                  value: editEntity?.[name]?.toString() ?? "",
-                },
-                dataDescriptor,
-                errorMessage,
-                onCommit,
-              })}
-            </FormField>
-            <div className={`${classBase}-edit-indicator`} />
-          </div>
-        );
-      })}
-
+          return (
+            <div
+              className={`${classBase}-field`}
+              key={name}
+              data-edited={isEdited}
+            >
+              <FormField data-field={name}>
+                <FormFieldLabel>{label}</FormFieldLabel>
+                {getDataItemEditControl({
+                  InputProps: {
+                    onChange,
+                    value: editEntity?.[name]?.toString() ?? "",
+                  },
+                  dataDescriptor,
+                  errorMessage,
+                  onCommit,
+                })}
+              </FormField>
+              <div className={`${classBase}-edit-indicator`} />
+            </div>
+          );
+        })}
+      </div>
       <div className={`${classBase}-buttons`}>
         <Button disabled={isClean} onClick={onCancel}>
           Cancel

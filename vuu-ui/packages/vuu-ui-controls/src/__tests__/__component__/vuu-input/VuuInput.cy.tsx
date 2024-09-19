@@ -22,15 +22,20 @@ describe("Given a VuuInput box with input validation", () => {
       cy.findAllByTestId("vuu-input").find(".vuuInput-errorIcon").realHover();
       cy.wait(500);
       cy.findAllByTestId("vuu-input").should("have.class", "vuuInput-error");
-      cy.get(".vuuTooltip").should("be.visible");
+      cy.get(".saltTooltip").should("be.visible");
     });
   });
   describe("WHEN valid input is provided", () => {
-    it("Then the box will turn green and no tooltip will be displayed", () => {
+    it("Then no error icon will be displayed", () => {
       cy.mount(<VuuInputWithValidation />);
       cy.findByTestId("vuu-input").type("012345{enter}");
-      cy.findByTestId("vuu-input").should("have.class", "saltInput-success");
-      cy.findByRole("img").should("have.class", "saltStatusAdornment-success");
+      cy.findAllByTestId("vuu-input").should(
+        "not.have.class",
+        "vuuInput-error",
+      );
+      cy.findAllByTestId("vuu-input")
+        .find(".vuuInput-errorIcon")
+        .should("not.exist");
     });
   });
   describe("WHEN no input is provded", () => {
