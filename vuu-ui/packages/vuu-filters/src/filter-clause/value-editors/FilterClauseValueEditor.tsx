@@ -8,7 +8,7 @@ import {
   NumericFilterClauseOp,
   SingleValueFilterClauseOp,
 } from "@finos/vuu-filter-types";
-import { isDateTimeColumn } from "@finos/vuu-utils";
+import { isDateTimeDataValue } from "@finos/vuu-utils";
 import { ForwardedRef, forwardRef } from "react";
 import { FilterClauseProps } from "../FilterClause";
 import { FilterClauseValueEditorDate } from "./FilterClauseValueEditorDate";
@@ -44,7 +44,7 @@ export const FilterClauseValueEditor = forwardRef(
       return null;
     }
 
-    if (isDateTimeColumn(selectedColumn)) {
+    if (isDateTimeDataValue(selectedColumn)) {
       return (
         <FilterClauseValueEditorDate
           inputProps={inputProps}

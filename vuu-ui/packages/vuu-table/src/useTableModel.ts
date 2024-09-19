@@ -40,8 +40,8 @@ import {
   TableSchema,
 } from "@finos/vuu-data-types";
 import { VuuColumnDataType, VuuTable } from "@finos/vuu-protocol-types";
-import { buildValidationChecker } from "@finos/vuu-ui-controls";
 import { Reducer, useReducer } from "react";
+import { buildValidationChecker } from "@finos/vuu-data-react";
 
 const { info } = logger("useTableModel");
 
@@ -52,10 +52,10 @@ const columnWithoutDataType = ({ serverDataType }: ColumnDescriptor) =>
 
 const getDataType = (
   column: ColumnDescriptor,
-  tableSchema?: TableSchema
+  tableSchema?: TableSchema,
 ): VuuColumnDataType | undefined => {
   const schemaColumn = tableSchema?.columns.find(
-    ({ name }) => name === column.name
+    ({ name }) => name === column.name,
   );
   if (schemaColumn) {
     return schemaColumn.serverDataType;
@@ -103,8 +103,8 @@ const getDefaultAlignment = (serverDataType?: VuuColumnDataType) =>
   serverDataType === undefined
     ? undefined
     : numericTypes.includes(serverDataType)
-    ? "right"
-    : "left";
+      ? "right"
+      : "left";
 
 export interface ColumnActionInit {
   availableWidth: number;
@@ -178,11 +178,11 @@ export interface ColumnActionTableSettings extends DataSourceConfig {
 }
 
 export const isShowColumnSettings = (
-  action: PersistentColumnAction
+  action: PersistentColumnAction,
 ): action is ColumnActionColumnSettings => action.type === "columnSettings";
 
 export const isShowTableSettings = (
-  action: PersistentColumnAction
+  action: PersistentColumnAction,
 ): action is ColumnActionTableSettings => action.type === "tableSettings";
 
 /**
@@ -226,7 +226,7 @@ const columnReducer: GridModelReducer = (state, action) => {
           ...action,
           tableConfig: applyRuntimeColumnWidthsToConfig(
             action.tableConfig,
-            state.columns
+            state.columns,
           ),
         });
       } else {
@@ -259,7 +259,7 @@ export const useTableModel = (
   tableConfigProp: TableConfig,
   dataSource: DataSource,
   selectionModel: TableSelectionModel,
-  availableWidth: number
+  availableWidth: number,
 ) => {
   const [state, dispatchTableModelAction] = useReducer<
     GridModelReducer,
@@ -272,7 +272,7 @@ export const useTableModel = (
       dataSource,
       selectionModel,
     },
-    init
+    init,
   );
 
   const { columns, headings, tableConfig, ...tableAttributes } = state;
@@ -304,7 +304,7 @@ function init({
   const { config: dataSourceConfig, tableSchema } = dataSource;
   const toRuntimeColumnDescriptor = columnDescriptorToRuntimeColumDescriptor(
     tableAttributes,
-    tableSchema
+    tableSchema,
   );
   const runtimeColumns = columns
     .filter(subscribedOnly(dataSourceConfig?.columns))
@@ -324,7 +324,7 @@ function init({
     columnsInRenderOrder.splice(
       0,
       0,
-      toRuntimeColumnDescriptor(checkboxColumnDescriptor, -1)
+      toRuntimeColumnDescriptor(checkboxColumnDescriptor, -1),
     );
   }
 
@@ -347,7 +347,7 @@ function init({
 
 const getLabel = (
   label: string,
-  columnFormatHeader?: "uppercase" | "capitalize"
+  columnFormatHeader?: "uppercase" | "capitalize",
 ): string => {
   if (columnFormatHeader === "uppercase") {
     return label.toUpperCase();
@@ -378,7 +378,7 @@ const columnDescriptorToRuntimeColumDescriptor =
       HeaderCellContentRenderer: getColumnHeaderContentRenderer(column),
       HeaderCellLabelRenderer: getColumnHeaderLabelRenderer(column),
       clientSideEditValidationCheck: hasValidationRules(column.type)
-        ? buildValidationChecker(column.type.renderer.rules)
+        ? buildValidationChecker(column.type.rules)
         : undefined,
       index: index + 1,
       label: getLabel(label, columnFormatHeader),
@@ -392,7 +392,7 @@ const columnDescriptorToRuntimeColumDescriptor =
     if (isGroupColumn(runtimeColumnWithDefaults)) {
       runtimeColumnWithDefaults.columns = runtimeColumnWithDefaults.columns.map(
         (col) =>
-          columnDescriptorToRuntimeColumDescriptor(tableAttributes)(col, index)
+          columnDescriptorToRuntimeColumDescriptor(tableAttributes)(col, index),
       );
     }
 
@@ -402,7 +402,7 @@ const columnDescriptorToRuntimeColumDescriptor =
 function moveColumn(
   state: InternalTableModel,
   // TODO do we ever use this ?
-  { column, moveBy }: ColumnActionMove
+  { column, moveBy }: ColumnActionMove,
 ) {
   const { columns } = state;
   if (typeof moveBy === "number") {
@@ -455,7 +455,7 @@ function showColumns(state: InternalTableModel, { columns }: ColumnActionShow) {
 
 function resizeColumn(
   state: InternalTableModel,
-  { column, phase, width }: ColumnActionResize
+  { column, phase, width }: ColumnActionResize,
 ) {
   const type = "updateColumnProp";
   const resizing = phase !== "end";
@@ -470,7 +470,7 @@ function resizeColumn(
             ...state,
             tableConfig: applyRuntimeColumnWidthsToConfig(
               tableConfig,
-              state.columns
+              state.columns,
             ),
           }
         : state;
@@ -485,7 +485,7 @@ function resizeColumn(
 
 function setTableSchema(
   state: InternalTableModel,
-  { tableSchema }: ColumnActionSetTableSchema
+  { tableSchema }: ColumnActionSetTableSchema,
 ) {
   const { columns } = state;
   if (columns.some(columnWithoutDataType)) {
@@ -524,7 +524,7 @@ function pinColumn(state: InternalTableModel, action: ColumnActionPin) {
 }
 function updateColumnProp(
   state: InternalTableModel,
-  action: ColumnActionUpdateProp
+  action: ColumnActionUpdateProp,
 ) {
   let { columns, tableConfig } = state;
   const { align, column, hidden, label, resizing, width } = action;
@@ -546,7 +546,7 @@ function updateColumnProp(
       columns = replaceColumn(columns, { ...targetColumn, width });
 
       const targetConfigColumn = tableConfig.columns.find(
-        (col) => col.name === column.name
+        (col) => col.name === column.name,
       );
       if (targetConfigColumn) {
         tableConfig = {
@@ -568,7 +568,7 @@ function updateColumnProp(
 
 function updateTableConfig(
   state: InternalTableModel,
-  { confirmed, filterSpec: filter, groupBy, sort }: ColumnActionTableConfig
+  { confirmed, filterSpec: filter, groupBy, sort }: ColumnActionTableConfig,
 ) {
   const hasGroupBy = groupBy !== undefined;
   const hasFilter = typeof filter?.filter === "string";

@@ -195,7 +195,7 @@ export const useVuuMenuActions = ({
         return true;
       }
     },
-    [VuuDataSource, closeDialog, showDialog],
+    [VuuDataSource, closeDialog, dataSource, showDialog],
   );
 
   const showSessionEditingForm = useCallback(

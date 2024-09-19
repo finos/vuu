@@ -9,3 +9,4 @@ export * from "./simul";
 export * from "./test";
 export * from "./Table";
 export * from "./VuuModule";
+export * from "./local-datasource-provider/LocalDatasourceProvider";

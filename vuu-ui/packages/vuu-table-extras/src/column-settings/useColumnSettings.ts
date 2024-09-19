@@ -3,7 +3,6 @@ import {
   TableConfig,
   ColumnTypeFormatting,
   ColumnSettingsProps,
-  ColumnTypeSimple,
 } from "@finos/vuu-table-types";
 
 import {
@@ -28,6 +27,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { DataValueTypeSimple } from "@finos/vuu-data-types";
 
 const integerCellRenderers: CellRendererDescriptor[] = [
   {
@@ -55,7 +55,7 @@ const stringCellRenderers: CellRendererDescriptor[] = [
 const booleanCellRenderers: CellRendererDescriptor[] = [];
 
 const getAvailableCellRenderers = (
-  column: ColumnDescriptor
+  column: ColumnDescriptor,
 ): CellRendererDescriptor[] => {
   switch (column.serverDataType) {
     case "char":
@@ -88,11 +88,11 @@ const getColumn = (columns: ColumnDescriptor[], column: ColumnDescriptor) => {
 
 const replaceColumn = (
   tableConfig: TableConfig,
-  column: ColumnDescriptor
+  column: ColumnDescriptor,
 ): TableConfig => ({
   ...tableConfig,
   columns: tableConfig.columns.map((col) =>
-    col.name === column.name ? column : col
+    col.name === column.name ? column : col,
   ),
 });
 
@@ -104,7 +104,7 @@ export const useColumnSettings = ({
   tableConfig,
 }: Omit<ColumnSettingsProps, "vuuTable">) => {
   const [column, setColumn] = useState<ColumnDescriptor>(
-    getColumn(tableConfig.columns, columnProp)
+    getColumn(tableConfig.columns, columnProp),
   );
   const columnRef = useRef<ColumnDescriptor>(column);
   const [inEditMode, setEditMode] = useState(column.name === "::");
@@ -158,7 +158,7 @@ export const useColumnSettings = ({
         }
       }
     },
-    [column, onConfigChange, tableConfig]
+    [column, onConfigChange, tableConfig],
   );
 
   const handleChange = useCallback<FormEventHandler>((evt) => {
@@ -188,16 +188,16 @@ export const useColumnSettings = ({
       setColumn(newColumn);
       onConfigChange(replaceColumn(tableConfig, newColumn));
     },
-    [column, onConfigChange, tableConfig]
+    [column, onConfigChange, tableConfig],
   );
 
   const handleChangeType = useCallback(
-    (type: ColumnTypeSimple) => {
+    (type: DataValueTypeSimple) => {
       const updatedColumn = updateColumnType(column, type);
       setColumn(updatedColumn);
       onConfigChange(replaceColumn(tableConfig, updatedColumn));
     },
-    [column, onConfigChange, tableConfig]
+    [column, onConfigChange, tableConfig],
   );
 
   // Changing the server data type applies only to calculated columns
@@ -205,7 +205,7 @@ export const useColumnSettings = ({
     (serverDataType: VuuColumnDataType) => {
       setColumn((col) => ({ ...col, serverDataType }));
     },
-    []
+    [],
   );
 
   const handleChangeRendering = useCallback<ColumnRenderPropsChangeHandler>(
@@ -213,13 +213,13 @@ export const useColumnSettings = ({
       if (renderProps) {
         const newColumn: ColumnDescriptor = updateColumnRenderProps(
           column,
-          renderProps
+          renderProps,
         );
         setColumn(newColumn);
         onConfigChange(replaceColumn(tableConfig, newColumn));
       }
     },
-    [column, onConfigChange, tableConfig]
+    [column, onConfigChange, tableConfig],
   );
 
   const navigateColumn = useCallback(
@@ -231,7 +231,7 @@ export const useColumnSettings = ({
         setColumn(newColumn);
       }
     },
-    [column, tableConfig]
+    [column, tableConfig],
   );
   const navigateNextColumn = useCallback(() => {
     navigateColumn({ moveBy: 1 });

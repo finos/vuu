@@ -1,5 +1,7 @@
-import { EditRuleValidator, registerComponent } from "@finos/vuu-utils";
+import { registerComponent } from "@finos/vuu-utils";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import { EditRuleValidator } from "@finos/vuu-data-types";
+import { OK } from "@finos/vuu-data-react";
 
 const isString = (value?: VuuRowDataItemType): value is string =>
   typeof value === "string";
@@ -7,16 +9,16 @@ const isString = (value?: VuuRowDataItemType): value is string =>
 export const CaseValidator: EditRuleValidator = (rule, value) => {
   if (isString(value)) {
     if (value === "") {
-      return true;
+      return OK;
     } else if (rule.value === "lower" && value.toLowerCase() !== value) {
-      return "value must be all lowercase";
+      return { ok: false, message: "value must be all lowercase" };
     } else if (rule.value === "upper" && value.toUpperCase() !== value) {
-      return "value must be all uppercase";
+      return { ok: false, message: "value must be all uppercase" };
     } else {
-      return true;
+      return OK;
     }
   } else {
-    return "value must be a string";
+    return { ok: false, message: "value must be a string" };
   }
 };
 

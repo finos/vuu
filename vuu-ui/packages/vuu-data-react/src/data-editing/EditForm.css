@@ -1,0 +1,48 @@
+.EditForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-400);
+  height: 100%;
+  padding: var(--salt-spacing-200) var(--salt-spacing-200)
+    var(--salt-spacing-200) var(--salt-spacing-400);
+  width: 100%;
+}
+
+.EditForm-form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--salt-spacing-400);
+}
+
+.EditForm-buttons {
+  align-items: center;
+  display: flex;
+  gap: var(--salt-spacing-200);
+  justify-content: flex-end;
+}
+
+.EditForm-field {
+  display: flex;
+
+  .saltFormField {
+    flex: 1 1 auto;
+  }
+
+  .EditForm-edit-indicator {
+    flex: 0 0 14px;
+    position: relative;
+  }
+
+  &[data-edited="true"] {
+    .EditForm-edit-indicator:after {
+      background-color: var(--salt-content-secondary-foreground);
+      border-radius: 5px;
+      content: "";
+      height: 10px;
+      position: absolute;
+      top: 50%;
+      right: -3px;
+      width: 10px;
+    }
+  }
+}

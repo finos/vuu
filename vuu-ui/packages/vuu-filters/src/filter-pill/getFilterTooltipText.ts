@@ -8,7 +8,7 @@ import {
 import {
   filterAsQuery,
   formatDate,
-  isDateTimeColumn,
+  isDateTimeDataValue,
   isMultiClauseFilter,
   dateTimePattern,
   defaultPatternsByType,
@@ -17,7 +17,7 @@ import { filterClauses } from "../filter-utils";
 
 function applyFormatter<T>(
   filter: SingleValueFilterClause<T> | MultiValueFilterClause<T[]>,
-  formatter: (t: T) => string
+  formatter: (t: T) => string,
 ): FilterClause {
   if ("value" in filter) {
     return { ...filter, value: formatter(filter.value) };
@@ -28,20 +28,20 @@ function applyFormatter<T>(
 
 function formatFilterValue(
   filter: FilterClause,
-  columnsByName?: ColumnDescriptorsByName
+  columnsByName?: ColumnDescriptorsByName,
 ): FilterClause {
   const column = columnsByName?.[filter.column];
-  if (column && isDateTimeColumn(column)) {
+  if (column && isDateTimeDataValue(column)) {
     const pattern = dateTimePattern(column.type);
     const formatter = (n: number) =>
       formatDate({ date: pattern.date ?? defaultPatternsByType.date })(
-        new Date(n)
+        new Date(n),
       );
     return applyFormatter(
       filter as
         | SingleValueFilterClause<number>
         | MultiValueFilterClause<number[]>,
-      formatter
+      formatter,
     );
   }
 
@@ -54,7 +54,7 @@ export const getFilterTooltipText =
       const [firstClause] = filterClauses(filter);
       const formattedFilter = formatFilterValue(
         firstClause as FilterClause,
-        columnsByName
+        columnsByName,
       );
       return `${filterAsQuery(formattedFilter)} ${filter.op} ...`;
     } else {

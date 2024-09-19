@@ -17,13 +17,13 @@ export interface ExpandoInputProps extends Omit<VuuInputProps, "onCommit"> {
 export const ExpandoInput = forwardRef(function ExpandoInput(
   {
     className: classNameProp,
-    TooltipProps,
+    errorMessage,
     value,
     inputProps,
     onCommit = noop,
     ...props
   }: ExpandoInputProps,
-  forwardedRef: ForwardedRef<HTMLDivElement>
+  forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -35,13 +35,13 @@ export const ExpandoInput = forwardRef(function ExpandoInput(
   return (
     <div
       className={cx(classBase, classNameProp, {
-        [`${classBase}-error`]: TooltipProps,
+        [`${classBase}-error`]: errorMessage,
       })}
       data-text={value}
     >
       <VuuInput
         {...props}
-        TooltipProps={TooltipProps}
+        errorMessage={errorMessage}
         inputProps={{ ...inputProps, className: `${classBase}-input` }}
         onCommit={onCommit}
         ref={forwardedRef}

@@ -59,7 +59,7 @@ export const TestTable = ({
       rowSeparators: true,
       zebraStripes: true,
     }),
-    []
+    [],
   );
 
   const dataSource = useMemo<DataSource>(() => {
@@ -183,15 +183,15 @@ export const EditableTableArrayData = () => {
               name: "string",
               renderer: {
                 name: "input-cell",
-                // rules: [
-                //   { name: "vuu-case", value: "upper" },
-                //   {
-                //     name: "vuu-pattern",
-                //     value: "^.{5,8}$",
-                //     message: "Value must contain between 5 and 8 characters",
-                //   },
-                // ],
               },
+              rules: [
+                { name: "vuu-case", value: "upper" },
+                {
+                  name: "vuu-pattern",
+                  value: "^.{5,8}$",
+                  message: "Value must contain between 5 and 8 characters",
+                },
+              ],
             },
           };
         case "currency":
@@ -241,7 +241,7 @@ export const EditableTableArrayData = () => {
           };
       }
     },
-    []
+    [],
   );
 
   const tableProps = useMemo<
@@ -252,7 +252,7 @@ export const EditableTableArrayData = () => {
       config: {
         columns: applyDefaultColumnConfig(
           getSchema(tableName),
-          getDefaultColumnConfig
+          getDefaultColumnConfig,
         ),
         rowSeparators: true,
         zebraStripes: true,
@@ -480,7 +480,7 @@ export const VuuTableCalculatedColumns = () => {
       //   serverDataType: "string",
       // },
     ],
-    []
+    [],
   );
 
   const schemas = getAllSchemas();
@@ -736,7 +736,7 @@ export const CustomColumnRenderer = () => {
                 colHeaderContentRenderer: "symbol-header",
               };
             }
-          }
+          },
         ),
         rowSeparators: true,
         zebraStripes: true,

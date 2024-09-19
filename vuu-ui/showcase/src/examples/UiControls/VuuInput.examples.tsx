@@ -10,9 +10,6 @@ const VuuInputTemplate = ({
 }: Partial<VuuInputProps> & {
   position?: CSSProperties;
 }) => {
-  const TooltipProps = {
-    tooltipContent: "something bad has happened",
-  };
   return (
     <div
       style={{
@@ -26,7 +23,6 @@ const VuuInputTemplate = ({
       }}
     >
       <VuuInput
-        TooltipProps={TooltipProps}
         data-testid="vuu-input"
         onCommit={() => console.log("commit")}
         {...props}
@@ -40,20 +36,10 @@ export const DefaultVuuInput = () => {
 };
 DefaultVuuInput.displaySequence = displaySequence++;
 
-export const VuuInputWithErrorMessageTooltipRight = () => {
-  return <VuuInputTemplate />;
+export const VuuInputWithErrorMessage = () => {
+  return <VuuInputTemplate errorMessage="Help" />;
 };
-VuuInputWithErrorMessageTooltipRight.displaySequence = displaySequence++;
-
-export const VuuInputWithErrorMessageTooltipLeft = () => {
-  return <VuuInputTemplate position={{ left: 300, top: 0 }} />;
-};
-VuuInputWithErrorMessageTooltipLeft.displaySequence = displaySequence++;
-
-export const InputRightTooltipLeftErrorMessage = () => {
-  return <VuuInputTemplate position={{ right: 0, top: 0 }} />;
-};
-InputRightTooltipLeftErrorMessage.displaySequence = displaySequence++;
+VuuInputWithErrorMessage.displaySequence = displaySequence++;
 
 // Showcase example showing the application of the VuuInput box with input validation
 export const VuuInputWithValidation = () => {
@@ -88,7 +74,7 @@ export const VuuInputWithValidation = () => {
   }
   const [inputValue, setInputValue] = useState("");
   const valid = isValidInput(inputValue, "number");
-  const content = getTooltipContent("number", valid);
+  const errorMessage = getTooltipContent("number", valid);
   const handleCommit = useCallback<
     CommitHandler<HTMLInputElement, string | undefined>
   >((evt) => {
@@ -96,9 +82,6 @@ export const VuuInputWithValidation = () => {
     const fieldValue = fieldElement?.value;
     setInputValue(fieldValue);
   }, []);
-  const TooltipProps = {
-    tooltipContent: content,
-  };
 
   return (
     <div
@@ -112,10 +95,9 @@ export const VuuInputWithValidation = () => {
       }}
     >
       <VuuInput
-        validationStatus={valid}
         onCommit={handleCommit}
         data-testid="vuu-input"
-        TooltipProps={TooltipProps}
+        errorMessage={errorMessage}
       />
     </div>
   );

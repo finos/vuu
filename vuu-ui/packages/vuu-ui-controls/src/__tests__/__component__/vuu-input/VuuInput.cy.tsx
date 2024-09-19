@@ -1,6 +1,5 @@
 import {
   DefaultVuuInput,
-  VuuInputWithErrorMessageTooltipRight,
   VuuInputWithValidation,
 } from "../../../../../../showcase/src/examples/UiControls/VuuInput.examples";
 
@@ -13,24 +12,6 @@ describe("VuuInput", () => {
       cy.findByTestId("vuu-input").find("input").should("be.visible");
     });
   });
-
-  describe("When provided with an error message", () => {
-    it("Then an error classname and indicator will be rendered", () => {
-      cy.mount(<VuuInputWithErrorMessageTooltipRight />);
-      cy.findByTestId("vuu-input").should("have.class", "vuuInput-error");
-      cy.findByTestId("vuu-input")
-        .find(".vuuInput-errorIcon")
-        .should("be.visible");
-    });
-
-    describe("And when user hovers error icon", () => {
-      it("Then tooltip will be displayed", () => {
-        cy.mount(<VuuInputWithErrorMessageTooltipRight />);
-        cy.findByTestId("vuu-input").find(".vuuInput-errorIcon").realHover();
-        cy.get(".vuuTooltip").should("be.visible");
-      });
-    });
-  });
 });
 
 describe("Given a VuuInput box with input validation", () => {
@@ -41,15 +22,20 @@ describe("Given a VuuInput box with input validation", () => {
       cy.findAllByTestId("vuu-input").find(".vuuInput-errorIcon").realHover();
       cy.wait(500);
       cy.findAllByTestId("vuu-input").should("have.class", "vuuInput-error");
-      cy.get(".vuuTooltip").should("be.visible");
+      cy.get(".saltTooltip").should("be.visible");
     });
   });
   describe("WHEN valid input is provided", () => {
-    it("Then the box will turn green and no tooltip will be displayed", () => {
+    it("Then no error icon will be displayed", () => {
       cy.mount(<VuuInputWithValidation />);
       cy.findByTestId("vuu-input").type("012345{enter}");
-      cy.findByTestId("vuu-input").should("have.class", "saltInput-success");
-      cy.findByRole("img").should("have.class", "saltStatusAdornment-success");
+      cy.findAllByTestId("vuu-input").should(
+        "not.have.class",
+        "vuuInput-error",
+      );
+      cy.findAllByTestId("vuu-input")
+        .find(".vuuInput-errorIcon")
+        .should("not.exist");
     });
   });
   describe("WHEN no input is provded", () => {
@@ -63,13 +49,13 @@ describe("Given a VuuInput box with input validation", () => {
     it("Then box will store the complete value", () => {
       cy.mount(<VuuInputWithValidation />);
       cy.findByTestId("vuu-input").type(
-        "01234567890123456789012345678901234567890123456789012345678901234567890{enter}"
+        "01234567890123456789012345678901234567890123456789012345678901234567890{enter}",
       );
       cy.findAllByTestId("vuu-input")
         .find("input.saltInput-input")
         .should(
           "have.value",
-          "01234567890123456789012345678901234567890123456789012345678901234567890"
+          "01234567890123456789012345678901234567890123456789012345678901234567890",
         );
     });
   });

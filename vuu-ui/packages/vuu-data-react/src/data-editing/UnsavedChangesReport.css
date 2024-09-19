@@ -1,0 +1,22 @@
+.vuuUnsavedChanges-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.vuuUnsavedChanges-row {
+  box-sizing: content-box;
+  border-bottom: solid 1px var(--salt-separable-secondary-borderColor);
+  height: 32px;
+
+  td {
+    padding: 0 var(--salt-spacing-200);
+  }
+}
+
+.vuuUnsavedChanges-fieldName {
+  text-transform: capitalize;
+}
+
+.vuuUnsavedChanges-new {
+  font-weight: bold;
+}

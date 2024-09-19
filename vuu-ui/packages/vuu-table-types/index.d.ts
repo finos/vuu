@@ -1,15 +1,21 @@
-import type { DataSourceRowObject } from "@finos/vuu-data-types";
-import { DataSourceRow } from "@finos/vuu-data-types";
+import type {
+  DataSourceRowObject,
+  DataValueDescriptor,
+  DataValueTypeSimple,
+  EditValidationRule,
+} from "@finos/vuu-data-types";
+import type {
+  DataValueValidationChecker,
+  DataSourceRow,
+} from "@finos/vuu-data-types";
 import type { Filter } from "@finos/vuu-filter-types";
 import type {
   VuuAggType,
-  VuuColumnDataType,
   VuuMenuItem,
   VuuRowDataItemType,
   VuuSortType,
   VuuTable,
 } from "@finos/vuu-protocol-types";
-import type { ClientSideValidationChecker } from "@finos/vuu-ui-controls";
 import type {
   ColumnMap,
   DateTimePattern,
@@ -29,10 +35,6 @@ export type TableHeading = { label: string; width: number };
 export type TableHeadings = TableHeading[][];
 
 export type ValueFormatter = (value: unknown) => string;
-
-export type ClientSideValidationChecker = (
-  value?: VuuRowDataItemType,
-) => string | false | undefined;
 
 export type DataCellEditHandler = (
   row: DataSourceRow,
@@ -124,6 +126,18 @@ export interface GridConfig extends TableConfig {
   selectionBookendWidth?: number;
 }
 
+// TODO tidy up this definition, currently split beween here and data-types
+export declare type DataValueTypeDescriptor = {
+  rules?: EditValidationRule[];
+  formatting?: ColumnTypeFormatting;
+  name: DataValueTypeSimple;
+  renderer?:
+    | ColumnTypeRendering
+    | LookupRenderer
+    | MappedValueTypeRenderer
+    | ValueListRenderer;
+};
+
 export declare type ColumnTypeFormatting = {
   alignOnDecimals?: boolean;
   decimals?: number;
@@ -132,12 +146,6 @@ export declare type ColumnTypeFormatting = {
 };
 
 export type ColumnTypeValueMap = { [key: string]: string };
-
-export interface EditValidationRule {
-  name: string;
-  message?: string;
-  value?: string;
-}
 
 export type ListOption = {
   label: string;
@@ -152,7 +160,6 @@ export interface ColumnTypeRendering {
   // specific to Background renderer
   flashStyle?: "bg-only" | "arrow-bg" | "arrow";
   name: string;
-  rules?: EditValidationRule[];
 }
 export interface MappedValueTypeRenderer {
   map: ColumnTypeValueMap;
@@ -178,40 +185,9 @@ export interface ValueListRenderer {
   values: string[];
 }
 
-export declare type ColumnTypeSimple =
-  | "string"
-  | "number"
-  | "boolean"
-  | "json"
-  | DateTimeColumnTypeSimple
-  | "checkbox";
-
-export declare type ColumnTypeDescriptor = {
-  formatting?: ColumnTypeFormatting;
-  name: ColumnTypeSimple;
-  renderer?:
-    | ColumnTypeRendering
-    | LookupRenderer
-    | MappedValueTypeRenderer
-    | ValueListRenderer;
-};
-
-export declare type DateTimeColumnTypeSimple = "date/time";
-
-type DateTimeColumnType =
-  | DateTimeColumnTypeSimple
-  | (Omit<ColumnTypeDescriptor, "name"> & { name: DateTimeColumnTypeSimple });
-
-export declare type DateTimeColumnDescriptor = Omit<
-  ColumnDescriptor,
-  "type"
-> & {
-  type: DateTimeColumnType;
-};
-
 export declare type ColumnTypeDescriptorCustomRenderer = {
   formatting?: ColumnTypeFormatting;
-  name: ColumnTypeSimple;
+  name: DataValueTypeSimple;
   renderer: ColumnTypeRendering;
 };
 
@@ -226,41 +202,28 @@ export interface FormattingSettingsProps<
    latter. e.g a server data type of long may be further refined as
    a date/time value using the column descriptor type.
    */
-  onChangeColumnType: (type: ColumnTypeSimple) => void;
+  onChangeColumnType: (type: DataValueTypeSimple) => void;
 }
 
-export interface ColumnTypeRendererWithValidationRules
-  extends ColumnTypeRendering {
+export interface ColumnTypeWithValidationRules
+  extends Omit<DataValueTypeDescriptor, "editRules"> {
   rules: EditValidationRule[];
 }
 
-export interface ColumnTypeWithValidationRules extends ColumnTypeDescriptor {
-  renderer: ColumnTypeRendererWithValidationRules;
-}
+export declare type ColumnSort = VuuSortType | number;
 
-export declare type ColumnType = ColumnTypeSimple | ColumnTypeDescriptor;
+export declare type PinLocation = "left" | "right" | "floating";
 
-export type ColumnSort = VuuSortType | number;
-
-export type PinLocation = "left" | "right" | "floating";
-
-export type ColumnAlignment = "left" | "right";
-
-export type BulkEdit = "bulk" | false | "read-only";
+export declare type ColumnAlignment = "left" | "right";
 
 /** This is a public description of a Column, defining all the
  * column attributes that can be defined by client. */
-export interface ColumnDescriptor {
+export interface ColumnDescriptor extends DataValueDescriptor {
   aggregate?: VuuAggType;
   align?: ColumnAlignment;
   className?: string;
   colHeaderContentRenderer?: string;
   colHeaderLabelRenderer?: string;
-  editable?: boolean;
-  /**
-   There are three values for editableBulk. When editableBulk is false, user will not see the column in BulkEditPanel. When editableBulk is "bulk", user will see the column in BulkEditPanel and be able to bulk-edit on BulkEditRow. When editableBulk is "read-only", user will see the column but won't be able to edit.
-  */
-  editableBulk?: BulkEdit;
   flex?: number;
   /**
    Optional additional level(s) of heading to display above label.
@@ -270,17 +233,12 @@ export interface ColumnDescriptor {
   heading?: string[];
   hidden?: boolean;
   isSystemColumn?: boolean;
-  /** The Label to display on column in Table */
-  label?: string;
   locked?: boolean;
   maxWidth?: number;
   minWidth?: number;
-  name: string;
   pin?: PinLocation;
   resizeable?: boolean;
-  serverDataType?: VuuColumnDataType;
   sortable?: boolean;
-  type?: ColumnType;
   width?: number;
 }
 
@@ -298,7 +256,7 @@ export interface RuntimeColumnDescriptor extends ColumnDescriptor {
   HeaderCellContentRenderer?: FunctionComponent<HeaderCellProps>;
   canStretch?: boolean;
   className?: string;
-  clientSideEditValidationCheck?: ClientSideValidationChecker;
+  clientSideEditValidationCheck?: DataValueValidationChecker;
   endPin?: true | undefined;
   filter?: Filter;
   flex?: number;

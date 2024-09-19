@@ -1,5 +1,7 @@
-import React, { SyntheticEvent, useCallback, useMemo, useState } from "react";
+import { DateTimeDataValueDescriptor } from "@finos/vuu-data-types";
+import { FormattingSettingsProps } from "@finos/vuu-table-types";
 import {
+  DatePattern,
   DateTimePattern,
   TimePattern,
   dateTimeLabelByType,
@@ -18,11 +20,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@salt-ds/core";
-import {
-  DateTimeColumnDescriptor,
-  FormattingSettingsProps,
-} from "@finos/vuu-table-types";
-import { DatePattern } from "@finos/vuu-utils";
+import React, { SyntheticEvent, useCallback, useMemo, useState } from "react";
 
 const toggleValues = ["date", "time", "both"] as const;
 type ToggleValue = (typeof toggleValues)[number];
@@ -34,7 +32,7 @@ function getToggleValue(pattern: DateTimePattern): ToggleValue {
 type DateTime = keyof DateTimePattern;
 
 const getSelectedPattern = (
-  pattern?: DatePattern | TimePattern
+  pattern?: DatePattern | TimePattern,
 ): DatePattern[] | TimePattern[] | undefined => {
   if (isDatePattern(pattern)) {
     return [pattern] as DatePattern[];
@@ -46,7 +44,7 @@ const getSelectedPattern = (
 };
 
 export const DateTimeFormattingSettings: React.FC<
-  FormattingSettingsProps<DateTimeColumnDescriptor>
+  FormattingSettingsProps<DateTimeDataValueDescriptor>
 > = ({ column, onChangeFormatting: onChange }) => {
   const formatting = getTypeFormattingFromColumn(column);
   const { pattern = fallbackDateTimePattern } = formatting;
@@ -56,20 +54,20 @@ export const DateTimeFormattingSettings: React.FC<
     {
       time: pattern.time ?? defaultPatternsByType.time,
       date: pattern.date ?? defaultPatternsByType.date,
-    }
+    },
   );
 
   const onPatternChange = useCallback(
     (pattern: DateTimePattern) => onChange({ ...formatting, pattern }),
-    [onChange, formatting]
+    [onChange, formatting],
   );
 
   const onDropdownChange = useCallback<
     <T extends DateTime>(
-      dateTime: T
+      dateTime: T,
     ) => (
       e: SyntheticEvent,
-      newSelected: Array<Required<DateTimePattern>[T]>
+      newSelected: Array<Required<DateTimePattern>[T]>,
     ) => void
   >(
     (dateTime) =>
@@ -84,7 +82,7 @@ export const DateTimeFormattingSettings: React.FC<
         }));
         onPatternChange(updatedPattern);
       },
-    [onPatternChange, pattern]
+    [onPatternChange, pattern],
   );
 
   const onToggleChange = useCallback(
@@ -106,7 +104,7 @@ export const DateTimeFormattingSettings: React.FC<
           });
       }
     },
-    [onPatternChange, pattern, fallbackState]
+    [onPatternChange, pattern, fallbackState],
   );
 
   return (

@@ -15,7 +15,7 @@ const sizeAttribute = (value: string | number) => {
 const getStyle = (
   styleProp?: CSSProperties,
   sizeOpen?: number,
-  sizeClosed?: number
+  sizeClosed?: number,
 ) => {
   const hasSizeOpen = sizeOpen !== undefined;
   const hasSizeClosed = sizeClosed !== undefined;
@@ -75,8 +75,6 @@ const Drawer = ({
     name: "Drawer",
     state: "open",
   });
-
-  console.log(`Drawer sizeOpen ${sizeOpen} sizeClosed ${sizeClosed}`);
 
   const className = cx(classBase, classNameProp, `${classBase}-${position}`, {
     [`${classBase}-open`]: open,

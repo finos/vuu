@@ -1,5 +1,8 @@
 import { DataSourceRow } from "@finos/vuu-data-types";
-import { ColumnDescriptor, ColumnTypeDescriptor } from "@finos/vuu-table-types";
+import {
+  ColumnDescriptor,
+  DataValueTypeDescriptor,
+} from "@finos/vuu-table-types";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { metadataKeys } from "./column-utils";
 
@@ -29,12 +32,12 @@ const typeofVuuDataItem = (value: VuuRowDataItemType) =>
   typeof value === "boolean"
     ? "boolean"
     : typeof value === "number"
-    ? "number"
-    : "string";
+      ? "number"
+      : "string";
 
 const getCellValue = (
   attribute: string,
-  attributeValue: unknown
+  attributeValue: unknown,
 ): CellValue => {
   if (isJsonData(attributeValue)) {
     return { attribute: `${attribute}+`, attributeValue: "", type: "json" };
@@ -55,7 +58,7 @@ const getCellValue = (
   }
 };
 
-const jsonColumnType: ColumnTypeDescriptor = {
+const jsonColumnType: DataValueTypeDescriptor = {
   name: "json",
   renderer: {
     name: "json",
@@ -63,7 +66,7 @@ const jsonColumnType: ColumnTypeDescriptor = {
 };
 
 export const jsonToDataSourceRows = (
-  json: JsonData
+  json: JsonData,
 ): [ColumnDescriptor[], DataSourceRow[]] => {
   const cols: ColumnDescriptor[] = [];
 
@@ -75,7 +78,7 @@ export const jsonToDataSourceRows = (
     {
       name: "col 2",
       type: jsonColumnType,
-    }
+    },
   );
 
   const rows: DataSourceRow[] = [];
@@ -90,7 +93,7 @@ const addChildValues = (
   cols: ColumnDescriptor[],
   index: Index = { value: 0 },
   keyBase = "$root",
-  depth = 0
+  depth = 0,
 ): [number, number] => {
   let leafCount = 0;
   let rowCount = 0;
@@ -120,7 +123,7 @@ const addChildValues = (
         cols,
         { value: index.value + 1 },
         fullKey,
-        depth + 1
+        depth + 1,
       );
       row[COUNT] = nestedLeafCount;
       leafCount += nestedLeafCount;

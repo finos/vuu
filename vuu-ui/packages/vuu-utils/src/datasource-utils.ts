@@ -22,8 +22,10 @@ import {
   VuuCreateVisualLink,
   VuuFilter,
   VuuRemoveVisualLink,
+  VuuRowDataItemType,
   VuuSort,
 } from "@finos/vuu-protocol-types";
+import { ColumnMap } from "./column-utils";
 
 export const NoFilter: VuuFilter = { filter: "" };
 export const NoSort: VuuSort = { sortDefs: [] };
@@ -321,3 +323,18 @@ export const withConfigDefaults = (
     };
   }
 };
+
+export type Entity = Record<string, VuuRowDataItemType>;
+// export type EntityKey<T extends Entity = Entity> = Extract<keyof T, "string">;
+
+export const dataSourceRowToEntity = <T extends Entity = Entity>(
+  row: DataSourceRow,
+  columnMap: ColumnMap,
+) =>
+  Object.entries(columnMap).reduce(
+    (entity, [name, index]) => ({
+      ...entity,
+      [name]: row[index],
+    }),
+    {} as T,
+  );

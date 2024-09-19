@@ -1,9 +1,13 @@
 export type Instrument = {
+  bbg: string;
   currency: string;
   description: string;
   exchange: string;
+  isin: string;
   lotSize: number;
   ric: string;
+  price: number;
+  date: number;
 };
 
 const isObject = (o: unknown) => typeof o === "object" && o !== null;
@@ -21,9 +25,13 @@ export const isValidInstrument = (o: unknown): o is Instrument => {
 };
 
 export const EmptyInstrument: Instrument = {
+  bbg: "",
   currency: "",
-  exchange: "",
   description: "",
+  exchange: "",
+  isin: "",
   lotSize: -1,
   ric: "",
+  price: -1,
+  date: -1,
 };

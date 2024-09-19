@@ -28,14 +28,14 @@ export interface SettingsProps {
   settings: Settings;
   onSettingChanged: (
     propertyName: string,
-    value: string | number | boolean
+    value: string | number | boolean,
   ) => void;
 }
 
 export type Option<T> = { label: string; value: T };
 
 export const isOption = (
-  value: Option<number | string> | number | string
+  value: Option<number | string> | number | string,
 ): value is Option<number | string> =>
   typeof value === "object" && "label" in value && "label" in value;
 
@@ -65,7 +65,7 @@ export type SettingsProperty =
   | BooleanProperty;
 
 export const isBooleanProperty = (
-  property: SettingsProperty
+  property: SettingsProperty,
 ): property is BooleanProperty => property.type === "boolean";
 
 export const isStringOrNumber = (value: unknown): value is string | number =>
@@ -102,7 +102,7 @@ export function FormControl({
     const checked =
       typeof currentValue === "boolean"
         ? currentValue
-        : property.defaultValue ?? false;
+        : (property.defaultValue ?? false);
 
     return <Switch checked={checked} onChange={changeHandler}></Switch>;
   }
@@ -145,17 +145,13 @@ export function FormControl({
     }
   } else {
     const valid = isValidInput(currentValue, property.type);
-    const content = getTooltipContent(property.type, valid);
-    const TooltipProps = {
-      tooltipContent: content,
-    };
+    const errorMessage = getTooltipContent(property.type, valid);
     return (
       <VuuInput
+        errorMessage={errorMessage}
         key={property.name}
         onCommit={inputHandler}
         onChange={(e) => setValue((e.target as HTMLInputElement).value)}
-        validationStatus={valid}
-        TooltipProps={TooltipProps}
         value={value as string}
       />
     );
@@ -218,7 +214,7 @@ export const SettingsForm = ({
       const { checked, value } = event.target as HTMLInputElement;
       onSettingChanged(fieldName, checked ?? value);
     },
-    [onSettingChanged]
+    [onSettingChanged],
   );
 
   // Change handler for selection form controls
@@ -227,7 +223,7 @@ export const SettingsForm = ({
       const fieldName = getFieldNameFromEventTarget(event);
       onSettingChanged(fieldName, selected);
     },
-    [onSettingChanged]
+    [onSettingChanged],
   );
 
   // Change Handler for input boxes
@@ -242,7 +238,7 @@ export const SettingsForm = ({
         onSettingChanged(fieldName, value);
       }
     },
-    [onSettingChanged]
+    [onSettingChanged],
   );
   return (
     <div {...htmlAttributes}>

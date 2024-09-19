@@ -47,10 +47,33 @@ export const getElementDataIndex = (el: HTMLElement | null) => {
   return -1;
 };
 
-export const queryClosest = <T extends HTMLElement = HTMLElement>(
+export function queryClosest<T extends HTMLElement = HTMLElement>(
   el: HTMLElement | EventTarget | null,
   cssQueryString: string,
-) => (el === null ? null : ((el as HTMLElement).closest(cssQueryString) as T));
+  throwIfNotFound?: false,
+): T | null;
+export function queryClosest<T extends HTMLElement = HTMLElement>(
+  el: HTMLElement | EventTarget | null,
+  cssQueryString: string,
+  throwIfNotFound: true,
+): T;
+export function queryClosest<T extends HTMLElement = HTMLElement>(
+  el: HTMLElement | EventTarget | null,
+  cssQueryString: string,
+  throwIfNotFound?: boolean,
+) {
+  if (el) {
+    const result = (el as HTMLElement).closest(cssQueryString) as T;
+    if (result) {
+      return result;
+    }
+  }
+  if (throwIfNotFound) {
+    throw Error(`no element found to match '${cssQueryString}'`);
+  } else {
+    return null;
+  }
+}
 
 export const getClosest = (el: HTMLElement, dataProperty: string) =>
   queryClosest(el, `[data-${dataProperty}]`);

@@ -1,6 +1,7 @@
 export * as AppPatterns from "./AppPatterns";
 export * as Apps from "./Apps";
 export * as TableExtras from "./TableExtras";
+export * as DataEditing from "./DataEditing";
 export * as DataTable from "./DataTable";
 export * as Filters from "./Filters";
 export * as html from "./html";
