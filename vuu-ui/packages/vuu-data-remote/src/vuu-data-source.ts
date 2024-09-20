@@ -470,7 +470,10 @@ export class VuuDataSource
     }
   }
 
-  applyConfig(config: DataSourceConfig): DataSourceConfigChanges | undefined {
+  applyConfig(
+    config: DataSourceConfig,
+    preserveExistingConfigAttributes = false,
+  ): DataSourceConfigChanges | undefined {
     const { noChanges, ...otherChanges } = isConfigChanged(
       this.#config,
       config,
@@ -488,7 +491,14 @@ export class VuuDataSource
                 },
               }
             : config;
-        this.#config = withConfigDefaults(newConfig);
+        if (preserveExistingConfigAttributes) {
+          this.#config = {
+            ...this.#config,
+            ...config,
+          };
+        } else {
+          this.#config = withConfigDefaults(newConfig);
+        }
         return otherChanges;
       }
     }

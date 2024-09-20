@@ -49,7 +49,7 @@ export const useSessionDataSource = ({
         // this won't do anything if dataSource config already matches this
         // This is only really used when injecting a dataSource into session
         // state in Showcase examples
-        ds.applyConfig(dataSourceConfigFromState);
+        ds.applyConfig(dataSourceConfigFromState, true);
       }
 
       if (ds.range.from > 0) {

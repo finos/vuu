@@ -1,4 +1,4 @@
-import { LocalDataSourceProvider } from "@finos/vuu-data-test/src/local-datasource-provider/LocalDatasourceProvider";
+import { LocalDataSourceProvider } from "@finos/vuu-data-test";
 import {
   FeatureAndLayoutProvider,
   LeftNav,
