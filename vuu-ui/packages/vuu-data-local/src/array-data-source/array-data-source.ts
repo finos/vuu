@@ -428,7 +428,10 @@ export class ArrayDataSource
     }
   }
 
-  applyConfig(config: DataSourceConfig): DataSourceConfigChanges | undefined {
+  applyConfig(
+    config: DataSourceConfig,
+    preserveExistingConfigAttributes = false,
+  ): DataSourceConfigChanges | undefined {
     const { noChanges, ...otherChanges } = isConfigChanged(
       this._config,
       config,
@@ -447,7 +450,14 @@ export class ArrayDataSource
                 },
               }
             : config;
-        this._config = withConfigDefaults(newConfig);
+        if (preserveExistingConfigAttributes) {
+          this._config = {
+            ...this._config,
+            ...config,
+          };
+        } else {
+          this._config = withConfigDefaults(newConfig);
+        }
         return otherChanges;
       }
     }

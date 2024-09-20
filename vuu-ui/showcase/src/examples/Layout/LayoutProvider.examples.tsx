@@ -14,7 +14,7 @@ import { useCallback, useState } from "react";
 import VuuFilterTableFeature from "feature-vuu-filter-table";
 
 import { schemas } from "@finos/vuu-data-test";
-import { LocalDataSourceProvider } from "@finos/vuu-data-test/src/local-datasource-provider/LocalDatasourceProvider";
+import { LocalDataSourceProvider } from "@finos/vuu-data-test";
 
 registerComponent("FilterTable", VuuFilterTableFeature, "view");
 
@@ -181,42 +181,22 @@ export const SimpleStaticLayoutJson = () => (
 
 SimpleStaticLayoutJson.displaySequence = displaySequence++;
 
+// prettier-ignore
 export const SimpleStaticLayoutJsonWithViews = () => (
   <LayoutProviderTemplate
     workspaceJSON={{
-      type: "Flexbox",
-      props: {
-        style: { flexDirection: "column", height: "100%" },
-      },
+      type: "Flexbox", props: { style: { flexDirection: "column", height: "100%" } },
       children: [
         {
-          type: "View",
-          props: {
-            header: TransformStreamDefaultController,
-            style: { flex: 1 },
-            title: "Blue Hawaii",
-          },
+          type: "View", props: { header: true, style: { flex: 1 }, title: "Blue Hawaii" },
           children: [
-            {
-              type: "div",
-              props: {
-                style: { background: "blue", margin: 4 },
-              },
-            },
+            { type: "div", props: { style: { background: "blue", margin: 4 } } },
           ],
         },
         {
-          type: "View",
-          props: {
-            header: TransformStreamDefaultController,
-            style: { flex: 1 },
-            title: "Yellow Submarine",
-          },
+          type: "View", props: { header: true, style: { flex: 1 }, title: "Yellow Submarine" },
           children: [
-            {
-              type: "div",
-              props: { style: { background: "yellow", margin: 4 } },
-            },
+            { type: "div", props: { style: { background: "yellow", margin: 4 } } },
           ],
         },
       ],
@@ -226,52 +206,25 @@ export const SimpleStaticLayoutJsonWithViews = () => (
 
 SimpleStaticLayoutJsonWithViews.displaySequence = displaySequence++;
 
+// prettier-ignore
 export const LayoutJsonWithPreloadedFeatures = () => (
   <LocalDataSourceProvider modules={["BASKET"]}>
     <LayoutProviderTemplate
       workspaceJSON={{
-        type: "Flexbox",
-        props: {
-          style: { flexDirection: "column", height: "100%" },
-        },
+        type: "Flexbox", props: { style: { flexDirection: "column", height: "100%" } },
         children: [
           {
-            type: "View",
-            props: {
-              header: TransformStreamDefaultController,
-              resizeable: true,
-              style: { flex: 1 },
-              title: "Basket",
-            },
+            type: "View", props: { header: true, resizeable: true, style: { flex: 1 }, title: "Basket" },
             children: [
-              {
-                type: "FilterTable",
-                props: {
-                  style: { margin: 4 },
-                  tableSchema: schemas.basket,
-                },
-              },
+              { type: "FilterTable", props: { style: { margin: 4 }, tableSchema: schemas.basket } },
             ],
           },
-          {
-            type: "View",
-            props: {
-              header: TransformStreamDefaultController,
-              resizeable: true,
-              style: { flex: 1 },
-              title: "Basket Constituents",
-            },
+          { type: "View", props: { header: true, resizeable: true, style: { flex: 1 }, title: "Basket Constituents" },
             children: [
-              {
-                type: "FilterTable",
-                props: {
-                  style: { margin: 4 },
-                  tableSchema: schemas.basketConstituent,
-                },
-              },
-            ],
-          },
-        ],
+              { type: "FilterTable", props: { style: { margin: 4 }, tableSchema: schemas.basketConstituent } },
+            ]
+          }
+        ]
       }}
     />
   </LocalDataSourceProvider>
@@ -279,71 +232,99 @@ export const LayoutJsonWithPreloadedFeatures = () => (
 
 LayoutJsonWithPreloadedFeatures.displaySequence = displaySequence++;
 
+// prettier-ignore
 export const LayoutJsonWithPreloadedFeaturesVisualLinks = () => (
   <LocalDataSourceProvider modules={["BASKET"]}>
     <LayoutProviderTemplate
-      workspaceJSON={{
-        type: "Flexbox",
-        props: {
-          style: { flexDirection: "column", height: "100%" },
-        },
-        children: [
-          {
-            id: "view-basket",
-            type: "View",
-            props: {
-              header: TransformStreamDefaultController,
-              resizeable: true,
-              style: { flex: 1 },
-              title: "Basket",
-            },
+      workspaceJSON={
+        { type: "Flexbox", props: { style: { flexDirection: "column", height: "100%" } },
+          children: [
+           { type: "View", id: "view-basket",  props: { header: true, resizeable: true, style: { flex: 1 }, title: "Basket" },
             children: [
-              {
-                type: "FilterTable",
-                props: {
-                  style: { margin: 4 },
-                  tableSchema: schemas.basket,
-                },
-              },
-            ],
+              { type: "FilterTable", props: { style: { margin: 4 }, tableSchema: schemas.basket } }
+            ]
           },
-          {
-            id: "view-basket-constituent",
-            type: "View",
-            props: {
-              header: TransformStreamDefaultController,
-              resizeable: true,
-              style: { flex: 1 },
-              title: "Basket Constituents",
-            },
+          { type: "View", id: "view-basket-constituent", props: { header: true, resizeable: true, style: { flex: 1 }, title: "Basket Constituents" },
             children: [
-              {
-                type: "FilterTable",
-                props: {
-                  style: { margin: 4 },
-                  tableSchema: schemas.basketConstituent,
-                },
-              },
+              { type: "FilterTable", props: { style: { margin: 4 }, tableSchema: schemas.basketConstituent } }
             ],
             state: {
               "datasource-config": {
-                visualLink: {
-                  label: "Basket",
-                  link: {
-                    fromColumn: "basketId",
-                    toColumn: "id",
-                    toTable: "basket",
-                  },
+                visualLink: { 
+                  label: "Basket", 
+                  link: { fromColumn: "basketId", toColumn: "id", toTable: "basket" },
                   parentClientVpId: "view-basket",
                   parentVpId: "view-basket",
-                },
-              },
-            },
-          },
+                }
+              }
+            }
+          }
         ],
       }}
     />
   </LocalDataSourceProvider>
 );
-
 LayoutJsonWithPreloadedFeaturesVisualLinks.displaySequence = displaySequence++;
+
+// prettier-ignore
+export const LayoutJsonWithTabbedFeaturesVisualLinks = () => (
+  <LocalDataSourceProvider modules={["BASKET"]}>
+    <LayoutProviderTemplate
+      workspaceJSON={
+        { type: "Flexbox", props: { style: { flexDirection: "column", height: "100%" } },
+          children: [
+             {type: "Stack", props: {active: 1, resizeable: true, style: { flex: 1 }},
+              children: [
+                { type: "View", id: "view-basket-1",  props: { title: "Basket 1" },
+                 children: [
+                   { type: "FilterTable", props: { style: { margin: 4 }, tableSchema: schemas.basket } }
+                 ]
+                },
+                { type: "View", id: "view-basket-2",  props: { title: "Basket 2" },
+                 children: [
+                   { type: "FilterTable", props: { style: { margin: 4 }, tableSchema: schemas.basket } }
+                 ]
+                } 
+              ]
+             },
+             {type: "Stack", props: {active: 1, resizeable: true, style: { flex: 1 }},
+              children:[
+                { type: "View", id: "view-basket-constituent", props: {title: "Basket Constituents" },
+                children: [
+                  { type: "FilterTable", props: { style: { margin: 4 }, tableSchema: schemas.basketConstituent } }
+                ],
+                state: {
+                 "datasource-config": {
+                   visualLink: { 
+                     label: "Basket Constituents 1", 
+                     link: { fromColumn: "basketId", toColumn: "id", toTable: "basket" },
+                     parentClientVpId: "view-basket-1",
+                     parentVpId: "view-basket-1",
+                   }
+                 }
+                 }
+                },
+                { type: "View", id: "view-basket-constituent", props: {title: "Basket Constituents" },
+                children: [
+                  { type: "FilterTable", props: { style: { margin: 4 }, tableSchema: schemas.basketConstituent } }
+                ],
+                state: {
+                 "datasource-config": {
+                   visualLink: { 
+                     label: "Basket Constituents 2", 
+                     link: { fromColumn: "basketId", toColumn: "id", toTable: "basket" },
+                     parentClientVpId: "view-basket-2",
+                     parentVpId: "view-basket-2",
+                   }
+                 }
+                 }
+                }
+ 
+             ]
+            }
+          ],
+      }}
+    />
+  </LocalDataSourceProvider>
+);
+LayoutJsonWithTabbedFeaturesVisualLinks.displaySequence = displaySequence++;

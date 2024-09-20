@@ -526,6 +526,11 @@ export interface DataSource
    */
   applyConfig: (
     config: DataSourceConfig,
+    /**
+     * If new config is missing attributes and these attributes are present on
+     * existing config, shoule the existing attributes be preserved ?
+     */
+    preserveExistingConfigAttributes?: boolean,
   ) => DataSourceConfigChanges | undefined;
   closeTreeNode: (key: string, cascade?: boolean) => void;
   columns: string[];

@@ -79,7 +79,7 @@
 
 .vuuTable-contentContainer {
   background: var(--table-background);
-  height: calc(var(--table-height) - var(--horizontal-scrollbar-height));
+  height: calc(100% - var(--horizontal-scrollbar-height));
   position: relative;
   overflow: auto;
   overscroll-behavior: none;
