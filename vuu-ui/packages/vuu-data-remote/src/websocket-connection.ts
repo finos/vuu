@@ -37,7 +37,17 @@ const connectionAttemptStatus: ConnectionTracking = {};
 const setWebsocket = Symbol("setWebsocket");
 const connectionCallback = Symbol("connectionCallback");
 
-export async function connect(
+const WEBSOCKET_TIMEOUT = 10000;
+
+/**
+ * API call to establish connection with a WebSocket.
+ * Returns a promise for a WebSocketConnection
+ * A Connection has the following properties
+ *  - connection-status
+ *  - send (message)
+ *  - requiresLogin
+ */
+export async function createWebSocketConnection(
   connectionString: string,
   protocol: WebSocketProtocol,
   callback: ConnectionCallback,
@@ -70,6 +80,20 @@ async function reconnect(_: WebsocketConnection) {
   //throw Error("connection broken");
 }
 
+/**
+ * First we create the low level WebSocket, then we create a WebSocketConnection
+ * instance which manages messaging over that WebSocket. If the network connection
+ * should be broken and we successfully reconnect, a new WebSocket will be created
+ * but the WebSocketConnection will persist - the new WebSocket will be assigned as
+ * a property and its onmessage, onclose etc event handlers will be assigned and
+ * managed by the WebSocketConnection.
+ *
+ * @param url
+ * @param protocol
+ * @param callback
+ * @param connection
+ * @returns
+ */
 async function makeConnection(
   url: string,
   protocol: WebSocketProtocol,
@@ -88,14 +112,20 @@ async function makeConnection(
   try {
     callback({ type: "connection-status", status: "connecting" });
     const reconnecting = typeof connection !== "undefined";
+
     const ws = await createWebsocket(url, protocol);
 
+    // We now have an open websocket.
     console.info(
       "%c⚡ %cconnected",
       "font-size: 24px;color: green;font-weight: bold;",
       "color:green; font-size: 14px;",
     );
 
+    // Our WebSocketConnection instance is preserved across network interruptions.
+    // It is stateful and carries event listener subscriptions. When the low-level
+    // WebSocket has been re-created, we update the WebSocketConnection instance
+    // with the new WebSocket.
     if (connection !== undefined) {
       connection[setWebsocket](ws);
     }
@@ -109,9 +139,12 @@ async function makeConnection(
     callback({ type: "connection-status", status });
     websocketConnection.status = status;
 
+    //TODO DO NOT DO THIS UNTIL WE KNOW the first message has been received
     // reset the retry attempts for subsequent disconnections
     trackedStatus.remaining = trackedStatus.allowed;
 
+    //TODO we don't return it here, we return a Promise and only resolve it when
+    // we get the first message back ???
     return websocketConnection as Connection;
   } catch (err) {
     const retry = --trackedStatus.remaining > 0;
@@ -148,23 +181,39 @@ const makeConnectionIn = (
     }, delay);
   });
 
+/**
+ * Create a new Websocket, returning a promise for the websocket.
+ *
+ * The promise is resolved only when the websocket is open.
+ * The promise is rejected if opening the WebSocket errors.
+ *
+ *
+ * @param websocketUrl
+ * @param protocol
+ * @returns
+ */
 const createWebsocket = (
   websocketUrl: string,
   protocol: WebSocketProtocol,
 ): Promise<WebSocket> =>
   new Promise((resolve, reject) => {
-    //TODO add timeout
     if (infoEnabled && protocol !== undefined) {
       info(`WebSocket Protocol ${protocol?.toString()}`);
     }
+    const timer = setTimeout(() => {
+      reject(Error("Fail to open WebSocket connection, timed out"));
+    }, WEBSOCKET_TIMEOUT);
 
     const ws = new WebSocket(websocketUrl, protocol);
-    // TODO do not resolve until we get first message acked. When operating
-    // via a proxy we may get a successful initial open, followed by an
-    // unexpected close, if the proxy fails to open a socket to the remote
-    // endpoint.
-    ws.onopen = () => resolve(ws);
-    ws.onerror = (evt) => reject(evt);
+
+    ws.onopen = () => {
+      clearTimeout(timer);
+      resolve(ws);
+    };
+    ws.onerror = (evt) => {
+      clearTimeout(timer);
+      reject(evt);
+    };
   });
 
 const closeWarn = () => {

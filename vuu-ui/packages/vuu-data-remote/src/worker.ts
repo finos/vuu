@@ -14,7 +14,7 @@ import {
   logger,
 } from "@finos/vuu-utils";
 import { ServerProxy } from "./server-proxy/server-proxy";
-import { connect as connectWebsocket } from "./websocket-connection";
+import { createWebSocketConnection } from "./websocket-connection";
 
 let server: ServerProxy;
 
@@ -29,7 +29,7 @@ async function connectToServer(
   retryLimitDisconnect?: number,
   retryLimitStartup?: number,
 ) {
-  const connection = await connectWebsocket(
+  const connection = await createWebSocketConnection(
     url,
     protocol,
     // if this was called during connect, we would get a ReferenceError, but it will

@@ -649,6 +649,7 @@ export declare type MenuRpcAction =
   | ShowToastAction;
 
 export type ConnectionStatus =
+  | "closed"
   | "connecting"
   | "connection-open-awaiting-session"
   | "connected"
