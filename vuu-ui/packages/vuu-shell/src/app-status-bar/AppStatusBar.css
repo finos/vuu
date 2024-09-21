@@ -2,10 +2,10 @@
   align-items: center;
   background-color: var(--salt-container-secondary-background);
   display: flex;
-  height: 24px;
+  height: 36px;
   justify-content: flex-end;
+  padding-top: var(--salt-spacing-200);
 }
-
 .vuuAppStatusBar-hidden {
   display: none;
 }

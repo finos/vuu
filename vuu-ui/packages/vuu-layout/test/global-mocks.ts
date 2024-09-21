@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { vi } from "vitest";
 
+const WorkerMock = vi.fn(() => ({}));
 const BlobMock = vi.fn(() => ({}));
 const URLMock = {
   createObjectURL: () => ({}),
 };
+vi.stubGlobal("Worker", WorkerMock);
 vi.stubGlobal("Blob", BlobMock);
 vi.stubGlobal("URL", URLMock);
 vi.stubGlobal("loggingSettings", { loggingLevel: "error" });

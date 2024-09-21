@@ -22,7 +22,7 @@ import {
 } from "@finos/vuu-utils";
 import { useMemo } from "react";
 import { getDefaultColumnConfig } from "./columnMetaData";
-import { useRpcResponseHandler } from "./useRpcResponseHandler";
+// import { useRpcResponseHandler } from "./useRpcResponseHandler";
 
 import "./App.css";
 
@@ -67,7 +67,7 @@ const dynamicFeatures = Object.values(features);
 
 export const App = ({ user }: { user: VuuUser }) => {
   // this is causing full app re-render when tables are loaded
-  const { handleRpcResponse } = useRpcResponseHandler();
+  // const { handleRpcResponse } = useRpcResponseHandler();
 
   const dragSource = useMemo(
     () => ({
@@ -90,9 +90,7 @@ export const App = ({ user }: { user: VuuUser }) => {
   return (
     <PersistenceProvider persistenceManager={localPersistenceManager}>
       <DragDropProvider dragSources={dragSource}>
-        <ShellContextProvider
-          value={{ getDefaultColumnConfig, handleRpcResponse }}
-        >
+        <ShellContextProvider value={{ getDefaultColumnConfig }}>
           <VuuDataSourceProvider>
             <FeatureAndLayoutProvider dynamicFeatures={dynamicFeatures}>
               <Shell

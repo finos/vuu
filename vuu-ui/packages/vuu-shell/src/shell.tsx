@@ -1,11 +1,11 @@
-import { connectToServer } from "@finos/vuu-data-remote";
+import { ConnectionManager } from "@finos/vuu-data-remote";
 import type { LayoutChangeHandler } from "@finos/vuu-layout";
 import { LayoutProvider, StackLayout } from "@finos/vuu-layout";
 import {
   ContextMenuProvider,
   DialogProvider,
   NotificationsProvider,
-  useNotifications
+  useNotifications,
 } from "@finos/vuu-popups";
 import { VuuUser, logger, registerComponent } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
@@ -17,7 +17,7 @@ import {
   IPersistenceManager,
   LocalPersistenceManager,
   PersistenceProvider,
-  usePersistenceManager
+  usePersistenceManager,
 } from "./persistence-manager";
 import { ShellLayoutProps, useShellLayout } from "./shell-layout-templates";
 import { SettingsSchema, UserSettingsPanel } from "./user-settings";
@@ -25,7 +25,7 @@ import {
   WorkspaceProps,
   WorkspaceProvider,
   useWorkspace,
-  useWorkspaceContextMenuItems
+  useWorkspaceContextMenuItems,
 } from "./workspace-management";
 
 import shellCss from "./shell.css";
@@ -39,7 +39,7 @@ if (process.env.NODE_ENV === "production") {
   // to avoif tree shaking the Stack away. Causes a runtime issue in dev.
   if (typeof StackLayout !== "function") {
     console.warn(
-      "StackLayout module not loaded, will be unable to deserialize from layout JSON"
+      "StackLayout module not loaded, will be unable to deserialize from layout JSON",
     );
   }
 }
@@ -65,14 +65,14 @@ const getAppHeader = (shellLayoutProps?: ShellLayoutProps) =>
   shellLayoutProps?.appHeader ?? defaultAppHeader;
 
 const defaultHTMLAttributes: HTMLAttributes<HTMLDivElement> = {
-  className: "vuuShell"
+  className: "vuuShell",
 };
 
 const getHTMLAttributes = (props?: ShellLayoutProps) => {
   if (props?.htmlAttributes) {
     return {
       ...defaultHTMLAttributes,
-      ...props.htmlAttributes
+      ...props.htmlAttributes,
     };
   } else {
     return defaultHTMLAttributes;
@@ -84,7 +84,7 @@ const VuuApplication = ({
   children,
   // loginUrl, // need to make this available to app header
   serverUrl,
-  user
+  user,
 }: Omit<
   ShellProps,
   "ContentLayoutProps" | "loginUrl" | "userSettingsSchema" | "workspaceProps"
@@ -93,7 +93,7 @@ const VuuApplication = ({
   useComponentCssInjection({
     testId: "vuu-shell",
     css: shellCss,
-    window: targetWindow
+    window: targetWindow,
   });
 
   const notify = useNotifications();
@@ -109,21 +109,21 @@ const VuuApplication = ({
         error?.("Failed to save layout");
       }
     },
-    [saveApplicationLayout]
+    [saveApplicationLayout],
   );
 
   useMemo(async () => {
     if (serverUrl && user.token) {
-      const connectionStatus = await connectToServer({
-        authToken: user.token,
+      const connectionResult = await ConnectionManager.connect({
+        token: user.token,
         url: serverUrl,
-        username: user.username
+        username: user.username,
       });
-      if (connectionStatus === "rejected") {
+      if (connectionResult === "rejected") {
         notify({
           type: "error",
           body: "Unable to connect to VUU Server",
-          header: "Error"
+          header: "Error",
         });
       }
     } else {
@@ -131,7 +131,7 @@ const VuuApplication = ({
         `Shell: serverUrl: '${serverUrl}', token: '${Array(user.token.length)
           .fill("#")
           .join("")}'  
-        `
+        `,
       );
     }
   }, [notify, serverUrl, user.token, user.username]);
@@ -141,7 +141,7 @@ const VuuApplication = ({
   const initialLayout = useShellLayout({
     ...ShellLayoutProps,
     appHeader: getAppHeader(ShellLayoutProps),
-    htmlAttributes: getHTMLAttributes(ShellLayoutProps)
+    htmlAttributes: getHTMLAttributes(ShellLayoutProps),
   });
 
   return isLayoutLoading ? null : (
@@ -178,7 +178,7 @@ export const Shell = ({
       return undefined;
     }
     console.log(
-      `No Persistence Manager, configuration data will be persisted to Local Storage, key: 'vuu/${user.username}'`
+      `No Persistence Manager, configuration data will be persisted to Local Storage, key: 'vuu/${user.username}'`,
     );
     return new LocalPersistenceManager(`vuu/${user.username}`);
   }, [persistenceManager, user.username]);

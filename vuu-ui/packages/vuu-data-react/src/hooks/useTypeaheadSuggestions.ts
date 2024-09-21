@@ -1,4 +1,4 @@
-import { makeRpcCall } from "@finos/vuu-data-remote";
+import { ConnectionManager } from "@finos/vuu-data-remote";
 import { SuggestionFetcher, TableSchemaTable } from "@finos/vuu-data-types";
 import {
   VuuRpcServiceRequest,
@@ -34,5 +34,5 @@ export const useTypeaheadSuggestions = () =>
             method: "getUniqueFieldValuesStartingWith",
             params,
           };
-    return makeRpcCall<string[]>(rpcMessage);
+    return ConnectionManager.makeRpcCall<string[]>(rpcMessage);
   }, []);

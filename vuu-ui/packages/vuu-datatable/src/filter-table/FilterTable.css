@@ -1,9 +1,9 @@
 .vuuFilterTable {
-  --vuuFilterBar-flex: 0 0 33px;
+  /* --vuuFilterBar-flex: 0 0 33px;
   --vuuMeasuredContainer-flex: 1 1 auto;
   --vuuMeasuredContainer-height: auto;
   display: flex;
-  flex-direction: column;
+  flex-direction: column; */
 
   .vuuFilterBar {
     flex: 0 0 auto;

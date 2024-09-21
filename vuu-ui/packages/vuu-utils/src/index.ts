@@ -37,6 +37,7 @@ export * from "./nanoid";
 export * from "./react-utils";
 export * from "./round-decimal";
 export * from "./perf-utils";
+export * from "./promise-utils";
 export * from "./protocol-message-utils";
 export * from "./range-utils";
 export * from "./row-utils";

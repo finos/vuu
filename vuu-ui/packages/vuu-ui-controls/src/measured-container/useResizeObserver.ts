@@ -31,7 +31,7 @@ const getTargetSize = (
     contentHeight: number;
     contentWidth: number;
   },
-  dimension: measuredDimension
+  dimension: measuredDimension,
 ): number => {
   switch (dimension) {
     case "height":
@@ -70,7 +70,7 @@ const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
         const newSize = getTargetSize(
           target as HTMLElement,
           { height, width, contentHeight, contentWidth },
-          dimension as measuredDimension
+          dimension as measuredDimension,
         );
 
         if (newSize !== size) {
@@ -92,7 +92,7 @@ export function useResizeObserver(
   ref: RefObject<Element | HTMLElement | null>,
   dimensions: readonly string[],
   onResize: ResizeHandler,
-  reportInitialSize = false
+  reportInitialSize = false,
 ) {
   const dimensionsRef = useRef(dimensions);
 
@@ -112,11 +112,11 @@ export function useResizeObserver(
             contentHeight,
             contentWidth,
           },
-          dim as measuredDimension
+          dim as measuredDimension,
         );
         return map;
       },
-      {}
+      {},
     );
   }, []);
 
@@ -146,7 +146,7 @@ export function useResizeObserver(
       } else {
         console.log(
           `%cuseResizeObserver an target expected to be under observation wa snot found. This warrants investigation`,
-          "font-weight:bold; color:red;"
+          "font-weight:bold; color:red;",
         );
       }
     }
@@ -158,7 +158,7 @@ export function useResizeObserver(
           `useResizeObserver attemping to observe same element twice`,
           {
             target,
-          }
+          },
         );
         // throw Error(
         //   "useResizeObserver attemping to observe same element twice"

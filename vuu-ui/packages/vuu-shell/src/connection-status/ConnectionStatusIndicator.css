@@ -1,35 +1,85 @@
-.vuuConnectionStatusIndicator {
-  align-items: center;
-  display: flex;
-  gap: var(--salt-spacing-400);
-  height: 24px;
-  padding: 0 var(--salt-spacing-200);
-}
-
-.vuuConnectionStatusIndicator-text {
-  text-transform: capitalize;
-}
-
-/* .vuuDisconnectedStatus::after {
-  --vuu-icon-svg: var(--svg-disconnected-status);
-  background-color: red;
-  transform: scale(1);
-  animation: infinite pulse 0.5s;
-}
-
-@keyframes pulse {
+@keyframes squeeze {
   0% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7);
+    transform: scale(1);
   }
 
-  70% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  50% {
+    transform: scale(0.85);
   }
 
   100% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    transform: scale(1);
   }
-} */
+}
+
+.ConnectionStatusIndicator {
+  --ball-size-large: 20px;
+  --ball-size-small: 14px;
+  --ballbox-padding: 4px;
+
+  height: var(--ballbox-height);
+  padding: 0 4px;
+  position: relative;
+
+  &.expanded {
+    .Ball.large {
+      animation-duration: 0.8s;
+      animation-name: squeeze;
+      transform-origin: center;
+    }
+    .Ball.small {
+      transform: translateX(calc(var(--ball-size-large) * var(--i)));
+    }
+  }
+}
+
+.ConnectionStatusIndicator-inactive {
+  --ball-color: lightgray;
+}
+
+.ConnectionStatusIndicator-closed {
+  --ball-color: lightgray;
+  .Ball.large {
+    transition: background-color 1s linear;
+  }
+}
+
+.ConnectionStatusIndicator-connected {
+  --ball-color: green;
+}
+
+.ConnectionStatusIndicator-connecting {
+  --ball-color: red;
+}
+.ConnectionStatusIndicator-disconnected {
+  --ball-color: red;
+}
+
+.Ball.large {
+  background-color: var(--ball-color);
+  border-radius: calc(var(--ball-size-large) / 2);
+  height: var(--ball-size-large);
+  right: var(--ballbox-padding);
+  top: calc(var(--ballbox-height) / 2 - (var(--ball-size-large) / 2));
+  position: absolute;
+  transition: transform 0.8s linear;
+
+  width: var(--ball-size-large);
+  z-index: 1;
+}
+
+.Ball.small {
+  background-color: var(--ball-color);
+  border-radius: calc(var(--ball-size-small) / 2);
+  height: var(--ball-size-small);
+  position: absolute;
+  right: calc(
+    var(--ballbox-padding) + (var(--ball-size-large) - var(--ball-size-small)) /
+      2
+  );
+  top: calc(var(--ballbox-height) / 2 - (var(--ball-size-small) / 2));
+  width: var(--ball-size-small);
+
+  transition: transform 0.4s ease-out;
+  transition-delay: 0.1s;
+}

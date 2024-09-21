@@ -1,6 +1,6 @@
 import {
   authenticate as vuuAuthenticate,
-  connectToServer,
+  ConnectionManager,
 } from "@finos/vuu-data-remote";
 import { useEffect, useState } from "react";
 
@@ -9,12 +9,16 @@ export const useAutoLoginToVuuServer = (autoLogin = true) => {
   useEffect(() => {
     const connect = async () => {
       try {
-        const authToken = (await vuuAuthenticate(
+        const token = (await vuuAuthenticate(
           "steve",
           "xyz",
-          "/api/authn"
+          "/api/authn",
         )) as string;
-        connectToServer({ url: "wss://localhost:8090/websocket", authToken });
+        ConnectionManager.connect({
+          url: "wss://localhost:8090/websocket",
+          token,
+          username: "steve",
+        });
       } catch (e: unknown) {
         if (e instanceof Error) {
           console.error(e.message);

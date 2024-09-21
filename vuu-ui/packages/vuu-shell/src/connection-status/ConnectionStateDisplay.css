@@ -1,0 +1,32 @@
+.vuuConnectionStateDisplay {
+  --ballbox-height: 40px;
+  --message-height: 16px;
+  --row-gap: 3px;
+
+  align-items: center;
+  column-gap: var(--salt-spacing-200);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: var(--ballbox-height) var(--message-height);
+  height: calc(var(--ballbox-height) + var(--message-height) + var(--row-gap));
+  padding: 0 var(--salt-spacing-200);
+  row-gap: var(--row-gap);
+
+  .vuuTrafficLightControl {
+    grid-area: 1/2/2/3;
+    padding-left: 20px;
+  }
+
+  .vuuConnectionRetryCountdown {
+    color: var(--salt-content-secondary-foreground);
+    grid-area: 2/2/3/3;
+    font-size: 11px;
+    text-align: end;
+    width: 100%;
+  }
+}
+
+.vuuConnectionStateDisplay-text {
+  grid-area: 1/1/2/2;
+  text-transform: capitalize;
+}

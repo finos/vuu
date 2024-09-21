@@ -9,6 +9,7 @@ import {
   DataSourceVisualLinkCreatedMessage,
   OptimizeStrategy,
   Selection,
+  ServerAPI,
   SubscribeCallback,
   SubscribeProps,
   TableSchema,
@@ -50,7 +51,7 @@ import {
   vuuDeleteRowRequest,
   vuuEditCellRequest,
 } from "@finos/vuu-utils";
-import { getServerAPI, ServerAPI } from "./connection-manager";
+import ConnectionManager from "./ConnectionManager";
 import { isDataSourceConfigMessage } from "./data-source";
 
 import { MenuRpcResponse } from "@finos/vuu-data-types";
@@ -122,7 +123,8 @@ export class VuuDataSource
     this.#pendingVisualLink = visualLink;
 
     this.#title = title;
-    this.rangeRequest = this.throttleRangeRequest;
+    // this.rangeRequest = this.throttleRangeRequest;
+    this.rangeRequest = this.rawRangeRequest;
   }
 
   async subscribe(
@@ -173,10 +175,11 @@ export class VuuDataSource
     this.#status = "subscribing";
     this.viewport = viewport;
 
-    this.server = await getServerAPI();
+    this.server = await ConnectionManager.serverAPI;
 
     const { bufferSize } = this;
 
+    // TODO make this async and await response here
     this.server?.subscribe(
       {
         ...this.#config,
@@ -219,6 +222,9 @@ export class VuuDataSource
       ) {
         this.#size = message.size;
         this.emit("resize", message.size);
+      } else if (message.type === "viewport-clear") {
+        this.#size = 0;
+        this.emit("resize", 0);
       }
       // This is used to remove any progress indication from the UI. We wait for actual data rather than
       // just the CHANGE_VP_SUCCESS ack as there is often a delay between receiving the ack and the data.
@@ -272,10 +278,13 @@ export class VuuDataSource
     }
   }
 
-  resume() {
+  resume(callback?: SubscribeCallback) {
     const isDisabled = this.#status.startsWith("disabl");
     const isSuspended = this.#status === "suspended";
     info?.(`resume #${this.viewport}, current status ${this.#status}`);
+    if (callback) {
+      this.clientCallback = callback;
+    }
     if (this.viewport) {
       if (isDisabled) {
         this.enable();
@@ -584,23 +593,13 @@ export class VuuDataSource
 
   set groupBy(groupBy: VuuGroupBy) {
     if (itemsOrOrderChanged(this.groupBy, groupBy)) {
-      const wasGrouped = this.#groupBy.length > 0;
+      const wasGrouped = this.groupBy.length > 0;
 
       this.config = {
         ...this.#config,
         groupBy,
       };
-      // if (this.viewport) {
-      //   const message = {
-      //     viewport: this.viewport,
-      //     type: "groupBy",
-      //     groupBy: this.#config.groupBy,
-      //   } as const;
 
-      //   if (this.server) {
-      //     this.server.send(message);
-      //   }
-      // }
       if (!wasGrouped && groupBy.length > 0 && this.viewport) {
         this.clientCallback?.({
           clientViewportId: this.viewport,
@@ -610,10 +609,6 @@ export class VuuDataSource
           rows: [],
         });
       }
-      // this.emit("config", this.#config, undefined, {
-      //   ...NO_CONFIG_CHANGES,
-      //   groupByChanged: true,
-      // });
       this.setConfigPending({ groupBy });
     }
   }

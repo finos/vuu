@@ -57,7 +57,7 @@ export interface MeasuredContainerHookResult {
 // inner values will be updated once measured.
 const getInitialCssSize = (
   height?: number | string,
-  width?: number | string
+  width?: number | string,
 ): CssSize => {
   if (isValidNumber(height) && isValidNumber(width)) {
     return {
@@ -76,7 +76,7 @@ const getInitialCssSize = (
 
 const getInitialInnerSize = (
   height: unknown,
-  width: unknown
+  width: unknown,
 ): MeasuredSize | undefined => {
   if (isValidNumber(height) && isValidNumber(width)) {
     return {
@@ -109,12 +109,15 @@ export const useMeasuredContainer = ({
     fixedHeight && fixedWidth
       ? NO_MEASUREMENT
       : fixedHeight
-      ? WidthOnly
-      : fixedWidth
-      ? HeightOnly
-      : ClientWidthHeight;
+        ? WidthOnly
+        : fixedWidth
+          ? HeightOnly
+          : ClientWidthHeight;
 
   useMemo(() => {
+    // TODO why call state from memo.
+    // Why not calculate size first inline, then assign that to state
+    // on first pass
     setSize((currentSize) => {
       const { inner, outer } = currentSize;
       if (isValidNumber(height) && isValidNumber(width) && inner && outer) {
@@ -189,7 +192,7 @@ export const useMeasuredContainer = ({
         setSize(newState);
       }
     },
-    [defaultHeight, defaultWidth, fixedHeight, fixedWidth, height, size, width]
+    [defaultHeight, defaultWidth, fixedHeight, fixedWidth, height, size, width],
   );
 
   useEffect(() => {

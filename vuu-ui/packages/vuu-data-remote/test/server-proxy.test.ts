@@ -17,6 +17,7 @@ import {
   testSchema,
   updateTableRow,
   createSubscription,
+  createConnection,
 } from "./test-utils";
 import { VuuRow } from "@finos/vuu-protocol-types";
 import {
@@ -3746,7 +3747,7 @@ describe("ServerProxy", () => {
     });
 
     it("queues range requests sent before subscription completes, sends to server after subscription completes", async () => {
-      const connection = { send: vi.fn(), status: "ready" as const };
+      const connection = createConnection();
       const postMessageToClient = vi.fn();
       const serverProxy = new ServerProxy(connection, postMessageToClient);
       serverProxy["authToken"] = "test";
@@ -3755,6 +3756,7 @@ describe("ServerProxy", () => {
       const [clientSubscription, serverSubscriptionAck, tableMetaResponse] =
         createSubscription();
       serverProxy.subscribe(clientSubscription);
+      // send a range request before the subscription is ACKed
       serverProxy.handleMessageFromClient({
         type: "setViewRange",
         viewport: "client-vp-1",
@@ -3767,8 +3769,7 @@ describe("ServerProxy", () => {
       serverProxy.handleMessageFromServer(tableMetaResponse);
       // allow the promises pending for the subscription and metadata to resolve
       await new Promise((resolve) => window.setTimeout(resolve, 0));
-      // expect(serverProxy["queuedRequests"].length).toEqual(0);
-      console.log(`test messages sent`);
+      expect(serverProxy["queuedRequests"].length).toEqual(0);
       expect(connection.send).toHaveBeenCalledTimes(3);
       expect(connection.send).toHaveBeenNthCalledWith(1, {
         body: {

@@ -1,7 +1,7 @@
-import type { ServerAPI } from "@finos/vuu-data-remote";
 import type {
   DataSource,
   DataSourceConstructorProps,
+  ServerAPI,
 } from "@finos/vuu-data-types";
 import { createContext } from "react";
 

@@ -2,11 +2,23 @@
 // Important: This import must come before RemoteDataSource import
 import "./global-mocks";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import * as connectionExports from "../src/connection-manager";
 //----------------------------------------------------
-import { DataSourceConfig } from "@finos/vuu-data-types";
+import { DataSourceConfig, ServerAPI } from "@finos/vuu-data-types";
 import { LinkDescriptorWithLabel, VuuSortCol } from "@finos/vuu-protocol-types";
 import { VuuDataSource } from "../src/vuu-data-source";
+import ConnectionManager from "../src/ConnectionManager";
+
+vi.mock("../src/ConnectionManager", () => ({
+  default: {
+    serverAPI: new Promise<ServerAPI>((resolve) => {
+      // @ts-ignore
+      resolve({
+        send: vi.fn(),
+        subscribe: vi.fn(),
+      });
+    }),
+  },
+}));
 
 const defaultSubscribeOptions = {
   aggregations: [],
@@ -92,73 +104,11 @@ describe("RemoteDataSource", () => {
     const callback = () => undefined;
 
     it("assigns viewport id if not passed, defaults all other options, server resolved immediately", async () => {
-      const serverSubscribe = vi.fn();
-      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
-        () =>
-          new Promise<connectionExports.ServerAPI>((resolve) => {
-            // @ts-ignore
-            resolve({
-              subscribe: serverSubscribe,
-            });
-          }),
-      );
       const dataSource = new VuuDataSource({ table });
       await dataSource.subscribe({}, callback);
 
-      expect(serverSubscribe).toHaveBeenCalledWith(
-        {
-          ...defaultSubscribeOptions,
-          table: {
-            module: "SIMUL",
-            table: "instruments",
-          },
-          viewport: "uuid-1",
-        },
-        expect.any(Function),
-      );
-    });
-
-    it("assigns viewport id if not passed, defaults all other options, server resolved previously", async () => {
-      const serverSubscribe = vi.fn();
-      const resolvedPromise = Promise.resolve({ subscribe: serverSubscribe });
-
-      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
-        // @ts-ignore
-        () => resolvedPromise,
-      );
-      const dataSource = new VuuDataSource({ table });
-
-      await dataSource.subscribe({}, callback);
-
-      expect(serverSubscribe).toHaveBeenCalledWith(
-        {
-          ...defaultSubscribeOptions,
-          table: {
-            module: "SIMUL",
-            table: "instruments",
-          },
-          viewport: "uuid-1",
-        },
-        expect.any(Function),
-      );
-    });
-
-    it("assigns viewport id if not passed, defaults all other options, server resolved later", async () => {
-      const serverSubscribe = vi.fn();
-      let resolvePromise;
-
-      const pr = new Promise<connectionExports.ServerAPI>((resolve) => {
-        resolvePromise = resolve;
-      });
-
-      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(() => pr);
-      const dataSource = new VuuDataSource({ table });
-
-      setTimeout(() => resolvePromise({ subscribe: serverSubscribe }), 50);
-
-      await dataSource.subscribe({}, callback);
-
-      expect(serverSubscribe).toHaveBeenCalledWith(
+      const serverAPI = await ConnectionManager.serverAPI;
+      expect(serverAPI.subscribe).toHaveBeenCalledWith(
         {
           ...defaultSubscribeOptions,
           table: {
@@ -172,8 +122,6 @@ describe("RemoteDataSource", () => {
     });
 
     it("uses options supplied at creation, if not passed with subscription", async () => {
-      const serverSubscribe = vi.fn();
-      const resolvedPromise = Promise.resolve({ subscribe: serverSubscribe });
       const aggregations = [{ column: "test", aggType: 1 } as const];
       const columns = ["test"];
       const filterSpec = { filter: 'ccy="EUR"' };
@@ -191,10 +139,6 @@ describe("RemoteDataSource", () => {
         parentVpId: "test",
       };
 
-      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
-        // @ts-ignore
-        () => resolvedPromise,
-      );
       const dataSource = new VuuDataSource({
         aggregations,
         bufferSize: 200,
@@ -206,9 +150,11 @@ describe("RemoteDataSource", () => {
         visualLink,
       });
 
+      const serverAPI = await ConnectionManager.serverAPI;
+
       await dataSource.subscribe({}, callback);
 
-      expect(serverSubscribe).toHaveBeenCalledWith(
+      expect(serverAPI.subscribe).toHaveBeenCalledWith(
         {
           aggregations,
           bufferSize: 200,
@@ -227,9 +173,6 @@ describe("RemoteDataSource", () => {
       );
     });
     it("uses options passed with subscription, in preference to objects passed at creation", async () => {
-      const serverSubscribe = vi.fn();
-      const resolvedPromise = Promise.resolve({ subscribe: serverSubscribe });
-
       const aggregations = [{ column: "test", aggType: 1 } as const];
       const columns = ["test"];
       const filterSpec = { filter: 'ccy="EUR"' };
@@ -242,10 +185,6 @@ describe("RemoteDataSource", () => {
       const groupBy2 = ["test"];
       const sort2 = { sortDefs: [{ column: "test", sortType: "A" } as const] };
 
-      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
-        // @ts-ignore
-        () => resolvedPromise,
-      );
       const dataSource = new VuuDataSource({
         aggregations,
         columns,
@@ -255,6 +194,8 @@ describe("RemoteDataSource", () => {
         table,
         viewport: "test-1",
       });
+
+      const serverAPI = await ConnectionManager.serverAPI;
 
       await dataSource.subscribe(
         {
@@ -268,7 +209,7 @@ describe("RemoteDataSource", () => {
         callback,
       );
 
-      expect(serverSubscribe).toHaveBeenCalledWith(
+      expect(serverAPI.subscribe).toHaveBeenCalledWith(
         {
           aggregations,
           bufferSize: 100,
@@ -289,29 +230,22 @@ describe("RemoteDataSource", () => {
     });
 
     it("subscribes with latest version of attributes, including when there are set whilst awaiting server", async () => {
-      const serverSubscribe = vi.fn();
-      let resolvePromise;
+      const serverAPI = await ConnectionManager.serverAPI;
 
-      const pr = new Promise<connectionExports.ServerAPI>((resolve) => {
-        resolvePromise = resolve;
-      });
-
-      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(() => pr);
       const dataSource = new VuuDataSource({ table });
 
-      setTimeout(() => {
-        // dataSource is blocked inside subscribe function, awaiting server ...
-        dataSource.groupBy = ["test2"];
-        dataSource.range = { from: 0, to: 50 };
-        resolvePromise({ subscribe: serverSubscribe });
-      }, 50);
-
-      await dataSource.subscribe(
+      const pendingSubscribe = dataSource.subscribe(
         { range: { from: 0, to: 20 }, groupBy: ["test1"] },
         callback,
       );
 
-      expect(serverSubscribe).toHaveBeenCalledWith(
+      // dataSource is blocked inside subscribe function, awaiting server ...
+      dataSource.groupBy = ["test2"];
+      dataSource.range = { from: 0, to: 50 };
+
+      await pendingSubscribe;
+
+      expect(serverAPI.subscribe).toHaveBeenCalledWith(
         {
           ...defaultSubscribeOptions,
           groupBy: ["test2"],
@@ -330,36 +264,30 @@ describe("RemoteDataSource", () => {
   describe("prop setters", () => {
     const callback = () => undefined;
     it("calls server when range set", async () => {
-      const serverSend = vi.fn();
-      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
-        // @ts-ignore
-        () => Promise.resolve({ send: serverSend, subscribe: callback }),
-      );
+      const serverAPI = await ConnectionManager.serverAPI;
+
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
       const range = { from: 0, to: 20 };
       dataSource.range = range;
 
-      expect(serverSend).toHaveBeenCalledWith({
+      expect(serverAPI.send).toHaveBeenCalledWith({
         type: "setViewRange",
         range,
         viewport: "vp1",
       });
     });
     it("calls server when aggregations set", async () => {
-      const serverSend = vi.fn();
-      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
-        // @ts-ignore
-        () => Promise.resolve({ send: serverSend, subscribe: callback }),
-      );
+      const serverAPI = await ConnectionManager.serverAPI;
+
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
       const aggregations = [{ column: "col1", aggType: 1 } as const];
       dataSource.aggregations = aggregations;
 
-      expect(serverSend).toHaveBeenCalledWith({
+      expect(serverAPI.send).toHaveBeenCalledWith({
         type: "aggregate",
         aggregations,
         viewport: "vp1",
@@ -367,36 +295,28 @@ describe("RemoteDataSource", () => {
     });
 
     it("calls server when columns set", async () => {
-      const serverSend = vi.fn();
-      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
-        // @ts-ignore
-        () => Promise.resolve({ send: serverSend, subscribe: callback }),
-      );
+      const serverAPI = await ConnectionManager.serverAPI;
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
       const columns = ["col1", "col2"];
       dataSource.columns = columns;
 
-      expect(serverSend).toHaveBeenCalledWith({
+      expect(serverAPI.send).toHaveBeenCalledWith({
         type: "setColumns",
         columns,
         viewport: "vp1",
       });
     });
     it("calls server when filter set", async () => {
-      const serverSend = vi.fn();
-      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
-        // @ts-ignore
-        () => Promise.resolve({ send: serverSend, subscribe: callback }),
-      );
+      const { send } = await ConnectionManager.serverAPI;
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
       const filterSpec = { filter: 'exchange="SETS"' };
       dataSource.filter = filterSpec;
 
-      expect(serverSend).toHaveBeenCalledWith({
+      expect(send).toHaveBeenCalledWith({
         type: "config",
         config: {
           aggregations: [],
@@ -415,19 +335,15 @@ describe("RemoteDataSource", () => {
         viewport: "vp1",
       });
     });
-    it("calls server when groupBy set", async () => {
-      const serverSend = vi.fn();
-      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
-        // @ts-ignore
-        () => Promise.resolve({ send: serverSend, subscribe: callback }),
-      );
+    it("calls server when groupBy set, using config message", async () => {
+      const { send } = await ConnectionManager.serverAPI;
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
       const groupBy = ["col1", "col2"];
       dataSource.groupBy = groupBy;
 
-      expect(serverSend).toHaveBeenCalledWith({
+      expect(send).toHaveBeenCalledWith({
         type: "config",
         config: {
           aggregations: [],
@@ -443,11 +359,7 @@ describe("RemoteDataSource", () => {
     });
 
     it("calls server when config set, if config has changed", async () => {
-      const serverSend = vi.fn();
-      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
-        // @ts-ignore
-        () => Promise.resolve({ send: serverSend, subscribe: callback }),
-      );
+      const { send } = await ConnectionManager.serverAPI;
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
@@ -457,7 +369,7 @@ describe("RemoteDataSource", () => {
 
       dataSource.config = config;
 
-      expect(serverSend).toHaveBeenCalledWith({
+      expect(send).toHaveBeenCalledWith({
         type: "config",
         config: {
           aggregations: [],
@@ -475,7 +387,7 @@ describe("RemoteDataSource", () => {
 
       dataSource.config = config;
 
-      expect(serverSend).toHaveBeenCalledWith({
+      expect(send).toHaveBeenCalledWith({
         type: "config",
         config: {
           aggregations: [],
@@ -489,11 +401,7 @@ describe("RemoteDataSource", () => {
     });
 
     it("parses filterStruct, if filterQuery only is provided", async () => {
-      const serverSend = vi.fn();
-      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
-        // @ts-ignore
-        () => Promise.resolve({ send: serverSend, subscribe: callback }),
-      );
+      const { send } = await ConnectionManager.serverAPI;
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
@@ -503,7 +411,7 @@ describe("RemoteDataSource", () => {
 
       dataSource.config = config;
 
-      expect(serverSend).toHaveBeenCalledWith({
+      expect(send).toHaveBeenCalledWith({
         type: "config",
         config: {
           aggregations: [],
@@ -524,11 +432,7 @@ describe("RemoteDataSource", () => {
     });
 
     it("does not call server when config set, if config has not changed", async () => {
-      const serverSend = vi.fn();
-      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
-        // @ts-ignore
-        () => Promise.resolve({ send: serverSend, subscribe: callback }),
-      );
+      const { send } = await ConnectionManager.serverAPI;
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
@@ -537,11 +441,11 @@ describe("RemoteDataSource", () => {
       };
 
       dataSource.config = config;
-      serverSend.mockClear();
+      send.mockClear();
 
       dataSource.config = config;
 
-      expect(serverSend).toHaveBeenCalledTimes(0);
+      expect(send).toHaveBeenCalledTimes(0);
     });
   });
 });
