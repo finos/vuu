@@ -152,6 +152,39 @@ _NOTE:_ Commits and pull requests to FINOS repositories will only be accepted fr
 
 _Need an ICLA? Unsure if you are covered under an existing CCLA? Email [help@finos.org](mailto:help@finos.org)_
 
+## For VUU Core Developers
+
+### Type of Test - Server Side
+
+| Type                           | Used For                                                                                                                                    | Example / Naming convention                             |
+|--------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|
+| End To End Tests (Server only) | Sending websocket message to server and assert on messages returned. Spin up real VUU server                                                | Tests that ends in WSApiTest                            |
+| Scenario Tests                 | Test specific scenario that may span multiple ui / server interactions. Uses test VUU server and various helpers to write tests with ease   | No name convention. Extends VuuServerTestCase           |
+| Functional Unit Tests          | Unit test logical group of classes to test an overall functional behaviour, show different ways the feature is intended to be used          | Tests that ends in FunctionalTest                       |
+| Unit Tests                     | Good old plain vanilla unit tests                                                                                                           | Start with class name/subject of the test, ends in Test |
+| Java Tests                     | Tests interfaces that can be called or extended by application that use the VUU in Java OR test for java application using VUU | Tests in vuu-java module or example/main-java module    |
+
+### Changes in progress
+
+> These are work in progress and intended to show the intention of the direction that it is heading. If decision is to take it forward, need to evolve it more and implement it for rest of the codebase. If decision is to reverse, should be removed to achieve consistency
+
+| Change                                  | Description                                                                                    |
+|-----------------------------------------|------------------------------------------------------------------------------------------------|
+| UI and Server API review                | New websocket message types  https://github.com/finos/vuu/discussions/1447. See Messages.scala |
+| RPC Handler registration and resolution | See https://github.com/finos/vuu/discussions/1503                                              | 
+| Functional Error handling               | See https://github.com/finos/vuu/discussions/1504                                              |
+
+
+## For Application Developers Using VUU
+
+### Type of Test - Server Side
+
+| Type                           | Used For                                                                                                                          | Example / Naming convention                   |
+|--------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------|
+| End To End Tests (Server only) | Sending websocket message to server and assert on messages returned. Spin up real VUU server                                      | Tests that ends in WSApiTest                  |
+| Scenario Tests                 | Test specific scenario that may span multiple ui / server interactions. Uses test VUU server                                      | No name convention. Extends VuuServerTestCase |
+| Java Tests                     | Tests interfaces that can be called or extended by application that use the library in Java Or test for java application using VUU | Tests in vuu-java module or example/main-java module    |
+
 ## License
 
 Copyright 2022 venuu-io
