@@ -14,7 +14,7 @@ import {
   TableSelectionModel,
   TableRowSelectHandlerInternal,
 } from "@finos/vuu-table-types";
-import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
+import { VuuSortType } from "@finos/vuu-protocol-types";
 import {
   DragStartHandler,
   MeasuredProps,
@@ -51,7 +51,6 @@ import { TableProps } from "./Table";
 import { updateTableConfig } from "./table-config";
 import { useCellEditing } from "./useCellEditing";
 import { useDataSource } from "./useDataSource";
-import { useInitialValue } from "./useInitialValue";
 import { useKeyboardNavigation } from "./useKeyboardNavigation";
 import { useSelection } from "./useSelection";
 import { useTableContextMenu } from "./useTableContextMenu";
@@ -243,18 +242,12 @@ export const useTable = ({
     size: size,
   });
 
-  const initialRange = useInitialValue<VuuRange>({
-    from: 0,
-    to: viewportMeasurements.rowCount,
-  });
-
   const { data, dataRef, getSelectedRows, range, setRange } = useDataSource({
     dataSource,
     // We need to factor this out of Table
     renderBufferSize,
     onSizeChange: onDataRowcountChange,
     onSubscribed,
-    range: initialRange,
   });
 
   const { requestScroll, ...scrollProps } = useTableScroll({

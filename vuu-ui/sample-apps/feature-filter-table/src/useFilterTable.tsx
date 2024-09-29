@@ -1,4 +1,8 @@
-import { MenuActionConfig, useVuuMenuActions } from "@finos/vuu-data-react";
+import {
+  MenuActionConfig,
+  useSessionDataSource,
+  useVuuMenuActions,
+} from "@finos/vuu-data-react";
 import {
   DataSourceVisualLinkCreatedMessage,
   SchemaColumn,
@@ -17,7 +21,6 @@ import {
   isTypeaheadSuggestionProvider,
 } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSessionDataSource } from "./useSessionDataSource";
 import { FilterMode } from "@finos/vuu-filters/src/filter-bar/useFilterBar";
 import { useVisualLinks } from "@finos/vuu-data-react";
 

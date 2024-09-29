@@ -118,6 +118,12 @@ const userSettingsSchema: SettingsSchema = {
       defaultValue: "light",
       type: "string",
     },
+    {
+      name: "showAppStatusBar",
+      label: "Show Application Status Bar",
+      defaultValue: false,
+      type: "boolean",
+    },
   ],
 };
 

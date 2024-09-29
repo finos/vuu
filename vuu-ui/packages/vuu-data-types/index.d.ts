@@ -15,6 +15,12 @@ import type {
   VuuSort,
   VuuTable,
   VuuRpcRequest,
+  VuuRpcServiceRequest,
+  VuuRpcMenuRequest,
+  VuuRpcViewportRequest,
+  VuuCreateVisualLink,
+  VuuRemoveVisualLink,
+  VuuTableList,
 } from "@finos/vuu-protocol-types";
 import type { DataSourceConfigChanges, IEventEmitter } from "@finos/vuu-utils";
 import type {
@@ -32,6 +38,7 @@ import type {
   VuuRange,
 } from "@finos/vuu-protocol-types";
 import { DataValueTypeDescriptor } from "@finos/vuu-table-types";
+import { PostMessageToClientCallback } from "@finos/vuu-data-remote";
 
 export declare type DataValueValidationSuccessResult = {
   ok: true;
@@ -211,6 +218,9 @@ export interface DataSourceAggregateMessage
 
 export type DataUpdateMode = "batch" | "update" | "size-only";
 
+export interface DataSourceClearMessage extends MessageWithClientViewportId {
+  type: "viewport-clear";
+}
 export interface DataSourceDataMessage extends MessageWithClientViewportId {
   mode: DataUpdateMode;
   rows?: DataSourceRow[];
@@ -315,6 +325,7 @@ export type DataSourceCallbackMessage =
   | DataSourceConfigMessage
   | DataSourceColumnsMessage
   | DataSourceDataMessage
+  | DataSourceClearMessage
   | DataSourceDebounceRequest
   | DataSourceDisabledMessage
   | DataSourceEnabledMessage
@@ -548,7 +559,7 @@ export interface DataSource
    * If an suspend is requested and not resumed within 3 seconds, it will automatically be promoted to a disable.,
    */
   suspend?: () => void;
-  resume?: () => void;
+  resume?: (callback?: SubscribeCallback) => void;
 
   deleteRow?: DataSourceDeleteHandler;
   /**
@@ -647,21 +658,6 @@ export declare type MenuRpcAction =
   | OpenDialogActionWithSchema
   | NoAction
   | ShowToastAction;
-
-export type ConnectionStatus =
-  | "connecting"
-  | "connection-open-awaiting-session"
-  | "connected"
-  | "disconnected"
-  | "failed"
-  | "reconnected";
-
-export interface ConnectionStatusMessage {
-  type: "connection-status";
-  reason?: string;
-  retry?: boolean;
-  status: ConnectionStatus;
-}
 
 export interface ConnectionQualityMetrics {
   type: "connection-metrics";
@@ -773,13 +769,17 @@ export type VuuUIMessageIn =
 export type WebSocketProtocol = string | string[] | undefined;
 
 export interface VuuUIMessageOutConnect {
-  protocol: WebSocketProtocol;
+  protocol?: WebSocketProtocol;
   type: "connect";
   token: string;
   url: string;
   username?: string;
   retryLimitDisconnect?: number;
   retryLimitStartup?: number;
+}
+
+export interface VuuUIMessageOutDisconnect {
+  type: "disconnect";
 }
 
 export interface VuuUIMessageOutSubscribe extends ServerProxySubscribeMessage {
@@ -900,8 +900,40 @@ export type WithRequestId<T> = T & { requestId: string };
 
 export type VuuUIMessageOut =
   | VuuUIMessageOutConnect
+  | VuuUIMessageOutDisconnect
   | VuuUIMessageOutSubscribe
   | VuuUIMessageOutUnsubscribe
   | VuuUIMessageOutViewport
-  | WithRequestId<VuuTableListRequest>
-  | WithRequestId<VuuTableMetaRequest>;
+  | WithRequestId<VuuTableListRequest | VuuTableMetaRequest>;
+
+export type ConnectOptions = {
+  url: string;
+  token: string;
+  username: string;
+  protocol?: WebSocketProtocol;
+  /** Max number of reconnect attempts in the event of unsuccessful websocket connection at startup */
+  retryLimitStartup?: number;
+  /** Max number of reconnect attempts in the event of a disconnected websocket connection */
+  retryLimitDisconnect?: number;
+};
+
+export interface ServerAPI {
+  destroy: (viewportId?: string) => void;
+  getTableSchema: (table: VuuTable) => Promise<TableSchema>;
+  getTableList: (module?: string) => Promise<VuuTableList>;
+  // TODO its not really unknown
+  rpcCall: <T = unknown>(
+    msg:
+      | VuuRpcServiceRequest
+      | VuuRpcMenuRequest
+      | VuuRpcViewportRequest
+      | VuuCreateVisualLink
+      | VuuRemoveVisualLink,
+  ) => Promise<T>;
+  send: (message: VuuUIMessageOut) => void;
+  subscribe: (
+    message: ServerProxySubscribeMessage,
+    callback: PostMessageToClientCallback,
+  ) => void;
+  unsubscribe: (viewport: string) => void;
+}

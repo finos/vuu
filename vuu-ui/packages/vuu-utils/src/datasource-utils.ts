@@ -1,6 +1,5 @@
 import {
   ConnectionQualityMetrics,
-  ConnectionStatusMessage,
   DataSourceCallbackMessage,
   DataSourceConfig,
   DataSourceDataMessage,
@@ -253,11 +252,6 @@ export const isTypeaheadSuggestionProvider = (
 export const isTableSchemaMessage = (
   message: VuuUIMessageIn,
 ): message is VuuUIMessageInTableMeta => message.type === "TABLE_META_RESP";
-
-export const isConnectionStatusMessage = (
-  msg: object | ConnectionStatusMessage,
-): msg is ConnectionStatusMessage =>
-  (msg as ConnectionStatusMessage).type === "connection-status";
 
 export const isConnectionQualityMetrics = (
   msg: object,

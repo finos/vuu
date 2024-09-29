@@ -1,5 +1,6 @@
 import {
-  ConnectionStatusMessage,
+  DataSourceCallbackMessage,
+  VuuUIMessageIn,
   VuuUIMessageOut,
   WebSocketProtocol,
   WithRequestId,
@@ -8,59 +9,85 @@ import {
   VuuRpcMenuRequest,
   VuuRpcServiceRequest,
 } from "@finos/vuu-protocol-types";
-import {
-  isConnectionQualityMetrics,
-  isConnectionStatusMessage,
-  logger,
-} from "@finos/vuu-utils";
+import { isConnectionQualityMetrics, logger } from "@finos/vuu-utils";
 import { ServerProxy } from "./server-proxy/server-proxy";
-import { connect as connectWebsocket } from "./websocket-connection";
+// import { createWebSocketConnection } from "./websocket-connection";
+import {
+  type RetryLimits,
+  WebSocketConnection,
+  isWebSocketConnectionMessage,
+} from "./WebSocketConnection";
 
 let server: ServerProxy;
 
 const { info, infoEnabled } = logger("worker");
 
+const getRetryLimits = (
+  retryLimitDisconnect?: number,
+  retryLimitStartup?: number,
+): RetryLimits | undefined => {
+  if (retryLimitDisconnect !== undefined && retryLimitStartup !== undefined) {
+    return {
+      connect: retryLimitStartup,
+      reconnect: retryLimitDisconnect,
+    };
+  } else if (retryLimitDisconnect !== undefined) {
+    return {
+      connect: retryLimitDisconnect,
+      reconnect: retryLimitDisconnect,
+    };
+  } else if (retryLimitStartup !== undefined) {
+    return {
+      connect: retryLimitStartup,
+      reconnect: retryLimitStartup,
+    };
+  }
+};
+
+let ws: WebSocketConnection;
+
+const sendMessageToClient = (
+  message: DataSourceCallbackMessage | VuuUIMessageIn,
+) => {
+  postMessage(message);
+};
+
 async function connectToServer(
   url: string,
-  protocol: WebSocketProtocol,
+  protocols: WebSocketProtocol,
   token: string,
   username: string | undefined,
-  onConnectionStatusChange: (msg: ConnectionStatusMessage) => void,
   retryLimitDisconnect?: number,
   retryLimitStartup?: number,
 ) {
-  const connection = await connectWebsocket(
-    url,
-    protocol,
-    // if this was called during connect, we would get a ReferenceError, but it will
-    // never be called until subscriptions have been made, so this is safe.
-    //TODO do we need to listen in to the connection messages here so we can lock back in, in the event of a reconnenct ?
-    (msg) => {
+  const websocketConnection = (ws = new WebSocketConnection({
+    callback: (msg) => {
       if (isConnectionQualityMetrics(msg)) {
         // console.log("post connection metrics");
         postMessage({ type: "connection-metrics", messages: msg });
-      } else if (isConnectionStatusMessage(msg)) {
-        onConnectionStatusChange(msg);
-        if (msg.status === "reconnected") {
-          server.reconnect();
-        }
+      } else if (isWebSocketConnectionMessage(msg)) {
+        postMessage(msg);
       } else {
         server.handleMessageFromServer(msg);
       }
     },
-    retryLimitDisconnect,
-    retryLimitStartup,
-  );
+    protocols,
+    retryLimits: getRetryLimits(retryLimitStartup, retryLimitDisconnect),
+    url,
+  }));
 
-  server = new ServerProxy(connection, (msg) => sendMessageToClient(msg));
-  if (connection.requiresLogin) {
+  websocketConnection.on("connection-status", postMessage);
+
+  // This will not resolve until the websocket has been successfully opened,
+  // i.e. we get an open event...
+  await websocketConnection.connect();
+  // ... at which point we will attempt to LOGIN, this will send the
+  // first message over the WebSocket connection.
+  server = new ServerProxy(websocketConnection, sendMessageToClient);
+  if (websocketConnection.requiresLogin) {
     // no handling for failed login
     await server.login(token, username);
   }
-}
-
-function sendMessageToClient(message: any) {
-  postMessage(message);
 }
 
 const handleMessageFromClient = async ({
@@ -78,7 +105,6 @@ const handleMessageFromClient = async ({
           message.protocol,
           message.token,
           message.username,
-          postMessage,
           message.retryLimitDisconnect,
           message.retryLimitStartup,
         );
@@ -89,7 +115,10 @@ const handleMessageFromClient = async ({
       break;
     // If any of the messages below are received BEFORE we have connected and created
     // the server - handle accordingly
-
+    case "disconnect":
+      server.disconnect();
+      ws?.close();
+      break;
     case "subscribe":
       infoEnabled && info(`client subscribe: ${JSON.stringify(message)}`);
       server.subscribe(message);

@@ -28,7 +28,7 @@ export const useVuuTables = () => {
         setTables(tableSchemas);
       } catch (err) {
         console.warn(
-          `useVuuTables: error fetching table metedata ${String(err)}`,
+          `useVuuTables: error fetching table metadata ${String(err)}`,
         );
       }
     }

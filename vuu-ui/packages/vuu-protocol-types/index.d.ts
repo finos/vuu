@@ -156,10 +156,17 @@ export interface VuuViewportChangeResponse {
 }
 
 export interface VuuViewportRangeRequest {
-  type: "CHANGE_VP_RANGE_SUCCESS";
-  viewPortId: string;
   from: number;
   to: number;
+  type: "CHANGE_VP_RANGE";
+  viewPortId: string;
+}
+
+export interface VuuViewportRangeResponse {
+  from: number;
+  to: number;
+  type: "CHANGE_VP_RANGE_SUCCESS";
+  viewPortId: string;
 }
 export interface ServerToClientDisableViewPortSuccess {
   type: "DISABLE_VP_SUCCESS";
@@ -169,7 +176,13 @@ export interface ServerToClientEnableViewPortSuccess {
   type: "ENABLE_VP_SUCCESS";
   viewPortId: string;
 }
-export interface ServerToClientRemoveViewPortSuccess {
+
+export interface VuuViewportRemoveRequest {
+  type: "REMOVE_VP";
+  viewPortId: string;
+}
+
+export interface VuuViewportRemoveResponse {
   type: "REMOVE_VP_SUCCESS";
   viewPortId: string;
 }
@@ -200,10 +213,10 @@ export declare type ServerMessageBody =
   | ServerToClientLoginSuccess
   | VuuViewportCreateResponse
   | VuuViewportChangeResponse
-  | VuuViewportRangeRequest
+  | VuuViewportRangeResponse
   | ServerToClientDisableViewPortSuccess
   | ServerToClientEnableViewPortSuccess
-  | ServerToClientRemoveViewPortSuccess
+  | VuuViewportRemoveResponse
   | ServerToClientSelectSuccess
   | VuuTableMetaResponse
   | VuuTableListResponse
@@ -245,20 +258,10 @@ export interface ClientToServerEnable {
   type: "ENABLE_VP";
   viewPortId: string;
 }
-export interface ClientToServerRemoveViewPort {
-  type: "REMOVE_VP";
-  viewPortId: string;
-}
 export interface ClientToServerSelection {
   type: "SET_SELECTION";
   selection: number[];
   vpId: string;
-}
-export interface ClientToServerViewPortRange {
-  from: number;
-  to: number;
-  type: "CHANGE_VP_RANGE";
-  viewPortId: string;
 }
 export interface ClientToServerOpenTreeNode {
   type: "OPEN_TREE_NODE";
@@ -303,9 +306,9 @@ export declare type ClientMessageBody =
   | VuuTableMetaRequest
   | VuuViewportCreateRequest
   | VuuViewportChangeRequest
-  | ClientToServerRemoveViewPort
+  | VuuViewportRemoveRequest
   | ClientToServerSelection
-  | ClientToServerViewPortRange
+  | VuuViewportRangeRequest
   | VuuViewportVisualLinksRequest
   | VuuViewportMenusRequest
   | ClientToServerOpenTreeNode

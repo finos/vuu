@@ -36,6 +36,7 @@ import type {
   VuuRpcRequest,
   VuuCreateVisualLink,
   VuuRemoveVisualLink,
+  VuuViewportRangeRequest,
 } from "@finos/vuu-protocol-types";
 import {
   isVuuMenuRpcRequest,
@@ -47,7 +48,6 @@ import {
   isSessionTableActionMessage,
   isVisualLinkMessage,
 } from "@finos/vuu-utils";
-import type { Connection } from "../connectionTypes";
 import {
   createSchemaFromTableMetadata,
   groupRowsByViewport,
@@ -57,6 +57,7 @@ import {
 import * as Message from "./messages";
 import { getRpcServiceModule } from "./rpc-services";
 import { NO_DATA_UPDATE, Viewport } from "./viewport";
+import { WebSocketConnection } from "../WebSocketConnection";
 
 export type PostMessageToClientCallback = (
   message: VuuUIMessageIn | DataSourceCallbackMessage,
@@ -118,12 +119,12 @@ interface PendingLogin {
 
 type QueuedRequest = {
   clientViewportId: string;
-  message: VuuClientMessage["body"];
+  message: VuuViewportRangeRequest;
   requestId: string;
 };
 
 export class ServerProxy {
-  private connection: Connection;
+  private connection: WebSocketConnection;
   private postMessageToClient: PostMessageToClientCallback;
   private viewports: Map<string, Viewport>;
   private mapClientToServerViewport: Map<string, string>;
@@ -138,14 +139,19 @@ export class ServerProxy {
   private cachedTableSchemas: Map<string, TableSchema> = new Map();
   private tableList: Promise<VuuTableListResponse> | undefined;
 
-  constructor(connection: Connection, callback: PostMessageToClientCallback) {
+  constructor(
+    connection: WebSocketConnection,
+    callback: PostMessageToClientCallback,
+  ) {
     this.connection = connection;
     this.postMessageToClient = callback;
     this.viewports = new Map<string, Viewport>();
     this.mapClientToServerViewport = new Map();
+
+    connection.on("reconnected", this.reconnect);
   }
 
-  public async reconnect() {
+  private reconnect = async () => {
     await this.login(this.authToken);
 
     // The "active" viewports are those the user has on their open layout
@@ -161,9 +167,25 @@ export class ServerProxy {
     const reconnectViewports = (viewports: Viewport[]) => {
       viewports.forEach((viewport) => {
         const { clientViewportId } = viewport;
-        this.viewports.set(clientViewportId, viewport);
-        this.sendMessageToServer(viewport.subscribe(), clientViewportId);
+
+        this.awaitResponseToMessage<VuuViewportCreateResponse>(
+          viewport.subscribe(),
+          clientViewportId,
+        ).then((msg) => {
+          if (msg.type === "CREATE_VP_SUCCESS") {
+            this.mapClientToServerViewport.set(
+              clientViewportId,
+              msg.viewPortId,
+            );
+            this.viewports.set(msg.viewPortId, viewport);
+            // TODO should we just call viewport.reconnected()
+            viewport.status = "subscribed";
+            viewport.serverViewportId = msg.viewPortId;
+          }
+        });
       });
+
+      // this.sendMessageToServer(viewport.subscribe(), clientViewportId);
     };
 
     reconnectViewports(activeViewports);
@@ -171,7 +193,7 @@ export class ServerProxy {
     setTimeout(() => {
       reconnectViewports(inactiveViewports);
     }, 2000);
-  }
+  };
 
   public async login(
     authToken?: string,
@@ -190,6 +212,22 @@ export class ServerProxy {
     } else if (this.authToken === "") {
       error("login, cannot login until auth token has been obtained");
     }
+  }
+
+  public disconnect() {
+    this.viewports.forEach((viewport) => {
+      const { clientViewportId } = viewport;
+      // would it be better to await these calls ?
+      // Once ACKed, these will clear up entries in local viewport map
+      this.unsubscribe(clientViewportId);
+      this.postMessageToClient({
+        clientViewportId,
+        type: "viewport-clear",
+      });
+    });
+
+    // this.viewports.clear();
+    // this.mapClientToServerViewport.clear();
   }
 
   public subscribe(message: ServerProxySubscribeMessage) {
@@ -277,31 +315,49 @@ export class ServerProxy {
     }
   }
 
+  /**
+   * Currently we only queue range requests, this may change
+   */
+  private addRequestToQueue(queuedRequest: QueuedRequest) {
+    const isDifferentTypeViewport = (qr: QueuedRequest) =>
+      qr.clientViewportId !== queuedRequest.clientViewportId ||
+      queuedRequest.message.type !== qr.message.type;
+
+    // Do not queue multiple requests of the same type for the same viewport.
+    // Latest takes priority
+    if (!this.queuedRequests.every(isDifferentTypeViewport)) {
+      this.queuedRequests = this.queuedRequests.filter(isDifferentTypeViewport);
+    }
+
+    this.queuedRequests.push(queuedRequest);
+  }
+
   private processQueuedRequests() {
-    const messageTypesProcessed: { [key: string]: true } = {};
-    while (this.queuedRequests.length) {
-      const queuedRequest = this.queuedRequests.pop();
-      if (queuedRequest) {
-        const { clientViewportId, message, requestId } = queuedRequest;
-        if (message.type === "CHANGE_VP_RANGE") {
-          if (messageTypesProcessed.CHANGE_VP_RANGE) {
-            continue;
-          }
-          messageTypesProcessed.CHANGE_VP_RANGE = true;
-          const serverViewportId =
-            this.mapClientToServerViewport.get(clientViewportId);
-          if (serverViewportId) {
-            this.sendMessageToServer(
-              {
-                ...message,
-                viewPortId: serverViewportId,
-              },
-              requestId,
-            );
-          }
-        }
+    const newQueue: QueuedRequest[] = [];
+    for (const queuedRequest of this.queuedRequests) {
+      const { clientViewportId, message, requestId } = queuedRequest;
+      const serverViewportId =
+        this.mapClientToServerViewport.get(clientViewportId);
+      if (serverViewportId) {
+        this.sendMessageToServer(
+          {
+            ...message,
+            viewPortId: serverViewportId,
+          },
+          requestId,
+        );
+      } else if (this.viewports.has(clientViewportId)) {
+        // If the clientViewportId is still used a a key in the viewport map, this
+        // viewport has not yet subscribed. Keep in the queue
+        newQueue.push(queuedRequest);
+      } else {
+        console.warn(
+          `ServerProxy processQueuedRequests, ${message.type} request not found ${clientViewportId}`,
+        );
       }
     }
+
+    this.queuedRequests = newQueue;
   }
 
   public unsubscribe(clientViewportId: string) {
@@ -359,44 +415,43 @@ export class ServerProxy {
   /**********************************************************************/
   private setViewRange(viewport: Viewport, message: VuuUIMessageOutViewRange) {
     const requestId = nextRequestId();
+
     const [serverRequest, rows, debounceRequest] = viewport.rangeRequest(
       requestId,
       message.range,
     );
 
-    info?.(`setViewRange ${message.range.from} - ${message.range.to}`);
+    if (viewport.status === "subscribed") {
+      info?.(`setViewRange ${message.range.from} - ${message.range.to}`);
 
-    if (serverRequest) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      if (process.env.NODE_ENV === "development") {
-        info?.(
-          `CHANGE_VP_RANGE [${message.range.from}-${message.range.to}] => [${serverRequest.from}-${serverRequest.to}]`,
-        );
+      if (serverRequest) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        if (process.env.NODE_ENV === "development") {
+          info?.(
+            `CHANGE_VP_RANGE [${message.range.from}-${message.range.to}] => [${serverRequest.from}-${serverRequest.to}]`,
+          );
+        }
+        this.sendMessageToServer(serverRequest, requestId);
       }
-      const sentToServer = this.sendIfReady(
-        serverRequest,
-        requestId,
-        viewport.status === "subscribed",
-      );
-      if (!sentToServer) {
-        this.queuedRequests.push({
-          clientViewportId: message.viewport,
-          message: serverRequest,
-          requestId,
+
+      if (rows) {
+        info?.(`setViewRange ${rows.length} rows returned from cache`);
+        this.postMessageToClient({
+          mode: "batch",
+          type: "viewport-update",
+          clientViewportId: viewport.clientViewportId,
+          rows,
         });
+      } else if (debounceRequest) {
+        this.postMessageToClient(debounceRequest);
       }
-    }
-    if (rows) {
-      info?.(`setViewRange ${rows.length} rows returned from cache`);
-      this.postMessageToClient({
-        mode: "batch",
-        type: "viewport-update",
-        clientViewportId: viewport.clientViewportId,
-        rows,
+    } else if (serverRequest) {
+      this.addRequestToQueue({
+        clientViewportId: message.viewport,
+        message: serverRequest,
+        requestId,
       });
-    } else if (debounceRequest) {
-      this.postMessageToClient(debounceRequest);
     }
   }
 
@@ -622,7 +677,6 @@ export class ServerProxy {
         const viewport = isVisualLinkMessage(message)
           ? this.getViewportForClient(message.childVpId)
           : this.getViewportForClient(message.viewport);
-
         switch (message.type) {
           case "setViewRange":
             return this.setViewRange(viewport, message);
@@ -661,6 +715,8 @@ export class ServerProxy {
       );
     } else if (isVuuMenuRpcRequest(message as VuuRpcRequest)) {
       return this.menuRpcCall(message as WithRequestId<VuuRpcMenuRequest>);
+    } else if (message.type === "disconnect") {
+      return this.disconnect();
     } else {
       const { type, requestId } = message;
       switch (type) {
@@ -752,19 +808,6 @@ export class ServerProxy {
   ) {
     const { module = "CORE" } = options;
     if (this.authToken) {
-      // if (body.type === "HB_RESP") {
-      //   // do nothing;
-      // } else if (body.type === "CREATE_VP" || body.type === "CHANGE_VP_RANGE") {
-      //   console.log(
-      //     `%c >>> ${JSON.stringify(body, null, 2)}`,
-      //     "background-color:green;color:white;font-weight:bold;"
-      //   );
-      // } else {
-      //   console.log(
-      //     `%c >>> ${body.type}`,
-      //     "background-color:green;color:white;font-weight:bold;"
-      //   );
-      // }
       this.connection.send({
         requestId,
         sessionId: this.sessionId,
@@ -778,15 +821,6 @@ export class ServerProxy {
 
   public handleMessageFromServer(message: VuuServerMessage) {
     const { body, requestId, sessionId } = message;
-
-    // if (message.body.type !== "HB") {
-    //   console.log(
-    //     `%c<<< [${new Date().toISOString().slice(11, 23)}]  (ServerProxy) ${
-    //       message.body.type || JSON.stringify(message)
-    //     }`,
-    //     "color:white;background-color:blue;font-weight:bold;"
-    //   );
-    // }
 
     const pendingRequest = this.pendingRequests.get(requestId);
     if (pendingRequest) {
@@ -1043,7 +1077,6 @@ export class ServerProxy {
         break;
 
       case "VIEW_PORT_MENU_REJ": {
-        console.log(`send menu error back to client`);
         const { error, rpcName, vpId } = body;
         const viewport = this.viewports.get(vpId);
         if (viewport) {

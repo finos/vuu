@@ -15,18 +15,17 @@ export const UserSettingsPanel = ({
   ...htmlAttributes
 }: UserSettingsPanelProps) => {
   const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-user-settings-panel",
+    css: userSettingsPanelCss,
+    window: targetWindow,
+  });
 
   const {
     onUserSettingChanged,
     userSettings = {},
     userSettingsSchema,
   } = useApplicationSettings();
-
-  useComponentCssInjection({
-    testId: "vuu-user-settings-panel",
-    css: userSettingsPanelCss,
-    window: targetWindow,
-  });
 
   // Without a schema, we can't render a form
   // We could render a list of input boxes but lets require a schema for now.

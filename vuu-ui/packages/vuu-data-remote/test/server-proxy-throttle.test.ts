@@ -4,15 +4,11 @@ import { TEST_setRequestId } from "../src/server-proxy/server-proxy";
 import {
   COMMON_ATTRS,
   COMMON_TABLE_ROW_ATTRS,
+  createConnection,
   createServerProxyAndSubscribeToViewport,
   createTableRows,
   sizeRow,
 } from "./test-utils";
-
-const mockConnection = {
-  send: vi.fn(),
-  status: "ready" as const,
-};
 
 describe("ServerProxy 'size-only throttling'", () => {
   it("passes a size only message through to UI client", async () => {
@@ -20,8 +16,8 @@ describe("ServerProxy 'size-only throttling'", () => {
     const serverProxy = await createServerProxyAndSubscribeToViewport(
       postMessageToClient,
       {
-        connection: mockConnection,
-      }
+        connection: createConnection(),
+      },
     );
     // prettier-ignore
     serverProxy.handleMessageFromServer({

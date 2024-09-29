@@ -1,19 +1,19 @@
 import { vi } from "vitest";
 import {
-  ServerToClientCreateViewPortSuccess,
-  ServerToClientMessage,
-  ServerToClientTableMeta,
+  VuuViewportCreateResponse,
   ServerToClientTableRows,
   VuuRow,
+  VuuServerMessage,
+  VuuTableMetaResponse,
 } from "@finos/vuu-protocol-types";
 import { ServerProxy } from "../src/server-proxy/server-proxy";
-import { Connection } from "../src/connectionTypes";
 
+import { PostMessageToClientCallback } from "../src";
 import {
-  PostMessageToClientCallback,
   ServerProxySubscribeMessage,
-} from "../src";
-import { TableSchema } from "@finos/vuu-data-types";
+  TableSchema,
+} from "@finos/vuu-data-types";
+import { WebSocketConnection } from "../src/WebSocketConnection";
 
 export const COMMON_ATTRS = {
   module: "TEST",
@@ -44,7 +44,7 @@ export const sizeRow = (viewPortId = "server-vp-1", vpSize = 100) =>
     rowIndex: -1,
     rowKey: "SIZE",
     updateType: "SIZE",
-  } as VuuRow);
+  }) as VuuRow;
 
 export const createTableRows = (
   viewPortId,
@@ -53,7 +53,7 @@ export const createTableRows = (
   vpSize = 100,
   ts = 1,
   sel: 0 | 1 = 0,
-  numericValue = 1000
+  numericValue = 1000,
 ): VuuRow[] => {
   const results: VuuRow[] = [];
   for (let rowIndex = from; rowIndex < to; rowIndex++) {
@@ -75,10 +75,10 @@ export const createTableRows = (
 };
 
 export const createTableGroupRows = (
-  includeSizeRow = true
-): ServerToClientMessage<ServerToClientTableRows> => {
+  includeSizeRow = true,
+): VuuServerMessage<ServerToClientTableRows> => {
   // prettier-ignore
-  const message: ServerToClientMessage<ServerToClientTableRows> =  {
+  const message: VuuServerMessage<ServerToClientTableRows> =  {
     ...COMMON_ATTRS,
     requestId: '1',
     body: {
@@ -146,7 +146,7 @@ export const updateTableRow = (
   viewPortId,
   rowIndex,
   updatedVal,
-  { vpSize = 100, ts = 2 } = {}
+  { vpSize = 100, ts = 2 } = {},
 ): VuuRow => {
   const key = ("0" + rowIndex).slice(-2);
   const rowKey = `key-${key}`;
@@ -187,8 +187,8 @@ export const createSubscription = ({
   viewport = `client-vp-${key}`
 } = {}): [
   ServerProxySubscribeMessage, 
-  ServerToClientMessage<ServerToClientCreateViewPortSuccess>,
-  ServerToClientMessage<ServerToClientTableMeta>
+  VuuServerMessage<VuuViewportCreateResponse>,
+  VuuServerMessage<VuuTableMetaResponse>
 ] => [
   { 
     aggregations,
@@ -233,14 +233,9 @@ export const createSubscription = ({
   }
 ];
 
-const mockConnection = {
-  send: vi.fn(),
-  status: "ready" as const,
-};
-
 export const subscribe = async (
   serverProxy: ServerProxy,
-  { bufferSize = 0, key = "1", to = 10 }: SubscriptionDetails
+  { bufferSize = 0, key = "1", to = 10 }: SubscriptionDetails,
 ) => {
   const [clientSubscription, serverSubscriptionAck, tableMetaResponse] =
     createSubscription({ bufferSize, key, to });
@@ -258,8 +253,22 @@ export type SubscriptionDetails = {
 };
 
 export type Mock = { mockClear: () => void };
-export type MockedConnection = Omit<Connection, "send"> & {
-  send: Connection["send"] & Mock;
+export type MockedConnection = Omit<
+  WebSocketConnection,
+  "on" | "protocols" | "send"
+> & {
+  on: WebSocketConnection["on"] & Mock;
+  send: WebSocketConnection["send"] & Mock;
+};
+
+export const createConnection = () => {
+  return {
+    connectionTimeout: 0,
+    on: vi.fn(),
+    requiresLogin: true,
+    send: vi.fn(),
+    status: "ready" as const,
+  };
 };
 
 export const createFixtures = async (
@@ -268,22 +277,18 @@ export const createFixtures = async (
     connection?: MockedConnection;
     key?: string;
     to?: number;
-  } = {}
+  } = {},
 ): Promise<
   [ServerProxy, PostMessageToClientCallback & Mock, MockedConnection]
 > => {
   const postMessageToClient = vi.fn();
-  const connection = {
-    send: vi.fn(),
-    status: "ready" as const,
-  };
-
+  const connection = createConnection();
   const serverProxy = await createServerProxyAndSubscribeToViewport(
     postMessageToClient,
     {
       ...proxyParams,
       connection,
-    }
+    },
   );
 
   return [serverProxy, postMessageToClient, connection];
@@ -293,10 +298,10 @@ export const createServerProxyAndSubscribeToViewport = async (
   postMessageToClient: any,
   {
     bufferSize = 0,
-    connection = mockConnection,
+    connection = createConnection(),
     key = "1",
     to = 10,
-  }: { bufferSize?: number; connection?: any; key?: string; to?: number } = {}
+  }: { bufferSize?: number; connection?: any; key?: string; to?: number } = {},
 ) => {
   const serverProxy = new ServerProxy(connection, postMessageToClient);
   //TODO we shouldn't be able to bypass checks like this

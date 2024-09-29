@@ -1,3 +1,4 @@
+import "./global-mocks";
 import { LayoutJSON } from "@finos/vuu-utils";
 import { describe, expect, it } from "vitest";
 import { isLayoutJSON } from "../src";

@@ -13,7 +13,6 @@ export interface DataSourceHookProps {
   dataSource: DataSource;
   onSizeChange: (size: number) => void;
   onSubscribed: (subscription: DataSourceSubscribedMessage) => void;
-  range?: VuuRange;
   renderBufferSize?: number;
 }
 
@@ -21,17 +20,16 @@ export const useDataSource = ({
   dataSource,
   onSizeChange,
   onSubscribed,
-  range = NULL_RANGE,
   renderBufferSize = 0,
 }: DataSourceHookProps) => {
   const [, forceUpdate] = useState<unknown>(null);
   const data = useRef<DataSourceRow[]>([]);
   const isMounted = useRef(true);
   const hasUpdated = useRef(false);
-  const rangeRef = useRef<VuuRange>(range);
+  const rangeRef = useRef<VuuRange>(NULL_RANGE);
 
   const dataWindow = useMemo(
-    () => new MovingWindow(getFullRange(range, renderBufferSize)),
+    () => new MovingWindow(getFullRange(NULL_RANGE, renderBufferSize)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
@@ -45,8 +43,6 @@ export const useDataSource = ({
       if (isMounted.current) {
         // TODO do we ever need to worry about missing updates here ?
         forceUpdate({});
-      } else {
-        // do nothing
       }
     },
     [dataWindow],
@@ -73,6 +69,11 @@ export const useDataSource = ({
           data.current = dataWindow.data;
           hasUpdated.current = true;
         }
+      } else if (message.type === "viewport-clear") {
+        onSizeChange?.(0);
+        dataWindow.setRowCount(0);
+        setData([]);
+        forceUpdate({});
       } else {
         console.log(`useDataSource unexpected message ${message.type}`);
       }
@@ -86,39 +87,41 @@ export const useDataSource = ({
 
   useEffect(() => {
     isMounted.current = true;
-    dataSource.resume?.();
+    if (dataSource.status !== "initialising") {
+      dataSource.resume?.(datasourceMessageHandler);
+    }
     return () => {
       isMounted.current = false;
       dataSource.suspend?.();
     };
-  }, [dataSource]);
+  }, [dataSource, datasourceMessageHandler]);
 
   useEffect(() => {
     if (dataSource.status === "disabled") {
       dataSource.enable?.(datasourceMessageHandler);
-    } else {
-      //TODO could we improve this by using a ref for range ?
-      dataSource?.subscribe(
-        { range: getFullRange(range, renderBufferSize) },
-        datasourceMessageHandler,
-      );
     }
-  }, [dataSource, datasourceMessageHandler, range, renderBufferSize]);
+  }, [dataSource, datasourceMessageHandler, renderBufferSize]);
 
   const setRange = useCallback(
     (range: VuuRange) => {
       if (!rangesAreSame(range, rangeRef.current)) {
         const fullRange = getFullRange(range, renderBufferSize);
         dataWindow.setRange(fullRange);
-        dataSource.range = rangeRef.current = fullRange;
+
+        if (dataSource.status !== "subscribed") {
+          dataSource?.subscribe({ range: fullRange }, datasourceMessageHandler);
+        } else {
+          dataSource.range = rangeRef.current = fullRange;
+        }
         // emit a range event omitting the renderBufferSize
         // This isn't great, we're using the dataSource as a conduit to emit a
-        // message that has nothing to do with the dataSource itself. CLient
+        // message that has nothing to do with the dataSource itself. Client
         // is the DataSourceState component.
+        // WHY CANT THIS BE DONE WITHIN DataSOurce ?
         dataSource.emit("range", range);
       }
     },
-    [dataSource, dataWindow, renderBufferSize],
+    [dataSource, dataWindow, datasourceMessageHandler, renderBufferSize],
   );
 
   return {

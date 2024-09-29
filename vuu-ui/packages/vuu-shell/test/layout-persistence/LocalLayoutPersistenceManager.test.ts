@@ -9,11 +9,11 @@ import {
   saveLocalEntity,
 } from "@finos/vuu-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { LocalPersistenceManager } from "../../src/persistence-manager";
+import { LocalPersistenceManager } from "../../src/persistence-manager/LocalPersistenceManager";
 
 const expectPromiseRejectsWithError = (
   f: () => Promise<unknown>,
-  message: string
+  message: string,
 ) => {
   expect(f).rejects.toStrictEqual(new Error(message));
 };
@@ -79,7 +79,7 @@ describe("createLayout", () => {
   it("persists to local storage with a unique ID and current date", async () => {
     const { id, created } = await persistenceManager.createLayout(
       metadataToAdd,
-      layoutToAdd
+      layoutToAdd,
     );
 
     const persistedMetadata =
@@ -108,7 +108,7 @@ describe("createLayout", () => {
 
     const { id, created } = await persistenceManager.createLayout(
       metadataToAdd,
-      layoutToAdd
+      layoutToAdd,
     );
     expect(id).not.toEqual(existingId);
 
@@ -140,7 +140,7 @@ describe("updateLayout", () => {
     await persistenceManager.updateLayout(
       existingId,
       metadataToUpdate,
-      layoutToAdd
+      layoutToAdd,
     );
 
     const persistedMetadata =
@@ -169,9 +169,9 @@ describe("updateLayout", () => {
         persistenceManager.updateLayout(
           existingId,
           metadataToUpdate,
-          layoutToAdd
+          layoutToAdd,
         ),
-      `No metadata with ID ${existingId}`
+      `No metadata with ID ${existingId}`,
     );
   });
 
@@ -183,9 +183,9 @@ describe("updateLayout", () => {
         persistenceManager.updateLayout(
           existingId,
           metadataToUpdate,
-          layoutToAdd
+          layoutToAdd,
         ),
-      `No layout with ID ${existingId}`
+      `No layout with ID ${existingId}`,
     );
   });
 
@@ -197,9 +197,9 @@ describe("updateLayout", () => {
         persistenceManager.updateLayout(
           requestedId,
           metadataToUpdate,
-          layoutToAdd
+          layoutToAdd,
         ),
-      `No metadata with ID ${requestedId}; No layout with ID ${requestedId}`
+      `No metadata with ID ${requestedId}; No layout with ID ${requestedId}`,
     );
   });
 
@@ -212,9 +212,9 @@ describe("updateLayout", () => {
         persistenceManager.updateLayout(
           existingId,
           metadataToUpdate,
-          layoutToAdd
+          layoutToAdd,
         ),
-      `Non-unique metadata with ID ${existingId}`
+      `Non-unique metadata with ID ${existingId}`,
     );
   });
 
@@ -227,9 +227,9 @@ describe("updateLayout", () => {
         persistenceManager.updateLayout(
           existingId,
           metadataToUpdate,
-          layoutToAdd
+          layoutToAdd,
         ),
-      `Non-unique layout with ID ${existingId}`
+      `Non-unique layout with ID ${existingId}`,
     );
   });
 
@@ -242,9 +242,9 @@ describe("updateLayout", () => {
         persistenceManager.updateLayout(
           existingId,
           metadataToUpdate,
-          layoutToAdd
+          layoutToAdd,
         ),
-      `Non-unique metadata with ID ${existingId}; Non-unique layout with ID ${existingId}`
+      `Non-unique metadata with ID ${existingId}; Non-unique layout with ID ${existingId}`,
     );
   });
 
@@ -256,9 +256,9 @@ describe("updateLayout", () => {
         persistenceManager.updateLayout(
           existingId,
           metadataToUpdate,
-          layoutToAdd
+          layoutToAdd,
         ),
-      `Non-unique metadata with ID ${existingId}; No layout with ID ${existingId}`
+      `Non-unique metadata with ID ${existingId}; No layout with ID ${existingId}`,
     );
   });
 
@@ -270,9 +270,9 @@ describe("updateLayout", () => {
         persistenceManager.updateLayout(
           existingId,
           metadataToUpdate,
-          layoutToAdd
+          layoutToAdd,
         ),
-      `No metadata with ID ${existingId}; Non-unique layout with ID ${existingId}`
+      `No metadata with ID ${existingId}; Non-unique layout with ID ${existingId}`,
     );
   });
 });
@@ -297,7 +297,7 @@ describe("deleteLayout", () => {
 
     expectPromiseRejectsWithError(
       () => persistenceManager.deleteLayout(existingId),
-      `No metadata with ID ${existingId}`
+      `No metadata with ID ${existingId}`,
     );
   });
 
@@ -306,7 +306,7 @@ describe("deleteLayout", () => {
 
     expectPromiseRejectsWithError(
       () => persistenceManager.deleteLayout(existingId),
-      `No layout with ID ${existingId}`
+      `No layout with ID ${existingId}`,
     );
   });
 
@@ -315,7 +315,7 @@ describe("deleteLayout", () => {
 
     expectPromiseRejectsWithError(
       () => persistenceManager.deleteLayout(requestedId),
-      `No metadata with ID ${requestedId}; No layout with ID ${requestedId}`
+      `No metadata with ID ${requestedId}; No layout with ID ${requestedId}`,
     );
   });
 
@@ -325,7 +325,7 @@ describe("deleteLayout", () => {
 
     expectPromiseRejectsWithError(
       () => persistenceManager.deleteLayout(existingId),
-      `Non-unique metadata with ID ${existingId}`
+      `Non-unique metadata with ID ${existingId}`,
     );
   });
 
@@ -335,7 +335,7 @@ describe("deleteLayout", () => {
 
     expectPromiseRejectsWithError(
       () => persistenceManager.deleteLayout(existingId),
-      `Non-unique layout with ID ${existingId}`
+      `Non-unique layout with ID ${existingId}`,
     );
   });
 
@@ -345,7 +345,7 @@ describe("deleteLayout", () => {
 
     expectPromiseRejectsWithError(
       () => persistenceManager.deleteLayout(existingId),
-      `Non-unique metadata with ID ${existingId}; Non-unique layout with ID ${existingId}`
+      `Non-unique metadata with ID ${existingId}; Non-unique layout with ID ${existingId}`,
     );
   });
 
@@ -354,7 +354,7 @@ describe("deleteLayout", () => {
 
     expectPromiseRejectsWithError(
       () => persistenceManager.deleteLayout(existingId),
-      `Non-unique metadata with ID ${existingId}; No layout with ID ${existingId}`
+      `Non-unique metadata with ID ${existingId}; No layout with ID ${existingId}`,
     );
   });
 
@@ -363,7 +363,7 @@ describe("deleteLayout", () => {
 
     expectPromiseRejectsWithError(
       () => persistenceManager.deleteLayout(existingId),
-      `No metadata with ID ${existingId}; Non-unique layout with ID ${existingId}`
+      `No metadata with ID ${existingId}; Non-unique layout with ID ${existingId}`,
     );
   });
 });
@@ -391,7 +391,7 @@ describe("loadLayout", () => {
 
     expectPromiseRejectsWithError(
       () => persistenceManager.loadLayout(existingId),
-      `No layout with ID ${existingId}`
+      `No layout with ID ${existingId}`,
     );
   });
 
@@ -400,7 +400,7 @@ describe("loadLayout", () => {
 
     expectPromiseRejectsWithError(
       () => persistenceManager.loadLayout(requestedId),
-      `No layout with ID ${requestedId}`
+      `No layout with ID ${requestedId}`,
     );
   });
 
@@ -419,7 +419,7 @@ describe("loadLayout", () => {
 
     expectPromiseRejectsWithError(
       () => persistenceManager.loadLayout(existingId),
-      `Non-unique layout with ID ${existingId}`
+      `Non-unique layout with ID ${existingId}`,
     );
   });
 
@@ -429,7 +429,7 @@ describe("loadLayout", () => {
 
     expectPromiseRejectsWithError(
       () => persistenceManager.loadLayout(existingId),
-      `Non-unique layout with ID ${existingId}`
+      `Non-unique layout with ID ${existingId}`,
     );
   });
 
@@ -438,7 +438,7 @@ describe("loadLayout", () => {
 
     expectPromiseRejectsWithError(
       () => persistenceManager.loadLayout(existingId),
-      `No layout with ID ${existingId}`
+      `No layout with ID ${existingId}`,
     );
   });
 
@@ -447,7 +447,7 @@ describe("loadLayout", () => {
 
     expectPromiseRejectsWithError(
       () => persistenceManager.loadLayout(existingId),
-      `Non-unique layout with ID ${existingId}`
+      `Non-unique layout with ID ${existingId}`,
     );
   });
 });

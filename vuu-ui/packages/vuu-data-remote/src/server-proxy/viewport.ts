@@ -35,7 +35,7 @@ import {
   ClientToServerOpenTreeNode,
   VuuRemoveVisualLink,
   ClientToServerSelection,
-  ClientToServerViewPortRange,
+  VuuViewportRangeRequest,
   LinkDescriptorWithLabel,
   VuuViewportCreateResponse,
   VuuAggregation,
@@ -58,6 +58,12 @@ import {
 import { getFirstAndLastRows } from "../message-utils";
 import { ArrayBackedMovingWindow } from "./array-backed-moving-window";
 import * as Message from "./messages";
+
+export type ViewportStatus =
+  | ""
+  | "subscribing"
+  | "resubscribing"
+  | "subscribed";
 
 const { debug, debugEnabled, error, info, infoEnabled, warn } =
   logger("viewport");
@@ -123,7 +129,7 @@ type AsyncOperation =
   | VuuRemoveVisualLink;
 
 type RangeRequestTuple = [
-  ClientToServerViewPortRange | null,
+  VuuViewportRangeRequest | null,
   DataSourceRow[]?,
   DataSourceDebounceRequest?,
 ];
@@ -156,6 +162,8 @@ const NO_UPDATE_STATUS: LastUpdateStatus = {
 };
 
 export class Viewport {
+  #status: ViewportStatus = "";
+
   private aggregations: VuuAggregation[];
   /** batchMode is irrelevant for Vuu Table, it was introduced to try and improve rendering performance of AgGrid */
   private batchMode = true;
@@ -175,7 +183,7 @@ export class Viewport {
   private keys: KeySet;
   private pendingLinkedParent?: LinkDescriptorWithLabel;
   private pendingOperations = new Map<string, AsyncOperation>();
-  private pendingRangeRequests: (ClientToServerViewPortRange & {
+  private pendingRangeRequests: (VuuViewportRangeRequest & {
     acked?: boolean;
     requestId: string;
   })[] = [];
@@ -195,7 +203,6 @@ export class Viewport {
   public linkedParent?: LinkedParent;
   public serverViewportId?: string;
   // TODO roll disabled/suspended into status
-  public status: "" | "subscribing" | "resubscribing" | "subscribed" = "";
   public suspended = false;
   public suspendTimer: number | null = null;
   public table: VuuTable;
@@ -282,10 +289,18 @@ export class Viewport {
     return this.dataWindow.rowCount ?? 0;
   }
 
+  get status() {
+    return this.#status;
+  }
+
+  set status(status: ViewportStatus) {
+    this.#status = status;
+  }
+
   subscribe() {
     const { filter } = this.filter;
     this.status =
-      this.status === "subscribed" ? "resubscribing" : "subscribing";
+      this.#status === "subscribed" ? "resubscribing" : "subscribing";
     return {
       type: Message.CREATE_VP,
       table: this.table,
@@ -490,6 +505,7 @@ export class Viewport {
     if (debugEnabled) {
       this.rangeMonitor.set(range);
     }
+
     // If we can satisfy the range request from the buffer, we will.
     // May or may not need to make a server request, depending on status of buffer
     const type = "CHANGE_VP_RANGE";
@@ -515,7 +531,7 @@ export class Viewport {
               type,
               viewPortId: this.serverViewportId,
               ...getFullRange(range, this.bufferSize, maxRange),
-            } as ClientToServerViewPortRange)
+            } as VuuViewportRangeRequest)
           : null;
       if (serverRequest) {
         debugEnabled &&
@@ -523,6 +539,8 @@ export class Viewport {
             `create CHANGE_VP_RANGE: [${serverRequest.from} - ${serverRequest.to}]`,
           );
         // TODO check that there is not already a pending server request for more data
+        // were we await an operation that might not be sent (if still subscribing)
+
         this.awaitOperation(requestId, { type });
         const pendingRequest = this.pendingRangeRequests.at(-1);
         if (pendingRequest) {

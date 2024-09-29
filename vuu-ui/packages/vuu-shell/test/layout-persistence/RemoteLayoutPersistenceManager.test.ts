@@ -1,3 +1,4 @@
+import "@finos/vuu-layout/test/global-mocks";
 import {
   LayoutJSON,
   LayoutMetadata,
@@ -98,7 +99,7 @@ describe("RemotePersistenceManager", () => {
 
       expectPromiseRejectsWithError(
         () => persistence.createLayout(metadata, layout),
-        errorMessage
+        errorMessage,
       );
     });
 
@@ -112,7 +113,7 @@ describe("RemotePersistenceManager", () => {
 
       expectPromiseRejectsWithError(
         () => persistence.createLayout(metadata, layout),
-        "Response did not contain valid metadata"
+        "Response did not contain valid metadata",
       );
     });
 
@@ -121,7 +122,7 @@ describe("RemotePersistenceManager", () => {
 
       expectPromiseRejectsWithError(
         () => persistence.createLayout(metadata, layout),
-        fetchError.message
+        fetchError.message,
       );
     });
   });
@@ -151,7 +152,7 @@ describe("RemotePersistenceManager", () => {
 
       expectPromiseRejectsWithError(
         () => persistence.updateLayout(uniqueId, metadata, layout),
-        errorMessage
+        errorMessage,
       );
     });
 
@@ -160,7 +161,7 @@ describe("RemotePersistenceManager", () => {
 
       expectPromiseRejectsWithError(
         () => persistence.updateLayout(uniqueId, metadata, layout),
-        fetchError.message
+        fetchError.message,
       );
     });
   });
@@ -190,7 +191,7 @@ describe("RemotePersistenceManager", () => {
 
       expectPromiseRejectsWithError(
         () => persistence.deleteLayout(uniqueId),
-        errorMessage
+        errorMessage,
       );
     });
 
@@ -199,7 +200,7 @@ describe("RemotePersistenceManager", () => {
 
       expectPromiseRejectsWithError(
         () => persistence.deleteLayout(uniqueId),
-        fetchError.message
+        fetchError.message,
       );
     });
   });
@@ -233,7 +234,7 @@ describe("RemotePersistenceManager", () => {
 
       expectPromiseRejectsWithError(
         () => persistence.loadMetadata(),
-        errorMessage
+        errorMessage,
       );
     });
 
@@ -247,7 +248,7 @@ describe("RemotePersistenceManager", () => {
 
       expectPromiseRejectsWithError(
         () => persistence.loadMetadata(),
-        "Response did not contain valid metadata"
+        "Response did not contain valid metadata",
       );
     });
 
@@ -256,7 +257,7 @@ describe("RemotePersistenceManager", () => {
 
       expectPromiseRejectsWithError(
         () => persistence.loadMetadata(),
-        fetchError.message
+        fetchError.message,
       );
     });
   });
@@ -288,7 +289,7 @@ describe("RemotePersistenceManager", () => {
 
       expectPromiseRejectsWithError(
         () => persistence.loadLayout(uniqueId),
-        errorMessage
+        errorMessage,
       );
     });
 
@@ -302,7 +303,7 @@ describe("RemotePersistenceManager", () => {
 
       expectPromiseRejectsWithError(
         () => persistence.loadLayout(uniqueId),
-        "Response did not contain a valid layout"
+        "Response did not contain a valid layout",
       );
     });
 
@@ -311,7 +312,7 @@ describe("RemotePersistenceManager", () => {
 
       expectPromiseRejectsWithError(
         () => persistence.loadLayout(uniqueId),
-        fetchError.message
+        fetchError.message,
       );
     });
   });

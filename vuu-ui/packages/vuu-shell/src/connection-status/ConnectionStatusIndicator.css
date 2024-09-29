@@ -1,68 +1,85 @@
-.vuuStatus-container {
-	display: flex;
+@keyframes squeeze {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(0.85);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
-.vuuStatus-text {
-	align-self: center;
+.ConnectionStatusIndicator {
+  --ball-size-large: 20px;
+  --ball-size-small: 14px;
+  --ballbox-padding: 4px;
+
+  height: var(--ballbox-height);
+  padding: 0 4px;
+  position: relative;
+
+  &.expanded {
+    .Ball.large {
+      animation-duration: 0.8s;
+      animation-name: squeeze;
+      transform-origin: center;
+    }
+    .Ball.small {
+      transform: translateX(calc(var(--ball-size-large) * var(--i)));
+    }
+  }
 }
 
-
-.vuuStatus {
-	--vuu-icon-height: 18px;
-	--vuu-icon-padding: var(--vuuStatus-padding, 6px);
-	--vuu-icon-width: var(--vuuStatus-width, auto);
-	--vuu-icon-min-width: var(--vuuStatus-min-width, 20px);
-	align-items: center;
-	display: inline-flex;
-	height: var(--vuu-icon-height);
-	justify-content: center;
-	min-width: var(--vuu-icon-min-width);
-	padding: 0 var(--vuu-icon-padding);
-	width: var(--vuu-icon-width);
-	position: relative;
+.ConnectionStatusIndicator-inactive {
+  --ball-color: lightgray;
 }
 
-.vuuStatus[data-icon]::after {
-	inset: 0 0 0 0;
-	content: '';
-	box-shadow: 0 0 0 0 black;
-	position: absolute;
-	mask: var(--vuu-icon-svg) center center/20px 20px no-repeat;
-	-webkit-mask: var(--vuu-icon-svg) center center/20px 20px no-repeat;
+.ConnectionStatusIndicator-closed {
+  --ball-color: lightgray;
+  .Ball.large {
+    transition: background-color 1s linear;
+  }
 }
 
-.vuuActiveStatus::after {
-	--vuu-icon-svg: var(--svg-active-status);
-	background-color: rgb(0, 255, 0);
+.ConnectionStatusIndicator-connected {
+  --ball-color: green;
 }
 
-.vuuConnectingStatus::after {
-	--vuu-icon-svg: var(--svg-connecting-status);
-	background-color: orange;
-	transform: scale(1);
-	animation: infinite pulse 1s;
+.ConnectionStatusIndicator-connecting {
+  --ball-color: red;
+}
+.ConnectionStatusIndicator-disconnected {
+  --ball-color: red;
 }
 
-.vuuDisconnectedStatus::after {
-	--vuu-icon-svg: var(--svg-disconnected-status);
-	background-color: red;
-	transform: scale(1);
-	animation: infinite pulse 0.5s;
+.Ball.large {
+  background-color: var(--ball-color);
+  border-radius: calc(var(--ball-size-large) / 2);
+  height: var(--ball-size-large);
+  right: var(--ballbox-padding);
+  top: calc(var(--ballbox-height) / 2 - (var(--ball-size-large) / 2));
+  position: absolute;
+  transition: transform 0.8s linear;
+
+  width: var(--ball-size-large);
+  z-index: 1;
 }
 
-@keyframes pulse {
-	0% {
-		transform: scale(0.95);
-		box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7);
-	}
+.Ball.small {
+  background-color: var(--ball-color);
+  border-radius: calc(var(--ball-size-small) / 2);
+  height: var(--ball-size-small);
+  position: absolute;
+  right: calc(
+    var(--ballbox-padding) + (var(--ball-size-large) - var(--ball-size-small)) /
+      2
+  );
+  top: calc(var(--ballbox-height) / 2 - (var(--ball-size-small) / 2));
+  width: var(--ball-size-small);
 
-	70% {
-		transform: scale(1);
-		box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
-	}
-
-	100% {
-		transform: scale(0.95);
-		box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
-	}
+  transition: transform 0.4s ease-out;
+  transition-delay: 0.1s;
 }

@@ -33,6 +33,7 @@ export const toDataSourceConfig = (
 const datasourceMessages = [
   "config",
   "aggregate",
+  "viewport-clear",
   "viewport-update",
   "columns",
   "debounce-begin",
