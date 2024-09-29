@@ -45,7 +45,7 @@ describe("WebSocketConnection", () => {
       const websocketConnection = new WebSocketConnection({
         callback,
         protocols: "",
-        url: "ws://test",
+        url: "wss://test",
       });
       websocketConnection.on("connection-status", connectionCallback);
 
@@ -74,7 +74,7 @@ describe("WebSocketConnection", () => {
       const websocketConnection = new WebSocketConnection({
         callback,
         protocols: "",
-        url: "ws://test",
+        url: "wss://test",
       });
       websocketConnection.on("connection-status", connectionCallback);
 
@@ -110,7 +110,7 @@ describe("WebSocketConnection", () => {
       const websocketConnection = new WebSocketConnection({
         callback,
         protocols: "",
-        url: "ws://test",
+        url: "wss://test",
       });
       websocketConnection.on("connection-status", connectionCallback);
 
@@ -150,7 +150,7 @@ describe("WebSocketConnection", () => {
       const websocketConnection = new WebSocketConnection({
         callback,
         protocols: "",
-        url: "ws://test",
+        url: "wss://test",
       });
       websocketConnection.on("connection-status", connectionCallback);
 
@@ -192,7 +192,7 @@ describe("WebSocketConnection", () => {
       const websocketConnection = new WebSocketConnection({
         callback,
         protocols: "",
-        url: "ws://test",
+        url: "wss://test",
       });
       websocketConnection.on("connection-status", connectionCallback);
 
@@ -239,7 +239,7 @@ describe("WebSocketConnection", () => {
       const websocketConnection = new WebSocketConnection({
         callback,
         protocols: "",
-        url: "ws://test",
+        url: "wss://test",
       });
       websocketConnection.on("connection-status", connectionCallback);
 
@@ -291,7 +291,7 @@ describe("WebSocketConnection", () => {
       const websocketConnection = new WebSocketConnection({
         callback,
         protocols: "",
-        url: "ws://test",
+        url: "wss://test",
       });
       websocketConnection.on("connection-status", connectionCallback);
 

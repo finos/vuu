@@ -8,7 +8,6 @@ import { useUserSetting } from "../application-provider";
 import { Settings } from "@finos/vuu-utils";
 import { ConnectionStateDisplay } from "../connection-status";
 import { useEffect, useState } from "react";
-import { Button } from "@salt-ds/core";
 
 const classBase = "vuuAppStatusBar";
 

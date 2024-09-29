@@ -14,7 +14,7 @@ import {
   TableSelectionModel,
   TableRowSelectHandlerInternal,
 } from "@finos/vuu-table-types";
-import { VuuRange, VuuSortType } from "@finos/vuu-protocol-types";
+import { VuuSortType } from "@finos/vuu-protocol-types";
 import {
   DragStartHandler,
   MeasuredProps,

@@ -7,6 +7,10 @@
     {
       "id": "CVE-2024-4068",
       "reason": "Lib used only in dev tooling (ESLint) no possibility of attack"
+    },
+    {
+      "id": "CVE-2024-47068",
+      "reason": "Lib used only in dev tooling (Rollup) no possibility of attack"
     }
   ]
 }
