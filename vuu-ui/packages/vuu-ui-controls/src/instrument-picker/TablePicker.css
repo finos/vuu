@@ -1,0 +1,10 @@
+.vuuTablePicker {
+  border-radius: 6px;
+  height: var(--salt-size-base);
+  padding: 1px;
+  box-sizing: content-box;
+}
+
+.vuuTablePicker-floating-table {
+  overflow: auto;
+}

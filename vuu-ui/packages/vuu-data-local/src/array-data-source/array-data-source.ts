@@ -252,6 +252,7 @@ export class ArrayDataSource
   }
 
   suspend() {
+    console.log(`suspend`);
     if (this.#status !== "unsubscribed") {
       info?.(`suspend #${this.viewport}, current status ${this.#status}`);
       this.#status = "suspended";
@@ -259,13 +260,21 @@ export class ArrayDataSource
     }
   }
 
-  resume() {
+  resume(callback?: SubscribeCallback) {
+    console.log(`resume`);
+
     const isSuspended = this.#status === "suspended";
     info?.(`resume #${this.viewport}, current status ${this.#status}`);
+    if (callback) {
+      this.clientCallback = callback;
+    }
+
     if (isSuspended) {
       this.#status = "subscribed";
     }
     this.emit("resumed", this.viewport);
+
+    this.sendRowsToClient(true);
   }
 
   disable() {

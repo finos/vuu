@@ -1,6 +1,7 @@
 import {
   getAllSchemas,
   getSchema,
+  LocalDataSourceProvider,
   SimulTableName,
   vuuModule,
 } from "@finos/vuu-data-test";
@@ -10,16 +11,17 @@ import type {
   ColumnDescriptor,
   TableRowSelectHandler,
 } from "@finos/vuu-table-types";
-import { InstrumentPicker } from "@finos/vuu-ui-controls";
-import { buildColumnMap, ColumnMap } from "@finos/vuu-utils";
+import { InstrumentPicker, TablePicker } from "@finos/vuu-ui-controls";
+import { buildColumnMap, ColumnMap, useDataSource } from "@finos/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { useTestDataSource } from "../utils";
 
 let displaySequence = 0;
 
-export const DefaultInstrumentPicker = () => {
+const TablePickerTemplate = () => {
   const tableName: SimulTableName = "instruments";
   const schema = getSchema(tableName);
+  const { VuuDataSource } = useDataSource();
 
   const [tableProps, columnMap, searchColumns] = useMemo<
     [Pick<TableProps, "config" | "dataSource">, ColumnMap, string[]]
@@ -31,13 +33,14 @@ export const DefaultInstrumentPicker = () => {
           rowSeparators: true,
           zebraStripes: true,
         },
-        dataSource:
-          vuuModule<SimulTableName>("SIMUL").createDataSource(tableName),
+        dataSource: new VuuDataSource({
+          table: { module: "SIMUL", table: "instruments" },
+        }),
       },
       buildColumnMap(schema.columns),
       ["bbg", "description"],
     ];
-  }, [schema.columns]);
+  }, [VuuDataSource, schema.columns]);
 
   const itemToString = useCallback((row: DataSourceRowObject) => {
     return String(row.data.description);
@@ -50,17 +53,33 @@ export const DefaultInstrumentPicker = () => {
   }, []);
 
   return (
-    <InstrumentPicker
-      TableProps={tableProps}
-      columnMap={columnMap}
-      itemToString={itemToString}
-      onSelect={handleSelect}
-      schema={schema}
-      searchColumns={searchColumns}
-      style={{ width: 400 }}
-    />
+    <div
+      style={{
+        padding: 4,
+        width: 700,
+        display: "flex",
+        justifyContent: "space-around",
+      }}
+    >
+      <InstrumentPicker
+        TableProps={tableProps}
+        columnMap={columnMap}
+        itemToString={itemToString}
+        onSelect={handleSelect}
+        schema={schema}
+        searchColumns={searchColumns}
+        style={{ width: 300 }}
+      />
+      <TablePicker schema={schema} style={{ width: 300 }} />
+    </div>
   );
 };
+
+export const DefaultInstrumentPicker = () => (
+  <LocalDataSourceProvider modules={["SIMUL"]}>
+    <TablePickerTemplate />
+  </LocalDataSourceProvider>
+);
 DefaultInstrumentPicker.displaySequence = displaySequence++;
 
 export const InstrumentPickerVuuInstruments = () => {
@@ -89,7 +108,7 @@ export const InstrumentPickerVuuInstruments = () => {
         dataSource,
       },
     ],
-    [dataSource]
+    [dataSource],
   );
 
   const handleSelect = useCallback<TableRowSelectHandler>((row) => {

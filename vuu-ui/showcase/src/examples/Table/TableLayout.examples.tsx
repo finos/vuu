@@ -13,7 +13,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 import { VuuRpcMenuRequest } from "@finos/vuu-protocol-types";
 
-let displaySequence = 1;
+let displaySequence = 0;
 
 type DataTableProps = Partial<
   Omit<TableProps, "config"> & { config?: Partial<TableConfig> }

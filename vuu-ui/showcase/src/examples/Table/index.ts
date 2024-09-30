@@ -8,3 +8,4 @@ export * as BigData from "./BigData.examples";
 export * as ColumnLayout from "./ColumnLayout.examples";
 export * as TableLayout from "./TableLayout.examples";
 export * as BulkEdit from "./BulkEdit.examples";
+export * as TableVuuLayoutCombinations from "./TableVuuLayoutCombinations.examples";

@@ -52,6 +52,12 @@ export const TestTable = ({
   rowCount = 1000,
   rowHeight = 20,
   width = 1000,
+}: {
+  height?: string | number;
+  renderBufferSize?: number;
+  rowCount?: number;
+  rowHeight?: number;
+  width?: string | number;
 }) => {
   const config = useMemo<TableConfig>(
     () => ({
