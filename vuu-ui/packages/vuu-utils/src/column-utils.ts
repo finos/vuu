@@ -1044,10 +1044,12 @@ const measureColumns = (
 ) =>
   columns.reduce<ColumnStats>(
     (aggregated, column) => {
-      aggregated.totalMinWidth += column.minWidth ?? defaultMinWidth;
-      aggregated.totalMaxWidth += column.maxWidth ?? defaultMaxWidth;
-      aggregated.totalWidth += column.width;
-      aggregated.flexCount += column.flex ?? 0;
+      if (column.hidden !== true) {
+        aggregated.totalMinWidth += column.minWidth ?? defaultMinWidth;
+        aggregated.totalMaxWidth += column.maxWidth ?? defaultMaxWidth;
+        aggregated.totalWidth += column.width;
+        aggregated.flexCount += column.flex ?? 0;
+      }
       return aggregated;
     },
     { totalMinWidth: 0, totalMaxWidth: 0, totalWidth: 0, flexCount: 0 },

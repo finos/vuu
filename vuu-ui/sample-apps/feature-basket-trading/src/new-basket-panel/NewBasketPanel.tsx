@@ -1,16 +1,12 @@
-import {
-  DataSource,
-  DataSourceRowObject,
-  TableSchema,
-} from "@finos/vuu-data-types";
+import { DataSourceRowObject, TableSchema } from "@finos/vuu-data-types";
 import {
   DialogHeader,
   PopupComponent as Popup,
   Portal,
 } from "@finos/vuu-popups";
 import {
-  InstrumentPicker,
-  InstrumentPickerProps,
+  TablePicker,
+  TablePickerProps,
   VuuInput,
 } from "@finos/vuu-ui-controls";
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
@@ -25,11 +21,10 @@ const classBase = "vuuBasketNewBasketPanel";
 export type BasketCreatedHandler = (
   basketName: string,
   basketId: string,
-  instanceId: string
+  instanceId: string,
 ) => void;
 
 export interface NewBasketPanelProps extends HTMLAttributes<HTMLDivElement> {
-  basketDataSource: DataSource;
   basketSchema: TableSchema;
   onClose: () => void;
   onBasketCreated: BasketCreatedHandler;
@@ -39,41 +34,29 @@ const searchColumns = ["name"];
 
 export const NewBasketPanel = ({
   className,
-  basketDataSource,
   basketSchema,
   onClose,
   onBasketCreated,
   ...htmlAttributes
 }: NewBasketPanelProps) => {
   const {
-    columnMap,
     onChangeBasketName,
-    onOpenChangeInstrumentPicker,
     onSave,
     onSelectBasket,
     saveButtonDisabled,
     saveButtonRef,
   } = useNewBasketPanel({
-    basketDataSource,
     basketSchema,
     onBasketCreated,
   });
 
-  const tableProps = useMemo<InstrumentPickerProps["TableProps"]>(
+  const tableProps = useMemo<TablePickerProps["TableProps"]>(
     () => ({
       config: {
-        columns: [
-          { name: "id", hidden: true },
-          {
-            name: "name",
-            width: 200,
-          },
-        ],
-        rowSeparators: true,
+        columns: [{ name: "id", hidden: true }, { name: "name" }],
       },
-      dataSource: basketDataSource,
     }),
-    [basketDataSource]
+    [],
   );
 
   const itemToString = (row: DataSourceRowObject) => row.data.name as string;
@@ -104,13 +87,10 @@ export const NewBasketPanel = ({
             </FormField>
             <FormField>
               <FormFieldLabel>Basket Definition</FormFieldLabel>
-              <InstrumentPicker
+              <TablePicker
                 TableProps={tableProps}
-                columnMap={columnMap}
-                itemToString={itemToString}
-                onOpenChange={onOpenChangeInstrumentPicker}
                 onSelect={onSelectBasket}
-                searchColumns={searchColumns}
+                rowToString={itemToString}
                 schema={basketSchema}
               />
             </FormField>

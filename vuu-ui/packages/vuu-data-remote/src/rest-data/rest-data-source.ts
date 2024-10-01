@@ -8,14 +8,14 @@ import {
   DataSourceStatus,
   SubscribeCallback,
   SubscribeProps,
-  WithFullConfig
+  WithFullConfig,
 } from "@finos/vuu-data-types";
 import {
   VuuAggregation,
   VuuTable,
   VuuGroupBy,
   VuuRange,
-  VuuSort
+  VuuSort,
 } from "@finos/vuu-protocol-types";
 import {
   ColumnMap,
@@ -24,7 +24,7 @@ import {
   NULL_RANGE,
   buildColumnMap,
   uuid,
-  vanillaConfig
+  vanillaConfig,
 } from "@finos/vuu-utils";
 import { NDJsonReader, jsonToDataSourceRow } from "./rest-utils";
 import { MovingWindow } from "./moving-window";
@@ -42,12 +42,13 @@ export class RestDataSource
     "description",
     "exchange",
     "ric",
-    "lotSize"
+    "lotSize",
   ]);
   #config: WithFullConfig = vanillaConfig;
   #data: DataSourceRow[] = [];
   #dataWindow = new MovingWindow(NULL_RANGE);
   #range: VuuRange = NULL_RANGE;
+  #title: string | undefined;
 
   aggregations: VuuAggregation[] = [];
   filter: DataSourceFilter = { filter: "" };
@@ -57,11 +58,13 @@ export class RestDataSource
   sort: VuuSort = { sortDefs: [] };
   status: DataSourceStatus = "initialising";
   table: VuuTable;
+
   viewport: string;
 
   constructor({
     table,
-    viewport = uuid()
+    title,
+    viewport = uuid(),
   }: DataSourceConstructorProps & {
     url?: string;
   }) {
@@ -82,9 +85,10 @@ export class RestDataSource
         "exchange",
         "ric",
         "isin",
-        "lotSize"
-      ]
+        "lotSize",
+      ],
     };
+    this.#title = title;
   }
 
   static get url() {
@@ -94,9 +98,17 @@ export class RestDataSource
     this._url = url;
   }
 
+  get title() {
+    return this.#title ?? `${this.table.module} ${this.table.table}`;
+  }
+
+  set title(title: string) {
+    this.#title = title;
+  }
+
   async subscribe(
     { range, ...props }: SubscribeProps,
-    callback: SubscribeCallback
+    callback: SubscribeCallback,
   ) {
     if (range) {
       this.range = range;
@@ -138,14 +150,14 @@ export class RestDataSource
     const allDone = () => {
       const end = performance.now();
       console.log(
-        `processing ${this.#dataWindow.data.length} rows took ${end - start}ms`
+        `processing ${this.#dataWindow.data.length} rows took ${end - start}ms`,
       );
       this.clientCallback?.({
         clientViewportId: this.viewport,
         mode: "update",
         rows: this.#dataWindow.data,
         size: 200000,
-        type: "viewport-update"
+        type: "viewport-update",
       });
     };
 
@@ -155,16 +167,16 @@ export class RestDataSource
     const summaryUrl = `${url}/summary`;
 
     fetch(url, {
-      mode: "cors"
+      mode: "cors",
     }).then(
       NDJsonReader(
         this.#range.from,
         (index, json) =>
           this.#dataWindow.add(
-            jsonToDataSourceRow(index, json, this.#columnMap)
+            jsonToDataSourceRow(index, json, this.#columnMap),
           ),
-        allDone
-      )
+        allDone,
+      ),
     );
   }
 

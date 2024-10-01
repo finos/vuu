@@ -223,6 +223,12 @@ export interface DataSourceClearMessage extends MessageWithClientViewportId {
 }
 export interface DataSourceDataMessage extends MessageWithClientViewportId {
   mode: DataUpdateMode;
+  /**
+   * this is needed by the ArrayDataSource, biut not currently used by VuuDataSource.
+   * Suspect it will be valuable in any DtaSOurce and should eventually be made a
+   * required field.
+   */
+  range?: VuuRange;
   rows?: DataSourceRow[];
   size?: number;
   type: "viewport-update";
@@ -547,15 +553,6 @@ export interface DataSource
   closeTreeNode: (key: string, cascade?: boolean) => void;
   columns: string[];
   config: DataSourceConfig;
-
-  /**
-   * derived from pageSize and size
-   */
-  readonly pageCount: number;
-  /**
-   * If provided, this will be used to determine page count.
-   */
-  pageSize?: number;
 
   status: DataSourceStatus;
   /**

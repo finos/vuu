@@ -5,13 +5,14 @@ import {
   SimulTableName,
   vuuModule,
 } from "@finos/vuu-data-test";
-import { DataSource } from "@finos/vuu-data-types";
+import { DataSource, TableSchema } from "@finos/vuu-data-types";
 import {
   Flexbox,
   FlexboxLayout,
   LayoutProvider,
   View,
 } from "@finos/vuu-layout";
+import { VuuTable } from "@finos/vuu-protocol-types";
 import { ContextPanel } from "@finos/vuu-shell";
 import { GroupHeaderCell, Table, TableProps } from "@finos/vuu-table";
 import {
@@ -30,6 +31,7 @@ import {
   applyDefaultColumnConfig,
   defaultValueFormatter,
   registerComponent,
+  useDataSource,
 } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
 import {
@@ -39,10 +41,11 @@ import {
   useMemo,
   useState,
 } from "react";
-import { useTestDataSource } from "../utils";
+import { useAutoLoginToVuuServer, useTestDataSource } from "../utils";
 import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 
 import "./Table.examples.css";
+import { VuuDataSourceProvider } from "@finos/vuu-data-react";
 
 let displaySequence = 1;
 
@@ -275,27 +278,46 @@ export const EditableTableArrayData = () => {
 };
 EditableTableArrayData.displaySequence = displaySequence++;
 
-export const VuuInstruments = () => {
-  const schemas = getAllSchemas();
-  const { config, dataSource, error } = useTestDataSource({
-    // bufferSize: 1000,
-    schemas,
-  });
+const VuuTableTemplate = ({ schema }: { schema: TableSchema }) => {
+  useAutoLoginToVuuServer();
+  const { VuuDataSource } = useDataSource();
+  const dataSource = useMemo(() => {
+    const { table } = schema;
+    const dataSource = new VuuDataSource({
+      columns: schema.columns.map((c) => c.name),
+      table,
+    });
+    return dataSource;
+  }, [VuuDataSource, schema]);
 
-  const [tableConfig] = useState<TableConfig>(config);
+  console.log();
 
-  if (error) {
-    return error;
-  }
+  const config = useMemo<TableConfig>(
+    () => ({
+      columns: schema.columns,
+    }),
+    [schema.columns],
+  );
+
+  console.log({ columns: schema.columns });
 
   return (
     <Table
-      config={tableConfig}
+      config={config}
       dataSource={dataSource}
       height={625}
       renderBufferSize={5}
       width={715}
     />
+  );
+};
+
+export const VuuInstruments = () => {
+  const schema = getSchema("instruments");
+  return (
+    <VuuDataSourceProvider>
+      <VuuTableTemplate schema={schema} />
+    </VuuDataSourceProvider>
   );
 };
 VuuInstruments.displaySequence = displaySequence++;

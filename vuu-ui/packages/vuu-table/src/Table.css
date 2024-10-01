@@ -180,6 +180,11 @@
     height: calc(var(--content-height) - var(--total-header-height));
     position: relative;
   }
+
+  .vuuTableRow {
+    position: relative;
+    top: auto;
+  }
 }
 
 .vuuTable-pagination-container {

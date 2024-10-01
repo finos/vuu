@@ -1,28 +1,18 @@
-import { TableSchema } from "@finos/vuu-data-types";
-import { Table, TableProps } from "@finos/vuu-table";
+import type { DataSourceRowObject, TableSchema } from "@finos/vuu-data-types";
+import { Table, type TableProps } from "@finos/vuu-table";
 import {
-  flip,
-  size,
-  useClick,
-  useDismiss,
-  useInteractions,
-} from "@floating-ui/react";
-import {
-  FloatingComponentProps,
   Input,
   useFloatingComponent,
-  useFloatingUI,
   useIdMemo,
+  type FloatingComponentProps,
 } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { HTMLAttributes, forwardRef, useMemo, useState } from "react";
-import { useTablePicker } from "./useTablePicker";
-
+import { forwardRef, useMemo, type HTMLAttributes } from "react";
 import { IconButton } from "../icon-button";
 import tablePickerCss from "./TablePicker.css";
-import { data } from "cypress/types/jquery";
+import { useTablePicker } from "./useTablePicker";
 
 const classBase = "vuuTablePicker";
 
@@ -33,6 +23,8 @@ interface FloatingTableProps extends FloatingComponentProps {
 export interface TablePickerProps
   extends Omit<HTMLAttributes<HTMLElement>, "onSelect">,
     Pick<TableProps, "onSelect"> {
+  TableProps?: Pick<TableProps, "config">;
+  rowToString?: (row: DataSourceRowObject) => string;
   schema: TableSchema;
 }
 
@@ -63,7 +55,9 @@ const FloatingTable = forwardRef<HTMLDivElement, FloatingTableProps>(
 );
 
 export const TablePicker = ({
+  TableProps,
   onSelect,
+  rowToString,
   schema,
   ...htmlAttributes
 }: TablePickerProps) => {
@@ -74,42 +68,25 @@ export const TablePicker = ({
     window: targetWindow,
   });
 
-  const [open, setOpen] = useState(false);
-
   const tableId = useIdMemo();
-  const { context, x, y, strategy, elements, floating, reference } =
-    useFloatingUI({
-      open,
-      onOpenChange: setOpen,
-      placement: "bottom-start",
-      strategy: "fixed",
-      middleware: [
-        size({
-          apply({ rects, elements, availableHeight }) {
-            Object.assign(elements.floating.style, {
-              minWidth: `${rects.reference.width}px`,
-              maxHeight: `max(calc(${availableHeight}px - var(--salt-spacing-100)), calc((var(--salt-size-base) + var(--salt-spacing-100)) * 5))`,
-            });
-          },
-        }),
-        flip({ fallbackStrategy: "initialPlacement" }),
-      ],
-    });
-
-  const { getReferenceProps, getFloatingProps } = useInteractions([
-    useDismiss(context),
-    useClick(context, { keyboardHandlers: false, toggle: false }),
-  ]);
 
   const {
     containerRef,
     dataSource,
+    highlightedIndex,
+    floatingUIProps: { x, y, strategy, floating, reference },
     inputProps,
-    isOpen,
+    interactionPropGetters: { getFloatingProps, getReferenceProps },
+    onKeyDown,
+    open,
     tableConfig,
+    tableHandlers,
+    tableRef,
     value,
     width,
   } = useTablePicker({
+    TableProps,
+    rowToString,
     onSelect,
     schema,
   });
@@ -118,16 +95,15 @@ export const TablePicker = ({
     () => (
       <IconButton
         {...getReferenceProps()}
+        data-embedded
         ref={reference}
         icon="chevron-down"
+        onKeyDown={onKeyDown}
+        variant="secondary"
       />
     ),
-    [getReferenceProps, reference],
+    [getReferenceProps, onKeyDown, reference],
   );
-
-  console.log({ dataSource, isOpen, elements });
-
-  console.log({ width });
 
   return (
     <div {...htmlAttributes} className={classBase} ref={containerRef}>
@@ -137,16 +113,22 @@ export const TablePicker = ({
         collapsed={!open}
         id={tableId}
         open={open}
-        left={x}
+        left={x + 3}
         position={strategy}
         ref={floating}
-        top={y}
+        top={y + 3}
       >
         <Table
+          {...tableHandlers}
           config={tableConfig}
           dataSource={dataSource}
-          height={300}
-          width={width}
+          height={250}
+          highlightedIndex={highlightedIndex}
+          navigationStyle="row"
+          ref={tableRef}
+          selectionModel="single"
+          showColumnHeaders={false}
+          width={width - 3}
         />
       </FloatingTable>
     </div>

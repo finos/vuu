@@ -119,12 +119,9 @@ export class ArrayDataSource
     vanillaConfig;
   #data: DataSourceRow[];
   #keys = new KeySet(NULL_RANGE);
-  #pageCount = -1;
-  #pageSize = -1;
   #links: LinkDescriptorWithLabel[] | undefined;
   #range: VuuRange = NULL_RANGE;
   #selectedRowsCount = 0;
-  #size = 0;
   #status: DataSourceStatus = "initialising";
   #title: string | undefined;
 
@@ -165,7 +162,6 @@ export class ArrayDataSource
     this.rangeChangeRowset = rangeChangeRowset;
     this.tableSchema = buildTableSchema(columnDescriptors, keyColumn);
     this.viewport = viewport || uuid();
-    this.#size = data.length;
     this.#title = title;
 
     const columns = columnDescriptors.map((col) => col.name);
@@ -245,6 +241,13 @@ export class ArrayDataSource
       } else if (this.#range !== NULL_RANGE) {
         this.sendRowsToClient();
       }
+
+      if (this.range.to !== 0) {
+        const pageCount = Math.ceil(
+          this.size / (this.range.to - this.range.from),
+        );
+        this.emit("page-count", pageCount);
+      }
     }
   }
 
@@ -254,7 +257,6 @@ export class ArrayDataSource
   }
 
   suspend() {
-    console.log(`suspend`);
     if (this.#status !== "unsubscribed") {
       info?.(`suspend #${this.viewport}, current status ${this.#status}`);
       this.#status = "suspended";
@@ -263,8 +265,6 @@ export class ArrayDataSource
   }
 
   resume(callback?: SubscribeCallback) {
-    console.log(`resume`);
-
     const isSuspended = this.#status === "suspended";
     info?.(`resume #${this.viewport}, current status ${this.#status}`);
     if (callback) {
@@ -316,15 +316,8 @@ export class ArrayDataSource
     }
   }
 
-  get pageCount() {
-    return Math.ceil(this.size / this.#pageSize);
-  }
-
-  set pageSize(pageSize: number) {
-    if (pageSize !== this.#pageSize) {
-      this.#pageSize = pageSize;
-      this.emit("page-count", this.pageCount);
-    }
+  get pageSize() {
+    return this.#range.to - this.#range.from;
   }
 
   get links() {
@@ -494,7 +487,6 @@ export class ArrayDataSource
   }
 
   get size() {
-    // return this.#size;
     return this.processedData?.length ?? this.#data.length;
   }
 
@@ -627,6 +619,7 @@ export class ArrayDataSource
       this.clientCallback?.({
         clientViewportId: this.viewport,
         mode: "batch",
+        range: this.#range,
         rows: rowsWithinViewport,
         size: data.length,
         type: "viewport-update",

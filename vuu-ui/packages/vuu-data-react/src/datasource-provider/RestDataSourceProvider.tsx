@@ -1,10 +1,12 @@
-import { RestDataSource, getServerAPI } from "@finos/vuu-data-remote";
+import { RestDataSource, ConnectionManager } from "@finos/vuu-data-remote";
 import { DataSourceProvider } from "@finos/vuu-utils";
 import { ReactNode } from "react";
 
+const getServerAPI = () => ConnectionManager.serverAPI;
+
 export const RestDataSourceProvider = ({
   children,
-  url
+  url,
 }: {
   children: ReactNode;
   url: string;

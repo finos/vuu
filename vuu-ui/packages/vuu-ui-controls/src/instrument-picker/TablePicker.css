@@ -6,5 +6,9 @@
 }
 
 .vuuTablePicker-floating-table {
+  border: solid 1px var(--salt-container-secondary-borderColor);
+  border-radius: 4px;
   overflow: auto;
+  padding: var(--salt-spacing-100) 0;
+  z-index: var(--salt-zIndex-popout);
 }

@@ -32,11 +32,7 @@ import {
   FC,
   ForwardedRef,
   RefObject,
-  SyntheticEvent,
   forwardRef,
-  useCallback,
-  useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -47,6 +43,7 @@ import { useTable } from "./useTable";
 import { ScrollingAPI } from "./useTableScroll";
 
 import tableCss from "./Table.css";
+import { usePagination } from "./usePagination";
 
 const classBase = "vuuTable";
 
@@ -233,10 +230,11 @@ const TableCore = ({
     onRowClick: onRowClickProp,
     onSelect,
     onSelectionChange,
-    renderBufferSize: Math.max(5, renderBufferSize),
+    renderBufferSize,
     rowHeight,
     scrollingApiRef,
     selectionModel,
+    showColumnHeaders,
     showPaginationControls,
     size,
   });
@@ -314,7 +312,7 @@ const TableCore = ({
                   onClick={onRowClick}
                   onDataEdited={onDataEdited}
                   row={data}
-                  offset={getRowOffset(data)}
+                  offset={showPaginationControls ? 0 : getRowOffset(data)}
                   onToggleGroup={onToggleGroup}
                   virtualColSpan={scrollProps.virtualColSpan}
                   zebraStripes={tableAttributes.zebraStripes}
@@ -351,7 +349,7 @@ export const Table = forwardRef(function Table(
     onRowClick,
     onSelect,
     onSelectionChange,
-    renderBufferSize,
+    renderBufferSize = 0,
     rowHeight: rowHeightProp,
     scrollingApiRef,
     selectionModel,
@@ -374,8 +372,6 @@ export const Table = forwardRef(function Table(
 
   const [size, setSize] = useState<MeasuredSize>();
   // TODO this will rerender entire table, move foter into seperate component
-  const [pageCount, setPageCount] = useState<number>(dataSource.pageCount);
-
   const { rowHeight, rowRef } = useMeasuredHeight({ height: rowHeightProp });
   const { rowHeight: footerHeight, rowRef: footerRef } = useMeasuredHeight({});
 
@@ -388,13 +384,10 @@ export const Table = forwardRef(function Table(
     throw Error("vuu Table requires dataSource prop");
   }
 
-  useMemo(() => {
-    dataSource.on("page-count", (n: number) => setPageCount(n));
-  }, [dataSource]);
-
-  const handlePageChange = useCallback((_evt: SyntheticEvent, page: number) => {
-    console.log(`page is now ${page}`);
-  }, []);
+  const { onPageChange, pageCount } = usePagination({
+    dataSource,
+    showPaginationControls,
+  });
 
   // TODO render TableHeader here and measure before row construction begins
   // TODO we could have MeasuredContainer render a Provider and make size available via a context hook ?
@@ -414,7 +407,6 @@ export const Table = forwardRef(function Table(
       }
     >
       <RowProxy ref={rowRef} height={rowHeightProp} />
-
       {size && rowHeight && (footerHeight || showColumnHeaders !== true) ? (
         <TableCore
           Row={Row}
@@ -437,7 +429,9 @@ export const Table = forwardRef(function Table(
           onRowClick={onRowClick}
           onSelect={onSelect}
           onSelectionChange={onSelectionChange}
-          renderBufferSize={renderBufferSize}
+          renderBufferSize={
+            showPaginationControls ? 0 : Math.max(5, renderBufferSize)
+          }
           rowHeight={rowHeight}
           scrollingApiRef={scrollingApiRef}
           selectionModel={selectionModel}
@@ -449,7 +443,7 @@ export const Table = forwardRef(function Table(
       ) : null}
       {showPaginationControls ? (
         <div className={`${classBase}-pagination-container`} ref={footerRef}>
-          <Pagination count={pageCount} onPageChange={handlePageChange}>
+          <Pagination count={pageCount} onPageChange={onPageChange}>
             <GoToInput />
             <Paginator />
           </Pagination>

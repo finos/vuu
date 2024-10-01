@@ -76,6 +76,11 @@ export const useDataSource = ({
           }
         }
         if (message.rows) {
+          if (message.range) {
+            if (message.range.to !== dataWindow.range.to) {
+              dataWindow.setRange(message.range);
+            }
+          }
           setData(message.rows);
         } else if (message.size === 0) {
           setData([]);

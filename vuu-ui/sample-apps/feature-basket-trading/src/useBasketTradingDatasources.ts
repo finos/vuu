@@ -22,7 +22,6 @@ const NO_CONFIG = {};
 
 export const useBasketTradingDataSources = ({
   basketConstituentSchema,
-  basketSchema,
   basketInstanceId,
   basketTradingSchema,
   basketTradingConstituentJoinSchema,
@@ -34,7 +33,6 @@ export const useBasketTradingDataSources = ({
   const { VuuDataSource } = useDataSource();
 
   const [
-    dataSourceBasket,
     dataSourceBasketTradingControl,
     dataSourceBasketTradingSearch,
     dataSourceBasketTradingConstituentJoin,
@@ -57,7 +55,6 @@ export const useBasketTradingDataSources = ({
       number,
       DataSourceConfig?,
     ][] = [
-      ["data-source-basket", basketSchema, 100],
       [
         "data-source-basket-trading-control",
         basketTradingSchema,
@@ -98,7 +95,6 @@ export const useBasketTradingDataSources = ({
     return dataSources;
   }, [
     basketInstanceId,
-    basketSchema,
     basketTradingSchema,
     basketTradingConstituentJoinSchema,
     basketConstituentSchema,
@@ -159,7 +155,6 @@ export const useBasketTradingDataSources = ({
   // in session state from where it will be used by the AddInstrument button in Col
   // Header
   return {
-    dataSourceBasket,
     dataSourceBasketTradingControl,
     dataSourceBasketTradingSearch,
     dataSourceBasketTradingConstituentJoin,

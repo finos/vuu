@@ -35,7 +35,7 @@ cellNavigationKeys.add("ArrowRight");
 
 export const isNavigationKey = (
   key: string,
-  navigationStyle: TableNavigationStyle
+  navigationStyle: TableNavigationStyle,
 ): key is NavigationKey => {
   switch (navigationStyle) {
     case "cell":
@@ -61,7 +61,7 @@ function nextCellPos(
   key: ArrowKey,
   [rowIdx, colIdx]: CellPos,
   columnCount: number,
-  rowCount: number
+  rowCount: number,
 ): CellPos {
   if (key === "ArrowUp") {
     if (rowIdx > -1) {
@@ -150,12 +150,12 @@ NavigationHookProps) => {
         // lastFocus.current = idx;
       }
     },
-    [onHighlight, setHighlightedIdx]
+    [onHighlight, setHighlightedIdx],
   );
 
   const getFocusedCell = (element: HTMLElement | Element | null) =>
     element?.closest(
-      "[role='columnHeader'],[role='cell']"
+      "[role='columnHeader'],[role='cell']",
     ) as HTMLDivElement | null;
 
   const getTableCellPos = (tableCell: HTMLDivElement): CellPos => {
@@ -192,7 +192,7 @@ NavigationHookProps) => {
     },
     // TODO we recreate this function whenever viewportRange changes, which will
     // be often whilst scrolling - store range in a a ref ?
-    [containerRef, requestScroll]
+    [containerRef, requestScroll],
   );
 
   const setActiveCell = useCallback(
@@ -208,13 +208,13 @@ NavigationHookProps) => {
         focusedCellPos.current = pos;
       }
     },
-    [focusCell, navigationStyle, setHighlightedIdx]
+    [focusCell, navigationStyle, setHighlightedIdx],
   );
 
   const nextPageItemIdx = useCallback(
     (
       key: "PageDown" | "PageUp" | "Home" | "End",
-      [rowIdx, colIdx]: CellPos
+      [rowIdx, colIdx]: CellPos,
     ): Promise<CellPos> =>
       new Promise((resolve) => {
         let newRowIdx = rowIdx;
@@ -262,7 +262,7 @@ NavigationHookProps) => {
           resolve([newRowIdx, colIdx]);
         }, 35);
       }),
-    [requestScroll, rowCount, viewportRowCount]
+    [requestScroll, rowCount, viewportRowCount],
   );
 
   const handleFocus = useCallback(() => {
@@ -298,14 +298,14 @@ NavigationHookProps) => {
         setActiveCell(nextRowIdx, nextColIdx, true);
       }
     },
-    [columnCount, nextPageItemIdx, rowCount, setActiveCell]
+    [columnCount, nextPageItemIdx, rowCount, setActiveCell],
   );
 
   const scrollRowIntoViewIfNecessary = useCallback(
     (rowIndex: number) => {
       requestScroll?.({ type: "scroll-row", rowIndex });
     },
-    [requestScroll]
+    [requestScroll],
   );
 
   const moveHighlightedRow = useCallback(
@@ -326,12 +326,15 @@ NavigationHookProps) => {
       rowCount,
       scrollRowIntoViewIfNecessary,
       setHighlightedIndex,
-    ]
+    ],
   );
 
   useEffect(() => {
     if (highlightedIndexProp !== undefined && highlightedIndexProp !== -1) {
-      scrollRowIntoViewIfNecessary(highlightedIndexProp);
+      requestAnimationFrame(() => {
+        // deferred call, ensuring table has fully rendered
+        scrollRowIntoViewIfNecessary(highlightedIndexProp);
+      });
     }
   }, [highlightedIndexProp, scrollRowIntoViewIfNecessary]);
 
@@ -351,7 +354,7 @@ NavigationHookProps) => {
         }
       }
     },
-    [rowCount, navigationStyle, moveHighlightedRow, navigateChildItems]
+    [rowCount, navigationStyle, moveHighlightedRow, navigateChildItems],
   );
 
   const handleClick = useCallback(
@@ -364,7 +367,7 @@ NavigationHookProps) => {
         setActiveCell(rowIdx, colIdx);
       }
     },
-    [setActiveCell]
+    [setActiveCell],
   );
 
   const handleMouseLeave = useCallback(() => {
@@ -378,7 +381,7 @@ NavigationHookProps) => {
         setHighlightedIndex(idx);
       }
     },
-    [setHighlightedIndex]
+    [setHighlightedIndex],
   );
 
   const navigate = useCallback(() => {
