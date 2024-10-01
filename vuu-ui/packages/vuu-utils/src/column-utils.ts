@@ -1245,3 +1245,7 @@ export const dataColumnAndKeyUnchanged = (
   p.row[KEY] === p1.row[KEY] &&
   p.column.valueFormatter(p.row[p.columnMap[p.column.name]]) ===
     p1.column.valueFormatter(p1.row[p1.columnMap[p1.column.name]]);
+
+export const toColumnName = (column: ColumnDescriptor) => column.name;
+export const isStringColumn = (column: ColumnDescriptor) =>
+  column.serverDataType === "string";

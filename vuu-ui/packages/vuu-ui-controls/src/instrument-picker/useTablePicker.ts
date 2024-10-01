@@ -21,7 +21,7 @@ import type {
   TableConfig,
   TableRowSelectHandler,
 } from "@finos/vuu-table-types";
-import { useDataSource } from "@finos/vuu-utils";
+import { isStringColumn, toColumnName, useDataSource } from "@finos/vuu-utils";
 import type { TablePickerProps } from "./TablePicker";
 import {
   isNavigationKey,
@@ -32,7 +32,7 @@ import {
 export interface TablePickerHookProps
   extends Pick<
     TablePickerProps,
-    "TableProps" | "onSelect" | "rowToString" | "schema"
+    "TableProps" | "onSelect" | "rowToString" | "schema" | "searchColumns"
   > {
   defaultIsOpen?: boolean;
   isOpen?: boolean;
@@ -43,9 +43,10 @@ const defaultRowToString = (row: DataSourceRowObject) =>
 
 export const useTablePicker = ({
   TableProps,
+  onSelect,
   rowToString = defaultRowToString,
   schema,
-  onSelect,
+  searchColumns = schema.columns.filter(isStringColumn).map(toColumnName),
 }: TablePickerHookProps) => {
   const { VuuDataSource } = useDataSource();
   const [value, setValue] = useState("");
@@ -70,11 +71,11 @@ export const useTablePicker = ({
 
   const navigation = useControlledTableNavigation(-1, dataSource.size);
 
-  // const baseFilterPattern = useMemo(
-  //   // TODO make this contains once server supports it
-  //   () => searchColumns.map((col) => `${col} starts "__VALUE__"`).join(" or "),
-  //   [searchColumns],
-  // );
+  const baseFilterPattern = useMemo(
+    // TODO make this contains once server supports it
+    () => searchColumns.map((col) => `${col} starts "__VALUE__"`).join(" or "),
+    [searchColumns],
+  );
 
   // const handleOpenChange = useCallback<OpenChangeHandler>(
   //   (open, closeReason) => {
@@ -112,18 +113,20 @@ export const useTablePicker = ({
       const { value } = evt.target;
       setValue(value);
 
-      // if (value && value.trim().length) {
-      //   const filter = baseFilterPattern.replaceAll("__VALUE__", value);
-      //   dataSource.filter = {
-      //     filter,
-      //   };
-      // } else {
-      //   dataSource.filter = {
-      //     filter: "",
-      //   };
-      // }
+      console.log(`input changed ${value}`);
+
+      if (value && value.trim().length) {
+        const filter = baseFilterPattern.replaceAll("__VALUE__", value);
+        dataSource.filter = {
+          filter,
+        };
+      } else {
+        dataSource.filter = {
+          filter: "",
+        };
+      }
     },
-    [],
+    [baseFilterPattern, dataSource],
   );
 
   const handleSelectRow = useCallback<TableRowSelectHandler>(

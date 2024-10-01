@@ -26,6 +26,7 @@ export interface TablePickerProps
   TableProps?: Pick<TableProps, "config">;
   rowToString?: (row: DataSourceRowObject) => string;
   schema: TableSchema;
+  searchColumns?: string[];
 }
 
 const FloatingTable = forwardRef<HTMLDivElement, FloatingTableProps>(
@@ -59,6 +60,7 @@ export const TablePicker = ({
   onSelect,
   rowToString,
   schema,
+  searchColumns,
   ...htmlAttributes
 }: TablePickerProps) => {
   const targetWindow = useWindow();
@@ -89,6 +91,7 @@ export const TablePicker = ({
     rowToString,
     onSelect,
     schema,
+    searchColumns,
   });
 
   const endAdornment = useMemo(
