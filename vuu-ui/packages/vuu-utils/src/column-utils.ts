@@ -1044,10 +1044,12 @@ const measureColumns = (
 ) =>
   columns.reduce<ColumnStats>(
     (aggregated, column) => {
-      aggregated.totalMinWidth += column.minWidth ?? defaultMinWidth;
-      aggregated.totalMaxWidth += column.maxWidth ?? defaultMaxWidth;
-      aggregated.totalWidth += column.width;
-      aggregated.flexCount += column.flex ?? 0;
+      if (column.hidden !== true) {
+        aggregated.totalMinWidth += column.minWidth ?? defaultMinWidth;
+        aggregated.totalMaxWidth += column.maxWidth ?? defaultMaxWidth;
+        aggregated.totalWidth += column.width;
+        aggregated.flexCount += column.flex ?? 0;
+      }
       return aggregated;
     },
     { totalMinWidth: 0, totalMaxWidth: 0, totalWidth: 0, flexCount: 0 },
@@ -1243,3 +1245,7 @@ export const dataColumnAndKeyUnchanged = (
   p.row[KEY] === p1.row[KEY] &&
   p.column.valueFormatter(p.row[p.columnMap[p.column.name]]) ===
     p1.column.valueFormatter(p1.row[p1.columnMap[p1.column.name]]);
+
+export const toColumnName = (column: ColumnDescriptor) => column.name;
+export const isStringColumn = (column: ColumnDescriptor) =>
+  column.serverDataType === "string";

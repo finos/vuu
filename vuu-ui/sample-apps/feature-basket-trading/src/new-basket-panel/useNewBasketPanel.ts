@@ -1,18 +1,17 @@
 import { ViewportRpcResponse } from "@finos/vuu-data-types";
 import type { TableRowSelectHandler } from "@finos/vuu-table-types";
 import { OpenChangeHandler } from "@finos/vuu-ui-controls";
-import { CommitHandler, buildColumnMap } from "@finos/vuu-utils";
-import { useCallback, useRef, useState } from "react";
+import { CommitHandler, buildColumnMap, useDataSource } from "@finos/vuu-utils";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NewBasketPanelProps } from "./NewBasketPanel";
 import { VuuRpcViewportRequest } from "@finos/vuu-protocol-types";
 
 export type NewBasketHookProps = Pick<
   NewBasketPanelProps,
-  "basketDataSource" | "basketSchema" | "onBasketCreated"
+  "basketSchema" | "onBasketCreated"
 >;
 
 export const useNewBasketPanel = ({
-  basketDataSource,
   basketSchema,
   onBasketCreated,
 }: NewBasketHookProps) => {
@@ -20,6 +19,22 @@ export const useNewBasketPanel = ({
   const [basketName, setBasketName] = useState("");
   const [basketId, setBasketId] = useState<string>();
   const saveButtonRef = useRef<HTMLButtonElement>(null);
+  const { VuuDataSource } = useDataSource();
+  const basketDataSource = useMemo(() => {
+    const ds = new VuuDataSource({ table: basketSchema.table });
+    ds.subscribe({}, () => {
+      // we don't really care about messages from this dataSource, we
+      // only use it as a conduit for creating a basket.
+    });
+    return ds;
+  }, [VuuDataSource, basketSchema]);
+
+  useEffect(() => {
+    return () => {
+      basketDataSource.unsubscribe();
+    };
+  }, [basketDataSource]);
+
   const saveBasket = useCallback(() => {
     if (basketName && basketId) {
       basketDataSource

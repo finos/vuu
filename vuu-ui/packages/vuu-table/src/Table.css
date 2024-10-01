@@ -1,4 +1,5 @@
 .vuuTable {
+  --vuu-table-pagination-height: 0px;
   --vuu-table-cell-outlineWidth: 1px;
   --table-height: var(--measured-px-height);
   --table-width: var(--measured-px-width);
@@ -167,4 +168,32 @@
 }
 .vuuDraggable-vuuTable {
   --row-height: 25px;
+}
+
+.vuuTable-pagination {
+  --vuu-table-pagination-height: 32px;
+  .vuuTable-col-headings {
+    position: relative;
+  }
+
+  .vuuTable-body {
+    height: calc(var(--content-height) - var(--total-header-height));
+    position: relative;
+  }
+
+  .vuuTableRow {
+    position: relative;
+    top: auto;
+  }
+}
+
+.vuuTable-pagination-container {
+  align-items: center;
+  display: flex;
+  height: var(--vuu-table-pagination-height);
+  justify-content: flex-end;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }

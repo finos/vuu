@@ -34,6 +34,20 @@ export const useDataSource = ({
     [],
   );
 
+  useMemo(() => {
+    dataSource.on("resumed", () => {
+      // When we resume a dataSource (after switching tabs etc)
+      // client will receive rows. We may not have received any
+      // setRange calls at this point so dataWindow range will
+      //not yet be set. If the dataWindow range is already set,
+      // this is a no-op.
+      const { range } = dataSource;
+      if (range.to !== 0) {
+        dataWindow.setRange(dataSource.range);
+      }
+    });
+  }, [dataSource, dataWindow]);
+
   const setData = useCallback(
     (updates: DataSourceRow[]) => {
       for (const row of updates) {
@@ -62,6 +76,11 @@ export const useDataSource = ({
           }
         }
         if (message.rows) {
+          if (message.range) {
+            if (message.range.to !== dataWindow.range.to) {
+              dataWindow.setRange(message.range);
+            }
+          }
           setData(message.rows);
         } else if (message.size === 0) {
           setData([]);
@@ -117,7 +136,7 @@ export const useDataSource = ({
         // This isn't great, we're using the dataSource as a conduit to emit a
         // message that has nothing to do with the dataSource itself. Client
         // is the DataSourceState component.
-        // WHY CANT THIS BE DONE WITHIN DataSOurce ?
+        // WHY CANT THIS BE DONE WITHIN DataSource ?
         dataSource.emit("range", range);
       }
     },

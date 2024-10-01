@@ -7,6 +7,7 @@ export * from "./table-cell";
 export * from "./table-config";
 export * from "./table-header";
 export * from "./useControlledTableNavigation";
+export * from "./useKeyboardNavigation";
 export * from "./useTableModel";
 export * from "./useTableScroll";
 export * from "./useTableViewport";

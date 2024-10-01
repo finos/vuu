@@ -103,7 +103,6 @@ export const useBasketTrading = ({
   }, [load]);
 
   const {
-    dataSourceBasket,
     dataSourceBasketTradingControl,
     dataSourceBasketTradingSearch,
     dataSourceBasketTradingConstituentJoin,
@@ -196,19 +195,13 @@ export const useBasketTrading = ({
       ...state,
       dialog: (
         <NewBasketPanel
-          basketDataSource={dataSourceBasket}
           basketSchema={basketSchema}
           onClose={handleCloseNewBasketPanel}
           onBasketCreated={handleBasketCreated}
         />
       ),
     }));
-  }, [
-    basketSchema,
-    dataSourceBasket,
-    handleBasketCreated,
-    handleCloseNewBasketPanel,
-  ]);
+  }, [basketSchema, handleBasketCreated, handleCloseNewBasketPanel]);
 
   const basketSelectorProps = useMemo<Omit<BasketSelectorProps, "basket">>(
     () => ({

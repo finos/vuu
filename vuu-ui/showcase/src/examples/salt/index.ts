@@ -8,6 +8,7 @@ export * as Dropdown from "./Dropdown.examples";
 export * as Input from "./Input.examples";
 export * as FormField from "./FormField.examples";
 export * as Menu from "./Menu.examples";
+export * as Pagination from "./Pagination.examples";
 export * as Progress from "./Progress.examples";
 export * as Switch from "./Switch.examples";
 export * as ToggleButton from "./ToggleButton.examples";

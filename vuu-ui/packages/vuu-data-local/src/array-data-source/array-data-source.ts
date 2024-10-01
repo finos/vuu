@@ -122,7 +122,6 @@ export class ArrayDataSource
   #links: LinkDescriptorWithLabel[] | undefined;
   #range: VuuRange = NULL_RANGE;
   #selectedRowsCount = 0;
-  #size = 0;
   #status: DataSourceStatus = "initialising";
   #title: string | undefined;
 
@@ -163,7 +162,6 @@ export class ArrayDataSource
     this.rangeChangeRowset = rangeChangeRowset;
     this.tableSchema = buildTableSchema(columnDescriptors, keyColumn);
     this.viewport = viewport || uuid();
-    this.#size = data.length;
     this.#title = title;
 
     const columns = columnDescriptors.map((col) => col.name);
@@ -243,6 +241,13 @@ export class ArrayDataSource
       } else if (this.#range !== NULL_RANGE) {
         this.sendRowsToClient();
       }
+
+      if (this.range.to !== 0) {
+        const pageCount = Math.ceil(
+          this.size / (this.range.to - this.range.from),
+        );
+        this.emit("page-count", pageCount);
+      }
     }
   }
 
@@ -259,13 +264,19 @@ export class ArrayDataSource
     }
   }
 
-  resume() {
+  resume(callback?: SubscribeCallback) {
     const isSuspended = this.#status === "suspended";
     info?.(`resume #${this.viewport}, current status ${this.#status}`);
+    if (callback) {
+      this.clientCallback = callback;
+    }
+
     if (isSuspended) {
       this.#status = "subscribed";
     }
     this.emit("resumed", this.viewport);
+
+    this.sendRowsToClient(true);
   }
 
   disable() {
@@ -303,6 +314,10 @@ export class ArrayDataSource
       this.processedData = collapseGroup(key, this.processedData);
       this.setRange(resetRange(this.#range), true);
     }
+  }
+
+  get pageSize() {
+    return this.#range.to - this.#range.from;
   }
 
   get links() {
@@ -472,7 +487,6 @@ export class ArrayDataSource
   }
 
   get size() {
-    // return this.#size;
     return this.processedData?.length ?? this.#data.length;
   }
 
@@ -605,6 +619,7 @@ export class ArrayDataSource
       this.clientCallback?.({
         clientViewportId: this.viewport,
         mode: "batch",
+        range: this.#range,
         rows: rowsWithinViewport,
         size: data.length,
         type: "viewport-update",

@@ -3,7 +3,7 @@ export * as ColumnPicker from "./ColumnPicker.examples";
 export * as DatePopup from "./DatePopup.examples";
 export * as DragDrop from "./DragDrop.examples";
 export * as EditableLabel from "./EditableLabel.examples";
-export * as InstrumentPicker from "./InstrumentPicker.examples";
+export * as TablePicker from "./TablePicker.examples";
 export * as InstrumentSearch from "./InstrumentSearch.examples";
 export * as List from "./List.examples";
 export * as OverflowContainer from "./OverflowContainer.examples";

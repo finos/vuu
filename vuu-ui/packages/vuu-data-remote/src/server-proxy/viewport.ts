@@ -171,8 +171,9 @@ export class Viewport {
   /**
    * clientRange is always the range requested by the client. We should assume
    * these are the rows visible to the user
+   * TODO what is clientRange needed for ?
    */
-  private clientRange: VuuRange;
+  #clientRange: VuuRange;
   private columns: string[];
   private dataWindow: ArrayBackedMovingWindow;
   private filter: DataSourceFilter;
@@ -231,7 +232,7 @@ export class Viewport {
   ) {
     this.aggregations = aggregations;
     this.bufferSize = bufferSize;
-    this.clientRange = range;
+    this.#clientRange = range;
     this.clientViewportId = viewport;
     this.columns = columns;
     this.filter = filter;
@@ -246,7 +247,7 @@ export class Viewport {
         `constructor #${viewport} ${table.table} bufferSize=${bufferSize}`,
       );
     this.dataWindow = new ArrayBackedMovingWindow(
-      this.clientRange,
+      this.#clientRange,
       range,
       this.bufferSize,
     );
@@ -289,6 +290,10 @@ export class Viewport {
     return this.dataWindow.rowCount ?? 0;
   }
 
+  get clientRange() {
+    return this.#clientRange;
+  }
+
   get status() {
     return this.#status;
   }
@@ -304,7 +309,7 @@ export class Viewport {
     return {
       type: Message.CREATE_VP,
       table: this.table,
-      range: getFullRange(this.clientRange, this.bufferSize),
+      range: getFullRange(this.#clientRange, this.bufferSize),
       aggregations: this.aggregations,
       columns: this.columns,
       sort: this.sort,

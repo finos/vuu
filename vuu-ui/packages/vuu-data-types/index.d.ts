@@ -223,6 +223,12 @@ export interface DataSourceClearMessage extends MessageWithClientViewportId {
 }
 export interface DataSourceDataMessage extends MessageWithClientViewportId {
   mode: DataUpdateMode;
+  /**
+   * this is needed by the ArrayDataSource, biut not currently used by VuuDataSource.
+   * Suspect it will be valuable in any DtaSOurce and should eventually be made a
+   * required field.
+   */
+  range?: VuuRange;
   rows?: DataSourceRow[];
   size?: number;
   type: "viewport-update";
@@ -454,6 +460,7 @@ export type DataSourceEvents = {
     configChanges?: DataSourceConfigChanges,
   ) => void;
   optimize: (optimize: OptimizeStrategy) => void;
+  "page-count": (pageCount: number) => void;
   range: (range: VuuRange) => void;
   resize: (size: number) => void;
   "row-selection": RowSelectionEventHandler;
@@ -546,6 +553,7 @@ export interface DataSource
   closeTreeNode: (key: string, cascade?: boolean) => void;
   columns: string[];
   config: DataSourceConfig;
+
   status: DataSourceStatus;
   /**
    *

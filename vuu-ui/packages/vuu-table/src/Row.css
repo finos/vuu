@@ -1,13 +1,17 @@
 .vuuTableRow {
   background: var(--row-background, var(--table-background));
-  color: var(--salt-content-secondary-foreground);
   border-bottom: 1px solid var(--row-borderColor, var(--table-background));
   box-sizing: border-box;
+  color: var(--salt-content-secondary-foreground);
+  contain: strict;
+  contain-intrinsic-height: var(--row-height);
+  content-visibility: auto;
   height: var(--row-height);
   line-height: var(--row-height);
   position: absolute;
   top: 0;
   white-space: nowrap;
+  width: 100%;
 }
 
 .vuuTableRow-proxy {

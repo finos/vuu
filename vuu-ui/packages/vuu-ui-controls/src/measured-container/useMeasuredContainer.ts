@@ -42,14 +42,39 @@ interface MeasuredState {
 
 const isNumber = (val: unknown): val is number => Number.isFinite(val);
 
-const FULL_SIZE: CssSize = { height: "100%", width: "auto" };
-
 export interface MeasuredContainerHookResult {
   containerRef: RefObject<HTMLDivElement>;
   cssSize: CssSize;
   outerSize: CssSize;
   innerSize?: MeasuredSize;
 }
+
+export const reduceSizeHeight = (
+  size: MeasuredSize,
+  value: number,
+): MeasuredSize => {
+  if (value === 0) {
+    return size;
+  } else {
+    return {
+      height: size.height - value,
+      width: size.width,
+    };
+  }
+};
+
+const getInitialValue = (
+  value: number | string | undefined,
+  defaultValue: "auto" | "100%",
+) => {
+  if (isValidNumber(value)) {
+    return `${value}px`;
+  } else if (typeof value === "string") {
+    return value;
+  } else {
+    return defaultValue;
+  }
+};
 
 // If (outer) height and width are known at initialisation (i.e. they
 // were passed as props), use as initial values for inner size. If there
@@ -59,19 +84,10 @@ const getInitialCssSize = (
   height?: number | string,
   width?: number | string,
 ): CssSize => {
-  if (isValidNumber(height) && isValidNumber(width)) {
-    return {
-      height: `${height}px`,
-      width: `${width}px`,
-    };
-  } else if (typeof height === "string" || typeof width === "string") {
-    return {
-      height: height ?? "100%",
-      width: width ?? "auto",
-    };
-  } else {
-    return FULL_SIZE;
-  }
+  return {
+    height: getInitialValue(height, "100%"),
+    width: getInitialValue(width, "auto"),
+  };
 };
 
 const getInitialInnerSize = (

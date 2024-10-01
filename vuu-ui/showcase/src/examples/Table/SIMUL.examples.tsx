@@ -18,7 +18,7 @@ let displaySequence = 1;
 
 const getDefaultColumnConfig = (
   tableName: string,
-  columnName: string
+  columnName: string,
 ): Partial<ColumnDescriptor> | undefined => {
   switch (columnName) {
     case "ask":
@@ -64,7 +64,7 @@ export const SimulTable = ({
   columnLayout,
   getDefaultColumnConfig,
   height = 625,
-  renderBufferSize = 0,
+  renderBufferSize = 10,
   rowClassNameGenerators,
   tableName = "instruments",
   ...props
@@ -94,7 +94,7 @@ export const SimulTable = ({
       rowClassNameGenerators,
       schema,
       tableName,
-    ]
+    ],
   );
 
   const handleConfigChange = useCallback(() => {

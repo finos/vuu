@@ -93,6 +93,8 @@ export interface TableHookProps
       | "onRowClick"
       | "renderBufferSize"
       | "scrollingApiRef"
+      | "showColumnHeaders"
+      | "showPaginationControls"
     > {
   containerRef: RefObject<HTMLDivElement>;
   rowHeight: number;
@@ -138,6 +140,8 @@ export const useTable = ({
   rowHeight = 20,
   scrollingApiRef,
   selectionModel,
+  showColumnHeaders,
+  showPaginationControls,
   size,
 }: TableHookProps) => {
   const tableConfigRef = useRef<TableConfig>(config);
@@ -145,7 +149,7 @@ export const useTable = ({
     tableConfigRef.current = config;
   }, [config]);
 
-  const [headerHeight, setHeaderHeight] = useState(-1);
+  const [headerHeight, setHeaderHeight] = useState(showColumnHeaders ? -1 : 0);
   const [rowCount, setRowCount] = useState<number>(dataSource.size);
   if (dataSource === undefined) {
     throw Error("no data source provided to Vuu Table");
@@ -240,7 +244,12 @@ export const useTable = ({
     rowCount,
     rowHeight,
     size: size,
+    showPaginationControls,
   });
+
+  // if (showPaginationControls) {
+  //   dataSource.pageSize = viewportMeasurements.rowCount;
+  // }
 
   const { data, dataRef, getSelectedRows, range, setRange } = useDataSource({
     dataSource,
@@ -256,6 +265,7 @@ export const useTable = ({
     rowHeight,
     scrollingApiRef,
     setRange,
+    showPaginationControls,
     onVerticalScroll: viewportHookSetScrollTop,
     onVerticalScrollInSitu: viewportHookSetInSituRowOffset,
     viewportMeasurements,
