@@ -6,7 +6,7 @@ import {
   useEffect,
   useMemo,
   useRef,
-  useState
+  useState,
 } from "react";
 import { MeasuredContainerProps } from "./MeasuredContainer";
 import { useResizeObserver, ResizeHandler } from "./useResizeObserver";
@@ -42,8 +42,6 @@ interface MeasuredState {
 
 const isNumber = (val: unknown): val is number => Number.isFinite(val);
 
-const FULL_SIZE: CssSize = { height: "100%", width: "auto" };
-
 export interface MeasuredContainerHookResult {
   containerRef: RefObject<HTMLDivElement>;
   cssSize: CssSize;
@@ -53,15 +51,28 @@ export interface MeasuredContainerHookResult {
 
 export const reduceSizeHeight = (
   size: MeasuredSize,
-  value: number
+  value: number,
 ): MeasuredSize => {
   if (value === 0) {
     return size;
   } else {
     return {
       height: size.height - value,
-      width: size.width
+      width: size.width,
     };
+  }
+};
+
+const getInitialValue = (
+  value: number | string | undefined,
+  defaultValue: "auto" | "100%",
+) => {
+  if (isValidNumber(value)) {
+    return `${value}px`;
+  } else if (typeof value === "string") {
+    return value;
+  } else {
+    return defaultValue;
   }
 };
 
@@ -73,19 +84,10 @@ const getInitialCssSize = (
   height?: number | string,
   width?: number | string,
 ): CssSize => {
-  if (isValidNumber(height) && isValidNumber(width)) {
-    return {
-      height: `${height}px`,
-      width: `${width}px`
-    };
-  } else if (typeof height === "string" || typeof width === "string") {
-    return {
-      height: height ?? "100%",
-      width: width ?? "auto"
-    };
-  } else {
-    return FULL_SIZE;
-  }
+  return {
+    height: getInitialValue(height, "100%"),
+    width: getInitialValue(width, "auto"),
+  };
 };
 
 const getInitialInnerSize = (
@@ -95,7 +97,7 @@ const getInitialInnerSize = (
   if (isValidNumber(height) && isValidNumber(width)) {
     return {
       height,
-      width
+      width,
     };
   }
 };
@@ -105,7 +107,7 @@ export const useMeasuredContainer = ({
   defaultWidth = 0,
   height,
   onResize: onResizeProp,
-  width
+  width,
 }: MeasuredProps): MeasuredContainerHookResult => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<MeasuredState>({
@@ -113,8 +115,8 @@ export const useMeasuredContainer = ({
     inner: getInitialInnerSize(height, width),
     outer: {
       height: height ?? "100%",
-      width: width ?? "auto"
-    }
+      width: width ?? "auto",
+    },
   });
   const fixedHeight = typeof height === "number";
   const fixedWidth = typeof width === "number";
@@ -148,7 +150,7 @@ export const useMeasuredContainer = ({
           return {
             ...currentSize,
             outer: { height, width },
-            inner: { height: height - heightDiff, width: width - widthDiff }
+            inner: { height: height - heightDiff, width: width - widthDiff },
           };
         }
       }
@@ -171,8 +173,8 @@ export const useMeasuredContainer = ({
           outer,
           inner: {
             width: Math.floor(clientWidth) || defaultWidth,
-            height
-          }
+            height,
+          },
         };
       } else if (
         fixedWidth &&
@@ -184,8 +186,8 @@ export const useMeasuredContainer = ({
           outer,
           inner: {
             height: Math.floor(clientHeight) || defaultHeight,
-            width
-          }
+            width,
+          },
         };
       } else if (
         isNumber(clientHeight) &&
@@ -197,8 +199,8 @@ export const useMeasuredContainer = ({
           outer,
           inner: {
             width: Math.floor(clientWidth) || defaultWidth,
-            height: Math.floor(clientHeight) || defaultHeight
-          }
+            height: Math.floor(clientHeight) || defaultHeight,
+          },
         };
       }
 
@@ -221,6 +223,6 @@ export const useMeasuredContainer = ({
     containerRef,
     cssSize: size.css,
     outerSize: size.outer,
-    innerSize: size.inner
+    innerSize: size.inner,
   };
 };

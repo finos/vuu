@@ -30,8 +30,6 @@ export interface NewBasketPanelProps extends HTMLAttributes<HTMLDivElement> {
   onBasketCreated: BasketCreatedHandler;
 }
 
-const searchColumns = ["name"];
-
 export const NewBasketPanel = ({
   className,
   basketSchema,

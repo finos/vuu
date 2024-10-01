@@ -12,7 +12,6 @@ import {
   LayoutProvider,
   View,
 } from "@finos/vuu-layout";
-import { VuuTable } from "@finos/vuu-protocol-types";
 import { ContextPanel } from "@finos/vuu-shell";
 import { GroupHeaderCell, Table, TableProps } from "@finos/vuu-table";
 import {

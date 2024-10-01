@@ -233,7 +233,6 @@ export class Viewport {
     this.aggregations = aggregations;
     this.bufferSize = bufferSize;
     this.#clientRange = range;
-    console.log(`Viewport clientRange initialised to ${JSON.stringify(range)}`);
     this.clientViewportId = viewport;
     this.columns = columns;
     this.filter = filter;

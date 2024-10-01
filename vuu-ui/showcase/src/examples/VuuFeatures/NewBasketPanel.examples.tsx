@@ -1,12 +1,6 @@
-import {
-  BasketsTableName,
-  LocalDataSourceProvider,
-  getSchema,
-  vuuModule,
-} from "@finos/vuu-data-test";
+import { LocalDataSourceProvider, getSchema } from "@finos/vuu-data-test";
 import { NewBasketPanel } from "feature-basket-trading";
-import { useCallback, useMemo } from "react";
-import { BasketCreatedHandler } from "sample-apps/feature-basket-trading/src/new-basket-panel";
+import { useCallback } from "react";
 
 let displaySequence = 1;
 
@@ -18,12 +12,9 @@ export const DefaultNewBasketPanel = () => {
   //   []
   // );
 
-  const handleBasketCreated = useCallback<BasketCreatedHandler>(
-    (basketName, basketId, instanceId) => {
-      console.log(`save basket #${basketId} as ${basketName} ${instanceId}`);
-    },
-    [],
-  );
+  const handleBasketCreated = useCallback(() => {
+    console.log(`save basket`);
+  }, []);
 
   return (
     <LocalDataSourceProvider modules={["BASKET"]}>

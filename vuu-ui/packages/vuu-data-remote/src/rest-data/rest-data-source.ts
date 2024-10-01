@@ -164,7 +164,7 @@ export class RestDataSource
     console.log(`base ${RestDataSource.url}`);
 
     const url = `${RestDataSource.url}/${this.table.table}`;
-    const summaryUrl = `${url}/summary`;
+    // const summaryUrl = `${url}/summary`;
 
     fetch(url, {
       mode: "cors",

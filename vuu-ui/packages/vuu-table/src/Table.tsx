@@ -338,6 +338,7 @@ export const Table = forwardRef(function Table(
     customHeader,
     dataSource,
     disableFocus,
+    height,
     highlightedIndex,
     id,
     navigationStyle,
@@ -357,6 +358,7 @@ export const Table = forwardRef(function Table(
     showColumnHeaderMenus,
     showPaginationControls,
     style: styleProp,
+    width,
     ...htmlAttributes
   }: TableProps,
   forwardedRef: ForwardedRef<HTMLDivElement>,
@@ -397,6 +399,7 @@ export const Table = forwardRef(function Table(
       className={cx(classBase, classNameProp, {
         [`${classBase}-pagination`]: showPaginationControls,
       })}
+      height={height}
       id={id}
       onResize={setSize}
       ref={useForkRef(containerRef, forwardedRef)}
@@ -405,6 +408,7 @@ export const Table = forwardRef(function Table(
           "--row-height-prop": rowHeight > 0 ? `${rowHeight}px` : undefined,
         } as CSSProperties
       }
+      width={width}
     >
       <RowProxy ref={rowRef} height={rowHeightProp} />
       {size && rowHeight && (footerHeight || showColumnHeaders !== true) ? (

@@ -69,4 +69,4 @@ export const VuuInstrumentPicker = () => {
     </VuuDataSourceProvider>
   );
 };
-DefaultInstrumentPicker.displaySequence = displaySequence++;
+VuuInstrumentPicker.displaySequence = displaySequence++;
