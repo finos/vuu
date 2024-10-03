@@ -44,8 +44,6 @@ import {
   SessionEditingForm,
 } from "../session-editing-form";
 
-const NO_CONFIG: MenuActionConfig = {};
-
 export type VuuMenuActionHandler = (type: string, options: unknown) => boolean;
 
 export interface ViewServerHookResult {
@@ -118,14 +116,13 @@ const getFormConfig = (
 export const useVuuMenuActions = ({
   clientSideMenuActionHandler,
   dataSource,
-  menuActionConfig = NO_CONFIG,
   onRpcResponse,
 }: VuuMenuActionHookProps): ViewServerHookResult => {
   const { VuuDataSource } = useDataSource();
   const buildViewserverMenuOptions: MenuBuilder = useCallback(
     (location, options) => {
       const { links, menu } = dataSource;
-      const { visualLink } = menuActionConfig;
+      const { visualLink } = dataSource;
       const descriptors: ContextMenuItemDescriptor[] = [];
 
       if (location === "grid" && links && !visualLink) {
@@ -155,7 +152,7 @@ export const useVuuMenuActions = ({
 
       return descriptors;
     },
-    [dataSource, menuActionConfig],
+    [dataSource],
   );
 
   const { showDialog, closeDialog } = useDialogContext();

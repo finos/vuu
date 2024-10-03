@@ -581,12 +581,12 @@ export interface VuuMenu {
 
 export declare type VuuRowDataItemType = string | number | boolean;
 
-export type VuuGroupDepth = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
-export type VuuGroupExpanded = true | false;
-export type VuuGroupPath = string;
-export type VuuGroupLeaf = true | false;
-export type VuuGroupLabel = string;
-export type VuuGroupCount = number;
+export declare type VuuGroupDepth = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+export declare type VuuGroupExpanded = true | false;
+export declare type VuuGroupPath = string;
+export declare type VuuGroupLeaf = true | false;
+export declare type VuuGroupLabel = string;
+export declare type VuuGroupCount = number;
 
 export declare type VuuGroupDataRow = [
   VuuGroupDepth,

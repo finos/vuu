@@ -22,6 +22,7 @@ vi.mock("../src/ConnectionManager", () => ({
 
 const defaultSubscribeOptions = {
   aggregations: [],
+  baseFilterSpec: { filter: "" },
   bufferSize: 100,
   columns: [],
   filterSpec: { filter: "" },
@@ -47,7 +48,7 @@ describe("RemoteDataSource", () => {
       } catch (err) {
         expect(err).toBeDefined();
         expect(err.message).to.not.eq(
-          "RemoteDataSource was created without table",
+          "RemoteDataSource was created without table"
         );
       }
       try {
@@ -57,7 +58,7 @@ describe("RemoteDataSource", () => {
       } catch (err) {
         expect(err).toBeDefined();
         expect(err.message).to.not.eq(
-          "RemoteDataSource was created without table",
+          "RemoteDataSource was created without table"
         );
       }
       try {
@@ -70,7 +71,7 @@ describe("RemoteDataSource", () => {
         throw Error("RemoteDataSource was created without table");
       } catch (err) {
         expect(err.message).toEqual(
-          "RemoteDataSource constructor called without table",
+          "RemoteDataSource constructor called without table"
         );
       }
     });
@@ -117,12 +118,13 @@ describe("RemoteDataSource", () => {
           },
           viewport: "uuid-1",
         },
-        expect.any(Function),
+        expect.any(Function)
       );
     });
 
     it("uses options supplied at creation, if not passed with subscription", async () => {
       const aggregations = [{ column: "test", aggType: 1 } as const];
+      const baseFilterSpec = { filter: "" };
       const columns = ["test"];
       const filterSpec = { filter: 'ccy="EUR"' };
       const groupBy = ["test"];
@@ -157,6 +159,7 @@ describe("RemoteDataSource", () => {
       expect(serverAPI.subscribe).toHaveBeenCalledWith(
         {
           aggregations,
+          baseFilterSpec,
           bufferSize: 200,
           columns,
           filterSpec,
@@ -169,11 +172,12 @@ describe("RemoteDataSource", () => {
           },
           viewport: "uuid-1",
         },
-        expect.any(Function),
+        expect.any(Function)
       );
     });
     it("uses options passed with subscription, in preference to objects passed at creation", async () => {
       const aggregations = [{ column: "test", aggType: 1 } as const];
+      const baseFilterSpec = { filter: "" };
       const columns = ["test"];
       const filterSpec = { filter: 'ccy="EUR"' };
       const groupBy = ["test"];
@@ -206,12 +210,13 @@ describe("RemoteDataSource", () => {
           sort: sort2,
           viewport: "test-2",
         },
-        callback,
+        callback
       );
 
       expect(serverAPI.subscribe).toHaveBeenCalledWith(
         {
           aggregations,
+          baseFilterSpec,
           bufferSize: 100,
           columns: columns2,
           filterSpec: filter2,
@@ -225,7 +230,7 @@ describe("RemoteDataSource", () => {
           viewport: "test-2",
           visualLink: undefined,
         },
-        expect.any(Function),
+        expect.any(Function)
       );
     });
 
@@ -236,7 +241,7 @@ describe("RemoteDataSource", () => {
 
       const pendingSubscribe = dataSource.subscribe(
         { range: { from: 0, to: 20 }, groupBy: ["test1"] },
-        callback,
+        callback
       );
 
       // dataSource is blocked inside subscribe function, awaiting server ...
@@ -256,7 +261,7 @@ describe("RemoteDataSource", () => {
           },
           viewport: "uuid-1",
         },
-        expect.any(Function),
+        expect.any(Function)
       );
     });
   });
@@ -320,6 +325,39 @@ describe("RemoteDataSource", () => {
         type: "config",
         config: {
           aggregations: [],
+          baseFilterSpec: { filter: "" },
+          columns: [],
+          filterSpec: {
+            filter: 'exchange="SETS"',
+            filterStruct: {
+              column: "exchange",
+              op: "=",
+              value: "SETS",
+            },
+          },
+          groupBy: [],
+          sort: { sortDefs: [] },
+        },
+        viewport: "vp1",
+      });
+    });
+    it("calls server when baseFilter set", async () => {
+      const serverSend = vi.fn();
+      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
+        // @ts-ignore
+        () => Promise.resolve({ send: serverSend, subscribe: callback })
+      );
+      const dataSource = new VuuDataSource({ table, viewport: "vp1" });
+      await dataSource.subscribe({}, callback);
+
+      const baseFilterSpec = { filter: 'exchange="SETS"' };
+      dataSource.baseFilter = baseFilterSpec;
+
+      expect(serverSend).toHaveBeenCalledWith({
+        type: "config",
+        config: {
+          aggregations: [],
+          baseFilterSpec: { filter: 'exchange="SETS"' },
           columns: [],
           filterSpec: {
             filter: 'exchange="SETS"',
@@ -347,6 +385,7 @@ describe("RemoteDataSource", () => {
         type: "config",
         config: {
           aggregations: [],
+          baseFilterSpec: { filter: "" },
           columns: [],
           filterSpec: {
             filter: "",
@@ -373,6 +412,7 @@ describe("RemoteDataSource", () => {
         type: "config",
         config: {
           aggregations: [],
+          baseFilterSpec: { filter: "" },
           columns: [],
           filterSpec: { filter: "" },
           groupBy: [],
@@ -391,6 +431,7 @@ describe("RemoteDataSource", () => {
         type: "config",
         config: {
           aggregations: [],
+          baseFilterSpec: { filter: "" },
           columns: ["col1", "col2", "col3"],
           filterSpec: { filter: "" },
           groupBy: [],
@@ -415,6 +456,7 @@ describe("RemoteDataSource", () => {
         type: "config",
         config: {
           aggregations: [],
+          baseFilterSpec: { filter: "" },
           columns: [],
           filterSpec: {
             filter: 'ccy = "EUR"',
@@ -423,6 +465,78 @@ describe("RemoteDataSource", () => {
               op: "=",
               value: "EUR",
             },
+          },
+          groupBy: [],
+          sort: { sortDefs: [] },
+        },
+        viewport: "vp1",
+      });
+    });
+
+    it("parses filterStruct, if both baseFilter and filter are provided", async () => {
+      const serverSend = vi.fn();
+      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
+        // @ts-ignore
+        () => Promise.resolve({ send: serverSend, subscribe: callback })
+      );
+      const dataSource = new VuuDataSource({ table, viewport: "vp1" });
+      await dataSource.subscribe({}, callback);
+
+      const config: DataSourceConfig = {
+        baseFilterSpec: { filter: 'ccy = "EUR"' },
+        filterSpec: { filter: 'exchange starts "X"' },
+      };
+
+      dataSource.config = config;
+
+      expect(serverSend).toHaveBeenCalledWith({
+        type: "config",
+        config: {
+          aggregations: [],
+          baseFilterSpec: { filter: 'ccy = "EUR"' },
+          columns: [],
+          filterSpec: {
+            filter: 'exchange starts "X" and ccy = "EUR"',
+            filterStruct: {
+              filters: [
+                { column: "exchange", op: "starts", value: "X" },
+                { column: "ccy", op: "=", value: "EUR" },
+              ],
+              op: "and",
+            },
+          },
+          groupBy: [],
+          sort: { sortDefs: [] },
+        },
+        viewport: "vp1",
+      });
+    });
+
+    it("parses filterStruct, if baseFilter only is provided", async () => {
+      const serverSend = vi.fn();
+      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
+        // @ts-ignore
+        () => Promise.resolve({ send: serverSend, subscribe: callback })
+      );
+      const dataSource = new VuuDataSource({ table, viewport: "vp1" });
+      await dataSource.subscribe({}, callback);
+
+      const config: DataSourceConfig = {
+        baseFilterSpec: { filter: 'ccy = "GBP"' },
+        filterSpec: { filter: "" },
+      };
+
+      dataSource.config = config;
+
+      expect(serverSend).toHaveBeenCalledWith({
+        type: "config",
+        config: {
+          aggregations: [],
+          baseFilterSpec: { filter: 'ccy = "GBP"' },
+          columns: [],
+          filterSpec: {
+            filter: 'ccy = "GBP"',
+            filterStruct: { column: "ccy", op: "=", value: "GBP" },
           },
           groupBy: [],
           sort: { sortDefs: [] },

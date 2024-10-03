@@ -32,6 +32,7 @@ export const NoSort: VuuSort = { sortDefs: [] };
 export const vanillaConfig: WithFullConfig = {
   aggregations: [],
   columns: [],
+  baseFilterSpec: NoFilter,
   filterSpec: NoFilter,
   groupBy: [],
   sort: NoSort,
@@ -39,6 +40,7 @@ export const vanillaConfig: WithFullConfig = {
 
 export type DataSourceConfigChanges = {
   aggregationsChanged: boolean;
+  baseFilterChanged: boolean;
   columnsChanged: boolean;
   filterChanged: boolean;
   groupByChanged: boolean;
@@ -127,6 +129,14 @@ const isColumnsChanged: DataConfigPredicate = (config, newConfig) => {
   return cols1.some((column, i) => column !== cols2?.[i]);
 };
 
+export const isBaseFilterChanged: DataConfigPredicate = (c1, c2) => {
+  if (equivalentFilter(c1, c2)) {
+    return false;
+  } else {
+    return c1.baseFilterSpec?.filter !== c2.baseFilterSpec?.filter;
+  }
+};
+
 export const isFilterChanged: DataConfigPredicate = (c1, c2) => {
   if (equivalentFilter(c1, c2)) {
     return false;
@@ -179,6 +189,7 @@ const isVisualLinkChanged: DataConfigPredicate = (
 
 export const NO_CONFIG_CHANGES: MaybeDataSourceConfigChanges = {
   aggregationsChanged: false,
+  baseFilterChanged: false,
   columnsChanged: false,
   filterChanged: false,
   groupByChanged: false,
@@ -204,6 +215,7 @@ export const isConfigChanged = (
   }
 
   const aggregationsChanged = isAggregationsChanged(config, newConfig);
+  const baseFilterChanged = isBaseFilterChanged(config, newConfig);
   const columnsChanged = isColumnsChanged(config, newConfig);
   const filterChanged = isFilterChanged(config, newConfig);
   const groupByChanged = isGroupByChanged(config, newConfig);
@@ -212,6 +224,7 @@ export const isConfigChanged = (
 
   const noChanges = !(
     aggregationsChanged ||
+    baseFilterChanged ||
     columnsChanged ||
     filterChanged ||
     groupByChanged ||
@@ -221,6 +234,7 @@ export const isConfigChanged = (
 
   return {
     aggregationsChanged,
+    baseFilterChanged,
     columnsChanged,
     filterChanged,
     groupByChanged,
@@ -234,6 +248,12 @@ export const hasGroupBy = (config?: DataSourceConfig): config is WithGroupBy =>
   config !== undefined &&
   config.groupBy !== undefined &&
   config.groupBy.length > 0;
+
+export const hasBaseFilter = (
+  config?: DataSourceConfig,
+): config is WithFilter =>
+  config?.baseFilterSpec !== undefined &&
+  config.baseFilterSpec.filter.length > 0;
 
 export const hasFilter = (config?: DataSourceConfig): config is WithFilter =>
   config?.filterSpec !== undefined && config.filterSpec.filter.length > 0;
@@ -291,6 +311,7 @@ export const withConfigDefaults = (
 ): WithFullConfig & { visualLink?: LinkDescriptorWithLabel } => {
   if (
     config.aggregations &&
+    config.baseFilterSpec &&
     config.columns &&
     config.filterSpec &&
     config.groupBy &&
@@ -300,6 +321,7 @@ export const withConfigDefaults = (
   } else {
     const {
       aggregations = [],
+      baseFilterSpec: baseFilter = { filter: "" },
       columns = [],
       filterSpec: filter = { filter: "" },
       groupBy = [],
@@ -309,6 +331,7 @@ export const withConfigDefaults = (
 
     return {
       aggregations,
+      baseFilterSpec: baseFilter,
       columns,
       filterSpec: filter,
       groupBy,

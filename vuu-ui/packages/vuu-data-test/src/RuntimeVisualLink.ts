@@ -37,13 +37,13 @@ export class RuntimeVisualLink {
       "row-selection",
       this.handleParentSelectEvent,
     );
-    this.#childDataSource.filter = { filter: "" };
+    this.#childDataSource.baseFilter = { filter: "" };
   }
 
   handleParentSelectEvent: RowSelectionEventHandler = (selection) => {
     if (this.#childDataSource) {
       const selectedValues = this.pickUniqueSelectedValues(selection);
-      this.#childDataSource.filter = {
+      this.#childDataSource.baseFilter = {
         filter: `${this.#childColumnName} in ["${selectedValues.join('","')}"]`,
       };
     }

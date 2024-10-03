@@ -11,6 +11,7 @@ import {
   SubscribeCallback,
   SubscribeProps,
   TableSchema,
+  WithBaseFilter,
   WithFullConfig,
 } from "@finos/vuu-data-types";
 import { filterPredicate, parseFilter } from "@finos/vuu-filter-parser";
@@ -21,39 +22,41 @@ import type {
   VuuMenu,
   VuuRange,
   VuuRowDataItemType,
-  VuuSort,
-  VuuRpcResponse,
   VuuRpcRequest,
+  VuuRpcResponse,
+  VuuSort,
 } from "@finos/vuu-protocol-types";
 import type { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
-  buildColumnMap,
   ColumnMap,
-  isConfigChanged,
+  DataSourceConfigChanges,
   EventEmitter,
+  KeySet,
+  NULL_RANGE,
+  buildColumnMap,
+  combine,
   getAddedItems,
   getMissingItems,
-  isGroupByChanged,
+  hasBaseFilter,
   hasFilter,
   hasGroupBy,
   hasSort,
-  KeySet,
+  isConfigChanged,
+  isEditCellRequest,
+  isGroupByChanged,
   logger,
   metadataKeys,
-  NULL_RANGE,
   rangeNewItems,
+  rangesAreSame,
   resetRange,
+  selectionCount,
   uuid,
   vanillaConfig,
   withConfigDefaults,
-  DataSourceConfigChanges,
-  selectionCount,
-  isEditCellRequest,
-  rangesAreSame,
 } from "@finos/vuu-utils";
 import { aggregateData } from "./aggregate-utils";
 import { buildDataToClientMap, toClientRow } from "./array-data-utils";
-import { collapseGroup, expandGroup, GroupMap, groupRows } from "./group-utils";
+import { GroupMap, collapseGroup, expandGroup, groupRows } from "./group-utils";
 import { sortRows } from "./sort-utils";
 
 const { debug, info } = logger("ArrayDataSource");
@@ -353,7 +356,7 @@ export class ArrayDataSource
     return this._config;
   }
 
-  set config(config: DataSourceConfig) {
+  set config(config: WithBaseFilter<DataSourceConfig>) {
     const configChanges = this.applyConfig(config);
     if (configChanges) {
       if (config) {
@@ -373,10 +376,12 @@ export class ArrayDataSource
         this._config = withConfigDefaults(newConfig);
 
         let processedData: DataSourceRow[] | undefined;
-
-        if (hasFilter(config)) {
-          const { filter, filterStruct = parseFilter(filter) } =
-            config.filterSpec;
+        console.log(config);
+        if (hasFilter(config) || hasBaseFilter(config)) {
+          const combinedFilter = config.baseFilterSpec
+            ? combine(config.filterSpec, config.baseFilterSpec)
+            : config.filterSpec;
+          const filterStruct = parseFilter(combinedFilter.filter);
           if (filterStruct) {
             const fn = filterPredicate(this.#columnMap, filterStruct);
             processedData = this.#data.filter(fn);
@@ -444,7 +449,7 @@ export class ArrayDataSource
   }
 
   applyConfig(
-    config: DataSourceConfig,
+    config: WithBaseFilter<DataSourceConfig>,
     preserveExistingConfigAttributes = false,
   ): DataSourceConfigChanges | undefined {
     const { noChanges, ...otherChanges } = isConfigChanged(
@@ -694,6 +699,19 @@ export class ArrayDataSource
     this.config = {
       ...this._config,
       sort,
+    };
+  }
+
+  get baseFilter() {
+    return this._config.baseFilterSpec;
+  }
+
+  set baseFilter(baseFilter: DataSourceFilter) {
+    debug?.(`baseFilter ${JSON.stringify(baseFilter)}`);
+    // TODO check that baseFilter has changed
+    this.config = {
+      ...this._config,
+      baseFilterSpec: baseFilter,
     };
   }
 
