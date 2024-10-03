@@ -37,11 +37,15 @@
         var(--measured-px-height) + var(--horizontal-scrollbar-height)
       );
     }
+    .vuuTable-scrollbarFiller {
+      height: var(--horizontal-scrollbar-height);
+    }
   }
 
   &.vuuTable-maxViewportRowLimit {
     /*  With a maxVviewportRowLimit, table is content sized, not container sized. */
     height: fit-content;
+    padding-bottom: var(--horizontal-scrollbar-height);
 
     .vuuTable-contentContainer {
       height: min(
@@ -54,6 +58,10 @@
         calc(var(--measured-px-height) + var(--horizontal-scrollbar-height)),
         calc(var(--content-height) + var(--horizontal-scrollbar-height))
       );
+    }
+
+    .vuuTable-scrollbarFiller {
+      height: var(--horizontal-scrollbar-height);
     }
   }
 }
@@ -73,10 +81,6 @@
 .vuuTable-scrollbarContainer {
   border-bottom: none !important;
   border-top: none !important;
-  border-left: solid 1px var(--salt-container-primary-borderColor);
-  /*  a top border */
-  /** creates a border to top od scrollbar */
-  /* box-shadow: 0px -1px 0px 0px var(--salt-container-primary-borderColor); */
   height: var(--viewport-body-height);
   left: 0px;
   overflow: auto;

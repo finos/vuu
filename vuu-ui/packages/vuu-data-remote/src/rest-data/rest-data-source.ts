@@ -29,11 +29,15 @@ import {
 import { NDJsonReader, jsonToDataSourceRow } from "./rest-utils";
 import { MovingWindow } from "./moving-window";
 
+export type RestMetaData = {
+  recordCount: number;
+};
+
 export class RestDataSource
   extends EventEmitter<DataSourceEvents>
   implements DataSource
 {
-  private static _url = "/api";
+  private static _api = "/api";
 
   private clientCallback: SubscribeCallback | undefined;
   #columnMap: ColumnMap = buildColumnMap([
@@ -70,8 +74,7 @@ export class RestDataSource
   }) {
     super();
 
-    if (!table)
-      throw Error("RemoteDataSource constructor called without table");
+    if (!table) throw Error("RestDataSource constructor called without table");
 
     this.table = table;
     this.viewport = viewport;
@@ -91,11 +94,29 @@ export class RestDataSource
     this.#title = title;
   }
 
-  static get url() {
-    return this._url;
+  private get pageSize() {
+    return this.#range.to - this.#range.from;
   }
-  static set url(url: string) {
-    this._url = url;
+
+  static get api() {
+    return this._api;
+  }
+
+  static set api(url: string) {
+    this._api = url;
+  }
+
+  get url() {
+    return `${RestDataSource.api}/${this.table.table}`;
+  }
+
+  get dataUrl() {
+    const { from, to } = this.#range;
+    return `${this.url}?origin=${from}&limit=${to - from}`;
+  }
+
+  get metaDataUrl() {
+    return `${this.url}/summary`;
   }
 
   get title() {
@@ -141,11 +162,16 @@ export class RestDataSource
     if (range.from !== this.#range.from || range.to !== this.#range.to) {
       this.#range = range;
       this.#dataWindow.setRange(range);
-      this.sendRowsToClient();
+      this.fetchData();
     }
   }
 
-  private fetchData() {
+  private fetchData = async () => {
+    const { recordCount } = await this.fetchMetaData();
+
+    const pageCount = Math.ceil(recordCount / this.pageSize);
+    this.emit("page-count", pageCount);
+
     const start = performance.now();
     const allDone = () => {
       const end = performance.now();
@@ -155,18 +181,16 @@ export class RestDataSource
       this.clientCallback?.({
         clientViewportId: this.viewport,
         mode: "update",
+        range: this.#range,
         rows: this.#dataWindow.data,
-        size: 200000,
+        size: recordCount,
         type: "viewport-update",
       });
     };
 
-    console.log(`base ${RestDataSource.url}`);
+    console.log(`base ${RestDataSource.api}`);
 
-    const url = `${RestDataSource.url}/${this.table.table}`;
-    // const summaryUrl = `${url}/summary`;
-
-    fetch(url, {
+    fetch(this.dataUrl, {
       mode: "cors",
     }).then(
       NDJsonReader(
@@ -178,7 +202,20 @@ export class RestDataSource
         allDone,
       ),
     );
-  }
+  };
+
+  private fetchMetaData = async () =>
+    new Promise<RestMetaData>((resolve, reject) => {
+      fetch(this.metaDataUrl, {
+        mode: "cors",
+      }).then((response) => {
+        if (response.ok) {
+          resolve(response.json());
+        } else {
+          reject(response.status);
+        }
+      });
+    });
 
   private sendRowsToClient() {
     console.log(`send rows to client`);

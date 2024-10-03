@@ -271,14 +271,18 @@ const TableCore = ({
     [`${classBase}-zebra`]: tableAttributes.zebraStripes,
   });
 
+  const cssScrollbarSize = {
+    "--horizontal-scrollbar-height": `${viewportMeasurements.horizontalScrollbarHeight}px`,
+    "--vertical-scrollbar-width": `${viewportMeasurements.verticalScrollbarWidth}px`,
+  } as CSSProperties;
+
   const cssVariables = {
+    ...cssScrollbarSize,
     "--content-height": `${viewportMeasurements.contentHeight}px`,
     "--content-width": `${viewportMeasurements.contentWidth}px`,
-    "--horizontal-scrollbar-height": `${viewportMeasurements.horizontalScrollbarHeight}px`,
     "--pinned-width-left": `${viewportMeasurements.pinnedWidthLeft}px`,
     "--pinned-width-right": `${viewportMeasurements.pinnedWidthRight}px`,
     "--total-header-height": `${headerHeight}px`,
-    "--vertical-scrollbar-width": `${viewportMeasurements.verticalScrollbarWidth}px`,
     "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`,
   } as CSSProperties;
 
@@ -348,6 +352,15 @@ const TableCore = ({
           ) : null}
         </div>
       </div>
+      {/* 
+        This keeps the heights of content container and scrollbar container aligned for
+        cases where we rely on height: fit-content. (ScrollbarContainer isn't taken into 
+        account because its absolutely positioned).
+      */}
+      <div
+        className={`${classBase}-scrollbarFiller`}
+        style={cssScrollbarSize}
+      />
       {draggableRow}
     </ContextMenuProvider>
   );

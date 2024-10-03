@@ -56,6 +56,7 @@ const DataTableTemplate = ({
     <Table
       {...props}
       config={tableConfig}
+      data-testid="table"
       dataSource={dataSource}
       height={500}
       maxViewportRowLimit={maxViewportRowLimit}
@@ -95,12 +96,18 @@ export const MaxViewportRowLimitRowsExceedLimit = () => {
 };
 MaxViewportRowLimitRowsExceedLimit.displaySequence = displaySequence++;
 
-export const MaxViewportRowLimitFewRows = () => {
+export const MaxViewportRowLimitFewRows = ({
+  width,
+}: Pick<TableProps, "width">) => {
   const schema = getSchema("basket");
   console.log({ schema });
   return (
     <LocalDataSourceProvider modules={["SIMUL"]}>
-      <DataTableTemplate maxViewportRowLimit={10} schema={schema} />
+      <DataTableTemplate
+        maxViewportRowLimit={10}
+        schema={schema}
+        width={width}
+      />
     </LocalDataSourceProvider>
   );
 };

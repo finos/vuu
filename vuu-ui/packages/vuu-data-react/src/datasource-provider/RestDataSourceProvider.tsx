@@ -12,7 +12,7 @@ export const RestDataSourceProvider = ({
   url: string;
 }) => {
   // url is a static property
-  RestDataSource.url = url;
+  RestDataSource.api = url;
   return (
     <DataSourceProvider
       VuuDataSource={RestDataSource}
