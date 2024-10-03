@@ -1,5 +1,5 @@
 .vuuTable {
-  --vuu-table-pagination-height: 0px;
+  --vuu-table-footer-height: 0px;
   --vuu-table-cell-outlineWidth: 1px;
   --table-height: var(--measured-px-height);
   --table-width: var(--measured-px-width);
@@ -25,6 +25,37 @@
   font-size: var(--vuuTable-fontSize, var(--salt-text-fontSize, 12px));
   position: relative;
   user-select: none;
+
+  &.vuuTable-viewportRowLimit {
+    height: fit-content;
+    /*  With a viewportRowLimit, table is content sized, not container sized. */
+    .vuuTable-contentContainer {
+      height: calc(var(--measured-px-height) + var(--total-header-height));
+    }
+    .vuuTable-scrollbarContainer {
+      height: calc(
+        var(--measured-px-height) + var(--horizontal-scrollbar-height)
+      );
+    }
+  }
+
+  &.vuuTable-maxViewportRowLimit {
+    /*  With a maxVviewportRowLimit, table is content sized, not container sized. */
+    height: fit-content;
+
+    .vuuTable-contentContainer {
+      height: min(
+        calc(var(--measured-px-height) + var(--total-header-height)),
+        calc(var(--content-height) + var(--total-header-height))
+      );
+    }
+    .vuuTable-scrollbarContainer {
+      height: min(
+        calc(var(--measured-px-height) + var(--horizontal-scrollbar-height)),
+        calc(var(--content-height) + var(--horizontal-scrollbar-height))
+      );
+    }
+  }
 }
 
 .vuuTable-zebra {
@@ -80,7 +111,9 @@
 
 .vuuTable-contentContainer {
   background: var(--table-background);
-  height: calc(100% - var(--horizontal-scrollbar-height));
+  height: calc(
+    100% - var(--horizontal-scrollbar-height) - var(--vuu-table-footer-height)
+  );
   position: relative;
   overflow: auto;
   overscroll-behavior: none;
@@ -171,7 +204,7 @@
 }
 
 .vuuTable-pagination {
-  --vuu-table-pagination-height: 32px;
+  --vuu-table-footer-height: 32px;
   .vuuTable-col-headings {
     position: relative;
   }
@@ -187,10 +220,10 @@
   }
 }
 
-.vuuTable-pagination-container {
+.vuuTable-footer {
   align-items: center;
   display: flex;
-  height: var(--vuu-table-pagination-height);
+  height: var(--vuu-table-footer-height);
   justify-content: flex-end;
   position: absolute;
   left: 0;

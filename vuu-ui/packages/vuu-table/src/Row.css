@@ -15,6 +15,7 @@
 }
 
 .vuuTableRow-proxy {
+  position: absolute !important;
   visibility: hidden;
 }
 
