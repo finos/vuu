@@ -9,6 +9,7 @@ export * from "./common-types";
 export * from "./css-utils";
 export * from "./data-utils";
 export * from "./datasource-action-utils";
+export * from "./datasource-filter-utils";
 export * from "./datasource-utils";
 export * from "./date";
 export * from "./debug-utils";

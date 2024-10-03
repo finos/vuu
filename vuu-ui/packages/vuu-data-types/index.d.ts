@@ -1,8 +1,16 @@
+import type {
+  DataSourceFilter,
+  MenuRpcResponse,
+  Selection,
+  TableSchema,
+} from "@finos/vuu-data-types";
 import type { Filter } from "@finos/vuu-filter-types";
 import type { MenuActionClosePopup } from "@finos/vuu-popups";
 import type {
+  LinkDescriptorWithLabel,
   NoAction,
   OpenDialogAction,
+  TypeAheadMethod,
   VuuAggregation,
   VuuColumnDataType,
   VuuColumns,
@@ -11,7 +19,10 @@ import type {
   VuuGroupBy,
   VuuLinkDescriptor,
   VuuMenu,
+  VuuRange,
   VuuRowDataItemType,
+  VuuRpcRequest,
+  VuuRpcViewportResponse,
   VuuSort,
   VuuTable,
   VuuRpcRequest,
@@ -32,13 +43,10 @@ import type {
 import type {
   VuuTableListRequest,
   VuuTableMetaRequest,
-  LinkDescriptorWithLabel,
-  VuuRpcViewportResponse,
-  TypeAheadMethod,
-  VuuRange,
 } from "@finos/vuu-protocol-types";
 import { DataValueTypeDescriptor } from "@finos/vuu-table-types";
 import { PostMessageToClientCallback } from "@finos/vuu-data-remote";
+import type { DataSourceConfigChanges, IEventEmitter } from "@finos/vuu-utils";
 
 export declare type DataValueValidationSuccessResult = {
   ok: true;
@@ -52,7 +60,7 @@ export declare type DataValueValidationResult =
   | DataValueValidationFailResult;
 
 export declare type DataValueValidationChecker = (
-  value?: VuuRowDataItemType,
+  value?: VuuRowDataItemType
 ) => DataValueValidationResult;
 
 export declare type EditRuleValidationSuccessResult = {
@@ -79,7 +87,7 @@ export declare type EditRuleValidationResult =
  */
 export declare type EditRuleValidator = (
   editRule: EditValidationRule,
-  value?: VuuRowDataItemType,
+  value?: VuuRowDataItemType
 ) => EditRuleValidationResult;
 
 /**
@@ -162,9 +170,9 @@ type IsExpanded = boolean;
 type Depth = number;
 type ChildCount = number;
 type RowKey = string;
-export type IsSelected = number;
+export declare type IsSelected = number;
 
-export type DataSourceRow = [
+export declare type DataSourceRow = [
   RowIndex,
   RenderKey,
   IsLeaf,
@@ -173,10 +181,10 @@ export type DataSourceRow = [
   ChildCount,
   RowKey,
   IsSelected,
-  ...VuuRowDataItemType[],
+  ...VuuRowDataItemType[]
 ];
 
-export type DataSourceRowObject = {
+export declare type DataSourceRowObject = {
   index: number;
   key: string;
   isGroupRow: boolean;
@@ -184,7 +192,7 @@ export type DataSourceRowObject = {
   data: VuuDataRowDto;
 };
 
-export type DataSourceRowPredicate = (row: DataSourceRow) => boolean;
+export declare type DataSourceRowPredicate = (row: DataSourceRow) => boolean;
 
 export interface ContextMenuItemBase {
   className?: string;
@@ -198,7 +206,7 @@ export interface ContextMenuLeafItemDescriptor extends ContextMenuItemBase {
   options?: unknown;
 }
 
-export type ContextMenuItemDescriptor =
+export declare type ContextMenuItemDescriptor =
   | ContextMenuLeafItemDescriptor
   | ContextMenuGroupItemDescriptor;
 
@@ -216,7 +224,7 @@ export interface DataSourceAggregateMessage
   type: "aggregate";
 }
 
-export type DataUpdateMode = "batch" | "update" | "size-only";
+export declare type DataUpdateMode = "batch" | "update" | "size-only";
 
 export interface DataSourceClearMessage extends MessageWithClientViewportId {
   type: "viewport-clear";
@@ -312,11 +320,11 @@ export interface DataSourceVisualLinksMessage
   links: VuuLinkDescriptor[];
 }
 
-export type VuuFeatureMessage =
+export declare type VuuFeatureMessage =
   | DataSourceMenusMessage
   | DataSourceVisualLinksMessage;
 
-export type DataSourceConfigMessage =
+export declare type DataSourceConfigMessage =
   | DataSourceAggregateMessage
   | DataSourceColumnsMessage
   | DataSourceFilterMessage
@@ -327,7 +335,7 @@ export type DataSourceConfigMessage =
 /**
  * Messages which are routed back to the DataSource
  */
-export type DataSourceCallbackMessage =
+export declare type DataSourceCallbackMessage =
   | DataSourceConfigMessage
   | DataSourceColumnsMessage
   | DataSourceDataMessage
@@ -341,12 +349,12 @@ export type DataSourceCallbackMessage =
   | DataSourceVisualLinkRemovedMessage
   | DataSourceVisualLinksMessage;
 
-export type ConfigChangeColumnsMessage = {
+export declare type ConfigChangeColumnsMessage = {
   type: "columns";
   columns?: ColumnDescriptor[];
 };
 
-export type ConfigChangeMessage =
+export declare type ConfigChangeMessage =
   | ConfigChangeColumnsMessage
   | DataSourceAggregateMessage
   | DataSourceFilterMessage
@@ -355,7 +363,7 @@ export type ConfigChangeMessage =
   | DataSourceVisualLinkCreatedMessage
   | DataSourceVisualLinkRemovedMessage;
 
-export type ConfigChangeHandler = (msg: ConfigChangeMessage) => void;
+export declare type ConfigChangeHandler = (msg: ConfigChangeMessage) => void;
 
 /**
  * MenuBuilder describes a factory function that creates
@@ -364,9 +372,9 @@ export type ConfigChangeHandler = (msg: ConfigChangeMessage) => void;
  * can be used to determine which Menu Items to include
  * in the menu. Most often used for ContextMenus.
  */
-export type MenuBuilder<L = string, O = unknown> = (
+export declare type MenuBuilder<L = string, O = unknown> = (
   location: L,
-  options: O,
+  options: O
 ) => ContextMenuItemDescriptor[];
 
 /**
@@ -377,8 +385,8 @@ export type MenuBuilder<L = string, O = unknown> = (
  * It should return true if it handled this MenuItem. This allows multiple Menu-
  * ActionHandlers to be chained.
  */
-export type MenuActionHandler = (
-  reason: MenuActionClosePopup,
+export declare type MenuActionHandler = (
+  reason: MenuActionClosePopup
 ) => boolean | undefined;
 
 export interface ContextMenuContextType {
@@ -386,7 +394,7 @@ export interface ContextMenuContextType {
   menuActionHandler: MenuActionHandler;
 }
 
-export type SchemaColumn = {
+export declare type SchemaColumn = {
   name: string;
   serverDataType: VuuColumnDataType;
 };
@@ -395,11 +403,11 @@ export type SchemaColumn = {
  * session will be present for session tables only, in which case the table
  * name represents the 'archetype' table name.
  */
-export type TableSchemaTable = VuuTable & {
+export declare type TableSchemaTable = VuuTable & {
   session?: string;
 };
 
-export type TableSchema = {
+export declare type TableSchema = {
   columns: SchemaColumn[];
   key: string;
   table: TableSchemaTable;
@@ -412,6 +420,7 @@ export type TableSchema = {
 export interface WithFullConfig {
   readonly aggregations: VuuAggregation[];
   readonly columns: VuuColumns;
+  readonly baseFilterSpec: DataSourceFilter;
   readonly filterSpec: DataSourceFilter;
   readonly groupBy: VuuGroupBy;
   readonly sort: VuuSort;
@@ -444,20 +453,22 @@ export interface SubscribeProps extends Partial<WithFullConfig> {
   title?: string;
 }
 
-export type SubscribeCallback = (message: DataSourceCallbackMessage) => void;
-export type OptimizeStrategy = "none" | "throttle" | "debounce";
+export declare type SubscribeCallback = (
+  message: DataSourceCallbackMessage
+) => void;
+export declare type OptimizeStrategy = "none" | "throttle" | "debounce";
 
-export type DataSourceEventHandler = (viewportId: string) => void;
-export type RowSelectionEventHandler = (
+export declare type DataSourceEventHandler = (viewportId: string) => void;
+export declare type RowSelectionEventHandler = (
   selection: Selection,
-  selectedRowCount: number,
+  selectedRowCount: number
 ) => void;
 
-export type DataSourceEvents = {
+export declare type DataSourceEvents = {
   config: (
     config: DataSourceConfig | undefined,
     confirmed?: boolean,
-    configChanges?: DataSourceConfigChanges,
+    configChanges?: DataSourceConfigChanges
   ) => void;
   optimize: (optimize: OptimizeStrategy) => void;
   "page-count": (pageCount: number) => void;
@@ -479,31 +490,33 @@ export type DataSourceEvents = {
  * return Promise<true> indicates success
  * return Promise<errorMessage> indicates failure
  */
-export type DataSourceEditHandler = (
+export declare type DataSourceEditHandler = (
   rowKey: string,
   columnName: string,
-  value: VuuRowDataItemType,
+  value: VuuRowDataItemType
 ) => Promise<true | string>;
 
-export type DataSourceDeleteHandler = (key: string) => Promise<true | string>;
-export type DataSourceInsertHandler = (
+export declare type DataSourceDeleteHandler = (
+  key: string
+) => Promise<true | string>;
+export declare type DataSourceInsertHandler = (
   key: string,
-  data: VuuDataRowDto,
+  data: VuuDataRowDto
 ) => Promise<true | string>;
 
-export type RpcResponse =
+export declare type RpcResponse =
   | MenuRpcResponse
   | VuuUIMessageInRPCEditReject
   | VuuUIMessageInRPCEditResponse
   | ViewportRpcResponse;
 
-export type RpcResponseHandler = (
-  response: Omit<VuuRpcResponse, "vpId">,
+export declare type RpcResponseHandler = (
+  response: Omit<VuuRpcResponse, "vpId">
 ) => boolean;
 
-export type RowSearchPredicate = (row: DataSourceRow) => boolean;
+export declare type RowSearchPredicate = (row: DataSourceRow) => boolean;
 
-export type DataSourceStatus =
+export declare type DataSourceStatus =
   | "disabled"
   | "disabling"
   | "enabled"
@@ -514,20 +527,24 @@ export type DataSourceStatus =
   | "suspended"
   | "unsubscribed";
 
-export type SuggestionFetcher = (params: TypeaheadParams) => Promise<string[]>;
-export type SuggestionProvider = () => SuggestionFetcher;
+export declare type SuggestionFetcher = (
+  params: TypeaheadParams
+) => Promise<string[]>;
+export declare type SuggestionProvider = () => SuggestionFetcher;
 
 export interface TypeaheadSuggestionProvider {
   getTypeaheadSuggestions: (
     columnName: string,
-    pattern?: string,
+    pattern?: string
   ) => Promise<string[]>;
 }
 
-export type RangeTuple = [from: number, to: number];
-export type SelectionItem = number | RangeTuple;
-export type Selection = SelectionItem[];
-export type SelectionChangeHandler = (selection: Selection) => void;
+export declare type RangeTuple = [from: number, to: number];
+export declare type SelectionItem = number | RangeTuple;
+export declare type Selection = SelectionItem[];
+export declare type SelectionChangeHandler = (selection: Selection) => void;
+
+export declare type WithBaseFilter<T> = T & { baseFilter?: DataSourceFilter };
 
 export interface DataSource
   extends IEventEmitter<DataSourceEvents>,
@@ -543,17 +560,16 @@ export interface DataSource
    * @returns true if config has been applied (will not be if existig config is same)
    */
   applyConfig: (
-    config: DataSourceConfig,
+    config: WithBaseFilter<DataSourceConfig>,
     /**
      * If new config is missing attributes and these attributes are present on
      * existing config, shoule the existing attributes be preserved ?
      */
-    preserveExistingConfigAttributes?: boolean,
+    preserveExistingConfigAttributes?: boolean
   ) => DataSourceConfigChanges | undefined;
   closeTreeNode: (key: string, cascade?: boolean) => void;
   columns: string[];
-  config: DataSourceConfig;
-
+  config: WithBaseFilter<DataSourceConfig>;
   status: DataSourceStatus;
   /**
    *
@@ -592,6 +608,7 @@ export interface DataSource
    * Should emit a disabled event
    */
   disable?: () => void;
+  baseFilter?: DataSourceFilter;
   filter: DataSourceFilter;
 
   /**
@@ -614,16 +631,16 @@ export interface DataSource
   menu?: VuuMenu;
   /** @deprecated, use remoteProcedureCall instead */
   menuRpcCall: (
-    rpcRequest: Omit<VuuRpcRequest, "vpId">,
+    rpcRequest: Omit<VuuRpcRequest, "vpId">
   ) => Promise<VuuRpcMenuResponse>;
   /* @deprecated, use remoteProcedureCall instead */
   rpcCall?: <T extends VuuRpcResponse = VuuRpcResponse>(
-    rpcRequest: Omit<VuuRpcRequest, "vpId">,
+    rpcRequest: Omit<VuuRpcRequest, "vpId">
   ) => Promise<T>;
   openTreeNode: (key: string) => void;
   range: VuuRange;
   remoteProcedureCall: <T extends VuuRpcResponse = VuuRpcResponse>(
-    message: VuuRpcRequest,
+    message: VuuRpcRequest
   ) => Promise<T>;
   select: SelectionChangeHandler;
   readonly selectedRowsCount: number;
@@ -632,7 +649,7 @@ export interface DataSource
   sort: VuuSort;
   subscribe: (
     props: SubscribeProps,
-    callback: SubscribeCallback,
+    callback: SubscribeCallback
   ) => Promise<void>;
   table?: VuuTable;
   readonly tableSchema?: TableSchema;
@@ -648,7 +665,7 @@ export interface DataSource
 }
 
 export interface MenuRpcResponse<
-  TAction extends MenuRpcAction = MenuRpcAction,
+  TAction extends MenuRpcAction = MenuRpcAction
 > {
   action: TAction;
   error?: string;
@@ -681,20 +698,20 @@ export interface ServerProxySubscribeMessage extends WithFullConfig {
   visualLink?: LinkDescriptorWithLabel;
 }
 
-// export type VuuUIMessageInConnectionStatus = {
+// export declare type VuuUIMessageInConnectionStatus = {
 //   type: 'connection-status';
 // };
 
-export type VuuUIMessageInConnected = {
+export declare type VuuUIMessageInConnected = {
   type: "connected";
 };
 
-export type VuuUIMessageInConnectionFailed = {
+export declare type VuuUIMessageInConnectionFailed = {
   type: "connection-failed";
   reason: string;
 };
 
-export type VuuUIMessageInWorkerReady = {
+export declare type VuuUIMessageInWorkerReady = {
   type: "ready";
 };
 
@@ -757,7 +774,7 @@ export interface VuuUIMessageInMenuRej {
   type: "VIEW_PORT_MENU_REJ";
 }
 
-export type VuuUiMessageInRequestResponse =
+export declare type VuuUiMessageInRequestResponse =
   | VuuUIMessageInMenuRej
   | MenuRpcResponse
   | MenuRpcReject
@@ -768,13 +785,13 @@ export type VuuUiMessageInRequestResponse =
   | VuuUIMessageInTableList
   | VuuUIMessageInTableMeta;
 
-export type VuuUIMessageIn =
+export declare type VuuUIMessageIn =
   | VuuUiMessageInRequestResponse
   | VuuUIMessageInConnected
   | VuuUIMessageInConnectionFailed
   | VuuUIMessageInWorkerReady;
 
-export type WebSocketProtocol = string | string[] | undefined;
+export declare type WebSocketProtocol = string | string[] | undefined;
 
 export interface VuuUIMessageOutConnect {
   protocol?: WebSocketProtocol;
@@ -880,7 +897,7 @@ export interface VuuUIMessageOutConfig extends ViewportMessageOut {
   type: "config";
 }
 
-export type VuuUIMessageOutViewport =
+export declare type VuuUIMessageOutViewport =
   | VuuUIMessageOutAggregate
   | VuuUIMessageOutCloseTreeNode
   | VuuUIMessageOutColumns
@@ -904,9 +921,9 @@ export interface TypeAheadRpcRequest {
   type: "RPC_CALL";
 }
 
-export type WithRequestId<T> = T & { requestId: string };
+export declare type WithRequestId<T> = T & { requestId: string };
 
-export type VuuUIMessageOut =
+export declare type VuuUIMessageOut =
   | VuuUIMessageOutConnect
   | VuuUIMessageOutDisconnect
   | VuuUIMessageOutSubscribe
@@ -936,12 +953,12 @@ export interface ServerAPI {
       | VuuRpcMenuRequest
       | VuuRpcViewportRequest
       | VuuCreateVisualLink
-      | VuuRemoveVisualLink,
+      | VuuRemoveVisualLink
   ) => Promise<T>;
   send: (message: VuuUIMessageOut) => void;
   subscribe: (
     message: ServerProxySubscribeMessage,
-    callback: PostMessageToClientCallback,
+    callback: PostMessageToClientCallback
   ) => void;
   unsubscribe: (viewport: string) => void;
 }
