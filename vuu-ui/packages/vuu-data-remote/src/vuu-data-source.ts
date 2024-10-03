@@ -37,7 +37,7 @@ import { parseFilter } from "@finos/vuu-filter-parser";
 import {
   DataSourceConfigChanges,
   EventEmitter,
-  combineConfig,
+  combineFilters,
   debounce,
   isConfigChanged,
   isViewportMenusAction,
@@ -470,9 +470,7 @@ export class VuuDataSource
     if (configChanges) {
       if (this.#config && this.viewport) {
         if (config) {
-          const newConfig = config.filterSpec
-            ? combineConfig(this.#config)
-            : this.#config;
+          const newConfig = combineFilters(this.#config);
           this.server?.send({
             viewport: this.viewport,
             type: "config",
