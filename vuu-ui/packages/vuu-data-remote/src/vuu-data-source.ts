@@ -13,43 +13,45 @@ import {
   SubscribeCallback,
   SubscribeProps,
   TableSchema,
+  WithBaseFilter,
   WithFullConfig,
 } from "@finos/vuu-data-types";
 import {
-  VuuRpcMenuRequest,
-  VuuRpcViewportRequest,
   LinkDescriptorWithLabel,
   VuuAggregation,
+  VuuCreateVisualLink,
   VuuDataRowDto,
   VuuGroupBy,
   VuuMenu,
   VuuRange,
   VuuRowDataItemType,
+  VuuRpcMenuRequest,
+  VuuRpcRequest,
+  VuuRpcResponse,
+  VuuRpcViewportRequest,
   VuuSort,
   VuuTable,
-  VuuRpcResponse,
-  VuuRpcRequest,
-  VuuCreateVisualLink,
 } from "@finos/vuu-protocol-types";
 
 import { parseFilter } from "@finos/vuu-filter-parser";
 import {
-  isConfigChanged,
-  debounce,
+  DataSourceConfigChanges,
   EventEmitter,
+  combineConfig,
+  debounce,
+  isConfigChanged,
   isViewportMenusAction,
   isVisualLinksAction,
   itemsOrOrderChanged,
   logger,
+  selectionCount,
   throttle,
   uuid,
   vanillaConfig,
-  withConfigDefaults,
-  DataSourceConfigChanges,
-  selectionCount,
   vuuAddRowRequest,
   vuuDeleteRowRequest,
   vuuEditCellRequest,
+  withConfigDefaults,
 } from "@finos/vuu-utils";
 import ConnectionManager from "./ConnectionManager";
 import { isDataSourceConfigMessage } from "./data-source";
@@ -468,10 +470,13 @@ export class VuuDataSource
     if (configChanges) {
       if (this.#config && this.viewport) {
         if (config) {
+          const newConfig = config.filterSpec
+            ? combineConfig(this.#config)
+            : this.#config;
           this.server?.send({
             viewport: this.viewport,
             type: "config",
-            config: this.#config,
+            config: newConfig,
           });
         }
       }
@@ -480,7 +485,7 @@ export class VuuDataSource
   }
 
   applyConfig(
-    config: DataSourceConfig,
+    config: WithBaseFilter<DataSourceConfig>,
     preserveExistingConfigAttributes = false,
   ): DataSourceConfigChanges | undefined {
     const { noChanges, ...otherChanges } = isConfigChanged(
@@ -574,6 +579,17 @@ export class VuuDataSource
       this.server?.send(message);
     }
     this.emit("config", this.#config);
+  }
+
+  get baseFilter() {
+    return this.#config.baseFilterSpec;
+  }
+
+  set baseFilter(baseFilter: DataSourceFilter) {
+    this.config = {
+      ...this.#config,
+      baseFilterSpec: baseFilter,
+    };
   }
 
   get filter() {

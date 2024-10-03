@@ -29,14 +29,18 @@ import type {
   ReactElement,
 } from "react";
 
-export type TableSelectionModel = "none" | "single" | "checkbox" | "extended";
+export declare type TableSelectionModel =
+  | "none"
+  | "single"
+  | "checkbox"
+  | "extended";
 
-export type TableHeading = { label: string; width: number };
-export type TableHeadings = TableHeading[][];
+export declare type TableHeading = { label: string; width: number };
+export declare type TableHeadings = TableHeading[][];
 
-export type ValueFormatter = (value: unknown) => string;
+export declare type ValueFormatter = (value: unknown) => string;
 
-export type DataCellEditHandler = (
+export declare type DataCellEditHandler = (
   row: DataSourceRow,
   columnName: string,
   value: VuuRowDataItemType,
@@ -51,24 +55,28 @@ export interface TableCellProps {
   row: DataSourceRow;
 }
 
-export type CommitResponse = Promise<true | string>;
+export declare type CommitResponse = Promise<true | string>;
 
-export type DataItemCommitHandler<
+export declare type DataItemCommitHandler<
   T extends VuuRowDataItemType = VuuRowDataItemType,
 > = (value: T) => CommitResponse;
 
-export type TableRowSelectHandler = (row: DataSourceRowObject | null) => void;
-export type TableRowSelectHandlerInternal = (row: DataSourceRow | null) => void;
+export declare type TableRowSelectHandler = (
+  row: DataSourceRowObject | null,
+) => void;
+export declare type TableRowSelectHandlerInternal = (
+  row: DataSourceRow | null,
+) => void;
 
 /**
  * Fired when user clicks a row, returning the row object (DataSourceRowObject)
  */
-export type TableRowClickHandler = (
+export declare type TableRowClickHandler = (
   evt: MouseEvent<HTMLDivElement>,
   row: DataSourceRowObject,
 ) => void;
 
-export type TableRowClickHandlerInternal = (
+export declare type TableRowClickHandlerInternal = (
   evt: MouseEvent<HTMLDivElement>,
   row: DataSourceRow,
   rangeSelect: boolean,
@@ -87,7 +95,7 @@ export interface TableCellRendererProps
  * on what was originally a fit layout. Once this happens, no further auto
  * fitting will take place. Fit layout always respects max and min widths,
  */
-export type ColumnLayout = "static" | "fit" | "manual";
+export declare type ColumnLayout = "static" | "fit" | "manual";
 
 export interface TableAttributes {
   columnDefaultWidth?: number;
@@ -99,7 +107,7 @@ export interface TableAttributes {
   zebraStripes?: boolean;
 }
 
-export type TableMenuLocation = "grid" | "header" | "filter";
+export declare type TableMenuLocation = "grid" | "header" | "filter";
 
 export interface VuuCellMenuItem extends VuuMenuItem {
   rowKey: string;
@@ -145,9 +153,9 @@ export declare type ColumnTypeFormatting = {
   zeroPad?: boolean;
 };
 
-export type ColumnTypeValueMap = { [key: string]: string };
+export declare type ColumnTypeValueMap = { [key: string]: string };
 
-export type ListOption = {
+export declare type ListOption = {
   label: string;
   value: number | string;
 };
@@ -165,7 +173,7 @@ export interface MappedValueTypeRenderer {
   map: ColumnTypeValueMap;
 }
 
-export type LookupTableDetails = {
+export declare type LookupTableDetails = {
   labelColumn: string;
   table: VuuTable;
   valueColumn: string;
@@ -298,17 +306,17 @@ export interface Heading {
 }
 
 // These are the actions that eventually get routed to the DataSource itself
-export type DataSourceAction =
+export declare type DataSourceAction =
   | GridActionCloseTreeNode
   | GridActionGroup
   | GridActionOpenTreeNode
   | GridActionSort;
 
-export type ScrollAction =
+export declare type ScrollAction =
   | GridActionScrollEndHorizontal
   | GridActionScrollStartHorizontal;
 
-export type GridAction =
+export declare type GridAction =
   | DataSourceAction
   | ScrollAction
   | GridActionResizeCol
@@ -343,18 +351,18 @@ export interface TableSettingsProps {
   tableConfig: TableConfig;
 }
 
-export type DefaultColumnConfiguration = <T extends string = string>(
+export declare type DefaultColumnConfiguration = <T extends string = string>(
   tableName: T,
   columnName: string,
 ) => Partial<ColumnDescriptor> | undefined;
 
-export type DefaultTableConfiguration = (
+export declare type DefaultTableConfiguration = (
   vuuTable?: VuuTable,
 ) => Partial<Omit<TableConfig, "columns">> | undefined;
 
-export type ResizePhase = "begin" | "resize" | "end";
+export declare type ResizePhase = "begin" | "resize" | "end";
 
-export type TableColumnResizeHandler = (
+export declare type TableColumnResizeHandler = (
   phase: ResizePhase,
   columnName: string,
   width?: number,
@@ -392,8 +400,8 @@ export interface HeaderCellProps
   showMenu?: boolean;
 }
 
-export type TableConfigChangeHandler = (config: TableConfig) => void;
+export declare type TableConfigChangeHandler = (config: TableConfig) => void;
 
-export type CustomHeaderComponent = FC<BaseRowProps>;
-export type CustomHeaderElement = ReactElement;
-export type CustomHeader = CustomHeaderComponent | CustomHeaderElement;
+export declare type CustomHeaderComponent = FC<BaseRowProps>;
+export declare type CustomHeaderElement = ReactElement;
+export declare type CustomHeader = CustomHeaderComponent | CustomHeaderElement;
