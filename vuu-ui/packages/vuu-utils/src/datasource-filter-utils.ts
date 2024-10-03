@@ -1,4 +1,8 @@
-import { DataSourceFilter, WithFullConfig } from "@finos/vuu-data-types";
+import {
+  DataSourceFilter,
+  WithBaseFilter,
+  WithFullConfig,
+} from "@finos/vuu-data-types";
 import { parseFilter } from "@finos/vuu-filter-parser";
 import { FilterCombinatorOp } from "@finos/vuu-filter-types";
 
@@ -17,7 +21,9 @@ export const combine = (
   };
 };
 
-export const combineConfig = (config: WithFullConfig): WithFullConfig => {
+export const combineFilters = (
+  config: WithBaseFilter<WithFullConfig>,
+): WithBaseFilter<WithFullConfig> => {
   const combinedFilter =
     config.filterSpec &&
     config.filterSpec.filter.length > 0 &&
