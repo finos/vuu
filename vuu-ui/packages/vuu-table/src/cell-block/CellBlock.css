@@ -1,0 +1,84 @@
+.vuuCellBlock {
+  background-color: #00bdff;
+  opacity: 0.3;
+  border: solid blue 1px;
+  position: absolute;
+
+  bottom: anchor(--cellblock-start bottom);
+  left: anchor(--cellblock-start left);
+  right: anchor(--cellblock-start right);
+  top: anchor(--cellblock-start top);
+
+  &.cellblock-direction-n {
+    bottom: anchor(--cellblock-start bottom);
+    left: anchor(--cellblock-start left);
+    right: anchor(--cellblock-start right);
+    top: anchor(--cellblock-end top);
+  }
+
+  &.cellblock-direction-ne {
+    bottom: anchor(--cellblock-start bottom);
+    left: anchor(--cellblock-start left);
+    right: anchor(--cellblock-end right);
+    top: anchor(--cellblock-end top);
+  }
+
+  &.cellblock-direction-e {
+    bottom: anchor(--cellblock-start bottom);
+    left: anchor(--cellblock-start left);
+    right: anchor(--cellblock-end right);
+    top: anchor(--cellblock-start top);
+  }
+
+  &.cellblock-direction-se {
+    bottom: anchor(--cellblock-end bottom);
+    left: anchor(--cellblock-start left);
+    right: anchor(--cellblock-end right);
+    top: anchor(--cellblock-start top);
+  }
+
+  &.cellblock-direction-s {
+    bottom: anchor(--cellblock-end bottom);
+    left: anchor(--cellblock-start left);
+    right: anchor(--cellblock-start right);
+    top: anchor(--cellblock-start top);
+  }
+
+  &.cellblock-direction-sw {
+    bottom: anchor(--cellblock-end bottom);
+    left: anchor(--cellblock-end left);
+    right: anchor(--cellblock-start right);
+    top: anchor(--cellblock-start top);
+  }
+
+  &.cellblock-direction-w {
+    bottom: anchor(--cellblock-start bottom);
+    left: anchor(--cellblock-end left);
+    right: anchor(--cellblock-start right);
+    top: anchor(--cellblock-start top);
+  }
+
+  &.cellblock-direction-nw {
+    bottom: anchor(--cellblock-start bottom);
+    left: anchor(--cellblock-end left);
+    right: anchor(--cellblock-start right);
+    top: anchor(--cellblock-end top);
+  }
+}
+
+.vuu-cellblock-start {
+  anchor-name: --cellblock-start;
+}
+
+.vuuTable.vuu-cellblock-select-in-progress {
+  .vuuTableCell:hover {
+    anchor-name: --cellblock-end;
+  }
+
+  .vuuCellBlock {
+    pointer-events: none;
+  }
+}
+.vuu-cellblock-end {
+  anchor-name: --cellblock-end;
+}

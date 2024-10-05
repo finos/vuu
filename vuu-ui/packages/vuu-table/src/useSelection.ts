@@ -48,7 +48,7 @@ export const useSelection = ({
 
   const isSelectionEvent = useCallback(
     (evt: KeyboardEvent<HTMLElement>) => selectionKeys.includes(evt.key),
-    [selectionKeys]
+    [selectionKeys],
   );
 
   const handleRowClick = useCallback<TableRowClickHandlerInternal>(
@@ -72,7 +72,7 @@ export const useSelection = ({
         idx,
         rangeSelect,
         keepExistingSelection,
-        active
+        active,
       );
 
       selectedRef.current = newSelected;
@@ -81,7 +81,7 @@ export const useSelection = ({
       onSelect?.(selectOperation === selectItem ? row : null);
       onSelectionChange?.(newSelected);
     },
-    [onSelect, onSelectionChange, selectionModel]
+    [onSelect, onSelectionChange, selectionModel],
   );
 
   const handleKeyDown = useCallback<KeyboardEventHandler<HTMLElement>>(
@@ -99,7 +99,7 @@ export const useSelection = ({
         }
       }
     },
-    [highlightedIndexRef, isSelectionEvent]
+    [highlightedIndexRef, isSelectionEvent],
   );
 
   return {

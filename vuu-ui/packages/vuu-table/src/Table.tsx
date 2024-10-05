@@ -56,6 +56,10 @@ export type TableNavigationStyle = "none" | "cell" | "row";
 export interface TableProps
   extends Omit<MeasuredContainerProps, "onDragStart" | "onDrop" | "onSelect"> {
   Row?: FC<RowProps>;
+  /**
+   * Allow a block of cells to be selected. Typically to be copied.
+   */
+  allowCellBlockSelection?: boolean;
   allowConfigEditing?: boolean;
   /**
    * Allow column headers to be dragged to re-arrange
@@ -65,6 +69,7 @@ export interface TableProps
    * Allow rows to be draggable
    */
   allowDragDrop?: boolean | dragStrategy;
+
   /**
    * required if a fully featured column picker is to be available
    */
@@ -176,6 +181,7 @@ export interface TableProps
 
 const TableCore = ({
   Row = DefaultRow,
+  allowCellBlockSelection,
   allowDragColumnHeader = true,
   allowDragDrop,
   availableColumns,
@@ -213,6 +219,7 @@ const TableCore = ({
 }) => {
   const id = useId(idProp);
   const {
+    cellBlock,
     columnMap,
     columns,
     data,
@@ -239,6 +246,7 @@ const TableCore = ({
     viewportMeasurements,
     ...tableProps
   } = useTable({
+    allowCellBlockSelection,
     allowDragDrop,
     availableColumns,
     config,
@@ -348,6 +356,7 @@ const TableCore = ({
                   zebraStripes={tableAttributes.zebraStripes}
                 />
               ))}
+              {cellBlock}
             </div>
           ) : null}
         </div>
@@ -369,6 +378,7 @@ const TableCore = ({
 export const Table = forwardRef(function Table(
   {
     Row,
+    allowCellBlockSelection,
     allowDragColumnHeader,
     allowDragDrop,
     availableColumns,
@@ -498,6 +508,7 @@ export const Table = forwardRef(function Table(
       (footerHeight || showPaginationControls !== true) ? (
         <TableCore
           Row={Row}
+          allowCellBlockSelection={allowCellBlockSelection}
           allowDragColumnHeader={allowDragColumnHeader}
           allowDragDrop={allowDragDrop}
           availableColumns={availableColumns}

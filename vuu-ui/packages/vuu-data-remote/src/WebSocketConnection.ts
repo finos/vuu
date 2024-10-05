@@ -3,15 +3,16 @@ import { VuuClientMessage, VuuServerMessage } from "@finos/vuu-protocol-types";
 import { DeferredPromise, EventEmitter } from "@finos/vuu-utils";
 
 export type ConnectingStatus = "connecting" | "reconnecting";
-export type RetryStatus = ConnectingStatus | "disconnected";
 export type ConnectedStatus = "connected" | "reconnected";
 export type ConnectionStatus =
-  | RetryStatus
   | ConnectedStatus
   | "closed"
   | "connection-open-awaiting-session"
+  | "disconnected"
   | "failed"
   | "inactive";
+
+type InternalConnectionStatus = ConnectionStatus | ConnectingStatus;
 
 type ReconnectAttempts = {
   retryAttemptsTotal: number;
@@ -19,10 +20,18 @@ type ReconnectAttempts = {
   secondsToNextRetry: number;
 };
 
-export interface WebSocketConnectionState extends ReconnectAttempts {
+export interface WebSocketConnectionState<
+  T extends InternalConnectionStatus = ConnectionStatus,
+> extends ReconnectAttempts {
   connectionPhase: ConnectingStatus;
-  connectionStatus: ConnectionStatus;
+  connectionStatus: T;
 }
+
+const isNotConnecting = (
+  connectionState: WebSocketConnectionState<InternalConnectionStatus>,
+): connectionState is WebSocketConnectionState<ConnectionStatus> =>
+  connectionState.connectionStatus !== "connecting" &&
+  connectionState.connectionStatus !== "reconnecting";
 
 export const isWebSocketConnectionMessage = (
   msg: object | WebSocketConnectionState,
@@ -96,7 +105,7 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
    a proxy.
   */
   #confirmedOpen = false;
-  #connectionState: WebSocketConnectionState;
+  #connectionState: WebSocketConnectionState<InternalConnectionStatus>;
   #connectionTimeout;
   #deferredConnection?: DeferredPromise;
   #protocols;
@@ -166,12 +175,16 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
     return this.#connectionState.connectionStatus;
   }
 
-  private set status(connectionStatus: ConnectionStatus) {
+  private set status(connectionStatus: InternalConnectionStatus) {
     this.#connectionState = {
       ...this.#connectionState,
       connectionStatus,
     };
-    this.emit("connection-status", this.#connectionState);
+    // we don't publish the connecting states. They have little meaning for clients
+    // and are will generally be very short-lived.
+    if (isNotConnecting(this.#connectionState)) {
+      this.emit("connection-status", this.#connectionState);
+    }
   }
 
   get connectionState() {
@@ -253,6 +266,7 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
       } else {
         this.emit("reconnected");
       }
+      console.log("connected");
     };
     ws.onerror = () => {
       clearTimeout(timer);

@@ -16,12 +16,21 @@
   --ball-size-large: 20px;
   --ball-size-small: 14px;
   --ballbox-padding: 4px;
-
-  height: var(--ballbox-height);
+  --retry-count: 0;
+  --height: var(
+    --ballbox-height,
+    calc(var(--ball-size-large) + var(--salt-spacing-100))
+  );
+  height: var(--height);
   padding: 0 4px;
   position: relative;
+  width: calc(
+    var(--ball-size-large) + var(--salt-spacing-400) +
+      (var(--ball-size-small) + var(--salt-spacing-100)) * var(--retry-count)
+  );
 
   &.expanded {
+    transition-delay: 1s;
     .Ball.large {
       animation-duration: 0.8s;
       animation-name: squeeze;
@@ -38,7 +47,8 @@
 }
 
 .ConnectionStatusIndicator-closed {
-  --ball-color: lightgray;
+  --ball-color: red;
+  opacity: 0.8;
   .Ball.large {
     transition: background-color 1s linear;
   }
@@ -48,9 +58,6 @@
   --ball-color: green;
 }
 
-.ConnectionStatusIndicator-connecting {
-  --ball-color: red;
-}
 .ConnectionStatusIndicator-disconnected {
   --ball-color: red;
 }
@@ -60,7 +67,7 @@
   border-radius: calc(var(--ball-size-large) / 2);
   height: var(--ball-size-large);
   right: var(--ballbox-padding);
-  top: calc(var(--ballbox-height) / 2 - (var(--ball-size-large) / 2));
+  top: calc(var(--height) / 2 - (var(--ball-size-large) / 2));
   position: absolute;
   transition: transform 0.8s linear;
 
@@ -77,7 +84,7 @@
     var(--ballbox-padding) + (var(--ball-size-large) - var(--ball-size-small)) /
       2
   );
-  top: calc(var(--ballbox-height) / 2 - (var(--ball-size-small) / 2));
+  top: calc(var(--height) / 2 - (var(--ball-size-small) / 2));
   width: var(--ball-size-small);
 
   transition: transform 0.4s ease-out;
