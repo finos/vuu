@@ -51,6 +51,7 @@ export const pathToExample = (path: string): [string[], string] => {
     const root = env === "development" ? "/src" : "";
     return [
       [
+        `${root}/examples/${importPath}/${exampleName}.mdx`,
         `${root}/examples/${importPath}/${exampleName}${suffix}`,
         `${root}/examples/${importPath}.examples${suffix}`,
         `${root}/examples/${importPath}/index${suffix}`,

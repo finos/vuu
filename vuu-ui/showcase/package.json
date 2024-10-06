@@ -9,6 +9,7 @@
     "dev": "vite",
     "docs": "node ./scripts/build-docs.mjs",
     "showcase": "node ./scripts/showcase.mjs",
+    "showcase-cli": "tsx ../node_modules/.bin/showcase-cli",
     "stories": "node ./scripts/parse-stories.mjs"
   },
   "keywords": [],
@@ -34,8 +35,10 @@
   },
   "devDependencies": {
     "@mdx-js/esbuild": "^3.0.1",
-    "@mdx-js/rollup": "3.0.0",
+    "@mdx-js/rollup": "3.0.1",
     "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^15.2.3"
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "showcase-cli": "1.0.0",
+    "tsx": "^4.19.1"
   }
 }

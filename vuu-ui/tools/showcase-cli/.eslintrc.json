@@ -1,0 +1,52 @@
+{
+  "env": {
+    "node": true,
+    "esnext": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
+    "plugin:cypress/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "plugins": ["react", "react-hooks"],
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "rules": {
+    "react/prop-types": 0,
+    "react/react-in-jsx-scope": 0,
+    "react-hooks/exhaustive-deps": [
+      "warn",
+      {
+        "additionalHooks": "(useLayoutEffectSkipFirst)"
+      }
+    ],
+    "no-prototype-builtins": 0,
+    "prefer-const": ["error", { "destructuring": "all" }],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "ignoreRestSiblings": true,
+        "argsIgnorePattern": "^_$",
+        "varsIgnorePattern": "^_$"
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["*.cy.tsx"]
+    }
+  ]
+}

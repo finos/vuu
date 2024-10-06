@@ -11,6 +11,7 @@ import { build } from "../../scripts/esbuild.mjs";
 import { buildFileList } from "./build-file-list.mjs";
 import fs from "fs";
 import path from "path";
+import mdx from "@mdx-js/esbuild";
 
 const indexFiles = buildFileList("./src/examples", /index.ts$/);
 const examples = buildFileList("./src/examples", /examples.tsx$/);
@@ -37,7 +38,7 @@ const cssInlinePlugin = {
         const css = await fs.promises.readFile(args.path, "utf8");
         // css = await esbuild.transform(css, { loader: "css", minify: true });
         return { loader: "text", contents: css };
-      }
+      },
     );
   },
 };
@@ -75,7 +76,7 @@ const esbuildConfig = {
     "./themes/tar-theme.ts",
   ],
   name: "showcase",
-  plugins: [cssInlinePlugin],
+  plugins: [cssInlinePlugin, mdx()],
   outdir,
   splitting: true,
   target: "esnext",
@@ -121,7 +122,7 @@ async function main() {
         { recursive: true },
         (err) => {
           if (err) throw err;
-        }
+        },
       );
     }
   });

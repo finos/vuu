@@ -15,7 +15,8 @@
     "showcase",
     "tools/vite-plugin-inline-css",
     "tools/esbuild-plugin-inline-css",
-    "tools/vuu-showcase"
+    "tools/vuu-showcase",
+    "tools/showcase-cli"
   ],
   "scripts": {
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
