@@ -342,18 +342,14 @@ describe("RemoteDataSource", () => {
       });
     });
     it("calls server when baseFilter set", async () => {
-      const serverSend = vi.fn();
-      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
-        // @ts-ignore
-        () => Promise.resolve({ send: serverSend, subscribe: callback })
-      );
+      const { send } = await ConnectionManager.serverAPI;
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
       const baseFilterSpec = { filter: 'exchange="SETS"' };
       dataSource.baseFilter = baseFilterSpec;
 
-      expect(serverSend).toHaveBeenCalledWith({
+      expect(send).toHaveBeenCalledWith({
         type: "config",
         config: {
           aggregations: [],
@@ -474,11 +470,7 @@ describe("RemoteDataSource", () => {
     });
 
     it("parses filterStruct, if both baseFilter and filter are provided", async () => {
-      const serverSend = vi.fn();
-      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
-        // @ts-ignore
-        () => Promise.resolve({ send: serverSend, subscribe: callback })
-      );
+      const { send } = await ConnectionManager.serverAPI;
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
@@ -489,7 +481,7 @@ describe("RemoteDataSource", () => {
 
       dataSource.config = config;
 
-      expect(serverSend).toHaveBeenCalledWith({
+      expect(send).toHaveBeenCalledWith({
         type: "config",
         config: {
           aggregations: [],
@@ -513,11 +505,7 @@ describe("RemoteDataSource", () => {
     });
 
     it("parses filterStruct, if baseFilter only is provided", async () => {
-      const serverSend = vi.fn();
-      vi.spyOn(connectionExports, "getServerAPI").mockImplementation(
-        // @ts-ignore
-        () => Promise.resolve({ send: serverSend, subscribe: callback })
-      );
+      const { send } = await ConnectionManager.serverAPI;
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
@@ -528,7 +516,7 @@ describe("RemoteDataSource", () => {
 
       dataSource.config = config;
 
-      expect(serverSend).toHaveBeenCalledWith({
+      expect(send).toHaveBeenCalledWith({
         type: "config",
         config: {
           aggregations: [],
