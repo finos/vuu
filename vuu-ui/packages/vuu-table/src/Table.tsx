@@ -134,7 +134,7 @@ export interface TableProps
    *
    * This callback is invoked when mouse is released or shift key released.
    */
-  onSelectCellBlock: (cellBlock: TableCellBlock) => void;
+  onSelectCellBlock?: (cellBlock: TableCellBlock) => void;
 
   onSelectionChange?: SelectionChangeHandler;
   renderBufferSize?: number;

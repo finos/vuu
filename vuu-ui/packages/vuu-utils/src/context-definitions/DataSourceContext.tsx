@@ -14,7 +14,7 @@ export interface DataSourceContextProps {
   VuuDataSource: DataSourceConstructor;
   vuuModuleNames?: string[];
   getServerAPI: () => Promise<
-    Pick<ServerAPI, "getTableList" | "getTableSchema">
+    Pick<ServerAPI, "getTableList" | "getTableSchema" | "rpcCall">
   >;
 }
 

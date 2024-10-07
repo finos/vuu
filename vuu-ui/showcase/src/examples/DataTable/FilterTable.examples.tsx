@@ -1,26 +1,44 @@
-import {
-  getAllSchemas,
-  getSchema,
-  SimulTableName,
-  vuuModule,
-} from "@finos/vuu-data-test";
+import { getSchema, LocalDataSourceProvider } from "@finos/vuu-data-test";
+import { TableSchema } from "@finos/vuu-data-types";
 import type { DataSourceFilter } from "@finos/vuu-data-types";
 import { FilterTable } from "@finos/vuu-datatable";
 import type { FilterState } from "@finos/vuu-filter-types";
 import type { FilterBarProps } from "@finos/vuu-filters";
-import type { TableProps } from "@finos/vuu-table";
 import type { TableConfig } from "@finos/vuu-table-types";
-import { useCallback, useMemo, useState } from "react";
-import { useTestDataSource } from "../utils";
+import { CSSProperties, useCallback, useMemo, useState } from "react";
+import { toColumnName, useDataSource } from "@finos/vuu-utils";
+import { useAutoLoginToVuuServer } from "../utils";
+import { VuuDataSourceProvider } from "@finos/vuu-data-react";
+import { View } from "@finos/vuu-layout";
 
 let displaySequence = 1;
-const schemas = getAllSchemas();
 
-export const FilterTableVuuInstruments = () => {
-  const { config, dataSource, error, tableSchema } = useTestDataSource({
-    // bufferSize: 1000,
-    schemas,
-  });
+type FilterTableTemplateProps = {
+  style?: CSSProperties;
+  tableSchema?: TableSchema;
+} & Partial<FilterBarProps>;
+
+const FilterTableTemplate = ({
+  style,
+  tableSchema = getSchema("instruments"),
+  QuickFilterProps,
+  variant,
+}: FilterTableTemplateProps) => {
+  useAutoLoginToVuuServer();
+  const { VuuDataSource } = useDataSource();
+
+  const dataSource = useMemo(() => {
+    return new VuuDataSource({
+      columns: tableSchema.columns.map(toColumnName),
+      table: tableSchema.table,
+    });
+  }, [VuuDataSource, tableSchema]);
+
+  const config = useMemo<TableConfig>(() => {
+    return {
+      columns: tableSchema.columns,
+    };
+  }, [tableSchema]);
 
   const [tableConfig] = useState<TableConfig>(config);
 
@@ -45,7 +63,9 @@ export const FilterTableVuuInstruments = () => {
     filterState,
     onApplyFilter: handleApplyFilter,
     onFilterStateChanged: handleFilterStateChange,
+    QuickFilterProps,
     tableSchema,
+    variant,
   };
 
   const tableProps = {
@@ -56,110 +76,54 @@ export const FilterTableVuuInstruments = () => {
     width: 715,
   };
 
-  if (error) {
-    return error;
-  }
-
   return (
-    <FilterTable FilterBarProps={filterBarProps} TableProps={tableProps} />
+    <View style={{ height: "100%", ...style }}>
+      <FilterTable FilterBarProps={filterBarProps} TableProps={tableProps} />
+    </View>
+  );
+};
+
+export const FilterTableVuuInstruments = () => {
+  return (
+    <VuuDataSourceProvider>
+      <FilterTableTemplate />
+    </VuuDataSourceProvider>
   );
 };
 FilterTableVuuInstruments.displaySequence = displaySequence++;
 
-export const FilterTableArrayDataInstruments = ({
-  quickFilterColumns,
-  variant = "custom-filters",
-}: Pick<FilterBarProps, "variant"> & {
-  quickFilterColumns?: string[];
-}) => {
-  const schema = schemas.instruments;
-  const { dataSource, config, ...restTableProps } = useMemo<
-    Pick<TableProps, "config" | "dataSource">
-  >(
-    () => ({
-      config: {
-        columns: schema.columns,
-        rowSeparators: true,
-        zebraStripes: true,
-      },
-      dataSource:
-        vuuModule<SimulTableName>("SIMUL").createDataSource("instruments"),
-    }),
-    [schema],
-  );
-
-  const { typeaheadHook } = vuuModule("SIMUL");
-
-  const [filterState, setFilterState] = useState<FilterState>({
-    filters: [],
-    activeIndices: [],
-  });
-
-  const handleApplyFilter = useCallback(
-    (filter: DataSourceFilter) => {
-      console.log("apply filter", { filter });
-      dataSource.filter = filter;
-    },
-    [dataSource],
-  );
-
-  const handleFilterStateChange = useCallback((fs: FilterState) => {
-    console.log("filter state changed:", fs);
-    setFilterState(fs);
-  }, []);
-
-  const FilterBarProps: FilterBarProps = {
-    QuickFilterProps: quickFilterColumns
-      ? {
-          quickFilterColumns,
-        }
-      : undefined,
-    columnDescriptors: config.columns,
-    filterState,
-    onApplyFilter: handleApplyFilter,
-    onFilterStateChanged: handleFilterStateChange,
-    suggestionProvider: typeaheadHook,
-    tableSchema: getSchema("instruments"),
-    variant,
-  };
-
-  const tableProps = {
-    ...restTableProps,
-    config,
-    dataSource,
-    renderBufferSize: 20,
-  };
-
+export const FilterTableArrayDataInstruments = () => {
   return (
-    <FilterTable
-      FilterBarProps={FilterBarProps}
-      style={{ height: "100%" }}
-      TableProps={tableProps}
-    />
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <FilterTableTemplate />
+    </LocalDataSourceProvider>
   );
 };
 FilterTableArrayDataInstruments.displaySequence = displaySequence++;
 
 export const FilterTableArrayDataInstrumentsQuickFilters = () => (
-  <FilterTableArrayDataInstruments
-    variant="quick-filters"
-    quickFilterColumns={["isin", "currency", "exchange"]}
-  />
+  <LocalDataSourceProvider modules={["SIMUL"]}>
+    <FilterTableTemplate
+      variant="quick-filters"
+      QuickFilterProps={{
+        quickFilterColumns: ["isin", "currency", "exchange"],
+      }}
+    />
+  </LocalDataSourceProvider>
 );
 FilterTableArrayDataInstrumentsQuickFilters.displaySequence = displaySequence++;
 
 export const FilterTableArrayDataInstrumentsFullFilters = () => (
-  <FilterTableArrayDataInstruments variant="full-filters" />
+  <LocalDataSourceProvider modules={["SIMUL"]}>
+    <FilterTableTemplate variant="full-filters" />
+  </LocalDataSourceProvider>
 );
 FilterTableArrayDataInstrumentsFullFilters.displaySequence = displaySequence++;
 
 export const FilterTableArrayDataInstrumentsFixedHeightContainer = () => (
-  <div
-    data-showcase-center
-    style={{ border: "solid red 4px", height: 600, width: 900 }}
-  >
-    <FilterTableArrayDataInstruments variant="full-filters" />
-  </div>
+  <LocalDataSourceProvider modules={["SIMUL"]}>
+    <FilterTableTemplate style={{ height: 600, width: 900 }} />
+  </LocalDataSourceProvider>
 );
 FilterTableArrayDataInstrumentsFixedHeightContainer.displaySequence =
   displaySequence++;

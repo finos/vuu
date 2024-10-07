@@ -230,14 +230,6 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
   destroy() {
     this.#worker.terminate();
   }
-
-  async makeRpcCall<T = unknown>(rpcRequest: VuuRpcServiceRequest) {
-    try {
-      return this.asyncRequest<T>(rpcRequest);
-    } catch (err) {
-      throw Error("Error accessing server api");
-    }
-  }
 }
 
 export default ConnectionManager.instance;

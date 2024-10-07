@@ -2,7 +2,7 @@ import { useTypeaheadSuggestions } from "@finos/vuu-data-react";
 import type { SuggestionFetcher } from "@finos/vuu-data-types";
 import type { TypeaheadParams } from "@finos/vuu-protocol-types";
 import { ExpandoInput, MultiSelectionHandler } from "@finos/vuu-ui-controls";
-import { getVuuTable } from "@finos/vuu-utils";
+import { CommitHandler, getVuuTable } from "@finos/vuu-utils";
 import { Option } from "@salt-ds/core";
 import {
   FormEvent,
@@ -43,7 +43,7 @@ export const FilterClauseValueEditorText = forwardRef(
       table,
       value,
     }: FilterClauseTextValueEditorProps,
-    forwardedRef: ForwardedRef<HTMLDivElement>
+    forwardedRef: ForwardedRef<HTMLDivElement>,
   ) {
     const isMultiValue = operator === "in";
 
@@ -54,21 +54,23 @@ export const FilterClauseValueEditorText = forwardRef(
     // (so user can type to filter list) until dropdown closes again. <ight need to
     // revisit.
     const [valueInputValue, setValueInputValue] = useState(
-      value?.toString() ?? ""
+      value?.toString() ?? "",
     );
-    const [typeaheadValues, setTypeaheadValues] = useState<string[]>([]);
+    const [typeaheadValues, setTypeaheadValues] = useState<string[] | false>(
+      [],
+    );
 
     const getSuggestions = suggestionProvider();
 
     const handleSingleValueSelectionChange = useCallback(
       (_, [value]: string[]) => onChangeValue(value),
-      [onChangeValue]
+      [onChangeValue],
     );
 
     const handleMultiValueSelectionChange = useCallback<MultiSelectionHandler>(
       // TODO when will this ever be final ?
       (_, values) => onChangeValue(values, false),
-      [onChangeValue]
+      [onChangeValue],
     );
 
     useEffect(() => {
@@ -80,7 +82,9 @@ export const FilterClauseValueEditorText = forwardRef(
             : [vuuTable, column.name];
         getSuggestions(params)
           .then((suggestions) => {
-            if (suggestions.length === 0 && valueInputValue) {
+            if (suggestions === false) {
+              setTypeaheadValues(false);
+            } else if (suggestions.length === 0 && valueInputValue) {
               setTypeaheadValues(NO_DATA_MATCH);
             } else {
               setTypeaheadValues(suggestions);
@@ -95,9 +99,8 @@ export const FilterClauseValueEditorText = forwardRef(
     const handleInputChange = useCallback(
       (evt: FormEvent<HTMLInputElement>) => {
         const { value } = evt.target as HTMLInputElement;
-        console.log(`handleInputChange "${value}"`);
         setValueInputValue(value);
-        // we want to set the filterclause status to valid, but not trigger focus chanmge
+        // we want to set the filterclause status to valid, but not trigger focus change
         if (
           operator === "starts" ||
           operator === "ends" ||
@@ -106,27 +109,33 @@ export const FilterClauseValueEditorText = forwardRef(
           onChangeValue(value, false);
         }
       },
-      [onChangeValue, operator]
+      [onChangeValue, operator],
+    );
+
+    const handleInputCommit = useCallback<CommitHandler>(
+      (evt, value) => {
+        console.log(`commit value ${value}`);
+        onChangeValue(value);
+      },
+      [onChangeValue],
     );
 
     const handleKeyDownFreeTextInput = useCallback<
       KeyboardEventHandler<HTMLInputElement>
     >(
       (evt) => {
-        console.log(`handleKeyDownFreeTextInput ${valueInputValue}`);
         if (
           (evt.key === "Enter" || evt.key === "Tab") &&
           valueInputValue !== ""
         ) {
           evt.stopPropagation();
           evt.preventDefault();
-          console.log(`call onInputComplete ${valueInputValue}`);
           onChangeValue(valueInputValue);
         } else {
           inputPropsProp?.onKeyDown?.(evt);
         }
       },
-      [inputPropsProp, onChangeValue, valueInputValue]
+      [inputPropsProp, onChangeValue, valueInputValue],
     );
 
     const inputProps = useMemo(() => {
@@ -141,6 +150,20 @@ export const FilterClauseValueEditorText = forwardRef(
     }, [inputPropsProp, handleKeyDownFreeTextInput, operator]);
 
     const getValueInputField = useCallback(() => {
+      if (typeaheadValues === false) {
+        // No typeahead service available
+        return (
+          <ExpandoInput
+            inputProps={inputProps}
+            className={className}
+            data-field="value"
+            value={valueInputValue}
+            ref={forwardedRef}
+            onChange={handleInputChange}
+            onCommit={handleInputCommit}
+          />
+        );
+      }
       switch (operator) {
         case "in":
           return (
@@ -229,5 +252,5 @@ export const FilterClauseValueEditorText = forwardRef(
     ]);
 
     return getValueInputField();
-  }
+  },
 );

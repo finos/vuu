@@ -1,25 +1,25 @@
 import { RestDataSourceProvider } from "@finos/vuu-data-react/src/datasource-provider/RestDataSourceProvider";
-import { SimulTableName, getSchema } from "@finos/vuu-data-test";
-import { View } from "@finos/vuu-layout";
-import { Table, TableProps } from "@finos/vuu-table";
-import { useMemo } from "react";
+import { getSchema } from "@finos/vuu-data-test";
+import { TableProps } from "@finos/vuu-table";
+import { useCallback, useMemo, useState } from "react";
 import { useDataSource } from "@finos/vuu-utils";
+import { FilterTable } from "@finos/vuu-datatable";
+import { FilterBarProps } from "@finos/vuu-filters";
+import { FilterState } from "@finos/vuu-filter-types";
+import { DataSourceFilter } from "@finos/vuu-data-types";
 
 let displaySequence = 0;
 
-const RestTableTemplate = ({
-  rowClassNameGenerators,
-  tableName = "instruments",
-  ...props
-}: Partial<TableProps> & {
-  rowClassNameGenerators?: string[];
-  tableName?: SimulTableName;
+const FilterTableTemplate = ({
+  quickFilterColumns,
+  variant = "custom-filters",
+}: Pick<FilterBarProps, "variant"> & {
+  quickFilterColumns?: string[];
 }) => {
-  const schema = getSchema(tableName);
   const { VuuDataSource } = useDataSource();
-
-  const tableProps = useMemo<
-    Pick<TableProps, "config" | "dataSource" | "showPaginationControls">
+  const schema = getSchema("instruments");
+  const { dataSource, config, ...restTableProps } = useMemo<
+    Pick<TableProps, "config" | "dataSource">
   >(
     () => ({
       config: {
@@ -28,22 +28,62 @@ const RestTableTemplate = ({
         zebraStripes: true,
       },
       dataSource: new VuuDataSource({ table: schema.table }),
-      showPaginationControls: true,
     }),
     [VuuDataSource, schema],
   );
 
+  const [filterState, setFilterState] = useState<FilterState>({
+    filters: [],
+    activeIndices: [],
+  });
+
+  const handleApplyFilter = useCallback(
+    (filter: DataSourceFilter) => {
+      console.log("apply filter", { filter });
+      dataSource.filter = filter;
+    },
+    [dataSource],
+  );
+
+  const handleFilterStateChange = useCallback((fs: FilterState) => {
+    console.log("filter state changed:", fs);
+    setFilterState(fs);
+  }, []);
+
+  const FilterBarProps: FilterBarProps = {
+    QuickFilterProps: quickFilterColumns
+      ? {
+          quickFilterColumns,
+        }
+      : undefined,
+    columnDescriptors: config.columns,
+    filterState,
+    onApplyFilter: handleApplyFilter,
+    onFilterStateChanged: handleFilterStateChange,
+    tableSchema: getSchema("instruments"),
+    variant,
+  };
+
+  const tableProps = {
+    ...restTableProps,
+    config,
+    dataSource,
+    renderBufferSize: 20,
+  };
+
   return (
-    <View style={{ height: 602, width: 802 }}>
-      <Table {...tableProps} {...props} />
-    </View>
+    <FilterTable
+      FilterBarProps={FilterBarProps}
+      style={{ height: "100%" }}
+      TableProps={tableProps}
+    />
   );
 };
 
 export const RestInstruments = () => {
   return (
     <RestDataSourceProvider url="http://localhost:8081/api">
-      <RestTableTemplate />
+      <FilterTableTemplate />
     </RestDataSourceProvider>
   );
 };

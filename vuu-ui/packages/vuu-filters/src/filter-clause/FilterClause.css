@@ -28,6 +28,11 @@
     flex: 1 0 auto;
   }
 
+  .vuuFilterClauseField.vuuExpandoInput {
+    align-items: flex-end;
+    display: inline-flex;
+  }
+
   .vuuExpandoCombobox {
     flex-basis: auto;
     flex-shrink: 0;

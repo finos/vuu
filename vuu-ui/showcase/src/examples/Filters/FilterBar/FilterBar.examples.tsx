@@ -12,7 +12,11 @@ import {
 } from "react";
 import type { DataSourceFilter } from "@finos/vuu-data-types";
 import { Input, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
-import { getSchema, vuuModule } from "@finos/vuu-data-test";
+import {
+  LocalDataSourceProvider,
+  getSchema,
+  vuuModule,
+} from "@finos/vuu-data-test";
 
 const lastUpdatedColumn = {
   name: "lastUpdated",
@@ -64,7 +68,6 @@ const DefaultFilterBarCore = ({
     () => [...tableSchema.columns, lastUpdatedColumn],
     [tableSchema],
   );
-  const { typeaheadHook } = vuuModule("SIMUL");
 
   const handleApplyFilter = useCallback(
     (filter: DataSourceFilter) => {
@@ -106,7 +109,6 @@ const DefaultFilterBarCore = ({
         onFilterDeleted={handleFilterDeleted}
         onFilterRenamed={handleFilterRenamed}
         onFilterStateChanged={handleFilterStateChange}
-        suggestionProvider={typeaheadHook}
         tableSchema={{ ...tableSchema, columns }}
         variant={variant}
       />
@@ -154,8 +156,15 @@ const FilterBarTemplate = ({
   );
 };
 
-export const DefaultFilterBar = (props: Partial<FilterBarProps>) => (
+export const FilterBarNoSuggestions = (props: Partial<FilterBarProps>) => (
   <FilterBarTemplate {...props} />
+);
+FilterBarNoSuggestions.displaySequence = displaySequence++;
+
+export const DefaultFilterBar = (props: Partial<FilterBarProps>) => (
+  <LocalDataSourceProvider modules={["SIMUL"]}>
+    <FilterBarTemplate {...props} />
+  </LocalDataSourceProvider>
 );
 DefaultFilterBar.displaySequence = displaySequence++;
 

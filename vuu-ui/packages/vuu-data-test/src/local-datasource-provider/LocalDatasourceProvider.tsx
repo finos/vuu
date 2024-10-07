@@ -1,20 +1,25 @@
 import type {
   DataSourceConfig,
   DataSourceConstructorProps,
-  TableSchema,
+  ServerAPI,
 } from "@finos/vuu-data-types";
-import type { VuuTable, VuuTableList } from "@finos/vuu-protocol-types";
+import type {
+  VuuCreateVisualLink,
+  VuuRemoveVisualLink,
+  VuuRpcMenuRequest,
+  VuuRpcServiceRequest,
+  VuuRpcViewportRequest,
+  VuuTable,
+} from "@finos/vuu-protocol-types";
 import { basketModule, basketSchemas, isBasketTable } from "../basket";
 import { isSimulTable, simulModule, simulSchemas } from "../simul";
 import { ReactNode } from "react";
 import { DataSourceProvider } from "@finos/vuu-utils";
 
-interface ServerAPI {
-  getTableList: () => Promise<VuuTableList>;
-  getTableSchema: (table: VuuTable) => Promise<TableSchema>;
-}
-
-const serverAPI: ServerAPI = {
+const serverAPI: Pick<
+  ServerAPI,
+  "getTableList" | "getTableSchema" | "rpcCall"
+> = {
   getTableList: async () => {
     return {
       tables: Object.values(simulSchemas)
@@ -32,6 +37,30 @@ const serverAPI: ServerAPI = {
         `unsupported module/table ${vuuTable.module}/${vuuTable.table}`,
       );
     }
+  },
+  rpcCall: async <T = unknown,>(
+    message:
+      | VuuRpcServiceRequest
+      | VuuRpcMenuRequest
+      | VuuRpcViewportRequest
+      | VuuCreateVisualLink
+      | VuuRemoveVisualLink,
+  ) => {
+    if (
+      message.type === "RPC_CALL" &&
+      message.service === "TypeAheadRpcHandler"
+    ) {
+      const [vuuTable] = message.params;
+
+      if (isSimulTable(vuuTable)) {
+        const typeahead = simulModule.typeaheadHook();
+        return typeahead(message.params) as T;
+      } else if (isBasketTable(vuuTable)) {
+        const typeahead = basketModule.typeaheadHook();
+        return typeahead(message.params) as T;
+      }
+    }
+    throw Error("LocalDataSource provider only handles TypeAhead rpc calls");
   },
 };
 
