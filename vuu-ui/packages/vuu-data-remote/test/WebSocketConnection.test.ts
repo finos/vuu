@@ -59,11 +59,10 @@ describe("WebSocketConnection", () => {
         secondsToNextRetry: 1,
       });
 
-      expect(connectionStatusMessages.length).toEqual(2);
+      expect(connectionStatusMessages.length).toEqual(1);
 
-      const [msg1, msg2] = connectionStatusMessages;
-      expect(msg1.connectionStatus).toEqual("connecting");
-      expect(msg2.connectionStatus).toEqual("connected");
+      const [msg1] = connectionStatusMessages;
+      expect(msg1.connectionStatus).toEqual("connected");
     });
 
     it("sets confirmedOpen and installs reconnect retry limits when first message received", async () => {
@@ -124,13 +123,11 @@ describe("WebSocketConnection", () => {
         secondsToNextRetry: 2,
       });
 
-      expect(connectionStatusMessages.length).toEqual(4);
+      expect(connectionStatusMessages.length).toEqual(2);
 
-      const [msg1, msg2, msg3, msg4] = connectionStatusMessages;
-      expect(msg1.connectionStatus).toEqual("connecting");
-      expect(msg2.connectionStatus).toEqual("disconnected");
-      expect(msg3.connectionStatus).toEqual("connecting");
-      expect(msg4.connectionStatus).toEqual("connected");
+      const [msg1, msg2] = connectionStatusMessages;
+      expect(msg1.connectionStatus).toEqual("disconnected");
+      expect(msg2.connectionStatus).toEqual("connected");
     });
 
     it("retries connect in case of failure, two failures", async () => {
@@ -164,15 +161,12 @@ describe("WebSocketConnection", () => {
         secondsToNextRetry: 4,
       });
 
-      expect(connectionStatusMessages.length).toEqual(6);
+      expect(connectionStatusMessages.length).toEqual(3);
 
-      const [msg1, msg2, msg3, msg4, msg5, msg6] = connectionStatusMessages;
-      expect(msg1.connectionStatus).toEqual("connecting");
+      const [msg1, msg2, msg3] = connectionStatusMessages;
+      expect(msg1.connectionStatus).toEqual("disconnected");
       expect(msg2.connectionStatus).toEqual("disconnected");
-      expect(msg3.connectionStatus).toEqual("connecting");
-      expect(msg4.connectionStatus).toEqual("disconnected");
-      expect(msg5.connectionStatus).toEqual("connecting");
-      expect(msg6.connectionStatus).toEqual("connected");
+      expect(msg3.connectionStatus).toEqual("connected");
     });
 
     it("connect fails after maximum retries", async () => {
@@ -208,17 +202,17 @@ describe("WebSocketConnection", () => {
         secondsToNextRetry: 32,
       });
 
-      expect(connectionStatusMessages.length).toEqual(13);
+      expect(connectionStatusMessages.length).toEqual(7);
 
-      const [msg1, msg2, msg3, msg4, msg5, msg6, , , , , , , msg13] =
+      const [msg1, msg2, msg3, msg4, msg5, msg6, msg7] =
         connectionStatusMessages;
-      expect(msg1.connectionStatus).toEqual("connecting");
+      expect(msg1.connectionStatus).toEqual("disconnected");
       expect(msg2.connectionStatus).toEqual("disconnected");
-      expect(msg3.connectionStatus).toEqual("connecting");
+      expect(msg3.connectionStatus).toEqual("disconnected");
       expect(msg4.connectionStatus).toEqual("disconnected");
-      expect(msg5.connectionStatus).toEqual("connecting");
+      expect(msg5.connectionStatus).toEqual("disconnected");
       expect(msg6.connectionStatus).toEqual("disconnected");
-      expect(msg13.connectionStatus).toEqual("closed");
+      expect(msg7.connectionStatus).toEqual("closed");
     });
 
     it("Simulating Proxy. opens but closes before message received. Fails after maximum retries", async () => {
@@ -253,10 +247,9 @@ describe("WebSocketConnection", () => {
         secondsToNextRetry: 1,
       });
 
-      expect(connectionStatusMessages.length).toEqual(2);
-      const [msg1, msg2] = connectionStatusMessages;
-      expect(msg1.connectionStatus).toEqual("connecting");
-      expect(msg2.connectionStatus).toEqual("connected");
+      expect(connectionStatusMessages.length).toEqual(1);
+      const [msg1] = connectionStatusMessages;
+      expect(msg1.connectionStatus).toEqual("connected");
 
       let reconnectAttempts = 0;
       while (vi.getTimerCount() > 0) {
