@@ -36,6 +36,7 @@ import {
 import {
   FocusEvent,
   KeyboardEvent,
+  MouseEventHandler,
   RefObject,
   useCallback,
   useEffect,
@@ -66,6 +67,7 @@ import { useTableScroll } from "./useTableScroll";
 import { useTableViewport } from "./useTableViewport";
 import { useTableAndColumnSettings } from "./useTableAndColumnSettings";
 import { useRowClassNameGenerators } from "./useRowClassNameGenerators";
+import { useCellBlockSelection } from "./cell-block/useCellBlockSelection";
 
 const stripInternalProperties = (tableConfig: TableConfig): TableConfig => {
   return tableConfig;
@@ -75,6 +77,7 @@ export interface TableHookProps
   extends MeasuredProps,
     Pick<
       TableProps,
+      | "allowCellBlockSelection"
       | "allowDragDrop"
       | "availableColumns"
       | "config"
@@ -89,6 +92,7 @@ export interface TableHookProps
       | "onDrop"
       | "onHighlight"
       | "onSelect"
+      | "onSelectCellBlock"
       | "onSelectionChange"
       | "onRowClick"
       | "renderBufferSize"
@@ -119,6 +123,7 @@ const addColumn = (
 });
 
 export const useTable = ({
+  allowCellBlockSelection,
   allowDragDrop = false,
   availableColumns,
   config,
@@ -135,6 +140,7 @@ export const useTable = ({
   onHighlight,
   onRowClick: onRowClickProp,
   onSelect,
+  onSelectCellBlock,
   onSelectionChange,
   renderBufferSize = 0,
   rowHeight = 20,
@@ -246,10 +252,6 @@ export const useTable = ({
     size: size,
     showPaginationControls,
   });
-
-  // if (showPaginationControls) {
-  //   dataSource.pageSize = viewportMeasurements.rowCount;
-  // }
 
   const { data, dataRef, getSelectedRows, range, setRange } = useDataSource({
     dataSource,
@@ -601,6 +603,15 @@ export const useTable = ({
     selectionModel,
   });
 
+  const {
+    onMouseDown: cellBlockHookMouseDown,
+    cellBlock,
+    onKeyDown: cellBlockSelectionKeyDown,
+  } = useCellBlockSelection({
+    allowCellBlockSelection,
+    onSelectCellBlock,
+  });
+
   const handleRowClick = useCallback<TableRowClickHandlerInternal>(
     (evt, row, rangeSelect, keepExistingSelection) => {
       selectionHookOnRowClick(evt, row, rangeSelect, keepExistingSelection);
@@ -611,7 +622,10 @@ export const useTable = ({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLElement>) => {
-      navigationKeyDown(e);
+      cellBlockSelectionKeyDown?.(e);
+      if (!e.defaultPrevented) {
+        navigationKeyDown(e);
+      }
       if (!e.defaultPrevented) {
         editingKeyDown(e);
       }
@@ -619,7 +633,12 @@ export const useTable = ({
         selectionHookKeyDown(e);
       }
     },
-    [navigationKeyDown, editingKeyDown, selectionHookKeyDown],
+    [
+      cellBlockSelectionKeyDown,
+      navigationKeyDown,
+      editingKeyDown,
+      selectionHookKeyDown,
+    ],
   );
 
   const onMoveColumn = useCallback(
@@ -694,25 +713,35 @@ export const useTable = ({
       itemQuery: ".vuuTableRow",
     });
 
+  const handleMouseDown = useCallback<MouseEventHandler>(
+    (evt) => {
+      rowDragMouseDown?.(evt);
+      if (!evt.isPropagationStopped()) {
+        cellBlockHookMouseDown?.(evt);
+      }
+    },
+    [rowDragMouseDown, cellBlockHookMouseDown],
+  );
+
   return {
     ...containerProps,
     "aria-rowcount": dataSource.size,
-    rowClassNameGenerator,
-    draggableRow,
-    onBlur: editingBlur,
-    onDoubleClick: editingDoubleClick,
-    onFocus: handleFocus,
-    onKeyDown: handleKeyDown,
-    onMouseDown: rowDragMouseDown,
+    cellBlock,
     columnMap,
     columns,
     data,
+    draggableRow,
     getRowOffset,
     handleContextMenuAction,
     headerHeight,
     headings,
     highlightedIndex: highlightedIndexRef.current,
     menuBuilder,
+    onBlur: editingBlur,
+    onDoubleClick: editingDoubleClick,
+    onFocus: handleFocus,
+    onKeyDown: handleKeyDown,
+    onMouseDown: handleMouseDown,
     onContextMenu,
     onDataEdited: handleDataEdited,
     onHeaderHeightMeasured,
@@ -723,6 +752,7 @@ export const useTable = ({
     onSortColumn: handleSort,
     onResizeColumn,
     onToggleGroup,
+    rowClassNameGenerator,
     scrollProps,
     // TODO don't think we need these ...
     tableAttributes,

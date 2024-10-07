@@ -3,9 +3,9 @@
   border-bottom: 1px solid var(--row-borderColor, var(--table-background));
   box-sizing: border-box;
   color: var(--salt-content-secondary-foreground);
-  contain: strict;
-  contain-intrinsic-height: var(--row-height);
-  content-visibility: auto;
+  contain: layout;
+  /* contain-intrinsic-height: var(--row-height);
+  content-visibility: auto; */
   height: var(--row-height);
   line-height: var(--row-height);
   position: absolute;
@@ -15,6 +15,7 @@
 }
 
 .vuuTableRow-proxy {
+  position: absolute !important;
   visibility: hidden;
 }
 
@@ -37,6 +38,7 @@
 }
 
 .vuuTableRow-selectedStart {
+  --selection-decorator-marginTop: 1px;
   --vuu-selection-decorator-left-radius: 5px 0 0 0;
   --vuu-selection-decorator-right-radius: 0 5px 0 0;
 
@@ -58,7 +60,7 @@
 .vuuTableRow-selectedStart:after {
   content: "";
   position: absolute;
-  top: -1px;
+  top: 0px;
   left: 4px;
   height: 1px;
   background: var(--vuuTableRow-selectionBlock-borderColor);
@@ -73,11 +75,18 @@
   );
 }
 
+.vuuTableRow-selectedStart.vuuTableRow-selectedEnd {
+  .vuuTableRow-selectionDecorator {
+    height: calc(var(--row-height) - 1px);
+  }
+}
+
 .vuuTableRow-selectionDecorator {
   background: var(--table-background);
   display: inline-block;
   position: relative;
   height: var(--row-height);
+  margin-top: var(--selection-decorator-marginTop, 0px);
   width: 4px;
   z-index: 2;
 }

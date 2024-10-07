@@ -5,6 +5,7 @@ import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, useMemo, useState } from "react";
 import { ConnectionRetryCountdown } from "./ConnectionRetryCountdown";
 import { ConnectionStatusIndicator } from "./ConnectionStatusIndicator";
+import cx from "clsx";
 
 import connectionStateDisplayCss from "./ConnectionStateDisplay.css";
 
@@ -27,7 +28,7 @@ interface ConnectionStateDisplayProps extends HTMLAttributes<HTMLDivElement> {
 const getDisplayText = (connectionState: WebSocketConnectionState) => {
   switch (connectionState.connectionStatus) {
     case "closed":
-      return "Closed";
+      return "Unable to connect to data service";
     case "failed":
       return connectionState.connectionPhase === "connecting"
         ? "Failed to connect"
@@ -35,8 +36,8 @@ const getDisplayText = (connectionState: WebSocketConnectionState) => {
 
     case "disconnected":
       return connectionState.connectionPhase === "connecting"
-        ? "Connecting"
-        : "Reconnecting";
+        ? "Attempting to connect to data service"
+        : "Attempting to reconnect to data service";
   }
 };
 
@@ -64,7 +65,10 @@ export const ConnectionStateDisplay = ({
   const { connectionStatus, secondsToNextRetry } = connectionState;
 
   return (
-    <div {...htmlAttributes} className={classBase}>
+    <div
+      {...htmlAttributes}
+      className={cx(classBase, `${classBase}-${connectionStatus}`)}
+    >
       {showText ? (
         <div className={`${classBase}-text`}>
           {getDisplayText(connectionState)}

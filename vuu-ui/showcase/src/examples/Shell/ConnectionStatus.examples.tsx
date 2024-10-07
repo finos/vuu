@@ -195,14 +195,12 @@ export const InteractiveStateDisplay = () => {
 
   const connectFail = async () => {
     // initial connection
-    await setStatus("connecting");
     await setStatus("disconnected", true);
 
     while (ref.current.retryAttemptsRemaining > 0) {
       console.log(
         `${ref.current.retryAttemptsRemaining} attempts remaining (next delay ${ref.current.secondsToNextRetry}s)`,
       );
-      await setStatus("connecting");
       await setStatus("disconnected");
     }
 
@@ -210,16 +208,20 @@ export const InteractiveStateDisplay = () => {
   };
 
   return (
-    <div style={{ padding: 24 }}>
-      <ConnectionStateDisplay
-        connectionState={ref.current}
-        style={{ width: 300 }}
-      />
+    <div
+      style={{
+        alignItems: "flex-end",
+        padding: 24,
+        display: "flex",
+        flexDirection: "column",
+        gap: 12,
+      }}
+    >
+      <ConnectionStateDisplay connectionState={ref.current} />
       <div
         className="Toolbar"
         style={{ display: "flex", gap: 6, marginTop: 12 }}
       >
-        <Button onClick={() => setStatus("connecting")}>Connecting</Button>
         <Button onClick={() => setStatus("connected")}>Connected</Button>
         <Button onClick={() => setStatus("disconnected")}>Disconnected</Button>
         <Button onClick={() => setStatus("closed")}>CLosed</Button>

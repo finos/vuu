@@ -60,7 +60,7 @@ export declare type DataValueValidationResult =
   | DataValueValidationFailResult;
 
 export declare type DataValueValidationChecker = (
-  value?: VuuRowDataItemType
+  value?: VuuRowDataItemType,
 ) => DataValueValidationResult;
 
 export declare type EditRuleValidationSuccessResult = {
@@ -87,7 +87,7 @@ export declare type EditRuleValidationResult =
  */
 export declare type EditRuleValidator = (
   editRule: EditValidationRule,
-  value?: VuuRowDataItemType
+  value?: VuuRowDataItemType,
 ) => EditRuleValidationResult;
 
 /**
@@ -181,7 +181,7 @@ export declare type DataSourceRow = [
   ChildCount,
   RowKey,
   IsSelected,
-  ...VuuRowDataItemType[]
+  ...VuuRowDataItemType[],
 ];
 
 export declare type DataSourceRowObject = {
@@ -374,7 +374,7 @@ export declare type ConfigChangeHandler = (msg: ConfigChangeMessage) => void;
  */
 export declare type MenuBuilder<L = string, O = unknown> = (
   location: L,
-  options: O
+  options: O,
 ) => ContextMenuItemDescriptor[];
 
 /**
@@ -386,7 +386,7 @@ export declare type MenuBuilder<L = string, O = unknown> = (
  * ActionHandlers to be chained.
  */
 export declare type MenuActionHandler = (
-  reason: MenuActionClosePopup
+  reason: MenuActionClosePopup,
 ) => boolean | undefined;
 
 export interface ContextMenuContextType {
@@ -454,21 +454,21 @@ export interface SubscribeProps extends Partial<WithFullConfig> {
 }
 
 export declare type SubscribeCallback = (
-  message: DataSourceCallbackMessage
+  message: DataSourceCallbackMessage,
 ) => void;
 export declare type OptimizeStrategy = "none" | "throttle" | "debounce";
 
 export declare type DataSourceEventHandler = (viewportId: string) => void;
 export declare type RowSelectionEventHandler = (
   selection: Selection,
-  selectedRowCount: number
+  selectedRowCount: number,
 ) => void;
 
 export declare type DataSourceEvents = {
   config: (
     config: DataSourceConfig | undefined,
     confirmed?: boolean,
-    configChanges?: DataSourceConfigChanges
+    configChanges?: DataSourceConfigChanges,
   ) => void;
   optimize: (optimize: OptimizeStrategy) => void;
   "page-count": (pageCount: number) => void;
@@ -493,15 +493,15 @@ export declare type DataSourceEvents = {
 export declare type DataSourceEditHandler = (
   rowKey: string,
   columnName: string,
-  value: VuuRowDataItemType
+  value: VuuRowDataItemType,
 ) => Promise<true | string>;
 
 export declare type DataSourceDeleteHandler = (
-  key: string
+  key: string,
 ) => Promise<true | string>;
 export declare type DataSourceInsertHandler = (
   key: string,
-  data: VuuDataRowDto
+  data: VuuDataRowDto,
 ) => Promise<true | string>;
 
 export declare type RpcResponse =
@@ -511,7 +511,7 @@ export declare type RpcResponse =
   | ViewportRpcResponse;
 
 export declare type RpcResponseHandler = (
-  response: Omit<VuuRpcResponse, "vpId">
+  response: Omit<VuuRpcResponse, "vpId">,
 ) => boolean;
 
 export declare type RowSearchPredicate = (row: DataSourceRow) => boolean;
@@ -527,15 +527,20 @@ export declare type DataSourceStatus =
   | "suspended"
   | "unsubscribed";
 
+/**
+ * Given a Vuu Table and column, returns a list of sorted distinct values
+ * for that column. Only first 10 values will ever be returned. User must
+ * type additional text to narrow down values.
+ */
 export declare type SuggestionFetcher = (
-  params: TypeaheadParams
-) => Promise<string[]>;
-export declare type SuggestionProvider = () => SuggestionFetcher;
+  params: TypeaheadParams,
+) => Promise<string[] | false>;
+export type SuggestionProvider = () => SuggestionFetcher;
 
 export interface TypeaheadSuggestionProvider {
   getTypeaheadSuggestions: (
     columnName: string,
-    pattern?: string
+    pattern?: string,
   ) => Promise<string[]>;
 }
 
@@ -565,7 +570,7 @@ export interface DataSource
      * If new config is missing attributes and these attributes are present on
      * existing config, shoule the existing attributes be preserved ?
      */
-    preserveExistingConfigAttributes?: boolean
+    preserveExistingConfigAttributes?: boolean,
   ) => DataSourceConfigChanges | undefined;
   closeTreeNode: (key: string, cascade?: boolean) => void;
   columns: string[];
@@ -631,16 +636,16 @@ export interface DataSource
   menu?: VuuMenu;
   /** @deprecated, use remoteProcedureCall instead */
   menuRpcCall: (
-    rpcRequest: Omit<VuuRpcRequest, "vpId">
+    rpcRequest: Omit<VuuRpcRequest, "vpId">,
   ) => Promise<VuuRpcMenuResponse>;
   /* @deprecated, use remoteProcedureCall instead */
   rpcCall?: <T extends VuuRpcResponse = VuuRpcResponse>(
-    rpcRequest: Omit<VuuRpcRequest, "vpId">
+    rpcRequest: Omit<VuuRpcRequest, "vpId">,
   ) => Promise<T>;
   openTreeNode: (key: string) => void;
   range: VuuRange;
   remoteProcedureCall: <T extends VuuRpcResponse = VuuRpcResponse>(
-    message: VuuRpcRequest
+    message: VuuRpcRequest,
   ) => Promise<T>;
   select: SelectionChangeHandler;
   readonly selectedRowsCount: number;
@@ -649,7 +654,7 @@ export interface DataSource
   sort: VuuSort;
   subscribe: (
     props: SubscribeProps,
-    callback: SubscribeCallback
+    callback: SubscribeCallback,
   ) => Promise<void>;
   table?: VuuTable;
   readonly tableSchema?: TableSchema;
@@ -665,7 +670,7 @@ export interface DataSource
 }
 
 export interface MenuRpcResponse<
-  TAction extends MenuRpcAction = MenuRpcAction
+  TAction extends MenuRpcAction = MenuRpcAction,
 > {
   action: TAction;
   error?: string;
@@ -953,12 +958,12 @@ export interface ServerAPI {
       | VuuRpcMenuRequest
       | VuuRpcViewportRequest
       | VuuCreateVisualLink
-      | VuuRemoveVisualLink
+      | VuuRemoveVisualLink,
   ) => Promise<T>;
   send: (message: VuuUIMessageOut) => void;
   subscribe: (
     message: ServerProxySubscribeMessage,
-    callback: PostMessageToClientCallback
+    callback: PostMessageToClientCallback,
   ) => void;
   unsubscribe: (viewport: string) => void;
 }

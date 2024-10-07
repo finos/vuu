@@ -1,0 +1,8 @@
+.vuuPaginationControl {
+  padding: 0 var(--salt-spacing-100);
+  .saltButton {
+    .saltIcon {
+      display: block !important;
+    }
+  }
+}

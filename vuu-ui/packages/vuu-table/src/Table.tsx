@@ -23,7 +23,7 @@ import {
   reduceSizeHeight,
 } from "@finos/vuu-ui-controls";
 import { metadataKeys, useId } from "@finos/vuu-utils";
-import { GoToInput, Pagination, Paginator, useForkRef } from "@salt-ds/core";
+import { useForkRef } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
@@ -33,17 +33,20 @@ import {
   ForwardedRef,
   RefObject,
   forwardRef,
+  useCallback,
+  useMemo,
   useRef,
   useState,
 } from "react";
 import { Row as DefaultRow, RowProxy } from "./Row";
+import { PaginationControl } from "./pagination";
 import { TableHeader } from "./table-header";
 import { useMeasuredHeight } from "./useMeasuredHeight";
 import { useTable } from "./useTable";
 import { ScrollingAPI } from "./useTableScroll";
 
 import tableCss from "./Table.css";
-import { usePagination } from "./usePagination";
+import { TableCellBlock } from "./cell-block/cellblock-utils";
 
 const classBase = "vuuTable";
 
@@ -54,6 +57,10 @@ export type TableNavigationStyle = "none" | "cell" | "row";
 export interface TableProps
   extends Omit<MeasuredContainerProps, "onDragStart" | "onDrop" | "onSelect"> {
   Row?: FC<RowProps>;
+  /**
+   * Allow a block of cells to be selected. Typically to be copied.
+   */
+  allowCellBlockSelection?: boolean;
   allowConfigEditing?: boolean;
   /**
    * Allow column headers to be dragged to re-arrange
@@ -63,6 +70,7 @@ export interface TableProps
    * Allow rows to be draggable
    */
   allowDragDrop?: boolean | dragStrategy;
+
   /**
    * required if a fully featured column picker is to be available
    */
@@ -86,6 +94,14 @@ export interface TableProps
    * Default is cell.
    */
   highlightedIndex?: number;
+
+  /**
+   * Behaves in most respects like viewportRowLimit except that, when there are fewer
+   * rows available than the limit set here, the Table height will reduce. This can be
+   * useful where a Table is used in a dropdown control.
+   */
+  maxViewportRowLimit?: number;
+
   navigationStyle?: TableNavigationStyle;
   /**
    * required if a fully featured column picker is to be available.
@@ -109,6 +125,17 @@ export interface TableProps
    */
   onRowClick?: TableRowClickHandler;
   onSelect?: TableRowSelectHandler;
+  /**
+   * Triggered when a block of cells is selected. CellBlock selection can be
+   * effected with either mouse or keyboard.
+   * - mouse: hold down mouse and drag over selection area
+   * - keyboard: press and hold shift key from start cell, then use arrow keys
+   *   to extend selection block.
+   *
+   * This callback is invoked when mouse is released or shift key released.
+   */
+  onSelectCellBlock?: (cellBlock: TableCellBlock) => void;
+
   onSelectionChange?: SelectionChangeHandler;
   renderBufferSize?: number;
   /**
@@ -149,10 +176,24 @@ export interface TableProps
    * if true, pagination will be used to navigate data, scrollbars will not be rendered
    */
   showPaginationControls?: boolean;
+
+  /**
+   * As an alternative to sizing the Table height via CSS or via an explicit height value,
+   * specify the number of rows to be displayed within the Viewport. The actual height
+   * will then be the product of  viewportRowLimit and rowHeight. Row Height will be
+   * determined in the usual way, it can be specified explicitly in a prop or set via
+   * CSS. If both explicit height and viewportRowLimit are provided by props, rowHeight
+   * will be derived from these. Do not pass props for all three values - height,
+   * rowHeight and viewportRowLimit. That will be rejected.
+   * Use maxViewportRowLimit rather than viewportRowLimit if the height of the table
+   * should be reduced when fewer rows are actually available than the limit specified.
+   */
+  viewportRowLimit?: number;
 }
 
 const TableCore = ({
   Row = DefaultRow,
+  allowCellBlockSelection,
   allowDragColumnHeader = true,
   allowDragDrop,
   availableColumns,
@@ -171,6 +212,7 @@ const TableCore = ({
   onHighlight,
   onRowClick: onRowClickProp,
   onSelect,
+  onSelectCellBlock,
   onSelectionChange,
   renderBufferSize = 0,
   rowHeight,
@@ -180,13 +222,17 @@ const TableCore = ({
   showColumnHeaderMenus = true,
   showPaginationControls,
   size,
-}: Omit<TableProps, "rowHeight"> & {
+}: Omit<
+  TableProps,
+  "maxViewportRowLimit" | "rowHeight" | "viewportRowLimit"
+> & {
   containerRef: RefObject<HTMLDivElement>;
   rowHeight: number;
   size: MeasuredSize;
 }) => {
   const id = useId(idProp);
   const {
+    cellBlock,
     columnMap,
     columns,
     data,
@@ -213,6 +259,7 @@ const TableCore = ({
     viewportMeasurements,
     ...tableProps
   } = useTable({
+    allowCellBlockSelection,
     allowDragDrop,
     availableColumns,
     config,
@@ -229,6 +276,7 @@ const TableCore = ({
     onHighlight,
     onRowClick: onRowClickProp,
     onSelect,
+    onSelectCellBlock,
     onSelectionChange,
     renderBufferSize,
     rowHeight,
@@ -245,14 +293,18 @@ const TableCore = ({
     [`${classBase}-zebra`]: tableAttributes.zebraStripes,
   });
 
+  const cssScrollbarSize = {
+    "--horizontal-scrollbar-height": `${viewportMeasurements.horizontalScrollbarHeight}px`,
+    "--vertical-scrollbar-width": `${viewportMeasurements.verticalScrollbarWidth}px`,
+  } as CSSProperties;
+
   const cssVariables = {
+    ...cssScrollbarSize,
     "--content-height": `${viewportMeasurements.contentHeight}px`,
     "--content-width": `${viewportMeasurements.contentWidth}px`,
-    "--horizontal-scrollbar-height": `${viewportMeasurements.horizontalScrollbarHeight}px`,
     "--pinned-width-left": `${viewportMeasurements.pinnedWidthLeft}px`,
     "--pinned-width-right": `${viewportMeasurements.pinnedWidthRight}px`,
     "--total-header-height": `${headerHeight}px`,
-    "--vertical-scrollbar-width": `${viewportMeasurements.verticalScrollbarWidth}px`,
     "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`,
   } as CSSProperties;
 
@@ -318,10 +370,20 @@ const TableCore = ({
                   zebraStripes={tableAttributes.zebraStripes}
                 />
               ))}
+              {cellBlock}
             </div>
           ) : null}
         </div>
       </div>
+      {/* 
+        This keeps the heights of content container and scrollbar container aligned for
+        cases where we rely on height: fit-content. (ScrollbarContainer isn't taken into 
+        account because its absolutely positioned).
+      */}
+      <div
+        className={`${classBase}-scrollbarFiller`}
+        style={cssScrollbarSize}
+      />
       {draggableRow}
     </ContextMenuProvider>
   );
@@ -330,6 +392,7 @@ const TableCore = ({
 export const Table = forwardRef(function Table(
   {
     Row,
+    allowCellBlockSelection,
     allowDragColumnHeader,
     allowDragDrop,
     availableColumns,
@@ -341,6 +404,7 @@ export const Table = forwardRef(function Table(
     height,
     highlightedIndex,
     id,
+    maxViewportRowLimit,
     navigationStyle,
     onAvailableColumnsChange,
     onConfigChange,
@@ -349,8 +413,9 @@ export const Table = forwardRef(function Table(
     onHighlight,
     onRowClick,
     onSelect,
+    onSelectCellBlock,
     onSelectionChange,
-    renderBufferSize = 0,
+    renderBufferSize,
     rowHeight: rowHeightProp,
     scrollingApiRef,
     selectionModel,
@@ -358,6 +423,7 @@ export const Table = forwardRef(function Table(
     showColumnHeaderMenus,
     showPaginationControls,
     style: styleProp,
+    viewportRowLimit,
     width,
     ...htmlAttributes
   }: TableProps,
@@ -372,10 +438,12 @@ export const Table = forwardRef(function Table(
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const [size, setSize] = useState<MeasuredSize>();
-  // TODO this will rerender entire table, move foter into seperate component
+  const [size, _setSize] = useState<MeasuredSize>();
+  // TODO this will rerender entire table, move footer into seperate component
   const { rowHeight, rowRef } = useMeasuredHeight({ height: rowHeightProp });
   const { rowHeight: footerHeight, rowRef: footerRef } = useMeasuredHeight({});
+
+  const rowLimit = maxViewportRowLimit ?? viewportRowLimit;
 
   if (config === undefined) {
     throw Error(
@@ -386,10 +454,47 @@ export const Table = forwardRef(function Table(
     throw Error("vuu Table requires dataSource prop");
   }
 
-  const { onPageChange, pageCount } = usePagination({
-    dataSource,
-    showPaginationControls,
-  });
+  if (showPaginationControls && renderBufferSize !== undefined) {
+    console.warn(
+      `Table: When pagination controls are used, renderBufferSize is ignored`,
+    );
+  }
+
+  if (rowLimit && height && rowHeightProp) {
+    console.warn(
+      `Table: when viewportRowLimit, rowHeight and height are used in combination, height is ignored`,
+    );
+    height = rowLimit * rowHeightProp;
+  } else if (rowLimit && rowHeightProp) {
+    height = rowLimit * rowHeightProp;
+  } else if (rowLimit) {
+    height = rowLimit * rowHeight;
+  }
+
+  const sizeRef = useRef<MeasuredSize>();
+  const setSize = useCallback(
+    (size: MeasuredSize) => {
+      if (viewportRowLimit && !rowHeight) {
+        sizeRef.current = size;
+      } else if (
+        size.height !== sizeRef.current?.height ||
+        size.width !== sizeRef.current?.width
+      ) {
+        _setSize(size);
+      }
+    },
+    [rowHeight, viewportRowLimit],
+  );
+  useMemo(() => {
+    if (sizeRef.current && rowHeight) {
+      const size = {
+        ...sizeRef.current,
+        height: rowHeight * (viewportRowLimit as number),
+      };
+      sizeRef.current = size;
+      _setSize(size);
+    }
+  }, [rowHeight, viewportRowLimit]);
 
   // TODO render TableHeader here and measure before row construction begins
   // TODO we could have MeasuredContainer render a Provider and make size available via a context hook ?
@@ -398,6 +503,8 @@ export const Table = forwardRef(function Table(
       {...htmlAttributes}
       className={cx(classBase, classNameProp, {
         [`${classBase}-pagination`]: showPaginationControls,
+        [`${classBase}-maxViewportRowLimit`]: maxViewportRowLimit,
+        [`${classBase}-viewportRowLimit`]: viewportRowLimit,
       })}
       height={height}
       id={id}
@@ -411,9 +518,12 @@ export const Table = forwardRef(function Table(
       width={width}
     >
       <RowProxy ref={rowRef} height={rowHeightProp} />
-      {size && rowHeight && (footerHeight || showColumnHeaders !== true) ? (
+      {size &&
+      rowHeight &&
+      (footerHeight || showPaginationControls !== true) ? (
         <TableCore
           Row={Row}
+          allowCellBlockSelection={allowCellBlockSelection}
           allowDragColumnHeader={allowDragColumnHeader}
           allowDragDrop={allowDragDrop}
           availableColumns={availableColumns}
@@ -432,9 +542,10 @@ export const Table = forwardRef(function Table(
           onHighlight={onHighlight}
           onRowClick={onRowClick}
           onSelect={onSelect}
+          onSelectCellBlock={onSelectCellBlock}
           onSelectionChange={onSelectionChange}
           renderBufferSize={
-            showPaginationControls ? 0 : Math.max(5, renderBufferSize)
+            showPaginationControls ? 0 : Math.max(5, renderBufferSize ?? 0)
           }
           rowHeight={rowHeight}
           scrollingApiRef={scrollingApiRef}
@@ -446,11 +557,8 @@ export const Table = forwardRef(function Table(
         />
       ) : null}
       {showPaginationControls ? (
-        <div className={`${classBase}-pagination-container`} ref={footerRef}>
-          <Pagination count={pageCount} onPageChange={onPageChange}>
-            <GoToInput />
-            <Paginator />
-          </Pagination>
+        <div className={`${classBase}-footer`} ref={footerRef}>
+          <PaginationControl dataSource={dataSource} />
         </div>
       ) : null}
     </MeasuredContainer>

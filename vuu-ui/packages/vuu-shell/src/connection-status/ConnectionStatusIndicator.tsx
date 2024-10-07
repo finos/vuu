@@ -82,6 +82,8 @@ export const ConnectionStatusIndicator = ({
 
   // const displayState = balls.length > 0 ? "disconnected" : connectionStatus;
   const displayState = connectionStatus;
+  const retryCount =
+    connectionStatus === "disconnected" ? retryAttemptsTotal : 0;
 
   return (
     <div
@@ -89,6 +91,7 @@ export const ConnectionStatusIndicator = ({
         expanded: expandedRef.current,
       })}
       ref={ballbox}
+      style={{ "--retry-count": retryCount } as CSSProperties}
     >
       <Ball large />
       {balls}

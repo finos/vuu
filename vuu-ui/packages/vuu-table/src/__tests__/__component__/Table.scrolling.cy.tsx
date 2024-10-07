@@ -28,7 +28,7 @@ describe("Table scrolling and keyboard navigation", () => {
         cy.findByRole("cell", { name: "row 1" }).should(
           "have.attr",
           "tabindex",
-          "0"
+          "0",
         );
         cy.findByRole("cell", { name: "row 1" }).should("be.focused");
         cy.realPress("PageDown");
@@ -43,14 +43,19 @@ describe("Table scrolling and keyboard navigation", () => {
         // row 31 should be top row in viewport
         cy.findByRole("row", withAriaRowIndex(31)).should(
           "have.css",
-          "transform",
-          "matrix(1, 0, 0, 1, 0, 600)"
+          "top",
+          "600px",
         );
+        // cy.findByRole("row", withAriaRowIndex(31)).should(
+        //   "have.css",
+        //   "transform",
+        //   "matrix(1, 0, 0, 1, 0, 600)"
+        // );
 
         cy.findByRole("cell", { name: "row 31" }).should(
           "have.attr",
           "tabindex",
-          "0"
+          "0",
         );
         cy.findByRole("cell", { name: "row 31" }).should("be.focused");
       });
@@ -69,7 +74,7 @@ describe("Table scrolling and keyboard navigation", () => {
           cy.findByRole("cell", { name: "row 1" }).should(
             "have.attr",
             "tabindex",
-            "0"
+            "0",
           );
           cy.findByRole("cell", { name: "row 1" }).should("be.focused");
 
@@ -89,7 +94,7 @@ describe("Table scrolling and keyboard navigation", () => {
         cy.findByRole("cell", { name: "row 1" }).should(
           "have.attr",
           "tabindex",
-          "0"
+          "0",
         );
         cy.findByRole("cell", { name: "row 1" }).should("be.focused");
         assertRenderedRows({ from: 0, to: 30 }, RENDER_BUFFER, ROW_COUNT);
@@ -104,7 +109,7 @@ describe("Table scrolling and keyboard navigation", () => {
         cy.findByRole("cell", { name: "row 1" }).should(
           "have.attr",
           "tabindex",
-          "0"
+          "0",
         );
         cy.findByRole("cell", { name: "row 1" }).should("be.focused");
         assertRenderedRows({ from: 0, to: 30 }, RENDER_BUFFER, ROW_COUNT);
@@ -120,7 +125,7 @@ describe("Table scrolling and keyboard navigation", () => {
         cy.findByRole("cell", { name: "row 1,000" }).should(
           "have.attr",
           "tabindex",
-          "0"
+          "0",
         );
         cy.findByRole("cell", { name: "row 1,000" }).should("be.focused");
         assertRenderedRows({ from: 970, to: 1000 }, RENDER_BUFFER, ROW_COUNT);
@@ -136,7 +141,7 @@ describe("Table scrolling and keyboard navigation", () => {
         cy.findByRole("cell", { name: "row 1,000" }).should(
           "have.attr",
           "tabindex",
-          "0"
+          "0",
         );
         cy.findByRole("cell", { name: "row 1,000" }).should("be.focused");
         assertRenderedRows({ from: 970, to: 1000 }, RENDER_BUFFER, ROW_COUNT);
@@ -154,7 +159,7 @@ describe("Table scrolling and keyboard navigation", () => {
         cy.findByRole("cell", { name: "row 2" }).should(
           "have.attr",
           "tabindex",
-          "0"
+          "0",
         );
         cy.findByRole("cell", { name: "row 2" }).should("be.focused");
         assertRenderedRows({ from: 0, to: 30 }, RENDER_BUFFER, ROW_COUNT);
@@ -169,7 +174,7 @@ describe("Table scrolling and keyboard navigation", () => {
         cy.findByRole("cell", { name: "row 31" }).should(
           "have.attr",
           "tabindex",
-          "0"
+          "0",
         );
         cy.findByRole("cell", { name: "row 31" }).should("be.focused");
         assertRenderedRows({ from: 1, to: 31 }, RENDER_BUFFER, ROW_COUNT);

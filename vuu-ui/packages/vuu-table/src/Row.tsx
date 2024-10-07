@@ -40,7 +40,7 @@ export const RowProxy = forwardRef<HTMLDivElement, { height?: number }>(
         style={{ height }}
       />
     );
-  }
+  },
 );
 
 // export const Row = memo(
@@ -79,7 +79,7 @@ export const Row = memo(
         const keepExistingSelection = evt.ctrlKey || evt.metaKey; /* mac only */
         onClick?.(evt, row, rangeSelect, keepExistingSelection);
       },
-      [onClick, row]
+      [onClick, row],
     );
 
     const { True, First, Last } = RowSelected;
@@ -95,10 +95,11 @@ export const Row = memo(
         [`${classBase}-selected`]: selectionStatus & True,
         [`${classBase}-selectedStart`]: selectionStatus & First,
         [`${classBase}-selectedEnd`]: selectionStatus & Last,
-      }
+      },
     );
 
-    const style = { transform: `translate3d(0px, ${offset}px, 0px)` };
+    // const style = { transform: `translate3d(0px, ${offset}px, 0px)` };
+    const style = { top: offset };
 
     const handleGroupCellClick = useCallback(
       (evt: MouseEvent, column: RuntimeColumnDescriptor) => {
@@ -107,7 +108,7 @@ export const Row = memo(
           onToggleGroup?.(row, column);
         }
       },
-      [columnMap, onToggleGroup, row]
+      [columnMap, onToggleGroup, row],
     );
 
     return (
@@ -139,6 +140,6 @@ export const Row = memo(
         <span className={`${classBase}-selectionDecorator vuuStickyRight`} />
       </div>
     );
-  }
+  },
 );
 Row.displayName = "Row";

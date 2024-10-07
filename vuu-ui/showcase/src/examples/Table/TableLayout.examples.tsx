@@ -1,9 +1,15 @@
 import { ArrayDataSource } from "@finos/vuu-data-local";
-import { SimulTableName, getSchema, vuuModule } from "@finos/vuu-data-test";
+import {
+  LocalDataSourceProvider,
+  SimulTableName,
+  getSchema,
+  vuuModule,
+} from "@finos/vuu-data-test";
 import {
   DataSource,
   Selection,
   SelectionChangeHandler,
+  TableSchema,
 } from "@finos/vuu-data-types";
 import { DockLayout, Drawer } from "@finos/vuu-layout";
 import { Table, TableProps, useHeaderProps } from "@finos/vuu-table";
@@ -12,48 +18,100 @@ import { List, ListItem } from "@finos/vuu-ui-controls";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 import { VuuRpcMenuRequest } from "@finos/vuu-protocol-types";
+import { useDataSource } from "@finos/vuu-utils";
 
 let displaySequence = 0;
 
 type DataTableProps = Partial<
   Omit<TableProps, "config"> & { config?: Partial<TableConfig> }
->;
+> & {
+  schema?: TableSchema;
+};
 
-export const DataTable = ({
+const DataTableTemplate = ({
   dataSource: dataSourceProp,
+  maxViewportRowLimit,
   navigationStyle = "cell",
+  rowHeight,
+  schema = getSchema("instruments"),
+  viewportRowLimit,
   width = 600,
   ...props
 }: DataTableProps) => {
+  const { VuuDataSource } = useDataSource();
   const tableConfig = useMemo<TableConfig>(() => {
     return {
       ...props.config,
-      columns: getSchema("instruments").columns,
+      columns: schema.columns,
       rowSeparators: true,
       zebraStripes: true,
     };
-  }, [props.config]);
+  }, [props.config, schema]);
 
   const dataSource = useMemo(() => {
-    return dataSourceProp ?? vuuModule("SIMUL").createDataSource("instruments");
-  }, [dataSourceProp]);
+    return dataSourceProp ?? new VuuDataSource({ table: schema.table });
+  }, [VuuDataSource, dataSourceProp, schema.table]);
 
   return (
-    <>
-      <Table
-        {...props}
-        config={tableConfig}
-        dataSource={dataSource}
-        height={500}
-        renderBufferSize={20}
-        navigationStyle={navigationStyle}
-        width={width}
-      />
-    </>
+    <Table
+      {...props}
+      config={tableConfig}
+      data-testid="table"
+      dataSource={dataSource}
+      height={500}
+      maxViewportRowLimit={maxViewportRowLimit}
+      navigationStyle={navigationStyle}
+      renderBufferSize={20}
+      rowHeight={rowHeight}
+      viewportRowLimit={viewportRowLimit}
+      width={width}
+    />
   );
 };
 
-DataTable.displaySequence = displaySequence++;
+export const ViewportRowLimitDefaultRowHeight = () => {
+  return (
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <DataTableTemplate viewportRowLimit={10} />
+    </LocalDataSourceProvider>
+  );
+};
+ViewportRowLimitDefaultRowHeight.displaySequence = displaySequence++;
+
+export const ViewportRowLimitExplicitRowHeight = () => {
+  return (
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <DataTableTemplate rowHeight={30} viewportRowLimit={10} />
+    </LocalDataSourceProvider>
+  );
+};
+ViewportRowLimitExplicitRowHeight.displaySequence = displaySequence++;
+
+export const MaxViewportRowLimitRowsExceedLimit = () => {
+  return (
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <DataTableTemplate maxViewportRowLimit={10} />
+    </LocalDataSourceProvider>
+  );
+};
+MaxViewportRowLimitRowsExceedLimit.displaySequence = displaySequence++;
+
+export const MaxViewportRowLimitFewRows = ({
+  width,
+}: Pick<TableProps, "width">) => {
+  const schema = getSchema("basket");
+  console.log({ schema });
+  return (
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <DataTableTemplate
+        maxViewportRowLimit={10}
+        schema={schema}
+        width={width}
+      />
+    </LocalDataSourceProvider>
+  );
+};
+MaxViewportRowLimitFewRows.displaySequence = displaySequence++;
 
 type InlineDrawerProps = {
   inline?: boolean;
@@ -97,37 +155,39 @@ const InlineDrawer = ({
   );
 
   return (
-    <DockLayout style={{ height: 500 }}>
-      <Drawer
-        inline={inline}
-        open={open}
-        peekaboo={peekaboo}
-        position={position}
-        title="Rebecca"
-        defaultOpen={false}
-      >
-        <div
-          ref={list}
-          style={{ width: "100%", height: "100%", background: "yellow" }}
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <DockLayout style={{ height: 500 }}>
+        <Drawer
+          inline={inline}
+          open={open}
+          peekaboo={peekaboo}
+          position={position}
+          title="Rebecca"
+          defaultOpen={false}
         >
-          <List>
-            <ListItem>Item 1</ListItem>
-            <ListItem>Item 2</ListItem>
-            <ListItem>Item 3</ListItem>
-            <ListItem>Item 4</ListItem>
-            <ListItem>Item 5</ListItem>
-            <ListItem>Item 6</ListItem>
-          </List>
-        </div>
-      </Drawer>
-      <DataTable
-        config={{ columnLayout: "fit" }}
-        dataSource={dataSource}
-        navigationStyle="row"
-        onSelectionChange={handleSelectionChange}
-        width="100%"
-      />
-    </DockLayout>
+          <div
+            ref={list}
+            style={{ width: "100%", height: "100%", background: "yellow" }}
+          >
+            <List>
+              <ListItem>Item 1</ListItem>
+              <ListItem>Item 2</ListItem>
+              <ListItem>Item 3</ListItem>
+              <ListItem>Item 4</ListItem>
+              <ListItem>Item 5</ListItem>
+              <ListItem>Item 6</ListItem>
+            </List>
+          </div>
+        </Drawer>
+        <DataTableTemplate
+          config={{ columnLayout: "fit" }}
+          dataSource={dataSource}
+          navigationStyle="row"
+          onSelectionChange={handleSelectionChange}
+          width="100%"
+        />
+      </DockLayout>
+    </LocalDataSourceProvider>
   );
 };
 

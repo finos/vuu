@@ -1,11 +1,9 @@
 import { SyntheticEvent, useCallback, useMemo, useState } from "react";
-import { TableProps } from "./Table";
 import { DataSource } from "@finos/vuu-data-types";
 
-export type PaginationHookProps = Pick<
-  TableProps,
-  "dataSource" | "showPaginationControls"
->;
+export interface PaginationHookProps {
+  dataSource: DataSource;
+}
 
 const getPageCount = (dataSource: DataSource) => {
   const { range, size } = dataSource;
@@ -17,17 +15,12 @@ const getPageCount = (dataSource: DataSource) => {
   }
 };
 
-export const usePagination = ({
-  dataSource,
-  showPaginationControls,
-}: PaginationHookProps) => {
+export const usePagination = ({ dataSource }: PaginationHookProps) => {
   const [pageCount, setPageCount] = useState<number>(getPageCount(dataSource));
 
   useMemo(() => {
-    if (showPaginationControls) {
-      dataSource.on("page-count", (n: number) => setPageCount(n));
-    }
-  }, [dataSource, showPaginationControls]);
+    dataSource.on("page-count", (n: number) => setPageCount(n));
+  }, [dataSource]);
 
   const handlePageChange = useCallback(
     (_evt: SyntheticEvent, page: number) => {

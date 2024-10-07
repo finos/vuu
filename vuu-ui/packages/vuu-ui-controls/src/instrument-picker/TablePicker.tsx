@@ -125,8 +125,8 @@ export const TablePicker = ({
           {...tableHandlers}
           config={tableConfig}
           dataSource={dataSource}
-          height={250}
           highlightedIndex={highlightedIndex}
+          maxViewportRowLimit={10}
           navigationStyle="row"
           ref={tableRef}
           selectionModel="single"

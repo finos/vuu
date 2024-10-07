@@ -106,7 +106,6 @@ export const useFilterClause = ({
     }
     filterClauseModel.column = selectedColumn;
     setTimeout(() => {
-      console.log(`focus next element`);
       focusNextElement();
     }, 100);
   };
