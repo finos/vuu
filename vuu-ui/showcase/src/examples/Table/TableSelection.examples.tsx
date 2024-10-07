@@ -1,10 +1,67 @@
-import { getSchema, SimulTableName, vuuModule } from "@finos/vuu-data-test";
+import {
+  getSchema,
+  LocalDataSourceProvider,
+  SimulTableName,
+  vuuModule,
+} from "@finos/vuu-data-test";
 import { Table, TableProps } from "@finos/vuu-table";
 import { useCallback, useMemo } from "react";
 
 import "./Table.examples.css";
+import { TableSchema } from "@finos/vuu-data-types";
+import { TableConfig } from "@finos/vuu-table-types";
+import { useDataSource } from "@finos/vuu-utils";
 
 let displaySequence = 1;
+
+type DataTableProps = Partial<
+  Omit<TableProps, "config"> & { config?: Partial<TableConfig> }
+> & {
+  schema?: TableSchema;
+};
+
+const DataTableTemplate = ({
+  allowCellBlockSelection,
+  dataSource: dataSourceProp,
+  maxViewportRowLimit,
+  navigationStyle = "cell",
+  rowHeight,
+  schema = getSchema("instruments"),
+  viewportRowLimit,
+  width = 600,
+  ...props
+}: DataTableProps) => {
+  const { VuuDataSource } = useDataSource();
+  const tableConfig = useMemo<TableConfig>(() => {
+    return {
+      ...props.config,
+      columns: schema.columns,
+      rowSeparators: true,
+      zebraStripes: true,
+    };
+  }, [props.config, schema]);
+
+  const dataSource = useMemo(() => {
+    return dataSourceProp ?? new VuuDataSource({ table: schema.table });
+  }, [VuuDataSource, dataSourceProp, schema.table]);
+
+  return (
+    <Table
+      {...props}
+      allowCellBlockSelection={allowCellBlockSelection}
+      config={tableConfig}
+      data-testid="table"
+      dataSource={dataSource}
+      height={500}
+      maxViewportRowLimit={maxViewportRowLimit}
+      navigationStyle={navigationStyle}
+      renderBufferSize={20}
+      rowHeight={rowHeight}
+      viewportRowLimit={viewportRowLimit}
+      width={width}
+    />
+  );
+};
 
 export const CheckboxSelection = () => {
   const tableProps = useMemo<
@@ -43,3 +100,12 @@ export const CheckboxSelection = () => {
   );
 };
 CheckboxSelection.displaySequence = displaySequence++;
+
+export const CellBlockSelection = () => {
+  return (
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <DataTableTemplate allowCellBlockSelection />
+    </LocalDataSourceProvider>
+  );
+};
+CellBlockSelection.displaySequence = displaySequence++;

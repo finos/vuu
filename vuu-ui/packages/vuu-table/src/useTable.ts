@@ -92,6 +92,7 @@ export interface TableHookProps
       | "onDrop"
       | "onHighlight"
       | "onSelect"
+      | "onSelectCellBlock"
       | "onSelectionChange"
       | "onRowClick"
       | "renderBufferSize"
@@ -139,6 +140,7 @@ export const useTable = ({
   onHighlight,
   onRowClick: onRowClickProp,
   onSelect,
+  onSelectCellBlock,
   onSelectionChange,
   renderBufferSize = 0,
   rowHeight = 20,
@@ -601,10 +603,14 @@ export const useTable = ({
     selectionModel,
   });
 
-  const { onMouseDown: cellBlockHookMouseDown, cellBlock } =
-    useCellBlockSelection({
-      allowCellBlockSelection,
-    });
+  const {
+    onMouseDown: cellBlockHookMouseDown,
+    cellBlock,
+    onKeyDown: cellBlockSelectionKeyDown,
+  } = useCellBlockSelection({
+    allowCellBlockSelection,
+    onSelectCellBlock,
+  });
 
   const handleRowClick = useCallback<TableRowClickHandlerInternal>(
     (evt, row, rangeSelect, keepExistingSelection) => {
@@ -616,7 +622,10 @@ export const useTable = ({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLElement>) => {
-      navigationKeyDown(e);
+      cellBlockSelectionKeyDown?.(e);
+      if (!e.defaultPrevented) {
+        navigationKeyDown(e);
+      }
       if (!e.defaultPrevented) {
         editingKeyDown(e);
       }
@@ -624,7 +633,12 @@ export const useTable = ({
         selectionHookKeyDown(e);
       }
     },
-    [navigationKeyDown, editingKeyDown, selectionHookKeyDown],
+    [
+      cellBlockSelectionKeyDown,
+      navigationKeyDown,
+      editingKeyDown,
+      selectionHookKeyDown,
+    ],
   );
 
   const onMoveColumn = useCallback(

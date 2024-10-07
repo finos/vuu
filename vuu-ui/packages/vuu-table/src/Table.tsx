@@ -46,6 +46,7 @@ import { useTable } from "./useTable";
 import { ScrollingAPI } from "./useTableScroll";
 
 import tableCss from "./Table.css";
+import { TableCellBlock } from "./cell-block/cellblock-utils";
 
 const classBase = "vuuTable";
 
@@ -124,6 +125,17 @@ export interface TableProps
    */
   onRowClick?: TableRowClickHandler;
   onSelect?: TableRowSelectHandler;
+  /**
+   * Triggered when a block of cells is selected. CellBlock selection can be
+   * effected with either mouse or keyboard.
+   * - mouse: hold down mouse and drag over selection area
+   * - keyboard: press and hold shift key from start cell, then use arrow keys
+   *   to extend selection block.
+   *
+   * This callback is invoked when mouse is released or shift key released.
+   */
+  onSelectCellBlock: (cellBlock: TableCellBlock) => void;
+
   onSelectionChange?: SelectionChangeHandler;
   renderBufferSize?: number;
   /**
@@ -200,6 +212,7 @@ const TableCore = ({
   onHighlight,
   onRowClick: onRowClickProp,
   onSelect,
+  onSelectCellBlock,
   onSelectionChange,
   renderBufferSize = 0,
   rowHeight,
@@ -263,6 +276,7 @@ const TableCore = ({
     onHighlight,
     onRowClick: onRowClickProp,
     onSelect,
+    onSelectCellBlock,
     onSelectionChange,
     renderBufferSize,
     rowHeight,
@@ -399,6 +413,7 @@ export const Table = forwardRef(function Table(
     onHighlight,
     onRowClick,
     onSelect,
+    onSelectCellBlock,
     onSelectionChange,
     renderBufferSize,
     rowHeight: rowHeightProp,
@@ -527,6 +542,7 @@ export const Table = forwardRef(function Table(
           onHighlight={onHighlight}
           onRowClick={onRowClick}
           onSelect={onSelect}
+          onSelectCellBlock={onSelectCellBlock}
           onSelectionChange={onSelectionChange}
           renderBufferSize={
             showPaginationControls ? 0 : Math.max(5, renderBufferSize ?? 0)

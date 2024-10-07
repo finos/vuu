@@ -1,5 +1,6 @@
 import { queryClosest } from "@finos/vuu-utils";
 import {
+  KeyboardEventHandler,
   MouseEventHandler,
   ReactElement,
   RefCallback,
@@ -47,6 +48,7 @@ const refState: RefState = {
   startCell: null,
 } as const;
 
+type NativeKeyboardHandler = (evt: KeyboardEvent) => void;
 type NativeMouseHandler = (evt: MouseEvent) => void;
 type MouseHandlers = {
   mouseMove: NativeMouseHandler;
@@ -86,6 +88,10 @@ export const useCellBlockSelection = ({
   const cellBlockRef = useCallback<RefCallback<HTMLDivElement>>((el) => {
     stateRef.current.cellBlock = el;
   }, []);
+
+  const createCellBlock = useCallback(() => {
+    setCellBlock(<CellBlock ref={cellBlockRef} />);
+  }, [cellBlockRef]);
 
   const initializeStateRef = useCallback(() => {
     const { cellBlock, cellBlockClassName, startCell, endCell } =
@@ -193,7 +199,7 @@ export const useCellBlockSelection = ({
         if (startCell) {
           setElementBox(startCell, startBox);
           startCell.classList.add("vuu-cellblock-start");
-          setCellBlock(<CellBlock ref={cellBlockRef} />);
+          createCellBlock();
         }
 
         const { mouseMove, mouseUp } = handlersRef.current;
@@ -203,7 +209,7 @@ export const useCellBlockSelection = ({
         addMouseListener("mouseUp", mouseUp);
       }
     },
-    [addMouseListener, cellBlockRef, removeMouseListener],
+    [addMouseListener, createCellBlock, removeMouseListener],
   );
 
   handlersRef.current.mouseUpPreDrag = useCallback(() => {
@@ -229,8 +235,71 @@ export const useCellBlockSelection = ({
     [addMouseListener, initializeStateRef],
   );
 
+  const shiftingRef = useRef(false);
+  const cellBlockEndRef = useRef([0, 0]);
+  const nativeKeyDownHandlerRef = useRef<NativeKeyboardHandler>(NullHandler);
+
+  const handleNativeKeyUp = useCallback((evt: KeyboardEvent) => {
+    if (evt.key === "Shift") {
+      const { current: pos } = cellBlockEndRef;
+
+      if (pos[0] || pos[1]) {
+        console.log(`cell selection [${pos[0]},${pos[1]}]`);
+      }
+      console.log("abandon cellblock selection");
+      shiftingRef.current = false;
+
+      window.removeEventListener("keydown", nativeKeyDownHandlerRef.current, {
+        capture: true,
+      });
+      window.removeEventListener("keyup", handleNativeKeyUp, {
+        capture: true,
+      });
+    }
+  }, []);
+  const handleNativeKeyDown = (nativeKeyDownHandlerRef.current = useCallback(
+    (evt: KeyboardEvent) => {
+      if (evt.key.startsWith("Arrow")) {
+        const { current: pos } = cellBlockEndRef;
+        switch (evt.key) {
+          case "ArrowRight":
+            pos[0] += 1;
+            break;
+          case "ArrowLEFT":
+            pos[0] -= 1;
+            break;
+          case "ArrowUP":
+            pos[1] -= 1;
+            break;
+          case "ArrowDown":
+            pos[1] += 1;
+            break;
+        }
+      }
+    },
+    [],
+  ));
+  const handleKeyDown = useCallback<KeyboardEventHandler>(
+    (evt) => {
+      if (evt.key === "Shift") {
+        shiftingRef.current = true;
+
+        window.addEventListener("keydown", handleNativeKeyDown, {
+          capture: true,
+        });
+        window.addEventListener("keyup", handleNativeKeyUp, {
+          capture: true,
+        });
+
+        evt.preventDefault();
+      }
+    },
+    [handleNativeKeyDown, handleNativeKeyUp],
+  );
+
   return {
     cellBlock,
+    onKeyDown: allowCellBlockSelection ? handleKeyDown : undefined,
     onMouseDown: allowCellBlockSelection ? handleMouseDown : undefined,
   };
 };
