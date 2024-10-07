@@ -90,7 +90,12 @@ export const useCellBlockSelection = ({
   }, []);
 
   const createCellBlock = useCallback(() => {
-    setCellBlock(<CellBlock ref={cellBlockRef} />);
+    const { startBox, startCell } = stateRef.current;
+    if (startCell) {
+      setElementBox(startCell, startBox);
+      startCell.classList.add("vuu-cellblock-start");
+      setCellBlock(<CellBlock ref={cellBlockRef} />);
+    }
   }, [cellBlockRef]);
 
   const initializeStateRef = useCallback(() => {
@@ -185,7 +190,7 @@ export const useCellBlockSelection = ({
   handlersRef.current.mouseMovePreDrag = useCallback(
     (evt: MouseEvent) => {
       const { current: state } = stateRef;
-      const { mouseStartX, mouseStartY, startBox, startCell } = state;
+      const { mouseStartX, mouseStartY } = state;
 
       const x = (state.mousePosX = evt.clientX);
       const y = (state.mousePosY = evt.clientY);
@@ -196,11 +201,7 @@ export const useCellBlockSelection = ({
       );
 
       if (distance > DRAG_THRESHOLD) {
-        if (startCell) {
-          setElementBox(startCell, startBox);
-          startCell.classList.add("vuu-cellblock-start");
-          createCellBlock();
-        }
+        createCellBlock();
 
         const { mouseMove, mouseUp } = handlersRef.current;
         removeMouseListener("mouseMovePreDrag");
@@ -284,14 +285,19 @@ export const useCellBlockSelection = ({
       if (evt.key === "Shift") {
         shiftingRef.current = true;
 
-        window.addEventListener("keydown", handleNativeKeyDown, {
-          capture: true,
-        });
-        window.addEventListener("keyup", handleNativeKeyUp, {
-          capture: true,
-        });
+        const cell = queryClosest<HTMLDivElement>(evt.target, ".vuuTableCell");
+        if (cell) {
+          const { current: state } = stateRef;
+          state.startCell = cell;
+          window.addEventListener("keydown", handleNativeKeyDown, {
+            capture: true,
+          });
+          window.addEventListener("keyup", handleNativeKeyUp, {
+            capture: true,
+          });
 
-        evt.preventDefault();
+          evt.preventDefault();
+        }
       }
     },
     [handleNativeKeyDown, handleNativeKeyUp],
