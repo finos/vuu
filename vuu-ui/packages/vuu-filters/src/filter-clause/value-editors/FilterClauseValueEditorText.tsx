@@ -112,8 +112,10 @@ export const FilterClauseValueEditorText = forwardRef(
       [onChangeValue, operator],
     );
 
-    const handleInputCommit = useCallback<CommitHandler>(
-      (evt, value) => {
+    const handleInputCommit = useCallback<
+      CommitHandler<HTMLInputElement, string | undefined>
+    >(
+      (evt, value = "") => {
         console.log(`commit value ${value}`);
         onChangeValue(value);
       },
@@ -239,15 +241,16 @@ export const FilterClauseValueEditorText = forwardRef(
         }
       }
     }, [
-      inputProps,
-      operator,
-      className,
       typeaheadValues,
-      handleInputChange,
-      handleMultiValueSelectionChange,
-      forwardedRef,
-      value,
+      operator,
+      inputProps,
+      className,
       valueInputValue,
+      forwardedRef,
+      handleInputChange,
+      handleInputCommit,
+      handleMultiValueSelectionChange,
+      value,
       handleSingleValueSelectionChange,
     ]);
 

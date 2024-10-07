@@ -42,7 +42,7 @@ type ColumnOptions = {
 
 const getValidColumns = (
   columns: ColumnDescriptor[],
-  { functionName, operator }: ColumnOptions
+  { functionName, operator }: ColumnOptions,
 ) => {
   if (operator) {
     return columns.filter(isNumericColumn);
@@ -105,7 +105,7 @@ const getConditionOperators = (column: ColumnDescriptor) => {
 };
 
 const toFunctionCompletion = (
-  functionDescriptor: ColumnFunctionDescriptor
+  functionDescriptor: ColumnFunctionDescriptor,
 ) => ({
   apply: `${functionDescriptor.name}( `,
   boost: 2,
@@ -168,7 +168,7 @@ export const useColumnExpressionSuggestionProvider = ({
   const findColumn = useCallback(
     (name?: string) =>
       name ? columns.find((col) => col.name === name) : undefined,
-    [columns]
+    [columns],
   );
 
   const latestSuggestionsRef = useRef<Completion[]>();
@@ -182,7 +182,7 @@ export const useColumnExpressionSuggestionProvider = ({
         switch (suggestionType) {
           case "expression": {
             const suggestions = await withApplySpace(
-              getColumns(columns, { functionName, prefix })
+              getColumns(columns, { functionName, prefix }),
             ).concat(getFunctions(options));
             return (latestSuggestionsRef.current = suggestions);
           }
@@ -196,7 +196,7 @@ export const useColumnExpressionSuggestionProvider = ({
           }
           case "relational-operator": {
             const suggestions = await getRelationalOperators(
-              findColumn(columnName)
+              findColumn(columnName),
             );
             return (latestSuggestionsRef.current = withApplySpace(suggestions));
           }
@@ -217,43 +217,45 @@ export const useColumnExpressionSuggestionProvider = ({
               // const column = findColumn(columnName);
               const params = getTypeaheadParams(
                 table,
-                columnName /*, startsWith*/
+                columnName /*, startsWith*/,
               );
               const suggestions = await getTypeaheadSuggestions(params);
-              latestSuggestionsRef.current = toSuggestions(suggestions, {
-                suffix: "",
-              });
+              if (suggestions) {
+                latestSuggestionsRef.current = toSuggestions(suggestions, {
+                  suffix: "",
+                });
 
-              latestSuggestionsRef.current.forEach((suggestion) => {
-                suggestion.apply = (
-                  view: EditorView,
-                  completion: Completion,
-                  from: number
-                ) => {
-                  const annotation = new AnnotationType<Completion>();
-                  const cursorPos = from + completion.label.length + 1;
-                  view.dispatch({
-                    changes: { from, insert: completion.label },
-                    selection: { anchor: cursorPos, head: cursorPos },
-                    annotations: annotation.of(completion),
-                  });
-                };
-              });
-              return latestSuggestionsRef.current;
+                latestSuggestionsRef.current.forEach((suggestion) => {
+                  suggestion.apply = (
+                    view: EditorView,
+                    completion: Completion,
+                    from: number,
+                  ) => {
+                    const annotation = new AnnotationType<Completion>();
+                    const cursorPos = from + completion.label.length + 1;
+                    view.dispatch({
+                      changes: { from, insert: completion.label },
+                      selection: { anchor: cursorPos, head: cursorPos },
+                      annotations: annotation.of(completion),
+                    });
+                  };
+                });
+              }
+              return latestSuggestionsRef.current || [];
             }
             break;
         }
 
         return [];
       },
-      [columns, findColumn, getTypeaheadSuggestions, table]
+      [columns, findColumn, getTypeaheadSuggestions, table],
     );
 
   const isPartialMatch = useCallback(
     async (
       valueType: ColumnExpressionSuggestionType,
       columnName?: string,
-      pattern?: string
+      pattern?: string,
     ) => {
       const { current: latestSuggestions } = latestSuggestionsRef;
       let maybe = false;
@@ -270,7 +272,7 @@ export const useColumnExpressionSuggestionProvider = ({
       }
       return maybe;
     },
-    [getSuggestions]
+    [getSuggestions],
   );
 
   return {

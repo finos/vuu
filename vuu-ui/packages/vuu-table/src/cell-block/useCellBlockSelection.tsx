@@ -74,7 +74,7 @@ const DRAG_THRESHOLD = 5;
 
 export interface CellblockSelectionHookProps {
   allowCellBlockSelection?: boolean;
-  onSelectCellBlock: (cellBlock: TableCellBlock) => void;
+  onSelectCellBlock?: (cellBlock: TableCellBlock) => void;
 }
 
 export const useCellBlockSelection = ({

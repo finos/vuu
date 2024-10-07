@@ -44,7 +44,10 @@ export const useVuuTypeaheadInput = ({
           : [vuuTable, column];
         getSuggestions(params)
           .then((suggestions) => {
-            if (suggestions.length === 0 && value) {
+            if (suggestions === false) {
+              // TODO is this right
+              setTypeaheadValues([]);
+            } else if (suggestions.length === 0 && value) {
               setTypeaheadValues(NO_DATA_MATCH);
             } else {
               setTypeaheadValues(suggestions);

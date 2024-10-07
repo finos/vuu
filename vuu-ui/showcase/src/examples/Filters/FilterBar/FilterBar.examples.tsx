@@ -12,11 +12,7 @@ import {
 } from "react";
 import type { DataSourceFilter } from "@finos/vuu-data-types";
 import { Input, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
-import {
-  LocalDataSourceProvider,
-  getSchema,
-  vuuModule,
-} from "@finos/vuu-data-test";
+import { LocalDataSourceProvider, getSchema } from "@finos/vuu-data-test";
 
 const lastUpdatedColumn = {
   name: "lastUpdated",
