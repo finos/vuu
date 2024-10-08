@@ -12,6 +12,8 @@ target/
 .bloop/**
 .metals/**
 
+.showcase/**
+.showcase/
 .vscode/**
 node_modules
 yarn-debug.log*

@@ -5,7 +5,11 @@
   "main": "index.js",
   "bin": "./cli.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "node ./scripts/build.mjs"
+  },
+  "dependencies": {
+    "@heswell/vuu-showcase": "0.0.1",
+    "node-static": "^0.7.11"
   },
   "type": "module",
   "author": "heswell",

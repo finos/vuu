@@ -1,12 +1,11 @@
 {
-  "name": "@finos/vuu-showcase",
+  "name": "@heswell/vuu-showcase",
   "version": "0.0.1",
   "author": "heswell",
   "main": "src/index.ts",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "node ../../scripts/run-build.mjs",
-    "type-defs": "node ../../scripts/build-type-defs.mjs"
+    "build": "node ./scripts/build.mjs"
   },
   "devDependencies": {
     "@finos/vuu-data-types": "0.0.26",

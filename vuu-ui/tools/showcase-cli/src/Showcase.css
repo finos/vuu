@@ -1,0 +1,38 @@
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+}
+
+#root {
+  height: 100vh;
+  position: absolute;
+  width: 100vw;
+}
+
+.vuuToolbarProxy {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  height: var(--vuuToolbarProxy-height, 32px);
+}
+
+.vuuToolbarProxy-vertical {
+  flex-direction: column;
+}
+
+.vuuShowcase-StandaloneRoot {
+  height: 100vh;
+  /** this prevents root being displaced by component margin */
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  background-color: var(--salt-container-primary-background);
+}
+
+.vuuShowcase-StandaloneRoot:has(> [data-showcase-center]) {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
