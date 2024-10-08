@@ -376,7 +376,6 @@ export class ArrayDataSource
         this._config = withConfigDefaults(newConfig);
 
         let processedData: DataSourceRow[] | undefined;
-        console.log(config);
         if (hasFilter(config) || hasBaseFilter(config)) {
           const combinedFilter = config.baseFilterSpec
             ? combine(config.filterSpec, config.baseFilterSpec)

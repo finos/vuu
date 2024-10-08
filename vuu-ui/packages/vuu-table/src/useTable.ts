@@ -4,17 +4,17 @@ import {
   DataSourceSubscribedMessage,
   SelectionChangeHandler,
 } from "@finos/vuu-data-types";
+import { VuuSortType } from "@finos/vuu-protocol-types";
 import {
   ColumnDescriptor,
   DataCellEditHandler,
-  TableRowClickHandlerInternal,
   RuntimeColumnDescriptor,
   TableColumnResizeHandler,
   TableConfig,
-  TableSelectionModel,
+  TableRowClickHandlerInternal,
   TableRowSelectHandlerInternal,
+  TableSelectionModel,
 } from "@finos/vuu-table-types";
-import { VuuSortType } from "@finos/vuu-protocol-types";
 import {
   DragStartHandler,
   MeasuredProps,
@@ -22,14 +22,13 @@ import {
   useDragDrop,
 } from "@finos/vuu-ui-controls";
 import {
-  toggleOrApplySort,
   asDataSourceRowObject,
   buildColumnMap,
-  getIndexFromRowElement,
   isGroupColumn,
   isJsonGroup,
   isValidNumber,
   metadataKeys,
+  toggleOrApplySort,
   updateColumn,
   useLayoutEffectSkipFirst,
 } from "@finos/vuu-utils";
@@ -44,30 +43,32 @@ import {
   useRef,
   useState,
 } from "react";
+import { TableProps } from "./Table";
+import { useCellBlockSelection } from "./cell-block/useCellBlockSelection";
 import {
   buildContextMenuDescriptors,
   useHandleTableContextMenu,
 } from "./context-menu";
-import { TableProps } from "./Table";
 import { updateTableConfig } from "./table-config";
+import { getIndexFromRowElement } from "./table-dom-utils";
 import { useCellEditing } from "./useCellEditing";
+import { useCellFocus } from "./useCellFocus";
 import { useDataSource } from "./useDataSource";
 import { useKeyboardNavigation } from "./useKeyboardNavigation";
+import { useRowClassNameGenerators } from "./useRowClassNameGenerators";
 import { useSelection } from "./useSelection";
+import { useTableAndColumnSettings } from "./useTableAndColumnSettings";
 import { useTableContextMenu } from "./useTableContextMenu";
 import {
   ColumnActionHide,
   ColumnActionPin,
+  PersistentColumnAction,
   isShowColumnSettings,
   isShowTableSettings,
-  PersistentColumnAction,
   useTableModel,
 } from "./useTableModel";
 import { useTableScroll } from "./useTableScroll";
 import { useTableViewport } from "./useTableViewport";
-import { useTableAndColumnSettings } from "./useTableAndColumnSettings";
-import { useRowClassNameGenerators } from "./useRowClassNameGenerators";
-import { useCellBlockSelection } from "./cell-block/useCellBlockSelection";
 
 const stripInternalProperties = (tableConfig: TableConfig): TableConfig => {
   return tableConfig;
@@ -509,6 +510,14 @@ export const useTable = ({
     [columnMap, columns, dataSource, dispatchTableModelAction],
   );
 
+  const { focusCell, tableBodyRef } = useCellFocus({
+    containerRef,
+    disableFocus,
+    requestScroll,
+  });
+
+  const columnCount = columns.filter((c) => c.hidden !== true).length;
+
   const {
     highlightedIndexRef,
     navigate,
@@ -516,13 +525,14 @@ export const useTable = ({
     onKeyDown: navigationKeyDown,
     ...containerProps
   } = useKeyboardNavigation({
-    columnCount: columns.filter((c) => c.hidden !== true).length,
+    columnCount,
     containerRef,
     disableFocus,
+    focusCell,
     highlightedIndex: highlightedIndexProp,
     navigationStyle,
     requestScroll,
-    rowCount: dataSource?.size,
+    rowCount,
     onHighlight,
     viewportRange: range,
     viewportRowCount: viewportMeasurements.rowCount,
@@ -609,7 +619,11 @@ export const useTable = ({
     onKeyDown: cellBlockSelectionKeyDown,
   } = useCellBlockSelection({
     allowCellBlockSelection,
+    columnCount,
+    containerRef,
+    focusCell,
     onSelectCellBlock,
+    rowCount,
   });
 
   const handleRowClick = useCallback<TableRowClickHandlerInternal>(
@@ -756,6 +770,7 @@ export const useTable = ({
     scrollProps,
     // TODO don't think we need these ...
     tableAttributes,
+    tableBodyRef,
     tableConfig,
     viewportMeasurements,
   };

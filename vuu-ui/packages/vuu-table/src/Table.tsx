@@ -102,6 +102,9 @@ export interface TableProps
    */
   maxViewportRowLimit?: number;
 
+  /**
+   * Determines bahaviour of keyboard navigation , either row focused or cell focused.
+   */
   navigationStyle?: TableNavigationStyle;
   /**
    * required if a fully featured column picker is to be available.
@@ -255,6 +258,7 @@ const TableCore = ({
     rowClassNameGenerator,
     scrollProps,
     tableAttributes,
+    tableBodyRef,
     tableConfig,
     viewportMeasurements,
     ...tableProps
@@ -308,6 +312,9 @@ const TableCore = ({
     "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`,
   } as CSSProperties;
 
+  const headersReady = showColumnHeaders === false || headerHeight > 0;
+  const readyToRenderTableBody = headersReady && data.length > 0;
+
   return (
     <ContextMenuProvider
       menuActionHandler={handleContextMenuAction}
@@ -351,8 +358,8 @@ const TableCore = ({
               virtualColSpan={scrollProps.virtualColSpan}
             />
           ) : null}
-          {showColumnHeaders === false || headerHeight > 0 ? (
-            <div className={`${classBase}-body`}>
+          {readyToRenderTableBody ? (
+            <div className={`${classBase}-body`} ref={tableBodyRef}>
               {data.map((data) => (
                 <Row
                   aria-rowindex={data[0] + 1}

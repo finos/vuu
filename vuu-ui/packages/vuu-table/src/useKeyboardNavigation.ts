@@ -1,5 +1,5 @@
 import { VuuRange } from "@finos/vuu-protocol-types";
-import { getIndexFromRowElement, queryClosest } from "@finos/vuu-utils";
+import { PageKey, queryClosest } from "@finos/vuu-utils";
 import { useControlled } from "@salt-ds/core";
 import {
   KeyboardEvent,
@@ -12,13 +12,14 @@ import {
 import { TableNavigationStyle } from "./Table";
 import {
   CellPos,
+  NavigationKey,
   cellDropdownShowing,
   closestRowIndex,
-  dataCellQuery,
-  getTableCell,
-  headerCellQuery,
+  getTableCellPos,
+  getNextCellPos,
 } from "./table-dom-utils";
 import { ScrollRequestHandler } from "./useTableScroll";
+import { FocusCell } from "./useCellFocus";
 
 const rowNavigationKeys = new Set<NavigationKey>([
   "Home",
@@ -47,52 +48,9 @@ export const isNavigationKey = (
   }
 };
 
-type ArrowKey = "ArrowUp" | "ArrowDown" | "ArrowLeft" | "ArrowRight";
-type PageKey = "Home" | "End" | "PageUp" | "PageDown";
-type NavigationKey = PageKey | ArrowKey;
-
 const PageKeys = ["Home", "End", "PageUp", "PageDown"];
 export const isPagingKey = (key: string): key is PageKey =>
   PageKeys.includes(key);
-
-const NULL_CELL_POS: CellPos = [-1, -1];
-
-function nextCellPos(
-  key: ArrowKey,
-  [rowIdx, colIdx]: CellPos,
-  columnCount: number,
-  rowCount: number,
-): CellPos {
-  if (key === "ArrowUp") {
-    if (rowIdx > -1) {
-      return [rowIdx - 1, colIdx];
-    } else {
-      return [rowIdx, colIdx];
-    }
-  } else if (key === "ArrowDown") {
-    if (rowIdx === -1) {
-      return [0, colIdx];
-    } else if (rowIdx === rowCount - 1) {
-      return [rowIdx, colIdx];
-    } else {
-      return [rowIdx + 1, colIdx];
-    }
-  } else if (key === "ArrowRight") {
-    // The colIdx is 1 based, because of the selection decorator
-    if (colIdx < columnCount) {
-      return [rowIdx, colIdx + 1];
-    } else {
-      return [rowIdx, colIdx];
-    }
-  } else if (key === "ArrowLeft") {
-    if (colIdx > 1) {
-      return [rowIdx, colIdx - 1];
-    } else {
-      return [rowIdx, colIdx];
-    }
-  }
-  return [rowIdx, colIdx];
-}
 
 export interface NavigationHookProps {
   containerRef: RefObject<HTMLElement>;
@@ -100,6 +58,7 @@ export interface NavigationHookProps {
   defaultHighlightedIndex?: number;
   disableFocus?: boolean;
   disableHighlightOnFocus?: boolean;
+  focusCell: FocusCell;
   highlightedIndex?: number;
   label?: string;
   navigationStyle: TableNavigationStyle;
@@ -115,20 +74,17 @@ export interface NavigationHookProps {
 export const useKeyboardNavigation = ({
   columnCount = 0,
   containerRef,
-  disableFocus = false,
   defaultHighlightedIndex,
   disableHighlightOnFocus,
+  focusCell,
   highlightedIndex: highlightedIndexProp,
   navigationStyle,
   requestScroll,
   onHighlight,
   rowCount = 0,
   viewportRowCount,
-}: // viewportRange,
-NavigationHookProps) => {
-  // const { from: viewportFirstRow, to: viewportLastRow } = viewportRange;
+}: NavigationHookProps) => {
   const focusedCellPos = useRef<CellPos>([-1, -1]);
-  const focusableCell = useRef<HTMLElement>();
   const activeCellPos = useRef<CellPos>([-1, 0]);
   // Keep this in sync with state value. This can be used by functions that need
   // to reference highlightedIndex at call time but do not need to be regenerated
@@ -157,43 +113,6 @@ NavigationHookProps) => {
     element?.closest(
       "[role='columnHeader'],[role='cell']",
     ) as HTMLDivElement | null;
-
-  const getTableCellPos = (tableCell: HTMLDivElement): CellPos => {
-    if (tableCell.role === "columnHeader") {
-      const colIdx = parseInt(tableCell.dataset.idx ?? "-1", 10);
-      return [-1, colIdx];
-    } else {
-      const focusedRow = tableCell.closest("[role='row']") as HTMLElement;
-      if (focusedRow) {
-        const rowIdx = getIndexFromRowElement(focusedRow);
-        // TODO will get trickier when we introduce horizontal virtualisation
-        const colIdx = Array.from(focusedRow.childNodes).indexOf(tableCell);
-        return [rowIdx, colIdx];
-      }
-    }
-    return NULL_CELL_POS;
-  };
-
-  const focusCell = useCallback(
-    (cellPos: CellPos) => {
-      if (containerRef.current) {
-        const activeCell = getTableCell(containerRef, cellPos);
-        if (activeCell) {
-          if (activeCell !== focusableCell.current) {
-            focusableCell.current?.removeAttribute("tabindex");
-            focusableCell.current = activeCell;
-            activeCell.setAttribute("tabindex", "0");
-          }
-          // TODO needs to be scroll cell
-          requestScroll?.({ type: "scroll-row", rowIndex: cellPos[0] });
-          activeCell.focus({ preventScroll: true });
-        }
-      }
-    },
-    // TODO we recreate this function whenever viewportRange changes, which will
-    // be often whilst scrolling - store range in a a ref ?
-    [containerRef, requestScroll],
-  );
 
   const setActiveCell = useCallback(
     (rowIdx: number, colIdx: number, fromKeyboard = false) => {
@@ -292,7 +211,7 @@ NavigationHookProps) => {
     async (key: NavigationKey) => {
       const [nextRowIdx, nextColIdx] = isPagingKey(key)
         ? await nextPageItemIdx(key, activeCellPos.current)
-        : nextCellPos(key, activeCellPos.current, columnCount, rowCount);
+        : getNextCellPos(key, activeCellPos.current, columnCount, rowCount);
       const [rowIdx, colIdx] = activeCellPos.current;
       if (nextRowIdx !== rowIdx || nextColIdx !== colIdx) {
         setActiveCell(nextRowIdx, nextColIdx, true);
@@ -313,7 +232,7 @@ NavigationHookProps) => {
       const { current: highlighted } = highlightedIndexRef;
       const [nextRowIdx] = isPagingKey(key)
         ? await nextPageItemIdx(key, [highlighted ?? -1, 0])
-        : nextCellPos(key, [highlighted ?? -1, 0], columnCount, rowCount);
+        : getNextCellPos(key, [highlighted ?? -1, 0], columnCount, rowCount);
       if (nextRowIdx !== highlighted) {
         setHighlightedIndex(nextRowIdx);
         // TO(DO make this a scroll request)
@@ -387,22 +306,6 @@ NavigationHookProps) => {
   const navigate = useCallback(() => {
     navigateChildItems("ArrowDown");
   }, [navigateChildItems]);
-
-  // First render will only render the outer container when explicit
-  // sizing has not been provided. Outer container is measured and
-  // only then, on second render,  is content rendered.
-  const fullyRendered = containerRef.current?.firstChild != null;
-  useEffect(() => {
-    if (fullyRendered && focusableCell.current === undefined && !disableFocus) {
-      const { current: container } = containerRef;
-      const cell = (container?.querySelector(headerCellQuery(0)) ||
-        container?.querySelector(dataCellQuery(0, 0))) as HTMLElement;
-      if (cell) {
-        cell.setAttribute("tabindex", "0");
-        focusableCell.current = cell;
-      }
-    }
-  }, [containerRef, disableFocus, fullyRendered]);
 
   return {
     highlightedIndexRef,

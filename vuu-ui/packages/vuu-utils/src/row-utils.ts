@@ -8,7 +8,7 @@ const { IS_LEAF, KEY, IDX } = metadataKeys;
 
 export type RowOffsetFunc = (
   row: DataSourceRow,
-  pctScrollTop?: number
+  pctScrollTop?: number,
 ) => number;
 export type RowAtPositionFunc = (position: number) => number;
 
@@ -37,7 +37,7 @@ export const actualRowPositioning = (rowHeight: number): RowPositioning => [
 export const virtualRowPositioning = (
   rowHeight: number,
   virtualisedExtent: number,
-  pctScrollTop: MutableRefObject<number>
+  pctScrollTop: MutableRefObject<number>,
 ): RowPositioning => [
   (row, offset = 0) => {
     const rowOffset = pctScrollTop.current * virtualisedExtent;
@@ -55,46 +55,28 @@ export const virtualRowPositioning = (
 
 export const getRowElementAtIndex = (
   container: HTMLDivElement | EventTarget,
-  rowIndex: number
+  rowIndex: number,
 ) => {
   if (rowIndex === -1) {
     return null;
   } else {
     const activeRow = (container as HTMLElement).querySelector(
-      `[aria-rowindex="${rowIndex + 1}"]`
+      `[aria-rowindex="${rowIndex + 1}"]`,
     ) as HTMLElement;
 
     if (activeRow) {
       return activeRow;
     } else {
       throw Error(
-        `getRowElementAtIndex no row found for index index ${rowIndex}`
+        `getRowElementAtIndex no row found for index index ${rowIndex}`,
       );
     }
-  }
-};
-
-export const getIndexFromRowElement = (rowElement: HTMLElement) => {
-  const rowIndex = rowElement.ariaRowIndex;
-  if (rowIndex != null) {
-    const index = parseInt(rowIndex) - 1;
-    if (!isNaN(index)) {
-      return index;
-    } else {
-      throw Error(
-        `getIndexFromRowElement row element aria rowindex invalid ${rowIndex}`
-      );
-    }
-  } else {
-    throw Error(
-      "getIndexFromRowElement row element does not have aria rowindex"
-    );
   }
 };
 
 export const asDataSourceRowObject = (
   row: DataSourceRow,
-  columnMap: ColumnMap
+  columnMap: ColumnMap,
 ): DataSourceRowObject => {
   const { [IS_LEAF]: isLeaf, [KEY]: key, [IDX]: index } = row;
 

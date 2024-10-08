@@ -70,11 +70,18 @@
   anchor-name: --cellblock-start;
 }
 
-.vuuTable.vuu-cellblock-select-in-progress {
+.vuuTable.vuu-cellblock-select-in-progress-keyboard {
+  .vuuTableCell:focus {
+    anchor-name: --cellblock-end;
+  }
+  .vuuCellBlock {
+    pointer-events: none;
+  }
+}
+.vuuTable.vuu-cellblock-select-in-progress-mouse {
   .vuuTableCell:hover {
     anchor-name: --cellblock-end;
   }
-
   .vuuCellBlock {
     pointer-events: none;
   }
