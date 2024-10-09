@@ -1,7 +1,8 @@
 import { DataSource, DataSourceRow } from "@finos/vuu-data-types";
 import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { useContextMenu as usePopupContextMenu } from "@finos/vuu-popups";
-import { buildColumnMap, getIndexFromRowElement } from "@finos/vuu-utils";
+import { buildColumnMap } from "@finos/vuu-utils";
+import { getIndexFromRowElement } from "./table-dom-utils";
 import { MouseEvent, useCallback } from "react";
 
 export interface TableContextMenuHookProps {
@@ -17,7 +18,7 @@ export const useTableContextMenu = ({
   columns,
   data,
   dataSource,
-  getSelectedRows
+  getSelectedRows,
 }: TableContextMenuHookProps) => {
   const [showContextMenu] = usePopupContextMenu();
 
@@ -41,11 +42,11 @@ export const useTableContextMenu = ({
           columns,
           row,
           selectedRows: selectedRowsCount === 0 ? NO_ROWS : getSelectedRows(),
-          viewport: dataSource.viewport
+          viewport: dataSource.viewport,
         });
       }
     },
-    [columns, data, dataSource, getSelectedRows, showContextMenu]
+    [columns, data, dataSource, getSelectedRows, showContextMenu],
   );
 
   return onContextMenu;

@@ -94,41 +94,6 @@ export const TestTable = ({
 };
 TestTable.displaySequence = displaySequence++;
 
-export const NavigationStyle = () => {
-  const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(() => {
-    const tableName: SimulTableName = "instruments";
-    return {
-      config: {
-        columns: getSchema(tableName).columns,
-        rowSeparators: true,
-        zebraStripes: true,
-      },
-      dataSource:
-        vuuModule<SimulTableName>("SIMUL").createDataSource(tableName),
-    };
-  }, []);
-
-  const onSelect = useCallback((row) => {
-    console.log("onSelect", { row });
-  }, []);
-  const onSelectionChange = useCallback((selected) => {
-    console.log("onSelectionChange", { selected });
-  }, []);
-
-  return (
-    <Table
-      {...tableProps}
-      height={645}
-      navigationStyle="row"
-      renderBufferSize={5}
-      onSelect={onSelect}
-      onSelectionChange={onSelectionChange}
-      width={723}
-    />
-  );
-};
-NavigationStyle.displaySequence = displaySequence++;
-
 export const ControlledNavigation = () => {
   const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(() => {
     const tableName: SimulTableName = "instruments";
@@ -288,8 +253,6 @@ const VuuTableTemplate = ({ schema }: { schema: TableSchema }) => {
     });
     return dataSource;
   }, [VuuDataSource, schema]);
-
-  console.log();
 
   const config = useMemo<TableConfig>(
     () => ({

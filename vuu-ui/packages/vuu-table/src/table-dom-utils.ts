@@ -1,28 +1,30 @@
 import { RefObject } from "react";
 import { ScrollDirection } from "./useTableScroll";
+import type { ArrowKey, PageKey } from "@finos/vuu-utils";
+
+const NULL_CELL_POS: CellPos = [-1, -1];
 
 /**
  * [rowIndex, colIndex
  */
 export type CellPos = [number, number];
 
+export type NavigationKey = PageKey | ArrowKey;
+
 export const headerCellQuery = (colIdx: number) =>
-  `.vuuTable-col-headers .vuuTableHeaderCell:nth-child(${colIdx})`;
+  `.vuuTable-col-headers .vuuTableHeaderCell[aria-colindex='${colIdx + 1}']`;
 
 export const dataCellQuery = (rowIdx: number, colIdx: number) =>
-  `.vuuTable-body > [aria-rowindex='${rowIdx + 1}'] > [role='cell']:nth-child(${
-    colIdx + 1
-  })`;
+  `.vuuTable-body > [aria-rowindex='${rowIdx + 1}'] > [aria-colindex='${colIdx + 1}']`;
 
 export const getTableCell = (
   containerRef: RefObject<HTMLElement>,
-
-  [rowIdx, colIdx]: CellPos
+  [rowIdx, colIdx]: CellPos,
 ) => {
   const cssQuery =
     rowIdx === -1 ? headerCellQuery(colIdx) : dataCellQuery(rowIdx, colIdx);
   const cell = containerRef.current?.querySelector(
-    cssQuery
+    cssQuery,
   ) as HTMLTableCellElement;
 
   if (cellIsEditable(cell)) {
@@ -47,27 +49,89 @@ export const cellDropdownShowing = (cell: HTMLDivElement | null) => {
 export const cellIsTextInput = (cell: HTMLElement) =>
   cell.querySelector(".vuuTableInputCell") !== null;
 
-export function getRowIndex(rowEl?: HTMLElement) {
-  if (rowEl) {
-    const idx: string | null = rowEl.ariaRowIndex;
-    if (idx !== null) {
-      return parseInt(idx, 10) - 1;
+export const getIndexFromRowElement = (rowElement: HTMLElement | null) => {
+  const rowIndex = rowElement?.ariaRowIndex;
+  if (rowIndex != null) {
+    const index = parseInt(rowIndex) - 1;
+    if (!isNaN(index)) {
+      return index;
     }
   }
   return -1;
-}
+};
+
+export const getIndexFromCellElement = (cellElement: HTMLElement | null) => {
+  const colIndex = cellElement?.ariaColIndex;
+  if (colIndex != null) {
+    const index = parseInt(colIndex) - 1;
+    if (!isNaN(index)) {
+      return index;
+    }
+  }
+  return -1;
+};
+
+export const getTableCellPos = (tableCell: HTMLDivElement): CellPos => {
+  const colIdx = getIndexFromCellElement(tableCell);
+  if (tableCell.role === "columnHeader") {
+    return [-1, colIdx];
+  } else {
+    const focusedRow = tableCell.closest("[role='row']") as HTMLElement;
+    if (focusedRow) {
+      return [getIndexFromRowElement(focusedRow), colIdx];
+    }
+  }
+  return NULL_CELL_POS;
+};
 
 const closestRow = (el: HTMLElement) =>
   el.closest('[role="row"]') as HTMLElement;
 
-export const closestRowIndex = (el: HTMLElement) => getRowIndex(closestRow(el));
+export const closestRowIndex = (el: HTMLElement) =>
+  getIndexFromRowElement(closestRow(el));
+
+export function getNextCellPos(
+  key: ArrowKey,
+  [rowIdx, colIdx]: CellPos,
+  columnCount: number,
+  rowCount: number,
+): CellPos {
+  if (key === "ArrowUp") {
+    if (rowIdx > -1) {
+      return [rowIdx - 1, colIdx];
+    } else {
+      return [rowIdx, colIdx];
+    }
+  } else if (key === "ArrowDown") {
+    if (rowIdx === -1) {
+      return [0, colIdx];
+    } else if (rowIdx === rowCount - 1) {
+      return [rowIdx, colIdx];
+    } else {
+      return [rowIdx + 1, colIdx];
+    }
+  } else if (key === "ArrowRight") {
+    if (colIdx < columnCount - 1) {
+      return [rowIdx, colIdx + 1];
+    } else {
+      return [rowIdx, colIdx];
+    }
+  } else if (key === "ArrowLeft") {
+    if (colIdx > 0) {
+      return [rowIdx, colIdx - 1];
+    } else {
+      return [rowIdx, colIdx];
+    }
+  }
+  return [rowIdx, colIdx];
+}
 
 const NO_SCROLL_NECESSARY = [undefined, undefined] as const;
 
 export const howFarIsRowOutsideViewport = (
   rowEl: HTMLElement,
   totalHeaderHeight: number,
-  contentContainer = rowEl.closest(".vuuTable-contentContainer")
+  contentContainer = rowEl.closest(".vuuTable-contentContainer"),
 ): readonly [ScrollDirection | undefined, number | undefined] => {
   //TODO lots of scope for optimisation here
   if (contentContainer) {

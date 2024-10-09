@@ -27,6 +27,7 @@ const DataTableTemplate = ({
   navigationStyle = "cell",
   rowHeight,
   schema = getSchema("instruments"),
+  selectionModel,
   viewportRowLimit,
   width = 600,
   ...props
@@ -36,7 +37,7 @@ const DataTableTemplate = ({
     return {
       ...props.config,
       columns: schema.columns,
-      rowSeparators: true,
+      rowSeparators: false,
       zebraStripes: true,
     };
   }, [props.config, schema]);
@@ -57,6 +58,7 @@ const DataTableTemplate = ({
       navigationStyle={navigationStyle}
       renderBufferSize={20}
       rowHeight={rowHeight}
+      selectionModel={selectionModel}
       viewportRowLimit={viewportRowLimit}
       width={width}
     />
@@ -104,7 +106,7 @@ CheckboxSelection.displaySequence = displaySequence++;
 export const CellBlockSelection = () => {
   return (
     <LocalDataSourceProvider modules={["SIMUL"]}>
-      <DataTableTemplate allowCellBlockSelection />
+      <DataTableTemplate allowCellBlockSelection selectionModel="none" />
     </LocalDataSourceProvider>
   );
 };
