@@ -87,7 +87,6 @@ export class VuuDataSource
   #size = 0;
   #status: DataSourceStatus = "initialising";
   #tableSchema: TableSchema | undefined;
-
   #title: string | undefined;
 
   public table: VuuTable;
@@ -139,7 +138,7 @@ export class VuuDataSource
       groupBy,
       filterSpec,
     }: SubscribeProps,
-    callback: SubscribeCallback
+    callback: SubscribeCallback,
   ) {
     if (this.#status === "disabled" || this.#status === "disabling") {
       this.enable(callback);
@@ -191,7 +190,7 @@ export class VuuDataSource
         range: this.#range,
         title: this.#title,
       },
-      this.handleMessageFromServer
+      this.handleMessageFromServer,
     );
   }
 
@@ -484,11 +483,11 @@ export class VuuDataSource
 
   applyConfig(
     config: WithBaseFilter<DataSourceConfig>,
-    preserveExistingConfigAttributes = false
+    preserveExistingConfigAttributes = false,
   ): DataSourceConfigChanges | undefined {
     const { noChanges, ...otherChanges } = isConfigChanged(
       this.#config,
-      config
+      config,
     );
     if (noChanges !== true) {
       if (config) {
@@ -707,7 +706,7 @@ export class VuuDataSource
 
   /**  @deprecated */
   async rpcCall<T extends VuuRpcResponse = VuuRpcResponse>(
-    rpcRequest: Omit<VuuRpcRequest, "vpId">
+    rpcRequest: Omit<VuuRpcRequest, "vpId">,
   ) {
     if (this.viewport && this.server) {
       return this.server?.rpcCall<T>({
@@ -737,7 +736,7 @@ export class VuuDataSource
         } else {
           return true;
         }
-      }
+      },
     );
   }
 

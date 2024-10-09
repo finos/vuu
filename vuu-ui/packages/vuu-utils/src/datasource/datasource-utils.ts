@@ -24,7 +24,7 @@ import {
   VuuRowDataItemType,
   VuuSort,
 } from "@finos/vuu-protocol-types";
-import { ColumnMap } from "./column-utils";
+import { ColumnMap } from "../column-utils";
 
 export const NoFilter: VuuFilter = { filter: "" };
 export const NoSort: VuuSort = { sortDefs: [] };
