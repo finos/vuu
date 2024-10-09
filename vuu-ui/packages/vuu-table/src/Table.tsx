@@ -447,8 +447,11 @@ export const Table = forwardRef(function Table(
 
   const [size, _setSize] = useState<MeasuredSize>();
   // TODO this will rerender entire table, move footer into seperate component
-  const { rowHeight, rowRef } = useMeasuredHeight({ height: rowHeightProp });
-  const { rowHeight: footerHeight, rowRef: footerRef } = useMeasuredHeight({});
+  const { measuredHeight: rowHeight, measuredRef: rowRef } = useMeasuredHeight({
+    height: rowHeightProp,
+  });
+  const { measuredHeight: footerHeight, measuredRef: footerRef } =
+    useMeasuredHeight({});
 
   const rowLimit = maxViewportRowLimit ?? viewportRowLimit;
 
