@@ -17,6 +17,8 @@ node_modules
 yarn-debug.log*
 yarn-error.log*
 
+.showcase/
+.showcase/**
 /vuu-ui/showcase/src/examples/**/*.js
 /vuu-ui/cypress/screenshots
 /vuu-ui/themes/tar-theme

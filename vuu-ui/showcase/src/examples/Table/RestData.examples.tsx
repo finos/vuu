@@ -12,8 +12,10 @@ let displaySequence = 0;
 
 const FilterTableTemplate = ({
   quickFilterColumns,
+  TableProps,
   variant = "custom-filters",
 }: Pick<FilterBarProps, "variant"> & {
+  TableProps?: Partial<TableProps>;
   quickFilterColumns?: string[];
 }) => {
   const { VuuDataSource } = useDataSource();
@@ -28,8 +30,9 @@ const FilterTableTemplate = ({
         zebraStripes: true,
       },
       dataSource: new VuuDataSource({ table: schema.table }),
+      ...TableProps,
     }),
-    [VuuDataSource, schema],
+    [TableProps, VuuDataSource, schema],
   );
 
   const [filterState, setFilterState] = useState<FilterState>({
@@ -80,11 +83,20 @@ const FilterTableTemplate = ({
   );
 };
 
-export const RestInstruments = () => {
+export const RestInstrumentsScrolling = () => {
   return (
     <RestDataSourceProvider url="http://localhost:8081/api">
       <FilterTableTemplate />
     </RestDataSourceProvider>
   );
 };
-RestInstruments.displaySequence = displaySequence++;
+RestInstrumentsScrolling.displaySequence = displaySequence++;
+
+export const RestInstrumentsPagination = () => {
+  return (
+    <RestDataSourceProvider url="http://localhost:8081/api">
+      <FilterTableTemplate TableProps={{ showPaginationControls: true }} />
+    </RestDataSourceProvider>
+  );
+};
+RestInstrumentsPagination.displaySequence = displaySequence++;

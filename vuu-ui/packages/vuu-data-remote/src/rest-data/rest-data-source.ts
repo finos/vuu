@@ -66,6 +66,9 @@ export class RestDataSource
   viewport: string;
 
   constructor({
+    filterSpec,
+    columns,
+    sort,
     table,
     title,
     viewport = uuid(),

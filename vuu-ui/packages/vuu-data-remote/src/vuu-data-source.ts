@@ -3,8 +3,6 @@ import {
   DataSourceCallbackMessage,
   DataSourceConfig,
   DataSourceConstructorProps,
-  DataSourceEvents,
-  DataSourceFilter,
   DataSourceStatus,
   DataSourceVisualLinkCreatedMessage,
   OptimizeStrategy,
@@ -13,8 +11,6 @@ import {
   SubscribeCallback,
   SubscribeProps,
   TableSchema,
-  WithBaseFilter,
-  WithFullConfig,
 } from "@finos/vuu-data-types";
 import {
   LinkDescriptorWithLabel,
@@ -33,13 +29,10 @@ import {
   VuuTable,
 } from "@finos/vuu-protocol-types";
 
-import { parseFilter } from "@finos/vuu-filter-parser";
 import {
-  DataSourceConfigChanges,
-  EventEmitter,
+  BaseDataSource,
   combineFilters,
   debounce,
-  isConfigChanged,
   isViewportMenusAction,
   isVisualLinksAction,
   itemsOrOrderChanged,
@@ -47,11 +40,9 @@ import {
   selectionCount,
   throttle,
   uuid,
-  vanillaConfig,
   vuuAddRowRequest,
   vuuDeleteRowRequest,
   vuuEditCellRequest,
-  withConfigDefaults,
 } from "@finos/vuu-utils";
 import ConnectionManager from "./ConnectionManager";
 import { isDataSourceConfigMessage } from "./data-source";
@@ -65,18 +56,12 @@ const { info } = logger("VuuDataSource");
 /*-----------------------------------------------------------------
  A RemoteDataSource manages a single subscription via the ServerProxy
   ----------------------------------------------------------------*/
-export class VuuDataSource
-  extends EventEmitter<DataSourceEvents>
-  implements DataSource
-{
+export class VuuDataSource extends BaseDataSource implements DataSource {
   private bufferSize: number;
   private server: ServerAPI | null = null;
-  private clientCallback: SubscribeCallback | undefined;
   private configChangePending: DataSourceConfig | undefined;
-  private rangeRequest: RangeRequest;
+  rangeRequest: RangeRequest;
 
-  #config: WithFullConfig & { visualLink?: LinkDescriptorWithLabel } =
-    vanillaConfig;
   #groupBy: VuuGroupBy = [];
   #pendingVisualLink?: LinkDescriptorWithLabel;
   #links: LinkDescriptorWithLabel[] | undefined;
@@ -84,84 +69,37 @@ export class VuuDataSource
   #optimize: OptimizeStrategy = "throttle";
   #range: VuuRange = { from: 0, to: 0 };
   #selectedRowsCount = 0;
-  #size = 0;
   #status: DataSourceStatus = "initialising";
   #tableSchema: TableSchema | undefined;
 
-  #title: string | undefined;
-
   public table: VuuTable;
-  public viewport: string | undefined;
 
-  constructor({
-    bufferSize = 100,
-    aggregations,
-    columns,
-    filterSpec,
-    groupBy,
-    sort,
-    table,
-    title,
-    viewport,
-    visualLink,
-  }: DataSourceConstructorProps) {
-    super();
+  constructor(props: DataSourceConstructorProps) {
+    super(props);
+
+    const { bufferSize = 100, table, visualLink } = props;
 
     if (!table)
       throw Error("RemoteDataSource constructor called without table");
 
     this.bufferSize = bufferSize;
     this.table = table;
-    this.viewport = viewport ?? "";
 
-    this.#config = {
-      ...this.#config,
-      aggregations: aggregations || this.#config.aggregations,
-      columns: columns || this.#config.columns,
-      filterSpec: filterSpec || this.#config.filterSpec,
-      groupBy: groupBy || this.#config.groupBy,
-      sort: sort || this.#config.sort,
-    };
     this.#pendingVisualLink = visualLink;
 
-    this.#title = title;
     // this.rangeRequest = this.throttleRangeRequest;
     this.rangeRequest = this.rawRangeRequest;
   }
 
-  async subscribe(
-    {
-      viewport = this.viewport || (this.viewport = uuid()),
-      columns,
-      aggregations,
-      range,
-      sort,
-      groupBy,
-      filterSpec,
-    }: SubscribeProps,
-    callback: SubscribeCallback
-  ) {
+  async subscribe(subscribeProps: SubscribeProps, callback: SubscribeCallback) {
+    super.subscribe(subscribeProps, callback);
+
+    const { viewport = this.viewport || (this.viewport = uuid()) } =
+      subscribeProps;
+
     if (this.#status === "disabled" || this.#status === "disabling") {
       this.enable(callback);
       return;
-    }
-    this.clientCallback = callback;
-    if (aggregations || columns || filterSpec || groupBy || sort) {
-      this.#config = {
-        ...this.#config,
-        aggregations: aggregations || this.#config.aggregations,
-        columns: columns || this.#config.columns,
-        filterSpec: filterSpec || this.#config.filterSpec,
-        groupBy: groupBy || this.#config.groupBy,
-        sort: sort || this.#config.sort,
-      };
-    }
-
-    // store the range before we await the server. It's is possible the
-    // range will be updated from the client before we have been able to
-    // subscribe. This ensures we will subscribe with latest value.
-    if (range) {
-      this.#range = range;
     }
 
     if (
@@ -175,7 +113,6 @@ export class VuuDataSource
     }
 
     this.#status = "subscribing";
-    this.viewport = viewport;
 
     this.server = await ConnectionManager.serverAPI;
 
@@ -184,14 +121,14 @@ export class VuuDataSource
     // TODO make this async and await response here
     this.server?.subscribe(
       {
-        ...this.#config,
+        ...this._config,
         bufferSize,
         viewport,
         table: this.table,
-        range: this.#range,
-        title: this.#title,
+        range: this._range,
+        title: this._title,
       },
-      this.handleMessageFromServer
+      this.handleMessageFromServer,
     );
   }
 
@@ -199,7 +136,7 @@ export class VuuDataSource
     if (message.type === "subscribed") {
       this.#status = "subscribed";
       this.tableSchema = message.tableSchema;
-      this.clientCallback?.(message);
+      this._clientCallback?.(message);
       if (this.#pendingVisualLink) {
         this.visualLink = this.#pendingVisualLink;
         this.#pendingVisualLink = undefined;
@@ -220,12 +157,12 @@ export class VuuDataSource
       if (
         message.type === "viewport-update" &&
         message.size !== undefined &&
-        message.size !== this.#size
+        message.size !== this._size
       ) {
-        this.#size = message.size;
+        this._size = message.size;
         this.emit("resize", message.size);
       } else if (message.type === "viewport-clear") {
-        this.#size = 0;
+        this._size = 0;
         this.emit("resize", 0);
       }
       // This is used to remove any progress indication from the UI. We wait for actual data rather than
@@ -241,7 +178,7 @@ export class VuuDataSource
       } else if (isVisualLinksAction(message)) {
         this.#links = message.links as LinkDescriptorWithLabel[];
       } else {
-        this.clientCallback?.(message);
+        this._clientCallback?.(message);
       }
 
       if (this.optimize === "debounce") {
@@ -261,7 +198,7 @@ export class VuuDataSource
       this.server = null;
       this.removeAllListeners();
       this.#status = "unsubscribed";
-      this.viewport = undefined;
+      this.viewport = "";
       this.range = { from: 0, to: 0 };
     }
   }
@@ -285,7 +222,7 @@ export class VuuDataSource
     const isSuspended = this.#status === "suspended";
     info?.(`resume #${this.viewport}, current status ${this.#status}`);
     if (callback) {
-      this.clientCallback = callback;
+      this._clientCallback = callback;
     }
     if (this.viewport) {
       if (isDisabled) {
@@ -321,7 +258,7 @@ export class VuuDataSource
     ) {
       this.#status = "enabling";
       if (callback) {
-        this.clientCallback = callback;
+        this._clientCallback = callback;
       }
       this.server?.send({
         viewport: this.viewport,
@@ -416,21 +353,6 @@ export class VuuDataSource
     return this.#selectedRowsCount;
   }
 
-  get size() {
-    return this.#size;
-  }
-
-  get range() {
-    return this.#range;
-  }
-
-  set range(range: VuuRange) {
-    if (range.from !== this.#range.from || range.to !== this.#range.to) {
-      this.#range = range;
-      this.rangeRequest(range);
-    }
-  }
-
   private rawRangeRequest: RangeRequest = (range) => {
     if (this.viewport && this.server) {
       this.server.send({
@@ -462,90 +384,50 @@ export class VuuDataSource
   }, 80);
 
   get config() {
-    return this.#config;
+    return super.config;
   }
 
   set config(config: DataSourceConfig) {
-    const configChanges = this.applyConfig(config);
-    if (configChanges) {
-      if (this.#config && this.viewport) {
-        if (config) {
-          const newConfig = combineFilters(this.#config);
-          this.server?.send({
-            viewport: this.viewport,
-            type: "config",
-            config: newConfig,
-          });
-        }
-      }
-      this.emit("config", this.#config, undefined, configChanges);
+    const previousConfig = this._config;
+    super.config = config;
+
+    if (this._config !== previousConfig) {
+      const newConfig = combineFilters(this._config);
+      this.server?.send({
+        viewport: this.viewport,
+        type: "config",
+        config: newConfig,
+      });
     }
   }
 
-  applyConfig(
-    config: WithBaseFilter<DataSourceConfig>,
-    preserveExistingConfigAttributes = false
-  ): DataSourceConfigChanges | undefined {
-    const { noChanges, ...otherChanges } = isConfigChanged(
-      this.#config,
-      config
-    );
-    if (noChanges !== true) {
-      if (config) {
-        const newConfig: DataSourceConfig =
-          config?.filterSpec?.filter &&
-          config?.filterSpec.filterStruct === undefined
-            ? {
-                ...config,
-                filterSpec: {
-                  filter: config.filterSpec.filter,
-                  filterStruct: parseFilter(config.filterSpec.filter),
-                },
-              }
-            : config;
-        if (preserveExistingConfigAttributes) {
-          this.#config = {
-            ...this.#config,
-            ...config,
-          };
-        } else {
-          this.#config = withConfigDefaults(newConfig);
-        }
-        return otherChanges;
-      }
-    }
-  }
-
-  //TODO replace all these individual server calls with calls to setConfig
+  // We can remove this entirely once columns is handlwed liek filters
+  // ie just sugar for setting config
   get columns() {
-    return this.#config.columns;
+    return super.columns;
   }
 
   set columns(columns: string[]) {
-    this.#config = {
-      ...this.#config,
-      columns,
-    };
-    if (this.viewport) {
+    const previousConfig = this._config;
+    super.columns = columns;
+
+    if (previousConfig !== this._config) {
       const message = {
         viewport: this.viewport,
         type: "setColumns",
         columns,
       } as const;
-      if (this.server) {
-        this.server.send(message);
-      }
+      this.server?.send(message);
     }
-    this.emit("config", this.#config);
   }
 
   get aggregations() {
-    return this.#config.aggregations;
+    return this._config.aggregations;
   }
 
   set aggregations(aggregations: VuuAggregation[]) {
-    this.#config = {
-      ...this.#config,
+    this._config = {
+      ...this._config,
       aggregations,
     };
     if (this.viewport) {
@@ -555,17 +437,17 @@ export class VuuDataSource
         aggregations,
       });
     }
-    this.emit("config", this.#config);
+    this.emit("config", this._config);
   }
 
   get sort() {
-    return this.#config.sort;
+    return this._config.sort;
   }
 
   set sort(sort: VuuSort) {
     // TODO should we wait until server ACK before we assign #sort ?
-    this.#config = {
-      ...this.#config,
+    this._config = {
+      ...this._config,
       sort,
     };
     if (this.viewport) {
@@ -576,33 +458,11 @@ export class VuuDataSource
       } as const;
       this.server?.send(message);
     }
-    this.emit("config", this.#config);
-  }
-
-  get baseFilter() {
-    return this.#config.baseFilterSpec;
-  }
-
-  set baseFilter(baseFilter: DataSourceFilter) {
-    this.config = {
-      ...this.#config,
-      baseFilterSpec: baseFilter,
-    };
-  }
-
-  get filter() {
-    return this.#config.filterSpec;
-  }
-
-  set filter(filter: DataSourceFilter) {
-    this.config = {
-      ...this.#config,
-      filterSpec: filter,
-    };
+    this.emit("config", this._config);
   }
 
   get groupBy() {
-    return this.#config.groupBy;
+    return this._config.groupBy;
   }
 
   set groupBy(groupBy: VuuGroupBy) {
@@ -610,12 +470,12 @@ export class VuuDataSource
       const wasGrouped = this.groupBy.length > 0;
 
       this.config = {
-        ...this.#config,
+        ...this._config,
         groupBy,
       };
 
       if (!wasGrouped && groupBy.length > 0 && this.viewport) {
-        this.clientCallback?.({
+        this._clientCallback?.({
           clientViewportId: this.viewport,
           mode: "batch",
           type: "viewport-update",
@@ -628,11 +488,11 @@ export class VuuDataSource
   }
 
   get title() {
-    return this.#title ?? `${this.table.module} ${this.table.table}`;
+    return this._title ?? `${this.table.module} ${this.table.table}`;
   }
 
   set title(title: string) {
-    this.#title = title;
+    this._title = title;
     if (this.viewport && title) {
       // This message doesn't actually trigger a message to Vuu server
       // it will be used to recompute visual link labels
@@ -646,12 +506,12 @@ export class VuuDataSource
   }
 
   get visualLink() {
-    return this.#config.visualLink;
+    return this._config.visualLink;
   }
 
   set visualLink(visualLink: LinkDescriptorWithLabel | undefined) {
-    this.#config = {
-      ...this.#config,
+    this._config = {
+      ...this._config,
       visualLink,
     };
 
@@ -687,7 +547,7 @@ export class VuuDataSource
       }
     }
 
-    this.emit("config", this.#config);
+    this.emit("config", this._config);
   }
 
   private setConfigPending(config?: DataSourceConfig) {
@@ -707,7 +567,7 @@ export class VuuDataSource
 
   /**  @deprecated */
   async rpcCall<T extends VuuRpcResponse = VuuRpcResponse>(
-    rpcRequest: Omit<VuuRpcRequest, "vpId">
+    rpcRequest: Omit<VuuRpcRequest, "vpId">,
   ) {
     if (this.viewport && this.server) {
       return this.server?.rpcCall<T>({
@@ -737,7 +597,7 @@ export class VuuDataSource
         } else {
           return true;
         }
-      }
+      },
     );
   }
 
