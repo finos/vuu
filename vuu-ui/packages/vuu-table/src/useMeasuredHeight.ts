@@ -8,9 +8,9 @@ interface MeasuredHeightHookProps {
 
 export const useMeasuredHeight = ({
   onHeightMeasured,
-  height: heightProp = 0
+  height: heightProp = 0,
 }: MeasuredHeightHookProps) => {
-  const [rowHeight, setRowHeight] = useState(heightProp);
+  const [measuredHeight, setMeasuredHeight] = useState(heightProp);
 
   const resizeObserver = useMemo(() => {
     return new ResizeObserver((entries: ResizeObserverEntry[]) => {
@@ -18,26 +18,27 @@ export const useMeasuredHeight = ({
         const [{ blockSize: measuredSize }] = entry.borderBoxSize;
         const newHeight = Math.round(measuredSize);
         if (isValidNumber(newHeight)) {
-          setRowHeight(newHeight);
+          setMeasuredHeight(newHeight);
           onHeightMeasured?.(newHeight);
         }
       }
     });
   }, [onHeightMeasured]);
 
-  const rowRef = useCallback<RefCallback<HTMLDivElement>>(
+  const measuredRef = useCallback<RefCallback<HTMLDivElement>>(
     (el) => {
       if (el) {
         if (heightProp === 0) {
           const { height } = el.getBoundingClientRect();
           resizeObserver.observe(el);
-          setRowHeight(height);
+          // avoids tiny sub-pixel discrepancies
+          setMeasuredHeight(Math.round(height));
         }
       } else {
         resizeObserver.disconnect();
       }
     },
-    [resizeObserver, heightProp]
+    [resizeObserver, heightProp],
   );
-  return { rowHeight, rowRef };
+  return { measuredHeight, measuredRef };
 };

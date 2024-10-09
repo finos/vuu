@@ -1,12 +1,12 @@
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
   DropOptions,
-  useDragDrop as useDragDrop
+  useDragDrop as useDragDrop,
 } from "@finos/vuu-ui-controls";
 import {
   moveColumnTo,
   queryClosest,
-  visibleColumnAtIndex
+  visibleColumnAtIndex,
 } from "@finos/vuu-utils";
 import { RefCallback, useCallback, useRef } from "react";
 import { TableHeaderProps } from "./TableHeader";
@@ -34,12 +34,12 @@ export const useTableHeader = ({
   onHeightMeasured,
   onMoveColumn,
   onSortColumn,
-  tableConfig
+  tableConfig,
 }: TableHeaderHookProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const scrollingContainerRef = useRef<HTMLDivElement | null>(null);
-  const { rowRef } = useMeasuredHeight({
-    onHeightMeasured
+  const { measuredRef: rowRef } = useMeasuredHeight({
+    onHeightMeasured,
   });
 
   const setContainerRef = useCallback<RefCallback<HTMLDivElement>>((el) => {
@@ -78,7 +78,7 @@ export const useTableHeader = ({
         onMoveColumn(moveColumnTo(tableConfig.columns, column, insertPos));
       }
     },
-    [columns, onMoveColumn, tableConfig.columns]
+    [columns, onMoveColumn, tableConfig.columns],
   );
 
   const handleColumnHeaderClick = useCallback(
@@ -89,7 +89,7 @@ export const useTableHeader = ({
       const isAdditive = evt.shiftKey;
       column && onSortColumn(column, isAdditive);
     },
-    [columns, onSortColumn]
+    [columns, onSortColumn],
   );
 
   // Drag Drop column headers
@@ -104,7 +104,7 @@ export const useTableHeader = ({
     itemQuery: ".vuuTableHeaderCell",
     onDrop: handleDropColumnHeader,
     orientation: "horizontal",
-    scrollingContainerRef
+    scrollingContainerRef,
   });
 
   return {
@@ -112,6 +112,6 @@ export const useTableHeader = ({
     draggedColumnIndex: dragDropHook.draggedItemIndex,
     onClick: handleColumnHeaderClick,
     onMouseDown: columnHeaderDragMouseDown,
-    setContainerRef: useForkRef(setContainerRef, rowRef)
+    setContainerRef: useForkRef(setContainerRef, rowRef),
   };
 };
