@@ -26,7 +26,6 @@ vi.mock("../src/ConnectionManager", () => ({
 
 const defaultSubscribeOptions = {
   aggregations: [],
-  baseFilterSpec: { filter: "" },
   bufferSize: 100,
   columns: [],
   filterSpec: { filter: "" },
@@ -100,8 +99,6 @@ describe("VuuDataSource", () => {
         table: { module: "SIMUL", table: "instruments" },
       });
 
-      console.log(dataSource.config);
-
       expect(dataSource.columns).toEqual(columns);
       expect(dataSource.filter).toEqual(filterSpec);
       expect(dataSource.sort).toEqual(sort);
@@ -131,7 +128,6 @@ describe("VuuDataSource", () => {
 
     it("uses options supplied at creation, if not passed with subscription", async () => {
       const aggregations = [{ column: "test", aggType: 1 } as const];
-      const baseFilterSpec = { filter: "" };
       const columns = ["test"];
       const filterSpec = { filter: 'ccy="EUR"' };
       const groupBy = ["test"];
@@ -166,10 +162,16 @@ describe("VuuDataSource", () => {
       expect(serverAPI.subscribe).toHaveBeenCalledWith(
         {
           aggregations,
-          baseFilterSpec,
           bufferSize: 200,
           columns,
-          filterSpec,
+          filterSpec: {
+            ...filterSpec,
+            filterStruct: {
+              column: "ccy",
+              op: "=",
+              value: "EUR",
+            },
+          },
           groupBy,
           range: { from: 0, to: 0 },
           sort,
@@ -184,7 +186,6 @@ describe("VuuDataSource", () => {
     });
     it("uses options passed with subscription, in preference to objects passed at creation", async () => {
       const aggregations = [{ column: "test", aggType: 1 } as const];
-      const baseFilterSpec = { filter: "" };
       const columns = ["test"];
       const filterSpec = { filter: 'ccy="EUR"' };
       const groupBy = ["test"];
@@ -223,10 +224,16 @@ describe("VuuDataSource", () => {
       expect(serverAPI.subscribe).toHaveBeenCalledWith(
         {
           aggregations,
-          baseFilterSpec,
           bufferSize: 100,
           columns: columns2,
-          filterSpec: filter2,
+          filterSpec: {
+            ...filter2,
+            filterStruct: {
+              column: "ccy",
+              op: "=",
+              value: "EUR",
+            },
+          },
           groupBy: groupBy2,
           range: { from: 0, to: 0 },
           sort: sort2,
@@ -291,7 +298,7 @@ describe("VuuDataSource", () => {
       });
     });
     it("calls server when aggregations set", async () => {
-      const serverAPI = await ConnectionManager.serverAPI;
+      const { send } = await ConnectionManager.serverAPI;
 
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
@@ -299,24 +306,36 @@ describe("VuuDataSource", () => {
       const aggregations = [{ column: "col1", aggType: 1 } as const];
       dataSource.aggregations = aggregations;
 
-      expect(serverAPI.send).toHaveBeenCalledWith({
-        type: "aggregate",
-        aggregations,
+      expect(send).toHaveBeenCalledWith({
+        type: "config",
+        config: {
+          aggregations,
+          columns: [],
+          filterSpec: { filter: "" },
+          groupBy: [],
+          sort: { sortDefs: [] },
+        },
         viewport: "vp1",
       });
     });
 
     it("calls server when columns set", async () => {
-      const serverAPI = await ConnectionManager.serverAPI;
+      const { send } = await ConnectionManager.serverAPI;
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
       const columns = ["col1", "col2"];
       dataSource.columns = columns;
 
-      expect(serverAPI.send).toHaveBeenCalledWith({
-        type: "setColumns",
-        columns,
+      expect(send).toHaveBeenCalledWith({
+        type: "config",
+        config: {
+          aggregations: [],
+          columns: ["col1", "col2"],
+          filterSpec: { filter: "" },
+          groupBy: [],
+          sort: { sortDefs: [] },
+        },
         viewport: "vp1",
       });
     });

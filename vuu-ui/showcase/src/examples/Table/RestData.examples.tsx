@@ -2,7 +2,7 @@ import { RestDataSourceProvider } from "@finos/vuu-data-react/src/datasource-pro
 import { getSchema } from "@finos/vuu-data-test";
 import { TableProps } from "@finos/vuu-table";
 import { useCallback, useMemo, useState } from "react";
-import { useDataSource } from "@finos/vuu-utils";
+import { toColumnName, useDataSource } from "@finos/vuu-utils";
 import { FilterTable } from "@finos/vuu-datatable";
 import { FilterBarProps } from "@finos/vuu-filters";
 import { FilterState } from "@finos/vuu-filter-types";
@@ -29,7 +29,10 @@ const FilterTableTemplate = ({
         rowSeparators: true,
         zebraStripes: true,
       },
-      dataSource: new VuuDataSource({ table: schema.table }),
+      dataSource: new VuuDataSource({
+        columns: schema.columns.map(toColumnName),
+        table: schema.table,
+      }),
       ...TableProps,
     }),
     [TableProps, VuuDataSource, schema],

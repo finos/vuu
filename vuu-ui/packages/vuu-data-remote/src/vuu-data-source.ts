@@ -14,7 +14,6 @@ import {
 } from "@finos/vuu-data-types";
 import {
   LinkDescriptorWithLabel,
-  VuuAggregation,
   VuuCreateVisualLink,
   VuuDataRowDto,
   VuuGroupBy,
@@ -25,7 +24,6 @@ import {
   VuuRpcRequest,
   VuuRpcResponse,
   VuuRpcViewportRequest,
-  VuuSort,
   VuuTable,
 } from "@finos/vuu-protocol-types";
 
@@ -119,9 +117,11 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     const { bufferSize } = this;
 
     // TODO make this async and await response here
+
+    const dataSourceConfig = combineFilters(this._config);
     this.server?.subscribe(
       {
-        ...this._config,
+        ...dataSourceConfig,
         bufferSize,
         viewport,
         table: this.table,
@@ -392,73 +392,12 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     super.config = config;
 
     if (this._config !== previousConfig) {
-      const newConfig = combineFilters(this._config);
       this.server?.send({
         viewport: this.viewport,
         type: "config",
-        config: newConfig,
+        config: combineFilters(this._config),
       });
     }
-  }
-
-  // We can remove this entirely once columns is handlwed liek filters
-  // ie just sugar for setting config
-  get columns() {
-    return super.columns;
-  }
-
-  set columns(columns: string[]) {
-    const previousConfig = this._config;
-    super.columns = columns;
-
-    if (previousConfig !== this._config) {
-      const message = {
-        viewport: this.viewport,
-        type: "setColumns",
-        columns,
-      } as const;
-      this.server?.send(message);
-    }
-  }
-
-  get aggregations() {
-    return this._config.aggregations;
-  }
-
-  set aggregations(aggregations: VuuAggregation[]) {
-    this._config = {
-      ...this._config,
-      aggregations,
-    };
-    if (this.viewport) {
-      this.server?.send({
-        viewport: this.viewport,
-        type: "aggregate",
-        aggregations,
-      });
-    }
-    this.emit("config", this._config);
-  }
-
-  get sort() {
-    return this._config.sort;
-  }
-
-  set sort(sort: VuuSort) {
-    // TODO should we wait until server ACK before we assign #sort ?
-    this._config = {
-      ...this._config,
-      sort,
-    };
-    if (this.viewport) {
-      const message = {
-        viewport: this.viewport,
-        type: "sort",
-        sort,
-      } as const;
-      this.server?.send(message);
-    }
-    this.emit("config", this._config);
   }
 
   get groupBy() {
