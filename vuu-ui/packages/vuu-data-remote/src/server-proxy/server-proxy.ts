@@ -6,15 +6,12 @@ import type {
   TableSchema,
   VuuUIMessageIn,
   VuuUIMessageOut,
-  VuuUIMessageOutAggregate,
   VuuUIMessageOutCloseTreeNode,
-  VuuUIMessageOutColumns,
   VuuUIMessageOutConfig,
   VuuUIMessageOutConnect,
   VuuUIMessageOutOpenTreeNode,
   VuuUIMessageOutSelect,
   VuuUIMessageOutSetTitle,
-  VuuUIMessageOutSort,
   VuuUIMessageOutSubscribe,
   VuuUIMessageOutUnsubscribe,
   VuuUIMessageOutViewRange,
@@ -461,25 +458,6 @@ export class ServerProxy {
     this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
 
-  private aggregate(viewport: Viewport, message: VuuUIMessageOutAggregate) {
-    const requestId = nextRequestId();
-    const request = viewport.aggregateRequest(requestId, message.aggregations);
-    this.sendIfReady(request, requestId, viewport.status === "subscribed");
-  }
-
-  private sort(viewport: Viewport, message: VuuUIMessageOutSort) {
-    const requestId = nextRequestId();
-    const request = viewport.sortRequest(requestId, message.sort);
-    this.sendIfReady(request, requestId, viewport.status === "subscribed");
-  }
-
-  private setColumns(viewport: Viewport, message: VuuUIMessageOutColumns) {
-    const requestId = nextRequestId();
-    const { columns } = message;
-    const request = viewport.columnRequest(requestId, columns);
-    this.sendIfReady(request, requestId, viewport.status === "subscribed");
-  }
-
   private setTitle(viewport: Viewport, message: VuuUIMessageOutSetTitle) {
     if (viewport) {
       viewport.title = message.title;
@@ -682,10 +660,6 @@ export class ServerProxy {
             return this.setViewRange(viewport, message);
           case "config":
             return this.setConfig(viewport, message);
-          case "aggregate":
-            return this.aggregate(viewport, message);
-          case "sort":
-            return this.sort(viewport, message);
           case "select":
             return this.select(viewport, message);
           case "suspend":
@@ -702,8 +676,6 @@ export class ServerProxy {
             return this.createLink(viewport, message);
           case "REMOVE_VISUAL_LINK":
             return this.removeLink(viewport, message);
-          case "setColumns":
-            return this.setColumns(viewport, message);
           case "setTitle":
             return this.setTitle(viewport, message);
           default:

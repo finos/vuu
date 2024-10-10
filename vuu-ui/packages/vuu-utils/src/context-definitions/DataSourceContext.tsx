@@ -23,7 +23,7 @@ const getServerAPI = () => {
 };
 
 class NullDataSource {
-  constructor() {
+  constructor(_: DataSourceConstructorProps) {
     throw Error("no DataSourceProvider has been installed");
   }
 }
@@ -31,5 +31,5 @@ class NullDataSource {
 export const DataSourceContext = createContext<DataSourceContextProps>({
   isLocalData: false,
   getServerAPI,
-  VuuDataSource: NullDataSource as any,
+  VuuDataSource: NullDataSource as DataSourceConstructor,
 });
