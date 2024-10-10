@@ -1,9 +1,13 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-// Important: This import must come before RemoteDataSource import
+// Important: This import must come before VuuDataSource import
 import "./global-mocks";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 //----------------------------------------------------
-import { DataSourceConfig, ServerAPI } from "@finos/vuu-data-types";
+import {
+  DataSourceConfig,
+  ServerAPI,
+  WithBaseFilter,
+} from "@finos/vuu-data-types";
 import { LinkDescriptorWithLabel, VuuSortCol } from "@finos/vuu-protocol-types";
 import { VuuDataSource } from "../src/vuu-data-source";
 import ConnectionManager from "../src/ConnectionManager";
@@ -22,7 +26,6 @@ vi.mock("../src/ConnectionManager", () => ({
 
 const defaultSubscribeOptions = {
   aggregations: [],
-  baseFilterSpec: { filter: "" },
   bufferSize: 100,
   columns: [],
   filterSpec: { filter: "" },
@@ -32,7 +35,7 @@ const defaultSubscribeOptions = {
   visualLink: undefined,
 };
 
-describe("RemoteDataSource", () => {
+describe("VuuDataSource", () => {
   const table = { module: "SIMUL", table: "instruments" };
 
   beforeEach(async () => {
@@ -48,7 +51,7 @@ describe("RemoteDataSource", () => {
       } catch (err) {
         expect(err).toBeDefined();
         expect(err.message).to.not.eq(
-          "RemoteDataSource was created without table"
+          "RemoteDataSource was created without table",
         );
       }
       try {
@@ -58,7 +61,7 @@ describe("RemoteDataSource", () => {
       } catch (err) {
         expect(err).toBeDefined();
         expect(err.message).to.not.eq(
-          "RemoteDataSource was created without table"
+          "RemoteDataSource was created without table",
         );
       }
       try {
@@ -71,7 +74,7 @@ describe("RemoteDataSource", () => {
         throw Error("RemoteDataSource was created without table");
       } catch (err) {
         expect(err.message).toEqual(
-          "RemoteDataSource constructor called without table"
+          "RemoteDataSource constructor called without table",
         );
       }
     });
@@ -95,6 +98,7 @@ describe("RemoteDataSource", () => {
         sort,
         table: { module: "SIMUL", table: "instruments" },
       });
+
       expect(dataSource.columns).toEqual(columns);
       expect(dataSource.filter).toEqual(filterSpec);
       expect(dataSource.sort).toEqual(sort);
@@ -116,15 +120,14 @@ describe("RemoteDataSource", () => {
             module: "SIMUL",
             table: "instruments",
           },
-          viewport: "uuid-1",
+          viewport: expect.stringMatching(/^\S{21}$/),
         },
-        expect.any(Function)
+        expect.any(Function),
       );
     });
 
     it("uses options supplied at creation, if not passed with subscription", async () => {
       const aggregations = [{ column: "test", aggType: 1 } as const];
-      const baseFilterSpec = { filter: "" };
       const columns = ["test"];
       const filterSpec = { filter: 'ccy="EUR"' };
       const groupBy = ["test"];
@@ -159,10 +162,16 @@ describe("RemoteDataSource", () => {
       expect(serverAPI.subscribe).toHaveBeenCalledWith(
         {
           aggregations,
-          baseFilterSpec,
           bufferSize: 200,
           columns,
-          filterSpec,
+          filterSpec: {
+            ...filterSpec,
+            filterStruct: {
+              column: "ccy",
+              op: "=",
+              value: "EUR",
+            },
+          },
           groupBy,
           range: { from: 0, to: 0 },
           sort,
@@ -170,14 +179,13 @@ describe("RemoteDataSource", () => {
             module: "SIMUL",
             table: "instruments",
           },
-          viewport: "uuid-1",
+          viewport: expect.stringMatching(/^\S{21}$/),
         },
-        expect.any(Function)
+        expect.any(Function),
       );
     });
     it("uses options passed with subscription, in preference to objects passed at creation", async () => {
       const aggregations = [{ column: "test", aggType: 1 } as const];
-      const baseFilterSpec = { filter: "" };
       const columns = ["test"];
       const filterSpec = { filter: 'ccy="EUR"' };
       const groupBy = ["test"];
@@ -210,16 +218,22 @@ describe("RemoteDataSource", () => {
           sort: sort2,
           viewport: "test-2",
         },
-        callback
+        callback,
       );
 
       expect(serverAPI.subscribe).toHaveBeenCalledWith(
         {
           aggregations,
-          baseFilterSpec,
           bufferSize: 100,
           columns: columns2,
-          filterSpec: filter2,
+          filterSpec: {
+            ...filter2,
+            filterStruct: {
+              column: "ccy",
+              op: "=",
+              value: "EUR",
+            },
+          },
           groupBy: groupBy2,
           range: { from: 0, to: 0 },
           sort: sort2,
@@ -230,7 +244,7 @@ describe("RemoteDataSource", () => {
           viewport: "test-2",
           visualLink: undefined,
         },
-        expect.any(Function)
+        expect.any(Function),
       );
     });
 
@@ -241,7 +255,7 @@ describe("RemoteDataSource", () => {
 
       const pendingSubscribe = dataSource.subscribe(
         { range: { from: 0, to: 20 }, groupBy: ["test1"] },
-        callback
+        callback,
       );
 
       // dataSource is blocked inside subscribe function, awaiting server ...
@@ -259,9 +273,9 @@ describe("RemoteDataSource", () => {
             module: "SIMUL",
             table: "instruments",
           },
-          viewport: "uuid-1",
+          viewport: expect.stringMatching(/^\S{21}$/),
         },
-        expect.any(Function)
+        expect.any(Function),
       );
     });
   });
@@ -284,7 +298,7 @@ describe("RemoteDataSource", () => {
       });
     });
     it("calls server when aggregations set", async () => {
-      const serverAPI = await ConnectionManager.serverAPI;
+      const { send } = await ConnectionManager.serverAPI;
 
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
@@ -292,24 +306,36 @@ describe("RemoteDataSource", () => {
       const aggregations = [{ column: "col1", aggType: 1 } as const];
       dataSource.aggregations = aggregations;
 
-      expect(serverAPI.send).toHaveBeenCalledWith({
-        type: "aggregate",
-        aggregations,
+      expect(send).toHaveBeenCalledWith({
+        type: "config",
+        config: {
+          aggregations,
+          columns: [],
+          filterSpec: { filter: "" },
+          groupBy: [],
+          sort: { sortDefs: [] },
+        },
         viewport: "vp1",
       });
     });
 
     it("calls server when columns set", async () => {
-      const serverAPI = await ConnectionManager.serverAPI;
+      const { send } = await ConnectionManager.serverAPI;
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
       const columns = ["col1", "col2"];
       dataSource.columns = columns;
 
-      expect(serverAPI.send).toHaveBeenCalledWith({
-        type: "setColumns",
-        columns,
+      expect(send).toHaveBeenCalledWith({
+        type: "config",
+        config: {
+          aggregations: [],
+          columns: ["col1", "col2"],
+          filterSpec: { filter: "" },
+          groupBy: [],
+          sort: { sortDefs: [] },
+        },
         viewport: "vp1",
       });
     });
@@ -325,7 +351,6 @@ describe("RemoteDataSource", () => {
         type: "config",
         config: {
           aggregations: [],
-          baseFilterSpec: { filter: "" },
           columns: [],
           filterSpec: {
             filter: 'exchange="SETS"',
@@ -341,6 +366,7 @@ describe("RemoteDataSource", () => {
         viewport: "vp1",
       });
     });
+
     it("calls server when baseFilter set", async () => {
       const { send } = await ConnectionManager.serverAPI;
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
@@ -353,7 +379,6 @@ describe("RemoteDataSource", () => {
         type: "config",
         config: {
           aggregations: [],
-          baseFilterSpec: { filter: 'exchange="SETS"' },
           columns: [],
           filterSpec: {
             filter: 'exchange="SETS"',
@@ -369,6 +394,7 @@ describe("RemoteDataSource", () => {
         viewport: "vp1",
       });
     });
+
     it("calls server when groupBy set, using config message", async () => {
       const { send } = await ConnectionManager.serverAPI;
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
@@ -381,7 +407,6 @@ describe("RemoteDataSource", () => {
         type: "config",
         config: {
           aggregations: [],
-          baseFilterSpec: { filter: "" },
           columns: [],
           filterSpec: {
             filter: "",
@@ -408,7 +433,6 @@ describe("RemoteDataSource", () => {
         type: "config",
         config: {
           aggregations: [],
-          baseFilterSpec: { filter: "" },
           columns: [],
           filterSpec: { filter: "" },
           groupBy: [],
@@ -427,7 +451,6 @@ describe("RemoteDataSource", () => {
         type: "config",
         config: {
           aggregations: [],
-          baseFilterSpec: { filter: "" },
           columns: ["col1", "col2", "col3"],
           filterSpec: { filter: "" },
           groupBy: [],
@@ -452,7 +475,6 @@ describe("RemoteDataSource", () => {
         type: "config",
         config: {
           aggregations: [],
-          baseFilterSpec: { filter: "" },
           columns: [],
           filterSpec: {
             filter: 'ccy = "EUR"',
@@ -474,7 +496,7 @@ describe("RemoteDataSource", () => {
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
-      const config: DataSourceConfig = {
+      const config: WithBaseFilter<DataSourceConfig> = {
         baseFilterSpec: { filter: 'ccy = "EUR"' },
         filterSpec: { filter: 'exchange starts "X"' },
       };
@@ -485,7 +507,6 @@ describe("RemoteDataSource", () => {
         type: "config",
         config: {
           aggregations: [],
-          baseFilterSpec: { filter: 'ccy = "EUR"' },
           columns: [],
           filterSpec: {
             filter: 'exchange starts "X" and ccy = "EUR"',
@@ -509,7 +530,7 @@ describe("RemoteDataSource", () => {
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
-      const config: DataSourceConfig = {
+      const config: WithBaseFilter<DataSourceConfig> = {
         baseFilterSpec: { filter: 'ccy = "GBP"' },
         filterSpec: { filter: "" },
       };
@@ -520,7 +541,6 @@ describe("RemoteDataSource", () => {
         type: "config",
         config: {
           aggregations: [],
-          baseFilterSpec: { filter: 'ccy = "GBP"' },
           columns: [],
           filterSpec: {
             filter: 'ccy = "GBP"',
@@ -543,7 +563,7 @@ describe("RemoteDataSource", () => {
       };
 
       dataSource.config = config;
-      send.mockClear();
+      send["mockClear"]();
 
       dataSource.config = config;
 

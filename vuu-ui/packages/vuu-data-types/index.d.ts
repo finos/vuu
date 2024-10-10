@@ -420,7 +420,6 @@ export declare type TableSchema = {
 export interface WithFullConfig {
   readonly aggregations: VuuAggregation[];
   readonly columns: VuuColumns;
-  readonly baseFilterSpec: DataSourceFilter;
   readonly filterSpec: DataSourceFilter;
   readonly groupBy: VuuGroupBy;
   readonly sort: VuuSort;
@@ -440,14 +439,17 @@ export interface WithSort extends DataSourceConfig {
   sort: VuuSort;
 }
 
-export interface DataSourceConstructorProps extends DataSourceConfig {
+export interface DataSourceConstructorProps
+  extends WithBaseFilter<DataSourceConfig> {
   bufferSize?: number;
   table: VuuTable;
   title?: string;
+  url?: string;
   viewport?: string;
 }
 
-export interface SubscribeProps extends Partial<WithFullConfig> {
+export interface SubscribeProps
+  extends Partial<WithBaseFilter<WithFullConfig>> {
   viewport?: string;
   range?: VuuRange;
   title?: string;
@@ -549,7 +551,9 @@ export declare type SelectionItem = number | RangeTuple;
 export declare type Selection = SelectionItem[];
 export declare type SelectionChangeHandler = (selection: Selection) => void;
 
-export declare type WithBaseFilter<T> = T & { baseFilter?: DataSourceFilter };
+export declare type WithBaseFilter<T> = T & {
+  baseFilterSpec?: DataSourceFilter;
+};
 
 export interface DataSource
   extends IEventEmitter<DataSourceEvents>,
@@ -837,20 +841,12 @@ export interface RequestMessage {
   requestId: string;
 }
 
-export interface VuuUIMessageOutColumns extends ViewportMessageOut {
-  type: "setColumns";
-  columns: string[];
-}
 export interface VuuUIMessageOutViewRange extends ViewportMessageOut {
   type: "setViewRange";
   range: {
     from: number;
     to: number;
   };
-}
-export interface VuuUIMessageOutAggregate extends ViewportMessageOut {
-  aggregations: VuuAggregation[];
-  type: "aggregate";
 }
 export interface VuuUIMessageOutCloseTreeNode extends ViewportMessageOut {
   key: string;
@@ -889,10 +885,6 @@ export interface VuuUIMessageOutSelectNone extends ViewportMessageOut {
   type: "selectNone";
 }
 
-export interface VuuUIMessageOutSort extends ViewportMessageOut {
-  sort: VuuSort;
-  type: "sort";
-}
 export interface VuuUIMessageOutSuspend extends ViewportMessageOut {
   type: "suspend";
 }
@@ -903,9 +895,7 @@ export interface VuuUIMessageOutConfig extends ViewportMessageOut {
 }
 
 export declare type VuuUIMessageOutViewport =
-  | VuuUIMessageOutAggregate
   | VuuUIMessageOutCloseTreeNode
-  | VuuUIMessageOutColumns
   | VuuUIMessageOutConfig
   | VuuUIMessageOutDisable
   | VuuUIMessageOutEnable
@@ -917,7 +907,6 @@ export declare type VuuUIMessageOutViewport =
   | VuuUIMessageOutSelectNone
   | VuuUIMessageOutSetTitle
   | VuuUIMessageOutSuspend
-  | VuuUIMessageOutSort
   | VuuUIMessageOutViewRange;
 
 export interface TypeAheadRpcRequest {

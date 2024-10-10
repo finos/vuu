@@ -11,6 +11,7 @@ import {
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInTableMeta,
   VuuUIMessageOutViewport,
+  WithBaseFilter,
   WithFilter,
   WithFullConfig,
   WithGroupBy,
@@ -24,7 +25,7 @@ import {
   VuuRowDataItemType,
   VuuSort,
 } from "@finos/vuu-protocol-types";
-import { ColumnMap } from "./column-utils";
+import { ColumnMap } from "../column-utils";
 
 export const NoFilter: VuuFilter = { filter: "" };
 export const NoSort: VuuSort = { sortDefs: [] };
@@ -32,7 +33,6 @@ export const NoSort: VuuSort = { sortDefs: [] };
 export const vanillaConfig: WithFullConfig = {
   aggregations: [],
   columns: [],
-  baseFilterSpec: NoFilter,
   filterSpec: NoFilter,
   groupBy: [],
   sort: NoSort,
@@ -53,8 +53,8 @@ export type MaybeDataSourceConfigChanges = DataSourceConfigChanges & {
 };
 
 type DataConfigPredicate = (
-  config: DataSourceConfig,
-  newConfig: DataSourceConfig,
+  config: WithBaseFilter<DataSourceConfig>,
+  newConfig: WithBaseFilter<DataSourceConfig>,
 ) => boolean;
 
 const equivalentAggregations: DataConfigPredicate = (
@@ -244,13 +244,15 @@ export const isConfigChanged = (
   };
 };
 
-export const hasGroupBy = (config?: DataSourceConfig): config is WithGroupBy =>
+export const hasGroupBy = (
+  config?: WithBaseFilter<DataSourceConfig>,
+): config is WithGroupBy =>
   config !== undefined &&
   config.groupBy !== undefined &&
   config.groupBy.length > 0;
 
 export const hasBaseFilter = (
-  config?: DataSourceConfig,
+  config?: WithBaseFilter<DataSourceConfig>,
 ): config is WithFilter =>
   config?.baseFilterSpec !== undefined &&
   config.baseFilterSpec.filter.length > 0;
@@ -307,8 +309,10 @@ export const messageHasDataRows = (
   message.type === "viewport-update" && Array.isArray(message.rows);
 
 export const withConfigDefaults = (
-  config: DataSourceConfig,
-): WithFullConfig & { visualLink?: LinkDescriptorWithLabel } => {
+  config: WithBaseFilter<DataSourceConfig>,
+): WithBaseFilter<WithFullConfig> & {
+  visualLink?: LinkDescriptorWithLabel;
+} => {
   if (
     config.aggregations &&
     config.baseFilterSpec &&

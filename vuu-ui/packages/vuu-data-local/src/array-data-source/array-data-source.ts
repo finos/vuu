@@ -34,7 +34,7 @@ import {
   KeySet,
   NULL_RANGE,
   buildColumnMap,
-  combine,
+  combineFilters,
   getAddedItems,
   getMissingItems,
   hasBaseFilter,
@@ -118,8 +118,9 @@ export class ArrayDataSource
 
   /** Map reflecting positions of columns in client data sent to user */
   #columnMap: ColumnMap;
-  protected _config: WithFullConfig & { visualLink?: LinkDescriptorWithLabel } =
-    vanillaConfig;
+  protected _config: WithBaseFilter<WithFullConfig> & {
+    visualLink?: LinkDescriptorWithLabel;
+  } = vanillaConfig;
   #data: DataSourceRow[];
   #keys = new KeySet(NULL_RANGE);
   #links: LinkDescriptorWithLabel[] | undefined;
@@ -377,10 +378,9 @@ export class ArrayDataSource
 
         let processedData: DataSourceRow[] | undefined;
         if (hasFilter(config) || hasBaseFilter(config)) {
-          const combinedFilter = config.baseFilterSpec
-            ? combine(config.filterSpec, config.baseFilterSpec)
-            : config.filterSpec;
-          const filterStruct = parseFilter(combinedFilter.filter);
+          const {
+            filterSpec: { filterStruct },
+          } = combineFilters(this._config);
           if (filterStruct) {
             const fn = filterPredicate(this.#columnMap, filterStruct);
             processedData = this.#data.filter(fn);
@@ -705,7 +705,7 @@ export class ArrayDataSource
     return this._config.baseFilterSpec;
   }
 
-  set baseFilter(baseFilter: DataSourceFilter) {
+  set baseFilter(baseFilter: DataSourceFilter | undefined) {
     debug?.(`baseFilter ${JSON.stringify(baseFilter)}`);
     // TODO check that baseFilter has changed
     this.config = {

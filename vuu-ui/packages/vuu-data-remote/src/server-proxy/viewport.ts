@@ -1,17 +1,12 @@
 import {
   DataSourceFilter,
   DataSourceRow,
-  DataSourceAggregateMessage,
   DataSourceCallbackMessage,
-  DataSourceColumnsMessage,
   DataSourceDebounceRequest,
   DataSourceDisabledMessage,
   DataSourceEnabledMessage,
-  DataSourceFilterMessage,
-  DataSourceGroupByMessage,
   DataSourceMenusMessage,
   DataSourceSetConfigMessage,
-  DataSourceSortMessage,
   DataSourceSubscribedMessage,
   DataSourceVisualLinkCreatedMessage,
   DataSourceVisualLinkRemovedMessage,
@@ -39,7 +34,6 @@ import {
   LinkDescriptorWithLabel,
   VuuViewportCreateResponse,
   VuuAggregation,
-  VuuGroupBy,
   VuuMenu,
   VuuRange,
   VuuRow,
@@ -85,40 +79,15 @@ interface ConfigOperation {
   data: WithFullConfig;
   type: "config";
 }
-interface Aggregate {
-  data: VuuAggregation[];
-  type: "aggregate";
-}
-interface Columns {
-  data: string[];
-  type: "columns";
-}
 interface SelectionOperation {
   data: Selection;
   type: "selection";
 }
-interface Sort {
-  data: VuuSort;
-  type: "sort";
-}
-interface GroupBy {
-  data: VuuGroupBy;
-  type: "groupBy";
-}
-interface GroupByClear {
-  data: VuuGroupBy;
-  type: "groupByClear";
-}
 
 type AsyncOperationWithData =
-  | Aggregate
-  | Columns
   | ConfigOperation
   | ViewportFilter
-  | GroupBy
-  | GroupByClear
-  | SelectionOperation
-  | Sort;
+  | SelectionOperation;
 
 type AsyncOperation =
   | AsyncOperationWithData
@@ -424,43 +393,6 @@ export class Viewport {
         type,
         config: pendingOperation.data,
       } as DataSourceSetConfigMessage;
-    } else if (type === "groupBy") {
-      this.isTree = pendingOperation.data.length > 0;
-      this.groupBy = pendingOperation.data;
-      debug?.(`groupBy change confirmed, isTree : ${this.isTree}`);
-      return {
-        clientViewportId,
-        type,
-        groupBy: pendingOperation.data,
-      } as DataSourceGroupByMessage;
-    } else if (type === "columns") {
-      this.columns = pendingOperation.data;
-      return {
-        clientViewportId,
-        type,
-        columns: pendingOperation.data,
-      } as DataSourceColumnsMessage;
-    } else if (type === "filter") {
-      this.filter = pendingOperation.data;
-      return {
-        clientViewportId,
-        type,
-        filter: pendingOperation.data,
-      } as DataSourceFilterMessage;
-    } else if (type === "aggregate") {
-      this.aggregations = pendingOperation.data;
-      return {
-        clientViewportId,
-        type: "aggregate",
-        aggregations: this.aggregations,
-      } as DataSourceAggregateMessage;
-    } else if (type === "sort") {
-      this.sort = pendingOperation.data;
-      return {
-        clientViewportId,
-        type,
-        sort: this.sort,
-      } as DataSourceSortMessage;
     } else if (type === "selection") {
       // should we do this here ?
       // this.selection = data;
@@ -674,7 +606,7 @@ export class Viewport {
   }
 
   currentData() {
-    const out = [];
+    const out: DataSourceRow[] = [];
     if (this.dataWindow) {
       const records = this.dataWindow.getData();
       const { keys } = this;
@@ -705,15 +637,6 @@ export class Viewport {
       type: Message.DISABLE_VP,
       viewPortId: this.serverViewportId,
     } as ClientToServerDisable;
-  }
-
-  columnRequest(requestId: string, columns: string[]) {
-    this.awaitOperation(requestId, {
-      type: "columns",
-      data: columns,
-    });
-    debug?.(`columnRequest: ${columns}`);
-    return this.createRequest({ columns });
   }
 
   setConfig(requestId: string, config: WithFullConfig) {
@@ -747,18 +670,6 @@ export class Viewport {
       },
       true,
     );
-  }
-
-  aggregateRequest(requestId: string, aggregations: VuuAggregation[]) {
-    this.awaitOperation(requestId, { type: "aggregate", data: aggregations });
-    info?.(`aggregateRequest: ${aggregations}`);
-    return this.createRequest({ aggregations });
-  }
-
-  sortRequest(requestId: string, sort: VuuSort) {
-    this.awaitOperation(requestId, { type: "sort", data: sort });
-    info?.(`sortRequest: ${JSON.stringify(sort.sortDefs)}`);
-    return this.createRequest({ sort });
   }
 
   selectRequest(requestId: string, selected: Selection) {
