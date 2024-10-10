@@ -420,7 +420,6 @@ export declare type TableSchema = {
 export interface WithFullConfig {
   readonly aggregations: VuuAggregation[];
   readonly columns: VuuColumns;
-  readonly baseFilterSpec: DataSourceFilter;
   readonly filterSpec: DataSourceFilter;
   readonly groupBy: VuuGroupBy;
   readonly sort: VuuSort;
@@ -549,7 +548,9 @@ export declare type SelectionItem = number | RangeTuple;
 export declare type Selection = SelectionItem[];
 export declare type SelectionChangeHandler = (selection: Selection) => void;
 
-export declare type WithBaseFilter<T> = T & { baseFilter?: DataSourceFilter };
+export declare type WithBaseFilter<T> = T & {
+  baseFilterSpec?: DataSourceFilter;
+};
 
 export interface DataSource
   extends IEventEmitter<DataSourceEvents>,
