@@ -1,5 +1,13 @@
 .vuuTableCell {
-    .vuuCheckboxRowSelectorIcon {
-        margin-top: calc(var(--row-height) / 2 - 6px ); 
-      }
+  .vuuCheckboxRowSelector {
+    align-items: center;
+    height: 100%;
+
+    .saltCheckboxIcon {
+      margin-top: 0;
+    }
+  }
+  .vuuCheckboxRowSelectorIcon {
+    margin-top: calc(var(--row-height) / 2 - 6px);
+  }
 }

@@ -9,7 +9,7 @@ import { useCallback, useMemo } from "react";
 
 import "./Table.examples.css";
 import { TableSchema } from "@finos/vuu-data-types";
-import { TableConfig } from "@finos/vuu-table-types";
+import { ColumnLayout, TableConfig } from "@finos/vuu-table-types";
 import { useDataSource } from "@finos/vuu-utils";
 
 let displaySequence = 1;
@@ -22,25 +22,27 @@ type DataTableProps = Partial<
 
 const DataTableTemplate = ({
   allowCellBlockSelection,
+  config: configProp,
   dataSource: dataSourceProp,
+  height = 500,
   maxViewportRowLimit,
   navigationStyle = "cell",
   rowHeight,
   schema = getSchema("instruments"),
   selectionModel,
   viewportRowLimit,
-  width = 600,
+  width = 1000,
   ...props
 }: DataTableProps) => {
   const { VuuDataSource } = useDataSource();
   const tableConfig = useMemo<TableConfig>(() => {
     return {
-      ...props.config,
+      ...configProp,
       columns: schema.columns,
       rowSeparators: false,
       zebraStripes: true,
     };
-  }, [props.config, schema]);
+  }, [configProp, schema]);
 
   const dataSource = useMemo(() => {
     return dataSourceProp ?? new VuuDataSource({ table: schema.table });
@@ -53,7 +55,7 @@ const DataTableTemplate = ({
       config={tableConfig}
       data-testid="table"
       dataSource={dataSource}
-      height={500}
+      height={height}
       maxViewportRowLimit={maxViewportRowLimit}
       navigationStyle={navigationStyle}
       renderBufferSize={20}
@@ -65,49 +67,64 @@ const DataTableTemplate = ({
   );
 };
 
-export const CheckboxSelection = () => {
-  const tableProps = useMemo<
-    Pick<TableProps, "config" | "dataSource" | "selectionModel">
-  >(() => {
-    const tableName: SimulTableName = "instruments";
+export const CheckboxSelection = ({
+  columnLayout,
+  height = 645,
+  width = 1000,
+}: {
+  columnLayout?: ColumnLayout;
+  height?: number;
+  width?: number;
+}) => {
+  const config = useMemo<Partial<TableConfig>>(() => {
     return {
-      config: {
-        columns: getSchema(tableName).columns,
-        rowSeparators: true,
-        zebraStripes: true,
-      },
-      dataSource:
-        vuuModule<SimulTableName>("SIMUL").createDataSource(tableName),
-      selectionModel: "checkbox",
+      columnLayout,
+      rowSeparators: true,
+      zebraStripes: true,
     };
-  }, []);
-
-  const onSelect = useCallback((row) => {
-    console.log("onSelect", { row });
-  }, []);
-  const onSelectionChange = useCallback((selected) => {
-    console.log("onSelectionChange", { selected });
-  }, []);
+  }, [columnLayout]);
 
   return (
-    <Table
-      {...tableProps}
-      height={645}
-      navigationStyle="row"
-      renderBufferSize={5}
-      onSelect={onSelect}
-      onSelectionChange={onSelectionChange}
-      width={723}
-    />
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <DataTableTemplate
+        allowCellBlockSelection
+        config={config}
+        height={height}
+        selectionModel="checkbox"
+        width={width}
+      />
+    </LocalDataSourceProvider>
   );
 };
 CheckboxSelection.displaySequence = displaySequence++;
 
-export const CellBlockSelection = () => {
+export const CellBlockSelectionOnly = () => {
   return (
     <LocalDataSourceProvider modules={["SIMUL"]}>
       <DataTableTemplate allowCellBlockSelection selectionModel="none" />
     </LocalDataSourceProvider>
   );
 };
-CellBlockSelection.displaySequence = displaySequence++;
+CellBlockSelectionOnly.displaySequence = displaySequence++;
+
+export const CellBlockCheckboxSelection = () => {
+  return (
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <DataTableTemplate allowCellBlockSelection selectionModel="checkbox" />
+    </LocalDataSourceProvider>
+  );
+};
+CellBlockCheckboxSelection.displaySequence = displaySequence++;
+
+export const CellBlockRowSelection = () => {
+  return (
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <DataTableTemplate
+        allowCellBlockSelection
+        selectionModel="extended"
+        navigationStyle="row"
+      />
+    </LocalDataSourceProvider>
+  );
+};
+CellBlockRowSelection.displaySequence = displaySequence++;
