@@ -1,5 +1,6 @@
+import React from "react";
 import { Flexbox } from "@finos/vuu-layout";
-import { Tree, TreeSourceNode } from "@finos/vuu-ui-controls";
+import { Tree } from "@finos/vuu-ui-controls";
 import { Density, ThemeMode } from "@finos/vuu-utils";
 import {
   Button,
@@ -9,42 +10,17 @@ import {
   ToggleButtonGroup,
 } from "@salt-ds/core";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { IFrame } from "./components";
-import { byDisplaySequence, ExamplesModule, loadTheme } from "./showcase-utils";
-
+import { loadTheme } from "./showcase-utils";
+import type { ExhibitsJson } from "./exhibit-utils";
 import { ThemeSwitch } from "@finos/vuu-shell";
 
 import "./App.css";
+import { useShowcaseApp } from "./useShowcaseApp";
 
-const sourceFromImports = (
-  stories: ExamplesModule,
-  prefix = "",
-  icon = "folder",
-): TreeSourceNode[] =>
-  Object.entries(stories)
-    .filter(([path]) => path !== "default")
-    .sort(byDisplaySequence)
-    .map<TreeSourceNode>(([label, stories]) => {
-      const id = `${prefix}${label}`;
-      // TODO how can we know when a potential docs node has docs
-      // console.log(`id=${id}`);
-      if (typeof stories === "function") {
-        return {
-          id,
-          icon: "rings",
-          label,
-        };
-      }
-      return {
-        id,
-        icon,
-        label,
-        childNodes: sourceFromImports(stories, `${id}/`, "box"),
-      };
-    });
 export interface AppProps {
-  stories: ExamplesModule;
+  exhibits: ExhibitsJson;
 }
 
 type ThemeDescriptor = { label?: string; id: string };
@@ -70,9 +46,10 @@ const availableDensity: DensityDescriptor[] = [
   { id: "touch", label: "Touch" },
 ];
 
-export const App = ({ stories }: AppProps) => {
-  const navigate = useNavigate();
+export const App = ({ exhibits }: AppProps) => {
   const [themeReady, setThemeReady] = useState(false);
+
+  const { onSelectionChange, source } = useShowcaseApp({ exhibits });
 
   useEffect(() => {
     loadTheme("vuu-theme").then(() => {
@@ -81,9 +58,7 @@ export const App = ({ stories }: AppProps) => {
   }, []);
 
   // // TODO cache source in localStorage
-  const source = useMemo(() => sourceFromImports(stories), [stories]);
   const { pathname } = useLocation();
-  const handleChange = ([selected]: TreeSourceNode[]) => navigate(selected.id);
   const [themeIndex, setThemeIndex] = useState(2);
   const [themeModeIndex, setThemeModeIndex] = useState(0);
   const [densityIndex, setDensityIndex] = useState(0);
@@ -134,7 +109,7 @@ export const App = ({ stories }: AppProps) => {
             style={{ flex: "0 0 200px" }}
             data-resizeable
             selected={[pathname.slice(1)]}
-            onSelectionChange={handleChange}
+            onSelectionChange={onSelectionChange}
             revealSelected
             source={source}
           />

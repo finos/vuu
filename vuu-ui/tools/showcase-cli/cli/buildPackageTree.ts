@@ -13,7 +13,7 @@ export const buildPackageTree = (dir: string, tree = {}) => {
       }
     } else if (fileName.match(/(examples.tsx|.mdx)$/)) {
       const [storyName] = fileName.split(".");
-      tree[storyName] = `${dir}${fileName}`;
+      tree[storyName] = fileName;
     }
   });
   return tree;

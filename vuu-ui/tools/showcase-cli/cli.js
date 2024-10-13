@@ -10,39 +10,50 @@ import {
 } from "./cli/cli-utils.ts";
 import indexHtml from "./templates/index.html.ts";
 import { fileURLToPath } from "url";
+import start from "./cli/main.ts";
+import { buildPackageTree } from "./cli/buildPackageTree";
 
 /** Parse the command line */
 var args = process.argv.slice(2);
 
+let configFilePath = "./showcase.config.json";
+
 // Validate input
-if (args.length !== 1) {
-  console.log("Warning: Requires 1 argument");
-  console.log("node config-path");
-  process.exit();
+if (args.length === 0) {
+  if (!fs.existsSync(configFilePath)) {
+    console.log("Warning: Requires 1 argument, path to config file. ");
+    process.exit();
+  } else {
+    console.log("using config file at './showcase.config.json'");
+  }
+} else {
+  if (fs.existsSync(args[0])) {
+    configFilePath = args[0];
+  } else {
+    console.log(
+      `Warning: first argument ${args[0]} should be path to config file, file not found`,
+    );
+    process.exit();
+  }
 }
 
-const configPath = args[0];
-
-// const dirsrc = path.dirname(configPath);
-if (!fs.existsSync(configPath)) {
-  console.log("Error: Config file doesn't exist. Given: ", configPath);
-  process.exit();
-}
-
-const templateDir = path.resolve(fileURLToPath(import.meta.url), "../dist");
+const distFolder = path.resolve(fileURLToPath(import.meta.url), "../dist");
 
 if (!fs.existsSync(".showcase")) {
   createFolder(".showcase");
+  // DOn't do this until we create importmaps
   await writeFile(indexHtml, "./.showcase/index.html");
 } else {
   console.log(".showcase folder present and correct");
 }
 
-if (fs.existsSync(templateDir)) {
-  copyFiles(templateDir, "./.showcase");
+// TODO check whether dist files already present in .showcase
+if (fs.existsSync(distFolder)) {
+  copyFiles(distFolder, "./.showcase");
 }
 
-const config = readJson(configPath);
+const config = readJson(configFilePath);
+
 //TODO use type validator to check config file
 const { exhibits } = config;
 if (!fs.existsSync(exhibits)) {
@@ -50,6 +61,12 @@ if (!fs.existsSync(exhibits)) {
   process.exit();
 }
 
-import("./cli/main.ts").then(({ default: start }) => {
-  start(config);
-});
+const stories = buildPackageTree(exhibits);
+await writeFile(
+  `export default ${JSON.stringify(stories, null, 2)};`,
+  "./.showcase/exhibits.js",
+);
+
+console.log(JSON.stringify(stories, null, 2));
+
+start(config);

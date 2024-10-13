@@ -1,10 +1,12 @@
-import "./Showcase.css";
-
+import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { ExamplesModule } from "./showcase-utils";
 import { App } from "./App";
+import { ExamplesModule } from "./showcase-utils";
 
-const createRoutes = (examples: ExamplesModule, prefix = ""): JSX.Element[] =>
+import "./Showcase.css";
+import { ExhibitsJson } from "./exhibit-utils";
+
+const createRoutes = (examples: ExhibitsJson, prefix = ""): JSX.Element[] =>
   Object.entries(examples)
     .filter(([path]) => path !== "default")
     .reduce<JSX.Element[]>((routes, [label, Value]) => {
@@ -16,11 +18,11 @@ const createRoutes = (examples: ExamplesModule, prefix = ""): JSX.Element[] =>
         : routes.concat(<Route key={label} path={id} />);
     }, []);
 
-export const Showcase = ({ exhibits }: { exhibits: ExamplesModule }) => {
+export const Showcase = ({ exhibits }: { exhibits: ExhibitsJson }) => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<App stories={exhibits} />}>
+        <Route path="/" element={<App exhibits={exhibits} />}>
           {createRoutes(exhibits)}
         </Route>
       </Routes>

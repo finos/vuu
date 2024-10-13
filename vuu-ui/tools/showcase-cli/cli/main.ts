@@ -1,6 +1,5 @@
 import { createServer } from "vite";
 import { HttpServerConfig, startHTTPServer } from "./http-server";
-import { buildPackageTree } from "./buildPackageTree";
 
 export type ShowcaseConfig = {
   exhibits: string;
@@ -9,11 +8,6 @@ export type ShowcaseConfig = {
 };
 
 export default async (config: ShowcaseConfig) => {
-  const start = performance.now();
-  const stories = buildPackageTree(config.exhibits);
-  const end = performance.now();
-  console.log(`building exhibits menu took ${end - start}ms`);
-  console.log(JSON.stringify(stories, null, 2));
   // fs.writeFile(OUT, JSON.stringify(stories, null, 2), (err) => {
   //   if (err) {
   //     console.log(err);
