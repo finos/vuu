@@ -69,6 +69,7 @@ import {
 } from "./useTableModel";
 import { useTableScroll } from "./useTableScroll";
 import { useTableViewport } from "./useTableViewport";
+import { TableCellBlock } from "./cell-block/cellblock-utils";
 
 const stripInternalProperties = (tableConfig: TableConfig): TableConfig => {
   return tableConfig;
@@ -613,6 +614,14 @@ export const useTable = ({
     selectionModel,
   });
 
+  const handleSelectCellBlock = useCallback(
+    (cellBlock: TableCellBlock) => {
+      handleSelectionChange([]);
+      onSelectCellBlock?.(cellBlock);
+    },
+    [handleSelectionChange, onSelectCellBlock],
+  );
+
   const {
     onMouseDown: cellBlockHookMouseDown,
     cellBlock,
@@ -622,7 +631,7 @@ export const useTable = ({
     columnCount,
     containerRef,
     focusCell,
-    onSelectCellBlock,
+    onSelectCellBlock: handleSelectCellBlock,
     rowCount,
   });
 
