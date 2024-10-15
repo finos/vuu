@@ -20,6 +20,7 @@ import {
 } from "@finos/vuu-table-extras";
 import {
   ColumnDescriptor,
+  ColumnLayout,
   DefaultColumnConfiguration,
   GroupColumnDescriptor,
   HeaderCellProps,
@@ -32,7 +33,7 @@ import {
   registerComponent,
   useDataSource,
 } from "@finos/vuu-utils";
-import { Button } from "@salt-ds/core";
+import { Button, Input } from "@salt-ds/core";
 import {
   CSSProperties,
   MouseEventHandler,
@@ -49,12 +50,14 @@ import { VuuDataSourceProvider } from "@finos/vuu-data-react";
 let displaySequence = 1;
 
 export const TestTable = ({
+  columnLayout,
   height = 625,
   renderBufferSize = 5,
   rowCount = 1000,
   rowHeight = 20,
   width = 1000,
 }: {
+  columnLayout?: ColumnLayout;
   height?: string | number;
   renderBufferSize?: number;
   rowCount?: number;
@@ -66,8 +69,9 @@ export const TestTable = ({
       columns: columnGenerator(5),
       rowSeparators: true,
       zebraStripes: true,
+      columnLayout,
     }),
-    [],
+    [columnLayout],
   );
 
   const dataSource = useMemo<DataSource>(() => {
@@ -84,6 +88,7 @@ export const TestTable = ({
   return (
     <Table
       config={config}
+      data-testid="test-table"
       dataSource={dataSource}
       height={height}
       renderBufferSize={renderBufferSize}
@@ -144,6 +149,37 @@ export const ControlledNavigation = () => {
   );
 };
 ControlledNavigation.displaySequence = displaySequence++;
+
+export const TabInAndOut = () => {
+  return (
+    <div style={{ width: 950 }}>
+      <div
+        style={{
+          alignItems: "center",
+          display: "flex",
+          height: 32,
+          padding: "0 12px",
+        }}
+      >
+        <Input placeholder="start here" data-testid="input-start" />
+      </div>
+      <div style={{ height: 600 }}>
+        <TestTable height="100%" width="100%" />
+      </div>
+      <div
+        style={{
+          alignItems: "center",
+          display: "flex",
+          height: 32,
+          padding: "0 12px",
+        }}
+      >
+        <Input placeholder="end here" data-testid="input-end" />
+      </div>
+    </div>
+  );
+};
+TabInAndOut.displaySequence = displaySequence++;
 
 export const EditableTableArrayData = () => {
   const getDefaultColumnConfig = useMemo<DefaultColumnConfiguration>(

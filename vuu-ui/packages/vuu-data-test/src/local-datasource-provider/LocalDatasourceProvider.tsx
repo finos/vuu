@@ -105,6 +105,7 @@ export const LocalDataSourceProvider = ({
 }) => {
   return (
     <DataSourceProvider
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       VuuDataSource={VuuDataSource as any}
       vuuModuleNames={modules}
       getServerAPI={getServerAPI}

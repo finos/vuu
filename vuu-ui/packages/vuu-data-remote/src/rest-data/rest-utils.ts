@@ -1,5 +1,10 @@
 import { DataSourceRow } from "@finos/vuu-data-types";
-import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import {
+  VuuFilter,
+  VuuRowDataItemType,
+  VuuSort,
+  VuuSortCol,
+} from "@finos/vuu-protocol-types";
 import { ColumnMap } from "@finos/vuu-utils";
 
 export type JsonPrimitive = string | number | boolean | null;
@@ -25,7 +30,7 @@ export const NDJsonReader =
             onEnd();
           } else {
             const chunk = decoder.decode(value, {
-              stream: true
+              stream: true,
             });
             buf += chunk;
 
@@ -47,7 +52,7 @@ export const NDJsonReader =
 export const jsonToDataSourceRow = (
   rowIndex: number,
   json: JsonObject,
-  columnMap: ColumnMap
+  columnMap: ColumnMap,
 ): DataSourceRow => {
   const dataSourceRow: DataSourceRow = [
     rowIndex,
@@ -57,10 +62,22 @@ export const jsonToDataSourceRow = (
     0,
     0,
     json.ric as string,
-    0
+    0,
   ];
   for (const [column, colIdx] of Object.entries(columnMap)) {
     dataSourceRow[colIdx] = json[column] as VuuRowDataItemType;
   }
   return dataSourceRow;
 };
+
+const sortParamsToList = (sortDefs: VuuSortCol[]) =>
+  sortDefs.reduce<string[]>(
+    (list, { column, sortType }) => list.concat([column, sortType]),
+    [],
+  );
+
+export const sortToQueryString = (sort: VuuSort) =>
+  `&sort=[${sortParamsToList(sort.sortDefs)}]`;
+
+export const filterToQueryString = (vuuFilter: VuuFilter) =>
+  `&filter=[${vuuFilter.filter}]`;

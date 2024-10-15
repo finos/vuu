@@ -115,6 +115,7 @@ export interface VuuRemoveVisualLinkResponse {
  */
 
 export interface VuuViewportCreateRequest {
+  aggregations: VuuAggregation[];
   columns: VuuColumns;
   filterSpec: VuuFilter;
   groupBy: string[];

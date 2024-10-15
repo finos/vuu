@@ -2,7 +2,7 @@ import { RestDataSourceProvider } from "@finos/vuu-data-react/src/datasource-pro
 import { getSchema } from "@finos/vuu-data-test";
 import { TableProps } from "@finos/vuu-table";
 import { useCallback, useMemo, useState } from "react";
-import { useDataSource } from "@finos/vuu-utils";
+import { toColumnName, useDataSource } from "@finos/vuu-utils";
 import { FilterTable } from "@finos/vuu-datatable";
 import { FilterBarProps } from "@finos/vuu-filters";
 import { FilterState } from "@finos/vuu-filter-types";
@@ -12,8 +12,10 @@ let displaySequence = 0;
 
 const FilterTableTemplate = ({
   quickFilterColumns,
+  TableProps,
   variant = "custom-filters",
 }: Pick<FilterBarProps, "variant"> & {
+  TableProps?: Partial<TableProps>;
   quickFilterColumns?: string[];
 }) => {
   const { VuuDataSource } = useDataSource();
@@ -27,9 +29,13 @@ const FilterTableTemplate = ({
         rowSeparators: true,
         zebraStripes: true,
       },
-      dataSource: new VuuDataSource({ table: schema.table }),
+      dataSource: new VuuDataSource({
+        columns: schema.columns.map(toColumnName),
+        table: schema.table,
+      }),
+      ...TableProps,
     }),
-    [VuuDataSource, schema],
+    [TableProps, VuuDataSource, schema],
   );
 
   const [filterState, setFilterState] = useState<FilterState>({
@@ -80,11 +86,20 @@ const FilterTableTemplate = ({
   );
 };
 
-export const RestInstruments = () => {
+export const RestInstrumentsScrolling = () => {
   return (
     <RestDataSourceProvider url="http://localhost:8081/api">
       <FilterTableTemplate />
     </RestDataSourceProvider>
   );
 };
-RestInstruments.displaySequence = displaySequence++;
+RestInstrumentsScrolling.displaySequence = displaySequence++;
+
+export const RestInstrumentsPagination = () => {
+  return (
+    <RestDataSourceProvider url="http://localhost:8081/api">
+      <FilterTableTemplate TableProps={{ showPaginationControls: true }} />
+    </RestDataSourceProvider>
+  );
+};
+RestInstrumentsPagination.displaySequence = displaySequence++;

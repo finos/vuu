@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { isConfigChanged, NO_CONFIG_CHANGES } from "../src/datasource-utils";
+import {
+  isConfigChanged,
+  NO_CONFIG_CHANGES,
+} from "../../src/datasource/datasource-utils";
 
 describe("datasource-utils", () => {
   describe("WHEN configs are empty", () => {
@@ -14,8 +17,8 @@ describe("datasource-utils", () => {
       expect(
         isConfigChanged(
           { filterSpec: { filter: 'ccy = "EUR"' } },
-          { filterSpec: { filter: 'ccy = "EUR"' } }
-        ).noChanges
+          { filterSpec: { filter: 'ccy = "EUR"' } },
+        ).noChanges,
       ).toEqual(true);
       expect(
         isConfigChanged(
@@ -26,8 +29,8 @@ describe("datasource-utils", () => {
           {
             sort: { sortDefs: [{ column: "ric", sortType: "A" }] },
             filterSpec: { filter: 'ccy = "EUR"' },
-          }
-        ).noChanges
+          },
+        ).noChanges,
       ).toEqual(true);
     });
   });
@@ -37,14 +40,14 @@ describe("datasource-utils", () => {
       expect(
         isConfigChanged(
           { filterSpec: { filter: 'ccy = "EUR"' } },
-          { filterSpec: { filter: 'ccy = "EUR"' } }
-        ).noChanges
+          { filterSpec: { filter: 'ccy = "EUR"' } },
+        ).noChanges,
       ).toEqual(true);
       expect(
         isConfigChanged(
           { filterSpec: { filter: 'ccy = "EUR"' } },
-          { filterSpec: { filter: 'ccy = "CAD"' } }
-        )
+          { filterSpec: { filter: 'ccy = "CAD"' } },
+        ),
       ).toEqual({
         ...NO_CONFIG_CHANGES,
         filterChanged: true,

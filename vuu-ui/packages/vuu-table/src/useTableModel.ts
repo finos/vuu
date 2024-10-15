@@ -310,6 +310,14 @@ function init({
     .filter(subscribedOnly(dataSourceConfig?.columns))
     .map(toRuntimeColumnDescriptor);
 
+  if (selectionModel === "checkbox") {
+    runtimeColumns.splice(
+      0,
+      0,
+      toRuntimeColumnDescriptor(checkboxColumnDescriptor, -1),
+    );
+  }
+
   const { columnLayout = "static" } = tableConfig;
   const runtimeColumnsWithLayout = applyWidthToColumns(runtimeColumns, {
     availableWidth,
@@ -319,14 +327,6 @@ function init({
   const columnsInRenderOrder = runtimeColumnsWithLayout.some(isPinned)
     ? sortPinnedColumns(runtimeColumnsWithLayout)
     : runtimeColumnsWithLayout;
-
-  if (selectionModel === "checkbox") {
-    columnsInRenderOrder.splice(
-      0,
-      0,
-      toRuntimeColumnDescriptor(checkboxColumnDescriptor, -1),
-    );
-  }
 
   let state: InternalTableModel = {
     availableWidth,

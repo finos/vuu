@@ -4,6 +4,7 @@ import { useControlled } from "@salt-ds/core";
 import {
   KeyboardEvent,
   MouseEvent,
+  MutableRefObject,
   RefObject,
   useCallback,
   useEffect,
@@ -11,7 +12,6 @@ import {
 } from "react";
 import { TableNavigationStyle } from "./Table";
 import {
-  CellPos,
   NavigationKey,
   cellDropdownShowing,
   closestRowIndex,
@@ -20,6 +20,7 @@ import {
 } from "./table-dom-utils";
 import { ScrollRequestHandler } from "./useTableScroll";
 import { FocusCell } from "./useCellFocus";
+import { CellFocusState, CellPos } from "@finos/vuu-table-types";
 
 const rowNavigationKeys = new Set<NavigationKey>([
   "Home",
@@ -53,6 +54,7 @@ export const isPagingKey = (key: string): key is PageKey =>
   PageKeys.includes(key);
 
 export interface NavigationHookProps {
+  cellFocusStateRef: MutableRefObject<CellFocusState>;
   containerRef: RefObject<HTMLElement>;
   columnCount?: number;
   defaultHighlightedIndex?: number;
@@ -72,6 +74,7 @@ export interface NavigationHookProps {
 }
 
 export const useKeyboardNavigation = ({
+  cellFocusStateRef,
   columnCount = 0,
   containerRef,
   defaultHighlightedIndex,
@@ -99,12 +102,9 @@ export const useKeyboardNavigation = ({
   });
   highlightedIndexRef.current = highlightedIndex;
   const setHighlightedIndex = useCallback(
-    (idx: number, fromKeyboard = false) => {
+    (idx: number) => {
       onHighlight?.(idx);
       setHighlightedIdx(idx);
-      if (fromKeyboard) {
-        // lastFocus.current = idx;
-      }
     },
     [onHighlight, setHighlightedIdx],
   );
@@ -117,11 +117,12 @@ export const useKeyboardNavigation = ({
   const setActiveCell = useCallback(
     (rowIdx: number, colIdx: number, fromKeyboard = false) => {
       const pos: CellPos = [rowIdx, colIdx];
+      // TODO do we still need this when we have cellFocusStateRef ?
       activeCellPos.current = pos;
       if (navigationStyle === "row") {
         setHighlightedIdx(rowIdx);
       } else {
-        focusCell(pos);
+        focusCell(pos, fromKeyboard);
       }
       if (fromKeyboard) {
         focusedCellPos.current = pos;
@@ -137,10 +138,12 @@ export const useKeyboardNavigation = ({
     ): Promise<CellPos> =>
       new Promise((resolve) => {
         let newRowIdx = rowIdx;
+        const { current: focusState } = cellFocusStateRef;
         switch (key) {
           case "PageDown": {
             newRowIdx = Math.min(rowCount - 1, rowIdx + viewportRowCount);
             if (newRowIdx !== rowIdx) {
+              focusState.cellPos = [newRowIdx, colIdx];
               requestScroll?.({ type: "scroll-page", direction: "down" });
             }
             break;
@@ -148,6 +151,7 @@ export const useKeyboardNavigation = ({
           case "PageUp": {
             newRowIdx = Math.max(0, rowIdx - viewportRowCount);
             if (newRowIdx !== rowIdx) {
+              focusState.cellPos = [newRowIdx, colIdx];
               requestScroll?.({ type: "scroll-page", direction: "up" });
             }
             break;
@@ -155,6 +159,7 @@ export const useKeyboardNavigation = ({
           case "Home": {
             newRowIdx = 0;
             if (newRowIdx !== rowIdx) {
+              focusState.cellPos = [0, colIdx];
               requestScroll?.({ type: "scroll-end", direction: "home" });
             }
             break;
@@ -162,6 +167,7 @@ export const useKeyboardNavigation = ({
           case "End": {
             newRowIdx = rowCount - 1;
             if (newRowIdx !== rowIdx) {
+              focusState.cellPos = [newRowIdx, colIdx];
               requestScroll?.({ type: "scroll-end", direction: "end" });
             }
             break;

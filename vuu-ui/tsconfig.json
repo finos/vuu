@@ -19,7 +19,7 @@
   },
   "include": [
     "cypress",
-    "packages/*/src",
+    "packages",
     "sample-apps/*/src",
     "showcase/src",
     "sample-apps/*/index.ts",

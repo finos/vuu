@@ -1,45 +1,36 @@
 import {
   DataSource,
+  DataSourceConfig,
   DataSourceConstructorProps,
   DataSourceEditHandler,
-  DataSourceEvents,
-  DataSourceFilter,
-  DataSourceRow,
   DataSourceStatus,
   SubscribeCallback,
   SubscribeProps,
-  WithFullConfig,
 } from "@finos/vuu-data-types";
+import { VuuTable, VuuGroupBy, VuuRange } from "@finos/vuu-protocol-types";
 import {
-  VuuAggregation,
-  VuuTable,
-  VuuGroupBy,
-  VuuRange,
-  VuuSort,
-} from "@finos/vuu-protocol-types";
-import {
+  BaseDataSource,
   ColumnMap,
-  EventEmitter,
-  NO_CONFIG_CHANGES,
   NULL_RANGE,
   buildColumnMap,
-  uuid,
-  vanillaConfig,
+  hasFilter,
+  hasSort,
 } from "@finos/vuu-utils";
-import { NDJsonReader, jsonToDataSourceRow } from "./rest-utils";
+import {
+  NDJsonReader,
+  filterToQueryString,
+  jsonToDataSourceRow,
+  sortToQueryString,
+} from "./rest-utils";
 import { MovingWindow } from "./moving-window";
 
 export type RestMetaData = {
   recordCount: number;
 };
 
-export class RestDataSource
-  extends EventEmitter<DataSourceEvents>
-  implements DataSource
-{
+export class RestDataSource extends BaseDataSource implements DataSource {
   private static _api = "/api";
 
-  private clientCallback: SubscribeCallback | undefined;
   #columnMap: ColumnMap = buildColumnMap([
     "bbg",
     "currency",
@@ -48,54 +39,36 @@ export class RestDataSource
     "ric",
     "lotSize",
   ]);
-  #config: WithFullConfig = vanillaConfig;
-  #data: DataSourceRow[] = [];
   #dataWindow = new MovingWindow(NULL_RANGE);
-  #range: VuuRange = NULL_RANGE;
-  #title: string | undefined;
 
-  aggregations: VuuAggregation[] = [];
-  filter: DataSourceFilter = { filter: "" };
   groupBy: VuuGroupBy = [];
   selectedRowsCount = 0;
-  size = 0;
-  sort: VuuSort = { sortDefs: [] };
   status: DataSourceStatus = "initialising";
   table: VuuTable;
 
-  viewport: string;
+  constructor(props: DataSourceConstructorProps & { url?: string }) {
+    super(props);
 
-  constructor({
-    table,
-    title,
-    viewport = uuid(),
-  }: DataSourceConstructorProps & {
-    url?: string;
-  }) {
-    super();
+    const { table } = props;
 
     if (!table) throw Error("RestDataSource constructor called without table");
-
     this.table = table;
-    this.viewport = viewport;
+  }
 
-    this.#config = {
-      ...this.#config,
-      columns: [
-        "bbg",
-        "currency",
-        "description",
-        "exchange",
-        "ric",
-        "isin",
-        "lotSize",
-      ],
-    };
-    this.#title = title;
+  async subscribe(subscribeProps: SubscribeProps, callback: SubscribeCallback) {
+    super.subscribe(subscribeProps, callback);
+
+    console.log(`subscribe ${JSON.stringify(subscribeProps, null, 2)}`);
+
+    this.rangeRequest(this._range);
+  }
+
+  unsubscribe() {
+    console.log("unsubscribe");
   }
 
   private get pageSize() {
-    return this.#range.to - this.#range.from;
+    return this._range.to - this._range.from;
   }
 
   static get api() {
@@ -111,57 +84,50 @@ export class RestDataSource
   }
 
   get dataUrl() {
-    const { from, to } = this.#range;
-    return `${this.url}?origin=${from}&limit=${to - from}`;
+    const { from, to } = this._range;
+    return `${this.url}?origin=${from}&limit=${to - from}${this.queryStringParameters}`;
   }
 
   get metaDataUrl() {
     return `${this.url}/summary`;
   }
 
+  private get queryStringParameters() {
+    const params: string[] = [];
+    if (hasSort(this._config)) {
+      params.push(sortToQueryString(this._config.sort));
+    }
+
+    if (hasFilter(this._config)) {
+      params.push(filterToQueryString(this._config.filterSpec));
+    }
+
+    return params.join("");
+  }
+
   get title() {
-    return this.#title ?? `${this.table.module} ${this.table.table}`;
+    return this._title ?? `${this.table.module} ${this.table.table}`;
   }
 
   set title(title: string) {
-    this.#title = title;
+    this._title = title;
   }
 
-  async subscribe(
-    { range, ...props }: SubscribeProps,
-    callback: SubscribeCallback,
-  ) {
-    if (range) {
-      this.range = range;
-    }
-
-    console.log(`subscribe ${JSON.stringify(props, null, 2)}`);
-    this.clientCallback = callback;
-
+  rangeRequest(range: VuuRange) {
+    console.log(`set range ${JSON.stringify(range)}`);
+    this.#dataWindow.setRange(range);
     this.fetchData();
   }
 
-  unsubscribe() {
-    console.log("unsubscribe");
-  }
-
-  get columns() {
-    return this.#config.columns;
-  }
-
   get config() {
-    return this.#config;
+    return super.config;
   }
 
-  get range() {
-    return this.#range;
-  }
+  set config(config: DataSourceConfig) {
+    const previousConfig = this._config;
+    super.config = config;
 
-  set range(range: VuuRange) {
-    console.log(`set range ${JSON.stringify(range)}`);
-    if (range.from !== this.#range.from || range.to !== this.#range.to) {
-      this.#range = range;
-      this.#dataWindow.setRange(range);
+    if (this._config !== previousConfig) {
       this.fetchData();
     }
   }
@@ -178,10 +144,10 @@ export class RestDataSource
       console.log(
         `processing ${this.#dataWindow.data.length} rows took ${end - start}ms`,
       );
-      this.clientCallback?.({
+      this._clientCallback?.({
         clientViewportId: this.viewport,
         mode: "update",
-        range: this.#range,
+        range: this._range,
         rows: this.#dataWindow.data,
         size: recordCount,
         type: "viewport-update",
@@ -194,7 +160,7 @@ export class RestDataSource
       mode: "cors",
     }).then(
       NDJsonReader(
-        this.#range.from,
+        this._range.from,
         (index, json) =>
           this.#dataWindow.add(
             jsonToDataSourceRow(index, json, this.#columnMap),
@@ -224,8 +190,6 @@ export class RestDataSource
   applyEdit: DataSourceEditHandler = async () => {
     return "Method not implemented";
   };
-
-  applyConfig = () => NO_CONFIG_CHANGES;
 
   openTreeNode = () => {
     throw new Error("openTreeNode, Method not implemented.");

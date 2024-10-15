@@ -6,7 +6,7 @@ export const DataSourceProvider = ({
   getServerAPI,
   isLocalData = true,
   VuuDataSource,
-  vuuModuleNames
+  vuuModuleNames,
 }: Omit<DataSourceContextProps, "isLocalData"> & {
   children: ReactNode;
   isLocalData?: boolean;

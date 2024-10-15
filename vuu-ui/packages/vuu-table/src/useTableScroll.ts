@@ -7,6 +7,7 @@ import {
 import type { VuuRange } from "@finos/vuu-protocol-types";
 import {
   ForwardedRef,
+  MutableRefObject,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -16,7 +17,11 @@ import {
 } from "react";
 import type { ViewportMeasurements } from "./useTableViewport";
 import { howFarIsRowOutsideViewport } from "./table-dom-utils";
-import type { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
+import type {
+  CellFocusState,
+  RuntimeColumnDescriptor,
+} from "@finos/vuu-table-types";
+import { FocusCell } from "./useCellFocus";
 
 export type ScrollDirectionVertical = "up" | "down";
 export type ScrollDirectionHorizontal = "left" | "right";
@@ -25,7 +30,15 @@ export type ScrollDirection =
   | ScrollDirectionHorizontal;
 
 /**
- * scroll into view the row at given index posiiton.
+ * scroll into view the row at given pixel offset.
+ */
+export interface ScrollRequestPosition {
+  scrollPos: number;
+  type: "scroll-top" | "scroll-bottom";
+}
+
+/**
+ * scroll into view the row at given row index posiiton.
  */
 export interface ScrollRequestRow {
   rowIndex: number;
@@ -44,7 +57,8 @@ export interface ScrollRequestPage {
 export type ScrollRequest =
   | ScrollRequestPage
   | ScrollRequestEnd
-  | ScrollRequestRow;
+  | ScrollRequestRow
+  | ScrollRequestPosition;
 
 export type ScrollRequestHandler = (request: ScrollRequest) => void;
 
@@ -152,7 +166,9 @@ type ScrollPos = {
 };
 
 export interface TableScrollHookProps {
+  cellFocusStateRef: MutableRefObject<CellFocusState>;
   columns: RuntimeColumnDescriptor[];
+  focusCell?: FocusCell;
   getRowAtPosition: RowAtPositionFunc;
   onHorizontalScroll?: (scrollLeft: number) => void;
   onVerticalScroll?: (scrollTop: number, pctScrollTop: number) => void;
@@ -170,7 +186,9 @@ export interface TableScrollHookProps {
 }
 
 export const useTableScroll = ({
+  cellFocusStateRef,
   columns,
+  focusCell,
   getRowAtPosition,
   onHorizontalScroll,
   onVerticalScroll,
@@ -202,6 +220,7 @@ export const useTableScroll = ({
     rowCount: viewportRowCount,
     totalHeaderHeight,
     usesMeasuredHeaderHeight,
+    viewportBodyHeight,
     viewportWidth,
   } = viewportMeasurements;
 
@@ -251,16 +270,42 @@ export const useTableScroll = ({
   const handleVerticalScroll = useCallback(
     (scrollTop: number, pctScrollTop: number) => {
       contentContainerPosRef.current.scrollTop = scrollTop;
+      const { current: prevFirstRow } = firstRowRef;
 
       onVerticalScroll?.(scrollTop, pctScrollTop);
       const firstRow = getRowAtPosition(scrollTop);
-      if (firstRow !== firstRowRef.current) {
+      if (firstRow !== prevFirstRow) {
         firstRowRef.current = firstRow;
-        setRange({ from: firstRow, to: firstRow + viewportRowCount });
+        const lastRow = firstRow + viewportRowCount;
+        setRange({ from: firstRow, to: lastRow });
+
+        // If we've scrolled the focused cell out of view, we need to remove
+        // focus from it. The row element will be recycled and used as the
+        // render target for a different DataRow, we do not want the focus
+        // state of the cell to be preserved.
+        // Conversely, if we scroll the focussed cell back into the viewport,
+        // we must re-apply focus to it. We use the placeholder cell for this.
+        const { current: focusState } = cellFocusStateRef;
+        if (focusState.cellPos) {
+          const prevLastRow = prevFirstRow + viewportRowCount;
+          const [row] = focusState.cellPos;
+          const wasInViewport = row >= prevFirstRow && row < prevLastRow;
+          const isInViewport = row >= firstRow && row < lastRow;
+
+          if (wasInViewport && !isInViewport) {
+            focusState.placeholderEl?.focus({ preventScroll: true });
+            focusState.outsideViewport = row < firstRow ? "above" : "below";
+          } else if (isInViewport && !wasInViewport) {
+            focusState.outsideViewport = false;
+            focusCell?.(focusState.cellPos);
+          }
+        }
       }
       onVerticalScrollInSitu?.(0);
     },
     [
+      cellFocusStateRef,
+      focusCell,
       getRowAtPosition,
       onVerticalScroll,
       onVerticalScrollInSitu,
@@ -387,79 +432,111 @@ export const useTableScroll = ({
         const [maxScrollLeft, maxScrollTop] = getMaxScroll(contentContainer);
         const { scrollLeft, scrollTop } = contentContainer;
         contentContainerScrolledRef.current = false;
-        if (scrollRequest.type === "scroll-row") {
-          const activeRow = getRowElementAtIndex(
-            contentContainer,
-            scrollRequest.rowIndex,
-          );
+        switch (scrollRequest.type) {
+          case "scroll-top":
+            {
+              contentContainer.scrollTo({
+                top: scrollRequest.scrollPos,
+                left: scrollLeft,
+                behavior: "instant",
+              });
+            }
+            break;
+          case "scroll-bottom":
+            {
+              contentContainer.scrollTo({
+                top:
+                  scrollRequest.scrollPos -
+                  (viewportBodyHeight - 2 * rowHeight),
+                left: scrollLeft,
+                behavior: "instant",
+              });
+            }
+            break;
+          case "scroll-row":
+            {
+              const activeRow = getRowElementAtIndex(
+                contentContainer,
+                scrollRequest.rowIndex,
+              );
 
-          if (activeRow !== null) {
-            const [direction, distance] = howFarIsRowOutsideViewport(
-              activeRow,
-              totalHeaderHeight,
-            );
-            if (direction && distance) {
+              if (activeRow !== null) {
+                const [direction, distance] = howFarIsRowOutsideViewport(
+                  activeRow,
+                  totalHeaderHeight,
+                );
+                if (direction && distance) {
+                  if (isVirtualScroll) {
+                    const offset = direction === "down" ? 1 : -1;
+                    onVerticalScrollInSitu?.(offset);
+                    const firstRow = firstRowRef.current + offset;
+                    firstRowRef.current = firstRow;
+                    setRange({
+                      from: firstRow,
+                      to: firstRow + viewportRowCount,
+                    });
+                  } else {
+                    let newScrollLeft = scrollLeft;
+                    let newScrollTop = scrollTop;
+                    if (direction === "up" || direction === "down") {
+                      newScrollTop = Math.min(
+                        Math.max(0, scrollTop + distance),
+                        maxScrollTop,
+                      );
+                    } else {
+                      newScrollLeft = Math.min(
+                        Math.max(0, scrollLeft + distance),
+                        maxScrollLeft,
+                      );
+                    }
+                    contentContainer.scrollTo({
+                      top: newScrollTop,
+                      left: newScrollLeft,
+                      behavior: "smooth",
+                    });
+                  }
+                }
+              }
+            }
+            break;
+          case "scroll-page":
+            {
+              const { direction } = scrollRequest;
               if (isVirtualScroll) {
-                const offset = direction === "down" ? 1 : -1;
+                const offset =
+                  direction === "down" ? viewportRowCount : -viewportRowCount;
                 onVerticalScrollInSitu?.(offset);
                 const firstRow = firstRowRef.current + offset;
                 firstRowRef.current = firstRow;
-                setRange({
-                  from: firstRow,
-                  to: firstRow + viewportRowCount,
-                });
+                setRange({ from: firstRow, to: firstRow + viewportRowCount });
               } else {
-                let newScrollLeft = scrollLeft;
-                let newScrollTop = scrollTop;
-                if (direction === "up" || direction === "down") {
-                  newScrollTop = Math.min(
-                    Math.max(0, scrollTop + distance),
-                    maxScrollTop,
-                  );
-                } else {
-                  newScrollLeft = Math.min(
-                    Math.max(0, scrollLeft + distance),
-                    maxScrollLeft,
-                  );
-                }
+                const scrollBy =
+                  direction === "down" ? appliedPageSize : -appliedPageSize;
+                const newScrollTop = Math.min(
+                  Math.max(0, scrollTop + scrollBy),
+                  maxScrollTop,
+                );
                 contentContainer.scrollTo({
                   top: newScrollTop,
-                  left: newScrollLeft,
-                  behavior: "smooth",
+                  left: scrollLeft,
+                  behavior: "auto",
                 });
               }
             }
-          }
-        } else if (scrollRequest.type === "scroll-page") {
-          const { direction } = scrollRequest;
-          if (isVirtualScroll) {
-            const offset =
-              direction === "down" ? viewportRowCount : -viewportRowCount;
-            onVerticalScrollInSitu?.(offset);
-            const firstRow = firstRowRef.current + offset;
-            firstRowRef.current = firstRow;
-            setRange({ from: firstRow, to: firstRow + viewportRowCount });
-          } else {
-            const scrollBy =
-              direction === "down" ? appliedPageSize : -appliedPageSize;
-            const newScrollTop = Math.min(
-              Math.max(0, scrollTop + scrollBy),
-              maxScrollTop,
-            );
-            contentContainer.scrollTo({
-              top: newScrollTop,
-              left: scrollLeft,
-              behavior: "auto",
-            });
-          }
-        } else if (scrollRequest.type === "scroll-end") {
-          const { direction } = scrollRequest;
-          const scrollTo = direction === "end" ? maxScrollTop : 0;
-          contentContainer.scrollTo({
-            top: scrollTo,
-            left: contentContainer.scrollLeft,
-            behavior: "auto",
-          });
+            break;
+          case "scroll-end":
+            {
+              const { direction } = scrollRequest;
+              const scrollTo = direction === "end" ? maxScrollTop : 0;
+              contentContainer.scrollTo({
+                top: scrollTo,
+                left: contentContainer.scrollLeft,
+                behavior: "auto",
+              });
+            }
+            break;
+          default:
+            console.warn(`unexpected scroll request ${scrollRequest["type"]}`);
         }
       }
     },
@@ -467,8 +544,10 @@ export const useTableScroll = ({
       appliedPageSize,
       isVirtualScroll,
       onVerticalScrollInSitu,
+      rowHeight,
       setRange,
       totalHeaderHeight,
+      viewportBodyHeight,
       viewportRowCount,
     ],
   );

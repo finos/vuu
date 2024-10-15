@@ -1,13 +1,9 @@
 import { RefObject } from "react";
 import { ScrollDirection } from "./useTableScroll";
 import type { ArrowKey, PageKey } from "@finos/vuu-utils";
+import type { CellPos } from "@finos/vuu-table-types";
 
 const NULL_CELL_POS: CellPos = [-1, -1];
-
-/**
- * [rowIndex, colIndex
- */
-export type CellPos = [number, number];
 
 export type NavigationKey = PageKey | ArrowKey;
 

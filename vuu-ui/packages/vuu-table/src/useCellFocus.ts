@@ -1,71 +1,128 @@
-import { RefCallback, RefObject, useCallback, useRef } from "react";
 import {
-  CellPos,
+  KeyboardEventHandler,
+  MutableRefObject,
+  RefCallback,
+  RefObject,
+  useCallback,
+} from "react";
+import {
   dataCellQuery,
   getTableCell,
   headerCellQuery,
 } from "./table-dom-utils";
 import { ScrollRequestHandler } from "./useTableScroll";
-import { queryClosest } from "@finos/vuu-utils";
+import { isArrowKey, queryClosest } from "@finos/vuu-utils";
+import { CellFocusState, CellPos } from "@finos/vuu-table-types";
 
 export interface CellFocusHookProps {
+  cellFocusStateRef: MutableRefObject<CellFocusState>;
   containerRef: RefObject<HTMLElement>;
   disableFocus?: boolean;
   requestScroll?: ScrollRequestHandler;
 }
 
-export type FocusCell = (cellPos: CellPos) => void;
+const getCellPosition = (el: HTMLElement) => {
+  const top = parseInt(el.parentElement?.style.top ?? "-1");
+  return { top };
+};
+
+export type FocusCell = (cellPos: CellPos, fromKeyboard?: boolean) => void;
 
 export const useCellFocus = ({
+  cellFocusStateRef,
   containerRef,
   disableFocus = false,
   requestScroll,
 }: CellFocusHookProps) => {
-  const focusableCell = useRef<HTMLElement>();
+  const focusCellPlaceholderRef = useCallback<RefCallback<HTMLDivElement>>(
+    (el) => (cellFocusStateRef.current.placeholderEl = el),
+    [cellFocusStateRef],
+  );
 
   const focusCell = useCallback<FocusCell>(
-    (cellPos) => {
+    (cellPos, fromKeyboard = false) => {
       if (containerRef.current) {
-        const activeCell = getTableCell(containerRef, cellPos);
-        if (activeCell) {
-          if (activeCell !== focusableCell.current) {
-            focusableCell.current?.removeAttribute("tabindex");
-            focusableCell.current = activeCell;
-            activeCell.setAttribute("tabindex", "0");
+        const { current: state } = cellFocusStateRef;
+
+        if (fromKeyboard && state.outsideViewport) {
+          state.cellPos = cellPos;
+        } else {
+          const activeCell = getTableCell(containerRef, cellPos);
+          if (activeCell) {
+            if (activeCell !== state.el) {
+              state.el?.removeAttribute("tabindex");
+              activeCell.setAttribute("tabindex", "0");
+
+              // TODO no need to measure if we're navigating horizontally
+              state.cellPos = cellPos;
+              state.el = activeCell;
+              state.pos = getCellPosition(activeCell);
+              state.outsideViewport = false;
+
+              if (state.placeholderEl) {
+                state.placeholderEl.style.top = `${state.pos.top}px`;
+              }
+            }
+            // TODO needs to be scroll cell to accommodate horizontal virtualization
+            requestScroll?.({ type: "scroll-row", rowIndex: cellPos[0] });
+            activeCell.focus({ preventScroll: true });
           }
-          // TODO needs to be scroll cell
-          requestScroll?.({ type: "scroll-row", rowIndex: cellPos[0] });
-          activeCell.focus({ preventScroll: true });
         }
       }
     },
-    // TODO we recreate this function whenever viewportRange changes, which will
-    // be often whilst scrolling - store range in a a ref ?
-    [containerRef, requestScroll],
+    [cellFocusStateRef, containerRef, requestScroll],
   );
 
   const tableBodyRef = useCallback<RefCallback<HTMLDivElement>>(
     (el) => {
       if (el) {
+        const { current: state } = cellFocusStateRef;
         const table = queryClosest<HTMLDivElement>(el, ".vuuTable");
         if (table) {
-          if (focusableCell.current === undefined && !disableFocus) {
+          if (state.el === null && !disableFocus) {
             const cell =
               table.querySelector<HTMLDivElement>(headerCellQuery(0)) ||
               table.querySelector<HTMLDivElement>(dataCellQuery(0, 0));
             if (cell) {
               cell.setAttribute("tabindex", "0");
-              focusableCell.current = cell;
+              state.cellPos = [0, 0];
+              state.el = cell;
+              state.pos = { top: -20 };
+
+              if (state.placeholderEl) {
+                state.placeholderEl.style.top = `-20px`;
+              }
             }
           }
         }
       }
     },
-    [disableFocus],
+    [cellFocusStateRef, disableFocus],
+  );
+
+  const focusCellPlaceholderKeyDown = useCallback<KeyboardEventHandler>(
+    (evt) => {
+      const { outsideViewport, pos } = cellFocusStateRef.current;
+      if (pos && isArrowKey(evt.key)) {
+        // TODO depends on whether we're scrolling up or down
+        if (outsideViewport === "above") {
+          requestScroll?.({ type: "scroll-top", scrollPos: pos.top });
+        } else if (outsideViewport === "below") {
+          requestScroll?.({ type: "scroll-bottom", scrollPos: pos.top });
+        } else {
+          throw Error(
+            `cellFocusPlaceholder should not have focus if inside viewport`,
+          );
+        }
+      }
+    },
+    [cellFocusStateRef, requestScroll],
   );
 
   return {
     focusCell,
+    focusCellPlaceholderKeyDown,
+    focusCellPlaceholderRef,
     tableBodyRef,
   };
 };

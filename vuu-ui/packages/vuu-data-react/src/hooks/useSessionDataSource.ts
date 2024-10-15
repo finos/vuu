@@ -1,7 +1,7 @@
 import {
   DataSource,
   DataSourceConfig,
-  TableSchema
+  TableSchema,
 } from "@finos/vuu-data-types";
 import { isConfigChanged, resetRange, useDataSource } from "@finos/vuu-utils";
 import { useViewContext } from "@finos/vuu-layout";
@@ -15,7 +15,7 @@ const NO_CONFIG: SessionDataSourceConfig = {};
 
 export const useSessionDataSource = ({
   dataSourceSessionKey = "data-source",
-  tableSchema
+  tableSchema,
 }: {
   dataSourceSessionKey?: string;
   tableSchema: TableSchema;
@@ -49,6 +49,7 @@ export const useSessionDataSource = ({
         // this won't do anything if dataSource config already matches this
         // This is only really used when injecting a dataSource into session
         // state in Showcase examples
+        // DO we definitely need this ? If not apply config can be provate
         ds.applyConfig(dataSourceConfigFromState, true);
       }
 
@@ -70,7 +71,7 @@ export const useSessionDataSource = ({
       table: tableSchema.table,
       ...dataSourceConfigFromState,
       columns,
-      title
+      title,
     });
     ds.on("config", handleDataSourceConfigChange);
     saveSession?.(ds, "data-source");
@@ -85,7 +86,7 @@ export const useSessionDataSource = ({
     saveSession,
     tableSchema.columns,
     tableSchema.table,
-    title
+    title,
   ]);
 
   return dataSource;

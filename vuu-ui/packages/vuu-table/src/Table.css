@@ -145,6 +145,12 @@
   position: relative;
 }
 
+.vuuTable-focusCellPlaceholder {
+  height: var(--row-height);
+  position: absolute;
+  width: 50px;
+}
+
 .vuuPinLeft,
 .vuuPinRight {
   background-color: inherit;
