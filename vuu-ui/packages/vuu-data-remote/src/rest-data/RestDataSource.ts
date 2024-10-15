@@ -11,7 +11,6 @@ import { VuuTable, VuuGroupBy, VuuRange } from "@finos/vuu-protocol-types";
 import {
   BaseDataSource,
   ColumnMap,
-  NO_CONFIG_CHANGES,
   NULL_RANGE,
   buildColumnMap,
   hasFilter,

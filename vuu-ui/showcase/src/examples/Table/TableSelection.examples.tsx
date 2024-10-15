@@ -1,11 +1,6 @@
-import {
-  getSchema,
-  LocalDataSourceProvider,
-  SimulTableName,
-  vuuModule,
-} from "@finos/vuu-data-test";
+import { getSchema, LocalDataSourceProvider } from "@finos/vuu-data-test";
 import { Table, TableProps } from "@finos/vuu-table";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 
 import "./Table.examples.css";
 import { TableSchema } from "@finos/vuu-data-types";

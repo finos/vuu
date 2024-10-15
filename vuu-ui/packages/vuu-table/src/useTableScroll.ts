@@ -536,7 +536,7 @@ export const useTableScroll = ({
             }
             break;
           default:
-            console.warn(`unexpected scroll request ${scrollRequest.type}`);
+            console.warn(`unexpected scroll request ${scrollRequest["type"]}`);
         }
       }
     },

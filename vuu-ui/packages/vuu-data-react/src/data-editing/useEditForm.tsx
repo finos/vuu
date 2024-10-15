@@ -40,6 +40,11 @@ type ValidationState = {
   messages: Record<string, string>;
 };
 
+const CLEAN_VALIDATION: ValidationState = {
+  ok: true,
+  messages: {},
+};
+
 const getValidationChecker = (
   descriptor: DataValueDescriptor,
   apply: "change" | "commit",
@@ -291,9 +296,10 @@ export const useEditForm = ({
     //   viewportRpcRequest("VP_BULK_EDIT_CANCEL_RPC"),
     // );
     setFormEditState(CLEAN_FORM);
+    setValidationState(CLEAN_VALIDATION);
     // console.log({ rpcResponse });
     setEntity(originalEntityRef.current as Entity);
-  }, [setEntity, setFormEditState]);
+  }, [setEntity, setFormEditState, setValidationState]);
 
   const handleFocus = useCallback<FocusEventHandler>((evt) => {
     // Ignore focus on popup Calendars, Lists etc
