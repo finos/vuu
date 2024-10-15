@@ -240,6 +240,8 @@ const TableCore = ({
     columns,
     data,
     draggableRow,
+    focusCellPlaceholderKeyDown,
+    focusCellPlaceholderRef,
     getRowOffset,
     handleContextMenuAction,
     headerHeight,
@@ -377,6 +379,25 @@ const TableCore = ({
                   zebraStripes={tableAttributes.zebraStripes}
                 />
               ))}
+              {/* 
+                The focusCellPlaceholder allows us to deal with the situation where a cell 
+                that has focus is scrolled out of the viewport. That cell, along with the 
+                containing row, will be recycled to render another DataRow. The html table 
+                cell must not retain focus once it is re-used but we need to track the 
+                original focus, in case user uses arrow key to resume navigation. 
+                The placeholder is fixed in place at the location where the focused cell 
+                was last rendered. It assumes focus. If we get an arrowkey mousedown event 
+                on the placeholder, the user has resumed navigation whilst the focused cell 
+                is offscreen. We scroll back to the focus location and pass focus back to 
+                the correct target cell.
+              */}
+              <div
+                className={`${classBase}-focusCellPlaceholder`}
+                onKeyDown={focusCellPlaceholderKeyDown}
+                ref={focusCellPlaceholderRef}
+                tabIndex={-1}
+              />
+
               {cellBlock}
             </div>
           ) : null}

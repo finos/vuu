@@ -295,7 +295,7 @@ export class ArrayDataSource
     this.#selectedRowsCount = selectionCount(selected);
     debug?.(`select ${JSON.stringify(selected)}`);
     this.selectedRows = selected;
-    this.setRange(resetRange(this.#range), true);
+    this.setRange(this.#range, true);
     this.emit("row-selection", selected, this.#selectedRowsCount);
   }
 

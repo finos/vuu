@@ -11,7 +11,6 @@ import {
 } from "react";
 import { TableNavigationStyle } from "./Table";
 import {
-  CellPos,
   NavigationKey,
   cellDropdownShowing,
   closestRowIndex,
@@ -20,6 +19,7 @@ import {
 } from "./table-dom-utils";
 import { ScrollRequestHandler } from "./useTableScroll";
 import { FocusCell } from "./useCellFocus";
+import { CellPos } from "@finos/vuu-table-types";
 
 const rowNavigationKeys = new Set<NavigationKey>([
   "Home",
@@ -99,12 +99,9 @@ export const useKeyboardNavigation = ({
   });
   highlightedIndexRef.current = highlightedIndex;
   const setHighlightedIndex = useCallback(
-    (idx: number, fromKeyboard = false) => {
+    (idx: number) => {
       onHighlight?.(idx);
       setHighlightedIdx(idx);
-      if (fromKeyboard) {
-        // lastFocus.current = idx;
-      }
     },
     [onHighlight, setHighlightedIdx],
   );
@@ -121,7 +118,7 @@ export const useKeyboardNavigation = ({
       if (navigationStyle === "row") {
         setHighlightedIdx(rowIdx);
       } else {
-        focusCell(pos);
+        focusCell(pos, fromKeyboard);
       }
       if (fromKeyboard) {
         focusedCellPos.current = pos;

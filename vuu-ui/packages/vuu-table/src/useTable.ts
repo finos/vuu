@@ -6,6 +6,7 @@ import {
 } from "@finos/vuu-data-types";
 import { VuuSortType } from "@finos/vuu-protocol-types";
 import {
+  CellFocusState,
   ColumnDescriptor,
   DataCellEditHandler,
   RuntimeColumnDescriptor,
@@ -52,7 +53,7 @@ import {
 import { updateTableConfig } from "./table-config";
 import { getIndexFromRowElement } from "./table-dom-utils";
 import { useCellEditing } from "./useCellEditing";
-import { useCellFocus } from "./useCellFocus";
+import { FocusCell, useCellFocus } from "./useCellFocus";
 import { useDataSource } from "./useDataSource";
 import { useKeyboardNavigation } from "./useKeyboardNavigation";
 import { useRowClassNameGenerators } from "./useRowClassNameGenerators";
@@ -73,6 +74,14 @@ import { TableCellBlock } from "./cell-block/cellblock-utils";
 
 const stripInternalProperties = (tableConfig: TableConfig): TableConfig => {
   return tableConfig;
+};
+
+const NullCellFocusState: CellFocusState = {
+  cellPos: undefined,
+  el: null,
+  outsideViewport: false,
+  placeholderEl: null,
+  pos: undefined,
 };
 
 export interface TableHookProps
@@ -156,6 +165,10 @@ export const useTable = ({
   useMemo(() => {
     tableConfigRef.current = config;
   }, [config]);
+
+  const cellFocusStateRef = useRef<CellFocusState>(NullCellFocusState);
+  // Needed to avoid circular dependency between useTableScroll and useCellFocus
+  const focusCellRef = useRef<FocusCell>();
 
   const [headerHeight, setHeaderHeight] = useState(showColumnHeaders ? -1 : 0);
   const [rowCount, setRowCount] = useState<number>(dataSource.size);
@@ -264,7 +277,9 @@ export const useTable = ({
   });
 
   const { requestScroll, ...scrollProps } = useTableScroll({
+    cellFocusStateRef,
     columns,
+    focusCell: focusCellRef.current,
     getRowAtPosition,
     rowHeight,
     scrollingApiRef,
@@ -511,11 +526,19 @@ export const useTable = ({
     [columnMap, columns, dataSource, dispatchTableModelAction],
   );
 
-  const { focusCell, tableBodyRef } = useCellFocus({
+  const {
+    focusCell,
+    focusCellPlaceholderKeyDown,
+    focusCellPlaceholderRef,
+    tableBodyRef,
+  } = useCellFocus({
+    cellFocusStateRef,
     containerRef,
     disableFocus,
     requestScroll,
   });
+
+  focusCellRef.current = focusCell;
 
   const columnCount = columns.filter((c) => c.hidden !== true).length;
 
@@ -754,6 +777,8 @@ export const useTable = ({
     columns,
     data,
     draggableRow,
+    focusCellPlaceholderKeyDown,
+    focusCellPlaceholderRef,
     getRowOffset,
     handleContextMenuAction,
     headerHeight,

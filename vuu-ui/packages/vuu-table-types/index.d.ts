@@ -28,6 +28,7 @@ import type {
   MouseEvent,
   ReactElement,
 } from "react";
+import { CellPos } from "@finos/vuu-table/src/table-dom-utils";
 
 export declare type TableSelectionModel =
   | "none"
@@ -405,3 +406,20 @@ export declare type TableConfigChangeHandler = (config: TableConfig) => void;
 export declare type CustomHeaderComponent = FC<BaseRowProps>;
 export declare type CustomHeaderElement = ReactElement;
 export declare type CustomHeader = CustomHeaderComponent | CustomHeaderElement;
+
+/**
+ * The row and column index positions of a table cell
+ * [rowIndex, colIndex]
+ */
+export declare type CellPos = [number, number];
+
+/**
+ * Used to track the Table cell (if any) with focus.
+ */
+export declare type CellFocusState = {
+  el: HTMLElement | null;
+  outsideViewport: "above" | "below" | false;
+  placeholderEl: HTMLDivElement | null;
+  pos: { top: number } | undefined;
+  cellPos: CellPos | undefined;
+};
