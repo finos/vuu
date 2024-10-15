@@ -549,6 +549,7 @@ export const useTable = ({
     onKeyDown: navigationKeyDown,
     ...containerProps
   } = useKeyboardNavigation({
+    cellFocusStateRef,
     columnCount,
     containerRef,
     disableFocus,
