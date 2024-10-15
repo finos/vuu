@@ -1,5 +1,6 @@
 import {
   DataSource,
+  DataSourceConfig,
   DataSourceConstructorProps,
   DataSourceEditHandler,
   DataSourceStatus,
@@ -13,8 +14,15 @@ import {
   NO_CONFIG_CHANGES,
   NULL_RANGE,
   buildColumnMap,
+  hasFilter,
+  hasSort,
 } from "@finos/vuu-utils";
-import { NDJsonReader, jsonToDataSourceRow } from "./rest-utils";
+import {
+  NDJsonReader,
+  filterToQueryString,
+  jsonToDataSourceRow,
+  sortToQueryString,
+} from "./rest-utils";
 import { MovingWindow } from "./moving-window";
 
 export type RestMetaData = {
@@ -78,11 +86,24 @@ export class RestDataSource extends BaseDataSource implements DataSource {
 
   get dataUrl() {
     const { from, to } = this._range;
-    return `${this.url}?origin=${from}&limit=${to - from}`;
+    return `${this.url}?origin=${from}&limit=${to - from}${this.queryStringParameters}`;
   }
 
   get metaDataUrl() {
     return `${this.url}/summary`;
+  }
+
+  private get queryStringParameters() {
+    const params: string[] = [];
+    if (hasSort(this._config)) {
+      params.push(sortToQueryString(this._config.sort));
+    }
+
+    if (hasFilter(this._config)) {
+      params.push(filterToQueryString(this._config.filterSpec));
+    }
+
+    return params.join("");
   }
 
   get title() {
@@ -97,6 +118,19 @@ export class RestDataSource extends BaseDataSource implements DataSource {
     console.log(`set range ${JSON.stringify(range)}`);
     this.#dataWindow.setRange(range);
     this.fetchData();
+  }
+
+  get config() {
+    return super.config;
+  }
+
+  set config(config: DataSourceConfig) {
+    const previousConfig = this._config;
+    super.config = config;
+
+    if (this._config !== previousConfig) {
+      this.fetchData();
+    }
   }
 
   private fetchData = async () => {
@@ -157,8 +191,6 @@ export class RestDataSource extends BaseDataSource implements DataSource {
   applyEdit: DataSourceEditHandler = async () => {
     return "Method not implemented";
   };
-
-  applyConfig = () => NO_CONFIG_CHANGES;
 
   openTreeNode = () => {
     throw new Error("openTreeNode, Method not implemented.");

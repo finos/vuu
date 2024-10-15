@@ -149,7 +149,7 @@
   height: var(--row-height);
   position: absolute;
   width: 50px;
- 
+}
 
 .vuuPinLeft,
 .vuuPinRight {
