@@ -1,65 +1,67 @@
 import { TableRowClickHandler } from "@finos/vuu-table-types";
 import { TableProps } from "@finos/vuu-table";
-import { OpenChangeHandler, useControlled } from "@finos/vuu-ui-controls";
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { BasketSelectorProps } from "./BasketSelector";
 import { BasketSelectorRow } from "./BasketSelectorRow";
+import {
+  flip,
+  size,
+  useClick,
+  useDismiss,
+  useInteractions,
+} from "@floating-ui/react";
+import { useFloatingUI } from "@salt-ds/core";
 
 export type BasketSelectorHookProps = Pick<
   BasketSelectorProps,
   | "basketInstanceId"
   | "dataSourceBasketTradingSearch"
-  | "defaultIsOpen"
-  | "isOpen"
-  | "onOpenChange"
   | "onClickAddBasket"
   | "onSelectBasket"
 >;
 
 export const useBasketSelector = ({
-  dataSourceBasketTradingSearch,
-  defaultIsOpen,
-  isOpen: isOpenProp,
   onClickAddBasket,
-  onOpenChange,
   onSelectBasket,
 }: BasketSelectorHookProps) => {
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const [isOpen, setIsOpen] = useControlled<boolean>({
-    controlled: isOpenProp,
-    default: defaultIsOpen ?? false,
-    name: "useDropdownList",
+  const [open, setOpen] = useState(false);
+
+  const { context, elements, ...floatingUIProps } = useFloatingUI({
+    open,
+    onOpenChange: setOpen,
+    placement: "bottom",
+    strategy: "fixed",
+    middleware: [
+      size({
+        apply({ rects, elements, availableHeight }) {
+          Object.assign(elements.floating.style, {
+            minWidth: `${rects.reference.width}px`,
+            maxHeight: `max(calc(${availableHeight}px - var(--salt-spacing-100)), calc((var(--salt-size-base) + var(--salt-spacing-100)) * 5))`,
+          });
+        },
+      }),
+      flip({ fallbackStrategy: "initialPlacement" }),
+    ],
   });
 
-  const handleOpenChange = useCallback<OpenChangeHandler>(
-    (open, closeReason) => {
-      setIsOpen(open);
-      onOpenChange?.(open, closeReason);
-      if (open === false) {
-        dataSourceBasketTradingSearch.disable?.();
-        if (closeReason !== "Tab") {
-          setTimeout(() => {
-            triggerRef.current?.focus();
-          }, 100);
-        }
-      }
-    },
-    [dataSourceBasketTradingSearch, onOpenChange, setIsOpen]
-  );
+  const interactionPropGetters = useInteractions([
+    useDismiss(context),
+    useClick(context, { keyboardHandlers: false, toggle: false }),
+  ]);
 
   const handleRowClick = useCallback<TableRowClickHandler>(
     (_evt, row) => {
       const instanceId = row.data.instanceId as string;
-      handleOpenChange(false, "select");
+      setOpen(false);
       onSelectBasket?.(instanceId);
     },
-    [handleOpenChange, onSelectBasket]
+    [onSelectBasket],
   );
 
   const handleClickAddBasket = useCallback(() => {
-    handleOpenChange(false, "script");
+    setOpen(false);
     onClickAddBasket();
-  }, [handleOpenChange, onClickAddBasket]);
+  }, [onClickAddBasket]);
 
   const TableProps: Partial<TableProps> = useMemo(
     () => ({
@@ -96,14 +98,14 @@ export const useBasketSelector = ({
       rowHeight: 47,
       tabIndex: -1,
     }),
-    [handleRowClick]
+    [handleRowClick],
   );
 
   return {
-    isOpen,
+    floatingUIProps,
+    interactionPropGetters,
     onClickAddBasket: handleClickAddBasket,
-    onOpenChange: handleOpenChange,
+    open,
     TableProps,
-    triggerRef,
   };
 };

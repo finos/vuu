@@ -2,7 +2,7 @@ import { getAllSchemas, SimulTableName, vuuModule } from "@finos/vuu-data-test";
 import { Flexbox } from "@finos/vuu-layout";
 import {
   DragDropProvider,
-  InstrumentSearch,
+  TableSearch,
   useDragDropProvider,
 } from "@finos/vuu-ui-controls";
 import type { DataSourceRow } from "@finos/vuu-data-types";
@@ -21,12 +21,13 @@ let displaySequence = 1;
 export const DefaultInstrumentSearch = () => {
   const dataSource = useMemo(
     () => vuuModule<SimulTableName>("SIMUL").createDataSource("instruments"),
-    []
+    [],
   );
   return (
-    <InstrumentSearch
+    <TableSearch
       autoFocus
       dataSource={dataSource}
+      searchColumns={["description"]}
       style={{ height: 400, width: 250 }}
     />
   );
@@ -44,7 +45,7 @@ export const InstrumentSearchVuuInstruments = () => {
   }
 
   return (
-    <InstrumentSearch
+    <TableSearch
       dataSource={dataSource}
       searchColumns={["bbg", "description"]}
       style={{ height: 400, width: 250 }}
@@ -60,7 +61,7 @@ const DropTarget = ({ id, ...htmlAttributes }: DropTargetProps) => {
   const { isDragSource, isDropTarget, register } = useDragDropProvider(id);
 
   console.log(
-    `DropTarget isDragSource ${isDragSource} isDropTarget ${isDropTarget}`
+    `DropTarget isDragSource ${isDragSource} isDropTarget ${isDropTarget}`,
   );
 
   const acceptDrop = useCallback<GlobalDropHandler>((dragState) => {
@@ -90,14 +91,14 @@ const DropTarget = ({ id, ...htmlAttributes }: DropTargetProps) => {
 export const InstrumentSearchDragDrop = () => {
   const dataSource = useMemo(
     () => vuuModule<SimulTableName>("SIMUL").createDataSource("instruments"),
-    []
+    [],
   );
 
   const dragSource = useMemo(
     () => ({
       "source-table": { dropTargets: "drop-target" },
     }),
-    []
+    [],
   );
 
   const handleDragStart = useCallback(() => {
@@ -107,7 +108,7 @@ export const InstrumentSearchDragDrop = () => {
   return (
     <DragDropProvider dragSources={dragSource}>
       <Flexbox>
-        <InstrumentSearch
+        <TableSearch
           TableProps={{
             allowDragDrop: "drag-copy",
             id: "source-table",
@@ -115,6 +116,7 @@ export const InstrumentSearchDragDrop = () => {
           }}
           autoFocus
           dataSource={dataSource}
+          searchColumns={["description"]}
           style={{ height: 400, width: 250 }}
         />
         <DropTarget id="drop-target" />

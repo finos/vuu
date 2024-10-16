@@ -21,11 +21,11 @@ const testBaskets = [
 export const DefaultBasketSelector = () => {
   const [columnMap, dataSource] = useMemo(() => {
     const dataSource = vuuModule("BASKET").createDataSource(
-      "basketTrading"
+      "basketTrading",
     ) as ArrayDataSource;
     for (const [basketId, basketName, side, status] of testBaskets) {
       dataSource["insert"](
-        createBasketTradingRow(basketId, basketName, status, side)
+        createBasketTradingRow(basketId, basketName, status, side),
       );
     }
     dataSource.select([1]);
@@ -33,7 +33,7 @@ export const DefaultBasketSelector = () => {
   }, []);
 
   const [selectedBasket, setSelectedBasket] = useState(
-    new Basket(dataSource.data[1], columnMap)
+    new Basket(dataSource.data[1], columnMap),
   );
 
   const handleClickAddBasket = useCallback(() => {
@@ -43,14 +43,14 @@ export const DefaultBasketSelector = () => {
   const handleSelectBasket = useCallback(
     (instanceId: string) => {
       const basket = dataSource.data.find(
-        (d) => d[columnMap.instanceId] === instanceId
+        (d) => d[columnMap.instanceId] === instanceId,
       );
       if (basket) {
         setSelectedBasket(new Basket(basket, columnMap));
       }
     },
 
-    [columnMap, dataSource.data]
+    [columnMap, dataSource.data],
   );
 
   return (
@@ -64,40 +64,3 @@ export const DefaultBasketSelector = () => {
   );
 };
 DefaultBasketSelector.displaySequence = displaySequence++;
-
-export const OpenBasketSelector = () => {
-  const [columnMap, dataSource] = useMemo(() => {
-    const dataSource = vuuModule("BASKET").createDataSource(
-      "basketTrading"
-    ) as ArrayDataSource;
-    for (const [basketId, basketName, side, status] of testBaskets) {
-      dataSource["insert"](
-        createBasketTradingRow(basketId, basketName, status, side)
-      );
-    }
-    dataSource.select([3]);
-    return [buildColumnMap(dataSource.columns), dataSource];
-  }, []);
-
-  const testBasket = new Basket(dataSource.data[3], columnMap);
-
-  const handleClickAddBasket = useCallback(() => {
-    console.log("Add Basket");
-  }, []);
-
-  const handleSelectBasket = useCallback(() => {
-    console.log("Select Basket");
-  }, []);
-
-  return (
-    <BasketSelector
-      basket={testBasket}
-      basketInstanceId="steve-3"
-      dataSourceBasketTradingSearch={dataSource}
-      isOpen={true}
-      onClickAddBasket={handleClickAddBasket}
-      onSelectBasket={handleSelectBasket}
-    />
-  );
-};
-OpenBasketSelector.displaySequence = displaySequence++;

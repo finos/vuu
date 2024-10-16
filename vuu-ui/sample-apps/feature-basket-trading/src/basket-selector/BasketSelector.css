@@ -1,101 +1,102 @@
 .vuuBasketSelector {
-    --basket-selector-height: 61px;
-    align-items: center;
-    border: solid 1px var(--vuu-color-gray-45);
-    border-radius: 6px;
-    display: inline-block;
-    height: var(--basket-selector-height);
-    min-width: 450px;
+  --basket-selector-height: 61px;
+  align-items: center;
+  border: solid 1px var(--vuu-color-gray-45);
+  border-radius: 6px;
+  display: inline-block;
+  height: var(--basket-selector-height);
+  min-width: 450px;
 }
 
 .vuuBasketSelector-basketDetails {
-    --col-gap: 32px;
-    display: grid;
-    flex: 1 1 auto;
-    gap: 0px var(--col-gap);
-    grid-template-columns: auto auto auto 1fr;
-    grid-template-rows: 18px 1fr;
-    height: 100%;
-    padding: 8px;
-    max-width: 100%;
+  --col-gap: 32px;
+  display: grid;
+  flex: 1 1 auto;
+  gap: 0px var(--col-gap);
+  grid-template-columns: auto auto auto 1fr;
+  grid-template-rows: 18px 1fr;
+  height: 100%;
+  padding: 8px;
+  max-width: 100%;
 }
 .vuuBasketSelector-label {
-    color: var(--vuu-color-gray-50);
-    line-height: 1.5;
-    position: relative;
+  color: var(--vuu-color-gray-50);
+  line-height: 1.5;
+  position: relative;
 }
 
 .vuuBasketSelector-label:not(:first-child):before {
-    content: '';
-    position: absolute;
-    left: calc(-1 * calc(var(--col-gap) / 2));
-    top: 0px;
-    width: 1px;
-    height: calc(var(--basket-selector-height) - 16px);
-    background-color: var(--vuu-color-gray-05);
+  content: "";
+  position: absolute;
+  left: calc(-1 * calc(var(--col-gap) / 2));
+  top: 0px;
+  width: 1px;
+  height: calc(var(--basket-selector-height) - 16px);
+  background-color: var(--vuu-color-gray-05);
 }
 
 .vuuBasketSelector-basketName {
-    font-size: 20px;
-    font-weight: 700;
-    line-height: normal;
-    min-width: 120px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: normal;
+  min-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-
 .vuuBasketSelector-symbolName {
-    font-size: 20px;
-    font-weight: 400;
-    line-height: normal;
-    min-width: 70px;
-    overflow: hidden;
-    position: relative;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: normal;
+  min-width: 70px;
+  overflow: hidden;
+  position: relative;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .vuuBasketSelector-exchangeRate {
-    --vuu-icon-height: 24px;
-    --vuu-icon-size: 24px;
-    --vuu-icon-top: 0px;
-    --vuu-icon-width: 24px;
-    --vuuPriceTicker-fontSize: 20px;
-    --vuuPriceTicker-fontWeight: 400;
-    line-height: 1.5;
-    min-width: 80px;
+  --vuu-icon-height: 24px;
+  --vuu-icon-size: 24px;
+  --vuu-icon-top: 0px;
+  --vuu-icon-width: 24px;
+  --vuuPriceTicker-fontSize: 20px;
+  --vuuPriceTicker-fontWeight: 400;
+  line-height: 1.5;
+  min-width: 80px;
 }
 
 .vuuBasketSelector-trigger {
-    --saltButton-height: 24px;
-    --saltButton-width: 24px;
-    --vuu-icon-color: var(--vuu-color-gray-50);
-    --vuu-icon-height: 24px;
-    --vuu-icon-size: 24px;
-    --vuu-icon-width: 24px;
-    align-self: center;
-    justify-self: end;
-    grid-column: 4;
-    grid-row: 1 / span 2;
+  --saltButton-height: 24px;
+  --saltButton-width: 24px;
+  --vuu-icon-color: var(--vuu-color-gray-50);
+  --vuu-icon-height: 24px;
+  --vuu-icon-size: 24px;
+  --vuu-icon-width: 24px;
+  align-self: center;
+  justify-self: end;
+  grid-column: 4;
+  grid-row: 1 / span 2;
 }
 
 .vuuBasketSelector-searchContainer {
-    /* --vuuInstrumentSearch-inputPadding: 0 12px; */
-    --vuuInstrumentSearch-padding: 12px 0;
-    --vuuMeasuredContainer-flex: 1 1 1px;
-    display: flex;
-    flex-direction: column;
-    height: 386px;
+  /* --vuuInstrumentSearch-inputPadding: 0 12px; */
+  --vuuInstrumentSearch-padding: 12px 0;
+  --vuuMeasuredContainer-flex: 1 1 1px;
+  border: solid 1px var(--salt-container-secondary-borderColor);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  height: 386px;
 }
 
 .vuuBasketSelector-instrumentSearch {
-    flex: 1 1 auto;
+  flex: 1 1 auto;
 }
 .vuuBasketSelector-buttonBar {
-    align-items: center;
-    display: flex;
-    flex: 0 0 36px;
-    justify-content: center;
+  align-items: center;
+  display: flex;
+  flex: 0 0 36px;
+  justify-content: center;
 }

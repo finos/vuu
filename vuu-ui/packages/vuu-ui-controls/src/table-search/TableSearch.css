@@ -1,0 +1,21 @@
+.vuuTableSearch {
+  height: 100%;
+  padding: var(--vuuTableSearch-padding, 12px);
+  display: flex;
+  flex-direction: column;
+}
+
+.vuuTableSearch-inputField {
+  --vuu-icon-size: 16px;
+  flex: 0 0 40px;
+  padding: 0 12px;
+}
+.vuuTableSearch-list {
+  --vuuMeasuredContainer-flex: 1 1 1px;
+  background-color: var(--salt-container-primary-background);
+  flex: 1 1 auto;
+}
+
+.vuuTableSearch .vuuTableCell {
+  padding: 0;
+}
