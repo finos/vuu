@@ -5,7 +5,6 @@ export * from "./cycle-state-button";
 export * from "./date-input";
 export * from "./date-picker";
 export * from "./drag-drop";
-export * from "./date-popup";
 export * from "./drag-drop";
 export * from "./dropdown-base";
 export * from "./editable";
