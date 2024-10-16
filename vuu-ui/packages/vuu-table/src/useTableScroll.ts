@@ -492,7 +492,8 @@ export const useTableScroll = ({
                     contentContainer.scrollTo({
                       top: newScrollTop,
                       left: newScrollLeft,
-                      behavior: "smooth",
+                      // avoid begaviour: 'smooth', doesn't work correctly
+                      behavior: "instant",
                     });
                   }
                 }

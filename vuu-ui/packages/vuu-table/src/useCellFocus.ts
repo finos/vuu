@@ -80,17 +80,29 @@ export const useCellFocus = ({
         const table = queryClosest<HTMLDivElement>(el, ".vuuTable");
         if (table) {
           if (state.el === null && !disableFocus) {
-            const cell =
-              table.querySelector<HTMLDivElement>(headerCellQuery(0)) ||
-              table.querySelector<HTMLDivElement>(dataCellQuery(0, 0));
-            if (cell) {
-              cell.setAttribute("tabindex", "0");
-              state.cellPos = [0, 0];
-              state.el = cell;
+            const headerCell = table.querySelector<HTMLDivElement>(
+              headerCellQuery(0),
+            );
+            if (headerCell) {
+              headerCell.setAttribute("tabindex", "0");
+              state.cellPos = [-1, 0];
+              state.el = headerCell;
               state.pos = { top: -20 };
-
               if (state.placeholderEl) {
                 state.placeholderEl.style.top = `-20px`;
+              }
+            } else {
+              const cell = table.querySelector<HTMLDivElement>(
+                dataCellQuery(0, 0),
+              );
+              if (cell) {
+                cell.setAttribute("tabindex", "0");
+                state.cellPos = [0, 0];
+                state.el = cell;
+                state.pos = { top: 0 };
+                if (state.placeholderEl) {
+                  state.placeholderEl.style.top = `0px`;
+                }
               }
             }
           }

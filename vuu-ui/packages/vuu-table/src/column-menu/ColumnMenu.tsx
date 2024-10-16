@@ -26,6 +26,7 @@ export const ColumnMenu = ({ className, column }: ColumnMenuProps) => {
       data-embedded
       menuLocation="column-menu"
       menuOptions={{ column }}
+      tabIndex={-1}
     />
   );
 };
