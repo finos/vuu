@@ -327,6 +327,7 @@ const TableCore = ({
           className={`${classBase}-scrollbarContainer`}
           ref={scrollProps.scrollbarContainerRef}
           style={cssVariables}
+          tabIndex={-1}
         >
           <div className={`${classBase}-scrollbarContent`} />
         </div>

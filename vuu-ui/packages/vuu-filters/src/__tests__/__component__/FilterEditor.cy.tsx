@@ -29,7 +29,7 @@ const selectMenuOption = (name: "AND" | "OR") => {
   cy.findByRole("menuitem", { name }).should(
     "have.class",
     "vuuHighlighted",
-    "true"
+    "true",
   );
   // TODO WHY doesn't ENTER work ?
   cy.findByRole("menuitem", { name }).realClick();
@@ -42,7 +42,7 @@ describe("FilterEditor", () => {
       cy.mount(<NewFilter />);
       cy.findAllByRole("combobox").should("have.length", 1);
     });
-    it("THEN save button is disabled as C Luse is invalid", () => {
+    it("THEN save button is disabled as Clause is invalid", () => {
       cy.mount(<NewFilter />);
       cy.findByRole("button", { name: "Save" }).should("be.disabled");
     });
@@ -160,7 +160,7 @@ describe("FilterEditor", () => {
         cy.realPress("ArrowDown");
         cy.findByRole("option", { name: "currency" }).should(
           "have.class",
-          "saltOption-active"
+          "saltOption-active",
         );
         EnterAndAssertListVisible();
         EnterAndAssertListVisible();

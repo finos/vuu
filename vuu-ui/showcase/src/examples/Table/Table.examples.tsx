@@ -36,6 +36,7 @@ import {
 import { Button, Input } from "@salt-ds/core";
 import {
   CSSProperties,
+  HTMLAttributes,
   MouseEventHandler,
   useCallback,
   useMemo,
@@ -161,7 +162,12 @@ export const TabInAndOut = () => {
           padding: "0 12px",
         }}
       >
-        <Input placeholder="start here" data-testid="input-start" />
+        <Input
+          placeholder="start here"
+          inputProps={
+            { "data-testid": "input-start" } as HTMLAttributes<HTMLInputElement>
+          }
+        />
       </div>
       <div style={{ height: 600 }}>
         <TestTable height="100%" width="100%" />
@@ -174,7 +180,12 @@ export const TabInAndOut = () => {
           padding: "0 12px",
         }}
       >
-        <Input placeholder="end here" data-testid="input-end" />
+        <Input
+          placeholder="end here"
+          inputProps={
+            { "data-testid": "input-end" } as HTMLAttributes<HTMLInputElement>
+          }
+        />
       </div>
     </div>
   );

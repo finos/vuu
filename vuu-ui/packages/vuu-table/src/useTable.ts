@@ -166,7 +166,10 @@ export const useTable = ({
     tableConfigRef.current = config;
   }, [config]);
 
-  const cellFocusStateRef = useRef<CellFocusState>(NullCellFocusState);
+  // state is mutated, so make every component gets a fresh copy
+  const initialState = useMemo(() => ({ ...NullCellFocusState }), []);
+
+  const cellFocusStateRef = useRef<CellFocusState>(initialState);
   // Needed to avoid circular dependency between useTableScroll and useCellFocus
   const focusCellRef = useRef<FocusCell>();
 
