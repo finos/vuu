@@ -6,16 +6,15 @@ import { useMemo } from "react";
 export const useCell = (
   column: RuntimeColumnDescriptor,
   classBase: string,
-  isHeader?: boolean
+  isHeader?: boolean,
 ) =>
   // TODO measure perf without the memo, might not be worth the cost
   useMemo(() => {
-    const className = cx(classBase, {
+    const className = cx(classBase, column.className, {
       vuuPinFloating: column.pin === "floating",
       vuuPinLeft: column.pin === "left",
       vuuPinRight: column.pin === "right",
       vuuEndPin: isHeader && column.endPin,
-      // [`${classBase}-resizing`]: column.resizing,
       [`${classBase}-editable`]: column.editable,
       [`${classBase}-right`]: column.align === "right",
     });

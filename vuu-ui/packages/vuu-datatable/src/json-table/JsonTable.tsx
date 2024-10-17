@@ -1,9 +1,12 @@
 import { TableProps } from "@finos/vuu-table";
-import { JsonData } from "@finos/vuu-utils";
+import { JsonData, registerComponent } from "@finos/vuu-utils";
 import { Table } from "@finos/vuu-table";
 import { JsonDataSource } from "@finos/vuu-data-local";
 import { useEffect, useMemo, useRef } from "react";
 import { TableConfig } from "@finos/vuu-table-types";
+import { JsonCell } from "./JsonCell";
+
+registerComponent("json", JsonCell, "cell-renderer");
 
 export interface JsonTableProps
   extends Omit<TableProps, "config" | "dataSource"> {
@@ -11,12 +14,12 @@ export interface JsonTableProps
     TableConfig,
     "columnSeparators" | "rowSeparators" | "zebraStripes"
   >;
-  source: JsonData | undefined;
+  source: JsonData;
 }
 
 export const JsonTable = ({
   config,
-  source: sourceProp = { "": "" },
+  source: sourceProp,
   ...tableProps
 }: JsonTableProps) => {
   const sourceRef = useRef(sourceProp);
@@ -31,6 +34,8 @@ export const JsonTable = ({
     return {
       ...config,
       columns: dataSourceRef.current?.columnDescriptors ?? [],
+      columnSeparators: true,
+      rowSeparators: true,
     };
   }, [config]);
 
@@ -49,6 +54,8 @@ export const JsonTable = ({
       {...tableProps}
       config={tableConfig}
       dataSource={dataSourceRef.current}
+      showColumnHeaderMenus={false}
+      selectionModel="none"
     />
   );
 };

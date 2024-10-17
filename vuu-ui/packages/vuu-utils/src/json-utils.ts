@@ -39,8 +39,10 @@ const getCellValue = (
   attribute: string,
   attributeValue: unknown,
 ): CellValue => {
-  if (isJsonData(attributeValue)) {
-    return { attribute: `${attribute}+`, attributeValue: "", type: "json" };
+  if (Array.isArray(attributeValue)) {
+    return { attribute: `${attribute}[`, attributeValue: "", type: "json" };
+  } else if (isJsonData(attributeValue)) {
+    return { attribute: `${attribute}{`, attributeValue: "", type: "json" };
   } else if (attributeValue === undefined) {
     return {
       attribute,
@@ -70,16 +72,27 @@ export const jsonToDataSourceRows = (
 ): [ColumnDescriptor[], DataSourceRow[]] => {
   const cols: ColumnDescriptor[] = [];
 
-  cols.push(
-    {
+  if (Array.isArray(json)) {
+    cols.push({
+      className: "vuuJsonCell",
+      label: "Index",
       name: "col 1",
       type: jsonColumnType,
-    },
-    {
-      name: "col 2",
+      width: 80,
+    });
+  } else {
+    cols.push({
+      className: "vuuJsonCell",
+      name: "Level 1",
       type: jsonColumnType,
-    },
-  );
+    });
+  }
+
+  cols.push({
+    className: "vuuJsonCell",
+    name: "Level 2",
+    type: jsonColumnType,
+  });
 
   const rows: DataSourceRow[] = [];
 
@@ -99,7 +112,8 @@ const addChildValues = (
   let rowCount = 0;
   if (depth === cols.length - 1) {
     cols.push({
-      name: `col ${cols.length + 1}`,
+      className: "vuuJsonCell",
+      name: `Level ${cols.length + 1}`,
       hidden: true,
       type: jsonColumnType,
     });

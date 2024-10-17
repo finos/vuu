@@ -124,7 +124,7 @@ export const Row = memo(
         {columns.filter(isNotHidden).map((column) => {
           const isGroup = isGroupColumn(column);
           const isJsonCell = isJsonColumn(column);
-          const Cell = isGroup ? TableGroupCell : TableCell;
+          const Cell = isGroup && !isJsonCell ? TableGroupCell : TableCell;
 
           return (
             <Cell

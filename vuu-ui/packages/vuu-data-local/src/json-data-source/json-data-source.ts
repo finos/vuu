@@ -32,6 +32,8 @@ import {
   KeySet,
   metadataKeys,
   NO_CONFIG_CHANGES,
+  NULL_RANGE,
+  rangesAreSame,
   uuid,
   vanillaConfig,
 } from "@finos/vuu-utils";
@@ -83,12 +85,13 @@ export class JsonDataSource
     data,
     filterSpec,
     groupBy,
+    range,
     sort,
     title,
     viewport,
   }: JsonDataSourceConstructorProps) {
     super();
-
+    console.log({ range });
     if (!data) {
       throw Error("JsonDataSource constructor called without data");
     }
@@ -151,9 +154,6 @@ export class JsonDataSource
     if (groupBy) {
       this.#groupBy = groupBy;
     }
-    if (range) {
-      this.#range = range;
-    }
     if (sort) {
       this.#sort = sort;
     }
@@ -185,6 +185,12 @@ export class JsonDataSource
       type: "viewport-update",
       size: this.visibleRows.length,
     });
+
+    if (range && !rangesAreSame(this.#range, range)) {
+      this.range = range;
+    } else if (this.#range !== NULL_RANGE) {
+      this.sendRowsToClient();
+    }
   }
 
   unsubscribe() {
@@ -213,6 +219,10 @@ export class JsonDataSource
   set data(data: JsonData) {
     console.log(`set JsonDataSource data`);
     [this.columnDescriptors, this.#data] = jsonToDataSourceRows(data);
+    console.log({
+      columnDescriptors: this.columnDescriptors,
+    });
+    console.table(this.#data);
     this.visibleRows = this.#data
       .filter((row) => row[DEPTH] === 0)
       .map((row, index) =>

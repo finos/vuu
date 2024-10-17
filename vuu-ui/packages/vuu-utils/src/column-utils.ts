@@ -385,7 +385,7 @@ export const isGroupColumn = (
 ): column is GroupColumnDescriptor => column.isGroup === true;
 
 export const isJsonAttribute = (value: unknown) =>
-  typeof value === "string" && value.endsWith("+");
+  typeof value === "string" && (value.endsWith("{") || value.endsWith("["));
 
 export const isJsonGroup = (
   column: RuntimeColumnDescriptor,
