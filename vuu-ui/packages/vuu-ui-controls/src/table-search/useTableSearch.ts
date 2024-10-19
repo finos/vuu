@@ -1,15 +1,15 @@
 import { FormEventHandler, useCallback, useMemo, useState } from "react";
-import { InstrumentSearchProps } from "./InstrumentSearch";
+import { TableSearchProps } from "./TableSearch";
 
-export interface InstrumentSearchHookProps
-  extends Pick<InstrumentSearchProps, "dataSource" | "searchColumns"> {
+export interface TableSearchHookProps
+  extends Pick<TableSearchProps, "dataSource" | "searchColumns"> {
   label?: string;
 }
 
-export const useInstrumentSearch = ({
+export const useTableSearch = ({
   dataSource,
-  searchColumns = ["description"],
-}: InstrumentSearchHookProps) => {
+  searchColumns,
+}: TableSearchHookProps) => {
   const [searchState, setSearchState] = useState<{
     searchText: string;
     filter: string;
@@ -18,7 +18,7 @@ export const useInstrumentSearch = ({
   const baseFilterPattern = useMemo(
     // TODO make this contains once server supports it
     () => searchColumns.map((col) => `${col} starts "__VALUE__"`).join(" or "),
-    [searchColumns]
+    [searchColumns],
   );
 
   const handleChange = useCallback<FormEventHandler>(
@@ -35,7 +35,7 @@ export const useInstrumentSearch = ({
         };
       }
     },
-    [baseFilterPattern, dataSource]
+    [baseFilterPattern, dataSource],
   );
 
   return {

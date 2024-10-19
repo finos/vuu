@@ -1,7 +1,6 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { TableCellRendererProps } from "@finos/vuu-table-types";
-import { registerComponent } from "@finos/vuu-utils";
 
 import searchCellCss from "./SearchCell.css";
 
@@ -32,7 +31,3 @@ export const SearchCell = ({
     </div>
   );
 };
-
-registerComponent("search-cell", SearchCell, "cell-renderer", {
-  serverDataType: "private",
-});

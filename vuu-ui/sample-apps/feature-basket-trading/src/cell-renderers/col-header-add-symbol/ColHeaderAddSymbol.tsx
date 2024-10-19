@@ -6,7 +6,7 @@ import {
 import { VuuShellLocation, registerComponent } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
 import type { DataSource } from "@finos/vuu-data-types";
-import type { InstrumentSearchProps } from "@finos/vuu-ui-controls/src";
+import type { TableSearchProps } from "@finos/vuu-ui-controls/src";
 import { MouseEventHandler, useCallback, useMemo } from "react";
 
 import "./ColHeaderAddSymbol.css";
@@ -23,7 +23,7 @@ export const ColHeaderAddSymbol = () => {
       return ds;
     } else {
       throw Error(
-        "ColHeaderAddSymbol expects Basket Constituent datasource to be available in session store"
+        "ColHeaderAddSymbol expects Basket Constituent datasource to be available in session store",
       );
     }
   }, [loadSession]);
@@ -44,13 +44,13 @@ export const ColHeaderAddSymbol = () => {
                 id: "basket-instruments",
               },
               dataSource,
-            } as InstrumentSearchProps,
+            } as TableSearchProps,
           },
           title: "Add Ticker",
         },
       } as SetPropsAction);
     },
-    [dataSource, dispatchLayoutAction]
+    [dataSource, dispatchLayoutAction],
   );
 
   return (
@@ -64,5 +64,5 @@ registerComponent(
   "col-header-add-symbol",
   ColHeaderAddSymbol,
   "column-header-content-renderer",
-  {}
+  {},
 );

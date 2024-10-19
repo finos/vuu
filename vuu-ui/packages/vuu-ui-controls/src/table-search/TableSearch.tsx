@@ -12,15 +12,11 @@ import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { HTMLAttributes, RefCallback, useCallback } from "react";
 import { SearchCell } from "./SearchCell";
-import { useInstrumentSearch } from "./useInstrumentSearch";
+import { useTableSearch } from "./useTableSearch";
 
-import instrumentSearchCss from "./InstrumentSearch.css";
+import instrumentSearchCss from "./TableSearch.css";
 
-const classBase = "vuuInstrumentSearch";
-
-if (typeof SearchCell !== "function") {
-  console.warn("Instrument Search: SearchCell module not loaded ");
-}
+const classBase = "vuuTableSearch";
 
 const defaultTableConfig: TableConfig = {
   columns: [
@@ -39,17 +35,17 @@ const defaultTableConfig: TableConfig = {
   rowSeparators: true,
 };
 
-export interface InstrumentSearchProps extends HTMLAttributes<HTMLDivElement> {
+export interface TableSearchProps extends HTMLAttributes<HTMLDivElement> {
   TableProps?: Partial<TableProps>;
   autoFocus?: boolean;
   dataSource: DataSource;
   placeHolder?: string;
-  searchColumns?: string[];
+  searchColumns: string[];
 }
 
 const searchIcon = <span data-icon="search" />;
 
-export const InstrumentSearch = ({
+export const TableSearch = ({
   TableProps,
   autoFocus = false,
   className,
@@ -57,15 +53,15 @@ export const InstrumentSearch = ({
   placeHolder,
   searchColumns,
   ...htmlAttributes
-}: InstrumentSearchProps) => {
+}: TableSearchProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
-    testId: "vuu-instrument-search",
+    testId: "vuu-table-search",
     css: instrumentSearchCss,
     window: targetWindow,
   });
 
-  const { dataSource, onChange, searchState } = useInstrumentSearch({
+  const { dataSource, onChange, searchState } = useTableSearch({
     dataSource: dataSourceProp,
     searchColumns,
   });
@@ -113,4 +109,8 @@ export const InstrumentSearch = ({
   );
 };
 
-registerComponent?.("InstrumentSearch", InstrumentSearch, "view");
+registerComponent("search-cell", SearchCell, "cell-renderer", {
+  serverDataType: "private",
+});
+
+registerComponent?.("TableSearch", TableSearch, "view");

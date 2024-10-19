@@ -1,23 +1,26 @@
 import { DataSource } from "@finos/vuu-data-types";
-import {
-  DropdownBase,
-  DropdownBaseProps,
-  InstrumentSearch,
-  PriceTicker,
-} from "@finos/vuu-ui-controls";
+import { TableSearch, PriceTicker } from "@finos/vuu-ui-controls";
 import { useId } from "@finos/vuu-utils";
-import { Button } from "@salt-ds/core";
-import { HTMLAttributes, useRef } from "react";
+import {
+  Button,
+  useFloatingComponent,
+  useIdMemo,
+  type FloatingComponentProps,
+} from "@salt-ds/core";
+import { HTMLAttributes, forwardRef } from "react";
 import { Basket } from "../useBasketTrading";
 import { useBasketSelector } from "./useBasketSelector";
+import cx from "clsx";
 
 import "./BasketSelector.css";
 
 const classBase = "vuuBasketSelector";
 
-export interface BasketSelectorProps
-  extends Pick<DropdownBaseProps, "defaultIsOpen" | "isOpen" | "onOpenChange">,
-    HTMLAttributes<HTMLElement> {
+interface FloatingBasketSelectorProps extends FloatingComponentProps {
+  collapsed?: boolean;
+}
+
+export interface BasketSelectorProps extends HTMLAttributes<HTMLElement> {
   basket?: Basket;
   basketInstanceId?: string;
   dataSourceBasketTradingSearch: DataSource;
@@ -26,41 +29,61 @@ export interface BasketSelectorProps
   onSelectBasket: (basketInstanceId: string) => void;
 }
 
+const FloatingSelector = forwardRef<
+  HTMLDivElement,
+  FloatingBasketSelectorProps
+>(function FloatingSelector(
+  { children, className, collapsed, open, ...props },
+  forwardedRef,
+) {
+  const { Component: FloatingComponent } = useFloatingComponent();
+  return (
+    <FloatingComponent
+      className={cx(
+        `${classBase}-floating-table`,
+        {
+          [`${classBase}-collapsed`]: collapsed,
+        },
+        className,
+      )}
+      role="listbox"
+      open={open}
+      {...props}
+      ref={forwardedRef}
+    >
+      {children}
+    </FloatingComponent>
+  );
+});
+
 export const BasketSelector = ({
   basket,
   basketInstanceId,
   dataSourceBasketTradingSearch,
   id: idProp,
-  isOpen: isOpenProp,
   onClickAddBasket: onClickAddBasketProp,
-  onOpenChange: onOpenChangeProp,
   onSelectBasket,
   ...htmlAttributes
 }: BasketSelectorProps) => {
-  const rootRef = useRef<HTMLDivElement>(null);
   const id = useId(idProp);
+  const selectorId = useIdMemo();
 
-  const { isOpen, onClickAddBasket, onOpenChange, TableProps, triggerRef } =
-    useBasketSelector({
-      basketInstanceId,
-      dataSourceBasketTradingSearch,
-      isOpen: isOpenProp,
-      onClickAddBasket: onClickAddBasketProp,
-      onOpenChange: onOpenChangeProp,
-      onSelectBasket,
-    });
+  const {
+    floatingUIProps: { x, y, strategy, floating, reference },
+    interactionPropGetters: { getFloatingProps, getReferenceProps },
+    onClickAddBasket,
+    open,
+    TableProps,
+  } = useBasketSelector({
+    basketInstanceId,
+    dataSourceBasketTradingSearch,
+    onClickAddBasket: onClickAddBasketProp,
+    onSelectBasket,
+  });
 
   return (
-    <DropdownBase
-      {...htmlAttributes}
-      PopupProps={{ minWidth: 400 }}
-      className={classBase}
-      isOpen={isOpen}
-      onOpenChange={onOpenChange}
-      placement="below-right"
-      ref={rootRef}
-    >
-      <div className={`${classBase}-basketDetails`}>
+    <div {...htmlAttributes} className={classBase}>
+      <div className={`${classBase}-basketDetails`} ref={reference}>
         <label className={`${classBase}-label`} id={`${id}-name`}>
           Basket Name
         </label>
@@ -90,27 +113,38 @@ export const BasketSelector = ({
           showArrow
         />
         <Button
+          {...getReferenceProps()}
           className={`${classBase}-trigger`}
           data-icon="chevron-down"
-          ref={triggerRef}
           variant="secondary"
         />
       </div>
-      <div className={`${classBase}-searchContainer`}>
-        <InstrumentSearch
-          TableProps={TableProps}
-          autoFocus
-          className={`${classBase}-instrumentSearch`}
-          dataSource={dataSourceBasketTradingSearch}
-          placeHolder="Enter Basket Name"
-          searchColumns={["basketName"]}
-        />
-        <div className={`${classBase}-buttonBar`}>
-          <Button onClick={onClickAddBasket} variant="secondary">
-            Add New Basket
-          </Button>
+      <FloatingSelector
+        {...getFloatingProps()}
+        collapsed={!open}
+        id={selectorId}
+        open={open}
+        left={x + 3}
+        position={strategy}
+        ref={floating}
+        top={y + 3}
+      >
+        <div className={`${classBase}-searchContainer`}>
+          <TableSearch
+            TableProps={TableProps}
+            autoFocus
+            className={`${classBase}-instrumentSearch`}
+            dataSource={dataSourceBasketTradingSearch}
+            placeHolder="Enter Basket Name"
+            searchColumns={["basketName"]}
+          />
+          <div className={`${classBase}-buttonBar`}>
+            <Button onClick={onClickAddBasket} variant="secondary">
+              Add New Basket
+            </Button>
+          </div>
         </div>
-      </div>
-    </DropdownBase>
+      </FloatingSelector>
+    </div>
   );
 };
