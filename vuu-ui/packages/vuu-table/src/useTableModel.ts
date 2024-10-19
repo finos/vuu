@@ -38,6 +38,8 @@ import {
   DataSource,
   DataSourceConfig,
   TableSchema,
+  WithBaseFilter,
+  WithFullConfig,
 } from "@finos/vuu-data-types";
 import { VuuColumnDataType, VuuTable } from "@finos/vuu-protocol-types";
 import { Reducer, useReducer } from "react";
@@ -161,7 +163,8 @@ export interface ColumnActionUpdateProp {
   width?: ColumnDescriptor["width"];
 }
 
-export interface ColumnActionTableConfig extends DataSourceConfig {
+export interface ColumnActionTableConfig
+  extends WithBaseFilter<WithFullConfig> {
   confirmed?: boolean;
   type: "tableConfig";
 }
@@ -306,6 +309,7 @@ function init({
     tableAttributes,
     tableSchema,
   );
+
   const runtimeColumns = columns
     .filter(subscribedOnly(dataSourceConfig?.columns))
     .map(toRuntimeColumnDescriptor);
@@ -568,22 +572,26 @@ function updateColumnProp(
 
 function updateTableConfig(
   state: InternalTableModel,
-  { confirmed, filterSpec: filter, groupBy, sort }: ColumnActionTableConfig,
+  {
+    confirmed,
+    filterSpec,
+    groupBy,
+    sort,
+  }: Omit<ColumnActionTableConfig, "columns">,
 ) {
-  const hasGroupBy = groupBy !== undefined;
-  const hasFilter = typeof filter?.filter === "string";
-  const hasSort = sort && sort.sortDefs.length > 0;
-
   let result = state;
 
-  if (hasGroupBy) {
+  if (groupBy.length > 0) {
+    console.log(`useTableModel.updateTableConfig applyGroupBy`, {
+      groupBy,
+    });
     result = {
       ...state,
       columns: applyGroupByToColumns(result.columns, groupBy, confirmed),
     };
   }
 
-  if (hasSort) {
+  if (sort.sortDefs.length > 0) {
     result = {
       ...state,
       columns: applySortToColumns(result.columns, sort),
@@ -595,10 +603,10 @@ function updateTableConfig(
     };
   }
 
-  if (hasFilter) {
+  if (filterSpec.filter.length > 0) {
     result = {
       ...state,
-      columns: applyFilterToColumns(result.columns, filter),
+      columns: applyFilterToColumns(result.columns, filterSpec),
     };
   } else if (result.columns.some(isFilteredColumn)) {
     result = {

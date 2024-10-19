@@ -1,6 +1,7 @@
-import { Tree, TreeSourceNode, useItemsWithIds } from "@finos/vuu-ui-controls";
+import { Tree, useItemsWithIds } from "@finos/vuu-ui-controls";
 import { groupByInitialLetter, usa_states_cities } from "./List/List.data";
 import { folderData } from "./Tree.data";
+import { TreeSourceNode } from "@finos/vuu-utils";
 
 let displaySequence = 1;
 
@@ -35,7 +36,7 @@ export const SimpleTree = () => {
           source={
             groupByInitialLetter(
               usa_states_cities,
-              "groups-only"
+              "groups-only",
             ) as TreeSourceNode[]
           }
         />

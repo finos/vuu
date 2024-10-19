@@ -2,7 +2,7 @@ import { KeyboardEvent, useCallback, useMemo, useRef } from "react";
 import { getIndexOfNode, getNodeById } from "./hierarchical-data-utils";
 import { useControlled } from "@salt-ds/core";
 import { ArrowDown, ArrowLeft, ArrowUp, isNavigationKey } from "./key-code";
-import { NormalisedTreeSourceNode } from "./treeTypes";
+import { NormalisedTreeSourceNode } from "@finos/vuu-utils";
 
 function nextItemIdx(count: number, key: string, idx: number) {
   if (key === ArrowUp || key === ArrowLeft) {
@@ -50,7 +50,7 @@ export const useKeyboardNavigation = ({
       bwd: ArrowUp,
       fwd: ArrowDown,
     }),
-    []
+    [],
   );
 
   const [highlightedIdx, setHighlightedIdx, isControlledHighlighting] =
@@ -65,7 +65,7 @@ export const useKeyboardNavigation = ({
       onHighlight?.(idx);
       setHighlightedIdx(idx);
     },
-    [onHighlight, setHighlightedIdx]
+    [onHighlight, setHighlightedIdx],
   );
 
   const nextFocusableItemIdx = useCallback(
@@ -81,7 +81,7 @@ export const useKeyboardNavigation = ({
       }
       return nextIdx;
     },
-    [ArrowBwd, ArrowFwd, treeNodes]
+    [ArrowBwd, ArrowFwd, treeNodes],
   );
 
   // does this belong here or should it be a method passed in?
@@ -117,7 +117,7 @@ export const useKeyboardNavigation = ({
       nextFocusableItemIdx,
       onKeyboardNavigation,
       setHighlightedIndex,
-    ]
+    ],
   );
 
   const handleKeyDown = useCallback(
@@ -129,7 +129,7 @@ export const useKeyboardNavigation = ({
         navigateChildItems(e);
       }
     },
-    [treeNodes, navigateChildItems]
+    [treeNodes, navigateChildItems],
   );
 
   const listProps = useMemo(
@@ -157,7 +157,7 @@ export const useKeyboardNavigation = ({
         setHighlightedIndex(-1);
       },
     }),
-    [handleFocus, handleKeyDown, setHighlightedIndex]
+    [handleFocus, handleKeyDown, setHighlightedIndex],
   );
 
   return {

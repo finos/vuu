@@ -49,6 +49,8 @@ export * from "./sort-utils";
 export * from "./table-schema-utils";
 export * from "./text-utils";
 export * from "./typeahead-utils";
+export * from "./tree-types";
+export * from "./tree-utils";
 export * from "./ThemeProvider";
 export * from "./ts-utils";
 export * from "./url-utils";

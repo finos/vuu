@@ -38,7 +38,6 @@
     --vuuTableCell-outline,
     solid var(--salt-focused-outlineColor) 2px
   );
-  outline-offset: -1px;
 
   &:has(.vuuCheckboxRowSelector) {
     outline: none;

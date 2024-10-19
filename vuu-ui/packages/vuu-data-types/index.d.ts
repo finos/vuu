@@ -468,7 +468,7 @@ export declare type RowSelectionEventHandler = (
 
 export declare type DataSourceEvents = {
   config: (
-    config: DataSourceConfig | undefined,
+    config: WithBaseFilter<WithFullConfig>,
     confirmed?: boolean,
     configChanges?: DataSourceConfigChanges,
   ) => void;
@@ -578,7 +578,7 @@ export interface DataSource
   ) => DataSourceConfigChanges | undefined;
   closeTreeNode: (key: string, cascade?: boolean) => void;
   columns: string[];
-  config: WithBaseFilter<DataSourceConfig>;
+  config: WithBaseFilter<WithFullConfig>;
   status: DataSourceStatus;
   /**
    *
@@ -627,6 +627,8 @@ export interface DataSource
    * @returns
    */
   getChildRows?: (rowKey: string) => DataSourceRow[];
+
+  getRowAtIndex?: (rowIndex: number) => DataSourceRow | undefined;
   /**
    * Only implemented on JSON DataSource
    * @param depth

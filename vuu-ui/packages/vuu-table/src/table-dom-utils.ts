@@ -13,14 +13,33 @@ export const headerCellQuery = (colIdx: number) =>
 export const dataCellQuery = (rowIdx: number, colIdx: number) =>
   `.vuuTable-table [aria-rowindex='${rowIdx}'] > [aria-colindex='${colIdx}']`;
 
+export const getLevelUp = (
+  containerRef: RefObject<HTMLElement>,
+  cellPos: CellPos,
+): CellPos => {
+  const cell = getTableCell(containerRef, cellPos);
+  let row = cell?.parentElement;
+  const level = parseInt(row?.ariaLevel ?? "1");
+  if (level > 1) {
+    const targetLevel = `${level - 1}`;
+    while (row !== null && row.ariaLevel !== targetLevel) {
+      row = row.previousElementSibling as HTMLElement;
+    }
+    if (row) {
+      const nextRowIndex = parseInt(row.ariaRowIndex ?? "- 1");
+      if (nextRowIndex !== -1) {
+        return [nextRowIndex - 1, 0];
+      }
+    }
+  }
+  return cellPos;
+};
 export const getTableCell = (
   containerRef: RefObject<HTMLElement>,
   [rowIdx, colIdx]: CellPos,
 ) => {
   const cssQuery = dataCellQuery(rowIdx, colIdx);
-  const cell = containerRef.current?.querySelector(
-    cssQuery,
-  ) as HTMLTableCellElement;
+  const cell = containerRef.current?.querySelector(cssQuery) as HTMLDivElement;
 
   if (cellIsEditable(cell)) {
     // Dropdown gets focus, Input does not
@@ -28,6 +47,16 @@ export const getTableCell = (
     return focusableContent || cell;
   } else {
     return cell;
+  }
+};
+
+export const getFocusedCell = (el: HTMLElement | Element | null) => {
+  if (el?.role == "cell" || el?.role === "columnheader") {
+    return el as HTMLDivElement;
+  } else {
+    return el?.closest(
+      "[role='columnHeader'],[role='cell']",
+    ) as HTMLDivElement | null;
   }
 };
 
@@ -39,6 +68,20 @@ export const cellDropdownShowing = (cell: HTMLDivElement | null) => {
     return cell?.querySelector('.saltDropdown[aria-expanded="true"]') !== null;
   }
   return false;
+};
+
+const cellIsGroupCell = (cell: HTMLElement | null) =>
+  cell?.classList.contains("vuuTableGroupCell");
+
+const rowIsExpanded = (cell: HTMLElement) => {
+  switch (cell.parentElement?.ariaExpanded) {
+    case "true":
+      return true;
+    case "false":
+      return false;
+    default:
+      return undefined;
+  }
 };
 
 export const cellIsTextInput = (cell: HTMLElement) =>
@@ -154,6 +197,32 @@ export function getNextCellPos(
   }
   return [rowIdx, colIdx];
 }
+
+export type TreeNodeOperation = "expand" | "collapse" | "level-up";
+
+export const getTreeNodeOperation = (
+  containerRef: RefObject<HTMLElement>,
+  cellPos: CellPos,
+  key: NavigationKey,
+): TreeNodeOperation | undefined => {
+  const cell = getTableCell(containerRef, cellPos);
+  if (cellIsGroupCell(cell)) {
+    const isExpanded = rowIsExpanded(cell);
+    if (isExpanded === true) {
+      if (key === "ArrowLeft") {
+        return "collapse";
+      }
+    } else if (isExpanded === false) {
+      if (key === "ArrowRight") {
+        return "expand";
+      } else if (key === "ArrowLeft") {
+        return "level-up";
+      }
+    } else if (key === "ArrowLeft") {
+      return "level-up";
+    }
+  }
+};
 
 const NO_SCROLL_NECESSARY = [undefined, undefined] as const;
 

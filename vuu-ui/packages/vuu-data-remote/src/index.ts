@@ -5,5 +5,5 @@ export * from "./constants";
 export * from "./data-source";
 export * from "./message-utils";
 export * from "./rest-data/RestDataSource";
-export * from "./vuu-data-source";
+export * from "./VuuDataSource";
 export type { WebSocketConnectionState } from "./WebSocketConnection";

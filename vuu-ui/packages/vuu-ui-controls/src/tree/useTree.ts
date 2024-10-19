@@ -1,4 +1,7 @@
+import type { NormalisedTreeSourceNode } from "@finos/vuu-utils";
 import { KeyboardEvent, useCallback, useRef } from "react";
+import { useCollapsibleGroups } from "./use-collapsible-groups";
+import { useHierarchicalData } from "./use-hierarchical-data";
 import { useKeyboardNavigation } from "./use-keyboard-navigation";
 import {
   GroupSelection,
@@ -6,10 +9,7 @@ import {
   TreeSelection,
   useSelection,
 } from "./use-selection";
-import { useHierarchicalData } from "./use-hierarchical-data";
-import { useCollapsibleGroups } from "./use-collapsible-groups";
 import { useTreeKeyboardNavigation } from "./use-tree-keyboard-navigation";
-import type { NormalisedTreeSourceNode } from "./treeTypes";
 
 const EMPTY_ARRAY: string[] = [];
 
@@ -76,7 +76,7 @@ export const useTree = ({
         selectionHook.listItemHandlers?.onClick?.(evt);
       }
     },
-    [collapsibleHook, selectionHook]
+    [collapsibleHook, selectionHook],
   );
 
   const handleKeyDown = useCallback(
@@ -97,7 +97,7 @@ export const useTree = ({
       keyboardHook.listProps,
       selectionHook.listHandlers,
       treeNavigationHook.listHandlers,
-    ]
+    ],
   );
 
   const getActiveDescendant = () =>

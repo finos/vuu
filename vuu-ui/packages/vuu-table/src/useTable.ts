@@ -55,7 +55,10 @@ import { getIndexFromRowElement } from "./table-dom-utils";
 import { useCellEditing } from "./useCellEditing";
 import { FocusCell, useCellFocus } from "./useCellFocus";
 import { useDataSource } from "./useDataSource";
-import { useKeyboardNavigation } from "./useKeyboardNavigation";
+import {
+  GroupToggleHandler,
+  useKeyboardNavigation,
+} from "./useKeyboardNavigation";
 import { useRowClassNameGenerators } from "./useRowClassNameGenerators";
 import { useSelection } from "./useSelection";
 import { useTableAndColumnSettings } from "./useTableAndColumnSettings";
@@ -122,6 +125,7 @@ export interface TableHookProps
       | "onRowClick"
       | "renderBufferSize"
       | "scrollingApiRef"
+      | "selectionBookendWidth"
       | "showColumnHeaders"
       | "showPaginationControls"
     > {
@@ -170,6 +174,7 @@ export const useTable = ({
   renderBufferSize = 0,
   rowHeight = 20,
   scrollingApiRef,
+  selectionBookendWidth,
   selectionModel,
   showColumnHeaders,
   showPaginationControls,
@@ -223,21 +228,18 @@ export const useTable = ({
     tableConfig,
   } = useTableModel(config, dataSource, selectionModel, availableWidth);
 
+  // this is realy here to capture changes to available Width - typically when we get
+  // rowcount so add allowance for vertical scrollbar, reducing available width
+  // including dataSOurce is causing us to do unnecessary work in useTableModel
+  // split this iniot multip effects
   useLayoutEffectSkipFirst(() => {
     dispatchTableModelAction({
       availableWidth,
       type: "init",
-      // tableConfig: config,
       tableConfig: tableConfigRef.current,
       dataSource,
     });
-  }, [
-    availableWidth,
-    config,
-    dataSource,
-    dispatchTableModelAction,
-    verticalScrollbarWidth,
-  ]);
+  }, [availableWidth, config, dataSource, dispatchTableModelAction]);
 
   const applyTableConfigChange = useCallback(
     (config: TableConfig) => {
@@ -283,6 +285,7 @@ export const useTable = ({
     headerHeight: headerState.height,
     rowCount,
     rowHeight,
+    selectionEndSize: selectionBookendWidth,
     size: size,
     showPaginationControls,
   });
@@ -344,6 +347,7 @@ export const useTable = ({
           direction: "home",
         });
       }
+      console.log(`useTable dispatch tableConfig`);
       dispatchTableModelAction({
         type: "tableConfig",
         ...config,
@@ -515,6 +519,7 @@ export const useTable = ({
       if (row[IS_EXPANDED]) {
         dataSource.closeTreeNode(key, true);
         if (isJson) {
+          // TODO could this be instigated by an event emitted by the JsonDataSOurce ? "config" ?
           const idx = columns.indexOf(column);
           const rows = dataSource.getRowsAtDepth?.(idx + 1);
           if (rows && !rows.some((row) => row[IS_EXPANDED] || row[IS_LEAF])) {
@@ -543,6 +548,23 @@ export const useTable = ({
       }
     },
     [columnMap, columns, dataSource, dispatchTableModelAction],
+  );
+
+  // TODO combine with aboue
+  const handleToggleGroup = useCallback<GroupToggleHandler>(
+    (treeNodeOperation, rowIdx) => {
+      const row = dataSource.getRowAtIndex?.(rowIdx);
+      if (row) {
+        console.log({ row });
+        const key = row[KEY];
+        if (treeNodeOperation === "expand") {
+          dataSource.openTreeNode(key);
+        } else {
+          dataSource.closeTreeNode(key);
+        }
+      }
+    },
+    [dataSource],
   );
 
   const {
@@ -579,6 +601,7 @@ export const useTable = ({
     requestScroll,
     rowCount,
     onHighlight,
+    onToggleGroup: handleToggleGroup,
     viewportRange: range,
     viewportRowCount: viewportMeasurements.rowCount,
   });
@@ -652,6 +675,7 @@ export const useTable = ({
     onKeyDown: selectionHookKeyDown,
     onRowClick: selectionHookOnRowClick,
   } = useSelection({
+    containerRef,
     highlightedIndexRef,
     onSelect: handleSelect,
     onSelectionChange: handleSelectionChange,

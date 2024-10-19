@@ -15,8 +15,11 @@ import {
   NavigationKey,
   cellDropdownShowing,
   closestRowIndex,
-  getNextCellPos,
   getAriaCellPos,
+  getFocusedCell,
+  getNextCellPos,
+  getTreeNodeOperation,
+  getLevelUp as getLevelUp,
 } from "./table-dom-utils";
 import { ScrollRequestHandler } from "./useTableScroll";
 import { FocusCell } from "./useCellFocus";
@@ -41,6 +44,7 @@ export const isNavigationKey = (
 ): key is NavigationKey => {
   switch (navigationStyle) {
     case "cell":
+    case "tree":
       return cellNavigationKeys.has(key as NavigationKey);
     case "row":
       return rowNavigationKeys.has(key as NavigationKey);
@@ -69,6 +73,11 @@ const PageKeys = ["Home", "End", "PageUp", "PageDown"];
 export const isPagingKey = (key: string): key is PageKey =>
   PageKeys.includes(key);
 
+export type GroupToggleHandler = (
+  treeNodeOperation: "expand" | "collapse",
+  rowIndex: number,
+) => void;
+
 export interface NavigationHookProps {
   cellFocusStateRef: MutableRefObject<CellFocusState>;
   containerRef: RefObject<HTMLElement>;
@@ -83,6 +92,7 @@ export interface NavigationHookProps {
   navigationStyle: TableNavigationStyle;
   viewportRange: VuuRange;
   onHighlight?: (idx: number) => void;
+  onToggleGroup: GroupToggleHandler;
   requestScroll?: ScrollRequestHandler;
   restoreLastFocus?: boolean;
   rowCount?: number;
@@ -102,6 +112,7 @@ export const useKeyboardNavigation = ({
   navigationStyle,
   requestScroll,
   onHighlight,
+  onToggleGroup,
   rowCount = 0,
   viewportRowCount,
 }: NavigationHookProps) => {
@@ -125,19 +136,11 @@ export const useKeyboardNavigation = ({
     (idx: number) => {
       onHighlight?.(idx);
       setHighlightedIdx(idx);
+      console.log(`set highlightedIndexRef to ${idx}`);
+      highlightedIndexRef.current = idx;
     },
     [onHighlight, setHighlightedIdx],
   );
-
-  const getFocusedCell = (el: HTMLElement | Element | null) => {
-    if (el?.role == "cell" || el?.role === "columnheader") {
-      return el as HTMLDivElement;
-    } else {
-      return el?.closest(
-        "[role='columnHeader'],[role='cell']",
-      ) as HTMLDivElement | null;
-    }
-  };
 
   const setActiveCell = useCallback(
     (rowIdx: number, colIdx: number, fromKeyboard = false) => {
@@ -220,7 +223,6 @@ export const useKeyboardNavigation = ({
         const focusedCell = getFocusedCell(document.activeElement);
         if (focusedCell) {
           cellFocusStateRef.current.cellPos = getAriaCellPos(focusedCell);
-          console.log({ pos: cellFocusStateRef.current.cellPos });
           if (navigationStyle === "row") {
             setHighlightedIdx(cellFocusStateRef.current.cellPos[0]);
           }
@@ -236,25 +238,59 @@ export const useKeyboardNavigation = ({
   ]);
 
   const navigateChildItems = useCallback(
-    async (key: NavigationKey) => {
-      const {
-        current: { cellPos },
-      } = cellFocusStateRef;
-      const [nextRowIdx, nextColIdx] = isPagingKey(key)
-        ? await nextPageItemIdx(key, cellPos)
-        : getNextCellPos(key, cellPos, columnCount, maxRowIndex);
-
+    async (
+      key: NavigationKey,
+      navigationStyle: "cell" | "tree" = "cell",
+    ): Promise<undefined> => {
+      console.log(`navigateChildItems`);
+      const { cellPos } = cellFocusStateRef.current;
       const [rowIdx, colIdx] = cellPos;
+      let nextRowIdx = -1,
+        nextColIdx = -1;
+
+      if (isPagingKey(key)) {
+        [nextRowIdx, nextColIdx] = await nextPageItemIdx(key, cellPos);
+      } else if (navigationStyle === "cell") {
+        [nextRowIdx, nextColIdx] = getNextCellPos(
+          key,
+          cellPos,
+          columnCount,
+          rowCount,
+        );
+      } else if (navigationStyle === "tree") {
+        const treeNodeOperation = getTreeNodeOperation(
+          containerRef,
+          cellPos,
+          key,
+        );
+
+        if (
+          treeNodeOperation === "expand" ||
+          treeNodeOperation === "collapse"
+        ) {
+          onToggleGroup(treeNodeOperation, rowIdx);
+        } else if (treeNodeOperation === "level-up") {
+          [nextRowIdx, nextColIdx] = getLevelUp(containerRef, cellPos);
+        } else {
+          return navigateChildItems(key, "cell");
+        }
+      }
+
       if (nextRowIdx !== rowIdx || nextColIdx !== colIdx) {
         setActiveCell(nextRowIdx, nextColIdx, true);
+        console.log(`nextRowIdx ${nextRowIdx}`);
+        setHighlightedIndex(nextRowIdx);
       }
     },
     [
       cellFocusStateRef,
-      columnCount,
       nextPageItemIdx,
-      maxRowIndex,
+      columnCount,
+      rowCount,
+      containerRef,
+      onToggleGroup,
       setActiveCell,
+      setHighlightedIndex,
     ],
   );
 
@@ -270,7 +306,7 @@ export const useKeyboardNavigation = ({
       const { current: highlighted } = highlightedIndexRef;
       const [nextRowIdx] = isPagingKey(key)
         ? await nextPageItemIdx(key, [highlighted ?? -1, 0])
-        : getNextCellPos(key, [highlighted ?? -1, 0], columnCount, rowCount);
+        : getNextCellPos(key, [highlighted ?? -1, 0], columnCount, maxRowIndex);
       if (nextRowIdx !== highlighted) {
         setHighlightedIndex(nextRowIdx);
         // TO(DO make this a scroll request)
@@ -279,8 +315,8 @@ export const useKeyboardNavigation = ({
     },
     [
       columnCount,
+      maxRowIndex,
       nextPageItemIdx,
-      rowCount,
       scrollRowIntoViewIfNecessary,
       setHighlightedIndex,
     ],
@@ -309,9 +345,9 @@ export const useKeyboardNavigation = ({
         e.stopPropagation();
         if (navigationStyle === "row") {
           moveHighlightedRow(e.key);
-        } else {
+        } else if (navigationStyle !== "none") {
           if (!focusColumnMenuIfAppropriate(e, cell)) {
-            navigateChildItems(e.key);
+            navigateChildItems(e.key, navigationStyle);
           }
         }
       }

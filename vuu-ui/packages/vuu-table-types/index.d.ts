@@ -30,6 +30,8 @@ import type {
 } from "react";
 import { CellPos } from "@finos/vuu-table/src/table-dom-utils";
 
+export declare type GroupToggleTarget = "toggle-icon" | "group-column";
+
 export declare type TableSelectionModel =
   | "none"
   | "single"
@@ -385,12 +387,14 @@ export interface BaseRowProps {
 export interface RowProps extends BaseRowProps {
   classNameGenerator?: RowClassNameGenerator;
   columnMap: ColumnMap;
+  groupToggleTarget?: GroupToggleTarget;
   highlighted?: boolean;
-  row: DataSourceRow;
   offset: number;
   onClick?: TableRowClickHandlerInternal;
   onDataEdited?: DataCellEditHandler;
   onToggleGroup?: (row: DataSourceRow, column: RuntimeColumnDescriptor) => void;
+  row: DataSourceRow;
+  showBookends?: boolean;
   zebraStripes?: boolean;
 }
 

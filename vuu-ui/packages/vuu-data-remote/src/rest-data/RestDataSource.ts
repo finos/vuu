@@ -6,6 +6,8 @@ import {
   DataSourceStatus,
   SubscribeCallback,
   SubscribeProps,
+  WithBaseFilter,
+  WithFullConfig,
 } from "@finos/vuu-data-types";
 import { VuuTable, VuuGroupBy, VuuRange } from "@finos/vuu-protocol-types";
 import {
@@ -123,7 +125,7 @@ export class RestDataSource extends BaseDataSource implements DataSource {
     return super.config;
   }
 
-  set config(config: DataSourceConfig) {
+  set config(config: WithBaseFilter<WithFullConfig>) {
     const previousConfig = this._config;
     super.config = config;
 

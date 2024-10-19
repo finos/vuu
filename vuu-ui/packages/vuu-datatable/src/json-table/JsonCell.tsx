@@ -2,7 +2,7 @@ import { TableCellProps } from "@finos/vuu-table-types";
 import { metadataKeys } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { IconButton } from "@finos/vuu-ui-controls";
+import { ToggleIconButton } from "@finos/vuu-ui-controls";
 
 // Note the className is actually applied to containing cell
 import arrayCellCss from "./JsonCell.css";
@@ -39,13 +39,10 @@ export const JsonCell = ({ column, columnMap, row }: TableCellProps) => {
 
   const displayValue = getDisplayValue();
   const isEmpty = displayValue === "" || displayValue === undefined;
-  const icon = isExpanded ? "triangle-down" : "triangle-right";
 
   return (
     <>
-      {isLeaf || isEmpty ? null : (
-        <IconButton icon={icon} size={7} variant="secondary" />
-      )}
+      {isLeaf || isEmpty ? null : <ToggleIconButton isExpanded={isExpanded} />}
       <span>{displayValue}</span>
     </>
   );

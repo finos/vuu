@@ -357,7 +357,7 @@ export class ArrayDataSource
     return this._config;
   }
 
-  set config(config: WithBaseFilter<DataSourceConfig>) {
+  set config(config: WithBaseFilter<WithFullConfig>) {
     const configChanges = this.applyConfig(config);
     if (configChanges) {
       if (config) {

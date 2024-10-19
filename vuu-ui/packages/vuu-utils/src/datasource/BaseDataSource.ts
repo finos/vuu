@@ -49,7 +49,7 @@ export abstract class BaseDataSource
     sort,
     title,
     viewport,
-  }: DataSourceConstructorProps) {
+  }: Omit<DataSourceConstructorProps, "table">) {
     super();
     this._config = {
       ...this._config,
@@ -158,7 +158,7 @@ export abstract class BaseDataSource
     return this._config;
   }
 
-  set config(config: WithBaseFilter<DataSourceConfig>) {
+  set config(config: WithBaseFilter<WithFullConfig>) {
     const configChanges = this.applyConfig(config);
     if (configChanges) {
       this.emit("config", this._config, undefined, configChanges);

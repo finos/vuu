@@ -1,4 +1,4 @@
-import type { TreeSourceNode } from "@finos/vuu-ui-controls";
+import type { TreeSourceNode } from "@finos/vuu-utils";
 
 export const folderData: TreeSourceNode[] = [
   // prettier-ignore

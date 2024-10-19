@@ -1,65 +1,89 @@
-
 .vuu-theme {
- --svg-spinner: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="rgb(38, 112, 169)" d="M73,50c0-12.7-10.3-23-23-23S27,37.3,27,50 M30.9,50c0-10.5,8.5-19.1,19.1-19.1S69.1,39.5,69.1,50"><animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s" from="0 50 50" to="360 50 50" repeatCount="indefinite" /></path></svg>');
+  --svg-spinner: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="rgb(38, 112, 169)" d="M73,50c0-12.7-10.3-23-23-23S27,37.3,27,50 M30.9,50c0-10.5,8.5-19.1,19.1-19.1S69.1,39.5,69.1,50"><animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s" from="0 50 50" to="360 50 50" repeatCount="indefinite" /></path></svg>');
 }
 
 .vuuTableGroupHeaderCell {
   --vuuColumnHeaderPill-margin: 0;
-  --cell-align: 'flex-start';
-    text-align: left;
-    background: var(--dataTable-background);
-    cursor: default;
-    height: var(--vuuTableHeaderHeight);
-    /* ensure header row sits atop everything else when scrolling down */
-  }
+  --cell-align: "flex-start";
+  text-align: left;
+  cursor: default;
+  /* ensure header row sits atop everything else when scrolling down */
 
+  --vuuColumnHeaderPill-margin: 0;
+  --vuuColumnHeaderPill-flex: 0 0 24px;
 
-  .vuuTableGroupHeaderCell-inner {
-    align-items: center;
-    display: flex;
-    gap: 4px;
-    height: 100%;
-    padding-left: 1px;
-  }
+  align-items: center;
+  background-color: var(
+    --vuuTableHeaderCell-background,
+    var(--table-background)
+  );
+  border-bottom: none;
+  border-right-color: var(--cell-borderColor);
+  border-right-style: solid;
+  border-right-width: 1px;
+  box-sizing: border-box;
+  display: inline-flex;
+  gap: 4px;
+  height: 100%;
+  padding: 0 12px 0 4px;
+  position: relative;
+  vertical-align: top;
 
-  .vuuTableGroupHeaderCell-col {
-    align-items: center;
-    background-color: inherit;
-    display: inline-flex;
-    flex: 0 1 auto;
-    height: calc(var(--vuuTableHeaderHeight) - 2px);
-    justify-content: space-between;
-    padding-right: 8px;
-    position: relative;
+  &.vuuPinLeft,
+  &.vuuPinRight {
+    background-color: var(
+      --vuuTableHeaderCell-background,
+      var(--table-background)
+    );
   }
+}
 
-  .vuuTableGroupHeaderCell-label {
-    align-items: center;
-    display: flex;
-    flex: 0 0 auto;
-  }
+.vuuTableGroupHeaderCell-inner {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  height: 100%;
+  padding-left: 1px;
+}
 
-  .vuuTableGroupHeaderCell-close {
-    --vuu-icon-height: 18px;
-    --vuu-icon-width: 18px;
-    cursor: pointer;
-    left: 3px;
-  }
-  
-  .vuuTableGroupHeaderCell-resizing {
-    --columnResizer-color: var(--salt-color-blue-500);
-    --columnResizer-height: var(--table-height);
-    --columnResizer-width: 2px;
-  }
-  .vuuTableGroupHeaderCell-pending {
-    --pending-content: '';
-  }
+.vuuTableGroupHeaderCell-col {
+  align-items: center;
+  background-color: inherit;
+  display: inline-flex;
+  flex: 0 1 auto;
+  height: calc(var(--vuuTableHeaderHeight) - 2px);
+  justify-content: space-between;
+  padding-right: 8px;
+  position: relative;
+}
 
-  .vuuTableGroupHeaderCell-col:has(+ .vuuColumnResizer):after {
-    content: var(--pending-content);
-    width: 24px;
-    height:24px;
-    background-image: var(--svg-spinner);
-    background-repeat: no-repeat;
-    background-size: cover;
-  }
+.vuuTableGroupHeaderCell-label {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+}
+
+.vuuTableGroupHeaderCell-close {
+  --vuu-icon-height: 18px;
+  --vuu-icon-width: 18px;
+  cursor: pointer;
+  left: 3px;
+}
+
+.vuuTableGroupHeaderCell-resizing {
+  --columnResizer-color: var(--salt-color-blue-500);
+  --columnResizer-height: var(--table-height);
+  --columnResizer-width: 2px;
+}
+.vuuTableGroupHeaderCell-pending {
+  --pending-content: "";
+}
+
+.vuuTableGroupHeaderCell-col:has(+ .vuuColumnResizer):after {
+  content: var(--pending-content);
+  width: 24px;
+  height: 24px;
+  background-image: var(--svg-spinner);
+  background-repeat: no-repeat;
+  background-size: cover;
+}

@@ -1,27 +1,61 @@
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
-import cx from "clsx";
+import { TableProps } from "@finos/vuu-table";
+import { Table } from "@finos/vuu-table";
+import { TreeDataSource } from "@finos/vuu-data-local";
+import { useEffect, useMemo, useRef } from "react";
+import { TableConfig } from "@finos/vuu-table-types";
+import { TreeSourceNode } from "@finos/vuu-utils";
 
-import treeTableCss from "./TreeTable.css";
-import { HTMLAttributes } from "react";
-
-const classBase = "vuuTreeTable";
-
-export interface TreeTableProps extends HTMLAttributes<HTMLDivElement> {
-  debugString?: string;
+export interface TreeTableProps
+  extends Omit<TableProps, "config" | "dataSource"> {
+  config?: Pick<
+    TableConfig,
+    "columnSeparators" | "rowSeparators" | "zebraStripes"
+  >;
+  source: TreeSourceNode[];
 }
 
 export const TreeTable = ({
-  className,
-  debugString,
-  ...htmlAttributes
+  config,
+  source: sourceProp,
+  ...tableProps
 }: TreeTableProps) => {
-  const targetWindow = useWindow();
-  useComponentCssInjection({
-    testId: "vuu-tree-table",
-    css: treeTableCss,
-    window: targetWindow,
-  });
+  const sourceRef = useRef(sourceProp);
+  const dataSourceRef = useRef<TreeDataSource>();
+  useMemo(() => {
+    dataSourceRef.current = new TreeDataSource({
+      data: sourceRef.current,
+    });
+  }, []);
 
-  return <div {...htmlAttributes} className={cx(classBase, className)} />;
+  const tableConfig = useMemo<TableConfig>(() => {
+    return {
+      ...config,
+      columns: dataSourceRef.current?.columnDescriptors ?? [],
+      columnSeparators: false,
+      rowSeparators: false,
+    };
+  }, [config]);
+
+  useEffect(() => {
+    if (dataSourceRef.current) {
+      dataSourceRef.current.data = sourceProp;
+    }
+  }, [sourceProp]);
+
+  if (dataSourceRef.current === undefined) {
+    return null;
+  }
+
+  return (
+    <Table
+      {...tableProps}
+      config={tableConfig}
+      dataSource={dataSourceRef.current}
+      groupToggleTarget="toggle-icon"
+      navigationStyle="tree"
+      showColumnHeaderMenus={false}
+      selectionModel="single"
+      selectionBookendWidth={0}
+    />
+  );
 };

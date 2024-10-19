@@ -10,26 +10,7 @@
   line-height: 16px;
   position: relative;
 
-  .saltButton {
-    .vuuIcon {
-      --vuu-icon-height: 18px;
-      --vuu-icon-left: -3px;
-      --vuu-icon-width: 18px;
-      &:after {
-        transition: transform 0.1s linear;
-      }
-      &[data-icon="triangle-down"]:after {
-        --vuu-icon-left: -1px;
-        --vuu-icon-top: -3px;
-      }
-    }
-    border: none;
-    border-radius: 0;
-    height: 18px;
-    left: 0;
-    min-width: 16px;
-    padding: 0;
+  .vuuToggleIconButton {
     position: absolute;
-    width: 18px;
   }
 }

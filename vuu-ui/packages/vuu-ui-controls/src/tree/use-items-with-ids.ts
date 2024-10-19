@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { NormalisedTreeSourceNode, TreeSourceNode } from "./treeTypes";
+import { NormalisedTreeSourceNode, TreeSourceNode } from "@finos/vuu-utils";
 
 const PathSeparators = new Set(["/", "-", "."]);
 // TODO where do we define or identify separators
@@ -15,7 +15,7 @@ type Indexer = {
 
 type SourceItemById = (
   id: string,
-  target?: NormalisedTreeSourceNode[]
+  target?: NormalisedTreeSourceNode[],
 ) => TreeSourceNode | undefined;
 
 export const useItemsWithIds = (
@@ -25,12 +25,12 @@ export const useItemsWithIds = (
     collapsibleHeaders = undefined,
     defaultExpanded = false,
     revealSelected = false,
-  } = {}
+  } = {},
 ): [number, NormalisedTreeSourceNode[], SourceItemById] => {
   const countChildItems = (
     item: TreeSourceNode,
     items: TreeSourceNode[],
-    idx: number
+    idx: number,
   ) => {
     if (item.childNodes) {
       return item.childNodes.length;
@@ -54,7 +54,7 @@ export const useItemsWithIds = (
       }
       return defaultExpanded;
     },
-    [defaultExpanded, revealSelected]
+    [defaultExpanded, revealSelected],
   );
 
   const normalizeItems = useCallback(
@@ -64,7 +64,7 @@ export const useItemsWithIds = (
       level = 1,
       path = "",
       results: NormalisedTreeSourceNode[] = [],
-      flattenedSource: TreeSourceNode[] = []
+      flattenedSource: TreeSourceNode[] = [],
     ): [number, NormalisedTreeSourceNode[], TreeSourceNode[]] => {
       let count = 0;
       // TODO get rid of the Proxy
@@ -107,7 +107,7 @@ export const useItemsWithIds = (
             level + 1,
             childPath,
             [],
-            flattenedSource
+            flattenedSource,
           );
           normalisedItem.childNodes = children;
           if (expanded === true || isNonCollapsibleGroupNode) {
@@ -117,7 +117,7 @@ export const useItemsWithIds = (
       });
       return [count, results, flattenedSource];
     },
-    [collapsibleHeaders, idRoot, isExpanded]
+    [collapsibleHeaders, idRoot, isExpanded],
   );
 
   const [count, sourceWithIds, flattenedSource] = useMemo<
@@ -129,7 +129,7 @@ export const useItemsWithIds = (
   const sourceItemById = useCallback<SourceItemById>(
     (id, target = sourceWithIds): TreeSourceNode | undefined => {
       const sourceWithId = target.find(
-        (i) => i.id === id || (i?.childNodes?.length && isParentPath(i.id, id))
+        (i) => i.id === id || (i?.childNodes?.length && isParentPath(i.id, id)),
       );
       if (sourceWithId?.id === id) {
         return flattenedSource[sourceWithId.index];
@@ -137,7 +137,7 @@ export const useItemsWithIds = (
         return sourceItemById(id, sourceWithId.childNodes);
       }
     },
-    [flattenedSource, sourceWithIds]
+    [flattenedSource, sourceWithIds],
   );
 
   return [count, sourceWithIds, sourceItemById];

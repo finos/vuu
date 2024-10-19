@@ -11,6 +11,8 @@ import {
   SubscribeCallback,
   SubscribeProps,
   TableSchema,
+  WithBaseFilter,
+  WithFullConfig,
 } from "@finos/vuu-data-types";
 import {
   LinkDescriptorWithLabel,
@@ -57,15 +59,13 @@ const { info } = logger("VuuDataSource");
 export class VuuDataSource extends BaseDataSource implements DataSource {
   private bufferSize: number;
   private server: ServerAPI | null = null;
-  private configChangePending: DataSourceConfig | undefined;
+  private configChangePending: WithBaseFilter<WithFullConfig> | undefined;
   rangeRequest: RangeRequest;
 
-  #groupBy: VuuGroupBy = [];
   #pendingVisualLink?: LinkDescriptorWithLabel;
   #links: LinkDescriptorWithLabel[] | undefined;
   #menu: VuuMenu | undefined;
   #optimize: OptimizeStrategy = "throttle";
-  #range: VuuRange = { from: 0, to: 0 };
   #selectedRowsCount = 0;
   #status: DataSourceStatus = "initialising";
   #tableSchema: TableSchema | undefined;
@@ -387,7 +387,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     return super.config;
   }
 
-  set config(config: DataSourceConfig) {
+  set config(config: WithBaseFilter<WithFullConfig>) {
     const previousConfig = this._config;
     super.config = config;
 
@@ -422,7 +422,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
           rows: [],
         });
       }
-      this.setConfigPending({ groupBy });
+      this.setConfigPending(this.config);
     }
   }
 
@@ -489,13 +489,13 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     this.emit("config", this._config);
   }
 
-  private setConfigPending(config?: DataSourceConfig) {
+  private setConfigPending(config?: WithBaseFilter<WithFullConfig>) {
     const pendingConfig = this.configChangePending;
     this.configChangePending = config;
 
     if (config !== undefined) {
       this.emit("config", config, false);
-    } else {
+    } else if (pendingConfig) {
       this.emit("config", pendingConfig, true);
     }
   }
