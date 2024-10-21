@@ -4,7 +4,7 @@ import { UserSettingsPanel } from "@finos/vuu-shell";
 import { IconButton } from "@finos/vuu-ui-controls";
 import { VuuShellLocation, registerComponent } from "@finos/vuu-utils";
 import cx from "clsx";
-import { HTMLAttributes, useCallback } from "react";
+import { HTMLAttributes, useCallback, useRef } from "react";
 
 import "./AppHeader.css";
 
@@ -21,6 +21,8 @@ export const AppHeader = ({
   ...htmlAttributes
 }: AppHeaderProps) => {
   const className = cx(classBase, classNameProp);
+  const layoutButtonRef = useRef<HTMLButtonElement>(null);
+  const settingsButtonRef = useRef<HTMLButtonElement>(null);
 
   const dispatchLayoutAction = useLayoutProviderDispatch();
 
@@ -37,6 +39,7 @@ export const AppHeader = ({
           },
         },
         title: "Layout & Components",
+        onClose: () => layoutButtonRef.current?.focus(),
       },
     });
   }, [dispatchLayoutAction, tableSchemas]);
@@ -51,6 +54,7 @@ export const AppHeader = ({
           type: "ApplicationSettings",
         },
         title: "Settings",
+        onClose: () => settingsButtonRef.current?.focus(),
       },
     });
   }, [dispatchLayoutAction]);
@@ -62,6 +66,7 @@ export const AppHeader = ({
         data-embedded
         icon="layout"
         onClick={handleShowLayout}
+        ref={layoutButtonRef}
         size={24}
         variant="secondary"
       />
@@ -70,6 +75,7 @@ export const AppHeader = ({
         data-embedded
         icon="settings"
         onClick={handleShowSettings}
+        ref={settingsButtonRef}
         size={20}
         variant="secondary"
       />

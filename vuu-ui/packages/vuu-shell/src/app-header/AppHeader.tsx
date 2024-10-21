@@ -5,7 +5,7 @@ import { Button } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { HTMLAttributes, useCallback } from "react";
+import { HTMLAttributes, useCallback, useRef } from "react";
 import { logout } from "../login";
 import { useLoginUrl } from "../application-provider";
 
@@ -25,8 +25,10 @@ export const AppHeader = ({
   useComponentCssInjection({
     testId: "vuu-app-header",
     css: appHeaderCss,
-    window: targetWindow
+    window: targetWindow,
   });
+
+  const settingsButtonRef = useRef<HTMLButtonElement>(null);
 
   const className = cx(classBase, classNameProp);
   const loginUrl = useLoginUrl();
@@ -40,9 +42,10 @@ export const AppHeader = ({
   const handleShowSettings = useCallback(() => {
     showComponentInContextPanel(
       {
-        type: "ApplicationSettings"
+        type: "ApplicationSettings",
       },
-      "Settings"
+      "Settings",
+      () => settingsButtonRef.current?.focus(),
     );
   }, [showComponentInContextPanel]);
 
@@ -63,6 +66,7 @@ export const AppHeader = ({
       <Button
         className={`${classBase}-menuItem`}
         onClick={handleShowSettings}
+        ref={settingsButtonRef}
         variant="secondary"
       >
         Settings <span data-icon="settings" />
