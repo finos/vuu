@@ -202,10 +202,18 @@ export type TreeNodeOperation = "expand" | "collapse" | "level-up";
 
 export const getTreeNodeOperation = (
   containerRef: RefObject<HTMLElement>,
+  navigationStyle: "cell" | "tree",
   cellPos: CellPos,
   key: NavigationKey,
+  shiftKey: boolean,
 ): TreeNodeOperation | undefined => {
   const cell = getTableCell(containerRef, cellPos);
+  if (navigationStyle === "cell" && !cellIsGroupCell(cell)) {
+    return undefined;
+  }
+  if (navigationStyle == "cell" && !shiftKey) {
+    return undefined;
+  }
   if (cellIsGroupCell(cell)) {
     const isExpanded = rowIsExpanded(cell);
     if (isExpanded === true) {

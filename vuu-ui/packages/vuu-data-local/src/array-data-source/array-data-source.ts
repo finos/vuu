@@ -299,7 +299,19 @@ export class ArrayDataSource
     this.emit("row-selection", selected, this.#selectedRowsCount);
   }
 
-  openTreeNode(key: string) {
+  private getRowKey(keyOrIndex: string | number) {
+    if (typeof keyOrIndex === "string") {
+      return keyOrIndex;
+    }
+    const row = this.getRowAtIndex(keyOrIndex);
+    if (row === undefined) {
+      throw Error(`row not found at index ${keyOrIndex}`);
+    }
+    return row?.[KEY];
+  }
+
+  openTreeNode(keyOrIndex: string | number) {
+    const key = this.getRowKey(keyOrIndex);
     this.openTreeNodes.push(key);
     this.processedData = expandGroup(
       this.openTreeNodes,
@@ -312,7 +324,8 @@ export class ArrayDataSource
     this.setRange(resetRange(this.#range), true);
   }
 
-  closeTreeNode(key: string) {
+  closeTreeNode(keyOrIndex: string | number) {
+    const key = this.getRowKey(keyOrIndex);
     this.openTreeNodes = this.openTreeNodes.filter((value) => value !== key);
     if (this.processedData) {
       this.processedData = collapseGroup(key, this.processedData);
@@ -418,6 +431,7 @@ export class ArrayDataSource
             config.groupBy,
             this.#columnMap,
           );
+          console.log({ groupedData });
           this.groupMap = groupMap;
           processedData = groupedData;
 
@@ -500,6 +514,10 @@ export class ArrayDataSource
 
   set range(range: VuuRange) {
     this.setRange(range);
+  }
+
+  getRowAtIndex(rowIndex: number) {
+    return this.processedData?.[rowIndex];
   }
 
   protected delete(row: VuuRowDataItemType[]) {

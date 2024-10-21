@@ -237,6 +237,11 @@ export interface ColumnDescriptor extends DataValueDescriptor {
   colHeaderLabelRenderer?: string;
   flex?: number;
   /**
+   * Only used when the column is included in a grouby clause.
+   * The icon will be displayed alongside the group label
+   */
+  getIcon?: (row: DataSourceRow) => string | undefined;
+  /**
    Optional additional level(s) of heading to display above label.
    May span multiple columns, if multiple adjacent columns declare
    same heading at same level.

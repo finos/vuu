@@ -576,7 +576,7 @@ export interface DataSource
      */
     preserveExistingConfigAttributes?: boolean,
   ) => DataSourceConfigChanges | undefined;
-  closeTreeNode: (key: string, cascade?: boolean) => void;
+  closeTreeNode: (keyOrIndex: string | number, cascade?: boolean) => void;
   columns: string[];
   config: WithBaseFilter<WithFullConfig>;
   status: DataSourceStatus;
@@ -648,7 +648,7 @@ export interface DataSource
   rpcCall?: <T extends VuuRpcResponse = VuuRpcResponse>(
     rpcRequest: Omit<VuuRpcRequest, "vpId">,
   ) => Promise<T>;
-  openTreeNode: (key: string) => void;
+  openTreeNode: (keyOrIndex: string | number) => void;
   range: VuuRange;
   remoteProcedureCall: <T extends VuuRpcResponse = VuuRpcResponse>(
     message: VuuRpcRequest,
@@ -851,7 +851,8 @@ export interface VuuUIMessageOutViewRange extends ViewportMessageOut {
   };
 }
 export interface VuuUIMessageOutCloseTreeNode extends ViewportMessageOut {
-  key: string;
+  index?: number;
+  key?: string;
   type: "closeTreeNode";
 }
 export interface VuuUIMessageOutRemoveLink extends ViewportMessageOut {
@@ -869,7 +870,8 @@ export interface VuuUIMessageOutEnable extends ViewportMessageOut {
   type: "enable";
 }
 export interface VuuUIMessageOutOpenTreeNode extends ViewportMessageOut {
-  key: string;
+  index?: number;
+  key?: string;
   type: "openTreeNode";
 }
 export interface VuuUIMessageOutResume extends ViewportMessageOut {

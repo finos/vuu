@@ -742,7 +742,24 @@ export const visibleColumnAtIndex = (
 };
 
 const { DEPTH, IS_LEAF } = metadataKeys;
-// Get the value for a specific columns within a grouped column
+
+export const getGroupIcon = (
+  columns: RuntimeColumnDescriptor[],
+  row: DataSourceRow,
+): string | undefined => {
+  const { [DEPTH]: depth, [IS_LEAF]: isLeaf } = row;
+  // Depth can be greater tha group columns when we have just removed a column from groupby
+  // but new data has not yet been received.
+  if (isLeaf || depth > columns.length) {
+    return undefined;
+  } else if (depth === 0) {
+    return undefined;
+  } else {
+    const { getIcon } = columns[depth - 1];
+    return getIcon?.(row);
+  }
+};
+
 export const getGroupValue = (
   columns: RuntimeColumnDescriptor[],
   row: DataSourceRow,
@@ -752,7 +769,7 @@ export const getGroupValue = (
   // Depth can be greater tha group columns when we have just removed a column from groupby
   // but new data has not yet been received.
   if (isLeaf || depth > columns.length) {
-    return [null, depth === null ? 0 : Math.max(0, depth - 1)];
+    return null;
   } else if (depth === 0) {
     return "$root";
   } else {

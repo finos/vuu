@@ -1,6 +1,6 @@
 import { GroupColumnDescriptor, TableCellProps } from "@finos/vuu-table-types";
-import { ToggleIconButton } from "@finos/vuu-ui-controls";
-import { getGroupValue, metadataKeys } from "@finos/vuu-utils";
+import { Icon, ToggleIconButton } from "@finos/vuu-ui-controls";
+import { getGroupIcon, getGroupValue, metadataKeys } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
@@ -34,6 +34,7 @@ export const TableGroupCell = ({
 
   const { columns } = column as GroupColumnDescriptor;
   const value = getGroupValue(columns, row, columnMap);
+  const icon = getGroupIcon(columns, row);
   const { className, style } = useCell(column, classBase);
 
   const handleClick = useCallback(
@@ -57,6 +58,7 @@ export const TableGroupCell = ({
       {isLeaf || count == 0 ? null : (
         <ToggleIconButton isExpanded={isExpanded} />
       )}
+      {icon ? <Icon name={icon} /> : null}
       <span>{value}</span>
     </div>
   );

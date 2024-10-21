@@ -552,10 +552,15 @@ export class Viewport {
     if (this.useBatchMode) {
       this.batchMode = true;
     }
+    const treeKey =
+      message.index === undefined
+        ? message.key
+        : this.getKeyForRowAtIndex(message.index);
+    console.log(`treeKeu ${treeKey}`);
     return {
       type: Message.OPEN_TREE_NODE,
       vpId: this.serverViewportId,
-      treeKey: message.key,
+      treeKey,
     } as ClientToServerOpenTreeNode;
   }
 
@@ -563,10 +568,14 @@ export class Viewport {
     if (this.useBatchMode) {
       this.batchMode = true;
     }
+    const treeKey =
+      message.index === undefined
+        ? message.key
+        : this.getKeyForRowAtIndex(message.index);
     return {
       type: Message.CLOSE_TREE_NODE,
       vpId: this.serverViewportId,
-      treeKey: message.key,
+      treeKey,
     } as ClientToServerCloseTreeNode;
   }
 
@@ -770,6 +779,11 @@ export class Viewport {
         }
       }
     }
+  }
+
+  private getKeyForRowAtIndex(rowIndex: number) {
+    const row = this.dataWindow.getAtIndex(rowIndex);
+    return row?.rowKey;
   }
 
   // This is called only after new data has been received from server - data

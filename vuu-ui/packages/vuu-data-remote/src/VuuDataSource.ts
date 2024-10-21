@@ -1,7 +1,6 @@
 import {
   DataSource,
   DataSourceCallbackMessage,
-  DataSourceConfig,
   DataSourceConstructorProps,
   DataSourceStatus,
   DataSourceVisualLinkCreatedMessage,
@@ -282,22 +281,28 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     }
   }
 
-  openTreeNode(key: string) {
+  openTreeNode(keyOrIndex: string | number) {
     if (this.viewport) {
+      const [key, index] =
+        typeof keyOrIndex === "string" ? [keyOrIndex] : [undefined, keyOrIndex];
       this.server?.send({
-        viewport: this.viewport,
-        type: "openTreeNode",
+        index,
         key,
+        type: "openTreeNode",
+        viewport: this.viewport,
       });
     }
   }
 
-  closeTreeNode(key: string) {
+  closeTreeNode(keyOrIndex: string | number) {
     if (this.viewport) {
+      const [key, index] =
+        typeof keyOrIndex === "string" ? [keyOrIndex] : [undefined, keyOrIndex];
       this.server?.send({
-        viewport: this.viewport,
-        type: "closeTreeNode",
+        index,
         key,
+        type: "closeTreeNode",
+        viewport: this.viewport,
       });
     }
   }

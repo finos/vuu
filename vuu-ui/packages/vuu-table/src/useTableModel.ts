@@ -582,12 +582,23 @@ function updateTableConfig(
   let result = state;
 
   if (groupBy.length > 0) {
+    const groupedColumns = applyGroupByToColumns(
+      result.columns,
+      groupBy,
+      confirmed,
+    );
+    const { availableWidth, columnLayout = "static" } = state;
+    const columns = applyWidthToColumns(groupedColumns, {
+      availableWidth,
+      columnLayout,
+    });
+
     console.log(`useTableModel.updateTableConfig applyGroupBy`, {
       groupBy,
     });
     result = {
       ...state,
-      columns: applyGroupByToColumns(result.columns, groupBy, confirmed),
+      columns,
     };
   }
 

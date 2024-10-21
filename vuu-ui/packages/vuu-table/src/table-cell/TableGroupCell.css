@@ -11,15 +11,21 @@
   cursor: pointer;
   display: inline-flex;
   line-height: 16px;
-}
 
-.vuuTableGroupCell-toggle {
-  --vuu-icon-height: 16px;
-  --vuu-icon-size: 7px;
-  --vuu-icon-width: 8px;
-  margin-right: 4px;
-  transition: transform 0.25s;
-  transform: var(--toggle-icon-transform);
+  .vuuIcon {
+    --vuu-icon-height: 20px;
+    --vuu-icon-width: 20px;
+    margin-right: var(--salt-spacing-100);
+  }
+
+  .vuuTableGroupCell-toggle {
+    --vuu-icon-height: 16px;
+    --vuu-icon-size: 7px;
+    --vuu-icon-width: 8px;
+    margin-right: 4px;
+    transition: transform 0.25s;
+    transform: var(--toggle-icon-transform);
+  }
 }
 
 [aria-level="2"] {

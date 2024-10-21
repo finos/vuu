@@ -9,7 +9,7 @@ const { DEPTH, IS_EXPANDED, KEY } = metadataKeys;
 
 export const collapseGroup = (
   key: string,
-  groupedRows: readonly DataSourceRow[]
+  groupedRows: readonly DataSourceRow[],
 ): DataSourceRow[] => {
   const rows: DataSourceRow[] = [];
 
@@ -50,7 +50,7 @@ export const expandGroup = (
   groupBy: VuuGroupBy,
   columnMap: ColumnMap,
   groupMap: GroupMap,
-  processedData: readonly DataSourceRow[]
+  processedData: readonly DataSourceRow[],
 ): DataSourceRow[] => {
   const groupIndices = groupBy.map<number>((column) => columnMap[column]);
   return dataRowsFromGroups2(
@@ -61,7 +61,7 @@ export const expandGroup = (
     undefined,
     undefined,
     undefined,
-    processedData
+    processedData,
   );
 };
 
@@ -73,14 +73,23 @@ const dataRowsFromGroups2 = (
   root = "$root",
   depth = 1,
   rows: DataSourceRow[] = [],
-  processedData: readonly DataSourceRow[]
+  processedData: readonly DataSourceRow[],
 ) => {
   console.log(`dataRowsFromGroups2 1)`);
   const keys = Object.keys(groupMap).sort();
   for (const key of keys) {
     const idx = rows.length;
     const groupKey = `${root}|${key}`;
-    const row: DataSourceRow = [idx, idx, false, false, depth, 0, groupKey, 0];
+    const row: DataSourceRow = [
+      idx,
+      idx,
+      false,
+      false,
+      depth,
+      childCount(groupMap[key]),
+      groupKey,
+      0,
+    ];
     // TODO whats this
     row[groupIndices[depth - 1]] = key;
     rows.push(row);
@@ -93,7 +102,7 @@ const dataRowsFromGroups2 = (
           groupMap[key] as KeyList,
           sourceRows,
           groupKey,
-          depth + 1
+          depth + 1,
         );
       } else {
         dataRowsFromGroups2(
@@ -104,7 +113,7 @@ const dataRowsFromGroups2 = (
           groupKey,
           depth + 1,
           rows,
-          processedData
+          processedData,
         );
       }
     }
@@ -120,8 +129,8 @@ const dataRowsFromGroups2 = (
           rows[key] = rows[key].splice(0, 8).concat(
             processedData[index].slice(
               8, // groupIndices[0] + 1,
-              processedData[index].length
-            )
+              processedData[index].length,
+            ),
           ) as DataSourceRow;
           break;
         }
@@ -138,7 +147,7 @@ const pushChildren = (
   tree: KeyList,
   sourceRows: readonly DataSourceRow[],
   parentKey: string,
-  depth: number
+  depth: number,
 ) => {
   for (const rowIdx of tree) {
     const idx = rows.length;
@@ -154,7 +163,7 @@ const pushChildren = (
 export const groupRows = (
   rows: readonly DataSourceRow[],
   groupBy: VuuGroupBy,
-  columnMap: ColumnMap
+  columnMap: ColumnMap,
 ): [DataSourceRow[], GroupMap] => {
   const groupIndices = groupBy.map<number>((column) => columnMap[column]);
   const groupTree = groupLeafRows(rows, groupIndices);
@@ -176,7 +185,7 @@ const dataRowsFromGroups = (groupTree: GroupMap, groupIndices: number[]) => {
       false,
       false,
       1,
-      0,
+      childCount(groupTree[key]),
       `$root|${key}`,
       0,
     ];
@@ -186,6 +195,14 @@ const dataRowsFromGroups = (groupTree: GroupMap, groupIndices: number[]) => {
   }
   return rows;
 };
+
+function childCount(list: GroupMap | KeyList) {
+  if (Array.isArray(list)) {
+    return list.length;
+  } else {
+    return Object.keys(list).length;
+  }
+}
 
 function groupLeafRows(leafRows: readonly DataSourceRow[], groupby: number[]) {
   const groups: GroupMap = {};
@@ -214,6 +231,5 @@ function groupLeafRows(leafRows: readonly DataSourceRow[], groupby: number[]) {
       }
     }
   }
-  console.log("!! groups", groups);
   return groups;
 }

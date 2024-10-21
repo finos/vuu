@@ -29,6 +29,7 @@ import {
   treeToDataSourceRows,
   uuid,
 } from "@finos/vuu-utils";
+import { IconProvider } from "./IconProvider";
 
 const NULL_SCHEMA = { columns: [], key: "", table: { module: "", table: "" } };
 
@@ -58,6 +59,7 @@ export class TreeDataSource extends BaseDataSource {
 
   #aggregations: VuuAggregation[] = [];
   #data: DataSourceRow[];
+  #iconProvider: IconProvider;
   #selectedRowsCount = 0;
   #size = 0;
   #status: DataSourceStatus = "initialising";
@@ -72,8 +74,12 @@ export class TreeDataSource extends BaseDataSource {
     if (!data) {
       throw Error("TreeDataSource constructor called without data");
     }
+    this.#iconProvider = new IconProvider();
 
-    [this.columnDescriptors, this.#data] = treeToDataSourceRows(data);
+    [this.columnDescriptors, this.#data] = treeToDataSourceRows(
+      data,
+      this.#iconProvider,
+    );
 
     if (this.columnDescriptors) {
       const columns = this.columnDescriptors.map((c) => c.name);
@@ -168,11 +174,7 @@ export class TreeDataSource extends BaseDataSource {
     return this;
   }
   set data(data: TreeSourceNode[]) {
-    console.log(`set JsonDataSource data`);
     [this.columnDescriptors, this.#data] = treeToDataSourceRows(data);
-    console.log({
-      columnDescriptors: this.columnDescriptors,
-    });
     // console.table(this.#data.slice(0, 20));
     [this.visibleRows, this.visibleRowIndex] = getVisibleRows(
       this.#data,
@@ -218,7 +220,19 @@ export class TreeDataSource extends BaseDataSource {
     }
   }
 
-  openTreeNode(key: string) {
+  private getRowKey(keyOrIndex: string | number) {
+    if (typeof keyOrIndex === "string") {
+      return keyOrIndex;
+    }
+    const row = this.getRowAtIndex(keyOrIndex);
+    if (row === undefined) {
+      throw Error(`row not found at index ${keyOrIndex}`);
+    }
+    return row[KEY];
+  }
+
+  openTreeNode(keyOrIndex: string | number) {
+    const key = this.getRowKey(keyOrIndex);
     this.expandedRows.add(key);
     [this.visibleRows, this.visibleRowIndex] = getVisibleRows(
       this.#data,
@@ -238,7 +252,8 @@ export class TreeDataSource extends BaseDataSource {
     });
   }
 
-  closeTreeNode(key: string, cascade = false) {
+  closeTreeNode(keyOrIndex: string | number, cascade = false) {
+    const key = this.getRowKey(keyOrIndex);
     this.expandedRows.delete(key);
     if (cascade) {
       for (const rowKey of this.expandedRows.keys()) {

@@ -239,10 +239,10 @@ export const useKeyboardNavigation = ({
 
   const navigateChildItems = useCallback(
     async (
-      key: NavigationKey,
       navigationStyle: "cell" | "tree" = "cell",
+      key: NavigationKey,
+      shiftKey = false,
     ): Promise<undefined> => {
-      console.log(`navigateChildItems`);
       const { cellPos } = cellFocusStateRef.current;
       const [rowIdx, colIdx] = cellPos;
       let nextRowIdx = -1,
@@ -250,20 +250,14 @@ export const useKeyboardNavigation = ({
 
       if (isPagingKey(key)) {
         [nextRowIdx, nextColIdx] = await nextPageItemIdx(key, cellPos);
-      } else if (navigationStyle === "cell") {
-        [nextRowIdx, nextColIdx] = getNextCellPos(
-          key,
-          cellPos,
-          columnCount,
-          rowCount,
-        );
-      } else if (navigationStyle === "tree") {
+      } else {
         const treeNodeOperation = getTreeNodeOperation(
           containerRef,
+          navigationStyle,
           cellPos,
           key,
+          shiftKey,
         );
-
         if (
           treeNodeOperation === "expand" ||
           treeNodeOperation === "collapse"
@@ -272,7 +266,12 @@ export const useKeyboardNavigation = ({
         } else if (treeNodeOperation === "level-up") {
           [nextRowIdx, nextColIdx] = getLevelUp(containerRef, cellPos);
         } else {
-          return navigateChildItems(key, "cell");
+          [nextRowIdx, nextColIdx] = getNextCellPos(
+            key,
+            cellPos,
+            columnCount,
+            rowCount,
+          );
         }
       }
 
@@ -347,7 +346,7 @@ export const useKeyboardNavigation = ({
           moveHighlightedRow(e.key);
         } else if (navigationStyle !== "none") {
           if (!focusColumnMenuIfAppropriate(e, cell)) {
-            navigateChildItems(e.key, navigationStyle);
+            navigateChildItems(navigationStyle, e.key, e.shiftKey);
           }
         }
       }
@@ -382,13 +381,16 @@ export const useKeyboardNavigation = ({
     [setHighlightedIndex],
   );
 
-  const navigate = useCallback(() => {
-    navigateChildItems("ArrowDown");
+  /**
+   * used when editing cells
+   */
+  const navigateCell = useCallback(() => {
+    navigateChildItems("cell", "ArrowDown");
   }, [navigateChildItems]);
 
   return {
     highlightedIndexRef,
-    navigate,
+    navigateCell,
     onClick: handleClick,
     onFocus: handleFocus,
     onKeyDown: handleKeyDown,

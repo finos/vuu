@@ -519,7 +519,7 @@ export const useTable = ({
       if (row[IS_EXPANDED]) {
         dataSource.closeTreeNode(key, true);
         if (isJson) {
-          // TODO could this be instigated by an event emitted by the JsonDataSOurce ? "config" ?
+          // TODO could this be instigated by an event emitted by the JsonDataSOurce ? "hide-columns" ?
           const idx = columns.indexOf(column);
           const rows = dataSource.getRowsAtDepth?.(idx + 1);
           if (rows && !rows.some((row) => row[IS_EXPANDED] || row[IS_LEAF])) {
@@ -553,15 +553,10 @@ export const useTable = ({
   // TODO combine with aboue
   const handleToggleGroup = useCallback<GroupToggleHandler>(
     (treeNodeOperation, rowIdx) => {
-      const row = dataSource.getRowAtIndex?.(rowIdx);
-      if (row) {
-        console.log({ row });
-        const key = row[KEY];
-        if (treeNodeOperation === "expand") {
-          dataSource.openTreeNode(key);
-        } else {
-          dataSource.closeTreeNode(key);
-        }
+      if (treeNodeOperation === "expand") {
+        dataSource.openTreeNode(rowIdx);
+      } else {
+        dataSource.closeTreeNode(rowIdx);
       }
     },
     [dataSource],
@@ -585,7 +580,7 @@ export const useTable = ({
 
   const {
     highlightedIndexRef,
-    navigate,
+    navigateCell: navigate,
     onFocus: navigationFocus,
     onKeyDown: navigationKeyDown,
     ...containerProps

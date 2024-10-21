@@ -252,7 +252,20 @@ export class JsonDataSource
     }
   }
 
-  openTreeNode(key: string) {
+  private getRowKey(keyOrIndex: string | number) {
+    if (typeof keyOrIndex === "string") {
+      return keyOrIndex;
+    }
+    const row = this.visibleRows[keyOrIndex];
+    if (row === undefined) {
+      throw Error(`row not found at index ${keyOrIndex}`);
+    }
+    return row?.[KEY];
+  }
+
+  openTreeNode(keyOrIndex: string | number) {
+    const key = this.getRowKey(keyOrIndex);
+
     this.expandedRows.add(key);
     this.visibleRows = getVisibleRows(this.#data, this.expandedRows);
     const { from, to } = this.#range;
@@ -268,7 +281,9 @@ export class JsonDataSource
     });
   }
 
-  closeTreeNode(key: string, cascade = false) {
+  closeTreeNode(keyOrIndex: string | number, cascade = false) {
+    const key = this.getRowKey(keyOrIndex);
+
     this.expandedRows.delete(key);
     if (cascade) {
       for (const rowKey of this.expandedRows.keys()) {
