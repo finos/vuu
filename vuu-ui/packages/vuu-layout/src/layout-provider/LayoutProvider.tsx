@@ -154,13 +154,18 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
   );
 
   const showComponentInContextPanel = useCallback(
-    (component: ReactElement | LayoutJSON, title?: string) => {
+    (
+      component: ReactElement | LayoutJSON,
+      title?: string,
+      onContextPanelClose?: () => void,
+    ) => {
       dispatchLayoutAction({
         type: "set-props",
         path: `#${VuuShellLocation.ContextPanel}`,
         props: {
           expanded: true,
           content: component,
+          onClose: onContextPanelClose,
           title,
         },
       });

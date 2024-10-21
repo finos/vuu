@@ -40,7 +40,7 @@ export const UserSettingsPanel = ({
       </div>
     );
   } else {
-    console.warn("no settingsSchema provided to UserSettingsPanel");
+    console.log("no settingsSchema provided to UserSettingsPanel");
     return null;
   }
 };

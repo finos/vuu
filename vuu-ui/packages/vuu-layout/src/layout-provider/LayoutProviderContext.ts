@@ -2,14 +2,14 @@ import { createContext, Dispatch, ReactElement } from "react";
 import {
   DragStartAction,
   LayoutReducerAction,
-  QueryAction
+  QueryAction,
 } from "../layout-reducer";
 import { SaveAction } from "../layout-view";
 import { LayoutJSON } from "@finos/vuu-utils";
 
 const unconfiguredLayoutProviderDispatch: LayoutProviderDispatch = (action) =>
   console.log(
-    `dispatch ${action.type}, have you forgotten to provide a LayoutProvider ?`
+    `dispatch ${action.type}, have you forgotten to provide a LayoutProvider ?`,
   );
 const unconfiguredService = (message: string) => () =>
   console.log(`${message}, have you forgotten to provide a LayoutProvider ?`);
@@ -24,7 +24,8 @@ export interface LayoutProviderContextProps {
   dispatchLayoutProvider: LayoutProviderDispatch;
   showComponentInContextPanel: (
     component: ReactElement | LayoutJSON,
-    title?: string
+    title?: string,
+    onContextPanelClose?: () => void,
   ) => void;
   switchWorkspace: (idx: number) => void;
   version: number;
@@ -34,8 +35,8 @@ export const LayoutProviderContext = createContext<LayoutProviderContextProps>({
   addComponentToWorkspace: unconfiguredService("addComponentToWorkspace"),
   dispatchLayoutProvider: unconfiguredLayoutProviderDispatch,
   showComponentInContextPanel: unconfiguredService(
-    "showComponentInContextPanel"
+    "showComponentInContextPanel",
   ),
   switchWorkspace: unconfiguredService("switchWorkspace"),
-  version: -1
+  version: -1,
 });

@@ -8,7 +8,13 @@ import { LayoutJSON, VuuShellLocation } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { useCallback, useMemo } from "react";
+import {
+  KeyboardEventHandler,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
 
 import contextPanelCss from "./ContextPanel.css";
 
@@ -20,6 +26,7 @@ export interface ContextPanelProps {
   content?: LayoutJSON;
   expanded?: boolean;
   id?: string;
+  onClose?: () => void;
   overlay?: boolean;
 }
 
@@ -28,6 +35,7 @@ export const ContextPanel = ({
   expanded = false,
   content: contentProp,
   id = VuuShellLocation.ContextPanel,
+  onClose,
   overlay = false,
   title,
 }: ContextPanelProps) => {
@@ -38,8 +46,8 @@ export const ContextPanel = ({
     window: targetWindow,
   });
 
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const dispatchLayoutAction = useLayoutProviderDispatch();
-  // const [contentJson, setContentJson] = useState(contentProp);
   const handleClose = useCallback(() => {
     dispatchLayoutAction({
       path: `#${VuuShellLocation.ContextPanel}`,
@@ -48,7 +56,15 @@ export const ContextPanel = ({
       type: "set-prop",
     });
   }, [dispatchLayoutAction]);
-  // TODO look up content using context
+
+  const handleKeyDown = useCallback<KeyboardEventHandler>(
+    (e) => {
+      if (e.key === "Escape") {
+        handleClose();
+      }
+    },
+    [handleClose],
+  );
 
   const className = cx(classBase, classNameProp, {
     [`${classBase}-expanded`]: expanded,
@@ -59,8 +75,18 @@ export const ContextPanel = ({
   const content = useMemo(
     () =>
       contentProp && expanded ? layoutFromJson(contentProp, "context-0") : null,
-    [contentProp, expanded]
+    [contentProp, expanded],
   );
+
+  useLayoutEffect(() => {
+    if (expanded) {
+      // Components loaded into the ContextPanel will often assume focus themselves,
+      //but if not, default to close button
+      closeButtonRef.current?.focus();
+    } else {
+      onClose?.();
+    }
+  }, [expanded, onClose]);
 
   return (
     <div
@@ -76,6 +102,8 @@ export const ContextPanel = ({
             data-embedded
             icon="close"
             onClick={handleClose}
+            onKeyDown={handleKeyDown}
+            ref={closeButtonRef}
             size={16}
             variant="secondary"
           />
