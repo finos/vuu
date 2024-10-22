@@ -149,7 +149,6 @@ export const FilterBar = ({
           onFilterDeleted={onFilterDeleted}
           onFilterRenamed={onFilterRenamed}
           onFilterStateChanged={onFilterStateChanged}
-          suggestionProvider={suggestionProvider}
           tableSchema={tableSchema}
         />
       ) : (
@@ -157,7 +156,6 @@ export const FilterBar = ({
           {...QuickFilterProps}
           availableColumns={columnDescriptors}
           onApplyFilter={onApplyFilter}
-          suggestionProvider={suggestionProvider}
           tableSchema={tableSchema}
         />
       )}

@@ -17,7 +17,9 @@ export const getFieldName = (target: EventTarget | HTMLElement): string => {
   }
 };
 
+export type InputSource = "typeahead-suggestion" | "text-input";
+
 export type CommitHandler<
   E extends HTMLElement = HTMLInputElement,
-  T extends VuuRowDataItemType | undefined = string
-> = (evt: SyntheticEvent<E>, value: T) => void;
+  T extends VuuRowDataItemType | undefined = string,
+> = (evt: SyntheticEvent<E>, value: T, source?: InputSource) => void;

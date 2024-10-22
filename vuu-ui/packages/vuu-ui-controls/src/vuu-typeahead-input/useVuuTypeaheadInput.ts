@@ -11,25 +11,25 @@ import {
   useState,
 } from "react";
 import { VuuTypeaheadInputProps } from "./VuuTypeaheadInput";
+import { useTypeaheadSuggestions } from "@finos/vuu-data-react";
 
 const NO_DATA_MATCH = ["No matching data"];
 
 export type VuuTypeaheadInputHookProps = Pick<
   VuuTypeaheadInputProps,
-  "column" | "onCommit" | "suggestionProvider" | "table"
+  "column" | "onCommit" | "table"
 >;
 
 export const useVuuTypeaheadInput = ({
   column,
   onCommit,
-  suggestionProvider,
   table,
 }: VuuTypeaheadInputHookProps) => {
   const [value, setValue] = useState("");
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [typeaheadValues, setTypeaheadValues] = useState<string[]>([]);
-  const getSuggestions = suggestionProvider();
+  const getSuggestions = useTypeaheadSuggestions();
 
   const callbackRef = useCallback<RefCallback<HTMLDivElement>>((el) => {
     rootRef.current = el;
@@ -70,7 +70,7 @@ export const useVuuTypeaheadInput = ({
       const input = rootRef.current?.querySelector("input");
       if (input) {
         // This is a workaround for the fact that ComboBox does not automatically
-        // highlight first list itemn when items have been populated dynamically.
+        // highlight first list item when items have been populated dynamically.
         // This has been raised as a bug.
         setTimeout(() => {
           dispatchKeyboardEvent(input, "keydown", "ArrowUp");
@@ -90,7 +90,11 @@ export const useVuuTypeaheadInput = ({
   ) => {
     console.log(`useVuuTypeahead handleSelectionChange ${newSelected}`);
     setValue(newSelected);
-    onCommit(evt as SyntheticEvent<HTMLInputElement>, newSelected);
+    onCommit(
+      evt as SyntheticEvent<HTMLInputElement>,
+      newSelected,
+      "typeahead-suggestion",
+    );
   };
 
   const handleOpenChange = (newOpen: boolean) => {

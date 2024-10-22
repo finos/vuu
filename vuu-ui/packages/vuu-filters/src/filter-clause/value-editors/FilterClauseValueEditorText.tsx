@@ -1,5 +1,4 @@
 import { useTypeaheadSuggestions } from "@finos/vuu-data-react";
-import type { SuggestionFetcher } from "@finos/vuu-data-types";
 import type { TypeaheadParams } from "@finos/vuu-protocol-types";
 import { ExpandoInput, MultiSelectionHandler } from "@finos/vuu-ui-controls";
 import { CommitHandler, getVuuTable } from "@finos/vuu-utils";
@@ -25,7 +24,6 @@ export interface FilterClauseTextValueEditorProps
   "data-field"?: string;
   ref: RefObject<HTMLDivElement>;
   operator: string;
-  suggestionProvider?: () => SuggestionFetcher;
   value: string | string[];
 }
 
@@ -39,7 +37,6 @@ export const FilterClauseValueEditorText = forwardRef(
       column,
       onChangeValue,
       operator,
-      suggestionProvider = useTypeaheadSuggestions,
       table,
       value,
     }: FilterClauseTextValueEditorProps,
@@ -60,7 +57,7 @@ export const FilterClauseValueEditorText = forwardRef(
       [],
     );
 
-    const getSuggestions = suggestionProvider();
+    const getSuggestions = useTypeaheadSuggestions();
 
     const handleSingleValueSelectionChange = useCallback(
       (_, [value]: string[]) => onChangeValue(value),

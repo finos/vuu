@@ -19,7 +19,6 @@ export interface DataItemEditControlProps {
   dataDescriptor: DataValueDescriptor;
   errorMessage?: string;
   onCommit: CommitHandler<HTMLElement, string | undefined>;
-  suggestionProvider?: SuggestionProvider;
   table?: TableSchemaTable;
 }
 
@@ -30,7 +29,6 @@ export const getDataItemEditControl = ({
   dataDescriptor,
   errorMessage,
   onCommit,
-  suggestionProvider,
   table,
 }: DataItemEditControlProps) => {
   const handleCommitNumber: CommitHandler<HTMLElement, number> = (
@@ -52,16 +50,11 @@ export const getDataItemEditControl = ({
     );
   } else if (isDateTimeDataValue(dataDescriptor)) {
     return <VuuDatePicker onCommit={handleCommitNumber} />;
-  } else if (
-    dataDescriptor.serverDataType === "string" &&
-    suggestionProvider &&
-    table
-  ) {
+  } else if (dataDescriptor.serverDataType === "string" && table) {
     return (
       <VuuTypeaheadInput
         column={dataDescriptor.name}
         onCommit={onCommit}
-        suggestionProvider={suggestionProvider}
         table={table}
       />
     );

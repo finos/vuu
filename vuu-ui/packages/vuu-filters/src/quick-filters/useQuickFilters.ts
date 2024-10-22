@@ -1,12 +1,12 @@
 import type { DataSourceFilter } from "@finos/vuu-data-types";
 import type { Filter } from "@finos/vuu-filter-types";
-import type { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import type { ColumnDescriptor } from "@finos/vuu-table-types";
 import { MultiSelectionHandler } from "@finos/vuu-ui-controls";
 import {
   CommitHandler,
   NoFilter,
   filterAsQuery,
+  isNumericColumn,
   queryClosest,
 } from "@finos/vuu-utils";
 import {
@@ -18,11 +18,46 @@ import {
 } from "react";
 import { QuickFilterProps } from "./QuickFilters";
 
-type QuickFilterValues = Record<string, VuuRowDataItemType>;
+type QuickFilterValues = Record<string, string>;
+
+const findColumn = (columns: ColumnDescriptor[], name: string) => {
+  const column = columns?.find((col) => col.name === name);
+  if (column) {
+    return column;
+  } else {
+    throw Error(`column not found ${name}`);
+  }
+};
+
+const asNumeric = (value: string, column: ColumnDescriptor): number => {
+  switch (column.serverDataType) {
+    case "int":
+    case "long": {
+      const numericValue = parseInt(value, 10);
+      if (isNaN(numericValue)) {
+        throw Error(`invalid value ${value} is not integer`);
+      } else {
+        return numericValue;
+      }
+    }
+    case "double": {
+      const numericValue = parseFloat(value);
+      if (isNaN(numericValue)) {
+        throw Error(`invalid value ${value} is not decimal`);
+      } else {
+        return numericValue;
+      }
+    }
+    default:
+      throw Error(
+        `DataType of column ${column.name}, ${column.serverDataType} is not numeric`,
+      );
+  }
+};
 
 const createFilterClause = (
-  [identifier, value]: [string, VuuRowDataItemType],
-  availableColumns?: ColumnDescriptor[],
+  [identifier, value]: [string, string],
+  availableColumns: ColumnDescriptor[],
 ): Filter => {
   if (identifier === "find") {
     if (availableColumns) {
@@ -33,21 +68,31 @@ const createFilterClause = (
         return {
           op: "or",
           filters: targetColumns.map((column) =>
-            createFilterClause([column.name, value]),
+            createFilterClause([column.name, value], availableColumns),
           ),
         };
       } else {
-        throw Error(`value ${value} is not valid for any of availanle columns`);
+        throw Error(`value ${value} is not valid for any of available columns`);
       }
     } else {
       throw Error("columns must be provided for find operation");
     }
   } else {
-    return {
-      column: identifier,
-      op: "contains",
-      value,
-    };
+    const column = findColumn(availableColumns, identifier);
+    if (isNumericColumn(column)) {
+      const numericValue = asNumeric(value, column);
+      return {
+        column: identifier,
+        op: "=",
+        value: numericValue,
+      };
+    } else {
+      return {
+        column: identifier,
+        op: "contains",
+        value,
+      };
+    }
   }
 };
 

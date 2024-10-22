@@ -3,7 +3,7 @@ import type {
   TableSchemaTable,
 } from "@finos/vuu-data-types";
 import { ComboBox, Option } from "@salt-ds/core";
-import { useVuuTypeaheadInput } from "./useVuuTypeahead";
+import { useVuuTypeaheadInput } from "./useVuuTypeaheadInput";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 
@@ -15,7 +15,7 @@ const classBase = "vuuTypeaheadInput";
 export interface VuuTypeaheadInputProps {
   column: string;
   onCommit: CommitHandler<HTMLInputElement>;
-  suggestionProvider: SuggestionProvider;
+  suggestionProvider?: SuggestionProvider;
   table: TableSchemaTable;
 }
 

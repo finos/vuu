@@ -57,15 +57,15 @@ export const VuuInput = forwardRef(function VuuInput<
       if (type === "number") {
         const numericValue = parseFloat(value);
         if (isValidNumber(numericValue)) {
-          onCommit(evt, numericValue as T);
+          onCommit(evt, numericValue as T, "text-input");
         } else {
           //TODO add validation logic
           throw Error("Invalid value");
         }
       } else if (type === "boolean") {
-        onCommit(evt, Boolean(value) as T);
+        onCommit(evt, Boolean(value) as T, "text-input");
       } else {
-        onCommit(evt, value as T);
+        onCommit(evt, value as T, "text-input");
       }
     },
     [onCommit, type],
