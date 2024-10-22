@@ -1,17 +1,17 @@
-import { TypeaheadParams } from "@finos/vuu-protocol-types";
+import { useTypeaheadSuggestions } from "@finos/vuu-data-react";
+import type { TypeaheadParams } from "@finos/vuu-protocol-types";
 import { dispatchKeyboardEvent, getVuuTable } from "@finos/vuu-utils";
 import {
-  ChangeEventHandler,
   ComponentPropsWithoutRef,
-  RefCallback,
-  SyntheticEvent,
   useCallback,
   useEffect,
   useRef,
   useState,
+  type ChangeEventHandler,
+  type RefCallback,
+  type SyntheticEvent,
 } from "react";
-import { VuuTypeaheadInputProps } from "./VuuTypeaheadInput";
-import { useTypeaheadSuggestions } from "@finos/vuu-data-react";
+import type { VuuTypeaheadInputProps } from "./VuuTypeaheadInput";
 
 const NO_DATA_MATCH = ["No matching data"];
 

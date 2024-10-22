@@ -2,13 +2,13 @@ import type {
   SuggestionProvider,
   TableSchemaTable,
 } from "@finos/vuu-data-types";
+import type { CommitHandler } from "@finos/vuu-utils";
 import { ComboBox, Option } from "@salt-ds/core";
-import { useVuuTypeaheadInput } from "./useVuuTypeaheadInput";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { useVuuTypeaheadInput } from "./useVuuTypeaheadInput";
 
 import vuuTypeaheadInputCss from "./VuuTypeaheadInput.css";
-import { CommitHandler } from "@finos/vuu-utils";
 
 const classBase = "vuuTypeaheadInput";
 
@@ -22,7 +22,6 @@ export interface VuuTypeaheadInputProps {
 export const VuuTypeaheadInput = ({
   column,
   onCommit,
-  suggestionProvider,
   table,
 }: VuuTypeaheadInputProps) => {
   const targetWindow = useWindow();
@@ -43,7 +42,6 @@ export const VuuTypeaheadInput = ({
   } = useVuuTypeaheadInput({
     column,
     onCommit,
-    suggestionProvider,
     table,
   });
   return (

@@ -1,6 +1,5 @@
-import {
+import type {
   DataValueDescriptor,
-  SuggestionProvider,
   TableSchemaTable,
 } from "@finos/vuu-data-types";
 import {

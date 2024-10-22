@@ -8,6 +8,7 @@ import { ColumnDescriptor } from "@finos/vuu-table-types";
 
 import inlineFilteCss from "./InlineFilter.css";
 import { InputProps } from "@salt-ds/core";
+import { TableSchemaTable } from "@finos/vuu-data-types";
 
 const classBase = "vuuInlineFilter";
 
@@ -18,6 +19,7 @@ export type FilterValueChangeHandler = (
 export interface InlineFilterProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   onChange: FilterValueChangeHandler;
+  table: TableSchemaTable;
 }
 
 const InputProps: Partial<InputProps> = {
@@ -27,6 +29,7 @@ const InputProps: Partial<InputProps> = {
 
 export const InlineFilter = ({
   onChange,
+  table,
   ...htmlAttributes
 }: InlineFilterProps) => {
   const targetWindow = useWindow();
@@ -64,6 +67,7 @@ export const InlineFilter = ({
             InputProps,
             dataDescriptor: column,
             onCommit,
+            table,
           })}
         </div>
       ))}
