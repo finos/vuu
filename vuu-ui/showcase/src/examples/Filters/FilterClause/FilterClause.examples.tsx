@@ -1,63 +1,49 @@
-import { getSchema, vuuModule } from "@finos/vuu-data-test";
+import { LocalDataSourceProvider, getSchema } from "@finos/vuu-data-test";
 import { SchemaColumn, TableSchema } from "@finos/vuu-data-types";
 import { FilterClauseModel, FilterClause } from "@finos/vuu-filters";
 import { useMemo } from "react";
-import { useAutoLoginToVuuServer } from "../../utils";
 
 import "./FilterClause.examples.css";
 import { ColumnDescriptorsByName } from "@finos/vuu-filter-types";
 
 let displaySequence = 1;
 
-export const NewFilterClause = () => {
-  const tableSchema = getSchema("instruments");
-  const { typeaheadHook } = vuuModule("SIMUL");
-
-  const filterClauseModel = useMemo(() => new FilterClauseModel({}), []);
-
+const FilterClauseTemplate = ({
+  filterClauseModel = new FilterClauseModel({}),
+  tableSchema = getSchema("instruments"),
+  columnsByName = columnDescriptorsByName(tableSchema.columns),
+}: {
+  columnsByName?: ColumnDescriptorsByName;
+  filterClauseModel?: FilterClauseModel;
+  tableSchema?: TableSchema;
+}) => {
   return (
     <div style={{ padding: "10px" }}>
       <FilterClause
-        columnsByName={columnDescriptorsByName(tableSchema.columns)}
+        columnsByName={columnsByName}
         data-testid="filterclause"
         filterClauseModel={filterClauseModel}
-        suggestionProvider={typeaheadHook}
         tableSchema={tableSchema}
       />
     </div>
+  );
+};
+
+export const NewFilterClause = () => {
+  return (
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <FilterClauseTemplate />
+    </LocalDataSourceProvider>
   );
 };
 NewFilterClause.displaySequence = displaySequence++;
 
 export const NewFilterClauseNoCompletions = () => {
-  const tableSchema = getSchema("instruments");
-
-  const filterClauseModel = useMemo(() => new FilterClauseModel({}), []);
-
-  const alwaysEmptyTypeaheadHook = useMemo(() => {
-    const suggestionFetcher = async () => {
-      return [];
-    };
-
-    return () => suggestionFetcher;
-  }, []);
-
-  return (
-    <div style={{ padding: "10px" }}>
-      <FilterClause
-        columnsByName={columnDescriptorsByName(tableSchema.columns)}
-        filterClauseModel={filterClauseModel}
-        suggestionProvider={alwaysEmptyTypeaheadHook}
-        tableSchema={tableSchema}
-      />
-    </div>
-  );
+  return <FilterClauseTemplate />;
 };
 NewFilterClauseNoCompletions.displaySequence = displaySequence++;
 
 export const PartialFilterClauseColumnOnly = () => {
-  useAutoLoginToVuuServer();
-  const tableSchema = getSchema("instruments");
   const filterClauseModel = useMemo(
     () =>
       new FilterClauseModel({
@@ -65,22 +51,15 @@ export const PartialFilterClauseColumnOnly = () => {
       }),
     [],
   );
-
   return (
-    <div style={{ padding: "10px" }}>
-      <FilterClause
-        columnsByName={columnDescriptorsByName(tableSchema.columns)}
-        filterClauseModel={filterClauseModel}
-        tableSchema={tableSchema}
-      />
-    </div>
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <FilterClauseTemplate filterClauseModel={filterClauseModel} />
+    </LocalDataSourceProvider>
   );
 };
 PartialFilterClauseColumnOnly.displaySequence = displaySequence++;
 
 export const PartialFilterClauseColumnAndOperator = () => {
-  const { typeaheadHook } = vuuModule("SIMUL");
-  const tableSchema = getSchema("instruments");
   const filterClauseModel = useMemo(
     () =>
       new FilterClauseModel({
@@ -89,25 +68,15 @@ export const PartialFilterClauseColumnAndOperator = () => {
       }),
     [],
   );
-
   return (
-    <div style={{ padding: "10px" }}>
-      <FilterClause
-        columnsByName={columnDescriptorsByName(tableSchema.columns)}
-        data-testid="filterclause"
-        filterClauseModel={filterClauseModel}
-        suggestionProvider={typeaheadHook}
-        tableSchema={tableSchema}
-      />
-    </div>
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <FilterClauseTemplate filterClauseModel={filterClauseModel} />
+    </LocalDataSourceProvider>
   );
 };
 PartialFilterClauseColumnAndOperator.displaySequence = displaySequence++;
 
 export const CompleteFilterClauseTextEquals = () => {
-  const { typeaheadHook } = vuuModule("SIMUL");
-  const tableSchema = getSchema("instruments");
-
   const filterClauseModel = useMemo(
     () =>
       new FilterClauseModel({
@@ -119,21 +88,14 @@ export const CompleteFilterClauseTextEquals = () => {
   );
 
   return (
-    <div style={{ padding: "10px" }}>
-      <FilterClause
-        columnsByName={columnDescriptorsByName(tableSchema.columns)}
-        filterClauseModel={filterClauseModel}
-        suggestionProvider={typeaheadHook}
-        tableSchema={tableSchema}
-      />
-    </div>
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <FilterClauseTemplate filterClauseModel={filterClauseModel} />
+    </LocalDataSourceProvider>
   );
 };
 CompleteFilterClauseTextEquals.displaySequence = displaySequence++;
 
 export const PartialFilterClauseDateColumnOnly = () => {
-  const { typeaheadHook } = vuuModule("SIMUL");
-
   const tableColumns: SchemaColumn[] = [
     {
       name: "tradeDate",
@@ -173,14 +135,13 @@ export const PartialFilterClauseDateColumnOnly = () => {
   }, []);
 
   return (
-    <div style={{ padding: "10px" }}>
-      <FilterClause
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <FilterClauseTemplate
         columnsByName={columnsByName}
         filterClauseModel={filterClauseModel}
-        suggestionProvider={typeaheadHook}
         tableSchema={tableSchema}
       />
-    </div>
+    </LocalDataSourceProvider>
   );
 };
 PartialFilterClauseDateColumnOnly.displaySequence = displaySequence++;

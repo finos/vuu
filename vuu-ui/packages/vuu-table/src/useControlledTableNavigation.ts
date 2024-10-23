@@ -1,5 +1,4 @@
-import { useStateRef } from "@finos/vuu-ui-controls";
-import { dispatchMouseEvent } from "@finos/vuu-utils";
+import { dispatchMouseEvent, useStateRef } from "@finos/vuu-utils";
 import { KeyboardEventHandler, useCallback, useRef } from "react";
 
 export const isRowSelectionKey = (key: string) =>

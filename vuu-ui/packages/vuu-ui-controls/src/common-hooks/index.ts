@@ -6,4 +6,3 @@ export * from "./useControlled";
 export * from "./use-resize-observer";
 export * from "./navigationTypes";
 export * from "./selectionTypes";
-export * from "./useStateRef";

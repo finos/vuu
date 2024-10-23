@@ -10,3 +10,4 @@ export * as Tree from "./Tree.examples";
 export * as SplitButton from "./SplitButton.examples";
 export * as Tabstrip from "./Tabstrip.examples";
 export * as VuuInput from "./VuuInput.examples";
+export * as VuuTypeaheadInput from "./VuuTypeaheadInput.examples";

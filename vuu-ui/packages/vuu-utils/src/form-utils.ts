@@ -1,5 +1,5 @@
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
-import { SyntheticEvent } from "react";
+import { KeyboardEvent, SyntheticEvent } from "react";
 import { queryClosest } from "./html-utils";
 
 /**
@@ -22,4 +22,8 @@ export type InputSource = "typeahead-suggestion" | "text-input";
 export type CommitHandler<
   E extends HTMLElement = HTMLInputElement,
   T extends VuuRowDataItemType | undefined = string,
-> = (evt: SyntheticEvent<E>, value: T, source?: InputSource) => void;
+> = (
+  evt: SyntheticEvent<E> | KeyboardEvent<E>,
+  value: T,
+  source?: InputSource,
+) => void;

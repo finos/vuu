@@ -1,4 +1,4 @@
-import type { SuggestionProvider, TableSchema } from "@finos/vuu-data-types";
+import type { TableSchema } from "@finos/vuu-data-types";
 import {
   ColumnDescriptorsByName,
   MultiValueFilterClause,

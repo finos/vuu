@@ -1,4 +1,4 @@
-import { SuggestionProvider, TableSchema } from "@finos/vuu-data-types";
+import { TableSchema } from "@finos/vuu-data-types";
 import type { Filter } from "@finos/vuu-filter-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { SplitButton } from "@finos/vuu-ui-controls";
