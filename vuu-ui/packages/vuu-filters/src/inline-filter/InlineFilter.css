@@ -1,16 +1,31 @@
 .vuuInlineFilter {
-  height: 24px;
+  height: var(--salt-size-base);
 
   .vuuInlineFilter-filter {
+    --saltInput-minHeight: 22px;
     display: inline-block;
-    padding: 1px;
+    height: 100%;
+    padding: 1px 1px 1px 0;
+
+    .vuuTypeaheadInput {
+      border: solid 1px var(--salt-separable-secondary-borderColor);
+      border-radius: 0;
+    }
+
+    .vuuTypeaheadInput {
+      height: 22px;
+      input::placeholder {
+        color: var(--salt-content-primary-foreground-disabled);
+      }
+    }
 
     .saltInput-primary.vuuInput {
-      border-color: var(--salt-separable-secondary-borderColor);
+      border: solid 1px var(--salt-separable-secondary-borderColor);
+      border-radius: 0;
       height: 22px;
       min-height: 22px;
       input::placeholder {
-        color: var(--tar-color-gray-25);
+        color: var(--salt-content-primary-foreground-disabled);
       }
     }
   }

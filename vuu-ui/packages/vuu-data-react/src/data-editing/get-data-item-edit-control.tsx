@@ -6,12 +6,14 @@ import {
   VuuDatePicker,
   VuuInput,
   VuuTypeaheadInput,
+  VuuTypeaheadInputProps,
 } from "@finos/vuu-ui-controls";
 import { CommitHandler, isDateTimeDataValue } from "@finos/vuu-utils";
 import { InputProps } from "@salt-ds/core";
 
 export interface DataItemEditControlProps {
   InputProps?: Partial<InputProps>;
+  TypeaheadProps?: Pick<VuuTypeaheadInputProps, "highlightFirstSuggestion">;
   /**
    * A table column or form field Descriptor.
    */
@@ -25,6 +27,7 @@ export type ValidationStatus = "initial" | true | string;
 
 export const getDataItemEditControl = ({
   InputProps,
+  TypeaheadProps,
   dataDescriptor,
   errorMessage,
   onCommit,
@@ -52,6 +55,8 @@ export const getDataItemEditControl = ({
   } else if (dataDescriptor.serverDataType === "string" && table) {
     return (
       <VuuTypeaheadInput
+        {...InputProps}
+        {...TypeaheadProps}
         column={dataDescriptor.name}
         onCommit={onCommit}
         table={table}

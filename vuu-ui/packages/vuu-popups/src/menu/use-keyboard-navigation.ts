@@ -15,7 +15,7 @@ export type MenuCloseReason = "tab-away" | "close-child-menu";
 
 export type MenuCloseHandler = (
   evt: KeyboardEvent,
-  reason: MenuCloseReason
+  reason: MenuCloseReason,
 ) => void;
 
 export interface KeyboardNavigationProps {
@@ -56,7 +56,6 @@ export const useKeyboardNavigation = ({
   highlightedIndex: highlightedIndexProp,
   onActivate,
   onHighlight,
-  // onKeyDown,
   onCloseMenu,
   onOpenMenu,
 }: KeyboardNavigationProps): NavigationHookResult => {
@@ -65,7 +64,7 @@ export const useKeyboardNavigation = ({
     isValidNumber(defaultHighlightedIdx)
   ) {
     throw Error(
-      "useKeyboardNavigation do not pass values for both highlightedIndex and defaultHighlightedIdx"
+      "useKeyboardNavigation do not pass values for both highlightedIndex and defaultHighlightedIdx",
     );
   }
 
@@ -73,7 +72,7 @@ export const useKeyboardNavigation = ({
   const highlightedIndexRef = useRef(
     defaultHighlightedIdx ??
       highlightedIndexProp ??
-      (autoHighlightFirstItem ? 0 : -1)
+      (autoHighlightFirstItem ? 0 : -1),
   );
   const [, forceRender] = useState<unknown>(null);
 
@@ -83,7 +82,7 @@ export const useKeyboardNavigation = ({
       onHighlight?.(idx);
       forceRender({});
     },
-    [onHighlight]
+    [onHighlight],
   );
 
   const setHighlightedIndex = useCallback(
@@ -94,7 +93,7 @@ export const useKeyboardNavigation = ({
         }
       }
     },
-    [controlledHighlighting, setHighlightedIdx]
+    [controlledHighlighting, setHighlightedIdx],
   );
 
   // does this belong here or should it be a method passed in?
@@ -106,14 +105,14 @@ export const useKeyboardNavigation = ({
     ? highlightedIndexProp
     : highlightedIndexRef.current;
 
-  const navigateChildldItems = useCallback(
+  const navigateChildItems = useCallback(
     (e: KeyboardEvent) => {
       const nextIdx = nextItemIdx(count, e.key, highlightedIndexRef.current);
       if (nextIdx !== highlightedIndexRef.current) {
         setHighlightedIndex(nextIdx);
       }
     },
-    [count, setHighlightedIndex]
+    [count, setHighlightedIndex],
   );
 
   const handleKeyDown = useCallback(
@@ -122,14 +121,14 @@ export const useKeyboardNavigation = ({
         e.preventDefault();
         e.stopPropagation();
         keyBoardNavigation.current = true;
-        navigateChildldItems(e);
+        navigateChildItems(e);
       } else if (
         (e.key === "ArrowRight" || e.key === "Enter") &&
         hasPopup(e.target as HTMLElement, highlightedIndex)
       ) {
         const menuEl = e.target as HTMLElement;
         const menuItemEl = menuEl.querySelector(
-          `:scope > [data-index='${highlightedIndex}']`
+          `:scope > [data-index='${highlightedIndex}']`,
         ) as HTMLElement;
 
         if (menuItemEl) {
@@ -145,13 +144,7 @@ export const useKeyboardNavigation = ({
         onCloseMenu(e, "tab-away");
       }
     },
-    [
-      highlightedIndex,
-      navigateChildldItems,
-      onActivate,
-      onCloseMenu,
-      onOpenMenu,
-    ]
+    [highlightedIndex, navigateChildItems, onActivate, onCloseMenu, onOpenMenu],
   );
 
   const listProps: KeyboardHookListProps = useMemo(
@@ -174,13 +167,12 @@ export const useKeyboardNavigation = ({
         }
       },
       onMouseLeave: () => {
-        // label === 'ParsedInput' && console.log(`%c[useKeyboardNavigationHook]<${label}> onMouseLeave`,'color:brown')
         keyBoardNavigation.current = true;
         setIgnoreFocus(false);
         setHighlightedIndex(-1);
       },
     }),
-    [handleKeyDown, highlightedIndex, setHighlightedIdx, setHighlightedIndex]
+    [handleKeyDown, highlightedIndex, setHighlightedIdx, setHighlightedIndex],
   );
 
   return {
@@ -188,7 +180,6 @@ export const useKeyboardNavigation = ({
     controlledHighlighting,
     highlightedIndex,
     setHighlightedIndex: setHighlightedIndex,
-    // keyBoardNavigation,
     listProps,
     setIgnoreFocus,
   };

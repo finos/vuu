@@ -1,9 +1,13 @@
 import { getDataItemEditControl } from "@finos/vuu-data-react";
 import { VirtualColSpan, useHeaderProps } from "@finos/vuu-table";
-import { CommitHandler, getFieldName } from "@finos/vuu-utils";
+import {
+  CommitHandler,
+  FilterAggregator,
+  getFieldName,
+} from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { HTMLAttributes, useCallback } from "react";
+import { HTMLAttributes, useCallback, useMemo } from "react";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 
 import inlineFilteCss from "./InlineFilter.css";
@@ -23,8 +27,14 @@ export interface InlineFilterProps
 }
 
 const InputProps: Partial<InputProps> = {
-  placeholder: "Enter value",
+  inputProps: {
+    placeholder: "Filter value",
+  },
   variant: "primary",
+};
+
+const TypeaheadProps = {
+  highlightFirstSuggestion: false,
 };
 
 export const InlineFilter = ({
@@ -39,6 +49,7 @@ export const InlineFilter = ({
     window: targetWindow,
   });
 
+  const filterAggregator = useMemo(() => new FilterAggregator(), []);
   const { columns, virtualColSpan = 0 } = useHeaderProps();
 
   const onCommit = useCallback<
@@ -48,23 +59,26 @@ export const InlineFilter = ({
       const fieldName = getFieldName(evt.target);
       const column = columns.find((c) => c.name === fieldName);
       if (column) {
-        onChange(column, value.toString());
+        filterAggregator.addFilter(fieldName, value.toString());
+        // onChange(column, value.toString());
       }
     },
-    [columns, onChange],
+    [columns, filterAggregator],
   );
 
   return (
-    <div {...htmlAttributes} className={classBase}>
+    <div {...htmlAttributes} className={classBase} role="row">
       <VirtualColSpan width={virtualColSpan} />
       {columns.map((column) => (
         <div
           className={`${classBase}-filter`}
+          data-field={column.name}
           key={column.name}
           style={{ width: column.width }}
         >
           {getDataItemEditControl({
             InputProps,
+            TypeaheadProps,
             dataDescriptor: column,
             onCommit,
             table,

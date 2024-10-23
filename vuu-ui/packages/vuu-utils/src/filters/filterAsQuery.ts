@@ -5,7 +5,7 @@ import {
 } from "@finos/vuu-filter-types";
 import type { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { isDateTimeDataValue } from "../column-utils";
-import { isMultiClauseFilter, isMultiValueFilter } from "./utils";
+import { isMultiClauseFilter, isMultiValueFilter } from "./filter-utils";
 
 const filterValue = (value: string | number | boolean) =>
   typeof value === "string" ? `"${value}"` : value;

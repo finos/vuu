@@ -22,7 +22,13 @@ import type { VuuTypeaheadInputProps } from "./VuuTypeaheadInput";
 
 export type VuuTypeaheadInputHookProps = Pick<
   VuuTypeaheadInputProps,
-  "allowFreeInput" | "column" | "freeTextWarning" | "onCommit" | "table"
+  | "allowFreeInput"
+  | "column"
+  | "freeTextWarning"
+  | "highlightFirstSuggestion"
+  | "inputProps"
+  | "onCommit"
+  | "table"
 >;
 
 const defaultFreeTextWarning =
@@ -32,6 +38,8 @@ export const useVuuTypeaheadInput = ({
   allowFreeInput = true,
   column,
   freeTextWarning,
+  highlightFirstSuggestion = true,
+  inputProps: inputPropsProp,
   onCommit,
   table,
 }: VuuTypeaheadInputHookProps) => {
@@ -113,7 +121,7 @@ export const useVuuTypeaheadInput = ({
     if (value === "" && newValue) {
       setOpen(true);
       const input = rootRef.current?.querySelector("input");
-      if (input) {
+      if (input && highlightFirstSuggestion) {
         pendingListFocusRef.current = true;
       }
     } else if (newValue === "" && value) {
@@ -144,6 +152,7 @@ export const useVuuTypeaheadInput = ({
   };
 
   const inputProps: ComponentPropsWithoutRef<"input"> = {
+    ...inputPropsProp,
     autoComplete: "off",
   };
 

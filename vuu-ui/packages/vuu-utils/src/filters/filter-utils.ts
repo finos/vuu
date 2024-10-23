@@ -11,6 +11,8 @@ import {
   SingleValueFilterClauseOp,
 } from "@finos/vuu-filter-types";
 import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
+import { EventEmitter } from "../event-emitter";
+import { VuuFilter } from "@finos/vuu-protocol-types";
 
 const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "=",
@@ -32,18 +34,18 @@ export const isNamedFilter = (f?: Filter) =>
 
 // ... with type constraints
 export const isSingleValueFilter = (
-  f?: Partial<Filter>
+  f?: Partial<Filter>,
 ): f is SingleValueFilterClause =>
   f !== undefined &&
   singleValueFilterOps.has(f.op as SingleValueFilterClauseOp);
 
 export const isFilterClause = (
-  f?: Partial<Filter>
+  f?: Partial<Filter>,
 ): f is SingleValueFilterClause | MultiValueFilterClause =>
   f !== undefined && (isSingleValueFilter(f) || isMultiValueFilter(f));
 
 export const isMultiValueFilter = (
-  f?: Partial<Filter>
+  f?: Partial<Filter>,
 ): f is MultiValueFilterClause => f !== undefined && f.op === "in";
 
 export const isInFilter = (f: Partial<Filter>): f is MultiValueFilterClause =>
@@ -59,14 +61,14 @@ export const isCompleteFilter = (filter: Partial<Filter>): filter is Filter =>
   filter.value !== undefined;
 
 export function isMultiClauseFilter(
-  f?: Partial<Filter> | FilterWithPartialClause
+  f?: Partial<Filter> | FilterWithPartialClause,
 ): f is MultiClauseFilter {
   return f !== undefined && (f.op === "and" || f.op === "or");
 }
 
 export const applyFilterToColumns = (
   columns: RuntimeColumnDescriptor[],
-  { filterStruct }: DataSourceFilter
+  { filterStruct }: DataSourceFilter,
 ) =>
   columns.map((column) => {
     // TODO this gives us a dependency on vuu-filters
@@ -97,7 +99,7 @@ export const stripFilterFromColumns = (columns: RuntimeColumnDescriptor[]) =>
 
 export const extractFilterForColumn = (
   filter: Filter | undefined,
-  columnName: string
+  columnName: string,
 ) => {
   if (isMultiClauseFilter(filter)) {
     return collectFiltersForColumn(filter, columnName);
@@ -110,7 +112,7 @@ export const extractFilterForColumn = (
 
 const collectFiltersForColumn = (
   filter: MultiClauseFilter,
-  columnName: string
+  columnName: string,
 ) => {
   const { filters, op } = filter;
   const results: Filter[] = [];
@@ -130,3 +132,15 @@ const collectFiltersForColumn = (
     filters: results,
   };
 };
+
+export type FilterEvents = {
+  filter: (vuuFilter: VuuFilter) => void;
+};
+
+export class FilterAggregator extends EventEmitter<FilterEvents> {
+  #filters = new Map<string, Filter>();
+  addFilter(column: string, value: string) {
+    console.log(`add filter for ${column} ${JSON.stringify(value)}`);
+    this.#filters.set(column, { column, op: "contains", value });
+  }
+}
