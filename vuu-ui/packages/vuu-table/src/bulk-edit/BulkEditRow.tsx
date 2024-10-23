@@ -1,20 +1,11 @@
 import { getDataItemEditControl } from "@finos/vuu-data-react";
-import {
-  DataSource,
-  SuggestionFetcher,
-  TypeaheadSuggestionProvider,
-} from "@finos/vuu-data-types";
-import { TypeaheadParams } from "@finos/vuu-protocol-types";
+import { DataSource } from "@finos/vuu-data-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
-import {
-  CommitHandler,
-  isTypeaheadSuggestionProvider,
-  queryClosest,
-} from "@finos/vuu-utils";
+import { CommitHandler, queryClosest } from "@finos/vuu-utils";
 import type { InputProps } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { HTMLAttributes, useCallback, useMemo, useRef } from "react";
+import { HTMLAttributes, useCallback, useRef } from "react";
 import { VirtualColSpan } from "../VirtualColSpan";
 import { useHeaderProps } from "../table-header";
 import bulkEditRowCss from "./BulkEditRow.css";
@@ -77,23 +68,6 @@ export const BulkEditRow = ({
     }
   }, []);
 
-  const getSuggestions = useCallback<SuggestionFetcher>(
-    ([, column, pattern]: TypeaheadParams) => {
-      const a = (
-        dataSource as TypeaheadSuggestionProvider
-      ).getTypeaheadSuggestions(column, pattern);
-      console.log(a);
-      return a;
-    },
-    [dataSource],
-  );
-
-  const suggestionProvider = useMemo(() => {
-    if (isTypeaheadSuggestionProvider(dataSource)) {
-      return () => getSuggestions;
-    }
-  }, [dataSource, getSuggestions]);
-
   return (
     <div {...htmlAttributes} className={classBase} onFocus={handleFocus}>
       <VirtualColSpan width={virtualColSpan} />
@@ -108,7 +82,6 @@ export const BulkEditRow = ({
             InputProps,
             dataDescriptor: column,
             onCommit,
-            suggestionProvider,
             table: dataSource.table,
           })}
         </div>

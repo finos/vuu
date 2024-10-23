@@ -11,7 +11,7 @@ import {
   useState,
 } from "react";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { getSchema, vuuModule } from "@finos/vuu-data-test";
+import { LocalDataSourceProvider, getSchema } from "@finos/vuu-data-test";
 import { FilterClauseValueChangeHandler } from "@finos/vuu-filters/src/filter-clause/useFilterClause";
 import { MultiSelectionHandler } from "@finos/vuu-ui-controls";
 
@@ -184,7 +184,6 @@ DefaultExpandoComboBoxHighlightFirstRow.displaySequence = displaySequence++;
 
 export const DataBoundTextInputEmpty = () => {
   const tableSchema = getSchema("instruments");
-  const { typeaheadHook } = vuuModule("SIMUL");
 
   const column: ColumnDescriptor = useMemo(
     () => ({ name: "currency", serverDataType: "string" }),
@@ -201,21 +200,21 @@ export const DataBoundTextInputEmpty = () => {
   );
 
   return (
-    <FilterClauseValueEditorText
-      column={column}
-      onChangeValue={handleInputComplete}
-      operator="="
-      suggestionProvider={typeaheadHook}
-      table={tableSchema.table}
-      value={value}
-    />
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <FilterClauseValueEditorText
+        column={column}
+        onChangeValue={handleInputComplete}
+        operator="="
+        table={tableSchema.table}
+        value={value}
+      />
+    </LocalDataSourceProvider>
   );
 };
 DataBoundTextInputEmpty.displaySequence = displaySequence++;
 
 export const DataBoundTextInputLoaded = () => {
   const tableSchema = getSchema("instruments");
-  const { typeaheadHook } = vuuModule("SIMUL");
 
   const column: ColumnDescriptor = useMemo(
     () => ({ name: "currency", serverDataType: "string" }),
@@ -232,14 +231,15 @@ export const DataBoundTextInputLoaded = () => {
   );
 
   return (
-    <FilterClauseValueEditorText
-      column={column}
-      onChangeValue={handleInputComplete}
-      operator="="
-      suggestionProvider={typeaheadHook}
-      table={tableSchema.table}
-      value={value}
-    />
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <FilterClauseValueEditorText
+        column={column}
+        onChangeValue={handleInputComplete}
+        operator="="
+        table={tableSchema.table}
+        value={value}
+      />
+    </LocalDataSourceProvider>
   );
 };
 DataBoundTextInputLoaded.displaySequence = displaySequence++;
