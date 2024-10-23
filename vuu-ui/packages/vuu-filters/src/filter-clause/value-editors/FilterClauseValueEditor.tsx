@@ -10,7 +10,6 @@ import {
 } from "@finos/vuu-filter-types";
 import { isDateTimeDataValue } from "@finos/vuu-utils";
 import { ForwardedRef, forwardRef } from "react";
-import { FilterClauseProps } from "../FilterClause";
 import { FilterClauseValueEditorDate } from "./FilterClauseValueEditorDate";
 
 const classBase = "vuuFilterClause";
@@ -18,13 +17,12 @@ const classBase = "vuuFilterClause";
 type FilterClauseValueEditorProps = Pick<
   ReturnType<typeof useFilterClause>,
   "selectedColumn" | "inputProps" | "onChangeValue" | "onDeselectValue"
-> &
-  Pick<FilterClauseProps, "suggestionProvider"> & {
-    table?: TableSchemaTable;
-  } & {
-    operator?: SingleValueFilterClauseOp | "in";
-    value?: string | string[] | number | number[] | boolean | boolean[];
-  };
+> & {
+  table?: TableSchemaTable;
+} & {
+  operator?: SingleValueFilterClauseOp | "in";
+  value?: string | string[] | number | number[] | boolean | boolean[];
+};
 
 export const FilterClauseValueEditor = forwardRef(
   function FilterClauseValueEditor(
@@ -34,7 +32,6 @@ export const FilterClauseValueEditor = forwardRef(
       inputProps,
       onChangeValue,
       onDeselectValue,
-      suggestionProvider,
       table,
       value,
     }: FilterClauseValueEditorProps,
@@ -69,7 +66,6 @@ export const FilterClauseValueEditor = forwardRef(
             onChangeValue={onChangeValue}
             operator={operator}
             ref={forwardedRef}
-            suggestionProvider={suggestionProvider}
             table={table}
             value={
               value === undefined

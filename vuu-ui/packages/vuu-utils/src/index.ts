@@ -48,10 +48,12 @@ export * from "./shell-layout-types";
 export * from "./sort-utils";
 export * from "./table-schema-utils";
 export * from "./text-utils";
+export * from "./typeahead-utils";
 export * from "./ThemeProvider";
 export * from "./ts-utils";
 export * from "./url-utils";
 export * from "./useId";
+export * from "./useStateRef";
 export * from "./user-types";
 export * from "./useLayoutEffectSkipFirst";
 

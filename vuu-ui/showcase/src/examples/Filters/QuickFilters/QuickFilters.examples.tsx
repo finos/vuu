@@ -2,7 +2,7 @@ import { QuickFilterProps, QuickFilters } from "@finos/vuu-filters";
 import type { DataSourceFilter } from "@finos/vuu-data-types";
 import type { ColumnDescriptor } from "@finos/vuu-table-types";
 import { useCallback, useMemo, useState } from "react";
-import { getSchema, vuuModule } from "@finos/vuu-data-test";
+import { LocalDataSourceProvider, getSchema } from "@finos/vuu-data-test";
 import { useViewContext, View } from "@finos/vuu-layout";
 import { setPersistentState } from "@finos/vuu-layout";
 
@@ -13,7 +13,6 @@ const QuickFiltersTemplate = ({
   allowFind,
   onApplyFilter,
   quickFilterColumns: quickFilterColumnsProp = [],
-  suggestionProvider = vuuModule("SIMUL").typeaheadHook,
   tableSchema = getSchema("instruments"),
   availableColumns = tableSchema?.columns,
 }: Partial<QuickFilterProps>) => {
@@ -46,7 +45,6 @@ const QuickFiltersTemplate = ({
       onApplyFilter={handleApplyFilter}
       onChangeQuickFilterColumns={handleChangeQuickFilterColumns}
       quickFilterColumns={quickFilterColumns}
-      suggestionProvider={suggestionProvider}
       tableSchema={tableSchema}
     />
   );
@@ -138,6 +136,12 @@ export const QuickDateFilter = () => {
           serverDataType: "long",
           type: "date/time",
         },
+        {
+          label: "Settlement Date",
+          name: "settlementDate",
+          serverDataType: "long",
+          type: "date/time",
+        },
       ],
       ["tradeDate"],
     ],
@@ -146,7 +150,7 @@ export const QuickDateFilter = () => {
   return (
     <QuickFiltersTemplate
       availableColumns={availableColumns}
-      allowAddColumn={false}
+      allowAddColumn={true}
       allowFind={false}
       quickFilterColumns={quickFilterColumns}
     />
@@ -160,6 +164,10 @@ const PersistentFilter = () => {
     () => (load?.("quick-filters") as string[]) ?? [],
     [load],
   );
+
+  const applyFilter = useCallback((filter: DataSourceFilter) => {
+    console.log(JSON.stringify(filter, null, 2));
+  }, []);
 
   const saveFilters = useCallback(
     (columns: string[]) => {
@@ -175,6 +183,7 @@ const PersistentFilter = () => {
 
   return (
     <QuickFiltersTemplate
+      onApplyFilter={applyFilter}
       onChangeQuickFilterColumns={saveFilters}
       quickFilterColumns={quickFilters}
     />
@@ -189,9 +198,11 @@ export const WithPersistence = () => {
   }, []);
 
   return (
-    <View id={id}>
-      <PersistentFilter />
-    </View>
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <View id={id}>
+        <PersistentFilter />
+      </View>
+    </LocalDataSourceProvider>
   );
 };
 WithPersistence.displaySequence = displaySequence++;

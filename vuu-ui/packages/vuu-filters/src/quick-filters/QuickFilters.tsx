@@ -14,10 +14,7 @@ const classBase = "vuuQuickFilters";
 
 export interface QuickFilterProps
   extends HTMLAttributes<HTMLDivElement>,
-    Pick<
-      FilterBarProps,
-      "onApplyFilter" | "suggestionProvider" | "tableSchema"
-    > {
+    Pick<FilterBarProps, "onApplyFilter" | "tableSchema"> {
   allowAddColumn?: boolean;
   allowFind?: boolean;
   availableColumns: ColumnDescriptor[];
@@ -38,7 +35,6 @@ export const QuickFilters = ({
   onApplyFilter,
   onChangeQuickFilterColumns,
   quickFilterColumns,
-  suggestionProvider,
   tableSchema,
 }: QuickFilterProps) => {
   const targetWindow = useWindow();
@@ -92,7 +88,6 @@ export const QuickFilters = ({
             {getDataItemEditControl({
               dataDescriptor: column,
               onCommit,
-              suggestionProvider,
               table: tableSchema?.table,
             })}
           </FormField>,

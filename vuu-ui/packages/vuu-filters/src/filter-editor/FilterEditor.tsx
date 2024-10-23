@@ -1,4 +1,4 @@
-import { SuggestionProvider, TableSchema } from "@finos/vuu-data-types";
+import { TableSchema } from "@finos/vuu-data-types";
 import type { Filter } from "@finos/vuu-filter-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { SplitButton } from "@finos/vuu-ui-controls";
@@ -23,7 +23,6 @@ export interface FilterEditorProps extends HTMLAttributes<HTMLDivElement> {
   filter?: Filter;
   onCancel: FilterEditCancelHandler;
   onSave: FilterEditSaveHandler;
-  suggestionProvider?: SuggestionProvider;
   tableSchema: TableSchema;
 }
 
@@ -32,7 +31,6 @@ export const FilterEditor = ({
   filter,
   onCancel,
   onSave,
-  suggestionProvider,
   tableSchema,
   ...htmlAttributes
 }: FilterEditorProps) => {
@@ -73,7 +71,7 @@ export const FilterEditor = ({
             onChange={onChangeFilterCombinator}
             onKeyDown={onKeyDownCombinator}
             operator={op}
-          />
+          />,
         );
       }
       content.push(
@@ -84,9 +82,8 @@ export const FilterEditor = ({
           key={`editor-${i}`}
           onCancel={onCancelFilterClause}
           onFocusSave={focusSaveButton}
-          suggestionProvider={suggestionProvider}
           tableSchema={tableSchema}
-        />
+        />,
       );
     });
     return content;

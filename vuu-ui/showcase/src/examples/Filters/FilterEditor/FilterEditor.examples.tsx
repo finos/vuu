@@ -1,4 +1,4 @@
-import { getSchema, vuuModule } from "@finos/vuu-data-test";
+import { LocalDataSourceProvider, getSchema } from "@finos/vuu-data-test";
 import type { SchemaColumn, TableSchema } from "@finos/vuu-data-types";
 import type { Filter } from "@finos/vuu-filter-types";
 import {
@@ -18,8 +18,6 @@ const FilterEditorTemplate = ({
   columnDescriptors = tableSchema.columns,
   ...props
 }: Partial<FilterEditorProps>) => {
-  const { typeaheadHook } = vuuModule("SIMUL");
-
   const onCancel = useCallback<FilterEditCancelHandler>(() => {
     console.log(`cancel  filter edit`);
   }, []);
@@ -47,14 +45,15 @@ const FilterEditorTemplate = ({
       onCancel={onCancel}
       onSave={onSave}
       style={style}
-      suggestionProvider={typeaheadHook}
       tableSchema={tableSchema}
     />
   );
 };
 
 export const NewFilter = (props: Partial<FilterEditorProps>) => (
-  <FilterEditorTemplate {...props} />
+  <LocalDataSourceProvider modules={["SIMUL"]}>
+    <FilterEditorTemplate {...props} />
+  </LocalDataSourceProvider>
 );
 
 NewFilter.displaySequence = displaySequence++;
@@ -86,11 +85,13 @@ export const NewFilterDateColumns = (props: Partial<FilterEditorProps>) => {
   }, []);
 
   return (
-    <FilterEditorTemplate
-      {...props}
-      columnDescriptors={columnDescriptors}
-      tableSchema={tableSchema}
-    />
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <FilterEditorTemplate
+        {...props}
+        columnDescriptors={columnDescriptors}
+        tableSchema={tableSchema}
+      />
+    </LocalDataSourceProvider>
   );
 };
 
@@ -105,7 +106,11 @@ export const EditSimplerFilter = (props: Partial<FilterEditorProps>) => {
     };
   }, []);
 
-  return <FilterEditorTemplate {...props} filter={filter} />;
+  return (
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <FilterEditorTemplate {...props} filter={filter} />
+    </LocalDataSourceProvider>
+  );
 };
 EditSimplerFilter.displaySequence = displaySequence++;
 
@@ -128,7 +133,11 @@ export const EditMultiClauseAndFilter = (props: Partial<FilterEditorProps>) => {
     };
   }, []);
 
-  return <FilterEditorTemplate {...props} filter={filter} />;
+  return (
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <FilterEditorTemplate {...props} filter={filter} />
+    </LocalDataSourceProvider>
+  );
 };
 EditMultiClauseAndFilter.displaySequence = displaySequence++;
 
@@ -151,6 +160,10 @@ export const EditMultiClauseOrFilter = (props: Partial<FilterEditorProps>) => {
     };
   }, []);
 
-  return <FilterEditorTemplate {...props} filter={filter} />;
+  return (
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <FilterEditorTemplate {...props} filter={filter} />
+    </LocalDataSourceProvider>
+  );
 };
 EditMultiClauseOrFilter.displaySequence = displaySequence++;

@@ -1,25 +1,25 @@
-import {
+import type {
   DataValueDescriptor,
-  SuggestionProvider,
   TableSchemaTable,
 } from "@finos/vuu-data-types";
 import {
   VuuDatePicker,
   VuuInput,
   VuuTypeaheadInput,
+  VuuTypeaheadInputProps,
 } from "@finos/vuu-ui-controls";
 import { CommitHandler, isDateTimeDataValue } from "@finos/vuu-utils";
 import { InputProps } from "@salt-ds/core";
 
 export interface DataItemEditControlProps {
   InputProps?: Partial<InputProps>;
+  TypeaheadProps?: Pick<VuuTypeaheadInputProps, "highlightFirstSuggestion">;
   /**
    * A table column or form field Descriptor.
    */
   dataDescriptor: DataValueDescriptor;
   errorMessage?: string;
   onCommit: CommitHandler<HTMLElement, string | undefined>;
-  suggestionProvider?: SuggestionProvider;
   table?: TableSchemaTable;
 }
 
@@ -27,10 +27,10 @@ export type ValidationStatus = "initial" | true | string;
 
 export const getDataItemEditControl = ({
   InputProps,
+  TypeaheadProps,
   dataDescriptor,
   errorMessage,
   onCommit,
-  suggestionProvider,
   table,
 }: DataItemEditControlProps) => {
   const handleCommitNumber: CommitHandler<HTMLElement, number> = (
@@ -52,16 +52,13 @@ export const getDataItemEditControl = ({
     );
   } else if (isDateTimeDataValue(dataDescriptor)) {
     return <VuuDatePicker onCommit={handleCommitNumber} />;
-  } else if (
-    dataDescriptor.serverDataType === "string" &&
-    suggestionProvider &&
-    table
-  ) {
+  } else if (dataDescriptor.serverDataType === "string" && table) {
     return (
       <VuuTypeaheadInput
+        {...InputProps}
+        {...TypeaheadProps}
         column={dataDescriptor.name}
         onCommit={onCommit}
-        suggestionProvider={suggestionProvider}
         table={table}
       />
     );

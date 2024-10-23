@@ -20,7 +20,6 @@ export interface CustomFilterProps
       | "onFilterDeleted"
       | "onFilterRenamed"
       | "onFilterStateChanged"
-      | "suggestionProvider"
       | "tableSchema"
     > {
   columnDescriptors: ColumnDescriptor[];
@@ -34,7 +33,6 @@ export const CustomFilters = ({
   onFilterDeleted,
   onFilterRenamed,
   onFilterStateChanged,
-  suggestionProvider,
   tableSchema,
 }: CustomFilterProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -81,7 +79,7 @@ export const CustomFilters = ({
           filter={filter}
           key={`filter-${i}`}
           selected={activeFilterIndex.includes(i)}
-        />
+        />,
       );
     });
     return items;
@@ -119,7 +117,6 @@ export const CustomFilters = ({
           onCancel={onCancelEdit}
           onSave={onSave}
           filter={interactedFilterState?.filter}
-          suggestionProvider={suggestionProvider}
           tableSchema={tableSchema}
         />
       )}

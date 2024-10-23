@@ -1,28 +1,49 @@
-import type {
-  SuggestionProvider,
-  TableSchemaTable,
-} from "@finos/vuu-data-types";
+import type { TableSchemaTable } from "@finos/vuu-data-types";
+import { NO_DATA_MATCH, type CommitHandler } from "@finos/vuu-utils";
 import { ComboBox, Option } from "@salt-ds/core";
-import { useVuuTypeaheadInput } from "./useVuuTypeahead";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { useVuuTypeaheadInput } from "./useVuuTypeaheadInput";
 
 import vuuTypeaheadInputCss from "./VuuTypeaheadInput.css";
-import { CommitHandler } from "@finos/vuu-utils";
+import { PillInputProps } from "@salt-ds/core/dist-types/pill-input";
 
 const classBase = "vuuTypeaheadInput";
+const [noMatchingData] = NO_DATA_MATCH;
 
 export interface VuuTypeaheadInputProps {
+  /**
+   * Allows a text string to be submitted that does not match any suggestion
+   * Defaults to true
+   */
+  allowFreeInput?: boolean;
   column: string;
+  /**
+   * A warning to display to the user if allowFreeText is false and they attempt
+   * to commit text which does not match any suggestions. A default message will
+   * be shown if not provided
+   */
+  freeTextWarning?: string;
+  /**
+   * When suggestions are displayed, should first option be highlighted ?
+   * Highlighted option will be selected if Enter pressed. If this option
+   * is not applied and no suggestion is highlighted, Enter will commit
+   * current text. This will be desirable if filter operator  will be
+   * 'contains', not if filter operator will be '='.
+   */
+  highlightFirstSuggestion?: boolean;
+  inputProps?: PillInputProps["inputProps"];
   onCommit: CommitHandler<HTMLInputElement>;
-  suggestionProvider: SuggestionProvider;
   table: TableSchemaTable;
 }
 
 export const VuuTypeaheadInput = ({
+  allowFreeInput,
   column,
+  freeTextWarning,
+  highlightFirstSuggestion,
+  inputProps: inputPropsProp,
   onCommit,
-  suggestionProvider,
   table,
 }: VuuTypeaheadInputProps) => {
   const targetWindow = useWindow();
@@ -31,9 +52,12 @@ export const VuuTypeaheadInput = ({
     css: vuuTypeaheadInputCss,
     window: targetWindow,
   });
+
   const {
     inputProps,
+    noFreeText,
     onChange,
+    onKeyDown,
     onOpenChange,
     onSelectionChange,
     open,
@@ -41,16 +65,26 @@ export const VuuTypeaheadInput = ({
     typeaheadValues,
     value,
   } = useVuuTypeaheadInput({
+    allowFreeInput,
     column,
+    freeTextWarning,
+    highlightFirstSuggestion,
+    inputProps: inputPropsProp,
     onCommit,
-    suggestionProvider,
     table,
   });
+
+  // need latest version of salt combobox
+  // const defaultHighlightedIndex =
+  //   highlightFirstSuggestion === false ? -1 : undefined;
+
   return (
     <ComboBox
       className={classBase}
+      // defaultHighlightedIndex={defaultHighlightedIndex}
       inputProps={inputProps}
       onChange={onChange}
+      onKeyDown={onKeyDown}
       onOpenChange={onOpenChange}
       onSelectionChange={onSelectionChange}
       open={open}
@@ -58,7 +92,12 @@ export const VuuTypeaheadInput = ({
       value={value}
     >
       {typeaheadValues.map((state) => (
-        <Option value={state} key={state} />
+        <Option
+          className="vuuTypeaheadOption"
+          value={state}
+          key={state}
+          disabled={state === noMatchingData || state === noFreeText}
+        />
       ))}
     </ComboBox>
   );

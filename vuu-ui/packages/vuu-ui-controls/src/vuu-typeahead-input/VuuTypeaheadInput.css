@@ -33,3 +33,7 @@
     width: var(--vuu-icon-size);
   }
 }
+
+.vuuTypeaheadOption[aria-disabled="true"] {
+  color: var(--salt-content-secondary-foreground);
+}

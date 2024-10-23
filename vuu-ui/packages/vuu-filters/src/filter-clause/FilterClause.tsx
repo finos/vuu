@@ -1,4 +1,4 @@
-import type { SuggestionProvider, TableSchema } from "@finos/vuu-data-types";
+import type { TableSchema } from "@finos/vuu-data-types";
 import {
   ColumnDescriptorsByName,
   MultiValueFilterClause,
@@ -31,7 +31,6 @@ export interface FilterClauseProps
   onDropdownClose?: (closeReason: CloseReason) => void;
   onDropdownOpen?: () => void;
   onFocusSave?: () => void;
-  suggestionProvider?: SuggestionProvider;
   tableSchema: TableSchema;
 }
 
@@ -45,7 +44,6 @@ export const FilterClause = ({
   onDropdownOpen,
   onFocusSave,
   filterClauseModel,
-  suggestionProvider,
   tableSchema,
   ...htmlAttributes
 }: FilterClauseProps) => {
@@ -109,7 +107,6 @@ export const FilterClause = ({
           operator={filterClauseModel.op}
           ref={valueRef}
           selectedColumn={selectedColumn}
-          suggestionProvider={suggestionProvider}
           table={tableSchema.table}
           value={
             (filterClause as MultiValueFilterClause)?.values ??
