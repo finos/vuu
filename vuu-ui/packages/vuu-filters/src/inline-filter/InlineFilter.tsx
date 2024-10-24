@@ -7,7 +7,13 @@ import {
 } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { HTMLAttributes, useCallback, useMemo } from "react";
+import {
+  HTMLAttributes,
+  KeyboardEventHandler,
+  useCallback,
+  useMemo,
+} from "react";
+import cx from "clsx";
 
 import inlineFilteCss from "./InlineFilter.css";
 import { InputProps } from "@salt-ds/core";
@@ -69,13 +75,26 @@ export const InlineFilter = ({
     [columns, filterAggregator, onChange],
   );
 
+  const handleKeyDown = useCallback<KeyboardEventHandler<HTMLDivElement>>(
+    (evt) => {
+      if (evt.key === "Enter") {
+        const el = evt.target as HTMLElement;
+        const inputElement = el.querySelector("input");
+        inputElement?.focus();
+      }
+    },
+    [],
+  );
+
   return (
     <div {...htmlAttributes} className={classBase} role="row">
       <VirtualColSpan width={virtualColSpan} />
-      {columns.map((column) => (
+      {columns.map((column, i) => (
         <div
-          className={`${classBase}-filter`}
+          aria-colindex={i + 1}
+          className={cx(`${classBase}-filter`, "vuuTableCell")}
           data-field={column.name}
+          onKeyDown={handleKeyDown}
           key={column.name}
           style={{ width: column.width }}
         >

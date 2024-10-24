@@ -8,17 +8,16 @@ const NULL_CELL_POS: CellPos = [-1, -1];
 export type NavigationKey = PageKey | ArrowKey;
 
 export const headerCellQuery = (colIdx: number) =>
-  `.vuuTable-col-headers .vuuTableHeaderCell[aria-colindex='${colIdx + 1}']`;
+  `.vuuTable-col-headers .vuuTableHeaderCell[aria-colindex='${colIdx}']`;
 
 export const dataCellQuery = (rowIdx: number, colIdx: number) =>
-  `.vuuTable-body > [aria-rowindex='${rowIdx + 1}'] > [aria-colindex='${colIdx + 1}']`;
+  `.vuuTable-table [aria-rowindex='${rowIdx}'] > [aria-colindex='${colIdx}']`;
 
 export const getTableCell = (
   containerRef: RefObject<HTMLElement>,
   [rowIdx, colIdx]: CellPos,
 ) => {
-  const cssQuery =
-    rowIdx === -1 ? headerCellQuery(colIdx) : dataCellQuery(rowIdx, colIdx);
+  const cssQuery = dataCellQuery(rowIdx, colIdx);
   const cell = containerRef.current?.querySelector(
     cssQuery,
   ) as HTMLTableCellElement;
@@ -45,10 +44,10 @@ export const cellDropdownShowing = (cell: HTMLDivElement | null) => {
 export const cellIsTextInput = (cell: HTMLElement) =>
   cell.querySelector(".vuuTableInputCell") !== null;
 
-export const getIndexFromRowElement = (rowElement: HTMLElement | null) => {
+export const getAriaRowIndex = (rowElement: HTMLElement | null) => {
   const rowIndex = rowElement?.ariaRowIndex;
   if (rowIndex != null) {
-    const index = parseInt(rowIndex) - 1;
+    const index = parseInt(rowIndex);
     if (!isNaN(index)) {
       return index;
     }
@@ -56,16 +55,45 @@ export const getIndexFromRowElement = (rowElement: HTMLElement | null) => {
   return -1;
 };
 
-export const getIndexFromCellElement = (cellElement: HTMLElement | null) => {
-  const colIndex = cellElement?.ariaColIndex;
+export const getAriaColIndex = (rowElement: HTMLElement | null) => {
+  const colIndex = rowElement?.ariaColIndex;
   if (colIndex != null) {
-    const index = parseInt(colIndex) - 1;
+    const index = parseInt(colIndex);
     if (!isNaN(index)) {
       return index;
     }
   }
   return -1;
 };
+
+export const getRowElementByAriaIndex = (
+  container: HTMLDivElement | EventTarget,
+  rowIndex: number,
+) => {
+  if (rowIndex === -1) {
+    return null;
+  } else {
+    const activeRow = (container as HTMLElement).querySelector(
+      `[aria-rowindex="${rowIndex}"]`,
+    ) as HTMLElement;
+
+    if (activeRow) {
+      return activeRow;
+    } else {
+      throw Error(
+        `getRowElementAtIndex no row found for index index ${rowIndex}`,
+      );
+    }
+  }
+};
+
+export const getIndexFromRowElement = (rowElement: HTMLElement | null) => {
+  const ariaRowIndex = getAriaRowIndex(rowElement);
+  return ariaRowIndex === -1 ? -1 : ariaRowIndex - 1;
+};
+
+export const getIndexFromCellElement = (cellElement: HTMLElement | null) =>
+  getAriaColIndex(cellElement);
 
 export const getTableCellPos = (tableCell: HTMLDivElement): CellPos => {
   const colIdx = getIndexFromCellElement(tableCell);
@@ -80,6 +108,11 @@ export const getTableCellPos = (tableCell: HTMLDivElement): CellPos => {
   return NULL_CELL_POS;
 };
 
+export const getAriaCellPos = (tableCell: HTMLDivElement): CellPos => {
+  const focusedRow = tableCell.closest("[role='row']") as HTMLElement;
+  return [getAriaRowIndex(focusedRow), getAriaColIndex(tableCell)];
+};
+
 const closestRow = (el: HTMLElement) =>
   el.closest('[role="row"]') as HTMLElement;
 
@@ -90,7 +123,7 @@ export function getNextCellPos(
   key: ArrowKey,
   [rowIdx, colIdx]: CellPos,
   columnCount: number,
-  rowCount: number,
+  maxRowIndex: number,
 ): CellPos {
   if (key === "ArrowUp") {
     if (rowIdx > -1) {
@@ -100,20 +133,20 @@ export function getNextCellPos(
     }
   } else if (key === "ArrowDown") {
     if (rowIdx === -1) {
-      return [0, colIdx];
-    } else if (rowIdx === rowCount - 1) {
+      return [1, colIdx];
+    } else if (rowIdx === maxRowIndex) {
       return [rowIdx, colIdx];
     } else {
       return [rowIdx + 1, colIdx];
     }
   } else if (key === "ArrowRight") {
-    if (colIdx < columnCount - 1) {
+    if (colIdx < columnCount) {
       return [rowIdx, colIdx + 1];
     } else {
       return [rowIdx, colIdx];
     }
   } else if (key === "ArrowLeft") {
-    if (colIdx > 0) {
+    if (colIdx > 1) {
       return [rowIdx, colIdx - 1];
     } else {
       return [rowIdx, colIdx];

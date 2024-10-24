@@ -15,8 +15,8 @@ import {
   NavigationKey,
   cellDropdownShowing,
   closestRowIndex,
-  getTableCellPos,
   getNextCellPos,
+  getAriaCellPos,
 } from "./table-dom-utils";
 import { ScrollRequestHandler } from "./useTableScroll";
 import { FocusCell } from "./useCellFocus";
@@ -51,10 +51,9 @@ export const isNavigationKey = (
 
 const focusColumnMenuIfAppropriate = (
   e: KeyboardEvent,
-  [rowIdx]: CellPos,
   el: HTMLElement | null,
 ) => {
-  if (e.shiftKey && e.key.match(/Arrow(Left|Right)/) && rowIdx === -1) {
+  if (e.shiftKey && e.key.match(/Arrow(Left|Right)/)) {
     if (el?.classList.contains("vuuTableHeaderCell")) {
       const menuButton = el?.querySelector<HTMLButtonElement>(".vuuColumnMenu");
       if (menuButton) {
@@ -74,6 +73,7 @@ export interface NavigationHookProps {
   cellFocusStateRef: MutableRefObject<CellFocusState>;
   containerRef: RefObject<HTMLElement>;
   columnCount?: number;
+  headerCount: number;
   defaultHighlightedIndex?: number;
   disableFocus?: boolean;
   disableHighlightOnFocus?: boolean;
@@ -97,6 +97,7 @@ export const useKeyboardNavigation = ({
   defaultHighlightedIndex,
   disableHighlightOnFocus,
   focusCell,
+  headerCount,
   highlightedIndex: highlightedIndexProp,
   navigationStyle,
   requestScroll,
@@ -116,6 +117,10 @@ export const useKeyboardNavigation = ({
     name: "UseKeyboardNavigation",
   });
   highlightedIndexRef.current = highlightedIndex;
+
+  // We use aria row index for tracking rows
+  const maxRowIndex = rowCount + headerCount;
+
   const setHighlightedIndex = useCallback(
     (idx: number) => {
       onHighlight?.(idx);
@@ -214,7 +219,7 @@ export const useKeyboardNavigation = ({
         // click handler.
         const focusedCell = getFocusedCell(document.activeElement);
         if (focusedCell) {
-          cellFocusStateRef.current.cellPos = getTableCellPos(focusedCell);
+          cellFocusStateRef.current.cellPos = getAriaCellPos(focusedCell);
           if (navigationStyle === "row") {
             setHighlightedIdx(cellFocusStateRef.current.cellPos[0]);
           }
@@ -236,15 +241,20 @@ export const useKeyboardNavigation = ({
       } = cellFocusStateRef;
       const [nextRowIdx, nextColIdx] = isPagingKey(key)
         ? await nextPageItemIdx(key, cellPos)
-        : getNextCellPos(key, cellPos, columnCount, rowCount);
-      console.log(`next cellPos row: ${nextRowIdx} col ${nextColIdx}`);
+        : getNextCellPos(key, cellPos, columnCount, maxRowIndex);
 
       const [rowIdx, colIdx] = cellPos;
       if (nextRowIdx !== rowIdx || nextColIdx !== colIdx) {
         setActiveCell(nextRowIdx, nextColIdx, true);
       }
     },
-    [cellFocusStateRef, columnCount, nextPageItemIdx, rowCount, setActiveCell],
+    [
+      cellFocusStateRef,
+      columnCount,
+      nextPageItemIdx,
+      maxRowIndex,
+      setActiveCell,
+    ],
   );
 
   const scrollRowIntoViewIfNecessary = useCallback(
@@ -299,22 +309,13 @@ export const useKeyboardNavigation = ({
         if (navigationStyle === "row") {
           moveHighlightedRow(e.key);
         } else {
-          const {
-            current: { cellPos },
-          } = cellFocusStateRef;
-          if (!focusColumnMenuIfAppropriate(e, cellPos, cell)) {
+          if (!focusColumnMenuIfAppropriate(e, cell)) {
             navigateChildItems(e.key);
           }
         }
       }
     },
-    [
-      rowCount,
-      navigationStyle,
-      moveHighlightedRow,
-      cellFocusStateRef,
-      navigateChildItems,
-    ],
+    [rowCount, navigationStyle, moveHighlightedRow, navigateChildItems],
   );
 
   const handleClick = useCallback(
@@ -323,7 +324,7 @@ export const useKeyboardNavigation = ({
       const target = evt.target as HTMLElement;
       const focusedCell = getFocusedCell(target);
       if (focusedCell) {
-        const [rowIdx, colIdx] = getTableCellPos(focusedCell);
+        const [rowIdx, colIdx] = getAriaCellPos(focusedCell);
         setActiveCell(rowIdx, colIdx);
       }
     },

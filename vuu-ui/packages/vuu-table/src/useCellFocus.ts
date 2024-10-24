@@ -85,7 +85,7 @@ export const useCellFocus = ({
             );
             if (headerCell) {
               headerCell.setAttribute("tabindex", "0");
-              state.cellPos = [-1, 0];
+              state.cellPos = [1, 1];
               state.el = headerCell;
               state.pos = { top: -20 };
               if (state.placeholderEl) {
@@ -97,7 +97,7 @@ export const useCellFocus = ({
               );
               if (cell) {
                 cell.setAttribute("tabindex", "0");
-                state.cellPos = [0, 0];
+                state.cellPos = [1, 1];
                 state.el = cell;
                 state.pos = { top: 0 };
                 if (state.placeholderEl) {

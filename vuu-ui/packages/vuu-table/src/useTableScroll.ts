@@ -1,6 +1,5 @@
 import {
   getColumnsInViewport,
-  getRowElementAtIndex,
   itemsChanged,
   RowAtPositionFunc,
 } from "@finos/vuu-utils";
@@ -16,7 +15,10 @@ import {
   useState,
 } from "react";
 import type { ViewportMeasurements } from "./useTableViewport";
-import { howFarIsRowOutsideViewport } from "./table-dom-utils";
+import {
+  getRowElementByAriaIndex,
+  howFarIsRowOutsideViewport,
+} from "./table-dom-utils";
 import type {
   CellFocusState,
   RuntimeColumnDescriptor,
@@ -455,7 +457,7 @@ export const useTableScroll = ({
             break;
           case "scroll-row":
             {
-              const activeRow = getRowElementAtIndex(
+              const activeRow = getRowElementByAriaIndex(
                 contentContainer,
                 scrollRequest.rowIndex,
               );
@@ -492,7 +494,7 @@ export const useTableScroll = ({
                     contentContainer.scrollTo({
                       top: newScrollTop,
                       left: newScrollLeft,
-                      // avoid begaviour: 'smooth', doesn't work correctly
+                      // avoid behaviour: 'smooth', doesn't work correctly
                       behavior: "instant",
                     });
                   }

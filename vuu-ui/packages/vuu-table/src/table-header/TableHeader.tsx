@@ -73,7 +73,7 @@ export const TableHeader = memo(
       const enrichElementWithAria = (el: JSX.Element, rowIndex: number) => {
         const offset = headings.length;
         return cloneElement(el, {
-          ariaRowIndex: rowIndex + offset + 2,
+          "aria-rowindex": rowIndex + offset + 2,
           ariaRole: "row",
         });
       };
@@ -124,10 +124,6 @@ export const TableHeader = memo(
       onSortColumn,
       tableConfig,
     });
-
-    console.log(
-      `we have ${customHeaderCount} custom headers and ${headings.length} headings`,
-    );
 
     return (
       <div
