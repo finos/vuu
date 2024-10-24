@@ -244,7 +244,7 @@ const TableCore = ({
     focusCellPlaceholderRef,
     getRowOffset,
     handleContextMenuAction,
-    headerHeight,
+    headerState: { height: headerHeight, count: headerCount },
     headings,
     highlightedIndex,
     menuBuilder,
@@ -365,7 +365,7 @@ const TableCore = ({
             <div className={`${classBase}-body`} ref={tableBodyRef}>
               {data.map((data) => (
                 <Row
-                  aria-rowindex={data[0] + 1}
+                  aria-rowindex={data[0] + headerCount + 1}
                   classNameGenerator={rowClassNameGenerator}
                   columnMap={columnMap}
                   columns={scrollProps.columnsWithinViewport}

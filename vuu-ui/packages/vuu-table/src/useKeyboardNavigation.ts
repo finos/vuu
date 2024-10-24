@@ -237,6 +237,8 @@ export const useKeyboardNavigation = ({
       const [nextRowIdx, nextColIdx] = isPagingKey(key)
         ? await nextPageItemIdx(key, cellPos)
         : getNextCellPos(key, cellPos, columnCount, rowCount);
+      console.log(`next cellPos row: ${nextRowIdx} col ${nextColIdx}`);
+
       const [rowIdx, colIdx] = cellPos;
       if (nextRowIdx !== rowIdx || nextColIdx !== colIdx) {
         setActiveCell(nextRowIdx, nextColIdx, true);

@@ -15,7 +15,8 @@ import {
   RuntimeColumnDescriptor,
 } from "@finos/vuu-table-types";
 import { EventEmitter } from "../event-emitter";
-import { VuuFilter } from "@finos/vuu-protocol-types";
+import { VuuFilter, VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import { getTypedValue } from "../form-utils";
 
 const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "=",
@@ -140,17 +141,32 @@ export type FilterEvents = {
   filter: (vuuFilter: VuuFilter) => void;
 };
 
-const createFilterClause = (column: string, value: string) =>
-  `${column} contains "${value}"`;
+const createFilterClause = (column: string, value: VuuRowDataItemType) =>
+  typeof value === "string"
+    ? `${column} contains "${value}"`
+    : `${column} = ${value}`;
 
 export class FilterAggregator extends EventEmitter<FilterEvents> {
   #columns = new Map<string, ColumnDescriptor>();
-  #filters = new Map<string, string | number>();
-  addFilter(column: ColumnDescriptor, value: string) {
-    console.log(`add filter for ${column} ${JSON.stringify(value)}`);
+  #filters = new Map<string, VuuRowDataItemType>();
+
+  addFilter(column: ColumnDescriptor, value: string | number) {
     this.#columns.set(column.name, column);
-    this.#filters.set(column.name, value);
+    const { serverDataType = "string" } = column;
+    const typedValue = getTypedValue(value.toString(), serverDataType, true);
+
+    this.#filters.set(column.name, typedValue);
     // this.emit("filter", this.filter);
+  }
+
+  removeFilter(column: ColumnDescriptor) {
+    if (this.#columns.has(column.name)) {
+      this.#columns.delete(column.name);
+      this.#filters.delete(column.name);
+      return true;
+    } else {
+      return false;
+    }
   }
 
   get filter(): VuuFilter {

@@ -5,7 +5,9 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import {
+  ChangeEventHandler,
   FocusEventHandler,
+  FormEventHandler,
   ForwardedRef,
   KeyboardEventHandler,
   ReactElement,
@@ -20,6 +22,7 @@ const classBase = "vuuInput";
 
 export interface VuuInputProps<T extends VuuRowDataItemType = string>
   extends Omit<InputProps, "validationStatus"> {
+  commitWhenCleared?: boolean;
   errorMessage?: ReactNode;
   onCommit: CommitHandler<HTMLInputElement, T | undefined>;
   type?: T;
@@ -34,6 +37,7 @@ export const VuuInput = forwardRef(function VuuInput<
 >(
   {
     className,
+    commitWhenCleared = false,
     errorMessage,
     id: idProp,
     onCommit,
@@ -69,6 +73,17 @@ export const VuuInput = forwardRef(function VuuInput<
       }
     },
     [onCommit, type],
+  );
+
+  const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
+    (evt) => {
+      const value = evt.target.value;
+      if (value.trim() === "" && commitWhenCleared) {
+        onCommit?.(evt, value as T);
+      }
+      props.inputProps?.onChange?.(evt);
+    },
+    [commitWhenCleared, onCommit, props.inputProps],
   );
 
   const handleKeyDown = useCallback<KeyboardEventHandler<HTMLInputElement>>(
@@ -107,6 +122,7 @@ export const VuuInput = forwardRef(function VuuInput<
         inputProps={{
           autoComplete: "off",
           ...props.inputProps,
+          onChange: handleChange,
         }}
         className={cx(classBase, className, {
           [`${classBase}-error`]: errorMessage,

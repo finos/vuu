@@ -5,11 +5,11 @@ import {
   RuntimeColumnDescriptor,
   TableColumnResizeHandler,
   TableConfig,
-  TableHeadings
+  TableHeadings,
 } from "@finos/vuu-table-types";
 import { isGroupColumn, isNotHidden } from "@finos/vuu-utils";
 import cx from "clsx";
-import { isValidElement, memo, useMemo } from "react";
+import { cloneElement, isValidElement, memo, useMemo } from "react";
 import { GroupHeaderCell, HeaderCell } from "../header-cell";
 import { useTableHeader } from "./useTableHeader";
 import { HeaderProvider } from "./HeaderProvider";
@@ -17,7 +17,7 @@ import { HeaderProvider } from "./HeaderProvider";
 export type ColumnSortHandler = (
   column: ColumnDescriptor,
   addToExistingSort: boolean,
-  sortType?: VuuSortType
+  sortType?: VuuSortType,
 ) => void;
 
 export interface TableHeaderProps {
@@ -26,7 +26,7 @@ export interface TableHeaderProps {
   columns: RuntimeColumnDescriptor[];
   customHeader?: CustomHeader | CustomHeader[];
   headings: TableHeadings;
-  onHeightMeasured: (height: number) => void;
+  onHeightMeasured: (height: number, count: number) => void;
   onResizeColumn: TableColumnResizeHandler;
   onMoveColumn: (columns: ColumnDescriptor[]) => void;
   onMoveGroupColumn: (columns: ColumnDescriptor[]) => void;
@@ -54,60 +54,94 @@ export const TableHeader = memo(
     showColumnHeaderMenus,
     tableConfig,
     tableId,
-    virtualColSpan = 0
+    virtualColSpan = 0,
   }: TableHeaderProps) => {
+    const [customHeaders, customHeaderCount] = useMemo<
+      [JSX.Element | JSX.Element[] | null, number]
+    >(() => {
+      const offset = headings.length;
+      const createElement = (Component: CustomHeader, index: number) => (
+        <Component
+          ariaRowIndex={offset + index + 2}
+          ariaRole="row"
+          columns={columns}
+          key={index}
+          virtualColSpan={virtualColSpan}
+        />
+      );
+
+      const enrichElementWithAria = (el: JSX.Element, rowIndex: number) => {
+        const offset = headings.length;
+        return cloneElement(el, {
+          ariaRowIndex: rowIndex + offset + 2,
+          ariaRole: "row",
+        });
+      };
+
+      if (customHeader === undefined) {
+        return [null, 0];
+      } else if (Array.isArray(customHeader)) {
+        if (customHeader.some(isValidElement)) {
+          const header = (
+            <HeaderProvider columns={columns} virtualColSpan={virtualColSpan}>
+              {customHeader.map((header, i) =>
+                isValidElement(header)
+                  ? enrichElementWithAria(header, i)
+                  : createElement(header, i),
+              )}
+            </HeaderProvider>
+          );
+          return [header, customHeader.length];
+        } else {
+          return [customHeader.map(createElement), customHeader.length];
+        }
+      } else if (isValidElement(customHeader)) {
+        // TODO rowIndex and role
+        const header = (
+          <HeaderProvider columns={columns} virtualColSpan={virtualColSpan}>
+            {enrichElementWithAria(customHeader, 0)}
+          </HeaderProvider>
+        );
+        return [header, 1];
+      } else {
+        return [createElement(customHeader, 0), 1];
+      }
+    }, [columns, customHeader, headings.length, virtualColSpan]);
+
     const {
       draggableColumn,
       draggedColumnIndex,
       onClick,
       onMouseDown,
-      setContainerRef
+      setContainerRef,
     } = useTableHeader({
       allowDragColumnHeader,
       columns,
+      customHeaderCount,
+      headings,
       onHeightMeasured,
       onMoveColumn,
       onSortColumn,
-      tableConfig
+      tableConfig,
     });
 
-    const customHeaders = useMemo(() => {
-      const createElement = (Component: CustomHeader, key?: number) => (
-        <Component
-          columns={columns}
-          key={key}
-          virtualColSpan={virtualColSpan}
-        />
-      );
-      if (customHeader === undefined) {
-        return null;
-      } else if (Array.isArray(customHeader)) {
-        if (customHeader.some(isValidElement)) {
-          return (
-            <HeaderProvider columns={columns} virtualColSpan={virtualColSpan}>
-              {customHeader.map((header, i) =>
-                isValidElement(header) ? header : createElement(header, i)
-              )}
-            </HeaderProvider>
-          );
-        } else {
-          return customHeader.map(createElement);
-        }
-      } else if (isValidElement(customHeader)) {
-        return (
-          <HeaderProvider columns={columns} virtualColSpan={virtualColSpan}>
-            {customHeader}
-          </HeaderProvider>
-        );
-      } else {
-        return createElement(customHeader);
-      }
-    }, [columns, customHeader, virtualColSpan]);
+    console.log(
+      `we have ${customHeaderCount} custom headers and ${headings.length} headings`,
+    );
 
     return (
-      <div className={`${classBase}-col-headings`} ref={setContainerRef}>
+      <div
+        className={`${classBase}-col-headings`}
+        ref={setContainerRef}
+        role="rowgroup"
+      >
         {headings.map((colHeaders, i) => (
-          <div className="vuuTable-heading" key={i}>
+          <div
+            className="vuuTable-heading"
+            key={i}
+            role="row"
+            aria-rowindex={i + 1}
+          >
             {colHeaders.map(({ label, width }, j) => (
               <div key={j} className="vuuTable-headingCell" style={{ width }}>
                 {label}
@@ -115,7 +149,11 @@ export const TableHeader = memo(
             ))}
           </div>
         ))}
-        <div className={`${classBase}-col-headers`} role="row">
+        <div
+          className={`${classBase}-col-headers`}
+          role="row"
+          aria-rowindex={headings.length + 1}
+        >
           {virtualColSpan > 0 ? (
             <div
               role="cell"
@@ -138,7 +176,7 @@ export const TableHeader = memo(
               <HeaderCell
                 aria-colindex={col.index}
                 className={cx({
-                  "vuuDraggable-dragAway": i === draggedColumnIndex
+                  "vuuDraggable-dragAway": i === draggedColumnIndex,
                 })}
                 column={col}
                 data-index={i}
@@ -149,13 +187,13 @@ export const TableHeader = memo(
                 onResize={onResizeColumn}
                 showMenu={showColumnHeaderMenus}
               />
-            )
+            ),
           )}
           {draggableColumn}
         </div>
         {customHeaders}
       </div>
     );
-  }
+  },
 );
 TableHeader.displayName = "TableHeader";

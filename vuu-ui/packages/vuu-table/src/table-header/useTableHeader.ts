@@ -1,4 +1,4 @@
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { ColumnDescriptor, TableHeadings } from "@finos/vuu-table-types";
 import {
   DropOptions,
   useDragDrop as useDragDrop,
@@ -22,8 +22,10 @@ export interface TableHeaderHookProps
     | "onSortColumn"
     | "tableConfig"
   > {
+  customHeaderCount: number;
+  headings: TableHeadings;
   label?: string;
-  onHeightMeasured: (height: number) => void;
+  onHeightMeasured: (height: number, customHeaderCount: number) => void;
   onMoveColumn: (columns: ColumnDescriptor[]) => void;
   onSortColumn: (column: ColumnDescriptor, addToExistingSort: boolean) => void;
 }
@@ -31,6 +33,8 @@ export interface TableHeaderHookProps
 export const useTableHeader = ({
   allowDragColumnHeader,
   columns,
+  customHeaderCount,
+  headings,
   onHeightMeasured,
   onMoveColumn,
   onSortColumn,
@@ -38,8 +42,16 @@ export const useTableHeader = ({
 }: TableHeaderHookProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const scrollingContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const handleHeightMeasured = useCallback(
+    (height: number) => {
+      onHeightMeasured(height, customHeaderCount + headings.length + 1);
+    },
+    [customHeaderCount, headings, onHeightMeasured],
+  );
+
   const { measuredRef: rowRef } = useMeasuredHeight({
-    onHeightMeasured,
+    onHeightMeasured: handleHeightMeasured,
   });
 
   const setContainerRef = useCallback<RefCallback<HTMLDivElement>>((el) => {

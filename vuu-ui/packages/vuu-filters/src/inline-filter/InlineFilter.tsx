@@ -56,8 +56,14 @@ export const InlineFilter = ({
       const fieldName = getFieldName(evt.target);
       const column = columns.find((c) => c.name === fieldName);
       if (column) {
-        filterAggregator.addFilter(column, value);
-        onChange(filterAggregator.filter);
+        if (value === "") {
+          if (filterAggregator.removeFilter(column)) {
+            onChange(filterAggregator.filter);
+          }
+        } else {
+          filterAggregator.addFilter(column, value);
+          onChange(filterAggregator.filter);
+        }
       }
     },
     [columns, filterAggregator, onChange],
@@ -76,6 +82,7 @@ export const InlineFilter = ({
           {getDataItemEditControl({
             InputProps,
             TypeaheadProps,
+            commitWhenCleared: true,
             dataDescriptor: column,
             onCommit,
             table,

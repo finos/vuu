@@ -13,7 +13,7 @@ import {
 } from "@finos/vuu-data-types";
 import { DockLayout, Drawer } from "@finos/vuu-layout";
 import { Table, TableProps, useHeaderProps } from "@finos/vuu-table";
-import { TableConfig } from "@finos/vuu-table-types";
+import { BaseRowProps, TableConfig } from "@finos/vuu-table-types";
 import { List, ListItem } from "@finos/vuu-ui-controls";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
@@ -225,10 +225,12 @@ export const SingleHeadingRow = () => {
 };
 SingleHeadingRow.displaySequence = displaySequence++;
 
-const SimpleCustomHeader = () => {
+const SimpleCustomHeader = ({ ariaRole, ariaRowIndex }: BaseRowProps) => {
   return (
     <div
+      aria-rowindex={ariaRowIndex}
       className="SimpleCustomHeader"
+      role={ariaRole}
       style={{ height: 15, backgroundColor: "black", color: "white" }}
     >
       This is the simplest possible custom header
@@ -271,11 +273,13 @@ export const CustomHeaderComponent = () => {
 };
 CustomHeaderComponent.displaySequence = displaySequence++;
 
-const CustomColumnHeader = () => {
+const CustomColumnHeader = ({ ariaRole, ariaRowIndex }: BaseRowProps) => {
   const { columns, virtualColSpan } = useHeaderProps();
   return (
     <div
+      aria-rowindex={ariaRowIndex}
       className="SimpleCustomHeader"
+      role={ariaRole}
       style={{ height: 25, backgroundColor: "black", color: "white" }}
     >
       <div style={{ display: "inline-block", width: virtualColSpan }} />

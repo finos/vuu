@@ -1,6 +1,10 @@
-import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import {
+  VuuColumnDataType,
+  VuuRowDataItemType,
+} from "@finos/vuu-protocol-types";
 import { KeyboardEvent, SyntheticEvent } from "react";
 import { queryClosest } from "./html-utils";
+import { isValidNumber } from "./data-utils";
 
 /**
  * Use with the following convention:
@@ -27,3 +31,55 @@ export type CommitHandler<
   value: T,
   source?: InputSource,
 ) => void;
+
+/**
+ * Convert a string value to the type appropriate for the associated
+ * column or form field. Can be used when processing a string value
+ * from an input used for user editing.
+ *
+ * @param value
+ * @param type
+ * @param throwIfUndefined
+ */
+export function getTypedValue(
+  value: string,
+  type: VuuColumnDataType,
+  throwIfUndefined?: false,
+): VuuRowDataItemType | undefined;
+export function getTypedValue(
+  value: string,
+  type: VuuColumnDataType,
+  throwIfUndefined: true,
+): VuuRowDataItemType;
+export function getTypedValue(
+  value: string,
+  type: VuuColumnDataType,
+  throwIfUndefined = false,
+): VuuRowDataItemType | undefined {
+  switch (type) {
+    case "int":
+    case "long": {
+      const typedValue = parseInt(value, 10);
+      if (isValidNumber(typedValue)) {
+        return typedValue;
+      } else if (throwIfUndefined) {
+        throw Error("SessionEditingForm getTypedValue");
+      } else {
+        return undefined;
+      }
+    }
+
+    case "double": {
+      const typedValue = parseFloat(value);
+      if (isValidNumber(typedValue)) {
+        return typedValue;
+      }
+      return undefined;
+    }
+
+    case "boolean":
+      return value === "true" ? true : false;
+    default:
+      return value;
+  }
+}
