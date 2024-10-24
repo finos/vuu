@@ -19,12 +19,14 @@ import inlineFilteCss from "./InlineFilter.css";
 import { InputProps } from "@salt-ds/core";
 import { TableSchemaTable } from "@finos/vuu-data-types";
 import { VuuFilter } from "@finos/vuu-protocol-types";
+import { BaseRowProps } from "@finos/vuu-table-types";
 
 const classBase = "vuuInlineFilter";
 
 export type FilterValueChangeHandler = (filter: VuuFilter) => void;
 export interface InlineFilterProps
-  extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
+  extends Partial<BaseRowProps>,
+    Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   onChange: FilterValueChangeHandler;
   table: TableSchemaTable;
 }
@@ -41,6 +43,7 @@ const TypeaheadProps = {
 };
 
 export const InlineFilter = ({
+  ariaRole,
   onChange,
   table,
   ...htmlAttributes
@@ -53,7 +56,7 @@ export const InlineFilter = ({
   });
 
   const filterAggregator = useMemo(() => new FilterAggregator(), []);
-  const { columns, virtualColSpan = 0 } = useHeaderProps();
+  const { columns = [], virtualColSpan = 0 } = useHeaderProps();
 
   const onCommit = useCallback<
     CommitHandler<HTMLElement, string | number | undefined>
@@ -87,7 +90,7 @@ export const InlineFilter = ({
   );
 
   return (
-    <div {...htmlAttributes} className={classBase} role="row">
+    <div {...htmlAttributes} className={classBase} role={ariaRole}>
       <VirtualColSpan width={virtualColSpan} />
       {columns.map((column, i) => (
         <div

@@ -573,6 +573,7 @@ export const useTable = ({
     containerRef,
     disableFocus,
     focusCell,
+    headerCount: headerState.count,
     highlightedIndex: highlightedIndexProp,
     navigationStyle,
     requestScroll,

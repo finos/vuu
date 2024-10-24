@@ -273,7 +273,10 @@ export const CustomHeaderComponent = () => {
 };
 CustomHeaderComponent.displaySequence = displaySequence++;
 
-const CustomColumnHeader = ({ ariaRole, ariaRowIndex }: BaseRowProps) => {
+const CustomColumnHeader = ({
+  ariaRole,
+  ariaRowIndex,
+}: Partial<BaseRowProps>) => {
   const { columns, virtualColSpan } = useHeaderProps();
   return (
     <div
