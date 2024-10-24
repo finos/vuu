@@ -7,7 +7,6 @@ import cx from "clsx";
 import {
   ChangeEventHandler,
   FocusEventHandler,
-  FormEventHandler,
   ForwardedRef,
   KeyboardEventHandler,
   ReactElement,
