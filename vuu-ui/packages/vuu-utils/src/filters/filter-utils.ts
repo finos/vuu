@@ -10,9 +10,13 @@ import {
   SingleValueFilterClause,
   SingleValueFilterClauseOp,
 } from "@finos/vuu-filter-types";
-import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
+import {
+  ColumnDescriptor,
+  RuntimeColumnDescriptor,
+} from "@finos/vuu-table-types";
 import { EventEmitter } from "../event-emitter";
-import { VuuFilter } from "@finos/vuu-protocol-types";
+import { VuuFilter, VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import { getTypedValue } from "../form-utils";
 
 const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "=",
@@ -137,10 +141,44 @@ export type FilterEvents = {
   filter: (vuuFilter: VuuFilter) => void;
 };
 
+const createFilterClause = (column: string, value: VuuRowDataItemType) =>
+  typeof value === "string"
+    ? `${column} contains "${value}"`
+    : `${column} = ${value}`;
+
 export class FilterAggregator extends EventEmitter<FilterEvents> {
-  #filters = new Map<string, Filter>();
-  addFilter(column: string, value: string) {
-    console.log(`add filter for ${column} ${JSON.stringify(value)}`);
-    this.#filters.set(column, { column, op: "contains", value });
+  #columns = new Map<string, ColumnDescriptor>();
+  #filters = new Map<string, VuuRowDataItemType>();
+
+  addFilter(column: ColumnDescriptor, value: string | number) {
+    this.#columns.set(column.name, column);
+    const { serverDataType = "string" } = column;
+    const typedValue = getTypedValue(value.toString(), serverDataType, true);
+
+    this.#filters.set(column.name, typedValue);
+    // this.emit("filter", this.filter);
+  }
+
+  removeFilter(column: ColumnDescriptor) {
+    if (this.#columns.has(column.name)) {
+      this.#columns.delete(column.name);
+      this.#filters.delete(column.name);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  get filter(): VuuFilter {
+    const { size } = this.#filters;
+    if (size === 0) {
+      return { filter: "" };
+    } else {
+      return {
+        filter: Array.from(this.#filters.entries())
+          .map((args) => createFilterClause(...args))
+          .join(" and "),
+      };
+    }
   }
 }

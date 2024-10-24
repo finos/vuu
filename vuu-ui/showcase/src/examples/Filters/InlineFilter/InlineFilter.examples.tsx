@@ -1,27 +1,51 @@
 import { useMemo } from "react";
 import { FilterValueChangeHandler, InlineFilter } from "@finos/vuu-filters";
-import { SimulTable } from "../../Table/SIMUL.examples";
-import { LocalDataSourceProvider } from "@finos/vuu-data-test";
+import { LocalDataSourceProvider, getSchema } from "@finos/vuu-data-test";
+import { useDataSource } from "@finos/vuu-utils";
+import { TableConfig } from "@finos/vuu-table-types";
+import { Table } from "@finos/vuu-table";
 
 let displaySequence = 0;
 
 const table = { module: "SIMUL", table: "instrumentsExtended" } as const;
+const schema = getSchema("instrumentsExtended");
 
-export const SimpleInlineFilters = () => {
+const TableTemplate = () => {
+  const { VuuDataSource } = useDataSource();
+
+  const dataSource = useMemo(() => {
+    return new VuuDataSource({ table: schema.table });
+  }, [VuuDataSource]);
+
   const inlineFilter = useMemo(() => {
-    const onChange: FilterValueChangeHandler = (column, value) => {
-      console.log(`apply filter to column ${column.name} using value ${value}`);
+    const onChange: FilterValueChangeHandler = (filter) => {
+      dataSource.filter = filter;
     };
     return <InlineFilter onChange={onChange} table={table} />;
+  }, [dataSource]);
+
+  const tableConfig = useMemo<TableConfig>(() => {
+    return {
+      columns: schema.columns,
+      rowSeparators: true,
+      zebraStripes: true,
+    };
   }, []);
 
   return (
+    <Table
+      config={tableConfig}
+      data-testid="table"
+      dataSource={dataSource}
+      customHeader={inlineFilter}
+    />
+  );
+};
+
+export const SimpleInlineFilters = () => {
+  return (
     <LocalDataSourceProvider modules={["SIMUL"]}>
-      <SimulTable
-        customHeader={inlineFilter}
-        height="100%"
-        tableName={table.table}
-      />
+      <TableTemplate />
     </LocalDataSourceProvider>
   );
 };

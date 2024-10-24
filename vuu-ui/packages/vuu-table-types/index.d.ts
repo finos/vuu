@@ -370,6 +370,8 @@ export declare type TableColumnResizeHandler = (
 ) => void;
 
 export interface BaseRowProps {
+  ariaRole?: string;
+  ariaRowIndex?: number;
   className?: string;
   columns: RuntimeColumnDescriptor[];
   style?: CSSProperties;

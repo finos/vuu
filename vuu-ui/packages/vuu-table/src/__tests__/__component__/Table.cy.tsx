@@ -28,7 +28,7 @@ describe("WHEN it initially renders", () => {
         height={625}
         tableName="instruments"
         width={800}
-      />
+      />,
     );
     const container = cy.findByTestId("table");
     container.should("have.class", "vuuTable");
@@ -36,6 +36,6 @@ describe("WHEN it initially renders", () => {
 
   it("THEN expected number of rows are present, with buffered rows, all with correct aria index", () => {
     cy.mount(<TestTable {...tableConfig} />);
-    assertRenderedRows({ from: 0, to: 30 }, RENDER_BUFFER, ROW_COUNT);
+    assertRenderedRows({ from: 1, to: 30 }, RENDER_BUFFER, ROW_COUNT);
   });
 });

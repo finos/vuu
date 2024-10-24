@@ -1,31 +1,76 @@
 .vuuInlineFilter {
+  --filter-borderColor: var(--salt-separable-secondary-borderColor);
+  --filter-color: var(--salt-content-primary-foreground-disabled);
+  --filter-padding: 1px 1px 1px 0;
+  --filter-content-height: 22px;
   height: var(--salt-size-base);
 
+  .vuuInlineFilter-filter:has(input:focus) {
+    --filter-borderColor: transparent;
+    --filter-content-height: 20px;
+
+    outline-width: 2px;
+    outline-offset: -2px;
+    outline-style: dotted;
+    outline-color: var(--salt-focused-outlineColor);
+
+    /* the padding ensures the outline is not clipped */
+    --filter-padding: 0 2px;
+    /* prevents shift when we apply the padding */
+    --saltInput-paddingLeft: 2px;
+
+    .saltInput-input {
+      outline: none;
+    }
+    .saltInput-focused {
+      border: none;
+      outline: none;
+    }
+
+    .saltComboBox-focused {
+      outline: none;
+    }
+  }
+
+  .vuuInlineFilter-filter:focus {
+    --filter-borderColor: transparent;
+    --filter-content-height: 20px;
+    /* the padding ensures the outline is not clipped */
+    --filter-padding: 0 2px;
+    /* prevents shift when we apply the padding */
+    --saltInput-paddingLeft: 2px;
+  }
+
   .vuuInlineFilter-filter {
-    --saltInput-minHeight: 22px;
-    display: inline-block;
+    --saltInput-minHeight: var(--filter-content-height);
+    align-items: center;
+    display: inline-flex;
     height: 100%;
-    padding: 1px 1px 1px 0;
+    padding: var(--filter-padding);
 
     .vuuTypeaheadInput {
-      border: solid 1px var(--salt-separable-secondary-borderColor);
+      border-style: solid;
+      border-color: var(--filter-borderColor);
+      border-width: 1px;
       border-radius: 0;
     }
 
     .vuuTypeaheadInput {
-      height: 22px;
+      height: var(--filter-content-height);
       input::placeholder {
-        color: var(--salt-content-primary-foreground-disabled);
+        color: var(--filter-color);
       }
     }
 
     .saltInput-primary.vuuInput {
-      border: solid 1px var(--salt-separable-secondary-borderColor);
+      border-style: solid;
+      border-color: var(--filter-borderColor);
+      border-width: 1px;
       border-radius: 0;
-      height: 22px;
-      min-height: 22px;
+      height: var(--filter-content-height);
+      min-height: var(--filter-content-height);
       input::placeholder {
-        color: var(--salt-content-primary-foreground-disabled);
+        color: var(--filter-color);
       }
     }
   }
@@ -33,4 +78,9 @@
   .vuuInlineFilter-virtualColSpan {
     display: inline-block;
   }
+}
+
+.vuuInlineFilter:focus-within {
+  --filter-borderColor: var(--salt-separable-primary-borderColor);
+  --filter-color: var(--salt-content-primary-foreground);
 }

@@ -6,7 +6,6 @@ import {
 import {
   deselectItem,
   dispatchMouseEvent,
-  getRowElementAtIndex,
   isRowSelected,
   metadataKeys,
   queryClosest,
@@ -20,6 +19,7 @@ import {
   useCallback,
   useRef,
 } from "react";
+import { getRowElementByAriaIndex } from "./table-dom-utils";
 
 const { IDX } = metadataKeys;
 
@@ -89,10 +89,7 @@ export const useSelection = ({
       if (isSelectionEvent(e)) {
         const { current: rowIndex } = highlightedIndexRef;
         if (rowIndex !== undefined && rowIndex !== -1) {
-          const rowEl = getRowElementAtIndex(e.target, rowIndex);
-          // const rowEl = (e.target as HTMLElement).querySelector(
-          //   `[aria-rowindex="${rowIndex + 1}"]`
-          // ) as HTMLElement;
+          const rowEl = getRowElementByAriaIndex(e.target, rowIndex);
           if (rowEl) {
             dispatchMouseEvent(rowEl, "click");
           }

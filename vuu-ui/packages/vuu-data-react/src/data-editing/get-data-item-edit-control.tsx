@@ -14,6 +14,7 @@ import { InputProps } from "@salt-ds/core";
 export interface DataItemEditControlProps {
   InputProps?: Partial<InputProps>;
   TypeaheadProps?: Pick<VuuTypeaheadInputProps, "highlightFirstSuggestion">;
+  commitWhenCleared?: boolean;
   /**
    * A table column or form field Descriptor.
    */
@@ -28,6 +29,7 @@ export type ValidationStatus = "initial" | true | string;
 export const getDataItemEditControl = ({
   InputProps,
   TypeaheadProps,
+  commitWhenCleared,
   dataDescriptor,
   errorMessage,
   onCommit,
@@ -67,6 +69,7 @@ export const getDataItemEditControl = ({
     <VuuInput
       variant="secondary"
       {...InputProps}
+      commitWhenCleared={commitWhenCleared}
       onCommit={onCommit}
       errorMessage={errorMessage}
     />

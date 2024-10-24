@@ -72,6 +72,20 @@ import { useTableScroll } from "./useTableScroll";
 import { useTableViewport } from "./useTableViewport";
 import { TableCellBlock } from "./cell-block/cellblock-utils";
 
+type HeaderState = {
+  height: number;
+  count: number;
+};
+
+const nullHeaderState = {
+  height: -1,
+  count: -1,
+};
+const zeroHeaderState = {
+  height: 0,
+  count: 0,
+};
+
 const stripInternalProperties = (tableConfig: TableConfig): TableConfig => {
   return tableConfig;
 };
@@ -173,7 +187,9 @@ export const useTable = ({
   // Needed to avoid circular dependency between useTableScroll and useCellFocus
   const focusCellRef = useRef<FocusCell>();
 
-  const [headerHeight, setHeaderHeight] = useState(showColumnHeaders ? -1 : 0);
+  const [headerState, setHeaderState] = useState<HeaderState>(
+    showColumnHeaders ? nullHeaderState : zeroHeaderState,
+  );
   const [rowCount, setRowCount] = useState<number>(dataSource.size);
   if (dataSource === undefined) {
     throw Error("no data source provided to Vuu Table");
@@ -185,7 +201,7 @@ export const useTable = ({
 
   const virtualContentHeight = rowHeight * rowCount;
   const viewportBodyHeight =
-    size.height - (headerHeight === -1 ? 0 : headerHeight);
+    size.height - (headerState.height === -1 ? 0 : headerState.height);
   const verticalScrollbarWidth =
     virtualContentHeight > viewportBodyHeight ? 10 : 0;
   const availableWidth = size.width - (verticalScrollbarWidth + 8);
@@ -264,7 +280,7 @@ export const useTable = ({
     ...viewportMeasurements
   } = useTableViewport({
     columns,
-    headerHeight,
+    headerHeight: headerState.height,
     rowCount,
     rowHeight,
     size: size,
@@ -557,6 +573,7 @@ export const useTable = ({
     containerRef,
     disableFocus,
     focusCell,
+    headerCount: headerState.count,
     highlightedIndex: highlightedIndexProp,
     navigationStyle,
     requestScroll,
@@ -746,9 +763,12 @@ export const useTable = ({
     [dataRef, onDragStart],
   );
 
-  const onHeaderHeightMeasured = useCallback((height: number) => {
-    setHeaderHeight(height);
-  }, []);
+  const onHeaderHeightMeasured = useCallback(
+    (height: number, count: number) => {
+      setHeaderState({ height, count });
+    },
+    [],
+  );
 
   // Drag Drop rows
   const { onMouseDown: rowDragMouseDown, draggable: draggableRow } =
@@ -785,7 +805,7 @@ export const useTable = ({
     focusCellPlaceholderRef,
     getRowOffset,
     handleContextMenuAction,
-    headerHeight,
+    headerState,
     headings,
     highlightedIndex: highlightedIndexRef.current,
     menuBuilder,

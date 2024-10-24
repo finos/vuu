@@ -15,8 +15,8 @@ import {
   NavigationKey,
   cellDropdownShowing,
   closestRowIndex,
-  getTableCellPos,
   getNextCellPos,
+  getAriaCellPos,
 } from "./table-dom-utils";
 import { ScrollRequestHandler } from "./useTableScroll";
 import { FocusCell } from "./useCellFocus";
@@ -51,10 +51,9 @@ export const isNavigationKey = (
 
 const focusColumnMenuIfAppropriate = (
   e: KeyboardEvent,
-  [rowIdx]: CellPos,
   el: HTMLElement | null,
 ) => {
-  if (e.shiftKey && e.key.match(/Arrow(Left|Right)/) && rowIdx === -1) {
+  if (e.shiftKey && e.key.match(/Arrow(Left|Right)/)) {
     if (el?.classList.contains("vuuTableHeaderCell")) {
       const menuButton = el?.querySelector<HTMLButtonElement>(".vuuColumnMenu");
       if (menuButton) {
@@ -74,6 +73,7 @@ export interface NavigationHookProps {
   cellFocusStateRef: MutableRefObject<CellFocusState>;
   containerRef: RefObject<HTMLElement>;
   columnCount?: number;
+  headerCount: number;
   defaultHighlightedIndex?: number;
   disableFocus?: boolean;
   disableHighlightOnFocus?: boolean;
@@ -97,6 +97,7 @@ export const useKeyboardNavigation = ({
   defaultHighlightedIndex,
   disableHighlightOnFocus,
   focusCell,
+  headerCount,
   highlightedIndex: highlightedIndexProp,
   navigationStyle,
   requestScroll,
@@ -116,6 +117,10 @@ export const useKeyboardNavigation = ({
     name: "UseKeyboardNavigation",
   });
   highlightedIndexRef.current = highlightedIndex;
+
+  // We use aria row index for tracking rows
+  const maxRowIndex = rowCount + headerCount;
+
   const setHighlightedIndex = useCallback(
     (idx: number) => {
       onHighlight?.(idx);
@@ -172,15 +177,15 @@ export const useKeyboardNavigation = ({
             break;
           }
           case "Home": {
-            newRowIdx = 0;
+            newRowIdx = headerCount + 1;
             if (newRowIdx !== rowIdx) {
-              focusState.cellPos = [0, colIdx];
+              focusState.cellPos = [newRowIdx, colIdx];
               requestScroll?.({ type: "scroll-end", direction: "home" });
             }
             break;
           }
           case "End": {
-            newRowIdx = rowCount - 1;
+            newRowIdx = rowCount + headerCount;
             if (newRowIdx !== rowIdx) {
               focusState.cellPos = [newRowIdx, colIdx];
               requestScroll?.({ type: "scroll-end", direction: "end" });
@@ -202,7 +207,7 @@ export const useKeyboardNavigation = ({
           resolve([newRowIdx, colIdx]);
         }, 35);
       }),
-    [cellFocusStateRef, requestScroll, rowCount, viewportRowCount],
+    [cellFocusStateRef, headerCount, requestScroll, rowCount, viewportRowCount],
   );
 
   const handleFocus = useCallback(() => {
@@ -214,7 +219,8 @@ export const useKeyboardNavigation = ({
         // click handler.
         const focusedCell = getFocusedCell(document.activeElement);
         if (focusedCell) {
-          cellFocusStateRef.current.cellPos = getTableCellPos(focusedCell);
+          cellFocusStateRef.current.cellPos = getAriaCellPos(focusedCell);
+          console.log({ pos: cellFocusStateRef.current.cellPos });
           if (navigationStyle === "row") {
             setHighlightedIdx(cellFocusStateRef.current.cellPos[0]);
           }
@@ -236,13 +242,20 @@ export const useKeyboardNavigation = ({
       } = cellFocusStateRef;
       const [nextRowIdx, nextColIdx] = isPagingKey(key)
         ? await nextPageItemIdx(key, cellPos)
-        : getNextCellPos(key, cellPos, columnCount, rowCount);
+        : getNextCellPos(key, cellPos, columnCount, maxRowIndex);
+
       const [rowIdx, colIdx] = cellPos;
       if (nextRowIdx !== rowIdx || nextColIdx !== colIdx) {
         setActiveCell(nextRowIdx, nextColIdx, true);
       }
     },
-    [cellFocusStateRef, columnCount, nextPageItemIdx, rowCount, setActiveCell],
+    [
+      cellFocusStateRef,
+      columnCount,
+      nextPageItemIdx,
+      maxRowIndex,
+      setActiveCell,
+    ],
   );
 
   const scrollRowIntoViewIfNecessary = useCallback(
@@ -297,22 +310,13 @@ export const useKeyboardNavigation = ({
         if (navigationStyle === "row") {
           moveHighlightedRow(e.key);
         } else {
-          const {
-            current: { cellPos },
-          } = cellFocusStateRef;
-          if (!focusColumnMenuIfAppropriate(e, cellPos, cell)) {
+          if (!focusColumnMenuIfAppropriate(e, cell)) {
             navigateChildItems(e.key);
           }
         }
       }
     },
-    [
-      rowCount,
-      navigationStyle,
-      moveHighlightedRow,
-      cellFocusStateRef,
-      navigateChildItems,
-    ],
+    [rowCount, navigationStyle, moveHighlightedRow, navigateChildItems],
   );
 
   const handleClick = useCallback(
@@ -321,7 +325,7 @@ export const useKeyboardNavigation = ({
       const target = evt.target as HTMLElement;
       const focusedCell = getFocusedCell(target);
       if (focusedCell) {
-        const [rowIdx, colIdx] = getTableCellPos(focusedCell);
+        const [rowIdx, colIdx] = getAriaCellPos(focusedCell);
         setActiveCell(rowIdx, colIdx);
       }
     },

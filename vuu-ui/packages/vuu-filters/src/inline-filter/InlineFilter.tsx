@@ -7,21 +7,26 @@ import {
 } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { HTMLAttributes, useCallback, useMemo } from "react";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+import {
+  HTMLAttributes,
+  KeyboardEventHandler,
+  useCallback,
+  useMemo,
+} from "react";
+import cx from "clsx";
 
 import inlineFilteCss from "./InlineFilter.css";
 import { InputProps } from "@salt-ds/core";
 import { TableSchemaTable } from "@finos/vuu-data-types";
+import { VuuFilter } from "@finos/vuu-protocol-types";
+import { BaseRowProps } from "@finos/vuu-table-types";
 
 const classBase = "vuuInlineFilter";
 
-export type FilterValueChangeHandler = (
-  column: ColumnDescriptor,
-  value: string,
-) => void;
+export type FilterValueChangeHandler = (filter: VuuFilter) => void;
 export interface InlineFilterProps
-  extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
+  extends Partial<BaseRowProps>,
+    Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   onChange: FilterValueChangeHandler;
   table: TableSchemaTable;
 }
@@ -38,6 +43,7 @@ const TypeaheadProps = {
 };
 
 export const InlineFilter = ({
+  ariaRole,
   onChange,
   table,
   ...htmlAttributes
@@ -50,7 +56,7 @@ export const InlineFilter = ({
   });
 
   const filterAggregator = useMemo(() => new FilterAggregator(), []);
-  const { columns, virtualColSpan = 0 } = useHeaderProps();
+  const { columns = [], virtualColSpan = 0 } = useHeaderProps();
 
   const onCommit = useCallback<
     CommitHandler<HTMLElement, string | number | undefined>
@@ -59,26 +65,46 @@ export const InlineFilter = ({
       const fieldName = getFieldName(evt.target);
       const column = columns.find((c) => c.name === fieldName);
       if (column) {
-        filterAggregator.addFilter(fieldName, value.toString());
-        // onChange(column, value.toString());
+        if (value === "") {
+          if (filterAggregator.removeFilter(column)) {
+            onChange(filterAggregator.filter);
+          }
+        } else {
+          filterAggregator.addFilter(column, value);
+          onChange(filterAggregator.filter);
+        }
       }
     },
-    [columns, filterAggregator],
+    [columns, filterAggregator, onChange],
+  );
+
+  const handleKeyDown = useCallback<KeyboardEventHandler<HTMLDivElement>>(
+    (evt) => {
+      if (evt.key === "Enter") {
+        const el = evt.target as HTMLElement;
+        const inputElement = el.querySelector("input");
+        inputElement?.focus();
+      }
+    },
+    [],
   );
 
   return (
-    <div {...htmlAttributes} className={classBase} role="row">
+    <div {...htmlAttributes} className={classBase} role={ariaRole}>
       <VirtualColSpan width={virtualColSpan} />
-      {columns.map((column) => (
+      {columns.map((column, i) => (
         <div
-          className={`${classBase}-filter`}
+          aria-colindex={i + 1}
+          className={cx(`${classBase}-filter`, "vuuTableCell")}
           data-field={column.name}
+          onKeyDown={handleKeyDown}
           key={column.name}
           style={{ width: column.width }}
         >
           {getDataItemEditControl({
             InputProps,
             TypeaheadProps,
+            commitWhenCleared: true,
             dataDescriptor: column,
             onCommit,
             table,
