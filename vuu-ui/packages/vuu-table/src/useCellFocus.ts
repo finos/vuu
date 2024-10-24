@@ -81,7 +81,7 @@ export const useCellFocus = ({
         if (table) {
           if (state.el === null && !disableFocus) {
             const headerCell = table.querySelector<HTMLDivElement>(
-              headerCellQuery(0),
+              headerCellQuery(1),
             );
             if (headerCell) {
               headerCell.setAttribute("tabindex", "0");

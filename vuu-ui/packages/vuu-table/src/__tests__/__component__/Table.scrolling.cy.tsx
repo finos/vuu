@@ -33,20 +33,20 @@ describe("Table scrolling and keyboard navigation", () => {
         cy.findByRole("cell", { name: "row 1" }).should("be.focused");
         cy.realPress("PageDown");
 
-        cy.findByRole("row", withAriaRowIndex(25)).should("not.exist");
-        cy.findByRole("row", withAriaRowIndex(26)).should("exist");
+        cy.findByRole("row", withAriaRowIndex(26)).should("not.exist");
+        cy.findByRole("row", withAriaRowIndex(27)).should("exist");
 
         cy.get(".vuuTable-contentContainer")
           .then((el) => el[0].scrollTop)
           .should("equal", 600);
 
         // row 31 should be top row in viewport
-        cy.findByRole("row", withAriaRowIndex(31)).should(
+        cy.findByRole("row", withAriaRowIndex(32)).should(
           "have.css",
           "top",
           "600px",
         );
-        // cy.findByRole("row", withAriaRowIndex(31)).should(
+        // cy.findByRole("row", withAriaRowIndex(32)).should(
         //   "have.css",
         //   "transform",
         //   "matrix(1, 0, 0, 1, 0, 600)"
@@ -78,7 +78,7 @@ describe("Table scrolling and keyboard navigation", () => {
           );
           cy.findByRole("cell", { name: "row 1" }).should("be.focused");
 
-          assertRenderedRows({ from: 0, to: 30 }, RENDER_BUFFER, ROW_COUNT);
+          assertRenderedRows({ from: 1, to: 30 }, RENDER_BUFFER, ROW_COUNT);
         });
       });
     });
@@ -97,7 +97,7 @@ describe("Table scrolling and keyboard navigation", () => {
           "0",
         );
         cy.findByRole("cell", { name: "row 1" }).should("be.focused");
-        assertRenderedRows({ from: 0, to: 30 }, RENDER_BUFFER, ROW_COUNT);
+        assertRenderedRows({ from: 1, to: 30 }, RENDER_BUFFER, ROW_COUNT);
       });
     });
     describe("WHEN topmost rows are in viewport, cell in middle of viewport is focussed and Home key pressed ", () => {
@@ -112,7 +112,7 @@ describe("Table scrolling and keyboard navigation", () => {
           "0",
         );
         cy.findByRole("cell", { name: "row 1" }).should("be.focused");
-        assertRenderedRows({ from: 0, to: 30 }, RENDER_BUFFER, ROW_COUNT);
+        assertRenderedRows({ from: 1, to: 30 }, RENDER_BUFFER, ROW_COUNT);
       });
     });
 

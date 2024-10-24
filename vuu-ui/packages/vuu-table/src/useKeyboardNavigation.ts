@@ -177,15 +177,15 @@ export const useKeyboardNavigation = ({
             break;
           }
           case "Home": {
-            newRowIdx = 0;
+            newRowIdx = headerCount + 1;
             if (newRowIdx !== rowIdx) {
-              focusState.cellPos = [0, colIdx];
+              focusState.cellPos = [newRowIdx, colIdx];
               requestScroll?.({ type: "scroll-end", direction: "home" });
             }
             break;
           }
           case "End": {
-            newRowIdx = rowCount - 1;
+            newRowIdx = rowCount + headerCount;
             if (newRowIdx !== rowIdx) {
               focusState.cellPos = [newRowIdx, colIdx];
               requestScroll?.({ type: "scroll-end", direction: "end" });
@@ -207,7 +207,7 @@ export const useKeyboardNavigation = ({
           resolve([newRowIdx, colIdx]);
         }, 35);
       }),
-    [cellFocusStateRef, requestScroll, rowCount, viewportRowCount],
+    [cellFocusStateRef, headerCount, requestScroll, rowCount, viewportRowCount],
   );
 
   const handleFocus = useCallback(() => {
@@ -220,6 +220,7 @@ export const useKeyboardNavigation = ({
         const focusedCell = getFocusedCell(document.activeElement);
         if (focusedCell) {
           cellFocusStateRef.current.cellPos = getAriaCellPos(focusedCell);
+          console.log({ pos: cellFocusStateRef.current.cellPos });
           if (navigationStyle === "row") {
             setHighlightedIdx(cellFocusStateRef.current.cellPos[0]);
           }

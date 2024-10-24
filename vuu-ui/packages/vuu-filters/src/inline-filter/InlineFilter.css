@@ -5,10 +5,40 @@
   --filter-content-height: 22px;
   height: var(--salt-size-base);
 
+  .vuuInlineFilter-filter:has(input:focus) {
+    --filter-borderColor: transparent;
+    --filter-content-height: 20px;
+
+    outline-width: 2px;
+    outline-offset: -2px;
+    outline-style: dotted;
+    outline-color: var(--salt-focused-outlineColor);
+
+    /* the padding ensures the outline is not clipped */
+    --filter-padding: 0 2px;
+    /* prevents shift when we apply the padding */
+    --saltInput-paddingLeft: 2px;
+
+    .saltInput-input {
+      outline: none;
+    }
+    .saltInput-focused {
+      border: none;
+      outline: none;
+    }
+
+    .saltComboBox-focused {
+      outline: none;
+    }
+  }
+
   .vuuInlineFilter-filter:focus {
     --filter-borderColor: transparent;
     --filter-content-height: 20px;
+    /* the padding ensures the outline is not clipped */
     --filter-padding: 0 2px;
+    /* prevents shift when we apply the padding */
+    --saltInput-paddingLeft: 2px;
   }
 
   .vuuInlineFilter-filter {
