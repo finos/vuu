@@ -8,18 +8,15 @@ import {
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, useCallback, useMemo } from "react";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
 
 import inlineFilteCss from "./InlineFilter.css";
 import { InputProps } from "@salt-ds/core";
 import { TableSchemaTable } from "@finos/vuu-data-types";
+import { VuuFilter } from "@finos/vuu-protocol-types";
 
 const classBase = "vuuInlineFilter";
 
-export type FilterValueChangeHandler = (
-  column: ColumnDescriptor,
-  value: string,
-) => void;
+export type FilterValueChangeHandler = (filter: VuuFilter) => void;
 export interface InlineFilterProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   onChange: FilterValueChangeHandler;
@@ -59,11 +56,11 @@ export const InlineFilter = ({
       const fieldName = getFieldName(evt.target);
       const column = columns.find((c) => c.name === fieldName);
       if (column) {
-        filterAggregator.addFilter(fieldName, value.toString());
-        // onChange(column, value.toString());
+        filterAggregator.addFilter(column, value);
+        onChange(filterAggregator.filter);
       }
     },
-    [columns, filterAggregator],
+    [columns, filterAggregator, onChange],
   );
 
   return (

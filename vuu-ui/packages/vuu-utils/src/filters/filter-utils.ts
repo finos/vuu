@@ -10,7 +10,10 @@ import {
   SingleValueFilterClause,
   SingleValueFilterClauseOp,
 } from "@finos/vuu-filter-types";
-import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
+import {
+  ColumnDescriptor,
+  RuntimeColumnDescriptor,
+} from "@finos/vuu-table-types";
 import { EventEmitter } from "../event-emitter";
 import { VuuFilter } from "@finos/vuu-protocol-types";
 
@@ -137,10 +140,29 @@ export type FilterEvents = {
   filter: (vuuFilter: VuuFilter) => void;
 };
 
+const createFilterClause = (column: string, value: string) =>
+  `${column} contains "${value}"`;
+
 export class FilterAggregator extends EventEmitter<FilterEvents> {
-  #filters = new Map<string, Filter>();
-  addFilter(column: string, value: string) {
+  #columns = new Map<string, ColumnDescriptor>();
+  #filters = new Map<string, string | number>();
+  addFilter(column: ColumnDescriptor, value: string) {
     console.log(`add filter for ${column} ${JSON.stringify(value)}`);
-    this.#filters.set(column, { column, op: "contains", value });
+    this.#columns.set(column.name, column);
+    this.#filters.set(column.name, value);
+    // this.emit("filter", this.filter);
+  }
+
+  get filter(): VuuFilter {
+    const { size } = this.#filters;
+    if (size === 0) {
+      return { filter: "" };
+    } else {
+      return {
+        filter: Array.from(this.#filters.entries())
+          .map((args) => createFilterClause(...args))
+          .join(" and "),
+      };
+    }
   }
 }

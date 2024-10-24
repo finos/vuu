@@ -1,4 +1,7 @@
 .vuuInlineFilter {
+  --filter-borderColor: var(--salt-separable-secondary-borderColor);
+  --filter-color: var(--salt-content-primary-foreground-disabled);
+
   height: var(--salt-size-base);
 
   .vuuInlineFilter-filter {
@@ -8,24 +11,24 @@
     padding: 1px 1px 1px 0;
 
     .vuuTypeaheadInput {
-      border: solid 1px var(--salt-separable-secondary-borderColor);
+      border: solid 1px var(--filter-borderColor);
       border-radius: 0;
     }
 
     .vuuTypeaheadInput {
       height: 22px;
       input::placeholder {
-        color: var(--salt-content-primary-foreground-disabled);
+        color: var(--filter-color);
       }
     }
 
     .saltInput-primary.vuuInput {
-      border: solid 1px var(--salt-separable-secondary-borderColor);
+      border: solid 1px var(--filter-borderColor);
       border-radius: 0;
       height: 22px;
       min-height: 22px;
       input::placeholder {
-        color: var(--salt-content-primary-foreground-disabled);
+        color: var(--filter-color);
       }
     }
   }
@@ -33,4 +36,9 @@
   .vuuInlineFilter-virtualColSpan {
     display: inline-block;
   }
+}
+
+.vuuInlineFilter:focus-within {
+  --filter-borderColor: var(--salt-separable-primary-borderColor);
+  --filter-color: var(--salt-content-primary-foreground);
 }
