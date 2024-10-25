@@ -1,6 +1,12 @@
+import { buildValidationChecker, useEditBulk } from "@finos/vuu-data-react";
 import { DataSource, RpcResponse } from "@finos/vuu-data-types";
 import { VuuRpcViewportRequest } from "@finos/vuu-protocol-types";
-import type { ColumnDescriptor, TableConfig } from "@finos/vuu-table-types";
+import type {
+  ColumnDescriptor,
+  DataValueTypeDescriptor,
+  TableConfig,
+} from "@finos/vuu-table-types";
+import { hasValidationRules, isTypeDescriptor } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
@@ -20,6 +26,18 @@ export interface BulkEditPanelProps extends HTMLAttributes<HTMLDivElement> {
   parentDs: DataSource;
 }
 
+const addRenderer = (
+  colType: DataValueTypeDescriptor,
+  rendererName: string,
+): DataValueTypeDescriptor => {
+  return {
+    name: colType.name,
+    rules: colType.rules,
+    formatting: colType.formatting,
+    renderer: { name: rendererName },
+  };
+};
+
 export const BulkEditPanel = ({
   className,
   columns,
@@ -31,20 +49,8 @@ export const BulkEditPanel = ({
   useComponentCssInjection({
     testId: "vuu-checkbox-cell",
     css: bulkEditPanelCss,
-    window: targetWindow
+    window: targetWindow,
   });
-
-  const bulkEditRow = useMemo(() => {
-    const onChange: EditValueChangeHandler = (column, value) => {
-      dataSource.rpcCall?.({
-        namedParams: { column: column.name, value },
-        params: [],
-        rpcName: "VP_BULK_EDIT_COLUMN_CELLS_RPC",
-        type: "VIEW_PORT_RPC_CALL"
-      } as Omit<VuuRpcViewportRequest, "vpId">);
-    };
-    return <BulkEditRow onChange={onChange} dataSource={parentDs} />;
-  }, [dataSource, parentDs]);
 
   const config: TableConfig = useMemo(() => {
     return {
@@ -55,17 +61,63 @@ export const BulkEditPanel = ({
               hidden: col.editableBulk === false,
               name: col.name,
               serverDataType: col.serverDataType ?? "string",
-              type: col.name === "date" ? col.type : "string"
+              type: isTypeDescriptor(col.type)
+                ? addRenderer(col.type, "input-cell")
+                : "string",
+              clientSideEditValidationCheck: hasValidationRules(col.type)
+                ? buildValidationChecker(col.type.rules)
+                : undefined,
             };
           })
         : dataSource.columns.map((name) => ({
             editable: true,
             name,
-            serverDataType: "string"
+            serverDataType: "string",
           })),
-      rowSeparators: true
+      rowSeparators: true,
     };
   }, [columns, dataSource.columns]);
+
+  const {
+    errorMessages,
+    formFieldsContainerRef,
+    focusedFieldRef,
+    handleFocus,
+    onChange,
+  } = useEditBulk({
+    descriptors: config.columns,
+  });
+
+  const bulkEditRow = useMemo(() => {
+    const onBulkChange: EditValueChangeHandler = (column, value) => {
+      dataSource.rpcCall?.({
+        namedParams: { column: column.name, value },
+        params: [],
+        rpcName: "VP_BULK_EDIT_COLUMN_CELLS_RPC",
+        type: "VIEW_PORT_RPC_CALL",
+      } as Omit<VuuRpcViewportRequest, "vpId">);
+    };
+
+    return (
+      <BulkEditRow
+        dataSource={parentDs}
+        errorMessages={errorMessages}
+        formFieldsContainerRef={formFieldsContainerRef}
+        focusedFieldRef={focusedFieldRef}
+        handleFocus={handleFocus}
+        onBulkChange={onBulkChange}
+        onChange={onChange}
+      />
+    );
+  }, [
+    dataSource,
+    errorMessages,
+    focusedFieldRef,
+    formFieldsContainerRef,
+    handleFocus,
+    onChange,
+    parentDs,
+  ]);
 
   return (
     <div

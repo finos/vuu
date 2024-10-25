@@ -5,7 +5,7 @@ const Average = 2;
 const ccy: Partial<ColumnDescriptor> = {
   name: "ccy",
   label: "CCY",
-  width: 100
+  width: 100,
 };
 
 const filledQuantity: Partial<ColumnDescriptor> = {
@@ -15,77 +15,68 @@ const filledQuantity: Partial<ColumnDescriptor> = {
   type: {
     name: "number",
     renderer: { name: "progress", associatedField: "quantity" },
-    formatting: { decimals: 0 }
-  }
+    formatting: { decimals: 0 },
+  },
 };
 
 const ric: Partial<ColumnDescriptor> = {
   name: "ric",
   label: "RIC",
   type: {
-    name: "string"
+    name: "string",
   },
-  width: 60
+  width: 60,
 };
 
 const side: Partial<ColumnDescriptor> = {
   label: "Side",
   name: "side",
   type: {
-    name: "string"
+    name: "string",
   },
-  width: 60
+  width: 60,
 };
 
 const columnMetaData: { [key: string]: Partial<ColumnDescriptor> } = {
   bbg: {
     name: "bbg",
     label: "BBG",
+    editableBulk: "bulk",
     type: {
-      name: "string"
+      name: "string",
     },
-    editableBulk: "bulk"
   },
 
   currency: {
     name: "currency",
     label: "Currency",
     width: 100,
-    editableBulk: "bulk"
+    editableBulk: "bulk",
   },
   date: {
     name: "date",
     label: "Date",
     type: {
-      name: "date/time"
+      name: "date/time",
     },
-    editableBulk: "bulk"
+    editableBulk: "bulk",
   },
   description: {
     name: "description",
     label: "Description",
-    type: {
-      name: "string"
-    },
     editableBulk: "bulk",
-    width: 150
+    width: 150,
   },
   exchange: {
     editableBulk: false,
     name: "exchange",
     label: "Exchange",
-    type: {
-      name: "string"
-    }
   },
 
   isin: {
     editableBulk: false,
     name: "isin",
     label: "ISIN",
-    type: {
-      name: "string"
-    }
   },
 
   lotSize: {
@@ -94,8 +85,21 @@ const columnMetaData: { [key: string]: Partial<ColumnDescriptor> } = {
     name: "lotSize",
     width: 120,
     type: {
-      name: "number"
-    }
+      name: "number",
+
+      rules: [
+        {
+          name: "char-numeric",
+          apply: "change",
+          message: "must be numeric",
+        },
+        {
+          name: "value-integer",
+          apply: "commit",
+          message: "must be a integer",
+        },
+      ],
+    },
   },
 
   price: {
@@ -104,13 +108,13 @@ const columnMetaData: { [key: string]: Partial<ColumnDescriptor> } = {
     name: "price",
     type: {
       name: "number",
-      formatting: { decimals: 2, zeroPad: true }
+      formatting: { decimals: 2, zeroPad: true },
     },
-    aggregate: Average
+    aggregate: Average,
   },
   ric: {
-    editableBulk: "read-only"
-  }
+    editableBulk: "read-only",
+  },
 };
 
 type TableColDefs = { [key: string]: Partial<ColumnDescriptor> };
@@ -120,19 +124,19 @@ const tables: { [key: string]: TableColDefs } = {
     ccy,
     filledQuantity,
     ric,
-    side
+    side,
   },
   ordersPrices: {
     ccy,
     filledQuantity,
     ric,
-    side
-  }
+    side,
+  },
 };
 
 export const getDefaultColumnConfig = (
   tableName: string,
-  columnName: string
+  columnName: string,
 ) => {
   return tables[tableName]?.[columnName] ?? columnMetaData[columnName];
 };
