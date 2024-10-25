@@ -1,3 +1,7 @@
+import {
+  buildValidationChecker,
+  getEditValidationRules,
+} from "@finos/vuu-data-react";
 import { DataValueDescriptor } from "@finos/vuu-data-types";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
@@ -9,10 +13,6 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  buildValidationChecker,
-  getEditValidationRules,
-} from "./edit-rule-validation-checker";
 
 export type EditValueChangeHandler = (
   column: ColumnDescriptor,
@@ -92,7 +92,7 @@ const getField = (target: EventTarget | HTMLElement) => {
   }
 };
 
-export const useEditBulk = ({ descriptors }: EditableBulkHookProps) => {
+export const useBulkEditRow = ({ descriptors }: EditableBulkHookProps) => {
   const formFieldsContainerRef = useRef<HTMLDivElement>(null);
   const focusedFieldRef = useRef("");
   const [, forceUpdate] = useState({});
@@ -142,8 +142,8 @@ export const useEditBulk = ({ descriptors }: EditableBulkHookProps) => {
     errorMessages,
     formFieldsContainerRef,
     focusedFieldRef,
-    handleFocus,
     ok,
     onChange: handleChange,
+    onFocus: handleFocus,
   };
 };
