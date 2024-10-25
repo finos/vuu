@@ -3,6 +3,10 @@ import { Table } from "./Table";
 
 const cachedValues = new Map<Table, Map<string, DataItem[]>>();
 
+const checkPattern = (value: string, pattern: string) => {
+  return new RegExp(`^${pattern}`, "i").test(value);
+};
+
 const getUniqueValues = (table: Table, column: string, pattern = "") => {
   let uniqueValues;
   const cachedEntry = cachedValues.get(table);
@@ -32,7 +36,9 @@ const getUniqueValues = (table: Table, column: string, pattern = "") => {
   }
   return pattern
     ? uniqueValues
-        .filter((value) => value.toString().startsWith(pattern))
+        // case insentitive regex
+        // .filter((value) => value.toString().startsWith(pattern))
+        .filter((value) => checkPattern(value.toString(), pattern))
         .slice(0, 10)
     : uniqueValues.slice(0, 10);
 };
@@ -52,7 +58,7 @@ const getUniqueValues = (table: Table, column: string, pattern = "") => {
 export const makeSuggestions = (
   table: Table,
   column: string,
-  pattern?: string
+  pattern?: string,
 ): Promise<string[]> =>
   new Promise((resolve) => {
     const uniqueValues = getUniqueValues(table, column, pattern);
