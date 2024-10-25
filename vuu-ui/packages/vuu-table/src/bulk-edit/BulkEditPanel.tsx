@@ -1,4 +1,4 @@
-import { buildValidationChecker, useEditBulk } from "@finos/vuu-data-react";
+import { buildValidationChecker } from "@finos/vuu-data-react";
 import { DataSource, RpcResponse } from "@finos/vuu-data-types";
 import { VuuRpcViewportRequest } from "@finos/vuu-protocol-types";
 import type {
@@ -78,16 +78,6 @@ export const BulkEditPanel = ({
     };
   }, [columns, dataSource.columns]);
 
-  const {
-    errorMessages,
-    formFieldsContainerRef,
-    focusedFieldRef,
-    handleFocus,
-    onChange,
-  } = useEditBulk({
-    descriptors: config.columns,
-  });
-
   const bulkEditRow = useMemo(() => {
     const onBulkChange: EditValueChangeHandler = (column, value) => {
       dataSource.rpcCall?.({
@@ -98,26 +88,8 @@ export const BulkEditPanel = ({
       } as Omit<VuuRpcViewportRequest, "vpId">);
     };
 
-    return (
-      <BulkEditRow
-        dataSource={parentDs}
-        errorMessages={errorMessages}
-        formFieldsContainerRef={formFieldsContainerRef}
-        focusedFieldRef={focusedFieldRef}
-        handleFocus={handleFocus}
-        onBulkChange={onBulkChange}
-        onChange={onChange}
-      />
-    );
-  }, [
-    dataSource,
-    errorMessages,
-    focusedFieldRef,
-    formFieldsContainerRef,
-    handleFocus,
-    onChange,
-    parentDs,
-  ]);
+    return <BulkEditRow dataSource={parentDs} onBulkChange={onBulkChange} />;
+  }, [dataSource, parentDs]);
 
   return (
     <div

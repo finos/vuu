@@ -4,15 +4,10 @@ import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { CommitHandler } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import {
-  FocusEventHandler,
-  HTMLAttributes,
-  Ref,
-  SyntheticEvent,
-  useCallback,
-} from "react";
+import { HTMLAttributes, KeyboardEventHandler, useCallback } from "react";
 import { VirtualColSpan } from "../VirtualColSpan";
 import { useHeaderProps } from "../table-header";
+import { useBulkEditRow } from "./useBulkEditRow";
 
 import bulkEditRowCss from "./BulkEditRow.css";
 
@@ -25,22 +20,12 @@ export type EditValueChangeHandler = (
 export interface BulkEditProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   dataSource: DataSource;
-  errorMessages: Record<string, string>;
-  formFieldsContainerRef: Ref<HTMLDivElement>;
-  focusedFieldRef: any;
-  handleFocus: FocusEventHandler;
   onBulkChange: EditValueChangeHandler;
-  onChange: (evt: SyntheticEvent<HTMLInputElement>) => void;
 }
 
 export const BulkEditRow = ({
   dataSource,
   onBulkChange,
-  errorMessages,
-  formFieldsContainerRef,
-  focusedFieldRef,
-  handleFocus,
-  onChange,
   ...htmlAttributes
 }: BulkEditProps) => {
   const targetWindow = useWindow();
@@ -50,13 +35,32 @@ export const BulkEditRow = ({
     window: targetWindow,
   });
 
-  const fieldRef = focusedFieldRef;
-
   const { columns, virtualColSpan = 0 } = useHeaderProps();
+
+  const {
+    errorMessages,
+    formFieldsContainerRef,
+    focusedFieldRef: fieldRef,
+    onFocus,
+    onChange,
+  } = useBulkEditRow({
+    descriptors: columns,
+  });
+
+  const handleKeyDown = useCallback<KeyboardEventHandler<HTMLDivElement>>(
+    (evt) => {
+      if (evt.key === "Enter") {
+        const el = evt.target as HTMLElement;
+        const inputElement = el.querySelector("input");
+        inputElement?.focus();
+      }
+    },
+    [],
+  );
 
   const onCommit = useCallback<CommitHandler<HTMLElement, string | undefined>>(
     (evt, value) => {
-      if (value !== undefined && String(value).trim() !== "" && fieldRef) {
+      if (value !== undefined && String(value).trim() !== "") {
         const columnName = fieldRef.current;
         if (columnName) {
           const column = columns.find((c) => c.name === columnName);
@@ -73,16 +77,18 @@ export const BulkEditRow = ({
     <div
       {...htmlAttributes}
       className={classBase}
-      onFocus={handleFocus}
+      onFocus={onFocus}
       ref={formFieldsContainerRef}
     >
       <VirtualColSpan width={virtualColSpan} />
-      {columns.map((column) => {
+      {columns.map((column, i) => {
         const errorMessage = errorMessages[column.name];
         return (
           <div
+            aria-colindex={i + 1}
             className={`${classBase}-filter`}
             data-field={column.name}
+            onKeyDown={handleKeyDown}
             key={column.name}
             style={{ width: column.width }}
           >
