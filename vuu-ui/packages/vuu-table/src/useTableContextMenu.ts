@@ -2,7 +2,7 @@ import { DataSource, DataSourceRow } from "@finos/vuu-data-types";
 import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { useContextMenu as usePopupContextMenu } from "@finos/vuu-popups";
 import { buildColumnMap } from "@finos/vuu-utils";
-import { getIndexFromRowElement } from "./table-dom-utils";
+import { getAriaColIndex, getAriaRowIndex } from "./table-dom-utils";
 import { MouseEvent, useCallback } from "react";
 
 export interface TableContextMenuHookProps {
@@ -10,6 +10,8 @@ export interface TableContextMenuHookProps {
   data: DataSourceRow[];
   dataSource: DataSource;
   getSelectedRows: () => DataSourceRow[];
+  // TODO can we eliminate this it is only needed to convert aria row index to actual row index
+  headerCount: number;
 }
 
 const NO_ROWS = [] as const;
@@ -19,19 +21,20 @@ export const useTableContextMenu = ({
   data,
   dataSource,
   getSelectedRows,
+  headerCount,
 }: TableContextMenuHookProps) => {
   const [showContextMenu] = usePopupContextMenu();
 
   const onContextMenu = useCallback(
     (evt: MouseEvent<HTMLElement>) => {
       const target = evt.target as HTMLElement;
-      const cellEl = target?.closest("div[role='cell']");
-      const rowEl = target?.closest("div[role='row']") as HTMLElement;
+      const cellEl = target?.closest<HTMLElement>("div[role='cell']");
+      const rowEl = target?.closest<HTMLElement>("div[role='row']");
       if (cellEl && rowEl) {
         const { selectedRowsCount } = dataSource;
         const columnMap = buildColumnMap(columns);
-        const rowIndex = getIndexFromRowElement(rowEl);
-        const cellIndex = Array.from(rowEl.childNodes).indexOf(cellEl);
+        const rowIndex = getAriaRowIndex(rowEl) - headerCount - 1;
+        const cellIndex = getAriaColIndex(cellEl) - 1;
         const row = data.find(([idx]) => idx === rowIndex);
         const columnName = columns[cellIndex];
         // TODO does it really make sense to collect selected rows ?
@@ -46,7 +49,7 @@ export const useTableContextMenu = ({
         });
       }
     },
-    [columns, data, dataSource, getSelectedRows, showContextMenu],
+    [columns, data, dataSource, getSelectedRows, headerCount, showContextMenu],
   );
 
   return onContextMenu;

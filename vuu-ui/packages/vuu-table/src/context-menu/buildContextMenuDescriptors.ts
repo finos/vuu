@@ -20,13 +20,13 @@ export const buildContextMenuDescriptors =
     //TODO which should it be ?
     if (location === "header" || location === "column-menu") {
       descriptors.push(
-        ...buildSortMenuItems(options as MaybeColumn, dataSource)
+        ...buildSortMenuItems(options as MaybeColumn, dataSource),
       );
       descriptors.push(
-        ...buildGroupMenuItems(options as MaybeColumn, dataSource)
+        ...buildGroupMenuItems(options as MaybeColumn, dataSource),
       );
       descriptors.push(
-        ...buildAggregationMenuItems(options as MaybeColumn, dataSource)
+        ...buildAggregationMenuItems(options as MaybeColumn, dataSource),
       );
       descriptors.push(...buildColumnDisplayMenuItems(options as MaybeColumn));
       descriptors.push({
@@ -56,7 +56,7 @@ export const buildContextMenuDescriptors =
 
 function buildSortMenuItems(
   options: MaybeColumn,
-  { sort: { sortDefs } }: DataSource
+  { sort: { sortDefs } }: DataSource,
 ): ContextMenuItemDescriptor[] {
   const { column } = options;
   const menuItems: ContextMenuItemDescriptor[] = [];
@@ -138,10 +138,10 @@ function buildSortMenuItems(
 
 function buildAggregationMenuItems(
   options: MaybeColumn,
-  dataSource: DataSource
+  dataSource: DataSource,
 ): ContextMenuItemDescriptor[] {
   const { column } = options;
-  if (column === undefined || dataSource.groupBy.length === 0) {
+  if (column === undefined || dataSource.groupBy?.length === 0) {
     return [];
   }
   const { name, label = name } = column;
@@ -160,7 +160,7 @@ function buildAggregationMenuItems(
               { label: "High", action: "agg-high", options },
               { label: "Low", action: "agg-low", options },
             ]
-          : []
+          : [],
       ),
     },
   ];
@@ -171,14 +171,14 @@ const pinColumn = (options: unknown, pinLocation: PinLocation) =>
     label: `Pin ${pinLocation}`,
     action: `column-pin-${pinLocation}`,
     options,
-  } as ContextMenuItemDescriptor);
+  }) as ContextMenuItemDescriptor;
 
 const pinLeft = (options: unknown) => pinColumn(options, "left");
 const pinFloating = (options: unknown) => pinColumn(options, "floating");
 const pinRight = (options: unknown) => pinColumn(options, "right");
 
 function buildColumnDisplayMenuItems(
-  options: MaybeColumn
+  options: MaybeColumn,
 ): ContextMenuItemDescriptor[] {
   const { column } = options;
   if (column === undefined) {
@@ -210,7 +210,7 @@ function buildColumnDisplayMenuItems(
       {
         label: `Pin column`,
         children: [pinFloating(options), pinRight(options)],
-      }
+      },
     );
   } else if (pin === "right") {
     menuItems.push(
@@ -218,7 +218,7 @@ function buildColumnDisplayMenuItems(
       {
         label: `Pin column`,
         children: [pinLeft(options), pinFloating(options)],
-      }
+      },
     );
   } else if (pin === "floating") {
     menuItems.push(
@@ -226,7 +226,7 @@ function buildColumnDisplayMenuItems(
       {
         label: `Pin column`,
         children: [pinLeft(options), pinRight(options)],
-      }
+      },
     );
   }
 
@@ -235,7 +235,7 @@ function buildColumnDisplayMenuItems(
 
 function buildGroupMenuItems(
   options: MaybeColumn,
-  { groupBy }: DataSource
+  { groupBy }: DataSource,
 ): ContextMenuItemDescriptor[] {
   const { column } = options;
   const menuItems: ContextMenuItemDescriptor[] = [];
@@ -245,7 +245,7 @@ function buildGroupMenuItems(
 
   const { name, label = name } = column;
 
-  if (groupBy.length === 0) {
+  if (groupBy?.length === 0) {
     menuItems.push({
       label: `Group by ${label}`,
       action: "group",

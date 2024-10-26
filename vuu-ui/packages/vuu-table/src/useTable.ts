@@ -51,7 +51,7 @@ import {
   useHandleTableContextMenu,
 } from "./context-menu";
 import { updateTableConfig } from "./table-config";
-import { getIndexFromRowElement } from "./table-dom-utils";
+import { getAriaRowIndex } from "./table-dom-utils";
 import { useCellEditing } from "./useCellEditing";
 import { FocusCell, useCellFocus } from "./useCellFocus";
 import { useDataSource } from "./useDataSource";
@@ -625,6 +625,7 @@ export const useTable = ({
     data,
     dataSource,
     getSelectedRows,
+    headerCount: headerState.count,
   });
 
   const onMoveGroupColumn = useCallback(
@@ -639,7 +640,7 @@ export const useTable = ({
       if (isGroupColumn(column)) {
         dataSource.groupBy = [];
       } else {
-        if (dataSource && dataSource.groupBy.includes(column.name)) {
+        if (dataSource && dataSource.groupBy?.includes(column.name)) {
           dataSource.groupBy = dataSource.groupBy.filter(
             (columnName) => columnName !== column.name,
           );
@@ -693,7 +694,6 @@ export const useTable = ({
     allowCellBlockSelection,
     columnCount,
     containerRef,
-    focusCell,
     onSelectCellBlock: handleSelectCellBlock,
     rowCount,
   });
@@ -770,7 +770,8 @@ export const useTable = ({
   const handleDragStartRow = useCallback<DragStartHandler>(
     (dragDropState) => {
       const { initialDragElement } = dragDropState;
-      const rowIndex = getIndexFromRowElement(initialDragElement);
+      const rowIndex =
+        getAriaRowIndex(initialDragElement) - headerState.count - 1;
       const row = dataRef.current.find((row) => row[0] === rowIndex);
       if (row) {
         dragDropState.setPayload(row);
@@ -779,7 +780,7 @@ export const useTable = ({
       }
       onDragStart?.(dragDropState);
     },
-    [dataRef, onDragStart],
+    [dataRef, headerState.count, onDragStart],
   );
 
   const onHeaderHeightMeasured = useCallback(

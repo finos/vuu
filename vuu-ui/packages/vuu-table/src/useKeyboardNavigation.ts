@@ -262,7 +262,7 @@ export const useKeyboardNavigation = ({
           treeNodeOperation === "expand" ||
           treeNodeOperation === "collapse"
         ) {
-          onToggleGroup(treeNodeOperation, rowIdx);
+          onToggleGroup(treeNodeOperation, rowIdx - headerCount - 1);
         } else if (treeNodeOperation === "level-up") {
           [nextRowIdx, nextColIdx] = getLevelUp(containerRef, cellPos);
         } else {
@@ -284,10 +284,11 @@ export const useKeyboardNavigation = ({
     [
       cellFocusStateRef,
       nextPageItemIdx,
-      columnCount,
-      rowCount,
       containerRef,
       onToggleGroup,
+      headerCount,
+      columnCount,
+      rowCount,
       setActiveCell,
       setHighlightedIndex,
     ],
@@ -373,9 +374,9 @@ export const useKeyboardNavigation = ({
 
   const handleMouseMove = useCallback(
     (evt: MouseEvent) => {
-      const idx = closestRowIndex(evt.target as HTMLElement);
-      if (idx !== -1 && idx !== highlightedIndexRef.current) {
-        setHighlightedIndex(idx);
+      const rowIdx = closestRowIndex(evt.target as HTMLElement);
+      if (rowIdx !== -1 && rowIdx !== highlightedIndexRef.current) {
+        setHighlightedIndex(rowIdx);
       }
     },
     [setHighlightedIndex],

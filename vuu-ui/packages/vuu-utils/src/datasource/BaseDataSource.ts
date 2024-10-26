@@ -192,6 +192,15 @@ export abstract class BaseDataSource
     this.emit("config", this._config);
   }
 
+  get title() {
+    return this._title ?? "";
+  }
+
+  set title(title: string) {
+    this._title = title;
+    this.emit("title-changed", this.viewport ?? "", title);
+  }
+
   // Public while we use this from useSessionDataSource
   public applyConfig(
     config: WithBaseFilter<DataSourceConfig>,

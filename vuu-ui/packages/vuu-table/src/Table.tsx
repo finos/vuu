@@ -378,25 +378,28 @@ const TableCore = ({
           ) : null}
           {readyToRenderTableBody ? (
             <div className={`${classBase}-body`} ref={tableBodyRef}>
-              {data.map((data) => (
-                <Row
-                  aria-rowindex={data[0] + headerCount + 1}
-                  classNameGenerator={rowClassNameGenerator}
-                  columnMap={columnMap}
-                  columns={scrollProps.columnsWithinViewport}
-                  groupToggleTarget={groupToggleTarget}
-                  highlighted={highlightedIndex === data[IDX]}
-                  key={data[RENDER_IDX]}
-                  onClick={onRowClick}
-                  onDataEdited={onDataEdited}
-                  row={data}
-                  offset={showPaginationControls ? 0 : getRowOffset(data)}
-                  onToggleGroup={onToggleGroup}
-                  showBookends={selectionBookendWidth > 0}
-                  virtualColSpan={scrollProps.virtualColSpan}
-                  zebraStripes={tableAttributes.zebraStripes}
-                />
-              ))}
+              {data.map((data) => {
+                const ariaRowIndex = data[IDX] + headerCount + 1;
+                return (
+                  <Row
+                    aria-rowindex={ariaRowIndex}
+                    classNameGenerator={rowClassNameGenerator}
+                    columnMap={columnMap}
+                    columns={scrollProps.columnsWithinViewport}
+                    groupToggleTarget={groupToggleTarget}
+                    highlighted={highlightedIndex === ariaRowIndex}
+                    key={data[RENDER_IDX]}
+                    onClick={onRowClick}
+                    onDataEdited={onDataEdited}
+                    row={data}
+                    offset={showPaginationControls ? 0 : getRowOffset(data)}
+                    onToggleGroup={onToggleGroup}
+                    showBookends={selectionBookendWidth > 0}
+                    virtualColSpan={scrollProps.virtualColSpan}
+                    zebraStripes={tableAttributes.zebraStripes}
+                  />
+                );
+              })}
               {/* 
                 The focusCellPlaceholder allows us to deal with the situation where a cell 
                 that has focus is scrolled out of the viewport. That cell, along with the 

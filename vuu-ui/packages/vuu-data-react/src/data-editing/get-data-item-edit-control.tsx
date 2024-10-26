@@ -39,7 +39,6 @@ export const getDataItemEditControl = ({
     evt,
     value,
   ) => {
-    console.log(`value`);
     onCommit(evt, value.toString());
   };
 

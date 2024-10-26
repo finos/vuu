@@ -432,11 +432,11 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
   }
 
   get title() {
-    return this._title ?? `${this.table.module} ${this.table.table}`;
+    return super.title || `${this.table.module} ${this.table.table}`;
   }
 
   set title(title: string) {
-    this._title = title;
+    super.title = title;
     if (this.viewport && title) {
       // This message doesn't actually trigger a message to Vuu server
       // it will be used to recompute visual link labels
@@ -446,7 +446,6 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
         viewport: this.viewport,
       });
     }
-    this.emit("title-changed", this.viewport ?? "'", title);
   }
 
   get visualLink() {

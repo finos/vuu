@@ -85,7 +85,6 @@ export class JsonDataSource
     data,
     filterSpec,
     groupBy,
-    range,
     sort,
     title,
     viewport,

@@ -52,12 +52,14 @@ const addChildValues = (
     });
   }
   for (let i = 0; i < treeSourceNodes.length; i++, index.value += 1) {
-    const { childNodes, header, icon, id, label } = treeSourceNodes[i];
+    const { childNodes, icon, label } = treeSourceNodes[i];
     const blanks = Array(depth - 1).fill("");
     const fullKey = `${keyBase}|${label}`;
     // prettier-ignore
     const row = [index.value, index.value, false,false,depth,0,fullKey,0, ...blanks, label ] as DataSourceRow;
-    iconProvider?.setIcon(fullKey, icon);
+    if (icon) {
+      iconProvider?.setIcon(fullKey, icon);
+    }
     rows.push(row);
     rowCount += 1;
 

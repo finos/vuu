@@ -636,7 +636,7 @@ export interface DataSource
    * @returns
    */
   getRowsAtDepth?: (depth: number, visibleOnly?: boolean) => DataSourceRow[];
-  groupBy: VuuGroupBy;
+  groupBy?: VuuGroupBy;
   insertRow?: DataSourceInsertHandler;
   links?: LinkDescriptorWithLabel[];
   menu?: VuuMenu;
