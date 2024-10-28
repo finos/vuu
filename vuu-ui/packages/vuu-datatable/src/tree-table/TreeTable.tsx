@@ -1,31 +1,28 @@
 import { TableProps } from "@finos/vuu-table";
-import { JsonData, registerComponent } from "@finos/vuu-utils";
 import { Table } from "@finos/vuu-table";
-import { JsonDataSource } from "@finos/vuu-data-local";
+import { TreeDataSource } from "@finos/vuu-data-local";
 import { useEffect, useMemo, useRef } from "react";
 import { TableConfig } from "@finos/vuu-table-types";
-import { JsonCell } from "./JsonCell";
+import { TreeSourceNode } from "@finos/vuu-utils";
 
-registerComponent("json", JsonCell, "cell-renderer");
-
-export interface JsonTableProps
+export interface TreeTableProps
   extends Omit<TableProps, "config" | "dataSource"> {
   config?: Pick<
     TableConfig,
     "columnSeparators" | "rowSeparators" | "zebraStripes"
   >;
-  source: JsonData;
+  source: TreeSourceNode[];
 }
 
-export const JsonTable = ({
+export const TreeTable = ({
   config,
   source: sourceProp,
   ...tableProps
-}: JsonTableProps) => {
+}: TreeTableProps) => {
   const sourceRef = useRef(sourceProp);
-  const dataSourceRef = useRef<JsonDataSource>();
+  const dataSourceRef = useRef<TreeDataSource>();
   useMemo(() => {
-    dataSourceRef.current = new JsonDataSource({
+    dataSourceRef.current = new TreeDataSource({
       data: sourceRef.current,
     });
   }, []);
@@ -34,8 +31,8 @@ export const JsonTable = ({
     return {
       ...config,
       columns: dataSourceRef.current?.columnDescriptors ?? [],
-      columnSeparators: true,
-      rowSeparators: true,
+      columnSeparators: false,
+      rowSeparators: false,
     };
   }, [config]);
 
@@ -54,8 +51,11 @@ export const JsonTable = ({
       {...tableProps}
       config={tableConfig}
       dataSource={dataSourceRef.current}
+      groupToggleTarget="toggle-icon"
+      navigationStyle="tree"
       showColumnHeaderMenus={false}
-      selectionModel="none"
+      selectionModel="single"
+      selectionBookendWidth={0}
     />
   );
 };

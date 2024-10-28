@@ -1,49 +1,46 @@
 import type { ColumnDescriptor } from "@finos/vuu-table-types";
 import type {
   LinkDescriptorWithLabel,
-  VuuGroupBy,
   VuuAggregation,
   VuuRange,
-  VuuSort,
   VuuRowDataItemType,
   VuuRpcResponse,
   VuuRpcRequest,
 } from "@finos/vuu-protocol-types";
 import type {
-  DataSourceFilter,
   DataSourceRow,
-  DataSource,
   DataSourceConstructorProps,
-  DataSourceEvents,
   DataSourceStatus,
   SubscribeCallback,
   SubscribeProps,
-  WithFullConfig,
   Selection,
   MenuRpcResponse,
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditResponse,
 } from "@finos/vuu-data-types";
 import {
-  EventEmitter,
+  BaseDataSource,
   isSelected,
-  JsonData,
-  jsonToDataSourceRows,
   KeySet,
   metadataKeys,
-  NO_CONFIG_CHANGES,
+  NULL_RANGE,
+  rangesAreSame,
+  TreeSourceNode,
+  treeToDataSourceRows,
   uuid,
-  vanillaConfig,
 } from "@finos/vuu-utils";
+import { IconProvider } from "./IconProvider";
 
 const NULL_SCHEMA = { columns: [], key: "", table: { module: "", table: "" } };
 
-export interface JsonDataSourceConstructorProps
+type VisibleRowIndex = Record<number, number>;
+
+export interface TreeDataSourceConstructorProps
   extends Omit<DataSourceConstructorProps, "bufferSize" | "table"> {
-  data: JsonData;
+  data: TreeSourceNode[];
 }
 
-const { DEPTH, IDX, IS_EXPANDED, IS_LEAF, KEY, SELECTED } = metadataKeys;
+const { COUNT, DEPTH, IDX, IS_EXPANDED, IS_LEAF, KEY, SELECTED } = metadataKeys;
 
 const toClientRow = (row: DataSourceRow, keys: KeySet) => {
   const [rowIndex] = row;
@@ -52,74 +49,46 @@ const toClientRow = (row: DataSourceRow, keys: KeySet) => {
   return clientRow;
 };
 
-export class JsonDataSource
-  extends EventEmitter<DataSourceEvents>
-  implements DataSource
-{
+export class TreeDataSource extends BaseDataSource {
   public columnDescriptors: ColumnDescriptor[];
   private clientCallback: SubscribeCallback | undefined;
   private expandedRows = new Set<string>();
   private visibleRows: DataSourceRow[] = [];
+  private visibleRowIndex: VisibleRowIndex = {};
+  private selectedRows: Selection = [];
 
   #aggregations: VuuAggregation[] = [];
-  #config: WithFullConfig = vanillaConfig;
   #data: DataSourceRow[];
-  #filter: DataSourceFilter = { filter: "" };
-  #groupBy: VuuGroupBy = [];
-  #range: VuuRange = { from: 0, to: 0 };
+  #iconProvider: IconProvider;
   #selectedRowsCount = 0;
   #size = 0;
-  #sort: VuuSort = { sortDefs: [] };
   #status: DataSourceStatus = "initialising";
-  #title: string | undefined;
 
   public rowCount: number | undefined;
-  public viewport: string;
 
-  private keys = new KeySet(this.#range);
+  private keys = new KeySet(this._range);
 
-  constructor({
-    aggregations,
-    data,
-    filterSpec,
-    groupBy,
-    sort,
-    title,
-    viewport,
-  }: JsonDataSourceConstructorProps) {
-    super();
+  constructor({ data, ...props }: TreeDataSourceConstructorProps) {
+    super(props);
 
     if (!data) {
-      throw Error("JsonDataSource constructor called without data");
+      throw Error("TreeDataSource constructor called without data");
     }
+    this.#iconProvider = new IconProvider();
 
-    [this.columnDescriptors, this.#data] = jsonToDataSourceRows(data);
+    [this.columnDescriptors, this.#data] = treeToDataSourceRows(
+      data,
+      this.#iconProvider,
+    );
 
-    this.visibleRows = this.#data
-      .filter((row) => row[DEPTH] === 0)
-      .map((row, index) =>
-        ([index, index] as Partial<DataSourceRow>).concat(row.slice(2)),
-      ) as DataSourceRow[];
-    this.viewport = viewport || uuid();
-    if (aggregations) {
-      this.#aggregations = aggregations;
-    }
     if (this.columnDescriptors) {
-      this.#config = {
-        ...this.#config,
-        columns: this.columnDescriptors.map((c) => c.name),
+      const columns = this.columnDescriptors.map((c) => c.name);
+      this._config = {
+        ...this._config,
+        columns,
+        groupBy: columns,
       };
     }
-    if (filterSpec) {
-      this.#filter = filterSpec;
-    }
-    if (groupBy) {
-      this.#groupBy = groupBy;
-    }
-    if (sort) {
-      this.#sort = sort;
-    }
-    this.#title = title;
   }
 
   async subscribe(
@@ -128,9 +97,6 @@ export class JsonDataSource
       columns,
       aggregations,
       range,
-      sort,
-      groupBy,
-      filterSpec,
     }: SubscribeProps,
     callback: SubscribeCallback,
   ) {
@@ -140,22 +106,10 @@ export class JsonDataSource
       this.#aggregations = aggregations;
     }
     if (columns) {
-      this.#config = {
-        ...this.#config,
+      this._config = {
+        ...this._config,
         columns,
       };
-    }
-    if (filterSpec) {
-      this.#filter = filterSpec;
-    }
-    if (groupBy) {
-      this.#groupBy = groupBy;
-    }
-    if (range) {
-      this.#range = range;
-    }
-    if (sort) {
-      this.#sort = sort;
     }
 
     if (this.#status !== "initialising") {
@@ -171,11 +125,11 @@ export class JsonDataSource
       aggregations: this.#aggregations,
       type: "subscribed",
       clientViewportId: this.viewport,
-      columns: this.#config.columns,
-      filterSpec: this.#filter,
-      groupBy: this.#groupBy,
-      range: this.#range,
-      sort: this.#sort,
+      columns: this.columns,
+      filterSpec: this.filter,
+      groupBy: this._config.groupBy,
+      range: this.range,
+      sort: this.sort,
       tableSchema: NULL_SCHEMA,
     });
 
@@ -185,6 +139,12 @@ export class JsonDataSource
       type: "viewport-update",
       size: this.visibleRows.length,
     });
+
+    if (range && !rangesAreSame(this._range, range)) {
+      this.range = range;
+    } else if (this._range !== NULL_RANGE) {
+      this.sendRowsToClient();
+    }
   }
 
   unsubscribe() {
@@ -210,30 +170,39 @@ export class JsonDataSource
     console.log("noop");
     return this;
   }
-  set data(data: JsonData) {
-    console.log(`set JsonDataSource data`);
-    [this.columnDescriptors, this.#data] = jsonToDataSourceRows(data);
-    this.visibleRows = this.#data
-      .filter((row) => row[DEPTH] === 0)
-      .map((row, index) =>
-        ([index, index] as Partial<DataSourceRow>).concat(row.slice(2)),
-      ) as DataSourceRow[];
+  set data(data: TreeSourceNode[]) {
+    [this.columnDescriptors, this.#data] = treeToDataSourceRows(data);
+    // console.table(this.#data.slice(0, 20));
+    [this.visibleRows, this.visibleRowIndex] = getVisibleRows(
+      this.#data,
+      this.expandedRows,
+    );
+
+    // console.table(this.#data);
+    console.table(this.visibleRows);
+
+    console.log({ visibleRows: this.visibleRows });
 
     requestAnimationFrame(() => {
       this.sendRowsToClient();
     });
   }
 
+  // Incoming Selection references visibleRow indices
   select(selected: Selection) {
+    // todo get a diff
     const updatedRows: DataSourceRow[] = [];
-    for (const row of this.#data) {
+    for (const row of this.visibleRows) {
       const { [IDX]: rowIndex, [SELECTED]: sel } = row;
       const wasSelected = sel === 1;
       const nowSelected = isSelected(selected, rowIndex);
       if (nowSelected !== wasSelected) {
         const selectedRow = row.slice() as DataSourceRow;
-        selectedRow[SELECTED] = nowSelected ? 1 : 0;
-        this.#data[rowIndex] = selectedRow;
+        const selectedValue = nowSelected ? 1 : 0;
+        selectedRow[SELECTED] = selectedValue;
+        const dataRowIdx = this.visibleRowIndex[rowIndex];
+        this.visibleRows[rowIndex] = selectedRow;
+        this.#data[dataRowIdx][SELECTED] = selectedValue;
         updatedRows.push(selectedRow);
       }
     }
@@ -248,10 +217,26 @@ export class JsonDataSource
     }
   }
 
-  openTreeNode(key: string) {
+  private getRowKey(keyOrIndex: string | number) {
+    if (typeof keyOrIndex === "string") {
+      return keyOrIndex;
+    }
+    const row = this.getRowAtIndex(keyOrIndex);
+    if (row === undefined) {
+      throw Error(`row not found at index ${keyOrIndex}`);
+    }
+    return row[KEY];
+  }
+
+  openTreeNode(keyOrIndex: string | number) {
+    const key = this.getRowKey(keyOrIndex);
     this.expandedRows.add(key);
-    this.visibleRows = getVisibleRows(this.#data, this.expandedRows);
-    const { from, to } = this.#range;
+    [this.visibleRows, this.visibleRowIndex] = getVisibleRows(
+      this.#data,
+      this.expandedRows,
+    );
+
+    const { from, to } = this._range;
     this.clientCallback?.({
       clientViewportId: this.viewport,
 
@@ -264,7 +249,8 @@ export class JsonDataSource
     });
   }
 
-  closeTreeNode(key: string, cascade = false) {
+  closeTreeNode(keyOrIndex: string | number, cascade = false) {
+    const key = this.getRowKey(keyOrIndex);
     this.expandedRows.delete(key);
     if (cascade) {
       for (const rowKey of this.expandedRows.keys()) {
@@ -273,20 +259,15 @@ export class JsonDataSource
         }
       }
     }
-    this.visibleRows = getVisibleRows(this.#data, this.expandedRows);
+    [this.visibleRows, this.visibleRowIndex] = getVisibleRows(
+      this.#data,
+      this.expandedRows,
+    );
     this.sendRowsToClient();
   }
 
   get status() {
     return this.#status;
-  }
-
-  get config() {
-    return this.#config;
-  }
-
-  applyConfig() {
-    return NO_CONFIG_CHANGES;
   }
 
   get selectedRowsCount() {
@@ -297,12 +278,7 @@ export class JsonDataSource
     return this.#size;
   }
 
-  get range() {
-    return this.#range;
-  }
-
-  set range(range: VuuRange) {
-    this.#range = range;
+  rangeRequest(range: VuuRange) {
     this.keys.reset(range);
     requestAnimationFrame(() => {
       this.sendRowsToClient();
@@ -310,7 +286,7 @@ export class JsonDataSource
   }
 
   private sendRowsToClient() {
-    const { from, to } = this.#range;
+    const { from, to } = this._range;
     this.clientCallback?.({
       clientViewportId: this.viewport,
       mode: "batch",
@@ -320,60 +296,6 @@ export class JsonDataSource
       size: this.visibleRows.length,
       type: "viewport-update",
     });
-  }
-
-  get columns() {
-    return this.#config.columns;
-  }
-
-  set columns(columns: string[]) {
-    // TODO use setter
-    this.#config = {
-      ...this.#config,
-      columns,
-    };
-  }
-
-  get aggregations() {
-    return this.#aggregations;
-  }
-
-  set aggregations(aggregations: VuuAggregation[]) {
-    this.#aggregations = aggregations;
-  }
-
-  get sort() {
-    return this.#sort;
-  }
-
-  set sort(sort: VuuSort) {
-    // TODO should we wait until server ACK before we assign #sort ?
-    this.#sort = sort;
-  }
-
-  get filter() {
-    return this.#filter;
-  }
-
-  set filter(filter: DataSourceFilter) {
-    // TODO should we wait until server ACK before we assign #sort ?
-    this.#filter = filter;
-  }
-
-  get groupBy() {
-    return this.#groupBy;
-  }
-
-  set groupBy(groupBy: VuuGroupBy) {
-    this.#groupBy = groupBy;
-  }
-
-  get title() {
-    return this.#title ?? "";
-  }
-
-  set title(title: string) {
-    this.#title = title;
   }
 
   createLink({
@@ -447,40 +369,51 @@ export class JsonDataSource
     const rows = visibleOnly ? this.visibleRows : this.#data;
     return rows.filter((row) => row[DEPTH] === depth);
   }
+
+  getRowAtIndex(rowIdx: number) {
+    return this.visibleRows[rowIdx];
+  }
 }
 
-type Index = {
-  value: number;
-};
-
-function getVisibleRows(rows: DataSourceRow[], expandedKeys: Set<string>) {
+function getVisibleRows(
+  rows: DataSourceRow[],
+  expandedKeys: Set<string>,
+): [visibleRows: DataSourceRow[], index: VisibleRowIndex] {
   const visibleRows: DataSourceRow[] = [];
-  const index: Index = { value: 0 };
-  for (let i = 0; i < rows.length; i++) {
+  const visibleRowIndex: VisibleRowIndex = {};
+
+  for (let i = 0, index = 0; i < rows.length; i++) {
     const row = rows[i];
-    const { [DEPTH]: depth, [KEY]: key, [IS_LEAF]: isLeaf } = row;
+    const {
+      [COUNT]: count,
+      [DEPTH]: depth,
+      [KEY]: key,
+      [IS_LEAF]: isLeaf,
+    } = row;
     const isExpanded = expandedKeys.has(key);
     visibleRows.push(cloneRow(row, index, isExpanded));
-    if (!isLeaf && !isExpanded) {
+    visibleRowIndex[index] = i;
+    index += 1;
+    const skipNonVisibleRows = !isLeaf && !isExpanded && count > 0;
+    if (skipNonVisibleRows) {
       do {
         i += 1;
       } while (i < rows.length - 1 && rows[i + 1][DEPTH] > depth);
     }
   }
-  return visibleRows;
+  return [visibleRows, visibleRowIndex];
 }
 
 const cloneRow = (
   row: DataSourceRow,
-  index: Index,
+  index: number,
   isExpanded: boolean,
 ): DataSourceRow => {
   const dolly = row.slice() as DataSourceRow;
-  dolly[0] = index.value;
-  dolly[1] = index.value;
+  dolly[0] = index;
+  dolly[1] = index;
   if (isExpanded) {
     dolly[IS_EXPANDED] = true;
   }
-  index.value += 1;
   return dolly;
 };

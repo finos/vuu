@@ -11,7 +11,6 @@ import {
 } from "react";
 import { closestListItemIndex } from "./list-dom-utils";
 import { isExpanded } from "./treeTypeUtils";
-import type { NormalisedTreeSourceNode, TreeSourceNode } from "./treeTypes";
 import { useItemsWithIds } from "./use-items-with-ids";
 import {
   GroupSelection,
@@ -23,6 +22,7 @@ import { useViewportTracking } from "./use-viewport-tracking";
 import { useTree } from "./useTree";
 
 import treeCss from "./Tree.css";
+import { NormalisedTreeSourceNode, TreeSourceNode } from "@finos/vuu-utils";
 
 const classBase = "vuuTree";
 
@@ -66,7 +66,7 @@ export const Tree = forwardRef(function Tree(
     source,
     ...htmlAttributes
   }: TreeProps,
-  forwardedRef: ForwardedRef<HTMLUListElement>
+  forwardedRef: ForwardedRef<HTMLUListElement>,
 ) {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -80,7 +80,7 @@ export const Tree = forwardRef(function Tree(
   // returns the full source data
   const [, sourceWithIds, sourceItemById] = useItemsWithIds(source, id, {
     revealSelected: revealSelected
-      ? selectedProp ?? defaultSelected ?? false
+      ? (selectedProp ?? defaultSelected ?? false)
       : undefined,
   });
 
@@ -138,7 +138,7 @@ export const Tree = forwardRef(function Tree(
   function addLeafNode(
     list: JSX.Element[],
     item: NormalisedTreeSourceNode,
-    idx: Indexer
+    idx: Indexer,
   ) {
     list.push(
       <TreeNode
@@ -149,7 +149,7 @@ export const Tree = forwardRef(function Tree(
           <span className={`${classBase}Node-icon`} data-icon={item.icon} />
         ) : null}
         <span>{item.label}</span>
-      </TreeNode>
+      </TreeNode>,
     );
     idx.value += 1;
   }
@@ -159,7 +159,7 @@ export const Tree = forwardRef(function Tree(
     child: NormalisedTreeSourceNode,
     idx: Indexer,
     id: string,
-    title: string
+    title: string,
   ) {
     const { value: i } = idx;
     idx.value += 1;
@@ -198,13 +198,13 @@ export const Tree = forwardRef(function Tree(
         <ul role="group">
           {isExpanded(child) ? renderSourceContent(child.childNodes, idx) : ""}
         </ul>
-      </TreeNode>
+      </TreeNode>,
     );
   }
 
   function renderSourceContent(
     items: NormalisedTreeSourceNode[],
-    idx = { value: 0 }
+    idx = { value: 0 },
   ) {
     if (items?.length > 0) {
       const listItems: JSX.Element[] = [];
@@ -240,7 +240,7 @@ const getListItemProps = (
   highlightedIdx: number,
   selected: string[],
   focusVisible: number,
-  className?: string
+  className?: string,
 ) => ({
   id: item.id,
   key: item.id,

@@ -6,7 +6,7 @@ import {
   useRef,
 } from "react";
 import { useControlled } from "@salt-ds/core";
-import { NormalisedTreeSourceNode } from "./treeTypes";
+import { NormalisedTreeSourceNode } from "@finos/vuu-utils";
 
 export type TreeSelection =
   | "none"
@@ -31,7 +31,7 @@ const isCollapsibleItem = (item: NormalisedTreeSourceNode) =>
 
 export type TreeNodeSelectionHandler = (
   evt: SyntheticEvent,
-  selected: string[]
+  selected: string[],
 ) => void;
 
 export const groupSelectionEnabled = (groupSelection: GroupSelection) =>
@@ -75,7 +75,7 @@ export const useSelection = ({
 
   const isSelectionEvent = useCallback(
     (evt) => selectionKeys.includes(evt.key),
-    [selectionKeys]
+    [selectionKeys],
   );
 
   const [selected, setSelected] = useControlled({
@@ -93,7 +93,7 @@ export const useSelection = ({
       idx: number,
       id: string,
       rangeSelect: boolean,
-      preserveExistingSelection = false
+      preserveExistingSelection = false,
     ) => {
       const { current: active } = lastActive;
       const isSelected = selected?.includes(id);
@@ -139,7 +139,7 @@ export const useSelection = ({
       selected,
       setSelected,
       singleSelect,
-    ]
+    ],
   );
 
   const handleKeyDown = useCallback(
@@ -152,7 +152,7 @@ export const useSelection = ({
           highlightedIdx,
           item.id,
           false,
-          evt.ctrlKey || evt.metaKey
+          evt.ctrlKey || evt.metaKey,
         );
         if (extendedSelect) {
           lastActive.current = highlightedIdx;
@@ -165,7 +165,7 @@ export const useSelection = ({
       treeNodes,
       isSelectionEvent,
       selectItemAtIndex,
-    ]
+    ],
   );
 
   const handleKeyboardNavigation = useCallback(
@@ -175,7 +175,7 @@ export const useSelection = ({
         selectItemAtIndex(evt, currentIndex, item.id, true);
       }
     },
-    [extendedSelect, treeNodes, selectItemAtIndex]
+    [extendedSelect, treeNodes, selectItemAtIndex],
   );
 
   const listHandlers =
@@ -198,7 +198,7 @@ export const useSelection = ({
             highlightedIdx,
             item.id,
             evt.shiftKey,
-            evt.ctrlKey || evt.metaKey
+            evt.ctrlKey || evt.metaKey,
           );
           if (extendedSelect) {
             lastActive.current = highlightedIdx;
@@ -206,7 +206,7 @@ export const useSelection = ({
         }
       }
     },
-    [extendedSelect, highlightedIdx, treeNodes, selectItemAtIndex]
+    [extendedSelect, highlightedIdx, treeNodes, selectItemAtIndex],
   );
 
   const listItemHandlers =

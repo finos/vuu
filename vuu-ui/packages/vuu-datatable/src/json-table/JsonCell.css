@@ -1,0 +1,16 @@
+.vuuJsonCell {
+  --group-cell-spacer-width: 20px;
+  align-items: center;
+  border-right-style: solid;
+  border-right-width: 1px;
+  cursor: pointer;
+  display: inline-flex;
+  height: var(--row-height);
+  padding-left: 20px;
+  line-height: 16px;
+  position: relative;
+
+  .vuuToggleIconButton {
+    position: absolute;
+  }
+}

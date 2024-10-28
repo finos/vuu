@@ -468,7 +468,7 @@ export declare type RowSelectionEventHandler = (
 
 export declare type DataSourceEvents = {
   config: (
-    config: DataSourceConfig | undefined,
+    config: WithBaseFilter<WithFullConfig>,
     confirmed?: boolean,
     configChanges?: DataSourceConfigChanges,
   ) => void;
@@ -576,9 +576,9 @@ export interface DataSource
      */
     preserveExistingConfigAttributes?: boolean,
   ) => DataSourceConfigChanges | undefined;
-  closeTreeNode: (key: string, cascade?: boolean) => void;
+  closeTreeNode: (keyOrIndex: string | number, cascade?: boolean) => void;
   columns: string[];
-  config: WithBaseFilter<DataSourceConfig>;
+  config: WithBaseFilter<WithFullConfig>;
   status: DataSourceStatus;
   /**
    *
@@ -627,6 +627,8 @@ export interface DataSource
    * @returns
    */
   getChildRows?: (rowKey: string) => DataSourceRow[];
+
+  getRowAtIndex?: (rowIndex: number) => DataSourceRow | undefined;
   /**
    * Only implemented on JSON DataSource
    * @param depth
@@ -634,7 +636,7 @@ export interface DataSource
    * @returns
    */
   getRowsAtDepth?: (depth: number, visibleOnly?: boolean) => DataSourceRow[];
-  groupBy: VuuGroupBy;
+  groupBy?: VuuGroupBy;
   insertRow?: DataSourceInsertHandler;
   links?: LinkDescriptorWithLabel[];
   menu?: VuuMenu;
@@ -646,7 +648,7 @@ export interface DataSource
   rpcCall?: <T extends VuuRpcResponse = VuuRpcResponse>(
     rpcRequest: Omit<VuuRpcRequest, "vpId">,
   ) => Promise<T>;
-  openTreeNode: (key: string) => void;
+  openTreeNode: (keyOrIndex: string | number) => void;
   range: VuuRange;
   remoteProcedureCall: <T extends VuuRpcResponse = VuuRpcResponse>(
     message: VuuRpcRequest,
@@ -849,7 +851,8 @@ export interface VuuUIMessageOutViewRange extends ViewportMessageOut {
   };
 }
 export interface VuuUIMessageOutCloseTreeNode extends ViewportMessageOut {
-  key: string;
+  index?: number;
+  key?: string;
   type: "closeTreeNode";
 }
 export interface VuuUIMessageOutRemoveLink extends ViewportMessageOut {
@@ -867,7 +870,8 @@ export interface VuuUIMessageOutEnable extends ViewportMessageOut {
   type: "enable";
 }
 export interface VuuUIMessageOutOpenTreeNode extends ViewportMessageOut {
-  key: string;
+  index?: number;
+  key?: string;
   type: "openTreeNode";
 }
 export interface VuuUIMessageOutResume extends ViewportMessageOut {

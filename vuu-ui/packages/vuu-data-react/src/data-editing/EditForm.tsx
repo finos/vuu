@@ -1,12 +1,11 @@
 import { getDataItemEditControl } from "@finos/vuu-data-react";
-import { DataSource, DataValueDescriptor } from "@finos/vuu-data-types";
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { HTMLAttributes } from "react";
 import { registerRules } from "./edit-validation-rules";
-import { useEditForm } from "./useEditForm";
+import { EditFormHookProps, useEditForm } from "./useEditForm";
 
 import editFormCss from "./EditForm.css";
 
@@ -14,11 +13,9 @@ const classBase = "EditForm";
 
 registerRules();
 
-export interface EditFormProps extends HTMLAttributes<HTMLDivElement> {
-  dataSource?: DataSource;
-  formFieldDescriptors: DataValueDescriptor[];
-  onSubmit?: () => void;
-}
+export interface EditFormProps
+  extends EditFormHookProps,
+    Omit<HTMLAttributes<HTMLDivElement>, "onSubmit"> {}
 
 export const EditForm = ({
   className,

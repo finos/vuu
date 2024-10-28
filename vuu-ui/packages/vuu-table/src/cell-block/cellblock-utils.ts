@@ -1,6 +1,10 @@
 import { VuuRange } from "@finos/vuu-protocol-types";
 import { queryClosest } from "@finos/vuu-utils";
-import { getTableCellPos } from "../table-dom-utils";
+import {
+  getAriaCellPos,
+  getAriaColIndex,
+  getAriaRowIndex,
+} from "../table-dom-utils";
 
 export type TableCellBlock = {
   columnRange: VuuRange;
@@ -67,30 +71,15 @@ export const outsideBox = (
   y: number,
 ) => x < left || x > right || y < top || y > bottom;
 
-const getColIndex = ({ ariaColIndex }: HTMLDivElement) => {
-  if (ariaColIndex !== null) {
-    return parseInt(ariaColIndex);
-  }
-  throw Error("invalid aria-colindex in table cell");
-};
-
-const getRowIndex = (cell: HTMLDivElement) => {
-  const row = queryClosest<HTMLDivElement>(cell, ".vuuTableRow");
-  if (row) {
-    const { ariaRowIndex } = row;
-    if (ariaRowIndex !== null) {
-      return parseInt(ariaRowIndex);
-    }
-  }
-  throw Error("invalid aria-rowindex in table row");
-};
+const getRowIndex = (cell: HTMLDivElement) =>
+  getAriaRowIndex(queryClosest<HTMLDivElement>(cell, ".vuuTableRow"));
 
 export const getTableCellBlock = (
   startCell: HTMLDivElement,
   endCell: HTMLDivElement,
 ): TableCellBlock => {
-  const colStart = getColIndex(startCell);
-  const colEnd = getColIndex(endCell);
+  const colStart = getAriaColIndex(startCell);
+  const colEnd = getAriaColIndex(endCell);
   const rowStart = getRowIndex(startCell);
   const rowEnd = getRowIndex(endCell);
 
@@ -166,8 +155,8 @@ export const getTextFromCells = (
     ".vuuTable-body",
     true,
   );
-  const [startRow, startCol] = getTableCellPos(startCell);
-  const [endRow, endCol] = getTableCellPos(endCell);
+  const [startRow, startCol] = getAriaCellPos(startCell);
+  const [endRow, endCol] = getAriaCellPos(endCell);
 
   const rowRange = {
     from: Math.min(startRow, endRow),
@@ -182,12 +171,12 @@ export const getTextFromCells = (
   const results: string[][] = [];
   for (let rowIdx = rowRange.from; rowIdx <= rowRange.to; rowIdx++) {
     const row = tableBody.querySelector(
-      `.vuuTableRow[aria-rowindex='${rowIdx + 1}']`,
+      `.vuuTableRow[aria-rowindex='${rowIdx}']`,
     );
     const rowData = [];
     for (let colIdx = colRange.from; colIdx <= colRange.to; colIdx++) {
       const cell = row?.querySelector(
-        `.vuuTableCell[aria-colindex='${colIdx + 1}']`,
+        `.vuuTableCell[aria-colindex='${colIdx}']`,
       );
       if (cell) {
         rowData.push(cell.textContent ?? "");

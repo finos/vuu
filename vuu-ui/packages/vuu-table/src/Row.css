@@ -117,7 +117,7 @@
   border-radius: var(--vuu-selection-decorator-right-radius, 0);
 }
 
-.vuuTableRow-expanded {
+.vuuTableRow[aria-expanded="true"] {
   --toggle-icon-transform: rotate(90deg);
 }
 

@@ -1,6 +1,6 @@
-import { DataSource, DataValueDescriptor } from "@finos/vuu-data-types";
+import type { DataSource, DataValueDescriptor } from "@finos/vuu-data-types";
 import { useDialogContext } from "@finos/vuu-popups";
-import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import type { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import {
   Entity,
   buildColumnMap,
@@ -18,7 +18,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { EditFormProps } from "./EditForm";
 import { UnsavedChangesReport } from "./UnsavedChangesReport";
 import {
   buildValidationChecker,
@@ -30,10 +29,11 @@ import {
   buildFormEditState,
 } from "./form-edit-state";
 
-export type EditFormHookProps = Pick<
-  EditFormProps,
-  "dataSource" | "formFieldDescriptors" | "onSubmit"
->;
+export interface EditFormHookProps {
+  dataSource?: DataSource;
+  formFieldDescriptors: DataValueDescriptor[];
+  onSubmit?: () => void;
+}
 
 type ValidationState = {
   ok: boolean;

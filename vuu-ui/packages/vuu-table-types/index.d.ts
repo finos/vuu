@@ -30,6 +30,8 @@ import type {
 } from "react";
 import { CellPos } from "@finos/vuu-table/src/table-dom-utils";
 
+export declare type GroupToggleTarget = "toggle-icon" | "group-column";
+
 export declare type TableSelectionModel =
   | "none"
   | "single"
@@ -235,6 +237,11 @@ export interface ColumnDescriptor extends DataValueDescriptor {
   colHeaderLabelRenderer?: string;
   flex?: number;
   /**
+   * Only used when the column is included in a grouby clause.
+   * The icon will be displayed alongside the group label
+   */
+  getIcon?: (row: DataSourceRow) => string | undefined;
+  /**
    Optional additional level(s) of heading to display above label.
    May span multiple columns, if multiple adjacent columns declare
    same heading at same level.
@@ -385,12 +392,14 @@ export interface BaseRowProps {
 export interface RowProps extends BaseRowProps {
   classNameGenerator?: RowClassNameGenerator;
   columnMap: ColumnMap;
+  groupToggleTarget?: GroupToggleTarget;
   highlighted?: boolean;
-  row: DataSourceRow;
   offset: number;
   onClick?: TableRowClickHandlerInternal;
   onDataEdited?: DataCellEditHandler;
   onToggleGroup?: (row: DataSourceRow, column: RuntimeColumnDescriptor) => void;
+  row: DataSourceRow;
+  showBookends?: boolean;
   zebraStripes?: boolean;
 }
 

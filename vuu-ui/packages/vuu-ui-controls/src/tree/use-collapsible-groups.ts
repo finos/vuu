@@ -2,7 +2,7 @@ import { KeyboardEvent, MouseEvent, useCallback, useRef } from "react";
 import { closestListItem } from "./list-dom-utils";
 import { ArrowLeft, ArrowRight, Enter } from "./key-code";
 import { getNodeById, replaceNode } from "./hierarchical-data-utils";
-import { NormalisedTreeSourceNode } from "./treeTypes";
+import { NormalisedTreeSourceNode } from "@finos/vuu-utils";
 
 const NO_HANDLERS: CollapsibleHookResult["listHandlers"] = {};
 const isToggleElement = (element: HTMLElement) =>
@@ -39,18 +39,18 @@ export const useCollapsibleGroups = ({
     (value) => {
       setVisibleData((stateSource.current = value));
     },
-    [setVisibleData]
+    [setVisibleData],
   );
 
   const expandNode = useCallback(
     (nodeList: NormalisedTreeSourceNode[], { id }: NormalisedTreeSourceNode) =>
       replaceNode(nodeList, id, { expanded: true }),
-    []
+    [],
   );
 
   const collapseNode = useCallback(
     (nodeList, { id }) => replaceNode(nodeList, id, { expanded: false }),
-    []
+    [],
   );
 
   const handleKeyDown = useCallback(
@@ -75,7 +75,7 @@ export const useCollapsibleGroups = ({
         }
       }
     },
-    [collapseNode, expandNode, highlightedIdx, treeNodes, setSource]
+    [collapseNode, expandNode, highlightedIdx, treeNodes, setSource],
   );
 
   /**
@@ -102,7 +102,7 @@ export const useCollapsibleGroups = ({
         }
       }
     },
-    [collapseNode, expandNode, setSource, source]
+    [collapseNode, expandNode, setSource, source],
   );
 
   const listItemHandlers = {

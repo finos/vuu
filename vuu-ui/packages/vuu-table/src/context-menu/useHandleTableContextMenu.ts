@@ -34,12 +34,12 @@ export interface ContextMenuHookProps {
 
 const removeFilterColumn = (
   dataSourceFilter: DataSourceFilter,
-  column: RuntimeColumnDescriptor
+  column: RuntimeColumnDescriptor,
 ) => {
   if (dataSourceFilter.filterStruct && column) {
     const [filterStruct, filter] = removeColumnFromFilter(
       column,
-      dataSourceFilter.filterStruct
+      dataSourceFilter.filterStruct,
     );
     return {
       filter,
@@ -67,8 +67,8 @@ export const useHandleTableContextMenu = ({
         case "sort-dsc": return (dataSource.sort = setSortColumn(dataSource.sort, column, "D")), true;
         case "sort-add-asc": return (dataSource.sort = addSortColumn(dataSource.sort, column, "A")), true;
         case "sort-add-dsc": return (dataSource.sort = addSortColumn(dataSource.sort, column, "D")), true;
-        case "group": return (dataSource.groupBy = addGroupColumn(dataSource.groupBy, column)), true;
-        case "group-add": return (dataSource.groupBy = addGroupColumn(dataSource.groupBy, column)), true;
+        case "group": return (dataSource.groupBy = addGroupColumn(dataSource.groupBy ?? [], column)), true;
+        case "group-add": return (dataSource.groupBy = addGroupColumn(dataSource.groupBy ?? [], column)), true;
         case "column-hide": return onPersistentColumnOperation({type: "hideColumns", columns: [column]}), true;
         case "column-remove": return (dataSource.columns = dataSource.columns.filter(name => name !== column.name)), true
         case "filter-remove-column": return (dataSource.filter = removeFilterColumn(dataSource.filter, column)), true;

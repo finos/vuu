@@ -1,12 +1,12 @@
 import { useRef, useState } from "react";
 import { isGroupNode, isHeader } from "./hierarchical-data-utils";
 import { isExpanded } from "./treeTypeUtils";
-import { NormalisedTreeSourceNode } from "./treeTypes";
+import { NormalisedTreeSourceNode } from "@finos/vuu-utils";
 
 const populateIndices = (
   nodes: NormalisedTreeSourceNode[],
   results: NormalisedTreeSourceNode[] = [],
-  idx = { value: 0 }
+  idx = { value: 0 },
 ) => {
   let skipToNextHeader = false;
   for (const node of nodes) {

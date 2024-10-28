@@ -6,6 +6,7 @@ import {
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import {
   CustomHeader,
+  GroupToggleTarget,
   RowProps,
   TableConfig,
   TableConfigChangeHandler,
@@ -52,7 +53,7 @@ const classBase = "vuuTable";
 
 const { IDX, RENDER_IDX } = metadataKeys;
 
-export type TableNavigationStyle = "none" | "cell" | "row";
+export type TableNavigationStyle = "none" | "cell" | "row" | "tree";
 
 export interface TableProps
   extends Omit<MeasuredContainerProps, "onDragStart" | "onDrop" | "onSelect"> {
@@ -90,6 +91,15 @@ export interface TableProps
    */
   customHeader?: CustomHeader | CustomHeader[];
   /**
+   * When rows are grouped, user can click group row(s) to expand/collapse display of child rows.
+   * This allows precise configuration of where user may click to trigger toggle/collapse. When
+   * row selection is also supported, clicking outside the region specified here will select or
+   * deselect the row.
+   * - toggle-icon - the small toggle icon must be clicked directly
+   * - group-column (default) - user can click anywhere within the group column, i.e on the icon or the column text
+   */
+  groupToggleTarget?: GroupToggleTarget;
+  /**
    * Defined how focus navigation within data cells will be handled by table.
    * Default is cell.
    */
@@ -104,6 +114,8 @@ export interface TableProps
 
   /**
    * Determines bahaviour of keyboard navigation , either row focused or cell focused.
+   * `tree` is a specialised navigation behaviour only useful where table is being
+   * used to present purely grouped data (see TreeTable)
    */
   navigationStyle?: TableNavigationStyle;
   /**
@@ -153,7 +165,7 @@ export interface TableProps
 
   /**
    * Selection Bookends style the left and right edge of a selection block.
-   * They are optional, value defaults to zero.
+   * They are optional, value currently defaults to 4.
    * TODO this should just live in CSS
    */
   selectionBookendWidth?: number;
@@ -205,6 +217,7 @@ const TableCore = ({
   customHeader,
   dataSource,
   disableFocus = false,
+  groupToggleTarget,
   highlightedIndex: highlightedIndexProp,
   id: idProp,
   navigationStyle = "cell",
@@ -220,6 +233,7 @@ const TableCore = ({
   renderBufferSize = 0,
   rowHeight,
   scrollingApiRef,
+  selectionBookendWidth = 0,
   selectionModel = "extended",
   showColumnHeaders = true,
   showColumnHeaderMenus = true,
@@ -287,6 +301,7 @@ const TableCore = ({
     renderBufferSize,
     rowHeight,
     scrollingApiRef,
+    selectionBookendWidth,
     selectionModel,
     showColumnHeaders,
     showPaginationControls,
@@ -363,23 +378,28 @@ const TableCore = ({
           ) : null}
           {readyToRenderTableBody ? (
             <div className={`${classBase}-body`} ref={tableBodyRef}>
-              {data.map((data) => (
-                <Row
-                  aria-rowindex={data[0] + headerCount + 1}
-                  classNameGenerator={rowClassNameGenerator}
-                  columnMap={columnMap}
-                  columns={scrollProps.columnsWithinViewport}
-                  highlighted={highlightedIndex === data[IDX]}
-                  key={data[RENDER_IDX]}
-                  onClick={onRowClick}
-                  onDataEdited={onDataEdited}
-                  row={data}
-                  offset={showPaginationControls ? 0 : getRowOffset(data)}
-                  onToggleGroup={onToggleGroup}
-                  virtualColSpan={scrollProps.virtualColSpan}
-                  zebraStripes={tableAttributes.zebraStripes}
-                />
-              ))}
+              {data.map((data) => {
+                const ariaRowIndex = data[IDX] + headerCount + 1;
+                return (
+                  <Row
+                    aria-rowindex={ariaRowIndex}
+                    classNameGenerator={rowClassNameGenerator}
+                    columnMap={columnMap}
+                    columns={scrollProps.columnsWithinViewport}
+                    groupToggleTarget={groupToggleTarget}
+                    highlighted={highlightedIndex === ariaRowIndex}
+                    key={data[RENDER_IDX]}
+                    onClick={onRowClick}
+                    onDataEdited={onDataEdited}
+                    row={data}
+                    offset={showPaginationControls ? 0 : getRowOffset(data)}
+                    onToggleGroup={onToggleGroup}
+                    showBookends={selectionBookendWidth > 0}
+                    virtualColSpan={scrollProps.virtualColSpan}
+                    zebraStripes={tableAttributes.zebraStripes}
+                  />
+                );
+              })}
               {/* 
                 The focusCellPlaceholder allows us to deal with the situation where a cell 
                 that has focus is scrolled out of the viewport. That cell, along with the 
@@ -430,6 +450,7 @@ export const Table = forwardRef(function Table(
     customHeader,
     dataSource,
     disableFocus,
+    groupToggleTarget,
     height,
     highlightedIndex,
     id,
@@ -447,6 +468,7 @@ export const Table = forwardRef(function Table(
     renderBufferSize,
     rowHeight: rowHeightProp,
     scrollingApiRef,
+    selectionBookendWidth = 4,
     selectionModel,
     showColumnHeaders,
     showColumnHeaderMenus,
@@ -564,6 +586,7 @@ export const Table = forwardRef(function Table(
           customHeader={customHeader}
           dataSource={dataSource}
           disableFocus={disableFocus}
+          groupToggleTarget={groupToggleTarget}
           highlightedIndex={highlightedIndex}
           id={id}
           navigationStyle={navigationStyle}
@@ -581,6 +604,7 @@ export const Table = forwardRef(function Table(
           }
           rowHeight={rowHeight}
           scrollingApiRef={scrollingApiRef}
+          selectionBookendWidth={selectionBookendWidth}
           selectionModel={selectionModel}
           showColumnHeaders={showColumnHeaders}
           showColumnHeaderMenus={showColumnHeaderMenus}

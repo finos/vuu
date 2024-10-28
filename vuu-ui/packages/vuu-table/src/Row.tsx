@@ -5,6 +5,7 @@ import {
   isJsonGroup,
   isNotHidden,
   metadataKeys,
+  queryClosest,
   RowSelected,
 } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
@@ -16,7 +17,7 @@ import { TableCell, TableGroupCell } from "./table-cell";
 import rowCss from "./Row.css";
 import { VirtualColSpan } from "./VirtualColSpan";
 
-const { IDX, IS_EXPANDED, SELECTED } = metadataKeys;
+const { COUNT, DEPTH, IDX, IS_EXPANDED, IS_LEAF, SELECTED } = metadataKeys;
 const classBase = "vuuTableRow";
 
 // A dummy Table Row rendered once and not visible. We measure this to
@@ -50,12 +51,14 @@ export const Row = memo(
     classNameGenerator,
     columnMap,
     columns,
+    groupToggleTarget = "group-column",
     highlighted,
     row,
     offset,
     onClick,
     onDataEdited,
     onToggleGroup,
+    showBookends = true,
     virtualColSpan = 0,
     zebraStripes = false,
     ...htmlAttributes
@@ -68,8 +71,11 @@ export const Row = memo(
     });
 
     const {
+      [COUNT]: childRowCount,
+      [DEPTH]: depth,
       [IDX]: rowIndex,
       [IS_EXPANDED]: isExpanded,
+      [IS_LEAF]: isLeaf,
       [SELECTED]: selectionStatus,
     } = row;
 
@@ -90,7 +96,6 @@ export const Row = memo(
       classNameGenerator?.(row, columnMap),
       {
         [`${classBase}-even`]: zebraStripes && rowIndex % 2 === 0,
-        [`${classBase}-expanded`]: isExpanded,
         [`${classBase}-highlighted`]: highlighted,
         [`${classBase}-selected`]: selectionStatus & True,
         [`${classBase}-selectedStart`]: selectionStatus & First,
@@ -98,33 +103,45 @@ export const Row = memo(
       },
     );
 
+    const canExpand = isLeaf === false && childRowCount > 0;
+    const ariaExpanded = isExpanded ? true : canExpand ? false : undefined;
+    const ariaLevel = isLeaf ? undefined : depth;
+
     // const style = { transform: `translate3d(0px, ${offset}px, 0px)` };
     const style = { top: offset };
 
     const handleGroupCellClick = useCallback(
       (evt: MouseEvent, column: RuntimeColumnDescriptor) => {
         if (isGroupColumn(column) || isJsonGroup(column, row, columnMap)) {
-          evt.stopPropagation();
+          if (groupToggleTarget === "toggle-icon") {
+            if (queryClosest(evt.target, "button") === null) {
+              return;
+            }
+          }
           onToggleGroup?.(row, column);
         }
       },
-      [columnMap, onToggleGroup, row],
+      [columnMap, groupToggleTarget, onToggleGroup, row],
     );
 
     return (
       <div
         {...htmlAttributes}
+        aria-expanded={ariaExpanded}
+        aria-level={ariaLevel}
         role="row"
         className={className}
         onClick={handleRowClick}
         style={style}
       >
-        <span className={`${classBase}-selectionDecorator vuuStickyLeft`} />
+        {showBookends ? (
+          <span className={`${classBase}-selectionDecorator vuuStickyLeft`} />
+        ) : null}
         <VirtualColSpan width={virtualColSpan} />
         {columns.filter(isNotHidden).map((column) => {
           const isGroup = isGroupColumn(column);
           const isJsonCell = isJsonColumn(column);
-          const Cell = isGroup ? TableGroupCell : TableCell;
+          const Cell = isGroup && !isJsonCell ? TableGroupCell : TableCell;
 
           return (
             <Cell
@@ -137,7 +154,9 @@ export const Row = memo(
             />
           );
         })}
-        <span className={`${classBase}-selectionDecorator vuuStickyRight`} />
+        {showBookends ? (
+          <span className={`${classBase}-selectionDecorator vuuStickyRight`} />
+        ) : null}
       </div>
     );
   },

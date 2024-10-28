@@ -1,12 +1,12 @@
 import { Flexbox } from "@finos/vuu-layout";
-import { Tree, TreeSourceNode } from "@finos/vuu-ui-controls";
-import { Density, ThemeMode } from "@finos/vuu-utils";
+import { Tree } from "@finos/vuu-ui-controls";
+import type { Density, ThemeMode, TreeSourceNode } from "@finos/vuu-utils";
 import {
   Button,
   SaltProvider,
   Text,
   ToggleButton,
-  ToggleButtonGroup
+  ToggleButtonGroup,
 } from "@salt-ds/core";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -20,7 +20,7 @@ import "./App.css";
 const sourceFromImports = (
   stories: ExamplesModule,
   prefix = "",
-  icon = "folder"
+  icon = "folder",
 ): TreeSourceNode[] =>
   Object.entries(stories)
     .filter(([path]) => path !== "default")
@@ -33,14 +33,14 @@ const sourceFromImports = (
         return {
           id,
           icon: "rings",
-          label
+          label,
         };
       }
       return {
         id,
         icon,
         label,
-        childNodes: sourceFromImports(stories, `${id}/`, "box")
+        childNodes: sourceFromImports(stories, `${id}/`, "box"),
       };
     });
 export interface AppProps {
@@ -55,19 +55,19 @@ const availableThemes: ThemeDescriptor[] = [
   { id: "no-theme", label: "No Theme" },
   { id: "salt-theme", label: "Salt" },
   { id: "vuu-theme", label: "Vuu" },
-  { id: "tar-theme", label: "Tar" }
+  { id: "tar-theme", label: "Tar" },
 ];
 
 const availableThemeModes: ThemeModeDescriptor[] = [
   { id: "light", label: "Light" },
-  { id: "dark", label: "Dark" }
+  { id: "dark", label: "Dark" },
 ];
 
 const availableDensity: DensityDescriptor[] = [
   { id: "high", label: "High" },
   { id: "medium", label: "Medium" },
   { id: "low", label: "Low" },
-  { id: "touch", label: "Touch" }
+  { id: "touch", label: "Touch" },
 ];
 
 export const App = ({ stories }: AppProps) => {
@@ -91,14 +91,14 @@ export const App = ({ stories }: AppProps) => {
   const theme = useMemo(() => availableThemes[themeIndex], [themeIndex]);
   const themeMode = useMemo(
     () => availableThemeModes[themeModeIndex],
-    [themeModeIndex]
+    [themeModeIndex],
   );
   const density = useMemo(() => availableDensity[densityIndex], [densityIndex]);
 
   const launchStandaloneWindow = useCallback(() => {
     window.open(
       `${location.href}?standalone&theme=${theme.id}#themeMode=${themeMode.id},density=${density.id}`,
-      "_blank"
+      "_blank",
     );
   }, [density.id, theme.id, themeMode.id]);
 
@@ -146,7 +146,7 @@ export const App = ({ stories }: AppProps) => {
             <div
               className="vuuToolbarProxy ShowcaseContentToolbar"
               style={{
-                height: 30
+                height: 30,
               }}
               data-mode="light"
             >
@@ -191,7 +191,7 @@ export const App = ({ stories }: AppProps) => {
               className={`ShowcaseContent`}
               style={{
                 flex: "1 1 auto",
-                position: "relative"
+                position: "relative",
               }}
             >
               <IFrame

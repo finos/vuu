@@ -34,7 +34,8 @@ const DataTableTemplate = ({
     return {
       ...configProp,
       columns: schema.columns,
-      rowSeparators: false,
+      columnSeparators: true,
+      rowSeparators: true,
       zebraStripes: true,
     };
   }, [configProp, schema]);

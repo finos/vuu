@@ -228,7 +228,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
   }
 
   get visualLink() {
-    return this.config.visualLink;
+    return this._config.visualLink;
   }
 
   set visualLink(visualLink: LinkDescriptorWithLabel | undefined) {

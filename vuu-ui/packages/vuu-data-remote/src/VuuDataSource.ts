@@ -1,7 +1,6 @@
 import {
   DataSource,
   DataSourceCallbackMessage,
-  DataSourceConfig,
   DataSourceConstructorProps,
   DataSourceStatus,
   DataSourceVisualLinkCreatedMessage,
@@ -11,6 +10,8 @@ import {
   SubscribeCallback,
   SubscribeProps,
   TableSchema,
+  WithBaseFilter,
+  WithFullConfig,
 } from "@finos/vuu-data-types";
 import {
   LinkDescriptorWithLabel,
@@ -57,15 +58,13 @@ const { info } = logger("VuuDataSource");
 export class VuuDataSource extends BaseDataSource implements DataSource {
   private bufferSize: number;
   private server: ServerAPI | null = null;
-  private configChangePending: DataSourceConfig | undefined;
+  private configChangePending: WithBaseFilter<WithFullConfig> | undefined;
   rangeRequest: RangeRequest;
 
-  #groupBy: VuuGroupBy = [];
   #pendingVisualLink?: LinkDescriptorWithLabel;
   #links: LinkDescriptorWithLabel[] | undefined;
   #menu: VuuMenu | undefined;
   #optimize: OptimizeStrategy = "throttle";
-  #range: VuuRange = { from: 0, to: 0 };
   #selectedRowsCount = 0;
   #status: DataSourceStatus = "initialising";
   #tableSchema: TableSchema | undefined;
@@ -282,22 +281,28 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     }
   }
 
-  openTreeNode(key: string) {
+  openTreeNode(keyOrIndex: string | number) {
     if (this.viewport) {
+      const [key, index] =
+        typeof keyOrIndex === "string" ? [keyOrIndex] : [undefined, keyOrIndex];
       this.server?.send({
-        viewport: this.viewport,
-        type: "openTreeNode",
+        index,
         key,
+        type: "openTreeNode",
+        viewport: this.viewport,
       });
     }
   }
 
-  closeTreeNode(key: string) {
+  closeTreeNode(keyOrIndex: string | number) {
     if (this.viewport) {
+      const [key, index] =
+        typeof keyOrIndex === "string" ? [keyOrIndex] : [undefined, keyOrIndex];
       this.server?.send({
-        viewport: this.viewport,
-        type: "closeTreeNode",
+        index,
         key,
+        type: "closeTreeNode",
+        viewport: this.viewport,
       });
     }
   }
@@ -387,7 +392,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     return super.config;
   }
 
-  set config(config: DataSourceConfig) {
+  set config(config: WithBaseFilter<WithFullConfig>) {
     const previousConfig = this._config;
     super.config = config;
 
@@ -422,16 +427,16 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
           rows: [],
         });
       }
-      this.setConfigPending({ groupBy });
+      this.setConfigPending(this.config);
     }
   }
 
   get title() {
-    return this._title ?? `${this.table.module} ${this.table.table}`;
+    return super.title || `${this.table.module} ${this.table.table}`;
   }
 
   set title(title: string) {
-    this._title = title;
+    super.title = title;
     if (this.viewport && title) {
       // This message doesn't actually trigger a message to Vuu server
       // it will be used to recompute visual link labels
@@ -441,7 +446,6 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
         viewport: this.viewport,
       });
     }
-    this.emit("title-changed", this.viewport ?? "'", title);
   }
 
   get visualLink() {
@@ -489,13 +493,13 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     this.emit("config", this._config);
   }
 
-  private setConfigPending(config?: DataSourceConfig) {
+  private setConfigPending(config?: WithBaseFilter<WithFullConfig>) {
     const pendingConfig = this.configChangePending;
     this.configChangePending = config;
 
     if (config !== undefined) {
       this.emit("config", config, false);
-    } else {
+    } else if (pendingConfig) {
       this.emit("config", pendingConfig, true);
     }
   }

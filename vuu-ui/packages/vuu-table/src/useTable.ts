@@ -51,11 +51,14 @@ import {
   useHandleTableContextMenu,
 } from "./context-menu";
 import { updateTableConfig } from "./table-config";
-import { getIndexFromRowElement } from "./table-dom-utils";
+import { getAriaRowIndex } from "./table-dom-utils";
 import { useCellEditing } from "./useCellEditing";
 import { FocusCell, useCellFocus } from "./useCellFocus";
 import { useDataSource } from "./useDataSource";
-import { useKeyboardNavigation } from "./useKeyboardNavigation";
+import {
+  GroupToggleHandler,
+  useKeyboardNavigation,
+} from "./useKeyboardNavigation";
 import { useRowClassNameGenerators } from "./useRowClassNameGenerators";
 import { useSelection } from "./useSelection";
 import { useTableAndColumnSettings } from "./useTableAndColumnSettings";
@@ -122,6 +125,7 @@ export interface TableHookProps
       | "onRowClick"
       | "renderBufferSize"
       | "scrollingApiRef"
+      | "selectionBookendWidth"
       | "showColumnHeaders"
       | "showPaginationControls"
     > {
@@ -170,6 +174,7 @@ export const useTable = ({
   renderBufferSize = 0,
   rowHeight = 20,
   scrollingApiRef,
+  selectionBookendWidth,
   selectionModel,
   showColumnHeaders,
   showPaginationControls,
@@ -223,21 +228,18 @@ export const useTable = ({
     tableConfig,
   } = useTableModel(config, dataSource, selectionModel, availableWidth);
 
+  // this is realy here to capture changes to available Width - typically when we get
+  // rowcount so add allowance for vertical scrollbar, reducing available width
+  // including dataSOurce is causing us to do unnecessary work in useTableModel
+  // split this iniot multip effects
   useLayoutEffectSkipFirst(() => {
     dispatchTableModelAction({
       availableWidth,
       type: "init",
-      // tableConfig: config,
       tableConfig: tableConfigRef.current,
       dataSource,
     });
-  }, [
-    availableWidth,
-    config,
-    dataSource,
-    dispatchTableModelAction,
-    verticalScrollbarWidth,
-  ]);
+  }, [availableWidth, config, dataSource, dispatchTableModelAction]);
 
   const applyTableConfigChange = useCallback(
     (config: TableConfig) => {
@@ -283,6 +285,7 @@ export const useTable = ({
     headerHeight: headerState.height,
     rowCount,
     rowHeight,
+    selectionEndSize: selectionBookendWidth,
     size: size,
     showPaginationControls,
   });
@@ -344,6 +347,7 @@ export const useTable = ({
           direction: "home",
         });
       }
+      console.log(`useTable dispatch tableConfig`);
       dispatchTableModelAction({
         type: "tableConfig",
         ...config,
@@ -515,6 +519,7 @@ export const useTable = ({
       if (row[IS_EXPANDED]) {
         dataSource.closeTreeNode(key, true);
         if (isJson) {
+          // TODO could this be instigated by an event emitted by the JsonDataSOurce ? "hide-columns" ?
           const idx = columns.indexOf(column);
           const rows = dataSource.getRowsAtDepth?.(idx + 1);
           if (rows && !rows.some((row) => row[IS_EXPANDED] || row[IS_LEAF])) {
@@ -545,6 +550,18 @@ export const useTable = ({
     [columnMap, columns, dataSource, dispatchTableModelAction],
   );
 
+  // TODO combine with aboue
+  const handleToggleGroup = useCallback<GroupToggleHandler>(
+    (treeNodeOperation, rowIdx) => {
+      if (treeNodeOperation === "expand") {
+        dataSource.openTreeNode(rowIdx);
+      } else {
+        dataSource.closeTreeNode(rowIdx);
+      }
+    },
+    [dataSource],
+  );
+
   const {
     focusCell,
     focusCellPlaceholderKeyDown,
@@ -563,7 +580,7 @@ export const useTable = ({
 
   const {
     highlightedIndexRef,
-    navigate,
+    navigateCell: navigate,
     onFocus: navigationFocus,
     onKeyDown: navigationKeyDown,
     ...containerProps
@@ -579,6 +596,7 @@ export const useTable = ({
     requestScroll,
     rowCount,
     onHighlight,
+    onToggleGroup: handleToggleGroup,
     viewportRange: range,
     viewportRowCount: viewportMeasurements.rowCount,
   });
@@ -607,6 +625,7 @@ export const useTable = ({
     data,
     dataSource,
     getSelectedRows,
+    headerCount: headerState.count,
   });
 
   const onMoveGroupColumn = useCallback(
@@ -621,7 +640,7 @@ export const useTable = ({
       if (isGroupColumn(column)) {
         dataSource.groupBy = [];
       } else {
-        if (dataSource && dataSource.groupBy.includes(column.name)) {
+        if (dataSource && dataSource.groupBy?.includes(column.name)) {
           dataSource.groupBy = dataSource.groupBy.filter(
             (columnName) => columnName !== column.name,
           );
@@ -674,7 +693,6 @@ export const useTable = ({
     allowCellBlockSelection,
     columnCount,
     containerRef,
-    focusCell,
     onSelectCellBlock: handleSelectCellBlock,
     rowCount,
   });
@@ -751,7 +769,8 @@ export const useTable = ({
   const handleDragStartRow = useCallback<DragStartHandler>(
     (dragDropState) => {
       const { initialDragElement } = dragDropState;
-      const rowIndex = getIndexFromRowElement(initialDragElement);
+      const rowIndex =
+        getAriaRowIndex(initialDragElement) - headerState.count - 1;
       const row = dataRef.current.find((row) => row[0] === rowIndex);
       if (row) {
         dragDropState.setPayload(row);
@@ -760,7 +779,7 @@ export const useTable = ({
       }
       onDragStart?.(dragDropState);
     },
-    [dataRef, onDragStart],
+    [dataRef, headerState.count, onDragStart],
   );
 
   const onHeaderHeightMeasured = useCallback(

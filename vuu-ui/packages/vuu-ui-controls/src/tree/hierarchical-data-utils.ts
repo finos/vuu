@@ -1,4 +1,4 @@
-import { NonLeafNode, NormalisedTreeSourceNode } from "./treeTypes";
+import { NonLeafNode, NormalisedTreeSourceNode } from "@finos/vuu-utils";
 
 export const getNodeParentPath = ({ id }: NormalisedTreeSourceNode) => {
   let pos = id.lastIndexOf("-");
@@ -30,7 +30,7 @@ const PATH_SEPARATORS = new Set([".", "/"]);
 
 const isDescendantOf = (
   node: NormalisedTreeSourceNode,
-  targetPath: string
+  targetPath: string,
 ): node is NonLeafNode => {
   if (!targetPath.startsWith(node.id)) {
     return false;
@@ -41,7 +41,7 @@ const isDescendantOf = (
 
 export const getNodeById = (
   nodes: NormalisedTreeSourceNode[],
-  id: string
+  id: string,
 ): NormalisedTreeSourceNode | undefined => {
   for (const node of nodes) {
     if (node.id === id) {
@@ -54,7 +54,7 @@ export const getNodeById = (
 
 export const getIndexOfNode = (
   treeNodes: NormalisedTreeSourceNode[],
-  node: NormalisedTreeSourceNode
+  node: NormalisedTreeSourceNode,
 ) => {
   const id = typeof node === "string" ? node : node.id;
   for (let i = 0; i < treeNodes.length; i++) {
@@ -67,7 +67,7 @@ export const getIndexOfNode = (
 export const replaceNode = (
   nodes: NormalisedTreeSourceNode[],
   id: string,
-  props: Partial<NormalisedTreeSourceNode>
+  props: Partial<NormalisedTreeSourceNode>,
 ): NormalisedTreeSourceNode[] => {
   let childNodes;
   const newNodes = nodes.map((node) => {

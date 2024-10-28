@@ -331,7 +331,9 @@ export function extractGroupColumn(
   if (groupBy && groupBy.length > 0) {
     const flattenedColumns = flattenColumnGroup(columns);
     // Note: groupedColumns will be in column order, not groupBy order
-    const [groupedColumns, rest] = flattenedColumns.reduce(
+    const [groupedColumns, rest] = flattenedColumns.reduce<
+      [RuntimeColumnDescriptor[], RuntimeColumnDescriptor[]]
+    >(
       (result, column, i) => {
         const [g, r] = result;
         if (groupBy.includes(column.name)) {
@@ -345,7 +347,7 @@ export function extractGroupColumn(
 
         return result;
       },
-      [[], []] as [RuntimeColumnDescriptor[], RuntimeColumnDescriptor[]],
+      [[], []],
     );
     if (groupedColumns.length !== groupBy.length) {
       throw Error(
@@ -367,15 +369,16 @@ export function extractGroupColumn(
     });
 
     const groupCol = {
-      name: "group-col",
-      heading: ["group-col"],
-      isGroup: true,
       columns: groupCols,
+      heading: ["group-col"],
+      index: 1,
+      isGroup: true,
       groupConfirmed: confirmed,
+      name: "group-col",
       width: groupCols.map((c) => c.width).reduce((a, b) => a + b) + 100,
     } as GroupColumnDescriptor;
 
-    return [groupCol, rest];
+    return [groupCol, rest.map((col, i) => ({ ...col, index: i + 2 }))];
   }
   return [null, flattenColumnGroup(columns)];
 }
@@ -385,7 +388,7 @@ export const isGroupColumn = (
 ): column is GroupColumnDescriptor => column.isGroup === true;
 
 export const isJsonAttribute = (value: unknown) =>
-  typeof value === "string" && value.endsWith("+");
+  typeof value === "string" && (value.endsWith("{") || value.endsWith("["));
 
 export const isJsonGroup = (
   column: RuntimeColumnDescriptor,
@@ -739,24 +742,41 @@ export const visibleColumnAtIndex = (
 };
 
 const { DEPTH, IS_LEAF } = metadataKeys;
-// Get the value for a specific columns within a grouped column
-export const getGroupValueAndOffset = (
+
+export const getGroupIcon = (
   columns: RuntimeColumnDescriptor[],
   row: DataSourceRow,
-  columnMap: ColumnMap,
-): [unknown, number] => {
+): string | undefined => {
   const { [DEPTH]: depth, [IS_LEAF]: isLeaf } = row;
   // Depth can be greater tha group columns when we have just removed a column from groupby
   // but new data has not yet been received.
   if (isLeaf || depth > columns.length) {
-    return [null, depth === null ? 0 : Math.max(0, depth - 1)];
+    return undefined;
   } else if (depth === 0) {
-    return ["$root", 0];
+    return undefined;
+  } else {
+    const { getIcon } = columns[depth - 1];
+    return getIcon?.(row);
+  }
+};
+
+export const getGroupValue = (
+  columns: RuntimeColumnDescriptor[],
+  row: DataSourceRow,
+  columnMap: ColumnMap,
+): unknown => {
+  const { [DEPTH]: depth, [IS_LEAF]: isLeaf } = row;
+  // Depth can be greater tha group columns when we have just removed a column from groupby
+  // but new data has not yet been received.
+  if (isLeaf || depth > columns.length) {
+    return null;
+  } else if (depth === 0) {
+    return "$root";
   } else {
     // offset 1 for now to allow for $root
     const { name, valueFormatter } = columns[depth - 1];
     const value = valueFormatter(row[columnMap[name]]);
-    return [value, depth - 1];
+    return value;
   }
 };
 

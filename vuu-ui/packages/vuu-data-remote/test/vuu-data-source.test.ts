@@ -9,7 +9,7 @@ import {
   WithBaseFilter,
 } from "@finos/vuu-data-types";
 import { LinkDescriptorWithLabel, VuuSortCol } from "@finos/vuu-protocol-types";
-import { VuuDataSource } from "../src/vuu-data-source";
+import { VuuDataSource } from "../src/VuuDataSource";
 import ConnectionManager from "../src/ConnectionManager";
 
 vi.mock("../src/ConnectionManager", () => ({

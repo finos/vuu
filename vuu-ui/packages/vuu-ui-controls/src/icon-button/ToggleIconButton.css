@@ -1,0 +1,37 @@
+.vuuToggleIconButton {
+  &.saltButton {
+    &:active {
+      --saltButton-background-active: transparent;
+    }
+    &:hover {
+      --saltButton-background-hover: transparent;
+    }
+    .vuuIcon {
+      --vuu-icon-height: 18px;
+      --vuu-icon-left: -3px;
+      --vuu-icon-width: 18px;
+      &:after {
+        transition: transform 0.1s linear;
+      }
+      &[data-icon="triangle-down"]:after {
+        --vuu-icon-left: -1px;
+        --vuu-icon-top: -3px;
+      }
+    }
+    border: none;
+    border-radius: 0;
+    height: 18px;
+    left: 0;
+    min-width: 16px;
+    padding: 0;
+    width: 18px;
+  }
+}
+
+.vuuTableGroupCell:hover {
+  .vuuToggleIconButton {
+    .vuuIcon:after {
+      --vuu-icon-color: var(--salt-palette-interact-cta-background-hover);
+    }
+  }
+}

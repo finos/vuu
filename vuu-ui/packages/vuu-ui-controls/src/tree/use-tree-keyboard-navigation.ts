@@ -5,7 +5,7 @@ import {
   getNodeParentPath,
   getIndexOfNode,
 } from "./hierarchical-data-utils";
-import { NormalisedTreeSourceNode } from "./treeTypes";
+import { NormalisedTreeSourceNode } from "@finos/vuu-utils";
 
 export interface TreeKeyboardNavigationHookProps {
   highlightedIdx: number;
@@ -38,7 +38,7 @@ export const useTreeKeyboardNavigation = ({
         }
       }
     },
-    [highlightedIdx, hiliteItemAtIndex, indexPositions, source]
+    [highlightedIdx, hiliteItemAtIndex, indexPositions, source],
   );
 
   const listHandlers = {

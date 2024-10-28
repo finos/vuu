@@ -79,9 +79,6 @@
   }
 }
 .vuuTable.vuu-cellblock-select-in-progress-mouse {
-  .vuuTableCell:hover {
-    anchor-name: --cellblock-end;
-  }
   .vuuCellBlock {
     pointer-events: none;
   }

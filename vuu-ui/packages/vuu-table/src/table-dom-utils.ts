@@ -3,24 +3,41 @@ import { ScrollDirection } from "./useTableScroll";
 import type { ArrowKey, PageKey } from "@finos/vuu-utils";
 import type { CellPos } from "@finos/vuu-table-types";
 
-const NULL_CELL_POS: CellPos = [-1, -1];
-
 export type NavigationKey = PageKey | ArrowKey;
 
 export const headerCellQuery = (colIdx: number) =>
   `.vuuTable-col-headers .vuuTableHeaderCell[aria-colindex='${colIdx}']`;
 
-export const dataCellQuery = (rowIdx: number, colIdx: number) =>
-  `.vuuTable-table [aria-rowindex='${rowIdx}'] > [aria-colindex='${colIdx}']`;
+export const dataCellQuery = (ariaRowIdx: number, ariaColIdx: number) =>
+  `.vuuTable-table [aria-rowindex='${ariaRowIdx}'] > [aria-colindex='${ariaColIdx}']`;
 
+export const getLevelUp = (
+  containerRef: RefObject<HTMLElement>,
+  cellPos: CellPos,
+): CellPos => {
+  const cell = getTableCell(containerRef, cellPos);
+  let row = cell?.parentElement;
+  const level = parseInt(row?.ariaLevel ?? "1");
+  if (level > 1) {
+    const targetLevel = `${level - 1}`;
+    while (row !== null && row.ariaLevel !== targetLevel) {
+      row = row.previousElementSibling as HTMLElement;
+    }
+    if (row) {
+      const nextRowIndex = parseInt(row.ariaRowIndex ?? "- 1");
+      if (nextRowIndex !== -1) {
+        return [nextRowIndex - 1, 0];
+      }
+    }
+  }
+  return cellPos;
+};
 export const getTableCell = (
   containerRef: RefObject<HTMLElement>,
   [rowIdx, colIdx]: CellPos,
 ) => {
   const cssQuery = dataCellQuery(rowIdx, colIdx);
-  const cell = containerRef.current?.querySelector(
-    cssQuery,
-  ) as HTMLTableCellElement;
+  const cell = containerRef.current?.querySelector(cssQuery) as HTMLDivElement;
 
   if (cellIsEditable(cell)) {
     // Dropdown gets focus, Input does not
@@ -28,6 +45,16 @@ export const getTableCell = (
     return focusableContent || cell;
   } else {
     return cell;
+  }
+};
+
+export const getFocusedCell = (el: HTMLElement | Element | null) => {
+  if (el?.role == "cell" || el?.role === "columnheader") {
+    return el as HTMLDivElement;
+  } else {
+    return el?.closest(
+      "[role='columnHeader'],[role='cell']",
+    ) as HTMLDivElement | null;
   }
 };
 
@@ -39,6 +66,20 @@ export const cellDropdownShowing = (cell: HTMLDivElement | null) => {
     return cell?.querySelector('.saltDropdown[aria-expanded="true"]') !== null;
   }
   return false;
+};
+
+const cellIsGroupCell = (cell: HTMLElement | null) =>
+  cell?.classList.contains("vuuTableGroupCell");
+
+const rowIsExpanded = (cell: HTMLElement) => {
+  switch (cell.parentElement?.ariaExpanded) {
+    case "true":
+      return true;
+    case "false":
+      return false;
+    default:
+      return undefined;
+  }
 };
 
 export const cellIsTextInput = (cell: HTMLElement) =>
@@ -55,8 +96,8 @@ export const getAriaRowIndex = (rowElement: HTMLElement | null) => {
   return -1;
 };
 
-export const getAriaColIndex = (rowElement: HTMLElement | null) => {
-  const colIndex = rowElement?.ariaColIndex;
+export const getAriaColIndex = (cellElement: HTMLElement | null) => {
+  const colIndex = cellElement?.ariaColIndex;
   if (colIndex != null) {
     const index = parseInt(colIndex);
     if (!isNaN(index)) {
@@ -87,26 +128,8 @@ export const getRowElementByAriaIndex = (
   }
 };
 
-export const getIndexFromRowElement = (rowElement: HTMLElement | null) => {
-  const ariaRowIndex = getAriaRowIndex(rowElement);
-  return ariaRowIndex === -1 ? -1 : ariaRowIndex - 1;
-};
-
 export const getIndexFromCellElement = (cellElement: HTMLElement | null) =>
   getAriaColIndex(cellElement);
-
-export const getTableCellPos = (tableCell: HTMLDivElement): CellPos => {
-  const colIdx = getIndexFromCellElement(tableCell);
-  if (tableCell.role === "columnHeader") {
-    return [-1, colIdx];
-  } else {
-    const focusedRow = tableCell.closest("[role='row']") as HTMLElement;
-    if (focusedRow) {
-      return [getIndexFromRowElement(focusedRow), colIdx];
-    }
-  }
-  return NULL_CELL_POS;
-};
 
 export const getAriaCellPos = (tableCell: HTMLDivElement): CellPos => {
   const focusedRow = tableCell.closest("[role='row']") as HTMLElement;
@@ -117,7 +140,7 @@ const closestRow = (el: HTMLElement) =>
   el.closest('[role="row"]') as HTMLElement;
 
 export const closestRowIndex = (el: HTMLElement) =>
-  getIndexFromRowElement(closestRow(el));
+  getAriaRowIndex(closestRow(el));
 
 export function getNextCellPos(
   key: ArrowKey,
@@ -154,6 +177,40 @@ export function getNextCellPos(
   }
   return [rowIdx, colIdx];
 }
+
+export type TreeNodeOperation = "expand" | "collapse" | "level-up";
+
+export const getTreeNodeOperation = (
+  containerRef: RefObject<HTMLElement>,
+  navigationStyle: "cell" | "tree",
+  cellPos: CellPos,
+  key: NavigationKey,
+  shiftKey: boolean,
+): TreeNodeOperation | undefined => {
+  const cell = getTableCell(containerRef, cellPos);
+  if (navigationStyle === "cell" && !cellIsGroupCell(cell)) {
+    return undefined;
+  }
+  if (navigationStyle == "cell" && !shiftKey) {
+    return undefined;
+  }
+  if (cellIsGroupCell(cell)) {
+    const isExpanded = rowIsExpanded(cell);
+    if (isExpanded === true) {
+      if (key === "ArrowLeft") {
+        return "collapse";
+      }
+    } else if (isExpanded === false) {
+      if (key === "ArrowRight") {
+        return "expand";
+      } else if (key === "ArrowLeft") {
+        return "level-up";
+      }
+    } else if (key === "ArrowLeft") {
+      return "level-up";
+    }
+  }
+};
 
 const NO_SCROLL_NECESSARY = [undefined, undefined] as const;
 

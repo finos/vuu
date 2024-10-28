@@ -1,6 +1,7 @@
 import {
   HTMLAttributes,
   KeyboardEventHandler,
+  MouseEventHandler,
   forwardRef,
   useCallback,
 } from "react";
@@ -36,11 +37,16 @@ export const CellBlock = forwardRef<HTMLDivElement, CellBlockProps>(
       [onCopy],
     );
 
+    const onContextMenu = useCallback<MouseEventHandler>(() => {
+      console.log("on cvontext menu");
+    }, []);
+
     return (
       <div
         {...htmlAttributes}
         className={cx(classBase, className)}
         ref={forwardedRef}
+        onContextMenu={onContextMenu}
         onKeyDown={handleKeyDown}
         tabIndex={0}
       />

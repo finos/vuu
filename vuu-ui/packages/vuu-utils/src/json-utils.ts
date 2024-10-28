@@ -19,7 +19,7 @@ type Index = { value: number };
 type CellValue = {
   attribute: string;
   attributeValue: JsonData | VuuRowDataItemType | null;
-  type: "json" | "number" | "string" | "boolean";
+  isLeaf: boolean;
 };
 
 const isJsonData = (value: unknown): value is JsonData =>
@@ -28,30 +28,34 @@ const isJsonData = (value: unknown): value is JsonData =>
 const vuuRowDataItemTypes = ["boolean", "number", "string"];
 const isVuuRowDataItem = (value: unknown): value is VuuRowDataItemType =>
   vuuRowDataItemTypes.includes(typeof value);
-const typeofVuuDataItem = (value: VuuRowDataItemType) =>
-  typeof value === "boolean"
-    ? "boolean"
-    : typeof value === "number"
-      ? "number"
-      : "string";
 
 const getCellValue = (
   attribute: string,
   attributeValue: unknown,
 ): CellValue => {
-  if (isJsonData(attributeValue)) {
-    return { attribute: `${attribute}+`, attributeValue: "", type: "json" };
+  if (Array.isArray(attributeValue)) {
+    return {
+      attribute: `${attribute}[`,
+      attributeValue: "",
+      isLeaf: false,
+    };
+  } else if (isJsonData(attributeValue)) {
+    return {
+      attribute: `${attribute}{`,
+      attributeValue: "",
+      isLeaf: false,
+    };
   } else if (attributeValue === undefined) {
     return {
       attribute,
       attributeValue: "undefined",
-      type: "string",
+      isLeaf: true,
     };
   } else if (isVuuRowDataItem(attributeValue)) {
     return {
       attribute,
       attributeValue,
-      type: typeofVuuDataItem(attributeValue),
+      isLeaf: true,
     };
   } else {
     throw Error(`unsupported type ${typeof attributeValue} in JSON`);
@@ -72,11 +76,13 @@ export const jsonToDataSourceRows = (
 
   cols.push(
     {
-      name: "col 1",
+      className: "vuuJsonCell",
+      name: "Level 1",
       type: jsonColumnType,
     },
     {
-      name: "col 2",
+      className: "vuuJsonCell",
+      name: "Level 2",
       type: jsonColumnType,
     },
   );
@@ -99,7 +105,8 @@ const addChildValues = (
   let rowCount = 0;
   if (depth === cols.length - 1) {
     cols.push({
-      name: `col ${cols.length + 1}`,
+      className: "vuuJsonCell",
+      name: `Level ${cols.length + 1}`,
       hidden: true,
       type: jsonColumnType,
     });
@@ -107,8 +114,7 @@ const addChildValues = (
   const columnEntries = Object.entries(json);
   for (let i = 0; i < columnEntries.length; i++, index.value += 1) {
     const [key, value] = columnEntries[i];
-    const { attribute, attributeValue, type } = getCellValue(key, value);
-    const isLeaf = type !== "json";
+    const { attribute, attributeValue, isLeaf } = getCellValue(key, value);
     const blanks = Array(depth).fill("");
     const fullKey = `${keyBase}|${key}`;
     // prettier-ignore

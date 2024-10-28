@@ -42,7 +42,7 @@ export class ArrayBackedMovingWindow {
   constructor(
     { from: clientFrom, to: clientTo }: VuuRange,
     { from, to }: VuuRange,
-    bufferSize: number
+    bufferSize: number,
   ) {
     this.bufferSize = bufferSize;
     this.clientRange = new WindowRange(clientFrom, clientTo);
@@ -115,7 +115,7 @@ export class ArrayBackedMovingWindow {
     return isWithinClientRange;
   }
 
-  getAtIndex(index: number): any {
+  getAtIndex(index: number): VuuRow | undefined {
     return this.#range.isWithin(index) &&
       this.internalData[index - this.#range.from] != null
       ? this.internalData[index - this.#range.from]
@@ -173,14 +173,14 @@ export class ArrayBackedMovingWindow {
     if (from !== this.#range.from || to !== this.#range.to) {
       log.debug?.(`setRange ${from} - ${to}`);
       const [overlapFrom, overlapTo] = this.#range.overlap(from, to);
-      const newData = new Array(to - from);
+      const newData: VuuRow[] = new Array(to - from);
       this.rowsWithinRange = 0;
 
       for (let i = overlapFrom; i < overlapTo; i++) {
-        const data = this.getAtIndex(i);
-        if (data) {
+        const row = this.getAtIndex(i);
+        if (row) {
           const index = i - from;
-          newData[index] = data;
+          newData[index] = row;
           if (this.isWithinClientRange(i)) {
             this.rowsWithinRange += 1;
           }
@@ -214,7 +214,7 @@ export class ArrayBackedMovingWindow {
     }
   };
 
-  getData(): any[] {
+  getData(): VuuRow[] {
     const { from, to } = this.#range;
     const { from: clientFrom, to: clientTo } = this.clientRange;
     const startOffset = Math.max(0, clientFrom - from);
@@ -223,7 +223,7 @@ export class ArrayBackedMovingWindow {
       to - from,
       to,
       clientTo - from,
-      this.rowCount ?? to
+      this.rowCount ?? to,
     );
     return this.internalData.slice(startOffset, endOffset);
   }

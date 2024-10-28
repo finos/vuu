@@ -10,11 +10,10 @@ import {
   useState,
 } from "react";
 import {
+  getAriaCellPos,
   getNextCellPos,
   getTableCell,
-  getTableCellPos,
 } from "../table-dom-utils";
-import { FocusCell } from "../useCellFocus";
 import { CellBlock } from "./CellBlock";
 import {
   PosTuple,
@@ -59,7 +58,6 @@ export interface CellblockSelectionHookProps {
   allowCellBlockSelection?: boolean;
   columnCount?: number;
   containerRef: RefObject<HTMLElement>;
-  focusCell: FocusCell;
   onSelectCellBlock?: (cellBlock: TableCellBlock) => void;
   rowCount?: number;
 }
@@ -68,7 +66,6 @@ export const useCellBlockSelection = ({
   allowCellBlockSelection,
   columnCount = 0,
   containerRef,
-  focusCell,
   onSelectCellBlock,
   rowCount = 0,
 }: CellblockSelectionHookProps) => {
@@ -216,22 +213,49 @@ export const useCellBlockSelection = ({
     removeMouseListener("mouseUpPreDrag");
   }, [removeMouseListener]);
 
+  const handleNativeMouseOver = useCallback((evt: MouseEvent) => {
+    const cell = queryClosest<HTMLDivElement>(evt.target, ".vuuTableCell");
+    if (cell) {
+      stateRef.current.endPos = getAriaCellPos(cell);
+      stateRef.current.endCell?.classList.remove("vuu-cellblock-end");
+      stateRef.current.endCell = cell;
+      setElementBox(cell, stateRef.current.endBox);
+      updateCellBlockClassName(stateRef.current);
+
+      cell?.classList.add("vuu-cellblock-end");
+    }
+  }, []);
+
+  const handleNativeMouseUp = useCallback(() => {
+    window.removeEventListener("mouseover", handleNativeMouseOver);
+  }, [handleNativeMouseOver]);
+
   const handleMouseDown = useCallback<MouseEventHandler>(
     (evt) => {
-      initializeStateRef();
-      const { current: state } = stateRef;
-      const cell = queryClosest<HTMLDivElement>(evt.target, ".vuuTableCell");
-      if (cell) {
-        state.startCell = cell;
-        state.mouseStartX = evt.clientX;
-        state.mouseStartY = evt.clientY;
+      if (evt.button === 0) {
+        initializeStateRef();
+        const { current: state } = stateRef;
+        const cell = queryClosest<HTMLDivElement>(evt.target, ".vuuTableCell");
+        if (cell) {
+          state.startCell = cell;
+          state.mouseStartX = evt.clientX;
+          state.mouseStartY = evt.clientY;
 
-        const { mouseMovePreDrag, mouseUpPreDrag } = handlersRef.current;
-        addMouseListener("mouseMovePreDrag", mouseMovePreDrag);
-        addMouseListener("mouseUpPreDrag", mouseUpPreDrag);
+          const { mouseMovePreDrag, mouseUpPreDrag } = handlersRef.current;
+          addMouseListener("mouseMovePreDrag", mouseMovePreDrag);
+          addMouseListener("mouseUpPreDrag", mouseUpPreDrag);
+          console.log("register mouse enter");
+          window.addEventListener("mouseover", handleNativeMouseOver);
+          window.addEventListener("mouseup", handleNativeMouseUp);
+        }
       }
     },
-    [addMouseListener, initializeStateRef],
+    [
+      addMouseListener,
+      handleNativeMouseOver,
+      handleNativeMouseUp,
+      initializeStateRef,
+    ],
   );
 
   const nativeKeyDownHandlerRef = useRef<NativeKeyboardHandler>(NullHandler);
@@ -253,6 +277,7 @@ export const useCellBlockSelection = ({
       });
     }
   }, []);
+
   const handleNativeKeyDown = (nativeKeyDownHandlerRef.current = useCallback(
     ({ key }: KeyboardEvent) => {
       if (isArrowKey(key)) {
@@ -262,14 +287,13 @@ export const useCellBlockSelection = ({
         }
         const nextCell = getNextCellPos(key, endPos, columnCount, rowCount);
         stateRef.current.endPos = nextCell;
-        focusCell(nextCell);
         const cell = getTableCell(containerRef, nextCell);
         stateRef.current.endCell = cell as HTMLDivElement;
         setElementBox(cell, endBox);
         updateCellBlockClassName(stateRef.current);
       }
     },
-    [columnCount, containerRef, createCellBlock, focusCell, rowCount],
+    [columnCount, containerRef, createCellBlock, rowCount],
   ));
   const handleKeyDown = useCallback<KeyboardEventHandler>(
     (evt) => {
@@ -277,7 +301,7 @@ export const useCellBlockSelection = ({
         initializeStateRef();
         const cell = queryClosest<HTMLDivElement>(evt.target, ".vuuTableCell");
         if (cell) {
-          const startPos = getTableCellPos(cell);
+          const startPos = getAriaCellPos(cell);
           stateRef.current.startPos = startPos;
           stateRef.current.endPos = clone(startPos);
           const { current: state } = stateRef;
