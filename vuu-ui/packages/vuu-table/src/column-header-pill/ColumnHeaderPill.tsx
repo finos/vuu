@@ -29,9 +29,11 @@ export const ColumnHeaderPill = ({
     window: targetWindow,
   });
 
+  console.log({ htmlAttributes });
+
   if (removable && typeof onRemove !== "function") {
     throw Error(
-      "ColumnHeaderPill onRemove prop must be provided if Pill is removable"
+      "ColumnHeaderPill onRemove prop must be provided if Pill is removable",
     );
   }
 
@@ -41,11 +43,11 @@ export const ColumnHeaderPill = ({
       evt.stopPropagation();
       onRemove?.(column);
     },
-    [column, onRemove]
+    [column, onRemove],
   );
 
   return (
-    <div {...htmlAttributes} className={cx(classBase, className)}>
+    <div {...htmlAttributes} className={cx(classBase, className)} tabIndex={-1}>
       {children}
       {removable ? (
         <span

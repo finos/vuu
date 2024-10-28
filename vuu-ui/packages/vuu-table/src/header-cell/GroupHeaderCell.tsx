@@ -9,7 +9,13 @@ import { useLayoutEffectSkipFirst } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { useCallback, useRef, useState } from "react";
+import {
+  KeyboardEventHandler,
+  MouseEventHandler,
+  useCallback,
+  useRef,
+  useState,
+} from "react";
 import { ColumnHeaderPill, GroupColumnPill } from "../column-header-pill";
 import { ColumnResizer, useTableColumnResize } from "../column-resizing";
 import { useCell } from "../useCell";
@@ -20,7 +26,7 @@ const classBase = "vuuTableGroupHeaderCell";
 
 const switchIfChanged = (
   columns: RuntimeColumnDescriptor[],
-  newColumns: RuntimeColumnDescriptor[]
+  newColumns: RuntimeColumnDescriptor[],
 ) => {
   if (columns === newColumns) {
     return columns;
@@ -84,12 +90,21 @@ export const GroupHeaderCell = ({
         }
       });
     },
-    [onMoveColumn]
+    [onMoveColumn],
   );
 
   useLayoutEffectSkipFirst(() => {
     setColumns((cols) => switchIfChanged(cols, groupColumn.columns));
   }, [groupColumn.columns]);
+
+  const handleClick = useCallback<MouseEventHandler<HTMLSpanElement>>(() => {
+    console.log("click");
+  }, []);
+  const handleKeyDown = useCallback<
+    KeyboardEventHandler<HTMLSpanElement>
+  >(() => {
+    console.log("keydown");
+  }, []);
 
   return (
     <div
@@ -113,11 +128,14 @@ export const GroupHeaderCell = ({
               {...columnPillProps}
               column={column}
               key={column.name}
+              onClick={handleClick}
+              onKeyDown={handleKeyDown}
             />
           );
         })}
       </OverflowContainer>
       <ColumnHeaderPill
+        className={`${classBase}-removeAll`}
         column={groupColumn}
         removable
         onRemove={onRemoveColumn}

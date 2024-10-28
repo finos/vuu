@@ -118,7 +118,6 @@ export const Row = memo(
               return;
             }
           }
-          evt.stopPropagation();
           onToggleGroup?.(row, column);
         }
       },

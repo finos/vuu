@@ -1,5 +1,11 @@
 .vuuToggleIconButton {
   &.saltButton {
+    &:active {
+      --saltButton-background-active: transparent;
+    }
+    &:hover {
+      --saltButton-background-hover: transparent;
+    }
     .vuuIcon {
       --vuu-icon-height: 18px;
       --vuu-icon-left: -3px;
@@ -19,5 +25,13 @@
     min-width: 16px;
     padding: 0;
     width: 18px;
+  }
+}
+
+.vuuTableGroupCell:hover {
+  .vuuToggleIconButton {
+    .vuuIcon:after {
+      --vuu-icon-color: var(--salt-palette-interact-cta-background-hover);
+    }
   }
 }

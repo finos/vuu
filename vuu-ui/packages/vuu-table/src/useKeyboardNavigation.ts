@@ -34,6 +34,11 @@ const rowNavigationKeys = new Set<NavigationKey>([
   "ArrowUp",
 ]);
 
+const CellLocator =
+  ".vuuTableCell,.vuuTableHeaderCell,.vuuTableGroupHeaderCell";
+
+const CellControlLocator = ".vuuColumnMenu,.vuuColumnHeaderPill";
+
 const cellNavigationKeys = new Set(rowNavigationKeys);
 cellNavigationKeys.add("ArrowLeft");
 cellNavigationKeys.add("ArrowRight");
@@ -53,16 +58,38 @@ export const isNavigationKey = (
   }
 };
 
-const focusColumnMenuIfAppropriate = (
-  e: KeyboardEvent,
-  el: HTMLElement | null,
-) => {
+const focusControlWithinCell = (e: KeyboardEvent, el: HTMLElement | null) => {
   if (e.shiftKey && e.key.match(/Arrow(Left|Right)/)) {
     if (el?.classList.contains("vuuTableHeaderCell")) {
       const menuButton = el?.querySelector<HTMLButtonElement>(".vuuColumnMenu");
       if (menuButton) {
         menuButton.focus();
         return true;
+      }
+    } else if (el?.classList.contains("vuuTableGroupHeaderCell")) {
+      const headerPill = el?.querySelector<HTMLButtonElement>(
+        ".vuuColumnHeaderPill",
+      );
+      if (headerPill) {
+        headerPill.focus();
+        return true;
+      }
+    } else if (el?.classList.contains("vuuColumnHeaderPill")) {
+      const nextPill = el.parentElement?.nextElementSibling
+        ?.firstChild as HTMLElement;
+      if (nextPill?.classList.contains("vuuColumnHeaderPill")) {
+        nextPill.focus();
+        return true;
+      } else {
+        const removeButton = queryClosest(
+          el,
+          ".vuuTableGroupHeaderCell",
+          true,
+        ).querySelector(".vuuTableGroupHeaderCell-removeAll") as HTMLElement;
+        if (removeButton) {
+          removeButton.focus();
+          return true;
+        }
       }
     }
   }
@@ -136,7 +163,6 @@ export const useKeyboardNavigation = ({
     (idx: number) => {
       onHighlight?.(idx);
       setHighlightedIdx(idx);
-      console.log(`set highlightedIndexRef to ${idx}`);
       highlightedIndexRef.current = idx;
     },
     [onHighlight, setHighlightedIdx],
@@ -270,14 +296,13 @@ export const useKeyboardNavigation = ({
             key,
             cellPos,
             columnCount,
-            rowCount,
+            maxRowIndex,
           );
         }
       }
 
       if (nextRowIdx !== rowIdx || nextColIdx !== colIdx) {
         setActiveCell(nextRowIdx, nextColIdx, true);
-        console.log(`nextRowIdx ${nextRowIdx}`);
         setHighlightedIndex(nextRowIdx);
       }
     },
@@ -288,7 +313,7 @@ export const useKeyboardNavigation = ({
       onToggleGroup,
       headerCount,
       columnCount,
-      rowCount,
+      maxRowIndex,
       setActiveCell,
       setHighlightedIndex,
     ],
@@ -335,7 +360,7 @@ export const useKeyboardNavigation = ({
     (e: KeyboardEvent) => {
       const cell = queryClosest<HTMLDivElement>(
         e.target,
-        ".vuuTableCell,.vuuColumnMenu,.vuuTableHeaderCell",
+        `${CellLocator},${CellControlLocator}`,
       );
       if (cellDropdownShowing(cell)) {
         return;
@@ -346,7 +371,7 @@ export const useKeyboardNavigation = ({
         if (navigationStyle === "row") {
           moveHighlightedRow(e.key);
         } else if (navigationStyle !== "none") {
-          if (!focusColumnMenuIfAppropriate(e, cell)) {
+          if (!focusControlWithinCell(e, cell)) {
             navigateChildItems(navigationStyle, e.key, e.shiftKey);
           }
         }
@@ -358,7 +383,7 @@ export const useKeyboardNavigation = ({
   const handleClick = useCallback(
     // Might not be a cell e.g the Settings button
     (evt: MouseEvent) => {
-      const target = evt.target as HTMLElement;
+      const target = queryClosest<HTMLDivElement>(evt.target, CellLocator);
       const focusedCell = getFocusedCell(target);
       if (focusedCell) {
         const [rowIdx, colIdx] = getAriaCellPos(focusedCell);
