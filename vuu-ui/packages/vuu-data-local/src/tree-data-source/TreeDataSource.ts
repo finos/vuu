@@ -97,9 +97,6 @@ export class TreeDataSource extends BaseDataSource {
       columns,
       aggregations,
       range,
-      sort,
-      groupBy,
-      filterSpec,
     }: SubscribeProps,
     callback: SubscribeCallback,
   ) {

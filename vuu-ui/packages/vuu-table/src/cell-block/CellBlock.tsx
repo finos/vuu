@@ -37,7 +37,7 @@ export const CellBlock = forwardRef<HTMLDivElement, CellBlockProps>(
       [onCopy],
     );
 
-    const onContextMenu = useCallback<MouseEventHandler>((evt) => {
+    const onContextMenu = useCallback<MouseEventHandler>(() => {
       console.log("on cvontext menu");
     }, []);
 

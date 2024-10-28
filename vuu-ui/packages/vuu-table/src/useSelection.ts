@@ -16,7 +16,6 @@ import {
   KeyboardEvent,
   KeyboardEventHandler,
   MutableRefObject,
-  RefObject,
   useCallback,
   useRef,
 } from "react";
@@ -29,7 +28,6 @@ const NO_SELECTION: Selection = [];
 const defaultSelectionKeys = ["Enter", " "];
 
 export interface SelectionHookProps {
-  containerRef: RefObject<HTMLElement>;
   highlightedIndexRef: MutableRefObject<number | undefined>;
   selectionKeys?: string[];
   selectionModel: TableSelectionModel;
@@ -38,7 +36,6 @@ export interface SelectionHookProps {
 }
 
 export const useSelection = ({
-  containerRef,
   highlightedIndexRef,
   selectionKeys = defaultSelectionKeys,
   selectionModel,

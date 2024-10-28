@@ -1,6 +1,5 @@
 import {
   DataSource,
-  DataSourceConfig,
   DataSourceConstructorProps,
   DataSourceEditHandler,
   DataSourceStatus,

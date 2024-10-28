@@ -671,7 +671,6 @@ export const useTable = ({
     onKeyDown: selectionHookKeyDown,
     onRowClick: selectionHookOnRowClick,
   } = useSelection({
-    containerRef,
     highlightedIndexRef,
     onSelect: handleSelect,
     onSelectionChange: handleSelectionChange,
