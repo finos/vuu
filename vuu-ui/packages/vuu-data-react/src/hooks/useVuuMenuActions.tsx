@@ -37,7 +37,7 @@ import {
   viewportRpcRequest,
 } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   FormConfig,
   FormFieldDescriptor,
@@ -158,6 +158,20 @@ export const useVuuMenuActions = ({
   const { showDialog, closeDialog } = useDialogContext();
   const showNotification = useNotifications();
 
+  const [valid, setValid] = useState(true);
+  const handleChange = useCallback(
+    (isValid: boolean) => {
+      console.log("setting to: ", isValid);
+      setValid(isValid);
+      console.log("current valid value: ", valid);
+    },
+    [valid],
+  );
+
+  useEffect(() => {
+    console.log("new submit value: ", valid);
+  }, [valid]);
+
   const showBulkEditDialog = useCallback(
     (table: VuuTable, columns?: ColumnDescriptor[]) => {
       // NO send BULK_EDIT_BEGIN
@@ -177,13 +191,14 @@ export const useVuuMenuActions = ({
             dataSource={sessionDs}
             onSubmit={handleSubmit}
             parentDs={dataSource}
+            handleChange={handleChange}
           />,
           "Bulk Amend",
           [
             <Button key="cancel" onClick={closeDialog}>
               Cancel
             </Button>,
-            <Button key="submit" onClick={handleSubmit}>
+            <Button key="submit" onClick={handleSubmit} disabled={!valid}>
               Save
             </Button>,
           ],
@@ -192,7 +207,7 @@ export const useVuuMenuActions = ({
         return true;
       }
     },
-    [VuuDataSource, closeDialog, dataSource, showDialog],
+    [VuuDataSource, valid, closeDialog, dataSource, handleChange, showDialog],
   );
 
   const showSessionEditingForm = useCallback(
@@ -218,6 +233,7 @@ export const useVuuMenuActions = ({
             dataSource={sessionDs}
             onSubmit={handleSubmit}
             parentDs={dataSource}
+            handleChange={handleChange}
           />,
           "Multi Row Edit",
           [
@@ -233,7 +249,7 @@ export const useVuuMenuActions = ({
         return true;
       }
     },
-    [closeDialog, dataSource, showDialog],
+    [closeDialog, dataSource, handleChange, showDialog],
   );
 
   const handleMenuAction = useCallback(

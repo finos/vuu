@@ -10,9 +10,10 @@ import { hasValidationRules, isTypeDescriptor } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { HTMLAttributes, useMemo } from "react";
+import { HTMLAttributes, MutableRefObject, useMemo, useRef } from "react";
 import { Table } from "../Table";
 import { BulkEditRow, type EditValueChangeHandler } from "./BulkEditRow";
+import { useBulkEditPanel } from "./useBulkEditPanel";
 
 import bulkEditPanelCss from "./BulkEditPanel.css";
 
@@ -24,6 +25,7 @@ export interface BulkEditPanelProps extends HTMLAttributes<HTMLDivElement> {
   response?: RpcResponse;
   mainTableName?: string;
   parentDs: DataSource;
+  handleChange: (val: boolean) => void;
 }
 
 const addRenderer = (
@@ -43,6 +45,7 @@ export const BulkEditPanel = ({
   columns,
   dataSource,
   parentDs,
+  handleChange,
   ...htmlAttributes
 }: BulkEditPanelProps): JSX.Element => {
   const targetWindow = useWindow();
@@ -78,6 +81,8 @@ export const BulkEditPanel = ({
     };
   }, [columns, dataSource.columns]);
 
+  const bulkRowValidRef = useRef(true);
+
   const bulkEditRow = useMemo(() => {
     const onBulkChange: EditValueChangeHandler = (column, value) => {
       dataSource.rpcCall?.({
@@ -88,14 +93,28 @@ export const BulkEditPanel = ({
       } as Omit<VuuRpcViewportRequest, "vpId">);
     };
 
-    return <BulkEditRow dataSource={parentDs} onBulkChange={onBulkChange} />;
+    return (
+      <BulkEditRow
+        dataSource={parentDs}
+        onBulkChange={onBulkChange}
+        bulkRowValidRef={bulkRowValidRef}
+      />
+    );
   }, [dataSource, parentDs]);
+
+  const { fieldContainerRef, onChange, onFocus } = useBulkEditPanel({
+    columnDescriptors: config.columns,
+    dataSource,
+    bulkRowValidRef,
+    handleChange,
+  });
 
   return (
     <div
       {...htmlAttributes}
       className={cx(classBase, className)}
       style={{ display: "flex", flexDirection: "column" }}
+      ref={fieldContainerRef}
     >
       <div className={`${classBase}-toolbar`} />
       <div className={`${classBase}-table`}>
@@ -108,6 +127,8 @@ export const BulkEditPanel = ({
           width={600}
           showColumnHeaderMenus={false}
           selectionModel="none"
+          onChange={onChange}
+          onFocus={onFocus}
         />
       </div>
     </div>

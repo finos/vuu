@@ -5,9 +5,10 @@ import {
 import { DataValueDescriptor } from "@finos/vuu-data-types";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { queryClosest } from "@finos/vuu-utils";
+import { CommitHandler, queryClosest } from "@finos/vuu-utils";
 import {
   FocusEventHandler,
+  MutableRefObject,
   SyntheticEvent,
   useCallback,
   useRef,
@@ -21,6 +22,8 @@ export type EditValueChangeHandler = (
 
 export interface EditableBulkHookProps {
   descriptors: DataValueDescriptor[];
+  onBulkChange: EditValueChangeHandler;
+  bulkRowValidRef: MutableRefObject<boolean>;
 }
 type ValidationState = {
   ok: boolean;
@@ -92,7 +95,11 @@ const getField = (target: EventTarget | HTMLElement) => {
   }
 };
 
-export const useBulkEditRow = ({ descriptors }: EditableBulkHookProps) => {
+export const useBulkEditRow = ({
+  descriptors,
+  onBulkChange,
+  bulkRowValidRef,
+}: EditableBulkHookProps) => {
   const formFieldsContainerRef = useRef<HTMLDivElement>(null);
   const focusedFieldRef = useRef("");
   const [, forceUpdate] = useState({});
@@ -101,8 +108,11 @@ export const useBulkEditRow = ({ descriptors }: EditableBulkHookProps) => {
     messages: {},
   });
 
-  const setValidationState = useCallback((state: ValidationState) => {
+  const bulkRowValidRefationState = useCallback((state: ValidationState) => {
     validationStateRef.current = state;
+    if (bulkRowValidRef) {
+      bulkRowValidRef.current = state.ok;
+    }
     forceUpdate({});
   }, []);
 
@@ -128,22 +138,37 @@ export const useBulkEditRow = ({ descriptors }: EditableBulkHookProps) => {
         const { current: state } = validationStateRef;
         const newState = nextValidationState(state, dataDescriptor, value);
         if (newState !== state) {
-          setValidationState(newState);
+          bulkRowValidRefationState(newState);
         }
       }
     },
-    [descriptors, setValidationState],
+    [descriptors, bulkRowValidRefationState],
   );
+
   const {
     current: { ok, messages: errorMessages },
   } = validationStateRef;
 
+  const onCommit = useCallback<CommitHandler<HTMLElement, string | undefined>>(
+    (evt, value) => {
+      if (value !== undefined && String(value).trim() !== "") {
+        const columnName = focusedFieldRef.current;
+        if (columnName) {
+          const column = descriptors.find((c) => c.name === columnName);
+          if (column && errorMessages[columnName] === undefined) {
+            onBulkChange(column, value);
+          }
+        }
+      }
+    },
+    [descriptors, errorMessages, onBulkChange],
+  );
+
   return {
     errorMessages,
     formFieldsContainerRef,
-    focusedFieldRef,
-    ok,
     onChange: handleChange,
+    onCommit,
     onFocus: handleFocus,
   };
 };
