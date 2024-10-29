@@ -33,10 +33,9 @@ import {
   toColumnName,
   useDataSource,
 } from "@finos/vuu-utils";
-import { Button, Input } from "@salt-ds/core";
+import { Button, Input, InputProps } from "@salt-ds/core";
 import {
   CSSProperties,
-  HTMLAttributes,
   MouseEventHandler,
   useCallback,
   useMemo,
@@ -195,7 +194,7 @@ export const TabInAndOut = () => {
         <Input
           placeholder="start here"
           inputProps={
-            { "data-testid": "input-start" } as HTMLAttributes<HTMLInputElement>
+            { "data-testid": "input-start" } as InputProps["inputProps"]
           }
         />
       </div>
@@ -213,7 +212,7 @@ export const TabInAndOut = () => {
         <Input
           placeholder="end here"
           inputProps={
-            { "data-testid": "input-end" } as HTMLAttributes<HTMLInputElement>
+            { "data-testid": "input-end" } as InputProps["inputProps"]
           }
         />
       </div>
