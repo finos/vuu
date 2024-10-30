@@ -28,12 +28,12 @@ const formFieldDescriptors: DataValueDescriptor[] = [
       rules: [
         {
           name: "char-numeric",
-          apply: "change",
+          phase: "change",
           message: "LotSize must be numeric",
         },
         {
           name: "value-integer",
-          apply: "commit",
+          phase: "commit",
           message: "LotSize must be an integer",
         },
       ],

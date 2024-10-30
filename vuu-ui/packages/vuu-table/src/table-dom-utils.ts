@@ -41,7 +41,9 @@ export const getTableCell = (
 
   if (cellIsEditable(cell)) {
     // Dropdown gets focus, Input does not
-    const focusableContent = cell.querySelector("button") as HTMLElement;
+    const focusableContent = cell.querySelector(
+      `button,input[type="checkbox"]`,
+    ) as HTMLElement;
     return focusableContent || cell;
   } else {
     return cell;

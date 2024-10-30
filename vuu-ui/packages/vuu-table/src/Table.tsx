@@ -6,6 +6,7 @@ import {
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import {
   CustomHeader,
+  DataCellEditNotification,
   GroupToggleTarget,
   RowProps,
   TableConfig,
@@ -130,6 +131,9 @@ export interface TableProps
    * prop, table state can be persisted across sessions.
    */
   onConfigChange?: TableConfigChangeHandler;
+
+  onDataEdited?: DataCellEditNotification;
+
   onDragStart?: DragStartHandler;
   onDrop?: (dragDropState: DragDropState) => void;
 
@@ -223,6 +227,7 @@ const TableCore = ({
   navigationStyle = "cell",
   onAvailableColumnsChange,
   onConfigChange,
+  onDataEdited: onDataEditedProp,
   onDragStart,
   onDrop,
   onHighlight,
@@ -291,6 +296,7 @@ const TableCore = ({
     navigationStyle,
     onAvailableColumnsChange,
     onConfigChange,
+    onDataEdited: onDataEditedProp,
     onDragStart,
     onDrop,
     onHighlight,
@@ -458,6 +464,7 @@ export const Table = forwardRef(function Table(
     navigationStyle,
     onAvailableColumnsChange,
     onConfigChange,
+    onDataEdited,
     onDragStart,
     onDrop,
     onHighlight,
@@ -592,6 +599,7 @@ export const Table = forwardRef(function Table(
           navigationStyle={navigationStyle}
           onAvailableColumnsChange={onAvailableColumnsChange}
           onConfigChange={onConfigChange}
+          onDataEdited={onDataEdited}
           onDragStart={onDragStart}
           onDrop={onDrop}
           onHighlight={onHighlight}

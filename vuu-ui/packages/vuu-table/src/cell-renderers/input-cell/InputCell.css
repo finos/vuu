@@ -1,31 +1,56 @@
-
-.vuuTableInputCell.saltInput-primary {
+.vuuTableCell.vuuTableCell-editable {
+  .vuuTableInputCell.saltInput-primary {
     --salt-focused-outlineStyle: none;
     --saltInput-height: var(--vuu-table-embedded-control-height);
     --saltInput-minHeight: var(--saltInput-height);
-    border-radius: 4px;
+    border-radius: 2px;
     font-weight: 500;
+  }
 }
 
 .vuuTableCell:focus .vuuTableInputCell.saltInput-primary,
 .vuuTableInputCell.saltInput-primary.saltInput-focused {
-    border: solid 2px var(--salt-focused-outlineColor);
-    padding: 0 3px;
+  border: solid 2px var(--salt-focused-outlineColor);
+  padding: 0 3px;
+}
+
+.vuuTableCell-editable:focus-within
+  .vuuTableInputCell.saltInput-primary:focus-within,
+.vuuTableInputCell.saltInput-primary.saltInput-focused {
+  border: dotted 2px var(--salt-focused-outlineColor);
+  padding: 0 3px;
 }
 
 .vuuTableInputCell-icon {
-    --vuu-icon-height: 13px;
-    --vuu-icon-size: 15px;
-    --vuu-icon-width: 12px;
-    border-radius: 10px;
+  --vuu-icon-height: 13px;
+  --vuu-icon-left: 0;
+  --vuu-icon-size: 15px;
+  --vuu-icon-width: 12px;
+  border-radius: 10px;
 }
 
-.vuuTableCell:focus .vuuTableInputCell.saltInput-primary.vuuTableInputCell-error,
-.vuuTableInputCell.saltInput-primary.saltInput-focused.vuuTableInputCell-error {
-    border: solid 2px var(--vuu-color-red-50);
+.vuuTableInputCell-error {
+  .saltInput-startAdornmentContainer {
+    .vuuTableInputCell-icon {
+      --vuu-icon-color: red;
+    }
+  }
+  .saltInput-endAdornmentContainer {
+    .vuuTableInputCell-icon {
+      --vuu-icon-color: red;
+    }
+  }
 }
 
+.vuuTableCell-right {
+  .saltInput-input {
+    text-align: right;
+  }
+}
 
-.vuuTableInputCell-error.saltInput-primary {
-    border: solid 1px var(--vuu-color-red-50);
+.vuuTableCell-error {
+  .vuuTableInputCell {
+    outline: var(--vuuTableCell-outline, solid red 2px);
+    outline-offset: -2px;
+  }
 }

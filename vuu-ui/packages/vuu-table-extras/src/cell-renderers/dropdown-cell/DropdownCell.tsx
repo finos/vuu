@@ -1,7 +1,6 @@
 import { useLookupValues } from "@finos/vuu-data-react";
 import type { VuuColumnDataType } from "@finos/vuu-protocol-types";
 import { ListOption, TableCellRendererProps } from "@finos/vuu-table-types";
-import { WarnCommit } from "@finos/vuu-ui-controls";
 import {
   dataColumnAndKeyUnchanged,
   dispatchCustomEvent,
@@ -14,6 +13,7 @@ import { useWindow } from "@salt-ds/window";
 import {
   KeyboardEventHandler,
   MouseEventHandler,
+  SyntheticEvent,
   memo,
   useCallback,
   useMemo,
@@ -28,7 +28,7 @@ const classBase = "vuuTableDropdownCell";
 export const DropdownCell = memo(function DropdownCell({
   column,
   columnMap,
-  onCommit = WarnCommit,
+  onEdit,
   row,
 }: TableCellRendererProps) {
   const targetWindow = useWindow();
@@ -56,20 +56,26 @@ export const DropdownCell = memo(function DropdownCell({
   }, []);
 
   const handleSelectionChange = useCallback(
-    (evt, [selectedOption]) => {
+    async (evt: SyntheticEvent, [selectedOption]: ListOption[]) => {
       if (selectedOption) {
         // Note, we do not setState locally when a selection is made, we just send the update
         // to the server. We rely on the update coming back in from a server response which
         // we handle in the useMemo above. If we worry that server repsonses might be too slow
         // we can extend this logic with some kind of pending update state.
-        onCommit(selectedOption.value as VuuColumnDataType).then((response) => {
-          if (response === true && evt) {
-            dispatchCustomEvent(evt.target as HTMLElement, "vuu-commit");
-          }
-        });
+        const response = await onEdit?.(
+          {
+            editType: "commit",
+            previousValue: valueRef.current?.value,
+            value: selectedOption.value as VuuColumnDataType,
+          },
+          "commit",
+        );
+        if (response === true) {
+          dispatchCustomEvent(evt.target as HTMLElement, "vuu-commit");
+        }
       }
     },
-    [onCommit]
+    [onEdit],
   );
 
   const handleClick = useCallback<MouseEventHandler<HTMLButtonElement>>(() => {
@@ -86,7 +92,7 @@ export const DropdownCell = memo(function DropdownCell({
         setOpen(true);
       }
     },
-    [open]
+    [open],
   );
 
   const { current: selectedOption } = valueRef;
@@ -109,8 +115,7 @@ export const DropdownCell = memo(function DropdownCell({
       ))}
     </Dropdown>
   );
-},
-dataColumnAndKeyUnchanged);
+}, dataColumnAndKeyUnchanged);
 
 registerComponent("dropdown-cell", DropdownCell, "cell-renderer", {
   userCanAssign: false,

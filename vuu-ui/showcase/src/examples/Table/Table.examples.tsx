@@ -21,7 +21,6 @@ import {
 import {
   ColumnDescriptor,
   ColumnLayout,
-  DefaultColumnConfiguration,
   GroupColumnDescriptor,
   HeaderCellProps,
   TableConfig,
@@ -191,103 +190,6 @@ export const TabInAndOut = () => {
   );
 };
 TabInAndOut.displaySequence = displaySequence++;
-
-export const EditableTableArrayData = () => {
-  const getDefaultColumnConfig = useMemo<DefaultColumnConfiguration>(
-    () => (_, columnName) => {
-      switch (columnName) {
-        case "bbg":
-          return {
-            editable: true,
-            type: {
-              name: "string",
-              renderer: {
-                name: "input-cell",
-              },
-              rules: [
-                { name: "vuu-case", value: "upper" },
-                {
-                  name: "vuu-pattern",
-                  value: "^.{5,8}$",
-                  message: "Value must contain between 5 and 8 characters",
-                },
-              ],
-            },
-          };
-        case "currency":
-          return {
-            editable: true,
-            type: {
-              name: "string",
-              renderer: {
-                name: "dropdown-cell",
-                values: ["CAD", "EUR", "GBP", "GBX", "USD"],
-              },
-            },
-          };
-        case "lotSize":
-          return {
-            editable: true,
-            type: {
-              name: "number",
-              renderer: {
-                name: "input-cell",
-              },
-            },
-          };
-        case "exchange":
-          return {
-            editable: true,
-            type: {
-              name: "string",
-              renderer: {
-                name: "input-cell",
-              },
-            },
-          };
-        case "ric":
-          return {
-            editable: true,
-            type: {
-              name: "string",
-              renderer: {
-                name: "input-cell",
-              },
-            },
-          };
-        case "wishlist":
-          return {
-            editable: true,
-          };
-      }
-    },
-    [],
-  );
-
-  const tableProps = useMemo<
-    Pick<TableProps, "config" | "dataSource" | "selectionModel">
-  >(() => {
-    const tableName: SimulTableName = "instrumentsExtended";
-    return {
-      config: {
-        columns: applyDefaultColumnConfig(
-          getSchema(tableName),
-          getDefaultColumnConfig,
-        ),
-        rowSeparators: true,
-        zebraStripes: true,
-      },
-      dataSource:
-        vuuModule<SimulTableName>("SIMUL").createDataSource(tableName),
-      selectionModel: "checkbox",
-    };
-  }, [getDefaultColumnConfig]);
-
-  return (
-    <Table {...tableProps} height={645} renderBufferSize={10} width={9200} />
-  );
-};
-EditableTableArrayData.displaySequence = displaySequence++;
 
 const VuuTableTemplate = ({ schema }: { schema: TableSchema }) => {
   useAutoLoginToVuuServer();

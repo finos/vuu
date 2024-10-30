@@ -61,6 +61,7 @@ export declare type DataValueValidationResult =
 
 export declare type DataValueValidationChecker = (
   value?: VuuRowDataItemType,
+  phase: EditPhase | "*",
 ) => DataValueValidationResult;
 
 export declare type EditRuleValidationSuccessResult = {
@@ -90,6 +91,8 @@ export declare type EditRuleValidator = (
   value?: VuuRowDataItemType,
 ) => EditRuleValidationResult;
 
+export declare type EditPhase = "commit" | "change";
+
 /**
  * Edit validation functions (EditRuleValidator) must be registered with the component registry.
  * They can then be referenced by name from EditValidationRule(s)
@@ -97,10 +100,10 @@ export declare type EditRuleValidator = (
 export interface EditValidationRule {
   /**
    * when is the rule applied
-   * - 'commit' - when suer commits change, e.g. by pressent ENTER (on an input), or TAB
+   * - 'commit' - when user commits change, e.g. by pressent ENTER (on an input), or TAB
    * - 'change' - for a text input, on every keystroke
    * */
-  apply?: "commit" | "change";
+  phase?: EditPhase;
   name: string;
   message?: string;
   value?: string;

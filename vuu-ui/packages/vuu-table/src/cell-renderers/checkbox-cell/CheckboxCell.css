@@ -1,0 +1,10 @@
+.vuuCheckboxCell-checkbox {
+  border: solid 2px transparent;
+  input:focus-visible + .saltCheckboxIcon {
+    outline: none;
+  }
+}
+
+.vuuTableCell-editable .vuuCheckboxCell-checkbox:focus-within {
+  border: solid 2px var(--salt-focused-outlineColor);
+}
