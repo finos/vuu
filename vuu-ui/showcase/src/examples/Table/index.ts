@@ -12,3 +12,4 @@ export * as TableSelection from "./TableSelection.examples";
 export * as BulkEdit from "./BulkEdit.examples";
 export * as TableVuuLayoutCombinations from "./TableVuuLayoutCombinations.examples";
 export * as RestData from "./RestData.examples";
+export * as TableEditing from "./TableEditing.examples";

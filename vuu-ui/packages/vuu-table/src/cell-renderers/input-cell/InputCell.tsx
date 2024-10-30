@@ -10,16 +10,10 @@ import inputCellCss from "./InputCell.css";
 
 const classBase = "vuuTableInputCell";
 
-const WarnCommit = (): Promise<true> => {
-  console.warn(
-    "onCommit handler has not been provided to InputCell cell renderer"
-  );
-  return Promise.resolve(true);
-};
 export const InputCell = ({
   column,
   columnMap,
-  onCommit = WarnCommit,
+  onEdit,
   row,
 }: TableCellRendererProps) => {
   const targetWindow = useWindow();
@@ -35,7 +29,7 @@ export const InputCell = ({
 
   const { warningMessage, ...editProps } = useEditableText({
     initialValue: dataValue,
-    onCommit,
+    onEdit,
     clientSideEditValidationCheck,
   });
 

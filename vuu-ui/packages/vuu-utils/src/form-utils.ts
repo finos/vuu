@@ -4,7 +4,7 @@ import {
 } from "@finos/vuu-protocol-types";
 import { KeyboardEvent, SyntheticEvent } from "react";
 import { queryClosest } from "./html-utils";
-import { isValidNumber } from "./data-utils";
+import { stringIsValidDecimal, stringIsValidInt } from "./data-utils";
 
 /**
  * Use with the following convention:
@@ -39,42 +39,44 @@ export type CommitHandler<
  *
  * @param value
  * @param type
- * @param throwIfUndefined
+ * @param throwIfInvalid
  */
 export function getTypedValue(
   value: string,
-  type: VuuColumnDataType,
-  throwIfUndefined?: false,
+  type: VuuColumnDataType | "number",
+  throwIfInvalid?: false,
 ): VuuRowDataItemType | undefined;
 export function getTypedValue(
   value: string,
-  type: VuuColumnDataType,
-  throwIfUndefined: true,
+  type: VuuColumnDataType | "number",
+  throwIfInvalid: true,
 ): VuuRowDataItemType;
 export function getTypedValue(
   value: string,
-  type: VuuColumnDataType,
-  throwIfUndefined = false,
+  type: VuuColumnDataType | "number",
+  throwIfInvalid = false,
 ): VuuRowDataItemType | undefined {
   switch (type) {
     case "int":
     case "long": {
-      const typedValue = parseInt(value, 10);
-      if (isValidNumber(typedValue)) {
-        return typedValue;
-      } else if (throwIfUndefined) {
-        throw Error("SessionEditingForm getTypedValue");
+      if (stringIsValidInt(value)) {
+        return parseInt(value, 10);
+      } else if (throwIfInvalid) {
+        throw Error(`value ${value} is not a valid ${type}`);
       } else {
         return undefined;
       }
     }
 
-    case "double": {
-      const typedValue = parseFloat(value);
-      if (isValidNumber(typedValue)) {
-        return typedValue;
+    case "double":
+    case "number": {
+      if (stringIsValidDecimal(value)) {
+        return parseFloat(value);
+      } else if (throwIfInvalid) {
+        throw Error(`value ${value} is not a valid ${type}`);
+      } else {
+        return undefined;
       }
-      return undefined;
     }
 
     case "boolean":

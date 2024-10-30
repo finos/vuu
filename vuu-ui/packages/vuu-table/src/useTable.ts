@@ -4,11 +4,11 @@ import {
   DataSourceSubscribedMessage,
   SelectionChangeHandler,
 } from "@finos/vuu-data-types";
-import { VuuSortType } from "@finos/vuu-protocol-types";
+import { VuuRowDataItemType, VuuSortType } from "@finos/vuu-protocol-types";
 import {
   CellFocusState,
   ColumnDescriptor,
-  DataCellEditHandler,
+  DataCellEditEvent,
   RuntimeColumnDescriptor,
   TableColumnResizeHandler,
   TableConfig,
@@ -116,6 +116,7 @@ export interface TableHookProps
       | "navigationStyle"
       | "onAvailableColumnsChange"
       | "onConfigChange"
+      | "onDataEdited"
       | "onDragStart"
       | "onDrop"
       | "onHighlight"
@@ -164,6 +165,7 @@ export const useTable = ({
   navigationStyle = "cell",
   onAvailableColumnsChange,
   onConfigChange,
+  onDataEdited: onDataEditedProp,
   onDragStart,
   onDrop,
   onHighlight,
@@ -671,6 +673,7 @@ export const useTable = ({
     onKeyDown: selectionHookKeyDown,
     onRowClick: selectionHookOnRowClick,
   } = useSelection({
+    containerRef,
     highlightedIndexRef,
     onSelect: handleSelect,
     onSelectionChange: handleSelectionChange,
@@ -759,11 +762,29 @@ export const useTable = ({
     [onDrop],
   );
 
-  const handleDataEdited = useCallback<DataCellEditHandler>(
-    async (row, columnName, value) => {
-      return dataSource.applyEdit(row[KEY], columnName, value);
+  const handleDataEdited = useCallback(
+    async (editState: DataCellEditEvent) => {
+      const {
+        editType = "commit",
+        isValid = true,
+        row,
+        columnName,
+        value,
+      } = editState;
+      let result = undefined;
+      if (editType === "commit" && isValid) {
+        result = await dataSource.applyEdit(
+          row[KEY],
+          columnName,
+          value as VuuRowDataItemType,
+        );
+        onDataEditedProp?.({ ...editState, isValid: result === true });
+        return result;
+      } else {
+        onDataEditedProp?.(editState);
+      }
     },
-    [dataSource],
+    [dataSource, onDataEditedProp],
   );
 
   const handleDragStartRow = useCallback<DragStartHandler>(

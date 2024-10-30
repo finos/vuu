@@ -10,6 +10,7 @@ import {
 import { FunctionComponent as FC, HTMLAttributes } from "react";
 import {
   ColumnMap,
+  hasCustomRenderer,
   isColumnTypeRenderer,
   isTypeDescriptor,
 } from "./column-utils";
@@ -288,17 +289,19 @@ export function getEditRuleValidator(name: string) {
 }
 
 function dataCellRenderer(column: ColumnDescriptor) {
-  if (isTypeDescriptor(column.type)) {
-    const { renderer } = column.type;
-    if (isColumnTypeRenderer(renderer)) {
-      return cellRenderersMap.get(renderer.name);
-    }
-  } else if (column.serverDataType === "boolean") {
+  if (column.serverDataType === "boolean" && !hasCustomRenderer(column.type)) {
     return cellRenderersMap.get("checkbox-cell");
-  } else if (column.editable) {
+  } else if (column.editable && !hasCustomRenderer(column.type)) {
     // we can only offer a text input edit as a generic editor.
     // If a more specialised editor is required, user must configure
     // it in column config.
     return cellRenderersMap.get("input-cell");
+  } else if (
+    isTypeDescriptor(column.type) &&
+    isColumnTypeRenderer(column.type.renderer)
+  ) {
+    return cellRenderersMap.get(column.type.renderer?.name);
+  } else if (column.serverDataType === "boolean") {
+    return cellRenderersMap.get("checkbox-cell");
   }
 }

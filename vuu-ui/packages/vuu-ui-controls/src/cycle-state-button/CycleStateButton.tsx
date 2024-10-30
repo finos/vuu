@@ -1,22 +1,17 @@
 import { Button, ButtonProps } from "@salt-ds/core";
 import cx from "clsx";
-import type { CommitResponse } from "@finos/vuu-table-types";
 import type {
   VuuColumnDataType,
   VuuRowDataItemType,
 } from "@finos/vuu-protocol-types";
 import { ForwardedRef, forwardRef, SyntheticEvent, useCallback } from "react";
+import { CommitHandler } from "@finos/vuu-utils";
 
 const classBase = "vuuCycleStateButton";
 
-export type CycleStateCommitHandler = (
-  evt: SyntheticEvent,
-  value: VuuRowDataItemType
-) => CommitResponse;
-
 export interface CycleStateButtonProps extends Omit<ButtonProps, "onChange"> {
   onChange?: (value: VuuRowDataItemType) => void;
-  onCommit?: CycleStateCommitHandler;
+  onCommit?: CommitHandler<HTMLButtonElement>;
   values: string[];
   value: string;
 }
@@ -41,19 +36,15 @@ export const CycleStateButton = forwardRef(function CycleStateButton(
     values,
     ...buttonProps
   }: CycleStateButtonProps,
-  forwardedRef: ForwardedRef<HTMLButtonElement>
+  forwardedRef: ForwardedRef<HTMLButtonElement>,
 ) {
   const handleClick = useCallback(
-    (evt: SyntheticEvent<HTMLButtonElement>) => {
+    async (evt: SyntheticEvent<HTMLButtonElement>) => {
       const nextValue = getNextValue(value, values);
       onChange?.(nextValue);
-      onCommit?.(evt, nextValue as VuuColumnDataType).then((response) => {
-        if (response !== true) {
-          console.error(response);
-        }
-      });
+      onCommit?.(evt, nextValue as VuuColumnDataType);
     },
-    [onChange, onCommit, value, values]
+    [onChange, onCommit, value, values],
   );
 
   return (
@@ -62,7 +53,7 @@ export const CycleStateButton = forwardRef(function CycleStateButton(
       className={cx(
         classBase,
         className,
-        `${classBase}-${value.toLowerCase()}`
+        `${classBase}-${value.toLowerCase()}`,
       )}
       onClick={handleClick}
       ref={forwardedRef}

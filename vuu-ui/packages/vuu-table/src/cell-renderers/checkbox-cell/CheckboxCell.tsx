@@ -1,36 +1,73 @@
-import { memo, useCallback } from "react";
+import { MouseEvent, KeyboardEventHandler, memo, useCallback } from "react";
 import { TableCellRendererProps } from "@finos/vuu-table-types";
-import { WarnCommit } from "@finos/vuu-ui-controls";
 import { Checkbox } from "@salt-ds/core";
 import {
   dataColumnAndKeyUnchanged,
   dispatchCustomEvent,
   registerComponent,
 } from "@finos/vuu-utils";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 
-export const CheckboxCell: React.FC<TableCellRendererProps> = memo(
-  ({ column, columnMap, onCommit = WarnCommit, row }) => {
+import checkboxCellCss from "./CheckboxCell.css";
+
+const classBase = "vuuCheckboxCell";
+
+export const CheckboxCell = memo(
+  ({ column, columnMap, onEdit, row }: TableCellRendererProps) => {
+    const targetWindow = useWindow();
+    useComponentCssInjection({
+      testId: "vuu-checkbox-cell",
+      css: checkboxCellCss,
+      window: targetWindow,
+    });
+
     const dataIdx = columnMap[column.name];
     const isChecked = !!row[dataIdx];
 
     const handleCommit = useCallback(
-      (value) => async (evt: React.MouseEvent) => {
-        const res = await onCommit(value);
+      (value) => async (evt: MouseEvent) => {
+        const res = await onEdit?.(
+          { previousValue: isChecked, value },
+          "commit",
+        );
         if (res === true) {
           dispatchCustomEvent(evt.target as HTMLElement, "vuu-commit");
         }
         return res;
       },
-      [onCommit]
+      [isChecked, onEdit],
     );
 
+    const handleKeyDown = useCallback<KeyboardEventHandler>(
+      async (evt) => {
+        if (evt.key === "Enter") {
+          const res = await onEdit?.(
+            { previousValue: isChecked, value: !isChecked },
+            "commit",
+          );
+          if (res === true) {
+            dispatchCustomEvent(evt.target as HTMLElement, "vuu-commit");
+          }
+        }
+      },
+      [isChecked, onEdit],
+    );
+
+    const className = `${classBase}-checkbox`;
+
     return column.editable ? (
-      <Checkbox checked={isChecked} onClick={handleCommit(!isChecked)} />
+      <Checkbox
+        checked={isChecked}
+        className={className}
+        onClick={handleCommit(!isChecked)}
+        onKeyDown={handleKeyDown}
+      />
     ) : (
-      <Checkbox checked={isChecked} disabled={true} />
+      <Checkbox checked={isChecked} className={className} disabled={true} />
     );
   },
-  dataColumnAndKeyUnchanged
+  dataColumnAndKeyUnchanged,
 );
 CheckboxCell.displayName = "CheckboxCell";
 

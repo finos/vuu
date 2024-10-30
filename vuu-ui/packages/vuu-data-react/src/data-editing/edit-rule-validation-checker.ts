@@ -2,6 +2,7 @@ import type {
   DataValueDescriptor,
   DataValueValidationChecker,
   DataValueValidationResult,
+  EditPhase,
   EditRuleValidationSuccessResult,
   EditValidationRule,
 } from "@finos/vuu-data-types";
@@ -14,13 +15,14 @@ const NO_VALIDATION_RULES: EditValidationRule[] = [] as const;
 
 export function getEditValidationRules(
   descriptor: DataValueDescriptor,
-  apply: "change" | "commit",
+  editPhase: EditPhase | "*",
 ) {
   if (isTypeDescriptor(descriptor.type)) {
-    return (
-      descriptor.type.rules?.filter(({ apply: a = "commit" }) => a === apply) ??
-      NO_VALIDATION_RULES
-    );
+    return editPhase === "*"
+      ? descriptor.type.rules
+      : (descriptor.type.rules?.filter(
+          ({ phase: a = "commit" }) => a === editPhase,
+        ) ?? NO_VALIDATION_RULES);
   }
 
   return NO_VALIDATION_RULES;
@@ -28,23 +30,30 @@ export function getEditValidationRules(
 
 export const buildValidationChecker =
   (rules: EditValidationRule[]): DataValueValidationChecker =>
-  (value?: VuuRowDataItemType) =>
-    applyRules(rules, value);
+  (value: VuuRowDataItemType | undefined, editPhase: EditPhase | "*") =>
+    applyRules(rules, value, editPhase);
 
-function applyRules(rules: EditValidationRule[], value?: VuuRowDataItemType) {
+function applyRules(
+  rules: EditValidationRule[],
+  value?: VuuRowDataItemType,
+  editPhase: EditPhase | "*" = "commit",
+) {
   const result: { ok: boolean; messages?: string[] } = { ok: true };
   for (const rule of rules) {
-    const applyRuleToValue = getEditRuleValidator(rule.name);
-    if (applyRuleToValue) {
-      const res = applyRuleToValue(rule, value);
-      if (!res.ok) {
-        result.ok = false;
-        (result.messages ?? (result.messages = [])).push(res.message);
+    const { phase = "commit" } = rule;
+    if (editPhase === "*" || phase === editPhase) {
+      const applyRuleToValue = getEditRuleValidator(rule.name);
+      if (applyRuleToValue) {
+        const res = applyRuleToValue(rule, value);
+        if (!res.ok) {
+          result.ok = false;
+          (result.messages ?? (result.messages = [])).push(res.message);
+        }
+      } else {
+        throw Error(
+          `editable-utils applyRules, no validator registered for rule '${rule.name}'`,
+        );
       }
-    } else {
-      throw Error(
-        `editable-utils applyRules, no validator registered for rule '${rule.name}'`,
-      );
     }
   }
   return result as DataValueValidationResult;

@@ -1,8 +1,11 @@
-import { DataItemCommitHandler, TableCellProps } from "@finos/vuu-table-types";
-import { isNumericColumn } from "@finos/vuu-utils";
+import type {
+  DataItemEditHandler,
+  TableCellProps,
+} from "@finos/vuu-table-types";
+import { getTypedValue } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { MouseEventHandler, useCallback } from "react";
+import { MouseEventHandler, useCallback, useState } from "react";
 import { useCell } from "../useCell";
 
 import tableCellCss from "./TableCell.css";
@@ -23,35 +26,51 @@ export const TableCell = ({
     window: targetWindow,
   });
 
-  const { className, style } = useCell(column, classBase);
-  const { CellRenderer, index, name, valueFormatter } = column;
-  const dataIdx = columnMap[name];
+  const [hasError, setHasError] = useState(false);
 
-  const handleDataItemEdited = useCallback<DataItemCommitHandler>(
-    (value) => {
-      if (onDataEdited) {
-        let typedValue = value;
-        if (isNumericColumn(column) && typeof value === "string") {
-          typedValue =
-            column.serverDataType === "double"
-              ? parseFloat(value)
-              : parseInt(value);
+  const { className, style } = useCell(column, classBase, false, hasError);
+  const { CellRenderer, index, valueFormatter } = column;
+  const dataIdx = columnMap[column.name];
+
+  const handleDataItemEdited = useCallback<DataItemEditHandler>(
+    (editState, editPhase) => {
+      if (editPhase === "commit") {
+        const { serverDataType = "string" } = column;
+        if (onDataEdited) {
+          const typedValue = getTypedValue(
+            String(editState.value),
+            serverDataType,
+            true,
+          );
+          return onDataEdited({
+            ...editState,
+            row,
+            columnName: column.name,
+            value: typedValue,
+          });
+        } else {
+          throw Error(
+            "TableCell onDataEdited prop not supplied for an editable cell",
+          );
         }
-        return onDataEdited?.(row, name, typedValue);
       } else {
-        throw Error(
-          "TableCell onDataEdited prop not supplied for an editable cell"
-        );
+        setHasError(editState.isValid === false);
+        onDataEdited({
+          ...editState,
+          row,
+          columnName: column.name,
+        });
+        return undefined;
       }
     },
-    [column, name, onDataEdited, row]
+    [column, onDataEdited, row],
   );
 
   const handleClick = useCallback<MouseEventHandler>(
     (evt) => {
       onClick?.(evt, column);
     },
-    [column, onClick]
+    [column, onClick],
   );
 
   return (
@@ -66,7 +85,7 @@ export const TableCell = ({
         <CellRenderer
           column={column}
           columnMap={columnMap}
-          onCommit={handleDataItemEdited}
+          onEdit={handleDataItemEdited}
           row={row}
         />
       ) : (

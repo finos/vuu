@@ -16,6 +16,7 @@ import {
   KeyboardEvent,
   KeyboardEventHandler,
   MutableRefObject,
+  RefObject,
   useCallback,
   useRef,
 } from "react";
@@ -28,6 +29,7 @@ const NO_SELECTION: Selection = [];
 const defaultSelectionKeys = ["Enter", " "];
 
 export interface SelectionHookProps {
+  containerRef: RefObject<HTMLElement>;
   highlightedIndexRef: MutableRefObject<number | undefined>;
   selectionKeys?: string[];
   selectionModel: TableSelectionModel;
@@ -36,6 +38,7 @@ export interface SelectionHookProps {
 }
 
 export const useSelection = ({
+  containerRef,
   highlightedIndexRef,
   selectionKeys = defaultSelectionKeys,
   selectionModel,
@@ -88,15 +91,16 @@ export const useSelection = ({
     (e) => {
       if (isSelectionEvent(e)) {
         const { current: rowIndex } = highlightedIndexRef;
-        if (rowIndex !== undefined && rowIndex !== -1) {
-          const rowEl = getRowElementByAriaIndex(e.target, rowIndex);
+        const { current: container } = containerRef;
+        if (rowIndex !== undefined && rowIndex !== -1 && container) {
+          const rowEl = getRowElementByAriaIndex(container, rowIndex);
           if (rowEl) {
             dispatchMouseEvent(rowEl, "click");
           }
         }
       }
     },
-    [highlightedIndexRef, isSelectionEvent],
+    [containerRef, highlightedIndexRef, isSelectionEvent],
   );
 
   return {

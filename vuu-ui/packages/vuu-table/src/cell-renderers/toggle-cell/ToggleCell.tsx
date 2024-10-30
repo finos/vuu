@@ -2,7 +2,6 @@ import {
   ColumnDescriptor,
   TableCellRendererProps,
 } from "@finos/vuu-table-types";
-import { CycleStateCommitHandler, WarnCommit } from "@finos/vuu-ui-controls";
 import {
   dataColumnAndKeyUnchanged,
   dispatchCustomEvent,
@@ -26,7 +25,7 @@ const getValueList = ({ name, type }: ColumnDescriptor) => {
     return type.renderer.values;
   } else {
     throw Error(
-      `useLookupValues column ${name} has not been configured with a values list`
+      `useLookupValues column ${name} has not been configured with a values list`,
     );
   }
 };
@@ -34,7 +33,7 @@ const getValueList = ({ name, type }: ColumnDescriptor) => {
 export const ToggleCell = memo(function ToggleCell({
   column,
   columnMap,
-  onCommit = WarnCommit,
+  onEdit,
   row,
 }: TableCellRendererProps) {
   const targetWindow = useWindow();
@@ -48,16 +47,18 @@ export const ToggleCell = memo(function ToggleCell({
   const dataIdx = columnMap[column.name];
   const value = row[dataIdx] as string;
 
-  const handleCommit = useCallback<CycleStateCommitHandler>(
-    (evt, value) => {
-      return onCommit(value).then((response) => {
-        if (response === true) {
-          dispatchCustomEvent(evt.target as HTMLElement, "vuu-commit");
-        }
-        return response;
-      });
+  const handleCommit = useCallback(
+    async (evt, newValue) => {
+      const res = await onEdit?.(
+        { previousValue: value, value: newValue },
+        "commit",
+      );
+      if (res === true) {
+        dispatchCustomEvent(evt.target as HTMLElement, "vuu-commit");
+      }
+      return res;
     },
-    [onCommit]
+    [onEdit, value],
   );
 
   return (
@@ -71,8 +72,7 @@ export const ToggleCell = memo(function ToggleCell({
       {value}
     </CycleStateButton>
   );
-},
-dataColumnAndKeyUnchanged);
+}, dataColumnAndKeyUnchanged);
 
 registerComponent("toggle-cell", ToggleCell, "cell-renderer", {
   userCanAssign: false,

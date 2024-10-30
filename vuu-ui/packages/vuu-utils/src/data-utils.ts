@@ -5,13 +5,27 @@ export const UP2 = "up2";
 export const DOWN1 = "down1";
 export const DOWN2 = "down2";
 
+const decimalPattern = /^-?[0-9]*\.[0-9]+$/;
+
+export const stringIsValidInt = (val: string) =>
+  parseInt(val, 10).toString() === val;
+
+export const stringIsValidDecimal = (val: string) =>
+  stringIsValidInt(val) || decimalPattern.test(val);
+
+export const stringIsValidNumber = (val: string) =>
+  stringIsValidInt(val) || stringIsValidDecimal(val);
+
+export const numericTypeOfStringValue = (val: string) =>
+  stringIsValidInt(val) ? "int" : stringIsValidDecimal(val) ? "double" : "NaN";
+
 export const isValidNumber = (n: unknown): n is number =>
   typeof n === "number" && isFinite(n);
 
 const EMPTY = {};
 export const shallowEquals = (
   o1: { [key: string]: unknown } = EMPTY,
-  o2: { [key: string]: unknown } = EMPTY
+  o2: { [key: string]: unknown } = EMPTY,
 ) => {
   const props1 = Object.keys(o1);
   const props2 = Object.keys(o2);
@@ -26,7 +40,7 @@ export function getMovingValueDirection(
   direction?: valueChangeDirection,
   prevValue?: number,
   /** the number of decimal places to take into account when highlighting a change  */
-  decimalPlaces?: number
+  decimalPlaces?: number,
 ): valueChangeDirection {
   if (newValue === undefined) {
     return "";

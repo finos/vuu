@@ -1,6 +1,6 @@
 import { DataValueValidationChecker } from "@finos/vuu-data-types";
-import { DataItemCommitHandler } from "@finos/vuu-table-types";
-import { useLayoutEffectSkipFirst } from "@finos/vuu-utils";
+import { DataItemEditHandler } from "@finos/vuu-table-types";
+import { getTypedValue } from "@finos/vuu-utils";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { dispatchCustomEvent } from "@finos/vuu-utils";
 import {
@@ -12,65 +12,62 @@ import {
   useState,
 } from "react";
 
-export const WarnCommit = (): Promise<true> => {
-  console.warn(
-    "onCommit handler has not been provided to InputCell cell renderer",
-  );
-  return Promise.resolve(true);
-};
-
 export interface EditableTextHookProps<
   T extends VuuRowDataItemType = VuuRowDataItemType,
 > {
   clientSideEditValidationCheck?: DataValueValidationChecker;
   initialValue?: T;
-  onCommit: DataItemCommitHandler<T>;
+  onEdit?: DataItemEditHandler;
   type?: "string" | "number" | "boolean";
 }
 
-export const useEditableText = <T extends string | number = string>({
+type EditState = {
+  message?: string;
+  value: string;
+};
+
+export const useEditableText = <T extends string | number | boolean = string>({
   clientSideEditValidationCheck,
   initialValue,
-  onCommit,
-  type,
+  onEdit,
+  type = "string",
 }: EditableTextHookProps<T>) => {
-  const [message, setMessage] = useState<string | undefined>();
-  const [value, setValue] = useState<T | undefined>(initialValue);
-  const initialValueRef = useRef<T | undefined>(initialValue);
+  const [editState, setEditState] = useState<EditState>({
+    value: initialValue?.toString() ?? "",
+  });
+  const initialValueRef = useRef<string>(initialValue?.toString() ?? "");
   const isDirtyRef = useRef(false);
-  const hasCommittedRef = useRef(false);
-
-  useLayoutEffectSkipFirst(() => {
-    //TODO this isn't right, review the state we're using
-    setValue(initialValue);
-  }, [initialValue]);
 
   const commit = useCallback(
-    (target: HTMLElement) => {
+    async (target: HTMLElement) => {
+      const { value } = editState;
       if (isDirtyRef.current) {
-        hasCommittedRef.current = true;
-        const result = clientSideEditValidationCheck?.(value);
+        const result = clientSideEditValidationCheck?.(value, "*");
         if (result?.ok === false) {
-          setMessage(result?.messages?.join(","));
+          setEditState((state) => ({
+            ...state,
+            message: result?.messages?.join(","),
+          }));
         } else {
-          setMessage(undefined);
-          console.log(`commit value ${value}`);
-          onCommit(value as T).then((response) => {
-            if (response === true) {
-              isDirtyRef.current = false;
-              dispatchCustomEvent(target, "vuu-commit");
-            } else {
-              setMessage(response);
-            }
-          });
+          setEditState((state) => ({ ...state, message: undefined }));
+          const response = await onEdit?.(
+            { editType: "commit", value, isValid: true },
+            "commit",
+          );
+          if (response === true) {
+            isDirtyRef.current = false;
+            initialValueRef.current = value;
+            dispatchCustomEvent(target, "vuu-commit");
+          } else if (typeof response === "string") {
+            setEditState((state) => ({ ...state, message: response }));
+          }
         }
       } else {
         // why, if not dirty ?
         dispatchCustomEvent(target, "vuu-commit");
-        hasCommittedRef.current = false;
       }
     },
-    [clientSideEditValidationCheck, onCommit, value],
+    [clientSideEditValidationCheck, editState, onEdit],
   );
 
   const handleKeyDown = useCallback(
@@ -86,13 +83,23 @@ export const useEditableText = <T extends string | number = string>({
         evt.stopPropagation();
       } else if (evt.key === "Escape") {
         if (isDirtyRef.current) {
+          const { value: previousValue } = editState;
           isDirtyRef.current = false;
-          setMessage(undefined);
-          setValue(initialValueRef.current);
+          setEditState({ value: initialValueRef.current, message: undefined });
+          // this assumes the original value was valid, is that safe ?
+          onEdit?.(
+            {
+              editType: "cancel",
+              isValid: true,
+              previousValue,
+              value: initialValueRef.current,
+            },
+            "cancel",
+          );
         }
       }
     },
-    [commit],
+    [commit, editState, onEdit],
   );
 
   const handleBlur = useCallback<FocusEventHandler<HTMLElement>>(
@@ -106,30 +113,38 @@ export const useEditableText = <T extends string | number = string>({
 
   const handleChange = useCallback<FormEventHandler>(
     (evt) => {
-      let typedValue: VuuRowDataItemType = (evt.target as HTMLInputElement)
-        .value;
-      if (type === "number" && !isNaN(parseFloat(typedValue))) {
-        typedValue = parseFloat(typedValue);
-      }
+      const { value } = evt.target as HTMLInputElement;
+      const typedValue = getTypedValue(value, type);
+      console.log(
+        `[useEditableText] handleChange '${value}' typedVaue ${typedValue}
+          initial value ${initialValueRef.current}
+        `,
+      );
       isDirtyRef.current = value !== initialValueRef.current;
-      setValue(typedValue as T);
-      if (hasCommittedRef.current && value !== undefined) {
-        const result = clientSideEditValidationCheck?.(value);
-        if (result?.ok === false) {
-          setMessage(result.messages?.join(","));
-        }
+      const result = clientSideEditValidationCheck?.(value, "change");
+      console.log({ result, value });
+      setEditState({ value });
+
+      onEdit?.(
+        { editType: "change", isValid: result?.ok !== false, value },
+        "change",
+      );
+      if (result?.ok === false) {
+        console.log("cell fails validation");
+        setEditState({ value, message: result.messages?.join(",") });
       }
     },
-    [clientSideEditValidationCheck, type, value],
+    [clientSideEditValidationCheck, onEdit, type],
   );
 
   return {
+    //TODO why are we detecting commit here, why not use VuuInput ?
     inputProps: {
       onBlur: handleBlur,
       onKeyDown: handleKeyDown,
     },
     onChange: handleChange,
-    value: value ?? "",
-    warningMessage: message,
+    value: editState.value,
+    warningMessage: editState.message,
   };
 };

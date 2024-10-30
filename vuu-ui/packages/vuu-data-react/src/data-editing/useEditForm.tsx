@@ -47,9 +47,9 @@ const CLEAN_VALIDATION: ValidationState = {
 
 const getValidationChecker = (
   descriptor: DataValueDescriptor,
-  apply: "change" | "commit",
+  editPhase: "change" | "commit",
 ) => {
-  const rules = getEditValidationRules(descriptor, apply);
+  const rules = getEditValidationRules(descriptor, editPhase) ?? [];
   return buildValidationChecker(rules);
 };
 
@@ -59,7 +59,7 @@ const nextValidationState = (
   value: VuuRowDataItemType,
 ): ValidationState => {
   const check = getValidationChecker(dataDescriptor, "change");
-  const result = check(value);
+  const result = check(value, "change");
   const { name } = dataDescriptor;
 
   const { ok: wasOk, messages: existingMessages } = state;

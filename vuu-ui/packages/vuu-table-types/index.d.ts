@@ -43,11 +43,22 @@ export declare type TableHeadings = TableHeading[][];
 
 export declare type ValueFormatter = (value: unknown) => string;
 
-export declare type DataCellEditHandler = (
-  row: DataSourceRow,
-  columnName: string,
-  value: VuuRowDataItemType,
-) => Promise<string | true>;
+export interface EditEventState {
+  editType?: EditType;
+  isValid?: boolean;
+  value: unknown;
+  previousValue?: VuuRowDataItemType;
+  value: VuuRowDataItemType;
+}
+
+export interface DataCellEditEvent extends EditEventState {
+  row: DataSourceRow;
+  columnName: string;
+}
+
+export declare type DataCellEditNotification = (
+  editEvent: DataCellEditEvent,
+) => void;
 
 export interface TableCellProps {
   className?: string;
@@ -60,9 +71,12 @@ export interface TableCellProps {
 
 export declare type CommitResponse = Promise<true | string>;
 
-export declare type DataItemCommitHandler<
-  T extends VuuRowDataItemType = VuuRowDataItemType,
-> = (value: T) => CommitResponse;
+export declare type EditType = "commit" | "change" | "cancel";
+
+declare type DataItemEditHandler<T extends EditType = EditType> = (
+  editState: EditEventState,
+  editPhase: T,
+) => T extends "commit" ? Promise<string | true> : void;
 
 export declare type TableRowSelectHandler = (
   row: DataSourceRowObject | null,
@@ -88,7 +102,7 @@ export declare type TableRowClickHandlerInternal = (
 
 export interface TableCellRendererProps
   extends Omit<TableCellProps, "onDataEdited"> {
-  onCommit?: DataItemCommitHandler;
+  onEdit?: DataItemEditHandler;
 }
 
 /**
@@ -395,6 +409,7 @@ export interface RowProps extends BaseRowProps {
   groupToggleTarget?: GroupToggleTarget;
   highlighted?: boolean;
   offset: number;
+  onCellEdit?: CellEditHandler;
   onClick?: TableRowClickHandlerInternal;
   onDataEdited?: DataCellEditHandler;
   onToggleGroup?: (row: DataSourceRow, column: RuntimeColumnDescriptor) => void;

@@ -55,6 +55,7 @@ export const Row = memo(
     highlighted,
     row,
     offset,
+    onCellEdit,
     onClick,
     onDataEdited,
     onToggleGroup,

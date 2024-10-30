@@ -216,6 +216,11 @@ export const isColumnTypeRenderer = (
 ): renderer is ColumnTypeRendering =>
   typeof (renderer as ColumnTypeRendering)?.name !== "undefined";
 
+export const hasCustomRenderer = (
+  type?: DataValueType,
+): type is DataValueTypeDescriptor =>
+  isTypeDescriptor(type) && isColumnTypeRenderer(type.renderer);
+
 export const isLookupRenderer = (
   renderer?: unknown,
 ): renderer is LookupRenderer =>

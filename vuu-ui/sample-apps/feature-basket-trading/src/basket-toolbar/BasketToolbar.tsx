@@ -1,7 +1,6 @@
 import { MenuActionHandler } from "@finos/vuu-data-types";
 import {
   CycleStateButton,
-  CycleStateCommitHandler,
   ExpandoInput,
   Icon,
   useEditableText,
@@ -9,7 +8,7 @@ import {
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
 import type {
   CommitResponse,
-  DataItemCommitHandler,
+  DataItemEditHandler,
 } from "@finos/vuu-table-types";
 import type { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { HTMLAttributes, useCallback } from "react";
@@ -20,6 +19,7 @@ import { BasketMenu } from "./BasketMenu";
 import cx from "clsx";
 
 import "./BasketToolbar.css";
+import { CommitHandler } from "@finos/vuu-utils";
 
 const classBase = "vuuBasketToolbar";
 
@@ -56,10 +56,10 @@ export const BasketToolbar = ({
     return true;
   };
 
-  const handleUnitsEdited = useCallback<DataItemCommitHandler<number>>(
-    (value) => {
+  const handleUnitsEdited = useCallback<DataItemEditHandler>(
+    ({ value }) => {
       if (onCommit) {
-        return onCommit?.("units", value);
+        return onCommit?.("units", value as VuuRowDataItemType);
       } else {
         throw Error(
           "BasketToolbar onCommit prop not supplied for editable Basket",
@@ -72,11 +72,11 @@ export const BasketToolbar = ({
   const { warningMessage: unitErrorMessage, ...unitProps } =
     useEditableText<number>({
       initialValue: basket?.units,
-      onCommit: handleUnitsEdited,
+      onEdit: handleUnitsEdited,
       type: "number",
     });
 
-  const handleSideCommit = useCallback<CycleStateCommitHandler>(
+  const handleSideCommit = useCallback<CommitHandler<HTMLButtonElement>>(
     (_, value) => {
       if (onCommit) {
         return onCommit?.("side", value);
