@@ -146,10 +146,12 @@ export const useBulkEditRow = ({
   );
 
   const {
-    current: { ok, messages: errorMessages },
+    current: { messages: errorMessages },
   } = validationStateRef;
 
-  const onCommit = useCallback<CommitHandler<HTMLElement, string | undefined>>(
+  const handleCommit = useCallback<
+    CommitHandler<HTMLElement, string | undefined>
+  >(
     (evt, value) => {
       if (value !== undefined && String(value).trim() !== "") {
         const columnName = focusedFieldRef.current;
@@ -168,7 +170,7 @@ export const useBulkEditRow = ({
     errorMessages,
     formFieldsContainerRef,
     onChange: handleChange,
-    onCommit,
+    onCommit: handleCommit,
     onFocus: handleFocus,
   };
 };

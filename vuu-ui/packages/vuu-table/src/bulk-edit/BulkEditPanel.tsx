@@ -10,7 +10,7 @@ import { hasValidationRules, isTypeDescriptor } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { HTMLAttributes, MutableRefObject, useMemo, useRef } from "react";
+import { HTMLAttributes, useMemo, useRef } from "react";
 import { Table } from "../Table";
 import { BulkEditRow, type EditValueChangeHandler } from "./BulkEditRow";
 import { useBulkEditPanel } from "./useBulkEditPanel";
@@ -84,7 +84,7 @@ export const BulkEditPanel = ({
   const bulkRowValidRef = useRef(true);
 
   const bulkEditRow = useMemo(() => {
-    const onBulkChange: EditValueChangeHandler = (column, value) => {
+    const handleBulkChange: EditValueChangeHandler = (column, value) => {
       dataSource.rpcCall?.({
         namedParams: { column: column.name, value },
         params: [],
@@ -96,7 +96,7 @@ export const BulkEditPanel = ({
     return (
       <BulkEditRow
         dataSource={parentDs}
-        onBulkChange={onBulkChange}
+        onBulkChange={handleBulkChange}
         bulkRowValidRef={bulkRowValidRef}
       />
     );
@@ -123,7 +123,7 @@ export const BulkEditPanel = ({
           config={config}
           customHeader={bulkEditRow}
           dataSource={dataSource}
-          height={400}
+          height={380}
           width={600}
           showColumnHeaderMenus={false}
           selectionModel="none"

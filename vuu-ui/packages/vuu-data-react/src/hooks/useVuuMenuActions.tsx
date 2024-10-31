@@ -20,7 +20,7 @@ import type {
   VuuRpcResponse,
   VuuTable,
 } from "@finos/vuu-protocol-types";
-import { BulkEditPanel } from "@finos/vuu-table";
+import { BulkEditPanel, BulkEditPanelDialog } from "@finos/vuu-table";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
   VuuServerMenuOptions,
@@ -37,7 +37,7 @@ import {
   viewportRpcRequest,
 } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import {
   FormConfig,
   FormFieldDescriptor,
@@ -158,20 +158,6 @@ export const useVuuMenuActions = ({
   const { showDialog, closeDialog } = useDialogContext();
   const showNotification = useNotifications();
 
-  const [valid, setValid] = useState(true);
-  const handleChange = useCallback(
-    (isValid: boolean) => {
-      console.log("setting to: ", isValid);
-      setValid(isValid);
-      console.log("current valid value: ", valid);
-    },
-    [valid],
-  );
-
-  useEffect(() => {
-    console.log("new submit value: ", valid);
-  }, [valid]);
-
   const showBulkEditDialog = useCallback(
     (table: VuuTable, columns?: ColumnDescriptor[]) => {
       // NO send BULK_EDIT_BEGIN
@@ -179,35 +165,22 @@ export const useVuuMenuActions = ({
         table,
         viewport: table.table,
       });
-      const handleSubmit = () => {
-        sessionDs?.rpcCall?.(viewportRpcRequest("VP_BULK_EDIT_SUBMIT_RPC"));
-        closeDialog();
-      };
 
       if (sessionDs) {
         showDialog(
-          <BulkEditPanel
+          <BulkEditPanelDialog
             columns={columns}
-            dataSource={sessionDs}
-            onSubmit={handleSubmit}
+            sessionDs={sessionDs}
             parentDs={dataSource}
-            handleChange={handleChange}
+            closeDialog={closeDialog}
           />,
           "Bulk Amend",
-          [
-            <Button key="cancel" onClick={closeDialog}>
-              Cancel
-            </Button>,
-            <Button key="submit" onClick={handleSubmit} disabled={!valid}>
-              Save
-            </Button>,
-          ],
         );
 
         return true;
       }
     },
-    [VuuDataSource, valid, closeDialog, dataSource, handleChange, showDialog],
+    [VuuDataSource, closeDialog, dataSource, showDialog],
   );
 
   const showSessionEditingForm = useCallback(
@@ -225,6 +198,10 @@ export const useVuuMenuActions = ({
       const handleSubmit = () => {
         sessionDs?.rpcCall?.(viewportRpcRequest("VP_BULK_EDIT_SUBMIT_RPC"));
         closeDialog();
+      };
+
+      const handleChange = (isValid: boolean) => {
+        console.log("placeholder: ", isValid);
       };
 
       if (sessionDs) {
@@ -249,7 +226,7 @@ export const useVuuMenuActions = ({
         return true;
       }
     },
-    [closeDialog, dataSource, handleChange, showDialog],
+    [closeDialog, dataSource, showDialog],
   );
 
   const handleMenuAction = useCallback(
