@@ -41,7 +41,7 @@
   &.vuuSplitButton-secondary {
     --split-background: var(
       --background-hover,
-      var(--salt-actionable-secondary-background-hover)
+      var(--salt-actionable-subtle-background-hover)
     );
   }
   &.vuuSplitButton-cta {
@@ -88,17 +88,17 @@
   --saltButton-borderColor: var(--split-background);
   --split-background: var(
     --background,
-    var(--salt-actionable-secondary-background)
+    var(--salt-actionable-subtle-background)
   );
-  --split-background-active: var(--salt-actionable-secondary-background-active);
-  --split-color-active: var(--salt-actionable-secondary-foreground-active);
+  --split-background-active: var(--salt-actionable-subtle-background-active);
+  --split-color-active: var(--salt-actionable-subtle-foreground-active);
 }
 
 .vuuSplitButton-secondary:hover:not(.vuuSplitButton-disabled) {
   --vuuButton-borderColor: var(--split-background);
-  --split-background: var(--salt-actionable-secondary-background-hover);
+  --split-background: var(--salt-actionable-subtle-background-hover);
   .saltButton {
-    --saltButton-text-color: var(--salt-actionable-secondary-foreground-hover);
+    --saltButton-text-color: var(--salt-actionable-subtle-foreground-hover);
   }
 }
 

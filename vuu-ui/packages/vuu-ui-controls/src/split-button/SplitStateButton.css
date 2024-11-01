@@ -1,6 +1,6 @@
 .vuuSplitStateButton {
-  --split-state-background: var(--salt-actionable-secondary-background);
-  --split-state-foreground: var(--salt-actionable-secondary-foreground);
+  --split-state-background: var(--salt-actionable-subtle-background);
+  --split-state-foreground: var(--salt-actionable-subtle-foreground);
   --vuuSplitButton-background: var(--split-state-background);
   --vuuSplitButton-foreground: var(--split-state-foreground);
   --vuuSplitButton-background-hover: var(--split-state-background);
@@ -43,9 +43,9 @@
     .vuuSplitButton-main:active,
     .vuuSplitButton-main.saltButton-active
   ) {
-  --split-background: var(--salt-actionable-secondary-background);
+  --split-background: var(--salt-actionable-subtle-background);
   .saltButton-primary:active {
-    background: var(--salt-actionable-secondary-background);
+    background: var(--salt-actionable-subtle-background);
   }
 }
 .vuuSplitStateButton[aria-checked="true"]:has(.vuuEditableLabel-editing):has(
