@@ -31,7 +31,7 @@
   .saltButton-primary {
     --saltButton-borderColor: var(
       --vuuButton-borderColor,
-      var(--salt-actionable-primary-foreground)
+      var(--salt-actionable-bold-foreground)
     );
     --saltButton-borderWidth: 1px;
     --saltButton-borderStyle: solid;
@@ -42,7 +42,7 @@
     ):hover {
     --saltButton-borderColor: var(
       --vuuButton-borderColor,
-      var(--salt-actionable-primary-background-hover)
+      var(--salt-actionable-bold-background-hover)
     );
   }
 }

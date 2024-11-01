@@ -8,35 +8,33 @@
 
   .saltButton-primary:active,
   .saltButton-primary.saltButton-active {
-    --saltButton-background-active: var(--salt-actionable-primary-background);
-    --saltButton-text-color-active: var(--salt-actionable-primary-foreground);
+    --saltButton-background-active: var(--salt-actionable-bold-background);
+    --saltButton-text-color-active: var(--salt-actionable-bold-foreground);
   }
 }
 
 .vuuSplitStateButton[aria-checked="true"] {
-  --vuuButtonIcon-color: var(--salt-actionable-primary-foreground-active);
-  --saltButton-text-color: var(--salt-actionable-primary-foreground-active);
-  --saltButton-text-color-hover: var(
-    --salt-actionable-primary-foreground-active
-  );
-  --split-state-background: var(--salt-actionable-primary-background-active);
-  --split-state-foreground: var(--salt-actionable-primary-foreground-active);
+  --vuuButtonIcon-color: var(--salt-actionable-bold-foreground-active);
+  --saltButton-text-color: var(--salt-actionable-bold-foreground-active);
+  --saltButton-text-color-hover: var(--salt-actionable-bold-foreground-active);
+  --split-state-background: var(--salt-actionable-bold-background-active);
+  --split-state-foreground: var(--salt-actionable-bold-foreground-active);
   &.focusVisible {
-    --split-state-background: var(--salt-actionable-primary-background-active);
+    --split-state-background: var(--salt-actionable-bold-background-active);
   }
 }
 
 .vuuSplitStateButton[aria-checked="true"] {
   .vuuEditableLabel-input {
-    color: var(--salt-actionable-primary-foreground-active);
+    color: var(--salt-actionable-bold-foreground-active);
   }
 }
 
 .vuuSplitButton-main.saltButton-active + .vuuSplitButton-trigger,
 .vuuSplitButton-main:active + .vuuSplitButton-trigger {
-  --saltButton-background: var(--salt-actionable-primary-background);
+  --saltButton-background: var(--salt-actionable-bold-background);
   .vuuIcon {
-    --vuu-icon-color: var(--salt-actionable-primary-foreground);
+    --vuu-icon-color: var(--salt-actionable-bold-foreground);
   }
 }
 
@@ -54,14 +52,14 @@
     .vuuSplitButton-main:active,
     .vuuSplitButton-main.saltButton-active
   ) {
-  --split-background: var(--salt-actionable-primary-background-active);
+  --split-background: var(--salt-actionable-bold-background-active);
   .saltButton-primary:active {
-    background: var(--salt-actionable-primary-background-active);
+    background: var(--salt-actionable-bold-background-active);
   }
 }
 
 .vuuSplitStateButton:hover:not(.vuuSplitStateButton-disabled) {
   .saltButton {
-    border-color: var(--salt-actionable-primary-foreground);
+    border-color: var(--salt-actionable-bold-foreground);
   }
 }
