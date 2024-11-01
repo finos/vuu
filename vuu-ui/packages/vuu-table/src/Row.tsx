@@ -106,7 +106,7 @@ export const Row = memo(
 
     const canExpand = isLeaf === false && childRowCount > 0;
     const ariaExpanded = isExpanded ? true : canExpand ? false : undefined;
-    const ariaLevel = isLeaf ? undefined : depth;
+    const ariaLevel = isLeaf && depth === 1 ? undefined : depth;
 
     // const style = { transform: `translate3d(0px, ${offset}px, 0px)` };
     const style = { top: offset };
@@ -114,10 +114,17 @@ export const Row = memo(
     const handleGroupCellClick = useCallback(
       (evt: MouseEvent, column: RuntimeColumnDescriptor) => {
         if (isGroupColumn(column) || isJsonGroup(column, row, columnMap)) {
+          const toggleIconClicked =
+            queryClosest(evt.target, ".vuuToggleIconButton") !== null;
           if (groupToggleTarget === "toggle-icon") {
-            if (queryClosest(evt.target, "button") === null) {
+            if (!toggleIconClicked) {
               return;
             }
+          }
+          if (toggleIconClicked) {
+            // prevent evt bubbling, will suppress selection hook.
+            // Clicking the toggle icon directly never triggers row selection
+            evt.stopPropagation();
           }
           onToggleGroup?.(row, column);
         }

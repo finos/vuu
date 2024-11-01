@@ -419,6 +419,7 @@ const TableCore = ({
                 the correct target cell.
               */}
               <div
+                aria-hidden={true}
                 className={`${classBase}-focusCellPlaceholder`}
                 onKeyDown={focusCellPlaceholderKeyDown}
                 ref={focusCellPlaceholderRef}

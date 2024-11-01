@@ -335,7 +335,10 @@ export const QuickFilters = () => {
       <style>{`
       .vuuFilterBar-quick-filter { width: 100%; }
     `}</style>
-      <FilterBarTemplate className="quick-filters" variant="quick-filters" />
+      <FilterBarTemplate
+        className="quick-filters"
+        variant="quick-filters-only"
+      />
     </>
   );
 };
@@ -344,7 +347,7 @@ QuickFilters.displaySequence = displaySequence++;
 export const QuickFiltersThreeColumns = () => {
   return (
     <FilterBarTemplate
-      variant="quick-filters"
+      variant="quick-filters-only"
       QuickFilterProps={{ quickFilterColumns: ["bbg"] }}
     />
   );

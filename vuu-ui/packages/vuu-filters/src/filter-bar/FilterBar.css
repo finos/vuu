@@ -27,7 +27,7 @@
   padding: var(--salt-spacing-100) var(--salt-spacing-200);
 }
 
-.vuuFilterBar-quick-filter {
+.vuuFilterBar-quick-filter-mode {
   --icon-container-height: 100%;
   --icon-marginTop: 20px;
   --filterbar-height: var(

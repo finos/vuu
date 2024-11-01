@@ -68,17 +68,16 @@ const FilterTableTemplate = ({
     variant,
   };
 
-  const tableProps = {
-    config: tableConfig,
-    dataSource,
-    height: 645,
-    renderBufferSize: 20,
-    width: 715,
-  };
-
   return (
     <View style={{ height: "100%", ...style }}>
-      <FilterTable FilterBarProps={filterBarProps} TableProps={tableProps} />
+      <FilterTable
+        FilterBarProps={filterBarProps}
+        TableProps={{
+          config: tableConfig,
+          dataSource,
+          renderBufferSize: 20,
+        }}
+      />
     </View>
   );
 };
@@ -101,17 +100,17 @@ export const FilterTableArrayDataInstruments = () => {
 };
 FilterTableArrayDataInstruments.displaySequence = displaySequence++;
 
-export const FilterTableArrayDataInstrumentsQuickFilters = () => (
+export const FilterTableInstrumentsQuickFilters = () => (
   <LocalDataSourceProvider modules={["SIMUL"]}>
     <FilterTableTemplate
-      variant="quick-filters"
+      variant="quick-filters-only"
       QuickFilterProps={{
         quickFilterColumns: ["isin", "currency", "exchange"],
       }}
     />
   </LocalDataSourceProvider>
 );
-FilterTableArrayDataInstrumentsQuickFilters.displaySequence = displaySequence++;
+FilterTableInstrumentsQuickFilters.displaySequence = displaySequence++;
 
 export const FilterTableArrayDataInstrumentsFullFilters = () => (
   <LocalDataSourceProvider modules={["SIMUL"]}>

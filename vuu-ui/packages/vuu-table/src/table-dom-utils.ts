@@ -26,7 +26,7 @@ export const getLevelUp = (
     if (row) {
       const nextRowIndex = parseInt(row.ariaRowIndex ?? "- 1");
       if (nextRowIndex !== -1) {
-        return [nextRowIndex - 1, 0];
+        return [nextRowIndex, 1];
       }
     }
   }

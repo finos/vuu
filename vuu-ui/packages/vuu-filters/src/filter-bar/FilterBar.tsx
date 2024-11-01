@@ -18,8 +18,8 @@ import { FilterMode, useFilterBar } from "./useFilterBar";
 import filterBarCss from "./FilterBar.css";
 
 export type FilterBarVariant =
-  | "custom-filters"
-  | "quick-filters"
+  | "custom-filters-only"
+  | "quick-filters-only"
   | "full-filters";
 
 export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
@@ -68,7 +68,7 @@ export const FilterBar = ({
   onFilterStateChanged,
   suggestionProvider,
   tableSchema,
-  variant = "custom-filters",
+  variant = "custom-filters-only",
   ...htmlAttributes
 }: FilterBarProps) => {
   const targetWindow = useWindow();
@@ -78,8 +78,8 @@ export const FilterBar = ({
     window: targetWindow,
   });
 
-  const allowCustomFilters = variant !== "quick-filters";
-  const allowQuickFilters = variant !== "custom-filters";
+  const allowCustomFilters = variant !== "quick-filters-only";
+  const allowQuickFilters = variant !== "custom-filters-only";
 
   const controlledFilterMode: FilterMode | undefined = !allowCustomFilters
     ? "quick-filter"
@@ -131,13 +131,9 @@ export const FilterBar = ({
   return (
     <div
       {...htmlAttributes}
-      className={cx(
-        className,
-        `${classBase}-${variant}`,
-        `${classBase}-${filterMode}`,
-      )}
+      className={cx(className, `${classBase}-${filterMode}-mode`)}
     >
-      {variant === "quick-filters" ? null : (
+      {variant === "quick-filters-only" ? null : (
         <div className={`${classBase}-iconContainer`}>{startAdornment}</div>
       )}
       {filterMode === "custom-filter" ? (

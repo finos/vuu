@@ -29,8 +29,6 @@ export const ColumnHeaderPill = ({
     window: targetWindow,
   });
 
-  console.log({ htmlAttributes });
-
   if (removable && typeof onRemove !== "function") {
     throw Error(
       "ColumnHeaderPill onRemove prop must be provided if Pill is removable",
