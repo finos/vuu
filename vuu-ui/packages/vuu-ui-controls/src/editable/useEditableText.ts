@@ -1,14 +1,12 @@
 import { DataValueValidationChecker } from "@finos/vuu-data-types";
-import { DataItemEditHandler } from "@finos/vuu-table-types";
-import { getTypedValue } from "@finos/vuu-utils";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
-import { dispatchCustomEvent } from "@finos/vuu-utils";
+import { DataItemEditHandler } from "@finos/vuu-table-types";
+import { dispatchCustomEvent, getTypedValue } from "@finos/vuu-utils";
 import {
   FocusEventHandler,
   FormEventHandler,
   KeyboardEvent,
   useCallback,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -37,16 +35,16 @@ export const useEditableText = <T extends string | number | boolean = string>({
   const [editState, setEditState] = useState<EditState>({
     value: value?.toString() ?? "",
   });
-  console.log("edit state: ", editState);
+  // console.log("edit state: ", editState);
   const initialValueRef = useRef<string>(value?.toString() ?? "");
   const isDirtyRef = useRef(false);
 
-  useMemo(() => {
-    if (editState.value !== value?.toString()) {
-      setEditState({ message: "", value: value?.toString() ?? "" });
-      console.log("initial value changed to: ", value);
-    }
-  }, [editState.value, value]);
+  // useMemo(() => {
+  //   if (editState.value !== value?.toString()) {
+  //     setEditState({ message: "", value: value?.toString() ?? "" });
+  //     console.log("initial value changed to: ", value);
+  //   }
+  // }, [editState.value, value]);
 
   const commit = useCallback(
     async (target: HTMLElement) => {
