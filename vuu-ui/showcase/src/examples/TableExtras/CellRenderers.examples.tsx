@@ -6,8 +6,8 @@ import {
   ColumnTypeRendering,
   RuntimeColumnDescriptor,
 } from "@finos/vuu-table-types";
-import { getValueFormatter } from "@finos/vuu-utils";
 import { VuuInput } from "@finos/vuu-ui-controls";
+import { getValueFormatter } from "@finos/vuu-utils";
 import { FormEventHandler, useCallback, useMemo, useState } from "react";
 
 let displaySequence = 1;
@@ -49,7 +49,7 @@ export const DefaultBackgroundCell = ({
 
   const handleChange = useCallback<FormEventHandler<HTMLInputElement>>(
     (evt) => setValue((evt.target as HTMLInputElement).value),
-    []
+    [],
   );
   const handlePriceChange = useCallback((evt, value) => {
     const numericValue = parseFloat(value);
@@ -77,6 +77,7 @@ export const DefaultBackgroundCell = ({
         onCommit={handlePriceChange}
       />
       <TableCell
+        ariaColIndex={0}
         column={priceColumn as RuntimeColumnDescriptor}
         columnMap={columnMap}
         row={row as any}

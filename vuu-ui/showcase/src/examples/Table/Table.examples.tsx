@@ -44,8 +44,8 @@ import {
 import { useAutoLoginToVuuServer, useTestDataSource } from "../utils";
 import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 
-import "./Table.examples.css";
 import { VuuDataSourceProvider } from "@finos/vuu-data-react";
+import "./Table.examples.css";
 
 let displaySequence = 1;
 
@@ -483,7 +483,11 @@ export const GroupHeaderCellOneColumn = () => {
         } as CSSProperties
       }
     >
-      <GroupHeaderCell column={column} onRemoveColumn={handleRemoveColumn} />
+      <GroupHeaderCell
+        ariaColIndex={0}
+        column={column}
+        onRemoveColumn={handleRemoveColumn}
+      />
     </div>
   );
 };
@@ -528,7 +532,11 @@ export const GroupHeaderCellTwoColumn = () => {
         } as CSSProperties
       }
     >
-      <GroupHeaderCell column={column} onRemoveColumn={handleRemoveColumn} />
+      <GroupHeaderCell
+        ariaColIndex={0}
+        column={column}
+        onRemoveColumn={handleRemoveColumn}
+      />
     </div>
   );
 };
@@ -582,6 +590,7 @@ export const GroupHeaderCellThreeColumn = () => {
     >
       <div data-resizeable style={{ flex: "1 1 auto", overflow: "hidden" }}>
         <GroupHeaderCell
+          ariaColIndex={0}
           className="vuuFullWidthExample"
           column={column}
           onRemoveColumn={handleRemoveColumn}
@@ -631,6 +640,7 @@ export const GroupHeaderCellThreeColumnFixedWidth = () => {
   return (
     <div data-resizeable style={{ width: 300, overflow: "hidden" }}>
       <GroupHeaderCell
+        ariaColIndex={0}
         className="vuuFullWidthExample"
         column={column}
         onRemoveColumn={handleRemoveColumn}

@@ -21,6 +21,7 @@ import headerCellCss from "./HeaderCell.css";
 const classBase = "vuuTableHeaderCell";
 
 export const HeaderCell = ({
+  ariaColIndex,
   className: classNameProp,
   column,
   onClick,
@@ -57,6 +58,7 @@ export const HeaderCell = ({
     const sortIndicator = <SortIndicator column={column} />;
     const columnLabel = HeaderCellLabelRenderer ? (
       <HeaderCellLabelRenderer
+        ariaColIndex={ariaColIndex}
         className={`${classBase}-label`}
         column={column}
       />
@@ -64,7 +66,13 @@ export const HeaderCell = ({
       <div className={`${classBase}-label`}>{column.label ?? column.name}</div>
     );
     const columnContent = HeaderCellContentRenderer
-      ? [<HeaderCellContentRenderer column={column} key="content" />]
+      ? [
+          <HeaderCellContentRenderer
+            ariaColIndex={ariaColIndex}
+            column={column}
+            key="content"
+          />,
+        ]
       : [];
 
     if (showMenu) {
@@ -82,13 +90,19 @@ export const HeaderCell = ({
         return [columnLabel, sortIndicator, columnContent];
       }
     }
-  }, [HeaderCellContentRenderer, HeaderCellLabelRenderer, column, showMenu]);
+  }, [
+    HeaderCellContentRenderer,
+    HeaderCellLabelRenderer,
+    ariaColIndex,
+    column,
+    showMenu,
+  ]);
 
   const handleClick = useCallback<MouseEventHandler<HTMLDivElement>>(
     (evt) => {
       !isResizing && onClick?.(evt);
     },
-    [isResizing, onClick]
+    [isResizing, onClick],
   );
 
   const handleKeyDown = useCallback<KeyboardEventHandler<HTMLDivElement>>(
@@ -97,7 +111,7 @@ export const HeaderCell = ({
         onClick?.(evt);
       }
     },
-    [onClick]
+    [onClick],
   );
 
   const { className, style } = useCell(column, classBase, true);
@@ -105,6 +119,7 @@ export const HeaderCell = ({
   return (
     <div
       {...htmlAttributes}
+      aria-colindex={ariaColIndex}
       className={cx(className, classNameProp, {
         [`${classBase}-resizing`]: isResizing,
         [`${classBase}-noMenu`]: showMenu === false,

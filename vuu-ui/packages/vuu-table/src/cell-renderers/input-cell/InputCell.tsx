@@ -28,7 +28,7 @@ export const InputCell = ({
   const { align = "left", clientSideEditValidationCheck } = column;
 
   const { warningMessage, ...editProps } = useEditableText({
-    initialValue: dataValue,
+    value: dataValue,
     onEdit,
     clientSideEditValidationCheck,
   });

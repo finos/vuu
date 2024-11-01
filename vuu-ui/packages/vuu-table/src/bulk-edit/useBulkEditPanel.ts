@@ -1,16 +1,17 @@
 import { DataSource } from "@finos/vuu-data-types";
 import {
   ColumnDescriptor,
+  DataCellEditNotification,
   RuntimeColumnDescriptor,
 } from "@finos/vuu-table-types";
-import { ColumnMap, buildColumnMap, queryClosest } from "@finos/vuu-utils";
-import { MutableRefObject, SyntheticEvent, useCallback, useRef } from "react";
+import { buildColumnMap } from "@finos/vuu-utils";
+import { useCallback, useRef } from "react";
 
 export interface EditBulkPanelProps {
   columnDescriptors: ColumnDescriptor[];
   dataSource: DataSource;
-  bulkRowValidRef: MutableRefObject<boolean>;
-  handleChange: (val: boolean) => void;
+  onChange: (val: boolean) => void;
+  rowState: boolean;
 }
 
 function find(descriptors: ColumnDescriptor[], fieldname: string) {
@@ -21,7 +22,7 @@ function find(descriptors: ColumnDescriptor[], fieldname: string) {
   throw Error(`DataValueDescriptor not found for field ${fieldname}`);
 }
 
-const isRecorded = (index: string[], record: string[][]) => {
+const isRecorded = (index: number[], record: number[][]) => {
   for (const r of record) {
     if (isSameArray(r, index)) {
       return true;
@@ -30,95 +31,77 @@ const isRecorded = (index: string[], record: string[][]) => {
   return false;
 };
 
-const isSameArray = (arr1: string[], arr2: string[]) => {
-  return arr1[0] === arr2[0] && arr1[1] === arr2[1];
+const isSameArray = (arr1: number[], arr2: number[]) => {
+  return arr1[0] == arr2[0] && arr1[1] == arr2[1];
 };
 
 export const useBulkEditPanel = ({
   columnDescriptors,
   dataSource,
-  bulkRowValidRef,
-  handleChange,
+  onChange,
+  rowState,
 }: EditBulkPanelProps) => {
-  const fieldContainerRef = useRef<HTMLDivElement>(null);
-  const focusIndexRef = useRef<string[]>();
-  const errorsRef = useRef<string[][]>([]);
+  const errorsRef = useRef<number[][]>([]);
 
   const columnMap = buildColumnMap(dataSource.columns);
-  const getFieldFromIndex = (columnMap: ColumnMap, idx: number) => {
-    for (const [fieldName, index] of Object.entries(columnMap)) {
-      if (index === idx + 7) {
-        return fieldName;
-      }
-    }
-    throw Error(`Field name not found for col-index ${idx}`);
-  };
 
-  const handleFocus = useCallback((evt) => {
-    const rowIndex = queryClosest(evt.target, "[aria-rowindex]")?.ariaRowIndex;
-    const colIndex = queryClosest(evt.target, "[aria-colindex]")?.ariaColIndex;
-    if (rowIndex && colIndex) {
-      focusIndexRef.current = [rowIndex, colIndex];
-    }
-  }, []);
+  const handleDataEdited = useCallback<DataCellEditNotification>(
+    ({
+      editType = "commit",
+      isValid = true,
+      row,
+      columnName,
+      value,
+      previousValue = value,
+    }) => {
+      console.log(
+        `data edited [${row[0]}], ${columnName} ${previousValue} => ${value} (${editType}) isValid ${isValid}`,
+      );
 
-  const handleFieldChange = useCallback(
-    (evt: SyntheticEvent<HTMLInputElement>) => {
-      const value = (
-        queryClosest(evt.target, "[value]") as unknown as HTMLInputElement
-      ).value;
-      if (focusIndexRef.current) {
-        const fieldName = getFieldFromIndex(
-          columnMap,
-          parseInt(focusIndexRef.current[1]),
-        );
-        const d = find(columnDescriptors, fieldName);
-        if ((d as RuntimeColumnDescriptor).clientSideEditValidationCheck) {
-          const check = (d as RuntimeColumnDescriptor)
-            .clientSideEditValidationCheck;
-          if (check) {
-            const result = check(value);
-            if (
-              !result.ok &&
-              !isRecorded(focusIndexRef.current, errorsRef.current)
-            ) {
-              console.log("add to errors: ", result);
-              errorsRef.current.push(focusIndexRef.current);
-            } else if (
-              result.ok &&
-              isRecorded(focusIndexRef.current, errorsRef.current)
-            ) {
-              const newRef = [];
-              for (const error of errorsRef.current) {
-                if (!isSameArray(error, focusIndexRef.current)) {
-                  newRef.push(error);
-                }
+      const d = find(columnDescriptors, columnName);
+      if ((d as RuntimeColumnDescriptor).clientSideEditValidationCheck) {
+        const check = (d as RuntimeColumnDescriptor)
+          .clientSideEditValidationCheck;
+        if (check) {
+          const result = check(value.toString(), "change");
+          console.log("result: ", value, result);
+          if (
+            !result.ok &&
+            !isRecorded([row[0], columnMap[columnName]], errorsRef.current)
+          ) {
+            console.log("add to errors: ", result);
+            errorsRef.current.push([row[0], columnMap[columnName]]);
+          } else if (
+            result.ok &&
+            isRecorded([row[0], columnMap[columnName]], errorsRef.current)
+          ) {
+            const newRef = [];
+            for (const error of errorsRef.current) {
+              if (!isSameArray(error, [row[0], columnMap[columnName]])) {
+                newRef.push(error);
               }
-              errorsRef.current = newRef;
             }
+            errorsRef.current = newRef;
           }
         }
       }
-
-      if (bulkRowValidRef) {
-        if (
-          bulkRowValidRef.current === true &&
-          errorsRef.current.length === 0
-        ) {
-          handleChange(true);
-          console.log("can submit", errorsRef.current);
-        } else {
-          handleChange(false);
-          console.log("cannot submit", errorsRef.current);
-        }
+      console.log("errors: ", errorsRef.current);
+      if (rowState === true && errorsRef.current.length === 0) {
+        onChange(true);
+      } else {
+        onChange(false);
       }
     },
-    [],
+    [columnDescriptors, columnMap, onChange, rowState],
   );
 
+  if (rowState === true && errorsRef.current.length === 0) {
+    onChange(true);
+  } else {
+    onChange(false);
+  }
+
   return {
-    fieldContainerRef,
-    onChange: handleFieldChange,
-    onFocus: handleFocus,
+    onDataEdited: handleDataEdited,
   };
 };

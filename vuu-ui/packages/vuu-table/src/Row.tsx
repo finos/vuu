@@ -1,17 +1,17 @@
 import { RowProps, RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import {
+  RowSelected,
   isGroupColumn,
   isJsonColumn,
   isJsonGroup,
   isNotHidden,
   metadataKeys,
   queryClosest,
-  RowSelected,
 } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { forwardRef, memo, MouseEvent, useCallback } from "react";
+import { MouseEvent, forwardRef, memo, useCallback } from "react";
 import { TableCell, TableGroupCell } from "./table-cell";
 
 import rowCss from "./Row.css";
@@ -146,13 +146,14 @@ export const Row = memo(
           <span className={`${classBase}-selectionDecorator vuuStickyLeft`} />
         ) : null}
         <VirtualColSpan width={virtualColSpan} />
-        {columns.filter(isNotHidden).map((column) => {
+        {columns.filter(isNotHidden).map((column, i) => {
           const isGroup = isGroupColumn(column);
           const isJsonCell = isJsonColumn(column);
           const Cell = isGroup && !isJsonCell ? TableGroupCell : TableCell;
 
           return (
             <Cell
+              ariaColIndex={i + 1}
               column={column}
               columnMap={columnMap}
               key={column.name}

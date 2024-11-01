@@ -11,8 +11,8 @@ import { isGroupColumn, isNotHidden } from "@finos/vuu-utils";
 import cx from "clsx";
 import { cloneElement, isValidElement, memo, useMemo } from "react";
 import { GroupHeaderCell, HeaderCell } from "../header-cell";
-import { useTableHeader } from "./useTableHeader";
 import { HeaderProvider } from "./HeaderProvider";
+import { useTableHeader } from "./useTableHeader";
 
 export type ColumnSortHandler = (
   column: ColumnDescriptor,
@@ -160,7 +160,8 @@ export const TableHeader = memo(
           {columns.filter(isNotHidden).map((col, i) =>
             isGroupColumn(col) ? (
               <GroupHeaderCell
-                aria-colindex={col.index}
+                // aria-colindex={col.index}
+                ariaColIndex={i + 1}
                 column={col}
                 data-index={i}
                 key={col.name}
@@ -170,7 +171,8 @@ export const TableHeader = memo(
               />
             ) : (
               <HeaderCell
-                aria-colindex={col.index}
+                // aria-colindex={col.index}
+                ariaColIndex={i + 1}
                 className={cx({
                   "vuuDraggable-dragAway": i === draggedColumnIndex,
                 })}
