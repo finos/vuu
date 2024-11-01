@@ -75,7 +75,6 @@ const dataRowsFromGroups2 = (
   rows: DataSourceRow[] = [],
   processedData: readonly DataSourceRow[],
 ) => {
-  console.log(`dataRowsFromGroups2 1)`);
   const keys = Object.keys(groupMap).sort();
   for (const key of keys) {
     const idx = rows.length;
@@ -118,7 +117,6 @@ const dataRowsFromGroups2 = (
       }
     }
   }
-  console.log(`dataRowsFromGroups2 2)`);
 
   for (const key in rows) {
     for (const index in rows) {
@@ -137,7 +135,6 @@ const dataRowsFromGroups2 = (
       }
     }
   }
-  console.log(`dataRowsFromGroups2 3)`);
 
   return rows;
 };

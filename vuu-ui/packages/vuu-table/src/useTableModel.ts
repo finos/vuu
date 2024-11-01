@@ -593,9 +593,6 @@ function updateTableConfig(
       columnLayout,
     });
 
-    console.log(`useTableModel.updateTableConfig applyGroupBy`, {
-      groupBy,
-    });
     result = {
       ...state,
       columns,

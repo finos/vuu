@@ -13,7 +13,7 @@ let displaySequence = 0;
 const FilterTableTemplate = ({
   quickFilterColumns,
   TableProps,
-  variant = "custom-filters",
+  variant = "custom-filters-only",
 }: Pick<FilterBarProps, "variant"> & {
   TableProps?: Partial<TableProps>;
   quickFilterColumns?: string[];
