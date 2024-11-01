@@ -1,10 +1,10 @@
-import { OverflowContainer } from "@finos/vuu-ui-controls";
 import {
   ColumnDescriptor,
   GroupColumnDescriptor,
   HeaderCellProps,
   RuntimeColumnDescriptor,
 } from "@finos/vuu-table-types";
+import { OverflowContainer } from "@finos/vuu-ui-controls";
 import { useLayoutEffectSkipFirst } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -37,12 +37,14 @@ const switchIfChanged = (
 
 export interface GroupHeaderCellProps
   extends Omit<HeaderCellProps, "onDragStart" | "onDrag" | "onDragEnd"> {
+  ariaColIndex: number;
   column: GroupColumnDescriptor;
   onMoveColumn?: (columns: ColumnDescriptor[]) => void;
   onRemoveColumn: (column: RuntimeColumnDescriptor) => void;
 }
 
 export const GroupHeaderCell = ({
+  ariaColIndex,
   column: groupColumn,
   className: classNameProp,
   onMoveColumn,
@@ -109,6 +111,7 @@ export const GroupHeaderCell = ({
   return (
     <div
       {...htmlAttributes}
+      aria-colindex={ariaColIndex}
       className={cx(className, classNameProp, {
         [`${classBase}-pending`]: groupColumn.groupConfirmed === false,
       })}

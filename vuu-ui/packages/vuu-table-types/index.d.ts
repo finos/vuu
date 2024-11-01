@@ -1,12 +1,10 @@
 import type {
+  DataSourceRow,
   DataSourceRowObject,
   DataValueDescriptor,
   DataValueTypeSimple,
-  EditValidationRule,
-} from "@finos/vuu-data-types";
-import type {
   DataValueValidationChecker,
-  DataSourceRow,
+  EditValidationRule,
 } from "@finos/vuu-data-types";
 import type { Filter } from "@finos/vuu-filter-types";
 import type {
@@ -16,6 +14,7 @@ import type {
   VuuSortType,
   VuuTable,
 } from "@finos/vuu-protocol-types";
+import { CellPos } from "@finos/vuu-table/src/table-dom-utils";
 import type {
   ColumnMap,
   DateTimePattern,
@@ -28,7 +27,6 @@ import type {
   MouseEvent,
   ReactElement,
 } from "react";
-import { CellPos } from "@finos/vuu-table/src/table-dom-utils";
 
 export declare type GroupToggleTarget = "toggle-icon" | "group-column";
 
@@ -46,7 +44,7 @@ export declare type ValueFormatter = (value: unknown) => string;
 export interface EditEventState {
   editType?: EditType;
   isValid?: boolean;
-  value: unknown;
+  // value: unknown;
   previousValue?: VuuRowDataItemType;
   value: VuuRowDataItemType;
 }
@@ -61,6 +59,7 @@ export declare type DataCellEditNotification = (
 ) => void;
 
 export interface TableCellProps {
+  ariaColIndex: number;
   className?: string;
   column: RuntimeColumnDescriptor;
   columnMap: ColumnMap;
@@ -101,7 +100,7 @@ export declare type TableRowClickHandlerInternal = (
 ) => void;
 
 export interface TableCellRendererProps
-  extends Omit<TableCellProps, "onDataEdited"> {
+  extends Omit<TableCellProps, "ariaColIndex" | "onDataEdited"> {
   onEdit?: DataItemEditHandler;
 }
 
@@ -420,6 +419,7 @@ export interface RowProps extends BaseRowProps {
 
 export interface HeaderCellProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onClick"> {
+  ariaColIndex: number;
   classBase?: string;
   column: RuntimeColumnDescriptor;
   onClick?: (evt: React.MouseEvent | React.KeyboardEvent) => void;

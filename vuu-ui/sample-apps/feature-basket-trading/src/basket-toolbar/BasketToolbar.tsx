@@ -71,7 +71,7 @@ export const BasketToolbar = ({
 
   const { warningMessage: unitErrorMessage, ...unitProps } =
     useEditableText<number>({
-      initialValue: basket?.units,
+      value: basket?.units,
       onEdit: handleUnitsEdited,
       type: "number",
     });

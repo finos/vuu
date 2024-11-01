@@ -2,13 +2,12 @@ import {
   buildValidationChecker,
   getEditValidationRules,
 } from "@finos/vuu-data-react";
-import { DataValueDescriptor } from "@finos/vuu-data-types";
+import { DataValueDescriptor, EditPhase } from "@finos/vuu-data-types";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { CommitHandler, queryClosest } from "@finos/vuu-utils";
+import { CommitHandler, getTypedValue, queryClosest } from "@finos/vuu-utils";
 import {
   FocusEventHandler,
-  MutableRefObject,
   SyntheticEvent,
   useCallback,
   useRef,
@@ -17,13 +16,13 @@ import {
 
 export type EditValueChangeHandler = (
   column: ColumnDescriptor,
-  value: string,
+  value: VuuRowDataItemType,
 ) => void;
 
 export interface EditableBulkHookProps {
   descriptors: DataValueDescriptor[];
   onBulkChange: EditValueChangeHandler;
-  bulkRowValidRef: MutableRefObject<boolean>;
+  onRowChange: (isValid: boolean) => void;
 }
 type ValidationState = {
   ok: boolean;
@@ -32,9 +31,9 @@ type ValidationState = {
 
 const getValidationChecker = (
   descriptor: DataValueDescriptor,
-  apply: "change" | "commit",
+  editPhase: EditPhase | "*",
 ) => {
-  const rules = getEditValidationRules(descriptor, apply);
+  const rules = getEditValidationRules(descriptor, editPhase);
   return buildValidationChecker(rules);
 };
 
@@ -44,7 +43,7 @@ const nextValidationState = (
   value: VuuRowDataItemType,
 ): ValidationState => {
   const check = getValidationChecker(dataDescriptor, "change");
-  const result = check(value);
+  const result = check(value, "change");
   const { name } = dataDescriptor;
 
   const { ok: wasOk, messages: existingMessages } = state;
@@ -98,7 +97,7 @@ const getField = (target: EventTarget | HTMLElement) => {
 export const useBulkEditRow = ({
   descriptors,
   onBulkChange,
-  bulkRowValidRef,
+  onRowChange,
 }: EditableBulkHookProps) => {
   const formFieldsContainerRef = useRef<HTMLDivElement>(null);
   const focusedFieldRef = useRef("");
@@ -108,13 +107,14 @@ export const useBulkEditRow = ({
     messages: {},
   });
 
-  const bulkRowValidRefationState = useCallback((state: ValidationState) => {
-    validationStateRef.current = state;
-    if (bulkRowValidRef) {
-      bulkRowValidRef.current = state.ok;
-    }
-    forceUpdate({});
-  }, []);
+  const bulkRowValidationState = useCallback(
+    (state: ValidationState) => {
+      validationStateRef.current = state;
+      onRowChange(state.ok);
+      forceUpdate({});
+    },
+    [onRowChange],
+  );
 
   const handleFocus = useCallback<FocusEventHandler>((evt) => {
     // Ignore focus on popup Calendars, Lists etc
@@ -138,11 +138,11 @@ export const useBulkEditRow = ({
         const { current: state } = validationStateRef;
         const newState = nextValidationState(state, dataDescriptor, value);
         if (newState !== state) {
-          bulkRowValidRefationState(newState);
+          bulkRowValidationState(newState);
         }
       }
     },
-    [descriptors, bulkRowValidRefationState],
+    [descriptors, bulkRowValidationState],
   );
 
   const {
@@ -158,7 +158,10 @@ export const useBulkEditRow = ({
         if (columnName) {
           const column = descriptors.find((c) => c.name === columnName);
           if (column && errorMessages[columnName] === undefined) {
-            onBulkChange(column, value);
+            console.log("apply BulkChange on", columnName);
+            const { serverDataType = "string" } = column;
+            const typedValue = getTypedValue(value, serverDataType, true);
+            onBulkChange(column, typedValue);
           }
         }
       }

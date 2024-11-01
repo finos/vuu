@@ -270,6 +270,7 @@ export const useKeyboardNavigation = ({
       shiftKey = false,
     ): Promise<undefined> => {
       const { cellPos } = cellFocusStateRef.current;
+      console.log("cellpos: ", cellPos);
       const [rowIdx, colIdx] = cellPos;
       let nextRowIdx = -1,
         nextColIdx = -1;

@@ -19,7 +19,7 @@ export function getEditValidationRules(
 ) {
   if (isTypeDescriptor(descriptor.type)) {
     return editPhase === "*"
-      ? descriptor.type.rules
+      ? (descriptor.type.rules ?? [])
       : (descriptor.type.rules?.filter(
           ({ phase: a = "commit" }) => a === editPhase,
         ) ?? NO_VALIDATION_RULES);

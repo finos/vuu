@@ -1,4 +1,4 @@
-import { TableCellProps } from "@finos/vuu-table-types";
+import { TableCellRendererProps } from "@finos/vuu-table-types";
 import {
   dataAndColumnUnchanged,
   DOWN1,
@@ -46,7 +46,7 @@ export const BackgroundCell = memo(function BackgroundCell({
   column,
   columnMap,
   row,
-}: TableCellProps) {
+}: TableCellRendererProps) {
   //TODO what about click handling
 
   const targetWindow = useWindow();

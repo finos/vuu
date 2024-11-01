@@ -90,12 +90,12 @@ const columnMetaData: { [key: string]: Partial<ColumnDescriptor> } = {
       rules: [
         {
           name: "char-numeric",
-          apply: "change",
+          phase: "change",
           message: "must be numeric",
         },
         {
           name: "value-integer",
-          apply: "commit",
+          phase: "commit",
           message: "must be a integer",
         },
       ],
