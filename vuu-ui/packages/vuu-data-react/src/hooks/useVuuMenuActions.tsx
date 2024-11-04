@@ -210,7 +210,7 @@ export const useVuuMenuActions = ({
             dataSource={sessionDs}
             onSubmit={handleSubmit}
             parentDs={dataSource}
-            onStateChange={handleChange}
+            onValidationStatusChange={handleChange}
           />,
           "Multi Row Edit",
           [

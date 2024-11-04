@@ -9,7 +9,6 @@ import { CommitHandler, getTypedValue, queryClosest } from "@finos/vuu-utils";
 import { InputProps } from "@salt-ds/core";
 import {
   FocusEventHandler,
-  KeyboardEventHandler,
   SyntheticEvent,
   useCallback,
   useMemo,

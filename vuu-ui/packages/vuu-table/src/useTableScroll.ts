@@ -19,11 +19,9 @@ import {
   getRowElementByAriaIndex,
   howFarIsRowOutsideViewport,
 } from "./table-dom-utils";
-import type {
-  CellFocusState,
-  RuntimeColumnDescriptor,
-} from "@finos/vuu-table-types";
+import type { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
 import { FocusCell } from "./useCellFocus";
+import { ICellFocusState } from "./CellFocusState";
 
 export type ScrollDirectionVertical = "up" | "down";
 export type ScrollDirectionHorizontal = "left" | "right";
@@ -168,7 +166,7 @@ type ScrollPos = {
 };
 
 export interface TableScrollHookProps {
-  cellFocusStateRef: MutableRefObject<CellFocusState>;
+  cellFocusStateRef: MutableRefObject<ICellFocusState>;
   columns: RuntimeColumnDescriptor[];
   focusCell?: FocusCell;
   getRowAtPosition: RowAtPositionFunc;
