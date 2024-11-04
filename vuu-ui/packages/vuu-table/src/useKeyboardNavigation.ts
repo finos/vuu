@@ -248,7 +248,10 @@ export const useKeyboardNavigation = ({
         // click handler.
         const focusedCell = getFocusedCell(document.activeElement);
         if (focusedCell) {
-          cellFocusStateRef.current.cellPos = getAriaCellPos(focusedCell);
+          cellFocusStateRef.current.cell = focusedCell;
+          console.log(
+            `handleFocus ${cellFocusStateRef.current.cellPos.join(",")}`,
+          );
           if (navigationStyle === "row") {
             setHighlightedIdx(cellFocusStateRef.current.cellPos[0]);
           }

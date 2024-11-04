@@ -7,6 +7,7 @@ import {
   FormEventHandler,
   KeyboardEvent,
   useCallback,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -25,6 +26,8 @@ type EditState = {
   value: string;
 };
 
+const stringValueOf = (value?: VuuRowDataItemType) => value?.toString() ?? "";
+
 export const useEditableText = <T extends string | number | boolean = string>({
   clientSideEditValidationCheck,
   value,
@@ -33,18 +36,19 @@ export const useEditableText = <T extends string | number | boolean = string>({
 }: EditableTextHookProps<T>) => {
   // console.log("initial value: ", initialValue);
   const [editState, setEditState] = useState<EditState>({
-    value: value?.toString() ?? "",
+    value: stringValueOf(value),
   });
   // console.log("edit state: ", editState);
   const initialValueRef = useRef<string>(value?.toString() ?? "");
   const isDirtyRef = useRef(false);
 
-  // useMemo(() => {
-  //   if (editState.value !== value?.toString()) {
-  //     setEditState({ message: "", value: value?.toString() ?? "" });
-  //     console.log("initial value changed to: ", value);
-  //   }
-  // }, [editState.value, value]);
+  useMemo(() => {
+    if (initialValueRef.current !== value?.toString()) {
+      initialValueRef.current = stringValueOf(value);
+      setEditState({ message: "", value: stringValueOf(value) });
+      console.log("initial value changed to: ", value);
+    }
+  }, [value]);
 
   const commit = useCallback(
     async (target: HTMLElement) => {
@@ -124,7 +128,7 @@ export const useEditableText = <T extends string | number | boolean = string>({
       const { value } = evt.target as HTMLInputElement;
       const typedValue = getTypedValue(value, type);
       console.log(
-        `[useEditableText] handleChange '${value}' typedVaue ${typedValue}
+        `[useEditableText] handleChange '${value}' typedValue ${typedValue}
           initial value ${initialValueRef.current}
         `,
       );

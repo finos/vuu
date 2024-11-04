@@ -12,10 +12,11 @@ import {
 } from "./table-dom-utils";
 import { ScrollRequestHandler } from "./useTableScroll";
 import { isArrowKey, queryClosest } from "@finos/vuu-utils";
-import { CellFocusState, CellPos } from "@finos/vuu-table-types";
+import { CellPos } from "@finos/vuu-table-types";
+import type { ICellFocusState } from "./CellFocusState";
 
 export interface CellFocusHookProps {
-  cellFocusStateRef: MutableRefObject<CellFocusState>;
+  cellFocusStateRef: MutableRefObject<ICellFocusState>;
   containerRef: RefObject<HTMLElement>;
   disableFocus?: boolean;
   requestScroll?: ScrollRequestHandler;
@@ -73,10 +74,11 @@ export const useCellFocus = ({
     [cellFocusStateRef, containerRef, requestScroll],
   );
 
-  const tableBodyRef = useCallback<RefCallback<HTMLDivElement>>(
+  const setTableBodyRef = useCallback<RefCallback<HTMLDivElement>>(
     (el) => {
       if (el) {
         const { current: state } = cellFocusStateRef;
+        console.log(state.cellPos?.join(",") ?? "no cellpos");
         const table = queryClosest<HTMLDivElement>(el, ".vuuTable");
         if (table) {
           if (state.el === null && !disableFocus) {
@@ -135,6 +137,6 @@ export const useCellFocus = ({
     focusCell,
     focusCellPlaceholderKeyDown,
     focusCellPlaceholderRef,
-    tableBodyRef,
+    setTableBodyRef,
   };
 };

@@ -2,11 +2,13 @@
   background-color: var(--salt-container-secondary-background);
   display: flex;
   flex-direction: column;
-  padding-top: var(--salt-spacing-300);
 
   .vuuTable {
-    --vuuTableCell-padding: 0;
     --table-background: var(--salt-container-secondary-background);
+  }
+
+  .vuuTableCell-editable {
+    --vuuTableCell-padding: 0;
   }
 }
 
@@ -21,5 +23,4 @@
 .vuuBulkEditPanel-table {
   align-items: center;
   flex: 1 1 auto;
-  padding: 10px;
 }

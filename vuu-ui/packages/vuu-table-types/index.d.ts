@@ -438,14 +438,3 @@ export declare type CustomHeader = CustomHeaderComponent | CustomHeaderElement;
  * [rowIndex, colIndex]
  */
 export declare type CellPos = [number, number];
-
-/**
- * Used to track the Table cell (if any) with focus.
- */
-export declare type CellFocusState = {
-  el: HTMLElement | null;
-  outsideViewport: "above" | "below" | false;
-  placeholderEl: HTMLDivElement | null;
-  pos: { top: number } | undefined;
-  cellPos: CellPos | undefined;
-};
