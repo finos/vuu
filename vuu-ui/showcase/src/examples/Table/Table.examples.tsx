@@ -451,15 +451,17 @@ export const VuuTableCalculatedColumns = () => {
 VuuTableCalculatedColumns.displaySequence = displaySequence++;
 
 export const GroupHeaderCellOneColumn = () => {
-  const column: GroupColumnDescriptor = useMemo(() => {
+  const column = useMemo<GroupColumnDescriptor>(() => {
     const valueFormatter = defaultValueFormatter;
     return {
+      ariaColIndex: 1,
       groupConfirmed: true,
       label: "group-column",
       name: "group-column",
       isGroup: true,
       columns: [
         {
+          ariaColIndex: -1,
           key: 1,
           name: "currency",
           label: "currency",
@@ -483,20 +485,17 @@ export const GroupHeaderCellOneColumn = () => {
         } as CSSProperties
       }
     >
-      <GroupHeaderCell
-        ariaColIndex={0}
-        column={column}
-        onRemoveColumn={handleRemoveColumn}
-      />
+      <GroupHeaderCell column={column} onRemoveColumn={handleRemoveColumn} />
     </div>
   );
 };
 GroupHeaderCellOneColumn.displaySequence = displaySequence++;
 
 export const GroupHeaderCellTwoColumn = () => {
-  const column: GroupColumnDescriptor = useMemo(() => {
+  const column = useMemo<GroupColumnDescriptor>(() => {
     const valueFormatter = defaultValueFormatter;
     return {
+      ariaColIndex: 1,
       groupConfirmed: true,
       key: 0,
       label: "group-column",
@@ -504,12 +503,14 @@ export const GroupHeaderCellTwoColumn = () => {
       isGroup: true,
       columns: [
         {
+          ariaColIndex: -1,
           name: "currency",
           label: "currency",
           valueFormatter,
           width: 100,
         },
         {
+          ariaColIndex: -1,
           name: "exchange",
           label: "exchange",
           valueFormatter,
@@ -532,11 +533,7 @@ export const GroupHeaderCellTwoColumn = () => {
         } as CSSProperties
       }
     >
-      <GroupHeaderCell
-        ariaColIndex={0}
-        column={column}
-        onRemoveColumn={handleRemoveColumn}
-      />
+      <GroupHeaderCell column={column} onRemoveColumn={handleRemoveColumn} />
     </div>
   );
 };
@@ -546,24 +543,28 @@ export const GroupHeaderCellThreeColumn = () => {
   const valueFormatter = defaultValueFormatter;
 
   const [column] = useState<GroupColumnDescriptor>({
+    ariaColIndex: 1,
     groupConfirmed: true,
     label: "group-column",
     name: "group-column",
     isGroup: true,
     columns: [
       {
+        ariaColIndex: -1,
         name: "currency",
         label: "currency",
         valueFormatter,
         width: 100,
       },
       {
+        ariaColIndex: -1,
         name: "exchange",
         label: "exchange",
         valueFormatter,
         width: 100,
       },
       {
+        ariaColIndex: -1,
         name: "price",
         label: "proce",
         valueFormatter,
@@ -590,7 +591,6 @@ export const GroupHeaderCellThreeColumn = () => {
     >
       <div data-resizeable style={{ flex: "1 1 auto", overflow: "hidden" }}>
         <GroupHeaderCell
-          ariaColIndex={0}
           className="vuuFullWidthExample"
           column={column}
           onRemoveColumn={handleRemoveColumn}
@@ -606,24 +606,28 @@ export const GroupHeaderCellThreeColumnFixedWidth = () => {
   const valueFormatter = defaultValueFormatter;
 
   const [column] = useState<GroupColumnDescriptor>({
+    ariaColIndex: 1,
     groupConfirmed: true,
     label: "group-column",
     name: "group-column",
     isGroup: true,
     columns: [
       {
+        ariaColIndex: -1,
         name: "currency",
         label: "currency",
         valueFormatter,
         width: 100,
       },
       {
+        ariaColIndex: -1,
         name: "exchange",
         label: "exchange",
         valueFormatter,
         width: 100,
       },
       {
+        ariaColIndex: -1,
         name: "price",
         label: "price",
         valueFormatter,
@@ -640,7 +644,6 @@ export const GroupHeaderCellThreeColumnFixedWidth = () => {
   return (
     <div data-resizeable style={{ width: 300, overflow: "hidden" }}>
       <GroupHeaderCell
-        ariaColIndex={0}
         className="vuuFullWidthExample"
         column={column}
         onRemoveColumn={handleRemoveColumn}

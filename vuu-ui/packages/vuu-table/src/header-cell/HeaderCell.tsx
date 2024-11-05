@@ -21,7 +21,6 @@ import headerCellCss from "./HeaderCell.css";
 const classBase = "vuuTableHeaderCell";
 
 export const HeaderCell = ({
-  ariaColIndex,
   className: classNameProp,
   column,
   onClick,
@@ -58,7 +57,6 @@ export const HeaderCell = ({
     const sortIndicator = <SortIndicator column={column} />;
     const columnLabel = HeaderCellLabelRenderer ? (
       <HeaderCellLabelRenderer
-        ariaColIndex={ariaColIndex}
         className={`${classBase}-label`}
         column={column}
       />
@@ -66,13 +64,7 @@ export const HeaderCell = ({
       <div className={`${classBase}-label`}>{column.label ?? column.name}</div>
     );
     const columnContent = HeaderCellContentRenderer
-      ? [
-          <HeaderCellContentRenderer
-            ariaColIndex={ariaColIndex}
-            column={column}
-            key="content"
-          />,
-        ]
+      ? [<HeaderCellContentRenderer column={column} key="content" />]
       : [];
 
     if (showMenu) {
@@ -90,13 +82,7 @@ export const HeaderCell = ({
         return [columnLabel, sortIndicator, columnContent];
       }
     }
-  }, [
-    HeaderCellContentRenderer,
-    HeaderCellLabelRenderer,
-    ariaColIndex,
-    column,
-    showMenu,
-  ]);
+  }, [HeaderCellContentRenderer, HeaderCellLabelRenderer, column, showMenu]);
 
   const handleClick = useCallback<MouseEventHandler<HTMLDivElement>>(
     (evt) => {
@@ -119,7 +105,7 @@ export const HeaderCell = ({
   return (
     <div
       {...htmlAttributes}
-      aria-colindex={ariaColIndex}
+      aria-colindex={column.ariaColIndex}
       className={cx(className, classNameProp, {
         [`${classBase}-resizing`]: isResizing,
         [`${classBase}-noMenu`]: showMenu === false,

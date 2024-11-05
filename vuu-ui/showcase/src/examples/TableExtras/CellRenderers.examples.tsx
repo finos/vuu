@@ -77,7 +77,6 @@ export const DefaultBackgroundCell = ({
         onCommit={handlePriceChange}
       />
       <TableCell
-        ariaColIndex={0}
         column={priceColumn as RuntimeColumnDescriptor}
         columnMap={columnMap}
         row={row as any}

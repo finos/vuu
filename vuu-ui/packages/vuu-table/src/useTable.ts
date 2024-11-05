@@ -477,7 +477,7 @@ export const useTable = ({
             );
           }
         } else {
-          const byColIndex = `[aria-colindex='${column.index}']`;
+          const byColIndex = `[aria-colindex='${column.ariaColIndex}']`;
           resizeCells.current = Array.from(
             containerRef.current?.querySelectorAll(
               `.vuuTableCell${byColIndex},.vuuTableHeaderCell${byColIndex}`,

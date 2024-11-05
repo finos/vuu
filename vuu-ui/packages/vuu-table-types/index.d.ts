@@ -59,7 +59,6 @@ export declare type DataCellEditNotification = (
 ) => void;
 
 export interface TableCellProps {
-  ariaColIndex: number;
   className?: string;
   column: RuntimeColumnDescriptor;
   columnMap: ColumnMap;
@@ -100,7 +99,7 @@ export declare type TableRowClickHandlerInternal = (
 ) => void;
 
 export interface TableCellRendererProps
-  extends Omit<TableCellProps, "ariaColIndex" | "onDataEdited"> {
+  extends Omit<TableCellProps, "onDataEdited"> {
   onEdit?: DataItemEditHandler;
 }
 
@@ -280,6 +279,7 @@ export interface ColumnDescriptorCustomRenderer
  * definitin with internal state values. */
 export interface RuntimeColumnDescriptor extends ColumnDescriptor {
   align?: "left" | "right";
+  ariaColIndex: number;
   CellRenderer?: FunctionComponent<TableCellRendererProps>;
   HeaderCellLabelRenderer?: FunctionComponent<HeaderCellProps>;
   HeaderCellContentRenderer?: FunctionComponent<HeaderCellProps>;
@@ -290,8 +290,6 @@ export interface RuntimeColumnDescriptor extends ColumnDescriptor {
   filter?: Filter;
   flex?: number;
   heading?: [...string[]];
-  /** A 1 based index for aria-colindex */
-  index?: number;
   isGroup?: boolean;
   isSystemColumn?: boolean;
   label: string;
@@ -419,7 +417,6 @@ export interface RowProps extends BaseRowProps {
 
 export interface HeaderCellProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onClick"> {
-  ariaColIndex: number;
   classBase?: string;
   column: RuntimeColumnDescriptor;
   onClick?: (evt: React.MouseEvent | React.KeyboardEvent) => void;

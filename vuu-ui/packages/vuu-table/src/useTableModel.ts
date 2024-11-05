@@ -310,9 +310,18 @@ function init({
     tableSchema,
   );
 
-  const runtimeColumns = columns
-    .filter(subscribedOnly(dataSourceConfig?.columns))
-    .map(toRuntimeColumnDescriptor);
+  const runtimeColumns: RuntimeColumnDescriptor[] = [];
+  let colIndex = 1;
+  for (const column of columns.filter(
+    subscribedOnly(dataSourceConfig?.columns),
+  )) {
+    runtimeColumns.push(
+      toRuntimeColumnDescriptor(column, column.hidden ? -1 : colIndex),
+    );
+    if (!column.hidden) {
+      colIndex += 1;
+    }
+  }
 
   if (selectionModel === "checkbox") {
     runtimeColumns.splice(
@@ -363,7 +372,7 @@ const getLabel = (
 
 const columnDescriptorToRuntimeColumDescriptor =
   (tableAttributes: TableAttributes, tableSchema?: TableSchema) =>
-  (column: ColumnDescriptor, index: number): RuntimeColumnDescriptor => {
+  (column: ColumnDescriptor, ariaColIndex: number): RuntimeColumnDescriptor => {
     const { columnDefaultWidth = DEFAULT_COLUMN_WIDTH, columnFormatHeader } =
       tableAttributes;
     const serverDataType = getDataType(column, tableSchema);
@@ -378,16 +387,16 @@ const columnDescriptorToRuntimeColumDescriptor =
     const runtimeColumnWithDefaults: RuntimeColumnDescriptor = {
       ...rest,
       align,
+      ariaColIndex,
       CellRenderer: getCellRenderer(column),
       HeaderCellContentRenderer: getColumnHeaderContentRenderer(column),
       HeaderCellLabelRenderer: getColumnHeaderLabelRenderer(column),
       clientSideEditValidationCheck: hasValidationRules(column.type)
         ? buildValidationChecker(column.type.rules)
         : undefined,
-      index: index + 1,
       label: getLabel(label, columnFormatHeader),
       name,
-      originalIdx: index,
+      originalIdx: ariaColIndex,
       serverDataType,
       valueFormatter: getValueFormatter(column, serverDataType),
       width,
@@ -396,7 +405,7 @@ const columnDescriptorToRuntimeColumDescriptor =
     if (isGroupColumn(runtimeColumnWithDefaults)) {
       runtimeColumnWithDefaults.columns = runtimeColumnWithDefaults.columns.map(
         (col) =>
-          columnDescriptorToRuntimeColumDescriptor(tableAttributes)(col, index),
+          columnDescriptorToRuntimeColumDescriptor(tableAttributes)(col, -1),
       );
     }
 

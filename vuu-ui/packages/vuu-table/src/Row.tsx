@@ -146,14 +146,13 @@ export const Row = memo(
           <span className={`${classBase}-selectionDecorator vuuStickyLeft`} />
         ) : null}
         <VirtualColSpan width={virtualColSpan} />
-        {columns.filter(isNotHidden).map((column, i) => {
+        {columns.filter(isNotHidden).map((column) => {
           const isGroup = isGroupColumn(column);
           const isJsonCell = isJsonColumn(column);
           const Cell = isGroup && !isJsonCell ? TableGroupCell : TableCell;
 
           return (
             <Cell
-              ariaColIndex={i + 1}
               column={column}
               columnMap={columnMap}
               key={column.name}
