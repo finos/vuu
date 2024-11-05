@@ -40,7 +40,9 @@ type FilterTableConfig = {
   "table-config"?: TableConfig;
 };
 
-export const useFilterTable = ({ tableSchema }: FilterTableFeatureProps) => {
+export const useFilterTableFeature = ({
+  tableSchema,
+}: FilterTableFeatureProps) => {
   const { load, save, title } = useViewContext();
 
   const {

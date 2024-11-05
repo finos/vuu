@@ -70,7 +70,7 @@ import {
   isShowTableSettings,
   useTableModel,
 } from "./useTableModel";
-import { useTableScroll } from "./useTableScroll";
+import { ScrollRequestHandler, useTableScroll } from "./useTableScroll";
 import { useTableViewport } from "./useTableViewport";
 import { TableCellBlock } from "./cell-block/cellblock-utils";
 import { CellFocusState } from "./CellFocusState";
@@ -175,6 +175,8 @@ export const useTable = ({
   size,
 }: TableHookProps) => {
   const tableConfigRef = useRef<TableConfig>(config);
+  // avoids a hook dependency on requestScroll, important to avoid re-registering config handler
+  const requestScrollRef = useRef<ScrollRequestHandler | undefined>();
   useMemo(() => {
     tableConfigRef.current = config;
   }, [config]);
@@ -224,8 +226,8 @@ export const useTable = ({
 
   // this is realy here to capture changes to available Width - typically when we get
   // rowcount so add allowance for vertical scrollbar, reducing available width
-  // including dataSOurce is causing us to do unnecessary work in useTableModel
-  // split this iniot multip effects
+  // including dataSource is causing us to do unnecessary work in useTableModel
+  // split this into multiple effects
   useLayoutEffectSkipFirst(() => {
     dispatchTableModelAction({
       availableWidth,
@@ -305,6 +307,8 @@ export const useTable = ({
     onVerticalScrollInSitu: viewportHookSetInSituRowOffset,
     viewportMeasurements,
   });
+  // avoids a hook dependency on requestScroll, important to avoid re-registering config handler
+  requestScrollRef.current = requestScroll;
 
   // TODO does this belong here ?
   const handleConfigEditedInSettingsPanel = useCallback(
@@ -332,23 +336,22 @@ export const useTable = ({
   );
 
   useEffect(() => {
-    dataSource.on("config", (config, confirmed, changes) => {
+    dataSource.on("config", (config, range, confirmed, changes) => {
       const scrollSensitiveChanges =
         changes?.filterChanged || changes?.groupByChanged;
-      if (scrollSensitiveChanges && dataSource.range.from > 0) {
-        requestScroll({
+      if (scrollSensitiveChanges && range.from > 0) {
+        requestScrollRef.current?.({
           type: "scroll-end",
           direction: "home",
         });
       }
-      console.log(`useTable dispatch tableConfig`);
       dispatchTableModelAction({
         type: "tableConfig",
         ...config,
         confirmed,
       });
     });
-  }, [dataSource, dispatchTableModelAction, requestScroll]);
+  }, [dataSource, dispatchTableModelAction]);
 
   const handleCreateCalculatedColumn = useCallback(
     (column: ColumnDescriptor) => {
@@ -729,6 +732,8 @@ export const useTable = ({
       };
 
       tableConfigRef.current = newTableConfig;
+
+      console.log(`useTable [onMoveColumn]`);
 
       dispatchTableModelAction({
         availableWidth,

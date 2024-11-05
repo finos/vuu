@@ -58,7 +58,6 @@ const { info } = logger("VuuDataSource");
 export class VuuDataSource extends BaseDataSource implements DataSource {
   private bufferSize: number;
   private server: ServerAPI | null = null;
-  private configChangePending: WithBaseFilter<WithFullConfig> | undefined;
   rangeRequest: RangeRequest;
 
   #pendingVisualLink?: LinkDescriptorWithLabel;
@@ -168,8 +167,8 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
       // just the CHANGE_VP_SUCCESS ack as there is often a delay between receiving the ack and the data.
       // It may be a SIZE only message, eg in the case of removing a groupBy column from a multi-column
       // groupby, where no tree nodes are expanded.
-      if (this.configChangePending) {
-        this.setConfigPending();
+      if (this.isAwaitingConfirmationOfConfigChange) {
+        this.confirmConfigChange();
       }
 
       if (isViewportMenusAction(message)) {
@@ -393,14 +392,25 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
   }
 
   set config(config: WithBaseFilter<WithFullConfig>) {
-    const previousConfig = this._config;
-    super.config = config;
+    const previousConfig = this.config;
 
     if (this._config !== previousConfig) {
+      super.config = config;
       this.server?.send({
         viewport: this.viewport,
         type: "config",
         config: combineFilters(this._config),
+      });
+    }
+  }
+
+  set impendingConfig(config: WithBaseFilter<WithFullConfig>) {
+    if (config !== this.config) {
+      super.impendingConfig = config;
+      this.server?.send({
+        viewport: this.viewport,
+        type: "config",
+        config: combineFilters(this.config),
       });
     }
   }
@@ -413,7 +423,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     if (itemsOrOrderChanged(this.groupBy, groupBy)) {
       const wasGrouped = this.groupBy.length > 0;
 
-      this.config = {
+      this.impendingConfig = {
         ...this._config,
         groupBy,
       };
@@ -427,7 +437,6 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
           rows: [],
         });
       }
-      this.setConfigPending(this.config);
     }
   }
 
@@ -490,18 +499,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
       }
     }
 
-    this.emit("config", this._config);
-  }
-
-  private setConfigPending(config?: WithBaseFilter<WithFullConfig>) {
-    const pendingConfig = this.configChangePending;
-    this.configChangePending = config;
-
-    if (config !== undefined) {
-      this.emit("config", config, false);
-    } else if (pendingConfig) {
-      this.emit("config", pendingConfig, true);
-    }
+    this.emit("config", this._config, this.range);
   }
 
   async remoteProcedureCall<T extends VuuRpcResponse = VuuRpcResponse>() {

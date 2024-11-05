@@ -469,12 +469,15 @@ export declare type RowSelectionEventHandler = (
   selectedRowCount: number,
 ) => void;
 
+export type DataSourceConfigChangeHandler = (
+  config: WithBaseFilter<WithFullConfig>,
+  range: VuuRange,
+  confirmed?: boolean,
+  configChanges?: DataSourceConfigChanges,
+) => void;
+
 export declare type DataSourceEvents = {
-  config: (
-    config: WithBaseFilter<WithFullConfig>,
-    confirmed?: boolean,
-    configChanges?: DataSourceConfigChanges,
-  ) => void;
+  config: DataSourceConfigChangeHandler;
   optimize: (optimize: OptimizeStrategy) => void;
   "page-count": (pageCount: number) => void;
   range: (range: VuuRange) => void;

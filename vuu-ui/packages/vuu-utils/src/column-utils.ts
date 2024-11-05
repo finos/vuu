@@ -37,6 +37,7 @@ import type {
 } from "@finos/vuu-table-types";
 import type { CSSProperties } from "react";
 import { moveItem } from "./array-utils";
+import { TableModel } from "@finos/vuu-table";
 
 /**
  * ColumnMap provides a lookup of the index position of a data item within a row
@@ -403,6 +404,20 @@ export function extractGroupColumn(
 export const isGroupColumn = (
   column: RuntimeColumnDescriptor,
 ): column is GroupColumnDescriptor => column.isGroup === true;
+
+/**
+ *  groupConfirmed is currently the only 'pending' attribute we use. A
+ * value of true is only reset by a follow-up value of false. Intermediary
+ * values of undefined are discounted.
+ */
+export const checkConfirmationPending = (previousConfig?: TableModel) => {
+  if (previousConfig) {
+    const [column] = previousConfig.columns;
+    if (isGroupColumn(column)) {
+      return column.groupConfirmed;
+    }
+  }
+};
 
 export const isJsonAttribute = (value: unknown) =>
   typeof value === "string" && (value.endsWith("{") || value.endsWith("["));

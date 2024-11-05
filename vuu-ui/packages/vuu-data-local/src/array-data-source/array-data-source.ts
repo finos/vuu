@@ -418,10 +418,6 @@ export class ArrayDataSource
             this.openTreeNodes.length = 0;
           } else {
             //TODO purge any openTreeNodes for a no-longer-present groupBy col
-            console.log("adjust the openTReeNodes groupBy changed ", {
-              originalGroupBy: originalConfig.groupBy,
-              newGroupBy: newConfig.groupBy,
-            });
           }
         }
 
@@ -431,7 +427,6 @@ export class ArrayDataSource
             config.groupBy,
             this.#columnMap,
           );
-          console.log({ groupedData });
           this.groupMap = groupMap;
           processedData = groupedData;
 
@@ -457,7 +452,7 @@ export class ArrayDataSource
 
       this.setRange(resetRange(this.#range), true);
 
-      this.emit("config", this._config, undefined, configChanges);
+      this.emit("config", this._config, this.range, undefined, configChanges);
     }
   }
 
@@ -704,7 +699,7 @@ export class ArrayDataSource
     );
     this.setRange(resetRange(this.#range), true);
 
-    this.emit("config", this._config);
+    this.emit("config", this._config, this.range);
   }
 
   get sort() {

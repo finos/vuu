@@ -81,11 +81,11 @@ export const GroupHeaderCell = ({
         const [tab] = newCols.splice(fromIndex, 1);
         if (toIndex === -1) {
           const result = newCols.concat(tab);
-          onMoveColumn?.(result);
+          requestAnimationFrame(() => onMoveColumn?.(result));
           return result;
         } else {
           newCols.splice(toIndex, 0, tab);
-          onMoveColumn?.(newCols);
+          requestAnimationFrame(() => onMoveColumn?.(newCols));
           return newCols;
         }
       });
