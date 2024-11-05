@@ -13,7 +13,6 @@ import tableCellCss from "./TableCell.css";
 const classBase = "vuuTableCell";
 
 export const TableCell = ({
-  ariaColIndex,
   column,
   columnMap,
   onClick,
@@ -30,7 +29,7 @@ export const TableCell = ({
   const [hasError, setHasError] = useState(false);
 
   const { className, style } = useCell(column, classBase, false, hasError);
-  const { CellRenderer, valueFormatter } = column;
+  const { ariaColIndex, CellRenderer, valueFormatter } = column;
   const dataIdx = columnMap[column.name];
 
   const handleDataItemEdited = useCallback<DataItemEditHandler>(

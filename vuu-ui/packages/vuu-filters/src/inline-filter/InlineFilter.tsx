@@ -1,18 +1,8 @@
 import { getDataItemEditControl } from "@finos/vuu-data-react";
-import { VirtualColSpan, useHeaderProps } from "@finos/vuu-table";
-import {
-  CommitHandler,
-  FilterAggregator,
-  getFieldName,
-} from "@finos/vuu-utils";
+import { VirtualColSpan } from "@finos/vuu-table";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import {
-  HTMLAttributes,
-  KeyboardEventHandler,
-  useCallback,
-  useMemo,
-} from "react";
+import { HTMLAttributes } from "react";
 import cx from "clsx";
 
 import inlineFilteCss from "./InlineFilter.css";
@@ -20,6 +10,7 @@ import { InputProps } from "@salt-ds/core";
 import { TableSchemaTable } from "@finos/vuu-data-types";
 import { VuuFilter } from "@finos/vuu-protocol-types";
 import { BaseRowProps } from "@finos/vuu-table-types";
+import { useInlineFilter } from "./useInlineFilter";
 
 const classBase = "vuuInlineFilter";
 
@@ -55,39 +46,9 @@ export const InlineFilter = ({
     window: targetWindow,
   });
 
-  const filterAggregator = useMemo(() => new FilterAggregator(), []);
-  const { columns = [], virtualColSpan = 0 } = useHeaderProps();
-
-  const onCommit = useCallback<
-    CommitHandler<HTMLElement, string | number | undefined>
-  >(
-    (evt, value = "") => {
-      const fieldName = getFieldName(evt.target);
-      const column = columns.find((c) => c.name === fieldName);
-      if (column) {
-        if (value === "") {
-          if (filterAggregator.removeFilter(column)) {
-            onChange(filterAggregator.filter);
-          }
-        } else {
-          filterAggregator.addFilter(column, value);
-          onChange(filterAggregator.filter);
-        }
-      }
-    },
-    [columns, filterAggregator, onChange],
-  );
-
-  const handleKeyDown = useCallback<KeyboardEventHandler<HTMLDivElement>>(
-    (evt) => {
-      if (evt.key === "Enter") {
-        const el = evt.target as HTMLElement;
-        const inputElement = el.querySelector("input");
-        inputElement?.focus();
-      }
-    },
-    [],
-  );
+  const { columns, onCommit, onKeyDown, virtualColSpan } = useInlineFilter({
+    onChange,
+  });
 
   return (
     <div {...htmlAttributes} className={classBase} role={ariaRole}>
@@ -95,10 +56,13 @@ export const InlineFilter = ({
       {columns.map((column, i) => (
         <div
           aria-colindex={i + 1}
-          className={cx(`${classBase}-filter`, "vuuTableCell")}
+          className={cx(`${classBase}Cell`, "vuuTableCell", {
+            "vuuTableCell-right": column.align === "right",
+          })}
           data-field={column.name}
-          onKeyDown={handleKeyDown}
+          onKeyDown={onKeyDown}
           key={column.name}
+          role="cell"
           style={{ width: column.width }}
         >
           {getDataItemEditControl({

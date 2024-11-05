@@ -6,7 +6,6 @@ import {
 } from "@finos/vuu-data-types";
 import { VuuRowDataItemType, VuuSortType } from "@finos/vuu-protocol-types";
 import {
-  CellFocusState,
   ColumnDescriptor,
   DataCellEditEvent,
   RuntimeColumnDescriptor,
@@ -74,6 +73,7 @@ import {
 import { useTableScroll } from "./useTableScroll";
 import { useTableViewport } from "./useTableViewport";
 import { TableCellBlock } from "./cell-block/cellblock-utils";
+import { CellFocusState } from "./CellFocusState";
 
 type HeaderState = {
   height: number;
@@ -91,14 +91,6 @@ const zeroHeaderState = {
 
 const stripInternalProperties = (tableConfig: TableConfig): TableConfig => {
   return tableConfig;
-};
-
-const NullCellFocusState: CellFocusState = {
-  cellPos: undefined,
-  el: null,
-  outsideViewport: false,
-  placeholderEl: null,
-  pos: undefined,
 };
 
 export interface TableHookProps
@@ -188,7 +180,7 @@ export const useTable = ({
   }, [config]);
 
   // state is mutated, so make every component gets a fresh copy
-  const initialState = useMemo(() => ({ ...NullCellFocusState }), []);
+  const initialState = useMemo(() => new CellFocusState(), []);
 
   const cellFocusStateRef = useRef<CellFocusState>(initialState);
   // Needed to avoid circular dependency between useTableScroll and useCellFocus
@@ -485,7 +477,7 @@ export const useTable = ({
             );
           }
         } else {
-          const byColIndex = `[aria-colindex='${column.index}']`;
+          const byColIndex = `[aria-colindex='${column.ariaColIndex}']`;
           resizeCells.current = Array.from(
             containerRef.current?.querySelectorAll(
               `.vuuTableCell${byColIndex},.vuuTableHeaderCell${byColIndex}`,
@@ -568,7 +560,7 @@ export const useTable = ({
     focusCell,
     focusCellPlaceholderKeyDown,
     focusCellPlaceholderRef,
-    tableBodyRef,
+    setTableBodyRef: tableBodyRef,
   } = useCellFocus({
     cellFocusStateRef,
     containerRef,

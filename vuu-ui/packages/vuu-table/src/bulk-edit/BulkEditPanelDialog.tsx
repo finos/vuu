@@ -32,7 +32,7 @@ export const BulkEditPanelDialog = ({
   });
 
   const [valid, setValid] = useState(true);
-  const handleStateChange = useCallback((isValid: boolean) => {
+  const handleValidationStatusChange = useCallback((isValid: boolean) => {
     setValid(isValid);
   }, []);
 
@@ -48,7 +48,7 @@ export const BulkEditPanelDialog = ({
         dataSource={sessionDs}
         onSubmit={handleSubmit}
         parentDs={parentDs}
-        onStateChange={handleStateChange}
+        onValidationStatusChange={handleValidationStatusChange}
       />
       <DialogActions>
         <Button key="cancel" onClick={closeDialog}>

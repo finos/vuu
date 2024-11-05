@@ -3,13 +3,14 @@ import { DataSource } from "@finos/vuu-data-types";
 import { BaseRowProps, ColumnDescriptor } from "@finos/vuu-table-types";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import cx from "clsx";
 import { HTMLAttributes } from "react";
 import { VirtualColSpan } from "../VirtualColSpan";
 import { useHeaderProps } from "../table-header";
 import { useBulkEditRow } from "./useBulkEditRow";
 
-import bulkEditRowCss from "./BulkEditRow.css";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import bulkEditRowCss from "./BulkEditRow.css";
 
 const classBase = "vuuBulkEditRow";
 
@@ -41,18 +42,25 @@ export const BulkEditRow = ({
 
   const { columns, virtualColSpan = 0 } = useHeaderProps();
 
-  const { errorMessages, formFieldsContainerRef, onChange, onCommit, onFocus } =
-    useBulkEditRow({
-      descriptors: columns,
-      onBulkChange,
-      onRowChange,
-    });
+  const {
+    errorMessages,
+    formFieldsContainerRef,
+    InputProps,
+    onCommit,
+    onFocus,
+    onKeyDown,
+  } = useBulkEditRow({
+    descriptors: columns,
+    onBulkChange,
+    onRowChange,
+  });
 
   return (
     <div
       {...htmlAttributes}
       className={classBase}
       onFocus={onFocus}
+      onKeyDown={onKeyDown}
       ref={formFieldsContainerRef}
       role={ariaRole}
     >
@@ -62,22 +70,23 @@ export const BulkEditRow = ({
         return (
           <div
             aria-colindex={i + 1}
-            className={`${classBase}-filter`}
+            className={cx(`${classBase}Cell`, "vuuTableCell", {
+              "vuuTableCell-right": column.align === "right",
+            })}
             data-field={column.name}
             key={column.name}
+            role="cell"
             style={{ width: column.width }}
           >
-            {getDataItemEditControl({
-              InputProps: {
-                onChange,
-                placeholder: "Enter value",
-                variant: "primary",
-              },
-              dataDescriptor: column,
-              errorMessage,
-              onCommit,
-              table: dataSource.table,
-            })}
+            {column.editable
+              ? getDataItemEditControl({
+                  InputProps,
+                  dataDescriptor: column,
+                  errorMessage,
+                  onCommit,
+                  table: dataSource.table,
+                })
+              : null}
           </div>
         );
       })}

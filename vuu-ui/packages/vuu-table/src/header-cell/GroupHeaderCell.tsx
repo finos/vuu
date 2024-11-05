@@ -37,14 +37,12 @@ const switchIfChanged = (
 
 export interface GroupHeaderCellProps
   extends Omit<HeaderCellProps, "onDragStart" | "onDrag" | "onDragEnd"> {
-  ariaColIndex: number;
   column: GroupColumnDescriptor;
   onMoveColumn?: (columns: ColumnDescriptor[]) => void;
   onRemoveColumn: (column: RuntimeColumnDescriptor) => void;
 }
 
 export const GroupHeaderCell = ({
-  ariaColIndex,
   column: groupColumn,
   className: classNameProp,
   onMoveColumn,
@@ -111,7 +109,7 @@ export const GroupHeaderCell = ({
   return (
     <div
       {...htmlAttributes}
-      aria-colindex={ariaColIndex}
+      aria-colindex={groupColumn.ariaColIndex}
       className={cx(className, classNameProp, {
         [`${classBase}-pending`]: groupColumn.groupConfirmed === false,
       })}

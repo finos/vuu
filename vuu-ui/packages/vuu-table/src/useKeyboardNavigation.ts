@@ -23,7 +23,8 @@ import {
 } from "./table-dom-utils";
 import { ScrollRequestHandler } from "./useTableScroll";
 import { FocusCell } from "./useCellFocus";
-import { CellFocusState, CellPos } from "@finos/vuu-table-types";
+import { CellPos } from "@finos/vuu-table-types";
+import { CellFocusState } from "./CellFocusState";
 
 const rowNavigationKeys = new Set<NavigationKey>([
   "Home",
@@ -248,9 +249,9 @@ export const useKeyboardNavigation = ({
         // click handler.
         const focusedCell = getFocusedCell(document.activeElement);
         if (focusedCell) {
-          cellFocusStateRef.current.cellPos = getAriaCellPos(focusedCell);
+          cellFocusStateRef.current.cell = focusedCell;
           if (navigationStyle === "row") {
-            setHighlightedIdx(cellFocusStateRef.current.cellPos[0]);
+            setHighlightedIdx(cellFocusStateRef.current.cellPos?.[0]);
           }
         }
       }
@@ -270,7 +271,9 @@ export const useKeyboardNavigation = ({
       shiftKey = false,
     ): Promise<undefined> => {
       const { cellPos } = cellFocusStateRef.current;
-      console.log("cellpos: ", cellPos);
+      if (cellPos === undefined) {
+        throw Error("navigateChildItems called before cellPos is set");
+      }
       const [rowIdx, colIdx] = cellPos;
       let nextRowIdx = -1,
         nextColIdx = -1;

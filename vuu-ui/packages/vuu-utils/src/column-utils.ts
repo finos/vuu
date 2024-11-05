@@ -374,16 +374,28 @@ export function extractGroupColumn(
     });
 
     const groupCol = {
+      ariaColIndex: 1,
       columns: groupCols,
       heading: ["group-col"],
-      index: 1,
       isGroup: true,
       groupConfirmed: confirmed,
       name: "group-col",
       width: groupCols.map((c) => c.width).reduce((a, b) => a + b) + 100,
     } as GroupColumnDescriptor;
 
-    return [groupCol, rest.map((col, i) => ({ ...col, index: i + 2 }))];
+    const withAdjustedAriaIndex: RuntimeColumnDescriptor[] = [];
+    let colIndex = 2;
+    for (const column of rest) {
+      withAdjustedAriaIndex.push({
+        ...column,
+        ariaColIndex: column.hidden ? -1 : colIndex,
+      });
+      if (!column.hidden) {
+        colIndex += 1;
+      }
+    }
+
+    return [groupCol, withAdjustedAriaIndex];
   }
   return [null, flattenColumnGroup(columns)];
 }

@@ -6,13 +6,16 @@ import { DataValueDescriptor, EditPhase } from "@finos/vuu-data-types";
 import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { CommitHandler, getTypedValue, queryClosest } from "@finos/vuu-utils";
+import { InputProps } from "@salt-ds/core";
 import {
   FocusEventHandler,
   SyntheticEvent,
   useCallback,
+  useMemo,
   useRef,
   useState,
 } from "react";
+import { useEditableCell } from "../useEditableCell";
 
 export type EditValueChangeHandler = (
   column: ColumnDescriptor,
@@ -169,11 +172,25 @@ export const useBulkEditRow = ({
     [descriptors, errorMessages, onBulkChange],
   );
 
+  const InputProps = useMemo<Partial<InputProps>>(
+    () => ({
+      inputProps: {
+        placeholder: "Enter value",
+      },
+      onChange: handleChange,
+      variant: "primary",
+    }),
+    [handleChange],
+  );
+
+  const { onKeyDown } = useEditableCell();
+
   return {
     errorMessages,
     formFieldsContainerRef,
-    onChange: handleChange,
+    InputProps,
     onCommit: handleCommit,
     onFocus: handleFocus,
+    onKeyDown,
   };
 };
