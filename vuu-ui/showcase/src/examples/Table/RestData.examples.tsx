@@ -95,6 +95,26 @@ export const RestInstrumentsScrolling = () => {
 };
 RestInstrumentsScrolling.displaySequence = displaySequence++;
 
+export const RestInstrumentsCustomHttpHeaders = () => {
+  // Note, the test Rest service used for these returns the Access control header
+  // "Access-Control-Allow-Headers": "*"
+  const createHttpHeaders = () => {
+    const headers = new Headers();
+    headers.append("Accept", "application/json");
+    headers.append("Vuu", "rest");
+    return headers;
+  };
+  return (
+    <RestDataSourceProvider
+      createHttpHeaders={createHttpHeaders}
+      url="http://localhost:8081/api"
+    >
+      <FilterTableTemplate />
+    </RestDataSourceProvider>
+  );
+};
+RestInstrumentsCustomHttpHeaders.displaySequence = displaySequence++;
+
 export const RestInstrumentsPagination = () => {
   return (
     <RestDataSourceProvider url="http://localhost:8081/api">

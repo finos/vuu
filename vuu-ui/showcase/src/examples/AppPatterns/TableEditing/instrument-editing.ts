@@ -1,3 +1,5 @@
+import { isObject } from "@finos/vuu-utils";
+
 export type Instrument = {
   bbg: string;
   currency: string;
@@ -9,8 +11,6 @@ export type Instrument = {
   price: number;
   date: number;
 };
-
-const isObject = (o: unknown) => typeof o === "object" && o !== null;
 
 export const isValidInstrument = (o: unknown): o is Instrument => {
   if (!isObject(o)) return false;

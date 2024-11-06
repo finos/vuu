@@ -1,5 +1,9 @@
 import { RestDataSource } from "@finos/vuu-data-remote";
-import { ServerAPI } from "@finos/vuu-data-types";
+import {
+  DataSourceConstructorProps,
+  ServerAPI,
+  TableSchema,
+} from "@finos/vuu-data-types";
 import {
   VuuCreateVisualLink,
   VuuRemoveVisualLink,
@@ -8,21 +12,34 @@ import {
   VuuRpcViewportRequest,
   VuuTable,
 } from "@finos/vuu-protocol-types";
-import { DataSourceProvider } from "@finos/vuu-utils";
+import { DataSourceProvider, isObject } from "@finos/vuu-utils";
 import { ReactNode } from "react";
 
-const serverAPI: Pick<
-  ServerAPI,
-  "getTableList" | "getTableSchema" | "rpcCall"
-> = {
+const serverAPI = (
+  schemas?: Record<string, TableSchema>,
+): Pick<ServerAPI, "getTableList" | "getTableSchema" | "rpcCall"> => ({
   getTableList: async () => {
-    console.log(`Rest data source does not yet support table list`);
-    return { tables: [] };
+    if (schemas) {
+      return {
+        tables: Object.keys(schemas).map((key) => {
+          const [module, table] = key.split(":");
+          return { module, table };
+        }),
+      };
+    } else {
+      console.log(`Rest data source does not yet support table list`);
+      return { tables: [] };
+    }
   },
-  getTableSchema: async (vuuTable: VuuTable) => {
-    throw Error(
-      `Rest data source does not yet support table schema (${vuuTable.table})`,
-    );
+  getTableSchema: async ({ module, table }: VuuTable) => {
+    const schema = schemas?.[`${module}:${table}`];
+    if (schema) {
+      return schema;
+    } else {
+      throw Error(
+        `Rest data source does not yet support table schema (${table})`,
+      );
+    }
   },
   rpcCall: async (
     message:
@@ -35,24 +52,63 @@ const serverAPI: Pick<
     Promise.reject(
       Error(`Rest data source does not yet support RPC (${message.type})`),
     ),
+});
+
+const getServerAPI = (schemas?: Record<string, TableSchema>) => async () =>
+  serverAPI(schemas);
+
+export type RestDataSourceExtension = {
+  createHttpHeaders?: () => Headers;
 };
 
-const getServerAPI = async () => serverAPI;
+export const isRestDataSourceExtension = (
+  o?: unknown,
+): o is RestDataSourceExtension => {
+  return (
+    isObject(o) &&
+    "createHttpHeaders" in o &&
+    typeof o["createHttpHeaders"] === "function"
+  );
+};
+
+const getRestDataSourceClass = ({
+  createHttpHeaders,
+}: RestDataSourceExtension) => {
+  if (createHttpHeaders) {
+    return class ExtendedClass extends RestDataSource {
+      constructor(props: DataSourceConstructorProps) {
+        super(props);
+      }
+      get httpHeaders(): Headers | undefined {
+        return createHttpHeaders();
+      }
+    };
+  } else {
+    return RestDataSource;
+  }
+};
 
 export const RestDataSourceProvider = ({
   children,
+  createHttpHeaders,
+  tableSchemas,
   url,
 }: {
   children: ReactNode;
+  tableSchemas?: Record<string, TableSchema>;
   url: string;
-}) => {
-  // url is a static property
+} & RestDataSourceExtension) => {
   RestDataSource.api = url;
+
+  const restDataSourceClass = getRestDataSourceClass({ createHttpHeaders });
+
   return (
     <DataSourceProvider
-      VuuDataSource={RestDataSource}
-      getServerAPI={getServerAPI}
+      VuuDataSource={restDataSourceClass}
+      dataSourceExtensions={{ createHttpHeaders }}
+      getServerAPI={getServerAPI(tableSchemas)}
       isLocalData={false}
+      tableSchemas={tableSchemas}
     >
       {children}
     </DataSourceProvider>

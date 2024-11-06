@@ -2,6 +2,7 @@ import type {
   DataSource,
   DataSourceConstructorProps,
   ServerAPI,
+  TableSchema,
 } from "@finos/vuu-data-types";
 import { createContext } from "react";
 
@@ -10,12 +11,21 @@ export type DataSourceConstructor = {
 };
 
 export interface DataSourceContextProps {
-  isLocalData: boolean;
   VuuDataSource: DataSourceConstructor;
-  vuuModuleNames?: string[];
+  dataSourceExtensions?: unknown;
+  isLocalData: boolean;
   getServerAPI: () => Promise<
     Pick<ServerAPI, "getTableList" | "getTableSchema" | "rpcCall">
   >;
+  /**
+   * A tableSchema would normally be requested via the serverAPI.
+   * schemas can be injected, in which case these 'local' schemas
+   * will be returned from the getTableSchema API call.
+   * The key is formed from concatenation of module and tableName
+   * from VuuTable e.g 'SIMUL:instruments'
+   */
+  tableSchemas?: Record<string, TableSchema>;
+  vuuModuleNames?: string[];
 }
 
 const getServerAPI = () => {
