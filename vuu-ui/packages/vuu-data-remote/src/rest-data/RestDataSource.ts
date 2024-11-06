@@ -89,6 +89,10 @@ export class RestDataSource extends BaseDataSource implements DataSource {
     return `${this.url}?origin=${from}&limit=${to - from}${this.queryStringParameters}`;
   }
 
+  get httpHeaders(): Headers | undefined {
+    return undefined;
+  }
+
   get metaDataUrl() {
     return `${this.url}/summary`;
   }
@@ -158,6 +162,7 @@ export class RestDataSource extends BaseDataSource implements DataSource {
     console.log(`base ${RestDataSource.api}`);
 
     fetch(this.dataUrl, {
+      headers: this.httpHeaders,
       mode: "cors",
     }).then(
       NDJsonReader(
@@ -174,6 +179,7 @@ export class RestDataSource extends BaseDataSource implements DataSource {
   private fetchMetaData = async () =>
     new Promise<RestMetaData>((resolve, reject) => {
       fetch(this.metaDataUrl, {
+        headers: this.httpHeaders,
         mode: "cors",
       }).then((response) => {
         if (response.ok) {

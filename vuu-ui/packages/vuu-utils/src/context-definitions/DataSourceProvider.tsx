@@ -21,3 +21,7 @@ export const DataSourceProvider = ({
 };
 
 export const useDataSource = () => useContext(DataSourceContext);
+export const useDataSourceExtensions = () => {
+  const { dataSourceExtensions } = useContext(DataSourceContext);
+  return dataSourceExtensions;
+};
