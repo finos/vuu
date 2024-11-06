@@ -116,7 +116,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
 
     // TODO make this async and await response here
 
-    const dataSourceConfig = combineFilters(this._config);
+    const dataSourceConfig = combineFilters(this.config);
     this.server?.subscribe(
       {
         ...dataSourceConfig,
@@ -392,9 +392,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
   }
 
   set config(config: WithBaseFilter<WithFullConfig>) {
-    const previousConfig = this.config;
-
-    if (this._config !== previousConfig) {
+    if (config !== this.config) {
       super.config = config;
       this.server?.send({
         viewport: this.viewport,
