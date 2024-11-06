@@ -4,13 +4,15 @@ import "./global-mocks";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 //----------------------------------------------------
 import {
-  DataSourceConfig,
   ServerAPI,
   WithBaseFilter,
+  WithFullConfig,
 } from "@finos/vuu-data-types";
 import { LinkDescriptorWithLabel, VuuSortCol } from "@finos/vuu-protocol-types";
 import { VuuDataSource } from "../src/VuuDataSource";
 import ConnectionManager from "../src/ConnectionManager";
+
+type ConfigType = WithBaseFilter<WithFullConfig>;
 
 vi.mock("../src/ConnectionManager", () => ({
   default: {
@@ -423,7 +425,11 @@ describe("VuuDataSource", () => {
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
-      let config: DataSourceConfig = {
+      let config: ConfigType = {
+        aggregations: [] as const,
+        columns: [],
+        filterSpec: { filter: "" },
+        groupBy: [],
         sort: { sortDefs: [{ column: "col1", sortType: "A" }] },
       };
 
@@ -442,7 +448,11 @@ describe("VuuDataSource", () => {
       });
 
       config = {
+        aggregations: [],
         columns: ["col1", "col2", "col3"],
+        filterSpec: { filter: "" },
+        groupBy: [],
+        sort: { sortDefs: [] },
       };
 
       dataSource.config = config;
@@ -465,8 +475,12 @@ describe("VuuDataSource", () => {
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
-      const config: DataSourceConfig = {
+      const config: ConfigType = {
+        aggregations: [],
+        columns: [],
         filterSpec: { filter: 'ccy = "EUR"' },
+        groupBy: [],
+        sort: { sortDefs: [] },
       };
 
       dataSource.config = config;
@@ -496,9 +510,13 @@ describe("VuuDataSource", () => {
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
-      const config: WithBaseFilter<DataSourceConfig> = {
+      const config: ConfigType = {
+        aggregations: [],
         baseFilterSpec: { filter: 'ccy = "EUR"' },
+        columns: [],
         filterSpec: { filter: 'exchange starts "X"' },
+        groupBy: [],
+        sort: { sortDefs: [] },
       };
 
       dataSource.config = config;
@@ -530,9 +548,13 @@ describe("VuuDataSource", () => {
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
-      const config: WithBaseFilter<DataSourceConfig> = {
+      const config: ConfigType = {
+        aggregations: [],
         baseFilterSpec: { filter: 'ccy = "GBP"' },
+        columns: [],
         filterSpec: { filter: "" },
+        groupBy: [],
+        sort: { sortDefs: [] },
       };
 
       dataSource.config = config;
@@ -558,7 +580,12 @@ describe("VuuDataSource", () => {
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
-      const config: DataSourceConfig = {
+      const config: ConfigType = {
+        aggregations: [],
+        baseFilterSpec: { filter: "" },
+        columns: [],
+        filterSpec: { filter: "" },
+        groupBy: [],
         sort: { sortDefs: [{ column: "col1", sortType: "A" }] },
       };
 

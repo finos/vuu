@@ -13,6 +13,7 @@ import { InstrumentTileContainer } from "./InstrumentTileContainer";
 import { useDataSource } from "./useDataSource";
 
 import "./VuuInstrumentTilesFeature.css";
+import { VuuRange } from "@finos/vuu-protocol-types";
 
 const classBase = "VuuInstrumentTilesFeature";
 
@@ -29,7 +30,7 @@ const VuuInstrumentTilesFeature = ({
 
   const instrumentKeys = useMemo(
     () => ["AAA.L", "AAV.L", "ABB.MC", "ABK.N", "CDQ.L"],
-    []
+    [],
   );
 
   const filter: DataSourceFilter = useMemo(
@@ -42,17 +43,20 @@ const VuuInstrumentTilesFeature = ({
       },
     }),
 
-    [instrumentKeys]
+    [instrumentKeys],
   );
 
   const handleDataSourceConfigChange = useCallback(
-    (config: DataSourceConfig | undefined, confirmed?: boolean) => {
-      // confirmed / unconfirmed messages are used for UI updates, not state saving
-      if (confirmed === undefined) {
+    (
+      config: DataSourceConfig | undefined,
+      _range: VuuRange,
+      confirmed?: boolean,
+    ) => {
+      if (confirmed !== false) {
         save?.(config, "datasource-config");
       }
     },
-    [save]
+    [save],
   );
 
   const dataSource: DataSource = useMemo(() => {
@@ -91,7 +95,7 @@ const VuuInstrumentTilesFeature = ({
 
   const columnMap = useMemo(
     () => buildColumnMap(dataSource.columns),
-    [dataSource.columns]
+    [dataSource.columns],
   );
 
   useEffect(() => {

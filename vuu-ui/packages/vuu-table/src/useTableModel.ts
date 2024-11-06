@@ -15,6 +15,7 @@ import {
   applyRuntimeColumnWidthsToConfig,
   applySortToColumns,
   applyWidthToColumns,
+  checkConfirmationPending,
   existingSort,
   getCellRenderer,
   getColumnHeaderContentRenderer,
@@ -233,7 +234,7 @@ const columnReducer: GridModelReducer = (state, action) => {
           ),
         });
       } else {
-        return init(action);
+        return init(action, state);
       }
     }
     case "moveColumn":
@@ -297,12 +298,10 @@ type InitialConfig = {
   tableConfig: TableConfig;
 };
 
-function init({
-  availableWidth,
-  dataSource,
-  selectionModel,
-  tableConfig,
-}: InitialConfig): InternalTableModel {
+function init(
+  { availableWidth, dataSource, selectionModel, tableConfig }: InitialConfig,
+  previousConfig?: InternalTableModel,
+): InternalTableModel {
   const { columns, ...tableAttributes } = tableConfig;
   const { config: dataSourceConfig, tableSchema } = dataSource;
   const toRuntimeColumnDescriptor = columnDescriptorToRuntimeColumDescriptor(
@@ -353,6 +352,7 @@ function init({
     state = updateTableConfig(state, {
       type: "tableConfig",
       ...rest,
+      confirmed: checkConfirmationPending(previousConfig),
     });
   }
   return state;
@@ -606,6 +606,8 @@ function updateTableConfig(
       ...state,
       columns,
     };
+  } else if (isGroupColumn(result.columns[0]) && confirmed === false) {
+    // reset groupConfirmed to false, if true
   }
 
   if (sort.sortDefs.length > 0) {

@@ -78,7 +78,6 @@ export const useCellFocus = ({
     (el) => {
       if (el) {
         const { current: state } = cellFocusStateRef;
-        console.log(state.cellPos?.join(",") ?? "no cellpos");
         const table = queryClosest<HTMLDivElement>(el, ".vuuTable");
         if (table) {
           if (state.el === null && !disableFocus) {

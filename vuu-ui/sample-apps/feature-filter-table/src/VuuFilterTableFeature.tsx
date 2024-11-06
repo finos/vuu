@@ -4,7 +4,7 @@ import { ContextMenuProvider } from "@finos/vuu-popups";
 import { DataSourceStats } from "@finos/vuu-table-extras";
 import { FilterTableFeatureProps } from "@finos/vuu-utils";
 import cx from "clsx";
-import { useFilterTable } from "./useFilterTable";
+import { useFilterTableFeature } from "./useFilterTableFeature";
 
 import "./VuuFilterTableFeature.css";
 
@@ -16,7 +16,7 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
     filterBarProps,
     handleFilterTableMenuAction,
     tableProps,
-  } = useFilterTable({ tableSchema });
+  } = useFilterTableFeature({ tableSchema });
 
   return (
     <ContextMenuProvider

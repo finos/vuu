@@ -6,7 +6,7 @@ import {
 } from "@finos/vuu-data-types";
 import {} from "@finos/vuu-data-remote";
 import { Filter } from "@finos/vuu-filter-types";
-import { VuuGroupBy, VuuSort } from "@finos/vuu-protocol-types";
+import { VuuGroupBy, VuuRange, VuuSort } from "@finos/vuu-protocol-types";
 import {
   buildColumnMap,
   ColumnMap,
@@ -36,8 +36,8 @@ type AgRow = {
 const reverseColumnMap = (columnMap: ColumnMap): Map<number, string> =>
   new Map<number, string>(
     Object.entries(columnMap).map(
-      (entry) => entry.reverse() as [number, string]
-    )
+      (entry) => entry.reverse() as [number, string],
+    ),
   );
 
 export interface IViewportDatasourceParams {
@@ -60,7 +60,7 @@ export class ViewportRowModelDataSource {
 
   constructor(
     private dataSource: DataSource,
-    private onFeatureEnabled?: (message: VuuFeatureMessage) => void
+    private onFeatureEnabled?: (message: VuuFeatureMessage) => void,
   ) {
     this.dataSource.subscribe({}, this.handleMessageFromDataSource);
     // this.dataSource.on("config", this.handleConfigChange);
@@ -77,8 +77,9 @@ export class ViewportRowModelDataSource {
   }
 
   private handleDataSourceConfigChange = (
-    config?: DataSourceConfig,
-    confirmed?: boolean
+    config: DataSourceConfig,
+    _range: VuuRange,
+    confirmed?: boolean,
   ) => {
     const columns = config?.columns ?? NO_COLUMNS;
     if (confirmed === undefined && Array.isArray(config?.columns)) {

@@ -452,6 +452,7 @@ export class ServerProxy {
     }
   }
 
+  // TODO check config has actually changed
   private setConfig(viewport: Viewport, message: VuuUIMessageOutConfig) {
     const requestId = nextRequestId();
     const request = viewport.setConfig(requestId, message.config);

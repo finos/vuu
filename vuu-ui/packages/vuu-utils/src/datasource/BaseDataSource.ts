@@ -25,6 +25,10 @@ import {
   withConfigDefaults,
 } from "./datasource-utils";
 
+export type RuntimeConfig = WithBaseFilter<WithFullConfig> & {
+  visualLink?: LinkDescriptorWithLabel;
+};
+
 export abstract class BaseDataSource
   extends EventEmitter<DataSourceEvents>
   implements Pick<DataSource, "config">
@@ -33,12 +37,13 @@ export abstract class BaseDataSource
   public viewport: string;
 
   protected _clientCallback: SubscribeCallback | undefined;
-  protected _config: WithBaseFilter<WithFullConfig> & {
-    visualLink?: LinkDescriptorWithLabel;
-  } = vanillaConfig;
+  protected _config: RuntimeConfig = vanillaConfig;
+  protected _impendingConfig: RuntimeConfig | undefined = undefined;
   protected _range: VuuRange = { from: 0, to: 0 };
   protected _size = 0;
   protected _title: string | undefined;
+
+  private awaitingConfirmationOfConfigChanges = false;
 
   constructor({
     aggregations,
@@ -117,7 +122,7 @@ export abstract class BaseDataSource
       ...this._config,
       aggregations,
     };
-    this.emit("config", this._config);
+    this.emit("config", this._config, this.range);
   }
 
   get baseFilter() {
@@ -140,7 +145,7 @@ export abstract class BaseDataSource
       ...this._config,
       columns,
     };
-    this.emit("config", this._config);
+    this.emit("config", this._config, this.range);
   }
 
   get filter() {
@@ -154,14 +159,43 @@ export abstract class BaseDataSource
     };
   }
 
+  get isAwaitingConfirmationOfConfigChange() {
+    return this._impendingConfig !== undefined;
+  }
+
+  protected confirmConfigChange() {
+    if (this._impendingConfig) {
+      this._config = this._impendingConfig;
+      this._impendingConfig = undefined;
+      this.emit("config", this._config, this.range, true);
+    } else {
+      throw Error(
+        `BaseDataSOurce, unexpected call to confirmConfigChange, no changes pending`,
+      );
+    }
+  }
+
   get config() {
-    return this._config;
+    return this._impendingConfig ?? this._config;
   }
 
   set config(config: WithBaseFilter<WithFullConfig>) {
+    const confirmed = this.awaitingConfirmationOfConfigChanges
+      ? true
+      : undefined;
+    // TODO what happens if config is set and we still have an unconfirmed change ?
+    this.awaitingConfirmationOfConfigChanges = false;
     const configChanges = this.applyConfig(config);
     if (configChanges) {
-      this.emit("config", this._config, undefined, configChanges);
+      this.emit("config", this.config, this.range, confirmed, configChanges);
+    }
+  }
+
+  set impendingConfig(config: WithBaseFilter<WithFullConfig>) {
+    this.awaitingConfirmationOfConfigChanges = true;
+    const configChanges = this.applyConfig(config);
+    if (configChanges) {
+      this.emit("config", this.config, this.range, false, configChanges);
     }
   }
 
@@ -189,7 +223,7 @@ export abstract class BaseDataSource
       ...this._config,
       sort,
     };
-    this.emit("config", this._config);
+    this.emit("config", this._config, this.range);
   }
 
   get title() {
@@ -224,12 +258,25 @@ export abstract class BaseDataSource
               }
             : config;
         if (preserveExistingConfigAttributes) {
-          this._config = {
-            ...this._config,
-            ...config,
-          };
+          if (this.awaitingConfirmationOfConfigChanges) {
+            this._impendingConfig = {
+              ...this._config,
+              ...config,
+            };
+          } else {
+            this._impendingConfig = undefined;
+            this._config = {
+              ...this._config,
+              ...config,
+            };
+          }
         } else {
-          this._config = withConfigDefaults(newConfig);
+          if (this.awaitingConfirmationOfConfigChanges) {
+            this._impendingConfig = withConfigDefaults(newConfig);
+          } else {
+            this._impendingConfig = undefined;
+            this._config = withConfigDefaults(newConfig);
+          }
         }
         return otherChanges;
       }

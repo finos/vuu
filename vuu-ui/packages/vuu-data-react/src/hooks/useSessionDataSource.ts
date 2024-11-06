@@ -1,11 +1,13 @@
 import {
   DataSource,
   DataSourceConfig,
+  DataSourceConfigChangeHandler,
   TableSchema,
 } from "@finos/vuu-data-types";
 import { isConfigChanged, resetRange, useDataSource } from "@finos/vuu-utils";
 import { useViewContext } from "@finos/vuu-layout";
 import { useCallback, useMemo } from "react";
+import { VuuRange } from "@finos/vuu-protocol-types";
 
 type SessionDataSourceConfig = {
   "datasource-config"?: DataSourceConfig;
@@ -26,21 +28,25 @@ export const useSessionDataSource = ({
   const { "datasource-config": dataSourceConfigFromState } =
     useMemo<SessionDataSourceConfig>(() => load?.() ?? NO_CONFIG, [load]);
 
-  const handleDataSourceConfigChange = useCallback(
-    (config: DataSourceConfig | undefined, confirmed?: boolean) => {
-      // confirmed / unconfirmed messages are used for UI updates, not state saving
-      if (confirmed === undefined) {
-        const { noChanges } = isConfigChanged(
-          dataSourceConfigFromState,
-          config,
-        );
-        if (noChanges === false) {
-          save?.(config, "datasource-config");
+  const handleDataSourceConfigChange =
+    useCallback<DataSourceConfigChangeHandler>(
+      (
+        config: DataSourceConfig | undefined,
+        _range: VuuRange,
+        confirmed?: boolean,
+      ) => {
+        if (confirmed !== false) {
+          const { noChanges } = isConfigChanged(
+            dataSourceConfigFromState,
+            config,
+          );
+          if (noChanges === false) {
+            save?.(config, "datasource-config");
+          }
         }
-      }
-    },
-    [dataSourceConfigFromState, save],
-  );
+      },
+      [dataSourceConfigFromState, save],
+    );
 
   const dataSource: DataSource = useMemo(() => {
     let ds = loadSession?.(dataSourceSessionKey) as DataSource;
