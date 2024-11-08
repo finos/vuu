@@ -8,7 +8,9 @@ import { clsx } from "clsx";
 import { forwardRef } from "react";
 import { useTabNext } from "./TabNextContext";
 
-export interface TabNextActionProps extends ButtonProps {}
+export interface TabNextActionProps extends ButtonProps {
+  debugLabel?: string;
+}
 
 export const TabNextAction = forwardRef<HTMLButtonElement, TabNextActionProps>(
   function TabNextAction(props, ref) {

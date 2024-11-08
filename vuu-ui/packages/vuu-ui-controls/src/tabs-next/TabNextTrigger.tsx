@@ -18,7 +18,9 @@ import tabTriggerCss from "./TabNextTrigger.css";
 import { useTabsNext } from "./TabsNextContext";
 
 export interface TabNextTriggerProps
-  extends ComponentPropsWithoutRef<"button"> {}
+  extends ComponentPropsWithoutRef<"button"> {
+  debugLabel?: string;
+}
 
 const withBaseName = makePrefixer("saltTabNextTrigger");
 
@@ -76,11 +78,11 @@ export const TabNextTrigger = forwardRef<
   const panelId = getPanelId(value);
 
   return (
-    // biome-ignore lint/a11y/useValidAriaProps: aria-actions is a draft spec https://pr-preview.s3.amazonaws.com/w3c/aria/pull/1805.html#aria-actions
     <button
       aria-selected={selected}
       aria-disabled={disabled}
       aria-controls={panelId}
+      // eslint-disable-next-line react/no-unknown-property
       aria-actions={clsx(actions) || undefined}
       aria-description={getAriaDescription(actions.length)}
       tabIndex={focused || selected ? undefined : -1}

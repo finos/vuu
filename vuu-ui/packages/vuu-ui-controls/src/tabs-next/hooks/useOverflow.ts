@@ -167,6 +167,7 @@ export function useOverflow({
   const hidden = childArray.slice(visibleCount || 1);
 
   const hiddenSelectedIndex = hidden.findIndex(
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     (child) => child?.props?.value === selected,
   );
