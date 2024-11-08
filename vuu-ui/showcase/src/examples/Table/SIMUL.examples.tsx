@@ -12,8 +12,6 @@ import { useCallback, useMemo } from "react";
 import { DemoTableContainer } from "./DemoTableContainer";
 import "./BuySellRowClassNameGenerator";
 
-//import { BulkEditRow } from "@finos/vuu-table";
-
 let displaySequence = 1;
 
 const getDefaultColumnConfig = (

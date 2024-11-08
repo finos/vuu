@@ -4,18 +4,30 @@ import {
 } from "@finos/vuu-data-remote";
 import { useEffect, useState } from "react";
 
-export const useAutoLoginToVuuServer = (autoLogin = true) => {
+export const useAutoLoginToVuuServer = ({
+  authenticate = true,
+  autoLogin = true,
+  secure = true,
+}: {
+  authenticate?: boolean;
+  autoLogin?: boolean;
+  secure?: boolean;
+} = {}) => {
   const [errorMessage, setErrorMessage] = useState("");
   useEffect(() => {
     const connect = async () => {
       try {
-        const token = (await vuuAuthenticate(
-          "steve",
-          "xyz",
-          "/api/authn",
-        )) as string;
+        let token = "no-token";
+        if (authenticate) {
+          token = (await vuuAuthenticate(
+            "steve",
+            "xyz",
+            "/api/authn",
+          )) as string;
+        }
+        const protocol = secure ? "wss" : "ws";
         ConnectionManager.connect({
-          url: "wss://localhost:8090/websocket",
+          url: `${protocol}://localhost:8090/websocket`,
           token,
           username: "steve",
         });
@@ -29,7 +41,7 @@ export const useAutoLoginToVuuServer = (autoLogin = true) => {
     if (autoLogin) {
       connect();
     }
-  }, [autoLogin]);
+  }, [authenticate, autoLogin, secure]);
 
   if (errorMessage) {
     return (
