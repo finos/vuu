@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { UserConfig } from "vite";
 import { version as reactVersion } from "react";
-import { cssInline } from "./tools/vite-plugin-inline-css/src";
+import { cssInline } from "vite-plugin-inline-css";
 
 const viteConfig: UserConfig = {
   plugins: [react(), tsconfigPaths(), /*, IstanbulPlugin()*/ cssInline()],
@@ -18,7 +18,6 @@ const viteConfig: UserConfig = {
   define: {
     "process.env.NODE_DEBUG": false,
     "process.env.LOCAL": true,
-    "process.env.LAYOUT_BASE_URL": `"http://127.0.0.1:8081/api"`,
   },
   resolve: {
     alias: {

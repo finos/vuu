@@ -55,92 +55,148 @@ export const ButtonVariations = () => {
       }}
     >
       <span />
-      <span>CTA</span>
-      <span>Primary</span>
-      <span>Secondary</span>
+      <span>Accented/Solid</span>
+      <span>Neutral/Solid</span>
+      <span>Neutral/transparent</span>
       <span>Embedded</span>
 
       <span />
-      <IconButton icon="filter" variant="cta" />
-      <IconButton icon="filter" variant="primary" />
-      <IconButton icon="filter" variant="secondary" />
-      <IconButton icon="filter" data-embedded variant="secondary" />
+      <IconButton icon="filter" appearance="solid" sentiment="accented" />
+      <IconButton icon="filter" appearance="solid" sentiment="neutral" />
+      <IconButton icon="filter" appearance="transparent" sentiment="neutral" />
+      <IconButton
+        icon="filter"
+        data-embedded
+        appearance="transparent"
+        sentiment="neutral"
+      />
 
       <span />
-      <Button variant="cta">
+      <Button appearance="solid" sentiment="accented">
         <Icon name="filter" />
         Filter
       </Button>
-      <Button variant="primary">
+      <Button appearance="solid" sentiment="neutral">
         <Icon name="filter" />
         Filter
       </Button>
-      <Button variant="secondary">
+      <Button appearance="transparent" sentiment="neutral">
         <Icon name="filter" />
         Filter
       </Button>
-      <Button data-embedded variant="secondary">
+      <Button data-embedded appearance="transparent" sentiment="neutral">
         <Icon name="filter" />
         Filter
       </Button>
 
       <span>active</span>
-      <IconButton className="saltButton-active" icon="filter" variant="cta" />
       <IconButton
         className="saltButton-active"
         icon="filter"
-        variant="primary"
+        appearance="solid"
+        sentiment="accented"
       />
       <IconButton
         className="saltButton-active"
         icon="filter"
-        variant="secondary"
+        appearance="solid"
+        sentiment="neutral"
+      />
+      <IconButton
+        className="saltButton-active"
+        icon="filter"
+        appearance="transparent"
+        sentiment="neutral"
       />
       <IconButton
         className="saltButton-active"
         data-embedded
         icon="filter"
-        variant="secondary"
+        appearance="transparent"
+        sentiment="neutral"
       />
 
       <span>active</span>
-      <Button className="saltButton-active" variant="cta">
+      <Button
+        className="saltButton-active"
+        appearance="solid"
+        sentiment="accented"
+      >
         <Icon name="filter" />
         Filter
       </Button>
-      <Button className="saltButton-active" variant="primary">
+      <Button
+        className="saltButton-active"
+        appearance="solid"
+        sentiment="neutral"
+      >
         <Icon name="filter" />
         Filter
       </Button>
-      <Button className="saltButton-active" variant="secondary">
+      <Button
+        className="saltButton-active"
+        appearance="transparent"
+        sentiment="neutral"
+      >
         <Icon name="filter" />
         Filter
       </Button>
-      <Button className="saltButton-active" data-embedded variant="secondary">
+      <Button
+        className="saltButton-active"
+        data-embedded
+        appearance="transparent"
+        sentiment="neutral"
+      >
         <Icon name="filter" />
         Filter
       </Button>
 
       <span>disabled</span>
-      <IconButton disabled icon="filter" variant="cta" />
-      <IconButton disabled icon="filter" variant="primary" />
-      <IconButton disabled icon="filter" variant="secondary" />
-      <IconButton disabled data-embedded icon="filter" variant="secondary" />
+      <IconButton
+        disabled
+        icon="filter"
+        appearance="solid"
+        sentiment="accented"
+      />
+      <IconButton
+        disabled
+        icon="filter"
+        appearance="solid"
+        sentiment="neutral"
+      />
+      <IconButton
+        disabled
+        icon="filter"
+        appearance="transparent"
+        sentiment="neutral"
+      />
+      <IconButton
+        disabled
+        data-embedded
+        icon="filter"
+        appearance="transparent"
+        sentiment="neutral"
+      />
 
       <span>disabled</span>
-      <Button disabled variant="cta">
+      <Button disabled appearance="solid" sentiment="accented">
         <Icon name="filter" />
         Filter
       </Button>
-      <Button disabled variant="primary">
+      <Button disabled appearance="solid" sentiment="neutral">
         <Icon name="filter" />
         Filter
       </Button>
-      <Button disabled variant="secondary">
+      <Button disabled appearance="transparent" sentiment="neutral">
         <Icon name="filter" />
         Filter
       </Button>
-      <Button disabled data-embedded variant="secondary">
+      <Button
+        disabled
+        data-embedded
+        appearance="transparent"
+        sentiment="neutral"
+      >
         <Icon name="filter" />
         Filter
       </Button>

@@ -58,12 +58,12 @@
 }
 
 .vuuTabstrip-overflowMenu-open {
-  --saltButton-background: var(--salt-actionable-secondary-background-active);
-  --saltButton-text-color: var(--salt-actionable-secondary-text-color-active);
+  --saltButton-background: var(--salt-actionable-subtle-background-active);
+  --saltButton-text-color: var(--salt-actionable-subtle-text-color-active);
 }
 
 .vuuTabstrip-overflowMenu-open .saltButton {
-  --saltIcon-color: var(--salt-actionable-secondary-foreground-active);
+  --saltIcon-color: var(--salt-actionable-subtle-foreground-active);
 }
 
 .vuuTabstrip-inner {

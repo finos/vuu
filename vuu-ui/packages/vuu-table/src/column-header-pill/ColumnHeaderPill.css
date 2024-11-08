@@ -1,30 +1,29 @@
 .vuuColumnHeaderPill {
-    --vuu-icon-size: 14px;
-    --menu-item-icon-color: black;
-    --vuu-icon-color: var(--salt-actionable-primary-foreground);
-    --vuu-icon-height: 12px;
-    --vuu-icon-width: 12px;
-    align-items: center;
-    background: var(--salt-actionable-primary-background);
-    color: var(--salt-actionable-primary-foreground);
-    border-radius: 4px;
-    flex: var(--vuuColumnHeaderPill-flex, none);
-    font-size: 11px;
-    gap: 4px;
-    height: 16px;
-    display: flex;
-    margin: var(--vuuColumnHeaderPill-margin, 0);
-    padding: 0 6px;
-    position: relative;     
+  --vuu-icon-size: 14px;
+  --menu-item-icon-color: black;
+  --vuu-icon-color: var(--salt-actionable-bold-foreground);
+  --vuu-icon-height: 12px;
+  --vuu-icon-width: 12px;
+  align-items: center;
+  background: var(--salt-actionable-bold-background);
+  color: var(--salt-actionable-bold-foreground);
+  border-radius: 4px;
+  flex: var(--vuuColumnHeaderPill-flex, none);
+  font-size: 11px;
+  gap: 4px;
+  height: 16px;
+  display: flex;
+  margin: var(--vuuColumnHeaderPill-margin, 0);
+  padding: 0 6px;
+  position: relative;
 }
 
 .vuuColumnHeaderPill:hover {
-    --vuu-icon-color: var(--salt-actionable-primary-foreground-hover);
-    background-color: var(--salt-actionable-primary-background-hover);
-    color: var(--salt-actionable-primary-foreground-hover);
-  
+  --vuu-icon-color: var(--salt-actionable-bold-foreground-hover);
+  background-color: var(--salt-actionable-bold-background-hover);
+  color: var(--salt-actionable-bold-foreground-hover);
 }
 
 .vuuColumnHeaderPill-removeButton {
-    cursor: pointer;
+  cursor: pointer;
 }

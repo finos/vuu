@@ -7,7 +7,8 @@ import "./ToggleButton.examples.css";
 let displaySequence = 1;
 
 interface ToggleButtonExampleProps {
-  "data-variant": ButtonProps["variant"];
+  "data-variant"?: ButtonProps["variant"];
+  "data-accented"?: boolean;
 }
 
 export const ButtonGroupWithTextOnly = (props: ToggleButtonExampleProps) => {
@@ -156,14 +157,14 @@ export const ToggleButtonGroupVariations = () => {
       <span />
       <ButtonGroupWithTextAndIcon data-variant="secondary" />
 
-      <span>CTA</span>
-      <ButtonGroupWithTextOnly data-variant="cta" />
+      <span>Accented</span>
+      <ButtonGroupWithTextOnly data-accented />
 
       <span />
-      <ButtonGroupWithIconOnly data-variant="cta" />
+      <ButtonGroupWithIconOnly data-accented />
 
       <span />
-      <ButtonGroupWithTextAndIcon data-variant="cta" />
+      <ButtonGroupWithTextAndIcon data-accented />
     </div>
   );
 };

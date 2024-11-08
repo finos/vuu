@@ -1,11 +1,11 @@
+import type { TableSchemaTable } from "@finos/vuu-data-types";
 import type { ColumnDescriptor } from "@finos/vuu-table-types";
 import type { CloseReason } from "@finos/vuu-ui-controls";
-import type { TableSchemaTable } from "@finos/vuu-data-types";
+import type { InputProps } from "@salt-ds/core";
 import type { FilterClauseValueChangeHandler } from "./useFilterClause";
-import type { InputHTMLAttributes } from "react";
 
 export interface FilterClauseValueEditor {
-  inputProps?: InputHTMLAttributes<HTMLInputElement>;
+  inputProps?: InputProps["inputProps"];
   column: ColumnDescriptor;
   onDeselect?: () => void;
   onChangeValue: FilterClauseValueChangeHandler;

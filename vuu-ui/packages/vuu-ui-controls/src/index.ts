@@ -18,6 +18,7 @@ export * from "./overflow-container";
 export * from "./price-ticker";
 export * from "./price-ticker";
 export * from "./split-button";
+export * from "./tabs-next";
 export * from "./tabstrip";
 export * from "./toolbar";
 export * from "./tree";

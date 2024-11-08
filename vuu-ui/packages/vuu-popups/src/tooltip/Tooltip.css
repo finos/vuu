@@ -1,8 +1,8 @@
 .vuuTooltip {
   --tooltip-align: flex-start;
-  --tooltip-background: var(--salt-actionable-primary-background-hover);
-  --tooltip-border: var(--salt-actionable-primary-background-hover);
-  --tooltip-color: var(--salt-actionable-primary-foreground-hover);
+  --tooltip-background: var(--salt-actionable-bold-background-hover);
+  --tooltip-border: var(--salt-actionable-bold-background-hover);
+  --tooltip-color: var(--salt-actionable-bold-foreground-hover);
   --tooltip-justify: flex-start;
   --tooltip-top: auto;
   --tooltip-right: auto;
