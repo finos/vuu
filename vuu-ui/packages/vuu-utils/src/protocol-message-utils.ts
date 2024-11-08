@@ -233,3 +233,8 @@ export function isSessionTableActionMessage(
     rpcResponse.action?.renderComponent === "inline-form"
   );
 }
+
+export const isRpcSuccess = (
+  response: VuuRpcResponse | Omit<VuuRpcResponse, "vpId">,
+): response is VuuRpcViewportResponse =>
+  isActionMessage(response) && response.action.type === "VP_RPC_SUCCESS";

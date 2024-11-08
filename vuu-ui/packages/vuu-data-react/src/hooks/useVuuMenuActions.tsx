@@ -20,7 +20,7 @@ import type {
   VuuRpcResponse,
   VuuTable,
 } from "@finos/vuu-protocol-types";
-import { BulkEditPanel, BulkEditPanelDialog } from "@finos/vuu-table";
+import { BulkEditPanel, BulkEditDialog } from "@finos/vuu-table";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
   VuuServerMenuOptions,
@@ -33,6 +33,7 @@ import {
   isRoot,
   isSessionTableActionMessage,
   isTableLocation,
+  toColumnName,
   useDataSource,
   viewportRpcRequest,
 } from "@finos/vuu-utils";
@@ -68,7 +69,7 @@ export interface VuuMenuActionHookProps {
    * Vuu will process the menuItem.
    */
   clientSideMenuActionHandler?: VuuMenuActionHandler;
-  dataSource: DataSource;
+  dataSource?: DataSource;
   menuActionConfig?: MenuActionConfig;
   onRpcResponse?: RpcResponseHandler;
 }
@@ -121,33 +122,37 @@ export const useVuuMenuActions = ({
   const { VuuDataSource } = useDataSource();
   const buildViewserverMenuOptions: MenuBuilder = useCallback(
     (location, options) => {
-      const { links, menu } = dataSource;
-      const { visualLink } = dataSource;
       const descriptors: ContextMenuItemDescriptor[] = [];
+      if (dataSource) {
+        const { links, menu } = dataSource;
+        const { visualLink } = dataSource;
 
-      if (location === "grid" && links && !visualLink) {
-        links.forEach((linkDescriptor: LinkDescriptorWithLabel) => {
-          const { link, label: linkLabel } = linkDescriptor;
-          const label = linkLabel ? linkLabel : link.toTable;
-          descriptors.push({
-            label: `Link to ${label}`,
-            action: "link-table",
-            options: linkDescriptor,
+        if (location === "grid" && links && !visualLink) {
+          links.forEach((linkDescriptor: LinkDescriptorWithLabel) => {
+            const { link, label: linkLabel } = linkDescriptor;
+            const label = linkLabel ? linkLabel : link.toTable;
+            descriptors.push({
+              label: `Link to ${label}`,
+              action: "link-table",
+              options: linkDescriptor,
+            });
           });
-        });
-      }
-
-      if (menu && isTableLocation(location)) {
-        const menuDescriptor = buildMenuDescriptorFromVuuMenu(
-          menu,
-          location,
-          options as VuuServerMenuOptions,
-        );
-        if (isRoot(menu) && isGroupMenuItemDescriptor(menuDescriptor)) {
-          descriptors.push(...menuDescriptor.children);
-        } else if (menuDescriptor) {
-          descriptors.push(menuDescriptor);
         }
+
+        if (menu && isTableLocation(location)) {
+          const menuDescriptor = buildMenuDescriptorFromVuuMenu(
+            menu,
+            location,
+            options as VuuServerMenuOptions,
+          );
+          if (isRoot(menu) && isGroupMenuItemDescriptor(menuDescriptor)) {
+            descriptors.push(...menuDescriptor.children);
+          } else if (menuDescriptor) {
+            descriptors.push(menuDescriptor);
+          }
+        }
+      } else {
+        throw Error("useVuuMenuActions no dataSource provided");
       }
 
       return descriptors;
@@ -159,32 +164,38 @@ export const useVuuMenuActions = ({
   const showNotification = useNotifications();
 
   const showBulkEditDialog = useCallback(
-    (table: VuuTable, columns?: ColumnDescriptor[]) => {
-      // NO send BULK_EDIT_BEGIN
+    (ds: DataSource, table: VuuTable, columns?: ColumnDescriptor[]) => {
       const sessionDs = new VuuDataSource({
+        columns: columns?.map(toColumnName),
         table,
         viewport: table.table,
       });
 
-      if (sessionDs) {
-        showDialog(
-          <BulkEditPanelDialog
-            columns={columns}
-            sessionDs={sessionDs}
-            parentDs={dataSource}
-            closeDialog={closeDialog}
-          />,
-          "Bulk Amend",
-        );
+      const handleClose = () => {
+        sessionDs.unsubscribe();
+        closeDialog();
+      };
 
-        return true;
-      }
+      showDialog(
+        <BulkEditDialog
+          columns={columns}
+          sessionDs={sessionDs}
+          parentDs={ds}
+          closeDialog={handleClose}
+        />,
+        "Bulk Amend",
+      );
+
+      return true;
     },
-    [VuuDataSource, closeDialog, dataSource, showDialog],
+    [VuuDataSource, closeDialog, showDialog],
   );
 
   const showSessionEditingForm = useCallback(
-    (action: OpenDialogAction & { tableSchema: TableSchema }) => {
+    (
+      ds: DataSource,
+      action: OpenDialogAction & { tableSchema: TableSchema },
+    ) => {
       const { tableSchema } = action;
       if (tableSchema) {
         const formConfig = getFormConfig(action);
@@ -194,7 +205,7 @@ export const useVuuMenuActions = ({
         );
       }
 
-      const sessionDs = dataSource.createSessionDataSource?.(action.table);
+      const sessionDs = ds.createSessionDataSource?.(action.table);
       const handleSubmit = () => {
         sessionDs?.rpcCall?.(viewportRpcRequest("VP_BULK_EDIT_SUBMIT_RPC"));
         closeDialog();
@@ -209,7 +220,7 @@ export const useVuuMenuActions = ({
           <BulkEditPanel
             dataSource={sessionDs}
             onSubmit={handleSubmit}
-            parentDs={dataSource}
+            parentDs={ds}
             onValidationStatusChange={handleChange}
           />,
           "Multi Row Edit",
@@ -222,11 +233,9 @@ export const useVuuMenuActions = ({
             </Button>,
           ],
         );
-
-        return true;
       }
     },
-    [closeDialog, dataSource, showDialog],
+    [closeDialog, showDialog],
   );
 
   const handleMenuAction = useCallback(
@@ -237,7 +246,7 @@ export const useVuuMenuActions = ({
         const rpcRequest = getMenuRpcRequest(options as unknown as VuuMenuItem);
 
         dataSource
-          .menuRpcCall(rpcRequest)
+          ?.menuRpcCall(rpcRequest)
           .then((rpcResponse: Omit<VuuRpcResponse, "requestId">) => {
             if (rpcResponse) {
               if (onRpcResponse?.(rpcResponse) === true) {
@@ -254,16 +263,22 @@ export const useVuuMenuActions = ({
                     header: title,
                   });
                 } else if (isOpenBulkEditResponse(rpcResponse)) {
-                  showBulkEditDialog(rpcResponse.action.table, options.columns);
+                  showBulkEditDialog(
+                    dataSource,
+                    rpcResponse.action.table,
+                    options.columns,
+                  );
                 } else if (isSessionTableActionMessage(rpcResponse)) {
-                  showSessionEditingForm(rpcResponse.action);
+                  showSessionEditingForm(dataSource, rpcResponse.action);
                 }
               }
             }
           });
         return true;
       } else if (menuId === "link-table") {
-        dataSource.visualLink = options as LinkDescriptorWithLabel;
+        if (dataSource) {
+          dataSource.visualLink = options as LinkDescriptorWithLabel;
+        }
         return true;
       } else {
         console.log(

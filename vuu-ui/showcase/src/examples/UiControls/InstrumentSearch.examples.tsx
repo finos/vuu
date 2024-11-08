@@ -1,11 +1,11 @@
-import { getAllSchemas, SimulTableName, vuuModule } from "@finos/vuu-data-test";
+import { getSchema, LocalDataSourceProvider } from "@finos/vuu-data-test";
 import { Flexbox } from "@finos/vuu-layout";
 import {
   DragDropProvider,
   TableSearch,
   useDragDropProvider,
 } from "@finos/vuu-ui-controls";
-import type { DataSourceRow } from "@finos/vuu-data-types";
+import type { DataSourceRow, TableSchema } from "@finos/vuu-data-types";
 import type { GlobalDropHandler } from "@finos/vuu-ui-controls";
 import {
   HTMLAttributes,
@@ -14,17 +14,32 @@ import {
   useMemo,
   useState,
 } from "react";
-import { useTestDataSource } from "../utils";
+import { useDataSource } from "@finos/vuu-utils";
+import { VuuDataSourceProvider } from "@finos/vuu-data-react";
+import { TableProps } from "@finos/vuu-table";
 
 let displaySequence = 1;
 
-export const DefaultInstrumentSearch = () => {
-  const dataSource = useMemo(
-    () => vuuModule<SimulTableName>("SIMUL").createDataSource("instruments"),
-    [],
-  );
+const TableSearchTemplate = ({
+  schema,
+  TableProps,
+}: {
+  schema: TableSchema;
+  TableProps?: Partial<TableProps>;
+}) => {
+  const { VuuDataSource } = useDataSource();
+  const dataSource = useMemo(() => {
+    const { table } = schema;
+    const dataSource = new VuuDataSource({
+      columns: schema.columns.map((c) => c.name),
+      table,
+    });
+    return dataSource;
+  }, [VuuDataSource, schema]);
+
   return (
     <TableSearch
+      TableProps={TableProps}
       autoFocus
       dataSource={dataSource}
       searchColumns={["description"]}
@@ -33,23 +48,23 @@ export const DefaultInstrumentSearch = () => {
   );
 };
 
+export const DefaultInstrumentSearch = () => {
+  const schema = getSchema("instruments");
+  return (
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <TableSearchTemplate schema={schema} />
+    </LocalDataSourceProvider>
+  );
+};
+
 DefaultInstrumentSearch.displaySequence = displaySequence++;
 
 export const InstrumentSearchVuuInstruments = () => {
-  const { dataSource, error } = useTestDataSource({
-    schemas: getAllSchemas(),
-  });
-
-  if (error) {
-    return error;
-  }
-
+  const schema = getSchema("instruments");
   return (
-    <TableSearch
-      dataSource={dataSource}
-      searchColumns={["bbg", "description"]}
-      style={{ height: 400, width: 250 }}
-    />
+    <VuuDataSourceProvider>
+      <TableSearchTemplate schema={schema} />;
+    </VuuDataSourceProvider>
   );
 };
 
@@ -89,10 +104,7 @@ const DropTarget = ({ id, ...htmlAttributes }: DropTargetProps) => {
 };
 
 export const InstrumentSearchDragDrop = () => {
-  const dataSource = useMemo(
-    () => vuuModule<SimulTableName>("SIMUL").createDataSource("instruments"),
-    [],
-  );
+  const schema = getSchema("instruments");
 
   const dragSource = useMemo(
     () => ({
@@ -106,22 +118,21 @@ export const InstrumentSearchDragDrop = () => {
   }, []);
 
   return (
-    <DragDropProvider dragSources={dragSource}>
-      <Flexbox>
-        <TableSearch
-          TableProps={{
-            allowDragDrop: "drag-copy",
-            id: "source-table",
-            onDragStart: handleDragStart,
-          }}
-          autoFocus
-          dataSource={dataSource}
-          searchColumns={["description"]}
-          style={{ height: 400, width: 250 }}
-        />
-        <DropTarget id="drop-target" />
-      </Flexbox>
-    </DragDropProvider>
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <DragDropProvider dragSources={dragSource}>
+        <Flexbox>
+          <TableSearchTemplate
+            schema={schema}
+            TableProps={{
+              allowDragDrop: "drag-copy",
+              id: "source-table",
+              onDragStart: handleDragStart,
+            }}
+          />
+          <DropTarget id="drop-target" />
+        </Flexbox>
+      </DragDropProvider>
+    </LocalDataSourceProvider>
   );
 };
 

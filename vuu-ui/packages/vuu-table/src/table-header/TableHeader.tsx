@@ -2,6 +2,8 @@ import { VuuSortType } from "@finos/vuu-protocol-types";
 import {
   ColumnDescriptor,
   CustomHeader,
+  CustomHeaderComponent,
+  CustomHeaderElement,
   RuntimeColumnDescriptor,
   TableColumnResizeHandler,
   TableConfig,
@@ -19,6 +21,9 @@ export type ColumnSortHandler = (
   addToExistingSort: boolean,
   sortType?: VuuSortType,
 ) => void;
+
+const isHeaderElement = (h: CustomHeader): h is CustomHeaderElement =>
+  isValidElement(h);
 
 export interface TableHeaderProps {
   allowDragColumnHeader: boolean;
@@ -60,7 +65,10 @@ export const TableHeader = memo(
       [JSX.Element | JSX.Element[] | null, number]
     >(() => {
       const offset = headings.length;
-      const createElement = (Component: CustomHeader, index: number) => (
+      const createElement = (
+        Component: CustomHeaderComponent,
+        index: number,
+      ) => (
         <Component
           ariaRowIndex={offset + index + 2}
           ariaRole="row"
@@ -81,21 +89,17 @@ export const TableHeader = memo(
       if (customHeader === undefined) {
         return [null, 0];
       } else if (Array.isArray(customHeader)) {
-        if (customHeader.some(isValidElement)) {
-          const header = (
-            <HeaderProvider columns={columns} virtualColSpan={virtualColSpan}>
-              {customHeader.map((header, i) =>
-                isValidElement(header)
-                  ? enrichElementWithAria(header, i)
-                  : createElement(header, i),
-              )}
-            </HeaderProvider>
-          );
-          return [header, customHeader.length];
-        } else {
-          return [customHeader.map(createElement), customHeader.length];
-        }
-      } else if (isValidElement(customHeader)) {
+        const header = (
+          <HeaderProvider columns={columns} virtualColSpan={virtualColSpan}>
+            {customHeader.map((header, i) =>
+              isHeaderElement(header)
+                ? enrichElementWithAria(header, i)
+                : createElement(header, i),
+            )}
+          </HeaderProvider>
+        );
+        return [header, customHeader.length];
+      } else if (isHeaderElement(customHeader)) {
         // TODO rowIndex and role
         const header = (
           <HeaderProvider columns={columns} virtualColSpan={virtualColSpan}>

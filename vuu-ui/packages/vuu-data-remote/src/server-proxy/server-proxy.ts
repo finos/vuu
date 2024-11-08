@@ -610,13 +610,13 @@ export class ServerProxy {
   private viewportRpcCall(message: WithRequestId<VuuRpcViewportRequest>) {
     const viewport = this.getViewportForClient(message.vpId, false);
     if (viewport?.serverViewportId) {
-      const [requestId, rpcRequest] =
+      const [requestId, { namedParams = {}, ...rpcRequest }] =
         stripRequestId<VuuRpcViewportRequest>(message);
       this.sendMessageToServer(
         {
           ...rpcRequest,
+          namedParams,
           vpId: viewport.serverViewportId,
-          namedParams: {},
         },
         requestId,
       );
@@ -829,6 +829,7 @@ export class ServerProxy {
           const viewport = viewports.get(body.viewPortId);
           if (viewport) {
             this.mapClientToServerViewport.delete(viewport.clientViewportId);
+            // do we need a destroy method on viewport ?
             viewports.delete(body.viewPortId);
             this.removeViewportFromVisualLinks(body.viewPortId);
           }

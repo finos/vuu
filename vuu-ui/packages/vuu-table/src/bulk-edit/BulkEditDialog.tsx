@@ -1,29 +1,27 @@
 import { DataSource } from "@finos/vuu-data-types";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { HTMLAttributes, useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 
 import bulkEditPanelCss from "./BulkEditPanel.css";
 import { BulkEditPanel } from "./BulkEditPanel";
 import { Button, DialogActions } from "@salt-ds/core";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { viewportRpcRequest } from "@finos/vuu-utils";
+import { isRpcSuccess, viewportRpcRequest } from "@finos/vuu-utils";
 
-export interface BulkEditPanelDialogProps
-  extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
+export interface BulkEditDialogProps {
   columns?: ColumnDescriptor[];
   sessionDs: DataSource;
   parentDs: DataSource;
   closeDialog: () => void;
 }
 
-export const BulkEditPanelDialog = ({
+export const BulkEditDialog = ({
   columns,
   sessionDs,
   parentDs,
   closeDialog,
-  //   ...htmlAttributes
-}: BulkEditPanelDialogProps) => {
+}: BulkEditDialogProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-bulk-edit-row",
@@ -36,10 +34,17 @@ export const BulkEditPanelDialog = ({
     setValid(isValid);
   }, []);
 
-  const handleSubmit = () => {
-    sessionDs?.rpcCall?.(viewportRpcRequest("VP_BULK_EDIT_SUBMIT_RPC"));
-    closeDialog();
-  };
+  const handleSubmit = useCallback(async () => {
+    const response = await sessionDs?.rpcCall?.(
+      viewportRpcRequest("VP_BULK_EDIT_SUBMIT_RPC"),
+    );
+    if (isRpcSuccess(response)) {
+      closeDialog();
+    } else {
+      // TODO
+      console.error({ response });
+    }
+  }, [closeDialog, sessionDs]);
 
   return (
     <>

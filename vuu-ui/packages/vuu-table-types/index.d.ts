@@ -21,11 +21,12 @@ import type {
   RowClassNameGenerator,
 } from "@finos/vuu-utils";
 import type {
+  ComponentType,
   CSSProperties,
   FunctionComponent,
+  FunctionComponentElement,
   HTMLAttributes,
   MouseEvent,
-  ReactElement,
 } from "react";
 
 export declare type GroupToggleTarget = "toggle-icon" | "group-column";
@@ -426,8 +427,9 @@ export interface HeaderCellProps
 
 export declare type TableConfigChangeHandler = (config: TableConfig) => void;
 
-export declare type CustomHeaderComponent = FC<BaseRowProps>;
-export declare type CustomHeaderElement = ReactElement;
+export declare type CustomHeaderComponent = ComponentType<BaseRowProps>;
+export declare type CustomHeaderElement =
+  FunctionComponentElement<BaseRowProps>;
 export declare type CustomHeader = CustomHeaderComponent | CustomHeaderElement;
 
 /**
