@@ -73,7 +73,7 @@
     "@types/jsdom": "^21.1.2",
     "@types/testing-library__cypress": "5.0.13",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
-    "@vitejs/plugin-react": "4.2.1",
+    "@vitejs/plugin-react": "4.3.3",
     "chalk": "^5.2.0",
     "cypress": "13.6.1",
     "cypress-axe": "1.5.0",
@@ -97,9 +97,9 @@
     "stylelint-prettier": "^5.0.2",
     "tinycolor2": "1.4.2",
     "typescript": "5.4.3",
-    "vite": "5.0.12",
-    "vite-tsconfig-paths": "4.2.2",
-    "vitest": "2.1.1"
+    "vite": "5.4.10",
+    "vite-tsconfig-paths": "5.1.0",
+    "vitest": "2.1.4"
   },
   "engines": {
     "node": ">=16.0.0"
