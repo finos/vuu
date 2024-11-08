@@ -5,6 +5,22 @@
     gap: 0;
     height: var(--salt-size-base);
     padding: 0;
+
+
+    &[data-accented] {
+      --salt-actionable-secondary-background-active: var(
+        --salt-actionable-accented-background-active
+      );
+      border-color: var(--salt-container-secondary-borderColor);
+    }
+  
+    &[data-variant="secondary"] {
+      --salt-actionable-secondary-background-active: var(
+        --salt-actionable-bold-background-active
+      );
+      --salt-container-primary-borderColor: transparent;
+    }
+  
   }
 
   .saltToggleButtonGroup-horizontal .saltToggleButton {
@@ -31,19 +47,6 @@
     }
   }
 
-  [data-variant="primary"] {
-    --salt-actionable-secondary-background-active: var(
-      --salt-actionable-bold-background-active
-    );
-    border-color: var(--salt-container-secondary-borderColor);
-  }
-
-  [data-variant="secondary"] {
-    --salt-actionable-secondary-background-active: var(
-      --salt-actionable-bold-background-active
-    );
-    --salt-container-primary-borderColor: transparent;
-  }
 
   .vuuStateButtonGroup {
     .saltToggleButton {
