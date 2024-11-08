@@ -8,10 +8,12 @@
   "bin": {
     "vuu": "./lib/index.js"
   },
+  "type": "module",
   "workspaces": [
     "packages/**",
     "sample-apps/**",
     "showcase",
+    "tools/vite-plugin-inline-css",
     "tools/esbuild-plugin-inline-css",
     "tools/vuu-showcase"
   ],
@@ -75,9 +77,9 @@
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "@vitejs/plugin-react": "4.3.3",
     "chalk": "^5.2.0",
-    "cypress": "13.6.1",
+    "cypress": "^13.15.1",
     "cypress-axe": "1.5.0",
-    "cypress-real-events": "1.11.0",
+    "cypress-real-events": "1.13.0",
     "esbuild": "0.23.0",
     "esbuild-visualizer": "0.6.0",
     "eslint": "8.36.0",
@@ -96,7 +98,7 @@
     "stylelint": "^16.10.0",
     "stylelint-prettier": "^5.0.2",
     "tinycolor2": "1.4.2",
-    "typescript": "5.4.3",
+    "typescript": "5.6.3",
     "vite": "5.4.10",
     "vite-tsconfig-paths": "5.1.0",
     "vitest": "2.1.4"
