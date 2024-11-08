@@ -111,14 +111,18 @@ export const useBulkEditPanel = ({
     [rowState],
   );
 
-  const handleBulkChange: EditValueChangeHandler = (column, value) => {
-    dataSource.rpcCall?.({
-      namedParams: { column: column.name, value },
-      params: [],
-      rpcName: "VP_BULK_EDIT_COLUMN_CELLS_RPC",
-      type: "VIEW_PORT_RPC_CALL",
-    } as Omit<VuuRpcViewportRequest, "vpId">);
-  };
+  const handleBulkChange: EditValueChangeHandler = useCallback(
+    async (column, value) => {
+      const response = await dataSource.rpcCall?.({
+        namedParams: { column: column.name, value },
+        params: [],
+        rpcName: "VP_BULK_EDIT_COLUMN_CELLS_RPC",
+        type: "VIEW_PORT_RPC_CALL",
+      } as Omit<VuuRpcViewportRequest, "vpId">);
+      console.log({ response });
+    },
+    [dataSource],
+  );
 
   return {
     tableConfig,

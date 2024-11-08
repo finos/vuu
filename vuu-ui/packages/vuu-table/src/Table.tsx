@@ -132,6 +132,10 @@ export interface TableProps
    */
   onConfigChange?: TableConfigChangeHandler;
 
+  /**
+   * In a Table with editable cells, this callback will be invoked every time
+   * a user performs any edit operation on an editable field.
+   */
   onDataEdited?: DataCellEditNotification;
 
   onDragStart?: DragStartHandler;

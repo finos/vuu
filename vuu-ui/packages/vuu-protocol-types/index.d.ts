@@ -318,7 +318,7 @@ export declare type ClientMessageBody =
   | VuuRemoveVisualLink
   | VuuRpcMenuRequest
   | VuuRpcViewportRequest
-  | VuuRpcServiceRequest;
+  | VuuRpcRequest;
 
 /**
  * RPC type messages

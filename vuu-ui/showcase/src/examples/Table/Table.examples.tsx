@@ -1,7 +1,7 @@
 import { ArrayDataSource } from "@finos/vuu-data-local";
 import {
-  getAllSchemas,
   getSchema,
+  LocalDataSourceProvider,
   SimulTableName,
   vuuModule,
 } from "@finos/vuu-data-test";
@@ -30,6 +30,7 @@ import {
   applyDefaultColumnConfig,
   defaultValueFormatter,
   registerComponent,
+  toColumnName,
   useDataSource,
 } from "@finos/vuu-utils";
 import { Button, Input } from "@salt-ds/core";
@@ -41,7 +42,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { useAutoLoginToVuuServer, useTestDataSource } from "../utils";
+import { useAutoLoginToVuuServer } from "../utils";
 import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 
 import { VuuDataSourceProvider } from "@finos/vuu-data-react";
@@ -99,19 +100,52 @@ export const TestTable = ({
 };
 TestTable.displaySequence = displaySequence++;
 
-export const ControlledNavigation = () => {
-  const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(() => {
-    const tableName: SimulTableName = "instruments";
+const TableTemplate = ({
+  height = 645,
+  highlightedIndex,
+  navigationStyle,
+  schema,
+  width = 723,
+  columns = schema.columns,
+  ...props
+}: {
+  columns?: ColumnDescriptor[];
+  schema: TableSchema;
+} & Partial<TableProps>) => {
+  const { VuuDataSource } = useDataSource();
+
+  const dataSource = useMemo(() => {
+    return new VuuDataSource({
+      columns: columns.map(toColumnName),
+      table: schema.table,
+    });
+  }, [VuuDataSource, columns, schema]);
+
+  const tableConfig = useMemo<TableConfig>(() => {
     return {
-      config: {
-        columns: getSchema(tableName).columns,
-        rowSeparators: true,
-        zebraStripes: true,
-      },
-      dataSource:
-        vuuModule<SimulTableName>("SIMUL").createDataSource(tableName),
+      columns,
+      rowSeparators: true,
+      zebraStripes: true,
     };
-  }, []);
+  }, [columns]);
+
+  return (
+    <Table
+      {...props}
+      config={tableConfig}
+      data-testid="table"
+      dataSource={dataSource}
+      height={height}
+      highlightedIndex={highlightedIndex}
+      navigationStyle={navigationStyle}
+      renderBufferSize={5}
+      width={width}
+    />
+  );
+};
+
+export const ControlledNavigation = () => {
+  const schema = getSchema("instruments");
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
   const handlePrevClick = useCallback(() => {
@@ -127,7 +161,7 @@ export const ControlledNavigation = () => {
   }, []);
 
   return (
-    <>
+    <LocalDataSourceProvider modules={["SIMUL"]}>
       <Toolbar>
         <Button variant="secondary" onClick={handlePrevClick}>
           Previous
@@ -136,16 +170,13 @@ export const ControlledNavigation = () => {
           Next
         </Button>
       </Toolbar>
-      <Table
-        {...tableProps}
-        height={645}
+      <TableTemplate
         highlightedIndex={highlightedIndex}
         navigationStyle="row"
         onHighlight={handleHighlight}
-        renderBufferSize={5}
-        width={723}
+        schema={schema}
       />
-    </>
+    </LocalDataSourceProvider>
   );
 };
 ControlledNavigation.displaySequence = displaySequence++;
@@ -192,7 +223,6 @@ export const TabInAndOut = () => {
 TabInAndOut.displaySequence = displaySequence++;
 
 const VuuTableTemplate = ({ schema }: { schema: TableSchema }) => {
-  useAutoLoginToVuuServer();
   const { VuuDataSource } = useDataSource();
   const dataSource = useMemo(() => {
     const { table } = schema;
@@ -422,30 +452,20 @@ export const VuuTableCalculatedColumns = () => {
     [],
   );
 
-  const schemas = getAllSchemas();
-  const { config, dataSource, error } = useTestDataSource({
-    // bufferSize: 1000,
-    schemas,
-    calculatedColumns,
-    tablename: "parentOrders",
-  });
+  useAutoLoginToVuuServer({ authenticate: false, secure: false });
 
-  console.log({ config, dataSource });
-
-  const [tableConfig] = useState<TableConfig>(config);
-
-  if (error) {
-    return error;
-  }
-
+  const schema = getSchema("parentOrders");
   return (
-    <Table
-      config={tableConfig}
-      dataSource={dataSource}
-      height={645}
-      renderBufferSize={50}
-      width="100%"
-    />
+    <VuuDataSourceProvider>
+      <TableTemplate
+        columns={
+          [...schema.columns, ...calculatedColumns] as ColumnDescriptor[]
+        }
+        renderBufferSize={50}
+        schema={schema}
+        width="100%"
+      />
+    </VuuDataSourceProvider>
   );
 };
 VuuTableCalculatedColumns.displaySequence = displaySequence++;
