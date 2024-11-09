@@ -16,6 +16,7 @@
     --vuu-icon-height: 20px;
     --vuu-icon-width: 20px;
     margin-right: var(--salt-spacing-100);
+    min-width: 20px;
   }
 
   .vuuTableGroupCell-toggle {
@@ -25,6 +26,11 @@
     margin-right: 4px;
     transition: transform 0.25s;
     transform: var(--toggle-icon-transform);
+  }
+
+  .vuuTableGroupCell-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
@@ -58,5 +64,11 @@
 
 .vuuTableGroupCell-spacer {
   display: inline-block;
-  width: calc(var(--indent, 0) * var(--group-cell-spacer-width));
+  min-width: calc(var(--indent, 0) * var(--group-cell-spacer-width));
+}
+
+.vuuTreeTable {
+  .vuuTableGroupCell.vuuTableCell {
+    border-right: none;
+  } 
 }

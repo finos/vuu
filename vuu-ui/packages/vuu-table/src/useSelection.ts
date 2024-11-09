@@ -11,7 +11,7 @@ import {
   queryClosest,
   selectItem,
 } from "@finos/vuu-utils";
-import { Selection, SelectionChangeHandler } from "@finos/vuu-data-types";
+import { Selection } from "@finos/vuu-data-types";
 import {
   KeyboardEvent,
   KeyboardEventHandler,
@@ -21,6 +21,7 @@ import {
   useRef,
 } from "react";
 import { getRowElementByAriaIndex } from "./table-dom-utils";
+import { TableProps } from "./Table";
 
 const { IDX } = metadataKeys;
 
@@ -28,17 +29,18 @@ const NO_SELECTION: Selection = [];
 
 const defaultSelectionKeys = ["Enter", " "];
 
-export interface SelectionHookProps {
+export interface SelectionHookProps
+  extends Pick<TableProps, "defaultSelectedIndexValues" | "onSelectionChange"> {
   containerRef: RefObject<HTMLElement>;
   highlightedIndexRef: MutableRefObject<number | undefined>;
   selectionKeys?: string[];
   selectionModel: TableSelectionModel;
   onSelect?: TableRowSelectHandlerInternal;
-  onSelectionChange: SelectionChangeHandler;
 }
 
 export const useSelection = ({
   containerRef,
+  defaultSelectedIndexValues = NO_SELECTION,
   highlightedIndexRef,
   selectionKeys = defaultSelectionKeys,
   selectionModel,
@@ -47,7 +49,7 @@ export const useSelection = ({
 }: SelectionHookProps) => {
   selectionModel === "extended" || selectionModel === "checkbox";
   const lastActiveRef = useRef(-1);
-  const selectedRef = useRef<Selection>(NO_SELECTION);
+  const selectedRef = useRef<Selection>(defaultSelectedIndexValues);
 
   const isSelectionEvent = useCallback(
     (evt: KeyboardEvent<HTMLElement>) => selectionKeys.includes(evt.key),

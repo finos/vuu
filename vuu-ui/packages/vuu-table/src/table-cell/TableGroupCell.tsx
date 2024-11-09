@@ -59,7 +59,7 @@ export const TableGroupCell = ({
         <ToggleIconButton isExpanded={isExpanded} />
       )}
       {icon ? <Icon name={icon} /> : null}
-      <span>{value}</span>
+      <span className={`${classBase}-label`}>{value}</span>
     </div>
   );
 };

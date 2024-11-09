@@ -102,6 +102,8 @@ export interface TableHookProps
       | "availableColumns"
       | "config"
       | "dataSource"
+      | "defaultSelectedIndexValues"
+      | "defaultSelectedKeyValues"
       | "disableFocus"
       | "highlightedIndex"
       | "id"
@@ -117,6 +119,7 @@ export interface TableHookProps
       | "onSelectionChange"
       | "onRowClick"
       | "renderBufferSize"
+      | "revealSelected"
       | "scrollingApiRef"
       | "selectionBookendWidth"
       | "showColumnHeaders"
@@ -151,6 +154,8 @@ export const useTable = ({
   config,
   containerRef,
   dataSource,
+  defaultSelectedIndexValues,
+  defaultSelectedKeyValues,
   disableFocus,
   highlightedIndex: highlightedIndexProp,
   id,
@@ -166,6 +171,7 @@ export const useTable = ({
   onSelectCellBlock,
   onSelectionChange,
   renderBufferSize = 0,
+  revealSelected,
   rowHeight = 20,
   scrollingApiRef,
   selectionBookendWidth,
@@ -288,8 +294,10 @@ export const useTable = ({
 
   const { data, dataRef, getSelectedRows, range, setRange } = useDataSource({
     dataSource,
-    // We need to factor this out of Table
+    defaultSelectedIndexValues,
+    defaultSelectedKeyValues,
     renderBufferSize,
+    revealSelected,
     onSizeChange: onDataRowcountChange,
     onSubscribed,
   });
@@ -669,6 +677,7 @@ export const useTable = ({
     onRowClick: selectionHookOnRowClick,
   } = useSelection({
     containerRef,
+    defaultSelectedIndexValues: defaultSelectedIndexValues,
     highlightedIndexRef,
     onSelect: handleSelect,
     onSelectionChange: handleSelectionChange,

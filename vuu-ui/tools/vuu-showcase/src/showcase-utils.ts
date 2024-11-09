@@ -35,6 +35,10 @@ export const byDisplaySequence = ([, f1]: VuuTuple, [, f2]: VuuTuple) => {
   }
 };
 
+export const pathFromKey = (key: string) => key.slice(5).split("|").join("/");
+export const keyFromPath = (path: string) =>
+  `$root${path.split("/").join("|")}`;
+
 export const pathToExample = (path: string): [string[], string] => {
   const endOfImportPath = path.lastIndexOf("/");
   const importPath =

@@ -240,10 +240,12 @@ export class ServerProxy {
         viewport.subscribe(),
         message.viewport,
       );
-      const awaitPendingReponses = Promise.all([
-        pendingSubscription,
-        pendingTableSchema,
-      ]) as Promise<[VuuViewportCreateResponse, TableSchema]>;
+
+      const pendingResponses = [pendingSubscription, pendingTableSchema];
+      const awaitPendingReponses = Promise.all(pendingResponses) as Promise<
+        [VuuViewportCreateResponse, TableSchema]
+      >;
+
       awaitPendingReponses.then(([subscribeResponse, tableSchema]) => {
         const { viewPortId: serverViewportId } = subscribeResponse;
         const { status: previousViewportStatus } = viewport;
@@ -267,6 +269,13 @@ export class ServerProxy {
               )}`,
             );
           }
+        }
+
+        if (message.selectedIndexValues) {
+          console.log(
+            `selected = ${JSON.stringify(message.selectedIndexValues)}`,
+          );
+          this.select(viewport, { selected: message.selectedIndexValues });
         }
 
         // In the case of a reconnect, we may have resubscribed a disabled viewport,
@@ -466,7 +475,10 @@ export class ServerProxy {
     }
   }
 
-  private select(viewport: Viewport, message: VuuUIMessageOutSelect) {
+  private select(
+    viewport: Viewport,
+    message: Pick<VuuUIMessageOutSelect, "selected">,
+  ) {
     const requestId = nextRequestId();
     const { selected } = message;
     const request = viewport.selectRequest(requestId, selected);

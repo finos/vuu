@@ -455,6 +455,9 @@ export interface SubscribeProps
   extends Partial<WithBaseFilter<WithFullConfig>> {
   viewport?: string;
   range?: VuuRange;
+  revealSelected?: boolean;
+  selectedIndexValues?: Selection;
+  selectedKeyValues?: string[];
   title?: string;
 }
 
@@ -709,6 +712,7 @@ export interface ConnectionQualityMetrics {
 export interface ServerProxySubscribeMessage extends WithFullConfig {
   bufferSize?: number;
   range: VuuRange;
+  selectedIndexValues?: Selection;
   table: VuuTable;
   title?: string;
   viewport: string;

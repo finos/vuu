@@ -52,9 +52,9 @@ type RangeRequest = (range: VuuRange) => void;
 
 const { info } = logger("VuuDataSource");
 
-/*-----------------------------------------------------------------
- A RemoteDataSource manages a single subscription via the ServerProxy
-  ----------------------------------------------------------------*/
+/*---------------------------------------------------------------------
+ A VuuDataSource manages a single subscription via the ServerProxy
+  ---------------------------------------------------------------------*/
 export class VuuDataSource extends BaseDataSource implements DataSource {
   private bufferSize: number;
   private server: ServerAPI | null = null;
@@ -90,8 +90,10 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
   async subscribe(subscribeProps: SubscribeProps, callback: SubscribeCallback) {
     super.subscribe(subscribeProps, callback);
 
-    const { viewport = this.viewport || (this.viewport = uuid()) } =
-      subscribeProps;
+    const {
+      selectedIndexValues,
+      viewport = this.viewport || (this.viewport = uuid()),
+    } = subscribeProps;
 
     if (this.#status === "disabled" || this.#status === "disabling") {
       this.enable(callback);
@@ -109,22 +111,25 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     }
 
     this.#status = "subscribing";
+    this.#selectedRowsCount = selectionCount(selectedIndexValues);
 
     this.server = await ConnectionManager.serverAPI;
 
     const { bufferSize } = this;
 
-    // TODO make this async and await response here
+    // TODO and await response here
 
     const dataSourceConfig = combineFilters(this.config);
+
     this.server?.subscribe(
       {
         ...dataSourceConfig,
         bufferSize,
-        viewport,
-        table: this.table,
         range: this._range,
+        selectedIndexValues: selectedIndexValues,
+        table: this.table,
         title: this._title,
+        viewport,
       },
       this.handleMessageFromServer,
     );
@@ -267,8 +272,6 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
   }
 
   select(selected: Selection) {
-    //TODO this isn't always going to be correct - need to count
-    // selection block items
     this.#selectedRowsCount = selectionCount(selected);
     if (this.viewport) {
       this.server?.send({

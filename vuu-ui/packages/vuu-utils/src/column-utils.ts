@@ -329,11 +329,15 @@ export const flattenColumnGroup = (
   }
 };
 
-export function extractGroupColumn(
-  columns: RuntimeColumnDescriptor[],
-  groupBy?: VuuGroupBy,
+export function extractGroupColumn({
+  availableWidth,
+  columns,
+  groupBy,
   confirmed = true,
-): [GroupColumnDescriptor | null, RuntimeColumnDescriptor[]] {
+}: ColumnGroupProps): [
+  GroupColumnDescriptor | null,
+  RuntimeColumnDescriptor[],
+] {
   if (groupBy && groupBy.length > 0) {
     const flattenedColumns = flattenColumnGroup(columns);
     // Note: groupedColumns will be in column order, not groupBy order
@@ -362,6 +366,9 @@ export function extractGroupColumn(
         )} `,
       );
     }
+
+    const groupOnly = rest.length === 0;
+
     const groupCount = groupBy.length;
     const groupCols: RuntimeColumnDescriptor[] = groupBy.map((name, idx) => {
       // Keep the cols in same order defined on groupBy
@@ -374,6 +381,13 @@ export function extractGroupColumn(
       };
     });
 
+    const width = groupOnly
+      ? availableWidth
+      : Math.min(
+          availableWidth,
+          groupCols.map((c) => c.width).reduce((a, b) => a + b) + 100,
+        );
+
     const groupCol = {
       ariaColIndex: 1,
       columns: groupCols,
@@ -381,7 +395,7 @@ export function extractGroupColumn(
       isGroup: true,
       groupConfirmed: confirmed,
       name: "group-col",
-      width: groupCols.map((c) => c.width).reduce((a, b) => a + b) + 100,
+      width,
     } as GroupColumnDescriptor;
 
     const withAdjustedAriaIndex: RuntimeColumnDescriptor[] = [];
@@ -574,24 +588,23 @@ export const setAggregations = (
     .concat({ column: column.name, aggType });
 };
 
-export const applyGroupByToColumns = (
-  columns: RuntimeColumnDescriptor[],
-  groupBy: VuuGroupBy,
-  confirmed = true,
-) => {
-  if (groupBy.length) {
-    const [groupColumn, nonGroupedColumns] = extractGroupColumn(
-      columns,
-      groupBy,
-      confirmed,
-    );
+export type ColumnGroupProps = {
+  columns: RuntimeColumnDescriptor[];
+  groupBy: VuuGroupBy;
+  confirmed?: boolean;
+  availableWidth: number;
+};
+
+export const applyGroupByToColumns = (props: ColumnGroupProps) => {
+  if (props.groupBy.length) {
+    const [groupColumn, nonGroupedColumns] = extractGroupColumn(props);
     if (groupColumn) {
       return [groupColumn as RuntimeColumnDescriptor].concat(nonGroupedColumns);
     }
-  } else if (columns[0]?.isGroup) {
-    return flattenColumnGroup(columns);
+  } else if (props.columns[0]?.isGroup) {
+    return flattenColumnGroup(props.columns);
   }
-  return columns;
+  return props.columns;
 };
 
 export const applySortToColumns = (

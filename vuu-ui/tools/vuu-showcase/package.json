@@ -8,8 +8,12 @@
     "build": "node ../../scripts/run-build.mjs",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@finos/vuu-data-types": "0.0.26",
+    "@finos/vuu-table-types": "0.0.26"
+  },
   "dependencies": {
+    "@finos/vuu-datatable": "0.0.26",
     "@finos/vuu-icons": "0.0.26",
     "@finos/vuu-layout": "0.0.26",
     "@finos/vuu-theme": "0.0.26",

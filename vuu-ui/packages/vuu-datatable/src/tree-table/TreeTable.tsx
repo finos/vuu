@@ -49,6 +49,7 @@ export const TreeTable = ({
   return (
     <Table
       {...tableProps}
+      className="vuuTreeTable"
       config={tableConfig}
       dataSource={dataSourceRef.current}
       groupToggleTarget="toggle-icon"

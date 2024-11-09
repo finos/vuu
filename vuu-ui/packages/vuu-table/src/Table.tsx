@@ -1,6 +1,7 @@
 import {
   DataSource,
   SchemaColumn,
+  Selection,
   SelectionChangeHandler,
 } from "@finos/vuu-data-types";
 import { ContextMenuProvider } from "@finos/vuu-popups";
@@ -83,6 +84,17 @@ export interface TableProps
    */
   config: TableConfig;
   dataSource: DataSource;
+
+  /**
+   * define rows ro be initially selected based on row index positions
+   */
+  defaultSelectedIndexValues?: Selection;
+  /**
+   * define rows ro be initially selected based on row key value. Not all DataSource
+   * implementations support this feature.
+   */
+  defaultSelectedKeyValues?: string[];
+
   disableFocus?: boolean;
   /**
    * Allows additional custom element(s) to be embedded immediately below column headers.
@@ -161,6 +173,17 @@ export interface TableProps
 
   onSelectionChange?: SelectionChangeHandler;
   renderBufferSize?: number;
+
+  /**
+   * Only applicable to grouped data. If there are selected rows which are not top-level
+   * items and group items above are not already expanded, expand all group items in
+   * the hierarchy above selected item. Selected items will thus always be visible, initially.
+   * This affects items set at load time via defaultSelectedKeyValues as well as items
+   * selected programatically (ie not directly by user).
+   * Nodes can of course be collapsed by user at runtime which may hide selected rows.
+   * Note: this is not supported by all DataSource implementations
+   */
+  revealSelected?: boolean;
   /**
    * Pixel height of rows. If specified here, this will take precedence over CSS
    * values and Table will not respond to density changes.
@@ -224,6 +247,8 @@ const TableCore = ({
   containerRef,
   customHeader,
   dataSource,
+  defaultSelectedIndexValues,
+  defaultSelectedKeyValues,
   disableFocus = false,
   groupToggleTarget,
   highlightedIndex: highlightedIndexProp,
@@ -240,6 +265,7 @@ const TableCore = ({
   onSelectCellBlock,
   onSelectionChange,
   renderBufferSize = 0,
+  revealSelected,
   rowHeight,
   scrollingApiRef,
   selectionBookendWidth = 0,
@@ -294,6 +320,8 @@ const TableCore = ({
     config,
     containerRef,
     dataSource,
+    defaultSelectedIndexValues,
+    defaultSelectedKeyValues,
     disableFocus,
     highlightedIndex: highlightedIndexProp,
     id,
@@ -309,6 +337,7 @@ const TableCore = ({
     onSelectCellBlock,
     onSelectionChange,
     renderBufferSize,
+    revealSelected,
     rowHeight,
     scrollingApiRef,
     selectionBookendWidth,
@@ -460,6 +489,8 @@ export const Table = forwardRef(function Table(
     config,
     customHeader,
     dataSource,
+    defaultSelectedIndexValues,
+    defaultSelectedKeyValues,
     disableFocus,
     groupToggleTarget,
     height,
@@ -478,6 +509,7 @@ export const Table = forwardRef(function Table(
     onSelectCellBlock,
     onSelectionChange,
     renderBufferSize,
+    revealSelected,
     rowHeight: rowHeightProp,
     scrollingApiRef,
     selectionBookendWidth = 4,
@@ -518,6 +550,11 @@ export const Table = forwardRef(function Table(
   }
   if (dataSource === undefined) {
     throw Error("vuu Table requires dataSource prop");
+  }
+  if (defaultSelectedIndexValues && defaultSelectedKeyValues) {
+    throw Error(
+      `defaultSelectedIndexValues and defaultSelectedKeyValues can not be used in combination. Use at most one.`,
+    );
   }
 
   if (showPaginationControls && renderBufferSize !== undefined) {
@@ -597,6 +634,8 @@ export const Table = forwardRef(function Table(
           containerRef={containerRef}
           customHeader={customHeader}
           dataSource={dataSource}
+          defaultSelectedIndexValues={defaultSelectedIndexValues}
+          defaultSelectedKeyValues={defaultSelectedKeyValues}
           disableFocus={disableFocus}
           groupToggleTarget={groupToggleTarget}
           highlightedIndex={highlightedIndex}
@@ -615,6 +654,7 @@ export const Table = forwardRef(function Table(
           renderBufferSize={
             showPaginationControls ? 0 : Math.max(5, renderBufferSize ?? 0)
           }
+          revealSelected={revealSelected}
           rowHeight={rowHeight}
           scrollingApiRef={scrollingApiRef}
           selectionBookendWidth={selectionBookendWidth}
