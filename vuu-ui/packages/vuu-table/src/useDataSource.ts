@@ -1,5 +1,4 @@
 import {
-  DataSource,
   DataSourceRow,
   DataSourceSubscribedMessage,
   SubscribeCallback,
@@ -8,19 +7,29 @@ import { VuuRange } from "@finos/vuu-protocol-types";
 import { getFullRange, NULL_RANGE, rangesAreSame } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MovingWindow } from "./moving-window";
+import { TableProps } from "./Table";
 
-export interface DataSourceHookProps {
-  dataSource: DataSource;
+export interface DataSourceHookProps
+  extends Pick<
+    TableProps,
+    | "dataSource"
+    | "defaultSelectedIndexValues"
+    | "defaultSelectedKeyValues"
+    | "renderBufferSize"
+    | "revealSelected"
+  > {
   onSizeChange: (size: number) => void;
   onSubscribed: (subscription: DataSourceSubscribedMessage) => void;
-  renderBufferSize?: number;
 }
 
 export const useDataSource = ({
   dataSource,
+  defaultSelectedIndexValues,
+  defaultSelectedKeyValues,
   onSizeChange,
   onSubscribed,
   renderBufferSize = 0,
+  revealSelected,
 }: DataSourceHookProps) => {
   const [, forceUpdate] = useState<unknown>(null);
   const data = useRef<DataSourceRow[]>([]);
@@ -128,7 +137,15 @@ export const useDataSource = ({
         dataWindow.setRange(fullRange);
 
         if (dataSource.status !== "subscribed") {
-          dataSource?.subscribe({ range: fullRange }, datasourceMessageHandler);
+          dataSource?.subscribe(
+            {
+              range: fullRange,
+              revealSelected,
+              selectedIndexValues: defaultSelectedIndexValues,
+              selectedKeyValues: defaultSelectedKeyValues,
+            },
+            datasourceMessageHandler,
+          );
         } else {
           dataSource.range = rangeRef.current = fullRange;
         }
@@ -140,7 +157,15 @@ export const useDataSource = ({
         dataSource.emit("range", range);
       }
     },
-    [dataSource, dataWindow, datasourceMessageHandler, renderBufferSize],
+    [
+      dataSource,
+      dataWindow,
+      datasourceMessageHandler,
+      defaultSelectedIndexValues,
+      defaultSelectedKeyValues,
+      renderBufferSize,
+      revealSelected,
+    ],
   );
 
   return {

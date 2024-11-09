@@ -93,10 +93,12 @@ export class TreeDataSource extends BaseDataSource {
 
   async subscribe(
     {
-      viewport = this.viewport ?? uuid(),
-      columns,
       aggregations,
+      columns,
       range,
+      revealSelected,
+      selectedKeyValues,
+      viewport = this.viewport ?? uuid(),
     }: SubscribeProps,
     callback: SubscribeCallback,
   ) {
@@ -120,6 +122,16 @@ export class TreeDataSource extends BaseDataSource {
     this.viewport = viewport;
 
     this.#status = "subscribed";
+    this.#selectedRowsCount = selectedKeyValues?.length ?? 0;
+
+    if (selectedKeyValues) {
+      this.applySelectedKeyValues(selectedKeyValues, revealSelected);
+    }
+
+    [this.visibleRows, this.visibleRowIndex] = getVisibleRows(
+      this.#data,
+      this.expandedRows,
+    );
 
     this.clientCallback?.({
       aggregations: this.#aggregations,
@@ -172,21 +184,39 @@ export class TreeDataSource extends BaseDataSource {
   }
   set data(data: TreeSourceNode[]) {
     [this.columnDescriptors, this.#data] = treeToDataSourceRows(data);
-    // console.table(this.#data.slice(0, 20));
-    [this.visibleRows, this.visibleRowIndex] = getVisibleRows(
-      this.#data,
-      this.expandedRows,
-    );
-
-    // console.table(this.#data);
-    console.table(this.visibleRows);
-
-    console.log({ visibleRows: this.visibleRows });
 
     requestAnimationFrame(() => {
       this.sendRowsToClient();
     });
   }
+
+  /**
+   * used to apply an initial selection. These may not necessarily be
+   * visible. If revealOnSelect is in force, expand nodes as necessary
+   * to ensure selected nodes are visible
+   */
+  private applySelectedKeyValues(keys: string[], revealSelected = false) {
+    keys.forEach((key) => {
+      const rowIdx = this.indexOfRowWithKey(key);
+      const row = this.#data[rowIdx];
+      row[SELECTED] = 1;
+
+      if (revealSelected && row[DEPTH] !== 1) {
+        console.log(`we've got a deep one here`);
+        const keys = key.slice(6).split("|").slice(0, -1);
+        console.log(JSON.stringify(keys));
+
+        let path = "$root";
+        do {
+          path = `${path}|${keys.shift()}`;
+          this.expandedRows.add(path);
+        } while (keys.length);
+      }
+    });
+  }
+
+  private indexOfRowWithKey = (key: string) =>
+    this.#data.findIndex((row) => row[KEY] === key);
 
   // Incoming Selection references visibleRow indices
   select(selected: Selection) {

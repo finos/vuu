@@ -6,7 +6,6 @@ export * as TablePicker from "./TablePicker.examples";
 export * as InstrumentSearch from "./InstrumentSearch.examples";
 export * as List from "./List.examples";
 export * as OverflowContainer from "./OverflowContainer.examples";
-export * as Tree from "./Tree.examples";
 export * as SplitButton from "./SplitButton.examples";
 export * as Tabstrip from "./Tabstrip.examples";
 export * as TabsNext from "./TabsNext.examples";

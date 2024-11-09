@@ -3,9 +3,9 @@ import { Table, TableProps } from "@finos/vuu-table";
 import { useMemo } from "react";
 
 import "./Table.examples.css";
-import { TableSchema } from "@finos/vuu-data-types";
+import { SelectionChangeHandler, TableSchema } from "@finos/vuu-data-types";
 import { ColumnLayout, TableConfig } from "@finos/vuu-table-types";
-import { useDataSource } from "@finos/vuu-utils";
+import { toColumnName, useDataSource } from "@finos/vuu-utils";
 
 let displaySequence = 1;
 
@@ -41,8 +41,14 @@ const DataTableTemplate = ({
   }, [configProp, schema]);
 
   const dataSource = useMemo(() => {
-    return dataSourceProp ?? new VuuDataSource({ table: schema.table });
-  }, [VuuDataSource, dataSourceProp, schema.table]);
+    return (
+      dataSourceProp ??
+      new VuuDataSource({
+        columns: schema.columns.map(toColumnName),
+        table: schema.table,
+      })
+    );
+  }, [VuuDataSource, dataSourceProp, schema]);
 
   return (
     <Table
@@ -124,3 +130,67 @@ export const CellBlockRowSelection = () => {
   );
 };
 CellBlockRowSelection.displaySequence = displaySequence++;
+
+export const PreSelectedRowByIndex = () => {
+  const handleSelectionChange: SelectionChangeHandler = (selection) => {
+    console.log(`selection changed ${JSON.stringify(selection)}`);
+  };
+  return (
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <DataTableTemplate
+        allowCellBlockSelection
+        defaultSelectedIndexValues={[4]}
+        onSelectionChange={handleSelectionChange}
+        selectionModel="extended"
+        navigationStyle="row"
+      />
+    </LocalDataSourceProvider>
+  );
+};
+PreSelectedRowByIndex.displaySequence = displaySequence++;
+
+export const PreSelectedRowsByIndex = () => {
+  return (
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <DataTableTemplate
+        allowCellBlockSelection
+        defaultSelectedIndexValues={[2, 4, 6, 8]}
+        selectionModel="extended"
+        navigationStyle="row"
+      />
+    </LocalDataSourceProvider>
+  );
+};
+PreSelectedRowsByIndex.displaySequence = displaySequence++;
+
+export const PreSelectedRangeByIndex = () => {
+  return (
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <DataTableTemplate
+        allowCellBlockSelection
+        defaultSelectedIndexValues={[[2, 8]]}
+        selectionModel="extended"
+        navigationStyle="row"
+      />
+    </LocalDataSourceProvider>
+  );
+};
+PreSelectedRangeByIndex.displaySequence = displaySequence++;
+
+export const PreSelectedRowByKey = () => {
+  const handleSelectionChange: SelectionChangeHandler = (selection) => {
+    console.log(`selection changed ${JSON.stringify(selection)}`);
+  };
+  return (
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <DataTableTemplate
+        allowCellBlockSelection
+        defaultSelectedKeyValues={["AAOZ.N"]}
+        onSelectionChange={handleSelectionChange}
+        selectionModel="extended"
+        navigationStyle="row"
+      />
+    </LocalDataSourceProvider>
+  );
+};
+PreSelectedRowByKey.displaySequence = displaySequence++;

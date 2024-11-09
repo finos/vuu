@@ -21,7 +21,7 @@ describe("selection-utils", () => {
 
     it("returns True when rowIndex is included in selection", () => {
       expect(getSelectionStatus([1], 1) & RowSelected.True).toEqual(
-        RowSelected.True
+        RowSelected.True,
       );
       expect(getSelectionStatus([[0, 3]], 1)).toEqual(RowSelected.True);
     });
@@ -58,6 +58,9 @@ describe("selection-utils", () => {
         expect(selectItem("extended", [[2, 5]], 7, true, false, 5)).toEqual([
           [2, 7],
         ]);
+      });
+      it("acts like single select if activeItem index not set", () => {
+        expect(selectItem("extended", [2], 9, true, false, -1)).toEqual([9]);
       });
       it("creates an additional range from activeItem", () => {
         expect(selectItem("extended", [[2, 5], 7], 9, true, false, 7)).toEqual([
@@ -106,7 +109,7 @@ describe("selection-utils", () => {
           [2, 4],
         ]);
         expect(selectItem("extended", [0, 2, 4, 7], 3, false, true, 3)).toEqual(
-          [0, [2, 4], 7]
+          [0, [2, 4], 7],
         );
       });
     });
@@ -124,7 +127,7 @@ describe("selection-utils", () => {
     describe("extended selection mode", () => {
       it("deselects a single item, no range required, no preserve selection", () => {
         expect(deselectItem("extended", [2, 5, 7], 7, false, false)).toEqual(
-          []
+          [],
         );
       });
       it("deselects a single item, no range required, preserve selection", () => {

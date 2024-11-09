@@ -191,6 +191,8 @@ export class ArrayDataSource
       columns,
       aggregations,
       range,
+      selectedIndexValues,
+      selectedKeyValues,
       sort,
       groupBy,
       filterSpec,
@@ -200,6 +202,11 @@ export class ArrayDataSource
     this.clientCallback = callback;
     this.viewport = viewport;
     this.#status = "subscribed";
+    this.selectedRows =
+      selectedIndexValues ??
+      this.convertKeysToIndexValues(selectedKeyValues) ??
+      [];
+    this.#selectedRowsCount = selectionCount(this.selectedRows);
     this.lastRangeServed = { from: 0, to: 0 };
 
     let config = this._config;
@@ -566,7 +573,7 @@ export class ArrayDataSource
     // TODO take sorting, filtering. grouping into account
     const colIndex = this.#columnMap[columnName];
     const dataColIndex = this.dataMap?.[columnName];
-    const dataIndex = this.#data.findIndex((row) => row[KEY] === keyValue);
+    const dataIndex = this.indexOfRowWithKey(keyValue);
     if (dataIndex !== -1 && dataColIndex !== undefined) {
       const dataSourceRow = this.#data[dataIndex];
       dataSourceRow[colIndex] = value;
@@ -577,6 +584,9 @@ export class ArrayDataSource
       }
     }
   };
+
+  private indexOfRowWithKey = (key: string) =>
+    this.#data.findIndex((row) => row[KEY] === key);
 
   protected update = (row: VuuRowDataItemType[], columnName: string) => {
     // TODO take sorting, filtering. grouping into account
@@ -779,15 +789,6 @@ export class ArrayDataSource
     console.log("remove link");
   }
 
-  private findRow(rowKey: number) {
-    const row = this.#data[rowKey];
-    if (row) {
-      return row;
-    } else {
-      throw `no row found for key ${rowKey}`;
-    }
-  }
-
   applyEdit(
     rowKey: string,
     columnName: string,
@@ -828,5 +829,18 @@ export class ArrayDataSource
         throw Error("menuRpcCall invalid rpcRequest");
       }
     });
+  }
+
+  private convertKeysToIndexValues(keys?: string[]) {
+    if (Array.isArray(keys)) {
+      const indexValues: number[] = [];
+      keys.forEach((key) => {
+        const rowIdx = this.indexOfRowWithKey(key);
+        if (rowIdx !== -1) {
+          indexValues.push(rowIdx);
+        }
+      });
+      return indexValues;
+    }
   }
 }

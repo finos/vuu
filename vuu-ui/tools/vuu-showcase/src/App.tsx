@@ -1,5 +1,7 @@
-import { Flexbox } from "@finos/vuu-layout";
-import { Tree } from "@finos/vuu-ui-controls";
+import { TreeTable } from "@finos/vuu-datatable";
+import { Flexbox, View } from "@finos/vuu-layout";
+import { ThemeSwitch } from "@finos/vuu-shell";
+import type { TableRowSelectHandler } from "@finos/vuu-table-types";
 import type { Density, ThemeMode, TreeSourceNode } from "@finos/vuu-utils";
 import {
   Button,
@@ -11,9 +13,13 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IFrame } from "./components";
-import { byDisplaySequence, ExamplesModule, loadTheme } from "./showcase-utils";
-
-import { ThemeSwitch } from "@finos/vuu-shell";
+import {
+  ExamplesModule,
+  byDisplaySequence,
+  keyFromPath,
+  loadTheme,
+  pathFromKey,
+} from "./showcase-utils";
 
 import "./App.css";
 
@@ -83,7 +89,12 @@ export const App = ({ stories }: AppProps) => {
   // // TODO cache source in localStorage
   const source = useMemo(() => sourceFromImports(stories), [stories]);
   const { pathname } = useLocation();
-  const handleChange = ([selected]: TreeSourceNode[]) => navigate(selected.id);
+  const handleChange: TableRowSelectHandler = (row) => {
+    if (row) {
+      const path = pathFromKey(row.key);
+      navigate(path);
+    }
+  };
   const [themeIndex, setThemeIndex] = useState(2);
   const [themeModeIndex, setThemeModeIndex] = useState(0);
   const [densityIndex, setDensityIndex] = useState(0);
@@ -129,15 +140,23 @@ export const App = ({ stories }: AppProps) => {
           <Text styleAs="h3">Vuu Showcase</Text>
         </div>
         <Flexbox style={{ flexDirection: "row", flex: 1 }}>
-          <Tree
-            className="ShowcaseNav"
-            style={{ flex: "0 0 200px" }}
-            data-resizeable
-            selected={[pathname.slice(1)]}
-            onSelectionChange={handleChange}
-            revealSelected
-            source={source}
-          />
+          <View
+            resizeable
+            style={{ flexGrow: 0, flexShrink: 0, flexBasis: 200 }}
+          >
+            <TreeTable
+              className="ShowcaseNav"
+              data-resizeable
+              rowHeight={30}
+              defaultSelectedKeyValues={[keyFromPath(pathname)]}
+              // selected={[pathname.slice(1)]}
+              showColumnHeaders={false}
+              onSelect={handleChange}
+              revealSelected
+              source={source}
+              width="100%"
+            />
+          </View>
           <Flexbox
             className="ShowcaseContentContainer"
             resizeable

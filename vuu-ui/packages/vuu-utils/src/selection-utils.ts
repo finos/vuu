@@ -35,7 +35,7 @@ export const deselectItem = (
   selected: Selection,
   itemIndex: number,
   rangeSelect: boolean,
-  keepExistingSelection = false
+  keepExistingSelection = false,
 ): Selection => {
   const singleSelect = selectionModel === "single";
   const multiSelect =
@@ -53,7 +53,7 @@ export const deselectItem = (
 
 const newSelectedFillsGapOrExtends = (
   selection: Selection,
-  itemIndex: number
+  itemIndex: number,
 ): boolean => {
   for (let i = 0; i < selection.length; i++) {
     const item = selection[i];
@@ -74,7 +74,7 @@ const newSelectedFillsGapOrExtends = (
 
 const fillGapOrExtendSelection = (
   selection: Selection,
-  itemIndex: number
+  itemIndex: number,
 ): Selection => {
   for (let i = 0; i < selection.length; i++) {
     const item = selection[i];
@@ -137,13 +137,15 @@ export const selectItem = (
   itemIndex: number,
   rangeSelect: boolean,
   keepExistingSelection = false,
-  activeItemIndex = -1
+  activeItemIndex = -1,
 ): Selection => {
   const singleSelect = selectionModel === "single";
   const multiSelect =
     selectionModel === "extended" || selectionModel === "checkbox";
   const actsLikeSingleSelect =
-    singleSelect || (multiSelect && !keepExistingSelection && !rangeSelect);
+    singleSelect ||
+    (multiSelect && !keepExistingSelection && !rangeSelect) ||
+    (rangeSelect && activeItemIndex === -1);
 
   if (selectionModel === "none") {
     return NO_SELECTION;
@@ -229,7 +231,7 @@ const mergeRanges = (r1: RangeTuple, r2: RangeTuple): RangeTuple => [
 
 const includedInRange = (
   selectedItem: SelectionItem | undefined,
-  index: number
+  index: number,
 ) => {
   if (typeof selectedItem === "undefined" || typeof selectedItem === "number") {
     return false;
@@ -251,7 +253,7 @@ const LAST_SELECTED_ROW_OF_BLOCK = RowSelected.True + RowSelected.Last;
  */
 export const getSelectionStatus = (
   selected: Selection,
-  itemIndex: number
+  itemIndex: number,
 ): number => {
   for (const item of selected) {
     if (typeof item === "number") {
@@ -331,13 +333,13 @@ export type SelectionDiff = {
   removed: SelectionItem[];
 };
 
-export const selectionCount = (selected: Selection) => {
+export const selectionCount = (selected: Selection = NO_SELECTION) => {
   let count = selected.length;
-  for (const selectionItem of selected){
-    if (Array.isArray(selectionItem)){
+  for (const selectionItem of selected) {
+    if (Array.isArray(selectionItem)) {
       const [from, to] = selectionItem;
-      count += (to - (from + 1));
+      count += to - (from + 1);
     }
   }
   return count;
-}
+};

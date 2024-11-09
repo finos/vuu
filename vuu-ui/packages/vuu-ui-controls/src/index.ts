@@ -21,7 +21,6 @@ export * from "./split-button";
 export * from "./tabs-next";
 export * from "./tabstrip";
 export * from "./toolbar";
-export * from "./tree";
 export * from "./utils";
 export * from "./vuu-date-picker";
 export * from "./vuu-input";

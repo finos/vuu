@@ -5,7 +5,7 @@ import { useWindow } from "@salt-ds/window";
 import { typeOf } from "../../utils";
 
 import layoutTreeViewer from "./layout-tree-viewer.css";
-import { Tree } from "@finos/vuu-ui-controls";
+import { TreeTable } from "@finos/vuu-datatable";
 
 const classBaseTree = "hwLayoutTreeViewer";
 
@@ -14,12 +14,12 @@ const toTreeJson = (component, path = "0") => {
     label: typeOf(component),
     path,
     childNodes: React.Children.map(component.props.children, (child, i) =>
-      toTreeJson(child, path ? `${path}.${i}` : `${i}`)
+      toTreeJson(child, path ? `${path}.${i}` : `${i}`),
     ),
   };
 };
 
-export const LayoutTreeViewer = ({ layout, onSelect, style }) => {
+export const LayoutTreeViewer = ({ layout, onSelect: _, style }) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-layout-tree-viewer",
@@ -29,16 +29,17 @@ export const LayoutTreeViewer = ({ layout, onSelect, style }) => {
 
   const treeJson = [toTreeJson(layout)];
 
-  const handleSelection = (evt, [{ path }]) => {
-    onSelect(path);
+  const handleSelection = (row) => {
+    console.log({ row });
+    // onSelect(path);
   };
 
   return (
     <div className={cx(classBaseTree)} style={style}>
-      <Tree
+      <TreeTable
         source={treeJson}
-        groupSelection="single"
-        onSelectionChange={handleSelection}
+        selectionModel="single"
+        onSelect={handleSelection}
       />
     </div>
   );
