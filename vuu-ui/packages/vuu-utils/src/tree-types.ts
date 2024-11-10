@@ -1,18 +1,8 @@
-export interface TreeSourceNode {
+export interface TreeSourceNode<T = unknown> {
+  nodeData?: T;
   id: string;
   icon?: string;
   header?: boolean;
   label: string;
-  childNodes?: TreeSourceNode[];
-}
-export interface NormalisedTreeSourceNode extends TreeSourceNode {
-  childNodes?: NormalisedTreeSourceNode[];
-  count: number;
-  expanded?: boolean;
-  index: number;
-  level: number;
-}
-
-export interface NonLeafNode extends NormalisedTreeSourceNode {
-  childNodes: NormalisedTreeSourceNode[];
+  childNodes?: TreeSourceNode<T>[];
 }

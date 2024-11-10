@@ -53,9 +53,14 @@ export const virtualRowPositioning = (
   true,
 ];
 
-export const asDataSourceRowObject = (
+export type RowToObjectMapper = (
   row: DataSourceRow,
   columnMap: ColumnMap,
+) => DataSourceRowObject;
+
+export const asDataSourceRowObject: RowToObjectMapper = (
+  row,
+  columnMap,
 ): DataSourceRowObject => {
   const { [IS_LEAF]: isLeaf, [KEY]: key, [IDX]: index } = row;
 

@@ -1,6 +1,9 @@
 import { TreeTable } from "@finos/vuu-datatable";
 
 import showcaseData from "./Tree.data";
+import { useMemo } from "react";
+import { TreeSourceNode } from "@finos/vuu-utils";
+import { TableRowSelectHandler } from "@finos/vuu-table-types";
 
 let displaySequence = 1;
 
@@ -45,3 +48,34 @@ export const ShowcaseTreeSelectedAutoReveal = () => {
   );
 };
 ShowcaseTreeSelectedAutoReveal.displaySequence = displaySequence++;
+
+const addDataNodes = (
+  treeNodes: TreeSourceNode[],
+  index = { value: 0 },
+): Array<TreeSourceNode<string>> => {
+  return treeNodes?.map<TreeSourceNode<string>>(({ childNodes, ...rest }) => ({
+    ...rest,
+    nodeData: `node-${index.value++}`,
+    childNodes: childNodes ? addDataNodes(childNodes, index) : undefined,
+  }));
+};
+
+export const ShowcaseTreeNodeOptions = () => {
+  const source = useMemo(() => {
+    return addDataNodes(showcaseData);
+  }, []);
+
+  const onSelect: TableRowSelectHandler = (row) => {
+    console.log({ row });
+  };
+
+  return (
+    <TreeTable
+      onSelect={onSelect}
+      rowHeight={30}
+      showColumnHeaders={false}
+      source={source}
+    />
+  );
+};
+ShowcaseTreeNodeOptions.displaySequence = displaySequence++;

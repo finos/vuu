@@ -16,7 +16,7 @@ import { IFrame } from "./components";
 import {
   ExamplesModule,
   byDisplaySequence,
-  keyFromPath,
+  keysFromPath,
   loadTheme,
   pathFromKey,
 } from "./showcase-utils";
@@ -148,7 +148,7 @@ export const App = ({ stories }: AppProps) => {
               className="ShowcaseNav"
               data-resizeable
               rowHeight={30}
-              defaultSelectedKeyValues={[keyFromPath(pathname)]}
+              defaultSelectedKeyValues={keysFromPath(pathname)}
               // selected={[pathname.slice(1)]}
               showColumnHeaders={false}
               onSelect={handleChange}
