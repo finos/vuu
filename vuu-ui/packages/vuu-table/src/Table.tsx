@@ -1,7 +1,5 @@
 import {
   DataSource,
-  DataSourceRow,
-  DataSourceRowObject,
   SchemaColumn,
   Selection,
   SelectionChangeHandler,

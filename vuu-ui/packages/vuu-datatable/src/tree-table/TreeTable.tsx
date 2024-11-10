@@ -10,7 +10,7 @@ import {
   type TreeSourceNode,
 } from "@finos/vuu-utils";
 
-const { IS_LEAF, KEY, IDX } = metadataKeys;
+const { DEPTH, IS_LEAF, KEY, IDX } = metadataKeys;
 
 export interface TreeTableProps
   extends Omit<TableProps, "config" | "dataSource"> {
@@ -22,7 +22,9 @@ export interface TreeTableProps
 }
 
 const rowToTreeNodeObject: RowToObjectMapper = (row, columnMap) => {
-  const { [IS_LEAF]: isLeaf, [KEY]: key, [IDX]: index } = row;
+  const { [IS_LEAF]: isLeaf, [KEY]: key, [IDX]: index, [DEPTH]: depth } = row;
+  const firstColIdx = columnMap.nodeData;
+  const labelColIdx = firstColIdx + depth;
 
   return {
     key,
@@ -30,7 +32,8 @@ const rowToTreeNodeObject: RowToObjectMapper = (row, columnMap) => {
     isGroupRow: !isLeaf,
     isSelected: isRowSelected(row),
     data: {
-      nodeData: row[columnMap.nodeData],
+      label: row[labelColIdx],
+      nodeData: row[firstColIdx],
     },
   };
 };
