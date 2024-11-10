@@ -3,7 +3,14 @@ import { Table } from "@finos/vuu-table";
 import { TreeDataSource } from "@finos/vuu-data-local";
 import { useEffect, useMemo, useRef } from "react";
 import { TableConfig } from "@finos/vuu-table-types";
-import { TreeSourceNode } from "@finos/vuu-utils";
+import {
+  isRowSelected,
+  metadataKeys,
+  type RowToObjectMapper,
+  type TreeSourceNode,
+} from "@finos/vuu-utils";
+
+const { DEPTH, IS_LEAF, KEY, IDX } = metadataKeys;
 
 export interface TreeTableProps
   extends Omit<TableProps, "config" | "dataSource"> {
@@ -13,6 +20,23 @@ export interface TreeTableProps
   >;
   source: TreeSourceNode[];
 }
+
+const rowToTreeNodeObject: RowToObjectMapper = (row, columnMap) => {
+  const { [IS_LEAF]: isLeaf, [KEY]: key, [IDX]: index, [DEPTH]: depth } = row;
+  const firstColIdx = columnMap.nodeData;
+  const labelColIdx = firstColIdx + depth;
+
+  return {
+    key,
+    index,
+    isGroupRow: !isLeaf,
+    isSelected: isRowSelected(row),
+    data: {
+      label: row[labelColIdx],
+      nodeData: row[firstColIdx],
+    },
+  };
+};
 
 export const TreeTable = ({
   config,
@@ -54,6 +78,7 @@ export const TreeTable = ({
       dataSource={dataSourceRef.current}
       groupToggleTarget="toggle-icon"
       navigationStyle="tree"
+      rowToObject={rowToTreeNodeObject}
       showColumnHeaderMenus={false}
       selectionModel="single"
       selectionBookendWidth={0}

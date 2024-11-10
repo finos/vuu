@@ -16,6 +16,10 @@ export const treeToDataSourceRows = (
 
   columns.push(
     {
+      name: "nodeData",
+      type: "json",
+    },
+    {
       getIcon: iconProvider?.getIcon,
       name: "Level 1",
       type: "string",
@@ -52,11 +56,11 @@ const addChildValues = (
     });
   }
   for (let i = 0; i < treeSourceNodes.length; i++, index.value += 1) {
-    const { childNodes, icon, label } = treeSourceNodes[i];
+    const { childNodes, icon, label, nodeData } = treeSourceNodes[i];
     const blanks = Array(depth - 1).fill("");
     const fullKey = `${keyBase}|${label}`;
     // prettier-ignore
-    const row = [index.value, index.value, false,false,depth,0,fullKey,0, ...blanks, label ] as DataSourceRow;
+    const row = [index.value, index.value, false,false,depth,0,fullKey,0, nodeData, ...blanks, label ] as DataSourceRow;
     if (icon) {
       iconProvider?.setIcon(fullKey, icon);
     }

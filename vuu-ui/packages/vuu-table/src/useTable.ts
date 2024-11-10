@@ -120,6 +120,7 @@ export interface TableHookProps
       | "onRowClick"
       | "renderBufferSize"
       | "revealSelected"
+      | "rowToObject"
       | "scrollingApiRef"
       | "selectionBookendWidth"
       | "showColumnHeaders"
@@ -173,6 +174,7 @@ export const useTable = ({
   renderBufferSize = 0,
   revealSelected,
   rowHeight = 20,
+  rowToObject = asDataSourceRowObject,
   scrollingApiRef,
   selectionBookendWidth,
   selectionModel,
@@ -666,10 +668,10 @@ export const useTable = ({
   const handleSelect = useCallback<TableRowSelectHandlerInternal>(
     (row) => {
       if (onSelect) {
-        onSelect(row === null ? null : asDataSourceRowObject(row, columnMap));
+        onSelect(row === null ? null : rowToObject(row, columnMap));
       }
     },
-    [columnMap, onSelect],
+    [columnMap, onSelect, rowToObject],
   );
 
   const {
@@ -707,9 +709,9 @@ export const useTable = ({
   const handleRowClick = useCallback<TableRowClickHandlerInternal>(
     (evt, row, rangeSelect, keepExistingSelection) => {
       selectionHookOnRowClick(evt, row, rangeSelect, keepExistingSelection);
-      onRowClickProp?.(evt, asDataSourceRowObject(row, columnMap));
+      onRowClickProp?.(evt, rowToObject(row, columnMap));
     },
-    [columnMap, onRowClickProp, selectionHookOnRowClick],
+    [columnMap, onRowClickProp, rowToObject, selectionHookOnRowClick],
   );
 
   const handleKeyDown = useCallback(

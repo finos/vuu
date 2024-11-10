@@ -86,7 +86,7 @@ export class TreeDataSource extends BaseDataSource {
       this._config = {
         ...this._config,
         columns,
-        groupBy: columns,
+        groupBy: columns.slice(1),
       };
     }
   }

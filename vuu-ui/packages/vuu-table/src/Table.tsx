@@ -25,7 +25,7 @@ import {
   dragStrategy,
   reduceSizeHeight,
 } from "@finos/vuu-ui-controls";
-import { metadataKeys, useId } from "@finos/vuu-utils";
+import { metadataKeys, RowToObjectMapper, useId } from "@finos/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -175,6 +175,17 @@ export interface TableProps
   renderBufferSize?: number;
 
   /**
+   * When a row is selected and onSelect provided, onSelect will be invoked with a
+   * DataSourceRowObject, derived from the internal representation of a data row,
+   * DataSourceRow. The data attribute of DataSourceRowObject is a simple map of
+   * column.name : value.
+   * This prop allows a custom function to be provided to make the conversion from
+   * DataSourceRow to DataSourceRowObject. It will very rarely be needed. It is
+   * used by the Treetable.
+   */
+  rowToObject?: RowToObjectMapper;
+
+  /**
    * Only applicable to grouped data. If there are selected rows which are not top-level
    * items and group items above are not already expanded, expand all group items in
    * the hierarchy above selected item. Selected items will thus always be visible, initially.
@@ -267,6 +278,7 @@ const TableCore = ({
   renderBufferSize = 0,
   revealSelected,
   rowHeight,
+  rowToObject,
   scrollingApiRef,
   selectionBookendWidth = 0,
   selectionModel = "extended",
@@ -339,6 +351,7 @@ const TableCore = ({
     renderBufferSize,
     revealSelected,
     rowHeight,
+    rowToObject,
     scrollingApiRef,
     selectionBookendWidth,
     selectionModel,
@@ -511,6 +524,7 @@ export const Table = forwardRef(function Table(
     renderBufferSize,
     revealSelected,
     rowHeight: rowHeightProp,
+    rowToObject,
     scrollingApiRef,
     selectionBookendWidth = 4,
     selectionModel,
@@ -656,6 +670,7 @@ export const Table = forwardRef(function Table(
           }
           revealSelected={revealSelected}
           rowHeight={rowHeight}
+          rowToObject={rowToObject}
           scrollingApiRef={scrollingApiRef}
           selectionBookendWidth={selectionBookendWidth}
           selectionModel={selectionModel}
