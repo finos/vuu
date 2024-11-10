@@ -12,8 +12,9 @@ export default `<html>
     <script type="module" src="http://localhost:1337/@vite/client"></script>
     <script type="module">
       const {default: exhibits} = await import("/exhibits.js");
+      const {default: treeSource} = await import("/treeSourceJson.js");
       const {default: start} = await import("/main.js");
-      start(exhibits)
+      start(exhibits, treeSource)
     </script>
   </head>
   <body>

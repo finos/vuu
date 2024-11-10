@@ -1,7 +1,7 @@
-import React from "react";
-import { Flexbox } from "@finos/vuu-layout";
-import { Tree } from "@finos/vuu-ui-controls";
-import { Density, ThemeMode } from "@finos/vuu-utils";
+import { TreeTable } from "@finos/vuu-datatable";
+import { Flexbox, View } from "@finos/vuu-layout";
+import { ThemeSwitch } from "@finos/vuu-shell";
+import { Density, ThemeMode, TreeSourceNode } from "@finos/vuu-utils";
 import {
   Button,
   SaltProvider,
@@ -9,18 +9,16 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@salt-ds/core";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { IFrame } from "./components";
-import { loadTheme } from "./showcase-utils";
-import type { ExhibitsJson } from "./exhibit-utils";
-import { ThemeSwitch } from "@finos/vuu-shell";
-
-import "./App.css";
+import { keysFromPath, loadTheme } from "./showcase-utils";
 import { useShowcaseApp } from "./useShowcaseApp";
 
+import "./App.css";
+
 export interface AppProps {
-  exhibits: ExhibitsJson;
+  treeSource: TreeSourceNode[];
 }
 
 type ThemeDescriptor = { label?: string; id: string };
@@ -46,10 +44,12 @@ const availableDensity: DensityDescriptor[] = [
   { id: "touch", label: "Touch" },
 ];
 
-export const App = ({ exhibits }: AppProps) => {
+export const App = ({ treeSource }: AppProps) => {
   const [themeReady, setThemeReady] = useState(false);
 
-  const { onSelectionChange, source } = useShowcaseApp({ exhibits });
+  const { onSelect, source } = useShowcaseApp({
+    treeSource,
+  });
 
   useEffect(() => {
     loadTheme("vuu-theme").then(() => {
@@ -59,6 +59,7 @@ export const App = ({ exhibits }: AppProps) => {
 
   // // TODO cache source in localStorage
   const { pathname } = useLocation();
+
   const [themeIndex, setThemeIndex] = useState(2);
   const [themeModeIndex, setThemeModeIndex] = useState(0);
   const [densityIndex, setDensityIndex] = useState(0);
@@ -104,15 +105,23 @@ export const App = ({ exhibits }: AppProps) => {
           <Text styleAs="h3">Vuu Showcase</Text>
         </div>
         <Flexbox style={{ flexDirection: "row", flex: 1 }}>
-          <Tree
-            className="ShowcaseNav"
-            style={{ flex: "0 0 200px" }}
-            data-resizeable
-            selected={[pathname.slice(1)]}
-            onSelectionChange={onSelectionChange}
-            revealSelected
-            source={source}
-          />
+          <View
+            resizeable
+            style={{ flexGrow: 0, flexShrink: 0, flexBasis: 200 }}
+          >
+            <TreeTable
+              className="ShowcaseNav"
+              data-resizeable
+              rowHeight={30}
+              defaultSelectedKeyValues={keysFromPath(pathname)}
+              // selected={[pathname.slice(1)]}
+              showColumnHeaders={false}
+              onSelect={onSelect}
+              revealSelected
+              source={source}
+              width="100%"
+            />
+          </View>
           <Flexbox
             className="ShowcaseContentContainer"
             resizeable

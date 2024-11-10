@@ -8,12 +8,6 @@ export type ShowcaseConfig = {
 };
 
 export default async (config: ShowcaseConfig) => {
-  // fs.writeFile(OUT, JSON.stringify(stories, null, 2), (err) => {
-  //   if (err) {
-  //     console.log(err);
-  //   }
-  // });
-
   const server = await createServer({
     build: {
       manifest: true,

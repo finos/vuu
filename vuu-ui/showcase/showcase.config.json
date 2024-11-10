@@ -3,5 +3,5 @@
     "port": 3100
   },
   "version": "1.0.0",
-  "exhibits": "./src/examples"
+  "exhibitsPath": "./src/examples"
 }

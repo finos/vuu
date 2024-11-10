@@ -1,9 +1,11 @@
 import fs from "fs";
 import path from "path";
 
-const OUT = "./src/generated/stories.json";
+export interface ExhibitsJson {
+  [key: string]: string | ExhibitsJson;
+}
 
-export const buildPackageTree = (dir: string, tree = {}) => {
+export const buildPackageTree = (dir: string, tree = {}): ExhibitsJson => {
   fs.readdirSync(dir).forEach((fileName) => {
     const filePath = path.join(dir, fileName);
     if (fs.lstatSync(filePath).isDirectory()) {

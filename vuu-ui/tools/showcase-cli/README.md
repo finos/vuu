@@ -2,7 +2,7 @@
 
 ## startup sequence
 
-#### cli.mjs
+#### cli.js
 
 - load index.html from templates
 - get config file from input args, default to 'showcase.config.json'
@@ -25,3 +25,20 @@
 
 - integrate into vuu cli, using stricli. Parameter parsing will happen there
 - use jumpgen to monitor file system for new/edited exhibits in dev mode
+
+## Running
+
+run npm script from showcase
+
+showcase config file `showcase.config.json` defines following
+
+- http-server
+  - port
+- version
+- exhibits ' ./src/examples'
+
+```
+npm run showcase-cli
+```
+
+runs showcase-cli/cli.js

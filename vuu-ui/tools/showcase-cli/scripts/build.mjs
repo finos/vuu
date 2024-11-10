@@ -11,7 +11,7 @@ import { build } from "../../../scripts/esbuild.mjs";
 // TODO use a separate build call for each theme, without bundling
 // const themes = ["./src/themes/salt-theme.ts", "./src/themes/vuu-theme.ts"];
 
-const entryPoints = ["src/main.ts"];
+const entryPoints = ["showcase-ui/main.ts"];
 
 const outdir = "dist";
 

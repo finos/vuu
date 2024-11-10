@@ -1,10 +1,10 @@
 import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { App } from "./App";
-import { ExamplesModule } from "./showcase-utils";
+import type { ExhibitsJson } from "./exhibit-utils";
 
 import "./Showcase.css";
-import { ExhibitsJson } from "./exhibit-utils";
+import { TreeSourceNode } from "@finos/vuu-utils";
 
 const createRoutes = (examples: ExhibitsJson, prefix = ""): JSX.Element[] =>
   Object.entries(examples)
@@ -18,11 +18,20 @@ const createRoutes = (examples: ExhibitsJson, prefix = ""): JSX.Element[] =>
         : routes.concat(<Route key={label} path={id} />);
     }, []);
 
-export const Showcase = ({ exhibits }: { exhibits: ExhibitsJson }) => {
+export const Showcase = ({
+  exhibits,
+  treeSource,
+}: {
+  exhibits: ExhibitsJson;
+  treeSource: TreeSourceNode[];
+}) => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<App exhibits={exhibits} />}>
+        <Route
+          path="/"
+          element={<App exhibits={exhibits} treeSource={treeSource} />}
+        >
           {createRoutes(exhibits)}
         </Route>
       </Routes>

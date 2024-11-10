@@ -2,16 +2,11 @@
 
 import fs from "fs";
 import path from "path";
-import {
-  copyFiles,
-  createFolder,
-  readJson,
-  writeFile,
-} from "./cli/cli-utils.ts";
-import indexHtml from "./templates/index.html.ts";
+import { copyFiles, createFolder, readJson, writeFile } from "./cli-utils.ts";
+import indexHtml from "../templates/index.html.ts";
 import { fileURLToPath } from "url";
-import start from "./cli/main.ts";
-import { buildPackageTree } from "./cli/buildPackageTree";
+import prepare from "./prepare.ts";
+import start from "./main.ts";
 
 /** Parse the command line */
 var args = process.argv.slice(2);
@@ -37,11 +32,11 @@ if (args.length === 0) {
   }
 }
 
-const distFolder = path.resolve(fileURLToPath(import.meta.url), "../dist");
+const distFolder = path.resolve(fileURLToPath(import.meta.url), "../../dist");
 
 if (!fs.existsSync(".showcase")) {
   createFolder(".showcase");
-  // DOn't do this until we create importmaps
+  // Don't do this until we create importmaps
   await writeFile(indexHtml, "./.showcase/index.html");
 } else {
   console.log(".showcase folder present and correct");
@@ -49,24 +44,24 @@ if (!fs.existsSync(".showcase")) {
 
 // TODO check whether dist files already present in .showcase
 if (fs.existsSync(distFolder)) {
+  console.log(`copy dist files from dist folder ${distFolder} to .showcase `);
   copyFiles(distFolder, "./.showcase");
+} else {
+  console.log(`no dist folder ${distFolder}`);
 }
 
 const config = readJson(configFilePath);
 
-//TODO use type validator to check config file
-const { exhibits } = config;
-if (!fs.existsSync(exhibits)) {
-  console.log("Error: Exhibits location doesn't exist. Given: ", exhibits);
-  process.exit();
-}
+const [exhibitsJson, treeSourceJson] = await prepare(config);
 
-const stories = buildPackageTree(exhibits);
 await writeFile(
-  `export default ${JSON.stringify(stories, null, 2)};`,
+  `export default ${JSON.stringify(exhibitsJson, null, 2)};`,
   "./.showcase/exhibits.js",
 );
 
-console.log(JSON.stringify(stories, null, 2));
+await writeFile(
+  `export default ${JSON.stringify(treeSourceJson, null, 2)};`,
+  "./.showcase/treeSourceJson.js",
+);
 
-start(config);
+start(config, exhibitsJson, treeSourceJson);

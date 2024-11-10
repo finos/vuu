@@ -114,6 +114,8 @@ export class TreeDataSource extends BaseDataSource {
       };
     }
 
+    console.log({ selectedKeyValues });
+
     if (this.#status !== "initialising") {
       //TODO check if subscription details are still the same
       return;

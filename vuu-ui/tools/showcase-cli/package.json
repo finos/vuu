@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "bin": "./cli.js",
+  "bin": "./cli/cli.js",
   "scripts": {
     "build": "node ./scripts/build.mjs"
   },
