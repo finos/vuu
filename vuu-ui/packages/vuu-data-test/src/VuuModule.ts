@@ -408,13 +408,13 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
 
         return {
           action: {
-            type: "NO_ACTION",
+            type: "VP_RPC_SUCCESS",
           },
           requestId: "request_id",
           rpcName: "VP_BULK_EDIT_SUBMIT_RPC",
           type: "VIEW_PORT_MENU_RESP",
           vpId,
-        } as VuuRpcMenuResponse;
+        } as unknown as VuuRpcViewportResponse;
       }
     }
     throw Error("saveBulkEdits base table not found");
