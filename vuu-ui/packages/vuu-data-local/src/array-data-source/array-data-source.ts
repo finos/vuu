@@ -139,6 +139,7 @@ export class ArrayDataSource
 
   constructor({
     aggregations,
+    baseFilterSpec,
     // different from RemoteDataSource
     columnDescriptors,
     data,
@@ -176,6 +177,7 @@ export class ArrayDataSource
     this.config = {
       ...this._config,
       aggregations: aggregations || this._config.aggregations,
+      baseFilterSpec,
       columns,
       filterSpec: filterSpec || this._config.filterSpec,
       groupBy: groupBy || this._config.groupBy,
@@ -190,6 +192,7 @@ export class ArrayDataSource
       viewport = this.viewport ?? (this.viewport = uuid()),
       columns,
       aggregations,
+      baseFilterSpec,
       range,
       selectedIndexValues,
       selectedKeyValues,
@@ -220,6 +223,7 @@ export class ArrayDataSource
       config = {
         ...config,
         aggregations: aggregations || this._config.aggregations,
+        baseFilterSpec: baseFilterSpec || this._config.baseFilterSpec,
         columns: columns || this._config.columns,
         filterSpec: filterSpec || this._config.filterSpec,
         groupBy: groupBy || this._config.groupBy,

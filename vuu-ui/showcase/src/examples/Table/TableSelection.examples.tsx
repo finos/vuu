@@ -1,11 +1,11 @@
 import { getSchema, LocalDataSourceProvider } from "@finos/vuu-data-test";
+import { SelectionChangeHandler, TableSchema } from "@finos/vuu-data-types";
 import { Table, TableProps } from "@finos/vuu-table";
+import { ColumnLayout, TableConfig } from "@finos/vuu-table-types";
+import { toColumnName, useDataSource } from "@finos/vuu-utils";
 import { useMemo } from "react";
 
 import "./Table.examples.css";
-import { SelectionChangeHandler, TableSchema } from "@finos/vuu-data-types";
-import { ColumnLayout, TableConfig } from "@finos/vuu-table-types";
-import { toColumnName, useDataSource } from "@finos/vuu-utils";
 
 let displaySequence = 1;
 

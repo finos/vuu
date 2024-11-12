@@ -176,7 +176,7 @@ export const useTable = ({
   rowHeight = 20,
   rowToObject = asDataSourceRowObject,
   scrollingApiRef,
-  selectionBookendWidth,
+  selectionBookendWidth = 4,
   selectionModel,
   showColumnHeaders,
   showPaginationControls,
@@ -213,7 +213,8 @@ export const useTable = ({
     size.height - (headerState.height === -1 ? 0 : headerState.height);
   const verticalScrollbarWidth =
     virtualContentHeight > viewportBodyHeight ? 10 : 0;
-  const availableWidth = size.width - (verticalScrollbarWidth + 8);
+  const availableWidth =
+    size.width - (verticalScrollbarWidth + (2 & selectionBookendWidth));
 
   const rowClassNameGenerator = useRowClassNameGenerators(config);
 

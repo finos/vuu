@@ -268,6 +268,13 @@ export interface ColumnDescriptor extends DataValueDescriptor {
   pin?: PinLocation;
   resizeable?: boolean;
   sortable?: boolean;
+  /**
+   * 'client' columns will not receive data from dataSource.
+   * They can be used with a custom renderer, e.g to render
+   * action buttons.
+   * default is 'server'
+   */
+  source?: "client" | "server";
   width?: number;
 }
 

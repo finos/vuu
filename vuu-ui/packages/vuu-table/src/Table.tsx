@@ -32,6 +32,7 @@ import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import {
   CSSProperties,
+  ComponentType,
   FC,
   ForwardedRef,
   RefObject,
@@ -59,6 +60,10 @@ export type TableNavigationStyle = "none" | "cell" | "row" | "tree";
 
 export interface TableProps
   extends Omit<MeasuredContainerProps, "onDragStart" | "onDrop" | "onSelect"> {
+  /**
+   * A react function componnet that will be rendered if there are no rows to display
+   */
+  EmptyDisplay?: ComponentType;
   Row?: FC<RowProps>;
   /**
    * Allow a block of cells to be selected. Typically to be copied.
@@ -249,6 +254,7 @@ export interface TableProps
 }
 
 const TableCore = ({
+  EmptyDisplay,
   Row = DefaultRow,
   allowCellBlockSelection,
   allowDragColumnHeader = true,
@@ -384,6 +390,10 @@ const TableCore = ({
   const headersReady = showColumnHeaders === false || headerHeight > 0;
   const readyToRenderTableBody = headersReady && data.length > 0;
 
+  if (dataSource.size === 0 && EmptyDisplay) {
+    return <EmptyDisplay />;
+  }
+
   return (
     <ContextMenuProvider
       menuActionHandler={handleContextMenuAction}
@@ -493,6 +503,7 @@ const TableCore = ({
 
 export const Table = forwardRef(function Table(
   {
+    EmptyDisplay,
     Row,
     allowCellBlockSelection,
     allowDragColumnHeader,
@@ -629,6 +640,7 @@ export const Table = forwardRef(function Table(
       ref={useForkRef(containerRef, forwardedRef)}
       style={
         {
+          ...styleProp,
           "--row-height-prop": rowHeight > 0 ? `${rowHeight}px` : undefined,
         } as CSSProperties
       }
@@ -639,6 +651,7 @@ export const Table = forwardRef(function Table(
       rowHeight &&
       (footerHeight || showPaginationControls !== true) ? (
         <TableCore
+          EmptyDisplay={EmptyDisplay}
           Row={Row}
           allowCellBlockSelection={allowCellBlockSelection}
           allowDragColumnHeader={allowDragColumnHeader}

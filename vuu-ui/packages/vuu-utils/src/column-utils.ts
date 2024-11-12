@@ -900,13 +900,13 @@ export const getTypeFormattingFromColumn = (
 };
 
 /**
- *
- * return a filter predicate that will reject columns, names of which
- * are not in provided list.
+ * Return a filter predicate that will reject columns, names of which
+ * are not in provided list. Exception made for columns explicitly
+ * configured as client columns.
  */
 export const subscribedOnly =
   (columnNames?: string[]) => (column: ColumnDescriptor) =>
-    columnNames?.includes(column.name);
+    column.source === "client" || columnNames?.includes(column.name);
 
 export const addColumnToSubscribedColumns = (
   subscribedColumns: ColumnDescriptor[],
@@ -1142,7 +1142,6 @@ export function applyWidthToColumns(
         totalWidth,
         defaultMaxWidth,
         defaultWidth,
-        flexCount,
       );
     }
   }
@@ -1213,52 +1212,61 @@ const shrinkColumnsToFitAvailableSpace = (
   }
 };
 
+const hasFlex = ({ flex }: ColumnDescriptor) => typeof flex === "number";
+
 const stretchColumnsToFillAvailableSpace = (
   columns: RuntimeColumnDescriptor[],
   availableWidth: number,
   totalWidth: number,
   defaultMaxWidth: number,
   defaultWidth: number,
-  flexCount: number,
 ) => {
   let freeSpaceToBeFilled = availableWidth - totalWidth;
-  const additionalWidthPerColumn = Math.floor(
-    freeSpaceToBeFilled / (flexCount || columns.length),
-  );
-  const newColumns = columns.map((column) => {
-    const {
-      maxWidth = defaultMaxWidth,
-      width = defaultWidth,
-      flex = 0,
-    } = column;
-    if (flexCount > 0 && flex === 0) {
-      return column;
-    }
-    const adjustedWidth = width + additionalWidthPerColumn;
-    if (adjustedWidth > maxWidth) {
-      return { ...column, width: maxWidth };
-    } else {
-      freeSpaceToBeFilled -= additionalWidthPerColumn;
-      return { ...column, width: adjustedWidth, canStretch: true };
-    }
-  });
-  const columnsNotYetAtMaxWidth = newColumns.filter(
-    (col) => col.canStretch,
-  ).length;
-  const finalAdjustmentPerColumn = Math.min(
-    1,
-    Math.ceil(freeSpaceToBeFilled / columnsNotYetAtMaxWidth),
-  );
-  return newColumns.map<RuntimeColumnDescriptor>(
-    ({ canStretch, ...column }) => {
-      if (canStretch && freeSpaceToBeFilled) {
-        freeSpaceToBeFilled -= finalAdjustmentPerColumn;
-        return { ...column, width: column.width + finalAdjustmentPerColumn };
-      } else {
+  let adjustedColumns = columns;
+
+  const canGrow = ({
+    width = defaultWidth,
+    maxWidth = defaultMaxWidth,
+  }: ColumnDescriptor) => width < maxWidth;
+
+  while (freeSpaceToBeFilled > 0) {
+    const flexCols = adjustedColumns.filter(
+      (col) => hasFlex(col) && canGrow(col),
+    );
+    const columnsNotYetAtMaxWidth =
+      flexCols.length || adjustedColumns.filter(canGrow).length;
+
+    // THis deos not take flex correctly into account
+    const additionalWidthPerColumn = Math.ceil(
+      freeSpaceToBeFilled / columnsNotYetAtMaxWidth,
+    );
+    adjustedColumns = columns.map((column) => {
+      const {
+        maxWidth = defaultMaxWidth,
+        width = defaultWidth,
+        flex = 0,
+      } = column;
+      if (flexCols.length > 0 && flex === 0) {
         return column;
       }
-    },
-  );
+
+      // we rounded the additionalWidthPerColumn up, so make sure
+      // we don't over-assign
+      const adjustmentAmount = Math.min(
+        additionalWidthPerColumn,
+        freeSpaceToBeFilled,
+      );
+      const adjustedWidth = width + adjustmentAmount;
+      if (adjustedWidth > maxWidth) {
+        freeSpaceToBeFilled -= adjustedWidth - maxWidth;
+        return { ...column, width: maxWidth };
+      } else {
+        freeSpaceToBeFilled -= adjustmentAmount;
+        return { ...column, width: adjustedWidth };
+      }
+    });
+  }
+  return adjustedColumns;
 };
 
 /**

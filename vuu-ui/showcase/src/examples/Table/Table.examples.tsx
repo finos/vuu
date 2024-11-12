@@ -51,18 +51,15 @@ let displaySequence = 1;
 
 export const TestTable = ({
   columnLayout,
+  config: configProp,
   height = 625,
   renderBufferSize = 5,
   rowCount = 1000,
   rowHeight = 20,
   width = 1000,
-}: {
+}: Partial<TableProps> & {
   columnLayout?: ColumnLayout;
-  height?: string | number;
-  renderBufferSize?: number;
   rowCount?: number;
-  rowHeight?: number;
-  width?: string | number;
 }) => {
   const config = useMemo<TableConfig>(
     () => ({
@@ -70,8 +67,9 @@ export const TestTable = ({
       rowSeparators: true,
       zebraStripes: true,
       columnLayout,
+      ...configProp,
     }),
-    [columnLayout],
+    [columnLayout, configProp],
   );
 
   const dataSource = useMemo<DataSource>(() => {
@@ -100,12 +98,12 @@ export const TestTable = ({
 TestTable.displaySequence = displaySequence++;
 
 const TableTemplate = ({
+  config,
   height = 645,
   highlightedIndex,
   navigationStyle,
   schema,
   width = 723,
-  columns = schema.columns,
   ...props
 }: {
   columns?: ColumnDescriptor[];
@@ -113,20 +111,22 @@ const TableTemplate = ({
 } & Partial<TableProps>) => {
   const { VuuDataSource } = useDataSource();
 
+  const tableConfig = useMemo<TableConfig>(() => {
+    return (
+      config ?? {
+        columns: schema.columns,
+        rowSeparators: true,
+        zebraStripes: true,
+      }
+    );
+  }, [config, schema]);
+
   const dataSource = useMemo(() => {
     return new VuuDataSource({
-      columns: columns.map(toColumnName),
+      columns: tableConfig.columns.map(toColumnName),
       table: schema.table,
     });
-  }, [VuuDataSource, columns, schema]);
-
-  const tableConfig = useMemo<TableConfig>(() => {
-    return {
-      columns,
-      rowSeparators: true,
-      zebraStripes: true,
-    };
-  }, [columns]);
+  }, [VuuDataSource, tableConfig.columns, schema]);
 
   return (
     <Table

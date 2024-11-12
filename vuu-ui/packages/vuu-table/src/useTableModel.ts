@@ -309,6 +309,8 @@ function init(
     tableSchema,
   );
 
+  console.log(`useTableModel availableWidth ${availableWidth}`);
+
   const runtimeColumns: RuntimeColumnDescriptor[] = [];
   let colIndex = 1;
   for (const column of columns.filter(
@@ -380,6 +382,7 @@ const columnDescriptorToRuntimeColumDescriptor =
       align = getDefaultAlignment(serverDataType),
       name,
       label = getColumnLabel(column),
+      source = "server",
       width = columnDefaultWidth,
       ...rest
     } = column;
@@ -398,6 +401,7 @@ const columnDescriptorToRuntimeColumDescriptor =
       name,
       originalIdx: ariaColIndex,
       serverDataType,
+      source,
       valueFormatter: getValueFormatter(column, serverDataType),
       width,
     };

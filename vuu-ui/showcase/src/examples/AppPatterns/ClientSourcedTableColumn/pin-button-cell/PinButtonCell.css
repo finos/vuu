@@ -1,0 +1,45 @@
+
+.vuuPinButtonCell {
+    font-weight: 500;
+    position: relative;
+    
+}
+
+
+
+.vuuIconCell.vuuTableCell {
+    align-items: center;    
+    display: inline-flex;
+    justify-content: center;
+    padding: 0;
+
+    .vuuIconButton {
+        --saltButton-minWidth: 20px;
+        --saltButton-borderRadius: 0px;
+        --saltButton-height: 20px;
+        --saltButton-width: 20px;
+
+        .vuuIcon {
+            --vuu-icon-left: 2px;
+            --vuu-icon-size: 14px;
+            --vuu-icon-top: 1px;
+            height: 18px;
+            width: 18px;
+        }
+        .vuuIcon:after{
+            --vuu-icon-color: var(--salt-separable-secondary-borderColor);
+        }
+    
+    }
+
+    .vuuPinButtonCell-pinned {
+        .vuuIcon:after{
+            --vuu-icon-color: var(--salt-content-primary-foreground);
+        }
+    }
+    
+  }
+
+
+
+
