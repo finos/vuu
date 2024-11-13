@@ -309,8 +309,6 @@ function init(
     tableSchema,
   );
 
-  console.log(`useTableModel availableWidth ${availableWidth}`);
-
   const runtimeColumns: RuntimeColumnDescriptor[] = [];
   let colIndex = 1;
   for (const column of columns.filter(

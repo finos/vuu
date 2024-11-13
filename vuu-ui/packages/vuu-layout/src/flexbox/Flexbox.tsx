@@ -12,7 +12,7 @@ const classBase = "hwFlexbox";
 
 const Flexbox = forwardRef(function Flexbox(
   props: FlexboxProps,
-  ref: ForwardedRef<HTMLDivElement>
+  ref: ForwardedRef<HTMLDivElement>,
 ) {
   const {
     breakPoints,
@@ -42,7 +42,6 @@ const Flexbox = forwardRef(function Flexbox(
 
   const { content, rootRef } = useSplitterResizing({
     children,
-    // cols: colsProp,
     onSplitterMoved,
     style,
   });

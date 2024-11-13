@@ -1,8 +1,14 @@
-import { FunctionComponent, HTMLAttributes, ReactElement } from "react";
+import {
+  CSSProperties,
+  FunctionComponent,
+  HTMLAttributes,
+  ReactElement,
+} from "react";
 import { HeaderProps } from "../layout-header";
 import {
   MaximizeAction,
-  MinimizeAction,
+  CollapseAction,
+  ExpandAction,
   MousedownViewAction,
   QueryAction,
   RemoveAction,
@@ -42,7 +48,8 @@ export type BroadcastMessageViewAction = {
 export type ViewAction =
   | BroadcastMessageViewAction
   | MaximizeAction
-  | MinimizeAction
+  | CollapseAction
+  | ExpandAction
   | MousedownViewAction
   | QueryAction
   | RemoveAction
@@ -68,5 +75,6 @@ export interface ViewProps extends HTMLAttributes<HTMLDivElement> {
   path?: string;
   resize?: ResizeStrategy;
   resizeable?: boolean;
+  restoreStyle?: CSSProperties;
   tearOut?: boolean;
 }

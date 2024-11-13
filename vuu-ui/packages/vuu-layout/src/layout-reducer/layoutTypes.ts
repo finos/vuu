@@ -45,9 +45,14 @@ export type MaximizeAction = {
   type: typeof LayoutActionType.MAXIMIZE;
 };
 
-export type MinimizeAction = {
+export type CollapseAction = {
   path?: string;
-  type: typeof LayoutActionType.MINIMIZE;
+  type: "collapse";
+};
+
+export type ExpandAction = {
+  path?: string;
+  type: "expand";
 };
 
 export type MoveChildAction = {
@@ -126,8 +131,8 @@ export type LayoutReducerAction =
   | AddAction
   | DragDropAction
   | LayoutResizeAction
-  | MaximizeAction
-  | MinimizeAction
+  | CollapseAction
+  | ExpandAction
   | MoveChildAction
   | RemoveAction
   | ReplaceAction
@@ -176,11 +181,11 @@ export type LayoutChangeReason = LayoutLevelChange | ApplicationLevelChange;
 
 export type LayoutChangeHandler = (
   layout: LayoutJSON,
-  layoutChangeReason: LayoutChangeReason
+  layoutChangeReason: LayoutChangeReason,
 ) => void;
 
 export const isApplicationLevelChange = (
-  layoutChangeReason: LayoutChangeReason
+  layoutChangeReason: LayoutChangeReason,
 ): layoutChangeReason is ApplicationLevelChange =>
   [
     "switch-active-layout",
@@ -190,7 +195,7 @@ export const isApplicationLevelChange = (
   ].includes(layoutChangeReason);
 
 export const isLayoutLevelChange = (
-  layoutChangeReason: LayoutChangeReason
+  layoutChangeReason: LayoutChangeReason,
 ): layoutChangeReason is LayoutLevelChange =>
   [
     "switch-active-tab",

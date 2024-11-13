@@ -50,9 +50,9 @@ export const useSplitterResizing = ({
       Array.isArray(childrenProp)
         ? childrenProp
         : React.isValidElement(childrenProp)
-        ? [childrenProp]
-        : [],
-    [childrenProp]
+          ? [childrenProp]
+          : [],
+    [childrenProp],
   );
 
   const handleDragStart = useCallback(
@@ -61,7 +61,7 @@ export const useSplitterResizing = ({
       if (contentMeta) {
         const [participants, bystanders] = identifyResizeParties(
           contentMeta,
-          index
+          index,
         );
         if (participants) {
           participants.forEach((index) => {
@@ -81,10 +81,14 @@ export const useSplitterResizing = ({
               }
             });
           }
+
+          if (rootRef.current) {
+            rootRef.current.classList.add("vuuSplitterResizing");
+          }
         }
       }
     },
-    [dimension]
+    [dimension],
   );
 
   const handleDrag = useCallback(
@@ -95,18 +99,21 @@ export const useSplitterResizing = ({
             contentRef.current,
             metaRef.current,
             distance,
-            dimension
-          )
+            dimension,
+          ),
         );
       }
     },
-    [dimension]
+    [dimension],
   );
 
   const handleDragEnd = useCallback(() => {
     const contentMeta = metaRef.current;
     if (contentMeta) {
       onSplitterMoved?.(contentMeta.filter(originalContentOnly));
+      if (rootRef.current) {
+        rootRef.current.classList.remove("vuuSplitterResizing");
+      }
     }
     contentMeta?.forEach((meta) => {
       meta.currentSize = undefined;
@@ -126,7 +133,7 @@ export const useSplitterResizing = ({
         onDragStart: handleDragStart,
       });
     },
-    [handleDrag, handleDragEnd, handleDragStart, isColumn]
+    [handleDrag, handleDragEnd, handleDragStart, isColumn],
   );
 
   useMemo(() => {
@@ -134,7 +141,7 @@ export const useSplitterResizing = ({
       children,
       dimension,
       createSplitter,
-      assignedKeys.current
+      assignedKeys.current,
     );
     metaRef.current = meta;
     contentRef.current = content;
@@ -150,7 +157,7 @@ function buildContent(
   children: ReactElement[],
   dimension: "width" | "height",
   createSplitter: SplitterFactory,
-  keys: any[]
+  keys: any[],
 ): [any[], ContentMeta[]] {
   const childMeta = gatherChildMeta(children, dimension);
   const splitterAndPlaceholderPositions =
@@ -186,7 +193,7 @@ function resizeContent(
   content: ReactElement[],
   contentMeta: ContentMeta[],
   distance: number,
-  dimension: "width" | "height"
+  dimension: "width" | "height",
 ) {
   const metaUpdated = updateMeta(contentMeta, distance);
   if (!metaUpdated) {
@@ -260,7 +267,7 @@ function createPlaceholder(index: number) {
 
 function measureElement(
   el: HTMLElement,
-  dimension: "width" | "height"
+  dimension: "width" | "height",
 ): FlexSize {
   const { [dimension]: size } = el.getBoundingClientRect();
   const style = getComputedStyle(el);

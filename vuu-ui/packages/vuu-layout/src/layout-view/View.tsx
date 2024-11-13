@@ -59,11 +59,14 @@ const View = forwardRef(function View(
     path = dataPath,
     resize = "responsive",
     resizeable = dataResizeable,
+    restoreStyle,
     tearOut,
     style = {},
     title: titleProp,
     ...restProps
   } = props;
+
+  console.log({ collapsed, restoreStyle });
 
   const targetWindow = useWindow();
   useComponentCssInjection({

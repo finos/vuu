@@ -18,7 +18,13 @@ import {
   useClientTableColumn,
 } from "./ClientTableColumnProvider/ClientTableColumnProvider";
 import { TableSearch } from "@finos/vuu-ui-controls";
-import { Flexbox, View } from "@finos/vuu-layout";
+import {
+  FlexboxLayout,
+  Header,
+  LayoutContainer,
+  LayoutProvider,
+  View,
+} from "@finos/vuu-layout";
 
 registerComponent("pin-button", PinButtonCell, "cell-renderer", {
   userCanAssign: false,
@@ -177,7 +183,10 @@ export const SearchWithPin = () => {
 };
 SearchWithPin.displaySequence = displaySequence++;
 
-const EmptyDisplay = () => {
+const EmptyRecent = () => {
+  return <div style={{ padding: "12px 6px" }}>No recently viewed items</div>;
+};
+const EmptyPinned = () => {
   return (
     <div style={{ padding: "12px 6px" }}>
       No Instruments have been pinned. Use the pin icon in the search list below
@@ -194,7 +203,7 @@ const RecentlyUsedItemsTable = ({ schema }: { schema: TableSchema }) => {
 
   return (
     <TableTemplate
-      EmptyDisplay={EmptyDisplay}
+      EmptyDisplay={EmptyRecent}
       config={{
         columnLayout: "fit",
         columns: [{ name: "description" }],
@@ -223,7 +232,7 @@ const PinnedItemsTable = ({ schema }: { schema: TableSchema }) => {
 
   return (
     <TableTemplate
-      EmptyDisplay={EmptyDisplay}
+      EmptyDisplay={EmptyPinned}
       config={{
         columnLayout: "fit",
         columns: [{ name: "description" }, PinColumn],
@@ -280,33 +289,102 @@ export const SearchAndPinned = () => {
   return (
     <LocalDataSourceProvider modules={["SIMUL"]}>
       <ClientTableColumnProvider>
-        <Flexbox
-          style={{ flexDirection: "column", height: "100%", width: 240 }}
-        >
-          <View
-            header={{ closeable: true }}
-            style={{ flexBasis: "auto", flexGrow: 0, flexShrink: 0 }}
-            title="Recently Viewed Instruments"
+        <LayoutProvider>
+          <FlexboxLayout
+            style={{ flexDirection: "column", height: "100%", width: 260 }}
           >
-            <RecentlyUsedItemsTable schema={schema} />
-          </View>
-          <View
-            header={{ closeable: true }}
-            style={{ flexBasis: "auto", flexGrow: 0, flexShrink: 0 }}
-            title="Pinned Instruments"
-          >
-            <PinnedItemsTable schema={schema} />
-          </View>
-          <View
-            header
-            style={{ flexBasis: 0, flexGrow: 1, flexShrink: 1 }}
-            title="Browse Instruments"
-          >
-            <SearchItemsTable schema={schema} />
-          </View>
-        </Flexbox>
+            <View
+              closeable
+              collapsed={false}
+              header={{ closeable: true }}
+              style={{ flexBasis: "auto", flexGrow: 0, flexShrink: 0 }}
+              title="Recently Viewed Instruments"
+            >
+              <RecentlyUsedItemsTable schema={schema} />
+            </View>
+            <View
+              closeable
+              collapsed={false}
+              header={{ closeable: true }}
+              style={{ flexBasis: "auto", flexGrow: 0, flexShrink: 0 }}
+              title="Pinned Instruments"
+            >
+              <PinnedItemsTable schema={schema} />
+            </View>
+            <View
+              collapsed={false}
+              header
+              style={{ flexBasis: 0, flexGrow: 1, flexShrink: 1 }}
+              title="Browse Instruments"
+            >
+              <SearchItemsTable schema={schema} />
+            </View>
+          </FlexboxLayout>
+        </LayoutProvider>
       </ClientTableColumnProvider>
     </LocalDataSourceProvider>
   );
 };
 SearchAndPinned.displaySequence = displaySequence++;
+
+export const SearchAndPinnedWithAdditionalContent = () => {
+  const schema = getSchema("instruments");
+
+  return (
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <ClientTableColumnProvider>
+        <LayoutProvider>
+          <LayoutContainer
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              height: "100%",
+              width: 300,
+            }}
+          >
+            <Header style={{ height: 48 }} title="Instruments" />
+            <FlexboxLayout
+              style={{
+                flexBasis: "auto",
+                flexGrow: 1,
+                flexDirection: "column",
+              }}
+            >
+              <View
+                closeable
+                collapsed={false}
+                header={{ closeable: true }}
+                style={{ flexBasis: "auto", flexGrow: 0, flexShrink: 0 }}
+                title="Recently Viewed Instruments"
+              >
+                <RecentlyUsedItemsTable schema={schema} />
+              </View>
+              <View
+                closeable
+                collapsed={false}
+                header={{ closeable: true }}
+                style={{ flexBasis: "auto", flexGrow: 0, flexShrink: 0 }}
+                title="Pinned Instruments"
+              >
+                <PinnedItemsTable schema={schema} />
+              </View>
+              <View
+                collapsed={false}
+                header
+                style={{ flexBasis: 0, flexGrow: 1, flexShrink: 1 }}
+                title="Browse Instruments"
+              >
+                <SearchItemsTable schema={schema} />
+              </View>
+            </FlexboxLayout>
+            <Header style={{ height: 48 }} title="Filters" />
+            <View style={{ flexBasis: "auto", flexGrow: 1 }}>
+              <div style={{ background: "red", height: "100%" }} />
+            </View>
+          </LayoutContainer>
+        </LayoutProvider>
+      </ClientTableColumnProvider>
+    </LocalDataSourceProvider>
+  );
+};
+SearchAndPinnedWithAdditionalContent.displaySequence = displaySequence++;

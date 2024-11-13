@@ -3,10 +3,13 @@ import {
   // ConfigWrapper,
   Flexbox,
   FlexboxLayout,
+  LayoutProvider,
   Stack,
   View,
 } from "@finos/vuu-layout";
 import { Brown } from "./components";
+import { SplitterMoveHandler } from "@finos/vuu-layout/src/flexbox/flexboxTypes";
+import { useCallback } from "react";
 
 let displaySequence = 1;
 
@@ -97,6 +100,60 @@ export const SimpleTower = () => {
 };
 
 SimpleTower.displaySequence = displaySequence++;
+
+export const TowerWithCollapsibleViews = () => {
+  const handleSplitterMoved = useCallback<SplitterMoveHandler>(
+    (contentMeta) => {
+      console.log(`splitter moved ${JSON.stringify(contentMeta)}`);
+    },
+    [],
+  );
+
+  return (
+    <LayoutProvider>
+      <FlexboxLayout
+        style={{
+          width: 300,
+          height: 600,
+          flexDirection: "column",
+          border: "solid 1px lightgrey",
+        }}
+        onSplitterMoved={handleSplitterMoved}
+        path=""
+      >
+        <View
+          collapsed={false}
+          header
+          resizeable
+          style={{ flexBasis: 150, flexShrink: 0, flexGrow: 1 }}
+          title="View 1"
+        >
+          <Component style={{ flex: 1, backgroundColor: "yellow" }} />
+        </View>
+        <View
+          collapsed={false}
+          header
+          resizeable
+          style={{ flexBasis: 150, flexShrink: 0, flexGrow: 1 }}
+          title="View 2"
+        >
+          <Component style={{ flex: 1, backgroundColor: "yellow" }} />
+        </View>
+        <View
+          collapsed={false}
+          header
+          resizeable
+          style={{ flexBasis: 150, flexShrink: 0, flexGrow: 1 }}
+          title="View 3"
+        >
+          <Component style={{ flex: 1, backgroundColor: "red" }} />
+        </View>
+      </FlexboxLayout>
+    </LayoutProvider>
+  );
+};
+
+TowerWithCollapsibleViews.displaySequence = displaySequence++;
 
 export const ThreeChildTower = () => {
   const handleSplitterMoved = (sizes: any) => {

@@ -22,13 +22,13 @@ export const useViewActionDispatcher = (
   id: string,
   rootRef: RefObject<HTMLDivElement>,
   viewPath?: string,
-  dropTargets?: string[]
+  dropTargets?: string[],
 ): [ViewDispatch, Contribution[] | undefined] => {
   const { loadSessionState, purgeSessionState, purgeState, saveSessionState } =
     usePersistentState();
 
   const [contributions, setContributions] = useState<Contribution[]>(
-    loadSessionState(id, "contributions") ?? []
+    loadSessionState(id, "contributions") ?? [],
   );
   const dispatchLayoutAction = useLayoutProviderDispatch();
   const updateContributions = useCallback(
@@ -39,7 +39,7 @@ export const useViewActionDispatcher = (
       saveSessionState(id, "contributions", updatedContributions);
       setContributions(updatedContributions);
     },
-    [contributions, id, saveSessionState]
+    [contributions, id, saveSessionState],
   );
 
   const clearContributions = useCallback(() => {
@@ -80,7 +80,7 @@ export const useViewActionDispatcher = (
         } as DragStartAction);
       });
     },
-    [rootRef, dispatchLayoutAction, viewPath, dropTargets]
+    [rootRef, dispatchLayoutAction, viewPath, dropTargets],
   );
 
   const handleMessageReceived = useCallback<BroadcastMessageHandler>(
@@ -99,25 +99,24 @@ export const useViewActionDispatcher = (
           console.log(`received ${message.type} message`);
       }
     },
-    [rootRef, unsubscribeAndClearState]
+    [rootRef, unsubscribeAndClearState],
   );
 
   const sendMessage = useViewBroadcastChannel(
     id,
     viewPath,
-    handleMessageReceived
+    handleMessageReceived,
   );
 
   const dispatchAction = useCallback(
     async <A extends ViewAction = ViewAction>(
       action: A,
-      evt?: SyntheticEvent
+      evt?: SyntheticEvent,
     ): Promise<boolean | QueryReponse | void> => {
       const { type } = action;
       switch (type) {
-        case "maximize":
-        case "minimize":
-        case "restore":
+        case "collapse":
+        case "expand":
           return dispatchLayoutAction({ type, path: action.path ?? viewPath });
         case "remove":
           return handleRemove();
@@ -150,7 +149,7 @@ export const useViewActionDispatcher = (
       updateContributions,
       clearContributions,
       sendMessage,
-    ]
+    ],
   );
 
   return [dispatchAction, contributions];

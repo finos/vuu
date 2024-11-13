@@ -148,6 +148,12 @@ span[data-icon] {
 
 [data-icon="chevron-down"] {
   --vuu-icon-svg: var(--vuu-svg-chevron-down);
+  transition: transform .2s linear;
+}
+[data-icon="chevron-open"] {
+  --vuu-icon-svg: var(--vuu-svg-chevron-down);
+  transform: rotate(-90deg);
+  transition: transform .2s linear;
 }
 
 [data-icon="chevron-left"] {
@@ -157,6 +163,8 @@ span[data-icon] {
 [data-icon="chevron-right"] {
   --vuu-icon-svg: var(--vuu-svg-chevron-right);
 }
+
+
 
 [data-icon="close"] {
   --vuu-icon-svg: var(--vuu-close-icon-svg, var(--svg-close));

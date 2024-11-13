@@ -11,6 +11,8 @@ export interface LayoutContainerProps {
   resizeable?: boolean;
 }
 
+export type SplitterMoveHandler = (content: ContentMeta[]) => void;
+
 export interface FlexboxProps
   extends LayoutContainerProps,
     HTMLAttributes<HTMLDivElement> {
@@ -21,7 +23,7 @@ export interface FlexboxProps
   fullPage?: number;
   flexFill?: boolean;
   gap?: number;
-  onSplitterMoved?: (content: ContentMeta[]) => void;
+  onSplitterMoved?: SplitterMoveHandler;
   row?: true;
   spacing?: number;
   splitterSize?: number;
