@@ -214,7 +214,7 @@ export const useTable = ({
   const verticalScrollbarWidth =
     virtualContentHeight > viewportBodyHeight ? 10 : 0;
   const availableWidth =
-    size.width - (verticalScrollbarWidth + (2 & selectionBookendWidth));
+    size.width - (verticalScrollbarWidth + 2 * selectionBookendWidth);
 
   const rowClassNameGenerator = useRowClassNameGenerators(config);
 
