@@ -129,6 +129,10 @@ export class TickingArrayDataSource extends ArrayDataSource {
     return super.range;
   }
 
+  set links(links: LinkDescriptorWithLabel[] | undefined) {
+    super.links = links;
+  }
+
   get links() {
     return this.#getVisualLinks?.(this.table.table);
   }
