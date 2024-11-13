@@ -380,6 +380,7 @@ const columnDescriptorToRuntimeColumDescriptor =
       align = getDefaultAlignment(serverDataType),
       name,
       label = getColumnLabel(column),
+      source = "server",
       width = columnDefaultWidth,
       ...rest
     } = column;
@@ -398,6 +399,7 @@ const columnDescriptorToRuntimeColumDescriptor =
       name,
       originalIdx: ariaColIndex,
       serverDataType,
+      source,
       valueFormatter: getValueFormatter(column, serverDataType),
       width,
     };

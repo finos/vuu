@@ -16,7 +16,14 @@ import {
 } from "react";
 import { useDataSource } from "@finos/vuu-utils";
 import { VuuDataSourceProvider } from "@finos/vuu-data-react";
-import { TableProps } from "@finos/vuu-table";
+import { Table, TableProps } from "@finos/vuu-table";
+import {
+  Accordion,
+  AccordionGroup,
+  AccordionHeader,
+  AccordionPanel,
+} from "@salt-ds/core";
+import { TableConfig } from "@finos/vuu-table-types";
 
 let displaySequence = 1;
 
@@ -137,3 +144,72 @@ export const InstrumentSearchDragDrop = () => {
 };
 
 InstrumentSearchDragDrop.displaySequence = displaySequence++;
+
+const EnhancedInstrumentSearch = () => {
+  const { VuuDataSource } = useDataSource();
+  const schema = getSchema("instruments");
+  const pinnedConfig = useMemo<TableConfig>(
+    () => ({
+      columns: [{ name: "description", serverDataType: "string" }],
+    }),
+    [],
+  );
+  const pinnedDataSource = useMemo(
+    () => new VuuDataSource({ table: schema.table }),
+    [VuuDataSource, schema.table],
+  );
+
+  const searchTableProps = useMemo<Partial<TableProps>>(
+    () => ({
+      config: {
+        columns: [
+          { name: "description" },
+          { name: "pinned", serverDataType: "boolean", width: 60 },
+        ],
+        columnLayout: "fit",
+      },
+    }),
+    [],
+  );
+  return (
+    <AccordionGroup>
+      <Accordion
+        className={"accordion"}
+        defaultExpanded
+        value={"mountains-and-hills"}
+        id="1"
+      >
+        <AccordionHeader>Pinned Instruments</AccordionHeader>
+        <AccordionPanel>
+          <Table
+            config={pinnedConfig}
+            dataSource={pinnedDataSource}
+            maxViewportRowLimit={10}
+            showColumnHeaders={false}
+          />
+        </AccordionPanel>
+      </Accordion>
+      <Accordion
+        className={"accordion"}
+        defaultExpanded
+        value={"mountains-and-hills"}
+        id="1"
+      >
+        <AccordionHeader>Instrument Search</AccordionHeader>
+        <AccordionPanel>
+          <TableSearchTemplate schema={schema} TableProps={searchTableProps} />
+        </AccordionPanel>
+      </Accordion>
+    </AccordionGroup>
+  );
+};
+
+export const InstrumentSearchFavourites = () => {
+  return (
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <EnhancedInstrumentSearch />
+    </LocalDataSourceProvider>
+  );
+};
+
+InstrumentSearchFavourites.displaySequence = displaySequence++;

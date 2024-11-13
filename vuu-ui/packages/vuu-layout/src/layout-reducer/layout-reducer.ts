@@ -19,10 +19,11 @@ import {
 import { moveChild } from "./move-layout-element";
 import {
   AddAction,
+  CollapseAction,
   DragDropAction,
+  ExpandAction,
   LayoutActionType,
   LayoutReducerAction,
-  MaximizeAction,
   SetPropAction,
   SetPropsAction,
   SwitchTabAction,
@@ -39,14 +40,15 @@ import { wrap } from "./wrap-layout-element";
 
 export const layoutReducer = (
   state: ReactElement,
-  action: LayoutReducerAction
+  action: LayoutReducerAction,
 ): ReactElement => {
   switch (action.type) {
     case LayoutActionType.ADD:
       return addChild(state, action);
     case LayoutActionType.DRAG_DROP:
       return dragDrop(state, action);
-    case LayoutActionType.MAXIMIZE:
+    case "collapse":
+    case "expand":
       return setChildProps(state, action);
     case LayoutActionType.REMOVE:
       return removeChild(state, action);
@@ -87,7 +89,7 @@ const switchTab = (state: ReactElement, { path, nextIdx }: SwitchTabAction) => {
 
 const setProp = (
   state: ReactElement,
-  { path, propName, propValue }: SetPropAction
+  { path, propName, propValue }: SetPropAction,
 ) => {
   const target = followPath(state, path, true);
   const replacement = React.cloneElement(target, {
@@ -102,7 +104,10 @@ const setProps = (state: ReactElement, { path, props }: SetPropsAction) => {
   return swapChild(state, target, replacement);
 };
 
-const setChildProps = (state: ReactElement, { path, type }: MaximizeAction) => {
+const setChildProps = (
+  state: ReactElement,
+  { path, type }: CollapseAction | ExpandAction,
+) => {
   if (path) {
     const target = followPath(state, path, true);
     return swapChild(state, target, target, type);
@@ -113,7 +118,7 @@ const setChildProps = (state: ReactElement, { path, type }: MaximizeAction) => {
 
 const dragDrop = (
   layoutRoot: ReactElement,
-  action: DragDropAction
+  action: DragDropAction,
 ): ReactElement => {
   const {
     draggedReactElement: newComponent,
@@ -131,33 +136,33 @@ const dragDrop = (
     const [targetTab, insertionPosition] = getInsertTabBeforeAfter(
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       existingComponent!,
-      pos
+      pos,
     );
     if (targetTab === undefined) {
       newLayoutRoot = insertIntoContainer(
         layoutRoot,
         existingComponent,
-        newComponent
+        newComponent,
       );
     } else {
       newLayoutRoot = insertBesideChild(
         layoutRoot,
         targetTab,
         newComponent,
-        insertionPosition
+        insertionPosition,
       );
     }
   } else if (!intrinsicSize && pos?.position?.Centre) {
     newLayoutRoot = _replaceChild(
       layoutRoot,
       existingComponent as ReactElement,
-      newComponent
+      newComponent,
     );
   } else {
     newLayoutRoot = dropLayoutIntoContainer(
       layoutRoot,
       dropTarget as DropTarget,
-      newComponent
+      newComponent,
     );
   }
 
@@ -167,7 +172,7 @@ const dragDrop = (
 
   const finalTarget = findTarget(
     newLayoutRoot,
-    (props: LayoutProps) => props.id === id && props.version === version
+    (props: LayoutProps) => props.id === id && props.version === version,
   ) as ReactElement;
   const finalPath = getProp(finalTarget, "path");
   return removeChild(newLayoutRoot, { path: finalPath, type: "remove" });
@@ -175,19 +180,19 @@ const dragDrop = (
 
 const addChild = (
   layoutRoot: ReactElement,
-  { path: containerPath, component }: AddAction
+  { path: containerPath, component }: AddAction,
 ) => {
   return insertIntoContainer(
     layoutRoot,
     followPath(layoutRoot, containerPath) as ReactElement,
-    component
+    component,
   );
 };
 
 const dropLayoutIntoContainer = (
   layoutRoot: ReactElement,
   dropTarget: DropTarget,
-  newComponent: ReactElement
+  newComponent: ReactElement,
 ): ReactElement => {
   const { component, pos, clientRect, dropRect } = dropTarget;
   const existingComponent = component as ReactElement;
@@ -199,13 +204,13 @@ const dropLayoutIntoContainer = (
       layoutRoot,
       existingComponent as ReactElement,
       newComponent,
-      pos
+      pos,
     );
   }
 
   const targetContainer = followPathToParent(
     layoutRoot,
-    existingComponentPath
+    existingComponentPath,
   ) as ReactElement;
 
   if (withTheGrain(pos, targetContainer)) {
@@ -217,7 +222,7 @@ const dropLayoutIntoContainer = (
       insertionPosition,
       pos,
       clientRect,
-      dropRect
+      dropRect,
     );
   }
 
@@ -228,7 +233,7 @@ const dropLayoutIntoContainer = (
       newComponent,
       pos,
       clientRect,
-      dropRect
+      dropRect,
     );
   }
 
@@ -247,8 +252,8 @@ const withTheGrain = (pos: DropPos, container: ReactElement) => {
   return pos.position.NorthOrSouth
     ? isTower(container)
     : pos.position.EastOrWest
-    ? isTerrace(container)
-    : false;
+      ? isTerrace(container)
+      : false;
 };
 
 const isTower = (container: ReactElement) => {

@@ -213,7 +213,11 @@ export const useMeasuredContainer = ({
 
   useEffect(() => {
     if (size.inner) {
-      onResizeProp?.(size.inner);
+      if (containerRef.current) {
+        // reassign using clientWidth to correctly account for borders
+        size.inner.width = containerRef.current.clientWidth;
+        onResizeProp?.(size.inner);
+      }
     }
   }, [onResizeProp, size.inner]);
 

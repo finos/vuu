@@ -46,7 +46,7 @@ describe("applyWidthToColumns", () => {
     });
   });
   describe("Fit layouts", () => {
-    it("applies fit layout when the total column width is less than available width", () => {
+    it("stretches column widths to fit available space when total column width is less than available width", () => {
       const columns: Partial<RuntimeColumnDescriptor>[] = [
         { name: "ID", label: "id", width: 80 },
         { name: "ID", label: "id", width: 80 },
@@ -62,7 +62,7 @@ describe("applyWidthToColumns", () => {
         { name: "ID", label: "id", width: 100 },
       ]);
     });
-    it("applies fit layout when the total column width is greater than available width", () => {
+    it("squeezes columns widths to fit the available space when the total column width is greater than available width", () => {
       const columns: Partial<RuntimeColumnDescriptor>[] = [
         { name: "ID", label: "id", width: 120 },
         { name: "ID", label: "id", width: 120 },
@@ -78,7 +78,7 @@ describe("applyWidthToColumns", () => {
         { name: "ID", label: "id", width: 100 },
       ]);
     });
-    it("applies fit layout when the total column width is greater than available width, one column minWidth", () => {
+    it("squeezes columns widths of some columns, when the total column width is greater than available width, one column minWidth", () => {
       const columns: Partial<RuntimeColumnDescriptor>[] = [
         { name: "ID", label: "id", width: 120 },
         { name: "ID", label: "id", width: 120, minWidth: 120 },
@@ -171,7 +171,7 @@ describe("applyWidthToColumns", () => {
             columnLayout: "fit",
             availableWidth: 300,
             defaultMinWidth: 50,
-          }
+          },
         );
         expect(result).toEqual([
           { name: "ID", label: "id", width: 50 },
@@ -192,7 +192,7 @@ describe("applyWidthToColumns", () => {
             columnLayout: "fit",
             availableWidth: 500,
             defaultMaxWidth: 250,
-          }
+          },
         );
         expect(result).toEqual([
           { name: "ID", label: "id", width: 100 },
@@ -235,6 +235,33 @@ describe("applyWidthToColumns", () => {
       ]);
     });
 
+    it("grows one column to fit available space where we only have two columns and one is non-resizeable", () => {
+      const columns: Partial<RuntimeColumnDescriptor>[] = [
+        { name: "ID", label: "id", width: 100 },
+        { name: "ID", label: "id", width: 50, maxWidth: 50 },
+      ];
+      const result = applyWidthToColumns(columns as RuntimeColumnDescriptor[], {
+        columnLayout: "fit",
+        availableWidth: 300,
+      });
+      expect(result).toEqual([
+        { name: "ID", label: "id", width: 250 },
+        { name: "ID", label: "id", width: 50, maxWidth: 50 },
+      ]);
+    });
+
+    it("grows single column to fit available space where we only have one column and a custom maxWidth", () => {
+      const columns: Partial<RuntimeColumnDescriptor>[] = [
+        { name: "ID", label: "id", width: 100 },
+      ];
+      const result = applyWidthToColumns(columns as RuntimeColumnDescriptor[], {
+        columnLayout: "fit",
+        availableWidth: 300,
+        defaultMaxWidth: 500,
+      });
+      expect(result).toEqual([{ name: "ID", label: "id", width: 300 }]);
+    });
+
     describe("WHEN available size exceeds total max widths", () => {
       it("THEN all columns are assigned max width", () => {
         const columns: Partial<RuntimeColumnDescriptor>[] = [
@@ -247,7 +274,7 @@ describe("applyWidthToColumns", () => {
           {
             columnLayout: "fit",
             availableWidth: 1000,
-          }
+          },
         );
         expect(result).toEqual([
           { name: "ID", label: "id", width: 250 },

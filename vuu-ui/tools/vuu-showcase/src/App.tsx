@@ -1,5 +1,5 @@
 import { TreeTable } from "@finos/vuu-datatable";
-import { Flexbox, View } from "@finos/vuu-layout";
+import { FlexboxLayout, LayoutProvider, View } from "@finos/vuu-layout";
 import { ThemeSwitch } from "@finos/vuu-shell";
 import type { TableRowSelectHandler } from "@finos/vuu-table-types";
 import type { Density, ThemeMode, TreeSourceNode } from "@finos/vuu-utils";
@@ -133,95 +133,100 @@ export const App = ({ stories }: AppProps) => {
 
   return themeReady ? (
     <SaltProvider density="high" theme="vuu-theme" mode="light">
-      <Flexbox
-        style={{ flexDirection: "column", width: "100vw", height: "100vh" }}
-      >
-        <div className="vuuToolbarProxy ShowcaseToolbar" style={{ height: 30 }}>
-          <Text styleAs="h3">Vuu Showcase</Text>
-        </div>
-        <Flexbox style={{ flexDirection: "row", flex: 1 }}>
-          <View
-            resizeable
-            style={{ flexGrow: 0, flexShrink: 0, flexBasis: 200 }}
+      <LayoutProvider>
+        <FlexboxLayout
+          style={{ flexDirection: "column", width: "100vw", height: "100vh" }}
+        >
+          <div
+            className="vuuToolbarProxy ShowcaseToolbar"
+            style={{ height: 30 }}
           >
-            <TreeTable
-              className="ShowcaseNav"
-              data-resizeable
-              rowHeight={30}
-              defaultSelectedKeyValues={keysFromPath(pathname)}
-              // selected={[pathname.slice(1)]}
-              showColumnHeaders={false}
-              onSelect={handleChange}
-              revealSelected
-              source={source}
-              width="100%"
-            />
-          </View>
-          <Flexbox
-            className="ShowcaseContentContainer"
-            resizeable
-            style={{ flexDirection: "column", flex: "1 1 auto" }}
-          >
-            <div
-              className="vuuToolbarProxy ShowcaseContentToolbar"
-              style={{
-                height: 30,
-              }}
-              data-mode="light"
+            <Text styleAs="h3">Vuu Showcase</Text>
+          </div>
+          <FlexboxLayout style={{ flexDirection: "row", flex: 1 }}>
+            <View
+              resizeable
+              style={{ flexGrow: 0, flexShrink: 0, flexBasis: 200 }}
             >
-              <ToggleButtonGroup
-                className="vuuToggleButtonGroup"
-                data-variant="primary"
-                onChange={handleThemeChange}
-                value={themeIndex}
-              >
-                <ToggleButton value={0}>No Theme</ToggleButton>
-                <ToggleButton value={1}>SALT</ToggleButton>
-                <ToggleButton value={2}>VUU</ToggleButton>
-                <ToggleButton value={3}>TAR</ToggleButton>
-              </ToggleButtonGroup>
-
-              <ThemeSwitch
-                className="vuuToggleButtonGroup"
-                data-variant="primary"
-                onChange={handleThemeModeSwitch}
-              ></ThemeSwitch>
-
-              <ToggleButtonGroup
-                className="vuuToggleButtonGroup"
-                data-variant="primary"
-                onChange={handleDensityChange}
-                value={densityIndex}
-              >
-                <ToggleButton value={0}>High</ToggleButton>
-                <ToggleButton value={1}>Medium</ToggleButton>
-                <ToggleButton value={2}>Low</ToggleButton>
-                <ToggleButton value={3}>Touch</ToggleButton>
-              </ToggleButtonGroup>
-
-              <Button
-                data-align="end"
-                data-icon="open-in"
-                onClick={launchStandaloneWindow}
-                variant="secondary"
+              <TreeTable
+                className="ShowcaseNav"
+                data-resizeable
+                rowHeight={30}
+                defaultSelectedKeyValues={keysFromPath(pathname)}
+                // selected={[pathname.slice(1)]}
+                showColumnHeaders={false}
+                onSelect={handleChange}
+                revealSelected
+                source={source}
+                width="100%"
               />
-            </div>
-            <div
-              className={`ShowcaseContent`}
-              style={{
-                flex: "1 1 auto",
-                position: "relative",
-              }}
+            </View>
+            <FlexboxLayout
+              className="ShowcaseContentContainer"
+              resizeable
+              style={{ flexDirection: "column", flex: "1 1 auto" }}
             >
-              <IFrame
-                theme={theme.id}
-                themeMode={themeMode.id}
-                density={density.id}
-              />
-            </div>
-          </Flexbox>
-        </Flexbox>
-      </Flexbox>
+              <div
+                className="vuuToolbarProxy ShowcaseContentToolbar"
+                style={{
+                  height: 30,
+                }}
+                data-mode="light"
+              >
+                <ToggleButtonGroup
+                  className="vuuToggleButtonGroup"
+                  data-variant="primary"
+                  onChange={handleThemeChange}
+                  value={themeIndex}
+                >
+                  <ToggleButton value={0}>No Theme</ToggleButton>
+                  <ToggleButton value={1}>SALT</ToggleButton>
+                  <ToggleButton value={2}>VUU</ToggleButton>
+                  <ToggleButton value={3}>TAR</ToggleButton>
+                </ToggleButtonGroup>
+
+                <ThemeSwitch
+                  className="vuuToggleButtonGroup"
+                  data-variant="primary"
+                  onChange={handleThemeModeSwitch}
+                ></ThemeSwitch>
+
+                <ToggleButtonGroup
+                  className="vuuToggleButtonGroup"
+                  data-variant="primary"
+                  onChange={handleDensityChange}
+                  value={densityIndex}
+                >
+                  <ToggleButton value={0}>High</ToggleButton>
+                  <ToggleButton value={1}>Medium</ToggleButton>
+                  <ToggleButton value={2}>Low</ToggleButton>
+                  <ToggleButton value={3}>Touch</ToggleButton>
+                </ToggleButtonGroup>
+
+                <Button
+                  data-align="end"
+                  data-icon="open-in"
+                  onClick={launchStandaloneWindow}
+                  variant="secondary"
+                />
+              </div>
+              <div
+                className={`ShowcaseContent`}
+                style={{
+                  flex: "1 1 auto",
+                  position: "relative",
+                }}
+              >
+                <IFrame
+                  theme={theme.id}
+                  themeMode={themeMode.id}
+                  density={density.id}
+                />
+              </div>
+            </FlexboxLayout>
+          </FlexboxLayout>
+        </FlexboxLayout>
+      </LayoutProvider>
     </SaltProvider>
   ) : null;
 };

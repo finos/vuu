@@ -31,7 +31,7 @@ export const MeasuredContainer = forwardRef(function MeasuredContainer(
     width,
     ...htmlAttributes
   }: MeasuredContainerProps,
-  forwardedRef: ForwardedRef<HTMLDivElement>
+  forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -52,6 +52,7 @@ export const MeasuredContainer = forwardRef(function MeasuredContainer(
   const getStyle = () => {
     return unmeasured
       ? ({
+          ...style,
           "--measured-css-height": `${cssSize.height}`,
           "--measured-css-width": `${cssSize.width}`,
         } as CSSProperties)

@@ -2,18 +2,9 @@ import { EditableLabel, IconButton } from "@finos/vuu-ui-controls";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import {
-  HTMLAttributes,
-  KeyboardEvent,
-  MouseEvent,
-  ReactElement,
-  cloneElement,
-  useCallback,
-  useRef,
-  useState,
-} from "react";
+import { HTMLAttributes, MouseEvent, ReactElement, cloneElement } from "react";
 import { Contribution } from "../layout-view";
-import { useViewDispatch } from "../layout-view-actions/ViewContext";
+import { useHeader } from "./useHeader";
 
 import headerCss from "./Header.css";
 
@@ -23,7 +14,7 @@ export interface HeaderProps extends HTMLAttributes<HTMLDivElement> {
   contributions?: Contribution[];
   expanded?: boolean;
   closeable?: boolean;
-  onEditTitle: (value: string) => void;
+  onEditTitle?: (value: string) => void;
   orientation?: "horizontal" | "vertical";
   tearOut?: boolean;
 }
@@ -48,22 +39,25 @@ export const Header = ({
     window: targetWindow,
   });
 
-  const labelFieldRef = useRef<HTMLDivElement>(null);
-  const [value, setValue] = useState<string>(title);
-  const [editing, setEditing] = useState<boolean>(false);
+  const {
+    editing,
+    focusTitle,
+    labelFieldRef,
+    onClickEdit,
+    onClose,
+    onExitEditMode,
+    onMouseDown,
+    onTitleKeyDown,
+    onToggleCollapse,
+    onToggleExpand,
+    setValue,
+    value,
+  } = useHeader({
+    onEditTitle,
+    title,
+  });
 
-  const viewDispatch = useViewDispatch();
-  const handleClose = (evt: MouseEvent) =>
-    viewDispatch?.({ type: "remove" }, evt);
-
-  const focusTitle = useCallback(() => {
-    labelFieldRef.current?.focus();
-  }, []);
-
-  const handleClickEdit = useCallback(() => {
-    focusTitle();
-    setEditing((isEditing) => !isEditing);
-  }, [focusTitle]);
+  console.log(`Header ${title}`);
 
   const handleButtonMouseDown = (evt: MouseEvent) => {
     // do not allow drag to be initiated
@@ -74,37 +68,11 @@ export const Header = ({
 
   const className = cx(classBase, classNameProp, `${classBase}-${orientation}`);
 
-  const handleTitleKeyDown = (evt: KeyboardEvent<HTMLDivElement>) => {
-    if (evt.key === "Enter") {
-      setEditing(true);
-    }
-  };
-
-  const handleExitEditMode = (
-    originalValue = "",
-    finalValue = "",
-    allowDeactivation = true,
-    editCancelled = false,
-  ) => {
-    setEditing(false);
-    if (editCancelled) {
-      setValue(originalValue);
-    } else if (finalValue !== originalValue) {
-      setValue(finalValue);
-      onEditTitle?.(finalValue);
-    }
-    if (allowDeactivation === false) {
-      labelFieldRef.current?.focus();
-    }
-  };
-
-  const handleMouseDown = (e: MouseEvent) => {
-    viewDispatch?.({ type: "mousedown" }, e);
-  };
-
   const toolbarItems: ReactElement[] = [];
   const postTitleContributedItems: ReactElement[] = [];
   const actionButtons: ReactElement[] = [];
+  const allowCollapse =
+    typeof collapsed === "boolean" || typeof collapsed === "string";
 
   contributions?.forEach((contribution, i) => {
     switch (contribution.location) {
@@ -118,6 +86,23 @@ export const Header = ({
     }
   });
 
+  allowCollapse &&
+    toolbarItems.push(
+      <IconButton
+        className={cx(`${classBase}-toggle`, {
+          [`${classBase}-collapsed`]: collapsed,
+        })}
+        data-embedded
+        icon={collapsed ? "chevron-open" : "chevron-down"}
+        key="collapse-button"
+        onClick={collapsed ? onToggleExpand : onToggleCollapse}
+        size={20}
+        tabIndex={0}
+        appearance="transparent"
+        sentiment="neutral"
+      />,
+    );
+
   title &&
     toolbarItems.push(
       <EditableLabel
@@ -127,8 +112,8 @@ export const Header = ({
         value={value}
         onChange={setValue}
         onMouseDownCapture={focusTitle}
-        onExitEditMode={handleExitEditMode}
-        onKeyDown={handleTitleKeyDown}
+        onExitEditMode={onExitEditMode}
+        onKeyDown={onTitleKeyDown}
         ref={labelFieldRef}
       />,
     );
@@ -140,7 +125,7 @@ export const Header = ({
         data-embedded
         icon="edit"
         key="edit-button"
-        onClick={handleClickEdit}
+        onClick={onClickEdit}
         onMouseDown={handleButtonMouseDown}
         tabIndex={0}
         variant="secondary"
@@ -150,12 +135,13 @@ export const Header = ({
   closeable &&
     actionButtons.push(
       <IconButton
+        appearance="transparent"
         data-embedded
         icon="close"
         key="close"
-        onClick={handleClose}
+        onClick={onClose}
         onMouseDown={handleButtonMouseDown}
-        variant="secondary"
+        sentiment="neutral"
       />,
     );
 
@@ -177,28 +163,10 @@ export const Header = ({
     <div
       className={cx("vuuToolbarProxy", className)}
       style={style}
-      onMouseDown={handleMouseDown}
+      onMouseDown={onMouseDown}
     >
       {toolbarItems}
       {/* 
-      {collapsed === false ? (
-        <ActionButton
-          aria-label="Minimize View"
-          actionId="minimize"
-          iconName="minimize"
-          onClick={handleAction}
-          onMouseDown={handleButtonMouseDown}
-        />
-      ) : null}
-      {collapsed ? (
-        <ActionButton
-          aria-label="Restore View"
-          actionId="restore"
-          iconName="double-chevron-right"
-          onClick={handleAction}
-          onMouseDown={handleButtonMouseDown}
-        />
-      ) : null}
       {expanded === false ? (
         <ActionButton
           aria-label="Maximize View"
