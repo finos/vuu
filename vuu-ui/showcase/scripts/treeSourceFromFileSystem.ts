@@ -1,21 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { type Module, type TreeSourceNode } from "@finos/vuu-utils";
-
-export type VuuExample = {
-  (props?: any): JSX.Element;
-  displaySequence: number;
-};
-
-export type ExamplesModule = Module<VuuExample>;
-
-const getFileType = (filePath: string) => {
-  const pos = filePath.lastIndexOf(".");
-  if (pos === -1) {
-    throw Error(`file path ${filePath} has no file type suffix`);
-  }
-  return filePath.slice(pos + 1);
-};
+import { type TreeSourceNode } from "@finos/vuu-utils";
 
 const lastPathSegment = (path: string, separator = "/") => {
   const root = path.endsWith(separator) ? path.slice(0, -1) : path;
