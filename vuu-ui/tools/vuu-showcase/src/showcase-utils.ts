@@ -4,35 +4,8 @@ type Environment = "development" | "production";
 export const env = process.env.NODE_ENV as Environment;
 
 export type VuuExample = {
-  (props?: any): JSX.Element;
+  (props?: { [key: string]: unknown }): JSX.Element;
   displaySequence: number;
-};
-
-export type ExamplesModule = Module<VuuExample>;
-export type VuuTuple = [string, VuuExample | ExamplesModule];
-
-export const isVuuExample = (
-  item: VuuExample | ExamplesModule,
-): item is VuuExample => typeof item === "function";
-
-export const byDisplaySequence = ([, f1]: VuuTuple, [, f2]: VuuTuple) => {
-  if (isVuuExample(f1) && isVuuExample(f2)) {
-    const { displaySequence: ds1 } = f1;
-    const { displaySequence: ds2 } = f2;
-
-    if (ds1 === undefined && ds2 === undefined) {
-      return 0;
-    }
-    if (ds2 === undefined) {
-      return -1;
-    }
-    if (ds1 === undefined) {
-      return 1;
-    }
-    return ds1 - ds2;
-  } else {
-    return 0;
-  }
 };
 
 export const pathFromKey = (key: string) => key.slice(5).split("|").join("/");

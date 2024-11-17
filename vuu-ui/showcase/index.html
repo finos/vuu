@@ -1,15 +1,24 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-    <link rel="manifest" href="/manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Vite Showcase</title>
+    <title>Vuu Showcase</title>
+    <script type="module">
+      import { hasUrlParameter } from "@finos/vuu-utils";
+      const { default: treeSource } = await import(
+        "/.showcase/treeSourceJson.js"
+      );
+      if (hasUrlParameter("standalone")) {
+        const { default: start } = await import("/src/index-standalone");
+        start(treeSource);
+      } else {
+        const { default: start } = await import("/src/index-main");
+        start(treeSource);
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

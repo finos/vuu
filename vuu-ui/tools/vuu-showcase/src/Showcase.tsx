@@ -1,27 +1,24 @@
 import "./Showcase.css";
 
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { ExamplesModule } from "./showcase-utils";
 import { App } from "./App";
+import { TreeSourceNode } from "@finos/vuu-utils";
 
-const createRoutes = (examples: ExamplesModule, prefix = ""): JSX.Element[] =>
-  Object.entries(examples)
-    .filter(([path]) => path !== "default")
-    .reduce<JSX.Element[]>((routes, [label, Value]) => {
-      const id = `${prefix}${label}`;
-      return typeof Value === "object"
-        ? routes
-            .concat(<Route key={label} path={id} element={label} />)
-            .concat(createRoutes(Value, `${id}/`))
-        : routes.concat(<Route key={label} path={id} />);
-    }, []);
+const createRoutes = (treeSource: TreeSourceNode[]): JSX.Element[] =>
+  treeSource.reduce<JSX.Element[]>((routes, { childNodes, label, id }) => {
+    return Array.isArray(childNodes)
+      ? routes
+          .concat(createRoutes(childNodes))
+          .concat(<Route key={label} path={id} element={label} />)
+      : routes.concat(<Route key={label} path={id} />);
+  }, []);
 
-export const Showcase = ({ exhibits }: { exhibits: ExamplesModule }) => {
+export const Showcase = ({ treeSource }: { treeSource: TreeSourceNode[] }) => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<App stories={exhibits} />}>
-          {createRoutes(exhibits)}
+        <Route path="/" element={<App treeSource={treeSource} />}>
+          {createRoutes(treeSource)}
         </Route>
       </Routes>
     </BrowserRouter>
