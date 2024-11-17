@@ -8,8 +8,7 @@
     "build": "node ./scripts/build.mjs",
     "dev": "vite",
     "docs": "node ./scripts/build-docs.mjs",
-    "showcase": "node ./scripts/showcase.mjs",
-    "stories": "node ./scripts/parse-stories.mjs"
+    "showcase": "tsx ./scripts/showcase.ts"
   },
   "keywords": [],
   "author": "heswell",
@@ -33,9 +32,10 @@
     "react-router-dom": "^6.2.1"
   },
   "devDependencies": {
-    "@mdx-js/esbuild": "^3.0.1",
-    "@mdx-js/rollup": "3.0.0",
+    "@mdx-js/esbuild": "3.1.0",
+    "@mdx-js/rollup": "3.0.1",
     "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^15.2.3"
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "tsx": "^4.19.1"
   }
 }

@@ -5,24 +5,31 @@ import {
   formatDuration,
   padRight,
   readPackageJson,
+  writeFile,
   writeMetaFile,
 } from "../../scripts/utils.mjs";
 import { build } from "../../scripts/esbuild.mjs";
 import { buildFileList } from "./build-file-list.mjs";
 import fs from "fs";
 import path from "path";
+import { treeSourceFromFileSystem } from "./treeSourceFromFileSystem";
+import mdx from "@mdx-js/esbuild";
 
 const indexFiles = buildFileList("./src/examples", /index.ts$/);
 const examples = buildFileList("./src/examples", /examples.tsx$/);
+const mdxFiles = buildFileList("./src/examples", /.mdx$/);
 const features = buildFileList("./src/features", /feature.tsx$/);
+
+console.log({ mdxFiles });
 
 // TODO use a separate build call for each theme, without bundling
 const themes = ["./src/themes/salt-theme.ts", "./src/themes/vuu-theme.ts"];
 
-const entryPoints = ["src/main.tsx"]
+const entryPoints = ["src/index-main.tsx", "src/index-standalone.tsx"]
   .concat(indexFiles)
   .concat(features)
   .concat(examples)
+  .concat(mdxFiles)
   .concat(themes);
 
 const cssInlinePlugin = {
@@ -37,7 +44,7 @@ const cssInlinePlugin = {
         const css = await fs.promises.readFile(args.path, "utf8");
         // css = await esbuild.transform(css, { loader: "css", minify: true });
         return { loader: "text", contents: css };
-      }
+      },
     );
   },
 };
@@ -48,16 +55,25 @@ const HTML_TEMPLATE = `
   <head>
     <base href="/" />
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="manifest" href="/manifest.json">    
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/main.css"/>
+    <link rel="stylesheet" href="/index-main.css"/>
     <title>Vite Showcase</title>
+    <script type="module">
+      const hasUrlParameter = (paramName) => new URL(document.location.href).searchParams.has(paramName);
+      const { default: treeSource } = await import(
+        "/treeSourceJson.js"
+      );
+      if (hasUrlParameter("standalone")) {
+        const { default: start } = await import("/index-standalone.js");
+        start(treeSource);
+      } else {
+        const { default: start } = await import("/index-main.js");
+        start(treeSource);
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/main.js"></script>
   </body>
 </html>
 `;
@@ -75,7 +91,7 @@ const esbuildConfig = {
     "./themes/tar-theme.ts",
   ],
   name: "showcase",
-  plugins: [cssInlinePlugin],
+  plugins: [cssInlinePlugin, mdx()],
   outdir,
   splitting: true,
   target: "esnext",
@@ -87,7 +103,7 @@ function writeHtmlFile() {
       if (err) {
         reject(err);
       } else {
-        resolve();
+        resolve(undefined);
       }
     });
   });
@@ -111,6 +127,12 @@ async function main() {
 
   await writeMetaFile(metafile, outdir);
 
+  const treeSourceJson = treeSourceFromFileSystem("./src/examples", "");
+  await writeFile(
+    `export default ${JSON.stringify(treeSourceJson)};`,
+    path.resolve(outdir, "treeSourceJson.js"),
+  );
+
   console.log("[DEPLOY public assets]");
   const publicContent = fs.readdirSync(`./public`);
   publicContent.forEach((file) => {
@@ -121,7 +143,7 @@ async function main() {
         { recursive: true },
         (err) => {
           if (err) throw err;
-        }
+        },
       );
     }
   });
@@ -146,11 +168,11 @@ async function main() {
 
   console.log("\ncore");
   outputs.core.sort(byFileName).forEach(({ fileName, bytes }) => {
-    console.log(`${padRight(fileName, 30)} ${formatBytes(bytes)}`);
+    console.log(`${padRight(fileName, 90)} ${formatBytes(bytes)}`);
   });
   console.log("\ncommon");
   outputs.common.forEach(({ fileName, bytes }) => {
-    console.log(`${padRight(fileName, 30)} ${formatBytes(bytes)}`);
+    console.log(`${padRight(fileName, 90)} ${formatBytes(bytes)}`);
   });
 
   console.log(`\nbuild took ${formatDuration(duration)}`);

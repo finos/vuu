@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import { cssInline } from "../tools/vite-plugin-inline-css/src";
+import mdx from "@mdx-js/rollup";
 
 export default defineConfig({
   build: {
@@ -15,21 +16,5 @@ export default defineConfig({
     jsx: `automatic`,
     target: "esnext",
   },
-  plugins: [cssInline()],
-  server: {
-    proxy: {
-      "/api/authn": {
-        target: "https://localhost:8443",
-        secure: false,
-      },
-    },
-  },
-  preview: {
-    proxy: {
-      "/api/authn": {
-        target: "https://localhost:8443",
-        secure: false,
-      },
-    },
-  },
+  plugins: [cssInline(), mdx()],
 });

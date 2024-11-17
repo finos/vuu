@@ -13,44 +13,12 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IFrame } from "./components";
-import {
-  ExamplesModule,
-  byDisplaySequence,
-  keysFromPath,
-  loadTheme,
-  pathFromKey,
-} from "./showcase-utils";
+import { keysFromPath, loadTheme, pathFromKey } from "./showcase-utils";
 
 import "./App.css";
 
-const sourceFromImports = (
-  stories: ExamplesModule,
-  prefix = "",
-  icon = "folder",
-): TreeSourceNode[] =>
-  Object.entries(stories)
-    .filter(([path]) => path !== "default")
-    .sort(byDisplaySequence)
-    .map<TreeSourceNode>(([label, stories]) => {
-      const id = `${prefix}${label}`;
-      // TODO how can we know when a potential docs node has docs
-      // console.log(`id=${id}`);
-      if (typeof stories === "function") {
-        return {
-          id,
-          icon: "rings",
-          label,
-        };
-      }
-      return {
-        id,
-        icon,
-        label,
-        childNodes: sourceFromImports(stories, `${id}/`, "box"),
-      };
-    });
 export interface AppProps {
-  stories: ExamplesModule;
+  treeSource: TreeSourceNode[];
 }
 
 type ThemeDescriptor = { label?: string; id: string };
@@ -76,7 +44,7 @@ const availableDensity: DensityDescriptor[] = [
   { id: "touch", label: "Touch" },
 ];
 
-export const App = ({ stories }: AppProps) => {
+export const App = ({ treeSource }: AppProps) => {
   const navigate = useNavigate();
   const [themeReady, setThemeReady] = useState(false);
 
@@ -87,9 +55,8 @@ export const App = ({ stories }: AppProps) => {
   }, []);
 
   // // TODO cache source in localStorage
-  const source = useMemo(() => sourceFromImports(stories), [stories]);
   const { pathname } = useLocation();
-  const handleChange: TableRowSelectHandler = (row) => {
+  const handleSelect: TableRowSelectHandler = (row) => {
     if (row) {
       const path = pathFromKey(row.key);
       navigate(path);
@@ -153,11 +120,10 @@ export const App = ({ stories }: AppProps) => {
                 data-resizeable
                 rowHeight={30}
                 defaultSelectedKeyValues={keysFromPath(pathname)}
-                // selected={[pathname.slice(1)]}
                 showColumnHeaders={false}
-                onSelect={handleChange}
+                onSelect={handleSelect}
                 revealSelected
-                source={source}
+                source={treeSource}
                 width="100%"
               />
             </View>
