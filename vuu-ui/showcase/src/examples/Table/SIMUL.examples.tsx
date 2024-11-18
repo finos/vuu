@@ -163,3 +163,19 @@ export const InstrumentPrices = () => (
   />
 );
 InstrumentPrices.displaySequence = displaySequence++;
+
+export const ParentOrders = () => (
+  <SimulTable
+    tableName="parentOrders"
+    getDefaultColumnConfig={getDefaultColumnConfig}
+  />
+);
+ParentOrders.displaySequence = displaySequence++;
+
+export const ChildOrders = () => (
+  <SimulTable
+    tableName="childOrders"
+    getDefaultColumnConfig={getDefaultColumnConfig}
+  />
+);
+ChildOrders.displaySequence = displaySequence++;
