@@ -9,12 +9,18 @@ import type { HeaderProps } from "./Header";
 import { useViewDispatch } from "../layout-view-actions";
 import { queryClosest } from "@finos/vuu-utils";
 
-export interface HeaderHookProps extends Pick<HeaderProps, "onEditTitle"> {
+export interface HeaderHookProps
+  extends Pick<HeaderProps, "onCollapse" | "onEditTitle" | "onExpand"> {
   debugString?: string;
   title: string;
 }
 
-export const useHeader = ({ onEditTitle, title }: HeaderHookProps) => {
+export const useHeader = ({
+  onCollapse,
+  onEditTitle,
+  onExpand,
+  title,
+}: HeaderHookProps) => {
   const [editing, setEditing] = useState<boolean>(false);
   const [value, setValue] = useState<string>(title);
   const labelFieldRef = useRef<HTMLDivElement>(null);
@@ -72,15 +78,17 @@ export const useHeader = ({ onEditTitle, title }: HeaderHookProps) => {
   const handleToggleCollapse = useCallback<MouseEventHandler>(
     (e) => {
       viewDispatch?.({ type: "collapse" }, e);
+      onCollapse?.();
     },
-    [viewDispatch],
+    [onCollapse, viewDispatch],
   );
 
   const handleToggleExpand = useCallback<MouseEventHandler>(
     (e) => {
       viewDispatch?.({ type: "expand" }, e);
+      onExpand?.();
     },
-    [viewDispatch],
+    [onExpand, viewDispatch],
   );
 
   return {

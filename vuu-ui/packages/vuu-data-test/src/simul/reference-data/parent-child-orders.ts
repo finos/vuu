@@ -13,13 +13,17 @@ const parentOrderData: VuuRowDataItemType[][] = [];
 
 const instrumentMap = buildDataColumnMap(schemas, "instruments");
 
-const PARENT_ORDER_COUNT = 1000;
-const CHILD_ORDER_COUNT = 10_000;
+const PARENT_ORDER_COUNT = 100_000;
+const CHILD_ORDER_COUNT = 500_000;
 
 const avgChildOrderPerOrder = Math.round(
   CHILD_ORDER_COUNT / PARENT_ORDER_COUNT,
 );
 const childMaxMultiple = 10;
+
+const start = performance.now();
+
+let childOrderId = 0;
 
 for (let i = 0; i < PARENT_ORDER_COUNT; i++) {
   const now = +new Date();
@@ -39,10 +43,9 @@ for (let i = 0; i < PARENT_ORDER_COUNT; i++) {
   const algo = algos[random(0, algos.length - 1)];
   const averagePrice = 0;
   const ccy = "GBP";
-  const childCount = 0;
   const exchange = instrument[instrumentMap.exchange];
-  const orderId = i;
-  const id = `${orderId}`;
+  const parentOrderIdAsInt = i;
+  const parentOrderId = `${parentOrderIdAsInt}`;
   const lastUpdate = now;
   const price = 100;
   const quantity = orderQuantity;
@@ -50,28 +53,6 @@ for (let i = 0; i < PARENT_ORDER_COUNT; i++) {
   const side = sides[random(0, sides.length - 1)];
   const status = orderStatus;
   const volLimit = 100;
-
-  const row: VuuRowDataItemType[] = [
-    account,
-    algo,
-    averagePrice,
-    ccy,
-    childCount,
-    exchange,
-    filledQty,
-    id,
-    orderId, // isAsInt
-    lastUpdate,
-    openQty,
-    price,
-    quantity,
-    ric,
-    side,
-    status,
-    volLimit,
-  ];
-
-  parentOrderData.push(row);
 
   const childOrderCount = random(
     0,
@@ -94,10 +75,9 @@ for (let i = 0; i < PARENT_ORDER_COUNT; i++) {
     const childOpenQty = childOrderQuantity - childFilledQty;
 
     const averagePrice = 0;
-    const id = `${j}`;
-    const idAsInt = j;
+    const childIdAsInt = childOrderId++;
+    const childId = `${childIdAsInt}`;
     const lastUpdate = 0;
-    const parentOrderId = id;
     const price = 100;
     const strategy = 0;
 
@@ -107,8 +87,8 @@ for (let i = 0; i < PARENT_ORDER_COUNT; i++) {
       ccy,
       exchange,
       childFilledQty,
-      id,
-      idAsInt,
+      childId,
+      childIdAsInt,
       lastUpdate,
       childOpenQty,
       parentOrderId,
@@ -123,7 +103,34 @@ for (let i = 0; i < PARENT_ORDER_COUNT; i++) {
 
     childOrderData.push(row);
   }
+
+  const row: VuuRowDataItemType[] = [
+    account,
+    algo,
+    averagePrice,
+    ccy,
+    childOrderCount,
+    exchange,
+    filledQty,
+    parentOrderId,
+    parentOrderIdAsInt,
+    lastUpdate,
+    openQty,
+    price,
+    quantity,
+    ric,
+    side,
+    status,
+    volLimit,
+  ];
+
+  parentOrderData.push(row);
 }
+const end = performance.now();
+
+console.log(
+  `took ${end - start} to create ${parentOrderData.length} orders and ${childOrderData.length} child orders`,
+);
 
 export const parentOrdersTable = new Table(
   schemas.parentOrders,

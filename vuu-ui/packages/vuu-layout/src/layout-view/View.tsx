@@ -55,6 +55,8 @@ const View = forwardRef(function View(
     flexFill,
     id: idProp,
     header,
+    onCollapse,
+    onExpand,
     orientation = "horizontal",
     path = dataPath,
     resize = "responsive",
@@ -65,8 +67,6 @@ const View = forwardRef(function View(
     title: titleProp,
     ...restProps
   } = props;
-
-  console.log({ collapsed, restoreStyle });
 
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -170,7 +170,9 @@ const View = forwardRef(function View(
             contributions={contributions}
             expanded={expanded}
             closeable={closeable}
+            onCollapse={onCollapse}
             onEditTitle={onEditTitle}
+            onExpand={onExpand}
             orientation={orientation}
             tearOut={tearOut}
             title={title}

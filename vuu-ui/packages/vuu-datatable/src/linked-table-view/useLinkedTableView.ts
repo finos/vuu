@@ -5,23 +5,26 @@ import {
 } from "@finos/vuu-data-types";
 import { useDataSource } from "@finos/vuu-utils";
 import {
-  LinkedDataSource,
   LinkedDataSources,
+  LinkedTableConfig,
   LinkedTableViewProps,
+  LinkTableConfig,
 } from "./LinkedTableView";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { TableConfig } from "@finos/vuu-table-types";
-import { VuuTable } from "@finos/vuu-protocol-types";
+import { LinkDescriptorWithLabel, VuuTable } from "@finos/vuu-protocol-types";
+import { useViewContext } from "@finos/vuu-layout";
 
-type TableDataSourceConfig = {
+export type TableDataSourceConfig = {
   config: TableConfig;
   dataSource: DataSource;
+  title: string;
 };
 
-export type LinkedTableConfig = {
+export type ResolvedTableConfig = {
   "1": TableDataSourceConfig;
-  "2": Array<TableDataSourceConfig>;
-  "3"?: Array<TableDataSourceConfig>;
+  "2": TableDataSourceConfig | TableDataSourceConfig[];
+  "3"?: TableDataSourceConfig | TableDataSourceConfig[];
 };
 
 export type LinkedTableViewHookProps = Pick<
@@ -40,7 +43,7 @@ const getSchema = (schemas: TableSchema[], { module, table }: VuuTable) => {
   }
 };
 
-const getTable = (ds: DataSourceConstructorProps | DataSource): VuuTable => {
+const getTable = (ds: DataSource | DataSourceConstructorProps): VuuTable => {
   if (ds.table) {
     return ds.table;
   } else {
@@ -53,7 +56,7 @@ const getTables = (linkedDataSources: LinkedDataSources): VuuTable[] => {
 
   const tables: VuuTable[] = [];
 
-  tables.push(getTable(linked1));
+  tables.push(getTable(linked1.dataSource));
 
   if (Array.isArray(linked2)) {
     linked2.forEach(({ dataSource }) => {
@@ -78,16 +81,23 @@ export const useLinkedTableView = ({
   linkedDataSources,
 }: LinkedTableViewHookProps) => {
   const { VuuDataSource, getServerAPI } = useDataSource();
-  const [linkedTableConfig, setLinkedTableConfig] = useState<
-    LinkedTableConfig | undefined
+  const [tableConfig, setTableConfig] = useState<
+    ResolvedTableConfig | undefined
   >();
+  const { id, load, save } = useViewContext();
+
+  const [activeTabs, setActiveTab] = useState<[number, number, number]>([
+    0, 0, 0,
+  ]);
+  const [collapsed, setCollapsed] = useState<[boolean, boolean]>([
+    false,
+    false,
+  ]);
 
   useMemo(async () => {
     const tables = getTables(linkedDataSources);
     const serverAPI = await getServerAPI();
     const schemas = await Promise.all(tables.map(serverAPI.getTableSchema));
-
-    console.log({ tables, schemas });
 
     const isDataSource = (
       ds: DataSourceConstructorProps | DataSource,
@@ -103,6 +113,42 @@ export const useLinkedTableView = ({
       }
     };
 
+    const createVisualLink = (
+      vuuLink: LinkedTableConfig["vuuLink"],
+      parentDs?: DataSource,
+    ) => {
+      if (parentDs && parentDs.table) {
+        const parentVpId = parentDs.viewport;
+        const toTable = vuuLink.toTable ?? parentDs.table?.table;
+
+        return {
+          link: {
+            ...vuuLink,
+            toTable,
+          },
+          parentClientVpId: parentVpId,
+          parentVpId,
+        } as LinkDescriptorWithLabel;
+      } else {
+        throw Error("visual link cannot be created without parent vp id");
+      }
+    };
+
+    const getLinkedDataSource = (
+      ds: DataSourceConstructorProps | DataSource,
+      vuuLink: LinkedTableConfig["vuuLink"],
+      parentDs?: DataSource,
+    ): DataSource => {
+      if (isDataSource(ds)) {
+        return ds;
+      } else {
+        return new VuuDataSource({
+          ...ds,
+          visualLink: createVisualLink(vuuLink, parentDs),
+        });
+      }
+    };
+
     const getTableConfig = (ds: DataSourceConstructorProps | DataSource) => {
       const schema = getSchema(schemas, getTable(ds));
       return {
@@ -110,36 +156,113 @@ export const useLinkedTableView = ({
       };
     };
 
-    const getLinkedConfig = (
-      ds: DataSourceConstructorProps | DataSource,
-    ): TableDataSourceConfig => ({
+    const getRootConfig = ({
+      dataSource: ds,
+      title,
+    }: LinkTableConfig): TableDataSourceConfig => ({
       config: getTableConfig(ds),
       dataSource: getDataSource(ds),
+      title,
+    });
+
+    const getLinkedConfig = (
+      { dataSource: ds, vuuLink, title }: LinkedTableConfig,
+      parentDataSource?: DataSource,
+    ): TableDataSourceConfig => ({
+      config: getTableConfig(ds),
+      dataSource: getLinkedDataSource(ds, vuuLink, parentDataSource),
+      title,
     });
 
     const getLinkedConfigs = (
-      lds?: LinkedDataSource | LinkedDataSource[],
-    ): TableDataSourceConfig[] => {
-      if (lds === undefined) {
-        return [];
-      } else if (Array.isArray(lds)) {
-        return lds.map(({ dataSource }) => getLinkedConfig(dataSource));
+      linkedTableConfig: LinkedTableConfig | LinkedTableConfig[],
+      parentDataSource?: DataSource,
+    ): TableDataSourceConfig | TableDataSourceConfig[] => {
+      if (Array.isArray(linkedTableConfig)) {
+        return linkedTableConfig.map((config) =>
+          getLinkedConfig(config, parentDataSource),
+        );
       } else {
-        return [getLinkedConfig(lds.dataSource)];
+        return getLinkedConfig(linkedTableConfig, parentDataSource);
       }
     };
 
     const { "1": level1, "2": level2, "3": level3 } = linkedDataSources;
 
-    const results: LinkedTableConfig = {
-      "1": getLinkedConfig(level1),
-      "2": getLinkedConfigs(level2),
-      "3": getLinkedConfigs(level3),
+    const configLevel1 = getRootConfig(level1);
+    const configLevel2 = getLinkedConfigs(level2, configLevel1.dataSource);
+    const dsLevel2 = Array.isArray(configLevel2)
+      ? undefined
+      : configLevel2.dataSource;
+    const configLevel3 = level3
+      ? getLinkedConfigs(level3, dsLevel2)
+      : undefined;
+
+    const results: ResolvedTableConfig = {
+      "1": configLevel1,
+      "2": configLevel2,
+      "3": configLevel3,
     };
-    setLinkedTableConfig(results);
+    setTableConfig(results);
   }, [VuuDataSource, getServerAPI, linkedDataSources]);
 
+  const handleTabChangeLevel1 = useCallback((tabIndex: number) => {
+    setActiveTab(([, v2, v3]) => [tabIndex, v2, v3]);
+  }, []);
+  const handleTabChangeLevel2 = useCallback((tabIndex: number) => {
+    setActiveTab(([v1, , v3]) => [v1, tabIndex, v3]);
+  }, []);
+  const handleTabChangeLevel3 = useCallback((tabIndex: number) => {
+    setActiveTab(([v1, v2]) => [v1, v2, tabIndex]);
+  }, []);
+
+  const handleCollapseLevel2 = useCallback(() => {
+    setCollapsed(([, val]) => [true, val]);
+  }, []);
+  const handleExpandLevel2 = useCallback(() => {
+    setCollapsed(([, val]) => [false, val]);
+  }, []);
+  const handleCollapseLevel3 = useCallback(() => {
+    setCollapsed(([val]) => [val, true]);
+  }, []);
+  const handleExpandLevel3 = useCallback(() => {
+    setCollapsed(([val]) => [val, false]);
+  }, []);
+
   return {
-    linkedTableConfig,
+    activeTabs,
+    level1: {
+      key: "level1",
+      onTabChange: handleTabChangeLevel1,
+    },
+    level2: {
+      collapsed: collapsed[0],
+      key: "level2",
+      onCollapse: handleCollapseLevel2,
+      onExpand: handleExpandLevel2,
+      onTabChange: handleTabChangeLevel2,
+    },
+    level3: {
+      collapsed: collapsed[1],
+      key: "level3",
+      onCollapse: handleCollapseLevel3,
+      onExpand: handleExpandLevel3,
+      onTabChange: handleTabChangeLevel3,
+    },
+    tableConfig,
   };
+};
+
+export type LevelsConfig = {
+  level1: LevelConfig;
+  level2: LevelConfig;
+  level3: LevelConfig;
+};
+
+export type LevelConfig = {
+  key: string;
+  collapsed?: boolean;
+  onCollapse?: () => void;
+  onTabChange?: (tabIndex: number) => void;
+  onExpand?: () => void;
 };

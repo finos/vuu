@@ -71,6 +71,8 @@ export interface ViewProps extends HTMLAttributes<HTMLDivElement> {
   expanded?: boolean;
   flexFill?: boolean;
   header?: boolean | Partial<HeaderProps>;
+  onCollapse?: () => void;
+  onExpand?: () => void;
   orientation?: "vertical" | "horizontal";
   path?: string;
   resize?: ResizeStrategy;
