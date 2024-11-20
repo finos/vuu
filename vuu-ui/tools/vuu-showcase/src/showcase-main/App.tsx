@@ -1,5 +1,4 @@
-import { TreeTable } from "@finos/vuu-datatable";
-import { FlexboxLayout, LayoutProvider, View } from "@finos/vuu-layout";
+import { FlexboxLayout, LayoutProvider } from "@finos/vuu-layout";
 import { ThemeSwitch } from "@finos/vuu-shell";
 import type { TableRowSelectHandler } from "@finos/vuu-table-types";
 import type { Density, ThemeMode, TreeSourceNode } from "@finos/vuu-utils";
@@ -12,8 +11,9 @@ import {
 } from "@salt-ds/core";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { IFrame } from "./components";
-import { keysFromPath, loadTheme, pathFromKey } from "./showcase-utils";
+import { keysFromPath, loadTheme, pathFromKey } from "../shared-utils";
+import { IFrame } from "./iframe";
+import { TreeNavPanel } from "./tree-nav/TreeNavPanel";
 
 import "./App.css";
 
@@ -111,22 +111,14 @@ export const App = ({ treeSource }: AppProps) => {
             <Text styleAs="h3">Vuu Showcase</Text>
           </div>
           <FlexboxLayout style={{ flexDirection: "row", flex: 1 }}>
-            <View
+            <TreeNavPanel
+              className="ShowcaseNav"
+              defaultSelectedKeyValues={keysFromPath(pathname)}
+              onSelect={handleSelect}
               resizeable
+              source={treeSource}
               style={{ flexGrow: 0, flexShrink: 0, flexBasis: 200 }}
-            >
-              <TreeTable
-                className="ShowcaseNav"
-                data-resizeable
-                rowHeight={30}
-                defaultSelectedKeyValues={keysFromPath(pathname)}
-                showColumnHeaders={false}
-                onSelect={handleSelect}
-                revealSelected
-                source={treeSource}
-                width="100%"
-              />
-            </View>
+            />
             <FlexboxLayout
               className="ShowcaseContentContainer"
               resizeable

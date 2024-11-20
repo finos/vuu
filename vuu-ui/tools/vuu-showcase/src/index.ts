@@ -1,4 +1,4 @@
 export * from "./Showcase";
 export * from "./ShowcaseStandalone";
-export { loadTheme } from "./showcase-utils";
-export type { VuuExample } from "./showcase-utils";
+export { loadTheme } from "./shared-utils";
+export type { VuuExample } from "./shared-utils";

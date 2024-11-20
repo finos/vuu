@@ -17,12 +17,17 @@ import type {
   MenuRpcResponse,
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditResponse,
+  DataSourceFilter,
 } from "@finos/vuu-data-types";
 import {
   BaseDataSource,
+  getParentRow,
   isSelected,
+  isSingleValueFilter,
   KeySet,
+  lastPathSegment,
   metadataKeys,
+  missingAncestor,
   NULL_RANGE,
   rangesAreSame,
   TreeSourceNode,
@@ -30,6 +35,8 @@ import {
   uuid,
 } from "@finos/vuu-utils";
 import { IconProvider } from "./IconProvider";
+import { parseFilter } from "@finos/vuu-filter-parser";
+import { FilterClause } from "@finos/vuu-filter-types";
 
 const NULL_SCHEMA = { columns: [], key: "", table: { module: "", table: "" } };
 
@@ -55,7 +62,6 @@ export class TreeDataSource extends BaseDataSource {
   private expandedRows = new Set<string>();
   private visibleRows: DataSourceRow[] = [];
   private visibleRowIndex: VisibleRowIndex = {};
-  private selectedRows: Selection = [];
 
   #aggregations: VuuAggregation[] = [];
   #data: DataSourceRow[];
@@ -63,6 +69,7 @@ export class TreeDataSource extends BaseDataSource {
   #selectedRowsCount = 0;
   #size = 0;
   #status: DataSourceStatus = "initialising";
+  #filterSet: number[] | undefined;
 
   public rowCount: number | undefined;
 
@@ -190,6 +197,56 @@ export class TreeDataSource extends BaseDataSource {
     });
   }
 
+  get filter() {
+    return this._config.filterSpec;
+  }
+
+  set filter(filter: DataSourceFilter) {
+    // Note not using the setter
+    this._config = {
+      ...this._config,
+      filterSpec: filter,
+    };
+
+    if (filter.filter) {
+      this.applyFilter(filter);
+    } else {
+      this.#filterSet = undefined;
+    }
+
+    [this.visibleRows, this.visibleRowIndex] = getVisibleRows(
+      this.#data,
+      this.expandedRows,
+      this.#filterSet,
+    );
+
+    const { from, to } = this.range;
+    this.clientCallback?.({
+      clientViewportId: this.viewport,
+      mode: "batch",
+      rows: this.visibleRows
+        .slice(from, to)
+        .map((row) => toClientRow(row, this.keys)),
+      size: this.visibleRows.length,
+      type: "viewport-update",
+    });
+  }
+
+  private applyFilter({ filter: filterQuery, filterStruct }: DataSourceFilter) {
+    const filter = filterStruct ?? (parseFilter(filterQuery) as FilterClause);
+    if (isSingleValueFilter(filter)) {
+      const filterSet = [];
+      const regex = new RegExp(`${filter.value}`, "i");
+      for (const row of this.#data) {
+        const { [KEY]: key, [IDX]: idx } = row;
+        if (regex.test(lastPathSegment(key, "|"))) {
+          filterSet.push(idx);
+        }
+      }
+      this.#filterSet = filterSet;
+    }
+  }
+
   /**
    * used to apply an initial selection. These may not necessarily be
    * visible. If revealOnSelect is in force, expand nodes as necessary
@@ -202,9 +259,7 @@ export class TreeDataSource extends BaseDataSource {
       row[SELECTED] = 1;
 
       if (revealSelected && row[DEPTH] !== 1) {
-        console.log(`we've got a deep one here`);
         const keys = key.slice(6).split("|").slice(0, -1);
-        console.log(JSON.stringify(keys));
 
         let path = "$root";
         do {
@@ -408,27 +463,55 @@ export class TreeDataSource extends BaseDataSource {
 function getVisibleRows(
   rows: DataSourceRow[],
   expandedKeys: Set<string>,
+  filterset?: number[],
 ): [visibleRows: DataSourceRow[], index: VisibleRowIndex] {
   const visibleRows: DataSourceRow[] = [];
   const visibleRowIndex: VisibleRowIndex = {};
 
-  for (let i = 0, index = 0; i < rows.length; i++) {
-    const row = rows[i];
+  const data = filterset ?? rows;
+
+  for (let i = 0, index = 0; i < data.length; i++) {
+    const idx = filterset ? filterset[i] : i;
+    const row = rows[idx];
     const {
       [COUNT]: count,
       [DEPTH]: depth,
       [KEY]: key,
       [IS_LEAF]: isLeaf,
     } = row;
-    const isExpanded = expandedKeys.has(key);
-    visibleRows.push(cloneRow(row, index, isExpanded));
-    visibleRowIndex[index] = i;
-    index += 1;
-    const skipNonVisibleRows = !isLeaf && !isExpanded && count > 0;
-    if (skipNonVisibleRows) {
-      do {
-        i += 1;
-      } while (i < rows.length - 1 && rows[i + 1][DEPTH] > depth);
+    if (filterset) {
+      // assume expanded for now
+
+      // if we have skipped a higher level group (that didn't directly match
+      // our filter criteria, add it.
+      const previousRow = visibleRows.at(-1);
+      if (missingAncestor(row, previousRow)) {
+        let currentRow: DataSourceRow | undefined = row;
+        const missingRows = [];
+        while (currentRow) {
+          currentRow = getParentRow(rows, currentRow);
+          if (currentRow) {
+            // we will get the missing rows in reverse order
+            missingRows.unshift(currentRow);
+          }
+        }
+        missingRows.forEach((row) => {
+          visibleRows.push(cloneRow(row, index++, true));
+        });
+      }
+
+      visibleRows.push(cloneRow(row, index++, true));
+      visibleRowIndex[index] = i;
+    } else {
+      const isExpanded = expandedKeys.has(key);
+      visibleRows.push(cloneRow(row, index, isExpanded));
+      visibleRowIndex[index++] = i;
+      const skipNonVisibleRows = !isLeaf && !isExpanded && count > 0;
+      if (skipNonVisibleRows) {
+        do {
+          i += 1;
+        } while (i < rows.length - 1 && rows[i + 1][DEPTH] > depth);
+      }
     }
   }
   return [visibleRows, visibleRowIndex];

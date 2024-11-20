@@ -6,6 +6,7 @@ vuu/src/main/resources/www/ws-example.html
 example/order/src/main/scala/org/finos/vuu/provider/simulation/SimulatedBigInstrumentsProvider.scala
 vuu/src/main/scala/org/finos/vuu/provider/simulation/SimulatedBigInstrumentsProvider.scala
 vuu-ui/packages/vuu-data-local/src/array-data-source/group-utils.ts
+vuu-ui/packages/vuu-data-local/src/tree-data-source/TreeDataSource.ts
 vuu-ui/packages/vuu-data-test/src/makeSuggestions.ts
 vuu-ui/packages/vuu-datagrid-extras/src/column-expression-input/column-language-parser/walkExpressionTree.ts
 vuu-ui/packages/vuu-layout/src/layout-persistence/RemoteLayoutPersistenceManager.ts
@@ -18,6 +19,8 @@ vuu-ui/showcase/scripts/build-file-list.mjs
 vuu-ui/showcase/src/index.tsx
 vuu-ui/showcase/src/examples/Layout/Menu.examples.tsx
 vuu-ui/tools/websocket-test.html
+vuu-ui/tools/vuu-showcase/src/shared-utils.ts
+vuu-ui/tools/vuu-showcase/src/showcase-main/showcase-utils.ts
 vuu/src/test/scala/org/finos/vuu/viewport/CreateViewPortScenarioTest.scala
 vuu/src/test/scala/org/finos/vuu/net/ws/WebSocketServerClientTest.scala
 vuu/src/test/scala/org/finos/vuu/net/rpc/RpcModuleTest.scala

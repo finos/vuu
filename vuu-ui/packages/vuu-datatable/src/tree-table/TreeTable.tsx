@@ -1,7 +1,7 @@
 import { TableProps } from "@finos/vuu-table";
 import { Table } from "@finos/vuu-table";
 import { TreeDataSource } from "@finos/vuu-data-local";
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { TableConfig } from "@finos/vuu-table-types";
 import {
   isRowSelected,
@@ -12,14 +12,17 @@ import {
 
 const { DEPTH, IS_LEAF, KEY, IDX } = metadataKeys;
 
-export interface TreeTableProps
-  extends Omit<TableProps, "config" | "dataSource"> {
+interface Props extends Omit<TableProps, "config" | "dataSource"> {
   config?: Pick<
     TableConfig,
     "columnSeparators" | "rowSeparators" | "zebraStripes"
   >;
-  source: TreeSourceNode[];
+  dataSource?: TreeDataSource;
+  source?: TreeSourceNode[];
 }
+
+export type TreeTableProps = Props &
+  ({ dataSource: TreeDataSource } | { source: TreeSourceNode[] });
 
 const rowToTreeNodeObject: RowToObjectMapper = (row, columnMap) => {
   const { [IS_LEAF]: isLeaf, [KEY]: key, [IDX]: index, [DEPTH]: depth } = row;
@@ -40,16 +43,22 @@ const rowToTreeNodeObject: RowToObjectMapper = (row, columnMap) => {
 
 export const TreeTable = ({
   config,
-  source: sourceProp,
+  dataSource,
+  source,
   ...tableProps
 }: TreeTableProps) => {
-  const sourceRef = useRef(sourceProp);
   const dataSourceRef = useRef<TreeDataSource>();
   useMemo(() => {
-    dataSourceRef.current = new TreeDataSource({
-      data: sourceRef.current,
-    });
-  }, []);
+    if (dataSource) {
+      dataSourceRef.current = dataSource;
+    } else if (source) {
+      dataSourceRef.current = new TreeDataSource({
+        data: source,
+      });
+    } else {
+      throw Error(`TreeTable either source or dataSource must be provided`);
+    }
+  }, [dataSource, source]);
 
   const tableConfig = useMemo<TableConfig>(() => {
     return {
@@ -59,12 +68,6 @@ export const TreeTable = ({
       rowSeparators: false,
     };
   }, [config]);
-
-  useEffect(() => {
-    if (dataSourceRef.current) {
-      dataSourceRef.current.data = sourceProp;
-    }
-  }, [sourceProp]);
 
   if (dataSourceRef.current === undefined) {
     return null;

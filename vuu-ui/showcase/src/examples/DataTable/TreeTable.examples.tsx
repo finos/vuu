@@ -1,9 +1,11 @@
 import { TreeTable } from "@finos/vuu-datatable";
 
 import showcaseData from "./Tree.data";
-import { useMemo } from "react";
+import { ChangeEventHandler, useCallback, useMemo, useRef } from "react";
 import { TreeSourceNode } from "@finos/vuu-utils";
 import { TableRowSelectHandler } from "@finos/vuu-table-types";
+import { TreeDataSource } from "@finos/vuu-data-local";
+import { VuuInput } from "@finos/vuu-ui-controls";
 
 let displaySequence = 1;
 
@@ -79,3 +81,60 @@ export const ShowcaseTreeNodeOptions = () => {
   );
 };
 ShowcaseTreeNodeOptions.displaySequence = displaySequence++;
+
+export const TreeTableSearch = () => {
+  const dataSource = useMemo(
+    () => new TreeDataSource({ data: showcaseData }),
+    [],
+  );
+
+  const onSelect: TableRowSelectHandler = (row) => {
+    console.log({ row });
+  };
+
+  const valueRef = useRef<string>("");
+
+  const handleCommit = useCallback(() => {
+    const value = valueRef.current;
+    if (value === "") {
+      dataSource.filter = { filter: "" };
+    } else {
+      dataSource.filter = { filter: `label contains "${valueRef.current}"` };
+    }
+  }, [dataSource]);
+
+  const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
+    (evt) => {
+      const { value } = evt.target;
+      valueRef.current = value.trim();
+      if (valueRef.current === "") {
+        handleCommit();
+      }
+    },
+    [handleCommit],
+  );
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        width: 400,
+      }}
+    >
+      <div style={{ flex: "0 0 32px", padding: 12 }}>
+        <VuuInput onChange={handleChange} onCommit={handleCommit} />
+      </div>
+      <div style={{ flex: 1 }}>
+        <TreeTable
+          onSelect={onSelect}
+          rowHeight={30}
+          showColumnHeaders={false}
+          dataSource={dataSource}
+        />
+      </div>
+    </div>
+  );
+};
+TreeTableSearch.displaySequence = displaySequence++;
