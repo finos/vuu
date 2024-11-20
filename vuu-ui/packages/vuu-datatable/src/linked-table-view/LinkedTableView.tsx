@@ -3,6 +3,7 @@ import { Flexbox, Stack, View } from "@finos/vuu-layout";
 import { VuuLink } from "@finos/vuu-protocol-types";
 import { Table } from "@finos/vuu-table";
 import { TableConfig } from "@finos/vuu-table-types";
+import { Tabstrip, Tab } from "@finos/vuu-ui-controls";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
@@ -15,6 +16,7 @@ import {
 } from "./useLinkedTableView";
 
 import css from "./LinkedTableView.css";
+import { TableLayoutToggleButton } from "./TableLayoutToggleButton";
 
 const classBase = "vuuLinkedTableView";
 
@@ -69,29 +71,14 @@ const LinkedTables = ({
 
   const getLinkedTables = (
     tdsConfig: TableDataSourceConfig | TableDataSourceConfig[],
-    { onTabChange, ...levelConfig }: LevelConfig,
+    {
+      onChangeTabbedView,
+      onTabChange,
+      tabbedView,
+      ...levelConfig
+    }: LevelConfig,
   ) =>
-    Array.isArray(tdsConfig) ? (
-      <Stack
-        active={activeTabs[1]}
-        data-resizeable
-        key={levelConfig.key}
-        onTabSelectionChanged={onTabChange}
-        style={{ flexBasis: 0, flexGrow: 1, flexShrink: 1 }}
-      >
-        {tdsConfig.map(({ config, dataSource, title }, i) => (
-          <View
-            className={`${classBase}-view`}
-            key={i}
-            resizeable
-            style={{ flexBasis: 0, flexGrow: 1, flexShrink: 1 }}
-            title={title}
-          >
-            <Table config={config} dataSource={dataSource} />
-          </View>
-        ))}
-      </Stack>
-    ) : (
+    Array.isArray(tdsConfig) === false ? (
       <View
         {...levelConfig}
         header
@@ -101,8 +88,93 @@ const LinkedTables = ({
       >
         <Table config={tdsConfig.config} dataSource={tdsConfig.dataSource} />
       </View>
+    ) : tabbedView === 1 ? (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          flexBasis: 0,
+          flexGrow: 1,
+          flexShrink: 1,
+        }}
+      >
+        <div className={`${classBase}-header`}>
+          <Tabstrip activeTabIndex={activeTabs[1]} onActiveChange={onTabChange}>
+            {tdsConfig.map(({ title }, i) => (
+              <Tab key={i} label={title} />
+            ))}
+          </Tabstrip>
+          <div className={`${classBase}-toolTray`}>
+            <TableLayoutToggleButton
+              onChange={onChangeTabbedView}
+              value={tabbedView}
+            />
+          </div>
+        </div>
+        <Stack
+          active={activeTabs[1]}
+          data-resizeable
+          key={levelConfig.key}
+          showTabs={false}
+          style={{ flexBasis: 0, flexGrow: 1, flexShrink: 1 }}
+        >
+          {tdsConfig.map(({ config, dataSource, title }, i) => (
+            <div
+              className={`${classBase}-view`}
+              key={i}
+              style={{ flexBasis: 0, flexGrow: 1, flexShrink: 1 }}
+              title={title}
+            >
+              <Table config={config} dataSource={dataSource} />
+            </div>
+          ))}
+        </Stack>
+      </div>
+    ) : (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          flexBasis: 0,
+          flexGrow: 1,
+          flexShrink: 1,
+        }}
+      >
+        <div className={`${classBase}-header`}>
+          <div className={`${classBase}-flexHeaders`}>
+            {tdsConfig.map(({ title }, i) => (
+              <span key={i}>{title}</span>
+            ))}
+          </div>
+          <div className={`${classBase}-toolTray`}>
+            <TableLayoutToggleButton
+              onChange={onChangeTabbedView}
+              value={tabbedView}
+            />
+          </div>
+        </div>
+        <Flexbox
+          style={{
+            flexDirection: "row",
+            flexBasis: 0,
+            flexGrow: 1,
+            flexShrink: 1,
+          }}
+        >
+          {tdsConfig.map(({ config, dataSource, title }, i) => (
+            <div
+              className={`${classBase}-view`}
+              data-resizeable
+              key={i}
+              style={{ flexBasis: 0, flexGrow: 1, flexShrink: 1 }}
+              title={title}
+            >
+              <Table config={config} dataSource={dataSource} />
+            </div>
+          ))}
+        </Flexbox>
+      </div>
     );
-
   const getAllLinkedTables = (
     level2: TableDataSourceConfig | TableDataSourceConfig[],
     level3: TableDataSourceConfig | TableDataSourceConfig[] | undefined,

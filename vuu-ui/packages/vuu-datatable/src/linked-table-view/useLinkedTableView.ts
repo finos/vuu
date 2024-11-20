@@ -10,10 +10,10 @@ import {
   LinkedTableViewProps,
   LinkTableConfig,
 } from "./LinkedTableView";
-import { useCallback, useMemo, useState } from "react";
+import { SyntheticEvent, useCallback, useMemo, useState } from "react";
 import { TableConfig } from "@finos/vuu-table-types";
 import { LinkDescriptorWithLabel, VuuTable } from "@finos/vuu-protocol-types";
-import { useViewContext } from "@finos/vuu-layout";
+// import { useViewContext } from "@finos/vuu-layout";
 
 export type TableDataSourceConfig = {
   config: TableConfig;
@@ -84,9 +84,7 @@ export const useLinkedTableView = ({
   const [tableConfig, setTableConfig] = useState<
     ResolvedTableConfig | undefined
   >();
-  // TBC
-  const { id } = useViewContext();
-  console.log({ id });
+  // const { id } = useViewContext();
   const [activeTabs, setActiveTab] = useState<[number, number, number]>([
     0, 0, 0,
   ]);
@@ -94,6 +92,7 @@ export const useLinkedTableView = ({
     false,
     false,
   ]);
+  const [tabbedView, setTabbedView] = useState<[0 | 1, 0 | 1]>([1, 1]);
 
   useMemo(async () => {
     const tables = getTables(linkedDataSources);
@@ -230,6 +229,29 @@ export const useLinkedTableView = ({
     setCollapsed(([val]) => [val, false]);
   }, []);
 
+  const handleChangeTabbedView2 = useCallback(
+    (evt: SyntheticEvent<HTMLElement>) => {
+      const target = evt.target as HTMLElement;
+      const button = target?.closest("button");
+      if (button) {
+        const value = parseInt(button.value) as 0 | 1;
+        setTabbedView(([, val]) => [value, val]);
+      }
+    },
+    [],
+  );
+  const handleChangeTabbedView3 = useCallback(
+    (evt: SyntheticEvent<HTMLElement>) => {
+      const target = evt.target as HTMLElement;
+      const button = target?.closest("button");
+      if (button) {
+        const value = parseInt(button.value) as 0 | 1;
+        setTabbedView(([val]) => [val, value]);
+      }
+    },
+    [],
+  );
+
   return {
     activeTabs,
     level1: {
@@ -239,16 +261,20 @@ export const useLinkedTableView = ({
     level2: {
       collapsed: collapsed[0],
       key: "level2",
+      onChangeTabbedView: handleChangeTabbedView2,
       onCollapse: handleCollapseLevel2,
       onExpand: handleExpandLevel2,
       onTabChange: handleTabChangeLevel2,
+      tabbedView: tabbedView[0],
     },
     level3: {
       collapsed: collapsed[1],
       key: "level3",
+      onChangeTabbedView: handleChangeTabbedView3,
       onCollapse: handleCollapseLevel3,
       onExpand: handleExpandLevel3,
       onTabChange: handleTabChangeLevel3,
+      tabbedView: tabbedView[1],
     },
     tableConfig,
   };
@@ -263,7 +289,9 @@ export type LevelsConfig = {
 export type LevelConfig = {
   key: string;
   collapsed?: boolean;
+  onChangeTabbedView?: (evt: SyntheticEvent<HTMLElement>) => void;
   onCollapse?: () => void;
   onTabChange?: (tabIndex: number) => void;
   onExpand?: () => void;
+  tabbedView?: 0 | 1;
 };
