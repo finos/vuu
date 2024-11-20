@@ -15,7 +15,6 @@ import {
 } from "./useLinkedTableView";
 
 import css from "./LinkedTableView.css";
-import { V } from "vitest/dist/chunks/reporters.anwo7Y6a";
 
 const classBase = "vuuLinkedTableView";
 

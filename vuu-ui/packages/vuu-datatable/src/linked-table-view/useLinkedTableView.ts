@@ -84,8 +84,9 @@ export const useLinkedTableView = ({
   const [tableConfig, setTableConfig] = useState<
     ResolvedTableConfig | undefined
   >();
-  const { id, load, save } = useViewContext();
-
+  // TBC
+  const { id } = useViewContext();
+  console.log({ id });
   const [activeTabs, setActiveTab] = useState<[number, number, number]>([
     0, 0, 0,
   ]);
