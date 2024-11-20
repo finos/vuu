@@ -1,5 +1,6 @@
 import {
   DataSourceConfig,
+  DataSourceConfigChangeHandler,
   DataSourceRow,
   DataSourceSubscribedMessage,
   SelectionChangeHandler,
@@ -346,8 +347,8 @@ export const useTable = ({
     [dataSource],
   );
 
-  useEffect(() => {
-    dataSource.on("config", (config, range, confirmed, changes) => {
+  const handleConfigChange = useCallback<DataSourceConfigChangeHandler>(
+    (config, range, confirmed, changes) => {
       const scrollSensitiveChanges =
         changes?.filterChanged || changes?.groupByChanged;
       if (scrollSensitiveChanges && range.from > 0) {
@@ -361,8 +362,16 @@ export const useTable = ({
         ...config,
         confirmed,
       });
-    });
-  }, [dataSource, dispatchTableModelAction]);
+    },
+    [dispatchTableModelAction],
+  );
+
+  useEffect(() => {
+    dataSource.on("config", handleConfigChange);
+    return () => {
+      dataSource.removeListener("config", handleConfigChange);
+    };
+  }, [dataSource, dispatchTableModelAction, handleConfigChange]);
 
   const handleCreateCalculatedColumn = useCallback(
     (column: ColumnDescriptor) => {

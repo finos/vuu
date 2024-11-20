@@ -50,6 +50,7 @@ export const useDataSource = ({
       // setRange calls at this point so dataWindow range will
       //not yet be set. If the dataWindow range is already set,
       // this is a no-op.
+      console.log("resumed");
       const { range } = dataSource;
       if (range.to !== 0) {
         dataWindow.setRange(dataSource.range);
@@ -81,6 +82,10 @@ export const useDataSource = ({
           const size = dataWindow.data.length;
           dataWindow.setRowCount(message.size);
           if (dataWindow.data.length < size) {
+            if (isMounted.current === false) {
+              console.log("setting state whilst unmounted");
+            }
+
             forceUpdate({});
           }
         }
@@ -101,6 +106,11 @@ export const useDataSource = ({
         onSizeChange?.(0);
         dataWindow.setRowCount(0);
         setData([]);
+
+        if (isMounted.current === false) {
+          console.log("setting state whilst unmounted");
+        }
+
         forceUpdate({});
       } else {
         console.log(`useDataSource unexpected message ${message.type}`);

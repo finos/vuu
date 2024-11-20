@@ -65,13 +65,14 @@ const LinkedTables = ({
     window: targetWindow,
   });
 
-  const { activeTabs, tableConfig, ...config } = useLinkedTableView({
+  const { tableConfig, ...config } = useLinkedTableView({
     linkedDataSources,
   });
 
   const getLinkedTables = (
     tdsConfig: TableDataSourceConfig | TableDataSourceConfig[],
     {
+      activeTab,
       onChangeTabbedView,
       onTabChange,
       tabbedView,
@@ -99,7 +100,7 @@ const LinkedTables = ({
         }}
       >
         <div className={`${classBase}-header`}>
-          <Tabstrip activeTabIndex={activeTabs[1]} onActiveChange={onTabChange}>
+          <Tabstrip activeTabIndex={activeTab} onActiveChange={onTabChange}>
             {tdsConfig.map(({ title }, i) => (
               <Tab key={i} label={title} />
             ))}
@@ -112,7 +113,7 @@ const LinkedTables = ({
           </div>
         </div>
         <Stack
-          active={activeTabs[1]}
+          active={activeTab}
           data-resizeable
           key={levelConfig.key}
           showTabs={false}
