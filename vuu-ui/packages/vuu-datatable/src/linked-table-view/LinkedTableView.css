@@ -2,6 +2,25 @@
     
 }
 
+.vuuLinkedTableView-header {
+    align-items: center;
+    
+    display: flex;
+    flex-basis: 28px;
+    flex-grow: 0;
+    flex-shrink: 0;
+    padding-right: var(--salt-spacing-100);
+
+    .vuuTabstrip {
+        width: fit-content;
+    }
+
+    .vuuLinkedTableView-toolTray {
+        margin-left: auto;
+    }
+
+}
+
 .vuuLinkedTableView-view {
     padding: var(--salt-spacing-100);
 }

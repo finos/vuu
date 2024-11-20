@@ -255,7 +255,6 @@ export class TickingArrayDataSource extends ArrayDataSource {
           parentVpId: parentClientVpId,
           parentColumnName: toColumn,
         }).then((response) => {
-          console.log({ response });
           this.emit(
             "visual-link-created",
             response as DataSourceVisualLinkCreatedMessage,
@@ -266,8 +265,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
       this.#visualLinkService?.({
         childVpId: this.viewport,
         type: "REMOVE_VISUAL_LINK",
-      }).then((response) => {
-        console.log({ response });
+      }).then((/* response */) => {
         this.emit("visual-link-removed");
       });
     }
