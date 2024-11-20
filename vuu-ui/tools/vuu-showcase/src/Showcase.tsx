@@ -1,7 +1,7 @@
 import "./Showcase.css";
 
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { App } from "./App";
+import { App } from "./showcase-main/App";
 import { TreeSourceNode } from "@finos/vuu-utils";
 
 const createRoutes = (treeSource: TreeSourceNode[]): JSX.Element[] =>

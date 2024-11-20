@@ -1,0 +1,17 @@
+.vuuTreeNavPanel {
+
+    .vuuTreeNavPanel-search {
+        display: flex;
+        flex-basis: 40px;
+        flex-grow: 0;
+        flex-shrink: 0;
+        justify-content: center;
+        padding: 2px var(--salt-spacing-300) 0 var(--salt-spacing-300);
+    }
+
+    .vuuTreeNavPanel-treeContainer {
+        flex-basis: auto;
+        flex-grow: 1;
+        flex-shrink: 1;
+    }
+}

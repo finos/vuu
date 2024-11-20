@@ -4,7 +4,7 @@ import { DataSourceRow } from "@finos/vuu-data-types";
 import { metadataKeys } from "./column-utils";
 import { IconProvider } from "@finos/vuu-data-local/src/tree-data-source/IconProvider";
 
-const { COUNT } = metadataKeys;
+const { COUNT, DEPTH, IDX, KEY } = metadataKeys;
 
 type Index = { value: number };
 
@@ -87,4 +87,46 @@ const addChildValues = (
   }
 
   return [leafCount, rowCount];
+};
+
+export const lastPathSegment = (path: string, separator = "/") => {
+  const root = path.endsWith(separator) ? path.slice(0, -1) : path;
+  return root.slice(root.lastIndexOf(separator) + 1);
+};
+
+export const dropLastPathSegment = (path: string, separator = "/") => {
+  return path.slice(0, path.lastIndexOf(separator));
+};
+
+export const getParentRow = (rows: DataSourceRow[], row: DataSourceRow) => {
+  const { [IDX]: idx, [DEPTH]: depth } = row;
+  for (let i = idx - 1; i >= 0; i--) {
+    const nextRow = rows[i];
+    if (nextRow[DEPTH] === depth - 1) {
+      return nextRow;
+    }
+  }
+};
+
+const rowsAreSiblings = (key1: string, key2: string) =>
+  dropLastPathSegment(key1, "|") === dropLastPathSegment(key2, "|");
+
+export const missingAncestor = (
+  row: DataSourceRow,
+  previousRow?: DataSourceRow,
+) => {
+  if (previousRow) {
+    const prevKey = previousRow[KEY];
+    const key = row[KEY];
+
+    if (key.startsWith(prevKey)) {
+      return false;
+    } else if (!rowsAreSiblings(prevKey, key)) {
+      return true;
+    }
+  } else if (row[DEPTH] > 1) {
+    return true;
+  }
+
+  return false;
 };

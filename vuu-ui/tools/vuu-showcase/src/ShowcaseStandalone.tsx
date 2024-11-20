@@ -11,7 +11,7 @@ import {
   loadTheme,
   pathToExample,
   VuuExample,
-} from "./showcase-utils";
+} from "./shared-utils";
 
 import "./Showcase.css";
 
@@ -106,7 +106,7 @@ export const ShowcaseStandalone = () => {
     } else if (exampleName) {
       console.error(
         `Unable to load Component(s), are you using the correct file structure for your examples ?
-           paths ${targetPaths.join("\n")} `
+           paths ${targetPaths.join("\n")} `,
       );
     } else {
       // root app has been loaded with no example selection, therefore nothing to load into iframe

@@ -818,7 +818,7 @@ export const getGroupValue = (
   } else if (depth === 0) {
     return "$root";
   } else {
-    // offset 1 for now to allow for $root
+    // offset allows for $root
     const { name, valueFormatter } = columns[depth - 1];
     const value = valueFormatter(row[columnMap[name]]);
     return value;
