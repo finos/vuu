@@ -43,9 +43,17 @@ export class RuntimeVisualLink {
   handleParentSelectEvent: RowSelectionEventHandler = (selection) => {
     if (this.#childDataSource) {
       const selectedValues = this.pickUniqueSelectedValues(selection);
-      this.#childDataSource.baseFilter = {
-        filter: `${this.#childColumnName} in ["${selectedValues.join('","')}"]`,
-      };
+      if (selectedValues.length === 0) {
+        this.#childDataSource.baseFilter = undefined;
+      } else if (selectedValues.length === 1) {
+        this.#childDataSource.baseFilter = {
+          filter: `${this.#childColumnName} = "${selectedValues[0]}"`,
+        };
+      } else {
+        this.#childDataSource.baseFilter = {
+          filter: `${this.#childColumnName} in ["${selectedValues.join('","')}"]`,
+        };
+      }
     }
   };
 

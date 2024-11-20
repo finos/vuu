@@ -151,6 +151,7 @@ export class ArrayDataSource
     sort,
     title,
     viewport,
+    visualLink,
   }: ArrayDataSourceConstructorProps) {
     super();
     if (!data || !columnDescriptors) {
@@ -159,6 +160,7 @@ export class ArrayDataSource
       );
     }
 
+    console.log({ visualLink });
     this.columnDescriptors = columnDescriptors;
     this.dataMap = dataMap;
     this.key = keyColumn

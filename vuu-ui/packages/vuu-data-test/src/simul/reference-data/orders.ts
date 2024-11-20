@@ -3,6 +3,7 @@ import { getRic } from "./instruments";
 import { random } from "../../data-utils";
 import { buildDataColumnMap, Table } from "../../Table";
 import { schemas } from "../simul-schemas";
+import { sides } from "./sides";
 
 export type status = string;
 export type ccy = string;
@@ -15,7 +16,6 @@ export type ric = string;
 export type side = string;
 export type trader = string;
 
-const SIDE = ["BUY", "SELL"];
 const traders = ["Trader A", "Trader B", "Trader C"];
 const orderStatus = [
   "Filled",
@@ -39,7 +39,7 @@ export type OrdersDataRow = [
   quantity,
   ric,
   side,
-  trader
+  trader,
 ];
 
 export const OrderColumnMap = {
@@ -70,10 +70,10 @@ for (let i = 0; i < 100; i++) {
   const filledQuantity = isComplete(status)
     ? quantity
     : status === "New"
-    ? 0
-    : random(0, quantity);
+      ? 0
+      : random(0, quantity);
   const ric = getRic("AAP.L");
-  const side = SIDE[random(0, 1)];
+  const side = sides[random(0, sides.length - 1)];
   const trader = traders[random(0, traders.length - 1)];
 
   ordersData.push([
@@ -95,7 +95,7 @@ for (let i = 0; i < 100; i++) {
 export const ordersTable = new Table(
   schemas.orders,
   ordersData,
-  buildDataColumnMap(schemas, "orders")
+  buildDataColumnMap(schemas, "orders"),
 );
 
 export { ordersData };

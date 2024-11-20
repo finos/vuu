@@ -65,6 +65,11 @@
   display: none;
 } */
 
+.vuuView-collapsed {
+  flex: 0 0 0 !important;
+}
+
+
 .vuuView-collapsed + .Splitter {
   display: none;
 }

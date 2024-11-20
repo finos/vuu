@@ -14,7 +14,9 @@ export interface HeaderProps extends HTMLAttributes<HTMLDivElement> {
   contributions?: Contribution[];
   expanded?: boolean;
   closeable?: boolean;
+  onCollapse?: () => void;
   onEditTitle?: (value: string) => void;
+  onExpand?: () => void;
   orientation?: "horizontal" | "vertical";
   tearOut?: boolean;
 }
@@ -27,7 +29,9 @@ export const Header = ({
   contributions,
   collapsed,
   closeable,
+  onCollapse,
   onEditTitle,
+  onExpand,
   orientation: orientationProp = "horizontal",
   style,
   title = "Untitled",
@@ -53,11 +57,11 @@ export const Header = ({
     setValue,
     value,
   } = useHeader({
+    onCollapse,
     onEditTitle,
+    onExpand,
     title,
   });
-
-  console.log(`Header ${title}`);
 
   const handleButtonMouseDown = (evt: MouseEvent) => {
     // do not allow drag to be initiated
@@ -166,42 +170,6 @@ export const Header = ({
       onMouseDown={onMouseDown}
     >
       {toolbarItems}
-      {/* 
-      {expanded === false ? (
-        <ActionButton
-          aria-label="Maximize View"
-          actionId="maximize"
-          iconName="maximize"
-          onClick={handleAction}
-          onMouseDown={handleButtonMouseDown}
-        />
-      ) : null}
-      {expanded ? (
-        <ActionButton
-          aria-label="Restore View"
-          actionId="restore"
-          iconName="restore"
-          onClick={handleAction}
-          onMouseDown={handleButtonMouseDown}
-        />
-      ) : null}
-      {tearOut ? (
-        <ActionButton
-          aria-label="Tear out View"
-          actionId="tearout"
-          iconName="tear-out"
-          onClick={handleAction}
-          onMouseDown={handleButtonMouseDown}
-        />
-      ) : null}
-      {closeable ? (
-        <Button
-          aria-label="close"
-          data-icon
-          onClick={handleClose}
-          onMouseDown={handleButtonMouseDown}
-        />
-      ) : null} */}
     </div>
   );
 };
