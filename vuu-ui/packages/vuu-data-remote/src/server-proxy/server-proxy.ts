@@ -306,7 +306,8 @@ export class ServerProxy {
           // Resend requests for links from other viewports already on page, they may be linkable to this viewport
           Array.from(this.viewports.entries())
             .filter(
-              ([id, { disabled }]) => id !== serverViewportId && !disabled,
+              ([id, { disabled, status }]) =>
+                id !== serverViewportId && !disabled && status === "subscribed",
             )
             .forEach(([vpId]) => {
               this.sendMessageToServer({
