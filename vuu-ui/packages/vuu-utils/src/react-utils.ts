@@ -1,4 +1,11 @@
-import { Children, isValidElement, ReactElement, ReactNode } from "react";
+import {
+  Children,
+  isValidElement,
+  ReactElement,
+  ReactNode,
+  useEffect,
+  useRef,
+} from "react";
 
 const EMPTY_ARRAY: ReactElement[] = [];
 
@@ -14,4 +21,18 @@ export const asReactElements = (children: ReactNode): ReactElement[] => {
   } else {
     return EMPTY_ARRAY;
   }
+};
+
+export const useIsMounted = (id = "") => {
+  const isMountedRef = useRef(false);
+  useEffect(() => {
+    console.log(`is MOUNTED ${id}`);
+    isMountedRef.current = true;
+    return () => {
+      console.log(`is UNMOUNTED ${id}`);
+      isMountedRef.current = false;
+    };
+  }, [id]);
+
+  return isMountedRef;
 };

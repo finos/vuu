@@ -13,8 +13,8 @@ const parentOrderData: VuuRowDataItemType[][] = [];
 
 const instrumentMap = buildDataColumnMap(schemas, "instruments");
 
-const PARENT_ORDER_COUNT = 100_000;
-const CHILD_ORDER_COUNT = 500_000;
+const PARENT_ORDER_COUNT = 75_000;
+const CHILD_ORDER_COUNT = 200_000;
 
 const avgChildOrderPerOrder = Math.round(
   CHILD_ORDER_COUNT / PARENT_ORDER_COUNT,

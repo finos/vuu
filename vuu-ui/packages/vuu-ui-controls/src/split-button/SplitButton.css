@@ -104,7 +104,7 @@
 
 .vuuSplitButton-cta {
   --split-background: var(--background, var(--salt-actionable-accented-bold-background));
-  --split-background-active: var(--salt-actionable-accented-bold-background-active;
+  --split-background-active: var(--salt-actionable-accented-bold-background-active);
   --split-color-active: var(--salt-actionable-bold-foreground-active);
 }
 .vuuSplitButton-cta:hover:not(.vuuSplitButton-disabled) {

@@ -17,6 +17,7 @@ import {
 
 import css from "./LinkedTableView.css";
 import { TableLayoutToggleButton } from "./TableLayoutToggleButton";
+import { Filter } from "@finos/vuu-filter-types";
 
 const classBase = "vuuLinkedTableView";
 
@@ -47,10 +48,25 @@ export type LinkedDataSources = {
 
 /**
  * Displays a vertical 'tower' of Tables with a hierarchical relationship.
- * Selection of row(s) on tables higher in the hierarchy drives the population
- * of data in tables below. (could be two-way ?)
+ * Currently supported levels are:
+ * - tier 1  - parent table(s)
+ * - tier 2  - child table(s)
+ * -tier 3 (optional) - grandchild table(s)
+ *
+ * Selection of row(s) on tables higher in the hierarchy drives the display
+ * of data in tables below. Currently this is one-way, top-down only
  */
 export interface LinkedTableViewProps extends HTMLAttributes<HTMLDivElement> {
+  /**
+   * Optional filter to allow externally controlled filter to be applied. This will
+   * be applied to tier 1 table(s).
+   * If applicable, it will also be applied to tier2/tier3 table(s) when no selection
+   * is in effect from parent table, 'If applicable' means if the filter column is
+   * available on tier 2/tier 3 tables).
+   * If a filter is provided and it cannot be applied - because
+   * column name of filter is not available in tier 1 table, an exception will be thrown.
+   */
+  filter?: Filter;
   linkedDataSources: LinkedDataSources;
 }
 const LinkedTables = ({
@@ -65,13 +81,14 @@ const LinkedTables = ({
     window: targetWindow,
   });
 
-  const { activeTabs, tableConfig, ...config } = useLinkedTableView({
+  const { tableConfig, ...config } = useLinkedTableView({
     linkedDataSources,
   });
 
   const getLinkedTables = (
     tdsConfig: TableDataSourceConfig | TableDataSourceConfig[],
     {
+      activeTab,
       onChangeTabbedView,
       onTabChange,
       tabbedView,
@@ -99,7 +116,7 @@ const LinkedTables = ({
         }}
       >
         <div className={`${classBase}-header`}>
-          <Tabstrip activeTabIndex={activeTabs[1]} onActiveChange={onTabChange}>
+          <Tabstrip activeTabIndex={activeTab} onActiveChange={onTabChange}>
             {tdsConfig.map(({ title }, i) => (
               <Tab key={i} label={title} />
             ))}
@@ -112,7 +129,7 @@ const LinkedTables = ({
           </div>
         </div>
         <Stack
-          active={activeTabs[1]}
+          active={activeTab}
           data-resizeable
           key={levelConfig.key}
           showTabs={false}

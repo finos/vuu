@@ -253,12 +253,13 @@ export const useLinkedTableView = ({
   );
 
   return {
-    activeTabs,
     level1: {
+      activeTab: activeTabs[0],
       key: "level1",
       onTabChange: handleTabChangeLevel1,
     },
     level2: {
+      activeTab: activeTabs[1],
       collapsed: collapsed[0],
       key: "level2",
       onChangeTabbedView: handleChangeTabbedView2,
@@ -268,6 +269,7 @@ export const useLinkedTableView = ({
       tabbedView: tabbedView[0],
     },
     level3: {
+      activeTab: activeTabs[2],
       collapsed: collapsed[1],
       key: "level3",
       onChangeTabbedView: handleChangeTabbedView3,
@@ -287,6 +289,7 @@ export type LevelsConfig = {
 };
 
 export type LevelConfig = {
+  activeTab: number;
   key: string;
   collapsed?: boolean;
   onChangeTabbedView?: (evt: SyntheticEvent<HTMLElement>) => void;

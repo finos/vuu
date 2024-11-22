@@ -22,5 +22,6 @@
 }
 
 .vuuLinkedTableView-view {
+    overflow: hidden;
     padding: var(--salt-spacing-100);
 }

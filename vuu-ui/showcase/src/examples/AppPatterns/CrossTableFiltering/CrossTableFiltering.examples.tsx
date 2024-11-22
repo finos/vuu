@@ -1,21 +1,27 @@
 import {
   Table as DataTable,
+  getSchema,
   TickingArrayDataSource,
 } from "@finos/vuu-data-test";
 import { SelectionChangeHandler, TableSchema } from "@finos/vuu-data-types";
 import {
+  Flexbox,
   FlexboxLayout,
   LayoutProvider,
   StackLayout,
   View,
 } from "@finos/vuu-layout";
-import { Table } from "@finos/vuu-table";
+import { Table, TableProps } from "@finos/vuu-table";
 import {
   TableConfig,
   TableRowClickHandler,
   TableRowSelectHandler,
 } from "@finos/vuu-table-types";
 import { useCallback, useMemo } from "react";
+import { LocalDataSourceProvider } from "@finos/vuu-data-test";
+import { LinkedDataSources, LinkedTableView } from "@finos/vuu-datatable";
+import { TableSearch } from "@finos/vuu-ui-controls";
+import { useDataSource } from "@finos/vuu-utils";
 
 let displaySequence = 1;
 
@@ -123,7 +129,7 @@ export const SimpleCrossTableFiltering = () => {
       rowSeparators: true,
       zebraStripes: true,
     }),
-    []
+    [],
   );
 
   const configChild = useMemo<TableConfig>(
@@ -132,7 +138,7 @@ export const SimpleCrossTableFiltering = () => {
       rowSeparators: true,
       zebraStripes: true,
     }),
-    []
+    [],
   );
 
   const dataSourceAll = useMemo(() => {
@@ -197,7 +203,7 @@ export const SimpleCrossTableFiltering = () => {
       const parentId = row.data.id;
       dataSource4.filter = { filter: `parentId = "${parentId}"` };
     },
-    [dataSource4]
+    [dataSource4],
   );
 
   const handleParentRowSelect = useCallback<TableRowSelectHandler>((row) => {
@@ -208,7 +214,7 @@ export const SimpleCrossTableFiltering = () => {
     (selection) => {
       console.log({ selection });
     },
-    []
+    [],
   );
 
   const handleChildRowClick = useCallback<TableRowClickHandler>(
@@ -216,7 +222,7 @@ export const SimpleCrossTableFiltering = () => {
       const parentId = row.data.id;
       dataSource5.filter = { filter: `parentId = "${parentId}"` };
     },
-    [dataSource5]
+    [dataSource5],
   );
 
   return (
@@ -278,3 +284,105 @@ export const SimpleCrossTableFiltering = () => {
   );
 };
 SimpleCrossTableFiltering.displaySequence = displaySequence++;
+
+const TableSearchTemplate = ({
+  schema,
+  TableProps,
+}: {
+  schema: TableSchema;
+  TableProps?: Partial<TableProps>;
+}) => {
+  const { VuuDataSource } = useDataSource();
+  const dataSource = useMemo(() => {
+    const { table } = schema;
+    const dataSource = new VuuDataSource({
+      columns: schema.columns.map((c) => c.name),
+      table,
+    });
+    return dataSource;
+  }, [VuuDataSource, schema]);
+
+  return (
+    <TableSearch
+      TableProps={TableProps}
+      autoFocus
+      dataSource={dataSource}
+      searchColumns={["description"]}
+      style={{ height: 400, width: 250 }}
+    />
+  );
+};
+
+export const FilteredLinkedTableView = () => {
+  const linkedDataSources = useMemo<LinkedDataSources>(() => {
+    return {
+      "1": {
+        dataSource: {
+          table: { module: "SIMUL", table: "instruments" },
+        },
+        title: "instruments",
+      },
+      "2": {
+        dataSource: {
+          table: { module: "SIMUL", table: "parentOrders" },
+        },
+        title: "Orders",
+        vuuLink: {
+          fromColumn: "ric",
+          toColumn: "ric",
+        },
+      },
+      "3": [
+        {
+          vuuLink: {
+            fromColumn: "parentOrderId",
+            toColumn: "id",
+          },
+          dataSource: {
+            table: { module: "SIMUL", table: "childOrders" },
+            title: "Child Orders",
+          },
+          title: "Child Orders 1",
+        },
+        {
+          vuuLink: {
+            fromColumn: "parentOrderId",
+            toColumn: "id",
+          },
+          dataSource: {
+            table: { module: "SIMUL", table: "childOrders" },
+          },
+          title: "Child Orders 2",
+        },
+      ],
+    };
+  }, []);
+
+  const schema = getSchema("instruments");
+
+  const onSelect = useCallback<TableRowSelectHandler>((row) => {
+    console.log({ row });
+  }, []);
+
+  return (
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <Flexbox style={{ height: "100%" }}>
+        <div
+          style={{
+            borderRight: "solid 1px black",
+            flexGrow: 0,
+            flexShrink: 0,
+            flexBasis: 200,
+          }}
+        >
+          <TableSearchTemplate TableProps={{ onSelect }} schema={schema} />
+        </div>
+        <LinkedTableView
+          linkedDataSources={linkedDataSources}
+          style={{ flexGrow: 1, flexShrink: 1, flexBasis: 0 }}
+        />
+      </Flexbox>
+    </LocalDataSourceProvider>
+  );
+};
+FilteredLinkedTableView.displaySequence = displaySequence++;

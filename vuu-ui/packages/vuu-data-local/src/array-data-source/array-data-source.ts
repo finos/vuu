@@ -461,9 +461,10 @@ export class ArrayDataSource
         });
       }
 
-      this.setRange(resetRange(this.#range), true);
-
-      this.emit("config", this._config, this.range, undefined, configChanges);
+      if (this.#status === "subscribed") {
+        this.setRange(resetRange(this.#range), true);
+        this.emit("config", this._config, this.range, undefined, configChanges);
+      }
     }
   }
 
