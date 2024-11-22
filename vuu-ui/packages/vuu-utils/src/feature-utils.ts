@@ -61,12 +61,12 @@ export interface StaticFeatureDescriptor {
 }
 
 const isStaticFeature = (
-  feature: unknown
+  feature: unknown,
 ): feature is StaticFeatureDescriptor =>
   feature !== null && typeof feature === "object" && "type" in feature;
 
 export const isStaticFeatures = (
-  features: unknown
+  features: unknown,
 ): features is StaticFeatureDescriptor[] =>
   Array.isArray(features) && features.every(isStaticFeature);
 
@@ -82,7 +82,7 @@ export function featureFromJson({ type }: { type: string }): ReactElement {
   const componentType = type.match(/^[a-z]/) ? type : getLayoutComponent(type);
   if (componentType === undefined) {
     throw Error(
-      `layoutUtils unable to create feature component from JSON, unknown type ${type}`
+      `layoutUtils unable to create feature component from JSON, unknown type ${type}`,
     );
   }
   return React.createElement(componentType);
@@ -100,10 +100,10 @@ export const isCustomFeature = (feature: DynamicFeatureDescriptor) =>
 
 export const isWildcardSchema = (schema?: "*" | VuuTable): schema is "*" =>
   schema === "*";
-export const isTableSchema = (schema?: "*" | VuuTable): schema is VuuTable =>
-  typeof schema === "object" &&
-  typeof schema.module === "string" &&
-  typeof schema.table === "string";
+export const isVuuTable = (vuuTable?: "*" | VuuTable): vuuTable is VuuTable =>
+  typeof vuuTable === "object" &&
+  typeof vuuTable.module === "string" &&
+  typeof vuuTable.table === "string";
 
 export interface FeaturePropsWithFilterTableFeature
   extends Omit<DynamicFeatureProps, "ComponentProps"> {
@@ -111,11 +111,15 @@ export interface FeaturePropsWithFilterTableFeature
 }
 
 export const hasFilterTableFeatureProps = (
-  props: DynamicFeatureProps
+  props: DynamicFeatureProps,
 ): props is FeaturePropsWithFilterTableFeature =>
   typeof props.ComponentProps === "object" &&
   props.ComponentProps !== null &&
   "tableSchema" in props.ComponentProps;
+
+export const isSameTable = (t1: VuuTable, t2: VuuTable) => {
+  t1.module === t2.module && t1.table == t2.table;
+};
 
 // Sort TableScheas by module
 export const byModule = (schema1: TableSchema, schema2: TableSchema) => {
@@ -142,19 +146,19 @@ export type GetFeaturePaths = (params: {
 
 export const getFilterTableFeatures = (
   schemas: TableSchema[],
-  getFeaturePath: GetFeaturePaths
+  getFeaturePath: GetFeaturePaths,
 ) =>
   schemas
     .sort(byModule)
     .map<DynamicFeatureProps<FilterTableFeatureProps>>((schema) => ({
       ...getFeaturePath({ env, fileName: "FilterTable" }),
       ComponentProps: {
-        tableSchema: schema
+        tableSchema: schema,
       },
       ViewProps: {
-        allowRename: true
+        allowRename: true,
       },
-      title: `${schema.table.module} ${schema.table.table}`
+      title: `${schema.table.module} ${schema.table.table}`,
     }));
 
 export type Component = {
@@ -164,11 +168,11 @@ export type Component = {
 
 export const assertComponentRegistered = (
   componentName: string,
-  component: unknown
+  component: unknown,
 ) => {
   if (typeof component !== "function") {
     console.warn(
-      `${componentName} module not loaded, will be unabale to deserialize from layout JSON`
+      `${componentName} module not loaded, will be unabale to deserialize from layout JSON`,
     );
   }
 };
@@ -181,14 +185,14 @@ export const assertComponentsRegistered = (componentList: Component[]) => {
 
 export const getCustomAndTableFeatures = (
   dynamicFeatures: DynamicFeatureDescriptor[],
-  vuuTables: Map<string, TableSchema>
+  tableSchemas: TableSchema[],
 ): {
   dynamicFeatures: DynamicFeatureProps[];
   tableFeatures: DynamicFeatureProps<FilterTableFeatureProps>[];
 } => {
   const [customFeatureConfig, tableFeaturesConfig] = partition(
     dynamicFeatures,
-    isCustomFeature
+    isCustomFeature,
   );
 
   const customFeatures: DynamicFeatureProps[] = [];
@@ -199,32 +203,34 @@ export const getCustomAndTableFeatures = (
     viewProps,
     ...feature
   } of tableFeaturesConfig) {
-    const { schema } = featureProps;
-    if (isWildcardSchema(schema) && vuuTables) {
-      for (const tableSchema of vuuTables.values()) {
+    const { schema: vuuTable } = featureProps;
+    if (isWildcardSchema(vuuTable) && tableSchemas) {
+      for (const tableSchema of tableSchemas) {
         tableFeatures.push({
           ...feature,
           ComponentProps: {
-            tableSchema
+            tableSchema,
           },
           title: `${tableSchema.table.module} ${wordify(
-            tableSchema.table.table
+            tableSchema.table.table,
           )}`,
           ViewProps: {
             ...viewProps,
-            allowRename: true
-          }
+            allowRename: true,
+          },
         });
       }
-    } else if (isTableSchema(schema) && vuuTables) {
-      const tableSchema = vuuTables.get(schema.table);
+    } else if (isVuuTable(vuuTable) && tableSchemas) {
+      const tableSchema = tableSchemas.find((tableSchema) =>
+        isSameTable(vuuTable, tableSchema.table),
+      );
       if (tableSchema) {
         tableFeatures.push({
           ...feature,
           ComponentProps: {
-            tableSchema
+            tableSchema,
           },
-          ViewProps: viewProps
+          ViewProps: viewProps,
         });
       }
     }
@@ -235,29 +241,31 @@ export const getCustomAndTableFeatures = (
     viewProps,
     ...feature
   } of customFeatureConfig) {
-    const { schema, schemas } = featureProps;
-    if (isTableSchema(schema) && vuuTables) {
-      const tableSchema = vuuTables.get(schema.table);
+    const { schema: vuuTable, schemas } = featureProps;
+    if (isVuuTable(vuuTable) && tableSchemas) {
+      const tableSchema = tableSchemas.find((tableSchema) =>
+        isSameTable(vuuTable, tableSchema.table),
+      );
       customFeatures.push({
         ...feature,
         ComponentProps: {
-          tableSchema
+          tableSchema,
         },
-        ViewProps: viewProps
+        ViewProps: viewProps,
       });
-    } else if (Array.isArray(schemas) && vuuTables) {
+    } else if (Array.isArray(schemas) && tableSchemas) {
       customFeatures.push({
         ...feature,
         ComponentProps: schemas.reduce<Record<string, TableSchema>>(
-          (map, schema) => {
-            map[`${schema.table}Schema`] = vuuTables.get(
-              schema.table
+          (map, vuuTable) => {
+            map[`${vuuTable.table}Schema`] = tableSchemas.find((tableSchema) =>
+              isSameTable(vuuTable, tableSchema.table),
             ) as TableSchema;
             return map;
           },
-          {}
+          {},
         ),
-        ViewProps: viewProps
+        ViewProps: viewProps,
       });
     } else {
       customFeatures.push(feature);

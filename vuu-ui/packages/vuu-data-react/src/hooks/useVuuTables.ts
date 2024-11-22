@@ -3,14 +3,15 @@ import { useDataSource } from "@finos/vuu-utils";
 import { useCallback, useEffect, useState } from "react";
 
 export const useVuuTables = () => {
-  const [tables, setTables] = useState<Map<string, TableSchema> | undefined>();
+  const [tableSchemas, setTableSchemas] = useState<TableSchema[] | undefined>();
 
   const { getServerAPI } = useDataSource();
 
   const buildTables = useCallback((schemas: TableSchema[]) => {
     const vuuTables = new Map<string, TableSchema>();
     schemas.forEach((schema) => {
-      vuuTables.set(schema.table.table, schema);
+      const { module, table } = schema.table;
+      vuuTables.set(`${module}:${table}`, schema);
     });
     return vuuTables;
   }, []);
@@ -20,12 +21,10 @@ export const useVuuTables = () => {
       try {
         const server = await getServerAPI();
         const { tables } = await server.getTableList();
-        const tableSchemas = buildTables(
-          await Promise.all(
-            tables.map((vuuTable) => server.getTableSchema(vuuTable)),
-          ),
+        const tableSchemas = await Promise.all(
+          tables.map((vuuTable) => server.getTableSchema(vuuTable)),
         );
-        setTables(tableSchemas);
+        setTableSchemas(tableSchemas);
       } catch (err) {
         console.warn(
           `useVuuTables: error fetching table metadata ${String(err)}`,
@@ -36,5 +35,5 @@ export const useVuuTables = () => {
     fetchTableMetadata();
   }, [buildTables, getServerAPI]);
 
-  return tables;
+  return tableSchemas;
 };
