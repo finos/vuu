@@ -31,12 +31,6 @@ export const useSplitterResizing = ({
   const metaRef = useRef<ContentMeta[]>();
   const contentRef = useRef<ReactElement[]>();
   const assignedKeys = useRef<string[]>([]);
-  // const [, forceUpdate] = useState({});
-
-  // const setContent = (content: ReactElement[]) => {
-  //   contentRef.current = content;
-  //   forceUpdate({});
-  // };
 
   const isColumn = style?.flexDirection === "column";
   const dimension = isColumn ? "height" : "width";
@@ -52,7 +46,6 @@ export const useSplitterResizing = ({
 
   const handleDragStart = useCallback(
     (index) => {
-      console.log("handleDragStart");
       const { current: contentMeta } = metaRef;
       if (contentMeta) {
         const [participants, bystanders] = identifyResizeParties(
@@ -92,25 +85,14 @@ export const useSplitterResizing = ({
   );
 
   const handleDrag = useCallback((idx, distance) => {
-    console.log("handleDrag");
     const { current: flexElements = [] } = flexElementsRef;
 
     if (contentRef.current && metaRef.current) {
       resizeElements(flexElements, metaRef.current, distance /*, dimension*/);
-      // setContent(
-      //   resizeContent(
-      //     contentRef.current,
-      //     metaRef.current,
-      //     distance,
-      //     dimension,
-      //   ),
-      // );
     }
   }, []);
 
   const handleDragEnd = useCallback(() => {
-    console.log("handleDragEnd");
-
     const contentMeta = metaRef.current;
     if (contentMeta) {
       onSplitterMoved?.(contentMeta.filter(originalContentOnly));
@@ -192,48 +174,10 @@ function buildContent(
   return [content, meta];
 }
 
-// function resizeContent(
-//   content: ReactElement[],
-//   contentMeta: ContentMeta[],
-//   distance: number,
-//   dimension: "width" | "height",
-// ) {
-//   const metaUpdated = updateMeta(contentMeta, distance);
-//   if (!metaUpdated) {
-//     return;
-//   }
-
-//   console.log(JSON.stringify(contentMeta, null, 2));
-
-//   return content.map((child, idx) => {
-//     const meta = contentMeta[idx];
-//     const { currentSize, flexOpen, flexBasis } = meta;
-//     const hasCurrentSize = currentSize !== undefined;
-//     if (hasCurrentSize || flexOpen) {
-//       const { flexBasis: actualFlexBasis } = child.props.style || {};
-//       const size = hasCurrentSize ? meta.currentSize : flexBasis;
-//       if (size !== actualFlexBasis) {
-//         return React.cloneElement(child, {
-//           style: {
-//             ...child.props.style,
-//             flexBasis: size,
-//             [dimension]: "auto",
-//           },
-//         });
-//       } else {
-//         return child;
-//       }
-//     } else {
-//       return child;
-//     }
-//   });
-// }
-
 function resizeElements(
   flexElements: HTMLDivElement[],
   contentMeta: ContentMeta[],
   distance: number,
-  // dimension: "width" | "height",
 ) {
   const metaUpdated = updateMeta(contentMeta, distance);
   if (!metaUpdated) {
@@ -245,23 +189,10 @@ function resizeElements(
     const { currentSize, flexOpen, flexBasis, splitter } = meta;
     const hasCurrentSize = currentSize !== undefined;
     if (!splitter && (hasCurrentSize || flexOpen)) {
-      // const actualFlexBasis = parseInt(element.style.flexBasis);
       const size = hasCurrentSize ? meta.currentSize : flexBasis;
-      // if (size !== actualFlexBasis) {
-      // console.log(`resize item  from ${actualFlexBasis} to ${currentSize}`);
       element.style.flexBasis = `${size}px`;
-      // return React.cloneElement(child, {
-      //   style: {
-      //     ...child.props.style,
-      //     flexBasis: size,
-      //     [dimension]: "auto",
-      //   },
-      // });
-      // }
     }
   });
-
-  // });
 }
 
 //TODO detect cursor move beyond drag limit and suspend further resize until cursoe re-engages with splitter
