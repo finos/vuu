@@ -3,7 +3,7 @@ import { RpcResponseHandler } from "@finos/vuu-data-types";
 import { useDialog } from "@finos/vuu-popups";
 import { VuuTable } from "@finos/vuu-protocol-types";
 import { Feature } from "@finos/vuu-shell";
-import { isActionMessage } from "@finos/vuu-utils";
+import { isActionMessage, isSameTable } from "@finos/vuu-utils";
 import { useCallback } from "react";
 
 const withTable = (action: unknown): action is { table: VuuTable } =>
@@ -12,7 +12,7 @@ const withTable = (action: unknown): action is { table: VuuTable } =>
 const vuuFilterTableFeatureUrl = "../feature-filter-table/index.js";
 
 export const useRpcResponseHandler = () => {
-  const tables = useVuuTables();
+  const tableSchemas = useVuuTables();
   const { setDialogState } = useDialog();
 
   const handleRpcResponse = useCallback<RpcResponseHandler>(
@@ -26,10 +26,13 @@ export const useRpcResponseHandler = () => {
       ) {
         if (
           withTable(rpcResponse.action) &&
-          tables &&
+          tableSchemas &&
           rpcResponse.action.table
         ) {
-          const schema = tables.get(rpcResponse.action.table.table);
+          const { table } = rpcResponse.action;
+          const schema = tableSchemas.find((tableSchema) =>
+            isSameTable(tableSchema.table, table),
+          );
           if (schema) {
             // If we already have this table open in this viewport, ignore
             setDialogState({
@@ -49,7 +52,7 @@ export const useRpcResponseHandler = () => {
       }
       return false;
     },
-    [setDialogState, tables],
+    [setDialogState, tableSchemas],
   );
 
   return {

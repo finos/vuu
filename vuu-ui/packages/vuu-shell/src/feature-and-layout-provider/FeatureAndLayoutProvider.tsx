@@ -58,16 +58,16 @@ export const FeatureAndLayoutProvider = ({
   staticFeatures,
   systemLayouts,
 }: FeatureAndLayoutProviderProps): ReactElement => {
-  const vuuTables = useVuuTables();
+  const tableSchemas = useVuuTables();
   const { dynamicFeatures, tableFeatures } = useMemo<{
     dynamicFeatures: DynamicFeatureProps[];
     tableFeatures: DynamicFeatureProps<FilterTableFeatureProps>[];
   }>(
     () =>
-      vuuTables
-        ? getCustomAndTableFeatures(dynamicFeaturesProp, vuuTables)
+      tableSchemas
+        ? getCustomAndTableFeatures(dynamicFeaturesProp, tableSchemas)
         : NO_FEATURES_VUU,
-    [dynamicFeaturesProp, vuuTables],
+    [dynamicFeaturesProp, tableSchemas],
   );
 
   return (
