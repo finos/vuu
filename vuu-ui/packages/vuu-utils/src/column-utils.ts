@@ -34,7 +34,6 @@ import type {
   TableHeading,
   TableHeadings,
   ValueListRenderer,
-  ValueFormatter,
 } from "@finos/vuu-table-types";
 import { type CSSProperties } from "react";
 import { moveItem } from "./array-utils";

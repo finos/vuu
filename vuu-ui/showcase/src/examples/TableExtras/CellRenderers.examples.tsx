@@ -1,5 +1,4 @@
 import { DataSourceRow } from "@finos/vuu-data-types";
-import { VuuDataRow, VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import { TableCell } from "@finos/vuu-table";
 import { BackgroundCell } from "@finos/vuu-table-extras";
 import {

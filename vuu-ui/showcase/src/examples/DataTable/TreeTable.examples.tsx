@@ -1,17 +1,10 @@
 import { TreeTable } from "@finos/vuu-datatable";
 
 import showcaseData from "./Tree.data";
-import {
-  ChangeEventHandler,
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
 import { TreeSourceNode } from "@finos/vuu-utils";
 import { TableRowSelectHandler } from "@finos/vuu-table-types";
 import { TreeDataSource } from "@finos/vuu-data-local";
-import { VuuInput } from "@finos/vuu-ui-controls";
 import { Input } from "@salt-ds/core";
 
 let displaySequence = 1;
