@@ -232,7 +232,7 @@ export const useTable = ({
     headings,
     tableAttributes,
     tableConfig,
-  } = useTableModel(config, dataSource, selectionModel, availableWidth);
+  } = useTableModel({ config, dataSource, selectionModel, availableWidth });
 
   // this is realy here to capture changes to available Width - typically when we get
   // rowcount so add allowance for vertical scrollbar, reducing available width

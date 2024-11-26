@@ -3,14 +3,15 @@ import { useWindow } from "@salt-ds/window";
 import { TableCellRendererProps } from "@finos/vuu-table-types";
 
 import searchCellCss from "./SearchCell.css";
+import { withHighlighting } from "@finos/vuu-utils";
 
 const classBase = "vuuSearchCell";
 
-// export to avoid tree shaking, component is not consumed directly
 export const SearchCell = ({
   column,
   columnMap,
   row,
+  searchPattern,
 }: TableCellRendererProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -22,7 +23,9 @@ export const SearchCell = ({
   //TODO what about click handling
 
   const key = columnMap[column.name];
-  const value = row[key];
+  const value = searchPattern
+    ? withHighlighting((v) => String(v), searchPattern)(row[key])
+    : row[key];
 
   return (
     <div className={classBase} tabIndex={-1}>

@@ -2,7 +2,7 @@ import type {
   DataItemEditHandler,
   TableCellProps,
 } from "@finos/vuu-table-types";
-import { getTypedValue } from "@finos/vuu-utils";
+import { getTypedValue, withHighlighting } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { MouseEventHandler, useCallback, useState } from "react";
@@ -18,6 +18,7 @@ export const TableCell = ({
   onClick,
   onDataEdited,
   row,
+  searchPattern,
 }: TableCellProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -73,6 +74,10 @@ export const TableCell = ({
     [column, onClick],
   );
 
+  const format = searchPattern
+    ? withHighlighting(valueFormatter, searchPattern)
+    : valueFormatter;
+
   return (
     <div
       aria-colindex={ariaColIndex}
@@ -87,9 +92,10 @@ export const TableCell = ({
           columnMap={columnMap}
           onEdit={handleDataItemEdited}
           row={row}
+          searchPattern={searchPattern}
         />
       ) : (
-        valueFormatter(row[dataIdx])
+        format(row[dataIdx])
       )}
     </div>
   );

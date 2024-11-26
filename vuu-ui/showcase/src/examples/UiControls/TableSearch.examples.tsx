@@ -29,10 +29,25 @@ let displaySequence = 1;
 
 const TableSearchTemplate = ({
   schema,
-  TableProps,
+  TableProps = {
+    config: {
+      columns: [
+        {
+          name: "description",
+          width: 200,
+          type: {
+            name: "string",
+            renderer: {
+              name: "search-cell",
+            },
+          },
+        },
+      ],
+    },
+  },
 }: {
   schema: TableSchema;
-  TableProps?: Partial<TableProps>;
+  TableProps?: Omit<TableProps, "dataSource">;
 }) => {
   const { VuuDataSource } = useDataSource();
   const dataSource = useMemo(() => {
@@ -46,9 +61,8 @@ const TableSearchTemplate = ({
 
   return (
     <TableSearch
-      TableProps={TableProps}
+      TableProps={{ ...TableProps, dataSource }}
       autoFocus
-      dataSource={dataSource}
       searchColumns={["description"]}
       style={{ height: 400, width: 250 }}
     />

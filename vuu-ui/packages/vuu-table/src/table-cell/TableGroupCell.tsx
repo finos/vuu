@@ -19,6 +19,7 @@ export const TableGroupCell = ({
   columnMap,
   onClick,
   row,
+  searchPattern,
 }: TableCellProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -33,7 +34,7 @@ export const TableGroupCell = ({
   });
 
   const { columns } = column as GroupColumnDescriptor;
-  const value = getGroupValue(columns, row, columnMap);
+  const value = getGroupValue(columns, row, columnMap, searchPattern);
   const icon = getGroupIcon(columns, row);
   const { className, style } = useCell(column, classBase);
 

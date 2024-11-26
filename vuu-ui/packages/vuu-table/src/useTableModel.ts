@@ -259,12 +259,19 @@ const columnReducer: GridModelReducer = (state, action) => {
   }
 };
 
-export const useTableModel = (
-  tableConfigProp: TableConfig,
-  dataSource: DataSource,
-  selectionModel: TableSelectionModel,
-  availableWidth: number,
-) => {
+export interface TableModelHookProps {
+  config: TableConfig;
+  dataSource: DataSource;
+  selectionModel: TableSelectionModel;
+  availableWidth: number;
+}
+
+export const useTableModel = ({
+  config: tableConfigProp,
+  dataSource,
+  selectionModel,
+  availableWidth,
+}: TableModelHookProps) => {
   const [state, dispatchTableModelAction] = useReducer<
     GridModelReducer,
     InitialConfig

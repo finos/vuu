@@ -1,11 +1,18 @@
 import { TreeTable } from "@finos/vuu-datatable";
 
 import showcaseData from "./Tree.data";
-import { ChangeEventHandler, useCallback, useMemo, useRef } from "react";
+import {
+  ChangeEventHandler,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { TreeSourceNode } from "@finos/vuu-utils";
 import { TableRowSelectHandler } from "@finos/vuu-table-types";
 import { TreeDataSource } from "@finos/vuu-data-local";
 import { VuuInput } from "@finos/vuu-ui-controls";
+import { Input } from "@salt-ds/core";
 
 let displaySequence = 1;
 
@@ -92,26 +99,20 @@ export const TreeTableSearch = () => {
     console.log({ row });
   };
 
-  const valueRef = useRef<string>("");
-
-  const handleCommit = useCallback(() => {
-    const value = valueRef.current;
-    if (value === "") {
-      dataSource.filter = { filter: "" };
-    } else {
-      dataSource.filter = { filter: `label contains "${valueRef.current}"` };
-    }
-  }, [dataSource]);
+  const [value, setValue] = useState<string>("");
 
   const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (evt) => {
-      const { value } = evt.target;
-      valueRef.current = value.trim();
-      if (valueRef.current === "") {
-        handleCommit();
+      const value = evt.target.value.trim();
+      setValue(value);
+
+      if (value === "") {
+        dataSource.filter = { filter: "" };
+      } else {
+        dataSource.filter = { filter: `label contains "${value}"` };
       }
     },
-    [handleCommit],
+    [dataSource],
   );
 
   return (
@@ -124,12 +125,13 @@ export const TreeTableSearch = () => {
       }}
     >
       <div style={{ flex: "0 0 32px", padding: 12 }}>
-        <VuuInput onChange={handleChange} onCommit={handleCommit} />
+        <Input onChange={handleChange} />
       </div>
       <div style={{ flex: 1 }}>
         <TreeTable
           onSelect={onSelect}
           rowHeight={30}
+          searchPattern={value}
           showColumnHeaders={false}
           dataSource={dataSource}
         />

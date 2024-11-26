@@ -134,7 +134,6 @@ export const BasketSelector = ({
             TableProps={TableProps}
             autoFocus
             className={`${classBase}-instrumentSearch`}
-            dataSource={dataSourceBasketTradingSearch}
             placeHolder="Enter Basket Name"
             searchColumns={["basketName"]}
           />

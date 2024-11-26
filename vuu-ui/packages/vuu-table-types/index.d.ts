@@ -40,7 +40,9 @@ export declare type TableSelectionModel =
 export declare type TableHeading = { label: string; width: number };
 export declare type TableHeadings = TableHeading[][];
 
-export declare type ValueFormatter = (value: unknown) => string;
+export declare type ValueFormatter<T extends string | JSX.Element = string> = (
+  value: unknown,
+) => T;
 
 export interface EditEventState {
   editType?: EditType;
@@ -66,6 +68,7 @@ export interface TableCellProps {
   onClick?: (event: MouseEvent, column: RuntimeColumnDescriptor) => void;
   onDataEdited?: DataCellEditHandler;
   row: DataSourceRow;
+  searchPattern: Lowercase<string>;
 }
 
 export declare type CommitResponse = Promise<true | string>;
@@ -419,6 +422,7 @@ export interface RowProps extends BaseRowProps {
   onDataEdited?: DataCellEditHandler;
   onToggleGroup?: (row: DataSourceRow, column: RuntimeColumnDescriptor) => void;
   row: DataSourceRow;
+  searchPattern: Lowercase<string>;
   showBookends?: boolean;
   zebraStripes?: boolean;
 }

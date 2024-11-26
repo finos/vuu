@@ -1,15 +1,9 @@
-import { getSchema } from "@finos/vuu-data-test";
+import { getSchema, LocalDataSourceProvider } from "@finos/vuu-data-test";
 import { FlexboxLayout, LayoutProvider, View } from "@finos/vuu-layout";
-import { Feature, useWorkspace } from "@finos/vuu-shell";
-import { useCallback, useState } from "react";
+import { Feature } from "@finos/vuu-shell";
 import FilterTableFeature from "../../features/FilterTable.feature";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
-import { JsonTable } from "@finos/vuu-datatable";
-import {
-  type DynamicFeatureProps,
-  type JsonData,
-  registerComponent,
-} from "@finos/vuu-utils";
+import { type DynamicFeatureProps, registerComponent } from "@finos/vuu-utils";
 
 registerComponent("FilterTableFeature", FilterTableFeature, "view");
 
@@ -18,53 +12,23 @@ let displaySequence = 1;
 export const DefaultFilterTableFeature = () => {
   const schema = getSchema("instruments");
 
-  //-----------------------------------------------------------------------------------
-  // Note the following functionality is provided by the Shell in a full application.
-  // Likewise the Shell provides the LayoutProvider wrapper. Again, in a full Vuu
-  // application, the Palette wraps each feature in a View.
-  //-----------------------------------------------------------------------------------
-  const { workspaceJSON, saveApplicationLayout } = useWorkspace();
-
-  // Save layout into state so we can display in JsonTable
-  const [savedLayoutJson, setSavedLayoutJson] = useState(workspaceJSON);
-
-  const handleLayoutChange = useCallback(
-    (layout) => {
-      saveApplicationLayout(layout);
-      setSavedLayoutJson(layout);
-    },
-    [saveApplicationLayout],
-  );
-  // ----------------------------------------------------------------------------------
-
   return (
-    <div style={{ display: "flex" }}>
-      <LayoutProvider
-        workspaceJSON={workspaceJSON}
-        onLayoutChange={handleLayoutChange}
-      >
-        <View
-          Header={VuuBlotterHeader}
-          id="table-next-feature"
-          className="vuuTableFeature"
-          closeable
-          header
-          title="Instruments"
-          style={{ width: 700, height: 500 }}
-        >
-          <FilterTableFeature tableSchema={schema} />
-        </View>
-      </LayoutProvider>
-      <div style={{ flex: "1 1 auto" }}>
-        <JsonTable
-          config={{
-            columnSeparators: true,
-            rowSeparators: true,
-            zebraStripes: true,
-          }}
-          source={savedLayoutJson as unknown as JsonData}
-        />
-      </div>
+    <div style={{ height: "100%" }}>
+      <LocalDataSourceProvider modules={["SIMUL"]}>
+        <LayoutProvider>
+          <View
+            Header={VuuBlotterHeader}
+            id="table-next-feature"
+            className="vuuTableFeature"
+            closeable
+            header
+            title="Instruments"
+            style={{ width: 700, height: 500 }}
+          >
+            <FilterTableFeature tableSchema={schema} />
+          </View>
+        </LayoutProvider>
+      </LocalDataSourceProvider>
     </div>
   );
 };
@@ -74,36 +38,38 @@ export const FilterTableFeatureFlexBox = () => {
   const schema = getSchema("instruments");
 
   return (
-    <LayoutProvider>
-      <FlexboxLayout
-        style={{ flexDirection: "column", width: "100%", height: "100%" }}
-      >
-        <View
-          Header={VuuBlotterHeader}
-          id="table-next-feature-0"
-          className="vuuTableFeature"
-          closeable
-          header
-          resizeable
-          title="Instruments"
-          style={{ flex: 1 }}
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <LayoutProvider>
+        <FlexboxLayout
+          style={{ flexDirection: "column", width: "100%", height: "100%" }}
         >
-          <FilterTableFeature tableSchema={schema} />
-        </View>
-        <View
-          Header={VuuBlotterHeader}
-          id="table-next-feature"
-          className="vuuTableFeature-1"
-          closeable
-          header
-          resizeable
-          title="Instruments"
-          style={{ flex: 1 }}
-        >
-          <FilterTableFeature tableSchema={schema} />
-        </View>
-      </FlexboxLayout>
-    </LayoutProvider>
+          <View
+            Header={VuuBlotterHeader}
+            id="table-next-feature-0"
+            className="vuuTableFeature"
+            closeable
+            header
+            resizeable
+            title="Instruments"
+            style={{ flex: 1 }}
+          >
+            <FilterTableFeature tableSchema={schema} />
+          </View>
+          <View
+            Header={VuuBlotterHeader}
+            id="table-next-feature"
+            className="vuuTableFeature-1"
+            closeable
+            header
+            resizeable
+            title="Instruments"
+            style={{ flex: 1 }}
+          >
+            <FilterTableFeature tableSchema={schema} />
+          </View>
+        </FlexboxLayout>
+      </LayoutProvider>
+    </LocalDataSourceProvider>
   );
 };
 FilterTableFeatureFlexBox.displaySequence = displaySequence++;
@@ -125,17 +91,19 @@ export const FilterTableFeatureAsFeature = () => {
   const tableSchema = getSchema("instruments");
 
   return (
-    <View
-      Header={VuuBlotterHeader}
-      id="table-next-feature"
-      className="vuuTableFeature"
-      closeable
-      header
-      title="Instruments"
-      style={{ width: 700, height: 500 }}
-    >
-      <Feature ComponentProps={{ tableSchema }} url={url} css={css} />
-    </View>
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <View
+        Header={VuuBlotterHeader}
+        id="table-next-feature"
+        className="vuuTableFeature"
+        closeable
+        header
+        title="Instruments"
+        style={{ width: 700, height: 500 }}
+      >
+        <Feature ComponentProps={{ tableSchema }} url={url} css={css} />
+      </View>
+    </LocalDataSourceProvider>
   );
 };
 FilterTableFeatureAsFeature.displayName = "FilterTable";
