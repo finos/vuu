@@ -249,6 +249,11 @@ export interface ColumnDescriptor extends DataValueDescriptor {
   aggregate?: VuuAggType;
   align?: ColumnAlignment;
   className?: string;
+  /**
+   * Allows custom content to be rendered into the column header. This will be an identifier.
+   * The identifier will be used to retrieve content from the component registry. The componnet
+   * yielded will be rendered into the column header.
+   */
   colHeaderContentRenderer?: string;
   colHeaderLabelRenderer?: string;
   flex?: number;

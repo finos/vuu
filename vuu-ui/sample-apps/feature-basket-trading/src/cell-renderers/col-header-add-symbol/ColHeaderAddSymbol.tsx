@@ -3,13 +3,16 @@ import {
   useLayoutProviderDispatch,
   useViewContext,
 } from "@finos/vuu-layout";
-import { VuuShellLocation, registerComponent } from "@finos/vuu-utils";
+import { registerComponent, VuuShellLocation } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
 import type { DataSource } from "@finos/vuu-data-types";
 import type { TableSearchProps } from "@finos/vuu-ui-controls/src";
 import { MouseEventHandler, useCallback, useMemo } from "react";
+import { TableSearch } from "@finos/vuu-ui-controls";
 
 import "./ColHeaderAddSymbol.css";
+
+registerComponent("TableSearch", TableSearch, "view");
 
 const classBase = "vuuColHeaderAddSymbol";
 
@@ -37,13 +40,17 @@ export const ColHeaderAddSymbol = () => {
         props: {
           expanded: true,
           content: {
-            type: "InstrumentSearch",
+            type: "TableSearch",
             props: {
               TableProps: {
                 allowDragDrop: "drag-copy",
+                config: {
+                  columns: [{ name: "description" }],
+                },
                 dataSource,
                 id: "basket-instruments",
               },
+              searchColumns: ["description"],
             } as TableSearchProps,
           },
           title: "Add Ticker",
@@ -59,10 +66,3 @@ export const ColHeaderAddSymbol = () => {
     </span>
   );
 };
-
-registerComponent(
-  "col-header-add-symbol",
-  ColHeaderAddSymbol,
-  "column-header-content-renderer",
-  {},
-);
