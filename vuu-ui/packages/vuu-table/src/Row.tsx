@@ -59,6 +59,7 @@ export const Row = memo(
     onClick,
     onDataEdited,
     onToggleGroup,
+    searchPattern,
     showBookends = true,
     virtualColSpan = 0,
     zebraStripes = false,
@@ -159,6 +160,7 @@ export const Row = memo(
               onClick={isGroup || isJsonCell ? handleGroupCellClick : undefined}
               onDataEdited={onDataEdited}
               row={row}
+              searchPattern={searchPattern}
             />
           );
         })}

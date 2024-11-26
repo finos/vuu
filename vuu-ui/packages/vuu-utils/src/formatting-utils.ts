@@ -89,3 +89,12 @@ export const getValueFormatter = (
   }
   return defaultValueFormatter;
 };
+
+/**
+ * Lowercases a string and returns as Lowercase typescript type
+ *
+ * @param str the input string
+ * @returns str converted to Lowercase
+ */
+export const lowerCase = (str: string) =>
+  str.toLowerCase() as Lowercase<string>;

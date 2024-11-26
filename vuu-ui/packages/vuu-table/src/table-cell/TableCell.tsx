@@ -7,6 +7,7 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { MouseEventHandler, useCallback, useState } from "react";
 import { useCell } from "../useCell";
+import { useHighlighting } from "../useHighlighting";
 
 import tableCellCss from "./TableCell.css";
 
@@ -18,6 +19,7 @@ export const TableCell = ({
   onClick,
   onDataEdited,
   row,
+  searchPattern = "",
 }: TableCellProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -73,6 +75,9 @@ export const TableCell = ({
     [column, onClick],
   );
 
+  const value = valueFormatter(row[dataIdx]);
+  const valueWithHighlighting = useHighlighting(value, searchPattern);
+
   return (
     <div
       aria-colindex={ariaColIndex}
@@ -87,9 +92,10 @@ export const TableCell = ({
           columnMap={columnMap}
           onEdit={handleDataItemEdited}
           row={row}
+          searchPattern={searchPattern}
         />
       ) : (
-        valueFormatter(row[dataIdx])
+        valueWithHighlighting
       )}
     </div>
   );

@@ -8,6 +8,7 @@ export * from "./table-config";
 export * from "./table-header";
 export * from "./useControlledTableNavigation";
 export * from "./useEditableCell";
+export * from "./useHighlighting";
 export * from "./useKeyboardNavigation";
 export * from "./useTableModel";
 export * from "./useTableScroll";

@@ -29,26 +29,44 @@ let displaySequence = 1;
 
 const TableSearchTemplate = ({
   schema,
-  TableProps,
+  TableProps: TablePropsProp,
 }: {
   schema: TableSchema;
   TableProps?: Partial<TableProps>;
 }) => {
   const { VuuDataSource } = useDataSource();
-  const dataSource = useMemo(() => {
-    const { table } = schema;
-    const dataSource = new VuuDataSource({
-      columns: schema.columns.map((c) => c.name),
-      table,
-    });
-    return dataSource;
-  }, [VuuDataSource, schema]);
+  const { table } = schema;
+
+  const TableProps = useMemo<TableProps>(
+    () => ({
+      config: {
+        columns: [
+          {
+            name: "description",
+            width: 200,
+            type: {
+              name: "string",
+              renderer: {
+                name: "search-cell",
+              },
+            },
+          },
+        ],
+        ...TablePropsProp?.config,
+      },
+      dataSource: new VuuDataSource({
+        columns: schema.columns.map((c) => c.name),
+        table,
+      }),
+      ...TablePropsProp,
+    }),
+    [TablePropsProp, VuuDataSource, schema.columns, table],
+  );
 
   return (
     <TableSearch
       TableProps={TableProps}
       autoFocus
-      dataSource={dataSource}
       searchColumns={["description"]}
       style={{ height: 400, width: 250 }}
     />

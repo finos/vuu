@@ -1,16 +1,14 @@
-import { DataSource } from "@finos/vuu-data-types";
 import {
   Table,
   TableProps,
   useControlledTableNavigation,
 } from "@finos/vuu-table";
-import { TableConfig } from "@finos/vuu-table-types";
 import { registerComponent } from "@finos/vuu-utils";
 import { Input } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { HTMLAttributes, RefCallback, useCallback } from "react";
+import { HTMLAttributes, RefCallback, useCallback, useMemo } from "react";
 import { SearchCell } from "./SearchCell";
 import { useTableSearch } from "./useTableSearch";
 
@@ -18,27 +16,13 @@ import instrumentSearchCss from "./TableSearch.css";
 
 const classBase = "vuuTableSearch";
 
-const defaultTableConfig: TableConfig = {
-  columns: [
-    { name: "bbg", hidden: true },
-    {
-      name: "description",
-      width: 200,
-      type: {
-        name: "string",
-        renderer: {
-          name: "search-cell",
-        },
-      },
-    },
-  ],
+const defaultConfig = {
   rowSeparators: true,
 };
 
 export interface TableSearchProps extends HTMLAttributes<HTMLDivElement> {
-  TableProps?: Partial<TableProps>;
+  TableProps: TableProps;
   autoFocus?: boolean;
-  dataSource: DataSource;
   placeHolder?: string;
   searchColumns: string[];
 }
@@ -46,10 +30,9 @@ export interface TableSearchProps extends HTMLAttributes<HTMLDivElement> {
 const searchIcon = <span data-icon="search" />;
 
 export const TableSearch = ({
-  TableProps,
+  TableProps: { dataSource: dataSourceProp, ...TableProps },
   autoFocus = false,
   className,
-  dataSource: dataSourceProp,
   placeHolder,
   searchColumns,
   ...htmlAttributes
@@ -60,6 +43,15 @@ export const TableSearch = ({
     css: instrumentSearchCss,
     window: targetWindow,
   });
+
+  const config = useMemo(
+    () => ({
+      ...defaultConfig,
+      ...TableProps?.config,
+    }),
+
+    [TableProps?.config],
+  );
 
   const { dataSource, onChange, searchState } = useTableSearch({
     dataSource: dataSourceProp,
@@ -93,15 +85,16 @@ export const TableSearch = ({
           disableFocus
           id="instrument-search"
           rowHeight={25}
-          config={defaultTableConfig}
           highlightedIndex={highlightedIndexRef.current}
           renderBufferSize={100}
           {...TableProps}
           className={`${classBase}-list`}
+          config={config}
           dataSource={dataSource}
           navigationStyle="row"
           onHighlight={onHighlight}
           ref={tableRef}
+          searchPattern={searchState.searchText}
           showColumnHeaders={false}
         />
       ) : null}

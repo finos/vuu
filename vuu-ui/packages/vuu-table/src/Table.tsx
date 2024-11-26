@@ -25,7 +25,12 @@ import {
   dragStrategy,
   reduceSizeHeight,
 } from "@finos/vuu-ui-controls";
-import { metadataKeys, RowToObjectMapper, useId } from "@finos/vuu-utils";
+import {
+  lowerCase,
+  metadataKeys,
+  RowToObjectMapper,
+  useId,
+} from "@finos/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -48,9 +53,9 @@ import { TableHeader } from "./table-header";
 import { useMeasuredHeight } from "./useMeasuredHeight";
 import { useTable } from "./useTable";
 import { ScrollingAPI } from "./useTableScroll";
+import { TableCellBlock } from "./cell-block/cellblock-utils";
 
 import tableCss from "./Table.css";
-import { TableCellBlock } from "./cell-block/cellblock-utils";
 
 const classBase = "vuuTable";
 
@@ -59,7 +64,10 @@ const { IDX, RENDER_IDX } = metadataKeys;
 export type TableNavigationStyle = "none" | "cell" | "row" | "tree";
 
 export interface TableProps
-  extends Omit<MeasuredContainerProps, "onDragStart" | "onDrop" | "onSelect"> {
+  extends Omit<
+    MeasuredContainerProps,
+    "onDragStart" | "onDrop" | "onSelect" | "searchPattern"
+  > {
   /**
    * A react function componnet that will be rendered if there are no rows to display
    */
@@ -211,6 +219,11 @@ export interface TableProps
   scrollingApiRef?: ForwardedRef<ScrollingAPI>;
 
   /**
+   * If a search has been applied against data, this is the search text used.
+   * Will be used to highlight matching text.
+   */
+  searchPattern?: string;
+  /**
    * Selection Bookends style the left and right edge of a selection block.
    * They are optional, value currently defaults to 4.
    * TODO this should just live in CSS
@@ -270,6 +283,7 @@ const TableCore = ({
   groupToggleTarget,
   highlightedIndex: highlightedIndexProp,
   id: idProp,
+  lowerCaseSearchPattern,
   navigationStyle = "cell",
   onAvailableColumnsChange,
   onConfigChange,
@@ -294,9 +308,13 @@ const TableCore = ({
   size,
 }: Omit<
   TableProps,
-  "maxViewportRowLimit" | "rowHeight" | "viewportRowLimit"
+  "maxViewportRowLimit" | "rowHeight" | "searchPattern" | "viewportRowLimit"
 > & {
   containerRef: RefObject<HTMLDivElement>;
+  /**
+   * We lowercase this once, on entry, which is the format in which it will be used.
+   */
+  lowerCaseSearchPattern: Lowercase<string>;
   rowHeight: number;
   size: MeasuredSize;
 }) => {
@@ -457,6 +475,7 @@ const TableCore = ({
                     offset={showPaginationControls ? 0 : getRowOffset(data)}
                     onToggleGroup={onToggleGroup}
                     showBookends={selectionBookendWidth > 0}
+                    searchPattern={lowerCaseSearchPattern}
                     virtualColSpan={scrollProps.virtualColSpan}
                     zebraStripes={tableAttributes.zebraStripes}
                   />
@@ -537,6 +556,7 @@ export const Table = forwardRef(function Table(
     rowHeight: rowHeightProp,
     rowToObject,
     scrollingApiRef,
+    searchPattern = "",
     selectionBookendWidth = 4,
     selectionModel,
     showColumnHeaders,
@@ -685,6 +705,7 @@ export const Table = forwardRef(function Table(
           rowHeight={rowHeight}
           rowToObject={rowToObject}
           scrollingApiRef={scrollingApiRef}
+          lowerCaseSearchPattern={lowerCase(searchPattern)}
           selectionBookendWidth={selectionBookendWidth}
           selectionModel={selectionModel}
           showColumnHeaders={showColumnHeaders}

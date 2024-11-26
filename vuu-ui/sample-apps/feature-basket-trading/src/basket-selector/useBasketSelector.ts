@@ -21,6 +21,7 @@ export type BasketSelectorHookProps = Pick<
 >;
 
 export const useBasketSelector = ({
+  dataSourceBasketTradingSearch,
   onClickAddBasket,
   onSelectBasket,
 }: BasketSelectorHookProps) => {
@@ -63,8 +64,9 @@ export const useBasketSelector = ({
     onClickAddBasket();
   }, [onClickAddBasket]);
 
-  const TableProps: Partial<TableProps> = useMemo(
+  const TableProps: TableProps = useMemo(
     () => ({
+      dataSource: dataSourceBasketTradingSearch,
       height: "auto",
       Row: BasketSelectorRow,
       config: {
@@ -98,7 +100,7 @@ export const useBasketSelector = ({
       rowHeight: 47,
       tabIndex: -1,
     }),
-    [handleRowClick],
+    [dataSourceBasketTradingSearch, handleRowClick],
   );
 
   return {

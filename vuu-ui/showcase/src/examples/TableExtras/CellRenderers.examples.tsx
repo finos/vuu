@@ -1,3 +1,4 @@
+import { DataSourceRow } from "@finos/vuu-data-types";
 import { TableCell } from "@finos/vuu-table";
 import { BackgroundCell } from "@finos/vuu-table-extras";
 import {
@@ -13,7 +14,7 @@ import { FormEventHandler, useCallback, useMemo, useState } from "react";
 let displaySequence = 1;
 
 const columnMap = {
-  price: 0,
+  price: 8,
 };
 
 const defaultFormatting = { decimals: 2 };
@@ -45,7 +46,8 @@ export const DefaultBackgroundCell = ({
   }, [formatting, renderer]);
 
   const [value, setValue] = useState<string>("100.00");
-  const [row, setRow] = useState<[number]>([100.0]);
+  // prettier-ignore
+  const [row, setRow] = useState<DataSourceRow>([0, 0, true, false, 1, 0, "key", 0, 100.00]);
 
   const handleChange = useCallback<FormEventHandler<HTMLInputElement>>(
     (evt) => setValue((evt.target as HTMLInputElement).value),
@@ -55,7 +57,7 @@ export const DefaultBackgroundCell = ({
     const numericValue = parseFloat(value);
     if (!isNaN(numericValue)) {
       console.log(`change price ${typeof value}`);
-      setRow([numericValue]);
+      setRow([0, 0, true, false, 1, 0, "key", 0, numericValue]);
     }
   }, []);
 
@@ -79,7 +81,7 @@ export const DefaultBackgroundCell = ({
       <TableCell
         column={priceColumn as RuntimeColumnDescriptor}
         columnMap={columnMap}
-        row={row as any}
+        row={row}
       />
     </div>
   );

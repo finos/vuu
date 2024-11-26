@@ -1,8 +1,10 @@
 import { FormEventHandler, useCallback, useMemo, useState } from "react";
 import { TableSearchProps } from "./TableSearch";
+import { DataSource } from "@finos/vuu-data-types";
 
 export interface TableSearchHookProps
-  extends Pick<TableSearchProps, "dataSource" | "searchColumns"> {
+  extends Pick<TableSearchProps, "searchColumns"> {
+  dataSource: DataSource;
   label?: string;
 }
 
@@ -17,7 +19,8 @@ export const useTableSearch = ({
 
   const baseFilterPattern = useMemo(
     // TODO make this contains once server supports it
-    () => searchColumns.map((col) => `${col} starts "__VALUE__"`).join(" or "),
+    () =>
+      searchColumns.map((col) => `${col} contains "__VALUE__"`).join(" or "),
     [searchColumns],
   );
 

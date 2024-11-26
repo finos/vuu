@@ -35,7 +35,7 @@ import type {
   TableHeadings,
   ValueListRenderer,
 } from "@finos/vuu-table-types";
-import type { CSSProperties } from "react";
+import { type CSSProperties } from "react";
 import { moveItem } from "./array-utils";
 import { TableModel } from "@finos/vuu-table";
 
@@ -809,7 +809,7 @@ export const getGroupValue = (
   columns: RuntimeColumnDescriptor[],
   row: DataSourceRow,
   columnMap: ColumnMap,
-): unknown => {
+): string | null => {
   const { [DEPTH]: depth, [IS_LEAF]: isLeaf } = row;
   // Depth can be greater tha group columns when we have just removed a column from groupby
   // but new data has not yet been received.
@@ -820,6 +820,7 @@ export const getGroupValue = (
   } else {
     // offset allows for $root
     const { name, valueFormatter } = columns[depth - 1];
+
     const value = valueFormatter(row[columnMap[name]]);
     return value;
   }

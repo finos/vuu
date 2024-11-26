@@ -41,9 +41,9 @@ export const ColHeaderAddSymbol = () => {
             props: {
               TableProps: {
                 allowDragDrop: "drag-copy",
+                dataSource,
                 id: "basket-instruments",
               },
-              dataSource,
             } as TableSearchProps,
           },
           title: "Add Ticker",
