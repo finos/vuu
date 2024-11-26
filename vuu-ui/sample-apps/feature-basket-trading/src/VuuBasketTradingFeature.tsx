@@ -1,33 +1,22 @@
-import { TableSchema } from "@finos/vuu-data-types";
 import { FlexboxLayout, Stack } from "@finos/vuu-layout";
 import { BasketTableEdit } from "./basket-table-edit";
 import { BasketTableLive } from "./basket-table-live";
 import { BasketToolbar } from "./basket-toolbar";
-
-import "./VuuBasketTradingFeature.css";
 import { EmptyBasketsPanel } from "./empty-baskets-panel";
 import { useBasketTrading } from "./useBasketTrading";
+
+import "./VuuBasketTradingFeature.css";
 
 const classBase = "VuuBasketTradingFeature";
 
 export type BasketStatus = "design" | "on-market";
 const basketStatus: [BasketStatus, BasketStatus] = ["design", "on-market"];
 
-export interface BasketTradingFeatureProps {
-  basketSchema: TableSchema;
-  basketConstituentSchema: TableSchema;
-  basketTradingSchema: TableSchema;
-  basketTradingConstituentJoinSchema: TableSchema;
-}
-
-const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
-  const {
-    basketSchema,
-    basketConstituentSchema,
-    basketTradingSchema,
-    basketTradingConstituentJoinSchema,
-  } = props;
-
+const VuuBasketTradingFeature = () => {
+  const basketTradingProps = useBasketTrading();
+  if (basketTradingProps === undefined) {
+    return null;
+  }
   const {
     basket,
     basketCount,
@@ -44,14 +33,13 @@ const VuuBasketTradingFeature = (props: BasketTradingFeatureProps) => {
     onDropInstrument,
     onSendToMarket,
     onTakeOffMarket,
-  } = useBasketTrading({
-    basketSchema,
-    basketConstituentSchema,
-    basketTradingSchema,
-    basketTradingConstituentJoinSchema,
-  });
+  } = basketTradingProps;
 
-  if (basketCount === -1) {
+  if (
+    basketCount === -1 ||
+    dataSourceBasketTradingConstituentJoin === undefined ||
+    basketSelectorProps === undefined
+  ) {
     // TODO loading
     return null;
   } else if (basketCount === 0) {

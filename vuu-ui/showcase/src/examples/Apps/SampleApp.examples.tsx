@@ -60,7 +60,7 @@ const dynamicFeatures: DynamicFeatureDescriptor[] = [
     name: "filter-table",
     ...featurePaths.FilterTableFeature,
     featureProps: {
-      schema: "*",
+      vuuTables: "*",
     },
     leftNavLocation: "vuu-tables",
   },
@@ -69,7 +69,7 @@ const dynamicFeatures: DynamicFeatureDescriptor[] = [
     name: "instrument-tiles",
     ...featurePaths.InstrumentTiles,
     featureProps: {
-      schemas: [
+      vuuTables: [
         {
           module: "SIMUL",
           table: "instrumentPrices",
@@ -84,26 +84,6 @@ const dynamicFeatures: DynamicFeatureDescriptor[] = [
     ...featurePaths.BasketTrading,
     viewProps: {
       header: false,
-    },
-    featureProps: {
-      schemas: [
-        {
-          module: "BASKET",
-          table: "basket",
-        },
-        {
-          module: "BASKET",
-          table: "basketTrading",
-        },
-        {
-          module: "BASKET",
-          table: "basketTradingConstituentJoin",
-        },
-        {
-          module: "BASKET",
-          table: "basketConstituent",
-        },
-      ],
     },
     leftNavLocation: "vuu-features",
   },

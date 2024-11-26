@@ -5,7 +5,7 @@ export type QueryReponse = { [key: string]: unknown };
 
 export type ViewDispatch = <Action extends ViewAction = ViewAction>(
   action: Action,
-  evt?: SyntheticEvent
+  evt?: SyntheticEvent,
 ) => Promise<boolean | QueryReponse | void>;
 
 /**
@@ -20,7 +20,7 @@ export interface ViewContextAPI {
    */
   dispatch?: ViewDispatch | null;
   id?: string;
-  load?: (key?: string) => unknown;
+  load?: <T = unknown>(key?: string) => T;
   loadSession?: (key?: string) => unknown;
   onConfigChange?: (config: unknown) => void;
   path?: string;

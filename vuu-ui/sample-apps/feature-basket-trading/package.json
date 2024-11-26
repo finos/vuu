@@ -47,7 +47,7 @@
       "header": false
     },
     "featureProps": {
-      "schemas": [
+      "vuuTables": [
         {
           "module": "BASKET",
           "table": "basket"

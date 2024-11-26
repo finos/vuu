@@ -105,5 +105,3 @@ export const TableSearch = ({
 registerComponent("search-cell", SearchCell, "cell-renderer", {
   serverDataType: "private",
 });
-
-registerComponent?.("TableSearch", TableSearch, "view");

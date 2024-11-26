@@ -1,13 +1,12 @@
-import { getAllSchemas } from "@finos/vuu-data-test";
+import { LocalDataSourceProvider } from "@finos/vuu-data-test";
 import { LayoutProvider, View } from "@finos/vuu-layout";
-import { Feature, ShellContextProvider, useWorkspace } from "@finos/vuu-shell";
+import { Feature, ShellContextProvider } from "@finos/vuu-shell";
 import {
   DynamicFeatureProps,
   LookupTableProvider,
   registerComponent,
 } from "@finos/vuu-utils";
-import { useCallback, useEffect } from "react";
-import { BasketTradingFeatureProps } from "sample-apps/feature-basket-trading";
+import { useCallback } from "react";
 import BasketTradingFeature from "../../features/BasketTrading.feature";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
 
@@ -16,27 +15,6 @@ registerComponent("BasketTradingFeature", BasketTradingFeature, "view");
 let displaySequence = 1;
 
 export const DefaultBasketTradingFeature = () => {
-  const schemas = getAllSchemas();
-  //-----------------------------------------------------------------------------------
-  // Note the following functionality is provided by the Shell in a full application.
-  // Likewise the Shell provides the LayoutProvider wrapper. Again, in a full Vuu
-  // application, the Palette wraps each feature in a View.
-  //-----------------------------------------------------------------------------------
-  const { workspaceJSON, saveApplicationLayout } = useWorkspace();
-
-  useEffect(() => {
-    console.log(`%clayout changed`, "color: blue; font-weight: bold;");
-  }, [workspaceJSON]);
-
-  const handleLayoutChange = useCallback(
-    (layout) => {
-      console.log("layout change");
-      saveApplicationLayout(layout);
-    },
-    [saveApplicationLayout],
-  );
-  // ----------------------------------------------------------------------------------
-
   const getLookupValues = useCallback<LookupTableProvider>((table) => {
     if (table.table === "algoType") {
       return [
@@ -58,31 +36,23 @@ export const DefaultBasketTradingFeature = () => {
   }, []);
 
   return (
-    <ShellContextProvider value={{ getLookupValues }}>
-      <LayoutProvider
-        workspaceJSON={workspaceJSON}
-        onLayoutChange={handleLayoutChange}
-      >
-        <View
-          Header={VuuBlotterHeader}
-          id="table-next-feature"
-          className="vuuTableFeature"
-          closeable
-          header
-          title="Basket Trading"
-          style={{ width: 1260, height: 600 }}
-        >
-          <BasketTradingFeature
-            basketSchema={schemas.basket}
-            basketConstituentSchema={schemas.basketConstituent}
-            basketTradingSchema={schemas.basketTrading}
-            basketTradingConstituentJoinSchema={
-              schemas.basketTradingConstituentJoin
-            }
-          />
-        </View>
-      </LayoutProvider>
-    </ShellContextProvider>
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <ShellContextProvider value={{ getLookupValues }}>
+        <LayoutProvider>
+          <View
+            Header={VuuBlotterHeader}
+            id="table-next-feature"
+            className="vuuTableFeature"
+            closeable
+            header
+            title="Basket Trading"
+            style={{ width: 1260, height: 600 }}
+          >
+            <BasketTradingFeature />
+          </View>
+        </LayoutProvider>
+      </ShellContextProvider>
+    </LocalDataSourceProvider>
   );
 };
 DefaultBasketTradingFeature.displaySequence = displaySequence++;
@@ -101,31 +71,20 @@ const featurePropsForEnv: Record<Environment, DynamicFeatureProps> = {
 
 export const BasketTradingFeatureAsFeature = () => {
   const { url, css } = featurePropsForEnv[env];
-  const schemas = getAllSchemas();
   return (
-    <View
-      Header={VuuBlotterHeader}
-      id="table-next-feature"
-      className="vuuTableFeature"
-      closeable
-      header
-      title="Instruments"
-      style={{ width: 1260, height: 600 }}
-    >
-      <Feature
-        ComponentProps={
-          {
-            basketSchema: schemas.basket,
-            basketConstituentSchema: schemas.basketConstituent,
-            basketTradingSchema: schemas.basketTrading,
-            basketTradingConstituentJoinSchema:
-              schemas.basketTradingConstituentJoin,
-          } as BasketTradingFeatureProps
-        }
-        url={url}
-        css={css}
-      />
-    </View>
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <View
+        Header={VuuBlotterHeader}
+        id="table-next-feature"
+        className="vuuTableFeature"
+        closeable
+        header
+        title="Instruments"
+        style={{ width: 1260, height: 600 }}
+      >
+        <Feature url={url} css={css} />
+      </View>
+    </LocalDataSourceProvider>
   );
 };
 BasketTradingFeatureAsFeature.displayName = "BasketTrading";

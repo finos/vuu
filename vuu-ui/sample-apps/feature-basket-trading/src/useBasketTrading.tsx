@@ -5,18 +5,20 @@ import {
   ViewportRpcResponse,
 } from "@finos/vuu-data-types";
 import { useViewContext } from "@finos/vuu-layout";
-import { ContextMenuConfiguration, useNotifications } from "@finos/vuu-popups";
-import { buildColumnMap, ColumnMap, metadataKeys } from "@finos/vuu-utils";
+import {
+  type ContextMenuConfiguration,
+  useNotifications,
+} from "@finos/vuu-popups";
+import { VuuRpcViewportRequest } from "@finos/vuu-protocol-types";
 import { TableConfig, TableConfigChangeHandler } from "@finos/vuu-table-types";
+import { type ColumnMap, metadataKeys } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { BasketSelectorProps } from "./basket-selector";
-import { BasketChangeHandler } from "./basket-toolbar";
-import { BasketCreatedHandler, NewBasketPanel } from "./new-basket-panel";
-import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
-import { BasketTradingFeatureProps } from "./VuuBasketTradingFeature";
+import type { BasketSelectorProps } from "./basket-selector";
 import defaultEditColumns from "./basket-table-edit/basketConstituentEditColumns";
 import defaultLiveColumns from "./basket-table-live/basketConstituentLiveColumns";
-import { VuuRpcViewportRequest } from "@finos/vuu-protocol-types";
+import type { BasketChangeHandler } from "./basket-toolbar";
+import { type BasketCreatedHandler, NewBasketPanel } from "./new-basket-panel";
+import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
 
 const { KEY } = metadataKeys;
 
@@ -48,27 +50,16 @@ export class Basket {
   }
 }
 
-export type BasketTradingHookProps = Pick<
-  BasketTradingFeatureProps,
-  | "basketSchema"
-  | "basketConstituentSchema"
-  | "basketTradingSchema"
-  | "basketTradingConstituentJoinSchema"
->;
-
 type BasketState = {
   basketInstanceId?: string;
   dialog?: JSX.Element;
 };
 
-const NO_STATE = { basketId: undefined } as any;
+const NO_STATE = { basketInstanceId: undefined } as {
+  basketInstanceId: undefined;
+};
 
-export const useBasketTrading = ({
-  basketSchema,
-  basketConstituentSchema,
-  basketTradingSchema,
-  basketTradingConstituentJoinSchema,
-}: BasketTradingHookProps) => {
+export const useBasketTrading = () => {
   const { load, save } = useViewContext();
   const notify = useNotifications();
 
@@ -92,29 +83,22 @@ export const useBasketTrading = ({
     );
   }, [load]);
 
-  const basketConstituentMap = useMemo(
-    () => buildColumnMap(basketConstituentSchema.columns),
-    [basketConstituentSchema],
-  );
-
-  const basketInstanceId = useMemo<string>(() => {
-    const { basketInstanceId } = load?.("basket-state") ?? NO_STATE;
+  const basketInstanceId = useMemo<string | undefined>(() => {
+    const { basketInstanceId } =
+      load<{ basketInstanceId: string }>?.("basket-state") ?? NO_STATE;
     return basketInstanceId;
   }, [load]);
 
   const {
+    basketConstituentMap,
+    basketSchema,
+    basketTradingMap,
     dataSourceBasketTradingControl,
     dataSourceBasketTradingSearch,
     dataSourceBasketTradingConstituentJoin,
     onSendToMarket,
     onTakeOffMarket,
-  } = useBasketTradingDataSources({
-    basketInstanceId,
-    basketSchema,
-    basketConstituentSchema,
-    basketTradingSchema,
-    basketTradingConstituentJoinSchema,
-  });
+  } = useBasketTradingDataSources({ basketInstanceId });
 
   const [basket, setBasket] = useState<Basket | undefined>();
 
@@ -125,27 +109,22 @@ export const useBasketTrading = ({
     dialog: undefined,
   });
 
-  const columnMapBasketTrading = useMemo(
-    () => buildColumnMap(dataSourceBasketTradingControl.columns),
-    [dataSourceBasketTradingControl.columns],
-  );
-
   const handleMessageFromBasketTradingControl = useCallback<SubscribeCallback>(
     (message) => {
       if (message.type === "viewport-update") {
         if (message.size) {
           setBasketCount(message.size);
         }
-        if (message.rows && message.rows.length > 0) {
-          setBasket(new Basket(message.rows[0], columnMapBasketTrading));
+        if (message.rows && message.rows.length > 0 && basketTradingMap) {
+          setBasket(new Basket(message.rows[0], basketTradingMap));
         }
       }
     },
-    [columnMapBasketTrading],
+    [basketTradingMap],
   );
 
   useMemo(() => {
-    dataSourceBasketTradingControl.subscribe(
+    dataSourceBasketTradingControl?.subscribe(
       {
         range: { from: 0, to: 1 },
       },
@@ -167,10 +146,15 @@ export const useBasketTrading = ({
 
   const handleSelectBasket = useCallback(
     (basketInstanceId: string) => {
-      save?.({ basketInstanceId }, "basket-state");
-      const filter = { filter: `instanceId = "${basketInstanceId}"` };
-      dataSourceBasketTradingConstituentJoin.filter = filter;
-      dataSourceBasketTradingControl.filter = filter;
+      if (
+        dataSourceBasketTradingConstituentJoin &&
+        dataSourceBasketTradingControl
+      ) {
+        save?.({ basketInstanceId }, "basket-state");
+        const filter = { filter: `instanceId = "${basketInstanceId}"` };
+        dataSourceBasketTradingConstituentJoin.filter = filter;
+        dataSourceBasketTradingControl.filter = filter;
+      }
     },
     [
       dataSourceBasketTradingConstituentJoin,
@@ -191,25 +175,32 @@ export const useBasketTrading = ({
   );
 
   const handleAddBasket = useCallback(() => {
-    setBasketState((state) => ({
-      ...state,
-      dialog: (
-        <NewBasketPanel
-          basketSchema={basketSchema}
-          onClose={handleCloseNewBasketPanel}
-          onBasketCreated={handleBasketCreated}
-        />
-      ),
-    }));
+    if (basketSchema) {
+      setBasketState((state) => ({
+        ...state,
+        dialog: (
+          <NewBasketPanel
+            basketSchema={basketSchema}
+            onClose={handleCloseNewBasketPanel}
+            onBasketCreated={handleBasketCreated}
+          />
+        ),
+      }));
+    }
   }, [basketSchema, handleBasketCreated, handleCloseNewBasketPanel]);
 
-  const basketSelectorProps = useMemo<Omit<BasketSelectorProps, "basket">>(
-    () => ({
-      basketInstanceId,
-      dataSourceBasketTradingSearch,
-      onClickAddBasket: handleAddBasket,
-      onSelectBasket: handleSelectBasket,
-    }),
+  const basketSelectorProps = useMemo<
+    Omit<BasketSelectorProps, "basket"> | undefined
+  >(
+    () =>
+      dataSourceBasketTradingSearch
+        ? {
+            basketInstanceId,
+            dataSourceBasketTradingSearch,
+            onClickAddBasket: handleAddBasket,
+            onSelectBasket: handleSelectBasket,
+          }
+        : undefined,
     [
       basketInstanceId,
       dataSourceBasketTradingSearch,
@@ -220,7 +211,7 @@ export const useBasketTrading = ({
 
   const handleCommitBasketChange = useCallback<BasketChangeHandler>(
     (columnName, value) => {
-      if (basket) {
+      if (basket && dataSourceBasketTradingControl) {
         const key = basket.dataSourceRow[KEY];
         return dataSourceBasketTradingControl.applyEdit(key, columnName, value);
       }
@@ -250,10 +241,10 @@ export const useBasketTrading = ({
   const handleDropInstrument = useCallback(
     (dragDropState) => {
       const constituentRow = dragDropState.payload;
-      if (constituentRow) {
+      if (constituentRow && basketConstituentMap) {
         const ric = constituentRow[basketConstituentMap.ric];
         dataSourceBasketTradingConstituentJoin
-          .rpcCall?.<ViewportRpcResponse>({
+          ?.rpcCall?.<ViewportRpcResponse>({
             type: "VIEW_PORT_RPC_CALL",
             rpcName: "addConstituent",
             namedParams: {},
@@ -276,7 +267,7 @@ export const useBasketTrading = ({
           });
       }
     },
-    [basketConstituentMap.ric, dataSourceBasketTradingConstituentJoin, notify],
+    [basketConstituentMap, dataSourceBasketTradingConstituentJoin, notify],
   );
 
   const handleConfigChangeEdit = useCallback<TableConfigChangeHandler>(
@@ -294,9 +285,9 @@ export const useBasketTrading = ({
   );
 
   useEffect(() => {
-    dataSourceBasketTradingControl.resume?.();
+    dataSourceBasketTradingControl?.resume?.();
     return () => {
-      dataSourceBasketTradingControl.suspend?.();
+      dataSourceBasketTradingControl?.suspend?.();
     };
   }, [dataSourceBasketTradingControl]);
 

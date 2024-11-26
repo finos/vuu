@@ -1,17 +1,21 @@
-import { Table, TableProps } from "@finos/vuu-table";
 import {
   ContextMenuConfiguration,
   ContextMenuProvider,
 } from "@finos/vuu-popups";
+import { Table, TableProps } from "@finos/vuu-table";
+import { registerComponent } from "@finos/vuu-utils";
 import { ColHeaderAddSymbol } from "../cell-renderers";
 
 import "./BasketTableEdit.css";
 
-const classBase = "vuuBasketTableEdit";
+registerComponent(
+  "col-header-add-symbol",
+  ColHeaderAddSymbol,
+  "column-header-content-renderer",
+  {},
+);
 
-if (typeof ColHeaderAddSymbol !== "function") {
-  console.warn("BasketTableEdit not all custom cell renderers are available");
-}
+const classBase = "vuuBasketTableEdit";
 
 export interface BasketTableEditProps extends TableProps {
   contextMenuConfig: ContextMenuConfiguration;
