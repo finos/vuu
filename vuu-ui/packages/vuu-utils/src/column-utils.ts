@@ -806,47 +806,11 @@ export const getGroupIcon = (
   }
 };
 
-export const withHighlighting =
-  (
-    formatter: ValueFormatter,
-    pattern: Lowercase<string>,
-  ): ValueFormatter<string | JSX.Element> =>
-  // eslint-disable-next-line react/display-name
-  (value: unknown) => {
-    const formattedValue = formatter(value);
-    const lowercaseValue = formattedValue.toLowerCase();
-    let start = 0;
-    let end = lowercaseValue.indexOf(pattern);
-    if (end === -1) {
-      return formattedValue;
-    }
-    const results = [];
-
-    while (end !== -1) {
-      results.push(formattedValue.slice(start, end));
-      start = end;
-      end = start + pattern.length;
-      results.push(
-        <span className="vuuHighlight" key={start}>
-          {formattedValue.slice(start, end)}
-        </span>,
-      );
-      start = end;
-      end = lowercaseValue.indexOf(pattern, start);
-      if (end === -1 && start < lowercaseValue.length) {
-        results.push(formattedValue.slice(start));
-      }
-    }
-
-    return <span style={{ whiteSpace: "pre" }}>{results}</span>;
-  };
-
 export const getGroupValue = (
   columns: RuntimeColumnDescriptor[],
   row: DataSourceRow,
   columnMap: ColumnMap,
-  searchPattern: Lowercase<string>,
-): unknown => {
+): string | null => {
   const { [DEPTH]: depth, [IS_LEAF]: isLeaf } = row;
   // Depth can be greater tha group columns when we have just removed a column from groupby
   // but new data has not yet been received.
@@ -858,11 +822,7 @@ export const getGroupValue = (
     // offset allows for $root
     const { name, valueFormatter } = columns[depth - 1];
 
-    const format = searchPattern
-      ? withHighlighting(valueFormatter, searchPattern)
-      : valueFormatter;
-
-    const value = format(row[columnMap[name]]);
+    const value = valueFormatter(row[columnMap[name]]);
     return value;
   }
 };

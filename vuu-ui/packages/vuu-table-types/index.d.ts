@@ -68,7 +68,7 @@ export interface TableCellProps {
   onClick?: (event: MouseEvent, column: RuntimeColumnDescriptor) => void;
   onDataEdited?: DataCellEditHandler;
   row: DataSourceRow;
-  searchPattern: Lowercase<string>;
+  searchPattern?: Lowercase<string>;
 }
 
 export declare type CommitResponse = Promise<true | string>;

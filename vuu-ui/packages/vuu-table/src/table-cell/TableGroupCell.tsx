@@ -9,6 +9,7 @@ import { useCell } from "../useCell";
 
 import tableCellCss from "./TableCell.css";
 import tableGroupCellCss from "./TableGroupCell.css";
+import { useHighlighting } from "../useHighlighting";
 
 const { COUNT, IS_EXPANDED, IS_LEAF } = metadataKeys;
 
@@ -19,7 +20,7 @@ export const TableGroupCell = ({
   columnMap,
   onClick,
   row,
-  searchPattern,
+  searchPattern = "",
 }: TableCellProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -34,7 +35,9 @@ export const TableGroupCell = ({
   });
 
   const { columns } = column as GroupColumnDescriptor;
-  const value = getGroupValue(columns, row, columnMap, searchPattern);
+  const value = getGroupValue(columns, row, columnMap);
+  const valueWithHighlighting = useHighlighting(value || "", searchPattern);
+
   const icon = getGroupIcon(columns, row);
   const { className, style } = useCell(column, classBase);
 
@@ -60,7 +63,7 @@ export const TableGroupCell = ({
         <ToggleIconButton isExpanded={isExpanded} />
       )}
       {icon ? <Icon name={icon} /> : null}
-      <span className={`${classBase}-label`}>{value}</span>
+      <span className={`${classBase}-label`}>{valueWithHighlighting}</span>
     </div>
   );
 };

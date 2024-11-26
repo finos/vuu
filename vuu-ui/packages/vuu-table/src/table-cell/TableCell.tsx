@@ -2,11 +2,12 @@ import type {
   DataItemEditHandler,
   TableCellProps,
 } from "@finos/vuu-table-types";
-import { getTypedValue, withHighlighting } from "@finos/vuu-utils";
+import { getTypedValue } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { MouseEventHandler, useCallback, useState } from "react";
 import { useCell } from "../useCell";
+import { useHighlighting } from "../useHighlighting";
 
 import tableCellCss from "./TableCell.css";
 
@@ -18,7 +19,7 @@ export const TableCell = ({
   onClick,
   onDataEdited,
   row,
-  searchPattern,
+  searchPattern = "",
 }: TableCellProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -74,9 +75,8 @@ export const TableCell = ({
     [column, onClick],
   );
 
-  const format = searchPattern
-    ? withHighlighting(valueFormatter, searchPattern)
-    : valueFormatter;
+  const value = valueFormatter(row[dataIdx]);
+  const valueWithHighlighting = useHighlighting(value, searchPattern);
 
   return (
     <div
@@ -95,7 +95,7 @@ export const TableCell = ({
           searchPattern={searchPattern}
         />
       ) : (
-        format(row[dataIdx])
+        valueWithHighlighting
       )}
     </div>
   );
