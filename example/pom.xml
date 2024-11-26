@@ -23,6 +23,7 @@
         <module>virtualized-table</module>
         <module>apache-ignite</module>
         <module>rest-api</module>
+        <module>valkey-redis</module>
     </modules>
 
 
