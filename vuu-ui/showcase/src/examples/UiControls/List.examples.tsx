@@ -20,8 +20,6 @@ import {
 } from "react";
 import { usa_states, usa_states_cities } from "./List.data";
 
-let displaySequence = 1;
-
 export const DefaultList = () => {
   const handleSelect = useCallback<SelectHandler>((evt, selected) => {
     console.log(`handleSelect ${selected}`);
@@ -30,7 +28,7 @@ export const DefaultList = () => {
     (evt, selected) => {
       console.log(`handleSelectionChange ${selected}`);
     },
-    []
+    [],
   );
   return (
     <List
@@ -43,7 +41,6 @@ export const DefaultList = () => {
     />
   );
 };
-DefaultList.displaySequence = displaySequence++;
 
 export const FixedWidthList = () => {
   const handleSelect = useCallback((evt, selected) => {
@@ -63,7 +60,6 @@ export const FixedWidthList = () => {
     />
   );
 };
-FixedWidthList.displaySequence = displaySequence++;
 
 export const DefaultSelectedItem = () => {
   const handleSelect = useCallback((evt, selected) => {
@@ -84,7 +80,6 @@ export const DefaultSelectedItem = () => {
     />
   );
 };
-DefaultSelectedItem.displaySequence = displaySequence++;
 
 export const InlineListItems = () => {
   const handleSelect = useCallback((evt, selected) => {
@@ -106,14 +101,13 @@ export const InlineListItems = () => {
     </List>
   );
 };
-InlineListItems.displaySequence = displaySequence++;
 
 export const ListExtendedSelection = () => {
   const handleSelectionChange = useCallback<MultiSelectionHandler>(
     (evt, selected) => {
       console.log(`handleSelectionChange`, { selected });
     },
-    []
+    [],
   );
   return (
     <List
@@ -125,7 +119,6 @@ export const ListExtendedSelection = () => {
     />
   );
 };
-ListExtendedSelection.displaySequence = displaySequence++;
 
 export const ListFocusAndHighlightedIndex = () => {
   const ref = useRef<HTMLDivElement>(null);
@@ -145,7 +138,6 @@ export const ListFocusAndHighlightedIndex = () => {
     />
   );
 };
-ListFocusAndHighlightedIndex.displaySequence = displaySequence++;
 
 export const ListHeight100Pct = () => {
   return (
@@ -169,7 +161,6 @@ export const ListHeight100Pct = () => {
     </Flexbox>
   );
 };
-ListHeight100Pct.displaySequence = displaySequence++;
 
 export const MultiSelectionList = () => {
   const handleSelect = useCallback((evt, selected) => {
@@ -199,7 +190,6 @@ export const MultiSelectionList = () => {
     </div>
   );
 };
-MultiSelectionList.displaySequence = displaySequence++;
 
 export const DraggableListItemsNoScroll = () => {
   const [data, setData] = useState(usa_states.slice(0, 10));
@@ -235,7 +225,6 @@ export const DraggableListItemsNoScroll = () => {
     />
   );
 };
-DraggableListItemsNoScroll.displaySequence = displaySequence++;
 
 export const DraggableListItems = () => {
   const [data, setData] = useState(usa_states);
@@ -275,12 +264,11 @@ export const DraggableListItems = () => {
     />
   );
 };
-DraggableListItems.displaySequence = displaySequence++;
 
 export const DraggableListItemsDropIndicator = () => {
   const dragStrategies: dragStrategy[] = useMemo(
     () => ["natural-movement", "drop-indicator"],
-    []
+    [],
   );
 
   const [data, setData] = useState(usa_states);
@@ -331,7 +319,6 @@ export const DraggableListItemsDropIndicator = () => {
     </>
   );
 };
-DraggableListItemsDropIndicator.displaySequence = displaySequence++;
 
 export const ListWithinFlexLayout = () => {
   const handleSelect = useCallback((evt, selected) => {
@@ -367,7 +354,6 @@ export const ListWithinFlexLayout = () => {
     </div>
   );
 };
-ListWithinFlexLayout.displaySequence = displaySequence++;
 
 export const DefaultSelectedWithinViewport = () => {
   const handleSelect = useCallback((evt, selected) => {
@@ -391,7 +377,6 @@ export const DefaultSelectedWithinViewport = () => {
     </>
   );
 };
-DefaultSelectedWithinViewport.displaySequence = displaySequence++;
 
 export const GroupedList = () => {
   const handleSelect = useCallback<SelectHandler>((evt, selected) => {
@@ -401,7 +386,7 @@ export const GroupedList = () => {
     (evt, selected) => {
       console.log(`handleSelectionChange ${selected}`);
     },
-    []
+    [],
   );
 
   return (
@@ -415,7 +400,6 @@ export const GroupedList = () => {
     />
   );
 };
-GroupedList.displaySequence = displaySequence++;
 
 export const GroupedListCollapsibleHeaders = () => {
   const handleSelect = useCallback<SelectHandler>((evt, selected) => {
@@ -425,7 +409,7 @@ export const GroupedListCollapsibleHeaders = () => {
     (evt, selected) => {
       console.log(`handleSelectionChange ${selected}`);
     },
-    []
+    [],
   );
 
   return (
@@ -440,4 +424,3 @@ export const GroupedListCollapsibleHeaders = () => {
     />
   );
 };
-GroupedListCollapsibleHeaders.displaySequence = displaySequence++;

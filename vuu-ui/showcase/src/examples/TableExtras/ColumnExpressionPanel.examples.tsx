@@ -5,8 +5,6 @@ import { useMemo } from "react";
 
 const instrumentPrices = { module: "SIMUL", table: "instrumentPrices" };
 
-let displaySequence = 1;
-
 export const DefaultColumnExpressionPanel = () => {
   const tableConfig = useMemo<TableConfig>(() => {
     return {
@@ -26,4 +24,3 @@ export const DefaultColumnExpressionPanel = () => {
     </div>
   );
 };
-DefaultColumnExpressionPanel.displaySequence = displaySequence++;

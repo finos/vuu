@@ -18,8 +18,6 @@ import {
 import { useCallback, useMemo } from "react";
 import { DropdownCell } from "@finos/vuu-table-extras";
 
-let displaySequence = 0;
-
 registerComponent("dropdown-cell", DropdownCell, "cell-renderer", {
   userCanAssign: false,
 });
@@ -145,4 +143,3 @@ export const EditableTable = () => {
     </LocalDataSourceProvider>
   );
 };
-EditableTable.displaySequence = displaySequence++;

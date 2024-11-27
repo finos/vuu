@@ -23,8 +23,6 @@ import { LinkedDataSources, LinkedTableView } from "@finos/vuu-datatable";
 import { TableSearch } from "@finos/vuu-ui-controls";
 import { useDataSource } from "@finos/vuu-utils";
 
-let displaySequence = 1;
-
 // prettier-ignore
 const ParentTableSchema:TableSchema = {
   columns: [
@@ -283,7 +281,6 @@ export const SimpleCrossTableFiltering = () => {
     </LayoutProvider>
   );
 };
-SimpleCrossTableFiltering.displaySequence = displaySequence++;
 
 const TableSearchTemplate = ({
   schema,
@@ -401,4 +398,3 @@ export const FilteredLinkedTableView = () => {
     </LocalDataSourceProvider>
   );
 };
-FilteredLinkedTableView.displaySequence = displaySequence++;

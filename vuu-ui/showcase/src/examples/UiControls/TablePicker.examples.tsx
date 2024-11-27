@@ -3,8 +3,6 @@ import { getSchema, LocalDataSourceProvider } from "@finos/vuu-data-test";
 import { TablePicker, TablePickerProps } from "@finos/vuu-ui-controls";
 import { useAutoLoginToVuuServer } from "../utils";
 
-let displaySequence = 0;
-
 const TablePickerTemplate = ({
   TableProps,
   rowToString,
@@ -48,7 +46,6 @@ export const DefaultInstrumentPicker = () => (
     />
   </LocalDataSourceProvider>
 );
-DefaultInstrumentPicker.displaySequence = displaySequence++;
 
 export const VuuInstrumentPicker = () => {
   useAutoLoginToVuuServer();
@@ -69,4 +66,3 @@ export const VuuInstrumentPicker = () => {
     </VuuDataSourceProvider>
   );
 };
-VuuInstrumentPicker.displaySequence = displaySequence++;

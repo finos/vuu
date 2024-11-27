@@ -16,8 +16,6 @@ import {
 } from "@finos/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 
-let displaySequence = 1;
-
 export const ColumnFormattingPanelDouble = () => {
   const [column, setColumn] = useState<ColumnDescriptor>({
     name: "price",
@@ -34,7 +32,7 @@ export const ColumnFormattingPanelDouble = () => {
         name: "vuu.price-move-background",
       },
     ],
-    []
+    [],
   );
 
   const handleChangeRendering = useCallback<ColumnRenderPropsChangeHandler>(
@@ -48,7 +46,7 @@ export const ColumnFormattingPanelDouble = () => {
         },
       }));
     },
-    []
+    [],
   );
 
   return (
@@ -68,8 +66,6 @@ export const ColumnFormattingPanelDouble = () => {
   );
 };
 
-ColumnFormattingPanelDouble.displaySequence = displaySequence++;
-
 export const ColumnFormattingPanelDateTime = () => {
   const [column, setColumn] = useState<ColumnDescriptor>({
     name: "lastUpdated",
@@ -85,12 +81,12 @@ export const ColumnFormattingPanelDateTime = () => {
 
   const availableRenderers = useMemo<CellRendererDescriptor[]>(
     () => [{ name: "Default renderer (data type long)" }],
-    []
+    [],
   );
 
   const handleChangeRendering = useCallback<ColumnRenderPropsChangeHandler>(
     (renderer) => console.log(`handleChangeRendering`, { renderer }),
-    []
+    [],
   );
 
   const onChangeFormatting = useCallback((formatting: ColumnTypeFormatting) => {
@@ -118,8 +114,6 @@ export const ColumnFormattingPanelDateTime = () => {
   );
 };
 
-ColumnFormattingPanelDateTime.displaySequence = displaySequence++;
-
 export const NewCalculatedColumnSettingsPanel = () => {
   const schema = getSchema("parentOrders");
   const [{ column, tableConfig }, setState] = useState<{
@@ -140,7 +134,7 @@ export const NewCalculatedColumnSettingsPanel = () => {
   const handleCreateCalculatedColumn = useCallback(
     (column: ColumnDescriptor) => {
       console.log(
-        `create calculated column ${JSON.stringify(column, null, 2)}`
+        `create calculated column ${JSON.stringify(column, null, 2)}`,
       );
       setState((s) => ({
         tableConfig: {
@@ -150,7 +144,7 @@ export const NewCalculatedColumnSettingsPanel = () => {
         column,
       }));
     },
-    []
+    [],
   );
 
   const handleCancelCreateColumn = useCallback(() => {
@@ -178,15 +172,13 @@ export const NewCalculatedColumnSettingsPanel = () => {
   );
 };
 
-NewCalculatedColumnSettingsPanel.displaySequence = displaySequence++;
-
 export const CalculatedColumnSettingsPanel = () => {
   const calculatedColumn = useMemo<ColumnDescriptor>(
     () => ({
       name: "ccyExchange:concatenate(currency,exchange):string",
       serverDataType: "string",
     }),
-    []
+    [],
   );
   const schema = getSchema("parentOrders");
   const [{ column, tableConfig }, setState] = useState<{
@@ -236,4 +228,3 @@ export const CalculatedColumnSettingsPanel = () => {
     </div>
   );
 };
-CalculatedColumnSettingsPanel.displaySequence = displaySequence++;

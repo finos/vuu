@@ -11,8 +11,6 @@ import { useAutoLoginToVuuServer } from "../utils";
 import { VuuDataSourceProvider } from "@finos/vuu-data-react";
 import { View } from "@finos/vuu-layout";
 
-let displaySequence = 1;
-
 type FilterTableTemplateProps = {
   style?: CSSProperties;
   tableSchema?: TableSchema;
@@ -89,7 +87,6 @@ export const FilterTableVuuInstruments = () => {
     </VuuDataSourceProvider>
   );
 };
-FilterTableVuuInstruments.displaySequence = displaySequence++;
 
 export const FilterTableArrayDataInstruments = () => {
   return (
@@ -98,7 +95,6 @@ export const FilterTableArrayDataInstruments = () => {
     </LocalDataSourceProvider>
   );
 };
-FilterTableArrayDataInstruments.displaySequence = displaySequence++;
 
 export const FilterTableInstrumentsQuickFilters = () => (
   <LocalDataSourceProvider modules={["SIMUL"]}>
@@ -110,19 +106,15 @@ export const FilterTableInstrumentsQuickFilters = () => (
     />
   </LocalDataSourceProvider>
 );
-FilterTableInstrumentsQuickFilters.displaySequence = displaySequence++;
 
 export const FilterTableArrayDataInstrumentsFullFilters = () => (
   <LocalDataSourceProvider modules={["SIMUL"]}>
     <FilterTableTemplate variant="full-filters" />
   </LocalDataSourceProvider>
 );
-FilterTableArrayDataInstrumentsFullFilters.displaySequence = displaySequence++;
 
 export const FilterTableArrayDataInstrumentsFixedHeightContainer = () => (
   <LocalDataSourceProvider modules={["SIMUL"]}>
     <FilterTableTemplate style={{ height: 600, width: 900 }} />
   </LocalDataSourceProvider>
 );
-FilterTableArrayDataInstrumentsFixedHeightContainer.displaySequence =
-  displaySequence++;

@@ -14,8 +14,6 @@ import {
 } from "react";
 import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 
-let displaySequence = 1;
-
 export const SimpleTable = () => {
   const config = useMemo<TableConfig>(
     () => ({
@@ -23,13 +21,13 @@ export const SimpleTable = () => {
       rowSeparators: true,
       zebraStripes: true,
     }),
-    []
+    [],
   );
 
   const dataSource = useMemo<DataSource>(() => {
     const data = new ArrayProxy(
       1_000_000_000,
-      rowGenerator(config.columns.map((col) => col.name))
+      rowGenerator(config.columns.map((col) => col.name)),
     );
     return new ArrayDataSource({
       columnDescriptors: config.columns,
@@ -43,7 +41,6 @@ export const SimpleTable = () => {
     <Table config={config} dataSource={dataSource} height={625} width={1000} />
   );
 };
-SimpleTable.displaySequence = displaySequence++;
 
 export const TableScrollingAPI = () => {
   const [rowInputValue, setRowInputValue] = useState("");
@@ -82,13 +79,13 @@ export const TableScrollingAPI = () => {
       columns: columnGenerator(5),
       zebraStripes: true,
     }),
-    []
+    [],
   );
 
   const dataSource = useMemo<DataSource>(() => {
     const data = new ArrayProxy(
       1_000_000_000,
-      rowGenerator(config.columns.map((col) => col.name))
+      rowGenerator(config.columns.map((col) => col.name)),
     );
     return new ArrayDataSource({
       columnDescriptors: config.columns,
@@ -116,4 +113,3 @@ export const TableScrollingAPI = () => {
     </>
   );
 };
-TableScrollingAPI.displaySequence = displaySequence++;

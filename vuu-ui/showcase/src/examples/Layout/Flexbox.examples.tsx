@@ -11,8 +11,6 @@ import { Brown } from "./components";
 import { SplitterMoveHandler } from "@finos/vuu-layout/src/flexbox/flexboxTypes";
 import { useCallback } from "react";
 
-let displaySequence = 1;
-
 export const Empty = () => (
   <FlexboxLayout
     style={{
@@ -25,8 +23,6 @@ export const Empty = () => (
     path=""
   />
 );
-
-Empty.displaySequence = displaySequence++;
 
 export const SingleChild = () => {
   return (
@@ -53,7 +49,6 @@ export const SingleChild = () => {
     // </ConfigWrapper>
   );
 };
-SingleChild.displaySequence = displaySequence++;
 
 export const SimpleTower = () => {
   const handleSplitterMoved = (sizes: any) => {
@@ -98,8 +93,6 @@ export const SimpleTower = () => {
     </div>
   );
 };
-
-SimpleTower.displaySequence = displaySequence++;
 
 export const TowerWithCollapsibleViews = () => {
   const handleSplitterMoved = useCallback<SplitterMoveHandler>(
@@ -153,8 +146,6 @@ export const TowerWithCollapsibleViews = () => {
   );
 };
 
-TowerWithCollapsibleViews.displaySequence = displaySequence++;
-
 export const ThreeChildTower = () => {
   const handleSplitterMoved = (sizes: any) => {
     console.log(`splitter moved ${JSON.stringify(sizes)}`);
@@ -205,8 +196,6 @@ export const ThreeChildTower = () => {
   );
 };
 
-ThreeChildTower.displaySequence = displaySequence++;
-
 export const TerraceWithBorderPaddingMargin = () => (
   <FlexboxLayout
     style={{
@@ -234,8 +223,6 @@ export const TerraceWithBorderPaddingMargin = () => (
     />
   </FlexboxLayout>
 );
-
-TerraceWithBorderPaddingMargin.displaySequence = displaySequence++;
 
 export const TerraceAutoSizing = () => (
   <FlexboxLayout
@@ -274,8 +261,6 @@ export const TerraceAutoSizing = () => (
   </FlexboxLayout>
 );
 
-TerraceAutoSizing.displaySequence = displaySequence++;
-
 export const TerraceWithHeader = () => (
   <FlexboxLayout
     title="Flexie"
@@ -304,7 +289,6 @@ export const TerraceWithHeader = () => (
     />
   </FlexboxLayout>
 );
-TerraceWithHeader.displaySequence = displaySequence++;
 
 export const TowerWithinTerrace = () => (
   <div>
@@ -379,8 +363,6 @@ export const TowerWithinTerrace = () => (
   </div>
 );
 
-TowerWithinTerrace.displaySequence = displaySequence++;
-
 export const QuadTerraceWithinTower = () => (
   <FlexboxLayout
     style={{ flexDirection: "column", width: 500, height: 500 }}
@@ -413,7 +395,6 @@ export const QuadTerraceWithinTower = () => (
     </FlexboxLayout>
   </FlexboxLayout>
 );
-QuadTerraceWithinTower.displaySequence = displaySequence++;
 
 export const DeeperNesting = () => (
   // <ConfigWrapper>
@@ -500,8 +481,6 @@ export const DeeperNesting = () => (
   // </ConfigWrapper>
 );
 
-DeeperNesting.displaySequence = displaySequence++;
-
 export const ComplexNestedLayout = () => (
   <FlexboxLayout
     column
@@ -569,5 +548,3 @@ export const ComplexNestedLayout = () => (
     <Component style={{ backgroundColor: "grey", height: 32 }} />
   </FlexboxLayout>
 );
-
-ComplexNestedLayout.displaySequence = displaySequence++;

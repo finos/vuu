@@ -5,8 +5,6 @@ import { BasketSelectorProps } from "sample-apps/feature-basket-trading/src/bask
 import { BasketChangeHandler } from "sample-apps/feature-basket-trading/src/basket-toolbar";
 import { BasketStatus } from "sample-apps/feature-basket-trading/src/VuuBasketTradingFeature";
 
-let displaySequence = 1;
-
 const testBasket: Basket = {
   dataSourceRow: [] as any,
   basketId: ".FTSE",
@@ -37,16 +35,16 @@ export const BasketToolbarDesign = () => {
       onClickAddBasket: () => console.log("Add Basket"),
       onSelectBasket: () => undefined,
     }),
-    [basket, dataSourceBasketTradingSearch]
+    [basket, dataSourceBasketTradingSearch],
   );
 
   const handleCommitBasketChange = useCallback<BasketChangeHandler>(
     (columnName, value) => {
       console.log(`${columnName} => ${value}`);
-      setBasket((basket) => ({ ...basket, [columnName]: value } as Basket));
+      setBasket((basket) => ({ ...basket, [columnName]: value }) as Basket);
       return Promise.resolve(true);
     },
-    []
+    [],
   );
 
   return (
@@ -60,7 +58,6 @@ export const BasketToolbarDesign = () => {
     />
   );
 };
-BasketToolbarDesign.displaySequence = displaySequence++;
 
 export const BasketToolbarOnMarket = () => {
   const [basketStatus, setBasketStatus] = useState<BasketStatus>("on-market");
@@ -76,7 +73,7 @@ export const BasketToolbarOnMarket = () => {
       onClickAddBasket: () => console.log("Add Basket"),
       onSelectBasket: () => undefined,
     }),
-    [dataSourceBasketTradingSearch]
+    [dataSourceBasketTradingSearch],
   );
 
   return (
@@ -89,4 +86,3 @@ export const BasketToolbarOnMarket = () => {
     />
   );
 };
-BasketToolbarOnMarket.displaySequence = displaySequence++;

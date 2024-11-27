@@ -4,14 +4,12 @@ import { CSSProperties, MouseEvent, useCallback, useState } from "react";
 
 import "./Toolbar.examples.css";
 
-let displaySequence = 1;
-
 export const DefaulToolbar = () => {
   const handleNavigateOutOfBounds = useCallback<NavigationOutOfBoundsHandler>(
     (direction) => {
       console.log(`onNavigateOutOfBounds ${direction}`);
     },
-    []
+    [],
   );
   return (
     <div
@@ -42,14 +40,13 @@ export const DefaulToolbar = () => {
     </div>
   );
 };
-DefaulToolbar.displaySequence = displaySequence++;
 
 export const ToolbarWrapPriority = () => {
   const handleNavigateOutOfBounds = useCallback<NavigationOutOfBoundsHandler>(
     (direction) => {
       console.log(`onNavigateOutOfBounds ${direction}`);
     },
-    []
+    [],
   );
   return (
     <div
@@ -80,7 +77,6 @@ export const ToolbarWrapPriority = () => {
     </div>
   );
 };
-ToolbarWrapPriority.displaySequence = displaySequence++;
 
 export const ToolbarControlledSelection = () => {
   const [activeItem, setActiveItem] = useState<number[]>([]);
@@ -115,7 +111,6 @@ export const ToolbarControlledSelection = () => {
     </div>
   );
 };
-ToolbarControlledSelection.displaySequence = displaySequence++;
 
 export const DefaulToolbarActivateSingle = () => {
   return (
@@ -148,7 +143,6 @@ export const DefaulToolbarActivateSingle = () => {
     </div>
   );
 };
-DefaulToolbarActivateSingle.displaySequence = displaySequence++;
 
 export const DefaulToolbarActivateSingleDeselectable = () => {
   return (
@@ -182,7 +176,6 @@ export const DefaulToolbarActivateSingleDeselectable = () => {
     </div>
   );
 };
-DefaulToolbarActivateSingleDeselectable.displaySequence = displaySequence++;
 
 export const ToolbarActivateMultipleItems = () => {
   return (
@@ -216,8 +209,6 @@ export const ToolbarActivateMultipleItems = () => {
   );
 };
 
-ToolbarActivateMultipleItems.displaySequence = displaySequence++;
-
 export const ToolbarShiftActivateMultipleItems = () => {
   return (
     <div
@@ -249,8 +240,6 @@ export const ToolbarShiftActivateMultipleItems = () => {
     </div>
   );
 };
-
-ToolbarShiftActivateMultipleItems.displaySequence = displaySequence++;
 
 export const ToolbarActivateMultipleItemsNonSelectableItem = () => {
   return (
@@ -288,9 +277,6 @@ export const ToolbarActivateMultipleItemsNonSelectableItem = () => {
     </div>
   );
 };
-
-ToolbarActivateMultipleItemsNonSelectableItem.displaySequence =
-  displaySequence++;
 
 export const ToolbarItemsEventHandlers = () => {
   const handleClick = useCallback((evt: MouseEvent<HTMLButtonElement>) => {
@@ -368,5 +354,3 @@ export const ToolbarItemsEventHandlers = () => {
     </div>
   );
 };
-
-ToolbarItemsEventHandlers.displaySequence = displaySequence++;

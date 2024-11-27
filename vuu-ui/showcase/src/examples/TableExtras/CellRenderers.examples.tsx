@@ -11,8 +11,6 @@ import { VuuInput } from "@finos/vuu-ui-controls";
 import { getValueFormatter } from "@finos/vuu-utils";
 import { FormEventHandler, useCallback, useMemo, useState } from "react";
 
-let displaySequence = 1;
-
 const columnMap = {
   price: 8,
 };
@@ -87,8 +85,6 @@ export const DefaultBackgroundCell = ({
   );
 };
 
-DefaultBackgroundCell.displaySequence = displaySequence++;
-
 const formatting0Decimals = { decimals: 0 };
 const formatting4Decimals = { decimals: 4 };
 const backgroundArrow = { ...defaultRenderer, flashStyle: "arrow-bg" as const };
@@ -97,19 +93,15 @@ const arrowOnly = { ...defaultRenderer, flashStyle: "arrow" as const };
 export const BackgroundCell4Decimals = () => (
   <DefaultBackgroundCell formatting={formatting4Decimals} />
 );
-BackgroundCell4Decimals.displaySequence = displaySequence++;
 
 export const BackgroundCellNoDecimals = () => (
   <DefaultBackgroundCell formatting={formatting0Decimals} />
 );
-BackgroundCellNoDecimals.displaySequence = displaySequence++;
 
 export const BackgroundArrowCell = () => (
   <DefaultBackgroundCell renderer={backgroundArrow} />
 );
-BackgroundArrowCell.displaySequence = displaySequence++;
 
 export const ArrowOnlyCell = () => (
   <DefaultBackgroundCell renderer={arrowOnly} />
 );
-ArrowOnlyCell.displaySequence = displaySequence++;

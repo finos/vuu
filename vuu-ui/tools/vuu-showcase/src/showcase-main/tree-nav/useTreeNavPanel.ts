@@ -1,11 +1,33 @@
-import { useCallback } from "react";
+import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
+import { TreeNavPanelProps } from "./TreeNavPanel";
+import { TreeDataSource } from "@finos/vuu-data-local";
 
-export const useTreeNavPanel = () => {
-  const handleCommit = useCallback(() => {
-    console.log("onCommit");
-  }, []);
+export type TreeNavPanelHookProps = Pick<TreeNavPanelProps, "source">;
+
+export const useTreeNavPanel = ({ source }: TreeNavPanelHookProps) => {
+  const dataSource = useMemo(
+    () => new TreeDataSource({ data: source }),
+    [source],
+  );
+  const [searchPattern, setSearchPattern] = useState<string>("");
+
+  const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
+    (evt) => {
+      const value = evt.target.value.trim();
+      setSearchPattern(value);
+
+      if (value === "") {
+        dataSource.filter = { filter: "" };
+      } else {
+        dataSource.filter = { filter: `label contains "${value}"` };
+      }
+    },
+    [dataSource],
+  );
 
   return {
-    onCommit: handleCommit,
+    dataSource,
+    onChange: handleChange,
+    searchPattern,
   };
 };

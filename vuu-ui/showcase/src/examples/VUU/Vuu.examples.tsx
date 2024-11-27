@@ -2,8 +2,6 @@ import { List, ListItem } from "@finos/vuu-ui-controls";
 import { useVuuTables, VuuDataSourceProvider } from "@finos/vuu-data-react";
 import { useAutoLoginToVuuServer } from "../utils";
 
-let displaySequence = 1;
-
 const VuuTablesTemplate = () => {
   const tableSchemas = useVuuTables();
 
@@ -27,5 +25,3 @@ export const VuuTables = () => {
     </VuuDataSourceProvider>
   );
 };
-
-VuuTables.displaySequence = displaySequence++;

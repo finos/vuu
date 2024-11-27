@@ -7,12 +7,10 @@ import {
 import layoutMetadata from "../_test-data/layoutMetadata";
 import { useMemo } from "react";
 
-let displaySequence = 0;
-
 export const DefaultLayoutList = (): JSX.Element => {
   const demoPersistenceManager = useMemo(
     () => new StaticPersistenceManager({ layoutMetadata }),
-    []
+    [],
   );
 
   return (
@@ -23,7 +21,6 @@ export const DefaultLayoutList = (): JSX.Element => {
     </PersistenceProvider>
   );
 };
-DefaultLayoutList.displaySequence = displaySequence++;
 
 export const LayoutListManyLayouts = (): JSX.Element => {
   const demoPersistenceManager = useMemo(
@@ -51,7 +48,7 @@ export const LayoutListManyLayouts = (): JSX.Element => {
         {id: "layout-18", group: "Group 4", name: "Layout 18", created: "26.05.2024", screenshot: "", user: "steve" },
       ],
       }),
-    []
+    [],
   );
 
   return (
@@ -62,4 +59,3 @@ export const LayoutListManyLayouts = (): JSX.Element => {
     </PersistenceProvider>
   );
 };
-LayoutListManyLayouts.displaySequence = displaySequence++;

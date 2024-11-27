@@ -3,8 +3,6 @@ import { ArrayDataSource } from "@finos/vuu-data-local";
 import { useMemo } from "react";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 
-let displaySequence = 1;
-
 export const DefaultTableList = () => {
   const [columns, dataSource] = useMemo(() => {
     const columns: ColumnDescriptor[] = [
@@ -49,4 +47,3 @@ export const DefaultTableList = () => {
     </div>
   );
 };
-DefaultTableList.displaySequence = displaySequence++;

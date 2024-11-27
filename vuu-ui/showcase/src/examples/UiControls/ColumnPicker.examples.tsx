@@ -5,8 +5,6 @@ import {
 } from "@finos/vuu-ui-controls";
 import { useMemo, useState } from "react";
 
-let displaySequence = 10;
-
 export const DefaultColumnSearch = () => {
   const columns = useMemo<string[]>(
     () => [
@@ -20,7 +18,7 @@ export const DefaultColumnSearch = () => {
       "lotSize",
       "exchangeRate",
     ],
-    []
+    [],
   );
 
   const handleChange = () => {
@@ -40,7 +38,6 @@ export const DefaultColumnSearch = () => {
     />
   );
 };
-DefaultColumnSearch.displaySequence = displaySequence++;
 
 export const DefaultColumnPicker = () => {
   const [selected, setSelected] = useState<string[]>([]);
@@ -61,7 +58,7 @@ export const DefaultColumnPicker = () => {
       "lotSize",
       "exchangeRate",
     ],
-    []
+    [],
   );
 
   return (
@@ -73,4 +70,3 @@ export const DefaultColumnPicker = () => {
     />
   );
 };
-DefaultColumnPicker.displaySequence = displaySequence++;

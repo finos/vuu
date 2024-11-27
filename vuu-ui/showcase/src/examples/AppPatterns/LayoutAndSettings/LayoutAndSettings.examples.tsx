@@ -22,12 +22,10 @@ import { AppHeader } from "./app-header";
 
 registerComponent("LayoutComponentsPanel", LayoutComponentsPanel, "view");
 
-let displaySequence = 0;
-
 export const TabbedLayoutComponents = () => {
   const demoPersistenceManager = useMemo(
     () => new StaticPersistenceManager({ layoutMetadata }),
-    []
+    [],
   );
 
   return (
@@ -40,12 +38,11 @@ export const TabbedLayoutComponents = () => {
     </PersistenceProvider>
   );
 };
-TabbedLayoutComponents.displaySequence = displaySequence++;
 
 export const TabbedLayoutComponentsWithDragDrop = () => {
   const demoPersistenceManager = useMemo(
     () => new StaticPersistenceManager({ layoutMetadata }),
-    []
+    [],
   );
 
   return (
@@ -78,12 +75,11 @@ export const TabbedLayoutComponentsWithDragDrop = () => {
     </PersistenceProvider>
   );
 };
-TabbedLayoutComponentsWithDragDrop.displaySequence = displaySequence++;
 
 export const FlyoutLayoutAndSettingsWithDragDrop = () => {
   const demoPersistenceManager = useMemo(
     () => new StaticPersistenceManager({ layoutMetadata }),
-    []
+    [],
   );
 
   const applicationSettingsSchema: SettingsSchema = {
@@ -153,4 +149,3 @@ export const FlyoutLayoutAndSettingsWithDragDrop = () => {
     </PersistenceProvider>
   );
 };
-FlyoutLayoutAndSettingsWithDragDrop.displaySequence = displaySequence++;

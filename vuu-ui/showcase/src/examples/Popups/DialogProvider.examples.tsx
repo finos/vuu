@@ -3,8 +3,6 @@ import { useDialogContext } from "@finos/vuu-popups";
 import { Button } from "@salt-ds/core";
 import { MouseEventHandler, useCallback, useRef, useState } from "react";
 
-let displaySequence = 1;
-
 const ComponentThatShowsDialog = () => {
   const renderCountRef = useRef(0);
   const [, forceRefresh] = useState({});
@@ -15,7 +13,7 @@ const ComponentThatShowsDialog = () => {
   const handleClick = useCallback(() => {
     showDialog(
       <div style={{ width: 200, height: 130, background: "cornflowerblue" }} />,
-      "A Dialog"
+      "A Dialog",
     );
   }, [showDialog]);
 
@@ -45,4 +43,3 @@ export const DefaultDialogProvider = () => (
     <ComponentThatShowsDialog />
   </DialogProvider>
 );
-DefaultDialogProvider.displaySequence = displaySequence++;

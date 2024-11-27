@@ -8,8 +8,6 @@ import { FilterBarProps } from "@finos/vuu-filters";
 import { FilterState } from "@finos/vuu-filter-types";
 import { DataSourceFilter } from "@finos/vuu-data-types";
 
-let displaySequence = 0;
-
 const FilterTableTemplate = ({
   quickFilterColumns,
   TableProps,
@@ -93,7 +91,6 @@ export const RestInstrumentsScrolling = () => {
     </RestDataSourceProvider>
   );
 };
-RestInstrumentsScrolling.displaySequence = displaySequence++;
 
 export const RestInstrumentsCustomHttpHeaders = () => {
   // Note, the test Rest service used for these returns the Access control header
@@ -113,7 +110,6 @@ export const RestInstrumentsCustomHttpHeaders = () => {
     </RestDataSourceProvider>
   );
 };
-RestInstrumentsCustomHttpHeaders.displaySequence = displaySequence++;
 
 export const RestInstrumentsPagination = () => {
   return (
@@ -122,4 +118,3 @@ export const RestInstrumentsPagination = () => {
     </RestDataSourceProvider>
   );
 };
-RestInstrumentsPagination.displaySequence = displaySequence++;

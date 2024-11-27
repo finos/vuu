@@ -6,8 +6,6 @@ import {
 } from "@salt-ds/core";
 import { Panel } from "@salt-ds/core";
 
-let displaySequence = 1;
-
 export const DefaultAccordion = () => {
   return (
     <Panel style={{ width: 600, height: 800 }}>
@@ -53,4 +51,3 @@ export const DefaultAccordion = () => {
     </Panel>
   );
 };
-DefaultAccordion.displaySequence = displaySequence++;

@@ -28,8 +28,6 @@ import {
   useState,
 } from "react";
 
-let displaySequence = 1;
-
 const usePosition = () => {
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{ x: number; y: number }>({
@@ -97,8 +95,6 @@ export const DefaultContextMenu = () => {
   );
 };
 
-DefaultContextMenu.displaySequence = displaySequence++;
-
 export const FlatContextMenu = () => {
   const { ref } = usePosition();
 
@@ -131,8 +127,6 @@ export const FlatContextMenu = () => {
   );
 };
 
-FlatContextMenu.displaySequence = displaySequence++;
-
 export const ContextMenuControlledHighlighting = () => {
   const handleClose: ContextMenuProps["onClose"] = () => {
     console.log(`clicked menu action`);
@@ -156,8 +150,6 @@ export const ContextMenuControlledHighlighting = () => {
   );
 };
 
-ContextMenuControlledHighlighting.displaySequence = displaySequence++;
-
 type IdProps = { children: string | JSX.Element };
 const Id = ({ children }: IdProps) => (
   <span style={{ color: "blue" }}>{children}</span>
@@ -166,7 +158,7 @@ const Id = ({ children }: IdProps) => (
 export const AdditionalNesting = () => {
   const { ref, position } = usePosition();
   const handleClose: ContextMenuProps["onClose"] = (
-    reason?: PopupCloseReason
+    reason?: PopupCloseReason,
   ) => {
     if (reasonIsMenuAction(reason)) {
       console.log(`menu closed ${reason.menuId}`);
@@ -248,12 +240,10 @@ export const AdditionalNesting = () => {
   );
 };
 
-AdditionalNesting.displaySequence = displaySequence++;
-
 export const ContextMenuPopup = () => {
   const contextMenu = useMemo(() => {
     const handleClose: ContextMenuProps["onClose"] = (
-      reason?: PopupCloseReason
+      reason?: PopupCloseReason,
     ) => {
       if (reasonIsMenuAction(reason)) {
         console.log(`menu closed ${reason.menuId}`);
@@ -354,8 +344,6 @@ export const ContextMenuPopup = () => {
   );
 };
 
-ContextMenuPopup.displaySequence = displaySequence++;
-
 const ComponentWithMenu = ({
   location,
   ...props
@@ -395,8 +383,6 @@ export const SimpleContextMenuProvider = () => {
   );
 };
 
-SimpleContextMenuProvider.displaySequence = displaySequence++;
-
 export const ContextMenuProviderWithLocationAwareMenuBuilder = () => {
   const menuDescriptors: ContextMenuItemDescriptor[] = [
     { label: "Sort", action: "sort", icon: "sort-up" },
@@ -423,7 +409,7 @@ export const ContextMenuProviderWithLocationAwareMenuBuilder = () => {
   const menuBuilder: MenuBuilder = (location: string) =>
     menuDescriptors.filter(
       (descriptor) =>
-        descriptor.location === undefined || descriptor.location === location
+        descriptor.location === undefined || descriptor.location === location,
     );
 
   const localMenuBuilder: MenuBuilder = (/* location: string */) => {
@@ -458,5 +444,3 @@ export const ContextMenuProviderWithLocationAwareMenuBuilder = () => {
     </ContextMenuProvider>
   );
 };
-ContextMenuProviderWithLocationAwareMenuBuilder.displaySequence =
-  displaySequence++;

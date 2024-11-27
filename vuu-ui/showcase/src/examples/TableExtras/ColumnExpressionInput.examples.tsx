@@ -13,8 +13,6 @@ import {} from "@finos/vuu-utils";
 import { useAutoLoginToVuuServer } from "../utils";
 import { Input } from "@salt-ds/core";
 
-let displaySequence = 1;
-
 const table = { module: "SIMUL", table: "instruments" };
 
 const columns = [
@@ -64,7 +62,7 @@ export const DefaultColumnExpressionInput = () => {
       console.log(`is valid ${isValidExpression}`);
       setIsValid(isValidExpression);
     },
-    [expression]
+    [expression],
   );
 
   return (
@@ -102,4 +100,3 @@ export const DefaultColumnExpressionInput = () => {
     </div>
   );
 };
-DefaultColumnExpressionInput.displaySequence = displaySequence++;

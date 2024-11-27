@@ -12,8 +12,6 @@ import { useCallback, useMemo } from "react";
 import { DemoTableContainer } from "./DemoTableContainer";
 import "./BuySellRowClassNameGenerator";
 
-let displaySequence = 1;
-
 const getDefaultColumnConfig = (
   tableName: string,
   columnName: string,
@@ -122,7 +120,6 @@ export const SimulTable = ({
     </>
   );
 };
-SimulTable.displaySequence = displaySequence++;
 
 export const InstrumentsExtended = () => (
   <SimulTable
@@ -130,7 +127,6 @@ export const InstrumentsExtended = () => (
     getDefaultColumnConfig={getDefaultColumnConfig}
   />
 );
-InstrumentsExtended.displaySequence = displaySequence++;
 
 export const Prices = () => {
   return (
@@ -140,7 +136,6 @@ export const Prices = () => {
     />
   );
 };
-Prices.displaySequence = displaySequence++;
 
 const rowClassGenerators = ["buy-sell-rows"];
 
@@ -154,7 +149,6 @@ export const Orders = () => {
     </NotificationsProvider>
   );
 };
-Orders.displaySequence = displaySequence++;
 
 export const InstrumentPrices = () => (
   <SimulTable
@@ -162,7 +156,6 @@ export const InstrumentPrices = () => (
     getDefaultColumnConfig={getDefaultColumnConfig}
   />
 );
-InstrumentPrices.displaySequence = displaySequence++;
 
 export const ParentOrders = () => (
   <SimulTable
@@ -170,7 +163,6 @@ export const ParentOrders = () => (
     getDefaultColumnConfig={getDefaultColumnConfig}
   />
 );
-ParentOrders.displaySequence = displaySequence++;
 
 export const ChildOrders = () => (
   <SimulTable
@@ -178,4 +170,3 @@ export const ChildOrders = () => (
     getDefaultColumnConfig={getDefaultColumnConfig}
   />
 );
-ChildOrders.displaySequence = displaySequence++;

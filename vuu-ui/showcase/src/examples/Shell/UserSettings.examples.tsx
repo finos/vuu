@@ -11,8 +11,6 @@ import { getStackWorkspaceJSON } from "@finos/vuu-shell";
 import { useMemo } from "react";
 import { scrollableSettingsFormSchema } from "./UserSettingsSchemaExamples/scrollableSettingsSchemaExample";
 
-let displaySequence = 1;
-
 // Showcase example showing the current default settings form
 export const DefaultUserSettingsForm = () => {
   const userSettingsSchema: SettingsSchema = {
@@ -37,7 +35,7 @@ export const DefaultUserSettingsForm = () => {
           },
         },
       }),
-    []
+    [],
   );
 
   return (
@@ -48,7 +46,6 @@ export const DefaultUserSettingsForm = () => {
     </PersistenceProvider>
   );
 };
-DefaultUserSettingsForm.displaySequence = displaySequence++;
 
 // Showcase example showing different form controls
 export const VariedFormControlUserSettingsForm = () => {
@@ -101,7 +98,7 @@ export const VariedFormControlUserSettingsForm = () => {
           },
         },
       }),
-    []
+    [],
   );
 
   return (
@@ -112,7 +109,6 @@ export const VariedFormControlUserSettingsForm = () => {
     </PersistenceProvider>
   );
 };
-VariedFormControlUserSettingsForm.displaySequence = displaySequence++;
 
 // Showcase example showing input validations
 export const InputValidationUserSettingsForm = () => {
@@ -142,7 +138,7 @@ export const InputValidationUserSettingsForm = () => {
           workspaceJSON: loadingJSON,
         },
       }),
-    []
+    [],
   );
 
   return (
@@ -153,7 +149,6 @@ export const InputValidationUserSettingsForm = () => {
     </PersistenceProvider>
   );
 };
-InputValidationUserSettingsForm.displaySequence = displaySequence++;
 
 // Showcase example showing large quantity of form controls
 export const ScrollableUserSettingsPanel = () => {
@@ -171,7 +166,7 @@ export const ScrollableUserSettingsPanel = () => {
           workspaceJSON: loadingJSON,
         },
       }),
-    []
+    [],
   );
 
   return (
@@ -182,42 +177,3 @@ export const ScrollableUserSettingsPanel = () => {
     </PersistenceProvider>
   );
 };
-ScrollableUserSettingsPanel.displaySequence = displaySequence++;
-
-// //Showcase example showing the shell with panel
-// const user = { username: "test-user", token: "test-token" };
-
-// export const SettingsFormInShell = () => {
-//   const demoPersistenceManager = useMemo(
-//     () =>
-//       new StaticPersistenceManager({
-//         applicationJSON: {
-//           userSettings: {
-//             userName: "",
-//             id: "",
-//           },
-//         },
-//       }),
-//     []
-//   );
-
-//   return (
-//     <PersistenceProvider persistenceManager={demoPersistenceManager}>
-//       <ApplicationProvider userSettingsSchema={scrollableSettingsFormSchema}>
-//         <Shell
-//           leftSidePanelLayout="full-height"
-//           loginUrl={window.location.toString()}
-//           user={user}
-//           style={
-//             {
-//               "--vuuShell-height": "100%",
-//               "--vuuShell-width": "100%",
-//             } as CSSProperties
-//           }
-//         />
-//       </ApplicationProvider>
-//     </PersistenceProvider>
-//   );
-// };
-
-// SettingsFormInShell.displaySequence = displaySequence++;

@@ -7,14 +7,11 @@ import { TableRowSelectHandler } from "@finos/vuu-table-types";
 import { TreeDataSource } from "@finos/vuu-data-local";
 import { Input } from "@salt-ds/core";
 
-let displaySequence = 1;
-
 export const ShowcaseTree = () => {
   return (
     <TreeTable rowHeight={30} showColumnHeaders={false} source={showcaseData} />
   );
 };
-ShowcaseTree.displaySequence = displaySequence++;
 
 export const ShowcaseTreeSelected = () => {
   return (
@@ -32,7 +29,6 @@ export const ShowcaseTreeSelected = () => {
     </div>
   );
 };
-ShowcaseTreeSelected.displaySequence = displaySequence++;
 
 export const ShowcaseTreeSelectedAutoReveal = () => {
   console.log({ showcaseData });
@@ -49,7 +45,6 @@ export const ShowcaseTreeSelectedAutoReveal = () => {
     />
   );
 };
-ShowcaseTreeSelectedAutoReveal.displaySequence = displaySequence++;
 
 const addDataNodes = (
   treeNodes: TreeSourceNode[],
@@ -80,7 +75,6 @@ export const ShowcaseTreeNodeOptions = () => {
     />
   );
 };
-ShowcaseTreeNodeOptions.displaySequence = displaySequence++;
 
 export const TreeTableSearch = () => {
   const dataSource = useMemo(
@@ -132,4 +126,3 @@ export const TreeTableSearch = () => {
     </div>
   );
 };
-TreeTableSearch.displaySequence = displaySequence++;

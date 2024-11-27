@@ -13,8 +13,6 @@ import {
   Option,
 } from "@salt-ds/core";
 
-let displaySequence = 1;
-
 // this example allows to fire notifications dynamically when wrapped in NotificationsProvider
 const Notifications = () => {
   const [type, setType] = useState<NotificationLevel>("info");
@@ -80,8 +78,6 @@ export const NotificationsWithContext = () => (
   </NotificationsProvider>
 );
 
-NotificationsWithContext.displaySequence = displaySequence++;
-
 export const SuccessNotificationToast = () => (
   <ToastNotification
     top={20}
@@ -94,8 +90,6 @@ export const SuccessNotificationToast = () => (
     }}
   />
 );
-
-SuccessNotificationToast.displaySequence = displaySequence++;
 
 export const ErrorNotificationToast = () => (
   <ToastNotification
@@ -110,8 +104,6 @@ export const ErrorNotificationToast = () => (
   />
 );
 
-ErrorNotificationToast.displaySequence = displaySequence++;
-
 export const WarningNotificationToast = () => (
   <ToastNotification
     top={20}
@@ -125,8 +117,6 @@ export const WarningNotificationToast = () => (
   />
 );
 
-WarningNotificationToast.displaySequence = displaySequence++;
-
 export const InfoNotificationToast = () => (
   <ToastNotification
     top={20}
@@ -139,5 +129,3 @@ export const InfoNotificationToast = () => (
     }}
   />
 );
-
-InfoNotificationToast.displaySequence = displaySequence++;

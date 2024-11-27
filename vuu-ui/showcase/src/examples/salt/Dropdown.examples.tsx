@@ -13,8 +13,6 @@ import { Icon } from "@finos/vuu-ui-controls";
 import { SyntheticEvent, useState } from "react";
 // import { LocationIcon } from "@salt-ds/icons";
 
-let displaySequence = 1;
-
 const usStates = [
   "Alabama",
   "Alaska",
@@ -89,25 +87,20 @@ const BaseDropdown = (args: DropdownProps) => (
 );
 
 export const DefaultDropdown = () => <BaseDropdown />;
-DefaultDropdown.displaySequence = displaySequence++;
 
 export const Placeholder = () => <BaseDropdown placeholder="State" />;
-Placeholder.displaySequence = displaySequence++;
 
 export const WithDefaultSelected = () => (
   <BaseDropdown defaultSelected={["California"]} />
 );
-WithDefaultSelected.displaySequence = displaySequence++;
 
 export const Readonly = () => (
   <BaseDropdown readOnly defaultSelected={["California"]} />
 );
-Readonly.displaySequence = displaySequence++;
 
 export const Disabled = () => (
   <BaseDropdown disabled defaultSelected={["California"]} />
 );
-Disabled.displaySequence = displaySequence++;
 
 export const DisabledOption = () => (
   <Dropdown>
@@ -116,7 +109,6 @@ export const DisabledOption = () => (
     ))}
   </Dropdown>
 );
-DisabledOption.displaySequence = displaySequence++;
 
 export const Variants = () => (
   <StackLayout>
@@ -132,10 +124,8 @@ export const Variants = () => (
     </Dropdown>
   </StackLayout>
 );
-Variants.displaySequence = displaySequence++;
 
 export const MultiSelect = () => <BaseDropdown multiselect />;
-MultiSelect.displaySequence = displaySequence++;
 
 export const WithFormField = () => {
   return (
@@ -150,7 +140,6 @@ export const WithFormField = () => {
     </FormField>
   );
 };
-WithFormField.displaySequence = displaySequence++;
 
 export const Grouped = () => (
   <Dropdown>
@@ -166,52 +155,7 @@ export const Grouped = () => (
     </OptionGroup>
   </Dropdown>
 );
-Grouped.displaySequence = displaySequence++;
 
-/*
-const countries: Record<string, { icon: JSX.Element; name: string }> = {
-  GB: {
-    icon: <GB aria-hidden size={0.75} />,
-    name: "United Kingdom of Great Britain and Northern Ireland",
-  },
-  US: {
-    icon: <US aria-hidden size={0.75} />,
-    name: "United States of America",
-  },
-};
-
-export const ComplexOption: StoryFn<DropdownProps> = (args) => {
-  const [selected, setSelected] = useState<string[]>([]);
-
-  const handleSelectionChange: DropdownProps["onSelectionChange"] = (
-    event,
-    newSelected
-  ) => {
-    setSelected(newSelected);
-    args.onSelectionChange?.(event, newSelected);
-  };
-
-  const adornment = countries[selected[0] ?? ""]?.icon || null;
-
-  return (
-    <Dropdown
-      {...args}
-      selected={selected}
-      startAdornment={adornment}
-      onSelectionChange={handleSelectionChange}
-      valueToString={(item) => countries[item].name}
-    >
-      <Option value="GB">
-        <GB size={0.75} aria-hidden /> United Kingdom of Great Britain and
-        Northern Ireland
-      </Option>
-      <Option value="US">
-        <US size={0.75} aria-hidden /> United States of America
-      </Option>
-    </Dropdown>
-  );
-};
-*/
 export const LongList = () => (
   <Dropdown>
     {longUsStates.map((state) => (
@@ -219,14 +163,13 @@ export const LongList = () => (
     ))}
   </Dropdown>
 );
-LongList.displaySequence = displaySequence++;
 
 export const CustomValue = (props: Partial<DropdownProps>) => {
   const [selected, setSelected] = useState<string[]>([]);
 
   const handleSelectionChange: DropdownProps["onSelectionChange"] = (
     event,
-    newSelected
+    newSelected,
   ) => {
     setSelected(newSelected);
     props.onSelectionChange?.(event, newSelected);
@@ -248,7 +191,6 @@ export const CustomValue = (props: Partial<DropdownProps>) => {
     </Dropdown>
   );
 };
-CustomValue.displaySequence = displaySequence++;
 
 export const Validation = () => {
   return (
@@ -259,12 +201,10 @@ export const Validation = () => {
     </StackLayout>
   );
 };
-Validation.displaySequence = displaySequence++;
 
 export const WithStartAdornment = () => (
   <BaseDropdown startAdornment={<Icon name="user" />} />
 );
-WithStartAdornment.displaySequence = displaySequence++;
 
 interface Person {
   id: number;
@@ -284,7 +224,7 @@ export const ObjectValue = () => {
   const [selected, setSelected] = useState<Person[]>([]);
   const handleSelectionChange = (
     event: SyntheticEvent,
-    newSelected: Person[]
+    newSelected: Person[],
   ) => {
     setSelected(newSelected);
   };
@@ -302,4 +242,3 @@ export const ObjectValue = () => {
     </Dropdown>
   );
 };
-ObjectValue.displaySequence = displaySequence++;

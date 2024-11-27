@@ -3,8 +3,6 @@ import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
 import { Button } from "@salt-ds/core";
 import { CSSProperties, useState } from "react";
 
-let displaySequence = 1;
-
 const toolbarStyle = {
   "--saltToolbar-background": "white",
 } as CSSProperties;
@@ -20,7 +18,6 @@ export const DefaultHeader = () => {
     />
   );
 };
-DefaultHeader.displaySequence = displaySequence++;
 
 export const HeaderWithTabs = () => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
@@ -81,7 +78,6 @@ export const HeaderWithTabs = () => {
     </Flexbox>
   );
 };
-HeaderWithTabs.displaySequence = displaySequence++;
 
 export const HeaderWithTitle = () => {
   return (
@@ -103,4 +99,3 @@ export const HeaderWithTitle = () => {
     </Flexbox>
   );
 };
-HeaderWithTitle.displaySequence = displaySequence++;

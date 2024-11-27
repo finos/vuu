@@ -50,8 +50,6 @@ import {
   useState,
 } from "react";
 
-let displaySequence = 0;
-
 const tabs = ["Home", "Transactions", "Loans", "Checks", "Liquidity"];
 const lotsOfTabs = [
   "Home",
@@ -95,7 +93,6 @@ export const Bordered = () => {
     </div>
   );
 };
-Bordered.displaySequence = displaySequence++;
 
 export const Inline = () => {
   return (
@@ -118,7 +115,6 @@ export const Inline = () => {
     </div>
   );
 };
-Inline.displaySequence = displaySequence++;
 
 const tabToIcon: Record<string, ComponentType> = {
   Home: HomeIcon,
@@ -154,7 +150,6 @@ export const WithIcon = () => {
     </div>
   );
 };
-WithIcon.displaySequence = displaySequence++;
 
 export const WithBadge = () => {
   return (
@@ -178,7 +173,6 @@ export const WithBadge = () => {
     </div>
   );
 };
-WithBadge.displaySequence = displaySequence++;
 
 export const Overflow = () => {
   return (
@@ -195,7 +189,6 @@ export const Overflow = () => {
     </TabsNext>
   );
 };
-Overflow.displaySequence = displaySequence++;
 
 export const Closable = () => {
   const [tabs, setTabs] = useState([
@@ -235,7 +228,6 @@ export const Closable = () => {
     </div>
   );
 };
-Closable.displaySequence = displaySequence++;
 
 export const DisabledTabs = () => {
   return (
@@ -259,7 +251,6 @@ export const DisabledTabs = () => {
     </div>
   );
 };
-DisabledTabs.displaySequence = displaySequence++;
 
 export const AddTabs = () => {
   const [tabs, setTabs] = useState(["Home", "Transactions", "Loans"]);
@@ -300,7 +291,6 @@ export const AddTabs = () => {
     </div>
   );
 };
-AddTabs.displaySequence = displaySequence++;
 
 export const Backgrounds = (): ReactElement => {
   const [variant, setVariant] =
@@ -345,7 +335,6 @@ export const Backgrounds = (): ReactElement => {
     </StackLayout>
   );
 };
-Backgrounds.displaySequence = displaySequence++;
 
 function AddTabDialog({
   open,
@@ -390,7 +379,6 @@ function AddTabDialog({
     </Dialog>
   );
 }
-AddTabDialog.displaySequence = displaySequence++;
 
 export const AddWithDialog = () => {
   const [tabs, setTabs] = useState(["Home", "Transactions", "Loans"]);
@@ -438,7 +426,6 @@ export const AddWithDialog = () => {
     </div>
   );
 };
-AddWithDialog.displaySequence = displaySequence++;
 
 function CloseConfirmationDialog({
   open,
@@ -525,7 +512,6 @@ export const CloseWithConfirmation = () => {
     </div>
   );
 };
-CloseWithConfirmation.displaySequence = displaySequence++;
 
 export const WithInteractiveElementInPanel = () => {
   return (
@@ -561,7 +547,6 @@ export const WithInteractiveElementInPanel = () => {
     </div>
   );
 };
-WithInteractiveElementInPanel.displaySequence = displaySequence++;
 
 export const WithMenu = () => {
   const [tabs, setTabs] = useState([
@@ -625,7 +610,6 @@ export const WithMenu = () => {
     </div>
   );
 };
-WithMenu.displaySequence = displaySequence++;
 
 export const Controlled = () => {
   const [tabs, setTabs] = useState(lotsOfTabs);
@@ -660,4 +644,3 @@ export const Controlled = () => {
     </TabsNext>
   );
 };
-Controlled.displaySequence = displaySequence++;

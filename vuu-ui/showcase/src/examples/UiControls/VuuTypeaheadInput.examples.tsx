@@ -5,8 +5,6 @@ import { VuuTypeaheadInput } from "@finos/vuu-ui-controls";
 import { CommitHandler } from "@finos/vuu-utils";
 import { CSSProperties } from "react";
 
-let displaySequence = 1;
-
 const TypeaheadInputTemplate = ({
   allowFreeInput,
   column = { name: "currency", serverDataType: "string" },
@@ -56,7 +54,6 @@ export const CurrencyWithTypeaheadAllowFreeText = ({
     </LocalDataSourceProvider>
   );
 };
-CurrencyWithTypeaheadAllowFreeText.displaySequence = displaySequence++;
 
 export const CurrencyWithTypeaheadDisallowFreeText = ({
   onCommit,
@@ -80,7 +77,6 @@ export const CurrencyWithTypeaheadDisallowFreeText = ({
     </LocalDataSourceProvider>
   );
 };
-CurrencyWithTypeaheadDisallowFreeText.displaySequence = displaySequence++;
 
 export const CurrencyNoTypeaheadAllowFreeText = () => {
   return (
@@ -98,7 +94,6 @@ export const CurrencyNoTypeaheadAllowFreeText = () => {
     </div>
   );
 };
-CurrencyNoTypeaheadAllowFreeText.displaySequence = displaySequence++;
 
 export const CurrencyNoTypeaheadDisallowFreeText = () => {
   return (
@@ -116,4 +111,3 @@ export const CurrencyNoTypeaheadDisallowFreeText = () => {
     </div>
   );
 };
-CurrencyNoTypeaheadDisallowFreeText.displaySequence = displaySequence++;

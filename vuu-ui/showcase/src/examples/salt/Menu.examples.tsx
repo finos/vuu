@@ -18,8 +18,6 @@ import {
 import { useState } from "react";
 import { VirtualElement } from "@floating-ui/react";
 
-let displaySequence = 1;
-
 export const SingleLevel = (args: MenuProps) => {
   return (
     <Menu {...args}>
@@ -61,7 +59,6 @@ export const SingleLevel = (args: MenuProps) => {
     </Menu>
   );
 };
-SingleLevel.displaySequence = displaySequence++;
 
 function EditStylingMenu() {
   return (
@@ -95,7 +92,6 @@ function EditStylingMenu() {
     </Menu>
   );
 }
-EditStylingMenu.displaySequence = displaySequence++;
 
 function ClearStylingMenu() {
   return (
@@ -129,7 +125,6 @@ function ClearStylingMenu() {
     </Menu>
   );
 }
-ClearStylingMenu.displaySequence = displaySequence++;
 
 export const MultiLevel = (args: MenuProps) => {
   return (
@@ -167,7 +162,6 @@ export const MultiLevel = (args: MenuProps) => {
     </Menu>
   );
 };
-MultiLevel.displaySequence = displaySequence++;
 
 export const GroupedItems = (args: MenuProps) => {
   return (
@@ -194,7 +188,6 @@ export const GroupedItems = (args: MenuProps) => {
     </Menu>
   );
 };
-GroupedItems.displaySequence = displaySequence++;
 
 export const SeparatorOnly = (args: MenuProps) => {
   return (
@@ -221,7 +214,6 @@ export const SeparatorOnly = (args: MenuProps) => {
     </Menu>
   );
 };
-SeparatorOnly.displaySequence = displaySequence++;
 
 export const Icons = (args: MenuProps) => {
   return (
@@ -248,7 +240,6 @@ export const Icons = (args: MenuProps) => {
     </Menu>
   );
 };
-Icons.displaySequence = displaySequence++;
 
 export const IconWithGroups = (args: MenuProps) => {
   return (
@@ -287,11 +278,10 @@ export const IconWithGroups = (args: MenuProps) => {
     </Menu>
   );
 };
-IconWithGroups.displaySequence = displaySequence++;
 
 export const ContextMenu = () => {
   const [virtualElement, setVirtualElement] = useState<VirtualElement | null>(
-    null
+    null,
   );
   const [open, setOpen] = useState(false);
   return (
@@ -339,4 +329,3 @@ export const ContextMenu = () => {
     </>
   );
 };
-ContextMenu.displaySequence = displaySequence++;

@@ -2,8 +2,6 @@ import { LayoutProvider, Stack, View } from "@finos/vuu-layout";
 import { useState } from "react";
 import { TestTable } from "./Table.examples";
 
-let displaySequence = 1;
-
 export const TwoTabbedTables = () => {
   const [active, setActive] = useState(0);
   return (
@@ -28,7 +26,6 @@ export const TwoTabbedTables = () => {
     </LayoutProvider>
   );
 };
-TwoTabbedTables.displaySequence = displaySequence++;
 
 export const FourTabbedTables = () => {
   const [active, setActive] = useState(0);
@@ -50,4 +47,3 @@ export const FourTabbedTables = () => {
     </Stack>
   );
 };
-FourTabbedTables.displaySequence = displaySequence++;

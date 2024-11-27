@@ -1,5 +1,3 @@
-let displaySequence = 1;
-
 import { GridLayout } from "./components/GridLayout";
 import "./GridLayout.examples.css";
 
@@ -14,7 +12,6 @@ export const GridLayoutA = () => {
     </GridLayout>
   );
 };
-GridLayoutA.displaySequence = displaySequence++;
 
 export const GridLayoutB = () => {
   return (
@@ -27,7 +24,6 @@ export const GridLayoutB = () => {
     </GridLayout>
   );
 };
-GridLayoutB.displaySequence = displaySequence++;
 
 export const GridLayoutC = () => {
   return (
@@ -40,4 +36,3 @@ export const GridLayoutC = () => {
     </GridLayout>
   );
 };
-GridLayoutC.displaySequence = displaySequence++;

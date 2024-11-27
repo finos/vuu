@@ -28,8 +28,6 @@ registerComponent("TableSettings", TableSettingsPanel, "view");
 
 const user = { username: "why-the-lucky-stiff", token: "test-token" };
 
-let displaySequence = 1;
-
 const getFeaturePath: GetFeaturePaths = ({
   env,
   fileName,
@@ -162,5 +160,3 @@ export const SampleAppDefaultFeatures = () => {
     </LocalDataSourceProvider>
   );
 };
-
-SampleAppDefaultFeatures.displaySequence = displaySequence++;

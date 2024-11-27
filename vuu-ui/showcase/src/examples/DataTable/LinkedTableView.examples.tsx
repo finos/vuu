@@ -2,8 +2,6 @@ import { LocalDataSourceProvider } from "@finos/vuu-data-test";
 import { LinkedDataSources, LinkedTableView } from "@finos/vuu-datatable";
 import { useMemo } from "react";
 
-let displaySequence = 0;
-
 export const TwoLevelLinkedTablesWithDescriptors = () => {
   const linkedDataSources = useMemo<LinkedDataSources>(() => {
     return {
@@ -35,7 +33,6 @@ export const TwoLevelLinkedTablesWithDescriptors = () => {
     </LocalDataSourceProvider>
   );
 };
-TwoLevelLinkedTablesWithDescriptors.displaySequence = displaySequence++;
 
 export const MultipleLevelTwoTables = () => {
   const linkedDataSources = useMemo<LinkedDataSources>(() => {
@@ -81,7 +78,6 @@ export const MultipleLevelTwoTables = () => {
     </LocalDataSourceProvider>
   );
 };
-MultipleLevelTwoTables.displaySequence = displaySequence++;
 
 export const ThreeLevelLinkedTablesWithDescriptors = () => {
   const linkedDataSources = useMemo<LinkedDataSources>(() => {
@@ -124,4 +120,3 @@ export const ThreeLevelLinkedTablesWithDescriptors = () => {
     </LocalDataSourceProvider>
   );
 };
-ThreeLevelLinkedTablesWithDescriptors.displaySequence = displaySequence++;

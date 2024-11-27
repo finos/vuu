@@ -4,8 +4,6 @@ import type { TableConfig } from "@finos/vuu-table-types";
 import { Table } from "@finos/vuu-table";
 import { useMemo } from "react";
 
-let displaySequence = 1;
-
 export const TableWithFooter = () => {
   const tableConfig = useMemo<TableConfig>(() => {
     return {
@@ -30,4 +28,3 @@ export const TableWithFooter = () => {
     </FlexboxLayout>
   );
 };
-TableWithFooter.displaySequence = displaySequence++;

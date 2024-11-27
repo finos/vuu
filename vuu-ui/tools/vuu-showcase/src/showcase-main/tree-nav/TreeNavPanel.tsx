@@ -1,13 +1,11 @@
 import { TreeTable, type TreeTableProps } from "@finos/vuu-datatable";
 import { View, type ViewProps } from "@finos/vuu-layout";
-import { VuuInput } from "@finos/vuu-ui-controls";
 import cx from "clsx";
 import { useTreeNavPanel } from "./useTreeNavPanel";
+import { TreeSourceNode } from "@finos/vuu-utils";
+import { Input } from "@salt-ds/core";
 
 import "./TreeNavPanel.css";
-import { TreeDataSource } from "@finos/vuu-data-local";
-import { useMemo } from "react";
-import { TreeSourceNode } from "@finos/vuu-utils";
 
 const classBase = "vuuTreeNavPanel";
 
@@ -27,12 +25,7 @@ export const TreeNavPanel = ({
   source,
   style,
 }: TreeNavPanelProps) => {
-  const { onCommit } = useTreeNavPanel();
-
-  const dataSource = useMemo(
-    () => new TreeDataSource({ data: source }),
-    [source],
-  );
+  const { dataSource, onChange, searchPattern } = useTreeNavPanel({ source });
 
   return (
     <View
@@ -41,7 +34,7 @@ export const TreeNavPanel = ({
       style={style}
     >
       <div className={`${classBase}-search`}>
-        <VuuInput onCommit={onCommit} />
+        <Input onChange={onChange} />
       </div>
       <div className={`${classBase}-treeContainer`}>
         <TreeTable
@@ -51,6 +44,7 @@ export const TreeNavPanel = ({
           showColumnHeaders={false}
           onSelect={onSelect}
           revealSelected
+          searchPattern={searchPattern}
           width="100%"
         />
       </div>

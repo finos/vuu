@@ -4,8 +4,6 @@ import { SyntheticEvent, useState } from "react";
 
 import "./ToggleButton.examples.css";
 
-let displaySequence = 1;
-
 interface ToggleButtonExampleProps {
   "data-variant"?: ButtonProps["variant"];
   "data-accented"?: boolean;
@@ -32,8 +30,6 @@ export const ButtonGroupWithTextOnly = (props: ToggleButtonExampleProps) => {
     </ToggleButtonGroup>
   );
 };
-
-ButtonGroupWithTextOnly.displaySequence = displaySequence++;
 
 export const ButtonGroupWithIconOnly = (props: ToggleButtonExampleProps) => {
   const [selectedIndex, setSelectedIndex] = useState<number>(1);
@@ -82,8 +78,6 @@ export const ButtonGroupWithIconOnly = (props: ToggleButtonExampleProps) => {
   );
 };
 
-ButtonGroupWithIconOnly.displaySequence = displaySequence++;
-
 export const ButtonGroupWithTextAndIcon = (props: ToggleButtonExampleProps) => {
   const [selectedIndex, setSelectedIndex] = useState<number>(1);
 
@@ -121,8 +115,6 @@ export const ButtonGroupWithTextAndIcon = (props: ToggleButtonExampleProps) => {
     </ToggleButtonGroup>
   );
 };
-
-ButtonGroupWithTextAndIcon.displaySequence = displaySequence++;
 
 export const ToggleButtonGroupVariations = () => {
   return (
@@ -168,7 +160,6 @@ export const ToggleButtonGroupVariations = () => {
     </div>
   );
 };
-ToggleButtonGroupVariations.displaySequence = displaySequence++;
 
 export const SingleToggleButton = () => {
   return (
@@ -177,4 +168,3 @@ export const SingleToggleButton = () => {
     </ToggleButton>
   );
 };
-SingleToggleButton.displaySequence = displaySequence++;

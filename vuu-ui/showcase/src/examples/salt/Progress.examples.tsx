@@ -1,7 +1,5 @@
 import { CircularProgress, LinearProgress } from "@salt-ds/core";
 
-let displaySequence = 1;
-
 export const LinearDefault = () => (
   <div>
     <div>
@@ -18,7 +16,6 @@ export const LinearDefault = () => (
     </div>
   </div>
 );
-LinearDefault.displaySequence = displaySequence++;
 
 export const CircularDefault = () => (
   <div style={{ display: "flex" }}>
@@ -36,4 +33,3 @@ export const CircularDefault = () => (
     </div>
   </div>
 );
-CircularDefault.displaySequence = displaySequence++;
