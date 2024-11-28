@@ -20,8 +20,12 @@ export const useDragDropNaturalMovement = () => {
   );
 
   const dragEnterDropTarget = useCallback(
-    (dropTarget: HTMLElement, direction: Direction) => {
-      displaceItem(dropTarget, sizeRef.current, true, direction);
+    (
+      dropTarget: HTMLElement,
+      direction: Direction,
+      tabElement = sizeRef.current,
+    ) => {
+      displaceItem(dropTarget, tabElement, true, direction);
     },
     [displaceItem],
   );

@@ -1,26 +1,48 @@
 import { DragEventHandler, useCallback, useMemo, useRef } from "react";
-import { DragDropState, IDragDropState, NullDragState } from "./DragDropState";
+import {
+  DragDropState,
+  DragOrigin,
+  IDragDropState,
+  NullDragState,
+} from "./DragDropState";
 import {
   getElementDataIndex,
   orientationType,
   queryClosest,
+  useDragContext,
 } from "@finos/vuu-utils";
 import { useDragDropNaturalMovement as useDragDropHook } from "./useDragDropNaturalMovement";
 import { Direction, DropHandler } from "../hooks/dragDropTypes";
 
+type HoverTargetState = {
+  direction: Direction;
+  // each time drag direction is reversed an out-by-one drop offset issue is incurred/removed
+  applyDropOffset: boolean;
+  target: HTMLElement;
+};
+
+const isDifferentTarget = (target: HTMLElement, state?: HoverTargetState) =>
+  state !== undefined && state.target !== target;
+const isDifferentDirection = (
+  direction: Direction,
+  state?: HoverTargetState,
+): state is HoverTargetState =>
+  state !== undefined && state.direction !== direction;
+
 export interface DragDropHookProps {
   draggableQuery?: string;
+  id: string;
   onDrop: DropHandler;
   orientation?: orientationType;
 }
 
 export const useDragDrop = ({
   draggableQuery = ".saltTabNext",
+  id,
   onDrop: onDropProp,
   orientation = "horizontal",
 }: DragDropHookProps) => {
-  const dropTargetRef = useRef<HTMLElement | null>(null);
-  const hoverTargetRef = useRef<HTMLElement | null>(null);
+  const hoverTargetStateRef = useRef<HoverTargetState | undefined>();
   const dragStateRef = useRef<IDragDropState>(NullDragState);
   const {
     startDrag,
@@ -29,6 +51,7 @@ export const useDragDrop = ({
     dragLeaveDropContainer,
     endDrag,
   } = useDragDropHook();
+  const dragContext = useDragContext();
 
   const handleDrag = useCallback((e: DragEvent) => {
     const { current: dragState } = dragStateRef;
@@ -44,13 +67,34 @@ export const useDragDrop = ({
     dragLeaveDropContainer();
   }, [dragLeaveDropContainer]);
 
-  const onReverseDirection = useCallback(
-    (direction: Direction) => {
-      if (hoverTargetRef.current) {
-        dragEnterDropTarget(hoverTargetRef.current, direction);
-      }
+  const initiateDrag = useCallback(
+    ({
+      dragContainerElement,
+      dragOrigin = "local",
+      x,
+      y,
+    }: {
+      dragContainerElement: HTMLElement;
+      dragOrigin?: DragOrigin;
+      x: number;
+      y: number;
+    }) => {
+      dragContainerElement?.classList.add("vuuDragContainer-dragging");
+
+      const dragState = (dragStateRef.current = new DragDropState({
+        dragOrigin,
+        dragContainerElement,
+        orientation,
+        onEnterDragContainer,
+        onLeaveDragContainer,
+      }));
+
+      dragState.x = x;
+      dragState.y = y;
+
+      addEventListener("drag", handleDrag);
     },
-    [dragEnterDropTarget],
+    [handleDrag, onEnterDragContainer, onLeaveDragContainer, orientation],
   );
 
   const dragDropListeners = useMemo<DragDropListeners>(
@@ -60,23 +104,27 @@ export const useDragDrop = ({
       },
       onDrop: (e) => {
         e.stopPropagation();
-        const { current: dropTarget } = dropTargetRef;
-        const draggedElementId = e.dataTransfer.getData("text/plain");
-        const draggedElement = document.getElementById(draggedElementId);
+        const { current: hoverState } = hoverTargetStateRef;
+        if (hoverState) {
+          const dropTarget = hoverTargetStateRef.current?.target;
+          const draggedElementId = e.dataTransfer.getData("text/plain");
+          const draggedElement = document.getElementById(draggedElementId);
 
-        if (draggedElement && dropTarget) {
-          draggedElement.classList.remove("vuuDragging");
-          draggedElement.parentElement?.classList.remove(
-            "vuuDragContainer-dragging",
-          );
+          if (draggedElement && dropTarget) {
+            draggedElement.classList.remove("vuuDragging");
+            draggedElement.parentElement?.classList.remove(
+              "vuuDragContainer-dragging",
+            );
 
-          const fromIndex = getElementDataIndex(draggedElement);
-          const toIndex = getElementDataIndex(dropTarget);
-          endDrag(draggedElement);
-          onDropProp({
-            fromIndex,
-            toIndex,
-          });
+            const fromIndex = getElementDataIndex(draggedElement);
+            const toIndex = getElementDataIndex(dropTarget);
+            endDrag(draggedElement);
+            onDropProp({
+              fromIndex,
+              toIndex: hoverState.applyDropOffset ? toIndex - 1 : toIndex,
+            });
+          }
+          dragContext.endDrag(id);
         } else {
           throw Error("Drop: No valid dropTarget");
         }
@@ -84,37 +132,48 @@ export const useDragDrop = ({
         return false;
       },
       onDragEnter: (e) => {
-        console.log("onDragEnter");
         e.stopPropagation();
 
         const tabElement = queryClosest(e.target, draggableQuery);
-        if (dragStateRef.current === NullDragState) {
-          console.log(`we're saeeing a dragged tab from another tabstrip`);
-        }
-        // const tabContainer = tabElement?.parentElement;
-        if (tabElement) {
-          // console.log({ dragDropState: dragStateRef.current });
-          // if (tabContainer !== dragStateRef.current.dragContainerElement) {
-          //   // TODO need to decide how we determine of this is allowed
-          //   dragStateRef.current.dragContainerElement = tabContainer;
-          // }
+        // const dragContainerElement = tabElement?.parentElement;
+        // if (dragStateRef.current === NullDragState && dragContainerElement) {
+        //   console.log(`we're seeing a dragged tab from another tabstrip`);
+        //   initiateDrag({
+        //     dragContainerElement,
+        //     x: e.clientX,
+        //     y: e.clientY,
+        //   });
 
+        //   dragStateRef.current.direction = "fwd";
+        // }
+        if (tabElement) {
           const {
-            current: { direction },
+            current: { direction = "fwd" },
           } = dragStateRef;
-          if (hoverTargetRef.current !== tabElement && direction) {
-            hoverTargetRef.current = tabElement;
-            dragEnterDropTarget(tabElement, direction);
+          const { current: hoverState } = hoverTargetStateRef;
+
+          if (isDifferentTarget(tabElement, hoverState)) {
+            hoverTargetStateRef.current = {
+              applyDropOffset: hoverState?.applyDropOffset ?? false,
+              target: tabElement,
+              direction,
+            };
+            dragEnterDropTarget(
+              tabElement,
+              direction,
+              dragContext.dragState.width,
+            );
+          } else if (isDifferentDirection(direction, hoverState)) {
+            hoverState.applyDropOffset = !hoverState.applyDropOffset;
+            hoverState.direction = direction;
+            dragEnterDropTarget(
+              tabElement,
+              direction,
+              dragContext.dragState.width,
+            );
           }
+
           e.stopPropagation();
-        } else {
-          const dropTargetElement = queryClosest(
-            e.target,
-            ".vuuDraggable-spacer",
-          );
-          if (dropTargetElement) {
-            dropTargetRef.current = hoverTargetRef.current;
-          }
         }
       },
       onDragOver: (e) => {
@@ -129,43 +188,40 @@ export const useDragDrop = ({
         const draggedElement = queryClosest(e.target, draggableQuery);
         const dragContainerElement = draggedElement?.parentElement;
         if (draggedElement && dragContainerElement) {
+          e.stopPropagation();
+
           draggedElement.classList.add("vuuDragging");
-          dragContainerElement?.classList.add("vuuDragContainer-dragging");
+
+          initiateDrag({
+            dragContainerElement,
+            x: e.clientX,
+            y: e.clientY,
+          });
 
           startDrag(draggedElement);
 
-          e.stopPropagation();
+          hoverTargetStateRef.current = {
+            applyDropOffset: false,
+            // todo can we determine this more accurately
+            direction: "fwd",
+            target: draggedElement,
+          };
 
-          const dragState = (dragStateRef.current = new DragDropState({
-            event: e,
-            draggedElement,
-            dragContainerElement,
-            orientation,
-            onEnterDragContainer,
-            onLeaveDragContainer,
-            onReverseDirection,
-          }));
-
-          dragState.x = e.clientX;
-          dragState.y = e.clientY;
+          dragContext.beginDrag(id, draggedElement);
 
           e.dataTransfer.setData("text/plain", draggedElement.id);
           e.dataTransfer.effectAllowed = "move";
-
-          addEventListener("drag", handleDrag);
         }
       },
     }),
     [
+      dragContext,
       dragEnterDropTarget,
       draggableQuery,
       endDrag,
-      handleDrag,
+      id,
+      initiateDrag,
       onDropProp,
-      onEnterDragContainer,
-      onLeaveDragContainer,
-      onReverseDirection,
-      orientation,
       startDrag,
     ],
   );

@@ -1,4 +1,4 @@
-import { capitalize, makePrefixer, useForkRef } from "@salt-ds/core";
+import { capitalize, makePrefixer, useForkRef, useIdMemo } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { clsx } from "clsx";
@@ -51,6 +51,7 @@ export const TabListNext = forwardRef<HTMLDivElement, TabListNextProps>(
       activeColor = "primary",
       children,
       className,
+      id: idProp,
       onKeyDown,
       onMoveTab,
       ...rest
@@ -67,7 +68,7 @@ export const TabListNext = forwardRef<HTMLDivElement, TabListNextProps>(
       window: targetWindow,
     });
 
-    console.log(`TabsListNext render`);
+    const id = useIdMemo(idProp);
 
     const {
       selected,
@@ -130,7 +131,7 @@ export const TabListNext = forwardRef<HTMLDivElement, TabListNextProps>(
       [onMoveTab],
     );
 
-    const dragProps = useDragDrop({ onDrop: handleDrop });
+    const dragProps = useDragDrop({ id, onDrop: handleDrop });
 
     useLayoutEffect(() => {
       if (!returnFocus.current || visible.length < 1 || selected === undefined)
@@ -158,6 +159,7 @@ export const TabListNext = forwardRef<HTMLDivElement, TabListNextProps>(
           className,
         )}
         data-ismeasuring={isMeasuring ? true : undefined}
+        id={id}
         ref={handleRef}
         onKeyDown={handleKeyDown}
         {...rest}

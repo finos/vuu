@@ -1,7 +1,5 @@
-// import { Table } from "@finos/vuu-table";
 import { Button } from "@salt-ds/core";
 import { useState } from "react";
-// import { useTableConfig } from "../utils/useTableConfig";
 import { DockLayout } from "./components/DockLayout";
 
 import "./LayoutExperiments.examples.css";

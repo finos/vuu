@@ -1,10 +1,10 @@
 import { DragEvent } from "react";
-import { Direction, MouseOffset } from "../hooks/dragDropTypes";
+import { Direction } from "../hooks/dragDropTypes";
 import { orientationType } from "@finos/vuu-utils";
 
+export type DragOrigin = "local" | "remote";
 export interface IDragDropState {
   direction?: Direction;
-  draggedElement?: HTMLElement;
   dragContainerElement?: HTMLElement;
   x: number;
   y: number;
@@ -16,13 +16,11 @@ export const NullDragState: IDragDropState = {
 };
 
 export type DragDropStateProps = {
-  event: DragEvent;
-  draggedElement: HTMLElement;
   dragContainerElement: HTMLElement;
+  dragOrigin: DragOrigin;
   orientation: orientationType;
   onEnterDragContainer?: () => void;
   onLeaveDragContainer?: () => void;
-  onReverseDirection?: (direction: Direction) => void;
 };
 
 export type ContainerBounds = {
@@ -44,8 +42,8 @@ export class DragDropState implements IDragDropState {
   #direction: Direction | undefined;
   /** The drag container, for Tabs it will be the TabList. */
   #dragContainerElement: HTMLElement | undefined;
+  #dragOrigin: DragOrigin;
   /** Distance between start (top | left) of dragged element and point where user pressed to drag */
-  readonly mouseOffset: MouseOffset;
   #orientation: orientationType;
   #withinContainerX = true;
   #withinContainerY = true;
@@ -55,33 +53,21 @@ export class DragDropState implements IDragDropState {
   #onLeaveDragContainer: undefined | (() => void);
   #onReverseDirection: undefined | ((direction: Direction) => void);
 
-  /** Element being dragged, (initial element cloned and rendered in portal). */
-  draggedElement: HTMLElement | undefined;
-
   payload: unknown = null;
 
   constructor({
-    event: e,
-    draggedElement,
     dragContainerElement,
+    dragOrigin = "local",
     orientation = "horizontal",
     onEnterDragContainer,
     onLeaveDragContainer,
-    onReverseDirection,
   }: DragDropStateProps) {
-    this.draggedElement = draggedElement;
     this.dragContainerElement = dragContainerElement;
-    this.mouseOffset = this.getMouseOffset(e, draggedElement);
+    this.#dragOrigin = dragOrigin;
     this.#orientation = orientation;
     this.#onEnterDragContainer = onEnterDragContainer;
     this.#onLeaveDragContainer = onLeaveDragContainer;
-    this.#onReverseDirection = onReverseDirection;
   }
-
-  /** Used to capture a ref to the Draggable JSX.Element */
-  setDraggable = (el: HTMLElement | undefined) => {
-    this.draggedElement = el;
-  };
 
   get dragContainerElement() {
     return this.#dragContainerElement;
@@ -141,7 +127,7 @@ export class DragDropState implements IDragDropState {
     this.#y = value;
   }
 
-  // TODO once we're outside the contaoiner, we can stop listening for every draf event and just wait for dragEnmter
+  // TODO once we're outside the container, we can stop listening for every drag event and just wait for dragEnter
   private set withinContainerX(value: boolean) {
     if (value !== this.#withinContainerX) {
       this.#withinContainerX = value;
@@ -179,7 +165,7 @@ export class DragDropState implements IDragDropState {
   }
 
   private getContainerBounds() {
-    const container = this.draggedElement?.parentElement;
+    const container = this.#dragContainerElement;
     if (container) {
       const { bottom, left, right, top } = container.getBoundingClientRect();
       return { bottom, left, right, top };

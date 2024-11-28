@@ -14,6 +14,7 @@ export * from "./datasource/datasource-filter-utils";
 export * from "./datasource/datasource-utils";
 export * from "./date";
 export * from "./debug-utils";
+export * from "./DragDropProviderNext";
 export * from "./filters";
 export * from "./html-utils";
 export * from "./event-emitter";

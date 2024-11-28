@@ -9,7 +9,7 @@ import {
   Tabstrip,
   TabstripProps,
 } from "@finos/vuu-ui-controls";
-import { moveItem } from "@finos/vuu-utils";
+import { DragDropProviderNext, moveItem } from "@finos/vuu-utils";
 import { SyntheticEvent, useCallback, useMemo, useRef, useState } from "react";
 import { FlexboxLayout, LayoutProvider } from "@finos/vuu-layout";
 
@@ -17,8 +17,6 @@ import "./TabsMigration.examples.css";
 import { TabState } from "@finos/vuu-layout/src/grid-layout/GridLayoutStackedtem";
 
 const SPLITTER_WIDTH = 3;
-
-let displaySequence = 1;
 
 const TabstripTemplate = ({
   activeTabIndex: activeTabIndexProp = 0,
@@ -148,7 +146,6 @@ export const TabstripDragDrop = ({
     width={width}
   />
 );
-TabstripDragDrop.displaySequence = displaySequence++;
 
 const TabstripTemplate2 = () => {
   const [ts1, ts2] = useMemo(
@@ -274,5 +271,8 @@ const TabstripTemplate2 = () => {
   );
 };
 
-export const TabstripDragDropBetweenTabs = () => <TabstripTemplate2 />;
-TabstripDragDropBetweenTabs.displaySequence = displaySequence++;
+export const TabstripDragDropBetweenTabs = () => (
+  <DragDropProviderNext>
+    <TabstripTemplate2 />
+  </DragDropProviderNext>
+);
