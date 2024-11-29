@@ -101,7 +101,7 @@ class BasketTradingService(val table: DataTable, val tableContainer: TableContai
           val constituentTable = tableContainer.getTable(BasketTradingConstituentTable)
           val constituents = constituentTable.primaryKeys.map(key => constituentTable.pullRow(key)).filter(_.get(BTC.InstanceId) == key)
           constituents.foreach(row => {
-            val unitsAsInt = data.asInstanceOf[Int]
+            val unitsAsInt = data.asInstanceOf[String].toInt
             val weighting = row.get(BTC.Weighting)
             val quantity = (weighting.asInstanceOf[Double] * unitsAsInt).toLong
             constituentTable.processUpdate(row.key(), RowWithData(row.key(), Map(BTC.InstanceIdRic -> row.key(), BTC.Quantity -> quantity)), clock.now())

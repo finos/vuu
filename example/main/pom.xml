@@ -27,6 +27,12 @@
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
+            <artifactId>valkey-redis</artifactId>
+            <version>0.9.65-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.vuu</groupId>
             <artifactId>virtualized-table</artifactId>
             <version>0.9.65-SNAPSHOT</version>
         </dependency>

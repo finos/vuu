@@ -68,11 +68,10 @@
     <!--logger name="org.finos.vuu.core.groupby.WrappedUpdateHandlingKeyObserver" level="DEBUG">
     </logger-->
 
-    <!--logger name="org.finos.vuu.core.groupby.GroupBySessionTableImpl" level="DEBUG">
-    </logger-->
+    <logger name="org.finos.vuu.example.valkey.provider" level="DEBUG">
+    </logger>
 
-
-    <root level="ERROR">
+    <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
 

@@ -8,6 +8,8 @@
         </encoder>
     </appender>
 
+
+
     <!-- uncomment this whole section if you want socket level logging -->
     <!--appender name="server-inout" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>target/vuu-server-inout.log</file>
