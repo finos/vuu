@@ -15,8 +15,6 @@ import { LocalDataSourceProvider, getSchema } from "@finos/vuu-data-test";
 import { FilterClauseValueChangeHandler } from "@finos/vuu-filters/src/filter-clause/useFilterClause";
 import { MultiSelectionHandler } from "@finos/vuu-ui-controls";
 
-let displaySequence = 1;
-
 const longUsStates = [
   "Alabama",
   "Alaska",
@@ -132,7 +130,6 @@ export const DefaultExpandoComboboxSalt = (props: ComboBoxProps) => {
     </ExpandoCombobox>
   );
 };
-DefaultExpandoComboboxSalt.displaySequence = displaySequence++;
 
 export const DefaultExpandoComboBox = (
   props: Partial<ComboBoxProps<ColumnDescriptor>>,
@@ -175,12 +172,10 @@ export const DefaultExpandoComboBox = (
     </ExpandoCombobox>
   );
 };
-DefaultExpandoComboBox.displaySequence = displaySequence++;
 
 export const DefaultExpandoComboBoxHighlightFirstRow = () => {
   return <DefaultExpandoComboBox />;
 };
-DefaultExpandoComboBoxHighlightFirstRow.displaySequence = displaySequence++;
 
 export const DataBoundTextInputEmpty = () => {
   const tableSchema = getSchema("instruments");
@@ -211,7 +206,6 @@ export const DataBoundTextInputEmpty = () => {
     </LocalDataSourceProvider>
   );
 };
-DataBoundTextInputEmpty.displaySequence = displaySequence++;
 
 export const DataBoundTextInputLoaded = () => {
   const tableSchema = getSchema("instruments");
@@ -242,7 +236,6 @@ export const DataBoundTextInputLoaded = () => {
     </LocalDataSourceProvider>
   );
 };
-DataBoundTextInputLoaded.displaySequence = displaySequence++;
 
 export const MultiSelectExpandoComboBox = () => {
   const currencies: string[] = useMemo(
@@ -266,4 +259,3 @@ export const MultiSelectExpandoComboBox = () => {
     </ExpandoCombobox>
   );
 };
-MultiSelectExpandoComboBox.displaySequence = displaySequence++;

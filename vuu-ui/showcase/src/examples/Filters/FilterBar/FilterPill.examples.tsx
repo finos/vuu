@@ -5,8 +5,6 @@ import { ExitEditModeHandler, Icon } from "@finos/vuu-ui-controls";
 import { Button, Input } from "@salt-ds/core";
 import { useCallback, useMemo, useState } from "react";
 
-let displaySequence = 1;
-
 export const DefaultFilterPill = () => {
   const [active, setActive] = useState(false);
   const handleClick = useMemo(() => () => setActive((value) => !value), []);
@@ -24,8 +22,6 @@ export const DefaultFilterPill = () => {
     />
   );
 };
-
-DefaultFilterPill.displaySequence = displaySequence++;
 
 export const FilterPillNotEditable = () => {
   const [active, setActive] = useState(false);
@@ -45,8 +41,6 @@ export const FilterPillNotEditable = () => {
     />
   );
 };
-
-FilterPillNotEditable.displaySequence = displaySequence++;
 
 const menuBuilder: MenuBuilder = (_, options) => [
   { action: "and-clause", label: "AND", options },
@@ -92,8 +86,6 @@ export const FilterPillWithMenu = () => {
   );
 };
 
-FilterPillWithMenu.displaySequence = displaySequence++;
-
 export const FilterPillEditableLabel = () => {
   const [active, setActive] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -119,7 +111,7 @@ export const FilterPillEditableLabel = () => {
       console.log(`${originalValue} -> ${newValue}`);
       setEditing(false);
     },
-    []
+    [],
   );
 
   const beginEdit = () => {
@@ -152,8 +144,6 @@ export const FilterPillEditableLabel = () => {
   );
 };
 
-FilterPillEditableLabel.displaySequence = displaySequence++;
-
 export const FilterPillVariations = () => {
   return (
     <div>
@@ -178,5 +168,3 @@ export const FilterPillVariations = () => {
     </div>
   );
 };
-
-FilterPillVariations.displaySequence = displaySequence++;

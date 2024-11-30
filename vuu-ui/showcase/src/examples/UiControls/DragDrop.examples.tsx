@@ -10,18 +10,16 @@ import {
 import { useCallback, useMemo, useState } from "react";
 import { usa_states } from "./List.data";
 
-let displaySequence = 1;
-
 export const DraggableListsOneWayDrag = () => {
   const [source1, source2] = useMemo(
     () => [usa_states.map((s) => `${s} 1`), usa_states.map((s) => `${s} 2`)],
-    []
+    [],
   );
   const dragSource = useMemo(
     () => ({
       list1: { dropTargets: ["list1", "list2"] },
     }),
-    []
+    [],
   );
 
   const [state1, setState1] = useState(source1);
@@ -40,7 +38,7 @@ export const DraggableListsOneWayDrag = () => {
         }
       });
     },
-    []
+    [],
   );
 
   const handleMoveListItem2 = useCallback<MoveItemHandler>(
@@ -56,7 +54,7 @@ export const DraggableListsOneWayDrag = () => {
         }
       });
     },
-    []
+    [],
   );
 
   const handleDragStart1 = useCallback<DragStartHandler>(
@@ -71,7 +69,7 @@ export const DraggableListsOneWayDrag = () => {
         dragDropState.setPayload(value);
       }
     },
-    [state1]
+    [state1],
   );
   const handleDragStart2 = useCallback<DragStartHandler>((dragDropState) => {
     console.log("handleDragStart2", {
@@ -91,7 +89,7 @@ export const DraggableListsOneWayDrag = () => {
         }
       });
     },
-    []
+    [],
   );
 
   return (
@@ -125,4 +123,3 @@ export const DraggableListsOneWayDrag = () => {
     </DragDropProvider>
   );
 };
-DraggableListsOneWayDrag.displaySequence = displaySequence++;

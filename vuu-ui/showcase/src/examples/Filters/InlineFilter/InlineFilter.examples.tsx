@@ -5,8 +5,6 @@ import { useDataSource } from "@finos/vuu-utils";
 import { TableConfig } from "@finos/vuu-table-types";
 import { Table } from "@finos/vuu-table";
 
-let displaySequence = 0;
-
 const table = { module: "SIMUL", table: "instrumentsExtended" } as const;
 const schema = getSchema("instrumentsExtended");
 
@@ -49,4 +47,3 @@ export const SimpleInlineFilters = () => {
     </LocalDataSourceProvider>
   );
 };
-SimpleInlineFilters.displaySequence = displaySequence++;

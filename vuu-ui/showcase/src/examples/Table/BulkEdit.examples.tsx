@@ -17,8 +17,6 @@ import { DemoTableContainer } from "./DemoTableContainer";
 import { useAutoLoginToVuuServer } from "../utils";
 import { DataSource } from "@finos/vuu-data-types";
 
-let displaySequence = 1;
-
 const BulkEditTableTemplate = ({
   table = "instruments",
 }: {
@@ -73,7 +71,6 @@ export const BulkEditTable = () => {
     </LocalDataSourceProvider>
   );
 };
-BulkEditTable.displaySequence = displaySequence++;
 
 export const BulkEditTableVuu = () => {
   useAutoLoginToVuuServer({ authenticate: false, secure: false });
@@ -85,4 +82,3 @@ export const BulkEditTableVuu = () => {
     </VuuDataSourceProvider>
   );
 };
-BulkEditTableVuu.displaySequence = displaySequence++;

@@ -1,8 +1,6 @@
 import { UnsavedChangesReport } from "@finos/vuu-data-react";
 import { Entity } from "@finos/vuu-utils";
 
-let displaySequence = 1;
-
 export const DefaultUnsavedChangesReport = () => {
   const entity: Entity = {
     price: 200.5,
@@ -20,4 +18,3 @@ export const DefaultUnsavedChangesReport = () => {
     </div>
   );
 };
-DefaultUnsavedChangesReport.displaySequence = displaySequence++;

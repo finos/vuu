@@ -3,8 +3,6 @@ import type { ColumnDescriptorCustomRenderer } from "@finos/vuu-table-types";
 import { ColumnRenderPropsChangeHandler } from "@finos/vuu-utils";
 import { useState } from "react";
 
-let displaySequence = 1;
-
 export const DefaultBackgroundCellConfigurationEditor = () => {
   const [column, setColumn] = useState<ColumnDescriptorCustomRenderer>({
     name: "test-column",
@@ -37,4 +35,3 @@ export const DefaultBackgroundCellConfigurationEditor = () => {
     />
   );
 };
-DefaultBackgroundCellConfigurationEditor.displaySequence = displaySequence++;

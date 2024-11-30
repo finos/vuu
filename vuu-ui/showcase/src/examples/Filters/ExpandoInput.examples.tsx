@@ -1,8 +1,6 @@
 import { ExpandoInput } from "@finos/vuu-ui-controls";
 import { ChangeEvent, useCallback, useState } from "react";
 
-let displaySequence = 1;
-
 export const DefaultExpandoInput = () => {
   const [value, setValuue] = useState("Enter value");
 
@@ -13,4 +11,3 @@ export const DefaultExpandoInput = () => {
 
   return <ExpandoInput onChange={handleChange} value={value} />;
 };
-DefaultExpandoInput.displaySequence = displaySequence++;

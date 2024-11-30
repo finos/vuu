@@ -17,8 +17,6 @@ import { Brown, StatefulComponent } from "./components";
 
 import "./LayoutContainer.examples.css";
 
-let displaySequence = 1;
-
 const Box = (props: HTMLAttributes<HTMLDivElement>) => (
   <div
     style={{
@@ -71,8 +69,6 @@ export const EmptyDraggable = () => {
     />
   );
 };
-
-EmptyDraggable.displaySequence = displaySequence++;
 
 export const SimpleNesting = () => {
   const handleLayoutChange = () => {
@@ -144,8 +140,6 @@ export const SimpleNesting = () => {
   );
 };
 
-SimpleNesting.displaySequence = displaySequence++;
-
 export const ImplicitSizing = () => (
   <LayoutContainer style={{ width: "100vw", height: "100vh" }}>
     <Flexbox
@@ -196,8 +190,6 @@ export const ImplicitSizing = () => (
     </Flexbox>
   </LayoutContainer>
 );
-
-ImplicitSizing.displaySequence = displaySequence++;
 
 export const SimpleNestingWithOffset = () => {
   const handleLayoutChange = () => {
@@ -263,8 +255,6 @@ export const SimpleNestingWithOffset = () => {
     </LayoutProvider>
   );
 };
-
-SimpleNestingWithOffset.displaySequence = displaySequence++;
 
 export const MultipleDraggableContainers = () => (
   <LayoutProvider>
@@ -358,8 +348,6 @@ export const MultipleDraggableContainers = () => (
   </LayoutProvider>
 );
 
-MultipleDraggableContainers.displaySequence = displaySequence++;
-
 export const CustomDrag = () => (
   <LayoutProvider>
     <LayoutContainer
@@ -404,8 +392,6 @@ export const CustomDrag = () => (
     </LayoutContainer>
   </LayoutProvider>
 );
-
-CustomDrag.displaySequence = displaySequence++;
 
 export const ComplexNestedLayout = () => {
   const handleLayoutChange = () => {
@@ -574,8 +560,6 @@ export const ComplexNestedLayout = () => {
   );
 };
 
-ComplexNestedLayout.displaySequence = displaySequence++;
-
 export const ScrollingLayout = () => (
   <LayoutContainer>
     <Flexbox
@@ -646,8 +630,6 @@ export const ScrollingLayout = () => (
     </Flexbox>
   </LayoutContainer>
 );
-
-ScrollingLayout.displaySequence = displaySequence++;
 
 export const JsonLayout = () => {
   return (
@@ -720,5 +702,3 @@ export const JsonLayout = () => {
     </LayoutProvider>
   );
 };
-
-JsonLayout.displaySequence = displaySequence++;

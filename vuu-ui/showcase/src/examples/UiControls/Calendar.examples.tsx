@@ -10,8 +10,6 @@ import {
 } from "@internationalized/date";
 import { useEffect, useRef, useState } from "react";
 
-let displaySequence = 1;
-
 const tz = getLocalTimeZone();
 const _today = today(tz);
 console.log({ tz, _today });
@@ -53,8 +51,6 @@ export const DefaultCalendar = () => {
   );
 };
 
-DefaultCalendar.displaySequence = displaySequence++;
-
 export const ControlledCalendar = () => {
   const [date, setDate] = useState<DateValue>(new CalendarDate(2024, 1, 1));
   const hoveredDate = new CalendarDate(2024, 1, 11);
@@ -77,5 +73,3 @@ export const ControlledCalendar = () => {
     </div>
   );
 };
-
-ControlledCalendar.displaySequence = displaySequence++;

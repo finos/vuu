@@ -5,8 +5,6 @@ import {
   Input,
 } from "@salt-ds/core";
 
-let displaySequence = 1;
-
 export const DefaultFormField = (props: FormFieldProps) => {
   return (
     <>
@@ -18,4 +16,3 @@ export const DefaultFormField = (props: FormFieldProps) => {
     </>
   );
 };
-DefaultFormField.displaySequence = displaySequence++;

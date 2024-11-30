@@ -18,8 +18,6 @@ import { LocalDataSourceProvider } from "@finos/vuu-data-test";
 
 registerComponent("FilterTable", VuuFilterTableFeature, "view");
 
-let displaySequence = 1;
-
 const contentRed = {
   type: "div",
   props: {
@@ -84,7 +82,6 @@ export const StaticTemplateNoChrome = () => {
     </>
   );
 };
-StaticTemplateNoChrome.displaySequence = displaySequence++;
 
 export const LeftRightChrome = () => {
   const handleLayoutChange = useCallback<LayoutChangeHandler>((layout) => {
@@ -145,7 +142,6 @@ export const LeftRightChrome = () => {
     </>
   );
 };
-LeftRightChrome.displaySequence = displaySequence++;
 
 const LayoutProviderTemplate = ({
   workspaceJSON,
@@ -179,8 +175,6 @@ export const SimpleStaticLayoutJson = () => (
   />
 );
 
-SimpleStaticLayoutJson.displaySequence = displaySequence++;
-
 // prettier-ignore
 export const SimpleStaticLayoutJsonWithViews = () => (
   <LayoutProviderTemplate
@@ -203,8 +197,6 @@ export const SimpleStaticLayoutJsonWithViews = () => (
     }}
   />
 );
-
-SimpleStaticLayoutJsonWithViews.displaySequence = displaySequence++;
 
 // prettier-ignore
 export const LayoutJsonWithPreloadedFeatures = () => (
@@ -229,8 +221,6 @@ export const LayoutJsonWithPreloadedFeatures = () => (
     />
   </LocalDataSourceProvider>
 );
-
-LayoutJsonWithPreloadedFeatures.displaySequence = displaySequence++;
 
 // prettier-ignore
 export const LayoutJsonWithPreloadedFeaturesVisualLinks = () => (
@@ -264,7 +254,6 @@ export const LayoutJsonWithPreloadedFeaturesVisualLinks = () => (
     />
   </LocalDataSourceProvider>
 );
-LayoutJsonWithPreloadedFeaturesVisualLinks.displaySequence = displaySequence++;
 
 // prettier-ignore
 export const LayoutJsonWithTabbedFeaturesVisualLinks = () => (
@@ -327,4 +316,3 @@ export const LayoutJsonWithTabbedFeaturesVisualLinks = () => (
     />
   </LocalDataSourceProvider>
 );
-LayoutJsonWithTabbedFeaturesVisualLinks.displaySequence = displaySequence++;

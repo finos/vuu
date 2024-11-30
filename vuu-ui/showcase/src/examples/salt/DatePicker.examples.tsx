@@ -9,8 +9,6 @@ import { VuuDatePicker } from "@finos/vuu-ui-controls";
 import { FormField, FormFieldLabel } from "@salt-ds/core";
 import { CommitHandler } from "@finos/vuu-utils";
 
-let displaySequence = 1;
-
 const tz = getLocalTimeZone();
 const _today = today(tz);
 
@@ -29,7 +27,6 @@ export const DefaultDatePicker = () => {
     />
   );
 };
-DefaultDatePicker.displaySequence = displaySequence++;
 
 export const DefaultVuuDatePicker = () => {
   const [selectedDate, setSelectedDate] = useState<DateValue>();
@@ -53,7 +50,6 @@ export const DefaultVuuDatePicker = () => {
     />
   );
 };
-DefaultVuuDatePicker.displaySequence = displaySequence++;
 
 export const VuuDatePickerWithValue = () => {
   const [selectedDate, setSelectedDate] = useState<DateValue>(_today);
@@ -77,7 +73,6 @@ export const VuuDatePickerWithValue = () => {
     />
   );
 };
-VuuDatePickerWithValue.displaySequence = displaySequence++;
 
 export const WithFormField = () => {
   return (
@@ -87,4 +82,3 @@ export const WithFormField = () => {
     </FormField>
   );
 };
-WithFormField.displaySequence = displaySequence++;

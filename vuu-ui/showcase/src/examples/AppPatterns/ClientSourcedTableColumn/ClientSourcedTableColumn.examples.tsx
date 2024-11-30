@@ -1,7 +1,7 @@
 import { getSchema, LocalDataSourceProvider } from "@finos/vuu-data-test";
-import { DataSourceFilter, TableSchema } from "@finos/vuu-data-types";
-import { Table, TableProps } from "@finos/vuu-table";
-import {
+import { DataSourceFilter, type TableSchema } from "@finos/vuu-data-types";
+import { Table, type TableProps } from "@finos/vuu-table";
+import type {
   ColumnDescriptor,
   TableConfig,
   TableRowSelectHandler,
@@ -29,8 +29,6 @@ import {
 registerComponent("pin-button", PinButtonCell, "cell-renderer", {
   userCanAssign: false,
 });
-
-let displaySequence = 0;
 
 const TableTemplate = ({
   filter,
@@ -154,7 +152,6 @@ export const PinItemButton = () => {
     </LocalDataSourceProvider>
   );
 };
-PinItemButton.displaySequence = displaySequence++;
 
 export const SearchWithPin = () => {
   const schema = getSchema("instruments");
@@ -180,7 +177,6 @@ export const SearchWithPin = () => {
     </LocalDataSourceProvider>
   );
 };
-SearchWithPin.displaySequence = displaySequence++;
 
 const EmptyRecent = () => {
   return <div style={{ padding: "12px 6px" }}>No recently viewed items</div>;
@@ -324,7 +320,6 @@ export const SearchAndPinned = () => {
     </LocalDataSourceProvider>
   );
 };
-SearchAndPinned.displaySequence = displaySequence++;
 
 export const SearchAndPinnedWithAdditionalContent = () => {
   const schema = getSchema("instruments");
@@ -386,4 +381,3 @@ export const SearchAndPinnedWithAdditionalContent = () => {
     </LocalDataSourceProvider>
   );
 };
-SearchAndPinnedWithAdditionalContent.displaySequence = displaySequence++;

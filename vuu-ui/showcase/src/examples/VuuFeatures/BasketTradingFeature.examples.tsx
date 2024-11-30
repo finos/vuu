@@ -12,8 +12,6 @@ import { VuuBlotterHeader } from "./VuuBlotterHeader";
 
 registerComponent("BasketTradingFeature", BasketTradingFeature, "view");
 
-let displaySequence = 1;
-
 export const DefaultBasketTradingFeature = () => {
   const getLookupValues = useCallback<LookupTableProvider>((table) => {
     if (table.table === "algoType") {
@@ -55,7 +53,6 @@ export const DefaultBasketTradingFeature = () => {
     </LocalDataSourceProvider>
   );
 };
-DefaultBasketTradingFeature.displaySequence = displaySequence++;
 
 type Environment = "development" | "production";
 const env = process.env.NODE_ENV as Environment;
@@ -88,4 +85,3 @@ export const BasketTradingFeatureAsFeature = () => {
   );
 };
 BasketTradingFeatureAsFeature.displayName = "BasketTrading";
-BasketTradingFeatureAsFeature.displaySequence = displaySequence++;

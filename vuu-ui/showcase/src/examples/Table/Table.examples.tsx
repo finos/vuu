@@ -47,8 +47,6 @@ import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 import { VuuDataSourceProvider } from "@finos/vuu-data-react";
 import "./Table.examples.css";
 
-let displaySequence = 1;
-
 export const TestTable = ({
   columnLayout,
   config: configProp,
@@ -95,7 +93,6 @@ export const TestTable = ({
     />
   );
 };
-TestTable.displaySequence = displaySequence++;
 
 const TableTemplate = ({
   config,
@@ -178,7 +175,6 @@ export const ControlledNavigation = () => {
     </LocalDataSourceProvider>
   );
 };
-ControlledNavigation.displaySequence = displaySequence++;
 
 export const TabInAndOut = () => {
   return (
@@ -219,7 +215,6 @@ export const TabInAndOut = () => {
     </div>
   );
 };
-TabInAndOut.displaySequence = displaySequence++;
 
 const VuuTableTemplate = ({ schema }: { schema: TableSchema }) => {
   const { VuuDataSource } = useDataSource();
@@ -260,7 +255,6 @@ export const VuuInstruments = () => {
     </VuuDataSourceProvider>
   );
 };
-VuuInstruments.displaySequence = displaySequence++;
 
 export const FlexLayoutTables = () => {
   const tableConfig = useMemo<TableConfig>(() => {
@@ -307,7 +301,6 @@ export const FlexLayoutTables = () => {
     </LayoutProvider>
   );
 };
-FlexLayoutTables.displaySequence = displaySequence++;
 
 export const TableInLayoutWithContextPanel = () => {
   useMemo(() => {
@@ -339,7 +332,6 @@ export const TableInLayoutWithContextPanel = () => {
     </LayoutProvider>
   );
 };
-TableInLayoutWithContextPanel.displaySequence = displaySequence++;
 
 export const AutoTable = () => {
   const tableConfig = useMemo<TableConfig>(() => {
@@ -357,7 +349,6 @@ export const AutoTable = () => {
     <Table config={tableConfig} dataSource={dataSource} renderBufferSize={0} />
   );
 };
-AutoTable.displaySequence = displaySequence++;
 
 export const AutoTableAsFlexChild = () => {
   const tableConfig = useMemo<TableConfig>(() => {
@@ -392,7 +383,6 @@ export const AutoTableAsFlexChild = () => {
     </div>
   );
 };
-AutoTableAsFlexChild.displaySequence = displaySequence++;
 
 export const VuuTableCalculatedColumns = () => {
   const calculatedColumns: ColumnDescriptor[] = useMemo(
@@ -467,7 +457,6 @@ export const VuuTableCalculatedColumns = () => {
     </VuuDataSourceProvider>
   );
 };
-VuuTableCalculatedColumns.displaySequence = displaySequence++;
 
 export const GroupHeaderCellOneColumn = () => {
   const column = useMemo<GroupColumnDescriptor>(() => {
@@ -508,7 +497,6 @@ export const GroupHeaderCellOneColumn = () => {
     </div>
   );
 };
-GroupHeaderCellOneColumn.displaySequence = displaySequence++;
 
 export const GroupHeaderCellTwoColumn = () => {
   const column = useMemo<GroupColumnDescriptor>(() => {
@@ -556,7 +544,6 @@ export const GroupHeaderCellTwoColumn = () => {
     </div>
   );
 };
-GroupHeaderCellTwoColumn.displaySequence = displaySequence++;
 
 export const GroupHeaderCellThreeColumn = () => {
   const valueFormatter = defaultValueFormatter;
@@ -619,7 +606,6 @@ export const GroupHeaderCellThreeColumn = () => {
     </Flexbox>
   );
 };
-GroupHeaderCellThreeColumn.displaySequence = displaySequence++;
 
 export const GroupHeaderCellThreeColumnFixedWidth = () => {
   const valueFormatter = defaultValueFormatter;
@@ -670,7 +656,6 @@ export const GroupHeaderCellThreeColumnFixedWidth = () => {
     </div>
   );
 };
-GroupHeaderCellThreeColumnFixedWidth.displaySequence = displaySequence++;
 
 const SymbolHeader = (_: HeaderCellProps) => {
   const handleClick = useCallback<MouseEventHandler>((e) => {
@@ -736,4 +721,3 @@ export const CustomColumnRenderer = () => {
     />
   );
 };
-CustomColumnRenderer.displaySequence = displaySequence++;

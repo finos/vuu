@@ -6,8 +6,6 @@ import { LocalDataSourceProvider, getSchema } from "@finos/vuu-data-test";
 import { useViewContext, View } from "@finos/vuu-layout";
 import { setPersistentState } from "@finos/vuu-layout";
 
-let displaySequence = 1;
-
 const QuickFiltersTemplate = ({
   allowAddColumn,
   allowFind,
@@ -57,7 +55,6 @@ export const SearchOnly = () => {
     />
   );
 };
-SearchOnly.displaySequence = displaySequence++;
 
 export const OneColumn = () => {
   return (
@@ -67,7 +64,6 @@ export const OneColumn = () => {
     />
   );
 };
-OneColumn.displaySequence = displaySequence++;
 
 export const ThreeColumns = () => {
   const [availableColumns, quickFilterColumns] = useMemo<
@@ -94,7 +90,6 @@ export const ThreeColumns = () => {
     />
   );
 };
-ThreeColumns.displaySequence = displaySequence++;
 
 export const ThreeColumnsOnly = () => {
   const [availableColumns, quickFilterColumns] = useMemo<
@@ -122,7 +117,6 @@ export const ThreeColumnsOnly = () => {
     />
   );
 };
-ThreeColumnsOnly.displaySequence = displaySequence++;
 
 export const QuickDateFilter = () => {
   const [availableColumns, quickFilterColumns] = useMemo<
@@ -156,7 +150,6 @@ export const QuickDateFilter = () => {
     />
   );
 };
-QuickDateFilter.displaySequence = displaySequence++;
 
 const PersistentFilter = () => {
   const { load, save } = useViewContext();
@@ -205,4 +198,3 @@ export const WithPersistence = () => {
     </LocalDataSourceProvider>
   );
 };
-WithPersistence.displaySequence = displaySequence++;

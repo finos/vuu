@@ -2,8 +2,6 @@ import { JsonTable } from "@finos/vuu-datatable";
 import { JsonData } from "@finos/vuu-utils";
 import packageJson from "../../../../package.json";
 
-let displaySequence = 1;
-
 const json: JsonData = {
   test1: "string 1",
   test2: "string 2",
@@ -65,7 +63,6 @@ export const DefaultJsonTable = () => {
     </>
   );
 };
-DefaultJsonTable.displaySequence = displaySequence++;
 
 const jsonArraySimpleData = {
   test1: "string 1",
@@ -91,7 +88,6 @@ export const JsonTableArraySimpleData = () => {
     </>
   );
 };
-JsonTableArraySimpleData.displaySequence = displaySequence++;
 
 const jsonArrayJsonData = {
   test1: "string 1",
@@ -121,7 +117,6 @@ export const JsonTableArrayJsonData = () => {
     </>
   );
 };
-JsonTableArrayJsonData.displaySequence = displaySequence++;
 
 export const PackageJsonTable = () => {
   return (
@@ -136,4 +131,3 @@ export const PackageJsonTable = () => {
     </>
   );
 };
-PackageJsonTable.displaySequence = displaySequence++;

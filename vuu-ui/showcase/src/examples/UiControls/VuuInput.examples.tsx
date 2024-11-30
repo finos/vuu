@@ -2,8 +2,6 @@ import { VuuInput, VuuInputProps } from "@finos/vuu-ui-controls";
 import { CommitHandler } from "@finos/vuu-utils";
 import { CSSProperties, useCallback, useState } from "react";
 
-let displaySequence = 1;
-
 const VuuInputTemplate = ({
   position = { left: 0, top: 0 },
   ...props
@@ -34,12 +32,10 @@ const VuuInputTemplate = ({
 export const DefaultVuuInput = () => {
   return <VuuInputTemplate />;
 };
-DefaultVuuInput.displaySequence = displaySequence++;
 
 export const VuuInputWithErrorMessage = () => {
   return <VuuInputTemplate errorMessage="Help" />;
 };
-VuuInputWithErrorMessage.displaySequence = displaySequence++;
 
 // Showcase example showing the application of the VuuInput box with input validation
 export const VuuInputWithValidation = () => {
@@ -102,4 +98,3 @@ export const VuuInputWithValidation = () => {
     </div>
   );
 };
-VuuInputWithValidation.displaySequence = displaySequence++;

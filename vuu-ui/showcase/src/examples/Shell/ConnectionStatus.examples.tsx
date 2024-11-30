@@ -10,8 +10,6 @@ import { ConnectionManager } from "@finos/vuu-data-remote";
 import { useLayoutEffect, useRef, useState } from "react";
 import { Button } from "@salt-ds/core";
 
-let displaySequence = 1;
-
 export const ConnectionStatusIndicatorConnected = () => {
   const connectionState: WebSocketConnectionState = {
     connectionPhase: "connecting",
@@ -22,7 +20,6 @@ export const ConnectionStatusIndicatorConnected = () => {
   };
   return <ConnectionStatusIndicator connectionState={connectionState} />;
 };
-ConnectionStatusIndicatorConnected.displaySequence = displaySequence++;
 
 export const ConnectionStatusIndicatorDisconnectedNoRetryUsed = () => {
   const connectionState: WebSocketConnectionState = {
@@ -34,8 +31,6 @@ export const ConnectionStatusIndicatorDisconnectedNoRetryUsed = () => {
   };
   return <ConnectionStatusIndicator connectionState={connectionState} />;
 };
-ConnectionStatusIndicatorDisconnectedNoRetryUsed.displaySequence =
-  displaySequence++;
 
 export const ConnectionStatusIndicatorDisconnectedOneRetryUsed = () => {
   const connectionState: WebSocketConnectionState = {
@@ -47,8 +42,6 @@ export const ConnectionStatusIndicatorDisconnectedOneRetryUsed = () => {
   };
   return <ConnectionStatusIndicator connectionState={connectionState} />;
 };
-ConnectionStatusIndicatorDisconnectedOneRetryUsed.displaySequence =
-  displaySequence++;
 
 export const ConnectionStatusIndicatorDisconnectedTwoRetryUsed = () => {
   const connectionState: WebSocketConnectionState = {
@@ -60,8 +53,6 @@ export const ConnectionStatusIndicatorDisconnectedTwoRetryUsed = () => {
   };
   return <ConnectionStatusIndicator connectionState={connectionState} />;
 };
-ConnectionStatusIndicatorDisconnectedTwoRetryUsed.displaySequence =
-  displaySequence++;
 
 export const ConnectionStatusIndicatorDisconnectedThreeRetryUsed = () => {
   const connectionStatusMessage: WebSocketConnectionState = {
@@ -75,8 +66,6 @@ export const ConnectionStatusIndicatorDisconnectedThreeRetryUsed = () => {
     <ConnectionStatusIndicator connectionState={connectionStatusMessage} />
   );
 };
-ConnectionStatusIndicatorDisconnectedThreeRetryUsed.displaySequence =
-  displaySequence++;
 
 export const ConnectionStatusIndicatorDisconnectedFourRetryUsed = () => {
   const connectionStatusMessage: WebSocketConnectionState = {
@@ -90,8 +79,6 @@ export const ConnectionStatusIndicatorDisconnectedFourRetryUsed = () => {
     <ConnectionStatusIndicator connectionState={connectionStatusMessage} />
   );
 };
-ConnectionStatusIndicatorDisconnectedFourRetryUsed.displaySequence =
-  displaySequence++;
 
 export const ConnectionStatusIndicatorDisconnectedAllRetryUsed = () => {
   const connectionStatusMessage: WebSocketConnectionState = {
@@ -105,8 +92,6 @@ export const ConnectionStatusIndicatorDisconnectedAllRetryUsed = () => {
     <ConnectionStatusIndicator connectionState={connectionStatusMessage} />
   );
 };
-ConnectionStatusIndicatorDisconnectedAllRetryUsed.displaySequence =
-  displaySequence++;
 
 export const ConnectionStatusIndicatorFailed = () => {
   const connectionStatusMessage: WebSocketConnectionState = {
@@ -120,7 +105,6 @@ export const ConnectionStatusIndicatorFailed = () => {
     <ConnectionStatusIndicator connectionState={connectionStatusMessage} />
   );
 };
-ConnectionStatusIndicatorFailed.displaySequence = displaySequence++;
 
 export const ConnectionStateDisplayConnected = () => {
   useLayoutEffect(() => {
@@ -134,7 +118,6 @@ export const ConnectionStateDisplayConnected = () => {
   }, []);
   return <ConnectionStateDisplay />;
 };
-ConnectionStateDisplayConnected.displaySequence = displaySequence++;
 
 export const ConnectionStateDisplayConnecting = () => {
   useLayoutEffect(() => {
@@ -148,7 +131,6 @@ export const ConnectionStateDisplayConnecting = () => {
   }, []);
   return <ConnectionStateDisplay />;
 };
-ConnectionStateDisplayConnecting.displaySequence = displaySequence++;
 
 const initialConnectionState: WebSocketConnectionState = {
   connectionPhase: "connecting",
@@ -230,4 +212,3 @@ export const InteractiveStateDisplay = () => {
     </div>
   );
 };
-InteractiveStateDisplay.displaySequence = displaySequence++;

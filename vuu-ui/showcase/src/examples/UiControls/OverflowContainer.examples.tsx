@@ -4,8 +4,6 @@ import { CSSProperties, useCallback, useState } from "react";
 
 import "./OverflowContainer.examples.css";
 
-let displaySequence = 1;
-
 export const DefaultOverflowContainer = () => {
   return (
     <div
@@ -30,8 +28,6 @@ export const DefaultOverflowContainer = () => {
     </div>
   );
 };
-
-DefaultOverflowContainer.displaySequence = displaySequence++;
 
 export const WrapOverflowContainerFlexLayout = () => {
   return (
@@ -99,8 +95,6 @@ export const WrapOverflowContainerFlexLayout = () => {
     </div>
   );
 };
-
-WrapOverflowContainerFlexLayout.displaySequence = displaySequence++;
 
 export const OverflowContainerHighPriorityItem = () => {
   return (
@@ -183,8 +177,6 @@ export const OverflowContainerHighPriorityItem = () => {
   );
 };
 
-OverflowContainerHighPriorityItem.displaySequence = displaySequence++;
-
 export const TestFixtureSimpleOverflowContainer = ({ width = 600 }) => {
   return (
     <>
@@ -201,8 +193,6 @@ export const TestFixtureSimpleOverflowContainer = ({ width = 600 }) => {
     </>
   );
 };
-
-TestFixtureSimpleOverflowContainer.displaySequence = displaySequence++;
 
 export const SortableOverflowContainer = () => {
   const [items, setItems] = useState<string[]>(["1", "2", "3", "4", "5", "6"]);
@@ -248,8 +238,6 @@ export const SortableOverflowContainer = () => {
     </div>
   );
 };
-
-SortableOverflowContainer.displaySequence = displaySequence++;
 
 export const VerticalOverflowContainerFlexLayout = () => {
   return (
@@ -300,5 +288,3 @@ export const VerticalOverflowContainerFlexLayout = () => {
     </div>
   );
 };
-
-VerticalOverflowContainerFlexLayout.displaySequence = displaySequence++;

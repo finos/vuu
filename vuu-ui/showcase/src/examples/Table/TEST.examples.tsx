@@ -7,11 +7,9 @@ import { SchemaColumn } from "@finos/vuu-data-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { DemoTableContainer } from "./DemoTableContainer";
 
-let displaySequence = 1;
-
 const extendColumnConfig = (
   columns: SchemaColumn[],
-  config: Partial<ColumnDescriptor>
+  config: Partial<ColumnDescriptor>,
 ) => columns.map<ColumnDescriptor>((col) => ({ ...col, ...config }));
 
 const TestTable = ({
@@ -32,7 +30,7 @@ const TestTable = ({
       },
       dataSource: vuuModule<TestTableName>("TEST").createDataSource(tableName),
     }),
-    [props, schema.columns, tableName]
+    [props, schema.columns, tableName],
   );
 
   const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
@@ -54,4 +52,3 @@ const TestTable = ({
 export const TwoHundredColumns = (props: Partial<TableProps>) => (
   <TestTable tableName="TwoHundredColumns" {...props} width={914} />
 );
-TwoHundredColumns.displaySequence = displaySequence++;

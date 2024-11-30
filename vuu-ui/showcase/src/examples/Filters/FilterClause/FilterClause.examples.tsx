@@ -1,12 +1,10 @@
 import { LocalDataSourceProvider, getSchema } from "@finos/vuu-data-test";
 import { SchemaColumn, TableSchema } from "@finos/vuu-data-types";
-import { FilterClauseModel, FilterClause } from "@finos/vuu-filters";
+import { ColumnDescriptorsByName } from "@finos/vuu-filter-types";
+import { FilterClause, FilterClauseModel } from "@finos/vuu-filters";
 import { useMemo } from "react";
 
 import "./FilterClause.examples.css";
-import { ColumnDescriptorsByName } from "@finos/vuu-filter-types";
-
-let displaySequence = 1;
 
 const FilterClauseTemplate = ({
   filterClauseModel = new FilterClauseModel({}),
@@ -36,12 +34,10 @@ export const NewFilterClause = () => {
     </LocalDataSourceProvider>
   );
 };
-NewFilterClause.displaySequence = displaySequence++;
 
 export const NewFilterClauseNoCompletions = () => {
   return <FilterClauseTemplate />;
 };
-NewFilterClauseNoCompletions.displaySequence = displaySequence++;
 
 export const PartialFilterClauseColumnOnly = () => {
   const filterClauseModel = useMemo(
@@ -57,7 +53,6 @@ export const PartialFilterClauseColumnOnly = () => {
     </LocalDataSourceProvider>
   );
 };
-PartialFilterClauseColumnOnly.displaySequence = displaySequence++;
 
 export const PartialFilterClauseColumnAndOperator = () => {
   const filterClauseModel = useMemo(
@@ -74,7 +69,6 @@ export const PartialFilterClauseColumnAndOperator = () => {
     </LocalDataSourceProvider>
   );
 };
-PartialFilterClauseColumnAndOperator.displaySequence = displaySequence++;
 
 export const CompleteFilterClauseTextEquals = () => {
   const filterClauseModel = useMemo(
@@ -93,7 +87,6 @@ export const CompleteFilterClauseTextEquals = () => {
     </LocalDataSourceProvider>
   );
 };
-CompleteFilterClauseTextEquals.displaySequence = displaySequence++;
 
 export const PartialFilterClauseDateColumnOnly = () => {
   const tableColumns: SchemaColumn[] = [
@@ -144,7 +137,6 @@ export const PartialFilterClauseDateColumnOnly = () => {
     </LocalDataSourceProvider>
   );
 };
-PartialFilterClauseDateColumnOnly.displaySequence = displaySequence++;
 
 const columnDescriptorsByName = (columns: TableSchema["columns"]) =>
   columns.reduce((m, col) => ({ ...m, [col.name]: col }), {});

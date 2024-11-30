@@ -20,8 +20,6 @@ import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 import { VuuRpcMenuRequest } from "@finos/vuu-protocol-types";
 import { useDataSource } from "@finos/vuu-utils";
 
-let displaySequence = 0;
-
 type DataTableProps = Partial<
   Omit<TableProps, "config"> & { config?: Partial<TableConfig> }
 > & {
@@ -76,7 +74,6 @@ export const ViewportRowLimitDefaultRowHeight = () => {
     </LocalDataSourceProvider>
   );
 };
-ViewportRowLimitDefaultRowHeight.displaySequence = displaySequence++;
 
 export const ViewportRowLimitExplicitRowHeight = () => {
   return (
@@ -85,7 +82,6 @@ export const ViewportRowLimitExplicitRowHeight = () => {
     </LocalDataSourceProvider>
   );
 };
-ViewportRowLimitExplicitRowHeight.displaySequence = displaySequence++;
 
 export const MaxViewportRowLimitRowsExceedLimit = () => {
   return (
@@ -94,7 +90,6 @@ export const MaxViewportRowLimitRowsExceedLimit = () => {
     </LocalDataSourceProvider>
   );
 };
-MaxViewportRowLimitRowsExceedLimit.displaySequence = displaySequence++;
 
 export const MaxViewportRowLimitFewRows = ({
   width,
@@ -111,7 +106,6 @@ export const MaxViewportRowLimitFewRows = ({
     </LocalDataSourceProvider>
   );
 };
-MaxViewportRowLimitFewRows.displaySequence = displaySequence++;
 
 type InlineDrawerProps = {
   inline?: boolean;
@@ -194,7 +188,6 @@ const InlineDrawer = ({
 export const RightInlineDrawerPeek = () => (
   <InlineDrawer position="right" inline />
 );
-RightInlineDrawerPeek.displaySequence = displaySequence++;
 
 export const SingleHeadingRow = () => {
   const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(() => {
@@ -223,7 +216,6 @@ export const SingleHeadingRow = () => {
     <Table {...tableProps} height={645} renderBufferSize={10} width={800} />
   );
 };
-SingleHeadingRow.displaySequence = displaySequence++;
 
 const SimpleCustomHeader = ({ ariaRole, ariaRowIndex }: BaseRowProps) => {
   return (
@@ -271,7 +263,6 @@ export const CustomHeaderComponent = () => {
     />
   );
 };
-CustomHeaderComponent.displaySequence = displaySequence++;
 
 const CustomColumnHeader = ({
   ariaRole,
@@ -335,7 +326,6 @@ export const CustomHeaderElementVirtualizedColumns = () => {
     />
   );
 };
-CustomHeaderElementVirtualizedColumns.displaySequence = displaySequence++;
 
 export const MultipleCustomHeaders = () => {
   const config = useMemo<TableConfig>(
@@ -372,4 +362,3 @@ export const MultipleCustomHeaders = () => {
     />
   );
 };
-MultipleCustomHeaders.displaySequence = displaySequence++;

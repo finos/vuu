@@ -11,8 +11,6 @@ import {
 
 import "./LayoutContainer.examples.css";
 
-let displaySequence = 1;
-
 export const SimplePalette = () => (
   <LayoutProvider>
     <Flexbox style={{ width: 900, height: 800 }}>
@@ -76,7 +74,6 @@ export const SimplePalette = () => (
     </Flexbox>
   </LayoutProvider>
 );
-SimplePalette.displaySequence = displaySequence++;
 
 export const StructuredPalette = () => (
   <View
@@ -196,4 +193,3 @@ export const StructuredPalette = () => (
     </Palette>
   </View>
 );
-StructuredPalette.displaySequence = displaySequence++;

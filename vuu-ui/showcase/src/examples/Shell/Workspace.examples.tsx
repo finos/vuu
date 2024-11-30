@@ -6,14 +6,12 @@ import {
 } from "@finos/vuu-shell";
 import { useMemo } from "react";
 
-let displaySequence = 1;
-
 const user = { username: "why-the-lucky-stiff", token: "test-token" };
 
 export const DefaultLayoutNoStoredState = () => {
   const demoPersistenceManager = useMemo(
     () => new StaticPersistenceManager({}),
-    []
+    [],
   );
   return (
     <PersistenceProvider persistenceManager={demoPersistenceManager}>
@@ -21,12 +19,11 @@ export const DefaultLayoutNoStoredState = () => {
     </PersistenceProvider>
   );
 };
-DefaultLayoutNoStoredState.displaySequence = displaySequence++;
 
 export const DefaultLayoutNoStoredStateLoadDelay = () => {
   const demoPersistenceManager = useMemo(
     () => new StaticPersistenceManager({ applicationLoadDelay: 5000 }),
-    []
+    [],
   );
   return (
     <PersistenceProvider persistenceManager={demoPersistenceManager}>
@@ -34,12 +31,11 @@ export const DefaultLayoutNoStoredStateLoadDelay = () => {
     </PersistenceProvider>
   );
 };
-DefaultLayoutNoStoredStateLoadDelay.displaySequence = displaySequence++;
 
 export const CustomDefaultLayoutNoStoredState = () => {
   const demoPersistenceManager = useMemo(
     () => new StaticPersistenceManager({}),
-    []
+    [],
   );
   const layoutJSON = useMemo(
     () => ({
@@ -48,7 +44,7 @@ export const CustomDefaultLayoutNoStoredState = () => {
         style: { backgroundColor: "yellow", height: "100%" },
       },
     }),
-    []
+    [],
   );
   return (
     <PersistenceProvider persistenceManager={demoPersistenceManager}>
@@ -56,7 +52,6 @@ export const CustomDefaultLayoutNoStoredState = () => {
     </PersistenceProvider>
   );
 };
-CustomDefaultLayoutNoStoredState.displaySequence = displaySequence++;
 
 export const DefaultLayoutStoredState = () => {
   const demoPersistenceManager = useMemo(
@@ -84,7 +79,7 @@ export const DefaultLayoutStoredState = () => {
           },
         },
       }),
-    []
+    [],
   );
   return (
     <PersistenceProvider persistenceManager={demoPersistenceManager}>
@@ -92,7 +87,6 @@ export const DefaultLayoutStoredState = () => {
     </PersistenceProvider>
   );
 };
-DefaultLayoutStoredState.displaySequence = displaySequence++;
 
 export const CustomLayoutStoredState = () => {
   const layoutJSON = useMemo(
@@ -102,7 +96,7 @@ export const CustomLayoutStoredState = () => {
         style: { backgroundColor: "yellow", height: "100%" },
       },
     }),
-    []
+    [],
   );
 
   const demoPersistenceManager = useMemo(
@@ -134,7 +128,7 @@ export const CustomLayoutStoredState = () => {
           },
         },
       }),
-    []
+    [],
   );
   return (
     <PersistenceProvider persistenceManager={demoPersistenceManager}>
@@ -142,4 +136,3 @@ export const CustomLayoutStoredState = () => {
     </PersistenceProvider>
   );
 };
-CustomLayoutStoredState.displaySequence = displaySequence++;

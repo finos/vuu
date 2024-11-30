@@ -9,8 +9,6 @@ import { LocalDataSourceProvider } from "@finos/vuu-data-test";
 import { DataValueDescriptor } from "@finos/vuu-data-types";
 import { DialogProvider } from "@finos/vuu-popups";
 
-let displaySequence = 0;
-
 const instrumentsTable = { module: "SIMUL", table: "instruments" };
 
 const formFieldDescriptors: DataValueDescriptor[] = [
@@ -92,4 +90,3 @@ export const RightInlineEditForm = () => (
     <TableWithInlineEditForm />
   </LocalDataSourceProvider>
 );
-RightInlineEditForm.displaySequence = displaySequence++;

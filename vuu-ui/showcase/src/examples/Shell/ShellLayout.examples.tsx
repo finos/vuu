@@ -25,8 +25,6 @@ registerComponent("Placeholder", Placeholder, "component");
 
 const user = { username: "test-user", token: "test-token" };
 
-let displaySequence = 1;
-
 const htmlAttributes = {
   "data-testid": "shell",
 } as HTMLAttributes<HTMLDivElement>;
@@ -48,8 +46,6 @@ export const DefaultShell = () => {
     ></Shell>
   );
 };
-
-DefaultShell.displaySequence = displaySequence++;
 
 export const SimpleShellCustomHeader = () => {
   const headerStyle: CSSProperties = {
@@ -80,8 +76,6 @@ export const SimpleShellCustomHeader = () => {
   );
 };
 
-SimpleShellCustomHeader.displaySequence = displaySequence++;
-
 export const SimpleShellNoWorkspaceTabs = () => {
   return (
     <Shell
@@ -102,8 +96,6 @@ export const SimpleShellNoWorkspaceTabs = () => {
     ></Shell>
   );
 };
-
-SimpleShellNoWorkspaceTabs.displaySequence = displaySequence++;
 
 export const FullHeightLeftPanel = () => {
   return (
@@ -126,7 +118,6 @@ export const FullHeightLeftPanel = () => {
     />
   );
 };
-FullHeightLeftPanel.displaySequence = displaySequence++;
 
 export const FullHeightLeftPanelLeftPanelClosed = () => {
   return (
@@ -152,8 +143,6 @@ export const FullHeightLeftPanelLeftPanelClosed = () => {
   );
 };
 
-FullHeightLeftPanelLeftPanelClosed.displaySequence = displaySequence++;
-
 export const InlayLeftPanel = () => {
   const persistNothing = useMemo(() => new StaticPersistenceManager({}), []);
   return (
@@ -178,7 +167,6 @@ export const InlayLeftPanel = () => {
     </PersistenceProvider>
   );
 };
-InlayLeftPanel.displaySequence = displaySequence++;
 
 const ToolbarTabs = () => {
   const dispatchLayoutAction = useLayoutProviderDispatch();
@@ -275,7 +263,6 @@ export const LeftMainTabs = () => {
     </PersistenceProvider>
   );
 };
-LeftMainTabs.displaySequence = displaySequence++;
 
 export const SimpleShellCustomPlaceholder = () => {
   const persistNothing = useMemo(() => new StaticPersistenceManager({}), []);
@@ -313,8 +300,6 @@ export const SimpleShellCustomPlaceholder = () => {
     </PersistenceProvider>
   );
 };
-
-SimpleShellCustomPlaceholder.displaySequence = displaySequence++;
 
 export const SimpleShellMultiLayouts = () => {
   const persistNothing = useMemo(() => new StaticPersistenceManager({}), []);
@@ -381,5 +366,3 @@ export const SimpleShellMultiLayouts = () => {
     </PersistenceProvider>
   );
 };
-
-SimpleShellMultiLayouts.displaySequence = displaySequence++;

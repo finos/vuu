@@ -112,8 +112,6 @@ const DefaultFilterBarCore = ({
   );
 };
 
-let displaySequence = 1;
-
 const FilterBarTemplate = ({
   QuickFilterProps,
   filterState: filterStateProp = { filters: [], activeIndices: [] },
@@ -155,14 +153,12 @@ const FilterBarTemplate = ({
 export const FilterBarNoSuggestions = (props: Partial<FilterBarProps>) => (
   <FilterBarTemplate {...props} />
 );
-FilterBarNoSuggestions.displaySequence = displaySequence++;
 
 export const DefaultFilterBar = (props: Partial<FilterBarProps>) => (
   <LocalDataSourceProvider modules={["SIMUL"]}>
     <FilterBarTemplate {...props} />
   </LocalDataSourceProvider>
 );
-DefaultFilterBar.displaySequence = displaySequence++;
 
 export const FilterBarOneSimpleFilter = () => {
   return (
@@ -176,7 +172,6 @@ export const FilterBarOneSimpleFilter = () => {
     />
   );
 };
-FilterBarOneSimpleFilter.displaySequence = displaySequence++;
 
 export const FilterBarOneMultiValueFilter = () => {
   return (
@@ -195,7 +190,6 @@ export const FilterBarOneMultiValueFilter = () => {
     />
   );
 };
-FilterBarOneMultiValueFilter.displaySequence = displaySequence++;
 
 export const FilterBarMultipleFilters = ({
   onFilterDeleted,
@@ -236,7 +230,6 @@ export const FilterBarMultipleFilters = ({
     />
   );
 };
-FilterBarMultipleFilters.displaySequence = displaySequence++;
 
 export const FilterBarMultipleFilterSets = () => {
   const [filterSets, setFilterSets] = useState(initialFilterSets);
@@ -327,7 +320,6 @@ const initialFilterSets: FilterState[] = [
     activeIndices: [],
   },
 ];
-FilterBarMultipleFilterSets.displaySequence = displaySequence++;
 
 export const QuickFilters = () => {
   return (
@@ -342,7 +334,6 @@ export const QuickFilters = () => {
     </>
   );
 };
-QuickFilters.displaySequence = displaySequence++;
 
 export const QuickFiltersThreeColumns = () => {
   return (
@@ -352,7 +343,6 @@ export const QuickFiltersThreeColumns = () => {
     />
   );
 };
-QuickFiltersThreeColumns.displaySequence = displaySequence++;
 
 export const FullFilters = () => {
   return (
@@ -365,4 +355,3 @@ export const FullFilters = () => {
     </>
   );
 };
-FullFilters.displaySequence = displaySequence++;

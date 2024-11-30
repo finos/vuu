@@ -16,8 +16,6 @@ import { ColumnDescriptor } from "@finos/vuu-table-types";
 import { SessionEditingForm } from "@finos/vuu-data-react";
 import { HTMLAttributes, MouseEventHandler, useMemo } from "react";
 
-let displaySequence = 0;
-
 const openFile: ActionWithParams = {
   id: "openFile",
   description: "open a file",
@@ -102,7 +100,6 @@ export const SingleFieldForm = () => {
     />
   );
 };
-SingleFieldForm.displaySequence = displaySequence++;
 
 export const TwinFieldForm = () => {
   return (
@@ -117,7 +114,6 @@ export const TwinFieldForm = () => {
     />
   );
 };
-TwinFieldForm.displaySequence = displaySequence++;
 
 const ComponentWithMenu = ({
   location,
@@ -167,7 +163,7 @@ const initialValue = (colType?: VuuColumnDataType) => {
 
 const emptyRow = (key: string, columns: ColumnDescriptor[]) =>
   columns.map((col) =>
-    col.name === "key" ? key : initialValue(col.serverDataType)
+    col.name === "key" ? key : initialValue(col.serverDataType),
   );
 
 const getDataSource = (action: ActionWithParams): DataSource => {
@@ -175,7 +171,7 @@ const getDataSource = (action: ActionWithParams): DataSource => {
     action.params.map((param) => ({
       name: param.name,
       serverDataType: param.type,
-    }))
+    })),
   );
 
   return new ArrayDataSource({
@@ -202,11 +198,11 @@ export const ContextMenuActions = () => {
       { label: "Set Outbound Fix ...", action: "setOutboundFix" },
       { label: "Load File ...", action: "loadFile" },
     ],
-    []
+    [],
   );
 
   const handleMenuAction: MenuActionHandler = (
-    action: MenuActionClosePopup
+    action: MenuActionClosePopup,
   ) => {
     const actionDescriptor = actionDescriptors[action.menuId];
     if (hasParams(actionDescriptor)) {
@@ -231,7 +227,7 @@ export const ContextMenuActions = () => {
   const menuBuilder: MenuBuilder = (location: string) =>
     menuDescriptors.filter(
       (descriptor) =>
-        descriptor.location === undefined || descriptor.location === location
+        descriptor.location === undefined || descriptor.location === location,
     );
 
   return (
@@ -247,4 +243,3 @@ export const ContextMenuActions = () => {
     </ContextMenuProvider>
   );
 };
-ContextMenuActions.displaySequence = displaySequence++;

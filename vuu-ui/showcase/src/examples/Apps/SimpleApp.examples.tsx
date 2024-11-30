@@ -15,8 +15,6 @@ import { useCallback, useMemo } from "react";
 
 import "./SimpleApp.css";
 
-let displaySequence = 1;
-
 const classBase = "vuuSimpleApp";
 
 export const SimpleApp = () => {
@@ -33,7 +31,7 @@ export const SimpleApp = () => {
       dataSource: simulModule.createDataSource("instruments"),
       showColumnHeaderMenus: false,
     }),
-    [schema]
+    [schema],
   );
 
   const handleApplyFilter = useCallback((filter: DataSourceFilter) => {
@@ -58,7 +56,7 @@ export const SimpleApp = () => {
       dataSource: simulModule.createDataSource("instruments"),
       showColumnHeaderMenus: false,
     }),
-    [schema]
+    [schema],
   );
 
   return (
@@ -128,4 +126,3 @@ export const SimpleApp = () => {
     </LayoutProvider>
   );
 };
-SimpleApp.displaySequence = displaySequence++;

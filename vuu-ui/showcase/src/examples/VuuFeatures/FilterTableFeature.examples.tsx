@@ -7,8 +7,6 @@ import { type DynamicFeatureProps, registerComponent } from "@finos/vuu-utils";
 
 registerComponent("FilterTableFeature", FilterTableFeature, "view");
 
-let displaySequence = 1;
-
 export const DefaultFilterTableFeature = () => {
   const schema = getSchema("instruments");
 
@@ -32,7 +30,6 @@ export const DefaultFilterTableFeature = () => {
     </div>
   );
 };
-DefaultFilterTableFeature.displaySequence = displaySequence++;
 
 export const FilterTableFeatureFlexBox = () => {
   const schema = getSchema("instruments");
@@ -72,7 +69,6 @@ export const FilterTableFeatureFlexBox = () => {
     </LocalDataSourceProvider>
   );
 };
-FilterTableFeatureFlexBox.displaySequence = displaySequence++;
 
 type Environment = "development" | "production";
 const env = process.env.NODE_ENV as Environment;
@@ -107,4 +103,3 @@ export const FilterTableFeatureAsFeature = () => {
   );
 };
 FilterTableFeatureAsFeature.displayName = "FilterTable";
-FilterTableFeatureAsFeature.displaySequence = displaySequence++;

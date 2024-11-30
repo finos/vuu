@@ -2,8 +2,6 @@ import { Button } from "@salt-ds/core";
 import { CSSProperties } from "react";
 import { Icon, IconButton } from "@finos/vuu-ui-controls";
 
-let displaySequence = 1;
-
 export const DefaultButton = () => {
   const handleClick = () => {
     console.log("Button click");
@@ -14,7 +12,6 @@ export const DefaultButton = () => {
     </Button>
   );
 };
-DefaultButton.displaySequence = displaySequence++;
 
 export const IconButtons = () => {
   return (
@@ -40,7 +37,6 @@ export const IconButtons = () => {
     </div>
   );
 };
-IconButtons.displaySequence = displaySequence++;
 
 export const ButtonVariations = () => {
   return (
@@ -203,4 +199,3 @@ export const ButtonVariations = () => {
     </div>
   );
 };
-ButtonVariations.displaySequence = displaySequence++;

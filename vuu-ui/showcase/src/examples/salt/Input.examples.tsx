@@ -1,7 +1,5 @@
 import { FormField, FormFieldLabel, Input } from "@salt-ds/core";
 
-let displaySequence = 1;
-
 export const WithFormField = () => {
   return (
     <FormField style={{ width: 292 }}>
@@ -10,4 +8,3 @@ export const WithFormField = () => {
     </FormField>
   );
 };
-WithFormField.displaySequence = displaySequence++;

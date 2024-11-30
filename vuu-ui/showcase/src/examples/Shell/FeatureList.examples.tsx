@@ -1,8 +1,6 @@
 import { FeatureList, GroupedFeatureProps } from "@finos/vuu-shell";
 import { DynamicFeatureProps } from "@finos/vuu-utils";
 
-let displaySequence = 1;
-
 export const DefaultFeatureList = () => {
   const features: DynamicFeatureProps[] = [
     { title: "Component 1", url: "test" },
@@ -13,7 +11,6 @@ export const DefaultFeatureList = () => {
 
   return <FeatureList features={features} style={{ width: 300 }} />;
 };
-DefaultFeatureList.displaySequence = displaySequence++;
 
 export const FeatureListWithTitle = () => {
   const features: DynamicFeatureProps[] = [
@@ -31,7 +28,6 @@ export const FeatureListWithTitle = () => {
     />
   );
 };
-FeatureListWithTitle.displaySequence = displaySequence++;
 
 export const FeatureListWithGroups = () => {
   const features: GroupedFeatureProps = {
@@ -56,7 +52,6 @@ export const FeatureListWithGroups = () => {
     />
   );
 };
-FeatureListWithGroups.displaySequence = displaySequence++;
 
 export const FeatureListWithGroupsManyItems = () => {
   const features: GroupedFeatureProps = {
@@ -96,4 +91,3 @@ export const FeatureListWithGroupsManyItems = () => {
     />
   );
 };
-FeatureListWithGroupsManyItems.displaySequence = displaySequence++;

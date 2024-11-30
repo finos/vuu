@@ -10,8 +10,6 @@ import {
 import type { ColumnDescriptor } from "@finos/vuu-table-types";
 import { useCallback, useMemo } from "react";
 
-let displaySequence = 1;
-
 const FilterEditorTemplate = ({
   onSave: onSaveProp,
   tableSchema = getSchema("instruments"),
@@ -56,8 +54,6 @@ export const NewFilter = (props: Partial<FilterEditorProps>) => (
   </LocalDataSourceProvider>
 );
 
-NewFilter.displaySequence = displaySequence++;
-
 export const NewFilterDateColumns = (props: Partial<FilterEditorProps>) => {
   const [tableSchema, columnDescriptors] = useMemo<
     [TableSchema, ColumnDescriptor[]]
@@ -95,8 +91,6 @@ export const NewFilterDateColumns = (props: Partial<FilterEditorProps>) => {
   );
 };
 
-NewFilterDateColumns.displaySequence = displaySequence++;
-
 export const EditSimplerFilter = (props: Partial<FilterEditorProps>) => {
   const filter = useMemo<Filter>(() => {
     return {
@@ -112,7 +106,6 @@ export const EditSimplerFilter = (props: Partial<FilterEditorProps>) => {
     </LocalDataSourceProvider>
   );
 };
-EditSimplerFilter.displaySequence = displaySequence++;
 
 export const EditMultiClauseAndFilter = (props: Partial<FilterEditorProps>) => {
   const filter = useMemo<Filter>(() => {
@@ -139,7 +132,6 @@ export const EditMultiClauseAndFilter = (props: Partial<FilterEditorProps>) => {
     </LocalDataSourceProvider>
   );
 };
-EditMultiClauseAndFilter.displaySequence = displaySequence++;
 
 export const EditMultiClauseOrFilter = (props: Partial<FilterEditorProps>) => {
   const filter = useMemo<Filter>(() => {
@@ -166,4 +158,3 @@ export const EditMultiClauseOrFilter = (props: Partial<FilterEditorProps>) => {
     </LocalDataSourceProvider>
   );
 };
-EditMultiClauseOrFilter.displaySequence = displaySequence++;

@@ -6,8 +6,6 @@ import { DockLayout } from "./components/DockLayout";
 
 import "./LayoutExperiments.examples.css";
 
-let displaySequence = 1;
-
 const classBase = "DockLayout";
 
 const CONTENT = 2;
@@ -67,7 +65,6 @@ export const DefaultDockLayout = () => {
     </div>
   );
 };
-DefaultDockLayout.displaySequence = displaySequence++;
 
 export const GridToolbar = () => {
   return (
@@ -83,4 +80,3 @@ export const GridToolbar = () => {
     </div>
   );
 };
-GridToolbar.displaySequence = displaySequence++;

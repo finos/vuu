@@ -3,8 +3,6 @@ import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { SyntheticEvent, useMemo, useState } from "react";
 import { getSchema } from "@finos/vuu-data-test";
 
-let displaySequence = 1;
-
 type PathMap = { [key: string]: { jsUrl: string; cssUrl?: string } };
 
 const componentPaths: { [key: string]: PathMap } = {
@@ -80,4 +78,3 @@ export const DefaultFeature = () => {
     </div>
   );
 };
-DefaultFeature.displaySequence = displaySequence++;

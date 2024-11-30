@@ -7,8 +7,6 @@ import { useMemo } from "react";
 
 import "./Table.examples.css";
 
-let displaySequence = 1;
-
 type DataTableProps = Partial<
   Omit<TableProps, "config"> & { config?: Partial<TableConfig> }
 > & {
@@ -98,7 +96,6 @@ export const CheckboxSelection = ({
     </LocalDataSourceProvider>
   );
 };
-CheckboxSelection.displaySequence = displaySequence++;
 
 export const CellBlockSelectionOnly = () => {
   return (
@@ -107,7 +104,6 @@ export const CellBlockSelectionOnly = () => {
     </LocalDataSourceProvider>
   );
 };
-CellBlockSelectionOnly.displaySequence = displaySequence++;
 
 export const CellBlockCheckboxSelection = () => {
   return (
@@ -116,7 +112,6 @@ export const CellBlockCheckboxSelection = () => {
     </LocalDataSourceProvider>
   );
 };
-CellBlockCheckboxSelection.displaySequence = displaySequence++;
 
 export const CellBlockRowSelection = () => {
   return (
@@ -129,7 +124,6 @@ export const CellBlockRowSelection = () => {
     </LocalDataSourceProvider>
   );
 };
-CellBlockRowSelection.displaySequence = displaySequence++;
 
 export const PreSelectedRowByIndex = () => {
   const handleSelectionChange: SelectionChangeHandler = (selection) => {
@@ -147,7 +141,6 @@ export const PreSelectedRowByIndex = () => {
     </LocalDataSourceProvider>
   );
 };
-PreSelectedRowByIndex.displaySequence = displaySequence++;
 
 export const PreSelectedRowsByIndex = () => {
   return (
@@ -161,7 +154,6 @@ export const PreSelectedRowsByIndex = () => {
     </LocalDataSourceProvider>
   );
 };
-PreSelectedRowsByIndex.displaySequence = displaySequence++;
 
 export const PreSelectedRangeByIndex = () => {
   return (
@@ -175,7 +167,6 @@ export const PreSelectedRangeByIndex = () => {
     </LocalDataSourceProvider>
   );
 };
-PreSelectedRangeByIndex.displaySequence = displaySequence++;
 
 export const PreSelectedRowByKey = () => {
   const handleSelectionChange: SelectionChangeHandler = (selection) => {
@@ -193,4 +184,3 @@ export const PreSelectedRowByKey = () => {
     </LocalDataSourceProvider>
   );
 };
-PreSelectedRowByKey.displaySequence = displaySequence++;

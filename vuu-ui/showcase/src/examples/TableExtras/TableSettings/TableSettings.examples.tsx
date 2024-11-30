@@ -10,8 +10,6 @@ import { MoveItemHandler } from "@finos/vuu-ui-controls";
 import { moveItem } from "@finos/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 
-let displaySequence = 1;
-
 export const DefaultColumnList = () => {
   const initialColumns = useMemo<ColumnItem[]>(
     () => [
@@ -135,7 +133,7 @@ export const DefaultColumnList = () => {
         isCalculated: false,
       } as const,
     ],
-    []
+    [],
   );
 
   const [columns, setColumns] = useState(initialColumns);
@@ -156,7 +154,6 @@ export const DefaultColumnList = () => {
     />
   );
 };
-DefaultColumnList.displaySequence = displaySequence++;
 
 export const ManyColumnList = () => {
   const initialColumns = useMemo<ColumnItem[]>(() => {
@@ -187,7 +184,6 @@ export const ManyColumnList = () => {
     />
   );
 };
-ManyColumnList.displaySequence = displaySequence++;
 
 export const DefaultSettingsPanel = () => {
   const [availableColumns, tableConfig] = useMemo<
@@ -204,7 +200,7 @@ export const DefaultSettingsPanel = () => {
         columns: [],
       },
     ],
-    []
+    [],
   );
   const handleConfigChange = (config: TableConfig) => {
     console.log("handleConfigChange", {
@@ -228,4 +224,3 @@ export const DefaultSettingsPanel = () => {
     />
   );
 };
-DefaultSettingsPanel.displaySequence = displaySequence++;

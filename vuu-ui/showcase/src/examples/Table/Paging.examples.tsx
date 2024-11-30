@@ -2,7 +2,7 @@ import { useVuuMenuActions } from "@finos/vuu-data-react";
 import {
   SimulTableName,
   simulModule,
-  simulSchemas
+  simulSchemas,
 } from "@finos/vuu-data-test";
 import { ContextMenuProvider } from "@finos/vuu-popups";
 import { Table, TableProps } from "@finos/vuu-table";
@@ -10,8 +10,6 @@ import { ColumnLayout } from "@finos/vuu-table-types";
 import { applyDefaultColumnConfig } from "@finos/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { DemoTableContainer } from "./DemoTableContainer";
-
-let displaySequence = 0;
 
 const SimulTable = ({
   columnLayout,
@@ -34,11 +32,11 @@ const SimulTable = ({
         columns: applyDefaultColumnConfig(schema),
         rowClassNameGenerators,
         rowSeparators: true,
-        zebraStripes: true
+        zebraStripes: true,
       },
-      dataSource: simulModule.createDataSource(tableName)
+      dataSource: simulModule.createDataSource(tableName),
     }),
-    [columnLayout, rowClassNameGenerators, schema, tableName]
+    [columnLayout, rowClassNameGenerators, schema, tableName],
   );
 
   const handleConfigChange = useCallback(() => {
@@ -46,7 +44,7 @@ const SimulTable = ({
   }, []);
 
   const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
-    dataSource: tableProps.dataSource
+    dataSource: tableProps.dataSource,
   });
 
   return (
@@ -69,9 +67,7 @@ const SimulTable = ({
     </>
   );
 };
-SimulTable.displaySequence = displaySequence++;
 
 export const DefaultPaging = () => (
   <SimulTable columnLayout="fit" tableName="instruments" />
 );
-DefaultPaging.displaySequence = displaySequence++;

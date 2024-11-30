@@ -25,8 +25,6 @@ import {
 } from "@salt-ds/core";
 import { TableConfig } from "@finos/vuu-table-types";
 
-let displaySequence = 1;
-
 const TableSearchTemplate = ({
   schema,
   TableProps: TablePropsProp,
@@ -82,8 +80,6 @@ export const DefaultInstrumentSearch = () => {
   );
 };
 
-DefaultInstrumentSearch.displaySequence = displaySequence++;
-
 export const InstrumentSearchVuuInstruments = () => {
   const schema = getSchema("instruments");
   return (
@@ -92,8 +88,6 @@ export const InstrumentSearchVuuInstruments = () => {
     </VuuDataSourceProvider>
   );
 };
-
-InstrumentSearchVuuInstruments.displaySequence = displaySequence++;
 
 type DropTargetProps = HTMLAttributes<HTMLDivElement>;
 const DropTarget = ({ id, ...htmlAttributes }: DropTargetProps) => {
@@ -161,8 +155,6 @@ export const InstrumentSearchDragDrop = () => {
   );
 };
 
-InstrumentSearchDragDrop.displaySequence = displaySequence++;
-
 const EnhancedInstrumentSearch = () => {
   const { VuuDataSource } = useDataSource();
   const schema = getSchema("instruments");
@@ -229,5 +221,3 @@ export const InstrumentSearchFavourites = () => {
     </LocalDataSourceProvider>
   );
 };
-
-InstrumentSearchFavourites.displaySequence = displaySequence++;

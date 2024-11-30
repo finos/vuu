@@ -19,8 +19,6 @@ import {
 
 import "./Dialog.examples.css";
 
-let displaySequence = 1;
-
 const UnmountLogger = () => {
   useEffect(() => {
     return () => {
@@ -92,7 +90,6 @@ const DialogTemplate: FC<
 };
 
 export const DefaultDialog = () => <DialogTemplate id="Default" />;
-DefaultDialog.displaySequence = displaySequence++;
 
 export const LongContent = () => {
   const content = useMemo(
@@ -144,7 +141,7 @@ export const LongContent = () => {
         </div>
       </StackLayout>
     ),
-    []
+    [],
   );
 
   return (
@@ -154,7 +151,6 @@ export const LongContent = () => {
     />
   );
 };
-LongContent.displaySequence = displaySequence++;
 
 export const Preheader = () => (
   <DialogTemplate
@@ -162,7 +158,6 @@ export const Preheader = () => (
     preheader="I am a preheader"
   />
 );
-Preheader.displaySequence = displaySequence++;
 
 const AlertDialogTemplate: FC<
   Omit<DialogProps, "content"> & { header: string; content?: ReactNode }
@@ -219,22 +214,18 @@ const AlertDialogTemplate: FC<
 export const InfoStatus = () => (
   <AlertDialogTemplate status="info" header="Info" />
 );
-InfoStatus.displaySequence = displaySequence++;
 
 export const SuccessStatus = () => (
   <AlertDialogTemplate status="success" header="Success" />
 );
-SuccessStatus.displaySequence = displaySequence++;
 
 export const Warningtatus = () => (
   <AlertDialogTemplate status="warning" header="Warning" />
 );
-Warningtatus.displaySequence = displaySequence++;
 
 export const ErrorStatus = () => (
   <AlertDialogTemplate status="error" header="Error" />
 );
-ErrorStatus.displaySequence = displaySequence++;
 
 export const MandatoryAction = ({ open: openProp = false }: DialogProps) => {
   const [open, setOpen] = useState(openProp);
@@ -281,7 +272,6 @@ export const MandatoryAction = ({ open: openProp = false }: DialogProps) => {
     </>
   );
 };
-MandatoryAction.displaySequence = displaySequence++;
 
 function FakeWindow({ children }: PropsWithChildren<unknown>) {
   return (
@@ -324,4 +314,3 @@ export const DesktopDialog = () => {
     </StackLayout>
   );
 };
-DesktopDialog.displaySequence = displaySequence++;

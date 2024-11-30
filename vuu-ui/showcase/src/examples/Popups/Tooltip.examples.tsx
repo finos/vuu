@@ -5,8 +5,6 @@ import { SyntheticEvent, useCallback, useMemo, useRef, useState } from "react";
 
 // import "./Tooltip.examples.css";
 
-let displaySequence = 1;
-
 type TooltipPlacement = "above" | "right" | "below" | "left";
 
 export const DefaultTooltip = () => {
@@ -14,7 +12,7 @@ export const DefaultTooltip = () => {
   const [tooltipPlacement, setTooltipPlacement] =
     useState<TooltipPlacement>("right");
   const [tooltipContent, setTooltipContent] = useState<"child" | "text">(
-    "text"
+    "text",
   );
 
   const id = useId();
@@ -24,7 +22,7 @@ export const DefaultTooltip = () => {
       const { value } = evt.target as HTMLButtonElement;
       setTooltipPlacement(value as TooltipPlacement);
     },
-    []
+    [],
   );
 
   const handleChangeContent = useCallback(
@@ -32,7 +30,7 @@ export const DefaultTooltip = () => {
       const { value } = evt.target as HTMLButtonElement;
       setTooltipContent(value as "child" | "text");
     },
-    []
+    [],
   );
 
   const tooltipChild = useMemo(
@@ -50,7 +48,7 @@ export const DefaultTooltip = () => {
         Custom Content
       </div>
     ),
-    []
+    [],
   );
 
   const { anchorProps, tooltipProps } = useTooltip({
@@ -114,4 +112,3 @@ export const DefaultTooltip = () => {
     </div>
   );
 };
-DefaultTooltip.displaySequence = displaySequence++;

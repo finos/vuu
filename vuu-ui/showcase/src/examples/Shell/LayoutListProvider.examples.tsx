@@ -8,8 +8,6 @@ import { useMemo } from "react";
 import { sysLayouts } from "../_test-data/sysLayoutMetadata";
 import { FeatureAndLayoutProvider } from "@finos/vuu-shell";
 
-let displaySequence = 0;
-
 export const LayoutListProvider = (): JSX.Element => {
   const demoPersistenceManager = useMemo(
     () =>
@@ -39,4 +37,3 @@ export const LayoutListProvider = (): JSX.Element => {
     </PersistenceProvider>
   );
 };
-LayoutListProvider.displaySequence = displaySequence++;

@@ -2,8 +2,6 @@ import { LocalDataSourceProvider, getSchema } from "@finos/vuu-data-test";
 import { NewBasketPanel } from "feature-basket-trading";
 import { useCallback } from "react";
 
-let displaySequence = 1;
-
 export const DefaultNewBasketPanel = () => {
   const schema = getSchema("basket");
 
@@ -26,4 +24,3 @@ export const DefaultNewBasketPanel = () => {
     </LocalDataSourceProvider>
   );
 };
-DefaultNewBasketPanel.displaySequence = displaySequence++;

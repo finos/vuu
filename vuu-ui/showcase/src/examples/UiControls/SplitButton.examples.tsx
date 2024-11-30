@@ -7,8 +7,6 @@ import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
 import { useCallback, useMemo, useState } from "react";
 import { PopupMenuProps } from "@finos/vuu-popups";
 
-let displaySequence = 1;
-
 const menuBuilder: MenuBuilder = (_, options) => [
   { action: "and-clause", label: "AND", options },
   { action: "or-clause", label: "OR", options },
@@ -29,7 +27,7 @@ export const DefaultSplitButton = ({
 }: Partial<SplitButtonProps>) => {
   const menuActionHandler = useMemo<MenuActionHandler>(
     () => PopupMenuProps?.menuActionHandler ?? defaultMenuHandler,
-    [PopupMenuProps?.menuActionHandler]
+    [PopupMenuProps?.menuActionHandler],
   );
 
   const menuProps: PopupMenuProps = {
@@ -40,7 +38,7 @@ export const DefaultSplitButton = ({
 
   const handleClick = useMemo(
     () => onClick ?? (() => console.log("main button click")),
-    [onClick]
+    [onClick],
   );
 
   return (
@@ -55,7 +53,6 @@ export const DefaultSplitButton = ({
     </div>
   );
 };
-DefaultSplitButton.displaySequence = displaySequence++;
 
 export const SegmentedSplitButton = ({
   PopupMenuProps,
@@ -88,7 +85,6 @@ export const SegmentedSplitButton = ({
     </div>
   );
 };
-SegmentedSplitButton.displaySequence = displaySequence++;
 
 export const SplitButtonVariations = () => {
   const menuProps: PopupMenuProps = {
@@ -136,7 +132,6 @@ export const SplitButtonVariations = () => {
     </div>
   );
 };
-SplitButtonVariations.displaySequence = displaySequence++;
 
 export const DefaultSplitStateButton = ({
   PopupMenuProps,
@@ -145,7 +140,7 @@ export const DefaultSplitStateButton = ({
 }: Partial<SplitButtonProps>) => {
   const menuActionHandler = useMemo<MenuActionHandler>(
     () => PopupMenuProps?.menuActionHandler ?? defaultMenuHandler,
-    [PopupMenuProps?.menuActionHandler]
+    [PopupMenuProps?.menuActionHandler],
   );
 
   const [selected, setSelected] = useState(false);
@@ -158,7 +153,7 @@ export const DefaultSplitStateButton = ({
 
   const handleClick = useMemo(
     () => onClick ?? (() => setSelected((value) => !value)),
-    [onClick]
+    [onClick],
   );
 
   return (
@@ -178,4 +173,3 @@ export const DefaultSplitStateButton = ({
     </div>
   );
 };
-DefaultSplitStateButton.displaySequence = displaySequence++;

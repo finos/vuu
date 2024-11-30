@@ -2,11 +2,9 @@ import {
   GoToInput,
   Pagination,
   PaginationProps,
-  Paginator
+  Paginator,
 } from "@salt-ds/core";
 import { SyntheticEvent, useCallback } from "react";
-
-let displaySequence = 0;
 
 const PaginationTemplate = ({ count = 100 }: Partial<PaginationProps>) => {
   const handlePageChanged = useCallback((_: SyntheticEvent, page: number) => {
@@ -23,7 +21,5 @@ const PaginationTemplate = ({ count = 100 }: Partial<PaginationProps>) => {
 };
 
 export const DefaultPagination = () => <PaginationTemplate count={25} />;
-DefaultPagination.displaySequence = displaySequence++;
 
 export const LargeDataset = () => <PaginationTemplate count={10000} />;
-LargeDataset.displaySequence = displaySequence++;

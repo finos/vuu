@@ -7,8 +7,6 @@ import {
 import { PopupService } from "@finos/vuu-popups";
 import { useEffect, useRef } from "react";
 
-let displaySequence = 1;
-
 const dropPositionBase: DropPosition = {
   Absolute: false,
   Centre: false,
@@ -93,5 +91,3 @@ export const DropMenuTwoOptionsNorth = () => {
     />
   );
 };
-
-DropMenuTwoOptionsNorth.displaySequence = displaySequence++;

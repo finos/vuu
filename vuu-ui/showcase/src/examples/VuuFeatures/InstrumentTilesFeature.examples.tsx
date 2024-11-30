@@ -7,8 +7,6 @@ import { VuuBlotterHeader } from "./VuuBlotterHeader";
 
 registerComponent("InstrumentTilesFeature", InstrumentTilesFeature, "view");
 
-let displaySequence = 1;
-
 export const DefaultInstrumentTilesFeature = () => {
   const schema = getSchema("instrumentPrices");
 
@@ -37,7 +35,6 @@ export const DefaultInstrumentTilesFeature = () => {
     </LayoutProvider>
   );
 };
-DefaultInstrumentTilesFeature.displaySequence = displaySequence++;
 
 type Environment = "development" | "production";
 const env = process.env.NODE_ENV as Environment;
@@ -74,4 +71,3 @@ export const InstrumentTilesFeatureAsFeature = () => {
   );
 };
 InstrumentTilesFeatureAsFeature.displayName = "InstrumentTiles";
-InstrumentTilesFeatureAsFeature.displaySequence = displaySequence++;

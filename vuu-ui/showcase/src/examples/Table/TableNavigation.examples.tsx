@@ -6,8 +6,6 @@ import { useAutoLoginToVuuServer } from "../utils";
 import { TableConfig } from "@finos/vuu-table-types";
 import { LocalDataSourceProvider, getSchema } from "@finos/vuu-data-test";
 
-let displaySequence = 0;
-
 const TableTemplate = ({
   navigationStyle,
   schema = getSchema("instruments"),
@@ -62,7 +60,6 @@ export const RowNavigation = () => {
     </LocalDataSourceProvider>
   );
 };
-RowNavigation.displaySequence = displaySequence++;
 
 export const CellNavigation = () => {
   return (
@@ -71,4 +68,3 @@ export const CellNavigation = () => {
     </LocalDataSourceProvider>
   );
 };
-CellNavigation.displaySequence = displaySequence++;

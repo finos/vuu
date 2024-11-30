@@ -4,8 +4,6 @@ import { useCallback, useMemo, useState } from "react";
 
 import "./MeasuredContainer.examples.css";
 
-let displaySequence = 1;
-
 const MeasuredChild = () => {
   const [{ h, w }, setSize] = useState<{ h: number; w: number }>({
     h: 0,
@@ -35,7 +33,7 @@ const MeasuredChild = () => {
         resizeObserver.observe(el);
       }
     },
-    [resizeObserver]
+    [resizeObserver],
   );
 
   return (
@@ -54,7 +52,6 @@ export const DefaultMeasuredContainer = () => {
     </MeasuredContainer>
   );
 };
-DefaultMeasuredContainer.displaySequence = displaySequence++;
 
 export const FixedSizeMeasuredContainer = () => {
   return (
@@ -63,7 +60,6 @@ export const FixedSizeMeasuredContainer = () => {
     </MeasuredContainer>
   );
 };
-FixedSizeMeasuredContainer.displaySequence = displaySequence++;
 
 export const FixedHeightMeasuredContainer = () => {
   return (
@@ -72,7 +68,6 @@ export const FixedHeightMeasuredContainer = () => {
     </MeasuredContainer>
   );
 };
-FixedHeightMeasuredContainer.displaySequence = displaySequence++;
 
 export const PercentageSizeMeasuredContainer = () => {
   return (
@@ -81,7 +76,6 @@ export const PercentageSizeMeasuredContainer = () => {
     </MeasuredContainer>
   );
 };
-PercentageSizeMeasuredContainer.displaySequence = displaySequence++;
 
 export const FlexLayoutMeasuredContainer = () => {
   return (
@@ -104,4 +98,3 @@ export const FlexLayoutMeasuredContainer = () => {
     </div>
   );
 };
-FlexLayoutMeasuredContainer.displaySequence = displaySequence++;

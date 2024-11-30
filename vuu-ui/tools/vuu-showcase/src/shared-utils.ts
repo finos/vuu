@@ -5,7 +5,6 @@ export const env = process.env.NODE_ENV as Environment;
 
 export type VuuExample = {
   (props?: { [key: string]: unknown }): JSX.Element;
-  displaySequence: number;
 };
 
 export const pathFromKey = (key: string) => key.slice(5).split("|").join("/");

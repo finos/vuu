@@ -13,8 +13,6 @@ import { Button } from "@salt-ds/core";
 
 import "./DockLayout.examples.css";
 
-let displaySequence = 1;
-
 type InlineDrawerProps = {
   inline?: boolean;
   position: "left" | "right" | "top" | "bottom";
@@ -69,68 +67,52 @@ const InlineDrawer = ({
 export const LeftInlineDrawerPeek = () => (
   <InlineDrawer position="left" inline peekaboo />
 );
-LeftInlineDrawerPeek.displaySequence = displaySequence++;
 
 export const RightInlineDrawerPeek = () => (
   <InlineDrawer position="right" inline peekaboo />
 );
-RightInlineDrawerPeek.displaySequence = displaySequence++;
 
 export const TopInlineDrawerPeek = () => (
   <InlineDrawer position="top" inline peekaboo />
 );
-TopInlineDrawerPeek.displaySequence = displaySequence++;
 
 export const BottomInlineDrawerPeek = () => (
   <InlineDrawer position="bottom" inline peekaboo />
 );
-BottomInlineDrawerPeek.displaySequence = displaySequence++;
 
 export const LeftOverlayDrawerPeek = () => (
   <InlineDrawer position="left" peekaboo />
 );
-LeftOverlayDrawerPeek.displaySequence = displaySequence++;
 
 export const RightOverlayDrawerPeek = () => (
   <InlineDrawer position="right" peekaboo />
 );
-RightOverlayDrawerPeek.displaySequence = displaySequence++;
 
 export const TopOverlayDrawerPeek = () => (
   <InlineDrawer position="top" peekaboo />
 );
-TopOverlayDrawerPeek.displaySequence = displaySequence++;
 
 export const BottomOverlayDrawerPeek = () => (
   <InlineDrawer position="bottom" peekaboo />
 );
-BottomOverlayDrawerPeek.displaySequence = displaySequence++;
 
 export const LeftInlineDrawer = () => <InlineDrawer position="left" inline />;
-LeftInlineDrawer.displaySequence = displaySequence++;
 
 export const RightInlineDrawer = () => <InlineDrawer position="right" inline />;
-RightInlineDrawer.displaySequence = displaySequence++;
 
 export const TopInlineDrawer = () => <InlineDrawer position="top" inline />;
-TopInlineDrawer.displaySequence = displaySequence++;
 
 export const BottomInlineDrawer = () => (
   <InlineDrawer position="bottom" inline />
 );
-BottomInlineDrawer.displaySequence = displaySequence++;
 
 export const LeftOverlayDrawer = () => <InlineDrawer position="left" />;
-LeftOverlayDrawer.displaySequence = displaySequence++;
 
 export const RightOverlayDrawer = () => <InlineDrawer position="right" />;
-RightOverlayDrawer.displaySequence = displaySequence++;
 
 export const TopOverlayDrawer = () => <InlineDrawer position="top" />;
-TopOverlayDrawer.displaySequence = displaySequence++;
 
 export const BottomOverlayDrawer = () => <InlineDrawer position="bottom" />;
-BottomOverlayDrawer.displaySequence = displaySequence++;
 
 export const LeftInlineDrawerStack = () => {
   const [open, setOpen] = useState(false);
@@ -169,7 +151,6 @@ export const LeftInlineDrawerStack = () => {
     </Flexbox>
   );
 };
-LeftInlineDrawerStack.displaySequence = displaySequence++;
 
 export const LeftInlineDrawerFlexbox = () => {
   const [open, setOpen] = useState(false);
@@ -252,7 +233,6 @@ export const LeftInlineDrawerFlexbox = () => {
     </DockLayout>
   );
 };
-LeftInlineDrawerFlexbox.displaySequence = displaySequence++;
 
 export const InlineDrawerFlexboxVariants = () => {
   const [open, setOpen] = useState(false);
@@ -375,7 +355,6 @@ export const InlineDrawerFlexboxVariants = () => {
     </>
   );
 };
-InlineDrawerFlexboxVariants.displaySequence = displaySequence++;
 
 export const CustomSizeDrawer = () => {
   return (
@@ -422,7 +401,6 @@ export const CustomSizeDrawer = () => {
     </DockLayout>
   );
 };
-CustomSizeDrawer.displaySequence = displaySequence++;
 
 export const WithToggleButton = () => {
   return (
@@ -453,4 +431,3 @@ export const WithToggleButton = () => {
     </DockLayout>
   );
 };
-WithToggleButton.displaySequence = displaySequence++;

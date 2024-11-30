@@ -7,8 +7,6 @@ import {
 } from "@finos/vuu-popups";
 import { useCallback, useMemo } from "react";
 
-let displaySequence = 1;
-
 const menuBuilder: MenuBuilder = () => [
   { action: "action-1", label: "Menu Item 1" },
   { action: "action-2", label: "Menu Item 2" },
@@ -27,7 +25,7 @@ export const DefaultPopupMenu = ({
 }: Partial<PopupMenuProps>) => {
   const menuHandler = useMemo<MenuActionHandler>(
     () => menuActionHandler ?? defaultMenuHandler,
-    [menuActionHandler]
+    [menuActionHandler],
   );
 
   const onMenuOpen = useCallback(() => {
@@ -56,22 +54,19 @@ export const DefaultPopupMenu = ({
   );
 };
 
-DefaultPopupMenu.displaySequence = displaySequence++;
-
 export const PopupMenuWithLabel = ({ height = 300, width = 600 }) => {
   const menuBuilder = useMemo<MenuBuilder>(
-    () => () =>
-      [
-        {
-          action: "action-1",
-          label: "Menu Item 1",
-        },
-        {
-          action: "action-2",
-          label: "Menu Item 2",
-        },
-      ],
-    []
+    () => () => [
+      {
+        action: "action-1",
+        label: "Menu Item 1",
+      },
+      {
+        action: "action-2",
+        label: "Menu Item 2",
+      },
+    ],
+    [],
   );
 
   const menuHandler = useMemo<MenuActionHandler>(
@@ -83,7 +78,7 @@ export const PopupMenuWithLabel = ({ height = 300, width = 600 }) => {
           return true;
         }
       },
-    []
+    [],
   );
 
   return (
@@ -108,24 +103,21 @@ export const PopupMenuWithLabel = ({ height = 300, width = 600 }) => {
   );
 };
 
-PopupMenuWithLabel.displaySequence = displaySequence++;
-
 export const PopupMenuWithMenuOptions = () => {
   const menuBuilder = useMemo<MenuBuilder>(
-    () => (_locaction, options) =>
-      [
-        {
-          action: "action-1",
-          label: "Menu Item 1",
-          options,
-        },
-        {
-          action: "action-2",
-          label: "Menu Item 2",
-          options,
-        },
-      ],
-    []
+    () => (_locaction, options) => [
+      {
+        action: "action-1",
+        label: "Menu Item 1",
+        options,
+      },
+      {
+        action: "action-2",
+        label: "Menu Item 2",
+        options,
+      },
+    ],
+    [],
   );
 
   const menuHandler = useMemo<MenuActionHandler>(
@@ -137,14 +129,14 @@ export const PopupMenuWithMenuOptions = () => {
           return true;
         }
       },
-    []
+    [],
   );
 
   const menuOptions = useMemo(
     () => ({
       test: "value-1",
     }),
-    []
+    [],
   );
 
   return (
@@ -159,8 +151,6 @@ export const PopupMenuWithMenuOptions = () => {
     </div>
   );
 };
-
-PopupMenuWithMenuOptions.displaySequence = displaySequence++;
 
 export const PopupMenuUsingLocationAndContext = () => {
   const contextMenuDescriptors = [
@@ -177,20 +167,19 @@ export const PopupMenuUsingLocationAndContext = () => {
     contextMenuDescriptors.filter((menuItem) => menuItem.location === location);
 
   const menuBuilder = useMemo<MenuBuilder>(
-    () => (_locaction, options) =>
-      [
-        {
-          action: "action-1",
-          label: "Menu Item 1",
-          options,
-        },
-        {
-          action: "action-2",
-          label: "Menu Item 2",
-          options,
-        },
-      ],
-    []
+    () => (_locaction, options) => [
+      {
+        action: "action-1",
+        label: "Menu Item 1",
+        options,
+      },
+      {
+        action: "action-2",
+        label: "Menu Item 2",
+        options,
+      },
+    ],
+    [],
   );
 
   const menuHandler = useMemo<MenuActionHandler>(
@@ -201,14 +190,14 @@ export const PopupMenuUsingLocationAndContext = () => {
           return true;
         }
       },
-    []
+    [],
   );
 
   const menuOptions = useMemo(
     () => ({
       test: "value-1",
     }),
-    []
+    [],
   );
 
   return (
@@ -234,5 +223,3 @@ export const PopupMenuUsingLocationAndContext = () => {
     </ContextMenuProvider>
   );
 };
-
-PopupMenuUsingLocationAndContext.displaySequence = displaySequence++;

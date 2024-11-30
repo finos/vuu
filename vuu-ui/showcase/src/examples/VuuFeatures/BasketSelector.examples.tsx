@@ -4,8 +4,6 @@ import { buildColumnMap } from "@finos/vuu-utils";
 import { Basket, BasketSelector } from "feature-basket-trading";
 import { useCallback, useMemo, useState } from "react";
 
-let displaySequence = 1;
-
 const testBaskets = [
   ["Amber-0001", "Amber Basket", "OFF MARKET", "BUY"],
   ["Blue-0002", "Blue Basket", "ON MARKET", "SELL"],
@@ -63,4 +61,3 @@ export const DefaultBasketSelector = () => {
     />
   );
 };
-DefaultBasketSelector.displaySequence = displaySequence++;
