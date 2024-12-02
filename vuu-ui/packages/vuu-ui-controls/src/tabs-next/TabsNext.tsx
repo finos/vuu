@@ -13,11 +13,13 @@ import {
   makePrefixer,
   useControlled,
   useEventCallback,
+  useIdMemo,
   useIsomorphicLayoutEffect,
 } from "@salt-ds/core";
 import { clsx } from "clsx";
 import { type Item, TabsNextContext } from "./TabsNextContext";
 import { useCollection } from "./hooks/useCollection";
+import { useDragContext } from "@finos/vuu-utils";
 
 export interface TabsNextProps
   extends Omit<ComponentPropsWithoutRef<"div">, "onChange"> {
@@ -40,8 +42,21 @@ const withBaseName = makePrefixer("saltTabsNext");
 
 export const TabsNext = forwardRef<HTMLDivElement, TabsNextProps>(
   function TabsNext(props, ref) {
-    const { className, children, value, defaultValue, onChange, ...rest } =
-      props;
+    const {
+      className,
+      children,
+      id: idProp,
+      value,
+      defaultValue,
+      onChange,
+      ...rest
+    } = props;
+
+    const id = useIdMemo(idProp);
+
+    // If we are a dragcontainer, pass isDraggable via context to tabs
+    const dragContext = useDragContext();
+    const isDraggable = dragContext.isDragContainer(id);
 
     const [valueToTabIdMap, setValueToIdMap] = useState({
       map: new Map<string, string>(),
@@ -84,7 +99,7 @@ export const TabsNext = forwardRef<HTMLDivElement, TabsNextProps>(
         setSelectedState(value);
         onChange?.(event, value);
       },
-      [onChange],
+      [onChange, setSelectedState],
     );
 
     const registerTab = useEventCallback((item: Item) => {
@@ -192,6 +207,8 @@ export const TabsNext = forwardRef<HTMLDivElement, TabsNextProps>(
 
     const context = useMemo(
       () => ({
+        id,
+        isDraggable,
         registerTab,
         registerPanel,
         getPanelId,
@@ -210,8 +227,10 @@ export const TabsNext = forwardRef<HTMLDivElement, TabsNextProps>(
         returnFocus,
       }),
       [
-        registerPanel,
+        id,
+        isDraggable,
         registerTab,
+        registerPanel,
         getPanelId,
         getTabId,
         selected,
@@ -228,7 +247,12 @@ export const TabsNext = forwardRef<HTMLDivElement, TabsNextProps>(
 
     return (
       <TabsNextContext.Provider value={context}>
-        <div className={clsx(withBaseName(), className)} ref={ref} {...rest}>
+        <div
+          className={clsx(withBaseName(), className)}
+          id={id}
+          ref={ref}
+          {...rest}
+        >
           {children}
         </div>
       </TabsNextContext.Provider>

@@ -10,13 +10,7 @@ import { DragEventHandler, useCallback, useRef } from "react";
 import { useGridLayoutDropHandler } from "./GridLayoutProvider";
 
 const dropTargetClassName = "vuuDropTarget";
-
-const positions = [
-  `vuuDropTarget-north`,
-  `vuuDropTarget-south`,
-  `vuuDropTarget-east`,
-  `vuuDropTarget-west`,
-];
+const dropTargetQuery = "[data-drop-target]";
 
 const removedropTargetPositionClassName = (el: HTMLElement) => {
   el.classList.forEach((className) => {
@@ -40,22 +34,17 @@ export const useAsDropTarget = () => {
   const drop = useGridLayoutDropHandler();
 
   const onDragEnter = useCallback<DragEventHandler>((evt) => {
-    console.log(`onDragEnter GridLayout`);
-
-    const target = queryClosest(evt.target, `.${dropTargetClassName}`);
+    console.log(`[useAsDropTarget] onDragEnter GridLayout`);
+    const target = queryClosest(evt.target, dropTargetQuery);
     if (target !== dropTargetRef.current) {
       if (target) {
+        // TODO bump this to StackContainer of over stack content
         dropTargetRef.current = target;
         const { bottom, left, right, top } = target.getBoundingClientRect();
         targetRectRef.current.bottom = bottom;
         targetRectRef.current.left = left;
         targetRectRef.current.right = right;
         targetRectRef.current.top = top;
-
-        if (target.dataset.dropTarget === "tabs") {
-          target.classList.add(`${dropTargetClassName}-tabs`);
-          positionRef.current = "tabs";
-        }
       }
     }
   }, []);
@@ -63,7 +52,7 @@ export const useAsDropTarget = () => {
   const onDragLeave = useCallback<DragEventHandler>((evt) => {
     console.log(`onDragLeave GridLayout`);
 
-    const target = queryClosest(evt.target, `.${dropTargetClassName}`);
+    const target = queryClosest(evt.target, dropTargetQuery);
     if (target === evt.target) {
       if (target === dropTargetRef.current) {
         dropTargetRef.current = undefined;
@@ -76,7 +65,7 @@ export const useAsDropTarget = () => {
 
   // We could replace this with mouse move to reduce event rate
   const onDragOver = useCallback<DragEventHandler>((evt) => {
-    const target = queryClosest(evt.target, `.${dropTargetClassName}`);
+    const target = queryClosest(evt.target, dropTargetQuery);
     if (target) {
       evt.preventDefault();
 
@@ -124,7 +113,8 @@ export const useAsDropTarget = () => {
 
   const onDrop = useCallback<DragEventHandler>(
     (evt) => {
-      let target = queryClosest(evt.target, `.${dropTargetClassName}`);
+      console.log(`drop`);
+      let target = queryClosest(evt.target, dropTargetQuery);
       if (target && positionRef.current) {
         removedropTargetPositionClassName(target);
         let { id } = target;
@@ -156,7 +146,6 @@ export const useAsDropTarget = () => {
   );
 
   return {
-    dropTargetClassName,
     onDragEnter,
     onDragOver,
     onDragLeave,

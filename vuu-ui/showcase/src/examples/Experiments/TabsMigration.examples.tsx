@@ -9,12 +9,17 @@ import {
   Tabstrip,
   TabstripProps,
 } from "@finos/vuu-ui-controls";
-import { DragDropProviderNext, moveItem } from "@finos/vuu-utils";
+import { moveItem } from "@finos/vuu-utils";
 import { SyntheticEvent, useCallback, useMemo, useRef, useState } from "react";
-import { FlexboxLayout, LayoutProvider } from "@finos/vuu-layout";
+import {
+  DragDropProviderNext,
+  DropHandler,
+  FlexboxLayout,
+  LayoutProvider,
+} from "@finos/vuu-layout";
+import { TabState } from "@finos/vuu-layout/src/grid-layout/GridLayoutStackedtem";
 
 import "./TabsMigration.examples.css";
-import { TabState } from "@finos/vuu-layout/src/grid-layout/GridLayoutStackedtem";
 
 const SPLITTER_WIDTH = 3;
 
@@ -72,6 +77,14 @@ const TabstripTemplate = ({
     },
     [tabs],
   );
+  const handleDrop = useCallback<DropHandler>(
+    ({ fromIndex, toIndex }) => {
+      const newTabs = moveItem(tabs, fromIndex, toIndex);
+      setTabs(newTabs);
+      setActiveTabIndex(newTabs.indexOf(activeTabRef.current));
+    },
+    [tabs],
+  );
 
   return (
     <LayoutProvider>
@@ -108,26 +121,32 @@ const TabstripTemplate = ({
             </Tabstrip>
           </div>
           <div style={{ flex: 1 }}>
-            <TabsNext onChange={handleChange} value={tabs[activeTabIndex]}>
-              <TabBar divider>
-                <TabListNext
-                  appearance="transparent"
-                  allowDragDrop
-                  onMoveTab={handleMoveTab}
-                >
-                  {tabs.map((label, index) => (
-                    <TabNext
-                      data-index={index}
-                      draggable
-                      value={label}
-                      key={label}
-                    >
-                      <TabNextTrigger>{label}</TabNextTrigger>
-                    </TabNext>
-                  ))}
-                </TabListNext>
-              </TabBar>
-            </TabsNext>
+            <DragDropProviderNext
+              dragSources={{ tabs1: { dropTargets: ["tabs1"] } }}
+              onDrop={handleDrop}
+            >
+              <TabsNext onChange={handleChange} value={tabs[activeTabIndex]}>
+                <TabBar divider>
+                  <TabListNext
+                    appearance="transparent"
+                    className="vuuDragContainer"
+                    id="tabs1"
+                  >
+                    {tabs.map((label, index) => (
+                      <TabNext
+                        className="vuuDraggableItem"
+                        data-index={index}
+                        draggable
+                        value={label}
+                        key={label}
+                      >
+                        <TabNextTrigger>{label}</TabNextTrigger>
+                      </TabNext>
+                    ))}
+                  </TabListNext>
+                </TabBar>
+              </TabsNext>
+            </DragDropProviderNext>
           </div>
         </FlexboxLayout>
         <div data-resizeable></div>
@@ -185,94 +204,105 @@ const TabstripTemplate2 = () => {
     [],
   );
 
-  const handleMoveTab1 = useCallback(
-    (fromIndex: number, toIndex: number) =>
-      setTabState1((state) => state.moveTab(fromIndex, toIndex)),
-    [],
-  );
-
-  const handleMoveTab2 = useCallback(
-    (fromIndex: number, toIndex: number) =>
-      setTabState2((state) => state.moveTab(fromIndex, toIndex)),
+  const handleDrop = useCallback<DropHandler>(
+    ({ fromId, fromIndex, toId, toIndex }) => {
+      console.log(`handleMoveTabNext ${fromId}`);
+      if (fromId === "tabs1" && toId === "tabs1") {
+        setTabState1((state) => state.moveTab(fromIndex, toIndex));
+      } else if (fromId === "tabs2" && toId === "tabs2") {
+        setTabState2((state) => state.moveTab(fromIndex, toIndex));
+      } else {
+        console.log("move one to t'other");
+      }
+    },
     [],
   );
 
   return (
-    <LayoutProvider>
-      <FlexboxLayout
-        style={{ height: 200, width: 700 + SPLITTER_WIDTH }}
-        path=""
-      >
-        <FlexboxLayout resizeable style={{ flexDirection: "column", flex: 1 }}>
-          <div style={{ flex: 1 }}>
-            <TabsNext
-              onChange={handleChange1}
-              value={tabState1.tabs[tabState1.active]}
-            >
-              <TabBar divider>
-                <TabListNext
-                  appearance="transparent"
-                  allowDragDrop
-                  onMoveTab={handleMoveTab1}
-                >
-                  {tabState1.tabs.map((label, index) => (
-                    <TabNext
-                      data-index={index}
-                      draggable
-                      value={label}
-                      key={label}
-                    >
-                      <TabNextTrigger>{label}</TabNextTrigger>
-                    </TabNext>
-                  ))}
-                </TabListNext>
-              </TabBar>
-            </TabsNext>
-          </div>
-          <div style={{ flex: 1 }}>
-            <TabsNext
-              onChange={handleChange2}
-              value={tabState2.tabs[tabState2.active]}
-            >
-              <TabBar divider>
-                <TabListNext
-                  appearance="transparent"
-                  allowDragDrop
-                  onMoveTab={handleMoveTab2}
-                >
-                  {tabState2.tabs.map((label, index) => (
-                    <TabNext
-                      data-index={index}
-                      draggable
-                      value={label}
-                      key={label}
-                    >
-                      <TabNextTrigger>{label}</TabNextTrigger>
-                    </TabNext>
-                  ))}
-                </TabListNext>
-              </TabBar>
-            </TabsNext>
-          </div>
-          <div
-            style={{ background: "yellow", flex: 1 }}
-            onDragEnter={() => console.log("drag enter")}
-            onDragLeave={() => console.log("drag leave")}
-            onDragOver={(e) => {
-              e.preventDefault();
-              console.log("drag over");
-            }}
-            onDrop={() => console.log("drop")}
-          />
+    <DragDropProviderNext
+      dragSources={{
+        tabs1: { dropTargets: ["tabs1", "tabs2"] },
+        tabs2: { dropTargets: ["tabs1", "tabs2"] },
+      }}
+      onDrop={handleDrop}
+    >
+      <LayoutProvider>
+        <FlexboxLayout
+          style={{ height: 200, width: 700 + SPLITTER_WIDTH }}
+          path=""
+        >
+          <FlexboxLayout
+            resizeable
+            style={{ flexDirection: "column", flex: 1 }}
+          >
+            <div style={{ flex: 1 }}>
+              <TabsNext
+                onChange={handleChange1}
+                value={tabState1.tabs[tabState1.active]}
+              >
+                <TabBar divider>
+                  <TabListNext
+                    appearance="transparent"
+                    className="vuuDragContainer"
+                    id="tabs1"
+                  >
+                    {tabState1.tabs.map((label, index) => (
+                      <TabNext
+                        className="vuuDraggableItem"
+                        data-index={index}
+                        draggable
+                        value={label}
+                        key={label}
+                      >
+                        <TabNextTrigger>{label}</TabNextTrigger>
+                      </TabNext>
+                    ))}
+                  </TabListNext>
+                </TabBar>
+              </TabsNext>
+            </div>
+            <div style={{ flex: 1 }}>
+              <TabsNext
+                onChange={handleChange2}
+                value={tabState2.tabs[tabState2.active]}
+              >
+                <TabBar divider>
+                  <TabListNext
+                    appearance="transparent"
+                    className="vuuDragContainer"
+                    id="tabs2"
+                  >
+                    {tabState2.tabs.map((label, index) => (
+                      <TabNext
+                        className="vuuDraggableItem"
+                        data-index={index}
+                        draggable
+                        value={label}
+                        key={label}
+                      >
+                        <TabNextTrigger>{label}</TabNextTrigger>
+                      </TabNext>
+                    ))}
+                  </TabListNext>
+                </TabBar>
+              </TabsNext>
+            </div>
+            <div
+              style={{ background: "yellow", flex: 1 }}
+              onDragEnter={() => console.log("drag enter")}
+              onDragLeave={() => console.log("drag leave")}
+              onDragOver={(e) => {
+                e.preventDefault();
+                console.log("drag over");
+              }}
+              onDrop={() => console.log("drop")}
+            />
+          </FlexboxLayout>
+          <div data-resizeable></div>
         </FlexboxLayout>
-        <div data-resizeable></div>
-      </FlexboxLayout>
-    </LayoutProvider>
+      </LayoutProvider>
+    </DragDropProviderNext>
   );
 };
 
-export const TabstripDragDropBetweenTabs = () => (
-  <DragDropProviderNext>
-    <TabstripTemplate2 />
-  </DragDropProviderNext>
-);
+export const TabstripDragDropBetweenTabs = () => <TabstripTemplate2 />;

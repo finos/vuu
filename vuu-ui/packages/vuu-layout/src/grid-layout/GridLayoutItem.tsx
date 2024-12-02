@@ -90,7 +90,7 @@ export const GridLayoutItem = ({
   );
 
   const useDropTargetHook = isDropTarget ? useAsDropTarget : useNotDropTarget;
-  const { dropTargetClassName, ...droppableProps } = useDropTargetHook();
+  const droppableProps = useDropTargetHook();
   const draggableProps = useDraggable({
     draggableClassName: classBaseItem,
     getPayload,
@@ -120,10 +120,7 @@ export const GridLayoutItem = ({
       style={style}
     >
       {header ? (
-        <div
-          className={cx(`${classBaseItem}Header`, dropTargetClassName)}
-          data-drop-target="tabs"
-        >
+        <div className={cx(`${classBaseItem}Header`)} data-drop-target="tabs">
           <span className={`${classBaseItem}Header-title`} draggable>
             {title}
           </span>
@@ -136,7 +133,7 @@ export const GridLayoutItem = ({
           />
         </div>
       ) : null}
-      <div className={cx(`${classBaseItem}Content`, dropTargetClassName)}>
+      <div className={cx(`${classBaseItem}Content`)} data-drop-target>
         {children}
       </div>
     </div>

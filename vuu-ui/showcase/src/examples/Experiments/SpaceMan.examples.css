@@ -1,0 +1,34 @@
+.DragContainer {
+    --container-height: 40px;
+    --container-width: auto;
+    --transition-property: none;
+    --item-height: 100%;
+    --item-width: 120px;
+
+    display: inline-flex;
+    height: var(--container-height);
+    position: relative;
+    width: var(--container-width);
+
+    &.vuuDragContainer-vertical {
+        --container-height: auto;
+        --container-width: 120px;
+        --item-height: 40px;
+        --item-width: auto;
+
+        flex-direction: column;
+    }
+   
+    .DragItem {
+        align-items: center;
+        display: flex;
+        flex-basis: auto;
+        flex-grow: 0;
+        flex-shrink: 0;
+        height: var(--item-height);
+        justify-content: center;
+        width: var(--item-width);
+    }
+
+}
+

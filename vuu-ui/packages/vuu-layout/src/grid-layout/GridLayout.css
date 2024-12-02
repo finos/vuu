@@ -120,7 +120,7 @@
   --grid-dropzone-right: 0px;
 }
 
-.vuuDropTarget:after {
+[data-drop-target]:after {
   background-color: cornflowerblue;
   content: "";
   opacity: 0.3;
@@ -134,23 +134,3 @@
   transition-timing-function: ease-in-out;
 }
 
-/* .vuuGridLayout {
-  --grid-dropzone-top: 0px;
-  --grid-dropzone-left: 100px;
-  --grid-dropzone-height: 100px;
-  --grid-dropzone-width: 100px;
-}
-
-.vuuGridLayout:after {
-  background-color: black;
-  content: "";
-  height: var(--grid-dropzone-height);
-  left: var(--grid-dropzone-left);
-  position: absolute;
-  top: var(--grid-dropzone-top);
-  transition-property: top, left, right, bottom;
-  transition-duration: 0.3s;
-  transition-timing-function: ease-in-out;
-  width: var(--grid-dropzone-width);
-} */
-}

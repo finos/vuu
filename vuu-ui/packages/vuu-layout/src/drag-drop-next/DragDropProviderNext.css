@@ -1,0 +1,61 @@
+.vuuDragContainer {
+    --orientation-transition-property: width;
+    --transition-property: var(--orientation-transition-property);
+
+    align-items: stretch;
+    background: white !important; /* TODO */
+    row-gap: 0;
+
+    &.vuuDragContainer-dragging {
+        .saltTabNextTrigger {
+            /* only when drag in progress */
+            pointer-events: none;
+        }
+    
+    }
+
+    &.vuuDragContainer-vertical {
+        --orientation-transition-property:height;
+
+        .DragSpacer {
+            height: 0;
+            width: auto;
+        }
+    
+    }
+
+    /* Only if no existing scrollbars */
+    &:has(.vuuDraggableItem-settling){
+        overflow:visible;
+    }
+
+    .vuuDraggableItem:not([aria-selected="true"]) {
+        background: inherit;
+    }
+
+    .vuuDraggableItem-hidden {
+        position: absolute;
+        z-index: -1;
+    }
+
+    .vuuDraggableItem-settling {
+        position: absolute;
+        z-index: 1;
+    }
+
+    .vuuDraggableItem-animating {
+        transition: transform .3s ease-in-out;
+    }
+
+    .DragSpacer {
+        align-self: stretch;
+        background-color: #d9d9d9;
+        flex: 0 0 auto;
+        min-height: 100%;
+        transition-property: var(--transition-property);
+        transition-duration: .25s;
+        transition-timing-function: ease;
+        width:0;
+    }
+
+}

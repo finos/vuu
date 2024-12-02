@@ -1,4 +1,4 @@
-import { makePrefixer, useId } from "@salt-ds/core";
+import { makePrefixer, useIdMemo } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { clsx } from "clsx";
@@ -26,9 +26,6 @@ export interface TabNextProps extends ComponentPropsWithoutRef<"div"> {
    */
   disabled?: boolean;
 
-  draggable?: boolean;
-  dragging?: boolean;
-
   /**
    * The value of the tab.
    */
@@ -42,8 +39,6 @@ export const TabNext = forwardRef<HTMLDivElement, TabNextProps>(
       children,
       className,
       disabled: disabledProp,
-      draggable,
-      dragging,
       onBlur,
       onMouseDown,
       onFocus,
@@ -59,11 +54,11 @@ export const TabNext = forwardRef<HTMLDivElement, TabNextProps>(
       window: targetWindow,
     });
 
-    const { selected, activeTab } = useTabsNext();
+    const { activeTab, isDraggable, selected } = useTabsNext();
 
     const disabled = !!disabledProp;
 
-    const id = useId(idProp);
+    const id = useIdMemo(idProp);
 
     const wasMouseDown = useRef(false);
     const [focusVisible, setFocusVisible] = useState(false);
@@ -138,7 +133,7 @@ export const TabNext = forwardRef<HTMLDivElement, TabNextProps>(
             className,
           )}
           data-overflowitem="true"
-          draggable={draggable}
+          draggable={isDraggable}
           id={id}
           ref={ref}
           onMouseDown={handleMouseDown}

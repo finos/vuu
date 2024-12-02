@@ -143,11 +143,7 @@ export const DragDropTabs = () => {
   return (
     <div data-showcase-center>
       <TabsNext onChange={handleChange} value={activeTab}>
-        <TabListNext
-          appearance="transparent"
-          allowDragDrop
-          onMoveTab={handleMoveTab}
-        >
+        <TabListNext appearance="transparent" onMoveTab={handleMoveTab}>
           {tabs.map((label, i) => (
             <TabNext value={label} key={label} data-index={i} draggable>
               <TabNextTrigger>{label}</TabNextTrigger>
@@ -164,7 +160,6 @@ export const DragDropTabs = () => {
     </div>
   );
 };
-DragDropTabs.displaySequence = displaySequence++;
 
 const tabToIcon: Record<string, ComponentType> = {
   Home: HomeIcon,

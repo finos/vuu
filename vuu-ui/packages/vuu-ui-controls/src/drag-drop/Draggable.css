@@ -8,15 +8,10 @@
 }
 
 .vuuDraggable-spacer {
-  background-color: pink;
   display: var(--vuuDraggable-display, inline-block);
   height: var(--vuuDraggable-spacer-height, var(--tabstrip-height));
   transition: var(--vuuDraggable-transitionProp, width) 0.35s ease;
   width: var(--vuuDraggable-spacer-width, 0);
-}
-
-.vuuDraggable-transitioning {
-  background-color: brown;
 }
 
 .vuuDraggable-dropIndicatorPosition {

@@ -1,16 +1,7 @@
-import {
-  GridLayoutItemProps,
-  Stack,
-  getDefaultTabLabel,
-  useDraggable,
-  useGridLayoutDragStartHandler,
-  useGridLayoutProps,
-} from "@finos/vuu-layout";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import React, {
-  DragEvent,
   ReactElement,
   ReactNode,
   SyntheticEvent,
@@ -22,9 +13,6 @@ import React, {
 import { useAsDropTarget } from "./useAsDropTarget";
 import { useNotDropTarget } from "./useNotDropTarget";
 
-import { moveItem, queryClosest } from "@finos/vuu-utils";
-import gridLayoutCss from "./GridLayout.css";
-import gridSplitterCss from "./GridSplitter.css";
 import {
   TabBar,
   TabListNext,
@@ -32,6 +20,19 @@ import {
   TabNextTrigger,
   TabsNext,
 } from "@finos/vuu-ui-controls";
+import { moveItem } from "@finos/vuu-utils";
+import { DropHandler } from "../drag-drop-next/DragContextNext";
+import { DragDropProviderNext as DragDropProvider } from "../drag-drop-next/DragDropProviderNext";
+import { getDefaultTabLabel } from "../layout-reducer";
+import { Stack } from "../stack";
+import gridLayoutCss from "./GridLayout.css";
+import { GridLayoutItemProps } from "./GridLayoutItem";
+import {
+  // useGridLayoutDragStartHandler,
+  useGridLayoutProps,
+} from "./GridLayoutProvider";
+import gridSplitterCss from "./GridSplitter.css";
+// import { useDraggable } from "./useDraggable";
 
 const classBaseItem = "vuuGridLayoutStackedItem";
 
@@ -95,7 +96,7 @@ export const GridLayoutStackedItem = ({
   });
 
   const layoutProps = useGridLayoutProps(id);
-  const onDragStart = useGridLayoutDragStartHandler();
+  // const onDragStart = useGridLayoutDragStartHandler();
 
   const initialTabState = useMemo<TabState>(
     () =>
@@ -110,13 +111,14 @@ export const GridLayoutStackedItem = ({
   const [tabState, setTabState] = useState<TabState>(initialTabState);
 
   const handleChange = useCallback(
-    (_: SyntheticEvent | null, value: string) =>
-      setTabState((state) => state.setActiveTab(value)),
+    (_: SyntheticEvent | null, value: string) => {
+      setTabState((state) => state.setActiveTab(value));
+    },
     [],
   );
 
-  const handleMoveTab = useCallback(
-    (fromIndex: number, toIndex: number) =>
+  const handleDrop = useCallback<DropHandler>(
+    ({ fromIndex, toIndex }) =>
       setTabState((state) => state.moveTab(fromIndex, toIndex)),
     [],
   );
@@ -126,24 +128,24 @@ export const GridLayoutStackedItem = ({
     [active],
   );
 
-  const getPayload = useCallback(
-    (evt: DragEvent<Element>): [string, string] => {
-      const draggedItem = queryClosest(evt.target, ".vuuGridLayoutItem");
-      if (draggedItem) {
-        return ["text/plain", draggedItem.id];
-      }
-      throw Error("GridLayoutItem no found");
-    },
-    [],
-  );
+  // const getPayload = useCallback(
+  //   (evt: DragEvent<Element>): [string, string] => {
+  //     const draggedItem = queryClosest(evt.target, ".vuuGridLayoutItem");
+  //     if (draggedItem) {
+  //       return ["text/plain", draggedItem.id];
+  //     }
+  //     throw Error("GridLayoutItem no found");
+  //   },
+  //   [],
+  // );
 
   const useDropTargetHook = isDropTarget ? useAsDropTarget : useNotDropTarget;
-  const { dropTargetClassName, ...droppableProps } = useDropTargetHook();
-  const draggableProps = useDraggable({
-    draggableClassName: classBaseItem,
-    getPayload,
-    onDragStart,
-  });
+  const droppableProps = useDropTargetHook();
+  // const draggableProps = useDraggable({
+  //   draggableClassName: classBaseItem,
+  //   getPayload,
+  //   onDragStart,
+  // });
 
   // const TabstripProps = useMemo<TabstripProps>(() => ({}), []);
 
@@ -159,41 +161,49 @@ export const GridLayoutStackedItem = ({
   };
 
   const stackId = `stack-${id}`;
+  const tabsId = `tabs-${id}`;
 
   return (
     <div
       {...htmlAttributes}
       {...droppableProps}
-      {...draggableProps}
       className={cx(className)}
       id={id}
       key={id}
       style={style}
     >
-      <div
-        className={cx(`${classBaseItem}Header`, dropTargetClassName)}
-        data-drop-target="tabs"
-      >
-        <TabsNext
-          onChange={handleChange}
-          value={tabState.tabs[tabState.active]}
+      <div className={`${classBaseItem}Header`}>
+        <DragDropProvider
+          dragSources={{ [tabsId]: { dropTargets: [tabsId] } }}
+          onDrop={handleDrop}
         >
-          <TabBar divider>
-            <TabListNext
-              appearance="transparent"
-              allowDragDrop
-              onMoveTab={handleMoveTab}
-            >
-              {tabState.tabs.map((label, index) => (
-                <TabNext data-index={index} draggable value={label} key={label}>
-                  <TabNextTrigger>{label}</TabNextTrigger>
-                </TabNext>
-              ))}
-            </TabListNext>
-          </TabBar>
-        </TabsNext>
+          <TabsNext
+            onChange={handleChange}
+            value={tabState.tabs[tabState.active]}
+          >
+            <TabBar divider>
+              <TabListNext
+                appearance="transparent"
+                className="vuuDragContainer"
+                id={tabsId}
+              >
+                {tabState.tabs.map((label, index) => (
+                  <TabNext
+                    className="vuuDraggableItem"
+                    data-index={index}
+                    draggable
+                    value={label}
+                    key={label}
+                  >
+                    <TabNextTrigger>{label}</TabNextTrigger>
+                  </TabNext>
+                ))}
+              </TabListNext>
+            </TabBar>
+          </TabsNext>
+        </DragDropProvider>
       </div>
-      <div className={cx(`${classBaseItem}Content`, dropTargetClassName)}>
+      <div className={`${classBaseItem}Content`} data-drop-target={id}>
         <Stack active={tabState.active} id={stackId} showTabs={false}>
           {children}
         </Stack>

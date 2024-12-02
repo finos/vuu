@@ -26,6 +26,8 @@ export interface TabsNextContextValue
   returnFocus: MutableRefObject<string | undefined>;
   menuOpen: boolean;
   setMenuOpen: Dispatch<SetStateAction<boolean>>;
+  id: string;
+  isDraggable: boolean;
 }
 
 export const TabsNextContext = createContext<TabsNextContextValue>(
@@ -47,6 +49,8 @@ export const TabsNextContext = createContext<TabsNextContextValue>(
     returnFocus: { current: undefined },
     menuOpen: false,
     setMenuOpen: () => undefined,
+    id: "",
+    isDraggable: false,
   },
 );
 
