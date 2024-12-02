@@ -162,14 +162,16 @@ export const DefaultFilterBar = (props: Partial<FilterBarProps>) => (
 
 export const FilterBarOneSimpleFilter = () => {
   return (
-    <FilterBarTemplate
-      filterState={{
-        filters: [
-          { column: "currency", name: "Filter One", op: "=", value: "EUR" },
-        ],
-        activeIndices: [],
-      }}
-    />
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <FilterBarTemplate
+        filterState={{
+          filters: [
+            { column: "currency", name: "Filter One", op: "=", value: "EUR" },
+          ],
+          activeIndices: [],
+        }}
+      />
+    </LocalDataSourceProvider>
   );
 };
 

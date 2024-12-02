@@ -1,10 +1,11 @@
-import { ComboBoxProps, Option } from "@salt-ds/core";
+import { Input, Option } from "@salt-ds/core";
 import {
   ExpandoCombobox,
   FilterClauseValueEditorText,
 } from "@finos/vuu-filters";
 import {
   ChangeEvent,
+  ReactNode,
   SyntheticEvent,
   useCallback,
   useMemo,
@@ -68,72 +69,71 @@ const longUsStates = [
   "Wyoming",
 ];
 
-function getTemplateDefaultValue({
-  defaultValue,
-  defaultSelected,
-  multiselect,
-}: Pick<
-  ComboBoxProps,
-  "defaultValue" | "defaultSelected" | "multiselect"
->): string {
-  if (multiselect) {
-    return "";
-  }
+const ExpandoContainer = ({ children }: { children: ReactNode }) => (
+  <div
+    style={{
+      alignItems: "center",
+      border: "solid 1px black",
+      display: "flex",
+      flexDirection: "column",
+      gap: 12,
+      padding: 12,
+      width: 300,
+    }}
+  >
+    <Input />
+    {children}
+    <Input />
+  </div>
+);
 
-  if (defaultValue) {
-    return String(defaultValue);
-  }
-
-  return defaultSelected?.[0] ?? "";
-}
-
-export const DefaultExpandoComboboxSalt = (props: ComboBoxProps) => {
-  const [value, setValue] = useState(getTemplateDefaultValue(props));
-
+const useExpandoCombo = () => {
+  const [value, setValue] = useState("");
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
-    console.log(`value = ${value}`);
     setValue(value);
   };
 
   const handleSelectionChange = (
-    event: SyntheticEvent,
+    _evt: SyntheticEvent,
     newSelected: string[],
   ) => {
-    props.onSelectionChange?.(event, newSelected);
-    if (props.multiselect) {
-      setValue("");
-      return;
-    }
     if (newSelected.length === 1) {
       setValue(newSelected[0]);
     } else {
       setValue("");
     }
   };
+  return {
+    onChange: handleChange,
+    onSelectionChange: handleSelectionChange,
+    value,
+  };
+};
+
+export const ExpandoComboboxStates = () => {
+  const { onChange, onSelectionChange, value } = useExpandoCombo();
 
   return (
-    <ExpandoCombobox
-      data-showcase-center
-      onChange={handleChange}
-      onSelectionChange={handleSelectionChange}
-      style={{ border: "solid 1px black", minWidth: 16 }}
-      value={value}
-    >
-      {longUsStates
-        .filter((state) =>
-          state.toLowerCase().includes(value.trim().toLowerCase()),
-        )
-        .map((state) => (
-          <Option value={state} key={state} />
-        ))}
-    </ExpandoCombobox>
+    <ExpandoContainer>
+      <ExpandoCombobox
+        onChange={onChange}
+        onSelectionChange={onSelectionChange}
+        value={value}
+      >
+        {longUsStates
+          .filter((state) =>
+            state.toLowerCase().includes(value.trim().toLowerCase()),
+          )
+          .map((state) => (
+            <Option value={state} key={state} />
+          ))}
+      </ExpandoCombobox>
+    </ExpandoContainer>
   );
 };
 
-export const DefaultExpandoComboBox = (
-  props: Partial<ComboBoxProps<ColumnDescriptor>>,
-) => {
+export const ExpandoComboBoxColumns = () => {
   const columns: ColumnDescriptor[] = useMemo(
     () => [
       { name: "ccy", serverDataType: "string" },
@@ -151,33 +151,28 @@ export const DefaultExpandoComboBox = (
     [],
   );
 
-  const handleSelectionChange = useCallback(
-    (_e: SyntheticEvent, [column]: ColumnDescriptor[]) => {
-      console.log(`select column ${column.name}`);
-    },
-    [],
-  );
+  const { onChange, onSelectionChange, value } = useExpandoCombo();
 
   return (
-    <ExpandoCombobox
-      {...props}
-      onSelectionChange={handleSelectionChange}
-      style={{ border: "solid 1px black", margin: 10, minWidth: 20 }}
-    >
-      {columns.map((column, i) => (
-        <Option key={i} value={column.name}>
-          {column.label ?? column.name}
-        </Option>
-      ))}
-    </ExpandoCombobox>
+    <ExpandoContainer>
+      <ExpandoCombobox
+        onChange={onChange}
+        onSelectionChange={onSelectionChange}
+        value={value}
+      >
+        {columns
+          .filter(({ name }) =>
+            name.toLowerCase().includes(value.trim().toLowerCase()),
+          )
+          .map(({ name, label = name }) => (
+            <Option value={label} key={name} />
+          ))}
+      </ExpandoCombobox>
+    </ExpandoContainer>
   );
 };
 
-export const DefaultExpandoComboBoxHighlightFirstRow = () => {
-  return <DefaultExpandoComboBox />;
-};
-
-export const DataBoundTextInputEmpty = () => {
+export const FilterClauseValueEditorTextInstrumentCurrency = () => {
   const tableSchema = getSchema("instruments");
 
   const column: ColumnDescriptor = useMemo(
@@ -196,18 +191,20 @@ export const DataBoundTextInputEmpty = () => {
 
   return (
     <LocalDataSourceProvider modules={["SIMUL"]}>
-      <FilterClauseValueEditorText
-        column={column}
-        onChangeValue={handleInputComplete}
-        operator="="
-        table={tableSchema.table}
-        value={value}
-      />
+      <ExpandoContainer>
+        <FilterClauseValueEditorText
+          column={column}
+          onChangeValue={handleInputComplete}
+          operator="="
+          table={tableSchema.table}
+          value={value}
+        />
+      </ExpandoContainer>
     </LocalDataSourceProvider>
   );
 };
 
-export const DataBoundTextInputLoaded = () => {
+export const FilterClauseValueEditorTextInstrumentCurrencyValue = () => {
   const tableSchema = getSchema("instruments");
 
   const column: ColumnDescriptor = useMemo(
@@ -226,13 +223,15 @@ export const DataBoundTextInputLoaded = () => {
 
   return (
     <LocalDataSourceProvider modules={["SIMUL"]}>
-      <FilterClauseValueEditorText
-        column={column}
-        onChangeValue={handleInputComplete}
-        operator="="
-        table={tableSchema.table}
-        value={value}
-      />
+      <ExpandoContainer>
+        <FilterClauseValueEditorText
+          column={column}
+          onChangeValue={handleInputComplete}
+          operator="="
+          table={tableSchema.table}
+          value={value}
+        />
+      </ExpandoContainer>
     </LocalDataSourceProvider>
   );
 };
@@ -248,14 +247,12 @@ export const MultiSelectExpandoComboBox = () => {
   }, []);
 
   return (
-    <ExpandoCombobox
-      multiselect
-      onSelectionChange={handleSelectionChange}
-      style={{ border: "solid 2px black", minWidth: 20 }}
-    >
-      {currencies.map((value, i) => (
-        <Option key={i} value={value} />
-      ))}
-    </ExpandoCombobox>
+    <ExpandoContainer>
+      <ExpandoCombobox multiselect onSelectionChange={handleSelectionChange}>
+        {currencies.map((value, i) => (
+          <Option key={i} value={value} />
+        ))}
+      </ExpandoCombobox>
+    </ExpandoContainer>
   );
 };
