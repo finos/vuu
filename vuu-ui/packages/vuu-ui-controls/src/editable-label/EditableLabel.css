@@ -7,14 +7,13 @@
 
   color: inherit;
   cursor: default;
-  display: flex;
+  display: inline-flex;
   flex-direction: column;
   font-size: var(--salt-text-fontSize);
   height: 100%;
   justify-content: center;
   letter-spacing: normal;
 
-  /* max-width: 170px; */
   overflow: hidden;
   padding-right: var(--editableLabel-padding);
   position: relative;
@@ -25,6 +24,16 @@
   &[data-embedded] {
     outline: none;
   }
+
+  .saltInput-activationIndicator {
+    display: none;
+  }
+
+  .saltInput-focused {
+    background-color: inherit;
+    outline: none;
+  }
+  
 }
 
 .vuuEditableLabel:before {
@@ -46,9 +55,6 @@
   width: calc(100% - 4px);
 }
 
-.vuuEditableLabel .saltInput-activationIndicator {
-  display: none;
-}
 
 .vuuEditableLabel-input {
   background-color: transparent;
@@ -63,6 +69,7 @@
   min-width: 0;
   outline: none;
   padding: 0;
+  width:0;
 }
 
 .vuuEditableLabel-label {

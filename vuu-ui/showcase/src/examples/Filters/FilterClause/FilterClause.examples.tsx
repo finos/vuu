@@ -2,9 +2,11 @@ import { LocalDataSourceProvider, getSchema } from "@finos/vuu-data-test";
 import { SchemaColumn, TableSchema } from "@finos/vuu-data-types";
 import { ColumnDescriptorsByName } from "@finos/vuu-filter-types";
 import { FilterClause, FilterClauseModel } from "@finos/vuu-filters";
-import { useMemo } from "react";
+import { ReactNode, useMemo } from "react";
+import { ColumnPicker } from "@finos/vuu-filters/src/filter-clause/ColumnPicker";
 
 import "./FilterClause.examples.css";
+import { Input } from "@salt-ds/core";
 
 const FilterClauseTemplate = ({
   filterClauseModel = new FilterClauseModel({}),
@@ -24,6 +26,36 @@ const FilterClauseTemplate = ({
         tableSchema={tableSchema}
       />
     </div>
+  );
+};
+
+const ExpandoContainer = ({ children }: { children: ReactNode }) => (
+  <div
+    style={{
+      alignItems: "center",
+      border: "solid 1px black",
+      display: "flex",
+      flexDirection: "column",
+      gap: 12,
+      padding: 12,
+      width: 300,
+    }}
+  >
+    <Input />
+    {children}
+    <Input />
+  </div>
+);
+
+export const DefaultColumnPicker = () => {
+  const columns = useMemo(() => getSchema("instruments").columns, []);
+  return (
+    <ExpandoContainer>
+      <ColumnPicker
+        columns={columns}
+        onSelect={(e, val) => console.log(`select ${val}`)}
+      />
+    </ExpandoContainer>
   );
 };
 
