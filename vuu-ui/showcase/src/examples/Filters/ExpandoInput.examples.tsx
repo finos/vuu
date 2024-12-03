@@ -1,13 +1,36 @@
 import { ExpandoInput } from "@finos/vuu-ui-controls";
-import { ChangeEvent, useCallback, useState } from "react";
+import { Input } from "@salt-ds/core";
+import { ChangeEvent, ReactNode, useCallback, useState } from "react";
+
+const ExpandoContainer = ({ children }: { children: ReactNode }) => (
+  <div
+    style={{
+      alignItems: "center",
+      border: "solid 1px black",
+      display: "flex",
+      flexDirection: "column",
+      gap: 12,
+      padding: 12,
+      width: 300,
+    }}
+  >
+    <Input />
+    {children}
+    <Input />
+  </div>
+);
 
 export const DefaultExpandoInput = () => {
-  const [value, setValuue] = useState("Enter value");
+  const [value, setValue] = useState("Initial value");
 
   const handleChange = useCallback((evt: ChangeEvent<HTMLInputElement>) => {
     const target = evt.target as HTMLInputElement;
-    setValuue(target.value);
+    setValue(target.value);
   }, []);
 
-  return <ExpandoInput onChange={handleChange} value={value} />;
+  return (
+    <ExpandoContainer>
+      <ExpandoInput onChange={handleChange} value={value} />
+    </ExpandoContainer>
+  );
 };

@@ -1,8 +1,8 @@
 .vuuExpandoCombobox {
   --expando-combobox-height: var(--vuuExpandoCombobox-height, var(--salt-size-base));
   --expando-combobox-fontSize: var(--vuuExpandoCombobox-fontSize, 12px);
-  --saltInput-paddingLeft: 0px;
-  --saltInput-paddingRight: 0px;
+  --saltPillInput-paddingLeft: 0px;
+  --saltPillInput-paddingRight: 0px;
 
   display: inline-flex;
   flex-direction: column;

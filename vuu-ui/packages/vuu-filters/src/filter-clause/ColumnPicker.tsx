@@ -2,6 +2,7 @@ import type { ColumnDescriptor } from "@finos/vuu-table-types";
 import { ExpandoCombobox } from "./ExpandoCombobox";
 import { ComboBoxProps, Option } from "@salt-ds/core";
 import { ForwardedRef, SyntheticEvent, forwardRef } from "react";
+import { useExpandoComboBox } from "./useExpandoCombobox";
 
 export type ColumnPickerProps = Pick<
   ComboBoxProps,
@@ -12,29 +13,36 @@ export type ColumnPickerProps = Pick<
 };
 
 export const ColumnPicker = forwardRef(function ColumnPicker(
-  { className, columns, inputProps, onSelect, value }: ColumnPickerProps,
-  forwardedRef: ForwardedRef<HTMLDivElement>
+  {
+    className,
+    columns,
+    inputProps,
+    onSelect,
+    value: valueProp,
+  }: ColumnPickerProps,
+  forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
-  const handleSelectionChange = (
-    evt: SyntheticEvent,
-    newSelected: string[]
-  ) => {
-    onSelect(evt, newSelected[0]);
-  };
+  const comboProps = useExpandoComboBox({
+    onSelect,
+    value: valueProp?.toString() ?? "",
+  });
 
   return (
     <ExpandoCombobox
+      {...comboProps}
       inputProps={inputProps}
       className={className}
       data-field="column"
-      onSelectionChange={handleSelectionChange}
       ref={forwardedRef}
       title="column"
-      value={value}
     >
-      {columns.map(({ name }) => (
-        <Option value={name} key={name} />
-      ))}
+      {columns
+        .filter(({ name }) =>
+          name.toLowerCase().includes(comboProps.value.toLowerCase()),
+        )
+        .map(({ name, label = name }) => (
+          <Option value={label} key={name} />
+        ))}
     </ExpandoCombobox>
   );
 });
