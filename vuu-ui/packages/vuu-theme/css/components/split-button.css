@@ -13,6 +13,9 @@
             border-radius: var(--trigger-border-radius);
         }
         
+        &.vuuFocusVisible {
+            --vuuButton-borderColor: transparent;
+        }
         
     }
 }
