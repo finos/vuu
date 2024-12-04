@@ -41,7 +41,9 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
           name.toLowerCase().includes(comboProps.value.toLowerCase()),
         )
         .map(({ name, label = name }) => (
-          <Option value={label} key={name} />
+          <Option value={name} key={name}>
+            {label}
+          </Option>
         ))}
     </ExpandoCombobox>
   );

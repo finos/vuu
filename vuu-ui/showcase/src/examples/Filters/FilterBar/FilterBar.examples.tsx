@@ -10,9 +10,10 @@ import {
   useRef,
   useState,
 } from "react";
-import type { DataSourceFilter } from "@finos/vuu-data-types";
+import type { DataSourceFilter, SchemaColumn } from "@finos/vuu-data-types";
 import { Input, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { LocalDataSourceProvider, getSchema } from "@finos/vuu-data-test";
+import { ColumnDescriptor } from "@finos/vuu-table-types";
 
 const lastUpdatedColumn = {
   name: "lastUpdated",
@@ -51,6 +52,7 @@ const FilterContainer = ({
 
 const DefaultFilterBarCore = ({
   QuickFilterProps,
+  columnDescriptors,
   filterState,
   onApplyFilter,
   onFilterDeleted,
@@ -61,8 +63,8 @@ const DefaultFilterBarCore = ({
   const [filterStruct, setFilterStruct] = useState<Filter | null>(null);
   const tableSchema = useMemo(() => getSchema("instruments"), []);
   const columns = useMemo(
-    () => [...tableSchema.columns, lastUpdatedColumn],
-    [tableSchema],
+    () => columnDescriptors ?? [...tableSchema.columns, lastUpdatedColumn],
+    [columnDescriptors, tableSchema.columns],
   );
 
   const handleApplyFilter = useCallback(
@@ -105,7 +107,7 @@ const DefaultFilterBarCore = ({
         onFilterDeleted={handleFilterDeleted}
         onFilterRenamed={handleFilterRenamed}
         onFilterStateChanged={handleFilterStateChange}
-        tableSchema={{ ...tableSchema, columns }}
+        tableSchema={{ ...tableSchema, columns: columns as SchemaColumn[] }}
         variant={variant}
       />
     </FilterContainer>
@@ -159,6 +161,30 @@ export const DefaultFilterBar = (props: Partial<FilterBarProps>) => (
     <FilterBarTemplate {...props} />
   </LocalDataSourceProvider>
 );
+
+export const DefaultFilterBarColumnLabels = (
+  props: Partial<FilterBarProps>,
+) => {
+  const columnDescriptors: ColumnDescriptor[] = [
+    { label: "BBG", name: "bbg", serverDataType: "string" },
+    { label: "Currency", name: "currency", serverDataType: "string" },
+    { label: "Description", name: "description", serverDataType: "string" },
+    { label: "Exchange", name: "exchange", serverDataType: "string" },
+    { label: "ISIN", name: "isin", serverDataType: "string" },
+    { label: "Lot size", name: "lotSize", serverDataType: "int" },
+    { label: "RIC", name: "ric", serverDataType: "string" },
+    { label: "Supported", name: "supported", serverDataType: "boolean" },
+    { label: "Wish list", name: "wishlist", serverDataType: "boolean" },
+    { label: "Last Updated", name: "lastUpdated", serverDataType: "long" },
+    { label: "Price", name: "price", serverDataType: "double" },
+    { label: "Date", name: "date", serverDataType: "long" },
+  ];
+  return (
+    <LocalDataSourceProvider modules={["SIMUL"]}>
+      <FilterBarTemplate {...props} columnDescriptors={columnDescriptors} />
+    </LocalDataSourceProvider>
+  );
+};
 
 export const FilterBarOneSimpleFilter = () => {
   return (
