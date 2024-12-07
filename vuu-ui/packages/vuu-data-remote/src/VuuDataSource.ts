@@ -150,10 +150,13 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     } else if (message.type === "enabled") {
       this.#status = "enabled";
     } else if (isDataSourceConfigMessage(message)) {
-      // This is an ACK for a CHANGE_VP message. Nothing to do here. We need
-      // to wait for data to be returned before we can consider the change
-      // to be in effect.
-      return;
+      // There is a downside to doing this here - although the viewport change may be ACKED,
+      // we may still experiece a delay before a data update arrives. However in some cases,
+      // there may be no data update (e.g lowest level of groupby removed, when no nodes
+      // expanded).
+      if (this.isAwaitingConfirmationOfConfigChange) {
+        this.confirmConfigChange();
+      }
     } else if (message.type === "debounce-begin") {
       this.optimize = "debounce";
     } else {
@@ -167,13 +170,6 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
       } else if (message.type === "viewport-clear") {
         this._size = 0;
         this.emit("resize", 0);
-      }
-      // This is used to remove any progress indication from the UI. We wait for actual data rather than
-      // just the CHANGE_VP_SUCCESS ack as there is often a delay between receiving the ack and the data.
-      // It may be a SIZE only message, eg in the case of removing a groupBy column from a multi-column
-      // groupby, where no tree nodes are expanded.
-      if (this.isAwaitingConfirmationOfConfigChange) {
-        this.confirmConfigChange();
       }
 
       if (isViewportMenusAction(message)) {
