@@ -2,15 +2,16 @@ package org.finos.vuu.core.table
 
 object MergeFunctions {
 
-  def mergeLeftToRight(update: RowWithData, data: RowWithData): RowWithData = {
+  def mergeLeftToRight(update: RowData, data: RowData): RowData = {
 
-    assert(update.key == data.key, s"check we're updating the same row ${update.key} != ${data.key}")
+    assert(update.key == data.key, s"check we're updating the same row ${update.key()} != ${data.key()}")
 
-    var newData: RowWithData = data
+    var newData: RowData = data
 
-    update.data.foreach({ case (field, value) => newData = newData.set(field, value) })
-
-    //println(">" + newData)
+    update match {
+      case update: RowWithData =>
+        update.data.foreach({ case (field, value) => newData = newData.set(field, value) })
+    }
 
     newData
   }

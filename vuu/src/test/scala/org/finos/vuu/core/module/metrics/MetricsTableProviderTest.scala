@@ -3,7 +3,7 @@ package org.finos.vuu.core.module.metrics
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.{LifeCycleComponentContext, LifecycleContainer, LifecycleEnabled}
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
-import org.finos.vuu.core.table.{DataTable, TableContainer}
+import org.finos.vuu.core.table.{DataTable, RowData, TableContainer}
 import org.finos.vuu.core.table.TableMockFactory._
 import org.finos.vuu.test.TestFriendlyJoinTableProvider
 import org.scalamock.scalatest.MockFactory
@@ -34,10 +34,10 @@ class MetricsTableProviderTest extends AnyFeatureSpec with Matchers with MockFac
 
       metricsTableProvider.runOnce()
 
-      (mockTable.processUpdate _).verify("instrumentsSessionTable_1", *, *).once
-      (mockTable.processUpdate _).verify("instrumentsSessionTable_2", *, *).once
-      (mockTable.processUpdate _).verify("fills_table", *, *).once
-      (mockTable.processUpdate _).verify("other", *, *).once
+      (mockTable.processUpdate(_: String, _: RowData, _: Long)).verify("instrumentsSessionTable_1", *, *).once
+      (mockTable.processUpdate(_: String, _: RowData, _: Long)).verify("instrumentsSessionTable_2", *, *).once
+      (mockTable.processUpdate(_: String, _: RowData, _: Long)).verify("fills_table", *, *).once
+      (mockTable.processUpdate(_: String, _: RowData, _: Long)).verify("other", *, *).once
     }
   }
 }
