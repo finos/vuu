@@ -44,6 +44,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
       expectedRows.foreach(row => (mockTable.processUpdate(_: String, _: RowData, _ : Long) ).verify(row.get(KEY_FIELD).toString, row, *).once)
     }
 
+
     Scenario("skips updating table when response is not parsable") {
       val mockClientResponse = "Some body"
       val mockBackend = SyncBackendStub.whenAnyRequest.thenRespond(mockClientResponse)
