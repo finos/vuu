@@ -12,7 +12,7 @@ import org.scalatest.matchers.should.Matchers
 
 class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
 
-  def getTableDef = {
+  def getTableDef: TableDef = {
       TableDef(
         name = "instruments",
         keyField = "ric",
