@@ -1,7 +1,7 @@
 package org.finos.vuu.example.rest.provider
 
 import org.finos.toolbox.json.JsonUtil
-import org.finos.vuu.core.table.{Columns, DataTable, RowWithData}
+import org.finos.vuu.core.table.{Columns, DataTable, RowData, RowWithData}
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.module.ModuleFactory.stringToString
@@ -29,7 +29,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
 
       getInstrumentsProvider(mockBackend).doStart()
 
-      (mockTable.processUpdate _).verify(expectedRow.get(KEY_FIELD).toString, expectedRow, *).once
+      (mockTable.processUpdate(_: String, _: RowData, _ : Long) ).verify(expectedRow.get(KEY_FIELD).toString, expectedRow, *).once
     }
 
     Scenario("can correctly make an external call, parse response and update the table WHEN server responds with multiple instruments") {
@@ -41,7 +41,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
 
       getInstrumentsProvider(mockBackend).doStart()
 
-      expectedRows.foreach(row => (mockTable.processUpdate _).verify(row.get(KEY_FIELD).toString, row, *).once)
+      expectedRows.foreach(row => (mockTable.processUpdate(_: String, _: RowData, _ : Long) ).verify(row.get(KEY_FIELD).toString, row, *).once)
     }
 
     Scenario("skips updating table when response is not parsable") {
@@ -50,7 +50,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
 
       getInstrumentsProvider(mockBackend).doStart()
 
-      (mockTable.processUpdate _).verify(*, *, *).never
+      (mockTable.processUpdate(_: String, _: RowData, _ : Long) ).verify(*, *, *).never
     }
 
     Scenario("skips updating table when response errors") {
@@ -58,7 +58,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
 
       getInstrumentsProvider(mockBackend).doStart()
 
-      (mockTable.processUpdate _).verify(*, *, *).never
+      (mockTable.processUpdate(_: String, _: RowData, _ : Long) ).verify(*, *, *).never
     }
   }
 
