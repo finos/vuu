@@ -2,23 +2,27 @@ package org.finos.vuu.test
 
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.index.IndexedField
+import org.finos.vuu.core.row.RowBuilder
 import org.finos.vuu.core.table.{Column, ColumnValueProvider, DataTable, KeyObserver, RowData, RowKeyUpdate, RowWithData, TableData, TablePrimaryKeys}
 import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
 
 class FakeInMemoryTable(val instanceName: String, val tableDef: TableDef) extends DataTable {
 
-  private val rowMap = scala.collection.mutable.HashMap.empty[String, RowWithData]
+  private val rowMap = scala.collection.mutable.HashMap.empty[String, RowData]
 
   override def name: String = instanceName
   override def getTableDef: TableDef = tableDef
 
-  override def processUpdate(rowKey: String, rowUpdate: RowWithData, timeStamp: Long): Unit =
+  override def newRow(key: String): RowBuilder = ???
+  override def rowBuilder: RowBuilder = ???
+
+  override def processUpdate(rowKey: String, rowUpdate: RowData, timeStamp: Long): Unit =
     rowMap += (rowKey -> rowUpdate)
 
   override def pullRow(key: String): RowData =
     rowMap.getOrElse(key, throw new Exception(s"Could not find row data for key $key in table $name"))
 
-  def pullAllRows() : List[RowWithData] =  rowMap.values.toList
+  def pullAllRows() : List[RowData] =  rowMap.values.toList
 
   override protected def createDataTableData(): TableData = ???
 
