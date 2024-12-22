@@ -1,8 +1,4 @@
-import {
-  asInteger,
-  type orientationType,
-  queryClosest,
-} from "@finos/vuu-utils";
+import { type orientationType } from "@finos/vuu-utils";
 
 type DragSourceDescriptor = {
   // TODO make optional default is self
@@ -16,108 +12,84 @@ export type DragSources = {
 };
 
 export type DropProps = {
-  fromId?: string;
-  fromIndex: number;
+  dragSource: DragSource;
   toId?: string;
   toIndex: number;
 };
 
 export type DropHandler = (dropProps: DropProps) => void;
 
-type DragContextConstructorProps = {
-  dragSources?: DragSources;
-  local?: boolean;
-  onDrop: DropHandler;
+/**
+ * provides details of a dragged component
+ */
+export type ComponentDragSource = {
+  id: string;
+  element: HTMLElement;
+  index: number;
+  label: string;
+  type: "component";
 };
 
-export interface IDragContext {
-  allowDrag: false | "local" | "remote" | "both";
-  beginDrag: (id: string, element: HTMLElement, index: number | string) => void;
-  canDropHere: (target: EventTarget | HTMLElement | null) => boolean;
-  draggedElement?: HTMLElement;
-  dragSources?: DragSources;
-  dragState?: {
-    element?: HTMLElement;
-    height: number;
-    sourceId: string;
-    width: number;
-  };
-  drop: (props: Pick<DropProps, "toId" | "toIndex">) => void;
-  dropped: boolean;
-  endDrag: (id: string) => void;
-  isDraggable: boolean;
-  isDragContainer: (id: string) => boolean;
-  registerDragDropParty: (id: string) => void;
-  withinDropZone: (target: EventTarget | HTMLElement | null) => boolean;
-}
+/**
+ * provides details of a template, to be used on drop to instantiate  a new component
+ */
+export type TemplateDragSource = {
+  componentJson: string;
+  element: HTMLElement;
+  index: number;
+  label: string;
+  type: "template";
+};
 
-export class DragContext implements IDragContext {
+export type DragSource = ComponentDragSource | TemplateDragSource;
+
+export const sourceIsComponent = (
+  source: DragSource,
+): source is ComponentDragSource => source.type === "component";
+
+export const sourceIsTemplate = (
+  source: DragSource,
+): source is TemplateDragSource => source.type === "template";
+
+/**
+ * This context is a global singleton. Even when DragDropProviders are nested,
+ * a single instance of this context object is always used.
+ */
+export class DragContext {
   #dropZoneCache = new Map<HTMLElement, boolean>();
-  #dragSourceId?: string;
+  #dragSource?: DragSource;
   #dragSources?: Map<string, DragSourceDescriptor>;
-  #dropHandler: DropHandler;
+  #dropHandler: DropHandler = () =>
+    console.log("no dropHandler has been attached");
   #dropped = false;
   #element?: HTMLElement;
-  #fromIndex: number | string | undefined;
   #height?: number;
-  #isLocal?: boolean;
+  #mouseX = -1;
+  #mouseY = -1;
   #width?: number;
-  constructor({
-    dragSources,
-    local = true,
-    onDrop,
-  }: DragContextConstructorProps) {
-    console.log(`DragContext local ${local} `);
-    this.#dropHandler = onDrop;
-    this.#isLocal = local;
-    if (dragSources) {
-      this.#dragSources = dragSources
-        ? this.buildDragSources(dragSources)
-        : undefined;
-    }
-  }
-  beginDrag(id: string, element: HTMLElement, index: number | string) {
-    const { height, width } = element.getBoundingClientRect();
-    this.#dragSourceId = id;
-    this.#dropped = false;
-    this.#fromIndex = index;
-    this.#element = element;
-    this.#height = height;
-    this.#width = width;
-  }
 
-  withinDropZone(target: EventTarget | HTMLElement | null) {
-    if (target) {
-      const el = target as HTMLElement;
-      let result = this.#dropZoneCache.get(el);
-      if (result === undefined) {
-        const dropSourceDescriptor = this.getDropTargets();
-        result =
-          dropSourceDescriptor !== undefined &&
-          queryClosest(
-            el,
-            dropSourceDescriptor.dropTargets.map((id) => `#${id}`).join(","),
-          ) !== null;
-        this.#dropZoneCache.set(el, result);
+  beginDrag(e: DragEvent, dragSource: DragSource) {
+    const { clientX: x, clientY: y, dataTransfer } = e;
+    if (dataTransfer) {
+      dataTransfer.effectAllowed = "move";
+      if (sourceIsTemplate(dragSource)) {
+        dataTransfer.setData("text/json", dragSource.componentJson);
+      } else {
+        dataTransfer.setData("text/plain", dragSource.id);
       }
-      return result;
-    } else {
-      return false;
-    }
-  }
-
-  canDropHere(target: EventTarget | HTMLElement | null) {
-    // TODO store both withinDropZOne and canDropn in same cache entities
-    if (target && this.withinDropZone(target)) {
-      return (target as HTMLElement).classList.contains("DragSpacer");
-    } else {
-      return false;
+      const { height, width } = dragSource.element.getBoundingClientRect();
+      this.#dragSource = dragSource;
+      this.#dropped = false;
+      this.#height = height;
+      this.#width = width;
+      this.#mouseX = x;
+      this.#mouseY = y;
     }
   }
 
   endDrag() {
     this.#dropZoneCache.clear();
-    this.#dragSourceId = undefined;
+    this.#dragSource = undefined;
     this.#element = undefined;
     this.#height = undefined;
     this.#width = undefined;
@@ -125,20 +97,19 @@ export class DragContext implements IDragContext {
 
   drop = ({ toId, toIndex }: Pick<DropProps, "toId" | "toIndex">) => {
     this.#dropped = true;
-    this.#dropHandler({
-      fromId: this.#dragSourceId,
-      fromIndex: this.fromIndex,
-      toId,
-      toIndex,
-    });
+    if (this.#dragSource) {
+      this.#dropHandler({
+        dragSource: this.#dragSource,
+        toId,
+        toIndex,
+      });
+    } else {
+      throw Error("[DragContextNext] drop, dragSource not defined");
+    }
   };
 
   registerDragDropParty(id: string) {
     console.log(`register dragdrop party ${id}`);
-  }
-
-  get allowDrag() {
-    return this.#isLocal ? "local" : false;
   }
 
   get draggedElement() {
@@ -152,75 +123,65 @@ export class DragContext implements IDragContext {
     }
   }
 
-  get dragState() {
-    const element = this.#element;
-    const height = this.#height;
-    const sourceId = this.#dragSourceId;
-    const width = this.#width;
-    if (element && height !== undefined && sourceId && width !== undefined) {
-      return {
-        element,
-        height,
-        sourceId,
-        width,
-      };
-    }
+  get dragSource() {
+    return this.#dragSource;
+  }
+
+  set dragSources(dragSources: DragSources) {
+    this.#dragSources = this.buildDragSources(dragSources);
+  }
+
+  // get dragState() {
+  //   if (
+  //     this.#dragSource &&
+  //     this.#height !== undefined &&
+  //     this.#width !== undefined
+  //   ) {
+  //     return {
+  //       element: this.#dragSource?.element,
+  //       height: this.#height,
+  //       sourceId: this.#dragSource.id,
+  //       width: this.#width,
+  //     };
+  //   }
+  // }
+
+  set dropHandler(dropHandler: DropHandler) {
+    this.#dropHandler = dropHandler;
   }
 
   get dropped() {
     return this.#dropped;
   }
 
-  get fromIndex() {
-    return asInteger(this.#fromIndex);
+  get x() {
+    return this.#mouseX;
+  }
+  set x(value: number) {
+    this.#mouseX = value;
   }
 
-  get id() {
-    return this.#dragSourceId;
+  get y() {
+    return this.#mouseY;
   }
-
-  get isDraggable() {
-    return this.allowDrag === "local";
+  set y(value: number) {
+    this.#mouseY = value;
   }
 
   private isDragSource(id: string) {
     return this.#dragSources?.has(id) ?? false;
   }
 
-  isDragContainer = (id: string) => {
-    return this.allowDrag === "local" || this.isDragSource(id);
-  };
-
-  private getDropTargets() {
-    if (this.#dragSourceId && this.#dragSources) {
-      return this.#dragSources.get(this.#dragSourceId);
-    } else {
-      throw Error(
-        "[DragContext] dropTargets, dragSourceId or dragSources undefined",
-      );
-    }
-  }
-
   private buildDragSources(dragSources: DragSources) {
     const sources = new Map<string, DragSourceDescriptor>();
     // TODO do we need the targets ?
-    // const targets = new Map<string, string[]>();
 
     for (const [
       sourceId,
       { dropTargets, orientation = "horizontal" },
     ] of Object.entries(dragSources)) {
       sources.set(sourceId, { dropTargets, orientation });
-      // for (const targetId of targetIds) {
-      //   const targetEntry = targets.get(targetId);
-      //   if (targetEntry) {
-      //     targetEntry.push(sourceId);
-      //   } else {
-      //     targets.set(targetId, [sourceId]);
-      //   }
-      // }
     }
-    // return [sources, targets];
     return sources;
   }
 }

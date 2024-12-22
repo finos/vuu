@@ -4,6 +4,7 @@ import { DragEvent, HTMLAttributes, useCallback } from "react";
 import { useDraggable, useGridLayoutDragStartHandler } from "@finos/vuu-layout";
 
 import "./GridPalette.css";
+import { DragSource } from "@finos/vuu-layout/src/drag-drop-next/DragContextNext";
 
 const classBase = "vuuGridPalette";
 
@@ -22,33 +23,42 @@ export const GridPalette = ({
   paletteItems,
   ...htmlAttributes
 }: GridPaletteProps) => {
-  const getPayload = useCallback(
-    (evt: DragEvent<Element>): [string, string] => {
+  const getDragSource = useCallback(
+    (evt: DragEvent<Element>): DragSource => {
       const draggedItem = queryClosest(evt.target, ".vuuGridPalette-item");
       if (draggedItem) {
         const index = parseInt(draggedItem.dataset.index ?? "-1");
         const item = paletteItems[index] as GridPaletteItem;
-        return ["text/json", JSON.stringify(item)];
+        return {
+          element: draggedItem,
+          index: -1,
+          componentJson: JSON.stringify(item),
+          label: "123",
+          type: "template",
+        };
       }
       throw Error("no palette item to provide payload");
     },
-    [paletteItems]
+    [paletteItems],
   );
 
   const onDragStart = useGridLayoutDragStartHandler();
-  const draggableProps = useDraggable({ getPayload, onDragStart });
+  const draggableProps = useDraggable({
+    getDragSource,
+    onDragStart,
+  });
 
   return (
     <div {...htmlAttributes} className={classBase} {...draggableProps}>
       {paletteItems.map((paletteItem, index) => (
-        <div
-          className={cx(`${classBase}-item`)}
-          data-item-id={paletteItem.id}
-          draggable
-          data-index={index}
-          key={index}
-        >
-          {paletteItem.label}
+        <div className={cx(`${classBase}-item`)} data-index={index} key={index}>
+          <div
+            data-item-id={paletteItem.id}
+            draggable
+            style={{ padding: "3px 8px" }}
+          >
+            {paletteItem.label}
+          </div>
         </div>
       ))}
     </div>

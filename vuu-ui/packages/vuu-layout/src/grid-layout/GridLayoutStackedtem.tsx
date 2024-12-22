@@ -20,19 +20,21 @@ import {
   TabNextTrigger,
   TabsNext,
 } from "@finos/vuu-ui-controls";
-import { moveItem } from "@finos/vuu-utils";
-import { DropHandler } from "../drag-drop-next/DragContextNext";
+import { moveItem, uuid } from "@finos/vuu-utils";
+import {
+  DropHandler,
+  sourceIsTemplate,
+} from "../drag-drop-next/DragContextNext";
 import { DragDropProviderNext as DragDropProvider } from "../drag-drop-next/DragDropProviderNext";
 import { getDefaultTabLabel } from "../layout-reducer";
 import { Stack } from "../stack";
 import gridLayoutCss from "./GridLayout.css";
 import { GridLayoutItemProps } from "./GridLayoutItem";
 import {
-  // useGridLayoutDragStartHandler,
   useGridLayoutProps,
+  useGridLayoutProviderDispatch,
 } from "./GridLayoutProvider";
 import gridSplitterCss from "./GridSplitter.css";
-// import { useDraggable } from "./useDraggable";
 
 const classBaseItem = "vuuGridLayoutStackedItem";
 
@@ -58,6 +60,9 @@ export class TabState {
   get activeTab() {
     return this.tabs[this.active];
   }
+  insertTab(newTab: string, index: number) {
+    return new TabState(0, this.tabs.toSpliced(index, 0, newTab));
+  }
   moveTab(fromIndex: number, toIndex: number) {
     return this.setTabs(moveItem(this.tabs, fromIndex, toIndex));
   }
@@ -65,7 +70,12 @@ export class TabState {
     return new TabState(this.tabs.indexOf(value), this.tabs);
   }
   setTabs(tabs: string[]) {
-    return new TabState(tabs.indexOf(this.activeTab), tabs);
+    if (tabs.includes(this.activeTab)) {
+      return new TabState(tabs.indexOf(this.activeTab), tabs);
+    } else {
+      const i = this.tabs.indexOf(this.activeTab);
+      return new TabState(Math.min(tabs.length - 1, i), tabs);
+    }
   }
 }
 
@@ -95,9 +105,11 @@ export const GridLayoutStackedItem = ({
     window: targetWindow,
   });
 
+  const dispatch = useGridLayoutProviderDispatch();
   const layoutProps = useGridLayoutProps(id);
-  // const onDragStart = useGridLayoutDragStartHandler();
 
+  // TODO need to add children to state OR DO WE ?
+  //
   const initialTabState = useMemo<TabState>(
     () =>
       new TabState(
@@ -118,9 +130,16 @@ export const GridLayoutStackedItem = ({
   );
 
   const handleDrop = useCallback<DropHandler>(
-    ({ fromIndex, toIndex }) =>
-      setTabState((state) => state.moveTab(fromIndex, toIndex)),
-    [],
+    ({ dragSource, toIndex }) => {
+      if (sourceIsTemplate(dragSource)) {
+        setTabState((state) => state.insertTab("New Tab", toIndex));
+        // TODO instantiate component and add to children array
+        dispatch({ type: "insert-tab", id, childId: uuid() });
+      } else {
+        setTabState((state) => state.moveTab(dragSource.index, toIndex));
+      }
+    },
+    [dispatch, id],
   );
 
   useLayoutEffect(
@@ -128,26 +147,8 @@ export const GridLayoutStackedItem = ({
     [active],
   );
 
-  // const getPayload = useCallback(
-  //   (evt: DragEvent<Element>): [string, string] => {
-  //     const draggedItem = queryClosest(evt.target, ".vuuGridLayoutItem");
-  //     if (draggedItem) {
-  //       return ["text/plain", draggedItem.id];
-  //     }
-  //     throw Error("GridLayoutItem no found");
-  //   },
-  //   [],
-  // );
-
   const useDropTargetHook = isDropTarget ? useAsDropTarget : useNotDropTarget;
   const droppableProps = useDropTargetHook();
-  // const draggableProps = useDraggable({
-  //   draggableClassName: classBaseItem,
-  //   getPayload,
-  //   onDragStart,
-  // });
-
-  // const TabstripProps = useMemo<TabstripProps>(() => ({}), []);
 
   const className = cx(classBaseItem, "vuuGridLayoutItem", {
     [`${classBaseItem}-resizeable-h`]: resizeable === "h",
@@ -185,6 +186,7 @@ export const GridLayoutStackedItem = ({
               <TabListNext
                 appearance="transparent"
                 className="vuuDragContainer"
+                data-drop-target={id}
                 id={tabsId}
               >
                 {tabState.tabs.map((label, index) => (

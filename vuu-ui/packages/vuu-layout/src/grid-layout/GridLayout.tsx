@@ -10,9 +10,11 @@ import {
   HTMLAttributes,
   ReactElement,
   useImperativeHandle,
+  useMemo,
 } from "react";
 import { GridLayoutItemProps } from "./GridLayoutItem";
 import { useGridSplitterResizing } from "./useGridSplitterResizing";
+import { GridModel, GridModelConstructorProps } from "./GridModel";
 
 const classBase = "vuuGridLayout";
 
@@ -40,15 +42,13 @@ export const GridSplitter = ({
   );
 };
 
-export interface GridLayoutProps extends HTMLAttributes<HTMLDivElement> {
+export interface GridLayoutProps
+  extends GridModelConstructorProps,
+    HTMLAttributes<HTMLDivElement> {
   children?:
     | ReactElement<GridLayoutItemProps>
     | ReactElement<GridLayoutItemProps>[];
-  colCount?: number;
-  cols?: (string | number)[];
   layoutAPI?: ForwardedRef<LayoutAPI>;
-  rowCount?: number;
-  rows?: (string | number)[];
 }
 
 export interface LayoutAPI {
@@ -72,6 +72,16 @@ export const GridLayout = ({
   style: styleProp,
   ...htmlAttributes
 }: GridLayoutProps) => {
+  const gridModel = useMemo(
+    () => new GridModel({ cols, colCount, rows, rowCount }),
+    [colCount, cols, rowCount, rows],
+  );
+
+  console.log(`GridModel
+    cols: [${gridModel.cols.join(",")}]
+    rows: [${gridModel.rows.join(",")}]
+    `);
+
   const {
     addGridColumn,
     addGridRow,

@@ -21,18 +21,25 @@
 }
 
 .vuuGridPalette {
-  [data-item-id="green"] {
+
+  .vuuGridPalette-item:has([data-item-id="green"]){
     background-color: green;
     color: white;
-  }
-  [data-item-id="red"] {
+  } 
+  .vuuGridPalette-item:has([data-item-id="red"]){
     background-color: red;
-  }
-  [data-item-id="yellow"] {
+    color: white;
+  } 
+  .vuuGridPalette-item:has([data-item-id="yellow"]){
     background-color: yellow;
-  }
-  [data-item-id="brown"] {
+  } 
+  .vuuGridPalette-item:has([data-item-id="brown"]){
     background-color: brown;
     color: white;
+  } 
+
+  [data-item-id] {
+    background-color: inherit;
+    color: inherit;
   }
 }

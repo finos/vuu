@@ -5,10 +5,13 @@ import {
   DragEvent,
   ReactElement,
   ReactNode,
+  useCallback,
   useContext,
 } from "react";
 import { GridLayoutDropHandler } from "./GridPlaceholder";
 import { GridLayoutDragStartHandler } from "./useDraggable";
+import { DragDropProviderNext } from "../drag-drop-next/DragDropProviderNext";
+import { DropHandler } from "../drag-drop-next/DragContextNext";
 
 export type GridStyle = Pick<
   CSSProperties,
@@ -22,8 +25,15 @@ export type GridLayoutCloseAction = {
   type: "close";
   id: string;
 };
+export type GridLayoutInsertTabAction = {
+  type: "insert-tab";
+  id: string;
+  childId: string;
+};
 
-export type GridLayoutAction = GridLayoutCloseAction;
+export type GridLayoutAction =
+  | GridLayoutCloseAction
+  | GridLayoutInsertTabAction;
 
 export type GridLayoutProviderDispatch = Dispatch<GridLayoutAction>;
 
@@ -81,6 +91,10 @@ export const GridLayoutProvider = (
     onDrop,
   } = props;
 
+  const handleDropNext = useCallback<DropHandler>(() => {
+    console.log("handleDropNext");
+  }, []);
+
   return (
     <GridLayoutProviderContext.Provider
       value={{
@@ -92,7 +106,9 @@ export const GridLayoutProvider = (
         version: 0,
       }}
     >
-      {children}
+      <DragDropProviderNext dragSources={{}} onDrop={handleDropNext}>
+        {children}
+      </DragDropProviderNext>
     </GridLayoutProviderContext.Provider>
   );
 };

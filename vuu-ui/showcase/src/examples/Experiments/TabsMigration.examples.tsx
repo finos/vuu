@@ -78,8 +78,8 @@ const TabstripTemplate = ({
     [tabs],
   );
   const handleDrop = useCallback<DropHandler>(
-    ({ fromIndex, toIndex }) => {
-      const newTabs = moveItem(tabs, fromIndex, toIndex);
+    ({ dragSource, toIndex }) => {
+      const newTabs = moveItem(tabs, dragSource.index, toIndex);
       setTabs(newTabs);
       setActiveTabIndex(newTabs.indexOf(activeTabRef.current));
     },
@@ -167,56 +167,94 @@ export const TabstripDragDrop = ({
 );
 
 const TabstripTemplate2 = () => {
-  const [ts1, ts2] = useMemo(
-    () => [
-      new TabState(0, [
+  const initialState = useMemo<Record<string, TabState>>(
+    () => ({
+      tabs1: new TabState(0, [
         "Home 1",
         "Transactions 1",
         "Loans 1",
         "Checks 1",
         "Liquidity 1",
       ]),
-      new TabState(0, [
+      tabs2: new TabState(0, [
         "Home 2",
         "Transactions 2",
         "Loans 2",
         "Checks 2",
         "Liquidity 2",
       ]),
-    ],
+    }),
     [],
   );
 
-  const [tabState1, setTabState1] = useState<TabState>(ts1);
-  const [tabState2, setTabState2] = useState<TabState>(ts2);
+  const [tabState, setTabState] =
+    useState<Record<string, TabState>>(initialState);
 
   const handleChange1 = useCallback(
-    (_: SyntheticEvent | null, value: string) => {
-      setTabState1((state) => state.setActiveTab(value));
-    },
+    (_: SyntheticEvent | null, value: string) =>
+      setTabState((state) => ({
+        ...state,
+        tabs1: state.tabs1.setActiveTab(value),
+      })),
     [],
   );
 
   const handleChange2 = useCallback(
-    (_: SyntheticEvent | null, value: string) => {
-      setTabState2((state) => state.setActiveTab(value));
-    },
+    (_: SyntheticEvent | null, value: string) =>
+      setTabState((state) => ({
+        ...state,
+        tabs2: state.tabs2.setActiveTab(value),
+      })),
     [],
   );
 
   const handleDrop = useCallback<DropHandler>(
-    ({ fromId, fromIndex, toId, toIndex }) => {
-      console.log(`handleMoveTabNext ${fromId}`);
-      if (fromId === "tabs1" && toId === "tabs1") {
-        setTabState1((state) => state.moveTab(fromIndex, toIndex));
-      } else if (fromId === "tabs2" && toId === "tabs2") {
-        setTabState2((state) => state.moveTab(fromIndex, toIndex));
+    ({ dragSource, toId, toIndex }) => {
+      if (dragSource.id === "tabs1" && toId === "tabs1") {
+        setTabState((state) => ({
+          ...state,
+          tabs1: state.tabs1.moveTab(dragSource.index, toIndex),
+        }));
+      } else if (dragSource.id === "tabs2" && toId === "tabs2") {
+        setTabState((state) => ({
+          ...state,
+          tabs2: state.tabs2.moveTab(dragSource.index, toIndex),
+        }));
       } else {
-        console.log("move one to t'other");
+        if (dragSource.id === "tabs1") {
+          setTabState(({ tabs1, tabs2 }) => {
+            const newTabs1 = tabs1.tabs.slice();
+            const newTabs2 = tabs2.tabs.slice();
+            const [movedTab] = newTabs1.splice(dragSource.index, 1);
+            newTabs2.splice(toIndex, 0, movedTab);
+            return {
+              tabs1: tabs1.setTabs(newTabs1),
+              tabs2: tabs2.setTabs(newTabs2),
+            };
+          });
+        } else {
+          setTabState(({ tabs1, tabs2 }) => {
+            const newTabs1 = tabs1.tabs.slice();
+            const newTabs2 = tabs2.tabs.slice();
+            const [movedTab] = newTabs2.splice(dragSource.index, 1);
+            newTabs1.splice(toIndex, 0, movedTab);
+            return {
+              tabs1: tabs1.setTabs(newTabs1),
+              tabs2: tabs2.setTabs(newTabs2),
+            };
+          });
+        }
       }
     },
     [],
   );
+
+  console.log(`
+    tabs1: ${tabState.tabs1.tabs.join(",")}
+    tabs2: ${tabState.tabs2.tabs.join(",")}
+    active1: ${tabState.tabs1.activeTab}
+    active2: ${tabState.tabs2.activeTab}
+    `);
 
   return (
     <DragDropProviderNext
@@ -238,7 +276,7 @@ const TabstripTemplate2 = () => {
             <div style={{ flex: 1 }}>
               <TabsNext
                 onChange={handleChange1}
-                value={tabState1.tabs[tabState1.active]}
+                value={tabState.tabs1.activeTab}
               >
                 <TabBar divider>
                   <TabListNext
@@ -246,7 +284,7 @@ const TabstripTemplate2 = () => {
                     className="vuuDragContainer"
                     id="tabs1"
                   >
-                    {tabState1.tabs.map((label, index) => (
+                    {tabState.tabs1.tabs.map((label, index) => (
                       <TabNext
                         className="vuuDraggableItem"
                         data-index={index}
@@ -264,7 +302,7 @@ const TabstripTemplate2 = () => {
             <div style={{ flex: 1 }}>
               <TabsNext
                 onChange={handleChange2}
-                value={tabState2.tabs[tabState2.active]}
+                value={tabState.tabs2.activeTab}
               >
                 <TabBar divider>
                   <TabListNext
@@ -272,7 +310,7 @@ const TabstripTemplate2 = () => {
                     className="vuuDragContainer"
                     id="tabs2"
                   >
-                    {tabState2.tabs.map((label, index) => (
+                    {tabState.tabs2.tabs.map((label, index) => (
                       <TabNext
                         className="vuuDraggableItem"
                         data-index={index}

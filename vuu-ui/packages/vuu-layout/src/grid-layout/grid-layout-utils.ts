@@ -299,15 +299,15 @@ export const adjustDistance = (moveBy: number, adjustmentAmount: number) => {
 };
 
 export const byColumnStart = (
-  item1: GridLayoutModelItem,
-  item2: GridLayoutModelItem,
+  item1: IGridLayoutModelItem,
+  item2: IGridLayoutModelItem,
 ) => {
   return item1.column.start - item2.column.start;
 };
 
 export const byRowStart = (
-  item1: GridLayoutModelItem,
-  item2: GridLayoutModelItem,
+  item1: IGridLayoutModelItem,
+  item2: IGridLayoutModelItem,
 ) => {
   return item1.row.start - item2.row.start;
 };
@@ -358,17 +358,17 @@ const gridLayoutPositionComparator = (
   return 0;
 };
 export const byColumnPosition = (
-  { column: pos1 }: GridLayoutModelItem,
-  { column: pos2 }: GridLayoutModelItem,
+  { column: pos1 }: IGridLayoutModelItem,
+  { column: pos2 }: IGridLayoutModelItem,
 ) => gridLayoutPositionComparator(pos1, pos2);
 
 export const byRowPosition = (
-  { row: pos1 }: GridLayoutModelItem,
-  { row: pos2 }: GridLayoutModelItem,
+  { row: pos1 }: IGridLayoutModelItem,
+  { row: pos2 }: IGridLayoutModelItem,
 ) => gridLayoutPositionComparator(pos1, pos2);
 
 export const itemsFillColumn = (
-  items: GridLayoutModelItem[],
+  items: IGridLayoutModelItem[],
   pos: GridLayoutModelPosition,
 ) => {
   const sortedItems = items.sort(byColumnPosition);
@@ -395,7 +395,7 @@ export const itemsFillColumn = (
   return false;
 };
 export const itemsFillRow = (
-  items: GridLayoutModelItem[],
+  items: IGridLayoutModelItem[],
   row: GridLayoutModelPosition,
 ) => {
   const sortedItems = items.sort(byRowPosition);

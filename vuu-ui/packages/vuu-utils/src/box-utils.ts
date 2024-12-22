@@ -16,7 +16,7 @@ export function boxContainsPoint(rect: rect, x: number, y: number) {
 
 export function getCenteredBox(
   { right, left, top, bottom }: rect,
-  pctSize: number
+  pctSize: number,
 ) {
   const pctOffset = (1 - pctSize) / 2;
   const w = (right - left) * pctOffset;
@@ -28,7 +28,7 @@ export function pointPositionWithinRect(
   x: number,
   y: number,
   rect: rect,
-  borderZone = 30
+  borderZone = 30,
 ) {
   const width = rect.right - rect.left;
   const height = rect.bottom - rect.top;
@@ -56,11 +56,14 @@ export function getPositionWithinBox(
   y: number,
   rect: rect,
   pctX: number,
-  pctY: number
+  pctY: number,
+  tabRect: rect | undefined,
 ): GridLayoutDropPosition {
   const centerBox = getCenteredBox(rect, 0.2);
   if (boxContainsPoint(centerBox, x, y)) {
     return "centre";
+  } else if (tabRect && boxContainsPoint(tabRect, x, y)) {
+    return "tabs";
   } else {
     const quadrant = `${pctY < 0.5 ? "north" : "south"}${
       pctX < 0.5 ? "west" : "east"

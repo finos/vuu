@@ -5,7 +5,12 @@
   padding: var(--vuu-grid-gap);
 
   &.vuuDragging {
-    .vuuDropTarget > * {
+    /* 
+      While we are dragging, do not let drag events fire on anything 
+      more granular than GridLayoutItem. Exception for vuuDraggableItem
+      is for Tabs 
+    */
+    [data-drop-target] > :not(.vuuDraggableItem) {
       pointer-events: none;
     }
   }
@@ -81,12 +86,6 @@
   inset: 0;
 }
 
-.vuuDropTarget-tabs {
-  --grid-dropzone-top: 0px;
-  --grid-dropzone-left: 0%;
-  --grid-dropzone-bottom: 0px;
-  --grid-dropzone-right: 0px;
-}
 
 .vuuDropTarget-east {
   --grid-dropzone-top: 0px;
@@ -120,10 +119,15 @@
   --grid-dropzone-right: 0px;
 }
 
-[data-drop-target]:after {
+.vuuDropTarget-centre:after,
+.vuuDropTarget-north:after, 
+.vuuDropTarget-east:after, 
+.vuuDropTarget-south:after,
+.vuuDropTarget-west:after {
   background-color: cornflowerblue;
   content: "";
   opacity: 0.3;
+  pointer-events: none;
   position: absolute;
   top: var(--grid-dropzone-top);
   right: var(--grid-dropzone-right);

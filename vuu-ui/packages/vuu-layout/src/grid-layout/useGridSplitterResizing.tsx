@@ -632,6 +632,8 @@ export const useGridSplitterResizing = ({
     (action) => {
       if (action.type === "close") {
         removeGridItem(action.id);
+      } else if (action.type === "insert-tab") {
+        console.log(`insert tab`);
       }
     },
     [removeGridItem],

@@ -22,6 +22,7 @@ import { useNotDropTarget } from "./useNotDropTarget";
 import { queryClosest } from "@finos/vuu-utils";
 import gridLayoutCss from "./GridLayout.css";
 import gridSplitterCss from "./GridSplitter.css";
+import { DragSource } from "../drag-drop-next/DragContextNext";
 
 const classBaseItem = "vuuGridLayoutItem";
 
@@ -43,11 +44,28 @@ export interface GridLayoutItemProps
   };
 }
 
+const getDragSourceWithElement = (
+  evt: DragEvent<Element>,
+): DragSource & { element: HTMLElement } => {
+  const draggedItem = queryClosest(evt.target, ".vuuGridLayoutItem");
+  if (draggedItem) {
+    return {
+      element: draggedItem,
+      id: draggedItem.id,
+      index: -1,
+      label: "no label",
+      type: "component",
+    };
+  }
+  throw Error("GridLayoutItem no found");
+};
+
 export const GridLayoutItem = ({
   children,
   className: classNameProp,
   header,
   id,
+  // TODO is it ever false ?
   isDropTarget = true,
   resizeable,
   style: styleProp,
@@ -68,6 +86,8 @@ export const GridLayoutItem = ({
 
   const dispatch = useGridLayoutProviderDispatch();
   const layoutProps = useGridLayoutProps(id);
+
+  // why can't the hook that processes this make this call ?
   const onDragStart = useGridLayoutDragStartHandler();
 
   const onClose = useCallback<MouseEventHandler<HTMLButtonElement>>(
@@ -78,22 +98,11 @@ export const GridLayoutItem = ({
     [dispatch, id],
   );
 
-  const getPayload = useCallback(
-    (evt: DragEvent<Element>): [string, string] => {
-      const draggedItem = queryClosest(evt.target, ".vuuGridLayoutItem");
-      if (draggedItem) {
-        return ["text/plain", draggedItem.id];
-      }
-      throw Error("GridLayoutItem no found");
-    },
-    [],
-  );
-
   const useDropTargetHook = isDropTarget ? useAsDropTarget : useNotDropTarget;
   const droppableProps = useDropTargetHook();
   const draggableProps = useDraggable({
     draggableClassName: classBaseItem,
-    getPayload,
+    getDragSource: getDragSourceWithElement,
     onDragStart,
   });
 
@@ -112,8 +121,8 @@ export const GridLayoutItem = ({
   return (
     <div
       {...htmlAttributes}
-      {...droppableProps}
       {...draggableProps}
+      {...droppableProps}
       className={cx(className)}
       id={id}
       key={id}

@@ -28,71 +28,58 @@ const getDataIndex = (el: HTMLElement | null) =>
 const getDropTargetIndex = (target: EventTarget | HTMLElement | null) =>
   getDataIndex(getDraggableEl(target));
 
-type DragState = {
-  draggedIndex: number;
-  dragImage: HTMLElement | undefined;
-  x: number;
-  y: number;
-};
-
 export function initializeDragContainer(
   containerEl: HTMLElement | null,
   dragContext: DragContext,
   orientation: orientationType = "horizontal",
 ) {
-  const dragState: DragState = {
-    draggedIndex: -1,
-    dragImage: undefined,
-    x: -1,
-    y: -1,
-  };
   const dragId = containerEl?.id ?? `drag-container-${++dragContainerInc}`;
   const spaceMan = new SpaceMan(dragId, orientation);
   spaceMan.setDragContainer(containerEl);
 
   const onDragStart = (e: DragEvent) => {
-    console.log(`DragStart`);
-
-    const draggableEl = getDraggableEl(e.target);
-    if (draggableEl) {
-      const index = getDataIndex(draggableEl);
+    const element = getDraggableEl(e.target);
+    if (element) {
+      const index = getDataIndex(element);
       e.stopPropagation();
-      dragState.draggedIndex = index;
-      dragState.x = e.clientX;
-      if (e.dataTransfer) {
-        e.dataTransfer.setData("text/plain", String(index));
-        e.dataTransfer.effectAllowed = "move";
-      }
       spaceMan.dragStart(index);
-      // this should be where we store the dragItem, then all
-      // SpaceMan instances will have access to it. Right now,
-      // we store it on every SpaceMan
-      dragContext.beginDrag(dragId, draggableEl, index);
+      dragContext.beginDrag(e, {
+        id: dragId,
+        element,
+        index,
+        label: dragId,
+        type: "component",
+      });
     }
   };
 
   const onDragEnter = (e: DragEvent) => {
-    if (dragContext.withinDropZone(e.target)) {
-      e.stopPropagation();
-      if (isDraggable(e.target)) {
-        console.log("onDragEnter");
-        const index = getDropTargetIndex(e.target);
-        const { draggedIndex, x, y } = dragState;
-        if (index !== -1 && index !== draggedIndex) {
-          const direction =
-            orientation === "horizontal"
-              ? e.clientX > x
-                ? "fwd"
-                : "bwd"
-              : e.clientY > y
-                ? "fwd"
-                : "bwd";
-          spaceMan.dragEnter(index, direction);
-        }
+    console.log(`[drag-drop-listeners] onDragEnter`);
+    // don't think we need this check. DragEnter wouldn't be firing
+    // if we weren't in a drop zone
+    e.stopPropagation();
+    if (isDraggable(e.target)) {
+      console.log("onDragEnter");
+      const index = getDropTargetIndex(e.target);
+      const { dragSource, x, y } = dragContext;
+      if (index !== -1 && index !== dragSource?.index) {
+        const direction =
+          orientation === "horizontal"
+            ? e.clientX > x
+              ? "fwd"
+              : "bwd"
+            : e.clientY > y
+              ? "fwd"
+              : "bwd";
+        spaceMan.dragEnter(index, direction);
       }
     }
-    dragState.x = e.clientX;
-    dragState.y = e.clientY;
+    dragContext.x = e.clientX;
+    dragContext.y = e.clientY;
+  };
+
+  const onDragOver = (e: DragEvent) => {
+    e.preventDefault();
   };
 
   const onDragLeave = (e: DragEvent) => {
@@ -102,13 +89,10 @@ export function initializeDragContainer(
     }
   };
 
-  const onDragOver = (e: DragEvent) => {
-    if (dragContext.canDropHere(e.target)) {
-      e.preventDefault();
-    }
-  };
-
-  const onDrop = async ({ clientX, clientY }: DragEvent) => {
+  const onDrop = async (e: DragEvent) => {
+    const { clientX, clientY } = e;
+    e.stopPropagation();
+    console.log("[drag-drop-listeners] drop");
     await spaceMan.drop(clientX, clientY);
     dragContext.drop({
       toId: dragId,
@@ -116,6 +100,7 @@ export function initializeDragContainer(
     });
   };
   const onDragEnd = () => {
+    console.log("dragend");
     if (!dragContext.dropped) {
       spaceMan.dragEnd();
     }

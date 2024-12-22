@@ -105,61 +105,18 @@ export class SpaceMan {
     }
   }
 
-  insertSpacer(index: number | string, size: number) {
-    if (this.#state === "initial" || this.#state === "away") {
-      const item = this.#dragContainer?.querySelector(
-        `[data-index="${index}"]`,
-      );
-      if (item) {
-        this.#dragSize = size;
-        item?.before(this.#spacer1);
-        this.#state = "1spacer";
-        this.setSpacerSizes(size);
-      } else {
-        throw Error(`[SpaceMan] inject no item at index[${index}]`);
-      }
-    } else {
-      throw Error(
-        'can only inject drag content when state is "initial" or "away"',
-      );
-    }
-  }
-
-  private freezeContainer() {
-    if (this.#dragContainer) {
-      const { width } = this.#dragContainer.getBoundingClientRect();
-      this.#dragContainer.style.width = `${width}px`;
-    }
-  }
-  private unfreezeContainer() {
-    if (this.#dragContainer) {
-      this.#dragContainer.style.width = "";
-    }
-  }
-
-  // If the index is same as existing value, direction has changed, an
-  // offset will apply, depending on direction.
-  private getDropTargetIndex(index: number, direction: Direction) {
-    if (index === this.#toIndex) {
-      if (direction === "fwd") {
-        return index + 1;
-      } else {
-        return index - 1;
-      }
-    } else {
-      return index;
-    }
-  }
-
   dragEnter(index: number, direction: Direction) {
     const propertyName = this.#sizeProperty;
     if (index === this.#toIndex && direction === this.#toDirection) {
       return;
     }
+    // we need to use ID rather than index, index is only meaningful
+    // within a tabs/list drag operation
     const dropTargetIndex = this.getDropTargetIndex(index, direction);
 
     if (this.#withinDragContainer === false) {
       this.#toIndex =
+        // we will not have #fromIndex if dragged item is from another container
         dropTargetIndex > asInteger(this.#fromIndex, Number.MAX_SAFE_INTEGER)
           ? dropTargetIndex - 1
           : dropTargetIndex;
@@ -230,6 +187,52 @@ export class SpaceMan {
       } else {
         throw Error(`[SpaceMan] dragEnter no item at index[${index}]`);
       }
+    }
+  }
+
+  insertSpacer(index: number | string, size: number) {
+    if (this.#state === "initial" || this.#state === "away") {
+      const item = this.#dragContainer?.querySelector(
+        `[data-index="${index}"]`,
+      );
+      if (item) {
+        this.#dragSize = size;
+        item?.before(this.#spacer1);
+        this.#state = "1spacer";
+        this.setSpacerSizes(size);
+      } else {
+        throw Error(`[SpaceMan] inject no item at index[${index}]`);
+      }
+    } else {
+      throw Error(
+        'can only inject drag content when state is "initial" or "away"',
+      );
+    }
+  }
+
+  private freezeContainer() {
+    if (this.#dragContainer) {
+      const { width } = this.#dragContainer.getBoundingClientRect();
+      this.#dragContainer.style.width = `${width}px`;
+    }
+  }
+  private unfreezeContainer() {
+    if (this.#dragContainer) {
+      this.#dragContainer.style.width = "";
+    }
+  }
+
+  // If the index is same as existing value, direction has changed, an
+  // offset will apply, depending on direction.
+  private getDropTargetIndex(index: number, direction: Direction) {
+    if (index === this.#toIndex) {
+      if (direction === "fwd") {
+        return index + 1;
+      } else {
+        return index - 1;
+      }
+    } else {
+      return index;
     }
   }
 

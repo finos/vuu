@@ -20,102 +20,161 @@ const removedropTargetPositionClassName = (el: HTMLElement) => {
   });
 };
 
+/**
+ * The dropTarget is usually the element with data-drop-target attribute. It can
+ * store an IDREF to another element.
+ */
+const getDropTarget = (target: EventTarget) => {
+  let dropTargetEl = queryClosest(target, dropTargetQuery);
+  if (dropTargetEl) {
+    const { dropTarget } = dropTargetEl.dataset;
+    switch (dropTarget) {
+      case "true":
+        return dropTargetEl;
+      case undefined:
+        throw Error(
+          "[useAsDropTarget] getDropTarget, called on element without data-drop-target attribute",
+        );
+      default: {
+        dropTargetEl = document.getElementById(dropTarget) as HTMLElement;
+        if (dropTargetEl) {
+          return dropTargetEl;
+        } else {
+          throw Error(
+            `[useAsDropTarget] getDropTarget, data-drop-target ${dropTarget} not found`,
+          );
+        }
+      }
+    }
+  } else {
+    return null;
+  }
+};
+
+type DropTargetState = {
+  mousePos: MousePosition;
+  position: GridLayoutDropPosition | undefined;
+  rect: rect;
+  tabRect: rect | undefined;
+  targetEl: HTMLElement | undefined;
+};
+
+const NullRect: rect = {
+  bottom: -1,
+  left: -1,
+  right: -1,
+  top: -1,
+};
+
+const NULL_STATE: DropTargetState = {
+  mousePos: { clientX: -1, clientY: -1 },
+  position: undefined,
+  rect: NullRect,
+  tabRect: undefined,
+  targetEl: undefined,
+};
+
 export const useAsDropTarget = () => {
-  const dropTargetRef = useRef<HTMLElement>();
-  const positionRef = useRef<GridLayoutDropPosition>();
-  const mousePosRef = useRef<MousePosition>({ clientX: -1, clientY: -1 });
-  const targetRectRef = useRef<rect>({
-    bottom: -1,
-    left: -1,
-    right: -1,
-    top: -1,
-  });
+  const dropTargetStateRef = useRef<DropTargetState>(NULL_STATE);
 
   const drop = useGridLayoutDropHandler();
 
   const onDragEnter = useCallback<DragEventHandler>((evt) => {
-    console.log(`[useAsDropTarget] onDragEnter GridLayout`);
-    const target = queryClosest(evt.target, dropTargetQuery);
-    if (target !== dropTargetRef.current) {
+    const target = getDropTarget(evt.target);
+    if (target !== dropTargetStateRef.current.targetEl) {
       if (target) {
-        // TODO bump this to StackContainer of over stack content
-        dropTargetRef.current = target;
+        dropTargetStateRef.current.targetEl = target;
+        const { rect } = dropTargetStateRef.current;
         const { bottom, left, right, top } = target.getBoundingClientRect();
-        targetRectRef.current.bottom = bottom;
-        targetRectRef.current.left = left;
-        targetRectRef.current.right = right;
-        targetRectRef.current.top = top;
+        rect.bottom = bottom;
+        rect.left = left;
+        rect.right = right;
+        rect.top = top;
+        if (target.classList.contains("vuuGridLayoutStackedItem")) {
+          const tabsList = target.querySelector('[role="tablist"]');
+          if (tabsList) {
+            const { bottom, left, right, top } =
+              tabsList.getBoundingClientRect();
+            dropTargetStateRef.current.tabRect = {
+              bottom,
+              left,
+              right,
+              top,
+            };
+          } else {
+            throw Error(
+              "[useAsDropTarget] onDragEnter, no tablist within GridLayoutStackedItem",
+            );
+          }
+        } else {
+          dropTargetStateRef.current.tabRect = undefined;
+        }
       }
-    }
-  }, []);
-
-  const onDragLeave = useCallback<DragEventHandler>((evt) => {
-    console.log(`onDragLeave GridLayout`);
-
-    const target = queryClosest(evt.target, dropTargetQuery);
-    if (target === evt.target) {
-      if (target === dropTargetRef.current) {
-        dropTargetRef.current = undefined;
-        positionRef.current = undefined;
-      }
-
-      removedropTargetPositionClassName(target);
     }
   }, []);
 
   // We could replace this with mouse move to reduce event rate
   const onDragOver = useCallback<DragEventHandler>((evt) => {
-    const target = queryClosest(evt.target, dropTargetQuery);
+    const target = getDropTarget(evt.target);
     if (target) {
       evt.preventDefault();
+      // TODO store dropTarget and rect and tabRect in same ref
+      if (target === dropTargetStateRef.current.targetEl) {
+        const { clientX, clientY } = evt;
+        const { mousePos } = dropTargetStateRef.current;
 
-      if (target === dropTargetRef.current) {
-        if (target.classList.contains(`${dropTargetClassName}-tabs`)) {
-          removedropTargetPositionClassName(target);
-          dropTargetRef.current.classList.add(`${dropTargetClassName}-tabs`);
-          positionRef.current = "tabs";
-        } else {
-          const { clientX, clientY } = evt;
-          const { current: mousePos } = mousePosRef;
+        if (clientX !== mousePos.clientX || clientY !== mousePos.clientY) {
+          mousePos.clientX = clientX;
+          mousePos.clientY = clientY;
 
-          if (clientX !== mousePos.clientX || clientY !== mousePos.clientY) {
-            mousePos.clientX = clientX;
-            mousePos.clientY = clientY;
+          const { rect, tabRect } = dropTargetStateRef.current;
 
-            const { current: rect } = targetRectRef;
+          const { pctX, pctY /*, closeToTheEdge */ } = pointPositionWithinRect(
+            clientX,
+            clientY,
+            rect,
+          );
+          const position = getPositionWithinBox(
+            clientX,
+            clientY,
+            rect,
+            pctX,
+            pctY,
+            tabRect,
+          );
+          const { position: lastPosition } = dropTargetStateRef.current;
 
-            const { pctX, pctY /*, closeToTheEdge */ } =
-              pointPositionWithinRect(clientX, clientY, rect);
-
-            const position = getPositionWithinBox(
-              clientX,
-              clientY,
-              rect,
-              pctX,
-              pctY,
-            );
-            const { current: lastPosition } = positionRef;
-
-            if (position !== lastPosition) {
-              if (dropTargetRef.current) {
-                removedropTargetPositionClassName(target);
-                dropTargetRef.current.classList.add(
-                  `${dropTargetClassName}-${position}`,
-                );
-              }
-              positionRef.current = position;
+          if (position !== lastPosition) {
+            if (dropTargetStateRef.current.targetEl) {
+              removedropTargetPositionClassName(target);
+              dropTargetStateRef.current.targetEl.classList.add(
+                `${dropTargetClassName}-${position}`,
+              );
             }
+            dropTargetStateRef.current.position = position;
           }
         }
       }
     }
   }, []);
 
+  const onDragLeave = useCallback<DragEventHandler>((evt) => {
+    const target = getDropTarget(evt.target);
+    if (target === evt.target) {
+      if (target === dropTargetStateRef.current.targetEl) {
+        dropTargetStateRef.current.targetEl = undefined;
+        dropTargetStateRef.current.position = undefined;
+      }
+
+      removedropTargetPositionClassName(target);
+    }
+  }, []);
+
   const onDrop = useCallback<DragEventHandler>(
     (evt) => {
-      console.log(`drop`);
-      let target = queryClosest(evt.target, dropTargetQuery);
-      if (target && positionRef.current) {
+      console.log(`[useAsDropTarget] drop`);
+      let target = getDropTarget(evt.target);
+      if (target && dropTargetStateRef.current.position) {
         removedropTargetPositionClassName(target);
         let { id } = target;
         if (!id) {
@@ -128,18 +187,18 @@ export const useAsDropTarget = () => {
 
         const jsonData = evt.dataTransfer.getData("text/json");
         if (jsonData) {
-          drop(id, JSON.parse(jsonData), positionRef.current);
+          drop(id, JSON.parse(jsonData), dropTargetStateRef.current.position);
         } else {
           const dropId = evt.dataTransfer.getData("text/plain");
           if (dropId) {
-            drop(id, dropId, positionRef.current);
+            drop(id, dropId, dropTargetStateRef.current.position);
           } else {
             throw Error("onDrop no payload to drop");
           }
         }
 
-        dropTargetRef.current = undefined;
-        positionRef.current = undefined;
+        dropTargetStateRef.current.targetEl = undefined;
+        dropTargetStateRef.current.position = undefined;
       }
     },
     [drop],

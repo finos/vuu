@@ -1,24 +1,14 @@
-import {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useMemo,
-} from "react";
+import { createContext, ReactNode, useContext, useEffect } from "react";
 import { initializeDragContainer } from "./drag-drop-listeners";
 import {
   DragContext,
   type DragSources,
   type DropHandler,
-  type IDragContext,
 } from "./DragContextNext";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 
 import dragDropProviderCss from "./DragDropProviderNext.css";
-
-const unconfiguredRegistrationCall = () =>
-  console.log(`have you forgotten to provide a DragDrop Provider ?`);
 
 export type DragDropRegistrationFn = (id: string) => void;
 export type DragDropBeginDrag = (
@@ -27,27 +17,11 @@ export type DragDropBeginDrag = (
 ) => void;
 export type DragDropEndDrag = (id: string) => void;
 
-export const isDraggable = (dragContext: IDragContext) =>
-  dragContext.allowDrag === "local" || dragContext.allowDrag === "both";
-
-const DragDropContext = createContext<IDragContext>({
-  allowDrag: false,
-  beginDrag: unconfiguredRegistrationCall,
-  canDropHere: () => false,
-  endDrag: unconfiguredRegistrationCall,
-  dragState: { element: undefined, height: -1, sourceId: "", width: -1 },
-  drop: unconfiguredRegistrationCall,
-  dropped: false,
-  isDraggable: false,
-  isDragContainer: () => false,
-  registerDragDropParty: unconfiguredRegistrationCall,
-  withinDropZone: () => false,
-});
+const DragDropContext = createContext<DragContext>(new DragContext());
 
 export interface DragDropNextProviderProps {
   children: ReactNode;
-  dragSources?: DragSources;
-  local?: boolean;
+  dragSources: DragSources;
   onDrop: DropHandler;
 }
 
@@ -61,7 +35,6 @@ export type MeasuredTarget = {
 export const DragDropProviderNext = ({
   children,
   dragSources,
-  local,
   onDrop,
 }: DragDropNextProviderProps) => {
   const targetWindow = useWindow();
@@ -71,10 +44,10 @@ export const DragDropProviderNext = ({
     window: targetWindow,
   });
 
-  const dragContext = useMemo(
-    () => new DragContext({ dragSources, local, onDrop }),
-    [dragSources, local, onDrop],
-  );
+  const dragContext = useDragContext();
+  dragContext.dragSources = dragSources;
+  // perhaps it should be an event emitter
+  dragContext.dropHandler = onDrop;
 
   useEffect(() => {
     const cleanupCallbacks: Array<() => void> = [];

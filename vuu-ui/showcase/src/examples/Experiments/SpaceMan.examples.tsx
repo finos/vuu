@@ -92,8 +92,8 @@ const SingleDragContainerTemplate = ({
   const [items, setItems] = useState(initialItems);
   const dragContainerRef = useRef<HTMLDivElement>(null);
 
-  const onDrop: DropHandler = ({ fromIndex, toIndex }) => {
-    setItems((items) => moveItem(items, fromIndex, toIndex));
+  const onDrop: DropHandler = ({ dragSource, toIndex }) => {
+    setItems((items) => moveItem(items, dragSource.index, toIndex));
   };
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
@@ -157,25 +157,27 @@ const CrossContainerDragTemplate = ({
   const [items1, setItems1] = useState(initialItems.dc1);
   const [items2, setItems2] = useState(initialItems.dc2);
 
-  const onDrop: DropHandler = ({ fromId, toId, fromIndex, toIndex }) => {
-    console.log(`drag from #${fromId} [${fromIndex}] to #${toId} [${toIndex}]`);
-    if (fromId === toId) {
-      if (fromId === "dc1") {
-        setItems1((items) => moveItem(items, fromIndex, toIndex));
+  const onDrop: DropHandler = ({ dragSource, toId, toIndex }) => {
+    console.log(
+      `drag from #${dragSource.id} [${dragSource.index}] to #${toId} [${toIndex}]`,
+    );
+    if (dragSource.id === toId) {
+      if (dragSource.id === "dc1") {
+        setItems1((items) => moveItem(items, dragSource.index, toIndex));
       } else {
-        setItems2((items) => moveItem(items, fromIndex, toIndex));
+        setItems2((items) => moveItem(items, dragSource.index, toIndex));
       }
-    } else if (fromId === "dc1") {
+    } else if (dragSource.id === "dc1") {
       const newItems1 = items1.slice();
       const newItems2 = items2.slice();
-      const [movedItem] = newItems1.splice(fromIndex, 1);
+      const [movedItem] = newItems1.splice(dragSource.index, 1);
       setItems1(newItems1);
       newItems2.splice(toIndex, 0, movedItem);
       setItems2(newItems2);
     } else {
       const newItems1 = items1.slice();
       const newItems2 = items2.slice();
-      const [movedItem] = newItems2.splice(fromIndex, 1);
+      const [movedItem] = newItems2.splice(dragSource.index, 1);
       setItems2(newItems2);
       newItems1.splice(toIndex, 0, movedItem);
       setItems1(newItems1);
@@ -240,8 +242,8 @@ export const TabsNextDragDrop = () => {
     [tabs],
   );
 
-  const onDrop: DropHandler = ({ fromIndex, toIndex }) => {
-    const newTabs = moveItem(tabs, fromIndex, toIndex);
+  const onDrop: DropHandler = ({ dragSource, toIndex }) => {
+    const newTabs = moveItem(tabs, dragSource.index, toIndex);
     setTabs(newTabs);
     setActiveTabIndex(newTabs.indexOf(activeTabRef.current));
   };
@@ -279,8 +281,8 @@ export const TabsNextDragDrop = () => {
 export const ListBoxDragDrop = () => {
   const [items, setItems] = useState(usa_10_states);
 
-  const onDrop: DropHandler = ({ fromIndex, toIndex }) => {
-    const newItems = moveItem(items, fromIndex, toIndex);
+  const onDrop: DropHandler = ({ dragSource, toIndex }) => {
+    const newItems = moveItem(items, dragSource.index, toIndex);
     setItems(newItems);
   };
 
@@ -314,8 +316,8 @@ export const ListBoxDragDrop = () => {
 export const ScrollingListBoxDragDrop = () => {
   const [items, setItems] = useState(usa_20_states);
 
-  const onDrop: DropHandler = ({ fromIndex, toIndex }) => {
-    const newItems = moveItem(items, fromIndex, toIndex);
+  const onDrop: DropHandler = ({ dragSource, toIndex }) => {
+    const newItems = moveItem(items, dragSource.index, toIndex);
     setItems(newItems);
   };
 
