@@ -55,6 +55,42 @@ export const TwoByTwoGrid = () => {
     layoutApi.current?.removeGridColumn(columnIndex);
   }, []);
 
+  const getTrackIndex = (grid: HTMLElement, x: number, y: number) => {
+    const { left, top } = grid.getBoundingClientRect();
+    const columns = getComputedStyle(grid)
+      .getPropertyValue("grid-template-columns")
+      .split(" ")
+      .map((value) => parseInt(value, 10));
+    const rows = getComputedStyle(grid)
+      .getPropertyValue("grid-template-rows")
+      .split(" ")
+      .map((value) => parseInt(value, 10));
+
+    let columnIndex = 0;
+    let rowIndex = 0;
+
+    let posLeft = left;
+    let posTop = top;
+
+    for (let i = 0; i < columns.length; i++) {
+      posLeft += columns[i];
+      if (posLeft > x) {
+        columnIndex = i;
+        break;
+      }
+    }
+
+    for (let i = 0; i < rows.length; i++) {
+      posTop += rows[i];
+      if (posTop > y) {
+        rowIndex = i;
+        break;
+      }
+    }
+
+    return { columnIndex, rowIndex };
+  };
+
   const onClick = useCallback<MouseEventHandler<HTMLDivElement>>(
     ({ target, clientX, clientY }) => {
       const grid = queryClosest(target, ".vuuGridLayout");

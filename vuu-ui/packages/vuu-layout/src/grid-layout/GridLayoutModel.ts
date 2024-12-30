@@ -1,5 +1,4 @@
 import { GridLayoutSplitDirection, uuid } from "@finos/vuu-utils";
-import { getColumns, getRows } from "./grid-dom-utils";
 import {
   byColumnStart,
   byRowStart,
@@ -1066,9 +1065,9 @@ export class GridLayoutModel {
 
   measureResizeDetails({
     grid,
-    cols = getColumns(grid),
+    cols,
     mousePos,
-    rows = getRows(grid),
+    rows,
     resizeElement,
     resizeDirection,
     resizeItem,
@@ -1084,9 +1083,9 @@ export class GridLayoutModel {
     | "rows"
     | "siblings"
   > & {
-    cols?: number[];
+    cols: number[];
     mousePos: number;
-    rows?: number[];
+    rows: number[];
   }): ResizeState | undefined {
     const contrasAndSiblings = this.findContrasAndSiblings(
       resizeItem,

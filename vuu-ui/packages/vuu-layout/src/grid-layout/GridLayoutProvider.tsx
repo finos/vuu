@@ -12,6 +12,7 @@ import { GridLayoutDropHandler } from "./GridPlaceholder";
 import { GridLayoutDragStartHandler } from "./useDraggable";
 import { DragDropProviderNext } from "../drag-drop-next/DragDropProviderNext";
 import { DropHandler } from "../drag-drop-next/DragContextNext";
+import { GridModel } from "./GridModel";
 
 export type GridStyle = Pick<
   CSSProperties,
@@ -48,6 +49,7 @@ export type GridLayoutDragEndHandler = (evt: DragEvent<HTMLElement>) => void;
 
 export interface GridLayoutProviderContextProps {
   dispatchGridLayoutAction: GridLayoutProviderDispatch;
+  gridModel?: GridModel;
   layoutMap: GridLayoutMap;
   onDragEnd?: GridLayoutDragEndHandler;
   onDragStart: GridLayoutDragStartHandler;
@@ -76,6 +78,7 @@ export interface GridLayoutProviderProps
     | "onDrop"
   > {
   children: ReactNode;
+  gridModel: GridModel;
   pathToDropTarget?: string;
 }
 
@@ -85,6 +88,7 @@ export const GridLayoutProvider = (
   const {
     children,
     dispatchGridLayoutAction,
+    gridModel,
     layoutMap,
     onDragEnd,
     onDragStart,
@@ -99,6 +103,7 @@ export const GridLayoutProvider = (
     <GridLayoutProviderContext.Provider
       value={{
         dispatchGridLayoutAction,
+        gridModel,
         layoutMap,
         onDragEnd,
         onDragStart,
@@ -136,4 +141,15 @@ export const useGridLayoutDragEndHandler = () => {
 export const useGridLayoutDragStartHandler = () => {
   const { onDragStart } = useContext(GridLayoutProviderContext);
   return onDragStart;
+};
+
+export const useGridModel = () => {
+  const { gridModel } = useContext(GridLayoutProviderContext);
+  if (gridModel) {
+    return gridModel;
+  } else {
+    throw Error(
+      "[useGridModel] no gridModel, did you forget to use a GridLayout",
+    );
+  }
 };

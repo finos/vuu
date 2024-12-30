@@ -37,36 +37,6 @@ export const splitTrack = (tracks: number[], trackIndex: number) => {
   return insertTrack(tracks, trackIndex, sizeOfNewTrack);
 };
 
-export const removeTrackFromTracks = (
-  tracks: number[],
-  trackIndex: number,
-  assignDirection: "bwd" | "fwd" = "fwd",
-) => {
-  if (trackIndex === tracks.length - 1) {
-    const lastValue = tracks.at(-1) as number;
-    const penultimateValue = tracks.at(-2) as number;
-    const newTracks = tracks.slice(0, -1);
-    newTracks[newTracks.length - 1] = penultimateValue + lastValue;
-    return newTracks;
-  } else if (trackIndex === 0) {
-    const [firstValue, secondValue] = tracks;
-    const newTracks = tracks.slice(1);
-    newTracks[0] = firstValue + secondValue;
-    return newTracks;
-  } else {
-    const value1 = tracks.at(trackIndex) as number;
-    const newTracks = tracks.filter((_track, index) => index !== trackIndex);
-    if (assignDirection === "fwd") {
-      const value2 = tracks.at(trackIndex + 1) as number;
-      newTracks[trackIndex] = value1 + value2;
-    } else {
-      const value2 = tracks.at(trackIndex - 1) as number;
-      newTracks[trackIndex - 1] = value1 + value2;
-    }
-    return newTracks;
-  }
-};
-
 /**
  *
  * @param tracks Create a new track such that we have a trackEdge that bisects

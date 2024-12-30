@@ -10,11 +10,11 @@ import {
   HTMLAttributes,
   ReactElement,
   useImperativeHandle,
-  useMemo,
 } from "react";
 import { GridLayoutItemProps } from "./GridLayoutItem";
 import { useGridSplitterResizing } from "./useGridSplitterResizing";
-import { GridModel, GridModelConstructorProps } from "./GridModel";
+import { GridModelConstructorProps } from "./GridModel";
+import { useGridLayout } from "./useGridLayout";
 
 const classBase = "vuuGridLayout";
 
@@ -72,10 +72,12 @@ export const GridLayout = ({
   style: styleProp,
   ...htmlAttributes
 }: GridLayoutProps) => {
-  const gridModel = useMemo(
-    () => new GridModel({ cols, colCount, rows, rowCount }),
-    [colCount, cols, rowCount, rows],
-  );
+  const { containerCallback, containerRef, gridModel } = useGridLayout({
+    colCount,
+    cols,
+    rowCount,
+    rows,
+  });
 
   console.log(`GridModel
     cols: [${gridModel.cols.join(",")}]
@@ -95,13 +97,14 @@ export const GridLayout = ({
     removeGridColumn,
     splitGridCol,
     splitGridRow,
-    containerRef,
     nonContentGridItems: { placeholders, splitters },
     ...layoutProps
   } = useGridSplitterResizing({
     children: childrenProp,
     colCount,
     cols,
+    containerRef,
+    gridModel,
     id,
     onClick,
     rowCount,
@@ -135,6 +138,7 @@ export const GridLayout = ({
   return (
     <GridLayoutProvider
       dispatchGridLayoutAction={dispatchGridLayoutAction}
+      gridModel={gridModel}
       layoutMap={layoutMap}
       onDragStart={onDragStart}
       onDrop={onDrop}
@@ -142,7 +146,7 @@ export const GridLayout = ({
       <div
         {...htmlAttributes}
         {...layoutProps}
-        ref={containerRef}
+        ref={containerCallback}
         style={style}
         className={cx(classBase, className)}
       >

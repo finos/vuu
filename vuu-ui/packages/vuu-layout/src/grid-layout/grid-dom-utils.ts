@@ -2,7 +2,6 @@ import {
   GridLayoutModelPosition,
   GridLayoutResizeDirection,
   IGridLayoutModelItem,
-  ResizeState,
 } from "./GridLayoutModel";
 
 export const classNameLayoutItem = "vuuGridLayoutItem";
@@ -25,29 +24,6 @@ export const getGridLayoutItem = (el: HTMLElement) => {
   } else {
     return el.closest(`.${classNameLayoutItem}`) as HTMLElement;
   }
-};
-
-export const getColumns = (el: HTMLElement) =>
-  getComputedStyle(el)
-    .getPropertyValue("grid-template-columns")
-    .split(" ")
-    .map((value) => parseInt(value, 10));
-
-export const setColumns = (el: HTMLElement, cols: number[]) => {
-  // console.log(`setColumns [${cols.join(",")}]`);
-  const trackTemplate = cols.map((r) => `${r}px`).join(" ");
-  el.style.gridTemplateColumns = trackTemplate;
-};
-
-export const getRows = (el: HTMLElement) =>
-  getComputedStyle(el)
-    .getPropertyValue("grid-template-rows")
-    .split(" ")
-    .map((value) => parseInt(value, 10));
-
-export const setRows = (el: HTMLElement, rows: number[]) => {
-  const trackTemplate = rows.map((r) => `${r}px`).join(" ");
-  el.style.gridTemplateRows = trackTemplate;
 };
 
 const NO_POSITION: GridPos = [-1, -1];
@@ -137,47 +113,4 @@ export const spansMultipleTracks = (
   const track = direction === "horizontal" ? "column" : "row";
   const { start, end } = gridItem[track];
   return end - start > 1;
-};
-
-export const setGridTrackTemplate = (
-  { grid, resizeDirection }: Pick<ResizeState, "grid" | "resizeDirection">,
-  tracks: number[],
-) => {
-  // console.log(`setGridTrackTemplate ${resizeDirection} [${tracks.join(",")}]`);
-  const trackTemplate = tracks.map((r) => `${r}px`).join(" ");
-  if (grid && resizeDirection === "vertical") {
-    grid.style.gridTemplateRows = trackTemplate;
-  } else if (grid && resizeDirection === "horizontal") {
-    grid.style.gridTemplateColumns = trackTemplate;
-  }
-};
-
-export const getTrackIndex = (grid: HTMLElement, x: number, y: number) => {
-  const { left, top } = grid.getBoundingClientRect();
-  const columns = getColumns(grid);
-  const rows = getRows(grid);
-
-  let columnIndex = 0;
-  let rowIndex = 0;
-
-  let posLeft = left;
-  let posTop = top;
-
-  for (let i = 0; i < columns.length; i++) {
-    posLeft += columns[i];
-    if (posLeft > x) {
-      columnIndex = i;
-      break;
-    }
-  }
-
-  for (let i = 0; i < rows.length; i++) {
-    posTop += rows[i];
-    if (posTop > y) {
-      rowIndex = i;
-      break;
-    }
-  }
-
-  return { columnIndex, rowIndex };
 };
