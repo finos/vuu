@@ -59,26 +59,6 @@ export const getRow = (el: HTMLElement | undefined): GridPos => {
   }
 };
 
-export const getGridItemProps = (el: HTMLElement): IGridLayoutModelItem => {
-  const col = getColumn(el);
-  const row = getRow(el);
-  const resizeable = el.classList.contains("vuuGridLayoutItem-resizeable-v")
-    ? "v"
-    : el.classList.contains("vuuGridLayoutItem-resizeable-h")
-      ? "h"
-      : el.classList.contains("vuuGridLayoutItem-resizeable-vh")
-        ? "vh"
-        : undefined;
-  return {
-    column: { start: col[0], end: col[1] },
-    fixed: el.dataset.fixed === "true",
-    id: el.id,
-    resizeable,
-    row: { start: row[0], end: row[1] },
-    type: "content",
-  };
-};
-
 export const getRowIndex = (el: HTMLElement) => {
   const [from] = getRow(el);
   return from - 1;

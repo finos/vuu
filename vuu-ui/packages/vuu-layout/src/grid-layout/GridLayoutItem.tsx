@@ -1,9 +1,3 @@
-import {
-  useDraggable,
-  useGridLayoutDragStartHandler,
-  useGridLayoutProps,
-  useGridLayoutProviderDispatch,
-} from "@finos/vuu-layout";
 import { IconButton } from "@finos/vuu-ui-controls";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -14,8 +8,8 @@ import {
   HTMLAttributes,
   MouseEventHandler,
   useCallback,
+  useEffect,
 } from "react";
-import { GridResizeable } from "./GridLayout";
 import { useAsDropTarget } from "./useAsDropTarget";
 import { useNotDropTarget } from "./useNotDropTarget";
 
@@ -23,25 +17,26 @@ import { queryClosest } from "@finos/vuu-utils";
 import gridLayoutCss from "./GridLayout.css";
 import gridSplitterCss from "./GridSplitter.css";
 import { DragSource } from "../drag-drop-next/DragContextNext";
+import { GridModelChildItemProps } from "./GridModel";
+import {
+  useGridChildProps,
+  useGridLayoutDragStartHandler,
+  useGridLayoutProviderDispatch,
+} from "./GridLayoutProvider";
+import { useDraggable } from "./useDraggable";
 
 const classBaseItem = "vuuGridLayoutItem";
 
 export interface GridLayoutItemProps
-  extends Omit<
-    HTMLAttributes<HTMLDivElement>,
-    "onDragStart" | "onDrop" | "style"
-  > {
+  extends GridModelChildItemProps,
+    Omit<
+      HTMLAttributes<HTMLDivElement>,
+      "id" | "onDragStart" | "onDrop" | "style"
+    > {
   header?: boolean;
-  id: string;
   isDropTarget?: boolean;
   label?: string;
-  resizeable?: GridResizeable;
-  style: CSSProperties & {
-    gridColumnEnd: number;
-    gridColumnStart: number;
-    gridRowEnd: number;
-    gridRowStart: number;
-  };
+  style: CSSProperties & GridStyle;
 }
 
 const getDragSourceWithElement = (
@@ -85,7 +80,15 @@ export const GridLayoutItem = ({
   });
 
   const dispatch = useGridLayoutProviderDispatch();
-  const layoutProps = useGridLayoutProps(id);
+  // TODO pass the styleProps in here to initialise the model value
+  const layoutProps = useGridChildProps({ id, resizeable, style: styleProp });
+
+  useEffect(
+    () => () => {
+      console.log(`unmount layout item ${id}`);
+    },
+    [id],
+  );
 
   // why can't the hook that processes this make this call ?
   const onDragStart = useGridLayoutDragStartHandler();
@@ -129,7 +132,7 @@ export const GridLayoutItem = ({
       style={style}
     >
       {header ? (
-        <div className={cx(`${classBaseItem}Header`)} data-drop-target="tabs">
+        <div className={cx(`${classBaseItem}Header`)} data-drop-target="header">
           <span className={`${classBaseItem}Header-title`} draggable>
             {title}
           </span>

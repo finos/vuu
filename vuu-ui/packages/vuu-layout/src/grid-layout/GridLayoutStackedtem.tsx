@@ -31,7 +31,7 @@ import { Stack } from "../stack";
 import gridLayoutCss from "./GridLayout.css";
 import { GridLayoutItemProps } from "./GridLayoutItem";
 import {
-  useGridLayoutProps,
+  useGridChildProps,
   useGridLayoutProviderDispatch,
 } from "./GridLayoutProvider";
 import gridSplitterCss from "./GridSplitter.css";
@@ -106,7 +106,7 @@ export const GridLayoutStackedItem = ({
   });
 
   const dispatch = useGridLayoutProviderDispatch();
-  const layoutProps = useGridLayoutProps(id);
+  const layoutProps = useGridChildProps(id);
 
   // TODO need to add children to state OR DO WE ?
   //

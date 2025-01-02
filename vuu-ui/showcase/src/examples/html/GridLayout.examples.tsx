@@ -128,6 +128,7 @@ export const TwoByTwoGrid = () => {
         <GridLayoutItem
           header
           id="green"
+          key="green"
           resizeable="hv"
           style={{
             gridColumnStart: 1,
@@ -147,6 +148,7 @@ export const TwoByTwoGrid = () => {
         <GridLayoutItem
           header
           id="blue"
+          key="blue"
           resizeable="hv"
           style={{
             gridColumnStart: 2,
@@ -161,6 +163,7 @@ export const TwoByTwoGrid = () => {
         <GridLayoutItem
           header
           id="yellow"
+          key="yellow"
           resizeable="hv"
           style={{
             gridColumnStart: 1,
@@ -175,6 +178,7 @@ export const TwoByTwoGrid = () => {
         <GridLayoutItem
           header
           id="red"
+          key="red"
           resizeable="hv"
           style={{
             gridColumnStart: 2,
@@ -341,7 +345,9 @@ export const SkewedTowerDeepTopRight = () => {
   return (
     <GridLayout colCount={2} id="GridLayoutD" rowCount={3}>
       <GridLayoutItem
-        id="green-H"
+        header
+        id="green"
+        key="green"
         resizeable="hv"
         style={{
           gridColumnStart: 1,
@@ -349,6 +355,7 @@ export const SkewedTowerDeepTopRight = () => {
           gridRowStart: 1,
           gridRowEnd: 2,
         }}
+        title="Green"
       >
         <div
           style={{
@@ -357,7 +364,8 @@ export const SkewedTowerDeepTopRight = () => {
         />
       </GridLayoutItem>
       <GridLayoutItem
-        id="blue-H"
+        id="blue"
+        key="blue"
         resizeable="hv"
         style={{
           gridColumnStart: 2,
@@ -369,7 +377,8 @@ export const SkewedTowerDeepTopRight = () => {
         <div style={{ background: "blue" }} />
       </GridLayoutItem>
       <GridLayoutItem
-        id="black-H"
+        id="yellow"
+        key="yellow"
         resizeable="hv"
         style={{
           gridColumnStart: 1,
@@ -378,10 +387,11 @@ export const SkewedTowerDeepTopRight = () => {
           gridRowEnd: 4,
         }}
       >
-        <div style={{ background: "black" }} />
+        <div style={{ background: "yellow" }} />
       </GridLayoutItem>
       <GridLayoutItem
-        id="red-H"
+        id="red"
+        key="red"
         resizeable="hv"
         style={{
           gridColumnStart: 2,
@@ -460,6 +470,7 @@ export const SkewedTerracesWideTopLeft = () => {
     <GridLayout colCount={3} id="GridLayoutE" rowCount={2}>
       <GridLayoutItem
         id="green"
+        key={"green"}
         resizeable="hv"
         style={{
           gridColumnStart: 1,
@@ -477,6 +488,7 @@ export const SkewedTerracesWideTopLeft = () => {
       </GridLayoutItem>
       <GridLayoutItem
         id="blue"
+        key="blue"
         resizeable="hv"
         style={{
           gridColumnStart: 3,
@@ -493,7 +505,9 @@ export const SkewedTerracesWideTopLeft = () => {
         />
       </GridLayoutItem>
       <GridLayoutItem
-        id="black"
+        header
+        id="yellow"
+        key="yellow"
         resizeable="hv"
         style={{
           gridColumnStart: 1,
@@ -511,6 +525,7 @@ export const SkewedTerracesWideTopLeft = () => {
       </GridLayoutItem>
       <GridLayoutItem
         id="red"
+        key="red"
         resizeable="hv"
         style={{
           gridColumnStart: 2,

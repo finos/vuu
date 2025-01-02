@@ -31,6 +31,8 @@ const getDropTarget = (target: EventTarget) => {
     switch (dropTarget) {
       case "true":
         return dropTargetEl;
+      case "header":
+        return undefined;
       case undefined:
         throw Error(
           "[useAsDropTarget] getDropTarget, called on element without data-drop-target attribute",

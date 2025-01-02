@@ -79,19 +79,11 @@ export const GridLayout = ({
     rows,
   });
 
-  console.log(`GridModel
-    cols: [${gridModel.cols.join(",")}]
-    rows: [${gridModel.rows.join(",")}]
-    `);
-
   const {
     addGridColumn,
     addGridRow,
     children,
     dispatchGridLayoutAction,
-    gridTemplateColumns,
-    gridTemplateRows,
-    layoutMap,
     onDragStart,
     onDrop,
     removeGridColumn,
@@ -101,14 +93,10 @@ export const GridLayout = ({
     ...layoutProps
   } = useGridSplitterResizing({
     children: childrenProp,
-    colCount,
-    cols,
     containerRef,
     gridModel,
     id,
     onClick,
-    rowCount,
-    rows,
   });
 
   useImperativeHandle(
@@ -123,15 +111,11 @@ export const GridLayout = ({
     [addGridColumn, addGridRow, removeGridColumn, splitGridCol, splitGridRow],
   );
 
-  console.log(
-    `render GridLayout columns [${JSON.stringify(gridTemplateColumns)}]`,
-  );
-
   const style = {
     "--col-count": colCount,
     "--row-count": rowCount,
-    gridTemplateColumns,
-    gridTemplateRows,
+    gridTemplateColumns: gridModel.gridTemplateColumns,
+    gridTemplateRows: gridModel.gridTemplateRows,
     ...styleProp,
   } as CSSProperties;
 
@@ -139,7 +123,6 @@ export const GridLayout = ({
     <GridLayoutProvider
       dispatchGridLayoutAction={dispatchGridLayoutAction}
       gridModel={gridModel}
-      layoutMap={layoutMap}
       onDragStart={onDragStart}
       onDrop={onDrop}
     >

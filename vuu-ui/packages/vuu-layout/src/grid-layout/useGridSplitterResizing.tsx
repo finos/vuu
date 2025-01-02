@@ -1,10 +1,11 @@
 import {
   LayoutJSON,
   asReactElements,
+  isGridLayoutSplitDirection,
   queryClosest,
   uuid,
 } from "@finos/vuu-utils";
-import React, {
+import {
   MouseEventHandler,
   ReactElement,
   RefObject,
@@ -14,32 +15,9 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { GridLayoutProps } from "./GridLayout";
-import {
-  GridLayoutModel,
-  GridLayoutModelPosition,
-  GridLayoutResizeDirection,
-  GridLayoutResizeOperation,
-  IGridLayoutModelItem,
-  IPlaceholder,
-  ISplitter,
-  type ResizeState,
-} from "./GridLayoutModel";
-import {
-  GridLayoutDragEndHandler,
-  GridLayoutMap,
-  GridLayoutProviderDispatch,
-} from "./GridLayoutProvider";
-import { GridLayoutItem, GridLayoutItemProps } from "./GridLayoutItem";
-import { GridLayoutStackedItem } from "./GridLayoutStackedtem";
-import {
-  addChildToStackedGridItem,
-  getGridItemChild,
-  getGridItemComponent,
-} from "./react-element-utils";
+import { layoutFromJson } from "../layout-reducer";
 import {
   classNameLayoutItem,
-  getGridItemProps,
   getGridLayoutItem,
   isHorizontalSplitter,
   isSplitter,
@@ -51,65 +29,51 @@ import {
   gridResizeDirectionFromDropPosition,
   splitTrack,
 } from "./grid-layout-utils";
-import { GridModel, GridModelConstructorProps } from "./GridModel";
-import { GridLayoutDragStartHandler } from "./useDraggable";
+import { GridLayoutProps } from "./GridLayout";
+import { GridLayoutItem, GridLayoutItemProps } from "./GridLayoutItem";
+import {
+  GridItemRemoveReason,
+  GridItemUpdate,
+  GridLayoutModel,
+  GridLayoutResizeDirection,
+  GridLayoutResizeOperation,
+  IGridLayoutModelItem,
+  IPlaceholder,
+  ISplitter,
+  type ResizeState,
+} from "./GridLayoutModel";
+import {
+  GridLayoutDragEndHandler,
+  GridLayoutProviderDispatch,
+} from "./GridLayoutProvider";
+import { GridLayoutStackedItem } from "./GridLayoutStackedtem";
+import { GridModel } from "./GridModel";
 import { GridLayoutDropHandler } from "./GridPlaceholder";
-import { layoutFromJson } from "../layout-reducer";
+import {
+  addChildToStackedGridItem,
+  getGridItemChild,
+  getGridItemComponent,
+} from "./react-element-utils";
+import { GridLayoutDragStartHandler } from "./useDraggable";
 
 export type SplitterResizingHookProps = Pick<
-  GridModelConstructorProps,
-  "colCount" | "cols" | "rowCount" | "rows"
-> &
-  Pick<GridLayoutProps, "children" | "id" | "onClick"> & {
-    containerRef: RefObject<HTMLElement | undefined>;
-    gridModel: GridModel;
-  };
-
-/**
- * return either cols or rows dependning on resize direction
- */
-const getTracks = ({ resizeDirection }: ResizeState, gridModel: GridModel) =>
-  resizeDirection === "vertical" ? gridModel.rows : gridModel.cols;
+  GridLayoutProps,
+  "children" | "id" | "onClick"
+> & {
+  containerRef: RefObject<HTMLElement | undefined>;
+  gridModel: GridModel;
+};
 
 type NonContentGridItems = {
   splitters: ISplitter[];
   placeholders: IPlaceholder[];
 };
 
-const buildLayoutMap = (
-  children:
-    | ReactElement<GridLayoutItemProps>[]
-    | ReactElement<GridLayoutItemProps>,
-): GridLayoutMap => {
-  const layoutMap: GridLayoutMap = {};
-  React.Children.forEach(
-    children,
-    ({
-      props: {
-        id,
-        style: { gridColumnEnd, gridColumnStart, gridRowEnd, gridRowStart },
-      },
-    }) => {
-      layoutMap[id] = {
-        gridColumnEnd,
-        gridColumnStart,
-        gridRowEnd,
-        gridRowStart,
-      };
-    },
-  );
-  return layoutMap;
-};
-
 export const useGridSplitterResizing = ({
   children: childrenProp,
-  colCount,
-  cols = Array(colCount).fill("1fr"),
   containerRef,
   gridModel,
   onClick: onClickProp,
-  rowCount,
-  rows = Array(rowCount).fill("1fr"),
 }: SplitterResizingHookProps) => {
   // TODO memoize this call
   const [children, setChildren] = useState<ReactElement<GridLayoutItemProps>[]>(
@@ -121,49 +85,28 @@ export const useGridSplitterResizing = ({
       placeholders: [],
     });
   const layoutModel = useMemo(
-    // TODO must cater for colCount/rowCount changing
-    () => new GridLayoutModel(cols.length, rows.length),
-    [cols.length, rows.length],
+    () => new GridLayoutModel(gridModel),
+    [gridModel],
   );
-  const layoutMapRef = useRef<GridLayoutMap>({});
-  useMemo(() => {
-    layoutMapRef.current = childrenProp ? buildLayoutMap(childrenProp) : {};
-  }, [childrenProp]);
 
-  const setGridLayoutMap = useCallback(
-    (
-      id: string,
-      { start, end }: GridLayoutModelPosition,
-      resizeDirection: GridLayoutResizeDirection,
-    ) => {
-      const gridItemStyle = layoutMapRef.current[id];
-      if (gridItemStyle) {
-        // we will have no entries for placeholders
-        if (resizeDirection === "horizontal") {
-          gridItemStyle.gridColumnStart = start;
-          gridItemStyle.gridColumnEnd = end;
-        } else {
-          gridItemStyle.gridRowStart = start;
-          gridItemStyle.gridRowEnd = end;
-        }
-      }
-    },
-    [],
-  );
   const resizingState = useRef<ResizeState | undefined>();
 
   const applyUpdates = useCallback(
-    (
-      resizeDirection: GridLayoutResizeDirection,
-      updates: [string, GridLayoutModelPosition][],
-      resetSplitters = false,
-    ) => {
-      const setTrack =
-        resizeDirection === "vertical" ? setGridRow : setGridColumn;
-
-      updates.forEach(([id, position]) => {
-        setTrack(id, position);
-        setGridLayoutMap(id, position, resizeDirection);
+    (updates: GridItemUpdate[], resetSplitters = false) => {
+      updates.forEach(([id, { column: columnPosition, row: rowPosition }]) => {
+        if (columnPosition) {
+          setGridColumn(id, columnPosition);
+        }
+        if (rowPosition) {
+          setGridRow(id, rowPosition);
+        }
+        if (rowPosition) {
+          gridModel.setChildItemPosition(id, rowPosition, "vertical");
+        } else if (columnPosition) {
+          gridModel.setChildItemPosition(id, columnPosition, "horizontal");
+        } else {
+          throw Error("[useGridSPlitterResizing] applyUpdates invalid input");
+        }
       });
 
       if (resetSplitters) {
@@ -171,7 +114,7 @@ export const useGridSplitterResizing = ({
         setNonContentGridItems((items) => ({ ...items, splitters }));
       }
     },
-    [layoutModel, setGridLayoutMap],
+    [gridModel, layoutModel],
   );
 
   const initiateResize = useCallback(
@@ -180,7 +123,7 @@ export const useGridSplitterResizing = ({
       const { current: state } = resizingState;
       if (state) {
         const { contraTrackIndex, resizeDirection, resizeTrackIndex } = state;
-        const tracks = getTracks(state, gridModel);
+        const tracks = gridModel.getTracks(resizeDirection);
 
         const newTrackIndex =
           resizeOperation === "contract" ? resizeTrackIndex : contraTrackIndex;
@@ -203,7 +146,7 @@ export const useGridSplitterResizing = ({
         } else {
           gridModel.setGridRows(newTracks);
         }
-        applyUpdates(resizeDirection, updates, true);
+        applyUpdates(updates, true);
         state.resizeTrackIsShared = false;
       }
     },
@@ -236,7 +179,7 @@ export const useGridSplitterResizing = ({
             ? contraTrackIndex
             : resizeTrackIndex;
 
-        const currentTracks = getTracks(state, gridModel);
+        const currentTracks = gridModel.getTracks(resizeDirection);
         restoredDistance = currentTracks[targetTrack];
 
         const assignDirection = resizeRequiresNewTrack
@@ -248,14 +191,15 @@ export const useGridSplitterResizing = ({
             : "bwd";
 
         if (state.resizeDirection === "horizontal") {
-          gridModel.removeGridColumn(targetTrack, assignDirection);
+          const updates = gridModel.removeGridColumn(
+            targetTrack,
+            assignDirection,
+          );
+          applyUpdates(updates, true);
         } else {
-          gridModel.removeGridRow(targetTrack, assignDirection);
+          const updates = gridModel.removeGridRow(targetTrack, assignDirection);
+          applyUpdates(updates, true);
         }
-
-        const updates = layoutModel.removeTrack(targetTrack, resizeDirection);
-
-        applyUpdates(resizeDirection, updates, true);
 
         if (resizeOperation === nextResizeOperation) {
           state.resizeTrackIsShared = true;
@@ -271,7 +215,7 @@ export const useGridSplitterResizing = ({
         }
       }
     },
-    [applyUpdates, gridModel, initiateResize, layoutModel],
+    [applyUpdates, gridModel, initiateResize],
   );
 
   const resize = useCallback(
@@ -280,8 +224,8 @@ export const useGridSplitterResizing = ({
       const directionOfTravel = moveBy < 0 ? "bwd" : "fwd";
 
       if (state) {
-        const { resizeTrackIndex, contraTrackIndex } = state;
-        const tracks = getTracks(state, gridModel);
+        const { resizeDirection, resizeTrackIndex, contraTrackIndex } = state;
+        const tracks = gridModel.getTracks(resizeDirection);
         const reducedTrackSize =
           directionOfTravel === "fwd"
             ? tracks[contraTrackIndex]
@@ -357,13 +301,7 @@ export const useGridSplitterResizing = ({
 
       const mousePos = resizeDirection === "vertical" ? e.clientY : e.clientX;
 
-      const resizeItem = layoutModel.gridItems.find(
-        (item) => item.id === resizeElement.id,
-      );
-
-      if (!resizeItem) {
-        throw Error("resize item not found");
-      }
+      const resizeItem = gridModel.getChildItem(resizeElement.id, true);
 
       resizingState.current = layoutModel.measureResizeDetails({
         grid,
@@ -429,91 +367,74 @@ export const useGridSplitterResizing = ({
     [onClickProp],
   );
 
-  const splitGridCol = useCallback(
+  const api_splitGridCol = useCallback(
     (gridItemId: string) => {
       console.log(`split Grid Col`);
-      const { current: grid } = containerRef;
       // const target = document.getElementById(gridItemId) as HTMLElement;
-      const gridItem = layoutModel.getGridItem(gridItemId);
-      if (grid && gridItem) {
-        const { tracks, updates } = layoutModel.splitGridItem(
-          gridItemId,
-          "west",
-          gridModel.cols,
-        );
-        if (updates.length > 0) {
-          gridModel.setGridCols(tracks);
-          applyUpdates("horizontal", updates);
+      const { tracks, updates } = layoutModel.splitGridItem(
+        gridItemId,
+        "west",
+        gridModel.cols,
+      );
+      if (updates.length > 0) {
+        gridModel.setGridCols(tracks);
+        applyUpdates(updates);
 
-          layoutModel.createPlaceholders();
-          const placeholders = layoutModel.getPlaceholders();
-          const splitters = layoutModel.getSplitterPositions();
-          setNonContentGridItems({ placeholders, splitters });
+        gridModel.createPlaceholders();
+        const placeholders = gridModel.getPlaceholders();
+        const splitters = layoutModel.getSplitterPositions();
+        setNonContentGridItems({ placeholders, splitters });
 
-          // add placeholders to the layoutMap
-        }
-      } else {
-        throw Error(`splitGridCol no gridItem with id ${gridItemId}`);
+        // add placeholders to the layoutMap
       }
     },
-    [applyUpdates, containerRef, gridModel, layoutModel],
+    [applyUpdates, gridModel, layoutModel],
   );
 
-  const splitGridRow = useCallback(
+  const api_splitGridRow = useCallback(
     (gridItemId: string) => {
-      const { current: grid } = containerRef;
       // const target = document.getElementById(gridItemId) as HTMLElement;
-      const gridItem = layoutModel.getGridItem(gridItemId);
-      if (grid && gridItem) {
-        const { tracks, updates } = layoutModel.splitGridItem(
-          gridItemId,
-          "north",
-          gridModel.rows,
-        );
+      const { tracks, updates } = layoutModel.splitGridItem(
+        gridItemId,
+        "north",
+        gridModel.rows,
+      );
 
-        if (updates.length > 0) {
-          // TODO move all into model
-          gridModel.setGridRows(tracks);
-          applyUpdates("vertical", updates);
-          layoutModel.createPlaceholders();
-          const placeholders = layoutModel.getPlaceholders();
-          const splitters = layoutModel.getSplitterPositions();
+      if (updates.length > 0) {
+        // TODO move all into model
+        gridModel.setGridRows(tracks);
+        applyUpdates(updates);
+        gridModel.createPlaceholders();
+        const placeholders = gridModel.getPlaceholders();
+        const splitters = layoutModel.getSplitterPositions();
 
-          setNonContentGridItems({ placeholders, splitters });
-        }
-      } else {
-        throw Error(`splitGridRow no gridItem with id ${gridItemId}`);
+        setNonContentGridItems({ placeholders, splitters });
       }
     },
-    [applyUpdates, containerRef, gridModel, layoutModel],
+    [applyUpdates, gridModel, layoutModel],
   );
 
-  const addGridColumn = useCallback(
+  const api_addGridColumn = useCallback(
     (gridItemId: string) => {
-      const { current: grid } = containerRef;
-      const gridItem = layoutModel.getGridItem(gridItemId);
+      const gridItem = gridModel.getChildItem(gridItemId, true);
       const resizeDirection = "horizontal";
-      if (grid && gridItem) {
-        const {
-          column: { start },
-        } = gridItem;
-        const trackIndex = start - 1;
-        const columns = splitTrack(gridModel.cols, trackIndex);
+      const {
+        column: { start },
+      } = gridItem;
+      const trackIndex = start - 1;
+      const columns = splitTrack(gridModel.cols, trackIndex);
 
-        gridModel.setGridCols(columns);
-        const updates = layoutModel.addTrack(trackIndex, resizeDirection);
-        if (updates.length > 0) {
-          applyUpdates(resizeDirection, updates, true);
-        }
-      } else {
-        throw Error(`addGridTrack no gridItem with id ${gridItemId}`);
+      gridModel.setGridCols(columns);
+      const updates = layoutModel.addTrack(trackIndex, resizeDirection);
+      if (updates.length > 0) {
+        applyUpdates(updates, true);
       }
     },
-    [applyUpdates, containerRef, gridModel, layoutModel],
+    [applyUpdates, gridModel, layoutModel],
   );
 
-  const addGridRow = useCallback((gridItemId: string) => {
-    console.log(`addGrodRow ${gridItemId}`);
+  const api_addGridRow = useCallback((gridItemId: string) => {
+    console.log(`addGridRow ${gridItemId}`);
   }, []);
 
   const api_removeGridColumn = useCallback(
@@ -521,69 +442,28 @@ export const useGridSplitterResizing = ({
       console.log(`api_removeGridColumn [${trackIndex}]`);
       const { current: grid } = containerRef;
       if (grid) {
-        gridModel.removeGridColumn(trackIndex);
-
-        const resizeDirection = "horizontal";
-        const updates = layoutModel.removeTrack(trackIndex, resizeDirection);
-        applyUpdates(resizeDirection, updates, true);
+        const updates = gridModel.removeGridColumn(trackIndex);
+        applyUpdates(updates, true);
       }
     },
-    [applyUpdates, containerRef, gridModel, layoutModel],
+    [applyUpdates, containerRef, gridModel],
   );
 
   useLayoutEffect(() => {
     /*
-     * Initialise the GridModel content
+     * Initialise Splitters and Placeholders
      */
-    if (containerRef.current) {
-      containerRef.current.childNodes.forEach((node) => {
-        const gridLayoutItem = node as HTMLElement;
-        if (gridLayoutItem.classList.contains("vuuGridLayoutItem")) {
-          const { column, fixed, id, resizeable, row, type } =
-            getGridItemProps(gridLayoutItem);
-          layoutModel.addGridItem({
-            id,
-            column,
-            fixed,
-            resizeable,
-            row,
-            type,
-          });
-        }
-      });
-      layoutModel.createPlaceholders();
-      const splitters = layoutModel.getSplitterPositions();
-      const placeholders = layoutModel.getPlaceholders();
-      setNonContentGridItems({ placeholders, splitters });
-    }
-  }, [containerRef, layoutModel]);
-
-  const removeTracks = useCallback(
-    (removedTrackLines: [number[], number[]]) => {
-      console.log(`removeTracks`);
-      const { current: grid } = containerRef;
-      if (grid) {
-        const [removedColumnTrackLines, removedRowTrackLines] =
-          removedTrackLines;
-
-        if (removedColumnTrackLines.length === 1) {
-          const [indexOfRemovedColumnTrack] = removedColumnTrackLines;
-          gridModel.removeGridColumn(indexOfRemovedColumnTrack - 1, "bwd");
-        }
-
-        if (removedRowTrackLines.length === 1) {
-          const [indexOfRemovedRowTrack] = removedRowTrackLines;
-          gridModel.removeGridRow(indexOfRemovedRowTrack - 1, "bwd");
-        }
-      }
-    },
-    [containerRef, gridModel],
-  );
+    gridModel.createPlaceholders();
+    const splitters = layoutModel.getSplitterPositions();
+    const placeholders = gridModel.getPlaceholders();
+    setNonContentGridItems({ placeholders, splitters });
+    console.log({ placeholders, splitters });
+  }, [gridModel, layoutModel]);
 
   const removeGridItem = useCallback(
-    (id: string, removeFromDOM = true) => {
-      console.log(`removeGridItem removeFromDOM = ${removeFromDOM}`);
-      if (removeFromDOM) {
+    (id: string, reason: Extract<GridItemRemoveReason, "close" | "drag">) => {
+      console.log(`removeGridItem removeFromDOM = ${reason}`);
+      if (reason === "close") {
         setChildren((c) => c.filter((c) => c.props.id !== id));
       } else {
         // set a className
@@ -593,29 +473,25 @@ export const useGridSplitterResizing = ({
           gridItemEl.style.gridColumn = "1/1";
         }
       }
-      const {
-        removedTrackLines,
-        updates: [horizontalUpdates, verticalUpdates],
-      } = layoutModel.removeGridItem(id);
+      console.log(gridModel?.toDebugString());
 
-      applyUpdates("horizontal", horizontalUpdates);
-      applyUpdates("vertical", verticalUpdates);
+      const updates = layoutModel.removeGridItem(id, reason);
 
-      if (removedTrackLines) {
-        removeTracks(removedTrackLines as [number[], number[]]);
-      }
+      applyUpdates(updates);
 
-      const placeholders = layoutModel.getPlaceholders();
+      const placeholders = gridModel.getPlaceholders();
       const splitters = layoutModel.getSplitterPositions();
       setNonContentGridItems({ placeholders, splitters });
+
+      console.log(gridModel?.toDebugString());
     },
-    [applyUpdates, layoutModel, removeTracks],
+    [applyUpdates, gridModel, layoutModel],
   );
 
   const dispatchGridLayoutAction = useCallback<GridLayoutProviderDispatch>(
     (action) => {
       if (action.type === "close") {
-        removeGridItem(action.id);
+        removeGridItem(action.id, "close");
       } else if (action.type === "insert-tab") {
         console.log(`insert tab`);
       }
@@ -703,14 +579,13 @@ export const useGridSplitterResizing = ({
 
   const handleDragStart = useCallback<GridLayoutDragStartHandler>(
     (evt, options) => {
-      console.log(`onDragStart GridLayout`);
-
       const { current: grid } = containerRef;
       if (grid) {
         requestAnimationFrame(() => {
           grid.classList.add("vuuDragging");
+          //TODO make this check more explicit
           if (options.type === "text/plain") {
-            removeGridItem(options.id, false);
+            removeGridItem(options.id, "drag");
           }
         });
       }
@@ -724,153 +599,107 @@ export const useGridSplitterResizing = ({
    */
   const handleDrop = useCallback<GridLayoutDropHandler>(
     (targetId, payload, position) => {
-      const { current: grid } = containerRef;
-      const targetGridItem = layoutModel.getGridItem(targetId, true);
+      const targetGridItem = gridModel.getChildItem(targetId, true);
+      if (typeof payload === "string") {
+        if (isGridLayoutSplitDirection(position)) {
+          const updates = layoutModel.dropSplitGridItem(
+            payload,
+            targetId,
+            position,
+          );
 
-      if (grid) {
-        if (typeof payload === "string") {
-          // repositioning existing layout item
+          if (updates.length > 0) {
+            applyUpdates(updates);
+          }
           const gridItemElement = document.getElementById(payload);
           if (gridItemElement) {
             gridItemElement.classList.remove("vuuGridLayoutItem-dragging");
-
-            // const childGridItems = containerRef.current?.childNodes;
-            // childGridItems?.forEach((node) => {
-            //   console.log(
-            //     `===>  ${node.className} ${getComputedStyle(node).getPropertyValue("grid-column")}`,
-            //   );
-            // });
-
-            if (position === "tabs") {
-              console.log(`what are we going to do now ?`);
-            } else if (position === "centre") {
-              const newGridItem = layoutModel.replaceGridItem(
-                targetId,
-                "content",
-              );
-
-              setGridColumn(newGridItem.id, newGridItem.column);
-              setGridRow(newGridItem.id, newGridItem.row);
-
-              // if target is not a placeholder, remove the child gridItem
-            } else {
-              const resizeDirection =
-                gridResizeDirectionFromDropPosition(position);
-              const currentTracks =
-                resizeDirection === "vertical"
-                  ? gridModel.rows
-                  : gridModel.cols;
-
-              const { newGridItem, tracks, updates } =
-                layoutModel.splitGridItem(
-                  targetId,
-                  position,
-                  currentTracks,
-                  payload,
-                );
-
-              // we could eliminate these calls by rolling this into splitGridItem
-              // but we would have to be able to return responses for both
-              // reszeDirections
-              if (resizeDirection === "horizontal") {
-                const { row } = newGridItem;
-                setGridRow(newGridItem.id, row);
-                setGridLayoutMap(newGridItem.id, row, resizeDirection);
-                gridModel.setGridCols(tracks);
-              } else {
-                const { column } = newGridItem;
-                setGridColumn(newGridItem.id, column);
-                setGridLayoutMap(newGridItem.id, column, resizeDirection);
-                gridModel.setGridRows(tracks);
-              }
-
-              if (updates.length > 0) {
-                applyUpdates(resizeDirection, updates);
-              }
-
-              const placeholders = layoutModel.getPlaceholders();
-              const splitters = layoutModel.getSplitterPositions();
-              setNonContentGridItems({ placeholders, splitters });
-            }
           }
+
+          const placeholders = gridModel.getPlaceholders();
+          const splitters = layoutModel.getSplitterPositions();
+          console.log({ splitters });
+          setNonContentGridItems({ placeholders, splitters });
+        } else if (position === "centre") {
+          console.log("replace target");
         } else {
-          // dragging from palette or similar
-          const { type } = targetGridItem;
-          // TODO look at how we manage component id values
-          const id = uuid();
-          const component = layoutFromJson(
-            { ...payload, id } as LayoutJSON,
-            "",
-          );
-          if (position === "centre") {
-            const newGridItem = layoutModel.replaceGridItem(
-              targetId,
-              "content",
-            );
-            addChildComponent(component, newGridItem);
-          } else if (position === "tabs") {
-            if (type === "content") {
-              // all this does is change the type
-              const newGridItem = layoutModel.replaceGridItem(
-                targetId,
-                "stacked-content",
-              );
-              replaceChildComponent(component, newGridItem);
-            } else if (type === "stacked-content") {
-              addChildComponent(component, targetGridItem);
-            } else {
-              console.log(`how do we handle tabs ${type}`);
-            }
-          } else {
-            const resizeDirection =
-              gridResizeDirectionFromDropPosition(position);
-            const currentTracks =
-              resizeDirection === "vertical" ? gridModel.rows : gridModel.cols;
-
-            const { tracks, updates, newGridItem } = layoutModel.splitGridItem(
-              targetId,
-              position,
-              currentTracks,
-            );
-
-            if (updates.length > 0) {
-              if (resizeDirection === "horizontal") {
-                gridModel.setGridCols(tracks);
-              } else {
-                gridModel.setGridRows(tracks);
-              }
-              applyUpdates(resizeDirection, updates);
-              addChildComponent(component, newGridItem);
-            }
-          }
+          console.log(`how do we handle ${position}`);
         }
 
-        const placeholders = layoutModel.getPlaceholders();
-        const splitters = layoutModel.getSplitterPositions();
-        setNonContentGridItems({ placeholders, splitters });
+        console.log(gridModel.toDebugString());
+        return;
+        //   if (position === "centre") {
+        //     const newGridItem = layoutModel.replaceGridItem(
+        //       targetId,
+        //       "content",
+        //     );
+        //     setGridColumn(newGridItem.id, newGridItem.column);
+        //     setGridRow(newGridItem.id, newGridItem.row);
+        //   }
+        // }
       } else {
-        throw Error(`splitGridRow no gridItem with id ${targetId}`);
+        // dragging from palette or similar
+        const { type } = targetGridItem;
+        // TODO look at how we manage component id values
+        const id = uuid();
+        const component = layoutFromJson({ ...payload, id } as LayoutJSON, "");
+        if (position === "centre") {
+          const newGridItem = layoutModel.replaceGridItem(targetId, "content");
+          addChildComponent(component, newGridItem);
+        } else if (position === "tabs") {
+          if (type === "content") {
+            // all this does is change the type
+            const newGridItem = layoutModel.replaceGridItem(
+              targetId,
+              "stacked-content",
+            );
+            replaceChildComponent(component, newGridItem);
+          } else if (type === "stacked-content") {
+            addChildComponent(component, targetGridItem);
+          } else {
+            console.log(`how do we handle tabs ${type}`);
+          }
+        } else {
+          const resizeDirection = gridResizeDirectionFromDropPosition(position);
+          const currentTracks =
+            resizeDirection === "vertical" ? gridModel.rows : gridModel.cols;
+
+          const { tracks, updates, newGridItem } = layoutModel.splitGridItem(
+            targetId,
+            position,
+            currentTracks,
+          );
+
+          if (updates.length > 0) {
+            if (resizeDirection === "horizontal") {
+              gridModel.setGridCols(tracks);
+            } else {
+              gridModel.setGridRows(tracks);
+            }
+            applyUpdates(updates);
+            addChildComponent(component, newGridItem);
+          }
+        }
       }
+
+      // const placeholders = layoutModel.getPlaceholders();
+      // const splitters = layoutModel.getSplitterPositions();
+      // setNonContentGridItems({ placeholders, splitters });
     },
     [
       addChildComponent,
       applyUpdates,
-      containerRef,
       gridModel,
       layoutModel,
       replaceChildComponent,
-      setGridLayoutMap,
     ],
   );
 
   return {
-    addGridColumn,
-    addGridRow,
+    addGridColumn: api_addGridColumn,
+    addGridRow: api_addGridRow,
     children,
     dispatchGridLayoutAction,
-    gridTemplateColumns: cols.join(" "),
-    gridTemplateRows: rows.join(" "),
-    layoutMap: layoutMapRef.current,
     onClick: clickHandler,
     onDragEnd: handleDragEnd,
     onDragStart: handleDragStart,
@@ -878,8 +707,8 @@ export const useGridSplitterResizing = ({
     onMouseDown,
     onMouseUp,
     removeGridColumn: api_removeGridColumn,
-    splitGridCol,
-    splitGridRow,
+    splitGridCol: api_splitGridCol,
+    splitGridRow: api_splitGridRow,
     nonContentGridItems,
   };
 };

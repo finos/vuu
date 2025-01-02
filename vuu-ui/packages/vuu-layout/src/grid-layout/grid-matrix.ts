@@ -1,5 +1,6 @@
 import { uuid } from "@finos/vuu-utils";
 import { IGridLayoutModelItem } from "./GridLayoutModel";
+import { GridModelChildItem } from "./GridModel";
 
 export type GridMatrix = number[][];
 
@@ -8,7 +9,7 @@ function addGridItemToGrid(
   {
     column: { start: colStart, end: colEnd },
     row: { start: rowStart, end: rowEnd },
-  }: IGridLayoutModelItem
+  }: IGridLayoutModelItem,
 ) {
   for (let row = rowStart - 1; row < rowEnd - 1; row++) {
     for (let col = colStart - 1; col < colEnd - 1; col++) {
@@ -19,7 +20,7 @@ function addGridItemToGrid(
 
 const fillGridMatrix = (
   grid: GridMatrix,
-  gridItems: IGridLayoutModelItem[]
+  gridItems: IGridLayoutModelItem[],
 ) => {
   for (const gridItem of gridItems) {
     addGridItemToGrid(grid, gridItem);
@@ -29,7 +30,7 @@ const fillGridMatrix = (
 export const getGridMatrix = (
   gridItems: IGridLayoutModelItem[],
   rowCount: number,
-  colCount: number
+  colCount: number,
 ): GridMatrix => {
   const grid = new Array(rowCount);
   for (let i = 0; i < grid.length; i++) {
@@ -68,7 +69,7 @@ function markCellsAsFilled(fromIndex: number, toIndex: number, row: number[]) {
 }
 
 export function getEmptyExtents(grid: GridMatrix) {
-  const emptyExtents: IGridLayoutModelItem[] = [];
+  const emptyExtents: GridModelChildItem[] = [];
   const rows = cloneGridMatrix(grid);
   for (let i = 0; i < rows.length; i++) {
     const cols = rows[i];
@@ -90,13 +91,15 @@ export function getEmptyExtents(grid: GridMatrix) {
           nextRow += 1;
         }
 
-        emptyExtents.push({
-          column: { start: j + 1, end: nextCol + 1 },
-          id: uuid(),
-          resizeable: "vh",
-          row: { start: i + 1, end: nextRow + 1 },
-          type: "placeholder",
-        });
+        emptyExtents.push(
+          new GridModelChildItem({
+            column: { start: j + 1, end: nextCol + 1 },
+            id: uuid(),
+            resizeable: "hv",
+            row: { start: i + 1, end: nextRow + 1 },
+            type: "placeholder",
+          }),
+        );
       }
     }
   }

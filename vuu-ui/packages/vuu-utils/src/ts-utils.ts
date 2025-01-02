@@ -6,3 +6,6 @@ export function isNotNullOrUndefined<T>(
 
 export const isObject = (o: unknown): o is object =>
   typeof o === "object" && o !== null;
+
+export type OptionalProperty<T, K extends keyof T> = Omit<T, K> &
+  Partial<Pick<T, K>>;

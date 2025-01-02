@@ -1,6 +1,9 @@
-import { GridLayoutSplitDirection } from "@finos/vuu-utils";
 import {
-  GridItemMaps,
+  GridLayoutDropPosition,
+  GridLayoutSplitDirection,
+} from "@finos/vuu-utils";
+import {
+  GridLayoutModelCoordinates,
   GridLayoutModelPosition,
   GridLayoutResizeDirection,
   IGridLayoutModelItem,
@@ -35,47 +38,6 @@ const insertTrack = (tracks: number[], trackIndex: number, size = 0) => {
 export const splitTrack = (tracks: number[], trackIndex: number) => {
   const sizeOfNewTrack = Math.floor(tracks[trackIndex] / 2);
   return insertTrack(tracks, trackIndex, sizeOfNewTrack);
-};
-
-/**
- *
- * @param tracks Create a new track such that we have a trackEdge that bisects
- * the two trackEdges provided. The start and end trackEdges should not be contiguous
- * otherwise splitTrack should be used instead.
- * @param start the leading trackEdge of the range
- * @param end the trailing trackEdge of range
- */
-//TODO what if there is an existing track that bisects range
-export const splitTracks = (tracks: number[], start: number, end: number) => {
-  let size = 0;
-  for (let i = start - 1; i < end - 1; i++) {
-    size += tracks[i];
-  }
-  let halfTrack = Math.floor(size / 2);
-  let newTrackIndex = 0;
-
-  const newTracks = [];
-  for (let i = 0; i < tracks.length; i++) {
-    if (i < start - 1) {
-      newTracks.push(tracks[i]);
-    } else if (i < end - 1) {
-      if (tracks[i] < halfTrack) {
-        newTracks.push(tracks[i]);
-        halfTrack -= tracks[i];
-      } else if (halfTrack) {
-        newTrackIndex = newTracks.length;
-        newTracks.push(halfTrack);
-        newTracks.push(tracks[i] - halfTrack);
-        halfTrack = 0;
-      } else {
-        newTracks.push(tracks[i]);
-      }
-    } else {
-      newTracks.push(tracks[i]);
-    }
-  }
-
-  return { newTrackIndex, newTracks };
 };
 
 /**
@@ -283,34 +245,11 @@ export const byRowStart = (
 };
 
 export const gridResizeDirectionFromDropPosition = (
-  dropPosition: GridLayoutSplitDirection,
+  dropPosition: GridLayoutDropPosition,
 ): GridLayoutResizeDirection =>
   dropPosition === "north" || dropPosition === "south"
     ? "vertical"
     : "horizontal";
-
-export const getUnusedGridTrackLines = (
-  gridItemMaps: GridItemMaps,
-  trackCount: number,
-): number[] => {
-  const unusedStartPositions: number[] = [];
-  const unusedTrackLines: number[] = [];
-
-  for (let i = 1; i <= trackCount; i++) {
-    if (!gridItemMaps.start.has(i)) {
-      unusedStartPositions.push(i);
-    }
-  }
-
-  for (let i = 2; i <= trackCount + 1; i++) {
-    if (!gridItemMaps.end.has(i)) {
-      if (unusedStartPositions.includes(i)) {
-        unusedTrackLines.push(i);
-      }
-    }
-  }
-  return unusedTrackLines;
-};
 
 const gridLayoutPositionComparator = (
   p1: GridLayoutModelPosition,
@@ -390,4 +329,135 @@ export const itemsFillRow = (
     }
   }
   return false;
+};
+
+/**
+ *
+ * @param tracks Create a new track such that we have a trackEdge that bisects
+ * the two trackEdges provided. The start and end trackEdges should not be contiguous
+ * otherwise splitTrack should be used instead.
+ * @param start the leading trackEdge of the range
+ * @param end the trailing trackEdge of range
+ */
+//TODO what if there is an existing track that bisects range
+export const splitTracks = (tracks: number[], start: number, end: number) => {
+  let size = 0;
+  for (let i = start - 1; i < end - 1; i++) {
+    size += tracks[i];
+  }
+  let halfTrack = Math.floor(size / 2);
+  let newTrackIndex = 0;
+
+  const newTracks = [];
+  for (let i = 0; i < tracks.length; i++) {
+    if (i < start - 1) {
+      newTracks.push(tracks[i]);
+    } else if (i < end - 1) {
+      if (tracks[i] < halfTrack) {
+        newTracks.push(tracks[i]);
+        halfTrack -= tracks[i];
+      } else if (halfTrack) {
+        newTrackIndex = newTracks.length;
+        newTracks.push(halfTrack);
+        newTracks.push(tracks[i] - halfTrack);
+        halfTrack = 0;
+      } else {
+        newTracks.push(tracks[i]);
+      }
+    } else {
+      newTracks.push(tracks[i]);
+    }
+  }
+
+  return { newTrackIndex, newTracks };
+};
+
+/**
+ * This assumes that tracks have already been prepared, such that 'position'
+ * spans at least two tracks in the split direction
+ *
+ * @param position
+ * @param splitDirection
+ * @returns [droppedItemPosition, targetPosition]
+ */
+export const splitGridChildPosition = (
+  position: GridLayoutModelCoordinates,
+  splitDirection: GridLayoutSplitDirection,
+  splitTrackIndex: number,
+): [GridLayoutModelCoordinates, GridLayoutModelCoordinates] => {
+  const droppedPosition = structuredClone(position);
+  const targetPosition = structuredClone(position);
+
+  console.log(`split at ${splitTrackIndex}`);
+
+  switch (splitDirection) {
+    case "north":
+      return [
+        {
+          ...droppedPosition,
+          row: {
+            start: position.row.start,
+            end: splitTrackIndex,
+          },
+        },
+        {
+          ...targetPosition,
+          row: {
+            start: splitTrackIndex,
+            end: position.row.end,
+          },
+        },
+      ];
+    case "east":
+      return [
+        {
+          ...droppedPosition,
+          column: {
+            start: splitTrackIndex,
+            end: position.column.end,
+          },
+        },
+        {
+          ...targetPosition,
+          column: {
+            start: position.column.start,
+            end: splitTrackIndex,
+          },
+        },
+      ];
+    case "south":
+      return [
+        {
+          ...droppedPosition,
+          row: {
+            start: splitTrackIndex,
+            end: position.row.end,
+          },
+        },
+        {
+          ...targetPosition,
+          row: {
+            start: position.row.start,
+            end: splitTrackIndex,
+          },
+        },
+      ];
+    case "west":
+      return [
+        {
+          ...droppedPosition,
+          column: {
+            start: position.column.start,
+            end: splitTrackIndex,
+          },
+        },
+        {
+          ...targetPosition,
+          column: {
+            start: splitTrackIndex,
+            end: position.column.end,
+          },
+        },
+      ];
+  }
 };

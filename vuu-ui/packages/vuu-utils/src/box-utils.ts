@@ -51,6 +51,11 @@ export type GridLayoutDropPosition =
   | "centre"
   | "tabs";
 
+export const isGridLayoutSplitDirection = (
+  position: GridLayoutDropPosition,
+): position is GridLayoutSplitDirection =>
+  position !== "tabs" && position !== "centre";
+
 export function getPositionWithinBox(
   x: number,
   y: number,

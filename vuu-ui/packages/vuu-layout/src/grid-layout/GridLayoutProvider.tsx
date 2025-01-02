@@ -1,6 +1,5 @@
 import {
   createContext,
-  CSSProperties,
   Dispatch,
   DragEvent,
   ReactElement,
@@ -12,13 +11,12 @@ import { GridLayoutDropHandler } from "./GridPlaceholder";
 import { GridLayoutDragStartHandler } from "./useDraggable";
 import { DragDropProviderNext } from "../drag-drop-next/DragDropProviderNext";
 import { DropHandler } from "../drag-drop-next/DragContextNext";
-import { GridModel } from "./GridModel";
-
-export type GridStyle = Pick<
-  CSSProperties,
-  "gridColumnStart" | "gridColumnEnd" | "gridRowStart" | "gridRowEnd"
->;
-export type GridLayoutMap = Record<string, GridStyle>;
+import {
+  GridModel,
+  GridModelChildItem,
+  GridModelChildItemProps,
+  isFullGridChildItemStyle,
+} from "./GridModel";
 
 export type GridLayoutActionType = "close";
 
@@ -50,7 +48,6 @@ export type GridLayoutDragEndHandler = (evt: DragEvent<HTMLElement>) => void;
 export interface GridLayoutProviderContextProps {
   dispatchGridLayoutAction: GridLayoutProviderDispatch;
   gridModel?: GridModel;
-  layoutMap: GridLayoutMap;
   onDragEnd?: GridLayoutDragEndHandler;
   onDragStart: GridLayoutDragStartHandler;
   onDrop: GridLayoutDropHandler;
@@ -61,7 +58,6 @@ export interface GridLayoutProviderContextProps {
 const GridLayoutProviderContext = createContext<GridLayoutProviderContextProps>(
   {
     dispatchGridLayoutAction: unconfiguredGridLayoutProviderDispatch,
-    layoutMap: {},
     onDragStart: () => console.log("no GridLayoutProvider"),
     onDrop: () => console.log("no GridLayoutProvider"),
     version: -1,
@@ -71,11 +67,7 @@ const GridLayoutProviderContext = createContext<GridLayoutProviderContextProps>(
 export interface GridLayoutProviderProps
   extends Pick<
     GridLayoutProviderContextProps,
-    | "dispatchGridLayoutAction"
-    | "layoutMap"
-    | "onDragEnd"
-    | "onDragStart"
-    | "onDrop"
+    "dispatchGridLayoutAction" | "onDragEnd" | "onDragStart" | "onDrop"
   > {
   children: ReactNode;
   gridModel: GridModel;
@@ -89,7 +81,6 @@ export const GridLayoutProvider = (
     children,
     dispatchGridLayoutAction,
     gridModel,
-    layoutMap,
     onDragEnd,
     onDragStart,
     onDrop,
@@ -104,7 +95,6 @@ export const GridLayoutProvider = (
       value={{
         dispatchGridLayoutAction,
         gridModel,
-        layoutMap,
         onDragEnd,
         onDragStart,
         onDrop,
@@ -123,9 +113,49 @@ export const useGridLayoutProviderDispatch = () => {
   return dispatchGridLayoutAction;
 };
 
-export const useGridLayoutProps = (id: string) => {
-  const { layoutMap } = useContext(GridLayoutProviderContext);
-  return layoutMap[id];
+export const useGridChildProps = ({
+  id,
+  style,
+  resizeable,
+  // TODO handle resizeable etc
+
+  // no need to store gridStyle separately, we already have it in childItem row, column
+}: GridModelChildItemProps) => {
+  const { gridModel } = useContext(GridLayoutProviderContext);
+
+  const childItem = gridModel?.getChildItem(id);
+  if (childItem) {
+    //console.log(`already registered child item ${id}`);
+  } else {
+    if (isFullGridChildItemStyle(style)) {
+      gridModel?.addChildItem(
+        new GridModelChildItem({
+          id,
+          column: {
+            start: style.gridColumnStart as number,
+            end: style.gridColumnEnd as number,
+          },
+          fixed: false,
+          resizeable,
+          row: {
+            start: style.gridRowStart as number,
+            end: style.gridRowEnd as number,
+          },
+        }),
+      );
+    }
+  }
+
+  const childLayoutStyle = gridModel?.getChildItemLayout(id);
+  if (childLayoutStyle) {
+    return childLayoutStyle;
+  } else if (isFullGridChildItemStyle(style)) {
+    gridModel?.setChildItemLayout(id, style);
+  } else {
+    throw Error(
+      `[GridLayoutProvider] no layout configuration for #${id} and missing grid layout styling`,
+    );
+  }
 };
 
 export const useGridLayoutDropHandler = () => {
