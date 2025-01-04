@@ -37,7 +37,14 @@ export const useDraggable = ({
       const dragSource = getDragSourceWithElement(e);
       e.stopPropagation();
 
-      onDragStart?.(e, { id: dragSource.id, type: "text/plain" });
+      if (dragSource.type === "template") {
+        onDragStart?.(e, {
+          payload: JSON.parse(dragSource.componentJson),
+          type: "text/json",
+        });
+      } else {
+        onDragStart?.(e, { id: dragSource.id, type: "text/plain" });
+      }
 
       dragContext.beginDrag(e.nativeEvent, dragSource);
     },

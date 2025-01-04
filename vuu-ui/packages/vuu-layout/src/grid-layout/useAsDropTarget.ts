@@ -117,6 +117,8 @@ export const useAsDropTarget = () => {
 
   // We could replace this with mouse move to reduce event rate
   const onDragOver = useCallback<DragEventHandler>((evt) => {
+    console.log("dragOver");
+
     const target = getDropTarget(evt.target);
     if (target) {
       evt.preventDefault();

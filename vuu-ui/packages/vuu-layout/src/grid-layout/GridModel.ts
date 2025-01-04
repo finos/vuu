@@ -144,6 +144,14 @@ export class GridModelChildItem implements IGridModelChildItem {
     }
     this.#dragging = isDragging;
   }
+
+  get layoutStyle() {
+    const {
+      column: { start: gridColumnStart, end: gridColumnEnd },
+      row: { start: gridRowStart, end: gridRowEnd },
+    } = this;
+    return { gridColumnEnd, gridColumnStart, gridRowEnd, gridRowStart };
+  }
 }
 
 export class GridModel extends EventEmitter<GridModelEvents> {
@@ -153,7 +161,6 @@ export class GridModel extends EventEmitter<GridModelEvents> {
   #templateRows: TrackSize[];
 
   #childItems: GridModelChildItem[] = [];
-  #childItemLayoutMap = new Map<string, Required<GridChildItemStyle>>();
   #index = new Map<string, IGridModelChildItem>();
 
   constructor({
@@ -382,43 +389,15 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     }
   }
 
-  getChildItemLayout(childItemId: string) {
-    return this.#childItemLayoutMap.get(childItemId);
+  getChildItemLayout(childItemId: string): Required<GridChildItemStyle> {
+    return this.getChildItem(childItemId, true).layoutStyle;
   }
 
-  setChildItemPosition(
-    childItemId: string,
-    { start, end }: GridLayoutModelPosition,
-    resizeDirection: GridLayoutResizeDirection,
-  ) {
-    if (resizeDirection === "horizontal") {
-      this.setChildItemLayout(childItemId, {
-        gridColumnStart: start,
-        gridColumnEnd: end,
-      });
+  validateChildId(childItemId: string) {
+    if (this.#childItems.findIndex(({ id }) => id === childItemId) === -1) {
+      throw Error(`[GridModel] validateChildId #${childItemId}`);
     } else {
-      this.setChildItemLayout(childItemId, {
-        gridRowStart: start,
-        gridRowEnd: end,
-      });
-    }
-  }
-
-  setChildItemLayout(childItemId: string, gridLayoutStyle: GridChildItemStyle) {
-    if (isFullGridChildItemStyle(gridLayoutStyle)) {
-      this.#childItemLayoutMap.set(childItemId, gridLayoutStyle);
-    } else {
-      const currentLayoutStyle = this.#childItemLayoutMap.get(childItemId);
-      if (currentLayoutStyle) {
-        this.#childItemLayoutMap.set(childItemId, {
-          ...currentLayoutStyle,
-          ...gridLayoutStyle,
-        });
-      } else {
-        throw Error(
-          "[GridModel] childLayout cannot be set with partial set of grid layout properties",
-        );
-      }
+      return childItemId;
     }
   }
 

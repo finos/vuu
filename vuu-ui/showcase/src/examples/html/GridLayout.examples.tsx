@@ -1,9 +1,4 @@
-import {
-  getTrackIndex,
-  GridLayout,
-  GridLayoutItem,
-  LayoutAPI,
-} from "@finos/vuu-layout";
+import { GridLayout, GridLayoutItem, LayoutAPI } from "@finos/vuu-layout";
 import { queryClosest, registerComponent } from "@finos/vuu-utils";
 import { MouseEventHandler, useCallback, useMemo, useRef } from "react";
 import { DebugGridItem } from "./components/DebugGridItem";
@@ -844,14 +839,14 @@ export const SingleRowFixedItemCenter = () => {
   );
 };
 
-export const SingleColumnFixedItemCenter = () => {
+export const SingleColumnFixedItemBlue = () => {
   return (
     <GridLayout
       colCount={1}
       id="GridLayoutE"
       rowCount={4}
       style={{
-        gridTemplateRows: "1fr 1fr 1fr 1fr",
+        gridTemplateRows: "1fr 150px 1fr 1fr",
       }}
     >
       <GridLayoutItem
@@ -881,14 +876,14 @@ export const SingleColumnFixedItemCenter = () => {
           gridRowStart: 2,
           gridRowEnd: 3,
         }}
-        title="Blue"
+        title="Blue (fixed height 150px)"
       >
         <div style={{ background: "blue" }} />
       </GridLayoutItem>
 
       <GridLayoutItem
         header
-        id="black"
+        id="yellow"
         resizeable="hv"
         style={{
           gridColumnStart: 1,
@@ -896,9 +891,9 @@ export const SingleColumnFixedItemCenter = () => {
           gridRowStart: 3,
           gridRowEnd: 4,
         }}
-        title="Black"
+        title="Yellow"
       >
-        <div style={{ background: "black" }} />
+        <div style={{ background: "yellow" }} />
       </GridLayoutItem>
       <GridLayoutItem
         header

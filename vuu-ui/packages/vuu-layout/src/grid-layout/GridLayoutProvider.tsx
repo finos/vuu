@@ -123,39 +123,33 @@ export const useGridChildProps = ({
 }: GridModelChildItemProps) => {
   const { gridModel } = useContext(GridLayoutProviderContext);
 
-  const childItem = gridModel?.getChildItem(id);
+  let childItem = gridModel?.getChildItem(id);
   if (childItem) {
     //console.log(`already registered child item ${id}`);
   } else {
     if (isFullGridChildItemStyle(style)) {
-      gridModel?.addChildItem(
-        new GridModelChildItem({
-          id,
-          column: {
-            start: style.gridColumnStart as number,
-            end: style.gridColumnEnd as number,
-          },
-          fixed: false,
-          resizeable,
-          row: {
-            start: style.gridRowStart as number,
-            end: style.gridRowEnd as number,
-          },
-        }),
+      childItem = new GridModelChildItem({
+        id,
+        column: {
+          start: style.gridColumnStart as number,
+          end: style.gridColumnEnd as number,
+        },
+        fixed: false,
+        resizeable,
+        row: {
+          start: style.gridRowStart as number,
+          end: style.gridRowEnd as number,
+        },
+      });
+
+      gridModel?.addChildItem(childItem);
+    } else {
+      throw Error(
+        `[GridLayoutProvider] no layout configuration for #${id} and missing grid layout styling`,
       );
     }
   }
-
-  const childLayoutStyle = gridModel?.getChildItemLayout(id);
-  if (childLayoutStyle) {
-    return childLayoutStyle;
-  } else if (isFullGridChildItemStyle(style)) {
-    gridModel?.setChildItemLayout(id, style);
-  } else {
-    throw Error(
-      `[GridLayoutProvider] no layout configuration for #${id} and missing grid layout styling`,
-    );
-  }
+  return childItem.layoutStyle;
 };
 
 export const useGridLayoutDropHandler = () => {

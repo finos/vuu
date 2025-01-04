@@ -36,7 +36,7 @@ export interface GridLayoutItemProps
   header?: boolean;
   isDropTarget?: boolean;
   label?: string;
-  style: CSSProperties & GridStyle;
+  style: CSSProperties;
 }
 
 const getDragSourceWithElement = (

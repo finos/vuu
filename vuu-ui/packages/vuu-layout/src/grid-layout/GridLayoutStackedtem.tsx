@@ -106,7 +106,7 @@ export const GridLayoutStackedItem = ({
   });
 
   const dispatch = useGridLayoutProviderDispatch();
-  const layoutProps = useGridChildProps(id);
+  const layoutProps = useGridChildProps({ id, resizeable, style: styleProp });
 
   // TODO need to add children to state OR DO WE ?
   //

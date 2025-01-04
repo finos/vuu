@@ -1,5 +1,4 @@
 import { uuid } from "@finos/vuu-utils";
-import { IGridLayoutModelItem } from "./GridLayoutModel";
 import { GridModelChildItem } from "./GridModel";
 
 export type GridMatrix = number[][];
@@ -9,7 +8,7 @@ function addGridItemToGrid(
   {
     column: { start: colStart, end: colEnd },
     row: { start: rowStart, end: rowEnd },
-  }: IGridLayoutModelItem,
+  }: GridModelChildItem,
 ) {
   for (let row = rowStart - 1; row < rowEnd - 1; row++) {
     for (let col = colStart - 1; col < colEnd - 1; col++) {
@@ -18,17 +17,14 @@ function addGridItemToGrid(
   }
 }
 
-const fillGridMatrix = (
-  grid: GridMatrix,
-  gridItems: IGridLayoutModelItem[],
-) => {
+const fillGridMatrix = (grid: GridMatrix, gridItems: GridModelChildItem[]) => {
   for (const gridItem of gridItems) {
     addGridItemToGrid(grid, gridItem);
   }
 };
 
 export const getGridMatrix = (
-  gridItems: IGridLayoutModelItem[],
+  gridItems: GridModelChildItem[],
   rowCount: number,
   colCount: number,
 ): GridMatrix => {

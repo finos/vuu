@@ -1,8 +1,8 @@
 import {
   GridLayoutModelPosition,
   GridLayoutResizeDirection,
-  IGridLayoutModelItem,
 } from "./GridLayoutModel";
+import { GridModelChildItem } from "./GridModel";
 
 export const classNameLayoutItem = "vuuGridLayoutItem";
 
@@ -87,7 +87,7 @@ export const setGridRow = (
 };
 
 export const spansMultipleTracks = (
-  gridItem: IGridLayoutModelItem,
+  gridItem: GridModelChildItem,
   direction: GridLayoutResizeDirection,
 ) => {
   const track = direction === "horizontal" ? "column" : "row";

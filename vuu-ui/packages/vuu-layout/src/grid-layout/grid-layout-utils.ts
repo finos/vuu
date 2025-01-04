@@ -6,9 +6,9 @@ import {
   GridLayoutModelCoordinates,
   GridLayoutModelPosition,
   GridLayoutResizeDirection,
-  IGridLayoutModelItem,
   ISplitter,
 } from "./GridLayoutModel";
+import { GridModelChildItem } from "./GridModel";
 
 /**
  * Given an array of track sizes, split the value at the indicated
@@ -74,9 +74,9 @@ export const getBisectingGridLine = (
 };
 
 export type ContrasAndSiblings = {
-  contras: IGridLayoutModelItem[];
+  contras: GridModelChildItem[];
   position: GridLayoutModelPosition;
-  siblings: IGridLayoutModelItem[];
+  siblings: GridModelChildItem[];
 };
 
 /**
@@ -92,9 +92,9 @@ export type ContrasAndSiblings = {
  * @returns
  */
 export const getMatchingColspan = (
-  targetGridItem: IGridLayoutModelItem,
-  siblings: IGridLayoutModelItem[],
-  contras: IGridLayoutModelItem[],
+  targetGridItem: GridModelChildItem,
+  siblings: GridModelChildItem[],
+  contras: GridModelChildItem[],
 ): ContrasAndSiblings | undefined => {
   const { column } = targetGridItem;
   const startCol = column.start;
@@ -102,8 +102,8 @@ export const getMatchingColspan = (
   let siblingIndex = 0;
   let contraIndex = 0;
 
-  const contrasOut: IGridLayoutModelItem[] = [];
-  const siblingsOut: IGridLayoutModelItem[] = [];
+  const contrasOut: GridModelChildItem[] = [];
+  const siblingsOut: GridModelChildItem[] = [];
 
   const targetAndSiblings = [targetGridItem].concat(siblings);
 
@@ -146,9 +146,9 @@ export const getMatchingColspan = (
  * @returns
  */
 export const getMatchingRowspan = (
-  gridItem: IGridLayoutModelItem,
-  siblings: IGridLayoutModelItem[],
-  contras: IGridLayoutModelItem[],
+  gridItem: GridModelChildItem,
+  siblings: GridModelChildItem[],
+  contras: GridModelChildItem[],
 ): ContrasAndSiblings | undefined => {
   const { row } = gridItem;
   const startRow = row.start;
@@ -156,8 +156,8 @@ export const getMatchingRowspan = (
   let siblingIndex = 0;
   let contraIndex = 0;
 
-  const contrasOut: IGridLayoutModelItem[] = [];
-  const siblingsOut: IGridLayoutModelItem[] = [];
+  const contrasOut: GridModelChildItem[] = [];
+  const siblingsOut: GridModelChildItem[] = [];
 
   const targetAndSiblings = [gridItem].concat(siblings);
 
@@ -231,15 +231,15 @@ export const adjustDistance = (moveBy: number, adjustmentAmount: number) => {
 };
 
 export const byColumnStart = (
-  item1: IGridLayoutModelItem,
-  item2: IGridLayoutModelItem,
+  item1: GridModelChildItem,
+  item2: GridModelChildItem,
 ) => {
   return item1.column.start - item2.column.start;
 };
 
 export const byRowStart = (
-  item1: IGridLayoutModelItem,
-  item2: IGridLayoutModelItem,
+  item1: GridModelChildItem,
+  item2: GridModelChildItem,
 ) => {
   return item1.row.start - item2.row.start;
 };
@@ -267,17 +267,17 @@ const gridLayoutPositionComparator = (
   return 0;
 };
 export const byColumnPosition = (
-  { column: pos1 }: IGridLayoutModelItem,
-  { column: pos2 }: IGridLayoutModelItem,
+  { column: pos1 }: GridModelChildItem,
+  { column: pos2 }: GridModelChildItem,
 ) => gridLayoutPositionComparator(pos1, pos2);
 
 export const byRowPosition = (
-  { row: pos1 }: IGridLayoutModelItem,
-  { row: pos2 }: IGridLayoutModelItem,
+  { row: pos1 }: GridModelChildItem,
+  { row: pos2 }: GridModelChildItem,
 ) => gridLayoutPositionComparator(pos1, pos2);
 
 export const itemsFillColumn = (
-  items: IGridLayoutModelItem[],
+  items: GridModelChildItem[],
   pos: GridLayoutModelPosition,
 ) => {
   const sortedItems = items.sort(byColumnPosition);
@@ -304,7 +304,7 @@ export const itemsFillColumn = (
   return false;
 };
 export const itemsFillRow = (
-  items: IGridLayoutModelItem[],
+  items: GridModelChildItem[],
   row: GridLayoutModelPosition,
 ) => {
   const sortedItems = items.sort(byRowPosition);
@@ -381,12 +381,12 @@ export const splitTracks = (tracks: number[], start: number, end: number) => {
  * @returns [droppedItemPosition, targetPosition]
  */
 export const splitGridChildPosition = (
-  position: GridLayoutModelCoordinates,
+  { column, row }: GridLayoutModelCoordinates,
   splitDirection: GridLayoutSplitDirection,
   splitTrackIndex: number,
 ): [GridLayoutModelCoordinates, GridLayoutModelCoordinates] => {
-  const droppedPosition = structuredClone(position);
-  const targetPosition = structuredClone(position);
+  const droppedPosition = structuredClone({ column, row });
+  const targetPosition = structuredClone({ column, row });
 
   console.log(`split at ${splitTrackIndex}`);
 
@@ -396,7 +396,7 @@ export const splitGridChildPosition = (
         {
           ...droppedPosition,
           row: {
-            start: position.row.start,
+            start: row.start,
             end: splitTrackIndex,
           },
         },
@@ -404,7 +404,7 @@ export const splitGridChildPosition = (
           ...targetPosition,
           row: {
             start: splitTrackIndex,
-            end: position.row.end,
+            end: row.end,
           },
         },
       ];
@@ -414,13 +414,13 @@ export const splitGridChildPosition = (
           ...droppedPosition,
           column: {
             start: splitTrackIndex,
-            end: position.column.end,
+            end: column.end,
           },
         },
         {
           ...targetPosition,
           column: {
-            start: position.column.start,
+            start: column.start,
             end: splitTrackIndex,
           },
         },
@@ -431,13 +431,13 @@ export const splitGridChildPosition = (
           ...droppedPosition,
           row: {
             start: splitTrackIndex,
-            end: position.row.end,
+            end: row.end,
           },
         },
         {
           ...targetPosition,
           row: {
-            start: position.row.start,
+            start: row.start,
             end: splitTrackIndex,
           },
         },
@@ -447,7 +447,7 @@ export const splitGridChildPosition = (
         {
           ...droppedPosition,
           column: {
-            start: position.column.start,
+            start: column.start,
             end: splitTrackIndex,
           },
         },
@@ -455,7 +455,7 @@ export const splitGridChildPosition = (
           ...targetPosition,
           column: {
             start: splitTrackIndex,
-            end: position.column.end,
+            end: column.end,
           },
         },
       ];

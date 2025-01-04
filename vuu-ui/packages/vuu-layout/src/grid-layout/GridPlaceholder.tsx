@@ -32,6 +32,11 @@ export const GridPlaceholder = ({
   const dragDropHandlers = useAsDropTarget();
 
   return (
-    <div {...htmlAttributes} {...dragDropHandlers} className={classBase} />
+    <div
+      {...htmlAttributes}
+      {...dragDropHandlers}
+      className={classBase}
+      data-drop-target
+    />
   );
 };
