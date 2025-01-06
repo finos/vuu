@@ -16,6 +16,11 @@ import {
 
 type TrackSize = number | string;
 
+export interface GridLayoutModelCoordinates {
+  column: GridLayoutModelPosition;
+  row: GridLayoutModelPosition;
+}
+
 export interface GridModelChildItemProps {
   fixed?: boolean;
   id: string;
@@ -152,6 +157,28 @@ export class GridModelChildItem implements IGridModelChildItem {
     } = this;
     return { gridColumnEnd, gridColumnStart, gridRowEnd, gridRowStart };
   }
+}
+
+export type AriaOrientation = "horizontal" | "vertical";
+export type SplitterAlign = "start" | "end";
+
+export interface ISplitter extends GridLayoutModelCoordinates {
+  align: SplitterAlign;
+  ariaOrientation: AriaOrientation;
+  controls: string;
+  id: string;
+  orientation: GridLayoutResizeDirection;
+  /**
+   * Index values of the two grid tracks (column or row) whose
+   * dimension (width for columns, height for rows) can be
+   * manipulated with this splitter. The tracks will usually,
+   * but not always, be adjacent.
+   */
+  resizedGridTracks: [number, number];
+  resizedChildItems: {
+    before: string[];
+    after: string[];
+  };
 }
 
 export class GridModel extends EventEmitter<GridModelEvents> {
@@ -465,21 +492,89 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     return this.childItems.filter(isPlaceholder);
   }
 
+  getSplitters() {
+    return this.#childItems.flatMap(this.getSplittersForChildItem);
+  }
+
+  private getSplittersForChildItem = (childItem: GridModelChildItem) => {
+    const splitters: ISplitter[] = [];
+    const { column, id, row } = childItem;
+
+    // 1) Horizontal (column) resizing - the vertically aligned splitters
+
+    const columnContrasAndSiblings = this.findContrasAndSiblings(
+      childItem,
+      "horizontal",
+    );
+
+    if (columnContrasAndSiblings) {
+      const resizeTrackIndex = column.start - 1;
+      const contraTrackIndex = column.start - 2;
+
+      const resizedChildItems = {
+        before: columnContrasAndSiblings.contras.map((c) => c.id),
+        after: [id].concat(columnContrasAndSiblings.siblings.map((c) => c.id)),
+      };
+
+      splitters.push({
+        align: "start",
+        ariaOrientation: "vertical",
+        column,
+        controls: id,
+        id: `${id}-splitter-h`,
+        orientation: "horizontal",
+        row: columnContrasAndSiblings.position,
+        resizedChildItems,
+        resizedGridTracks: [contraTrackIndex, resizeTrackIndex],
+      });
+    }
+
+    // 2) Vertical (row) resizing - the horizontally aligned splitters
+
+    const rowContrasAndSiblings = this.findContrasAndSiblings(
+      childItem,
+      "vertical",
+    );
+
+    if (rowContrasAndSiblings) {
+      const resizeTrackIndex = row.start - 1;
+      const contraTrackIndex = row.start - 2;
+
+      const resizedChildItems = {
+        before: rowContrasAndSiblings.contras.map((c) => c.id),
+        after: [id].concat(rowContrasAndSiblings.siblings.map((c) => c.id)),
+      };
+
+      splitters.push({
+        align: "start",
+        ariaOrientation: "horizontal",
+        column: rowContrasAndSiblings.position,
+        controls: id,
+        id: `${id}-splitter-v`,
+        orientation: "vertical",
+        resizedChildItems,
+        resizedGridTracks: [contraTrackIndex, resizeTrackIndex],
+        row,
+      });
+    }
+    return splitters;
+  };
+
   findContrasAndSiblings(
-    gridItem: GridModelChildItem,
-    resizeDirection: GridLayoutResizeDirection = "horizontal",
+    childItem: GridModelChildItem,
+    resizeDirection: GridLayoutResizeDirection,
   ) {
     if (resizeDirection === "vertical") {
-      const contrasAbove = this.getContrasAbove(gridItem);
+      const contrasAbove = this.getContrasAbove(childItem);
       if (contrasAbove.length > 0) {
-        const siblingsRight = this.getSiblingsRight(gridItem);
-        return getMatchingColspan(gridItem, siblingsRight, contrasAbove);
+        const siblingsRight = this.getSiblingsRight(childItem);
+        return getMatchingColspan(childItem, siblingsRight, contrasAbove);
       }
     } else {
-      const contrasLeft = this.getContrasLeft(gridItem);
+      const contrasLeft = this.getContrasLeft(childItem);
       if (contrasLeft.length > 0) {
-        const siblingsBelow = this.getSiblingsBelow(gridItem);
-        return getMatchingRowspan(gridItem, siblingsBelow, contrasLeft);
+        const siblingsBelow = this.getSiblingsBelow(childItem);
+        return getMatchingRowspan(childItem, siblingsBelow, contrasLeft);
       }
     }
   }

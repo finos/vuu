@@ -9,7 +9,12 @@ import {
   splitTrack,
   splitTracks,
 } from "./grid-layout-utils";
-import type { GridModel, GridModelChildItem } from "./GridModel";
+import type {
+  GridLayoutModelCoordinates,
+  GridModel,
+  GridModelChildItem,
+  ISplitter,
+} from "./GridModel";
 
 export type GridLayoutModelPosition = {
   end: number;
@@ -17,25 +22,14 @@ export type GridLayoutModelPosition = {
 };
 
 export type ResizeState = {
-  cols: number[];
-  contras: GridModelChildItem[];
-  contraTrackIndex: number;
   resizeTrackIsShared: boolean;
-  grid: HTMLElement;
   mousePos: number;
-  resizeElement: HTMLElement;
-  resizeDirection: GridLayoutResizeDirection;
-  resizeItem: GridModelChildItem;
-  resizeTrackIndex: number;
-  rows: number[];
-  siblings: GridModelChildItem[];
-  splitterElement: HTMLElement;
+  splitter: ISplitter;
 };
 
 export type GridItemRemoveReason = "drag" | "close" | "placeholder";
 
 export type GridLayoutResizeOperation = "contract" | "expand";
-export type SplitterAlign = "start" | "end";
 export type GridLayoutResizeDirection = "vertical" | "horizontal";
 export type GridLayoutRelativePosition =
   | "aboveInSameColumn"
@@ -50,21 +44,10 @@ export type GridLayoutModelItemType =
   | "splitter"
   | "stacked-content";
 
-export interface GridLayoutModelCoordinates {
-  column: GridLayoutModelPosition;
-  row: GridLayoutModelPosition;
-}
 type OneOrBothGridLayoutModelCoordinates =
   | GridLayoutModelCoordinates
   | OptionalProperty<GridLayoutModelCoordinates, "column">
   | OptionalProperty<GridLayoutModelCoordinates, "row">;
-
-export interface ISplitter extends GridLayoutModelCoordinates {
-  align: SplitterAlign;
-  controls: string;
-  id: string;
-  orientation: GridLayoutResizeDirection;
-}
 
 export type GridItemUpdate = [string, OneOrBothGridLayoutModelCoordinates];
 type ColumnAndRowUpdates = [GridItemUpdate[], GridItemUpdate[]];
@@ -386,50 +369,17 @@ export class GridLayoutModel {
     return droppedGridItem;
   }
 
-  getSplitterPositions(): ISplitter[] {
-    const splitterPositions: ISplitter[] = [];
-    for (const gridItem of this.gridModel.childItems) {
-      const { column, id, row } = gridItem;
+  createSplitters(): ISplitter[] {
+    return (this.splitters = this.gridModel.getSplitters());
+  }
 
-      // 1) Horizontal resizing - the vertically aligned splitters
-
-      const rowSpan = this.gridModel.findContrasAndSiblings(
-        gridItem,
-        "horizontal",
-      );
-
-      if (rowSpan) {
-        splitterPositions.push({
-          align: "start",
-          column,
-          controls: id,
-          id: `${id}-splitter-h`,
-          orientation: "horizontal",
-          row: rowSpan.position,
-        });
-      }
-
-      // 2) Vertical resizing - the horizontally aligned splitters
-
-      const columnSpan = this.gridModel.findContrasAndSiblings(
-        gridItem,
-        "vertical",
-      );
-
-      if (columnSpan) {
-        splitterPositions.push({
-          align: "start",
-          column: columnSpan.position,
-          controls: id,
-          id: `${id}-splitter-v`,
-          orientation: "vertical",
-          row,
-        });
-      }
+  getSplitterById(splitterId: string) {
+    const splitter = this.splitters?.find(({ id }) => id === splitterId);
+    if (splitter) {
+      return splitter;
+    } else {
+      throw Error(`[GridLayoutModel] getSplitterId #${splitterId}`);
     }
-
-    this.splitters = splitterPositions;
-    return splitterPositions;
   }
 
   getSplitter(
@@ -456,7 +406,9 @@ export class GridLayoutModel {
     resizeOperation: GridLayoutResizeOperation,
     state: ResizeState,
   ) {
-    const { contras, resizeDirection, resizeItem, siblings } = state;
+    const { splitter } = state;
+    const { before: contraIds, after: resizeIds } = splitter.resizedChildItems;
+    const resizeDirection = splitter.orientation;
 
     const expandingResizeItem = resizeOperation === "expand";
 
@@ -472,7 +424,10 @@ export class GridLayoutModel {
     const updates = this.addTrack(newTrackIndex, resizeDirection);
     const indexAdjustment = expandingResizeItem ? -1 : +1;
 
-    contras.forEach(({ id, [track]: { start, end } }) => {
+    contraIds.forEach((id) => {
+      const {
+        [track]: { start, end },
+      } = this.gridModel.getChildItem(id, true);
       const existingUpdate = updates.find(
         ([itemId, positions]) => id === itemId && positions[track],
       );
@@ -490,7 +445,10 @@ export class GridLayoutModel {
       }
     });
 
-    siblings.concat(resizeItem).forEach(({ id, [track]: { start, end } }) => {
+    resizeIds.forEach((id) => {
+      const {
+        [track]: { start, end },
+      } = this.gridModel.getChildItem(id, true);
       const existingUpdate = updates.find(
         ([itemId, positions]) => id === itemId && positions[track],
       );
@@ -705,8 +663,9 @@ export class GridLayoutModel {
     tracks: number[],
     newTrackSize: number,
     resizeOperation: GridLayoutResizeOperation,
-    { resizeTrackIndex }: ResizeState,
+    { splitter }: ResizeState,
   ) {
+    const [, resizeTrackIndex] = splitter.resizedGridTracks;
     const newTracks = tracks.slice();
     newTracks.splice(resizeTrackIndex, 0, 0);
     newTracks[resizeTrackIndex] = Math.abs(newTrackSize);
@@ -720,64 +679,13 @@ export class GridLayoutModel {
     return newTracks;
   }
 
-  getInitialResizeState({
-    grid,
-    cols,
-    mousePos,
-    rows,
-    resizeElement,
-    resizeDirection,
-    resizeItem,
-    ...rest
-  }: Omit<
-    ResizeState,
-    | "contras"
-    | "contraTrackIndex"
-    | "cols"
-    | "mouseCurrentPos"
-    | "resizeTrackIndex"
-    | "resizeTrackIsShared"
-    | "rows"
-    | "siblings"
-  > & {
-    cols: number[];
-    mousePos: number;
-    rows: number[];
-  }): ResizeState | undefined {
-    const contrasAndSiblings = this.gridModel.findContrasAndSiblings(
-      resizeItem,
-      resizeDirection,
-    );
-
-    if (contrasAndSiblings && this.splitters) {
-      const { contras, siblings } = contrasAndSiblings;
-
-      //TODO calculate simpleResize
-
-      const track: GridLayoutTrack =
-        resizeDirection === "horizontal" ? "column" : "row";
-
-      const resizeTrackIndex = resizeItem[track].start - 1;
-      const contraTrackIndex = resizeItem[track].start - 2;
-
-      const splitter = this.getSplitter(resizeItem, resizeDirection);
-      const resizeTrackIsShared = isResizeTrackShared(this.splitters, splitter);
-
-      return {
-        ...rest,
-        cols,
-        contras,
-        contraTrackIndex,
-        grid,
-        mousePos,
-        resizeElement,
-        resizeItem,
-        resizeDirection,
-        rows,
-        siblings,
-        resizeTrackIndex,
-        resizeTrackIsShared,
-      };
+  isResizeTrackShared(splitter: ISplitter) {
+    if (this.splitters) {
+      return isResizeTrackShared(this.splitters, splitter);
+    } else {
+      throw Error(
+        "[GridLayoutModel] isResizeTrackShared, no splitters created",
+      );
     }
   }
 

@@ -842,7 +842,7 @@ export const SingleRowFixedItemCenter = () => {
 export const SingleColumnFixedItemBlue = () => {
   return (
     <GridLayout
-      colCount={1}
+      colCount={2}
       id="GridLayoutE"
       rowCount={4}
       style={{
@@ -869,10 +869,28 @@ export const SingleColumnFixedItemBlue = () => {
       </GridLayoutItem>
       <GridLayoutItem
         header
+        id="pink"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 2,
+          gridColumnEnd: 3,
+          gridRowStart: 1,
+          gridRowEnd: 2,
+        }}
+        title="Pink"
+      >
+        <div
+          style={{
+            background: "pink",
+          }}
+        />
+      </GridLayoutItem>
+      <GridLayoutItem
+        header
         id="blue"
         style={{
           gridColumnStart: 1,
-          gridColumnEnd: 2,
+          gridColumnEnd: 3,
           gridRowStart: 2,
           gridRowEnd: 3,
         }}
@@ -887,7 +905,7 @@ export const SingleColumnFixedItemBlue = () => {
         resizeable="hv"
         style={{
           gridColumnStart: 1,
-          gridColumnEnd: 2,
+          gridColumnEnd: 3,
           gridRowStart: 3,
           gridRowEnd: 4,
         }}
@@ -908,6 +926,20 @@ export const SingleColumnFixedItemBlue = () => {
         title="Red"
       >
         <div style={{ background: "red" }} />
+      </GridLayoutItem>
+      <GridLayoutItem
+        header
+        id="brown"
+        resizeable="hv"
+        style={{
+          gridColumnStart: 2,
+          gridColumnEnd: 3,
+          gridRowStart: 4,
+          gridRowEnd: 5,
+        }}
+        title="Brown"
+      >
+        <div style={{ background: "brown" }} />
       </GridLayoutItem>
     </GridLayout>
   );

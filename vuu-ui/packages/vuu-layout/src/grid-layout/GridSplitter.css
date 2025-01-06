@@ -1,12 +1,13 @@
 .vuuGridSplitter {
     background-color: cornflowerblue;
 }
-.vuuGridSplitter-horizontal {
+.vuuGridSplitter[aria-orientation="vertical"] {
     cursor: ew-resize;
     transform: translate(-2px,0);
     width: 4px;
 }
-.vuuGridSplitter-vertical {
+
+.vuuGridSplitter[aria-orientation="horizontal"] {
     cursor: ns-resize;
     height: 4px;
     transform: translate(0, -2px);

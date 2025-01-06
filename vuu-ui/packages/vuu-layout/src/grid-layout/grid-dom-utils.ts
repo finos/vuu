@@ -13,10 +13,6 @@ type GridPos = [number, number];
 
 export const isSplitter = (element: HTMLElement) =>
   element.classList.contains("vuuGridSplitter");
-export const isVerticalSplitter = (element: HTMLElement) =>
-  element.classList.contains("vuuGridSplitter-vertical");
-export const isHorizontalSplitter = (element: HTMLElement) =>
-  element.classList.contains("vuuGridSplitter-horizontal");
 
 export const getGridLayoutItem = (el: HTMLElement) => {
   if (el.classList.contains(classNameLayoutItem)) {

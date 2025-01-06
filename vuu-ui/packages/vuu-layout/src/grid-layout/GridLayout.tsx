@@ -1,4 +1,5 @@
 import {
+  AriaOrientation,
   GridLayoutProvider,
   GridPlaceholder,
   ResizeOrientation,
@@ -22,11 +23,13 @@ export type GridResizeable = "h" | "v" | "hv";
 
 export interface GridSplitterProps extends HTMLAttributes<HTMLDivElement> {
   "aria-controls": string;
+  ariaOrientation: AriaOrientation;
   orientation: ResizeOrientation;
 }
 
 export const GridSplitter = ({
   "aria-controls": ariaControls,
+  ariaOrientation,
   orientation,
   ...htmlAttributes
 }: GridSplitterProps) => {
@@ -35,7 +38,8 @@ export const GridSplitter = ({
     <div
       {...htmlAttributes}
       aria-controls={ariaControls}
-      className={cx("vuuGridSplitter", `vuuGridSplitter-${orientation}`)}
+      aria-orientation={ariaOrientation}
+      className="vuuGridSplitter"
       id={id}
       role="separator"
     />
@@ -72,12 +76,13 @@ export const GridLayout = ({
   style: styleProp,
   ...htmlAttributes
 }: GridLayoutProps) => {
-  const { containerCallback, containerRef, gridModel } = useGridLayout({
-    colCount,
-    cols,
-    rowCount,
-    rows,
-  });
+  const { containerCallback, containerRef, gridModel, onDragEnd } =
+    useGridLayout({
+      colCount,
+      cols,
+      rowCount,
+      rows,
+    });
 
   const {
     addGridColumn,
@@ -132,6 +137,7 @@ export const GridLayout = ({
         ref={containerCallback}
         style={style}
         className={cx(classBase, className)}
+        onDragEnd={onDragEnd}
       >
         {children}
         {placeholders.map((placeholder) => (
@@ -147,6 +153,7 @@ export const GridLayout = ({
         {splitters.map((splitter) => (
           <GridSplitter
             aria-controls={splitter.controls}
+            ariaOrientation={splitter.ariaOrientation}
             id={splitter.id}
             key={splitter.id}
             orientation={splitter.orientation}

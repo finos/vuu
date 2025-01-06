@@ -1,5 +1,6 @@
 import { RefCallback, useCallback, useEffect, useMemo, useRef } from "react";
 import { GridModel, GridModelConstructorProps } from "./GridModel";
+import { GridLayoutDragEndHandler } from "./GridLayoutProvider";
 
 export type GridLayoutHookProps = Pick<
   GridModelConstructorProps,
@@ -47,6 +48,13 @@ export const useGridLayout = ({
     }
   }, []);
 
+  const handleDragEnd = useCallback<GridLayoutDragEndHandler>(() => {
+    const { current: grid } = containerRef;
+    if (grid) {
+      grid.classList.remove("vuuDragging");
+    }
+  }, [containerRef]);
+
   useEffect(() => {
     gridModel.addListener("grid-template-columns", updateGridTemplateColumns);
     gridModel.addListener("grid-template-rows", updateGridTemplateRows);
@@ -64,5 +72,6 @@ export const useGridLayout = ({
     containerCallback,
     containerRef,
     gridModel,
+    onDragEnd: handleDragEnd,
   };
 };
