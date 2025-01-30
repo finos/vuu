@@ -1,3 +1,4 @@
+export * from "./GridModel";
 export * from "./GridLayoutModel";
 export * from "./GridLayout";
 export * from "./GridLayoutItem";
@@ -6,3 +7,5 @@ export * from "./GridPlaceholder";
 export * from "./grid-dom-utils";
 export * from "./grid-layout-utils";
 export * from "./useDraggable";
+export { useGridLayoutDragStartHandler } from "./GridLayoutContext";
+export type { DragSource } from "./GridLayoutContext";

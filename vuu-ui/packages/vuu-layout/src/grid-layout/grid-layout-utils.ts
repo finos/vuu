@@ -3,12 +3,17 @@ import {
   GridLayoutSplitDirection,
 } from "@finos/vuu-utils";
 import {
-  GridLayoutModelCoordinates,
   GridLayoutModelPosition,
   GridLayoutResizeDirection,
-  ISplitter,
 } from "./GridLayoutModel";
-import { GridModelChildItem } from "./GridModel";
+import {
+  GridLayoutChildItemDescriptor,
+  GridLayoutModelCoordinates,
+  GridModelChildItem,
+  GridModelCoordinates,
+  ISplitter,
+  TrackType,
+} from "./GridModel";
 
 /**
  * Given an array of track sizes, split the value at the indicated
@@ -103,7 +108,7 @@ export const getMatchingColspan = (
   let contraIndex = 0;
 
   const contrasOut: GridModelChildItem[] = [];
-  const siblingsOut: GridModelChildItem[] = [];
+  const siblingsOut: GridModelChildItem[] = [targetGridItem];
 
   const targetAndSiblings = [targetGridItem].concat(siblings);
 
@@ -157,7 +162,7 @@ export const getMatchingRowspan = (
   let contraIndex = 0;
 
   const contrasOut: GridModelChildItem[] = [];
-  const siblingsOut: GridModelChildItem[] = [];
+  const siblingsOut: GridModelChildItem[] = [gridItem];
 
   const targetAndSiblings = [gridItem].concat(siblings);
 
@@ -381,12 +386,21 @@ export const splitTracks = (tracks: number[], start: number, end: number) => {
  * @returns [droppedItemPosition, targetPosition]
  */
 export const splitGridChildPosition = (
-  { column, row }: GridLayoutModelCoordinates,
+  {
+    column: { start: colStart, end: colEnd },
+    row: { start: rowStart, end: rowEnd },
+  }: GridLayoutModelCoordinates,
   splitDirection: GridLayoutSplitDirection,
   splitTrackIndex: number,
 ): [GridLayoutModelCoordinates, GridLayoutModelCoordinates] => {
-  const droppedPosition = structuredClone({ column, row });
-  const targetPosition = structuredClone({ column, row });
+  const droppedPosition = {
+    column: { start: colStart, end: colEnd },
+    row: { start: rowStart, end: rowEnd },
+  };
+  const targetPosition = {
+    column: { start: colStart, end: colEnd },
+    row: { start: rowStart, end: rowEnd },
+  };
 
   console.log(`split at ${splitTrackIndex}`);
 
@@ -396,7 +410,7 @@ export const splitGridChildPosition = (
         {
           ...droppedPosition,
           row: {
-            start: row.start,
+            start: rowStart,
             end: splitTrackIndex,
           },
         },
@@ -404,7 +418,7 @@ export const splitGridChildPosition = (
           ...targetPosition,
           row: {
             start: splitTrackIndex,
-            end: row.end,
+            end: rowEnd,
           },
         },
       ];
@@ -414,13 +428,13 @@ export const splitGridChildPosition = (
           ...droppedPosition,
           column: {
             start: splitTrackIndex,
-            end: column.end,
+            end: colEnd,
           },
         },
         {
           ...targetPosition,
           column: {
-            start: column.start,
+            start: colStart,
             end: splitTrackIndex,
           },
         },
@@ -431,13 +445,13 @@ export const splitGridChildPosition = (
           ...droppedPosition,
           row: {
             start: splitTrackIndex,
-            end: row.end,
+            end: rowEnd,
           },
         },
         {
           ...targetPosition,
           row: {
-            start: row.start,
+            start: rowStart,
             end: splitTrackIndex,
           },
         },
@@ -447,7 +461,7 @@ export const splitGridChildPosition = (
         {
           ...droppedPosition,
           column: {
-            start: column.start,
+            start: colStart,
             end: splitTrackIndex,
           },
         },
@@ -455,9 +469,58 @@ export const splitGridChildPosition = (
           ...targetPosition,
           column: {
             start: splitTrackIndex,
-            end: column.end,
+            end: colEnd,
           },
         },
       ];
   }
 };
+
+export const isFixedHeightChildItem = (item: GridModelChildItem) =>
+  item.resizeable === false || item.resizeable === "h";
+export const isFixedWidthChildItem = (item: GridModelChildItem) =>
+  item.resizeable === false || item.resizeable === "v";
+
+export const getGridArea = ({ column, row }: GridLayoutModelCoordinates) =>
+  `${row.start}/${column.start}/${row.end}/${column.end}`;
+
+export const getSharedGridPosition = (
+  childItems: GridModelChildItem[],
+): GridLayoutModelCoordinates => {
+  const [{ column, row }, ...rest] = childItems;
+  if (rest.length > 0) {
+    if (
+      rest.some(
+        ({ column: c, row: r }) =>
+          c.start !== column.start ||
+          c.end !== column.end ||
+          r.start !== row.start ||
+          r.end !== row.end,
+      )
+    ) {
+      throw Error(
+        "grid-layout-utils] getSharedGridPosition not all child grid items hae same GridLayoutModelCoordinates",
+      );
+    }
+  }
+  return { column, row };
+};
+
+export const getGridPosition = (
+  gridArea: GridLayoutChildItemDescriptor["gridArea"],
+): GridModelCoordinates => {
+  if (typeof gridArea === "string") {
+    const [rowStart, colStart, rowEnd, colEnd] = gridArea
+      .split("/")
+      .map((val) => parseInt(val, 10));
+    return {
+      column: { start: colStart, end: colEnd },
+      row: { start: rowStart, end: rowEnd },
+    };
+  } else {
+    throw Error(`[grid-layout-utils] getGridPosition gridArea  must be valid`);
+  }
+};
+
+export const getTrackType = (splitter: ISplitter): TrackType =>
+  splitter.orientation === "vertical" ? "row" : "column";

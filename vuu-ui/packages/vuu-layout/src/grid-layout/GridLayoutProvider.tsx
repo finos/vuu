@@ -1,179 +1,174 @@
 import {
   createContext,
-  Dispatch,
   DragEvent,
   ReactElement,
   ReactNode,
   useCallback,
   useContext,
+  useMemo,
 } from "react";
-import { GridLayoutDropHandler } from "./GridPlaceholder";
-import { GridLayoutDragStartHandler } from "./useDraggable";
-import { DragDropProviderNext } from "../drag-drop-next/DragDropProviderNext";
-import { DropHandler } from "../drag-drop-next/DragContextNext";
 import {
-  GridModel,
-  GridModelChildItem,
-  GridModelChildItemProps,
-  isFullGridChildItemStyle,
+  GridLayoutChangeHandler,
+  GridLayoutChildItemDescriptor,
+  GridLayoutDescriptor,
 } from "./GridModel";
+import { GridLayoutItemProps } from "./GridLayoutItem";
+import { layoutFromJson, layoutToJSON } from "../layout-reducer";
+import { LayoutJSON } from "@finos/vuu-utils";
 
-export type GridLayoutActionType = "close";
+export type GridChildElementsChangeHandler = (
+  id: string,
+  childElements: ReactElement<GridLayoutItemProps>[],
+) => void;
 
-export type GridLayoutCloseAction = {
-  type: "close";
-  id: string;
+type GridLayoutOptions = {
+  newChildItem: {
+    header: boolean;
+  };
 };
-export type GridLayoutInsertTabAction = {
-  type: "insert-tab";
+
+export type ComponentMap = Record<string, ReactElement>;
+export type SerializedComponentMap = Record<string, LayoutJSON>;
+
+export type SerializedGridLayout<T = SerializedComponentMap | ComponentMap> = {
+  components: T;
   id: string;
-  childId: string;
+  layout: GridLayoutDescriptor<Record<string, GridLayoutChildItemDescriptor>>;
 };
 
-export type GridLayoutAction =
-  | GridLayoutCloseAction
-  | GridLayoutInsertTabAction;
+interface GridLayoutProviderContext {
+  getSavedGrid?: (id: string) => SerializedGridLayout | undefined;
+  gridChildItemsMap?: Map<string, SerializedComponentMap>;
+  gridLayoutMap?: Map<string, GridLayoutDescriptor>;
+  getChildElements?: (
+    id: string,
+    children?: ReactNode,
+  ) => ReactElement[] | undefined;
+  options?: GridLayoutOptions;
+  onChangeChildElements?: GridChildElementsChangeHandler;
+  onChangeLayout?: GridLayoutChangeHandler;
+}
 
-export type GridLayoutProviderDispatch = Dispatch<GridLayoutAction>;
-
-const unconfiguredGridLayoutProviderDispatch: GridLayoutProviderDispatch = (
-  action,
-) =>
-  console.log(
-    `dispatch ${action.type}, have you forgotten to provide a GridLayoutProvider ?`,
-  );
+const GridLayoutProviderContext = createContext<GridLayoutProviderContext>({});
 
 export type GridLayoutDragEndHandler = (evt: DragEvent<HTMLElement>) => void;
 
-export interface GridLayoutProviderContextProps {
-  dispatchGridLayoutAction: GridLayoutProviderDispatch;
-  gridModel?: GridModel;
-  onDragEnd?: GridLayoutDragEndHandler;
-  onDragStart: GridLayoutDragStartHandler;
-  onDrop: GridLayoutDropHandler;
-
-  version: number;
-}
-
-const GridLayoutProviderContext = createContext<GridLayoutProviderContextProps>(
-  {
-    dispatchGridLayoutAction: unconfiguredGridLayoutProviderDispatch,
-    onDragStart: () => console.log("no GridLayoutProvider"),
-    onDrop: () => console.log("no GridLayoutProvider"),
-    version: -1,
-  },
-);
-
-export interface GridLayoutProviderProps
-  extends Pick<
-    GridLayoutProviderContextProps,
-    "dispatchGridLayoutAction" | "onDragEnd" | "onDragStart" | "onDrop"
-  > {
+export interface GridLayoutProviderProps {
   children: ReactNode;
-  gridModel: GridModel;
-  pathToDropTarget?: string;
+  options?: GridLayoutOptions;
+  serializedLayout?: SerializedGridLayout;
 }
 
 export const GridLayoutProvider = (
   props: GridLayoutProviderProps,
 ): ReactElement => {
-  const {
-    children,
-    dispatchGridLayoutAction,
-    gridModel,
-    onDragEnd,
-    onDragStart,
-    onDrop,
-  } = props;
+  const { children, serializedLayout, options } = props;
+  const [gridLayoutMap, gridChildItemsMap] = useMemo<
+    [Map<string, GridLayoutDescriptor>, Map<string, SerializedComponentMap>]
+  >(() => {
+    const componentMap = new Map();
+    const layoutMap: Map<string, GridLayoutDescriptor> = new Map();
 
-  const handleDropNext = useCallback<DropHandler>(() => {
-    console.log("handleDropNext");
+    if (serializedLayout) {
+      const { id, components, layout } = serializedLayout;
+      componentMap.set(id, components);
+      layoutMap.set(id, layout);
+    }
+    return [layoutMap, componentMap];
+  }, [serializedLayout]);
+
+  const onChangeLayout = useCallback<GridLayoutChangeHandler>(
+    (id, gridLayoutDescriptor) => {
+      console.log(`[GridLayoutProvider] ${id} onChangeLayout
+      ${JSON.stringify(gridLayoutDescriptor, null, 2)}`);
+      gridLayoutMap.set(id, gridLayoutDescriptor);
+    },
+    [gridLayoutMap],
+  );
+
+  /**
+   * We track child elements for two reasons:
+   *  - layout persistence to remote storage
+   *  - re-mounting of grid layout that has been previously
+   * unmounted, e.g because of tab switching withn a tabbed display
+   */
+  const onChangeChildElements = useCallback<GridChildElementsChangeHandler>(
+    (layoutId, childElements) => {
+      console.log(`[GridLayoutProvider] #${layoutId} onChangeChildElements`, {
+        childElements,
+      });
+      const serializedComponentMap =
+        childElements.reduce<SerializedComponentMap>((map, component) => {
+          const { id: gridLayoutItemId } = component.props;
+          if (typeof gridLayoutItemId !== "string") {
+            throw Error(
+              `[GridLayoutProvider] onChangeChildElements, child GridLayoutItem has no id`,
+            );
+          }
+          map[gridLayoutItemId] = layoutToJSON(component);
+          return map;
+        }, {});
+      gridChildItemsMap.set(layoutId, serializedComponentMap);
+    },
+    [gridChildItemsMap],
+  );
+  const getChildElements = useCallback((id: string, children?: ReactNode) => {
+    console.log(`[GridLayoutProvider] #${id} getChildElements `, {
+      children,
+    });
+    return undefined;
   }, []);
+
+  const getSavedGrid = useCallback(
+    (id: string): SerializedGridLayout<ComponentMap> | undefined => {
+      const layoutJSON = gridChildItemsMap.get(id);
+      const layout = gridLayoutMap.get(id);
+      if (layoutJSON && layout) {
+        return {
+          components: Object.entries(layoutJSON).reduce<
+            Record<string, ReactElement>
+          >((map, [id, layoutJSON]) => {
+            map[id] = layoutFromJson(layoutJSON, "");
+            return map;
+          }, {}),
+          id,
+          layout,
+        };
+      }
+    },
+    [gridChildItemsMap, gridLayoutMap],
+  );
 
   return (
     <GridLayoutProviderContext.Provider
       value={{
-        dispatchGridLayoutAction,
-        gridModel,
-        onDragEnd,
-        onDragStart,
-        onDrop,
-        version: 0,
+        getChildElements,
+        getSavedGrid,
+        gridChildItemsMap,
+        gridLayoutMap,
+        onChangeChildElements,
+        onChangeLayout,
+        options,
       }}
     >
-      <DragDropProviderNext dragSources={{}} onDrop={handleDropNext}>
-        {children}
-      </DragDropProviderNext>
+      {children}
     </GridLayoutProviderContext.Provider>
   );
 };
 
-export const useGridLayoutProviderDispatch = () => {
-  const { dispatchGridLayoutAction } = useContext(GridLayoutProviderContext);
-  return dispatchGridLayoutAction;
+export const useGridChangeHandler = () => {
+  const { onChangeChildElements, onChangeLayout } = useContext(
+    GridLayoutProviderContext,
+  );
+  return { onChangeChildElements, onChangeLayout };
 };
 
-export const useGridChildProps = ({
-  id,
-  style,
-  resizeable,
-  // TODO handle resizeable etc
-
-  // no need to store gridStyle separately, we already have it in childItem row, column
-}: GridModelChildItemProps) => {
-  const { gridModel } = useContext(GridLayoutProviderContext);
-
-  let childItem = gridModel?.getChildItem(id);
-  if (childItem) {
-    //console.log(`already registered child item ${id}`);
-  } else {
-    if (isFullGridChildItemStyle(style)) {
-      childItem = new GridModelChildItem({
-        id,
-        column: {
-          start: style.gridColumnStart as number,
-          end: style.gridColumnEnd as number,
-        },
-        fixed: false,
-        resizeable,
-        row: {
-          start: style.gridRowStart as number,
-          end: style.gridRowEnd as number,
-        },
-      });
-
-      gridModel?.addChildItem(childItem);
-    } else {
-      throw Error(
-        `[GridLayoutProvider] no layout configuration for #${id} and missing grid layout styling`,
-      );
-    }
-  }
-  return childItem.layoutStyle;
+export const useSavedGrid = () => {
+  const { getSavedGrid } = useContext(GridLayoutProviderContext);
+  return getSavedGrid;
 };
 
-export const useGridLayoutDropHandler = () => {
-  const { onDrop } = useContext(GridLayoutProviderContext);
-  return onDrop;
-};
-
-export const useGridLayoutDragEndHandler = () => {
-  const { onDragEnd } = useContext(GridLayoutProviderContext);
-  return onDragEnd;
-};
-
-export const useGridLayoutDragStartHandler = () => {
-  const { onDragStart } = useContext(GridLayoutProviderContext);
-  return onDragStart;
-};
-
-export const useGridModel = () => {
-  const { gridModel } = useContext(GridLayoutProviderContext);
-  if (gridModel) {
-    return gridModel;
-  } else {
-    throw Error(
-      "[useGridModel] no gridModel, did you forget to use a GridLayout",
-    );
-  }
+export const useGridLayoutOptions = () => {
+  const { options } = useContext(GridLayoutProviderContext);
+  return options;
 };

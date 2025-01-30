@@ -3,52 +3,69 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import {
-  CSSProperties,
-  DragEvent,
+  createElement,
   HTMLAttributes,
+  isValidElement,
   MouseEventHandler,
+  ReactElement,
   useCallback,
   useEffect,
 } from "react";
 import { useAsDropTarget } from "./useAsDropTarget";
 import { useNotDropTarget } from "./useNotDropTarget";
 
-import { queryClosest } from "@finos/vuu-utils";
+import { LayoutJSON, queryClosest } from "@finos/vuu-utils";
+import { componentToJson } from "../layout-reducer";
 import gridLayoutCss from "./GridLayout.css";
-import gridSplitterCss from "./GridSplitter.css";
-import { DragSource } from "../drag-drop-next/DragContextNext";
-import { GridModelChildItemProps } from "./GridModel";
 import {
-  useGridChildProps,
+  DragSourceProvider,
+  useGridLayoutDispatch,
   useGridLayoutDragStartHandler,
-  useGridLayoutProviderDispatch,
-} from "./GridLayoutProvider";
+} from "./GridLayoutContext";
+import { GridModelChildItemProps } from "./GridModel";
+import gridSplitterCss from "./GridSplitter.css";
 import { useDraggable } from "./useDraggable";
+import { useGridChildProps } from "./useGridChildProps";
 
 const classBaseItem = "vuuGridLayoutItem";
 
 export interface GridLayoutItemProps
-  extends GridModelChildItemProps,
+  extends Omit<
+      GridModelChildItemProps,
+      "contentDetached" | "contentVisible" | "type"
+    >,
     Omit<
       HTMLAttributes<HTMLDivElement>,
       "id" | "onDragStart" | "onDrop" | "style"
     > {
+  "data-drop-target"?: boolean | string;
   header?: boolean;
-  isDropTarget?: boolean;
+  /**
+   * If provided, component is fixed height
+   */
+  height?: number;
   label?: string;
-  style: CSSProperties;
+  /**
+   * If provided, component is fixed width
+   */
+  width?: number;
 }
 
-const getDragSourceWithElement = (
-  evt: DragEvent<Element>,
-): DragSource & { element: HTMLElement } => {
+const getDragSource: DragSourceProvider = (evt) => {
   const draggedItem = queryClosest(evt.target, ".vuuGridLayoutItem");
+  const dragElement =
+    (draggedItem?.querySelector(".vuuDraggableLabel") as HTMLElement) ||
+    undefined;
   if (draggedItem) {
+    const gridLayout = queryClosest(draggedItem, ".vuuGridLayout", true);
     return {
+      dragElement,
       element: draggedItem,
       id: draggedItem.id,
-      index: -1,
-      label: "no label",
+      layoutId: gridLayout.id,
+      label:
+        draggedItem.querySelector(".vuuDraggableLabel")?.textContent ??
+        "no label",
       type: "component",
     };
   }
@@ -58,13 +75,15 @@ const getDragSourceWithElement = (
 export const GridLayoutItem = ({
   children,
   className: classNameProp,
-  header,
+  "data-drop-target": dataDropTarget,
+  header: headerProp,
+  height,
   id,
-  // TODO is it ever false ?
-  isDropTarget = true,
+  stackId,
   resizeable,
   style: styleProp,
-  title,
+  title: titleProp,
+  width,
   ...htmlAttributes
 }: GridLayoutItemProps) => {
   const targetWindow = useWindow();
@@ -79,9 +98,36 @@ export const GridLayoutItem = ({
     window: targetWindow,
   });
 
-  const dispatch = useGridLayoutProviderDispatch();
-  // TODO pass the styleProps in here to initialise the model value
-  const layoutProps = useGridChildProps({ id, resizeable, style: styleProp });
+  const dispatch = useGridLayoutDispatch();
+  // TODO pass the styleProp in here to initialise the model value
+  const {
+    contentDetached,
+    contentVisible,
+    dropTarget,
+    header,
+    stacked,
+    title,
+    ...layoutProps
+  } = useGridChildProps({
+    dropTarget: dataDropTarget,
+    header: headerProp,
+    height,
+    id,
+    resizeable,
+    stackId,
+    style: styleProp,
+    title: titleProp,
+    width,
+  });
+
+  // console.log(
+  //   `[GridLayoutItem] #${id}
+  //     contentDetached=${contentDetached}
+  //     contentVisible=${contentVisible}
+  //     stackId=${stackId}
+  //     dropTarget = ${dropTarget}
+  //     `,
+  // );
 
   useEffect(
     () => () => {
@@ -101,18 +147,17 @@ export const GridLayoutItem = ({
     [dispatch, id],
   );
 
-  const useDropTargetHook = isDropTarget ? useAsDropTarget : useNotDropTarget;
+  const useDropTargetHook = dropTarget ? useAsDropTarget : useNotDropTarget;
   const droppableProps = useDropTargetHook();
   const draggableProps = useDraggable({
     draggableClassName: classBaseItem,
-    getDragSource: getDragSourceWithElement,
+    getDragSource,
     onDragStart,
   });
 
   const className = cx(classBaseItem, {
-    [`${classBaseItem}-resizeable-h`]: resizeable === "h",
-    [`${classBaseItem}-resizeable-v`]: resizeable === "v",
-    [`${classBaseItem}-resizeable-vh`]: resizeable === "hv",
+    "vuu-detached": contentDetached,
+    "vuu-stacked": stacked && !contentDetached,
   });
 
   const style = {
@@ -121,7 +166,7 @@ export const GridLayoutItem = ({
     "--header-height": header ? "25px" : "0px",
   };
 
-  return (
+  return contentVisible || contentDetached ? (
     <div
       {...htmlAttributes}
       {...draggableProps}
@@ -131,9 +176,12 @@ export const GridLayoutItem = ({
       key={id}
       style={style}
     >
-      {header ? (
+      {header && !stacked ? (
         <div className={cx(`${classBaseItem}Header`)} data-drop-target="header">
-          <span className={`${classBaseItem}Header-title`} draggable>
+          <span
+            className={`${classBaseItem}Header-title vuuDraggableLabel`}
+            draggable
+          >
             {title}
           </span>
           <IconButton
@@ -145,9 +193,30 @@ export const GridLayoutItem = ({
           />
         </div>
       ) : null}
-      <div className={cx(`${classBaseItem}Content`)} data-drop-target>
+      <div
+        className={cx(`${classBaseItem}Content`)}
+        data-drop-target={dropTarget}
+      >
         {children}
       </div>
     </div>
-  );
+  ) : null;
+};
+
+const GridLayoutItemType = createElement(GridLayoutItem).type;
+export const isGridLayoutItem = (element: ReactElement) =>
+  element.type === GridLayoutItem;
+
+GridLayoutItem.toJSON = (
+  element: ReactElement<GridLayoutItemProps, typeof GridLayoutItemType>,
+) => {
+  const { children } = element.props;
+  if (isValidElement(children)) {
+    const child = componentToJson(children);
+    return {
+      ...child,
+    } as LayoutJSON;
+  } else {
+    throw Error("[GridLayoutItem] children is not a react element");
+  }
 };

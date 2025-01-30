@@ -19,7 +19,6 @@ import {
 import { clsx } from "clsx";
 import { type Item, TabsNextContext } from "./TabsNextContext";
 import { useCollection } from "./hooks/useCollection";
-import { useDragContext } from "@finos/vuu-utils";
 
 export interface TabsNextProps
   extends Omit<ComponentPropsWithoutRef<"div">, "onChange"> {
@@ -53,10 +52,6 @@ export const TabsNext = forwardRef<HTMLDivElement, TabsNextProps>(
     } = props;
 
     const id = useIdMemo(idProp);
-
-    // If we are a dragcontainer, pass isDraggable via context to tabs
-    const dragContext = useDragContext();
-    const isDraggable = dragContext.isDragContainer(id);
 
     const [valueToTabIdMap, setValueToIdMap] = useState({
       map: new Map<string, string>(),
@@ -208,7 +203,6 @@ export const TabsNext = forwardRef<HTMLDivElement, TabsNextProps>(
     const context = useMemo(
       () => ({
         id,
-        isDraggable,
         registerTab,
         registerPanel,
         getPanelId,
@@ -228,7 +222,6 @@ export const TabsNext = forwardRef<HTMLDivElement, TabsNextProps>(
       }),
       [
         id,
-        isDraggable,
         registerTab,
         registerPanel,
         getPanelId,

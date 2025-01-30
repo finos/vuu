@@ -2,13 +2,15 @@ import { createContext, ReactNode, useContext, useEffect } from "react";
 import { initializeDragContainer } from "./drag-drop-listeners";
 import {
   DragContext,
+  DragContextDetachTabHandler,
+  DragContextDropHandler,
   type DragSources,
-  type DropHandler,
 } from "./DragContextNext";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 
 import dragDropProviderCss from "./DragDropProviderNext.css";
+import { useGridLayoutId } from "../grid-layout/GridLayoutContext";
 
 export type DragDropRegistrationFn = (id: string) => void;
 export type DragDropBeginDrag = (
@@ -17,12 +19,15 @@ export type DragDropBeginDrag = (
 ) => void;
 export type DragDropEndDrag = (id: string) => void;
 
+export type DragSourceRegistrationHandler = (id: string) => void;
+
 const DragDropContext = createContext<DragContext>(new DragContext());
 
 export interface DragDropNextProviderProps {
   children: ReactNode;
   dragSources: DragSources;
-  onDrop: DropHandler;
+  onDetachTab: DragContextDetachTabHandler;
+  onDrop: DragContextDropHandler;
 }
 
 export type MeasuredTarget = {
@@ -34,7 +39,7 @@ export type MeasuredTarget = {
 
 export const DragDropProviderNext = ({
   children,
-  dragSources,
+  onDetachTab,
   onDrop,
 }: DragDropNextProviderProps) => {
   const targetWindow = useWindow();
@@ -45,22 +50,32 @@ export const DragDropProviderNext = ({
   });
 
   const dragContext = useDragContext();
-  dragContext.dragSources = dragSources;
-  // perhaps it should be an event emitter
-  dragContext.dropHandler = onDrop;
+
+  const layoutId = useGridLayoutId();
 
   useEffect(() => {
+    dragContext.on("detach-tab", onDetachTab);
+    dragContext.on("drop", onDrop);
+
     const cleanupCallbacks: Array<() => void> = [];
-    if (dragSources) {
-      Object.entries(dragSources).forEach(([id, { orientation }]) => {
-        const el = document.getElementById(id);
-        cleanupCallbacks.push(
-          initializeDragContainer(el, dragContext, orientation),
-        );
-      });
-      return () => cleanupCallbacks.forEach((cleanup) => cleanup());
-    }
-  }, [dragContext, dragSources]);
+    console.log(
+      `[DragDropProviderNext#${layoutId}] useEffect dragSources [${[...dragContext.internalDragSources.keys()]}]`,
+    );
+    // TODO this is for declarative drag drop sources, not supported for now
+    // dragContext.internalDragSources.forEach(({ orientation }, id) => {
+    //   const el = document.getElementById(id);
+    //   if (el) {
+    //     cleanupCallbacks.push(
+    //       initializeDragContainer(el, dragContext, orientation),
+    //     );
+    //   } else {
+    //     throw Error(
+    //       `[DragDropProviderNext] useEffect no element found for dragSource #${id}`,
+    //     );
+    //   }
+    // });
+    return () => cleanupCallbacks.forEach((cleanup) => cleanup());
+  }, [dragContext, layoutId, onDetachTab, onDrop]);
 
   return (
     <DragDropContext.Provider value={dragContext}>

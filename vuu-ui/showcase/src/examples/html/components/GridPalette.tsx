@@ -1,10 +1,13 @@
 import cx from "clsx";
 import { queryClosest } from "@finos/vuu-utils";
 import { DragEvent, HTMLAttributes, useCallback } from "react";
-import { useDraggable, useGridLayoutDragStartHandler } from "@finos/vuu-layout";
+import {
+  type DragSource,
+  useDraggable,
+  useGridLayoutDragStartHandler,
+} from "@finos/vuu-layout";
 
 import "./GridPalette.css";
-import { DragSource } from "@finos/vuu-layout/src/drag-drop-next/DragContextNext";
 
 const classBase = "vuuGridPalette";
 
@@ -13,7 +16,6 @@ export interface GridPaletteProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export type GridPaletteItem = {
-  id: string;
   label: string;
   props: unknown;
   type: string;
@@ -27,12 +29,14 @@ export const GridPalette = ({
     (evt: DragEvent<Element>): DragSource => {
       const draggedItem = queryClosest(evt.target, ".vuuGridPalette-item");
       if (draggedItem) {
+        const gridLayout = queryClosest(draggedItem, ".vuuGridLayout", true);
+
         const index = parseInt(draggedItem.dataset.index ?? "-1");
         const item = paletteItems[index] as GridPaletteItem;
         return {
           element: draggedItem,
-          index: -1,
           componentJson: JSON.stringify(item),
+          layoutId: gridLayout.id,
           label: "123",
           type: "template",
         };
@@ -53,7 +57,7 @@ export const GridPalette = ({
       {paletteItems.map((paletteItem, index) => (
         <div className={cx(`${classBase}-item`)} data-index={index} key={index}>
           <div
-            data-item-id={paletteItem.id}
+            data-item-id={paletteItem.label.toLowerCase()}
             draggable
             style={{ padding: "3px 8px" }}
           >

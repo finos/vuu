@@ -27,7 +27,6 @@ export interface TabsNextContextValue
   menuOpen: boolean;
   setMenuOpen: Dispatch<SetStateAction<boolean>>;
   id: string;
-  isDraggable: boolean;
 }
 
 export const TabsNextContext = createContext<TabsNextContextValue>(
@@ -50,7 +49,6 @@ export const TabsNextContext = createContext<TabsNextContextValue>(
     menuOpen: false,
     setMenuOpen: () => undefined,
     id: "",
-    isDraggable: false,
   },
 );
 

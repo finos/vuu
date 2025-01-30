@@ -1,14 +1,8 @@
-.vuuGridLayout {
+.vuuGridLayout.vuuFullPage {
   height: 100vh;
   width: 100vw;
 }
 
-#GridLayoutA,
-#GridLayoutB,
-#GridLayoutC {
-  grid-template-columns: repeat(var(--col-count), 1fr);
-  grid-template-rows: repeat(var(--row-count), 1fr);
-}
 
 [data-resize-role]:after {
   color: white;
@@ -42,4 +36,26 @@
     background-color: inherit;
     color: inherit;
   }
+}
+
+/**
+  the following are from Stack
+  challenge: when resolving grid layout, some
+  measurements are taken before STack css has
+  been injected
+*/
+.vuuTabs {
+  display: flex;
+  box-sizing: border-box;
+  flex-direction: column;
+}
+
+.vuuTabs-tabPanel {
+  display: flex;
+  flex: 1; 
+  flex-direction: column;
+}
+
+.vuuTabs-tabPanel > * {
+  flex: 1 1 auto;
 }

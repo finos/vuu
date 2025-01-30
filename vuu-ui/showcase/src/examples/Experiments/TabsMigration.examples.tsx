@@ -1,172 +1,72 @@
 import {
-  ExitTabEditModeHandler,
-  Tab,
   TabBar,
   TabListNext,
   TabNext,
   TabNextTrigger,
   TabsNext,
-  Tabstrip,
-  TabstripProps,
-} from "@finos/vuu-ui-controls";
-import { moveItem } from "@finos/vuu-utils";
-import { SyntheticEvent, useCallback, useMemo, useRef, useState } from "react";
+} from "@salt-ds/lab";
+import { SyntheticEvent, useCallback, useMemo, useState } from "react";
 import {
   DragDropProviderNext,
-  DropHandler,
+  type DropHandler,
   FlexboxLayout,
   LayoutProvider,
 } from "@finos/vuu-layout";
-import { TabState } from "@finos/vuu-layout/src/grid-layout/GridLayoutStackedtem";
 
 import "./TabsMigration.examples.css";
+import { TabbedComponentDragSource } from "@finos/vuu-layout/src/grid-layout/GridLayoutContext";
 
 const SPLITTER_WIDTH = 3;
 
-const TabstripTemplate = ({
-  activeTabIndex: activeTabIndexProp = 0,
-  allowAddTab = false,
-  allowCloseTab = false,
-  allowDragDrop = false,
-  allowRenameTab = false,
-  animateSelectionThumb = true,
-  tabs: tabsProp = ["Home", "Transactions", "Loans", "Checks", "Liquidity"],
-  variant = "secondary",
-  width = 700,
-}: Partial<TabstripProps> & { tabs?: string[]; width?: number }) => {
-  const [activeTabIndex, setActiveTabIndex] = useState(activeTabIndexProp);
-  const [tabs, setTabs] = useState(tabsProp);
-  const activeTabRef = useRef<string>(tabs[activeTabIndex]);
+export class TabState {
+  constructor(
+    public active: number,
+    public tabs: string[],
+  ) {}
+  get activeTab() {
+    return this.tabs[this.active];
+  }
 
-  const handleChange = useCallback(
-    (_: SyntheticEvent | null, value: string) => {
-      setActiveTabIndex(tabs.indexOf(value));
-      activeTabRef.current = value;
-    },
-    [tabs],
-  );
+  setActiveTab(value: string) {
+    return new TabState(this.tabs.indexOf(value), this.tabs);
+  }
 
-  const handleAddTab = useCallback(() => {
-    const count = tabs.length;
-    setTabs((state) => state.concat(`Tab ${state.length + 1}`));
-    setActiveTabIndex(count);
-  }, [tabs.length]);
+  moveTab(fromIndex: number, position: "before" | "after", target: string) {
+    const newTabs = this.tabs.slice();
+    const [movedTab] = newTabs.splice(fromIndex, 1);
+    const pos = newTabs.indexOf(target);
+    if (position === "after") {
+      newTabs.splice(pos + 1, 0, movedTab);
+    } else {
+      newTabs.splice(pos, 0, movedTab);
+    }
+    return this.setTabs(newTabs);
+  }
+  insertTab(tab: string, position: "before" | "after", target: string) {
+    const newTabs = this.tabs.slice();
+    const pos = newTabs.indexOf(target);
+    if (position === "after") {
+      newTabs.splice(pos + 1, 0, tab);
+    } else {
+      newTabs.splice(pos, 0, tab);
+    }
+    return this.setTabs(newTabs);
+  }
 
-  const handleCloseTab = useCallback(
-    (tabIndex: number, newActiveTabIndex: number) => {
-      setTabs((state) => state.filter((_, i) => i !== tabIndex));
-      setActiveTabIndex(newActiveTabIndex);
-    },
-    [],
-  );
+  removeTab(index: number) {
+    return this.setTabs(this.tabs.toSpliced(index, 1));
+  }
+  setTabs(tabs: string[]) {
+    if (tabs.includes(this.activeTab)) {
+      return new TabState(tabs.indexOf(this.activeTab), tabs);
+    } else {
+      const i = this.tabs.indexOf(this.activeTab);
+      return new TabState(Math.min(tabs.length - 1, i), tabs);
+    }
+  }
+}
 
-  const handleTabLabelChanged = useCallback<ExitTabEditModeHandler>(
-    (originalValue, newValue) => {
-      setTabs((currentTabs) =>
-        currentTabs.map((name) => (name === originalValue ? newValue : name)),
-      );
-    },
-    [],
-  );
-
-  const handleMoveTab = useCallback(
-    (fromIndex: number, toIndex: number) => {
-      const newTabs = moveItem(tabs, fromIndex, toIndex);
-      setTabs(newTabs);
-      setActiveTabIndex(newTabs.indexOf(activeTabRef.current));
-    },
-    [tabs],
-  );
-  const handleDrop = useCallback<DropHandler>(
-    ({ dragSource, toIndex }) => {
-      const newTabs = moveItem(tabs, dragSource.index, toIndex);
-      setTabs(newTabs);
-      setActiveTabIndex(newTabs.indexOf(activeTabRef.current));
-    },
-    [tabs],
-  );
-
-  return (
-    <LayoutProvider>
-      <FlexboxLayout
-        style={{ height: 200, width: width + SPLITTER_WIDTH }}
-        path=""
-      >
-        <FlexboxLayout resizeable style={{ flexDirection: "column", flex: 1 }}>
-          <div style={{ flex: 1 }}>
-            <Tabstrip
-              activeTabIndex={activeTabIndex}
-              allowAddTab={allowAddTab}
-              allowCloseTab={allowCloseTab}
-              allowDragDrop={allowDragDrop}
-              allowRenameTab={allowRenameTab}
-              animateSelectionThumb={animateSelectionThumb}
-              onActiveChange={setActiveTabIndex}
-              onAddTab={handleAddTab}
-              onCloseTab={handleCloseTab}
-              onExitEditMode={handleTabLabelChanged}
-              onMoveTab={handleMoveTab}
-              variant={variant}
-            >
-              {tabs.map((label, i) => (
-                <Tab
-                  index={i}
-                  key={label}
-                  label={label}
-                  ariaControls={
-                    i === activeTabIndex ? `ts-panel-${i}` : undefined
-                  }
-                />
-              ))}
-            </Tabstrip>
-          </div>
-          <div style={{ flex: 1 }}>
-            <DragDropProviderNext
-              dragSources={{ tabs1: { dropTargets: ["tabs1"] } }}
-              onDrop={handleDrop}
-            >
-              <TabsNext onChange={handleChange} value={tabs[activeTabIndex]}>
-                <TabBar divider>
-                  <TabListNext
-                    appearance="transparent"
-                    className="vuuDragContainer"
-                    id="tabs1"
-                  >
-                    {tabs.map((label, index) => (
-                      <TabNext
-                        className="vuuDraggableItem"
-                        data-index={index}
-                        draggable
-                        value={label}
-                        key={label}
-                      >
-                        <TabNextTrigger>{label}</TabNextTrigger>
-                      </TabNext>
-                    ))}
-                  </TabListNext>
-                </TabBar>
-              </TabsNext>
-            </DragDropProviderNext>
-          </div>
-        </FlexboxLayout>
-        <div data-resizeable></div>
-      </FlexboxLayout>
-    </LayoutProvider>
-  );
-};
-
-export const TabstripDragDrop = ({
-  activeTabIndex: activeTabIndexProp = 4,
-  width = 700,
-}) => (
-  <TabstripTemplate
-    activeTabIndex={activeTabIndexProp}
-    allowDragDrop
-    width={width}
-  />
-);
-
-const TabstripTemplate2 = () => {
+const TabstripTemplate = () => {
   const initialState = useMemo<Record<string, TabState>>(
     () => ({
       tabs1: new TabState(0, [
@@ -190,6 +90,16 @@ const TabstripTemplate2 = () => {
   const [tabState, setTabState] =
     useState<Record<string, TabState>>(initialState);
 
+  const handleDetachTab = useCallback((tabsId: string, tabIndex: number) => {
+    console.log(`detach tab ${tabsId} [${tabIndex}]`);
+    // if (tabsId in tabState) {
+    //   setTabState((state) => ({
+    //     ...state,
+    //     [tabsId]: state[tabsId].removeTab(tabIndex),
+    //   }));
+    // }
+  }, []);
+
   const handleChange1 = useCallback(
     (_: SyntheticEvent | null, value: string) =>
       setTabState((state) => ({
@@ -208,42 +118,51 @@ const TabstripTemplate2 = () => {
     [],
   );
 
-  const handleDrop = useCallback<DropHandler>(
-    ({ dragSource, toId, toIndex }) => {
-      if (dragSource.id === "tabs1" && toId === "tabs1") {
-        setTabState((state) => ({
-          ...state,
-          tabs1: state.tabs1.moveTab(dragSource.index, toIndex),
-        }));
-      } else if (dragSource.id === "tabs2" && toId === "tabs2") {
-        setTabState((state) => ({
-          ...state,
-          tabs2: state.tabs2.moveTab(dragSource.index, toIndex),
-        }));
+  const handleDrop = useCallback<DropHandler<TabbedComponentDragSource>>(
+    ({ dragSource, tabsId, dropPosition }) => {
+      // if (sourceIsComponent(dragSource)) {
+      console.log(
+        `[TabsMigration.examples] handleDrop ${tabsId} ${dropPosition?.position} ${dropPosition?.target}`,
+      );
+
+      if (dropPosition && tabsId) {
+        const { position, target } = dropPosition;
+
+        setTabState(({ tabs1, tabs2 }) => {
+          if (dragSource.tabsId === "tabs1" && tabsId === "tabs1") {
+            return {
+              tabs1: tabs1.moveTab(dragSource.tabIndex, position, target),
+              tabs2,
+            };
+          } else if (dragSource.tabsId === "tabs2" && tabsId === "tabs2") {
+            return {
+              tabs1,
+              tabs2: tabs2.moveTab(dragSource.tabIndex, position, target),
+            };
+          } else if (dragSource.tabsId === "tabs1" && tabsId === "tabs2") {
+            const newTabs1 = tabs1.tabs.slice();
+            const [movedTab] = newTabs1.splice(dragSource.tabIndex, 1);
+
+            return {
+              tabs1: tabs1.setTabs(newTabs1),
+              tabs2: tabs2.insertTab(movedTab, position, target),
+            };
+          } else if (dragSource.tabsId === "tabs2" && tabsId === "tabs1") {
+            const newTabs2 = tabs2.tabs.slice();
+            const [movedTab] = newTabs2.splice(dragSource.tabIndex, 1);
+
+            return {
+              tabs1: tabs1.insertTab(movedTab, position, target),
+              tabs2: tabs2.setTabs(newTabs2),
+            };
+          } else {
+            throw Error();
+          }
+        });
       } else {
-        if (dragSource.id === "tabs1") {
-          setTabState(({ tabs1, tabs2 }) => {
-            const newTabs1 = tabs1.tabs.slice();
-            const newTabs2 = tabs2.tabs.slice();
-            const [movedTab] = newTabs1.splice(dragSource.index, 1);
-            newTabs2.splice(toIndex, 0, movedTab);
-            return {
-              tabs1: tabs1.setTabs(newTabs1),
-              tabs2: tabs2.setTabs(newTabs2),
-            };
-          });
-        } else {
-          setTabState(({ tabs1, tabs2 }) => {
-            const newTabs1 = tabs1.tabs.slice();
-            const newTabs2 = tabs2.tabs.slice();
-            const [movedTab] = newTabs2.splice(dragSource.index, 1);
-            newTabs1.splice(toIndex, 0, movedTab);
-            return {
-              tabs1: tabs1.setTabs(newTabs1),
-              tabs2: tabs2.setTabs(newTabs2),
-            };
-          });
-        }
+        throw Error(
+          "[TabsMigration.examples] handleDrop missing required params",
+        );
       }
     },
     [],
@@ -263,6 +182,7 @@ const TabstripTemplate2 = () => {
         tabs2: { dropTargets: ["tabs1", "tabs2"] },
       }}
       onDrop={handleDrop}
+      onDetachTab={handleDetachTab}
     >
       <LayoutProvider>
         <FlexboxLayout
@@ -288,6 +208,8 @@ const TabstripTemplate2 = () => {
                       <TabNext
                         className="vuuDraggableItem"
                         data-index={index}
+                        data-label={label}
+                        data-grid-layout-item-id={label}
                         draggable
                         value={label}
                         key={label}
@@ -314,6 +236,7 @@ const TabstripTemplate2 = () => {
                       <TabNext
                         className="vuuDraggableItem"
                         data-index={index}
+                        data-label={label}
                         draggable
                         value={label}
                         key={label}
@@ -343,4 +266,4 @@ const TabstripTemplate2 = () => {
   );
 };
 
-export const TabstripDragDropBetweenTabs = () => <TabstripTemplate2 />;
+export const TabstripDragDropBetweenTabs = () => <TabstripTemplate />;

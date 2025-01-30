@@ -25,6 +25,7 @@ import {
   TabNextTrigger,
   TabsNext,
 } from "@finos/vuu-ui-controls";
+import { sourceIsComponent } from "@finos/vuu-layout/src/drag-drop-next/DragContextNext";
 
 const usa_10_states = usa_states.slice(0, 10);
 const usa_20_states = usa_states.slice(0, 20);
@@ -158,29 +159,31 @@ const CrossContainerDragTemplate = ({
   const [items2, setItems2] = useState(initialItems.dc2);
 
   const onDrop: DropHandler = ({ dragSource, toId, toIndex }) => {
-    console.log(
-      `drag from #${dragSource.id} [${dragSource.index}] to #${toId} [${toIndex}]`,
-    );
-    if (dragSource.id === toId) {
-      if (dragSource.id === "dc1") {
-        setItems1((items) => moveItem(items, dragSource.index, toIndex));
+    if (sourceIsComponent(dragSource)) {
+      console.log(
+        `drag from #${dragSource.id} [${dragSource.index}] to #${toId} [${toIndex}]`,
+      );
+      if (dragSource.id === toId) {
+        if (dragSource.id === "dc1") {
+          setItems1((items) => moveItem(items, dragSource.index, toIndex));
+        } else {
+          setItems2((items) => moveItem(items, dragSource.index, toIndex));
+        }
+      } else if (dragSource.id === "dc1") {
+        const newItems1 = items1.slice();
+        const newItems2 = items2.slice();
+        const [movedItem] = newItems1.splice(dragSource.index, 1);
+        setItems1(newItems1);
+        newItems2.splice(toIndex, 0, movedItem);
+        setItems2(newItems2);
       } else {
-        setItems2((items) => moveItem(items, dragSource.index, toIndex));
+        const newItems1 = items1.slice();
+        const newItems2 = items2.slice();
+        const [movedItem] = newItems2.splice(dragSource.index, 1);
+        setItems2(newItems2);
+        newItems1.splice(toIndex, 0, movedItem);
+        setItems1(newItems1);
       }
-    } else if (dragSource.id === "dc1") {
-      const newItems1 = items1.slice();
-      const newItems2 = items2.slice();
-      const [movedItem] = newItems1.splice(dragSource.index, 1);
-      setItems1(newItems1);
-      newItems2.splice(toIndex, 0, movedItem);
-      setItems2(newItems2);
-    } else {
-      const newItems1 = items1.slice();
-      const newItems2 = items2.slice();
-      const [movedItem] = newItems2.splice(dragSource.index, 1);
-      setItems2(newItems2);
-      newItems1.splice(toIndex, 0, movedItem);
-      setItems1(newItems1);
     }
   };
 

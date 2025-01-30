@@ -17,7 +17,7 @@
     &.vuuDragContainer-vertical {
         --orientation-transition-property:height;
 
-        .DragSpacer {
+        .SpaceMan {
             height: 0;
             width: auto;
         }
@@ -44,18 +44,22 @@
     }
 
     .vuuDraggableItem-animating {
-        transition: transform .3s ease-in-out;
+        transition: transform .2s ease-in-out;
     }
 
-    .DragSpacer {
+    .SpaceMan {
         align-self: stretch;
         background-color: #d9d9d9;
         flex: 0 0 auto;
         min-height: 100%;
         transition-property: var(--transition-property);
-        transition-duration: .25s;
-        transition-timing-function: ease;
+        transition-duration: .1s;
+        transition-timing-function: ease-in;
         width:0;
+    }
+
+    &.saltTabListNext {
+        gap: 0;
     }
 
 }

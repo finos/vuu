@@ -2,7 +2,12 @@ import { DragEvent, DragEventHandler, useCallback } from "react";
 import { GridLayoutDragEndHandler } from "./GridLayoutProvider";
 import { LayoutJSON } from "@finos/vuu-utils";
 import { useDragContext } from "../drag-drop-next/DragDropProviderNext";
-import { DragSource } from "../drag-drop-next/DragContextNext";
+import {
+  DragSourceProvider,
+  sourceIsComponent,
+  sourceIsTemplate,
+  useGridLayoutId,
+} from "./GridLayoutContext";
 
 export type DragStartIdOptions = {
   id: string;
@@ -20,35 +25,41 @@ export type GridLayoutDragStartHandler = (
 
 export interface DraggableHookProps {
   draggableClassName?: string;
-  getDragSource: (evt: DragEvent<Element>) => DragSource;
+  getDragSource: DragSourceProvider;
   onDragEnd?: GridLayoutDragEndHandler;
   onDragStart?: GridLayoutDragStartHandler;
 }
 
 export const useDraggable = ({
-  getDragSource: getDragSourceWithElement,
+  getDragSource,
   onDragEnd,
   onDragStart,
 }: DraggableHookProps) => {
   const dragContext = useDragContext();
+  const layoutId = useGridLayoutId();
 
   const handleDragStart = useCallback<DragEventHandler<HTMLElement>>(
     (e) => {
-      const dragSource = getDragSourceWithElement(e);
+      const dragSource = getDragSource(e);
       e.stopPropagation();
-
-      if (dragSource.type === "template") {
+      // Note we're not currently using the dataTransfer object. We use the dragSource
+      // We will need to change this if we want to support cross window drag drop
+      if (sourceIsTemplate(dragSource)) {
+        console.log(`[useDraggable#${layoutId}] drag template`);
         onDragStart?.(e, {
           payload: JSON.parse(dragSource.componentJson),
           type: "text/json",
         });
-      } else {
+      } else if (sourceIsComponent(dragSource)) {
+        console.log(`[useDraggable#${layoutId}] drag component`);
         onDragStart?.(e, { id: dragSource.id, type: "text/plain" });
+      } else {
+        throw Error("didnt expect this");
       }
 
       dragContext.beginDrag(e.nativeEvent, dragSource);
     },
-    [dragContext, getDragSourceWithElement, onDragStart],
+    [dragContext, getDragSource, layoutId, onDragStart],
   );
 
   const handleDragEnd = useCallback<DragEventHandler<HTMLElement>>(

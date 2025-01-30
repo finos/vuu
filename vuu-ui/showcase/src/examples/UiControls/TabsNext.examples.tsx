@@ -134,16 +134,16 @@ export const DragDropTabs = () => {
     [],
   );
 
-  const handleMoveTab = useCallback(
-    (fromIndex: number, toIndex: number) =>
-      setTabState((state) => state.moveTab(fromIndex, toIndex)),
-    [],
-  );
+  // const handleMoveTab = useCallback(
+  //   (fromIndex: number, toIndex: number) =>
+  //     setTabState((state) => state.moveTab(fromIndex, toIndex)),
+  //   [],
+  // );
 
   return (
     <div data-showcase-center>
       <TabsNext onChange={handleChange} value={activeTab}>
-        <TabListNext appearance="transparent" onMoveTab={handleMoveTab}>
+        <TabListNext appearance="transparent">
           {tabs.map((label, i) => (
             <TabNext value={label} key={label} data-index={i} draggable>
               <TabNextTrigger>{label}</TabNextTrigger>

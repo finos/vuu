@@ -167,7 +167,7 @@ const DragDropNextContext = createContext<IDragContext>({
   allowDrag: false,
   beginDrag: unconfiguredRegistrationCall,
   endDrag: unconfiguredRegistrationCall,
-  dragState: { element: undefined, height: -1, width: -1 },
+  dragState: undefined,
   drop: unconfiguredRegistrationCall,
   isDraggable: false,
   isDragContainer: () => false,

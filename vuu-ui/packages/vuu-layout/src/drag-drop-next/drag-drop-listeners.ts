@@ -1,8 +1,8 @@
 import { orientationType, queryClosest } from "@finos/vuu-utils";
 import { DragContext } from "./DragContextNext";
 import { SpaceMan } from "./SpaceMan";
-
-let dragContainerInc = 0;
+import { sourceIsTabbedComponent } from "../grid-layout/GridLayoutContext";
+import { getClosestGridLayout } from "../grid-layout";
 
 const isDraggable = (
   target: EventTarget | HTMLElement | null,
@@ -13,56 +13,119 @@ const isDraggable = (
 
 const getDraggableEl = (target: EventTarget | HTMLElement | null) => {
   const el = target as HTMLElement;
-  if (el === null) {
-    return null;
-  } else if (el?.classList.contains("vuuDraggableItem")) {
-    return el;
+  if (isDraggable(target)) {
+    if (el?.classList.contains("vuuDraggableItem")) {
+      return el;
+    } else {
+      return queryClosest(el, ".vuuDraggableItem");
+    }
   } else {
-    return queryClosest(el, ".vuuDraggableItem");
+    return null;
   }
+};
+
+const isRemoteContainer = (
+  sourceElement: HTMLElement,
+  targetElement: HTMLElement,
+) => {
+  return sourceElement.parentElement !== targetElement?.parentElement;
 };
 
 const getDataIndex = (el: HTMLElement | null) =>
   el ? parseInt(el.dataset.index ?? "-1") : -1;
 
-const getDropTargetIndex = (target: EventTarget | HTMLElement | null) =>
-  getDataIndex(getDraggableEl(target));
+const getDataLabel = (el: HTMLElement | null) => el?.dataset.label ?? "";
 
 export function initializeDragContainer(
-  containerEl: HTMLElement | null,
+  containerEl: HTMLElement,
   dragContext: DragContext,
   orientation: orientationType = "horizontal",
 ) {
-  const dragId = containerEl?.id ?? `drag-container-${++dragContainerInc}`;
-  const spaceMan = new SpaceMan(dragId, orientation);
+  const gridId = getClosestGridLayout(containerEl);
+  const dragId = containerEl.id;
+  const spaceMan = new SpaceMan(dragContext, dragId, orientation);
   spaceMan.setDragContainer(containerEl);
+
+  const focusDroppedTab = (tabsId: string, tabLabel: string) => {
+    requestAnimationFrame(() => {
+      const droppedTab = document
+        .getElementById(tabsId)
+        ?.querySelector(
+          `[data-label="${tabLabel}"] .saltTabNextTrigger`,
+        ) as HTMLButtonElement;
+      droppedTab?.focus();
+    });
+  };
 
   const onDragStart = (e: DragEvent) => {
     const element = getDraggableEl(e.target);
+    console.log(`[drag-drop-listeners#${gridId}] onDragStart`);
     if (element) {
-      const index = getDataIndex(element);
+      const tabsContainer = queryClosest(e.target, ".vuuDragContainer", true);
+      const gridLayout = queryClosest(tabsContainer, ".vuuGridLayout", true);
+      const gridLayoutItem = queryClosest(
+        tabsContainer,
+        ".vuuGridLayoutItem",
+        true,
+      );
+      const tabIndex = getDataIndex(element);
+      const label = getDataLabel(element);
+      const isSelectedTab =
+        element.querySelector('[aria-selected="true"]') !== null;
+
+      const { gridLayoutItemId } = element.dataset;
       e.stopPropagation();
-      spaceMan.dragStart(index);
       dragContext.beginDrag(e, {
-        id: dragId,
         element,
-        index,
-        label: dragId,
-        type: "component",
+        isSelectedTab,
+        layoutId: gridLayout.id,
+        tab: { id: gridLayoutItemId ?? "", label },
+        tabIndex,
+        tabsId: gridLayoutItem.id,
+        type: "tabbed-component",
+      });
+
+      requestAnimationFrame(() => {
+        console.log(`[drag-drop-listeners#${gridId}]] onDragStart<RAF>`);
+        spaceMan.dragStart(tabIndex);
+        dragContext.detachTab(gridId, gridLayoutItem.id, label);
       });
     }
   };
 
   const onDragEnter = (e: DragEvent) => {
-    console.log(`[drag-drop-listeners] onDragEnter`);
-    // don't think we need this check. DragEnter wouldn't be firing
-    // if we weren't in a drop zone
-    e.stopPropagation();
-    if (isDraggable(e.target)) {
-      console.log("onDragEnter");
-      const index = getDropTargetIndex(e.target);
-      const { dragSource, x, y } = dragContext;
-      if (index !== -1 && index !== dragSource?.index) {
+    // we should really mark drop targets
+    const dropTarget = getDraggableEl(e.target);
+    console.log(`[drag-drop-listeners#${dragId}] onDragEnter`);
+    // We always revent default here, that way useAsDropItem will know that another drag handler
+    // is responsible for this area
+    e.preventDefault();
+    const { dragSource, x, y } = dragContext;
+    if (dropTarget) {
+      console.log(
+        `[drag-drop-listeners#${dragId}] onDragEnter ${dropTarget.className} preventDefault`,
+      );
+      const indexOfDropTarget = getDataIndex(dropTarget);
+      if (sourceIsTabbedComponent(dragSource)) {
+        if (
+          indexOfDropTarget !== -1 &&
+          (indexOfDropTarget !== dragSource?.tabIndex ||
+            isRemoteContainer(dragSource.element, dropTarget))
+        ) {
+          const direction =
+            orientation === "horizontal"
+              ? e.clientX > x
+                ? "fwd"
+                : "bwd"
+              : e.clientY > y
+                ? "fwd"
+                : "bwd";
+
+          spaceMan.dragEnter(indexOfDropTarget, direction);
+        }
+      } else {
+        console.log(`draging a componnet over a tabstrip`);
+
         const direction =
           orientation === "horizontal"
             ? e.clientX > x
@@ -71,7 +134,8 @@ export function initializeDragContainer(
             : e.clientY > y
               ? "fwd"
               : "bwd";
-        spaceMan.dragEnter(index, direction);
+
+        spaceMan.dragEnter(indexOfDropTarget, direction);
       }
     }
     dragContext.x = e.clientX;
@@ -83,24 +147,58 @@ export function initializeDragContainer(
   };
 
   const onDragLeave = (e: DragEvent) => {
-    const container = queryClosest(e.relatedTarget, ".vuuDragContainer");
+    console.log(
+      `[drag-drop-listeners#${dragId}] onDragleave ${spaceMan.id}.${dragId}`,
+    );
+    // Have we dragged the draggable item right out of the parent drag container
+    const container = queryClosest(e.relatedTarget, `#${spaceMan.id}`);
     if (container === null) {
       spaceMan.leaveDragContainer();
     }
   };
 
   const onDrop = async (e: DragEvent) => {
-    const { clientX, clientY } = e;
-    e.stopPropagation();
-    console.log("[drag-drop-listeners] drop");
-    await spaceMan.drop(clientX, clientY);
-    dragContext.drop({
-      toId: dragId,
-      toIndex: spaceMan.toIndex,
-    });
+    if (e.defaultPrevented) {
+      console.log(
+        `[drag-drop-listeners#${dragId}] onDrop ${dragId} - already handled`,
+      );
+      spaceMan.cleanup();
+    } else {
+      const { clientX, clientY } = e;
+      e.stopPropagation();
+
+      // important we capture this before calling spaceMan.drop
+      const { dropPosition } = spaceMan;
+
+      console.log(
+        `[drag-drop-listeners] onDrop #${dragId}  ${dropPosition?.position} targetTabId ${dropPosition?.target}`,
+      );
+      if (dropPosition) {
+        await spaceMan.drop(clientX, clientY);
+        dragContext.drop({
+          tabsId: dragId,
+          dropPosition,
+        });
+
+        if (dragContext.dragSource) {
+          focusDroppedTab(dragId, dragContext.dragSource.label);
+        }
+      } else {
+        console.log(`[drag-drop-listeners] onDrop, drop is elsewhere `);
+        spaceMan.cleanup();
+      }
+    }
   };
   const onDragEnd = () => {
-    console.log("dragend");
+    console.log(`[drag-drop-listeners#${dragId}] onDragEnd`, {
+      dragSource: dragContext.dragSource,
+    });
+    if (
+      sourceIsTabbedComponent(dragContext.dragSource) &&
+      dragContext.dragSource.tabsId === dragId
+    ) {
+      console.log(`[drag-drop-listeners#${dragId}] do we need to cleanup`);
+    }
     if (!dragContext.dropped) {
       spaceMan.dragEnd();
     }
@@ -118,22 +216,24 @@ export function initializeDragContainer(
     }
   };
 
+  console.log(`[drag-drop-listeners#${gridId}] register listeners`);
   containerEl?.addEventListener("mousedown", onMouseDown);
   containerEl?.addEventListener("dragstart", onDragStart);
   containerEl?.addEventListener("dragenter", onDragEnter);
   containerEl?.addEventListener("dragleave", onDragLeave);
   containerEl?.addEventListener("dragover", onDragOver);
-  containerEl?.addEventListener("drop", onDrop);
-  containerEl?.addEventListener("dragend", onDragEnd);
+  document.body.addEventListener("drop", onDrop);
+  document.body.addEventListener("dragend", onDragEnd);
 
   function cleanUp() {
+    console.log(`[drag-drop-listeners#${gridId}] unregister listeners`);
     containerEl?.removeEventListener("mousedown", onMouseDown);
     containerEl?.removeEventListener("dragstart", onDragStart);
     containerEl?.removeEventListener("dragenter", onDragEnter);
     containerEl?.removeEventListener("dragleave", onDragLeave);
     containerEl?.removeEventListener("dragover", onDragOver);
-    containerEl?.removeEventListener("drop", onDrop);
-    containerEl?.removeEventListener("dragend", onDragEnd);
+    document.body.removeEventListener("drop", onDrop);
+    document.body.removeEventListener("dragend", onDragEnd);
   }
 
   return cleanUp;

@@ -1,4 +1,6 @@
 .vuuGridLayout {
+  --vuu-layout-tabs-height: 32px;
+
   --vuu-grid-gap: 6px;
   --vuu-grid-header-height: 25px;
   display: grid;
@@ -13,6 +15,10 @@
     [data-drop-target] > :not(.vuuDraggableItem) {
       pointer-events: none;
     }
+  }
+
+  &.vuuResizing {
+    transition: .3s;
   }
 }
 
@@ -47,9 +53,10 @@
   cursor: grab;
   display: flex;
   flex: 0 0 var(--vuu-grid-header-height);
-  inset: var(--vuu-grid-gap) var(--vuu-grid-gap) auto var(--vuu-grid-gap);
+  /* inset: var(--vuu-grid-gap) var(--vuu-grid-gap) auto var(--vuu-grid-gap); */
   height: var(--vuu-grid-header-height);
   padding: 0 var(--salt-spacing-100) 0 0;
+  position: relative;
 
   [data-align="right"] {
     margin-left: auto;
@@ -63,11 +70,19 @@
   }
 }
 
-.vuuGridLayoutStackedItemHeader {
-  flex: 0 0 32px;
+.vuuGridLayoutStackedItem {
+  /* height: var(--vuu-layout-tabs-height); */
   .saltTabsNext {
     margin-top: 3px;
   }
+}
+
+.vuu-detached {
+  visibility: hidden;
+}
+
+.vuu-stacked {
+  margin-top: var(--vuu-layout-tabs-height)
 }
 
 .vuuGridLayoutItemHeader-close {
@@ -119,6 +134,19 @@
   --grid-dropzone-right: 0px;
 }
 
+/* we could simplify this by assigning a className to the content */
+.vuu-stacked {
+  & > .vuuDropTarget-north {
+    --grid-dropzone-top: -32px;
+  }
+  & > .vuuDropTarget-east {
+    --grid-dropzone-top: -32px;
+  }
+  & > .vuuDropTarget-west {
+    --grid-dropzone-top: -32px;
+  }
+}
+
 .vuuDropTarget-centre:after,
 .vuuDropTarget-north:after, 
 .vuuDropTarget-east:after, 
@@ -136,5 +164,18 @@
   transition-property: top, left, right, bottom;
   transition-duration: 0.3s;
   transition-timing-function: ease-in-out;
+  z-index: 100;
+}
+.vuuDropTarget-header:after {
+  background-color: red;
+  content: "";
+  inset: 0px;
+  opacity: 0.3;
+  pointer-events: none;
+  position: absolute;
+  transition-property: top, left, right, bottom;
+  transition-duration: 0.3s;
+  transition-timing-function: ease-in-out;
+  z-index: 100;
 }
 

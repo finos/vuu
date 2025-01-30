@@ -48,13 +48,13 @@ export type GridLayoutSplitDirection = "north" | "south" | "east" | "west";
 
 export type GridLayoutDropPosition =
   | GridLayoutSplitDirection
-  | "centre"
-  | "tabs";
+  | "header"
+  | "centre";
 
 export const isGridLayoutSplitDirection = (
   position: GridLayoutDropPosition,
 ): position is GridLayoutSplitDirection =>
-  position !== "tabs" && position !== "centre";
+  position !== "centre" && position !== "header";
 
 export function getPositionWithinBox(
   x: number,
@@ -62,13 +62,10 @@ export function getPositionWithinBox(
   rect: rect,
   pctX: number,
   pctY: number,
-  tabRect: rect | undefined,
 ): GridLayoutDropPosition {
   const centerBox = getCenteredBox(rect, 0.2);
   if (boxContainsPoint(centerBox, x, y)) {
     return "centre";
-  } else if (tabRect && boxContainsPoint(tabRect, x, y)) {
-    return "tabs";
   } else {
     const quadrant = `${pctY < 0.5 ? "north" : "south"}${
       pctX < 0.5 ? "west" : "east"

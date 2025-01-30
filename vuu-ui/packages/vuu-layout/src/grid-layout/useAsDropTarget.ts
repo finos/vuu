@@ -7,49 +7,106 @@ import {
   getPositionWithinBox,
 } from "@finos/vuu-utils";
 import { DragEventHandler, useCallback, useRef } from "react";
-import { useGridLayoutDropHandler } from "./GridLayoutProvider";
+import { useGridLayoutDropHandler, useGridLayoutId } from "./GridLayoutContext";
+import { useDragContext } from "../drag-drop-next/DragDropProviderNext";
 
-const dropTargetClassName = "vuuDropTarget";
-const dropTargetQuery = "[data-drop-target]";
+const DROPTARGET_CLASSNAME = "vuuDropTarget";
+const GRIDITEM_QUERY = ".vuuGridLayoutItem";
+const DROPTARGET_QUERY = "[data-drop-target]";
 
-const removedropTargetPositionClassName = (el: HTMLElement) => {
+const removeDropTargetPositionClassName = (el: HTMLElement) => {
   el.classList.forEach((className) => {
-    if (className.match(/(north|east|south|west|centre|tabs)$/)) {
+    if (className.match(/(north|east|south|west|centre|tabs|header)$/)) {
       el.classList.remove(className);
     }
   });
+};
+
+const addDropTargetPositionClassName = (
+  el: HTMLElement,
+  position: GridLayoutDropPosition,
+) => {
+  removeDropTargetPositionClassName(el);
+  el.classList.add(`${DROPTARGET_CLASSNAME}-${position}`);
+};
+
+/**
+ * Describes a drop target. Will always reference a GrtidLayoutItem, but these may include more than
+ * one dropTarget e.g. the header and the content area will each be drop targets and help determine
+ * the drop position.
+ */
+type DropTarget = {
+  /**
+   * identifies the GridLayoutItem associated with the dropTarget
+   */
+  gridLayoutItemId: string;
+  /**
+   * The element with data-drop-target attribute
+   */
+  target: HTMLElement;
+  /**
+   * Drop behaviour will differ depending on whether we are dragging over the header or main content body.
+   * A remote target is located elsewhere in the dom from the current drag location, e.g the tabPanel
+   * associated with a Tab.
+   */
+  type: "header" | "content" | "remote";
 };
 
 /**
  * The dropTarget is usually the element with data-drop-target attribute. It can
  * store an IDREF to another element.
  */
-const getDropTarget = (target: EventTarget) => {
-  let dropTargetEl = queryClosest(target, dropTargetQuery);
+const getDropTarget = (
+  target: EventTarget,
+  currentDropTarget: DropTarget | undefined,
+): DropTarget | undefined => {
+  let dropTargetEl = queryClosest(target, DROPTARGET_QUERY);
   if (dropTargetEl) {
-    const { dropTarget } = dropTargetEl.dataset;
-    switch (dropTarget) {
-      case "true":
-        return dropTargetEl;
-      case "header":
-        return undefined;
-      case undefined:
-        throw Error(
-          "[useAsDropTarget] getDropTarget, called on element without data-drop-target attribute",
-        );
-      default: {
-        dropTargetEl = document.getElementById(dropTarget) as HTMLElement;
-        if (dropTargetEl) {
-          return dropTargetEl;
-        } else {
+    const { id: gridLayoutItemId } = queryClosest(
+      dropTargetEl,
+      GRIDITEM_QUERY,
+      true,
+    );
+
+    if (dropTargetEl === currentDropTarget?.target) {
+      return currentDropTarget;
+    } else {
+      const { dropTarget: dropTargetValue } = dropTargetEl.dataset;
+      switch (dropTargetValue) {
+        case "true":
+          return {
+            gridLayoutItemId,
+            target: dropTargetEl,
+            type: "content",
+          };
+        case "header":
+          return {
+            gridLayoutItemId,
+            target: dropTargetEl,
+            type: "header",
+          };
+        case undefined:
           throw Error(
-            `[useAsDropTarget] getDropTarget, data-drop-target ${dropTarget} not found`,
+            "[useAsDropTarget] getDropTarget, called on element without data-drop-target attribute",
           );
+        default: {
+          dropTargetEl = document.getElementById(
+            dropTargetValue,
+          ) as HTMLElement;
+          if (dropTargetEl) {
+            return {
+              gridLayoutItemId,
+              target: dropTargetEl,
+              type: "remote",
+            };
+          } else {
+            throw Error(
+              `[useAsDropTarget] getDropTarget, data-drop-target ${dropTargetValue} not found`,
+            );
+          }
         }
       }
     }
-  } else {
-    return null;
   }
 };
 
@@ -57,8 +114,7 @@ type DropTargetState = {
   mousePos: MousePosition;
   position: GridLayoutDropPosition | undefined;
   rect: rect;
-  tabRect: rect | undefined;
-  targetEl: HTMLElement | undefined;
+  dropTarget: DropTarget | undefined;
 };
 
 const NullRect: rect = {
@@ -72,90 +128,100 @@ const NULL_STATE: DropTargetState = {
   mousePos: { clientX: -1, clientY: -1 },
   position: undefined,
   rect: NullRect,
-  tabRect: undefined,
-  targetEl: undefined,
+  dropTarget: undefined,
 };
 
 export const useAsDropTarget = () => {
   const dropTargetStateRef = useRef<DropTargetState>(NULL_STATE);
 
   const drop = useGridLayoutDropHandler();
+  const dragContext = useDragContext();
+  const layoutId = useGridLayoutId();
 
-  const onDragEnter = useCallback<DragEventHandler>((evt) => {
-    const target = getDropTarget(evt.target);
-    if (target !== dropTargetStateRef.current.targetEl) {
-      if (target) {
-        dropTargetStateRef.current.targetEl = target;
-        const { rect } = dropTargetStateRef.current;
-        const { bottom, left, right, top } = target.getBoundingClientRect();
-        rect.bottom = bottom;
-        rect.left = left;
-        rect.right = right;
-        rect.top = top;
-        if (target.classList.contains("vuuGridLayoutStackedItem")) {
-          const tabsList = target.querySelector('[role="tablist"]');
-          if (tabsList) {
-            const { bottom, left, right, top } =
-              tabsList.getBoundingClientRect();
-            dropTargetStateRef.current.tabRect = {
-              bottom,
-              left,
-              right,
-              top,
-            };
-          } else {
-            throw Error(
-              "[useAsDropTarget] onDragEnter, no tablist within GridLayoutStackedItem",
-            );
-          }
-        } else {
-          dropTargetStateRef.current.tabRect = undefined;
+  const onDragEnter = useCallback<DragEventHandler>(
+    (evt) => {
+      const { dropTarget: currentDropTarget } = dropTargetStateRef.current;
+      let dropTarget = getDropTarget(evt.target, currentDropTarget);
+      console.log(
+        `[useAsDropTarget#${layoutId}] onDragEnter ${dropTarget?.gridLayoutItemId}, evt already handled ${evt.defaultPrevented}`,
+      );
+
+      if (evt.defaultPrevented) {
+        // We are entering Tabs, this is handled by drag-drop-listeners
+        dropTarget = undefined;
+      }
+
+      if (dropTarget !== currentDropTarget) {
+        if (dropTarget) {
+          console.log(
+            `%c[useAsDropTarget] onDragEnter set current dropTarget = ${dropTarget.gridLayoutItemId}`,
+            "color:green;font-weight:bold;",
+          );
+
+          dropTargetStateRef.current.dropTarget = dropTarget;
+          const { rect } = dropTargetStateRef.current;
+          const { bottom, left, right, top } =
+            dropTarget.target.getBoundingClientRect();
+          rect.bottom = bottom;
+          rect.left = left;
+          rect.right = right;
+          rect.top = top;
+        } else if (currentDropTarget) {
+          dropTargetStateRef.current.dropTarget = undefined;
+          console.log(
+            `%c[useAsDropTarget] clear droptarget ${currentDropTarget?.gridLayoutItemId}`,
+            "color:brown;font-weight: bold;",
+          );
+          removeDropTargetPositionClassName(currentDropTarget?.target);
         }
       }
-    }
-  }, []);
+    },
+    [layoutId],
+  );
 
   // We could replace this with mouse move to reduce event rate
   const onDragOver = useCallback<DragEventHandler>((evt) => {
-    console.log("dragOver");
-
-    const target = getDropTarget(evt.target);
-    if (target) {
+    const { dropTarget: currentDropTarget } = dropTargetStateRef.current;
+    const dropTarget = getDropTarget(evt.target, currentDropTarget);
+    if (dropTarget) {
+      // preventDefault on the event to enable drop
       evt.preventDefault();
       // TODO store dropTarget and rect and tabRect in same ref
-      if (target === dropTargetStateRef.current.targetEl) {
-        const { clientX, clientY } = evt;
-        const { mousePos } = dropTargetStateRef.current;
+      if (dropTarget === currentDropTarget) {
+        const { position: lastPosition } = dropTargetStateRef.current;
+        if (dropTarget.type === "header") {
+          if (lastPosition !== "header") {
+            addDropTargetPositionClassName(dropTarget.target, "header");
+            dropTargetStateRef.current.position = "header";
+          }
+        } else {
+          const { clientX, clientY } = evt;
+          const { mousePos } = dropTargetStateRef.current;
 
-        if (clientX !== mousePos.clientX || clientY !== mousePos.clientY) {
-          mousePos.clientX = clientX;
-          mousePos.clientY = clientY;
+          if (clientX !== mousePos.clientX || clientY !== mousePos.clientY) {
+            mousePos.clientX = clientX;
+            mousePos.clientY = clientY;
 
-          const { rect, tabRect } = dropTargetStateRef.current;
+            const { rect } = dropTargetStateRef.current;
 
-          const { pctX, pctY /*, closeToTheEdge */ } = pointPositionWithinRect(
-            clientX,
-            clientY,
-            rect,
-          );
-          const position = getPositionWithinBox(
-            clientX,
-            clientY,
-            rect,
-            pctX,
-            pctY,
-            tabRect,
-          );
-          const { position: lastPosition } = dropTargetStateRef.current;
-
-          if (position !== lastPosition) {
-            if (dropTargetStateRef.current.targetEl) {
-              removedropTargetPositionClassName(target);
-              dropTargetStateRef.current.targetEl.classList.add(
-                `${dropTargetClassName}-${position}`,
-              );
+            const { pctX, pctY /*, closeToTheEdge */ } =
+              pointPositionWithinRect(clientX, clientY, rect);
+            const position = getPositionWithinBox(
+              clientX,
+              clientY,
+              rect,
+              pctX,
+              pctY,
+            );
+            // console.log(
+            //   `[useAsDropTarget] onDragOver ${dropTarget.gridLayoutItemId} position ${position}`,
+            // );
+            if (position !== lastPosition) {
+              if (dropTargetStateRef.current.dropTarget) {
+                addDropTargetPositionClassName(dropTarget.target, position);
+              }
+              dropTargetStateRef.current.position = position;
             }
-            dropTargetStateRef.current.position = position;
           }
         }
       }
@@ -163,49 +229,55 @@ export const useAsDropTarget = () => {
   }, []);
 
   const onDragLeave = useCallback<DragEventHandler>((evt) => {
-    const target = getDropTarget(evt.target);
-    if (target === evt.target) {
-      if (target === dropTargetStateRef.current.targetEl) {
-        dropTargetStateRef.current.targetEl = undefined;
+    const { dropTarget: currentDropTarget } = dropTargetStateRef.current;
+    const dropTarget = getDropTarget(evt.target, currentDropTarget);
+    console.log(
+      `[useAsDropTarget] onDragleave ${evt.target?.className} to ${evt.relatedTarget?.className}`,
+      {
+        dropTarget,
+      },
+    );
+    if (dropTarget?.target === evt.target) {
+      if (dropTarget === currentDropTarget) {
+        console.log(
+          `[useAsDropTarget] onDragleave ... leaving the current dropTarget, dropTarget is now undefined`,
+        );
+        dropTargetStateRef.current.dropTarget = undefined;
         dropTargetStateRef.current.position = undefined;
       }
 
-      removedropTargetPositionClassName(target);
+      removeDropTargetPositionClassName(dropTarget.target);
     }
   }, []);
 
   const onDrop = useCallback<DragEventHandler>(
     (evt) => {
-      console.log(`[useAsDropTarget] drop`);
-      let target = getDropTarget(evt.target);
-      if (target && dropTargetStateRef.current.position) {
-        removedropTargetPositionClassName(target);
-        let { id } = target;
-        if (!id) {
-          target = queryClosest(evt.target, `.vuuGridLayoutItem`);
-          if (!target) {
-            throw Error("unable to identify drop target");
-          }
-          ({ id } = target);
-        }
+      const { dropTarget: currentDropTarget } = dropTargetStateRef.current;
+      const { dragSource } = dragContext;
+      if (dragSource && currentDropTarget) {
+        console.log(`[useAsDropTarget#${layoutId}] onDrop`, { dragSource });
 
-        const jsonData = evt.dataTransfer.getData("text/json");
-        if (jsonData) {
-          drop(id, JSON.parse(jsonData), dropTargetStateRef.current.position);
-        } else {
-          const dropId = evt.dataTransfer.getData("text/plain");
-          if (dropId) {
-            drop(id, dropId, dropTargetStateRef.current.position);
-          } else {
-            throw Error("onDrop no payload to drop");
-          }
+        const dropTarget = getDropTarget(evt.target, currentDropTarget);
+        if (dropTarget && dropTargetStateRef.current.position) {
+          // this prevents drag-drop-listeners drop firing when tab dragged to another tabstrip
+          evt.preventDefault();
+          removeDropTargetPositionClassName(dropTarget.target);
+          drop(
+            dropTarget.gridLayoutItemId,
+            dragSource,
+            dropTargetStateRef.current.position,
+          );
         }
-
-        dropTargetStateRef.current.targetEl = undefined;
-        dropTargetStateRef.current.position = undefined;
+      } else if (currentDropTarget) {
+        throw Error(
+          `[useAsDropTarget] onDrop no dragSource to drop on ${currentDropTarget.gridLayoutItemId}`,
+        );
       }
+
+      dropTargetStateRef.current.dropTarget = undefined;
+      dropTargetStateRef.current.position = undefined;
     },
-    [drop],
+    [dragContext, drop, layoutId],
   );
 
   return {

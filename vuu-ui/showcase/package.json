@@ -26,6 +26,7 @@
     "@floating-ui/react": "^0.26.5",
     "@internationalized/date": "^3.0.0",
     "@salt-ds/core": "1.37.1",
+    "@salt-ds/lab": "1.0.0-alpha.62",
     "@salt-ds/theme": "1.23.1",
     "clsx": "^2.0.0",
     "react": ">=17.0.2",

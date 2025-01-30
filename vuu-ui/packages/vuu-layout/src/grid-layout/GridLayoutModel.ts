@@ -1,4 +1,8 @@
-import { GridLayoutSplitDirection, OptionalProperty } from "@finos/vuu-utils";
+import {
+  EventEmitter,
+  GridLayoutSplitDirection,
+  OptionalProperty,
+} from "@finos/vuu-utils";
 import {
   getBisectingGridLine,
   gridResizeDirectionFromDropPosition,
@@ -6,14 +10,15 @@ import {
   itemsFillColumn,
   itemsFillRow,
   splitGridChildPosition,
-  splitTrack,
   splitTracks,
 } from "./grid-layout-utils";
-import type {
-  GridLayoutModelCoordinates,
-  GridModel,
-  GridModelChildItem,
-  ISplitter,
+import {
+  TrackType,
+  type GridLayoutModelCoordinates,
+  type GridModel,
+  type GridModelChildItem,
+  type GridModelEvents,
+  type ISplitter,
 } from "./GridModel";
 
 export type GridLayoutModelPosition = {
@@ -27,7 +32,7 @@ export type ResizeState = {
   splitter: ISplitter;
 };
 
-export type GridItemRemoveReason = "drag" | "close" | "placeholder";
+export type GridItemRemoveReason = "drag" | "close" | "placeholder" | "unstack";
 
 export type GridLayoutResizeOperation = "contract" | "expand";
 export type GridLayoutResizeDirection = "vertical" | "horizontal";
@@ -52,10 +57,17 @@ type OneOrBothGridLayoutModelCoordinates =
 export type GridItemUpdate = [string, OneOrBothGridLayoutModelCoordinates];
 type ColumnAndRowUpdates = [GridItemUpdate[], GridItemUpdate[]];
 
-export class GridLayoutModel {
+export type GridLayoutModelEvents = Pick<
+  GridModelEvents,
+  "child-position-updates"
+>;
+
+export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
   private splitters: ISplitter[] | undefined;
 
-  constructor(private gridModel: GridModel) {}
+  constructor(private gridModel: GridModel) {
+    super();
+  }
 
   private updateContrasToOccupySpace = ({
     column,
@@ -69,8 +81,9 @@ export class GridLayoutModel {
     const adjacentItemsWithSameRowStart = this.gridModel
       .findByRowStart(row.start)
       ?.filter(
-        ({ column: { start, end } }) =>
-          end === column.start || start === column.end,
+        ({ column: { start, end }, stackId }) =>
+          stackId === undefined &&
+          (end === column.start || start === column.end),
       );
     if (adjacentItemsWithSameRowStart) {
       // 2) do any of the items that start on the same row as our gridcell
@@ -82,14 +95,42 @@ export class GridLayoutModel {
         (item) => item.row.end === row.end && item.id !== id,
       );
       if (itemsInSameRow.length === 1) {
+        const [itemInSameRow] = itemsInSameRow;
         const {
           id: contraId,
           column: { start, end },
-        } = itemsInSameRow[0];
+        } = itemInSameRow;
+
         if (end === column.start) {
-          return [[[contraId, { column: { start, end: column.end } }]], []];
+          const updates: ColumnAndRowUpdates = [
+            [[contraId, { column: { start, end: column.end } }]],
+            [],
+          ];
+          if (itemInSameRow.type === "stacked-content") {
+            const stackedItems = this.gridModel.getStackedChildItems(
+              itemInSameRow.id,
+            );
+            stackedItems.forEach(({ id }) => {
+              updates[0].push([id, { column: { start, end: column.end } }]);
+            });
+          }
+
+          return updates;
         } else if (start === column.end) {
-          return [[[contraId, { column: { start: column.start, end } }]], []];
+          const updates: ColumnAndRowUpdates = [
+            [[contraId, { column: { start: column.start, end } }]],
+            [],
+          ];
+          if (itemInSameRow.type === "stacked-content") {
+            const stackedItems = this.gridModel.getStackedChildItems(
+              itemInSameRow.id,
+            );
+            stackedItems.forEach(({ id }) => {
+              updates[0].push([id, { column: { start: column.start, end } }]);
+            });
+          }
+
+          return updates;
         }
       } else if (itemsInSameRow.length === 2) {
         // assuming no overlapping gridcells, the most we can have here
@@ -124,7 +165,10 @@ export class GridLayoutModel {
           const itemsEndingWhereTargetStarts = this.gridModel
             .findByColumnEnd(column.start)
             ?.filter(
-              (item) => item.row.start >= row.start && item.row.end <= row.end,
+              (item) =>
+                item.stackId === undefined &&
+                item.row.start >= row.start &&
+                item.row.end <= row.end,
             );
           if (
             itemsEndingWhereTargetStarts &&
@@ -137,12 +181,18 @@ export class GridLayoutModel {
                   { column: { start, end: column.end } },
                 ] as GridItemUpdate,
             );
+
+            // if any are stacked-content, apply updates to child items
+
             return [columnUpdates, []];
           }
           const itemsStartingWhereTargetEnds = this.gridModel
             .findByColumnStart(column.end)
             ?.filter(
-              (item) => item.row.start >= row.start && item.row.end <= row.end,
+              (item) =>
+                item.stackId === undefined &&
+                item.row.start >= row.start &&
+                item.row.end <= row.end,
             );
           if (
             itemsStartingWhereTargetEnds &&
@@ -163,7 +213,8 @@ export class GridLayoutModel {
     const adjacentItemsWithSameColumnStart = this.gridModel
       .findByColumnStart(column.start)
       ?.filter(
-        ({ row: { start, end } }) => end === row.start || start === row.end,
+        ({ row: { start, end }, stackId }) =>
+          stackId === undefined && (end === row.start || start === row.end),
       );
     if (adjacentItemsWithSameColumnStart) {
       const itemsInSameColumn = adjacentItemsWithSameColumnStart.filter(
@@ -171,14 +222,40 @@ export class GridLayoutModel {
       );
 
       if (itemsInSameColumn.length === 1) {
+        const [itemInSameColumn] = itemsInSameColumn;
+
         const {
           id: contraId,
           row: { start, end },
-        } = itemsInSameColumn[0];
+        } = itemInSameColumn;
         if (end === row.start) {
-          return [[], [[contraId, { row: { start, end: row.end } }]]];
+          const updates: ColumnAndRowUpdates = [
+            [],
+            [[contraId, { row: { start, end: row.end } }]],
+          ];
+          if (itemInSameColumn.type === "stacked-content") {
+            const stackedItems = this.gridModel.getStackedChildItems(
+              itemInSameColumn.id,
+            );
+            stackedItems.forEach(({ id }) => {
+              updates[1].push([id, { row: { start, end: row.end } }]);
+            });
+          }
+          return updates;
         } else if (start === row.end) {
-          return [[], [[contraId, { row: { start: row.start, end } }]]];
+          const updates: ColumnAndRowUpdates = [
+            [],
+            [[contraId, { row: { start: row.start, end } }]],
+          ];
+          if (itemInSameColumn.type === "stacked-content") {
+            const stackedItems = this.gridModel.getStackedChildItems(
+              itemInSameColumn.id,
+            );
+            stackedItems.forEach(({ id }) => {
+              updates[1].push([id, { row: { start: row.start, end } }]);
+            });
+          }
+          return updates;
         }
       } else if (itemsInSameColumn.length === 2) {
         const adjacentBefore = itemsInSameColumn.filter(
@@ -287,12 +364,12 @@ export class GridLayoutModel {
     if (rowItemUpdates.length || colItemUpdates.length) {
       colItemUpdates.forEach(([id, { column: colPosition }]) => {
         if (colPosition) {
-          this.gridModel.upddateChildColumn(id, colPosition);
+          this.gridModel.updateChildColumn(id, colPosition);
         }
       });
       rowItemUpdates.forEach(([id, { row: rowPosition }]) => {
         if (rowPosition) {
-          this.gridModel.upddateChildRow(id, rowPosition);
+          this.gridModel.updateChildRow(id, rowPosition);
         }
       });
 
@@ -349,7 +426,11 @@ export class GridLayoutModel {
         this.gridModel.removeGridRow(indexOfRemovedRowTrack - 1, "bwd", false);
       }
 
-      return colItemUpdates.concat(rowItemUpdates);
+      this.emit(
+        "child-position-updates",
+        colItemUpdates.concat(rowItemUpdates),
+        { placeholders: true, splitters: true },
+      );
     }
 
     if (reason !== "placeholder") {
@@ -364,8 +445,8 @@ export class GridLayoutModel {
     const droppedGridItem = gridModel.getChildItem(droppedItemId, true);
     const { column, row } = gridModel.getChildItem(targetItemId, true);
     gridModel.removeChildItem(targetItemId, "close");
-    gridModel.upddateChildColumn(droppedItemId, column);
-    gridModel.upddateChildRow(droppedItemId, row);
+    gridModel.updateChildColumn(droppedItemId, column);
+    gridModel.updateChildRow(droppedItemId, row);
     return droppedGridItem;
   }
 
@@ -400,44 +481,47 @@ export class GridLayoutModel {
   }
 
   addTrackForResize(
-    tracks: number[],
+    trackType: TrackType,
     newTrackIndex: number,
     newTrackSize: number,
     resizeOperation: GridLayoutResizeOperation,
+    trackIndex: number,
     state: ResizeState,
   ) {
+    console.log(
+      `[GridLayoutModel] addTrackForResize ${newTrackIndex} ${newTrackSize}`,
+    );
+
     const { splitter } = state;
     const { before: contraIds, after: resizeIds } = splitter.resizedChildItems;
     const resizeDirection = splitter.orientation;
 
     const expandingResizeItem = resizeOperation === "expand";
-
-    const track = resizeDirection === "horizontal" ? "column" : "row";
-
-    // TODO use splitTrack from grid-layout-utils
-    const newTracks = this.splitSharedTrack(
-      tracks,
-      newTrackSize,
-      resizeOperation,
-      state,
-    );
-    const updates = this.addTrack(newTrackIndex, resizeDirection);
     const indexAdjustment = expandingResizeItem ? -1 : +1;
+
+    this.gridModel.tracks.insertTrack(
+      trackType,
+      newTrackSize,
+      trackIndex,
+      expandingResizeItem,
+    );
+
+    const updates = this.addTrack(newTrackIndex, resizeDirection);
 
     contraIds.forEach((id) => {
       const {
-        [track]: { start, end },
+        [trackType]: { start, end },
       } = this.gridModel.getChildItem(id, true);
       const existingUpdate = updates.find(
-        ([itemId, positions]) => id === itemId && positions[track],
+        ([itemId, positions]) => id === itemId && positions[trackType],
       );
       if (existingUpdate) {
-        const [, { [track]: position }] = existingUpdate;
+        const [, { [trackType]: position }] = existingUpdate;
         if (position) {
           position.end += indexAdjustment;
         }
       } else {
-        if (track === "column") {
+        if (trackType === "column") {
           updates.push([id, { column: { start, end: end + indexAdjustment } }]);
         } else {
           updates.push([id, { row: { start, end: end + indexAdjustment } }]);
@@ -447,18 +531,18 @@ export class GridLayoutModel {
 
     resizeIds.forEach((id) => {
       const {
-        [track]: { start, end },
+        [trackType]: { start, end },
       } = this.gridModel.getChildItem(id, true);
       const existingUpdate = updates.find(
-        ([itemId, positions]) => id === itemId && positions[track],
+        ([itemId, positions]) => id === itemId && positions[trackType],
       );
       if (existingUpdate) {
-        const [, { [track]: position }] = existingUpdate;
+        const [, { [trackType]: position }] = existingUpdate;
         if (position) {
           position.start += indexAdjustment;
         }
       } else {
-        if (track === "column") {
+        if (trackType === "column") {
           updates.push([id, { column: { start, end: end + indexAdjustment } }]);
         } else {
           updates.push([id, { row: { start, end: end + indexAdjustment } }]);
@@ -468,16 +552,27 @@ export class GridLayoutModel {
 
     this.applyUpdates(updates);
 
-    return { newTracks, updates };
+    this.emit("child-position-updates", updates, { splitters: true });
   }
 
+  /**
+   * Calculate the new grid positions for a dropped item and the target item,
+   * when the target is being split in two. Generate updates for the respective
+   * grid child items.
+   *
+   * @param droppedItemId
+   * @param targetItemId
+   * @param splitDirection
+   * @param splitIndex
+   * @returns
+   */
   private dropSplitTarget(
     droppedItemId: string,
     targetItemId: string,
     splitDirection: GridLayoutSplitDirection,
     splitIndex: number,
   ) {
-    const updates: GridItemUpdate[] = [];
+    let updates: GridItemUpdate[] = [];
     const targetGridItem = this.gridModel.getChildItem(targetItemId, true);
 
     const [droppedItemPosition, targetItemPosition] = splitGridChildPosition(
@@ -488,6 +583,14 @@ export class GridLayoutModel {
 
     updates.push([targetItemId, targetItemPosition]);
     updates.push([droppedItemId, droppedItemPosition]);
+
+    // Updates applied to a stacked item must also be applied to child items
+    if (targetGridItem.type === "stacked-content") {
+      const childitems = this.gridModel.getStackedChildItems(targetItemId);
+      updates = updates.concat(
+        childitems.map(({ id }) => [id, targetItemPosition]),
+      );
+    }
 
     this.applyUpdates(updates);
 
@@ -508,18 +611,17 @@ export class GridLayoutModel {
     const targetGridItem = this.gridModel.getChildItem(targetItemId, true);
     let updates: GridItemUpdate[] = [];
 
-    // 1) determine where we need to split the track and check that this is, in fact, neccesary
-    const currentTracks = this.gridModel.getTracks(resizeDirection);
-    const isVertical = resizeDirection === "vertical";
-    const { column: targetColumn, row: targetRow } = targetGridItem;
+    const trackType = resizeDirection === "vertical" ? "row" : "column";
+    const tracks = this.gridModel.tracks.getTracks(trackType);
 
-    const resizeTrack = isVertical ? targetRow : targetColumn;
+    // determine where we need to split the track and check that this is, in fact, neccesary
+    const isVertical = resizeDirection === "vertical";
+
+    const resizeTrack = targetGridItem[trackType];
     let newTrackIndex = resizeTrack.start - 1;
-    let newTracks: number[] = [];
 
     if (resizeTrack.end - resizeTrack.start === 1) {
       updates = this.addTrack(newTrackIndex, resizeDirection);
-
       this.applyUpdates(updates);
 
       updates = updates.filter(
@@ -536,12 +638,16 @@ export class GridLayoutModel {
             : targetGridItem.column.end - 1,
         ),
       );
+      const targetTrack = tracks[newTrackIndex];
+      if (targetTrack.isFraction) {
+        this.gridModel.tracks.measure(trackType);
+      }
 
-      newTracks = splitTrack(currentTracks, newTrackIndex);
+      this.gridModel.tracks.splitTrack(trackType, newTrackIndex);
     } else {
       // Is there already a track line in the required position
       const bisectingGridLine = getBisectingGridLine(
-        currentTracks,
+        tracks,
         resizeTrack.start,
         resizeTrack.end,
       );
@@ -555,11 +661,20 @@ export class GridLayoutModel {
 
         updates.push([droppedItemId, droppedItemPosition]);
         updates.push([targetItemId, targetItemPosition]);
+
+        // Updates applied to a stacked item must also be applied to child items
+        if (targetGridItem.type === "stacked-content") {
+          const childitems = this.gridModel.getStackedChildItems(targetItemId);
+          updates = updates.concat(
+            childitems.map(({ id }) => [id, targetItemPosition]),
+          );
+        }
+
         this.applyUpdates(updates);
       } else {
         // this will calculate sizes of the new tracks
         ({ newTracks, newTrackIndex } = splitTracks(
-          currentTracks,
+          tracks,
           resizeTrack.start,
           resizeTrack.end,
         ));
@@ -580,15 +695,12 @@ export class GridLayoutModel {
       }
     }
 
-    if (newTracks.length > 0) {
-      if (resizeDirection === "vertical") {
-        this.gridModel.setGridRows(newTracks);
-      } else {
-        this.gridModel.setGridCols(newTracks);
-      }
-    }
-
-    return updates;
+    this.emit(
+      "child-position-updates",
+      updates,
+      { splitters: true },
+      // updates.filter(([id]) => id !== droppedItemId),
+    );
   }
 
   /*
@@ -608,7 +720,6 @@ export class GridLayoutModel {
     const track = resizeDirection === "vertical" ? "row" : "column";
     for (const item of this.gridModel.childItems) {
       const { start, end } = item[track];
-      console.log(`#${item.id} ${track}: ${start}/${end}`);
 
       if (start > gridPosition) {
         updates.push(setShiftForward(item));
@@ -659,26 +770,6 @@ export class GridLayoutModel {
     return updates;
   }
 
-  splitSharedTrack(
-    tracks: number[],
-    newTrackSize: number,
-    resizeOperation: GridLayoutResizeOperation,
-    { splitter }: ResizeState,
-  ) {
-    const [, resizeTrackIndex] = splitter.resizedGridTracks;
-    const newTracks = tracks.slice();
-    newTracks.splice(resizeTrackIndex, 0, 0);
-    newTracks[resizeTrackIndex] = Math.abs(newTrackSize);
-
-    if (resizeOperation === "expand") {
-      newTracks[resizeTrackIndex - 1] -= newTrackSize;
-    } else {
-      newTracks[resizeTrackIndex + 1] -= newTrackSize;
-    }
-
-    return newTracks;
-  }
-
   isResizeTrackShared(splitter: ISplitter) {
     if (this.splitters) {
       return isResizeTrackShared(this.splitters, splitter);
@@ -703,10 +794,10 @@ export class GridLayoutModel {
   private applyUpdates(updates: GridItemUpdate[]) {
     updates?.forEach(([id, { column: columnPosition, row: rowPosition }]) => {
       if (columnPosition) {
-        this.gridModel.upddateChildColumn(id, columnPosition);
+        this.gridModel.updateChildColumn(id, columnPosition);
       }
       if (rowPosition) {
-        this.gridModel.upddateChildRow(id, rowPosition);
+        this.gridModel.updateChildRow(id, rowPosition);
       }
     });
   }

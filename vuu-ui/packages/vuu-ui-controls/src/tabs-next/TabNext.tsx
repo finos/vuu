@@ -54,7 +54,7 @@ export const TabNext = forwardRef<HTMLDivElement, TabNextProps>(
       window: targetWindow,
     });
 
-    const { activeTab, isDraggable, selected } = useTabsNext();
+    const { activeTab, selected } = useTabsNext();
 
     const disabled = !!disabledProp;
 
@@ -133,7 +133,6 @@ export const TabNext = forwardRef<HTMLDivElement, TabNextProps>(
             className,
           )}
           data-overflowitem="true"
-          draggable={isDraggable}
           id={id}
           ref={ref}
           onMouseDown={handleMouseDown}

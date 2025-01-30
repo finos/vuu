@@ -44,8 +44,7 @@ export interface WithType {
 
 export type LayoutModel = LayoutRoot | ReactElement | WithType;
 
-export interface LayoutJSON<T extends object = { [key: string]: any }>
-  extends WithType {
+export interface LayoutJSON<T extends object = any> extends WithType {
   active?: number;
   children?: LayoutJSON[];
   id?: string;

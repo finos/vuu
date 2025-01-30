@@ -1,17 +1,13 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import React, {
+import {
+  createElement,
   ReactElement,
-  ReactNode,
   SyntheticEvent,
   useCallback,
-  useLayoutEffect,
-  useMemo,
-  useState,
+  useEffect,
 } from "react";
-import { useAsDropTarget } from "./useAsDropTarget";
-import { useNotDropTarget } from "./useNotDropTarget";
 
 import {
   TabBar,
@@ -19,80 +15,26 @@ import {
   TabNext,
   TabNextTrigger,
   TabsNext,
-} from "@finos/vuu-ui-controls";
-import { moveItem, uuid } from "@finos/vuu-utils";
-import {
-  DropHandler,
-  sourceIsTemplate,
-} from "../drag-drop-next/DragContextNext";
-import { DragDropProviderNext as DragDropProvider } from "../drag-drop-next/DragDropProviderNext";
-import { getDefaultTabLabel } from "../layout-reducer";
-import { Stack } from "../stack";
+} from "@salt-ds/lab";
 import gridLayoutCss from "./GridLayout.css";
 import { GridLayoutItemProps } from "./GridLayoutItem";
-import {
-  useGridChildProps,
-  useGridLayoutProviderDispatch,
-} from "./GridLayoutProvider";
 import gridSplitterCss from "./GridSplitter.css";
+import { useGridChildProps } from "./useGridChildProps";
+import { useDragContext } from "../drag-drop-next/DragDropProviderNext";
+import { useGridModel } from "./GridLayoutContext";
 
 const classBaseItem = "vuuGridLayoutStackedItem";
 
-const getChildElements = <T extends ReactElement = ReactElement>(
-  children: ReactNode,
-): T[] => {
-  const elements: T[] = [];
-  React.Children.forEach(children, (child) => {
-    if (React.isValidElement(child)) {
-      elements.push(child as T);
-    } else {
-      console.warn(`Stack has unexpected child element type`);
-    }
-  });
-  return elements;
-};
-
-export class TabState {
-  constructor(
-    public active: number,
-    public tabs: string[],
-  ) {}
-  get activeTab() {
-    return this.tabs[this.active];
-  }
-  insertTab(newTab: string, index: number) {
-    return new TabState(0, this.tabs.toSpliced(index, 0, newTab));
-  }
-  moveTab(fromIndex: number, toIndex: number) {
-    return this.setTabs(moveItem(this.tabs, fromIndex, toIndex));
-  }
-  setActiveTab(value: string) {
-    return new TabState(this.tabs.indexOf(value), this.tabs);
-  }
-  setTabs(tabs: string[]) {
-    if (tabs.includes(this.activeTab)) {
-      return new TabState(tabs.indexOf(this.activeTab), tabs);
-    } else {
-      const i = this.tabs.indexOf(this.activeTab);
-      return new TabState(Math.min(tabs.length - 1, i), tabs);
-    }
-  }
-}
-
 export const GridLayoutStackedItem = ({
-  active = 0,
   children,
   className: classNameProp,
   header,
   id,
-  isDropTarget = true,
   resizeable,
   style: styleProp,
   title,
   ...htmlAttributes
-}: GridLayoutItemProps & {
-  active?: number;
-}) => {
+}: GridLayoutItemProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-grid-layout",
@@ -105,111 +47,89 @@ export const GridLayoutStackedItem = ({
     window: targetWindow,
   });
 
-  const dispatch = useGridLayoutProviderDispatch();
-  const layoutProps = useGridChildProps({ id, resizeable, style: styleProp });
+  const { registerTabsForDragDrop } = useDragContext();
 
-  // TODO need to add children to state OR DO WE ?
-  //
-  const initialTabState = useMemo<TabState>(
-    () =>
-      new TabState(
-        active,
-        getChildElements(children).map((child, idx) =>
-          getDefaultTabLabel(child, idx, []),
-        ),
-      ),
-    [active, children],
-  );
-  const [tabState, setTabState] = useState<TabState>(initialTabState);
+  useEffect(() => {
+    registerTabsForDragDrop(id);
+  }, [id, registerTabsForDragDrop]);
 
-  const handleChange = useCallback(
-    (_: SyntheticEvent | null, value: string) => {
-      setTabState((state) => state.setActiveTab(value));
-    },
-    [],
-  );
-
-  const handleDrop = useCallback<DropHandler>(
-    ({ dragSource, toIndex }) => {
-      if (sourceIsTemplate(dragSource)) {
-        setTabState((state) => state.insertTab("New Tab", toIndex));
-        // TODO instantiate component and add to children array
-        dispatch({ type: "insert-tab", id, childId: uuid() });
-      } else {
-        setTabState((state) => state.moveTab(dragSource.index, toIndex));
-      }
-    },
-    [dispatch, id],
-  );
-
-  useLayoutEffect(
-    () => setTabState((state) => state.setActiveTab(state.tabs[active])),
-    [active],
-  );
-
-  const useDropTargetHook = isDropTarget ? useAsDropTarget : useNotDropTarget;
-  const droppableProps = useDropTargetHook();
-
-  const className = cx(classBaseItem, "vuuGridLayoutItem", {
-    [`${classBaseItem}-resizeable-h`]: resizeable === "h",
-    [`${classBaseItem}-resizeable-v`]: resizeable === "v",
-    [`${classBaseItem}-resizeable-vh`]: resizeable === "hv",
+  const layoutProps = useGridChildProps({
+    id,
+    resizeable,
+    style: styleProp,
+    type: "stacked-content",
   });
+
+  const { getTabState } = useGridModel();
+  const tabState = getTabState(id);
+
+  const handleTabSelectionChange = useCallback(
+    (_: SyntheticEvent | null, value: string) => {
+      tabState.setActiveTab(value);
+    },
+    [tabState],
+  );
+
+  const className = cx(classBaseItem, "vuuGridLayoutItem");
 
   const style = {
     ...styleProp,
     ...layoutProps,
   };
 
-  const stackId = `stack-${id}`;
   const tabsId = `tabs-${id}`;
 
+  // console.log(
+  //   `[GridLayoutStackedItem] render (#${tabState.activeTab.id} active)
+  //    ${JSON.stringify(tabState.tabs, null, 2)}
+  //   `,
+  // );
+
+  console.log(
+    `[GridLayoutStackedItem] render ${tabState.tabs.map((t) => t.label)}`,
+  );
+
   return (
-    <div
-      {...htmlAttributes}
-      {...droppableProps}
-      className={cx(className)}
-      id={id}
-      key={id}
-      style={style}
-    >
-      <div className={`${classBaseItem}Header`}>
-        <DragDropProvider
-          dragSources={{ [tabsId]: { dropTargets: [tabsId] } }}
-          onDrop={handleDrop}
+    <>
+      <div
+        {...htmlAttributes}
+        className={cx(className)}
+        id={id}
+        key={id}
+        style={style}
+      >
+        <TabsNext
+          onChange={handleTabSelectionChange}
+          value={tabState.tabs[tabState.active].label}
         >
-          <TabsNext
-            onChange={handleChange}
-            value={tabState.tabs[tabState.active]}
-          >
-            <TabBar divider>
-              <TabListNext
-                appearance="transparent"
-                className="vuuDragContainer"
-                data-drop-target={id}
-                id={tabsId}
-              >
-                {tabState.tabs.map((label, index) => (
-                  <TabNext
-                    className="vuuDraggableItem"
-                    data-index={index}
-                    draggable
-                    value={label}
-                    key={label}
-                  >
-                    <TabNextTrigger>{label}</TabNextTrigger>
-                  </TabNext>
-                ))}
-              </TabListNext>
-            </TabBar>
-          </TabsNext>
-        </DragDropProvider>
+          <TabBar divider>
+            <TabListNext
+              appearance="transparent"
+              className="vuuDragContainer"
+              id={tabsId}
+            >
+              {tabState.tabs.map(({ id: gridLayoutItemId, label }, index) => (
+                <TabNext
+                  className="vuuDraggableItem"
+                  data-index={index}
+                  data-grid-layout-item-id={gridLayoutItemId}
+                  data-label={label}
+                  draggable
+                  value={label}
+                  key={label}
+                >
+                  <TabNextTrigger>{label}</TabNextTrigger>
+                </TabNext>
+              ))}
+            </TabListNext>
+          </TabBar>
+        </TabsNext>
       </div>
-      <div className={`${classBaseItem}Content`} data-drop-target={id}>
-        <Stack active={tabState.active} id={stackId} showTabs={false}>
-          {children}
-        </Stack>
-      </div>
-    </div>
+    </>
   );
 };
+
+const GridLayoutStackedItemType = createElement(GridLayoutStackedItem).type;
+
+export const isGridLayoutStackedItem = (element: ReactElement) =>
+  element.type === GridLayoutStackedItemType;

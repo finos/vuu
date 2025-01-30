@@ -170,6 +170,9 @@ export const Stack = forwardRef(function Stack(
     getTabIcon,
   };
 
+  const activeTabIndex =
+    TabstripProps?.activeTabIndex ?? (child === null ? -1 : active);
+
   return (
     <div
       className={cx(classBase, classNameProp, {
@@ -183,9 +186,7 @@ export const Stack = forwardRef(function Stack(
         <Tabstrip
           aria-label="data tabs"
           {...TabstripProps}
-          activeTabIndex={
-            TabstripProps?.activeTabIndex ?? (child === null ? -1 : active)
-          }
+          activeTabIndex={activeTabIndex}
           allowDragDrop={TabstripProps.allowDragDrop !== false}
           animateSelectionThumb
           className={cx("vuuTabHeader", tabstripClassName)}
@@ -203,6 +204,7 @@ export const Stack = forwardRef(function Stack(
       <div
         aria-labelledby={`${id}-${active}`}
         className={`${classBase}-tabPanel`}
+        key={`tab-panel=${activeTabIndex}`}
         role="tabpanel"
       >
         {child}

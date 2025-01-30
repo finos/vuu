@@ -1,11 +1,13 @@
 import { RefCallback } from "react";
 import { asInteger, isValidNumber, orientationType } from "@finos/vuu-utils";
+import { DragContext, DropPosition } from "./DragContextNext";
 
 export type State = "initial" | "away" | "1spacer" | "2spacer";
 
 type Direction = "fwd" | "bwd";
 
 export class SpaceMan {
+  #dragContext: DragContext;
   #dragItem: HTMLElement | undefined;
   #dragContainer: HTMLElement | null = null;
   #dragSize = 0;
@@ -14,27 +16,22 @@ export class SpaceMan {
   #mouseOffset: { x: number; y: number } = { x: 0, y: 0 };
   #orientation: orientationType;
   #sizeProperty: "height" | "width";
-  #spacer1 = this.createDragSpacer(true);
+  #spacer1 = this.createDragSpacer();
   #spacer2 = this.createDragSpacer();
+  // TODO do we still need this state
   #state: State = "initial";
   #toDirection: Direction | undefined;
   #toIndex: string | number | undefined = undefined;
-  #transitioning: [number, number | undefined] | false = false;
   #withinDragContainer = false;
 
   constructor(
+    dragContext: DragContext,
     public id: string,
     orientation: orientationType = "horizontal",
   ) {
+    this.#dragContext = dragContext;
     this.#orientation = orientation;
     this.#sizeProperty = orientation === "horizontal" ? "width" : "height";
-  }
-
-  get fromIndex() {
-    return asInteger(this.#fromIndex);
-  }
-  get toIndex() {
-    return asInteger(this.#toIndex);
   }
 
   get mouseOffset() {
@@ -44,8 +41,36 @@ export class SpaceMan {
     this.#mouseOffset = offset;
   }
 
-  set transitioning(value: [number, number | undefined] | false) {
-    this.#transitioning = value;
+  get dropPosition(): DropPosition | undefined {
+    // console.log("[SpaceMan] get dropPosition");
+    const dropTargetSpacer = this.#dragContainer?.querySelector(
+      '[data-drop-target="true"]',
+    );
+    if (dropTargetSpacer) {
+      let siblingElement = dropTargetSpacer.nextElementSibling as HTMLElement;
+      if (siblingElement) {
+        return {
+          position: "before",
+          target: siblingElement.dataset.label ?? siblingElement.id,
+        };
+      }
+
+      siblingElement = dropTargetSpacer.previousElementSibling as HTMLElement;
+      if (siblingElement) {
+        return {
+          position: "after",
+          target: siblingElement.dataset.label ?? siblingElement.id,
+        };
+      }
+
+      throw Error(
+        `[[SpaceMan] (getter) dropPosition] no dropTarget with data-drop-target attribute found`,
+      );
+    }
+  }
+
+  get positionRelativeToTargetTab(): "before" | "after" {
+    return "before";
   }
 
   setDragContainer: RefCallback<HTMLElement> = (el: HTMLElement | null) => {
@@ -66,14 +91,19 @@ export class SpaceMan {
     this.#withinDragContainer = false;
     this.#state = "away";
     this.setSpacerSizes(0, 0);
+    //TODO is the timeout just to allow the spacer rezuse to animate ?
+    // seems to work without it
     setTimeout(() => {
       // TODO deal with situation where item re-enters before this happens
       this.clearSpacers();
-    }, 300);
+    }, 200);
   }
 
   dragStart(index: number | string) {
-    console.log("[SpaceMan] dragStart");
+    console.log(
+      "%c[SpaceMan] dragStart",
+      "background: yellow;font-weight:bold",
+    );
     const item = this.#dragContainer?.querySelector(
       `[data-index="${index}"]`,
     ) as HTMLElement;
@@ -106,24 +136,33 @@ export class SpaceMan {
   }
 
   dragEnter(index: number, direction: Direction) {
+    console.log(
+      `[SpaceMan] dragEnter index ${index} direction ${direction} state ${this.#state}`,
+    );
     const propertyName = this.#sizeProperty;
     if (index === this.#toIndex && direction === this.#toDirection) {
+      console.log(
+        `[SpaceMan] dragEnter, return early: no change to toIndex, direction`,
+      );
       return;
     }
     // we need to use ID rather than index, index is only meaningful
     // within a tabs/list drag operation
-    const dropTargetIndex = this.getDropTargetIndex(index, direction);
-
     if (this.#withinDragContainer === false) {
       this.#toIndex =
         // we will not have #fromIndex if dragged item is from another container
-        dropTargetIndex > asInteger(this.#fromIndex, Number.MAX_SAFE_INTEGER)
-          ? dropTargetIndex - 1
-          : dropTargetIndex;
+        index > asInteger(this.#fromIndex, Number.MAX_SAFE_INTEGER)
+          ? index - 1
+          : index;
       this.enterDragContainer();
-      this.insertSpacer(index, 100);
+      console.log(`insert first spacer dragOperation ${this.#dragOperation}`);
+      this.insertSpacer(index, this.#dragContext.dragElementWidth);
+
+      if (this.#dragOperation === "none") {
+        this.#dragOperation = "remote";
+      }
     } else {
-      this.#toIndex = dropTargetIndex;
+      this.#toIndex = index;
       this.#toDirection = direction;
 
       const item = this.#dragContainer?.querySelector(
@@ -132,6 +171,11 @@ export class SpaceMan {
       if (item) {
         if (this.#dragOperation === "none") {
           this.#dragOperation = "remote";
+          console.log(
+            `
+            Does this ever happen any more ? 
+            second first spacer dragOperation ${this.#dragOperation} direction ${direction}`,
+          );
           this.insertSpacer(index, 100);
         } else {
           if (direction === "fwd") {
@@ -141,21 +185,11 @@ export class SpaceMan {
               this.setSpacerSizes(0, this.#dragSize);
             } else if (this.#state === "2spacer") {
               if (this.#spacer1.style[propertyName] === "0px") {
-                if (this.#transitioning) {
-                  item.before(this.#spacer1);
-                  item.after(this.#spacer2);
-                } else {
-                  item.after(this.#spacer1);
-                  this.setSpacerSizes(this.#dragSize, 0);
-                }
+                item.after(this.#spacer1);
+                this.setSpacerSizes(this.#dragSize, 0);
               } else {
-                if (this.#transitioning) {
-                  item.before(this.#spacer2);
-                  item.after(this.#spacer1);
-                } else {
-                  item.after(this.#spacer2);
-                  this.setSpacerSizes(0, this.#dragSize);
-                }
+                item.after(this.#spacer2);
+                this.setSpacerSizes(0, this.#dragSize);
               }
             }
           } else {
@@ -165,21 +199,11 @@ export class SpaceMan {
               this.setSpacerSizes(0, this.#dragSize);
             } else if (this.#state === "2spacer") {
               if (this.#spacer1.style[propertyName] === "0px") {
-                if (this.#transitioning) {
-                  item.before(this.#spacer2);
-                  item.after(this.#spacer1);
-                } else {
-                  item.before(this.#spacer1);
-                  this.setSpacerSizes(this.#dragSize, 0);
-                }
+                item.before(this.#spacer1);
+                this.setSpacerSizes(this.#dragSize, 0);
               } else {
-                if (this.#transitioning) {
-                  item.after(this.#spacer2);
-                  item.before(this.#spacer1);
-                } else {
-                  item.before(this.#spacer2);
-                  this.setSpacerSizes(0, this.#dragSize);
-                }
+                item.before(this.#spacer2);
+                this.setSpacerSizes(0, this.#dragSize);
               }
             }
           }
@@ -205,7 +229,7 @@ export class SpaceMan {
       }
     } else {
       throw Error(
-        'can only inject drag content when state is "initial" or "away"',
+        `can only inject drag content when state is "initial" or "away", found "${this.#state}"`,
       );
     }
   }
@@ -222,20 +246,6 @@ export class SpaceMan {
     }
   }
 
-  // If the index is same as existing value, direction has changed, an
-  // offset will apply, depending on direction.
-  private getDropTargetIndex(index: number, direction: Direction) {
-    if (index === this.#toIndex) {
-      if (direction === "fwd") {
-        return index + 1;
-      } else {
-        return index - 1;
-      }
-    } else {
-      return index;
-    }
-  }
-
   private clearSpacers() {
     const propertyName = this.#sizeProperty;
     this.#spacer1.remove();
@@ -244,12 +254,11 @@ export class SpaceMan {
     this.#spacer2.style[propertyName] = "0px";
   }
 
-  private cleanup() {
-    console.log("cleanup");
+  cleanup() {
+    console.log(`[SpaceMan#${this.id}] cleanup`);
     this.clearSpacers();
 
     if (this.#dragItem) {
-      console.log("reset drag item");
       this.#dragItem.classList.remove("vuuDraggableItem-settling");
       this.#dragItem.classList.remove("vuuDraggableItem-animating");
       this.#dragItem.style.left = "";
@@ -261,6 +270,9 @@ export class SpaceMan {
 
   drop(x: number, y: number): Promise<void> {
     // TODO dragItem should be passed in
+    console.log(`[SpaceMan#${this.id}] drop, returns a promise`, {
+      dragItem: this.#dragItem,
+    });
     return new Promise((resolve) => {
       if (this.#dragItem) {
         const dragItem = this.#dragItem;
@@ -307,20 +319,11 @@ export class SpaceMan {
   }
 
   dragEnd() {
-    console.log("drag end");
     //TODO only if not dropped
     this.#dragContainer?.classList.remove("vuuDragContainer-dragging");
     // we need to do a bit more than this
     // this.#dragItem?.classList.remove("vuuDraggableItem-hidden");
     // this.#dragItem = undefined;
-  }
-
-  private alreadyScheduled(size1: number, size2?: number) {
-    return (
-      this.#transitioning &&
-      this.#transitioning[0] === size1 &&
-      this.#transitioning[1] === size2
-    );
   }
 
   private getPositionOfDragContainer() {
@@ -357,34 +360,23 @@ export class SpaceMan {
 
   private setSpacerSizes(size1: number, size2?: number, timeout = 0) {
     const propertyName = this.#sizeProperty;
-    console.log(`setSpacerSizes ${size1} ${size2}`);
-    if (!this.alreadyScheduled(size1, size2)) {
-      setTimeout(() => {
-        if (this.#spacer1.parentNode === null) {
-          // do nothing
-          console.log("null parento");
-        } else {
-          console.log(
-            `animate from ${this.#spacer1.style[propertyName]} ${this.#spacer2.style[propertyName]} to ${size1} ${size2}`,
-          );
-          this.transitioning = [size1, size2];
-          this.#spacer1.style[propertyName] = `${size1}px`;
-          if (isValidNumber(size2)) {
-            this.#spacer2.style[propertyName] = `${size2}px`;
-          }
+    setTimeout(() => {
+      if (this.#spacer1.parentNode === null) {
+        // do nothing
+      } else {
+        this.#spacer1.style[propertyName] = `${size1}px`;
+        this.#spacer1.dataset.dropTarget = size1 > 0 ? "true" : "false";
+        if (isValidNumber(size2)) {
+          this.#spacer2.style[propertyName] = `${size2}px`;
+          this.#spacer2.dataset.dropTarget = size2 > 0 ? "true" : "false";
         }
-      }, timeout);
-    } else console.log("already scheduled");
+      }
+    }, timeout);
   }
 
-  private createDragSpacer(trackTransitionEnd = false) {
+  private createDragSpacer() {
     const spacer = document.createElement("div");
-    spacer.className = "DragSpacer transitioning";
-    if (trackTransitionEnd) {
-      spacer.addEventListener("transitionend", () => {
-        this.transitioning = false;
-      });
-    }
+    spacer.className = "SpaceMan";
     return spacer;
   }
 }

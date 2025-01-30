@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { isSimpleStateValue } from "./react-utils";
 
 /**
  * Extension to useState that maintains a ref for the
@@ -15,9 +16,6 @@ import {
  *
  * @param value the initial value to store
  */
-
-const isSimpleStateValue = <T>(arg: SetStateAction<T>): arg is T =>
-  typeof arg !== "function";
 
 // Keeps a ref value in sync with a state value
 export const useStateRef = <T = string>(

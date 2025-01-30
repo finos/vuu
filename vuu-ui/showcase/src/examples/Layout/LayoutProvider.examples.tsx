@@ -10,7 +10,7 @@ import {
   registerComponent,
 } from "@finos/vuu-utils";
 import { Button } from "@salt-ds/core";
-import { useCallback, useState } from "react";
+import { ReactElement, useCallback, useState } from "react";
 import VuuFilterTableFeature from "feature-vuu-filter-table";
 
 import { schemas } from "@finos/vuu-data-test";
@@ -37,7 +37,7 @@ const contentBlue = {
   },
 };
 
-export const StaticTemplateNoChrome = () => {
+export const SimpleComponentContent = () => {
   const handleLayoutChange = useCallback<LayoutChangeHandler>((layout) => {
     console.log({ layout });
   }, []);
@@ -143,12 +143,28 @@ export const LeftRightChrome = () => {
   );
 };
 
+const EmptyLayoutProvider = ({
+  children,
+  workspaceJSON,
+}: {
+  children: ReactElement;
+  workspaceJSON?: LayoutJSON;
+}) => (
+  // children ? (
+  <LayoutProvider workspaceJSON={workspaceJSON}>
+    {children || null}
+  </LayoutProvider>
+);
+// ) : (
+//   <LayoutProvider workspaceJSON={workspaceJSON} />
+// );
+
 const LayoutProviderTemplate = ({
   workspaceJSON,
 }: {
   workspaceJSON: LayoutJSON;
 }) => (
-  <LayoutProvider workspaceJSON={workspaceJSON}>
+  <EmptyLayoutProvider workspaceJSON={workspaceJSON}>
     <LayoutContainer
       dropTarget
       id={VuuShellLocation.WorkspaceContainer}
@@ -157,8 +173,28 @@ const LayoutProviderTemplate = ({
         position: "absolute",
       }}
     />
-  </LayoutProvider>
+  </EmptyLayoutProvider>
 );
+
+// export const LayoutProviderNoContent = () => {
+//   return <EmptyLayoutProvider />;
+// };
+// export const LayoutProviderNoChildren = () => {
+//   return (
+//     <EmptyLayoutProvider
+//       workspaceJSON={{
+//         type: "Flexbox",
+//         props: {
+//           style: { flexDirection: "column", height: "100%" },
+//         },
+//         children: [
+//           { type: "div", props: { style: { background: "blue", flex: 1 } } },
+//           { type: "div", props: { style: { background: "yellow", flex: 1 } } },
+//         ],
+//       }}
+//     />
+//   );
+// };
 
 export const SimpleStaticLayoutJson = () => (
   <LayoutProviderTemplate

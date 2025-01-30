@@ -5,6 +5,7 @@ import {
   type LayoutJSON,
 } from "@finos/vuu-utils";
 import {
+  CSSProperties,
   useCallback,
   useContext,
   useEffect,
@@ -207,6 +208,7 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
   );
 
   useEffect(() => {
+    console.log(`[LayoutProvider] useEffect`);
     if (workspaceJSON) {
       info?.("workspaceJSON changed. inject new layout into application");
       if (Array.isArray(workspaceJSON)) {
@@ -279,6 +281,10 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
     childrenRef.current = children;
   }
 
+  console.log({
+    children: state.current,
+  });
+
   return (
     <LayoutProviderContext.Provider
       value={{
@@ -329,7 +335,7 @@ export const useLayoutCreateNewChild = () => {
                 ...props,
                 resizeable: true,
                 style: {
-                  ...props?.style,
+                  ...(props?.style as CSSProperties),
                   flexGrow: 1,
                   flexShrink: 0,
                   flexBasis: 0,

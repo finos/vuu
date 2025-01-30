@@ -1,4 +1,11 @@
-import { type orientationType } from "@finos/vuu-utils";
+import { EventEmitter, type orientationType } from "@finos/vuu-utils";
+import {
+  DragSource,
+  sourceIsComponent,
+  sourceIsTabbedComponent,
+  sourceIsTemplate,
+} from "../grid-layout/GridLayoutContext";
+import { initializeDragContainer } from "./drag-drop-listeners";
 
 type DragSourceDescriptor = {
   // TODO make optional default is self
@@ -7,81 +14,89 @@ type DragSourceDescriptor = {
   payloadType?: string;
 };
 
+export type DropPosition = {
+  position: "before" | "after";
+  target: string;
+};
+
 export type DragSources = {
   [key: string]: DragSourceDescriptor;
 };
 
-export type DropProps = {
-  dragSource: DragSource;
+export type DropProps<T extends DragSource = DragSource> = {
+  dragSource: T;
   toId?: string;
-  toIndex: number;
+  // The tab drop properties ...
+  tabsId?: string;
+  dropPosition?: DropPosition;
 };
 
-export type DropHandler = (dropProps: DropProps) => void;
+export type DropHandler<T extends DragSource = DragSource> = (
+  dropProps: DropProps<T>,
+) => void;
 
-/**
- * provides details of a dragged component
- */
-export type ComponentDragSource = {
-  id: string;
-  element: HTMLElement;
-  index: number;
-  label: string;
-  type: "component";
+const defaultDropHandler = () =>
+  console.log("no dropHandler has been attached");
+
+export type DragContextDropEvent = {
+  type: "drop";
+  dragSource: DragSource;
+  tabsId: string;
+  dropPosition: DropPosition;
+};
+export type DragContextDetachTabEvent = {
+  gridId: string;
+  type: "detach-tab";
+  tabsId: string;
+  value: string;
 };
 
-/**
- * provides details of a template, to be used on drop to instantiate  a new component
- */
-export type TemplateDragSource = {
-  componentJson: string;
-  element: HTMLElement;
-  index: number;
-  label: string;
-  type: "template";
+export type DragContextDropHandler = (evt: DragContextDropEvent) => void;
+export type DragContextDetachTabHandler = (
+  evt: DragContextDetachTabEvent,
+) => void;
+
+export type DragContextEvents = {
+  drop: DragContextDropHandler;
+  "detach-tab": DragContextDetachTabHandler;
 };
-
-export type DragSource = ComponentDragSource | TemplateDragSource;
-
-export const sourceIsComponent = (
-  source: DragSource,
-): source is ComponentDragSource => source.type === "component";
-
-export const sourceIsTemplate = (
-  source: DragSource,
-): source is TemplateDragSource => source.type === "template";
 
 /**
  * This context is a global singleton. Even when DragDropProviders are nested,
  * a single instance of this context object is always used.
  */
-export class DragContext {
-  #dropZoneCache = new Map<HTMLElement, boolean>();
+export class DragContext extends EventEmitter<DragContextEvents> {
+  #dragElementHeight?: number;
+  #dragElementWidth?: number;
+  #dragLabelWidth?: number;
   #dragSource?: DragSource;
-  #dragSources?: Map<string, DragSourceDescriptor>;
-  #dropHandler: DropHandler = () =>
-    console.log("no dropHandler has been attached");
+  #dragSources: Map<string, DragSourceDescriptor> = new Map();
+  #dropHandler: DropHandler = defaultDropHandler;
   #dropped = false;
+  #dropZoneCache = new Map<HTMLElement, boolean>();
   #element?: HTMLElement;
-  #height?: number;
   #mouseX = -1;
   #mouseY = -1;
-  #width?: number;
 
   beginDrag(e: DragEvent, dragSource: DragSource) {
     const { clientX: x, clientY: y, dataTransfer } = e;
+    console.log(`[DragContextNext] beginDrag #${dragSource.layoutId}`);
     if (dataTransfer) {
       dataTransfer.effectAllowed = "move";
       if (sourceIsTemplate(dragSource)) {
         dataTransfer.setData("text/json", dragSource.componentJson);
-      } else {
+      } else if (sourceIsComponent(dragSource)) {
         dataTransfer.setData("text/plain", dragSource.id);
+      } else if (sourceIsTabbedComponent(dragSource)) {
+        dataTransfer.setData("text/plain", dragSource.tab.id);
+      } else {
+        throw Error("whaat");
       }
       const { height, width } = dragSource.element.getBoundingClientRect();
       this.#dragSource = dragSource;
       this.#dropped = false;
-      this.#height = height;
-      this.#width = width;
+      this.#dragElementHeight = height;
+      this.#dragElementWidth = width;
       this.#mouseX = x;
       this.#mouseY = y;
     }
@@ -91,26 +106,63 @@ export class DragContext {
     this.#dropZoneCache.clear();
     this.#dragSource = undefined;
     this.#element = undefined;
-    this.#height = undefined;
-    this.#width = undefined;
+    this.#dragElementHeight = undefined;
+    this.#dragElementWidth = undefined;
   }
 
-  drop = ({ toId, toIndex }: Pick<DropProps, "toId" | "toIndex">) => {
+  /**
+   * A 'detached' tab is one that has been dragged from its place in tabstrip
+   * but not yet dropped. If it is the selected tab, we want to avoid unmounting
+   * the react component in the associated TabPanel. By marking it as 'detached'
+   * the TabPanel is still rendered but not visible. When the tab is dropped, the
+   * TabPanel can be assigned its new location (might still be within tabstrip, might
+   * not be) and made visible, without ever having to unmount/remount.
+   */
+  detachTab(gridId: string, tabsId: string, value: string) {
+    console.log(
+      `%c[DragContextNext] #${gridId}detachTab #${tabsId} tab (${value})`,
+      "color:blue;font-weight:bold;",
+    );
+    // change dragSource to component
+    console.log({
+      dragSource: this.#dragSource,
+    });
+
+    this.emit("detach-tab", { type: "detach-tab", gridId, tabsId, value });
+  }
+
+  drop = ({
+    tabsId,
+    dropPosition,
+  }: Pick<DragContextDropEvent, "tabsId" | "dropPosition">) => {
+    console.log(
+      `[DragContextNext] drop at #${tabsId} ${dropPosition?.position} ${dropPosition?.target}`,
+    );
     this.#dropped = true;
     if (this.#dragSource) {
-      this.#dropHandler({
+      this.emit("drop", {
+        type: "drop",
         dragSource: this.#dragSource,
-        toId,
-        toIndex,
+        tabsId,
+        dropPosition,
       });
     } else {
       throw Error("[DragContextNext] drop, dragSource not defined");
     }
   };
 
-  registerDragDropParty(id: string) {
-    console.log(`register dragdrop party ${id}`);
-  }
+  registerTabsForDragDrop = (id: string) => {
+    console.log(`[DragContextNext] registerDragSource #${id}`);
+    this.#dragSources.set(id, { dropTargets: ["*"] });
+    const dragSourceElement = document.getElementById(id);
+    if (dragSourceElement) {
+      initializeDragContainer(dragSourceElement, this);
+    } else {
+      throw Error(
+        `[DragDropProviderNext] registerDragSource no element found for #${id}`,
+      );
+    }
+  };
 
   get draggedElement() {
     const element = this.#element;
@@ -123,12 +175,20 @@ export class DragContext {
     }
   }
 
+  get dragElementWidth() {
+    return this.#dragElementWidth ?? 100;
+  }
+
   get dragSource() {
     return this.#dragSource;
   }
 
+  get internalDragSources() {
+    return this.#dragSources;
+  }
+
   set dragSources(dragSources: DragSources) {
-    this.#dragSources = this.buildDragSources(dragSources);
+    this.buildDragSources(dragSources);
   }
 
   // get dragState() {
@@ -147,6 +207,13 @@ export class DragContext {
   // }
 
   set dropHandler(dropHandler: DropHandler) {
+    if (this.#dropHandler === defaultDropHandler) {
+      console.log("[DragContextNext] set dropHandler");
+    } else {
+      console.log(
+        "[DragContextNext] set dropHandler - WARNING overwriting existing value",
+      );
+    }
     this.#dropHandler = dropHandler;
   }
 
@@ -168,20 +235,13 @@ export class DragContext {
     this.#mouseY = value;
   }
 
-  private isDragSource(id: string) {
-    return this.#dragSources?.has(id) ?? false;
-  }
-
   private buildDragSources(dragSources: DragSources) {
-    const sources = new Map<string, DragSourceDescriptor>();
-    // TODO do we need the targets ?
-
+    const sources = this.#dragSources;
     for (const [
       sourceId,
       { dropTargets, orientation = "horizontal" },
     ] of Object.entries(dragSources)) {
       sources.set(sourceId, { dropTargets, orientation });
     }
-    return sources;
   }
 }

@@ -1,21 +1,26 @@
 import {
-  AriaOrientation,
-  GridLayoutProvider,
+  getGridArea,
   GridPlaceholder,
   ResizeOrientation,
 } from "@finos/vuu-layout";
+import { registerComponent } from "@finos/vuu-utils";
+import { useIdMemo } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import {
-  CSSProperties,
-  ForwardedRef,
-  HTMLAttributes,
-  ReactElement,
-  useImperativeHandle,
-} from "react";
+import { CSSProperties, HTMLAttributes, ReactElement } from "react";
+import { DragDropProviderNext } from "../drag-drop-next/DragDropProviderNext";
+import gridLayoutCss from "./GridLayout.css";
+import { GridLayoutContext } from "./GridLayoutContext";
 import { GridLayoutItemProps } from "./GridLayoutItem";
-import { useGridSplitterResizing } from "./useGridSplitterResizing";
-import { GridModelConstructorProps } from "./GridModel";
+import { GridLayoutStackedItem } from "./GridLayoutStackedtem";
+import {
+  AriaOrientation,
+  GridLayoutChangeHandler,
+  GridLayoutDescriptor,
+} from "./GridModel";
 import { useGridLayout } from "./useGridLayout";
+import { useGridSplitterResizing } from "./useGridSplitterResizing";
 
 const classBase = "vuuGridLayout";
 
@@ -26,6 +31,8 @@ export interface GridSplitterProps extends HTMLAttributes<HTMLDivElement> {
   ariaOrientation: AriaOrientation;
   orientation: ResizeOrientation;
 }
+
+const NO_DRAG_SOURCES = {} as const;
 
 export const GridSplitter = ({
   "aria-controls": ariaControls,
@@ -47,123 +54,131 @@ export const GridSplitter = ({
 };
 
 export interface GridLayoutProps
-  extends GridModelConstructorProps,
-    HTMLAttributes<HTMLDivElement> {
+  extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   children?:
     | ReactElement<GridLayoutItemProps>
     | ReactElement<GridLayoutItemProps>[];
-  layoutAPI?: ForwardedRef<LayoutAPI>;
-}
-
-export interface LayoutAPI {
-  addGridColumn: (id: string) => void;
-  addGridRow: (id: string) => void;
-  removeGridColumn: (trackIndex: number) => void;
-  splitGridCol: (id: string) => void;
-  splitGridRow: (id: string) => void;
+  "full-page"?: boolean;
+  layout?: GridLayoutDescriptor;
+  onChange?: GridLayoutChangeHandler;
 }
 
 export const GridLayout = ({
-  id,
+  id: idProp,
   children: childrenProp,
-  colCount,
-  cols,
   className,
-  layoutAPI,
+  "full-page": fullPage,
+  layout,
   onClick,
-  rowCount,
-  rows,
+  onChange,
   style: styleProp,
   ...htmlAttributes
 }: GridLayoutProps) => {
-  const { containerCallback, containerRef, gridModel, onDragEnd } =
-    useGridLayout({
-      colCount,
-      cols,
-      rowCount,
-      rows,
-    });
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-grid-layout",
+    css: gridLayoutCss,
+    window: targetWindow,
+  });
+
+  const id = useIdMemo(idProp);
 
   const {
-    addGridColumn,
-    addGridRow,
     children,
+    containerCallback,
     dispatchGridLayoutAction,
+    gridLayoutModel,
+    gridModel,
+    nonContentGridItems: { placeholders, splitters, stackedItems },
+    onDetachTab,
+    onDragEnd,
     onDragStart,
     onDrop,
-    removeGridColumn,
-    splitGridCol,
-    splitGridRow,
-    nonContentGridItems: { placeholders, splitters },
-    ...layoutProps
-  } = useGridSplitterResizing({
+    onDropStackedItem,
+  } = useGridLayout({
     children: childrenProp,
-    containerRef,
+    id,
+    layout,
+    onChange,
+  });
+
+  const splitterLayoutProps = useGridSplitterResizing({
+    gridLayoutModel,
     gridModel,
     id,
     onClick,
   });
 
-  useImperativeHandle(
-    layoutAPI,
-    () => ({
-      addGridColumn,
-      addGridRow,
-      removeGridColumn,
-      splitGridCol,
-      splitGridRow,
-    }),
-    [addGridColumn, addGridRow, removeGridColumn, splitGridCol, splitGridRow],
-  );
-
   const style = {
-    "--col-count": colCount,
-    "--row-count": rowCount,
-    gridTemplateColumns: gridModel.gridTemplateColumns,
-    gridTemplateRows: gridModel.gridTemplateRows,
+    ...gridModel.tracks.css,
     ...styleProp,
   } as CSSProperties;
 
   return (
-    <GridLayoutProvider
-      dispatchGridLayoutAction={dispatchGridLayoutAction}
-      gridModel={gridModel}
-      onDragStart={onDragStart}
-      onDrop={onDrop}
+    <GridLayoutContext.Provider
+      value={{
+        dispatchGridLayoutAction,
+        gridLayoutModel,
+        gridModel,
+        id,
+        onDragEnd,
+        onDragStart,
+        onDrop,
+      }}
     >
-      <div
-        {...htmlAttributes}
-        {...layoutProps}
-        ref={containerCallback}
-        style={style}
-        className={cx(classBase, className)}
-        onDragEnd={onDragEnd}
+      <DragDropProviderNext
+        dragSources={NO_DRAG_SOURCES}
+        onDetachTab={onDetachTab}
+        onDrop={onDropStackedItem}
       >
-        {children}
-        {placeholders.map((placeholder) => (
-          <GridPlaceholder
-            id={placeholder.id}
-            key={placeholder.id}
-            style={{
-              gridColumn: `${placeholder.column.start}/${placeholder.column.end}`,
-              gridRow: `${placeholder.row.start}/${placeholder.row.end}`,
-            }}
-          />
-        ))}
-        {splitters.map((splitter) => (
-          <GridSplitter
-            aria-controls={splitter.controls}
-            ariaOrientation={splitter.ariaOrientation}
-            id={splitter.id}
-            key={splitter.id}
-            orientation={splitter.orientation}
-            style={{
-              gridColumn: `${splitter.column.start}/${splitter.column.end}`,
-              gridRow: `${splitter.row.start}/${splitter.row.end}`,
-            }}
-          />
-        ))}
-      </div>
-    </GridLayoutProvider>
+        <div
+          {...htmlAttributes}
+          {...splitterLayoutProps}
+          id={id}
+          ref={containerCallback}
+          style={style}
+          className={cx(classBase, className, {
+            vuuFullPage: fullPage,
+          })}
+          onDragEnd={onDragEnd}
+        >
+          {stackedItems.map((stackedItem) => (
+            <GridLayoutStackedItem
+              id={stackedItem.id}
+              key={stackedItem.id}
+              style={{
+                gridArea: getGridArea(stackedItem),
+              }}
+            />
+          ))}
+          {children}
+          {placeholders.map((placeholder) => (
+            <GridPlaceholder
+              id={placeholder.id}
+              key={placeholder.id}
+              style={{
+                gridArea: getGridArea(placeholder),
+              }}
+            />
+          ))}
+          {splitters.map((splitter) => (
+            <GridSplitter
+              aria-controls={splitter.controls}
+              ariaOrientation={splitter.ariaOrientation}
+              id={splitter.id}
+              key={splitter.id}
+              orientation={splitter.orientation}
+              style={{
+                gridArea: getGridArea(splitter),
+              }}
+            />
+          ))}
+        </div>
+      </DragDropProviderNext>
+    </GridLayoutContext.Provider>
   );
 };
+
+GridLayout.displayName = "Grid";
+
+registerComponent("Grid", GridLayout, "container");

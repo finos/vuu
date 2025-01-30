@@ -1,3 +1,4 @@
+import { queryClosest } from "@finos/vuu-utils";
 import {
   GridLayoutModelPosition,
   GridLayoutResizeDirection,
@@ -90,3 +91,12 @@ export const spansMultipleTracks = (
   const { start, end } = gridItem[track];
   return end - start > 1;
 };
+
+export function getClosestGridLayout(source: string): string;
+export function getClosestGridLayout(source: HTMLElement): string;
+export function getClosestGridLayout(source: string | HTMLElement) {
+  const el =
+    typeof source === "string" ? document.getElementById(source) : source;
+  const gridLayout = queryClosest(el, ".vuuGridLayout", true);
+  return gridLayout.id;
+}

@@ -1,16 +1,9 @@
-import { GridLayoutDropPosition } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes } from "react";
 import { useAsDropTarget } from "./useAsDropTarget";
 
 import gridPlaceholderCss from "./GridPlaceholder.css";
-
-export type GridLayoutDropHandler = (
-  targetId: string,
-  payload: string | object,
-  position: GridLayoutDropPosition,
-) => void;
 
 const classBase = "vuuGridPlaceholder";
 
@@ -35,7 +28,7 @@ export const GridPlaceholder = ({
     <div
       {...htmlAttributes}
       {...dragDropHandlers}
-      className={classBase}
+      className={`${classBase} vuuGridLayoutItem`}
       data-drop-target
     />
   );
