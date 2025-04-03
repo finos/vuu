@@ -1,15 +1,12 @@
-import {
-  getGridArea,
-  GridPlaceholder,
-  ResizeOrientation,
-} from "@finos/vuu-layout";
 import { registerComponent } from "@finos/vuu-utils";
 import { useIdMemo } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { CSSProperties, HTMLAttributes, ReactElement } from "react";
-import { DragDropProviderNext } from "../drag-drop-next/DragDropProviderNext";
+import { DragDropProviderNext } from "./drag-drop-next/DragDropProviderNext";
+import type { ResizeOrientation } from "./grid-dom-utils";
+import { getGridArea } from "./grid-layout-utils";
 import gridLayoutCss from "./GridLayout.css";
 import { GridLayoutContext } from "./GridLayoutContext";
 import { GridLayoutItemProps } from "./GridLayoutItem";
@@ -19,6 +16,7 @@ import {
   GridLayoutChangeHandler,
   GridLayoutDescriptor,
 } from "./GridModel";
+import { GridPlaceholder } from "./GridPlaceholder";
 import { useGridLayout } from "./useGridLayout";
 import { useGridSplitterResizing } from "./useGridSplitterResizing";
 

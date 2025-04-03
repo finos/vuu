@@ -4,7 +4,7 @@ import {
   sourceIsComponent,
   sourceIsTabbedComponent,
   sourceIsTemplate,
-} from "../grid-layout/GridLayoutContext";
+} from "../GridLayoutContext";
 import { initializeDragContainer } from "./drag-drop-listeners";
 
 type DragSourceDescriptor = {

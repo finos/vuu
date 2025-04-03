@@ -1,11 +1,11 @@
-import cx from "clsx";
 import { queryClosest } from "@finos/vuu-utils";
-import { DragEvent, HTMLAttributes, useCallback } from "react";
 import {
-  type DragSource,
   useDraggable,
   useGridLayoutDragStartHandler,
-} from "@finos/vuu-layout";
+  type DragSource,
+} from "@heswell/grid-layout";
+import cx from "clsx";
+import { DragEvent, HTMLAttributes, useCallback } from "react";
 
 import "./GridPalette.css";
 

@@ -1,7 +1,7 @@
 import { DragEvent, DragEventHandler, useCallback } from "react";
 import { GridLayoutDragEndHandler } from "./GridLayoutProvider";
 import { LayoutJSON } from "@finos/vuu-utils";
-import { useDragContext } from "../drag-drop-next/DragDropProviderNext";
+import { useDragContext } from "./drag-drop-next/DragDropProviderNext";
 import {
   DragSourceProvider,
   sourceIsComponent,

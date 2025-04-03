@@ -1,8 +1,8 @@
 import { orientationType, queryClosest } from "@finos/vuu-utils";
 import { DragContext } from "./DragContextNext";
 import { SpaceMan } from "./SpaceMan";
-import { sourceIsTabbedComponent } from "../grid-layout/GridLayoutContext";
-import { getClosestGridLayout } from "../grid-layout";
+import { sourceIsTabbedComponent } from "../GridLayoutContext";
+import { getClosestGridLayout } from "../grid-dom-utils";
 
 const isDraggable = (
   target: EventTarget | HTMLElement | null,

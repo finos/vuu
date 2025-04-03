@@ -46,12 +46,9 @@ import {
   type ComponentType,
   type ReactElement,
   type SyntheticEvent,
-  useCallback,
-  useMemo,
   useRef,
   useState,
 } from "react";
-import { TabState } from "@finos/vuu-layout/src/grid-layout/GridLayoutStackedtem";
 
 const tabs = ["Home", "Transactions", "Loans", "Checks", "Liquidity"];
 const lotsOfTabs = [
@@ -104,48 +101,6 @@ export const Inline = () => {
         <TabListNext appearance="transparent">
           {tabs.map((label) => (
             <TabNext value={label} key={label}>
-              <TabNextTrigger>{label}</TabNextTrigger>
-            </TabNext>
-          ))}
-        </TabListNext>
-
-        {tabs.map((label) => (
-          <TabNextPanel value={label} key={label}>
-            {label}
-          </TabNextPanel>
-        ))}
-      </TabsNext>
-    </div>
-  );
-};
-
-export const DragDropTabs = () => {
-  const ts = useMemo(
-    () =>
-      new TabState(0, ["Home", "Transactions", "Loans", "Checks", "Liquidity"]),
-    [],
-  );
-
-  const [{ activeTab, tabs }, setTabState] = useState<TabState>(ts);
-  const handleChange = useCallback(
-    (_: SyntheticEvent | null, value: string) => {
-      setTabState((state) => state.setActiveTab(value));
-    },
-    [],
-  );
-
-  // const handleMoveTab = useCallback(
-  //   (fromIndex: number, toIndex: number) =>
-  //     setTabState((state) => state.moveTab(fromIndex, toIndex)),
-  //   [],
-  // );
-
-  return (
-    <div data-showcase-center>
-      <TabsNext onChange={handleChange} value={activeTab}>
-        <TabListNext appearance="transparent">
-          {tabs.map((label, i) => (
-            <TabNext value={label} key={label} data-index={i} draggable>
               <TabNextTrigger>{label}</TabNextTrigger>
             </TabNext>
           ))}

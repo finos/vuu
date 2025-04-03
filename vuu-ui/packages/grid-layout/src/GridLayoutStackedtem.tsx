@@ -20,7 +20,7 @@ import gridLayoutCss from "./GridLayout.css";
 import { GridLayoutItemProps } from "./GridLayoutItem";
 import gridSplitterCss from "./GridSplitter.css";
 import { useGridChildProps } from "./useGridChildProps";
-import { useDragContext } from "../drag-drop-next/DragDropProviderNext";
+import { useDragContext } from "./drag-drop-next/DragDropProviderNext";
 import { useGridModel } from "./GridLayoutContext";
 
 const classBaseItem = "vuuGridLayoutStackedItem";

@@ -1,5 +1,4 @@
 import React, { ReactElement } from "react";
-import { StackProps } from "../stack";
 
 export const getGridItemChild = (
   gridItems: ReactElement[],
@@ -42,7 +41,7 @@ export const addChildToStackedGridItem = (
   // can we add an imperative API method to Stack ?
   return React.cloneElement(
     stackElement,
-    { active: stackChildren.length } as StackProps,
+    { active: stackChildren.length } as any,
     stackChildren.concat(childElement),
   );
 };

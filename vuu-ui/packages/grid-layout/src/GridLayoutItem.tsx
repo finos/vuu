@@ -15,7 +15,7 @@ import { useAsDropTarget } from "./useAsDropTarget";
 import { useNotDropTarget } from "./useNotDropTarget";
 
 import { LayoutJSON, queryClosest } from "@finos/vuu-utils";
-import { componentToJson } from "../layout-reducer";
+import { componentToJson } from "./componentToJson";
 import gridLayoutCss from "./GridLayout.css";
 import {
   DragSourceProvider,

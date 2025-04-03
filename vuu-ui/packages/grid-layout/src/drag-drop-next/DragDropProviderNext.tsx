@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useContext, useEffect } from "react";
-import { initializeDragContainer } from "./drag-drop-listeners";
+// import { initializeDragContainer } from "./drag-drop-listeners";
 import {
   DragContext,
   DragContextDetachTabHandler,
@@ -10,7 +10,7 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 
 import dragDropProviderCss from "./DragDropProviderNext.css";
-import { useGridLayoutId } from "../grid-layout/GridLayoutContext";
+import { useGridLayoutId } from "../GridLayoutContext";
 
 export type DragDropRegistrationFn = (id: string) => void;
 export type DragDropBeginDrag = (

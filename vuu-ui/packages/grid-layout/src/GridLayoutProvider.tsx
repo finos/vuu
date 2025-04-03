@@ -13,7 +13,8 @@ import {
   GridLayoutDescriptor,
 } from "./GridModel";
 import { GridLayoutItemProps } from "./GridLayoutItem";
-import { layoutFromJson, layoutToJSON } from "../layout-reducer";
+import { layoutToJSON } from "./layoutToJson";
+import { layoutFromJson } from "./layoutFromJson";
 import { LayoutJSON } from "@finos/vuu-utils";
 
 export type GridChildElementsChangeHandler = (

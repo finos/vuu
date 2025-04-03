@@ -8,12 +8,7 @@ import {
   isLayoutComponent,
   uuid,
 } from "@finos/vuu-utils";
-import React, {
-  CSSProperties,
-  JSXElementConstructor,
-  ReactElement,
-  cloneElement,
-} from "react";
+import React, { CSSProperties, ReactElement, cloneElement } from "react";
 import { TabLabelFactory } from "../stack";
 import {
   getPersistentState,

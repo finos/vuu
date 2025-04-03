@@ -1,6 +1,6 @@
 import { EventEmitter, uuid, type OptionalProperty } from "@finos/vuu-utils";
 import { CSSProperties } from "react";
-import { DropPosition } from "../drag-drop-next/DragContextNext";
+import { DropPosition } from "./drag-drop-next/DragContextNext";
 import {
   byColumnStart,
   byRowStart,

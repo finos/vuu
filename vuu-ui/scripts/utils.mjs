@@ -25,7 +25,7 @@ export const formatBytes = (bytes, decimals = 2, displayLength = 10) => {
   const i = floor(log(bytes) / log(k));
   return frontPad(
     parseFloat((bytes / pow(k, i)).toFixed(dm)) + " " + sizes[i],
-    displayLength
+    displayLength,
   );
 };
 
@@ -34,21 +34,15 @@ export const formatDuration = ({ seconds, nanoSeconds }) =>
 
 export const execWait = (cmd, cwd = ".") =>
   new Promise((resolve, reject) => {
-    // const newProcess = exec(cmd, { cwd }, (err, stdout, stderr) => {
     exec(cmd, { cwd }, (err, stdout, stderr) => {
       console.log(stdout);
-      if (stderr) {
-        console.log(`stderr: ${stderr}`);
-      }
-      if (err) {
-        reject(err);
+      // TODO whats the difference between err and stdErr ?
+      if (err ?? stderr) {
+        reject(err ?? stderr);
       } else {
         resolve();
       }
     });
-    // newProcess.stdout.on("data", function (data) {
-    //   console.log(data);
-    // });
   });
 
 export function removeFolder(folderPath) {
@@ -166,7 +160,7 @@ export const getCommandLineArg = (argName, expectValue, defaultValue) => {
   const argEquals = argName + "=";
   const args = process.argv.slice(2);
   const matchedArg = args.find(
-    (arg) => arg === argName || arg.startsWith(argEquals)
+    (arg) => arg === argName || arg.startsWith(argEquals),
   );
   if (matchedArg && expectValue) {
     if (matchedArg.startsWith(argEquals)) {
@@ -195,7 +189,7 @@ const args = process.argv.slice(2);
 export const withArgs = (...argNames) => {
   const commandLineArgs = argNames
     .map((arg) =>
-      args.includes(arg) || args.includes("--" + arg) ? ` --${arg}` : ""
+      args.includes(arg) || args.includes("--" + arg) ? ` --${arg}` : "",
     )
     .join("");
   return commandLineArgs ? ` -- ${commandLineArgs}` : "";

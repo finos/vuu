@@ -21,8 +21,8 @@ import {
 import {
   DragContextDetachTabHandler,
   DragContextDropHandler,
-} from "../drag-drop-next/DragContextNext";
-import { layoutFromJson } from "../layout-reducer";
+} from "./drag-drop-next/DragContextNext";
+import { layoutFromJson } from "./layoutFromJson";
 import {
   getClosestGridLayout,
   setGridColumn,

@@ -8,7 +8,7 @@ import {
 } from "@finos/vuu-utils";
 import { DragEventHandler, useCallback, useRef } from "react";
 import { useGridLayoutDropHandler, useGridLayoutId } from "./GridLayoutContext";
-import { useDragContext } from "../drag-drop-next/DragDropProviderNext";
+import { useDragContext } from "./drag-drop-next/DragDropProviderNext";
 
 const DROPTARGET_CLASSNAME = "vuuDropTarget";
 const GRIDITEM_QUERY = ".vuuGridLayoutItem";

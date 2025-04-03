@@ -1,15 +1,14 @@
+import { useMemo } from "react";
+
+import { type LayoutJSON } from "@finos/vuu-utils";
 import {
   GridLayout,
-  GridLayoutDescriptor,
   GridLayoutProvider,
   layoutFromJson,
-  SerializedGridLayout,
-  Stack,
-} from "@finos/vuu-layout";
-import { useMemo, useState } from "react";
-
+  type GridLayoutDescriptor,
+  type SerializedGridLayout,
+} from "@heswell/grid-layout";
 import "./GridLayout.examples.css";
-import { LayoutJSON } from "@finos/vuu-utils";
 
 export const TwoByTwoDoubleRowspanInColumnTwoJsonLayout = () => {
   const layout = useMemo<GridLayoutDescriptor>(
@@ -239,122 +238,4 @@ export const GridLayoutFromJSON = () => {
   }, [layoutJson]);
 
   return gridLayout;
-};
-
-const layoutJson1 = {
-  type: "Grid",
-  props: {
-    "full-page": true,
-    layout: {
-      cols: ["1fr", "1fr"],
-      rows: ["1fr", "1fr"],
-      gridLayoutItems: {
-        red: {
-          gridArea: "1/1/2/2",
-          header: true,
-        },
-        green: {
-          gridArea: "2/1/3/2",
-        },
-        blue: {
-          gridArea: "1/2/3/3",
-        },
-      },
-    },
-  },
-  children: [
-    {
-      type: "div",
-      id: "red",
-      props: { style: { background: "red" } },
-    },
-    {
-      type: "div",
-      id: "green",
-      props: { style: { background: "green" } },
-    },
-    {
-      type: "div",
-      id: "blue",
-      props: { style: { background: "blue" } },
-    },
-  ],
-};
-
-const layoutJson2 = {
-  type: "Grid",
-  props: {
-    "full-page": true,
-    layout: {
-      cols: ["1fr", "1fr"],
-      rows: ["1fr", "1fr"],
-      gridLayoutItems: {
-        red: {
-          gridArea: "1/2/2/3",
-          header: true,
-        },
-        green: {
-          gridArea: "2/2/3/3",
-        },
-        blue: {
-          gridArea: "1/1/3/2",
-        },
-      },
-    },
-  },
-  children: [
-    {
-      type: "div",
-      id: "red",
-      props: { style: { background: "red" } },
-    },
-    {
-      type: "div",
-      id: "green",
-      props: { style: { background: "green" } },
-    },
-    {
-      type: "div",
-      id: "blue",
-      props: { style: { background: "blue" } },
-    },
-  ],
-};
-
-export const GridLayoutFromJSONTabbed = () => {
-  const [gridLayout1, gridLayout2] = useMemo(() => {
-    return [layoutFromJson(layoutJson1, "0"), layoutFromJson(layoutJson2, "0")];
-  }, []);
-  const [active, setActive] = useState(0);
-
-  return (
-    <Stack
-      active={active}
-      onTabSelectionChanged={setActive}
-      style={{ height: "100vh", width: "100vw" }}
-    >
-      {gridLayout1}
-      {gridLayout2}
-    </Stack>
-  );
-};
-
-export const GridLayoutFromJSONTabbedLayoutProvider = () => {
-  const [gridLayout1, gridLayout2] = useMemo(() => {
-    return [layoutFromJson(layoutJson1, "0"), layoutFromJson(layoutJson2, "0")];
-  }, []);
-  const [active, setActive] = useState(0);
-
-  return (
-    <GridLayoutProvider>
-      <Stack
-        active={active}
-        onTabSelectionChanged={setActive}
-        style={{ height: "100vh", width: "100vw" }}
-      >
-        {gridLayout1}
-        {gridLayout2}
-      </Stack>
-    </GridLayoutProvider>
-  );
 };
