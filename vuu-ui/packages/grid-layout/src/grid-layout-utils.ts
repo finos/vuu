@@ -45,39 +45,6 @@ export const splitTrack = (tracks: number[], trackIndex: number) => {
   return insertTrack(tracks, trackIndex, sizeOfNewTrack);
 };
 
-/**
- *
- * @param tracks the track sizes
- * @param startLine the start grid Line (column line or row Line)
- * @param endLine the end grid Line (column line or row Line)
- * @returns
- */
-export const getBisectingGridLine = (
-  tracks: number[],
-  startLine: number,
-  endLine: number,
-) => {
-  if (endLine - startLine > 1) {
-    // Total the sizes between start and end
-    // find the half way point
-    // see if an existing edge occurs at that point (or wiuthin .5 pixesl, if decimal)
-  }
-  let size = 0;
-  for (let i = startLine - 1; i < endLine - 1; i++) {
-    size += tracks[i];
-  }
-  const halfSize = size / 2;
-
-  size = 0;
-  for (let i = startLine - 1; i < endLine - 1; i++) {
-    size += tracks[i];
-    if (Math.abs(halfSize - size) < 1) {
-      return i + 2;
-    }
-  }
-  return -1;
-};
-
 export type ContrasAndSiblings = {
   contras: GridModelChildItem[];
   position: GridLayoutModelPosition;

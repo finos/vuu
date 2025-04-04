@@ -1,4 +1,3 @@
-import { IconButton } from "@finos/vuu-ui-controls";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
@@ -14,8 +13,8 @@ import {
 import { useAsDropTarget } from "./useAsDropTarget";
 import { useNotDropTarget } from "./useNotDropTarget";
 
-import { LayoutJSON, queryClosest } from "@finos/vuu-utils";
-import { componentToJson } from "./componentToJson";
+import { queryClosest } from "@finos/vuu-utils";
+import { componentToJson, LayoutJSON } from "./componentToJson";
 import gridLayoutCss from "./GridLayout.css";
 import {
   DragSourceProvider,
@@ -26,6 +25,7 @@ import { GridModelChildItemProps } from "./GridModel";
 import gridSplitterCss from "./GridSplitter.css";
 import { useDraggable } from "./useDraggable";
 import { useGridChildProps } from "./useGridChildProps";
+import { IconButton } from "./IconButton";
 
 const classBaseItem = "vuuGridLayoutItem";
 

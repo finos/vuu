@@ -25,7 +25,7 @@ export type TrackSize = number | CSSTrackSize;
 export const isFractionUnit = (trackSize: TrackSize) =>
   typeof trackSize === "string" && trackSize.endsWith("fr");
 
-export const isPixelUnit = (trackSize: TrackSize) =>
+export const isPixelUnit = (trackSize: TrackSize): trackSize is CSSTrackSize =>
   typeof trackSize === "string" && trackSize.endsWith("px");
 
 const NO_SPLITTERS: ISplitter[] = [];
@@ -59,13 +59,16 @@ export const isMapBasedLayout = (
   Record<string, GridLayoutChildItemDescriptor>
 > => !Array.isArray(layout.gridLayoutItems);
 
-export type GridLayoutDescriptor<
-  T extends GridLayoutChildItemDescriptors = GridLayoutChildItemDescriptors,
-> = {
+export interface GridColumnsAndRows {
   cols: TrackSize[];
   rows: TrackSize[];
+}
+
+export interface GridLayoutDescriptor<
+  T extends GridLayoutChildItemDescriptors = GridLayoutChildItemDescriptors,
+> extends GridColumnsAndRows {
   gridLayoutItems: T;
-};
+}
 
 export interface GridLayoutModelCoordinates {
   column: GridLayoutModelPosition;
@@ -484,6 +487,18 @@ export class GridTrack {
     return isFractionUnit(this.#trackSize);
   }
 
+  get isPixelValue() {
+    return isPixelUnit(this.#trackSize);
+  }
+
+  get isNumber() {
+    return typeof this.#trackSize === "number";
+  }
+
+  get isMeasured() {
+    return this.measuredValue !== -1;
+  }
+
   get measuredValue() {
     return this.#measuredValue ?? -1;
   }
@@ -502,9 +517,13 @@ export class GridTrack {
     }
   }
 
-  get numericValue() {
-    if (typeof this.#trackSize === "number") {
-      return this.#trackSize;
+  get hasNumericValue() {
+    return this.isNumber || this.isPixelValue || this.isMeasured;
+  }
+
+  get numericValue(): number {
+    if (this.isNumber) {
+      return this.#trackSize as number;
     } else if (isPixelUnit(this.#trackSize)) {
       return parseInt(this.#trackSize);
     } else if (this.#measuredValue !== -1) {
@@ -609,6 +628,42 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
     } else {
       throw Error(`[GridTracks] measure no grid element found #${this.gridId}`);
     }
+  }
+
+  getBisectingTrack(
+    trackType: TrackType,
+    startIndex: number,
+    endIndex: number,
+  ) {
+    console.log(
+      `[GridTracks] getBisectingTrack (${trackType}) [${startIndex} : ${endIndex}] `,
+    );
+
+    const tracks = this.getTracks(trackType);
+    const tracksInRange = tracks.slice(startIndex - 1, endIndex);
+    if (!tracksInRange.every((track) => track.hasNumericValue)) {
+      this.measure(trackType);
+    }
+
+    if (endIndex - startIndex > 1) {
+      // Total the sizes between start and end
+      // find the half way point
+      // see if an existing edge occurs at that point (or wiuthin .5 pixesl, if decimal)
+    }
+    let size = 0;
+    for (let i = startIndex - 1; i < endIndex - 1; i++) {
+      size += tracks[i].numericValue;
+    }
+    const halfSize = size / 2;
+
+    size = 0;
+    for (let i = startIndex - 1; i < endIndex - 1; i++) {
+      size += tracks[i].numericValue;
+      if (Math.abs(halfSize - size) < 1) {
+        return i + 2;
+      }
+    }
+    return -1;
   }
 
   splitTrack(trackType: TrackType, trackIndex: number) {

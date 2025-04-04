@@ -4,7 +4,6 @@ import {
   OptionalProperty,
 } from "@finos/vuu-utils";
 import {
-  getBisectingGridLine,
   gridResizeDirectionFromDropPosition,
   doesResizeRequireNewTrack as isResizeTrackShared,
   itemsFillColumn,
@@ -646,17 +645,23 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
       this.gridModel.tracks.splitTrack(trackType, newTrackIndex);
     } else {
       // Is there already a track line in the required position
-      const bisectingGridLine = getBisectingGridLine(
-        tracks,
+      const bisectingGridTrack = this.gridModel.tracks.getBisectingTrack(
+        trackType,
         resizeTrack.start,
         resizeTrack.end,
       );
-      if (bisectingGridLine !== -1) {
+      // console.log({ bisectingGridTrack });
+      // const bisectingGridLine = getBisectingGridLine(
+      //   tracks,
+      //   resizeTrack.start,
+      //   resizeTrack.end,
+      // );
+      if (bisectingGridTrack !== -1) {
         const [droppedItemPosition, targetItemPosition] =
           splitGridChildPosition(
             { column: targetGridItem.column, row: targetGridItem.row },
             splitDirection,
-            bisectingGridLine,
+            bisectingGridTrack,
           );
 
         updates.push([droppedItemId, droppedItemPosition]);

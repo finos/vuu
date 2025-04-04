@@ -1,10 +1,9 @@
-import { MousePosition } from "@finos/vuu-ui-controls";
 import {
+  getPositionWithinBox,
   type GridLayoutDropPosition,
   pointPositionWithinRect,
   queryClosest,
   type rect,
-  getPositionWithinBox,
 } from "@finos/vuu-utils";
 import { DragEventHandler, useCallback, useRef } from "react";
 import { useGridLayoutDropHandler, useGridLayoutId } from "./GridLayoutContext";
@@ -29,6 +28,11 @@ const addDropTargetPositionClassName = (
   removeDropTargetPositionClassName(el);
   el.classList.add(`${DROPTARGET_CLASSNAME}-${position}`);
 };
+
+interface MousePosition {
+  clientX: number;
+  clientY: number;
+}
 
 /**
  * Describes a drop target. Will always reference a GrtidLayoutItem, but these may include more than

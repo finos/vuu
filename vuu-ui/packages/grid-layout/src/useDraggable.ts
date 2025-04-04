@@ -1,6 +1,5 @@
 import { DragEvent, DragEventHandler, useCallback } from "react";
 import { GridLayoutDragEndHandler } from "./GridLayoutProvider";
-import { LayoutJSON } from "@finos/vuu-utils";
 import { useDragContext } from "./drag-drop-next/DragDropProviderNext";
 import {
   DragSourceProvider,
@@ -8,6 +7,7 @@ import {
   sourceIsTemplate,
   useGridLayoutId,
 } from "./GridLayoutContext";
+import { LayoutJSON } from "./componentToJson";
 
 export type DragStartIdOptions = {
   id: string;

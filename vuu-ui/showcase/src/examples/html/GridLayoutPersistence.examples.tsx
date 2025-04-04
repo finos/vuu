@@ -43,7 +43,7 @@ export const TwoByTwoDoubleRowspanInColumnTwoJsonLayout = () => {
   );
 
   return (
-    <GridLayout full-page layout={layout}>
+    <GridLayout full-page colsAndRows={layout}>
       <div id="green" style={{ background: "green" }} />
       <div id="blue" style={{ background: "blue" }} />
       <div id="red" style={{ background: "red" }} />
@@ -189,7 +189,7 @@ export const TwoByTwoDoubleRowspanInColumnTwoSerialized = () => {
   );
 
   return (
-    <GridLayout full-page layout={layout}>
+    <GridLayout full-page colsAndRows={layout}>
       <div id="green" style={{ background: "green" }} />
       <div id="blue" style={{ background: "blue" }} />
       <div id="red" style={{ background: "red" }} />

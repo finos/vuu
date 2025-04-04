@@ -2,7 +2,6 @@ import {
   asReactElements,
   isGridLayoutSplitDirection,
   isSimpleStateValue,
-  LayoutJSON,
   queryClosest,
   uuid,
 } from "@finos/vuu-utils";
@@ -52,6 +51,7 @@ import {
 import { isGridLayoutStackedItem } from "./GridLayoutStackedtem";
 import {
   GridChildPositionChangeHandler,
+  GridColumnsAndRows,
   GridLayoutChangeHandler,
   GridLayoutChildItemDescriptor,
   GridLayoutDescriptor,
@@ -70,11 +70,12 @@ import {
   getGridItemChild,
 } from "./react-element-utils";
 import { GridLayoutDragStartHandler } from "./useDraggable";
+import { LayoutJSON } from "./componentToJson";
 
 export type GridLayoutHookProps = {
   children: ReactNode;
   id: string;
-  layout?: GridLayoutDescriptor;
+  colsAndRows?: GridColumnsAndRows;
   onChange?: GridLayoutChangeHandler;
 };
 
@@ -153,7 +154,7 @@ export const buildMapsKeyedByGridLayoutItemId = (
 export const useGridLayout = ({
   children: childrenProp,
   id,
-  layout: layoutProp,
+  colsAndRows,
   onChange,
 }: GridLayoutHookProps) => {
   const containerRef = useRef<HTMLDivElement>();
@@ -177,17 +178,17 @@ export const useGridLayout = ({
       const { components: savedChildren, layout: savedLayout } = savedGrid;
 
       return [Object.values(savedChildren), savedChildren, savedLayout];
-    } else if (layoutProp) {
+    } else if (colsAndRows) {
       const reactElements = asReactElements(childrenProp);
       const [childElementMap, layoutDescriptor] =
-        buildMapsKeyedByGridLayoutItemId(reactElements, layoutProp);
+        buildMapsKeyedByGridLayoutItemId(reactElements, colsAndRows);
       return [reactElements, childElementMap, layoutDescriptor];
     } else {
       throw Error(
         `[useGridLayout] useMemo no saved grid details available and no layout provided. Either pass layout prop or provide layout using a GridLayoutProvider`,
       );
     }
-  }, [childrenProp, getSavedGrid, id, layoutProp]);
+  }, [childrenProp, getSavedGrid, id, colsAndRows]);
 
   /**
    * We expect one of three formats here:

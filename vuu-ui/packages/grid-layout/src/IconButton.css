@@ -1,0 +1,4 @@
+.vuuIconButton {
+  --saltButton-padding: 0;
+  --saltButton-minWidth: var(--salt-size-base);
+}

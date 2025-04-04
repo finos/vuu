@@ -7,18 +7,19 @@ import { CSSProperties, HTMLAttributes, ReactElement } from "react";
 import { DragDropProviderNext } from "./drag-drop-next/DragDropProviderNext";
 import type { ResizeOrientation } from "./grid-dom-utils";
 import { getGridArea } from "./grid-layout-utils";
-import gridLayoutCss from "./GridLayout.css";
 import { GridLayoutContext } from "./GridLayoutContext";
 import { GridLayoutItemProps } from "./GridLayoutItem";
 import { GridLayoutStackedItem } from "./GridLayoutStackedtem";
 import {
   AriaOrientation,
+  GridColumnsAndRows,
   GridLayoutChangeHandler,
-  GridLayoutDescriptor,
 } from "./GridModel";
 import { GridPlaceholder } from "./GridPlaceholder";
 import { useGridLayout } from "./useGridLayout";
 import { useGridSplitterResizing } from "./useGridSplitterResizing";
+
+import gridLayoutCss from "./GridLayout.css";
 
 const classBase = "vuuGridLayout";
 
@@ -57,7 +58,7 @@ export interface GridLayoutProps
     | ReactElement<GridLayoutItemProps>
     | ReactElement<GridLayoutItemProps>[];
   "full-page"?: boolean;
-  layout?: GridLayoutDescriptor;
+  colsAndRows?: GridColumnsAndRows;
   onChange?: GridLayoutChangeHandler;
 }
 
@@ -66,7 +67,7 @@ export const GridLayout = ({
   children: childrenProp,
   className,
   "full-page": fullPage,
-  layout,
+  colsAndRows,
   onClick,
   onChange,
   style: styleProp,
@@ -96,7 +97,7 @@ export const GridLayout = ({
   } = useGridLayout({
     children: childrenProp,
     id,
-    layout,
+    colsAndRows,
     onChange,
   });
 

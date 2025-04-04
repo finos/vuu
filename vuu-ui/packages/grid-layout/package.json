@@ -12,6 +12,7 @@
   },
   "types": "src/index.ts",
   "dependencies": {
+    "@finos/vuu-utils": "0.0.26",
     "@salt-ds/core": "1.37.1",
     "@salt-ds/lab": "1.0.0-alpha.62",
     "@salt-ds/styles": "0.2.1",

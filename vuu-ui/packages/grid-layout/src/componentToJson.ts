@@ -1,11 +1,37 @@
-import { LayoutProps } from "@finos/vuu-layout";
-import {
-  elementImplementsJSONSerialization,
-  LayoutJSON,
-} from "@finos/vuu-utils";
-import React, { ReactElement } from "react";
+import { elementImplementsJSONSerialization } from "@finos/vuu-utils";
+import React, { CSSProperties, ReactElement } from "react";
 import { getProps } from "./propUtils";
 import { typeOf } from "./typeOf";
+
+export interface LayoutJSON<T extends object = any> {
+  active?: number;
+  children?: LayoutJSON[];
+  id?: string;
+  props?: T;
+  state?: unknown;
+  style?: CSSProperties;
+  title?: string;
+  type: string;
+}
+
+export interface LayoutProps {
+  active?: number;
+  "data-path"?: string;
+  children?: ReactElement[];
+  /**
+   * indicates flexDirection for Flexbox
+   */
+  column?: boolean;
+  dropTarget?: boolean;
+  i8d: string;
+  key: string;
+  // layout?: LayoutJSON;
+  path?: string;
+  resizeable?: boolean;
+  style: CSSProperties;
+  type?: string;
+  version?: number;
+}
 
 export function componentToJson(element: ReactElement): LayoutJSON {
   if (elementImplementsJSONSerialization(element)) {

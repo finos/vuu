@@ -20,16 +20,11 @@ import { GridPalette, GridPaletteItem } from "./components/GridPalette";
 
 import "./GridLayout.examples.css";
 import { Button } from "@salt-ds/core";
-import {
-  useGridLayoutDispatch,
-  useGridModel,
-} from "@finos/vuu-layout/src/grid-layout/GridLayoutContext";
 
 export const SingleItemFillsGrid = () => {
-  console.log("dsdsdsdsdsdsd");
   return (
     <GridLayout
-      layout={{
+      colsAndRows={{
         cols: ["1fr"],
         rows: ["1fr"],
       }}
@@ -54,7 +49,7 @@ export const SingleItemFillsGrid = () => {
 export const SingleStackedItemFillsGrid = () => {
   return (
     <GridLayout
-      layout={{ cols: ["1fr"], rows: ["1fr"] }}
+      colsAndRows={{ cols: ["1fr"], rows: ["1fr"] }}
       full-page
       id="GridLayout1"
     >
@@ -121,7 +116,7 @@ export const SingleStackedItemFillsGrid = () => {
 export const TowerOfTwoStackedItems = () => {
   return (
     <GridLayout
-      layout={{ cols: ["1fr"], rows: ["1fr", "1fr"] }}
+      colsAndRows={{ cols: ["1fr"], rows: ["1fr", "1fr"] }}
       full-page
       id="GridLayoutB"
     >
@@ -264,7 +259,7 @@ export const TwoByTwoGrid = () => {
       <GridLayout
         full-page
         id="GridLayoutA"
-        layout={{
+        colsAndRows={{
           cols: ["1fr", "1fr"],
           rows: ["1fr", "1fr"],
         }}
@@ -334,7 +329,7 @@ export const TwoByTwoGrid = () => {
 export const TwoByTwoEmptyCell = () => {
   return (
     <GridLayout
-      layout={{
+      colsAndRows={{
         cols: ["1fr", "1fr"],
         rows: ["1fr", "1fr"],
       }}
@@ -381,7 +376,7 @@ export const TwoByTwoEmptyCell = () => {
 export const TwoByTwoDoubleRowspanInColumnTwo = () => {
   return (
     <GridLayout
-      layout={{
+      colsAndRows={{
         cols: ["1fr", "1fr"],
         rows: ["1fr", "1fr"],
       }}
@@ -431,7 +426,7 @@ export const TwoByTwoColumnOneDoubleRowspan = () => {
     <GridLayout
       full-page
       id="GridLayoutB"
-      layout={{
+      colsAndRows={{
         cols: ["1fr", "1fr"],
         rows: ["1fr", "1fr"],
       }}
@@ -476,7 +471,7 @@ export const SkewedTowerDeepTopRight = () => {
     <GridLayout
       full-page
       id="GridLayoutD"
-      layout={{
+      colsAndRows={{
         cols: ["1fr", "1fr"],
         rows: ["1fr", "1fr", "1fr"],
       }}
@@ -534,7 +529,7 @@ export const SkewedTowerDeepTopRight = () => {
 export const SkewedTowerDeepTopLeft = () => {
   return (
     <GridLayout
-      layout={{
+      colsAndRows={{
         cols: ["1fr", "1fr"],
         rows: ["1fr", "1fr", "1fr"],
       }}
@@ -582,7 +577,7 @@ export const SkewedTerracesWideTopLeft = () => {
     <GridLayout
       full-page
       id="GridLayoutE"
-      layout={{
+      colsAndRows={{
         cols: ["1fr", "1fr", "1fr"],
         rows: ["1fr", "1fr"],
       }}
@@ -645,7 +640,7 @@ export const GridLayoutG = () => {
     <GridLayout
       full-page
       id="GridLayoutE"
-      layout={{
+      colsAndRows={{
         cols: ["1fr", "1fr", "1fr"],
         rows: ["1fr", "1fr"],
       }}
@@ -695,7 +690,7 @@ export const GridLayoutH = () => {
     <GridLayout
       full-page
       id="GridLayoutE"
-      layout={{
+      colsAndRows={{
         cols: ["1fr", "1fr"],
         rows: ["1fr", "32px", "1fr"],
       }}
@@ -752,7 +747,7 @@ export const FourCellTerrace = () => {
     <GridLayout
       full-page
       id="GridLayoutE"
-      layout={{
+      colsAndRows={{
         cols: ["1fr", "1fr", "1fr", "1fr"],
         rows: ["1fr"],
       }}
@@ -817,7 +812,7 @@ export const FourCellTerrace = () => {
 export const FixedAppHeaderSimpleContent = () => {
   return (
     <GridLayout
-      layout={{
+      colsAndRows={{
         cols: ["1fr"],
         rows: ["80px", "1fr"],
       }}
@@ -845,7 +840,7 @@ export const FixedAppHeaderThreeColumnContent = () => {
   return (
     // prettier-ignore
     <GridLayout id="GridLayoutB" full-page
-      layout={{ cols: ["200px", "1fr", "200px"], rows: ["48px", "40px", "1fr"] }}
+      colsAndRows={{ cols: ["200px", "1fr", "200px"], rows: ["48px", "40px", "1fr"] }}
     >
       <GridLayoutItem id="gray" style={{ gridArea: "1/1/2/4" }}>
         <DebugGridItem style={{ background: "gray" }} />
@@ -908,7 +903,7 @@ export const FixedAppHeaderCollapsibleSidebars = () => {
   return (
     // prettier-ignore
     <GridLayout id="GridLayoutB" full-page
-      layout={{ cols, rows }}
+      colsAndRows={{ cols, rows }}
     >
       <GridLayoutItem id="gray" style={{ gridArea: "1/1/2/4" }}>
         <DebugGridItem style={{ alignItems: "center",background: "gray",display: "flex", gap: 9,justifyContent: "center"  }} >
@@ -995,7 +990,7 @@ export const FixedAppHeaderCustomCollapsibleSidebars = () => {
   return (
     // prettier-ignore
     <GridLayout id="GridLayoutB" full-page
-      layout={{ cols, rows }}
+      colsAndRows={{ cols, rows }}
     >
       <GridLayoutItem id="gray" style={{ gridArea: "1/1/2/4" }}>
         <CustomHeader  />
@@ -1037,7 +1032,7 @@ export const SingleRowFixedItemCenter = () => {
     <GridLayout
       full-page
       id="GridLayoutE"
-      layout={{
+      colsAndRows={{
         cols: ["1fr", "1fr", "1fr", "1fr"],
         rows: ["1fr"],
       }}
@@ -1100,7 +1095,7 @@ export const SingleColumnFixedItemBlue = () => {
     <GridLayout
       full-page
       id="GridLayoutE"
-      layout={{
+      colsAndRows={{
         cols: ["1fr", "1fr"],
         rows: ["1fr", "1fr", "1fr", "1fr"],
       }}
@@ -1192,7 +1187,7 @@ export const EmptyGridLayout = () => {
     <GridLayout
       full-page
       id="GridLayoutE"
-      layout={{
+      colsAndRows={{
         cols: ["1fr", "1fr"],
         rows: ["1fr", "1fr"],
       }}
@@ -1254,7 +1249,7 @@ export const EmptyWithPalette = () => {
         <GridLayout
           full-page
           id="GridLayoutE"
-          layout={{
+          colsAndRows={{
             cols: ["200px", "1fr"],
             rows: ["1fr"],
           }}
@@ -1325,7 +1320,7 @@ export const ShowCaseLayout = () => {
       <GridLayout
         full-page
         id="GridLayoutE"
-        layout={{
+        colsAndRows={{
           cols: ["200px", "1fr", "200px"],
           rows: ["48px", "40px", "1fr"],
         }}
@@ -1442,7 +1437,7 @@ export const ShowCaseLayoutNestedGrid = () => {
         <GridLayout
           full-page
           id="showcase"
-          layout={{
+          colsAndRows={{
             cols: ["200px", "1fr", "200px"],
             rows: ["48px", "40px", "1fr"],
           }}
@@ -1483,7 +1478,7 @@ export const ShowCaseLayoutNestedGrid = () => {
           >
             <GridLayout
               id="brown-layout"
-              layout={{ cols: ["1fr"], rows: ["1fr"] }}
+              colsAndRows={{ cols: ["1fr"], rows: ["1fr"] }}
               title="Brown Layout"
             >
               <GridLayoutItem
@@ -1508,7 +1503,7 @@ export const ShowCaseLayoutNestedGrid = () => {
           >
             <GridLayout
               id="navy-layout"
-              layout={{
+              colsAndRows={{
                 cols: ["1fr"],
                 rows: ["1fr"],
               }}
@@ -1537,7 +1532,7 @@ export const ShowCaseLayoutNestedGrid = () => {
           >
             <GridLayout
               id="gray-layout"
-              layout={{
+              colsAndRows={{
                 cols: ["1fr"],
                 rows: ["1fr"],
               }}
@@ -1566,7 +1561,7 @@ export const ShowCaseLayoutNestedGrid = () => {
           >
             <GridLayout
               id="black-layout"
-              layout={{
+              colsAndRows={{
                 cols: ["1fr"],
                 rows: ["1fr"],
               }}

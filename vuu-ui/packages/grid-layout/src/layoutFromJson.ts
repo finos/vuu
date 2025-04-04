@@ -1,5 +1,6 @@
-import { getLayoutComponent, LayoutJSON, uuid } from "@finos/vuu-utils";
+import { getLayoutComponent, uuid } from "@finos/vuu-utils";
 import React, { ReactElement } from "react";
+import { LayoutJSON } from "./componentToJson";
 
 export function layoutFromJson(
   { active, id = uuid(), type, children, props, state }: LayoutJSON,
