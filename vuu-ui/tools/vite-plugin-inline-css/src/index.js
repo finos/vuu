@@ -1,13 +1,15 @@
 import { createFilter } from "vite";
 import MagicString from "magic-string";
-
-
+/**
+ * This plugin is invoked when we run showcase in dev mode
+ */
 // This plugin adds "?inline" to each css import within our components to disable
 // vite's own style injection used in storybook
 export function cssInline(options = {}) {
   const {
     exclude = ["**/**.stories.tsx"],
     include = [
+      "**/packages/grid-layout/**/*.{tsx,jsx}",
       "**/packages/vuu-datatable/**/*.{tsx,jsx}",
       "**/packages/vuu-data-react/**/*.{tsx,jsx}",
       "**/packages/vuu-filters/**/*.{tsx,jsx}",

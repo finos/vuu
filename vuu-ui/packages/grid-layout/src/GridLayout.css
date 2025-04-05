@@ -1,0 +1,181 @@
+.vuuGridLayout {
+  --vuu-layout-tabs-height: 32px;
+
+  --vuu-grid-gap: 6px;
+  --vuu-grid-header-height: 25px;
+  display: grid;
+  padding: var(--vuu-grid-gap);
+
+  &.vuuDragging {
+    /* 
+      While we are dragging, do not let drag events fire on anything 
+      more granular than GridLayoutItem. Exception for vuuDraggableItem
+      is for Tabs 
+    */
+    [data-drop-target] > :not(.vuuDraggableItem) {
+      pointer-events: none;
+    }
+  }
+
+  &.vuuResizing {
+    transition: .3s;
+  }
+}
+
+.vuuGridLayoutItem {
+  --vuu-header-height: var(--header-height, 25px);
+  border: solid 1px white;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+
+  &.vuuGridLayoutItem-dragging {
+    display: none;
+    grid-column: 0/0 !important;
+    grid-row: 0/0;
+  }
+}
+
+.vuuGridLayoutItem-active {
+  border: dashed 1px blue;
+  position: relative;
+}
+
+/* .vuuGridLayoutItem > * {
+  position: absolute;
+  inset: calc(var(--vuu-header-height) + var(--vuu-grid-gap))
+    var(--vuu-grid-gap) var(--vuu-grid-gap) var(--vuu-grid-gap);
+} */
+
+.vuuGridLayoutItemHeader {
+  align-items: center;
+  background-color: #ccc;
+  cursor: grab;
+  display: flex;
+  flex: 0 0 var(--vuu-grid-header-height);
+  /* inset: var(--vuu-grid-gap) var(--vuu-grid-gap) auto var(--vuu-grid-gap); */
+  height: var(--vuu-grid-header-height);
+  padding: 0 var(--salt-spacing-100) 0 0;
+  position: relative;
+
+  [data-align="right"] {
+    margin-left: auto;
+  }
+
+  .vuuGridLayoutItemHeader-title {
+    align-items: center;
+    display: flex;
+    height: 100%;
+    padding: 0 var(--salt-spacing-200);
+  }
+}
+
+.vuuGridLayoutStackedItem {
+  /* height: var(--vuu-layout-tabs-height); */
+  .saltTabsNext {
+    margin-top: 3px;
+  }
+}
+
+.vuu-detached {
+  visibility: hidden;
+}
+
+.vuu-stacked {
+  margin-top: var(--vuu-layout-tabs-height)
+}
+
+.vuuGridLayoutItemHeader-close {
+  margin-left: auto;
+}
+
+.vuuGridLayoutStackedItemContent,
+.vuuGridLayoutItemContent {
+  flex: 1 1 auto;
+  position: relative;
+}
+
+.vuuGridLayoutStackedItemContent > *,
+.vuuGridLayoutItemContent > * {
+  position: absolute;
+  inset: 0;
+}
+
+
+.vuuDropTarget-east {
+  --grid-dropzone-top: 0px;
+  --grid-dropzone-left: 50%;
+  --grid-dropzone-bottom: 0px;
+  --grid-dropzone-right: 0px;
+}
+.vuuDropTarget-west {
+  --grid-dropzone-top: 0px;
+  --grid-dropzone-left: 0px;
+  --grid-dropzone-bottom: 0px;
+  --grid-dropzone-right: 50%;
+}
+.vuuDropTarget-north {
+  --grid-dropzone-top: 0px;
+  --grid-dropzone-left: 0px;
+  --grid-dropzone-bottom: 50%;
+  --grid-dropzone-right: 0px;
+}
+.vuuDropTarget-south {
+  --grid-dropzone-top: 50%;
+  --grid-dropzone-left: 0px;
+  --grid-dropzone-bottom: 0px;
+  --grid-dropzone-right: 0px;
+}
+
+.vuuDropTarget-centre {
+  --grid-dropzone-top: 0px;
+  --grid-dropzone-left: 0px;
+  --grid-dropzone-bottom: 0px;
+  --grid-dropzone-right: 0px;
+}
+
+/* we could simplify this by assigning a className to the content */
+.vuu-stacked {
+  & > .vuuDropTarget-north {
+    --grid-dropzone-top: -32px;
+  }
+  & > .vuuDropTarget-east {
+    --grid-dropzone-top: -32px;
+  }
+  & > .vuuDropTarget-west {
+    --grid-dropzone-top: -32px;
+  }
+}
+
+.vuuDropTarget-centre:after,
+.vuuDropTarget-north:after, 
+.vuuDropTarget-east:after, 
+.vuuDropTarget-south:after,
+.vuuDropTarget-west:after {
+  background-color: cornflowerblue;
+  content: "";
+  opacity: 0.3;
+  pointer-events: none;
+  position: absolute;
+  top: var(--grid-dropzone-top);
+  right: var(--grid-dropzone-right);
+  bottom: var(--grid-dropzone-bottom);
+  left: var(--grid-dropzone-left);
+  transition-property: top, left, right, bottom;
+  transition-duration: 0.3s;
+  transition-timing-function: ease-in-out;
+  z-index: 100;
+}
+.vuuDropTarget-header:after {
+  background-color: red;
+  content: "";
+  inset: 0px;
+  opacity: 0.3;
+  pointer-events: none;
+  position: absolute;
+  transition-property: top, left, right, bottom;
+  transition-duration: 0.3s;
+  transition-timing-function: ease-in-out;
+  z-index: 100;
+}
+

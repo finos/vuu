@@ -1,0 +1,27 @@
+.vuuGridSplitter {
+    background-color: cornflowerblue;
+}
+.vuuGridSplitter[aria-orientation="vertical"] {
+    cursor: ew-resize;
+    transform: translate(-2px,0);
+    width: 4px;
+}
+
+.vuuGridSplitter[aria-orientation="horizontal"] {
+    cursor: ns-resize;
+    height: 4px;
+    transform: translate(0, -2px);
+}
+
+.vuuGridSplitter[aria-controls="blue"]{
+    background-color: blue;
+}
+.vuuGridSplitter[aria-controls="red"]{
+    background-color: red;
+}
+.vuuGridSplitter[aria-controls="black"]{
+    background-color: black;
+}
+.vuuGridSplitter[aria-controls="green"]{
+    background-color: green;
+}

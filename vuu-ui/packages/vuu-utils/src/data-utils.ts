@@ -88,3 +88,20 @@ export function getMovingValueDirection(
     }
   }
 }
+
+export function asInteger(
+  index: number | string | undefined,
+  defaultValue?: number,
+) {
+  if (typeof index === "number") {
+    return index;
+  } else {
+    const numIdx = parseInt(index ?? "");
+    if (!isNaN(numIdx)) {
+      return numIdx;
+    } else if (typeof defaultValue === "number") {
+      return defaultValue;
+    }
+    throw Error(`parseIndex invalid value ${index}`);
+  }
+}
