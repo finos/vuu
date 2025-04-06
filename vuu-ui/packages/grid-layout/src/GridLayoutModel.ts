@@ -360,6 +360,7 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
 
     const [colItemUpdates, rowItemUpdates] =
       this.updateContrasToOccupySpace(gridItem);
+
     if (rowItemUpdates.length || colItemUpdates.length) {
       colItemUpdates.forEach(([id, { column: colPosition }]) => {
         if (colPosition) {
@@ -374,13 +375,8 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
 
       const [unusedColLines, unusedRowLines] =
         this.gridModel.findUnusedGridLines();
-      if (unusedColLines.length === 2) {
-        console.warn(
-          `multiple unused lines ${unusedColLines.join(",")} (colCount = ${
-            this.gridModel.colCount
-          })`,
-        );
-      }
+      // TODO do we ever hit this code any more ?
+      console.log({ unusedColLines, unusedRowLines });
       if (unusedColLines.length === 1) {
         const trackIndex = unusedColLines[0] - 1;
         const colUpdates = this.removeTrack(trackIndex, "horizontal");
@@ -395,7 +391,12 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
             colItemUpdates.push([id, u]);
           }
         });
+      } else if (unusedColLines.length > 1) {
+        throw Error(
+          `[GridLayoutModel] removeGridItem, unexpected number of unused column lines ${unusedColLines.length}`,
+        );
       }
+
       if (unusedRowLines.length === 1) {
         const trackIndex = unusedRowLines[0] - 1;
         const rowUpdates = this.removeTrack(trackIndex, "vertical");
@@ -409,6 +410,10 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
             rowItemUpdates.push([id, u]);
           }
         });
+      } else if (unusedRowLines.length > 1) {
+        throw Error(
+          `[GridLayoutModel] removeGridItem, unexpected number of unused row lines ${unusedRowLines.length}`,
+        );
       }
 
       if (unusedColLines.length === 1) {
@@ -617,9 +622,10 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
     const isVertical = resizeDirection === "vertical";
 
     const resizeTrack = targetGridItem[trackType];
-    let newTrackIndex = resizeTrack.start - 1;
+    const newTrackIndex = resizeTrack.start - 1;
 
     if (resizeTrack.end - resizeTrack.start === 1) {
+      // Splitting a single column
       updates = this.addTrack(newTrackIndex, resizeDirection);
       this.applyUpdates(updates);
 
@@ -650,12 +656,6 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
         resizeTrack.start,
         resizeTrack.end,
       );
-      // console.log({ bisectingGridTrack });
-      // const bisectingGridLine = getBisectingGridLine(
-      //   tracks,
-      //   resizeTrack.start,
-      //   resizeTrack.end,
-      // );
       if (bisectingGridTrack !== -1) {
         const [droppedItemPosition, targetItemPosition] =
           splitGridChildPosition(
@@ -677,12 +677,13 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
 
         this.applyUpdates(updates);
       } else {
+        console.log(`CHECK THIS CODE >>>>>>>>>>`);
         // this will calculate sizes of the new tracks
-        ({ newTracks, newTrackIndex } = splitTracks(
-          tracks,
+        this.gridModel.tracks.splitTracks(
+          trackType,
           resizeTrack.start,
           resizeTrack.end,
-        ));
+        );
         updates = this.addTrack(newTrackIndex, resizeDirection);
 
         updates = updates.filter(

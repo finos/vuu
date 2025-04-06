@@ -77,6 +77,7 @@ export function initializeDragContainer(
       e.stopPropagation();
       dragContext.beginDrag(e, {
         element,
+        label,
         isSelectedTab,
         layoutId: gridLayout.id,
         tab: { id: gridLayoutItemId ?? "", label },

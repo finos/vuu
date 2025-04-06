@@ -304,47 +304,6 @@ export const itemsFillRow = (
 };
 
 /**
- *
- * @param tracks Create a new track such that we have a trackEdge that bisects
- * the two trackEdges provided. The start and end trackEdges should not be contiguous
- * otherwise splitTrack should be used instead.
- * @param start the leading trackEdge of the range
- * @param end the trailing trackEdge of range
- */
-//TODO what if there is an existing track that bisects range
-export const splitTracks = (tracks: number[], start: number, end: number) => {
-  let size = 0;
-  for (let i = start - 1; i < end - 1; i++) {
-    size += tracks[i];
-  }
-  let halfTrack = Math.floor(size / 2);
-  let newTrackIndex = 0;
-
-  const newTracks = [];
-  for (let i = 0; i < tracks.length; i++) {
-    if (i < start - 1) {
-      newTracks.push(tracks[i]);
-    } else if (i < end - 1) {
-      if (tracks[i] < halfTrack) {
-        newTracks.push(tracks[i]);
-        halfTrack -= tracks[i];
-      } else if (halfTrack) {
-        newTrackIndex = newTracks.length;
-        newTracks.push(halfTrack);
-        newTracks.push(tracks[i] - halfTrack);
-        halfTrack = 0;
-      } else {
-        newTracks.push(tracks[i]);
-      }
-    } else {
-      newTracks.push(tracks[i]);
-    }
-  }
-
-  return { newTrackIndex, newTracks };
-};
-
-/**
  * This assumes that tracks have already been prepared, such that 'position'
  * spans at least two tracks in the split direction
  *

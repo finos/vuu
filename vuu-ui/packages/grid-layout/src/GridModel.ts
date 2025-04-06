@@ -296,11 +296,7 @@ export class GridModelChildItem implements IGridModelChildItem {
   }
 
   set dragging(isDragging: boolean) {
-    if (isDragging) {
-      console.log(`#${this.id} is being dragged`);
-    } else {
-      console.log(`#${this.id} is no longer being dragged`);
-    }
+    console.log(`[GridModelItem#${this.id}] set dragging ${isDragging}`);
     this.#dragging = isDragging;
   }
 
@@ -666,6 +662,10 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
     return -1;
   }
 
+  /**
+   * Split a single track into 2 equal sized tracks
+   *
+   */
   splitTrack(trackType: TrackType, trackIndex: number) {
     console.log(`[GridTracks] splitTrack (${trackType}) [${trackIndex}] `);
 
@@ -680,6 +680,49 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
     targetTrack.increment(-sizeOfNewTrack);
 
     this.emit("grid-track-resize", trackType, tracks);
+  }
+
+  /**
+   * Given multiple tracks (columns/rows), create a new grid line that exactly bisects
+   * given tracks.
+   */
+  //TODO what if there is an existing track that bisects range
+  splitTracks(
+    trackType: TrackType,
+    fromTrackLine: number,
+    toTrackLine: number,
+  ) {
+    const tracks = this.getTracks(trackType);
+
+    let size = 0;
+    for (let i = fromTrackLine - 1; i < toTrackLine - 1; i++) {
+      size += tracks[i];
+    }
+    let halfTrack = Math.floor(size / 2);
+    let newTrackIndex = 0;
+
+    const newTracks = [];
+    for (let i = 0; i < tracks.length; i++) {
+      if (i < fromTrackLine - 1) {
+        newTracks.push(tracks[i]);
+      } else if (i < toTrackLine - 1) {
+        if (tracks[i] < halfTrack) {
+          newTracks.push(tracks[i]);
+          halfTrack -= tracks[i];
+        } else if (halfTrack) {
+          newTrackIndex = newTracks.length;
+          newTracks.push(halfTrack);
+          newTracks.push(tracks[i] - halfTrack);
+          halfTrack = 0;
+        } else {
+          newTracks.push(tracks[i]);
+        }
+      } else {
+        newTracks.push(tracks[i]);
+      }
+    }
+
+    return { newTrackIndex, newTracks };
   }
 
   insertTrack(
@@ -1272,14 +1315,18 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     const unusedColLines: number[] = [];
     const unusedRowLines: number[] = [];
 
+    const childItemsWithoutDraggedItem = this.#childItems.filter(
+      (item) => !item.dragging,
+    );
+
     for (let i = 1; i <= colCount; i++) {
-      if (!this.findByColumnStart(i)) {
+      if (!this.findByColumnStart(i, childItemsWithoutDraggedItem)) {
         unusedStartPositions.push(i);
       }
     }
 
     for (let i = 2; i <= colCount + 1; i++) {
-      if (!this.findByColumnEnd(i)) {
+      if (!this.findByColumnEnd(i, childItemsWithoutDraggedItem)) {
         if (unusedStartPositions.includes(i)) {
           unusedColLines.push(i);
         }
@@ -1289,13 +1336,13 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     unusedStartPositions.length = 0;
 
     for (let i = 1; i <= rowCount; i++) {
-      if (!this.findByRowStart(i)) {
+      if (!this.findByRowStart(i, childItemsWithoutDraggedItem)) {
         unusedStartPositions.push(i);
       }
     }
 
     for (let i = 2; i <= rowCount + 1; i++) {
-      if (!this.findByRowEnd(i)) {
+      if (!this.findByRowEnd(i, childItemsWithoutDraggedItem)) {
         if (unusedStartPositions.includes(i)) {
           unusedRowLines.push(i);
         }
@@ -1505,29 +1552,48 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     );
   }
 
-  findByColumnStart(pos: number) {
-    const childItems = this.#childItems.filter(
-      ({ column: { start } }) => start === pos,
+  /**
+   * Given a column, return all childItems starting at that column
+   */
+  findByColumnStart(col: number, childItems = this.#childItems) {
+    const childItemsStartingAtCol = childItems.filter(
+      ({ column: { start } }) => start === col,
     );
-    return childItems.length === 0 ? undefined : childItems;
+    return childItemsStartingAtCol.length === 0
+      ? undefined
+      : childItemsStartingAtCol;
   }
-
-  findByColumnEnd(pos: number) {
-    const childItems = this.#childItems.filter(
-      ({ column: { end } }) => end === pos,
+  /**
+   * Given a column, return all childItems ending at that column
+   */
+  findByColumnEnd(col: number, childItems = this.#childItems) {
+    const childItemsEndingAtCol = childItems.filter(
+      ({ column: { end } }) => end === col,
     );
-    return childItems.length === 0 ? undefined : childItems;
+    return childItemsEndingAtCol.length === 0
+      ? undefined
+      : childItemsEndingAtCol;
   }
-  findByRowStart(pos: number) {
-    const childItems = this.#childItems.filter(
-      ({ row: { start } }) => start === pos,
+  /**
+   * Given a row, return all childItems starting at that row
+   */
+  findByRowStart(row: number, childItems = this.#childItems) {
+    const childItemsStartingAtRow = childItems.filter(
+      ({ row: { start } }) => start === row,
     );
-    return childItems.length === 0 ? undefined : childItems;
+    return childItemsStartingAtRow.length === 0
+      ? undefined
+      : childItemsStartingAtRow;
   }
-  findByRowEnd(pos: number) {
-    const childItems = this.#childItems.filter(
-      ({ row: { end } }) => end === pos,
+  /**
+   * Given a row, return all childItems ending at that row
+   */
+  findByRowEnd(row: number, childItems = this.#childItems) {
+    const childItemsEndingAtRow = childItems.filter(
+      ({ row: { end } }) => end === row,
     );
-    return childItems.length === 0 ? undefined : childItems;
+    return childItemsEndingAtRow.length === 0
+      ? undefined
+      : childItemsEndingAtRow;
   }
 }

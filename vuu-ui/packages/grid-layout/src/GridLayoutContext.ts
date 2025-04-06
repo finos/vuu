@@ -50,6 +50,7 @@ const unconfiguredGridLayoutDispatch: GridLayoutDispatch = (action) =>
 export interface TabbedComponentDragSource {
   element: HTMLElement;
   isSelectedTab: boolean;
+  label: string;
   layoutId: string;
   tab: TabStateTab;
   /** deprecated */

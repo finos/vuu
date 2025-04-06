@@ -437,18 +437,19 @@ export const useGridLayout = ({
       containerRef.current?.classList.remove("vuuDragging");
 
       if (sourceIsComponent(dragSource)) {
+        const droppedItemId = gridModel.validateChildId(dragSource.id);
         const targetId = isStackedItem(targetGridItem)
           ? targetGridItem.stackId
           : targetItemId;
 
-        const droppedItemId = gridModel.validateChildId(dragSource.id);
+        const droppedGridItem = gridModel.getChildItem(droppedItemId, true);
+        droppedGridItem.dragging = false;
+
+        const gridItemElement = document.getElementById(droppedItemId);
+        gridItemElement?.classList.remove("vuuGridLayoutItem-dragging");
+
         if (isGridLayoutSplitDirection(position)) {
           gridLayoutModel.dropSplitGridItem(droppedItemId, targetId, position);
-
-          const gridItemElement = document.getElementById(droppedItemId);
-          if (gridItemElement) {
-            gridItemElement.classList.remove("vuuGridLayoutItem-dragging");
-          }
 
           const placeholders = gridModel.getPlaceholders();
           const splitters = gridLayoutModel.createSplitters();
@@ -464,11 +465,6 @@ export const useGridLayout = ({
           );
           setGridColumn(droppedItemId, column);
           setGridRow(droppedItemId, row);
-
-          const gridItemElement = document.getElementById(droppedItemId);
-          if (gridItemElement) {
-            gridItemElement.classList.remove("vuuGridLayoutItem-dragging");
-          }
 
           setChildren((c) =>
             c.filter((child) => child.props.id !== targetItemId),
