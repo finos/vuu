@@ -128,24 +128,6 @@ export const GridLayoutProvider = (
     return undefined;
   }, []);
 
-  /*
-        // return Object.entries(childElementMap).map(
-      //   ([gridLayoutItemId, element]) => {
-      //     // TODO type IS in here although the types shouldn't allow it
-      //     const { gridArea, type, ...gridLayoutItemProps } =
-      //       layout.gridLayoutItems[gridLayoutItemId];
-      //     return (
-      //       <GridLayoutItem
-      //         {...gridLayoutItemProps}
-      //         id={gridLayoutItemId}
-      //         style={{ gridArea }}
-      //         key={gridLayoutItemId}
-      //       >
-      //         {element}
-      //       </GridLayoutItem>
-      //     );
-
-  */
   const getSavedGrid = useCallback(
     (id: string): DeserializedGridLayout | undefined => {
       const layoutJSON = gridChildItemsMap.get(id);

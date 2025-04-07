@@ -410,6 +410,17 @@ export const isFixedWidthChildItem = (item: GridModelChildItem) =>
 export const getGridArea = ({ column, row }: GridLayoutModelCoordinates) =>
   `${row.start}/${column.start}/${row.end}/${column.end}`;
 
+export const getActiveIndex = (childItems: GridModelChildItem[]) => {
+  const index = childItems.findIndex((item) => item.contentVisible);
+  if (childItems.length === 0) {
+    return -1;
+  } else if (index === -1) {
+    return 0;
+  } else {
+    return index;
+  }
+};
+
 export const getSharedGridPosition = (
   childItems: GridModelChildItem[],
 ): GridLayoutModelCoordinates => {

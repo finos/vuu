@@ -27,7 +27,11 @@ import {
   setGridColumn,
   setGridRow,
 } from "./grid-dom-utils";
-import { getGridArea, getSharedGridPosition } from "./grid-layout-utils";
+import {
+  getActiveIndex,
+  getGridArea,
+  getSharedGridPosition,
+} from "./grid-layout-utils";
 import {
   GridLayoutDispatch,
   GridLayoutDropHandler,
@@ -697,7 +701,8 @@ export const useGridLayout = ({
       const tabs = gridModel.getChildItem(stackId);
       if (tabs === undefined) {
         const { column, row } = getSharedGridPosition(items);
-        gridModel.setTabState(stackId, items);
+        const activeIndex = getActiveIndex(items);
+        gridModel.setTabState(stackId, items, activeIndex);
         const stackedItem = new GridModelChildItem({
           column,
           id: stackId,

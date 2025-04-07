@@ -30,10 +30,7 @@ import { IconButton } from "./IconButton";
 const classBaseItem = "vuuGridLayoutItem";
 
 export interface GridLayoutItemProps
-  extends Omit<
-      GridModelChildItemProps,
-      "contentDetached" | "contentVisible" | "type"
-    >,
+  extends Omit<GridModelChildItemProps, "contentDetached" | "type">,
     Omit<
       HTMLAttributes<HTMLDivElement>,
       "id" | "onDragStart" | "onDrop" | "style"
@@ -75,6 +72,7 @@ const getDragSource: DragSourceProvider = (evt) => {
 export const GridLayoutItem = ({
   children,
   className: classNameProp,
+  contentVisible: contentVisibleProp,
   "data-drop-target": dataDropTarget,
   header: headerProp,
   height,
@@ -109,6 +107,7 @@ export const GridLayoutItem = ({
     title,
     ...layoutProps
   } = useGridChildProps({
+    contentVisible: contentVisibleProp,
     dropTarget: dataDropTarget,
     header: headerProp,
     height,
@@ -119,15 +118,6 @@ export const GridLayoutItem = ({
     title: titleProp,
     width,
   });
-
-  // console.log(
-  //   `[GridLayoutItem] #${id}
-  //     contentDetached=${contentDetached}
-  //     contentVisible=${contentVisible}
-  //     stackId=${stackId}
-  //     dropTarget = ${dropTarget}
-  //     `,
-  // );
 
   useEffect(
     () => () => {
@@ -154,6 +144,8 @@ export const GridLayoutItem = ({
     getDragSource,
     onDragStart,
   });
+
+  console.log(`[GridLayoutItem] #${id} contentVisible ${contentVisible}`);
 
   const className = cx(classBaseItem, {
     "vuu-detached": contentDetached,

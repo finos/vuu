@@ -30,21 +30,17 @@ export const isPixelUnit = (trackSize: TrackSize): trackSize is CSSTrackSize =>
 
 const NO_SPLITTERS: ISplitter[] = [];
 
+//TODO shouldn't id be here ?
 export interface GridLayoutChildItemDescriptor {
-  /**
-   * componentId is only required when a GridLayout is declared using JSX
-   * and child components are directly nested within GridLayout without GridItem
-   * wrappers.
-   * Each child component must have a unique id. The componentId here is used
-   * to match the  with the associated component. If GridItem wrappers are included
-   * explicitly in the JSX, componentId is not required in the
-   * GridLayoutChildItemDescriptor.
-   */
-  componentId?: string;
+  contentVisible?: boolean;
   dropTarget?: boolean | string;
   gridArea: string;
   header?: boolean;
   resizeable?: GridModelItemResizeable;
+  /**
+   * For GridLayoutItems that are 'stacked' (e.g. displayed in tabbed container)
+   * this is the id of the associated StackedLayoutItem.
+   */
   stackId?: string;
   title?: string;
 }
@@ -81,21 +77,13 @@ export interface GridLayoutModelCoordinates {
   row: GridLayoutModelPosition;
 }
 
-export interface GridModelChildItemProps {
+export interface GridModelChildItemProps
+  extends Omit<GridLayoutChildItemDescriptor, "gridArea"> {
   contentVisible?: boolean;
-  dropTarget?: boolean | string;
   fixed?: boolean;
-  header?: boolean;
   height?: number;
   id: string;
-  /**
-   * For GridLayoutItems that are 'stacked' (e.g. displayed in tabbed container)
-   * this is the id of the associated StackedLayoutItem.
-   */
-  stackId?: string;
-  resizeable?: GridModelItemResizeable;
   style: GridChildItemStyle;
-  title?: string;
   type?: GridModelItemType;
   width?: number;
 }
@@ -952,7 +940,11 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     }
   };
 
-  setTabState(stackId: string, childItems: GridModelChildItem[]) {
+  setTabState(
+    stackId: string,
+    childItems: GridModelChildItem[],
+    activeItem = 0,
+  ) {
     console.log(`[GridModel] setTabState  ${stackId}`);
     let tabState = this.#tabState.get(stackId);
     if (tabState) {
@@ -962,7 +954,7 @@ export class GridModel extends EventEmitter<GridModelEvents> {
       id,
       label: title ?? `Label-${index + 1}`,
     }));
-    tabState = new TabState(stackId, 0, tabs);
+    tabState = new TabState(stackId, activeItem, tabs);
 
     tabState.on("active-change", this.handleTabSelectionChange);
     tabState.on("tab-added", this.handleTabAdded);
@@ -970,7 +962,7 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     tabState.on("tabs-change", this.handleTabsChange);
     tabState.on("tabs-removed", this.handleTabsRemoved);
 
-    this.activateStackedChildItem(stackId, tabs[0]);
+    this.activateStackedChildItem(stackId, tabs[activeItem]);
 
     this.#tabState.set(stackId, tabState);
     return tabState;
@@ -1034,16 +1026,37 @@ export class GridModel extends EventEmitter<GridModelEvents> {
       gridLayoutItems: this.#childItems.reduce<GridLayoutChildItemDescriptors>(
         (
           result,
-          { id, column, dropTarget, header, resizeable, row, stackId, title },
-        ) => {
-          result[id.replace(/^grid-/, "")] = {
+          {
+            id,
+            column,
+            contentVisible,
             dropTarget,
-            gridArea: `${row.start}/${column.start}/${row.end}/${column.end}`,
             header,
             resizeable,
+            row,
             stackId,
             title,
-          };
+            type,
+          },
+        ) => {
+          console.log(`[GridModel] toGridLayoutDescriptor ${id} = ${type}`);
+          if (stackId) {
+            console.log(
+              `[GridModel] is a stacked item, active item ? ${contentVisible === true} `,
+            );
+          }
+          // The stacked-content gridItems are a runtime construct, no need to serialize
+          if (type !== "stacked-content") {
+            result[id] = {
+              contentVisible,
+              dropTarget,
+              gridArea: `${row.start}/${column.start}/${row.end}/${column.end}`,
+              header,
+              resizeable,
+              stackId,
+              title,
+            };
+          }
           return result;
         },
         {},
@@ -1148,12 +1161,20 @@ export class GridModel extends EventEmitter<GridModelEvents> {
   private addChildItems(childItems: GridLayoutChildItemDescriptors) {
     for (const [
       id,
-      { dropTarget, header, resizeable, stackId, title, ...item },
+      {
+        contentVisible,
+        dropTarget,
+        header,
+        resizeable,
+        stackId,
+        title,
+        ...item
+      },
     ] of Object.entries(childItems)) {
       const { column, row } = getGridPosition(item.gridArea);
       this.addChildItem(
         new GridModelChildItem({
-          // id: `grid-${id}`,
+          contentVisible,
           id,
           column,
           dropTarget,

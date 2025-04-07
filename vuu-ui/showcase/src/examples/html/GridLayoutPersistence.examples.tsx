@@ -91,6 +91,7 @@ export const SingleStackDeserialized = () => {
             title: "Blue",
           },
           red: {
+            contentVisible: true,
             gridArea: "1/1/2/2",
             header: true,
             resizeable: "hv",
