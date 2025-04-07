@@ -103,9 +103,9 @@ export const GridLayoutProvider = (
    */
   const onChangeChildElements = useCallback<GridChildElementsChangeHandler>(
     (layoutId, childElements) => {
-      console.log(`[GridLayoutProvider] #${layoutId} onChangeChildElements`, {
-        childElements,
-      });
+      // console.log(`[GridLayoutProvider] #${layoutId} onChangeChildElements`, {
+      //   childElements,
+      // });
       const serializedComponentMap =
         childElements.reduce<SerializedComponentMap>((map, component) => {
           const { id: gridLayoutItemId } = component.props;
@@ -121,12 +121,15 @@ export const GridLayoutProvider = (
     },
     [gridChildItemsMap],
   );
-  const getChildElements = useCallback((id: string, children?: ReactNode) => {
-    console.log(`[GridLayoutProvider] #${id} getChildElements `, {
-      children,
-    });
-    return undefined;
-  }, []);
+  const getChildElements = useCallback(
+    (/*id: string, children?: ReactNode*/) => {
+      // console.log(`[GridLayoutProvider] #${id} getChildElements `, {
+      //   children,
+      // });
+      return undefined;
+    },
+    [],
+  );
 
   const getSavedGrid = useCallback(
     (id: string): DeserializedGridLayout | undefined => {

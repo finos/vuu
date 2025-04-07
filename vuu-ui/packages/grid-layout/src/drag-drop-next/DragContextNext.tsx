@@ -119,10 +119,10 @@ export class DragContext extends EventEmitter<DragContextEvents> {
    * not be) and made visible, without ever having to unmount/remount.
    */
   detachTab(gridId: string, tabsId: string, value: string) {
-    console.log(
-      `%c[DragContextNext] #${gridId}detachTab #${tabsId} tab (${value})`,
-      "color:blue;font-weight:bold;",
-    );
+    // console.log(
+    //   `%c[DragContextNext] #${gridId}detachTab #${tabsId} tab (${value})`,
+    //   "color:blue;font-weight:bold;",
+    // );
     // change dragSource to component
     console.log({
       dragSource: this.#dragSource,

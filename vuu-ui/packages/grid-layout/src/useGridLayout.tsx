@@ -218,10 +218,10 @@ export const useGridLayout = ({
   const [gridModel, gridLayoutModel, containerCallback] = useMemo(
     // TODO handling runtime change of cols, rows etc currently not supported
     () => {
-      console.log(
-        `%c[useGridLayout#${id}] useMemo create the GridModel`,
-        "color: green",
-      );
+      // console.log(
+      //   `%c[useGridLayout#${id}] useMemo create the GridModel`,
+      //   "color: green",
+      // );
       const gridModel = new GridModel(id, layout);
       const gridLayoutModel = new GridLayoutModel(gridModel);
       const callbackRef: RefCallback<HTMLDivElement> = (el) => {
@@ -362,11 +362,11 @@ export const useGridLayout = ({
    */
   const handleDrop = useCallback<GridLayoutDropHandler>(
     (targetItemId, dragSource, position) => {
-      console.log(`[useGridLayout#${id}] handleDrop`, {
-        targetItemId,
-        dragSource,
-        position,
-      });
+      // console.log(`[useGridLayout#${id}] handleDrop`, {
+      //   targetItemId,
+      //   dragSource,
+      //   position,
+      // });
 
       const targetGridItem = gridModel.getChildItem(targetItemId, true);
 
@@ -564,12 +564,12 @@ export const useGridLayout = ({
         }
       } else if (targetStackItemId && dropPosition) {
         if (sourceIsComponent(dragSource)) {
-          console.log(
-            `[useGridLayout] dropping a standalone component #${dragSource.id} into a stack ${targetStackItemId}`,
-            {
-              dragSource,
-            },
-          );
+          // console.log(
+          //   `[useGridLayout] dropping a standalone component #${dragSource.id} into a stack ${targetStackItemId}`,
+          //   {
+          //     dragSource,
+          //   },
+          // );
           const tabState = gridModel.getTabState(targetStackItemId);
           tabState.addTab(
             { id: dragSource.id, label: dragSource.label },

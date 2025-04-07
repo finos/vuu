@@ -1190,16 +1190,16 @@ export class GridModel extends EventEmitter<GridModelEvents> {
 
   addChildItem(childItem: GridModelChildItem) {
     // TODO assert that item is within current columns, rows or extend these
-    console.log(
-      `[GridModel#${this.id}] addChildItem ${childItem.id} (parent: ${childItem.stackId})
-        is visible ? ${childItem.contentVisible}
-        resizeable ? ${childItem.resizeable}
-        gridArea ${JSON.stringify(childItem.layoutStyle)}
-      `,
-      {
-        childItem,
-      },
-    );
+    // console.log(
+    //   `[GridModel#${this.id}] addChildItem ${childItem.id} (parent: ${childItem.stackId})
+    //     is visible ? ${childItem.contentVisible}
+    //     resizeable ? ${childItem.resizeable}
+    //     gridArea ${JSON.stringify(childItem.layoutStyle)}
+    //   `,
+    //   {
+    //     childItem,
+    //   },
+    // );
     this.#childItems.push(childItem);
     this.#index.set(childItem.id, childItem);
   }
@@ -1492,9 +1492,9 @@ export class GridModel extends EventEmitter<GridModelEvents> {
           const siblingsRight = this.getSiblingsRight(contra);
           return getMatchingColspan(contra, siblingsRight, contrasAbove);
         }
-        console.log(`going to have to skip a row for ${childItem.id}`, {
-          contrasBelow,
-        });
+        // console.log(`going to have to skip a row for ${childItem.id}`, {
+        //   contrasBelow,
+        // });
       } else {
         const siblingsRight = this.getSiblingsRight(childItem);
         return getMatchingColspan(childItem, siblingsRight, contrasAbove);

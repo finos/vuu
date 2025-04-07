@@ -270,9 +270,9 @@ export class SpaceMan {
 
   drop(x: number, y: number): Promise<void> {
     // TODO dragItem should be passed in
-    console.log(`[SpaceMan#${this.id}] drop, returns a promise`, {
-      dragItem: this.#dragItem,
-    });
+    // console.log(`[SpaceMan#${this.id}] drop, returns a promise`, {
+    //   dragItem: this.#dragItem,
+    // });
     return new Promise((resolve) => {
       if (this.#dragItem) {
         const dragItem = this.#dragItem;

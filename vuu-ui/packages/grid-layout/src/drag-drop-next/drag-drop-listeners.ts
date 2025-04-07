@@ -191,9 +191,9 @@ export function initializeDragContainer(
     }
   };
   const onDragEnd = () => {
-    console.log(`[drag-drop-listeners#${dragId}] onDragEnd`, {
-      dragSource: dragContext.dragSource,
-    });
+    // console.log(`[drag-drop-listeners#${dragId}] onDragEnd`, {
+    //   dragSource: dragContext.dragSource,
+    // });
     if (
       sourceIsTabbedComponent(dragContext.dragSource) &&
       dragContext.dragSource.tabsId === dragId

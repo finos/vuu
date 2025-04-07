@@ -157,10 +157,10 @@ export const useAsDropTarget = () => {
 
       if (dropTarget !== currentDropTarget) {
         if (dropTarget) {
-          console.log(
-            `%c[useAsDropTarget] onDragEnter set current dropTarget = ${dropTarget.gridLayoutItemId}`,
-            "color:green;font-weight:bold;",
-          );
+          // console.log(
+          //   `%c[useAsDropTarget] onDragEnter set current dropTarget = ${dropTarget.gridLayoutItemId}`,
+          //   "color:green;font-weight:bold;",
+          // );
 
           dropTargetStateRef.current.dropTarget = dropTarget;
           const { rect } = dropTargetStateRef.current;
@@ -172,10 +172,10 @@ export const useAsDropTarget = () => {
           rect.top = top;
         } else if (currentDropTarget) {
           dropTargetStateRef.current.dropTarget = undefined;
-          console.log(
-            `%c[useAsDropTarget] clear droptarget ${currentDropTarget?.gridLayoutItemId}`,
-            "color:brown;font-weight: bold;",
-          );
+          // console.log(
+          //   `%c[useAsDropTarget] clear droptarget ${currentDropTarget?.gridLayoutItemId}`,
+          //   "color:brown;font-weight: bold;",
+          // );
           removeDropTargetPositionClassName(currentDropTarget?.target);
         }
       }
@@ -259,7 +259,7 @@ export const useAsDropTarget = () => {
       const { dropTarget: currentDropTarget } = dropTargetStateRef.current;
       const { dragSource } = dragContext;
       if (dragSource && currentDropTarget) {
-        console.log(`[useAsDropTarget#${layoutId}] onDrop`, { dragSource });
+        // console.log(`[useAsDropTarget#${layoutId}] onDrop`, { dragSource });
 
         const dropTarget = getDropTarget(evt.target, currentDropTarget);
         if (dropTarget && dropTargetStateRef.current.position) {
@@ -281,7 +281,7 @@ export const useAsDropTarget = () => {
       dropTargetStateRef.current.dropTarget = undefined;
       dropTargetStateRef.current.position = undefined;
     },
-    [dragContext, drop, layoutId],
+    [dragContext, drop],
   );
 
   return {

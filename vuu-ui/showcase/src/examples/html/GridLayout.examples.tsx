@@ -1424,14 +1424,11 @@ export const ShowCaseLayoutNestedGrid = () => {
     [],
   );
 
-  const handleGridLayoutChanged = useCallback<GridLayoutChangeHandler>(
-    (id, gridLayout) => {
-      console.log(`layout changed for grid ${id}`, {
-        gridLayout,
-      });
-    },
-    [],
-  );
+  const handleGridLayoutChanged = useCallback<GridLayoutChangeHandler>(() => {
+    // console.log(`layout changed for grid ${id}`, {
+    //   gridLayout,
+    // });
+  }, []);
 
   return (
     <>
