@@ -4,6 +4,8 @@ import {
   GridLayoutItem,
   GridLayoutProvider,
   TrackSize,
+  useGridLayoutDispatch,
+  useGridModel,
 } from "@heswell/grid-layout";
 import { queryClosest } from "@finos/vuu-utils";
 import {
@@ -20,6 +22,7 @@ import { GridPalette, GridPaletteItem } from "./components/GridPalette";
 
 import "./GridLayout.examples.css";
 import { Button } from "@salt-ds/core";
+import { CSSTrackSize } from "@heswell/grid-layout/src/GridModel";
 
 export const SingleItemFillsGrid = () => {
   return (
@@ -886,8 +889,8 @@ const closeButtonStyleRight: CSSProperties = {
 const flip = (size: string) => (size === "0px" ? "200px" : "0px");
 
 export const FixedAppHeaderCollapsibleSidebars = () => {
-  const [cols, setCols] = useState<TrackSize[]>(["200px", "1fr", "200px"]);
-  const [rows] = useState<TrackSize[]>(["48px", "40px", "1fr"]);
+  const [cols, setCols] = useState<CSSTrackSize[]>(["200px", "1fr", "200px"]);
+  const [rows] = useState<CSSTrackSize[]>(["48px", "40px", "1fr"]);
   const toggleLeftSidebar = () => {
     setCols(([col1, col2, col3]) => [flip(col1), col2, col3]);
   };

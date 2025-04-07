@@ -7,12 +7,8 @@ import {
   useContext,
   useMemo,
 } from "react";
-import {
-  GridLayoutChangeHandler,
-  GridLayoutChildItemDescriptor,
-  GridLayoutDescriptor,
-} from "./GridModel";
-import { GridLayoutItemProps } from "./GridLayoutItem";
+import { GridLayoutChangeHandler, GridLayoutDescriptor } from "./GridModel";
+import { GridLayoutItem, GridLayoutItemProps } from "./GridLayoutItem";
 import { layoutToJSON } from "./layoutToJson";
 import { layoutFromJson } from "./layoutFromJson";
 import { LayoutJSON } from "./componentToJson";
@@ -28,17 +24,29 @@ type GridLayoutOptions = {
   };
 };
 
-export type ComponentMap = Record<string, ReactElement>;
+export type ReactElementList = ReactElement[];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ReactElementMap<P = any> = Record<string, ReactElement<P>>;
 export type SerializedComponentMap = Record<string, LayoutJSON>;
 
-export type SerializedGridLayout<T = SerializedComponentMap | ComponentMap> = {
-  components: T;
+export type SerializedGridLayout = {
+  components: SerializedComponentMap;
   id: string;
-  layout: GridLayoutDescriptor<Record<string, GridLayoutChildItemDescriptor>>;
+  layout: GridLayoutDescriptor;
+};
+
+export type DeserializedGridLayout = {
+  components: ReactElementMap<GridLayoutItemProps>;
+  id: string;
+  layout: GridLayoutDescriptor;
 };
 
 interface GridLayoutProviderContext {
-  getSavedGrid?: (id: string) => SerializedGridLayout | undefined;
+  /**
+   * Returns a 'deserialized' copy of a grid layout. Deserialized means the
+   * child gridItems have already been reconstituted as React Elements
+   */
+  getSavedGrid?: (id: string) => DeserializedGridLayout | undefined;
   gridChildItemsMap?: Map<string, SerializedComponentMap>;
   gridLayoutMap?: Map<string, GridLayoutDescriptor>;
   getChildElements?: (
@@ -120,8 +128,26 @@ export const GridLayoutProvider = (
     return undefined;
   }, []);
 
+  /*
+        // return Object.entries(childElementMap).map(
+      //   ([gridLayoutItemId, element]) => {
+      //     // TODO type IS in here although the types shouldn't allow it
+      //     const { gridArea, type, ...gridLayoutItemProps } =
+      //       layout.gridLayoutItems[gridLayoutItemId];
+      //     return (
+      //       <GridLayoutItem
+      //         {...gridLayoutItemProps}
+      //         id={gridLayoutItemId}
+      //         style={{ gridArea }}
+      //         key={gridLayoutItemId}
+      //       >
+      //         {element}
+      //       </GridLayoutItem>
+      //     );
+
+  */
   const getSavedGrid = useCallback(
-    (id: string): SerializedGridLayout<ComponentMap> | undefined => {
+    (id: string): DeserializedGridLayout | undefined => {
       const layoutJSON = gridChildItemsMap.get(id);
       const layout = gridLayoutMap.get(id);
       if (layoutJSON && layout) {
@@ -129,7 +155,18 @@ export const GridLayoutProvider = (
           components: Object.entries(layoutJSON).reduce<
             Record<string, ReactElement>
           >((map, [id, layoutJSON]) => {
-            map[id] = layoutFromJson(layoutJSON, "");
+            const gridItem = layout.gridLayoutItems?.[id];
+            if (!gridItem) {
+              throw Error(
+                `[GridLayoutProvider] no saved gridLayoutItem details for #${id}`,
+              );
+            }
+            const { gridArea, ...props } = gridItem;
+            map[id] = (
+              <GridLayoutItem {...props} id={id} key={id} style={{ gridArea }}>
+                {layoutFromJson(layoutJSON, "")}
+              </GridLayoutItem>
+            );
             return map;
           }, {}),
           id,

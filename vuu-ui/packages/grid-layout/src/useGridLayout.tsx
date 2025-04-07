@@ -47,18 +47,17 @@ import {
   useGridChangeHandler,
   useGridLayoutOptions,
   useSavedGrid,
+  ReactElementList,
 } from "./GridLayoutProvider";
 import { isGridLayoutStackedItem } from "./GridLayoutStackedtem";
 import {
   GridChildPositionChangeHandler,
   GridColumnsAndRows,
   GridLayoutChangeHandler,
-  GridLayoutChildItemDescriptor,
   GridLayoutDescriptor,
   GridModel,
   GridModelChildItem,
   GridTrackResizeHandler,
-  isDeclarativeLayout,
   ISplitter,
   isStackedItem,
   NonContentResetOptions,
@@ -79,7 +78,7 @@ export type GridLayoutHookProps = {
   onChange?: GridLayoutChangeHandler;
 };
 
-type GridLayoutChildren = Array<ReactElement<GridLayoutItemProps>>;
+type GridLayoutItemElements = Array<ReactElement<GridLayoutItemProps>>;
 
 type NonContentGridItems = {
   splitters: ISplitter[];
@@ -91,65 +90,12 @@ const isLayoutItem = (element: ReactElement) =>
   isGridLayoutItem(element) || isGridLayoutStackedItem(element);
 
 /**
- * The persistence format of a grid layout is two parallel maps,
- * - gridLayoutItemId => ReactElement
- * - gridLayoutItemId => GridLayoutItemDescriptor
+ * Create the GridModel and bind model changes to DOM changes.
+ * The GridModel is constructed from a GridLayoutDescriptor, which may
+ * have been passed explicitly or extracted from GridLayoutItems.
  *
- * When we are rendering a layout defined with a combination of child
- * elements in JSX and layout descriptors in json, we manipulate this
- * data into the persistence format, so all subsequent processing is
- * common.
- */
-export const buildMapsKeyedByGridLayoutItemId = (
-  children: ReactElement[],
-  layoutDescriptor: GridLayoutDescriptor,
-): [
-  Record<string, ReactElement>,
-  GridLayoutDescriptor<Record<string, GridLayoutChildItemDescriptor>>,
-] => {
-  if (isDeclarativeLayout(layoutDescriptor)) {
-    const { gridLayoutItems } = layoutDescriptor;
-    if (gridLayoutItems === undefined) {
-      throw Error(`[useGridLayoutItem] no gridLayoutItems in layout`);
-    }
-    const childElementMap: Record<string, ReactElement> = {};
-    const gridLayoutItemsAsMap: Record<string, GridLayoutChildItemDescriptor> =
-      {};
-    children.forEach((child: ReactElement) => {
-      const gridLayoutItemDescriptor = gridLayoutItems.find(
-        (item) => item.componentId === child.props.id,
-      );
-      if (gridLayoutItemDescriptor) {
-        const gridLayoutItemId = uuid();
-        childElementMap[gridLayoutItemId] = child;
-        const { componentId, ...gridLayoutItem } = gridLayoutItemDescriptor;
-        gridLayoutItemsAsMap[gridLayoutItemId] = gridLayoutItem;
-      } else {
-        throw Error(
-          `[useGridLayoutItem] no GridLayoutItem definition for child #${child.props.id}`,
-        );
-      }
-    });
-
-    return [
-      childElementMap,
-      {
-        ...layoutDescriptor,
-        gridLayoutItems: gridLayoutItemsAsMap,
-      },
-    ];
-  } else {
-    return [
-      {},
-      layoutDescriptor as GridLayoutDescriptor<
-        Record<string, GridLayoutChildItemDescriptor>
-      >,
-    ];
-  }
-};
-
-/**
- * In this hook we create the GridModel and bind model changes to DOM changes
+ * Create the list of GridLayoutItem elements to be rendered.
+ * The GridLayoutItem elements may be explicitly coded in JSX.
  */
 export const useGridLayout = ({
   children: childrenProp,
@@ -166,23 +112,25 @@ export const useGridLayout = ({
 
   const [, forceRender] = useState({});
 
-  const [children, childElementMap, layout] = useMemo<
-    [
-      ReactElement[],
-      Record<string, ReactElement>,
-      GridLayoutDescriptor<Record<string, GridLayoutChildItemDescriptor>>,
-    ]
+  /**
+   * Construct the initial set of child elements and the GridLayoutDescriptor
+   * which will be used to create the GridModel. We also save in state a copy
+   * of the child elements as a map, keyed by id.
+   */
+  const [children, layout] = useMemo<
+    [ReactElementList, GridLayoutDescriptor]
   >(() => {
     const savedGrid = getSavedGrid?.(id);
     if (savedGrid) {
       const { components: savedChildren, layout: savedLayout } = savedGrid;
-
-      return [Object.values(savedChildren), savedChildren, savedLayout];
+      return [Object.values(savedChildren), savedLayout];
     } else if (colsAndRows) {
       const reactElements = asReactElements(childrenProp);
-      const [childElementMap, layoutDescriptor] =
-        buildMapsKeyedByGridLayoutItemId(reactElements, colsAndRows);
-      return [reactElements, childElementMap, layoutDescriptor];
+      const layoutDescriptor = {
+        ...colsAndRows,
+      };
+
+      return [reactElements, layoutDescriptor];
     } else {
       throw Error(
         `[useGridLayout] useMemo no saved grid details available and no layout provided. Either pass layout prop or provide layout using a GridLayoutProvider`,
@@ -190,63 +138,47 @@ export const useGridLayout = ({
     }
   }, [childrenProp, getSavedGrid, id, colsAndRows]);
 
-  /**
-   * We expect one of three formats here:
-   *
-   * 1. children are all instances 'GridLayoutItem'. They carry all the
-   * information necessary to allow us to build the layout. This is a layout
-   * rendered from JSX defined by developer.
-   * 2. children are regular components. They must each have an id prop.
-   * Layout information is provided separately, in the shape of
-   * layout.gridLayoutItems. Each of these must have a componentId prop, that
-   * references one of the child component id values.
-   * This is a variation on 1) where developer can provide layout information
-   * via json rather than coding GridLayoutItem elements.
-   * 3. children are provided in serialized form. The serialized form is two parallel
-   * maps:
-   *  - gridLayoutItemId => ReactElement
-   *  - gridLayoutItemId => GridLayoutItemDescriptor
-   * We process this form directly. In scenario  2) above, we manipulate the
-   * elements and layout into this form.
-   */
-  const buildGridLayoutItems = useMemo<GridLayoutChildren>(() => {
+  const buildGridLayoutItems = useMemo<GridLayoutItemElements>(() => {
     //TODO check that children conform to expected props
     // if layout passed. construct GridLayoutItems
     if (children.every(isLayoutItem)) {
       // see 1) above
       // store as map
       return children;
-    } else if (layout) {
-      // need to jump through some hoops here
-      return Object.entries(childElementMap).map(
-        ([gridLayoutItemId, element]) => {
-          // TODO type IS in here although the types shouldn't allow it
-          const { gridArea, type, ...gridLayoutItemProps } =
-            layout.gridLayoutItems[gridLayoutItemId];
-          return (
-            <GridLayoutItem
-              {...gridLayoutItemProps}
-              id={gridLayoutItemId}
-              style={{ gridArea }}
-              key={gridLayoutItemId}
-            >
-              {element}
-            </GridLayoutItem>
-          );
-        },
-      );
     } else {
       throw Error(
-        "[useGridLayout] layoutDescriptor must be provided if children of GridLayout are not instances of GridLayoutItem",
+        `[useGridLayout] every child GridItem must be a GridLayoutItem`,
       );
+      // need to jump through some hoops here
+      // return Object.entries(childElementMap).map(
+      //   ([gridLayoutItemId, element]) => {
+      //     // TODO type IS in here although the types shouldn't allow it
+      //     const { gridArea, type, ...gridLayoutItemProps } =
+      //       layout.gridLayoutItems[gridLayoutItemId];
+      //     return (
+      //       <GridLayoutItem
+      //         {...gridLayoutItemProps}
+      //         id={gridLayoutItemId}
+      //         style={{ gridArea }}
+      //         key={gridLayoutItemId}
+      //       >
+      //         {element}
+      //       </GridLayoutItem>
+      //     );
+      //   },
+      // );
     }
-  }, [children, layout, childElementMap]);
+  }, [children]);
 
-  const childrenRef = useRef<GridLayoutChildren>(buildGridLayoutItems);
+  const childrenRef = useRef<GridLayoutItemElements>(buildGridLayoutItems);
   console.log({ children: childrenRef.current });
 
   const setChildren = useCallback(
-    (newChildren: GridLayoutChildren | SetStateAction<GridLayoutChildren>) => {
+    (
+      newChildren:
+        | GridLayoutItemElements
+        | SetStateAction<GridLayoutItemElements>,
+    ) => {
       if (isSimpleStateValue(newChildren)) {
         childrenRef.current = newChildren;
       } else {

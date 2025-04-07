@@ -9,7 +9,6 @@ import {
   itemsFillColumn,
   itemsFillRow,
   splitGridChildPosition,
-  splitTracks,
 } from "./grid-layout-utils";
 import {
   TrackType,
@@ -622,7 +621,7 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
     const isVertical = resizeDirection === "vertical";
 
     const resizeTrack = targetGridItem[trackType];
-    const newTrackIndex = resizeTrack.start - 1;
+    let newTrackIndex = resizeTrack.start - 1;
 
     if (resizeTrack.end - resizeTrack.start === 1) {
       // Splitting a single column
@@ -677,9 +676,7 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
 
         this.applyUpdates(updates);
       } else {
-        console.log(`CHECK THIS CODE >>>>>>>>>>`);
-        // this will calculate sizes of the new tracks
-        this.gridModel.tracks.splitTracks(
+        newTrackIndex = this.gridModel.tracks.splitTracks(
           trackType,
           resizeTrack.start,
           resizeTrack.end,

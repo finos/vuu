@@ -5,51 +5,9 @@ import {
   GridLayout,
   GridLayoutProvider,
   layoutFromJson,
-  type GridLayoutDescriptor,
   type SerializedGridLayout,
 } from "@heswell/grid-layout";
 import "./GridLayout.examples.css";
-
-export const TwoByTwoDoubleRowspanInColumnTwoJsonLayout = () => {
-  const layout = useMemo<GridLayoutDescriptor>(
-    () => ({
-      cols: ["1fr", "1fr"],
-      rows: ["1fr", "1fr"],
-      gridLayoutItems: [
-        {
-          componentId: "green",
-          gridArea: "1/1/2/2",
-          header: true,
-          // resizeable: "hv",
-          title: "Green",
-        },
-        {
-          componentId: "blue",
-          gridArea: "1/2/3/3",
-          header: true,
-          // resizeable: "hv",
-          title: "Blue",
-        },
-        {
-          componentId: "red",
-          gridArea: "2/1/3/2",
-          header: true,
-          // resizeable: "hv",
-          title: "Red",
-        },
-      ],
-    }),
-    [],
-  );
-
-  return (
-    <GridLayout full-page colsAndRows={layout}>
-      <div id="green" style={{ background: "green" }} />
-      <div id="blue" style={{ background: "blue" }} />
-      <div id="red" style={{ background: "red" }} />
-    </GridLayout>
-  );
-};
 
 export const TwoByTwoDoubleRowspanInColumnTwoDeserialized = () => {
   const serializedLayout = useMemo<SerializedGridLayout>(
@@ -158,44 +116,6 @@ export const SingleStackDeserialized = () => {
   );
 };
 
-export const TwoByTwoDoubleRowspanInColumnTwoSerialized = () => {
-  const layout = useMemo<GridLayoutDescriptor>(
-    () => ({
-      cols: ["1fr", "1fr"],
-      rows: ["1fr", "1fr"],
-      gridLayoutItems: [
-        {
-          componentId: "green",
-          gridArea: "1/1/2/2",
-          header: true,
-          resizeable: "hv",
-          title: "Green",
-        },
-        {
-          componentId: "blue",
-          gridArea: "1/2/3/3",
-          header: true,
-          resizeable: "hv",
-        },
-        {
-          componentId: "red",
-          gridArea: "2/1/3/2",
-          header: true,
-          resizeable: "hv",
-        },
-      ],
-    }),
-    [],
-  );
-
-  return (
-    <GridLayout full-page colsAndRows={layout}>
-      <div id="green" style={{ background: "green" }} />
-      <div id="blue" style={{ background: "blue" }} />
-      <div id="red" style={{ background: "red" }} />
-    </GridLayout>
-  );
-};
 export const GridLayoutFromJSON = () => {
   const layoutJson = useMemo<LayoutJSON>(
     () => ({

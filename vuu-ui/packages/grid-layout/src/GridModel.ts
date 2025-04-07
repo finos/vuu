@@ -31,6 +31,16 @@ export const isPixelUnit = (trackSize: TrackSize): trackSize is CSSTrackSize =>
 const NO_SPLITTERS: ISplitter[] = [];
 
 export interface GridLayoutChildItemDescriptor {
+  /**
+   * componentId is only required when a GridLayout is declared using JSX
+   * and child components are directly nested within GridLayout without GridItem
+   * wrappers.
+   * Each child component must have a unique id. The componentId here is used
+   * to match the  with the associated component. If GridItem wrappers are included
+   * explicitly in the JSX, componentId is not required in the
+   * GridLayoutChildItemDescriptor.
+   */
+  componentId?: string;
   dropTarget?: boolean | string;
   gridArea: string;
   header?: boolean;
@@ -44,30 +54,26 @@ export interface GridLayoutChildItemDescriptorWithComponentId
   componentId: string;
 }
 
-export type GridLayoutChildItemDescriptors =
-  | Record<string, GridLayoutChildItemDescriptor>
-  | GridLayoutChildItemDescriptorWithComponentId[];
-
-export const isDeclarativeLayout = (
-  layout: GridLayoutDescriptor,
-): layout is GridLayoutDescriptor<
-  GridLayoutChildItemDescriptorWithComponentId[]
-> => Array.isArray(layout.gridLayoutItems);
-export const isMapBasedLayout = (
-  layout: GridLayoutDescriptor,
-): layout is GridLayoutDescriptor<
-  Record<string, GridLayoutChildItemDescriptor>
-> => !Array.isArray(layout.gridLayoutItems);
+export type GridLayoutChildItemDescriptors = Record<
+  string,
+  GridLayoutChildItemDescriptor
+>;
+// export type GridLayoutChildItemDescriptors =
+//   | Record<string, GridLayoutChildItemDescriptor>
+//   | GridLayoutChildItemDescriptorWithComponentId[];
 
 export interface GridColumnsAndRows {
   cols: TrackSize[];
   rows: TrackSize[];
 }
 
-export interface GridLayoutDescriptor<
-  T extends GridLayoutChildItemDescriptors = GridLayoutChildItemDescriptors,
-> extends GridColumnsAndRows {
-  gridLayoutItems: T;
+/**
+ * Describes a GridLayout
+ * grid rows and columns
+ * layout details of gridItems
+ */
+export interface GridLayoutDescriptor extends GridColumnsAndRows {
+  gridLayoutItems?: GridLayoutChildItemDescriptors;
 }
 
 export interface GridLayoutModelCoordinates {
@@ -694,25 +700,30 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
   ) {
     const tracks = this.getTracks(trackType);
 
+    const tracksInRange = tracks.slice(fromTrackLine - 1, toTrackLine);
+    if (!tracksInRange.every((track) => track.hasNumericValue)) {
+      this.measure(trackType);
+    }
+
     let size = 0;
     for (let i = fromTrackLine - 1; i < toTrackLine - 1; i++) {
-      size += tracks[i];
+      size += tracks[i].numericValue;
     }
     let halfTrack = Math.floor(size / 2);
     let newTrackIndex = 0;
 
-    const newTracks = [];
+    const newTracks: GridTrack[] = [];
     for (let i = 0; i < tracks.length; i++) {
       if (i < fromTrackLine - 1) {
         newTracks.push(tracks[i]);
       } else if (i < toTrackLine - 1) {
-        if (tracks[i] < halfTrack) {
+        if (tracks[i].numericValue < halfTrack) {
           newTracks.push(tracks[i]);
-          halfTrack -= tracks[i];
+          halfTrack -= tracks[i].numericValue;
         } else if (halfTrack) {
           newTrackIndex = newTracks.length;
-          newTracks.push(halfTrack);
-          newTracks.push(tracks[i] - halfTrack);
+          newTracks.push(new GridTrack(halfTrack));
+          newTracks.push(new GridTrack(tracks[i].numericValue - halfTrack));
           halfTrack = 0;
         } else {
           newTracks.push(tracks[i]);
@@ -722,7 +733,11 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
       }
     }
 
-    return { newTrackIndex, newTracks };
+    console.log(`[GridTracks] splitTracks, after: ${tracks.join(" ")}`);
+
+    this.emit("grid-track-resize", trackType, newTracks);
+
+    return newTrackIndex;
   }
 
   insertTrack(
@@ -776,7 +791,7 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
     trackType: TrackType,
     trackIndex: number,
     value: TrackSize,
-    animate = true,
+    // animate = true,
   ) {
     // console.log(
     //   `[GridTracks] resizeTo ${trackType} [${trackIndex}] ${value} animate ? ${animate}`,
@@ -1019,17 +1034,7 @@ export class GridModel extends EventEmitter<GridModelEvents> {
       gridLayoutItems: this.#childItems.reduce<GridLayoutChildItemDescriptors>(
         (
           result,
-          {
-            id,
-            column,
-            dropTarget,
-            header,
-            resizeable,
-            row,
-            stackId,
-            title,
-            type,
-          },
+          { id, column, dropTarget, header, resizeable, row, stackId, title },
         ) => {
           result[id.replace(/^grid-/, "")] = {
             dropTarget,
@@ -1037,7 +1042,6 @@ export class GridModel extends EventEmitter<GridModelEvents> {
             header,
             resizeable,
             stackId,
-            type,
             title,
           };
           return result;
@@ -1097,73 +1101,69 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     assignDirection?: AssignDirection,
     updateChildItems = true,
   ) {
-    throw Error("[GridModel] removeGridRow need to reimplement this");
+    this.tracks.removeTrack("row", index, assignDirection);
 
     // const newRows = this.removeGridTrack(this.#rows, index, assignDirection);
     // this.setGridRows(newRows);
 
-    // const updates: GridItemUpdate[] = [];
+    const updates: GridItemUpdate[] = [];
 
-    // if (updateChildItems) {
-    //   const gridPosition = index + 1;
+    if (updateChildItems) {
+      const gridPosition = index + 1;
 
-    //   for (const item of this.#childItems) {
-    //     const { start, end } = item.row;
+      for (const item of this.#childItems) {
+        const { start, end } = item.row;
 
-    //     let startUpdate: Partial<GridLayoutModelPosition> | undefined =
-    //       undefined;
-    //     let endUpdate: Partial<GridLayoutModelPosition> | undefined = undefined;
+        let startUpdate: Partial<GridLayoutModelPosition> | undefined =
+          undefined;
+        let endUpdate: Partial<GridLayoutModelPosition> | undefined = undefined;
 
-    //     if (start > gridPosition) {
-    //       startUpdate = { start: start - 1 };
-    //     }
-    //     if (end > gridPosition) {
-    //       endUpdate = { end: end - 1 };
-    //     }
+        if (start > gridPosition) {
+          startUpdate = { start: start - 1 };
+        }
+        if (end > gridPosition) {
+          endUpdate = { end: end - 1 };
+        }
 
-    //     if (startUpdate || endUpdate) {
-    //       updates.push([
-    //         item.id,
-    //         {
-    //           row: { start, end, ...startUpdate, ...endUpdate },
-    //         },
-    //       ]);
-    //     }
-    //   }
+        if (startUpdate || endUpdate) {
+          updates.push([
+            item.id,
+            {
+              row: { start, end, ...startUpdate, ...endUpdate },
+            },
+          ]);
+        }
+      }
 
-    //   updates.forEach(([id, { row }]) => {
-    //     if (row) {
-    //       this.updateChildRow(id, row);
-    //     }
-    //   });
-    // }
+      updates.forEach(([id, { row }]) => {
+        if (row) {
+          this.updateChildRow(id, row);
+        }
+      });
+    }
 
-    // this.emit("child-position-updates", updates, { splitters: true });
+    this.emit("child-position-updates", updates, { splitters: true });
   }
 
   private addChildItems(childItems: GridLayoutChildItemDescriptors) {
     for (const [
       id,
-      { dropTarget, header, resizeable, stackId, title, type, ...item },
+      { dropTarget, header, resizeable, stackId, title, ...item },
     ] of Object.entries(childItems)) {
-      if (type === "stacked-content") {
-        console.log(`should we even be persisyingb the stacked content ?`);
-      } else {
-        const { column, row } = getGridPosition(item.gridArea);
-        this.addChildItem(
-          new GridModelChildItem({
-            // id: `grid-${id}`,
-            id,
-            column,
-            dropTarget,
-            header,
-            resizeable,
-            row,
-            stackId,
-            title,
-          }),
-        );
-      }
+      const { column, row } = getGridPosition(item.gridArea);
+      this.addChildItem(
+        new GridModelChildItem({
+          // id: `grid-${id}`,
+          id,
+          column,
+          dropTarget,
+          header,
+          resizeable,
+          row,
+          stackId,
+          title,
+        }),
+      );
     }
   }
 
@@ -1287,10 +1287,6 @@ export class GridModel extends EventEmitter<GridModelEvents> {
       const stackedChildren = this.childItems.filter(isStackedItem);
       return Map.groupBy(stackedChildren, ({ stackId }) => stackId);
     }
-  }
-
-  getChildItemLayout(childItemId: string): Required<GridChildItemStyle> {
-    return this.getChildItem(childItemId, true).layoutStyle;
   }
 
   validateChildId(childItemId: string) {

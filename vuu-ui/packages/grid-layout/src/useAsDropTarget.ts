@@ -235,12 +235,12 @@ export const useAsDropTarget = () => {
   const onDragLeave = useCallback<DragEventHandler>((evt) => {
     const { dropTarget: currentDropTarget } = dropTargetStateRef.current;
     const dropTarget = getDropTarget(evt.target, currentDropTarget);
-    console.log(
-      `[useAsDropTarget] onDragleave ${evt.target?.className} to ${evt.relatedTarget?.className}`,
-      {
-        dropTarget,
-      },
-    );
+    // console.log(
+    //   `[useAsDropTarget] onDragleave ${evt.target?.className} to ${evt.relatedTarget?.className}`,
+    //   {
+    //     dropTarget,
+    //   },
+    // );
     if (dropTarget?.target === evt.target) {
       if (dropTarget === currentDropTarget) {
         console.log(

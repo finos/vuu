@@ -12,6 +12,8 @@ export type {
 export { layoutFromJson } from "./layoutFromJson";
 export {
   type DragSource,
+  useGridLayoutDispatch,
+  useGridModel,
   useGridLayoutDragStartHandler,
 } from "./GridLayoutContext";
 export { useDraggable } from "./useDraggable";
