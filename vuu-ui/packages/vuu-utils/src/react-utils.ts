@@ -3,6 +3,7 @@ import {
   isValidElement,
   ReactElement,
   ReactNode,
+  SetStateAction,
   useEffect,
   useRef,
 } from "react";
@@ -36,3 +37,6 @@ export const useIsMounted = (id = "") => {
 
   return isMountedRef;
 };
+
+export const isSimpleStateValue = <T>(arg: SetStateAction<T>): arg is T =>
+  typeof arg !== "function";

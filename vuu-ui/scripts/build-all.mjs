@@ -10,15 +10,16 @@ export const buildAll = async () => {
         "cjs",
         "debug",
         "license",
-        "json"
+        "json",
       )}`,
-      `packages/${packageName}`
+      `packages/${packageName}`,
     ).catch((err) => {
       console.error(`[${packageName}] ${err.message}`);
     });
 
   // TODO determine the dependency graph/build order programatically
   const wave1 = [
+    "grid-layout",
     "vuu-data-test",
     "vuu-filter-parser",
     "vuu-icons",
@@ -43,7 +44,7 @@ export const buildAll = async () => {
     console.log(
       JSON.stringify({
         "package-list": wave1.concat(wave2).concat(wave3).concat(wave4),
-      })
+      }),
     );
   }
 
