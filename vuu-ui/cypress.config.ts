@@ -1,12 +1,9 @@
 import { defineConfig } from "cypress";
-import react from "@vitejs/plugin-react";
-import tsconfigPaths from "vite-tsconfig-paths";
 import { UserConfig } from "vite";
 import { version as reactVersion } from "react";
-import { cssInline } from "vite-plugin-inline-css";
 
 const viteConfig: UserConfig = {
-  plugins: [react(), tsconfigPaths(), /*, IstanbulPlugin()*/ cssInline()],
+  plugins: [],
   server: {
     watch: {
       ignored: ["**/coverage"],
@@ -18,13 +15,6 @@ const viteConfig: UserConfig = {
   define: {
     "process.env.NODE_DEBUG": false,
     "process.env.LOCAL": true,
-  },
-  resolve: {
-    alias: {
-      "cypress/react18": reactVersion.startsWith("18")
-        ? "cypress/react18"
-        : "cypress/react",
-    },
   },
 };
 

@@ -41,7 +41,7 @@
     "showcase": "cd showcase && npm run showcase",
     "showcase:preview": "serve ./showcase/dist -p 4173",
     "showcase:build": "npm run build:worker && cd showcase && tsx scripts/build.ts",
-    "test:cypress": "npm run build:worker && DEBUG=cypress:* cypress run --component --browser chrome --headless",
+    "test:cypress": "npm run build:worker && cypress run --component --browser chrome --headless",
     "test:cypress:local": "cypress open --component --browser chrome",
     "test:vite": "npm run build:worker && vitest run",
     "bump": "node ./scripts/version.mjs",
