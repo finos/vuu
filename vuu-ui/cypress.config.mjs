@@ -2,10 +2,10 @@ import { defineConfig } from "cypress";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { version as reactVersion } from "react";
-import { createFilter, Plugin } from "vite";
+import { createFilter } from "vite";
 import MagicString from "magic-string";
 
-export function cssInline(): Plugin {
+export function cssInline() {
   const exclude = ["**/**.stories.tsx"];
   const include = [
     "**/packages/grid-layout/**/*.{tsx,jsx}",
