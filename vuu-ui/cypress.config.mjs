@@ -1,11 +1,10 @@
 import { defineConfig } from "cypress";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
-import { UserConfig } from "vite";
 import { version as reactVersion } from "react";
 import { cssInline } from "vite-plugin-inline-css";
 
-const viteConfig: UserConfig = {
+const viteConfig = {
   plugins: [react(), tsconfigPaths(), /*, IstanbulPlugin()*/ cssInline()],
   server: {
     watch: {
@@ -38,7 +37,7 @@ export default defineConfig({
       // installCoverageTask(on, config);
       //Setting up a log task to allow logging to the console during an axe test because console.log() does not work directly in a test
       on("task", {
-        log(message: string) {
+        log(message) {
           console.log(message);
 
           return null;
