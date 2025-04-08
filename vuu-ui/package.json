@@ -50,16 +50,15 @@
     "typecheck": "tsc --noEmit --project tsconfig-typecheck.json"
   },
   "dependencies": {
-    "@testing-library/react-hooks": "^8.0.1",
     "@types/jest": "^29.5.11",
     "@types/node": "^18.0.0",
-    "@types/react": "^17.0.2",
-    "@types/react-dom": "^17.0.2",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.0.0",
     "@typescript-eslint/parser": "^5.41.0",
     "clsx": "^2.0.0",
     "html-to-image": "^1.11.11",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "rollup-plugin-webpack-stats": "^0.2.5",
     "semver": "^7.5.2"
   },
@@ -104,6 +103,6 @@
     "vitest": "^2.1.9"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=20.0.0"
   }
 }
