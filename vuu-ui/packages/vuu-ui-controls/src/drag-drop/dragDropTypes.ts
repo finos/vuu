@@ -1,7 +1,6 @@
 import { MouseEventHandler, RefObject } from "react";
 import { orientationType } from "@finos/vuu-utils";
 import { DragDropState } from "./DragDropState";
-import { GlobalDropHandler } from "./useGlobalDragDrop";
 
 //-----------------------------------
 // From useScrollPosition in List
