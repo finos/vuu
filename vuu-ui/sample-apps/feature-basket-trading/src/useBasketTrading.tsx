@@ -1,6 +1,7 @@
 import { useVuuMenuActions } from "@finos/vuu-data-react";
 import {
   DataSourceRow,
+  RpcResponseHandler,
   SubscribeCallback,
   ViewportRpcResponse,
 } from "@finos/vuu-data-types";
@@ -9,7 +10,7 @@ import {
   type ContextMenuConfiguration,
   useNotifications,
 } from "@finos/vuu-popups";
-import { VuuRpcViewportRequest } from "@finos/vuu-protocol-types";
+import { VuuDataRow, VuuRpcViewportRequest } from "@finos/vuu-protocol-types";
 import { TableConfig, TableConfigChangeHandler } from "@finos/vuu-table-types";
 import { type ColumnMap, metadataKeys } from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -19,6 +20,7 @@ import defaultLiveColumns from "./basket-table-live/basketConstituentLiveColumns
 import type { BasketChangeHandler } from "./basket-toolbar";
 import { type BasketCreatedHandler, NewBasketPanel } from "./new-basket-panel";
 import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
+import { DragDropState } from "@finos/vuu-ui-controls";
 
 const { KEY } = metadataKeys;
 
@@ -220,7 +222,7 @@ export const useBasketTrading = () => {
     [basket, dataSourceBasketTradingControl],
   );
 
-  const handleRpcResponse = useCallback((response) => {
+  const handleRpcResponse = useCallback<RpcResponseHandler>((response) => {
     console.log("handleRpcResponse", {
       response,
     });
@@ -239,8 +241,8 @@ export const useBasketTrading = () => {
   };
 
   const handleDropInstrument = useCallback(
-    (dragDropState) => {
-      const constituentRow = dragDropState.payload;
+    (dragDropState: DragDropState) => {
+      const constituentRow = dragDropState.payload as VuuDataRow;
       if (constituentRow && basketConstituentMap) {
         const ric = constituentRow[basketConstituentMap.ric];
         dataSourceBasketTradingConstituentJoin

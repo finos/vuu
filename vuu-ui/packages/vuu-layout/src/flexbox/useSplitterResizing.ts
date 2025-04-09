@@ -45,7 +45,7 @@ export const useSplitterResizing = ({
   );
 
   const handleDragStart = useCallback(
-    (index) => {
+    (index: number) => {
       const { current: contentMeta } = metaRef;
       if (contentMeta) {
         const [participants, bystanders] = identifyResizeParties(
@@ -84,7 +84,7 @@ export const useSplitterResizing = ({
     [dimension],
   );
 
-  const handleDrag = useCallback((idx, distance) => {
+  const handleDrag = useCallback((idx: number, distance: number) => {
     const { current: flexElements = [] } = flexElementsRef;
 
     if (contentRef.current && metaRef.current) {

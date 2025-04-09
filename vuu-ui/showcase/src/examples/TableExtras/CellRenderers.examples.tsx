@@ -8,7 +8,7 @@ import {
   RuntimeColumnDescriptor,
 } from "@finos/vuu-table-types";
 import { VuuInput } from "@finos/vuu-ui-controls";
-import { getValueFormatter } from "@finos/vuu-utils";
+import { CommitHandler, getValueFormatter } from "@finos/vuu-utils";
 import { FormEventHandler, useCallback, useMemo, useState } from "react";
 
 const columnMap = {
@@ -51,11 +51,12 @@ export const DefaultBackgroundCell = ({
     (evt) => setValue((evt.target as HTMLInputElement).value),
     [],
   );
-  const handlePriceChange = useCallback((evt, value) => {
-    const numericValue = parseFloat(value);
-    if (!isNaN(numericValue)) {
-      console.log(`change price ${typeof value}`);
-      setRow([0, 0, true, false, 1, 0, "key", 0, numericValue]);
+  const handlePriceChange = useCallback<CommitHandler>((evt, value) => {
+    if (typeof value === "string") {
+      const numericValue = parseFloat(value);
+      if (!isNaN(numericValue)) {
+        setRow([0, 0, true, false, 1, 0, "key", 0, numericValue]);
+      }
     }
   }, []);
 

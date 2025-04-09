@@ -1,6 +1,7 @@
 import { useViewContext } from "@finos/vuu-layout";
 import { registerComponent } from "@finos/vuu-utils";
 import React, {
+  ChangeEventHandler,
   HTMLAttributes,
   useCallback,
   useMemo,
@@ -23,13 +24,13 @@ export const StatefulComponent = ({
   const state = useRef(storedState ?? initialState);
   const [value, setValue] = useState(state.current);
 
-  const handleChange = useCallback(
+  const handleChange = useCallback<ChangeEventHandler<HTMLTextAreaElement>>(
     (e) => {
       const value = e.target.value;
       setValue((state.current = value));
       save?.(value, stateKey);
     },
-    [save, stateKey]
+    [save, stateKey],
   );
 
   return (

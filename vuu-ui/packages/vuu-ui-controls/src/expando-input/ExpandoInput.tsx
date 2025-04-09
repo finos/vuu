@@ -1,9 +1,9 @@
-import cx from "clsx";
+import { CommitHandler } from "@finos/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import cx from "clsx";
 import { ForwardedRef, forwardRef } from "react";
 import { VuuInput, VuuInputProps } from "../vuu-input";
-
 import expandoInputCss from "./ExpandoInput.css";
 
 const classBase = "vuuExpandoInput";
@@ -11,7 +11,7 @@ const classBase = "vuuExpandoInput";
 const noop = () => undefined;
 
 export interface ExpandoInputProps extends Omit<VuuInputProps, "onCommit"> {
-  onCommit?: VuuInputProps["onCommit"];
+  onCommit?: CommitHandler;
 }
 
 export const ExpandoInput = forwardRef(function ExpandoInput(

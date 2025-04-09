@@ -6,7 +6,7 @@ import {
 import { Dropdown, FormField, FormFieldLabel, Option } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { useCallback, useState } from "react";
+import { SyntheticEvent, useCallback, useState } from "react";
 
 import backgroundCellConfigurationEditorCss from "./BackgroundCellConfigurationEditor.css";
 
@@ -44,10 +44,10 @@ export const BackgroundCellConfigurationEditor = ({
   console.log({ type: column.type });
 
   const [flashStyle, setFlashStyle] = useState<FlashOption | undefined>(
-    valueFromColumn(column)
+    valueFromColumn(column),
   );
   const handleSelectionChange = useCallback(
-    (_, [flashOption]) => {
+    (_: SyntheticEvent, [flashOption]: FlashOption[]) => {
       setFlashStyle(flashOption);
       const renderProps = column.type.renderer;
       onChangeRendering({
@@ -55,7 +55,7 @@ export const BackgroundCellConfigurationEditor = ({
         flashStyle: flashOption?.value ?? defaultFlashOption.value,
       });
     },
-    [column.type, onChangeRendering]
+    [column.type, onChangeRendering],
   );
 
   return (
@@ -79,5 +79,5 @@ export const BackgroundCellConfigurationEditor = ({
 
 registerConfigurationEditor(
   "BackgroundCellConfigurationEditor",
-  BackgroundCellConfigurationEditor
+  BackgroundCellConfigurationEditor,
 );

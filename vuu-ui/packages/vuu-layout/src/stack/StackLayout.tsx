@@ -1,5 +1,5 @@
 import { registerComponent, useId } from "@finos/vuu-utils";
-import React, { useCallback, useRef } from "react";
+import React, { MouseEvent, useCallback, useRef } from "react";
 import {
   useLayoutCreateNewChild,
   useLayoutProviderDispatch,
@@ -53,7 +53,7 @@ export const StackLayout = (props: StackProps) => {
         }, 100);
       }
     },
-    [children, dispatch, sendMessage]
+    [children, dispatch, sendMessage],
   );
 
   const handleTabAdd = useCallback(() => {
@@ -78,11 +78,11 @@ export const StackLayout = (props: StackProps) => {
         });
       }
     },
-    [dispatch, path]
+    [dispatch, path],
   );
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleMouseDown = async (e: any, index: number) => {
+  const handleMouseDown = async (e: MouseEvent, index: number) => {
     let readyToDrag: undefined | ((value: unknown) => void);
 
     const preDragActivity = async () =>
@@ -93,7 +93,7 @@ export const StackLayout = (props: StackProps) => {
 
     const dragging = await dispatchViewAction(
       { type: "mousedown", index, preDragActivity },
-      e
+      e,
     );
 
     if (dragging) {

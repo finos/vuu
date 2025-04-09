@@ -5,7 +5,11 @@ import {
   SimulTableName,
   vuuModule,
 } from "@finos/vuu-data-test";
-import { DataSource, TableSchema } from "@finos/vuu-data-types";
+import {
+  DataSource,
+  SelectionChangeHandler,
+  TableSchema,
+} from "@finos/vuu-data-types";
 import {
   Flexbox,
   FlexboxLayout,
@@ -23,7 +27,9 @@ import {
   ColumnLayout,
   GroupColumnDescriptor,
   HeaderCellProps,
+  RuntimeColumnDescriptor,
   TableConfig,
+  TableRowSelectHandler,
 } from "@finos/vuu-table-types";
 import { Toolbar } from "@finos/vuu-ui-controls";
 import {
@@ -481,7 +487,7 @@ export const GroupHeaderCellOneColumn = () => {
       width: 150,
     };
   }, []);
-  const handleRemoveColumn = useCallback((column) => {
+  const handleRemoveColumn = useCallback((column: RuntimeColumnDescriptor) => {
     console.log(`remove column ${column.name}`);
   }, []);
 
@@ -528,7 +534,7 @@ export const GroupHeaderCellTwoColumn = () => {
       width: 200,
     };
   }, []);
-  const handleRemoveColumn = useCallback((column) => {
+  const handleRemoveColumn = useCallback((column: RuntimeColumnDescriptor) => {
     console.log(`remove column ${column.name}`);
   }, []);
 
@@ -580,7 +586,7 @@ export const GroupHeaderCellThreeColumn = () => {
     valueFormatter,
     width: 250,
   });
-  const handleRemoveColumn = useCallback((column) => {
+  const handleRemoveColumn = useCallback((column: RuntimeColumnDescriptor) => {
     console.log(`remove column ${column.name}`);
   }, []);
 
@@ -642,7 +648,7 @@ export const GroupHeaderCellThreeColumnFixedWidth = () => {
     valueFormatter,
     width: 250,
   });
-  const handleRemoveColumn = useCallback((column) => {
+  const handleRemoveColumn = useCallback((column: RuntimeColumnDescriptor) => {
     console.log(`remove column ${column.name}`);
   }, []);
 
@@ -702,10 +708,10 @@ export const CustomColumnRenderer = () => {
     };
   }, []);
 
-  const onSelect = useCallback((row) => {
+  const onSelect = useCallback<TableRowSelectHandler>((row) => {
     console.log({ row });
   }, []);
-  const onSelectionChange = useCallback((selected) => {
+  const onSelectionChange = useCallback<SelectionChangeHandler>((selected) => {
     console.log({ selected });
   }, []);
 

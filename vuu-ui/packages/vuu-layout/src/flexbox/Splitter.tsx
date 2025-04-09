@@ -4,6 +4,7 @@ import cx from "clsx";
 import React, {
   HTMLAttributes,
   KeyboardEvent,
+  MouseEventHandler,
   useCallback,
   useRef,
   useState,
@@ -49,7 +50,7 @@ export const Splitter = React.memo(function Splitter({
   const [active, setActive] = useState(false);
 
   const handleKeyDownDrag = useCallback(
-    ({ key, shiftKey }) => {
+    ({ key, shiftKey }: KeyboardEvent) => {
       const distance = shiftKey ? 10 : 1;
       if (column && key === "ArrowDown") {
         onDrag(index, distance);
@@ -61,11 +62,11 @@ export const Splitter = React.memo(function Splitter({
         onDrag(index, distance);
       }
     },
-    [column, index, onDrag]
+    [column, index, onDrag],
   );
 
   const handleKeyDownInitDrag = useCallback(
-    (evt) => {
+    (evt: KeyboardEvent) => {
       const { key } = evt;
       const horizontalMove = key === "ArrowLeft" || key === "ArrowRight";
       const verticalMove = key === "ArrowUp" || key === "ArrowDown";
@@ -75,14 +76,14 @@ export const Splitter = React.memo(function Splitter({
         keyDownHandlerRef.current = handleKeyDownDrag;
       }
     },
-    [column, handleKeyDownDrag, index, onDragStart]
+    [column, handleKeyDownDrag, index, onDragStart],
   );
 
   const keyDownHandlerRef = useRef(handleKeyDownInitDrag);
   const handleKeyDown = (evt: KeyboardEvent) => keyDownHandlerRef.current(evt);
 
   const handleMouseMove = useCallback(
-    (e) => {
+    (e: MouseEvent) => {
       ignoreClick.current = true;
       const pos = e[column ? "clientY" : "clientX"];
       const diff = pos - lastPos.current;
@@ -91,7 +92,7 @@ export const Splitter = React.memo(function Splitter({
       }
       lastPos.current = pos;
     },
-    [column, index, onDrag]
+    [column, index, onDrag],
   );
 
   const handleMouseUp = useCallback(() => {
@@ -102,7 +103,7 @@ export const Splitter = React.memo(function Splitter({
     rootRef.current?.focus();
   }, [handleMouseMove, onDragEnd, setActive]);
 
-  const handleMouseDown = useCallback(
+  const handleMouseDown = useCallback<MouseEventHandler>(
     (e) => {
       lastPos.current = column ? e.clientY : e.clientX;
       onDragStart(index);
@@ -111,7 +112,7 @@ export const Splitter = React.memo(function Splitter({
       e.preventDefault();
       setActive(true);
     },
-    [column, handleMouseMove, handleMouseUp, index, onDragStart, setActive]
+    [column, handleMouseMove, handleMouseUp, index, onDragStart, setActive],
   );
 
   const handleClick = () => {

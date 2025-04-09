@@ -2,6 +2,7 @@ import { RefObject, useCallback, useMemo } from "react";
 import { useLayoutProviderDispatch } from "../layout-provider/LayoutProvider";
 import { usePersistentState } from "../use-persistent-state";
 import { useViewActionDispatcher } from "../layout-view-actions/useViewActionDispatcher";
+import { ConfigChangeHandler } from "../layout-view-actions";
 
 export interface ViewHookProps {
   id: string;
@@ -32,12 +33,12 @@ export const useView = ({
     id,
     rootRef,
     path,
-    dropTargets
+    dropTargets,
   );
 
   const title = useMemo(
     () => loadState("view-title") ?? titleProp,
-    [loadState, titleProp]
+    [loadState, titleProp],
   );
 
   const onEditTitle = useCallback(
@@ -46,46 +47,46 @@ export const useView = ({
         layoutDispatch({ type: "set-title", path, title });
       }
     },
-    [layoutDispatch, path]
+    [layoutDispatch, path],
   );
 
   const restoredState = useMemo(() => loadState(id), [id, loadState]);
 
   const load = useCallback(
     (key?: string) => loadState(id, key),
-    [id, loadState]
+    [id, loadState],
   );
 
   const purge = useCallback(
-    (key) => {
+    (key: string) => {
       purgeState(id, key);
       layoutDispatch({ type: "save" });
     },
-    [id, layoutDispatch, purgeState]
+    [id, layoutDispatch, purgeState],
   );
 
   const save = useCallback(
-    (state, key) => {
+    (state: unknown, key: string) => {
       saveState(id, key, state);
       layoutDispatch({ type: "save" });
     },
-    [id, layoutDispatch, saveState]
+    [id, layoutDispatch, saveState],
   );
   const loadSession = useCallback(
     (key?: string) => loadSessionState(id, key),
-    [id, loadSessionState]
+    [id, loadSessionState],
   );
   const saveSession = useCallback(
-    (state, key) => saveSessionState(id, key, state),
-    [id, saveSessionState]
+    (state: unknown, key: string) => saveSessionState(id, key, state),
+    [id, saveSessionState],
   );
 
-  const onConfigChange = useCallback(
+  const onConfigChange = useCallback<ConfigChangeHandler>(
     ({ type: key, ...config }) => {
       const { [key]: data } = config;
       save(data, key);
     },
-    [save]
+    [save],
   );
 
   return {

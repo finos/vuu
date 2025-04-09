@@ -3,6 +3,7 @@ import {
   TableCellRendererProps,
 } from "@finos/vuu-table-types";
 import {
+  CommitHandler,
   dataColumnAndKeyUnchanged,
   dispatchCustomEvent,
   isTypeDescriptor,
@@ -47,7 +48,7 @@ export const ToggleCell = memo(function ToggleCell({
   const dataIdx = columnMap[column.name];
   const value = row[dataIdx] as string;
 
-  const handleCommit = useCallback(
+  const handleCommit = useCallback<CommitHandler<HTMLButtonElement>>(
     async (evt, newValue) => {
       const res = await onEdit?.(
         { previousValue: value, value: newValue },

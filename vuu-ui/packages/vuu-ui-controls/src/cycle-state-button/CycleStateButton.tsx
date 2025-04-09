@@ -9,8 +9,10 @@ import { CommitHandler } from "@finos/vuu-utils";
 
 const classBase = "vuuCycleStateButton";
 
+export type CycleStateButtonChangeHandler = (value: VuuRowDataItemType) => void;
+
 export interface CycleStateButtonProps extends Omit<ButtonProps, "onChange"> {
-  onChange?: (value: VuuRowDataItemType) => void;
+  onChange?: CycleStateButtonChangeHandler;
   onCommit?: CommitHandler<HTMLButtonElement>;
   values: string[];
   value: string;

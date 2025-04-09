@@ -40,7 +40,7 @@ export const useTableColumnResize = ({
   }, [name, onResize, rootRef]);
 
   const handleResize = useCallback(
-    (_evt: MouseEvent, moveBy: number, totalDistanceMoved) => {
+    (_evt: MouseEvent, moveBy: number, totalDistanceMoved: number) => {
       if (rootRef.current) {
         if (onResize) {
           const { current: width } = widthRef;
@@ -52,7 +52,7 @@ export const useTableColumnResize = ({
         }
       }
     },
-    [name, onResize, rootRef]
+    [name, onResize, rootRef],
   );
 
   const handleResizeEnd = useCallback(() => {

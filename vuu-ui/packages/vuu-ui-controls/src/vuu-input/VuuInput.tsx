@@ -23,7 +23,7 @@ export interface VuuInputProps<T extends VuuRowDataItemType = string>
   extends Omit<InputProps, "validationStatus"> {
   commitWhenCleared?: boolean;
   errorMessage?: ReactNode;
-  onCommit: CommitHandler<HTMLInputElement, T | undefined>;
+  onCommit: CommitHandler;
   type?: T;
 }
 
@@ -55,7 +55,7 @@ export const VuuInput = forwardRef(function VuuInput<
 
   const id = useId(idProp);
 
-  const commitValue = useCallback<CommitHandler>(
+  const commitValue = useCallback<CommitHandler<HTMLInputElement, string>>(
     (evt, value) => {
       if (type === "number") {
         const numericValue = parseFloat(value);

@@ -77,7 +77,7 @@ export const useKeyboardNavigation = ({
   const [, forceRender] = useState<unknown>(null);
 
   const setHighlightedIdx = useCallback(
-    (idx) => {
+    (idx: number) => {
       highlightedIndexRef.current = idx;
       onHighlight?.(idx);
       forceRender({});
@@ -86,7 +86,7 @@ export const useKeyboardNavigation = ({
   );
 
   const setHighlightedIndex = useCallback(
-    (idx) => {
+    (idx: number) => {
       if (idx !== highlightedIndexRef.current) {
         if (!controlledHighlighting) {
           setHighlightedIdx(idx);

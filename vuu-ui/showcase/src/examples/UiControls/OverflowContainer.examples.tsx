@@ -197,7 +197,7 @@ export const TestFixtureSimpleOverflowContainer = ({ width = 600 }) => {
 export const SortableOverflowContainer = () => {
   const [items, setItems] = useState<string[]>(["1", "2", "3", "4", "5", "6"]);
 
-  const handleDrop = useCallback((fromIndex, toIndex) => {
+  const handleDrop = useCallback((fromIndex: number, toIndex: number) => {
     console.log(`handle drop from ${fromIndex} to ${toIndex}`);
     setItems((tabs) => {
       const newTabs = tabs.slice();

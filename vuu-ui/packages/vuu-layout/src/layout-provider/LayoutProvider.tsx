@@ -101,7 +101,7 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
   const [, forceRefresh] = useState<unknown>(null);
 
   const serializeState = useCallback(
-    (source, layoutChangeReason: LayoutChangeReason) => {
+    (source: ReactElement, layoutChangeReason: LayoutChangeReason) => {
       if (onLayoutChange) {
         const workspaceContainer =
           findTarget(source, isWorkspaceContainer) || state.current;
@@ -181,7 +181,9 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
           break;
         }
         case "save": {
-          serializeState(state.current, getLayoutChangeReason(action));
+          if (state.current) {
+            serializeState(state.current, getLayoutChangeReason(action));
+          }
           break;
         }
         case "query":

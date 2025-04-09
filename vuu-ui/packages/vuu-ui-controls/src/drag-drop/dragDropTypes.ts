@@ -1,6 +1,7 @@
 import { MouseEventHandler, RefObject } from "react";
 import { orientationType } from "@finos/vuu-utils";
 import { DragDropState } from "./DragDropState";
+import { GlobalDropHandler } from "./useGlobalDragDrop";
 
 //-----------------------------------
 // From useScrollPosition in List
@@ -73,7 +74,7 @@ export interface InternalDragHookResult
   handleScrollStop?: (
     scrollDirection: "fwd" | "bwd",
     _scrollPos: number,
-    atEnd: boolean
+    atEnd: boolean,
   ) => void;
   /**
    * Draggable item has been dragged out of container. Remove any local drop

@@ -17,7 +17,10 @@ import {
   TableSelectionModel,
 } from "@finos/vuu-table-types";
 import {
+  DragDropState,
   DragStartHandler,
+  DropHandler,
+  GlobalDropHandler,
   MeasuredProps,
   MeasuredSize,
   useDragDrop,
@@ -774,7 +777,9 @@ export const useTable = ({
   );
 
   const handleDropRow = useCallback(
-    (dragDropState) => {
+    // TODO - this should be GlobalDropHandler
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (dragDropState: any) => {
       onDrop?.(dragDropState);
     },
     [onDrop],

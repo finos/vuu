@@ -4,7 +4,7 @@ function buildPackage(packageName) {
   console.log(`build TypeScript typedefs for ${packageName}`);
   execWait(
     `npm run --silent type-defs${withArgs("debug")}`,
-    `packages/${packageName}`
+    `packages/${packageName}`,
   ).catch(() => {
     console.error(`Error processing ${packageName}`);
   });
@@ -12,7 +12,6 @@ function buildPackage(packageName) {
 
 const packages = [
   "vuu-codemirror",
-  "vuu-data-ag-grid",
   "vuu-data-local",
   "vuu-data-react",
   "vuu-data-remote",

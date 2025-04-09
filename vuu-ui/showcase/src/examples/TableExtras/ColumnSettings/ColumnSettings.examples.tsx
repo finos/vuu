@@ -15,6 +15,7 @@ import {
   updateColumnType,
 } from "@finos/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
+import { DataValueTypeSimple } from "@finos/vuu-data-types";
 
 export const ColumnFormattingPanelDouble = () => {
   const [column, setColumn] = useState<ColumnDescriptor>({
@@ -93,7 +94,7 @@ export const ColumnFormattingPanelDateTime = () => {
     setColumn((col) => updateColumnFormatting(col, formatting));
   }, []);
 
-  const onChangeType = useCallback((t) => {
+  const onChangeType = useCallback((t: DataValueTypeSimple) => {
     setColumn((col) => updateColumnType(col, t));
   }, []);
 

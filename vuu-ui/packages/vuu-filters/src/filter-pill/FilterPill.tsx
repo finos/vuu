@@ -33,6 +33,7 @@ import { getFilterLabel } from "./getFilterLabel";
 import { getFilterTooltipText } from "./getFilterTooltipText";
 
 import filterPillCss from "./FilterPill.css";
+import { ButtonProps } from "@salt-ds/core";
 
 const classBase = "vuuFilterPill";
 
@@ -88,7 +89,7 @@ export const FilterPill = ({
   const getLabel = getFilterLabel(columnsByName);
   const label = useMemo(
     () => filter.name ?? getLabel(filter),
-    [getLabel, filter]
+    [getLabel, filter],
   );
 
   const getTooltipTextl = getFilterTooltipText(columnsByName);
@@ -146,7 +147,7 @@ export const FilterPill = ({
       filter,
       handleMenuClose,
       onMenuAction,
-    ]
+    ],
   );
 
   const handleExitEditMode = useCallback<ExitEditModeHandler>(
@@ -156,7 +157,7 @@ export const FilterPill = ({
         rootRef.current?.querySelector("button")?.focus();
       });
     },
-    [onExitEditMode]
+    [onExitEditMode],
   );
 
   const { anchorProps, hideTooltip, showTooltip, tooltipProps } = useTooltip({
@@ -166,8 +167,8 @@ export const FilterPill = ({
     tooltipContent: filterAsReactNode(filter, getTooltipTextl),
   });
 
-  const buttonProps = {
-    onBlur: hideTooltip,
+  const buttonProps: Partial<ButtonProps> = {
+    onBlur: () => hideTooltip(),
     onFocus: useCallback<FocusEventHandler>(() => {
       showTooltip(rootRef);
     }, [showTooltip]),

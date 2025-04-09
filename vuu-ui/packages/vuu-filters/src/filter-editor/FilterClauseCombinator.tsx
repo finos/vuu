@@ -1,5 +1,8 @@
 import type { FilterCombinatorOp } from "@finos/vuu-filter-types";
-import { CycleStateButton } from "@finos/vuu-ui-controls";
+import {
+  CycleStateButton,
+  CycleStateButtonChangeHandler,
+} from "@finos/vuu-ui-controls";
 import { KeyboardEventHandler, useCallback } from "react";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -9,7 +12,7 @@ import filterClauseCombinatorCss from "./FilterClauseCombinator.css";
 const classBase = "vuuFilterClauseCombinator";
 
 export type FilterClauseCombinatorChangeHandler = (
-  op: FilterCombinatorOp
+  op: FilterCombinatorOp,
 ) => void;
 
 export interface FilterClauseCombinatorProps {
@@ -30,11 +33,11 @@ export const FilterClauseCombinator = ({
     window: targetWindow,
   });
 
-  const handleChange = useCallback(
+  const handleChange = useCallback<CycleStateButtonChangeHandler>(
     (value) => {
       onChange(value as FilterCombinatorOp);
     },
-    [onChange]
+    [onChange],
   );
 
   return (

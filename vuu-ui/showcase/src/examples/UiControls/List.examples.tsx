@@ -43,12 +43,15 @@ export const DefaultList = () => {
 };
 
 export const FixedWidthList = () => {
-  const handleSelect = useCallback((evt, selected) => {
+  const handleSelect = useCallback<SelectHandler>((evt, selected) => {
     console.log(`handleSelect`, { selected });
   }, []);
-  const handleSelectionChange = useCallback((evt, selected) => {
-    console.log(`handleSelectionChange`, { selected });
-  }, []);
+  const handleSelectionChange = useCallback<SingleSelectionHandler>(
+    (evt, selected) => {
+      console.log(`handleSelectionChange`, { selected });
+    },
+    [],
+  );
   return (
     <List
       aria-label="Listbox example"
@@ -62,12 +65,15 @@ export const FixedWidthList = () => {
 };
 
 export const DefaultSelectedItem = () => {
-  const handleSelect = useCallback((evt, selected) => {
+  const handleSelect = useCallback<SelectHandler>((evt, selected) => {
     console.log(`handleSelect`, { selected });
   }, []);
-  const handleSelectionChange = useCallback((evt, selected) => {
-    console.log(`handleSelectionChange`, { selected });
-  }, []);
+  const handleSelectionChange = useCallback<SingleSelectionHandler>(
+    (evt, selected) => {
+      console.log(`handleSelectionChange`, { selected });
+    },
+    [],
+  );
   return (
     <List
       aria-label="Listbox example"
@@ -82,12 +88,15 @@ export const DefaultSelectedItem = () => {
 };
 
 export const InlineListItems = () => {
-  const handleSelect = useCallback((evt, selected) => {
+  const handleSelect = useCallback<SelectHandler>((evt, selected) => {
     console.log(`handleSelect`, { selected });
   }, []);
-  const handleSelectionChange = useCallback((evt, selected) => {
-    console.log(`handleSelectionChange`, { selected });
-  }, []);
+  const handleSelectionChange = useCallback<SingleSelectionHandler>(
+    (evt, selected) => {
+      console.log(`handleSelectionChange`, { selected });
+    },
+    [],
+  );
   return (
     <List
       aria-label="Listbox example"
@@ -163,12 +172,15 @@ export const ListHeight100Pct = () => {
 };
 
 export const MultiSelectionList = () => {
-  const handleSelect = useCallback((evt, selected) => {
+  const handleSelect = useCallback<SelectHandler>((evt, selected) => {
     console.log(`handleSelect`, { selected });
   }, []);
-  const handleSelectionChange = useCallback((evt, selected) => {
-    console.log(`handleSelectionChange`, { selected });
-  }, []);
+  const handleSelectionChange = useCallback<MultiSelectionHandler>(
+    (evt, selected) => {
+      console.log(`handleSelectionChange`, { selected });
+    },
+    [],
+  );
 
   return (
     <div style={{ display: "flex", gap: 24, width: 700, height: 600 }}>
@@ -194,7 +206,7 @@ export const MultiSelectionList = () => {
 export const DraggableListItemsNoScroll = () => {
   const [data, setData] = useState(usa_states.slice(0, 10));
 
-  const handleDrop = useCallback((fromIndex, toIndex) => {
+  const handleDrop = useCallback((fromIndex: number, toIndex: number) => {
     setData((data) => {
       const newData = data.slice();
       const [tab] = newData.splice(fromIndex, 1);
@@ -207,7 +219,7 @@ export const DraggableListItemsNoScroll = () => {
     });
   }, []);
 
-  const handleSelect = useCallback((evt, item) => {
+  const handleSelect = useCallback<SelectHandler>((evt, item) => {
     console.log("select", {
       item,
     });
@@ -229,7 +241,7 @@ export const DraggableListItemsNoScroll = () => {
 export const DraggableListItems = () => {
   const [data, setData] = useState(usa_states);
 
-  const handleDrop = useCallback((fromIndex, toIndex) => {
+  const handleDrop = useCallback((fromIndex: number, toIndex: number) => {
     setData((data) => {
       const newData = data.slice();
       const [tab] = newData.splice(fromIndex, 1);
@@ -242,7 +254,7 @@ export const DraggableListItems = () => {
     });
   }, []);
 
-  const handleSelect = useCallback((evt, item) => {
+  const handleSelect = useCallback<SelectHandler>((evt, item) => {
     console.log("select", {
       item,
     });
@@ -274,7 +286,7 @@ export const DraggableListItemsDropIndicator = () => {
   const [data, setData] = useState(usa_states);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
-  const handleDrop = useCallback((fromIndex, toIndex) => {
+  const handleDrop = useCallback((fromIndex: number, toIndex: number) => {
     console.log(`drop ${fromIndex} ${toIndex}`);
     setData((data) => {
       const newData = data.slice();
@@ -288,7 +300,7 @@ export const DraggableListItemsDropIndicator = () => {
     });
   }, []);
 
-  const handleSelect = useCallback((evt, item) => {
+  const handleSelect = useCallback<SelectHandler>((evt, item) => {
     console.log("select", {
       item,
     });
@@ -321,12 +333,15 @@ export const DraggableListItemsDropIndicator = () => {
 };
 
 export const ListWithinFlexLayout = () => {
-  const handleSelect = useCallback((evt, selected) => {
+  const handleSelect = useCallback<SelectHandler>((evt, selected) => {
     console.log(`handleSelect`, { selected });
   }, []);
-  const handleSelectionChange = useCallback((evt, selected) => {
-    console.log(`handleSelectionChange`, { selected });
-  }, []);
+  const handleSelectionChange = useCallback<SingleSelectionHandler>(
+    (evt, selected) => {
+      console.log(`handleSelectionChange`, { selected });
+    },
+    [],
+  );
 
   return (
     <div
@@ -356,12 +371,15 @@ export const ListWithinFlexLayout = () => {
 };
 
 export const DefaultSelectedWithinViewport = () => {
-  const handleSelect = useCallback((evt, selected) => {
+  const handleSelect = useCallback<SelectHandler>((evt, selected) => {
     console.log(`handleSelect`, { selected });
   }, []);
-  const handleSelectionChange = useCallback((evt, selected) => {
-    console.log(`handleSelectionChange`, { selected });
-  }, []);
+  const handleSelectionChange = useCallback<SingleSelectionHandler>(
+    (evt, selected) => {
+      console.log(`handleSelectionChange`, { selected });
+    },
+    [],
+  );
   return (
     <>
       <Input />

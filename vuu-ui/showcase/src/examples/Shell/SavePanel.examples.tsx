@@ -1,9 +1,10 @@
 import { SaveLayoutPanel } from "@finos/vuu-shell";
+import { LayoutMetadataDto } from "@finos/vuu-utils";
 import { Dialog, DialogContent, DialogHeader } from "@salt-ds/core";
 import { useCallback } from "react";
 
 export const SavePanel = () => {
-  const handleSave = useCallback((layoutMeta) => {
+  const handleSave = useCallback((layoutMeta: LayoutMetadataDto) => {
     console.log(JSON.stringify(layoutMeta, null, 2));
   }, []);
 

@@ -1,3 +1,4 @@
+import { ResizeHandler } from "@finos/vuu-ui-controls";
 import { useResizeObserver, WidthHeight } from "../responsive";
 import { RefObject, useCallback, useRef } from "react";
 
@@ -32,7 +33,7 @@ export const useViewResize = ({
     resizeHandle.current = undefined;
   }, [mainRef]);
 
-  const onResize = useCallback(
+  const onResize = useCallback<ResizeHandler>(
     ({ height, width }) => {
       mainSize.current.height = height;
       mainSize.current.width = width;
@@ -41,13 +42,13 @@ export const useViewResize = ({
       }
       resizeHandle.current = window.setTimeout(setMainSize, 40);
     },
-    [setMainSize]
+    [setMainSize],
   );
 
   useResizeObserver(
     rootRef,
     deferResize ? WidthHeight : NO_MEASUREMENT,
     onResize,
-    deferResize
+    deferResize,
   );
 };

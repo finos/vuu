@@ -7,7 +7,8 @@ import cx from "clsx";
 
 import measuredContainerCss from "./MeasuredContainer.css";
 
-export interface MeasuredContainerProps extends HTMLAttributes<HTMLDivElement> {
+export interface MeasuredContainerProps
+  extends Omit<HTMLAttributes<HTMLDivElement>, "onResize"> {
   /**
    * A numeric value for height will result in a fixed height. To adapt to container
    * use either a percentage height or 'auto'. Always use 'auto' when rendering

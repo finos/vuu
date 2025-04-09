@@ -111,7 +111,7 @@ export const useFilterClause = ({
   };
 
   const onSelectOperator = useCallback(
-    (_, selectedOp: FilterClauseOp) => {
+    (_: SyntheticEvent, selectedOp: FilterClauseOp) => {
       filterClauseModel.setOp(selectedOp);
       focusNextElement();
     },

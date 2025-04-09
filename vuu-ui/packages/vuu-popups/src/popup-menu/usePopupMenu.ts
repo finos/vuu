@@ -47,13 +47,13 @@ export const usePopupMenu = ({
   const rootRef = useRef<HTMLButtonElement>(null);
 
   const setMenuOpen = useCallback(
-    (isOpen) => {
+    (isOpen: boolean) => {
       _setMenuOpen(isOpen);
       if (isOpen) {
         onMenuOpen?.();
       }
     },
-    [onMenuOpen]
+    [onMenuOpen],
   );
 
   const [showContextMenu] = useContextMenu(menuBuilder, menuActionHandler);
@@ -85,7 +85,7 @@ export const usePopupMenu = ({
         });
       }
     },
-    [onMenuClose, setMenuOpen, tabIndex]
+    [onMenuClose, setMenuOpen, tabIndex],
   );
 
   const showMenu = useCallback(
@@ -130,7 +130,7 @@ export const usePopupMenu = ({
       popupPlacement,
       setMenuOpen,
       showContextMenu,
-    ]
+    ],
   );
 
   const ariaAttributes: AriaAttributes = {

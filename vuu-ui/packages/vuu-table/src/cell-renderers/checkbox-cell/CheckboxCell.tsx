@@ -26,7 +26,7 @@ export const CheckboxCell = memo(
     const isChecked = !!row[dataIdx];
 
     const handleCommit = useCallback(
-      (value) => async (evt: MouseEvent) => {
+      (value: boolean) => async (evt: MouseEvent) => {
         const res = await onEdit?.(
           { previousValue: isChecked, value },
           "commit",

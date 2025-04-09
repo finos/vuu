@@ -2,7 +2,6 @@ export * as DockLayout from "./DockLayout.examples";
 export * as LayoutContainer from "./LayoutContainer.examples";
 export * as DropMenu from "./DropMenu.examples";
 export * as Flexbox from "./Flexbox.examples";
-export * as FluidGrid from "./FluidGrid.examples";
 export * as Header from "./Header.examples";
 export * as MeasuredContainer from "./MeasuredContainer.examples";
 export * as Palette from "./Palette.examples";

@@ -19,7 +19,7 @@ export const setPersistentState = (id: string, value: any) =>
   persistentState.set(id, value);
 
 export const usePersistentState = () => {
-  const loadSessionState = useCallback((id, key) => {
+  const loadSessionState = useCallback((id: string, key?: string) => {
     const state = sessionState.get(id);
     if (state) {
       if (key !== undefined && state[key] !== undefined) {
@@ -32,19 +32,22 @@ export const usePersistentState = () => {
     }
   }, []);
 
-  const saveSessionState = useCallback((id, key, data) => {
-    if (key === undefined) {
-      sessionState.set(id, data);
-    } else if (sessionState.has(id)) {
-      const state = sessionState.get(id);
-      sessionState.set(id, {
-        ...state,
-        [key]: data,
-      });
-    } else {
-      sessionState.set(id, { [key]: data });
-    }
-  }, []);
+  const saveSessionState = useCallback(
+    (id: string, key: string, data: unknown) => {
+      if (key === undefined) {
+        sessionState.set(id, data);
+      } else if (sessionState.has(id)) {
+        const state = sessionState.get(id);
+        sessionState.set(id, {
+          ...state,
+          [key]: data,
+        });
+      } else {
+        sessionState.set(id, { [key]: data });
+      }
+    },
+    [],
+  );
 
   const purgeSessionState = useCallback((id: string, key?: string) => {
     if (sessionState.has(id)) {
@@ -88,7 +91,7 @@ export const usePersistentState = () => {
         persistentState.set(id, { [key]: data });
       }
     },
-    []
+    [],
   );
 
   const purgeState = useCallback((id: string, key?: string) => {

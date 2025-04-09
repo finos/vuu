@@ -157,9 +157,7 @@ export const useQuickFilters = ({
     [],
   );
 
-  const handleCommit = useCallback<
-    CommitHandler<HTMLElement, string | number | undefined>
-  >(
+  const handleCommit = useCallback<CommitHandler<HTMLElement>>(
     (e, value) => {
       const field = queryClosest(e.target, "[data-field]");
       const column = field?.dataset.field;

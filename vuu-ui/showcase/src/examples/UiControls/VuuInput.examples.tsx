@@ -71,9 +71,7 @@ export const VuuInputWithValidation = () => {
   const [inputValue, setInputValue] = useState("");
   const valid = isValidInput(inputValue, "number");
   const errorMessage = getTooltipContent("number", valid);
-  const handleCommit = useCallback<
-    CommitHandler<HTMLInputElement, string | undefined>
-  >((evt) => {
+  const handleCommit = useCallback<CommitHandler>((evt) => {
     const fieldElement = evt.target as HTMLInputElement;
     const fieldValue = fieldElement?.value;
     setInputValue(fieldValue);

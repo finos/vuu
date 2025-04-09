@@ -203,12 +203,8 @@ export const useTableSettings = ({
     [],
   );
 
-  const handleCommitColumnWidth = useCallback<
-    CommitHandler<HTMLInputElement, string | undefined>
-  >((_, value) => {
-    if (value === undefined) {
-      console.log(`column width is undefined`);
-    } else {
+  const handleCommitColumnWidth = useCallback<CommitHandler>((_, value) => {
+    if (typeof value === "string") {
       const columnDefaultWidth = parseInt(value);
       if (!isNaN(columnDefaultWidth)) {
         setColumnState((state) => ({

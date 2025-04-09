@@ -152,11 +152,9 @@ export const useBulkEditRow = ({
     current: { messages: errorMessages },
   } = validationStateRef;
 
-  const handleCommit = useCallback<
-    CommitHandler<HTMLElement, string | undefined>
-  >(
+  const handleCommit = useCallback<CommitHandler<HTMLElement>>(
     (evt, value) => {
-      if (value !== undefined && String(value).trim() !== "") {
+      if (typeof value === "string" && value.trim() !== "") {
         const columnName = focusedFieldRef.current;
         if (columnName) {
           const column = descriptors.find((c) => c.name === columnName);
