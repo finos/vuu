@@ -71,12 +71,12 @@ const dragThreshold = 3;
 
 const getDraggableElement = (
   el: EventTarget | null,
-  query: string
+  query: string,
 ): HTMLElement => (el as HTMLElement)?.closest(query) as HTMLElement;
 
 const getLastElement = (
   container: HTMLElement,
-  itemQuery: string
+  itemQuery: string,
 ): [HTMLElement, boolean] => {
   const fullItemQuery = `:is(${itemQuery}${NOT_OVERFLOWED},.vuuOverflowContainer-OverflowIndicator)`;
   const childElements = Array.from(container.querySelectorAll(fullItemQuery));
@@ -176,7 +176,7 @@ export const useDragDrop: DragDropHook = ({
       if (container) {
         const [lastElement, lastItemIsOverflowIndicator] = getLastElement(
           container,
-          itemQuery
+          itemQuery,
         );
         const { CONTRA, CONTRA_END, DIMENSION, END, START } =
           dimensions(orientation);
@@ -189,13 +189,13 @@ export const useDragDrop: DragDropHook = ({
         dragBoundaries.current.end = lastItemIsOverflowIndicator
           ? Math.max(lastItemStart, containerRect.right - draggableSize)
           : isScrollableRef.current
-          ? containerRect[START] + containerRect[DIMENSION] - draggableSize
-          : lastItemEnd - draggableSize;
+            ? containerRect[START] + containerRect[DIMENSION] - draggableSize
+            : lastItemEnd - draggableSize;
         dragBoundaries.current.contraStart = containerRect[CONTRA];
         dragBoundaries.current.contraEnd = containerRect[CONTRA_END];
       }
     },
-    [containerRef, itemQuery, orientation]
+    [containerRef, itemQuery, orientation],
   );
 
   const terminateDrag = useCallback(() => {
@@ -204,7 +204,7 @@ export const useDragDrop: DragDropHook = ({
 
     const { current: toIndex } = dropIndexRef;
     const droppedItem = containerRef.current?.querySelector(
-      `${itemQuery}[data-index="${toIndex}"]`
+      `${itemQuery}[data-index="${toIndex}"]`,
     );
     if (droppedItem) {
       droppedItem.classList.remove("vuuDropTarget-settling");
@@ -245,23 +245,23 @@ export const useDragDrop: DragDropHook = ({
         return bwd ? "bwd" : fwd ? "fwd" : "";
       }
     },
-    [scrollableContainerRef, orientation]
+    [scrollableContainerRef, orientation],
   );
 
   const useDragDropHook: InternalHook =
     allowDragDrop === true || allowDragDrop === "natural-movement"
       ? useDragDropNaturalMovement
       : allowDragDrop === "drop-indicator"
-      ? useDragDropIndicator
-      : allowDragDrop === "drag-copy"
-      ? useDragDropCopy
-      : noDragDrop;
+        ? useDragDropIndicator
+        : allowDragDrop === "drag-copy"
+          ? useDragDropCopy
+          : noDragDrop;
 
   const onScrollingStopped = useCallback(
     (scrollDirection: "fwd" | "bwd", scrollPos: number, atEnd: boolean) => {
       handleScrollStopRef.current?.(scrollDirection, scrollPos, atEnd);
     },
-    []
+    [],
   );
 
   const { isScrolling, startScrolling, stopScrolling } = useAutoScroll({
@@ -288,7 +288,7 @@ export const useDragDrop: DragDropHook = ({
       }
       dragDropStateRef.current = null;
     },
-    [id, onDrop, onEndOfDragOperation]
+    [id, onDrop, onEndOfDragOperation],
   );
 
   const {
@@ -352,7 +352,7 @@ export const useDragDrop: DragDropHook = ({
       orientation,
       releaseDrag,
       removeDragHandlers,
-    ]
+    ],
   );
 
   const dragMouseMoveHandler = useCallback(
@@ -406,7 +406,7 @@ export const useDragDrop: DragDropHook = ({
 
           if (!isScrolling.current) {
             const renderDragPos = Math.round(
-              Math.max(boundary.start, Math.min(boundary.end, dragPos))
+              Math.max(boundary.start, Math.min(boundary.end, dragPos)),
             );
             draggableElement.style[START] = `${renderDragPos}px`;
             drag(renderDragPos, mouseMoveDirection);
@@ -423,7 +423,7 @@ export const useDragDrop: DragDropHook = ({
       orientation,
       startScrolling,
       stopScrolling,
-    ]
+    ],
   );
   const dragMouseUpHandler = useCallback(() => {
     removeDragHandlers();
@@ -469,7 +469,7 @@ export const useDragDrop: DragDropHook = ({
         return false;
       }
     },
-    [attachDragHandlers, beginDrag, containerRef, setDragBoundaries]
+    [attachDragHandlers, beginDrag, containerRef, setDragBoundaries],
   );
 
   const dragStart = useCallback(
@@ -483,7 +483,7 @@ export const useDragDrop: DragDropHook = ({
       if (container && scrollableContainer && dragElement) {
         isScrollableRef.current = isContainerScrollable(
           scrollableContainer,
-          orientation
+          orientation,
         );
         scrollableContainerRef.current = scrollableContainer;
 
@@ -492,7 +492,7 @@ export const useDragDrop: DragDropHook = ({
 
         const dragDropState = (dragDropStateRef.current = new DragDropState(
           mousePosition,
-          dragElement
+          dragElement,
         ));
 
         setDragBoundaries(containerRect, draggableRect);
@@ -535,7 +535,7 @@ export const useDragDrop: DragDropHook = ({
       scrollingContainerRef,
       setDragBoundaries,
       terminateDrag,
-    ]
+    ],
   );
 
   const preDragMouseMoveHandler = useCallback(
@@ -560,7 +560,7 @@ export const useDragDrop: DragDropHook = ({
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [containerRef, beginDrag, orientation]
+    [containerRef, beginDrag, orientation],
   );
 
   const preDragMouseUpHandler = useCallback(() => {
@@ -602,14 +602,14 @@ export const useDragDrop: DragDropHook = ({
           document.removeEventListener(
             "mousemove",
             preDragMouseMoveHandler,
-            false
+            false,
           );
           document.removeEventListener("mouseup", preDragMouseUpHandler, false);
           dragStart(mousePosition);
         }, 500);
       }
     },
-    [containerRef, dragStart, preDragMouseMoveHandler, preDragMouseUpHandler]
+    [containerRef, dragStart, preDragMouseMoveHandler, preDragMouseUpHandler],
   );
 
   const { current: settlingItem } = settlingItemRef;
@@ -617,7 +617,7 @@ export const useDragDrop: DragDropHook = ({
     if (settlingItem && containerRef.current) {
       const dropPos = dropPosRef.current;
       const droppedItem = containerRef.current.querySelector(
-        `${itemQuery}[data-index="${dropPos}"]`
+        `${itemQuery}[data-index="${dropPos}"]`,
       );
 
       if (droppedItem) {

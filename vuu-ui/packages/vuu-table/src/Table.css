@@ -196,6 +196,7 @@
 
   .vuuDraggable-spacer {
     border-bottom: solid 1px #ccc;
+    display: var(--vuuDraggable-display, inline-block);
     height: var(--vuu-table-col-header-height);
   }
 }
