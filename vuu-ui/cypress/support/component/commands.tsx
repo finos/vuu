@@ -1,5 +1,5 @@
 import "@testing-library/cypress/add-commands";
-import { mount as cypressMount } from "cypress/react18";
+import { mount as cypressMount } from "cypress/react";
 import type { MountOptions, MountReturn } from "cypress/react";
 import "cypress-axe";
 import { Options } from "cypress-axe";
@@ -42,12 +42,12 @@ declare global {
        */
       checkAxeComponent(
         options?: Options,
-        enableFailures?: boolean
+        enableFailures?: boolean,
       ): Chainable<void>;
 
       mountPerformance: (
         jsx: ReactNode,
-        options?: MountOptions
+        options?: MountOptions,
       ) => Chainable<MountReturn>;
       mount: (jsx: ReactNode, options?: MountOptions) => Chainable<MountReturn>;
 
@@ -92,9 +92,9 @@ Cypress.Commands.add(
           }
         }
       },
-      !enableFailures
+      !enableFailures,
     );
-  }
+  },
 );
 
 Cypress.Commands.add("mount", function (children, options) {
@@ -102,7 +102,7 @@ Cypress.Commands.add("mount", function (children, options) {
     <SaltProvider density="high" theme="vuu-theme">
       {children},
     </SaltProvider>,
-    options
+    options,
   );
 });
 
@@ -132,7 +132,7 @@ Cypress.Commands.add("paste", { prevSubject: "element" }, (input, value) => {
   // taken from https://stackoverflow.com/a/69552958/11217233
   const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
     window.HTMLInputElement.prototype,
-    "value"
+    "value",
   )?.set;
 
   if (nativeInputValueSetter) {
@@ -142,7 +142,7 @@ Cypress.Commands.add("paste", { prevSubject: "element" }, (input, value) => {
         new Event("input", {
           bubbles: true,
           composed: true,
-        })
+        }),
       );
     });
   }
