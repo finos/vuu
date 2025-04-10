@@ -52,13 +52,13 @@ const viteConfig = {
     "process.env.NODE_DEBUG": false,
     "process.env.LOCAL": true,
   },
-  resolve: {
-    alias: {
-      "cypress/react18": reactVersion.startsWith("18")
-        ? "cypress/react18"
-        : "cypress/react",
-    },
-  },
+  // resolve: {
+  //   alias: {
+  //     "cypress/react18": reactVersion.startsWith("18")
+  //       ? "cypress/react18"
+  //       : "cypress/react",
+  //   },
+  // },
 };
 
 export default defineConfig({
