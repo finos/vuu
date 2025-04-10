@@ -6,7 +6,7 @@ import type {
 import { createContext, ReactNode, useCallback, useMemo } from "react";
 
 export const ContextMenuContext = createContext<ContextMenuContextType | null>(
-  null
+  null,
 );
 
 export interface ContextMenuConfiguration {
@@ -39,7 +39,7 @@ const Provider = ({
     }
   }, [context, menuBuilder]);
 
-  const handleMenuAction = useCallback(
+  const handleMenuAction = useCallback<MenuActionHandler>(
     (reason) => {
       if (menuActionHandler?.(reason)) {
         return true;
@@ -49,7 +49,7 @@ const Provider = ({
         return true;
       }
     },
-    [context, menuActionHandler]
+    [context, menuActionHandler],
   );
 
   return (

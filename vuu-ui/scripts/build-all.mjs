@@ -34,7 +34,6 @@ export const buildAll = async () => {
     "vuu-datatable",
     "vuu-table",
     "vuu-data-react",
-    "vuu-data-ag-grid",
     "vuu-table-extras",
     "vuu-layout",
     "vuu-shell",

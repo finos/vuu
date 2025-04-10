@@ -18,7 +18,6 @@ export interface FilterClauseNumericValueEditorProps
   "data-field"?: string;
   operatorInputRef?: RefObject<HTMLInputElement>;
   operator: string;
-  ref: RefObject<HTMLDivElement>;
   value?: number;
 }
 
@@ -31,10 +30,10 @@ export const FilterClauseValueEditorNumber = forwardRef(
       onChangeValue,
       value: valueProp,
     }: FilterClauseNumericValueEditorProps,
-    forwardedRef: ForwardedRef<HTMLDivElement>
+    forwardedRef: ForwardedRef<HTMLDivElement>,
   ) {
     const [value, setValue] = useState<string>(
-      isValidNumber(valueProp) ? valueProp.toString() : ""
+      isValidNumber(valueProp) ? valueProp.toString() : "",
     );
 
     // useEffect(() => {
@@ -61,7 +60,7 @@ export const FilterClauseValueEditorNumber = forwardRef(
           }
         }
       },
-      [onChangeValue]
+      [onChangeValue],
     );
 
     return (
@@ -75,5 +74,5 @@ export const FilterClauseValueEditorNumber = forwardRef(
         value={value}
       />
     );
-  }
+  },
 );

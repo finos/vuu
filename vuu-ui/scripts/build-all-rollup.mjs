@@ -7,7 +7,7 @@ export const buildAll = async () => {
     execWait(`npm run --silent build`, `packages/${packageName}`).catch(
       (err) => {
         console.error(`[${packageName}] ${err.message}`);
-      }
+      },
     );
 
   // TODO determine the dependency graph/build order programatically
@@ -30,7 +30,6 @@ export const buildAll = async () => {
     "vuu-datatable",
     "vuu-table",
     "vuu-data-react",
-    "vuu-data-ag-grid",
     "vuu-table-extras",
     "vuu-layout",
     "vuu-shell",
@@ -40,7 +39,7 @@ export const buildAll = async () => {
     console.log(
       JSON.stringify({
         "package-list": wave1.concat(wave2).concat(wave3).concat(wave4),
-      })
+      }),
     );
   }
 

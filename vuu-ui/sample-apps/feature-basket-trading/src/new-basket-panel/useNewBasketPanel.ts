@@ -69,10 +69,8 @@ export const useNewBasketPanel = ({
     }
   }, []);
 
-  const handleChangeBasketName = useCallback<
-    CommitHandler<HTMLInputElement, string | undefined>
-  >((_, value) => {
-    if (value !== undefined) {
+  const handleChangeBasketName = useCallback<CommitHandler>((_, value) => {
+    if (typeof value === "string") {
       setBasketName(value);
     }
     return Promise.resolve(true);

@@ -6,7 +6,6 @@ const packages = [
   "vuu-codemirror",
   "vuu-data-local",
   "vuu-data-remote",
-  "vuu-data-ag-grid",
   "vuu-data-react",
   "vuu-data-test",
   "vuu-data-types",
@@ -30,11 +29,11 @@ const packages = [
 async function publishPackage(packageName, suffix) {
   await execWait(
     "npm publish --registry https://registry.npmjs.org --access public",
-    `dist/${packageName}${suffix}`
+    `dist/${packageName}${suffix}`,
   );
 }
 
 const packageNameSuffix = debug ? "-debug" : "";
 await Promise.all(
-  packages.map((packageName) => publishPackage(packageName, packageNameSuffix))
+  packages.map((packageName) => publishPackage(packageName, packageNameSuffix)),
 );

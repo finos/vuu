@@ -20,7 +20,7 @@ export interface DataItemEditControlProps {
    */
   dataDescriptor: DataValueDescriptor;
   errorMessage?: string;
-  onCommit: CommitHandler<HTMLElement, string | undefined>;
+  onCommit: CommitHandler<HTMLElement>;
   table?: TableSchemaTable;
 }
 

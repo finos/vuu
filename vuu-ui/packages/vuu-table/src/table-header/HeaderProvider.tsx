@@ -1,9 +1,9 @@
 import { BaseRowProps } from "@finos/vuu-table-types";
-import { createContext, FC, useContext } from "react";
+import { createContext, FC, ReactNode, useContext } from "react";
 
 const HeaderContext = createContext<BaseRowProps>({ columns: [] });
 
-export const HeaderProvider: FC<BaseRowProps> = ({
+export const HeaderProvider: FC<BaseRowProps & { children: ReactNode }> = ({
   children,
   columns,
   virtualColSpan,

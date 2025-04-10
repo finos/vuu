@@ -101,6 +101,7 @@ export const useVuuTypeaheadInput = ({
                 // This is a workaround for the fact that ComboBox does not automatically
                 // highlight first list item when items have been populated dynamically.
                 // This has been raised as a bug.
+                //TODO this is failing to work correctly in new version of cypress
                 dispatchKeyboardEvent(inputRef.current, "keydown", "ArrowUp");
               }
             }

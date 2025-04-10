@@ -167,9 +167,12 @@ export const ManyColumnList = () => {
 
   const [columns, setColumns] = useState<ColumnItem[]>(initialColumns);
 
-  const handleMoveListItem = useCallback((fromIndex, toIndex) => {
-    setColumns((cols) => moveItem(cols, fromIndex, toIndex));
-  }, []);
+  const handleMoveListItem = useCallback(
+    (fromIndex: number, toIndex: number) => {
+      setColumns((cols) => moveItem(cols, fromIndex, toIndex));
+    },
+    [],
+  );
 
   const handleChange = () => {
     console.log("handleChange");

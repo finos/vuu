@@ -4,6 +4,7 @@ import {
   DragEndCallback,
   Draggable,
   DragInstructions,
+  DragMoveCallback,
 } from "../drag-drop";
 import { DragStartAction } from "../layout-reducer";
 import { getIntrinsicSize } from "../layout-reducer/flexUtils";
@@ -29,14 +30,14 @@ interface DragOperation {
 const getDragElement = (
   rect: DragDropRect,
   id: string,
-  dragElement?: HTMLElement
+  dragElement?: HTMLElement,
 ): [HTMLElement, string, number, number] => {
   const wrapper = document.createElement("div");
   wrapper.className = "vuuSimpleDraggableWrapper";
   wrapper.classList.add(
     "vuuSimpleDraggableWrapper",
     "salt-theme",
-    "salt-density-medium"
+    "salt-density-medium",
   );
   wrapper.dataset.dragging = "true";
 
@@ -50,7 +51,7 @@ const getDragElement = (
 };
 
 const determineDragOffsets = (
-  draggedElement: HTMLElement
+  draggedElement: HTMLElement,
 ): [number, number] => {
   const { offsetParent } = draggedElement;
   if (offsetParent === null) {
@@ -65,13 +66,13 @@ const determineDragOffsets = (
 export const useLayoutDragDrop = (
   rootLayoutRef: MutableRefObject<ReactElement>,
   dispatch: LayoutProviderDispatch,
-  pathToDropTarget?: string
+  pathToDropTarget?: string,
 ) => {
   const dragActionRef = useRef<CurrentDragAction>();
   const dragOperationRef = useRef<DragOperation>();
   const draggableHTMLElementRef = useRef<HTMLElement>();
 
-  const handleDrag = useCallback((x, y) => {
+  const handleDrag = useCallback<DragMoveCallback>((x, y) => {
     if (dragOperationRef.current && draggableHTMLElementRef.current) {
       const {
         dragOffsets: [offsetX, offsetY],
@@ -123,7 +124,7 @@ export const useLayoutDragDrop = (
         draggableHTMLElementRef.current = undefined;
       }
     },
-    [dispatch]
+    [dispatch],
   );
 
   const handleDragStart = useCallback(
@@ -156,7 +157,7 @@ export const useLayoutDragDrop = (
           [element, dragCSS, dragStartLeft, dragStartTop] = getDragElement(
             dragRect,
             dragPayloadId,
-            dragElement
+            dragElement,
           );
         } else {
           dragOffsets = determineDragOffsets(element);
@@ -178,7 +179,7 @@ export const useLayoutDragDrop = (
             drag: handleDrag,
             drop: handleDrop,
           },
-          intrinsicSize
+          intrinsicSize,
           // dropTargets
         );
 
@@ -195,7 +196,7 @@ export const useLayoutDragDrop = (
         };
       }
     },
-    [handleDrag, handleDrop, rootLayoutRef]
+    [handleDrag, handleDrop, rootLayoutRef],
   );
 
   const prepareToDrag = useCallback(
@@ -207,7 +208,7 @@ export const useLayoutDragDrop = (
       };
       Draggable.handleMousedown(evt, handleDragStart, options.instructions);
     },
-    [handleDragStart, pathToDropTarget, rootLayoutRef]
+    [handleDragStart, pathToDropTarget, rootLayoutRef],
   );
 
   return prepareToDrag;

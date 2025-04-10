@@ -10,6 +10,7 @@ import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import {
   KeyboardEventHandler,
+  ReactNode,
   useCallback,
   useLayoutEffect,
   useMemo,
@@ -28,6 +29,7 @@ export interface ContextPanelProps {
   id?: string;
   onClose?: () => void;
   overlay?: boolean;
+  title?: ReactNode;
 }
 
 export const ContextPanel = ({

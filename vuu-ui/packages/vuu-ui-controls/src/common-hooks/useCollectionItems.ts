@@ -65,7 +65,7 @@ export const useCollectionItems = <Item>({
       path = "",
       results: CollectionItem<Item>[] = [],
       flattenedCollection: CollectionItem<Item>[] = [],
-      flattenedSource: (Item | null)[] = []
+      flattenedSource: (Item | null)[] = [],
     ): [CollectionItem<Item>[], (Item | null)[], CollectionItem<Item>[]] => {
       items.forEach((item, i, all) => {
         const isCollapsibleHeader = item.header && options.collapsibleHeaders;
@@ -83,7 +83,7 @@ export const useCollectionItems = <Item>({
 
         const expanded = nonCollapsible
           ? undefined
-          : item.expanded ?? isExpanded();
+          : (item.expanded ?? isExpanded());
         //TODO dev time check - if id is provided by user, make sure
         // hierarchical pattern is consistent
         const normalisedItem: CollectionItem<Item> = {
@@ -116,14 +116,14 @@ export const useCollectionItems = <Item>({
             childPath,
             [],
             flattenedCollection,
-            flattenedSource
+            flattenedSource,
           );
           normalisedItem.childNodes = children;
         }
       });
       return [results, flattenedSource, flattenedCollection];
     },
-    [options.collapsibleHeaders, getItemId, idRoot, isExpanded]
+    [options.collapsibleHeaders, getItemId, idRoot, isExpanded],
   );
 
   const getFilter = useCallback(() => {
@@ -139,7 +139,7 @@ export const useCollectionItems = <Item>({
       items: CollectionItem<Item>[],
       filter: null | FilterPredicate = getFilter(),
       results: CollectionItem<Item>[] = [],
-      idx: { value: number } = { value: 0 }
+      idx: { value: number } = { value: 0 },
     ): CollectionItem<Item>[] => {
       let skipToNextHeader = false;
       for (const item of items) {
@@ -163,7 +163,7 @@ export const useCollectionItems = <Item>({
       }
       return results;
     },
-    [getFilter, itemToString]
+    [getFilter, itemToString],
   );
 
   // Stage 1 - convert source or children to CollectionItems.
@@ -195,7 +195,7 @@ export const useCollectionItems = <Item>({
       addMetadataToItems,
       inheritedCollectionHook,
       partialCollectionItems,
-    ]
+    ],
   );
   flattenedDataRef.current = flattenedCollection;
 
@@ -210,7 +210,7 @@ export const useCollectionItems = <Item>({
       collectVisibleItems,
       collectionItems,
       inheritedCollectionHook,
-    ]
+    ],
   );
 
   const collectionItemsRef = useRef(collectionItems);
@@ -223,16 +223,16 @@ export const useCollectionItems = <Item>({
         forceUpdate({});
       }
     },
-    [collectionItems, collectVisibleItems]
+    [collectionItems, collectVisibleItems],
   );
 
   const itemById = useCallback(
     (
       id: string,
-      target: CollectionItem<Item>[] = collectionItems
+      target: CollectionItem<Item>[] = collectionItems,
     ): Item | never => {
       const sourceWithId = target.find(
-        (i) => i.id === id || (i?.childNodes?.length && isParentPath(i.id, id))
+        (i) => i.id === id || (i?.childNodes?.length && isParentPath(i.id, id)),
       );
       if (sourceWithId?.id === id) {
         //TODO do we need the flattered source at all ?
@@ -242,16 +242,16 @@ export const useCollectionItems = <Item>({
       }
       throw Error(`useCollectionData itemById, id ${id} not found `);
     },
-    [flattenedSource, collectionItems]
+    [flattenedSource, collectionItems],
   );
 
   const indexOfItemById = useCallback(
     (
       id: string,
-      target: CollectionItem<Item>[] = collectionItems
+      target: CollectionItem<Item>[] = collectionItems,
     ): number | never => {
       const sourceWithId = target.find(
-        (i) => i.id === id || (i?.childNodes?.length && isParentPath(i.id, id))
+        (i) => i.id === id || (i?.childNodes?.length && isParentPath(i.id, id)),
       );
       const idx = sourceWithId ? dataRef.current.indexOf(sourceWithId) : -1;
       if (idx !== -1) {
@@ -259,21 +259,21 @@ export const useCollectionItems = <Item>({
       }
       throw Error(`useCollectionData indexOfItemById, id ${id} not found `);
     },
-    [collectionItems]
+    [collectionItems],
   );
 
   const toCollectionItem = useCallback(
     (item: Item): CollectionItem<Item> | never => {
       // TODO what about Tree structures, we need to search flattened source
       const collectionItem = flattenedDataRef.current.find((i) =>
-        isValidElement(i.value) ? i.label === item : i.value === item
+        isValidElement(i.value) ? i.label === item : i.value === item,
       );
       if (collectionItem) {
         return collectionItem;
       }
       throw Error(`useCollectionData toCollectionItem, item not found `);
     },
-    []
+    [],
   );
 
   // TODO types need more work, these are correct but we
@@ -295,11 +295,11 @@ export const useCollectionItems = <Item>({
 
       return undefined;
     },
-    [toCollectionItem]
+    [toCollectionItem],
   );
 
   const itemToCollectionItemId = useCallback(
-    (sel) => {
+    (sel: Item) => {
       if (sel === undefined) {
         return undefined;
       }
@@ -313,13 +313,13 @@ export const useCollectionItems = <Item>({
         return [];
       }
     },
-    [itemToCollectionItem]
+    [itemToCollectionItem],
   );
 
   const stringToCollectionItem = useCallback(
     (value: string | null | undefined) => {
       const toCollectionItem = (
-        item: string
+        item: string,
       ): undefined | CollectionItem<Item> | never => {
         // TODO what about Tree structures, we need to search flattened source
         const collectionItem = flattenedDataRef.current.find((i) =>
@@ -328,7 +328,7 @@ export const useCollectionItems = <Item>({
           //@ts-ignore
           isValidElement(i.value)
             ? i.label === item
-            : i.value !== null && itemToString(i.value) === item
+            : i.value !== null && itemToString(i.value) === item,
         );
         if (collectionItem) {
           return collectionItem;
@@ -352,7 +352,7 @@ export const useCollectionItems = <Item>({
 
       return undefined;
     },
-    [itemToString]
+    [itemToString],
   );
 
   const itemToId = useCallback((item: Item): string => {
@@ -371,12 +371,12 @@ export const useCollectionItems = <Item>({
         item.id,
         {
           expanded: false,
-        }
+        },
       );
       dataRef.current = collectVisibleItems(collectionItemsRef.current);
       forceUpdate({});
     },
-    [collectVisibleItems]
+    [collectVisibleItems],
   );
 
   const expandGroupItem = useCallback(
@@ -386,12 +386,12 @@ export const useCollectionItems = <Item>({
         item.id,
         {
           expanded: true,
-        }
+        },
       );
       dataRef.current = collectVisibleItems(collectionItemsRef.current);
       forceUpdate({});
     },
-    [collectVisibleItems]
+    [collectVisibleItems],
   );
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment

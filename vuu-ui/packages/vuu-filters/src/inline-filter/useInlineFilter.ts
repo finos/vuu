@@ -15,9 +15,7 @@ export const useInlineFilter = ({
   const filterAggregator = useMemo(() => new FilterAggregator(), []);
   const { columns = [], virtualColSpan = 0 } = useHeaderProps();
 
-  const handleCommit = useCallback<
-    CommitHandler<HTMLElement, string | number | undefined>
-  >(
+  const handleCommit = useCallback<CommitHandler<HTMLElement>>(
     (evt, value = "") => {
       const fieldName = getFieldName(evt.target);
       const column = columns.find((c) => c.name === fieldName);
@@ -27,8 +25,14 @@ export const useInlineFilter = ({
             onChange(filterAggregator.filter);
           }
         } else {
-          filterAggregator.addFilter(column, value);
-          onChange(filterAggregator.filter);
+          if (typeof value === "string" || typeof value === "number") {
+            filterAggregator.addFilter(column, value);
+            onChange(filterAggregator.filter);
+          } else {
+            throw Error(
+              `[useInlineFilter] handleCommit value ${typeof value} supports string, number only`,
+            );
+          }
         }
       }
     },

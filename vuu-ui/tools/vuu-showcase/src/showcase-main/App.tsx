@@ -9,7 +9,13 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@salt-ds/core";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  SyntheticEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { keysFromPath, loadTheme, pathFromKey } from "../shared-utils";
 import { IFrame } from "./iframe";
@@ -80,12 +86,12 @@ export const App = ({ treeSource }: AppProps) => {
     );
   }, [density.id, theme.id, themeMode.id]);
 
-  const handleThemeChange = useCallback((evt) => {
+  const handleThemeChange = useCallback((evt: SyntheticEvent) => {
     const { value } = evt.target as HTMLInputElement;
     setThemeIndex(parseInt(value));
   }, []);
 
-  const handleDensityChange = useCallback((evt) => {
+  const handleDensityChange = useCallback((evt: SyntheticEvent) => {
     const { value } = evt.target as HTMLInputElement;
     setDensityIndex(parseInt(value));
   }, []);

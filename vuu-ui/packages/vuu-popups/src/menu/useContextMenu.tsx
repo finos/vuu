@@ -1,19 +1,19 @@
 import {
   ContextMenuItemDescriptor,
   MenuActionHandler,
-  MenuBuilder
+  MenuBuilder,
 } from "@finos/vuu-data-types";
 import { ColumnDescriptor } from "@finos/vuu-table-types";
 import {
   isGroupMenuItemDescriptor,
-  useThemeAttributes
+  useThemeAttributes,
 } from "@finos/vuu-utils";
 import { cloneElement, useCallback, useContext, useMemo } from "react";
 import {
   MenuActionClosePopup,
   PopupCloseReason,
   PopupService,
-  reasonIsMenuAction
+  reasonIsMenuAction,
 } from "../popup";
 import { ContextMenu, ContextMenuProps } from "./ContextMenu";
 import { MenuItem, MenuItemGroup } from "./MenuList";
@@ -39,13 +39,13 @@ export type EventLike = {
 export type ShowContextMenu = (
   e: EventLike,
   location: string,
-  options: ContextMenuOptions
+  options: ContextMenuOptions,
 ) => void;
 
 // The argument allows a top-level menuBuilder to operate outside the Context
 export const useContextMenu = (
   menuBuilder?: MenuBuilder,
-  menuActionHandler?: MenuActionHandler
+  menuActionHandler?: MenuActionHandler,
 ): [ShowContextMenu, () => void] => {
   const ctx = useContext(ContextMenuContext);
 
@@ -54,13 +54,13 @@ export const useContextMenu = (
     () => ({
       themeClass,
       densityClass,
-      dataMode
+      dataMode,
     }),
-    [dataMode, densityClass, themeClass]
+    [dataMode, densityClass, themeClass],
   );
 
   const buildMenuOptions = useCallback(
-    (menuBuilders: MenuBuilder[], location, options) => {
+    (menuBuilders: MenuBuilder[], location: string, options: unknown) => {
       let results: ContextMenuItemDescriptor[] = [];
       for (const menuBuilder of menuBuilders) {
         // Maybe we should leave the concatenation to the menuBuilder, then it can control menuItem order
@@ -68,7 +68,7 @@ export const useContextMenu = (
       }
       return results;
     },
-    []
+    [],
   );
 
   const handleShowContextMenu = useCallback<ShowContextMenu>(
@@ -80,9 +80,9 @@ export const useContextMenu = (
         return showContextMenuComponent(
           {
             x: e.clientX,
-            y: e.clientY
+            y: e.clientY,
           },
-          contextMenu
+          contextMenu,
         );
       }
 
@@ -102,12 +102,12 @@ export const useContextMenu = (
         const menuItemDescriptors = buildMenuOptions(
           menuBuilders,
           location,
-          options
+          options,
         );
 
         // const menuHandler = menuActionHandler ?? ctx?.menuActionHandler;
         const menuHandler: MenuActionHandler = (
-          action: MenuActionClosePopup
+          action: MenuActionClosePopup,
         ) => {
           if (menuActionHandler?.(action) === true) {
             return true;
@@ -121,18 +121,18 @@ export const useContextMenu = (
           // have access to the ContextMenuContext. Pass the theme attributes here
           showContextMenu(e, menuItemDescriptors, menuHandler, {
             PortalProps: {
-              themeAttributes
+              themeAttributes,
             },
-            ...ContextMenuProps
+            ...ContextMenuProps,
           });
         }
       } else {
         console.warn(
-          "useContextMenu, no menuBuilders configured. These should be supplied via the ContextMenuProvider(s)"
+          "useContextMenu, no menuBuilders configured. These should be supplied via the ContextMenuProvider(s)",
         );
       }
     },
-    [buildMenuOptions, ctx, menuActionHandler, menuBuilder, themeAttributes]
+    [buildMenuOptions, ctx, menuActionHandler, menuBuilder, themeAttributes],
   );
 
   const hideContextMenu = useCallback(() => {
@@ -146,13 +146,13 @@ const NO_OPTIONS = {};
 
 const showContextMenuComponent = (
   position: { x: number; y: number },
-  contextMenu: JSX.Element
+  contextMenu: JSX.Element,
 ) => {
   PopupService.showPopup({
     focus: true,
     left: 0,
     top: 0,
-    component: cloneElement(contextMenu, { position })
+    component: cloneElement(contextMenu, { position }),
   });
 };
 
@@ -163,7 +163,7 @@ const showContextMenu = (
   {
     position: positionProp,
     ...contextMenuProps
-  }: ContextMenuOptions["ContextMenuProps"] = NO_OPTIONS
+  }: ContextMenuOptions["ContextMenuProps"] = NO_OPTIONS,
 ) => {
   const menuItems = (menuDescriptors: ContextMenuItemDescriptor[]) => {
     const fromDescriptor = (menuItem: ContextMenuItemDescriptor, i: number) =>
@@ -201,7 +201,7 @@ const showContextMenu = (
 
   const position = positionProp ?? {
     x: e.clientX,
-    y: e.clientY
+    y: e.clientY,
   };
 
   const component = (

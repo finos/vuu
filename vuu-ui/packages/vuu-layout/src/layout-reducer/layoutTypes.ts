@@ -144,7 +144,7 @@ export type LayoutReducerAction =
   | SwitchTabAction;
 
 export type MousedownViewAction = {
-  preDragActivity?: any;
+  preDragActivity?: unknown;
   index?: number;
   type: "mousedown";
 };

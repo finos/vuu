@@ -3,6 +3,11 @@ import type { ViewAction } from "../layout-view";
 
 export type QueryReponse = { [key: string]: unknown };
 
+export type ConfigChangeHandler = (config: {
+  [key: string]: unknown;
+  type: string;
+}) => void;
+
 export type ViewDispatch = <Action extends ViewAction = ViewAction>(
   action: Action,
   evt?: SyntheticEvent,
@@ -22,7 +27,7 @@ export interface ViewContextAPI {
   id?: string;
   load?: <T = unknown>(key?: string) => T;
   loadSession?: (key?: string) => unknown;
-  onConfigChange?: (config: unknown) => void;
+  onConfigChange?: ConfigChangeHandler;
   path?: string;
   purge?: (key: string) => void;
   save?: (state: unknown, key: string) => void;

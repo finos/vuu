@@ -32,6 +32,7 @@ import {
   FocusEvent,
   FocusEventHandler,
   HTMLAttributes,
+  KeyboardEventHandler,
   useCallback,
   useEffect,
   useMemo,
@@ -256,7 +257,7 @@ export const SessionEditingForm = ({
     }
   }, [applyAction, dataSource]);
 
-  const handleKeyDown = useCallback(
+  const handleKeyDown = useCallback<KeyboardEventHandler>(
     (evt) => {
       if (evt.key === "Enter" && dataStatusRef.current === Status.changed) {
         handleSubmit();

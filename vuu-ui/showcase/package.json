@@ -16,7 +16,6 @@
   "license": "Apache-2.0",
   "type": "module",
   "dependencies": {
-    "@finos/vuu-data-ag-grid": "0.0.26",
     "@finos/vuu-data-test": "0.0.26",
     "@finos/vuu-filters": "0.0.26",
     "@finos/vuu-layout": "0.0.26",
@@ -28,8 +27,8 @@
     "@salt-ds/core": "1.37.1",
     "@salt-ds/theme": "1.23.1",
     "clsx": "^2.0.0",
-    "react": ">=17.0.2",
-    "react-dom": ">=17.0.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-router-dom": "^6.2.1"
   },
   "devDependencies": {

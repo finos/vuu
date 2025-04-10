@@ -73,7 +73,7 @@ export interface InternalDragHookResult
   handleScrollStop?: (
     scrollDirection: "fwd" | "bwd",
     _scrollPos: number,
-    atEnd: boolean
+    atEnd: boolean,
   ) => void;
   /**
    * Draggable item has been dragged out of container. Remove any local drop

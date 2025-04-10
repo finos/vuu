@@ -8,7 +8,7 @@ import {
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { HTMLAttributes, useCallback, useMemo } from "react";
+import { HTMLAttributes, ReactElement, useCallback, useMemo } from "react";
 import { LayoutTile } from "./LayoutTile";
 import { useWorkspace } from "./WorkspaceProvider";
 import { useLayouts } from "../feature-and-layout-provider";
@@ -72,7 +72,7 @@ export const LayoutList = ({
     };
   }, {});
 
-  let sysContent: object | null | undefined = [];
+  let sysContent: ReactElement[] = [];
   if (systemLayouts) {
     sysContent = [
       <div className={`${classBase}-group`} key={0}>

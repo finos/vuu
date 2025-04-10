@@ -15,7 +15,7 @@ import { MenuItemProps, MenuOpenHandler } from "./MenuList";
 const nudge = (
   menus: RuntimeMenuDescriptor[],
   distance: number,
-  pos: "left" | "top"
+  pos: "left" | "top",
 ) => {
   return menus.map((m, i) =>
     i === menus.length - 1
@@ -23,7 +23,7 @@ const nudge = (
           ...m,
           [pos]: m[pos] - distance,
         }
-      : m
+      : m,
   );
 };
 const nudgeLeft = (menus: RuntimeMenuDescriptor[], distance: number) =>
@@ -44,7 +44,7 @@ const flipSides = (id: string, menus: RuntimeMenuDescriptor[]) => {
           ...m,
           left: parentMenu.left - (width - 2),
         }
-      : m
+      : m,
   );
 };
 
@@ -79,7 +79,7 @@ const getTargetMenuId = (id: string) => id.slice(9);
 
 const getMenuItemDetails = (
   { ariaExpanded, ariaHasPopup, id }: HTMLElement,
-  rootId: string
+  rootId: string,
 ) => {
   if (id.startsWith("menuitem")) {
     return {
@@ -126,7 +126,7 @@ export const useCascade = ({
   const menuIsOpen = useCallback(
     (menuId: string) =>
       openMenus.current.findIndex((menu) => menu.id === menuId) !== -1,
-    []
+    [],
   );
 
   const getOpenMenuStatus = useCallback((menuId: string) => {
@@ -150,23 +150,29 @@ export const useCascade = ({
   // const prevAim = useRef({mousePos: null, distance: true});
 
   const openMenu = useCallback(
-    (hostMenuId = rootId, targetMenuId: string, itemId = null) => {
+    (
+      hostMenuId = rootId,
+      targetMenuId: string,
+      itemId: string | null = null,
+    ) => {
       if (hostMenuId === rootId && itemId === null) {
         setOpenMenus([{ id: rootId, left: posX, top: posY }]);
       } else {
         menuState.current[hostMenuId] = "popup-open";
-        const el = document.getElementById(itemId) as HTMLElement;
-        if (el !== null) {
-          const { left, top } = getPosition(el, openMenus.current);
-          setOpenMenus(
-            openMenus.current.concat({ id: targetMenuId, left, top })
-          );
-        } else {
-          throw Error(`openMenu no menuItem ${itemId}`);
+        if (itemId) {
+          const el = document.getElementById(itemId) as HTMLElement;
+          if (el !== null) {
+            const { left, top } = getPosition(el, openMenus.current);
+            setOpenMenus(
+              openMenus.current.concat({ id: targetMenuId, left, top }),
+            );
+          } else {
+            throw Error(`openMenu no menuItem ${itemId}`);
+          }
         }
       }
     },
-    [rootId, posX, posY, setOpenMenus]
+    [rootId, posX, posY, setOpenMenus],
   );
 
   const closeMenu = useCallback(
@@ -184,11 +190,11 @@ export const useCascade = ({
         setOpenMenus(menus);
       }
     },
-    [rootId, setOpenMenus]
+    [rootId, setOpenMenus],
   );
 
   const closeMenus = useCallback(
-    (menuItemId) => {
+    (menuItemId: string) => {
       const menus = openMenus.current.slice();
       const menuItemMenuId = menuItemId.slice(9);
       let { id: lastMenuId } = menus.at(-1) as RuntimeMenuDescriptor;
@@ -203,7 +209,7 @@ export const useCascade = ({
         setOpenMenus(menus);
       }
     },
-    [rootId, setOpenMenus]
+    [rootId, setOpenMenus],
   );
 
   const clearAnyScheduledOpenTasks = useCallback(() => {
@@ -218,7 +224,7 @@ export const useCascade = ({
       hostMenuId: string,
       targetMenuId: string,
       menuItemId: string,
-      delay = 300
+      delay = 300,
     ) => {
       clearAnyScheduledOpenTasks();
       // do we need to set target state to pending-open ?s
@@ -233,7 +239,7 @@ export const useCascade = ({
         openMenu(hostMenuId, targetMenuId, menuItemId);
       }, delay);
     },
-    [clearAnyScheduledOpenTasks, closeMenus, openMenu]
+    [clearAnyScheduledOpenTasks, closeMenus, openMenu],
   );
 
   const scheduleClose = useCallback(
@@ -247,7 +253,7 @@ export const useCascade = ({
         closeMenus(itemId);
       }, 400);
     },
-    [closeMenus]
+    [closeMenus],
   );
 
   const handleRender = useCallback(() => {
@@ -377,7 +383,7 @@ export const useCascade = ({
       rootId,
       scheduleClose,
       scheduleOpen,
-    ]
+    ],
   );
 
   const listItemProps: Partial<MenuItemProps> = useMemo(
@@ -398,7 +404,7 @@ export const useCascade = ({
         }
       },
     }),
-    [onActivate, onMouseEnterItem, rootId, triggerChildMenu]
+    [onActivate, onMouseEnterItem, rootId, triggerChildMenu],
   );
 
   return {

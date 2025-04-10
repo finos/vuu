@@ -64,7 +64,11 @@ export const useViewActionDispatcher = (
   }, [unsubscribeAndClearState, dispatchLayoutAction, viewPath]);
 
   const handleMouseDown = useCallback(
-    async (evt, index, preDragActivity): Promise<boolean> => {
+    async (
+      evt: MouseEvent,
+      index: number,
+      preDragActivity: unknown,
+    ): Promise<boolean> => {
       evt.stopPropagation();
       const dragRect = rootRef.current?.getBoundingClientRect();
       return new Promise((resolve, reject) => {
@@ -111,7 +115,7 @@ export const useViewActionDispatcher = (
   const dispatchAction = useCallback(
     async <A extends ViewAction = ViewAction>(
       action: A,
-      evt?: SyntheticEvent,
+      evt?: MouseEvent | SyntheticEvent,
     ): Promise<boolean | QueryReponse | void> => {
       const { type } = action;
       switch (type) {
@@ -121,7 +125,12 @@ export const useViewActionDispatcher = (
         case "remove":
           return handleRemove();
         case "mousedown":
-          return handleMouseDown(evt, action.index, action.preDragActivity);
+          // TODO fix types
+          return handleMouseDown(
+            evt as MouseEvent,
+            action.index as number,
+            action.preDragActivity,
+          );
         case "add-toolbar-contribution":
           return updateContributions(action.location, action.content);
         case "remove-toolbar-contribution":

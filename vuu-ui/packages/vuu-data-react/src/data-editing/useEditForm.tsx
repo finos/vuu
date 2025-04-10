@@ -2,6 +2,7 @@ import type { DataSource, DataValueDescriptor } from "@finos/vuu-data-types";
 import { useDialogContext } from "@finos/vuu-popups";
 import type { VuuRowDataItemType } from "@finos/vuu-protocol-types";
 import {
+  CommitHandler,
   Entity,
   buildColumnMap,
   dataSourceRowToEntity,
@@ -240,8 +241,8 @@ export const useEditForm = ({
     forceUpdate({});
   }, []);
 
-  const handleFieldCommit = useCallback(
-    (evt, value) => {
+  const handleFieldCommit = useCallback<CommitHandler<HTMLElement>>(
+    (_, value) => {
       const { current: fieldName } = focusedFieldRef;
       const dataDescriptor = find(formFieldDescriptors, fieldName);
 

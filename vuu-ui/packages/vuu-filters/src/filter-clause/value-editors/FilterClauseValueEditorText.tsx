@@ -9,7 +9,7 @@ import {
   forwardRef,
   HTMLAttributes,
   KeyboardEventHandler,
-  RefObject,
+  SyntheticEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -22,7 +22,7 @@ export interface FilterClauseTextValueEditorProps
   extends FilterClauseValueEditor,
     HTMLAttributes<HTMLDivElement> {
   "data-field"?: string;
-  ref: RefObject<HTMLDivElement>;
+  // ref: RefObject<HTMLDivElement>;
   operator: string;
   value: string | string[];
 }
@@ -58,7 +58,7 @@ export const FilterClauseValueEditorText = forwardRef(
     const getSuggestions = useTypeaheadSuggestions();
 
     const handleSingleValueSelectionChange = useCallback(
-      (_, [value]: string[]) => onChangeValue(value),
+      (_: SyntheticEvent, [value]: string[]) => onChangeValue(value),
       [onChangeValue],
     );
 
@@ -107,12 +107,11 @@ export const FilterClauseValueEditorText = forwardRef(
       [onChangeValue, operator],
     );
 
-    const handleInputCommit = useCallback<
-      CommitHandler<HTMLInputElement, string | undefined>
-    >(
-      (evt, value = "") => {
-        console.log(`commit value ${value}`);
-        onChangeValue(value);
+    const handleInputCommit = useCallback<CommitHandler>(
+      (_, value = "") => {
+        if (typeof value === "string") {
+          onChangeValue(value);
+        }
       },
       [onChangeValue],
     );

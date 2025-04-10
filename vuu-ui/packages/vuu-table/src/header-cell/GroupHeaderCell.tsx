@@ -75,7 +75,7 @@ export const GroupHeaderCell = ({
       : undefined;
 
   const handleMoveItem = useCallback(
-    (fromIndex, toIndex) => {
+    (fromIndex: number, toIndex: number) => {
       setColumns((cols) => {
         const newCols = cols.slice();
         const [tab] = newCols.splice(fromIndex, 1);
