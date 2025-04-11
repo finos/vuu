@@ -16,7 +16,7 @@
     "@finos/vuu-table-types": "0.0.26"
   },
   "dependencies": {
-    "@salt-ds/core": "1.37.1",
+    "@salt-ds/core": "1.43.0",
     "@salt-ds/styles": "0.2.1",
     "@salt-ds/window": "0.1.1",
     "@finos/vuu-data-react": "0.0.26",

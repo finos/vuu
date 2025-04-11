@@ -4,9 +4,6 @@ import {
   VariedFormControlUserSettingsForm,
 } from "../../../../../showcase/src/examples/Shell/UserSettings.examples";
 
-
-
-
 // Tests for current default user settings panel with only one toggle button form control
 describe("Given a single toggle button form control", () => {
   it("should have two buttons, with one selected", () => {
@@ -23,7 +20,7 @@ describe("Given a single toggle button form control", () => {
       cy.contains("button", "light").should(
         "have.attr",
         "aria-checked",
-        "false"
+        "false",
       );
       // Clicks and checks the light button
       cy.contains("button", "light").click();
@@ -31,7 +28,7 @@ describe("Given a single toggle button form control", () => {
       cy.contains("button", "dark").should(
         "have.attr",
         "aria-checked",
-        "false"
+        "false",
       );
     });
   });
@@ -111,9 +108,7 @@ describe("Given a form with multiple form controls of different types", () => {
     it("should change colour", () => {
       cy.mount(<VariedFormControlUserSettingsForm />);
       cy.get('[data-field="greyscale"]').find("input.saltSwitch-input").click();
-      cy.get('[data-field="greyscale"]')
-        .find(".saltIcon")
-        .should("have.attr", "aria-label", "success small solid");
+      cy.get("label.saltSwitch-checked").should("be.visible");
     });
   });
 });
