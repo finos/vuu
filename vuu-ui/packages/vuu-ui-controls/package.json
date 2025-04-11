@@ -20,9 +20,9 @@
     "@finos/vuu-popups": "0.0.26",
     "@finos/vuu-table": "0.0.26",
     "@finos/vuu-utils": "0.0.26",
-    "@floating-ui/react": "^0.26.5",
-    "@salt-ds/core": "1.37.1",
-    "@salt-ds/icons": "1.12.1",
+    "@floating-ui/react": "^0.26.28",
+    "@salt-ds/core": "1.43.0",
+    "@salt-ds/icons": "1.13.2",
     "@salt-ds/styles": "0.2.1",
     "@salt-ds/window": "0.1.1",
     "tabbable": "^6.0.0"

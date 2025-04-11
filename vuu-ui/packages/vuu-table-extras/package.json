@@ -25,12 +25,12 @@
     "@finos/vuu-utils": "0.0.26",
     "@finos/vuu-ui-controls": "0.0.26",
     "@lezer/lr": "1.4.2",
-    "@salt-ds/core": "1.37.1",
+    "@salt-ds/core": "1.43.0",
     "@salt-ds/styles": "0.2.1",
     "@salt-ds/window": "0.1.1"
   },
   "peerDependencies": {
-    "@floating-ui/react": "^0.26.5",
+    "@floating-ui/react": "^0.26.28",
     "clsx": "^2.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
