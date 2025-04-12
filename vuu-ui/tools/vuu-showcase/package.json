@@ -10,8 +10,14 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "devDependencies": {
+    "@mdx-js/esbuild": "3.1.0",
+    "@mdx-js/rollup": "3.1.0",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
     "@finos/vuu-data-types": "0.0.26",
-    "@finos/vuu-table-types": "0.0.26"
+    "@finos/vuu-table-types": "0.0.26",
+    "open": "10.1.0",
+    "serve-handler": "6.1.6"
   },
   "dependencies": {
     "@finos/vuu-datatable": "0.0.26",
@@ -22,7 +28,8 @@
     "@finos/vuu-utils": "0.0.26",
     "@fontsource/open-sans": "^4.5.13",
     "@salt-ds/core": "1.43.0",
-    "@salt-ds/theme": "1.28.0"
+    "@salt-ds/theme": "1.28.0",
+    "symlink-dir": "^6.0.5"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",

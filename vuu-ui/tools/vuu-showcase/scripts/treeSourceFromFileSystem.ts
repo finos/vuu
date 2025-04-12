@@ -2,11 +2,6 @@ import fs from "fs";
 import path from "path";
 import { type TreeSourceNode } from "@finos/vuu-utils";
 
-const lastPathSegment = (path: string, separator = "/") => {
-  const root = path.endsWith(separator) ? path.slice(0, -1) : path;
-  return root.slice(root.lastIndexOf(separator) + 1);
-};
-
 export const dropLastPathSegment = (path: string, separator = "/") => {
   return path.slice(0, path.lastIndexOf(separator));
 };
@@ -15,7 +10,8 @@ const exportPattern = /export const ([A-Z][a-zA-Z]+) = /g;
 
 export const treeSourceFromFileSystem = (
   exhibitsPath: string,
-  route: string,
+  env: "development" | "production" = "development",
+  route = "",
   icon = "folder",
 ): TreeSourceNode[] => {
   const treeSourceNodes: TreeSourceNode[] = [];
@@ -28,6 +24,7 @@ export const treeSourceFromFileSystem = (
         label: fileName,
         childNodes: treeSourceFromFileSystem(
           filePath,
+          env,
           `${route}${fileName}/`,
           "box",
         ),
@@ -38,25 +35,32 @@ export const treeSourceFromFileSystem = (
       ) {
         treeSourceNodes.push(treeSourceNode);
       }
-    } else if (fileName.match(/(examples.tsx|.mdx)$/)) {
+    } else if (fileName.match(/examples.tsx$/)) {
       const name = dropLastPathSegment(dropLastPathSegment(fileName, "."), ".");
       const id = `${route}${name}`;
-      if (name !== lastPathSegment(route)) {
-        treeSourceNodes.push({
-          id,
-          icon: "box",
-          label: name,
-          childNodes: treeSourceFromExportedComponents(
-            exhibitsPath,
-            `${route}${name}/`,
-            fileName,
-          ),
-        });
-      } else {
-        treeSourceNodes.push(
-          ...treeSourceFromExportedComponents(exhibitsPath, route, fileName),
-        );
-      }
+      treeSourceNodes.push({
+        id,
+        icon: "box",
+        label: name,
+        childNodes: treeSourceFromExportedComponents(
+          exhibitsPath,
+          env,
+          `${route}${name}/`,
+          fileName,
+        ),
+      });
+    } else if (fileName.match(/.mdx$/)) {
+      const name = dropLastPathSegment(fileName, ".");
+      const id = `${route}${name}`;
+      treeSourceNodes.push({
+        id,
+        icon: "box",
+        label: name,
+        nodeData: {
+          name,
+          path: `${exhibitsPath}/${fileName}`,
+        },
+      });
     }
   });
   return treeSourceNodes;
@@ -64,6 +68,7 @@ export const treeSourceFromFileSystem = (
 
 const treeSourceFromExportedComponents = (
   exhibitsPath: string,
+  env: "development" | "production",
   route,
   fileName: string,
 ) => {
@@ -71,6 +76,9 @@ const treeSourceFromExportedComponents = (
   const text = fs.readFileSync(filePath).toString();
   let match = exportPattern.exec(text);
   const treeSourceNodes: TreeSourceNode[] = [];
+  const exhibitsPrefix = env === "production" ? "showcase/" : "";
+  const resolvedFileName =
+    env === "production" ? fileName.replace(/.tsx/, ".js") : fileName;
   while (match != null) {
     const componentName = match[1];
     treeSourceNodes.push({
@@ -78,7 +86,7 @@ const treeSourceFromExportedComponents = (
       label: componentName,
       nodeData: {
         componentName,
-        path: `${exhibitsPath}/${fileName}`,
+        path: `${exhibitsPrefix}${exhibitsPath}/${resolvedFileName}`,
       },
     });
     match = exportPattern.exec(text);

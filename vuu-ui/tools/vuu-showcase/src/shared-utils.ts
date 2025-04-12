@@ -1,4 +1,4 @@
-import { importCSS, isModule, Module, ReactComponent } from "@finos/vuu-utils";
+import { importCSS, TreeSourceNode } from "@finos/vuu-utils";
 
 type Environment = "development" | "production";
 export const env = process.env.NODE_ENV as Environment;
@@ -16,45 +16,49 @@ export const keysFromPath = (path: string) => {
   }
 };
 
-export const pathToExample = (path: string): [string[], string] => {
-  const endOfImportPath = path.lastIndexOf("/");
-  const importPath =
-    endOfImportPath === -1 ? path : path.slice(0, endOfImportPath);
-  const suffix = env === "development" ? "" : ".js";
-  const exampleName = path.slice(endOfImportPath + 1);
-  if (exampleName === "") {
-    return [[], ""];
-  } else {
-    const root = env === "development" ? "/src" : "";
-    return [
-      [
-        `${root}/examples/${importPath}/${exampleName}${suffix}`,
-        `${root}/examples/${importPath}.examples${suffix}`,
-        `${root}/examples/${importPath}/index${suffix}`,
-      ],
-      exampleName,
-    ];
-  }
+export type ComponentDescriptor = {
+  componentName: string;
+  path: string;
 };
 
-export const getComponent = <T = ReactComponent>(
-  module: Module,
-  paths: string[],
-): T | undefined => {
-  let importedEntity = module;
-  while (paths.length > 0) {
-    const key = paths.shift() as string;
-    if (key in importedEntity) {
-      const entity = importedEntity[key];
-      if (isModule(entity)) {
-        importedEntity = importedEntity[key] as Module;
-      } else {
-        return importedEntity[key] as T;
-      }
-    }
+export type DocumentDescriptor = {
+  name: string;
+  path: string;
+};
+
+export const isComponentDescriptor = (
+  val: unknown,
+): val is ComponentDescriptor =>
+  !!val &&
+  typeof val === "object" &&
+  typeof val["componentName"] === "string" &&
+  typeof val["path"] === "string";
+
+export const isDocumentDescriptor = (val: unknown): val is DocumentDescriptor =>
+  !!val &&
+  typeof val === "object" &&
+  typeof val["name"] === "string" &&
+  typeof val["path"] === "string";
+
+export const getTargetPath = (url: URL, treeSourceNodes: TreeSourceNode[]) => {
+  const { pathname } = url;
+  const keys = pathname.slice(1).split("/");
+
+  let key = keys.shift();
+  let treeNode = treeSourceNodes.find((node) => node.id === key);
+
+  while (keys.length) {
+    key += `/${keys.shift()}`;
+    treeNode = treeNode?.childNodes?.find((node) => node.id === key);
   }
-  if (importedEntity.default) {
-    return importedEntity.default as T;
+
+  if (
+    isComponentDescriptor(treeNode?.nodeData) ||
+    isDocumentDescriptor(treeNode?.nodeData)
+  ) {
+    return treeNode?.nodeData;
+  } else {
+    throw Error("dsdsdsdsdsd");
   }
 };
 
