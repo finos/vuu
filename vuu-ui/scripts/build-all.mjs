@@ -33,6 +33,7 @@ export const buildAll = async () => {
   const wave4 = [
     "vuu-datatable",
     "vuu-table",
+    "vuu-tanstack-table",
     "vuu-data-react",
     "vuu-table-extras",
     "vuu-layout",

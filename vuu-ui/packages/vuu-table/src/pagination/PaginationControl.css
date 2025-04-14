@@ -1,4 +1,8 @@
 .vuuPaginationControl {
+  align-items: center;
+  display: flex;
+  height: var(--vuuPaginationControl-height, auto);
+  justify-content: flex-end;
   padding: 0 var(--salt-spacing-100);
   .saltButton {
     .saltIcon {

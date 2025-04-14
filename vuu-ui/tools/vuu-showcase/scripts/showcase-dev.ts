@@ -47,6 +47,7 @@ function cssInline(): PluginOption {
     "**/packages/vuu-shell/**/*.{tsx,jsx}",
     "**/packages/vuu-table/**/*.{tsx,jsx}",
     "**/packages/vuu-table-extras/**/*.{tsx,jsx}",
+    "**/packages/vuu-tanstack-table/**/*.{tsx,jsx}",
     "**/packages/vuu-ui-controls/**/*.{tsx,jsx}",
   ];
   const filter = createFilter(include, exclude);

@@ -2,6 +2,7 @@ export * from "./bulk-edit";
 export * from "./cell-renderers";
 export * from "./header-cell";
 export * from "./header-cell";
+// TODO move to table extras ?
 export * from "./pagination";
 export * from "./Table";
 export * from "./table-cell";

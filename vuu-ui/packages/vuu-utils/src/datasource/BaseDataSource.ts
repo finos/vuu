@@ -222,6 +222,8 @@ export abstract class BaseDataSource
         `[BaseDataSource] <set>range from (${this._range.from}:${this._range.to}) to (${range.from}:${range.to})`,
       );
       this._range = range;
+      this.pageCount = Math.ceil(this._size / (range.to - range.from));
+
       this.rangeRequest(range);
     }
   }

@@ -27,9 +27,6 @@ export const usePagination = ({ dataSource }: PaginationHookProps) => {
       const { range } = dataSource;
       const pageSize = range.to - range.from;
       const firstRow = pageSize * (page - 1);
-      console.log(
-        `set range ${JSON.stringify({ from: firstRow, to: firstRow + pageSize })}`,
-      );
       dataSource.range = { from: firstRow, to: firstRow + pageSize };
     },
     [dataSource],
