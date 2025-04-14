@@ -33,10 +33,12 @@ vuu-ui/showcase/scripts/build-docs.mjs
 vuu-ui/showcase/scripts/build-rollup.mjs
 vuu-ui/showcase/scripts/parse-stories.mjs
 vuu-ui/showcase/scripts/build.ts
-vuu-ui/showcase/scripts/treeSourceFromFileSystem.ts
 vuu-ui/showcase/scripts/utils.mjs
 vuu-ui/scripts/build-rollup.mjs
 vuu-ui/scripts/utils.mjs
+vuu-ui/tools/vuu-showcase/scripts/build-file-list.ts
+vuu-ui/tools/vuu-showcase/scripts/utils.ts
+vuu-ui/tools/vuu-showcase/scripts/treeSourceFromFileSystem.ts
 vuu-ui/tools/vuu-showcase/src/showcase-utils.ts
 example/order/src/main/scala/org/finos/vuu/order/oms/impl/InMemOmsApi.scala
 example/virtualized-table/src/main/scala/org/finos/vuu/example/virtualtable/bigdatacache/FakeBigDataCache.scala

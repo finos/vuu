@@ -1,6 +1,6 @@
 import "./Showcase.css";
 
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import React, { BrowserRouter, Route, Routes } from "react-router-dom";
 import { App } from "./showcase-main/App";
 import { TreeSourceNode } from "@finos/vuu-utils";
 
