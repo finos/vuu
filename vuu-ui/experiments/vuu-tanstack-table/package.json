@@ -1,0 +1,26 @@
+{
+  "name": "vuu-tanstack-table",
+  "version": "0.0.26",
+  "author": "heswell",
+  "main": "src/index.ts",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build:dev": "node ../../scripts/run-build.mjs",
+    "build": "node ../../scripts/run-build-rollup.mjs",
+    "type-defs": "node ../../scripts/build-type-defs.mjs"
+  },
+  "devDependencies": {},
+  "dependencies": {
+    "@finos/vuu-table-types": "0.0.26",
+    "@salt-ds/core": "1.43.0",
+    "@salt-ds/styles": "0.2.1",
+    "@salt-ds/window": "0.1.1",
+    "@tanstack/react-table": "^8.21.2",
+    "@tanstack/react-virtual": "^3.13.6"
+  },
+  "peerDependencies": {
+    "clsx": "^2.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}

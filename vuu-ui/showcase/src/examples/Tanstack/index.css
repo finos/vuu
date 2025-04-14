@@ -1,0 +1,10 @@
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
+.container {
+  height: 600px;
+  overflow: auto;
+}
