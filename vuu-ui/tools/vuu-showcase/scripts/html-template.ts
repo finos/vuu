@@ -6,15 +6,16 @@ export default `<!doctype html>
     <title>Vuu Showcase</title>
     <script type="module">
       import React from "react";
-      import ReactDOM from "react-dom";
+      import {createRoot} from "react-dom/client";
       import { Showcase, ShowcaseStandalone } from "@finos/vuu-showcase";
       import { hasUrlParameter } from "@finos/vuu-utils";
       const { default: treeSource } = await import("/treeSourceJson.js");
-      const root = document.getElementById("root");
+      const container = document.getElementById("root");
+      const root = createRoot(container);
       if (hasUrlParameter("standalone")) {
-        ReactDOM.render(React.createElement(ShowcaseStandalone, { treeSource }), root);
+        root.render(React.createElement(ShowcaseStandalone, { treeSource }));
       } else {
-        ReactDOM.render(React.createElement(Showcase, { treeSource }), root);
+        root.render(React.createElement(Showcase, { treeSource }));
       }
     </script>
   </head>

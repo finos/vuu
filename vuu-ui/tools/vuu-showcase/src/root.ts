@@ -1,17 +1,19 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import { Showcase, ShowcaseStandalone } from "@finos/vuu-showcase";
 import { hasUrlParameter, TreeSourceNode } from "@finos/vuu-utils";
 
 function start(treeSource: TreeSourceNode[]) {
-  const root = document.getElementById("root");
-  if (hasUrlParameter("standalone")) {
-    ReactDOM.render(
-      React.createElement(ShowcaseStandalone, { treeSource }),
-      root,
-    );
+  const container = document.getElementById("root");
+  if (container) {
+    const root = createRoot(container);
+    if (hasUrlParameter("standalone")) {
+      root.render(React.createElement(ShowcaseStandalone, { treeSource }));
+    } else {
+      root.render(React.createElement(Showcase, { treeSource }));
+    }
   } else {
-    ReactDOM.render(React.createElement(Showcase, { treeSource }), root);
+    throw Error("document does not contain #root wlwmwnt");
   }
 }
 
