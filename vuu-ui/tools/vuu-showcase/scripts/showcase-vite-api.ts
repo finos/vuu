@@ -104,6 +104,5 @@ await server.listen();
 server.printUrls();
 server.bindCLIShortcuts({ print: true });
 
-console.log(`opening showcase at ${chalk.green("http://localhost:5173/")} ...`);
-
-open("http://localhost:5173/");
+// console.log(`opening showcase at ${chalk.green("http://localhost:5173/")} ...`);
+// open("http://localhost:5173/");

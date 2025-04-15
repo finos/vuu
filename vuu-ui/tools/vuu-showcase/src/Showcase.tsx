@@ -1,7 +1,7 @@
 import "./Showcase.css";
 
 import React, { BrowserRouter, Route, Routes } from "react-router-dom";
-import { App } from "./showcase-main/App";
+import { ShowcaseShell } from "./showcase-main/ShowcaseShell";
 import { TreeSourceNode } from "@finos/vuu-utils";
 
 const createRoutes = (treeSource: TreeSourceNode[]): JSX.Element[] =>
@@ -17,7 +17,7 @@ export const Showcase = ({ treeSource }: { treeSource: TreeSourceNode[] }) => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<App treeSource={treeSource} />}>
+        <Route path="/" element={<ShowcaseShell treeSource={treeSource} />}>
           {createRoutes(treeSource)}
         </Route>
       </Routes>

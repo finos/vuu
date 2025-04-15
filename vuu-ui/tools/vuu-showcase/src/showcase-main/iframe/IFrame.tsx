@@ -1,3 +1,4 @@
+import React from "react";
 import { Density, ThemeMode } from "@finos/vuu-utils";
 
 export interface IFrameProps {
