@@ -258,6 +258,8 @@ export const useAsDropTarget = () => {
     (evt) => {
       const { dropTarget: currentDropTarget } = dropTargetStateRef.current;
       const { dragSource } = dragContext;
+      // We ignore drop events when no dragSOurce has been registered. These will be
+      // GridSPlitter events and will be handled directly by the GridSplitter
       if (dragSource && currentDropTarget) {
         // console.log(`[useAsDropTarget#${layoutId}] onDrop`, { dragSource });
 
@@ -272,10 +274,6 @@ export const useAsDropTarget = () => {
             dropTargetStateRef.current.position,
           );
         }
-      } else if (currentDropTarget) {
-        throw Error(
-          `[useAsDropTarget] onDrop no dragSource to drop on ${currentDropTarget.gridLayoutItemId}`,
-        );
       }
 
       dropTargetStateRef.current.dropTarget = undefined;
