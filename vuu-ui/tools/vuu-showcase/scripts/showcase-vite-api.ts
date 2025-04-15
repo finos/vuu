@@ -5,6 +5,7 @@ import MagicString from "magic-string";
 import open from "open";
 import { createFilter, createServer, type PluginOption } from "vite";
 import INDEX_HTML from "./html-template";
+import path from "path";
 
 import { createFolder, linkSourceDirectory, writeFile } from "./utils";
 import { treeSourceFromFileSystem } from "./treeSourceFromFileSystem";
@@ -17,8 +18,9 @@ const treeSourceJson = treeSourceFromFileSystem(pathToExhibits);
 const end = performance.now();
 console.log(`[showcase-vite-api] building tree took ${end - start}ms`);
 
-const __dirname = "/Users/steve/github/finos/vuu/vuu-ui/showcase/.showcase/dev";
-console.log({ __dirname });
+const cwd = process.cwd();
+const __dirname = path.join(cwd, ".showcase/dev");
+
 /**
  * This plugin is invoked when we run showcase in dev mode
  */
