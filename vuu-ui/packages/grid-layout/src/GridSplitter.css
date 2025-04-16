@@ -1,27 +1,50 @@
 .vuuGridSplitter {
-    background-color: cornflowerblue;
+    --splitter-background: var(--salt-separable-secondary-borderColor);
+    --splitter-size: 5px;
+
+
+    background-color: var(--splitter-background);
+    position: relative;
+
+    .vuu-grab-zone {
+        position: absolute;
+        background-color: rgba(255, 0, 0, 0.01);
+        cursor: inherit;
+    }
 }
+
+.vuuGridSplitter:hover {
+    --splitter-background: var(--salt-separable-primary-borderColor);
+  }
+  
+.vuuGridSplitter-active {
+    --splitter-background: var(--salt-separable-primary-borderColor);
+  }
+  
 .vuuGridSplitter[aria-orientation="vertical"] {
     cursor: ew-resize;
     transform: translate(-2px,0);
-    width: 4px;
+    width: var(--splitter-size);
+
+    .vuu-grab-zone {
+        left: 0;
+        right: 0;
+        top: -5px;
+        bottom: -5px;
+    }
+
 }
 
 .vuuGridSplitter[aria-orientation="horizontal"] {
     cursor: ns-resize;
-    height: 4px;
-    transform: translate(0, -2px);
-}
+    height: var(--splitter-size);
 
-.vuuGridSplitter[aria-controls="blue"]{
-    background-color: blue;
-}
-.vuuGridSplitter[aria-controls="red"]{
-    background-color: red;
-}
-.vuuGridSplitter[aria-controls="black"]{
-    background-color: black;
-}
-.vuuGridSplitter[aria-controls="green"]{
-    background-color: green;
+    transform: translate(0, -2px);
+
+    .vuu-grab-zone {
+        left: -5px;
+        right: -5px;
+        top: 0;
+        bottom: 0;
+    }
 }

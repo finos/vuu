@@ -22,7 +22,6 @@ import {
   useGridLayoutDragStartHandler,
 } from "./GridLayoutContext";
 import { GridModelChildItemProps } from "./GridModel";
-import gridSplitterCss from "./GridSplitter.css";
 import { useDraggable } from "./useDraggable";
 import { useGridChildProps } from "./useGridChildProps";
 import { IconButton } from "./IconButton";
@@ -88,11 +87,6 @@ export const GridLayoutItem = ({
   useComponentCssInjection({
     testId: "vuu-grid-layout",
     css: gridLayoutCss,
-    window: targetWindow,
-  });
-  useComponentCssInjection({
-    testId: "vuu-grid-splitter",
-    css: gridSplitterCss,
     window: targetWindow,
   });
 

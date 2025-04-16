@@ -13,10 +13,9 @@ import { GridColumnsAndRows, GridLayoutChangeHandler } from "./GridModel";
 import { GridPlaceholder } from "./GridPlaceholder";
 import { useGridLayout } from "./useGridLayout";
 import { useGridSplitterResizing } from "./useGridSplitterResizing";
-import { useGridSplitter } from "./useGridSplitter";
+import { GridSplitter } from "./GridSplitter";
 
 import gridLayoutCss from "./GridLayout.css";
-import { GridSplitter } from "./GridSplitter";
 
 const classBase = "vuuGridLayout";
 
@@ -73,14 +72,14 @@ export const GridLayout = ({
     onChange,
   });
 
-  // const splitterLayoutProps = useGridSplitterResizing({
-  //   gridLayoutModel,
-  //   gridModel,
-  //   id,
-  //   onClick,
-  // });
+  const splitterLayoutProps = useGridSplitterResizing({
+    gridLayoutModel,
+    gridModel,
+    id,
+    onClick,
+  });
 
-  const splitterProps = useGridSplitter();
+  // const splitterProps = useGridSplitter();
 
   const style = {
     ...gridModel.tracks.css,
@@ -106,7 +105,7 @@ export const GridLayout = ({
       >
         <div
           {...htmlAttributes}
-          // {...splitterLayoutProps}
+          {...splitterLayoutProps}
           id={id}
           ref={containerCallback}
           style={style}
@@ -136,7 +135,7 @@ export const GridLayout = ({
           ))}
           {splitters.map((splitter) => (
             <GridSplitter
-              {...splitterProps}
+              // {...splitterProps}
               aria-controls={splitter.controls}
               ariaOrientation={splitter.ariaOrientation}
               id={splitter.id}

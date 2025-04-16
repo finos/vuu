@@ -13,7 +13,8 @@ export type ResizeOrientation = "horizontal" | "vertical";
 type GridPos = [number, number];
 
 export const isSplitter = (element: HTMLElement) =>
-  element.classList.contains("vuuGridSplitter");
+  element.classList.contains("vuuGridSplitter") ||
+  queryClosest(element, ".vuuGridSplitter") !== null;
 
 export const getGridLayoutItem = (el: HTMLElement) => {
   if (el.classList.contains(classNameLayoutItem)) {
