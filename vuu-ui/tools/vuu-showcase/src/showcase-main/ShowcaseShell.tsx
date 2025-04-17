@@ -128,13 +128,14 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
             rows: ["48px", "40px", "1fr"],
           }}
           full-page
+          id="ShowcaseShell"
           onChange={handleGridLayoutChanged}
         >
           {/* ------ App Header -------*/}
           <GridLayoutItem
             id="app-header"
             style={{
-              gridArea: "1/1/2/4",
+              gridArea: "1/1/2/3",
             }}
           >
             <div

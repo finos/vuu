@@ -492,7 +492,6 @@ export const useGridLayout = ({
       addChildComponent,
       gridLayoutModel,
       gridModel,
-      id,
       layoutOptions?.newChildItem.header,
       setChildren,
     ],
@@ -677,9 +676,9 @@ export const useGridLayout = ({
 
   const handleTrackResize = useCallback<GridTrackResizeHandler>(
     (trackType, tracks) => {
-      // console.log(
-      //   `[useGridLayout] handleTrackResize ${trackType} [${tracks.join(" ")}]`,
-      // );
+      console.log(
+        `[useGridLayout] handleTrackResize ${trackType} [${tracks.join(" ")}]`,
+      );
       if (containerRef.current) {
         if (trackType === "column") {
           containerRef.current.style.gridTemplateColumns = tracks.join(" ");

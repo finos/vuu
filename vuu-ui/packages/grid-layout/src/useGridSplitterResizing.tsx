@@ -2,7 +2,7 @@ import { MouseEventHandler, useCallback, useRef } from "react";
 import {
   classNameLayoutItem,
   getGridLayoutItem,
-  isSplitter,
+  getGridSplitter,
 } from "./grid-dom-utils";
 import { adjustDistance, getTrackType } from "./grid-layout-utils";
 import { GridLayoutProps } from "./GridLayout";
@@ -28,6 +28,7 @@ export const useGridSplitterResizing = ({
   onClick: onClickProp,
 }: SplitterResizingHookProps) => {
   const resizingState = useRef<ResizeState | undefined>();
+  const splitterRef = useRef<HTMLElement>();
 
   const createNewTrackForResize = useCallback(
     (moveBy: number) => {
@@ -178,6 +179,12 @@ export const useGridSplitterResizing = ({
   const mouseUp = useCallback(() => {
     document.removeEventListener("mousemove", mouseMove);
     document.removeEventListener("mouseup", mouseUp);
+
+    if (splitterRef.current) {
+      splitterRef.current.classList.remove("vuuGridSplitter-active");
+      splitterRef.current = undefined;
+    }
+
     // TODO make sure a resize has actually taken place
     gridModel.notifyChange();
   }, [gridModel, mouseMove]);
@@ -187,8 +194,8 @@ export const useGridSplitterResizing = ({
   // gridItems is taken into account
   const onMouseDown = useCallback<MouseEventHandler>(
     (e) => {
-      const splitterElement = e.target as HTMLDivElement;
-      if (!isSplitter(splitterElement)) {
+      const splitterElement = getGridSplitter(e.target as HTMLDivElement);
+      if (splitterElement === null) {
         return;
       }
 
@@ -205,6 +212,9 @@ export const useGridSplitterResizing = ({
 
         document.addEventListener("mousemove", mouseMove);
         document.addEventListener("mouseup", mouseUp);
+
+        splitterElement.classList.add("vuuGridSplitter-active");
+        splitterRef.current = splitterElement;
       }
     },
     [gridModel, layoutModel, mouseMove, mouseUp],
@@ -215,25 +225,21 @@ export const useGridSplitterResizing = ({
     (e) => {
       const gridLayoutItem = getGridLayoutItem(e.target as HTMLElement);
       if (gridLayoutItem) {
-        if (isSplitter(gridLayoutItem)) {
-          // ignore
-        } else {
-          const { left, top } = gridLayoutItem.getBoundingClientRect();
+        const { left, top } = gridLayoutItem.getBoundingClientRect();
 
-          if (e.clientY < top || e.clientX < left) {
-            return;
-          }
-
-          if (selectedRef.current) {
-            const el = document.getElementById(
-              selectedRef.current,
-            ) as HTMLElement;
-            el.classList.remove(`${classNameLayoutItem}-active`);
-          }
-
-          selectedRef.current = gridLayoutItem.id;
-          gridLayoutItem.classList.add(`${classNameLayoutItem}-active`);
+        if (e.clientY < top || e.clientX < left) {
+          return;
         }
+
+        if (selectedRef.current) {
+          const el = document.getElementById(
+            selectedRef.current,
+          ) as HTMLElement;
+          el.classList.remove(`${classNameLayoutItem}-active`);
+        }
+
+        selectedRef.current = gridLayoutItem.id;
+        gridLayoutItem.classList.add(`${classNameLayoutItem}-active`);
       }
       onClickProp?.(e);
     },
