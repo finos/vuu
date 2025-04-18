@@ -50,8 +50,10 @@ export const useGridChildProps = ({
     contentVisible: childItem.contentVisible,
     dropTarget: childItem.dropTarget,
     header: childItem.header,
+    horizontalSplitter: childItem.horizontalSplitter,
     stacked: childItem.stackId !== undefined,
     title: childItem.title,
+    verticalSplitter: childItem.verticalSplitter,
     ...childItem.layoutStyle,
   };
 };

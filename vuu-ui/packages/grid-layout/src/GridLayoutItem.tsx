@@ -97,8 +97,10 @@ export const GridLayoutItem = ({
     contentVisible,
     dropTarget,
     header,
+    horizontalSplitter,
     stacked,
     title,
+    verticalSplitter,
     ...layoutProps
   } = useGridChildProps({
     contentVisible: contentVisibleProp,
@@ -144,6 +146,8 @@ export const GridLayoutItem = ({
   const className = cx(classBaseItem, {
     "vuu-detached": contentDetached,
     "vuu-stacked": stacked && !contentDetached,
+    "has-h-splitter": horizontalSplitter,
+    "has-v-splitter": verticalSplitter,
   });
 
   const style = {

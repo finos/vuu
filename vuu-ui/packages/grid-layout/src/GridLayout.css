@@ -40,6 +40,13 @@
     grid-column: 0/0 !important;
     grid-row: 0/0;
   }
+
+  &.has-h-splitter:not(.vuu-stacked) {
+    margin-top: 7px;
+  }
+  &.has-v-splitter {
+    margin-left: 7px;
+  }
 }
 
 .vuuGridLayoutItem-active {
@@ -88,7 +95,12 @@
 }
 
 .vuu-stacked {
-  margin-top: var(--vuu-layout-tabs-height)
+  &.has-h-splitter {
+    margin-top: calc(var(--vuu-layout-tabs-height) + 7px);
+  }
+  &:not(.has-h-splitter){
+    margin-top: var(--vuu-layout-tabs-height);
+  }
 }
 
 .vuuGridLayoutItemHeader-close {

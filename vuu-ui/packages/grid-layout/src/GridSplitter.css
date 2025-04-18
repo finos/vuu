@@ -1,7 +1,7 @@
 .vuuGridSplitter {
     --splitter-background: var(--salt-separable-secondary-borderColor);
     --splitter-borderColor: white;
-    --splitter-borderStyle: solid;
+    --splitter-borderStyle: none;
     --splitter-borderWidth: 3px;
   
     --splitter-size: 7px;
@@ -31,8 +31,10 @@
   }
   
 .vuuGridSplitter[aria-orientation="vertical"] {
+    --splitter-borderStyle: none solid;
+
     cursor: ew-resize;
-    transform: translate(-2px,0);
+    /* transform: translate(-2px,0); */
     width: var(--splitter-size);
 
     .vuu-grab-zone {
@@ -45,10 +47,11 @@
 }
 
 .vuuGridSplitter[aria-orientation="horizontal"] {
+    --splitter-borderStyle: solid none;
     cursor: ns-resize;
     height: var(--splitter-size);
 
-    transform: translate(0, -2px);
+    /* transform: translate(0, -2px); */
 
     .vuu-grab-zone {
         left: -5px;
