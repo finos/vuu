@@ -16,6 +16,7 @@ export const treeToDataSourceRows = (
 
   columns.push(
     {
+      hidden: true,
       name: "nodeData",
       type: "json",
     },
@@ -51,7 +52,7 @@ const addChildValues = (
   if (depth === cols.length - 1) {
     cols.push({
       getIcon: iconProvider?.getIcon,
-      name: `Level ${cols.length + 1}`,
+      name: `Level ${cols.length}`,
       type: "string",
     });
   }

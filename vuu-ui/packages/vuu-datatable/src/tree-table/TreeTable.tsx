@@ -69,6 +69,8 @@ export const TreeTable = ({
     };
   }, [config]);
 
+  console.log({ tableConfig, dataSource: dataSourceRef.current });
+
   if (dataSourceRef.current === undefined) {
     return null;
   }
