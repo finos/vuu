@@ -37,7 +37,7 @@
     "deploy:websocket-test": "node ./tools/deploy-websocket-test.mjs",
     "view-bundle": "node ./scripts/visualize-bundle.mjs",
     "type-defs": "node ./scripts/build-all-type-defs.mjs",
-    "showcase": "cd showcase && tsx ../tools/vuu-showcase/scripts/showcase-vite-api.ts",
+    "showcase": "cd showcase && tsx ../tools/vuu-showcase/scripts/showcase-dev.ts",
     "showcase:prod": "npm run build:worker && cd showcase && tsx ../tools/vuu-showcase/scripts/showcase-build.ts",
     "test:cypress": "npm run build:worker && cypress run --component --browser chrome --headless",
     "test:cypress:local": "cypress open --component --browser chrome",
