@@ -22,7 +22,6 @@ import {
   useGridLayoutDragStartHandler,
 } from "./GridLayoutContext";
 import { GridModelChildItemProps } from "./GridModel";
-import gridSplitterCss from "./GridSplitter.css";
 import { useDraggable } from "./useDraggable";
 import { useGridChildProps } from "./useGridChildProps";
 import { IconButton } from "./IconButton";
@@ -90,11 +89,6 @@ export const GridLayoutItem = ({
     css: gridLayoutCss,
     window: targetWindow,
   });
-  useComponentCssInjection({
-    testId: "vuu-grid-splitter",
-    css: gridSplitterCss,
-    window: targetWindow,
-  });
 
   const dispatch = useGridLayoutDispatch();
   // TODO pass the styleProp in here to initialise the model value
@@ -103,8 +97,10 @@ export const GridLayoutItem = ({
     contentVisible,
     dropTarget,
     header,
+    horizontalSplitter,
     stacked,
     title,
+    verticalSplitter,
     ...layoutProps
   } = useGridChildProps({
     contentVisible: contentVisibleProp,
@@ -150,6 +146,8 @@ export const GridLayoutItem = ({
   const className = cx(classBaseItem, {
     "vuu-detached": contentDetached,
     "vuu-stacked": stacked && !contentDetached,
+    "has-h-splitter": horizontalSplitter,
+    "has-v-splitter": verticalSplitter,
   });
 
   const style = {

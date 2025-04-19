@@ -144,6 +144,9 @@ export const useAsDropTarget = () => {
 
   const onDragEnter = useCallback<DragEventHandler>(
     (evt) => {
+      if (dragContext.dragSource === undefined) {
+        return;
+      }
       const { dropTarget: currentDropTarget } = dropTargetStateRef.current;
       let dropTarget = getDropTarget(evt.target, currentDropTarget);
       console.log(
@@ -180,84 +183,102 @@ export const useAsDropTarget = () => {
         }
       }
     },
-    [layoutId],
+    [dragContext, layoutId],
   );
 
   // We could replace this with mouse move to reduce event rate
-  const onDragOver = useCallback<DragEventHandler>((evt) => {
-    const { dropTarget: currentDropTarget } = dropTargetStateRef.current;
-    const dropTarget = getDropTarget(evt.target, currentDropTarget);
-    if (dropTarget) {
-      // preventDefault on the event to enable drop
-      evt.preventDefault();
-      // TODO store dropTarget and rect and tabRect in same ref
-      if (dropTarget === currentDropTarget) {
-        const { position: lastPosition } = dropTargetStateRef.current;
-        if (dropTarget.type === "header") {
-          if (lastPosition !== "header") {
-            addDropTargetPositionClassName(dropTarget.target, "header");
-            dropTargetStateRef.current.position = "header";
-          }
-        } else {
-          const { clientX, clientY } = evt;
-          const { mousePos } = dropTargetStateRef.current;
+  const onDragOver = useCallback<DragEventHandler>(
+    (evt) => {
+      if (dragContext.dragSource === undefined) {
+        return;
+      }
+      const { dropTarget: currentDropTarget } = dropTargetStateRef.current;
+      const dropTarget = getDropTarget(evt.target, currentDropTarget);
+      if (dropTarget) {
+        // preventDefault on the event to enable drop
+        evt.preventDefault();
+        // TODO store dropTarget and rect and tabRect in same ref
+        if (dropTarget === currentDropTarget) {
+          const { position: lastPosition } = dropTargetStateRef.current;
+          if (dropTarget.type === "header") {
+            if (lastPosition !== "header") {
+              addDropTargetPositionClassName(dropTarget.target, "header");
+              dropTargetStateRef.current.position = "header";
+            }
+          } else {
+            const { clientX, clientY } = evt;
+            const { mousePos } = dropTargetStateRef.current;
 
-          if (clientX !== mousePos.clientX || clientY !== mousePos.clientY) {
-            mousePos.clientX = clientX;
-            mousePos.clientY = clientY;
+            if (clientX !== mousePos.clientX || clientY !== mousePos.clientY) {
+              mousePos.clientX = clientX;
+              mousePos.clientY = clientY;
 
-            const { rect } = dropTargetStateRef.current;
+              const { rect } = dropTargetStateRef.current;
 
-            const { pctX, pctY /*, closeToTheEdge */ } =
-              pointPositionWithinRect(clientX, clientY, rect);
-            const position = getPositionWithinBox(
-              clientX,
-              clientY,
-              rect,
-              pctX,
-              pctY,
-            );
-            // console.log(
-            //   `[useAsDropTarget] onDragOver ${dropTarget.gridLayoutItemId} position ${position}`,
-            // );
-            if (position !== lastPosition) {
-              if (dropTargetStateRef.current.dropTarget) {
-                addDropTargetPositionClassName(dropTarget.target, position);
+              const { pctX, pctY /*, closeToTheEdge */ } =
+                pointPositionWithinRect(clientX, clientY, rect);
+              const position = getPositionWithinBox(
+                clientX,
+                clientY,
+                rect,
+                pctX,
+                pctY,
+              );
+              // console.log(
+              //   `[useAsDropTarget] onDragOver ${dropTarget.gridLayoutItemId} position ${position}`,
+              // );
+              if (position !== lastPosition) {
+                if (dropTargetStateRef.current.dropTarget) {
+                  addDropTargetPositionClassName(dropTarget.target, position);
+                }
+                dropTargetStateRef.current.position = position;
               }
-              dropTargetStateRef.current.position = position;
             }
           }
         }
       }
-    }
-  }, []);
+    },
+    [dragContext],
+  );
 
-  const onDragLeave = useCallback<DragEventHandler>((evt) => {
-    const { dropTarget: currentDropTarget } = dropTargetStateRef.current;
-    const dropTarget = getDropTarget(evt.target, currentDropTarget);
-    // console.log(
-    //   `[useAsDropTarget] onDragleave ${evt.target?.className} to ${evt.relatedTarget?.className}`,
-    //   {
-    //     dropTarget,
-    //   },
-    // );
-    if (dropTarget?.target === evt.target) {
-      if (dropTarget === currentDropTarget) {
-        console.log(
-          `[useAsDropTarget] onDragleave ... leaving the current dropTarget, dropTarget is now undefined`,
-        );
-        dropTargetStateRef.current.dropTarget = undefined;
-        dropTargetStateRef.current.position = undefined;
+  const onDragLeave = useCallback<DragEventHandler>(
+    (evt) => {
+      if (dragContext.dragSource === undefined) {
+        return;
       }
+      const { dropTarget: currentDropTarget } = dropTargetStateRef.current;
+      const dropTarget = getDropTarget(evt.target, currentDropTarget);
+      // console.log(
+      //   `[useAsDropTarget] onDragleave ${evt.target?.className} to ${evt.relatedTarget?.className}`,
+      //   {
+      //     dropTarget,
+      //   },
+      // );
+      if (dropTarget?.target === evt.target) {
+        if (dropTarget === currentDropTarget) {
+          console.log(
+            `[useAsDropTarget] onDragleave ... leaving the current dropTarget, dropTarget is now undefined`,
+          );
+          dropTargetStateRef.current.dropTarget = undefined;
+          dropTargetStateRef.current.position = undefined;
+        }
 
-      removeDropTargetPositionClassName(dropTarget.target);
-    }
-  }, []);
+        removeDropTargetPositionClassName(dropTarget.target);
+      }
+    },
+    [dragContext],
+  );
 
   const onDrop = useCallback<DragEventHandler>(
     (evt) => {
+      if (dragContext.dragSource === undefined) {
+        return;
+      }
+
       const { dropTarget: currentDropTarget } = dropTargetStateRef.current;
       const { dragSource } = dragContext;
+      // We ignore drop events when no dragSOurce has been registered. These will be
+      // GridSPlitter events and will be handled directly by the GridSplitter
       if (dragSource && currentDropTarget) {
         // console.log(`[useAsDropTarget#${layoutId}] onDrop`, { dragSource });
 
@@ -272,10 +293,6 @@ export const useAsDropTarget = () => {
             dropTargetStateRef.current.position,
           );
         }
-      } else if (currentDropTarget) {
-        throw Error(
-          `[useAsDropTarget] onDrop no dragSource to drop on ${currentDropTarget.gridLayoutItemId}`,
-        );
       }
 
       dropTargetStateRef.current.dropTarget = undefined;

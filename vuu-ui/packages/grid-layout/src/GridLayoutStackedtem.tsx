@@ -53,12 +53,13 @@ export const GridLayoutStackedItem = ({
     registerTabsForDragDrop(id);
   }, [id, registerTabsForDragDrop]);
 
-  const layoutProps = useGridChildProps({
-    id,
-    resizeable,
-    style: styleProp,
-    type: "stacked-content",
-  });
+  const { horizontalSplitter, verticalSplitter, ...layoutProps } =
+    useGridChildProps({
+      id,
+      resizeable,
+      style: styleProp,
+      type: "stacked-content",
+    });
 
   const { getTabState } = useGridModel();
   const tabState = getTabState(id);
@@ -70,7 +71,10 @@ export const GridLayoutStackedItem = ({
     [tabState],
   );
 
-  const className = cx(classBaseItem, "vuuGridLayoutItem");
+  const className = cx(classBaseItem, "vuuGridLayoutItem", {
+    "has-h-splitter": horizontalSplitter,
+    "has-v-splitter": verticalSplitter,
+  });
 
   const style = {
     ...styleProp,

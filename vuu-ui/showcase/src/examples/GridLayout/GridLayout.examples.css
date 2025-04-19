@@ -1,0 +1,61 @@
+.vuuGridLayout.vuuFullPage {
+  height: 100vh;
+  width: 100vw;
+}
+
+
+[data-resize-role]:after {
+  color: white;
+  content: attr(data-resize-role);
+  font-size: 16px;
+  font-weight: bold;
+  left: 9px;
+  position: absolute;
+  top: 32px;
+}
+
+.vuuGridPalette {
+
+  .vuuGridPalette-item:has([data-item-id="green"]){
+    background-color: green;
+    color: white;
+  } 
+  .vuuGridPalette-item:has([data-item-id="red"]){
+    background-color: red;
+    color: white;
+  } 
+  .vuuGridPalette-item:has([data-item-id="yellow"]){
+    background-color: yellow;
+  } 
+  .vuuGridPalette-item:has([data-item-id="brown"]){
+    background-color: brown;
+    color: white;
+  } 
+
+  [data-item-id] {
+    background-color: inherit;
+    color: inherit;
+  }
+}
+
+/**
+  the following are from Stack
+  challenge: when resolving grid layout, some
+  measurements are taken before STack css has
+  been injected
+*/
+.vuuTabs {
+  display: flex;
+  box-sizing: border-box;
+  flex-direction: column;
+}
+
+.vuuTabs-tabPanel {
+  display: flex;
+  flex: 1; 
+  flex-direction: column;
+}
+
+.vuuTabs-tabPanel > * {
+  flex: 1 1 auto;
+}

@@ -40,20 +40,14 @@ import {
   sourceIsTemplate,
   useGridLayoutId,
 } from "./GridLayoutContext";
-import {
-  GridLayoutItem,
-  GridLayoutItemProps,
-  isGridLayoutItem,
-} from "./GridLayoutItem";
+import { GridLayoutItem, GridLayoutItemProps } from "./GridLayoutItem";
 import { GridItemRemoveReason, GridLayoutModel } from "./GridLayoutModel";
 import {
   GridLayoutDragEndHandler,
   useGridChangeHandler,
   useGridLayoutOptions,
   useSavedGrid,
-  ReactElementList,
 } from "./GridLayoutProvider";
-import { isGridLayoutStackedItem } from "./GridLayoutStackedtem";
 import {
   GridChildPositionChangeHandler,
   GridColumnsAndRows,
@@ -90,9 +84,6 @@ type NonContentGridItems = {
   stackedItems: GridModelChildItem[];
 };
 
-const isLayoutItem = (element: ReactElement) =>
-  isGridLayoutItem(element) || isGridLayoutStackedItem(element);
-
 /**
  * Create the GridModel and bind model changes to DOM changes.
  * The GridModel is constructed from a GridLayoutDescriptor, which may
@@ -122,7 +113,7 @@ export const useGridLayout = ({
    * of the child elements as a map, keyed by id.
    */
   const [children, layout] = useMemo<
-    [ReactElementList, GridLayoutDescriptor]
+    [GridLayoutItemElements, GridLayoutDescriptor]
   >(() => {
     const savedGrid = getSavedGrid?.(id);
     if (savedGrid) {
@@ -142,40 +133,7 @@ export const useGridLayout = ({
     }
   }, [childrenProp, getSavedGrid, id, colsAndRows]);
 
-  const buildGridLayoutItems = useMemo<GridLayoutItemElements>(() => {
-    //TODO check that children conform to expected props
-    // if layout passed. construct GridLayoutItems
-    if (children.every(isLayoutItem)) {
-      // see 1) above
-      // store as map
-      return children;
-    } else {
-      throw Error(
-        `[useGridLayout] every child GridItem must be a GridLayoutItem`,
-      );
-      // need to jump through some hoops here
-      // return Object.entries(childElementMap).map(
-      //   ([gridLayoutItemId, element]) => {
-      //     // TODO type IS in here although the types shouldn't allow it
-      //     const { gridArea, type, ...gridLayoutItemProps } =
-      //       layout.gridLayoutItems[gridLayoutItemId];
-      //     return (
-      //       <GridLayoutItem
-      //         {...gridLayoutItemProps}
-      //         id={gridLayoutItemId}
-      //         style={{ gridArea }}
-      //         key={gridLayoutItemId}
-      //       >
-      //         {element}
-      //       </GridLayoutItem>
-      //     );
-      //   },
-      // );
-    }
-  }, [children]);
-
-  const childrenRef = useRef<GridLayoutItemElements>(buildGridLayoutItems);
-  console.log({ children: childrenRef.current });
+  const childrenRef = useRef<GridLayoutItemElements>(children);
 
   const setChildren = useCallback(
     (
@@ -203,11 +161,6 @@ export const useGridLayout = ({
       placeholders: [],
       stackedItems: [],
     });
-
-  console.log(`[useGridLayout] render`, {
-    savedLayout: layout,
-    savedChildElements: children,
-  });
 
   useMemo(() => {
     console.log(
@@ -245,10 +198,6 @@ export const useGridLayout = ({
 
   const updateGridChildItems = useCallback<GridChildPositionChangeHandler>(
     (updates, { placeholders, splitters } = NonContentResetOptions) => {
-      console.log(`[useGridLayout] updateGridChildItems`, {
-        updates,
-      });
-
       updates.forEach(([id, { column: columnPosition, row: rowPosition }]) => {
         if (columnPosition) {
           setGridColumn(id, columnPosition);
@@ -492,7 +441,6 @@ export const useGridLayout = ({
       addChildComponent,
       gridLayoutModel,
       gridModel,
-      id,
       layoutOptions?.newChildItem.header,
       setChildren,
     ],
@@ -677,9 +625,9 @@ export const useGridLayout = ({
 
   const handleTrackResize = useCallback<GridTrackResizeHandler>(
     (trackType, tracks) => {
-      // console.log(
-      //   `[useGridLayout] handleTrackResize ${trackType} [${tracks.join(" ")}]`,
-      // );
+      console.log(
+        `[useGridLayout] handleTrackResize ${trackType} [${tracks.join(" ")}]`,
+      );
       if (containerRef.current) {
         if (trackType === "column") {
           containerRef.current.style.gridTemplateColumns = tracks.join(" ");

@@ -38,6 +38,7 @@ body {
 
 .ShowcaseContent {
   background-color: var(--salt-container-primary-background);
+  height: 100%;
   overflow: hidden;
 }
 

@@ -248,11 +248,13 @@ export class GridModelChildItem implements IGridModelChildItem {
   dropTarget?: boolean | string;
   header?: boolean;
   height?: number;
+  horizontalSplitter = false;
   stackId?: string;
   resizeable: GridModelItemResizeable;
   row: GridModelPosition;
   title?: string;
   type: GridModelItemType;
+  verticalSplitter = false;
   width?: number;
 
   #dragging = false;
@@ -1260,12 +1262,17 @@ export class GridModel extends EventEmitter<GridModelEvents> {
       row: { start: rowStart, end: rowEnd },
     } = targetChild;
     const stackId = uuid();
+
     const stackChild = new GridModelChildItem({
       column: { start: colStart, end: colEnd },
       id: stackId,
       row: { start: rowStart, end: rowEnd },
       type: "stacked-content",
     });
+
+    const { horizontalSplitter: h, verticalSplitter: v } = targetChild;
+    stackChild.horizontalSplitter = stackedChild.horizontalSplitter = h;
+    stackChild.verticalSplitter = stackedChild.verticalSplitter = v;
 
     this.setTabState(stackId, [targetChild, stackedChild]);
 
@@ -1390,6 +1397,10 @@ export class GridModel extends EventEmitter<GridModelEvents> {
   }
 
   getSplitters() {
+    this.#childItems.forEach((childItem) => {
+      childItem.horizontalSplitter = false;
+      childItem.verticalSplitter = false;
+    });
     return this.#childItems.flatMap(this.getSplittersForChildItem);
   }
 
@@ -1405,7 +1416,11 @@ export class GridModel extends EventEmitter<GridModelEvents> {
 
     if (!isFixedWidthChildItem(childItem)) {
       const columnContrasAndSiblings =
-        this.findColContrasAndSiblings(childItem);
+        this.findColumnContrasAndSiblings(childItem);
+
+      console.log(`column contrasAndSiblings for #${childItem.id}`, {
+        columnContrasAndSiblings,
+      });
 
       if (columnContrasAndSiblings) {
         const resizeTrackIndex = column.start - 1;
@@ -1415,6 +1430,10 @@ export class GridModel extends EventEmitter<GridModelEvents> {
           before: columnContrasAndSiblings.contras.map((c) => c.id),
           after: columnContrasAndSiblings.siblings.map((c) => c.id),
         };
+
+        columnContrasAndSiblings.siblings.forEach((childItem) => {
+          childItem.verticalSplitter = true;
+        });
 
         splitters.push({
           align: "start",
@@ -1448,6 +1467,10 @@ export class GridModel extends EventEmitter<GridModelEvents> {
           after: rowContrasAndSiblings.siblings.map((c) => c.id),
         };
 
+        rowContrasAndSiblings.siblings.forEach((childItem) => {
+          childItem.horizontalSplitter = true;
+        });
+
         splitters.push({
           align: "start",
           ariaOrientation: "horizontal",
@@ -1472,7 +1495,7 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     return splitters;
   };
 
-  private findColContrasAndSiblings(childItem: GridModelChildItem) {
+  private findColumnContrasAndSiblings(childItem: GridModelChildItem) {
     const contrasLeft = this.getContrasLeft(childItem);
     if (contrasLeft.length > 0) {
       const siblingsBelow = this.getSiblingsBelow(childItem);

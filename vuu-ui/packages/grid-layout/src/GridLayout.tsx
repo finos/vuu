@@ -5,52 +5,21 @@ import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { CSSProperties, HTMLAttributes, ReactElement } from "react";
 import { DragDropProviderNext } from "./drag-drop-next/DragDropProviderNext";
-import type { ResizeOrientation } from "./grid-dom-utils";
 import { getGridArea } from "./grid-layout-utils";
 import { GridLayoutContext } from "./GridLayoutContext";
 import { GridLayoutItemProps } from "./GridLayoutItem";
 import { GridLayoutStackedItem } from "./GridLayoutStackedtem";
-import {
-  AriaOrientation,
-  GridColumnsAndRows,
-  GridLayoutChangeHandler,
-} from "./GridModel";
+import { GridColumnsAndRows, GridLayoutChangeHandler } from "./GridModel";
 import { GridPlaceholder } from "./GridPlaceholder";
 import { useGridLayout } from "./useGridLayout";
 import { useGridSplitterResizing } from "./useGridSplitterResizing";
+import { GridSplitter } from "./GridSplitter";
 
 import gridLayoutCss from "./GridLayout.css";
 
 const classBase = "vuuGridLayout";
 
 export type GridResizeable = "h" | "v" | "hv";
-
-export interface GridSplitterProps extends HTMLAttributes<HTMLDivElement> {
-  "aria-controls": string;
-  ariaOrientation: AriaOrientation;
-  orientation: ResizeOrientation;
-}
-
-const NO_DRAG_SOURCES = {} as const;
-
-export const GridSplitter = ({
-  "aria-controls": ariaControls,
-  ariaOrientation,
-  orientation,
-  ...htmlAttributes
-}: GridSplitterProps) => {
-  const id = `${ariaControls}-splitter-${orientation[0]}`;
-  return (
-    <div
-      {...htmlAttributes}
-      aria-controls={ariaControls}
-      aria-orientation={ariaOrientation}
-      className="vuuGridSplitter"
-      id={id}
-      role="separator"
-    />
-  );
-};
 
 export interface GridLayoutProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
@@ -61,6 +30,8 @@ export interface GridLayoutProps
   colsAndRows?: GridColumnsAndRows;
   onChange?: GridLayoutChangeHandler;
 }
+
+const NO_DRAG_SOURCES = {} as const;
 
 export const GridLayout = ({
   id: idProp,
@@ -107,6 +78,8 @@ export const GridLayout = ({
     id,
     onClick,
   });
+
+  // const splitterProps = useGridSplitter();
 
   const style = {
     ...gridModel.tracks.css,
@@ -162,6 +135,7 @@ export const GridLayout = ({
           ))}
           {splitters.map((splitter) => (
             <GridSplitter
+              // {...splitterProps}
               aria-controls={splitter.controls}
               ariaOrientation={splitter.ariaOrientation}
               id={splitter.id}

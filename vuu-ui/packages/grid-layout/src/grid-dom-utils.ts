@@ -6,14 +6,20 @@ import {
 import { GridModelChildItem } from "./GridModel";
 
 export const classNameLayoutItem = "vuuGridLayoutItem";
+export const classNameGridSplitter = "vuuGridSplitter";
 
 export type ResizeOrientation = "horizontal" | "vertical";
 
 // TODO cobvert these to GridLayoutPosition
 type GridPos = [number, number];
 
-export const isSplitter = (element: HTMLElement) =>
-  element.classList.contains("vuuGridSplitter");
+export const getGridSplitter = (el: HTMLElement) => {
+  if (el.classList.contains(classNameGridSplitter)) {
+    return el;
+  } else {
+    return el.closest(`.${classNameGridSplitter}`) as HTMLElement;
+  }
+};
 
 export const getGridLayoutItem = (el: HTMLElement) => {
   if (el.classList.contains(classNameLayoutItem)) {

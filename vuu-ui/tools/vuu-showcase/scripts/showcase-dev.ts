@@ -1,11 +1,10 @@
 import mdx from "@mdx-js/rollup";
-import chalk from "chalk";
 import fs from "fs";
 import MagicString from "magic-string";
-import open from "open";
 import { createFilter, createServer, type PluginOption } from "vite";
 import INDEX_HTML from "./html-template";
 import path from "path";
+import Watcher from "watcher";
 
 import { createFolder, linkSourceDirectory, writeFile } from "./utils";
 import { treeSourceFromFileSystem } from "./treeSourceFromFileSystem";
@@ -17,6 +16,16 @@ const start = performance.now();
 const treeSourceJson = treeSourceFromFileSystem(pathToExhibits);
 const end = performance.now();
 console.log(`[showcase-vite-api] building tree took ${end - start}ms`);
+
+const watcher = new Watcher(pathToExhibits, {
+  recursive: true,
+  ignoreInitial: true,
+});
+watcher.on("all", (event, targetPath /* targetPathNext*/) => {
+  // This is what the library does internally when you pass it a handler directly
+  console.log(`[watcher] ${event} ${targetPath}`); // => could be any target event: 'add', 'addDir', 'change', 'rename', 'renameDir', 'unlink' or 'unlinkDir'
+  // console.log(targetPathNext); // => the file system path "targetPath" got renamed to, this is only provided on 'rename'/'renameDir' events
+});
 
 const cwd = process.cwd();
 const __dirname = path.join(cwd, ".showcase/dev");
@@ -96,6 +105,9 @@ const server = await createServer({
     jsx: `automatic`,
     target: "esnext",
   },
+  optimizeDeps: {
+    include: ["@salt-ds/core", "@salt-ds/lab", "@salt-ds/icons"],
+  },
   root: __dirname,
   plugins: [cssInline(), mdx()],
 });
@@ -104,6 +116,12 @@ await server.listen();
 server.printUrls();
 server.bindCLIShortcuts({ print: true });
 
-console.log(`opening showcase at ${chalk.green("http://localhost:5173/")} ...`);
+// console.log(`opening showcase at ${chalk.green("http://localhost:5173/")} ...`);
+// open("http://localhost:5173/");
 
-open("http://localhost:5173/");
+process.on("SIGINT", async function () {
+  console.log("[showcase-dev] shutting down");
+  watcher.close();
+  await server.close();
+  process.exit();
+});
