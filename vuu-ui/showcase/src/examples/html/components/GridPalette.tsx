@@ -8,6 +8,7 @@ import cx from "clsx";
 import { DragEvent, HTMLAttributes, useCallback } from "react";
 
 import "./GridPalette.css";
+import { TemplateSource } from "@heswell/grid-layout/src/GridLayoutContext";
 
 const classBase = "vuuGridPalette";
 
@@ -26,7 +27,7 @@ export const GridPalette = ({
   ...htmlAttributes
 }: GridPaletteProps) => {
   const getDragSource = useCallback(
-    (evt: DragEvent<Element>): DragSource => {
+    (evt: DragEvent<Element>): TemplateSource => {
       const draggedItem = queryClosest(evt.target, ".vuuGridPalette-item");
       if (draggedItem) {
         const gridLayout = queryClosest(draggedItem, ".vuuGridLayout", true);

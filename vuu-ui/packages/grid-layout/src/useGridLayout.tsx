@@ -107,6 +107,18 @@ export const useGridLayout = ({
 
   const [, forceRender] = useState({});
 
+  useMemo(() => {
+    console.log(`colsAndRows has changed`, {
+      colsAndRows,
+    });
+  }, [colsAndRows]);
+
+  useMemo(() => {
+    console.log(`childrenProp has changed`, {
+      childrenProp,
+    });
+  }, [childrenProp]);
+
   /**
    * Construct the initial set of child elements and the GridLayoutDescriptor
    * which will be used to create the GridModel. We also save in state a copy
@@ -116,6 +128,9 @@ export const useGridLayout = ({
     [GridLayoutItemElements, GridLayoutDescriptor]
   >(() => {
     const savedGrid = getSavedGrid?.(id);
+    console.log(`[useGridLayout#${id}] children has changed`, {
+      savedGrid,
+    });
     if (savedGrid) {
       const { components: savedChildren, layout: savedLayout } = savedGrid;
       return [Object.values(savedChildren), savedLayout];
@@ -133,7 +148,12 @@ export const useGridLayout = ({
     }
   }, [childrenProp, getSavedGrid, id, colsAndRows]);
 
+  // Note we initialise this ref with the initial children from props. We subsequently
+  // only update it in response to manipulation of the GridLayout NOT in case of the
+  // children prop changing.
   const childrenRef = useRef<GridLayoutItemElements>(children);
+
+  console.log({ children, fromRef: childrenRef.current });
 
   const setChildren = useCallback(
     (
@@ -175,7 +195,7 @@ export const useGridLayout = ({
       //   `%c[useGridLayout#${id}] useMemo create the GridModel`,
       //   "color: green",
       // );
-      const gridModel = new GridModel(id, layout);
+      const gridModel = (window.gridModel = new GridModel(id, layout));
       const gridLayoutModel = new GridLayoutModel(gridModel);
       const callbackRef: RefCallback<HTMLDivElement> = (el) => {
         if (el) {
@@ -198,6 +218,7 @@ export const useGridLayout = ({
 
   const updateGridChildItems = useCallback<GridChildPositionChangeHandler>(
     (updates, { placeholders, splitters } = NonContentResetOptions) => {
+      console.log("[useGridLayout] updateGridChildItems", { updates });
       updates.forEach(([id, { column: columnPosition, row: rowPosition }]) => {
         if (columnPosition) {
           setGridColumn(id, columnPosition);
@@ -225,17 +246,14 @@ export const useGridLayout = ({
         setChildren((c) => c.filter((c) => c.props.id !== id));
       } else {
         // set a className
-        const gridItemEl = document.getElementById(id);
-        if (gridItemEl) {
-          // this should be set in code that handles dragging, not code that handles close
-          gridItemEl.classList.add("vuuGridLayoutItem-dragging");
-          gridItemEl.style.gridColumn = "1/1";
-        }
+        // this should be set in code that handles dragging, not code that handles close
+        const gridLayoutItem = gridModel.getChildItem(id, true);
+        gridLayoutItem.dragging = true;
       }
 
       gridLayoutModel.removeGridItem(id, reason);
     },
-    [gridLayoutModel, setChildren],
+    [gridLayoutModel, gridModel, setChildren],
   );
 
   const handleDragStart = useCallback<GridLayoutDragStartHandler>(
@@ -330,8 +348,8 @@ export const useGridLayout = ({
         const droppedGridItem = gridModel.getChildItem(droppedItemId, true);
         droppedGridItem.dragging = false;
 
-        const gridItemElement = document.getElementById(droppedItemId);
-        gridItemElement?.classList.remove("vuuGridLayoutItem-dragging");
+        // const gridItemElement = document.getElementById(droppedItemId);
+        // gridItemElement?.classList.remove("vuuGridLayoutItem-dragging");
 
         if (isGridLayoutSplitDirection(position)) {
           gridLayoutModel.dropSplitGridItem(droppedItemId, targetId, position);
@@ -523,6 +541,8 @@ export const useGridLayout = ({
             { id: dragSource.id, label: dragSource.label },
             dropPosition,
           );
+          const gridModelItem = gridModel.getChildItem(dragSource.id, true);
+          gridModelItem.dragging = false;
         } else if (sourceIsTemplate(dragSource)) {
           // we're dropping b atemplete item onto a tabstrip. Check that
           // we are handling this in the context of the correct layout
@@ -601,9 +621,32 @@ export const useGridLayout = ({
         case "close":
           removeGridItem(action.id, "close");
           break;
-        case "insert-tab":
-          // never used
-          console.log(`insert tab`);
+        case "add-child":
+          {
+            const { componentTemplate, title, stackId } = action;
+            const componentJSON = JSON.parse(componentTemplate.componentJson);
+
+            const newChildId = uuid();
+            const gridModelChildItem = new GridModelChildItem({
+              id: newChildId,
+              column: { start: 1, end: 1 },
+              dropTarget: true,
+              header: layoutOptions?.newChildItem.header,
+              resizeable: "hv",
+              row: { start: 1, end: 1 },
+              stackId,
+              title: title ?? componentTemplate.label ?? "New Item",
+            });
+            gridModel.addChildItem(gridModelChildItem);
+
+            const component = layoutFromJson(componentJSON as LayoutJSON, "");
+            addChildComponent(component, gridModelChildItem);
+
+            if (stackId) {
+              const tabState = gridModel.getTabState(stackId);
+              tabState.setActiveTab(title ?? gridModelChildItem.title);
+            }
+          }
           break;
         case "resize-grid-column":
           {
@@ -620,7 +663,12 @@ export const useGridLayout = ({
           );
       }
     },
-    [gridModel, removeGridItem],
+    [
+      addChildComponent,
+      gridModel,
+      layoutOptions?.newChildItem.header,
+      removeGridItem,
+    ],
   );
 
   const handleTrackResize = useCallback<GridTrackResizeHandler>(

@@ -114,9 +114,11 @@ export const ShowCaseLayoutNestedGrid = () => {
             >
               <GridLayoutItem
                 data-drop-target
+                header
                 id="brown"
                 resizeable="hv"
                 style={{ gridArea: "1/1/2/2" }}
+                title="Brown"
               >
                 <DebugGridItem
                   style={{

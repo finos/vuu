@@ -1,0 +1,21 @@
+.vuuGridLayoutStackedItem {
+  /* height: var(--vuu-layout-tabs-height); */
+    .saltTabsNext {
+
+        .saltTabBar {
+            justify-content: flex-start;
+        }
+
+        .saltTabListNext {
+            width: auto;
+        }
+
+        margin-top: 3px;
+        .saltTabNext {
+        margin-left: 2px;
+            &:first-child {
+                margin-left: 0;
+            }
+        }
+    }
+}

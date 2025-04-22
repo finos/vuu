@@ -28,68 +28,6 @@
   
 }
 
-.vuuGridLayoutItem {
-  --vuu-header-height: var(--header-height, 25px);
-  border: solid 1px white;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-
-  &.vuuGridLayoutItem-dragging {
-    display: none;
-    grid-column: 0/0 !important;
-    grid-row: 0/0;
-  }
-
-  &.has-h-splitter:not(.vuu-stacked) {
-    margin-top: 7px;
-  }
-  &.has-v-splitter {
-    margin-left: 7px;
-  }
-}
-
-.vuuGridLayoutItem-active {
-  border: dashed 1px blue;
-  position: relative;
-}
-
-/* .vuuGridLayoutItem > * {
-  position: absolute;
-  inset: calc(var(--vuu-header-height) + var(--vuu-grid-gap))
-    var(--vuu-grid-gap) var(--vuu-grid-gap) var(--vuu-grid-gap);
-} */
-
-.vuuGridLayoutItemHeader {
-  align-items: center;
-  background-color: #ccc;
-  cursor: grab;
-  display: flex;
-  flex: 0 0 var(--vuu-grid-header-height);
-  /* inset: var(--vuu-grid-gap) var(--vuu-grid-gap) auto var(--vuu-grid-gap); */
-  height: var(--vuu-grid-header-height);
-  padding: 0 var(--salt-spacing-100) 0 0;
-  position: relative;
-
-  [data-align="right"] {
-    margin-left: auto;
-  }
-
-  .vuuGridLayoutItemHeader-title {
-    align-items: center;
-    display: flex;
-    height: 100%;
-    padding: 0 var(--salt-spacing-200);
-  }
-}
-
-.vuuGridLayoutStackedItem {
-  /* height: var(--vuu-layout-tabs-height); */
-  .saltTabsNext {
-    margin-top: 3px;
-  }
-}
-
 .vuu-detached {
   visibility: hidden;
 }

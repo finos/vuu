@@ -7,6 +7,7 @@ import {
   SyntheticEvent,
   useCallback,
   useEffect,
+  useState,
 } from "react";
 
 import {
@@ -16,36 +17,50 @@ import {
   TabNextTrigger,
   TabsNext,
 } from "@salt-ds/lab";
-import gridLayoutCss from "./GridLayout.css";
 import { GridLayoutItemProps } from "./GridLayoutItem";
-import gridSplitterCss from "./GridSplitter.css";
 import { useGridChildProps } from "./useGridChildProps";
 import { useDragContext } from "./drag-drop-next/DragDropProviderNext";
-import { useGridModel } from "./GridLayoutContext";
+import {
+  ComponentTemplate,
+  useGridLayoutDispatch,
+  useGridModel,
+} from "./GridLayoutContext";
+import { IconButton } from "@finos/vuu-ui-controls";
+import { TabMenu } from "./TabMenu";
+import { AddTabDialog } from "./AddTabDialog";
+
+import gridLayoutStackedItemCss from "./GridLayoutStackedItem.css";
 
 const classBaseItem = "vuuGridLayoutStackedItem";
 
+export interface GridLayoutStackedItemProps extends GridLayoutItemProps {
+  allowAddTab?: boolean;
+  getNewComponent?: () => ComponentTemplate;
+  showMenu?: boolean;
+}
+
 export const GridLayoutStackedItem = ({
+  allowAddTab,
   children,
   className: classNameProp,
   header,
   id,
+  getNewComponent,
   resizeable,
+  showMenu,
   style: styleProp,
   title,
   ...htmlAttributes
-}: GridLayoutItemProps) => {
+}: GridLayoutStackedItemProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
-    testId: "vuu-grid-layout",
-    css: gridLayoutCss,
+    testId: "vuu-grid-layout-stacked-item",
+    css: gridLayoutStackedItemCss,
     window: targetWindow,
   });
-  useComponentCssInjection({
-    testId: "vuu-grid-splitter",
-    css: gridSplitterCss,
-    window: targetWindow,
-  });
+  const [confirmationOpen, setConfirmationOpen] = useState(false);
+
+  console.log(`[GridLayoutStackedItem#${id}] render`);
 
   const { registerTabsForDragDrop } = useDragContext();
 
@@ -53,16 +68,17 @@ export const GridLayoutStackedItem = ({
     registerTabsForDragDrop(id);
   }, [id, registerTabsForDragDrop]);
 
-  const { horizontalSplitter, verticalSplitter, ...layoutProps } =
-    useGridChildProps({
-      id,
-      resizeable,
-      style: styleProp,
-      type: "stacked-content",
-    });
+  const { gridArea, horizontalSplitter, verticalSplitter } = useGridChildProps({
+    id,
+    resizeable,
+    style: styleProp,
+    type: "stacked-content",
+  });
+
+  const dispatch = useGridLayoutDispatch();
 
   const { getTabState } = useGridModel();
-  const tabState = getTabState(id);
+  const tabState = getTabState(id, "create");
 
   const handleTabSelectionChange = useCallback(
     (_: SyntheticEvent | null, value: string) => {
@@ -78,7 +94,7 @@ export const GridLayoutStackedItem = ({
 
   const style = {
     ...styleProp,
-    ...layoutProps,
+    gridArea,
   };
 
   const tabsId = `tabs-${id}`;
@@ -93,6 +109,38 @@ export const GridLayoutStackedItem = ({
     `[GridLayoutStackedItem] render ${tabState.tabs.map((t) => t.label)}`,
   );
 
+  const handleConfirm = (newTab: string) => {
+    const componentTemplate = getNewComponent?.();
+    if (componentTemplate) {
+      dispatch({
+        title: newTab,
+        type: "add-child",
+        componentTemplate,
+        stackId: id,
+      });
+    }
+    setConfirmationOpen(false);
+  };
+
+  const handleCancel = () => {
+    setConfirmationOpen(false);
+  };
+
+  const handleClickAddTab = useCallback(() => {
+    setConfirmationOpen(true);
+    // const componentTemplate = getNewComponent?.();
+    // if (componentTemplate) {
+    //   console.log("we have a new component template", {
+    //     componentTemplate,
+    //   });
+    //   dispatch({
+    //     type: "add-child",
+    //     componentTemplate,
+    //     stackId: id,
+    //   });
+    // }
+  }, []);
+
   return (
     <>
       <div
@@ -104,7 +152,7 @@ export const GridLayoutStackedItem = ({
       >
         <TabsNext
           onChange={handleTabSelectionChange}
-          value={tabState.tabs[tabState.active].label}
+          value={tabState.tabs[tabState.active]?.label ?? null}
         >
           <TabBar divider>
             <TabListNext
@@ -123,12 +171,31 @@ export const GridLayoutStackedItem = ({
                   key={label}
                 >
                   <TabNextTrigger>{label}</TabNextTrigger>
+                  {showMenu ? (
+                    <TabMenu layoutItemId={gridLayoutItemId} />
+                  ) : null}
                 </TabNext>
               ))}
             </TabListNext>
+            <IconButton
+              aria-label="Create Tab"
+              className={`${classBaseItem}-addTabButton`}
+              data-embedded
+              icon="add"
+              data-overflow-priority="1"
+              key="addButton"
+              onClick={handleClickAddTab}
+              variant="secondary"
+              tabIndex={-1}
+            />
           </TabBar>
         </TabsNext>
       </div>
+      <AddTabDialog
+        open={confirmationOpen}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </>
   );
 };

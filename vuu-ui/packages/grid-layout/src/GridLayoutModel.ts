@@ -8,6 +8,8 @@ import {
   doesResizeRequireNewTrack as isResizeTrackShared,
   itemsFillColumn,
   itemsFillRow,
+  setTrackEnd,
+  setTrackStart,
   splitGridChildPosition,
 } from "./grid-layout-utils";
 import {
@@ -49,8 +51,7 @@ export type GridLayoutModelItemType =
 
 type OneOrBothGridLayoutModelCoordinates =
   | GridLayoutModelCoordinates
-  | OptionalProperty<GridLayoutModelCoordinates, "column">
-  | OptionalProperty<GridLayoutModelCoordinates, "row">;
+  | OptionalProperty<GridLayoutModelCoordinates, TrackType>;
 
 export type GridItemUpdate = [string, OneOrBothGridLayoutModelCoordinates];
 type ColumnAndRowUpdates = [GridItemUpdate[], GridItemUpdate[]];
@@ -321,126 +322,106 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
     return [[], []];
   };
 
-  private setColExpanded = ({
-    id,
-    column: { start, end },
-  }: GridModelChildItem): GridItemUpdate => [
-    id,
-    { column: { start, end: end + 1 } },
-  ];
-
-  private setRowExpanded = ({
-    id,
-    row: { start, end },
-  }: GridModelChildItem): GridItemUpdate => [
-    id,
-    { row: { start, end: end + 1 } },
-  ];
-
-  private setShiftColForward = ({
-    id,
-    column: { start, end },
-  }: GridModelChildItem): GridItemUpdate => [
-    id,
-    { column: { start: start + 1, end: end + 1 } },
-  ];
-
-  private setShiftRowForward = ({
-    id,
-    row: { start, end },
-  }: GridModelChildItem): GridItemUpdate => [
-    id,
-    { row: { start: start + 1, end: end + 1 } },
-  ];
-
   removeGridItem(gridItemId: string, reason: GridItemRemoveReason) {
     const gridItem = this.gridModel.getChildItem(gridItemId, true);
     this.gridModel.removeChildItem(gridItemId, reason);
 
-    const [colItemUpdates, rowItemUpdates] =
-      this.updateContrasToOccupySpace(gridItem);
-
-    if (rowItemUpdates.length || colItemUpdates.length) {
-      colItemUpdates.forEach(([id, { column: colPosition }]) => {
-        if (colPosition) {
-          this.gridModel.updateChildColumn(id, colPosition);
-        }
+    if (gridItem.stackId) {
+      const tabState = this.gridModel.getTabState(gridItem.stackId, "throw");
+      console.log("were removing an item from a stack", {
+        tabState,
       });
-      rowItemUpdates.forEach(([id, { row: rowPosition }]) => {
-        if (rowPosition) {
-          this.gridModel.updateChildRow(id, rowPosition);
-        }
-      });
+      tabState.removeTab(gridItem.id);
+    } else {
+      const [colItemUpdates, rowItemUpdates] =
+        this.updateContrasToOccupySpace(gridItem);
 
-      const [unusedColLines, unusedRowLines] =
-        this.gridModel.findUnusedGridLines();
-      // TODO do we ever hit this code any more ?
-      console.log({ unusedColLines, unusedRowLines });
-      if (unusedColLines.length === 1) {
-        const trackIndex = unusedColLines[0] - 1;
-        const colUpdates = this.removeTrack(trackIndex, "horizontal");
-
-        colUpdates.forEach(([id, u]) => {
-          const existingUpdate = colItemUpdates.find(
-            ([itemId]) => id === itemId,
-          );
-          if (existingUpdate) {
-            existingUpdate[1] = u;
-          } else {
-            colItemUpdates.push([id, u]);
+      if (rowItemUpdates.length || colItemUpdates.length) {
+        colItemUpdates.forEach(([id, { column: colPosition }]) => {
+          if (colPosition) {
+            this.gridModel.updateChildColumn(id, colPosition);
           }
         });
-      } else if (unusedColLines.length > 1) {
-        throw Error(
-          `[GridLayoutModel] removeGridItem, unexpected number of unused column lines ${unusedColLines.length}`,
-        );
-      }
-
-      if (unusedRowLines.length === 1) {
-        const trackIndex = unusedRowLines[0] - 1;
-        const rowUpdates = this.removeTrack(trackIndex, "vertical");
-        rowUpdates.forEach(([id, u]) => {
-          const existingUpdate = rowItemUpdates.find(
-            ([itemId]) => id === itemId,
-          );
-          if (existingUpdate) {
-            existingUpdate[1] = u;
-          } else {
-            rowItemUpdates.push([id, u]);
+        rowItemUpdates.forEach(([id, { row: rowPosition }]) => {
+          if (rowPosition) {
+            this.gridModel.updateChildRow(id, rowPosition);
           }
         });
-      } else if (unusedRowLines.length > 1) {
-        throw Error(
-          `[GridLayoutModel] removeGridItem, unexpected number of unused row lines ${unusedRowLines.length}`,
+
+        const [unusedColLines, unusedRowLines] =
+          this.gridModel.findUnusedGridLines();
+        // TODO do we ever hit this code any more ?
+        console.log({ unusedColLines, unusedRowLines });
+        if (unusedColLines.length === 1) {
+          const trackIndex = unusedColLines[0] - 1;
+          const colUpdates = this.removeTrack(trackIndex, "horizontal");
+
+          colUpdates.forEach(([id, u]) => {
+            const existingUpdate = colItemUpdates.find(
+              ([itemId]) => id === itemId,
+            );
+            if (existingUpdate) {
+              existingUpdate[1] = u;
+            } else {
+              colItemUpdates.push([id, u]);
+            }
+          });
+        } else if (unusedColLines.length > 1) {
+          throw Error(
+            `[GridLayoutModel] removeGridItem, unexpected number of unused column lines ${unusedColLines.length}`,
+          );
+        }
+
+        if (unusedRowLines.length === 1) {
+          const trackIndex = unusedRowLines[0] - 1;
+          const rowUpdates = this.removeTrack(trackIndex, "vertical");
+          rowUpdates.forEach(([id, u]) => {
+            const existingUpdate = rowItemUpdates.find(
+              ([itemId]) => id === itemId,
+            );
+            if (existingUpdate) {
+              existingUpdate[1] = u;
+            } else {
+              rowItemUpdates.push([id, u]);
+            }
+          });
+        } else if (unusedRowLines.length > 1) {
+          throw Error(
+            `[GridLayoutModel] removeGridItem, unexpected number of unused row lines ${unusedRowLines.length}`,
+          );
+        }
+
+        if (unusedColLines.length === 1) {
+          const [indexOfRemovedColumnTrack] = unusedColLines;
+          this.gridModel.removeGridTrack(
+            "column",
+            indexOfRemovedColumnTrack - 1,
+            "bwd",
+            false,
+          );
+        }
+
+        if (unusedRowLines.length === 1) {
+          const [indexOfRemovedRowTrack] = unusedRowLines;
+          this.gridModel.removeGridTrack(
+            "row",
+            indexOfRemovedRowTrack - 1,
+            "bwd",
+            false,
+          );
+        }
+
+        this.emit(
+          "child-position-updates",
+          colItemUpdates.concat(rowItemUpdates),
+          { placeholders: true, splitters: true },
         );
       }
 
-      if (unusedColLines.length === 1) {
-        const [indexOfRemovedColumnTrack] = unusedColLines;
-        this.gridModel.removeGridColumn(
-          indexOfRemovedColumnTrack - 1,
-          "bwd",
-          false,
-        );
+      if (reason !== "placeholder") {
+        this.gridModel.createPlaceholders();
       }
-
-      if (unusedRowLines.length === 1) {
-        const [indexOfRemovedRowTrack] = unusedRowLines;
-        this.gridModel.removeGridRow(indexOfRemovedRowTrack - 1, "bwd", false);
-      }
-
-      this.emit(
-        "child-position-updates",
-        colItemUpdates.concat(rowItemUpdates),
-        { placeholders: true, splitters: true },
-      );
     }
-
-    if (reason !== "placeholder") {
-      this.gridModel.createPlaceholders();
-    }
-
-    return [];
   }
 
   dropReplaceGridItem(droppedItemId: string, targetItemId: string) {
@@ -483,77 +464,44 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
     );
   }
 
+  /**
+   * We're going to resize a gridItem that shares a grid line with one or
+   * more other grid items. We need to insert a new grid line, then anchor
+   * the griditem to be resized to the new grid line.
+   */
   addTrackForResize(
     trackType: TrackType,
-    newTrackIndex: number,
     newTrackSize: number,
     resizeOperation: GridLayoutResizeOperation,
-    trackIndex: number,
+    index: number,
     state: ResizeState,
   ) {
-    console.log(
-      `[GridLayoutModel] addTrackForResize ${newTrackIndex} ${newTrackSize}`,
-    );
-
     const { splitter } = state;
     const { before: contraIds, after: resizeIds } = splitter.resizedChildItems;
-    const resizeDirection = splitter.orientation;
 
-    const expandingResizeItem = resizeOperation === "expand";
-    const indexAdjustment = expandingResizeItem ? -1 : +1;
+    const position = resizeOperation === "expand" ? "before" : "after";
 
-    this.gridModel.tracks.insertTrack(
+    this.gridModel.insertGridTrack(
       trackType,
+      { index, position },
       newTrackSize,
-      trackIndex,
-      expandingResizeItem,
     );
 
-    const updates = this.addTrack(newTrackIndex, resizeDirection);
+    const updates: GridItemUpdate[] = [];
+
+    const adjustment = position === "before" ? -1 : 1;
+    resizeIds.forEach((id) => {
+      const gridItem = this.gridModel.getChildItem(id, true);
+      updates.push(setTrackStart(trackType, gridItem, adjustment));
+    });
 
     contraIds.forEach((id) => {
-      const {
-        [trackType]: { start, end },
-      } = this.gridModel.getChildItem(id, true);
-      const existingUpdate = updates.find(
-        ([itemId, positions]) => id === itemId && positions[trackType],
-      );
-      if (existingUpdate) {
-        const [, { [trackType]: position }] = existingUpdate;
-        if (position) {
-          position.end += indexAdjustment;
-        }
-      } else {
-        if (trackType === "column") {
-          updates.push([id, { column: { start, end: end + indexAdjustment } }]);
-        } else {
-          updates.push([id, { row: { start, end: end + indexAdjustment } }]);
-        }
-      }
+      const gridItem = this.gridModel.getChildItem(id, true);
+      updates.push(setTrackEnd(trackType, gridItem, adjustment));
     });
 
-    resizeIds.forEach((id) => {
-      const {
-        [trackType]: { start, end },
-      } = this.gridModel.getChildItem(id, true);
-      const existingUpdate = updates.find(
-        ([itemId, positions]) => id === itemId && positions[trackType],
-      );
-      if (existingUpdate) {
-        const [, { [trackType]: position }] = existingUpdate;
-        if (position) {
-          position.start += indexAdjustment;
-        }
-      } else {
-        if (trackType === "column") {
-          updates.push([id, { column: { start, end: end + indexAdjustment } }]);
-        } else {
-          updates.push([id, { row: { start, end: end + indexAdjustment } }]);
-        }
-      }
-    });
-
-    this.applyUpdates(updates);
+    // can't the event emitting be done by the GridModel ?
+    this.gridModel.applyUpdates(updates);
 
     this.emit("child-position-updates", updates, { splitters: true });
   }
@@ -595,7 +543,7 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
       );
     }
 
-    this.applyUpdates(updates);
+    this.gridModel.applyUpdates(updates);
 
     return updates;
   }
@@ -615,39 +563,24 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
     let updates: GridItemUpdate[] = [];
 
     const trackType = resizeDirection === "vertical" ? "row" : "column";
-    const tracks = this.gridModel.tracks.getTracks(trackType);
-
-    // determine where we need to split the track and check that this is, in fact, neccesary
-    const isVertical = resizeDirection === "vertical";
-
     const resizeTrack = targetGridItem[trackType];
-    let newTrackIndex = resizeTrack.start - 1;
 
     if (resizeTrack.end - resizeTrack.start === 1) {
       // Splitting a single column
-      updates = this.addTrack(newTrackIndex, resizeDirection);
-      this.applyUpdates(updates);
 
-      updates = updates.filter(
-        ([id]) => id !== droppedItemId && id !== targetItemId,
-      );
+      const newTrackIndex = resizeTrack.start - 1;
+      this.gridModel.splitGridTrack(trackType, newTrackIndex);
 
       updates = updates.concat(
         this.dropSplitTarget(
           droppedItemId,
           targetItemId,
           splitDirection,
-          isVertical
+          trackType === "row"
             ? targetGridItem.row.end - 1
             : targetGridItem.column.end - 1,
         ),
       );
-      const targetTrack = tracks[newTrackIndex];
-      if (targetTrack.isFraction) {
-        this.gridModel.tracks.measure(trackType);
-      }
-
-      this.gridModel.tracks.splitTrack(trackType, newTrackIndex);
     } else {
       // Is there already a track line in the required position
       const bisectingGridTrack = this.gridModel.tracks.getBisectingTrack(
@@ -674,17 +607,12 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
           );
         }
 
-        this.applyUpdates(updates);
+        this.gridModel.applyUpdates(updates);
       } else {
-        newTrackIndex = this.gridModel.tracks.splitTracks(
+        const newTrackIndex = this.gridModel.splitGridTracks(
           trackType,
           resizeTrack.start,
           resizeTrack.end,
-        );
-        updates = this.addTrack(newTrackIndex, resizeDirection);
-
-        updates = updates.filter(
-          ([id]) => id !== droppedItemId && id !== targetItemId,
         );
 
         updates = updates.concat(
@@ -704,36 +632,6 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
       { splitters: true },
       // updates.filter(([id]) => id !== droppedItemId),
     );
-  }
-
-  /*
-  When we add a track, all current track edges will be increased by 1.
-  Any gridItem bound to an edge equal to or greater than the one being
-  added must be adjusted.
- */
-  addTrack(trackIndex: number, resizeDirection: GridLayoutResizeDirection) {
-    const gridPosition = trackIndex + 1;
-    const updates: GridItemUpdate[] = [];
-
-    const [setExpanded, setShiftForward] =
-      resizeDirection === "vertical"
-        ? [this.setRowExpanded, this.setShiftRowForward]
-        : [this.setColExpanded, this.setShiftColForward];
-
-    const track = resizeDirection === "vertical" ? "row" : "column";
-    for (const item of this.gridModel.childItems) {
-      const { start, end } = item[track];
-
-      if (start > gridPosition) {
-        updates.push(setShiftForward(item));
-      } else if (end > gridPosition) {
-        updates.push(setExpanded(item));
-      }
-    }
-
-    this.applyUpdates(updates);
-
-    return updates;
   }
 
   /*
@@ -768,7 +666,7 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
       }
     }
 
-    this.applyUpdates(updates);
+    this.gridModel.applyUpdates(updates);
 
     return updates;
   }
@@ -792,16 +690,5 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
         )
         .join("")}
     `;
-  }
-
-  private applyUpdates(updates: GridItemUpdate[]) {
-    updates?.forEach(([id, { column: columnPosition, row: rowPosition }]) => {
-      if (columnPosition) {
-        this.gridModel.updateChildColumn(id, columnPosition);
-      }
-      if (rowPosition) {
-        this.gridModel.updateChildRow(id, rowPosition);
-      }
-    });
   }
 }

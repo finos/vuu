@@ -87,7 +87,7 @@ export class SpaceMan {
   leaveDragContainer() {
     console.log(`%cLeaveDragContainer`, "color:red;font-weight:bold;");
     // TODO we need to undo this at end of drag operation
-    this.freezeContainer();
+    // this.freezeContainer();
     this.#withinDragContainer = false;
     this.#state = "away";
     this.setSpacerSizes(0, 0);
@@ -156,7 +156,7 @@ export class SpaceMan {
           : index;
       this.enterDragContainer();
       console.log(`insert first spacer dragOperation ${this.#dragOperation}`);
-      this.insertSpacer(index, this.#dragContext.dragElementWidth);
+      this.insertSpacer(index, this.#dragContext.dragLabelWidth);
 
       if (this.#dragOperation === "none") {
         this.#dragOperation = "remote";
@@ -234,17 +234,19 @@ export class SpaceMan {
     }
   }
 
-  private freezeContainer() {
-    if (this.#dragContainer) {
-      const { width } = this.#dragContainer.getBoundingClientRect();
-      this.#dragContainer.style.width = `${width}px`;
-    }
-  }
-  private unfreezeContainer() {
-    if (this.#dragContainer) {
-      this.#dragContainer.style.width = "";
-    }
-  }
+  // private freezeContainer() {
+  //   if (this.#dragContainer) {
+  //     console.log("FREEZE container");
+  //     const { width } = this.#dragContainer.getBoundingClientRect();
+  //     this.#dragContainer.style.width = `${width}px`;
+  //   }
+  // }
+  // private unfreezeContainer() {
+  //   if (this.#dragContainer) {
+  //     console.log("UNFREEZE container");
+  //     this.#dragContainer.style.width = "";
+  //   }
+  // }
 
   private clearSpacers() {
     const propertyName = this.#sizeProperty;

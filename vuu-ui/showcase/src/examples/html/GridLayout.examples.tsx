@@ -21,7 +21,6 @@ import { GridPalette, GridPaletteItem } from "./components/GridPalette";
 
 import "./GridLayout.examples.css";
 import { Button } from "@salt-ds/core";
-import { CSSTrackSize } from "@heswell/grid-layout/src/GridModel";
 
 export const SingleItemFillsGrid = () => {
   return (
@@ -48,72 +47,6 @@ export const SingleItemFillsGrid = () => {
   );
 };
 
-export const SingleStackedItemFillsGrid = () => {
-  return (
-    <GridLayout
-      colsAndRows={{ cols: ["1fr"], rows: ["1fr"] }}
-      full-page
-      id="GridLayout1"
-    >
-      <GridLayoutItem
-        data-drop-target
-        header
-        id="brown"
-        key="brown"
-        resizeable="hv"
-        style={{
-          gridArea: "1/1/2/2",
-        }}
-        stackId="tabs-1"
-        title="Brown"
-      >
-        <DebugGridItem style={{ background: "brown" }} />
-      </GridLayoutItem>
-      <GridLayoutItem
-        data-drop-target
-        header
-        id="navy"
-        key="navy"
-        resizeable="hv"
-        style={{
-          gridArea: "1/1/2/2",
-        }}
-        stackId="tabs-1"
-        title="Navy"
-      >
-        <DebugGridItem style={{ background: "navy" }} />
-      </GridLayoutItem>
-      <GridLayoutItem
-        data-drop-target
-        header
-        id="red"
-        key="red"
-        resizeable="hv"
-        style={{
-          gridArea: "1/1/2/2",
-        }}
-        stackId="tabs-1"
-        title="Red"
-      >
-        <DebugGridItem style={{ background: "red" }} />
-      </GridLayoutItem>
-      <GridLayoutItem
-        data-drop-target
-        header
-        id="yellow"
-        key="yellow"
-        resizeable="hv"
-        style={{
-          gridArea: "1/1/2/2",
-        }}
-        stackId="tabs-1"
-        title="Yellow"
-      >
-        <DebugGridItem style={{ background: "yellow" }} />
-      </GridLayoutItem>
-    </GridLayout>
-  );
-};
 // prettier-ignore
 export const TowerOfTwoStackedItems = () => {
   return (
@@ -888,8 +821,8 @@ const closeButtonStyleRight: CSSProperties = {
 const flip = (size: string) => (size === "0px" ? "200px" : "0px");
 
 export const FixedAppHeaderCollapsibleSidebars = () => {
-  const [cols, setCols] = useState<CSSTrackSize[]>(["200px", "1fr", "200px"]);
-  const [rows] = useState<CSSTrackSize[]>(["48px", "40px", "1fr"]);
+  const [cols, setCols] = useState<TrackSize[]>(["200px", "1fr", "200px"]);
+  const [rows] = useState<TrackSize[]>(["48px", "40px", "1fr"]);
   const toggleLeftSidebar = () => {
     setCols(([col1, col2, col3]) => [flip(col1), col2, col3]);
   };
@@ -1265,116 +1198,6 @@ export const EmptyWithPalette = () => {
           </GridLayoutItem>
         </GridLayout>
       </GridLayoutProvider>
-    </>
-  );
-};
-
-export const ShowCaseLayout = () => {
-  const paletteItems = useMemo<GridPaletteItem[]>(
-    () => [
-      {
-        id: "red",
-        label: "Red",
-        type: "DebugGridItem",
-        props: {
-          style: {
-            background: "red",
-          },
-        },
-      },
-      {
-        id: "green",
-        label: "Green",
-        type: "DebugGridItem",
-        props: {
-          style: {
-            background: "green",
-          },
-        },
-      },
-      {
-        id: "yellow",
-        label: "Yellow",
-        type: "DebugGridItem",
-        props: {
-          style: {
-            background: "yellow",
-          },
-        },
-      },
-      {
-        id: "brown",
-        label: "Brown",
-        type: "DebugGridItem",
-        props: {
-          style: {
-            background: "brown",
-          },
-        },
-      },
-    ],
-    [],
-  );
-  return (
-    <>
-      <div id="dragImage" style={{ position: "absolute", left: 0 }}></div>
-
-      <GridLayout
-        full-page
-        id="GridLayoutE"
-        colsAndRows={{
-          cols: ["200px", "1fr", "200px"],
-          rows: ["48px", "40px", "1fr"],
-        }}
-      >
-        <GridLayoutItem id="app-header" style={{ gridArea: "1/1/2/4" }}>
-          <div style={{ background: "yellow" }}>AppHeader</div>
-        </GridLayoutItem>
-        <GridLayoutItem
-          id="palette"
-          resizeable="hv"
-          style={{ gridArea: "2/1/4/2" }}
-        >
-          <GridPalette paletteItems={paletteItems} />
-        </GridLayoutItem>
-
-        <GridLayoutItem id="app-toolbar" style={{ gridArea: "2/2/3/3" }}>
-          <div style={{ background: "brown", color: "white" }}>Toolbar</div>
-        </GridLayoutItem>
-
-        <GridLayoutItem
-          id="brown"
-          stackId="main-tabs"
-          style={{ gridArea: "3/2/4/3" }}
-          title="Brown"
-        >
-          <div style={{ background: "brown", color: "white" }}>Brown</div>
-        </GridLayoutItem>
-        <GridLayoutItem
-          id="navy"
-          stackId="main-tabs"
-          style={{ gridArea: "3/2/4/3" }}
-          title="Navy"
-        >
-          <div style={{ background: "navy", color: "white" }}>Navy</div>
-        </GridLayoutItem>
-        <GridLayoutItem
-          id="gray"
-          stackId="main-tabs"
-          style={{ gridArea: "3/2/4/3" }}
-          title="Gray"
-        >
-          <div style={{ background: "gray", color: "white" }}>Gray</div>
-        </GridLayoutItem>
-        <GridLayoutItem
-          id="black"
-          stackId="main-tabs"
-          style={{ gridArea: "3/2/4/3" }}
-          title="Black"
-        >
-          <div style={{ background: "black", color: "white" }}>Black</div>
-        </GridLayoutItem>
-      </GridLayout>
     </>
   );
 };

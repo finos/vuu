@@ -5,7 +5,7 @@ import {
   sourceIsTabbedComponent,
   sourceIsTemplate,
 } from "../GridLayoutContext";
-import { initializeDragContainer } from "./drag-drop-listeners";
+import { initializeDragContainer } from "./tabstrip-drag-drop";
 
 type DragSourceDescriptor = {
   // TODO make optional default is self
@@ -80,7 +80,6 @@ export class DragContext extends EventEmitter<DragContextEvents> {
 
   beginDrag(e: DragEvent, dragSource: DragSource) {
     const { clientX: x, clientY: y, dataTransfer } = e;
-    console.log(`[DragContextNext] beginDrag #${dragSource.layoutId}`);
     if (dataTransfer) {
       dataTransfer.effectAllowed = "move";
       if (sourceIsTemplate(dragSource)) {
@@ -93,10 +92,19 @@ export class DragContext extends EventEmitter<DragContextEvents> {
         throw Error("whaat");
       }
       const { height, width } = dragSource.element.getBoundingClientRect();
+      let dragLabelWidth = width;
+      if (sourceIsComponent(dragSource) && dragSource.dragElement) {
+        dragLabelWidth = dragSource.dragElement.getBoundingClientRect()?.width;
+      }
+
+      console.log(
+        `[DragContextNext] beginDrag #${dragSource.layoutId} dragLabelWidth ${dragLabelWidth} dragElementWidth ${width}`,
+      );
       this.#dragSource = dragSource;
       this.#dropped = false;
       this.#dragElementHeight = height;
       this.#dragElementWidth = width;
+      this.#dragLabelWidth = dragLabelWidth;
       this.#mouseX = x;
       this.#mouseY = y;
     }
@@ -177,6 +185,10 @@ export class DragContext extends EventEmitter<DragContextEvents> {
 
   get dragElementWidth() {
     return this.#dragElementWidth ?? 100;
+  }
+
+  get dragLabelWidth() {
+    return this.#dragLabelWidth ?? this.dragElementWidth;
   }
 
   get dragSource() {
