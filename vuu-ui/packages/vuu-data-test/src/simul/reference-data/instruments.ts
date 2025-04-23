@@ -1,4 +1,4 @@
-import { isinGenerator } from "@thomaschaplin/isin-generator";
+import { isinGenerator } from "./isin-generator";
 import { currencies } from "./currencies";
 import { locations, suffixes } from "./locations";
 import { lotsizes } from "./lotsizes";
@@ -24,7 +24,7 @@ export type InstrumentsDataRow = [
   number,
   ric,
   price,
-  date
+  date,
 ];
 
 export const InstrumentColumnMap = {
@@ -36,7 +36,7 @@ export const InstrumentColumnMap = {
   number: 5,
   ric: 6,
   price: 7,
-  date: 8
+  date: 8,
 } as const;
 
 const instrumentsData: InstrumentsDataRow[] = [];
@@ -80,7 +80,7 @@ for (const char1 of chars1) {
           lotSize,
           ric,
           price,
-          date
+          date,
         ]);
         count++;
       }
@@ -99,7 +99,7 @@ export const getRic = (defaultRic: string) => {
 export const instrumentsTable = new Table(
   schemas.instruments,
   instrumentsData,
-  buildDataColumnMap(schemas, "instruments")
+  buildDataColumnMap(schemas, "instruments"),
 );
 
 export { instrumentsData };

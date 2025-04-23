@@ -48,6 +48,7 @@
     "typecheck": "tsc --noEmit --project tsconfig-typecheck.json"
   },
   "dependencies": {
+    "@thomaschaplin/cusip-generator": "^1.0.22",
     "@types/jest": "^29.5.11",
     "@types/node": "^18.0.0",
     "@types/react": "^18.3.3",

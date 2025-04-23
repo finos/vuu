@@ -11,8 +11,7 @@
   },
   "dependencies": {
     "@finos/vuu-data-local": "0.0.26",
-    "@finos/vuu-utils": "0.0.26",
-    "@thomaschaplin/isin-generator": "1.0.3"
+    "@finos/vuu-utils": "0.0.26"
   },
   "devDependencies": {
     "@finos/vuu-protocol-types": "0.0.26",
