@@ -60,7 +60,7 @@ export type ViewportStatus =
   | "subscribed";
 
 const { debug, debugEnabled, error, info, infoEnabled, warn } =
-  logger("viewport");
+  logger("Viewport");
 
 interface Disable {
   type: "disable";
@@ -356,6 +356,11 @@ export class Viewport {
     pendingOperations.delete(requestId);
     if (type === "CHANGE_VP_RANGE") {
       const [from, to] = params as [number, number];
+      infoEnabled &&
+        info(
+          `completeOperation CHANGE_VP_RANGE
+        window setRange (${from}:${to}) ${this.pendingRangeRequests.length} range requests pending`,
+        );
       this.dataWindow?.setRange(from, to);
 
       for (let i = this.pendingRangeRequests.length - 1; i >= 0; i--) {
@@ -442,6 +447,11 @@ export class Viewport {
     if (debugEnabled) {
       this.rangeMonitor.set(range);
     }
+    infoEnabled &&
+      info(
+        `(bufferSize ${this.bufferSize}) rangeRequest (${range.from}:${range.to}) 
+            current: window client (${this.dataWindow.clientRange.from}:${this.dataWindow.clientRange.to}), full (${this.dataWindow.range.from}:${this.dataWindow.range.to}) `,
+      );
 
     // If we can satisfy the range request from the buffer, we will.
     // May or may not need to make a server request, depending on status of buffer
@@ -457,6 +467,13 @@ export class Viewport {
         range.from,
         range.to,
       );
+      infoEnabled &&
+        info(
+          `updated: window client (${this.dataWindow.clientRange.from}:${this.dataWindow.clientRange.to}), full (${this.dataWindow.range.from}:${this.dataWindow.range.to})
+          serverDataRequired ${serverDataRequired ? "Y" : "N"}
+          ${clientRows.length} rows returned from local buffer
+          `,
+        );
 
       let debounceRequest: DataSourceDebounceRequest | undefined;
       // Don't use zero as a range cap, it's is likely a transient count reported immediately
@@ -471,6 +488,10 @@ export class Viewport {
             } as VuuViewportRangeRequest)
           : null;
       if (serverRequest) {
+        infoEnabled &&
+          info(
+            `create CHANGE_VP_RANGE: (${serverRequest.from} - ${serverRequest.to})`,
+          );
         debugEnabled &&
           debug?.(
             `create CHANGE_VP_RANGE: [${serverRequest.from} - ${serverRequest.to}]`,
@@ -556,7 +577,7 @@ export class Viewport {
       message.index === undefined
         ? message.key
         : this.getKeyForRowAtIndex(message.index);
-    console.log(`treeKeu ${treeKey}`);
+    infoEnabled && info(`treeKey ${treeKey}`);
     return {
       type: Message.OPEN_TREE_NODE,
       vpId: this.serverViewportId,

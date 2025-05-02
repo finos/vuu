@@ -43,6 +43,8 @@ export abstract class BaseDataSource
   protected _size = 0;
   protected _title: string | undefined;
 
+  #pageCount = 0;
+
   private awaitingConfirmationOfConfigChanges = false;
 
   constructor({
@@ -170,7 +172,7 @@ export abstract class BaseDataSource
       this.emit("config", this._config, this.range, true);
     } else {
       throw Error(
-        `BaseDataSOurce, unexpected call to confirmConfigChange, no changes pending`,
+        `[BaseDataSource], unexpected call to confirmConfigChange, no changes pending`,
       );
     }
   }
@@ -199,12 +201,26 @@ export abstract class BaseDataSource
     }
   }
 
+  get pageCount() {
+    return this.#pageCount;
+  }
+
+  set pageCount(pageCount: number) {
+    if (pageCount !== this.#pageCount) {
+      this.#pageCount = pageCount;
+      this.emit("page-count", pageCount);
+    }
+  }
+
   get range() {
     return this._range;
   }
 
   set range(range: VuuRange) {
     if (range.from !== this._range.from || range.to !== this._range.to) {
+      console.log(
+        `[BaseDataSource] <set>range from (${this._range.from}:${this._range.to}) to (${range.from}:${range.to})`,
+      );
       this._range = range;
       this.rangeRequest(range);
     }
@@ -212,6 +228,14 @@ export abstract class BaseDataSource
 
   get size() {
     return this._size;
+  }
+
+  set size(size: number) {
+    this._size = size;
+    if (this.range.to !== 0) {
+      const pageCount = Math.ceil(size / (this.range.to - this.range.from));
+      this.pageCount = pageCount;
+    }
   }
 
   get sort() {
