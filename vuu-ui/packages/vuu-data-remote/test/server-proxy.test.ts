@@ -500,6 +500,7 @@ describe("ServerProxy", () => {
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "batch",
+        range: { from: 10, to: 20 },
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -771,6 +772,7 @@ describe("ServerProxy", () => {
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "batch",
+        range: {from: 2, to: 12},
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -794,6 +796,7 @@ describe("ServerProxy", () => {
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "batch",
+        range: { from: 5, to: 15 },
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -819,6 +822,7 @@ describe("ServerProxy", () => {
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "batch",
+        range: { from: 8, to: 18 },
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -1088,6 +1092,7 @@ describe("ServerProxy", () => {
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "batch",
+        range: {from:12, to: 23},
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -1120,6 +1125,7 @@ describe("ServerProxy", () => {
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "batch",
+        range: {from:30, to:40},
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [

@@ -21,12 +21,14 @@ if (
 
 export const DemoTableContainer = ({
   children,
+  height = "100vh",
 }: {
   children: ReactElement<typeof Table>;
+  height?: string | number;
 }) => {
   return (
     <LayoutProvider>
-      <Flexbox style={{ height: "100vh", width: "100vw" }}>
+      <Flexbox style={{ height, width: "100vw" }}>
         <View style={{ flex: 1 }}>{children}</View>
         <ContextPanel />
       </Flexbox>

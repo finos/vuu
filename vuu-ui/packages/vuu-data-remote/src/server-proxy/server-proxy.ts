@@ -68,7 +68,7 @@ let _requestId = 1;
 export const TEST_setRequestId = (id: number) => (_requestId = id);
 
 const { debug, debugEnabled, error, info, infoEnabled, warn } =
-  logger("server-proxy");
+  logger("ServerProxy");
 
 const nextRequestId = () => `${_requestId++}`;
 const DEFAULT_OPTIONS: MessageOptions = {};
@@ -272,9 +272,8 @@ export class ServerProxy {
         }
 
         if (message.selectedIndexValues) {
-          console.log(
-            `selected = ${JSON.stringify(message.selectedIndexValues)}`,
-          );
+          infoEnabled &&
+            info(`selected = ${JSON.stringify(message.selectedIndexValues)}`);
           this.select(viewport, { selected: message.selectedIndexValues });
         }
 
@@ -422,7 +421,8 @@ export class ServerProxy {
   /**********************************************************************/
   private setViewRange(viewport: Viewport, message: VuuUIMessageOutViewRange) {
     const requestId = nextRequestId();
-
+    infoEnabled &&
+      info(`setViewRange (${message.range.from}:${message.range.to})`);
     const [serverRequest, rows, debounceRequest] = viewport.rangeRequest(
       requestId,
       message.range,
@@ -436,9 +436,13 @@ export class ServerProxy {
         // @ts-ignore
         if (process.env.NODE_ENV === "development") {
           info?.(
-            `CHANGE_VP_RANGE [${message.range.from}-${message.range.to}] => [${serverRequest.from}-${serverRequest.to}]`,
+            `CHANGE_VP_RANGE (${message.range.from}-${message.range.to}) => (${serverRequest.from}-${serverRequest.to})`,
           );
         }
+        infoEnabled &&
+          info(
+            `setViewRange send CHANGE_VP_RANGE<#${requestId}> (${serverRequest.from}-${serverRequest.to})`,
+          );
         this.sendMessageToServer(serverRequest, requestId);
       }
 
@@ -448,6 +452,7 @@ export class ServerProxy {
           mode: "batch",
           type: "viewport-update",
           clientViewportId: viewport.clientViewportId,
+          range: message.range,
           rows,
         });
       } else if (debounceRequest) {
@@ -898,38 +903,46 @@ export class ServerProxy {
       case "TABLE_ROW":
         {
           const viewportRowMap = groupRowsByViewport(body.rows);
-          if (process.env.NODE_ENV === "development" && debugEnabled) {
-            const [firstRow, secondRow] = body.rows;
-            if (body.rows.length === 0) {
-              debug("handleMessageFromServer TABLE_ROW 0 rows");
-            } else if (firstRow?.rowIndex === -1) {
-              if (body.rows.length === 1) {
-                if (firstRow.updateType === "SIZE") {
-                  debug(
+          // if (process.env.NODE_ENV === "development" && debugEnabled) {
+          const [firstRow, secondRow] = body.rows;
+          if (body.rows.length === 0) {
+            infoEnabled && info("handleMessageFromServer TABLE_ROW 0 rows");
+          } else if (firstRow?.rowIndex === -1) {
+            if (body.rows.length === 1) {
+              if (firstRow.updateType === "SIZE") {
+                infoEnabled &&
+                  info(
                     `handleMessageFromServer [${firstRow.viewPortId}] TABLE_ROW SIZE ONLY ${firstRow.vpSize}`,
                   );
-                } else {
-                  debug(
+                infoEnabled &&
+                  info(
+                    `handleMessageFromServer [${firstRow.viewPortId}] TABLE_ROW SIZE ONLY ${firstRow.vpSize}`,
+                  );
+              } else {
+                infoEnabled &&
+                  info(
                     `handleMessageFromServer [${firstRow.viewPortId}] TABLE_ROW SIZE ${firstRow.vpSize} rowIdx ${firstRow.rowIndex}`,
                   );
-                }
-              } else {
-                debug(
+              }
+            } else {
+              infoEnabled &&
+                info(
                   `handleMessageFromServer TABLE_ROW ${
                     body.rows.length
                   } rows, SIZE ${firstRow.vpSize}, [${
                     secondRow?.rowIndex
                   }] - [${body.rows[body.rows.length - 1]?.rowIndex}]`,
                 );
-              }
-            } else {
-              debug(
+            }
+          } else {
+            infoEnabled &&
+              info(
                 `handleMessageFromServer TABLE_ROW ${body.rows.length} rows [${
                   firstRow?.rowIndex
                 }] - [${body.rows[body.rows.length - 1]?.rowIndex}]`,
               );
-            }
           }
+          // }
 
           for (const [viewportId, rows] of Object.entries(viewportRowMap)) {
             const viewport = viewports.get(viewportId);
@@ -951,9 +964,8 @@ export class ServerProxy {
           const viewport = this.viewports.get(body.viewPortId);
           if (viewport) {
             const { from, to } = body;
-            if (process.env.NODE_ENV === "development") {
-              info?.(`CHANGE_VP_RANGE_SUCCESS ${from} - ${to}`);
-            }
+            infoEnabled &&
+              info(`CHANGE_VP_RANGE_SUCCESS<#${requestId}> ${from} - ${to}`);
             viewport.completeOperation(requestId, from, to);
           }
         }

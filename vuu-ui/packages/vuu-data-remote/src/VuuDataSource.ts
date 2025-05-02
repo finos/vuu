@@ -50,7 +50,7 @@ import { MenuRpcResponse } from "@finos/vuu-data-types";
 
 type RangeRequest = (range: VuuRange) => void;
 
-const { info } = logger("VuuDataSource");
+const { info, infoEnabled } = logger("VuuDataSource");
 
 /*---------------------------------------------------------------------
  A VuuDataSource manages a single subscription via the ServerProxy
@@ -160,12 +160,12 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
       if (
         message.type === "viewport-update" &&
         message.size !== undefined &&
-        message.size !== this._size
+        message.size !== this.size
       ) {
-        this._size = message.size;
+        this.size = message.size;
         this.emit("resize", message.size);
       } else if (message.type === "viewport-clear") {
-        this._size = 0;
+        this.size = 0;
         this.emit("resize", 0);
       }
       // This is used to remove any progress indication from the UI. We wait for actual data rather than
@@ -181,6 +181,11 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
       } else if (isVisualLinksAction(message)) {
         this.#links = message.links as LinkDescriptorWithLabel[];
       } else {
+        if (infoEnabled && message.type === "viewport-update") {
+          info(
+            `handleMessageFromServer<viewport-update> range (${message.range?.from}:${message.range?.to}) rows ${message.rows?.at(0)?.[0]} - ${message.rows?.at(-1)?.[0]}`,
+          );
+        }
         this._clientCallback?.(message);
       }
 
