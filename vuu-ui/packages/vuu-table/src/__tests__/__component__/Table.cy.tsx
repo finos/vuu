@@ -1,7 +1,7 @@
 import React from "react";
 // TODO try and get TS path alias working to avoid relative paths like this
-import { SimulTable } from "../../../../../showcase/src/examples/Table/SIMUL.examples";
-import { TestTable } from "../../../../../showcase/src/examples/Table/Table.examples";
+import { SimulTable } from "../../../../../showcase/src/examples/Table/Modules/SIMUL.examples";
+import { TestTable } from "../../../../../showcase/src/examples/Table/Misc.examples";
 import { assertRenderedRows } from "./table-test-utils";
 
 const withAriaIndex = (index: number) => ({

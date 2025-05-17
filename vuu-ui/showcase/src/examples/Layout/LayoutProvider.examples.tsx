@@ -200,7 +200,7 @@ export const SimpleStaticLayoutJsonWithViews = () => (
 
 // prettier-ignore
 export const LayoutJsonWithPreloadedFeatures = () => (
-  <LocalDataSourceProvider modules={["BASKET"]}>
+  <LocalDataSourceProvider>
     <LayoutProviderTemplate
       workspaceJSON={{
         type: "Flexbox", props: { style: { flexDirection: "column", height: "100%" } },
@@ -224,7 +224,7 @@ export const LayoutJsonWithPreloadedFeatures = () => (
 
 // prettier-ignore
 export const LayoutJsonWithPreloadedFeaturesVisualLinks = () => (
-  <LocalDataSourceProvider modules={["BASKET"]}>
+  <LocalDataSourceProvider>
     <LayoutProviderTemplate
       workspaceJSON={
         { type: "Flexbox", props: { style: { flexDirection: "column", height: "100%" } },
@@ -257,7 +257,7 @@ export const LayoutJsonWithPreloadedFeaturesVisualLinks = () => (
 
 // prettier-ignore
 export const LayoutJsonWithTabbedFeaturesVisualLinks = () => (
-  <LocalDataSourceProvider modules={["BASKET"]}>
+  <LocalDataSourceProvider>
     <LayoutProviderTemplate
       workspaceJSON={
         { type: "Flexbox", props: { style: { flexDirection: "column", height: "100%" } },

@@ -98,16 +98,13 @@ class VuuDataSource {
 
 export const LocalDataSourceProvider = ({
   children,
-  modules,
 }: {
   children: ReactNode;
-  modules: string[];
 }) => {
   return (
     <DataSourceProvider
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       VuuDataSource={VuuDataSource as any}
-      vuuModuleNames={modules}
       getServerAPI={getServerAPI}
     >
       {children}

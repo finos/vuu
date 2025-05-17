@@ -59,6 +59,7 @@ const instrumentColumns: Array<TableColumnDef<Instrument>> = [
   },
 ];
 
+/** tags=data-consumer */
 export const WithPaginationFillContainer = () => {
   const { VuuDataSource } = useDataSource();
   const dataSource = useMemo(() => {
@@ -77,6 +78,7 @@ export const WithPaginationFillContainer = () => {
   );
 };
 
+/** tags=data-consumer */
 export const WithScrollingFillContainer = () => {
   const { VuuDataSource } = useDataSource();
   const dataSource = useMemo(() => {
@@ -94,6 +96,7 @@ export const WithScrollingFillContainer = () => {
   );
 };
 
+/** tags=data-consumer */
 export const WithColumnMenuFillContainer = () => {
   const { VuuDataSource } = useDataSource();
   const dataSource = useMemo(() => {

@@ -202,6 +202,8 @@ export class ArrayDataSource
     }: SubscribeProps,
     callback: SubscribeCallback,
   ) {
+    console.log(`%cArrayDataSource subscribe`, "color: red;font-weight:bold;");
+
     this.clientCallback = callback;
     this.viewport = viewport;
     this.#status = "subscribed";

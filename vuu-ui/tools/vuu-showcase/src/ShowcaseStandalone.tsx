@@ -5,14 +5,17 @@ import {
   TreeSourceNode,
 } from "@finos/vuu-utils";
 import { SaltProvider } from "@salt-ds/core";
-import React, { ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import {
-  getTargetPath,
+  getTargetTreeNode,
   isComponentDescriptor,
   loadTheme,
 } from "./shared-utils";
+import { LocalDataSourceProvider } from "@finos/vuu-data-test";
 
 import "./Showcase.css";
+import { DataLocation } from "./showcase-main/ShowcaseProvider";
+import { VuuDataSourceProvider } from "@finos/vuu-data-react";
 
 const asThemeMode = (input: string | undefined): ThemeMode => {
   if (input === "light" || input === "dark") {
@@ -34,6 +37,14 @@ const asDensity = (input: string | undefined): Density => {
   }
 };
 
+const asDataLocation = (input: string | undefined): DataLocation => {
+  if (input === "local" || input === "remote") {
+    return input;
+  } else {
+    return "local";
+  }
+};
+
 // The theme is passed as a queryString parameter in the url
 // themeMode and density are passed via the url hash, so can be
 // changed without refreshing the page
@@ -45,6 +56,7 @@ export const ShowcaseStandalone = ({
   const [, forceRefresh] = useState({});
   const densityRef = useRef<Density>("high");
   const themeModeRef = useRef<ThemeMode>("light");
+  const dataLocationRef = useRef<DataLocation>("local");
 
   const [component, setComponent] = useState<ReactNode>(null);
   const [themeReady, setThemeReady] = useState(true);
@@ -55,11 +67,14 @@ export const ShowcaseStandalone = ({
   useEffect(() => {
     const checkUrlParams = () => {
       const _themeMode = asThemeMode(getUrlParameter("themeMode"));
+      const _dataLocation = asDataLocation(getUrlParameter("dataLocation"));
       const _density = asDensity(getUrlParameter("density"));
       if (
         _themeMode !== themeModeRef.current ||
-        _density !== densityRef.current
+        _density !== densityRef.current ||
+        _dataLocation !== dataLocationRef.current
       ) {
+        dataLocationRef.current = _dataLocation;
         densityRef.current = _density;
         themeModeRef.current = _themeMode;
         forceRefresh({});
@@ -79,17 +94,17 @@ export const ShowcaseStandalone = ({
 
   useMemo(async () => {
     const url = new URL(document.location.href);
-    const target = getTargetPath(url, treeSource);
+    const { nodeData } = getTargetTreeNode<any>(url, treeSource);
     try {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const targetModule: Module = await import(
-        /* @vite-ignore */ `/${target.path}`
+        /* @vite-ignore */ `/${nodeData.path}`
       );
 
       if (targetModule) {
-        if (isComponentDescriptor(target)) {
-          const Component = targetModule[target.componentName];
+        if (isComponentDescriptor(nodeData)) {
+          const Component = targetModule[nodeData.componentName];
           if (Component) {
             setComponent(<Component />);
           } else {
@@ -124,7 +139,20 @@ export const ShowcaseStandalone = ({
         density={densityRef.current}
         mode={themeModeRef.current}
       >
-        <div className="vuuShowcase-StandaloneRoot">{component}</div>
+        {dataLocationRef.current === "local" ? (
+          <LocalDataSourceProvider>
+            <div className="vuuShowcase-StandaloneRoot">{component}</div>
+          </LocalDataSourceProvider>
+        ) : (
+          <VuuDataSourceProvider
+            authenticate={false}
+            autoLogin
+            websocketUrl="ws://localhost:8091/websocket"
+            // websocketUrl="wss://localhost:8090/websocket"
+          >
+            <div className="vuuShowcase-StandaloneRoot">{component}</div>
+          </VuuDataSourceProvider>
+        )}
       </SaltProvider>
     );
   } else {

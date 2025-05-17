@@ -42,7 +42,7 @@ const TableTemplate = () => {
 
 export const SimpleInlineFilters = () => {
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <TableTemplate />
     </LocalDataSourceProvider>
   );

@@ -64,7 +64,7 @@ const BulkEditTableTemplate = ({
 
 export const BulkEditTable = () => {
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <DialogProvider>
         <BulkEditTableTemplate />
       </DialogProvider>

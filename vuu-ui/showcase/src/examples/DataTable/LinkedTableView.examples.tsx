@@ -25,7 +25,7 @@ export const TwoLevelLinkedTablesWithDescriptors = () => {
   }, []);
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <LinkedTableView
         linkedDataSources={linkedDataSources}
         style={{ height: "100%" }}
@@ -70,7 +70,7 @@ export const MultipleLevelTwoTables = () => {
   }, []);
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <LinkedTableView
         linkedDataSources={linkedDataSources}
         style={{ height: "100%" }}
@@ -112,7 +112,7 @@ export const ThreeLevelLinkedTablesWithDescriptors = () => {
   }, []);
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <LinkedTableView
         linkedDataSources={linkedDataSources}
         style={{ height: "100%" }}

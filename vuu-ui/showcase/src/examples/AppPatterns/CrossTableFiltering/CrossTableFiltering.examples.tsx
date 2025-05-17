@@ -378,7 +378,7 @@ export const FilteredLinkedTableView = () => {
   }, []);
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <Flexbox style={{ height: "100%" }}>
         <div
           style={{

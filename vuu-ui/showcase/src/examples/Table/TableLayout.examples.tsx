@@ -69,7 +69,7 @@ const DataTableTemplate = ({
 
 export const ViewportRowLimitDefaultRowHeight = () => {
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <DataTableTemplate viewportRowLimit={10} />
     </LocalDataSourceProvider>
   );
@@ -77,7 +77,7 @@ export const ViewportRowLimitDefaultRowHeight = () => {
 
 export const ViewportRowLimitExplicitRowHeight = () => {
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <DataTableTemplate rowHeight={30} viewportRowLimit={10} />
     </LocalDataSourceProvider>
   );
@@ -85,7 +85,7 @@ export const ViewportRowLimitExplicitRowHeight = () => {
 
 export const MaxViewportRowLimitRowsExceedLimit = () => {
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <DataTableTemplate maxViewportRowLimit={10} />
     </LocalDataSourceProvider>
   );
@@ -97,7 +97,7 @@ export const MaxViewportRowLimitFewRows = ({
   const schema = getSchema("basket");
   console.log({ schema });
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <DataTableTemplate
         maxViewportRowLimit={10}
         schema={schema}
@@ -149,7 +149,7 @@ const InlineDrawer = ({
   );
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <DockLayout style={{ height: 500 }}>
         <Drawer
           inline={inline}

@@ -1,5 +1,5 @@
 import { useVuuMenuActions } from "@finos/vuu-data-react";
-import { getSchema, SimulTableName, vuuModule } from "@finos/vuu-data-test";
+import { getSchema, SimulTableName } from "@finos/vuu-data-test";
 import { ContextMenuProvider, NotificationsProvider } from "@finos/vuu-popups";
 import { Table, TableProps } from "@finos/vuu-table";
 import type {
@@ -7,10 +7,14 @@ import type {
   ColumnLayout,
   DefaultColumnConfiguration,
 } from "@finos/vuu-table-types";
-import { applyDefaultColumnConfig } from "@finos/vuu-utils";
+import {
+  applyDefaultColumnConfig,
+  toColumnName,
+  useDataSource,
+} from "@finos/vuu-utils";
 import { useCallback, useMemo } from "react";
-import { DemoTableContainer } from "./DemoTableContainer";
-import "./BuySellRowClassNameGenerator";
+import { DemoTableContainer } from "../DemoTableContainer";
+import "../BuySellRowClassNameGenerator";
 
 const getDefaultColumnConfig = (
   tableName: string,
@@ -56,7 +60,7 @@ const getDefaultColumnConfig = (
   }
 };
 
-export const SimulTable = ({
+const SimulTable = ({
   columnLayout,
   getDefaultColumnConfig,
   height = 625,
@@ -70,26 +74,30 @@ export const SimulTable = ({
   rowClassNameGenerators?: string[];
   tableName?: SimulTableName;
 }) => {
-  const schema = getSchema(tableName);
+  const { VuuDataSource } = useDataSource();
+
+  const tableSchema = getSchema(tableName);
 
   const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(
     () => ({
       config: {
         columnLayout,
-        columns: applyDefaultColumnConfig(schema, getDefaultColumnConfig),
+        columns: applyDefaultColumnConfig(tableSchema, getDefaultColumnConfig),
         rowClassNameGenerators,
         rowSeparators: true,
         zebraStripes: true,
       },
-      dataSource:
-        vuuModule<SimulTableName>("SIMUL").createDataSource(tableName),
+      dataSource: new VuuDataSource({
+        columns: tableSchema.columns.map(toColumnName),
+        table: tableSchema.table,
+      }),
     }),
     [
       columnLayout,
+      tableSchema,
       getDefaultColumnConfig,
       rowClassNameGenerators,
-      schema,
-      tableName,
+      VuuDataSource,
     ],
   );
 
@@ -121,6 +129,20 @@ export const SimulTable = ({
   );
 };
 
+/** tags=data-consumer */
+export const Instruments = ({
+  columnLayout,
+}: {
+  columnLayout?: ColumnLayout;
+}) => (
+  <SimulTable
+    columnLayout={columnLayout}
+    tableName="instruments"
+    getDefaultColumnConfig={getDefaultColumnConfig}
+  />
+);
+
+/** tags=data-consumer */
 export const InstrumentsExtended = () => (
   <SimulTable
     tableName="instrumentsExtended"
@@ -128,6 +150,7 @@ export const InstrumentsExtended = () => (
   />
 );
 
+/** tags=data-consumer */
 export const Prices = () => {
   return (
     <SimulTable
@@ -139,6 +162,7 @@ export const Prices = () => {
 
 const rowClassGenerators = ["buy-sell-rows"];
 
+/** tags=data-consumer */
 export const Orders = () => {
   return (
     <NotificationsProvider>
@@ -150,6 +174,7 @@ export const Orders = () => {
   );
 };
 
+/** tags=data-consumer */
 export const InstrumentPrices = () => (
   <SimulTable
     tableName="instrumentPrices"
@@ -157,6 +182,7 @@ export const InstrumentPrices = () => (
   />
 );
 
+/** tags=data-consumer */
 export const ParentOrders = () => (
   <SimulTable
     tableName="parentOrders"
@@ -164,6 +190,7 @@ export const ParentOrders = () => (
   />
 );
 
+/** tags=data-consumer */
 export const ChildOrders = () => (
   <SimulTable
     tableName="childOrders"

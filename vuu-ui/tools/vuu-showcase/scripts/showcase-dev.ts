@@ -13,9 +13,11 @@ const pathToExhibits = "./src/examples";
 
 // 1) Build the exhibit structure that will be used to create nav tree in showcase GUI
 const start = performance.now();
-const treeSourceJson = treeSourceFromFileSystem(pathToExhibits);
+const [treeSourceJson, tags] = treeSourceFromFileSystem(pathToExhibits);
 const end = performance.now();
-console.log(`[showcase-vite-api] building tree took ${end - start}ms`);
+console.log(`[showcase-vite-api] building tree took ${end - start}ms`, {
+  tags,
+});
 
 const watcher = new Watcher(pathToExhibits, {
   recursive: true,
@@ -111,6 +113,14 @@ const server = await createServer({
   },
   root: __dirname,
   plugins: [cssInline(), mdx()],
+  server: {
+    proxy: {
+      "/api/authn": {
+        target: "https://localhost:8443",
+        secure: false,
+      },
+    },
+  },
 });
 await server.listen();
 

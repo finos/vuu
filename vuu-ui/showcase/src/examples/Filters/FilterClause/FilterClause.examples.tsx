@@ -61,7 +61,7 @@ export const DefaultColumnPicker = () => {
 
 export const NewFilterClause = () => {
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <FilterClauseTemplate />
     </LocalDataSourceProvider>
   );
@@ -80,7 +80,7 @@ export const PartialFilterClauseColumnOnly = () => {
     [],
   );
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <FilterClauseTemplate filterClauseModel={filterClauseModel} />
     </LocalDataSourceProvider>
   );
@@ -96,7 +96,7 @@ export const PartialFilterClauseColumnAndOperator = () => {
     [],
   );
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <FilterClauseTemplate filterClauseModel={filterClauseModel} />
     </LocalDataSourceProvider>
   );
@@ -114,7 +114,7 @@ export const CompleteFilterClauseTextEquals = () => {
   );
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <FilterClauseTemplate filterClauseModel={filterClauseModel} />
     </LocalDataSourceProvider>
   );
@@ -160,7 +160,7 @@ export const PartialFilterClauseDateColumnOnly = () => {
   }, []);
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <FilterClauseTemplate
         columnsByName={columnsByName}
         filterClauseModel={filterClauseModel}

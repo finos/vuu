@@ -218,9 +218,8 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
 
   async disconnect() {
     try {
-      // should we await this ?
       this.#worker.send({ type: "disconnect" });
-      // how do we disable the serverAPI
+      this.#deferredServerAPI = new DeferredPromise<ServerAPI>();
       return "disconnected";
     } catch (err: unknown) {
       return "rejected";

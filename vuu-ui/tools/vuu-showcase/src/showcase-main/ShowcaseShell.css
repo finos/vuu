@@ -9,6 +9,7 @@ body {
   --vuuTree-node-expanded-transform: rotate(90deg) translate(1px, 1px);
   --vuuTree-icon-color: var(--salt-palette-accent-background);
   --vuuTree-font-size: 12px;
+  height: 100%;
 }
 
 .ShowcaseToolbar,

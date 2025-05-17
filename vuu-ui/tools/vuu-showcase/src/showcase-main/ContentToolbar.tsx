@@ -1,12 +1,15 @@
 import React, { SyntheticEvent, useCallback } from "react";
 import { ThemeSwitch } from "@finos/vuu-shell";
 import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
-import { Density, useShowcaseContext } from "./ShowcaseProvider";
+import { DataLocation, Density, useShowcaseContext } from "./ShowcaseProvider";
 
 export const ContentToolbar = () => {
   const {
+    dataConsumer,
+    dataLocation,
     density,
     onChangeDensity,
+    onChangeDataLocation,
     onChangeTheme,
     onChangeThemeMode,
     theme,
@@ -15,10 +18,10 @@ export const ContentToolbar = () => {
 
   const launchStandaloneWindow = useCallback(() => {
     window.open(
-      `${location.href}?standalone&theme=${theme}#themeMode=${themeMode},density=${density}`,
+      `${location.href}?standalone&theme=${theme}#themeMode=${themeMode},density=${density},dataLocation=${dataLocation}`,
       "_blank",
     );
-  }, [density, theme, themeMode]);
+  }, [dataLocation, density, theme, themeMode]);
 
   const handleThemeChange = useCallback(
     (evt: SyntheticEvent) => {
@@ -34,6 +37,14 @@ export const ContentToolbar = () => {
       onChangeDensity(value as Density);
     },
     [onChangeDensity],
+  );
+
+  const handleDataLocationChange = useCallback(
+    (evt: SyntheticEvent) => {
+      const { value } = evt.target as HTMLInputElement;
+      onChangeDataLocation(value as DataLocation);
+    },
+    [onChangeDataLocation],
   );
 
   return (
@@ -72,6 +83,18 @@ export const ContentToolbar = () => {
         <ToggleButton value="low">Low</ToggleButton>
         <ToggleButton value="touch">Touch</ToggleButton>
       </ToggleButtonGroup>
+
+      {dataConsumer ? (
+        <ToggleButtonGroup
+          className="vuuToggleButtonGroup"
+          data-variant="primary"
+          onChange={handleDataLocationChange}
+          value={dataLocation}
+        >
+          <ToggleButton value="local">Local Data</ToggleButton>
+          <ToggleButton value="remote">Remote Data</ToggleButton>
+        </ToggleButtonGroup>
+      ) : null}
 
       <Button
         data-align="end"

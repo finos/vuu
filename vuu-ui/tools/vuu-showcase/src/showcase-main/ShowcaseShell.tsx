@@ -7,9 +7,14 @@ import {
   GridLayoutProvider,
 } from "@heswell/grid-layout";
 import { SaltProvider, Text } from "@salt-ds/core";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { keysFromPath, loadTheme, pathFromKey } from "../shared-utils";
+import {
+  getTargetTreeNode,
+  keysFromPath,
+  loadTheme,
+  pathFromKey,
+} from "../shared-utils";
 import { ContentToolbar } from "./ContentToolbar";
 import { IFrame } from "./iframe";
 import { ShowcaseProvider } from "./ShowcaseProvider";
@@ -23,7 +28,15 @@ export interface AppProps {
 
 export const ShowcaseShell = ({ treeSource }: AppProps) => {
   const navigate = useNavigate();
+  const initialIsDataConsumer = useMemo(() => {
+    const url = new URL(document.location.href);
+    const treeNode = getTargetTreeNode(url, treeSource, false) as any;
+    return (
+      (treeNode && treeNode.nodeData.tags?.includes("data-consumer")) ?? false
+    );
+  }, [treeSource]);
   const [themeReady, setThemeReady] = useState(false);
+  const [dataConsumer, setDataConsumer] = useState(initialIsDataConsumer);
 
   useEffect(() => {
     loadTheme("vuu-theme").then(() => {
@@ -36,6 +49,7 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
   const handleSelect: TableRowSelectHandler = (row) => {
     if (row) {
       const path = pathFromKey(row.key);
+      setDataConsumer(row.data.nodeData?.tags?.includes("data-consumer"));
       navigate(path);
     }
   };
@@ -51,7 +65,7 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
 
   return themeReady ? (
     <SaltProvider density="high" theme="vuu-theme" mode="light">
-      <ShowcaseProvider>
+      <ShowcaseProvider isDataConsumer={dataConsumer}>
         <GridLayoutProvider>
           <GridLayout
             colsAndRows={{

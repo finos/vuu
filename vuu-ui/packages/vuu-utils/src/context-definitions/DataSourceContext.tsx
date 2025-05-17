@@ -25,7 +25,6 @@ export interface DataSourceContextProps {
    * from VuuTable e.g 'SIMUL:instruments'
    */
   tableSchemas?: Record<string, TableSchema>;
-  vuuModuleNames?: string[];
 }
 
 const getServerAPI = () => {

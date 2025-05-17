@@ -74,7 +74,7 @@ const TableSearchTemplate = ({
 export const DefaultInstrumentSearch = () => {
   const schema = getSchema("instruments");
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <TableSearchTemplate schema={schema} />
     </LocalDataSourceProvider>
   );
@@ -137,7 +137,7 @@ export const InstrumentSearchDragDrop = () => {
   }, []);
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <DragDropProvider dragSources={dragSource}>
         <Flexbox>
           <TableSearchTemplate
@@ -216,7 +216,7 @@ const EnhancedInstrumentSearch = () => {
 
 export const InstrumentSearchFavourites = () => {
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <EnhancedInstrumentSearch />
     </LocalDataSourceProvider>
   );

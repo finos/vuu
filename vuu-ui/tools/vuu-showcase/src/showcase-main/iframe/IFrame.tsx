@@ -3,12 +3,12 @@ import { useLocation } from "react-router-dom";
 import { useShowcaseContext } from "../ShowcaseProvider";
 
 export const IFrame = () => {
-  const { density, theme, themeMode } = useShowcaseContext();
+  const { dataLocation, density, theme, themeMode } = useShowcaseContext();
   const location = useLocation();
   const src = useMemo(() => {
-    const src = `${location.pathname}?standalone&theme=${theme}#themeMode=${themeMode},density=${density}`;
+    const src = `${location.pathname}?standalone&theme=${theme}#themeMode=${themeMode},density=${density},dataLocation=${dataLocation}`;
     return src;
-  }, [density, location.pathname, theme, themeMode]);
+  }, [dataLocation, density, location.pathname, theme, themeMode]);
 
   return (
     <div className="ShowCaseIFrame-container">

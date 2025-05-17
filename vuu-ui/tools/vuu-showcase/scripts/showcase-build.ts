@@ -82,7 +82,7 @@ async function main() {
     },
   );
 
-  const treeSourceJson = treeSourceFromFileSystem(
+  const [treeSourceJson, tags] = treeSourceFromFileSystem(
     "./src/examples",
     "production",
   );

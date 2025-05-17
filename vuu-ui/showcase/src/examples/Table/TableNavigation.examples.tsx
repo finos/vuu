@@ -55,7 +55,7 @@ const TableTemplate = ({
 
 export const RowNavigation = () => {
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <TableTemplate navigationStyle="row" />
     </LocalDataSourceProvider>
   );
@@ -63,7 +63,7 @@ export const RowNavigation = () => {
 
 export const CellNavigation = () => {
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <TableTemplate navigationStyle="cell" />
     </LocalDataSourceProvider>
   );

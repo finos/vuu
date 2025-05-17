@@ -132,7 +132,7 @@ export const PinItemButton = () => {
   const schema = getSchema("instruments");
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <ClientTableColumnProvider>
         <TableTemplate
           selectionBookendWidth={0}
@@ -157,7 +157,7 @@ export const SearchWithPin = () => {
   const schema = getSchema("instruments");
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <ClientTableColumnProvider>
         <TableSearchTemplate
           TableProps={{
@@ -282,7 +282,7 @@ export const SearchAndPinned = () => {
   const schema = getSchema("instruments");
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <ClientTableColumnProvider>
         <LayoutProvider>
           <FlexboxLayout
@@ -325,7 +325,7 @@ export const SearchAndPinnedWithAdditionalContent = () => {
   const schema = getSchema("instruments");
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <ClientTableColumnProvider>
         <LayoutProvider>
           <LayoutContainer
