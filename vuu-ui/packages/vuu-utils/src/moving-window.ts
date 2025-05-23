@@ -82,4 +82,17 @@ export class MovingWindow {
   get range() {
     return this.#range;
   }
+
+  // TODO make this more performant, see implementation in
+  // array-backed-moving-window - use same implementation
+  get hasAllRowsWithinRange(): boolean {
+    const { from, to } = this.#range;
+
+    for (let i = from; i < to; i++) {
+      if (this.getAtIndex(i) === undefined) {
+        return false;
+      }
+    }
+    return true;
+  }
 }

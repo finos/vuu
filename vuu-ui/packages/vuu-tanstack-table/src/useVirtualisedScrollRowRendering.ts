@@ -13,9 +13,6 @@ export const useVirtualisedScrollRowRendering: RowRenderingHook = ({
   setRange,
   totalRowCount,
 }) => {
-  console.log(
-    `[useVirtualisedScrollRowRendering] totalRowCount = ${totalRowCount}`,
-  );
   const firstRowRef = useRef<number>(0);
   const contentHeight = rowHeight * totalRowCount;
   const contentContainerRef = useRef<HTMLDivElement | null>(null);
@@ -29,12 +26,8 @@ export const useVirtualisedScrollRowRendering: RowRenderingHook = ({
   const setViewportPosition = useCallback(
     (firstRow: number) => {
       const lastRow = firstRow + viewportRowCountRef.current;
-      console.log(
-        `[useVirtualisedScrollRowRendering] firstRow ${firstRow} lastRow ${lastRow} renderBufferSize ${renderBufferSize} totalRowCount = ${totalRowCountRef.current}`,
-      );
       const from = Math.max(0, firstRow - renderBufferSize);
       const to = Math.min(lastRow + renderBufferSize, totalRowCountRef.current);
-      console.log(`[useVirtualisedScrollRowRendering] setRange ${from}:${to}`);
       setRange?.({ from, to });
     },
     [renderBufferSize, setRange],
@@ -54,9 +47,6 @@ export const useVirtualisedScrollRowRendering: RowRenderingHook = ({
 
   const setViewportRowCount = useCallback(
     (viewportRowCount: number) => {
-      console.log(
-        `[useVirtualisedScrollRowRendering] setViewportRowCount ${viewportRowCount}`,
-      );
       viewportRowCountRef.current = viewportRowCount;
       setViewportPosition(0);
     },
@@ -97,10 +87,6 @@ export const useVirtualisedScrollRowRendering: RowRenderingHook = ({
     (el) => {
       if (el) {
         contentContainerRef.current = el;
-        console.log(`[useVirtualisedScrollRowRendering] scrollable`, {
-          el,
-        });
-
         const { height } = el.getBoundingClientRect();
         el.addEventListener("scroll", handleScroll);
         setContentHeight(height);

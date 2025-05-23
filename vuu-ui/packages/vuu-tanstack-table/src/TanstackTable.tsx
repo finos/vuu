@@ -10,7 +10,6 @@ import {
 import { useVirtualColumns } from "./useVirtualColumns";
 import { useVirtualisedScrollRowRendering } from "./useVirtualisedScrollRowRendering";
 import { usePaginatedRowRendering } from "./usePaginatedRowRendering";
-import { VuuDataRow } from "@finos/vuu-protocol-types";
 import { useMeasuredHeight } from "./useMeasuredHeight";
 import { Row, RowProxy } from "./Row";
 import { ColumnActionHandler, ColumnMenu } from "./ColumnMenu";
@@ -19,6 +18,7 @@ import cx from "clsx";
 
 import tableCss from "./TanstackTable.css";
 import { useForkRef } from "@salt-ds/core";
+import { DataSourceRow } from "@finos/vuu-data-types";
 
 const classBase = "TanstackTable";
 
@@ -72,8 +72,6 @@ export const TanstackTable = <T extends object>({
     setRange,
     totalRowCount,
   });
-
-  console.log({ contentHeight });
 
   const scrollableContainerRef = useRef<HTMLDivElement>(null);
 
@@ -198,10 +196,8 @@ export const TanstackTable = <T extends object>({
                 style={bodyStyle}
               >
                 {rows.map((row) => {
-                  const [idx, key] = row.original as VuuDataRow as [
-                    number,
-                    number,
-                  ];
+                  // console.log(`row original ${JSON.stringify(row.original)}`);
+                  const [idx, key] = row.original as DataSourceRow;
                   // console.log(
                   //   `[Table] [${idx}] key ${key} rowKey ${row.original[6]} selected ${row.original[7]}`,
                   // );

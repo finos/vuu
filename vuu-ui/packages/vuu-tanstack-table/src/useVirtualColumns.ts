@@ -31,12 +31,9 @@ export const useVirtualColumns = ({
   });
 
   const virtualColumns = columnVirtualizer.getVirtualItems();
-  console.log({ virtualColumns });
   const virtualPaddingLeading = virtualColumns[0]?.start ?? 0;
   const virtualPaddingTrailing =
     columnVirtualizer.getTotalSize() - (virtualColumns.at(-1)?.end ?? 0);
-
-  console.log(`virtualPaddingLeading = ${virtualPaddingLeading}`);
 
   return {
     virtualItems: virtualColumns,

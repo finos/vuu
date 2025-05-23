@@ -57,10 +57,6 @@ export const useTanstackTableWithVuuDatasource = <T extends VuuDataSourceRow>({
   const data = useRef<VuuDataSourceRow[]>([]);
   const [totalRowCount, setTotalRowCount] = useState<number>(dataSource.size);
 
-  console.log(
-    `[useTanstackTableWithVuuDataSource] rowCount = ${totalRowCount}`,
-  );
-
   const columnsWithVuuAccessors = tanstackColumnAccessorsToVuuColumnAccessors(
     columns as TableColumnDef<VuuDataSourceRow>[],
   );
@@ -86,7 +82,9 @@ export const useTanstackTableWithVuuDatasource = <T extends VuuDataSourceRow>({
       data.current = dataWindow.data.slice();
       // if (isMounted.current) {
       // TODO do we ever need to worry about missing updates here ?
-      forceUpdate({});
+      if (dataWindow.hasAllRowsWithinRange) {
+        forceUpdate({});
+      }
       // }
     },
     [dataWindow],
@@ -94,11 +92,7 @@ export const useTanstackTableWithVuuDatasource = <T extends VuuDataSourceRow>({
 
   const setRange = useCallback(
     (range: VuuRange) => {
-      console.log(
-        `[useTanstackTableWithVuuDataSource] setRange ${JSON.stringify(range)}`,
-      );
       dataWindow.setRange(range);
-
       dataSource.range = range;
     },
     [dataSource, dataWindow],
@@ -118,11 +112,12 @@ export const useTanstackTableWithVuuDatasource = <T extends VuuDataSourceRow>({
             }
 
             if (message.rows) {
-              if (message.range) {
-                if (message.range.to !== dataWindow.range.to) {
-                  dataWindow.setRange(message.range);
-                }
-              }
+              // if (message.range) {
+              // TODO why would we ever do this
+              // if (message.range.to !== dataWindow.range.to) {
+              //   dataWindow.setRange(message.range);
+              // }
+              // }
               setData(message.rows);
             }
           }
@@ -203,12 +198,15 @@ export const useTanstackTableWithVuuDatasource = <T extends VuuDataSourceRow>({
     columns: columnsWithVuuAccessors,
     enableMultiRowSelection: false,
     enableRowSelection: true,
-    getRowId: (row) => `${row[0]}`, // is this right ?
+    // getRowId: (row) => `${row[0]}`, // is this right ?
+    getRowId: (row) => {
+      return `${row[0]}`;
+    }, // is this right ?
     onColumnVisibilityChange: handleColumnVisibilityChange,
     onSortingChange: handleSortRequest,
     onRowSelectionChange: handleRowSelectionChange,
     getCoreRowModel: getCoreRowModel(),
-    debugTable: true,
+    // debugTable: true,
     manualPagination: true,
     rowCount: dataSource.size,
     state: {

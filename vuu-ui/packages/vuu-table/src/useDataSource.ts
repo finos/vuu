@@ -93,11 +93,15 @@ export const useDataSource = ({
           }
         }
         if (message.rows) {
-          if (message.range) {
-            if (message.range.to !== dataWindow.range.to) {
-              dataWindow.setRange(message.range);
-            }
-          }
+          // Removed because known to cause issues when multiple server requests
+          // are handled  - a newer range can be overwritten with an out-of-date
+          // range. If we need this for some reason, amke sure server sends up
+          // top date range
+          // if (message.range) {
+          //   if (message.range.to !== dataWindow.range.to) {
+          //     dataWindow.setRange(message.range);
+          //   }
+          // }
           setData(message.rows);
         } else if (message.size === 0) {
           setData([]);
