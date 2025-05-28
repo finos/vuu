@@ -76,10 +76,11 @@ export const useTanstackTableWithVuuDatasource = <T extends VuuDataSourceRow>({
       for (const row of updates) {
         dataWindow.add(row);
       }
+
       // We do the slice because an in-place update like a select operation replaces
       // only a single row within the collection. Tanstack table does an identity check
       // on the collection itself.
-      data.current = dataWindow.data.slice();
+      data.current = dataWindow.slice();
       // if (isMounted.current) {
       // TODO do we ever need to worry about missing updates here ?
       if (dataWindow.hasAllRowsWithinRange) {
@@ -102,7 +103,9 @@ export const useTanstackTableWithVuuDatasource = <T extends VuuDataSourceRow>({
     const dataSourceMessageHandler: SubscribeCallback = (message) => {
       switch (message.type) {
         case "subscribed":
-          console.log("[useVuuData] dataSourceMessageHandler subscribed");
+          console.log(
+            "[useTanstackTableWithVuuDataSource] dataSourceMessageHandler subscribed",
+          );
           break;
         case "viewport-update":
           {
@@ -198,7 +201,6 @@ export const useTanstackTableWithVuuDatasource = <T extends VuuDataSourceRow>({
     columns: columnsWithVuuAccessors,
     enableMultiRowSelection: false,
     enableRowSelection: true,
-    // getRowId: (row) => `${row[0]}`, // is this right ?
     getRowId: (row) => {
       return `${row[0]}`;
     }, // is this right ?
