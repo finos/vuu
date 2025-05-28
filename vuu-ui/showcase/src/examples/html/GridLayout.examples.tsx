@@ -887,12 +887,12 @@ const CustomHeader = ({
   const gridModel = useGridModel();
   const toggleLeftSidebar = () => {
     const currentValue = gridModel.tracks.columns.at(0);
-    const value: TrackSize = currentValue === 0 ? "200px" : 0;
+    const value: TrackSize = currentValue === "0px" ? "200px" : "0px";
     dispatch({ type: "resize-grid-column", trackIndex: 0, value });
   };
   const toggleRightSidebar = () => {
     const currentValue = gridModel.tracks.columns.at(2);
-    const value: TrackSize = currentValue === 0 ? "200px" : 0;
+    const value: TrackSize = currentValue === "0px" ? "200px" : "0px";
     dispatch({ type: "resize-grid-column", trackIndex: 2, value });
   };
   return (

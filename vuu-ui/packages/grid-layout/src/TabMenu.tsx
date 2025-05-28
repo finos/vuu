@@ -15,8 +15,8 @@ export interface TabMenuProps {
 }
 
 export const TabMenu = ({
-  allowClose = true,
-  allowRename = true,
+  // allowClose = true,
+  // allowRename = true,
   layoutItemId,
 }: TabMenuProps) => {
   const targetWindow = useWindow();

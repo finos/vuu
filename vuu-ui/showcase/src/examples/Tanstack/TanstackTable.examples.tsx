@@ -5,7 +5,6 @@ import { toColumnName, useDataSource } from "@finos/vuu-utils";
 import { useMemo } from "react";
 
 import "./index.css";
-import { access } from "fs";
 
 export type DataRowAtIndexFunc<T = unknown> = (index: number) => T[];
 const instrumentsSchema = getSchema("instruments");
@@ -121,12 +120,12 @@ export const WithColumnMenuFillContainer = () => {
 };
 
 export const FlexLayoutTables = () => {
-  const [ds1, ds2, ds3, ds4] = useMemo(() => {
+  const [ds1 /*, ds2, ds3, ds4*/] = useMemo(() => {
     return [
       vuuModule("SIMUL").createDataSource("instruments"),
-      vuuModule("SIMUL").createDataSource("instruments"),
-      vuuModule("SIMUL").createDataSource("instruments"),
-      vuuModule("SIMUL").createDataSource("instruments"),
+      // vuuModule("SIMUL").createDataSource("instruments"),
+      // vuuModule("SIMUL").createDataSource("instruments"),
+      // vuuModule("SIMUL").createDataSource("instruments"),
     ];
   }, []);
 
@@ -223,6 +222,8 @@ export const VirtualisedColumns = () => {
   const { VuuDataSource } = useDataSource();
   const dataSource = useMemo(() => {
     return new VuuDataSource({
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-ignore
       columns: ordersColumns.map(({ accessorKey }) => accessorKey),
       table: { module: "ORDERS", table: "orders" },
     });

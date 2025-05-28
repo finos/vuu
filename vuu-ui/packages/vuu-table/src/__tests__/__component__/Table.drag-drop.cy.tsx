@@ -1,6 +1,6 @@
 // TODO try and get TS path alias working to avoid relative paths like this
-import { Table } from "@finos/vuu-data-test";
-import { SimulTable } from "../../../../../showcase/src/examples/Table/Modules/SIMUL.examples";
+import { Instruments } from "../../../../../showcase/src/examples/Table/Modules/SIMUL.examples";
+import { LocalDataSourceProvider } from "@finos/vuu-data-test";
 import { TableProps } from "../../Table";
 
 //TODO fix this test. mousemove instructions atre not working in upgraded cypress version
@@ -17,7 +17,11 @@ describe("Table drag drop", () => {
   describe("Drag drop column headers", () => {
     describe("WHEN exchange columns is dragged and dropped on currency", () => {
       it("THEN columns are reordered and grid rerendered", () => {
-        cy.mount(<SimulTable tableName="instruments" {...tableConfig} />);
+        cy.mount(
+          <LocalDataSourceProvider>
+            <Instruments {...tableConfig} />
+          </LocalDataSourceProvider>,
+        );
 
         cy.findByRole("columnheader", { name: "currency" }).should(
           "have.attr",

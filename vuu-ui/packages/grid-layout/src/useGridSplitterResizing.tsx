@@ -38,7 +38,7 @@ export const useGridSplitterResizing = ({
         const { splitter } = state;
         const trackType = getTrackType(splitter);
 
-        const [contraTrackIndex, resizeTrackIndex] = splitter.resizedGridTracks;
+        const [_, resizeTrackIndex] = splitter.resizedGridTracks;
 
         layoutModel.addTrackForResize(
           trackType,

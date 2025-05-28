@@ -10,7 +10,6 @@ import { flexRender } from "@tanstack/react-table";
 import { forwardRef, memo, MouseEventHandler, useCallback } from "react";
 
 import rowCss from "./Row.css";
-import { VirtualItem } from "@tanstack/react-virtual";
 import { VirtualizedOptions } from "./useVirtualColumns";
 
 const classBase = "TanstackTable";

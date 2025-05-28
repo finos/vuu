@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 export const useAutoLoginToVuuServer = ({
   authenticate = true,
   autoConnect = true,
-  autoLogin = true,
+  // autoLogin = true,
   secure = true,
   websocketUrl,
 }: {

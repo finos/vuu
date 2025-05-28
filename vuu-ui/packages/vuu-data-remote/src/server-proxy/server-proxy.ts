@@ -128,6 +128,7 @@ export class ServerProxy {
   private authToken = "";
   private user = "user";
   private pendingLogin?: PendingLogin;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private pendingRequests = new Map<string, PendingRequest<any>>();
   private sessionId?: string;
   private queuedRequests: Array<QueuedRequest> = [];

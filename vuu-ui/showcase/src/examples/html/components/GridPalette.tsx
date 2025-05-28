@@ -2,7 +2,6 @@ import { queryClosest } from "@finos/vuu-utils";
 import {
   useDraggable,
   useGridLayoutDragStartHandler,
-  type DragSource,
 } from "@heswell/grid-layout";
 import cx from "clsx";
 import { DragEvent, HTMLAttributes, useCallback } from "react";

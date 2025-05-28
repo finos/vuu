@@ -3,7 +3,7 @@ import React, { CSSProperties, ReactElement } from "react";
 import { getProps } from "./propUtils";
 import { typeOf } from "./typeOf";
 
-export interface LayoutJSON<T extends object = any> {
+export interface LayoutJSON<T extends object = object> {
   active?: number;
   children?: LayoutJSON[];
   id?: string;
@@ -56,7 +56,7 @@ export function componentToJson(element: ReactElement): LayoutJSON {
 export function serializeProps(props?: LayoutProps) {
   if (props) {
     const { path, ...otherProps } = props;
-    const result: { [key: string]: any } = {};
+    const result: { [key: string]: unknown } = {};
     for (const [key, value] of Object.entries(otherProps)) {
       result[key] = serializeValue(value);
     }
@@ -64,7 +64,7 @@ export function serializeProps(props?: LayoutProps) {
   }
 }
 
-function serializeValue(value: unknown): any {
+function serializeValue(value: unknown): unknown {
   if (
     typeof value === "string" ||
     typeof value === "number" ||
@@ -74,7 +74,7 @@ function serializeValue(value: unknown): any {
   } else if (Array.isArray(value)) {
     return value.map(serializeValue);
   } else if (typeof value === "object" && value !== null) {
-    const result: { [key: string]: any } = {};
+    const result: { [key: string]: unknown } = {};
     for (const [k, v] of Object.entries(value)) {
       result[k] = serializeValue(v);
     }

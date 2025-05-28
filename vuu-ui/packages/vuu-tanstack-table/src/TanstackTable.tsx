@@ -138,7 +138,7 @@ export const TanstackTable = <T extends object>({
                       {virtualColumns.map((virtualColumn) => {
                         const header = headerGroup.headers[virtualColumn.index];
                         const isSorted = header.column.getIsSorted();
-                        const sortIndex = header.column.getSortIndex();
+                        // const sortIndex = header.column.getSortIndex();
 
                         return (
                           <div

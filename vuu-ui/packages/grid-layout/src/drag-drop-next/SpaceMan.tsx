@@ -282,7 +282,7 @@ export class SpaceMan {
         const settleComplete = () => {
           dragItem.removeEventListener("transitionend", settleComplete);
           this.cleanup();
-          this.unfreezeContainer();
+          // this.unfreezeContainer();
           resolve();
         };
 

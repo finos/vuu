@@ -55,7 +55,6 @@ import {
 } from "../message-utils";
 import { ArrayBackedMovingWindow } from "./array-backed-moving-window";
 import * as Message from "./messages";
-import { byRowPosition } from "@heswell/grid-layout/src/grid-layout-utils";
 
 export type ViewportStatus =
   | ""

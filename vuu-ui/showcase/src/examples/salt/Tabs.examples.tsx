@@ -43,6 +43,7 @@ import {
   ReceiptIcon,
 } from "@salt-ds/icons";
 import { ChangeEvent, SyntheticEvent, useRef, useState } from "react";
+import { ReactComponent } from "@finos/vuu-utils";
 
 const tabs = ["Home", "Transactions", "Loans", "Checks", "Liquidity"];
 const lotsOfTabs = [
@@ -110,7 +111,7 @@ export const Inline = () => {
   );
 };
 
-const tabToIcon: Record<string, ComponentType> = {
+const tabToIcon: Record<string, any> = {
   Home: HomeIcon,
   Transactions: ReceiptIcon,
   Loans: CreditCardIcon,

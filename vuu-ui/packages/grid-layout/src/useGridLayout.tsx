@@ -195,7 +195,7 @@ export const useGridLayout = ({
       //   `%c[useGridLayout#${id}] useMemo create the GridModel`,
       //   "color: green",
       // );
-      const gridModel = (window.gridModel = new GridModel(id, layout));
+      const gridModel = new GridModel(id, layout);
       const gridLayoutModel = new GridLayoutModel(gridModel);
       const callbackRef: RefCallback<HTMLDivElement> = (el) => {
         if (el) {

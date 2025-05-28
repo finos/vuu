@@ -60,6 +60,13 @@ const getDefaultColumnConfig = (
   }
 };
 
+export type SimulTableProps = Partial<TableProps> & {
+  columnLayout?: ColumnLayout;
+  getDefaultColumnConfig?: DefaultColumnConfiguration;
+  rowClassNameGenerators?: string[];
+  tableName?: SimulTableName;
+};
+
 const SimulTable = ({
   columnLayout,
   getDefaultColumnConfig,
@@ -68,12 +75,7 @@ const SimulTable = ({
   rowClassNameGenerators,
   tableName = "instruments",
   ...props
-}: Partial<TableProps> & {
-  columnLayout?: ColumnLayout;
-  getDefaultColumnConfig?: DefaultColumnConfiguration;
-  rowClassNameGenerators?: string[];
-  tableName?: SimulTableName;
-}) => {
+}: SimulTableProps) => {
   const { VuuDataSource } = useDataSource();
 
   const tableSchema = getSchema(tableName);
@@ -130,13 +132,9 @@ const SimulTable = ({
 };
 
 /** tags=data-consumer */
-export const Instruments = ({
-  columnLayout,
-}: {
-  columnLayout?: ColumnLayout;
-}) => (
+export const Instruments = (props: Omit<SimulTableProps, "tableName">) => (
   <SimulTable
-    columnLayout={columnLayout}
+    {...props}
     tableName="instruments"
     getDefaultColumnConfig={getDefaultColumnConfig}
   />

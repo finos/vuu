@@ -1386,7 +1386,10 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     );
     if (childItem.stackId) {
       const tabState = this.getTabState(childItem.stackId);
-      const tab: TabStateTab = { id: childItem.id, label: childItem.title };
+      const tab: TabStateTab = {
+        id: childItem.id,
+        label: childItem.title ?? childItem.id,
+      };
       tabState.addTab(tab);
       if (tabState.activeTab === tab) {
         childItem.contentVisible = true;
