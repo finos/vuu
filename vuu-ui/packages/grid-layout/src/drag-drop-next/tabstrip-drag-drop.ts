@@ -59,7 +59,7 @@ export function initializeDragContainer(
 
   const onDragStart = (e: DragEvent) => {
     const element = getDraggableEl(e.target);
-    console.log(`[drag-drop-listeners#${gridId}] onDragStart`);
+    console.log(`[tabstrip-drag-dop#${gridId}] onDragStart`);
     if (element) {
       const tabsContainer = queryClosest(e.target, ".vuuDragContainer", true);
       const gridLayout = queryClosest(tabsContainer, ".vuuGridLayout", true);
@@ -87,7 +87,7 @@ export function initializeDragContainer(
       });
 
       requestAnimationFrame(() => {
-        console.log(`[drag-drop-listeners#${gridId}]] onDragStart<RAF>`);
+        console.log(`[tabstrip-drag-dop#${gridId}]] onDragStart<RAF>`);
         spaceMan.dragStart(tabIndex);
         dragContext.detachTab(gridId, gridLayoutItem.id, label);
       });
@@ -97,14 +97,14 @@ export function initializeDragContainer(
   const onDragEnter = (e: DragEvent) => {
     // we should really mark drop targets
     const dropTarget = getDraggableEl(e.target);
-    console.log(`[drag-drop-listeners#${dragId}] onDragEnter`);
+    console.log(`[tabstrip-drag-dop#${dragId}] onDragEnter`);
     // We always revent default here, that way useAsDropItem will know that another drag handler
     // is responsible for this area
     e.preventDefault();
     const { dragSource, x, y } = dragContext;
     if (dropTarget) {
       console.log(
-        `[drag-drop-listeners#${dragId}] onDragEnter ${dropTarget.className} preventDefault`,
+        `[tabstrip-drag-dop#${dragId}] onDragEnter ${dropTarget.className} preventDefault`,
       );
       const indexOfDropTarget = getDataIndex(dropTarget);
       if (sourceIsTabbedComponent(dragSource)) {
@@ -149,7 +149,7 @@ export function initializeDragContainer(
 
   const onDragLeave = (e: DragEvent) => {
     console.log(
-      `[drag-drop-listeners#${dragId}] onDragleave ${spaceMan.id}.${dragId}`,
+      `[tabstrip-drag-dop#${dragId}] onDragleave ${spaceMan.id}.${dragId}`,
     );
     // Have we dragged the draggable item right out of the parent drag container
     const container = queryClosest(e.relatedTarget, `#${spaceMan.id}`);
@@ -161,7 +161,7 @@ export function initializeDragContainer(
   const onDrop = async (e: DragEvent) => {
     if (e.defaultPrevented) {
       console.log(
-        `[drag-drop-listeners#${dragId}] onDrop ${dragId} - already handled`,
+        `[tabstrip-drag-dop#${dragId}] onDrop ${dragId} - already handled`,
       );
       spaceMan.cleanup();
     } else {
@@ -172,7 +172,7 @@ export function initializeDragContainer(
       const { dropPosition } = spaceMan;
 
       console.log(
-        `[drag-drop-listeners] onDrop #${dragId}  ${dropPosition?.position} targetTabId ${dropPosition?.target}`,
+        `[tabstrip-drag-dop] onDrop #${dragId}  ${dropPosition?.position} targetTabId ${dropPosition?.target}`,
       );
       if (dropPosition) {
         await spaceMan.drop(clientX, clientY);
@@ -185,20 +185,20 @@ export function initializeDragContainer(
           focusDroppedTab(dragId, dragContext.dragSource.label);
         }
       } else {
-        console.log(`[drag-drop-listeners] onDrop, drop is elsewhere `);
+        console.log(`[tabstrip-drag-dop] onDrop, drop is elsewhere `);
         spaceMan.cleanup();
       }
     }
   };
   const onDragEnd = () => {
-    // console.log(`[drag-drop-listeners#${dragId}] onDragEnd`, {
+    // console.log(`[tabstrip-drag-dop#${dragId}] onDragEnd`, {
     //   dragSource: dragContext.dragSource,
     // });
     if (
       sourceIsTabbedComponent(dragContext.dragSource) &&
       dragContext.dragSource.tabsId === dragId
     ) {
-      console.log(`[drag-drop-listeners#${dragId}] do we need to cleanup`);
+      console.log(`[tabstrip-drag-dop#${dragId}] do we need to cleanup`);
     }
     if (!dragContext.dropped) {
       spaceMan.dragEnd();
@@ -217,7 +217,7 @@ export function initializeDragContainer(
     }
   };
 
-  console.log(`[drag-drop-listeners#${gridId}] register listeners`);
+  console.log(`[tabstrip-drag-dop#${gridId}] register listeners`);
   containerEl?.addEventListener("mousedown", onMouseDown);
   containerEl?.addEventListener("dragstart", onDragStart);
   containerEl?.addEventListener("dragenter", onDragEnter);
@@ -227,7 +227,7 @@ export function initializeDragContainer(
   document.body.addEventListener("dragend", onDragEnd);
 
   function cleanUp() {
-    console.log(`[drag-drop-listeners#${gridId}] unregister listeners`);
+    console.log(`[tabstrip-drag-dop#${gridId}] unregister listeners`);
     containerEl?.removeEventListener("mousedown", onMouseDown);
     containerEl?.removeEventListener("dragstart", onDragStart);
     containerEl?.removeEventListener("dragenter", onDragEnter);

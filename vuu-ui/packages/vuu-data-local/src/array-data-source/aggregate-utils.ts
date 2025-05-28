@@ -3,7 +3,7 @@ import type { VuuAggregation, VuuGroupBy } from "@finos/vuu-protocol-types";
 import type { ColumnMap } from "@finos/vuu-utils";
 import type { GroupMap, KeyList } from "./group-utils";
 
-export const count = (arr: any[]) => arr.length;
+export const count = (arr: unknown[]) => arr.length;
 
 export const aggregateData = (
   aggregations: VuuAggregation[],

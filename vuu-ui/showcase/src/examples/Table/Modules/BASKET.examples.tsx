@@ -1,4 +1,4 @@
-import { BasketTable } from "./BASKET/BasketTable";
+import { BasketTable } from "./BasketTable";
 
 // import { default as Basket } from "./Basket";
 

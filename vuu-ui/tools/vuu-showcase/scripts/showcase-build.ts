@@ -38,7 +38,7 @@ const cssInlinePlugin = {
     build.onLoad(
       {
         filter:
-          /packages\/(vuu|grid)-(datatable|filters|layout|popups|shell|table"table-extras|ui-controls|table)\/.*.css$/,
+          /packages\/(vuu|grid)-(datatable|filters|layout|popups|shell|table-extras|ui-controls|table|tanstack-table)\/.*.css$/,
       },
       async (args) => {
         const css = await fs.promises.readFile(args.path, "utf8");
@@ -82,7 +82,7 @@ async function main() {
     },
   );
 
-  const treeSourceJson = treeSourceFromFileSystem(
+  const [treeSourceJson /*, tags*/] = treeSourceFromFileSystem(
     "./src/examples",
     "production",
   );

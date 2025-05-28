@@ -191,7 +191,7 @@ export const WithPersistence = () => {
   }, []);
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <View id={id}>
         <PersistentFilter />
       </View>

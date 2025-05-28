@@ -128,6 +128,7 @@ export class ServerProxy {
   private authToken = "";
   private user = "user";
   private pendingLogin?: PendingLogin;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private pendingRequests = new Map<string, PendingRequest<any>>();
   private sessionId?: string;
   private queuedRequests: Array<QueuedRequest> = [];
@@ -449,7 +450,7 @@ export class ServerProxy {
       if (rows) {
         info?.(`setViewRange ${rows.length} rows returned from cache`);
         this.postMessageToClient({
-          mode: "batch",
+          mode: "update",
           type: "viewport-update",
           clientViewportId: viewport.clientViewportId,
           range: message.range,
@@ -524,7 +525,7 @@ export class ServerProxy {
     debug?.(`resumeViewport size ${size}, ${rows.length} rows sent to client`);
     this.postMessageToClient({
       clientViewportId: viewport.clientViewportId,
-      mode: "batch",
+      mode: "update",
       rows,
       size,
       type: "viewport-update",
@@ -891,7 +892,7 @@ export class ServerProxy {
               const [size, rows] = viewport.resume();
               this.postMessageToClient({
                 clientViewportId: viewport.clientViewportId,
-                mode: "batch",
+                mode: "update",
                 rows,
                 size,
                 type: "viewport-update",
@@ -1200,6 +1201,8 @@ export class ServerProxy {
         const result = viewport.getClientRows();
         if (result !== NO_DATA_UPDATE) {
           const [rows, mode] = result;
+          // what if the rows we're about to send do not fill the entire range
+
           const size = viewport.getNewRowCount();
           if (size !== undefined || (rows && rows.length > 0)) {
             debugEnabled &&

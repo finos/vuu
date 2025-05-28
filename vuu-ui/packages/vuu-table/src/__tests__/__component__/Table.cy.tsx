@@ -1,8 +1,9 @@
 import React from "react";
 // TODO try and get TS path alias working to avoid relative paths like this
-import { SimulTable } from "../../../../../showcase/src/examples/Table/SIMUL.examples";
-import { TestTable } from "../../../../../showcase/src/examples/Table/Table.examples";
+import { Instruments } from "../../../../../showcase/src/examples/Table/Modules/SIMUL.examples";
+import { TestTable } from "../../../../../showcase/src/examples/Table/Misc.examples";
 import { assertRenderedRows } from "./table-test-utils";
+import { LocalDataSourceProvider } from "@finos/vuu-data-test";
 
 const withAriaIndex = (index: number) => ({
   name: (_: string, el: Element) => el.ariaRowIndex === `${index}`,
@@ -22,13 +23,14 @@ describe("WHEN it initially renders", () => {
 
   it("THEN expected classname is present", () => {
     cy.mount(
-      <SimulTable
-        data-testid="table"
-        renderBufferSize={5}
-        height={625}
-        tableName="instruments"
-        width={800}
-      />,
+      <LocalDataSourceProvider>
+        <Instruments
+          data-testid="table"
+          renderBufferSize={5}
+          height={625}
+          width={800}
+        />
+      </LocalDataSourceProvider>,
     );
     const container = cy.findByTestId("table");
     container.should("have.class", "vuuTable");

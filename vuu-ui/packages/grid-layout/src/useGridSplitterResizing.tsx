@@ -38,14 +38,10 @@ export const useGridSplitterResizing = ({
         const { splitter } = state;
         const trackType = getTrackType(splitter);
 
-        const [contraTrackIndex, resizeTrackIndex] = splitter.resizedGridTracks;
-
-        const newTrackIndex =
-          resizeOperation === "contract" ? resizeTrackIndex : contraTrackIndex;
+        const [_, resizeTrackIndex] = splitter.resizedGridTracks;
 
         layoutModel.addTrackForResize(
           trackType,
-          newTrackIndex,
           Math.abs(moveBy),
           resizeOperation,
           resizeTrackIndex,
@@ -88,11 +84,7 @@ export const useGridSplitterResizing = ({
             ? "fwd"
             : "bwd";
 
-        if (splitter.orientation === "horizontal") {
-          gridModel.removeGridColumn(targetTrack, assignDirection);
-        } else {
-          gridModel.removeGridRow(targetTrack, assignDirection);
-        }
+        gridModel.removeGridTrack(trackType, targetTrack, assignDirection);
 
         state.resizeTrackIsShared = true;
         if (resizeOperation === "expand") {

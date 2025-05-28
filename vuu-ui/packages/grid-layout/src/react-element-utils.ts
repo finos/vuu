@@ -41,7 +41,7 @@ export const addChildToStackedGridItem = (
   // can we add an imperative API method to Stack ?
   return React.cloneElement(
     stackElement,
-    { active: stackChildren.length } as any,
+    { active: stackChildren.length },
     stackChildren.concat(childElement),
   );
 };

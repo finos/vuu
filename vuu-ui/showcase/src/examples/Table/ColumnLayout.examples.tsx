@@ -1,7 +1,7 @@
-import { SimulTable } from "./SIMUL.examples";
+import { Instruments } from "./Modules/SIMUL.examples";
 
-export const DefaultColumnLayout = () => <SimulTable />;
+export const DefaultColumnLayout = () => <Instruments />;
 
-export const StaticColumnLayout = () => <SimulTable columnLayout="static" />;
+export const StaticColumnLayout = () => <Instruments columnLayout="static" />;
 
-export const FitColumnLayout = () => <SimulTable columnLayout="fit" />;
+export const FitColumnLayout = () => <Instruments columnLayout="fit" />;

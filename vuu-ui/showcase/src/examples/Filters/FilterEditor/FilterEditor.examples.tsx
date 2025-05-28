@@ -49,7 +49,7 @@ const FilterEditorTemplate = ({
 };
 
 export const NewFilter = (props: Partial<FilterEditorProps>) => (
-  <LocalDataSourceProvider modules={["SIMUL"]}>
+  <LocalDataSourceProvider>
     <FilterEditorTemplate {...props} />
   </LocalDataSourceProvider>
 );
@@ -81,7 +81,7 @@ export const NewFilterDateColumns = (props: Partial<FilterEditorProps>) => {
   }, []);
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <FilterEditorTemplate
         {...props}
         columnDescriptors={columnDescriptors}
@@ -101,7 +101,7 @@ export const EditSimplerFilter = (props: Partial<FilterEditorProps>) => {
   }, []);
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <FilterEditorTemplate {...props} filter={filter} />
     </LocalDataSourceProvider>
   );
@@ -127,7 +127,7 @@ export const EditMultiClauseAndFilter = (props: Partial<FilterEditorProps>) => {
   }, []);
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <FilterEditorTemplate {...props} filter={filter} />
     </LocalDataSourceProvider>
   );
@@ -153,7 +153,7 @@ export const EditMultiClauseOrFilter = (props: Partial<FilterEditorProps>) => {
   }, []);
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <FilterEditorTemplate {...props} filter={filter} />
     </LocalDataSourceProvider>
   );

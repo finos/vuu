@@ -15,7 +15,7 @@ export const DefaultNewBasketPanel = () => {
   }, []);
 
   return (
-    <LocalDataSourceProvider modules={["BASKET"]}>
+    <LocalDataSourceProvider>
       <NewBasketPanel
         basketSchema={schema}
         onClose={() => console.log("close")}

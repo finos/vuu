@@ -12,12 +12,19 @@ export type GridLayoutCloseAction = {
   id: string;
 };
 
-//TODO is it used ?
-export type GridLayoutInsertTabAction = {
-  type: "insert-tab";
-  id: string;
-  childId: string;
+export type GridLayoutAddChildAction = {
+  title: string;
+  type: "add-child";
+  componentTemplate: ComponentTemplate;
+  stackId?: string;
 };
+
+//TODO is it used ?
+// export type GridLayoutInsertTabAction = {
+//   type: "insert-tab";
+//   id: string;
+//   childId: string;
+// };
 
 //TODO NOT USED
 export type GridLayoutSwitchTabAction = {
@@ -34,7 +41,8 @@ export type GridLayoutTrackAction = {
 
 export type GridLayoutAction =
   | GridLayoutCloseAction
-  | GridLayoutInsertTabAction
+  // | GridLayoutInsertTabAction
+  | GridLayoutAddChildAction
   | GridLayoutSwitchTabAction
   | GridLayoutTrackAction;
 
@@ -70,14 +78,17 @@ export interface ComponentDragSource {
   type: "component";
 }
 
+export interface ComponentTemplate {
+  componentJson: string;
+  label: string;
+}
+
 /**
  * provides details of a template, to be used on drop to instantiate  a new component
  */
-export interface TemplateDragSource {
-  componentJson: string;
+export interface TemplateSource extends ComponentTemplate {
   element: HTMLElement;
   layoutId: string;
-  label: string;
   type: "template";
 }
 
@@ -85,7 +96,7 @@ export type DragSourceProvider = (evt: DragEvent<Element>) => DragSource;
 
 export type DragSource =
   | ComponentDragSource
-  | TemplateDragSource
+  | TemplateSource
   | TabbedComponentDragSource;
 
 export const sourceIsComponent = (
@@ -108,7 +119,7 @@ export const sourceIsTabbedComponent = (
 
 export const sourceIsTemplate = (
   source: DragSource | undefined,
-): source is TemplateDragSource => {
+): source is TemplateSource => {
   if (source === undefined) {
     throw Error("sourceIsTemplate: source is undefined");
   }

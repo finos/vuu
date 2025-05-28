@@ -40,7 +40,11 @@ export const isDocumentDescriptor = (val: unknown): val is DocumentDescriptor =>
   typeof val["name"] === "string" &&
   typeof val["path"] === "string";
 
-export const getTargetPath = (url: URL, treeSourceNodes: TreeSourceNode[]) => {
+export const getTargetTreeNode = <T = unknown>(
+  url: URL,
+  treeSourceNodes: TreeSourceNode<T>[],
+  throwIfNotFound = true,
+) => {
   const { pathname } = url;
   const keys = pathname.slice(1).split("/");
 
@@ -56,8 +60,8 @@ export const getTargetPath = (url: URL, treeSourceNodes: TreeSourceNode[]) => {
     isComponentDescriptor(treeNode?.nodeData) ||
     isDocumentDescriptor(treeNode?.nodeData)
   ) {
-    return treeNode?.nodeData;
-  } else {
+    return treeNode;
+  } else if (throwIfNotFound) {
     throw Error("dsdsdsdsdsd");
   }
 };

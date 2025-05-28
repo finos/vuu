@@ -4,9 +4,13 @@ import {
   SubscribeCallback,
 } from "@finos/vuu-data-types";
 import { VuuRange } from "@finos/vuu-protocol-types";
-import { getFullRange, NULL_RANGE, rangesAreSame } from "@finos/vuu-utils";
+import {
+  getFullRange,
+  MovingWindow,
+  NULL_RANGE,
+  rangesAreSame,
+} from "@finos/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { MovingWindow } from "./moving-window";
 import { TableProps } from "./Table";
 
 export interface DataSourceHookProps
@@ -50,7 +54,6 @@ export const useDataSource = ({
       // setRange calls at this point so dataWindow range will
       //not yet be set. If the dataWindow range is already set,
       // this is a no-op.
-      console.log("resumed");
       const { range } = dataSource;
       if (range.to !== 0) {
         dataWindow.setRange(dataSource.range);
@@ -90,11 +93,15 @@ export const useDataSource = ({
           }
         }
         if (message.rows) {
-          if (message.range) {
-            if (message.range.to !== dataWindow.range.to) {
-              dataWindow.setRange(message.range);
-            }
-          }
+          // Removed because known to cause issues when multiple server requests
+          // are handled  - a newer range can be overwritten with an out-of-date
+          // range. If we need this for some reason, amke sure server sends up
+          // top date range
+          // if (message.range) {
+          //   if (message.range.to !== dataWindow.range.to) {
+          //     dataWindow.setRange(message.range);
+          //   }
+          // }
           setData(message.rows);
         } else if (message.size === 0) {
           setData([]);

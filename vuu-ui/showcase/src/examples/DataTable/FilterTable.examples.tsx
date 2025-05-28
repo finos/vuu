@@ -1,4 +1,4 @@
-import { getSchema, LocalDataSourceProvider } from "@finos/vuu-data-test";
+import { getSchema } from "@finos/vuu-data-test";
 import { TableSchema } from "@finos/vuu-data-types";
 import type { DataSourceFilter } from "@finos/vuu-data-types";
 import { FilterTable } from "@finos/vuu-datatable";
@@ -7,8 +7,6 @@ import type { FilterBarProps } from "@finos/vuu-filters";
 import type { TableConfig } from "@finos/vuu-table-types";
 import { CSSProperties, useCallback, useMemo, useState } from "react";
 import { toColumnName, useDataSource } from "@finos/vuu-utils";
-import { useAutoLoginToVuuServer } from "../utils";
-import { VuuDataSourceProvider } from "@finos/vuu-data-react";
 import { View } from "@finos/vuu-layout";
 
 type FilterTableTemplateProps = {
@@ -22,7 +20,6 @@ const FilterTableTemplate = ({
   QuickFilterProps,
   variant,
 }: FilterTableTemplateProps) => {
-  useAutoLoginToVuuServer();
   const { VuuDataSource } = useDataSource();
 
   const dataSource = useMemo(() => {
@@ -80,41 +77,27 @@ const FilterTableTemplate = ({
   );
 };
 
-export const FilterTableVuuInstruments = () => {
-  return (
-    <VuuDataSourceProvider>
-      <FilterTableTemplate />
-    </VuuDataSourceProvider>
-  );
+/** tags=data-consumer */
+export const FilterTableInstruments = () => {
+  return <FilterTableTemplate />;
 };
 
-export const FilterTableArrayDataInstruments = () => {
-  return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
-      <FilterTableTemplate />
-    </LocalDataSourceProvider>
-  );
-};
-
+/** tags=data-consumer */
 export const FilterTableInstrumentsQuickFilters = () => (
-  <LocalDataSourceProvider modules={["SIMUL"]}>
-    <FilterTableTemplate
-      variant="quick-filters-only"
-      QuickFilterProps={{
-        quickFilterColumns: ["isin", "currency", "exchange"],
-      }}
-    />
-  </LocalDataSourceProvider>
+  <FilterTableTemplate
+    variant="quick-filters-only"
+    QuickFilterProps={{
+      quickFilterColumns: ["isin", "currency", "exchange"],
+    }}
+  />
 );
 
+/** tags=data-consumer */
 export const FilterTableArrayDataInstrumentsFullFilters = () => (
-  <LocalDataSourceProvider modules={["SIMUL"]}>
-    <FilterTableTemplate variant="full-filters" />
-  </LocalDataSourceProvider>
+  <FilterTableTemplate variant="full-filters" />
 );
 
+/** tags=data-consumer */
 export const FilterTableArrayDataInstrumentsFixedHeightContainer = () => (
-  <LocalDataSourceProvider modules={["SIMUL"]}>
-    <FilterTableTemplate style={{ height: 600, width: 900 }} />
-  </LocalDataSourceProvider>
+  <FilterTableTemplate style={{ height: 600, width: 900 }} />
 );

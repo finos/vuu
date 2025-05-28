@@ -266,7 +266,6 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
       } else {
         this.emit("reconnected");
       }
-      console.log("connected");
     };
     ws.onerror = () => {
       clearTimeout(timer);

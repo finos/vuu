@@ -1,5 +1,5 @@
 // TODO try and get TS path alias working to avoid relative paths like this
-import { TestTable } from "../../../../../showcase/src/examples/Table/Table.examples";
+import { TestTable } from "../../../../../showcase/src/examples/Table/Misc.examples";
 import { TwoHundredColumns } from "../../../../../showcase/src/examples/Table/TEST.examples";
 import {
   assertRenderedColumns,

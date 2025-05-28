@@ -6,14 +6,13 @@ export const DataSourceProvider = ({
   getServerAPI,
   isLocalData = true,
   VuuDataSource,
-  vuuModuleNames,
 }: Omit<DataSourceContextProps, "isLocalData"> & {
   children: ReactNode;
   isLocalData?: boolean;
 }) => {
   return (
     <DataSourceContext.Provider
-      value={{ isLocalData, vuuModuleNames, VuuDataSource, getServerAPI }}
+      value={{ isLocalData, VuuDataSource, getServerAPI }}
     >
       {children}
     </DataSourceContext.Provider>

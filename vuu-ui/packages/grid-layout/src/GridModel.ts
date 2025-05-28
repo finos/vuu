@@ -9,6 +9,11 @@ import {
   getMatchingRowspan,
   isFixedHeightChildItem,
   isFixedWidthChildItem,
+  setColumnEnd,
+  moveColumn,
+  setRowEnd,
+  moveRow,
+  getGridArea,
 } from "./grid-layout-utils";
 import { getEmptyExtents, getGridMatrix } from "./grid-matrix";
 import {
@@ -19,13 +24,16 @@ import {
 } from "./GridLayoutModel";
 
 export type TrackUnit = "px" | "fr";
-export type CSSTrackSize = `${number}${TrackUnit}`;
-export type TrackSize = number | CSSTrackSize;
+export type CSSFraction = `${number}fr`;
+export type CSSPixels = `${number}px`;
+export type TrackSize = CSSFraction | CSSPixels;
 
-export const isFractionUnit = (trackSize: TrackSize) =>
+export const isFractionUnit = (
+  trackSize: TrackSize,
+): trackSize is CSSFraction =>
   typeof trackSize === "string" && trackSize.endsWith("fr");
 
-export const isPixelUnit = (trackSize: TrackSize): trackSize is CSSTrackSize =>
+export const isPixelUnit = (trackSize: TrackSize): trackSize is CSSPixels =>
   typeof trackSize === "string" && trackSize.endsWith("px");
 
 const NO_SPLITTERS: ISplitter[] = [];
@@ -83,7 +91,7 @@ export interface GridModelChildItemProps
   fixed?: boolean;
   height?: number;
   id: string;
-  style: GridChildItemStyle;
+  style?: GridChildItemStyle;
   type?: GridModelItemType;
   width?: number;
 }
@@ -91,6 +99,11 @@ export interface GridModelChildItemProps
 export type GridModelTrack = "column" | "row";
 
 export type AssignDirection = "bwd" | "fwd";
+
+export type TrackInsertionPosition = {
+  index: number;
+  position: "before" | "after";
+};
 
 const assertValidTracks = (track: "col" | "row", trackSizes?: TrackSize[]) => {
   if (trackSizes === undefined) {
@@ -102,6 +115,14 @@ export type GridLayoutChangeHandler = (
   gridId: string,
   gridLayoutDescriptor: GridLayoutDescriptor,
 ) => void;
+
+export type GridTrackAddedEvent = {
+  gridId: string;
+  trackType: TrackType;
+  newTrackIndex: number;
+  newTracks: GridTrack[];
+};
+export type GridTrackAddedHandler = (evt: GridTrackAddedEvent) => void;
 
 export type NonContentResetOptions = {
   placeholders?: boolean;
@@ -130,6 +151,7 @@ export type TabSelectionChangeHandler = (
 
 export type GridModelEvents = {
   "grid-layout-change": GridLayoutChangeHandler;
+  "grid-track-added": GridTrackAddedHandler;
   "child-position-updates": GridChildPositionChangeHandler;
   "tabs-change": TabsChangeHandler;
   "tabs-created": (stackItem: GridModelChildItem) => void;
@@ -296,12 +318,8 @@ export class GridModelChildItem implements IGridModelChildItem {
     this.#dragging = isDragging;
   }
 
-  get layoutStyle() {
-    const {
-      column: { start: gridColumnStart, end: gridColumnEnd },
-      row: { start: gridRowStart, end: gridRowEnd },
-    } = this;
-    return { gridColumnEnd, gridColumnStart, gridRowEnd, gridRowStart };
+  get gridArea() {
+    return getGridArea(this);
   }
 }
 
@@ -406,16 +424,25 @@ export class TabState extends EventEmitter<TabStateTabEvents> {
     this.emit("tabs-change", this.id, this.active, this.tabs);
   }
 
-  addTab(tab: TabStateTab, { position, target }: DropPosition) {
-    console.log(
-      `[TabState#${this.id}] add tab #${tab.id} ${tab.label} ${position} ${target}`,
-    );
-    const pos = this.indexOfTab(target);
-    const newTabs = this.tabs.slice();
-    newTabs.splice(pos, 0, tab);
-    this.active = newTabs.indexOf(tab);
-    this.tabs = newTabs;
-    this.emit("tab-added", this, tab);
+  addTab(tab: TabStateTab, dropPosition?: DropPosition) {
+    if (dropPosition) {
+      const { position, target } = dropPosition;
+      console.log(
+        `[TabState#${this.id}] add tab #${tab.id} ${tab.label} ${position} ${target}`,
+      );
+      const pos = this.indexOfTab(target);
+      const newTabs = this.tabs.slice();
+      newTabs.splice(pos, 0, tab);
+      this.active = newTabs.indexOf(tab);
+      this.tabs = newTabs;
+      this.emit("tab-added", this, tab);
+    } else {
+      const newTabs = this.tabs.concat([tab]);
+      this.tabs = newTabs;
+      if (this.active === -1) {
+        this.setActiveTab(tab.label);
+      }
+    }
   }
 
   removeTab(id: string) {
@@ -451,24 +478,23 @@ export type GridTrackResizeHandler = (
   tracks: GridTrack[],
 ) => void;
 export type GridTrackEvents = {
+  "grid-track-added": GridTrackAddedHandler;
   "grid-track-resize": GridTrackResizeHandler;
 };
-
-const trackSizeToCssValue = (trackSize: TrackSize): CSSTrackSize =>
-  typeof trackSize === "number" ? `${trackSize}px` : trackSize;
 
 export class GridTrack {
   static fromTrackSize = (trackSize: TrackSize) => new GridTrack(trackSize);
 
   #measuredValue = -1;
-  #trackSize: TrackSize;
+  #fractions = -1;
+  #pixels = -1;
 
   constructor(trackSize: TrackSize) {
-    this.#trackSize = trackSize;
-  }
-
-  get cssValue() {
-    return trackSizeToCssValue(this.#trackSize);
+    console.log(
+      `%c[GridTrack] constructor ${trackSize}`,
+      "color: blue;font-weight: bold;",
+    );
+    this.trackSize = trackSize;
   }
 
   get hasBeenMeasured() {
@@ -476,15 +502,11 @@ export class GridTrack {
   }
 
   get isFraction() {
-    return isFractionUnit(this.#trackSize);
+    return this.#fractions !== -1;
   }
 
   get isPixelValue() {
-    return isPixelUnit(this.#trackSize);
-  }
-
-  get isNumber() {
-    return typeof this.#trackSize === "number";
+    return this.#pixels !== -1;
   }
 
   get isMeasured() {
@@ -492,7 +514,7 @@ export class GridTrack {
   }
 
   get measuredValue() {
-    return this.#measuredValue ?? -1;
+    return this.#measuredValue;
   }
 
   set measuredValue(value: number) {
@@ -501,7 +523,8 @@ export class GridTrack {
 
   convertUnitsToPixels() {
     if (this.hasBeenMeasured) {
-      this.#trackSize = `${this.#measuredValue}px`;
+      this.#pixels = this.#measuredValue;
+      this.#fractions = -1;
     } else {
       throw Error(
         `[GridTrack] convertUnitToPixels, tracks must be measured before calling this method`,
@@ -510,14 +533,12 @@ export class GridTrack {
   }
 
   get hasNumericValue() {
-    return this.isNumber || this.isPixelValue || this.isMeasured;
+    return this.isPixelValue || this.isMeasured;
   }
 
   get numericValue(): number {
-    if (this.isNumber) {
-      return this.#trackSize as number;
-    } else if (isPixelUnit(this.#trackSize)) {
-      return parseInt(this.#trackSize);
+    if (this.isPixelValue) {
+      return this.#pixels;
     } else if (this.#measuredValue !== -1) {
       return this.#measuredValue;
     } else {
@@ -528,28 +549,50 @@ export class GridTrack {
   }
 
   get trackSize() {
-    return this.#trackSize;
+    return this.#fractions !== -1
+      ? `${this.#fractions}fr`
+      : `${this.#pixels}px`;
   }
 
   set trackSize(trackSize: TrackSize) {
-    this.#trackSize = trackSize;
+    console.log(
+      `[GridTrackTrack] set trackSize ${trackSize}, this measuredValue ${this.measuredValue}`,
+    );
+
+    if (isPixelUnit(trackSize)) {
+      this.#pixels = parseInt(trackSize);
+      this.#fractions = -1;
+    } else {
+      this.#fractions = parseInt(trackSize);
+      this.#pixels = -1;
+    }
+
+    this.#measuredValue = -1;
   }
 
-  increment(value: number) {
-    if (typeof this.#trackSize === "number") {
-      this.#trackSize += value;
-    } else if (isPixelUnit(this.#trackSize)) {
-      this.#trackSize = parseInt(this.#trackSize) + value;
-    } else if (this.#measuredValue !== -1) {
-      this.#trackSize = this.#measuredValue + value;
+  addFraction(trackSize: TrackSize) {
+    if (this.isFraction && isFractionUnit(trackSize)) {
+      this.#fractions += parseInt(trackSize);
     } else {
-      throw Error(
-        `[GridTrack] increment, value ${this.#trackSize} cannot be incremented unless measured first`,
-      );
+      throw Error("Track.addFraction, both trackSize values must be fractions");
     }
   }
 
-  toString = () => this.cssValue;
+  increment(value: number) {
+    if (this.isFraction && !this.isMeasured) {
+      throw Error(
+        `[GridTrack] increment, value ${this.trackSize} cannot be incremented unless measured first`,
+      );
+    }
+
+    if (this.isFraction) {
+      this.convertUnitsToPixels();
+    }
+
+    this.#pixels += value;
+  }
+
+  toString = () => this.trackSize;
 }
 
 export class GridTracks extends EventEmitter<GridTrackEvents> {
@@ -574,7 +617,9 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
     return this.#columns.map((col) => col.trackSize);
   }
 
+  // suspected NOT USED
   set columns(columns: TrackSize[]) {
+    alert("unexpected");
     console.log(`[GridTracks] set columns ${columns.join(" ")}`);
     this.#columns = columns.map(GridTrack.fromTrackSize);
     this.emit("grid-track-resize", "column", this.#columns);
@@ -584,7 +629,9 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
     return this.#rows.map((col) => col.trackSize);
   }
 
+  // suspected NOT USED
   set rows(rows: TrackSize[]) {
+    alert("unexpected");
     console.log(`[GridTracks] set rows ${rows.join(" ")}`);
     this.#rows = rows.map(GridTrack.fromTrackSize);
     this.emit("grid-track-resize", "row", this.#rows);
@@ -668,12 +715,30 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
     const tracks = this.getTracks(trackType);
     const targetTrack = tracks[trackIndex];
     if (targetTrack.isFraction) {
-      this.measure(trackType);
-    }
-    const sizeOfNewTrack = Math.floor(targetTrack.numericValue / 2);
+      const otherFractionTracks = tracks.filter(
+        (track, i) => i !== trackIndex && track.isFraction,
+      );
 
-    tracks.splice(trackIndex, 0, new GridTrack(sizeOfNewTrack));
-    targetTrack.increment(-sizeOfNewTrack);
+      if (otherFractionTracks.length === 0) {
+        tracks.splice(trackIndex, 0, new GridTrack(targetTrack.trackSize));
+      } else if (otherFractionTracks.length === 1) {
+        const [otherFractionTrack] = otherFractionTracks;
+        if (otherFractionTrack.trackSize === "1fr") {
+          otherFractionTrack.trackSize = "2fr";
+          targetTrack.trackSize = "1fr";
+          tracks.splice(trackIndex, 0, new GridTrack("1fr"));
+        } else {
+          console.log("need to do a bit more here");
+        }
+      } else {
+        console.log("need to do a bit more here");
+      }
+    } else {
+      const sizeOfNewTrack = Math.floor(targetTrack.numericValue / 2);
+
+      tracks.splice(trackIndex, 0, new GridTrack(`${sizeOfNewTrack}px`));
+      targetTrack.increment(-sizeOfNewTrack);
+    }
 
     this.emit("grid-track-resize", trackType, tracks);
   }
@@ -691,6 +756,25 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
     const tracks = this.getTracks(trackType);
 
     const tracksInRange = tracks.slice(fromTrackLine - 1, toTrackLine);
+
+    let newTrackIndex = 0;
+    const newTracks: GridTrack[] = [];
+
+    // if (tracksInRange.every(({ trackSize }) => isFractionUnit(trackSize))) {
+    //   console.log(`every track is a fraction`);
+    //   const fractionTotal = tracksInRange.reduce((sum, { trackSize }) => {
+    //     sum += parseInt(trackSize as string);
+    //     return sum;
+    //   }, 0);
+
+    //   if (fractionTotal % 2 === 0) {
+    //     const newSize = fractionTotal / 2;
+    //     console.log(`new trackSize ${newSize}fr`);
+    //   } else {
+    //     console.log("need to double up all fractions in tracks");
+    //   }
+
+    // } else {
     if (!tracksInRange.every((track) => track.hasNumericValue)) {
       this.measure(trackType);
     }
@@ -700,9 +784,6 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
       size += tracks[i].numericValue;
     }
     let halfTrack = Math.floor(size / 2);
-    let newTrackIndex = 0;
-
-    const newTracks: GridTrack[] = [];
     for (let i = 0; i < tracks.length; i++) {
       if (i < fromTrackLine - 1) {
         newTracks.push(tracks[i]);
@@ -712,8 +793,10 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
           halfTrack -= tracks[i].numericValue;
         } else if (halfTrack) {
           newTrackIndex = newTracks.length;
-          newTracks.push(new GridTrack(halfTrack));
-          newTracks.push(new GridTrack(tracks[i].numericValue - halfTrack));
+          newTracks.push(new GridTrack(`${halfTrack}px`));
+          newTracks.push(
+            new GridTrack(`${tracks[i].numericValue - halfTrack}px`),
+          );
           halfTrack = 0;
         } else {
           newTracks.push(tracks[i]);
@@ -721,6 +804,13 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
       } else {
         newTracks.push(tracks[i]);
       }
+    }
+    // }
+
+    if (trackType === "column") {
+      this.#columns = newTracks;
+    } else {
+      this.#rows = newTracks;
     }
 
     console.log(`[GridTracks] splitTracks, after: ${tracks.join(" ")}`);
@@ -730,33 +820,25 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
     return newTrackIndex;
   }
 
+  /**
+   * In the trackInsertionPosition, the index always indicates where the new track
+   * will be inserted. The position indicates where it falls, conceptually, in relation
+   * to the existing two tracks that it will fall between. It will overlap one, but not
+   * both of the existing track positions.
+   */
   insertTrack(
     trackType: TrackType,
-    newTrackSize: number,
-    trackIndex: number,
-    expandingResizeItem: boolean,
+    { index, position }: TrackInsertionPosition,
+    trackSize: number,
   ) {
-    console.log(
-      `[GridTracks] insertTrack (${trackType}) [${trackIndex}]  ${newTrackSize} expandingResizeItem ${expandingResizeItem}`,
-    );
-
     const tracks = this.getTracks(trackType);
-    const resizeTrack = tracks[trackIndex];
-    const contraTrack = tracks[trackIndex - 1];
-    if (contraTrack === undefined) {
-      throw Error(
-        `[GridTracks] splitTrack, no contraTrack at [${contraTrack}]`,
-      );
-    }
-
-    const reducedTrack = expandingResizeItem ? contraTrack : resizeTrack;
+    const reducedTrack =
+      position === "before" ? tracks[index - 1] : tracks[index];
     if (reducedTrack.isFraction) {
       this.measure(trackType);
     }
-    tracks.splice(trackIndex, 0, new GridTrack(Math.abs(newTrackSize)));
-    reducedTrack.increment(-newTrackSize);
-
-    console.log(`[GridTracks] insertTrack, after: ${this.#columns.join(" ")}`);
+    tracks.splice(index, 0, new GridTrack(`${Math.abs(trackSize)}px`));
+    reducedTrack.increment(-trackSize);
 
     this.emit("grid-track-resize", trackType, tracks);
   }
@@ -770,9 +852,33 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
 
     const tracks = this.getTracks(trackType);
 
-    const contraTrack = assignFwd ? tracks[index + 1] : tracks[index - 1];
-    const [removedTrack] = tracks.splice(index, 1);
-    contraTrack.increment(removedTrack.numericValue);
+    const contraIndex = assignFwd ? index + 1 : index - 1;
+    const contraTrack = tracks[contraIndex];
+    const removedTrack = tracks[index];
+
+    const otherTracksAreFractions = tracks.some(
+      (track, i) => i !== index && i !== contraIndex && track.isFraction,
+    );
+
+    if (contraTrack.isFraction && removedTrack.isFraction) {
+      // We don't need to do anything if there are no other fraction unit tracks
+      if (otherTracksAreFractions) {
+        contraTrack.addFraction(removedTrack.trackSize);
+      }
+    } else if (contraTrack.isFraction) {
+      // We don't need to do anything if there are no other fraction unit tracks
+      if (otherTracksAreFractions) {
+        this.measure(trackType);
+        contraTrack.increment(removedTrack.numericValue);
+      }
+    } else if (removedTrack.isFraction) {
+      this.measure(trackType);
+      contraTrack.increment(removedTrack.numericValue);
+    } else {
+      contraTrack.increment(removedTrack.numericValue);
+    }
+
+    tracks.splice(index, 1);
 
     this.emit("grid-track-resize", trackType, tracks);
   }
@@ -931,10 +1037,18 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     this.detachStackedChildItem(stackId, activeTab);
   };
 
-  getTabState = (tabsId: string) => {
+  getTabState = (
+    tabsId: string,
+    fallbackAction: "throw" | "create" = "throw",
+  ): TabState => {
     const tabState = this.#tabState.get(tabsId);
     if (tabState) {
       return tabState;
+    } else if (fallbackAction === "create") {
+      // GridItems that refer to this stack may have already been created,
+      // find them here
+      this.setTabState(tabsId, [], -1);
+      return this.getTabState(tabsId, "throw");
     } else {
       throw Error(
         `[GridModel#${this.id}] getTabState, no tabState found for tabs #${tabsId} and no initialisation params provided`,
@@ -964,7 +1078,12 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     tabState.on("tabs-change", this.handleTabsChange);
     tabState.on("tabs-removed", this.handleTabsRemoved);
 
-    this.activateStackedChildItem(stackId, tabs[activeItem]);
+    if (tabs[activeItem]) {
+      // tabState can be set before childItems are identified in the case of an
+      // explicit GridLayoutStackedItem. In this case the activeStackedChildItem
+      // will be activated later.
+      this.activateStackedChildItem(stackId, tabs[activeItem]);
+    }
 
     this.#tabState.set(stackId, tabState);
     return tabState;
@@ -1066,68 +1185,102 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     };
   }
 
-  removeGridColumn(
-    index: number,
-    assignDirection?: AssignDirection,
-    updateChildItems = true,
-  ) {
-    this.tracks.removeTrack("column", index, assignDirection);
+  splitGridTrack(trackType: TrackType, trackIndex: number) {
+    this.tracks.splitTrack(trackType, trackIndex);
+    this.updateChildItemsToAccommodateNewTrack(trackType, trackIndex);
+  }
 
+  splitGridTracks(
+    trackType: TrackType,
+    fromTrackLine: number,
+    toTrackLine: number,
+  ) {
+    const trackIndex = this.tracks.splitTracks(
+      trackType,
+      fromTrackLine,
+      toTrackLine,
+    );
+
+    this.updateChildItemsToAccommodateNewTrack(trackType, trackIndex);
+
+    return trackIndex;
+  }
+
+  private updateChildItemsToAccommodateNewTrack(
+    trackType: TrackType,
+    trackIndex: number,
+  ) {
+    const gridPosition = trackIndex + 1;
     const updates: GridItemUpdate[] = [];
 
-    if (updateChildItems) {
-      const gridPosition = index + 1;
+    const [setTrackEnd, moveTrack] =
+      trackType === "row" ? [setRowEnd, moveRow] : [setColumnEnd, moveColumn];
 
-      for (const item of this.#childItems) {
-        const { start, end } = item.column;
+    for (const item of this.#childItems) {
+      const { start, end } = item[trackType];
 
-        let startUpdate: Partial<GridLayoutModelPosition> | undefined =
-          undefined;
-        let endUpdate: Partial<GridLayoutModelPosition> | undefined = undefined;
-
-        if (start > gridPosition) {
-          startUpdate = { start: start - 1 };
-        }
-        if (end > gridPosition) {
-          endUpdate = { end: end - 1 };
-        }
-
-        if (startUpdate || endUpdate) {
-          updates.push([
-            item.id,
-            {
-              column: { start, end, ...startUpdate, ...endUpdate },
-            },
-          ]);
-        }
+      if (start > gridPosition) {
+        updates.push(moveTrack(item));
+      } else if (end > gridPosition) {
+        updates.push(setTrackEnd(item));
       }
-
-      updates.forEach(([id, { column }]) => {
-        if (column) {
-          this.updateChildColumn(id, column);
-        }
-      });
     }
 
+    this.applyUpdates(updates);
+  }
+
+  insertGridTrack(
+    trackType: TrackType,
+    { index, position }: TrackInsertionPosition,
+    trackSize: number,
+  ) {
+    this.tracks.insertTrack(trackType, { index, position }, trackSize);
+
+    const gridPosition = index + 1;
+    const updates: GridItemUpdate[] = [];
+
+    const [setTrackEnd, moveTrack] =
+      trackType === "row" ? [setRowEnd, moveRow] : [setColumnEnd, moveColumn];
+
+    for (const item of this.#childItems) {
+      const { start, end } = item[trackType];
+
+      if (position === "before") {
+        if (start >= gridPosition) {
+          updates.push(moveTrack(item));
+        } else if (end >= gridPosition) {
+          updates.push(setTrackEnd(item));
+        }
+      } else {
+        if (start > gridPosition) {
+          updates.push(moveTrack(item));
+        } else if (end > gridPosition) {
+          updates.push(setTrackEnd(item));
+        }
+      }
+    }
+
+    this.applyUpdates(updates);
+    // do we ned to fire an event here ?
     this.emit("child-position-updates", updates, { splitters: true });
   }
-  removeGridRow(
-    index: number,
+
+  removeGridTrack(
+    trackType: TrackType,
+    trackIndex: number,
     assignDirection?: AssignDirection,
     updateChildItems = true,
   ) {
-    this.tracks.removeTrack("row", index, assignDirection);
+    console.log(`[GridModel] removeGridTrack ${trackType} [${trackIndex}]`);
 
-    // const newRows = this.removeGridTrack(this.#rows, index, assignDirection);
-    // this.setGridRows(newRows);
-
-    const updates: GridItemUpdate[] = [];
+    this.tracks.removeTrack(trackType, trackIndex, assignDirection);
 
     if (updateChildItems) {
-      const gridPosition = index + 1;
+      const updates: GridItemUpdate[] = [];
+      const gridPosition = trackIndex + 1;
 
       for (const item of this.#childItems) {
-        const { start, end } = item.row;
+        const { start, end } = item[trackType];
 
         let startUpdate: Partial<GridLayoutModelPosition> | undefined =
           undefined;
@@ -1144,20 +1297,26 @@ export class GridModel extends EventEmitter<GridModelEvents> {
           updates.push([
             item.id,
             {
-              row: { start, end, ...startUpdate, ...endUpdate },
+              [trackType]: { start, end, ...startUpdate, ...endUpdate },
             },
           ]);
         }
       }
 
-      updates.forEach(([id, { row }]) => {
-        if (row) {
-          this.updateChildRow(id, row);
-        }
-      });
+      this.applyUpdates(updates);
+      this.emit("child-position-updates", updates, { splitters: true });
     }
+  }
 
-    this.emit("child-position-updates", updates, { splitters: true });
+  applyUpdates(updates: GridItemUpdate[]) {
+    updates?.forEach(([id, { column: columnPosition, row: rowPosition }]) => {
+      if (columnPosition) {
+        this.updateChildColumn(id, columnPosition);
+      }
+      if (rowPosition) {
+        this.updateChildRow(id, rowPosition);
+      }
+    });
   }
 
   private addChildItems(childItems: GridLayoutChildItemDescriptors) {
@@ -1192,18 +1351,54 @@ export class GridModel extends EventEmitter<GridModelEvents> {
 
   addChildItem(childItem: GridModelChildItem) {
     // TODO assert that item is within current columns, rows or extend these
-    // console.log(
-    //   `[GridModel#${this.id}] addChildItem ${childItem.id} (parent: ${childItem.stackId})
-    //     is visible ? ${childItem.contentVisible}
-    //     resizeable ? ${childItem.resizeable}
-    //     gridArea ${JSON.stringify(childItem.layoutStyle)}
-    //   `,
-    //   {
-    //     childItem,
-    //   },
-    // );
+    console.log(
+      `[GridModel#${this.id}] addChildItem (${childItem.type}) #${childItem.id}  (parent: ${childItem.stackId})
+        is visible ? ${childItem.contentVisible}
+        resizeable ? ${childItem.resizeable}
+        gridArea ${JSON.stringify(childItem.gridArea)}
+      `,
+      {
+        childItem,
+      },
+    );
+
+    // GridLayoutStackedItem may or may not be declared explicitly in JSX.
+    // If not, it will be created post initial render, based on stackId
+    // references in gridItems. If declared explicitly, it may or may not
+    // preceed childItems in source code order.
+    if (childItem.stackId) {
+      const stackItem = this.getChildItem(childItem.stackId);
+      if (stackItem) {
+        this.addChildItemToStack(childItem, stackItem);
+      }
+    }
+
     this.#childItems.push(childItem);
     this.#index.set(childItem.id, childItem);
+  }
+
+  private addChildItemToStack(
+    childItem: GridModelChildItem,
+    stackItem: GridModelChildItem,
+  ) {
+    console.log(
+      `[GridModel] addChildItemToStack #${childItem.id} => #${stackItem.id}`,
+    );
+    if (childItem.stackId) {
+      const tabState = this.getTabState(childItem.stackId);
+      const tab: TabStateTab = {
+        id: childItem.id,
+        label: childItem.title ?? childItem.id,
+      };
+      tabState.addTab(tab);
+      if (tabState.activeTab === tab) {
+        childItem.contentVisible = true;
+      }
+    } else {
+      throw Error(
+        `[[GridModel] addChildItemToStack #${childItem.id} => #${stackItem.id} child has no stackId`,
+      );
+    }
   }
 
   updateChildColumn(childItemId: string, { start, end }: GridModelPosition) {
@@ -1215,6 +1410,13 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     if (end !== previousEnd) {
       childItem.column.end = end;
     }
+
+    if (childItem.type === "stacked-content") {
+      const stackedChildItems = this.getStackedChildItems(childItemId);
+      stackedChildItems.forEach((childItem) => {
+        this.updateChildColumn(childItem.id, { start, end });
+      });
+    }
   }
 
   updateChildRow(childItemId: string, { start, end }: GridModelPosition) {
@@ -1225,6 +1427,13 @@ export class GridModel extends EventEmitter<GridModelEvents> {
     }
     if (end !== previousEnd) {
       childItem.row.end = end;
+    }
+
+    if (childItem.type === "stacked-content") {
+      const stackedChildItems = this.getStackedChildItems(childItemId);
+      stackedChildItems.forEach((childItem) => {
+        this.updateChildRow(childItem.id, { start, end });
+      });
     }
   }
 

@@ -1,6 +1,6 @@
 import { LayoutProvider, Stack, View } from "@finos/vuu-layout";
 import { useState } from "react";
-import { TestTable } from "./Table.examples";
+import { TestTable } from "./Misc.examples";
 
 export const TwoTabbedTables = () => {
   const [active, setActive] = useState(0);

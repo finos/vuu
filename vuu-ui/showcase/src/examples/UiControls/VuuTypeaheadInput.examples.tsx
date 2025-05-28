@@ -38,7 +38,7 @@ export const CurrencyWithTypeaheadAllowFreeText = ({
   onCommit?: CommitHandler;
 }) => {
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <div
         style={{
           alignItems: "center",
@@ -61,7 +61,7 @@ export const CurrencyWithTypeaheadDisallowFreeText = ({
   onCommit?: CommitHandler;
 }) => {
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <div
         style={{
           alignItems: "center",

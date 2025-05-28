@@ -125,7 +125,7 @@ const SampleApp = () => {
   );
 
   return (
-    <LocalDataSourceProvider modules={["BASKET", "SIMUL"]}>
+    <LocalDataSourceProvider>
       <FeatureAndLayoutProvider
         dynamicFeatures={dynamicFeatures}
         systemLayouts={sysLayouts}
@@ -155,7 +155,7 @@ const SampleApp = () => {
 export const SampleAppDefaultFeatures = () => {
   document.cookie = `vuu-username=${user.username}`;
   return (
-    <LocalDataSourceProvider modules={["BASKET", "SIMUL"]}>
+    <LocalDataSourceProvider>
       <SampleApp />
     </LocalDataSourceProvider>
   );

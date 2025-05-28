@@ -5,7 +5,7 @@ import { ColumnLayout, TableConfig } from "@finos/vuu-table-types";
 import { toColumnName, useDataSource } from "@finos/vuu-utils";
 import { useMemo } from "react";
 
-import "./Table.examples.css";
+import "./Misc.examples.css";
 
 type DataTableProps = Partial<
   Omit<TableProps, "config"> & { config?: Partial<TableConfig> }
@@ -85,7 +85,7 @@ export const CheckboxSelection = ({
   }, [columnLayout]);
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <DataTableTemplate
         allowCellBlockSelection
         config={config}
@@ -99,7 +99,7 @@ export const CheckboxSelection = ({
 
 export const CellBlockSelectionOnly = () => {
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <DataTableTemplate allowCellBlockSelection selectionModel="none" />
     </LocalDataSourceProvider>
   );
@@ -107,7 +107,7 @@ export const CellBlockSelectionOnly = () => {
 
 export const CellBlockCheckboxSelection = () => {
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <DataTableTemplate allowCellBlockSelection selectionModel="checkbox" />
     </LocalDataSourceProvider>
   );
@@ -115,7 +115,7 @@ export const CellBlockCheckboxSelection = () => {
 
 export const CellBlockRowSelection = () => {
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <DataTableTemplate
         allowCellBlockSelection
         selectionModel="extended"
@@ -130,7 +130,7 @@ export const PreSelectedRowByIndex = () => {
     console.log(`selection changed ${JSON.stringify(selection)}`);
   };
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <DataTableTemplate
         allowCellBlockSelection
         defaultSelectedIndexValues={[4]}
@@ -144,7 +144,7 @@ export const PreSelectedRowByIndex = () => {
 
 export const PreSelectedRowsByIndex = () => {
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <DataTableTemplate
         allowCellBlockSelection
         defaultSelectedIndexValues={[2, 4, 6, 8]}
@@ -157,7 +157,7 @@ export const PreSelectedRowsByIndex = () => {
 
 export const PreSelectedRangeByIndex = () => {
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <DataTableTemplate
         allowCellBlockSelection
         defaultSelectedIndexValues={[[2, 8]]}
@@ -173,7 +173,7 @@ export const PreSelectedRowByKey = () => {
     console.log(`selection changed ${JSON.stringify(selection)}`);
   };
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <DataTableTemplate
         allowCellBlockSelection
         defaultSelectedKeyValues={["AAOZ.N"]}

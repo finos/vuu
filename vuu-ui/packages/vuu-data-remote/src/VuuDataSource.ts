@@ -89,7 +89,6 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
 
   async subscribe(subscribeProps: SubscribeProps, callback: SubscribeCallback) {
     super.subscribe(subscribeProps, callback);
-
     const {
       selectedIndexValues,
       viewport = this.viewport || (this.viewport = uuid()),

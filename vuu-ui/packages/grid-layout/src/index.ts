@@ -1,5 +1,6 @@
 export { GridLayout } from "./GridLayout";
 export { GridLayoutItem } from "./GridLayoutItem";
+export { GridLayoutStackedItem } from "./GridLayoutStackedtem";
 export {
   GridLayoutProvider,
   type SerializedGridLayout,
@@ -11,7 +12,9 @@ export type {
 } from "./GridModel";
 export { layoutFromJson } from "./layoutFromJson";
 export {
+  type ComponentTemplate,
   type DragSource,
+  type TemplateSource,
   useGridLayoutDispatch,
   useGridModel,
   useGridLayoutDragStartHandler,

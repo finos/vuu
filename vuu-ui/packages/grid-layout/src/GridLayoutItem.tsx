@@ -15,13 +15,13 @@ import { useNotDropTarget } from "./useNotDropTarget";
 
 import { queryClosest } from "@finos/vuu-utils";
 import { componentToJson, LayoutJSON } from "./componentToJson";
-import gridLayoutCss from "./GridLayout.css";
+import gridLayoutItemCss from "./GridLayoutItem.css";
 import {
   DragSourceProvider,
   useGridLayoutDispatch,
   useGridLayoutDragStartHandler,
 } from "./GridLayoutContext";
-import { GridModelChildItemProps } from "./GridModel";
+import { GridChildItemStyle, GridModelChildItemProps } from "./GridModel";
 import { useDraggable } from "./useDraggable";
 import { useGridChildProps } from "./useGridChildProps";
 import { IconButton } from "./IconButton";
@@ -29,7 +29,7 @@ import { IconButton } from "./IconButton";
 const classBaseItem = "vuuGridLayoutItem";
 
 export interface GridLayoutItemProps
-  extends Omit<GridModelChildItemProps, "contentDetached" | "type">,
+  extends Omit<GridModelChildItemProps, "contentDetached" | "style" | "type">,
     Omit<
       HTMLAttributes<HTMLDivElement>,
       "id" | "onDragStart" | "onDrop" | "style"
@@ -41,6 +41,11 @@ export interface GridLayoutItemProps
    */
   height?: number;
   label?: string;
+  /**
+   * style.gridArea is optional only if stackId is provided and a separate declaration
+   * of a GridLayoutStackedItem child is included within GridLayout
+   */
+  style?: GridChildItemStyle;
   /**
    * If provided, component is fixed width
    */
@@ -86,22 +91,25 @@ export const GridLayoutItem = ({
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-grid-layout",
-    css: gridLayoutCss,
+    css: gridLayoutItemCss,
     window: targetWindow,
   });
+
+  console.log(`[GridLayoutItem#${id}] render`);
 
   const dispatch = useGridLayoutDispatch();
   // TODO pass the styleProp in here to initialise the model value
   const {
     contentDetached,
     contentVisible,
+    dragging,
     dropTarget,
+    gridArea,
     header,
     horizontalSplitter,
     stacked,
     title,
     verticalSplitter,
-    ...layoutProps
   } = useGridChildProps({
     contentVisible: contentVisibleProp,
     dropTarget: dataDropTarget,
@@ -141,9 +149,8 @@ export const GridLayoutItem = ({
     onDragStart,
   });
 
-  console.log(`[GridLayoutItem] #${id} contentVisible ${contentVisible}`);
-
   const className = cx(classBaseItem, {
+    "vuuGridLayoutItem-dragging": dragging,
     "vuu-detached": contentDetached,
     "vuu-stacked": stacked && !contentDetached,
     "has-h-splitter": horizontalSplitter,
@@ -152,7 +159,7 @@ export const GridLayoutItem = ({
 
   const style = {
     ...styleProp,
-    ...layoutProps,
+    gridArea,
     "--header-height": header ? "25px" : "0px",
   };
 

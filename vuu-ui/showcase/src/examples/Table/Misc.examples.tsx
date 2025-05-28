@@ -51,7 +51,7 @@ import { useAutoLoginToVuuServer } from "../utils";
 import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 
 import { VuuDataSourceProvider } from "@finos/vuu-data-react";
-import "./Table.examples.css";
+import "./Misc.examples.css";
 
 export const TestTable = ({
   columnLayout,
@@ -163,7 +163,7 @@ export const ControlledNavigation = () => {
   }, []);
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <Toolbar>
         <Button variant="secondary" onClick={handlePrevClick}>
           Previous

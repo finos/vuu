@@ -218,10 +218,9 @@ export abstract class BaseDataSource
 
   set range(range: VuuRange) {
     if (range.from !== this._range.from || range.to !== this._range.to) {
-      console.log(
-        `[BaseDataSource] <set>range from (${this._range.from}:${this._range.to}) to (${range.from}:${range.to})`,
-      );
       this._range = range;
+      this.pageCount = Math.ceil(this._size / (range.to - range.from));
+
       this.rangeRequest(range);
     }
   }

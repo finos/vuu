@@ -1,23 +1,14 @@
 import React, { useMemo } from "react";
-import { Density, ThemeMode } from "@finos/vuu-utils";
 import { useLocation } from "react-router-dom";
+import { useShowcaseContext } from "../ShowcaseProvider";
 
-export interface IFrameProps {
-  theme?: string;
-  themeMode?: ThemeMode;
-  density?: Density;
-}
-
-export const IFrame = ({
-  theme = "vuu",
-  themeMode = "light",
-  density = "high",
-}: IFrameProps) => {
+export const IFrame = () => {
+  const { dataLocation, density, theme, themeMode } = useShowcaseContext();
   const location = useLocation();
   const src = useMemo(() => {
-    const src = `${location.pathname}?standalone&theme=${theme}#themeMode=${themeMode},density=${density}`;
+    const src = `${location.pathname}?standalone&theme=${theme}#themeMode=${themeMode},density=${density},dataLocation=${dataLocation}`;
     return src;
-  }, [density, location.pathname, theme, themeMode]);
+  }, [dataLocation, density, location.pathname, theme, themeMode]);
 
   return (
     <div className="ShowCaseIFrame-container">

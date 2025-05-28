@@ -15,7 +15,6 @@ export const useGridChildProps = ({
   title,
   type = "content",
   width,
-  // TODO handle resizeable etc
 
   // no need to store gridStyle separately, we already have it in childItem row, column
 }: GridModelChildItemProps) => {
@@ -25,7 +24,7 @@ export const useGridChildProps = ({
   if (childItem) {
     console.log(`already registered child item ${id}`);
   } else {
-    const { column, row } = getGridPosition(style.gridArea);
+    const { column, row } = getGridPosition(style?.gridArea ?? "1/1/2/2");
     childItem = new GridModelChildItem({
       contentVisible,
       dropTarget,
@@ -48,12 +47,13 @@ export const useGridChildProps = ({
   return {
     contentDetached: childItem.contentDetached,
     contentVisible: childItem.contentVisible,
+    dragging: childItem.dragging,
     dropTarget: childItem.dropTarget,
+    gridArea: childItem.gridArea,
     header: childItem.header,
     horizontalSplitter: childItem.horizontalSplitter,
     stacked: childItem.stackId !== undefined,
     title: childItem.title,
     verticalSplitter: childItem.verticalSplitter,
-    ...childItem.layoutStyle,
   };
 };

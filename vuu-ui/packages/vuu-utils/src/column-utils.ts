@@ -46,9 +46,6 @@ import { TableModel } from "@finos/vuu-table";
 export interface ColumnMap {
   [columnName: string]: number;
 }
-export interface ReverseColumnMap {
-  [columnIndex: number]: string;
-}
 
 const SORT_ASC = "asc";
 const NO_HEADINGS: TableHeadings = [];
@@ -261,24 +258,6 @@ export function buildColumnMap(
       }
       return map;
     }, {} as ColumnMap);
-  } else {
-    return EMPTY_COLUMN_MAP;
-  }
-}
-
-export function buildReverseColumnMap(
-  columns?: (RuntimeColumnDescriptor | SchemaColumn | string)[],
-): ReverseColumnMap {
-  const start = metadataKeys.count;
-  if (columns) {
-    return columns.reduce((map, column, i) => {
-      if (typeof column === "string") {
-        map[start + i] = column;
-      } else {
-        map[start + i] = column.name;
-      }
-      return map;
-    }, {} as ReverseColumnMap);
   } else {
     return EMPTY_COLUMN_MAP;
   }

@@ -190,7 +190,7 @@ export const FilterClauseValueEditorTextInstrumentCurrency = () => {
   );
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <ExpandoContainer>
         <FilterClauseValueEditorText
           column={column}
@@ -222,7 +222,7 @@ export const FilterClauseValueEditorTextInstrumentCurrencyValue = () => {
   );
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <ExpandoContainer>
         <FilterClauseValueEditorText
           column={column}

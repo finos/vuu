@@ -86,7 +86,7 @@ const TableWithInlineEditForm = () => {
 };
 
 export const RightInlineEditForm = () => (
-  <LocalDataSourceProvider modules={["SIMUL"]}>
+  <LocalDataSourceProvider>
     <TableWithInlineEditForm />
   </LocalDataSourceProvider>
 );

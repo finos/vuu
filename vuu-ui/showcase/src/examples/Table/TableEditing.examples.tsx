@@ -138,7 +138,7 @@ export const EditableTable = () => {
   );
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <TableTemplate getDefaultColumnConfig={getDefaultColumnConfig} />
     </LocalDataSourceProvider>
   );

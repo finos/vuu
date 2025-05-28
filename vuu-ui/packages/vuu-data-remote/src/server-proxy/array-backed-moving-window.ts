@@ -57,7 +57,7 @@ export class ArrayBackedMovingWindow {
     return this.#range;
   }
 
-  // TODO we shpuld probably have a hasAllClientRowsWithinRange
+  // TODO we should probably have a hasAllClientRowsWithinRange
   get hasAllRowsWithinRange(): boolean {
     return (
       this.rowsWithinRange === this.clientRange.to - this.clientRange.from ||

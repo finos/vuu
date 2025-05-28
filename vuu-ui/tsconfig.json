@@ -19,6 +19,7 @@
   },
   "include": [
     "cypress",
+    "experiments",
     "packages",
     "sample-apps/*/src",
     "showcase/src",

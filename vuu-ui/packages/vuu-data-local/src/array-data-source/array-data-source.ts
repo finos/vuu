@@ -202,6 +202,8 @@ export class ArrayDataSource
     }: SubscribeProps,
     callback: SubscribeCallback,
   ) {
+    console.log(`%cArrayDataSource subscribe`, "color: red;font-weight:bold;");
+
     this.clientCallback = callback;
     this.viewport = viewport;
     this.#status = "subscribed";
@@ -520,6 +522,9 @@ export class ArrayDataSource
   }
 
   set range(range: VuuRange) {
+    // if (range.to === 32) {
+    //   debugger;
+    // }
     this.setRange(range);
   }
 
@@ -617,9 +622,18 @@ export class ArrayDataSource
 
   private setRange(range: VuuRange, forceFullRefresh = false) {
     if (range.from !== this.#range.from || range.to !== this.#range.to) {
+      const currentPageCount = Math.ceil(
+        this.size / (this.#range.to - this.#range.from),
+      );
+      const newPageCount = Math.ceil(this.size / (range.to - range.from));
+
       this.#range = range;
       const keysResequenced = this.#keys.reset(range);
       this.sendRowsToClient(forceFullRefresh || keysResequenced);
+
+      if (newPageCount !== currentPageCount) {
+        this.emit("page-count", newPageCount);
+      }
     } else if (forceFullRefresh) {
       this.sendRowsToClient(forceFullRefresh);
     }
@@ -658,11 +672,16 @@ export class ArrayDataSource
       });
       this.lastRangeServed = {
         from: this.#range.from,
-        to: Math.min(
-          this.#range.to,
-          this.#range.from + rowsWithinViewport.length,
-        ),
+        to: this.#range.to,
+        // to: Math.min(
+        //   this.#range.to,
+        //   this.#range.from + rowsWithinViewport.length,
+        // ),
       };
+      // console.log(
+      //   `%c[ArrayDataSource] lastRangeServed (${this.lastRangeServed.from}:${this.lastRangeServed.to})`,
+      //   "color:green;font-weight:bold;",
+      // );
     }
   }
 

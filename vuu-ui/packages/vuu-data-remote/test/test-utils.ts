@@ -46,10 +46,21 @@ export const sizeRow = (viewPortId = "server-vp-1", vpSize = 100) =>
     updateType: "SIZE",
   }) as VuuRow;
 
+/**
+ *
+ * @param viewPortId string
+ * @param from
+ * @param to
+ * @param vpSize
+ * @param ts timestamp
+ * @param sel
+ * @param numericValue
+ * @returns
+ */
 export const createTableRows = (
-  viewPortId,
-  from,
-  to,
+  viewPortId: string,
+  from: number,
+  to: number,
   vpSize = 100,
   ts = 1,
   sel: 0 | 1 = 0,
@@ -312,3 +323,29 @@ export const createServerProxyAndSubscribeToViewport = async (
 
   return serverProxy;
 };
+
+class ServerAPI {
+  #serverProxy: ServerProxy;
+  constructor(serverProxy: ServerProxy) {
+    this.#serverProxy = serverProxy;
+  }
+  ackRangeRequest(
+    from: number,
+    to: number,
+    requestId = "1",
+    viewPortId = "server-vp-1",
+  ) {
+    this.#serverProxy.handleMessageFromServer({
+      ...COMMON_ATTRS,
+      requestId,
+      body: {
+        type: "CHANGE_VP_RANGE_SUCCESS",
+        viewPortId,
+        from,
+        to,
+      },
+    });
+  }
+}
+export const serverAPI = (serverProxy: ServerProxy) =>
+  new ServerAPI(serverProxy);

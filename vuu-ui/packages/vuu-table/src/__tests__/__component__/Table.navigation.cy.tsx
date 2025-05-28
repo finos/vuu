@@ -1,4 +1,4 @@
-import { TabInAndOut } from "../../../../../showcase/src/examples/Table/Table.examples";
+import { TabInAndOut } from "../../../../../showcase/src/examples/Table/Misc.examples";
 
 describe("Cell navigation with keyboard", () => {
   describe("navigation from outside with Tab", () => {

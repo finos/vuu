@@ -3,6 +3,7 @@ import {
   GridLayoutSplitDirection,
 } from "@finos/vuu-utils";
 import {
+  GridItemUpdate,
   GridLayoutModelPosition,
   GridLayoutResizeDirection,
 } from "./GridLayoutModel";
@@ -461,3 +462,59 @@ export const getGridPosition = (
 
 export const getTrackType = (splitter: ISplitter): TrackType =>
   splitter.orientation === "vertical" ? "row" : "column";
+
+export const setTrackStart = (
+  trackType: TrackType,
+  gridItem: GridModelChildItem,
+  adjustment = 1,
+): GridItemUpdate => {
+  const {
+    id,
+    [trackType]: { start, end },
+  } = gridItem;
+  return [
+    id,
+    {
+      [trackType]: { start: start + adjustment, end },
+    },
+  ];
+};
+
+export const setTrackEnd = (
+  trackType: TrackType,
+  gridItem: GridModelChildItem,
+  adjustment = 1,
+): GridItemUpdate => {
+  const {
+    id,
+    [trackType]: { start, end },
+  } = gridItem;
+  return [
+    id,
+    {
+      [trackType]: { start, end: end + adjustment },
+    },
+  ];
+};
+
+export const setColumnEnd = (gridItem: GridModelChildItem): GridItemUpdate =>
+  setTrackEnd("column", gridItem);
+
+export const setRowEnd = (gridItem: GridModelChildItem): GridItemUpdate =>
+  setTrackEnd("row", gridItem);
+
+export const moveColumn = ({
+  id,
+  column: { start, end },
+}: GridModelChildItem): GridItemUpdate => [
+  id,
+  { column: { start: start + 1, end: end + 1 } },
+];
+
+export const moveRow = ({
+  id,
+  row: { start, end },
+}: GridModelChildItem): GridItemUpdate => [
+  id,
+  { row: { start: start + 1, end: end + 1 } },
+];

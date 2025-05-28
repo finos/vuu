@@ -49,7 +49,10 @@ import {
   logger,
   RangeMonitor,
 } from "@finos/vuu-utils";
-import { getFirstAndLastRows } from "../message-utils";
+import {
+  gapBetweenLastRowSentToClient,
+  getFirstAndLastRows,
+} from "../message-utils";
 import { ArrayBackedMovingWindow } from "./array-backed-moving-window";
 import * as Message from "./messages";
 
@@ -134,8 +137,7 @@ export class Viewport {
   #status: ViewportStatus = "";
 
   private aggregations: VuuAggregation[];
-  /** batchMode is irrelevant for Vuu Table, it was introduced to try and improve rendering performance of AgGrid */
-  private batchMode = true;
+  private batchMode = false;
   private bufferSize: number;
   /**
    * clientRange is always the range requested by the client. We should assume
@@ -160,9 +162,9 @@ export class Viewport {
   private postMessageToClient: (message: DataSourceCallbackMessage) => void;
   private rowCountChanged = false;
   private selectedRows: Selection = [];
-  private useBatchMode = true;
   private lastUpdateStatus: LastUpdateStatus = NO_UPDATE_STATUS;
   private updateThrottleTimer: number | undefined = undefined;
+  private lastRowsReturnedToClient: [number, number] = [-1, -1];
 
   private rangeMonitor = new RangeMonitor("ViewPort");
 
@@ -471,8 +473,7 @@ export class Viewport {
         info(
           `updated: window client (${this.dataWindow.clientRange.from}:${this.dataWindow.clientRange.to}), full (${this.dataWindow.range.from}:${this.dataWindow.range.to})
           serverDataRequired ${serverDataRequired ? "Y" : "N"}
-          ${clientRows.length} rows returned from local buffer
-          `,
+          ${clientRows.length} rows returned from local buffer`,
         );
 
       let debounceRequest: DataSourceDebounceRequest | undefined;
@@ -518,10 +519,6 @@ export class Viewport {
           }
         }
         this.pendingRangeRequests.push({ ...serverRequest, requestId });
-
-        if (this.useBatchMode) {
-          this.batchMode = true;
-        }
       } else if (clientRows.length > 0) {
         this.batchMode = false;
       }
@@ -531,6 +528,9 @@ export class Viewport {
 
       const toClient = this.isTree ? toClientRowTree : toClientRow;
       if (clientRows.length) {
+        this.lastRowsReturnedToClient[0] = clientRows[0].rowIndex;
+        this.lastRowsReturnedToClient[1] = clientRows.at(-1)?.rowIndex ?? -1;
+
         return [
           serverRequest,
           clientRows.map((row) => {
@@ -570,9 +570,6 @@ export class Viewport {
   }
 
   openTreeNode(requestId: string, message: VuuUIMessageOutOpenTreeNode) {
-    if (this.useBatchMode) {
-      this.batchMode = true;
-    }
     const treeKey =
       message.index === undefined
         ? message.key
@@ -586,9 +583,6 @@ export class Viewport {
   }
 
   closeTreeNode(requestId: string, message: VuuUIMessageOutCloseTreeNode) {
-    if (this.useBatchMode) {
-      this.batchMode = true;
-    }
     const treeKey =
       message.index === undefined
         ? message.key
@@ -606,10 +600,6 @@ export class Viewport {
       childVpId: this.serverViewportId,
     } as VuuCreateVisualLink;
     this.awaitOperation(requestId, message);
-    if (this.useBatchMode) {
-      // next TABLE_ROWS we get will be triggered by selection on parent
-      this.batchMode = true;
-    }
     return message as VuuCreateVisualLink;
   }
 
@@ -674,16 +664,14 @@ export class Viewport {
 
     const { filterSpec: filter, ...remainingConfig } = config;
 
-    if (this.useBatchMode) {
-      this.batchMode = true;
-    }
-
     debugEnabled
       ? debug?.(`setConfig ${JSON.stringify(config)}`)
       : info?.(`setConfig`);
 
     if (!this.isTree && config.groupBy.length > 0) {
       this.dataWindow?.clear();
+      this.lastRowsReturnedToClient[0] = -1;
+      this.lastRowsReturnedToClient[1] = -1;
     }
 
     return this.createRequest(
@@ -828,27 +816,48 @@ export class Viewport {
         this.updateThrottleTimer = undefined;
       }
 
-      if (this.pendingUpdates.length > 0) {
+      if (
+        this.pendingUpdates.length > 0 &&
+        this.dataWindow.hasAllRowsWithinRange
+      ) {
         out = [];
         mode = "update";
-        for (const row of this.pendingUpdates) {
-          out.push(toClient(row, keys, selectedRows));
-        }
-        this.pendingUpdates.length = 0;
-      } else {
-        const records = this.dataWindow.getData();
-        // if scrolling and hasAllRowsWithinRange, turn scrolling off
-        // if not scrolling, return just the updates
 
-        if (this.dataWindow.hasAllRowsWithinRange) {
-          out = [];
-          mode = "batch";
-          for (const row of records) {
+        const missingRows = gapBetweenLastRowSentToClient(
+          this.lastRowsReturnedToClient,
+          this.pendingUpdates,
+          this.dataWindow.clientRange,
+        );
+        if (missingRows) {
+          for (let i = missingRows.from; i < missingRows.to; i++) {
+            const row = this.dataWindow.getAtIndex(i);
+            if (row) {
+              out.push(toClient(row, keys, selectedRows));
+            } else {
+              throw Error("[Viewport] missing row not in data cache");
+            }
+          }
+          for (const row of this.pendingUpdates) {
             out.push(toClient(row, keys, selectedRows));
           }
-          this.batchMode = false;
+
+          // for (const row of this.dataWindow.getData()) {
+          //   out.push(toClient(row, keys, selectedRows));
+          // }
+          out.sort(
+            ([idx1]: DataSourceRow, [idx2]: DataSourceRow) => idx1 - idx2,
+          );
+        } else {
+          for (const row of this.pendingUpdates) {
+            out.push(toClient(row, keys, selectedRows));
+          }
         }
+
+        // This assumes pendingUpdates are in rowIndex order
+        this.lastRowsReturnedToClient[0] = out.at(0)?.[0] ?? -1;
+        this.lastRowsReturnedToClient[1] = out.at(-1)?.[0] ?? -1;
       }
+      this.pendingUpdates.length = 0;
       this.hasUpdates = false;
     }
 

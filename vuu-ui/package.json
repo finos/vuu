@@ -33,7 +33,6 @@
     "launch:demo": "node ./scripts/launch-app.mjs",
     "launch:table": "node ./scripts/launch-table.mjs",
     "launch:demo:electron": "cd tools/electron && node ./node_modules/.bin/electron .",
-    "launch:showcase": " cd showcase && node scripts/launch.mjs",
     "deploy:websocket-test": "node ./tools/deploy-websocket-test.mjs",
     "view-bundle": "node ./scripts/visualize-bundle.mjs",
     "type-defs": "node ./scripts/build-all-type-defs.mjs",
@@ -48,7 +47,6 @@
     "typecheck": "tsc --noEmit --project tsconfig-typecheck.json"
   },
   "dependencies": {
-    "@thomaschaplin/cusip-generator": "^1.0.22",
     "@types/jest": "^29.5.11",
     "@types/node": "^18.0.0",
     "@types/react": "^18.3.3",

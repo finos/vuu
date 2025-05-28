@@ -34,7 +34,7 @@ export const DefaultBasketTradingFeature = () => {
   }, []);
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <ShellContextProvider value={{ getLookupValues }}>
         <LayoutProvider>
           <View
@@ -69,7 +69,7 @@ const featurePropsForEnv: Record<Environment, DynamicFeatureProps> = {
 export const BasketTradingFeatureAsFeature = () => {
   const { url, css } = featurePropsForEnv[env];
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <View
         Header={VuuBlotterHeader}
         id="table-next-feature"

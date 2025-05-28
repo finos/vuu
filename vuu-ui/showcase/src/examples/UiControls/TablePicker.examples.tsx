@@ -31,7 +31,7 @@ const instrumentToString: TablePickerProps["rowToString"] = (row) =>
   `[${row.key}] ${row.data.description}`;
 
 export const DefaultInstrumentPicker = () => (
-  <LocalDataSourceProvider modules={["SIMUL"]}>
+  <LocalDataSourceProvider>
     <TablePickerTemplate
       rowToString={instrumentToString}
       TableProps={{

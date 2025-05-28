@@ -157,7 +157,7 @@ export const FilterBarNoSuggestions = (props: Partial<FilterBarProps>) => (
 );
 
 export const DefaultFilterBar = (props: Partial<FilterBarProps>) => (
-  <LocalDataSourceProvider modules={["SIMUL"]}>
+  <LocalDataSourceProvider>
     <FilterBarTemplate {...props} />
   </LocalDataSourceProvider>
 );
@@ -180,7 +180,7 @@ export const DefaultFilterBarColumnLabels = (
     { label: "Date", name: "date", serverDataType: "long" },
   ];
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <FilterBarTemplate {...props} columnDescriptors={columnDescriptors} />
     </LocalDataSourceProvider>
   );
@@ -188,7 +188,7 @@ export const DefaultFilterBarColumnLabels = (
 
 export const FilterBarOneSimpleFilter = () => {
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <FilterBarTemplate
         filterState={{
           filters: [

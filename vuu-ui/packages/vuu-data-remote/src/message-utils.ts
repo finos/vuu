@@ -9,6 +9,7 @@ import {
   VuuTableMetaResponse,
   VuuRow,
   VuuRpcServiceRequest,
+  VuuRange,
 } from "@finos/vuu-protocol-types";
 
 export const isVuuRpcRequest = (
@@ -40,12 +41,35 @@ export const getFirstAndLastRows = (
 };
 
 export type ViewportRowMap = { [key: string]: VuuRow[] };
+
+const insertRow = (rows: VuuRow[], row: VuuRow) => {
+  const lastRow = rows.at(-1);
+  if (lastRow === undefined || row.rowIndex > lastRow.rowIndex) {
+    rows.push(row);
+  } else {
+    for (let i = 0; i < rows.length; i++) {
+      if (row.rowIndex < rows[i].rowIndex) {
+        rows.splice(i, 0, row);
+        return;
+      } else if (row.rowIndex === rows[i].rowIndex) {
+        if (row.ts < rows[i].ts) {
+          // ignore an earlier update
+        } else {
+          rows[i] = row;
+        }
+        return;
+      }
+    }
+    throw Error("don't expect to get this far");
+  }
+};
+
 export const groupRowsByViewport = (rows: VuuRow[]): ViewportRowMap => {
   const result: ViewportRowMap = {};
   for (const row of rows) {
     const rowsForViewport =
       result[row.viewPortId] || (result[row.viewPortId] = []);
-    rowsForViewport.push(row);
+    insertRow(rowsForViewport, row);
   }
   return result;
 };
@@ -64,4 +88,35 @@ export const createSchemaFromTableMetadata = ({
     })),
     key,
   };
+};
+
+export const gapBetweenLastRowSentToClient = (
+  lastRowsReturnedToClient: [number, number],
+  pendingUpdates: VuuRow[],
+  clientRange: VuuRange,
+): VuuRange | undefined => {
+  const firstPendingUpdate = pendingUpdates.at(0);
+  const lastPendingUpdate = pendingUpdates.at(-1);
+
+  if (firstPendingUpdate && lastPendingUpdate) {
+    const [firstRowIndex, lastRowIndex] = lastRowsReturnedToClient;
+
+    if (
+      lastRowIndex < firstPendingUpdate.rowIndex - 1 &&
+      clientRange.from < firstPendingUpdate.rowIndex
+    ) {
+      return {
+        from: Math.max(lastRowIndex + 1, clientRange.from),
+        to: firstPendingUpdate.rowIndex,
+      };
+    } else if (
+      firstRowIndex > lastPendingUpdate.rowIndex + 1 &&
+      clientRange.to > lastPendingUpdate.rowIndex
+    ) {
+      return {
+        from: lastPendingUpdate.rowIndex + 1,
+        to: Math.min(clientRange.to, firstRowIndex),
+      };
+    }
+  }
 };

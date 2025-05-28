@@ -12,7 +12,7 @@ export const DefaultFilterTableFeature = () => {
 
   return (
     <div style={{ height: "100%" }}>
-      <LocalDataSourceProvider modules={["SIMUL"]}>
+      <LocalDataSourceProvider>
         <LayoutProvider>
           <View
             Header={VuuBlotterHeader}
@@ -35,7 +35,7 @@ export const FilterTableFeatureFlexBox = () => {
   const schema = getSchema("instruments");
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <LayoutProvider>
         <FlexboxLayout
           style={{ flexDirection: "column", width: "100%", height: "100%" }}
@@ -87,7 +87,7 @@ export const FilterTableFeatureAsFeature = () => {
   const tableSchema = getSchema("instruments");
 
   return (
-    <LocalDataSourceProvider modules={["SIMUL"]}>
+    <LocalDataSourceProvider>
       <View
         Header={VuuBlotterHeader}
         id="table-next-feature"
