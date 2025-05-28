@@ -83,6 +83,19 @@ export class MovingWindow {
     return this.#range;
   }
 
+  slice(): DataSourceRow[] {
+    const data: DataSourceRow[] = [];
+    const { from } = this.range;
+    for (let i = 0; i < this.data.length; i++) {
+      if (this.data[i]) {
+        data.push(this.data[i]);
+      } else {
+        data.push([from + i, from + i, true, false, 1, 0, "", 0]);
+      }
+    }
+    return data;
+  }
+
   // TODO make this more performant, see implementation in
   // array-backed-moving-window - use same implementation
   get hasAllRowsWithinRange(): boolean {
