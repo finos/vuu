@@ -1134,42 +1134,50 @@ export const EmptyWithPalette = () => {
   const paletteItems = useMemo<GridPaletteItem[]>(
     () => [
       {
-        id: "red",
-        label: "Red",
-        type: "DebugGridItem",
-        props: {
-          style: {
-            background: "red",
+        paletteEntry: { label: "Red" },
+        component: {
+          label: "Red",
+          type: "DebugGridItem",
+          props: {
+            style: {
+              background: "red",
+            },
           },
         },
       },
       {
-        id: "green",
-        label: "Green",
-        type: "DebugGridItem",
-        props: {
-          style: {
-            background: "green",
+        paletteEntry: { label: "Green" },
+        component: {
+          label: "Green",
+          type: "DebugGridItem",
+          props: {
+            style: {
+              background: "green",
+            },
           },
         },
       },
       {
-        id: "yellow",
-        label: "Yellow",
-        type: "DebugGridItem",
-        props: {
-          style: {
-            background: "yellow",
+        paletteEntry: { label: "Yellow" },
+        component: {
+          label: "Yellow",
+          type: "DebugGridItem",
+          props: {
+            style: {
+              background: "yellow",
+            },
           },
         },
       },
       {
-        id: "brown",
-        label: "Brown",
-        type: "DebugGridItem",
-        props: {
-          style: {
-            background: "brown",
+        paletteEntry: { label: "Brown" },
+        component: {
+          label: "Brown",
+          type: "DebugGridItem",
+          props: {
+            style: {
+              background: "brown",
+            },
           },
         },
       },

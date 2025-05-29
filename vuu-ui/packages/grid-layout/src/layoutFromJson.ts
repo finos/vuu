@@ -2,10 +2,14 @@ import { getLayoutComponent, uuid } from "@vuu-ui/vuu-utils";
 import React, { ReactElement } from "react";
 import { LayoutJSON } from "./componentToJson";
 
-export function layoutFromJson(
-  { active, id = uuid(), type, children, props, state }: LayoutJSON,
-  path: string,
-): ReactElement {
+export function layoutFromJson({
+  active,
+  id = uuid(),
+  type,
+  children,
+  props,
+  state,
+}: LayoutJSON): ReactElement {
   const componentType = type.match(/^[a-z]/) ? type : getLayoutComponent(type);
 
   if (componentType === undefined) {
@@ -28,10 +32,7 @@ export function layoutFromJson(
       id,
       ...props,
       key: id,
-      path,
     },
-    children
-      ? children.map((child, i) => layoutFromJson(child, `${path}.${i}`))
-      : undefined,
+    children ? children.map((child, i) => layoutFromJson(child)) : undefined,
   );
 }

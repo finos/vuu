@@ -1,3 +1,11 @@
+import {
+  TabBar,
+  TabList as TabListNext,
+  Tab as TabNext,
+  TabTrigger as TabNextTrigger,
+  Tabs as TabsNext,
+} from "@salt-ds/core";
+import { IconButton } from "@vuu-ui/vuu-ui-controls";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
@@ -7,27 +15,16 @@ import {
   type SyntheticEvent,
   useCallback,
   useEffect,
-  useState,
 } from "react";
-
-import {
-  TabBar,
-  TabList as TabListNext,
-  Tab as TabNext,
-  TabTrigger as TabNextTrigger,
-  Tabs as TabsNext,
-} from "@salt-ds/core";
-import type { GridLayoutItemProps } from "./GridLayoutItem";
-import { useGridChildProps } from "./useGridChildProps";
 import { useDragContext } from "./drag-drop-next/DragDropProviderNext";
 import {
   type ComponentTemplate,
-  useGridLayoutDispatch,
   useGridModel,
 } from "./GridLayoutContext";
-import { IconButton } from "@vuu-ui/vuu-ui-controls";
+import type { GridLayoutItemProps } from "./GridLayoutItem";
 import { TabMenu } from "./TabMenu";
-import { AddTabDialog } from "./AddTabDialog";
+import { useEditTabName } from "./useEditTabName";
+import { useGridChildProps } from "./useGridChildProps";
 
 import gridLayoutStackedItemCss from "./GridLayoutStackedItem.css";
 
@@ -35,7 +32,7 @@ const classBaseItem = "vuuGridLayoutStackedItem";
 
 export interface GridLayoutStackedItemProps extends GridLayoutItemProps {
   allowAddTab?: boolean;
-  getNewComponent?: () => ComponentTemplate;
+  getNewComponent?: () => Omit<ComponentTemplate, "label">;
   showMenu?: boolean;
 }
 
@@ -58,11 +55,8 @@ export const GridLayoutStackedItem = ({
     css: gridLayoutStackedItemCss,
     window: targetWindow,
   });
-  const [confirmationOpen, setConfirmationOpen] = useState(false);
 
-  console.log(`[GridLayoutStackedItem#${id}] render`);
-
-  console.log(`[GridLayoutStackedItem#${id}] render`);
+  const { dialog, showTabEditDialog } = useEditTabName({ getNewComponent, id });
 
   const { registerTabsForDragDrop } = useDragContext();
 
@@ -76,8 +70,6 @@ export const GridLayoutStackedItem = ({
     style: styleProp,
     type: "stacked-content",
   });
-
-  const dispatch = useGridLayoutDispatch();
 
   const { getTabState } = useGridModel();
   const tabState = getTabState(id, "create");
@@ -111,37 +103,9 @@ export const GridLayoutStackedItem = ({
     `[GridLayoutStackedItem] render ${tabState.tabs.map((t) => t.label)}`,
   );
 
-  const handleConfirm = (newTab: string) => {
-    const componentTemplate = getNewComponent?.();
-    if (componentTemplate) {
-      dispatch({
-        title: newTab,
-        type: "add-child",
-        componentTemplate,
-        stackId: id,
-      });
-    }
-    setConfirmationOpen(false);
-  };
-
-  const handleCancel = () => {
-    setConfirmationOpen(false);
-  };
-
   const handleClickAddTab = useCallback(() => {
-    setConfirmationOpen(true);
-    // const componentTemplate = getNewComponent?.();
-    // if (componentTemplate) {
-    //   console.log("we have a new component template", {
-    //     componentTemplate,
-    //   });
-    //   dispatch({
-    //     type: "add-child",
-    //     componentTemplate,
-    //     stackId: id,
-    //   });
-    // }
-  }, []);
+    showTabEditDialog();
+  }, [showTabEditDialog]);
 
   return (
     <>
@@ -174,30 +138,28 @@ export const GridLayoutStackedItem = ({
                 >
                   <TabNextTrigger>{label}</TabNextTrigger>
                   {showMenu ? (
-                    <TabMenu layoutItemId={gridLayoutItemId} />
+                    <TabMenu layoutItemId={gridLayoutItemId} tabLabel={label} />
                   ) : null}
                 </TabNext>
               ))}
             </TabListNext>
-            <IconButton
-              aria-label="Create Tab"
-              className={`${classBaseItem}-addTabButton`}
-              data-embedded
-              icon="add"
-              data-overflow-priority="1"
-              key="addButton"
-              onClick={handleClickAddTab}
-              variant="secondary"
-              tabIndex={-1}
-            />
+            {allowAddTab ? (
+              <IconButton
+                aria-label="Create Tab"
+                className={`${classBaseItem}-addTabButton`}
+                data-embedded
+                icon="add"
+                data-overflow-priority="1"
+                key="addButton"
+                onClick={handleClickAddTab}
+                variant="secondary"
+                tabIndex={-1}
+              />
+            ) : null}
           </TabBar>
         </TabsNext>
       </div>
-      <AddTabDialog
-        open={confirmationOpen}
-        onConfirm={handleConfirm}
-        onCancel={handleCancel}
-      />
+      {dialog}
     </>
   );
 };

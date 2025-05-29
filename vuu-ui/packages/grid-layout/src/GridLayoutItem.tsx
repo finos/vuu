@@ -1,5 +1,6 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { queryClosest, registerComponent } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import {
   createElement,
@@ -10,21 +11,20 @@ import {
   useCallback,
   useEffect,
 } from "react";
-import { useAsDropTarget } from "./useAsDropTarget";
-import { useNotDropTarget } from "./useNotDropTarget";
-
-import { queryClosest } from "@vuu-ui/vuu-utils";
 import { componentToJson, LayoutJSON } from "./componentToJson";
-import gridLayoutItemCss from "./GridLayoutItem.css";
 import {
   DragSourceProvider,
   useGridLayoutDispatch,
   useGridLayoutDragStartHandler,
 } from "./GridLayoutContext";
 import { GridChildItemStyle, GridModelChildItemProps } from "./GridModel";
+import { IconButton } from "./IconButton";
+import { useAsDropTarget } from "./useAsDropTarget";
 import { useDraggable } from "./useDraggable";
 import { useGridChildProps } from "./useGridChildProps";
-import { IconButton } from "./IconButton";
+import { useNotDropTarget } from "./useNotDropTarget";
+
+import gridLayoutItemCss from "./GridLayoutItem.css";
 
 const classBaseItem = "vuuGridLayoutItem";
 
@@ -94,8 +94,6 @@ export const GridLayoutItem = ({
     css: gridLayoutItemCss,
     window: targetWindow,
   });
-
-  console.log(`[GridLayoutItem#${id}] render`);
 
   const dispatch = useGridLayoutDispatch();
   // TODO pass the styleProp in here to initialise the model value
@@ -207,7 +205,14 @@ export const isGridLayoutItem = (element: ReactElement) =>
 GridLayoutItem.toJSON = (
   element: ReactElement<GridLayoutItemProps, typeof GridLayoutItemType>,
 ) => {
-  const { children } = element.props;
+  let { children } = element.props;
+  if (Array.isArray(children)) {
+    if (children.length > 1) {
+      throw Error(`[GridLayoutItem] cannot have more than one child element`);
+    }
+    // Only happens when reconstitured from JSON
+    [children] = children;
+  }
   if (isValidElement(children)) {
     const child = componentToJson(children);
     return {
@@ -217,3 +222,5 @@ GridLayoutItem.toJSON = (
     throw Error("[GridLayoutItem] children is not a react element");
   }
 };
+
+registerComponent("GridLayoutItem", GridLayoutItem, "component");

@@ -151,8 +151,6 @@ export const useGridLayout = ({
   // children prop changing.
   const childrenRef = useRef<GridLayoutItemElements>(children);
 
-  console.log({ children, fromRef: childrenRef.current });
-
   const setChildren = useCallback(
     (
       newChildren:
@@ -216,7 +214,6 @@ export const useGridLayout = ({
 
   const updateGridChildItems = useCallback<GridChildPositionChangeHandler>(
     (updates, { placeholders, splitters } = NonContentResetOptions) => {
-      console.log("[useGridLayout] updateGridChildItems", { updates });
       updates.forEach(([id, { column: columnPosition, row: rowPosition }]) => {
         if (columnPosition) {
           setGridColumn(id, columnPosition);
@@ -256,8 +253,6 @@ export const useGridLayout = ({
 
   const handleDragStart = useCallback<GridLayoutDragStartHandler>(
     (evt, options) => {
-      console.log(`[useGridLayout] handleDragStart layoutId ${layoutId}`);
-
       const { current: grid } = containerRef;
       if (grid) {
         requestAnimationFrame(() => {
@@ -269,24 +264,21 @@ export const useGridLayout = ({
         });
       }
     },
-    [containerRef, layoutId, removeGridItem],
+    [containerRef, removeGridItem],
   );
 
   const handleDragEnd = useCallback<GridLayoutDragEndHandler>(() => {
     const { current: grid } = containerRef;
-    console.log(`[useGridLayout] drag end layoutId ${layoutId}`);
     if (grid) {
       grid.classList.remove("vuuDragging");
     }
-  }, [layoutId]);
+  }, []);
 
   const addChildComponent = useCallback(
     (
       component: ReactElement,
       { column, header, id, row, title, type }: GridModelChildItem,
     ) => {
-      console.log(`[useGridLayout] addChildComponent #${id}`);
-
       // TODO we want to store components internally in a map, as well as providing an
       // array for rendering. The map will be used for persistence, to tie the component
       // to layout props - Q do we need to, can't the layout props be derived from the
@@ -303,7 +295,6 @@ export const useGridLayout = ({
           c.map((child) => (child.props.id === id ? newChild : child)),
         );
       } else {
-        console.log(`[useGridLayout] header = ${header}`);
         const newChild = (
           <GridLayoutItem
             data-drop-target
@@ -321,6 +312,41 @@ export const useGridLayout = ({
         );
         setChildren((c) => c.concat(newChild));
       }
+    },
+    [setChildren],
+  );
+
+  const replaceChildComponent = useCallback(
+    (
+      targetItemId: string,
+      component: ReactElement,
+      { column, header, id, row, title }: GridModelChildItem,
+    ) => {
+      console.log(`[useGridLayout] replaceChildComponent #${id}`);
+
+      // TODO we want to store components internally in a map, as well as providing an
+      // array for rendering. The map will be used for persistence, to tie the component
+      // to layout props - Q do we need to, can't the layout props be derived from the
+      // GridLayoutItem ?
+
+      const newChild = (
+        <GridLayoutItem
+          data-drop-target
+          header={header}
+          id={id}
+          key={id}
+          resizeable="hv"
+          style={{
+            gridArea: getGridArea({ column, row }),
+          }}
+          title={title}
+        >
+          {component}
+        </GridLayoutItem>
+      );
+      setChildren((c) =>
+        c.map((child) => (child.props.id === targetItemId ? newChild : child)),
+      );
     },
     [setChildren],
   );
@@ -433,13 +459,18 @@ export const useGridLayout = ({
         });
         gridModel.addChildItem(gridModelChildItem);
 
-        const component = layoutFromJson(restJSON as LayoutJSON, "");
+        const targetId = isStackedItem(targetGridItem)
+          ? targetGridItem.stackId
+          : targetItemId;
+
+        const component = layoutFromJson(restJSON as LayoutJSON);
         if (position === "centre") {
           const newGridItem = gridLayoutModel.dropReplaceGridItem(
             gridModelChildItem.id,
             targetItemId,
           );
-          addChildComponent(component, newGridItem);
+          replaceChildComponent(targetItemId, component, newGridItem);
+          gridModel.notifyChange();
         } else if (position === "header") {
           gridModel.stackChildItems(targetItemId, newChildId);
           addChildComponent(component, gridModelChildItem);
@@ -447,7 +478,7 @@ export const useGridLayout = ({
         } else {
           gridLayoutModel.dropSplitGridItem(
             gridModelChildItem.id,
-            targetItemId,
+            targetId,
             position,
           );
           addChildComponent(component, gridModelChildItem);
@@ -462,6 +493,7 @@ export const useGridLayout = ({
       gridLayoutModel,
       gridModel,
       layoutOptions?.newChildItem.header,
+      replaceChildComponent,
       setChildren,
     ],
   );
@@ -546,7 +578,7 @@ export const useGridLayout = ({
           const gridModelItem = gridModel.getChildItem(dragSource.id, true);
           gridModelItem.dragging = false;
         } else if (sourceIsTemplate(dragSource)) {
-          // we're dropping b atemplete item onto a tabstrip. Check that
+          // we're dropping a template item onto a tabstrip. Check that
           // we are handling this in the context of the correct layout
           const gridId = getClosestGridLayout(targetStackItemId);
           if (gridId === id) {
@@ -557,21 +589,25 @@ export const useGridLayout = ({
             const { label = "New Item", ...restJSON } = JSON.parse(
               dragSource.componentJson,
             );
+            const { column, row } = gridModel.getChildItem(
+              targetStackItemId,
+              true,
+            );
 
             const newChildId = uuid();
             const gridModelChildItem = new GridModelChildItem({
               id: newChildId,
-              column: { start: 1, end: 1 },
+              column,
               dropTarget: true,
               header: layoutOptions?.newChildItem.header,
               resizeable: "hv",
-              row: { start: 1, end: 1 },
+              row,
               stackId: targetStackItemId,
               title: label,
             });
             gridModel.addChildItem(gridModelChildItem);
 
-            const component = layoutFromJson(restJSON as LayoutJSON, "");
+            const component = layoutFromJson(restJSON as LayoutJSON);
             addChildComponent(component, gridModelChildItem);
             gridModel.notifyChange();
           }
@@ -623,31 +659,38 @@ export const useGridLayout = ({
         case "close":
           removeGridItem(action.id, "close");
           break;
-        case "add-child":
+        case "rename-tab":
+          gridModel.updateChildTitle(action.id, action.title);
+          break;
+        case "add-tabbed-child":
           {
             const { componentTemplate, title, stackId } = action;
-            const componentJSON = JSON.parse(componentTemplate.componentJson);
+            const { componentJson, dropTarget = true } = componentTemplate;
+            const componentJSON = JSON.parse(componentJson);
+            const { column, row } = gridModel.getChildItem(stackId, true);
 
             const newChildId = uuid();
             const gridModelChildItem = new GridModelChildItem({
               id: newChildId,
-              column: { start: 1, end: 1 },
-              dropTarget: true,
+              column,
+              dropTarget: dropTarget || undefined,
               header: layoutOptions?.newChildItem.header,
               resizeable: "hv",
-              row: { start: 1, end: 1 },
+              row,
               stackId,
               title: title ?? componentTemplate.label ?? "New Item",
             });
             gridModel.addChildItem(gridModelChildItem);
 
-            const component = layoutFromJson(componentJSON as LayoutJSON, "");
+            const component = layoutFromJson({
+              ...componentJSON,
+              title,
+            } as LayoutJSON);
             addChildComponent(component, gridModelChildItem);
 
-            if (stackId) {
-              const tabState = gridModel.getTabState(stackId);
-              tabState.setActiveTab(title ?? gridModelChildItem.title);
-            }
+            const tabState = gridModel.getTabState(stackId);
+            tabState.setActiveTab(title ?? gridModelChildItem.title);
+            gridModel.notifyChange();
           }
           break;
         case "resize-grid-column":
@@ -675,9 +718,6 @@ export const useGridLayout = ({
 
   const handleTrackResize = useCallback<GridTrackResizeHandler>(
     (trackType, tracks) => {
-      console.log(
-        `[useGridLayout] handleTrackResize ${trackType} [${tracks.join(" ")}]`,
-      );
       if (containerRef.current) {
         if (trackType === "column") {
           containerRef.current.style.gridTemplateColumns = tracks.join(" ");
