@@ -1,5 +1,6 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { queryClosest } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import {
   createElement,
@@ -10,21 +11,20 @@ import {
   useCallback,
   useEffect,
 } from "react";
-import { useAsDropTarget } from "./useAsDropTarget";
-import { useNotDropTarget } from "./useNotDropTarget";
-
-import { queryClosest } from "@vuu-ui/vuu-utils";
 import { componentToJson, LayoutJSON } from "./componentToJson";
-import gridLayoutItemCss from "./GridLayoutItem.css";
 import {
   DragSourceProvider,
   useGridLayoutDispatch,
   useGridLayoutDragStartHandler,
 } from "./GridLayoutContext";
 import { GridChildItemStyle, GridModelChildItemProps } from "./GridModel";
+import { IconButton } from "./IconButton";
+import { useAsDropTarget } from "./useAsDropTarget";
 import { useDraggable } from "./useDraggable";
 import { useGridChildProps } from "./useGridChildProps";
-import { IconButton } from "./IconButton";
+import { useNotDropTarget } from "./useNotDropTarget";
+
+import gridLayoutItemCss from "./GridLayoutItem.css";
 
 const classBaseItem = "vuuGridLayoutItem";
 

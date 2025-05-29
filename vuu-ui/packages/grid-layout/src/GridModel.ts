@@ -457,6 +457,18 @@ export class TabState extends EventEmitter<TabStateTabEvents> {
     }
   }
 
+  renameTab(id: string, label: string) {
+    const tabIndex = this.tabs.findIndex((tab) => tab.id === id);
+    if (tabIndex !== -1) {
+      this.tabs[tabIndex] = { id, label };
+      this.emit("tabs-change", this.id, this.active, this.tabs);
+    } else {
+      throw Error(
+        `[TabState] cannot rename tab #${id} => '${label}', tab not found`,
+      );
+    }
+  }
+
   get activeTab() {
     return this.tabs[this.active];
   }
@@ -1384,6 +1396,17 @@ export class GridModel extends EventEmitter<GridModelEvents> {
       throw Error(
         `[[GridModel] addChildItemToStack #${childItem.id} => #${stackItem.id} child has no stackId`,
       );
+    }
+  }
+
+  updateChildTitle(childItemId: string, title: string) {
+    console.log(`[GridModel] updateChildAttribute #${childItemId} ${title}`);
+    const childItem = this.getChildItem(childItemId, true);
+    if (title !== childItem.title) {
+      childItem.title = title;
+      if (childItem.stackId) {
+        this.getTabState(childItem.stackId).renameTab(childItemId, title);
+      }
     }
   }
 

@@ -623,6 +623,9 @@ export const useGridLayout = ({
         case "close":
           removeGridItem(action.id, "close");
           break;
+        case "rename-tab":
+          gridModel.updateChildTitle(action.id, action.title);
+          break;
         case "add-child":
           {
             const { componentTemplate, title, stackId } = action;
