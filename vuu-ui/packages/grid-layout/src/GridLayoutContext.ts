@@ -12,6 +12,12 @@ export type GridLayoutCloseAction = {
   id: string;
 };
 
+export type GridLayoutRenameTabAction = {
+  type: "rename-tab";
+  id: string;
+  title: string;
+};
+
 export type GridLayoutAddChildAction = {
   title: string;
   type: "add-child";
@@ -44,7 +50,8 @@ export type GridLayoutAction =
   // | GridLayoutInsertTabAction
   | GridLayoutAddChildAction
   | GridLayoutSwitchTabAction
-  | GridLayoutTrackAction;
+  | GridLayoutTrackAction
+  | GridLayoutRenameTabAction;
 
 export type GridLayoutDispatch = Dispatch<GridLayoutAction>;
 const unconfiguredGridLayoutDispatch: GridLayoutDispatch = (action) =>
