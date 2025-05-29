@@ -1,21 +1,21 @@
-import { DataSourceRow } from "@finos/vuu-data-types";
+import { DataSourceRow } from "@vuu-ui/vuu-data-types";
 import {
   AndFilter,
   Filter,
   MultiValueFilterClause,
   OrFilter,
-  SingleValueFilterClause
-} from "@finos/vuu-filter-types";
-import { ColumnMap } from "@finos/vuu-utils";
+  SingleValueFilterClause,
+} from "@vuu-ui/vuu-filter-types";
+import { ColumnMap } from "@vuu-ui/vuu-utils";
 import { parseFilter } from "./FilterParser";
-import { VuuDataRow } from "@finos/vuu-protocol-types";
+import { VuuDataRow } from "@vuu-ui/vuu-protocol-types";
 
 const filterPredicateMap = new Map<string, FilterPredicate>();
 const filterReject = () => false;
 
 export const getFilterPredicate = (
   columnMap: ColumnMap,
-  filterQuery: string
+  filterQuery: string,
 ): FilterPredicate => {
   let predicate = filterPredicateMap.get(filterQuery);
   if (predicate) {
@@ -29,7 +29,7 @@ export const getFilterPredicate = (
     return predicate;
   } catch (err) {
     console.warn(
-      `filter-evaluation-utils, failed to parse filter "${filterQuery}"`
+      `filter-evaluation-utils, failed to parse filter "${filterQuery}"`,
     );
     return filterReject;
   }
@@ -37,7 +37,7 @@ export const getFilterPredicate = (
 
 export function filterPredicate(
   columnMap: ColumnMap,
-  filter: Filter
+  filter: Filter,
 ): FilterPredicate {
   //TODO convert filter to include colIdx ratherthan colName, so we don't have to pass cols
   switch (filter.op) {
@@ -73,7 +73,7 @@ export type FilterPredicate = (row: DataSourceRow | VuuDataRow) => boolean;
 
 const testInclude = (
   columnMap: ColumnMap,
-  filter: MultiValueFilterClause
+  filter: MultiValueFilterClause,
 ): FilterPredicate => {
   return (row) =>
     (filter.values as unknown[]).indexOf(row[columnMap[filter.column]]) !== -1;
@@ -81,40 +81,40 @@ const testInclude = (
 
 const testEQ = (
   columnMap: ColumnMap,
-  filter: SingleValueFilterClause
+  filter: SingleValueFilterClause,
 ): FilterPredicate => {
   return (row) => row[columnMap[filter.column]] === filter.value;
 };
 
 const testGT = (
   columnMap: ColumnMap,
-  filter: SingleValueFilterClause
+  filter: SingleValueFilterClause,
 ): FilterPredicate => {
   return (row) => row[columnMap[filter.column]] > filter.value;
 };
 const testGE = (
   columnMap: ColumnMap,
-  filter: SingleValueFilterClause
+  filter: SingleValueFilterClause,
 ): FilterPredicate => {
   return (row) => row[columnMap[filter.column]] >= filter.value;
 };
 
 const testLT = (
   columnMap: ColumnMap,
-  filter: SingleValueFilterClause
+  filter: SingleValueFilterClause,
 ): FilterPredicate => {
   return (row) => row[columnMap[filter.column]] < filter.value;
 };
 const testLE = (
   columnMap: ColumnMap,
-  filter: SingleValueFilterClause
+  filter: SingleValueFilterClause,
 ): FilterPredicate => {
   return (row) => row[columnMap[filter.column]] <= filter.value;
 };
 
 const testEW = (
   columnMap: ColumnMap,
-  filter: SingleValueFilterClause
+  filter: SingleValueFilterClause,
 ): FilterPredicate => {
   const filterValue = filter.value as string;
   if (typeof filterValue !== "string") {
@@ -131,7 +131,7 @@ const testEW = (
 
 const testSW = (
   columnMap: ColumnMap,
-  filter: SingleValueFilterClause
+  filter: SingleValueFilterClause,
 ): FilterPredicate => {
   const filterValue = filter.value as string;
   if (typeof filterValue !== "string") {
@@ -148,7 +148,7 @@ const testSW = (
 
 const testContains = (
   columnMap: ColumnMap,
-  filter: SingleValueFilterClause
+  filter: SingleValueFilterClause,
 ): FilterPredicate => {
   const filterValue = filter.value as string;
   if (typeof filterValue !== "string") {

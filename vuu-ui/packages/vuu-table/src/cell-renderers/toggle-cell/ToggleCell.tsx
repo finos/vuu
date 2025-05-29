@@ -1,7 +1,7 @@
 import {
   ColumnDescriptor,
   TableCellRendererProps,
-} from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-table-types";
 import {
   CommitHandler,
   dataColumnAndKeyUnchanged,
@@ -9,13 +9,13 @@ import {
   isTypeDescriptor,
   isValueListRenderer,
   registerComponent,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 
 import { memo, useCallback } from "react";
-import { CycleStateButton } from "@finos/vuu-ui-controls";
+import { CycleStateButton } from "@vuu-ui/vuu-ui-controls";
 
 import toggleCellCss from "./ToggleCell.css";
 

@@ -1,7 +1,7 @@
-import { useVuuMenuActions } from "@finos/vuu-data-react";
-import { BasketsTableName, getSchema, vuuModule } from "@finos/vuu-data-test";
-import { ContextMenuProvider } from "@finos/vuu-popups";
-import { Table, TableProps } from "@finos/vuu-table";
+import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
+import { BasketsTableName, getSchema, vuuModule } from "@vuu-ui/vuu-data-test";
+import { ContextMenuProvider } from "@vuu-ui/vuu-popups";
+import { Table, TableProps } from "@vuu-ui/vuu-table";
 import { useMemo } from "react";
 
 export const BasketTable = ({ tableName }: { tableName: BasketsTableName }) => {
@@ -17,7 +17,7 @@ export const BasketTable = ({ tableName }: { tableName: BasketsTableName }) => {
       dataSource:
         vuuModule<BasketsTableName>("BASKET").createDataSource(tableName),
     }),
-    [schema.columns, tableName]
+    [schema.columns, tableName],
   );
 
   const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({

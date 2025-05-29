@@ -1,9 +1,9 @@
-import "@finos/vuu-layout/test/global-mocks";
+import "@vuu-ui/vuu-layout/test/global-mocks";
 import {
   LayoutJSON,
   LayoutMetadata,
   LayoutMetadataDto,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { v4 as uuidv4 } from "uuid";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -19,7 +19,7 @@ global.fetch = mockFetch;
 
 const username = "vuu user";
 
-vi.mock("@finos/vuu-shell", async () => {
+vi.mock("@vuu-ui/vuu-shell", async () => {
   return {
     getAuthDetailsFromCookies: (): [string, string] => {
       return [username, "token"];

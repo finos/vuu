@@ -3,7 +3,7 @@ import {
   WorkspaceProvider,
   PersistenceProvider,
   StaticPersistenceManager,
-} from "@finos/vuu-shell";
+} from "@vuu-ui/vuu-shell";
 import layoutMetadata from "../_test-data/layoutMetadata";
 import { useMemo } from "react";
 

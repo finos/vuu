@@ -1,12 +1,12 @@
-import { DataSourceRow, EditRuleValidator } from "@finos/vuu-data-types";
-import { VuuColumnDataType } from "@finos/vuu-protocol-types";
+import { DataSourceRow, EditRuleValidator } from "@vuu-ui/vuu-data-types";
+import { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
 import {
   ColumnDescriptor,
   ColumnDescriptorCustomRenderer,
   ColumnTypeRendering,
   HeaderCellProps,
   TableCellRendererProps,
-} from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-table-types";
 import { FunctionComponent as FC, HTMLAttributes } from "react";
 import {
   ColumnMap,

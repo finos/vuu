@@ -2,12 +2,12 @@ import {
   ContextMenuItemDescriptor,
   MenuActionHandler,
   MenuBuilder,
-} from "@finos/vuu-data-types";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-data-types";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
   isGroupMenuItemDescriptor,
   useThemeAttributes,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { cloneElement, useCallback, useContext, useMemo } from "react";
 import {
   MenuActionClosePopup,

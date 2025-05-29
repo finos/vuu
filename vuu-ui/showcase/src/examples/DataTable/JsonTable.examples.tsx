@@ -1,5 +1,5 @@
-import { JsonTable } from "@finos/vuu-datatable";
-import { JsonData } from "@finos/vuu-utils";
+import { JsonTable } from "@vuu-ui/vuu-datatable";
+import { JsonData } from "@vuu-ui/vuu-utils";
 import packageJson from "../../../../package.json";
 
 const json: JsonData = {

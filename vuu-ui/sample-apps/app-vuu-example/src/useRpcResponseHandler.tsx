@@ -1,9 +1,9 @@
-import { useVuuTables } from "@finos/vuu-data-react";
-import { RpcResponseHandler } from "@finos/vuu-data-types";
-import { useDialog } from "@finos/vuu-popups";
-import { VuuTable } from "@finos/vuu-protocol-types";
-import { Feature } from "@finos/vuu-shell";
-import { isActionMessage, isSameTable } from "@finos/vuu-utils";
+import { useVuuTables } from "@vuu-ui/vuu-data-react";
+import { RpcResponseHandler } from "@vuu-ui/vuu-data-types";
+import { useDialog } from "@vuu-ui/vuu-popups";
+import { VuuTable } from "@vuu-ui/vuu-protocol-types";
+import { Feature } from "@vuu-ui/vuu-shell";
+import { isActionMessage, isSameTable } from "@vuu-ui/vuu-utils";
 import { useCallback } from "react";
 
 const withTable = (action: unknown): action is { table: VuuTable } =>

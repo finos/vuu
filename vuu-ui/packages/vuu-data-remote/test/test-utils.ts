@@ -5,14 +5,14 @@ import {
   VuuRow,
   VuuServerMessage,
   VuuTableMetaResponse,
-} from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-protocol-types";
 import { ServerProxy } from "../src/server-proxy/server-proxy";
 
 import { PostMessageToClientCallback } from "../src";
 import {
   ServerProxySubscribeMessage,
   TableSchema,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import { WebSocketConnection } from "../src/WebSocketConnection";
 
 export const COMMON_ATTRS = {

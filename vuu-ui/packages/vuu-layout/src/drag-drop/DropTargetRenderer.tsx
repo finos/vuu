@@ -1,4 +1,4 @@
-import { PopupService } from "@finos/vuu-popups";
+import { PopupService } from "@vuu-ui/vuu-popups";
 import { RelativeDropPosition } from "./BoxModel";
 import { DragDropRect } from "./dragDropTypes";
 import { DragState } from "./DragState";
@@ -107,7 +107,7 @@ export default class DropTargetCanvas {
     height: number,
     tabLeft = 0,
     tabWidth = 0,
-    tabHeight = 0
+    tabHeight = 0,
   ): Point[] {
     const tabOnly = this.tabMode === "tab-only";
     if (tabWidth === 0) {
@@ -202,7 +202,7 @@ export default class DropTargetCanvas {
 
     const targetDropOutline = dropTarget.getTargetDropOutline(
       lineWidth,
-      dragState
+      dragState,
     );
 
     if (targetDropOutline) {
@@ -219,7 +219,7 @@ export default class DropTargetCanvas {
       const points = this.getPoints(l, t, w, h, tabLeft, tabWidth, tabHeight);
       const path = pathFromPoints(points);
       const animation = document.getElementById(
-        "hw-drop-outline-animate"
+        "hw-drop-outline-animate",
       ) as unknown as SVGAnimateElement;
       animation?.setAttribute("to", path);
       animation?.beginElement();

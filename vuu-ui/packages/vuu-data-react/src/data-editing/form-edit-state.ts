@@ -1,4 +1,4 @@
-import { Entity } from "@finos/vuu-utils";
+import { Entity } from "@vuu-ui/vuu-utils";
 
 export type FormEditState = {
   isClean: boolean;

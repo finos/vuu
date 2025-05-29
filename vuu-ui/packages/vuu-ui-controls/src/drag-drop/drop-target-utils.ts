@@ -1,4 +1,4 @@
-import { orientationType } from "@finos/vuu-utils";
+import { orientationType } from "@vuu-ui/vuu-utils";
 import { ViewportRange } from "./dragDropTypes";
 import { Direction, Rect } from "./dragDropTypes";
 
@@ -65,7 +65,7 @@ type ElementPosition = "x" | "y";
 export const measureElementSizeAndPosition = (
   element: HTMLElement,
   dimension: Dimension = "width",
-  includeAutoMargin = false
+  includeAutoMargin = false,
 ) => {
   const pos = dimension === "width" ? "left" : "top";
   const { [dimension]: size, [pos]: position } =
@@ -128,7 +128,7 @@ export const dimensions = (orientation: orientationType) =>
 
 export const getItemById = (
   measuredItems: MeasuredDropTarget[],
-  id: string
+  id: string,
 ) => {
   const result = measuredItems.find((item) => item.id === id);
   if (result) {
@@ -141,7 +141,7 @@ export const getItemById = (
 
 export const removeDraggedItem = (
   measuredItems: MeasuredDropTarget[],
-  index: number
+  index: number,
 ) => {
   measuredItems.splice(index, 1);
   for (let i = index; i < measuredItems.length; i++) {
@@ -156,12 +156,12 @@ export const measureDropTargets = (
   orientation: orientationType,
   itemQuery?: string,
   viewportRange?: ViewportRange,
-  draggedItemId?: string
+  draggedItemId?: string,
 ) => {
   const dragThresholds: MeasuredDropTarget[] = [];
   const { DIMENSION } = dimensions(orientation);
   const children = Array.from(
-    itemQuery ? container.querySelectorAll(itemQuery) : container.children
+    itemQuery ? container.querySelectorAll(itemQuery) : container.children,
   );
 
   const itemCount = children.length;
@@ -205,7 +205,7 @@ export const getIndexOfDraggedItem = (dropTargets: MeasuredDropTarget[]) =>
 // the movements within the dropTargets collection
 export const mutateDropTargetsSwitchDropTargetPosition = (
   dropTargets: MeasuredDropTarget[],
-  direction: Direction
+  direction: Direction,
 ) => {
   const indexOfDraggedItem = getIndexOfDraggedItem(dropTargets);
   const indexOfTarget =
@@ -269,7 +269,7 @@ export const getNextDropTarget = (
   dropTargets: MeasuredDropTarget[],
   pos: number,
   draggedItemSize: number,
-  mouseMoveDirection: Direction
+  mouseMoveDirection: Direction,
 ): MeasuredDropTarget => {
   const len = dropTargets.length;
   const indexOfDraggedItem = getIndexOfDraggedItem(dropTargets);
@@ -324,19 +324,19 @@ export const dropTargetsDebugString = (dropTargets: MeasuredDropTarget[]) =>
     .map(
       (d, i) =>
         `\n${d.isDraggedItem ? "*" : " "}[${i}] width : ${Math.floor(
-          d.size
+          d.size,
         )}    ${Math.floor(d.start)} - ${Math.floor(d.end)} (mid ${Math.floor(
-          d.mid
-        )})  ${d.element?.textContent} `
+          d.mid,
+        )})  ${d.element?.textContent} `,
     )
     .join("");
 
 export const getItemParentContainer = (
   container: HTMLElement | null,
-  itemQuery: string
+  itemQuery: string,
 ) => {
   const firstItem = container?.querySelector(
-    `${itemQuery}:not([aria-hidden="true"])`
+    `${itemQuery}:not([aria-hidden="true"])`,
   );
   if (firstItem) {
     // generally, we expect the immediateParent to be a contentContainer, the
@@ -350,7 +350,7 @@ export const getItemParentContainer = (
 
 export const getScrollableContainer = (
   container: HTMLElement | null,
-  itemQuery: string
+  itemQuery: string,
 ) => {
   const immediateParent = getItemParentContainer(container, itemQuery);
   if (immediateParent === container) {
@@ -362,7 +362,7 @@ export const getScrollableContainer = (
 
 export const isContainerScrollable = (
   scrollableContainer: HTMLElement | null,
-  orientation: orientationType
+  orientation: orientationType,
 ) => {
   if (scrollableContainer === null) {
     return false;

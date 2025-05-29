@@ -1,6 +1,6 @@
-import type { DataSourceRow } from "@finos/vuu-data-types";
-import type { VuuGroupBy } from "@finos/vuu-protocol-types";
-import { ColumnMap, metadataKeys } from "@finos/vuu-utils";
+import type { DataSourceRow } from "@vuu-ui/vuu-data-types";
+import type { VuuGroupBy } from "@vuu-ui/vuu-protocol-types";
+import { ColumnMap, metadataKeys } from "@vuu-ui/vuu-utils";
 
 export type KeyList = number[];
 export type GroupMap = { [key: string]: GroupMap | KeyList };

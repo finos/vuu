@@ -6,12 +6,12 @@ import {
   MenuBuilder,
   RpcResponseHandler,
   TableSchema,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import {
   useDialogContext,
   useNotifications,
   type MenuActionClosePopup,
-} from "@finos/vuu-popups";
+} from "@vuu-ui/vuu-popups";
 import type {
   LinkDescriptorWithLabel,
   OpenDialogAction,
@@ -19,9 +19,9 @@ import type {
   VuuMenuItem,
   VuuRpcResponse,
   VuuTable,
-} from "@finos/vuu-protocol-types";
-import { BulkEditPanel, BulkEditDialog } from "@finos/vuu-table";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-protocol-types";
+import { BulkEditPanel, BulkEditDialog } from "@vuu-ui/vuu-table";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
   VuuServerMenuOptions,
   buildMenuDescriptorFromVuuMenu,
@@ -36,7 +36,7 @@ import {
   toColumnName,
   useDataSource,
   viewportRpcRequest,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { Button } from "@salt-ds/core";
 import { useCallback } from "react";
 import {

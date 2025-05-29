@@ -1,5 +1,5 @@
-import { Tooltip, useTooltip } from "@finos/vuu-popups";
-import { useId } from "@finos/vuu-utils";
+import { Tooltip, useTooltip } from "@vuu-ui/vuu-popups";
+import { useId } from "@vuu-ui/vuu-utils";
 import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { SyntheticEvent, useCallback, useMemo, useRef, useState } from "react";
 

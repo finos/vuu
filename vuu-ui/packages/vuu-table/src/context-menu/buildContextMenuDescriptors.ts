@@ -2,9 +2,9 @@ import {
   ContextMenuItemDescriptor,
   DataSource,
   MenuBuilder,
-} from "@finos/vuu-data-types";
-import { RuntimeColumnDescriptor, PinLocation } from "@finos/vuu-table-types";
-import { isNumericColumn } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-data-types";
+import { RuntimeColumnDescriptor, PinLocation } from "@vuu-ui/vuu-table-types";
+import { isNumericColumn } from "@vuu-ui/vuu-utils";
 
 export type ContextMenuLocation = "header" | "filter" | "grid";
 

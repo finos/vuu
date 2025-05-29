@@ -1,16 +1,16 @@
-import { getSchema, simulModule } from "@finos/vuu-data-test";
-import type { DataSourceFilter } from "@finos/vuu-data-types";
-import { FilterBar, FilterBarProps } from "@finos/vuu-filters";
+import { getSchema, simulModule } from "@vuu-ui/vuu-data-test";
+import type { DataSourceFilter } from "@vuu-ui/vuu-data-types";
+import { FilterBar, FilterBarProps } from "@vuu-ui/vuu-filters";
 import {
   FlexboxLayout,
   LayoutProvider,
   StackLayout,
   View,
-} from "@finos/vuu-layout";
-import { ContextPanel } from "@finos/vuu-shell";
-import { Table, TableProps } from "@finos/vuu-table";
-import { IconButton, Tab, Tabstrip } from "@finos/vuu-ui-controls";
-import { VuuShellLocation } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-layout";
+import { ContextPanel } from "@vuu-ui/vuu-shell";
+import { Table, TableProps } from "@vuu-ui/vuu-table";
+import { IconButton, Tab, Tabstrip } from "@vuu-ui/vuu-ui-controls";
+import { VuuShellLocation } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 
 import "./SimpleApp.css";

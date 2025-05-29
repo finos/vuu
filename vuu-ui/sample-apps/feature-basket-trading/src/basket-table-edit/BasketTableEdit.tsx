@@ -1,9 +1,9 @@
 import {
   ContextMenuConfiguration,
   ContextMenuProvider,
-} from "@finos/vuu-popups";
-import { Table, TableProps } from "@finos/vuu-table";
-import { registerComponent } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-popups";
+import { Table, TableProps } from "@vuu-ui/vuu-table";
+import { registerComponent } from "@vuu-ui/vuu-utils";
 import { ColHeaderAddSymbol } from "../cell-renderers";
 
 import "./BasketTableEdit.css";

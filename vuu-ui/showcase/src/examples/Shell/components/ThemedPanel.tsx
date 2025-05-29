@@ -1,5 +1,5 @@
-import { ThemeSwitch } from "@finos/vuu-shell";
-import { ThemeMode, ThemeProvider } from "@finos/vuu-utils";
+import { ThemeSwitch } from "@vuu-ui/vuu-shell";
+import { ThemeMode, ThemeProvider } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import {
   HTMLAttributes,
@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 
-import { useContextMenu } from "@finos/vuu-popups";
+import { useContextMenu } from "@vuu-ui/vuu-popups";
 import { Button } from "@salt-ds/core";
 import "./ThemedPanel.css";
 

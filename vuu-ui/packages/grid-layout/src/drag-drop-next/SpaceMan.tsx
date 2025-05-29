@@ -1,5 +1,5 @@
 import { RefCallback } from "react";
-import { asInteger, isValidNumber, orientationType } from "@finos/vuu-utils";
+import { asInteger, isValidNumber, orientationType } from "@vuu-ui/vuu-utils";
 import { DragContext, DropPosition } from "./DragContextNext";
 
 export type State = "initial" | "away" | "1spacer" | "2spacer";

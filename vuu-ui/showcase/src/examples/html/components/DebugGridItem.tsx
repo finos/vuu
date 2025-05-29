@@ -1,4 +1,4 @@
-import { LayoutJSON, registerComponent } from "@finos/vuu-utils";
+import { LayoutJSON, registerComponent } from "@vuu-ui/vuu-utils";
 import {
   createElement,
   HTMLAttributes,

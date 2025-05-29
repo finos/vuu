@@ -1,10 +1,10 @@
-import { IconButton, List, ListItem } from "@finos/vuu-ui-controls";
+import { IconButton, List, ListItem } from "@vuu-ui/vuu-ui-controls";
 import {
   LayoutJSON,
   LayoutMetadata,
   SystemLayoutMetadata,
   VuuShellLocation,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
@@ -12,7 +12,7 @@ import { HTMLAttributes, ReactElement, useCallback, useMemo } from "react";
 import { LayoutTile } from "./LayoutTile";
 import { useWorkspace } from "./WorkspaceProvider";
 import { useLayouts } from "../feature-and-layout-provider";
-import { layoutFromJson, useLayoutProviderDispatch } from "@finos/vuu-layout";
+import { layoutFromJson, useLayoutProviderDispatch } from "@vuu-ui/vuu-layout";
 
 import layoutListCss from "./LayoutList.css";
 

@@ -1,6 +1,6 @@
 import { FilterModel, FilterClauseModel } from "../src/FilterModel";
 import { describe, expect, it } from "vitest";
-import { Filter } from "@finos/vuu-filter-types";
+import { Filter } from "@vuu-ui/vuu-filter-types";
 
 const simpleEqualsFilter: Filter = {
   column: "ccy",

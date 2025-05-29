@@ -3,9 +3,9 @@ import cx from "clsx";
 import type {
   VuuColumnDataType,
   VuuRowDataItemType,
-} from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-protocol-types";
 import { ForwardedRef, forwardRef, SyntheticEvent, useCallback } from "react";
-import { CommitHandler } from "@finos/vuu-utils";
+import { CommitHandler } from "@vuu-ui/vuu-utils";
 
 const classBase = "vuuCycleStateButton";
 

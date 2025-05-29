@@ -1,14 +1,14 @@
-import { Flexbox, View } from "@finos/vuu-layout";
-import { Table } from "@finos/vuu-table";
-import { simulSchemas, simulModule } from "@finos/vuu-data-test";
-import { ThemeProvider } from "@finos/vuu-utils";
-import { ContextPanel } from "@finos/vuu-shell";
+import { Flexbox, View } from "@vuu-ui/vuu-layout";
+import { Table } from "@vuu-ui/vuu-table";
+import { simulSchemas, simulModule } from "@vuu-ui/vuu-data-test";
+import { ThemeProvider } from "@vuu-ui/vuu-utils";
+import { ContextPanel } from "@vuu-ui/vuu-shell";
 
-import "@finos/vuu-icons/index.css";
-import "@finos/vuu-theme/index.css";
+import "@vuu-ui/vuu-icons/index.css";
+import "@vuu-ui/vuu-theme/index.css";
 
 import "./App.css";
-// import { ThemeProvider } from "@finos/vuu-utils";
+// import { ThemeProvider } from "@vuu-ui/vuu-utils";
 
 console.log({ ContextPanel });
 

@@ -3,7 +3,7 @@ import { GridLayoutDragEndHandler } from "./GridLayoutProvider";
 import { GridModel, TabStateTab, TrackSize } from "./GridModel";
 import { GridLayoutDragStartHandler } from "./useDraggable";
 import { GridLayoutModel } from "./GridLayoutModel";
-import { GridLayoutDropPosition } from "@finos/vuu-utils";
+import { GridLayoutDropPosition } from "@vuu-ui/vuu-utils";
 
 export type GridLayoutActionType = "close";
 

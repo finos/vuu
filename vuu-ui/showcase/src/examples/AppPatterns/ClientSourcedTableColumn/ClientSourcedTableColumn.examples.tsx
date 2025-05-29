@@ -1,30 +1,30 @@
-import { getSchema, LocalDataSourceProvider } from "@finos/vuu-data-test";
-import { DataSourceFilter, type TableSchema } from "@finos/vuu-data-types";
-import { Table, type TableProps } from "@finos/vuu-table";
+import { getSchema, LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import { DataSourceFilter, type TableSchema } from "@vuu-ui/vuu-data-types";
+import { Table, type TableProps } from "@vuu-ui/vuu-table";
 import type {
   ColumnDescriptor,
   TableConfig,
   TableRowSelectHandler,
-} from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-table-types";
 import {
   registerComponent,
   toColumnName,
   useDataSource,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { PinButtonCell } from "./pin-button-cell";
 import {
   ClientTableColumnProvider,
   useClientTableColumn,
 } from "./ClientTableColumnProvider/ClientTableColumnProvider";
-import { TableSearch } from "@finos/vuu-ui-controls";
+import { TableSearch } from "@vuu-ui/vuu-ui-controls";
 import {
   FlexboxLayout,
   Header,
   LayoutContainer,
   LayoutProvider,
   View,
-} from "@finos/vuu-layout";
+} from "@vuu-ui/vuu-layout";
 
 registerComponent("pin-button", PinButtonCell, "cell-renderer", {
   userCanAssign: false,

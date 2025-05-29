@@ -1,5 +1,5 @@
-import { IconButton } from "@finos/vuu-ui-controls";
-import { VuuShellLocation } from "@finos/vuu-utils";
+import { IconButton } from "@vuu-ui/vuu-ui-controls";
+import { VuuShellLocation } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, useMemo, useState } from "react";

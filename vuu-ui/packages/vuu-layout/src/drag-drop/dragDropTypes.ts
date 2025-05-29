@@ -1,4 +1,4 @@
-import type { rect } from "@finos/vuu-utils";
+import type { rect } from "@vuu-ui/vuu-utils";
 export interface DragDropRect extends rect {
   children?: DragDropRect[];
   header?: {

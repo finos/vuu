@@ -12,7 +12,7 @@ import {
   TableSchema,
   WithBaseFilter,
   WithFullConfig,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import {
   LinkDescriptorWithLabel,
   VuuCreateVisualLink,
@@ -26,7 +26,7 @@ import {
   VuuRpcResponse,
   VuuRpcViewportRequest,
   VuuTable,
-} from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-protocol-types";
 
 import {
   BaseDataSource,
@@ -42,11 +42,11 @@ import {
   vuuAddRowRequest,
   vuuDeleteRowRequest,
   vuuEditCellRequest,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import ConnectionManager from "./ConnectionManager";
 import { isDataSourceConfigMessage } from "./data-source";
 
-import { MenuRpcResponse } from "@finos/vuu-data-types";
+import { MenuRpcResponse } from "@vuu-ui/vuu-data-types";
 
 type RangeRequest = (range: VuuRange) => void;
 

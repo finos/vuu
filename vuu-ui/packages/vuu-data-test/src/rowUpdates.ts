@@ -1,8 +1,8 @@
-import { VuuRange, VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import { VuuRange, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { Table } from "./Table";
 
 export type UpdateHandler = (
-  updates: (RowUpdates | RowInsert | RowDelete)[]
+  updates: (RowUpdates | RowInsert | RowDelete)[],
 ) => void;
 
 export interface UpdateGenerator {
@@ -17,14 +17,14 @@ type MAXIMUM_ALLOWED_BOUNDARY = 20;
 type RepeatingTuple<
   Tuple extends Array<unknown>,
   Result extends Array<unknown> = [],
-  Count extends ReadonlyArray<number> = []
+  Count extends ReadonlyArray<number> = [],
 > = Count["length"] extends MAXIMUM_ALLOWED_BOUNDARY
   ? Result
   : Tuple extends []
-  ? []
-  : Result extends []
-  ? RepeatingTuple<Tuple, Tuple, [...Count, 1]>
-  : RepeatingTuple<Tuple, Result | [...Result, ...Tuple], [...Count, 1]>;
+    ? []
+    : Result extends []
+      ? RepeatingTuple<Tuple, Tuple, [...Count, 1]>
+      : RepeatingTuple<Tuple, Result | [...Result, ...Tuple], [...Count, 1]>;
 
 type UpdatePairs = RepeatingTuple<[number, VuuRowDataItemType]>;
 export type RowUpdates = ["U", number, ...UpdatePairs];

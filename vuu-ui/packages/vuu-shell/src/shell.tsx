@@ -1,13 +1,13 @@
-import { ConnectionManager } from "@finos/vuu-data-remote";
-import type { LayoutChangeHandler } from "@finos/vuu-layout";
-import { LayoutProvider, StackLayout } from "@finos/vuu-layout";
+import { ConnectionManager } from "@vuu-ui/vuu-data-remote";
+import type { LayoutChangeHandler } from "@vuu-ui/vuu-layout";
+import { LayoutProvider, StackLayout } from "@vuu-ui/vuu-layout";
 import {
   ContextMenuProvider,
   DialogProvider,
   NotificationsProvider,
   useNotifications,
-} from "@finos/vuu-popups";
-import { VuuUser, logger, registerComponent } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-popups";
+import { VuuUser, logger, registerComponent } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, ReactNode, useCallback, useMemo } from "react";

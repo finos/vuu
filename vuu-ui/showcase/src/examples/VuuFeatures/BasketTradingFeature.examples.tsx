@@ -1,11 +1,11 @@
-import { LocalDataSourceProvider } from "@finos/vuu-data-test";
-import { LayoutProvider, View } from "@finos/vuu-layout";
-import { Feature, ShellContextProvider } from "@finos/vuu-shell";
+import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import { LayoutProvider, View } from "@vuu-ui/vuu-layout";
+import { Feature, ShellContextProvider } from "@vuu-ui/vuu-shell";
 import {
   DynamicFeatureProps,
   LookupTableProvider,
   registerComponent,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { useCallback } from "react";
 import BasketTradingFeature from "../../features/BasketTrading.feature";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";

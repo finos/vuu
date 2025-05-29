@@ -3,7 +3,7 @@ import type {
   DataSourceConstructorProps,
   ServerAPI,
   TableSchema,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import { createContext } from "react";
 
 export type DataSourceConstructor = {

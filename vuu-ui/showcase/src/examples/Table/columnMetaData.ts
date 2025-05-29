@@ -1,4 +1,4 @@
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
 const Average = 2;
 

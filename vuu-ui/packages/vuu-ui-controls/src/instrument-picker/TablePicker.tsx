@@ -1,5 +1,5 @@
-import type { DataSourceRowObject, TableSchema } from "@finos/vuu-data-types";
-import { Table, type TableProps } from "@finos/vuu-table";
+import type { DataSourceRowObject, TableSchema } from "@vuu-ui/vuu-data-types";
+import { Table, type TableProps } from "@vuu-ui/vuu-table";
 import {
   Input,
   useFloatingComponent,

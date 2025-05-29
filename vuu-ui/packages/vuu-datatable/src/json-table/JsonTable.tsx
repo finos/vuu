@@ -1,9 +1,9 @@
-import { TableProps } from "@finos/vuu-table";
-import { JsonData, registerComponent } from "@finos/vuu-utils";
-import { Table } from "@finos/vuu-table";
-import { JsonDataSource } from "@finos/vuu-data-local";
+import { TableProps } from "@vuu-ui/vuu-table";
+import { JsonData, registerComponent } from "@vuu-ui/vuu-utils";
+import { Table } from "@vuu-ui/vuu-table";
+import { JsonDataSource } from "@vuu-ui/vuu-data-local";
 import { useEffect, useMemo, useRef } from "react";
-import { TableConfig } from "@finos/vuu-table-types";
+import { TableConfig } from "@vuu-ui/vuu-table-types";
 import { JsonCell } from "./JsonCell";
 
 registerComponent("json", JsonCell, "cell-renderer");

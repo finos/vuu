@@ -1,5 +1,5 @@
 // TODO close button needs to be a button. Hence tab needs to include 2 buttons
-import { MenuActionHandler } from "@finos/vuu-data-types";
+import { MenuActionHandler } from "@vuu-ui/vuu-data-types";
 import { useForkRef } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -51,7 +51,7 @@ export const Tab = forwardRef(function Tab(
     tabIndex,
     ...props
   }: TabProps,
-  ref: ForwardedRef<HTMLDivElement>
+  ref: ForwardedRef<HTMLDivElement>,
 ): ReactElement<TabProps> {
   if (showMenuButton && typeof onMenuAction !== "function") {
     throw Error("Tab onMenuAction must be provided if showMenuButton is set");
@@ -74,13 +74,13 @@ export const Tab = forwardRef(function Tab(
         onClick?.(e, index);
       }
     },
-    [editing, index, onClick]
+    [editing, index, onClick],
   );
 
   const handleOnExitEditMode: EditableLabelProps["onExitEditMode"] = (
     originalValue = "",
     editedValue = "",
-    allowDeactivation = true
+    allowDeactivation = true,
   ) => onExitEditMode(originalValue, editedValue, allowDeactivation, index);
 
   const handleKeyUp = (e: KeyboardEvent) => {
@@ -120,7 +120,7 @@ export const Tab = forwardRef(function Tab(
     if (editableRef.current) {
       const editable = editableRef.current as HTMLElement;
       const input = editable.querySelector(
-        ".vuuEditableLabel-input"
+        ".vuuEditableLabel-input",
       ) as HTMLInputElement;
       input?.focus();
     }

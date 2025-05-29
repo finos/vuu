@@ -1,4 +1,4 @@
-import { registerComponent } from "@finos/vuu-utils";
+import { registerComponent } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
@@ -19,7 +19,7 @@ export const LayoutContainer = forwardRef(function LayoutContainer(
     resizeable: _, // ignore, its just a marker used by the layout system
     ...htmlAttributes
   }: LayoutContainerProps,
-  forwardedRef: ForwardedRef<HTMLDivElement>
+  forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
   const targetWindow = useWindow();
   useComponentCssInjection({

@@ -1,6 +1,6 @@
-import { Prompt } from "@finos/vuu-popups";
-import type { ColumnDescriptor } from "@finos/vuu-table-types";
-import { IconButton } from "@finos/vuu-ui-controls";
+import { Prompt } from "@vuu-ui/vuu-popups";
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { IconButton } from "@vuu-ui/vuu-ui-controls";
 import { HTMLAttributes, ReactElement, useRef } from "react";
 import { type FilterBarProps } from "../filter-bar";
 import { FilterEditor } from "../filter-editor";

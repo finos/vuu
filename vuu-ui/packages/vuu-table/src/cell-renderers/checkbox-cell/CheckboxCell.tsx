@@ -1,11 +1,11 @@
 import { MouseEvent, KeyboardEventHandler, memo, useCallback } from "react";
-import { TableCellRendererProps } from "@finos/vuu-table-types";
+import { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
 import { Checkbox } from "@salt-ds/core";
 import {
   dataColumnAndKeyUnchanged,
   dispatchCustomEvent,
   registerComponent,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 

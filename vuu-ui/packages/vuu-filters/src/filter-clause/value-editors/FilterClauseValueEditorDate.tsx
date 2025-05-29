@@ -1,9 +1,9 @@
 import React, { useCallback, useState } from "react";
 import { getLocalTimeZone, DateValue } from "@internationalized/date";
-import { CommitHandler, toCalendarDate } from "@finos/vuu-utils";
-import { NumericFilterClauseOp } from "@finos/vuu-filter-types";
+import { CommitHandler, toCalendarDate } from "@vuu-ui/vuu-utils";
+import { NumericFilterClauseOp } from "@vuu-ui/vuu-filter-types";
 import { FilterClauseValueEditor } from "../filterClauseTypes";
-import { VuuDatePicker } from "@finos/vuu-ui-controls";
+import { VuuDatePicker } from "@vuu-ui/vuu-ui-controls";
 
 interface FilterClauseValueEditorDateProps
   extends Pick<FilterClauseValueEditor, "onChangeValue" | "inputProps"> {

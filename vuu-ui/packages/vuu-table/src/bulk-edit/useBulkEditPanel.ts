@@ -1,15 +1,15 @@
-import { buildValidationChecker } from "@finos/vuu-data-react";
-import { VuuRpcViewportRequest } from "@finos/vuu-protocol-types";
+import { buildValidationChecker } from "@vuu-ui/vuu-data-react";
+import { VuuRpcViewportRequest } from "@vuu-ui/vuu-protocol-types";
 import {
   DataCellEditNotification,
   DataValueTypeDescriptor,
   TableConfig,
-} from "@finos/vuu-table-types";
-import { hasValidationRules, isTypeDescriptor } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-table-types";
+import { hasValidationRules, isTypeDescriptor } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import type { BulkEditPanelProps } from "./BulkEditPanel";
 import { EditValueChangeHandler } from "./useBulkEditRow";
-import { metadataKeys } from "@finos/vuu-utils";
+import { metadataKeys } from "@vuu-ui/vuu-utils";
 
 const addRenderer = (
   colType: DataValueTypeDescriptor,

@@ -1,5 +1,5 @@
-import { DialogProvider } from "@finos/vuu-popups";
-import { useDialogContext } from "@finos/vuu-popups";
+import { DialogProvider } from "@vuu-ui/vuu-popups";
+import { useDialogContext } from "@vuu-ui/vuu-popups";
 import { Button } from "@salt-ds/core";
 import { MouseEventHandler, useCallback, useRef, useState } from "react";
 

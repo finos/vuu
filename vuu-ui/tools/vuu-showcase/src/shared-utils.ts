@@ -1,4 +1,4 @@
-import { importCSS, TreeSourceNode } from "@finos/vuu-utils";
+import { importCSS, TreeSourceNode } from "@vuu-ui/vuu-utils";
 
 type Environment = "development" | "production";
 export const env = process.env.NODE_ENV as Environment;

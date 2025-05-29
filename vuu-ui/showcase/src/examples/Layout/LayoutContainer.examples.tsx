@@ -11,7 +11,7 @@ import {
   StackLayout,
   useViewContext,
   View,
-} from "@finos/vuu-layout";
+} from "@vuu-ui/vuu-layout";
 
 import { Brown, StatefulComponent } from "./components";
 

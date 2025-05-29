@@ -3,11 +3,11 @@ import {
   DataSourceConfig,
   DataSourceConfigChangeHandler,
   TableSchema,
-} from "@finos/vuu-data-types";
-import { isConfigChanged, resetRange, useDataSource } from "@finos/vuu-utils";
-import { useViewContext } from "@finos/vuu-layout";
+} from "@vuu-ui/vuu-data-types";
+import { isConfigChanged, resetRange, useDataSource } from "@vuu-ui/vuu-utils";
+import { useViewContext } from "@vuu-ui/vuu-layout";
 import { useCallback, useMemo } from "react";
-import { VuuRange } from "@finos/vuu-protocol-types";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 
 type SessionDataSourceConfig = {
   "datasource-config"?: DataSourceConfig;

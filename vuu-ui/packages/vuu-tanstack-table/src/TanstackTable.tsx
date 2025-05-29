@@ -1,4 +1,4 @@
-import { PaginationControl } from "@finos/vuu-table";
+import { PaginationControl } from "@vuu-ui/vuu-table";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { flexRender } from "@tanstack/react-table";
@@ -18,7 +18,7 @@ import cx from "clsx";
 
 import tableCss from "./TanstackTable.css";
 import { useForkRef } from "@salt-ds/core";
-import { DataSourceRow } from "@finos/vuu-data-types";
+import { DataSourceRow } from "@vuu-ui/vuu-data-types";
 
 const classBase = "TanstackTable";
 

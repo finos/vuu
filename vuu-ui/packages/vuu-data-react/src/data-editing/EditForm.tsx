@@ -1,4 +1,4 @@
-import { getDataItemEditControl } from "@finos/vuu-data-react";
+import { getDataItemEditControl } from "@vuu-ui/vuu-data-react";
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";

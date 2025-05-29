@@ -4,9 +4,9 @@ import {
   Drawer,
   Flexbox,
   View,
-} from "@finos/vuu-layout";
+} from "@vuu-ui/vuu-layout";
 
-import { VuuShellLocation } from "@finos/vuu-utils";
+import { VuuShellLocation } from "@vuu-ui/vuu-utils";
 import {
   MouseEvent,
   ReactElement,

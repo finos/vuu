@@ -1,5 +1,5 @@
 import "./global-mocks";
-import { LayoutJSON } from "@finos/vuu-utils";
+import { LayoutJSON } from "@vuu-ui/vuu-utils";
 import { describe, expect, it } from "vitest";
 import { isLayoutJSON } from "../src";
 

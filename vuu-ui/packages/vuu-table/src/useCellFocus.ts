@@ -11,8 +11,8 @@ import {
   headerCellQuery,
 } from "./table-dom-utils";
 import { ScrollRequestHandler } from "./useTableScroll";
-import { isArrowKey, queryClosest } from "@finos/vuu-utils";
-import { CellPos } from "@finos/vuu-table-types";
+import { isArrowKey, queryClosest } from "@vuu-ui/vuu-utils";
+import { CellPos } from "@vuu-ui/vuu-table-types";
 import type { ICellFocusState } from "./CellFocusState";
 
 export interface CellFocusHookProps {

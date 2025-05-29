@@ -1,6 +1,6 @@
-import { DataSource } from "@finos/vuu-data-types";
-import { TableSearch, PriceTicker } from "@finos/vuu-ui-controls";
-import { useId } from "@finos/vuu-utils";
+import { DataSource } from "@vuu-ui/vuu-data-types";
+import { TableSearch, PriceTicker } from "@vuu-ui/vuu-ui-controls";
+import { useId } from "@vuu-ui/vuu-utils";
 import {
   Button,
   useFloatingComponent,

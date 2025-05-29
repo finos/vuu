@@ -1,4 +1,4 @@
-import { isCharacterKey } from "@finos/vuu-utils";
+import { isCharacterKey } from "@vuu-ui/vuu-utils";
 import {
   FocusEventHandler,
   KeyboardEvent as ReactKeyboardEvent,
@@ -28,7 +28,7 @@ export const useCellEditing = ({ navigate }: CellEditingHookProps) => {
         input.select();
       }
     },
-    []
+    [],
   );
 
   const focusInput = useCallback(
@@ -40,7 +40,7 @@ export const useCellEditing = ({ navigate }: CellEditingHookProps) => {
         input.select();
       }
     },
-    []
+    [],
   );
 
   const handleKeyDown = useCallback(
@@ -54,7 +54,7 @@ export const useCellEditing = ({ navigate }: CellEditingHookProps) => {
         }
       }
     },
-    [editInput, focusInput]
+    [editInput, focusInput],
   );
 
   const handleDoubleClick = useCallback(
@@ -65,7 +65,7 @@ export const useCellEditing = ({ navigate }: CellEditingHookProps) => {
         e.stopPropagation();
       }
     },
-    [editInput]
+    [editInput],
   );
 
   const handleBlur = useCallback<FocusEventHandler>(
@@ -73,7 +73,7 @@ export const useCellEditing = ({ navigate }: CellEditingHookProps) => {
       const el = e.target as HTMLElement;
       el.removeEventListener("vuu-commit", commitHandler, true);
     },
-    [commitHandler]
+    [commitHandler],
   );
 
   const handleFocus = useCallback<FocusEventHandler>(
@@ -81,7 +81,7 @@ export const useCellEditing = ({ navigate }: CellEditingHookProps) => {
       const el = e.target as HTMLElement;
       el.addEventListener("vuu-commit", commitHandler, true);
     },
-    [commitHandler]
+    [commitHandler],
   );
 
   return {

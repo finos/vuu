@@ -4,7 +4,7 @@ import {
   LayoutMetadata,
   LayoutMetadataDto,
   Settings,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { getAuthDetailsFromCookies } from "../login";
 import { IPersistenceManager } from "./PersistenceManager";
 
@@ -22,7 +22,7 @@ export class RemotePersistenceManager implements IPersistenceManager {
 
   createLayout(
     metadata: LayoutMetadataDto,
-    layout: LayoutJSON
+    layout: LayoutJSON,
   ): Promise<LayoutMetadata> {
     return new Promise((resolve, reject) =>
       fetch(`${baseURL}/${layoutsSaveLocation}`, {
@@ -48,14 +48,14 @@ export class RemotePersistenceManager implements IPersistenceManager {
         })
         .catch((error: Error) => {
           reject(error);
-        })
+        }),
     );
   }
 
   updateLayout(
     id: string,
     metadata: LayoutMetadataDto,
-    newLayoutJson: LayoutJSON
+    newLayoutJson: LayoutJSON,
   ): Promise<void> {
     return new Promise((resolve, reject) =>
       fetch(`${baseURL}/${layoutsSaveLocation}/${id}`, {
@@ -73,7 +73,7 @@ export class RemotePersistenceManager implements IPersistenceManager {
         })
         .catch((error: Error) => {
           reject(error);
-        })
+        }),
     );
   }
 
@@ -90,7 +90,7 @@ export class RemotePersistenceManager implements IPersistenceManager {
         })
         .catch((error: Error) => {
           reject(error);
-        })
+        }),
     );
   }
 
@@ -134,7 +134,7 @@ export class RemotePersistenceManager implements IPersistenceManager {
         })
         .catch((error: Error) => {
           reject(error);
-        })
+        }),
     );
   }
 
@@ -156,7 +156,7 @@ export class RemotePersistenceManager implements IPersistenceManager {
         })
         .catch((error: Error) => {
           reject(error);
-        })
+        }),
     );
   }
 
@@ -176,8 +176,8 @@ export class RemotePersistenceManager implements IPersistenceManager {
             if (!applicationJSON) {
               reject(
                 new Error(
-                  "Response did not contain valid application layout information"
-                )
+                  "Response did not contain valid application layout information",
+                ),
               );
             }
             resolve(applicationJSON.definition);
@@ -185,7 +185,7 @@ export class RemotePersistenceManager implements IPersistenceManager {
         })
         .catch((error: Error) => {
           reject(error);
-        })
+        }),
     );
   }
 

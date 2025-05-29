@@ -1,4 +1,4 @@
-import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
+import { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { ColumnHeaderPill } from "./ColumnHeaderPill";
@@ -27,8 +27,8 @@ export const SortIndicator = ({ column }: SortIndicatorProps) => {
         ? "arrow-down"
         : "arrow-up"
       : column.sorted === "A"
-      ? "arrow-up"
-      : "arrow-down";
+        ? "arrow-up"
+        : "arrow-down";
 
   return (
     <ColumnHeaderPill column={column}>

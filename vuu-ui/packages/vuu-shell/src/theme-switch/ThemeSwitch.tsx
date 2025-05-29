@@ -3,7 +3,7 @@ import { ToggleButton, ToggleButtonGroup, useControlled } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, SyntheticEvent, useCallback } from "react";
-import { ThemeMode } from "@finos/vuu-utils";
+import { ThemeMode } from "@vuu-ui/vuu-utils";
 
 import themeSwitchCss from "./ThemeSwitch.css";
 
@@ -42,7 +42,7 @@ export const ThemeSwitch = ({
       setMode(value as ThemeMode);
       onChange(value as ThemeMode);
     },
-    [onChange, setMode]
+    [onChange, setMode],
   );
   const className = cx(classBase, classNameProp);
   return (

@@ -1,5 +1,5 @@
-import { TableSchemaTable } from "@finos/vuu-data-types";
-import { VuuTable } from "@finos/vuu-protocol-types";
+import { TableSchemaTable } from "@vuu-ui/vuu-data-types";
+import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 
 export const getVuuTable = (schemaTable: TableSchemaTable): VuuTable => {
   if (schemaTable.session) {

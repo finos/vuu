@@ -1,4 +1,4 @@
-import { RpcService } from "@finos/vuu-protocol-types";
+import { RpcService } from "@vuu-ui/vuu-protocol-types";
 
 export const getRpcServiceModule = (service: RpcService): string => {
   switch (service) {

@@ -1,4 +1,4 @@
-import { registerComponent, useId } from "@finos/vuu-utils";
+import { registerComponent, useId } from "@vuu-ui/vuu-utils";
 import React, { MouseEvent, useCallback, useRef } from "react";
 import {
   useLayoutCreateNewChild,

@@ -1,7 +1,7 @@
-import { Table } from "@finos/vuu-table";
-import { ArrayDataSource } from "@finos/vuu-data-local";
+import { Table } from "@vuu-ui/vuu-table";
+import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
 import { useMemo } from "react";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
 export const DefaultTableList = () => {
   const [columns, dataSource] = useMemo(() => {

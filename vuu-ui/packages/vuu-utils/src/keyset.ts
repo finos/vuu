@@ -1,4 +1,4 @@
-import { VuuRange } from "@finos/vuu-protocol-types";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 
 const EMPTY: number[] = [];
 export class KeySet {

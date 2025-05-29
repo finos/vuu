@@ -2,10 +2,10 @@ import {
   DataSourceFilter,
   SuggestionProvider,
   TableSchema,
-} from "@finos/vuu-data-types";
-import { Filter, FilterState } from "@finos/vuu-filter-types";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { Icon } from "@finos/vuu-ui-controls";
+} from "@vuu-ui/vuu-data-types";
+import { Filter, FilterState } from "@vuu-ui/vuu-filter-types";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { Icon } from "@vuu-ui/vuu-ui-controls";
 import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";

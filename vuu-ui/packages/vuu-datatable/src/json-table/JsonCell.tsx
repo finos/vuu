@@ -1,8 +1,8 @@
-import { TableCellProps } from "@finos/vuu-table-types";
-import { metadataKeys } from "@finos/vuu-utils";
+import { TableCellProps } from "@vuu-ui/vuu-table-types";
+import { metadataKeys } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { ToggleIconButton } from "@finos/vuu-ui-controls";
+import { ToggleIconButton } from "@vuu-ui/vuu-ui-controls";
 
 // Note the className is actually applied to containing cell
 import arrayCellCss from "./JsonCell.css";

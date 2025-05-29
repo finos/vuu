@@ -1,6 +1,6 @@
-import { ColumnExpressionPanel } from "@finos/vuu-table-extras";
-import { getSchema } from "@finos/vuu-data-test";
-import { TableConfig } from "@finos/vuu-table-types";
+import { ColumnExpressionPanel } from "@vuu-ui/vuu-table-extras";
+import { getSchema } from "@vuu-ui/vuu-data-test";
+import { TableConfig } from "@vuu-ui/vuu-table-types";
 import { useMemo } from "react";
 
 const instrumentPrices = { module: "SIMUL", table: "instrumentPrices" };

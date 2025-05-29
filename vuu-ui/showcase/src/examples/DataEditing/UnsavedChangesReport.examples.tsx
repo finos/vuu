@@ -1,5 +1,5 @@
-import { UnsavedChangesReport } from "@finos/vuu-data-react";
-import { Entity } from "@finos/vuu-utils";
+import { UnsavedChangesReport } from "@vuu-ui/vuu-data-react";
+import { Entity } from "@vuu-ui/vuu-utils";
 
 export const DefaultUnsavedChangesReport = () => {
   const entity: Entity = {

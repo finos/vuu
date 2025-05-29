@@ -1,4 +1,4 @@
-import { LayoutModel, rect, rectTuple } from "@finos/vuu-utils";
+import { LayoutModel, rect, rectTuple } from "@vuu-ui/vuu-utils";
 import { getProps, typeOf } from "../utils";
 import {
   BoxModel,
@@ -35,7 +35,7 @@ export type GuideLine = [
   number,
   number,
   number,
-  number
+  number,
 ];
 export interface TargetDropOutline {
   l: number;
@@ -88,7 +88,7 @@ export class DropTarget {
    */
   getTargetDropOutline(
     lineWidth: number,
-    dragState?: DragState
+    dragState?: DragState,
   ): TargetDropOutline {
     if (this.pos.tab) {
       return this.getDropTabOutline(lineWidth, this.pos.tab);
@@ -97,7 +97,7 @@ export class DropTarget {
     } else {
       const [l, t, r, b] = this.getDropRectOutline(
         lineWidth,
-        dragState
+        dragState,
       ) as rectTuple;
       return { l, t, r, b };
     }
@@ -139,11 +139,11 @@ export class DropTarget {
 
     const left = Math.min(
       rect.right - width,
-      Math.max(rect.left, Math.round(pos.x - x.mousePct * width))
+      Math.max(rect.left, Math.round(pos.x - x.mousePct * width)),
     );
     const top = Math.min(
       rect.bottom - height,
-      Math.max(rect.top, Math.round(pos.y - y.mousePct * height))
+      Math.max(rect.top, Math.round(pos.y - y.mousePct * height)),
     );
     const [l, t, r, b] = (this.dropRect = [
       left,
@@ -246,8 +246,8 @@ export class DropTarget {
     return dropTarget === null
       ? null
       : dropTarget?.active
-      ? dropTarget
-      : DropTarget.getActiveDropTarget(dropTarget.nextDropTarget);
+        ? dropTarget
+        : DropTarget.getActiveDropTarget(dropTarget.nextDropTarget);
   }
 }
 
@@ -258,7 +258,7 @@ export function identifyDropTarget(
   rootLayout: LayoutModel,
   measurements: Measurements,
   intrinsicSize?: number,
-  validDropTargets?: string[]
+  validDropTargets?: string[],
 ) {
   let dropTarget = null;
 
@@ -267,7 +267,7 @@ export function identifyDropTarget(
     measurements,
     x,
     y,
-    validDropTargets
+    validDropTargets,
   );
 
   if (allBoxesContainingPoint.length) {
@@ -293,7 +293,7 @@ export function identifyDropTarget(
           box,
           measurements,
           x,
-          y
+          y,
         );
         if (targetPosition) {
           const [containerPos, clientRect] = targetPosition;
@@ -326,7 +326,7 @@ function getTargetPosition(
   box: rect,
   measurements: Measurements,
   x: number,
-  y: number
+  y: number,
 ): [DropPos, DragDropRect] | undefined {
   if (!container || container.type === "LayoutContainer") {
     return;

@@ -1,5 +1,5 @@
-import type { TableRowSelectHandler } from "@finos/vuu-table-types";
-import type { TreeSourceNode } from "@finos/vuu-utils";
+import type { TableRowSelectHandler } from "@vuu-ui/vuu-table-types";
+import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
 import {
   GridLayout,
   GridLayoutChangeHandler,

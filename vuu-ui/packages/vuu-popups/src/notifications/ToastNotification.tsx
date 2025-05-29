@@ -1,4 +1,4 @@
-import { Icon } from "@finos/vuu-ui-controls";
+import { Icon } from "@vuu-ui/vuu-ui-controls";
 import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -47,7 +47,7 @@ export const ToastNotification = (props: ToastNotificationProps) => {
     if (animated) {
       setTimeout(
         () => setRight(-toastWidth - toastContainerRightPadding),
-        toastDisplayDuration + horizontalTransitionDuration
+        toastDisplayDuration + horizontalTransitionDuration,
       );
     }
   }, [animated]);

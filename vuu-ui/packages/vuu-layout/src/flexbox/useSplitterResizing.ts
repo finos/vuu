@@ -1,4 +1,4 @@
-import { getUniqueId } from "@finos/vuu-utils";
+import { getUniqueId } from "@vuu-ui/vuu-utils";
 import React, { ReactElement, useCallback, useMemo, useRef } from "react";
 import { Placeholder } from "../placeholder";
 import { Splitter } from "./Splitter";

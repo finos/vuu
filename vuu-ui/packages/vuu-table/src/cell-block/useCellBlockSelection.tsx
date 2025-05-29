@@ -1,4 +1,4 @@
-import { isArrowKey, queryClosest } from "@finos/vuu-utils";
+import { isArrowKey, queryClosest } from "@vuu-ui/vuu-utils";
 import {
   KeyboardEventHandler,
   MouseEventHandler,

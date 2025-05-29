@@ -2,13 +2,13 @@ import {
   getElementByDataIndex,
   getElementDataIndex,
   queryClosest,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 
 const QUERY_ADD_BUTTON = '.saltButton:has([aria-label="Add filter"])';
 
 export const navigateToNextItem = (
   el: HTMLElement | EventTarget,
-  direction: "bwd" | "fwd" = "fwd"
+  direction: "bwd" | "fwd" = "fwd",
 ) => {
   const pill = queryClosest(el, ".vuuFilterPill");
   if (pill) {
@@ -23,7 +23,7 @@ export const navigateToNextItem = (
       } else if (direction === "fwd") {
         const filterBar = queryClosest(el, ".vuuFilterBar");
         const addButton = filterBar?.querySelector(
-          QUERY_ADD_BUTTON
+          QUERY_ADD_BUTTON,
         ) as HTMLElement;
         addButton?.focus();
       }
@@ -33,7 +33,7 @@ export const navigateToNextItem = (
     if (button) {
       const filterBar = queryClosest(el, ".vuuFilterBar");
       const target = filterBar?.querySelector(
-        ".vuuFilterPill:last-child"
+        ".vuuFilterPill:last-child",
       ) as HTMLElement;
       target?.focus();
     }

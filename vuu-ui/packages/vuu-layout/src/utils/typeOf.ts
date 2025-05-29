@@ -1,4 +1,4 @@
-import { LayoutJSON, LayoutModel, WithType } from "@finos/vuu-utils";
+import { LayoutJSON, LayoutModel, WithType } from "@vuu-ui/vuu-utils";
 import { ReactElement } from "react";
 
 export function typeOf(element?: LayoutModel | WithType): string | undefined {

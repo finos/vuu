@@ -1,4 +1,4 @@
-import { Portal } from "@finos/vuu-popups";
+import { Portal } from "@vuu-ui/vuu-popups";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { forwardRef } from "react";

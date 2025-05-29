@@ -1,5 +1,5 @@
-import { FilterClause, FilterClauseOp } from "@finos/vuu-filter-types";
-import { hasOpenOptionList } from "@finos/vuu-utils";
+import { FilterClause, FilterClauseOp } from "@vuu-ui/vuu-filter-types";
+import { hasOpenOptionList } from "@vuu-ui/vuu-utils";
 import {
   KeyboardEvent,
   RefCallback,

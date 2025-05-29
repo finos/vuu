@@ -1,4 +1,4 @@
-import { registerComponent, useId } from "@finos/vuu-utils";
+import { registerComponent, useId } from "@vuu-ui/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";

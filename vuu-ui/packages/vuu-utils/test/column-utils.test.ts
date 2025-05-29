@@ -1,7 +1,7 @@
 //Testing for issue #639
 import { describe, expect, it } from "vitest";
 import { applyWidthToColumns } from "../src/column-utils";
-import type { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
+import type { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { getColumnsInViewport } from "../src/column-utils";
 
 describe("applyWidthToColumns", () => {

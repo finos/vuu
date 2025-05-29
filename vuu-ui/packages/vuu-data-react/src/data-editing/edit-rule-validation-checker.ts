@@ -5,9 +5,9 @@ import type {
   EditPhase,
   EditRuleValidationSuccessResult,
   EditValidationRule,
-} from "@finos/vuu-data-types";
-import type { VuuRowDataItemType } from "@finos/vuu-protocol-types";
-import { getEditRuleValidator, isTypeDescriptor } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-data-types";
+import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
+import { getEditRuleValidator, isTypeDescriptor } from "@vuu-ui/vuu-utils";
 
 export const OK: EditRuleValidationSuccessResult = { ok: true };
 

@@ -1,13 +1,13 @@
 /* eslint-disable no-sequences */
-import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
-import { Filter } from "@finos/vuu-filter-types";
-import { removeColumnFromFilter } from "@finos/vuu-utils";
-import { VuuFilter } from "@finos/vuu-protocol-types";
+import { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { Filter } from "@vuu-ui/vuu-filter-types";
+import { removeColumnFromFilter } from "@vuu-ui/vuu-utils";
+import { VuuFilter } from "@vuu-ui/vuu-protocol-types";
 import {
   DataSource,
   DataSourceFilter,
   MenuActionHandler,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import { PersistentColumnAction } from "../useTableModel";
 import {
   addGroupColumn,
@@ -15,7 +15,7 @@ import {
   AggregationType,
   setAggregations,
   setSortColumn,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 
 export interface ContextMenuOptions {
   column?: RuntimeColumnDescriptor;

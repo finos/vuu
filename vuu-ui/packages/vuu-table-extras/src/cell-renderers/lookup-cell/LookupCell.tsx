@@ -1,6 +1,6 @@
-import { useLookupValues } from "@finos/vuu-data-react";
-import { TableCellRendererProps } from "@finos/vuu-table-types";
-import { dataAndColumnUnchanged, registerComponent } from "@finos/vuu-utils";
+import { useLookupValues } from "@vuu-ui/vuu-data-react";
+import { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
+import { dataAndColumnUnchanged, registerComponent } from "@vuu-ui/vuu-utils";
 import { memo } from "react";
 
 export const LookupCell = memo(function LookupCell({
@@ -12,8 +12,7 @@ export const LookupCell = memo(function LookupCell({
   const dataValue = row[dataIdx] as string | number;
   const { initialValue: value } = useLookupValues(column, dataValue);
   return <span>{value?.label}</span>;
-},
-dataAndColumnUnchanged);
+}, dataAndColumnUnchanged);
 
 registerComponent("lookup-cell", LookupCell, "cell-renderer", {
   userCanAssign: false,

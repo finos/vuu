@@ -1,13 +1,13 @@
-import { LocalDataSourceProvider, getSchema } from "@finos/vuu-data-test";
-import type { SchemaColumn, TableSchema } from "@finos/vuu-data-types";
-import type { Filter } from "@finos/vuu-filter-types";
+import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
+import type { SchemaColumn, TableSchema } from "@vuu-ui/vuu-data-types";
+import type { Filter } from "@vuu-ui/vuu-filter-types";
 import {
   FilterEditCancelHandler,
   FilterEditor,
   type FilterEditorProps,
   type FilterEditSaveHandler,
-} from "@finos/vuu-filters";
-import type { ColumnDescriptor } from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-filters";
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { useCallback, useMemo } from "react";
 
 const FilterEditorTemplate = ({

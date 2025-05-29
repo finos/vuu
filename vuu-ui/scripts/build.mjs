@@ -80,10 +80,10 @@ export default async function main(customConfig) {
     const entryPoint = isTypeScriptSrc
       ? indexSrcTS
       : isTypeScript
-      ? indexTS
-      : isJavaScript
-      ? indexJS
-      : indexCSS;
+        ? indexTS
+        : isJavaScript
+          ? indexJS
+          : indexCSS;
     const entryPoints = [entryPoint];
     // We may have a top-level css as well as typescript (icons)
     if (hasRootCss && !entryPoint.endsWith(".css")) {
@@ -124,7 +124,7 @@ export default async function main(customConfig) {
         const filesToPublish = isTypeLib
           ? [indexDTS]
           : filesFromPackageJson.filter(
-              (fileName) => !GeneratedFiles.test(fileName)
+              (fileName) => !GeneratedFiles.test(fileName),
             );
         files = filesToPublish.concat(files);
         if (filesToPublish.length) {
@@ -177,7 +177,7 @@ export default async function main(customConfig) {
 
       if (debug) {
         updateVersionAndDependencies(newPackage, {
-          pattern: /^@finos\/vuu/,
+          pattern: /^@vuu-ui\/vuu/,
           suffix: "-debug",
         });
       }
@@ -191,7 +191,7 @@ export default async function main(customConfig) {
           } else {
             resolve();
           }
-        }
+        },
       );
     });
   }
@@ -206,7 +206,7 @@ export default async function main(customConfig) {
             err,
           });
         }
-      }
+      },
     );
   }
 
@@ -220,7 +220,7 @@ export default async function main(customConfig) {
             err,
           });
         }
-      }
+      },
     );
   }
 
@@ -232,7 +232,7 @@ export default async function main(customConfig) {
     fs.renameSync(`${outdir}/esm/index.css`, path.resolve(outdir, "index.css"));
     fs.renameSync(
       `${outdir}/esm/index.css.map`,
-      path.resolve(outdir, "index.css.map")
+      path.resolve(outdir, "index.css.map"),
     );
     // copy any font files
   }
@@ -255,7 +255,7 @@ export default async function main(customConfig) {
           ...buildConfig,
           format: "cjs",
           outdir: `${outdir}/cjs`,
-        })
+        }),
       );
     }
   }
@@ -306,8 +306,8 @@ export default async function main(customConfig) {
       } else {
         console.log(
           `\tesm/index.js:  ${formatBytes(jsOut.bytes)} (${formatDuration(
-            esmOutput.duration
-          )})`
+            esmOutput.duration,
+          )})`,
         );
       }
     }
@@ -320,8 +320,8 @@ export default async function main(customConfig) {
       if (jsOut) {
         console.log(
           `\tcjs/index.js:  ${formatBytes(jsOut.bytes)} (${formatDuration(
-            cjsOutput.duration
-          )})`
+            cjsOutput.duration,
+          )})`,
         );
       }
     }

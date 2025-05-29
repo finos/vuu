@@ -1,5 +1,5 @@
-import { ThemeSwitch } from "@finos/vuu-shell";
-import { ThemeMode } from "@finos/vuu-utils";
+import { ThemeSwitch } from "@vuu-ui/vuu-shell";
+import { ThemeMode } from "@vuu-ui/vuu-utils";
 import { useCallback, useState } from "react";
 
 export const DefaultThemeSwitch = () => {

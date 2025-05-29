@@ -1,7 +1,7 @@
 import {
   authenticate as vuuAuthenticate,
   ConnectionManager,
-} from "@finos/vuu-data-remote";
+} from "@vuu-ui/vuu-data-remote";
 import { useEffect, useState } from "react";
 
 export const useAutoLoginToVuuServer = ({

@@ -2,7 +2,7 @@ import ftse from "./ftse100";
 import nasdaq from "./nasdaq100";
 import sp500 from "./sp500";
 import hsi from "./hsi";
-import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 
 const basketConstituentData = [];
 for (const row of ftse) {

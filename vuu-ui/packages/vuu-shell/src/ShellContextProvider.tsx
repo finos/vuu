@@ -1,4 +1,4 @@
-import { ShellContext, ShellContextProps } from "@finos/vuu-utils";
+import { ShellContext, ShellContextProps } from "@vuu-ui/vuu-utils";
 import { ReactElement, ReactNode } from "react";
 
 export interface ShellProviderProps {

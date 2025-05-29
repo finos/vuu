@@ -1,10 +1,10 @@
-import { isValidNumber, MEASURES, orientationType } from "@finos/vuu-utils";
+import { isValidNumber, MEASURES, orientationType } from "@vuu-ui/vuu-utils";
 import { CSSProperties, RefObject, useCallback, useMemo, useRef } from "react";
 
 export const useAnimatedSelectionThumb = (
   containerRef: RefObject<HTMLElement>,
   activeTabIndex: number,
-  orientation: orientationType = "horizontal"
+  orientation: orientationType = "horizontal",
 ) => {
   const animationSuspendedRef = useRef(false);
   const suspendAnimation = useCallback(() => {
@@ -27,7 +27,7 @@ export const useAnimatedSelectionThumb = (
       const oldSelected =
         containerRef.current?.querySelector(".vuuTab-selected");
       const newSelected = containerRef.current?.querySelector(
-        `[data-index="${activeTabIndex}"] .vuuTab`
+        `[data-index="${activeTabIndex}"] .vuuTab`,
       );
       const { positionProp, sizeProp } = MEASURES[orientation];
       if (oldSelected && newSelected && !animationSuspendedRef.current) {
@@ -47,16 +47,16 @@ export const useAnimatedSelectionThumb = (
           requestAnimationFrame(() => {
             containerRef.current?.style.setProperty(
               "--tab-thumb-offset",
-              "0px"
+              "0px",
             );
             containerRef.current?.style.setProperty("--tab-thumb-size", "100%");
             containerRef.current?.style.setProperty(
               "--tab-thumb-transition",
-              `all ${duration}s ease`
+              `all ${duration}s ease`,
             );
             containerRef.current?.addEventListener(
               "transitionend",
-              onTransitionEnd
+              onTransitionEnd,
             );
           });
         }

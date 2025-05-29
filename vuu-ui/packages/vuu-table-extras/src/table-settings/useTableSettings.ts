@@ -1,10 +1,10 @@
-import { SchemaColumn } from "@finos/vuu-data-types";
-import { updateTableConfig } from "@finos/vuu-table";
+import { SchemaColumn } from "@vuu-ui/vuu-data-types";
+import { updateTableConfig } from "@vuu-ui/vuu-table";
 import {
   ColumnDescriptor,
   TableConfig,
   TableSettingsProps,
-} from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-table-types";
 import {
   addColumnToSubscribedColumns,
   queryClosest,
@@ -13,7 +13,7 @@ import {
   subscribedOnly,
   useLayoutEffectSkipFirst,
   CommitHandler,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import {
   MouseEvent,
   SyntheticEvent,

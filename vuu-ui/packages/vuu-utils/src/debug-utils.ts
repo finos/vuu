@@ -1,4 +1,4 @@
-import { VuuRange } from "@finos/vuu-protocol-types";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import { logger } from "./logging-utils";
 
 const { debug, debugEnabled } = logger("range-monitor");
@@ -22,7 +22,7 @@ export class RangeMonitor {
         debug(
           `<${this.source}> [${from}-${to}], ${(
             this.timestamp - timestamp
-          ).toFixed(0)} ms elapsed`
+          ).toFixed(0)} ms elapsed`,
         );
     } else {
       return 0;

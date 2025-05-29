@@ -1,13 +1,13 @@
-import { Flexbox, LayoutProvider, View } from "@finos/vuu-layout";
-import { ContextPanel } from "@finos/vuu-shell";
-import { Table } from "@finos/vuu-table";
-import { registerComponent } from "@finos/vuu-utils";
+import { Flexbox, LayoutProvider, View } from "@vuu-ui/vuu-layout";
+import { ContextPanel } from "@vuu-ui/vuu-shell";
+import { Table } from "@vuu-ui/vuu-table";
+import { registerComponent } from "@vuu-ui/vuu-utils";
 import { ReactElement } from "react";
 
 import {
   ColumnSettingsPanel,
   TableSettingsPanel,
-} from "@finos/vuu-table-extras";
+} from "@vuu-ui/vuu-table-extras";
 
 if (
   typeof ColumnSettingsPanel !== "function" ||

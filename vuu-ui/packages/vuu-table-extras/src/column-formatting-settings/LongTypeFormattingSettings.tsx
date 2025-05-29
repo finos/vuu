@@ -7,10 +7,10 @@ import {
 } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { isDateTimeDataValue, isTypeDescriptor } from "@finos/vuu-utils";
+import { isDateTimeDataValue, isTypeDescriptor } from "@vuu-ui/vuu-utils";
 import { DateTimeFormattingSettings } from "./DateTimeFormattingSettings";
 import { BaseNumericFormattingSettings } from "./BaseNumericFormattingSettings";
-import { FormattingSettingsProps } from "@finos/vuu-table-types";
+import { FormattingSettingsProps } from "@vuu-ui/vuu-table-types";
 
 import longTypeFormattingSettingsCss from "./LongTypeFormattingSettings.css";
 

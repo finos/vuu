@@ -2,7 +2,7 @@ import {
   LayoutJSON,
   LayoutMetadata,
   SystemLayoutMetadata,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes } from "react";

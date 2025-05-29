@@ -1,9 +1,9 @@
-import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
-import { VuuGroupBy } from "@finos/vuu-protocol-types";
+import { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { VuuGroupBy } from "@vuu-ui/vuu-protocol-types";
 
 export function addGroupColumn(
   groupBy: VuuGroupBy,
-  column: RuntimeColumnDescriptor
+  column: RuntimeColumnDescriptor,
 ) {
   if (groupBy) {
     return groupBy.concat(column.name);

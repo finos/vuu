@@ -1,5 +1,5 @@
-import { ContextMenuProvider } from "@finos/vuu-popups";
-import { MenuActionHandler } from "@finos/vuu-data-types";
+import { ContextMenuProvider } from "@vuu-ui/vuu-popups";
+import { MenuActionHandler } from "@vuu-ui/vuu-data-types";
 import { ThemedPanel } from "./components/ThemedPanel";
 
 import "./ThemeProvider.examples.css";

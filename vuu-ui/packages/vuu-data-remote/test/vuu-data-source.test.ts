@@ -7,8 +7,11 @@ import {
   ServerAPI,
   WithBaseFilter,
   WithFullConfig,
-} from "@finos/vuu-data-types";
-import { LinkDescriptorWithLabel, VuuSortCol } from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-data-types";
+import {
+  LinkDescriptorWithLabel,
+  VuuSortCol,
+} from "@vuu-ui/vuu-protocol-types";
 import { VuuDataSource } from "../src/VuuDataSource";
 import ConnectionManager from "../src/ConnectionManager";
 

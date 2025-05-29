@@ -1,19 +1,19 @@
-import { ArrayDataSource } from "@finos/vuu-data-local";
+import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
 import {
   ContextMenuItemDescriptor,
   DataSource,
   MenuActionHandler,
   MenuBuilder,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import {
   ContextMenuProvider,
   MenuActionClosePopup,
   useContextMenu,
   useDialog,
-} from "@finos/vuu-popups";
-import { VuuColumnDataType } from "@finos/vuu-protocol-types";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { SessionEditingForm } from "@finos/vuu-data-react";
+} from "@vuu-ui/vuu-popups";
+import { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { SessionEditingForm } from "@vuu-ui/vuu-data-react";
 import { HTMLAttributes, MouseEventHandler, useMemo } from "react";
 
 const openFile: ActionWithParams = {

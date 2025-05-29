@@ -1,5 +1,5 @@
 import { ButtonProps, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
-import { Icon } from "@finos/vuu-ui-controls";
+import { Icon } from "@vuu-ui/vuu-ui-controls";
 import { SyntheticEvent, useState } from "react";
 
 import "./ToggleButton.examples.css";

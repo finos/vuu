@@ -2,12 +2,12 @@ import {
   ContextMenuItemDescriptor,
   MenuActionHandler,
   MenuBuilder,
-} from "@finos/vuu-data-types";
-import { Filter, FilterState, NamedFilter } from "@finos/vuu-filter-types";
-import { FilterBarProps } from "@finos/vuu-filters";
-import { useViewContext } from "@finos/vuu-layout";
-import { useWorkspace } from "@finos/vuu-shell";
-import { FilterTableFeatureProps } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-data-types";
+import { Filter, FilterState, NamedFilter } from "@vuu-ui/vuu-filter-types";
+import { FilterBarProps } from "@vuu-ui/vuu-filters";
+import { useViewContext } from "@vuu-ui/vuu-layout";
+import { useWorkspace } from "@vuu-ui/vuu-shell";
+import { FilterTableFeatureProps } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 
 const NO_CONFIG: FilterBarConfig = {};
@@ -64,14 +64,14 @@ export const usePersistFilterState = ({
         saveApplicationSettings(newSavedFilters, "filters");
       }
     },
-    [getApplicationSettings, saveApplicationSettings, tableSchema]
+    [getApplicationSettings, saveApplicationSettings, tableSchema],
   );
 
   const saveFilterToSettings = useCallback(
     (filter: Filter, name?: string) => {
       if (tableSchema && name) {
         const savedFilters = getApplicationSettings(
-          "filters"
+          "filters",
         ) as SavedFilterMap;
         let newFilters = savedFilters;
         const { module, table } = tableSchema.table;
@@ -82,7 +82,7 @@ export const usePersistFilterState = ({
               newFilters = {
                 ...savedFilters,
                 [key]: savedFilters[key].map((f) =>
-                  f.name === name ? { ...filter, name } : f
+                  f.name === name ? { ...filter, name } : f,
                 ),
               };
             } else if (
@@ -93,7 +93,7 @@ export const usePersistFilterState = ({
               newFilters = {
                 ...savedFilters,
                 [key]: savedFilters[key].map((f) =>
-                  f.name === filter.name ? { ...filter, name } : f
+                  f.name === filter.name ? { ...filter, name } : f,
                 ),
               };
             } else {
@@ -118,7 +118,7 @@ export const usePersistFilterState = ({
         }
       }
     },
-    [getApplicationSettings, saveApplicationSettings, tableSchema]
+    [getApplicationSettings, saveApplicationSettings, tableSchema],
   );
 
   const handleFilterStateChanged = useCallback(
@@ -126,21 +126,21 @@ export const usePersistFilterState = ({
       save?.({ filterState }, "filterbar-config");
       setFilterState(filterState);
     },
-    [save]
+    [save],
   );
 
   const handleFilterDeleted = useCallback(
     (filter: Filter) => {
       removeFilterFromSettings(filter);
     },
-    [removeFilterFromSettings]
+    [removeFilterFromSettings],
   );
 
   const handleFilterRenamed = useCallback(
     (filter: Filter, name: string) => {
       saveFilterToSettings(filter, name);
     },
-    [saveFilterToSettings]
+    [saveFilterToSettings],
   );
 
   const buildFilterTableMenuOptions = useCallback<MenuBuilder>(
@@ -164,7 +164,7 @@ export const usePersistFilterState = ({
         return [];
       }
     },
-    [savedFilters]
+    [savedFilters],
   );
 
   const handleFilterTableMenuAction = useCallback<MenuActionHandler>(
@@ -181,7 +181,7 @@ export const usePersistFilterState = ({
       console.log(menuId, options);
       // return false;
     },
-    []
+    [],
   );
 
   return {

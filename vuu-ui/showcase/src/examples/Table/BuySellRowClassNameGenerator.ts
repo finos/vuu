@@ -1,6 +1,6 @@
-import { DataSourceRow } from "@finos/vuu-data-types";
-import { ColumnMap, RowClassGenerator } from "@finos/vuu-utils";
-import { registerComponent } from "@finos/vuu-utils";
+import { DataSourceRow } from "@vuu-ui/vuu-data-types";
+import { ColumnMap, RowClassGenerator } from "@vuu-ui/vuu-utils";
+import { registerComponent } from "@vuu-ui/vuu-utils";
 
 import "./buy-sell.css";
 

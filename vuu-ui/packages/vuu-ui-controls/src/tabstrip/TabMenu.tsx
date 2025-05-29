@@ -2,8 +2,8 @@ import {
   ContextMenuItemDescriptor,
   MenuActionHandler,
   MenuBuilder,
-} from "@finos/vuu-data-types";
-import { PopupMenu } from "@finos/vuu-popups";
+} from "@vuu-ui/vuu-data-types";
+import { PopupMenu } from "@vuu-ui/vuu-popups";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
@@ -72,7 +72,7 @@ export const TabMenu = ({
       controlledComponentId,
       controlledComponentTitle,
       index,
-    ]
+    ],
   );
 
   return (

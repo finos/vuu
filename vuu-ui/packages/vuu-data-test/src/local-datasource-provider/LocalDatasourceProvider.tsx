@@ -2,7 +2,7 @@ import type {
   DataSourceConfig,
   DataSourceConstructorProps,
   ServerAPI,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import type {
   VuuCreateVisualLink,
   VuuRemoveVisualLink,
@@ -10,11 +10,11 @@ import type {
   VuuRpcServiceRequest,
   VuuRpcViewportRequest,
   VuuTable,
-} from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-protocol-types";
 import { basketModule, basketSchemas, isBasketTable } from "../basket";
 import { isSimulTable, simulModule, simulSchemas } from "../simul";
 import { ReactNode } from "react";
-import { DataSourceProvider } from "@finos/vuu-utils";
+import { DataSourceProvider } from "@vuu-ui/vuu-utils";
 
 const serverAPI: Pick<
   ServerAPI,

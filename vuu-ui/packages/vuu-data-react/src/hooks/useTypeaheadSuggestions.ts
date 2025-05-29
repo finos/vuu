@@ -1,9 +1,9 @@
-import { SuggestionFetcher, TableSchemaTable } from "@finos/vuu-data-types";
+import { SuggestionFetcher, TableSchemaTable } from "@vuu-ui/vuu-data-types";
 import {
   VuuRpcServiceRequest,
   TypeaheadParams,
-} from "@finos/vuu-protocol-types";
-import { useDataSource } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-protocol-types";
+import { useDataSource } from "@vuu-ui/vuu-utils";
 import { useCallback } from "react";
 
 export const getTypeaheadParams = (

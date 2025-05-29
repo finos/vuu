@@ -4,7 +4,7 @@ import {
   rect,
   rectTuple,
   uuid,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import React, { CSSProperties, ReactElement, ReactNode } from "react";
 import { DropPos } from "../drag-drop/dragDropTypes";
 import { getProps, resetPath } from "../utils";
@@ -46,7 +46,7 @@ const isPercentageSize = (value: string | number) =>
   typeof value === "string" && value.endsWith("%");
 
 export const getIntrinsicSize = (
-  component: ReactElement
+  component: ReactElement,
 ): { height?: number; width?: number } | undefined => {
   const { style: { width = auto, height = auto } = NO_STYLE } = component.props;
 
@@ -67,7 +67,7 @@ export const getIntrinsicSize = (
 export function getFlexStyle(
   component: ReactElement,
   dimension: dimension,
-  pos?: DropPos
+  pos?: DropPos,
 ) {
   const crossDimension = CROSS_DIMENSION[dimension];
   const {
@@ -112,7 +112,7 @@ export function hasUnboundedFlexStyle(component: ReactElement) {
 export function getFlexOrIntrinsicStyle(
   component: ReactElement,
   dimension: dimension,
-  pos: position
+  pos: position,
 ) {
   const crossDimension = CROSS_DIMENSION[dimension];
   const {
@@ -161,7 +161,7 @@ export function wrapIntrinsicSizeComponentWithFlexbox(
   flexDirection: flexDirection,
   path: string,
   clientRect?: rect,
-  dropRect?: rectTuple
+  dropRect?: rectTuple,
 ) {
   const wrappedChildren = [];
   let pathIndex = 0;
@@ -180,7 +180,7 @@ export function wrapIntrinsicSizeComponentWithFlexbox(
         createPlaceHolder(`${path}.${pathIndex++}`, startPlaceholder, {
           flexGrow: 0,
           flexShrink: 0,
-        })
+        }),
       );
     }
   } else {
@@ -198,14 +198,14 @@ export function wrapIntrinsicSizeComponentWithFlexbox(
         flexGrow: 0,
         flexShrink: 0,
       },
-    })
+    }),
   );
 
   if (endPlaceholder) {
     wrappedChildren.push(
       createPlaceHolder(`${path}.${pathIndex++}`, 0, undefined, {
         [`data-${flexDirection}-placeholder`]: true,
-      })
+      }),
     );
   }
 
@@ -213,13 +213,13 @@ export function wrapIntrinsicSizeComponentWithFlexbox(
     flexDirection,
     { resizeable: false, style: { flexBasis: "auto" } },
     wrappedChildren,
-    path
+    path,
   );
 }
 
 const getFlexValue = (
   flexBasis: number,
-  flexFill: boolean
+  flexFill: boolean,
 ): number | undefined => {
   if (flexFill) {
     return undefined;
@@ -232,7 +232,7 @@ export function createFlexbox(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   props: any,
   children: ReactNode,
-  path: string
+  path: string,
 ) {
   const id = uuid();
   const { flexFill, style, resizeable = true } = props;
@@ -256,7 +256,7 @@ export function createFlexbox(
       },
       resizeable,
     },
-    children
+    children,
   );
 }
 
@@ -267,7 +267,7 @@ export function createPlaceHolder(
   size: number,
   style?: CSSProperties,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  props?: any
+  props?: any,
 ) {
   const id = uuid();
   return React.createElement("div", {

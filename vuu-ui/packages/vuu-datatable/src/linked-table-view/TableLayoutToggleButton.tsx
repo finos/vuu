@@ -1,4 +1,4 @@
-import { Icon } from "@finos/vuu-ui-controls";
+import { Icon } from "@vuu-ui/vuu-ui-controls";
 import {
   ToggleButton,
   ToggleButtonGroup,

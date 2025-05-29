@@ -1,5 +1,5 @@
-import { VuuRange } from "@finos/vuu-protocol-types";
-import { PageKey, queryClosest } from "@finos/vuu-utils";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
+import { PageKey, queryClosest } from "@vuu-ui/vuu-utils";
 import { useControlled } from "@salt-ds/core";
 import {
   KeyboardEvent,
@@ -23,7 +23,7 @@ import {
 } from "./table-dom-utils";
 import { ScrollRequestHandler } from "./useTableScroll";
 import { FocusCell } from "./useCellFocus";
-import { CellPos } from "@finos/vuu-table-types";
+import { CellPos } from "@vuu-ui/vuu-table-types";
 import { CellFocusState } from "./CellFocusState";
 
 const rowNavigationKeys = new Set<NavigationKey>([

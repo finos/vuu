@@ -3,7 +3,7 @@ import type {
   ColumnDef as TanstackColumnDef,
   RowData as TanstackRowData,
 } from "@tanstack/react-table";
-import { VuuRange } from "@finos/vuu-protocol-types";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 export type TableColumnDef<T extends TanstackRowData> = TanstackColumnDef<T> & {
   align?: CSSProperties["textAlign"];
   style?: CSSProperties;

@@ -1,4 +1,4 @@
-import { getElementByDataIndex, orientationType } from "@finos/vuu-utils";
+import { getElementByDataIndex, orientationType } from "@vuu-ui/vuu-utils";
 
 const NON_WRAPPED_ITEM = ".vuuOverflowContainer-item:not(.wrapped)";
 
@@ -44,14 +44,14 @@ export const NO_WRAPPED_ITEMS: OverflowItem[] = [];
  */
 export const getNonWrappedAndWrappedItems = (
   container: HTMLElement,
-  orientation: orientationType
+  orientation: orientationType,
 ): [OverflowItem[], OverflowItem[]] => {
   const nonWrappedItems: OverflowItem[] = [];
   const wrappedItems: OverflowItem[] = [];
   let currentPosition = -1;
   let overflowed = false;
   const sortedChildren = sortByScreenOrder(
-    Array.from(container.children) as HTMLElement[]
+    Array.from(container.children) as HTMLElement[],
   );
   const positionAttribute = orientation === "vertical" ? "top" : "left";
   for (const child of sortedChildren) {
@@ -80,7 +80,7 @@ export const getNonWrappedAndWrappedItems = (
 export const applyOverflowClassToWrappedItems = (
   container: HTMLElement,
   overflowedItems: OverflowItem[],
-  classBase?: string
+  classBase?: string,
 ) => {
   let ignoreOverflow = false;
   const className = classBase ? `${classBase}-overflowed` : "overflow";
@@ -116,7 +116,7 @@ const minPriority = (priority: number, { overflowPriority }: OverflowItem) =>
   Math.min(priority, parseInt(overflowPriority));
 
 export const overflowIndicatorHasWrappedButShouldNotHave = (
-  wrappedItems: OverflowItem[]
+  wrappedItems: OverflowItem[],
 ) => wrappedItems.length > 1 && wrappedItems.at(-1)?.index === "overflow";
 
 const getHighestPriorityItem = (overflowItems: OverflowItem[]) => {
@@ -135,11 +135,11 @@ const getHighestPriorityItem = (overflowItems: OverflowItem[]) => {
 
 export const highPriorityItemsHaveWrappedButShouldNotHave = (
   nonWrappedItems: OverflowItem[],
-  wrappedItems: OverflowItem[]
+  wrappedItems: OverflowItem[],
 ) => {
   const minNonwrappedPriority = nonWrappedItems.reduce<number>(
     minPriority,
-    Number.MAX_SAFE_INTEGER
+    Number.MAX_SAFE_INTEGER,
   );
   const maxwrappedPriority = wrappedItems.reduce<number>(maxPriority, 0);
   if (maxwrappedPriority > minNonwrappedPriority) {
@@ -158,7 +158,7 @@ export const highPriorityItemsHaveWrappedButShouldNotHave = (
 export const correctForWrappedOverflowIndicator = (
   container: HTMLElement,
   overflowedItems: OverflowItem[],
-  orientation: orientationType
+  orientation: orientationType,
 ): Promise<OverflowItem[]> =>
   new Promise((resolve) => {
     requestAnimationFrame(() => {
@@ -179,7 +179,7 @@ export const correctForWrappedHighPriorityItems = (
   container: HTMLElement,
   nonWrapped: OverflowItem[],
   wrapped: OverflowItem[],
-  orientation: orientationType
+  orientation: orientationType,
 ): Promise<[OverflowItem[], OverflowItem[]]> =>
   new Promise((resolve) => {
     requestAnimationFrame(() => {
@@ -189,7 +189,7 @@ export const correctForWrappedHighPriorityItems = (
         const [nonWrappedItems, wrappedItems] = switchWrappedItemIntoView(
           container,
           highPriorityWrappedItem,
-          orientation
+          orientation,
         );
         resolve([nonWrappedItems, wrappedItems]);
       } else {
@@ -200,14 +200,14 @@ export const correctForWrappedHighPriorityItems = (
 
 export const markElementAsWrapped = (
   container: HTMLElement,
-  item: OverflowItem
+  item: OverflowItem,
 ) => {
   const el = getElementByDataIndex(container, item.index);
   if (el) {
     el.classList.add("wrapped");
   } else {
     throw Error(
-      `markElementAsWrapped element item with index ${item.index} not found`
+      `markElementAsWrapped element item with index ${item.index} not found`,
     );
   }
 };
@@ -227,7 +227,7 @@ const getNewItems = (items1: OverflowItem[], items2: OverflowItem[]) => {
 
 export const unmarkItemsWhichAreNoLongerWrapped = (
   container: HTMLElement,
-  wrappedItems: OverflowItem[]
+  wrappedItems: OverflowItem[],
 ) => {
   const elementssMarkedAsWrapped = getElementsMarkedAsWrapped(container);
   elementssMarkedAsWrapped.forEach((el) => {
@@ -259,19 +259,19 @@ const getElementSize = (el: HTMLElement, sizeProperty: "width" | "height") => {
 const getAvailableSpace = (
   container: HTMLElement,
   overflowIndicator: HTMLElement,
-  orientation: orientationType
+  orientation: orientationType,
 ) => {
   if (orientation === "horizontal") {
     const { right: containerRight } = container.getBoundingClientRect();
     const paddingRight = parseInt(
-      getComputedStyle(container).getPropertyValue("padding-right")
+      getComputedStyle(container).getPropertyValue("padding-right"),
     );
     const { right: indicatorRight } = overflowIndicator.getBoundingClientRect();
     return containerRight - paddingRight - indicatorRight;
   } else {
     const { bottom: containerBottom } = container.getBoundingClientRect();
     const paddingBottom = parseInt(
-      getComputedStyle(container).getPropertyValue("padding-bottom")
+      getComputedStyle(container).getPropertyValue("padding-bottom"),
     );
     const { bottom: indicatorBottom } =
       overflowIndicator.getBoundingClientRect();
@@ -286,14 +286,14 @@ const getAvailableSpace = (
  */
 export const removeOverflowIndicatorIfNoLongerNeeded = (
   container: HTMLElement,
-  orientation: orientationType
+  orientation: orientationType,
 ): boolean => {
   const sizeProperty = orientation === "horizontal" ? "width" : "height";
   const overflowIndicator = getOverflowIndicator(container);
   const availableSpace = getAvailableSpace(
     container,
     overflowIndicator,
-    orientation
+    orientation,
   );
   const indicatorWidth = getElementSize(overflowIndicator, sizeProperty);
   const overflowedItem = getOverflowedItem(container);
@@ -326,7 +326,7 @@ const byPriorityDescending = (h1: Element, h2: Element) => {
 
 const getNonwrappedItemsByPriority = (container: HTMLElement) =>
   Array.from(container.querySelectorAll(NON_WRAPPED_ITEM)).sort(
-    byPriorityDescending
+    byPriorityDescending,
   ) as HTMLElement[];
 
 /**
@@ -337,13 +337,13 @@ const getNonwrappedItemsByPriority = (container: HTMLElement) =>
 export const switchWrappedItemIntoView = (
   container: HTMLElement,
   overflowItem: OverflowItem,
-  orientation: orientationType
+  orientation: orientationType,
 ): [OverflowItem[], OverflowItem[]] => {
   const unwrappedItems = getNonwrappedItemsByPriority(container);
   const targetElement = getElementByDataIndex(
     container,
     overflowItem.index,
-    true
+    true,
   );
   let pos = -1;
   let unwrappedItem = unwrappedItems.at(pos) as HTMLElement;
@@ -376,7 +376,7 @@ export const switchWrappedItemIntoView = (
   }
   const [nonWrappedItems, wrappedItems] = getNonWrappedAndWrappedItems(
     container,
-    orientation
+    orientation,
   );
   unmarkItemsWhichAreNoLongerWrapped(container, wrappedItems);
   return [nonWrappedItems, wrappedItems];
@@ -384,7 +384,7 @@ export const switchWrappedItemIntoView = (
 
 const switchWrapOnElements = (
   wrappedElement?: HTMLElement | null,
-  nonWrappedElement?: HTMLElement
+  nonWrappedElement?: HTMLElement,
 ) => {
   if (!wrappedElement || !nonWrappedElement) {
     throw Error("switchWrapOnElements, element undefined");

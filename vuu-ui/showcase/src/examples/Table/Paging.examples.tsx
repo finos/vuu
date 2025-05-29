@@ -1,16 +1,16 @@
-import { useVuuMenuActions } from "@finos/vuu-data-react";
+import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
 import {
   SimulTableName,
   simulModule,
   simulSchemas,
-} from "@finos/vuu-data-test";
-import { ContextMenuProvider } from "@finos/vuu-popups";
-import { Table, TableProps } from "@finos/vuu-table";
-import { ColumnLayout } from "@finos/vuu-table-types";
-import { applyDefaultColumnConfig } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-data-test";
+import { ContextMenuProvider } from "@vuu-ui/vuu-popups";
+import { Table, TableProps } from "@vuu-ui/vuu-table";
+import { ColumnLayout } from "@vuu-ui/vuu-table-types";
+import { applyDefaultColumnConfig } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { DemoTableContainer } from "./DemoTableContainer";
-import { VuuDataSource } from "@finos/vuu-data-remote";
+import { VuuDataSource } from "@vuu-ui/vuu-data-remote";
 import { useAutoLoginToVuuServer } from "../utils";
 
 const SimulTable = ({

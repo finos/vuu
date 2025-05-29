@@ -1,7 +1,7 @@
-import { DataSource, DataSourceRow } from "@finos/vuu-data-types";
-import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
-import { useContextMenu as usePopupContextMenu } from "@finos/vuu-popups";
-import { buildColumnMap } from "@finos/vuu-utils";
+import { DataSource, DataSourceRow } from "@vuu-ui/vuu-data-types";
+import { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { useContextMenu as usePopupContextMenu } from "@vuu-ui/vuu-popups";
+import { buildColumnMap } from "@vuu-ui/vuu-utils";
 import { getAriaColIndex, getAriaRowIndex } from "./table-dom-utils";
 import { MouseEvent, useCallback } from "react";
 

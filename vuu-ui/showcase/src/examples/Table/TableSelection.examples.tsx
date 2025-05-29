@@ -1,8 +1,8 @@
-import { getSchema, LocalDataSourceProvider } from "@finos/vuu-data-test";
-import { SelectionChangeHandler, TableSchema } from "@finos/vuu-data-types";
-import { Table, TableProps } from "@finos/vuu-table";
-import { ColumnLayout, TableConfig } from "@finos/vuu-table-types";
-import { toColumnName, useDataSource } from "@finos/vuu-utils";
+import { getSchema, LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import { SelectionChangeHandler, TableSchema } from "@vuu-ui/vuu-data-types";
+import { Table, TableProps } from "@vuu-ui/vuu-table";
+import { ColumnLayout, TableConfig } from "@vuu-ui/vuu-table-types";
+import { toColumnName, useDataSource } from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
 
 import "./Misc.examples.css";

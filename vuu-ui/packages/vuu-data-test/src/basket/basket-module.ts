@@ -4,8 +4,8 @@ import {
   VuuRowDataItemType,
   VuuRpcViewportAction,
   VuuRpcViewportResponse,
-} from "@finos/vuu-protocol-types";
-import { ColumnMap, isViewportRpcRequest } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-protocol-types";
+import { ColumnMap, isViewportRpcRequest } from "@vuu-ui/vuu-utils";
 import pricesTable from "./reference-data/prices";
 import { joinTables, Table } from "../Table";
 import { BasketsTableName, schemas } from "./basket-schemas";

@@ -1,12 +1,12 @@
 import {
   ConnectionStatus,
   WebSocketConnectionState,
-} from "@finos/vuu-data-remote/src/WebSocketConnection";
+} from "@vuu-ui/vuu-data-remote/src/WebSocketConnection";
 import {
   ConnectionStateDisplay,
   ConnectionStatusIndicator,
-} from "@finos/vuu-shell";
-import { ConnectionManager } from "@finos/vuu-data-remote";
+} from "@vuu-ui/vuu-shell";
+import { ConnectionManager } from "@vuu-ui/vuu-data-remote";
 import { useLayoutEffect, useRef, useState } from "react";
 import { Button } from "@salt-ds/core";
 

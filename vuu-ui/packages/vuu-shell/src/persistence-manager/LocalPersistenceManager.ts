@@ -10,7 +10,7 @@ import {
   LayoutMetadata,
   LayoutMetadataDto,
   WithId,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { getAuthDetailsFromCookies } from "../login";
 import { IPersistenceManager } from "./PersistenceManager";
 const baseMetadataSaveLocation = "layouts/metadata";
@@ -31,7 +31,7 @@ export class LocalPersistenceManager implements IPersistenceManager {
 
   createLayout(
     metadata: LayoutMetadataDto,
-    layout: LayoutJSON
+    layout: LayoutJSON,
   ): Promise<LayoutMetadata> {
     return new Promise((resolve) => {
       Promise.all([this.loadLayouts(), this.loadMetadata()]).then(
@@ -45,10 +45,10 @@ export class LocalPersistenceManager implements IPersistenceManager {
 
           this.saveLayoutsWithMetadata(
             [...existingLayouts, { id, json: layout }],
-            [...existingMetadata, newMetadata]
+            [...existingMetadata, newMetadata],
           );
           resolve(newMetadata);
-        }
+        },
       );
     });
   }
@@ -56,17 +56,17 @@ export class LocalPersistenceManager implements IPersistenceManager {
   updateLayout(
     id: string,
     newMetadata: LayoutMetadataDto,
-    newLayout: LayoutJSON
+    newLayout: LayoutJSON,
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       this.validateIds(id)
         .then(() => Promise.all([this.loadLayouts(), this.loadMetadata()]))
         .then(([existingLayouts, existingMetadata]) => {
           const updatedLayouts = existingLayouts.map((layout) =>
-            layout.id === id ? { ...layout, json: newLayout } : layout
+            layout.id === id ? { ...layout, json: newLayout } : layout,
           );
           const updatedMetadata = existingMetadata.map((metadata) =>
-            metadata.id === id ? { ...metadata, ...newMetadata } : metadata
+            metadata.id === id ? { ...metadata, ...newMetadata } : metadata,
           );
           this.saveLayoutsWithMetadata(updatedLayouts, updatedMetadata);
           resolve();
@@ -82,7 +82,7 @@ export class LocalPersistenceManager implements IPersistenceManager {
         .then(([existingLayouts, existingMetadata]) => {
           const layouts = existingLayouts.filter((layout) => layout.id !== id);
           const metadata = existingMetadata.filter(
-            (metadata) => metadata.id !== id
+            (metadata) => metadata.id !== id,
           );
           this.saveLayoutsWithMetadata(layouts, metadata);
           resolve();
@@ -97,7 +97,7 @@ export class LocalPersistenceManager implements IPersistenceManager {
         .then(() => this.loadLayouts())
         .then((existingLayouts) => {
           const foundLayout = existingLayouts.find(
-            (layout) => layout.id === id
+            (layout) => layout.id === id,
           );
           if (foundLayout) {
             resolve(foundLayout.json);
@@ -112,7 +112,7 @@ export class LocalPersistenceManager implements IPersistenceManager {
   loadMetadata(): Promise<LayoutMetadata[]> {
     return new Promise((resolve) => {
       const metadata = getLocalEntity<LayoutMetadata[]>(
-        this.metadataSaveLocation
+        this.metadataSaveLocation,
       );
       resolve(metadata || []);
     });
@@ -135,7 +135,7 @@ export class LocalPersistenceManager implements IPersistenceManager {
     return new Promise((resolve, reject) => {
       const savedLayout = saveLocalEntity<ApplicationJSON>(
         this.#urlKey,
-        applicationJSON
+        applicationJSON,
       );
       if (savedLayout) {
         this.#applicationJSON = applicationJSON;
@@ -155,7 +155,7 @@ export class LocalPersistenceManager implements IPersistenceManager {
 
   saveLayoutsWithMetadata = (
     layouts: Layout[],
-    metadata: LayoutMetadata[]
+    metadata: LayoutMetadata[],
   ): void => {
     saveLocalEntity<Layout[]>(this.layoutsSaveLocation, layouts);
     saveLocalEntity<LayoutMetadata[]>(this.metadataSaveLocation, metadata);

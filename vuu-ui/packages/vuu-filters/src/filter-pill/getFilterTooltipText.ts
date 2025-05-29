@@ -4,7 +4,7 @@ import {
   FilterClause,
   MultiValueFilterClause,
   SingleValueFilterClause,
-} from "@finos/vuu-filter-types";
+} from "@vuu-ui/vuu-filter-types";
 import {
   filterAsQuery,
   formatDate,
@@ -12,7 +12,7 @@ import {
   isMultiClauseFilter,
   dateTimePattern,
   defaultPatternsByType,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { filterClauses } from "../filter-utils";
 
 function applyFormatter<T>(

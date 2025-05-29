@@ -1,7 +1,7 @@
-import { TableSchema } from "@finos/vuu-data-types";
-import { Stack, StackProps } from "@finos/vuu-layout";
-import { FeatureList, LayoutList } from "@finos/vuu-shell";
-import { GetFeaturePaths, getFilterTableFeatures } from "@finos/vuu-utils";
+import { TableSchema } from "@vuu-ui/vuu-data-types";
+import { Stack, StackProps } from "@vuu-ui/vuu-layout";
+import { FeatureList, LayoutList } from "@vuu-ui/vuu-shell";
+import { GetFeaturePaths, getFilterTableFeatures } from "@vuu-ui/vuu-utils";
 import { useMemo, useState } from "react";
 
 import "./LayoutComponentsPanel.css";
@@ -38,7 +38,7 @@ export const LayoutComponentsPanel = ({
 
   const features = useMemo(
     () => getFilterTableFeatures(tableSchemas, getFeaturePath),
-    [tableSchemas]
+    [tableSchemas],
   );
 
   return (

@@ -3,7 +3,7 @@ import {
   logger,
   usePlaceholderJSON,
   type LayoutJSON,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import {
   useCallback,
   useContext,

@@ -5,7 +5,7 @@ import {
   QueryAction,
 } from "../layout-reducer";
 import { SaveAction } from "../layout-view";
-import { LayoutJSON } from "@finos/vuu-utils";
+import { LayoutJSON } from "@vuu-ui/vuu-utils";
 
 const unconfiguredLayoutProviderDispatch: LayoutProviderDispatch = (action) =>
   console.log(

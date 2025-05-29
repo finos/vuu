@@ -1,12 +1,12 @@
-import { TableConfig } from "@finos/vuu-table-types";
+import { TableConfig } from "@vuu-ui/vuu-table-types";
 import {
   getRowClassNameGenerator,
   RowClassNameGenerator,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
 
 const createClassNameGenerator = (
-  ids?: string[]
+  ids?: string[],
 ): RowClassNameGenerator | undefined => {
   const functions: RowClassNameGenerator[] = [];
   ids?.forEach((id) => {

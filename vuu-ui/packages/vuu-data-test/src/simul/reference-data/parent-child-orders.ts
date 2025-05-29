@@ -1,4 +1,4 @@
-import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { random } from "../../data-utils";
 import { buildDataColumnMap, Table } from "../../Table";
 import { schemas } from "../simul-schemas";

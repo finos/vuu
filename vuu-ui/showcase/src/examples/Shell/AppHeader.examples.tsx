@@ -1,4 +1,4 @@
-import { AppHeader } from "@finos/vuu-shell";
+import { AppHeader } from "@vuu-ui/vuu-shell";
 
 export const DefaultAppHeader = () => {
   return <AppHeader />;

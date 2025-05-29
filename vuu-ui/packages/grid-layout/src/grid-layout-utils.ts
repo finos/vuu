@@ -1,7 +1,7 @@
 import {
   GridLayoutDropPosition,
   GridLayoutSplitDirection,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import {
   GridItemUpdate,
   GridLayoutModelPosition,

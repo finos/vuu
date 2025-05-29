@@ -5,7 +5,7 @@ import {
   getElementDataIndex,
   getFocusableElement,
   orientationType,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import {
   FocusEvent,
   FocusEventHandler,
@@ -24,10 +24,10 @@ import {
   ArrowRight,
   Home,
   End,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { getIndexOfEditedItem } from "./toolbar-dom-utils";
 import { NavigationOutOfBoundsHandler } from "./Toolbar";
-import { PopupCloseCallback } from "@finos/vuu-popups";
+import { PopupCloseCallback } from "@vuu-ui/vuu-popups";
 
 type directionType = "bwd" | "fwd" | "start" | "end";
 type directionMap = { [key: string]: directionType };
@@ -54,7 +54,7 @@ const itemIsNotFocusable = (
   direction: "bwd" | "fwd",
   indexCount: number,
   nextIdx: number,
-  hasOverflowedItem: boolean
+  hasOverflowedItem: boolean,
 ) => {
   if (container) {
     const withinRangeBwd = direction === "bwd" && nextIdx > 0;
@@ -74,7 +74,7 @@ const itemIsNotFocusable = (
 
 const isNavigationKey = (
   key: string,
-  orientation: orientationType = "horizontal"
+  orientation: orientationType = "horizontal",
 ) => navigation[orientation][key] !== undefined;
 
 const isMenuActivationKey = (key: string) => key === ArrowDown;
@@ -121,7 +121,7 @@ const getIndexOfOverflowItem = (container: HTMLElement | null) => {
 const getElementByPosition = (
   container: HTMLElement | null,
   index: number,
-  includeOverflowInd = false
+  includeOverflowInd = false,
 ) => {
   if (container !== null) {
     const targets = getToolbarItems(container);
@@ -158,7 +158,7 @@ interface ToolbarNavigationHookResult {
     itemIndex: number,
     immediateFocus?: boolean,
     withKeyboard?: boolean,
-    delay?: number
+    delay?: number,
   ) => void;
   focusVisible: number;
   focusIsWithinComponent: boolean;
@@ -190,7 +190,7 @@ export const useKeyboardNavigation = ({
     (value: number) => {
       _setHighlightedIdx((focusedRef.current = value));
     },
-    [_setHighlightedIdx]
+    [_setHighlightedIdx],
   );
 
   const keyboardNavigation = useRef(false);
@@ -200,7 +200,7 @@ export const useKeyboardNavigation = ({
       itemIndex: number,
       immediateFocus = false,
       withKeyboard?: boolean,
-      delay = 70
+      delay = 70,
     ) => {
       // The timeout is important in two scenarios:
       // 1) where tab has overflowed and is being selected from overflow menu.
@@ -221,7 +221,7 @@ export const useKeyboardNavigation = ({
         const element = getElementByPosition(
           containerRef.current,
           itemIndex,
-          true
+          true,
         );
         if (element) {
           const focussableElement = getFocusableElement(element);
@@ -234,7 +234,7 @@ export const useKeyboardNavigation = ({
         setTimeout(setFocus, delay);
       }
     },
-    [containerRef, setHighlightedIdx]
+    [containerRef, setHighlightedIdx],
   );
 
   const onFocus = (e: FocusEvent<HTMLElement>) => {
@@ -265,7 +265,7 @@ export const useKeyboardNavigation = ({
 
   const getIndexCount = useCallback(
     () => containerRef.current?.querySelectorAll(`[data-index]`).length ?? 0,
-    [containerRef]
+    [containerRef],
   );
 
   const nextFocusableItemIdx = useCallback(
@@ -279,7 +279,7 @@ export const useKeyboardNavigation = ({
 
       const hasOverflowedItem =
         containerRef.current?.querySelector(
-          ".vuuOverflowContainer-wrapContainer-overflowed"
+          ".vuuOverflowContainer-wrapContainer-overflowed",
         ) != null;
 
       while (
@@ -288,7 +288,7 @@ export const useKeyboardNavigation = ({
           nextDirection,
           indexCount,
           nextIdx,
-          hasOverflowedItem
+          hasOverflowedItem,
         )
       ) {
         const newIdx = nextItemIdx(indexCount, nextDirection, nextIdx);
@@ -302,7 +302,7 @@ export const useKeyboardNavigation = ({
       }
       return nextIdx;
     },
-    [containerRef, getIndexCount]
+    [containerRef, getIndexCount],
   );
 
   const navigateChildItems = useCallback(
@@ -323,7 +323,7 @@ export const useKeyboardNavigation = ({
       highlightedIdx,
       focusItem,
       onNavigateOutOfBounds,
-    ]
+    ],
   );
 
   const highlightedItemHasMenu = useCallback(() => {
@@ -376,7 +376,7 @@ export const useKeyboardNavigation = ({
       highlightedItemInEditState,
       navigateChildItems,
       orientation,
-    ]
+    ],
   );
 
   // TODO, in common hooks, we use mouse movement to track current highlighted
@@ -412,7 +412,7 @@ export const useKeyboardNavigation = ({
         }
       }
     },
-    [containerRef, focusItem]
+    [containerRef, focusItem],
   );
 
   const containerProps = {

@@ -1,4 +1,4 @@
-import type { TreeSourceNode } from "@finos/vuu-utils";
+import type { TreeSourceNode } from "@vuu-ui/vuu-utils";
 
 export type TreeSearchResult = {
   id: string;

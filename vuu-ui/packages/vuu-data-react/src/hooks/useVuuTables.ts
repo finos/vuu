@@ -1,5 +1,5 @@
-import type { TableSchema } from "@finos/vuu-data-types";
-import { useDataSource } from "@finos/vuu-utils";
+import type { TableSchema } from "@vuu-ui/vuu-data-types";
+import { useDataSource } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useState } from "react";
 
 export const useVuuTables = () => {

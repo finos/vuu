@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { NotificationsContext } from "./NotificationsProvider";
-import { getUniqueId } from "@finos/vuu-utils";
+import { getUniqueId } from "@vuu-ui/vuu-utils";
 import { ToastNotification } from "./ToastNotification";
 import { Notification } from "./notificationTypes";
 
@@ -31,9 +31,12 @@ export const NotificationsCenter = ({
         id: getUniqueId(),
       };
       setNotifications((prev) => prev.concat(newNotification));
-      setTimeout(() => {
-        setNotifications((prev) => prev.filter((n) => n !== newNotification));
-      }, toastDisplayDuration + horizontalTransitionDuration * 2);
+      setTimeout(
+        () => {
+          setNotifications((prev) => prev.filter((n) => n !== newNotification));
+        },
+        toastDisplayDuration + horizontalTransitionDuration * 2,
+      );
     });
   }, [notificationsContext]);
 

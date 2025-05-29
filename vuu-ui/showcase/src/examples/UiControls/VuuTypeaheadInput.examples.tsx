@@ -1,8 +1,8 @@
-import { LocalDataSourceProvider } from "@finos/vuu-data-test";
-import { TableSchemaTable } from "@finos/vuu-data-types";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { VuuTypeaheadInput } from "@finos/vuu-ui-controls";
-import { CommitHandler } from "@finos/vuu-utils";
+import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import { TableSchemaTable } from "@vuu-ui/vuu-data-types";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { VuuTypeaheadInput } from "@vuu-ui/vuu-ui-controls";
+import { CommitHandler } from "@vuu-ui/vuu-utils";
 import { CSSProperties } from "react";
 
 const TypeaheadInputTemplate = ({

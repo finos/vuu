@@ -1,4 +1,4 @@
-import { CommitHandler } from "@finos/vuu-utils";
+import { CommitHandler } from "@vuu-ui/vuu-utils";
 import {
   DateValue,
   getLocalTimeZone,

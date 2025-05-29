@@ -1,4 +1,4 @@
-import type { ColumnDescriptor } from "@finos/vuu-table-types";
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import type {
   LinkDescriptorWithLabel,
   VuuAggregation,
@@ -6,7 +6,7 @@ import type {
   VuuRowDataItemType,
   VuuRpcResponse,
   VuuRpcRequest,
-} from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-protocol-types";
 import type {
   DataSourceRow,
   DataSourceConstructorProps,
@@ -18,7 +18,7 @@ import type {
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditResponse,
   DataSourceFilter,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import {
   BaseDataSource,
   getParentRow,
@@ -33,10 +33,10 @@ import {
   TreeSourceNode,
   treeToDataSourceRows,
   uuid,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { IconProvider } from "./IconProvider";
-import { parseFilter } from "@finos/vuu-filter-parser";
-import { FilterClause } from "@finos/vuu-filter-types";
+import { parseFilter } from "@vuu-ui/vuu-filter-parser";
+import { FilterClause } from "@vuu-ui/vuu-filter-types";
 
 const NULL_SCHEMA = { columns: [], key: "", table: { module: "", table: "" } };
 

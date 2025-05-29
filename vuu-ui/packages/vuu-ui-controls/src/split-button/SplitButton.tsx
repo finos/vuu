@@ -1,4 +1,4 @@
-import { PopupMenu, PopupMenuProps } from "@finos/vuu-popups";
+import { PopupMenu, PopupMenuProps } from "@vuu-ui/vuu-popups";
 import { Button, ButtonProps, useForkRef } from "@salt-ds/core";
 import { forwardRef, HTMLAttributes } from "react";
 import { useSplitButton } from "./useSplitButton";
@@ -33,7 +33,7 @@ export const SplitButton = forwardRef<HTMLDivElement, SplitButtonProps>(
       variant = "primary",
       ...htmlAttributes
     },
-    forwardedRef
+    forwardedRef,
   ) {
     const targetWindow = useWindow();
     useComponentCssInjection({
@@ -82,5 +82,5 @@ export const SplitButton = forwardRef<HTMLDivElement, SplitButtonProps>(
         />
       </div>
     );
-  }
+  },
 );

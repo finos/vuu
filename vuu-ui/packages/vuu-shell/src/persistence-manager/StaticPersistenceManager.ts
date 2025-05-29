@@ -3,7 +3,7 @@ import {
   LayoutJSON,
   LayoutMetadata,
   Settings,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { IPersistenceManager } from "./PersistenceManager";
 
 function unsupported<T = void>() {

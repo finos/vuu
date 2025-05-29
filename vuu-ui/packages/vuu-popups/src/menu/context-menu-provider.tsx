@@ -2,7 +2,7 @@ import type {
   ContextMenuContextType,
   MenuActionHandler,
   MenuBuilder,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import { createContext, ReactNode, useCallback, useMemo } from "react";
 
 export const ContextMenuContext = createContext<ContextMenuContextType | null>(

@@ -5,16 +5,16 @@ import type {
   MouseEvent,
   ReactElement,
 } from "react";
-import { orientationType } from "@finos/vuu-utils";
+import { orientationType } from "@vuu-ui/vuu-utils";
 
 import type { EditableLabelProps } from "../editable-label";
-import type { MenuActionHandler } from "@finos/vuu-data-types";
+import type { MenuActionHandler } from "@vuu-ui/vuu-data-types";
 
 export type ExitTabEditModeHandler = (
   originalValue: string,
   editedValue: string,
   allowDeactivation: boolean,
-  tabIndex: number
+  tabIndex: number,
 ) => void;
 
 export interface FocusAPI {
@@ -127,7 +127,7 @@ export type exitEditHandler = (
   originalValue: string,
   editedValue: string,
   allowDeactivation: boolean,
-  tabIndex: number
+  tabIndex: number,
 ) => void;
 
 export interface responsiveDataAttributes {

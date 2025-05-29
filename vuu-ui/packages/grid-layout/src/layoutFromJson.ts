@@ -1,4 +1,4 @@
-import { getLayoutComponent, uuid } from "@finos/vuu-utils";
+import { getLayoutComponent, uuid } from "@vuu-ui/vuu-utils";
 import React, { ReactElement } from "react";
 import { LayoutJSON } from "./componentToJson";
 

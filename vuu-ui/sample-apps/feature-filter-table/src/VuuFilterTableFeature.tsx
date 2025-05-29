@@ -1,8 +1,8 @@
-import { FilterTable } from "@finos/vuu-datatable";
-import { FlexboxLayout } from "@finos/vuu-layout";
-import { ContextMenuProvider } from "@finos/vuu-popups";
-import { DataSourceStats } from "@finos/vuu-table-extras";
-import { FilterTableFeatureProps } from "@finos/vuu-utils";
+import { FilterTable } from "@vuu-ui/vuu-datatable";
+import { FlexboxLayout } from "@vuu-ui/vuu-layout";
+import { ContextMenuProvider } from "@vuu-ui/vuu-popups";
+import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
+import { FilterTableFeatureProps } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { useFilterTableFeature } from "./useFilterTableFeature";
 

@@ -1,6 +1,6 @@
 import { useCallback } from "react";
-import { Filter, FilterState } from "@finos/vuu-filter-types";
-import { useControlled } from "@finos/vuu-ui-controls";
+import { Filter, FilterState } from "@vuu-ui/vuu-filter-types";
+import { useControlled } from "@vuu-ui/vuu-ui-controls";
 
 export interface FiltersHookProps {
   defaultFilterState?: FilterState;
@@ -13,7 +13,7 @@ export interface FiltersHookProps {
 const getActiveIndices = (
   indices: number[],
   toggledIndex: number,
-  preserveExisting: boolean
+  preserveExisting: boolean,
 ) => {
   const isActive = indices.includes(toggledIndex);
   if (isActive) {
@@ -50,7 +50,7 @@ export const useFilterState = ({
       setFilterState(s);
       onFilterStateChanged?.(s);
     },
-    [onFilterStateChanged, setFilterState]
+    [onFilterStateChanged, setFilterState],
   );
 
   const handleAddFilter = useCallback(
@@ -64,7 +64,7 @@ export const useFilterState = ({
       });
       return index;
     },
-    [filterState, handleFilterStateChange]
+    [filterState, handleFilterStateChange],
   );
 
   const handleDeleteFilter = useCallback(
@@ -81,7 +81,7 @@ export const useFilterState = ({
 
       const newIndices = removeIndexAndDecrementLarger(
         filterState.activeIndices,
-        index
+        index,
       );
 
       handleFilterStateChange({
@@ -96,7 +96,7 @@ export const useFilterState = ({
       filterState.activeIndices,
       handleFilterStateChange,
       onFilterDeleted,
-    ]
+    ],
   );
 
   const handleRenameFilter = useCallback(
@@ -115,7 +115,7 @@ export const useFilterState = ({
 
       return index;
     },
-    [filterState, handleFilterStateChange, onFilterRenamed]
+    [filterState, handleFilterStateChange, onFilterRenamed],
   );
 
   const handleChangeFilter = useCallback(
@@ -133,7 +133,7 @@ export const useFilterState = ({
 
       return index;
     },
-    [filterState, handleFilterStateChange]
+    [filterState, handleFilterStateChange],
   );
 
   const handleToggleFilterActive = useCallback(
@@ -143,11 +143,11 @@ export const useFilterState = ({
         activeIndices: getActiveIndices(
           filterState.activeIndices,
           filterIndex,
-          preserveRemainingFilters
+          preserveRemainingFilters,
         ),
       });
     },
-    [filterState, handleFilterStateChange]
+    [filterState, handleFilterStateChange],
   );
 
   return {
@@ -166,7 +166,7 @@ const appendIfNotPresent = (ns: number[], n: number) =>
 
 const removeIndexAndDecrementLarger = (
   indices: number[],
-  idxToRemove: number
+  idxToRemove: number,
 ) => {
   return indices.reduce<number[]>((res, i) => {
     if (i === idxToRemove) return res;

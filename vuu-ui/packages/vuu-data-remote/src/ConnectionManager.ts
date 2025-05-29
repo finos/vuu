@@ -5,7 +5,7 @@ import {
   ServerProxySubscribeMessage,
   TableSchema,
   VuuUIMessageIn,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import {
   VuuCreateVisualLink,
   VuuRemoveVisualLink,
@@ -15,7 +15,7 @@ import {
   VuuTableList,
   VuuTableListRequest,
   VuuTableMetaRequest,
-} from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-protocol-types";
 import {
   DeferredPromise,
   EventEmitter,
@@ -24,7 +24,7 @@ import {
   isTableSchemaMessage,
   messageHasResult,
   uuid,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import {
   WebSocketConnectionEvents,
   WebSocketConnectionState,
@@ -33,7 +33,7 @@ import {
 import { DedicatedWorker } from "./DedicatedWorker";
 import { shouldMessageBeRoutedToDataSource } from "./data-source";
 
-import { ConnectionQualityMetrics } from "@finos/vuu-data-types";
+import { ConnectionQualityMetrics } from "@vuu-ui/vuu-data-types";
 
 export type PostMessageToClientCallback = (
   msg: DataSourceCallbackMessage,

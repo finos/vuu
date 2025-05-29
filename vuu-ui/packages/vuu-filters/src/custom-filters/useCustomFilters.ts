@@ -1,17 +1,17 @@
-import { MenuActionHandler } from "@finos/vuu-data-types";
-import { ColumnDescriptorsByName, Filter } from "@finos/vuu-filter-types";
-import { PromptProps } from "@finos/vuu-popups";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { MenuActionHandler } from "@vuu-ui/vuu-data-types";
+import { ColumnDescriptorsByName, Filter } from "@vuu-ui/vuu-filter-types";
+import { PromptProps } from "@vuu-ui/vuu-popups";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
   EditableLabelProps,
   EditAPI,
   NullEditAPI,
-} from "@finos/vuu-ui-controls";
+} from "@vuu-ui/vuu-ui-controls";
 import {
   filterAsQuery,
   getElementDataIndex,
   queryClosest,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import {
   KeyboardEventHandler,
   MouseEventHandler,
@@ -35,7 +35,7 @@ import { useFilterState } from "./useFilterState";
 export type EditFilterState = "create" | "edit";
 export type FilterState = EditFilterState | "rename";
 export const isEditFilterState = (
-  filterState?: string
+  filterState?: string,
 ): filterState is EditFilterState =>
   filterState === "edit" || filterState === "create";
 
@@ -78,7 +78,7 @@ export const useCustomFilters = ({
 
   const columnsByName = useMemo(
     () => columnDescriptorsByName(columnDescriptors),
-    [columnDescriptors]
+    [columnDescriptors],
   );
 
   const {
@@ -127,14 +127,14 @@ export const useCustomFilters = ({
     (index = 0) => {
       requestAnimationFrame(() => {
         const target = containerRef.current?.querySelector(
-          `.vuuFilterPill[data-index="${index}"] button`
+          `.vuuFilterPill[data-index="${index}"] button`,
         ) as undefined | HTMLInputElement;
         if (target) {
           target.focus();
         }
       });
     },
-    [containerRef]
+    [containerRef],
   );
 
   const deleteConfirmed = useCallback(
@@ -148,7 +148,7 @@ export const useCustomFilters = ({
         }
       });
     },
-    [filters.length, focusFilterPill, onDeleteFilter]
+    [filters.length, focusFilterPill, onDeleteFilter],
   );
 
   const getDeletePrompt = useMemo(
@@ -171,7 +171,7 @@ export const useCustomFilters = ({
         variant: "warn",
       } as PromptProps;
     },
-    [deleteConfirmed, focusFilterPill]
+    [deleteConfirmed, focusFilterPill],
   );
 
   const deleteFilter = useCallback(
@@ -182,7 +182,7 @@ export const useCustomFilters = ({
         deleteConfirmed(filter);
       }
     },
-    [deleteConfirmed, getDeletePrompt]
+    [deleteConfirmed, getDeletePrompt],
   );
 
   // TODO handle cancel edit name
@@ -201,7 +201,7 @@ export const useCustomFilters = ({
         }
         setInteractedFilterState(undefined);
       },
-      [focusFilterPill, interactedFilterState, onRenameFilter]
+      [focusFilterPill, interactedFilterState, onRenameFilter],
     );
 
   const handlePillMenuAction = useCallback<MenuActionHandler>(
@@ -231,7 +231,7 @@ export const useCustomFilters = ({
           return false;
       }
     },
-    [deleteFilter, editPillLabel, filters]
+    [deleteFilter, editPillLabel, filters],
   );
 
   const handlePillKeyDown = useCallback<KeyboardEventHandler>((e) => {
@@ -251,7 +251,7 @@ export const useCustomFilters = ({
         focusFilterPill(idx);
       }
     },
-    [editPillLabel, focusFilterPill, onAddFilter, onChangeFilter]
+    [editPillLabel, focusFilterPill, onAddFilter, onChangeFilter],
   );
 
   const filterSaveHandler = useCallback<FilterEditSaveHandler>(
@@ -262,13 +262,13 @@ export const useCustomFilters = ({
         addIfNewElseUpdate(filter, existingFilter);
       }
     },
-    [addIfNewElseUpdate, interactedFilterState]
+    [addIfNewElseUpdate, interactedFilterState],
   );
 
   const handlePillClick = useCallback<MouseEventHandler<HTMLButtonElement>>(
     (e) => {
       const isEditing = (e.target as HTMLElement).querySelector(
-        ".vuuEditableLabel-editing"
+        ".vuuEditableLabel-editing",
       );
       if (!isEditing) {
         const pill = queryClosest(e.target, ".vuuFilterPill");
@@ -278,7 +278,7 @@ export const useCustomFilters = ({
         }
       }
     },
-    [onToggleFilterActive]
+    [onToggleFilterActive],
   );
 
   const FilterPillProps: Omit<FilterPillProps, "filter" | "selected"> = {
@@ -335,7 +335,7 @@ export const useCustomFilters = ({
 };
 
 function columnDescriptorsByName(
-  columns: ColumnDescriptor[]
+  columns: ColumnDescriptor[],
 ): ColumnDescriptorsByName {
   return columns.reduce((m, col) => ({ ...m, [col.name]: col }), {});
 }

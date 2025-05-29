@@ -3,8 +3,8 @@ import {
   VuuUIMessageIn,
   VuuUIMessageOut,
   WithRequestId,
-} from "@finos/vuu-data-types";
-import { DeferredPromise, getLoggingConfigForWorker } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-data-types";
+import { DeferredPromise, getLoggingConfigForWorker } from "@vuu-ui/vuu-utils";
 
 // Note: inlined-worker is a generated file, it must be built
 import { workerSourceCode } from "./inlined-worker";
@@ -14,7 +14,7 @@ import {
   VuuRpcMenuRequest,
   VuuRpcServiceRequest,
   VuuRpcViewportRequest,
-} from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-protocol-types";
 
 const workerBlob = new Blob([getLoggingConfigForWorker() + workerSourceCode], {
   type: "text/javascript",

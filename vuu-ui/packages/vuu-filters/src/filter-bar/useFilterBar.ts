@@ -1,4 +1,4 @@
-import { queryClosest } from "@finos/vuu-utils";
+import { queryClosest } from "@vuu-ui/vuu-utils";
 import { useControlled } from "@salt-ds/core";
 import { SyntheticEvent, useCallback } from "react";
 import { FilterBarProps } from "./FilterBar";
@@ -32,7 +32,7 @@ export const useFilterBar = ({
         onChangeFilterMode?.(newFilterMode);
       }
     },
-    [onChangeFilterMode, setFilterMode]
+    [onChangeFilterMode, setFilterMode],
   );
 
   return {

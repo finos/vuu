@@ -1,4 +1,4 @@
-import { useId } from "@finos/vuu-utils";
+import { useId } from "@vuu-ui/vuu-utils";
 import { useCallback, useRef } from "react";
 import { PopupCloseCallback, PopupComponent } from "../popup";
 import { Portal, PortalProps } from "../portal";
@@ -47,7 +47,7 @@ export const ContextMenu = ({
         options: options as ContextMenuOptions,
       });
     },
-    [actions, id, onClose]
+    [actions, id, onClose],
   );
 
   const {
@@ -78,7 +78,7 @@ export const ContextMenu = ({
         });
       }
     },
-    [closeMenu, onClose]
+    [closeMenu, onClose],
   );
 
   const handleHighlightMenuItem = () => {

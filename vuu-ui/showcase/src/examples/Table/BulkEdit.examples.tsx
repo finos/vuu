@@ -1,21 +1,21 @@
 import {
   useVuuMenuActions,
   VuuDataSourceProvider,
-} from "@finos/vuu-data-react";
-import { getSchema, VuuTableName } from "@finos/vuu-data-test";
-import { LocalDataSourceProvider } from "@finos/vuu-data-test";
-import { ContextMenuProvider, DialogProvider } from "@finos/vuu-popups";
-import { Table, TableProps } from "@finos/vuu-table";
+} from "@vuu-ui/vuu-data-react";
+import { getSchema, VuuTableName } from "@vuu-ui/vuu-data-test";
+import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import { ContextMenuProvider, DialogProvider } from "@vuu-ui/vuu-popups";
+import { Table, TableProps } from "@vuu-ui/vuu-table";
 import {
   applyDefaultColumnConfig,
   toColumnName,
   useDataSource,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { useMemo, useState } from "react";
 import { getDefaultColumnConfig } from "./columnMetaData";
 import { DemoTableContainer } from "./DemoTableContainer";
 import { useAutoLoginToVuuServer } from "../utils";
-import { DataSource } from "@finos/vuu-data-types";
+import { DataSource } from "@vuu-ui/vuu-data-types";
 
 const BulkEditTableTemplate = ({
   table = "instruments",

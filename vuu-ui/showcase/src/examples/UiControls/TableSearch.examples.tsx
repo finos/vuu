@@ -1,12 +1,12 @@
-import { getSchema, LocalDataSourceProvider } from "@finos/vuu-data-test";
-import { Flexbox } from "@finos/vuu-layout";
+import { getSchema, LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import { Flexbox } from "@vuu-ui/vuu-layout";
 import {
   DragDropProvider,
   TableSearch,
   useDragDropProvider,
-} from "@finos/vuu-ui-controls";
-import type { DataSourceRow, TableSchema } from "@finos/vuu-data-types";
-import type { GlobalDropHandler } from "@finos/vuu-ui-controls";
+} from "@vuu-ui/vuu-ui-controls";
+import type { DataSourceRow, TableSchema } from "@vuu-ui/vuu-data-types";
+import type { GlobalDropHandler } from "@vuu-ui/vuu-ui-controls";
 import {
   HTMLAttributes,
   useCallback,
@@ -14,16 +14,16 @@ import {
   useMemo,
   useState,
 } from "react";
-import { useDataSource } from "@finos/vuu-utils";
-import { VuuDataSourceProvider } from "@finos/vuu-data-react";
-import { Table, TableProps } from "@finos/vuu-table";
+import { useDataSource } from "@vuu-ui/vuu-utils";
+import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
+import { Table, TableProps } from "@vuu-ui/vuu-table";
 import {
   Accordion,
   AccordionGroup,
   AccordionHeader,
   AccordionPanel,
 } from "@salt-ds/core";
-import { TableConfig } from "@finos/vuu-table-types";
+import { TableConfig } from "@vuu-ui/vuu-table-types";
 
 const TableSearchTemplate = ({
   schema,

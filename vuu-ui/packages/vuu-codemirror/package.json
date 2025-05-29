@@ -1,6 +1,6 @@
 {
-  "name": "@finos/vuu-codemirror",
-  "version": "0.0.26",
+  "name": "@vuu-ui/vuu-codemirror",
+  "version": "0.11.1",
   "author": "heswell",
   "main": "src/index.ts",
   "license": "Apache-2.0",
@@ -11,7 +11,7 @@
     "lezer-generate:column": "lezer-generator --output ./src/column-expression-input/column-language-parser/generated/column-parser.js ./src/column-expression-input/column-language-parser/grammar/column.grammar"
   },
   "devDependencies": {
-    "@finos/vuu-table-types": "0.0.26"
+    "@vuu-ui/vuu-table-types": "0.11.1"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.4.2",
@@ -19,7 +19,7 @@
     "@codemirror/language": "^6.6.0",
     "@codemirror/state": "^6.2.0",
     "@codemirror/view": "^6.9.3",
-    "@finos/vuu-utils": "0.0.26",
+    "@vuu-ui/vuu-utils": "0.11.1",
     "@lezer/common": "1.2.3",
     "@lezer/highlight": "^1.1.3"
   },

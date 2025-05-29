@@ -1,5 +1,5 @@
-import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
-import { PopupMenu } from "@finos/vuu-popups";
+import { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { PopupMenu } from "@vuu-ui/vuu-popups";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes } from "react";

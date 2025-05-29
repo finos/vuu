@@ -1,4 +1,4 @@
-import { FlexboxLayout, Stack } from "@finos/vuu-layout";
+import { FlexboxLayout, Stack } from "@vuu-ui/vuu-layout";
 import { BasketTableEdit } from "./basket-table-edit";
 import { BasketTableLive } from "./basket-table-live";
 import { BasketToolbar } from "./basket-toolbar";

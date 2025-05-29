@@ -1,4 +1,4 @@
-import { asReactElements, useId } from "@finos/vuu-utils";
+import { asReactElements, useId } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
@@ -124,7 +124,7 @@ export const Tabstrip = ({
             />
           ) : (
             []
-          )
+          ),
         ),
     [
       children,
@@ -142,7 +142,7 @@ export const Tabstrip = ({
       interactedTabState,
       focusVisible,
       location,
-    ]
+    ],
   );
 
   return (

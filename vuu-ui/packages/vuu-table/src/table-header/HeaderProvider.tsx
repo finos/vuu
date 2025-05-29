@@ -1,4 +1,4 @@
-import { BaseRowProps } from "@finos/vuu-table-types";
+import { BaseRowProps } from "@vuu-ui/vuu-table-types";
 import { createContext, FC, ReactNode, useContext } from "react";
 
 const HeaderContext = createContext<BaseRowProps>({ columns: [] });

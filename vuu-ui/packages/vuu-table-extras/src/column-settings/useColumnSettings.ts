@@ -3,7 +3,7 @@ import {
   TableConfig,
   ColumnTypeFormatting,
   ColumnSettingsProps,
-} from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-table-types";
 
 import {
   CellRendererDescriptor,
@@ -17,8 +17,8 @@ import {
   updateColumnFormatting,
   updateColumnType,
   queryClosest,
-} from "@finos/vuu-utils";
-import { VuuColumnDataType } from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-utils";
+import { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
 import {
   FormEventHandler,
   useCallback,
@@ -27,7 +27,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { DataValueTypeSimple } from "@finos/vuu-data-types";
+import { DataValueTypeSimple } from "@vuu-ui/vuu-data-types";
 
 const integerCellRenderers: CellRendererDescriptor[] = [
   {

@@ -13,8 +13,8 @@ import {
   TableSchema,
   WithBaseFilter,
   WithFullConfig,
-} from "@finos/vuu-data-types";
-import { filterPredicate, parseFilter } from "@finos/vuu-filter-parser";
+} from "@vuu-ui/vuu-data-types";
+import { filterPredicate, parseFilter } from "@vuu-ui/vuu-filter-parser";
 import type {
   LinkDescriptorWithLabel,
   VuuAggregation,
@@ -25,8 +25,8 @@ import type {
   VuuRpcRequest,
   VuuRpcResponse,
   VuuSort,
-} from "@finos/vuu-protocol-types";
-import type { ColumnDescriptor } from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-protocol-types";
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
   ColumnMap,
   DataSourceConfigChanges,
@@ -53,7 +53,7 @@ import {
   uuid,
   vanillaConfig,
   withConfigDefaults,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { aggregateData } from "./aggregate-utils";
 import { buildDataToClientMap, toClientRow } from "./array-data-utils";
 import { GroupMap, collapseGroup, expandGroup, groupRows } from "./group-utils";

@@ -1,4 +1,4 @@
-import { VuuRange } from "@finos/vuu-protocol-types";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import { generateNextBidAsk, nextRandomDouble, random } from "./data-utils";
 import type { UpdateGenerator } from "./rowUpdates";
 import { Table } from "./Table";
@@ -66,7 +66,7 @@ export class BaseUpdateGenerator implements UpdateGenerator {
                 currentAsk,
                 10,
                 5,
-                nextRandomDouble
+                nextRandomDouble,
               );
               rowUpdates[ask] = newAsk;
               rowUpdates[bid] = newBid;

@@ -1,4 +1,4 @@
-import { queryClosest } from "@finos/vuu-utils";
+import { queryClosest } from "@vuu-ui/vuu-utils";
 import { KeyboardEventHandler, useCallback } from "react";
 
 export const useEditableCell = () => {

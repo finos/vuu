@@ -1,5 +1,5 @@
-import { TableCellRendererProps } from "@finos/vuu-table-types";
-import { registerComponent } from "@finos/vuu-utils";
+import { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
+import { registerComponent } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 
 import "./StatusCell.css";

@@ -1,6 +1,6 @@
-import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
-import { Icon, IconButton } from "@finos/vuu-ui-controls";
-import { useId } from "@finos/vuu-utils";
+import { MenuActionHandler, MenuBuilder } from "@vuu-ui/vuu-data-types";
+import { Icon, IconButton } from "@vuu-ui/vuu-ui-controls";
+import { useId } from "@vuu-ui/vuu-utils";
 import { Button, ButtonProps } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";

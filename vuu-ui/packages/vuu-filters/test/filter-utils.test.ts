@@ -1,4 +1,4 @@
-import { Filter } from "@finos/vuu-filter-types";
+import { Filter } from "@vuu-ui/vuu-filter-types";
 import { describe, expect, it } from "vitest";
 import { addFilter } from "../src/filter-utils";
 

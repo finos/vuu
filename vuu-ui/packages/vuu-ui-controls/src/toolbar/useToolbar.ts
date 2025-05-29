@@ -1,4 +1,4 @@
-import { isValidNumber } from "@finos/vuu-utils";
+import { isValidNumber } from "@vuu-ui/vuu-utils";
 import {
   KeyboardEvent,
   MouseEvent as ReactMouseEvent,
@@ -80,7 +80,7 @@ export const useToolbar = ({
         }
       }
     },
-    [keyboardHookHandleClick, onClick]
+    [keyboardHookHandleClick, onClick],
   );
 
   const handleKeyDown = useCallback(
@@ -90,7 +90,7 @@ export const useToolbar = ({
         onKeyDown?.(evt);
       }
     },
-    [keyboardHookHandleKeyDown, onKeyDown]
+    [keyboardHookHandleKeyDown, onKeyDown],
   );
 
   const onSwitchWrappedItemIntoView = useCallback(
@@ -102,7 +102,7 @@ export const useToolbar = ({
         keyboardHookFocusItem(index);
       }
     },
-    [keyboardHookFocusItem, selectionHookActivateItem]
+    [keyboardHookFocusItem, selectionHookActivateItem],
   );
 
   const itemProps = {

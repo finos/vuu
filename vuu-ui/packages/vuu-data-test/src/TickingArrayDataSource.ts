@@ -1,13 +1,13 @@
 import {
   ArrayDataSource,
   ArrayDataSourceConstructorProps,
-} from "@finos/vuu-data-local";
+} from "@vuu-ui/vuu-data-local";
 import type {
   DataSourceVisualLinkCreatedMessage,
   SelectionItem,
   SubscribeCallback,
   SubscribeProps,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import type {
   VuuRpcMenuRequest,
   LinkDescriptorWithLabel,
@@ -20,12 +20,12 @@ import type {
   VuuRpcRequest,
   VuuCreateVisualLink,
   VuuRemoveVisualLink,
-} from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-protocol-types";
 import {
   isViewportRpcRequest,
   isVuuMenuRpcRequest,
   metadataKeys,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { makeSuggestions } from "./makeSuggestions";
 import { Table } from "./Table";
 import { RpcService, SessionTableMap } from "./VuuModule";

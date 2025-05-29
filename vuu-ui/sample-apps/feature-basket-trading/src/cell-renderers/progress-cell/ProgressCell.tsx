@@ -1,10 +1,10 @@
-import { TableCellProps } from "@finos/vuu-table-types";
+import { TableCellProps } from "@vuu-ui/vuu-table-types";
 import {
   isColumnTypeRenderer,
   isTypeDescriptor,
   isValidNumber,
   registerComponent,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { CSSProperties } from "react";
 
@@ -36,7 +36,7 @@ export const ProgressCell = ({ column, columnMap, row }: TableCellProps) => {
           if (Number.isFinite(floatOtherValue)) {
             percentage = Math.min(
               Math.round((floatValue / floatOtherValue) * 100),
-              100
+              100,
             );
             showProgress = isFinite(percentage);
           }
@@ -58,7 +58,7 @@ export const ProgressCell = ({ column, columnMap, row }: TableCellProps) => {
         />
       ) : null}
       <span className={`${classBase}-text`}>{`${percentage.toFixed(
-        2
+        2,
       )} %`}</span>
     </div>
   );

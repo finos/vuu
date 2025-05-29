@@ -2,8 +2,8 @@ import { FormField, FormFieldLabel, Input, Switch } from "@salt-ds/core";
 import {
   ColumnTypeFormatting,
   FormattingSettingsProps,
-} from "@finos/vuu-table-types";
-import { getTypeFormattingFromColumn } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-table-types";
+import { getTypeFormattingFromColumn } from "@vuu-ui/vuu-utils";
 import {
   ChangeEvent,
   KeyboardEvent,
@@ -27,7 +27,7 @@ export const BaseNumericFormattingSettings = ({
         onChange(formattingSettings);
       }
     },
-    [formattingSettings, onChange]
+    [formattingSettings, onChange],
   );
 
   const handleChangeDecimals = useCallback(
@@ -37,8 +37,8 @@ export const BaseNumericFormattingSettings = ({
         value === ""
           ? undefined
           : isNaN(parseInt(value))
-          ? undefined
-          : parseInt(value);
+            ? undefined
+            : parseInt(value);
 
       const newFormattingSettings = {
         ...formattingSettings,
@@ -46,7 +46,7 @@ export const BaseNumericFormattingSettings = ({
       };
       setFormattingSettings(newFormattingSettings);
     },
-    [formattingSettings]
+    [formattingSettings],
   );
 
   const handleChangeAlignDecimals = useCallback(
@@ -59,7 +59,7 @@ export const BaseNumericFormattingSettings = ({
       setFormattingSettings(newFormattingSettings);
       onChange(newFormattingSettings);
     },
-    [formattingSettings, onChange]
+    [formattingSettings, onChange],
   );
 
   const handleChangeZeroPad = useCallback(
@@ -72,7 +72,7 @@ export const BaseNumericFormattingSettings = ({
       setFormattingSettings(newFormattingSettings);
       onChange(newFormattingSettings);
     },
-    [formattingSettings, onChange]
+    [formattingSettings, onChange],
   );
 
   return (

@@ -1,4 +1,4 @@
-import { isObject } from "@finos/vuu-utils";
+import { isObject } from "@vuu-ui/vuu-utils";
 
 export type Instrument = {
   bbg: string;

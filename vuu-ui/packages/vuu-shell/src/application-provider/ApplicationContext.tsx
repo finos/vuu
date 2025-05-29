@@ -1,5 +1,5 @@
-import type { Settings, VuuUser } from "@finos/vuu-utils";
-import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import type { Settings, VuuUser } from "@vuu-ui/vuu-utils";
+import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { createContext } from "react";
 import { SettingsSchema } from "../user-settings";
 
@@ -11,7 +11,7 @@ const Guest: VuuUser = {
 export interface ApplicationContextProps {
   onUserSettingChanged: (
     propertyName: string,
-    value: VuuRowDataItemType
+    value: VuuRowDataItemType,
   ) => void;
   loginUrl?: string;
   userSettings?: Settings;
@@ -22,7 +22,7 @@ export interface ApplicationContextProps {
 export const ApplicationContext = createContext<ApplicationContextProps>({
   onUserSettingChanged: (propertyName: string) =>
     console.warn(
-      `Cannot change setting '${propertyName}'.\nDid you forget to declare an ApplicationProvider ?`
+      `Cannot change setting '${propertyName}'.\nDid you forget to declare an ApplicationProvider ?`,
     ),
   user: Guest,
 });

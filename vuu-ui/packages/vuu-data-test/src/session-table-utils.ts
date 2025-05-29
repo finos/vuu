@@ -1,12 +1,12 @@
-import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { Table, buildDataColumnMapFromSchema } from "./Table";
-import { metadataKeys } from "@finos/vuu-utils";
+import { metadataKeys } from "@vuu-ui/vuu-utils";
 
 const { KEY } = metadataKeys;
 
 export const createSessionTableFromSelectedRows = (
   table: Table,
-  selectedRowIds: string[]
+  selectedRowIds: string[],
 ) => {
   const sessionData: VuuRowDataItemType[][] = [];
   for (let i = 0; i < selectedRowIds.length; i++) {
@@ -20,6 +20,6 @@ export const createSessionTableFromSelectedRows = (
   return new Table(
     table.schema,
     sessionData,
-    buildDataColumnMapFromSchema(table.schema)
+    buildDataColumnMapFromSchema(table.schema),
   );
 };

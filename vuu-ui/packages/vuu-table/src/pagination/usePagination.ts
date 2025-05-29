@@ -1,5 +1,5 @@
 import { SyntheticEvent, useCallback, useMemo, useState } from "react";
-import { DataSource } from "@finos/vuu-data-types";
+import { DataSource } from "@vuu-ui/vuu-data-types";
 
 export interface PaginationHookProps {
   dataSource: DataSource;

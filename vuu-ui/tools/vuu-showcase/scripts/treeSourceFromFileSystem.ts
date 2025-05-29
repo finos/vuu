@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { type TreeSourceNode } from "@finos/vuu-utils";
+import { type TreeSourceNode } from "@vuu-ui/vuu-utils";
 
 export const dropLastPathSegment = (path: string, separator = "/") => {
   return path.slice(0, path.lastIndexOf(separator));

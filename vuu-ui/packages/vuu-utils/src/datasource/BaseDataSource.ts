@@ -8,14 +8,14 @@ import type {
   SubscribeProps,
   WithBaseFilter,
   WithFullConfig,
-} from "@finos/vuu-data-types";
-import { parseFilter } from "@finos/vuu-filter-parser";
+} from "@vuu-ui/vuu-data-types";
+import { parseFilter } from "@vuu-ui/vuu-filter-parser";
 import {
   LinkDescriptorWithLabel,
   VuuAggregation,
   VuuRange,
   VuuSort,
-} from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter } from "../event-emitter";
 import { uuid } from "../nanoid";
 import {

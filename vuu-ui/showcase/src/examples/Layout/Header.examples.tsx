@@ -1,5 +1,5 @@
-import { Flexbox, Header } from "@finos/vuu-layout";
-import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
+import { Flexbox, Header } from "@vuu-ui/vuu-layout";
+import { Tab, Tabstrip } from "@vuu-ui/vuu-ui-controls";
 import { Button } from "@salt-ds/core";
 import { CSSProperties, useState } from "react";
 

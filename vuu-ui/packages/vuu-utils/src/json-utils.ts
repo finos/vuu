@@ -1,9 +1,9 @@
-import { DataSourceRow } from "@finos/vuu-data-types";
+import { DataSourceRow } from "@vuu-ui/vuu-data-types";
 import {
   ColumnDescriptor,
   DataValueTypeDescriptor,
-} from "@finos/vuu-table-types";
-import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-table-types";
+import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { metadataKeys } from "./column-utils";
 
 const { COUNT } = metadataKeys;

@@ -1,7 +1,7 @@
-import { FlexboxLayout } from "@finos/vuu-layout";
-import { getSchema, vuuModule } from "@finos/vuu-data-test";
-import type { TableConfig } from "@finos/vuu-table-types";
-import { Table } from "@finos/vuu-table";
+import { FlexboxLayout } from "@vuu-ui/vuu-layout";
+import { getSchema, vuuModule } from "@vuu-ui/vuu-data-test";
+import type { TableConfig } from "@vuu-ui/vuu-table-types";
+import { Table } from "@vuu-ui/vuu-table";
 import { useMemo } from "react";
 
 export const TableWithFooter = () => {

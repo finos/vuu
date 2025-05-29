@@ -1,4 +1,4 @@
-import { MeasuredSize } from "@finos/vuu-ui-controls";
+import { MeasuredSize } from "@vuu-ui/vuu-ui-controls";
 import { RefCallback, useCallback, useMemo, useRef, useState } from "react";
 import { HeightOnly, ResizeHandler, useResizeObserver } from "../common-hooks";
 
@@ -23,7 +23,7 @@ export interface HeightHookResult {
 const getContentHeight = (
   itemCount: number,
   itemHeight: number,
-  itemGapSize = 0
+  itemGapSize = 0,
 ) => {
   if (itemCount === 0) {
     return 0;
@@ -72,7 +72,7 @@ export const useListHeight = ({
           .fill(0)
           .reduce<number>(
             (total, _, index) => total + getItemHeight(index) + itemGapSize,
-            0
+            0,
           ) -
         // We don't want gap after the last item
         itemGapSize;

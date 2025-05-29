@@ -1,4 +1,4 @@
-import { Filter } from "@finos/vuu-filter-types";
+import { Filter } from "@vuu-ui/vuu-filter-types";
 import { parser } from "./generated/filter-parser";
 import { walkTree } from "./FilterTreeWalker";
 

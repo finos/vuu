@@ -1,4 +1,4 @@
-import { Icon } from "@finos/vuu-ui-controls";
+import { Icon } from "@vuu-ui/vuu-ui-controls";
 import { Menu, MenuItem, MenuPanel, MenuTrigger } from "@salt-ds/core";
 import { TabNextAction } from "@salt-ds/lab";
 import { useComponentCssInjection } from "@salt-ds/styles";

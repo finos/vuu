@@ -9,7 +9,7 @@ import handler from "serve-handler";
 import http from "http";
 import open from "open";
 import { fileURLToPath } from "url";
-import { TreeSourceNode } from "@finos/vuu-utils";
+import { TreeSourceNode } from "@vuu-ui/vuu-utils";
 
 const pathToSrc = "./src/examples";
 

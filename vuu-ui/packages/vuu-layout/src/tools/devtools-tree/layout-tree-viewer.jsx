@@ -5,7 +5,7 @@ import { useWindow } from "@salt-ds/window";
 import { typeOf } from "../../utils";
 
 import layoutTreeViewer from "./layout-tree-viewer.css";
-import { TreeTable } from "@finos/vuu-datatable";
+import { TreeTable } from "@vuu-ui/vuu-datatable";
 
 const classBaseTree = "hwLayoutTreeViewer";
 

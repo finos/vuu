@@ -2,7 +2,7 @@ import {
   EventEmitter,
   GridLayoutSplitDirection,
   OptionalProperty,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import {
   gridResizeDirectionFromDropPosition,
   doesResizeRequireNewTrack as isResizeTrackShared,

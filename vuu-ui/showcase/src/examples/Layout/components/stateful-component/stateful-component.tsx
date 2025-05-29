@@ -1,5 +1,5 @@
-import { useViewContext } from "@finos/vuu-layout";
-import { registerComponent } from "@finos/vuu-utils";
+import { useViewContext } from "@vuu-ui/vuu-layout";
+import { registerComponent } from "@vuu-ui/vuu-utils";
 import React, {
   ChangeEventHandler,
   HTMLAttributes,

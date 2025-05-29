@@ -1,10 +1,10 @@
-import { TableCellProps } from "@finos/vuu-table-types";
+import { TableCellProps } from "@vuu-ui/vuu-table-types";
 import {
   isColumnTypeRenderer,
   isTypeDescriptor,
   isValidNumber,
   registerComponent,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -44,7 +44,7 @@ const ProgressCell = ({ column, columnMap, row }: TableCellProps) => {
           if (Number.isFinite(floatOtherValue)) {
             percentage = Math.min(
               Math.round((floatValue / floatOtherValue) * 100),
-              100
+              100,
             );
             showProgress = isFinite(percentage);
           }

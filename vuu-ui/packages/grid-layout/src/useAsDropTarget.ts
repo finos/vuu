@@ -4,7 +4,7 @@ import {
   pointPositionWithinRect,
   queryClosest,
   type rect,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { DragEventHandler, useCallback, useRef } from "react";
 import { useGridLayoutDropHandler, useGridLayoutId } from "./GridLayoutContext";
 import { useDragContext } from "./drag-drop-next/DragDropProviderNext";

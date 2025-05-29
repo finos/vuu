@@ -1,12 +1,12 @@
-import { useLookupValues } from "@finos/vuu-data-react";
-import type { VuuColumnDataType } from "@finos/vuu-protocol-types";
-import { ListOption, TableCellRendererProps } from "@finos/vuu-table-types";
+import { useLookupValues } from "@vuu-ui/vuu-data-react";
+import type { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
+import { ListOption, TableCellRendererProps } from "@vuu-ui/vuu-table-types";
 import {
   dataColumnAndKeyUnchanged,
   dispatchCustomEvent,
   getSelectedOption,
   registerComponent,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { Dropdown, Option } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";

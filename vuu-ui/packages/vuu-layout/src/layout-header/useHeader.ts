@@ -7,7 +7,7 @@ import {
 } from "react";
 import type { HeaderProps } from "./Header";
 import { useViewDispatch } from "../layout-view-actions";
-import { queryClosest } from "@finos/vuu-utils";
+import { queryClosest } from "@vuu-ui/vuu-utils";
 
 export interface HeaderHookProps
   extends Pick<HeaderProps, "onCollapse" | "onEditTitle" | "onExpand"> {

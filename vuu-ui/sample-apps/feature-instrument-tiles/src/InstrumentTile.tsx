@@ -1,6 +1,6 @@
-import { DataSourceRow } from "@finos/vuu-data-types";
-import { PriceTicker } from "@finos/vuu-ui-controls";
-import { ColumnMap, numericFormatter } from "@finos/vuu-utils";
+import { DataSourceRow } from "@vuu-ui/vuu-data-types";
+import { PriceTicker } from "@vuu-ui/vuu-ui-controls";
+import { ColumnMap, numericFormatter } from "@vuu-ui/vuu-utils";
 import { HTMLAttributes, memo } from "react";
 
 import "./InstrumentTile.css";
@@ -33,6 +33,6 @@ export const InstrumentTile = memo(
         <PriceTicker price={instrument[bid] as number} />
       </div>
     );
-  }
+  },
 );
 InstrumentTile.displayName = "InstrumentTile";

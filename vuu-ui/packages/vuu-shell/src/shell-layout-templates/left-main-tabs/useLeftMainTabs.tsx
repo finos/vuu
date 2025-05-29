@@ -1,6 +1,6 @@
-import { Flexbox, StackLayout } from "@finos/vuu-layout";
+import { Flexbox, StackLayout } from "@vuu-ui/vuu-layout";
 
-import { VuuShellLocation } from "@finos/vuu-utils";
+import { VuuShellLocation } from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
 import { ShellLayoutTemplateHook } from "../useShellLayout";
 

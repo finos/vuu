@@ -1,4 +1,4 @@
-import type { DataSourceFilter } from "@finos/vuu-data-types";
+import type { DataSourceFilter } from "@vuu-ui/vuu-data-types";
 import {
   AndFilter,
   Filter,
@@ -9,13 +9,13 @@ import {
   OrFilter,
   SingleValueFilterClause,
   SingleValueFilterClauseOp,
-} from "@finos/vuu-filter-types";
+} from "@vuu-ui/vuu-filter-types";
 import {
   ColumnDescriptor,
   RuntimeColumnDescriptor,
-} from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-table-types";
 import { EventEmitter } from "../event-emitter";
-import { VuuFilter, VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import { VuuFilter, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { getTypedValue } from "../form-utils";
 
 const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([

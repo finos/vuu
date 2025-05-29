@@ -3,8 +3,8 @@ import {
   SchemaColumn,
   Selection,
   SelectionChangeHandler,
-} from "@finos/vuu-data-types";
-import { ContextMenuProvider } from "@finos/vuu-popups";
+} from "@vuu-ui/vuu-data-types";
+import { ContextMenuProvider } from "@vuu-ui/vuu-popups";
 import {
   CustomHeader,
   DataCellEditNotification,
@@ -15,8 +15,8 @@ import {
   TableRowClickHandler,
   TableRowSelectHandler,
   TableSelectionModel,
-} from "@finos/vuu-table-types";
-import type { DragDropState } from "@finos/vuu-ui-controls";
+} from "@vuu-ui/vuu-table-types";
+import type { DragDropState } from "@vuu-ui/vuu-ui-controls";
 import {
   DragStartHandler,
   MeasuredContainer,
@@ -24,13 +24,13 @@ import {
   MeasuredSize,
   dragStrategy,
   reduceSizeHeight,
-} from "@finos/vuu-ui-controls";
+} from "@vuu-ui/vuu-ui-controls";
 import {
   lowerCase,
   metadataKeys,
   RowToObjectMapper,
   useId,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";

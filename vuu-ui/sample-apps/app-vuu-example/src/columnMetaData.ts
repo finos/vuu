@@ -1,4 +1,4 @@
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
 const Average = 2;
 
@@ -395,7 +395,7 @@ const tables: { [key: string]: TableColDefs } = {
 
 export const getDefaultColumnConfig = (
   tableName: string,
-  columnName: string
+  columnName: string,
 ) => {
   return tables[tableName]?.[columnName] ?? columnMetaData[columnName];
 };

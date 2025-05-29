@@ -1,4 +1,4 @@
-import { TableSchemaTable } from "@finos/vuu-data-types";
+import { TableSchemaTable } from "@vuu-ui/vuu-data-types";
 import cx from "clsx";
 import { useFilterClause } from "../useFilterClause";
 import { FilterClauseValueEditorNumber } from "./FilterClauseValueEditorNumber";
@@ -7,8 +7,8 @@ import { FilterClauseValueEditorText } from "./FilterClauseValueEditorText";
 import {
   NumericFilterClauseOp,
   SingleValueFilterClauseOp,
-} from "@finos/vuu-filter-types";
-import { isDateTimeDataValue } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-filter-types";
+import { isDateTimeDataValue } from "@vuu-ui/vuu-utils";
 import { ForwardedRef, forwardRef } from "react";
 import { FilterClauseValueEditorDate } from "./FilterClauseValueEditorDate";
 

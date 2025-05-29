@@ -1,4 +1,4 @@
-import { Component, View } from "@finos/vuu-layout";
+import { Component, View } from "@vuu-ui/vuu-layout";
 
 export const ComponentWithBorderAndHeader = ({ width = 500, height = 400 }) => (
   <View

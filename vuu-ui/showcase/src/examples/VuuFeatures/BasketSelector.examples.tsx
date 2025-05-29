@@ -1,6 +1,6 @@
-import { ArrayDataSource } from "@finos/vuu-data-local";
-import { createBasketTradingRow, vuuModule } from "@finos/vuu-data-test";
-import { buildColumnMap } from "@finos/vuu-utils";
+import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
+import { createBasketTradingRow, vuuModule } from "@vuu-ui/vuu-data-test";
+import { buildColumnMap } from "@vuu-ui/vuu-utils";
 import { Basket, BasketSelector } from "feature-basket-trading";
 import { useCallback, useMemo, useState } from "react";
 

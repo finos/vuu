@@ -1,14 +1,14 @@
-import { DataSourceRowObject, TableSchema } from "@finos/vuu-data-types";
+import { DataSourceRowObject, TableSchema } from "@vuu-ui/vuu-data-types";
 import {
   DialogHeader,
   PopupComponent as Popup,
   Portal,
-} from "@finos/vuu-popups";
+} from "@vuu-ui/vuu-popups";
 import {
   TablePicker,
   TablePickerProps,
   VuuInput,
-} from "@finos/vuu-ui-controls";
+} from "@vuu-ui/vuu-ui-controls";
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
 import cx from "clsx";
 import { HTMLAttributes, RefCallback, useCallback, useMemo } from "react";

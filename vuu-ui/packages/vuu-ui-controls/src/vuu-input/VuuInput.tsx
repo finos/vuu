@@ -1,5 +1,5 @@
-import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
-import { CommitHandler, isValidNumber, useId } from "@finos/vuu-utils";
+import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
+import { CommitHandler, isValidNumber, useId } from "@vuu-ui/vuu-utils";
 import { Input, InputProps, Tooltip } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";

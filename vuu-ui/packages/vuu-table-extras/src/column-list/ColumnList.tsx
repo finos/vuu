@@ -1,11 +1,11 @@
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
   Icon,
   List,
   ListItem,
   ListItemProps,
   ListProps,
-} from "@finos/vuu-ui-controls";
+} from "@vuu-ui/vuu-ui-controls";
 import { Checkbox, Switch } from "@salt-ds/core";
 import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
@@ -17,7 +17,7 @@ import {
   useCallback,
 } from "react";
 import { ColumnItem } from "../table-settings";
-import { getColumnLabel, queryClosest } from "@finos/vuu-utils";
+import { getColumnLabel, queryClosest } from "@vuu-ui/vuu-utils";
 
 import columnList from "./ColumnList.css";
 
@@ -27,7 +27,7 @@ const classBaseListItem = "vuuColumnListItem";
 export type ColumnChangeHandler = (
   columnName: string,
   propertyName: keyof ColumnDescriptor | "subscribed",
-  value: string | number | boolean
+  value: string | number | boolean,
 ) => void;
 
 export interface ColumnListProps
@@ -105,7 +105,7 @@ export const ColumnList = ({
         }
       }
     },
-    [onChange]
+    [onChange],
   );
 
   const handleClick = useCallback<MouseEventHandler>(
@@ -118,7 +118,7 @@ export const ColumnList = ({
         }
       }
     },
-    [onNavigateToColumn]
+    [onNavigateToColumn],
   );
 
   return (

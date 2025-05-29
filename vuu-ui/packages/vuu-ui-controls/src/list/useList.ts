@@ -1,4 +1,4 @@
-import { useLayoutEffectSkipFirst } from "@finos/vuu-utils";
+import { useLayoutEffectSkipFirst } from "@vuu-ui/vuu-utils";
 import {
   KeyboardEvent,
   MouseEvent,
@@ -65,7 +65,7 @@ export const useList = <Item, S extends SelectionStrategy>({
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const lastSelection = useRef<string[] | undefined>(
-    selected || defaultSelected
+    selected || defaultSelected,
   );
   const handleKeyboardNavigation = (evt: KeyboardEvent, nextIndex: number) => {
     selectionHook.listHandlers.onKeyboardNavigation?.(evt, nextIndex);
@@ -81,7 +81,7 @@ export const useList = <Item, S extends SelectionStrategy>({
         }
       }
     },
-    [dataHook, onSelect]
+    [dataHook, onSelect],
   );
 
   const setContainerRef = useCallback<RefCallback<HTMLDivElement>>((el) => {
@@ -99,18 +99,18 @@ export const useList = <Item, S extends SelectionStrategy>({
           const [selectedItem] = selected;
           (onSelectionChange as SingleSelectionHandler<Item>)(
             evt,
-            dataHook.itemById(selectedItem)
+            dataHook.itemById(selectedItem),
           );
         } else if (isMultiSelection(selectionStrategy)) {
           const selectedItems = selected.map((id) => dataHook.itemById(id));
           (onSelectionChange as MultiSelectionHandler<Item>)(
             evt,
-            selectedItems
+            selectedItems,
           );
         }
       }
     },
-    [dataHook, onSelectionChange, selectionStrategy]
+    [dataHook, onSelectionChange, selectionStrategy],
   );
 
   const {
@@ -147,7 +147,7 @@ export const useList = <Item, S extends SelectionStrategy>({
       setHighlightedIndex(-1);
       onDragStart?.(dragDropState);
     },
-    [onDragStart, setHighlightedIndex]
+    [onDragStart, setHighlightedIndex],
   );
 
   const selectionHook = useSelection({
@@ -233,7 +233,7 @@ export const useList = <Item, S extends SelectionStrategy>({
       onKeyDown,
       selectionHook.listHandlers,
       typeaheadOnKeyDown,
-    ]
+    ],
   );
 
   // This is only appropriate when we are directly controlling a List,
@@ -273,7 +273,7 @@ export const useList = <Item, S extends SelectionStrategy>({
       navigationMouseMove,
       highlightedIndex,
       dataHook.data,
-    ]
+    ],
   );
 
   const getActiveDescendant = () =>

@@ -1,10 +1,10 @@
-import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
+import { MenuActionHandler, MenuBuilder } from "@vuu-ui/vuu-data-types";
 import {
   ContextMenuProvider,
   MenuCloseHandler,
   PopupMenu,
   PopupMenuProps,
-} from "@finos/vuu-popups";
+} from "@vuu-ui/vuu-popups";
 import { useCallback, useMemo } from "react";
 
 const menuBuilder: MenuBuilder = () => [

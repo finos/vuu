@@ -1,4 +1,4 @@
-import { VuuInput } from "@finos/vuu-ui-controls";
+import { VuuInput } from "@vuu-ui/vuu-ui-controls";
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";

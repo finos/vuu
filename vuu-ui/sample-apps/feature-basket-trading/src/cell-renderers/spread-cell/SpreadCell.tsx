@@ -1,5 +1,5 @@
-import { TableCellProps } from "@finos/vuu-table-types";
-import { registerComponent } from "@finos/vuu-utils";
+import { TableCellProps } from "@vuu-ui/vuu-table-types";
+import { registerComponent } from "@vuu-ui/vuu-utils";
 import { CSSProperties } from "react";
 
 import "./SpreadCell.css";

@@ -1,4 +1,4 @@
-import { TableCellRendererProps } from "@finos/vuu-table-types";
+import { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
 import {
   dataAndColumnUnchanged,
   DOWN1,
@@ -8,14 +8,14 @@ import {
   registerComponent,
   UP1,
   UP2,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { memo } from "react";
 import { useDirection } from "./useDirection";
 
-import { DataValueType } from "@finos/vuu-data-types";
+import { DataValueType } from "@vuu-ui/vuu-data-types";
 import backgroundCellCss from "./BackgroundCell.css";
 import backgroundKeyFramesCss from "./BackgroundKeyframes.css";
 

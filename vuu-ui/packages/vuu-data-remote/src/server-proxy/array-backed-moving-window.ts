@@ -1,5 +1,5 @@
-import { VuuRange, VuuRow } from "@finos/vuu-protocol-types";
-import { logger, WindowRange } from "@finos/vuu-utils";
+import { VuuRange, VuuRow } from "@vuu-ui/vuu-protocol-types";
+import { logger, WindowRange } from "@vuu-ui/vuu-utils";
 
 const EMPTY_ARRAY = [] as const;
 

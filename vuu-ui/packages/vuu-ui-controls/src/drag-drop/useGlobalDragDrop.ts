@@ -1,4 +1,4 @@
-import { boxContainsPoint, dispatchCustomEvent } from "@finos/vuu-utils";
+import { boxContainsPoint, dispatchCustomEvent } from "@vuu-ui/vuu-utils";
 import { useCallback, useRef } from "react";
 import { MeasuredTarget } from "./DragDropProvider";
 import { DragDropState } from "./DragDropState";
@@ -13,7 +13,7 @@ export const useGlobalDragDrop = ({
 }: {
   onDragOverDropTarget: (
     dropTargetId: string,
-    dragDropState: DragDropState
+    dragDropState: DragDropState,
   ) => boolean;
   onDrop: (dropTargetId: string, dragDropState: DragDropState) => void;
 }) => {
@@ -56,7 +56,7 @@ export const useGlobalDragDrop = ({
         if (dropTargetId) {
           const dropTargetWillResumeDrag = onDragOverDropTarget(
             dropTargetId,
-            dragDropState
+            dragDropState,
           );
           if (dropTargetWillResumeDrag) {
             // prettier-ignore
@@ -73,7 +73,7 @@ export const useGlobalDragDrop = ({
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [],
   );
 
   const dragMouseUpHandler = useCallback(() => {
@@ -99,7 +99,7 @@ export const useGlobalDragDrop = ({
 
       return true;
     },
-    [dragMouseMoveHandler, dragMouseUpHandler]
+    [dragMouseMoveHandler, dragMouseUpHandler],
   );
 
   return {

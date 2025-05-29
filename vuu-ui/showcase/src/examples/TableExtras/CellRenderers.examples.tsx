@@ -1,14 +1,14 @@
-import { DataSourceRow } from "@finos/vuu-data-types";
-import { TableCell } from "@finos/vuu-table";
-import { BackgroundCell } from "@finos/vuu-table-extras";
+import { DataSourceRow } from "@vuu-ui/vuu-data-types";
+import { TableCell } from "@vuu-ui/vuu-table";
+import { BackgroundCell } from "@vuu-ui/vuu-table-extras";
 import {
   ColumnDescriptor,
   ColumnTypeFormatting,
   ColumnTypeRendering,
   RuntimeColumnDescriptor,
-} from "@finos/vuu-table-types";
-import { VuuInput } from "@finos/vuu-ui-controls";
-import { CommitHandler, getValueFormatter } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-table-types";
+import { VuuInput } from "@vuu-ui/vuu-ui-controls";
+import { CommitHandler, getValueFormatter } from "@vuu-ui/vuu-utils";
 import { FormEventHandler, useCallback, useMemo, useState } from "react";
 
 const columnMap = {

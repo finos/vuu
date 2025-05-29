@@ -1,10 +1,10 @@
-import { authenticate } from "@finos/vuu-data-remote";
-import { LoginPanel } from "@finos/vuu-shell";
+import { authenticate } from "@vuu-ui/vuu-data-remote";
+import { LoginPanel } from "@vuu-ui/vuu-shell";
 import React from "react";
 import ReactDOM from "react-dom";
 
-import "@finos/vuu-icons/index.css";
-import "@finos/vuu-theme/index.css";
+import "@vuu-ui/vuu-icons/index.css";
+import "@vuu-ui/vuu-theme/index.css";
 import "./login.css";
 import { SaltProvider } from "@salt-ds/core";
 
@@ -28,5 +28,5 @@ ReactDOM.render(
   <SaltProvider theme="vuu-theme" density="high">
     <LoginPanel onSubmit={login} />
   </SaltProvider>,
-  document.getElementById("root")
+  document.getElementById("root"),
 );

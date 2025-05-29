@@ -4,7 +4,7 @@ import {
   LayoutModel,
   rectTuple,
   uuid,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import React, { ReactElement } from "react";
 import { DropPos } from "../drag-drop/dragDropTypes";
 import { DropTarget } from "../drag-drop/DropTarget";
@@ -36,7 +36,7 @@ export function wrap(
   newComponent: any,
   pos: DropPos,
   clientRect?: DropTarget["clientRect"],
-  dropRect?: DropTarget["dropRect"]
+  dropRect?: DropTarget["dropRect"],
 ): ReactElement {
   const { children: containerChildren, path: containerPath } =
     getProps(container);
@@ -51,7 +51,7 @@ export function wrap(
         newComponent,
         pos,
         clientRect,
-        dropRect
+        dropRect,
       )
     : containerChildren.map((child: ReactElement, index: number) =>
         index === idx
@@ -61,9 +61,9 @@ export function wrap(
               newComponent,
               pos,
               clientRect,
-              dropRect
+              dropRect,
             )
-          : child
+          : child,
       );
 
   return React.cloneElement(container, undefined, children);
@@ -76,14 +76,14 @@ function updateChildren(
   newComponent: ReactElement,
   pos: DropPos,
   clientRect?: DropTarget["clientRect"],
-  dropRect?: rectTuple
+  dropRect?: rectTuple,
 ) {
   const intrinsicSize = getIntrinsicSize(newComponent);
 
   if (intrinsicSize?.width && intrinsicSize?.height) {
     if (clientRect === undefined || dropRect === undefined) {
       throw Error(
-        "wrap-layout-element, updateChildren clientRect and dropRect must both be available"
+        "wrap-layout-element, updateChildren clientRect and dropRect must both be available",
       );
     }
     return wrapIntrinsicSizedComponent(
@@ -92,7 +92,7 @@ function updateChildren(
       newComponent,
       pos,
       clientRect,
-      dropRect
+      dropRect,
     );
   }
   return wrapFlexComponent(
@@ -100,7 +100,7 @@ function updateChildren(
     containerChildren,
     existingComponent,
     newComponent,
-    pos
+    pos,
   );
 }
 
@@ -109,7 +109,7 @@ function wrapFlexComponent(
   containerChildren: ReactElement[],
   existingComponent: ReactElement,
   newComponent: ReactElement,
-  pos: DropPos
+  pos: DropPos,
 ) {
   const { version = 0 } = getProps(newComponent);
   const { path: existingComponentPath, title } = getProps(existingComponent);
@@ -124,7 +124,7 @@ function wrapFlexComponent(
       existingComponent,
       newComponent,
       flexDirection,
-      pos
+      pos,
     );
   const targetFirst = isTargetFirst(pos);
   const active = targetFirst ? 1 : 0;
@@ -173,27 +173,27 @@ function wrapFlexComponent(
           resetPath(
             existingComponent,
             `${existingComponentPath}.0`,
-            existingComponentProps
+            existingComponentProps,
           ),
           applyLayoutProps(
             React.cloneElement(newComponent, newComponentProps),
-            `${existingComponentPath}.1`
+            `${existingComponentPath}.1`,
           ),
         ]
       : [
           applyLayoutProps(
             React.cloneElement(newComponent, newComponentProps),
-            `${existingComponentPath}.0`
+            `${existingComponentPath}.0`,
           ),
           resetPath(
             existingComponent,
             `${existingComponentPath}.1`,
-            existingComponentProps
+            existingComponentProps,
           ),
-        ]
+        ],
   );
   return containerChildren.map((child: ReactElement) =>
-    child === existingComponent ? wrapper : child
+    child === existingComponent ? wrapper : child,
   );
 }
 
@@ -203,7 +203,7 @@ function wrapIntrinsicSizedComponent(
   newComponent: ReactElement,
   pos: DropPos,
   clientRect: DropTarget["clientRect"],
-  dropRect: rectTuple
+  dropRect: rectTuple,
 ) {
   const { flexDirection } = getLayoutSpecForWrapper(pos);
   const contraDirection = flexDirection === "column" ? "row" : "column";
@@ -232,7 +232,7 @@ function wrapIntrinsicSizedComponent(
         : createPlaceHolder(`${pathRoot}.${pathIndex++}`, startPlaceholder, {
             flexGrow: 0,
             flexShrink: 0,
-          })
+          }),
     );
   }
   wrappedChildren.push(
@@ -241,8 +241,8 @@ function wrapIntrinsicSizedComponent(
       contraDirection,
       `${pathRoot}.${pathIndex++}`,
       clientRect,
-      dropRect
-    )
+      dropRect,
+    ),
   );
   if (endPlaceholder) {
     wrappedChildren.push(
@@ -251,7 +251,7 @@ function wrapIntrinsicSizedComponent(
         : resetPath(existingComponent, `${pathRoot}.${pathIndex++}`, {
             [resizeProp]: true,
             style: { flexBasis: 0, flexGrow: 1, flexShrink: 1 },
-          })
+          }),
     );
   }
 
@@ -259,10 +259,10 @@ function wrapIntrinsicSizedComponent(
     flexDirection,
     existingComponent.props,
     wrappedChildren,
-    pathRoot
+    pathRoot,
   );
   return containerChildren.map((child) =>
-    child === existingComponent ? wrapper : child
+    child === existingComponent ? wrapper : child,
   );
 }
 
@@ -271,7 +271,7 @@ function getWrappedFlexStyles(
   existingComponent: ReactElement,
   newComponent: ReactElement,
   flexDirection: flexDirection,
-  pos: DropPos
+  pos: DropPos,
 ) {
   const style = {
     ...existingComponent.props.style,
@@ -290,10 +290,10 @@ const isTargetFirst = (pos: DropPos) =>
   pos.position.SouthOrEast
     ? true
     : pos?.tab?.positionRelativeToTab === "before"
-    ? false
-    : pos.position.Header
-    ? true
-    : false;
+      ? false
+      : pos.position.Header
+        ? true
+        : false;
 
 function getLayoutSpecForWrapper(pos: DropPos): LayoutSpec {
   if (pos.position.Header) {

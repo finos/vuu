@@ -23,7 +23,7 @@ import {
   getFirstSelectedItem,
   hasSelection,
 } from "../../common-hooks";
-import { getElementByDataIndex, isValidNumber } from "@finos/vuu-utils";
+import { getElementByDataIndex, isValidNumber } from "@vuu-ui/vuu-utils";
 
 export const LIST_FOCUS_VISIBLE = -2;
 
@@ -65,7 +65,7 @@ const getStartIdx = (
   key: string,
   idx: number,
   selectedIdx: number,
-  length: number
+  length: number,
 ) => {
   if (key === End) {
     return length;
@@ -82,14 +82,14 @@ const pageDown = (
   containerEl: HTMLElement,
   itemEl: HTMLElement,
   itemCount: number,
-  index: number
+  index: number,
 ): number | undefined => {
   const { top: itemTop } = itemEl.getBoundingClientRect();
   const { scrollTop, clientHeight, scrollHeight } = containerEl;
   const lastIndexPosition = itemCount - 1;
   const newScrollTop = Math.min(
     scrollTop + clientHeight,
-    scrollHeight - clientHeight
+    scrollHeight - clientHeight,
   );
   // If there is no scroll movement, we are already scrolled to last page, or
   // no scroll movement is necessary, highlight last item
@@ -104,7 +104,7 @@ const pageDown = (
       nextRect = getElementByDataIndex(
         containerEl,
         nextIdx,
-        true
+        true,
       ).getBoundingClientRect();
     } while (nextRect.top < itemTop && nextIdx < lastIndexPosition);
     return nextIdx;
@@ -114,7 +114,7 @@ const pageDown = (
 const pageUp = (
   containerEl: HTMLElement,
   itemEl: HTMLElement,
-  index: number
+  index: number,
 ) => {
   const { top: itemTop } = itemEl.getBoundingClientRect();
   const { scrollTop, clientHeight } = containerEl;
@@ -130,7 +130,7 @@ const pageUp = (
       nextRect = getElementByDataIndex(
         containerEl,
         nextIdx,
-        true
+        true,
       ).getBoundingClientRect();
     } while (nextRect.top > itemTop && nextIdx > 0);
     return nextIdx;
@@ -178,7 +178,7 @@ export const useKeyboardNavigation = ({
         lastFocus.current = idx;
       }
     },
-    [onHighlight, setHighlightedIdx]
+    [onHighlight, setHighlightedIdx],
   );
 
   const nextPageItemIdx = useCallback(
@@ -196,7 +196,7 @@ export const useKeyboardNavigation = ({
       }
       return result ?? index;
     },
-    [containerRef, itemCount]
+    [containerRef, itemCount],
   );
 
   const nextFocusableItemIdx = useCallback(
@@ -238,7 +238,7 @@ export const useKeyboardNavigation = ({
         return nextIdx;
       }
     },
-    [containerRef, itemCount, selected]
+    [containerRef, itemCount, selected],
   );
 
   // does this belong here or should it be a method passed in?
@@ -309,7 +309,7 @@ export const useKeyboardNavigation = ({
       nextPageItemIdx,
       onKeyboardNavigation,
       setHighlightedIndex,
-    ]
+    ],
   );
 
   const handleKeyDown = useCallback(
@@ -323,7 +323,7 @@ export const useKeyboardNavigation = ({
         keyboardNavigation.current = true;
       }
     },
-    [itemCount, navigateChildItems]
+    [itemCount, navigateChildItems],
   );
 
   const containerProps = useMemo(() => {

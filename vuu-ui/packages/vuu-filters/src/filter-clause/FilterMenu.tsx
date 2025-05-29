@@ -1,9 +1,9 @@
-import { PopupMenu } from "@finos/vuu-popups";
+import { PopupMenu } from "@vuu-ui/vuu-popups";
 import {
   ContextMenuItemDescriptor,
   MenuActionHandler,
   MenuBuilder,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import { useMemo } from "react";
 
 import { andCommand, MenuOptions, orCommand } from "./FilterMenuOptions";
@@ -41,7 +41,7 @@ export const FilterMenu = ({
         tabIndex: index,
       },
     ],
-    [allowAnd, allowOr, index]
+    [allowAnd, allowOr, index],
   );
 
   return (

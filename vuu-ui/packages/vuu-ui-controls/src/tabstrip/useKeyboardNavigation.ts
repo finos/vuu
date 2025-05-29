@@ -4,7 +4,7 @@ import {
   getElementByDataIndex,
   getFocusableElement,
   orientationType,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import {
   FocusEvent,
   FocusEventHandler,
@@ -23,7 +23,7 @@ import {
   ArrowRight,
   Home,
   End,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { getIndexOfEditedItem } from "./tabstrip-dom-utils";
 
 type directionType = "bwd" | "fwd" | "start" | "end";
@@ -45,7 +45,7 @@ const navigation = {
 
 const isNavigationKey = (
   key: string,
-  orientation: orientationType = "horizontal"
+  orientation: orientationType = "horizontal",
 ) => navigation[orientation][key] !== undefined;
 
 const isMenuActivationKey = (key: string) => key === ArrowDown;
@@ -101,7 +101,7 @@ interface TabstripNavigationHookResult {
     tabIndex: number,
     immediateFocus?: boolean,
     withKeyboard?: boolean,
-    delay?: number
+    delay?: number,
   ) => void;
   focusVisible: number;
   focusIsWithinComponent: boolean;
@@ -134,7 +134,7 @@ export const useKeyboardNavigation = ({
     (value: number) => {
       _setHighlightedIdx((focusedRef.current = value));
     },
-    [_setHighlightedIdx]
+    [_setHighlightedIdx],
   );
 
   const keyboardNavigation = useRef(false);
@@ -144,7 +144,7 @@ export const useKeyboardNavigation = ({
       tabIndex: number,
       immediateFocus = false,
       withKeyboard?: boolean,
-      delay = 70
+      delay = 70,
     ) => {
       // The timeout is important in two scenarios:
       // 1) where tab has overflowed and is being selected from overflow menu.
@@ -177,7 +177,7 @@ export const useKeyboardNavigation = ({
         setTimeout(setFocus, delay);
       }
     },
-    [containerRef, setHighlightedIdx]
+    [containerRef, setHighlightedIdx],
   );
 
   const onFocus = (e: FocusEvent<HTMLElement>) => {
@@ -210,7 +210,7 @@ export const useKeyboardNavigation = ({
 
   const getIndexCount = useCallback(
     () => containerRef.current?.querySelectorAll(`[data-index]`).length ?? 0,
-    [containerRef]
+    [containerRef],
   );
 
   const nextFocusableItemIdx = useCallback(
@@ -225,7 +225,7 @@ export const useKeyboardNavigation = ({
         ((nextDirection === "fwd" && nextIdx < indexCount) ||
           (nextDirection === "bwd" && nextIdx > 0)) &&
         !isNonWrappedElement(
-          getElementByDataIndex(containerRef.current, nextIdx)
+          getElementByDataIndex(containerRef.current, nextIdx),
         )
       ) {
         const newIdx = nextItemIdx(indexCount, nextDirection, nextIdx);
@@ -237,7 +237,7 @@ export const useKeyboardNavigation = ({
       }
       return nextIdx;
     },
-    [containerRef, getIndexCount]
+    [containerRef, getIndexCount],
   );
 
   // forceFocusVisible supports an edge case - first or last Tab are clicked
@@ -264,7 +264,7 @@ export const useKeyboardNavigation = ({
       nextFocusableItemIdx,
       focusTab,
       orientation,
-    ]
+    ],
   );
 
   const highlightedTabHasMenu = useCallback(() => {
@@ -304,7 +304,7 @@ export const useKeyboardNavigation = ({
       highlightedTabHasMenu,
       navigateChildItems,
       orientation,
-    ]
+    ],
   );
 
   // TODO, in common hooks, we use mouse movement to track current highlighted

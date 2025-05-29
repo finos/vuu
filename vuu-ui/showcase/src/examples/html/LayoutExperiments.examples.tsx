@@ -1,4 +1,4 @@
-// import { Table } from "@finos/vuu-table";
+// import { Table } from "@vuu-ui/vuu-table";
 import { Button } from "@salt-ds/core";
 import { useState } from "react";
 // import { useTableConfig } from "../utils/useTableConfig";

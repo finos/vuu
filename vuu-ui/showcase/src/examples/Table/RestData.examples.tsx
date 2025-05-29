@@ -1,12 +1,12 @@
-import { RestDataSourceProvider } from "@finos/vuu-data-react/src/datasource-provider/RestDataSourceProvider";
-import { getSchema } from "@finos/vuu-data-test";
-import { TableProps } from "@finos/vuu-table";
+import { RestDataSourceProvider } from "@vuu-ui/vuu-data-react/src/datasource-provider/RestDataSourceProvider";
+import { getSchema } from "@vuu-ui/vuu-data-test";
+import { TableProps } from "@vuu-ui/vuu-table";
 import { useCallback, useMemo, useState } from "react";
-import { toColumnName, useDataSource } from "@finos/vuu-utils";
-import { FilterTable } from "@finos/vuu-datatable";
-import { FilterBarProps } from "@finos/vuu-filters";
-import { FilterState } from "@finos/vuu-filter-types";
-import { DataSourceFilter } from "@finos/vuu-data-types";
+import { toColumnName, useDataSource } from "@vuu-ui/vuu-utils";
+import { FilterTable } from "@vuu-ui/vuu-datatable";
+import { FilterBarProps } from "@vuu-ui/vuu-filters";
+import { FilterState } from "@vuu-ui/vuu-filter-types";
+import { DataSourceFilter } from "@vuu-ui/vuu-data-types";
 
 const FilterTableTemplate = ({
   quickFilterColumns,

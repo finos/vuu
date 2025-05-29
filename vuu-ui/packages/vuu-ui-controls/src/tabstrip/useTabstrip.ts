@@ -1,6 +1,6 @@
-import type { MenuActionHandler } from "@finos/vuu-data-types";
-import type { OverflowItem } from "@finos/vuu-ui-controls";
-import { orientationType } from "@finos/vuu-utils";
+import type { MenuActionHandler } from "@vuu-ui/vuu-data-types";
+import type { OverflowItem } from "@vuu-ui/vuu-ui-controls";
+import { orientationType } from "@vuu-ui/vuu-utils";
 import {
   KeyboardEvent,
   MouseEvent as ReactMouseEvent,
@@ -20,7 +20,7 @@ export type ExitEditModeHandler = (
   originalValue: string,
   editedValue: string,
   allowDeactivation: boolean,
-  tabIndex: number
+  tabIndex: number,
 ) => void;
 
 export interface TabstripHookProps {
@@ -97,14 +97,14 @@ export const useTabstrip = ({
     useAnimatedSelectionThumb(
       containerRef,
       animateSelectionThumb ? selectionHookSelected : -1,
-      orientation
+      orientation,
     );
 
   const handleDrop = useCallback(
     ({ fromIndex, toIndex }: DropOptions) => {
       const { current: selected } = lastSelection;
       console.log(
-        `useTabstrip handleDrop ${fromIndex} - ${toIndex}  ${selected}`
+        `useTabstrip handleDrop ${fromIndex} - ${toIndex}  ${selected}`,
       );
       onMoveTab?.(fromIndex, toIndex);
       let nextSelectedTab = -1;
@@ -130,7 +130,7 @@ export const useTabstrip = ({
       resumeAnimation,
       selectionHookActivateTab,
       suspendAnimation,
-    ]
+    ],
   );
 
   const { onMouseDown: dragDropHookHandleMouseDown, ...dragDropHook } =
@@ -156,7 +156,7 @@ export const useTabstrip = ({
         keyboardHookFocusTab(tabIndex, false, true);
       }
     },
-    [keyboardHookFocusTab, onExitEditMode]
+    [keyboardHookFocusTab, onExitEditMode],
   );
 
   const handleClick = useCallback(
@@ -168,7 +168,7 @@ export const useTabstrip = ({
       // }
     },
     // [dragDropHook.isDragging, keyboardHook, selectionHook]
-    [keyboardHookHandleClick, selectionHookHandleClick]
+    [keyboardHookHandleClick, selectionHookHandleClick],
   );
 
   const editTab = useCallback(
@@ -176,7 +176,7 @@ export const useTabstrip = ({
       console.log(`set interacted tab state ${tabIndex}`);
       setInteractedTabState({ index: tabIndex, state: "rename" });
     },
-    [highlightedIdx]
+    [highlightedIdx],
   );
 
   const handleKeyDown = useCallback(
@@ -189,7 +189,7 @@ export const useTabstrip = ({
         editTab();
       }
     },
-    [editTab, keyboardHookHandleKeyDown, selectionHookHandleKeyDown]
+    [editTab, keyboardHookHandleKeyDown, selectionHookHandleKeyDown],
   );
 
   const handleCloseTabFromMenu = useCallback(
@@ -199,8 +199,8 @@ export const useTabstrip = ({
         selectedTabIndex > tabIndex
           ? selectedTabIndex - 1
           : selectedTabIndex === tabIndex
-          ? 0
-          : selectedTabIndex;
+            ? 0
+            : selectedTabIndex;
       suspendAnimation();
       // containerRef.current?.classList.add("vuuTabThumb-noTransition");
       onCloseTab?.(tabIndex, newActiveTabIndex);
@@ -210,7 +210,7 @@ export const useTabstrip = ({
       }, 200);
       return true;
     },
-    [containerRef, onCloseTab, resumeAnimation, suspendAnimation]
+    [containerRef, onCloseTab, resumeAnimation, suspendAnimation],
   );
 
   const handleRenameTabFromMenu = useCallback(
@@ -218,7 +218,7 @@ export const useTabstrip = ({
       editTab(tabIndex);
       return true;
     },
-    [editTab]
+    [editTab],
   );
 
   const handleTabMenuAction = useCallback<MenuActionHandler>(
@@ -235,7 +235,7 @@ export const useTabstrip = ({
       }
       return false;
     },
-    [handleCloseTabFromMenu, handleRenameTabFromMenu]
+    [handleCloseTabFromMenu, handleRenameTabFromMenu],
   );
 
   //TODO( why do we sometimes see this fired twice  eg following rename)
@@ -259,7 +259,7 @@ export const useTabstrip = ({
         selectionHookActivateTab(index);
       }
     },
-    [selectionHookActivateTab]
+    [selectionHookActivateTab],
   );
 
   const navigationProps = {

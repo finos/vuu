@@ -1,7 +1,7 @@
-import { TableCellRendererProps } from "@finos/vuu-table-types";
-import { registerComponent } from "@finos/vuu-utils";
+import { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
+import { registerComponent } from "@vuu-ui/vuu-utils";
 import { Input } from "@salt-ds/core";
-import { useEditableText } from "@finos/vuu-ui-controls";
+import { useEditableText } from "@vuu-ui/vuu-ui-controls";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";

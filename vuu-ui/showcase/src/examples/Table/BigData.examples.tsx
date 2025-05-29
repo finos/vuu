@@ -1,9 +1,9 @@
-import { ArrayDataSource } from "@finos/vuu-data-local";
-import { ArrayProxy } from "@finos/vuu-data-test";
-import { DataSource } from "@finos/vuu-data-types";
-import { noScrolling, ScrollingAPI, Table } from "@finos/vuu-table";
-import { TableConfig } from "@finos/vuu-table-types";
-import { Toolbar } from "@finos/vuu-ui-controls";
+import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
+import { ArrayProxy } from "@vuu-ui/vuu-data-test";
+import { DataSource } from "@vuu-ui/vuu-data-types";
+import { noScrolling, ScrollingAPI, Table } from "@vuu-ui/vuu-table";
+import { TableConfig } from "@vuu-ui/vuu-table-types";
+import { Toolbar } from "@vuu-ui/vuu-ui-controls";
 import { Button, Input } from "@salt-ds/core";
 import {
   ChangeEventHandler,

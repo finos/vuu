@@ -3,7 +3,7 @@ import {
   LayoutJSON,
   LayoutModel,
   WithActive,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import React, { isValidElement, ReactElement } from "react";
 import { getProp, getProps } from "./propUtils";
 import { typeOf } from "./typeOf";
@@ -52,7 +52,7 @@ export const resolvePath = (source: ReactElement, path = ""): string => {
  */
 export const resolveJSONPath = (
   source: LayoutJSON,
-  path = ""
+  path = "",
 ): LayoutJSON | undefined => {
   const [step1, ...steps] = path.split(".");
   if (step1?.startsWith("#")) {
@@ -72,7 +72,7 @@ export const resolveJSONPath = (
 
 export function followPathToParent(
   source: ReactElement,
-  path: string
+  path: string,
 ): ReactElement | null {
   const { "data-path": dataPath, path: sourcePath = dataPath } =
     getProps(source);
@@ -86,7 +86,7 @@ export function followPathToParent(
 export function findTarget(
   source: LayoutModel | undefined,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  test: (props: any) => boolean
+  test: (props: any) => boolean,
 ): LayoutModel | undefined {
   if (source) {
     const { children, ...props } = getProps(source);
@@ -107,7 +107,7 @@ export function findTarget(
 
 export function containerOf(
   source: LayoutModel,
-  target: LayoutModel
+  target: LayoutModel,
 ): LayoutModel | null {
   if (target === source) {
     return null;
@@ -125,7 +125,7 @@ export function containerOf(
 
 export const getChild = (
   children: ReactElement[],
-  idx: number
+  idx: number,
 ): ReactElement | undefined => {
   if (React.isValidElement(children) && idx == 0) {
     return children;
@@ -152,7 +152,7 @@ export function followPathToComponent(component: ReactElement, path: string) {
 const findTargetById = (
   source: ReactElement,
   id: string,
-  throwIfNotFound = true
+  throwIfNotFound = true,
 ): ReactElement | undefined => {
   const { children, id: idProp } = source.props;
   if (idProp === id) {
@@ -179,7 +179,7 @@ const findTargetById = (
 const findTargetJSONById = (
   source: LayoutJSON,
   id: string,
-  throwIfNotFound = true
+  throwIfNotFound = true,
 ): LayoutJSON | undefined => {
   const { children, id: idProp } = source;
   if (idProp === id) {
@@ -204,12 +204,12 @@ const findTargetJSONById = (
 
 export function followPath(
   source: LayoutModel,
-  path: string
+  path: string,
 ): LayoutModel | undefined;
 export function followPath(
   source: ReactElement,
   path: string,
-  throwIfNotFound: true
+  throwIfNotFound: true,
 ): ReactElement;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function followPath(source: any, path: any, throwIfNotFound = false) {
@@ -221,7 +221,7 @@ export function followPath(source: any, path: any, throwIfNotFound = false) {
     getProps(source);
   if (path.indexOf(sourcePath) !== 0) {
     throw Error(
-      `pathUtils.followPath path ${path} is not within source path ${sourcePath}`
+      `pathUtils.followPath path ${path} is not within source path ${sourcePath}`,
     );
   }
   const route = path.slice(sourcePath.length + 1);
@@ -310,7 +310,7 @@ export function previousLeaf(root: ReactElement, path: string) {
         lastIdx = pathIndices.pop() as number;
         parent = followPathToParent(
           root,
-          getProp(parent, "path")
+          getProp(parent, "path"),
         ) as ReactElement;
         if (lastIdx > 0) {
           const nextStep = parent.props.children[lastIdx - 1];
@@ -349,7 +349,7 @@ type NextStepResult = {
 export function nextStep(
   pathSoFar: string,
   targetPath: string,
-  followPathToEnd = false
+  followPathToEnd = false,
 ): NextStepResult {
   if (pathSoFar === targetPath) {
     return { idx: -1, finalStep: true };
@@ -372,7 +372,7 @@ export function resetPath(
   model: ReactElement,
   path: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  additionalProps?: any
+  additionalProps?: any,
 ): ReactElement {
   if (getProp(model, "path") === path) {
     return model;
@@ -389,6 +389,6 @@ export function resetPath(
   return React.cloneElement(
     model,
     { [pathPropName]: path, ...additionalProps },
-    children
+    children,
   );
 }

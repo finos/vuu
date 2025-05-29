@@ -1,4 +1,4 @@
-import { IconButton } from "@finos/vuu-ui-controls";
+import { IconButton } from "@vuu-ui/vuu-ui-controls";
 import {
   Menu,
   MenuItem,
@@ -9,7 +9,7 @@ import {
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 
-import { DataSourceRow } from "@finos/vuu-data-types";
+import { DataSourceRow } from "@vuu-ui/vuu-data-types";
 import { type Column as TanstackColumn } from "@tanstack/react-table";
 import { MouseEventHandler, ReactElement, useCallback } from "react";
 import columnMenuCss from "./ColumnMenu.css";

@@ -3,7 +3,7 @@ import {
   ColumnDescriptorCustomRenderer,
   ColumnTypeRendering,
   FormattingSettingsProps,
-} from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-table-types";
 import {
   CellRendererDescriptor,
   ConfigurationEditorProps,
@@ -11,7 +11,7 @@ import {
   getConfigurationEditor,
   isColumnTypeRenderer,
   isTypeDescriptor,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { Dropdown, FormField, FormFieldLabel, Option } from "@salt-ds/core";
 import cx from "clsx";
 import { HTMLAttributes, SyntheticEvent, useCallback, useMemo } from "react";
@@ -44,7 +44,7 @@ export const ColumnFormattingPanel = ({
         onChangeFormatting,
         onChangeColumnType,
       }),
-    [column, onChangeColumnType, onChangeFormatting]
+    [column, onChangeColumnType, onChangeFormatting],
   );
 
   console.log({ formattingSettingsComponent });
@@ -68,7 +68,7 @@ export const ColumnFormattingPanel = ({
         ? type.renderer.name
         : undefined;
     const configuredRenderer = availableRenderers.find(
-      (renderer) => renderer.name === rendererName
+      (renderer) => renderer.name === rendererName,
     );
     return configuredRenderer ?? defaultRenderer;
   }, [availableRenderers, column]);
@@ -76,14 +76,14 @@ export const ColumnFormattingPanel = ({
   const handleChangeRenderer = useCallback(
     (
       _e: SyntheticEvent,
-      [cellRendererDescriptor]: CellRendererDescriptor[]
+      [cellRendererDescriptor]: CellRendererDescriptor[],
     ) => {
       const renderProps: ColumnTypeRendering = {
         name: cellRendererDescriptor.name,
       };
       onChangeRendering?.(renderProps);
     },
-    [onChangeRendering]
+    [onChangeRendering],
   );
 
   const { serverDataType = "string" } = column;

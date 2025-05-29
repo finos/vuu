@@ -1,4 +1,4 @@
-import { DataSourceRow } from "@finos/vuu-data-types";
+import { DataSourceRow } from "@vuu-ui/vuu-data-types";
 import { describe, expect, it } from "vitest";
 import { actualRowPositioning, virtualRowPositioning } from "../src/row-utils";
 

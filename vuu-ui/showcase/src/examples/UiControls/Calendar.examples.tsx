@@ -1,7 +1,7 @@
 import {
   Calendar,
   UseSingleSelectionCalendarProps,
-} from "@finos/vuu-ui-controls";
+} from "@vuu-ui/vuu-ui-controls";
 import {
   CalendarDate,
   DateValue,

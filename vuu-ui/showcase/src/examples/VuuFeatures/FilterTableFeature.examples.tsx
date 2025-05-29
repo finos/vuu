@@ -1,9 +1,9 @@
-import { getSchema, LocalDataSourceProvider } from "@finos/vuu-data-test";
-import { FlexboxLayout, LayoutProvider, View } from "@finos/vuu-layout";
-import { Feature } from "@finos/vuu-shell";
+import { getSchema, LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import { FlexboxLayout, LayoutProvider, View } from "@vuu-ui/vuu-layout";
+import { Feature } from "@vuu-ui/vuu-shell";
 import FilterTableFeature from "../../features/FilterTable.feature";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
-import { type DynamicFeatureProps, registerComponent } from "@finos/vuu-utils";
+import { type DynamicFeatureProps, registerComponent } from "@vuu-ui/vuu-utils";
 
 registerComponent("FilterTableFeature", FilterTableFeature, "view");
 

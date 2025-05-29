@@ -1,4 +1,4 @@
-import { elementImplementsJSONSerialization } from "@finos/vuu-utils";
+import { elementImplementsJSONSerialization } from "@vuu-ui/vuu-utils";
 import React, { CSSProperties, ReactElement } from "react";
 import { getProps } from "./propUtils";
 import { typeOf } from "./typeOf";

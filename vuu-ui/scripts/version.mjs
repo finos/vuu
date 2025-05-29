@@ -20,7 +20,7 @@ const packages = [
 const rewriteDependencyVersions = (dependencies, version) => {
   let deps = Object.keys(dependencies).slice();
   deps.forEach((pckName) => {
-    if (pckName.startsWith("@finos")) {
+    if (pckName.startsWith("@vuu-ui")) {
       dependencies[pckName] = version;
     }
   });
@@ -51,6 +51,6 @@ function bumpPackageDependencyVersions(packagePath) {
 }
 
 await Promise.all(
-  packages.map((packagePath) => bumpPackageVersion(packagePath))
+  packages.map((packagePath) => bumpPackageVersion(packagePath)),
 );
 packages.forEach((packagePath) => bumpPackageDependencyVersions(packagePath));

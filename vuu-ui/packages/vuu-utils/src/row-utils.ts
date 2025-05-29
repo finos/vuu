@@ -1,5 +1,8 @@
 //TODO this all probably belongs in vuu-table
-import type { DataSourceRow, DataSourceRowObject } from "@finos/vuu-data-types";
+import type {
+  DataSourceRow,
+  DataSourceRowObject,
+} from "@vuu-ui/vuu-data-types";
 import type { MutableRefObject } from "react";
 import { ColumnMap, metadataKeys } from "./column-utils";
 import { isRowSelected } from "./selection-utils";

@@ -8,7 +8,7 @@ import {
   ViewportRange,
 } from "./dragDropTypes";
 import { useDragDisplacers } from "./useDragDisplacers";
-import { dispatchMouseEvent } from "@finos/vuu-utils";
+import { dispatchMouseEvent } from "@vuu-ui/vuu-utils";
 import {
   dimensions,
   getIndexOfDraggedItem,
@@ -62,7 +62,7 @@ export const useDragDropNaturalMovement = ({
     (scrollDirection: "fwd" | "bwd") => {
       const itemContainer = getItemParentContainer(
         containerRef.current,
-        itemQuery
+        itemQuery,
       );
       const { current: draggedItem } = draggedItemRef;
 
@@ -74,11 +74,11 @@ export const useDragDropNaturalMovement = ({
         setTerminalSpacer(
           itemContainer,
           scrollDirection === "fwd" ? "end" : "start",
-          draggedItem.size
+          draggedItem.size,
         );
       }
     },
-    [containerRef, itemQuery, setTerminalSpacer]
+    [containerRef, itemQuery, setTerminalSpacer],
   );
 
   const handleScrollStop = useCallback(
@@ -91,7 +91,7 @@ export const useDragDropNaturalMovement = ({
           container,
           orientation,
           fullItemQuery,
-          rangeRef.current
+          rangeRef.current,
         ));
 
         const dropTargetAtBoundary =
@@ -121,7 +121,7 @@ export const useDragDropNaturalMovement = ({
         }
       }
     },
-    [containerRef, fullItemQuery, orientation]
+    [containerRef, fullItemQuery, orientation],
   );
 
   const beginDrag = useCallback(
@@ -149,7 +149,7 @@ export const useDragDropNaturalMovement = ({
           orientation,
           fullItemQuery,
           viewportRange,
-          draggedItemId
+          draggedItemId,
         ));
 
         if (internalDrag) {
@@ -168,7 +168,7 @@ export const useDragDropNaturalMovement = ({
               draggedItem,
               draggedItem.size,
               false,
-              "static"
+              "static",
             );
           }
         } else {
@@ -211,7 +211,7 @@ export const useDragDropNaturalMovement = ({
             dropTarget,
             dropTarget.size,
             true,
-            "static"
+            "static",
           );
         }
       }
@@ -224,7 +224,7 @@ export const useDragDropNaturalMovement = ({
       orientation,
       selected,
       viewportRange,
-    ]
+    ],
   );
 
   const [showPopup, hidePopup] = useMemo(() => {
@@ -233,7 +233,7 @@ export const useDragDropNaturalMovement = ({
       if (!popupShowing) {
         popupShowing = true;
         const button = dropTarget.element.querySelector(
-          ".vuuPopupMenu"
+          ".vuuPopupMenu",
         ) as HTMLElement;
         if (button) {
           dispatchMouseEvent(button, "click");
@@ -245,7 +245,7 @@ export const useDragDropNaturalMovement = ({
       if (popupShowing) {
         popupShowing = false;
         const button = dropTarget.element.querySelector(
-          ".vuuPopupMenu"
+          ".vuuPopupMenu",
         ) as HTMLElement;
         if (button) {
           dispatchMouseEvent(button, "click");
@@ -270,7 +270,7 @@ export const useDragDropNaturalMovement = ({
             dropTargets,
             dragPos,
             draggedItem.size,
-            mouseMoveDirection
+            mouseMoveDirection,
           );
 
           if (nextDropTarget && !nextDropTarget.isDraggedItem) {
@@ -292,11 +292,11 @@ export const useDragDropNaturalMovement = ({
                 nextDropTarget,
                 size,
                 true,
-                mouseMoveDirection
+                mouseMoveDirection,
               );
 
               const overflowIndicator = dropTargets.at(
-                -1
+                -1,
               ) as MeasuredDropTarget;
               hidePopup(overflowIndicator);
               setShowOverflow((overflowMenuShowingRef.current = false));
@@ -306,7 +306,7 @@ export const useDragDropNaturalMovement = ({
         }
       }
     },
-    [containerRef, displaceItem, displaceLastItem, hidePopup, showPopup]
+    [containerRef, displaceItem, displaceLastItem, hidePopup, showPopup],
   );
 
   const drop = useCallback((): DropOptions => {
@@ -329,8 +329,8 @@ export const useDragDropNaturalMovement = ({
     const toIndex = overflowMenuShowingRef.current
       ? -1
       : fromIndex < insertionPosition && !isLastItem
-      ? insertionPosition - 1
-      : insertionPosition;
+        ? insertionPosition - 1
+        : insertionPosition;
 
     return { fromIndex, toIndex, isExternal };
   }, [clearSpacers]);

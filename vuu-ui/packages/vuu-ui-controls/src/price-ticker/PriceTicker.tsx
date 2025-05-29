@@ -3,7 +3,7 @@ import {
   isValidNumber,
   numericFormatter,
   valueChangeDirection,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { HTMLAttributes, memo, useMemo, useRef } from "react";
 import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
@@ -64,6 +64,6 @@ export const PriceTicker = memo(
         {showArrow ? <span data-icon="price-arrow" /> : null}
       </div>
     );
-  }
+  },
 );
 PriceTicker.displayName = "PriceTicker";

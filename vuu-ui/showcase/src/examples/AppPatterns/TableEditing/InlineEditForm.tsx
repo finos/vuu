@@ -1,13 +1,13 @@
-import { getSchema } from "@finos/vuu-data-test";
-import { DockLayout, Drawer } from "@finos/vuu-layout";
+import { getSchema } from "@vuu-ui/vuu-data-test";
+import { DockLayout, Drawer } from "@vuu-ui/vuu-layout";
 import { RefCallback, useCallback, useMemo } from "react";
-import { Table } from "@finos/vuu-table";
-import { TableConfig } from "@finos/vuu-table-types";
-import { EditForm } from "@finos/vuu-data-react";
+import { Table } from "@vuu-ui/vuu-table";
+import { TableConfig } from "@vuu-ui/vuu-table-types";
+import { EditForm } from "@vuu-ui/vuu-data-react";
 import { useTableEditManager } from "./useTableEditManager";
-import { LocalDataSourceProvider } from "@finos/vuu-data-test";
-import { DataValueDescriptor } from "@finos/vuu-data-types";
-import { DialogProvider } from "@finos/vuu-popups";
+import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import { DataValueDescriptor } from "@vuu-ui/vuu-data-types";
+import { DialogProvider } from "@vuu-ui/vuu-popups";
 
 const instrumentsTable = { module: "SIMUL", table: "instruments" };
 

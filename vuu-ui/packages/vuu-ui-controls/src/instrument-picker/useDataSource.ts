@@ -4,7 +4,7 @@ import {
   DataSource,
   DataSourceRow,
   SubscribeCallback,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MovingWindow } from "./moving-window";
 export interface DataSourceHookProps {
@@ -19,7 +19,7 @@ export const useDataSource = ({ dataSource }: DataSourceHookProps) => {
   const dataWindow = useMemo(
     () => new MovingWindow({ from: 0, to: 10 }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [],
   );
 
   const setData = useCallback(
@@ -31,7 +31,7 @@ export const useDataSource = ({ dataSource }: DataSourceHookProps) => {
       data.current = dataWindow.data;
       forceUpdate({});
     },
-    [dataWindow]
+    [dataWindow],
   );
 
   const datasourceMessageHandler: SubscribeCallback = useCallback(
@@ -46,14 +46,14 @@ export const useDataSource = ({ dataSource }: DataSourceHookProps) => {
         console.log(`useDataSource unexpected message ${message.type}`);
       }
     },
-    [setData]
+    [setData],
   );
 
   useEffect(() => {
     console.log("subscribe to dataSource");
     dataSource?.subscribe(
       { range: { from: 0, to: 10 } },
-      datasourceMessageHandler
+      datasourceMessageHandler,
     );
   }, [dataSource, datasourceMessageHandler]);
 

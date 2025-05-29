@@ -1,4 +1,4 @@
-import "@finos/vuu-layout/test/global-mocks";
+import "@vuu-ui/vuu-layout/test/global-mocks";
 import {
   Layout,
   LayoutJSON,
@@ -7,7 +7,7 @@ import {
   formatDate,
   getLocalEntity,
   saveLocalEntity,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { LocalPersistenceManager } from "../../src/persistence-manager/LocalPersistenceManager";
 

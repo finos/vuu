@@ -8,8 +8,8 @@ import {
   keymap,
   minimalSetup,
   startCompletion,
-} from "@finos/vuu-codemirror";
-import { createEl } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-codemirror";
+import { createEl } from "@vuu-ui/vuu-utils";
 import {
   FocusEventHandler,
   MutableRefObject,
@@ -54,12 +54,12 @@ export type ColumnExpressionSuggestionOptions = {
 export interface IExpressionSuggestionProvider {
   getSuggestions: (
     valueType: ColumnExpressionSuggestionType,
-    options?: ColumnExpressionSuggestionOptions
+    options?: ColumnExpressionSuggestionOptions,
   ) => Promise<Completion[]>;
   isPartialMatch: (
     valueType: ColumnExpressionSuggestionType,
     columnName?: string,
-    text?: string | undefined
+    text?: string | undefined,
   ) => Promise<boolean>;
 }
 
@@ -81,12 +81,12 @@ const getOptionClass = (/*completion: Completion*/) => {
 const noop = () => console.log("noooop");
 
 const hasExpressionType = (
-  completion: Completion
+  completion: Completion,
 ): completion is Completion & { expressionType: string } =>
   "expressionType" in completion;
 
 const injectOptionContent = (
-  completion: Completion /*, state: EditorState*/
+  completion: Completion /*, state: EditorState*/,
 ) => {
   if (hasExpressionType(completion)) {
     const div = createEl("div", "expression-type-container");
@@ -173,7 +173,7 @@ export const useColumnExpressionEditor = ({
           }),
           // Enforces single line view
           EditorState.transactionFilter.of((tr) =>
-            tr.newDoc.lines > 1 ? [] : tr
+            tr.newDoc.lines > 1 ? [] : tr,
           ),
           vuuTheme,
           vuuHighlighting,

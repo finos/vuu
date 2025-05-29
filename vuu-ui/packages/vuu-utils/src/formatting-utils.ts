@@ -1,10 +1,10 @@
-import { DateTimeDataValueDescriptor } from "@finos/vuu-data-types";
+import { DateTimeDataValueDescriptor } from "@vuu-ui/vuu-data-types";
 import {
   ColumnDescriptor,
   ColumnTypeFormatting,
   ColumnTypeValueMap,
   ValueFormatter,
-} from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-table-types";
 import {
   isDateTimeDataValue,
   isMappedValueTypeRenderer,

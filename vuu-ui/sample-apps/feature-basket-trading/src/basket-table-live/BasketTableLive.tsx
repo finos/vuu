@@ -1,4 +1,4 @@
-import { Table, TableProps } from "@finos/vuu-table";
+import { Table, TableProps } from "@vuu-ui/vuu-table";
 import { ProgressCell, SpreadCell, StatusCell } from "../cell-renderers";
 
 if (

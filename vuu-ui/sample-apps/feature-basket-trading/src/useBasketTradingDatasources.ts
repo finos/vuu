@@ -1,14 +1,14 @@
-import { useViewContext } from "@finos/vuu-layout";
+import { useViewContext } from "@vuu-ui/vuu-layout";
 import {
   DataSource,
   DataSourceConfig,
   TableSchema,
   ViewportRpcResponse,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import { useCallback, useMemo, useState } from "react";
-import { useNotifications } from "@finos/vuu-popups";
-import { VuuRpcViewportRequest } from "@finos/vuu-protocol-types";
-import { buildColumnMap, ColumnMap, useDataSource } from "@finos/vuu-utils";
+import { useNotifications } from "@vuu-ui/vuu-popups";
+import { VuuRpcViewportRequest } from "@vuu-ui/vuu-protocol-types";
+import { buildColumnMap, ColumnMap, useDataSource } from "@vuu-ui/vuu-utils";
 
 export type basketDataSourceKey =
   | "data-source-basket"

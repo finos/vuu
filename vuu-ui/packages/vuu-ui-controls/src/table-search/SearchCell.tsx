@@ -1,7 +1,7 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { TableCellRendererProps } from "@finos/vuu-table-types";
-import { useHighlighting } from "@finos/vuu-table";
+import { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
+import { useHighlighting } from "@vuu-ui/vuu-table";
 
 import searchCellCss from "./SearchCell.css";
 

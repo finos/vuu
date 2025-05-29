@@ -1,4 +1,4 @@
-import { createEl } from "@finos/vuu-utils";
+import { createEl } from "@vuu-ui/vuu-utils";
 import { ColumnFunctionDescriptor } from "./column-function-descriptors";
 
 export const functionDocInfo = ({
@@ -29,7 +29,7 @@ export const functionDocInfo = ({
     const expressionElement = createEl(
       "div",
       "example-expression",
-      example.expression
+      example.expression,
     );
     const resultElement = createEl("div", "example-result", example.result);
 

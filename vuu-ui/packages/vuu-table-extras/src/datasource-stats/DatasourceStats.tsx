@@ -1,5 +1,5 @@
-import { DataSource } from "@finos/vuu-data-types";
-import { VuuRange } from "@finos/vuu-protocol-types";
+import { DataSource } from "@vuu-ui/vuu-data-types";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";

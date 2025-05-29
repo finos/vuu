@@ -12,7 +12,7 @@ import {
   type ResizeState,
 } from "./GridLayoutModel";
 import { GridModel } from "./GridModel";
-import { queryClosest } from "@finos/vuu-utils";
+import { queryClosest } from "@vuu-ui/vuu-utils";
 
 export type SplitterResizingHookProps = Pick<
   GridLayoutProps,

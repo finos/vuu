@@ -1,6 +1,6 @@
-import { useLayoutOperation } from "@finos/vuu-layout";
-import { Toolbar } from "@finos/vuu-ui-controls";
-import { ThemeMode } from "@finos/vuu-utils";
+import { useLayoutOperation } from "@vuu-ui/vuu-layout";
+import { Toolbar } from "@vuu-ui/vuu-ui-controls";
+import { ThemeMode } from "@vuu-ui/vuu-utils";
 import { Button } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";

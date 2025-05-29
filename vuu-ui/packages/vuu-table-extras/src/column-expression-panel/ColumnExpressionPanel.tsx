@@ -1,6 +1,6 @@
-import { VuuColumnDataType } from "@finos/vuu-protocol-types";
-import { ColumnDescriptor, ColumnSettingsProps } from "@finos/vuu-table-types";
-import { getCalculatedColumnDetails } from "@finos/vuu-utils";
+import { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
+import { ColumnDescriptor, ColumnSettingsProps } from "@vuu-ui/vuu-table-types";
+import { getCalculatedColumnDetails } from "@vuu-ui/vuu-utils";
 import {
   Dropdown,
   FormField,
@@ -47,7 +47,7 @@ export const ColumnExpressionPanel = ({
   // The initial value to pass into the Expression Input. That is a
   // CodeMirror editor and will manage its own state once initialised.
   const initialExpressionRef = useRef<string>(
-    getCalculatedColumnDetails(column).expression ?? ""
+    getCalculatedColumnDetails(column).expression ?? "",
   );
 
   const suggestionProvider = useColumnExpressionSuggestionProvider({

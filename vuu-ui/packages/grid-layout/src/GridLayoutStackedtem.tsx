@@ -25,7 +25,7 @@ import {
   useGridLayoutDispatch,
   useGridModel,
 } from "./GridLayoutContext";
-import { IconButton } from "@finos/vuu-ui-controls";
+import { IconButton } from "@vuu-ui/vuu-ui-controls";
 import { TabMenu } from "./TabMenu";
 import { AddTabDialog } from "./AddTabDialog";
 

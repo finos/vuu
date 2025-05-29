@@ -3,7 +3,7 @@ import {
   getUrlParameter,
   ThemeMode,
   TreeSourceNode,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { SaltProvider } from "@salt-ds/core";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -11,11 +11,11 @@ import {
   isComponentDescriptor,
   loadTheme,
 } from "./shared-utils";
-import { LocalDataSourceProvider } from "@finos/vuu-data-test";
+import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 
 import "./Showcase.css";
 import { DataLocation } from "./showcase-main/ShowcaseProvider";
-import { VuuDataSourceProvider } from "@finos/vuu-data-react";
+import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 
 const asThemeMode = (input: string | undefined): ThemeMode => {
   if (input === "light" || input === "dark") {

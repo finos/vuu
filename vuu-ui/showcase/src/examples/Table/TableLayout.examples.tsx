@@ -1,24 +1,24 @@
-import { ArrayDataSource } from "@finos/vuu-data-local";
+import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
 import {
   LocalDataSourceProvider,
   SimulTableName,
   getSchema,
   vuuModule,
-} from "@finos/vuu-data-test";
+} from "@vuu-ui/vuu-data-test";
 import {
   DataSource,
   Selection,
   SelectionChangeHandler,
   TableSchema,
-} from "@finos/vuu-data-types";
-import { DockLayout, Drawer } from "@finos/vuu-layout";
-import { Table, TableProps, useHeaderProps } from "@finos/vuu-table";
-import { BaseRowProps, TableConfig } from "@finos/vuu-table-types";
-import { List, ListItem } from "@finos/vuu-ui-controls";
+} from "@vuu-ui/vuu-data-types";
+import { DockLayout, Drawer } from "@vuu-ui/vuu-layout";
+import { Table, TableProps, useHeaderProps } from "@vuu-ui/vuu-table";
+import { BaseRowProps, TableConfig } from "@vuu-ui/vuu-table-types";
+import { List, ListItem } from "@vuu-ui/vuu-ui-controls";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
-import { VuuRpcMenuRequest } from "@finos/vuu-protocol-types";
-import { useDataSource } from "@finos/vuu-utils";
+import { VuuRpcMenuRequest } from "@vuu-ui/vuu-protocol-types";
+import { useDataSource } from "@vuu-ui/vuu-utils";
 
 type DataTableProps = Partial<
   Omit<TableProps, "config"> & { config?: Partial<TableConfig> }

@@ -1,4 +1,4 @@
-import { uuid } from "@finos/vuu-utils";
+import { uuid } from "@vuu-ui/vuu-utils";
 import { GridModelChildItem } from "./GridModel";
 
 export type GridMatrix = number[][];

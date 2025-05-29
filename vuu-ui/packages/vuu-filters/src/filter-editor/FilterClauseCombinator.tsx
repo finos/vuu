@@ -1,8 +1,8 @@
-import type { FilterCombinatorOp } from "@finos/vuu-filter-types";
+import type { FilterCombinatorOp } from "@vuu-ui/vuu-filter-types";
 import {
   CycleStateButton,
   CycleStateButtonChangeHandler,
-} from "@finos/vuu-ui-controls";
+} from "@vuu-ui/vuu-ui-controls";
 import { KeyboardEventHandler, useCallback } from "react";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";

@@ -1,6 +1,6 @@
 import { Button } from "@salt-ds/core";
 import { CSSProperties } from "react";
-import { Icon, IconButton } from "@finos/vuu-ui-controls";
+import { Icon, IconButton } from "@vuu-ui/vuu-ui-controls";
 
 export const DefaultButton = () => {
   const handleClick = () => {

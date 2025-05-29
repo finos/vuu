@@ -1,16 +1,16 @@
-import { MenuActionHandler } from "@finos/vuu-data-types";
+import { MenuActionHandler } from "@vuu-ui/vuu-data-types";
 import {
   CycleStateButton,
   ExpandoInput,
   Icon,
   useEditableText,
-} from "@finos/vuu-ui-controls";
+} from "@vuu-ui/vuu-ui-controls";
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
 import type {
   CommitResponse,
   DataItemEditHandler,
-} from "@finos/vuu-table-types";
-import type { VuuRowDataItemType } from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-table-types";
+import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { HTMLAttributes, useCallback } from "react";
 import { BasketSelector, BasketSelectorProps } from "../basket-selector";
 import { Basket } from "../useBasketTrading";
@@ -19,7 +19,7 @@ import { BasketMenu } from "./BasketMenu";
 import cx from "clsx";
 
 import "./BasketToolbar.css";
-import { CommitHandler } from "@finos/vuu-utils";
+import { CommitHandler } from "@vuu-ui/vuu-utils";
 
 const classBase = "vuuBasketToolbar";
 

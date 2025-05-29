@@ -1,8 +1,8 @@
 import type {
   DataItemEditHandler,
   TableCellProps,
-} from "@finos/vuu-table-types";
-import { getTypedValue } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-table-types";
+import { getTypedValue } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { MouseEventHandler, useCallback, useState } from "react";

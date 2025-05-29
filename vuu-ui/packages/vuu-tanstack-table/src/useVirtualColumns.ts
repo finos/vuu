@@ -1,7 +1,7 @@
 import { useVirtualizer, VirtualItem } from "@tanstack/react-virtual";
 import type { Table } from "@tanstack/react-table";
 import { RefObject } from "react";
-import { DataSourceRow } from "@finos/vuu-data-types";
+import { DataSourceRow } from "@vuu-ui/vuu-data-types";
 
 export interface VirtualColumnsHookProps {
   scrollableContainerRef: RefObject<HTMLDivElement>;

@@ -1,4 +1,4 @@
-import { Entity } from "@finos/vuu-utils";
+import { Entity } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { buildFormEditState } from "./form-edit-state";

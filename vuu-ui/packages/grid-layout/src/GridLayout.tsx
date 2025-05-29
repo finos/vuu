@@ -1,4 +1,4 @@
-import { registerComponent } from "@finos/vuu-utils";
+import { registerComponent } from "@vuu-ui/vuu-utils";
 import { useIdMemo } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";

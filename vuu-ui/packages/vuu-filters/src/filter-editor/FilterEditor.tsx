@@ -1,7 +1,7 @@
-import { TableSchema } from "@finos/vuu-data-types";
-import type { Filter } from "@finos/vuu-filter-types";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { SplitButton } from "@finos/vuu-ui-controls";
+import { TableSchema } from "@vuu-ui/vuu-data-types";
+import type { Filter } from "@vuu-ui/vuu-filter-types";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { SplitButton } from "@vuu-ui/vuu-ui-controls";
 import { Button } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";

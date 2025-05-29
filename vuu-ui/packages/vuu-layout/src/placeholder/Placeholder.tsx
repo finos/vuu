@@ -1,7 +1,7 @@
 import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { registerComponent } from "@finos/vuu-utils";
+import { registerComponent } from "@vuu-ui/vuu-utils";
 import { LayoutStartPanel } from "./LayoutStartPanel";
 import { View } from "../layout-view/View";
 import type { ViewProps } from "../layout-view/viewTypes";

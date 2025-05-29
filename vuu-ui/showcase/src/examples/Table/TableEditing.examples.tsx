@@ -2,21 +2,21 @@ import {
   LocalDataSourceProvider,
   VuuTableName,
   getSchema,
-} from "@finos/vuu-data-test";
-import { DataSource, DataValueType } from "@finos/vuu-data-types";
-import { Table, TableProps } from "@finos/vuu-table";
+} from "@vuu-ui/vuu-data-test";
+import { DataSource, DataValueType } from "@vuu-ui/vuu-data-types";
+import { Table, TableProps } from "@vuu-ui/vuu-table";
 import {
   DataCellEditNotification,
   DefaultColumnConfiguration,
   TableConfig,
-} from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-table-types";
 import {
   applyDefaultColumnConfig,
   registerComponent,
   useDataSource,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
-import { DropdownCell } from "@finos/vuu-table-extras";
+import { DropdownCell } from "@vuu-ui/vuu-table-extras";
 
 registerComponent("dropdown-cell", DropdownCell, "cell-renderer", {
   userCanAssign: false,

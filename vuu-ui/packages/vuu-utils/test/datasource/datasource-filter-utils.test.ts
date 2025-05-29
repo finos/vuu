@@ -1,4 +1,4 @@
-import { WithBaseFilter, WithFullConfig } from "@finos/vuu-data-types";
+import { WithBaseFilter, WithFullConfig } from "@vuu-ui/vuu-data-types";
 import { describe, expect, it } from "vitest";
 import { combineFilters } from "../../src/datasource/datasource-filter-utils";
 

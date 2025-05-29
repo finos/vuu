@@ -1,5 +1,5 @@
-import { Tab, Tabstrip, TabstripProps } from "@finos/vuu-ui-controls";
-import { useId } from "@finos/vuu-utils";
+import { Tab, Tabstrip, TabstripProps } from "@vuu-ui/vuu-ui-controls";
+import { useId } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";

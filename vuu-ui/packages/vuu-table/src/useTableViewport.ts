@@ -3,8 +3,8 @@
  * and virtualisation of the table. This includes measurements required
  * to support pinned columns.
  */
-import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
-import { MeasuredSize } from "@finos/vuu-ui-controls";
+import { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { MeasuredSize } from "@vuu-ui/vuu-ui-controls";
 import {
   actualRowPositioning,
   measurePinnedColumns,
@@ -12,7 +12,7 @@ import {
   RowOffsetFunc,
   RowPositioning,
   virtualRowPositioning,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useRef } from "react";
 
 export interface TableViewportHookProps {

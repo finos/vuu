@@ -1,9 +1,9 @@
-import type { ColumnDescriptor } from "@finos/vuu-table-types";
-import { isNumericColumn, isTextColumn } from "@finos/vuu-utils";
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { isNumericColumn, isTextColumn } from "@vuu-ui/vuu-utils";
 import type {
   FilterClauseOp,
   NumericFilterClauseOp,
-} from "@finos/vuu-filter-types";
+} from "@vuu-ui/vuu-filter-types";
 
 export const textOperators: FilterClauseOp[] = [
   "=",

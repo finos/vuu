@@ -1,5 +1,5 @@
-import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
-import { getColumnStyle } from "@finos/vuu-utils";
+import { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { getColumnStyle } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { useMemo } from "react";
 

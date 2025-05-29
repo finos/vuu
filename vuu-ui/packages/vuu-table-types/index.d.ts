@@ -5,21 +5,21 @@ import type {
   DataValueTypeSimple,
   DataValueValidationChecker,
   EditValidationRule,
-} from "@finos/vuu-data-types";
-import type { Filter } from "@finos/vuu-filter-types";
+} from "@vuu-ui/vuu-data-types";
+import type { Filter } from "@vuu-ui/vuu-filter-types";
 import type {
   VuuAggType,
   VuuMenuItem,
   VuuRowDataItemType,
   VuuSortType,
   VuuTable,
-} from "@finos/vuu-protocol-types";
-import { CellPos } from "@finos/vuu-table/src/table-dom-utils";
+} from "@vuu-ui/vuu-protocol-types";
+import { CellPos } from "@vuu-ui/vuu-table/src/table-dom-utils";
 import type {
   ColumnMap,
   DateTimePattern,
   RowClassNameGenerator,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import type {
   ComponentType,
   CSSProperties,

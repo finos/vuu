@@ -2,7 +2,7 @@ import {
   DynamicFeatureProps,
   importCSS,
   registerComponent,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import React, { Suspense, useEffect } from "react";
 import { FeatureErrorBoundary } from "./FeatureErrorBoundary";
 import { Loader } from "./Loader";

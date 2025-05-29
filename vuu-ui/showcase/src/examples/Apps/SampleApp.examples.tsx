@@ -1,23 +1,23 @@
-import { LocalDataSourceProvider } from "@finos/vuu-data-test";
+import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import {
   FeatureAndLayoutProvider,
   LeftNav,
   SettingsSchema,
   Shell,
   SidePanelProps,
-} from "@finos/vuu-shell";
+} from "@vuu-ui/vuu-shell";
 import {
   ColumnSettingsPanel,
   TableSettingsPanel,
-} from "@finos/vuu-table-extras";
-import { DragDropProvider } from "@finos/vuu-ui-controls";
+} from "@vuu-ui/vuu-table-extras";
+import { DragDropProvider } from "@vuu-ui/vuu-ui-controls";
 import {
   DynamicFeatureDescriptor,
   DynamicFeatureProps,
   GetFeaturePaths,
   env,
   registerComponent,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { CSSProperties, useMemo } from "react";
 import { sysLayouts } from "../_test-data/sysLayoutMetadata";
 

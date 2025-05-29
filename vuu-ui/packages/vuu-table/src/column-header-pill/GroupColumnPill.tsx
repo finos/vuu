@@ -1,4 +1,4 @@
-import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
+import { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 
@@ -28,10 +28,10 @@ export const GroupColumnPill = ({
         ? "arrow-down"
         : "arrow-up"
       : sorted === "A"
-      ? "arrow-up"
-      : sorted === "D"
-      ? "arrow-down"
-      : undefined;
+        ? "arrow-up"
+        : sorted === "D"
+          ? "arrow-down"
+          : undefined;
 
   return (
     <ColumnHeaderPill {...columnHeaderProps} column={column}>

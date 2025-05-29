@@ -1,6 +1,6 @@
 import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
 import { TreeNavPanelProps } from "./TreeNavPanel";
-import { TreeDataSource } from "@finos/vuu-data-local";
+import { TreeDataSource } from "@vuu-ui/vuu-data-local";
 
 export type TreeNavPanelHookProps = Pick<TreeNavPanelProps, "source">;
 

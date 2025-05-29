@@ -7,8 +7,8 @@ import {
   SubscribeProps,
   WithBaseFilter,
   WithFullConfig,
-} from "@finos/vuu-data-types";
-import { VuuTable, VuuGroupBy, VuuRange } from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-data-types";
+import { VuuTable, VuuGroupBy, VuuRange } from "@vuu-ui/vuu-protocol-types";
 import {
   BaseDataSource,
   ColumnMap,
@@ -16,7 +16,7 @@ import {
   buildColumnMap,
   hasFilter,
   hasSort,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import {
   NDJsonReader,
   filterToQueryString,

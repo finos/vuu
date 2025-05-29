@@ -1,19 +1,19 @@
-import { VuuDataSource } from "@finos/vuu-data-remote";
+import { VuuDataSource } from "@vuu-ui/vuu-data-remote";
 import {
   DataSource,
   DataSourceConfig,
   DataSourceFilter,
   TableSchema,
-} from "@finos/vuu-data-types";
-import { useViewContext } from "@finos/vuu-layout";
-import { buildColumnMap, metadataKeys } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-data-types";
+import { useViewContext } from "@vuu-ui/vuu-layout";
+import { buildColumnMap, metadataKeys } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo } from "react";
 import { InstrumentTile } from "./InstrumentTile";
 import { InstrumentTileContainer } from "./InstrumentTileContainer";
 import { useDataSource } from "./useDataSource";
 
 import "./VuuInstrumentTilesFeature.css";
-import { VuuRange } from "@finos/vuu-protocol-types";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 
 const classBase = "VuuInstrumentTilesFeature";
 

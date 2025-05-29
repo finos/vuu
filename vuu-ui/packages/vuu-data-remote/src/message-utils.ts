@@ -2,7 +2,7 @@ import {
   TableSchema,
   VuuUIMessageOut,
   WithRequestId,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import {
   VuuRpcMenuRequest,
   VuuRpcViewportRequest,
@@ -10,7 +10,7 @@ import {
   VuuRow,
   VuuRpcServiceRequest,
   VuuRange,
-} from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-protocol-types";
 
 export const isVuuRpcRequest = (
   message:

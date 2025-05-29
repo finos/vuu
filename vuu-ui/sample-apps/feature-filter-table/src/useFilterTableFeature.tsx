@@ -2,27 +2,27 @@ import {
   MenuActionConfig,
   useSessionDataSource,
   useVuuMenuActions,
-} from "@finos/vuu-data-react";
+} from "@vuu-ui/vuu-data-react";
 import {
   DataSourceVisualLinkCreatedMessage,
   SchemaColumn,
   SuggestionFetcher,
   TypeaheadSuggestionProvider,
-} from "@finos/vuu-data-types";
-import { usePersistFilterState } from "@finos/vuu-datatable";
-import { FilterBarProps, QuickFilterProps } from "@finos/vuu-filters";
-import { useViewContext } from "@finos/vuu-layout";
-import { TypeaheadParams } from "@finos/vuu-protocol-types";
-import { useShellContext } from "@finos/vuu-utils";
-import { TableConfig, TableConfigChangeHandler } from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-data-types";
+import { usePersistFilterState } from "@vuu-ui/vuu-datatable";
+import { FilterBarProps, QuickFilterProps } from "@vuu-ui/vuu-filters";
+import { useViewContext } from "@vuu-ui/vuu-layout";
+import { TypeaheadParams } from "@vuu-ui/vuu-protocol-types";
+import { useShellContext } from "@vuu-ui/vuu-utils";
+import { TableConfig, TableConfigChangeHandler } from "@vuu-ui/vuu-table-types";
 import {
   FilterTableFeatureProps,
   applyDefaultColumnConfig,
   isTypeaheadSuggestionProvider,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FilterMode } from "@finos/vuu-filters/src/filter-bar/useFilterBar";
-import { useVisualLinks } from "@finos/vuu-data-react";
+import { FilterMode } from "@vuu-ui/vuu-filters/src/filter-bar/useFilterBar";
+import { useVisualLinks } from "@vuu-ui/vuu-data-react";
 
 const NO_CONFIG: FilterTableConfig = {};
 

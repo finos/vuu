@@ -1,10 +1,10 @@
-import type { TableSchema } from "@finos/vuu-data-types";
+import type { TableSchema } from "@vuu-ui/vuu-data-types";
 import {
   ColumnDescriptorsByName,
   MultiValueFilterClause,
   SingleValueFilterClause,
-} from "@finos/vuu-filter-types";
-import { CloseReason } from "@finos/vuu-ui-controls";
+} from "@vuu-ui/vuu-filter-types";
+import { CloseReason } from "@vuu-ui/vuu-ui-controls";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";

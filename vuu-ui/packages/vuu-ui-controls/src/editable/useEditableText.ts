@@ -1,7 +1,7 @@
-import { DataValueValidationChecker } from "@finos/vuu-data-types";
-import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
-import { DataItemEditHandler } from "@finos/vuu-table-types";
-import { dispatchCustomEvent, getTypedValue } from "@finos/vuu-utils";
+import { DataValueValidationChecker } from "@vuu-ui/vuu-data-types";
+import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
+import { DataItemEditHandler } from "@vuu-ui/vuu-table-types";
+import { dispatchCustomEvent, getTypedValue } from "@vuu-ui/vuu-utils";
 import {
   FocusEventHandler,
   FormEventHandler,

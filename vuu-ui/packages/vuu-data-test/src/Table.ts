@@ -1,6 +1,6 @@
-import { SchemaColumn, TableSchema } from "@finos/vuu-data-types";
-import { VuuRowDataItemType, VuuTable } from "@finos/vuu-protocol-types";
-import { ColumnMap, EventEmitter } from "@finos/vuu-utils";
+import { SchemaColumn, TableSchema } from "@vuu-ui/vuu-data-types";
+import { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
+import { ColumnMap, EventEmitter } from "@vuu-ui/vuu-utils";
 import { UpdateGenerator } from "./rowUpdates";
 
 export type TableEvents = {
@@ -20,7 +20,7 @@ export class Table extends EventEmitter<TableEvents> {
     schema: TableSchema,
     data: VuuRowDataItemType[][],
     dataMap: ColumnMap,
-    updateGenerator?: UpdateGenerator
+    updateGenerator?: UpdateGenerator,
   ) {
     super();
     this.#data = data;
@@ -66,7 +66,7 @@ export class Table extends EventEmitter<TableEvents> {
 
   update(key: string, columnName: string, value: VuuRowDataItemType) {
     const rowIndex = this.#data.findIndex(
-      (row) => row[this.#indexOfKey] === key
+      (row) => row[this.#indexOfKey] === key,
     );
     const colIndex = this.#dataMap[columnName];
     if (rowIndex !== -1) {
@@ -80,7 +80,7 @@ export class Table extends EventEmitter<TableEvents> {
   updateRow(row: VuuRowDataItemType[]) {
     const key = row[this.#indexOfKey];
     const rowIndex = this.#data.findIndex(
-      (row) => row[this.#indexOfKey] === key
+      (row) => row[this.#indexOfKey] === key,
     );
     if (rowIndex !== -1) {
       this.#data[rowIndex] = row;
@@ -95,7 +95,7 @@ export function buildDataColumnMapFromSchema(schema: Readonly<TableSchema>) {
       ...map,
       [col.name]: index,
     }),
-    {}
+    {},
   );
 }
 
@@ -110,7 +110,7 @@ export function buildDataColumnMapFromSchema(schema: Readonly<TableSchema>) {
  */
 export function buildDataColumnMap<TableName extends string = string>(
   schemas: Readonly<Record<TableName, Readonly<TableSchema>>>,
-  tableName: TableName
+  tableName: TableName,
 ) {
   return buildDataColumnMapFromSchema(schemas[tableName]);
 }
@@ -118,7 +118,7 @@ export function buildDataColumnMap<TableName extends string = string>(
 const getServerDataType = (
   columnName: string,
   { columns: cols1, table: t1 }: TableSchema,
-  { columns: cols2, table: t2 }: TableSchema
+  { columns: cols2, table: t2 }: TableSchema,
 ) => {
   const col1 = cols1.find((col) => col.name === columnName);
   const col2 = cols2.find((col) => col.name === columnName);
@@ -127,7 +127,7 @@ const getServerDataType = (
       return col1.serverDataType;
     } else {
       throw Error(
-        `both tables ${t1.table} and ${t2.table} implement column ${columnName}, but with types differ`
+        `both tables ${t1.table} and ${t2.table} implement column ${columnName}, but with types differ`,
       );
     }
   } else if (col1) {
@@ -145,7 +145,7 @@ export const joinTables = (
   joinTable: VuuTable,
   table1: Table,
   table2: Table,
-  joinColumn: string
+  joinColumn: string,
 ) => {
   const { map: m1, schema: schema1 } = table1;
   const { map: m2, schema: schema2 } = table2;
@@ -153,7 +153,7 @@ export const joinTables = (
   const k2 = m2[joinColumn];
 
   const combinedColumns = new Set(
-    [...schema1.columns, ...schema2.columns].map((col) => col.name).sort()
+    [...schema1.columns, ...schema2.columns].map((col) => col.name).sort(),
   );
 
   const combinedSchema: TableSchema = {

@@ -1,6 +1,6 @@
-import { getDataItemEditControl } from "@finos/vuu-data-react";
-import type { ColumnDescriptor } from "@finos/vuu-table-types";
-import { ColumnPicker, Icon, VuuInput } from "@finos/vuu-ui-controls";
+import { getDataItemEditControl } from "@vuu-ui/vuu-data-react";
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { ColumnPicker, Icon, VuuInput } from "@vuu-ui/vuu-ui-controls";
 import { FormField, FormFieldLabel } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";

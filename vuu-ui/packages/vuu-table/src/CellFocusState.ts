@@ -1,4 +1,4 @@
-import { CellPos } from "@finos/vuu-table-types";
+import { CellPos } from "@vuu-ui/vuu-table-types";
 import { getAriaCellPos } from "./table-dom-utils";
 
 /**

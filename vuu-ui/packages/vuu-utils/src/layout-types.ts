@@ -1,4 +1,4 @@
-import { LayoutJSON } from "@finos/vuu-utils";
+import { LayoutJSON } from "@vuu-ui/vuu-utils";
 
 export interface WithId {
   id: string;

@@ -1,5 +1,5 @@
-import { LayoutContainer, Flexbox } from "@finos/vuu-layout";
-import { VuuShellLocation } from "@finos/vuu-utils";
+import { LayoutContainer, Flexbox } from "@vuu-ui/vuu-layout";
+import { VuuShellLocation } from "@vuu-ui/vuu-utils";
 import { ContextPanel } from "../context-panel";
 import { SidePanel } from "../side-panel";
 import { ShellLayoutTemplateHook } from "../useShellLayout";

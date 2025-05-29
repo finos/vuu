@@ -1,4 +1,4 @@
-import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import {
   Density,
   Mode,

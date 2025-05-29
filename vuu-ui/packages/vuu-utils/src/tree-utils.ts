@@ -1,8 +1,8 @@
 import { TreeSourceNode } from "./tree-types";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { DataSourceRow } from "@finos/vuu-data-types";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { DataSourceRow } from "@vuu-ui/vuu-data-types";
 import { metadataKeys } from "./column-utils";
-import { IconProvider } from "@finos/vuu-data-local/src/tree-data-source/IconProvider";
+import { IconProvider } from "@vuu-ui/vuu-data-local/src/tree-data-source/IconProvider";
 
 const { COUNT, DEPTH, IDX, KEY } = metadataKeys;
 
