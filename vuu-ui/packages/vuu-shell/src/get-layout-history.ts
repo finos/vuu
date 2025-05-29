@@ -1,4 +1,4 @@
-import type { VuuUser } from "@finos/vuu-utils";
+import type { VuuUser } from "@vuu-ui/vuu-utils";
 
 export interface LayoutHistoryItem {
   user: string;
@@ -8,7 +8,7 @@ export interface LayoutHistoryItem {
 }
 
 export const getLayoutHistory = async (
-  user: VuuUser
+  user: VuuUser,
 ): Promise<LayoutHistoryItem[]> => {
   const history = await fetch(`api/vui/${user.username}`, {})
     .then((response) => {

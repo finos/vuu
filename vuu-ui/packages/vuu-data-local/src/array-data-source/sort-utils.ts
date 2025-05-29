@@ -1,21 +1,21 @@
-import type { DataSourceRow } from "@finos/vuu-data-types";
-import type { VuuSort, VuuSortType } from "@finos/vuu-protocol-types";
-import { ColumnMap } from "@finos/vuu-utils";
+import type { DataSourceRow } from "@vuu-ui/vuu-data-types";
+import type { VuuSort, VuuSortType } from "@vuu-ui/vuu-protocol-types";
+import { ColumnMap } from "@vuu-ui/vuu-utils";
 
 type SortDef = [number, VuuSortType];
 type SortPredicate = (
   r1: DataSourceRow,
   r2: DataSourceRow,
-  sortDefDef: SortDef
+  sortDefDef: SortDef,
 ) => SortCompareResult;
 type SortCompareResult = 0 | 1 | -1;
 type RowSortComparatorFactory = (
   sortDefs: SortDef[],
-  test?: SortPredicate
+  test?: SortPredicate,
 ) => RowSortComparator;
 type RowSortComparator = (
   item1: DataSourceRow,
-  item2: DataSourceRow
+  item2: DataSourceRow,
 ) => SortCompareResult;
 
 const defaultSortPredicate: SortPredicate = (r1, r2, [i, direction]) => {
@@ -73,7 +73,7 @@ const multiColComparator: RowSortComparatorFactory =
 export const sortRows = (
   rows: readonly DataSourceRow[],
   { sortDefs }: VuuSort,
-  columnMap: ColumnMap
+  columnMap: ColumnMap,
 ) => {
   const indexedSortDefs = sortDefs.map<SortDef>(({ column, sortType }) => [
     columnMap[column],

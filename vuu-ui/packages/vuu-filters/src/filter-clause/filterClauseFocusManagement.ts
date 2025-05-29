@@ -1,4 +1,4 @@
-import { getElementDataIndex, queryClosest } from "@finos/vuu-utils";
+import { getElementDataIndex, queryClosest } from "@vuu-ui/vuu-utils";
 import { KeyboardEvent } from "react";
 
 const getFilterClauseElement = (possiblyDescendant?: HTMLElement) =>

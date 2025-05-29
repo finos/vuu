@@ -1,4 +1,4 @@
-import { PopupMenu } from "@finos/vuu-popups";
+import { PopupMenu } from "@vuu-ui/vuu-popups";
 
 export const FilterBarMenu = () => {
   const classBase = "vuuFilterBarMenu";

@@ -1,4 +1,4 @@
-import { isValidNumber } from "@finos/vuu-utils";
+import { isValidNumber } from "@vuu-ui/vuu-utils";
 import { RefCallback, useCallback, useMemo, useState } from "react";
 
 interface MeasuredHeightHookProps {

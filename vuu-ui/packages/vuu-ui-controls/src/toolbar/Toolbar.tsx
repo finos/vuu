@@ -1,4 +1,4 @@
-import { asReactElements, useId } from "@finos/vuu-utils";
+import { asReactElements, useId } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -95,7 +95,7 @@ export const Toolbar = ({
           tabIndex: focusableIdx === index ? 0 : -1,
         });
       }),
-    [activeItemIndex, children, focusableIdx, id, itemProps]
+    [activeItemIndex, children, focusableIdx, id, itemProps],
   );
 
   return (

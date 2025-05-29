@@ -11,7 +11,7 @@ import {
 } from "react";
 import cx from "clsx";
 import "./DockLayout.css";
-import { ResizeStrategy } from "@finos/vuu-layout";
+import { ResizeStrategy } from "@vuu-ui/vuu-layout";
 
 const classBase = "DockLayout";
 
@@ -136,7 +136,7 @@ export const DockLayout = ({
         </div>
       </div>
     ),
-    []
+    [],
   );
 
   const wrapContentElement = useCallback(
@@ -158,7 +158,7 @@ export const DockLayout = ({
         });
       }
     },
-    [createWrapper]
+    [createWrapper],
   );
 
   const childElements = deferResize ? wrapContentElement(children) : children;

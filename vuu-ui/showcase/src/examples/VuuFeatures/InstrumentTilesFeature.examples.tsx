@@ -1,7 +1,7 @@
-import { getSchema } from "@finos/vuu-data-test";
-import { LayoutProvider, View } from "@finos/vuu-layout";
-import { Feature, useWorkspace } from "@finos/vuu-shell";
-import { DynamicFeatureProps, registerComponent } from "@finos/vuu-utils";
+import { getSchema } from "@vuu-ui/vuu-data-test";
+import { LayoutProvider, View } from "@vuu-ui/vuu-layout";
+import { Feature, useWorkspace } from "@vuu-ui/vuu-shell";
+import { DynamicFeatureProps, registerComponent } from "@vuu-ui/vuu-utils";
 import { InstrumentTilesFeature } from "../../features/InstrumentTiles.feature";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
 

@@ -1,10 +1,14 @@
-import { ViewportRpcResponse } from "@finos/vuu-data-types";
-import type { TableRowSelectHandler } from "@finos/vuu-table-types";
-import { OpenChangeHandler } from "@finos/vuu-ui-controls";
-import { CommitHandler, buildColumnMap, useDataSource } from "@finos/vuu-utils";
+import { ViewportRpcResponse } from "@vuu-ui/vuu-data-types";
+import type { TableRowSelectHandler } from "@vuu-ui/vuu-table-types";
+import { OpenChangeHandler } from "@vuu-ui/vuu-ui-controls";
+import {
+  CommitHandler,
+  buildColumnMap,
+  useDataSource,
+} from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NewBasketPanelProps } from "./NewBasketPanel";
-import { VuuRpcViewportRequest } from "@finos/vuu-protocol-types";
+import { VuuRpcViewportRequest } from "@vuu-ui/vuu-protocol-types";
 
 export type NewBasketHookProps = Pick<
   NewBasketPanelProps,

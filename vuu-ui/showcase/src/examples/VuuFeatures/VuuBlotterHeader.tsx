@@ -1,5 +1,5 @@
-import { Contribution, HeaderProps } from "@finos/vuu-layout";
-import { Header } from "@finos/vuu-layout";
+import { Contribution, HeaderProps } from "@vuu-ui/vuu-layout";
+import { Header } from "@vuu-ui/vuu-layout";
 import "./VuuBlotterHeader.css";
 
 const classBase = "VuuBlotterHeader";

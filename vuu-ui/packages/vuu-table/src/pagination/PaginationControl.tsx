@@ -6,7 +6,7 @@ import { usePagination } from "./usePagination";
 
 import paginationControlCss from "./PaginationControl.css";
 import { HtmlHTMLAttributes, forwardRef } from "react";
-import { DataSource } from "@finos/vuu-data-types";
+import { DataSource } from "@vuu-ui/vuu-data-types";
 
 const classBase = "vuuPaginationControl";
 

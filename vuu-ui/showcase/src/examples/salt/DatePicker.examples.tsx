@@ -1,13 +1,13 @@
-import { DatePicker } from "@finos/vuu-ui-controls";
+import { DatePicker } from "@vuu-ui/vuu-ui-controls";
 import {
   getLocalTimeZone,
   today,
   type DateValue,
 } from "@internationalized/date";
 import { useState } from "react";
-import { VuuDatePicker } from "@finos/vuu-ui-controls";
+import { VuuDatePicker } from "@vuu-ui/vuu-ui-controls";
 import { FormField, FormFieldLabel } from "@salt-ds/core";
-import { CommitHandler } from "@finos/vuu-utils";
+import { CommitHandler } from "@vuu-ui/vuu-utils";
 
 const tz = getLocalTimeZone();
 const _today = today(tz);

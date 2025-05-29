@@ -1,5 +1,5 @@
-import { LocalDataSourceProvider } from "@finos/vuu-data-test";
-import { LinkedDataSources, LinkedTableView } from "@finos/vuu-datatable";
+import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import { LinkedDataSources, LinkedTableView } from "@vuu-ui/vuu-datatable";
 import { useMemo } from "react";
 
 export const TwoLevelLinkedTablesWithDescriptors = () => {

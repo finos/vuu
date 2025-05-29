@@ -1,6 +1,6 @@
-import { VuuDataSourceProvider } from "@finos/vuu-data-react";
-import { getSchema, LocalDataSourceProvider } from "@finos/vuu-data-test";
-import { TablePicker, TablePickerProps } from "@finos/vuu-ui-controls";
+import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
+import { getSchema, LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import { TablePicker, TablePickerProps } from "@vuu-ui/vuu-ui-controls";
 import { useAutoLoginToVuuServer } from "../utils";
 
 const TablePickerTemplate = ({

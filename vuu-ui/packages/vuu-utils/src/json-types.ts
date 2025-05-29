@@ -1,4 +1,4 @@
-import { NamedFilter } from "@finos/vuu-filter-types";
+import { NamedFilter } from "@vuu-ui/vuu-filter-types";
 import { CSSProperties, ReactElement } from "react";
 
 export type ValueOf<T> = T[keyof T];

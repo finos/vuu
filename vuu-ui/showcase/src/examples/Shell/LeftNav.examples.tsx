@@ -1,4 +1,4 @@
-import { LeftNav } from "@finos/vuu-shell";
+import { LeftNav } from "@vuu-ui/vuu-shell";
 
 export const VerticalTabstrip = () => {
   return <LeftNav />;

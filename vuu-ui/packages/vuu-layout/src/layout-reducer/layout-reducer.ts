@@ -1,4 +1,4 @@
-import { isContainer } from "@finos/vuu-utils";
+import { isContainer } from "@vuu-ui/vuu-utils";
 import React, { ReactElement } from "react";
 import { DropPos } from "../drag-drop/dragDropTypes";
 import { DropTarget } from "../drag-drop/DropTarget";

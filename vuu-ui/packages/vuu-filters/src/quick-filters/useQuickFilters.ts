@@ -1,14 +1,14 @@
-import type { DataSourceFilter } from "@finos/vuu-data-types";
-import type { Filter } from "@finos/vuu-filter-types";
-import type { ColumnDescriptor } from "@finos/vuu-table-types";
-import { MultiSelectionHandler } from "@finos/vuu-ui-controls";
+import type { DataSourceFilter } from "@vuu-ui/vuu-data-types";
+import type { Filter } from "@vuu-ui/vuu-filter-types";
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { MultiSelectionHandler } from "@vuu-ui/vuu-ui-controls";
 import {
   CommitHandler,
   NoFilter,
   filterAsQuery,
   isNumericColumn,
   queryClosest,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import {
   ChangeEventHandler,
   RefCallback,

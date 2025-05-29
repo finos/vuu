@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { LayoutJSON } from "@finos/vuu-utils";
+import { LayoutJSON } from "@vuu-ui/vuu-utils";
 import { ReactElement } from "react";
 import { DragDropRect, DragInstructions } from "../drag-drop";
 import { DropTarget } from "../drag-drop/DropTarget";

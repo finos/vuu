@@ -1,5 +1,5 @@
-import { ServerProxySubscribeMessage } from "@finos/vuu-data-types";
-import { ServerToClientCreateViewPortSuccess } from "@finos/vuu-protocol-types";
+import { ServerProxySubscribeMessage } from "@vuu-ui/vuu-data-types";
+import { ServerToClientCreateViewPortSuccess } from "@vuu-ui/vuu-protocol-types";
 import { describe, expect, it } from "vitest";
 import { Viewport } from "../src/server-proxy/viewport";
 import "./global-mocks";
@@ -76,7 +76,7 @@ describe("Viewport", () => {
           bufferSize: 100,
           ...constructor_options,
         },
-        noop
+        noop,
       );
       const message = vp.subscribe();
       const {
@@ -101,7 +101,7 @@ describe("Viewport", () => {
           bufferSize: 100,
           range: { from: 0, to: 100 },
         },
-        noop
+        noop,
       );
       const message = vp.subscribe();
       const {
@@ -125,7 +125,7 @@ describe("Viewport", () => {
           bufferSize: 100,
           range: { from: 100, to: 200 },
         },
-        noop
+        noop,
       );
       const message = vp.subscribe();
       const {
@@ -187,7 +187,7 @@ describe("Viewport", () => {
           bufferSize: 10,
           range: { from: 0, to: 10 },
         },
-        noop
+        noop,
       );
       const [, serverSubscription] = createSubscription();
 
@@ -219,7 +219,7 @@ describe("Viewport", () => {
           bufferSize: 10,
           range: { from: 0, to: 10 },
         },
-        noop
+        noop,
       );
       const [, serverSubscription] = createSubscription();
       vp.handleSubscribed(serverSubscription.body, testSchema);
@@ -230,23 +230,23 @@ describe("Viewport", () => {
       // vp.completeOperation("1", 50, 60);
 
       expect(vp["rangeRequestAlreadyPending"]({ from: 0, to: 10 })).toEqual(
-        false
+        false,
       );
       expect(vp["rangeRequestAlreadyPending"]({ from: 0, to: 50 })).toEqual(
-        false
+        false,
       );
       expect(vp["rangeRequestAlreadyPending"]({ from: 50, to: 60 })).toEqual(
-        true
+        true,
       );
       expect(vp["rangeRequestAlreadyPending"]({ from: 52, to: 62 })).toEqual(
-        true
+        true,
       );
       // this one breaches the bufferSize 25% threshold
       expect(vp["rangeRequestAlreadyPending"]({ from: 52, to: 63 })).toEqual(
-        true
+        true,
       );
       expect(vp["rangeRequestAlreadyPending"]({ from: 60, to: 70 })).toEqual(
-        false
+        false,
       );
     });
 
@@ -257,7 +257,7 @@ describe("Viewport", () => {
           bufferSize: 10,
           range: { from: 0, to: 10 },
         },
-        noop
+        noop,
       );
       const [, serverSubscription] = createSubscription();
       vp.handleSubscribed(serverSubscription.body, testSchema);
@@ -270,25 +270,25 @@ describe("Viewport", () => {
       vp.completeOperation("2", 60, 70);
 
       expect(vp["rangeRequestAlreadyPending"]({ from: 50, to: 60 })).toEqual(
-        true
+        true,
       );
       expect(vp["rangeRequestAlreadyPending"]({ from: 52, to: 62 })).toEqual(
-        true
+        true,
       );
       expect(vp["rangeRequestAlreadyPending"]({ from: 52, to: 63 })).toEqual(
-        true
+        true,
       );
       expect(vp["rangeRequestAlreadyPending"]({ from: 50, to: 70 })).toEqual(
-        true
+        true,
       );
       expect(vp["rangeRequestAlreadyPending"]({ from: 50, to: 72 })).toEqual(
-        true
+        true,
       );
       expect(vp["rangeRequestAlreadyPending"]({ from: 50, to: 73 })).toEqual(
-        true
+        true,
       );
       expect(vp["rangeRequestAlreadyPending"]({ from: 70, to: 80 })).toEqual(
-        false
+        false,
       );
     });
   });
@@ -301,7 +301,7 @@ describe("Viewport", () => {
           bufferSize: 10,
           range: { from: 0, to: 10 },
         },
-        noop
+        noop,
       );
       const [, serverSubscription] = createSubscription();
 

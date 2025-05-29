@@ -1,7 +1,7 @@
-import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
-import { FilterPill } from "@finos/vuu-filters";
-import { PopupMenuProps } from "@finos/vuu-popups";
-import { ExitEditModeHandler, Icon } from "@finos/vuu-ui-controls";
+import { MenuActionHandler, MenuBuilder } from "@vuu-ui/vuu-data-types";
+import { FilterPill } from "@vuu-ui/vuu-filters";
+import { PopupMenuProps } from "@vuu-ui/vuu-popups";
+import { ExitEditModeHandler, Icon } from "@vuu-ui/vuu-ui-controls";
 import { Button, Input } from "@salt-ds/core";
 import { useCallback, useMemo, useState } from "react";
 

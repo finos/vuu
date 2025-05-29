@@ -2,9 +2,9 @@ import {
   ContextMenuItemDescriptor,
   MenuActionHandler,
   MenuBuilder,
-} from "@finos/vuu-data-types";
-import { MenuActionClosePopup, useDialogContext } from "@finos/vuu-popups";
-import { LayoutMetadataDto } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-data-types";
+import { MenuActionClosePopup, useDialogContext } from "@vuu-ui/vuu-popups";
+import { LayoutMetadataDto } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { SaveLayoutPanel } from "./SaveLayoutPanel";
 import { useWorkspace } from "./WorkspaceProvider";
@@ -23,7 +23,7 @@ export const useWorkspaceContextMenuItems = () => {
       saveLayout(layoutMetadata);
       closeDialog();
     },
-    [saveLayout, closeDialog]
+    [saveLayout, closeDialog],
   );
 
   const [buildMenuOptions, handleMenuAction] = useMemo<
@@ -44,7 +44,7 @@ export const useWorkspaceContextMenuItems = () => {
               label: "Layout Settings",
               action: "layout-settings",
               options,
-            }
+            },
           );
         }
         return menuDescriptors;
@@ -60,7 +60,7 @@ export const useWorkspaceContextMenuItems = () => {
             />,
             "Save Layout",
             [],
-            true
+            true,
           );
           return true;
         }

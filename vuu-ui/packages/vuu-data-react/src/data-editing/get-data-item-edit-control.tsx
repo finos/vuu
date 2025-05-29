@@ -1,14 +1,14 @@
 import type {
   DataValueDescriptor,
   TableSchemaTable,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import {
   VuuDatePicker,
   VuuInput,
   VuuTypeaheadInput,
   VuuTypeaheadInputProps,
-} from "@finos/vuu-ui-controls";
-import { CommitHandler, isDateTimeDataValue } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-ui-controls";
+import { CommitHandler, isDateTimeDataValue } from "@vuu-ui/vuu-utils";
 import { InputProps } from "@salt-ds/core";
 
 export interface DataItemEditControlProps {

@@ -1,10 +1,10 @@
-import type { DataSourceRow, Selection } from "@finos/vuu-data-types";
+import type { DataSourceRow, Selection } from "@vuu-ui/vuu-data-types";
 import {
   ColumnMap,
   getSelectionStatus,
   KeySet,
   metadataKeys,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 
 const { RENDER_IDX, SELECTED } = metadataKeys;
 
@@ -12,7 +12,7 @@ export const toClientRow = (
   row: DataSourceRow,
   keys: KeySet,
   selection: Selection,
-  dataIndices?: number[]
+  dataIndices?: number[],
 ) => {
   const [rowIndex] = row;
   let clientRow;
@@ -38,7 +38,7 @@ const divergentMaps = (columnMap: ColumnMap, dataMap?: ColumnMap) => {
       const dataIdx = dataMap[columnName];
       if (dataIdx === undefined) {
         throw Error(
-          `ArrayDataSource column ${columnName} is not in underlying data set`
+          `ArrayDataSource column ${columnName} is not in underlying data set`,
         );
       } else if (dataIdx !== index - mapOffset) {
         return true;
@@ -59,7 +59,7 @@ const getDataIndices = (columnMap: ColumnMap, dataMap: ColumnMap) => {
 
 export const buildDataToClientMap = (
   columnMap: ColumnMap,
-  dataMap?: ColumnMap
+  dataMap?: ColumnMap,
 ): number[] | undefined => {
   if (dataMap && divergentMaps(columnMap, dataMap)) {
     return getDataIndices(columnMap, dataMap);

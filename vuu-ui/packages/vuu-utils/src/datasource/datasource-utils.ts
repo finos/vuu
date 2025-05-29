@@ -16,7 +16,7 @@ import {
   WithFullConfig,
   WithGroupBy,
   WithSort,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import {
   LinkDescriptorWithLabel,
   VuuCreateVisualLink,
@@ -24,7 +24,7 @@ import {
   VuuRemoveVisualLink,
   VuuRowDataItemType,
   VuuSort,
-} from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-protocol-types";
 import { ColumnMap } from "../column-utils";
 
 export const NoFilter: VuuFilter = { filter: "" };

@@ -1,8 +1,8 @@
-import type { ListOption } from "@finos/vuu-table-types";
+import type { ListOption } from "@vuu-ui/vuu-table-types";
 
 export const getSelectedOption = (
   values: ListOption[],
-  selectedValue: string | number | undefined
+  selectedValue: string | number | undefined,
 ) => {
   if (selectedValue === undefined) {
     return undefined;

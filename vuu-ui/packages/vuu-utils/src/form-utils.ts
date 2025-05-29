@@ -1,7 +1,7 @@
 import {
   VuuColumnDataType,
   VuuRowDataItemType,
-} from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-protocol-types";
 import { KeyboardEvent, SyntheticEvent } from "react";
 import { queryClosest } from "./html-utils";
 import { stringIsValidDecimal, stringIsValidInt } from "./data-utils";

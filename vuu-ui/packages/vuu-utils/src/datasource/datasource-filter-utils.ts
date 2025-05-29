@@ -1,5 +1,5 @@
-import { WithBaseFilter, WithFullConfig } from "@finos/vuu-data-types";
-import { parseFilter } from "@finos/vuu-filter-parser";
+import { WithBaseFilter, WithFullConfig } from "@vuu-ui/vuu-data-types";
+import { parseFilter } from "@vuu-ui/vuu-filter-parser";
 
 export const combineFilters = ({
   baseFilterSpec,

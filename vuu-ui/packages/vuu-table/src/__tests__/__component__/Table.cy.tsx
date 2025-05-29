@@ -3,7 +3,7 @@ import React from "react";
 import { Instruments } from "../../../../../showcase/src/examples/Table/Modules/SIMUL.examples";
 import { TestTable } from "../../../../../showcase/src/examples/Table/Misc.examples";
 import { assertRenderedRows } from "./table-test-utils";
-import { LocalDataSourceProvider } from "@finos/vuu-data-test";
+import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 
 const withAriaIndex = (index: number) => ({
   name: (_: string, el: Element) => el.ariaRowIndex === `${index}`,

@@ -1,5 +1,5 @@
 import { MouseEventHandler, RefObject } from "react";
-import { orientationType } from "@finos/vuu-utils";
+import { orientationType } from "@vuu-ui/vuu-utils";
 import { DragDropState } from "./DragDropState";
 
 //-----------------------------------

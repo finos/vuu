@@ -1,4 +1,4 @@
-import { EventEmitter, type orientationType } from "@finos/vuu-utils";
+import { EventEmitter, type orientationType } from "@vuu-ui/vuu-utils";
 import {
   DragSource,
   sourceIsComponent,

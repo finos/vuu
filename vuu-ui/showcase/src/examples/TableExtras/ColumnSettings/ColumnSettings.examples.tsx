@@ -1,21 +1,21 @@
-import { getSchema } from "@finos/vuu-data-test";
+import { getSchema } from "@vuu-ui/vuu-data-test";
 import {
   ColumnDescriptor,
   ColumnTypeFormatting,
   TableConfig,
-} from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-table-types";
 import {
   ColumnFormattingPanel,
   ColumnSettingsPanel,
-} from "@finos/vuu-table-extras";
+} from "@vuu-ui/vuu-table-extras";
 import {
   CellRendererDescriptor,
   ColumnRenderPropsChangeHandler,
   updateColumnFormatting,
   updateColumnType,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
-import { DataValueTypeSimple } from "@finos/vuu-data-types";
+import { DataValueTypeSimple } from "@vuu-ui/vuu-data-types";
 
 export const ColumnFormattingPanelDouble = () => {
   const [column, setColumn] = useState<ColumnDescriptor>({

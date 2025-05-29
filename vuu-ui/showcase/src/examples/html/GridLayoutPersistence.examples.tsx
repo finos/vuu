@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { type LayoutJSON } from "@finos/vuu-utils";
+import { type LayoutJSON } from "@vuu-ui/vuu-utils";
 import {
   GridLayout,
   GridLayoutProvider,

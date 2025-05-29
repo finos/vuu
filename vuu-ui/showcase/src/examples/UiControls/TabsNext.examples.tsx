@@ -40,7 +40,7 @@ import {
   TabNextPanel,
   TabNextTrigger,
   TabsNext,
-} from "@finos/vuu-ui-controls";
+} from "@vuu-ui/vuu-ui-controls";
 import {
   type ChangeEvent,
   type ComponentType,

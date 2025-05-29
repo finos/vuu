@@ -4,7 +4,7 @@ import {
   NotificationLevel,
   ToastNotification,
   useNotifications,
-} from "@finos/vuu-popups";
+} from "@vuu-ui/vuu-popups";
 import {
   Dropdown,
   FormField,

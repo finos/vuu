@@ -3,7 +3,7 @@ import {
   Shell,
   StaticPersistenceManager,
   getStackWorkspaceJSON,
-} from "@finos/vuu-shell";
+} from "@vuu-ui/vuu-shell";
 import { useMemo } from "react";
 
 const user = { username: "why-the-lucky-stiff", token: "test-token" };

@@ -1,4 +1,4 @@
-import { useId } from "@finos/vuu-utils";
+import { useId } from "@vuu-ui/vuu-utils";
 import { useForkRef } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -41,7 +41,7 @@ const classBase = "vuuList";
 
 export const List = forwardRef(function List<
   Item = string,
-  S extends SelectionStrategy = "default"
+  S extends SelectionStrategy = "default",
 >(
   {
     ListItem = DefaultListItem,
@@ -94,7 +94,7 @@ export const List = forwardRef(function List<
     tabToSelect,
     ...htmlAttributes
   }: ListProps<Item, S>,
-  forwardedRef?: ForwardedRef<HTMLDivElement>
+  forwardedRef?: ForwardedRef<HTMLDivElement>,
 ) {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -204,7 +204,7 @@ export const List = forwardRef(function List<
     idx: { value: number },
     headerId: string,
     title: string,
-    expanded?: boolean
+    expanded?: boolean,
   ) => ReactElement = function createHeader(idx, headerId, title, expanded) {
     const header = (
       <ListItem
@@ -234,7 +234,7 @@ export const List = forwardRef(function List<
   function renderCollectionItem(
     list: ReactElement[],
     item: CollectionItem<Item>,
-    idx: { value: number }
+    idx: { value: number },
   ) {
     // Note, a number of these props are specific to ListItem. What if user
     // implements a custom ListItem but neglects to handle all these props.
@@ -254,7 +254,7 @@ export const List = forwardRef(function List<
       }),
       disabled: disabled || listDisabled,
       id: itemId,
-      item: isChildItem ? undefined : item?.value ?? undefined,
+      item: isChildItem ? undefined : (item?.value ?? undefined),
       itemHeight: getItemHeight(idx.value),
       itemTextHighlightPattern,
       key: itemId,
@@ -269,7 +269,7 @@ export const List = forwardRef(function List<
         cloneElement(value, listItemProps)
       ) : (
         <ListItem {...listItemProps} />
-      )
+      ),
     );
 
     idx.value += 1;
@@ -278,39 +278,39 @@ export const List = forwardRef(function List<
   const addGroup: (
     list: ReactElement[],
     items: CollectionItem<Item>[],
-    idx: { value: number }
+    idx: { value: number },
   ) => void = function addGroup(
     list: ReactElement[],
     items: CollectionItem<Item>[],
-    idx: { value: number }
+    idx: { value: number },
   ) {
     const { count = 0, id, expanded, label = "" } = items[idx.value];
     const header = createHeader(idx, id, label, expanded);
     const childItems: ReactElement | ReactElement[] =
       expanded !== false
         ? [header].concat(
-            renderCollectionItems(items, idx, idx.value + count) || []
+            renderCollectionItems(items, idx, idx.value + count) || [],
           )
         : header;
 
     list.push(
       <div key={id} role="group">
         {childItems}
-      </div>
+      </div>,
     );
   };
 
   const renderCollectionItems = (
     items: CollectionItem<Item>[],
     idx: CollectionIndexer = { value: 0 },
-    end = items.length
+    end = items.length,
   ): ReactElement[] | undefined => {
     const listItems: ReactElement[] = [];
     while (idx.value < end) {
       const item = items[idx.value];
       if (item.header) {
         listItems.push(
-          createHeader(idx, item.id, item.label!, item.expanded === false)
+          createHeader(idx, item.id, item.label!, item.expanded === false),
         );
       } else if (item.childNodes) {
         addGroup(listItems, items, idx);
@@ -412,5 +412,5 @@ export const List = forwardRef(function List<
 }) as <Item = string, S extends SelectionStrategy = "default">(
   props: ListProps<Item, S> & {
     ref?: ForwardedRef<HTMLDivElement>;
-  }
+  },
 ) => ReactElement<ListProps<Item>>;

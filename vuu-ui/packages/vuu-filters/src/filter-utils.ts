@@ -1,4 +1,4 @@
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
   AndFilter,
   Filter,
@@ -7,7 +7,7 @@ import {
   FilterWithPartialClause,
   MultiClauseFilter,
   NumericFilterClauseOp,
-} from "@finos/vuu-filter-types";
+} from "@vuu-ui/vuu-filter-types";
 import {
   extractFilterForColumn,
   isAndFilter,
@@ -17,7 +17,7 @@ import {
   isOrFilter,
   isSingleValueFilter,
   partition,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 
 export const AND = "and";
 export const EQUALS = "=";
@@ -43,7 +43,7 @@ export type FilterType =
 
 export const filterClauses = (
   filter: Partial<Filter> | FilterWithPartialClause | null,
-  clauses: Partial<FilterClause>[] = []
+  clauses: Partial<FilterClause>[] = [],
 ): Partial<FilterClause>[] => {
   if (filter) {
     if (isMultiClauseFilter(filter)) {
@@ -83,7 +83,7 @@ export const removeLastClause = (filter: MultiClauseFilter) => {
 export const addClause = (
   existingFilter: Filter,
   clause: Partial<Filter>,
-  { combineWith = AND }: AddFilterOptions = DEFAULT_ADD_FILTER_OPTS
+  { combineWith = AND }: AddFilterOptions = DEFAULT_ADD_FILTER_OPTS,
 ): FilterWithPartialClause => {
   if (
     isMultiClauseFilter(existingFilter) &&
@@ -112,7 +112,7 @@ export const addClause = (
 export const addFilter = (
   existingFilter: Filter | undefined,
   filter: Filter,
-  { combineWith = AND }: AddFilterOptions = DEFAULT_ADD_FILTER_OPTS
+  { combineWith = AND }: AddFilterOptions = DEFAULT_ADD_FILTER_OPTS,
 ): Filter | undefined => {
   if (includesNoValues(filter)) {
     if (isMultiClauseFilter(filter)) {
@@ -210,7 +210,7 @@ const merge = (f1: Filter, f2: Filter): Filter | undefined => {
       values: [
         ...f1.values,
         ...(f2.values as any[]).filter(
-          (v: string | number) => !(f1.values as any[]).includes(v)
+          (v: string | number) => !(f1.values as any[]).includes(v),
         ),
       ],
     };
@@ -249,7 +249,7 @@ const combine = (existingFilters: Filter[], replacementFilters: Filter[]) => {
   };
   const stillApplicable = (existingFilter: Filter) =>
     replacementFilters.some((replacementFilter) =>
-      replaces(existingFilter, replacementFilter)
+      replaces(existingFilter, replacementFilter),
     ) === false;
   return existingFilters.filter(stillApplicable).concat(replacementFilters);
 };
@@ -261,19 +261,19 @@ export const removeFilter = (sourceFilter: Filter, filterToRemove: Filter) => {
   if (sourceFilter.op !== AND) {
     throw Error(
       `removeFilter cannot remove ${JSON.stringify(
-        filterToRemove
-      )} from ${JSON.stringify(sourceFilter)}`
+        filterToRemove,
+      )} from ${JSON.stringify(sourceFilter)}`,
     );
   }
   const filters = sourceFilter.filters.filter(
-    (f) => !filterEquals(f, filterToRemove)
+    (f) => !filterEquals(f, filterToRemove),
   );
   return filters.length > 0 ? { type: AND, filters } : null;
 };
 
 export const splitFilterOnColumn = (
   columnName: string,
-  filter?: Filter
+  filter?: Filter,
 ): [Filter | undefined, Filter | undefined] => {
   if (!filter) {
     return [undefined, undefined];
@@ -286,7 +286,7 @@ export const splitFilterOnColumn = (
   }
   const [[columnFilter = undefined], filters] = partition(
     (filter as AndFilter).filters,
-    (f) => f.column === columnName
+    (f) => f.column === columnName,
   );
   return filters.length === 1
     ? [columnFilter, filters[0]]
@@ -305,7 +305,7 @@ export const overrideColName = (filter: Filter, column: string): Filter => {
 
 export const filterIncludesColumn = (
   filter: Filter,
-  column: ColumnDescriptor
+  column: ColumnDescriptor,
 ): boolean => {
   if (!filter) {
     return false;
@@ -325,7 +325,7 @@ export const filterIncludesColumn = (
 
 const removeFilterForColumn = (
   sourceFilter: Filter | undefined,
-  column: ColumnDescriptor
+  column: ColumnDescriptor,
 ): Filter | undefined => {
   const colName = column.name;
   if (!sourceFilter) {
@@ -388,7 +388,7 @@ export const filterEquals = (f1?: Filter, f2?: Filter, strict = false) => {
 export const updateFilter = (
   filter: Filter | undefined,
   newFilter: Filter | undefined,
-  mode: "add" | "replace"
+  mode: "add" | "replace",
 ): Filter | undefined => {
   if (filter && newFilter) {
     if (mode === "replace") {
@@ -426,7 +426,7 @@ export const updateFilter = (
 export const getTypeaheadFilter = (
   column: string,
   filterValues: string[],
-  isStartsWithFilter?: boolean
+  isStartsWithFilter?: boolean,
 ): Filter | undefined => {
   if (filterValues.length === 0) {
     return undefined;
@@ -452,7 +452,7 @@ export const getTypeaheadFilter = (
 export const getNumericFilter = (
   column: string,
   op?: NumericFilterClauseOp,
-  value?: number
+  value?: number,
 ): FilterClause | undefined => {
   if (op === undefined) return undefined;
   if (value === undefined || isNaN(value)) return undefined;

@@ -1,20 +1,20 @@
-import { simulSchemas } from "@finos/vuu-data-test";
+import { simulSchemas } from "@vuu-ui/vuu-data-test";
 import {
   LayoutContainer,
   Flexbox,
   LayoutProvider,
   Placeholder,
   View,
-} from "@finos/vuu-layout";
-import type { SettingsSchema } from "@finos/vuu-shell";
+} from "@vuu-ui/vuu-layout";
+import type { SettingsSchema } from "@vuu-ui/vuu-shell";
 import {
   ApplicationProvider,
   ContextPanel,
   WorkspaceProvider,
   PersistenceProvider,
   StaticPersistenceManager,
-} from "@finos/vuu-shell";
-import { VuuShellLocation, registerComponent } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-shell";
+import { VuuShellLocation, registerComponent } from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
 import layoutMetadata from "../../_test-data/layoutMetadata";
 import { LayoutComponentsPanel } from "./LayoutComponentsPanel";

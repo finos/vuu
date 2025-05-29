@@ -1,5 +1,5 @@
 import cx from "clsx";
-import { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
+import { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, MouseEvent, useCallback } from "react";

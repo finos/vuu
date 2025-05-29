@@ -5,8 +5,8 @@ import {
   StaticPersistenceManager,
   UserSettingsPanel,
   loadingJSON,
-} from "@finos/vuu-shell";
-import { getStackWorkspaceJSON } from "@finos/vuu-shell";
+} from "@vuu-ui/vuu-shell";
+import { getStackWorkspaceJSON } from "@vuu-ui/vuu-shell";
 
 import { useMemo } from "react";
 import { scrollableSettingsFormSchema } from "./UserSettingsSchemaExamples/scrollableSettingsSchemaExample";

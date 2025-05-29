@@ -1,8 +1,8 @@
-import type { ColumnDescriptorCustomRenderer } from "@finos/vuu-table-types";
+import type { ColumnDescriptorCustomRenderer } from "@vuu-ui/vuu-table-types";
 import {
   ConfigurationEditorProps,
   registerConfigurationEditor,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { Dropdown, FormField, FormFieldLabel, Option } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";

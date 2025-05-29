@@ -1,8 +1,8 @@
-import type { RpcResponseHandler } from "@finos/vuu-data-types";
+import type { RpcResponseHandler } from "@vuu-ui/vuu-data-types";
 import type {
   DefaultColumnConfiguration,
   DefaultTableConfiguration,
-} from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-table-types";
 import { createContext, useContext } from "react";
 import { LookupTableProvider } from "./feature-utils";
 

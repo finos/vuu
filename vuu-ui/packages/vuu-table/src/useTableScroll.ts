@@ -2,8 +2,8 @@ import {
   getColumnsInViewport,
   itemsChanged,
   RowAtPositionFunc,
-} from "@finos/vuu-utils";
-import type { VuuRange } from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-utils";
+import type { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import {
   ForwardedRef,
   MutableRefObject,
@@ -19,7 +19,7 @@ import {
   getRowElementByAriaIndex,
   howFarIsRowOutsideViewport,
 } from "./table-dom-utils";
-import type { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
+import type { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { FocusCell } from "./useCellFocus";
 import { ICellFocusState } from "./CellFocusState";
 

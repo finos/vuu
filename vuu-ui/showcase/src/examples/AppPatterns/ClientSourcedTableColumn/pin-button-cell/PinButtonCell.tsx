@@ -1,6 +1,6 @@
-import { TableCellRendererProps } from "@finos/vuu-table-types";
-import { IconButton } from "@finos/vuu-ui-controls";
-import { metadataKeys } from "@finos/vuu-utils";
+import { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
+import { IconButton } from "@vuu-ui/vuu-ui-controls";
+import { metadataKeys } from "@vuu-ui/vuu-utils";
 import { MouseEventHandler, useCallback } from "react";
 import { useClientTableColumn } from "../ClientTableColumnProvider/ClientTableColumnProvider";
 import cx from "clsx";

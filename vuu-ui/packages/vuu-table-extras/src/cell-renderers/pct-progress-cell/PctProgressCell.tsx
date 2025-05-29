@@ -1,5 +1,5 @@
-import { TableCellProps } from "@finos/vuu-table-types";
-import { registerComponent } from "@finos/vuu-utils";
+import { TableCellProps } from "@vuu-ui/vuu-table-types";
+import { registerComponent } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -46,7 +46,7 @@ export const PctProgressCell = ({ column, columnMap, row }: TableCellProps) => {
         style={{ "--progress-bar-pct": `${percentageValue}%` } as CSSProperties}
       />
       <span className={`${classBase}-text`}>{`${percentageValue.toFixed(
-        2
+        2,
       )} %`}</span>
     </div>
   );

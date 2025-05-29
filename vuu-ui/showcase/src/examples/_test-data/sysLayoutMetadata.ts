@@ -1,4 +1,4 @@
-import { SystemLayoutMetadata } from "@finos/vuu-utils";
+import { SystemLayoutMetadata } from "@vuu-ui/vuu-utils";
 import { screenshots } from "./layout-screenshots";
 
 const layouts = {

@@ -3,8 +3,8 @@ import {
   RangeTuple,
   Selection,
   SelectionItem,
-} from "@finos/vuu-data-types";
-import { TableSelectionModel } from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-data-types";
+import { TableSelectionModel } from "@vuu-ui/vuu-table-types";
 import { metadataKeys } from "./column-utils";
 
 const NO_SELECTION: number[] = [];

@@ -3,8 +3,8 @@ import {
   ListItem,
   ListItemProps,
   ListProps,
-} from "@finos/vuu-ui-controls";
-import { registerComponent, uuid } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-ui-controls";
+import { registerComponent, uuid } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
@@ -64,7 +64,7 @@ export const PaletteItem = memo(
         {...props}
       />
     );
-  }
+  },
 );
 
 PaletteItem.displayName = "PaletteItem";
@@ -158,7 +158,7 @@ export const Palette = ({
               key: idx,
               onMouseDown: handleMouseDown,
             })
-          : child
+          : child,
       )}
     </List>
   );

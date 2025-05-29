@@ -1,5 +1,5 @@
-import { TableSchema } from "@finos/vuu-data-types";
-import { VuuTable } from "@finos/vuu-protocol-types";
+import { TableSchema } from "@vuu-ui/vuu-data-types";
+import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 
 export type SimulTableName =
   | "instruments"

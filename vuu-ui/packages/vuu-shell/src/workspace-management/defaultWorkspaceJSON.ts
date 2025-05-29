@@ -1,5 +1,5 @@
-import { StackProps } from "@finos/vuu-layout";
-import { LayoutJSON, VuuShellLocation } from "@finos/vuu-utils";
+import { StackProps } from "@vuu-ui/vuu-layout";
+import { LayoutJSON, VuuShellLocation } from "@vuu-ui/vuu-utils";
 
 export type WorkspaceStackProps = Pick<
   StackProps,
@@ -9,22 +9,22 @@ export type WorkspaceStackProps = Pick<
 export const warningLayout: LayoutJSON = {
   type: "View",
   props: {
-    style: { height: "calc(100% - 6px)" }
+    style: { height: "calc(100% - 6px)" },
   },
   children: [
     {
       props: {
-        className: "vuuShell-warningPlaceholder"
+        className: "vuuShell-warningPlaceholder",
       },
-      type: "Placeholder"
-    }
-  ]
+      type: "Placeholder",
+    },
+  ],
 };
 
 export const loadingJSON: Readonly<LayoutJSON> = {
   type: "Component",
   id: "loading-main",
-  props: {}
+  props: {},
 };
 
 export const defaultWorkspaceJSON: LayoutJSON<
@@ -41,45 +41,45 @@ export const defaultWorkspaceJSON: LayoutJSON<
       animateSelectionThumb: false,
       "aria-label": "Workspace Tabs",
       location: "workspace-tab",
-      variant: "primary"
+      variant: "primary",
     },
-    preserve: true
-  }
+    preserve: true,
+  },
 };
 
 export const getStackWorkspaceJSON = (
-  activeLayoutIndex?: number
+  activeLayoutIndex?: number,
 ): LayoutJSON => ({
   ...defaultWorkspaceJSON,
-  active: activeLayoutIndex ?? 0
+  active: activeLayoutIndex ?? 0,
 });
 
 const placeholderLayout: LayoutJSON = {
   props: {
     id: "tab1",
     title: "Tab 1",
-    className: "vuuShell-Placeholder"
+    className: "vuuShell-Placeholder",
   },
-  type: "Placeholder"
+  type: "Placeholder",
 };
 
 export const getWorkspaceWithLayoutJSON = (
   customWorkspaceJSON?: LayoutJSON | LayoutJSON[],
   layoutJSON: LayoutJSON | LayoutJSON[] = placeholderLayout,
   activeLayoutIndex?: number,
-  stackProps?: WorkspaceStackProps
+  stackProps?: WorkspaceStackProps,
 ): LayoutJSON | LayoutJSON[] => {
   const stackWorkspace = getStackWorkspaceJSON(activeLayoutIndex);
   if (Array.isArray(customWorkspaceJSON)) {
     const workspace = customWorkspaceJSON.find(
-      (layout) => layout.id === VuuShellLocation.Workspace
+      (layout) => layout.id === VuuShellLocation.Workspace,
     );
     if (workspace) {
       return customWorkspaceJSON.map((ws) => {
         if (ws.id === VuuShellLocation.Workspace) {
           return {
             ...ws,
-            children: Array.isArray(layoutJSON) ? layoutJSON : [layoutJSON]
+            children: Array.isArray(layoutJSON) ? layoutJSON : [layoutJSON],
           };
         } else {
           return ws;
@@ -87,13 +87,13 @@ export const getWorkspaceWithLayoutJSON = (
       });
     } else {
       throw Error(
-        "Multiple workspaces have been provided but none has the workspace id"
+        "Multiple workspaces have been provided but none has the workspace id",
       );
     }
   } else if (customWorkspaceJSON) {
     return {
       ...customWorkspaceJSON,
-      children: Array.isArray(layoutJSON) ? layoutJSON : [layoutJSON]
+      children: Array.isArray(layoutJSON) ? layoutJSON : [layoutJSON],
     };
   } else {
     return {
@@ -103,10 +103,10 @@ export const getWorkspaceWithLayoutJSON = (
         ...stackProps,
         TabstripProps: {
           ...stackWorkspace.props?.TabstripProps,
-          ...stackProps?.TabstripProps
-        }
+          ...stackProps?.TabstripProps,
+        },
       },
-      children: Array.isArray(layoutJSON) ? layoutJSON : [layoutJSON]
+      children: Array.isArray(layoutJSON) ? layoutJSON : [layoutJSON],
     };
   }
 };

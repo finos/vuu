@@ -3,8 +3,8 @@ import {
   DataSourceRow as VuuDataSourceRow,
   SubscribeCallback,
   DataSourceRow,
-} from "@finos/vuu-data-types";
-import { getFullRange, MovingWindow, NULL_RANGE } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-data-types";
+import { getFullRange, MovingWindow, NULL_RANGE } from "@vuu-ui/vuu-utils";
 import {
   getCoreRowModel,
   OnChangeFn,
@@ -20,7 +20,7 @@ import {
   tanstackSortToVuuSort,
 } from "./vuu-tanstack-utils";
 import { ColumnMenuProps } from "./ColumnMenu";
-import { VuuRange } from "@finos/vuu-protocol-types";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 
 const NO_SELECTION: RowSelectionState = {} as const;
 const NO_SORT: SortingState = [] as const;

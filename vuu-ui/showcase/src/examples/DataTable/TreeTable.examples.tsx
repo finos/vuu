@@ -1,10 +1,10 @@
-import { TreeTable } from "@finos/vuu-datatable";
+import { TreeTable } from "@vuu-ui/vuu-datatable";
 
 import showcaseData from "./Tree.data";
 import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
-import { TreeSourceNode } from "@finos/vuu-utils";
-import { TableRowSelectHandler } from "@finos/vuu-table-types";
-import { TreeDataSource } from "@finos/vuu-data-local";
+import { TreeSourceNode } from "@vuu-ui/vuu-utils";
+import { TableRowSelectHandler } from "@vuu-ui/vuu-table-types";
+import { TreeDataSource } from "@vuu-ui/vuu-data-local";
 import { Input } from "@salt-ds/core";
 
 export const ShowcaseTree = () => {

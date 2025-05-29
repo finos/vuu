@@ -5,7 +5,7 @@ import type {
   DateTimeDataValueDescriptor,
   SchemaColumn,
   TableSchema,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import type {
   VuuAggType,
   VuuAggregation,
@@ -14,7 +14,7 @@ import type {
   VuuGroupBy,
   VuuRowRecord,
   VuuSort,
-} from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-protocol-types";
 import type {
   ColumnAlignment,
   ColumnDescriptor,
@@ -34,10 +34,10 @@ import type {
   TableHeading,
   TableHeadings,
   ValueListRenderer,
-} from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-table-types";
 import { type CSSProperties } from "react";
 import { moveItem } from "./array-utils";
-import { TableModel } from "@finos/vuu-table";
+import { TableModel } from "@vuu-ui/vuu-table";
 
 /**
  * ColumnMap provides a lookup of the index position of a data item within a row

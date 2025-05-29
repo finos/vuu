@@ -1,9 +1,9 @@
-import { useEditableCell, useHeaderProps } from "@finos/vuu-table";
+import { useEditableCell, useHeaderProps } from "@vuu-ui/vuu-table";
 import {
   CommitHandler,
   FilterAggregator,
   getFieldName,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { FilterValueChangeHandler } from "./InlineFilter";
 

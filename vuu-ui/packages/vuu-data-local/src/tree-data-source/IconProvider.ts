@@ -1,5 +1,5 @@
-import { DataSourceRow } from "@finos/vuu-data-types";
-import { metadataKeys } from "@finos/vuu-utils";
+import { DataSourceRow } from "@vuu-ui/vuu-data-types";
+import { metadataKeys } from "@vuu-ui/vuu-utils";
 
 const { KEY } = metadataKeys;
 

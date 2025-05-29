@@ -1,5 +1,5 @@
-import type { TableSchemaTable } from "@finos/vuu-data-types";
-import { NO_DATA_MATCH, type CommitHandler } from "@finos/vuu-utils";
+import type { TableSchemaTable } from "@vuu-ui/vuu-data-types";
+import { NO_DATA_MATCH, type CommitHandler } from "@vuu-ui/vuu-utils";
 import { ComboBox, Option } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";

@@ -1,11 +1,11 @@
-import { Palette, PaletteItem } from "@finos/vuu-layout";
-import { Icon, ListProps } from "@finos/vuu-ui-controls";
+import { Palette, PaletteItem } from "@vuu-ui/vuu-layout";
+import { Icon, ListProps } from "@vuu-ui/vuu-ui-controls";
 import {
   DynamicFeatureProps,
   StaticFeatureDescriptor,
   featureFromJson,
   isStaticFeatures,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";

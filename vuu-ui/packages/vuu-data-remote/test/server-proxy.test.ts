@@ -20,11 +20,11 @@ import {
   createConnection,
   serverAPI,
 } from "./test-utils";
-import { VuuRow } from "@finos/vuu-protocol-types";
+import { VuuRow } from "@vuu-ui/vuu-protocol-types";
 import {
   DataSourceDataMessage,
   DataSourceEnabledMessage,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 
 const SERVER_MESSAGE_CONSTANTS = {
   module: "CORE",

@@ -16,18 +16,18 @@ import {
   useState,
 } from "react";
 
-import type { DataSourceRowObject } from "@finos/vuu-data-types";
+import type { DataSourceRowObject } from "@vuu-ui/vuu-data-types";
 import type {
   TableConfig,
   TableRowSelectHandler,
-} from "@finos/vuu-table-types";
-import { isStringColumn, toColumnName, useDataSource } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-table-types";
+import { isStringColumn, toColumnName, useDataSource } from "@vuu-ui/vuu-utils";
 import type { TablePickerProps } from "./TablePicker";
 import {
   isNavigationKey,
   isRowSelectionKey,
   useControlledTableNavigation,
-} from "@finos/vuu-table";
+} from "@vuu-ui/vuu-table";
 
 export interface TablePickerHookProps
   extends Pick<

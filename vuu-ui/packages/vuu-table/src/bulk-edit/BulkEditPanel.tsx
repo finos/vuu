@@ -1,5 +1,5 @@
-import { DataSource, RpcResponse } from "@finos/vuu-data-types";
-import type { ColumnDescriptor } from "@finos/vuu-table-types";
+import { DataSource, RpcResponse } from "@vuu-ui/vuu-data-types";
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";

@@ -3,10 +3,10 @@ import {
   WorkspaceProvider,
   PersistenceProvider,
   StaticPersistenceManager,
-} from "@finos/vuu-shell";
+} from "@vuu-ui/vuu-shell";
 import { useMemo } from "react";
 import { sysLayouts } from "../_test-data/sysLayoutMetadata";
-import { FeatureAndLayoutProvider } from "@finos/vuu-shell";
+import { FeatureAndLayoutProvider } from "@vuu-ui/vuu-shell";
 
 export const LayoutListProvider = (): JSX.Element => {
   const demoPersistenceManager = useMemo(

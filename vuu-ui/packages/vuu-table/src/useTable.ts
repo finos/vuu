@@ -4,8 +4,8 @@ import {
   DataSourceRow,
   DataSourceSubscribedMessage,
   SelectionChangeHandler,
-} from "@finos/vuu-data-types";
-import { VuuRowDataItemType, VuuSortType } from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-data-types";
+import { VuuRowDataItemType, VuuSortType } from "@vuu-ui/vuu-protocol-types";
 import {
   ColumnDescriptor,
   DataCellEditEvent,
@@ -15,13 +15,13 @@ import {
   TableRowClickHandlerInternal,
   TableRowSelectHandlerInternal,
   TableSelectionModel,
-} from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-table-types";
 import {
   DragStartHandler,
   MeasuredProps,
   MeasuredSize,
   useDragDrop,
-} from "@finos/vuu-ui-controls";
+} from "@vuu-ui/vuu-ui-controls";
 import {
   asDataSourceRowObject,
   buildColumnMap,
@@ -32,7 +32,7 @@ import {
   toggleOrApplySort,
   updateColumn,
   useLayoutEffectSkipFirst,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import {
   FocusEvent,
   KeyboardEvent,

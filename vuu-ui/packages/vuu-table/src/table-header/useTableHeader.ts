@@ -1,13 +1,13 @@
-import { ColumnDescriptor, TableHeadings } from "@finos/vuu-table-types";
+import { ColumnDescriptor, TableHeadings } from "@vuu-ui/vuu-table-types";
 import {
   DropOptions,
   useDragDrop as useDragDrop,
-} from "@finos/vuu-ui-controls";
+} from "@vuu-ui/vuu-ui-controls";
 import {
   moveColumnTo,
   queryClosest,
   visibleColumnAtIndex,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { RefCallback, useCallback, useRef } from "react";
 import { TableHeaderProps } from "./TableHeader";
 import { useMeasuredHeight } from "../useMeasuredHeight";

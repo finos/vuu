@@ -2,7 +2,7 @@ import {
   TableRowClickHandlerInternal,
   TableRowSelectHandlerInternal,
   TableSelectionModel,
-} from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-table-types";
 import {
   deselectItem,
   dispatchMouseEvent,
@@ -10,8 +10,8 @@ import {
   metadataKeys,
   queryClosest,
   selectItem,
-} from "@finos/vuu-utils";
-import { Selection } from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-utils";
+import { Selection } from "@vuu-ui/vuu-data-types";
 import {
   KeyboardEvent,
   KeyboardEventHandler,

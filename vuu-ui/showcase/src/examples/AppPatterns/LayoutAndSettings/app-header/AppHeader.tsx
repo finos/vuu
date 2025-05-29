@@ -1,8 +1,8 @@
-import { TableSchema } from "@finos/vuu-data-types";
-import { useLayoutProviderDispatch } from "@finos/vuu-layout";
-import { UserSettingsPanel } from "@finos/vuu-shell";
-import { IconButton } from "@finos/vuu-ui-controls";
-import { VuuShellLocation, registerComponent } from "@finos/vuu-utils";
+import { TableSchema } from "@vuu-ui/vuu-data-types";
+import { useLayoutProviderDispatch } from "@vuu-ui/vuu-layout";
+import { UserSettingsPanel } from "@vuu-ui/vuu-shell";
+import { IconButton } from "@vuu-ui/vuu-ui-controls";
+import { VuuShellLocation, registerComponent } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { HTMLAttributes, useCallback, useRef } from "react";
 

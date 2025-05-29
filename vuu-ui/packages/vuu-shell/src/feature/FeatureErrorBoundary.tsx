@@ -1,4 +1,4 @@
-import { DynamicFeatureProps } from "@finos/vuu-utils";
+import { DynamicFeatureProps } from "@vuu-ui/vuu-utils";
 import React, { ErrorInfo, ReactNode } from "react";
 
 export interface FeatureErrorBoundaryProps extends DynamicFeatureProps {

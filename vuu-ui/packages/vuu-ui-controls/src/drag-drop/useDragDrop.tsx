@@ -1,4 +1,4 @@
-import { dispatchCustomEvent } from "@finos/vuu-utils";
+import { dispatchCustomEvent } from "@vuu-ui/vuu-utils";
 import {
   MouseEventHandler,
   useCallback,

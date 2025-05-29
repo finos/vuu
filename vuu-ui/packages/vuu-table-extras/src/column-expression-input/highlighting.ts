@@ -2,7 +2,7 @@ import {
   HighlightStyle,
   syntaxHighlighting,
   tags,
-} from "@finos/vuu-codemirror";
+} from "@vuu-ui/vuu-codemirror";
 
 const myHighlightStyle = HighlightStyle.define([
   {

@@ -2,8 +2,8 @@ import {
   DataSource,
   DataSourceConstructorProps,
   TableSchema,
-} from "@finos/vuu-data-types";
-import { useDataSource } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-data-types";
+import { useDataSource } from "@vuu-ui/vuu-utils";
 import {
   LinkedDataSources,
   LinkedTableConfig,
@@ -11,9 +11,9 @@ import {
   LinkTableConfig,
 } from "./LinkedTableView";
 import { SyntheticEvent, useCallback, useMemo, useState } from "react";
-import { TableConfig } from "@finos/vuu-table-types";
-import { LinkDescriptorWithLabel, VuuTable } from "@finos/vuu-protocol-types";
-// import { useViewContext } from "@finos/vuu-layout";
+import { TableConfig } from "@vuu-ui/vuu-table-types";
+import { LinkDescriptorWithLabel, VuuTable } from "@vuu-ui/vuu-protocol-types";
+// import { useViewContext } from "@vuu-ui/vuu-layout";
 
 export type TableDataSourceConfig = {
   config: TableConfig;

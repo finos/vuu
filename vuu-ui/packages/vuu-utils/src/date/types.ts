@@ -1,4 +1,4 @@
-import { ColumnTypeFormatting } from "@finos/vuu-table-types";
+import { ColumnTypeFormatting } from "@vuu-ui/vuu-table-types";
 
 const supportedDatePatterns = [
   "dd.mm.yyyy",
@@ -32,6 +32,6 @@ export const isTimePattern = (pattern?: string): pattern is TimePattern =>
   supportedTimePatterns.includes(pattern as TimePattern);
 
 export const isDateTimePattern = (
-  pattern?: ColumnTypeFormatting["pattern"]
+  pattern?: ColumnTypeFormatting["pattern"],
 ): pattern is DateTimePattern =>
   isDatePattern(pattern?.date) || isTimePattern(pattern?.time);

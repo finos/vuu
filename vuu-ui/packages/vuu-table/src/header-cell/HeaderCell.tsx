@@ -1,5 +1,5 @@
-import { useContextMenu } from "@finos/vuu-popups";
-import { HeaderCellProps } from "@finos/vuu-table-types";
+import { useContextMenu } from "@vuu-ui/vuu-popups";
+import { HeaderCellProps } from "@vuu-ui/vuu-table-types";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";

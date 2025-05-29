@@ -1,4 +1,4 @@
-import { VuuSortType } from "@finos/vuu-protocol-types";
+import { VuuSortType } from "@vuu-ui/vuu-protocol-types";
 import {
   ColumnDescriptor,
   CustomHeader,
@@ -8,8 +8,8 @@ import {
   TableColumnResizeHandler,
   TableConfig,
   TableHeadings,
-} from "@finos/vuu-table-types";
-import { isGroupColumn, isNotHidden } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-table-types";
+import { isGroupColumn, isNotHidden } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { cloneElement, isValidElement, memo, useMemo } from "react";
 import { GroupHeaderCell, HeaderCell } from "../header-cell";

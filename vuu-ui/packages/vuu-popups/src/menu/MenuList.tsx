@@ -11,7 +11,7 @@ import React, {
   useRef,
 } from "react";
 //TODO do we want this dependency ?
-import { useId } from "@finos/vuu-utils";
+import { useId } from "@vuu-ui/vuu-utils";
 import {
   MenuCloseHandler,
   useKeyboardNavigation,
@@ -68,7 +68,7 @@ const getDisplayName = (item: ReactNode) =>
     : undefined;
 
 export const isMenuItemLabel = (
-  item: ReactNode
+  item: ReactNode,
 ): item is ReactElement<MenuItemLabelProps> =>
   getDisplayName(item) === "MenuItemLabel";
 
@@ -76,7 +76,7 @@ const hasIcon = (child: ReactElement) => child.props["data-icon"];
 
 export type MenuOpenHandler = (
   menuItemEl: HTMLElement,
-  immediate?: boolean
+  immediate?: boolean,
 ) => void;
 export interface MenuListProps extends HTMLAttributes<HTMLDivElement> {
   activatedByKeyboard?: boolean;
@@ -158,7 +158,7 @@ export const MenuList = ({
     const maybeIcon = (
       childElement: ReactElement,
       withIcon: boolean,
-      iconName?: string
+      iconName?: string,
     ) =>
       withIcon
         ? [
@@ -174,7 +174,7 @@ export const MenuList = ({
       list: ReactElement[],
       child: ReactElement,
       idx: number,
-      withIcon: boolean
+      withIcon: boolean,
     ) {
       const {
         children,
@@ -190,7 +190,7 @@ export const MenuList = ({
       const ariaControls = subMenuShowing ? `${id}-${itemId}` : undefined;
 
       const ariaLabel =
-        label ?? typeof children === "string" ? children : undefined;
+        (label ?? typeof children === "string") ? children : undefined;
 
       list.push(
         <MenuItem
@@ -203,7 +203,7 @@ export const MenuList = ({
             highlightedIndex,
             appliedFocusVisible,
             className,
-            hasSeparator
+            hasSeparator,
           )}
           aria-controls={ariaControls}
           aria-haspopup={hasSubMenu || undefined}
@@ -213,7 +213,7 @@ export const MenuList = ({
           {hasSubMenu
             ? maybeIcon(label ?? children, withIcon, iconName)
             : maybeIcon(children, withIcon, iconName)}
-        </MenuItem>
+        </MenuItem>,
       );
       // mapIdxToId.set(idx, itemId);
     }
@@ -255,7 +255,7 @@ const getMenuItemProps = (
   highlightedIdx: number,
   focusVisible: number,
   className: string,
-  hasSeparator: boolean
+  hasSeparator: boolean,
 ) => ({
   id: `menuitem-${itemId}`,
   key: key ?? idx,

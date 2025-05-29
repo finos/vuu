@@ -2,7 +2,7 @@ import { Input, Option } from "@salt-ds/core";
 import {
   ExpandoCombobox,
   FilterClauseValueEditorText,
-} from "@finos/vuu-filters";
+} from "@vuu-ui/vuu-filters";
 import {
   ChangeEvent,
   ReactNode,
@@ -11,10 +11,10 @@ import {
   useMemo,
   useState,
 } from "react";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { LocalDataSourceProvider, getSchema } from "@finos/vuu-data-test";
-import { FilterClauseValueChangeHandler } from "@finos/vuu-filters/src/filter-clause/useFilterClause";
-import { MultiSelectionHandler } from "@finos/vuu-ui-controls";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
+import { FilterClauseValueChangeHandler } from "@vuu-ui/vuu-filters/src/filter-clause/useFilterClause";
+import { MultiSelectionHandler } from "@vuu-ui/vuu-ui-controls";
 
 const longUsStates = [
   "Alabama",

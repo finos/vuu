@@ -1,4 +1,4 @@
-import { queryClosest, useId } from "@finos/vuu-utils";
+import { queryClosest, useId } from "@vuu-ui/vuu-utils";
 import { MouseEvent, ReactNode, useCallback, useRef, useState } from "react";
 import { TooltipProps } from "./Tooltip";
 import { TooltipPlacement } from "./useTooltipAnchoredPosition";
@@ -54,7 +54,7 @@ export const useTooltip = ({
       } else {
         mouseLeaveTimerRef.current = window.setTimeout(
           hideTooltipRef.current,
-          defer
+          defer,
         );
       }
     }
@@ -86,7 +86,7 @@ export const useTooltip = ({
       id,
       placement,
       tooltipContent,
-    ]
+    ],
   );
 
   const handleMouseEnter = useCallback(
@@ -99,7 +99,7 @@ export const useTooltip = ({
         mouseEnterTimerRef.current = window.setTimeout(showTooltip, 800);
       }
     },
-    [anchorQuery, showTooltip]
+    [anchorQuery, showTooltip],
   );
 
   const handleMouseLeave = useCallback(() => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { filterAsQuery } from "../../src/filters";
-import { Filter, NumericFilterClauseOp } from "@finos/vuu-filter-types";
+import { Filter, NumericFilterClauseOp } from "@vuu-ui/vuu-filter-types";
 import { dateFilterAsQuery } from "../../src/filters/filterAsQuery";
 
 describe("filterAsQuery", () => {
@@ -10,7 +10,7 @@ describe("filterAsQuery", () => {
         column: "currency",
         op: "=",
         value: "EUR",
-      })
+      }),
     ).toEqual('currency = "EUR"');
   });
   it("stringifies multi value filter clauses, string values", () => {
@@ -19,7 +19,7 @@ describe("filterAsQuery", () => {
         column: "currency",
         op: "in",
         values: ["EUR", "GBP"],
-      })
+      }),
     ).toEqual('currency in ["EUR","GBP"]');
   });
   it("stringifies simple filter clauses, numeric values", () => {
@@ -28,7 +28,7 @@ describe("filterAsQuery", () => {
         column: "price",
         op: ">",
         value: 1000,
-      })
+      }),
     ).toEqual("price > 1000");
   });
   it("stringifies multi value filter clauses, numeric values", () => {
@@ -37,7 +37,7 @@ describe("filterAsQuery", () => {
         column: "price",
         op: "in",
         values: [1000, 2000, 3000],
-      })
+      }),
     ).toEqual("price in [1000,2000,3000]");
   });
   it("stringifies simple filter clauses, boolean values", () => {
@@ -46,7 +46,7 @@ describe("filterAsQuery", () => {
         column: "isCancelled",
         op: "=",
         value: true,
-      })
+      }),
     ).toEqual("isCancelled = true");
   });
 
@@ -59,7 +59,7 @@ describe("filterAsQuery", () => {
           { op: ">=", column: "price", value: 200.5 },
           { op: "!=", column: "cancelled", value: true },
         ],
-      })
+      }),
     ).toEqual('currency = "EUR" and price >= 200.5 and cancelled != true');
     expect(
       filterAsQuery({
@@ -69,7 +69,7 @@ describe("filterAsQuery", () => {
           { op: ">=", column: "price", value: 200.5 },
           { op: "!=", column: "cancelled", value: true },
         ],
-      })
+      }),
     ).toEqual('currency = "EUR" or price >= 200.5 or cancelled != true');
   });
 
@@ -94,7 +94,7 @@ describe("filterAsQuery", () => {
       ],
     };
     expect(filterAsQuery(nestedMultiClauseFilter)).toEqual(
-      '(currency = "CAD" or (cancelled != true and isSupported = true)) and price >= 200.5'
+      '(currency = "CAD" or (cancelled != true and isSupported = true)) and price >= 200.5',
     );
   });
 
@@ -115,11 +115,11 @@ describe("filterAsQuery", () => {
           columnsByName: {
             lastUpdated: { name: "lastUpdated", type: "date/time" },
           },
-        }
+        },
       );
 
       expect(result).toEqual(
-        `lastUpdated >= ${date.getTime()} and lastUpdated < ${datePlus1Day.getTime()}`
+        `lastUpdated >= ${date.getTime()} and lastUpdated < ${datePlus1Day.getTime()}`,
       );
     });
 
@@ -140,11 +140,11 @@ describe("filterAsQuery", () => {
           columnsByName: {
             lastUpdated: { name: "lastUpdated", type: "date/time" },
           },
-        }
+        },
       );
 
       expect(result).toEqual(
-        `(lastUpdated < ${date.getTime()} or lastUpdated >= ${datePlus1Day.getTime()}) and currency != "EUR"`
+        `(lastUpdated < ${date.getTime()} or lastUpdated >= ${datePlus1Day.getTime()}) and currency != "EUR"`,
       );
     });
   });
@@ -157,7 +157,7 @@ describe("dateFilterAsQuery", () => {
       const filter = { op, value: 1, column: "lastUpdated" } as const;
       const expected = [filter.column, filter.op, filter.value].join(" ");
       expect(dateFilterAsQuery(filter)).toEqual(expected);
-    }
+    },
   );
 
   const testDate = new Date("2021-12-15");
@@ -173,7 +173,7 @@ describe("dateFilterAsQuery", () => {
     } as const;
 
     expect(dateFilterAsQuery(f)).toEqual(
-      `(lastUpdated < ${testDate.getTime()} or lastUpdated >= ${testDatePlus1Day.getTime()})`
+      `(lastUpdated < ${testDate.getTime()} or lastUpdated >= ${testDatePlus1Day.getTime()})`,
     );
   });
 
@@ -185,7 +185,7 @@ describe("dateFilterAsQuery", () => {
     } as const;
 
     expect(dateFilterAsQuery(f)).toEqual(
-      `(lastUpdated >= ${testDate.getTime()} and lastUpdated < ${testDatePlus1Day.getTime()})`
+      `(lastUpdated >= ${testDate.getTime()} and lastUpdated < ${testDatePlus1Day.getTime()})`,
     );
   });
 });

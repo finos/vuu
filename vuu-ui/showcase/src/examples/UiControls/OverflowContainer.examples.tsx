@@ -1,5 +1,5 @@
-import { Flexbox } from "@finos/vuu-layout";
-import { OverflowContainer } from "@finos/vuu-ui-controls";
+import { Flexbox } from "@vuu-ui/vuu-layout";
+import { OverflowContainer } from "@vuu-ui/vuu-ui-controls";
 import { CSSProperties, useCallback, useState } from "react";
 
 import "./OverflowContainer.examples.css";

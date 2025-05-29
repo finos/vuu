@@ -1,6 +1,6 @@
 // TODO try and get TS path alias working to avoid relative paths like this
 import { Instruments } from "../../../../../showcase/src/examples/Table/Modules/SIMUL.examples";
-import { LocalDataSourceProvider } from "@finos/vuu-data-test";
+import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { TableProps } from "../../Table";
 
 //TODO fix this test. mousemove instructions atre not working in upgraded cypress version

@@ -1,5 +1,5 @@
-import { VuuInput, VuuInputProps } from "@finos/vuu-ui-controls";
-import { CommitHandler } from "@finos/vuu-utils";
+import { VuuInput, VuuInputProps } from "@vuu-ui/vuu-ui-controls";
+import { CommitHandler } from "@vuu-ui/vuu-utils";
 import { CSSProperties, useCallback, useState } from "react";
 
 const VuuInputTemplate = ({

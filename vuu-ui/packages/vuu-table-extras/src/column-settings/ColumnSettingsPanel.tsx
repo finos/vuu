@@ -1,10 +1,10 @@
-import { ColumnDescriptor, ColumnSettingsProps } from "@finos/vuu-table-types";
-import { Icon, VuuInput } from "@finos/vuu-ui-controls";
+import { ColumnDescriptor, ColumnSettingsProps } from "@vuu-ui/vuu-table-types";
+import { Icon, VuuInput } from "@vuu-ui/vuu-ui-controls";
 import {
   getCalculatedColumnDetails,
   getDefaultAlignment,
   isCalculatedColumn,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import {
   Button,
   FormField,

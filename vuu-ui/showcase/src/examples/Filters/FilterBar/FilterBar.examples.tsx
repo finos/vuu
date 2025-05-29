@@ -1,5 +1,5 @@
-import { FilterBar, FilterBarProps } from "@finos/vuu-filters";
-import type { Filter, FilterState } from "@finos/vuu-filter-types";
+import { FilterBar, FilterBarProps } from "@vuu-ui/vuu-filters";
+import type { Filter, FilterState } from "@vuu-ui/vuu-filter-types";
 import {
   CSSProperties,
   ReactElement,
@@ -10,10 +10,10 @@ import {
   useRef,
   useState,
 } from "react";
-import type { DataSourceFilter, SchemaColumn } from "@finos/vuu-data-types";
+import type { DataSourceFilter, SchemaColumn } from "@vuu-ui/vuu-data-types";
 import { Input, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
-import { LocalDataSourceProvider, getSchema } from "@finos/vuu-data-test";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
 const lastUpdatedColumn = {
   name: "lastUpdated",

@@ -7,11 +7,11 @@ import {
 } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { TableSettingsProps } from "@finos/vuu-table-types";
+import { TableSettingsProps } from "@vuu-ui/vuu-table-types";
 import { ColumnList } from "../column-list";
 import { useTableSettings } from "./useTableSettings";
-import { Icon } from "@finos/vuu-ui-controls";
-import { VuuInput } from "@finos/vuu-ui-controls";
+import { Icon } from "@vuu-ui/vuu-ui-controls";
+import { VuuInput } from "@vuu-ui/vuu-ui-controls";
 
 import tableSettingsPanelCss from "./TableSettingsPanel.css";
 

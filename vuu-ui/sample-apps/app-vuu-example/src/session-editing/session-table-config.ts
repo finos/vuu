@@ -2,8 +2,8 @@ import {
   MenuRpcResponse,
   OpenDialogActionWithSchema,
   TableSchema,
-} from "@finos/vuu-data-types";
-import { FormConfig, FormFieldDescriptor } from "@finos/vuu-data-react";
+} from "@vuu-ui/vuu-data-types";
+import { FormConfig, FormFieldDescriptor } from "@vuu-ui/vuu-data-react";
 
 const static_config: { [key: string]: Partial<FormConfig> } = {
   OPEN_EDIT_RESET_FIX: {
@@ -27,7 +27,7 @@ const static_config: { [key: string]: Partial<FormConfig> } = {
 
 const mergeFields = (
   fields: FormFieldDescriptor[],
-  staticFields?: FormFieldDescriptor[]
+  staticFields?: FormFieldDescriptor[],
 ) => {
   if (Array.isArray(staticFields)) {
     return fields.map((field) => {

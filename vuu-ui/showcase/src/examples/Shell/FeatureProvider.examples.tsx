@@ -1,6 +1,6 @@
-import { FeatureList, useFeatures } from "@finos/vuu-shell";
-import { StaticFeatureDescriptor } from "@finos/vuu-utils";
-import { FeatureAndLayoutProvider } from "@finos/vuu-shell";
+import { FeatureList, useFeatures } from "@vuu-ui/vuu-shell";
+import { StaticFeatureDescriptor } from "@vuu-ui/vuu-utils";
+import { FeatureAndLayoutProvider } from "@vuu-ui/vuu-shell";
 
 const staticFeatures: StaticFeatureDescriptor[] = [
   { label: "label1", type: "Placeholder" },

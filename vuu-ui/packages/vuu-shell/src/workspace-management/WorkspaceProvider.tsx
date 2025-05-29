@@ -1,5 +1,5 @@
-import { isLayoutJSON, resolveJSONPath } from "@finos/vuu-layout";
-import { useNotifications } from "@finos/vuu-popups";
+import { isLayoutJSON, resolveJSONPath } from "@vuu-ui/vuu-layout";
+import { useNotifications } from "@vuu-ui/vuu-popups";
 import {
   LayoutMetadata,
   LayoutMetadataDto,
@@ -9,14 +9,14 @@ import {
   type ApplicationJSON,
   type ApplicationSetting,
   type ApplicationSettings,
-  type LayoutJSON
-} from "@finos/vuu-utils";
+  type LayoutJSON,
+} from "@vuu-ui/vuu-utils";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { usePersistenceManager } from "../persistence-manager";
 import {
   getWorkspaceWithLayoutJSON,
   loadingJSON,
-  type WorkspaceStackProps
+  type WorkspaceStackProps,
 } from "./defaultWorkspaceJSON";
 
 const { info } = logger("useLayoutManager");
@@ -47,7 +47,7 @@ export interface WorkspaceProviderProps extends WorkspaceProps {
 
 const ensureLayoutHasTitle = (
   layout: LayoutJSON,
-  layoutMetadata: LayoutMetadataDto
+  layoutMetadata: LayoutMetadataDto,
 ) => {
   if (layout.props?.title !== undefined) {
     return layout;
@@ -56,14 +56,14 @@ const ensureLayoutHasTitle = (
       ...layout,
       props: {
         ...layout.props,
-        title: layoutMetadata.name
-      }
+        title: layoutMetadata.name,
+      },
     };
   }
 };
 
 const loadingApplicationJSON: ApplicationJSON = {
-  workspaceJSON: loadingJSON
+  workspaceJSON: loadingJSON,
 };
 
 /**
@@ -86,7 +86,7 @@ export const WorkspaceProvider = ({
   activeLayoutIndex,
   layoutPlaceholderJSON,
   showTabs,
-  workspaceJSON: customWorkspaceJSON
+  workspaceJSON: customWorkspaceJSON,
 }: WorkspaceProviderProps) => {
   const [layoutMetadata, setLayoutMetadata] = useState<LayoutMetadata[]>([]);
   // TODO this default should probably be a loading state rather than the placeholder
@@ -103,7 +103,7 @@ export const WorkspaceProvider = ({
         forceRefresh({});
       }
     },
-    []
+    [],
   );
 
   const setWorkspaceJSON = useCallback(
@@ -111,12 +111,12 @@ export const WorkspaceProvider = ({
       setApplicationJSON(
         {
           ...applicationJSONRef.current,
-          workspaceJSON
+          workspaceJSON,
         },
-        rerender
+        rerender,
       );
     },
-    [setApplicationJSON]
+    [setApplicationJSON],
   );
 
   const setApplicationSettings = useCallback(
@@ -126,13 +126,13 @@ export const WorkspaceProvider = ({
           ...applicationJSONRef.current,
           settings: {
             ...applicationJSONRef.current.settings,
-            ...settings
-          }
+            ...settings,
+          },
         },
-        false
+        false,
       );
     },
-    [setApplicationJSON]
+    [setApplicationJSON],
   );
 
   useEffect(() => {
@@ -146,7 +146,7 @@ export const WorkspaceProvider = ({
         notify({
           type: "error",
           header: "Failed to Load Layouts",
-          body: "Could not load list of available layouts"
+          body: "Could not load list of available layouts",
         });
         console.error("Error occurred while retrieving metadata", error);
       });
@@ -165,13 +165,13 @@ export const WorkspaceProvider = ({
             customWorkspaceJSON,
             layoutJSON,
             activeLayoutIndex,
-            { TabstripProps, showTabs }
+            { TabstripProps, showTabs },
           );
           info?.(`applicationJSON not found, getting defaultWorkspaceJSON,
             ${JSON.stringify(workspaceJSON, null, 2)}
             `);
           setApplicationJSON({
-            workspaceJSON
+            workspaceJSON,
           });
         }
       })
@@ -179,11 +179,11 @@ export const WorkspaceProvider = ({
         notify({
           type: "error",
           header: "Failed to Load Layout",
-          body: "Could not load your latest view"
+          body: "Could not load your latest view",
         });
         console.error(
           "Error occurred while retrieving application layout",
-          error
+          error,
         );
       });
   }, [
@@ -194,7 +194,7 @@ export const WorkspaceProvider = ({
     notify,
     persistenceManager,
     setApplicationJSON,
-    showTabs
+    showTabs,
   ]);
 
   const saveApplicationLayout = useCallback(
@@ -206,7 +206,7 @@ export const WorkspaceProvider = ({
         console.error("Tried to save invalid application layout", layout);
       }
     },
-    [persistenceManager, setWorkspaceJSON]
+    [persistenceManager, setWorkspaceJSON],
   );
 
   const saveLayout = useCallback(
@@ -219,7 +219,7 @@ export const WorkspaceProvider = ({
         } else {
           layoutToSave = resolveJSONPath(
             workspaceJSON,
-            `#${VuuShellLocation.Workspace}.ACTIVE_CHILD`
+            `#${VuuShellLocation.Workspace}.ACTIVE_CHILD`,
           );
         }
       } catch (e) {
@@ -233,7 +233,7 @@ export const WorkspaceProvider = ({
             notify({
               type: "success",
               header: "Layout Saved Successfully",
-              body: `${metadata.name} saved successfully`
+              body: `${metadata.name} saved successfully`,
             });
             setLayoutMetadata((prev) => [...prev, metadata]);
           })
@@ -241,7 +241,7 @@ export const WorkspaceProvider = ({
             notify({
               type: "error",
               header: "Failed to Save Layout",
-              body: `Failed to save layout ${metadata.name}`
+              body: `Failed to save layout ${metadata.name}`,
             });
             console.error("Error occurred while saving layout", error);
           });
@@ -250,30 +250,30 @@ export const WorkspaceProvider = ({
         notify({
           type: "error",
           header: "Failed to Save Layout",
-          body: "Cannot save invalid layout"
+          body: "Cannot save invalid layout",
         });
       }
     },
-    [notify, persistenceManager]
+    [notify, persistenceManager],
   );
 
   const saveApplicationSettings = useCallback(
     (
       settings: ApplicationSettings | ApplicationSetting,
-      key?: keyof ApplicationSettings
+      key?: keyof ApplicationSettings,
     ) => {
       const { settings: applicationSettings } = applicationJSONRef.current;
       if (key) {
         setApplicationSettings({
           ...applicationSettings,
-          [key]: settings
+          [key]: settings,
         });
       } else {
         setApplicationSettings(settings as ApplicationSettings);
       }
       persistenceManager?.saveApplicationJSON(applicationJSONRef.current);
     },
-    [persistenceManager, setApplicationSettings]
+    [persistenceManager, setApplicationSettings],
   );
 
   const getApplicationSettings = useCallback(
@@ -281,7 +281,7 @@ export const WorkspaceProvider = ({
       const { settings } = applicationJSONRef.current;
       return key ? settings?.[key] : settings;
     },
-    []
+    [],
   );
 
   const loadLayoutById = useCallback(
@@ -298,8 +298,8 @@ export const WorkspaceProvider = ({
               children: (currentLayout.children || []).concat(layoutJson),
               props: {
                 ...currentLayout.props,
-                active: currentLayout.children?.length ?? 0
-              }
+                active: currentLayout.children?.length ?? 0,
+              },
             });
           }
         })
@@ -307,12 +307,12 @@ export const WorkspaceProvider = ({
           notify({
             type: "error",
             header: "Failed to Load Layout",
-            body: "Failed to load the requested layout"
+            body: "Failed to load the requested layout",
           });
           console.error("Error occurred while loading layout", error);
         });
     },
-    [notify, persistenceManager, setWorkspaceJSON]
+    [notify, persistenceManager, setWorkspaceJSON],
   );
 
   return (
@@ -325,7 +325,7 @@ export const WorkspaceProvider = ({
         workspaceJSON: applicationJSONRef.current.workspaceJSON,
         saveApplicationLayout,
         saveApplicationSettings,
-        loadLayoutById
+        loadLayoutById,
       }}
     >
       {children}
@@ -340,6 +340,6 @@ export const useWorkspace = () => {
 
   return {
     ...contextProps,
-    workspaceJSON
+    workspaceJSON,
   };
 };

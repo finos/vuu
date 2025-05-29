@@ -7,7 +7,7 @@ import {
   selectionIsDisallowed,
 } from "../common-hooks";
 import { useControlled } from "@salt-ds/core";
-import { getClosestIndexItem, isSelectableElement } from "@finos/vuu-utils";
+import { getClosestIndexItem, isSelectableElement } from "@vuu-ui/vuu-utils";
 
 const defaultSelectionKeys = ["Enter", " "];
 
@@ -59,7 +59,7 @@ export const useSelection = ({
 
   const isSelectionEvent = useCallback(
     (evt: KeyboardEvent) => defaultSelectionKeys.includes(evt.key),
-    []
+    [],
   );
 
   const selectItem = useCallback(
@@ -71,7 +71,7 @@ export const useSelection = ({
       setSelected(newSelected);
       onSelectionChange?.(newSelected);
     },
-    [onSelectionChange, selected, selectionStrategy, setSelected]
+    [onSelectionChange, selected, selectionStrategy, setSelected],
   );
 
   const deselectItem = useCallback(
@@ -84,7 +84,7 @@ export const useSelection = ({
       setSelected(newSelected);
       onSelectionChange?.(newSelected);
     },
-    [onSelectionChange, selected, selectionStrategy, setSelected]
+    [onSelectionChange, selected, selectionStrategy, setSelected],
   );
 
   const handleKeyDown = useCallback(
@@ -108,7 +108,7 @@ export const useSelection = ({
       selectionStrategy,
       selectItem,
       deselectItem,
-    ]
+    ],
   );
 
   const handleClick = useCallback(
@@ -122,7 +122,7 @@ export const useSelection = ({
         }
       }
     },
-    [deselectItem, selectItem, selected, selectionStrategy]
+    [deselectItem, selectItem, selected, selectionStrategy],
   );
 
   const itemHandlers = selectionIsDisallowed(selectionStrategy)

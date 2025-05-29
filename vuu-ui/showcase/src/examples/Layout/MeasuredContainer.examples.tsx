@@ -1,5 +1,5 @@
-import { MeasuredContainer } from "@finos/vuu-ui-controls";
-import { isValidNumber } from "@finos/vuu-utils";
+import { MeasuredContainer } from "@vuu-ui/vuu-ui-controls";
+import { isValidNumber } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 
 import "./MeasuredContainer.examples.css";

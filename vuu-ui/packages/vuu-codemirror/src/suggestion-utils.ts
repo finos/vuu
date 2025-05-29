@@ -1,8 +1,8 @@
 import { Completion } from "@codemirror/autocomplete";
 import { AnnotationType } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
-import type { ColumnDescriptor } from "@finos/vuu-table-types";
-import { isNumericColumn } from "@finos/vuu-utils";
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { isNumericColumn } from "@vuu-ui/vuu-utils";
 
 export interface VuuCompletion extends Completion {
   isIllustration?: boolean;
@@ -30,13 +30,13 @@ const applyWithCursorMove =
         changes: { from: from + 1, insert: " " },
         selection: { anchor: from + 2, head: from + 2 },
         annotations: annotation.of(completion),
-      }
+      },
     );
   };
 
 export const toSuggestions = (
   values: string[],
-  options = NO_OPTIONS
+  options = NO_OPTIONS,
 ): VuuCompletion[] => {
   const {
     moveCursorToEnd = false,
@@ -52,8 +52,8 @@ export const toSuggestions = (
     apply: moveCursorToEnd
       ? applyWithCursorMove()
       : isIllustration
-      ? `${quote}${prefix}${quote}`
-      : `${prefix}${quote}${value}${quote}${suffix}`,
+        ? `${quote}${prefix}${quote}`
+        : `${prefix}${quote}${value}${quote}${suffix}`,
   }));
 };
 

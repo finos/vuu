@@ -2,7 +2,7 @@ import {
   EditableLabel,
   ExitEditModeHandler,
   Icon,
-} from "@finos/vuu-ui-controls";
+} from "@vuu-ui/vuu-ui-controls";
 import { Button, Input } from "@salt-ds/core";
 import { ReactNode, useRef, useState } from "react";
 

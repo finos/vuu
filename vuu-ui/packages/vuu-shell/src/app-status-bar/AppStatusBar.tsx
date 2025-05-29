@@ -1,11 +1,11 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { ConnectionManager } from "@finos/vuu-data-remote";
+import { ConnectionManager } from "@vuu-ui/vuu-data-remote";
 
 import appStatusBarCss from "./AppStatusBar.css";
 import { useUserSetting } from "../application-provider";
-import { Settings } from "@finos/vuu-utils";
+import { Settings } from "@vuu-ui/vuu-utils";
 import { ConnectionStateDisplay } from "../connection-status";
 import { useEffect, useState } from "react";
 

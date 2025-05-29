@@ -6,29 +6,29 @@ import {
   MultiClauseFilter,
   MultiValueFilterClause,
   SingleValueFilterClause,
-} from "@finos/vuu-filter-types";
+} from "@vuu-ui/vuu-filter-types";
 import {
   EventEmitter,
   isMultiClauseFilter,
   isMultiValueFilter,
   isSingleValueFilter,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 
 export type FilterStatusChangeHandler = (isValid: boolean) => void;
 export type FilterChangeHandler = (
   filter: Partial<Filter>,
-  isValid: boolean
+  isValid: boolean,
 ) => void;
 export type FilterClauseChangeHandler = (
   filter: Partial<FilterClause>,
-  isValid: boolean
+  isValid: boolean,
 ) => void;
 
 const hasValues = ({ values }: MultiValueFilterClause) =>
   Array.isArray(values) && values.length > 0;
 
 const isValidFilterClause = (
-  filterClause: Partial<FilterClause>
+  filterClause: Partial<FilterClause>,
 ): filterClause is FilterClause => {
   if (filterClause.op === undefined || filterClause.column === undefined) {
     return false;
@@ -131,7 +131,7 @@ export class FilterClauseModel extends EventEmitter<FilterClauseModelEvents> {
       | number[]
       | boolean
       | boolean[],
-    isFinal = true
+    isFinal = true,
   ) {
     if (isSingleValueFilter(this.#filterClause)) {
       this.#filterClause = {
@@ -197,7 +197,7 @@ export class FilterModel extends EventEmitter<FilterModelEvents> {
       this.#op = operator;
     } else if (operator && this.#op && operator !== this.#op) {
       throw Error(
-        "FilterModel: use setOp to change the Filter combinator operator"
+        "FilterModel: use setOp to change the Filter combinator operator",
       );
     }
 

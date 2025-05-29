@@ -2,16 +2,16 @@ import {
   Placeholder,
   useLayoutOperation,
   useLayoutProviderDispatch,
-} from "@finos/vuu-layout";
+} from "@vuu-ui/vuu-layout";
 import {
   PersistenceProvider,
   Shell,
   StaticPersistenceManager,
   WorkspaceProps,
   defaultWorkspaceJSON,
-} from "@finos/vuu-shell";
-import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
-import { VuuShellLocation, registerComponent } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-shell";
+import { Tab, Tabstrip } from "@vuu-ui/vuu-ui-controls";
+import { VuuShellLocation, registerComponent } from "@vuu-ui/vuu-utils";
 import { Button } from "@salt-ds/core";
 import {
   CSSProperties,

@@ -1,5 +1,5 @@
-import { SaveLayoutPanel } from "@finos/vuu-shell";
-import { LayoutMetadataDto } from "@finos/vuu-utils";
+import { SaveLayoutPanel } from "@vuu-ui/vuu-shell";
+import { LayoutMetadataDto } from "@vuu-ui/vuu-utils";
 import { Dialog, DialogContent, DialogHeader } from "@salt-ds/core";
 import { useCallback } from "react";
 

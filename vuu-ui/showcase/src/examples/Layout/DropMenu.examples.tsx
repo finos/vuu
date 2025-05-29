@@ -3,8 +3,8 @@ import {
   DropMenu,
   DropPosition,
   DropTarget,
-} from "@finos/vuu-layout";
-import { PopupService } from "@finos/vuu-popups";
+} from "@vuu-ui/vuu-layout";
+import { PopupService } from "@vuu-ui/vuu-popups";
 import { useEffect, useRef } from "react";
 
 const dropPositionBase: DropPosition = {

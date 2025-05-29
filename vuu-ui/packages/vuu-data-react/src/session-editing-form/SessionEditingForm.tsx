@@ -1,11 +1,11 @@
-import { VuuDataSource } from "@finos/vuu-data-remote";
-import { DataSource, TableSchema } from "@finos/vuu-data-types";
+import { VuuDataSource } from "@vuu-ui/vuu-data-remote";
+import { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
 import {
   VuuColumnDataType,
   VuuDataRow,
   VuuRowDataItemType,
   VuuRpcAction,
-} from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-protocol-types";
 import {
   buildColumnMap,
   getTypedValue,
@@ -14,7 +14,7 @@ import {
   queryClosest,
   shallowEquals,
   vuuEditCellRequest,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import {
   Button,
   FormField,

@@ -1,7 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Showcase, ShowcaseStandalone } from "@finos/vuu-showcase";
-import { hasUrlParameter, TreeSourceNode } from "@finos/vuu-utils";
+import { Showcase, ShowcaseStandalone } from "@vuu-ui/vuu-showcase";
+import { hasUrlParameter, TreeSourceNode } from "@vuu-ui/vuu-utils";
 
 function start(treeSource: TreeSourceNode[]) {
   const container = document.getElementById("root");

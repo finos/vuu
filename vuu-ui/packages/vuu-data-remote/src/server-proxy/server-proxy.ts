@@ -16,7 +16,7 @@ import type {
   VuuUIMessageOutUnsubscribe,
   VuuUIMessageOutViewRange,
   WithRequestId,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import type {
   ClientMessageBody,
   VuuRpcMenuRequest,
@@ -34,7 +34,7 @@ import type {
   VuuCreateVisualLink,
   VuuRemoveVisualLink,
   VuuViewportRangeRequest,
-} from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-protocol-types";
 import {
   isVuuMenuRpcRequest,
   isViewportMessage,
@@ -44,7 +44,7 @@ import {
   isSessionTable,
   isSessionTableActionMessage,
   isVisualLinkMessage,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import {
   createSchemaFromTableMetadata,
   groupRowsByViewport,

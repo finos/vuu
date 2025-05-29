@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { Action } from "../layout-action";
 import { useLayoutProviderDispatch } from "../layout-provider";
 import { SplitterResizeAction } from "../layout-reducer";
-import { registerComponent } from "@finos/vuu-utils";
+import { registerComponent } from "@vuu-ui/vuu-utils";
 import Flexbox from "./Flexbox";
 import { FlexboxLayoutProps, SplitterMoveHandler } from "./flexboxTypes";
 

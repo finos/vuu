@@ -1,4 +1,4 @@
-import { ResizeHandler } from "@finos/vuu-ui-controls";
+import { ResizeHandler } from "@vuu-ui/vuu-ui-controls";
 import { useResizeObserver, WidthHeight } from "../responsive";
 import { RefObject, useCallback, useRef } from "react";
 

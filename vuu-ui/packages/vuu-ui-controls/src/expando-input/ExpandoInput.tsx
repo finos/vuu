@@ -1,4 +1,4 @@
-import { CommitHandler } from "@finos/vuu-utils";
+import { CommitHandler } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";

@@ -6,14 +6,14 @@ import {
   numericOperators,
   stringOperators,
   toSuggestions,
-} from "@finos/vuu-codemirror";
+} from "@vuu-ui/vuu-codemirror";
 import {
   getTypeaheadParams,
   useTypeaheadSuggestions,
-} from "@finos/vuu-data-react";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { VuuTable } from "@finos/vuu-protocol-types";
-import { isNumericColumn, isTextColumn } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-data-react";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { VuuTable } from "@vuu-ui/vuu-protocol-types";
+import { isNumericColumn, isTextColumn } from "@vuu-ui/vuu-utils";
 import { useCallback, useRef } from "react";
 import {
   ColumnFunctionDescriptor,

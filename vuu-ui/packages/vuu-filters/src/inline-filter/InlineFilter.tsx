@@ -1,5 +1,5 @@
-import { getDataItemEditControl } from "@finos/vuu-data-react";
-import { VirtualColSpan } from "@finos/vuu-table";
+import { getDataItemEditControl } from "@vuu-ui/vuu-data-react";
+import { VirtualColSpan } from "@vuu-ui/vuu-table";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes } from "react";
@@ -7,9 +7,9 @@ import cx from "clsx";
 
 import inlineFilteCss from "./InlineFilter.css";
 import { InputProps } from "@salt-ds/core";
-import { TableSchemaTable } from "@finos/vuu-data-types";
-import { VuuFilter } from "@finos/vuu-protocol-types";
-import { BaseRowProps } from "@finos/vuu-table-types";
+import { TableSchemaTable } from "@vuu-ui/vuu-data-types";
+import { VuuFilter } from "@vuu-ui/vuu-protocol-types";
+import { BaseRowProps } from "@vuu-ui/vuu-table-types";
 import { useInlineFilter } from "./useInlineFilter";
 
 const classBase = "vuuInlineFilter";

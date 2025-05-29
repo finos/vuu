@@ -1,9 +1,9 @@
-import type { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
-import type { ColumnDescriptor } from "@finos/vuu-table-types";
+import type { MenuActionHandler, MenuBuilder } from "@vuu-ui/vuu-data-types";
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import type {
   ColumnDescriptorsByName,
   FilterCombinatorOp,
-} from "@finos/vuu-filter-types";
+} from "@vuu-ui/vuu-filter-types";
 import {
   KeyboardEventHandler,
   RefCallback,
@@ -75,13 +75,13 @@ export const useFilterEditor = ({
 
   const columnsByName = useMemo(
     () => columnDescriptorsByName(columnDescriptors),
-    [columnDescriptors]
+    [columnDescriptors],
   );
 
   const isLastFilterClause = useCallback(
     (index?: number) =>
       index !== undefined && filterModel.filterClauses.length === index + 1,
-    [filterModel]
+    [filterModel],
   );
 
   const focusSaveButton = useCallback(() => {
@@ -119,18 +119,18 @@ export const useFilterEditor = ({
           if (indexOfFilterClause > 0) {
             focusFilterClauseField(
               containerRef.current,
-              indexOfFilterClause - 1
+              indexOfFilterClause - 1,
             );
           }
         }
       } else {
         console.log(
-          `cancel because of Escape valid clause ${filterClause.isValid}`
+          `cancel because of Escape valid clause ${filterClause.isValid}`,
         );
         onCancel(filter);
       }
     },
-    [filter, filterModel, onCancel]
+    [filter, filterModel, onCancel],
   );
 
   const invokeMenuAction = useCallback<MenuActionHandler>(
@@ -160,7 +160,7 @@ export const useFilterEditor = ({
           return false;
       }
     },
-    [filter?.name, filterModel, onSave]
+    [filter?.name, filterModel, onSave],
   );
 
   const handleKeyDownSaveButton = useCallback<KeyboardEventHandler>(
@@ -174,7 +174,7 @@ export const useFilterEditor = ({
         onCancel(filter);
       }
     },
-    [filter, onCancel]
+    [filter, onCancel],
   );
 
   const handleKeyDownNavigationFromCombinator = useCallback<
@@ -201,7 +201,7 @@ export const useFilterEditor = ({
         options: {},
         type: "menu-action",
       }),
-    [invokeMenuAction]
+    [invokeMenuAction],
   );
 
   const saveButtonProps = {
@@ -222,7 +222,7 @@ export const useFilterEditor = ({
         clauseCombinatorRef.current = op;
         forceRefresh({});
       },
-      [filterModel]
+      [filterModel],
     );
 
   const handleCancelFilterEdit = useCallback(() => {
@@ -246,7 +246,7 @@ export const useFilterEditor = ({
 
 // Duplicated in useFilterBar
 function columnDescriptorsByName(
-  columns: ColumnDescriptor[]
+  columns: ColumnDescriptor[],
 ): ColumnDescriptorsByName {
   return columns.reduce((m, col) => ({ ...m, [col.name]: col }), {});
 }

@@ -1,9 +1,9 @@
-import { DataSource, DataSourceConstructorProps } from "@finos/vuu-data-types";
-import { Flexbox, Stack, View } from "@finos/vuu-layout";
-import { VuuLink } from "@finos/vuu-protocol-types";
-import { Table } from "@finos/vuu-table";
-import { TableConfig } from "@finos/vuu-table-types";
-import { Tabstrip, Tab } from "@finos/vuu-ui-controls";
+import { DataSource, DataSourceConstructorProps } from "@vuu-ui/vuu-data-types";
+import { Flexbox, Stack, View } from "@vuu-ui/vuu-layout";
+import { VuuLink } from "@vuu-ui/vuu-protocol-types";
+import { Table } from "@vuu-ui/vuu-table";
+import { TableConfig } from "@vuu-ui/vuu-table-types";
+import { Tabstrip, Tab } from "@vuu-ui/vuu-ui-controls";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
@@ -17,7 +17,7 @@ import {
 
 import css from "./LinkedTableView.css";
 import { TableLayoutToggleButton } from "./TableLayoutToggleButton";
-import { Filter } from "@finos/vuu-filter-types";
+import { Filter } from "@vuu-ui/vuu-filter-types";
 
 const classBase = "vuuLinkedTableView";
 

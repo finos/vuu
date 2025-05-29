@@ -1,5 +1,5 @@
-import { TableRowClickHandler } from "@finos/vuu-table-types";
-import { TableProps } from "@finos/vuu-table";
+import { TableRowClickHandler } from "@vuu-ui/vuu-table-types";
+import { TableProps } from "@vuu-ui/vuu-table";
 import { useCallback, useMemo, useState } from "react";
 import { BasketSelectorProps } from "./BasketSelector";
 import { BasketSelectorRow } from "./BasketSelectorRow";

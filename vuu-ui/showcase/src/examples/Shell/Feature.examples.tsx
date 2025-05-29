@@ -1,7 +1,7 @@
-import { Feature } from "@finos/vuu-shell";
+import { Feature } from "@vuu-ui/vuu-shell";
 import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { SyntheticEvent, useMemo, useState } from "react";
-import { getSchema } from "@finos/vuu-data-test";
+import { getSchema } from "@vuu-ui/vuu-data-test";
 
 type PathMap = { [key: string]: { jsUrl: string; cssUrl?: string } };
 

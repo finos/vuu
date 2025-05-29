@@ -1,9 +1,9 @@
-import { LocalDataSourceProvider, getSchema } from "@finos/vuu-data-test";
-import { SchemaColumn, TableSchema } from "@finos/vuu-data-types";
-import { ColumnDescriptorsByName } from "@finos/vuu-filter-types";
-import { FilterClause, FilterClauseModel } from "@finos/vuu-filters";
+import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
+import { SchemaColumn, TableSchema } from "@vuu-ui/vuu-data-types";
+import { ColumnDescriptorsByName } from "@vuu-ui/vuu-filter-types";
+import { FilterClause, FilterClauseModel } from "@vuu-ui/vuu-filters";
 import { ReactNode, useMemo } from "react";
-import { ColumnPicker } from "@finos/vuu-filters/src/filter-clause/ColumnPicker";
+import { ColumnPicker } from "@vuu-ui/vuu-filters/src/filter-clause/ColumnPicker";
 
 import "./FilterClause.examples.css";
 import { Input } from "@salt-ds/core";

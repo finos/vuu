@@ -1,4 +1,4 @@
-import { DataItem } from "@finos/vuu-utils";
+import { DataItem } from "@vuu-ui/vuu-utils";
 import { Table } from "./Table";
 
 const cachedValues = new Map<Table, Map<string, DataItem[]>>();

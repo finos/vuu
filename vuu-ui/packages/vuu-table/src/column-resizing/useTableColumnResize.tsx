@@ -2,7 +2,7 @@ import {
   Heading,
   ResizePhase,
   RuntimeColumnDescriptor,
-} from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-table-types";
 import { RefObject, useCallback, useRef, useState } from "react";
 
 export type ResizeHandler = (evt: MouseEvent, moveBy: number) => void;

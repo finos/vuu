@@ -5,7 +5,7 @@ import {
   OpenDialogActionWithSchema,
   SuggestionFetcher,
   TableSchema,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import {
   VuuRpcMenuRequest,
   VuuRpcViewportRequest,
@@ -22,8 +22,8 @@ import {
   VuuRpcViewportResponse,
   VuuCreateVisualLink,
   VuuRemoveVisualLink,
-} from "@finos/vuu-protocol-types";
-import { isViewportRpcRequest, uuid } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-protocol-types";
+import { isViewportRpcRequest, uuid } from "@vuu-ui/vuu-utils";
 import { Table, buildDataColumnMapFromSchema } from "./Table";
 import { TickingArrayDataSource } from "./TickingArrayDataSource";
 import { makeSuggestions } from "./makeSuggestions";

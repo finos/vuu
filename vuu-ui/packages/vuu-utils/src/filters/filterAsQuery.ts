@@ -2,8 +2,8 @@ import {
   ColumnDescriptorsByName,
   Filter,
   SingleValueFilterClause,
-} from "@finos/vuu-filter-types";
-import type { RuntimeColumnDescriptor } from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-filter-types";
+import type { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { isDateTimeDataValue } from "../column-utils";
 import { isMultiClauseFilter, isMultiValueFilter } from "./filter-utils";
 

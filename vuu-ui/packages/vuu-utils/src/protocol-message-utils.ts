@@ -5,7 +5,7 @@ import type {
   RpcResponse,
   TableSchema,
   VuuUiMessageInRequestResponse,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import {
   VuuRpcMenuRequest,
   OpenDialogAction,
@@ -20,7 +20,7 @@ import {
   VuuRpcMenuSuccess,
   VuuTable,
   VuuRpcViewportResponse,
-} from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-protocol-types";
 
 const MENU_RPC_TYPES = [
   "VIEW_PORT_MENUS_SELECT_RPC",

@@ -1,17 +1,17 @@
-import { useVuuMenuActions } from "@finos/vuu-data-react";
-import { getSchema, SimulTableName } from "@finos/vuu-data-test";
-import { ContextMenuProvider, NotificationsProvider } from "@finos/vuu-popups";
-import { Table, TableProps } from "@finos/vuu-table";
+import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
+import { getSchema, SimulTableName } from "@vuu-ui/vuu-data-test";
+import { ContextMenuProvider, NotificationsProvider } from "@vuu-ui/vuu-popups";
+import { Table, TableProps } from "@vuu-ui/vuu-table";
 import type {
   ColumnDescriptor,
   ColumnLayout,
   DefaultColumnConfiguration,
-} from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-table-types";
 import {
   applyDefaultColumnConfig,
   toColumnName,
   useDataSource,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { DemoTableContainer } from "../DemoTableContainer";
 import "../BuySellRowClassNameGenerator";

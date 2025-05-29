@@ -1,10 +1,10 @@
-import { SelectionChangeHandler, TableSchema } from "@finos/vuu-data-types";
-import { Table, TableProps } from "@finos/vuu-table";
-import { useDataSource } from "@finos/vuu-utils";
+import { SelectionChangeHandler, TableSchema } from "@vuu-ui/vuu-data-types";
+import { Table, TableProps } from "@vuu-ui/vuu-table";
+import { useDataSource } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { useAutoLoginToVuuServer } from "../utils";
-import { TableConfig, TableRowSelectHandler } from "@finos/vuu-table-types";
-import { LocalDataSourceProvider, getSchema } from "@finos/vuu-data-test";
+import { TableConfig, TableRowSelectHandler } from "@vuu-ui/vuu-table-types";
+import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
 
 const TableTemplate = ({
   navigationStyle,

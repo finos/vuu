@@ -1,8 +1,8 @@
 import {
   ColumnDescriptor,
   RuntimeColumnDescriptor,
-} from "@finos/vuu-table-types";
-import { VuuSort, VuuSortCol, VuuSortType } from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-table-types";
+import { VuuSort, VuuSortCol, VuuSortType } from "@vuu-ui/vuu-protocol-types";
 
 const cycleSortType = (sortType: VuuSortType) =>
   sortType === "A" ? "D" : sortType === "D" ? undefined : "A";
@@ -15,7 +15,7 @@ export const toggleOrApplySort = (
   { sortDefs }: VuuSort,
   { name: column }: ColumnDescriptor,
   extendSort = false,
-  sortType?: VuuSortType
+  sortType?: VuuSortType,
 ): VuuSort => {
   if (extendSort) {
     const existingDef = sortDefs.find((sortDef) => sortDef.column === column);
@@ -27,7 +27,7 @@ export const toggleOrApplySort = (
                 column,
                 sortType: sortDef.sortType === "A" ? "D" : "A",
               }
-            : sortDef
+            : sortDef,
         ),
       };
     } else {
@@ -44,8 +44,8 @@ export const toggleOrApplySort = (
     typeof sortType === "string"
       ? sortType
       : sortDefs.length === 1 && sortDefs[0].column === column
-      ? cycleSortType(sortDefs[0].sortType)
-      : "A";
+        ? cycleSortType(sortDefs[0].sortType)
+        : "A";
 
   return newSortType
     ? {
@@ -57,7 +57,7 @@ export const toggleOrApplySort = (
 export const setSortColumn = (
   { sortDefs }: VuuSort,
   column: RuntimeColumnDescriptor,
-  sortType?: "A" | "D"
+  sortType?: "A" | "D",
 ): VuuSort => {
   if (sortType === undefined) {
     const columnSort = sortDefs.find((item) => item.column === column.name);
@@ -78,7 +78,7 @@ export const setSortColumn = (
 export const addSortColumn = (
   { sortDefs }: VuuSort,
   column: RuntimeColumnDescriptor,
-  sortType: "A" | "D" = "A"
+  sortType: "A" | "D" = "A",
 ): VuuSort => {
   const sortEntry: VuuSortCol = { column: column.name, sortType };
   if (sortDefs.length > 0) {

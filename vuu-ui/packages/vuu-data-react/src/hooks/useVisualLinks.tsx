@@ -1,6 +1,6 @@
-import { DataSource } from "@finos/vuu-data-types";
-import { useViewContext } from "@finos/vuu-layout";
-import { IconButton } from "@finos/vuu-ui-controls";
+import { DataSource } from "@vuu-ui/vuu-data-types";
+import { useViewContext } from "@vuu-ui/vuu-layout";
+import { IconButton } from "@vuu-ui/vuu-ui-controls";
 import { useCallback, useEffect } from "react";
 
 export const useVisualLinks = (dataSource: DataSource) => {

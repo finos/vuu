@@ -1,6 +1,6 @@
 import { vi } from "vitest";
 import { VuuServerMessageCallback } from "../src/WebSocketConnection";
-import { EventEmitter } from "@finos/vuu-utils";
+import { EventEmitter } from "@vuu-ui/vuu-utils";
 
 const websocketMessageEmitter = new EventEmitter();
 

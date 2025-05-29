@@ -1,6 +1,6 @@
 {
-  "name": "@finos/vuu-ui-controls",
-  "version": "0.0.26",
+  "name": "@vuu-ui/vuu-ui-controls",
+  "version": "0.11.1",
   "description": "VUU UI Controls",
   "main": "src/index.ts",
   "author": "heswell",
@@ -11,15 +11,15 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "devDependencies": {
-    "@finos/vuu-data-types": "0.0.26",
-    "@finos/vuu-table-types": "0.0.26"
+    "@vuu-ui/vuu-data-types": "0.11.1",
+    "@vuu-ui/vuu-table-types": "0.11.1"
   },
   "dependencies": {
-    "@finos/vuu-data-react": "0.0.26",
-    "@finos/vuu-layout": "0.0.26",
-    "@finos/vuu-popups": "0.0.26",
-    "@finos/vuu-table": "0.0.26",
-    "@finos/vuu-utils": "0.0.26",
+    "@vuu-ui/vuu-data-react": "0.11.1",
+    "@vuu-ui/vuu-layout": "0.11.1",
+    "@vuu-ui/vuu-popups": "0.11.1",
+    "@vuu-ui/vuu-table": "0.11.1",
+    "@vuu-ui/vuu-utils": "0.11.1",
     "@floating-ui/react": "^0.26.28",
     "@salt-ds/core": "1.43.0",
     "@salt-ds/icons": "1.13.2",

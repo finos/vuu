@@ -1,6 +1,6 @@
-import { DataSourceRow } from "@finos/vuu-data-types";
-import { metadataKeys, WindowRange } from "@finos/vuu-utils";
-import { VuuRange } from "@finos/vuu-protocol-types";
+import { DataSourceRow } from "@vuu-ui/vuu-data-types";
+import { metadataKeys, WindowRange } from "@vuu-ui/vuu-utils";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 
 const { SELECTED } = metadataKeys;
 

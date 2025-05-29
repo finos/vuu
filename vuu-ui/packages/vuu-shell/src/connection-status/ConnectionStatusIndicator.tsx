@@ -1,5 +1,5 @@
 import { CSSProperties, memo, useMemo, useRef } from "react";
-import type { WebSocketConnectionState } from "@finos/vuu-data-remote";
+import type { WebSocketConnectionState } from "@vuu-ui/vuu-data-remote";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 

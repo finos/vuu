@@ -5,11 +5,11 @@ import {
   Expression,
   isCompleteExpression,
   useColumnExpressionSuggestionProvider,
-} from "@finos/vuu-table-extras";
+} from "@vuu-ui/vuu-table-extras";
 
-import { JsonTable } from "@finos/vuu-datatable";
+import { JsonTable } from "@vuu-ui/vuu-datatable";
 
-import {} from "@finos/vuu-utils";
+import {} from "@vuu-ui/vuu-utils";
 import { useAutoLoginToVuuServer } from "../utils";
 import { Input } from "@salt-ds/core";
 

@@ -1,4 +1,4 @@
-import { ContextMenuItemDescriptor } from "@finos/vuu-data-types";
+import { ContextMenuItemDescriptor } from "@vuu-ui/vuu-data-types";
 
 export type MenuOptions = { [key: string]: unknown };
 
@@ -8,7 +8,7 @@ export const andCommand = (options?: MenuOptions) =>
     location: "filter",
     action: `and-filter-clause`,
     options,
-  } as ContextMenuItemDescriptor);
+  }) as ContextMenuItemDescriptor;
 
 export const orCommand = (options?: MenuOptions) =>
   ({
@@ -16,4 +16,4 @@ export const orCommand = (options?: MenuOptions) =>
     location: "filter",
     action: `or-filter-clause`,
     options,
-  } as ContextMenuItemDescriptor);
+  }) as ContextMenuItemDescriptor;

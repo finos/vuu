@@ -1,5 +1,5 @@
 import React, { forwardRef, HTMLAttributes } from "react";
-import { registerComponent } from "@finos/vuu-utils";
+import { registerComponent } from "@vuu-ui/vuu-utils";
 
 export interface ComponentProps extends HTMLAttributes<HTMLDivElement> {
   resizeable?: boolean;
@@ -7,7 +7,7 @@ export interface ComponentProps extends HTMLAttributes<HTMLDivElement> {
 
 const Component = forwardRef(function Component(
   { resizeable, ...props }: ComponentProps,
-  ref: React.ForwardedRef<HTMLDivElement>
+  ref: React.ForwardedRef<HTMLDivElement>,
 ) {
   return <div {...props} className="Component" ref={ref} />;
 }) as React.FunctionComponent<ComponentProps>;

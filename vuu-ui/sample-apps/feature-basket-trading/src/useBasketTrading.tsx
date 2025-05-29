@@ -1,18 +1,18 @@
-import { useVuuMenuActions } from "@finos/vuu-data-react";
+import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
 import {
   DataSourceRow,
   RpcResponseHandler,
   SubscribeCallback,
   ViewportRpcResponse,
-} from "@finos/vuu-data-types";
-import { useViewContext } from "@finos/vuu-layout";
+} from "@vuu-ui/vuu-data-types";
+import { useViewContext } from "@vuu-ui/vuu-layout";
 import {
   type ContextMenuConfiguration,
   useNotifications,
-} from "@finos/vuu-popups";
-import { VuuDataRow, VuuRpcViewportRequest } from "@finos/vuu-protocol-types";
-import { TableConfig, TableConfigChangeHandler } from "@finos/vuu-table-types";
-import { type ColumnMap, metadataKeys } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-popups";
+import { VuuDataRow, VuuRpcViewportRequest } from "@vuu-ui/vuu-protocol-types";
+import { TableConfig, TableConfigChangeHandler } from "@vuu-ui/vuu-table-types";
+import { type ColumnMap, metadataKeys } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { BasketSelectorProps } from "./basket-selector";
 import defaultEditColumns from "./basket-table-edit/basketConstituentEditColumns";
@@ -20,7 +20,7 @@ import defaultLiveColumns from "./basket-table-live/basketConstituentLiveColumns
 import type { BasketChangeHandler } from "./basket-toolbar";
 import { type BasketCreatedHandler, NewBasketPanel } from "./new-basket-panel";
 import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
-import { DragDropState } from "@finos/vuu-ui-controls";
+import { DragDropState } from "@vuu-ui/vuu-ui-controls";
 
 const { KEY } = metadataKeys;
 

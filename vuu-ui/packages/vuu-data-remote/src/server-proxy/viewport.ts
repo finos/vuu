@@ -19,7 +19,7 @@ import {
   VuuUIMessageOutOpenTreeNode,
   VuuUIMessageOutCloseTreeNode,
   WithRequestId,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import {
   VuuViewportChangeRequest,
   ClientToServerCloseTreeNode,
@@ -40,7 +40,7 @@ import {
   VuuSort,
   VuuTable,
   VuuGroupDataRow,
-} from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-protocol-types";
 import {
   expandSelection,
   getFullRange,
@@ -48,7 +48,7 @@ import {
   KeySet,
   logger,
   RangeMonitor,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import {
   gapBetweenLastRowSentToClient,
   getFirstAndLastRows,

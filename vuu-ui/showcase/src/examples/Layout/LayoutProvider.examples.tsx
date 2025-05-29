@@ -3,18 +3,18 @@ import {
   Flexbox,
   LayoutChangeHandler,
   LayoutProvider,
-} from "@finos/vuu-layout";
+} from "@vuu-ui/vuu-layout";
 import {
   LayoutJSON,
   VuuShellLocation,
   registerComponent,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { Button } from "@salt-ds/core";
 import { useCallback, useState } from "react";
 import VuuFilterTableFeature from "feature-vuu-filter-table";
 
-import { schemas } from "@finos/vuu-data-test";
-import { LocalDataSourceProvider } from "@finos/vuu-data-test";
+import { schemas } from "@vuu-ui/vuu-data-test";
+import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 
 registerComponent("FilterTable", VuuFilterTableFeature, "view");
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { isDateTimePattern } from "../../src/date/types";
-import { ColumnTypeFormatting } from "@finos/vuu-table-types";
+import { ColumnTypeFormatting } from "@vuu-ui/vuu-table-types";
 
 describe("isDateTimePattern", () => {
   it.each<{ pattern: ColumnTypeFormatting["pattern"]; expected: boolean }>([
@@ -13,6 +13,6 @@ describe("isDateTimePattern", () => {
     ({ pattern, expected }) => {
       const actual = isDateTimePattern(pattern);
       expect(actual).toEqual(expected);
-    }
+    },
   );
 });

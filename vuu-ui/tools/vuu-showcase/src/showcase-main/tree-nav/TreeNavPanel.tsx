@@ -1,8 +1,8 @@
-import { TreeTable, type TreeTableProps } from "@finos/vuu-datatable";
-import { View, type ViewProps } from "@finos/vuu-layout";
+import { TreeTable, type TreeTableProps } from "@vuu-ui/vuu-datatable";
+import { View, type ViewProps } from "@vuu-ui/vuu-layout";
 import cx from "clsx";
 import { useTreeNavPanel } from "./useTreeNavPanel";
-import { TreeSourceNode } from "@finos/vuu-utils";
+import { TreeSourceNode } from "@vuu-ui/vuu-utils";
 import { Input } from "@salt-ds/core";
 
 import "./TreeNavPanel.css";

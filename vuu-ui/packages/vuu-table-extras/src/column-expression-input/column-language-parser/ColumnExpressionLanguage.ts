@@ -3,7 +3,7 @@ import {
   LRLanguage,
   styleTags,
   tags as tag,
-} from "@finos/vuu-codemirror";
+} from "@vuu-ui/vuu-codemirror";
 import { parser } from "./generated/column-parser";
 
 const columnExpressionLanguage = LRLanguage.define({
@@ -24,6 +24,6 @@ const columnExpressionLanguage = LRLanguage.define({
 
 export const columnExpressionLanguageSupport = () => {
   return new LanguageSupport(
-    columnExpressionLanguage /*, [exampleCompletion]*/
+    columnExpressionLanguage /*, [exampleCompletion]*/,
   );
 };

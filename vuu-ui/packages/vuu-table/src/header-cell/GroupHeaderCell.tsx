@@ -3,9 +3,9 @@ import {
   GroupColumnDescriptor,
   HeaderCellProps,
   RuntimeColumnDescriptor,
-} from "@finos/vuu-table-types";
-import { OverflowContainer } from "@finos/vuu-ui-controls";
-import { useLayoutEffectSkipFirst } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-table-types";
+import { OverflowContainer } from "@vuu-ui/vuu-ui-controls";
+import { useLayoutEffectSkipFirst } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";

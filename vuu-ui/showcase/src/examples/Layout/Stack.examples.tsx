@@ -4,7 +4,7 @@ import {
   LayoutProvider,
   StackLayout,
   View,
-} from "@finos/vuu-layout";
+} from "@vuu-ui/vuu-layout";
 import { useState } from "react";
 
 const allowAddTab = true;

@@ -3,8 +3,8 @@ import type {
   DataSourceConfig,
   DataSourceConfigMessage,
   DataSourceDataSizeMessage,
-} from "@finos/vuu-data-types";
-import type {} from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-data-types";
+import type {} from "@vuu-ui/vuu-protocol-types";
 
 export const isSizeOnly = (
   message: DataSourceCallbackMessage,

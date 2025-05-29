@@ -1,6 +1,6 @@
-import type { DataSource, DataValueDescriptor } from "@finos/vuu-data-types";
-import { useDialogContext } from "@finos/vuu-popups";
-import type { VuuRowDataItemType } from "@finos/vuu-protocol-types";
+import type { DataSource, DataValueDescriptor } from "@vuu-ui/vuu-data-types";
+import { useDialogContext } from "@vuu-ui/vuu-popups";
+import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import {
   CommitHandler,
   Entity,
@@ -9,7 +9,7 @@ import {
   messageHasDataRows,
   queryClosest,
   viewportRpcRequest,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { Button } from "@salt-ds/core";
 import {
   FocusEventHandler,

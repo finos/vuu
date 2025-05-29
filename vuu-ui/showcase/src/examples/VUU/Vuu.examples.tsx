@@ -1,5 +1,5 @@
-import { List, ListItem } from "@finos/vuu-ui-controls";
-import { useVuuTables, VuuDataSourceProvider } from "@finos/vuu-data-react";
+import { List, ListItem } from "@vuu-ui/vuu-ui-controls";
+import { useVuuTables, VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 import { useAutoLoginToVuuServer } from "../utils";
 
 const VuuTablesTemplate = () => {

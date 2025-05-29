@@ -4,7 +4,7 @@ import type {
   LayoutMetadata,
   LayoutMetadataDto,
   Settings,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 
 export interface IPersistenceManager {
   /**
@@ -17,7 +17,7 @@ export interface IPersistenceManager {
    */
   createLayout: (
     metadata: LayoutMetadataDto,
-    layout: LayoutJSON
+    layout: LayoutJSON,
   ) => Promise<LayoutMetadata>;
 
   /**
@@ -30,7 +30,7 @@ export interface IPersistenceManager {
   updateLayout: (
     id: string,
     metadata: LayoutMetadataDto,
-    layout: LayoutJSON
+    layout: LayoutJSON,
   ) => Promise<void>;
 
   /**

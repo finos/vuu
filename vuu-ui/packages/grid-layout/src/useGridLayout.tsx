@@ -4,7 +4,7 @@ import {
   isSimpleStateValue,
   queryClosest,
   uuid,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import {
   ReactElement,
   ReactNode,

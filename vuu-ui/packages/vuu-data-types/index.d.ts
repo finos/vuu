@@ -3,9 +3,9 @@ import type {
   MenuRpcResponse,
   Selection,
   TableSchema,
-} from "@finos/vuu-data-types";
-import type { Filter } from "@finos/vuu-filter-types";
-import type { MenuActionClosePopup } from "@finos/vuu-popups";
+} from "@vuu-ui/vuu-data-types";
+import type { Filter } from "@vuu-ui/vuu-filter-types";
+import type { MenuActionClosePopup } from "@vuu-ui/vuu-popups";
 import type {
   LinkDescriptorWithLabel,
   NoAction,
@@ -32,21 +32,21 @@ import type {
   VuuCreateVisualLink,
   VuuRemoveVisualLink,
   VuuTableList,
-} from "@finos/vuu-protocol-types";
-import type { DataSourceConfigChanges, IEventEmitter } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-protocol-types";
+import type { DataSourceConfigChanges, IEventEmitter } from "@vuu-ui/vuu-utils";
 import type {
   DataSourceFilter,
   MenuRpcResponse,
   Selection,
   TableSchema,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import type {
   VuuTableListRequest,
   VuuTableMetaRequest,
-} from "@finos/vuu-protocol-types";
-import { DataValueTypeDescriptor } from "@finos/vuu-table-types";
-import { PostMessageToClientCallback } from "@finos/vuu-data-remote";
-import type { DataSourceConfigChanges, IEventEmitter } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-protocol-types";
+import { DataValueTypeDescriptor } from "@vuu-ui/vuu-table-types";
+import { PostMessageToClientCallback } from "@vuu-ui/vuu-data-remote";
+import type { DataSourceConfigChanges, IEventEmitter } from "@vuu-ui/vuu-utils";
 
 export declare type DataValueValidationSuccessResult = {
   ok: true;

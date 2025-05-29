@@ -3,9 +3,9 @@ import {
   ContextMenuItemDescriptor,
   DataSourceRow,
   MenuRpcResponse,
-  OpenDialogActionWithSchema
-} from "@finos/vuu-data-types";
-import { getFilterPredicate } from "@finos/vuu-filter-parser";
+  OpenDialogActionWithSchema,
+} from "@vuu-ui/vuu-data-types";
+import { getFilterPredicate } from "@vuu-ui/vuu-filter-parser";
 import {
   ClientToServerMenuCellRPC,
   ClientToServerMenuRowRPC,
@@ -14,14 +14,14 @@ import {
   VuuMenuContext,
   VuuMenuItem,
   VuuRpcMenuRequest,
-  VuuRpcResponse
-} from "@finos/vuu-protocol-types";
+  VuuRpcResponse,
+} from "@vuu-ui/vuu-protocol-types";
 import {
   ColumnDescriptor,
   TableMenuLocation,
   VuuCellMenuItem,
-  VuuRowMenuItem
-} from "@finos/vuu-table-types";
+  VuuRowMenuItem,
+} from "@vuu-ui/vuu-table-types";
 import { getRowRecord, metadataKeys, type ColumnMap } from "./column-utils";
 
 export type VuuServerMenuOptions = {
@@ -47,12 +47,12 @@ export const isSelectionMenu = (options: VuuMenuItem): options is VuuMenuItem =>
   options.context === "selected-rows";
 
 export const isGroupMenuItemDescriptor = (
-  menuItem?: ContextMenuItemDescriptor
+  menuItem?: ContextMenuItemDescriptor,
 ): menuItem is ContextMenuGroupItemDescriptor =>
   menuItem !== undefined && "children" in menuItem;
 
 export const isTableLocation = (
-  location: string
+  location: string,
 ): location is TableMenuLocation =>
   ["grid", "header", "filter"].includes(location);
 
@@ -68,7 +68,7 @@ const hasFilter = ({ filter }: VuuMenuItem) =>
 const vuuContextCompatibleWithTableLocation = (
   uiLocation: TableMenuLocation,
   vuuContext: VuuMenuContext,
-  selectedRowCount = 0
+  selectedRowCount = 0,
 ) => {
   switch (uiLocation) {
     case "grid":
@@ -89,7 +89,7 @@ const gridRowMeetsFilterCriteria = (
   row: DataSourceRow,
   selectedRows: DataSourceRow[],
   filter: string,
-  columnMap: ColumnMap
+  columnMap: ColumnMap,
 ): boolean => {
   if (context === "cell" || context === "row") {
     const filterPredicate = getFilterPredicate(columnMap, filter);
@@ -108,18 +108,18 @@ const gridRowMeetsFilterCriteria = (
 const menuShouldBeRenderedInThisContext = (
   menuItem: VuuMenu | VuuMenuItem,
   tableLocation: TableMenuLocation,
-  options: VuuServerMenuOptions
+  options: VuuServerMenuOptions,
 ): boolean => {
   if (isGroupMenuItem(menuItem)) {
     return menuItem.menus.some((childMenu) =>
-      menuShouldBeRenderedInThisContext(childMenu, tableLocation, options)
+      menuShouldBeRenderedInThisContext(childMenu, tableLocation, options),
     );
   }
   if (
     !vuuContextCompatibleWithTableLocation(
       tableLocation,
       menuItem.context,
-      options.selectedRows?.length
+      options.selectedRows?.length,
     )
   ) {
     return false;
@@ -131,7 +131,7 @@ const menuShouldBeRenderedInThisContext = (
       options.row,
       options.selectedRows,
       menuItem.filter,
-      options.columnMap
+      options.columnMap,
     );
   }
 
@@ -144,7 +144,7 @@ const menuShouldBeRenderedInThisContext = (
 
 const getMenuItemOptions = (
   menu: VuuMenuItem,
-  options: VuuServerMenuOptions
+  options: VuuServerMenuOptions,
 ): VuuMenuItem => {
   switch (menu.context) {
     case "cell":
@@ -152,19 +152,19 @@ const getMenuItemOptions = (
         ...menu,
         field: options.columnName,
         rowKey: options.row[KEY],
-        value: options.row[options.columnMap[options.columnName]]
+        value: options.row[options.columnMap[options.columnName]],
       } as VuuCellMenuItem;
     case "row":
       return {
         ...menu,
         columns: options.columns,
         row: getRowRecord(options.row, options.columnMap),
-        rowKey: options.row[KEY]
+        rowKey: options.row[KEY],
       } as VuuRowMenuItem;
     case "selected-rows":
       return {
         ...menu,
-        columns: options.columns
+        columns: options.columns,
       } as any;
     default:
       return menu;
@@ -174,27 +174,27 @@ const getMenuItemOptions = (
 export const buildMenuDescriptorFromVuuMenu = (
   menu: VuuMenu | VuuMenuItem,
   tableLocation: TableMenuLocation,
-  options: VuuServerMenuOptions
+  options: VuuServerMenuOptions,
 ): ContextMenuItemDescriptor | undefined => {
   if (menuShouldBeRenderedInThisContext(menu, tableLocation, options)) {
     if (isVuuMenuItem(menu)) {
       return {
         label: menu.name,
         action: "MENU_RPC_CALL",
-        options: getMenuItemOptions(menu, options)
+        options: getMenuItemOptions(menu, options),
       };
     } else {
       const children = menu.menus
         .map((childMenu) =>
-          buildMenuDescriptorFromVuuMenu(childMenu, tableLocation, options)
+          buildMenuDescriptorFromVuuMenu(childMenu, tableLocation, options),
         )
         .filter(
-          (childMenu) => childMenu !== undefined
+          (childMenu) => childMenu !== undefined,
         ) as ContextMenuItemDescriptor[];
       if (children.length > 0) {
         return {
           label: menu.name,
-          children
+          children,
         };
       }
     }
@@ -202,7 +202,7 @@ export const buildMenuDescriptorFromVuuMenu = (
 };
 
 export const getMenuRpcRequest = (
-  options: VuuMenuItem
+  options: VuuMenuItem,
 ): Omit<VuuRpcMenuRequest, "vpId"> => {
   const { rpcName } = options;
   if (isCellMenu(options)) {
@@ -211,34 +211,34 @@ export const getMenuRpcRequest = (
       rowKey: options.rowKey,
       rpcName,
       value: options.value,
-      type: "VIEW_PORT_MENU_CELL_RPC"
+      type: "VIEW_PORT_MENU_CELL_RPC",
     } as Omit<ClientToServerMenuCellRPC, "vpId">;
   } else if (isRowMenu(options)) {
     return {
       rowKey: options.rowKey,
       row: options.row,
       rpcName,
-      type: "VIEW_PORT_MENU_ROW_RPC"
+      type: "VIEW_PORT_MENU_ROW_RPC",
     } as Omit<ClientToServerMenuRowRPC, "vpId">;
   } else if (isSelectionMenu(options)) {
     return {
       rpcName,
-      type: "VIEW_PORT_MENUS_SELECT_RPC"
+      type: "VIEW_PORT_MENUS_SELECT_RPC",
     } as Omit<VuuRpcMenuRequest, "vpId">;
   } else {
     return {
       rpcName,
-      type: "VIEW_PORT_MENU_TABLE_RPC"
+      type: "VIEW_PORT_MENU_TABLE_RPC",
     } as Omit<VuuRpcMenuRequest, "vpId">;
   }
 };
 
 export const isOpenBulkEditResponse = (
-  rpcResponse: Partial<VuuRpcResponse>
+  rpcResponse: Partial<VuuRpcResponse>,
 ): rpcResponse is MenuRpcResponse<OpenDialogActionWithSchema> =>
   (rpcResponse as MenuRpcResponse).rpcName === "VP_BULK_EDIT_BEGIN_RPC";
 
 export const hasShowNotificationAction = (
-  res: Partial<VuuRpcResponse>
+  res: Partial<VuuRpcResponse>,
 ): res is MenuRpcResponse<ShowNotificationAction> =>
   (res as MenuRpcResponse).action?.type === "SHOW_NOTIFICATION_ACTION";

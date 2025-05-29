@@ -2,8 +2,8 @@ import {
   ClientToServerMenuRowRPC,
   VuuLink,
   VuuMenu,
-} from "@finos/vuu-protocol-types";
-import { isVuuMenuRpcRequest } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-protocol-types";
+import { isVuuMenuRpcRequest } from "@vuu-ui/vuu-utils";
 import { Table, joinTables } from "../Table";
 import { RpcService, ServiceHandler } from "../VuuModule";
 import { SimulModule } from "./SimulModule";

@@ -1,4 +1,4 @@
-import { DataSource } from "@finos/vuu-data-types";
+import { DataSource } from "@vuu-ui/vuu-data-types";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { useCallback, useState } from "react";
@@ -6,8 +6,8 @@ import { useCallback, useState } from "react";
 import bulkEditPanelCss from "./BulkEditPanel.css";
 import { BulkEditPanel } from "./BulkEditPanel";
 import { Button, DialogActions } from "@salt-ds/core";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { isRpcSuccess, viewportRpcRequest } from "@finos/vuu-utils";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { isRpcSuccess, viewportRpcRequest } from "@vuu-ui/vuu-utils";
 
 export interface BulkEditDialogProps {
   columns?: ColumnDescriptor[];

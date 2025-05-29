@@ -1,10 +1,10 @@
 import { ReactElement } from "react";
-import { LayoutModel } from "@finos/vuu-utils";
+import { LayoutModel } from "@vuu-ui/vuu-utils";
 
 const NO_PROPS = {};
 export const getProp = (
   component: LayoutModel | undefined,
-  propName: string
+  propName: string,
 ) => {
   const props = getProps(component);
   return props[propName] ?? props[`data-${propName}`];
@@ -21,7 +21,7 @@ export const getChildProp = (container: LayoutModel) => {
     } = props;
     if (rest.length > 0) {
       console.warn(
-        `getChild expected a single child, found ${rest.length + 1}`
+        `getChild expected a single child, found ${rest.length + 1}`,
       );
     }
     return target as ReactElement;

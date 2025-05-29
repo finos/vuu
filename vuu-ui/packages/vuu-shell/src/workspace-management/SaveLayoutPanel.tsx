@@ -1,4 +1,4 @@
-import { LayoutMetadataDto } from "@finos/vuu-utils";
+import { LayoutMetadataDto } from "@vuu-ui/vuu-utils";
 import {
   Button,
   ComboBox,
@@ -100,7 +100,7 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
         setGroup(selectedValue || "");
       }
     },
-    [group]
+    [group],
   );
 
   const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {

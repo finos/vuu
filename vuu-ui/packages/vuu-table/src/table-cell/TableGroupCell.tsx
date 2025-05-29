@@ -1,6 +1,6 @@
-import { GroupColumnDescriptor, TableCellProps } from "@finos/vuu-table-types";
-import { Icon, ToggleIconButton } from "@finos/vuu-ui-controls";
-import { getGroupIcon, getGroupValue, metadataKeys } from "@finos/vuu-utils";
+import { GroupColumnDescriptor, TableCellProps } from "@vuu-ui/vuu-table-types";
+import { Icon, ToggleIconButton } from "@vuu-ui/vuu-ui-controls";
+import { getGroupIcon, getGroupValue, metadataKeys } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";

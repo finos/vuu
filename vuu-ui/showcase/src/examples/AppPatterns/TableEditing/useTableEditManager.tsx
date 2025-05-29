@@ -2,17 +2,17 @@ import {
   DataSource,
   Selection,
   SelectionChangeHandler,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import {
   VuuRpcMenuRequest,
   VuuRpcResponse,
   VuuTable,
-} from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-protocol-types";
 import {
   isOpenBulkEditResponse,
   useDataSource,
   viewportRpcRequest,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 
 export const useTableEditManager = (vuuTable: VuuTable) => {

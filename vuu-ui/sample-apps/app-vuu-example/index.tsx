@@ -1,10 +1,10 @@
-import { getAuthDetailsFromCookies, redirectToLogin } from "@finos/vuu-shell";
+import { getAuthDetailsFromCookies, redirectToLogin } from "@vuu-ui/vuu-shell";
 import React from "react";
 import ReactDOM from "react-dom";
 import { App } from "./src/App";
 
-import "@finos/vuu-icons/index.css";
-import "@finos/vuu-theme/index.css";
+import "@vuu-ui/vuu-icons/index.css";
+import "@vuu-ui/vuu-theme/index.css";
 
 const [username, token] = getAuthDetailsFromCookies();
 if (!username || !token) {
@@ -13,6 +13,6 @@ if (!username || !token) {
 } else {
   ReactDOM.render(
     <App user={{ username, token }} />,
-    document.getElementById("root")
+    document.getElementById("root"),
   );
 }

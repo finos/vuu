@@ -1,6 +1,6 @@
-import { WebSocketProtocol } from "@finos/vuu-data-types";
-import { VuuClientMessage, VuuServerMessage } from "@finos/vuu-protocol-types";
-import { DeferredPromise, EventEmitter } from "@finos/vuu-utils";
+import { WebSocketProtocol } from "@vuu-ui/vuu-data-types";
+import { VuuClientMessage, VuuServerMessage } from "@vuu-ui/vuu-protocol-types";
+import { DeferredPromise, EventEmitter } from "@vuu-ui/vuu-utils";
 
 export type ConnectingStatus = "connecting" | "reconnecting";
 export type ConnectedStatus = "connected" | "reconnected";

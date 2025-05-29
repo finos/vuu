@@ -1,13 +1,13 @@
-import { getSchema } from "@finos/vuu-data-test";
-import { DataSourceConfig, SchemaColumn } from "@finos/vuu-data-types";
+import { getSchema } from "@vuu-ui/vuu-data-test";
+import { DataSourceConfig, SchemaColumn } from "@vuu-ui/vuu-data-types";
 import {
   ColumnItem,
   ColumnList,
   TableSettingsPanel,
-} from "@finos/vuu-table-extras";
-import { TableConfig } from "@finos/vuu-table-types";
-import { MoveItemHandler } from "@finos/vuu-ui-controls";
-import { moveItem } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-table-extras";
+import { TableConfig } from "@vuu-ui/vuu-table-types";
+import { MoveItemHandler } from "@vuu-ui/vuu-ui-controls";
+import { moveItem } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 
 export const DefaultColumnList = () => {

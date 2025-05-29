@@ -2,8 +2,8 @@ import {
   ColumnDescriptor,
   ListOption,
   LookupTableDetails,
-} from "@finos/vuu-table-types";
-import { VuuDataSource } from "@finos/vuu-data-remote";
+} from "@vuu-ui/vuu-table-types";
+import { VuuDataSource } from "@vuu-ui/vuu-data-remote";
 import {
   buildColumnMap,
   getSelectedOption,
@@ -11,7 +11,7 @@ import {
   isTypeDescriptor,
   isValueListRenderer,
   useShellContext,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { useMemo, useState } from "react";
 
 const NO_VALUES: ListOption[] = [];
@@ -57,7 +57,7 @@ const loadLookupValues = ({
               dataSource.unsubscribe();
             }
           }
-        }
+        },
       );
     });
     lookupValueMap.set(tableKey, promise);
@@ -75,14 +75,14 @@ const getLookupDetails = ({ name, type }: ColumnDescriptor) => {
     return type.renderer.lookup;
   } else {
     throw Error(
-      `useLookupValues column ${name} is not configured to use lookup values`
+      `useLookupValues column ${name} is not configured to use lookup values`,
     );
   }
 };
 
 export const useLookupValues = (
   column: ColumnDescriptor,
-  initialValueProp: number | string
+  initialValueProp: number | string,
 ) => {
   const { type: columnType } = column;
   const { getLookupValues } = useShellContext();
@@ -118,7 +118,7 @@ export const useLookupValues = (
         setLookupState({
           initialValue: getSelectedOption(values, initialValueProp) ?? null,
           values,
-        })
+        }),
       );
     }
   }, [values, column, initialValueProp]);

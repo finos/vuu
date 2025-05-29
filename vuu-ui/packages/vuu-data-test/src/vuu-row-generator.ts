@@ -1,5 +1,5 @@
-import type { ColumnDescriptor } from "@finos/vuu-table-types";
-import type { VuuRowDataItemType, VuuTable } from "@finos/vuu-protocol-types";
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { UpdateGenerator } from "./rowUpdates";
 
 type GenerateRowFunc = (index: number) => VuuRowDataItemType[];
@@ -8,7 +8,7 @@ export type RowGeneratorFactory = (columns: string[]) => GenerateRowFunc;
 
 export type ColumnGeneratorFn = (
   columns?: number | string[],
-  columnConfig?: { [key: string]: Partial<ColumnDescriptor> }
+  columnConfig?: { [key: string]: Partial<ColumnDescriptor> },
 ) => ColumnDescriptor[];
 
 export const DefaultRowGenerator: RowGeneratorFactory =
@@ -16,13 +16,13 @@ export const DefaultRowGenerator: RowGeneratorFactory =
     return [`row ${index + 1}`].concat(
       Array(columns.length)
         .fill(true)
-        .map((v, j) => `value ${j + 2} @ ${index + 1}`)
+        .map((v, j) => `value ${j + 2} @ ${index + 1}`),
     );
   };
 
 export const DefaultColumnGenerator: ColumnGeneratorFn = (
   columns,
-  columnConfig = {}
+  columnConfig = {},
 ) => {
   if (typeof columns === "number") {
     return [{ label: "Row Number", name: "rownum", width: 150 }].concat(
@@ -32,7 +32,7 @@ export const DefaultColumnGenerator: ColumnGeneratorFn = (
           const name = `column_${i + 1}`;
           const label = `Column ${i + 1}`;
           return { label, name, width: 100, ...columnConfig[name] };
-        })
+        }),
     );
   } else {
     throw Error("DefaultColumnGenerator must be passed columns (number)");
@@ -45,7 +45,7 @@ export const defaultGenerators = {
 };
 
 export const getColumnAndRowGenerator = (
-  table?: VuuTable
+  table?: VuuTable,
 ):
   | [ColumnGeneratorFn, RowGeneratorFactory]
   | [ColumnGeneratorFn, RowGeneratorFactory, () => UpdateGenerator] => {
@@ -74,7 +74,7 @@ export const getColumnAndRowGenerator = (
     }
     default:
       throw Error(
-        `vuu-row-gererator table ${table?.table} was requested but no generator is registered`
+        `vuu-row-gererator table ${table?.table} was requested but no generator is registered`,
       );
   }
 };
@@ -83,7 +83,7 @@ export const populateArray = (
   count: number,
   colGen: ColumnGeneratorFn,
   rowGen: RowGeneratorFactory,
-  columns?: number | string[]
+  columns?: number | string[],
 ) => {
   const columnDescriptors = colGen(columns);
   const generateRow = rowGen(columnDescriptors.map((col) => col.name));

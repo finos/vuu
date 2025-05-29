@@ -2,12 +2,12 @@ import {
   ColumnDescriptorsByName,
   Filter,
   FilterClause,
-} from "@finos/vuu-filter-types";
-import { isMultiClauseFilter } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-filter-types";
+import { isMultiClauseFilter } from "@vuu-ui/vuu-utils";
 
 const getColumnLabel = (
   filter: FilterClause,
-  columnsByName?: ColumnDescriptorsByName
+  columnsByName?: ColumnDescriptorsByName,
 ) => {
   const column = columnsByName?.[filter.column];
   if (column) {

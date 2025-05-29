@@ -2,26 +2,26 @@ import {
   Table as DataTable,
   getSchema,
   TickingArrayDataSource,
-} from "@finos/vuu-data-test";
-import { SelectionChangeHandler, TableSchema } from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-test";
+import { SelectionChangeHandler, TableSchema } from "@vuu-ui/vuu-data-types";
 import {
   Flexbox,
   FlexboxLayout,
   LayoutProvider,
   StackLayout,
   View,
-} from "@finos/vuu-layout";
-import { Table, TableProps } from "@finos/vuu-table";
+} from "@vuu-ui/vuu-layout";
+import { Table, TableProps } from "@vuu-ui/vuu-table";
 import {
   TableConfig,
   TableRowClickHandler,
   TableRowSelectHandler,
-} from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-table-types";
 import { useCallback, useMemo } from "react";
-import { LocalDataSourceProvider } from "@finos/vuu-data-test";
-import { LinkedDataSources, LinkedTableView } from "@finos/vuu-datatable";
-import { TableSearch } from "@finos/vuu-ui-controls";
-import { useDataSource } from "@finos/vuu-utils";
+import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import { LinkedDataSources, LinkedTableView } from "@vuu-ui/vuu-datatable";
+import { TableSearch } from "@vuu-ui/vuu-ui-controls";
+import { useDataSource } from "@vuu-ui/vuu-utils";
 
 // prettier-ignore
 const ParentTableSchema:TableSchema = {

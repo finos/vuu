@@ -4,8 +4,8 @@ import {
   RowSelectionEventHandler,
   Selection,
   SelectionItem,
-} from "@finos/vuu-data-types";
-import { buildColumnMap } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-data-types";
+import { buildColumnMap } from "@vuu-ui/vuu-utils";
 import { TickingArrayDataSource } from "./TickingArrayDataSource";
 
 export class RuntimeVisualLink {

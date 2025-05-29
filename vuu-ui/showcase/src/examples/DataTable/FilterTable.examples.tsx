@@ -1,13 +1,13 @@
-import { getSchema } from "@finos/vuu-data-test";
-import { TableSchema } from "@finos/vuu-data-types";
-import type { DataSourceFilter } from "@finos/vuu-data-types";
-import { FilterTable } from "@finos/vuu-datatable";
-import type { FilterState } from "@finos/vuu-filter-types";
-import type { FilterBarProps } from "@finos/vuu-filters";
-import type { TableConfig } from "@finos/vuu-table-types";
+import { getSchema } from "@vuu-ui/vuu-data-test";
+import { TableSchema } from "@vuu-ui/vuu-data-types";
+import type { DataSourceFilter } from "@vuu-ui/vuu-data-types";
+import { FilterTable } from "@vuu-ui/vuu-datatable";
+import type { FilterState } from "@vuu-ui/vuu-filter-types";
+import type { FilterBarProps } from "@vuu-ui/vuu-filters";
+import type { TableConfig } from "@vuu-ui/vuu-table-types";
 import { CSSProperties, useCallback, useMemo, useState } from "react";
-import { toColumnName, useDataSource } from "@finos/vuu-utils";
-import { View } from "@finos/vuu-layout";
+import { toColumnName, useDataSource } from "@vuu-ui/vuu-utils";
+import { View } from "@vuu-ui/vuu-layout";
 
 type FilterTableTemplateProps = {
   style?: CSSProperties;

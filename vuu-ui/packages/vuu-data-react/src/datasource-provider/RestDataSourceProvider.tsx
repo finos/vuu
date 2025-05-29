@@ -1,9 +1,9 @@
-import { RestDataSource } from "@finos/vuu-data-remote";
+import { RestDataSource } from "@vuu-ui/vuu-data-remote";
 import {
   DataSourceConstructorProps,
   ServerAPI,
   TableSchema,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import {
   VuuCreateVisualLink,
   VuuRemoveVisualLink,
@@ -11,8 +11,8 @@ import {
   VuuRpcServiceRequest,
   VuuRpcViewportRequest,
   VuuTable,
-} from "@finos/vuu-protocol-types";
-import { DataSourceProvider, isObject } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-protocol-types";
+import { DataSourceProvider, isObject } from "@vuu-ui/vuu-utils";
 import { ReactNode } from "react";
 
 const serverAPI = (

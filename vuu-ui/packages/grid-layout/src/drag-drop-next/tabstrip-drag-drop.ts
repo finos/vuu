@@ -1,4 +1,4 @@
-import { orientationType, queryClosest } from "@finos/vuu-utils";
+import { orientationType, queryClosest } from "@vuu-ui/vuu-utils";
 import { DragContext } from "./DragContextNext";
 import { SpaceMan } from "./SpaceMan";
 import { sourceIsTabbedComponent } from "../GridLayoutContext";

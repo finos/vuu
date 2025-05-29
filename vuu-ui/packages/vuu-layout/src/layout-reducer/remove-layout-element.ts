@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { VuuShellLocation } from "@finos/vuu-utils";
+import { VuuShellLocation } from "@vuu-ui/vuu-utils";
 import React, { ReactElement } from "react";
 import {
   followPath,
@@ -35,7 +35,7 @@ export function removeChild(layoutRoot: ReactElement, { path }: RemoveAction) {
     let newLayout = swapChild(
       layoutRoot,
       targetParent,
-      createPlaceHolder(containerPath, flexBasis, style)
+      createPlaceHolder(containerPath, flexBasis, style),
     );
     while ((targetParent = followPathToParent(newLayout, containerPath))) {
       if (getProp(targetParent, "path") === "0") {
@@ -50,12 +50,12 @@ export function removeChild(layoutRoot: ReactElement, { path }: RemoveAction) {
         newLayout = swapChild(
           layoutRoot,
           targetParent,
-          createPlaceHolder(containerPath, flexBasis, style)
+          createPlaceHolder(containerPath, flexBasis, style),
         );
       } else if (hasAdjacentPlaceholders(children)) {
         newLayout = collapsePlaceholders(
           layoutRoot,
-          targetParent as ReactElement
+          targetParent as ReactElement,
         );
       } else {
         break;
@@ -68,7 +68,7 @@ export function removeChild(layoutRoot: ReactElement, { path }: RemoveAction) {
 
 function _removeChild(
   container: ReactElement,
-  child: ReactElement
+  child: ReactElement,
 ): ReactElement {
   const props = getProps(container);
   const { children: componentChildren, path, preserve } = props;
@@ -99,7 +99,7 @@ function _removeChild(
                 },
                 type: "Placeholder",
               },
-              path
+              path,
             )
           : createPlaceHolder(path, flexBasis);
       children.push(placeHolder);
@@ -184,7 +184,7 @@ const makeFlexible = (children: ReactElement[]) => {
             flexGrow: 1,
           },
         })
-      : child
+      : child,
   );
 };
 
@@ -204,7 +204,7 @@ const hasAdjacentPlaceholders = (children: ReactElement[]) => {
 
 const collapsePlaceholders = (
   container: ReactElement,
-  target: ReactElement
+  target: ReactElement,
 ) => {
   const { children: componentChildren, path } = getProps(container);
   const { idx, finalStep } = nextStep(path, getProp(target, "path"));
@@ -248,7 +248,7 @@ const _collapsePlaceHolders = (container: ReactElement) => {
   return React.cloneElement(
     container,
     undefined,
-    newChildren.map((child, i) => resetPath(child, `${containerPath}.${i}`))
+    newChildren.map((child, i) => resetPath(child, `${containerPath}.${i}`)),
   );
 };
 
@@ -269,9 +269,10 @@ const mergePlaceholders = ([placeholder, ...placeholders]: ReactElement[]) => {
 
 const allOtherChildrenArePlaceholders = (
   children: ReactElement[],
-  path?: string
+  path?: string,
 ) =>
   children.every(
     (child) =>
-      getProp(child, "placeholder") || (path && getProp(child, "path") === path)
+      getProp(child, "placeholder") ||
+      (path && getProp(child, "path") === path),
   );

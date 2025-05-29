@@ -1,7 +1,7 @@
-import { getSchema, vuuModule } from "@finos/vuu-data-test";
-import { FlexboxLayout, LayoutProvider, View } from "@finos/vuu-layout";
-import { TableColumnDef, TanstackTable } from "@finos/vuu-tanstack-table";
-import { toColumnName, useDataSource } from "@finos/vuu-utils";
+import { getSchema, vuuModule } from "@vuu-ui/vuu-data-test";
+import { FlexboxLayout, LayoutProvider, View } from "@vuu-ui/vuu-layout";
+import { TableColumnDef, TanstackTable } from "@vuu-ui/vuu-tanstack-table";
+import { toColumnName, useDataSource } from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
 
 import "./index.css";

@@ -1,10 +1,10 @@
-import { QuickFilterProps, QuickFilters } from "@finos/vuu-filters";
-import type { DataSourceFilter } from "@finos/vuu-data-types";
-import type { ColumnDescriptor } from "@finos/vuu-table-types";
+import { QuickFilterProps, QuickFilters } from "@vuu-ui/vuu-filters";
+import type { DataSourceFilter } from "@vuu-ui/vuu-data-types";
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { useCallback, useMemo, useState } from "react";
-import { LocalDataSourceProvider, getSchema } from "@finos/vuu-data-test";
-import { useViewContext, View } from "@finos/vuu-layout";
-import { setPersistentState } from "@finos/vuu-layout";
+import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
+import { useViewContext, View } from "@vuu-ui/vuu-layout";
+import { setPersistentState } from "@vuu-ui/vuu-layout";
 
 const QuickFiltersTemplate = ({
   allowAddColumn,

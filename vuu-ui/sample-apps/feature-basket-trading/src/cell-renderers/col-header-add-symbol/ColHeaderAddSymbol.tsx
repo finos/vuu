@@ -2,13 +2,13 @@ import {
   SetPropsAction,
   useLayoutProviderDispatch,
   useViewContext,
-} from "@finos/vuu-layout";
-import { registerComponent, VuuShellLocation } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-layout";
+import { registerComponent, VuuShellLocation } from "@vuu-ui/vuu-utils";
 import { Button } from "@salt-ds/core";
-import type { DataSource } from "@finos/vuu-data-types";
-import type { TableSearchProps } from "@finos/vuu-ui-controls/src";
+import type { DataSource } from "@vuu-ui/vuu-data-types";
+import type { TableSearchProps } from "@vuu-ui/vuu-ui-controls/src";
 import { MouseEventHandler, useCallback, useMemo } from "react";
-import { TableSearch } from "@finos/vuu-ui-controls";
+import { TableSearch } from "@vuu-ui/vuu-ui-controls";
 
 import "./ColHeaderAddSymbol.css";
 

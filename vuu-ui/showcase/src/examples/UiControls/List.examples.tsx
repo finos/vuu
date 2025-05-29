@@ -1,4 +1,4 @@
-import { Flexbox } from "@finos/vuu-layout";
+import { Flexbox } from "@vuu-ui/vuu-layout";
 import {
   dragStrategy,
   List,
@@ -6,7 +6,7 @@ import {
   MultiSelectionHandler,
   SelectHandler,
   SingleSelectionHandler,
-} from "@finos/vuu-ui-controls";
+} from "@vuu-ui/vuu-ui-controls";
 
 import { Input, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 

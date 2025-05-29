@@ -1,15 +1,15 @@
-import { VuuLogo } from "@finos/vuu-icons";
+import { VuuLogo } from "@vuu-ui/vuu-icons";
 import {
   LayoutResizeAction,
   Stack,
   useLayoutProviderDispatch,
-} from "@finos/vuu-layout";
-import { Tab, Tabstrip } from "@finos/vuu-ui-controls";
+} from "@vuu-ui/vuu-layout";
+import { Tab, Tabstrip } from "@vuu-ui/vuu-ui-controls";
 import {
   DynamicFeatureProps,
   FilterTableFeatureProps,
   hasFilterTableFeatureProps,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";

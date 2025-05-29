@@ -1,4 +1,4 @@
-import { DataSource } from "@finos/vuu-data-types";
+import { DataSource } from "@vuu-ui/vuu-data-types";
 import {
   ReactElement,
   RefObject,

@@ -1,7 +1,7 @@
 import { RefObject } from "react";
 import { ScrollDirection } from "./useTableScroll";
-import type { ArrowKey, PageKey } from "@finos/vuu-utils";
-import type { CellPos } from "@finos/vuu-table-types";
+import type { ArrowKey, PageKey } from "@vuu-ui/vuu-utils";
+import type { CellPos } from "@vuu-ui/vuu-table-types";
 
 export type NavigationKey = PageKey | ArrowKey;
 

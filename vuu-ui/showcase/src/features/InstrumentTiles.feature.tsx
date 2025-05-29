@@ -1,5 +1,5 @@
-import { vuuModule } from "@finos/vuu-data-test";
-import { useViewContext } from "@finos/vuu-layout";
+import { vuuModule } from "@vuu-ui/vuu-data-test";
+import { useViewContext } from "@vuu-ui/vuu-layout";
 import VuuInstrumentTilesFeature, {
   InstrumentTilesFeatureProps,
 } from "feature-vuu-instrument-tiles";
@@ -9,7 +9,7 @@ export const InstrumentTilesFeature = ({
 }: InstrumentTilesFeatureProps) => {
   const { saveSession } = useViewContext();
   const dataSource = vuuModule("SIMUL").createDataSource(
-    instrumentPricesSchema.table.table
+    instrumentPricesSchema.table.table,
   );
 
   saveSession?.(dataSource, "data-source");

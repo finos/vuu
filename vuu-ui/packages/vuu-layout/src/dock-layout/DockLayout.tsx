@@ -2,7 +2,7 @@ import {
   asReactElements,
   partition,
   registerComponent,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -36,8 +36,8 @@ const DockLayout = (props: DockLayoutProps) => {
     verticalDrawers.length === 0
       ? "horizontal"
       : horizontalDrawers.length === 0
-      ? "vertical"
-      : "both";
+        ? "vertical"
+        : "both";
 
   const className = cx(classBase, classNameProp, `${classBase}-${orientation}`);
 

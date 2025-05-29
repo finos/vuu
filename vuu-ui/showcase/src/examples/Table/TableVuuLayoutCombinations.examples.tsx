@@ -1,4 +1,4 @@
-import { LayoutProvider, Stack, View } from "@finos/vuu-layout";
+import { LayoutProvider, Stack, View } from "@vuu-ui/vuu-layout";
 import { useState } from "react";
 import { TestTable } from "./Misc.examples";
 

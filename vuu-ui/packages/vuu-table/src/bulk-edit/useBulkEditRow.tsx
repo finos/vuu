@@ -1,11 +1,11 @@
 import {
   buildValidationChecker,
   getEditValidationRules,
-} from "@finos/vuu-data-react";
-import { DataValueDescriptor, EditPhase } from "@finos/vuu-data-types";
-import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
-import { CommitHandler, getTypedValue, queryClosest } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-data-react";
+import { DataValueDescriptor, EditPhase } from "@vuu-ui/vuu-data-types";
+import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { CommitHandler, getTypedValue, queryClosest } from "@vuu-ui/vuu-utils";
 import { InputProps } from "@salt-ds/core";
 import {
   FocusEventHandler,

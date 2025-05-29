@@ -13,7 +13,7 @@ import {
 import { useAsDropTarget } from "./useAsDropTarget";
 import { useNotDropTarget } from "./useNotDropTarget";
 
-import { queryClosest } from "@finos/vuu-utils";
+import { queryClosest } from "@vuu-ui/vuu-utils";
 import { componentToJson, LayoutJSON } from "./componentToJson";
 import gridLayoutItemCss from "./GridLayoutItem.css";
 import {

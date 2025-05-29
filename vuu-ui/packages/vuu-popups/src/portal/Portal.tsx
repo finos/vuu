@@ -1,4 +1,4 @@
-import { ThemeAttributes, useThemeAttributes } from "@finos/vuu-utils";
+import { ThemeAttributes, useThemeAttributes } from "@vuu-ui/vuu-utils";
 import { ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useComponentCssInjection } from "@salt-ds/styles";
@@ -97,8 +97,8 @@ export const Portal = ({
         typeof id === "string"
           ? id
           : id.length > 0
-          ? (id.at(-1) as string)
-          : "vuu-portal-root";
+            ? (id.at(-1) as string)
+            : "vuu-portal-root";
     }
     const el = portalRef.current;
     if (!container.contains(el)) {

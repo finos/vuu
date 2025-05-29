@@ -1,9 +1,9 @@
-import { PopupMenu } from "@finos/vuu-popups";
+import { PopupMenu } from "@vuu-ui/vuu-popups";
 import {
   ContextMenuItemDescriptor,
   MenuActionHandler,
   MenuBuilder,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import { useMemo } from "react";
 import cx from "clsx";
 
@@ -52,12 +52,12 @@ export const BasketMenu = ({
           {
             action: "action4",
             label: "To Algo",
-          }
+          },
         );
         return menuItems;
       },
     ],
-    []
+    [],
   );
 
   return (

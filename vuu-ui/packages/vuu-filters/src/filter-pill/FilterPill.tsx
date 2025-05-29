@@ -1,22 +1,22 @@
 import {
   ContextMenuItemDescriptor,
   MenuActionHandler,
-} from "@finos/vuu-data-types";
-import { ColumnDescriptorsByName, Filter } from "@finos/vuu-filter-types";
+} from "@vuu-ui/vuu-data-types";
+import { ColumnDescriptorsByName, Filter } from "@vuu-ui/vuu-filter-types";
 import {
   PopupCloseCallback,
   PopupMenuProps,
   Tooltip,
   useTooltip,
-} from "@finos/vuu-popups";
+} from "@vuu-ui/vuu-popups";
 import {
   EditableLabel,
   EditableLabelProps,
   ExitEditModeHandler,
   SplitStateButton,
   SplitStateButtonProps,
-} from "@finos/vuu-ui-controls";
-import { useId } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-ui-controls";
+import { useId } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";

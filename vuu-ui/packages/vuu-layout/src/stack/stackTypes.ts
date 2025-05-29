@@ -1,10 +1,10 @@
-import { TabstripProps } from "@finos/vuu-ui-controls";
+import { TabstripProps } from "@vuu-ui/vuu-ui-controls";
 import { HTMLAttributes, MouseEvent, ReactElement, ReactNode } from "react";
 
 export type TabLabelFactory = (
   component: ReactElement,
   index: number,
-  existingLabels: string[]
+  existingLabels: string[],
 ) => string;
 
 export interface SerializableStackProps {

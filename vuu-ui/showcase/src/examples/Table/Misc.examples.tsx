@@ -1,27 +1,27 @@
-import { ArrayDataSource } from "@finos/vuu-data-local";
+import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
 import {
   getSchema,
   LocalDataSourceProvider,
   SimulTableName,
   vuuModule,
-} from "@finos/vuu-data-test";
+} from "@vuu-ui/vuu-data-test";
 import {
   DataSource,
   SelectionChangeHandler,
   TableSchema,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import {
   Flexbox,
   FlexboxLayout,
   LayoutProvider,
   View,
-} from "@finos/vuu-layout";
-import { ContextPanel } from "@finos/vuu-shell";
-import { GroupHeaderCell, Table, TableProps } from "@finos/vuu-table";
+} from "@vuu-ui/vuu-layout";
+import { ContextPanel } from "@vuu-ui/vuu-shell";
+import { GroupHeaderCell, Table, TableProps } from "@vuu-ui/vuu-table";
 import {
   ColumnSettingsPanel,
   TableSettingsPanel,
-} from "@finos/vuu-table-extras";
+} from "@vuu-ui/vuu-table-extras";
 import {
   ColumnDescriptor,
   ColumnLayout,
@@ -30,15 +30,15 @@ import {
   RuntimeColumnDescriptor,
   TableConfig,
   TableRowSelectHandler,
-} from "@finos/vuu-table-types";
-import { Toolbar } from "@finos/vuu-ui-controls";
+} from "@vuu-ui/vuu-table-types";
+import { Toolbar } from "@vuu-ui/vuu-ui-controls";
 import {
   applyDefaultColumnConfig,
   defaultValueFormatter,
   registerComponent,
   toColumnName,
   useDataSource,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { Button, Input, InputProps } from "@salt-ds/core";
 import {
   CSSProperties,
@@ -50,7 +50,7 @@ import {
 import { useAutoLoginToVuuServer } from "../utils";
 import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 
-import { VuuDataSourceProvider } from "@finos/vuu-data-react";
+import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 import "./Misc.examples.css";
 
 export const TestTable = ({

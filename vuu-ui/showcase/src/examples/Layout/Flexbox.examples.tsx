@@ -6,9 +6,9 @@ import {
   LayoutProvider,
   Stack,
   View,
-} from "@finos/vuu-layout";
+} from "@vuu-ui/vuu-layout";
 import { Brown } from "./components";
-import { SplitterMoveHandler } from "@finos/vuu-layout/src/flexbox/flexboxTypes";
+import { SplitterMoveHandler } from "@vuu-ui/vuu-layout/src/flexbox/flexboxTypes";
 import { useCallback } from "react";
 
 export const Empty = () => (

@@ -1,4 +1,4 @@
-import { dimension } from "@finos/vuu-utils";
+import { dimension } from "@vuu-ui/vuu-utils";
 import React, { CSSProperties, ReactElement } from "react";
 import { followPath, getProps } from "../utils";
 import { LayoutResizeAction, SplitterResizeAction } from "./layoutTypes";
@@ -6,7 +6,7 @@ import { swapChild } from "./replace-layout-element";
 
 export function resizeFlexChild(
   layoutRoot: ReactElement,
-  { path, size }: LayoutResizeAction
+  { path, size }: LayoutResizeAction,
 ) {
   const target = followPath(layoutRoot, path, true);
 
@@ -27,7 +27,7 @@ export function resizeFlexChild(
 
 export function resizeFlexChildren(
   layoutRoot: ReactElement,
-  { path, sizes }: SplitterResizeAction
+  { path, sizes }: SplitterResizeAction,
 ) {
   const target = followPath(layoutRoot, path, true);
   const { children, style } = getProps(target);
@@ -38,7 +38,7 @@ export function resizeFlexChildren(
   const replacement = React.cloneElement(
     target,
     undefined,
-    replacementChildren
+    replacementChildren,
   );
 
   return swapChild(layoutRoot, target, replacement);
@@ -47,7 +47,7 @@ export function resizeFlexChildren(
 function applySizesToChildren(
   children: ReactElement[],
   sizes: { currentSize: number; flexBasis: number }[],
-  dimension: dimension
+  dimension: dimension,
 ) {
   return children.map((child, i) => {
     const {
@@ -74,7 +74,7 @@ function applySizesToChildren(
 function applySizeToChild(
   style: CSSProperties,
   dimension: dimension,
-  newSize: number
+  newSize: number,
 ) {
   const hasSize = typeof style[dimension] === "number";
   const { flexShrink = 1, flexGrow = 1 } = style;

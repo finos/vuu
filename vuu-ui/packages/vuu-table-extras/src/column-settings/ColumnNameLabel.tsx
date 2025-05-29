@@ -1,11 +1,11 @@
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import {
   getCalculatedColumnDetails,
   isCalculatedColumn,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { MouseEventHandler } from "react";
 
 import columnNameLabelCss from "./ColumnNameLabel.css";

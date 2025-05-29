@@ -1,4 +1,4 @@
-import { EditableLabel, IconButton } from "@finos/vuu-ui-controls";
+import { EditableLabel, IconButton } from "@vuu-ui/vuu-ui-controls";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";

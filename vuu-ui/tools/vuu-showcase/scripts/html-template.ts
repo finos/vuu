@@ -7,8 +7,8 @@ export default `<!doctype html>
     <script type="module">
       import React from "react";
       import {createRoot} from "react-dom/client";
-      import { Showcase, ShowcaseStandalone } from "@finos/vuu-showcase";
-      import { hasUrlParameter } from "@finos/vuu-utils";
+      import { Showcase, ShowcaseStandalone } from "@vuu-ui/vuu-showcase";
+      import { hasUrlParameter } from "@vuu-ui/vuu-utils";
       const { default: treeSource } = await import("/treeSourceJson.js");
       const container = document.getElementById("root");
       const root = createRoot(container);

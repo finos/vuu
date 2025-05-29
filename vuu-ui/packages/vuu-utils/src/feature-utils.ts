@@ -1,6 +1,6 @@
-import type { TableSchema } from "@finos/vuu-data-types";
-import type { VuuTable } from "@finos/vuu-protocol-types";
-import { ListOption } from "@finos/vuu-table-types";
+import type { TableSchema } from "@vuu-ui/vuu-data-types";
+import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
+import { ListOption } from "@vuu-ui/vuu-table-types";
 import { partition } from "./array-utils";
 import { wordify } from "./text-utils";
 import React, { ReactElement } from "react";

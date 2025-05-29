@@ -1,4 +1,4 @@
-import type { ColumnDescriptor } from "@finos/vuu-table-types";
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { ExpandoCombobox } from "./ExpandoCombobox";
 import { ComboBoxProps, Option } from "@salt-ds/core";
 import { ForwardedRef, SyntheticEvent, forwardRef } from "react";

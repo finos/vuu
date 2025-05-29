@@ -2,8 +2,8 @@ import {
   ColumnDescriptor,
   RuntimeColumnDescriptor,
   TableConfig,
-} from "@finos/vuu-table-types";
-import { getRuntimeColumnWidth } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-table-types";
+import { getRuntimeColumnWidth } from "@vuu-ui/vuu-utils";
 
 export type MoveColumnTableConfigAction = {
   type: "col-move";
@@ -39,7 +39,7 @@ export type TableConfigAction =
 
 export const updateTableConfig = (
   config: TableConfig,
-  action: TableConfigAction
+  action: TableConfigAction,
 ): TableConfig => {
   switch (action.type) {
     case "col-size": {
@@ -56,8 +56,8 @@ export const updateTableConfig = (
             return col.name === action.column.name
               ? { ...col, width }
               : col.width
-              ? col
-              : { ...col, width: getRuntimeColumnWidth(col, runtimeColumns) };
+                ? col
+                : { ...col, width: getRuntimeColumnWidth(col, runtimeColumns) };
           } else {
             return col.name === action.column.name
               ? { ...col, width: action.width }
@@ -72,7 +72,7 @@ export const updateTableConfig = (
         columns: config.columns.map((col) =>
           col.name === action.column.name
             ? { ...col, [action.property]: action.value }
-            : col
+            : col,
         ),
       };
 

@@ -1,11 +1,11 @@
-import { DataSourceRow } from "@finos/vuu-data-types";
+import { DataSourceRow } from "@vuu-ui/vuu-data-types";
 import {
   VuuFilter,
   VuuRowDataItemType,
   VuuSort,
   VuuSortCol,
-} from "@finos/vuu-protocol-types";
-import { ColumnMap } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-protocol-types";
+import { ColumnMap } from "@vuu-ui/vuu-utils";
 
 export type JsonPrimitive = string | number | boolean | null;
 export type JsonArray = Json[];

@@ -1,10 +1,10 @@
-import { Table, TableProps } from "@finos/vuu-table";
+import { Table, TableProps } from "@vuu-ui/vuu-table";
 import { useMemo } from "react";
-import { TestTableName, getSchema, vuuModule } from "@finos/vuu-data-test";
-import { useVuuMenuActions } from "@finos/vuu-data-react";
-import { ContextMenuProvider } from "@finos/vuu-popups";
-import { SchemaColumn } from "@finos/vuu-data-types";
-import { ColumnDescriptor } from "@finos/vuu-table-types";
+import { TestTableName, getSchema, vuuModule } from "@vuu-ui/vuu-data-test";
+import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
+import { ContextMenuProvider } from "@vuu-ui/vuu-popups";
+import { SchemaColumn } from "@vuu-ui/vuu-data-types";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { DemoTableContainer } from "./DemoTableContainer";
 
 const extendColumnConfig = (

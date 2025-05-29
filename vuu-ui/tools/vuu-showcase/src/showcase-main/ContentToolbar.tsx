@@ -1,5 +1,5 @@
 import React, { SyntheticEvent, useCallback } from "react";
-import { ThemeSwitch } from "@finos/vuu-shell";
+import { ThemeSwitch } from "@vuu-ui/vuu-shell";
 import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { DataLocation, Density, useShowcaseContext } from "./ShowcaseProvider";
 

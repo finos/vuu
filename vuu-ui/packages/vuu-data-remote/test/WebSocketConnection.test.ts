@@ -16,7 +16,7 @@ import {
   WebSocketConnection,
   WebSocketConnectionState,
 } from "../src/WebSocketConnection";
-import { VuuServerMessage } from "@finos/vuu-protocol-types";
+import { VuuServerMessage } from "@vuu-ui/vuu-protocol-types";
 
 describe("WebSocketConnection", () => {
   beforeEach(() => {

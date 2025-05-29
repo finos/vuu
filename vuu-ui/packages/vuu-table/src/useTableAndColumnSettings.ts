@@ -1,12 +1,15 @@
-import { DataSourceConfig, SchemaColumn } from "@finos/vuu-data-types";
-import { useLayoutProviderDispatch } from "@finos/vuu-layout";
+import { DataSourceConfig, SchemaColumn } from "@vuu-ui/vuu-data-types";
+import { useLayoutProviderDispatch } from "@vuu-ui/vuu-layout";
 import {
   ColumnDescriptor,
   ColumnSettingsProps,
   TableConfig,
   TableSettingsProps,
-} from "@finos/vuu-table-types";
-import { VuuShellLocation, getCalculatedColumnDetails } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-table-types";
+import {
+  VuuShellLocation,
+  getCalculatedColumnDetails,
+} from "@vuu-ui/vuu-utils";
 import { useCallback, useRef, useState } from "react";
 import { ColumnActionColumnSettings } from "./useTableModel";
 
@@ -30,14 +33,14 @@ export const useTableAndColumnSettings = ({
   const showTableSettingsRef = useRef<() => void>();
 
   const [availableColumns, setAvailableColumns] = useState<SchemaColumn[]>(
-    availableColumnsProps
+    availableColumnsProps,
   );
 
   const showContextPanel = useCallback(
     (
       componentType: string,
       title: string,
-      props: TableSettingsProps | ColumnSettingsProps
+      props: TableSettingsProps | ColumnSettingsProps,
     ) => {
       dispatchLayoutAction({
         type: "set-props",
@@ -52,7 +55,7 @@ export const useTableAndColumnSettings = ({
         },
       });
     },
-    [dispatchLayoutAction]
+    [dispatchLayoutAction],
   );
 
   const handleCancelCreateColumn = useCallback(() => {
@@ -77,11 +80,11 @@ export const useTableAndColumnSettings = ({
         onCreateCalculatedColumn(column);
       } else {
         throw Error(
-          "Cannot create calculatec columns without valis serverDataType"
+          "Cannot create calculatec columns without valis serverDataType",
         );
       }
     },
-    [availableColumns, onAvailableColumnsChange, onCreateCalculatedColumn]
+    [availableColumns, onAvailableColumnsChange, onCreateCalculatedColumn],
   );
 
   const showColumnSettingsPanel = useCallback(
@@ -101,7 +104,7 @@ export const useTableAndColumnSettings = ({
       onConfigChange,
       showContextPanel,
       tableConfig,
-    ]
+    ],
   );
 
   const handleAddCalculatedColumn = useCallback(() => {
@@ -127,7 +130,7 @@ export const useTableAndColumnSettings = ({
         });
       }
     },
-    [showColumnSettingsPanel, tableConfig.columns]
+    [showColumnSettingsPanel, tableConfig.columns],
   );
 
   showTableSettingsRef.current = useCallback(() => {

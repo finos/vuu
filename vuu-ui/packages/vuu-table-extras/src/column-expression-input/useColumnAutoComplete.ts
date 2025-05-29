@@ -9,7 +9,7 @@ import {
   getValue,
   SyntaxNode,
   syntaxTree,
-} from "@finos/vuu-codemirror";
+} from "@vuu-ui/vuu-codemirror";
 import { MutableRefObject, useCallback } from "react";
 import {
   ColumnNamedTerms,
@@ -101,7 +101,7 @@ const getRelationalOperator = (node: SyntaxNode, state: EditorState) => {
 
 const getColumnName = (
   node: SyntaxNode,
-  state: EditorState
+  state: EditorState,
 ): string | undefined => {
   if (node.name === "RelationalExpression") {
     if (node.firstChild?.name === "Column") {
@@ -121,11 +121,11 @@ const makeSuggestions = async (
   context: CompletionContext,
   suggestionProvider: IExpressionSuggestionProvider,
   suggestionType: ColumnExpressionSuggestionType,
-  optionalArgs: ColumnExpressionSuggestionOptions = {}
+  optionalArgs: ColumnExpressionSuggestionOptions = {},
 ) => {
   const options = await suggestionProvider.getSuggestions(
     suggestionType,
-    optionalArgs
+    optionalArgs,
   );
   const { startsWith = "" } = optionalArgs;
   return { from: context.pos - startsWith.length, options };
@@ -136,7 +136,7 @@ const handleConditionalExpression = (
   context: CompletionContext,
   suggestionProvider: IExpressionSuggestionProvider,
   maybeComplete?: boolean,
-  onSubmit?: () => void
+  onSubmit?: () => void,
 ) => {
   const lastChild = getLastChild(node, context);
   switch (lastChild?.name) {
@@ -165,22 +165,22 @@ const promptToSave = (context: CompletionContext, onSubmit: () => void) => {
 
 export const useColumnAutoComplete = (
   suggestionProvider: IExpressionSuggestionProvider,
-  onSubmit: MutableRefObject<ApplyCompletion>
+  onSubmit: MutableRefObject<ApplyCompletion>,
 ) => {
   const makeSuggestions = useCallback(
     async (
       context: CompletionContext,
       suggestionType: ColumnExpressionSuggestionType,
-      optionalArgs: ColumnExpressionSuggestionOptions = {}
+      optionalArgs: ColumnExpressionSuggestionOptions = {},
     ) => {
       const options = await suggestionProvider.getSuggestions(
         suggestionType,
-        optionalArgs
+        optionalArgs,
       );
       const { startsWith = "" } = optionalArgs;
       return { from: context.pos - startsWith.length, options };
     },
-    [suggestionProvider]
+    [suggestionProvider],
   );
 
   return useCallback(
@@ -222,7 +222,7 @@ export const useColumnAutoComplete = (
           return handleConditionalExpression(
             nodeBefore,
             context,
-            suggestionProvider
+            suggestionProvider,
           );
         case "RelationalExpression":
           {
@@ -242,7 +242,7 @@ export const useColumnAutoComplete = (
                   "condition-operator",
                   {
                     columnName,
-                  }
+                  },
                 );
                 return { from: context.pos, options };
               } else {
@@ -261,7 +261,7 @@ export const useColumnAutoComplete = (
             // we only encounter a string as the right hand operand of a conditional expression
             const operator = getRelationalOperator(
               nodeBefore,
-              state
+              state,
             ) as ColumnExpressionOperator;
             const columnName = getColumnName(nodeBefore, state);
             // are we inside the string or immediately after it
@@ -379,7 +379,7 @@ export const useColumnAutoComplete = (
 
                   const suggestions = await suggestionProvider.getSuggestions(
                     "operator",
-                    { columnName }
+                    { columnName },
                   );
                   options = options.concat(suggestions);
                 }
@@ -395,7 +395,7 @@ export const useColumnAutoComplete = (
                 context,
                 suggestionProvider,
                 maybeComplete,
-                onSubmit.current
+                onSubmit.current,
               );
             }
             break;
@@ -405,7 +405,7 @@ export const useColumnAutoComplete = (
             const isPartialMatch = await suggestionProvider.isPartialMatch(
               "expression",
               undefined,
-              word.text
+              word.text,
             );
 
             if (isPartialMatch) {
@@ -433,7 +433,7 @@ export const useColumnAutoComplete = (
                 context,
                 suggestionProvider,
                 maybeComplete,
-                onSubmit.current
+                onSubmit.current,
               );
             } else if (parentNode?.name === "ArgList") {
               if (maybeComplete) {
@@ -450,6 +450,6 @@ export const useColumnAutoComplete = (
         }
       }
     },
-    [makeSuggestions, onSubmit, suggestionProvider]
+    [makeSuggestions, onSubmit, suggestionProvider],
   ) as CompletionSource;
 };

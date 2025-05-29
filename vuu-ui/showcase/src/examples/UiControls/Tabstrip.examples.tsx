@@ -3,10 +3,10 @@ import {
   Tab,
   Tabstrip,
   TabstripProps,
-} from "@finos/vuu-ui-controls";
-import { moveItem } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-ui-controls";
+import { moveItem } from "@vuu-ui/vuu-utils";
 import { useCallback, useState } from "react";
-import { FlexboxLayout, LayoutProvider } from "@finos/vuu-layout";
+import { FlexboxLayout, LayoutProvider } from "@vuu-ui/vuu-layout";
 
 import "./Tabstrip.examples.css";
 

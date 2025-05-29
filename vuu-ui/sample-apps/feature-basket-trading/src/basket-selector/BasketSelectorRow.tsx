@@ -1,5 +1,5 @@
-import type { RowProps } from "@finos/vuu-table-types";
-import { metadataKeys } from "@finos/vuu-utils";
+import type { RowProps } from "@vuu-ui/vuu-table-types";
+import { metadataKeys } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { MouseEvent, useCallback } from "react";
 
@@ -38,7 +38,7 @@ export const BasketSelectorRow = ({
       const keepExistingSelection = evt.ctrlKey || evt.metaKey; /* mac only */
       onClick?.(evt, row, rangeSelect, keepExistingSelection);
     },
-    [onClick, row]
+    [onClick, row],
   );
 
   return (

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { LayoutModel, rectTuple, uuid } from "@finos/vuu-utils";
+import { LayoutModel, rectTuple, uuid } from "@vuu-ui/vuu-utils";
 import React, { ReactElement } from "react";
 import { DropPos } from "../drag-drop";
 import { DropTarget } from "../drag-drop/DropTarget";

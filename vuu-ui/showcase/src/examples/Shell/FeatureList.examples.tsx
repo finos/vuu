@@ -1,5 +1,5 @@
-import { FeatureList, GroupedFeatureProps } from "@finos/vuu-shell";
-import { DynamicFeatureProps } from "@finos/vuu-utils";
+import { FeatureList, GroupedFeatureProps } from "@vuu-ui/vuu-shell";
+import { DynamicFeatureProps } from "@vuu-ui/vuu-utils";
 
 export const DefaultFeatureList = () => {
   const features: DynamicFeatureProps[] = [

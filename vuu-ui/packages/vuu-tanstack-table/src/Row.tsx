@@ -4,7 +4,7 @@ import cx from "clsx";
 // A dummy Table Row rendered once and not visible. We measure this to
 // determine height of Row(s) and monitor it for size changes (in
 // case of runtime density switch). This allows ListItem height to
-import { VuuDataRow } from "@finos/vuu-protocol-types";
+import { VuuDataRow } from "@vuu-ui/vuu-protocol-types";
 import type { Row as TanstackRow } from "@tanstack/react-table";
 import { flexRender } from "@tanstack/react-table";
 import { forwardRef, memo, MouseEventHandler, useCallback } from "react";

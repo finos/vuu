@@ -1,4 +1,4 @@
-import { getCookieValue } from "@finos/vuu-utils";
+import { getCookieValue } from "@vuu-ui/vuu-utils";
 
 export const getAuthModeFromCookies = (): string => {
   const mode = getCookieValue("vuu-auth-mode") as string;

@@ -1,4 +1,4 @@
-import { ContextMenuItemDescriptor } from "@finos/vuu-data-types";
+import { ContextMenuItemDescriptor } from "@vuu-ui/vuu-data-types";
 
 export type MenuOptions = { [key: string]: unknown };
 
@@ -7,7 +7,7 @@ export interface FilterPillMenuOptions {
 }
 
 export const isFilterPillMenuOptions = (
-  options: unknown
+  options: unknown,
 ): options is FilterPillMenuOptions =>
   typeof options === "object" && options !== null && "filter" in options;
 
@@ -17,7 +17,7 @@ export const closeCommand = (options?: MenuOptions) =>
     location: "filter",
     action: `close-filter`,
     options,
-  } as ContextMenuItemDescriptor);
+  }) as ContextMenuItemDescriptor;
 
 export const deleteCommand = (options?: MenuOptions) =>
   ({
@@ -25,7 +25,7 @@ export const deleteCommand = (options?: MenuOptions) =>
     location: "filter",
     action: `delete-filter`,
     options,
-  } as ContextMenuItemDescriptor);
+  }) as ContextMenuItemDescriptor;
 
 export const renameCommand = (options?: MenuOptions) =>
   ({
@@ -33,7 +33,7 @@ export const renameCommand = (options?: MenuOptions) =>
     location: "filter",
     action: `rename-filter`,
     options,
-  } as ContextMenuItemDescriptor);
+  }) as ContextMenuItemDescriptor;
 
 export const editCommand = (options?: MenuOptions) =>
   ({
@@ -41,4 +41,4 @@ export const editCommand = (options?: MenuOptions) =>
     location: "filter",
     action: "edit-filter",
     options,
-  } as ContextMenuItemDescriptor);
+  }) as ContextMenuItemDescriptor;

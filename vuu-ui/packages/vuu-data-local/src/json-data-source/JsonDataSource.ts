@@ -1,4 +1,4 @@
-import type { ColumnDescriptor } from "@finos/vuu-table-types";
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import type {
   LinkDescriptorWithLabel,
   VuuGroupBy,
@@ -8,7 +8,7 @@ import type {
   VuuRowDataItemType,
   VuuRpcResponse,
   VuuRpcRequest,
-} from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-protocol-types";
 import type {
   DataSourceFilter,
   DataSourceRow,
@@ -23,7 +23,7 @@ import type {
   MenuRpcResponse,
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditResponse,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import {
   EventEmitter,
   isSelected,
@@ -36,7 +36,7 @@ import {
   rangesAreSame,
   uuid,
   vanillaConfig,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 
 const NULL_SCHEMA = { columns: [], key: "", table: { module: "", table: "" } };
 

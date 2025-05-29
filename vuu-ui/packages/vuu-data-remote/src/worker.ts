@@ -4,12 +4,12 @@ import {
   VuuUIMessageOut,
   WebSocketProtocol,
   WithRequestId,
-} from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-data-types";
 import {
   VuuRpcMenuRequest,
   VuuRpcServiceRequest,
-} from "@finos/vuu-protocol-types";
-import { isConnectionQualityMetrics, logger } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-protocol-types";
+import { isConnectionQualityMetrics, logger } from "@vuu-ui/vuu-utils";
 import { ServerProxy } from "./server-proxy/server-proxy";
 // import { createWebSocketConnection } from "./websocket-connection";
 import {

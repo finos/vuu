@@ -4,12 +4,12 @@ import {
   FilterCombinatorOp,
   MultipleValueFilterClauseOp,
   SingleValueFilterClauseOp,
-} from "@finos/vuu-filter-types";
+} from "@vuu-ui/vuu-filter-types";
 import {
   isMultiClauseFilter,
   isMultiValueFilter,
   isSingleValueFilter,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 
 class FilterExpression {
   public name: string | undefined;

@@ -8,7 +8,7 @@ import {
   TableConfig,
   TableHeadings,
   TableSelectionModel,
-} from "@finos/vuu-table-types";
+} from "@vuu-ui/vuu-table-types";
 import {
   applyFilterToColumns,
   applyGroupByToColumns,
@@ -33,7 +33,7 @@ import {
   sortPinnedColumns,
   stripFilterFromColumns,
   subscribedOnly,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 
 import {
   DataSource,
@@ -41,10 +41,10 @@ import {
   TableSchema,
   WithBaseFilter,
   WithFullConfig,
-} from "@finos/vuu-data-types";
-import { VuuColumnDataType, VuuTable } from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-data-types";
+import { VuuColumnDataType, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { Reducer, useReducer } from "react";
-import { buildValidationChecker } from "@finos/vuu-data-react";
+import { buildValidationChecker } from "@vuu-ui/vuu-data-react";
 
 const { info } = logger("useTableModel");
 

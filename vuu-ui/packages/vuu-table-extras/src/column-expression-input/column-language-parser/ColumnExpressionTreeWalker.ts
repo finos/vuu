@@ -1,4 +1,4 @@
-import { Tree } from "@finos/vuu-codemirror";
+import { Tree } from "@vuu-ui/vuu-codemirror";
 import { RelationalExpression } from "./generated/column-parser.terms";
 type expressionType =
   | "arithmeticExpression"
@@ -290,48 +290,48 @@ const isUnknown = (e: Expression): e is UnknownExpression =>
   e.type === "unknown";
 
 const isArithmeticExpression = (
-  expression: PotentiallyUnresolvedExpression
+  expression: PotentiallyUnresolvedExpression,
 ): expression is ArithmeticExpression =>
   expression.type === "arithmeticExpression";
 
 const isCallExpression = (
-  expression: PotentiallyUnresolvedExpression
+  expression: PotentiallyUnresolvedExpression,
 ): expression is CallExpression => expression.type === "callExpression";
 
 const isConditionalExpression = (
-  expression: PotentiallyUnresolvedExpression
+  expression: PotentiallyUnresolvedExpression,
 ): expression is ConditionalExpression =>
   expression.type === "conditionalExpression";
 
 const isCondition = (
-  expression: Expression | PartialExpression
+  expression: Expression | PartialExpression,
 ): expression is ConditionExpression =>
   expression.type === "relationalExpression" ||
   expression.type === "booleanCondition";
 
 const booleanConditionIsIncomplete = (
-  condition: ConditionExpression
+  condition: ConditionExpression,
 ): boolean =>
   condition.expressions.length < 2 ||
   condition.expressions.some((e) => conditionIsIncomplete(e));
 
 const isBooleanCondition = (
-  expression: Expression
+  expression: Expression,
 ): expression is BooleanCondition => expression.type === "booleanCondition";
 
 const isRelationalExpression = (
-  expression?: Expression
+  expression?: Expression,
 ): expression is RelationalExpression =>
   expression?.type === "relationalExpression";
 
 const conditionIsIncomplete = (
-  condition: Expression
+  condition: Expression,
 ): condition is ConditionExpression =>
   (isBooleanCondition(condition) && booleanConditionIsIncomplete(condition)) ||
   (isRelationalExpression(condition) && condition.expressions.length < 2);
 
 const firstIncompleteExpression = (
-  expression: Expression
+  expression: Expression,
 ): Expression | undefined => {
   if (isUnknown(expression)) {
     return expression;
@@ -372,7 +372,7 @@ const firstIncompleteExpression = (
 const replaceUnknownExpression = (
   incompleteExpression: Expression,
   unknownExpression: UnknownExpression,
-  expression: Expression
+  expression: Expression,
 ): boolean => {
   const { expressions = [] } = incompleteExpression;
   if (expressions.includes(unknownExpression)) {
@@ -422,7 +422,7 @@ type PotentiallyUnresolvedExpression = Expression | PartialExpression;
 
 const addExpression = (
   expression: Expression,
-  subExpression: PartialExpression | Expression
+  subExpression: PartialExpression | Expression,
 ) => {
   const targetExpression = firstIncompleteExpression(expression);
   if (targetExpression) {
@@ -452,7 +452,7 @@ class ColumnExpression {
         this.addExpression(condition);
       } else if (isUnknown(this.#expression.truthyExpression)) {
         this.#expression.truthyExpression = new ConditionalExpressionImpl(
-          booleanOperator
+          booleanOperator,
         );
       } else if (expressionIsIncomplete(this.#expression.truthyExpression)) {
         const condition = booleanOperator
@@ -461,7 +461,7 @@ class ColumnExpression {
         this.addExpression(condition);
       } else if (isUnknown(this.#expression.falsyExpression)) {
         this.#expression.falsyExpression = new ConditionalExpressionImpl(
-          booleanOperator
+          booleanOperator,
         );
       } else if (expressionIsIncomplete(this.#expression.falsyExpression)) {
         const condition = booleanOperator
@@ -488,7 +488,7 @@ class ColumnExpression {
         replaceUnknownExpression(
           this.#expression,
           targetExpression,
-          expression
+          expression,
         );
       }
     } else if (isConditionalExpression(this.#expression)) {
@@ -498,7 +498,7 @@ class ColumnExpression {
           replaceUnknownExpression(
             this.#expression,
             targetExpression,
-            expression
+            expression,
           );
         } else if (targetExpression) {
           addExpression(targetExpression, expression);
@@ -559,7 +559,7 @@ class ColumnExpression {
           replaceUnknownExpression(
             this.#expression,
             targetExpression,
-            literalExpression
+            literalExpression,
           );
         } else if (targetExpression) {
           addExpression(targetExpression, literalExpression);

@@ -1,6 +1,6 @@
-import type { FilterClauseOp } from "@finos/vuu-filter-types";
-import type { ColumnDescriptor } from "@finos/vuu-table-types";
-import { isValidFilterClauseOp } from "@finos/vuu-utils";
+import type { FilterClauseOp } from "@vuu-ui/vuu-filter-types";
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { isValidFilterClauseOp } from "@vuu-ui/vuu-utils";
 import { ComboBoxProps, Option } from "@salt-ds/core";
 import { ForwardedRef, SyntheticEvent, forwardRef } from "react";
 import { ExpandoCombobox } from "./ExpandoCombobox";
@@ -16,11 +16,11 @@ export type OperatorPickerProps = Pick<
 
 export const OperatorPicker = forwardRef(function ColumnPicker(
   { className, column, inputProps, onSelect, value }: OperatorPickerProps,
-  forwardedRef: ForwardedRef<HTMLDivElement>
+  forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
   const handleSelectionChange = (
     evt: SyntheticEvent,
-    newSelected: string[]
+    newSelected: string[],
   ) => {
     const [selectedValue] = newSelected;
     if (isValidFilterClauseOp(selectedValue)) {

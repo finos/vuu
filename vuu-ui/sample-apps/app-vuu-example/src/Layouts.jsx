@@ -1,5 +1,5 @@
 import React from "react";
-import { FlexboxLayout as Flexbox, Placeholder } from "@finos/vuu-layout";
+import { FlexboxLayout as Flexbox, Placeholder } from "@vuu-ui/vuu-layout";
 
 export const twoColumns = (
   <Flexbox style={{ flexDirection: "column" }}>

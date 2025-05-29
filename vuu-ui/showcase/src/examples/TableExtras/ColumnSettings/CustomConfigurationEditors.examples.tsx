@@ -1,6 +1,6 @@
-import { BackgroundCellConfigurationEditor } from "@finos/vuu-table-extras";
-import type { ColumnDescriptorCustomRenderer } from "@finos/vuu-table-types";
-import { ColumnRenderPropsChangeHandler } from "@finos/vuu-utils";
+import { BackgroundCellConfigurationEditor } from "@vuu-ui/vuu-table-extras";
+import type { ColumnDescriptorCustomRenderer } from "@vuu-ui/vuu-table-types";
+import { ColumnRenderPropsChangeHandler } from "@vuu-ui/vuu-utils";
 import { useState } from "react";
 
 export const DefaultBackgroundCellConfigurationEditor = () => {

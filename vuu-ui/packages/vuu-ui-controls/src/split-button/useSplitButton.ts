@@ -1,5 +1,5 @@
-import { MenuCloseHandler, PopupMenuProps } from "@finos/vuu-popups";
-import { dispatchMouseEvent } from "@finos/vuu-utils";
+import { MenuCloseHandler, PopupMenuProps } from "@vuu-ui/vuu-popups";
+import { dispatchMouseEvent } from "@vuu-ui/vuu-utils";
 import {
   FocusEventHandler,
   KeyboardEventHandler,
@@ -36,7 +36,7 @@ SplitButtonHookProps) => {
   const onMenuClose = useCallback<MenuCloseHandler>((reason) => {
     if (reason?.type !== "tab-away") {
       const buttonMain = rootRef.current?.querySelector(
-        ".vuuSplitButton-main"
+        ".vuuSplitButton-main",
       ) as HTMLElement;
       buttonMain?.focus();
     }
@@ -78,14 +78,14 @@ SplitButtonHookProps) => {
     (evt) => {
       if (evt.key === "ArrowDown") {
         const popupTrigger = rootRef.current?.querySelector(
-          `.${classBase}-trigger`
+          `.${classBase}-trigger`,
         ) as HTMLElement;
         if (popupTrigger) {
           dispatchMouseEvent(popupTrigger, "click");
         }
       }
     },
-    [classBase]
+    [classBase],
   );
 
   const ButtonProps = {

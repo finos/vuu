@@ -2,7 +2,7 @@ import {
   ColumnPicker,
   ColumnSearch,
   MultiSelectionHandler,
-} from "@finos/vuu-ui-controls";
+} from "@vuu-ui/vuu-ui-controls";
 import { useMemo, useState } from "react";
 
 export const DefaultColumnSearch = () => {

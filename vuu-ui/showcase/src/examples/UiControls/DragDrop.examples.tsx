@@ -1,4 +1,4 @@
-import { Flexbox } from "@finos/vuu-layout";
+import { Flexbox } from "@vuu-ui/vuu-layout";
 import {
   DragDropProvider,
   DragStartHandler,
@@ -6,7 +6,7 @@ import {
   DropOptions,
   List,
   MoveItemHandler,
-} from "@finos/vuu-ui-controls";
+} from "@vuu-ui/vuu-ui-controls";
 import { useCallback, useMemo, useState } from "react";
 import { usa_states } from "./List.data";
 

@@ -1,4 +1,4 @@
-import { vuuModule } from "@finos/vuu-data-test";
+import { vuuModule } from "@vuu-ui/vuu-data-test";
 import { Basket, BasketToolbar } from "feature-basket-trading";
 import { useCallback, useMemo, useState } from "react";
 import { BasketSelectorProps } from "sample-apps/feature-basket-trading/src/basket-selector";

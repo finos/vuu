@@ -1,4 +1,4 @@
-import { DateTimeDataValueDescriptor } from "@finos/vuu-data-types";
+import { DateTimeDataValueDescriptor } from "@vuu-ui/vuu-data-types";
 import { isTypeDescriptor } from "../column-utils";
 import { DateTimePattern, isDateTimePattern } from "./types";
 

@@ -1,6 +1,6 @@
-import { VuuRowDataItemType } from "@finos/vuu-protocol-types";
-import { VuuInput } from "@finos/vuu-ui-controls";
-import { getFieldName, Settings } from "@finos/vuu-utils";
+import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
+import { VuuInput } from "@vuu-ui/vuu-ui-controls";
+import { getFieldName, Settings } from "@vuu-ui/vuu-utils";
 import {
   Dropdown,
   DropdownProps,

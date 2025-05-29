@@ -1,5 +1,5 @@
-import { VuuDataSourceProvider } from "@finos/vuu-data-react";
-import { FlexboxLayout, StackLayout } from "@finos/vuu-layout";
+import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
+import { FlexboxLayout, StackLayout } from "@vuu-ui/vuu-layout";
 import {
   FeatureAndLayoutProvider,
   LeftNav,
@@ -9,23 +9,23 @@ import {
   Shell,
   ShellContextProvider,
   ShellLayoutProps,
-} from "@finos/vuu-shell";
+} from "@vuu-ui/vuu-shell";
 import {
   ColumnSettingsPanel,
   TableSettingsPanel,
-} from "@finos/vuu-table-extras";
-import { DragDropProvider } from "@finos/vuu-ui-controls";
-import type { VuuUser } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-table-extras";
+import { DragDropProvider } from "@vuu-ui/vuu-ui-controls";
+import type { VuuUser } from "@vuu-ui/vuu-utils";
 import {
   assertComponentsRegistered,
   registerComponent,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
 import { getDefaultColumnConfig } from "./columnMetaData";
 // import { useRpcResponseHandler } from "./useRpcResponseHandler";
 
 import "./App.css";
-// import { RestDataSourceProvider } from "@finos/vuu-data-react/src/datasource-provider/RestDataSourceProvider";
+// import { RestDataSourceProvider } from "@vuu-ui/vuu-data-react/src/datasource-provider/RestDataSourceProvider";
 
 registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
 registerComponent("TableSettings", TableSettingsPanel, "view");

@@ -5,7 +5,7 @@ import {
   StaticFeatureDescriptor,
   SystemLayoutMetadata,
   getCustomAndTableFeatures,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import {
   ReactElement,
   ReactNode,
@@ -13,7 +13,7 @@ import {
   useContext,
   useMemo,
 } from "react";
-import { useVuuTables } from "@finos/vuu-data-react";
+import { useVuuTables } from "@vuu-ui/vuu-data-react";
 
 export interface FeatureContextProps {
   dynamicFeatures?: DynamicFeatureProps[];

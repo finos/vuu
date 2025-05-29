@@ -1,4 +1,4 @@
-import { LocalDataSourceProvider, getSchema } from "@finos/vuu-data-test";
+import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
 import { NewBasketPanel } from "feature-basket-trading";
 import { useCallback } from "react";
 

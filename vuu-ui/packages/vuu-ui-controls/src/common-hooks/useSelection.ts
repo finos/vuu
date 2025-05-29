@@ -2,7 +2,7 @@ import {
   getElementByDataIndex,
   getElementDataIndex,
   isSelectableElement,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import {
   KeyboardEvent,
   MouseEvent,
@@ -28,7 +28,7 @@ export type GroupSelectionMode = "none" | "single" | "cascade";
 const defaultSelectionKeys = ["Enter", " "];
 
 export const groupSelectionEnabled = (
-  groupSelection: GroupSelectionMode
+  groupSelection: GroupSelectionMode,
 ): boolean => groupSelection && groupSelection !== GROUP_SELECTION_NONE;
 
 export const useSelection = ({
@@ -54,7 +54,7 @@ export const useSelection = ({
 
   const isSelectionEvent = useCallback(
     (evt: KeyboardEvent) => selectionKeys.includes(evt.key),
-    [selectionKeys]
+    [selectionKeys],
   );
 
   const [selected, setSelected] = useControlled<string[]>({
@@ -66,12 +66,12 @@ export const useSelection = ({
 
   const isItemSelected = useCallback(
     (itemId: string) => selected.includes(itemId),
-    [selected]
+    [selected],
   );
 
   const selectDeselectable = useCallback(
     (itemId: string) => (isItemSelected(itemId) ? [] : [itemId]),
-    [isItemSelected]
+    [isItemSelected],
   );
   const selectMultiple = useCallback(
     (itemId: string) => {
@@ -81,7 +81,7 @@ export const useSelection = ({
       nextItems.sort();
       return nextItems;
     },
-    [isItemSelected, selected]
+    [isItemSelected, selected],
   );
   const selectRange = useCallback(
     (idx: number, preserveExistingSelection?: boolean) => {
@@ -99,7 +99,7 @@ export const useSelection = ({
 
       const container = containerRef.current as HTMLElement;
       const allItems = Array.from(
-        container.querySelectorAll(itemQuery)
+        container.querySelectorAll(itemQuery),
       ) as HTMLElement[];
       const rangeSelection = allItems
         .slice(startRegion, endRegion + 1)
@@ -109,7 +109,7 @@ export const useSelection = ({
       nextItems.sort();
       return nextItems;
     },
-    [containerRef, itemQuery, selected]
+    [containerRef, itemQuery, selected],
   );
 
   const selectItemAtIndex = useCallback(
@@ -117,7 +117,7 @@ export const useSelection = ({
       evt: SyntheticEvent,
       idx: number,
       rangeSelect: boolean,
-      preserveExistingSelection?: boolean
+      preserveExistingSelection?: boolean,
     ) => {
       const { current: container } = containerRef;
       const { id } = getElementByDataIndex(container, idx, true);
@@ -164,7 +164,7 @@ export const useSelection = ({
       selectDeselectable,
       setSelected,
       onSelectionChange,
-    ]
+    ],
   );
 
   const handleKeyDown = useCallback(
@@ -182,7 +182,7 @@ export const useSelection = ({
             evt,
             highlightedIndex,
             false,
-            evt.ctrlKey || evt.metaKey
+            evt.ctrlKey || evt.metaKey,
           );
           if (isExtendedSelect) {
             lastActive.current = highlightedIndex;
@@ -197,7 +197,7 @@ export const useSelection = ({
       tabToSelect,
       selectItemAtIndex,
       isExtendedSelect,
-    ]
+    ],
   );
 
   const handleKeyboardNavigation = useCallback(
@@ -210,7 +210,7 @@ export const useSelection = ({
         }
       }
     },
-    [isExtendedSelect, containerRef, selectItemAtIndex]
+    [isExtendedSelect, containerRef, selectItemAtIndex],
   );
 
   const handleClick = useCallback(
@@ -224,7 +224,7 @@ export const useSelection = ({
           evt,
           highlightedIndex,
           evt.shiftKey,
-          evt.ctrlKey || evt.metaKey
+          evt.ctrlKey || evt.metaKey,
         );
         if (isExtendedSelect) {
           lastActive.current = highlightedIndex;
@@ -239,7 +239,7 @@ export const useSelection = ({
       onClick,
       selectItemAtIndex,
       isExtendedSelect,
-    ]
+    ],
   );
 
   const listHandlers = selectionIsDisallowed(selectionStrategy)

@@ -1,4 +1,4 @@
-import { ExpandoInput } from "@finos/vuu-ui-controls";
+import { ExpandoInput } from "@vuu-ui/vuu-ui-controls";
 import { Input } from "@salt-ds/core";
 import { ChangeEvent, ReactNode, useCallback, useState } from "react";
 

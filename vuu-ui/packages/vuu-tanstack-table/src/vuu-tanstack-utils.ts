@@ -1,8 +1,8 @@
-import { VuuSort, VuuSortCol } from "@finos/vuu-protocol-types";
-import { buildColumnMap } from "@finos/vuu-utils";
+import { VuuSort, VuuSortCol } from "@vuu-ui/vuu-protocol-types";
+import { buildColumnMap } from "@vuu-ui/vuu-utils";
 import { type SortingState } from "@tanstack/react-table";
 import { TableColumnDef } from "./tanstack-table-types";
-import { DataSourceRow as VuuDataSourceRow } from "@finos/vuu-data-types";
+import { DataSourceRow as VuuDataSourceRow } from "@vuu-ui/vuu-data-types";
 import {
   AccessorKeyColumnDef,
   ColumnDef,

@@ -1,5 +1,5 @@
-import { ConnectionManager, VuuDataSource } from "@finos/vuu-data-remote";
-import { DataSourceProvider } from "@finos/vuu-utils";
+import { ConnectionManager, VuuDataSource } from "@vuu-ui/vuu-data-remote";
+import { DataSourceProvider } from "@vuu-ui/vuu-utils";
 import { ReactNode } from "react";
 import { useAutoLoginToVuuServer } from "./useAutoLoginToVuuServer";
 

@@ -8,8 +8,8 @@ import {
   useCallback,
   KeyboardEvent,
 } from "react";
-import { ExpandoInput } from "@finos/vuu-ui-controls";
-import { isValidNumber } from "@finos/vuu-utils";
+import { ExpandoInput } from "@vuu-ui/vuu-ui-controls";
+import { isValidNumber } from "@vuu-ui/vuu-utils";
 import { FilterClauseValueEditor } from "../filterClauseTypes";
 
 export interface FilterClauseNumericValueEditorProps

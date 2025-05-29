@@ -1,9 +1,9 @@
 import { useMemo } from "react";
-import { FilterValueChangeHandler, InlineFilter } from "@finos/vuu-filters";
-import { LocalDataSourceProvider, getSchema } from "@finos/vuu-data-test";
-import { useDataSource } from "@finos/vuu-utils";
-import { TableConfig } from "@finos/vuu-table-types";
-import { Table } from "@finos/vuu-table";
+import { FilterValueChangeHandler, InlineFilter } from "@vuu-ui/vuu-filters";
+import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
+import { useDataSource } from "@vuu-ui/vuu-utils";
+import { TableConfig } from "@vuu-ui/vuu-table-types";
+import { Table } from "@vuu-ui/vuu-table";
 
 const table = { module: "SIMUL", table: "instrumentsExtended" } as const;
 const schema = getSchema("instrumentsExtended");

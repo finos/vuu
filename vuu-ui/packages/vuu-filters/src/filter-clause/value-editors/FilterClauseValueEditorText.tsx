@@ -1,7 +1,7 @@
-import { useTypeaheadSuggestions } from "@finos/vuu-data-react";
-import type { TypeaheadParams } from "@finos/vuu-protocol-types";
-import { ExpandoInput, MultiSelectionHandler } from "@finos/vuu-ui-controls";
-import { CommitHandler, getVuuTable, NO_DATA_MATCH } from "@finos/vuu-utils";
+import { useTypeaheadSuggestions } from "@vuu-ui/vuu-data-react";
+import type { TypeaheadParams } from "@vuu-ui/vuu-protocol-types";
+import { ExpandoInput, MultiSelectionHandler } from "@vuu-ui/vuu-ui-controls";
+import { CommitHandler, getVuuTable, NO_DATA_MATCH } from "@vuu-ui/vuu-utils";
 import { Option } from "@salt-ds/core";
 import {
   FormEvent,

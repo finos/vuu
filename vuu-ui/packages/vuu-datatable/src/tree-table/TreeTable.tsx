@@ -1,14 +1,14 @@
-import { TableProps } from "@finos/vuu-table";
-import { Table } from "@finos/vuu-table";
-import { TreeDataSource } from "@finos/vuu-data-local";
+import { TableProps } from "@vuu-ui/vuu-table";
+import { Table } from "@vuu-ui/vuu-table";
+import { TreeDataSource } from "@vuu-ui/vuu-data-local";
 import { useMemo, useRef } from "react";
-import { TableConfig } from "@finos/vuu-table-types";
+import { TableConfig } from "@vuu-ui/vuu-table-types";
 import {
   isRowSelected,
   metadataKeys,
   type RowToObjectMapper,
   type TreeSourceNode,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 
 const { DEPTH, IS_LEAF, KEY, IDX } = metadataKeys;
 

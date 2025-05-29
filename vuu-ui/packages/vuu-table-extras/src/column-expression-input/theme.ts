@@ -1,4 +1,4 @@
-import { EditorView } from "@finos/vuu-codemirror";
+import { EditorView } from "@vuu-ui/vuu-codemirror";
 
 export const vuuTheme = EditorView.theme(
   {
@@ -54,5 +54,5 @@ export const vuuTheme = EditorView.theme(
       },
     },
   },
-  { dark: false }
+  { dark: false },
 );

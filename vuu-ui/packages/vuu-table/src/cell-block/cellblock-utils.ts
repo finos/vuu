@@ -1,5 +1,5 @@
-import { VuuRange } from "@finos/vuu-protocol-types";
-import { queryClosest } from "@finos/vuu-utils";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
+import { queryClosest } from "@vuu-ui/vuu-utils";
 import {
   getAriaCellPos,
   getAriaColIndex,

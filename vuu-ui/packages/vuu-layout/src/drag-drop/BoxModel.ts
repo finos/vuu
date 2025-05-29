@@ -1,5 +1,5 @@
 import { ReactElement } from "react";
-import { boxContainsPoint, isContainer, LayoutModel } from "@finos/vuu-utils";
+import { boxContainsPoint, isContainer, LayoutModel } from "@vuu-ui/vuu-utils";
 import { getProps, typeOf } from "../utils";
 import { DragDropRect, DropPos, RelativePosition } from "./dragDropTypes";
 
@@ -34,8 +34,8 @@ function _position(str: keyof typeof positionValues) {
       str === "north" || str === "west"
         ? 0
         : str === "south" || str === "east"
-        ? 1
-        : NaN,
+          ? 1
+          : NaN,
     valueOf: function () {
       return positionValues[str];
     },
@@ -73,7 +73,7 @@ export class BoxModel {
   // TODO we will need to make this more flexible e.g allowing drop anywhere within these target
   static measure(
     model: ReactElement,
-    dropTargetPaths: string[] = []
+    dropTargetPaths: string[] = [],
   ): Measurements {
     const measurements: Measurements = {};
     measureRootComponent(model, measurements, dropTargetPaths);
@@ -85,14 +85,14 @@ export class BoxModel {
     measurements: Measurements,
     x: number,
     y: number,
-    validDropTargets?: string[]
+    validDropTargets?: string[],
   ) {
     return allBoxesContainingPoint(
       layout,
       measurements,
       x,
       y,
-      validDropTargets
+      validDropTargets,
     ).reverse();
   }
 }
@@ -101,7 +101,7 @@ export function pointPositionWithinRect(
   x: number,
   y: number,
   rect: DragDropRect,
-  borderZone = 30
+  borderZone = 30,
 ) {
   const width = rect.right - rect.left;
   const height = rect.bottom - rect.top;
@@ -121,7 +121,7 @@ export function getPosition(
   x: number,
   y: number,
   rect: DragDropRect,
-  targetOrientation?: "row" | "column"
+  targetOrientation?: "row" | "column",
 ): DropPos {
   const { BEFORE, AFTER } = RelativeDropPosition;
   const { pctX, pctY, closeToTheEdge } = pointPositionWithinRect(x, y, rect);
@@ -145,7 +145,7 @@ export function getPosition(
       } else {
         //TODO account for gaps between tabs
         const targetTab = rect.Stack.find(
-          ({ left, right }) => x >= left && x <= right
+          ({ left, right }) => x >= left && x <= right,
         );
         if (targetTab) {
           const tabWidth = targetTab.right - targetTab.left;
@@ -194,7 +194,7 @@ function getPositionWithinBox(
   y: number,
   rect: DragDropRect,
   pctX: number,
-  pctY: number
+  pctY: number,
 ) {
   const centerBox = getCenteredBox(rect, 0.2);
   if (boxContainsPoint(centerBox, x, y)) {
@@ -220,7 +220,7 @@ function getPositionWithinBox(
 
 function getCenteredBox(
   { right, left, top, bottom }: DragDropRect,
-  pctSize: number
+  pctSize: number,
 ) {
   const pctOffset = (1 - pctSize) / 2;
   const w = (right - left) * pctOffset;
@@ -231,7 +231,7 @@ function getCenteredBox(
 function measureRootComponent(
   rootComponent: ReactElement,
   measurements: Measurements,
-  dropTargets: string[]
+  dropTargets: string[],
 ) {
   const {
     id,
@@ -253,7 +253,7 @@ function measureComponent(
   component: LayoutModel,
   rect: DragDropRect,
   el: HTMLElement,
-  measurements: Measurements
+  measurements: Measurements,
 ) {
   const {
     "data-path": dataPath,
@@ -277,7 +277,7 @@ function measureComponent(
       };
       if (type === "Stack") {
         measurements[path].Stack = Array.from(
-          headerEl.querySelectorAll(".vuuTab")
+          headerEl.querySelectorAll(".vuuTab"),
         )
           .map((tab) => tab.getBoundingClientRect())
           .map(({ left, right }) => ({ left, right }));
@@ -301,7 +301,7 @@ function collectChildMeasurements(
   preX = 0,
   posX = 0,
   preY = 0,
-  posY = 0
+  posY = 0,
 ) {
   const {
     children,
@@ -338,7 +338,7 @@ function collectChildMeasurements(
         el,
         child,
       ];
-    }
+    },
   );
 
   // ...so that, in the second pass, we can identify gaps ...
@@ -382,7 +382,7 @@ function collectChildMeasurements(
         child,
         rect,
         el,
-        measurements
+        measurements,
       );
 
       const childType = typeOf(child) as string;
@@ -394,11 +394,11 @@ function collectChildMeasurements(
           localPreX,
           localPosX,
           localPreY,
-          localPosY
+          localPosY,
         );
       }
       return componentMeasurements;
-    }
+    },
   );
   if (childMeasurements.length) {
     measurements[path].children = expandedMeasurements;
@@ -417,7 +417,7 @@ function omitDragging(component: ReactElement) {
 }
 
 function measureComponentDomElement(
-  component: LayoutModel
+  component: LayoutModel,
 ): [DragDropRect, HTMLElement, LayoutModel] {
   const { id } = getProps(component) as { id: string };
   if (id === undefined) {
@@ -426,7 +426,7 @@ function measureComponentDomElement(
   const el = document.getElementById(id);
   if (!el) {
     throw Error(
-      "BoxModel.measureComponentElement,  no DOM element found for component"
+      "BoxModel.measureComponentElement,  no DOM element found for component",
     );
   }
   // Note: height and width are not required for dropTarget identification, but
@@ -462,7 +462,7 @@ function allBoxesContainingPoint(
   x: number,
   y: number,
   dropTargets?: string[],
-  boxes: LayoutModel[] = []
+  boxes: LayoutModel[] = [],
 ): LayoutModel[] {
   const {
     children,
@@ -509,7 +509,7 @@ function allBoxesContainingPoint(
       measurements,
       x,
       y,
-      dropTargets
+      dropTargets,
     );
     if (nestedBoxes.length) {
       return boxes.concat(nestedBoxes);
@@ -521,7 +521,7 @@ function allBoxesContainingPoint(
 function scrollIntoViewIfNeccesary(
   { top, bottom, scrolling }: DragDropRect,
   x: number,
-  y: number
+  y: number,
 ) {
   if (scrolling) {
     const { id, scrollTop, scrollHeight } = scrolling;

@@ -2,14 +2,14 @@ import {
   DataSourceRow,
   DataSourceSubscribedMessage,
   SubscribeCallback,
-} from "@finos/vuu-data-types";
-import { VuuRange } from "@finos/vuu-protocol-types";
+} from "@vuu-ui/vuu-data-types";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import {
   getFullRange,
   MovingWindow,
   NULL_RANGE,
   rangesAreSame,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TableProps } from "./Table";
 

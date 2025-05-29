@@ -1,4 +1,4 @@
-import { Filter } from "@finos/vuu-filter-types";
+import { Filter } from "@vuu-ui/vuu-filter-types";
 import { addFilter } from "../filter-utils";
 
 export const isStartsWithValue = (value: string) => /\.\.\.$/.test(value); // Does the value end in elipsis
@@ -6,7 +6,7 @@ export const isStartsWithValue = (value: string) => /\.\.\.$/.test(value); // Do
 export const getTypeaheadFilter = (
   column: string,
   filterValues: string[],
-  isStartsWithFilter?: boolean
+  isStartsWithFilter?: boolean,
 ): Filter | undefined => {
   if (filterValues.length === 0) {
     return undefined;
@@ -32,7 +32,7 @@ export const getTypeaheadFilter = (
 export const getRangeFilter = (
   column: string,
   startValue?: number,
-  endValue?: number
+  endValue?: number,
 ): Filter | undefined => {
   const startFilter: Filter | undefined =
     startValue === undefined

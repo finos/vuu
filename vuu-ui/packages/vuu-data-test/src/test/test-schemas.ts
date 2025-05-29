@@ -1,4 +1,4 @@
-import { TableSchema } from "@finos/vuu-data-types";
+import { TableSchema } from "@vuu-ui/vuu-data-types";
 import { DefaultColumnGenerator } from "../vuu-row-generator";
 
 export type TestTableName = "TwoHundredColumns";

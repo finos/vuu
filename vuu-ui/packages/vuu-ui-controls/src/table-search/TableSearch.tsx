@@ -2,8 +2,8 @@ import {
   Table,
   TableProps,
   useControlledTableNavigation,
-} from "@finos/vuu-table";
-import { registerComponent } from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-table";
+import { registerComponent } from "@vuu-ui/vuu-utils";
 import { Input } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";

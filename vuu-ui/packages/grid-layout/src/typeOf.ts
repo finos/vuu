@@ -1,4 +1,4 @@
-import { LayoutModel, WithType } from "@finos/vuu-utils";
+import { LayoutModel, WithType } from "@vuu-ui/vuu-utils";
 import { ReactElement } from "react";
 import { LayoutJSON } from "./componentToJson";
 

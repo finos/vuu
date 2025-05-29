@@ -1,5 +1,5 @@
-import { DateTimeDataValueDescriptor } from "@finos/vuu-data-types";
-import { FormattingSettingsProps } from "@finos/vuu-table-types";
+import { DateTimeDataValueDescriptor } from "@vuu-ui/vuu-data-types";
+import { FormattingSettingsProps } from "@vuu-ui/vuu-table-types";
 import {
   DatePattern,
   DateTimePattern,
@@ -11,7 +11,7 @@ import {
   isDatePattern,
   isTimePattern,
   supportedDateTimePatterns,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import {
   Dropdown,
   FormField,

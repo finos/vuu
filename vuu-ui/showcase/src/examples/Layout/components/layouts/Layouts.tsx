@@ -1,14 +1,18 @@
-import { FlexboxLayout as Flexbox, Placeholder, View } from "@finos/vuu-layout";
+import {
+  FlexboxLayout as Flexbox,
+  Placeholder,
+  View,
+} from "@vuu-ui/vuu-layout";
 
 const fullFlex = { flexBasis: 1, flexGrow: 1, flexShrink: 1 };
 const noFlex = { flexGrow: 0, flexShrink: 0 };
 
 export const holyGrail = (
-  <Flexbox style={{ flexDirection: "column", ...fullFlex }} path=''>
+  <Flexbox style={{ flexDirection: "column", ...fullFlex }} path="">
     <View data-resizeable style={{ flexBasis: 100, ...noFlex }}>
       <Placeholder />
     </View>
-    <Flexbox style={{ flexDirection: "row", flex: 1 }} path=''>
+    <Flexbox style={{ flexDirection: "row", flex: 1 }} path="">
       <View data-resizeable style={{ flexBasis: 100, ...noFlex }}>
         <Placeholder />
       </View>
@@ -35,31 +39,31 @@ export const responsiveExample = (
       margin: 20,
       backgroundColor: "#ccc",
     }}
-    path=''
+    path=""
   >
     <div data-xs={12} style={{ backgroundColor: "red", height: 150 }} />
-    <Flexbox data-xs={12} cols={12} style={{}} path=''>
+    <Flexbox data-xs={12} cols={12} style={{}} path="">
       <div data-xs={4} style={{ backgroundColor: "green", minHeight: 300 }} />
-      <Flexbox data-xs={8} cols={8} style={{ minHeight: 300 }} path=''>
+      <Flexbox data-xs={8} cols={8} style={{ minHeight: 300 }} path="">
         <div
           data-xs={8}
           style={{ backgroundColor: "rgba(0,0,255,.3)", minHeight: 50 }}
         />
-        <Flexbox data-xs={8} cols={8} style={{}} path=''>
+        <Flexbox data-xs={8} cols={8} style={{}} path="">
           <div
             data-xs={4}
             style={{ backgroundColor: "green", minHeight: 50 }}
           />
           <div data-xs={4} style={{ backgroundColor: "blue" }} />
         </Flexbox>
-        <Flexbox data-xs={8} cols={8} style={{}} path=''>
+        <Flexbox data-xs={8} cols={8} style={{}} path="">
           <div
             data-xs={4}
             style={{ backgroundColor: "green", minHeight: 50 }}
           />
           <div data-xs={4} style={{ backgroundColor: "blue" }} />
         </Flexbox>
-        <Flexbox data-xs={8} cols={8} style={{}} path=''>
+        <Flexbox data-xs={8} cols={8} style={{}} path="">
           <div
             data-xs={4}
             style={{ backgroundColor: "green", minHeight: 50 }}
@@ -72,7 +76,7 @@ export const responsiveExample = (
 );
 
 export const twoRows = (
-  <Flexbox style={{ flexDirection: "column", ...fullFlex }} resizeable path=''>
+  <Flexbox style={{ flexDirection: "column", ...fullFlex }} resizeable path="">
     <View data-resizeable style={{ flex: 1 }}>
       <Placeholder />
     </View>
@@ -83,7 +87,7 @@ export const twoRows = (
 );
 
 export const threeRows = (
-  <Flexbox style={{ flexDirection: "column", ...fullFlex }} resizeable path=''>
+  <Flexbox style={{ flexDirection: "column", ...fullFlex }} resizeable path="">
     <Placeholder data-resizeable style={{ flex: 1 }} />
     <Placeholder data-resizeable style={{ flex: 1 }} />
     <Placeholder data-resizeable style={{ flex: 1 }} />
@@ -91,7 +95,7 @@ export const threeRows = (
 );
 
 export const fourRows = (
-  <Flexbox style={{ flexDirection: "column", ...fullFlex }} resizeable path=''>
+  <Flexbox style={{ flexDirection: "column", ...fullFlex }} resizeable path="">
     <Placeholder data-resizeable style={{ flex: 1 }} />
     <Placeholder data-resizeable style={{ flex: 1 }} />
     <Placeholder data-resizeable style={{ flex: 1 }} />
@@ -100,7 +104,7 @@ export const fourRows = (
 );
 
 export const twoColumns = (
-  <Flexbox style={{ flexDirection: "row", ...fullFlex }} resizeable path=''>
+  <Flexbox style={{ flexDirection: "row", ...fullFlex }} resizeable path="">
     <Placeholder data-resizeable style={{ flex: 1 }} />
     <Placeholder data-resizeable style={{ flex: 1 }} />
   </Flexbox>
@@ -115,7 +119,7 @@ export const threeColumnsContent = (
       flexShrink: 1,
     }}
     resizeable
-    path=''
+    path=""
   >
     <Placeholder
       data-resizeable
@@ -133,7 +137,7 @@ export const threeColumnsContent = (
 );
 
 export const threeRowsContent = (
-  <Flexbox style={{ flexDirection: "column", ...fullFlex }} resizeable path=''>
+  <Flexbox style={{ flexDirection: "column", ...fullFlex }} resizeable path="">
     <Placeholder data-resizeable style={{ flex: 0, minHeight: 30 }} />
     <Placeholder data-resizeable style={{ flex: 0, minHeight: 30 }} />
     <Placeholder data-resizeable style={{ flex: 0, minHeight: 30 }} />
@@ -144,6 +148,6 @@ export const responsive_12_col = (
   <Flexbox
     className="show-grid"
     style={{ flexDirection: "row", ...fullFlex }}
-    path=''
+    path=""
   />
 );

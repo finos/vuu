@@ -1,4 +1,4 @@
-import { LayoutModel, rect } from "@finos/vuu-utils";
+import { LayoutModel, rect } from "@vuu-ui/vuu-utils";
 import { ReactElement } from "react";
 import { findTarget, followPath, getProps } from "../utils";
 import { BoxModel, Measurements } from "./BoxModel";
@@ -10,7 +10,7 @@ import DropTargetRenderer from "./DropTargetRenderer";
 export type DragStartCallback = (e: MouseEvent, x: number, y: number) => void;
 export type DragMoveCallback = (
   x: number | undefined,
-  y: number | undefined
+  y: number | undefined,
 ) => void;
 export type DragEndCallback = (droppedTarget?: Partial<DropTarget>) => void;
 export type DragInstructions = {
@@ -43,7 +43,7 @@ const SCALE_FACTOR = 0.4;
 
 function getDragContainer(
   rootContainer: ReactElement,
-  dragContainerPath: string
+  dragContainerPath: string,
 ) {
   if (dragContainerPath) {
     return followPath(rootContainer, dragContainerPath) as ReactElement;
@@ -51,7 +51,7 @@ function getDragContainer(
     return findTarget(
       rootContainer,
       // TODO dropTarget is not good
-      (props) => props.dropTarget
+      (props) => props.dropTarget,
     ) as ReactElement;
   }
 }
@@ -60,7 +60,7 @@ export const Draggable = {
   handleMousedown(
     e: MouseEvent,
     dragStartCallback: DragStartCallback,
-    dragInstructions: DragInstructions = {}
+    dragInstructions: DragInstructions = {},
   ) {
     _dragStartCallback = dragStartCallback;
     _dragInstructions = dragInstructions;
@@ -101,7 +101,7 @@ export const Draggable = {
       drop: DragEndCallback;
     },
     intrinsicSize?: IntrinsicSizes,
-    dropTargets?: string[]
+    dropTargets?: string[],
   ) {
     ({ drag: _dragMoveCallback, drop: _dragEndCallback } = dragHandler);
     return initDrag(
@@ -110,7 +110,7 @@ export const Draggable = {
       { top, left, right, bottom } as DragDropRect,
       dragPos,
       intrinsicSize,
-      dropTargets
+      dropTargets,
     );
   },
 };
@@ -148,7 +148,7 @@ function initDrag(
   dragRect: DragDropRect,
   dragPos: { x: number; y: number },
   intrinsicSize?: IntrinsicSizes,
-  dropTargets?: string[]
+  dropTargets?: string[],
 ) {
   _dragContainer = getDragContainer(rootContainer, dragContainerPath);
 
@@ -177,7 +177,7 @@ function initDrag(
     dragPos.x,
     dragPos.y,
     dragRect,
-    intrinsicSize
+    intrinsicSize,
   );
 
   const pctX = Math.round(_dragState.x.mousePct * 100);
@@ -230,14 +230,14 @@ function dragMousemoveHandler(evt: MouseEvent) {
       _dragContainer,
       _measurements,
       dragState.hasIntrinsicSize(),
-      _validDropTargetPaths
+      _validDropTargetPaths,
     );
   } else {
     dropTarget = identifyDropTarget(
       dragState.dropX(),
       dragState.dropY(),
       _dragContainer,
-      _measurements
+      _measurements,
     );
   }
 

@@ -2,8 +2,8 @@ import {
   ContextMenuItemDescriptor,
   MenuActionHandler,
   MenuBuilder,
-} from "@finos/vuu-data-types";
-import { Flexbox } from "@finos/vuu-layout";
+} from "@vuu-ui/vuu-data-types";
+import { Flexbox } from "@vuu-ui/vuu-layout";
 import {
   ContextMenu,
   ContextMenuProps,
@@ -14,7 +14,7 @@ import {
   reasonIsMenuAction,
   Separator,
   useContextMenu,
-} from "@finos/vuu-popups";
+} from "@vuu-ui/vuu-popups";
 
 import { Button } from "@salt-ds/core";
 

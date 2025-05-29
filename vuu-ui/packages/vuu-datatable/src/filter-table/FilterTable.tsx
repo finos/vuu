@@ -1,5 +1,5 @@
-import { FilterBar, FilterBarProps } from "@finos/vuu-filters";
-import { Table, TableProps } from "@finos/vuu-table";
+import { FilterBar, FilterBarProps } from "@vuu-ui/vuu-filters";
+import { Table, TableProps } from "@vuu-ui/vuu-table";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";

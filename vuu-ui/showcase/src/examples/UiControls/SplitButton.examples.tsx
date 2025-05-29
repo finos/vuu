@@ -2,10 +2,10 @@ import {
   SplitButton,
   SplitButtonProps,
   SplitStateButton,
-} from "@finos/vuu-ui-controls";
-import { MenuActionHandler, MenuBuilder } from "@finos/vuu-data-types";
+} from "@vuu-ui/vuu-ui-controls";
+import { MenuActionHandler, MenuBuilder } from "@vuu-ui/vuu-data-types";
 import { useCallback, useMemo, useState } from "react";
-import { PopupMenuProps } from "@finos/vuu-popups";
+import { PopupMenuProps } from "@vuu-ui/vuu-popups";
 
 const menuBuilder: MenuBuilder = (_, options) => [
   { action: "and-clause", label: "AND", options },

@@ -1,5 +1,5 @@
-import { ConnectionManager } from "@finos/vuu-data-remote";
-import type { WebSocketConnectionState } from "@finos/vuu-data-remote/src/WebSocketConnection";
+import { ConnectionManager } from "@vuu-ui/vuu-data-remote";
+import type { WebSocketConnectionState } from "@vuu-ui/vuu-data-remote/src/WebSocketConnection";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, useMemo, useState } from "react";

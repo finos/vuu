@@ -8,7 +8,7 @@ import {
 } from "react";
 import { hasPopup, isRoot } from "./utils";
 import { isNavigationKey } from "./key-code";
-import { isValidNumber } from "@finos/vuu-utils";
+import { isValidNumber } from "@vuu-ui/vuu-utils";
 import { MenuOpenHandler } from "./MenuList";
 
 export type MenuCloseReason = "tab-away" | "close-child-menu";

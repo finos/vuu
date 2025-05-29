@@ -1,11 +1,11 @@
-import { useTypeaheadSuggestions } from "@finos/vuu-data-react";
-import type { TypeaheadParams } from "@finos/vuu-protocol-types";
+import { useTypeaheadSuggestions } from "@vuu-ui/vuu-data-react";
+import type { TypeaheadParams } from "@vuu-ui/vuu-protocol-types";
 import {
   dispatchKeyboardEvent,
   getVuuTable,
   useStateRef,
   NO_DATA_MATCH,
-} from "@finos/vuu-utils";
+} from "@vuu-ui/vuu-utils";
 import {
   ComponentPropsWithoutRef,
   KeyboardEventHandler,
