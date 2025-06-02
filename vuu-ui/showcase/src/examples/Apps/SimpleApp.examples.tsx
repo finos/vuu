@@ -43,7 +43,7 @@ export const SimpleApp = () => {
   const filterBarProps: FilterBarProps = {
     columnDescriptors: schema.columns,
     onApplyFilter: handleApplyFilter,
-    tableSchema: schema,
+    vuuTable: schema.table,
   };
   const tableProps2 = useMemo<Pick<TableProps, "config" | "dataSource">>(
     () => ({

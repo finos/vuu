@@ -20,7 +20,7 @@ export interface CustomFilterProps
       | "onFilterDeleted"
       | "onFilterRenamed"
       | "onFilterStateChanged"
-      | "tableSchema"
+      | "vuuTable"
     > {
   columnDescriptors: ColumnDescriptor[];
 }
@@ -33,7 +33,7 @@ export const CustomFilters = ({
   onFilterDeleted,
   onFilterRenamed,
   onFilterStateChanged,
-  tableSchema,
+  vuuTable,
 }: CustomFilterProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -110,14 +110,14 @@ export const CustomFilters = ({
           />
         ) : null}
       </div>
-      {filterModel && tableSchema && (
+      {filterModel && vuuTable && (
         <FilterEditor
           columnDescriptors={columnDescriptors}
           key="filter-editor"
           onCancel={onCancelEdit}
           onSave={onSave}
           filter={interactedFilterState?.filter}
-          tableSchema={tableSchema}
+          vuuTable={vuuTable}
         />
       )}
     </>

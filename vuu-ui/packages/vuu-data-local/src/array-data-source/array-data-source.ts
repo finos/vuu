@@ -634,6 +634,7 @@ export class ArrayDataSource
       if (newPageCount !== currentPageCount) {
         this.emit("page-count", newPageCount);
       }
+      this.emit("range", range);
     } else if (forceFullRefresh) {
       this.sendRowsToClient(forceFullRefresh);
     }

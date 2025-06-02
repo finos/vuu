@@ -1,19 +1,19 @@
-import type { TableSchema } from "@vuu-ui/vuu-data-types";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import {
   ColumnDescriptorsByName,
   MultiValueFilterClause,
   SingleValueFilterClause,
 } from "@vuu-ui/vuu-filter-types";
 import { CloseReason } from "@vuu-ui/vuu-ui-controls";
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { HTMLAttributes, useMemo } from "react";
 import { FilterClauseModel } from "../FilterModel";
+import { ColumnPicker } from "./ColumnPicker";
 import { useFilterClause } from "./useFilterClause";
 import { FilterClauseValueEditor } from "./value-editors/FilterClauseValueEditor";
-import { ColumnPicker } from "./ColumnPicker";
 
+import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import filterClauseCss from "./FilterClause.css";
 import { OperatorPicker } from "./OperatorPicker";
 
@@ -31,7 +31,7 @@ export interface FilterClauseProps
   onDropdownClose?: (closeReason: CloseReason) => void;
   onDropdownOpen?: () => void;
   onFocusSave?: () => void;
-  tableSchema: TableSchema;
+  vuuTable: VuuTable;
 }
 
 const classBase = "vuuFilterClause";
@@ -44,7 +44,7 @@ export const FilterClause = ({
   onDropdownOpen,
   onFocusSave,
   filterClauseModel,
-  tableSchema,
+  vuuTable,
   ...htmlAttributes
 }: FilterClauseProps) => {
   const {
@@ -107,7 +107,7 @@ export const FilterClause = ({
           operator={filterClauseModel.op}
           ref={valueRef}
           selectedColumn={selectedColumn}
-          table={tableSchema.table}
+          table={vuuTable}
           value={
             (filterClause as MultiValueFilterClause)?.values ??
             (filterClause as SingleValueFilterClause)?.value

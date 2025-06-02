@@ -23,7 +23,7 @@ const FilterClauseTemplate = ({
         columnsByName={columnsByName}
         data-testid="filterclause"
         filterClauseModel={filterClauseModel}
-        tableSchema={tableSchema}
+        vuuTable={tableSchema.table}
       />
     </div>
   );

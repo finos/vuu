@@ -8,6 +8,8 @@ import { FilterBarProps } from "@vuu-ui/vuu-filters";
 import { FilterState } from "@vuu-ui/vuu-filter-types";
 import { DataSourceFilter } from "@vuu-ui/vuu-data-types";
 
+const instrumentsSchema = getSchema("instruments");
+
 const FilterTableTemplate = ({
   quickFilterColumns,
   TableProps,
@@ -64,7 +66,7 @@ const FilterTableTemplate = ({
     filterState,
     onApplyFilter: handleApplyFilter,
     onFilterStateChanged: handleFilterStateChange,
-    tableSchema: getSchema("instruments"),
+    vuuTable: instrumentsSchema.table,
     variant,
   };
 

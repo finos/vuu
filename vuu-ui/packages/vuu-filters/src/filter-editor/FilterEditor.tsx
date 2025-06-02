@@ -1,4 +1,3 @@
-import { TableSchema } from "@vuu-ui/vuu-data-types";
 import type { Filter } from "@vuu-ui/vuu-filter-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { SplitButton } from "@vuu-ui/vuu-ui-controls";
@@ -12,6 +11,7 @@ import { FilterClauseCombinator } from "./FilterClauseCombinator";
 import { useFilterEditor } from "./useFilterEditor";
 
 import filterEditorCss from "./FilterEditor.css";
+import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 
 const classBase = "vuuFilterEditor";
 
@@ -23,7 +23,7 @@ export interface FilterEditorProps extends HTMLAttributes<HTMLDivElement> {
   filter?: Filter;
   onCancel: FilterEditCancelHandler;
   onSave: FilterEditSaveHandler;
-  tableSchema: TableSchema;
+  vuuTable: VuuTable;
 }
 
 export const FilterEditor = ({
@@ -31,7 +31,7 @@ export const FilterEditor = ({
   filter,
   onCancel,
   onSave,
-  tableSchema,
+  vuuTable,
   ...htmlAttributes
 }: FilterEditorProps) => {
   const targetWindow = useWindow();
@@ -82,7 +82,7 @@ export const FilterEditor = ({
           key={`editor-${i}`}
           onCancel={onCancelFilterClause}
           onFocusSave={focusSaveButton}
-          tableSchema={tableSchema}
+          vuuTable={vuuTable}
         />,
       );
     });

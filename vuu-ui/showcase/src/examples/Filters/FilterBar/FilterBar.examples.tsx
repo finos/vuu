@@ -10,7 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
-import type { DataSourceFilter, SchemaColumn } from "@vuu-ui/vuu-data-types";
+import type { DataSourceFilter } from "@vuu-ui/vuu-data-types";
 import { Input, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
@@ -107,7 +107,7 @@ const DefaultFilterBarCore = ({
         onFilterDeleted={handleFilterDeleted}
         onFilterRenamed={handleFilterRenamed}
         onFilterStateChanged={handleFilterStateChange}
-        tableSchema={{ ...tableSchema, columns: columns as SchemaColumn[] }}
+        vuuTable={tableSchema.table}
         variant={variant}
       />
     </FilterContainer>
