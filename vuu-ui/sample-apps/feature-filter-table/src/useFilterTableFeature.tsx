@@ -140,7 +140,6 @@ export const useFilterTableFeature = ({
     onFilterDeleted,
     onFilterRenamed,
     onFilterStateChanged,
-    suggestionProvider,
     tableSchema,
     variant: "full-filters",
   };

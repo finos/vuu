@@ -1,8 +1,4 @@
-import {
-  DataSourceFilter,
-  SuggestionProvider,
-  TableSchema,
-} from "@vuu-ui/vuu-data-types";
+import { DataSourceFilter, TableSchema } from "@vuu-ui/vuu-data-types";
 import { Filter, FilterState } from "@vuu-ui/vuu-filter-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
@@ -42,7 +38,6 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   onFilterDeleted?: (filter: Filter) => void;
   onFilterRenamed?: (filter: Filter, name: string) => void;
   onFilterStateChanged?: (state: FilterState) => void;
-  suggestionProvider?: SuggestionProvider;
   /**
    * TableSchema is used both to populate list of available columns and to
    * provide table in call to Typeahead service
@@ -66,7 +61,6 @@ export const FilterBar = ({
   onFilterDeleted,
   onFilterRenamed,
   onFilterStateChanged,
-  suggestionProvider,
   tableSchema,
   variant = "custom-filters-only",
   ...htmlAttributes
