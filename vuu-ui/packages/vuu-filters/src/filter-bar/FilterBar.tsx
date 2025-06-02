@@ -1,8 +1,4 @@
-import {
-  DataSourceFilter,
-  SuggestionProvider,
-  TableSchema,
-} from "@vuu-ui/vuu-data-types";
+import { DataSourceFilter } from "@vuu-ui/vuu-data-types";
 import { Filter, FilterState } from "@vuu-ui/vuu-filter-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
@@ -16,6 +12,7 @@ import { QuickFilterProps, QuickFilters } from "../quick-filters";
 import { FilterMode, useFilterBar } from "./useFilterBar";
 
 import filterBarCss from "./FilterBar.css";
+import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 
 export type FilterBarVariant =
   | "custom-filters-only"
@@ -28,9 +25,10 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
     "quickFilterColumns" | "onChangeQuickFilterColumns"
   >;
   /**
-   * This is used to apply tailored filters based on column types and other attributes.
-   * NOTE: Always make sure that these are passed with proper re-render optimization, otherwise,
-   *       might end up with infinite state updates.
+   * Used to ensure we present filter editors appropriate to the data type of column.
+   * NOTE: Always make sure that these are passed with proper re-render optimization (i.e make
+   * sure its a stable reference, in React terminology), otherwise might end up with infinite
+   * state updates.
    */
   columnDescriptors: ColumnDescriptor[];
   defaultFilterMode?: FilterMode;
@@ -42,12 +40,10 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   onFilterDeleted?: (filter: Filter) => void;
   onFilterRenamed?: (filter: Filter, name: string) => void;
   onFilterStateChanged?: (state: FilterState) => void;
-  suggestionProvider?: SuggestionProvider;
   /**
-   * TableSchema is used both to populate list of available columns and to
-   * provide table in call to Typeahead service
+   * Defines table used in call to Vuu Typeahead service
    */
-  tableSchema?: TableSchema;
+  vuuTable?: VuuTable;
   variant?: FilterBarVariant;
 }
 
@@ -66,8 +62,7 @@ export const FilterBar = ({
   onFilterDeleted,
   onFilterRenamed,
   onFilterStateChanged,
-  suggestionProvider,
-  tableSchema,
+  vuuTable,
   variant = "custom-filters-only",
   ...htmlAttributes
 }: FilterBarProps) => {
@@ -145,14 +140,14 @@ export const FilterBar = ({
           onFilterDeleted={onFilterDeleted}
           onFilterRenamed={onFilterRenamed}
           onFilterStateChanged={onFilterStateChanged}
-          tableSchema={tableSchema}
+          vuuTable={vuuTable}
         />
       ) : (
         <QuickFilters
           {...QuickFilterProps}
           availableColumns={columnDescriptors}
           onApplyFilter={onApplyFilter}
-          tableSchema={tableSchema}
+          vuuTable={vuuTable}
         />
       )}
     </div>

@@ -6,19 +6,15 @@ import {
 import {
   DataSourceVisualLinkCreatedMessage,
   SchemaColumn,
-  SuggestionFetcher,
-  TypeaheadSuggestionProvider,
 } from "@vuu-ui/vuu-data-types";
 import { usePersistFilterState } from "@vuu-ui/vuu-datatable";
 import { FilterBarProps, QuickFilterProps } from "@vuu-ui/vuu-filters";
 import { useViewContext } from "@vuu-ui/vuu-layout";
-import { TypeaheadParams } from "@vuu-ui/vuu-protocol-types";
 import { useShellContext } from "@vuu-ui/vuu-utils";
 import { TableConfig, TableConfigChangeHandler } from "@vuu-ui/vuu-table-types";
 import {
   FilterTableFeatureProps,
   applyDefaultColumnConfig,
-  isTypeaheadSuggestionProvider,
 } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FilterMode } from "@vuu-ui/vuu-filters/src/filter-bar/useFilterBar";
@@ -67,21 +63,6 @@ export const useFilterTableFeature = ({
   const dataSource = useSessionDataSource({ tableSchema });
 
   useVisualLinks(dataSource);
-
-  const getSuggestions = useCallback<SuggestionFetcher>(
-    ([, column, pattern]: TypeaheadParams) =>
-      (dataSource as TypeaheadSuggestionProvider).getTypeaheadSuggestions(
-        column,
-        pattern,
-      ),
-    [dataSource],
-  );
-
-  const suggestionProvider = useMemo(() => {
-    if (isTypeaheadSuggestionProvider(dataSource)) {
-      return () => getSuggestions;
-    }
-  }, [dataSource, getSuggestions]);
 
   const handleAvailableColumnsChange = useCallback(
     (columns: SchemaColumn[]) => {
@@ -140,8 +121,7 @@ export const useFilterTableFeature = ({
     onFilterDeleted,
     onFilterRenamed,
     onFilterStateChanged,
-    suggestionProvider,
-    tableSchema,
+    vuuTable: tableSchema.table,
     variant: "full-filters",
   };
 

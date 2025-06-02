@@ -171,7 +171,7 @@ export const useDataSource = ({
         // message that has nothing to do with the dataSource itself. Client
         // is the DataSourceState component.
         // WHY CANT THIS BE DONE WITHIN DataSource ?
-        dataSource.emit("range", range);
+        // dataSource.emit("range", range);
       }
     },
     [

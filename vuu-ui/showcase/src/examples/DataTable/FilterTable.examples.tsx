@@ -59,7 +59,7 @@ const FilterTableTemplate = ({
     onApplyFilter: handleApplyFilter,
     onFilterStateChanged: handleFilterStateChange,
     QuickFilterProps,
-    tableSchema,
+    vuuTable: tableSchema.table,
     variant,
   };
 

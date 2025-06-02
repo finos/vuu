@@ -6,13 +6,15 @@ import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
 import { useViewContext, View } from "@vuu-ui/vuu-layout";
 import { setPersistentState } from "@vuu-ui/vuu-layout";
 
+const instrumentsSchema = getSchema("instruments");
+
 const QuickFiltersTemplate = ({
   allowAddColumn,
   allowFind,
   onApplyFilter,
   quickFilterColumns: quickFilterColumnsProp = [],
-  tableSchema = getSchema("instruments"),
-  availableColumns = tableSchema?.columns,
+  vuuTable = instrumentsSchema.table,
+  availableColumns = instrumentsSchema?.columns,
 }: Partial<QuickFilterProps>) => {
   const initialColumns = useMemo(() => {
     return quickFilterColumnsProp;
@@ -43,7 +45,7 @@ const QuickFiltersTemplate = ({
       onApplyFilter={handleApplyFilter}
       onChangeQuickFilterColumns={handleChangeQuickFilterColumns}
       quickFilterColumns={quickFilterColumns}
-      tableSchema={tableSchema}
+      vuuTable={vuuTable}
     />
   );
 };

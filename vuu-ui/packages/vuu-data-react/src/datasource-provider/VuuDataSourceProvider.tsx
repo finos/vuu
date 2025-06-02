@@ -7,17 +7,20 @@ const getServerAPI = () => ConnectionManager.serverAPI;
 
 export const VuuDataSourceProvider = ({
   authenticate,
+  autoConnect = false,
   autoLogin = false,
   children,
   websocketUrl,
 }: {
   authenticate?: boolean;
+  autoConnect?: boolean;
   autoLogin?: boolean;
   children: ReactNode;
   websocketUrl?: string;
 }) => {
   useAutoLoginToVuuServer({
     authenticate,
+    autoConnect,
     autoLogin,
     websocketUrl,
   });

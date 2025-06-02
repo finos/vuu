@@ -222,6 +222,8 @@ export abstract class BaseDataSource
       this.pageCount = Math.ceil(this._size / (range.to - range.from));
 
       this.rangeRequest(range);
+
+      this.emit("range", range);
     }
   }
 

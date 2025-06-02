@@ -1,5 +1,5 @@
 import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
-import type { SchemaColumn, TableSchema } from "@vuu-ui/vuu-data-types";
+import type { SchemaColumn } from "@vuu-ui/vuu-data-types";
 import type { Filter } from "@vuu-ui/vuu-filter-types";
 import {
   FilterEditCancelHandler,
@@ -10,10 +10,11 @@ import {
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { useCallback, useMemo } from "react";
 
+const instrumentsSchema = getSchema("instruments");
+
 const FilterEditorTemplate = ({
   onSave: onSaveProp,
-  tableSchema = getSchema("instruments"),
-  columnDescriptors = tableSchema.columns,
+  columnDescriptors = instrumentsSchema.columns,
   ...props
 }: Partial<FilterEditorProps>) => {
   const onCancel = useCallback<FilterEditCancelHandler>(() => {
@@ -43,7 +44,7 @@ const FilterEditorTemplate = ({
       onCancel={onCancel}
       onSave={onSave}
       style={style}
-      tableSchema={tableSchema}
+      vuuTable={instrumentsSchema.table}
     />
   );
 };
@@ -55,9 +56,7 @@ export const NewFilter = (props: Partial<FilterEditorProps>) => (
 );
 
 export const NewFilterDateColumns = (props: Partial<FilterEditorProps>) => {
-  const [tableSchema, columnDescriptors] = useMemo<
-    [TableSchema, ColumnDescriptor[]]
-  >(() => {
+  const columnDescriptors = useMemo<ColumnDescriptor[]>(() => {
     const columns: SchemaColumn[] = [
       {
         name: "tradeDate",
@@ -69,15 +68,10 @@ export const NewFilterDateColumns = (props: Partial<FilterEditorProps>) => {
       },
     ];
 
-    return [
-      {
-        columns,
-        key: "id",
-        table: { table: "Test", module: "test" },
-      },
-
-      columns.map<ColumnDescriptor>((col) => ({ ...col, type: "date/time" })),
-    ];
+    return columns.map<ColumnDescriptor>((col) => ({
+      ...col,
+      type: "date/time",
+    }));
   }, []);
 
   return (
@@ -85,7 +79,7 @@ export const NewFilterDateColumns = (props: Partial<FilterEditorProps>) => {
       <FilterEditorTemplate
         {...props}
         columnDescriptors={columnDescriptors}
-        tableSchema={tableSchema}
+        vuuTable={instrumentsSchema.table}
       />
     </LocalDataSourceProvider>
   );

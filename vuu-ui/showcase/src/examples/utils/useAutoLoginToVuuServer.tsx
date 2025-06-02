@@ -6,10 +6,12 @@ import { useEffect, useState } from "react";
 
 export const useAutoLoginToVuuServer = ({
   authenticate = true,
+  autoConnect = true,
   autoLogin = true,
   secure = true,
 }: {
   authenticate?: boolean;
+  autoConnect?: boolean;
   autoLogin?: boolean;
   secure?: boolean;
 } = {}) => {
@@ -38,10 +40,10 @@ export const useAutoLoginToVuuServer = ({
         }
       }
     };
-    if (autoLogin) {
+    if (autoConnect && autoLogin) {
       connect();
     }
-  }, [authenticate, autoLogin, secure]);
+  }, [authenticate, autoConnect, autoLogin, secure]);
 
   if (errorMessage) {
     return (
