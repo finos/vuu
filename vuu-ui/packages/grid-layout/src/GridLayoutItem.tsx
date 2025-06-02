@@ -1,6 +1,6 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { queryClosest } from "@vuu-ui/vuu-utils";
+import { queryClosest, registerComponent } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import {
   createElement,
@@ -207,7 +207,14 @@ export const isGridLayoutItem = (element: ReactElement) =>
 GridLayoutItem.toJSON = (
   element: ReactElement<GridLayoutItemProps, typeof GridLayoutItemType>,
 ) => {
-  const { children } = element.props;
+  let { children } = element.props;
+  if (Array.isArray(children)) {
+    if (children.length > 1) {
+      throw Error(`[GridLayoutItem] cannot have more than one child element`);
+    }
+    // Only happens when reconstitured from JSON
+    [children] = children;
+  }
   if (isValidElement(children)) {
     const child = componentToJson(children);
     return {
@@ -217,3 +224,5 @@ GridLayoutItem.toJSON = (
     throw Error("[GridLayoutItem] children is not a react element");
   }
 };
+
+registerComponent("GridLayoutItem", GridLayoutItem, "component");

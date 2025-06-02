@@ -149,7 +149,7 @@ export const GridLayoutProvider = (
             const { gridArea, ...props } = gridItem;
             map[id] = (
               <GridLayoutItem {...props} id={id} key={id} style={{ gridArea }}>
-                {layoutFromJson(layoutJSON, "")}
+                {layoutFromJson(layoutJSON)}
               </GridLayoutItem>
             );
             return map;

@@ -26,7 +26,7 @@ export const useEditTabName = ({
         if (componentTemplate) {
           dispatch({
             title,
-            type: "add-child",
+            type: "add-tabbed-child",
             componentTemplate,
             stackId: id,
           });

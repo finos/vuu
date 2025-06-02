@@ -142,6 +142,8 @@ export const useAsDropTarget = () => {
   const dragContext = useDragContext();
   const layoutId = useGridLayoutId();
 
+  console.log(`[GridLayout:useAsDropTarget] #${layoutId}`);
+
   const onDragEnter = useCallback<DragEventHandler>(
     (evt) => {
       if (dragContext.dragSource === undefined) {
