@@ -155,7 +155,7 @@ export const GridLayoutFromJSON = () => {
   );
 
   const gridLayout = useMemo(() => {
-    return layoutFromJson(layoutJson, "0");
+    return layoutFromJson(layoutJson);
   }, [layoutJson]);
 
   return gridLayout;

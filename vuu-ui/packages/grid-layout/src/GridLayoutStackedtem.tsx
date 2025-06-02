@@ -29,7 +29,7 @@ const classBaseItem = "vuuGridLayoutStackedItem";
 
 export interface GridLayoutStackedItemProps extends GridLayoutItemProps {
   allowAddTab?: boolean;
-  getNewComponent?: () => ComponentTemplate;
+  getNewComponent?: () => Omit<ComponentTemplate, "label">;
   showMenu?: boolean;
 }
 
@@ -140,17 +140,19 @@ export const GridLayoutStackedItem = ({
                 </TabNext>
               ))}
             </TabListNext>
-            <IconButton
-              aria-label="Create Tab"
-              className={`${classBaseItem}-addTabButton`}
-              data-embedded
-              icon="add"
-              data-overflow-priority="1"
-              key="addButton"
-              onClick={handleClickAddTab}
-              variant="secondary"
-              tabIndex={-1}
-            />
+            {allowAddTab ? (
+              <IconButton
+                aria-label="Create Tab"
+                className={`${classBaseItem}-addTabButton`}
+                data-embedded
+                icon="add"
+                data-overflow-priority="1"
+                key="addButton"
+                onClick={handleClickAddTab}
+                variant="secondary"
+                tabIndex={-1}
+              />
+            ) : null}
           </TabBar>
         </TabsNext>
       </div>

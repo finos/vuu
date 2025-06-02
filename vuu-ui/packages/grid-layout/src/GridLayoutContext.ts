@@ -18,11 +18,11 @@ export type GridLayoutRenameTabAction = {
   title: string;
 };
 
-export type GridLayoutAddChildAction = {
+export type GridLayoutAddTabbedChildAction = {
   title: string;
-  type: "add-child";
+  type: "add-tabbed-child";
   componentTemplate: ComponentTemplate;
-  stackId?: string;
+  stackId: string;
 };
 
 //TODO is it used ?
@@ -48,7 +48,7 @@ export type GridLayoutTrackAction = {
 export type GridLayoutAction =
   | GridLayoutCloseAction
   // | GridLayoutInsertTabAction
-  | GridLayoutAddChildAction
+  | GridLayoutAddTabbedChildAction
   | GridLayoutSwitchTabAction
   | GridLayoutTrackAction
   | GridLayoutRenameTabAction;
@@ -86,7 +86,19 @@ export interface ComponentDragSource {
 }
 
 export interface ComponentTemplate {
+  /**
+   * Stringified JSON - the serialized layoutJSON from which
+   * component can be reconstituted
+   */
   componentJson: string;
+  /**
+   * Can the component act as a drop target. Note: false does not
+   * preclude children of the component from acting as drop targets.
+   */
+  dropTarget?: boolean;
+  /**
+   * Primarily intended for display in Palette etc.
+   */
   label: string;
 }
 

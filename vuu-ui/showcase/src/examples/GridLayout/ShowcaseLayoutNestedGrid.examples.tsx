@@ -1,14 +1,26 @@
-import { useCallback, useMemo } from "react";
+import { HTMLAttributes, useCallback, useMemo } from "react";
 import { GridPalette, GridPaletteItem } from "../html/components/GridPalette";
 import {
+  ComponentTemplate,
   GridLayout,
   GridLayoutChangeHandler,
   GridLayoutItem,
   GridLayoutProvider,
+  GridLayoutStackedItem,
+  GridPlaceholder,
 } from "@heswell/grid-layout";
 import { DebugGridItem } from "../html/components/DebugGridItem";
 
 import "./GridLayout.examples.css";
+import { componentToJson } from "@vuu-ui/vuu-layout";
+import { uuid } from "@vuu-ui/vuu-utils";
+
+const AppHeader = (props: HTMLAttributes<HTMLDivElement>) => {
+  return <div {...props}>AppHeader</div>;
+};
+const Toolbar = (props: HTMLAttributes<HTMLDivElement>) => {
+  return <div {...props}>Toolbar</div>;
+};
 
 export const ShowCaseLayoutNestedGrid = () => {
   const paletteItems = useMemo<GridPaletteItem[]>(
@@ -60,6 +72,28 @@ export const ShowCaseLayoutNestedGrid = () => {
     // });
   }, []);
 
+  const getNewComponent = (): Omit<ComponentTemplate, "label"> => {
+    return {
+      componentJson: JSON.stringify(
+        componentToJson(
+          <GridLayout colsAndRows={{ cols: ["1fr"], rows: ["1fr"] }}>
+            <GridLayoutItem
+              data-drop-target
+              header
+              id={uuid()}
+              resizeable="hv"
+              style={{ gridArea: "1/1/2/2" }}
+              title="Brown"
+            >
+              <GridPlaceholder style={{ inset: 0, position: "absolute" }} />
+            </GridLayoutItem>
+          </GridLayout>,
+        ),
+      ),
+      dropTarget: false,
+    };
+  };
+
   return (
     <>
       <div id="dragImage" style={{ position: "absolute", left: 0 }}></div>
@@ -68,7 +102,7 @@ export const ShowCaseLayoutNestedGrid = () => {
           full-page
           id="showcase"
           colsAndRows={{
-            cols: ["200px", "1fr", "200px"],
+            cols: ["200px", "1fr", "80px"],
             rows: ["48px", "40px", "1fr"],
           }}
           onChange={handleGridLayoutChanged}
@@ -79,7 +113,7 @@ export const ShowCaseLayoutNestedGrid = () => {
               gridArea: "1/1/2/4",
             }}
           >
-            <div style={{ background: "yellow" }}>AppHeader</div>
+            <AppHeader style={{ background: "yellow" }} />
           </GridLayoutItem>
           <GridLayoutItem
             id="palette"
@@ -98,8 +132,15 @@ export const ShowCaseLayoutNestedGrid = () => {
               gridArea: "2/2/3/3",
             }}
           >
-            <div style={{ background: "brown", color: "white" }}>Toolbar</div>
+            <Toolbar style={{ background: "brown", color: "white" }} />
           </GridLayoutItem>
+          <GridLayoutStackedItem
+            id="main-tabs"
+            style={{ gridArea: "3/2/4/3" }}
+            allowAddTab
+            getNewComponent={getNewComponent}
+            showMenu
+          />
 
           <GridLayoutItem
             id="LayoutBrown"

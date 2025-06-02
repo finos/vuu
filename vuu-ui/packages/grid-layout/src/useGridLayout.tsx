@@ -433,7 +433,7 @@ export const useGridLayout = ({
         });
         gridModel.addChildItem(gridModelChildItem);
 
-        const component = layoutFromJson(restJSON as LayoutJSON, "");
+        const component = layoutFromJson(restJSON as LayoutJSON);
         if (position === "centre") {
           const newGridItem = gridLayoutModel.dropReplaceGridItem(
             gridModelChildItem.id,
@@ -626,31 +626,34 @@ export const useGridLayout = ({
         case "rename-tab":
           gridModel.updateChildTitle(action.id, action.title);
           break;
-        case "add-child":
+        case "add-tabbed-child":
           {
             const { componentTemplate, title, stackId } = action;
-            const componentJSON = JSON.parse(componentTemplate.componentJson);
+            const { componentJson, dropTarget = true } = componentTemplate;
+            const componentJSON = JSON.parse(componentJson);
+            const { column, row } = gridModel.getChildItem(stackId, true);
 
             const newChildId = uuid();
             const gridModelChildItem = new GridModelChildItem({
               id: newChildId,
-              column: { start: 1, end: 1 },
-              dropTarget: true,
+              column,
+              dropTarget: dropTarget || undefined,
               header: layoutOptions?.newChildItem.header,
               resizeable: "hv",
-              row: { start: 1, end: 1 },
+              row,
               stackId,
               title: title ?? componentTemplate.label ?? "New Item",
             });
             gridModel.addChildItem(gridModelChildItem);
 
-            const component = layoutFromJson(componentJSON as LayoutJSON, "");
+            const component = layoutFromJson({
+              ...componentJSON,
+              title,
+            } as LayoutJSON);
             addChildComponent(component, gridModelChildItem);
 
-            if (stackId) {
-              const tabState = gridModel.getTabState(stackId);
-              tabState.setActiveTab(title ?? gridModelChildItem.title);
-            }
+            const tabState = gridModel.getTabState(stackId);
+            tabState.setActiveTab(title ?? gridModelChildItem.title);
           }
           break;
         case "resize-grid-column":
