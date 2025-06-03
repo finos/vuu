@@ -2,9 +2,12 @@ import { getSchema, vuuModule } from "@vuu-ui/vuu-data-test";
 import { FlexboxLayout, LayoutProvider, View } from "@vuu-ui/vuu-layout";
 import { TableColumnDef, TanstackTable } from "@vuu-ui/vuu-tanstack-table";
 import { toColumnName, useDataSource } from "@vuu-ui/vuu-utils";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 import "./index.css";
+import { FilterBar } from "@vuu-ui/vuu-filters";
+import { VuuFilter, VuuTable } from "@vuu-ui/vuu-protocol-types";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
 export type DataRowAtIndexFunc<T = unknown> = (index: number) => T[];
 const instrumentsSchema = getSchema("instruments");
@@ -116,6 +119,47 @@ export const WithColumnMenuFillContainer = () => {
         }}
       />
     </div>
+  );
+};
+
+/** tags=data-consumer */
+export const WithFilters = () => {
+  const { VuuDataSource } = useDataSource();
+  const dataSource = useMemo(() => {
+    return new VuuDataSource(dataSourceProps);
+  }, [VuuDataSource]);
+
+  const [columnDescriptors, vuuTable] = useMemo<
+    [ColumnDescriptor[], VuuTable]
+  >(() => {
+    return [
+      instrumentsSchema.columns,
+      { module: "SIMUL", table: "instruments" },
+    ];
+  }, []);
+
+  const applyFilter = useCallback(
+    (filter: VuuFilter) => {
+      dataSource.filter = filter;
+    },
+    [dataSource],
+  );
+
+  return (
+    <>
+      <FilterBar
+        columnDescriptors={columnDescriptors}
+        onApplyFilter={applyFilter}
+        vuuTable={vuuTable}
+      />
+      <div style={{ height: 600 }}>
+        <TanstackTable<Instrument>
+          columns={instrumentColumns}
+          dataSource={dataSource}
+          rowHeight={25}
+        />
+      </div>
+    </>
   );
 };
 

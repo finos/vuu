@@ -225,7 +225,6 @@ export declare type ServerMessageBody =
   | VuuViewportMenusResponse
   | VuuRpcMenuSuccess
   | VuuRpcMenuError
-  | ServerToClientMenuSessionTableAction
   | VuuRpcServiceResponse
   | VuuRpcViewportResponse
   | VuuViewportVisualLinksResponse
