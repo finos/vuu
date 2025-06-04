@@ -56,6 +56,9 @@ export class SpaceMan {
       }
 
       siblingElement = dropTargetSpacer.previousElementSibling as HTMLElement;
+      if (siblingElement === this.#dragItem) {
+        siblingElement = siblingElement.previousElementSibling as HTMLElement;
+      }
       if (siblingElement) {
         return {
           position: "after",
@@ -115,11 +118,11 @@ export class SpaceMan {
       this.#dragOperation = "local";
       this.#withinDragContainer = true;
       setTimeout(() => {
-        item.classList.add("vuuDraggableItem-hidden");
-
         this.#spacer1.style[propertyName] = `${size}px`;
-        item?.before(this.#spacer1);
+        this.#spacer1.dataset.dropTarget = "true";
+        item?.after(this.#spacer1);
         this.#dragItem = item;
+        item.classList.add("vuuDraggableItem-hidden");
         if (!this.#withinDragContainer) {
           // Item has been dragged straight out of container
           // Delay this slightly more than RequestAnimationFrame. Avoids
