@@ -465,6 +465,10 @@ export const useGridLayout = ({
         });
         gridModel.addChildItem(gridModelChildItem);
 
+        const targetId = isStackedItem(targetGridItem)
+          ? targetGridItem.stackId
+          : targetItemId;
+
         const component = layoutFromJson(restJSON as LayoutJSON);
         if (position === "centre") {
           const newGridItem = gridLayoutModel.dropReplaceGridItem(
@@ -480,7 +484,7 @@ export const useGridLayout = ({
         } else {
           gridLayoutModel.dropSplitGridItem(
             gridModelChildItem.id,
-            targetItemId,
+            targetId,
             position,
           );
           addChildComponent(component, gridModelChildItem);

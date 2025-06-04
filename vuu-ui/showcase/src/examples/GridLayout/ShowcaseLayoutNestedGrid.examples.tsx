@@ -23,44 +23,36 @@ const Toolbar = (props: HTMLAttributes<HTMLDivElement>) => {
 };
 
 export const ShowCaseLayoutNestedGrid = () => {
+  // prettier-ignore
   const paletteItems = useMemo<GridPaletteItem[]>(
     () => [
       {
-        label: "Red",
-        type: "DebugGridItem",
-        props: {
-          style: {
-            background: "red",
-          },
-        },
+        paletteEntry: {label: "Red", style: { background: "red", color: 'white' }}, 
+        component: {label: "Red", type: "DebugGridItem", props: { style: { background: "red" }}}
       },
       {
-        label: "Green",
-        type: "DebugGridItem",
-        props: {
-          style: {
-            background: "green",
-          },
-        },
+        paletteEntry: {label: "Green", style: { background: "green", color: 'white' }}, 
+        component: {label: "Green", type: "DebugGridItem", props: { style: { background: "green" }}},
       },
       {
-        label: "Yellow",
-        type: "DebugGridItem",
-        props: {
-          style: {
-            background: "yellow",
-          },
-        },
+        paletteEntry: {label: "Yellow", style: { background: "yellow", color: 'black' }}, 
+        component: {label: "Yellow", type: "DebugGridItem", props: { style: { background: "yellow" }}},
       },
       {
-        label: "Brown",
-        type: "DebugGridItem",
-        props: {
-          debugLabel: "Brown",
-          style: {
-            background: "brown",
-          },
-        },
+        paletteEntry: {label: "Brown", style: { background: "brown", color: 'white' }}, 
+        component: {label: "Brown", type: "DebugGridItem", props: { style: { background: "brown" }}},
+      },
+      {
+        paletteEntry: {label: "Blue", style: { background: "green", color: 'white' }}, 
+        component: {label: "Blue",type: "DebugGridItem", props: { style: { background: "blue" }}},
+      },
+      {
+        paletteEntry: {label: "Navy", style: { background: "navy", color: 'white' }}, 
+        component: {label: "Navy",type: "DebugGridItem", props: { style: { background: "navy" }}},
+      },
+      {
+        paletteEntry: {label: "Gray", style: { background: "gray", color: 'white' }}, 
+        component: {label: "Gray", type: "DebugGridItem", props: { style: { background: "gray" }}},
       },
     ],
     [],
