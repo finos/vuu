@@ -12,6 +12,7 @@ import {
   isActionMessage,
   isErrorResponse,
   queryClosest,
+  Range,
   shallowEquals,
   vuuEditCellRequest,
 } from "@vuu-ui/vuu-utils";
@@ -172,7 +173,7 @@ export const SessionEditingForm = ({
       }
     };
 
-    ds.subscribe({ range: { from: 0, to: 5 } }, (message) => {
+    ds.subscribe({ range: Range(0, 5) }, (message) => {
       if (message.type === "viewport-update" && message.rows) {
         if (dataStatusRef.current === Status.uninitialised) {
           applyServerData(message.rows[0]);

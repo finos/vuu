@@ -14,6 +14,7 @@ export class MovingWindow {
   #range: WindowRange;
 
   constructor({ from, to }: VuuRange) {
+    console.log(`[MovingWindow] new (${from}:${to})`);
     this.#range = new WindowRange(from, to);
     //internal data is always 0 based, we add range.from to determine an offset
     this.data = new Array(Math.max(0, to - from));
@@ -63,6 +64,8 @@ export class MovingWindow {
   }
 
   setRange({ from, to }: VuuRange) {
+    console.log(`[MovingWindow] setRange (${from}:${to})`);
+
     if (from !== this.#range.from || to !== this.#range.to) {
       const [overlapFrom, overlapTo] = this.#range.overlap(from, to);
       const newData = new Array(Math.max(0, to - from));

@@ -8,8 +8,8 @@ import {
   DataSourceStatus,
   DataSourceSubscribedMessage,
   Selection,
-  SubscribeCallback,
-  SubscribeProps,
+  DataSourceSubscribeCallback,
+  DataSourceSubscribeProps,
   TableSchema,
   WithBaseFilter,
   WithFullConfig,
@@ -33,6 +33,7 @@ import {
   EventEmitter,
   KeySet,
   NULL_RANGE,
+  Range,
   buildColumnMap,
   combineFilters,
   getAddedItems,
@@ -47,8 +48,6 @@ import {
   logger,
   metadataKeys,
   rangeNewItems,
-  rangesAreSame,
-  resetRange,
   selectionCount,
   uuid,
   vanillaConfig,
@@ -101,7 +100,7 @@ export class ArrayDataSource
   extends EventEmitter<DataSourceEvents>
   implements DataSource
 {
-  private clientCallback: SubscribeCallback | undefined;
+  private clientCallback: DataSourceSubscribeCallback | undefined;
   private columnDescriptors: ColumnDescriptor[];
   /** sorted offsets of data within raw data, reflecting sort order
    * of columns specified by client.
@@ -124,7 +123,7 @@ export class ArrayDataSource
   #data: DataSourceRow[];
   #keys = new KeySet(NULL_RANGE);
   #links: LinkDescriptorWithLabel[] | undefined;
-  #range: VuuRange = NULL_RANGE;
+  #range = Range(0, 0);
   #selectedRowsCount = 0;
   #status: DataSourceStatus = "initialising";
   #title: string | undefined;
@@ -199,8 +198,8 @@ export class ArrayDataSource
       sort,
       groupBy,
       filterSpec,
-    }: SubscribeProps,
-    callback: SubscribeCallback,
+    }: DataSourceSubscribeProps,
+    callback: DataSourceSubscribeCallback,
   ) {
     console.log(`%cArrayDataSource subscribe`, "color: red;font-weight:bold;");
 
@@ -253,7 +252,7 @@ export class ArrayDataSource
         type: "viewport-update",
         size: this.#data.length,
       });
-      if (range && !rangesAreSame(this.#range, range)) {
+      if (range && !this.#range.equals(range)) {
         this.range = range;
       } else if (this.#range !== NULL_RANGE) {
         this.sendRowsToClient();
@@ -281,7 +280,7 @@ export class ArrayDataSource
     }
   }
 
-  resume(callback?: SubscribeCallback) {
+  resume(callback?: DataSourceSubscribeCallback) {
     const isSuspended = this.#status === "suspended";
     info?.(`resume #${this.viewport}, current status ${this.#status}`);
     if (callback) {
@@ -334,7 +333,7 @@ export class ArrayDataSource
       this.groupMap as GroupMap,
       this.processedData as DataSourceRow[],
     );
-    this.setRange(resetRange(this.#range), true);
+    this.setRange(this.#range.reset, true);
   }
 
   closeTreeNode(keyOrIndex: string | number) {
@@ -342,7 +341,7 @@ export class ArrayDataSource
     this.openTreeNodes = this.openTreeNodes.filter((value) => value !== key);
     if (this.processedData) {
       this.processedData = collapseGroup(key, this.processedData);
-      this.setRange(resetRange(this.#range), true);
+      this.setRange(this.#range.reset, true);
     }
   }
 
@@ -464,7 +463,7 @@ export class ArrayDataSource
       }
 
       if (this.#status === "subscribed") {
-        this.setRange(resetRange(this.#range), true);
+        this.setRange(this.#range.reset, true);
         this.emit("config", this._config, this.range, undefined, configChanges);
       }
     }
@@ -521,10 +520,7 @@ export class ArrayDataSource
     return this.#range;
   }
 
-  set range(range: VuuRange) {
-    // if (range.to === 32) {
-    //   debugger;
-    // }
+  set range(range: Range) {
     this.setRange(range);
   }
 
@@ -620,7 +616,7 @@ export class ArrayDataSource
     }
   };
 
-  private setRange(range: VuuRange, forceFullRefresh = false) {
+  private setRange(range: Range, forceFullRefresh = false) {
     if (range.from !== this.#range.from || range.to !== this.#range.to) {
       const currentPageCount = Math.ceil(
         this.size / (this.#range.to - this.#range.from),
@@ -631,10 +627,13 @@ export class ArrayDataSource
       const keysResequenced = this.#keys.reset(range);
       this.sendRowsToClient(forceFullRefresh || keysResequenced);
 
-      if (newPageCount !== currentPageCount) {
-        this.emit("page-count", newPageCount);
-      }
-      this.emit("range", range);
+      requestAnimationFrame(() => {
+        // executed within RAF in case this is used to setState/trigger render in listening clients
+        if (newPageCount !== currentPageCount) {
+          this.emit("page-count", newPageCount);
+        }
+        this.emit("range", range);
+      });
     } else if (forceFullRefresh) {
       this.sendRowsToClient(forceFullRefresh);
     }
@@ -732,7 +731,7 @@ export class ArrayDataSource
       this.#columnMap,
       this.groupMap as GroupMap,
     );
-    this.setRange(resetRange(this.#range), true);
+    this.setRange(this.#range.reset, true);
 
     this.emit("config", this._config, this.range);
   }

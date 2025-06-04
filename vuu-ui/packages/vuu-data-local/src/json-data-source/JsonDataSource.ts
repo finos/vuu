@@ -3,7 +3,6 @@ import type {
   LinkDescriptorWithLabel,
   VuuGroupBy,
   VuuAggregation,
-  VuuRange,
   VuuSort,
   VuuRowDataItemType,
   VuuRpcResponse,
@@ -16,8 +15,8 @@ import type {
   DataSourceConstructorProps,
   DataSourceEvents,
   DataSourceStatus,
-  SubscribeCallback,
-  SubscribeProps,
+  DataSourceSubscribeCallback,
+  DataSourceSubscribeProps,
   WithFullConfig,
   Selection,
   MenuRpcResponse,
@@ -33,7 +32,7 @@ import {
   metadataKeys,
   NO_CONFIG_CHANGES,
   NULL_RANGE,
-  rangesAreSame,
+  Range,
   uuid,
   vanillaConfig,
 } from "@vuu-ui/vuu-utils";
@@ -59,7 +58,7 @@ export class JsonDataSource
   implements DataSource
 {
   public columnDescriptors: ColumnDescriptor[];
-  private clientCallback: SubscribeCallback | undefined;
+  private clientCallback: DataSourceSubscribeCallback | undefined;
   private expandedRows = new Set<string>();
   private visibleRows: DataSourceRow[] = [];
 
@@ -68,7 +67,7 @@ export class JsonDataSource
   #data: DataSourceRow[];
   #filter: DataSourceFilter = { filter: "" };
   #groupBy: VuuGroupBy = [];
-  #range: VuuRange = { from: 0, to: 0 };
+  #range = Range(0, 0);
   #selectedRowsCount = 0;
   #size = 0;
   #sort: VuuSort = { sortDefs: [] };
@@ -132,8 +131,8 @@ export class JsonDataSource
       sort,
       groupBy,
       filterSpec,
-    }: SubscribeProps,
-    callback: SubscribeCallback,
+    }: DataSourceSubscribeProps,
+    callback: DataSourceSubscribeCallback,
   ) {
     this.clientCallback = callback;
 
@@ -184,7 +183,7 @@ export class JsonDataSource
       size: this.visibleRows.length,
     });
 
-    if (range && !rangesAreSame(this.#range, range)) {
+    if (range && !this.#range.equals(range)) {
       this.range = range;
     } else if (this.#range !== NULL_RANGE) {
       this.sendRowsToClient();
@@ -319,7 +318,7 @@ export class JsonDataSource
     return this.#range;
   }
 
-  set range(range: VuuRange) {
+  set range(range: Range) {
     this.#range = range;
     this.keys.reset(range);
     requestAnimationFrame(() => {

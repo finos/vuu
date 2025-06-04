@@ -3,8 +3,8 @@ import {
   DataSourceConstructorProps,
   DataSourceEditHandler,
   DataSourceStatus,
-  SubscribeCallback,
-  SubscribeProps,
+  DataSourceSubscribeCallback,
+  DataSourceSubscribeProps,
   WithBaseFilter,
   WithFullConfig,
 } from "@vuu-ui/vuu-data-types";
@@ -56,7 +56,10 @@ export class RestDataSource extends BaseDataSource implements DataSource {
     this.table = table;
   }
 
-  async subscribe(subscribeProps: SubscribeProps, callback: SubscribeCallback) {
+  async subscribe(
+    subscribeProps: DataSourceSubscribeProps,
+    callback: DataSourceSubscribeCallback,
+  ) {
     super.subscribe(subscribeProps, callback);
 
     console.log(`subscribe ${JSON.stringify(subscribeProps, null, 2)}`);

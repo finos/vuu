@@ -4,8 +4,8 @@ import type {
   DataSourceConstructorProps,
   DataSourceEvents,
   DataSourceFilter,
-  SubscribeCallback,
-  SubscribeProps,
+  DataSourceSubscribeCallback,
+  DataSourceSubscribeProps,
   WithBaseFilter,
   WithFullConfig,
 } from "@vuu-ui/vuu-data-types";
@@ -24,6 +24,7 @@ import {
   vanillaConfig,
   withConfigDefaults,
 } from "./datasource-utils";
+import { Range } from "../range-utils";
 
 export type RuntimeConfig = WithBaseFilter<WithFullConfig> & {
   visualLink?: LinkDescriptorWithLabel;
@@ -36,10 +37,10 @@ export abstract class BaseDataSource
   // This should simply be id
   public viewport: string;
 
-  protected _clientCallback: SubscribeCallback | undefined;
+  protected _clientCallback: DataSourceSubscribeCallback | undefined;
   protected _config: RuntimeConfig = vanillaConfig;
   protected _impendingConfig: RuntimeConfig | undefined = undefined;
-  protected _range: VuuRange = { from: 0, to: 0 };
+  protected _range = Range(0, 0);
   protected _size = 0;
   protected _title: string | undefined;
 
@@ -82,8 +83,8 @@ export abstract class BaseDataSource
       groupBy,
       filterSpec,
       viewport = this.viewport || (this.viewport = uuid()),
-    }: SubscribeProps,
-    callback: SubscribeCallback,
+    }: DataSourceSubscribeProps,
+    callback: DataSourceSubscribeCallback,
   ) {
     this._clientCallback = callback;
     this.viewport = viewport;
@@ -216,14 +217,14 @@ export abstract class BaseDataSource
     return this._range;
   }
 
-  set range(range: VuuRange) {
+  set range(range: Range) {
     if (range.from !== this._range.from || range.to !== this._range.to) {
       this._range = range;
       this.pageCount = Math.ceil(this._size / (range.to - range.from));
-
       this.rangeRequest(range);
-
-      this.emit("range", range);
+      requestAnimationFrame(() => {
+        this.emit("range", range);
+      });
     }
   }
 

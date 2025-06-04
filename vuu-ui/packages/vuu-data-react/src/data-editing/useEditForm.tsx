@@ -4,6 +4,7 @@ import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import {
   CommitHandler,
   Entity,
+  Range,
   buildColumnMap,
   dataSourceRowToEntity,
   messageHasDataRows,
@@ -207,7 +208,7 @@ export const useEditForm = ({
 
       const columnMap = buildColumnMap(dataSource.columns);
 
-      dataSource?.subscribe({ range: { from: 0, to: 1 } }, (message) => {
+      dataSource?.subscribe({ range: Range(0, 1) }, (message) => {
         if (messageHasDataRows(message)) {
           const [row] = message.rows;
           if (row) {

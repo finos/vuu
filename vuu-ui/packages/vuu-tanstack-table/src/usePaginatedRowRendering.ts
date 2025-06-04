@@ -5,21 +5,8 @@ import { RowRenderingHook } from "./tanstack-table-types";
 export const usePaginatedRowRendering: RowRenderingHook = ({
   rowHeight,
   setRange,
-  totalRowCount,
 }) => {
   const viewportRowCountRef = useRef(0);
-
-  const calculateRange = useCallback(
-    (firstRow: number) => {
-      const lastRow = firstRow + viewportRowCountRef.current;
-      console.log(`firstRow ${firstRow} lastRow ${lastRow}`);
-      const from = Math.max(0, firstRow);
-      const to = Math.min(lastRow, totalRowCount);
-      console.log(`[usePaginatedRowRendering] setRange ${from}:${to}`);
-      setRange({ from, to });
-    },
-    [setRange, totalRowCount],
-  );
 
   const setViewportRowCount = useCallback(
     (viewportRowCount: number) => {
@@ -27,9 +14,10 @@ export const usePaginatedRowRendering: RowRenderingHook = ({
         `[usePaginatedRowRendering] setViewportRowCount ${viewportRowCount}`,
       );
       viewportRowCountRef.current = viewportRowCount;
-      calculateRange(0);
+
+      setRange({ from: 0, to: viewportRowCount });
     },
-    [calculateRange],
+    [setRange],
   );
 
   const onHeightMeasured = useCallback(

@@ -8,6 +8,7 @@ import "./index.css";
 import { FilterBar } from "@vuu-ui/vuu-filters";
 import { VuuFilter, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
 
 export type DataRowAtIndexFunc<T = unknown> = (index: number) => T[];
 const instrumentsSchema = getSchema("instruments");
@@ -159,6 +160,7 @@ export const WithFilters = () => {
           rowHeight={25}
         />
       </div>
+      <DataSourceStats dataSource={dataSource} />
     </>
   );
 };

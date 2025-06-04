@@ -1,4 +1,4 @@
-import { RefCallback, useCallback, useMemo, useRef } from "react";
+import { RefCallback, useCallback, useRef } from "react";
 import { RowRenderingHook } from "./tanstack-table-types";
 
 type ScrollPos = {
@@ -8,29 +8,25 @@ type ScrollPos = {
 
 export const useVirtualisedScrollRowRendering: RowRenderingHook = ({
   headerHeight,
-  renderBufferSize = 20,
   rowHeight,
   setRange,
-  totalRowCount,
 }) => {
   const firstRowRef = useRef<number>(0);
-  const contentHeight = rowHeight * totalRowCount;
   const contentContainerRef = useRef<HTMLDivElement | null>(null);
   const contentContainerPosRef = useRef<ScrollPos>({
     scrollTop: 0,
     scrollLeft: 0,
   });
   const viewportRowCountRef = useRef(0);
-  const totalRowCountRef = useRef(totalRowCount);
 
   const setViewportPosition = useCallback(
     (firstRow: number) => {
       const lastRow = firstRow + viewportRowCountRef.current;
-      const from = Math.max(0, firstRow - renderBufferSize);
-      const to = Math.min(lastRow + renderBufferSize, totalRowCountRef.current);
+      const from = Math.max(0, firstRow);
+      const to = lastRow;
       setRange?.({ from, to });
     },
-    [renderBufferSize, setRange],
+    [setRange],
   );
 
   const handleVerticalScroll = useCallback(
@@ -53,23 +49,6 @@ export const useVirtualisedScrollRowRendering: RowRenderingHook = ({
     [setViewportPosition],
   );
 
-  useMemo(() => {
-    if (totalRowCountRef.current !== totalRowCount) {
-      totalRowCountRef.current = totalRowCount;
-      setViewportPosition(firstRowRef.current);
-    }
-  }, [setViewportPosition, totalRowCount]);
-
-  const setContentHeight = useCallback(
-    (height: number) => {
-      console.log(
-        `[useVirtualisedScrollRowRendering] set contentHeight ${height} (headerHeight = ${headerHeight})`,
-      );
-      setViewportRowCount(Math.ceil((height - headerHeight) / rowHeight));
-    },
-    [headerHeight, rowHeight, setViewportRowCount],
-  );
-
   const handleScroll = useCallback(() => {
     const { current: contentContainer } = contentContainerRef;
     const { current: scrollPos } = contentContainerPosRef;
@@ -89,11 +68,11 @@ export const useVirtualisedScrollRowRendering: RowRenderingHook = ({
         contentContainerRef.current = el;
         const { height } = el.getBoundingClientRect();
         el.addEventListener("scroll", handleScroll);
-        setContentHeight(height);
+        setViewportRowCount(Math.ceil((height - headerHeight) / rowHeight));
       }
     },
-    [handleScroll, setContentHeight],
+    [handleScroll, headerHeight, rowHeight, setViewportRowCount],
   );
 
-  return { contentHeight, scrollableContainerRef };
+  return { scrollableContainerRef };
 };

@@ -7,8 +7,8 @@ import {
   OptimizeStrategy,
   Selection,
   ServerAPI,
-  SubscribeCallback,
-  SubscribeProps,
+  DataSourceSubscribeCallback,
+  DataSourceSubscribeProps,
   TableSchema,
   WithBaseFilter,
   WithFullConfig,
@@ -36,6 +36,7 @@ import {
   isVisualLinksAction,
   itemsOrOrderChanged,
   logger,
+  Range,
   selectionCount,
   throttle,
   uuid,
@@ -87,7 +88,10 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     this.rangeRequest = this.rawRangeRequest;
   }
 
-  async subscribe(subscribeProps: SubscribeProps, callback: SubscribeCallback) {
+  async subscribe(
+    subscribeProps: DataSourceSubscribeProps,
+    callback: DataSourceSubscribeCallback,
+  ) {
     super.subscribe(subscribeProps, callback);
     const {
       selectedIndexValues,
@@ -119,6 +123,10 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     // TODO and await response here
 
     const dataSourceConfig = combineFilters(this.config);
+
+    console.log(
+      `[VuuDataSource] subscribe,  send subscribe message range (${this._range.from}:${this._range.to})`,
+    );
 
     this.server?.subscribe(
       {
@@ -185,6 +193,11 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
             `handleMessageFromServer<viewport-update> range (${message.range?.from}:${message.range?.to}) rows ${message.rows?.at(0)?.[0]} - ${message.rows?.at(-1)?.[0]}`,
           );
         }
+        if (message.type === "viewport-update") {
+          console.log(
+            `handleMessageFromServer<viewport-update> range (${message.range?.from}:${message.range?.to}) rows ${message.rows?.at(0)?.[0]} - ${message.rows?.at(-1)?.[0]}`,
+          );
+        }
         this._clientCallback?.(message);
       }
 
@@ -206,7 +219,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
       this.removeAllListeners();
       this.#status = "unsubscribed";
       this.viewport = "";
-      this.range = { from: 0, to: 0 };
+      this.range = Range(0, 0);
     }
   }
 
@@ -224,7 +237,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     }
   }
 
-  resume(callback?: SubscribeCallback) {
+  resume(callback?: DataSourceSubscribeCallback) {
     const isDisabled = this.#status.startsWith("disabl");
     const isSuspended = this.#status === "suspended";
     info?.(`resume #${this.viewport}, current status ${this.#status}`);
@@ -257,7 +270,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     }
   }
 
-  enable(callback?: SubscribeCallback) {
+  enable(callback?: DataSourceSubscribeCallback) {
     info?.(`enable #${this.viewport}, current status ${this.#status}`);
     if (
       this.viewport &&

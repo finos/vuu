@@ -10,6 +10,7 @@ import {
   isLookupRenderer,
   isTypeDescriptor,
   isValueListRenderer,
+  Range,
   useShellContext,
 } from "@vuu-ui/vuu-utils";
 import { useMemo, useState } from "react";
@@ -43,7 +44,7 @@ const loadLookupValues = ({
       dataSource.subscribe(
         {
           columns,
-          range: { from: 0, to: 100 },
+          range: Range(0, 100),
         },
         (message) => {
           if (message.type === "viewport-update") {

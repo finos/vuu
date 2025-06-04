@@ -2,7 +2,7 @@ import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
 import {
   DataSourceRow,
   RpcResponseHandler,
-  SubscribeCallback,
+  DataSourceSubscribeCallback,
   ViewportRpcResponse,
 } from "@vuu-ui/vuu-data-types";
 import { useViewContext } from "@vuu-ui/vuu-layout";
@@ -12,7 +12,7 @@ import {
 } from "@vuu-ui/vuu-popups";
 import { VuuDataRow, VuuRpcViewportRequest } from "@vuu-ui/vuu-protocol-types";
 import { TableConfig, TableConfigChangeHandler } from "@vuu-ui/vuu-table-types";
-import { type ColumnMap, metadataKeys } from "@vuu-ui/vuu-utils";
+import { type ColumnMap, metadataKeys, Range } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { BasketSelectorProps } from "./basket-selector";
 import defaultEditColumns from "./basket-table-edit/basketConstituentEditColumns";
@@ -111,24 +111,25 @@ export const useBasketTrading = () => {
     dialog: undefined,
   });
 
-  const handleMessageFromBasketTradingControl = useCallback<SubscribeCallback>(
-    (message) => {
-      if (message.type === "viewport-update") {
-        if (message.size) {
-          setBasketCount(message.size);
+  const handleMessageFromBasketTradingControl =
+    useCallback<DataSourceSubscribeCallback>(
+      (message) => {
+        if (message.type === "viewport-update") {
+          if (message.size) {
+            setBasketCount(message.size);
+          }
+          if (message.rows && message.rows.length > 0 && basketTradingMap) {
+            setBasket(new Basket(message.rows[0], basketTradingMap));
+          }
         }
-        if (message.rows && message.rows.length > 0 && basketTradingMap) {
-          setBasket(new Basket(message.rows[0], basketTradingMap));
-        }
-      }
-    },
-    [basketTradingMap],
-  );
+      },
+      [basketTradingMap],
+    );
 
   useMemo(() => {
     dataSourceBasketTradingControl?.subscribe(
       {
-        range: { from: 0, to: 1 },
+        range: Range(0, 1),
       },
       handleMessageFromBasketTradingControl,
     );

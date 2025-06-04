@@ -1,4 +1,5 @@
 import { PaginationControl } from "@vuu-ui/vuu-table";
+import { DataSourceRow } from "@vuu-ui/vuu-data-types";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { flexRender } from "@tanstack/react-table";
@@ -18,7 +19,6 @@ import cx from "clsx";
 
 import tableCss from "./TanstackTable.css";
 import { useForkRef } from "@salt-ds/core";
-import { DataSourceRow } from "@vuu-ui/vuu-data-types";
 
 const classBase = "TanstackTable";
 
@@ -31,10 +31,13 @@ export const TanstackTable = <T extends object>({
   columns,
   dataSource,
   headerHeight = 25,
+  renderBufferSize,
   rowHeight: rowHeightProp,
   showColumnMenu,
   showPaginationControls,
-}: TanstackTableProps<T>) => {
+}: Omit<TanstackTableProps<T>, "rowHeight"> & {
+  rowHeight?: number;
+}) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-table",
@@ -49,10 +52,11 @@ export const TanstackTable = <T extends object>({
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { setRange, table, totalRowCount } =
+  const { contentHeight, setRange, table } =
     useTanstackTableWithVuuDatasource<any>({
       columns,
       dataSource,
+      renderBufferSize,
       rowHeight,
       showPaginationControls,
     });
@@ -62,16 +66,12 @@ export const TanstackTable = <T extends object>({
   const useRowRenderingHook = showPaginationControls
     ? usePaginatedRowRendering
     : useVirtualisedScrollRowRendering;
-  const {
-    contentHeight,
-    scrollableContainerRef: setScrollableContainer,
-    tableBodyRef,
-  } = useRowRenderingHook({
-    headerHeight,
-    rowHeight,
-    setRange,
-    totalRowCount,
-  });
+  const { scrollableContainerRef: setScrollableContainer, tableBodyRef } =
+    useRowRenderingHook({
+      headerHeight,
+      rowHeight,
+      setRange,
+    });
 
   const scrollableContainerRef = useRef<HTMLDivElement>(null);
 

@@ -1,26 +1,31 @@
 import {
-  DataSource,
-  DataSourceRow as VuuDataSourceRow,
-  SubscribeCallback,
-  DataSourceRow,
-} from "@vuu-ui/vuu-data-types";
-import { getFullRange, MovingWindow, NULL_RANGE } from "@vuu-ui/vuu-utils";
-import {
   getCoreRowModel,
   OnChangeFn,
+  useReactTable,
   type RowSelectionState,
   type SortingState,
   type VisibilityState,
-  useReactTable,
 } from "@tanstack/react-table";
+import {
+  DataSource,
+  DataSourceRow,
+  DataSourceSubscribeCallback,
+  DataSourceRow as VuuDataSourceRow,
+} from "@vuu-ui/vuu-data-types";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
+import {
+  getFullRange,
+  MovingWindow,
+  NULL_RANGE,
+  Range,
+} from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useRef, useState } from "react";
+import { ColumnMenuProps } from "./ColumnMenu";
 import { TableColumnDef } from "./tanstack-table-types";
 import {
   tanstackColumnAccessorsToVuuColumnAccessors,
   tanstackSortToVuuSort,
 } from "./vuu-tanstack-utils";
-import { ColumnMenuProps } from "./ColumnMenu";
-import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 
 const NO_SELECTION: RowSelectionState = {} as const;
 const NO_SORT: SortingState = [] as const;
@@ -35,11 +40,18 @@ export interface TanstackTableProps<T extends object> {
    * values and Table will not respond to density changes.
    */
   headerHeight?: number;
+
   /**
-   * Pixel height of rows. If specified here, this will take precedence over CSS
-   * values and Table will not respond to density changes.
+   * Number of rows to render outside the visible viewport. A small number of
+   * additional rows smooths the scrolling behaviour and helps avoid white-out
+   * at head or tail of scroll area. It also increases rendering work so use
+   * with care. Default valus used is 20 (10 leading rows + 10 trailing rows)
    */
-  rowHeight?: number;
+  renderBufferSize?: number;
+  /**
+   * Pixel height of rows.
+   */
+  rowHeight: number;
 
   showColumnMenu?: Pick<
     ColumnMenuProps,
@@ -52,9 +64,13 @@ export interface TanstackTableProps<T extends object> {
 export const useTanstackTableWithVuuDatasource = <T extends VuuDataSourceRow>({
   columns,
   dataSource,
+  renderBufferSize = 20,
+  rowHeight = 32,
 }: TanstackTableProps<T>) => {
   const [, forceUpdate] = useState<unknown>(null);
   const data = useRef<VuuDataSourceRow[]>([]);
+  // TODO could we calculate contentSize here ?
+  const totalRowCountRef = useRef(0);
   const [totalRowCount, setTotalRowCount] = useState<number>(dataSource.size);
 
   const columnsWithVuuAccessors = tanstackColumnAccessorsToVuuColumnAccessors(
@@ -92,15 +108,22 @@ export const useTanstackTableWithVuuDatasource = <T extends VuuDataSourceRow>({
   );
 
   const setRange = useCallback(
-    (range: VuuRange) => {
+    (viewportRange: VuuRange) => {
+      console.log(
+        `[useTanstackTableWithVuuDataSource] set (viewport) Range: (${viewportRange.from}:${viewportRange.to}) rowCount = ${totalRowCountRef.current}`,
+      );
+      const range = Range(viewportRange.from, viewportRange.to, {
+        renderBufferSize,
+        rowCount: totalRowCountRef.current,
+      });
       dataWindow.setRange(range);
       dataSource.range = range;
     },
-    [dataSource, dataWindow],
+    [dataSource, dataWindow, renderBufferSize],
   );
 
   useMemo(() => {
-    const dataSourceMessageHandler: SubscribeCallback = (message) => {
+    const dataSourceMessageHandler: DataSourceSubscribeCallback = (message) => {
       switch (message.type) {
         case "subscribed":
           console.log(
@@ -111,7 +134,7 @@ export const useTanstackTableWithVuuDatasource = <T extends VuuDataSourceRow>({
           {
             if (typeof message.size === "number") {
               dataWindow.setRowCount(message.size);
-              setTotalRowCount(message.size);
+              setTotalRowCount((totalRowCountRef.current = message.size));
             }
 
             if (message.rows) {
@@ -134,7 +157,7 @@ export const useTanstackTableWithVuuDatasource = <T extends VuuDataSourceRow>({
 
     dataSource.subscribe(
       {
-        range: { from: 0, to: 0 },
+        range: NULL_RANGE,
       },
       dataSourceMessageHandler,
     );
@@ -220,8 +243,8 @@ export const useTanstackTableWithVuuDatasource = <T extends VuuDataSourceRow>({
 
   return {
     dataSource,
+    contentHeight: rowHeight * totalRowCount,
     setRange,
     table,
-    totalRowCount,
   };
 };

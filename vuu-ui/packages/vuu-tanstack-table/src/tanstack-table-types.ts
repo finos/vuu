@@ -19,11 +19,9 @@ export interface RowRenderingHookProps {
   renderBufferSize?: number;
   rowHeight: number;
   setRange: (range: VuuRange) => void;
-  totalRowCount: number;
 }
 
 export type RowRenderingHook = (props: RowRenderingHookProps) => {
-  contentHeight: number | string;
   scrollableContainerRef?: RefCallback<HTMLDivElement>;
   tableBodyRef?: React.Ref<HTMLDivElement>;
 };

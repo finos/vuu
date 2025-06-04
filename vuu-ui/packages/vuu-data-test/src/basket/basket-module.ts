@@ -161,6 +161,7 @@ const viewportRpcResponse = (
     type: "VP_RPC_SUCCESS",
     ...action,
   },
+  method: "???",
   namedParams: {},
   params,
   vpId,
