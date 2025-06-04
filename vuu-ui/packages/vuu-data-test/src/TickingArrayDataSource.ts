@@ -5,15 +5,14 @@ import {
 import type {
   DataSourceVisualLinkCreatedMessage,
   SelectionItem,
-  SubscribeCallback,
-  SubscribeProps,
+  DataSourceSubscribeCallback,
+  DataSourceSubscribeProps,
 } from "@vuu-ui/vuu-data-types";
 import type {
   VuuRpcMenuRequest,
   LinkDescriptorWithLabel,
   RpcNamedParams,
   VuuMenu,
-  VuuRange,
   VuuRowDataItemType,
   VuuRpcResponse,
   VuuRpcMenuResponse,
@@ -25,6 +24,7 @@ import {
   isViewportRpcRequest,
   isVuuMenuRpcRequest,
   metadataKeys,
+  Range,
 } from "@vuu-ui/vuu-utils";
 import { makeSuggestions } from "./makeSuggestions";
 import { Table } from "./Table";
@@ -103,7 +103,10 @@ export class TickingArrayDataSource extends ArrayDataSource {
     }
   }
 
-  async subscribe(subscribeProps: SubscribeProps, callback: SubscribeCallback) {
+  async subscribe(
+    subscribeProps: DataSourceSubscribeProps,
+    callback: DataSourceSubscribeCallback,
+  ) {
     const subscription = super.subscribe(subscribeProps, callback);
     // if (subscribeProps.range) {
     //   this.#updateGenerator?.setRange(subscribeProps.range);
@@ -121,7 +124,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
     this.#table = undefined;
   }
 
-  set range(range: VuuRange) {
+  set range(range: Range) {
     super.range = range;
     // this.#updateGenerator?.setRange(range);
   }

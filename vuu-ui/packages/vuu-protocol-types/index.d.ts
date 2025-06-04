@@ -225,7 +225,6 @@ export declare type ServerMessageBody =
   | VuuViewportMenusResponse
   | VuuRpcMenuSuccess
   | VuuRpcMenuError
-  | ServerToClientMenuSessionTableAction
   | VuuRpcServiceResponse
   | VuuRpcViewportResponse
   | VuuViewportVisualLinksResponse
@@ -403,7 +402,7 @@ export interface VuuRpcViewportRequest {
 export interface VuuRpcViewportResponse {
   action: VuuRpcViewportAction;
   type: "VIEW_PORT_RPC_REPONSE";
-  // method: string;
+  method: string;
   namedParams: { [key: string]: VuuRowDataItemType | VuuTable };
   params: string[];
   vpId: string;

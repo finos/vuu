@@ -11,8 +11,8 @@ import type {
   DataSourceRow,
   DataSourceConstructorProps,
   DataSourceStatus,
-  SubscribeCallback,
-  SubscribeProps,
+  DataSourceSubscribeCallback,
+  DataSourceSubscribeProps,
   Selection,
   MenuRpcResponse,
   VuuUIMessageInRPCEditReject,
@@ -29,7 +29,6 @@ import {
   metadataKeys,
   missingAncestor,
   NULL_RANGE,
-  rangesAreSame,
   TreeSourceNode,
   treeToDataSourceRows,
   uuid,
@@ -58,7 +57,7 @@ const toClientRow = (row: DataSourceRow, keys: KeySet) => {
 
 export class TreeDataSource extends BaseDataSource {
   public columnDescriptors: ColumnDescriptor[];
-  private clientCallback: SubscribeCallback | undefined;
+  private clientCallback: DataSourceSubscribeCallback | undefined;
   private expandedRows = new Set<string>();
   private visibleRows: DataSourceRow[] = [];
   private visibleRowIndex: VisibleRowIndex = {};
@@ -106,8 +105,8 @@ export class TreeDataSource extends BaseDataSource {
       revealSelected,
       selectedKeyValues,
       viewport = this.viewport ?? uuid(),
-    }: SubscribeProps,
-    callback: SubscribeCallback,
+    }: DataSourceSubscribeProps,
+    callback: DataSourceSubscribeCallback,
   ) {
     this.clientCallback = callback;
 
@@ -159,7 +158,7 @@ export class TreeDataSource extends BaseDataSource {
       size: this.visibleRows.length,
     });
 
-    if (range && !rangesAreSame(this._range, range)) {
+    if (range && !this._range.equals(range)) {
       this.range = range;
     } else if (this._range !== NULL_RANGE) {
       this.sendRowsToClient();

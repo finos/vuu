@@ -4,7 +4,7 @@ import {
   DataSourceConfigChangeHandler,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
-import { isConfigChanged, resetRange, useDataSource } from "@vuu-ui/vuu-utils";
+import { isConfigChanged, useDataSource } from "@vuu-ui/vuu-utils";
 import { useViewContext } from "@vuu-ui/vuu-layout";
 import { useCallback, useMemo } from "react";
 import { VuuRange } from "@vuu-ui/vuu-protocol-types";
@@ -61,7 +61,7 @@ export const useSessionDataSource = ({
 
       if (ds.range.from > 0) {
         // UI does not currently restore scroll position, so always reset to top of dataset
-        ds.range = resetRange(ds.range);
+        ds.range = ds.range.reset;
       }
 
       return ds;

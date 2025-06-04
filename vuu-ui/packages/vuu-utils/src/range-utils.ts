@@ -1,28 +1,130 @@
-export interface VuuRange {
-  from: number;
-  to: number;
-  bufferSize?: number;
-  reset?: boolean;
-}
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 
 interface FromToRange {
   from: number;
   to: number;
 }
 
-export const NULL_RANGE: VuuRange = { from: 0, to: 0 } as const;
+export interface Range extends VuuRange {
+  equals: (vuuRange: VuuRange) => boolean;
+  firstRowInViewport: number;
+  lastRowInViewport: number;
+  renderBufferSize?: number;
+  reset: Range;
+  rowCount?: number;
+}
 
-export const rangesAreSame = (
-  r1: VuuRange | undefined,
-  r2: VuuRange | undefined
-) => {
-  return r1?.from === r2?.from && r1?.to === r2?.to;
+export interface RangeOptions {
+  renderBufferSize?: number;
+  rowCount?: number;
+}
+
+const defaultRangeOptions = {
+  renderBufferSize: 0,
+  rowCount: -1,
 };
+class RangeImpl implements Range {
+  #baseFrom: number;
+  #renderBufferSize = 0;
+  #rowCount = -1;
+  #baseTo: number;
+
+  // We have to keep these as simple public properties (not getters) so they survive structuredClone
+  public from = 0;
+  public to = 0;
+
+  constructor(
+    /** Index position of first visible row in viewport */
+    from: number,
+    /** Index position of last visible row in viewport + 1 */
+    to: number,
+    rangeOptions: RangeOptions = defaultRangeOptions,
+  ) {
+    this.#baseFrom = from;
+    this.#baseTo = to;
+    this.renderBufferSize =
+      rangeOptions.renderBufferSize ?? defaultRangeOptions.renderBufferSize;
+    this.rowCount = rangeOptions.rowCount ?? defaultRangeOptions.rowCount;
+
+    console.log(
+      `[Range] new (${this.#baseFrom}:${this.#baseTo}) renderBuffer: ${this.renderBufferSize}, rowCount: ${this.rowCount}`,
+    );
+  }
+
+  get firstRowInViewport() {
+    return this.#baseFrom + 1;
+  }
+
+  get lastRowInViewport() {
+    if (this.#rowCount > 0) {
+      return Math.min(this.#baseTo, this.#rowCount);
+    } else {
+      return this.#baseTo;
+    }
+  }
+
+  get renderBufferSize() {
+    return this.#renderBufferSize;
+  }
+
+  set renderBufferSize(value: number) {
+    this.#renderBufferSize = value;
+    this.from = Math.max(0, this.#baseFrom - value);
+    if (this.#rowCount > 0) {
+      this.to = Math.max(this.#baseTo + this.#renderBufferSize, this.#rowCount);
+    } else {
+      this.to = this.#baseTo + this.#renderBufferSize;
+    }
+  }
+
+  get rowCount() {
+    return this.#rowCount;
+  }
+
+  set rowCount(value: number) {
+    this.#rowCount = value;
+    if (value > 0) {
+      this.to = Math.min(this.#baseTo + this.#renderBufferSize, value);
+    } else {
+      this.to = this.#baseTo + this.#renderBufferSize;
+    }
+  }
+
+  get reset() {
+    return new RangeImpl(0, this.#baseTo - this.#baseFrom, {
+      rowCount: this.#rowCount,
+      renderBufferSize: this.#renderBufferSize,
+    });
+  }
+
+  equals(range: VuuRange) {
+    return range.from === this.#baseFrom && range.to === this.#baseTo;
+  }
+
+  toJson() {
+    return {
+      from: this.from,
+      to: this.to,
+      baseFrom: this.#baseFrom,
+      baseTo: this.#baseTo,
+      renderBufferSize: this.#renderBufferSize,
+      rowCount: this.#rowCount,
+    };
+  }
+}
+
+export const Range = (
+  from: number,
+  to: number,
+  rangeOptions?: RangeOptions,
+): Range => new RangeImpl(from, to, rangeOptions);
+
+export const NULL_RANGE = Range(0, 0);
 
 export function getFullRange(
   { from, to }: VuuRange,
   bufferSize = 0,
-  totalRowCount: number = Number.MAX_SAFE_INTEGER
+  totalRowCount: number = Number.MAX_SAFE_INTEGER,
 ): FromToRange {
   if (from === 0 && to === 0) {
     return { from, to };
@@ -52,15 +154,6 @@ export function getFullRange(
   }
 }
 
-export function resetRange({ from, to, bufferSize = 0 }: VuuRange): VuuRange {
-  return {
-    from: 0,
-    to: to - from,
-    bufferSize,
-    reset: true,
-  };
-}
-
 export const withinRange = (value: number, { from, to }: VuuRange) =>
   value >= from && value < to;
 
@@ -75,7 +168,7 @@ export const withinRange = (value: number, { from, to }: VuuRange) =>
 
 export const rangeNewItems = (
   { from: from1, to: to1 }: VuuRange,
-  newRange: VuuRange
+  newRange: VuuRange,
 ): VuuRange => {
   const { from: from2, to: to2 } = newRange;
   const noOverlap = from2 >= to1 || to2 <= from1;
@@ -83,8 +176,8 @@ export const rangeNewItems = (
   return noOverlap || newFullySubsumesOld
     ? newRange
     : to2 > to1
-    ? { from: to1, to: to2 }
-    : { from: from2, to: from1 };
+      ? { from: to1, to: to2 }
+      : { from: from2, to: from1 };
 };
 
 export class WindowRange {

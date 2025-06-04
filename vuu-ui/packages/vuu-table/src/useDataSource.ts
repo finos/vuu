@@ -1,17 +1,12 @@
 import {
   DataSourceRow,
   DataSourceSubscribedMessage,
-  SubscribeCallback,
+  DataSourceSubscribeCallback,
 } from "@vuu-ui/vuu-data-types";
-import { VuuRange } from "@vuu-ui/vuu-protocol-types";
-import {
-  getFullRange,
-  MovingWindow,
-  NULL_RANGE,
-  rangesAreSame,
-} from "@vuu-ui/vuu-utils";
+import { MovingWindow, NULL_RANGE, Range } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TableProps } from "./Table";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 
 export interface DataSourceHookProps
   extends Pick<
@@ -39,10 +34,11 @@ export const useDataSource = ({
   const data = useRef<DataSourceRow[]>([]);
   const isMounted = useRef(true);
   const hasUpdated = useRef(false);
-  const rangeRef = useRef<VuuRange>(NULL_RANGE);
+  const rangeRef = useRef<Range>(NULL_RANGE);
+  const totalRowCountRef = useRef(0);
 
   const dataWindow = useMemo(
-    () => new MovingWindow(getFullRange(NULL_RANGE, renderBufferSize)),
+    () => new MovingWindow(NULL_RANGE),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
@@ -75,7 +71,7 @@ export const useDataSource = ({
     [dataWindow],
   );
 
-  const datasourceMessageHandler: SubscribeCallback = useCallback(
+  const datasourceMessageHandler: DataSourceSubscribeCallback = useCallback(
     (message) => {
       if (message.type === "subscribed") {
         onSubscribed?.(message);
@@ -84,6 +80,8 @@ export const useDataSource = ({
           onSizeChange?.(message.size);
           const size = dataWindow.data.length;
           dataWindow.setRowCount(message.size);
+          totalRowCountRef.current = message.size;
+
           if (dataWindow.data.length < size) {
             if (isMounted.current === false) {
               console.log("setting state whilst unmounted");
@@ -148,15 +146,19 @@ export const useDataSource = ({
   }, [dataSource, datasourceMessageHandler, renderBufferSize]);
 
   const setRange = useCallback(
-    (range: VuuRange) => {
-      if (!rangesAreSame(range, rangeRef.current)) {
-        const fullRange = getFullRange(range, renderBufferSize);
-        dataWindow.setRange(fullRange);
+    (viewportRange: VuuRange) => {
+      if (!rangeRef.current.equals(viewportRange)) {
+        const range = Range(viewportRange.from, viewportRange.to, {
+          renderBufferSize,
+          rowCount: totalRowCountRef.current,
+        });
+
+        dataWindow.setRange(range);
 
         if (dataSource.status !== "subscribed") {
           dataSource?.subscribe(
             {
-              range: fullRange,
+              range,
               revealSelected,
               selectedIndexValues: defaultSelectedIndexValues,
               selectedKeyValues: defaultSelectedKeyValues,
@@ -164,7 +166,7 @@ export const useDataSource = ({
             datasourceMessageHandler,
           );
         } else {
-          dataSource.range = rangeRef.current = fullRange;
+          dataSource.range = rangeRef.current = range;
         }
         // emit a range event omitting the renderBufferSize
         // This isn't great, we're using the dataSource as a conduit to emit a

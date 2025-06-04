@@ -33,7 +33,11 @@ import type {
   VuuRemoveVisualLink,
   VuuTableList,
 } from "@vuu-ui/vuu-protocol-types";
-import type { DataSourceConfigChanges, IEventEmitter } from "@vuu-ui/vuu-utils";
+import type {
+  DataSourceConfigChanges,
+  IEventEmitter,
+  Range,
+} from "@vuu-ui/vuu-utils";
 import type {
   DataSourceFilter,
   MenuRpcResponse,
@@ -451,17 +455,17 @@ export interface DataSourceConstructorProps
   viewport?: string;
 }
 
-export interface SubscribeProps
+export interface DataSourceSubscribeProps
   extends Partial<WithBaseFilter<WithFullConfig>> {
   viewport?: string;
-  range?: VuuRange;
+  range?: Range;
   revealSelected?: boolean;
   selectedIndexValues?: Selection;
   selectedKeyValues?: string[];
   title?: string;
 }
 
-export declare type SubscribeCallback = (
+export declare type DataSourceSubscribeCallback = (
   message: DataSourceCallbackMessage,
 ) => void;
 export declare type OptimizeStrategy = "none" | "throttle" | "debounce";
@@ -474,7 +478,7 @@ export declare type RowSelectionEventHandler = (
 
 export type DataSourceConfigChangeHandler = (
   config: WithBaseFilter<WithFullConfig>,
-  range: VuuRange,
+  range: Range,
   confirmed?: boolean,
   configChanges?: DataSourceConfigChanges,
 ) => void;
@@ -483,7 +487,7 @@ export declare type DataSourceEvents = {
   config: DataSourceConfigChangeHandler;
   optimize: (optimize: OptimizeStrategy) => void;
   "page-count": (pageCount: number) => void;
-  range: (range: VuuRange) => void;
+  range: (range: Range) => void;
   resize: (size: number) => void;
   "row-selection": RowSelectionEventHandler;
   subscribed: (subscription: DataSourceSubscribedMessage) => void;
@@ -601,7 +605,7 @@ export interface DataSource
    * If an suspend is requested and not resumed within 3 seconds, it will automatically be promoted to a disable.,
    */
   suspend?: () => void;
-  resume?: (callback?: SubscribeCallback) => void;
+  resume?: (callback?: DataSourceSubscribeCallback) => void;
 
   deleteRow?: DataSourceDeleteHandler;
   /**
@@ -618,7 +622,7 @@ export interface DataSource
    * assume ownership of a subscription and receive all messages.
    * Should emit an enabled event
    */
-  enable?: (callback?: SubscribeCallback) => void;
+  enable?: (callback?: DataSourceSubscribeCallback) => void;
   /**
    * Disables this subscription. A datasource will send no further messages until re-enabled. Example usage
    * might be for a component displayed within a set of Tabs. If user switches to another tab, the dataSource
@@ -658,7 +662,7 @@ export interface DataSource
     rpcRequest: Omit<VuuRpcRequest, "vpId">,
   ) => Promise<T>;
   openTreeNode: (keyOrIndex: string | number) => void;
-  range: VuuRange;
+  range: Range;
   remoteProcedureCall: <T extends VuuRpcResponse = VuuRpcResponse>(
     message: VuuRpcRequest,
   ) => Promise<T>;
@@ -668,8 +672,8 @@ export interface DataSource
   readonly size: number;
   sort: VuuSort;
   subscribe: (
-    props: SubscribeProps,
-    callback: SubscribeCallback,
+    props: DataSourceSubscribeProps,
+    callback: DataSourceSubscribeCallback,
   ) => Promise<void>;
   table?: VuuTable;
   readonly tableSchema?: TableSchema;

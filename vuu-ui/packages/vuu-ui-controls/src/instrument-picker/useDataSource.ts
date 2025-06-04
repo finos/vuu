@@ -3,10 +3,11 @@
 import {
   DataSource,
   DataSourceRow,
-  SubscribeCallback,
+  DataSourceSubscribeCallback,
 } from "@vuu-ui/vuu-data-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MovingWindow } from "./moving-window";
+import { Range } from "@vuu-ui/vuu-utils";
 export interface DataSourceHookProps {
   dataSource: DataSource;
   instruments: string[];
@@ -34,7 +35,7 @@ export const useDataSource = ({ dataSource }: DataSourceHookProps) => {
     [dataWindow],
   );
 
-  const datasourceMessageHandler: SubscribeCallback = useCallback(
+  const datasourceMessageHandler: DataSourceSubscribeCallback = useCallback(
     (message) => {
       if (message.type === "subscribed") {
         // onSubscribed?.(message);
@@ -51,10 +52,7 @@ export const useDataSource = ({ dataSource }: DataSourceHookProps) => {
 
   useEffect(() => {
     console.log("subscribe to dataSource");
-    dataSource?.subscribe(
-      { range: { from: 0, to: 10 } },
-      datasourceMessageHandler,
-    );
+    dataSource?.subscribe({ range: Range(0, 10) }, datasourceMessageHandler);
   }, [dataSource, datasourceMessageHandler]);
 
   return data.current;

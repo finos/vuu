@@ -356,6 +356,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
       delete this.#sessionTableMap[vpId];
       return {
         action: { type: "VP_RPC_SUCCESS" },
+        method: "???",
         namedParams: {},
         params: [],
         type: "VIEW_PORT_RPC_REPONSE",

@@ -1,5 +1,6 @@
 import { SyntheticEvent, useCallback, useMemo, useState } from "react";
 import { DataSource } from "@vuu-ui/vuu-data-types";
+import { Range } from "@vuu-ui/vuu-utils";
 
 export interface PaginationHookProps {
   dataSource: DataSource;
@@ -27,7 +28,7 @@ export const usePagination = ({ dataSource }: PaginationHookProps) => {
       const { range } = dataSource;
       const pageSize = range.to - range.from;
       const firstRow = pageSize * (page - 1);
-      dataSource.range = { from: firstRow, to: firstRow + pageSize };
+      dataSource.range = Range(firstRow, firstRow + pageSize);
     },
     [dataSource],
   );
