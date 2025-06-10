@@ -1,4 +1,4 @@
-import { ContextMenuItemDescriptor } from "@vuu-ui/vuu-data-types";
+import { ContextMenuItemDescriptor } from "@vuu-ui/vuu-context-menu";
 
 export type MenuOptions = { [key: string]: unknown };
 
@@ -16,7 +16,7 @@ export const closeCommand = (options?: MenuOptions) =>
   ({
     label: `Close`,
     location: "tab",
-    action: `close-tab`,
+    id: `close-tab`,
     options,
   }) as ContextMenuItemDescriptor;
 
@@ -24,6 +24,6 @@ export const renameCommand = (options?: MenuOptions) =>
   ({
     label: `Rename`,
     location: "tab",
-    action: `rename-tab`,
+    id: `rename-tab`,
     options,
   }) as ContextMenuItemDescriptor;

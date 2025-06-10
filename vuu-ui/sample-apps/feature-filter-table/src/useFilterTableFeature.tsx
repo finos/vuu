@@ -152,16 +152,16 @@ export const useFilterTableFeature = ({
     }
   }, [dataSource, title]);
 
-  const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
+  const { menuBuilder, menuActionHandler } = useVuuMenuActions({
     dataSource,
     menuActionConfig,
     onRpcResponse: handleRpcResponse,
   });
 
   return {
-    buildFilterTableMenuOptions: buildViewserverMenuOptions,
+    menuBuilder,
     filterBarProps,
-    handleFilterTableMenuAction: handleMenuAction,
+    menuActionHandler,
     tableProps,
   };
 };

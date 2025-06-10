@@ -8,7 +8,7 @@ import type {
 import { orientationType } from "@vuu-ui/vuu-utils";
 
 import type { EditableLabelProps } from "../editable-label";
-import type { MenuActionHandler } from "@vuu-ui/vuu-data-types";
+import { MenuActionHandler } from "@vuu-ui/vuu-context-menu";
 
 export type ExitTabEditModeHandler = (
   originalValue: string,

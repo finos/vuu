@@ -5,7 +5,6 @@ import type {
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
 import type { Filter } from "@vuu-ui/vuu-filter-types";
-import type { MenuActionClosePopup } from "@vuu-ui/vuu-popups";
 import type {
   LinkDescriptorWithLabel,
   NoAction,
@@ -201,26 +200,6 @@ export declare type DataSourceRowObject = {
 
 export declare type DataSourceRowPredicate = (row: DataSourceRow) => boolean;
 
-export interface ContextMenuItemBase {
-  className?: string;
-  icon?: string;
-  label: string;
-  location?: string;
-}
-
-export interface ContextMenuLeafItemDescriptor extends ContextMenuItemBase {
-  action: string;
-  options?: unknown;
-}
-
-export declare type ContextMenuItemDescriptor =
-  | ContextMenuLeafItemDescriptor
-  | ContextMenuGroupItemDescriptor;
-
-export interface ContextMenuGroupItemDescriptor extends ContextMenuItemBase {
-  children: ContextMenuItemDescriptor[];
-}
-
 export interface MessageWithClientViewportId {
   clientViewportId: string;
 }
@@ -371,35 +350,6 @@ export declare type ConfigChangeMessage =
   | DataSourceVisualLinkRemovedMessage;
 
 export declare type ConfigChangeHandler = (msg: ConfigChangeMessage) => void;
-
-/**
- * MenuBuilder describes a factory function that creates
- * Menu Item Descriptors appropriate to the supplied
- * location. Location can be any string identifier, it
- * can be used to determine which Menu Items to include
- * in the menu. Most often used for ContextMenus.
- */
-export declare type MenuBuilder<L = string, O = unknown> = (
-  location: L,
-  options: O,
-) => ContextMenuItemDescriptor[];
-
-/**
- * MenuActionHandler describes a function that provides an implementation of
- * one or more MenuItem actions. It will receive the type from the MenuItem
- * clicked, plus any options object associated with that MenuItem.
- *
- * It should return true if it handled this MenuItem. This allows multiple Menu-
- * ActionHandlers to be chained.
- */
-export declare type MenuActionHandler = (
-  reason: MenuActionClosePopup,
-) => boolean | undefined;
-
-export interface ContextMenuContextType {
-  menuBuilders: MenuBuilder[];
-  menuActionHandler: MenuActionHandler;
-}
 
 export declare type SchemaColumn = {
   name: string;

@@ -1,13 +1,13 @@
 import { PopupMenu } from "@vuu-ui/vuu-popups";
-import {
-  ContextMenuItemDescriptor,
-  MenuActionHandler,
-  MenuBuilder,
-} from "@vuu-ui/vuu-data-types";
 import { useMemo } from "react";
 import cx from "clsx";
 
 import "./BasketMenu.css";
+import {
+  ContextMenuItemDescriptor,
+  MenuActionHandler,
+  MenuBuilder,
+} from "@vuu-ui/vuu-context-menu";
 
 const classBase = "vuuBasketMenu";
 
@@ -38,19 +38,19 @@ export const BasketMenu = ({
         const menuItems: ContextMenuItemDescriptor[] = [];
         menuItems.push(
           {
-            action: "action1",
+            id: "action1",
             label: "Limit to Near",
           },
           {
-            action: "action2",
+            id: "action2",
             label: "Limit Far",
           },
           {
-            action: "action3",
+            id: "action3",
             label: "Peg to Near",
           },
           {
-            action: "action4",
+            id: "action4",
             label: "To Algo",
           },
         );

@@ -1,7 +1,3 @@
-import {
-  ContextMenuItemDescriptor,
-  MenuActionHandler,
-} from "@vuu-ui/vuu-data-types";
 import { ColumnDescriptorsByName, Filter } from "@vuu-ui/vuu-filter-types";
 import {
   PopupCloseCallback,
@@ -28,12 +24,16 @@ import {
   editCommand,
   MenuOptions,
   renameCommand,
-} from "./FilterPillMenuOptions";
+} from "../filter-pill-menu/FilterPillMenuOptions";
 import { getFilterLabel } from "./getFilterLabel";
 import { getFilterTooltipText } from "./getFilterTooltipText";
 
 import filterPillCss from "./FilterPill.css";
 import { ButtonProps } from "@salt-ds/core";
+import {
+  ContextMenuItemDescriptor,
+  MenuActionHandler,
+} from "@vuu-ui/vuu-context-menu";
 
 const classBase = "vuuFilterPill";
 

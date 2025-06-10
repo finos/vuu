@@ -1,12 +1,12 @@
 import { PopupMenu } from "@vuu-ui/vuu-popups";
+import { useMemo } from "react";
+
+import { andCommand, MenuOptions, orCommand } from "./FilterMenuOptions";
 import {
   ContextMenuItemDescriptor,
   MenuActionHandler,
   MenuBuilder,
-} from "@vuu-ui/vuu-data-types";
-import { useMemo } from "react";
-
-import { andCommand, MenuOptions, orCommand } from "./FilterMenuOptions";
+} from "@vuu-ui/vuu-context-menu";
 
 const classBase = "vuuTabMenu";
 

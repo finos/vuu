@@ -7,6 +7,7 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 
 import splitButtonCss from "./SplitButton.css";
+import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 
 export interface SplitButtonProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onClick">,
@@ -52,35 +53,37 @@ export const SplitButton = forwardRef<HTMLDivElement, SplitButtonProps>(
       });
 
     return (
-      <div
-        {...htmlAttributes}
-        {...rootProps}
-        className={cx(classBase, `${classBase}-${variant}`, className, {
-          [`${classBase}-disabled`]: disabled,
-          [`${classBase}-segmented`]: segmented,
-        })}
-        ref={useForkRef(forwardedRef, rootRef)}
-        data-showcase-center
-        tabIndex={-1}
-      >
-        <Button
-          {...ButtonProps}
-          className={`${classBase}-main`}
-          disabled={disabled}
-          ref={buttonRef}
-          variant={variant}
+      <ContextMenuProvider>
+        <div
+          {...htmlAttributes}
+          {...rootProps}
+          className={cx(classBase, `${classBase}-${variant}`, className, {
+            [`${classBase}-disabled`]: disabled,
+            [`${classBase}-segmented`]: segmented,
+          })}
+          ref={useForkRef(forwardedRef, rootRef)}
+          data-showcase-center
+          tabIndex={-1}
         >
-          {children}
-        </Button>
-        <PopupMenu
-          {...PopupMenuProps}
-          className={`${classBase}-trigger`}
-          disabled={disabled}
-          icon={PopupMenuProps?.icon ?? "chevron-down"}
-          tabIndex={segmented ? 0 : -1}
-          variant={variant}
-        />
-      </div>
+          <Button
+            {...ButtonProps}
+            className={`${classBase}-main`}
+            disabled={disabled}
+            ref={buttonRef}
+            variant={variant}
+          >
+            {children}
+          </Button>
+          <PopupMenu
+            {...PopupMenuProps}
+            className={`${classBase}-trigger`}
+            disabled={disabled}
+            icon={PopupMenuProps?.icon ?? "chevron-down"}
+            tabIndex={segmented ? 0 : -1}
+            variant={variant}
+          />
+        </div>
+      </ContextMenuProvider>
     );
   },
 );

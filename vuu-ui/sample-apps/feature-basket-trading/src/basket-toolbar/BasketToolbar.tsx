@@ -1,4 +1,3 @@
-import { MenuActionHandler } from "@vuu-ui/vuu-data-types";
 import {
   CycleStateButton,
   ExpandoInput,
@@ -20,6 +19,7 @@ import cx from "clsx";
 
 import "./BasketToolbar.css";
 import { CommitHandler } from "@vuu-ui/vuu-utils";
+import { MenuActionHandler } from "@vuu-ui/vuu-context-menu";
 
 const classBase = "vuuBasketToolbar";
 

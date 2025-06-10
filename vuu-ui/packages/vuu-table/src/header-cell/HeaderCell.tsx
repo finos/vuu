@@ -1,4 +1,3 @@
-import { useContextMenu } from "@vuu-ui/vuu-popups";
 import { HeaderCellProps } from "@vuu-ui/vuu-table-types";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -17,6 +16,7 @@ import { ColumnResizer, useTableColumnResize } from "../column-resizing";
 import { useCell } from "../useCell";
 
 import headerCellCss from "./HeaderCell.css";
+import { useContextMenu } from "@vuu-ui/vuu-context-menu";
 
 const classBase = "vuuTableHeaderCell";
 
@@ -43,7 +43,7 @@ export const HeaderCell = ({
     rootRef,
   });
 
-  const [showContextMenu] = useContextMenu();
+  const showContextMenu = useContextMenu();
 
   const handleContextMenu = useMemo(() => {
     if (showMenu) {

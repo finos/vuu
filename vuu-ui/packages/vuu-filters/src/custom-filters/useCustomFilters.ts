@@ -1,4 +1,3 @@
-import { MenuActionHandler } from "@vuu-ui/vuu-data-types";
 import { ColumnDescriptorsByName, Filter } from "@vuu-ui/vuu-filter-types";
 import { PromptProps } from "@vuu-ui/vuu-popups";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
@@ -31,6 +30,7 @@ import { FilterPillProps } from "../filter-pill";
 import { FilterMenuOptions } from "../filter-pill-menu";
 import { navigateToNextItem } from "./filterBarFocusManagement";
 import { useFilterState } from "./useFilterState";
+import { MenuActionHandler } from "@vuu-ui/vuu-context-menu";
 
 export type EditFilterState = "create" | "edit";
 export type FilterState = EditFilterState | "rename";
@@ -205,7 +205,7 @@ export const useCustomFilters = ({
     );
 
   const handlePillMenuAction = useCallback<MenuActionHandler>(
-    ({ menuId, options }) => {
+    (menuId, options) => {
       switch (menuId) {
         case "delete-filter": {
           const { filter } = options as FilterMenuOptions;

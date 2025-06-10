@@ -1,6 +1,6 @@
 import { FilterTable } from "@vuu-ui/vuu-datatable";
 import { FlexboxLayout } from "@vuu-ui/vuu-layout";
-import { ContextMenuProvider } from "@vuu-ui/vuu-popups";
+import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
 import { FilterTableFeatureProps } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
@@ -11,17 +11,13 @@ import "./VuuFilterTableFeature.css";
 const classBase = "vuuFilterTableFeature";
 
 const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
-  const {
-    buildFilterTableMenuOptions,
-    filterBarProps,
-    handleFilterTableMenuAction,
-    tableProps,
-  } = useFilterTableFeature({ tableSchema });
+  const { menuBuilder, filterBarProps, menuActionHandler, tableProps } =
+    useFilterTableFeature({ tableSchema });
 
   return (
     <ContextMenuProvider
-      menuActionHandler={handleFilterTableMenuAction}
-      menuBuilder={buildFilterTableMenuOptions}
+      menuActionHandler={menuActionHandler}
+      menuBuilder={menuBuilder}
     >
       <FlexboxLayout
         className={classBase}

@@ -11,8 +11,8 @@ import type {
   VuuAggregation,
   VuuColumnDataType,
   VuuDataRow,
+  VuuDataRowDto,
   VuuGroupBy,
-  VuuRowRecord,
   VuuSort,
 } from "@vuu-ui/vuu-protocol-types";
 import type {
@@ -714,11 +714,11 @@ export function updateColumn(
 
 export const toDataSourceColumns = (column: ColumnDescriptor) => column.name;
 
-export const getRowRecord = (
+export const dataSourceRowToDataRowDto = (
   row: DataSourceRow,
   columnMap: ColumnMap,
-): VuuRowRecord => {
-  return Object.entries(columnMap).reduce<VuuRowRecord>(
+): VuuDataRowDto => {
+  return Object.entries(columnMap).reduce<VuuDataRowDto>(
     (map, [colName, key]) => {
       map[colName] = row[key];
       return map;

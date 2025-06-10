@@ -4,7 +4,7 @@ import {
 } from "@vuu-ui/vuu-data-react";
 import { getSchema, VuuTableName } from "@vuu-ui/vuu-data-test";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { ContextMenuProvider, DialogProvider } from "@vuu-ui/vuu-popups";
+import { DialogProvider } from "@vuu-ui/vuu-popups";
 import { Table, TableProps } from "@vuu-ui/vuu-table";
 import {
   applyDefaultColumnConfig,
@@ -16,6 +16,7 @@ import { getDefaultColumnConfig } from "./columnMetaData";
 import { DemoTableContainer } from "./DemoTableContainer";
 import { useAutoLoginToVuuServer } from "../utils";
 import { DataSource } from "@vuu-ui/vuu-data-types";
+import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 
 const BulkEditTableTemplate = ({
   table = "instruments",
@@ -46,14 +47,14 @@ const BulkEditTableTemplate = ({
     [schema],
   );
 
-  const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
+  const { menuBuilder, menuActionHandler } = useVuuMenuActions({
     dataSource,
   });
 
   return dataSource ? (
     <ContextMenuProvider
-      menuActionHandler={handleMenuAction}
-      menuBuilder={buildViewserverMenuOptions}
+      menuActionHandler={menuActionHandler}
+      menuBuilder={menuBuilder}
     >
       <DemoTableContainer>
         <Table {...tableProps} dataSource={dataSource} />

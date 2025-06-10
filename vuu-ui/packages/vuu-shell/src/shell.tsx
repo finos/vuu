@@ -2,7 +2,6 @@ import { ConnectionManager } from "@vuu-ui/vuu-data-remote";
 import type { LayoutChangeHandler } from "@vuu-ui/vuu-layout";
 import { LayoutProvider, StackLayout } from "@vuu-ui/vuu-layout";
 import {
-  ContextMenuProvider,
   DialogProvider,
   NotificationsProvider,
   useNotifications,
@@ -30,6 +29,7 @@ import {
 
 import shellCss from "./shell.css";
 import { loadingJSON } from "./workspace-management/defaultWorkspaceJSON";
+import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 
 registerComponent("ApplicationSettings", UserSettingsPanel, "view");
 

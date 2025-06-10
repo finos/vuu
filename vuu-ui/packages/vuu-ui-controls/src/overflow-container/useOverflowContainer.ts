@@ -1,4 +1,3 @@
-import { MenuActionHandler, MenuBuilder } from "@vuu-ui/vuu-data-types";
 import {
   isValidNumber,
   MEASURES,
@@ -19,6 +18,7 @@ import {
 } from "./overflow-utils";
 import { OverflowContainerProps } from "./OverflowContainer";
 import { DropOptions, useDragDrop } from "../drag-drop";
+import { MenuActionHandler, MenuBuilder } from "@vuu-ui/vuu-context-menu";
 
 export interface OverflowContainerHookProps
   extends Pick<OverflowContainerProps, "allowDragDrop" | "onMoveItem">,
@@ -107,14 +107,14 @@ export const useOverflowContainer = ({
         return menuItems.map((item: OverflowItem) => {
           return {
             label: item.label,
-            action: `activate-item-${item.index}`,
+            id: `activate-item-${item.index}`,
             options: { overflowItem: item },
           };
         });
       },
       // The menu items are our overflowed items, selecting one by default
       // brings it back onto the toolbar - TODO is this right ?
-      ({ options }) => {
+      (menuItemId, options) => {
         if (container && hasOverflowItem(options)) {
           // TODO do we always want to switch it into view - leave that to caller
           const [, wrappedItems] = switchWrappedItemIntoView(

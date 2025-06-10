@@ -1,21 +1,18 @@
 /* eslint-disable no-sequences */
-import { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { MenuActionHandler } from "@vuu-ui/vuu-context-menu";
+import { DataSource, DataSourceFilter } from "@vuu-ui/vuu-data-types";
 import { Filter } from "@vuu-ui/vuu-filter-types";
-import { removeColumnFromFilter } from "@vuu-ui/vuu-utils";
 import { VuuFilter } from "@vuu-ui/vuu-protocol-types";
-import {
-  DataSource,
-  DataSourceFilter,
-  MenuActionHandler,
-} from "@vuu-ui/vuu-data-types";
-import { PersistentColumnAction } from "../useTableModel";
+import { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
   addGroupColumn,
   addSortColumn,
   AggregationType,
+  removeColumnFromFilter,
   setAggregations,
   setSortColumn,
 } from "@vuu-ui/vuu-utils";
+import { PersistentColumnAction } from "../useTableModel";
 
 export interface ContextMenuOptions {
   column?: RuntimeColumnDescriptor;
@@ -57,12 +54,15 @@ export const useHandleTableContextMenu = ({
   onPersistentColumnOperation,
 }: ContextMenuHookProps) => {
   /** return {boolean} used by caller to determine whether to forward to additional installed context menu handlers */
-  const handleContextMenuAction: MenuActionHandler = (action): boolean => {
-    const gridOptions = action.options as ContextMenuOptions;
+  const handleContextMenuAction: MenuActionHandler = (
+    menuItemId,
+    options,
+  ): boolean => {
+    const gridOptions = options as ContextMenuOptions;
     if (gridOptions.column && dataSource) {
       const { column } = gridOptions;
       // prettier-ignore
-      switch(action.menuId){
+      switch(menuItemId){
         case "sort-asc": return (dataSource.sort = setSortColumn(dataSource.sort, column, "A")), true;
         case "sort-dsc": return (dataSource.sort = setSortColumn(dataSource.sort, column, "D")), true;
         case "sort-add-asc": return (dataSource.sort = addSortColumn(dataSource.sort, column, "A")), true;

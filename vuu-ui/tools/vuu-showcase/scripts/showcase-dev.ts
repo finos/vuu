@@ -41,6 +41,7 @@ function cssInline(): PluginOption {
   const exclude = ["**/**.stories.tsx"];
   const include = [
     "**/packages/grid-layout/**/*.{tsx,jsx}",
+    "**/packages/vuu-context-menu/**/*.{tsx,jsx}",
     "**/packages/vuu-datatable/**/*.{tsx,jsx}",
     "**/packages/vuu-data-react/**/*.{tsx,jsx}",
     "**/packages/vuu-filters/**/*.{tsx,jsx}",

@@ -28,6 +28,7 @@ interface TableCSS extends CSSProperties {
   "--row-height": `${number}px`;
 }
 export const TanstackTable = <T extends object>({
+  allowContextMenu,
   columns,
   dataSource,
   headerHeight = 25,
@@ -52,8 +53,9 @@ export const TanstackTable = <T extends object>({
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { contentHeight, setRange, table } =
+  const { contentHeight, onContextMenu, setRange, table } =
     useTanstackTableWithVuuDatasource<any>({
+      allowContextMenu,
       columns,
       dataSource,
       renderBufferSize,
@@ -118,7 +120,11 @@ export const TanstackTable = <T extends object>({
             className={`${classBase}-contentContainer`}
             ref={useForkRef(setScrollableContainer, scrollableContainerRef)}
           >
-            <div className={`${classBase}-table`} role="table">
+            <div
+              className={`${classBase}-table`}
+              role="table"
+              onContextMenu={onContextMenu}
+            >
               <div className={`${classBase}Header`}>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <div

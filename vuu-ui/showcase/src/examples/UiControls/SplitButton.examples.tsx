@@ -3,18 +3,18 @@ import {
   SplitButtonProps,
   SplitStateButton,
 } from "@vuu-ui/vuu-ui-controls";
-import { MenuActionHandler, MenuBuilder } from "@vuu-ui/vuu-data-types";
 import { useCallback, useMemo, useState } from "react";
 import { PopupMenuProps } from "@vuu-ui/vuu-popups";
+import { MenuActionHandler, MenuBuilder } from "@vuu-ui/vuu-context-menu";
 
 const menuBuilder: MenuBuilder = (_, options) => [
-  { action: "and-clause", label: "AND", options },
-  { action: "or-clause", label: "OR", options },
+  { id: "and-clause", label: "AND", options },
+  { id: "or-clause", label: "OR", options },
 ];
 
-const defaultMenuHandler: MenuActionHandler = ({ menuId }) => {
-  console.log(`Menu Action ${menuId} invoked`);
-  if (menuId === "action-1" || menuId === "action-1") {
+const defaultMenuHandler: MenuActionHandler = (menuItemId) => {
+  console.log(`Menu Action ${menuItemId} invoked`);
+  if (menuItemId === "action-1" || menuItemId === "action-1") {
     // invoke our action here
     return true;
   }

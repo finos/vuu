@@ -9,7 +9,6 @@ import type {
 import type { Filter } from "@vuu-ui/vuu-filter-types";
 import type {
   VuuAggType,
-  VuuMenuItem,
   VuuRowDataItemType,
   VuuSortType,
   VuuTable,
@@ -124,18 +123,6 @@ export interface TableAttributes {
   // showHighlightedRow?: boolean;
   rowSeparators?: boolean;
   zebraStripes?: boolean;
-}
-
-export declare type TableMenuLocation = "grid" | "header" | "filter";
-
-export interface VuuCellMenuItem extends VuuMenuItem {
-  rowKey: string;
-  field: string;
-  value: VuuRowDataItemType;
-}
-export interface VuuRowMenuItem extends VuuMenuItem {
-  rowKey: string;
-  row: { [key: string]: VuuRowDataItemType };
 }
 
 /**

@@ -1,4 +1,3 @@
-import type { MenuActionHandler, MenuBuilder } from "@vuu-ui/vuu-data-types";
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import type {
   ColumnDescriptorsByName,
@@ -27,6 +26,7 @@ import {
 } from "../FilterModel";
 import { FilterClauseCancelHandler } from "../filter-clause";
 import { FilterClauseCombinatorChangeHandler } from "./FilterClauseCombinator";
+import { MenuActionHandler, MenuBuilder } from "@vuu-ui/vuu-context-menu";
 
 export interface FilterEditorHookProps
   extends Pick<
@@ -62,13 +62,13 @@ export const useFilterEditor = ({
   const saveButtonMenuBuilder: MenuBuilder = useCallback((_, options) => {
     switch (clauseCombinatorRef.current) {
       case "and":
-        return [{ action: "and-clause", label: "AND", options }];
+        return [{ id: "and-clause", label: "AND", options }];
       case "or":
-        return [{ action: "or-clause", label: "OR", options }];
+        return [{ id: "or-clause", label: "OR", options }];
       default:
         return [
-          { action: "and-clause", label: "AND", options },
-          { action: "or-clause", label: "OR", options },
+          { id: "and-clause", label: "AND", options },
+          { id: "or-clause", label: "OR", options },
         ];
     }
   }, []);
@@ -134,7 +134,7 @@ export const useFilterEditor = ({
   );
 
   const invokeMenuAction = useCallback<MenuActionHandler>(
-    ({ menuId }) => {
+    (menuId) => {
       switch (menuId) {
         case "save": {
           const savedFilter = filterModel.asFilter();
@@ -196,11 +196,7 @@ export const useFilterEditor = ({
   const handleClickSaveButton = useMemo(
     () => () =>
       // onSave() ?
-      invokeMenuAction({
-        menuId: "save",
-        options: {},
-        type: "menu-action",
-      }),
+      invokeMenuAction("save"),
     [invokeMenuAction],
   );
 

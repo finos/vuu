@@ -7,7 +7,6 @@ import React, {
   ReactElement,
 } from "react";
 import ReactDOM from "react-dom";
-import { ContextMenuOptions } from "../menu";
 import { renderPortal } from "../portal-deprecated";
 
 let _dialogOpen = false;
@@ -36,7 +35,7 @@ export type EscapeClosePopup = {
 export type MenuActionClosePopup = {
   closedBy?: string;
   menuId: string;
-  options: ContextMenuOptions;
+  options: unknown;
   type: "menu-action";
 };
 
@@ -47,11 +46,11 @@ export type PopupCloseReason =
   | TabAwayClosePopup;
 
 export const reasonIsMenuAction = (
-  reason?: PopupCloseReason
+  reason?: PopupCloseReason,
 ): reason is MenuActionClosePopup => reason?.type === "menu-action";
 
 export const reasonIsClickAway = (
-  reason?: PopupCloseReason
+  reason?: PopupCloseReason,
 ): reason is ClickAwayClosePopup => reason?.type === "click-away";
 
 function specialKeyHandler(e: KeyboardEvent) {
@@ -70,7 +69,7 @@ function specialKeyHandler(e: KeyboardEvent) {
 function outsideClickHandler(e: MouseEvent) {
   if (_popups.length) {
     const popupContainers = document.body.querySelectorAll(
-      ".vuuPopup,#vuu-portal-root"
+      ".vuuPopup,#vuu-portal-root",
     );
     for (let i = 0; i < popupContainers.length; i++) {
       if (popupContainers[i].contains(e.target as HTMLElement)) {
@@ -206,14 +205,14 @@ export class PopupService {
       createElement(
         PopupComponent,
         { key: incrementingKey++, position, style },
-        component
+        component,
       ),
       el,
       left,
       top,
       () => {
         PopupService.keepWithinThePage(el, right);
-      }
+      },
     );
   }
 
@@ -234,7 +233,7 @@ export class PopupService {
     document.removeEventListener(
       "keydown",
       PopupService.escapeKeyListener,
-      true
+      true,
     );
 
     PopupService?.onClose?.(
@@ -243,7 +242,7 @@ export class PopupService {
             ...reason,
             closedBy: "popup-service",
           }
-        : undefined
+        : undefined,
     );
   }
 
@@ -296,7 +295,7 @@ export class DialogService {
           }
         },
       }),
-      document.body.querySelector(containerEl)
+      document.body.querySelector(containerEl),
     );
   }
 

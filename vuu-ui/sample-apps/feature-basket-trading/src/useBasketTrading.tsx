@@ -6,10 +6,7 @@ import {
   ViewportRpcResponse,
 } from "@vuu-ui/vuu-data-types";
 import { useViewContext } from "@vuu-ui/vuu-layout";
-import {
-  type ContextMenuConfiguration,
-  useNotifications,
-} from "@vuu-ui/vuu-popups";
+import { useNotifications } from "@vuu-ui/vuu-popups";
 import { VuuDataRow, VuuRpcViewportRequest } from "@vuu-ui/vuu-protocol-types";
 import { TableConfig, TableConfigChangeHandler } from "@vuu-ui/vuu-table-types";
 import { type ColumnMap, metadataKeys, Range } from "@vuu-ui/vuu-utils";
@@ -230,15 +227,15 @@ export const useBasketTrading = () => {
     return true;
   }, []);
 
-  const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
+  const { menuBuilder, menuActionHandler } = useVuuMenuActions({
     dataSource: dataSourceBasketTradingConstituentJoin,
     menuActionConfig: undefined,
     onRpcResponse: handleRpcResponse,
   });
 
-  const basketDesignContextMenuConfig: ContextMenuConfiguration = {
-    menuActionHandler: handleMenuAction,
-    menuBuilder: buildViewserverMenuOptions,
+  const basketDesignContextMenuConfig = {
+    menuActionHandler,
+    menuBuilder,
   };
 
   const handleDropInstrument = useCallback(

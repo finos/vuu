@@ -9,6 +9,8 @@ import { FilterBar } from "@vuu-ui/vuu-filters";
 import { VuuFilter, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
+import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
+import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
 
 export type DataRowAtIndexFunc<T = unknown> = (index: number) => T[];
 const instrumentsSchema = getSchema("instruments");
@@ -161,6 +163,37 @@ export const WithFilters = () => {
         />
       </div>
       <DataSourceStats dataSource={dataSource} />
+    </>
+  );
+};
+
+/** tags=data-consumer */
+export const WithContextMenu = () => {
+  const { VuuDataSource } = useDataSource();
+  const dataSource = useMemo(() => {
+    return new VuuDataSource(dataSourceProps);
+  }, [VuuDataSource]);
+
+  const { menuBuilder, menuActionHandler } = useVuuMenuActions({
+    dataSource: dataSource,
+  });
+
+  return (
+    <>
+      <ContextMenuProvider
+        menuActionHandler={menuActionHandler}
+        menuBuilder={menuBuilder}
+      >
+        <div style={{ height: 600 }}>
+          <TanstackTable<Instrument>
+            allowContextMenu
+            columns={instrumentColumns}
+            dataSource={dataSource}
+            rowHeight={25}
+          />
+        </div>
+        <DataSourceStats dataSource={dataSource} />
+      </ContextMenuProvider>
     </>
   );
 };

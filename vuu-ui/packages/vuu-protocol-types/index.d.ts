@@ -429,7 +429,7 @@ export interface ClientToServerMenuGridRPC {
 }
 
 export interface ClientToServerMenuRowRPC {
-  row: VuuRowRecord;
+  row: VuuDataRowDto;
   rowKey: string;
   rpcName: string;
   type: "VIEW_PORT_MENU_ROW_RPC";
@@ -641,9 +641,6 @@ export declare type VuuLinkDescriptor = {
   parentVpId: string;
   link: VuuLink;
 };
-
-// used in MenuRPC row message
-export declare type VuuRowRecord = { [key: string]: VuuRowDataItemType };
 
 /**
  * LinkDescriptor with label is not strictly part of the Vuu Protocol

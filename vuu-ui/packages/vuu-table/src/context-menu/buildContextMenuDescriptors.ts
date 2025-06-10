@@ -1,8 +1,8 @@
 import {
   ContextMenuItemDescriptor,
-  DataSource,
   MenuBuilder,
-} from "@vuu-ui/vuu-data-types";
+} from "@vuu-ui/vuu-context-menu";
+import { DataSource } from "@vuu-ui/vuu-data-types";
 import { RuntimeColumnDescriptor, PinLocation } from "@vuu-ui/vuu-table-types";
 import { isNumericColumn } from "@vuu-ui/vuu-utils";
 
@@ -30,26 +30,18 @@ export const buildContextMenuDescriptors =
       );
       descriptors.push(...buildColumnDisplayMenuItems(options as MaybeColumn));
       descriptors.push({
-        action: "column-settings",
+        id: "column-settings",
         icon: "settings",
         label: `Column Settings ...`,
         options,
       });
       descriptors.push({
-        action: "table-settings",
+        id: "table-settings",
         icon: "settings",
         label: `DataGrid Settings ...`,
         options,
       });
     }
-
-    // if (options?.selectedRowCount){
-    //   // TODO pass the table name
-    //   const rpcActions = getRpcActions();
-    //   for (let {label, method} of rpcActions){
-    //     descriptors.push({action: Action.RpcCall, label,  options: {method}})
-    //   }
-    // }
 
     return descriptors;
   };
@@ -69,26 +61,26 @@ function buildSortMenuItems(
   if (column.sorted === "A") {
     menuItems.push({
       label: "Reverse Sort (DSC)",
-      action: "sort-dsc",
+      id: "sort-dsc",
       options,
     });
   } else if (column.sorted === "D") {
     menuItems.push({
       label: "Reverse Sort (ASC)",
-      action: "sort-asc",
+      id: "sort-asc",
       options,
     });
   } else if (typeof column.sorted === "number") {
     if (column.sorted > 0) {
       menuItems.push({
         label: "Reverse Sort (DSC)",
-        action: "sort-add-dsc",
+        id: "sort-add-dsc",
         options,
       });
     } else {
       menuItems.push({
         label: "Reverse Sort (ASC)",
-        action: "sort-add-asc",
+        id: "sort-add-asc",
         options,
       });
     }
@@ -97,7 +89,7 @@ function buildSortMenuItems(
     if (hasSort && Math.abs(column.sorted) < sortDefs.length) {
       menuItems.push({
         label: "Remove from sort",
-        action: "sort-remove",
+        id: "sort-remove",
         options,
       });
     }
@@ -105,31 +97,31 @@ function buildSortMenuItems(
     menuItems.push({
       label: "New Sort",
       children: [
-        { label: "Ascending", action: "sort-asc", options },
-        { label: "Descending", action: "sort-dsc", options },
+        { label: "Ascending", id: "sort-asc", options },
+        { label: "Descending", id: "sort-dsc", options },
       ],
     });
   } else if (hasSort) {
     menuItems.push({
       label: "Add to sort",
       children: [
-        { label: "Ascending", action: "sort-add-asc", options },
-        { label: "Descending", action: "sort-add-dsc", options },
+        { label: "Ascending", id: "sort-add-asc", options },
+        { label: "Descending", id: "sort-add-dsc", options },
       ],
     });
     menuItems.push({
       label: "New Sort",
       children: [
-        { label: "Ascending", action: "sort-asc", options },
-        { label: "Descending", action: "sort-dsc", options },
+        { label: "Ascending", id: "sort-asc", options },
+        { label: "Descending", id: "sort-dsc", options },
       ],
     });
   } else {
     menuItems.push({
       label: "Sort",
       children: [
-        { label: "Ascending", action: "sort-asc", options },
-        { label: "Descending", action: "sort-dsc", options },
+        { label: "Ascending", id: "sort-asc", options },
+        { label: "Descending", id: "sort-dsc", options },
       ],
     });
   }
@@ -150,15 +142,15 @@ function buildAggregationMenuItems(
     {
       label: `Aggregate ${label}`,
       children: [
-        { label: "Count", action: "agg-count", options },
-        { label: "Distinct", action: "agg-distinct", options },
+        { label: "Count", id: "agg-count", options },
+        { label: "Distinct", id: "agg-distinct", options },
       ].concat(
         isNumericColumn(column)
           ? [
-              { label: "Sum", action: "agg-sum", options },
-              { label: "Avg", action: "agg-avg", options },
-              { label: "High", action: "agg-high", options },
-              { label: "Low", action: "agg-low", options },
+              { label: "Sum", id: "agg-sum", options },
+              { label: "Avg", id: "agg-avg", options },
+              { label: "High", id: "agg-high", options },
+              { label: "Low", id: "agg-low", options },
             ]
           : [],
       ),
@@ -169,7 +161,7 @@ function buildAggregationMenuItems(
 const pinColumn = (options: unknown, pinLocation: PinLocation) =>
   ({
     label: `Pin ${pinLocation}`,
-    action: `column-pin-${pinLocation}`,
+    id: `column-pin-${pinLocation}`,
     options,
   }) as ContextMenuItemDescriptor;
 
@@ -189,12 +181,12 @@ function buildColumnDisplayMenuItems(
   const menuItems: ContextMenuItemDescriptor[] = [
     {
       label: `Hide column`,
-      action: "column-hide",
+      id: "column-hide",
       options,
     },
     {
       label: `Remove column`,
-      action: "column-remove",
+      id: "column-remove",
       options,
     },
   ];
@@ -206,7 +198,7 @@ function buildColumnDisplayMenuItems(
     });
   } else if (pin === "left") {
     menuItems.push(
-      { label: "Unpin column", action: "column-unpin", options },
+      { label: "Unpin column", id: "column-unpin", options },
       {
         label: `Pin column`,
         children: [pinFloating(options), pinRight(options)],
@@ -214,7 +206,7 @@ function buildColumnDisplayMenuItems(
     );
   } else if (pin === "right") {
     menuItems.push(
-      { label: "Unpin column", action: "column-unpin", options },
+      { label: "Unpin column", id: "column-unpin", options },
       {
         label: `Pin column`,
         children: [pinLeft(options), pinFloating(options)],
@@ -222,7 +214,7 @@ function buildColumnDisplayMenuItems(
     );
   } else if (pin === "floating") {
     menuItems.push(
-      { label: "Unpin column", action: "column-unpin", options },
+      { label: "Unpin column", id: "column-unpin", options },
       {
         label: `Pin column`,
         children: [pinLeft(options), pinRight(options)],
@@ -248,13 +240,13 @@ function buildGroupMenuItems(
   if (groupBy?.length === 0) {
     menuItems.push({
       label: `Group by ${label}`,
-      action: "group",
+      id: "group",
       options,
     });
   } else {
     menuItems.push({
       label: `Add ${label} to group by`,
-      action: "group-add",
+      id: "group-add",
       options,
     });
   }
