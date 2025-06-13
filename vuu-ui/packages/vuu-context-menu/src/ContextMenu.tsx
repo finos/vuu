@@ -1,14 +1,14 @@
+import { VirtualElement } from "@floating-ui/dom";
+import { Menu, MenuPanel, MenuProps } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { VirtualElement } from "@floating-ui/dom";
+import { MenuActionHandler } from "./ContextMenuProvider";
 import {
   ContextMenuItemDescriptor,
   menuItemsFromMenuDescriptors,
 } from "./menu-utils";
 
 import contextMenuCss from "./ContextMenu.css";
-import { MenuActionHandler } from "./ContextMenuProvider";
-import { Menu, MenuPanel, MenuProps } from "@salt-ds/core";
 
 export interface ContextMenuProps
   extends Pick<MenuProps, "open" | "onOpenChange"> {

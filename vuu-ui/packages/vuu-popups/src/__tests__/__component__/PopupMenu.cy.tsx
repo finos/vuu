@@ -89,13 +89,11 @@ describe("Given a PopupMenu", () => {
       cy.mount(<DefaultPopupMenu menuActionHandler={menuHandlerSpy} />);
       cy.findByRole("button").realClick();
       cy.findByRole("menuitem", { name: "Menu Item 1" }).should("exist");
-      cy.wait(50);
+      cy.findByRole("menu").should("be.focused");
+      cy.realPress("ArrowDown");
+      cy.findByRole("menuitem", { name: "Menu Item 1" }).should("be.focused");
       cy.realPress("Enter");
-      cy.get("@menuActionHandler").should("have.been.calledWith", {
-        type: "menu-action",
-        menuId: "action-1",
-        options: undefined,
-      });
+      cy.get("@menuActionHandler").should("have.been.calledWith", "action-1");
     });
   });
 
@@ -107,12 +105,11 @@ describe("Given a PopupMenu", () => {
       cy.findByRole("menuitem", { name: "Menu Item 1" }).should("exist");
       cy.wait(30);
       cy.realPress("ArrowDown");
+      cy.findByRole("menuitem", { name: "Menu Item 1" }).should("be.focused");
+      cy.realPress("ArrowDown");
+      cy.findByRole("menuitem", { name: "Menu Item 2" }).should("be.focused");
       cy.realPress("Enter");
-      cy.get("@menuActionHandler").should("have.been.calledWith", {
-        type: "menu-action",
-        menuId: "action-2",
-        options: undefined,
-      });
+      cy.get("@menuActionHandler").should("have.been.calledWith", "action-2");
     });
   });
 });

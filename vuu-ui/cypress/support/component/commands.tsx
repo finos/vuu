@@ -1,6 +1,6 @@
 import "@testing-library/cypress/add-commands";
-import { mount as cypressMount } from "cypress/react";
-import type { MountOptions, MountReturn } from "cypress/react";
+import { mount as cypressMount } from "cypress/react18";
+import type { MountOptions, MountReturn } from "cypress/react18";
 import "cypress-axe";
 import { Options } from "cypress-axe";
 // import { PerformanceResult, PerformanceTester } from "./PerformanceTester";

@@ -7,7 +7,6 @@ import {
 } from "react";
 import { PopupMenuProps } from "./PopupMenu";
 import { getPositionRelativeToAnchor } from "../popup/getPositionRelativeToAnchor";
-import { PopupCloseCallback, reasonIsClickAway } from "../popup/popup-service";
 import { PopupPlacement } from "../popup/Popup";
 import { useContextMenu } from "@vuu-ui/vuu-context-menu";
 

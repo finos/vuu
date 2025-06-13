@@ -9,6 +9,7 @@ import { useCallback, useState } from "react";
 import { FlexboxLayout, LayoutProvider } from "@vuu-ui/vuu-layout";
 
 import "./Tabstrip.examples.css";
+import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 
 const SPLITTER_WIDTH = 3;
 
@@ -124,12 +125,14 @@ export const TabstripRemoveTab = ({
   activeTabIndex: activeTabIndexProp = 4,
   width = 700,
 }) => (
-  <TabstripTemplate
-    activeTabIndex={activeTabIndexProp}
-    allowAddTab
-    allowCloseTab
-    width={width}
-  />
+  <ContextMenuProvider>
+    <TabstripTemplate
+      activeTabIndex={activeTabIndexProp}
+      allowAddTab
+      allowCloseTab
+      width={width}
+    />
+  </ContextMenuProvider>
 );
 
 export const TabstripEditableLabels = ({

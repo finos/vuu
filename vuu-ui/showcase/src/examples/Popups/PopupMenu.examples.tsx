@@ -3,11 +3,7 @@ import {
   MenuActionHandler,
   MenuBuilder,
 } from "@vuu-ui/vuu-context-menu";
-import {
-  MenuCloseHandler,
-  PopupMenu,
-  PopupMenuProps,
-} from "@vuu-ui/vuu-popups";
+import { PopupMenu, PopupMenuProps } from "@vuu-ui/vuu-popups";
 import { useCallback, useMemo } from "react";
 
 const menuBuilder: MenuBuilder = () => [
@@ -31,29 +27,24 @@ export const DefaultPopupMenu = ({
     [menuActionHandler],
   );
 
-  const onMenuOpen = useCallback(() => {
-    console.log("Menu opened");
-  }, []);
-
-  const onMenuClose = useCallback<MenuCloseHandler>((reason) => {
-    console.log(`Menu closed`, {
-      reason,
-    });
+  const onMenuClose = useCallback(() => {
+    console.log(`Menu closed`);
   }, []);
 
   return (
-    <div
-      data-showcase-center
-      style={{ gap: 24, display: "flex", alignItems: "center" }}
-    >
-      <input data-testid="input" defaultValue="test" />
-      <PopupMenu
-        menuBuilder={menuBuilder}
-        menuActionHandler={menuHandler}
-        onMenuOpen={onMenuOpen}
-        onMenuClose={onMenuClose}
-      />
-    </div>
+    <ContextMenuProvider>
+      <div
+        data-showcase-center
+        style={{ gap: 24, display: "flex", alignItems: "center" }}
+      >
+        <input data-testid="input" defaultValue="test" />
+        <PopupMenu
+          menuBuilder={menuBuilder}
+          menuActionHandler={menuHandler}
+          onMenuClose={onMenuClose}
+        />
+      </div>
+    </ContextMenuProvider>
   );
 };
 
