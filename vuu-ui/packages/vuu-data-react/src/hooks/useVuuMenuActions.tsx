@@ -38,7 +38,7 @@ import {
   isSessionTableActionMessage,
   metadataKeys,
   toColumnName,
-  useDataSource,
+  useData,
   viewportRpcRequest,
 } from "@vuu-ui/vuu-utils";
 import { Button } from "@salt-ds/core";
@@ -309,7 +309,7 @@ export const useVuuMenuActions = ({
   dataSource,
   onRpcResponse,
 }: VuuMenuActionHookProps): VuuMenuActionHookResult => {
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
   const menuBuilder: MenuBuilder<TableMenuLocation, TableContextMenuOptions> =
     useCallback(
       (location, options) => {

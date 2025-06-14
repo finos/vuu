@@ -10,7 +10,7 @@ import {
 } from "@vuu-ui/vuu-protocol-types";
 import {
   isOpenBulkEditResponse,
-  useDataSource,
+  useData,
   viewportRpcRequest,
 } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useRef, useState } from "react";
@@ -19,7 +19,7 @@ export const useTableEditManager = (vuuTable: VuuTable) => {
   const [open, setOpen] = useState(false);
   const [sessionDataSource, setSessionDataSource] = useState<DataSource>();
   const sessionRef = useRef<DataSource>();
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
 
   const dataSource = useMemo(() => {
     const ds = new VuuDataSource({

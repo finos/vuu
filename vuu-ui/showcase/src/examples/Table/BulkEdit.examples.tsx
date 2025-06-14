@@ -9,7 +9,7 @@ import { Table, TableProps } from "@vuu-ui/vuu-table";
 import {
   applyDefaultColumnConfig,
   toColumnName,
-  useDataSource,
+  useData,
 } from "@vuu-ui/vuu-utils";
 import { useMemo, useState } from "react";
 import { getDefaultColumnConfig } from "./columnMetaData";
@@ -27,7 +27,7 @@ const BulkEditTableTemplate = ({
     undefined,
   );
   const schema = getSchema(table);
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
 
   useMemo(async () => {
     const ds = new VuuDataSource({

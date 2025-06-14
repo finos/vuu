@@ -2,7 +2,7 @@ import { RestDataSourceProvider } from "@vuu-ui/vuu-data-react/src/datasource-pr
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { TableProps } from "@vuu-ui/vuu-table";
 import { useCallback, useMemo, useState } from "react";
-import { toColumnName, useDataSource } from "@vuu-ui/vuu-utils";
+import { toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { FilterTable } from "@vuu-ui/vuu-datatable";
 import { FilterBarProps } from "@vuu-ui/vuu-filters";
 import { FilterState } from "@vuu-ui/vuu-filter-types";
@@ -18,7 +18,7 @@ const FilterTableTemplate = ({
   TableProps?: Partial<TableProps>;
   quickFilterColumns?: string[];
 }) => {
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
   const schema = getSchema("instruments");
   const { dataSource, config, ...restTableProps } = useMemo<
     Pick<TableProps, "config" | "dataSource">

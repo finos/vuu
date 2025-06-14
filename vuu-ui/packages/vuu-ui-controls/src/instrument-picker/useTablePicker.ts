@@ -21,7 +21,7 @@ import type {
   TableConfig,
   TableRowSelectHandler,
 } from "@vuu-ui/vuu-table-types";
-import { isStringColumn, toColumnName, useDataSource } from "@vuu-ui/vuu-utils";
+import { isStringColumn, toColumnName, useData } from "@vuu-ui/vuu-utils";
 import type { TablePickerProps } from "./TablePicker";
 import {
   isNavigationKey,
@@ -48,7 +48,7 @@ export const useTablePicker = ({
   schema,
   searchColumns = schema.columns.filter(isStringColumn).map(toColumnName),
 }: TablePickerHookProps) => {
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
   const [value, setValue] = useState("");
   const [open, setOpen] = useState(false);
 

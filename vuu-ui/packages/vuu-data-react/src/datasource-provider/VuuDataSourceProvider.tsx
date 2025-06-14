@@ -1,5 +1,5 @@
 import { ConnectionManager, VuuDataSource } from "@vuu-ui/vuu-data-remote";
-import { DataSourceProvider } from "@vuu-ui/vuu-utils";
+import { DataProvider } from "@vuu-ui/vuu-utils";
 import { ReactNode } from "react";
 import { useAutoLoginToVuuServer } from "./useAutoLoginToVuuServer";
 
@@ -25,12 +25,12 @@ export const VuuDataSourceProvider = ({
     websocketUrl,
   });
   return (
-    <DataSourceProvider
+    <DataProvider
       VuuDataSource={VuuDataSource}
       getServerAPI={getServerAPI}
       isLocalData={false}
     >
       {children}
-    </DataSourceProvider>
+    </DataProvider>
   );
 };

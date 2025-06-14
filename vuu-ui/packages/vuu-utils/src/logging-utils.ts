@@ -106,3 +106,10 @@ function getLoggingLevelFromCookie(): LogLevel {
 export const getLoggingConfigForWorker = () => {
   return `const loggingSettings = { loggingLevel: "${getLoggingLevelFromCookie()}"};`;
 };
+
+export const logUnhandledMessage = (
+  message: never,
+  context = "[logUnhandledStruct]",
+) => {
+  console.log(`${context}  ${JSON.stringify(message)}`);
+};

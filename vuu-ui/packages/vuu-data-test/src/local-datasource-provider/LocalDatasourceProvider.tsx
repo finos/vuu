@@ -14,7 +14,7 @@ import type {
 import { basketModule, basketSchemas, isBasketTable } from "../basket";
 import { isSimulTable, simulModule, simulSchemas } from "../simul";
 import { ReactNode } from "react";
-import { DataSourceProvider } from "@vuu-ui/vuu-utils";
+import { DataProvider } from "@vuu-ui/vuu-utils";
 
 const serverAPI: Pick<
   ServerAPI,
@@ -102,12 +102,12 @@ export const LocalDataSourceProvider = ({
   children: ReactNode;
 }) => {
   return (
-    <DataSourceProvider
+    <DataProvider
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       VuuDataSource={VuuDataSource as any}
       getServerAPI={getServerAPI}
     >
       {children}
-    </DataSourceProvider>
+    </DataProvider>
   );
 };

@@ -11,12 +11,12 @@ import {
   useRef,
 } from "react";
 import { SortIndicator } from "../column-header-pill";
-import { ColumnMenu } from "../column-menu";
 import { ColumnResizer, useTableColumnResize } from "../column-resizing";
 import { useCell } from "../useCell";
 
 import headerCellCss from "./HeaderCell.css";
 import { useContextMenu } from "@vuu-ui/vuu-context-menu";
+import { ColumnMenu } from "@vuu-ui/vuu-table-extras";
 
 const classBase = "vuuTableHeaderCell";
 

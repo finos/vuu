@@ -9,9 +9,9 @@ import {
 
 import { ContextMenuItemDescriptor } from "./menu-utils";
 
-export type MenuActionHandler = (
-  menuItemId: string,
-  options?: unknown,
+export type MenuActionHandler<T extends string = string, Options = unknown> = (
+  menuItemId: T,
+  options?: Options,
 ) => boolean | undefined;
 
 export type MenuBuilder<Location extends string = string, Options = unknown> = (

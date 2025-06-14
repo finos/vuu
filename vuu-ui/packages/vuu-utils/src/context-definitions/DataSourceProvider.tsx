@@ -1,26 +1,43 @@
-import { ReactNode, useContext } from "react";
-import { DataSourceContext, DataSourceContextProps } from "./DataSourceContext";
+import { DataSource } from "@vuu-ui/vuu-data-types";
+import { createContext, ReactNode, useContext } from "react";
+
+export interface DataSourceContextProps {
+  dataSource?: DataSource;
+}
+
+export const DataSourceContext = createContext<DataSourceContextProps>({
+  dataSource: undefined,
+});
 
 export const DataSourceProvider = ({
   children,
-  getServerAPI,
-  isLocalData = true,
-  VuuDataSource,
-}: Omit<DataSourceContextProps, "isLocalData"> & {
+  dataSource,
+}: {
   children: ReactNode;
-  isLocalData?: boolean;
+  dataSource: DataSource;
 }) => {
   return (
-    <DataSourceContext.Provider
-      value={{ isLocalData, VuuDataSource, getServerAPI }}
-    >
+    <DataSourceContext.Provider value={{ dataSource }}>
       {children}
     </DataSourceContext.Provider>
   );
 };
 
-export const useDataSource = () => useContext(DataSourceContext);
-export const useDataSourceExtensions = () => {
-  const { dataSourceExtensions } = useContext(DataSourceContext);
-  return dataSourceExtensions;
-};
+export function useDataSource(throwIfNoDataSource: true): DataSource;
+export function useDataSource(
+  throwIfNoDataSource: false | undefined,
+): DataSource | undefined;
+export function useDataSource(throwIfNoDataSource = false) {
+  const { dataSource } = useContext(DataSourceContext);
+  if (dataSource) {
+    return dataSource;
+  } else if (throwIfNoDataSource) {
+    throw Error(
+      `[DataSOurceProvider] useDataSource,no DataSourceProvider has been declared `,
+    );
+  } else {
+    console.warn(
+      `[DataSourceProvider] useDataSource: no DataSourceProvider has been declared`,
+    );
+  }
+}

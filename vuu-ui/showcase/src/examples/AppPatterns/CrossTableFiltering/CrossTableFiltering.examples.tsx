@@ -21,7 +21,7 @@ import { useCallback, useMemo } from "react";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { LinkedDataSources, LinkedTableView } from "@vuu-ui/vuu-datatable";
 import { TableSearch } from "@vuu-ui/vuu-ui-controls";
-import { useDataSource } from "@vuu-ui/vuu-utils";
+import { useData } from "@vuu-ui/vuu-utils";
 
 // prettier-ignore
 const ParentTableSchema:TableSchema = {
@@ -289,7 +289,7 @@ const TableSearchTemplate = ({
   schema: TableSchema;
   TableProps: Partial<TableProps>;
 }) => {
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
   const { table } = schema;
   const TableProps = useMemo<TableProps>(
     () => ({

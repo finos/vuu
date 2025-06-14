@@ -2,7 +2,7 @@ import { getSchema, LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import { SelectionChangeHandler, TableSchema } from "@vuu-ui/vuu-data-types";
 import { Table, TableProps } from "@vuu-ui/vuu-table";
 import { ColumnLayout, TableConfig } from "@vuu-ui/vuu-table-types";
-import { toColumnName, useDataSource } from "@vuu-ui/vuu-utils";
+import { toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
 
 import "./Misc.examples.css";
@@ -27,7 +27,7 @@ const DataTableTemplate = ({
   width = 1000,
   ...props
 }: DataTableProps) => {
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
   const tableConfig = useMemo<TableConfig>(() => {
     return {
       ...configProp,

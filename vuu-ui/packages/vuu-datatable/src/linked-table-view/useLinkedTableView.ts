@@ -3,7 +3,7 @@ import {
   DataSourceConstructorProps,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
-import { useDataSource } from "@vuu-ui/vuu-utils";
+import { useData } from "@vuu-ui/vuu-utils";
 import {
   LinkedDataSources,
   LinkedTableConfig,
@@ -80,7 +80,7 @@ const getTables = (linkedDataSources: LinkedDataSources): VuuTable[] => {
 export const useLinkedTableView = ({
   linkedDataSources,
 }: LinkedTableViewHookProps) => {
-  const { VuuDataSource, getServerAPI } = useDataSource();
+  const { VuuDataSource, getServerAPI } = useData();
   const [tableConfig, setTableConfig] = useState<
     ResolvedTableConfig | undefined
   >();

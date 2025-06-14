@@ -46,10 +46,7 @@ import {
 } from "react";
 import { TableProps } from "./Table";
 import { useCellBlockSelection } from "./cell-block/useCellBlockSelection";
-import {
-  buildContextMenuDescriptors,
-  useHandleTableContextMenu,
-} from "./context-menu";
+import { buildContextMenuDescriptors } from "./context-menu";
 import { updateTableConfig } from "./table-config";
 import { getAriaRowIndex } from "./table-dom-utils";
 import { useCellEditing } from "./useCellEditing";
@@ -75,6 +72,7 @@ import { ScrollRequestHandler, useTableScroll } from "./useTableScroll";
 import { useTableViewport } from "./useTableViewport";
 import { TableCellBlock } from "./cell-block/cellblock-utils";
 import { CellFocusState } from "./CellFocusState";
+import { useColumnActions } from "@vuu-ui/vuu-table-extras";
 
 type HeaderState = {
   height: number;
@@ -450,7 +448,7 @@ export const useTable = ({
     ],
   );
 
-  const handleContextMenuAction = useHandleTableContextMenu({
+  const handleColumnAction = useColumnActions({
     dataSource,
     onPersistentColumnOperation,
   });
@@ -864,7 +862,7 @@ export const useTable = ({
     focusCellPlaceholderKeyDown,
     focusCellPlaceholderRef,
     getRowOffset,
-    handleContextMenuAction,
+    handleColumnAction,
     headerState,
     headings,
     highlightedIndex: highlightedIndexRef.current,

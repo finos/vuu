@@ -56,7 +56,7 @@ export const toggleOrApplySort = (
 
 export const setSortColumn = (
   { sortDefs }: VuuSort,
-  column: RuntimeColumnDescriptor,
+  column: ColumnDescriptor,
   sortType?: "A" | "D",
 ): VuuSort => {
   if (sortType === undefined) {
@@ -77,7 +77,7 @@ export const setSortColumn = (
 
 export const addSortColumn = (
   { sortDefs }: VuuSort,
-  column: RuntimeColumnDescriptor,
+  column: ColumnDescriptor,
   sortType: "A" | "D" = "A",
 ): VuuSort => {
   const sortEntry: VuuSortCol = { column: column.name, sortType };
@@ -87,5 +87,41 @@ export const addSortColumn = (
     };
   } else {
     return { sortDefs: [sortEntry] };
+  }
+};
+
+export type ColumnSortStatus =
+  | "no-sort"
+  | "sort-other-column"
+  | "single-sort-asc"
+  | "single-sort-desc"
+  | "multi-sort-includes-column-asc"
+  | "multi-sort-includes-column-desc";
+
+/**
+ * Given a VuuSort definition and a column, determine whether the given column
+ * is included in the sort and if so, in what position/direction.
+ */
+export const getSortStatus = (
+  columnName: string,
+  vuuSort?: VuuSort,
+): ColumnSortStatus => {
+  if (vuuSort === undefined || vuuSort.sortDefs.length === 0) {
+    return "no-sort";
+  } else {
+    const sortDef = vuuSort.sortDefs.find((sd) => sd.column === columnName);
+    if (sortDef) {
+      if (vuuSort.sortDefs.length === 1) {
+        return sortDef.sortType === "A"
+          ? "single-sort-asc"
+          : "single-sort-desc";
+      } else {
+        return sortDef.sortType === "A"
+          ? "multi-sort-includes-column-asc"
+          : "multi-sort-includes-column-desc";
+      }
+    } else {
+      return "sort-other-column";
+    }
   }
 };

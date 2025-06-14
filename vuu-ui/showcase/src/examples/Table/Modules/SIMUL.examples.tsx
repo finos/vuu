@@ -1,3 +1,4 @@
+import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
 import { getSchema, SimulTableName } from "@vuu-ui/vuu-data-test";
 import { NotificationsProvider } from "@vuu-ui/vuu-popups";
@@ -10,12 +11,11 @@ import type {
 import {
   applyDefaultColumnConfig,
   toColumnName,
-  useDataSource,
+  useData,
 } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
-import { DemoTableContainer } from "../DemoTableContainer";
 import "../BuySellRowClassNameGenerator";
-import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
+import { DemoTableContainer } from "../DemoTableContainer";
 
 const getDefaultColumnConfig = (
   tableName: string,
@@ -77,7 +77,7 @@ const SimulTable = ({
   tableName = "instruments",
   ...props
 }: SimulTableProps) => {
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
 
   const tableSchema = getSchema(tableName);
 

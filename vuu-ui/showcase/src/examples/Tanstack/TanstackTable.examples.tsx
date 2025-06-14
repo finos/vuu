@@ -1,7 +1,7 @@
 import { getSchema, vuuModule } from "@vuu-ui/vuu-data-test";
 import { FlexboxLayout, LayoutProvider, View } from "@vuu-ui/vuu-layout";
 import { TableColumnDef, TanstackTable } from "@vuu-ui/vuu-tanstack-table";
-import { toColumnName, useDataSource } from "@vuu-ui/vuu-utils";
+import { toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 
 import "./index.css";
@@ -66,7 +66,7 @@ const instrumentColumns: Array<TableColumnDef<Instrument>> = [
 
 /** tags=data-consumer */
 export const WithPaginationFillContainer = () => {
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
     return new VuuDataSource(dataSourceProps);
   }, [VuuDataSource]);
@@ -85,7 +85,7 @@ export const WithPaginationFillContainer = () => {
 
 /** tags=data-consumer */
 export const WithScrollingFillContainer = () => {
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
     return new VuuDataSource(dataSourceProps);
   }, [VuuDataSource]);
@@ -103,7 +103,7 @@ export const WithScrollingFillContainer = () => {
 
 /** tags=data-consumer */
 export const WithColumnMenuFillContainer = () => {
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
     return new VuuDataSource(dataSourceProps);
   }, [VuuDataSource]);
@@ -127,7 +127,7 @@ export const WithColumnMenuFillContainer = () => {
 
 /** tags=data-consumer */
 export const WithFilters = () => {
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
     return new VuuDataSource(dataSourceProps);
   }, [VuuDataSource]);
@@ -169,7 +169,7 @@ export const WithFilters = () => {
 
 /** tags=data-consumer */
 export const WithContextMenu = () => {
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
     return new VuuDataSource(dataSourceProps);
   }, [VuuDataSource]);
@@ -298,7 +298,7 @@ const ordersColumns: Array<TableColumnDef<object>> = [
 
 /** tags=data-consumer */
 export const VirtualisedColumns = () => {
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
     return new VuuDataSource({
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment

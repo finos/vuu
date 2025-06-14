@@ -250,6 +250,10 @@ export interface ColumnDescriptor extends DataValueDescriptor {
    */
   getIcon?: (row: DataSourceRow) => string | undefined;
   /**
+   * Can this column be included in a groupBy operation ? Default is true.
+   */
+  groupable?: boolean;
+  /**
    Optional additional level(s) of heading to display above label.
    May span multiple columns, if multiple adjacent columns declare
    same heading at same level.

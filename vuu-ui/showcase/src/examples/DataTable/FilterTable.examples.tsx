@@ -6,7 +6,7 @@ import type { FilterState } from "@vuu-ui/vuu-filter-types";
 import type { FilterBarProps } from "@vuu-ui/vuu-filters";
 import type { TableConfig } from "@vuu-ui/vuu-table-types";
 import { CSSProperties, useCallback, useMemo, useState } from "react";
-import { toColumnName, useDataSource } from "@vuu-ui/vuu-utils";
+import { toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { View } from "@vuu-ui/vuu-layout";
 
 type FilterTableTemplateProps = {
@@ -20,7 +20,7 @@ const FilterTableTemplate = ({
   QuickFilterProps,
   variant,
 }: FilterTableTemplateProps) => {
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
 
   const dataSource = useMemo(() => {
     return new VuuDataSource({

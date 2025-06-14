@@ -8,7 +8,7 @@ import {
 import { useCallback, useMemo, useState } from "react";
 import { useNotifications } from "@vuu-ui/vuu-popups";
 import { VuuRpcViewportRequest } from "@vuu-ui/vuu-protocol-types";
-import { buildColumnMap, ColumnMap, useDataSource } from "@vuu-ui/vuu-utils";
+import { buildColumnMap, ColumnMap, useData } from "@vuu-ui/vuu-utils";
 
 export type basketDataSourceKey =
   | "data-source-basket"
@@ -40,7 +40,7 @@ export const useBasketTradingDataSources = ({
   const [basketState, setBasketState] = useState<BasketTableState>();
   const notify = useNotifications();
   const { id, loadSession, saveSession, title } = useViewContext();
-  const { getServerAPI, VuuDataSource } = useDataSource();
+  const { getServerAPI, VuuDataSource } = useData();
 
   useMemo(async () => {
     const serverAPI = await getServerAPI();

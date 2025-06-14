@@ -1,7 +1,6 @@
 import { useForkRef } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import {
   DataSource,
   SchemaColumn,
@@ -56,6 +55,7 @@ import { useTable } from "./useTable";
 import { ScrollingAPI } from "./useTableScroll";
 
 import tableCss from "./Table.css";
+import { TableProvider } from "@vuu-ui/vuu-table-extras";
 
 const classBase = "vuuTable";
 
@@ -328,7 +328,7 @@ const TableCore = ({
     focusCellPlaceholderKeyDown,
     focusCellPlaceholderRef,
     getRowOffset,
-    handleContextMenuAction,
+    handleColumnAction,
     headerState: { height: headerHeight, count: headerCount },
     headings,
     highlightedIndex,
@@ -413,9 +413,9 @@ const TableCore = ({
   }
 
   return (
-    <ContextMenuProvider
-      menuActionHandler={handleContextMenuAction}
-      menuBuilder={menuBuilder}
+    <TableProvider
+      dataSource={dataSource}
+      menuActionHandler={handleColumnAction}
     >
       {showPaginationControls !== true ? (
         <div
@@ -516,7 +516,7 @@ const TableCore = ({
         style={cssScrollbarSize}
       />
       {draggableRow}
-    </ContextMenuProvider>
+    </TableProvider>
   );
 };
 

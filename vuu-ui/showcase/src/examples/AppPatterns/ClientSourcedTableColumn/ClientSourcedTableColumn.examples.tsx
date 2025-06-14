@@ -6,11 +6,7 @@ import type {
   TableConfig,
   TableRowSelectHandler,
 } from "@vuu-ui/vuu-table-types";
-import {
-  registerComponent,
-  toColumnName,
-  useDataSource,
-} from "@vuu-ui/vuu-utils";
+import { registerComponent, toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { PinButtonCell } from "./pin-button-cell";
 import {
@@ -48,7 +44,7 @@ const TableTemplate = ({
   filter?: DataSourceFilter;
   schema: TableSchema;
 } & Partial<TableProps>) => {
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
 
   const tableConfig = useMemo<TableConfig>(() => {
     return (
@@ -93,7 +89,7 @@ const TableSearchTemplate = ({
   schema: TableSchema;
   TableProps: Omit<TableProps, "dataSource">;
 }) => {
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
     const { table } = schema;
     const dataSource = new VuuDataSource({
