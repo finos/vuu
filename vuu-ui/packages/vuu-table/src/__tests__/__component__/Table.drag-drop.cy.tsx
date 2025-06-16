@@ -23,17 +23,15 @@ describe("Table drag drop", () => {
           </LocalDataSourceProvider>,
         );
 
-        cy.findByRole("columnheader", { name: "currency" }).should(
-          "have.attr",
-          "aria-colindex",
-          "2",
-        );
-        cy.findByRole("columnheader", { name: "exchange" }).should(
-          "have.attr",
-          "aria-colindex",
-          "4",
-        );
-        cy.findByRole("columnheader", { name: "exchange" }).realMouseDown({
+        cy.findByRole("columnheader", {
+          name: "currency column header",
+        }).should("have.attr", "aria-colindex", "2");
+        cy.findByRole("columnheader", {
+          name: "exchange column header",
+        }).should("have.attr", "aria-colindex", "4");
+        cy.findByRole("columnheader", {
+          name: "exchange column header",
+        }).realMouseDown({
           button: "left",
           position: "center",
         });

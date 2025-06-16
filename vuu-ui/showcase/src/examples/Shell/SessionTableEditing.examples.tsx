@@ -1,6 +1,6 @@
 import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
 import { DataSource } from "@vuu-ui/vuu-data-types";
-import { MenuActionClosePopup, useDialog } from "@vuu-ui/vuu-popups";
+import { useDialog } from "@vuu-ui/vuu-popups";
 import { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { SessionEditingForm } from "@vuu-ui/vuu-data-react";

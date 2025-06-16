@@ -1,7 +1,4 @@
-import {
-  ColumnDescriptor,
-  RuntimeColumnDescriptor,
-} from "@vuu-ui/vuu-table-types";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { VuuSort, VuuSortCol, VuuSortType } from "@vuu-ui/vuu-protocol-types";
 
 const cycleSortType = (sortType: VuuSortType) =>

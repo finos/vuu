@@ -493,82 +493,48 @@ export function buildAggregationMenuItems(
       >
         Distinct
       </MenuItem>,
-    ].concat(
-      isNumericColumn(column)
-        ? [
-            <MenuItem
-              data-menu-action-id="agg-sum"
-              key="agg-sum"
-              onClick={menuActionClickHandler}
-            >
-              Sum
-            </MenuItem>,
-            <MenuItem
-              data-menu-action-id="agg-avg"
-              key="agg-avg"
-              onClick={menuActionClickHandler}
-            >
-              Average
-            </MenuItem>,
-            <MenuItem
-              data-menu-action-id="agg-high"
-              key="agg-high"
-              onClick={menuActionClickHandler}
-            >
-              High
-            </MenuItem>,
-            <MenuItem
-              data-menu-action-id="agg-low"
-              key="agg-low"
-              onClick={menuActionClickHandler}
-            >
-              Low
-            </MenuItem>,
-          ]
-        : [],
-    );
+    ];
+
+    if (isNumericColumn(column)) {
+      menuItems.push(
+        <MenuItem
+          data-menu-action-id="agg-sum"
+          key="agg-sum"
+          onClick={menuActionClickHandler}
+        >
+          Sum
+        </MenuItem>,
+        <MenuItem
+          data-menu-action-id="agg-avg"
+          key="agg-avg"
+          onClick={menuActionClickHandler}
+        >
+          Average
+        </MenuItem>,
+        <MenuItem
+          data-menu-action-id="agg-high"
+          key="agg-high"
+          onClick={menuActionClickHandler}
+        >
+          High
+        </MenuItem>,
+        <MenuItem
+          data-menu-action-id="agg-low"
+          key="agg-low"
+          onClick={menuActionClickHandler}
+        >
+          Low
+        </MenuItem>,
+      );
+    }
 
     return [
       <Menu key="aggregate-menu">
         <MenuTrigger>
           <MenuItem>{`Aggregate ${label}`}</MenuItem>
         </MenuTrigger>
-        <MenuPanel>
-          <MenuItem
-            data-menu-action-id="agg-count"
-            key="agg-count"
-            onClick={menuActionClickHandler}
-          >
-            Count
-          </MenuItem>
-          <MenuItem
-            data-menu-action-id="agg-distinct"
-            key="agg-distinct"
-            onClick={menuActionClickHandler}
-          >
-            Distinct
-          </MenuItem>
-        </MenuPanel>
+        <MenuPanel>{menuItems}</MenuPanel>
       </Menu>,
     ];
   }
-
-  // return [
-  //   {
-  //     label: `Aggregate ${label}`,
-  //     children: [
-  //       { label: "Count", id: "agg-count", options },
-  //       { label: "Distinct", id: "agg-distinct", options },
-  //     ].concat(
-  //       isNumericColumn(column)
-  //         ? [
-  //             { label: "Sum", id: "agg-sum", options },
-  //             { label: "Avg", id: "agg-avg", options },
-  //             { label: "High", id: "agg-high", options },
-  //             { label: "Low", id: "agg-low", options },
-  //           ]
-  //         : [],
-  //     ),
-  //   },
-  // ];
 }

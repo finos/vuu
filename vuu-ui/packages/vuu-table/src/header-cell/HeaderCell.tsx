@@ -106,6 +106,7 @@ export const HeaderCell = ({
     <div
       {...htmlAttributes}
       aria-colindex={column.ariaColIndex}
+      aria-label={`${column.label ?? column.name} column header`}
       className={cx(className, classNameProp, {
         [`${classBase}-resizing`]: isResizing,
         [`${classBase}-noMenu`]: showMenu === false,

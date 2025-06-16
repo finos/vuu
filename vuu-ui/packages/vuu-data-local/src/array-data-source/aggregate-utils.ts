@@ -108,13 +108,10 @@ function aggregateCount(
     }
   }
 
-  console.log("!!!! targetData", targetData);
-  console.log("!!!! counts", counts);
   return counts;
 }
 
 function getAggColumn(columnMap: ColumnMap, aggregations: VuuAggregation[]) {
-  console.log("!!!! aggregation length", aggregations.length);
   const columnName = aggregations[aggregations.length - 1].column;
   const columnNumber = columnMap[columnName];
   return columnNumber;
@@ -152,7 +149,6 @@ function aggregateSum(
   }
 
   for (const key in groupMap) {
-    console.log(key);
     const sum = Number(sumRecursive(groupMap[key], leafData, aggColumn));
     sums[key] = sum;
   }
@@ -165,8 +161,6 @@ function aggregateSum(
     }
   }
 
-  console.log("!!!! targetData", targetData);
-  console.log("!!!! sums", sums);
   return sums;
 }
 

@@ -37,12 +37,11 @@ import {
 
 import {
   DataSource,
-  DataSourceConfig,
   TableSchema,
   WithBaseFilter,
   WithFullConfig,
 } from "@vuu-ui/vuu-data-types";
-import { VuuColumnDataType, VuuTable } from "@vuu-ui/vuu-protocol-types";
+import { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
 import { Reducer, useReducer } from "react";
 import { buildValidationChecker } from "@vuu-ui/vuu-data-react";
 
