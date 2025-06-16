@@ -9,6 +9,7 @@ import { HTMLAttributes, MouseEventHandler, useCallback } from "react";
 
 import columnMenuCss from "./ColumnMenu.css";
 import {
+  buildAggregationMenuItems,
   buildPinMenuItems,
   buildGroupMenu,
   buildSortMenu,
@@ -53,6 +54,11 @@ export const ColumnMenu = ({
 
   const sortMenu = buildSortMenu(column, dataSource, menuActionClickHandler);
   const groupMenu = buildGroupMenu(column, dataSource, menuActionClickHandler);
+  const aggregationMenu = buildAggregationMenuItems(
+    column,
+    dataSource,
+    menuActionClickHandler,
+  );
   const visibilityMenuItems = buildVisibilityMenuItems(
     column,
     menuActionClickHandler,
@@ -87,6 +93,7 @@ export const ColumnMenu = ({
       <MenuPanel>
         {sortMenu}
         {groupMenu}
+        {aggregationMenu}
         {visibilityMenuItems}
         {pinMenu}
         {settingsMenuItems}

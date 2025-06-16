@@ -5,7 +5,7 @@ import type {
   VuuRowDataItemType,
 } from "@vuu-ui/vuu-protocol-types";
 import { ForwardedRef, forwardRef, SyntheticEvent, useCallback } from "react";
-import { CommitHandler } from "@vuu-ui/vuu-utils";
+import type { CommitHandler } from "@vuu-ui/vuu-utils";
 
 const classBase = "vuuCycleStateButton";
 

@@ -30,7 +30,12 @@ export const TableProvider = ({
   children: ReactNode;
 }) => {
   return (
-    <TableContext.Provider value={{ dataSource, menuActionHandler }}>
+    <TableContext.Provider
+      value={{
+        dataSource,
+        menuActionHandler,
+      }}
+    >
       {children}
     </TableContext.Provider>
   );
@@ -45,6 +50,9 @@ export function useTableContext(throwIfNoDataSource = false) {
   ) {
     throw Error(`[TableProvider] no DataSourceProvider has been declared`);
   } else {
-    return { dataSource, menuActionHandler };
+    return {
+      dataSource,
+      menuActionHandler,
+    };
   }
 }

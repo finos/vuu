@@ -1,4 +1,3 @@
-import { getDataItemEditControl } from "@vuu-ui/vuu-data-react";
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -8,6 +7,7 @@ import { registerRules } from "./edit-validation-rules";
 import { EditFormHookProps, useEditForm } from "./useEditForm";
 
 import editFormCss from "./EditForm.css";
+import { getDataItemEditControl } from "./get-data-item-edit-control";
 
 const classBase = "EditForm";
 

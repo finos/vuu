@@ -1,13 +1,13 @@
-import {
+import type {
   DataSource,
   DataSourceConfig,
   DataSourceConfigChangeHandler,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
-import { isConfigChanged, useData } from "@vuu-ui/vuu-utils";
 import { useViewContext } from "@vuu-ui/vuu-layout";
+import type { VuuRange } from "@vuu-ui/vuu-protocol-types";
+import { isConfigChanged, useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
-import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 
 type SessionDataSourceConfig = {
   "datasource-config"?: DataSourceConfig;

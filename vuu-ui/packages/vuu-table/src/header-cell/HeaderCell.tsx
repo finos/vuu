@@ -1,6 +1,8 @@
-import { HeaderCellProps } from "@vuu-ui/vuu-table-types";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { useContextMenu } from "@vuu-ui/vuu-context-menu";
+import { ColumnMenu } from "@vuu-ui/vuu-table-extras";
+import { HeaderCellProps } from "@vuu-ui/vuu-table-types";
 import cx from "clsx";
 import {
   KeyboardEventHandler,
@@ -15,8 +17,6 @@ import { ColumnResizer, useTableColumnResize } from "../column-resizing";
 import { useCell } from "../useCell";
 
 import headerCellCss from "./HeaderCell.css";
-import { useContextMenu } from "@vuu-ui/vuu-context-menu";
-import { ColumnMenu } from "@vuu-ui/vuu-table-extras";
 
 const classBase = "vuuTableHeaderCell";
 

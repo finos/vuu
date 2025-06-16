@@ -264,7 +264,7 @@ export interface ColumnDescriptor extends DataValueDescriptor {
   locked?: boolean;
   maxWidth?: number;
   minWidth?: number;
-  pin?: PinLocation;
+  pin?: PinLocation | false;
   resizeable?: boolean;
   sortable?: boolean;
   /**

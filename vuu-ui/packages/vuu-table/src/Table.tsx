@@ -7,6 +7,7 @@ import {
   Selection,
   SelectionChangeHandler,
 } from "@vuu-ui/vuu-data-types";
+import { TableProvider } from "@vuu-ui/vuu-table-extras";
 import {
   CustomHeader,
   DataCellEditNotification,
@@ -55,7 +56,6 @@ import { useTable } from "./useTable";
 import { ScrollingAPI } from "./useTableScroll";
 
 import tableCss from "./Table.css";
-import { TableProvider } from "@vuu-ui/vuu-table-extras";
 
 const classBase = "vuuTable";
 
@@ -332,7 +332,6 @@ const TableCore = ({
     headerState: { height: headerHeight, count: headerCount },
     headings,
     highlightedIndex,
-    menuBuilder,
     onDataEdited,
     onHeaderHeightMeasured,
     onMoveColumn,

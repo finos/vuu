@@ -1,3 +1,10 @@
+import { Button } from "@salt-ds/core";
+import {
+  type ContextMenuItemDescriptor,
+  isGroupMenuItemDescriptor,
+  type MenuActionHandler,
+  type MenuBuilder,
+} from "@vuu-ui/vuu-context-menu";
 import {
   DataSource,
   DataSourceRow,
@@ -5,6 +12,7 @@ import {
   RpcResponseHandler,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
+import { getFilterPredicate } from "@vuu-ui/vuu-filter-parser";
 import { useDialogContext, useNotifications } from "@vuu-ui/vuu-popups";
 import type {
   ClientToServerMenuCellRPC,
@@ -21,14 +29,13 @@ import type {
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
 import {
-  BulkEditPanel,
   BulkEditDialog,
-  TableContextMenuOptions,
+  BulkEditPanel,
   isTableLocation,
+  TableContextMenuOptions,
   TableMenuLocation,
 } from "@vuu-ui/vuu-table";
-import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
   ColumnMap,
   dataSourceRowToDataRowDto,
@@ -41,20 +48,12 @@ import {
   useData,
   viewportRpcRequest,
 } from "@vuu-ui/vuu-utils";
-import { Button } from "@salt-ds/core";
 import { useCallback } from "react";
 import {
   FormConfig,
   FormFieldDescriptor,
   SessionEditingForm,
 } from "../session-editing-form";
-import {
-  ContextMenuItemDescriptor,
-  isGroupMenuItemDescriptor,
-  MenuActionHandler,
-  MenuBuilder,
-} from "@vuu-ui/vuu-context-menu";
-import { getFilterPredicate } from "@vuu-ui/vuu-filter-parser";
 
 export interface VuuMenuActionHookResult {
   menuBuilder: MenuBuilder<TableMenuLocation, TableContextMenuOptions>;

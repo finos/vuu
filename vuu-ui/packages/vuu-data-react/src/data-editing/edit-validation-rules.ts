@@ -1,6 +1,6 @@
+import type { EditRuleValidator } from "@vuu-ui/vuu-data-types";
+import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { registerComponent } from "@vuu-ui/vuu-utils";
-import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
-import { EditRuleValidator } from "@vuu-ui/vuu-data-types";
 import { OK } from "./edit-rule-validation-checker";
 
 const isString = (value?: VuuRowDataItemType): value is string =>

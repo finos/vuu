@@ -246,7 +246,7 @@ export const isMappedValueTypeRenderer = (
   typeof (renderer as MappedValueTypeRenderer)?.map !== "undefined";
 
 export function buildColumnMap(
-  columns?: (RuntimeColumnDescriptor | SchemaColumn | string)[],
+  columns?: (ColumnDescriptor | SchemaColumn | string)[],
 ): ColumnMap {
   const start = metadataKeys.count;
   if (columns) {
@@ -580,7 +580,7 @@ export const getColumnStyle = ({
 
 export const setAggregations = (
   aggregations: VuuAggregation[],
-  column: RuntimeColumnDescriptor,
+  column: ColumnDescriptor,
   aggType: VuuAggType,
 ) => {
   return aggregations

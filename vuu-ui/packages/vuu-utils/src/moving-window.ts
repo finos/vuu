@@ -1,10 +1,8 @@
 import { DataSourceRow } from "@vuu-ui/vuu-data-types";
-import {
-  isRowSelectedLast,
-  metadataKeys,
-  WindowRange,
-} from "@vuu-ui/vuu-utils";
 import { VuuRange } from "@vuu-ui/vuu-protocol-types";
+import { metadataKeys } from "./column-utils";
+import { WindowRange } from "./range-utils";
+import { isRowSelectedLast } from "./selection-utils";
 
 const { SELECTED } = metadataKeys;
 

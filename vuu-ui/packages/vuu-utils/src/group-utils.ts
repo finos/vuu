@@ -2,12 +2,17 @@ import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { VuuGroupBy } from "@vuu-ui/vuu-protocol-types";
 
 export function addGroupColumn(groupBy: VuuGroupBy, column: ColumnDescriptor) {
-  if (groupBy) {
+  if (groupBy.length > 0) {
     return groupBy.concat(column.name);
   } else {
     return [column.name];
   }
 }
+
+export const removeGroupColumn = (
+  groupBy: VuuGroupBy,
+  column: ColumnDescriptor,
+) => groupBy.filter((colName) => colName !== column.name);
 
 export type ColumnGroupStatus =
   | "no-groupby"

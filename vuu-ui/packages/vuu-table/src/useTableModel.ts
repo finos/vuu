@@ -118,7 +118,7 @@ export interface ColumnActionInit {
 
 export interface ColumnActionHide {
   type: "hideColumns";
-  columns: RuntimeColumnDescriptor[];
+  columns: ColumnDescriptor[];
 }
 
 export interface ColumnActionShow {
@@ -134,7 +134,7 @@ export interface ColumnActionMove {
 export interface ColumnActionPin {
   type: "pinColumn";
   column: ColumnDescriptor;
-  pin?: PinLocation;
+  pin: PinLocation | false;
 }
 
 export interface ColumnActionResize {
@@ -156,7 +156,7 @@ export interface ColumnActionUpdate {
 
 export interface ColumnActionUpdateProp {
   align?: ColumnDescriptor["align"];
-  column: RuntimeColumnDescriptor;
+  column: ColumnDescriptor;
   hidden?: ColumnDescriptor["hidden"];
   label?: ColumnDescriptor["label"];
   resizing?: RuntimeColumnDescriptor["resizing"];
@@ -169,34 +169,6 @@ export interface ColumnActionTableConfig
   confirmed?: boolean;
   type: "tableConfig";
 }
-
-export interface ColumnActionColumnSettings extends DataSourceConfig {
-  type: "columnSettings";
-  column: ColumnDescriptor;
-  /** required only for calculated coplumns */
-  vuuTable?: VuuTable;
-}
-
-export interface ColumnActionTableSettings extends DataSourceConfig {
-  type: "tableSettings";
-}
-
-export const isShowColumnSettings = (
-  action: PersistentColumnAction,
-): action is ColumnActionColumnSettings => action.type === "columnSettings";
-
-export const isShowTableSettings = (
-  action: PersistentColumnAction,
-): action is ColumnActionTableSettings => action.type === "tableSettings";
-
-/**
- * PersistentColumnActions are those actions that require us to persist user changes across sessions
- */
-export type PersistentColumnAction =
-  | ColumnActionPin
-  | ColumnActionHide
-  | ColumnActionColumnSettings
-  | ColumnActionTableSettings;
 
 export type GridModelAction =
   | ColumnActionHide
