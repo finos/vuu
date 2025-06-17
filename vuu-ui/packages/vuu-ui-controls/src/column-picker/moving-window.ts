@@ -1,8 +1,8 @@
 //TODO stansardise this
 
-import { DataSourceRow } from "@vuu-ui/vuu-data-types";
+import type { DataSourceRow } from "@vuu-ui/vuu-data-types";
+import type { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import { metadataKeys, WindowRange } from "@vuu-ui/vuu-utils";
-import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 
 const { SELECTED } = metadataKeys;
 

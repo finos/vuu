@@ -1,8 +1,3 @@
-import {
-  ContextMenuItemDescriptor,
-  MenuActionHandler,
-  MenuBuilder,
-} from "@vuu-ui/vuu-data-types";
 import { PopupMenu } from "@vuu-ui/vuu-popups";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -11,8 +6,19 @@ import { useMemo } from "react";
 import { MenuOptions, closeCommand, renameCommand } from "./TabMenuOptions";
 
 import tabMenuCss from "./TabMenu.css";
+import {
+  ContextMenuItemDescriptor,
+  MenuActionHandler,
+  MenuBuilder,
+} from "@vuu-ui/vuu-context-menu";
 
 const classBase = "vuuTabMenu";
+
+export type TabContextMenuOptions = {
+  controlledComponentId?: string;
+  controlledComponentTitle?: string;
+  tabIndex: number;
+};
 
 export interface TabMenuProps {
   allowClose: boolean;
@@ -49,7 +55,7 @@ export const TabMenu = ({
   });
 
   const [menuBuilder, menuOptions] = useMemo(
-    (): [MenuBuilder, MenuOptions] => [
+    (): [MenuBuilder, TabContextMenuOptions] => [
       (_location, options) => {
         const menuItems: ContextMenuItemDescriptor[] = [];
         if (allowRename) {

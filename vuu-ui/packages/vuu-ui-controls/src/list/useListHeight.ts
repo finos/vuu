@@ -1,6 +1,6 @@
-import { MeasuredSize } from "@vuu-ui/vuu-ui-controls";
 import { RefCallback, useCallback, useMemo, useRef, useState } from "react";
 import { HeightOnly, ResizeHandler, useResizeObserver } from "../common-hooks";
+import { MeasuredSize } from "../measured-container";
 
 export interface ListHeightHookProps {
   displayedItemCount: number;

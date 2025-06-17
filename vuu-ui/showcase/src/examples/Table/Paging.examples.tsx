@@ -4,7 +4,6 @@ import {
   simulModule,
   simulSchemas,
 } from "@vuu-ui/vuu-data-test";
-import { ContextMenuProvider } from "@vuu-ui/vuu-popups";
 import { Table, TableProps } from "@vuu-ui/vuu-table";
 import { ColumnLayout } from "@vuu-ui/vuu-table-types";
 import { applyDefaultColumnConfig } from "@vuu-ui/vuu-utils";
@@ -12,6 +11,7 @@ import { useCallback, useMemo } from "react";
 import { DemoTableContainer } from "./DemoTableContainer";
 import { VuuDataSource } from "@vuu-ui/vuu-data-remote";
 import { useAutoLoginToVuuServer } from "../utils";
+import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 
 const SimulTable = ({
   columnLayout,
@@ -44,15 +44,15 @@ const SimulTable = ({
     // console.log(JSON.stringify(config, null, 2));
   }, []);
 
-  const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
+  const { menuBuilder, menuActionHandler } = useVuuMenuActions({
     dataSource: tableProps.dataSource,
   });
 
   return (
     <>
       <ContextMenuProvider
-        menuActionHandler={handleMenuAction}
-        menuBuilder={buildViewserverMenuOptions}
+        menuActionHandler={menuActionHandler}
+        menuBuilder={menuBuilder}
       >
         <DemoTableContainer>
           <Table
@@ -106,15 +106,15 @@ const VuuTable = ({
     // console.log(JSON.stringify(config, null, 2));
   }, []);
 
-  const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
+  const { menuBuilder, menuActionHandler } = useVuuMenuActions({
     dataSource: tableProps.dataSource,
   });
 
   return (
     <>
       <ContextMenuProvider
-        menuActionHandler={handleMenuAction}
-        menuBuilder={buildViewserverMenuOptions}
+        menuActionHandler={menuActionHandler}
+        menuBuilder={menuBuilder}
       >
         <DemoTableContainer>
           <Table

@@ -5,11 +5,14 @@ import {
   DataValueTypeDescriptor,
   TableConfig,
 } from "@vuu-ui/vuu-table-types";
-import { hasValidationRules, isTypeDescriptor } from "@vuu-ui/vuu-utils";
+import {
+  hasValidationRules,
+  isTypeDescriptor,
+  metadataKeys,
+} from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import type { BulkEditPanelProps } from "./BulkEditPanel";
 import { EditValueChangeHandler } from "./useBulkEditRow";
-import { metadataKeys } from "@vuu-ui/vuu-utils";
 
 const addRenderer = (
   colType: DataValueTypeDescriptor,

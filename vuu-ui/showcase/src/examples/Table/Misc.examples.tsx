@@ -37,7 +37,7 @@ import {
   defaultValueFormatter,
   registerComponent,
   toColumnName,
-  useDataSource,
+  useData,
 } from "@vuu-ui/vuu-utils";
 import { Button, Input, InputProps } from "@salt-ds/core";
 import {
@@ -112,7 +112,7 @@ const TableTemplate = ({
   columns?: ColumnDescriptor[];
   schema: TableSchema;
 } & Partial<TableProps>) => {
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
 
   const tableConfig = useMemo<TableConfig>(() => {
     return (
@@ -223,7 +223,7 @@ export const TabInAndOut = () => {
 };
 
 const VuuTableTemplate = ({ schema }: { schema: TableSchema }) => {
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
     const { table } = schema;
     const dataSource = new VuuDataSource({

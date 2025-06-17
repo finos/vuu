@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { FilterValueChangeHandler, InlineFilter } from "@vuu-ui/vuu-filters";
 import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
-import { useDataSource } from "@vuu-ui/vuu-utils";
+import { useData } from "@vuu-ui/vuu-utils";
 import { TableConfig } from "@vuu-ui/vuu-table-types";
 import { Table } from "@vuu-ui/vuu-table";
 
@@ -9,7 +9,7 @@ const table = { module: "SIMUL", table: "instrumentsExtended" } as const;
 const schema = getSchema("instrumentsExtended");
 
 const TableTemplate = () => {
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
 
   const dataSource = useMemo(() => {
     return new VuuDataSource({ table: schema.table });

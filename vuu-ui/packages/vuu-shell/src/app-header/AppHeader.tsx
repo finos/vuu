@@ -1,13 +1,13 @@
-import { useLayoutOperation } from "@vuu-ui/vuu-layout";
-import { Toolbar } from "@vuu-ui/vuu-ui-controls";
-import { ThemeMode } from "@vuu-ui/vuu-utils";
 import { Button } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { useLayoutOperation } from "@vuu-ui/vuu-layout";
+import { Toolbar } from "@vuu-ui/vuu-ui-controls";
+import type { ThemeMode } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { HTMLAttributes, useCallback, useRef } from "react";
-import { logout } from "../login";
 import { useLoginUrl } from "../application-provider";
+import { logout } from "../login";
 
 import appHeaderCss from "./AppHeader.css";
 

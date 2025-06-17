@@ -9,7 +9,6 @@ import type {
 import type { Filter } from "@vuu-ui/vuu-filter-types";
 import type {
   VuuAggType,
-  VuuMenuItem,
   VuuRowDataItemType,
   VuuSortType,
   VuuTable,
@@ -124,18 +123,6 @@ export interface TableAttributes {
   // showHighlightedRow?: boolean;
   rowSeparators?: boolean;
   zebraStripes?: boolean;
-}
-
-export declare type TableMenuLocation = "grid" | "header" | "filter";
-
-export interface VuuCellMenuItem extends VuuMenuItem {
-  rowKey: string;
-  field: string;
-  value: VuuRowDataItemType;
-}
-export interface VuuRowMenuItem extends VuuMenuItem {
-  rowKey: string;
-  row: { [key: string]: VuuRowDataItemType };
 }
 
 /**
@@ -263,6 +250,10 @@ export interface ColumnDescriptor extends DataValueDescriptor {
    */
   getIcon?: (row: DataSourceRow) => string | undefined;
   /**
+   * Can this column be included in a groupBy operation ? Default is true.
+   */
+  groupable?: boolean;
+  /**
    Optional additional level(s) of heading to display above label.
    May span multiple columns, if multiple adjacent columns declare
    same heading at same level.
@@ -273,7 +264,7 @@ export interface ColumnDescriptor extends DataValueDescriptor {
   locked?: boolean;
   maxWidth?: number;
   minWidth?: number;
-  pin?: PinLocation;
+  pin?: PinLocation | false;
   resizeable?: boolean;
   sortable?: boolean;
   /**

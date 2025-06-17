@@ -26,12 +26,17 @@ import {
   tanstackColumnAccessorsToVuuColumnAccessors,
   tanstackSortToVuuSort,
 } from "./vuu-tanstack-utils";
+import { useTableContextMenu } from "@vuu-ui/vuu-table";
 
 const NO_SELECTION: RowSelectionState = {} as const;
 const NO_SORT: SortingState = [] as const;
 const NO_VISIBILITY_STATE: VisibilityState = {} as const;
 
 export interface TanstackTableProps<T extends object> {
+  /**
+   * Should the table support Vuu serverside context menu
+   */
+  allowContextMenu?: boolean;
   columns: TableColumnDef<T>[];
 
   dataSource: DataSource;
@@ -62,6 +67,7 @@ export interface TanstackTableProps<T extends object> {
 }
 
 export const useTanstackTableWithVuuDatasource = <T extends VuuDataSourceRow>({
+  allowContextMenu,
   columns,
   dataSource,
   renderBufferSize = 20,
@@ -219,6 +225,14 @@ export const useTanstackTableWithVuuDatasource = <T extends VuuDataSourceRow>({
     [dataSource],
   );
 
+  const onContextMenu = useTableContextMenu({
+    allowContextMenu,
+    columns: dataSource.columns.map((name) => ({ name })),
+    data: data.current,
+    dataSource,
+    getSelectedRows: () => dataWindow.getSelectedRows(),
+  });
+
   const table = useReactTable<DataSourceRow>({
     data: data.current,
     columns: columnsWithVuuAccessors,
@@ -244,6 +258,7 @@ export const useTanstackTableWithVuuDatasource = <T extends VuuDataSourceRow>({
   return {
     dataSource,
     contentHeight: rowHeight * totalRowCount,
+    onContextMenu,
     setRange,
     table,
   };

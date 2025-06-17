@@ -12,7 +12,7 @@ import {
   VuuRpcViewportRequest,
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
-import { DataSourceProvider, isObject } from "@vuu-ui/vuu-utils";
+import { DataProvider, isObject } from "@vuu-ui/vuu-utils";
 import { ReactNode } from "react";
 
 const serverAPI = (
@@ -103,7 +103,7 @@ export const RestDataSourceProvider = ({
   const restDataSourceClass = getRestDataSourceClass({ createHttpHeaders });
 
   return (
-    <DataSourceProvider
+    <DataProvider
       VuuDataSource={restDataSourceClass}
       dataSourceExtensions={{ createHttpHeaders }}
       getServerAPI={getServerAPI(tableSchemas)}
@@ -111,6 +111,6 @@ export const RestDataSourceProvider = ({
       tableSchemas={tableSchemas}
     >
       {children}
-    </DataSourceProvider>
+    </DataProvider>
   );
 };

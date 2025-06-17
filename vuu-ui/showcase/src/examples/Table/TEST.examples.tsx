@@ -2,10 +2,10 @@ import { Table, TableProps } from "@vuu-ui/vuu-table";
 import { useMemo } from "react";
 import { TestTableName, getSchema, vuuModule } from "@vuu-ui/vuu-data-test";
 import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
-import { ContextMenuProvider } from "@vuu-ui/vuu-popups";
 import { SchemaColumn } from "@vuu-ui/vuu-data-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { DemoTableContainer } from "./DemoTableContainer";
+import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 
 const extendColumnConfig = (
   columns: SchemaColumn[],
@@ -33,14 +33,14 @@ const TestTable = ({
     [props, schema.columns, tableName],
   );
 
-  const { buildViewserverMenuOptions, handleMenuAction } = useVuuMenuActions({
+  const { menuBuilder, menuActionHandler } = useVuuMenuActions({
     dataSource: tableProps.dataSource,
   });
 
   return (
     <ContextMenuProvider
-      menuActionHandler={handleMenuAction}
-      menuBuilder={buildViewserverMenuOptions}
+      menuActionHandler={menuActionHandler}
+      menuBuilder={menuBuilder}
     >
       <DemoTableContainer>
         <Table {...tableProps} renderBufferSize={50} />

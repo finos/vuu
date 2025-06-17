@@ -13,6 +13,7 @@ export * from "./useEditableCell";
 export * from "./useHighlighting";
 export * from "./useKeyboardNavigation";
 export * from "./useTableModel";
+export * from "./useTableContextMenu";
 export * from "./useTableScroll";
 export * from "./useTableViewport";
 export * from "./VirtualColSpan";

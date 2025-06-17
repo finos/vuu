@@ -1,7 +1,8 @@
-import { useContextMenu } from "@vuu-ui/vuu-popups";
-import { HeaderCellProps } from "@vuu-ui/vuu-table-types";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { useContextMenu } from "@vuu-ui/vuu-context-menu";
+import { ColumnMenu } from "@vuu-ui/vuu-table-extras";
+import { HeaderCellProps } from "@vuu-ui/vuu-table-types";
 import cx from "clsx";
 import {
   KeyboardEventHandler,
@@ -12,7 +13,6 @@ import {
   useRef,
 } from "react";
 import { SortIndicator } from "../column-header-pill";
-import { ColumnMenu } from "../column-menu";
 import { ColumnResizer, useTableColumnResize } from "../column-resizing";
 import { useCell } from "../useCell";
 
@@ -43,7 +43,7 @@ export const HeaderCell = ({
     rootRef,
   });
 
-  const [showContextMenu] = useContextMenu();
+  const showContextMenu = useContextMenu();
 
   const handleContextMenu = useMemo(() => {
     if (showMenu) {
@@ -106,6 +106,7 @@ export const HeaderCell = ({
     <div
       {...htmlAttributes}
       aria-colindex={column.ariaColIndex}
+      aria-label={`${column.label ?? column.name} column header`}
       className={cx(className, classNameProp, {
         [`${classBase}-resizing`]: isResizing,
         [`${classBase}-noMenu`]: showMenu === false,

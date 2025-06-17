@@ -135,7 +135,10 @@ export const ColumnSettingsPanel = ({
       </FormField>
       <FormField data-field="column-pin">
         <FormFieldLabel>Pin Column</FormFieldLabel>
-        <ToggleButtonGroup onChange={onChangeToggleButton} value={pin ?? ""}>
+        <ToggleButtonGroup
+          onChange={onChangeToggleButton}
+          value={pin || "false"}
+        >
           <ToggleButton value="left">
             <Icon name="pin-left" size={16} />
           </ToggleButton>

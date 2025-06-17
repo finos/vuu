@@ -1,6 +1,6 @@
 import { SelectionChangeHandler, TableSchema } from "@vuu-ui/vuu-data-types";
 import { Table, TableProps } from "@vuu-ui/vuu-table";
-import { useDataSource } from "@vuu-ui/vuu-utils";
+import { useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { useAutoLoginToVuuServer } from "../utils";
 import { TableConfig, TableRowSelectHandler } from "@vuu-ui/vuu-table-types";
@@ -13,7 +13,7 @@ const TableTemplate = ({
   schema?: TableSchema;
 }) => {
   useAutoLoginToVuuServer();
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
     const { table } = schema;
     const dataSource = new VuuDataSource({

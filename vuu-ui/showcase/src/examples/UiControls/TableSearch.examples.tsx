@@ -14,7 +14,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { useDataSource } from "@vuu-ui/vuu-utils";
+import { useData } from "@vuu-ui/vuu-utils";
 import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 import { Table, TableProps } from "@vuu-ui/vuu-table";
 import {
@@ -32,7 +32,7 @@ const TableSearchTemplate = ({
   schema: TableSchema;
   TableProps?: Partial<TableProps>;
 }) => {
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
   const { table } = schema;
 
   const TableProps = useMemo<TableProps>(
@@ -156,7 +156,7 @@ export const InstrumentSearchDragDrop = () => {
 };
 
 const EnhancedInstrumentSearch = () => {
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
   const schema = getSchema("instruments");
   const pinnedConfig = useMemo<TableConfig>(
     () => ({

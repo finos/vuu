@@ -10,7 +10,7 @@ export type DataSourceConstructor = {
   new (props: DataSourceConstructorProps): DataSource;
 };
 
-export interface DataSourceContextProps {
+export interface DataContextProps {
   VuuDataSource: DataSourceConstructor;
   dataSourceExtensions?: unknown;
   isLocalData: boolean;
@@ -28,17 +28,17 @@ export interface DataSourceContextProps {
 }
 
 const getServerAPI = () => {
-  throw Error("no DataSourceProvider has been installed");
+  throw Error("no DataProvider has been installed");
 };
 
-class NullDataSource {
+class NullDataSourceConstructor {
   constructor(_: DataSourceConstructorProps) {
-    throw Error("no DataSourceProvider has been installed");
+    throw Error("no DataeProvider has been installed");
   }
 }
 
-export const DataSourceContext = createContext<DataSourceContextProps>({
+export const DataContext = createContext<DataContextProps>({
   isLocalData: false,
   getServerAPI,
-  VuuDataSource: NullDataSource as DataSourceConstructor,
+  VuuDataSource: NullDataSourceConstructor as DataSourceConstructor,
 });

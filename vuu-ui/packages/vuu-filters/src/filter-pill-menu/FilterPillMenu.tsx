@@ -1,9 +1,4 @@
 import { PopupMenu } from "@vuu-ui/vuu-popups";
-import {
-  ContextMenuItemDescriptor,
-  MenuActionHandler,
-  MenuBuilder,
-} from "@vuu-ui/vuu-data-types";
 import { useMemo } from "react";
 import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
@@ -16,8 +11,13 @@ import {
   editCommand,
   MenuOptions,
   renameCommand,
-} from "../filter-pill/FilterPillMenuOptions";
+} from "./FilterPillMenuOptions";
 import { Filter } from "@vuu-ui/vuu-filter-types";
+import {
+  ContextMenuItemDescriptor,
+  MenuActionHandler,
+  MenuBuilder,
+} from "@vuu-ui/vuu-context-menu";
 
 const classBase = "vuuFilterPillMenu";
 

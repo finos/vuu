@@ -1,10 +1,13 @@
+import { useForkRef } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import {
   DataSource,
   SchemaColumn,
   Selection,
   SelectionChangeHandler,
 } from "@vuu-ui/vuu-data-types";
-import { ContextMenuProvider } from "@vuu-ui/vuu-popups";
+import { TableProvider } from "@vuu-ui/vuu-table-extras";
 import {
   CustomHeader,
   DataCellEditNotification,
@@ -26,14 +29,11 @@ import {
   reduceSizeHeight,
 } from "@vuu-ui/vuu-ui-controls";
 import {
+  RowToObjectMapper,
   lowerCase,
   metadataKeys,
-  RowToObjectMapper,
   useId,
 } from "@vuu-ui/vuu-utils";
-import { useForkRef } from "@salt-ds/core";
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import {
   CSSProperties,
@@ -48,12 +48,12 @@ import {
   useState,
 } from "react";
 import { Row as DefaultRow, RowProxy } from "./Row";
+import { TableCellBlock } from "./cell-block/cellblock-utils";
 import { PaginationControl } from "./pagination";
 import { TableHeader } from "./table-header";
 import { useMeasuredHeight } from "./useMeasuredHeight";
 import { useTable } from "./useTable";
 import { ScrollingAPI } from "./useTableScroll";
-import { TableCellBlock } from "./cell-block/cellblock-utils";
 
 import tableCss from "./Table.css";
 
@@ -328,11 +328,10 @@ const TableCore = ({
     focusCellPlaceholderKeyDown,
     focusCellPlaceholderRef,
     getRowOffset,
-    handleContextMenuAction,
+    handleColumnAction,
     headerState: { height: headerHeight, count: headerCount },
     headings,
     highlightedIndex,
-    menuBuilder,
     onDataEdited,
     onHeaderHeightMeasured,
     onMoveColumn,
@@ -413,9 +412,9 @@ const TableCore = ({
   }
 
   return (
-    <ContextMenuProvider
-      menuActionHandler={handleContextMenuAction}
-      menuBuilder={menuBuilder}
+    <TableProvider
+      dataSource={dataSource}
+      menuActionHandler={handleColumnAction}
     >
       {showPaginationControls !== true ? (
         <div
@@ -516,7 +515,7 @@ const TableCore = ({
         style={cssScrollbarSize}
       />
       {draggableRow}
-    </ContextMenuProvider>
+    </TableProvider>
   );
 };
 

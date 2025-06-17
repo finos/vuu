@@ -322,6 +322,8 @@ export const ContextMenu = () => {
       >
         <MenuPanel>
           <MenuItem>Copy</MenuItem>
+          <EditStylingMenu />
+          <ClearStylingMenu />
           <MenuItem>Move</MenuItem>
           <MenuItem>Delete</MenuItem>
         </MenuPanel>

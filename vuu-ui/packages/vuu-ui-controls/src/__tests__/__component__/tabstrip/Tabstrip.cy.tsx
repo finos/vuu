@@ -264,7 +264,7 @@ describe("Editable Tabs", () => {
       cy.realPress("Enter");
       cy.findByRole("tab", { name: "Transactions" }).should(
         "have.class",
-        "vuuTab-editing"
+        "vuuTab-editing",
       );
       cy.findByRole("textbox").should("be.focused");
     });
@@ -277,7 +277,7 @@ describe("Editable Tabs", () => {
       cy.realPress("Enter");
       cy.findByRole("tab", { name: "Home" }).should(
         "have.class",
-        "vuuTab-editing"
+        "vuuTab-editing",
       );
       cy.findByRole("textbox").should("be.focused");
     });
@@ -301,7 +301,7 @@ describe("Editable Tabs", () => {
       cy.realPress("Enter");
       cy.findByRole("tab", { name: "test" }).should(
         "not.have.class",
-        "vuuTab-editing"
+        "vuuTab-editing",
       );
       cy.findByRole("tab", { name: "test" }).should("be.focused");
     });
@@ -316,7 +316,7 @@ describe("Editable Tabs", () => {
       cy.realPress("Escape");
       cy.findByRole("tab", { name: "Home" }).should(
         "not.have.class",
-        "vuuTab-editing"
+        "vuuTab-editing",
       );
       cy.findByRole("tab", { name: "Home" }).should("be.focused");
     });
@@ -335,6 +335,8 @@ describe("Removing Tabs.", () => {
         it("THEN tab is closed", () => {
           cy.mount(<TabstripRemoveTab />);
           cy.findByRole("tab", { name: "Home" }).realClick();
+          cy.realPress("ArrowDown");
+
           cy.realPress("ArrowDown");
           cy.realPress("Enter");
           cy.findAllByRole("tab").should("have.length", 4);

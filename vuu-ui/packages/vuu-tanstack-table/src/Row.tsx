@@ -94,12 +94,14 @@ export const Row = memo(
           key="leadingSpacer"
           style={{ width: virtualPaddingLeading }}
         />
-        {virtualColumns.map((virtualColumn) => {
+        {virtualColumns.map((virtualColumn, i) => {
           const cell = visibleCells[virtualColumn.index];
           return (
             <div
+              aria-colindex={i + 1}
               className={`${classBase}Cell`}
               key={cell.id}
+              role="cell"
               style={{
                 width: cell.column.getSize(),
               }}

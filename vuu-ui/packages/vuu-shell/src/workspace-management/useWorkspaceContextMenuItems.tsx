@@ -1,13 +1,14 @@
-import {
-  ContextMenuItemDescriptor,
-  MenuActionHandler,
-  MenuBuilder,
-} from "@vuu-ui/vuu-data-types";
-import { MenuActionClosePopup, useDialogContext } from "@vuu-ui/vuu-popups";
+import { useDialogContext } from "@vuu-ui/vuu-popups";
 import { LayoutMetadataDto } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { SaveLayoutPanel } from "./SaveLayoutPanel";
 import { useWorkspace } from "./WorkspaceProvider";
+import {
+  ContextMenuItemDescriptor,
+  MenuActionHandler,
+  MenuBuilder,
+} from "@vuu-ui/vuu-context-menu";
+import { TabContextMenuOptions } from "@vuu-ui/vuu-ui-controls";
 
 export const useWorkspaceContextMenuItems = () => {
   const { saveLayout } = useWorkspace();
@@ -37,26 +38,30 @@ export const useWorkspaceContextMenuItems = () => {
           menuDescriptors.push(
             {
               label: "Save Layout",
-              action: "save-layout",
+              id: "save-layout",
               options,
             },
             {
               label: "Layout Settings",
-              action: "layout-settings",
+              id: "layout-settings",
               options,
             },
           );
         }
         return menuDescriptors;
       },
-      (action: MenuActionClosePopup) => {
-        if (action.menuId === "save-layout") {
+      (menuItemId, options) => {
+        if (menuItemId === "save-layout") {
           showDialog(
             <SaveLayoutPanel
               onCancel={handleCloseDialog}
               onSave={handleSave}
-              componentId={action.options?.controlledComponentId}
-              defaultTitle={action.options?.controlledComponentTitle as string}
+              componentId={
+                (options as TabContextMenuOptions)?.controlledComponentId
+              }
+              defaultTitle={
+                (options as TabContextMenuOptions)?.controlledComponentTitle
+              }
             />,
             "Save Layout",
             [],

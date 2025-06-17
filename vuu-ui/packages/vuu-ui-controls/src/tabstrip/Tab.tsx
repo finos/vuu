@@ -1,5 +1,4 @@
 // TODO close button needs to be a button. Hence tab needs to include 2 buttons
-import { MenuActionHandler } from "@vuu-ui/vuu-data-types";
 import { useForkRef } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -19,6 +18,7 @@ import { TabMenu } from "./TabMenu";
 import { TabProps } from "./TabsTypes";
 
 import tabCss from "./Tab.css";
+import { MenuActionHandler } from "@vuu-ui/vuu-context-menu";
 
 const classBase = "vuuTab";
 

@@ -1,3 +1,6 @@
+import { Checkbox, Switch } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
   Icon,
@@ -6,10 +9,8 @@ import {
   ListItemProps,
   ListProps,
 } from "@vuu-ui/vuu-ui-controls";
-import { Checkbox, Switch } from "@salt-ds/core";
+import { getColumnLabel, queryClosest } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
 import {
   HTMLAttributes,
   MouseEventHandler,
@@ -17,7 +18,6 @@ import {
   useCallback,
 } from "react";
 import { ColumnItem } from "../table-settings";
-import { getColumnLabel, queryClosest } from "@vuu-ui/vuu-utils";
 
 import columnList from "./ColumnList.css";
 

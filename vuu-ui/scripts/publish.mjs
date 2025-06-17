@@ -4,6 +4,7 @@ const debug = getCommandLineArg("--debug");
 
 const packages = [
   "vuu-codemirror",
+  "vuu-context-menu",
   "vuu-data-local",
   "vuu-data-remote",
   "vuu-data-react",

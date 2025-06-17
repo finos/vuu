@@ -6,7 +6,8 @@ export const buildAll = async () => {
   const buildPackage = async (packageName) =>
     execWait(`npm run --silent build`, `packages/${packageName}`).catch(
       (err) => {
-        console.error(`[${packageName}] ${err.message}`);
+        console.error(`[${packageName}] ${err.toString()}`);
+        process.exit(1);
       },
     );
 
@@ -27,6 +28,7 @@ export const buildAll = async () => {
   const wave2 = ["vuu-data-remote", "vuu-data-local"];
   const wave3 = ["vuu-filters", "vuu-popups"];
   const wave4 = [
+    "vuu-context-menu",
     "vuu-datatable",
     "vuu-table",
     "vuu-tanstack-table",

@@ -1,11 +1,11 @@
 import type { TableSchema } from "@vuu-ui/vuu-data-types";
-import { useDataSource } from "@vuu-ui/vuu-utils";
+import { useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useState } from "react";
 
 export const useVuuTables = () => {
   const [tableSchemas, setTableSchemas] = useState<TableSchema[] | undefined>();
 
-  const { getServerAPI } = useDataSource();
+  const { getServerAPI } = useData();
 
   const buildTables = useCallback((schemas: TableSchema[]) => {
     const vuuTables = new Map<string, TableSchema>();

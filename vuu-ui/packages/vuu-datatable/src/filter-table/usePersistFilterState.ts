@@ -2,7 +2,7 @@ import {
   ContextMenuItemDescriptor,
   MenuActionHandler,
   MenuBuilder,
-} from "@vuu-ui/vuu-data-types";
+} from "@vuu-ui/vuu-context-menu";
 import { Filter, FilterState, NamedFilter } from "@vuu-ui/vuu-filter-types";
 import { FilterBarProps } from "@vuu-ui/vuu-filters";
 import { useViewContext } from "@vuu-ui/vuu-layout";
@@ -148,7 +148,7 @@ export const usePersistFilterState = ({
       if (location === "filter-bar-menu") {
         if (savedFilters.length > 0) {
           return savedFilters.map((filter) => ({
-            action: "add-filter",
+            id: "add-filter",
             label: filter.name,
             options: { filter },
           }));
@@ -156,7 +156,7 @@ export const usePersistFilterState = ({
           return [
             {
               label: `You have no saved filters for this table`,
-              action: `no-action`,
+              id: `no-action`,
             } as ContextMenuItemDescriptor,
           ];
         }
@@ -168,18 +168,12 @@ export const usePersistFilterState = ({
   );
 
   const handleFilterTableMenuAction = useCallback<MenuActionHandler>(
-    (menuAction) => {
-      const { menuId, options } = menuAction;
-      if (menuId === "add-filter") {
-        console.log(`add filter `, {
-          options,
-        });
+    (menuItemId) => {
+      if (menuItemId === "add-filter") {
         return true;
       } else {
         return false;
       }
-      console.log(menuId, options);
-      // return false;
     },
     [],
   );

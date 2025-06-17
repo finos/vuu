@@ -7,6 +7,11 @@ import {
 } from "@vuu-ui/vuu-data-types";
 import { VuuRowDataItemType, VuuSortType } from "@vuu-ui/vuu-protocol-types";
 import {
+  ColumnDisplayActionHandler,
+  TableSettingsActionHandler,
+  useColumnActions,
+} from "@vuu-ui/vuu-table-extras";
+import {
   ColumnDescriptor,
   DataCellEditEvent,
   RuntimeColumnDescriptor,
@@ -28,6 +33,7 @@ import {
   isGroupColumn,
   isJsonGroup,
   isValidNumber,
+  logUnhandledMessage,
   metadataKeys,
   toggleOrApplySort,
   updateColumn,
@@ -44,12 +50,10 @@ import {
   useRef,
   useState,
 } from "react";
-import { TableProps } from "./Table";
+import { TableCellBlock } from "./cell-block/cellblock-utils";
 import { useCellBlockSelection } from "./cell-block/useCellBlockSelection";
-import {
-  buildContextMenuDescriptors,
-  useHandleTableContextMenu,
-} from "./context-menu";
+import { CellFocusState } from "./CellFocusState";
+import { TableProps } from "./Table";
 import { updateTableConfig } from "./table-config";
 import { getAriaRowIndex } from "./table-dom-utils";
 import { useCellEditing } from "./useCellEditing";
@@ -66,15 +70,10 @@ import { useTableContextMenu } from "./useTableContextMenu";
 import {
   ColumnActionHide,
   ColumnActionPin,
-  PersistentColumnAction,
-  isShowColumnSettings,
-  isShowTableSettings,
   useTableModel,
 } from "./useTableModel";
 import { ScrollRequestHandler, useTableScroll } from "./useTableScroll";
 import { useTableViewport } from "./useTableViewport";
-import { TableCellBlock } from "./cell-block/cellblock-utils";
-import { CellFocusState } from "./CellFocusState";
 
 type HeaderState = {
   height: number;
@@ -220,11 +219,6 @@ export const useTable = ({
   const rowClassNameGenerator = useRowClassNameGenerators(config);
 
   const useRowDragDrop = allowDragDrop ? useDragDrop : useNullDragDrop;
-
-  const menuBuilder = useMemo(
-    () => buildContextMenuDescriptors(dataSource),
-    [dataSource],
-  );
 
   const {
     columns,
@@ -424,35 +418,45 @@ export const useTable = ({
       tableConfig,
     });
 
-  const onPersistentColumnOperation = useCallback(
-    (action: PersistentColumnAction) => {
-      if (isShowColumnSettings(action)) {
-        showColumnSettingsPanel(action);
-      } else if (isShowTableSettings(action)) {
-        showTableSettingsPanel();
-      } else {
-        switch (action.type) {
-          case "hideColumns":
-            return hideColumns(action);
-          case "pinColumn":
-            return pinColumn(action);
-          default:
-            dispatchTableModelAction(action);
-        }
+  const handleColumnDisplayAction = useCallback<ColumnDisplayActionHandler>(
+    (action) => {
+      // if (isShowColumnSettings(action)) {
+      //   showColumnSettingsPanel(action);
+      // } else if (isShowTableSettings(action)) {
+      //   showTableSettingsPanel();
+      // } else {
+      const { type } = action;
+      switch (type) {
+        case "hideColumn":
+          return hideColumns({
+            type: "hideColumns",
+            columns: [action.column],
+          });
+        case "pinColumn":
+          return pinColumn(action);
+        default:
+          logUnhandledMessage(type, "[vuu-table] handleColumnDisplayAction");
       }
+      // }
     },
-    [
-      dispatchTableModelAction,
-      hideColumns,
-      pinColumn,
-      showColumnSettingsPanel,
-      showTableSettingsPanel,
-    ],
+    [hideColumns, pinColumn],
   );
 
-  const handleContextMenuAction = useHandleTableContextMenu({
+  const handleDisplaySettingsAction = useCallback<TableSettingsActionHandler>(
+    (action) => {
+      if (action.type === "column-settings") {
+        showColumnSettingsPanel(action);
+      } else {
+        showTableSettingsPanel();
+      }
+    },
+    [showColumnSettingsPanel, showTableSettingsPanel],
+  );
+
+  const handleColumnAction = useColumnActions({
     dataSource,
-    onPersistentColumnOperation,
+    onColumnDisplayAction: handleColumnDisplayAction,
+    onDisplaySettingsAction: handleDisplaySettingsAction,
   });
 
   const handleSort = useCallback(
@@ -864,11 +868,10 @@ export const useTable = ({
     focusCellPlaceholderKeyDown,
     focusCellPlaceholderRef,
     getRowOffset,
-    handleContextMenuAction,
+    handleColumnAction,
     headerState,
     headings,
     highlightedIndex: highlightedIndexRef.current,
-    menuBuilder,
     onBlur: editingBlur,
     onDoubleClick: editingDoubleClick,
     onFocus: handleFocus,

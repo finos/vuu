@@ -1,29 +1,31 @@
+import { Flexbox } from "@vuu-ui/vuu-layout";
+
 import {
-  ContextMenuItemDescriptor,
+  Menu,
+  MenuGroup,
+  MenuItem,
+  MenuPanel,
+  MenuTrigger,
+  type MenuProps,
+} from "@salt-ds/core";
+import {
+  type ContextMenuItemDescriptor,
+  ContextMenuProvider,
   MenuActionHandler,
   MenuBuilder,
-} from "@vuu-ui/vuu-data-types";
-import { Flexbox } from "@vuu-ui/vuu-layout";
-import {
-  ContextMenu,
-  ContextMenuProps,
-  ContextMenuProvider,
-  MenuItem,
-  MenuItemGroup,
-  PopupCloseReason,
-  reasonIsMenuAction,
-  Separator,
   useContextMenu,
-} from "@vuu-ui/vuu-popups";
+} from "@vuu-ui/vuu-context-menu";
 
 import { Button } from "@salt-ds/core";
 
+import { VirtualElement } from "@floating-ui/dom";
 import {
   HTMLAttributes,
   MouseEvent,
   MouseEventHandler,
+  RefCallback,
+  useCallback,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -44,43 +46,104 @@ const usePosition = () => {
   return { ref, position };
 };
 
-const SampleContextMenu = (props: Partial<ContextMenuProps>) => (
-  <ContextMenu {...props}>
-    <MenuItemGroup label="Item 1">
-      <MenuItem action="ACT 1.1">Item 1.1</MenuItem>
-      <MenuItem>Item 1.2</MenuItem>
-      <MenuItem>Item 1.3</MenuItem>
-      <Separator />
-      <MenuItem>Item 1.4</MenuItem>
-      <MenuItem>Item 1.5</MenuItem>
-    </MenuItemGroup>
-    <MenuItem action="ACT 2" options={{ name: "petie" }}>
-      Item 2
-    </MenuItem>
-    <MenuItemGroup label="Item 3">
-      <MenuItemGroup label="Item 3.1">
-        <MenuItem>Item 3.1.1</MenuItem>
-        <MenuItem>Item 3.1.2</MenuItem>
-        <MenuItem>Item 3.1.3</MenuItem>
-        <MenuItem action="ACT 3.1.4">Item 3.1.4</MenuItem>
-      </MenuItemGroup>
-      <MenuItem>Item 3.2</MenuItem>
-      <MenuItem>Item 3.3</MenuItem>
-      <MenuItem>Item 3.3</MenuItem>
-    </MenuItemGroup>
-  </ContextMenu>
+const SampleContextMenu = ({
+  onClickMenuItem,
+  ...props
+}: Pick<MenuProps, "getVirtualElement" | "open"> & {
+  onClickMenuItem?: (id: string) => void;
+}) => (
+  <Menu {...props}>
+    <MenuPanel>
+      <Menu>
+        <MenuTrigger>
+          <MenuItem>Item 1</MenuItem>
+        </MenuTrigger>
+        <MenuPanel>
+          <MenuGroup>
+            <MenuItem onClick={() => onClickMenuItem?.("item-1.1")}>
+              Item 1.1{" "}
+            </MenuItem>
+            <MenuItem onClick={() => onClickMenuItem?.("item-1.2")}>
+              Item 1.2
+            </MenuItem>
+            <MenuItem onClick={() => onClickMenuItem?.("item-1.3")}>
+              Item 1.3
+            </MenuItem>
+          </MenuGroup>
+          <MenuGroup>
+            <MenuItem>Item 1.4</MenuItem>
+            <MenuItem>Item 1.5</MenuItem>
+          </MenuGroup>
+        </MenuPanel>
+      </Menu>
+      <MenuItem>Item 2</MenuItem>
+      <Menu>
+        <MenuTrigger>
+          <MenuItem>Item 3</MenuItem>
+        </MenuTrigger>
+        <MenuPanel>
+          <Menu>
+            <MenuTrigger>
+              <MenuItem>Item 3.1</MenuItem>
+            </MenuTrigger>
+            <MenuPanel>
+              <MenuItem>Item 3.1.1 </MenuItem>
+              <MenuItem>Item 3.1.2</MenuItem>
+              <MenuItem>Item 3.1.3</MenuItem>
+              <MenuItem>Item 3.1.4</MenuItem>
+            </MenuPanel>
+          </Menu>
+          <MenuItem>Item 3.2</MenuItem>
+          <MenuItem>Item 3.3</MenuItem>
+          <MenuItem>Item 3.4</MenuItem>
+        </MenuPanel>
+      </Menu>
+    </MenuPanel>
+  </Menu>
 );
 
+const NullVirtualElement: VirtualElement = {
+  getBoundingClientRect: () => ({
+    height: 0,
+    width: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    x: 0,
+    y: 0,
+  }),
+};
 export const DefaultContextMenu = () => {
-  const handleClose: ContextMenuProps["onClose"] = () => {
-    console.log(`clicked menu action`);
-  };
+  const [virtualElement, setVirtualElement] =
+    useState<VirtualElement>(NullVirtualElement);
+  const [open, setOpen] = useState(true);
+  const callbackRef = useCallback<RefCallback<HTMLDivElement>>((el) => {
+    if (el) {
+      const { top, left } = el.getBoundingClientRect();
+      setVirtualElement({
+        getBoundingClientRect: () => ({
+          width: 0,
+          height: 0,
+          x: left,
+          y: top,
+          top,
+          right: 0,
+          bottom: 0,
+          left,
+        }),
+      });
+    }
+  }, []);
 
-  const { ref, position } = usePosition();
+  const onClickMenuItem = useCallback((id: string) => {
+    console.log(`menuItem clicked ${id}`);
+    setOpen(false);
+  }, []);
 
   return (
     <div
-      ref={ref}
+      ref={callbackRef}
       style={{
         background: "ivory",
         height: 300,
@@ -88,9 +151,11 @@ export const DefaultContextMenu = () => {
         margin: 100,
       }}
     >
-      {position.x !== -1 && position.y !== -1 ? (
-        <SampleContextMenu position={position} onClose={handleClose} />
-      ) : null}
+      <SampleContextMenu
+        getVirtualElement={() => virtualElement}
+        onClickMenuItem={onClickMenuItem}
+        open={open}
+      />
     </div>
   );
 };
@@ -108,239 +173,189 @@ export const FlatContextMenu = () => {
         margin: 100,
       }}
     >
-      <ContextMenu>
-        <MenuItem action="ACT 1.1">Item 1.1</MenuItem>
-        <MenuItem>Item 1.2</MenuItem>
-        <MenuItem>Item 1.3</MenuItem>
-        <Separator />
-        <MenuItem>Item 1.4</MenuItem>
-        <MenuItem>Item 1.5</MenuItem>
-        <MenuItem>Item 3.1.1</MenuItem>
-        <MenuItem>Item 3.1.2</MenuItem>
-        <MenuItem>Item 3.1.3</MenuItem>
-        <MenuItem action="ACT 3.1.4">Item 3.1.4</MenuItem>
-        <MenuItem>Item 3.2</MenuItem>
-        <MenuItem>Item 3.3</MenuItem>
-        <MenuItem>Item 3.3</MenuItem>
-      </ContextMenu>
-    </div>
-  );
-};
-
-export const ContextMenuControlledHighlighting = () => {
-  const handleClose: ContextMenuProps["onClose"] = () => {
-    console.log(`clicked menu action`);
-  };
-
-  const { ref, position } = usePosition();
-
-  return (
-    <div
-      ref={ref}
-      style={{ background: "ivory", height: "100vh", width: "100vw" }}
-    >
-      {position.x !== -1 && position.y !== -1 ? (
-        <SampleContextMenu
-          defaultHighlightedIdx={1}
-          position={position}
-          onClose={handleClose}
-        />
-      ) : null}
-    </div>
-  );
-};
-
-type IdProps = { children: string | JSX.Element };
-const Id = ({ children }: IdProps) => (
-  <span style={{ color: "blue" }}>{children}</span>
-);
-
-export const AdditionalNesting = () => {
-  const { ref, position } = usePosition();
-  const handleClose: ContextMenuProps["onClose"] = (
-    reason?: PopupCloseReason,
-  ) => {
-    if (reasonIsMenuAction(reason)) {
-      console.log(`menu closed ${reason.menuId}`);
-    }
-  };
-
-  return (
-    <div
-      ref={ref}
-      style={{ background: "ivory", height: "100vh", width: "100vw" }}
-    >
-      {position.x !== -1 && position.y !== -1 ? (
-        <ContextMenu position={position} id="test" onClose={handleClose}>
-          <MenuItemGroup>
-            <MenuItem.Label>
-              Item 1 <Id>menuitem-test-0</Id>
-            </MenuItem.Label>
-            <MenuItem action="action-0">
-              Item 1.1 <Id>menuitem-test-0-0</Id>
-            </MenuItem>
-            <MenuItem>
-              Item 1.2 <Id>#test-0-1</Id>
-            </MenuItem>
-            <MenuItem>
-              Item 1.3 <Id>#test-0/2</Id>
-            </MenuItem>
-            <Separator />
-            <MenuItem>
-              Item 1.4 <Id>#test-0/3</Id>
-            </MenuItem>
-            <MenuItem>
-              Item 1.5 <Id>#test-0/4</Id>
-            </MenuItem>
-          </MenuItemGroup>
-          <MenuItemGroup label="Item 2 #test-1">
-            <MenuItemGroup label="Item 2.1 #1.0">
-              <MenuItem>Item 2.1.0</MenuItem>
-              <MenuItem>Item 2.1.1</MenuItem>
-              <MenuItem>Item 2.1.2</MenuItem>
-              <Separator />
-              <MenuItem>Item 2.1.4</MenuItem>
-              <MenuItem>Item 2.1.5</MenuItem>
-            </MenuItemGroup>
-            <MenuItem>Item 2.2 #1.1</MenuItem>
-            <MenuItem>Item 2.3 #1.2</MenuItem>
-            <MenuItem>Item 2.4 #1.0</MenuItem>
-            <MenuItem>Item 2.5 #1.0</MenuItem>
-          </MenuItemGroup>
-          <MenuItemGroup label="Item 3 #test-2">
-            <MenuItem>Item 3.1</MenuItem>
+      <Menu open={true}>
+        <MenuPanel>
+          <MenuGroup>
+            <MenuItem>Item 1.1</MenuItem>
+            <MenuItem>Item 1.2</MenuItem>
+            <MenuItem>Item 1.3</MenuItem>
+          </MenuGroup>
+          <MenuGroup>
+            <MenuItem>Item 1.4</MenuItem>
+            <MenuItem>Item 1.5</MenuItem>
+            <MenuItem>Item 3.1.1</MenuItem>
+            <MenuItem>Item 3.1.2</MenuItem>
+            <MenuItem>Item 3.1.3</MenuItem>
+            <MenuItem>Item 3.1.4</MenuItem>
             <MenuItem>Item 3.2</MenuItem>
             <MenuItem>Item 3.3</MenuItem>
-            <Separator />
-            <MenuItem>Item 3.4</MenuItem>
-            <MenuItem>Item 3.5</MenuItem>
-          </MenuItemGroup>
-          <MenuItemGroup label="Item 4 #test-3">
-            <MenuItem>Item 4.1</MenuItem>
-            <MenuItem>Item 4.2</MenuItem>
-            <MenuItem>Item 4.3</MenuItem>
-            <Separator />
-            <MenuItem>Item 4.4</MenuItem>
-            <MenuItem>Item 4.5</MenuItem>
-          </MenuItemGroup>
-          <MenuItemGroup label="Item 5 #test-4">
-            <MenuItemGroup label="Item 5.1 #4.0">
-              <MenuItem>Item 5.1.1</MenuItem>
-              <MenuItem>Item 5.1.2</MenuItem>
-              <MenuItem>Item 5.1.3</MenuItem>
-              <MenuItem>Item 5.1.4</MenuItem>
-            </MenuItemGroup>
-            <MenuItem>Item 5.2</MenuItem>
-            <MenuItem>Item 5.3</MenuItem>
-            <MenuItem>Item 5.4</MenuItem>
-          </MenuItemGroup>
-        </ContextMenu>
-      ) : null}
+            <MenuItem>Item 3.3</MenuItem>
+          </MenuGroup>
+        </MenuPanel>
+      </Menu>
+    </div>
+  );
+};
+
+export const AdditionalNesting = () => {
+  return (
+    <div style={{ background: "ivory", height: "100vh", width: "100vw" }}>
+      <Menu open={true}>
+        <MenuPanel>
+          <Menu>
+            <MenuTrigger>
+              <MenuItem>Item 1</MenuItem>
+            </MenuTrigger>
+            <MenuPanel>
+              <MenuItem>Item 1.1 </MenuItem>
+              <MenuItem>Item 1.2</MenuItem>
+              <MenuItem>Item 1.3</MenuItem>
+              <MenuItem>Item 1.4</MenuItem>
+              <MenuItem>Item 1.5</MenuItem>
+            </MenuPanel>
+          </Menu>
+          <Menu>
+            <MenuTrigger>
+              <MenuItem>Item 2</MenuItem>
+            </MenuTrigger>
+            <MenuPanel>
+              <Menu>
+                <MenuTrigger>
+                  <MenuItem>Item 2.1</MenuItem>
+                </MenuTrigger>
+                <MenuPanel>
+                  <MenuGroup>
+                    <MenuItem>Item 2.1.1 </MenuItem>
+                    <MenuItem>Item 2.1.2</MenuItem>
+                    <MenuItem>Item 2.1.3</MenuItem>
+                  </MenuGroup>
+                  <MenuGroup>
+                    <MenuItem>Item 2.1.4</MenuItem>
+                    <MenuItem>Item 2.1.5</MenuItem>
+                  </MenuGroup>
+                </MenuPanel>
+              </Menu>
+              <MenuItem>Item 2.2</MenuItem>
+              <MenuItem>Item 2.3</MenuItem>
+              <MenuGroup>
+                <MenuItem>Item 2.4</MenuItem>
+                <MenuItem>Item 2.5</MenuItem>
+              </MenuGroup>
+            </MenuPanel>
+          </Menu>
+        </MenuPanel>
+      </Menu>
     </div>
   );
 };
 
 export const ContextMenuPopup = () => {
-  const contextMenu = useMemo(() => {
-    const handleClose: ContextMenuProps["onClose"] = (
-      reason?: PopupCloseReason,
-    ) => {
-      if (reasonIsMenuAction(reason)) {
-        console.log(`menu closed ${reason.menuId}`);
-      }
-    };
-
-    return (
-      <ContextMenu onClose={handleClose}>
-        <MenuItemGroup label="Item 1">
-          <MenuItem action="1.1">Item 1.1</MenuItem>
-          <MenuItem>Item 1.2</MenuItem>
-          <MenuItem>Item 1.3</MenuItem>
-          <Separator />
-          <MenuItem>Item 1.4</MenuItem>
-          <MenuItem>Item 1.5</MenuItem>
-        </MenuItemGroup>
-        <MenuItem>Item 2</MenuItem>
-        <MenuItemGroup label="Item 3">
-          <MenuItemGroup label="Item 3.1">
-            <MenuItem>Item 3.1.1</MenuItem>
-            <MenuItem>Item 3.1.2</MenuItem>
-            <MenuItem>Item 3.1.3</MenuItem>
-            <MenuItem>Item 3.1.4</MenuItem>
-          </MenuItemGroup>
-          <MenuItem>Item 3.2</MenuItem>
-          <MenuItem>Item 3.3</MenuItem>
-          <MenuItem>Item 3.3</MenuItem>
-        </MenuItemGroup>
-      </ContextMenu>
-    );
+  const [open, setOpen] = useState(false);
+  const onClickMenuItem = useCallback((id: string) => {
+    console.log(`menuItem clicked ${id}`);
+    setOpen(false);
   }, []);
-
-  const [showContextMenu] = useContextMenu();
-  const ref = useRef(null);
+  const [virtualElement, setVirtualElement] = useState<VirtualElement | null>(
+    null,
+  );
 
   const handleClick = (evt: MouseEvent<HTMLElement>) => {
-    showContextMenu(evt, "", {
-      contextMenu,
+    setVirtualElement({
+      getBoundingClientRect: () => ({
+        width: 0,
+        height: 0,
+        x: evt.clientX,
+        y: evt.clientY,
+        top: evt.clientY,
+        right: evt.clientX,
+        bottom: evt.clientY,
+        left: evt.clientX,
+      }),
     });
+    setOpen(true);
   };
 
   return (
-    <div
-      style={{
-        background: "ivory",
-        height: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        width: "100vw",
-      }}
-    >
-      <Button
-        onClick={handleClick}
-        ref={ref}
-        style={{ justifySelf: "flex-end" }}
-      >
-        Show Context Menu
-      </Button>
+    <>
       <div
         style={{
-          alignSelf: "stretch",
+          background: "ivory",
+          height: "100vh",
           display: "flex",
-          flexDirection: "column",
+          alignItems: "center",
           justifyContent: "space-between",
+          width: "100vw",
         }}
       >
-        <Button
-          onClick={handleClick}
-          ref={ref}
-          style={{ justifySelf: "flex-end" }}
-        >
+        <Button onClick={handleClick} style={{ justifySelf: "flex-end" }}>
           Show Context Menu
         </Button>
-        <Button
-          onClick={handleClick}
-          ref={ref}
-          style={{ justifySelf: "flex-end" }}
+        <div
+          style={{
+            alignSelf: "stretch",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+          }}
         >
-          Show Context Menu
-        </Button>
-        <Button
-          onClick={handleClick}
-          ref={ref}
-          style={{ justifySelf: "flex-end" }}
-        >
+          <Button onClick={handleClick} style={{ justifySelf: "flex-end" }}>
+            Show Context Menu
+          </Button>
+          <Button onClick={handleClick} style={{ justifySelf: "flex-end" }}>
+            Show Context Menu
+          </Button>
+          <Button onClick={handleClick} style={{ justifySelf: "flex-end" }}>
+            Show Context Menu
+          </Button>
+        </div>
+        <Button onClick={handleClick} style={{ justifySelf: "flex-end" }}>
           Show Context Menu
         </Button>
       </div>
-      <Button
-        onClick={handleClick}
-        ref={ref}
-        style={{ justifySelf: "flex-end" }}
+      <Menu
+        getVirtualElement={() => virtualElement}
+        open={open}
+        onOpenChange={setOpen}
       >
-        Show Context Menu
-      </Button>
-    </div>
+        <MenuPanel>
+          <Menu>
+            <MenuTrigger>
+              <MenuItem onClick={() => onClickMenuItem("item-1")}>
+                Item 1
+              </MenuItem>
+            </MenuTrigger>
+            <MenuPanel>
+              <MenuGroup>
+                <MenuItem>Item 1.1 </MenuItem>
+                <MenuItem>Item 1.2</MenuItem>
+                <MenuItem>Item 1.3</MenuItem>
+              </MenuGroup>
+              <MenuGroup>
+                <MenuItem>Item 2.1.4</MenuItem>
+                <MenuItem>Item 2.1.5</MenuItem>
+              </MenuGroup>
+            </MenuPanel>
+          </Menu>
+          <MenuItem>Item 2</MenuItem>
+          <Menu>
+            <MenuTrigger>
+              <MenuItem>Item 3</MenuItem>
+            </MenuTrigger>
+            <MenuPanel>
+              <MenuGroup>
+                <MenuItem>Item 3.1 </MenuItem>
+                <MenuItem>Item 3.2</MenuItem>
+                <MenuItem>Item 3.3</MenuItem>
+              </MenuGroup>
+              <MenuGroup>
+                <MenuItem>Item 3.4</MenuItem>
+                <MenuItem>Item 3.5</MenuItem>
+              </MenuGroup>
+            </MenuPanel>
+          </Menu>
+        </MenuPanel>
+      </Menu>
+    </>
   );
 };
 
@@ -348,23 +363,22 @@ const ComponentWithMenu = ({
   location,
   ...props
 }: HTMLAttributes<HTMLDivElement> & { location: "left" | "right" }) => {
-  const [showContextMenu] = useContextMenu();
+  const showContextMenu = useContextMenu();
   const handleContextMenu: MouseEventHandler<HTMLDivElement> = (e) => {
-    console.log(`ComponentWithMenu<${location}> handleContextMenu`);
     showContextMenu(e, location, { type: "outer" });
   };
   return <div {...props} onContextMenu={handleContextMenu} />;
 };
 
 export const SimpleContextMenuProvider = () => {
-  const menuDescriptors = [
-    { label: "Sort", action: "sort" },
-    { label: "Filter", action: "sort" },
-    { label: "Group", action: "group" },
+  const menuDescriptors: ContextMenuItemDescriptor[] = [
+    { label: "Sort", id: "sort" },
+    { label: "Filter", id: "filter" },
+    { label: "Group", id: "group" },
   ];
 
-  const handleMenuAction: MenuActionHandler = (reason) => {
-    console.log(`handleContextMenu ${reason.menuId}`);
+  const handleMenuAction: MenuActionHandler = (id: string) => {
+    console.log(`handleContextMenu ${id}`);
     return true;
   };
 
@@ -385,24 +399,24 @@ export const SimpleContextMenuProvider = () => {
 
 export const ContextMenuProviderWithLocationAwareMenuBuilder = () => {
   const menuDescriptors: ContextMenuItemDescriptor[] = [
-    { label: "Sort", action: "sort", icon: "sort-up" },
-    { label: "Filter", action: "filter", icon: "filter" },
-    { label: "Group", action: "group" },
-    { label: "Left 1", action: "left1", location: "left" },
-    { label: "Left 2", action: "left2", location: "left" },
+    { label: "Sort", id: "sort", icon: "sort-up" },
+    { label: "Filter", id: "filter", icon: "filter" },
+    { label: "Group", id: "group" },
+    { label: "Left 1", id: "left1", location: "left" },
+    { label: "Left 2", id: "left2", location: "left" },
     {
       label: "Right1",
-      action: "right1",
+      id: "right1",
       location: "right",
       children: [
-        { label: "Right 1.1", action: "right1.1", location: "right" },
-        { label: "Right 1.2", action: "right1.2", location: "right" },
+        { label: "Right 1.1", id: "right1.1", location: "right" },
+        { label: "Right 1.2", id: "right1.2", location: "right" },
       ],
     },
   ];
 
-  const handleMenuAction: MenuActionHandler = (action) => {
-    console.log(`handleContextMenu ${action.menuId}`);
+  const handleMenuAction: MenuActionHandler = (menuItemId) => {
+    console.log(`handleContextMenu ${menuItemId}`);
     return true;
   };
 
@@ -417,10 +431,10 @@ export const ContextMenuProviderWithLocationAwareMenuBuilder = () => {
     return [
       {
         label: "Local 1",
-        action: "local1",
+        id: "local1",
         options: { LookAtMeMa: "no-hands" },
       },
-      { label: "Local 2", action: "local2" },
+      { label: "Local 2", id: "local2" },
     ];
   };
 

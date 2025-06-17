@@ -1,9 +1,9 @@
-import { MenuActionHandler, MenuBuilder } from "@vuu-ui/vuu-data-types";
 import { FilterPill } from "@vuu-ui/vuu-filters";
 import { PopupMenuProps } from "@vuu-ui/vuu-popups";
 import { ExitEditModeHandler, Icon } from "@vuu-ui/vuu-ui-controls";
 import { Button, Input } from "@salt-ds/core";
 import { useCallback, useMemo, useState } from "react";
+import { MenuActionHandler, MenuBuilder } from "@vuu-ui/vuu-context-menu";
 
 export const DefaultFilterPill = () => {
   const [active, setActive] = useState(false);
@@ -43,11 +43,11 @@ export const FilterPillNotEditable = () => {
 };
 
 const menuBuilder: MenuBuilder = (_, options) => [
-  { action: "and-clause", label: "AND", options },
-  { action: "or-clause", label: "OR", options },
+  { id: "and-clause", label: "AND", options },
+  { id: "or-clause", label: "OR", options },
 ];
 
-const defaultMenuHandler: MenuActionHandler = ({ menuId }) => {
+const defaultMenuHandler: MenuActionHandler = (menuId) => {
   console.log(`Menu Action ${menuId} invoked`);
   if (menuId === "action-1" || menuId === "action-1") {
     // invoke our action here
@@ -59,7 +59,7 @@ export const FilterPillWithMenu = () => {
   const [active, setActive] = useState(false);
   const handleClick = useMemo(() => () => setActive((value) => !value), []);
 
-  const handleMenuAction = useCallback<MenuActionHandler>(({ menuId }) => {
+  const handleMenuAction = useCallback<MenuActionHandler>((menuId) => {
     console.log(`menuId ${menuId}`);
     return true;
   }, []);
@@ -91,7 +91,7 @@ export const FilterPillEditableLabel = () => {
   const [editing, setEditing] = useState(false);
   const handleClick = useMemo(() => () => setActive((value) => !value), []);
 
-  const handleMenuAction = useCallback<MenuActionHandler>(({ menuId }) => {
+  const handleMenuAction = useCallback<MenuActionHandler>((menuId) => {
     if (menuId === "rename-filter") {
       setTimeout(() => {
         setEditing(true);

@@ -11,8 +11,8 @@ import type {
   VuuAggregation,
   VuuColumnDataType,
   VuuDataRow,
+  VuuDataRowDto,
   VuuGroupBy,
-  VuuRowRecord,
   VuuSort,
 } from "@vuu-ui/vuu-protocol-types";
 import type {
@@ -246,7 +246,7 @@ export const isMappedValueTypeRenderer = (
   typeof (renderer as MappedValueTypeRenderer)?.map !== "undefined";
 
 export function buildColumnMap(
-  columns?: (RuntimeColumnDescriptor | SchemaColumn | string)[],
+  columns?: (ColumnDescriptor | SchemaColumn | string)[],
 ): ColumnMap {
   const start = metadataKeys.count;
   if (columns) {
@@ -580,7 +580,7 @@ export const getColumnStyle = ({
 
 export const setAggregations = (
   aggregations: VuuAggregation[],
-  column: RuntimeColumnDescriptor,
+  column: ColumnDescriptor,
   aggType: VuuAggType,
 ) => {
   return aggregations
@@ -714,11 +714,11 @@ export function updateColumn(
 
 export const toDataSourceColumns = (column: ColumnDescriptor) => column.name;
 
-export const getRowRecord = (
+export const dataSourceRowToDataRowDto = (
   row: DataSourceRow,
   columnMap: ColumnMap,
-): VuuRowRecord => {
-  return Object.entries(columnMap).reduce<VuuRowRecord>(
+): VuuDataRowDto => {
+  return Object.entries(columnMap).reduce<VuuDataRowDto>(
     (map, [colName, key]) => {
       map[colName] = row[key];
       return map;

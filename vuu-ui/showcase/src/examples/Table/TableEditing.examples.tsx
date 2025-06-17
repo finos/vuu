@@ -13,7 +13,7 @@ import {
 import {
   applyDefaultColumnConfig,
   registerComponent,
-  useDataSource,
+  useData,
 } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { DropdownCell } from "@vuu-ui/vuu-table-extras";
@@ -32,7 +32,7 @@ const TableTemplate = ({
 }) => {
   const schema = getSchema(tableName);
 
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
   const [dataSource, config] = useMemo<[DataSource, TableConfig]>(() => {
     const dataSource = new VuuDataSource({ table: schema.table });
     const config = {

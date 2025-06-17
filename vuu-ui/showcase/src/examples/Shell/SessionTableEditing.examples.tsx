@@ -1,20 +1,17 @@
 import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
-import {
-  ContextMenuItemDescriptor,
-  DataSource,
-  MenuActionHandler,
-  MenuBuilder,
-} from "@vuu-ui/vuu-data-types";
-import {
-  ContextMenuProvider,
-  MenuActionClosePopup,
-  useContextMenu,
-  useDialog,
-} from "@vuu-ui/vuu-popups";
+import { DataSource } from "@vuu-ui/vuu-data-types";
+import { useDialog } from "@vuu-ui/vuu-popups";
 import { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { SessionEditingForm } from "@vuu-ui/vuu-data-react";
 import { HTMLAttributes, MouseEventHandler, useMemo } from "react";
+import {
+  ContextMenuItemDescriptor,
+  ContextMenuProvider,
+  MenuActionHandler,
+  MenuBuilder,
+  useContextMenu,
+} from "@vuu-ui/vuu-context-menu";
 
 const openFile: ActionWithParams = {
   id: "openFile",
@@ -119,7 +116,7 @@ const ComponentWithMenu = ({
   location,
   ...props
 }: HTMLAttributes<HTMLDivElement> & { location: "left" | "right" }) => {
-  const [showContextMenu] = useContextMenu();
+  const showContextMenu = useContextMenu();
   const handleContextMenu: MouseEventHandler<HTMLDivElement> = (e) => {
     console.log(`ComponentWithMenu<${location}> handleContextMenu`);
     showContextMenu(e, location, { type: "outer" });
@@ -188,23 +185,21 @@ export const ContextMenuActions = () => {
 
   const menuDescriptors: ContextMenuItemDescriptor[] = useMemo(
     () => [
-      { label: "Menu Action 1, no Parameters", action: "action1" },
-      { label: "Menu Action 2, no Parameters", action: "action2" },
-      { label: "Set Log Level ...", action: "setLogLevel" },
-      { label: "Switch Connection List", action: "switchConnectionList" },
-      { label: "Fix status", action: "fixStatus" },
-      { label: "Fix HB interval ...", action: "fixHbInterval" },
-      { label: "Set Inbound Fix ...", action: "setInboundFix" },
-      { label: "Set Outbound Fix ...", action: "setOutboundFix" },
-      { label: "Load File ...", action: "loadFile" },
+      { label: "Menu Action 1, no Parameters", id: "id1" },
+      { label: "Menu id 2, no Parameters", id: "id2" },
+      { label: "Set Log Level ...", id: "setLogLevel" },
+      { label: "Switch Connection List", id: "switchConnectionList" },
+      { label: "Fix status", id: "fixStatus" },
+      { label: "Fix HB interval ...", id: "fixHbInterval" },
+      { label: "Set Inbound Fix ...", id: "setInboundFix" },
+      { label: "Set Outbound Fix ...", id: "setOutboundFix" },
+      { label: "Load File ...", id: "loadFile" },
     ],
     [],
   );
 
-  const handleMenuAction: MenuActionHandler = (
-    action: MenuActionClosePopup,
-  ) => {
-    const actionDescriptor = actionDescriptors[action.menuId];
+  const handleMenuAction: MenuActionHandler = (menuItemId) => {
+    const actionDescriptor = actionDescriptors[menuItemId];
     if (hasParams(actionDescriptor)) {
       setDialogState({
         content: (

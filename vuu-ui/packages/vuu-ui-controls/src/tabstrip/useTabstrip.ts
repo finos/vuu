@@ -1,4 +1,3 @@
-import type { MenuActionHandler } from "@vuu-ui/vuu-data-types";
 import type { OverflowItem } from "@vuu-ui/vuu-ui-controls";
 import { orientationType } from "@vuu-ui/vuu-utils";
 import {
@@ -15,6 +14,7 @@ import { getIndexOfSelectedTab } from "./tabstrip-dom-utils";
 import { useAnimatedSelectionThumb } from "./useAnimatedSelectionThumb";
 import { useKeyboardNavigation } from "./useKeyboardNavigation";
 import { useSelection } from "./useSelection";
+import { MenuActionHandler } from "@vuu-ui/vuu-context-menu";
 
 export type ExitEditModeHandler = (
   originalValue: string,
@@ -222,15 +222,15 @@ export const useTabstrip = ({
   );
 
   const handleTabMenuAction = useCallback<MenuActionHandler>(
-    (action) => {
-      if (isTabMenuOptions(action.options)) {
-        switch (action.menuId) {
+    (menuItemId, options) => {
+      if (isTabMenuOptions(options)) {
+        switch (menuItemId) {
           case "close-tab":
-            return handleCloseTabFromMenu(action.options.tabIndex);
+            return handleCloseTabFromMenu(options.tabIndex);
           case "rename-tab":
-            return handleRenameTabFromMenu(action.options.tabIndex);
+            return handleRenameTabFromMenu(options.tabIndex);
           default:
-            console.log(`tab menu action ${action.menuId}`);
+            console.log(`tab menu action ${menuItemId}`);
         }
       }
       return false;

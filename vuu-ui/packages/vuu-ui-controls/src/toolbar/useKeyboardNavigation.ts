@@ -27,7 +27,7 @@ import {
 } from "@vuu-ui/vuu-utils";
 import { getIndexOfEditedItem } from "./toolbar-dom-utils";
 import { NavigationOutOfBoundsHandler } from "./Toolbar";
-import { PopupCloseCallback } from "@vuu-ui/vuu-popups";
+import type { PopupCloseCallback } from "@vuu-ui/vuu-popups";
 
 type directionType = "bwd" | "fwd" | "start" | "end";
 type directionMap = { [key: string]: directionType };

@@ -5,12 +5,10 @@ import {
   useRef,
   useState,
 } from "react";
-import { MenuOpenHandler } from "../menu";
 import { PopupMenuProps } from "./PopupMenu";
 import { getPositionRelativeToAnchor } from "../popup/getPositionRelativeToAnchor";
-import { useContextMenu } from "../menu";
-import { PopupCloseCallback, reasonIsClickAway } from "../popup/popup-service";
 import { PopupPlacement } from "../popup/Popup";
+import { useContextMenu } from "@vuu-ui/vuu-context-menu";
 
 export interface PopupMenuHookProps
   extends Pick<
@@ -34,7 +32,6 @@ export const usePopupMenu = ({
   id,
   menuActionHandler,
   menuBuilder,
-  menuClassName,
   menuLocation,
   menuOptions,
   onMenuClose,
@@ -56,36 +53,33 @@ export const usePopupMenu = ({
     [onMenuOpen],
   );
 
-  const [showContextMenu] = useContextMenu(menuBuilder, menuActionHandler);
+  const showContextMenu = useContextMenu(menuBuilder, menuActionHandler);
 
-  const handleOpenMenu = useCallback<MenuOpenHandler>((el) => {
-    console.log(`menu Open `, {
-      el,
-    });
-  }, []);
-
-  const handleMenuClose = useCallback<PopupCloseCallback>(
-    (reason) => {
-      setMenuOpen(false);
-      // If user has clicked the MenuButton whilst menu is open, we want to close it.
-      // The PopupService will close it for us as a 'click-away' event. We don't want
-      // that click on the button to re-open it.
-      if (reasonIsClickAway(reason)) {
-        const target = reason.mouseEvt.target as HTMLElement;
-        if (target === rootRef.current) {
-          suppressShowMenuRef.current = true;
-        }
-        onMenuClose?.(reason);
-      } else {
-        requestAnimationFrame(() => {
-          onMenuClose?.(reason);
-          if (tabIndex !== -1 && reason?.type !== "tab-away") {
-            rootRef.current?.focus();
-          }
-        });
+  const handleMenuOpenChange = useCallback(
+    (isOpen: boolean) => {
+      if (isOpen === false) {
+        setMenuOpen(false);
+        onMenuClose?.();
       }
+      // // If user has clicked the MenuButton whilst menu is open, we want to close it.
+      // // The PopupService will close it for us as a 'click-away' event. We don't want
+      // // that click on the button to re-open it.
+      // if (reasonIsClickAway(reason)) {
+      //   const target = reason.mouseEvt.target as HTMLElement;
+      //   if (target === rootRef.current) {
+      //     suppressShowMenuRef.current = true;
+      //   }
+      //   onMenuClose?.(reason);
+      // } else {
+      //   requestAnimationFrame(() => {
+      //     onMenuClose?.(reason);
+      //     if (tabIndex !== -1 && reason?.type !== "tab-away") {
+      //       rootRef.current?.focus();
+      //     }
+      //   });
+      // }
     },
-    [onMenuClose, setMenuOpen, tabIndex],
+    [onMenuClose, setMenuOpen],
   );
 
   const showMenu = useCallback(
@@ -98,38 +92,29 @@ export const usePopupMenu = ({
           const {
             left: x,
             top: y,
-            width,
+            // width,
           } = getPositionRelativeToAnchor(anchorEl, popupPlacement, 0, 0);
           setMenuOpen(true);
 
-          showContextMenu(e, menuLocation, {
-            ContextMenuProps: {
-              className: menuClassName,
-              id: `${id}-menu`,
-              onClose: handleMenuClose,
-              openMenu: handleOpenMenu,
-              position: {
-                x,
-                y,
-              },
-              style: { width: width ? width - 2 : undefined },
-            },
-            ...menuOptions,
+          showContextMenu(e, menuLocation, menuOptions, {
+            // className: menuClassName,
+            // id: `${id}-menu`,
+            onOpenChange: handleMenuOpenChange,
+            x,
+            y,
+            // style: { width: width ? width - 2 : undefined },
           });
         }
       }
     },
     [
       anchorElement,
-      handleMenuClose,
-      handleOpenMenu,
-      id,
-      menuClassName,
-      menuLocation,
-      menuOptions,
       popupPlacement,
       setMenuOpen,
       showContextMenu,
+      menuLocation,
+      menuOptions,
+      handleMenuOpenChange,
     ],
   );
 

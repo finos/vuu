@@ -3,7 +3,7 @@ import {
   VuuRpcServiceRequest,
   TypeaheadParams,
 } from "@vuu-ui/vuu-protocol-types";
-import { useDataSource } from "@vuu-ui/vuu-utils";
+import { useData } from "@vuu-ui/vuu-utils";
 import { useCallback } from "react";
 
 export const getTypeaheadParams = (
@@ -19,7 +19,7 @@ export const getTypeaheadParams = (
 };
 
 export const useTypeaheadSuggestions = () => {
-  const { getServerAPI } = useDataSource();
+  const { getServerAPI } = useData();
   return useCallback<SuggestionFetcher>(
     async (params: TypeaheadParams) => {
       const rpcMessage: VuuRpcServiceRequest =

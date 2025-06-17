@@ -11,7 +11,7 @@ import {
   getCalculatedColumnDetails,
 } from "@vuu-ui/vuu-utils";
 import { useCallback, useRef, useState } from "react";
-import { ColumnActionColumnSettings } from "./useTableModel";
+import { DisplayColumnSettingsAction } from "@vuu-ui/vuu-table-extras/src/column-menu/column-action-types";
 
 export interface TableAndColumnSettingsHookProps {
   availableColumns: SchemaColumn[];
@@ -88,7 +88,7 @@ export const useTableAndColumnSettings = ({
   );
 
   const showColumnSettingsPanel = useCallback(
-    (action: ColumnActionColumnSettings) => {
+    (action: DisplayColumnSettingsAction) => {
       showContextPanel("ColumnSettings", "Column Settings", {
         column: action.column,
         onCancelCreateColumn: handleCancelCreateColumn,
@@ -113,7 +113,7 @@ export const useTableAndColumnSettings = ({
         name: "::",
         serverDataType: "string",
       },
-      type: "columnSettings",
+      type: "column-settings",
       vuuTable: { module: "SIMUL", table: "instruments" },
     });
   }, [showColumnSettingsPanel]);
@@ -123,7 +123,7 @@ export const useTableAndColumnSettings = ({
       const column = tableConfig.columns.find((c) => c.name === columnName);
       if (column) {
         showColumnSettingsPanel({
-          type: "columnSettings",
+          type: "column-settings",
           column,
           //TODO where do we get this from
           vuuTable: { module: "SIMUL", table: "instruments" },

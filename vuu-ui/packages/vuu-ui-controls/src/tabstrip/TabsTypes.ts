@@ -1,3 +1,5 @@
+import type { MenuActionHandler } from "@vuu-ui/vuu-context-menu";
+import type { orientationType } from "@vuu-ui/vuu-utils";
 import type {
   AriaAttributes,
   HTMLAttributes,
@@ -5,10 +7,7 @@ import type {
   MouseEvent,
   ReactElement,
 } from "react";
-import { orientationType } from "@vuu-ui/vuu-utils";
-
 import type { EditableLabelProps } from "../editable-label";
-import type { MenuActionHandler } from "@vuu-ui/vuu-data-types";
 
 export type ExitTabEditModeHandler = (
   originalValue: string,

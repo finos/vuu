@@ -1,11 +1,7 @@
 import { ViewportRpcResponse } from "@vuu-ui/vuu-data-types";
 import type { TableRowSelectHandler } from "@vuu-ui/vuu-table-types";
 import { OpenChangeHandler } from "@vuu-ui/vuu-ui-controls";
-import {
-  CommitHandler,
-  buildColumnMap,
-  useDataSource,
-} from "@vuu-ui/vuu-utils";
+import { CommitHandler, buildColumnMap, useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NewBasketPanelProps } from "./NewBasketPanel";
 import { VuuRpcViewportRequest } from "@vuu-ui/vuu-protocol-types";
@@ -23,7 +19,7 @@ export const useNewBasketPanel = ({
   const [basketName, setBasketName] = useState("");
   const [basketId, setBasketId] = useState<string>();
   const saveButtonRef = useRef<HTMLButtonElement>(null);
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
   const basketDataSource = useMemo(() => {
     const ds = new VuuDataSource({ table: basketSchema.table });
     ds.subscribe({}, () => {

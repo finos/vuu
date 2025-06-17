@@ -4,7 +4,9 @@ describe("Cell navigation with keyboard", () => {
   describe("navigation from outside with Tab", () => {
     it("begins navigation in first header cell", () => {
       cy.mount(<TabInAndOut />);
+      cy.findByRole("table").should("be.visible");
       cy.findByTestId("input-start").realClick();
+      // MAke sure we don't tab before the table has actually completed rendering
       cy.realPress("Tab");
       cy.findAllByRole("columnheader").eq(0).should("be.focused");
     });

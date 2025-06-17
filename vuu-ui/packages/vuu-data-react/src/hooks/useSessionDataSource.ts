@@ -1,13 +1,13 @@
-import {
+import type {
   DataSource,
   DataSourceConfig,
   DataSourceConfigChangeHandler,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
-import { isConfigChanged, useDataSource } from "@vuu-ui/vuu-utils";
 import { useViewContext } from "@vuu-ui/vuu-layout";
+import type { VuuRange } from "@vuu-ui/vuu-protocol-types";
+import { isConfigChanged, useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
-import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 
 type SessionDataSourceConfig = {
   "datasource-config"?: DataSourceConfig;
@@ -23,7 +23,7 @@ export const useSessionDataSource = ({
   tableSchema: TableSchema;
 }) => {
   const { id, load, save, loadSession, saveSession, title } = useViewContext();
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
 
   const { "datasource-config": dataSourceConfigFromState } =
     useMemo<SessionDataSourceConfig>(() => load?.() ?? NO_CONFIG, [load]);

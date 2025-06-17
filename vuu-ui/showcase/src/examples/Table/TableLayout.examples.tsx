@@ -18,7 +18,7 @@ import { List, ListItem } from "@vuu-ui/vuu-ui-controls";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 import { VuuRpcMenuRequest } from "@vuu-ui/vuu-protocol-types";
-import { useDataSource } from "@vuu-ui/vuu-utils";
+import { useData } from "@vuu-ui/vuu-utils";
 
 type DataTableProps = Partial<
   Omit<TableProps, "config"> & { config?: Partial<TableConfig> }
@@ -36,7 +36,7 @@ const DataTableTemplate = ({
   width = 600,
   ...props
 }: DataTableProps) => {
-  const { VuuDataSource } = useDataSource();
+  const { VuuDataSource } = useData();
   const tableConfig = useMemo<TableConfig>(() => {
     return {
       ...props.config,

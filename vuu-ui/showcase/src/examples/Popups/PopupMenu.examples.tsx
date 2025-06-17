@@ -1,18 +1,17 @@
-import { MenuActionHandler, MenuBuilder } from "@vuu-ui/vuu-data-types";
 import {
   ContextMenuProvider,
-  MenuCloseHandler,
-  PopupMenu,
-  PopupMenuProps,
-} from "@vuu-ui/vuu-popups";
+  MenuActionHandler,
+  MenuBuilder,
+} from "@vuu-ui/vuu-context-menu";
+import { PopupMenu, PopupMenuProps } from "@vuu-ui/vuu-popups";
 import { useCallback, useMemo } from "react";
 
 const menuBuilder: MenuBuilder = () => [
-  { action: "action-1", label: "Menu Item 1" },
-  { action: "action-2", label: "Menu Item 2" },
+  { id: "action-1", label: "Menu Item 1" },
+  { id: "action-2", label: "Menu Item 2" },
 ];
 
-const defaultMenuHandler: MenuActionHandler = ({ menuId }) => {
+const defaultMenuHandler: MenuActionHandler = (menuId) => {
   console.log(`Menu Action ${menuId} invoked`);
   if (menuId === "action-1" || menuId === "action-1") {
     // invoke our action here
@@ -28,29 +27,24 @@ export const DefaultPopupMenu = ({
     [menuActionHandler],
   );
 
-  const onMenuOpen = useCallback(() => {
-    console.log("Menu opened");
-  }, []);
-
-  const onMenuClose = useCallback<MenuCloseHandler>((reason) => {
-    console.log(`Menu closed`, {
-      reason,
-    });
+  const onMenuClose = useCallback(() => {
+    console.log(`Menu closed`);
   }, []);
 
   return (
-    <div
-      data-showcase-center
-      style={{ gap: 24, display: "flex", alignItems: "center" }}
-    >
-      <input data-testid="input" defaultValue="test" />
-      <PopupMenu
-        menuBuilder={menuBuilder}
-        menuActionHandler={menuHandler}
-        onMenuOpen={onMenuOpen}
-        onMenuClose={onMenuClose}
-      />
-    </div>
+    <ContextMenuProvider>
+      <div
+        data-showcase-center
+        style={{ gap: 24, display: "flex", alignItems: "center" }}
+      >
+        <input data-testid="input" defaultValue="test" />
+        <PopupMenu
+          menuBuilder={menuBuilder}
+          menuActionHandler={menuHandler}
+          onMenuClose={onMenuClose}
+        />
+      </div>
+    </ContextMenuProvider>
   );
 };
 
@@ -58,11 +52,11 @@ export const PopupMenuWithLabel = ({ height = 300, width = 600 }) => {
   const menuBuilder = useMemo<MenuBuilder>(
     () => () => [
       {
-        action: "action-1",
+        id: "action-1",
         label: "Menu Item 1",
       },
       {
-        action: "action-2",
+        id: "action-2",
         label: "Menu Item 2",
       },
     ],
@@ -70,14 +64,13 @@ export const PopupMenuWithLabel = ({ height = 300, width = 600 }) => {
   );
 
   const menuHandler = useMemo<MenuActionHandler>(
-    () =>
-      ({ menuId }) => {
-        console.log(`Menu Action ${menuId} invoked`);
-        if (menuId === "action-1" || menuId === "action-1") {
-          // invoke our action here
-          return true;
-        }
-      },
+    () => (menuId) => {
+      console.log(`Menu Action ${menuId} invoked`);
+      if (menuId === "action-1" || menuId === "action-1") {
+        // invoke our action here
+        return true;
+      }
+    },
     [],
   );
 
@@ -107,12 +100,12 @@ export const PopupMenuWithMenuOptions = () => {
   const menuBuilder = useMemo<MenuBuilder>(
     () => (_locaction, options) => [
       {
-        action: "action-1",
+        id: "action-1",
         label: "Menu Item 1",
         options,
       },
       {
-        action: "action-2",
+        id: "action-2",
         label: "Menu Item 2",
         options,
       },
@@ -121,14 +114,13 @@ export const PopupMenuWithMenuOptions = () => {
   );
 
   const menuHandler = useMemo<MenuActionHandler>(
-    () =>
-      ({ menuId }) => {
-        console.log(`Menu Action ${menuId} invoked`);
-        if (menuId === "action-1" || menuId === "action-1") {
-          // invoke our action here
-          return true;
-        }
-      },
+    () => (menuId) => {
+      console.log(`Menu Action ${menuId} invoked`);
+      if (menuId === "action-1" || menuId === "action-1") {
+        // invoke our action here
+        return true;
+      }
+    },
     [],
   );
 
@@ -154,9 +146,9 @@ export const PopupMenuWithMenuOptions = () => {
 
 export const PopupMenuUsingLocationAndContext = () => {
   const contextMenuDescriptors = [
-    { label: "Sort", action: "sort", location: "test-location" },
-    { label: "Filter", action: "sort", location: "test-location" },
-    { label: "Group", action: "group" },
+    { label: "Sort", id: "sort", location: "test-location" },
+    { label: "Filter", id: "sort", location: "test-location" },
+    { label: "Group", id: "group" },
   ];
 
   const handleContextMenuAction: MenuActionHandler = () => {
@@ -169,12 +161,12 @@ export const PopupMenuUsingLocationAndContext = () => {
   const menuBuilder = useMemo<MenuBuilder>(
     () => (_locaction, options) => [
       {
-        action: "action-1",
+        id: "action-1",
         label: "Menu Item 1",
         options,
       },
       {
-        action: "action-2",
+        id: "action-2",
         label: "Menu Item 2",
         options,
       },
@@ -183,13 +175,12 @@ export const PopupMenuUsingLocationAndContext = () => {
   );
 
   const menuHandler = useMemo<MenuActionHandler>(
-    () =>
-      ({ menuId }) => {
-        if (menuId === "action-1" || menuId === "action-1") {
-          // invoke our action here
-          return true;
-        }
-      },
+    () => (menuId) => {
+      if (menuId === "action-1" || menuId === "action-1") {
+        // invoke our action here
+        return true;
+      }
+    },
     [],
   );
 
