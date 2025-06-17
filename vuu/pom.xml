@@ -8,7 +8,7 @@
     </parent>
 
     <properties>
-        <lucene.version>8.11.0</lucene.version>
+        <lucene.version>8.11.4</lucene.version>
     </properties>
 
     <artifactId>vuu</artifactId>
