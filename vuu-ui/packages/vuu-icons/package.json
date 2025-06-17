@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/vuu-icons",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "description": "css embedded svg icons plus icon components for Vuu",
   "main": "src/index.ts",
   "license": "Apache-2.0",
@@ -14,7 +14,7 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "peerDependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react": ">=18.3.1",
+    "react-dom": ">=18.3.1"
   }
 }
