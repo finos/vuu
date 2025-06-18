@@ -1,6 +1,5 @@
 import { getAuthDetailsFromCookies, redirectToLogin } from "@vuu-ui/vuu-shell";
-import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import { App } from "./src/App";
 
 import "@vuu-ui/vuu-icons/index.css";
@@ -11,8 +10,9 @@ if (!username || !token) {
   // This won't be needed with serverside protection
   redirectToLogin();
 } else {
-  ReactDOM.render(
-    <App user={{ username, token }} />,
-    document.getElementById("root"),
-  );
+  const container = document.getElementById("root");
+  if (container) {
+    const root = createRoot(container);
+    root.render(<App user={{ username, token }} />);
+  }
 }

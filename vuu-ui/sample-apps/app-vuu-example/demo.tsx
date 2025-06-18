@@ -1,13 +1,12 @@
+import { SaltProvider } from "@salt-ds/core";
 import { LoginPanel } from "@vuu-ui/vuu-shell";
 import { uuid } from "@vuu-ui/vuu-utils";
-import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 
 import "@vuu-ui/vuu-icons/index.css";
 import "@vuu-ui/vuu-theme/index.css";
 
 import "./login.css";
-import { SaltProvider } from "@salt-ds/core";
 
 async function login(username: string) {
   try {
@@ -25,9 +24,12 @@ async function login(username: string) {
   }
 }
 
-ReactDOM.render(
-  <SaltProvider theme="vuu-theme" density="high">
-    <LoginPanel requirePassword={false} onSubmit={login} />
-  </SaltProvider>,
-  document.getElementById("root"),
-);
+const container = document.getElementById("root");
+if (container) {
+  const root = createRoot(container);
+  root.render(
+    <SaltProvider theme="vuu-theme" density="high">
+      <LoginPanel requirePassword={false} onSubmit={login} />
+    </SaltProvider>,
+  );
+}
