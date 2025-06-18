@@ -1,6 +1,6 @@
 import { ColumnDescriptorsByName, Filter } from "@vuu-ui/vuu-filter-types";
 import {
-  PopupCloseCallback,
+  MenuCloseHandler,
   PopupMenuProps,
   Tooltip,
   useTooltip,
@@ -96,7 +96,7 @@ export const FilterPill = ({
 
   const id = useId(idProp);
 
-  const handleMenuClose = useCallback<PopupCloseCallback>((reason) => {
+  const handleMenuClose = useCallback<MenuCloseHandler>((reason) => {
     if (reason?.type === "escape") {
       requestAnimationFrame(() => {
         if (rootRef.current) {

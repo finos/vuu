@@ -30,7 +30,7 @@ export const useTableAndColumnSettings = ({
   tableConfig,
 }: TableAndColumnSettingsHookProps) => {
   const dispatchLayoutAction = useLayoutProviderDispatch();
-  const showTableSettingsRef = useRef<() => void>();
+  const showTableSettingsRef = useRef<() => void>(undefined);
 
   const [availableColumns, setAvailableColumns] = useState<SchemaColumn[]>(
     availableColumnsProps,

@@ -106,7 +106,8 @@ export const StackLayout = (props: StackProps) => {
   };
 
   const getTabLabel: TabLabelFactory = (component, idx, existingLabels) => {
-    const { id, title } = component.props;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { id, title } = component.props as any;
     return (
       loadState(id, "view-title") ||
       title ||

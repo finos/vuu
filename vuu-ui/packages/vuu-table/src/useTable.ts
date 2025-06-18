@@ -126,7 +126,7 @@ export interface TableHookProps
       | "showColumnHeaders"
       | "showPaginationControls"
     > {
-  containerRef: RefObject<HTMLDivElement>;
+  containerRef: RefObject<HTMLDivElement | null>;
   rowHeight: number;
   selectionModel: TableSelectionModel;
   size: MeasuredSize;
@@ -184,7 +184,7 @@ export const useTable = ({
 }: TableHookProps) => {
   const tableConfigRef = useRef<TableConfig>(config);
   // avoids a hook dependency on requestScroll, important to avoid re-registering config handler
-  const requestScrollRef = useRef<ScrollRequestHandler | undefined>();
+  const requestScrollRef = useRef<ScrollRequestHandler | undefined>(undefined);
   useMemo(() => {
     tableConfigRef.current = config;
   }, [config]);
@@ -194,7 +194,7 @@ export const useTable = ({
 
   const cellFocusStateRef = useRef<CellFocusState>(initialState);
   // Needed to avoid circular dependency between useTableScroll and useCellFocus
-  const focusCellRef = useRef<FocusCell>();
+  const focusCellRef = useRef<FocusCell>(undefined);
 
   const [headerState, setHeaderState] = useState<HeaderState>(
     showColumnHeaders ? nullHeaderState : zeroHeaderState,
@@ -473,7 +473,7 @@ export const useTable = ({
     [dataSource],
   );
 
-  const resizeCells = useRef<HTMLElement[] | undefined>();
+  const resizeCells = useRef<HTMLElement[] | undefined>(undefined);
 
   const onResizeColumn: TableColumnResizeHandler = useCallback(
     (phase, columnName, width) => {

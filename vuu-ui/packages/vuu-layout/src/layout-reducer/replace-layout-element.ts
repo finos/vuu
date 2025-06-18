@@ -46,7 +46,10 @@ export function swapChild(
     getProp(model, "path"),
     getProp(child, "path"),
   );
-  const children = model.props.children.slice();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const modelChildren = (model.props as any).children as ReactElement[];
+  const children = modelChildren.slice();
 
   if (finalStep) {
     if (!op) {
@@ -95,7 +98,8 @@ function collapse(parent: ReactElement, child: ReactElement) {
       collapsed,
       restoreStyle,
       style,
-    });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
   }
   return child;
 }
@@ -114,5 +118,6 @@ function expand(child: ReactElement) {
     collapsed: false,
     style,
     restoreStyle: undefined,
-  });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any);
 }

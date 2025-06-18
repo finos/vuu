@@ -120,7 +120,8 @@ function _removeChild(
   }
 
   children = children.map((child, i) => resetPath(child, `${path}.${i}`));
-  return React.cloneElement(container, { active }, children);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return React.cloneElement(container, { active } as any, children);
 }
 
 function unwrap(container: ReactElement, child: ReactElement) {
@@ -134,17 +135,23 @@ function unwrap(container: ReactElement, child: ReactElement) {
   if (path === "0") {
     unwrappedChild = React.cloneElement(unwrappedChild, {
       style: {
-        ...child.props.style,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...(child.props as any).style,
         width,
         height,
       },
-    });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
   } else if (type === "Flexbox") {
     const dim =
-      container.props.style.flexDirection === "column" ? "height" : "width";
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (container.props as any).style.flexDirection === "column"
+        ? "height"
+        : "width";
     const {
       style: { [dim]: size, ...style },
-    } = unwrappedChild.props;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } = unwrappedChild.props as any;
     unwrappedChild = React.cloneElement(unwrappedChild, {
       flexFill: undefined,
       style: {
@@ -155,18 +162,22 @@ function unwrap(container: ReactElement, child: ReactElement) {
         width,
         height,
       },
-    });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
   }
   return unwrappedChild;
 }
 
 const isFlexible = (element: ReactElement) => {
-  return element.props.style?.flexGrow > 0;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (element.props as any).style?.flexGrow > 0;
 };
 
 const canBeMadeFlexible = (element: ReactElement) => {
-  if (element.props.style) {
-    const { width, height, flexGrow } = element.props.style;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if ((element.props as any).style) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { width, height, flexGrow } = (element.props as any).style;
     return (
       flexGrow === 0 && typeof width !== "number" && typeof height !== "number"
     );
@@ -180,10 +191,12 @@ const makeFlexible = (children: ReactElement[]) => {
     canBeMadeFlexible(child)
       ? React.cloneElement(child, {
           style: {
-            ...child.props.style,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ...(child.props as any).style,
             flexGrow: 1,
           },
-        })
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any)
       : child,
   );
 };
@@ -255,16 +268,17 @@ const _collapsePlaceHolders = (container: ReactElement) => {
 const mergePlaceholders = ([placeholder, ...placeholders]: ReactElement[]) => {
   const targetStyle = getProp(placeholder, "style");
   let { flexBasis, flexGrow, flexShrink } = targetStyle;
-  for (const {
-    props: { style },
-  } of placeholders) {
+  for (const placeholder of placeholders) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { style } = placeholder.props as any;
     flexBasis += style.flexBasis;
     flexGrow = Math.max(flexGrow, style.flexGrow);
     flexShrink = Math.max(flexShrink, style.flexShrink);
   }
   return React.cloneElement(placeholder, {
     style: { ...targetStyle, flexBasis, flexGrow, flexShrink },
-  });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any);
 };
 
 const allOtherChildrenArePlaceholders = (

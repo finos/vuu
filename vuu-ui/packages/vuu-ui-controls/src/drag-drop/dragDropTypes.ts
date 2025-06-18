@@ -1,4 +1,4 @@
-import { MouseEventHandler, RefObject } from "react";
+import { MouseEventHandler, ReactElement, RefObject } from "react";
 import type { orientationType } from "@vuu-ui/vuu-utils";
 import { DragDropState } from "./DragDropState";
 
@@ -55,8 +55,8 @@ export type Rect = {
 };
 
 export interface DragHookResult {
-  draggable?: JSX.Element;
-  dropIndicator?: JSX.Element;
+  draggable?: ReactElement;
+  dropIndicator?: ReactElement;
   draggedItemIndex?: number;
   isDragging: boolean;
   isScrolling: RefObject<boolean>;
@@ -95,7 +95,7 @@ export type DropHandler = (options: DropOptions) => void;
 
 export interface DragDropProps {
   allowDragDrop?: boolean | dragStrategy;
-  containerRef: RefObject<HTMLElement>;
+  containerRef: RefObject<HTMLElement | null>;
   /** this is the className that will be assigned during drag to the dragged element  */
   draggableClassName: string;
   extendedDropZone?: boolean;
@@ -112,7 +112,7 @@ export interface DragDropProps {
    * The scrolling container does not necessarily have to be a
    * descendant of the container, it may be an ancestor element;
    */
-  scrollingContainerRef?: RefObject<HTMLElement>;
+  scrollingContainerRef?: RefObject<HTMLElement | null>;
   // selected?: CollectionItem<unknown> | CollectionItem<unknown>[] | null;
   viewportRange?: ViewportRange;
 }

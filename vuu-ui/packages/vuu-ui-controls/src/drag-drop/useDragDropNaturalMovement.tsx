@@ -47,7 +47,7 @@ export const useDragDropNaturalMovement = ({
   const { clearSpacers, displaceItem, displaceLastItem, setTerminalSpacer } =
     useDragDisplacers(orientation);
 
-  const draggedItemRef = useRef<MeasuredDropTarget>();
+  const draggedItemRef = useRef<MeasuredDropTarget>(undefined);
   const fullItemQuery = `:is(${itemQuery}${NOT_OVERFLOWED}${NOT_HIDDEN},.vuuOverflowContainer-OverflowIndicator)`;
 
   const indexOf = (dropTarget: MeasuredDropTarget) =>
@@ -55,7 +55,7 @@ export const useDragDropNaturalMovement = ({
 
   // Shouldn't need this - but viewportRange is always stale in stopScrolling. Checked all dependencies
   // look ok. Something to do with setTimeout / scrollHandler ?
-  const rangeRef = useRef<ViewportRange>();
+  const rangeRef = useRef<ViewportRange>(undefined);
   rangeRef.current = viewportRange;
 
   const handleScrollStart = useCallback(

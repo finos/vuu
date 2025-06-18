@@ -1,6 +1,5 @@
 import {
   KeyboardEventHandler,
-  MutableRefObject,
   RefCallback,
   RefObject,
   useCallback,
@@ -16,8 +15,8 @@ import { CellPos } from "@vuu-ui/vuu-table-types";
 import type { ICellFocusState } from "./CellFocusState";
 
 export interface CellFocusHookProps {
-  cellFocusStateRef: MutableRefObject<ICellFocusState>;
-  containerRef: RefObject<HTMLElement>;
+  cellFocusStateRef: RefObject<ICellFocusState>;
+  containerRef: RefObject<HTMLElement | null>;
   disableFocus?: boolean;
   requestScroll?: ScrollRequestHandler;
 }
@@ -36,7 +35,9 @@ export const useCellFocus = ({
   requestScroll,
 }: CellFocusHookProps) => {
   const focusCellPlaceholderRef = useCallback<RefCallback<HTMLDivElement>>(
-    (el) => (cellFocusStateRef.current.placeholderEl = el),
+    (el) => {
+      cellFocusStateRef.current.placeholderEl = el;
+    },
     [cellFocusStateRef],
   );
 

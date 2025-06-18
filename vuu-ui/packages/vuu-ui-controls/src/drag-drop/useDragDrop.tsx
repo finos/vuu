@@ -1,6 +1,7 @@
 import { dispatchCustomEvent } from "@vuu-ui/vuu-utils";
 import {
   MouseEventHandler,
+  ReactElement,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -46,7 +47,7 @@ const NULL_DRAG_DROP_RESULT = {
 };
 
 type DraggableStatus = {
-  draggable?: JSX.Element;
+  draggable?: ReactElement;
   draggedItemIndex: number;
   isDragging: boolean;
 };
@@ -129,7 +130,7 @@ export const useDragDrop: DragDropHook = ({
   const dropPosRef = useRef(-1);
   const dropIndexRef = useRef(-1);
 
-  const handleScrollStopRef = useRef<ScrollStopHandler>();
+  const handleScrollStopRef = useRef<ScrollStopHandler>(undefined);
 
   const {
     isDragSource,
@@ -141,8 +142,8 @@ export const useDragDrop: DragDropHook = ({
 
   type NativeMouseHandler = (evt: MouseEvent) => void;
   /** refs for drag handlers to avoid circular dependency issues  */
-  const dragMouseMoveHandlerRef = useRef<NativeMouseHandler>();
-  const dragMouseUpHandlerRef = useRef<NativeMouseHandler>();
+  const dragMouseMoveHandlerRef = useRef<NativeMouseHandler>(undefined);
+  const dragMouseUpHandlerRef = useRef<NativeMouseHandler>(undefined);
 
   const attachDragHandlers = useCallback(() => {
     const { current: dragMove } = dragMouseMoveHandlerRef;

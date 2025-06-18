@@ -16,7 +16,7 @@ export function useDirection(
   value: unknown,
   column: RuntimeColumnDescriptor,
 ) {
-  const ref = useRef<State>();
+  const ref = useRef<State>(undefined);
   const [prevKey, prevValue, prevColumn, prevDirection] =
     ref.current || INITIAL_VALUE;
 

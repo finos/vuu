@@ -1,9 +1,9 @@
-import React, { useContext } from "react";
+import React, { ReactElement, useContext } from "react";
 import { NotificationsCenter } from "./NotificationsCenter";
 import { Notification } from "./notificationTypes";
 
 export type DispatchNotification = (
-  notification: Omit<Notification, "id">
+  notification: Omit<Notification, "id">,
 ) => void;
 
 export type NotificationsContext = {
@@ -31,11 +31,11 @@ class NotificationsContextObject implements NotificationsContext {
 }
 
 const NotificationsContext = React.createContext<NotificationsContext>(
-  new NotificationsContextObject()
+  new NotificationsContextObject(),
 );
 
 export const NotificationsProvider = (props: {
-  children: JSX.Element | JSX.Element[];
+  children: ReactElement | ReactElement[];
 }) => {
   const context = useContext(NotificationsContext);
   return (

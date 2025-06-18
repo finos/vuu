@@ -20,7 +20,8 @@ export function resizeFlexChild(
   // const dimension = style.flexDirection === "column" ? "height" : "width";
   // const replacementChildren = applySizesToChildren(children, sizes, dimension);
 
-  const replacement = React.cloneElement(target, { style: newStyle });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const replacement = React.cloneElement(target, { style: newStyle } as any);
 
   return swapChild(layoutRoot, target, replacement);
 }
@@ -66,8 +67,9 @@ function applySizesToChildren(
       return child;
     }
     return React.cloneElement(child, {
-      style: applySizeToChild(child.props.style, dimension, newSize),
-    });
+      style: applySizeToChild((child.props as any).style, dimension, newSize),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
   });
 }
 

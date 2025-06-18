@@ -16,11 +16,11 @@ export const useTooltip = ({
   placement = ["right", "above", "below"],
   tooltipContent,
 }: TooltipHookProps) => {
-  const hideTooltipRef = useRef<() => void>();
+  const hideTooltipRef = useRef<() => void>(undefined);
   const isHoveringRef = useRef(false);
   const anchorElementRef = useRef<HTMLElement | null>(null);
-  const mouseEnterTimerRef = useRef<number | undefined>();
-  const mouseLeaveTimerRef = useRef<number | undefined>();
+  const mouseEnterTimerRef = useRef<number | undefined>(undefined);
+  const mouseLeaveTimerRef = useRef<number | undefined>(undefined);
   const [tooltipProps, setTooltipProps] = useState<TooltipProps | undefined>();
 
   const id = useId(idProp);

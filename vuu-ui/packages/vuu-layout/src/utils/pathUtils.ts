@@ -18,9 +18,9 @@ const removeFinalPathSegment = (path: string) => {
 };
 
 const getChildren = (c: ReactElement) =>
-  React.isValidElement(c.props.children)
-    ? [c.props.children]
-    : c.props.children;
+  React.isValidElement((c.props as any).children)
+    ? [(c.props as any).children]
+    : (c.props as any).children;
 
 /**
  * This is a very specific function at the moment. It resolves a path of the form
@@ -154,7 +154,8 @@ const findTargetById = (
   id: string,
   throwIfNotFound = true,
 ): ReactElement | undefined => {
-  const { children, id: idProp } = source.props;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { children, id: idProp } = source.props as any;
   if (idProp === id) {
     return source;
   }
@@ -272,18 +273,20 @@ export function nextLeaf(root: ReactElement, path: string) {
   let pathIndices = path.split(".").map((idx) => parseInt(idx, 10));
   if (parent) {
     const lastIdx = pathIndices.pop();
-    const { children } = parent.props;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { children } = parent.props as any;
     if (children.length - 1 > lastIdx!) {
       return firstLeaf(children[lastIdx! + 1]);
     } else {
       const parentIdx = pathIndices.pop();
       const nextParent = followPathToParent(root, getProp(parent, "path"));
       if (nextParent && typeof parentIdx === "number") {
-        pathIndices = nextParent.props.path
+        pathIndices = (nextParent.props as any).path
           .split(".")
           .map((idx: string) => parseInt(idx, 10));
-        if (nextParent.props.children.length - 1 > parentIdx) {
-          const nextStep = nextParent.props.children[parentIdx + 1];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((nextParent.props as any).children.length - 1 > parentIdx) {
+          const nextStep = (nextParent.props as any).children[parentIdx + 1];
           if (isContainer(typeOf(nextStep) as string)) {
             return firstLeaf(nextStep);
           } else {
@@ -302,7 +305,8 @@ export function previousLeaf(root: ReactElement, path: string) {
   let lastIdx = pathIndices.pop();
   let parent = followPathToParent(root, path);
   if (parent != null && typeof lastIdx === "number") {
-    const { children } = parent.props;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { children } = parent.props as any;
     if (lastIdx > 0) {
       return lastLeaf(children[lastIdx - 1]);
     } else {
@@ -313,7 +317,8 @@ export function previousLeaf(root: ReactElement, path: string) {
           getProp(parent, "path"),
         ) as ReactElement;
         if (lastIdx > 0) {
-          const nextStep = parent.props.children[lastIdx - 1];
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const nextStep = (parent.props as any).children[lastIdx - 1];
           if (isContainer(typeOf(nextStep) as string)) {
             return lastLeaf(nextStep);
           }
@@ -327,7 +332,8 @@ export function previousLeaf(root: ReactElement, path: string) {
 
 function firstLeaf(layoutRoot: ReactElement): ReactElement {
   if (isContainer(typeOf(layoutRoot) as string)) {
-    const { children } = layoutRoot.props || layoutRoot;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { children } = (layoutRoot.props || layoutRoot) as any;
     return firstLeaf(children[0]);
   }
   return layoutRoot;
@@ -335,7 +341,8 @@ function firstLeaf(layoutRoot: ReactElement): ReactElement {
 
 function lastLeaf(root: ReactElement): ReactElement {
   if (isContainer(typeOf(root) as string)) {
-    const { children } = root.props || root;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { children } = (root.props || root) as any;
     return lastLeaf(children[children.length - 1]);
   }
   return root;
@@ -378,14 +385,16 @@ export function resetPath(
     return model;
   }
   const children: ReactElement[] = [];
-  React.Children.forEach(model.props.children, (child, i) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  React.Children.forEach((model.props as any).children, (child, i) => {
     if (!getProp(child, "path")) {
       children.push(child);
     } else {
       children.push(resetPath(child, `${path}.${i}`));
     }
   });
-  const pathPropName = model.props["data-path"] ? "data-path" : "path";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pathPropName = (model.props as any)["data-path"] ? "data-path" : "path";
   return React.cloneElement(
     model,
     { [pathPropName]: path, ...additionalProps },

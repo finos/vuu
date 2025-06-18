@@ -15,7 +15,7 @@ export interface NavigationProps {
 }
 
 export interface NavigationHookProps extends NavigationProps {
-  containerRef: RefObject<HTMLElement>;
+  containerRef: RefObject<HTMLElement | null>;
   label?: string;
   selected?: string[];
 }

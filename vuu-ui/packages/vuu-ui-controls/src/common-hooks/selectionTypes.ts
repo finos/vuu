@@ -20,33 +20,33 @@ export type SelectionStrategy =
   | MultiSelectionStrategy;
 
 export const isSingleSelection = (
-  s?: SelectionStrategy
+  s?: SelectionStrategy,
 ): s is SingleSelectionStrategy =>
   s === undefined || s === "default" || s === "deselectable";
 
 export const isMultiSelection = (
-  s?: SelectionStrategy
+  s?: SelectionStrategy,
 ): s is MultiSelectionStrategy =>
   s === "multiple" || s?.startsWith("extended") === true;
 
 export type SelectHandler<Item = string> = (
   event: SyntheticEvent,
-  selectedItem: Item
+  selectedItem: Item,
 ) => void;
 
 export const selectionIsDisallowed = (
-  selection?: SelectionStrategy | SpecialKeyMultipleSelection
+  selection?: SelectionStrategy | SpecialKeyMultipleSelection,
 ): selection is SelectionDisallowed => selection === "none";
 
 export const allowMultipleSelection = (
   selectionStrategy: SelectionStrategy | SpecialKeyMultipleSelection,
-  specialKey = false
+  specialKey = false,
 ) =>
   selectionStrategy === "multiple" ||
   (selectionStrategy === "multiple-special-key" && specialKey);
 
 export const deselectionIsAllowed = (
-  selection?: SelectionStrategy | SpecialKeyMultipleSelection
+  selection?: SelectionStrategy | SpecialKeyMultipleSelection,
 ): selection is "deselectable" | MultiSelectionStrategy =>
   selection !== "none" && selection !== "default";
 
@@ -65,16 +65,16 @@ interface SelectionProps {
 }
 
 export interface ListHandlers {
-  onClick?: (event: React.MouseEvent) => void;
-  onKeyDown?: (event: React.KeyboardEvent) => void;
+  onClick?: (event: React.MouseEvent<HTMLElement>) => void;
+  onKeyDown?: (event: React.KeyboardEvent<HTMLElement>) => void;
   onKeyboardNavigation?: (
     event: React.KeyboardEvent,
-    currentIndex: number
+    currentIndex: number,
   ) => void;
   onMouseMove?: (event: React.MouseEvent) => void;
 }
 export interface SelectionHookProps extends SelectionProps {
-  containerRef: RefObject<HTMLElement>;
+  containerRef: RefObject<HTMLElement | null>;
   disableSelection?: boolean;
   highlightedIndex: number;
   itemQuery: string;
@@ -96,24 +96,24 @@ export interface SelectionHookResult {
  */
 export type MultiSelectionHandler<Item = string> = (
   event: SyntheticEvent | null,
-  selected: Item[]
+  selected: Item[],
 ) => void;
 /**
  * evt is only null in the special case of freeform text in combobox
  */
 export type SingleSelectionHandler<Item = string> = (
   event: SyntheticEvent | null,
-  selected: Item
+  selected: Item,
 ) => void;
 
 export type SelectionType<
   I,
-  S extends SelectionStrategy
+  S extends SelectionStrategy,
 > = S extends MultiSelectionStrategy ? I[] : I | null;
 
 export interface ComponentSelectionProps<
   Item = string,
-  S extends SelectionStrategy = "default"
+  S extends SelectionStrategy = "default",
 > {
   defaultSelected?: S extends MultiSelectionStrategy ? Item[] : Item;
   onSelect?: SelectHandler<Item>;

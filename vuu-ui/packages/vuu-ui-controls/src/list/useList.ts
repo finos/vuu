@@ -208,7 +208,7 @@ export const useList = <Item, S extends SelectionStrategy>({
   });
 
   const handleKeyDown = useCallback(
-    (evt: KeyboardEvent) => {
+    (evt: KeyboardEvent<HTMLElement>) => {
       if (!evt.defaultPrevented) {
         typeaheadOnKeyDown?.(evt);
       }

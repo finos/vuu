@@ -20,7 +20,7 @@ import { useViewBroadcastChannel } from "../layout-view/useViewBroadcastChannel"
 
 export const useViewActionDispatcher = (
   id: string,
-  rootRef: RefObject<HTMLDivElement>,
+  rootRef: RefObject<HTMLDivElement | null>,
   viewPath?: string,
   dropTargets?: string[],
 ): [ViewDispatch, Contribution[] | undefined] => {

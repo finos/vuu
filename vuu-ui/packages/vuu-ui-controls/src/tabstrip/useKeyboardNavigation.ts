@@ -86,7 +86,7 @@ export interface ContainerNavigationProps {
 }
 
 interface TabstripNavigationHookProps {
-  containerRef: RefObject<HTMLElement>;
+  containerRef: RefObject<HTMLElement | null>;
   defaultHighlightedIdx?: number;
   highlightedIdx?: number;
   keyBoardActivation?: "manual" | "automatic";

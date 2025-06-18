@@ -17,7 +17,7 @@ export interface IconButtonProps extends Omit<ButtonProps, "children"> {
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
   function IconButton(
     { "aria-label": ariaLabel, className, icon, size, ...buttonProps },
-    ref
+    ref,
   ) {
     const targetWindow = useWindow();
     useComponentCssInjection({
@@ -31,5 +31,5 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         <Icon aria-label={ariaLabel} name={icon} size={size} />
       </Button>
     );
-  }
+  },
 );

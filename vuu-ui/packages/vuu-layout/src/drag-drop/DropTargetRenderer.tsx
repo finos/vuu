@@ -1,19 +1,13 @@
-import { PopupService } from "@vuu-ui/vuu-popups";
 import { RelativeDropPosition } from "./BoxModel";
 import { DragDropRect } from "./dragDropTypes";
 import { DragState } from "./DragState";
-import { computeMenuPosition, DropMenu } from "./DropMenu";
 import { DropTarget, GuideLine } from "./DropTarget";
 
 type Point = [number, number];
 type TabMode = "full-view" | "tab-only";
 
-let _multiDropOptions = false;
 let _hoverDropTarget: DropTarget | null = null;
 let _shiftedTab: HTMLElement | null = null;
-
-const onHoverDropTarget = (dropTarget: DropTarget | null) =>
-  (_hoverDropTarget = dropTarget);
 
 const start = ([x, y]: Point) => `M${x},${y}`;
 const point = ([x, y]: Point) => `L${x},${y}`;
@@ -93,7 +87,6 @@ export default class DropTargetCanvas {
     if (dragCanvas) {
       dragCanvas.style.visibility = "hidden";
     }
-    PopupService.hidePopup();
   }
 
   get hoverDropTarget() {
@@ -160,39 +153,17 @@ export default class DropTargetCanvas {
 
   draw(dropTarget: DropTarget, dragState: DragState) {
     const sameDropTarget = false;
-    const wasMultiDrop = _multiDropOptions;
 
     if (_hoverDropTarget !== null) {
       this.drawTarget(_hoverDropTarget);
     } else {
       if (sameDropTarget === false) {
-        _multiDropOptions = dropTarget.nextDropTarget != null;
         if (dropTarget.pos.tab) {
           moveExistingTabs(dropTarget);
         } else if (_shiftedTab) {
           clearShiftedTab();
         }
         this.drawTarget(dropTarget, dragState);
-      }
-
-      if (_multiDropOptions) {
-        const [left, top, orientation] = computeMenuPosition(dropTarget);
-        if (!wasMultiDrop || !sameDropTarget) {
-          const component = (
-            <DropMenu
-              dropTarget={dropTarget}
-              onHover={onHoverDropTarget}
-              orientation={orientation}
-            />
-          );
-          PopupService.showPopup({
-            left,
-            top,
-            component,
-          });
-        }
-      } else {
-        PopupService.hidePopup();
       }
     }
   }
@@ -244,7 +215,8 @@ function moveExistingTabs(dropTarget: DropTarget) {
     },
   } = dropTarget;
 
-  const { id } = dropTarget.component.props;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { id } = dropTarget.component.props as any;
   let tabEl = null;
   // console.log(`tabPos = ${tabPos} (width=${tabWidth}) x=${x}`)
   if (Stack && tab && tab.positionRelativeToTab !== AFTER) {

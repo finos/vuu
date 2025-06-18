@@ -60,7 +60,7 @@ export const TabsNext = forwardRef<HTMLDivElement, TabsNextProps>(
       items,
     } = useCollection({ wrap: true });
 
-    const activeTab = useRef<Pick<Item, "id" | "value">>();
+    const activeTab = useRef<Pick<Item, "id" | "value">>(undefined);
     const returnFocus = useRef<string | undefined>(undefined);
 
     const [menuOpen, setMenuOpen] = useState(false);

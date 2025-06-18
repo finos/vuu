@@ -332,7 +332,8 @@ function getTargetPosition(
     return;
   }
 
-  const containingBox = measurements[container.props.path];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const containingBox = measurements[(container.props as any).path];
   const closeToTop = closeToTheEdge & positionValues.north;
   const closeToRight = closeToTheEdge & positionValues.east;
   const closeToBottom = closeToTheEdge & positionValues.south;
@@ -350,7 +351,8 @@ function getTargetPosition(
     closeToLeft && Math.round(box.left) === Math.round(containingBox.left);
 
   if (atTop || atRight || atBottom || atLeft) {
-    const { "data-path": dataPath, path = dataPath } = container.props;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { "data-path": dataPath, path = dataPath } = container.props as any;
     const clientRect = measurements[path];
     const containerPos = getPosition(x, y, clientRect);
 
@@ -380,13 +382,15 @@ function isTabbedContainer(component: LayoutModel) {
 function isVBox(component: LayoutModel) {
   return (
     typeOf(component) === "Flexbox" &&
-    component.props.style.flexDirection === "column"
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (component.props as any).style.flexDirection === "column"
   );
 }
 
 function isHBox(component: LayoutModel) {
   return (
     typeOf(component) === "Flexbox" &&
-    component.props.style.flexDirection === "row"
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (component.props as any).style.flexDirection === "row"
   );
 }

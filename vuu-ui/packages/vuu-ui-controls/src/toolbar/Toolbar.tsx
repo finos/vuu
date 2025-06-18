@@ -83,7 +83,7 @@ export const Toolbar = ({
           id: itemId = `${id}-tab-${index}`,
           className: itemClassName,
           ...ownProps
-        } = child.props;
+        } = child.props as any;
         const selected = activeItemIndex.includes(index);
         return React.cloneElement(child, {
           ...forwardCallbackProps(ownProps, itemProps),

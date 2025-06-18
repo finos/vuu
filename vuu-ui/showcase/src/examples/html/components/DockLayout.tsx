@@ -87,15 +87,18 @@ export const DockLayout = ({
   const contentRef = useRef<HTMLDivElement>(null);
   const contentInnerRef = useRef<HTMLDivElement>(null);
 
-  const setContentSize = useCallback((sourceRef: RefObject<HTMLElement>) => {
-    if (sourceRef.current && contentInnerRef.current) {
-      const { current: sourceEl } = sourceRef;
-      const { current: targetEl } = contentInnerRef;
-      const { height, width } = sourceEl.getBoundingClientRect();
-      console.log(`set content inner size to ${width} x ${height}`);
-      targetEl.style.cssText = `height: ${height}px; width: ${width}px;`;
-    }
-  }, []);
+  const setContentSize = useCallback(
+    (sourceRef: RefObject<HTMLElement | null>) => {
+      if (sourceRef.current && contentInnerRef.current) {
+        const { current: sourceEl } = sourceRef;
+        const { current: targetEl } = contentInnerRef;
+        const { height, width } = sourceEl.getBoundingClientRect();
+        console.log(`set content inner size to ${width} x ${height}`);
+        targetEl.style.cssText = `height: ${height}px; width: ${width}px;`;
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     if (contentInnerRef.current) {
@@ -148,7 +151,8 @@ export const DockLayout = ({
         const count = Children.count(children);
         return Children.map(children, (child, index) => {
           const isLastChild = index === count - 1;
-          const { "data-dock": dockPosition } = child.props;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { "data-dock": dockPosition } = child.props as any;
           if (dockPosition === "content" || (!contentFound && isLastChild)) {
             contentFound = true;
             return createWrapper(child);

@@ -169,7 +169,7 @@ export interface ColumnActionTableConfig
   type: "tableConfig";
 }
 
-export type GridModelAction =
+export type TableModelAction =
   | ColumnActionHide
   | ColumnActionInit
   | ColumnActionMove
@@ -181,11 +181,11 @@ export type GridModelAction =
   | ColumnActionUpdateProp
   | ColumnActionTableConfig;
 
-export type GridModelReducer = Reducer<InternalTableModel, GridModelAction>;
+type TableModelReducer = Reducer<InternalTableModel, TableModelAction>;
 
-export type ColumnActionDispatch = (action: GridModelAction) => void;
+export type TableModelActionDispatch = (action: TableModelAction) => void;
 
-const columnReducer: GridModelReducer = (state, action) => {
+const tableModelReducer: TableModelReducer = (state, action) => {
   info?.(`TableModelReducer ${action.type}`);
   switch (action.type) {
     case "init": {
@@ -243,11 +243,8 @@ export const useTableModel = ({
   selectionModel,
   availableWidth,
 }: TableModelHookProps) => {
-  const [state, dispatchTableModelAction] = useReducer<
-    GridModelReducer,
-    InitialConfig
-  >(
-    columnReducer,
+  const [state, dispatchTableModelAction] = useReducer(
+    tableModelReducer,
     {
       availableWidth,
       tableConfig: tableConfigProp,

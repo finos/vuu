@@ -11,7 +11,14 @@ import {
   type ApplicationSettings,
   type LayoutJSON,
 } from "@vuu-ui/vuu-utils";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import {
+  ReactElement,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { usePersistenceManager } from "../persistence-manager";
 import {
   getWorkspaceWithLayoutJSON,
@@ -37,7 +44,7 @@ export type WorkspaceProps = WorkspaceStackProps & {
 };
 
 export interface WorkspaceProviderProps extends WorkspaceProps {
-  children: JSX.Element | JSX.Element[];
+  children: ReactElement | ReactElement[];
 
   /**
    * layoutPlaceholderJSON defines the layout to render when a new workspace layout is created.

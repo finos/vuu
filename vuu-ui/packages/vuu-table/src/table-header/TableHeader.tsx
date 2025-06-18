@@ -11,7 +11,13 @@ import {
 } from "@vuu-ui/vuu-table-types";
 import { isGroupColumn, isNotHidden } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
-import { cloneElement, isValidElement, memo, useMemo } from "react";
+import {
+  cloneElement,
+  isValidElement,
+  memo,
+  ReactElement,
+  useMemo,
+} from "react";
 import { GroupHeaderCell, HeaderCell } from "../header-cell";
 import { HeaderProvider } from "./HeaderProvider";
 import { useTableHeader } from "./useTableHeader";
@@ -62,7 +68,7 @@ export const TableHeader = memo(
     virtualColSpan = 0,
   }: TableHeaderProps) => {
     const [customHeaders, customHeaderCount] = useMemo<
-      [JSX.Element | JSX.Element[] | null, number]
+      [ReactElement | ReactElement[] | null, number]
     >(() => {
       const offset = headings.length;
       const createElement = (
@@ -78,12 +84,13 @@ export const TableHeader = memo(
         />
       );
 
-      const enrichElementWithAria = (el: JSX.Element, rowIndex: number) => {
+      const enrichElementWithAria = (el: ReactElement, rowIndex: number) => {
         const offset = headings.length;
         return cloneElement(el, {
           "aria-rowindex": rowIndex + offset + 2,
           ariaRole: "row",
-        });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any);
       };
 
       if (customHeader === undefined) {

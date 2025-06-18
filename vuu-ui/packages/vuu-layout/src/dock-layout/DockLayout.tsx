@@ -12,8 +12,11 @@ import Drawer from "./Drawer";
 import dockLayoutCss from "./DockLayout.css";
 
 const isDrawer = (component: ReactElement) => component.type === Drawer;
-const isVertical = ({ props: { position = "left" } }: ReactElement) =>
-  position.match(/top|bottom/);
+const isVertical = (element: ReactElement) =>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (element.props as any).position &&
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (element.props as any).position.match(/top|bottom/);
 
 export type DockLayoutProps = HTMLAttributes<HTMLDivElement>;
 

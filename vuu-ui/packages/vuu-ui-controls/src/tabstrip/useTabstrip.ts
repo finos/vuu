@@ -27,7 +27,7 @@ export interface TabstripHookProps {
   activeTabIndex: number;
   allowDragDrop: boolean;
   animateSelectionThumb: boolean;
-  containerRef: RefObject<HTMLElement>;
+  containerRef: RefObject<HTMLElement | null>;
   onActiveChange?: (tabIndex: number) => void;
   onAddTab?: () => void;
   onCloseTab?: (tabIndex: number, newActiveTabIndex: number) => void;

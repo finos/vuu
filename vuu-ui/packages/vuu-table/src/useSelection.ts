@@ -15,7 +15,6 @@ import { Selection } from "@vuu-ui/vuu-data-types";
 import {
   KeyboardEvent,
   KeyboardEventHandler,
-  MutableRefObject,
   RefObject,
   useCallback,
   useRef,
@@ -31,8 +30,8 @@ const defaultSelectionKeys = ["Enter", " "];
 
 export interface SelectionHookProps
   extends Pick<TableProps, "defaultSelectedIndexValues" | "onSelectionChange"> {
-  containerRef: RefObject<HTMLElement>;
-  highlightedIndexRef: MutableRefObject<number | undefined>;
+  containerRef: RefObject<HTMLElement | null>;
+  highlightedIndexRef: RefObject<number | undefined>;
   selectionKeys?: string[];
   selectionModel: TableSelectionModel;
   onSelect?: TableRowSelectHandlerInternal;

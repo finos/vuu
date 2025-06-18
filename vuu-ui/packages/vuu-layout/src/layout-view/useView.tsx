@@ -6,7 +6,7 @@ import { ConfigChangeHandler } from "../layout-view-actions";
 
 export interface ViewHookProps {
   id: string;
-  rootRef: RefObject<HTMLDivElement>;
+  rootRef: RefObject<HTMLDivElement | null>;
   path?: string;
   dropTargets?: string[];
   title?: string;

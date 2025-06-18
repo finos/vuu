@@ -310,7 +310,7 @@ const TableCore = ({
   TableProps,
   "maxViewportRowLimit" | "rowHeight" | "searchPattern" | "viewportRowLimit"
 > & {
-  containerRef: RefObject<HTMLDivElement>;
+  containerRef: RefObject<HTMLDivElement | null>;
   /**
    * We lowercase this once, on entry, which is the format in which it will be used.
    */
@@ -618,7 +618,7 @@ export const Table = forwardRef(function Table(
     height = rowLimit * rowHeight;
   }
 
-  const sizeRef = useRef<MeasuredSize>();
+  const sizeRef = useRef<MeasuredSize>(undefined);
   const setSize = useCallback(
     (size: MeasuredSize) => {
       if (viewportRowLimit && !rowHeight) {

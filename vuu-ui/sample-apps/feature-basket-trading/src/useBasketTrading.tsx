@@ -10,7 +10,7 @@ import { useNotifications } from "@vuu-ui/vuu-popups";
 import { VuuDataRow, VuuRpcViewportRequest } from "@vuu-ui/vuu-protocol-types";
 import { TableConfig, TableConfigChangeHandler } from "@vuu-ui/vuu-table-types";
 import { type ColumnMap, metadataKeys, Range } from "@vuu-ui/vuu-utils";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { ReactElement, useCallback, useEffect, useMemo, useState } from "react";
 import type { BasketSelectorProps } from "./basket-selector";
 import defaultEditColumns from "./basket-table-edit/basketConstituentEditColumns";
 import defaultLiveColumns from "./basket-table-live/basketConstituentLiveColumns";
@@ -51,7 +51,7 @@ export class Basket {
 
 type BasketState = {
   basketInstanceId?: string;
-  dialog?: JSX.Element;
+  dialog?: ReactElement;
 };
 
 const NO_STATE = { basketInstanceId: undefined } as {

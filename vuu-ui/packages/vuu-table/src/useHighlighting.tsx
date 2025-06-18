@@ -1,7 +1,9 @@
+import { ReactElement } from "react";
+
 export const useHighlighting = (
   value: string,
   pattern: Lowercase<string>,
-): string | JSX.Element => {
+): string | ReactElement => {
   if (pattern === "") {
     return value;
   }

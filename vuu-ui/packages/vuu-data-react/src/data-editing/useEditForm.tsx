@@ -121,11 +121,11 @@ export const useEditForm = ({
 }: EditFormHookProps) => {
   const { showDialog, closeDialog } = useDialogContext();
 
-  const currentDataSource = useRef<DataSource>();
+  const currentDataSource = useRef<DataSource>(undefined);
   const formFieldsContainerRef = useRef<HTMLDivElement>(null);
-  const entityRef = useRef<Entity>();
+  const entityRef = useRef<Entity>(undefined);
   const focusedFieldRef = useRef("");
-  const originalEntityRef = useRef<Entity>();
+  const originalEntityRef = useRef<Entity>(undefined);
   const formEditStateRef = useRef<FormEditState>(CLEAN_FORM);
   const validationStateRef = useRef<ValidationState>({
     ok: true,

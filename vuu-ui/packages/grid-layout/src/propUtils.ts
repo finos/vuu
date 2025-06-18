@@ -6,7 +6,8 @@ export const getProp = (
   component: LayoutModel | undefined,
   propName: string,
 ) => {
-  const props = getProps(component);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const props = getProps(component) as any;
   return props[propName] ?? props[`data-${propName}`];
 };
 
@@ -14,7 +15,8 @@ export const getProps = (component?: LayoutModel) =>
   component?.props || component || NO_PROPS;
 
 export const getChildProp = (container: LayoutModel) => {
-  const props = getProps(container);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const props = getProps(container) as any;
   if (props.children) {
     const {
       children: [target, ...rest],

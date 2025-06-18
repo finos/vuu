@@ -156,7 +156,8 @@ const dragDrop = (
     newLayoutRoot = _replaceChild(
       layoutRoot,
       existingComponent as ReactElement,
-      newComponent,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      newComponent as any,
     );
   } else {
     newLayoutRoot = dropLayoutIntoContainer(
@@ -257,15 +258,13 @@ const withTheGrain = (pos: DropPos, container: ReactElement) => {
 };
 
 const isTower = (container: ReactElement) => {
-  return (
-    typeOf(container) === "Flexbox" &&
-    container.props.style.flexDirection === "column"
-  );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { style } = container.props as any;
+  return typeOf(container) === "Flexbox" && style.flexDirection === "column";
 };
 
 const isTerrace = (container: ReactElement) => {
-  return (
-    typeOf(container) === "Flexbox" &&
-    container.props.style.flexDirection !== "column"
-  );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { style } = container.props as any;
+  return typeOf(container) === "Flexbox" && style.flexDirection !== "column";
 };

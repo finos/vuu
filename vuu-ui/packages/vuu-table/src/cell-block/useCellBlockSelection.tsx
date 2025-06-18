@@ -57,7 +57,7 @@ const DRAG_THRESHOLD = 5;
 export interface CellblockSelectionHookProps {
   allowCellBlockSelection?: boolean;
   columnCount?: number;
-  containerRef: RefObject<HTMLElement>;
+  containerRef: RefObject<HTMLElement | null>;
   onSelectCellBlock?: (cellBlock: TableCellBlock) => void;
   rowCount?: number;
 }

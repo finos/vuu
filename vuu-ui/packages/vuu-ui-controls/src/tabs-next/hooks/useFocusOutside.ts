@@ -2,7 +2,7 @@ import { useWindow } from "@salt-ds/window";
 import { type RefObject, useEffect } from "react";
 
 export function useFocusOutside(
-  elementRef: RefObject<HTMLElement>,
+  elementRef: RefObject<HTMLElement | null>,
   onFocusOutside: () => void,
   enabled: boolean,
   ignore?: string,

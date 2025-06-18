@@ -151,7 +151,7 @@ export const SessionEditingForm = ({
   const [values, setValues] = useState<FormValues>();
   const [errorMessage, setErrorMessage] = useState("");
   const formContentRef = useRef<HTMLDivElement>(null);
-  const initialDataRef = useRef<FormValues>();
+  const initialDataRef = useRef<FormValues>(undefined);
   const dataStatusRef = useRef(Status.uninitialised);
 
   const dataSource = useMemo(() => {

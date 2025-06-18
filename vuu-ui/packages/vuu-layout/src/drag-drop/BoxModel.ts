@@ -501,7 +501,8 @@ function allBoxesContainingPoint(
   }
 
   for (let i = 0; i < children.length; i++) {
-    if (type === "Stack" && component.props.active !== i) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (type === "Stack" && (component.props as any).active !== i) {
       continue;
     }
     const nestedBoxes = allBoxesContainingPoint(

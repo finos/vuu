@@ -3,7 +3,7 @@ import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { HTMLAttributes, useMemo } from "react";
+import { HTMLAttributes, ReactElement, useMemo } from "react";
 import { Table } from "../Table";
 import { BulkEditRow } from "./BulkEditRow";
 import { useBulkEditPanel } from "./useBulkEditPanel";
@@ -28,7 +28,7 @@ export const BulkEditPanel = ({
   parentDs,
   onValidationStatusChange,
   ...htmlAttributes
-}: BulkEditPanelProps): JSX.Element => {
+}: BulkEditPanelProps): ReactElement => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-checkbox-cell",

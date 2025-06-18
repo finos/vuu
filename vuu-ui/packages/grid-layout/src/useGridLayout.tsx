@@ -98,7 +98,7 @@ export const useGridLayout = ({
   colsAndRows,
   onChange,
 }: GridLayoutHookProps) => {
-  const containerRef = useRef<HTMLDivElement>();
+  const containerRef = useRef<HTMLDivElement>(null);
   const { onChangeChildElements, onChangeLayout } = useGridChangeHandler();
   const layoutOptions = useGridLayoutOptions();
 
@@ -128,14 +128,12 @@ export const useGridLayout = ({
     [GridLayoutItemElements, GridLayoutDescriptor]
   >(() => {
     const savedGrid = getSavedGrid?.(id);
-    console.log(`[useGridLayout#${id}] children has changed`, {
-      savedGrid,
-    });
     if (savedGrid) {
       const { components: savedChildren, layout: savedLayout } = savedGrid;
       return [Object.values(savedChildren), savedLayout];
     } else if (colsAndRows) {
-      const reactElements = asReactElements(childrenProp);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const reactElements = asReactElements(childrenProp) as any;
       const layoutDescriptor = {
         ...colsAndRows,
       };
@@ -284,7 +282,7 @@ export const useGridLayout = ({
 
   const addChildComponent = useCallback(
     (
-      component: JSX.Element,
+      component: ReactElement,
       { column, header, id, row, title, type }: GridModelChildItem,
     ) => {
       console.log(`[useGridLayout] addChildComponent #${id}`);
@@ -296,7 +294,11 @@ export const useGridLayout = ({
 
       if (type === "stacked-content") {
         const stackedGridItem = getGridItemChild(childrenRef.current, id);
-        const newChild = addChildToStackedGridItem(stackedGridItem, component);
+        const newChild = addChildToStackedGridItem(
+          stackedGridItem,
+          component,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ) as any;
         setChildren((c) =>
           c.map((child) => (child.props.id === id ? newChild : child)),
         );

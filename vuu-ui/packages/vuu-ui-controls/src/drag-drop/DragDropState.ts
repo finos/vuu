@@ -15,7 +15,7 @@ export class DragDropState {
     this.mouseOffset = this.getMouseOffset(mousePosition, dragElement);
   }
 
-  /** Used to capture a ref to the Draggable JSX.Element */
+  /** Used to capture a ref to the Draggable ReactElement */
   setDraggable = (el: HTMLElement | null) => {
     this.draggableElement = el;
   };
@@ -26,7 +26,7 @@ export class DragDropState {
 
   private getMouseOffset(
     mousePosition: MousePosition,
-    dragElement: HTMLElement
+    dragElement: HTMLElement,
   ) {
     const { clientX, clientY } = mousePosition;
     const draggableRect = dragElement.getBoundingClientRect();

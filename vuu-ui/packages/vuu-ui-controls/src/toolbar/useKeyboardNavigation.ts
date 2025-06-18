@@ -27,7 +27,7 @@ import {
 } from "@vuu-ui/vuu-utils";
 import { getIndexOfEditedItem } from "./toolbar-dom-utils";
 import { NavigationOutOfBoundsHandler } from "./Toolbar";
-import type { PopupCloseCallback } from "@vuu-ui/vuu-popups";
+import { MenuCloseHandler } from "@vuu-ui/vuu-popups";
 
 type directionType = "bwd" | "fwd" | "start" | "end";
 type directionMap = { [key: string]: directionType };
@@ -143,7 +143,7 @@ export interface ContainerNavigationProps {
 }
 
 interface ToolbarNavigationHookProps {
-  containerRef: RefObject<HTMLElement>;
+  containerRef: RefObject<HTMLElement | null>;
   defaultHighlightedIdx?: number;
   highlightedIdx?: number;
   onNavigateOutOfBounds?: NavigationOutOfBoundsHandler;
@@ -165,7 +165,7 @@ interface ToolbarNavigationHookResult {
   onClick: (evt: ReactMouseEvent, tabIndex: number) => void;
   onFocus: (evt: FocusEvent<HTMLElement>) => void;
   onKeyDown: (evt: KeyboardEvent) => void;
-  onOverflowMenuClose?: PopupCloseCallback;
+  onOverflowMenuClose?: MenuCloseHandler;
   setHighlightedIdx: (highlightedIndex: number) => void;
 }
 
@@ -403,7 +403,7 @@ export const useKeyboardNavigation = ({
     keyboardNavigation.current = false;
   }, [hasFocus]);
 
-  const handleOverflowMenuClose = useCallback<PopupCloseCallback>(
+  const handleOverflowMenuClose = useCallback<MenuCloseHandler>(
     (closeReason) => {
       if (closeReason?.type === "escape") {
         const index = getIndexOfOverflowItem(containerRef.current);

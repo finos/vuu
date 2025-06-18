@@ -32,7 +32,7 @@ export class DedicatedWorker {
     this.#worker = deferredWorker.promise;
     const worker = new Worker(workerBlobUrl);
     const timer: number | null = window.setTimeout(() => {
-      deferredWorker.reject(Error("timed out waiting for worker to load"));
+      console.warn("timed out waiting for worker to load");
     }, 1000);
     worker.onmessage = (msg: MessageEvent<VuuUIMessageIn>) => {
       const { data: message } = msg;

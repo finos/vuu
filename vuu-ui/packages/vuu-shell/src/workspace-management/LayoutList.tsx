@@ -97,7 +97,7 @@ export const LayoutList = ({
     ];
   }
 
-  const content = useMemo<JSX.Element[]>(() => {
+  const content = useMemo<ReactElement[]>(() => {
     return Object.entries(layoutsByGroup).map(
       ([heading, layoutMetadata], index) => (
         <div className={`${classBase}-group`} key={index}>

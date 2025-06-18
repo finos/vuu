@@ -18,7 +18,7 @@ export type PopupPlacement =
   | "right";
 
 export interface PopupComponentProps extends HTMLAttributes<HTMLDivElement> {
-  anchorElement: RefObject<HTMLElement>;
+  anchorElement: RefObject<HTMLElement | null>;
   // TODO this is repeated in Position
   minWidth?: number | string;
   offsetLeft?: number;

@@ -28,7 +28,7 @@ export const useViewBroadcastChannel = (
   onMessageReceived?: BroadcastMessageHandler,
 ) => {
   const broadcastChannelRef =
-    useRef<VuuBroadcastChannel<ViewBroadcastMessage>>();
+    useRef<VuuBroadcastChannel<ViewBroadcastMessage>>(undefined);
 
   useEffect(() => {
     const broadcastChannel: VuuBroadcastChannel<ViewBroadcastMessage> =

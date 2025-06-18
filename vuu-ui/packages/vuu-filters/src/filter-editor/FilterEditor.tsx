@@ -4,7 +4,7 @@ import { SplitButton } from "@vuu-ui/vuu-ui-controls";
 import { Button } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { HTMLAttributes } from "react";
+import { HTMLAttributes, ReactElement } from "react";
 import { FilterClauseModel } from "../FilterModel";
 import { FilterClause } from "../filter-clause";
 import { FilterClauseCombinator } from "./FilterClauseCombinator";
@@ -62,7 +62,7 @@ export const FilterEditor = ({
   const getContents = () => {
     const { op } = filterModel;
 
-    const content: JSX.Element[] = [];
+    const content: ReactElement[] = [];
     filterModel.filterClauses.forEach((filterClauseModel, i) => {
       if (i > 0 && op) {
         content.push(

@@ -18,7 +18,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 export const useTableEditManager = (vuuTable: VuuTable) => {
   const [open, setOpen] = useState(false);
   const [sessionDataSource, setSessionDataSource] = useState<DataSource>();
-  const sessionRef = useRef<DataSource>();
+  const sessionRef = useRef<DataSource>(undefined);
   const { VuuDataSource } = useData();
 
   const dataSource = useMemo(() => {

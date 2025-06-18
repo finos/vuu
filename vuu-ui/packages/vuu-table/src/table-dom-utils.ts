@@ -12,7 +12,7 @@ export const dataCellQuery = (ariaRowIdx: number, ariaColIdx: number) =>
   `.vuuTable-table [aria-rowindex='${ariaRowIdx}'] > [aria-colindex='${ariaColIdx}']`;
 
 export const getLevelUp = (
-  containerRef: RefObject<HTMLElement>,
+  containerRef: RefObject<HTMLElement | null>,
   cellPos: CellPos,
 ): CellPos => {
   const cell = getTableCell(containerRef, cellPos);
@@ -33,7 +33,7 @@ export const getLevelUp = (
   return cellPos;
 };
 export const getTableCell = (
-  containerRef: RefObject<HTMLElement>,
+  containerRef: RefObject<HTMLElement | null>,
   [rowIdx, colIdx]: CellPos,
 ) => {
   const cssQuery = dataCellQuery(rowIdx, colIdx);
@@ -183,7 +183,7 @@ export function getNextCellPos(
 export type TreeNodeOperation = "expand" | "collapse" | "level-up";
 
 export const getTreeNodeOperation = (
-  containerRef: RefObject<HTMLElement>,
+  containerRef: RefObject<HTMLElement | null>,
   navigationStyle: "cell" | "tree",
   cellPos: CellPos,
   key: NavigationKey,

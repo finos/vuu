@@ -9,7 +9,7 @@ export type ResizeHandler = (evt: MouseEvent, moveBy: number) => void;
 export interface CellResizeHookProps {
   column: RuntimeColumnDescriptor | Heading;
   onResize?: (phase: ResizePhase, columnName: string, width?: number) => void;
-  rootRef: RefObject<HTMLDivElement>;
+  rootRef: RefObject<HTMLDivElement | null>;
 }
 
 export interface CellResizeHookResult {
