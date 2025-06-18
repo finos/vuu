@@ -100,7 +100,8 @@ export const Palette = ({
     const idx = parseInt(listItemElement.dataset?.index ?? "-1");
     const {
       props: { caption, component: payload, template, ...props },
-    } = children[idx];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } = children[idx] as any;
     const { ViewProps: componentViewProps } = payload.props;
     const { height, left, top, width } =
       listItemElement.getBoundingClientRect();
@@ -157,7 +158,8 @@ export const Palette = ({
           ? cloneElement(child, {
               key: idx,
               onMouseDown: handleMouseDown,
-            })
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any)
           : child,
       )}
     </List>

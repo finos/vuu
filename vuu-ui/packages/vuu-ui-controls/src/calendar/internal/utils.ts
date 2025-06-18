@@ -1,4 +1,5 @@
 import {
+  CalendarIdentifier,
   DateFormatter,
   type DateValue,
   createCalendar,
@@ -29,7 +30,8 @@ export function formatDate(
 }
 
 export function getCalender() {
-  const calendarIdentifier = getDateFormatter().resolvedOptions().calendar;
+  const calendarIdentifier = getDateFormatter().resolvedOptions()
+    .calendar as CalendarIdentifier;
   return createCalendar(calendarIdentifier);
 }
 

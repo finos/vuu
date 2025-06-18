@@ -138,7 +138,7 @@ export const GridLayoutProvider = (
       if (layoutJSON && layout) {
         return {
           components: Object.entries(layoutJSON).reduce<
-            Record<string, ReactElement>
+            Record<string, ReactElement<GridLayoutItemProps>>
           >((map, [id, layoutJSON]) => {
             const gridItem = layout.gridLayoutItems?.[id];
             if (!gridItem) {

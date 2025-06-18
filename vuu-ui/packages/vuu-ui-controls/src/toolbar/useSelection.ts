@@ -12,7 +12,7 @@ import { getClosestIndexItem, isSelectableElement } from "@vuu-ui/vuu-utils";
 const defaultSelectionKeys = ["Enter", " "];
 
 export interface SelectionHookProps {
-  containerRef: RefObject<HTMLElement>;
+  containerRef: RefObject<HTMLElement | null>;
   defaultSelected?: number[];
   highlightedIdx: number;
   itemQuery: string;

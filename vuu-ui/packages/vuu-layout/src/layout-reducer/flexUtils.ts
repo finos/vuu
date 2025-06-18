@@ -48,7 +48,9 @@ const isPercentageSize = (value: string | number) =>
 export const getIntrinsicSize = (
   component: ReactElement,
 ): { height?: number; width?: number } | undefined => {
-  const { style: { width = auto, height = auto } = NO_STYLE } = component.props;
+  const { style: { width = auto, height = auto } = NO_STYLE } =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    component.props as any;
 
   const numHeight = typeof height === "number";
   const numWidth = typeof width === "number";
@@ -75,7 +77,8 @@ export function getFlexStyle(
       [crossDimension]: intrinsicCrossSize = auto,
       ...intrinsicStyles
     } = NO_STYLE,
-  } = component.props;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } = component.props as any;
 
   if (pos && pos[dimension]) {
     return {
@@ -96,7 +99,8 @@ export function getFlexStyle(
 
 export function hasUnboundedFlexStyle(component: ReactElement) {
   const { style: { flex, flexGrow, flexShrink, flexBasis } = NO_STYLE } =
-    component.props;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    component.props as any;
   if (typeof flex === "number") {
     return true;
   }
@@ -121,7 +125,8 @@ export function getFlexOrIntrinsicStyle(
       [crossDimension]: intrinsicCrossSize = auto,
       ...intrinsicStyles
     } = NO_STYLE,
-  } = component.props;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } = component.props as any;
 
   if (intrinsicSize !== auto) {
     if (isPercentageSize(intrinsicSize)) {

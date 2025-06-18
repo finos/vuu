@@ -27,9 +27,9 @@ export const useSplitterResizing = ({
   style,
 }: SplitterHookProps): SplitterHookResult => {
   const rootRef = useRef<HTMLDivElement>(null);
-  const flexElementsRef = useRef<HTMLDivElement[]>();
-  const metaRef = useRef<ContentMeta[]>();
-  const contentRef = useRef<ReactElement[]>();
+  const flexElementsRef = useRef<HTMLDivElement[]>(undefined);
+  const metaRef = useRef<ContentMeta[]>(undefined);
+  const contentRef = useRef<ReactElement[]>(undefined);
   const assignedKeys = useRef<string[]>([]);
 
   const isColumn = style?.flexDirection === "column";

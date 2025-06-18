@@ -5,19 +5,49 @@ import { MenuActionHandler, MenuBuilder } from "@vuu-ui/vuu-context-menu";
 import { Icon, IconButton } from "@vuu-ui/vuu-ui-controls";
 import { useId } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
-import { HTMLAttributes, RefObject } from "react";
+import { HTMLAttributes, KeyboardEvent, RefObject } from "react";
 import { PopupPlacement } from "../popup/Popup";
-import { PopupCloseReason } from "../popup/popup-service";
 import { usePopupMenu } from "./usePopupMenu";
 
 import popupMenuCss from "./PopupMenu.css";
 
 const classBase = "vuuPopupMenu";
 
+export type TabAwayClosePopup = {
+  closedBy?: string;
+  type: "tab-away";
+  event: KeyboardEvent;
+};
+
+export type ClickAwayClosePopup = {
+  closedBy?: string;
+  type: "click-away";
+  mouseEvt: MouseEvent;
+};
+
+export type EscapeClosePopup = {
+  closedBy?: string;
+  event: KeyboardEvent;
+  type: "escape";
+};
+
+export type MenuActionClosePopup = {
+  closedBy?: string;
+  menuId: string;
+  options: unknown;
+  type: "menu-action";
+};
+
+export type PopupCloseReason =
+  | ClickAwayClosePopup
+  | EscapeClosePopup
+  | MenuActionClosePopup
+  | TabAwayClosePopup;
+
 export type MenuCloseHandler = (reason?: PopupCloseReason) => void;
 
 export interface PopupMenuProps extends HTMLAttributes<HTMLButtonElement> {
-  anchorElement?: RefObject<HTMLElement>;
+  anchorElement?: RefObject<HTMLElement | null>;
   disabled?: boolean;
   icon?: string;
   label?: string;

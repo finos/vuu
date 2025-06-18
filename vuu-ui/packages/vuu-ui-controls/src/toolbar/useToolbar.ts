@@ -20,7 +20,7 @@ export interface ToolbarHookProps
       | "onNavigateOutOfBounds"
     >,
     Required<Pick<ToolbarProps, "orientation" | "selectionStrategy">> {
-  containerRef: RefObject<HTMLElement>;
+  containerRef: RefObject<HTMLElement | null>;
   itemQuery?: string;
 }
 

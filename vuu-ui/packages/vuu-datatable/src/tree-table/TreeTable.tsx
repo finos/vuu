@@ -47,7 +47,7 @@ export const TreeTable = ({
   source,
   ...tableProps
 }: TreeTableProps) => {
-  const dataSourceRef = useRef<TreeDataSource>();
+  const dataSourceRef = useRef<TreeDataSource>(undefined);
   useMemo(() => {
     if (dataSource) {
       dataSourceRef.current = dataSource;

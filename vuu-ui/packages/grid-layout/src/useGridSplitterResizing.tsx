@@ -27,8 +27,8 @@ export const useGridSplitterResizing = ({
   gridModel,
   onClick: onClickProp,
 }: SplitterResizingHookProps) => {
-  const resizingState = useRef<ResizeState | undefined>();
-  const splitterRef = useRef<HTMLElement>();
+  const resizingState = useRef<ResizeState | undefined>(undefined);
+  const splitterRef = useRef<HTMLElement>(undefined);
 
   const createNewTrackForResize = useCallback(
     (moveBy: number) => {
@@ -212,7 +212,7 @@ export const useGridSplitterResizing = ({
     [gridModel, layoutModel, mouseMove, mouseUp],
   );
 
-  const selectedRef = useRef<string>();
+  const selectedRef = useRef<string>(undefined);
   const clickHandler = useCallback<MouseEventHandler<HTMLDivElement>>(
     (e) => {
       const gridLayoutItem = getGridLayoutItem(e.target as HTMLElement);

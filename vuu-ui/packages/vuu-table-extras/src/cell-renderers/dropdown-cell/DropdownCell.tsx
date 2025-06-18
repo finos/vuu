@@ -42,7 +42,7 @@ export const DropdownCell = memo(function DropdownCell({
   const dataIdx = columnMap[column.name];
   const dataValue = row[dataIdx] as string | number;
   const { values } = useLookupValues(column, dataValue);
-  const valueRef = useRef<ListOption>();
+  const valueRef = useRef<ListOption>(undefined);
 
   useMemo(() => {
     valueRef.current = getSelectedOption(values, dataValue);

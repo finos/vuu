@@ -9,7 +9,7 @@ import {
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { HTMLAttributes, Key, useMemo } from "react";
+import { HTMLAttributes, Key, ReactElement, useMemo } from "react";
 import { Feature } from "../feature/Feature";
 
 import featureListCss from "./FeatureList.css";
@@ -50,7 +50,7 @@ export const FeatureList = ({
     window: targetWindow,
   });
 
-  const content = useMemo<JSX.Element[]>(() => {
+  const content = useMemo<ReactElement[]>(() => {
     if (isStaticFeatures(features)) {
       return features.map(({ label, type }, idx) => {
         return (

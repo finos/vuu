@@ -56,7 +56,8 @@ const WrapContainer = React.memo(
         "data-overflow-priority": overflowPriority = "0",
         id: itemId = `${id}-${i}`,
         label = `Item ${i + 1}`,
-      } = childEl.props;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } = childEl.props as any;
       return (
         <div
           className={cx(`${classBase}-item`, {

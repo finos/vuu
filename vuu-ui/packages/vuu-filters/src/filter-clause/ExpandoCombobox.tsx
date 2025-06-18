@@ -3,6 +3,7 @@ import { ComboBox, ComboBoxProps } from "@salt-ds/core";
 import {
   ChangeEvent,
   ForwardedRef,
+  ReactElement,
   Ref,
   SyntheticEvent,
   forwardRef,
@@ -29,7 +30,7 @@ const defaultItemToString = (item: unknown) => {
   }
 };
 export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
-  Item = string
+  Item = string,
 >(
   {
     children,
@@ -42,7 +43,7 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
     value: valueProp,
     ...props
   }: ExpandoComboboxProps<Item>,
-  forwardedRef: ForwardedRef<HTMLDivElement>
+  forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -53,7 +54,7 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
 
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(
-    valueProp === undefined ? "" : valueProp.toString()
+    valueProp === undefined ? "" : valueProp.toString(),
   );
 
   const handleChange = (evt: ChangeEvent<HTMLInputElement>) => {
@@ -112,5 +113,5 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
     </div>
   );
 }) as <Item = string>(
-  props: ExpandoComboboxProps<Item> & { ref?: Ref<HTMLDivElement> }
-) => JSX.Element;
+  props: ExpandoComboboxProps<Item> & { ref?: Ref<HTMLDivElement> },
+) => ReactElement;

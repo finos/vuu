@@ -6,6 +6,7 @@ import React, {
   KeyboardEventHandler,
   MouseEventHandler,
   PropsWithChildren,
+  ReactElement,
   Ref,
   RefCallback,
   RefObject,
@@ -30,8 +31,8 @@ import {
 import { ViewportRange } from "./useScrollPosition";
 
 export type ComponentType<T = unknown> = (
-  props: PropsWithChildren<T>
-) => JSX.Element;
+  props: PropsWithChildren<T>,
+) => ReactElement;
 
 export type ListItemType<T = unknown> = ComponentType<
   ListItemProps<T> & { ref?: Ref<HTMLDivElement> }
@@ -68,7 +69,7 @@ export interface ListScrollHandles<Item> {
 
 export interface ListProps<
   Item = string,
-  S extends SelectionStrategy = "default"
+  S extends SelectionStrategy = "default",
 > extends ComponentSelectionProps<Item, S>,
     Omit<
       HTMLAttributes<HTMLDivElement>,
@@ -196,7 +197,7 @@ export interface ListProps<
 
   onViewportScroll?: (
     firstVisibleRowIndex: number,
-    lastVisibleRowIndex: number
+    lastVisibleRowIndex: number,
   ) => void;
 
   /**
@@ -236,7 +237,7 @@ export interface ListControlProps {
 
 export interface ListHookProps<
   Item = string,
-  S extends SelectionStrategy = "default"
+  S extends SelectionStrategy = "default",
 > extends Pick<
     ListProps<Item, S>,
     | "allowDragDrop"
@@ -257,7 +258,7 @@ export interface ListHookProps<
     | "tabToSelect"
   > {
   collectionHook: CollectionHookResult<Item>;
-  contentRef?: RefObject<HTMLElement>;
+  contentRef?: RefObject<HTMLElement | null>;
   defaultHighlightedIndex?: number;
   defaultSelected?: string[];
   disableAriaActiveDescendant?: boolean;
@@ -269,7 +270,7 @@ export interface ListHookProps<
   listHandlers?: ListHandlers;
   onKeyboardNavigation?: (
     event: React.KeyboardEvent,
-    currentIndex: number
+    currentIndex: number,
   ) => void;
   onKeyDown?: (evt: KeyboardEvent) => void;
   selected?: string[];
@@ -282,7 +283,7 @@ export interface ListHookResult<Item>
     Pick<SelectionHookResult, "selected" | "setSelected">,
     Partial<Omit<NavigationHookResult, "listProps">>,
     Omit<DragHookResult, "isDragging" | "isScrolling"> {
-  containerRef: RefObject<HTMLDivElement>;
+  containerRef: RefObject<HTMLDivElement | null>;
   setContainerRef: RefCallback<HTMLDivElement>;
   keyboardNavigation: RefObject<boolean>;
   listHandlers: ListHandlers;

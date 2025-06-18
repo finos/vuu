@@ -31,8 +31,8 @@ import tabOverflowListCss from "./TabOverflowList.css";
 import { useFocusOutside } from "./hooks/useFocusOutside";
 
 interface TabOverflowListProps extends ComponentPropsWithoutRef<"button"> {
-  buttonRef?: Ref<HTMLButtonElement>;
-  tabstripRef: RefObject<HTMLDivElement>;
+  buttonRef?: Ref<HTMLButtonElement | null>;
+  tabstripRef: RefObject<HTMLDivElement | null>;
   children?: ReactNode;
   isMeasuring?: boolean;
   open: boolean;

@@ -17,8 +17,9 @@ export const useGlobalDragDrop = ({
   ) => boolean;
   onDrop: (dropTargetId: string, dragDropState: DragDropState) => void;
 }) => {
-  const dropTargetRef = useRef<string>();
-  const measuredDropTargetsRef = useRef<Record<string, MeasuredTarget>>();
+  const dropTargetRef = useRef<string>(undefined);
+  const measuredDropTargetsRef =
+    useRef<Record<string, MeasuredTarget>>(undefined);
 
   const dragDropStateRef = useRef<DragDropState | null>(null);
   /** current mouse position */

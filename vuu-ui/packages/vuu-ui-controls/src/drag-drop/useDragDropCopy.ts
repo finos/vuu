@@ -15,7 +15,7 @@ export const useDragDropCopy = ({
   selected,
   viewportRange,
 }: InternalDragDropProps): InternalDragHookResult => {
-  const rangeRef = useRef<ViewportRange>();
+  const rangeRef = useRef<ViewportRange>(undefined);
   rangeRef.current = viewportRange;
 
   const beginDrag = useCallback(
@@ -28,7 +28,7 @@ export const useDragDropCopy = ({
         console.log("its a selected element, and we have a multi select");
       }
     },
-    [selected]
+    [selected],
   );
 
   const drag = useCallback(() => undefined, []);

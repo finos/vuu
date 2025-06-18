@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig-emit-types.json",
+  "compilerOptions": {
+    "outDir": "../../dist/vuu-data-remote/types"
+  },
+  "include": [
+    "src",
+    "../../global.d.ts"
+  ]
+}

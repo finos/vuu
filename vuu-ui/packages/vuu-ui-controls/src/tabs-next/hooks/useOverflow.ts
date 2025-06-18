@@ -15,11 +15,11 @@ import {
 import type { Item } from "./useCollection";
 
 interface UseOverflowProps {
-  container: RefObject<HTMLElement>;
+  container: RefObject<HTMLElement | null>;
   selected?: string;
   children: ReactNode;
   tabs: Item[];
-  overflowButton: RefObject<HTMLButtonElement>;
+  overflowButton: RefObject<HTMLButtonElement | null>;
 }
 
 function getTabWidth(element: HTMLElement) {

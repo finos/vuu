@@ -4,7 +4,7 @@ import { dimensions } from "./drop-target-utils";
 export type ScrollStopHandler = (
   scrollDirection: "fwd" | "bwd",
   scrollPos: number,
-  atEnd: boolean
+  atEnd: boolean,
 ) => void;
 
 export const useAutoScroll = ({
@@ -12,7 +12,7 @@ export const useAutoScroll = ({
   onScrollingStopped,
   orientation = "vertical",
 }: {
-  containerRef: RefObject<HTMLElement>;
+  containerRef: RefObject<HTMLElement | null>;
   onScrollingStopped?: ScrollStopHandler;
   orientation?: "horizontal" | "vertical";
 }) => {
@@ -31,10 +31,10 @@ export const useAutoScroll = ({
       onScrollingStopped?.(
         lastScrollDirectionRef.current,
         scrollPosRef.current,
-        atEnd
+        atEnd,
       );
     },
-    [onScrollingStopped]
+    [onScrollingStopped],
   );
 
   const startScrolling = useCallback(
@@ -75,7 +75,7 @@ export const useAutoScroll = ({
         }
       }
     },
-    [containerRef, orientation, stopScrolling]
+    [containerRef, orientation, stopScrolling],
   );
 
   return {

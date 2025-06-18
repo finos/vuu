@@ -43,7 +43,7 @@ interface MeasuredState {
 const isNumber = (val: unknown): val is number => Number.isFinite(val);
 
 export interface MeasuredContainerHookResult {
-  containerRef: RefObject<HTMLDivElement>;
+  containerRef: RefObject<HTMLDivElement | null>;
   cssSize: CssSize;
   outerSize: CssSize;
   innerSize?: MeasuredSize;

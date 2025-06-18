@@ -87,7 +87,8 @@ export const Tabstrip = ({
             editable = allowRenameTab,
             location: tabLocation,
             showMenuButton = showTabMenuButton,
-          } = child.props;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } = child.props as any;
           const selected = index === activeTabIndex;
           return React.cloneElement(child, {
             ...tabProps,

@@ -113,11 +113,11 @@ export interface DateInputProps<SelectionVariantType>
   /**
    * Reference for the startInput;
    */
-  startInputRef?: RefObject<HTMLInputElement>;
+  startInputRef?: RefObject<HTMLInputElement | null>;
   /**
    * Reference for the endInput;
    */
-  endInputRef?: RefObject<HTMLInputElement>;
+  endInputRef?: RefObject<HTMLInputElement | null>;
   /**
    * Selection variant. Defaults to single select.
    */

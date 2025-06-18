@@ -56,7 +56,7 @@ export interface CustomFilterHookProps
     | "onFilterRenamed"
     | "onFilterStateChanged"
   > {
-  containerRef: RefObject<HTMLDivElement>;
+  containerRef: RefObject<HTMLDivElement | null>;
 }
 
 export const useCustomFilters = ({

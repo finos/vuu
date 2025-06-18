@@ -68,9 +68,9 @@ export const useLayoutDragDrop = (
   dispatch: LayoutProviderDispatch,
   pathToDropTarget?: string,
 ) => {
-  const dragActionRef = useRef<CurrentDragAction>();
-  const dragOperationRef = useRef<DragOperation>();
-  const draggableHTMLElementRef = useRef<HTMLElement>();
+  const dragActionRef = useRef<CurrentDragAction>(undefined);
+  const dragOperationRef = useRef<DragOperation>(undefined);
+  const draggableHTMLElementRef = useRef<HTMLElement>(undefined);
 
   const handleDrag = useCallback<DragMoveCallback>((x, y) => {
     if (dragOperationRef.current && draggableHTMLElementRef.current) {
@@ -141,7 +141,8 @@ export const useLayoutDragDrop = (
         const { current: rootLayout } = rootLayoutRef;
         const dragPos = { x: evt.clientX, y: evt.clientY };
         const dragPayload = component ?? followPath(rootLayout, path, true);
-        const { id: dragPayloadId } = dragPayload.props;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { id: dragPayloadId } = dragPayload.props as any;
         const intrinsicSize = getIntrinsicSize(dragPayload);
         let originalCSS = "",
           dragCSS = "",

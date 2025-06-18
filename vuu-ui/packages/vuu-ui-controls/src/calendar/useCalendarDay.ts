@@ -35,7 +35,7 @@ export interface useCalendarDayProps {
 
 export function useCalendarDay(
   { date, month }: useCalendarDayProps,
-  ref: RefObject<HTMLElement>,
+  ref: RefObject<HTMLElement | null>,
 ) {
   const {
     state: { focusedDate, hideOutOfRangeDates, calendarFocused },

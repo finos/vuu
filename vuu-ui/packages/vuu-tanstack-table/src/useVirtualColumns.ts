@@ -4,7 +4,7 @@ import { RefObject } from "react";
 import { DataSourceRow } from "@vuu-ui/vuu-data-types";
 
 export interface VirtualColumnsHookProps {
-  scrollableContainerRef: RefObject<HTMLDivElement>;
+  scrollableContainerRef: RefObject<HTMLDivElement | null>;
   table: Table<DataSourceRow>;
 }
 

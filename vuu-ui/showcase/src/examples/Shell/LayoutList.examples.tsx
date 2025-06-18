@@ -5,9 +5,9 @@ import {
   StaticPersistenceManager,
 } from "@vuu-ui/vuu-shell";
 import layoutMetadata from "../_test-data/layoutMetadata";
-import { useMemo } from "react";
+import { ReactElement, useMemo } from "react";
 
-export const DefaultLayoutList = (): JSX.Element => {
+export const DefaultLayoutList = (): ReactElement => {
   const demoPersistenceManager = useMemo(
     () => new StaticPersistenceManager({ layoutMetadata }),
     [],
@@ -22,7 +22,7 @@ export const DefaultLayoutList = (): JSX.Element => {
   );
 };
 
-export const LayoutListManyLayouts = (): JSX.Element => {
+export const LayoutListManyLayouts = (): ReactElement => {
   const demoPersistenceManager = useMemo(
     () =>
       new StaticPersistenceManager({

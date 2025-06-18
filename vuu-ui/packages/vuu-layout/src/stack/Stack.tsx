@@ -111,7 +111,8 @@ export const Stack = forwardRef(function Stack(
         closeable = allowCloseTab,
         id: childId = `${id}-${idx}`,
         "data-tab-location": tabLocation,
-      } = child.props;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } = child.props as any;
       const label = getTabLabel(child, idx, tabLabelsRef.current);
       tabLabelsRef.current.push(label);
       return (

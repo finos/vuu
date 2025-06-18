@@ -1,10 +1,11 @@
 import { importCSS, TreeSourceNode } from "@vuu-ui/vuu-utils";
+import { ReactElement } from "react";
 
 type Environment = "development" | "production";
 export const env = process.env.NODE_ENV as Environment;
 
 export type VuuExample = {
-  (props?: { [key: string]: unknown }): JSX.Element;
+  (props?: { [key: string]: unknown }): ReactElement;
 };
 
 export const pathFromKey = (key: string) => key.slice(5).split("|").join("/");

@@ -1,5 +1,8 @@
+import { ReactElement } from "react";
+
 export type ReactComponent = {
-  (props?: any): JSX.Element;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (props?: any): ReactElement;
 };
 
 export const isModule = (entity: Module | ReactComponent): entity is Module =>

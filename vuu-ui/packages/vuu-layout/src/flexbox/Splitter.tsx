@@ -43,7 +43,7 @@ export const Splitter = React.memo(function Splitter({
     window: targetWindow,
   });
 
-  const ignoreClick = useRef<boolean>();
+  const ignoreClick = useRef<boolean>(undefined);
   const rootRef = useRef<HTMLDivElement>(null);
   const lastPos = useRef<number>(0);
 

@@ -217,9 +217,11 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
           isMultiWorkspaceContainer,
         ) as ReactElement;
         if (targetContainer) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { path: targetContainerPath } = targetContainer.props as any;
           const target = getChildProp(targetContainer);
           const newLayouts = workspaceJSON.map((ws, i) =>
-            layoutFromJson(ws, `${targetContainer.props.path}.${i}`),
+            layoutFromJson(ws, `${targetContainerPath}.${i}`),
           );
           const action = target
             ? {
@@ -229,7 +231,7 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
               }
             : {
                 type: LayoutActionType.ADD,
-                path: targetContainer.props.path,
+                path: targetContainerPath,
                 component: newLayouts,
               };
           dispatchLayoutAction(action, true);
@@ -240,10 +242,12 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
           isWorkspaceContainer,
         ) as ReactElement;
         if (targetContainer) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { path: targetContainerPath } = targetContainer.props as any;
           const target = getChildProp(targetContainer);
           const newLayout = layoutFromJson(
             workspaceJSON,
-            `${targetContainer.props.path}.0`,
+            `${targetContainerPath}.0`,
           );
           const action = target
             ? {
@@ -253,7 +257,7 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
               }
             : {
                 type: LayoutActionType.ADD,
-                path: targetContainer.props.path,
+                path: targetContainerPath,
                 component: newLayout,
               };
           dispatchLayoutAction(action, true);

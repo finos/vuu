@@ -171,7 +171,7 @@ export const useColumnExpressionSuggestionProvider = ({
     [columns],
   );
 
-  const latestSuggestionsRef = useRef<Completion[]>();
+  const latestSuggestionsRef = useRef<Completion[]>(undefined);
   const getTypeaheadSuggestions = useTypeaheadSuggestions();
 
   const getSuggestions: IExpressionSuggestionProvider["getSuggestions"] =

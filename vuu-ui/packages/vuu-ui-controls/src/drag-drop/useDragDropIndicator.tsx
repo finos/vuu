@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { ReactElement, useCallback, useRef, useState } from "react";
 
 import {
   InternalDragDropProps,
@@ -31,7 +31,7 @@ export const useDragDropIndicator = ({
   selected,
   viewportRange,
 }: InternalDragDropProps): InternalDragHookResult => {
-  const dragDirectionRef = useRef<Direction | undefined>();
+  const dragDirectionRef = useRef<Direction | undefined>(undefined);
   const dropIndicatorRef = useRef<HTMLDivElement>(null);
   const dropTargetRef = useRef<MeasuredDropTarget | null>(null);
   const dropZoneRef = useRef<dropZone | "">("");
@@ -42,11 +42,13 @@ export const useDragDropIndicator = ({
   const overflowMenuShowingRef = useRef(false);
 
   const [showOverflow, setShowOverflow] = useState(false);
-  const [dropIndicator, setDropIndicator] = useState<JSX.Element | undefined>();
+  const [dropIndicator, setDropIndicator] = useState<
+    ReactElement | undefined
+  >();
 
   const { clearSpacer, positionDropIndicator } = useDropIndicator();
 
-  const draggedItemRef = useRef<MeasuredDropTarget>();
+  const draggedItemRef = useRef<MeasuredDropTarget>(undefined);
   const fullItemQuery = `:is(${itemQuery}${NOT_OVERFLOWED}${NOT_HIDDEN},[data-overflow-indicator])`;
 
   // const { setMeasurements: setVizData } = useListViz();
@@ -57,7 +59,7 @@ export const useDragDropIndicator = ({
   const reposition = (
     dropTarget: MeasuredDropTarget,
     distance: number,
-    indexShift?: number
+    indexShift?: number,
   ) => {
     dropTarget.start += distance;
     dropTarget.mid += distance;
@@ -69,7 +71,7 @@ export const useDragDropIndicator = ({
 
   // Shouldn't need this - but viewportRange is always stale in stopScrolling. Checked all dependencies
   // look ok. Something to do with setTimeout / scrollHandler ?
-  const rangeRef = useRef<ViewportRange>();
+  const rangeRef = useRef<ViewportRange>(undefined);
   rangeRef.current = viewportRange;
 
   const handleScrollStart = useCallback(() => {
@@ -85,7 +87,7 @@ export const useDragDropIndicator = ({
           container,
           orientation,
           fullItemQuery,
-          rangeRef.current
+          rangeRef.current,
         );
         // setVizData(measuredDropTargets.current);
 
@@ -97,7 +99,7 @@ export const useDragDropIndicator = ({
           dropTargets,
           midPos,
           size,
-          "fwd"
+          "fwd",
         );
         if (nextDropTarget) {
           if (atEnd && scrollDirection === "fwd") {
@@ -116,7 +118,7 @@ export const useDragDropIndicator = ({
       fullItemQuery,
       orientation,
       // setVizData,
-    ]
+    ],
   );
 
   const beginDrag = useCallback(
@@ -141,7 +143,7 @@ export const useDragDropIndicator = ({
           container,
           orientation,
           fullItemQuery,
-          viewportRange
+          viewportRange,
         ));
 
         const draggedItem = getItemById(dropTargets, draggedItemId);
@@ -176,7 +178,7 @@ export const useDragDropIndicator = ({
 
           const dropIndicatorPosition = positionDropIndicator(
             dropTarget,
-            dropZone as dropZone
+            dropZone as dropZone,
           );
 
           const { top, left, width } =
@@ -200,7 +202,7 @@ export const useDragDropIndicator = ({
               style={dropIndicatorRect}
               ref={dropIndicatorRef}
               element={createDropIndicator()}
-            />
+            />,
           );
         }
       }
@@ -212,7 +214,7 @@ export const useDragDropIndicator = ({
       fullItemQuery,
       viewportRange,
       positionDropIndicator,
-    ]
+    ],
   );
 
   const drag = useCallback(
@@ -230,7 +232,7 @@ export const useDragDropIndicator = ({
             dropTargets,
             dragPos,
             draggedItem.size,
-            mouseMoveDirection
+            mouseMoveDirection,
           );
 
           if (
@@ -249,23 +251,21 @@ export const useDragDropIndicator = ({
                 const dropTarget = dropTargets[dropTargets.length - 1];
                 const dropIndicatorPosition = positionDropIndicator(
                   dropTarget,
-                  "start"
+                  "start",
                 );
                 const dropIndicatorRect =
                   dropIndicatorPosition.getBoundingClientRect();
-                dropIndicatorRef.current.style[
-                  START
-                ] = `${dropIndicatorRect.top}px`;
+                dropIndicatorRef.current.style[START] =
+                  `${dropIndicatorRect.top}px`;
               } else {
                 const dropIndicatorPosition = positionDropIndicator(
                   nextDropTarget,
-                  "start"
+                  "start",
                 ) as unknown as HTMLElement;
                 const dropIndicatorRect =
                   dropIndicatorPosition.getBoundingClientRect();
-                dropIndicatorRef.current.style[
-                  START
-                ] = `${dropIndicatorRect.top}px`;
+                dropIndicatorRef.current.style[START] =
+                  `${dropIndicatorRect.top}px`;
               }
               // setVizData(dropTargets, nextDropTarget, nextDropZone);
 
@@ -278,7 +278,7 @@ export const useDragDropIndicator = ({
         }
       }
     },
-    [containerRef, orientation, positionDropIndicator]
+    [containerRef, orientation, positionDropIndicator],
   );
 
   const drop = useCallback((): DropOptions => {

@@ -148,7 +148,8 @@ function wrapFlexComponent(
     type === "Flexbox"
       ? {
           splitterSize:
-            (typeOf(container) === "Flexbox" && container.props.splitterSize) ??
+            (typeOf(container) === "Flexbox" &&
+              (container.props as any).splitterSize) ??
             undefined,
         }
       : undefined;
@@ -274,7 +275,7 @@ function getWrappedFlexStyles(
   pos: DropPos,
 ) {
   const style = {
-    ...existingComponent.props.style,
+    ...(existingComponent.props as any).style,
     flexDirection,
   };
 

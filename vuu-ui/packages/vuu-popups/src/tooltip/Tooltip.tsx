@@ -14,7 +14,7 @@ const classBase = "vuuTooltip";
 
 export type TooltipStatus = "warning" | "error" | "info";
 export interface TooltipProps {
-  anchorElement: RefObject<HTMLElement>;
+  anchorElement: RefObject<HTMLElement | null>;
   children: ReactNode;
   className?: string;
   id?: string;

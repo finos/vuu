@@ -6,7 +6,7 @@ export type TooltipPlacement = "above" | "right" | "below" | "left";
 
 const pointerSize = 12;
 export interface TooltipAnchoredPositionHookProps {
-  anchorElement: RefObject<HTMLElement>;
+  anchorElement: RefObject<HTMLElement | null>;
   placement: TooltipPlacement | TooltipPlacement[];
 }
 
@@ -22,7 +22,7 @@ const roomBelow = (anchor: DOMRect, tooltip: DOMRect) =>
 const roomAvailableAtPlacement = (
   placement: TooltipPlacement,
   anchor: DOMRect,
-  tooltip: DOMRect
+  tooltip: DOMRect,
 ) => {
   switch (placement) {
     case "above":
@@ -63,7 +63,7 @@ const positionRight: Positioner = (anchor, tooltip) => ({
 const positionAtPlacement = (
   placement: TooltipPlacement,
   anchor: DOMRect,
-  tooltip: DOMRect
+  tooltip: DOMRect,
 ) => {
   switch (placement) {
     case "above":
@@ -81,7 +81,7 @@ const positionAtPlacement = (
 
 const keepWithinTheScreen = (
   { height, width }: DOMRect,
-  position: Position
+  position: Position,
 ) => {
   const { clientWidth, clientHeight } = document.body;
   let { left, top } = position;
@@ -105,7 +105,7 @@ const toCSSText = ({ left, top }: Position) =>
   `left:${left}px;top:${top}px;opacity:1;`;
 
 const getNextPlacement = (
-  placement: TooltipPlacement | TooltipPlacement[]
+  placement: TooltipPlacement | TooltipPlacement[],
 ): [TooltipPlacement | undefined, TooltipPlacement[]] => {
   if (Array.isArray(placement)) {
     if (placement.length === 0) {
@@ -137,8 +137,8 @@ export const useTooltipAnchoredPosition = ({
             el.style.cssText = toCSSText(
               keepWithinTheScreen(
                 tooltipRect,
-                positionAtPlacement(nextPlacement, anchorRect, tooltipRect)
-              )
+                positionAtPlacement(nextPlacement, anchorRect, tooltipRect),
+              ),
             );
             el.dataset.align = nextPlacement;
             return;
@@ -148,7 +148,7 @@ export const useTooltipAnchoredPosition = ({
       }
       el?.classList.remove("vuuHidden");
     },
-    [anchorElement, placement]
+    [anchorElement, placement],
   );
   return ref;
 };

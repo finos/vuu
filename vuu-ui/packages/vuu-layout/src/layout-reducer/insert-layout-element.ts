@@ -21,7 +21,7 @@ import {
 type insertionPosition = "before" | "after";
 
 export function getInsertTabBeforeAfter(stack: LayoutModel, pos: DropPos) {
-  const tabs = stack.props.children;
+  const { children: tabs } = stack.props as any;
   const tabCount = tabs.length;
   const { index = -1, positionRelativeToTab = "after" } = pos.tab || {};
   return index === -1 || index >= tabCount
@@ -68,7 +68,7 @@ export function insertIntoContainer(
         : insertedIdx
       : containerActive;
 
-  return React.cloneElement(container, { active }, children);
+  return React.cloneElement(container, { active } as any, children);
 }
 
 const getDefaultTitle = (
@@ -82,7 +82,7 @@ const getDefaultTitle = (
     : undefined;
 
 const getChildrenTitles = (children: ReactElement[]) =>
-  children.map((child) => child.props.title);
+  children.map((child) => (child.props as any).title);
 
 function insertIntoChildren(
   container: ReactElement,
@@ -178,7 +178,7 @@ export function insertBesideChild(
       ];
 
   const active = typeOf(container) === "Stack" ? insertedIdx : containerActive;
-  return React.cloneElement(container, { active }, children);
+  return React.cloneElement(container, { active } as any, children);
 }
 
 function updateChildren(
@@ -371,7 +371,8 @@ function getStyledComponents(
   let { version = 0 } = getProps(newComponent);
   version += 1;
   if (typeOf(container) === "Flexbox") {
-    const [dim] = getManagedDimension(container.props.style);
+    const { style: containerStyle } = container.props as any;
+    const [dim] = getManagedDimension(containerStyle);
     const splitterSize = 6;
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -386,12 +387,12 @@ function getStyledComponents(
     return [
       React.cloneElement(existingComponent, {
         style: existingComponentStyle,
-      }),
+      } as any),
       React.cloneElement(newComponent, {
         id,
         version,
         style: newComponentStyle,
-      }),
+      } as any),
     ];
   } else {
     const {
@@ -407,7 +408,7 @@ function getStyledComponents(
         id,
         version,
         style: { ...style, flex: "1 1 0px" },
-      }),
+      } as any),
     ];
   }
 }

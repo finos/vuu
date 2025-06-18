@@ -23,7 +23,7 @@ export const JsonTable = ({
   ...tableProps
 }: JsonTableProps) => {
   const sourceRef = useRef(sourceProp);
-  const dataSourceRef = useRef<JsonDataSource>();
+  const dataSourceRef = useRef<JsonDataSource>(undefined);
   useMemo(() => {
     dataSourceRef.current = new JsonDataSource({
       data: sourceRef.current,

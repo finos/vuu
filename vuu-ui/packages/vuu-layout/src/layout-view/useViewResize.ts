@@ -10,9 +10,9 @@ type size = {
 };
 
 export interface ViewResizeHookProps {
-  mainRef: RefObject<HTMLDivElement>;
+  mainRef: RefObject<HTMLDivElement | null>;
   resize?: "defer" | "responsive";
-  rootRef: RefObject<HTMLDivElement>;
+  rootRef: RefObject<HTMLDivElement | null>;
 }
 
 export const useViewResize = ({
@@ -23,7 +23,7 @@ export const useViewResize = ({
   const deferResize = resize === "defer";
 
   const mainSize = useRef<size>({});
-  const resizeHandle = useRef<number>();
+  const resizeHandle = useRef<number>(undefined);
 
   const setMainSize = useCallback(() => {
     if (mainRef.current) {

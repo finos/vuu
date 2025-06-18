@@ -5,6 +5,7 @@ import { useIsomorphicLayoutEffect } from "@salt-ds/core";
 
 const HeightOnly = ["height"];
 const HeightWithScroll = ["height", "scrollHeight"];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const EMPTY_ARRAY: any[] = [];
 
 const ObservedDimensions = {
@@ -20,7 +21,7 @@ const NULL_REF = { current: null };
 
 const getItemTop = (
   element: HTMLElement,
-  offsetContainer: HTMLElement | null
+  offsetContainer: HTMLElement | null,
 ) => {
   const { transform = "none" } = getComputedStyle(element);
   if (transform.startsWith("matrix")) {
@@ -42,8 +43,8 @@ const getItemTop = (
 };
 
 export interface ViewportTrackingProps<Item> {
-  containerRef: RefObject<HTMLElement>;
-  contentRef?: RefObject<HTMLElement>;
+  containerRef: RefObject<HTMLElement | null>;
+  contentRef?: RefObject<HTMLElement | null>;
   highlightedIdx?: number;
   indexPositions: CollectionItem<Item>[];
   stickyHeaders?: boolean;
@@ -112,7 +113,7 @@ export const useViewportTracking = <Item>({
         }
       }
     },
-    [containerRef, contentRef, scrollTo, stickyHeaders]
+    [containerRef, contentRef, scrollTo, stickyHeaders],
   );
 
   useIsomorphicLayoutEffect(() => {
@@ -146,7 +147,7 @@ export const useViewportTracking = <Item>({
         viewport.current.contentHeight = scrollHeight;
       }
     },
-    []
+    [],
   );
 
   const onContentResize: ResizeHandler = useCallback(({ height }) => {
@@ -159,7 +160,7 @@ export const useViewportTracking = <Item>({
   // contentRef will be null, so second call to observer will observe nothing.
   // If we have both container and content, then we observe the height of each.
   const [containerDimensions, contentDimensions] = getObservedDimensions(
-    contentRef === NULL_REF
+    contentRef === NULL_REF,
   );
   useResizeObserver(containerRef, containerDimensions, onContainerResize, true);
   useResizeObserver(contentRef, contentDimensions, onContentResize, true);

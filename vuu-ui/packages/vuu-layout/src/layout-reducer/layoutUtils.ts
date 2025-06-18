@@ -32,7 +32,8 @@ const theKidHasNoStyle: CSSProperties = {};
 export const applyLayoutProps = (component: ReactElement, path = "0") => {
   const [layoutProps, children] = getChildLayoutProps(
     typeOf(component) as string,
-    component.props,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    component.props as any,
     path,
   );
   return React.cloneElement(component, layoutProps, children);
@@ -63,7 +64,8 @@ export const cloneElementAddLayoutProps = (
   const type = typeOf(layoutElement) as string;
   const [layoutProps, children] = getChildLayoutProps(
     type,
-    layoutElement.props,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    layoutElement.props as any,
     "0",
     undefined,
     previousLayout,
@@ -137,7 +139,10 @@ function getChildLayoutProps(
   }
 
   const previousChildren =
-    (previousLayout as any)?.children ?? previousLayout?.props?.children;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (previousLayout as any)?.children ??
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (previousLayout as any)?.props?.children;
   const hasDynamicChildren = props.dropTarget && previousChildren;
   const children = hasDynamicChildren
     ? previousChildren
@@ -164,7 +169,8 @@ function getLayoutChildren(
         if (!previousType || childType === previousType) {
           const [layoutProps, children] = getChildLayoutProps(
             childType,
-            child.props,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            child.props as any,
             `${path}.${i}`,
             type,
             previousChildren?.[i],
@@ -271,6 +277,7 @@ export function componentToJson(component: ReactElement): LayoutJSON {
 export function serializeProps(props?: LayoutProps) {
   if (props) {
     const { path, ...otherProps } = props;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result: { [key: string]: any } = {};
     for (const [key, value] of Object.entries(otherProps)) {
       result[key] = serializeValue(value);
@@ -279,6 +286,7 @@ export function serializeProps(props?: LayoutProps) {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function serializeValue(value: unknown): any {
   if (
     typeof value === "string" ||
@@ -289,6 +297,7 @@ function serializeValue(value: unknown): any {
   } else if (Array.isArray(value)) {
     return value.map(serializeValue);
   } else if (typeof value === "object" && value !== null) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result: { [key: string]: any } = {};
     for (const [k, v] of Object.entries(value)) {
       result[k] = serializeValue(v);
@@ -329,8 +338,10 @@ export const getDefaultTabLabel: TabLabelFactory = (
   existingLabels = [],
 ): string => {
   let label =
-    component.props?.title ??
-    component.props?.["data-tab-title"] ??
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (component.props as any)?.title ??
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (component.props as any)?.["data-tab-title"] ??
     existingLabels[tabIndex];
   if (label) {
     return label;

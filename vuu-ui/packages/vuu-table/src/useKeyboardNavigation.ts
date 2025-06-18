@@ -108,7 +108,7 @@ export type GroupToggleHandler = (
 
 export interface NavigationHookProps {
   cellFocusStateRef: MutableRefObject<CellFocusState>;
-  containerRef: RefObject<HTMLElement>;
+  containerRef: RefObject<HTMLElement | null>;
   columnCount?: number;
   headerCount: number;
   defaultHighlightedIndex?: number;
@@ -148,7 +148,7 @@ export const useKeyboardNavigation = ({
   // to reference highlightedIndex at call time but do not need to be regenerated
   // every time it changes (i.e keep highlightedIndex out of their dependency
   // arrays, as it can update frequently)
-  const highlightedIndexRef = useRef<number | undefined>();
+  const highlightedIndexRef = useRef<number | undefined>(undefined);
 
   const [highlightedIndex, setHighlightedIdx] = useControlled({
     controlled: highlightedIndexProp,

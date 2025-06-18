@@ -2,7 +2,7 @@ import { isValidNumber, MEASURES, orientationType } from "@vuu-ui/vuu-utils";
 import { CSSProperties, RefObject, useCallback, useMemo, useRef } from "react";
 
 export const useAnimatedSelectionThumb = (
-  containerRef: RefObject<HTMLElement>,
+  containerRef: RefObject<HTMLElement | null>,
   activeTabIndex: number,
   orientation: orientationType = "horizontal",
 ) => {

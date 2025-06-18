@@ -106,7 +106,7 @@ export const useColumnExpressionEditor = ({
 }: ColumnExpressionInputProps) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const onSubmitRef = useRef<ApplyCompletion>(noop);
-  const viewRef = useRef<EditorView>();
+  const viewRef = useRef<EditorView>(undefined);
   const completionFn = useColumnAutoComplete(suggestionProvider, onSubmitRef);
 
   const [createState, clearInput, submit] = useMemo(() => {

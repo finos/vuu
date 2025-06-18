@@ -3,9 +3,10 @@ import "./Showcase.css";
 import React, { BrowserRouter, Route, Routes } from "react-router-dom";
 import { ShowcaseShell } from "./showcase-main/ShowcaseShell";
 import { TreeSourceNode } from "@vuu-ui/vuu-utils";
+import { ReactElement } from "react";
 
-const createRoutes = (treeSource: TreeSourceNode[]): JSX.Element[] =>
-  treeSource.reduce<JSX.Element[]>((routes, { childNodes, label, id }) => {
+const createRoutes = (treeSource: TreeSourceNode[]): ReactElement[] =>
+  treeSource.reduce<ReactElement[]>((routes, { childNodes, label, id }) => {
     return Array.isArray(childNodes)
       ? routes
           .concat(createRoutes(childNodes))

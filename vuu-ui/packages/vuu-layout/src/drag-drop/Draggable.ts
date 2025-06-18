@@ -1,4 +1,4 @@
-import { LayoutModel, rect } from "@vuu-ui/vuu-utils";
+import { rect } from "@vuu-ui/vuu-utils";
 import { ReactElement } from "react";
 import { findTarget, followPath, getProps } from "../utils";
 import { BoxModel, Measurements } from "./BoxModel";
@@ -157,7 +157,8 @@ function initDrag(
   if (dropTargets) {
     const dropPaths = dropTargets
       .map((id) => findTarget(rootContainer, (props) => props.id === id))
-      .map((target) => (target as LayoutModel).props.path);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((target) => (target as any).props.path);
     _validDropTargetPaths = dropPaths;
   }
 

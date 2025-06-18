@@ -16,7 +16,7 @@ type SelectableElement = ReactElement<{ selectable: boolean }>;
 
 export const sourceItemHasProp = (
   item: unknown,
-  propertyName: string
+  propertyName: string,
 ): boolean => {
   return (
     item !== null && Object.prototype.hasOwnProperty.call(item, propertyName)
@@ -57,7 +57,7 @@ export const isFocusable = (item: unknown): boolean => {
 export const countChildItems = <Item>(
   item: CollectionItem<Item>,
   items: CollectionItem<Item>[],
-  idx: number
+  idx: number,
 ): number => {
   if (item.childNodes) {
     return item.childNodes.length;
@@ -79,7 +79,7 @@ export const getChildLabel = (
     children?: ReactNode;
     label?: string;
     title?: string;
-  }>
+  }>,
 ): string | undefined => {
   if (typeof element.props.children === "string") {
     return element.props.children;
@@ -105,7 +105,7 @@ const childIsSelectable = (child: ReactElement) => {
 };
 
 export const getChildNodes = (
-  element: ReactElement
+  element: ReactElement,
 ): CollectionItem<ReactElement>[] | undefined => {
   if (childIsGroup(element)) {
     const {
@@ -119,7 +119,7 @@ export const getChildNodes = (
 
 const mapReactElementChildren = (
   children: ReactNode,
-  fn: (el: ReactElement) => CollectionItem<ReactElement>
+  fn: (el: ReactElement) => CollectionItem<ReactElement>,
 ): CollectionItem<ReactElement>[] => {
   const childElements: CollectionItem<ReactElement>[] = [];
   Children.forEach(children, (child) => {
@@ -142,7 +142,7 @@ type CollectionItemWithoutId<T> = Omit<CollectionItem<T>, "id">;
 
 export const sourceItems = <T>(
   source?: ReadonlyArray<T>,
-  options?: CollectionOptions<T>
+  options?: CollectionOptions<T>,
 ): CollectionItemWithoutId<T>[] | undefined => {
   if (Array.isArray(source)) {
     if (source.length === 0 && options?.noChildrenLabel) {
@@ -158,14 +158,14 @@ export const sourceItems = <T>(
           ({
             childNodes: sourceItems(
               (item as unknown as SourceGroup<T>).childNodes,
-              options
+              options,
             ),
             description: item.description,
             expanded: item.expanded,
             value: item,
             label:
               options?.itemToString?.(item as T) ?? defaultItemToString(item),
-          } as CollectionItemWithoutId<T>)
+          }) as CollectionItemWithoutId<T>,
       );
     }
   } else if (source) {
@@ -174,7 +174,7 @@ export const sourceItems = <T>(
 };
 
 export const childItems = (
-  children: ReactNode
+  children: ReactNode,
 ): CollectionItem<ReactElement>[] | undefined => {
   if (children) {
     return mapReactElementChildren(children, (child) => {
@@ -191,7 +191,8 @@ export const childItems = (
         expanded,
         header: childIsHeader(child),
         id,
-        label: getChildLabel(child),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        label: getChildLabel(child as any),
         selectable: childIsSelectable(child),
         value: child,
       } as CollectionItem<ReactElement>;
@@ -220,7 +221,7 @@ function isDescendantOf(basePath: string, targetPath: string) {
 export function replaceCollectionItem<Item>(
   nodes: CollectionItem<Item>[],
   id: string,
-  props: Partial<CollectionItem<Item>>
+  props: Partial<CollectionItem<Item>>,
 ): CollectionItem<Item>[] {
   let childNodes: CollectionItem<Item>[];
   const newNodes: CollectionItem<Item>[] = nodes.map((node) => {

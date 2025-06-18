@@ -38,7 +38,8 @@ export function componentToJson(element: ReactElement): LayoutJSON {
     return element.type.toJSON(element);
   } else {
     const type = typeOf(element) as string;
-    const { id, children, type: _omit, ...props } = getProps(element);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { id, children, type: _omit, ...props } = getProps(element) as any;
 
     // const state = hasPersistentState(id) ? getPersistentState(id) : undefined;
     const state = undefined;

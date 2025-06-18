@@ -39,7 +39,7 @@ export declare type TableSelectionModel =
 export declare type TableHeading = { label: string; width: number };
 export declare type TableHeadings = TableHeading[][];
 
-export declare type ValueFormatter<T extends string | JSX.Element = string> = (
+export declare type ValueFormatter<T extends string | ReactElement = string> = (
   value: unknown,
 ) => T;
 

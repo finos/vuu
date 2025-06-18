@@ -1,6 +1,7 @@
 import {
   FC,
   PropsWithChildren,
+  ReactElement,
   ReactNode,
   useEffect,
   useMemo,
@@ -32,7 +33,7 @@ const DialogTemplate: FC<
   Omit<DialogProps, "content"> & {
     header?: string;
     preheader?: string;
-    content?: JSX.Element;
+    content?: ReactElement;
   }
 > = ({
   header,
