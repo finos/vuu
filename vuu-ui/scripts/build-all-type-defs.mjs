@@ -11,6 +11,8 @@ function buildPackage(packageName) {
 }
 
 const packages = [
+  "grid-layout",
+  "vuu-context-menu",
   "vuu-codemirror",
   "vuu-data-local",
   "vuu-data-react",
