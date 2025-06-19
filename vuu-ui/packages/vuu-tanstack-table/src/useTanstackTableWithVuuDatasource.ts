@@ -12,6 +12,7 @@ import {
   DataSourceSubscribeCallback,
   DataSourceRow as VuuDataSourceRow,
 } from "@vuu-ui/vuu-data-types";
+import { TableSelectionModel } from "@vuu-ui/vuu-table-types";
 import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import {
   getFullRange,
@@ -58,6 +59,11 @@ export interface TanstackTableProps<T extends object> {
    */
   rowHeight: number;
 
+  /**
+   * Tanstack doesn't easily support extended (shift and click) block selection
+   */
+  selectionModel?: Exclude<TableSelectionModel, "extended">;
+
   showColumnMenu?: Pick<
     ColumnMenuProps,
     "allowGrouping" | "allowSort" | "allowHide" | "allowInlineFilters"
@@ -72,6 +78,7 @@ export const useTanstackTableWithVuuDatasource = <T extends VuuDataSourceRow>({
   dataSource,
   renderBufferSize = 20,
   rowHeight = 32,
+  selectionModel = "none",
 }: TanstackTableProps<T>) => {
   const [, forceUpdate] = useState<unknown>(null);
   const data = useRef<VuuDataSourceRow[]>([]);
@@ -236,8 +243,8 @@ export const useTanstackTableWithVuuDatasource = <T extends VuuDataSourceRow>({
   const table = useReactTable<DataSourceRow>({
     data: data.current,
     columns: columnsWithVuuAccessors,
-    enableMultiRowSelection: false,
-    enableRowSelection: true,
+    enableMultiRowSelection: selectionModel === "checkbox",
+    enableRowSelection: selectionModel !== "none",
     getRowId: (row) => {
       return `${row[0]}`;
     }, // is this right ?

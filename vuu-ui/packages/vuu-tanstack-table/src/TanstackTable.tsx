@@ -34,6 +34,7 @@ export const TanstackTable = <T extends object>({
   headerHeight = 25,
   renderBufferSize,
   rowHeight: rowHeightProp,
+  selectionModel,
   showColumnMenu,
   showPaginationControls,
 }: Omit<TanstackTableProps<T>, "rowHeight"> & {
@@ -60,6 +61,7 @@ export const TanstackTable = <T extends object>({
       dataSource,
       renderBufferSize,
       rowHeight,
+      selectionModel,
       showPaginationControls,
     });
 

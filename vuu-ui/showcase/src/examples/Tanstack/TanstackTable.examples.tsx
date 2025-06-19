@@ -1,16 +1,16 @@
+import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
+import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
 import { getSchema, vuuModule } from "@vuu-ui/vuu-data-test";
+import { FilterBar } from "@vuu-ui/vuu-filters";
 import { FlexboxLayout, LayoutProvider, View } from "@vuu-ui/vuu-layout";
+import { VuuFilter, VuuTable } from "@vuu-ui/vuu-protocol-types";
+import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { TableColumnDef, TanstackTable } from "@vuu-ui/vuu-tanstack-table";
 import { toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 
 import "./index.css";
-import { FilterBar } from "@vuu-ui/vuu-filters";
-import { VuuFilter, VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
-import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
-import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
 
 export type DataRowAtIndexFunc<T = unknown> = (index: number) => T[];
 const instrumentsSchema = getSchema("instruments");
@@ -120,6 +120,44 @@ export const WithColumnMenuFillContainer = () => {
           allowInlineFilters: true,
           allowSort: true,
         }}
+      />
+    </div>
+  );
+};
+
+/** tags=data-consumer */
+export const WithSingleRowSelection = () => {
+  const { VuuDataSource } = useData();
+  const dataSource = useMemo(() => {
+    return new VuuDataSource(dataSourceProps);
+  }, [VuuDataSource]);
+
+  return (
+    <div style={{ height: 600 }}>
+      <TanstackTable<Instrument>
+        columns={instrumentColumns}
+        dataSource={dataSource}
+        rowHeight={25}
+        selectionModel="single"
+      />
+    </div>
+  );
+};
+
+/** tags=data-consumer */
+export const WithMultiRowSelection = () => {
+  const { VuuDataSource } = useData();
+  const dataSource = useMemo(() => {
+    return new VuuDataSource(dataSourceProps);
+  }, [VuuDataSource]);
+
+  return (
+    <div style={{ height: 600 }}>
+      <TanstackTable<Instrument>
+        columns={instrumentColumns}
+        dataSource={dataSource}
+        rowHeight={25}
+        selectionModel="checkbox"
       />
     </div>
   );
