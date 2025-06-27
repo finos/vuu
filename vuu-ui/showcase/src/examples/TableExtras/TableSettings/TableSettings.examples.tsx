@@ -6,7 +6,6 @@ import {
   TableSettingsPanel,
 } from "@vuu-ui/vuu-table-extras";
 import { TableConfig } from "@vuu-ui/vuu-table-types";
-import { MoveItemHandler } from "@vuu-ui/vuu-ui-controls";
 import { moveItem } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 
@@ -141,16 +140,16 @@ export const DefaultColumnList = () => {
   const handleChange = () => {
     console.log("handleChange");
   };
-  const handleMoveListItem: MoveItemHandler = (fromIndex, toIndex) => {
-    setColumns((cols) => moveItem(cols, fromIndex, toIndex));
-  };
+  const handleReorderColumnItems = useCallback((columnItems: ColumnItem[]) => {
+    setColumns(columnItems);
+  }, []);
 
   return (
     <ColumnList
       columnItems={columns}
       style={{ width: 300, height: 600 }}
       onChange={handleChange}
-      onMoveListItem={handleMoveListItem}
+      onReorderColumnItems={handleReorderColumnItems}
     />
   );
 };
@@ -198,6 +197,9 @@ export const DefaultSettingsPanel = () => {
         { name: "bbg", serverDataType: "string" },
         { name: "bid", serverDataType: "double" },
         { name: "ask", serverDataType: "double" },
+        { name: "open", serverDataType: "double" },
+        { name: "close", serverDataType: "double" },
+        { name: "last", serverDataType: "double" },
       ],
       {
         columns: [],

@@ -9,11 +9,12 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { TableSettingsProps } from "@vuu-ui/vuu-table-types";
 import { ColumnList } from "../column-list";
-import { useTableSettings } from "./useTableSettings";
+import { ColumnItem, useTableSettings } from "./useTableSettings";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
 import { VuuInput } from "@vuu-ui/vuu-ui-controls";
 
 import tableSettingsPanelCss from "./TableSettingsPanel.css";
+import { useCallback } from "react";
 
 const classBase = "vuuTableSettingsPanel";
 
@@ -45,9 +46,9 @@ export const TableSettingsPanel = ({
     columnLabelsValue,
     onChangeColumnLabels,
     onChangeTableAttribute,
+    onReorderColumnItems,
     onColumnChange,
     onCommitColumnWidth,
-    onMoveListItem,
     tableConfig,
   } = useTableSettings({
     availableColumns,
@@ -130,8 +131,8 @@ export const TableSettingsPanel = ({
       <ColumnList
         columnItems={columnItems}
         onChange={onColumnChange}
-        onMoveListItem={onMoveListItem}
         onNavigateToColumn={onNavigateToColumn}
+        onReorderColumnItems={onReorderColumnItems}
       />
 
       <div className={`${classBase}-calculatedButtonbar`}>

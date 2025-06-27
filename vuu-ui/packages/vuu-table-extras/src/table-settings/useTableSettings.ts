@@ -9,10 +9,10 @@ import {
   addColumnToSubscribedColumns,
   queryClosest,
   isCalculatedColumn,
-  moveItem,
   subscribedOnly,
   useLayoutEffectSkipFirst,
   CommitHandler,
+  reorderColumnItems,
 } from "@vuu-ui/vuu-utils";
 import {
   MouseEvent,
@@ -23,18 +23,8 @@ import {
 } from "react";
 import { ColumnChangeHandler } from "../column-list";
 
-const sortOrderFromAvailableColumns = (
-  availableColumns: SchemaColumn[],
-  columns: ColumnDescriptor[],
-) => {
-  const sortedColumns: ColumnDescriptor[] = [];
-  for (const { name } of availableColumns) {
-    const column = columns.find((col) => col.name === name);
-    if (column) {
-      sortedColumns.push(column);
-    }
-  }
-  return sortedColumns;
+export type ColumnLike = {
+  name: string;
 };
 
 export type ColumnItem = Pick<
@@ -84,19 +74,18 @@ export const useTableSettings = ({
     [availableColumns, tableConfig.columns],
   );
 
-  const handleMoveListItem = useCallback(
-    (fromIndex: number, toIndex: number) => {
+  const handleReorderColumnItems = useCallback(
+    (columnItems: ColumnItem[]) => {
+      const orderedNames = columnItems.map((c) => c.name);
       setColumnState((state) => {
-        const newAvailableColumns = moveItem(
+        const newAvailableColumns = reorderColumnItems(
           state.availableColumns,
-          fromIndex,
-          toIndex,
+          orderedNames,
         );
-        const newColumns = sortOrderFromAvailableColumns(
-          newAvailableColumns,
+        const newColumns = reorderColumnItems(
           tableConfig.columns,
+          orderedNames,
         );
-
         return {
           availableColumns: newAvailableColumns,
           tableConfig: {
@@ -190,7 +179,6 @@ export const useTableSettings = ({
       const button = queryClosest<HTMLButtonElement>(evt.target, "button");
       if (button) {
         const { ariaPressed, value } = button;
-        console.log({ ariaPressed, value, button });
         setColumnState((state) => ({
           ...state,
           tableConfig: {
@@ -216,7 +204,6 @@ export const useTableSettings = ({
         }));
       }
     }
-    console.log({ value });
   }, []);
 
   useLayoutEffectSkipFirst(() => {
@@ -237,7 +224,7 @@ export const useTableSettings = ({
     onChangeTableAttribute: handleChangeTableAttribute,
     onColumnChange: handleColumnChange,
     onCommitColumnWidth: handleCommitColumnWidth,
-    onMoveListItem: handleMoveListItem,
+    onReorderColumnItems: handleReorderColumnItems,
     tableConfig,
   };
 };
