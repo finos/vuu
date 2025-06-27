@@ -24,3 +24,4 @@ export * from "./utils";
 export * from "./vuu-date-picker";
 export * from "./vuu-input";
 export * from "./vuu-typeahead-input";
+export { SortableList, SortableOption } from "./sortable-list/SortableList";
