@@ -116,7 +116,7 @@ export const ColumnPicker = forwardRef<HTMLButtonElement, ColumnPickerProps>(
     const handleChange = () => {
       console.log("handleChange");
     };
-    const handleMoveListItem = () => {
+    const handleReorderColumns = () => {
       console.log("handleMoveListItem");
     };
 
@@ -146,7 +146,7 @@ export const ColumnPicker = forwardRef<HTMLButtonElement, ColumnPickerProps>(
           <ColumnSearch
             columns={columns}
             onChange={handleChange}
-            onMoveListItem={handleMoveListItem}
+            onReorderColumns={handleReorderColumns}
             onSelectionChange={onSelectionChange}
             selected={selected}
             style={{ width: 220, height: 300 }}

@@ -6,7 +6,6 @@ import {
   TableSettingsPanel,
 } from "@vuu-ui/vuu-table-extras";
 import { TableConfig } from "@vuu-ui/vuu-table-types";
-import { moveItem } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 
 export const DefaultColumnList = () => {
@@ -166,12 +165,9 @@ export const ManyColumnList = () => {
 
   const [columns, setColumns] = useState<ColumnItem[]>(initialColumns);
 
-  const handleMoveListItem = useCallback(
-    (fromIndex: number, toIndex: number) => {
-      setColumns((cols) => moveItem(cols, fromIndex, toIndex));
-    },
-    [],
-  );
+  const handleReorderColumnItems = useCallback((columnItems: ColumnItem[]) => {
+    setColumns(columnItems);
+  }, []);
 
   const handleChange = () => {
     console.log("handleChange");
@@ -182,7 +178,7 @@ export const ManyColumnList = () => {
       columnItems={columns}
       style={{ width: 300, height: 600 }}
       onChange={handleChange}
-      onMoveListItem={handleMoveListItem}
+      onReorderColumnItems={handleReorderColumnItems}
     />
   );
 };

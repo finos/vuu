@@ -9,12 +9,12 @@ import {
 } from "../overflow-container";
 import { useToolbar } from "./useToolbar";
 import { forwardCallbackProps } from "../utils";
-
-import toolbarCss from "./Toolbar.css";
 import {
   SelectionStrategy,
   SpecialKeyMultipleSelection,
 } from "../common-hooks";
+
+import toolbarCss from "./Toolbar.css";
 
 const classBase = "vuuToolbar";
 

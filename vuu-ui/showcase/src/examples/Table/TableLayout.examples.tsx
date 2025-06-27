@@ -14,7 +14,7 @@ import {
 import { DockLayout, Drawer } from "@vuu-ui/vuu-layout";
 import { Table, TableProps, useHeaderProps } from "@vuu-ui/vuu-table";
 import { BaseRowProps, TableConfig } from "@vuu-ui/vuu-table-types";
-import { List, ListItem } from "@vuu-ui/vuu-ui-controls";
+import { ListBox, Option } from "@salt-ds/core";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 import { VuuRpcMenuRequest } from "@vuu-ui/vuu-protocol-types";
@@ -163,14 +163,14 @@ const InlineDrawer = ({
             ref={list}
             style={{ width: "100%", height: "100%", background: "yellow" }}
           >
-            <List>
-              <ListItem>Item 1</ListItem>
-              <ListItem>Item 2</ListItem>
-              <ListItem>Item 3</ListItem>
-              <ListItem>Item 4</ListItem>
-              <ListItem>Item 5</ListItem>
-              <ListItem>Item 6</ListItem>
-            </List>
+            <ListBox>
+              <Option value="Item 1" />
+              <Option value="Item 2" />
+              <Option value="Item 3" />
+              <Option value="Item 4" />
+              <Option value="Item 5" />
+              <Option value="Item 6" />
+            </ListBox>
           </div>
         </Drawer>
         <DataTableTemplate

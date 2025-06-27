@@ -8,8 +8,7 @@ import {
   Stack,
   View,
 } from "@vuu-ui/vuu-layout";
-import { List, ListItem } from "@vuu-ui/vuu-ui-controls";
-import { Button } from "@salt-ds/core";
+import { Button, ListBox, Option } from "@salt-ds/core";
 
 import "./DockLayout.examples.css";
 
@@ -42,14 +41,14 @@ const InlineDrawer = ({
         title="Rebecca"
         defaultOpen={false}
       >
-        <List>
-          <ListItem>Item 1</ListItem>
-          <ListItem>Item 2</ListItem>
-          <ListItem>Item 3</ListItem>
-          <ListItem>Item 4</ListItem>
-          <ListItem>Item 5</ListItem>
-          <ListItem>Item 6</ListItem>
-        </List>
+        <ListBox>
+          <Option value="Item 1" />
+          <Option value="Item 2" />
+          <Option value="Item 3" />
+          <Option value="Item 4" />
+          <Option value="Item 5" />
+          <Option value="Item 6" />
+        </ListBox>
       </Drawer>
       <Component
         title="Cornflower"

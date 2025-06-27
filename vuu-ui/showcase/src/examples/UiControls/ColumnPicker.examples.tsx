@@ -24,7 +24,7 @@ export const DefaultColumnSearch = () => {
   const handleChange = () => {
     console.log("handleChange");
   };
-  const handleMoveListItem = () => {
+  const handleReorderColumns = () => {
     console.log("handleMoveListItem");
   };
 
@@ -34,7 +34,7 @@ export const DefaultColumnSearch = () => {
       data-showcase-center
       style={{ border: "solid 1px black", width: 220, height: 400 }}
       onChange={handleChange}
-      onMoveListItem={handleMoveListItem}
+      onReorderColumns={handleReorderColumns}
     />
   );
 };

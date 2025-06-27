@@ -12,7 +12,6 @@ export * from "./expando-input";
 export * from "./icon-button";
 export * from "./instrument-picker";
 export * from "./table-search";
-export * from "./list";
 export * from "./measured-container";
 export * from "./overflow-container";
 export * from "./price-ticker";
