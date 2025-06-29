@@ -5,6 +5,7 @@ import {
   CustomHeaderComponent,
   CustomHeaderElement,
   RuntimeColumnDescriptor,
+  ShowColumnHeaderNMenus,
   TableColumnResizeHandler,
   TableConfig,
   TableHeadings,
@@ -43,7 +44,7 @@ export interface TableHeaderProps {
   onMoveGroupColumn: (columns: ColumnDescriptor[]) => void;
   onRemoveGroupColumn: (column: RuntimeColumnDescriptor) => void;
   onSortColumn: ColumnSortHandler;
-  showColumnHeaderMenus: boolean;
+  showColumnHeaderMenus?: ShowColumnHeaderNMenus;
   tableConfig: TableConfig;
   tableId: string;
   virtualColSpan?: number;
@@ -190,7 +191,7 @@ export const TableHeader = memo(
                 onClick={onClick}
                 onMouseDown={onMouseDown}
                 onResize={onResizeColumn}
-                showMenu={showColumnHeaderMenus}
+                showColumnHeaderMenus={showColumnHeaderMenus}
               />
             ),
           )}

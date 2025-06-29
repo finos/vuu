@@ -1,8 +1,8 @@
+import { DragDropProvider } from "@dnd-kit/react";
+import { useSortable } from "@dnd-kit/react/sortable";
 import { Checkbox, ListBox, Option, OptionProps, Switch } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { useSortable } from "@dnd-kit/react/sortable";
-import { DragDropProvider } from "@dnd-kit/react";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { Icon, IconButton } from "@vuu-ui/vuu-ui-controls";
 import {
@@ -18,7 +18,7 @@ import {
   useCallback,
   useRef,
 } from "react";
-import { ColumnItem } from "../table-settings";
+import { ColumnItem } from "../table-column-settings/useTableSettings";
 
 import columnList from "./ColumnList.css";
 

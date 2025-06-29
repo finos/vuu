@@ -1,17 +1,14 @@
 import { DataSourceConfig, SchemaColumn } from "@vuu-ui/vuu-data-types";
-import { useLayoutProviderDispatch } from "@vuu-ui/vuu-layout";
 import {
   ColumnDescriptor,
   ColumnSettingsProps,
   TableConfig,
   TableSettingsProps,
 } from "@vuu-ui/vuu-table-types";
-import {
-  VuuShellLocation,
-  getCalculatedColumnDetails,
-} from "@vuu-ui/vuu-utils";
+import { getCalculatedColumnDetails } from "@vuu-ui/vuu-utils";
 import { useCallback, useRef, useState } from "react";
 import { DisplayColumnSettingsAction } from "@vuu-ui/vuu-table-extras/src/column-menu/column-action-types";
+import { useContextPanel } from "@vuu-ui/vuu-ui-controls";
 
 export interface TableAndColumnSettingsHookProps {
   availableColumns: SchemaColumn[];
@@ -29,34 +26,13 @@ export const useTableAndColumnSettings = ({
   onDataSourceConfigChange,
   tableConfig,
 }: TableAndColumnSettingsHookProps) => {
-  const dispatchLayoutAction = useLayoutProviderDispatch();
   const showTableSettingsRef = useRef<() => void>(undefined);
 
   const [availableColumns, setAvailableColumns] = useState<SchemaColumn[]>(
     availableColumnsProps,
   );
 
-  const showContextPanel = useCallback(
-    (
-      componentType: string,
-      title: string,
-      props: TableSettingsProps | ColumnSettingsProps,
-    ) => {
-      dispatchLayoutAction({
-        type: "set-props",
-        path: `#${VuuShellLocation.ContextPanel}`,
-        props: {
-          expanded: true,
-          content: {
-            type: componentType,
-            props,
-          },
-          title,
-        },
-      });
-    },
-    [dispatchLayoutAction],
-  );
+  const showContextPanel = useContextPanel();
 
   const handleCancelCreateColumn = useCallback(() => {
     requestAnimationFrame(() => {

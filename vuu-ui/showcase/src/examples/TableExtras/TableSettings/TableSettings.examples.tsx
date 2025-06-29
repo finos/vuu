@@ -7,6 +7,12 @@ import {
 } from "@vuu-ui/vuu-table-extras";
 import { TableConfig } from "@vuu-ui/vuu-table-types";
 import { useCallback, useMemo, useState } from "react";
+import {
+  Checkbox,
+  CheckboxGroup,
+  FormField,
+  FormFieldLabel,
+} from "@salt-ds/core";
 
 export const DefaultColumnList = () => {
   const initialColumns = useMemo<ColumnItem[]>(
@@ -183,7 +189,7 @@ export const ManyColumnList = () => {
   );
 };
 
-export const DefaultSettingsPanel = () => {
+export const DefaultTableSettings = () => {
   const [availableColumns, tableConfig] = useMemo<
     [SchemaColumn[], TableConfig]
   >(
@@ -216,12 +222,43 @@ export const DefaultSettingsPanel = () => {
   };
 
   return (
-    <TableSettingsPanel
-      availableColumns={availableColumns}
-      onAddCalculatedColumn={() => console.log("add calculated column")}
-      onConfigChange={handleConfigChange}
-      onDataSourceConfigChange={handleDataSourceConfigChange}
-      tableConfig={tableConfig}
-    />
+    <div style={{ display: "flex", gap: 100 }}>
+      <div
+        style={{
+          margin: 30,
+          width: 300,
+          height: 700,
+          border: "solid 1px lightgray",
+        }}
+      >
+        <TableSettingsPanel
+          availableColumns={availableColumns}
+          onAddCalculatedColumn={() => console.log("add calculated column")}
+          onConfigChange={handleConfigChange}
+          onDataSourceConfigChange={handleDataSourceConfigChange}
+          tableConfig={tableConfig}
+        />
+      </div>
+      <div
+        style={{
+          width: 300,
+          border: "solid 1px lightgray",
+          padding: "var(--salt-spacing-100)",
+        }}
+      >
+        <FormField>
+          <FormFieldLabel>Table Permissions</FormFieldLabel>
+          <CheckboxGroup name="permissions" direction="vertical">
+            <Checkbox label="Column labels" value="column-labels" />
+            <Checkbox label="Column width" value="column-width" />
+            <Checkbox label="Grid separators" value="grid-separators" />
+            <Checkbox label="Reorder columns" value="reorder-columns" />
+            <Checkbox label="Remove columns" value="remove-columns" />
+            <Checkbox label="Hide columns" value="hide-columns" />
+            <Checkbox label="Calculated columns" value="calculated-columns" />
+          </CheckboxGroup>
+        </FormField>
+      </div>
+    </div>
   );
 };

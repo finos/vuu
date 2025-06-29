@@ -99,8 +99,9 @@ export function buildSortMenu(
   column: ColumnDescriptor,
   dataSource: DataSource,
   menuActionClickHandler: MenuItemClickHandler,
+  isAllowed = true,
 ): MenuElement | null {
-  if (column.sortable === false) {
+  if (!isAllowed || column.sortable === false) {
     return null;
   } else {
     const { name, label = name } = column;
@@ -229,8 +230,9 @@ export function buildGroupMenu(
   column: ColumnDescriptor,
   dataSource: DataSource,
   menuActionClickHandler: MenuItemClickHandler,
+  isAllowed = true,
 ): MenuElement | null {
-  if (column.groupable === false) {
+  if (!isAllowed || column.groupable === false) {
     return null;
   } else {
     const menuItems: MenuElements = [];
@@ -307,7 +309,11 @@ export function buildGroupMenu(
 export const buildVisibilityMenuItems = (
   column: ColumnDescriptor,
   menuActionClickHandler: MenuItemClickHandler,
-): MenuElements => {
+  isAllowed = true,
+): MenuElements | null => {
+  if (!isAllowed) {
+    return null;
+  }
   const menuItems: MenuElements = [];
   const { name, label = name } = column;
   menuItems.push(
@@ -335,8 +341,9 @@ export const buildVisibilityMenuItems = (
 export const buildPinMenuItems = (
   column: ColumnDescriptor,
   menuActionClickHandler: MenuItemClickHandler,
+  isAllowed = true,
 ): MenuElements => {
-  if (column === undefined) {
+  if (!isAllowed || column === undefined) {
     return [];
   }
   const { pin } = column;
@@ -441,7 +448,12 @@ export const buildPinMenuItems = (
 export const buildSettingsMenuItems = (
   _: ColumnDescriptor,
   menuActionClickHandler: MenuItemClickHandler,
-): MenuElements => {
+  isAllowed = true,
+): MenuElements | null => {
+  if (!isAllowed) {
+    return null;
+  }
+
   const menuItems: MenuElements = [];
 
   menuItems.push(
@@ -472,7 +484,12 @@ export function buildAggregationMenuItems(
   column: ColumnDescriptor,
   dataSource: DataSource,
   menuActionClickHandler: MenuItemClickHandler,
-): MenuElements {
+  isAllowed = true,
+): MenuElements | null {
+  if (!isAllowed) {
+    return null;
+  }
+
   const { name, label = name } = column;
 
   if (dataSource.groupBy?.length === 0) {

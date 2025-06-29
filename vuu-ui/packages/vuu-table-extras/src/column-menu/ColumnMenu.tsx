@@ -1,7 +1,10 @@
 import { Menu, MenuPanel, MenuTrigger } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import {
+  ColumnDescriptor,
+  ColumnMenuPermissions,
+} from "@vuu-ui/vuu-table-types";
 import { IconButton } from "@vuu-ui/vuu-ui-controls";
 import { useTableContext } from "../table-provider/TableProvider";
 import cx from "clsx";
@@ -23,15 +26,33 @@ import { MenuActionHandler } from "@vuu-ui/vuu-context-menu";
 
 const classBase = "vuuColumnMenu";
 
+const defaultColumnMenuPermissions = {
+  allowSort: true,
+  allowGroup: true,
+  allowAggregation: true,
+  allowHide: true,
+  allowPin: true,
+  allowSettings: true,
+};
+
 export interface ColumnMenuProps extends HTMLAttributes<HTMLSpanElement> {
   column: ColumnDescriptor;
   menuActionHandler?: MenuActionHandler<ColumnMenuActionType, ColumnDescriptor>;
+  menuPermissions?: ColumnMenuPermissions;
 }
 
 export const ColumnMenu = ({
   className,
   column,
   menuActionHandler: menuActionHandlerProp,
+  menuPermissions: {
+    allowSort,
+    allowGroup,
+    allowAggregation,
+    allowHide,
+    allowPin,
+    allowSettings,
+  } = defaultColumnMenuPermissions,
 }: ColumnMenuProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -52,21 +73,34 @@ export const ColumnMenu = ({
     [column, menuActionHandler, menuActionHandlerProp],
   );
 
-  const sortMenu = buildSortMenu(column, dataSource, menuActionClickHandler);
-  const groupMenu = buildGroupMenu(column, dataSource, menuActionClickHandler);
+  const sortMenu = buildSortMenu(
+    column,
+    dataSource,
+    menuActionClickHandler,
+    allowSort,
+  );
+  const groupMenu = buildGroupMenu(
+    column,
+    dataSource,
+    menuActionClickHandler,
+    allowGroup,
+  );
   const aggregationMenu = buildAggregationMenuItems(
     column,
     dataSource,
     menuActionClickHandler,
+    allowAggregation,
   );
   const visibilityMenuItems = buildVisibilityMenuItems(
     column,
     menuActionClickHandler,
+    allowHide,
   );
-  const pinMenu = buildPinMenuItems(column, menuActionClickHandler);
+  const pinMenu = buildPinMenuItems(column, menuActionClickHandler, allowPin);
   const settingsMenuItems = buildSettingsMenuItems(
     column,
     menuActionClickHandler,
+    allowSettings,
   );
 
   const handleClick = useCallback<MouseEventHandler<HTMLButtonElement>>(

@@ -10,6 +10,7 @@ import {
   ColumnDisplayActionHandler,
   TableSettingsActionHandler,
   useColumnActions,
+  useTableAndColumnSettings,
 } from "@vuu-ui/vuu-table-extras";
 import {
   ColumnDescriptor,
@@ -65,7 +66,6 @@ import {
 } from "./useKeyboardNavigation";
 import { useRowClassNameGenerators } from "./useRowClassNameGenerators";
 import { useSelection } from "./useSelection";
-import { useTableAndColumnSettings } from "./useTableAndColumnSettings";
 import { useTableContextMenu } from "./useTableContextMenu";
 import {
   ColumnActionHide,
@@ -420,11 +420,6 @@ export const useTable = ({
 
   const handleColumnDisplayAction = useCallback<ColumnDisplayActionHandler>(
     (action) => {
-      // if (isShowColumnSettings(action)) {
-      //   showColumnSettingsPanel(action);
-      // } else if (isShowTableSettings(action)) {
-      //   showTableSettingsPanel();
-      // } else {
       const { type } = action;
       switch (type) {
         case "hideColumn":

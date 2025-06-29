@@ -5,13 +5,13 @@ import {
   type LayoutJSON,
 } from "@vuu-ui/vuu-utils";
 import {
+  RefObject,
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useRef,
   useState,
-  type MutableRefObject,
   type ReactElement,
 } from "react";
 import {
@@ -203,7 +203,7 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
   );
 
   const prepareToDragLayout = useLayoutDragDrop(
-    state as MutableRefObject<ReactElement>,
+    state as RefObject<ReactElement>,
     layoutActionDispatcher,
     pathToDropTarget,
   );
@@ -280,6 +280,7 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
 
   if (state.current === undefined) {
     state.current = cloneElementAddLayoutProps(children);
+    console.log({ state: state.current });
   } else if (children !== childrenRef.current) {
     state.current = cloneElementAddLayoutProps(children, state.current);
     childrenRef.current = children;

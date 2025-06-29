@@ -377,6 +377,17 @@ export interface TableSettingsProps {
   tableConfig: TableConfig;
 }
 
+export declare type ColumnMenuPermissions = {
+  allowSort?: boolean;
+  allowGroup?: boolean;
+  allowAggregation?: boolean;
+  allowHide?: boolean;
+  allowPin: boolean;
+  allowSettings: boolean;
+};
+
+export declare type ShowColumnHeaderNMenus = boolean | ColumnMenuPermissions;
+
 export declare type DefaultColumnConfiguration = <T extends string = string>(
   tableName: T,
   columnName: string,
@@ -429,7 +440,7 @@ export interface HeaderCellProps
   column: RuntimeColumnDescriptor;
   onClick?: (evt: React.MouseEvent | React.KeyboardEvent) => void;
   onResize?: TableColumnResizeHandler;
-  showMenu?: boolean;
+  showColumnHeaderMenus?: ShowColumnHeaderNMenus;
 }
 
 export declare type TableConfigChangeHandler = (config: TableConfig) => void;

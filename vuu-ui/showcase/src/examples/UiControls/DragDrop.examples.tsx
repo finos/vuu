@@ -16,8 +16,8 @@ export const DraggableListsOneWayDrag = () => {
     [],
   );
 
-  const [state1, setState1] = useState(source1);
-  const [state2, setState2] = useState(source2);
+  const [state1] = useState(source1);
+  const [state2] = useState(source2);
 
   // const handleMoveListItem1 = useCallback<MoveItemHandler>(
   //   (fromIndex, toIndex) => {
