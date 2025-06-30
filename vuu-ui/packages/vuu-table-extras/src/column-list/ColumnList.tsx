@@ -3,7 +3,10 @@ import { useSortable } from "@dnd-kit/react/sortable";
 import { Checkbox, ListBox, Option, OptionProps, Switch } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import {
+  ColumnDescriptor,
+  ColumnListPermissions,
+} from "@vuu-ui/vuu-table-types";
 import { Icon, IconButton } from "@vuu-ui/vuu-ui-controls";
 import {
   getColumnLabel,
@@ -16,6 +19,7 @@ import {
   MouseEventHandler,
   SyntheticEvent,
   useCallback,
+  useMemo,
   useRef,
 } from "react";
 import { ColumnItem } from "../table-column-settings/useTableSettings";
@@ -24,6 +28,26 @@ import columnList from "./ColumnList.css";
 
 const classBase = "vuuColumnList";
 const classBaseListItem = "vuuColumnListItem";
+
+const useSorting = (id: string, index: number, allowSort = true) => {
+  const { handleRef: sortableHandleRef, ref: sortableRef } = useSortable({
+    id,
+    index,
+  });
+
+  const noopRef = useCallback(() => {
+    // do nothing
+  }, []);
+
+  const [handleRef, ref] = useMemo(() => {
+    return allowSort ? [sortableHandleRef, sortableRef] : [noopRef, noopRef];
+  }, [allowSort, noopRef, sortableHandleRef, sortableRef]);
+
+  return {
+    handleRef,
+    ref,
+  };
+};
 
 export type ColumnChangeHandler = (
   columnName: string,
@@ -37,15 +61,21 @@ export interface ColumnListProps
   onChange: ColumnChangeHandler;
   onNavigateToColumn?: (columnName: string) => void;
   onReorderColumnItems?: (columnItems: ColumnItem[]) => void;
+  permissions?: ColumnListPermissions;
 }
 
 const ColumnListItem = ({
   className: classNameProp,
   index,
   item,
+  permissions: { allowHideColumns, allowRemoveColumns, allowReorderColumns },
   ...optionProps
-}: OptionProps & { index: number; item: ColumnItem }) => {
-  const { handleRef, ref } = useSortable({ id: item.name, index });
+}: OptionProps & {
+  index: number;
+  item: ColumnItem;
+  permissions: ColumnListPermissions;
+}) => {
+  const { handleRef, ref } = useSorting(item.name, index, allowReorderColumns);
   return (
     <Option
       {...optionProps}
@@ -54,31 +84,42 @@ const ColumnListItem = ({
       id={item.name}
       ref={ref}
     >
-      <IconButton
-        data-embedded
-        appearance="transparent"
-        icon="draggable"
-        ref={handleRef}
-        size={16}
-      />
+      {allowReorderColumns ? (
+        <IconButton
+          data-embedded
+          appearance="transparent"
+          icon="draggable"
+          ref={handleRef}
+          size={16}
+        />
+      ) : null}
       {item?.isCalculated ? (
         <Icon name="function" />
       ) : (
         <Checkbox
           className={`${classBase}-checkBox`}
           checked={item?.subscribed}
+          readOnly={allowRemoveColumns === false}
         />
       )}
       <span className={`${classBase}-text`}>
         {getColumnLabel(item as ColumnDescriptor)}
       </span>
-      <Switch
-        className={`${classBase}-switch`}
-        checked={item?.hidden !== true}
-        disabled={item?.subscribed !== true}
-      />
+      {allowHideColumns !== false ? (
+        <Switch
+          className={`${classBase}-switch`}
+          checked={item?.hidden !== true}
+          disabled={item?.subscribed !== true}
+        />
+      ) : null}
     </Option>
   );
+};
+
+const defaultPermissions: ColumnListPermissions = {
+  allowHideColumns: true,
+  allowRemoveColumns: true,
+  allowReorderColumns: true,
 };
 
 export const ColumnList = ({
@@ -87,6 +128,7 @@ export const ColumnList = ({
   onChange,
   onNavigateToColumn,
   onReorderColumnItems,
+  permissions = defaultPermissions,
   ...htmlAttributes
 }: ColumnListProps) => {
   const targetWindow = useWindow();
@@ -168,6 +210,7 @@ export const ColumnList = ({
               key={columnItem.name}
               onChange={handleChange}
               onClick={handleClick}
+              permissions={permissions}
               value={columnItem}
             />
           ))}

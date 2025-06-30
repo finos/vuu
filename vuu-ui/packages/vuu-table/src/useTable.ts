@@ -8,7 +8,9 @@ import {
 import { VuuRowDataItemType, VuuSortType } from "@vuu-ui/vuu-protocol-types";
 import {
   ColumnDisplayActionHandler,
+  columnSettingsFromColumnMenuPermissions,
   TableSettingsActionHandler,
+  tableSettingsFromColumnMenuPermissions,
   useColumnActions,
   useTableAndColumnSettings,
 } from "@vuu-ui/vuu-table-extras";
@@ -123,6 +125,7 @@ export interface TableHookProps
       | "rowToObject"
       | "scrollingApiRef"
       | "selectionBookendWidth"
+      | "showColumnHeaderMenus"
       | "showColumnHeaders"
       | "showPaginationControls"
     > {
@@ -178,6 +181,7 @@ export const useTable = ({
   scrollingApiRef,
   selectionBookendWidth = 4,
   selectionModel,
+  showColumnHeaderMenus = true,
   showColumnHeaders,
   showPaginationControls,
   size,
@@ -415,6 +419,14 @@ export const useTable = ({
       onConfigChange: handleConfigEditedInSettingsPanel,
       onCreateCalculatedColumn: handleCreateCalculatedColumn,
       onDataSourceConfigChange: handleDataSourceConfigChanged,
+      settingsPermissions: {
+        allowColumnSettings: columnSettingsFromColumnMenuPermissions(
+          showColumnHeaderMenus,
+        ),
+        allowTableSettings: tableSettingsFromColumnMenuPermissions(
+          showColumnHeaderMenus,
+        ),
+      },
       tableConfig,
     });
 

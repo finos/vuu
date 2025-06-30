@@ -361,6 +361,19 @@ export interface ColumnSettingsProps {
   vuuTable: VuuTable;
 }
 
+export interface ColumnListPermissions {
+  allowReorderColumns?: boolean;
+  allowRemoveColumns?: boolean;
+  allowHideColumns?: boolean;
+}
+
+export interface TableSettingsPermissions extends ColumnListPermissions {
+  allowColumnLabelCase?: boolean;
+  allowColumnDefaultWidth?: boolean;
+  allowGridSeparators?: boolean;
+  allowCalculatedColumns?: boolean;
+}
+
 /**
  * Describes the props for a Table Configuration Editor, for which
  * an implementation is provided in vuu-table-extras
@@ -375,18 +388,23 @@ export interface TableSettingsProps {
   onDataSourceConfigChange: (dataSourceConfig: DataSourceConfig) => void;
   onNavigateToColumn?: (columnName: string) => void;
   tableConfig: TableConfig;
+  permissions?: TableSettingsPermissions;
 }
 
-export declare type ColumnMenuPermissions = {
+export interface SettingsPermissions {
+  allowColumnSettings: boolean;
+  allowTableSettings: boolean | TableSettingsPermissions;
+}
+
+export interface ColumnMenuPermissions extends SettingsPermissions {
   allowSort?: boolean;
   allowGroup?: boolean;
   allowAggregation?: boolean;
   allowHide?: boolean;
   allowPin: boolean;
-  allowSettings: boolean;
-};
+}
 
-export declare type ShowColumnHeaderNMenus = boolean | ColumnMenuPermissions;
+export declare type ShowColumnHeaderMenus = boolean | ColumnMenuPermissions;
 
 export declare type DefaultColumnConfiguration = <T extends string = string>(
   tableName: T,

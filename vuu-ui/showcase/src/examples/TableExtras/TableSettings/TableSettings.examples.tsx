@@ -3,10 +3,11 @@ import { DataSourceConfig, SchemaColumn } from "@vuu-ui/vuu-data-types";
 import {
   ColumnItem,
   ColumnList,
+  defaultTableSettingsPermissions,
   TableSettingsPanel,
 } from "@vuu-ui/vuu-table-extras";
-import { TableConfig } from "@vuu-ui/vuu-table-types";
-import { useCallback, useMemo, useState } from "react";
+import { TableConfig, TableSettingsPermissions } from "@vuu-ui/vuu-table-types";
+import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
 import {
   Checkbox,
   CheckboxGroup,
@@ -190,6 +191,9 @@ export const ManyColumnList = () => {
 };
 
 export const DefaultTableSettings = () => {
+  const [permissions, setPermissions] = useState<TableSettingsPermissions>(
+    defaultTableSettingsPermissions,
+  );
   const [availableColumns, tableConfig] = useMemo<
     [SchemaColumn[], TableConfig]
   >(
@@ -221,6 +225,18 @@ export const DefaultTableSettings = () => {
     });
   };
 
+  const handlePermissionChanged = useCallback<
+    ChangeEventHandler<HTMLInputElement>
+  >((evt) => {
+    console.log(
+      `handlePermissionChanged ${evt.target.value} ${evt.target.checked}`,
+    );
+    setPermissions((existingPermissions) => ({
+      ...existingPermissions,
+      [evt.target.value]: evt.target.checked,
+    }));
+  }, []);
+
   return (
     <div style={{ display: "flex", gap: 100 }}>
       <div
@@ -236,6 +252,7 @@ export const DefaultTableSettings = () => {
           onAddCalculatedColumn={() => console.log("add calculated column")}
           onConfigChange={handleConfigChange}
           onDataSourceConfigChange={handleDataSourceConfigChange}
+          permissions={permissions}
           tableConfig={tableConfig}
         />
       </div>
@@ -248,14 +265,46 @@ export const DefaultTableSettings = () => {
       >
         <FormField>
           <FormFieldLabel>Table Permissions</FormFieldLabel>
-          <CheckboxGroup name="permissions" direction="vertical">
-            <Checkbox label="Column labels" value="column-labels" />
-            <Checkbox label="Column width" value="column-width" />
-            <Checkbox label="Grid separators" value="grid-separators" />
-            <Checkbox label="Reorder columns" value="reorder-columns" />
-            <Checkbox label="Remove columns" value="remove-columns" />
-            <Checkbox label="Hide columns" value="hide-columns" />
-            <Checkbox label="Calculated columns" value="calculated-columns" />
+          <CheckboxGroup
+            direction="vertical"
+            name="permissions"
+            onChange={handlePermissionChanged}
+          >
+            <Checkbox
+              checked={permissions.allowColumnLabelCase}
+              label="Column labels"
+              value="allowColumnLabelCase"
+            />
+            <Checkbox
+              checked={permissions.allowColumnDefaultWidth}
+              label="Column width"
+              value="allowColumnDefaultWidth"
+            />
+            <Checkbox
+              checked={permissions.allowGridSeparators}
+              label="Grid separators"
+              value="allowGridSeparators"
+            />
+            <Checkbox
+              checked={permissions.allowReorderColumns}
+              label="Reorder columns"
+              value="allowReorderColumns"
+            />
+            <Checkbox
+              checked={permissions.allowRemoveColumns}
+              label="Remove columns"
+              value="allowRemoveColumns"
+            />
+            <Checkbox
+              checked={permissions.allowHideColumns}
+              label="Hide columns"
+              value="allowHideColumns"
+            />
+            <Checkbox
+              checked={permissions.allowCalculatedColumns}
+              label="Calculated columns"
+              value="allowCalculatedColumns"
+            />
           </CheckboxGroup>
         </FormField>
       </div>

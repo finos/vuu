@@ -13,7 +13,7 @@ import {
   DataCellEditNotification,
   GroupToggleTarget,
   RowProps,
-  ShowColumnHeaderNMenus as ShowColumnHeaderMenus,
+  ShowColumnHeaderMenus,
   TableConfig,
   TableConfigChangeHandler,
   TableRowClickHandler,
@@ -382,6 +382,7 @@ const TableCore = ({
     selectionBookendWidth,
     selectionModel,
     showColumnHeaders,
+    showColumnHeaderMenus,
     showPaginationControls,
     size,
   });

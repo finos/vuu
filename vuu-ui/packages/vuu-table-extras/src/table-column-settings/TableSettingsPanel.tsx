@@ -7,7 +7,10 @@ import {
 } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { TableSettingsProps } from "@vuu-ui/vuu-table-types";
+import {
+  TableSettingsPermissions,
+  TableSettingsProps,
+} from "@vuu-ui/vuu-table-types";
 import { ColumnList } from "../column-list";
 import { useTableSettings } from "./useTableSettings";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
@@ -17,21 +20,30 @@ import tableSettingsPanelCss from "./TableSettingsPanel.css";
 
 const classBase = "vuuTableSettingsPanel";
 
+export const defaultTableSettingsPermissions: Readonly<TableSettingsPermissions> =
+  {
+    allowColumnLabelCase: true,
+    allowColumnDefaultWidth: true,
+    allowGridSeparators: true,
+    allowReorderColumns: true,
+    allowRemoveColumns: true,
+    allowHideColumns: true,
+    allowCalculatedColumns: true,
+  };
+
 /**
   The TableSettingsPanel assumes 'ownership' of the tableSettings.
   It updates the settings in state locally and notifies caller of
   every change via onChange callback
  */
 export const TableSettingsPanel = ({
-  allowColumnLabelCase = true,
-  allowColumnDefaultWidth = true,
-  allowGridRowStyling = true,
   availableColumns,
   onAddCalculatedColumn,
   onConfigChange,
   onDataSourceConfigChange,
   onNavigateToColumn,
   tableConfig: tableConfigProp,
+  permissions = defaultTableSettingsPermissions,
 }: TableSettingsProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -56,11 +68,19 @@ export const TableSettingsPanel = ({
     tableConfig: tableConfigProp,
   });
 
+  const {
+    allowColumnLabelCase = true,
+    allowColumnDefaultWidth = true,
+    allowGridSeparators = true,
+    allowCalculatedColumns,
+    ...columnListPermissions
+  } = permissions;
+
   return (
     <div className={classBase}>
       {allowColumnLabelCase ||
       allowColumnDefaultWidth ||
-      allowGridRowStyling ? (
+      allowGridSeparators ? (
         <div className={`${classBase}-header`}>
           <span>Column Settings</span>
         </div>
@@ -98,7 +118,7 @@ export const TableSettingsPanel = ({
         </FormField>
       ) : null}
 
-      {allowGridRowStyling ? (
+      {allowGridSeparators ? (
         <FormField>
           <FormFieldLabel>Grid separators</FormFieldLabel>
           <div className="saltToggleButtonGroup vuuStateButtonGroup saltToggleButtonGroup-horizontal">
@@ -129,17 +149,20 @@ export const TableSettingsPanel = ({
 
       <ColumnList
         columnItems={columnItems}
+        permissions={columnListPermissions}
         onChange={onColumnChange}
         onNavigateToColumn={onNavigateToColumn}
         onReorderColumnItems={onReorderColumnItems}
       />
 
-      <div className={`${classBase}-calculatedButtonbar`}>
-        <Button data-icon="plus" onClick={onAddCalculatedColumn} />
-        <span className={`${classBase}-calculatedLabel`}>
-          Add calculated column
-        </span>
-      </div>
+      {allowCalculatedColumns ? (
+        <div className={`${classBase}-calculatedButtonbar`}>
+          <Button data-icon="plus" onClick={onAddCalculatedColumn} />
+          <span className={`${classBase}-calculatedLabel`}>
+            Add calculated column
+          </span>
+        </div>
+      ) : null}
     </div>
   );
 };

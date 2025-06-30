@@ -1,7 +1,9 @@
 import { DataSourceConfig, SchemaColumn } from "@vuu-ui/vuu-data-types";
 import {
   ColumnDescriptor,
+  ColumnMenuPermissions,
   ColumnSettingsProps,
+  SettingsPermissions,
   TableConfig,
   TableSettingsProps,
 } from "@vuu-ui/vuu-table-types";
@@ -9,6 +11,7 @@ import { getCalculatedColumnDetails } from "@vuu-ui/vuu-utils";
 import { useCallback, useRef, useState } from "react";
 import { DisplayColumnSettingsAction } from "@vuu-ui/vuu-table-extras/src/column-menu/column-action-types";
 import { useContextPanel } from "@vuu-ui/vuu-ui-controls";
+import { defaultTableSettingsPermissions } from "./TableSettingsPanel";
 
 export interface TableAndColumnSettingsHookProps {
   availableColumns: SchemaColumn[];
@@ -16,10 +19,30 @@ export interface TableAndColumnSettingsHookProps {
   onConfigChange: (config: TableConfig) => void;
   onCreateCalculatedColumn: (column: ColumnDescriptor) => void;
   onDataSourceConfigChange: (dataSourceConfig: DataSourceConfig) => void;
+  settingsPermissions?: SettingsPermissions;
   tableConfig: TableConfig;
 }
+
+export const columnSettingsFromColumnMenuPermissions = (
+  settings?: boolean | ColumnMenuPermissions,
+) =>
+  typeof settings === undefined
+    ? true
+    : typeof settings === "boolean"
+      ? settings
+      : (settings?.allowColumnSettings ?? true);
+export const tableSettingsFromColumnMenuPermissions = (
+  settings?: boolean | ColumnMenuPermissions,
+) =>
+  typeof settings === undefined
+    ? defaultTableSettingsPermissions
+    : typeof settings === "boolean"
+      ? settings
+      : (settings?.allowTableSettings ?? defaultTableSettingsPermissions);
+
 export const useTableAndColumnSettings = ({
   availableColumns: availableColumnsProps,
+  settingsPermissions,
   onAvailableColumnsChange,
   onConfigChange,
   onCreateCalculatedColumn,
@@ -121,6 +144,7 @@ export const useTableAndColumnSettings = ({
       onConfigChange,
       onDataSourceConfigChange,
       onNavigateToColumn: handleNavigateToColumn,
+      permissions: settingsPermissions?.allowTableSettings,
       tableConfig,
     } as TableSettingsProps);
   }, [
@@ -129,6 +153,7 @@ export const useTableAndColumnSettings = ({
     handleNavigateToColumn,
     onConfigChange,
     onDataSourceConfigChange,
+    settingsPermissions,
     showContextPanel,
     tableConfig,
   ]);

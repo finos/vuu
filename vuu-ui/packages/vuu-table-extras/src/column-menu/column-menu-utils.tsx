@@ -7,7 +7,10 @@ import {
   MenuTrigger,
 } from "@salt-ds/core";
 import { DataSource } from "@vuu-ui/vuu-data-types";
-import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import {
+  ColumnDescriptor,
+  TableSettingsPermissions,
+} from "@vuu-ui/vuu-table-types";
 import {
   getGroupStatus,
   getSortStatus,
@@ -448,34 +451,40 @@ export const buildPinMenuItems = (
 export const buildSettingsMenuItems = (
   _: ColumnDescriptor,
   menuActionClickHandler: MenuItemClickHandler,
-  isAllowed = true,
+  allowColumnSettings = true,
+  allowTableSettings: boolean | TableSettingsPermissions = true,
 ): MenuElements | null => {
-  if (!isAllowed) {
+  if (!allowColumnSettings && !allowTableSettings) {
     return null;
   }
 
   const menuItems: MenuElements = [];
 
-  menuItems.push(
-    <MenuItem
-      data-icon="settings"
-      data-menu-action-id="column-settings"
-      key="column-settings"
-      onClick={menuActionClickHandler}
-    >
-      Column settings ...
-    </MenuItem>,
-  );
-  menuItems.push(
-    <MenuItem
-      data-icon="settings"
-      data-menu-action-id="table-settings"
-      key="table-settings"
-      onClick={menuActionClickHandler}
-    >
-      Table settings ...
-    </MenuItem>,
-  );
+  if (allowColumnSettings) {
+    menuItems.push(
+      <MenuItem
+        data-icon="settings"
+        data-menu-action-id="column-settings"
+        key="column-settings"
+        onClick={menuActionClickHandler}
+      >
+        Column settings ...
+      </MenuItem>,
+    );
+  }
+
+  if (allowTableSettings) {
+    menuItems.push(
+      <MenuItem
+        data-icon="settings"
+        data-menu-action-id="table-settings"
+        key="table-settings"
+        onClick={menuActionClickHandler}
+      >
+        Table settings ...
+      </MenuItem>,
+    );
+  }
 
   return menuItems;
 };

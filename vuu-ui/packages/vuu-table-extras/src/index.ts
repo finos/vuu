@@ -9,12 +9,19 @@ export type {
 } from "./column-menu/column-action-types";
 export { ColumnSettingsPanel } from "./table-column-settings/ColumnSettingsPanel";
 export { useColumnSettings } from "./table-column-settings/useColumnSettings";
-export { TableSettingsPanel } from "./table-column-settings/TableSettingsPanel";
+export {
+  defaultTableSettingsPermissions,
+  TableSettingsPanel,
+} from "./table-column-settings/TableSettingsPanel";
 export {
   type ColumnItem,
   useTableSettings,
 } from "./table-column-settings/useTableSettings";
-export { useTableAndColumnSettings } from "./table-column-settings/useTableAndColumnSettings";
+export {
+  columnSettingsFromColumnMenuPermissions,
+  tableSettingsFromColumnMenuPermissions,
+  useTableAndColumnSettings,
+} from "./table-column-settings/useTableAndColumnSettings";
 export * from "./column-expression-input";
 export * from "./column-expression-panel";
 export * from "./column-formatting-settings";

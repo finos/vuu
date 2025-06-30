@@ -5,7 +5,7 @@ import {
   CustomHeaderComponent,
   CustomHeaderElement,
   RuntimeColumnDescriptor,
-  ShowColumnHeaderNMenus,
+  ShowColumnHeaderMenus,
   TableColumnResizeHandler,
   TableConfig,
   TableHeadings,
@@ -44,7 +44,7 @@ export interface TableHeaderProps {
   onMoveGroupColumn: (columns: ColumnDescriptor[]) => void;
   onRemoveGroupColumn: (column: RuntimeColumnDescriptor) => void;
   onSortColumn: ColumnSortHandler;
-  showColumnHeaderMenus?: ShowColumnHeaderNMenus;
+  showColumnHeaderMenus?: ShowColumnHeaderMenus;
   tableConfig: TableConfig;
   tableId: string;
   virtualColSpan?: number;

@@ -23,16 +23,18 @@ import {
   buildSettingsMenuItems,
 } from "./column-menu-utils";
 import { MenuActionHandler } from "@vuu-ui/vuu-context-menu";
+import { defaultTableSettingsPermissions } from "../table-column-settings/TableSettingsPanel";
 
 const classBase = "vuuColumnMenu";
 
-const defaultColumnMenuPermissions = {
+const defaultColumnMenuPermissions: Readonly<ColumnMenuPermissions> = {
   allowSort: true,
   allowGroup: true,
   allowAggregation: true,
   allowHide: true,
   allowPin: true,
-  allowSettings: true,
+  allowColumnSettings: true,
+  allowTableSettings: defaultTableSettingsPermissions,
 };
 
 export interface ColumnMenuProps extends HTMLAttributes<HTMLSpanElement> {
@@ -51,7 +53,8 @@ export const ColumnMenu = ({
     allowAggregation,
     allowHide,
     allowPin,
-    allowSettings,
+    allowColumnSettings,
+    allowTableSettings,
   } = defaultColumnMenuPermissions,
 }: ColumnMenuProps) => {
   const targetWindow = useWindow();
@@ -100,7 +103,8 @@ export const ColumnMenu = ({
   const settingsMenuItems = buildSettingsMenuItems(
     column,
     menuActionClickHandler,
-    allowSettings,
+    allowColumnSettings,
+    allowTableSettings,
   );
 
   const handleClick = useCallback<MouseEventHandler<HTMLButtonElement>>(
