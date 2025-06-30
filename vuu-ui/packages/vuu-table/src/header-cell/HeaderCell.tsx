@@ -1,12 +1,10 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { useContextMenu } from "@vuu-ui/vuu-context-menu";
 import { ColumnMenu } from "@vuu-ui/vuu-table-extras";
 import { HeaderCellProps } from "@vuu-ui/vuu-table-types";
 import cx from "clsx";
 import {
   KeyboardEventHandler,
-  MouseEvent,
   MouseEventHandler,
   useCallback,
   useMemo,
@@ -25,7 +23,7 @@ export const HeaderCell = ({
   column,
   onClick,
   onResize,
-  showMenu = true,
+  showColumnHeaderMenus = true,
   ...htmlAttributes
 }: HeaderCellProps) => {
   const targetWindow = useWindow();
@@ -43,16 +41,6 @@ export const HeaderCell = ({
     rootRef,
   });
 
-  const showContextMenu = useContextMenu();
-
-  const handleContextMenu = useMemo(() => {
-    if (showMenu) {
-      return undefined;
-    } else {
-      return (e: MouseEvent) => showContextMenu(e, "column-menu", { column });
-    }
-  }, [column, showContextMenu, showMenu]);
-
   const headerItems = useMemo(() => {
     const sortIndicator = <SortIndicator column={column} />;
     const columnLabel = HeaderCellLabelRenderer ? (
@@ -67,8 +55,12 @@ export const HeaderCell = ({
       ? [<HeaderCellContentRenderer column={column} key="content" />]
       : [];
 
-    if (showMenu) {
-      const columnMenu = <ColumnMenu column={column} />;
+    if (showColumnHeaderMenus) {
+      const menuPermissions =
+        showColumnHeaderMenus === true ? undefined : showColumnHeaderMenus;
+      const columnMenu = (
+        <ColumnMenu column={column} menuPermissions={menuPermissions} />
+      );
 
       if (column.align === "right") {
         return [sortIndicator, columnLabel, columnContent, columnMenu];
@@ -82,7 +74,12 @@ export const HeaderCell = ({
         return [columnLabel, sortIndicator, columnContent];
       }
     }
-  }, [HeaderCellContentRenderer, HeaderCellLabelRenderer, column, showMenu]);
+  }, [
+    HeaderCellContentRenderer,
+    HeaderCellLabelRenderer,
+    column,
+    showColumnHeaderMenus,
+  ]);
 
   const handleClick = useCallback<MouseEventHandler<HTMLDivElement>>(
     (evt) => {
@@ -109,10 +106,9 @@ export const HeaderCell = ({
       aria-label={`${column.label ?? column.name} column header`}
       className={cx(className, classNameProp, {
         [`${classBase}-resizing`]: isResizing,
-        [`${classBase}-noMenu`]: showMenu === false,
+        [`${classBase}-noMenu`]: showColumnHeaderMenus === false,
       })}
       onClick={handleClick}
-      onContextMenu={handleContextMenu}
       onKeyDown={handleKeyDown}
       ref={rootRef}
       role="columnheader"

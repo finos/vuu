@@ -3,12 +3,17 @@ import { DataSourceConfig, SchemaColumn } from "@vuu-ui/vuu-data-types";
 import {
   ColumnItem,
   ColumnList,
+  defaultTableSettingsPermissions,
   TableSettingsPanel,
 } from "@vuu-ui/vuu-table-extras";
-import { TableConfig } from "@vuu-ui/vuu-table-types";
-import { MoveItemHandler } from "@vuu-ui/vuu-ui-controls";
-import { moveItem } from "@vuu-ui/vuu-utils";
-import { useCallback, useMemo, useState } from "react";
+import { TableConfig, TableSettingsPermissions } from "@vuu-ui/vuu-table-types";
+import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
+import {
+  Checkbox,
+  CheckboxGroup,
+  FormField,
+  FormFieldLabel,
+} from "@salt-ds/core";
 
 export const DefaultColumnList = () => {
   const initialColumns = useMemo<ColumnItem[]>(
@@ -141,16 +146,16 @@ export const DefaultColumnList = () => {
   const handleChange = () => {
     console.log("handleChange");
   };
-  const handleMoveListItem: MoveItemHandler = (fromIndex, toIndex) => {
-    setColumns((cols) => moveItem(cols, fromIndex, toIndex));
-  };
+  const handleReorderColumnItems = useCallback((columnItems: ColumnItem[]) => {
+    setColumns(columnItems);
+  }, []);
 
   return (
     <ColumnList
       columnItems={columns}
       style={{ width: 300, height: 600 }}
       onChange={handleChange}
-      onMoveListItem={handleMoveListItem}
+      onReorderColumnItems={handleReorderColumnItems}
     />
   );
 };
@@ -167,12 +172,9 @@ export const ManyColumnList = () => {
 
   const [columns, setColumns] = useState<ColumnItem[]>(initialColumns);
 
-  const handleMoveListItem = useCallback(
-    (fromIndex: number, toIndex: number) => {
-      setColumns((cols) => moveItem(cols, fromIndex, toIndex));
-    },
-    [],
-  );
+  const handleReorderColumnItems = useCallback((columnItems: ColumnItem[]) => {
+    setColumns(columnItems);
+  }, []);
 
   const handleChange = () => {
     console.log("handleChange");
@@ -183,12 +185,15 @@ export const ManyColumnList = () => {
       columnItems={columns}
       style={{ width: 300, height: 600 }}
       onChange={handleChange}
-      onMoveListItem={handleMoveListItem}
+      onReorderColumnItems={handleReorderColumnItems}
     />
   );
 };
 
-export const DefaultSettingsPanel = () => {
+export const DefaultTableSettings = () => {
+  const [permissions, setPermissions] = useState<TableSettingsPermissions>(
+    defaultTableSettingsPermissions,
+  );
   const [availableColumns, tableConfig] = useMemo<
     [SchemaColumn[], TableConfig]
   >(
@@ -198,6 +203,9 @@ export const DefaultSettingsPanel = () => {
         { name: "bbg", serverDataType: "string" },
         { name: "bid", serverDataType: "double" },
         { name: "ask", serverDataType: "double" },
+        { name: "open", serverDataType: "double" },
+        { name: "close", serverDataType: "double" },
+        { name: "last", serverDataType: "double" },
       ],
       {
         columns: [],
@@ -217,13 +225,89 @@ export const DefaultSettingsPanel = () => {
     });
   };
 
+  const handlePermissionChanged = useCallback<
+    ChangeEventHandler<HTMLInputElement>
+  >((evt) => {
+    console.log(
+      `handlePermissionChanged ${evt.target.value} ${evt.target.checked}`,
+    );
+    setPermissions((existingPermissions) => ({
+      ...existingPermissions,
+      [evt.target.value]: evt.target.checked,
+    }));
+  }, []);
+
   return (
-    <TableSettingsPanel
-      availableColumns={availableColumns}
-      onAddCalculatedColumn={() => console.log("add calculated column")}
-      onConfigChange={handleConfigChange}
-      onDataSourceConfigChange={handleDataSourceConfigChange}
-      tableConfig={tableConfig}
-    />
+    <div style={{ display: "flex", gap: 100 }}>
+      <div
+        style={{
+          margin: 30,
+          width: 300,
+          height: 700,
+          border: "solid 1px lightgray",
+        }}
+      >
+        <TableSettingsPanel
+          availableColumns={availableColumns}
+          onAddCalculatedColumn={() => console.log("add calculated column")}
+          onConfigChange={handleConfigChange}
+          onDataSourceConfigChange={handleDataSourceConfigChange}
+          permissions={permissions}
+          tableConfig={tableConfig}
+        />
+      </div>
+      <div
+        style={{
+          width: 300,
+          border: "solid 1px lightgray",
+          padding: "var(--salt-spacing-100)",
+        }}
+      >
+        <FormField>
+          <FormFieldLabel>Table Permissions</FormFieldLabel>
+          <CheckboxGroup
+            direction="vertical"
+            name="permissions"
+            onChange={handlePermissionChanged}
+          >
+            <Checkbox
+              checked={permissions.allowColumnLabelCase}
+              label="Column labels"
+              value="allowColumnLabelCase"
+            />
+            <Checkbox
+              checked={permissions.allowColumnDefaultWidth}
+              label="Column width"
+              value="allowColumnDefaultWidth"
+            />
+            <Checkbox
+              checked={permissions.allowGridSeparators}
+              label="Grid separators"
+              value="allowGridSeparators"
+            />
+            <Checkbox
+              checked={permissions.allowReorderColumns}
+              label="Reorder columns"
+              value="allowReorderColumns"
+            />
+            <Checkbox
+              checked={permissions.allowRemoveColumns}
+              label="Remove columns"
+              value="allowRemoveColumns"
+            />
+            <Checkbox
+              checked={permissions.allowHideColumns}
+              label="Hide columns"
+              value="allowHideColumns"
+            />
+            <Checkbox
+              checked={permissions.allowCalculatedColumns}
+              label="Calculated columns"
+              value="allowCalculatedColumns"
+            />
+          </CheckboxGroup>
+        </FormField>
+      </div>
+    </div>
   );
 };

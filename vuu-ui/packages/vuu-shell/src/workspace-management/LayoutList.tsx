@@ -1,8 +1,8 @@
-import { IconButton, List, ListItem } from "@vuu-ui/vuu-ui-controls";
+import { IconButton } from "@vuu-ui/vuu-ui-controls";
+import { ListBox, Option } from "@salt-ds/core";
 import {
   LayoutJSON,
   LayoutMetadata,
-  SystemLayoutMetadata,
   VuuShellLocation,
 } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
@@ -21,6 +21,8 @@ type LayoutGroups = {
 };
 
 const classBase = "vuuLayoutList";
+
+const NO_SELECTION: never[] = [];
 
 export const LayoutList = ({
   className,
@@ -77,22 +79,18 @@ export const LayoutList = ({
     sysContent = [
       <div className={`${classBase}-group`} key={0}>
         <div className={`${classBase}-groupHeader`}>System Layout</div>
-        <List<SystemLayoutMetadata, "none">
-          height={undefined}
-          itemHeight={68}
-          selectionStrategy="none"
-          source={systemLayouts}
-          ListItem={({ item, ...props }) => (
-            <ListItem {...props}>
+        <ListBox selected={NO_SELECTION}>
+          {systemLayouts.map((layout) => (
+            <Option value={layout} key={layout.id}>
               <LayoutTile
                 {...htmlAttributes}
-                key={item?.id}
-                metadata={item as SystemLayoutMetadata}
+                key={layout.id}
+                metadata={layout}
                 onLoadLayout={handleLoadSysLayout}
               />
-            </ListItem>
-          )}
-        />
+            </Option>
+          ))}
+        </ListBox>
       </div>,
     ];
   }
@@ -102,28 +100,25 @@ export const LayoutList = ({
       ([heading, layoutMetadata], index) => (
         <div className={`${classBase}-group`} key={index}>
           <div className={`${classBase}-groupHeader`}>{heading}</div>
-          <List<LayoutMetadata, "none">
-            height={undefined}
-            itemHeight={68}
-            selectionStrategy="none"
-            source={layoutMetadata}
-            ListItem={({ item, ...props }) => (
-              <ListItem {...props}>
+          <ListBox selected={NO_SELECTION}>
+            {layoutMetadata.map((layout) => (
+              <Option value={layout} key={layout.id}>
                 <LayoutTile
                   {...htmlAttributes}
-                  key={item?.id}
-                  metadata={item as LayoutMetadata}
+                  key={layout.id}
+                  metadata={layout}
                   onLoadLayout={handleLoadLayout}
                 />
                 <IconButton
                   className={`${classBase}-menu`}
                   data-embedded
                   icon="more-vert"
-                  variant="secondary"
+                  appearance="transparent"
+                  sentiment="neutral"
                 />
-              </ListItem>
-            )}
-          />
+              </Option>
+            ))}
+          </ListBox>
         </div>
       ),
     );

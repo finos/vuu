@@ -1,0 +1,63 @@
+# Column Menu
+
+## package @vuu-ui/vuu-table-extras
+
+The `ColumnMenu` is a Popup Menu designed to be embedded within the column header of a Table component. Out of the box it offers the following functionality:
+
+- Sort
+- Group
+- Aggregate
+- Hide
+- Remove
+- Pin
+- Column Settings
+- Table Settings
+
+All but one of these items operate on the target data column. The exception is the Table Settings menu item which opens the Settings Panel for the table itself.
+Not all menu items will always be shown. This depends on configuration, from the following sources:
+
+### ColumnMenu permissions
+
+The ColumnMenu itself can be explicitly configured to control the menu item,s offered. The `menuPermissions` prop is a collection of boolean values, all true by default, that can be used to disable individual features:
+
+```typescript
+type ColumnMenuPermissions = {
+  allowSort?: boolean;
+  allowGroup?: boolean;
+  allowAggregation?: boolean;
+  allowHide?: boolean;
+  allowPin: boolean;
+  allowSettings: boolean;
+};
+```
+
+The Vuu Table supports ColumnMenu configuration within its props API. The `showColumnHeaderMenus` prop accepts either a boolean value or a set of ColumnMenuPermissions
+
+- true the ColumnMenu will be rendered in column headers and all available column menu items will be available
+- false the column headers will not render ColumnMenus at all
+- columnMenuPermissions - the ColumnMenu will be rendered with available menu items determined by the permission flags set here.
+
+### Column permissions
+
+Column configuration is one of the required attributes of the Table API. Some of the configuration options available on a column may reduce the list of ColumnMenu options. These are from the `ColumnDescriptor` type:
+
+- `groupable` if false the `group` menu items will not be rendered (nor the `aggregate` menu item)
+- `sortable` if false the `sort` menu items will not be rendered
+
+## The Menu Items
+
+### Sort
+
+### Group
+
+### Aggregate
+
+### Hide
+
+### Remove
+
+### Pin
+
+### Column Settings
+
+### Table Settings

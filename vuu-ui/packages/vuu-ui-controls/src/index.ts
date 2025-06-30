@@ -12,7 +12,6 @@ export * from "./expando-input";
 export * from "./icon-button";
 export * from "./instrument-picker";
 export * from "./table-search";
-export * from "./list";
 export * from "./measured-container";
 export * from "./overflow-container";
 export * from "./price-ticker";
@@ -25,3 +24,8 @@ export * from "./utils";
 export * from "./vuu-date-picker";
 export * from "./vuu-input";
 export * from "./vuu-typeahead-input";
+export {
+  ContextPanelProvider,
+  useContextPanel,
+} from "./context-panel-provider/ContextPanelProvider";
+export { SortableList, SortableOption } from "./sortable-list/SortableList";

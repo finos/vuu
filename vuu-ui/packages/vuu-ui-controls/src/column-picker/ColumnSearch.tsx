@@ -1,9 +1,9 @@
-import { Input } from "@salt-ds/core";
+import { Checkbox, Input, ListBoxProps } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { HTMLAttributes, RefCallback, forwardRef, useCallback } from "react";
-import { List, ListProps } from "../list";
+import { ListBox, Option } from "@salt-ds/core";
 
 import searchableListCss from "./ColumnSearch.css";
 
@@ -11,11 +11,9 @@ const classBase = "vuuColumnSearch";
 
 export interface ColumnSearchProps
   extends HTMLAttributes<HTMLDivElement>,
-    Pick<
-      ListProps<string, "multiple">,
-      "onMoveListItem" | "onSelectionChange" | "selected"
-    > {
+    Pick<ListBoxProps, "onSelectionChange" | "selected"> {
   columns: string[];
+  onReorderColumns: (columns: string[]) => void;
 }
 
 const searchIcon = <span data-icon="search" />;
@@ -27,12 +25,11 @@ export const ColumnSearch = forwardRef<HTMLDivElement, ColumnSearchProps>(
       className,
       columns,
       onChange,
-      onMoveListItem,
       onSelectionChange,
       selected,
       ...htmlAttributes
     },
-    forwardedRef
+    forwardedRef,
   ) {
     const targetWindow = useWindow();
     useComponentCssInjection({
@@ -66,19 +63,15 @@ export const ColumnSearch = forwardRef<HTMLDivElement, ColumnSearchProps>(
             // onChange={onChange}
           />
         </div>
-
-        <List<string, "multiple">
-          allowDragDrop
-          height="auto"
-          onChange={handleChange}
-          onMoveListItem={onMoveListItem}
-          onSelectionChange={onSelectionChange}
-          selected={selected}
-          selectionStrategy="multiple"
-          source={columns}
-          itemHeight={33}
-        />
+        <ListBox>
+          {columns.map((column) => (
+            <Option key={column} value={column}>
+              <Checkbox onChange={handleChange} />
+              <span>{column}</span>
+            </Option>
+          ))}
+        </ListBox>
       </div>
     );
-  }
+  },
 );

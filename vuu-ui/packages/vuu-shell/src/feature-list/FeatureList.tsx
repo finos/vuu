@@ -1,5 +1,5 @@
 import { Palette, PaletteItem } from "@vuu-ui/vuu-layout";
-import { Icon, ListProps } from "@vuu-ui/vuu-ui-controls";
+import { Icon } from "@vuu-ui/vuu-ui-controls";
 import {
   DynamicFeatureProps,
   StaticFeatureDescriptor,
@@ -28,16 +28,6 @@ export interface FeatureListProps extends HTMLAttributes<HTMLDivElement> {
     | StaticFeatureDescriptor[];
 }
 
-const listPropsFullHeight: Partial<ListProps> = {
-  height: undefined,
-  itemHeight: 40,
-};
-const listPropsAutoHeight: Partial<ListProps> = {
-  displayedItemCount: 100,
-  height: undefined,
-  itemHeight: 40,
-};
-
 export const FeatureList = ({
   features,
   title = "VUU TABLES",
@@ -58,7 +48,7 @@ export const FeatureList = ({
             closeable
             component={featureFromJson({ type })}
             key={idx}
-            label={label}
+            value={label}
             resizeable
             resize="defer"
             header
@@ -72,17 +62,13 @@ export const FeatureList = ({
     if (Array.isArray(features)) {
       return [
         <div className={`${classBase}-standalone`} key={0}>
-          <Palette
-            key="0"
-            orientation="vertical"
-            ListProps={listPropsFullHeight}
-          >
+          <Palette key="0" orientation="vertical">
             {features.map((featureProps, i) => (
               <PaletteItem
                 closeable
                 component={<Feature {...featureProps} />}
                 key={i}
-                label={featureProps.title}
+                value={featureProps.title}
                 resizeable
                 resize="defer"
                 header
@@ -100,14 +86,14 @@ export const FeatureList = ({
       return Object.entries(features).map(([heading, featureList], index) => (
         <div className={`${classBase}-group`} key={index}>
           <div className={`${classBase}-groupHeader`}>{heading}</div>
-          <Palette orientation="vertical" ListProps={listPropsAutoHeight}>
+          <Palette orientation="vertical">
             {featureList.map(
               (featureProps: DynamicFeatureProps<object>, i: Key) => (
                 <PaletteItem
                   closeable
                   component={<Feature {...featureProps} />}
                   key={i}
-                  label={featureProps.title}
+                  value={featureProps.title}
                   resizeable
                   resize="defer"
                   header

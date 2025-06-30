@@ -428,7 +428,7 @@ export const ComplexNestedLayout = () => {
                       }}
                     />
                   }
-                  label="Blue Monday"
+                  value="Blue Monday"
                   closeable
                   resizeable
                   header
@@ -439,7 +439,7 @@ export const ComplexNestedLayout = () => {
                       style={{ backgroundColor: "brown", height: "100%" }}
                     />
                   }
-                  label="Brown Sugar"
+                  value="Brown Sugar"
                   closeable
                   resizeable
                   header
@@ -450,7 +450,7 @@ export const ComplexNestedLayout = () => {
                       style={{ backgroundColor: "green", height: "100%" }}
                     />
                   }
-                  label="Green Day"
+                  value="Green Day"
                   closeable
                   resizeable
                   header
@@ -461,7 +461,7 @@ export const ComplexNestedLayout = () => {
                       style={{ backgroundColor: "yellow", height: "100%" }}
                     />
                   }
-                  label="Lemonheads"
+                  value="Lemonheads"
                   closeable
                   resizeable
                   header

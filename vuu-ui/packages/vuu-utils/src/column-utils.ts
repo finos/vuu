@@ -1305,3 +1305,22 @@ export const dataColumnAndKeyUnchanged = (
 export const toColumnName = (column: ColumnDescriptor) => column.name;
 export const isStringColumn = (column: ColumnDescriptor) =>
   column.serverDataType === "string";
+
+/**
+ * Given an ordered list of column names, return column items in same order
+ */
+export const reorderColumnItems = <
+  T extends { name: string } = { name: string },
+>(
+  columnItems: Array<T>,
+  orderedNames: string[],
+): T[] => {
+  const columns: T[] = [];
+  for (const name of orderedNames) {
+    const columnItem = columnItems.find((c) => c.name === name);
+    if (columnItem) {
+      columns.push(columnItem);
+    }
+  }
+  return columns;
+};

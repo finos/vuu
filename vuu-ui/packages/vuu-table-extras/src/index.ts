@@ -7,10 +7,23 @@ export type {
   ColumnDisplayActionHandler,
   TableSettingsActionHandler,
 } from "./column-menu/column-action-types";
-export * from "./column-settings";
+export { ColumnSettingsPanel } from "./table-column-settings/ColumnSettingsPanel";
+export { useColumnSettings } from "./table-column-settings/useColumnSettings";
+export {
+  defaultTableSettingsPermissions,
+  TableSettingsPanel,
+} from "./table-column-settings/TableSettingsPanel";
+export {
+  type ColumnItem,
+  useTableSettings,
+} from "./table-column-settings/useTableSettings";
+export {
+  columnSettingsFromColumnMenuPermissions,
+  tableSettingsFromColumnMenuPermissions,
+  useTableAndColumnSettings,
+} from "./table-column-settings/useTableAndColumnSettings";
 export * from "./column-expression-input";
 export * from "./column-expression-panel";
 export * from "./column-formatting-settings";
 export * from "./datasource-stats";
-export * from "./table-settings";
 export { TableProvider, useTableContext } from "./table-provider/TableProvider";

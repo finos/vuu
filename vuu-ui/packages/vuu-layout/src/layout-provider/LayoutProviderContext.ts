@@ -11,8 +11,16 @@ const unconfiguredLayoutProviderDispatch: LayoutProviderDispatch = (action) =>
   console.log(
     `dispatch ${action.type}, have you forgotten to provide a LayoutProvider ?`,
   );
+
 const unconfiguredService = (message: string) => () =>
   console.log(`${message}, have you forgotten to provide a LayoutProvider ?`);
+
+const MissingLayoutContextPanel = unconfiguredService(
+  "showComponentInContextPanel",
+);
+
+export const isUnconfiguredProperty = (property: unknown): boolean =>
+  property === MissingLayoutContextPanel;
 
 export type LayoutProviderDispatch = Dispatch<
   LayoutReducerAction | SaveAction | DragStartAction | QueryAction
@@ -34,9 +42,7 @@ export interface LayoutProviderContextProps {
 export const LayoutProviderContext = createContext<LayoutProviderContextProps>({
   addComponentToWorkspace: unconfiguredService("addComponentToWorkspace"),
   dispatchLayoutProvider: unconfiguredLayoutProviderDispatch,
-  showComponentInContextPanel: unconfiguredService(
-    "showComponentInContextPanel",
-  ),
+  showComponentInContextPanel: MissingLayoutContextPanel,
   switchWorkspace: unconfiguredService("switchWorkspace"),
   version: -1,
 });

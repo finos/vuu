@@ -203,11 +203,20 @@ export const useLayoutDragDrop = (
   const prepareToDrag = useCallback(
     (action: DragStartAction) => {
       const { evt, ...options } = action;
-      dragActionRef.current = {
-        ...options,
-        dragContainerPath: resolvePath(rootLayoutRef.current, pathToDropTarget),
-      };
-      Draggable.handleMousedown(evt, handleDragStart, options.instructions);
+      try {
+        dragActionRef.current = {
+          ...options,
+          dragContainerPath: resolvePath(
+            rootLayoutRef.current,
+            pathToDropTarget,
+          ),
+        };
+        Draggable.handleMousedown(evt, handleDragStart, options.instructions);
+      } catch (err) {
+        console.warn(
+          `[useLayoutDragDrop] path ${pathToDropTarget} not resolved, the application layout does not have the required elements to support drag drop`,
+        );
+      }
     },
     [handleDragStart, pathToDropTarget, rootLayoutRef],
   );
