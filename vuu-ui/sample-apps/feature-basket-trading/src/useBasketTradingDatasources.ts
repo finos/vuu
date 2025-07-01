@@ -83,7 +83,7 @@ export const useBasketTradingDataSources = ({
 
     const basketTradingSearchKey = `data-source-basket-trading-search`;
     let dataSourceBasketTradingSearch = loadSession?.(
-      basketTradingControlKey,
+      basketTradingSearchKey,
     ) as DataSource;
     if (!dataSourceBasketTradingSearch) {
       dataSourceBasketTradingSearch = new VuuDataSource({

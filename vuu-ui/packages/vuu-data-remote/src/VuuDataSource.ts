@@ -139,9 +139,6 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
   }
 
   handleMessageFromServer = (message: DataSourceCallbackMessage) => {
-    console.log(
-      `message from server ${message.type} awaiting confirmation ${this.isAwaitingConfirmationOfConfigChange}`,
-    );
     if (message.type === "subscribed") {
       this.#status = "subscribed";
       this.tableSchema = message.tableSchema;
@@ -435,7 +432,6 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     if (itemsOrOrderChanged(this.groupBy, groupBy)) {
       const wasGrouped = this.groupBy.length > 0;
 
-      console.log(`%cset impending config`, "color:green");
       this.impendingConfig = {
         ...this._config,
         groupBy,
