@@ -45,10 +45,6 @@ class RangeImpl implements Range {
     this.renderBufferSize =
       rangeOptions.renderBufferSize ?? defaultRangeOptions.renderBufferSize;
     this.rowCount = rangeOptions.rowCount ?? defaultRangeOptions.rowCount;
-
-    console.log(
-      `[Range] new (${this.#baseFrom}:${this.#baseTo}) renderBuffer: ${this.renderBufferSize}, rowCount: ${this.rowCount}`,
-    );
   }
 
   get firstRowInViewport() {

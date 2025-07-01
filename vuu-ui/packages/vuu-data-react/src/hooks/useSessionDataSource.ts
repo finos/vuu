@@ -7,13 +7,13 @@ import type {
 import { useViewContext } from "@vuu-ui/vuu-layout";
 import type { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import { isConfigChanged, useData } from "@vuu-ui/vuu-utils";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 
-type SessionDataSourceConfig = {
+type SessionState = {
   "datasource-config"?: DataSourceConfig;
 };
 
-const NO_CONFIG: SessionDataSourceConfig = {};
+const NO_CONFIG: SessionState = {};
 
 export const useSessionDataSource = ({
   dataSourceSessionKey = "data-source",
@@ -26,7 +26,11 @@ export const useSessionDataSource = ({
   const { VuuDataSource } = useData();
 
   const { "datasource-config": dataSourceConfigFromState } =
-    useMemo<SessionDataSourceConfig>(() => load?.() ?? NO_CONFIG, [load]);
+    useMemo<SessionState>(() => load?.() ?? NO_CONFIG, [load]);
+
+  const dataSourceConfigRef = useRef<DataSourceConfig | undefined>(
+    dataSourceConfigFromState,
+  );
 
   const handleDataSourceConfigChange =
     useCallback<DataSourceConfigChangeHandler>(
@@ -37,15 +41,16 @@ export const useSessionDataSource = ({
       ) => {
         if (confirmed !== false) {
           const { noChanges } = isConfigChanged(
-            dataSourceConfigFromState,
+            dataSourceConfigRef.current,
             config,
           );
           if (noChanges === false) {
+            dataSourceConfigRef.current = config;
             save?.(config, "datasource-config");
           }
         }
       },
-      [dataSourceConfigFromState, save],
+      [save],
     );
 
   const dataSource: DataSource = useMemo(() => {
@@ -75,7 +80,7 @@ export const useSessionDataSource = ({
       // bufferSize: 0,
       viewport: id,
       table: tableSchema.table,
-      ...dataSourceConfigFromState,
+      ...dataSourceConfigRef.current,
       columns,
       title,
     });
