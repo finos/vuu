@@ -34,7 +34,7 @@ async function copyLicense(outdir) {
           err,
         });
       }
-    }
+    },
   );
 }
 
@@ -115,7 +115,7 @@ async function writePackageJSON(packageJson) {
         } else {
           resolve();
         }
-      }
+      },
     );
     copyLicense(`${outdir}/${packageName}`);
   });
@@ -140,12 +140,12 @@ async function writeFileFromBundle(bundle, options) {
 
   console.log(`\n\tbundle size ${options.format}`);
   console.log(
-    `\t\t${padRight("JavaScript", 30)}${formatBytes(javascriptSize)}`
+    `\t\t${padRight("JavaScript", 30)}${formatBytes(javascriptSize)}`,
   );
   console.log(
     `\t\t${padRight("CSS", 30)}${formatBytes(
-      cssSize + cssInlineSize
-    )}   (${formatBytes(cssInlineSize)} injected)`
+      cssSize + cssInlineSize,
+    )}   (${formatBytes(cssInlineSize)} injected)`,
   );
 
   return { javascriptSize, cssSize, cssInlineSize };
@@ -165,12 +165,15 @@ export default async function main() {
 
     const bundle = await rollup({
       ...inputOptions,
-      external: buildExternals(packageJson).concat(JsxRuntime),
+      external: buildExternals(packageJson)
+        .concat(JsxRuntime)
+        // Something abour this library doesn't play well with rollup
+        .concat(["@dnd-kit/react", "@dnd-kit/react/sortable"]),
     });
     // await Promise.all(outputOptionsList.map(bundle.write));
     console.log(`\n${scopedPackageName}`);
     await Promise.all(
-      outputOptionsList.map((options) => writeFileFromBundle(bundle, options))
+      outputOptionsList.map((options) => writeFileFromBundle(bundle, options)),
     );
 
     await bundle.close();
