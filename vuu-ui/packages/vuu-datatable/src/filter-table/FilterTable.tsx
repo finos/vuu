@@ -28,8 +28,6 @@ export const FilterTable = ({
     window: targetWindow,
   });
 
-  console.log({ TableProps });
-
   const { filterBarProps } = useFilterTable({
     TableProps,
     FilterBarProps,

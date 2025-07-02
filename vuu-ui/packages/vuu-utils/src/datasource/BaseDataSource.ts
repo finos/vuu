@@ -169,6 +169,10 @@ export abstract class BaseDataSource
   protected confirmConfigChange() {
     if (this._impendingConfig) {
       this._config = this._impendingConfig;
+      console.log(
+        "%cclear impending config and emit config change",
+        "color:red",
+      );
       this._impendingConfig = undefined;
       this.emit("config", this._config, this.range, true);
     } else {

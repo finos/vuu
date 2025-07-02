@@ -80,10 +80,15 @@
   grid-row: 1 / span 2;
 }
 
+.vuuBasketSelector-floating-table {
+  z-index: var(--salt-zIndex-popout);
+}
+
 .vuuBasketSelector-searchContainer {
   /* --vuuInstrumentSearch-inputPadding: 0 12px; */
   --vuuInstrumentSearch-padding: 12px 0;
   --vuuMeasuredContainer-flex: 1 1 1px;
+  background-color: var(--salt-container-primary-background);
   border: solid 1px var(--salt-container-secondary-borderColor);
   border-radius: 4px;
   display: flex;

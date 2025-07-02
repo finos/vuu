@@ -422,9 +422,6 @@ export class ServerProxy {
   /**********************************************************************/
   private setViewRange(viewport: Viewport, message: VuuUIMessageOutViewRange) {
     const requestId = nextRequestId();
-    console.log(
-      `[ServerProxy] setViewRange (${message.range.from}:${message.range.to})`,
-    );
     infoEnabled &&
       info(`setViewRange (${message.range.from}:${message.range.to})`);
     const [serverRequest, rows, debounceRequest] = viewport.rangeRequest(

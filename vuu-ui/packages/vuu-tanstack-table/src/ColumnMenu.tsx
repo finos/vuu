@@ -50,8 +50,6 @@ export const ColumnMenu = ({
     ? column.columnDef.accessorKey
     : undefined;
 
-  console.log({ columnName });
-
   const { dataSource } = useData();
 
   const columnHeader = column.columnDef.header;
@@ -60,7 +58,6 @@ export const ColumnMenu = ({
     (e) => {
       e.stopPropagation();
       const { action } = (e.target as HTMLElement).dataset;
-      console.log(`useMenuAction ${action}`);
 
       switch (action) {
         case "group":

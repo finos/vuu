@@ -280,7 +280,6 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
 
   if (state.current === undefined) {
     state.current = cloneElementAddLayoutProps(children);
-    console.log({ state: state.current });
   } else if (children !== childrenRef.current) {
     state.current = cloneElementAddLayoutProps(children, state.current);
     childrenRef.current = children;

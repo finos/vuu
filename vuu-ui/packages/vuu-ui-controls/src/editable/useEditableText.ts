@@ -34,11 +34,9 @@ export const useEditableText = <T extends string | number | boolean = string>({
   onEdit,
   type = "string",
 }: EditableTextHookProps<T>) => {
-  // console.log("initial value: ", initialValue);
   const [editState, setEditState] = useState<EditState>({
     value: stringValueOf(value),
   });
-  // console.log("edit state: ", editState);
   const initialValueRef = useRef<string>(value?.toString() ?? "");
   const isDirtyRef = useRef(false);
 
@@ -46,7 +44,6 @@ export const useEditableText = <T extends string | number | boolean = string>({
     if (initialValueRef.current !== value?.toString()) {
       initialValueRef.current = stringValueOf(value);
       setEditState({ message: "", value: stringValueOf(value) });
-      console.log("initial value changed to: ", value);
     }
   }, [value]);
 
@@ -134,7 +131,6 @@ export const useEditableText = <T extends string | number | boolean = string>({
       );
       isDirtyRef.current = value !== initialValueRef.current;
       const result = clientSideEditValidationCheck?.(value, "change");
-      console.log({ result, value });
       setEditState({ value });
 
       onEdit?.(
@@ -142,7 +138,6 @@ export const useEditableText = <T extends string | number | boolean = string>({
         "change",
       );
       if (result?.ok === false) {
-        console.log("cell fails validation");
         setEditState({ value, message: result.messages?.join(",") });
       }
     },

@@ -124,10 +124,6 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
 
     const dataSourceConfig = combineFilters(this.config);
 
-    console.log(
-      `[VuuDataSource] subscribe,  send subscribe message range (${this._range.from}:${this._range.to})`,
-    );
-
     this.server?.subscribe(
       {
         ...dataSourceConfig,
@@ -190,11 +186,6 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
       } else {
         if (infoEnabled && message.type === "viewport-update") {
           info(
-            `handleMessageFromServer<viewport-update> range (${message.range?.from}:${message.range?.to}) rows ${message.rows?.at(0)?.[0]} - ${message.rows?.at(-1)?.[0]}`,
-          );
-        }
-        if (message.type === "viewport-update") {
-          console.log(
             `handleMessageFromServer<viewport-update> range (${message.range?.from}:${message.range?.to}) rows ${message.rows?.at(0)?.[0]} - ${message.rows?.at(-1)?.[0]}`,
           );
         }
@@ -447,6 +438,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
       };
 
       if (!wasGrouped && groupBy.length > 0 && this.viewport) {
+        // clear data from table whilst we wait for grouped data from server
         this._clientCallback?.({
           clientViewportId: this.viewport,
           mode: "batch",
