@@ -12,7 +12,12 @@ import {
   useLayoutOperation,
 } from "@vuu-ui/vuu-layout";
 import { LayoutJSON } from "@vuu-ui/vuu-utils";
-import { Dialog, DialogContent } from "@salt-ds/core";
+import {
+  Dialog,
+  DialogCloseButton,
+  DialogContent,
+  DialogHeader,
+} from "@salt-ds/core";
 
 export type ShowContextPanel = (
   componentType: string,
@@ -41,6 +46,12 @@ export const ContextPanelProvider = ({
   const { showComponentInContextPanel } = useLayoutOperation();
   const [dialog, setDialog] = useState<ReactElement | null>(null);
 
+  const handleOpenChange = useCallback((isOpen: boolean) => {
+    if (!isOpen) {
+      setDialog(null);
+    }
+  }, []);
+
   const showContextPanel = useCallback<ShowContextPanel>(
     (componentType, title, props) => {
       if (showContextPanelProp) {
@@ -56,13 +67,21 @@ export const ContextPanelProvider = ({
           "",
         );
         setDialog(
-          <Dialog open={true}>
+          <Dialog open={true} onOpenChange={handleOpenChange}>
+            <DialogCloseButton
+              appearance="transparent"
+              data-embedded
+              data-icon="close"
+              onClick={() => setDialog(null)}
+              sentiment="neutral"
+            />
+            <DialogHeader header={title} />
             <DialogContent>{component}</DialogContent>
           </Dialog>,
         );
       }
     },
-    [showComponentInContextPanel, showContextPanelProp],
+    [handleOpenChange, showComponentInContextPanel, showContextPanelProp],
   );
 
   return (
