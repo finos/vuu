@@ -50,6 +50,14 @@ export const getTableCell = (
   }
 };
 
+export const getHeaderCell = (
+  containerRef: RefObject<HTMLElement | null>,
+  columnName: string,
+) =>
+  containerRef.current?.querySelector(
+    `.vuuTableHeaderCell[data-column-name="${columnName}"]`,
+  ) as HTMLDivElement | null;
+
 export const getFocusedCell = (el: HTMLElement | Element | null) => {
   if (el?.role == "cell" || el?.role === "columnheader") {
     return el as HTMLDivElement;

@@ -56,7 +56,7 @@ export const useCellFocus = ({
               activeCell.setAttribute("tabindex", "0");
 
               // TODO no need to measure if we're navigating horizontally
-              state.cellPos = cellPos;
+              // state.cellPos = cellPos;
               state.el = activeCell;
               state.pos = getCellPosition(activeCell);
               state.outsideViewport = false;
@@ -65,6 +65,8 @@ export const useCellFocus = ({
                 state.placeholderEl.style.top = `${state.pos.top}px`;
               }
             }
+            state.cellPos = cellPos;
+
             // TODO needs to be scroll cell to accommodate horizontal virtualization
             requestScroll?.({ type: "scroll-row", rowIndex: cellPos[0] });
             activeCell.focus({ preventScroll: true });

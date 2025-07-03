@@ -1,13 +1,13 @@
 import {
+  ColumnDescriptor,
   Heading,
   ResizePhase,
-  RuntimeColumnDescriptor,
 } from "@vuu-ui/vuu-table-types";
 import { RefObject, useCallback, useRef, useState } from "react";
 
 export type ResizeHandler = (evt: MouseEvent, moveBy: number) => void;
 export interface CellResizeHookProps {
-  column: RuntimeColumnDescriptor | Heading;
+  column: ColumnDescriptor | Heading;
   onResize?: (phase: ResizePhase, columnName: string, width?: number) => void;
   rootRef: RefObject<HTMLDivElement | null>;
 }
@@ -15,7 +15,7 @@ export interface CellResizeHookProps {
 export interface CellResizeHookResult {
   isResizing: boolean;
   onDrag: (evt: MouseEvent, moveBy: number, totalDistanceMoved: number) => void;
-  onDragStart: (evt: React.MouseEvent) => void;
+  onDragStart: (evt: MouseEvent) => void;
   onDragEnd: (evt: MouseEvent) => void;
 }
 

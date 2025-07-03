@@ -246,3 +246,7 @@
 .vuuHighlight {
   color: blue;
 }
+
+.DragColumn {
+  box-shadow: var(--salt-overlayable-shadow-drag);
+}

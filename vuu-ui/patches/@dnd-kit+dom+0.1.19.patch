@@ -1,0 +1,13 @@
+diff --git a/node_modules/@dnd-kit/dom/utilities.js b/node_modules/@dnd-kit/dom/utilities.js
+index 107b71f..34b3c79 100644
+--- a/node_modules/@dnd-kit/dom/utilities.js
++++ b/node_modules/@dnd-kit/dom/utilities.js
+@@ -760,7 +760,7 @@ function computeStyles(element) {
+ 
+ // src/utilities/scroll/isFixed.ts
+ function isFixed(node, computedStyle = getComputedStyles(node, true)) {
+-  return computedStyle.position === "fixed" || computedStyle.position === "sticky";
++  return computedStyle.position === "fixed" /*|| computedStyle.position === "sticky"*/;
+ }
+ 
+ // src/utilities/scroll/isScrollable.ts

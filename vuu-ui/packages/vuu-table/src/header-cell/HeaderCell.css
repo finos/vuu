@@ -30,12 +30,17 @@
   }
 }
 
+.vuuTableHeaderCell.vuuDragging,
 .vuuTableHeaderCell:focus {
   outline: var(
     --vuuTableCell-outline,
     solid var(--salt-focused-outlineColor) 2px
   );
-  outline-offset: -2px;
+  outline-offset: -3px;
+}
+
+.vuuTableHeaderCell.vuuDragging {
+  height: var(--vuu-table-col-header-height);
 }
 
 .vuuTableHeaderCell-right {

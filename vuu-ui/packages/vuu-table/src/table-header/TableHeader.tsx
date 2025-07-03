@@ -1,6 +1,14 @@
 import { VuuSortType } from "@vuu-ui/vuu-protocol-types";
 import {
+  DragDropProvider,
+  DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
+  RestrictToHorizontalAxis,
+} from "@vuu-ui/vuu-utils";
+import {
   ColumnDescriptor,
+  ColumnMoveHandler,
   CustomHeader,
   CustomHeaderComponent,
   CustomHeaderElement,
@@ -11,7 +19,6 @@ import {
   TableHeadings,
 } from "@vuu-ui/vuu-table-types";
 import { isGroupColumn, isNotHidden } from "@vuu-ui/vuu-utils";
-import cx from "clsx";
 import {
   cloneElement,
   isValidElement,
@@ -40,7 +47,7 @@ export interface TableHeaderProps {
   headings: TableHeadings;
   onHeightMeasured: (height: number, count: number) => void;
   onResizeColumn: TableColumnResizeHandler;
-  onMoveColumn: (columns: ColumnDescriptor[]) => void;
+  onMoveColumn: ColumnMoveHandler;
   onMoveGroupColumn: (columns: ColumnDescriptor[]) => void;
   onRemoveGroupColumn: (column: RuntimeColumnDescriptor) => void;
   onSortColumn: ColumnSortHandler;
@@ -120,22 +127,18 @@ export const TableHeader = memo(
       }
     }, [columns, customHeader, headings.length, virtualColSpan]);
 
-    const {
-      draggableColumn,
-      draggedColumnIndex,
-      onClick,
-      onMouseDown,
-      setContainerRef,
-    } = useTableHeader({
-      allowDragColumnHeader,
-      columns,
-      customHeaderCount,
-      headings,
-      onHeightMeasured,
-      onMoveColumn,
-      onSortColumn,
-      tableConfig,
-    });
+    const { dragColumn, onClick, onDragEnd, onDragStart, setContainerRef } =
+      useTableHeader({
+        columns,
+        customHeaderCount,
+        headings,
+        onHeightMeasured,
+        onMoveColumn,
+        onSortColumn,
+        tableConfig,
+      });
+
+    const visibleColumns = columns.filter(isNotHidden);
 
     return (
       <div
@@ -157,46 +160,76 @@ export const TableHeader = memo(
             ))}
           </div>
         ))}
-        <div
-          className={`${classBase}-col-headers`}
-          role="row"
-          aria-rowindex={headings.length + 1}
+        <DragDropProvider // whats the difference between this and DnDContext
+          onDragEnd={onDragEnd}
+          onDragStart={onDragStart}
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore typing error from dnd-kit
+          modifiers={[RestrictToHorizontalAxis]}
+          sensors={[
+            KeyboardSensor.configure({
+              keyboardCodes: {
+                start: ["Space"],
+                cancel: ["Escape"],
+                end: ["Space", "Enter"],
+                left: ["ArrowLeft"],
+                right: ["ArrowRight"],
+                up: [],
+                down: [],
+              },
+            }),
+            PointerSensor,
+          ]}
         >
-          {virtualColSpan > 0 ? (
-            <div
-              role="cell"
-              className="vuuTableCell"
-              style={{ width: virtualColSpan }}
-            />
-          ) : null}
-          {columns.filter(isNotHidden).map((col, i) =>
-            isGroupColumn(col) ? (
-              <GroupHeaderCell
-                column={col}
-                data-index={i}
-                key={col.name}
-                onMoveColumn={onMoveGroupColumn}
-                onRemoveColumn={onRemoveGroupColumn}
-                onResize={onResizeColumn}
-              />
-            ) : (
-              <HeaderCell
-                className={cx({
-                  "vuuDraggable-dragAway": i === draggedColumnIndex,
-                })}
-                column={col}
-                data-index={i}
-                id={`${tableId}-col-${i}`}
-                key={col.name}
-                onClick={onClick}
-                onMouseDown={onMouseDown}
-                onResize={onResizeColumn}
-                showColumnHeaderMenus={showColumnHeaderMenus}
-              />
-            ),
-          )}
-          {draggableColumn}
-        </div>
+          <div
+            className={`${classBase}-col-headers`}
+            role="row"
+            aria-rowindex={headings.length + 1}
+          >
+            {/* {virtualColSpan > 0 ? (
+                <div
+                  role="cell"
+                  className="vuuTableCell"
+                  style={{ width: virtualColSpan }}
+                />
+              ) : null} */}
+            {visibleColumns.map((col, i) =>
+              isGroupColumn(col) ? (
+                <GroupHeaderCell
+                  column={col}
+                  id={`${tableId}-${col.name}`}
+                  key={col.name}
+                  onMoveColumn={onMoveGroupColumn}
+                  onRemoveColumn={onRemoveGroupColumn}
+                  onResize={onResizeColumn}
+                />
+              ) : (
+                <HeaderCell
+                  allowDragColumnHeader={allowDragColumnHeader}
+                  column={col}
+                  index={i}
+                  id={`${tableId}-${col.name}`}
+                  key={col.name}
+                  onClick={onClick}
+                  onResize={onResizeColumn}
+                  showColumnHeaderMenus={showColumnHeaderMenus}
+                />
+              ),
+            )}
+          </div>
+          <DragOverlay>
+            {dragColumn ? (
+              <div id={dragColumn.id} className="DragColumn">
+                <HeaderCell
+                  column={dragColumn.column}
+                  className="vuuDragging"
+                  id={`${tableId}-${dragColumn.id}-dragging`}
+                  index={-1}
+                />
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DragDropProvider>
         {customHeaders}
       </div>
     );

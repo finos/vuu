@@ -165,10 +165,9 @@ export default async function main() {
 
     const bundle = await rollup({
       ...inputOptions,
-      external: buildExternals(packageJson)
-        .concat(JsxRuntime)
-        // Something abour this library doesn't play well with rollup
-        .concat(["@dnd-kit/react", "@dnd-kit/react/sortable"]),
+      external: buildExternals(packageJson).concat(JsxRuntime),
+      // Something abour this library doesn't play well with rollup
+      // .concat(["@dnd-kit/react", "@dnd-kit/react/sortable"]),
     });
     // await Promise.all(outputOptionsList.map(bundle.write));
     console.log(`\n${scopedPackageName}`);

@@ -16,6 +16,7 @@ import {
 } from "@vuu-ui/vuu-table-extras";
 import {
   ColumnDescriptor,
+  ColumnMoveHandler,
   DataCellEditEvent,
   RuntimeColumnDescriptor,
   TableColumnResizeHandler,
@@ -58,7 +59,7 @@ import { useCellBlockSelection } from "./cell-block/useCellBlockSelection";
 import { CellFocusState } from "./CellFocusState";
 import { TableProps } from "./Table";
 import { updateTableConfig } from "./table-config";
-import { getAriaRowIndex } from "./table-dom-utils";
+import { getAriaRowIndex, getHeaderCell } from "./table-dom-utils";
 import { useCellEditing } from "./useCellEditing";
 import { FocusCell, useCellFocus } from "./useCellFocus";
 import { useDataSource } from "./useDataSource";
@@ -756,16 +757,14 @@ export const useTable = ({
     ],
   );
 
-  const onMoveColumn = useCallback(
-    (columns: ColumnDescriptor[]) => {
+  const onMoveColumn = useCallback<ColumnMoveHandler>(
+    (columnName, columns) => {
       const newTableConfig = {
         ...tableConfig,
         columns,
       };
 
       tableConfigRef.current = newTableConfig;
-
-      console.log(`useTable [onMoveColumn]`);
 
       dispatchTableModelAction({
         availableWidth,
@@ -774,11 +773,26 @@ export const useTable = ({
         dataSource,
       });
       onConfigChange?.(stripInternalProperties(newTableConfig));
+
+      setTimeout(() => {
+        const headerCell = getHeaderCell(containerRef, columnName);
+        if (headerCell) {
+          const { ariaColIndex } = headerCell;
+          const { ariaRowIndex } = headerCell.parentElement as HTMLDivElement;
+          const col = parseInt(ariaColIndex ?? "-1");
+          const row = parseInt(ariaRowIndex ?? "-1");
+          if (!isNaN(col) && col !== -1 && !isNaN(row) && row !== -1) {
+            focusCell([row, col]);
+          }
+        }
+      }, 300);
     },
     [
       availableWidth,
+      containerRef,
       dataSource,
       dispatchTableModelAction,
+      focusCell,
       onConfigChange,
       tableConfig,
     ],

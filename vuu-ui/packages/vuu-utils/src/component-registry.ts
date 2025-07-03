@@ -51,7 +51,10 @@ const viewsSet = new Set<string>();
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const layoutComponentsMap = new Map<string, FC<any>>();
 const cellRenderersMap = new Map<string, FC<TableCellRendererProps>>();
-const columnHeaderRenderersMap = new Map<string, FC<HeaderCellProps>>();
+const columnHeaderRenderersMap = new Map<
+  string,
+  FC<Omit<HeaderCellProps, "id" | "index">>
+>();
 const configEditorsMap = new Map<string, FC<ConfigurationEditorProps>>();
 const cellConfigPanelsMap = new Map<string, ConfigEditorComponent>();
 const editRuleValidatorsMap = new Map<string, EditRuleValidator>();
@@ -133,12 +136,13 @@ const isCellRenderer = (
 const isColumnHeaderContentRenderer = (
   type: ComponentType,
   component: unknown,
-): component is FC<HeaderCellProps> =>
+): component is FC<Omit<HeaderCellProps, "id" | "index">> =>
   type === "column-header-content-renderer";
 const isColumnHeaderLabelRenderer = (
   type: ComponentType,
   component: unknown,
-): component is FC<HeaderCellProps> => type === "column-header-label-renderer";
+): component is FC<Omit<HeaderCellProps, "id" | "index">> =>
+  type === "column-header-label-renderer";
 
 const isCellConfigPanel = (
   type: ComponentType,

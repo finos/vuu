@@ -79,7 +79,6 @@ export interface TableProps
    * Allow a block of cells to be selected. Typically to be copied.
    */
   allowCellBlockSelection?: boolean;
-  allowConfigEditing?: boolean;
   /**
    * Allow column headers to be dragged to re-arrange
    */
@@ -444,7 +443,8 @@ const TableCore = ({
           {showColumnHeaders ? (
             <TableHeader
               allowDragColumnHeader={allowDragColumnHeader}
-              columns={scrollProps.columnsWithinViewport}
+              // columns={scrollProps.columnsWithinViewport}
+              columns={columns}
               customHeader={customHeader}
               headings={headings}
               onHeightMeasured={onHeaderHeightMeasured}

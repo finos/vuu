@@ -2,6 +2,7 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { ColumnMenu } from "@vuu-ui/vuu-table-extras";
 import { HeaderCellProps } from "@vuu-ui/vuu-table-types";
+import { useSortable } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import {
   KeyboardEventHandler,
@@ -14,13 +15,22 @@ import { SortIndicator } from "../column-header-pill";
 import { ColumnResizer, useTableColumnResize } from "../column-resizing";
 import { useCell } from "../useCell";
 
+import { useForkRef } from "@salt-ds/core";
 import headerCellCss from "./HeaderCell.css";
 
 const classBase = "vuuTableHeaderCell";
 
+const doNothing = () => {
+  // dummy hook
+  return { ref: { current: null } };
+};
+
 export const HeaderCell = ({
+  allowDragColumnHeader = true,
   className: classNameProp,
   column,
+  id,
+  index,
   onClick,
   onResize,
   showColumnHeaderMenus = true,
@@ -32,7 +42,8 @@ export const HeaderCell = ({
     css: headerCellCss,
     window: targetWindow,
   });
-
+  const dragDropSortHook = allowDragColumnHeader ? useSortable : doNothing;
+  const { ref: sortableRef } = dragDropSortHook({ id, index });
   const { HeaderCellContentRenderer, HeaderCellLabelRenderer } = column;
   const rootRef = useRef<HTMLDivElement>(null);
   const { isResizing, ...resizeProps } = useTableColumnResize({
@@ -108,9 +119,12 @@ export const HeaderCell = ({
         [`${classBase}-resizing`]: isResizing,
         [`${classBase}-noMenu`]: showColumnHeaderMenus === false,
       })}
+      data-column-name={column.name}
+      data-index={index}
+      id={id}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
-      ref={rootRef}
+      ref={useForkRef<HTMLDivElement>(rootRef, sortableRef)}
       role="columnheader"
       style={style}
     >
