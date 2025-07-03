@@ -36,7 +36,7 @@ export const ContextPanel = ({
   className: classNameProp,
   expanded = false,
   content: contentProp,
-  id = VuuShellLocation.ContextPanel,
+  id,
   onClose,
   overlay = false,
   title,
@@ -95,6 +95,7 @@ export const ContextPanel = ({
       className={cx(classBase, className, "vuuScrollable", {
         [`${classBase}-expanded`]: expanded,
       })}
+      id={id}
     >
       <View className={`${classBase}-inner`} header={false} id={id}>
         <div className={`${classBase}-header`}>

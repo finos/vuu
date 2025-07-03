@@ -1,5 +1,10 @@
 .salt-theme.vuu-theme {
   .saltDialog {
-    width: fit-content;
+    width: fit-content
+  }
+
+  .saltDialogCloseButton {
+    right: var(--salt-spacing-100);
+    top: var(--salt-spacing-100);
   }
 }

@@ -1,7 +1,7 @@
 import { Flexbox, LayoutProvider, View } from "@vuu-ui/vuu-layout";
 import { ContextPanel } from "@vuu-ui/vuu-shell";
 import { Table } from "@vuu-ui/vuu-table";
-import { registerComponent } from "@vuu-ui/vuu-utils";
+import { registerComponent, VuuShellLocation } from "@vuu-ui/vuu-utils";
 import { ReactElement } from "react";
 
 import {
@@ -30,7 +30,7 @@ export const DemoTableContainer = ({
     <LayoutProvider>
       <Flexbox style={{ height, width: "100vw" }}>
         <View style={{ flex: 1 }}>{children}</View>
-        <ContextPanel />
+        <ContextPanel id={VuuShellLocation.ContextPanel} />
       </Flexbox>
     </LayoutProvider>
   );

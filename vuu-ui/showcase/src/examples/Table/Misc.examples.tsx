@@ -1,4 +1,6 @@
+import { Button, Input, InputProps } from "@salt-ds/core";
 import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
+import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 import {
   getSchema,
   LocalDataSourceProvider,
@@ -39,7 +41,6 @@ import {
   toColumnName,
   useData,
 } from "@vuu-ui/vuu-utils";
-import { Button, Input, InputProps } from "@salt-ds/core";
 import {
   CSSProperties,
   MouseEventHandler,
@@ -50,8 +51,9 @@ import {
 import { useAutoLoginToVuuServer } from "../utils";
 import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 
-import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 import "./Misc.examples.css";
+
+registerComponent("TableSettings", TableSettingsPanel, "view");
 
 export const TestTable = ({
   columnLayout,
