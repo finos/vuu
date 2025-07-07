@@ -99,8 +99,10 @@ export const assertFolderExists = (folderName, exitIfFalse) => {
     // ignore, we handle it below
   }
   if (!isFolder) {
-    console.error(`folder ${path.resolve(folderName)} not found`);
     if (exitIfFalse) {
+      console.error(
+        `folder ${path.resolve(folderName)} not found exitIfFalse ${exitIfFalse}`,
+      );
       process.exit(1);
     } else {
       return false;

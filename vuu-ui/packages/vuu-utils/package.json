@@ -1,28 +1,26 @@
 {
   "name": "@vuu-ui/vuu-utils",
-  "version": "0.13.7",
+  "version": "0.13.9",
   "author": "heswell",
   "main": "src/index.ts",
   "license": "Apache-2.0",
   "types": "src/index.ts",
   "scripts": {
     "build:dev": "node ../../scripts/run-build.mjs",
+    "build:rslib": "node ../../scripts/run-build-rslib.mjs",
     "build": "node ../../scripts/run-build-rollup.mjs",
     "test": "vitest run",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
-  "dependencies": {
-    "@dnd-kit/react": "^0.1.19"
-  },
   "devDependencies": {
-    "@vuu-ui/vuu-data-types": "0.13.7",
-    "@vuu-ui/vuu-table-types": "0.13.7",
-    "@vuu-ui/vuu-filter-types": "0.13.7",
-    "@vuu-ui/vuu-protocol-types": "0.13.7"
+    "@vuu-ui/vuu-data-types": "0.13.9",
+    "@vuu-ui/vuu-table-types": "0.13.9",
+    "@vuu-ui/vuu-filter-types": "0.13.9",
+    "@vuu-ui/vuu-protocol-types": "0.13.9"
   },
   "peerDependencies": {
     "@internationalized/date": "^3.0.0",
-    "@vuu-ui/vuu-filter-parser": "0.13.7",
+    "@vuu-ui/vuu-filter-parser": "0.13.9",
     "clsx": "^2.0.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
