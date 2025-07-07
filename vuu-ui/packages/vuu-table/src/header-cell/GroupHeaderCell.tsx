@@ -36,8 +36,12 @@ const switchIfChanged = (
 };
 
 export interface GroupHeaderCellProps
-  extends Omit<HeaderCellProps, "onDragStart" | "onDrag" | "onDragEnd"> {
+  extends Omit<
+    HeaderCellProps,
+    "id" | "index" | "onDragStart" | "onDrag" | "onDragEnd"
+  > {
   column: GroupColumnDescriptor;
+  id?: string;
   onMoveColumn?: (columns: ColumnDescriptor[]) => void;
   onRemoveColumn: (column: RuntimeColumnDescriptor) => void;
 }

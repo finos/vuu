@@ -16,7 +16,7 @@ export const DefaultRowGenerator: RowGeneratorFactory =
     return [`row ${index + 1}`].concat(
       Array(columns.length)
         .fill(true)
-        .map((v, j) => `value ${j + 2} @ ${index + 1}`),
+        .map((v, j) => `value ${j + 1} @ ${index + 1}`),
     );
   };
 

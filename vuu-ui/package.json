@@ -44,9 +44,12 @@
     "bump": "node ./scripts/version.mjs",
     "pub": "node ./scripts/publish.mjs",
     "pub:debug": "node ./scripts/publish.mjs --debug",
-    "typecheck": "tsc --noEmit --project tsconfig-typecheck.json"
+    "typecheck": "tsc --noEmit --project tsconfig-typecheck.json",
+    "patch-package": "patch-package",
+    "postinstall": "npm run patch-package"
   },
   "dependencies": {
+    "patch-package": "^8.0.0",
     "@types/jest": "^29.5.11",
     "@types/node": "^18.0.0",
     "@types/react": ">=18.3.3",

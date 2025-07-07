@@ -1,5 +1,4 @@
-import { DragDropProvider } from "@dnd-kit/react";
-import { useSortable } from "@dnd-kit/react/sortable";
+import { DragDropProvider, useSortable } from "@vuu-ui/vuu-utils";
 import { Checkbox, ListBox, Option, OptionProps, Switch } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";

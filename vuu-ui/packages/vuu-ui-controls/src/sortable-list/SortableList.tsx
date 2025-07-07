@@ -1,6 +1,5 @@
 import { ListBox, ListBoxProps, Option, OptionProps } from "@salt-ds/core";
-import { useSortable } from "@dnd-kit/react/sortable";
-import { DragDropProvider } from "@dnd-kit/react";
+import { DragDropProvider, useSortable } from "@vuu-ui/vuu-utils";
 import { useCallback, useRef } from "react";
 
 export const SortableOption = ({

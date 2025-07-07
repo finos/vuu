@@ -28,6 +28,11 @@ import type {
   MouseEvent,
 } from "react";
 
+export declare type ColumnMoveHandler = (
+  columnName: string,
+  columns: ColumnDescriptor[],
+) => void;
+
 export declare type GroupToggleTarget = "toggle-icon" | "group-column";
 
 export declare type TableSelectionModel =
@@ -288,8 +293,12 @@ export interface RuntimeColumnDescriptor extends ColumnDescriptor {
   align?: "left" | "right";
   ariaColIndex: number;
   CellRenderer?: FunctionComponent<TableCellRendererProps>;
-  HeaderCellLabelRenderer?: FunctionComponent<HeaderCellProps>;
-  HeaderCellContentRenderer?: FunctionComponent<HeaderCellProps>;
+  HeaderCellLabelRenderer?: FunctionComponent<
+    Omit<HeaderCellProps, "id" | "index">
+  >;
+  HeaderCellContentRenderer?: FunctionComponent<
+    Omit<HeaderCellProps, "id" | "index">
+  >;
   canStretch?: boolean;
   className?: string;
   clientSideEditValidationCheck?: DataValueValidationChecker;
@@ -453,9 +462,12 @@ export interface RowProps extends BaseRowProps {
 }
 
 export interface HeaderCellProps
-  extends Omit<HTMLAttributes<HTMLDivElement>, "onClick"> {
+  extends Omit<HTMLAttributes<HTMLDivElement>, "id" | "onClick"> {
+  allowDragColumnHeader?: boolean;
   classBase?: string;
   column: RuntimeColumnDescriptor;
+  id: string;
+  index: number;
   onClick?: (evt: React.MouseEvent | React.KeyboardEvent) => void;
   onResize?: TableColumnResizeHandler;
   showColumnHeaderMenus?: ShowColumnHeaderNMenus;

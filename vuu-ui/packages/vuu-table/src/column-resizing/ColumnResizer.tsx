@@ -1,6 +1,6 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { useCallback, useRef } from "react";
+import { RefCallback, useCallback, useRef } from "react";
 
 import columnResizerCss from "./ColumnResizer.css";
 
@@ -10,7 +10,12 @@ const baseClass = "vuuColumnResizer";
 export interface TableColumnResizerProps {
   onDrag: (evt: MouseEvent, moveBy: number, totalDistanceMoved: number) => void;
   onDragEnd: (evt: MouseEvent, totalDistanceMoved: number) => void;
-  onDragStart: (evt: React.MouseEvent) => void;
+  /**
+   *
+   * @param evt DOM MouseEvent
+   * @returns
+   */
+  onDragStart: (evt: MouseEvent) => void;
 }
 
 export const ColumnResizer = ({
@@ -24,10 +29,10 @@ export const ColumnResizer = ({
     css: columnResizerCss,
     window: targetWindow,
   });
-
   const positionRef = useRef({ start: 0, now: 0 });
+  const elementRef = useRef<HTMLDivElement | undefined>(undefined);
 
-  const onMouseMove = useCallback(
+  const onPointerMove = useCallback(
     (e: MouseEvent) => {
       if (e.stopPropagation) {
         e.stopPropagation();
@@ -49,29 +54,28 @@ export const ColumnResizer = ({
         onDrag(e, moveBy, distanceMoved);
       }
     },
-    [onDrag]
+    [onDrag],
   );
 
-  const onMouseUp = useCallback(
+  const onPointerUp = useCallback(
     (e: MouseEvent) => {
-      window.removeEventListener("mouseup", onMouseUp);
-      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointermove", onPointerMove);
 
       const { current: position } = positionRef;
       const distanceMoved = position.now - position.start;
       onDragEnd(e, distanceMoved);
     },
-    [onDragEnd, onMouseMove]
+    [onDragEnd, onPointerMove],
   );
 
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
+  const handlePointerDown = useCallback(
+    (e: MouseEvent) => {
       const { current: position } = positionRef;
       onDragStart(e);
       position.now = position.start = Math.round(e.clientX);
-
-      window.addEventListener("mouseup", onMouseUp);
-      window.addEventListener("mousemove", onMouseMove);
+      window.addEventListener("pointerup", onPointerUp);
+      window.addEventListener("pointermove", onPointerMove);
 
       if (e.stopPropagation) {
         e.stopPropagation();
@@ -81,8 +85,18 @@ export const ColumnResizer = ({
         e.preventDefault();
       }
     },
-    [onDragStart, onMouseMove, onMouseUp]
+    [onDragStart, onPointerMove, onPointerUp],
   );
 
-  return <div className={baseClass} onMouseDown={handleMouseDown} />;
+  const setRef = useCallback<RefCallback<HTMLDivElement>>(
+    (el) => {
+      if (el && elementRef.current === undefined) {
+        el.addEventListener("pointerdown", handlePointerDown);
+        elementRef.current = el;
+      }
+    },
+    [handlePointerDown],
+  );
+
+  return <div className={baseClass} ref={setRef} />;
 };
