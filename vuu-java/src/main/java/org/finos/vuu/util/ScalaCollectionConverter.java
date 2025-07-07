@@ -7,6 +7,8 @@ import java.util.Map;
 
 public class ScalaCollectionConverter {
 
+    private ScalaCollectionConverter() { }
+
     public static <K, V> scala.collection.immutable.Map<K, V> toScala(Map<K, V> m) {
         return scala.collection.immutable.Map.from(CollectionConverters.MapHasAsScala(m).asScala());
     }
