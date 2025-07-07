@@ -8,6 +8,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import json from "@rollup/plugin-json";
 
 import {
+  assertFolderExists,
   createFolder,
   readPackageJson,
   formatBytes,
@@ -55,7 +56,7 @@ const outputOptionsList = [
 
 const JsxRuntime = "react/jsx-runtime";
 
-async function writePackageJSON(packageJson) {
+async function writePackageJSON(packageJson, nestedPackages = false) {
   return new Promise((resolve, reject) => {
     const {
       files: filesFromPackageJson = [],
@@ -81,12 +82,19 @@ async function writePackageJSON(packageJson) {
       });
     });
 
-    const exports = {
-      ".": {
-        require: "./cjs/index.js",
-        import: "./esm/index.js",
-      },
-    };
+    const exports = nestedPackages
+      ? {
+          ".": {
+            require: "./cjs/packages/src/index.js",
+            import: "./esm/packages/src/index.js",
+          },
+        }
+      : {
+          ".": {
+            require: "./cjs/index.js",
+            import: "./esm/index.js",
+          },
+        };
 
     if (style) {
       exports[style] = {
@@ -166,8 +174,6 @@ export default async function main() {
     const bundle = await rollup({
       ...inputOptions,
       external: buildExternals(packageJson).concat(JsxRuntime),
-      // Something abour this library doesn't play well with rollup
-      // .concat(["@dnd-kit/react", "@dnd-kit/react/sortable"]),
     });
     // await Promise.all(outputOptionsList.map(bundle.write));
     console.log(`\n${scopedPackageName}`);
@@ -180,7 +186,9 @@ export default async function main() {
     fs.renameSync("esm", `${outPath}/esm`);
     fs.renameSync("cjs", `${outPath}/cjs`);
 
-    writePackageJSON(packageJson);
+    const nestedPackages = assertFolderExists(`${outPath}/esm/packages`);
+
+    writePackageJSON(packageJson, nestedPackages);
   } catch (error) {
     console.error(error);
   }
