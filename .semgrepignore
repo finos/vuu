@@ -12,8 +12,7 @@ vuu-ui/packages/vuu-datagrid-extras/src/column-expression-input/column-language-
 vuu-ui/packages/vuu-layout/src/layout-persistence/RemoteLayoutPersistenceManager.ts
 vuu-ui/packages/vuu-popups/src/menu/useContextMenu.tsx
 vuu-ui/packages/vuu-table-extras/src/cell-edit-validators/PatternValidator.ts
-vuu-ui/packages/vuu-ui-controls/src/list/Highlighter.tsx
-vuu-ui/packages/vuu-ui-controls/src/list/common-hooks/utils/filter-utils.ts
+vuu-ui/packages/vuu-ui-controls/src/highlighter/Highlighter.tsx
 vuu-ui/packages/vuu-utils/src/url-utils.ts
 vuu-ui/showcase/scripts/build-file-list.mjs
 vuu-ui/showcase/scripts/searchTargetsFromFileSystem.ts
