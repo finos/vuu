@@ -604,7 +604,7 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
     this.#columns = columns.map(GridTrack.fromTrackSize);
     this.#rows = rows.map(GridTrack.fromTrackSize);
 
-    console.log(`[GridTracks] 
+    console.log(`[GridTracks]
       columns ${columns.join(" ")}
       rows ${rows.join(" ")}`);
   }
@@ -942,8 +942,8 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
 
   toString() {
     return `
-      grid-template-columns: ${this.#columns.join(" ")} 
-      grid-template-rows: ${this.#rows.join(" ")} 
+      grid-template-columns: ${this.#columns.join(" ")}
+      grid-template-rows: ${this.#rows.join(" ")}
     `;
   }
 }
@@ -1347,16 +1347,6 @@ export class GridModel extends EventEmitter<GridModelEvents> {
 
   addChildItem(childItem: GridModelChildItem) {
     // TODO assert that item is within current columns, rows or extend these
-    console.log(
-      `[GridModel#${this.id}] addChildItem (${childItem.type}) #${childItem.id}  (parent: ${childItem.stackId})
-        is visible ? ${childItem.contentVisible}
-        resizeable ? ${childItem.resizeable}
-        gridArea ${JSON.stringify(childItem.gridArea)}
-      `,
-      {
-        childItem,
-      },
-    );
 
     // GridLayoutStackedItem may or may not be declared explicitly in JSX.
     // If not, it will be created post initial render, based on stackId
