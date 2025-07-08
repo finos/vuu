@@ -1,4 +1,5 @@
 import { useSortable } from "@dnd-kit/react/sortable";
+import { useInstance } from "@dnd-kit/react";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import { KeyboardSensor, PointerSensor } from "@dnd-kit/dom";
 import { RestrictToHorizontalAxis } from "@dnd-kit/abstract/modifiers";
@@ -9,6 +10,7 @@ export {
   KeyboardSensor,
   PointerSensor,
   RestrictToHorizontalAxis,
+  useInstance,
   useSortable,
 };
 

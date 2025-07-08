@@ -49,6 +49,7 @@
     "postinstall": "npm run patch-package"
   },
   "dependencies": {
+    "@dnd-kit/react": "^0.1.19",
     "patch-package": "^8.0.0",
     "@types/jest": "^29.5.11",
     "@types/node": "^18.0.0",
