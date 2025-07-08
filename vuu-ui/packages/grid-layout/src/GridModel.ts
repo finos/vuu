@@ -490,10 +490,6 @@ export class GridTrack {
   #pixels = -1;
 
   constructor(trackSize: TrackSize) {
-    console.log(
-      `%c[GridTrack] constructor ${trackSize}`,
-      "color: blue;font-weight: bold;",
-    );
     this.trackSize = trackSize;
   }
 

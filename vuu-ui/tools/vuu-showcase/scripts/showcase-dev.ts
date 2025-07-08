@@ -12,12 +12,7 @@ import { treeSourceFromFileSystem } from "./treeSourceFromFileSystem";
 const pathToExhibits = "./src/examples";
 
 // 1) Build the exhibit structure that will be used to create nav tree in showcase GUI
-const start = performance.now();
-const [treeSourceJson, tags] = treeSourceFromFileSystem(pathToExhibits);
-const end = performance.now();
-console.log(`[showcase-vite-api] building tree took ${end - start}ms`, {
-  tags,
-});
+const [treeSourceJson /*, tags*/] = treeSourceFromFileSystem(pathToExhibits);
 
 const watcher = new Watcher(pathToExhibits, {
   recursive: true,

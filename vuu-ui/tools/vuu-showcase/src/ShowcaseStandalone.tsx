@@ -122,9 +122,6 @@ export const ShowcaseStandalone = ({
       if (match) {
         console.log(
           `A component is trying to load ${match[0]} using salt css injection. The css plugin has not converted this file. See showcase-vite-api.ts`,
-          {
-            match,
-          },
         );
       } else {
         throw err;

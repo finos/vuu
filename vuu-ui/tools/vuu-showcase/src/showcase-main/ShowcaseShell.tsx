@@ -55,10 +55,8 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
   };
 
   const handleGridLayoutChanged = useCallback<GridLayoutChangeHandler>(
-    (gridId, gridLayoutDescriptor) => {
-      console.log(`[ShowcaseShell] Grid layout changed ${gridId}`, {
-        gridLayoutDescriptor,
-      });
+    (/*gridId, gridLayoutDescriptor*/) => {
+      // TODO
     },
     [],
   );
