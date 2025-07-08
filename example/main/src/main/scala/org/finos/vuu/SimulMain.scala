@@ -20,7 +20,7 @@ import org.finos.vuu.example.rest.client.{HttpClient, StubbedBackend}
 import org.finos.vuu.example.rest.module.RestModule
 import org.finos.vuu.example.virtualtable.module.VirtualTableModule
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
-import org.finos.vuu.net.http.VuuHttp2ServerOptions
+import org.finos.vuu.net.http.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
 import org.finos.vuu.net.{AlwaysHappyLoginValidator, Authenticator, LoggedInTokenValidator}
 import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
@@ -101,9 +101,8 @@ object httpServerOptions {
     val options = VuuHttp2ServerOptions()
       //only specify webroot if we want to load the source locally, we'll load it from the jar
       //otherwise
-      .withWebRoot(c.getString(ConfigKeys.webroot))
+      .withWebRoot(AbsolutePathWebRoot(c.getString(ConfigKeys.webroot), directoryListings = true))
       //don't leave me on in prod pls....
-      .withDirectoryListings(true)
       .withBindAddress("0.0.0.0")
       .withPort(8443)
 
