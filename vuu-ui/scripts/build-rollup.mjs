@@ -85,8 +85,8 @@ async function writePackageJSON(packageJson, nestedPackages = false) {
     const exports = nestedPackages
       ? {
           ".": {
-            require: "./cjs/packages/src/index.js",
-            import: "./esm/packages/src/index.js",
+            require: `./cjs/packages/${packageName}/src/index.js`,
+            import: `./esm/packages/${packageName}/src/index.js`,
           },
         }
       : {
