@@ -6,10 +6,11 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.{TableDefContainer, ViewServerModule}
 import org.finos.vuu.core._
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
-import org.finos.vuu.net.http.VuuHttp2ServerOptions
+import org.finos.vuu.net.http.{VuuHttp2ServerOptions, WebRootDisabled}
 import org.finos.vuu.net.json.JsonVsSerializer
 import org.finos.vuu.net.ws.WebSocketClient
 import org.finos.vuu.net.{AlwaysHappyLoginValidator, ViewServerClient, WebSocketViewServerClient}
+
 import java.security.SecureRandom
 
 class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
@@ -33,8 +34,8 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
 
     val config = VuuServerConfig(
       VuuHttp2ServerOptions()
+        .withWebRoot(WebRootDisabled())
         .withSslDisabled()
-        .withDirectoryListings(true)
         .withPort(http),
       VuuWebSocketOptions()
         .withBindAddress("0.0.0.0")
