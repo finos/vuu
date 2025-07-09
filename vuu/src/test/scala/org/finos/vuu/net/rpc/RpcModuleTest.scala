@@ -4,7 +4,7 @@ import org.finos.vuu.client.ClientHelperFns._
 import org.finos.vuu.core.module.{MyObjectParam, TableDefContainer, TestModule}
 import org.finos.vuu.core.{VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
 import org.finos.vuu.net.WebSocketViewServerClient
-import org.finos.vuu.net.http.VuuHttp2ServerOptions
+import org.finos.vuu.net.http.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
 import org.finos.vuu.net.json.JsonVsSerializer
 import org.finos.vuu.net.ws.WebSocketClient
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
@@ -42,9 +42,8 @@ class RpcModuleTest extends AnyFeatureSpec with Matchers {
 
       val config = VuuServerConfig(
         VuuHttp2ServerOptions()
-          .withWebRoot("vuu/src/main/resources/www")
+          .withWebRoot(AbsolutePathWebRoot("vuu/src/main/resources/www", directoryListings = true))
           .withSsl("vuu/src/main/resources/certs/cert.pem", "vuu/src/main/resources/certs/key.pem")
-          .withDirectoryListings(true)
           .withPort(https),
         VuuWebSocketOptions()
           .withUri("websocket")
