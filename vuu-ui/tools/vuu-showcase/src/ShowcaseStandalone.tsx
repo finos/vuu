@@ -12,6 +12,7 @@ import {
   loadTheme,
 } from "./shared-utils";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import cx from "clsx";
 
 import "./Showcase.css";
 import { DataLocation } from "./showcase-main/ShowcaseProvider";
@@ -45,6 +46,11 @@ const asDataLocation = (input: string | undefined): DataLocation => {
   }
 };
 
+type ContentState = {
+  component: ReactNode;
+  isMDX: boolean;
+};
+
 // The theme is passed as a queryString parameter in the url
 // themeMode and density are passed via the url hash, so can be
 // changed without refreshing the page
@@ -58,7 +64,7 @@ export const ShowcaseStandalone = ({
   const themeModeRef = useRef<ThemeMode>("light");
   const dataLocationRef = useRef<DataLocation>("local");
 
-  const [component, setComponent] = useState<ReactNode>(null);
+  const [contentState, setContentState] = useState<ContentState | null>(null);
   const [themeReady, setThemeReady] = useState(true);
 
   // We only need this once as entire page will refresh if theme changes
@@ -94,7 +100,7 @@ export const ShowcaseStandalone = ({
 
   useMemo(async () => {
     const url = new URL(document.location.href);
-    const { nodeData } = getTargetTreeNode<any>(url, treeSource);
+    const { nodeData } = getTargetTreeNode<unknown>(url, treeSource);
     try {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -106,13 +112,19 @@ export const ShowcaseStandalone = ({
         if (isComponentDescriptor(nodeData)) {
           const Component = targetModule[nodeData.componentName];
           if (Component) {
-            setComponent(<Component />);
+            setContentState({
+              component: <Component />,
+              isMDX: nodeData.path.endsWith("mdx"),
+            });
           } else {
             console.warn(`Example Componentnot found`);
           }
         } else {
           const Component = targetModule.default;
-          setComponent(<Component />);
+          setContentState({
+            component: <Component />,
+            isMDX: nodeData.path.endsWith("mdx"),
+          });
         }
       } else {
         // root app has been loaded with no example selection, therefore nothing to load into iframe
@@ -138,7 +150,13 @@ export const ShowcaseStandalone = ({
       >
         {dataLocationRef.current === "local" ? (
           <LocalDataSourceProvider>
-            <div className="vuuShowcase-StandaloneRoot">{component}</div>
+            <div
+              className={cx("vuuShowcase-StandaloneRoot", {
+                "vuuShowcase-mdx": contentState?.isMDX,
+              })}
+            >
+              {contentState?.component}
+            </div>
           </LocalDataSourceProvider>
         ) : (
           <VuuDataSourceProvider
@@ -148,7 +166,13 @@ export const ShowcaseStandalone = ({
             websocketUrl="ws://localhost:8091/websocket"
             // websocketUrl="wss://localhost:8090/websocket"
           >
-            <div className="vuuShowcase-StandaloneRoot">{component}</div>
+            <div
+              className={cx("vuuShowcase-StandaloneRoot", {
+                "vuuShowcase-mdx": contentState?.isMDX,
+              })}
+            >
+              {contentState?.component}
+            </div>
           </VuuDataSourceProvider>
         )}
       </SaltProvider>

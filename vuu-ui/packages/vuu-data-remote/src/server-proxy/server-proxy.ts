@@ -904,46 +904,46 @@ export class ServerProxy {
       case "TABLE_ROW":
         {
           const viewportRowMap = groupRowsByViewport(body.rows);
-          // if (process.env.NODE_ENV === "development" && debugEnabled) {
-          const [firstRow, secondRow] = body.rows;
-          if (body.rows.length === 0) {
-            infoEnabled && info("handleMessageFromServer TABLE_ROW 0 rows");
-          } else if (firstRow?.rowIndex === -1) {
-            if (body.rows.length === 1) {
-              if (firstRow.updateType === "SIZE") {
-                infoEnabled &&
-                  info(
-                    `handleMessageFromServer [${firstRow.viewPortId}] TABLE_ROW SIZE ONLY ${firstRow.vpSize}`,
-                  );
-                infoEnabled &&
-                  info(
-                    `handleMessageFromServer [${firstRow.viewPortId}] TABLE_ROW SIZE ONLY ${firstRow.vpSize}`,
-                  );
+          if (process.env.NODE_ENV === "development" && debugEnabled) {
+            const [firstRow, secondRow] = body.rows;
+            if (body.rows.length === 0) {
+              infoEnabled && info("handleMessageFromServer TABLE_ROW 0 rows");
+            } else if (firstRow?.rowIndex === -1) {
+              if (body.rows.length === 1) {
+                if (firstRow.updateType === "SIZE") {
+                  infoEnabled &&
+                    info(
+                      `handleMessageFromServer [${firstRow.viewPortId}] TABLE_ROW SIZE ONLY ${firstRow.vpSize}`,
+                    );
+                  infoEnabled &&
+                    info(
+                      `handleMessageFromServer [${firstRow.viewPortId}] TABLE_ROW SIZE ONLY ${firstRow.vpSize}`,
+                    );
+                } else {
+                  infoEnabled &&
+                    info(
+                      `handleMessageFromServer [${firstRow.viewPortId}] TABLE_ROW SIZE ${firstRow.vpSize} rowIdx ${firstRow.rowIndex}`,
+                    );
+                }
               } else {
                 infoEnabled &&
                   info(
-                    `handleMessageFromServer [${firstRow.viewPortId}] TABLE_ROW SIZE ${firstRow.vpSize} rowIdx ${firstRow.rowIndex}`,
+                    `handleMessageFromServer TABLE_ROW ${
+                      body.rows.length
+                    } rows, SIZE ${firstRow.vpSize}, [${
+                      secondRow?.rowIndex
+                    }] - [${body.rows[body.rows.length - 1]?.rowIndex}]`,
                   );
               }
             } else {
               infoEnabled &&
                 info(
-                  `handleMessageFromServer TABLE_ROW ${
-                    body.rows.length
-                  } rows, SIZE ${firstRow.vpSize}, [${
-                    secondRow?.rowIndex
+                  `handleMessageFromServer TABLE_ROW ${body.rows.length} rows [${
+                    firstRow?.rowIndex
                   }] - [${body.rows[body.rows.length - 1]?.rowIndex}]`,
                 );
             }
-          } else {
-            infoEnabled &&
-              info(
-                `handleMessageFromServer TABLE_ROW ${body.rows.length} rows [${
-                  firstRow?.rowIndex
-                }] - [${body.rows[body.rows.length - 1]?.rowIndex}]`,
-              );
           }
-          // }
 
           for (const [viewportId, rows] of Object.entries(viewportRowMap)) {
             const viewport = viewports.get(viewportId);

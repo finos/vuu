@@ -1,0 +1,75 @@
+# VuuDataRemote
+
+## Viewport Range management
+
+Sequence of operations is:
+
+### 1. client sends `setViewRange` message via worker
+
+### 2. ServerProxy calls viewport.rangeRequest
+
+this will return either or both the following
+
+- a serverRequest `CHANGE_VP_RANGE` to request data for a new range
+- a set of rows from local cache to satisfy client range request
+
+The following logic is employed:
+
+call dataWindow.setClientRange, this will return two values:
+
+- serverDataRequired
+- clientRows
+
+  serverDataRequired is a true/false, if true we need to make a request to server
+  clientRows are rows to be returned directly to client
+
+  The following logic is employed:
+
+  if dataWindow already contains all rows in clientRange, return those rows
+  call bufferBreakout to set serverDataRequired - if new range comes withnin 25% of existing range, return true
+
+back in Viewport ...
+if serverDataRequired
+
+- check if request already pending that would cover this range
+- if so ignore
+- if not, build new server request for 'full range' (client range plus buffer)
+
+schedule a task to await the server range request ACK (see 6. below)
+
+// check to see if we need to throttle requests
+
+- new range jumped beyond last range before data received.
+
+reset keys to match new range
+if clientRows
+
+- store lastRowsReturnedToClient
+- convert VuuDataRows to DataSOurceRows
+
+return serverRequest and clientRows to ServerProxy
+
+### 4. send request to server (IF APPROPRIATE)
+
+### 5. return rows to client (IF APPROPRIATE)
+
+### 6. Receive CHANGE_VP_RANGE_SUCCESS (IF 4.)
+
+    call viewport.completeOperation to complete the task scheduled earlier
+        - call dataWindow.setRange(fullRange)
+        - reset cache to new range dimensions, purge any rows outside range
+
+        - mark pendingRangeRequest as acked
+
+### 7. Receive TABLE_ROW
+
+- call viewport.updateRows (on each viewport for which we've receibed data)
+  for each row
+
+  - dataWindow.setAtIndex - increments rowsWithinRange if we dataWindow did not have this row - return true if this update is within clientRange
+
+- call processUpdates
+  for each viewport with updates:
+  - viewport.getClientRows
+    always sends data rows for complete clientRange
+  - postMessageToClient ("viewport-update")
