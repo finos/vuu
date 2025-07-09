@@ -8,13 +8,13 @@ export interface ClockProps {
   milliseconds?: number;
 }
 
+export type TimeUnit = "minutes" | "seconds" | "ms";
 export class Clock {
   #millisSinceEpoch = 0;
 
   constructor(props?: ClockProps) {
     const today = new Date();
     const offset = today.getTimezoneOffset();
-    console.log({ offset });
     if (props) {
       const dateProvided =
         typeof props.year === "number" &&
@@ -48,7 +48,20 @@ export class Clock {
     }
   }
 
+  advance(value: number, units: TimeUnit = "ms") {
+    const multiplier = units === "ms" ? 1 : units === "seconds" ? 1000 : 60_000;
+    this.#millisSinceEpoch += value * multiplier;
+  }
+
   toString() {
     return new Date(this.#millisSinceEpoch).toISOString();
+  }
+
+  get now() {
+    return this.#millisSinceEpoch;
+  }
+
+  get date() {
+    return new Date(this.#millisSinceEpoch);
   }
 }

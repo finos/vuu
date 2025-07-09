@@ -22,6 +22,14 @@ const formatConfigByTimePatterns: Record<TimePattern, DateTimeFormatConfig> = {
     locale: "en-GB",
     options: { ...baseTimeFormatOptions, hour12: true },
   },
+  "hh:mm:ss.ms": {
+    locale: "en-GB",
+    options: {
+      ...baseTimeFormatOptions,
+      hour12: false,
+      fractionalSecondDigits: 3,
+    },
+  },
 };
 
 // Date format config
@@ -72,7 +80,7 @@ export function formatDate(pattern: DateTimePattern): (d: Date) => string {
 
 export function getDateFormatter(
   locale: string,
-  options?: Intl.DateTimeFormatOptions
+  options?: Intl.DateTimeFormatOptions,
 ) {
   return new DateFormatter(locale, options);
 }
