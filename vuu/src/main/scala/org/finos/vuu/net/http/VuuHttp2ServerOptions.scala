@@ -12,7 +12,7 @@ trait VuuSecurityOptions {
 sealed trait VuuHttp2ServerWebRootType
 case class WebRootDisabled() extends VuuHttp2ServerWebRootType
 case class ClassPathWebRoot() extends VuuHttp2ServerWebRootType
-case class AbsolutePathWebRoot(path: String, directoryListings: Boolean) extends VuuHttp2ServerWebRootType
+case class AbsolutePathWebRoot(path: String, directoryListings: Boolean = false) extends VuuHttp2ServerWebRootType
 
 trait VuuHttp2ServerOptions {
   def sslEnabled: Boolean
