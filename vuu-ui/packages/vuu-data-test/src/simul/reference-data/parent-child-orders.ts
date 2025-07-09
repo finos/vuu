@@ -1,4 +1,5 @@
 import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
+import { Clock } from "@vuu-ui/vuu-utils";
 import { random } from "../../data-utils";
 import { buildDataColumnMap, Table } from "../../Table";
 import { schemas } from "../simul-schemas";
@@ -21,12 +22,14 @@ const avgChildOrderPerOrder = Math.round(
 );
 const childMaxMultiple = 10;
 
+const clock = new Clock({ year: 2025, month: 4, day: 15, hours: 8 });
+
 const start = performance.now();
 
 let childOrderId = 0;
 
 for (let i = 0; i < PARENT_ORDER_COUNT; i++) {
-  const now = +new Date();
+  clock.advance(random(0, 100));
   const instrument = instrumentsData[random(0, instrumentsData.length - 1)];
 
   const orderQuantity = 1000 * random(1, 100);
@@ -46,13 +49,14 @@ for (let i = 0; i < PARENT_ORDER_COUNT; i++) {
   const exchange = instrument[instrumentMap.exchange];
   const parentOrderIdAsInt = i;
   const parentOrderId = `${parentOrderIdAsInt}`;
-  const lastUpdate = now;
   const price = 100;
   const quantity = orderQuantity;
   const ric = instrument[instrumentMap.ric];
   const side = sides[random(0, sides.length - 1)];
   const status = orderStatus;
   const volLimit = 100;
+  const lastUpdate = clock.now;
+  const created = clock.now;
 
   const childOrderCount = random(
     0,
@@ -89,7 +93,6 @@ for (let i = 0; i < PARENT_ORDER_COUNT; i++) {
       childFilledQty,
       childId,
       childIdAsInt,
-      lastUpdate,
       childOpenQty,
       parentOrderId,
       price,
@@ -99,6 +102,8 @@ for (let i = 0; i < PARENT_ORDER_COUNT; i++) {
       childOrderStatus,
       strategy,
       volLimit,
+      lastUpdate,
+      created,
     ];
 
     childOrderData.push(row);
@@ -114,7 +119,6 @@ for (let i = 0; i < PARENT_ORDER_COUNT; i++) {
     filledQty,
     parentOrderId,
     parentOrderIdAsInt,
-    lastUpdate,
     openQty,
     price,
     quantity,
@@ -122,6 +126,8 @@ for (let i = 0; i < PARENT_ORDER_COUNT; i++) {
     side,
     status,
     volLimit,
+    lastUpdate,
+    created,
   ];
 
   parentOrderData.push(row);

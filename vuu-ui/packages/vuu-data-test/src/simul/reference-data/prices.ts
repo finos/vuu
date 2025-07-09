@@ -15,6 +15,8 @@ type open = number;
 type phase = "C";
 type ric = string;
 type scenario = "close";
+type lastUpdate = number;
+type created = number;
 
 export type PricesDataRow = [
   ask,
@@ -26,7 +28,9 @@ export type PricesDataRow = [
   open,
   phase,
   ric,
-  scenario
+  scenario,
+  lastUpdate,
+  created,
 ];
 
 const { bid, bidSize, ask, askSize } = buildDataColumnMap(schemas, "prices");
@@ -37,13 +41,17 @@ const pricesUpdateGenerator = new BaseUpdateGenerator({
   askSize,
 });
 
+const now = Date.now();
+const lastUpdate = now;
+const created = now;
+
 // const start = performance.now();
 // Create 100_000 Instruments
 const requiredInstrumentFields = ["ric", "price"] as const;
 const pricesData: Array<PricesDataRow> = instrumentsData.map((instrument) => {
   const { ric, price: priceSeed } = requiredInstrumentFields.reduce(
     (obj, f) => ({ ...obj, [f]: instrument[InstrumentColumnMap[f]] }),
-    {} as { ric: string; price: number }
+    {} as { ric: string; price: number },
   );
   const spread = random(0, 10);
 
@@ -56,7 +64,22 @@ const pricesData: Array<PricesDataRow> = instrumentsData.map((instrument) => {
   const open = priceSeed + random(0, 1) / 10;
   const phase = "C";
   const scenario = "close";
-  return [ask, askSize, bid, bidSize, close, last, open, phase, ric, scenario];
+  const lastUpdate = now;
+  const created = now;
+  return [
+    ask,
+    askSize,
+    bid,
+    bidSize,
+    close,
+    last,
+    open,
+    phase,
+    ric,
+    scenario,
+    lastUpdate,
+    created,
+  ];
 });
 
 // prettier-ignore
@@ -84,6 +107,8 @@ for (const [,,,lastTrade,ric] of basketConstituentData) {
       phase,
       ric as string,
       scenario,
+      lastUpdate,
+      created
     ]);
   }
 }
@@ -95,7 +120,7 @@ export const pricesTable = new Table(
   schemas.prices,
   pricesData,
   buildDataColumnMap(schemas, "prices"),
-  pricesUpdateGenerator
+  pricesUpdateGenerator,
 );
 
 export { pricesData };

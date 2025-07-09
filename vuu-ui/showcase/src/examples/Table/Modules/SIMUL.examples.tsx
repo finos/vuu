@@ -58,6 +58,16 @@ const getDefaultColumnConfig = (
       };
     case "wishlist":
       return { editable: true };
+    case "created":
+    case "lastUpdate":
+      return {
+        type: {
+          name: "date/time",
+          formatting: {
+            pattern: { time: "hh:mm:ss.ms" },
+          },
+        },
+      };
   }
 };
 

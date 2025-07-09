@@ -10,7 +10,11 @@ const supportedDatePatterns = [
   "MMMM dd, yyyy",
 ] as const;
 
-const supportedTimePatterns = ["hh:mm:ss", "hh:mm:ss a"] as const;
+const supportedTimePatterns = [
+  "hh:mm:ss",
+  "hh:mm:ss a",
+  "hh:mm:ss.ms",
+] as const;
 
 export const supportedDateTimePatterns = {
   date: supportedDatePatterns,
