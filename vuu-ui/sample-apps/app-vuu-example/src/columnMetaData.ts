@@ -128,11 +128,15 @@ const columnMetaData: { [key: string]: Partial<ColumnDescriptor> } = {
     name: "clOrderId",
     width: 60,
   },
+
   created: {
     label: "Created",
     name: "created",
     type: {
       name: "date/time",
+      formatting: {
+        pattern: { time: "hh:mm:ss.ms" },
+      },
     },
   },
   currency: {
@@ -197,8 +201,12 @@ const columnMetaData: { [key: string]: Partial<ColumnDescriptor> } = {
     name: "lastUpdate",
     type: {
       name: "date/time",
+      formatting: {
+        pattern: { time: "hh:mm:ss.ms" },
+      },
     },
   },
+
   lotSize: {
     label: "Lot Size",
     name: "lotSize",

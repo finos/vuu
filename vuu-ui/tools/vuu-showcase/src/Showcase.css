@@ -22,13 +22,27 @@ body {
 }
 
 .vuuShowcase-StandaloneRoot {
-  height: 100vh;
-  /** this prevents root being displaced by component margin */
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100vw;
   background-color: var(--salt-container-primary-background);
+
+  &:not(.vuuShowcase-mdx){
+    height: 100vh;
+    left: 0;
+    top: 0;
+    /** this prevents root being displaced by component margin */
+    position: absolute;
+    width: 100vw;      
+  }
+
+  &.vuuShowcase-mdx {
+    padding: var(--salt-spacing-400);
+    height: auto;
+  }
+}
+
+#root:has(.vuuShowcase-mdx){
+  height: 100vh;
+  width: 100vw;
+  overflow-x:auto;
 }
 
 .vuuShowcase-StandaloneRoot:has(> [data-showcase-center]) {
