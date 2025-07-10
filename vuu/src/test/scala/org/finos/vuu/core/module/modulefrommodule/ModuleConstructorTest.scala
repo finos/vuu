@@ -6,7 +6,7 @@ import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.{VuuSecurityOptions, VuuServerConfig, VuuThreadingOptions, VuuWebSocketOptions}
 import org.finos.vuu.net.{AlwaysHappyLoginValidator, Authenticator, ViewServerMessage}
-import org.finos.vuu.net.http.VuuHttp2ServerOptions
+import org.finos.vuu.net.http.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -32,10 +32,9 @@ class ModuleConstructorTest extends AnyFeatureSpec with Matchers with GivenWhenT
         VuuHttp2ServerOptions()
           //only specify webroot if we want to load the source locally, we'll load it from the jar
           //otherwise
-          .withWebRoot("webRoot")
+          .withWebRoot(AbsolutePathWebRoot("webRoot", directoryListings = true))
           .withSsl("certPath", "keyPath")
           //don't leave me on in prod pls....
-          .withDirectoryListings(true)
           .withBindAddress("0.0.0.0")
           .withPort(8443),
         VuuWebSocketOptions()

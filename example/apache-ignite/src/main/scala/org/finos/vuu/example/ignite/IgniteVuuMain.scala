@@ -17,7 +17,7 @@ import org.finos.vuu.core.module.vui.VuiStateModule
 import org.finos.vuu.example.ignite.loader.IgniteOrderGenerator
 import org.finos.vuu.example.ignite.module.IgniteOrderDataModule
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
-import org.finos.vuu.net.http.VuuHttp2ServerOptions
+import org.finos.vuu.net.http.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
 import org.finos.vuu.net.{AlwaysHappyLoginValidator, Authenticator, LoggedInTokenValidator}
 import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
@@ -63,12 +63,8 @@ object IgniteVuuMain extends App with StrictLogging {
 
   val config = VuuServerConfig(
     VuuHttp2ServerOptions()
-      //only specify webroot if we want to load the source locally, we'll load it from the jar
-      //otherwise
-      .withWebRoot(webRoot)
+      .withWebRoot(AbsolutePathWebRoot(webRoot, directoryListings = true))
       .withSsl(certPath, keyPath)
-      //don't leave me on in prod pls....
-      .withDirectoryListings(true)
       .withBindAddress("0.0.0.0")
       .withPort(8443),
     VuuWebSocketOptions()

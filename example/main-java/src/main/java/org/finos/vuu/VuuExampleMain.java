@@ -19,6 +19,7 @@ import org.finos.vuu.net.AlwaysHappyLoginValidator;
 import org.finos.vuu.net.Authenticator;
 import org.finos.vuu.net.LoggedInTokenValidator;
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator;
+import org.finos.vuu.net.http.AbsolutePathWebRoot;
 import org.finos.vuu.net.http.VuuHttp2ServerOptions;
 import org.finos.vuu.plugin.Plugin;
 import org.finos.vuu.state.MemoryBackedVuiStateStore;
@@ -54,13 +55,9 @@ public class VuuExampleMain
         final String keyPath = "example/main/src/main/resources/certs/key.pem";
 
         final VuuServerConfig config = new VuuServerConfig(
-                        VuuHttp2ServerOptions.apply()
-                                .withWebRoot(webRoot)
-                        //if we specify a web root, it means we will serve the files from a directory on the file system
-                        //if we don't the files will be served from the vuu-ui jar directly.
-                        //.withWebRoot(".")
+                VuuHttp2ServerOptions.apply()
+                        .withWebRoot(new AbsolutePathWebRoot(webRoot, true))
                         .withSsl(certPath, keyPath)
-                        .withDirectoryListings(true)
                         .withPort(8443),
                 VuuWebSocketOptions.apply()
                         .withUri("websocket")
