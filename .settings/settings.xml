@@ -1,13 +1,9 @@
 <settings>
     <servers>
-        <!--server>
-            <id>github</id>
-            <privateKey>${user.home}/.ssh/id_dsa</privateKey>
-        </server-->
         <server>
             <id>ossrh</id>
-            <username>${env.OSSRH_USERNAME}</username>
-            <password>${env.OSSRH_PASSWORD}</password>
+            <username>${env.CI_DEPLOY_USERNAME}</username>
+            <password>${env.CI_DEPLOY_PASSWORD}</password>
         </server>
     </servers>
 </settings>

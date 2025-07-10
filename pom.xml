@@ -70,17 +70,6 @@
         </dependencies>
     </dependencyManagement>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
@@ -103,6 +92,11 @@
         <jmh.version>1.36</jmh.version>
         <guava.version>32.0.1-jre</guava.version>
         <maven.gpg.plugin.version>3.1.0</maven.gpg.plugin.version>
+        <gpg.executable>gpg</gpg.executable>
+        <publish.server.id>ossrh</publish.server.id>
+        <release.goals>install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish</release.goals>
+        <github.global.server>github</github.global.server>
+        <github.oauth.token>${env.GITHUB_TOKEN}</github.oauth.token>
     </properties>
 
     <modules>
@@ -246,6 +240,7 @@
                                     <gpgArguments>
                                         <arg>--pinentry-mode</arg>
                                         <arg>loopback</arg>
+                                        <arg>--digest-algo=SHA512</arg>
                                     </gpgArguments>
                                 </configuration>
                             </execution>
@@ -287,20 +282,26 @@
                     <artifactId>maven-install-plugin</artifactId>
                     <version>2.5.2</version>
                 </plugin>
+
                 <plugin>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>2.8.2</version>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>3.1.1</version>
+                    <configuration>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <releaseProfiles>release</releaseProfiles>
+                        <goals>${release.goals}</goals>
+                    </configuration>
                 </plugin>
 
                 <plugin>
-                    <groupId>org.sonatype.plugins</groupId>
-                    <artifactId>nexus-staging-maven-plugin</artifactId>
-                    <version>1.6.13</version>
+                    <groupId>org.sonatype.central</groupId>
+                    <artifactId>central-publishing-maven-plugin</artifactId>
+                    <version>0.7.0</version>
                     <extensions>true</extensions>
                     <configuration>
-                        <serverId>ossrh</serverId>
-                        <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                        <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        <publishingServerId>${publish.server.id}</publishingServerId>
+                        <autoPublish>true</autoPublish>
                     </configuration>
                 </plugin>
 
