@@ -199,9 +199,8 @@ export class ViewportCache {
   }
 
   // TODO do we really need it
-  setRowCount(/*rowCount: number*/) {
-    // console.log(`[ViewportCache] setRowCount ${rowCount}`);
-    //
+  setRowCount(rowCount: number) {
+    console.log(`[ViewportCache] setRowCount ${rowCount}`);
   }
 
   private buildKeyMap() {
