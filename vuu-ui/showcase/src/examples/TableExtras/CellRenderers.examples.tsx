@@ -15,6 +15,9 @@ const columnMap = {
   price: 8,
 };
 
+const timestamp = 0;
+const isNew = false;
+
 const defaultFormatting = { decimals: 2 };
 const defaultRenderer = {
   name: "vuu.price-move-background",
@@ -45,7 +48,7 @@ export const DefaultBackgroundCell = ({
 
   const [value, setValue] = useState<string>("100.00");
   // prettier-ignore
-  const [row, setRow] = useState<DataSourceRow>([0, 0, true, false, 1, 0, "key", 0, 100.00]);
+  const [row, setRow] = useState<DataSourceRow>([0, 0, true, false, 1, 0, "key", 0,  timestamp, isNew, 100.00]);
 
   const handleChange = useCallback<FormEventHandler<HTMLInputElement>>(
     (evt) => setValue((evt.target as HTMLInputElement).value),
@@ -55,7 +58,8 @@ export const DefaultBackgroundCell = ({
     if (typeof value === "string") {
       const numericValue = parseFloat(value);
       if (!isNaN(numericValue)) {
-        setRow([0, 0, true, false, 1, 0, "key", 0, numericValue]);
+        // prettier-ignore
+        setRow([0, 0, true, false, 1, 0, "key", 0,  timestamp, isNew, numericValue]);
       }
     }
   }, []);

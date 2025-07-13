@@ -1,5 +1,4 @@
 import { ServerProxySubscribeMessage } from "@vuu-ui/vuu-data-types";
-import { ServerToClientCreateViewPortSuccess } from "@vuu-ui/vuu-protocol-types";
 import { describe, expect, it } from "vitest";
 import { Viewport } from "../src/server-proxy/viewport";
 import "./global-mocks";
@@ -9,6 +8,7 @@ import {
   sizeRow,
   testSchema,
 } from "./test-utils";
+import { VuuViewportCreateResponse } from "@vuu-ui/vuu-protocol-types";
 
 const config_options = {
   aggregations: [],
@@ -147,7 +147,7 @@ describe("Viewport", () => {
   describe("subscribed", () => {
     it("sets status to subscribed", () => {
       const vp = new Viewport(constructor_options, noop);
-      const vuuMessageBody: ServerToClientCreateViewPortSuccess = {
+      const vuuMessageBody: VuuViewportCreateResponse = {
         ...vuu_config_options,
         range: { from: 0, to: 50 },
         type: "CREATE_VP_SUCCESS",
@@ -160,7 +160,7 @@ describe("Viewport", () => {
 
     it("echos back subscription details, enriching values sent by server", () => {
       const vp = new Viewport(constructor_options, noop);
-      const vuuMessageBody: ServerToClientCreateViewPortSuccess = {
+      const vuuMessageBody: VuuViewportCreateResponse = {
         ...vuu_config_options,
         range: { from: 0, to: 50 },
         type: "CREATE_VP_SUCCESS",

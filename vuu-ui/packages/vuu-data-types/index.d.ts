@@ -177,6 +177,8 @@ type Depth = number;
 type ChildCount = number;
 type RowKey = string;
 export declare type IsSelected = number;
+type Timestamp = number;
+type IsNew = boolean;
 
 export declare type DataSourceRow = [
   RowIndex,
@@ -187,6 +189,8 @@ export declare type DataSourceRow = [
   ChildCount,
   RowKey,
   IsSelected,
+  Timestamp,
+  IsNew,
   ...VuuRowDataItemType[],
 ];
 

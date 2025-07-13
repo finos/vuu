@@ -47,6 +47,10 @@ export interface ColumnMap {
   [columnName: string]: number;
 }
 
+export interface ReverseColumnMap {
+  [columnIndex: number]: string;
+}
+
 const SORT_ASC = "asc";
 const NO_HEADINGS: TableHeadings = [];
 const DEFAULT_COL_WIDTH = 100;
@@ -285,6 +289,9 @@ export const metadataKeys = {
   COUNT: 5,
   KEY,
   SELECTED: 7,
+  // TIMESTAMP: 8,
+  // IS_NEW: 9,
+  // count: 10,
   count: 8,
   // TODO following only used in datamodel
   PARENT_IDX: "parent_idx",

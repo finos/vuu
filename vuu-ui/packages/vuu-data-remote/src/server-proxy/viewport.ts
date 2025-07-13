@@ -475,6 +475,11 @@ export class Viewport {
           serverDataRequired ${serverDataRequired ? "Y" : "N"}
           ${clientRows.length} rows returned from local buffer`,
         );
+      // console.log(
+      //   `[Viewport] updated: window client (${this.dataWindow.clientRange.from}:${this.dataWindow.clientRange.to}), full (${this.dataWindow.range.from}:${this.dataWindow.range.to})
+      //     serverDataRequired ${serverDataRequired ? "Y" : "N"}
+      //     ${clientRows.length} rows returned from local cache (${clientRows.map((r) => r.rowIndex).join(",")})`,
+      // );
 
       let debounceRequest: DataSourceDebounceRequest | undefined;
       // Don't use zero as a range cap, it's is likely a transient count reported immediately

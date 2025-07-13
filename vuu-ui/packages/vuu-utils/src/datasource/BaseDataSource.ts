@@ -198,11 +198,28 @@ export abstract class BaseDataSource
     }
   }
 
-  set impendingConfig(config: WithBaseFilter<WithFullConfig>) {
-    this.awaitingConfirmationOfConfigChanges = true;
-    const configChanges = this.applyConfig(config);
-    if (configChanges) {
-      this.emit("config", this.config, this.range, false, configChanges);
+  get impendingConfig() {
+    return this._impendingConfig;
+  }
+  /**
+   * This can be set by subclass in cases where we want to await ACK of async request
+   * before we go ahead and apply change to config.
+   * It is set in place of 'config' itself and it is then the responsibility of the client
+   * to call 'confirmConfigChange' once confirmation of the change is received.
+   * Client can check 'isAwaitingConfirmationOfConfigChange' to see if a change is pending
+   * confirmation.
+   */
+  set impendingConfig(config: undefined | WithBaseFilter<WithFullConfig>) {
+    if (config) {
+      this.awaitingConfirmationOfConfigChanges = true;
+      const configChanges = this.applyConfig(config);
+      if (configChanges) {
+        this.emit("config", this.config, this.range, false, configChanges);
+      }
+    } else {
+      throw Error(
+        `[BaseDataSource] ''unsetting impendingConfig is not currently supported`,
+      );
     }
   }
 

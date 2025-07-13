@@ -7,6 +7,9 @@ export type GroupMap = { [key: string]: GroupMap | KeyList };
 
 const { DEPTH, IS_EXPANDED, KEY } = metadataKeys;
 
+const timestamp = 0;
+const isNew = false;
+
 export const collapseGroup = (
   key: string,
   groupedRows: readonly DataSourceRow[],
@@ -88,6 +91,8 @@ const dataRowsFromGroups2 = (
       childCount(groupMap[key]),
       groupKey,
       0,
+      timestamp,
+      isNew,
     ];
     // TODO whats this
     row[groupIndices[depth - 1]] = key;
@@ -185,6 +190,8 @@ const dataRowsFromGroups = (groupTree: GroupMap, groupIndices: number[]) => {
       childCount(groupTree[key]),
       `$root|${key}`,
       0,
+      timestamp,
+      isNew,
     ];
     row[groupIndices[depth]] = key;
     rows.push(row);
