@@ -2,10 +2,13 @@
 import type {
   DataSourceRow,
   DataSourceRowObject,
+  Selection,
 } from "@vuu-ui/vuu-data-types";
 import type { MutableRefObject } from "react";
 import { ColumnMap, metadataKeys } from "./column-utils";
-import { isRowSelected } from "./selection-utils";
+import { getSelectionStatus, isRowSelected } from "./selection-utils";
+import { IKeySet } from "./keyset";
+import { VuuRow } from "@vuu-ui/vuu-protocol-types";
 
 const { IS_LEAF, KEY, IDX } = metadataKeys;
 
@@ -80,4 +83,24 @@ export const asDataSourceRowObject: RowToObjectMapper = (
   }
 
   return rowObject;
+};
+
+const NO_SELECTION: Selection = [];
+export const vuuRowToDataSourceRow = (
+  { rowIndex, rowKey, sel: isSelected, ts, data }: VuuRow,
+  keys: IKeySet,
+  selectedRows: Selection = NO_SELECTION,
+) => {
+  return [
+    rowIndex,
+    keys.keyFor(rowIndex),
+    true,
+    false,
+    0,
+    0,
+    rowKey,
+    isSelected ? getSelectionStatus(selectedRows, rowIndex) : 0,
+    ts,
+    false, // IsNew
+  ].concat(data) as DataSourceRow;
 };

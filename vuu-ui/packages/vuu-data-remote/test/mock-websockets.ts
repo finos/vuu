@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { vi } from "vitest";
 import { VuuServerMessageCallback } from "../src/WebSocketConnection";
 import { EventEmitter } from "@vuu-ui/vuu-utils";
@@ -51,9 +52,9 @@ class BaseWebSocket {
 export class MockWebSocketOpenFirstTime extends BaseWebSocket {
   constructor() {
     super();
-    console.log(`MockWebSocketOpenFirstTime`);
+    // console.log(`MockWebSocketOpenFirstTime`);
     setTimeout(() => {
-      console.log(`call openHandler`);
+      // console.log(`call openHandler`);
       this?.openHandler();
     }, 0);
     vi.advanceTimersByTimeAsync(1);

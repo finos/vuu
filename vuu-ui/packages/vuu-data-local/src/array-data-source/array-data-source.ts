@@ -74,7 +74,19 @@ export interface ArrayDataSourceConstructorProps
 const toDataSourceRow =
   (key: number) =>
   (data: VuuRowDataItemType[], index: number): DataSourceRow => {
-    return [index, index, true, false, 1, 0, String(data[key]), 0, ...data];
+    return [
+      index,
+      index,
+      true,
+      false,
+      1,
+      0,
+      String(data[key]),
+      0,
+      0, // ts
+      false, // isNew
+      ...data,
+    ];
   };
 
 // const isError = (err: unknown): err is { message: string } =>

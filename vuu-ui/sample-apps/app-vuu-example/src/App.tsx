@@ -25,7 +25,6 @@ import { getDefaultColumnConfig } from "./columnMetaData";
 // import { useRpcResponseHandler } from "./useRpcResponseHandler";
 
 import "./App.css";
-// import { RestDataSourceProvider } from "@vuu-ui/vuu-data-react/src/datasource-provider/RestDataSourceProvider";
 
 registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
 registerComponent("TableSettings", TableSettingsPanel, "view");

@@ -1,7 +1,13 @@
 import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 
 const EMPTY: number[] = [];
-export class KeySet {
+
+export interface IKeySet {
+  keyFor: (rowIndex: number) => number;
+  reset: (range: VuuRange) => void;
+}
+
+export class KeySet implements IKeySet {
   private keys = new Map<number, number>();
   private nextKeyValue = 0;
   private range: VuuRange;

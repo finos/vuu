@@ -9,6 +9,7 @@ import {
 import { DebugGridItem } from "../html/components/DebugGridItem";
 
 import "./GridLayout.examples.css";
+import { GridLayoutStackedItem } from "@heswell/grid-layout/src/GridLayoutStackedtem";
 
 export const ShowCaseLayoutNestedGrid = () => {
   const paletteItems = useMemo<GridPaletteItem[]>(

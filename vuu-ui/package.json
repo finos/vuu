@@ -10,6 +10,7 @@
   },
   "type": "module",
   "workspaces": [
+    "experiments/**",
     "packages/**",
     "sample-apps/**",
     "tools/vite-plugin-inline-css",

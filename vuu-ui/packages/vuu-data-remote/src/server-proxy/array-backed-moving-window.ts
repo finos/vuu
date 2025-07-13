@@ -163,6 +163,8 @@ export class ArrayBackedMovingWindow {
         const end = Math.min(originalRange.from, to);
         clientRows = this.internalData.slice(from - offset, end - offset);
       }
+    } else if (this.rowsWithinRange > 0) {
+      // console.log(`[ArrayBackedMovingWindow] has some client rows but not all`);
     }
 
     const serverDataRequired = this.bufferBreakout(from, to);

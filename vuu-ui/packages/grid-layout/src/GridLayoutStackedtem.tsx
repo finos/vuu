@@ -62,6 +62,8 @@ export const GridLayoutStackedItem = ({
 
   console.log(`[GridLayoutStackedItem#${id}] render`);
 
+  console.log(`[GridLayoutStackedItem#${id}] render`);
+
   const { registerTabsForDragDrop } = useDragContext();
 
   useEffect(() => {
