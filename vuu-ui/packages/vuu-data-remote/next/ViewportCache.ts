@@ -120,7 +120,7 @@ export class ViewportCache {
     // console.log(
     //   `[ViewportCache]  addRows range=${JSON.stringify(this.range)} clientRange=${JSON.stringify(this.#clientRange)}`,
     // );
-    const keyMapPreviousRows = this.buildKeyMap();
+    // const keyMapPreviousRows = this.buildKeyMap();
     const clientRange = this.#clientRange;
     const hadAllRows = this.hasAllRows(clientRange);
 

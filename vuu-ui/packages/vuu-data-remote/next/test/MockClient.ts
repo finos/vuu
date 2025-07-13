@@ -85,7 +85,7 @@ class MockClientImpl implements IClient {
   }
 
   receiveDataFromServer: DataSourceSubscribeCallback = (message) => {
-    const now = new Date().getTime();
+    // const now = new Date().getTime();
     // console.log(`[MockClient] ${now} receive data from server `);
     if (message.type === "viewport-update") {
       // console.table(message.rows);
