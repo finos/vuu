@@ -178,16 +178,17 @@ export default async function main() {
     // await Promise.all(outputOptionsList.map(bundle.write));
     console.log(`\n${scopedPackageName}`);
     await Promise.all(
-      outputOptionsList.map((options) => writeFileFromBundle(bundle, options)),
+      outputOptionsList.map((options) =>
+        writeFileFromBundle(bundle, {
+          ...options,
+          dir: `${outPath}/${options.dir}`,
+        }),
+      ),
     );
 
     await bundle.close();
 
-    fs.renameSync("esm", `${outPath}/esm`);
-    fs.renameSync("cjs", `${outPath}/cjs`);
-
     const nestedPackages = assertFolderExists(`${outPath}/esm/packages`);
-
     writePackageJSON(packageJson, nestedPackages);
   } catch (error) {
     console.error(error);
