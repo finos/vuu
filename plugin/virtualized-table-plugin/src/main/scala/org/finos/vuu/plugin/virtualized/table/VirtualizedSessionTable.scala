@@ -6,7 +6,7 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.SessionTableDef
 import org.finos.vuu.core.table.{ColumnValueProvider, InMemSessionDataTable, RowData, RowWithData, TableData, TablePrimaryKeys}
 import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.provider.{JoinTableProvider, VirtualizedProvider}
+import org.finos.vuu.provider.JoinTableProvider
 
 class VirtualizedSessionTable(clientSessionId: ClientSessionId,
                               sessionTableDef: SessionTableDef,
