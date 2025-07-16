@@ -2,6 +2,7 @@ import {
   ClientToServerMenuRowRPC,
   VuuLink,
   VuuMenu,
+  VuuRpcViewportResponse,
 } from "@vuu-ui/vuu-protocol-types";
 import { isVuuMenuRpcRequest } from "@vuu-ui/vuu-utils";
 import { Table, joinTables } from "../Table";
@@ -14,6 +15,8 @@ import { pricesTable } from "./reference-data/prices";
 import {
   parentOrdersTable,
   childOrdersTable,
+  startGeneratingNewOrders,
+  stopGeneratingNewOrders,
 } from "./reference-data/parent-child-orders";
 import { schemas, type SimulTableName } from "./simul-schemas";
 
@@ -117,12 +120,49 @@ const cancelOrder: ServiceHandler = async (rpcRequest) => {
   }
 };
 
+const startOrders = async () => {
+  startGeneratingNewOrders();
+  return {
+    type: "VIEW_PORT_RPC_REPONSE",
+    action: {
+      type: "VP_RPC_SUCCESS",
+    },
+    method: "???",
+    namedParams: {},
+    params: [],
+    vpId: "",
+  } as VuuRpcViewportResponse;
+};
+const stopOrders = async () => {
+  stopGeneratingNewOrders();
+  return {
+    type: "VIEW_PORT_RPC_REPONSE",
+    action: {
+      type: "VP_RPC_SUCCESS",
+    },
+    method: "???",
+    namedParams: {},
+    params: [],
+    vpId: "",
+  } as VuuRpcViewportResponse;
+};
+
 const services: Record<SimulTableName, RpcService[] | undefined> = {
   ...undefinedTables,
   orders: [
     {
       rpcName: "CANCEL_ORDER",
       service: cancelOrder,
+    },
+  ],
+  parentOrders: [
+    {
+      rpcName: "startGeneratingNewOrders",
+      service: startOrders,
+    },
+    {
+      rpcName: "stopGeneratingNewOrders",
+      service: stopOrders,
     },
   ],
 };

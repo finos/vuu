@@ -273,4 +273,12 @@ export class TickingArrayDataSource extends ArrayDataSource {
       });
     }
   }
+
+  freeze() {
+    super.freeze();
+  }
+
+  unfreeze() {
+    super.unfreeze();
+  }
 }

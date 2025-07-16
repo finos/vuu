@@ -169,11 +169,22 @@ export interface VuuViewportRangeResponse {
   type: "CHANGE_VP_RANGE_SUCCESS";
   viewPortId: string;
 }
-export interface ServerToClientDisableViewPortSuccess {
+
+export interface VuuViewportDisableRequest {
+  type: "DISABLE_VP";
+  viewPortId: string;
+}
+export interface VuuViewportDisableResponse {
   type: "DISABLE_VP_SUCCESS";
   viewPortId: string;
 }
-export interface ServerToClientEnableViewPortSuccess {
+
+export interface VuuViewportEnableRequest {
+  type: "ENABLE_VP";
+  viewPortId: string;
+}
+
+export interface VuuViewportEnableResponse {
   type: "ENABLE_VP_SUCCESS";
   viewPortId: string;
 }
@@ -187,6 +198,26 @@ export interface VuuViewportRemoveResponse {
   type: "REMOVE_VP_SUCCESS";
   viewPortId: string;
 }
+
+export interface VuuViewportFreezeRequest {
+  type: "FREEZE_VP";
+  viewPortId: string;
+}
+
+export interface VuuViewportFreezeResponse {
+  type: "FREEZE_VP_SUCCESS";
+  viewPortId: string;
+}
+export interface VuuViewportUnfreezeRequest {
+  type: "UNFREEZE_VP";
+  viewPortId: string;
+}
+
+export interface VuuViewportUnfreezeResponse {
+  type: "UNFREEZE_VP_SUCCESS";
+  viewPortId: string;
+}
+
 export interface ServerToClientSelectSuccess {
   type: "SET_SELECTION_SUCCESS";
   vpId: string;
@@ -215,8 +246,8 @@ export declare type ServerMessageBody =
   | VuuViewportCreateResponse
   | VuuViewportChangeResponse
   | VuuViewportRangeResponse
-  | ServerToClientDisableViewPortSuccess
-  | ServerToClientEnableViewPortSuccess
+  | VuuViewportDisableResponse
+  | VuuViewportEnableResponse
   | VuuViewportRemoveResponse
   | ServerToClientSelectSuccess
   | VuuTableMetaResponse
@@ -249,14 +280,6 @@ export interface ClientToServerLogin {
 export interface ClientToServerHeartBeat {
   type: "HB_RESP";
   ts: number;
-}
-export interface ClientToServerDisable {
-  type: "DISABLE_VP";
-  viewPortId: string;
-}
-export interface ClientToServerEnable {
-  type: "ENABLE_VP";
-  viewPortId: string;
 }
 export interface ClientToServerSelection {
   type: "SET_SELECTION";
@@ -300,8 +323,8 @@ export declare type ClientMessageBody =
   | ClientToServerAuth
   | ClientToServerLogin
   | ClientToServerHeartBeat
-  | ClientToServerDisable
-  | ClientToServerEnable
+  | VuuViewportDisableRequest
+  | VuuViewportEnableRequest
   | VuuTableListRequest
   | VuuTableMetaRequest
   | VuuViewportCreateRequest

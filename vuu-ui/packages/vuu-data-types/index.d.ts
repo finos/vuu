@@ -439,6 +439,7 @@ export type DataSourceConfigChangeHandler = (
 
 export declare type DataSourceEvents = {
   config: DataSourceConfigChangeHandler;
+  freeze: (isFrozen: boolean, freezeTimeStamp: number) => void;
   optimize: (optimize: OptimizeStrategy) => void;
   "page-count": (pageCount: number) => void;
   range: (range: Range) => void;
@@ -546,6 +547,25 @@ export interface DataSource
   closeTreeNode: (keyOrIndex: string | number, cascade?: boolean) => void;
   columns: string[];
   config: WithBaseFilter<WithFullConfig>;
+  /**
+   * Applies a time filter to the viewport such that no new records created after the
+   * freeze are sent to client. This makes client's view stable, even when large numbers
+   * of new records are being created. The price is that view becomes stale. DataSource
+   * implementation is not required to support this functionality.
+   */
+  freeze?: () => void;
+  /**
+   * Removes the 'freeze' filter. See 'freeze' above.
+   */
+  unfreeze?: () => void;
+  /**
+   * see 'freeze' above. true if 'freeze' has previoulsy been called.
+   */
+  isFrozen?: boolean;
+  /**
+   * see 'freeze' above. If frozen, the time at which freeze was applied.
+   */
+  freezeTimestamp?: number | undefined;
   status: DataSourceStatus;
   /**
    *
@@ -831,6 +851,12 @@ export interface VuuUIMessageOutSetTitle extends ViewportMessageOut {
   type: "setTitle";
 }
 
+export interface VuuUIMessageOutFreeze extends ViewportMessageOut {
+  type: "FREEZE_VP";
+}
+export interface VuuUIMessageOutUnfreeze extends ViewportMessageOut {
+  type: "UNFREEZE_VP";
+}
 export interface VuuUIMessageOutDisable extends ViewportMessageOut {
   type: "disable";
 }
@@ -869,6 +895,8 @@ export interface VuuUIMessageOutConfig extends ViewportMessageOut {
 export declare type VuuUIMessageOutViewport =
   | VuuUIMessageOutCloseTreeNode
   | VuuUIMessageOutConfig
+  | VuuUIMessageOutFreeze
+  | VuuUIMessageOutUnfreeze
   | VuuUIMessageOutDisable
   | VuuUIMessageOutEnable
   | VuuUIMessageOutOpenTreeNode

@@ -51,12 +51,14 @@ export class Table extends EventEmitter<TableEvents> {
     return this.#schema;
   }
 
-  insert(row: VuuRowDataItemType[]) {
+  insert(row: VuuRowDataItemType[], emitEvent = true) {
     const index = this.#data.length;
     this.#data.push(row);
     const key = row[this.#indexOfKey] as string;
     this.#index.set(key, index);
-    this.emit("insert", row);
+    if (emitEvent) {
+      this.emit("insert", row);
+    }
   }
 
   findByKey(key: string) {
