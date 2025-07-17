@@ -69,8 +69,6 @@ export const DataSourceStats = ({
   const to = numberFormatter.format(range.lastRowInViewport);
   const value = numberFormatter.format(size);
 
-  console.log(`range = ${JSON.stringify(range)}`);
-
   if (size === 0) {
     return (
       <div className={className}>
