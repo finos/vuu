@@ -199,8 +199,8 @@ export class ViewportCache {
   }
 
   // TODO do we really need it
-  setRowCount(rowCount: number) {
-    console.log(`[ViewportCache] setRowCount ${rowCount}`);
+  setRowCount(_: number) {
+    // console.log(`[ViewportCache] setRowCount ${rowCount}`);
   }
 
   private buildKeyMap() {
@@ -213,12 +213,12 @@ export class ViewportCache {
   private identifyNewRows(keySetPreviousRows: Record<string, number>) {
     // we should avaoid the copy that happens here, just iterate the (client) rows directly
     const clientRows = this.getRows(this.#clientRange);
-    for (const { rowIndex, rowKey, ts } of clientRows) {
+    for (const { rowIndex, rowKey } of clientRows) {
       const prevIndex = keySetPreviousRows[rowKey];
       if (prevIndex === undefined) {
-        console.log(`${rowKey} at [${rowIndex}] created at ${ts} is new`);
+        // console.log(`${rowKey} at [${rowIndex}] created at ${ts} is new`);
       } else if (prevIndex !== rowIndex) {
-        console.log(`${rowKey} at [${rowIndex}] has moved from [${prevIndex}]`);
+        // console.log(`${rowKey} at [${rowIndex}] has moved from [${prevIndex}]`);
       }
     }
   }

@@ -59,8 +59,9 @@ export const useEditableText = <T extends string | number | boolean = string>({
           }));
         } else {
           setEditState((state) => ({ ...state, message: undefined }));
+          const typedValue = getTypedValue(value, type, true);
           const response = await onEdit?.(
-            { editType: "commit", value, isValid: true },
+            { editType: "commit", value: typedValue, isValid: true },
             "commit",
           );
           if (response === true) {
@@ -76,7 +77,7 @@ export const useEditableText = <T extends string | number | boolean = string>({
         dispatchCustomEvent(target, "vuu-commit");
       }
     },
-    [clientSideEditValidationCheck, editState, onEdit],
+    [clientSideEditValidationCheck, editState, onEdit, type],
   );
 
   const handleKeyDown = useCallback(
@@ -123,7 +124,7 @@ export const useEditableText = <T extends string | number | boolean = string>({
   const handleChange = useCallback<FormEventHandler>(
     (evt) => {
       const { value } = evt.target as HTMLInputElement;
-      const typedValue = getTypedValue(value, type);
+      const typedValue = getTypedValue(value, type, true);
       console.log(
         `[useEditableText] handleChange '${value}' typedValue ${typedValue}
           initial value ${initialValueRef.current}
@@ -134,7 +135,11 @@ export const useEditableText = <T extends string | number | boolean = string>({
       setEditState({ value });
 
       onEdit?.(
-        { editType: "change", isValid: result?.ok !== false, value },
+        {
+          editType: "change",
+          isValid: result?.ok !== false,
+          value: typedValue,
+        },
         "change",
       );
       if (result?.ok === false) {

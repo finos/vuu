@@ -950,8 +950,10 @@ export class Viewport {
   }
 }
 
+const isNew = false;
+
 const toClientRow = (
-  { rowIndex, rowKey, sel: isSelected, data }: VuuRow,
+  { rowIndex, rowKey, sel: isSelected, data, ts }: VuuRow,
   keys: KeySet,
   selectedRows: Selection,
 ) => {
@@ -964,11 +966,13 @@ const toClientRow = (
     0,
     rowKey,
     isSelected ? getSelectionStatus(selectedRows, rowIndex) : 0,
+    ts,
+    isNew,
   ].concat(data) as DataSourceRow;
 };
 
 const toClientRowTree = (
-  { rowIndex, rowKey, sel: isSelected, data }: VuuRow,
+  { rowIndex, rowKey, sel: isSelected, data, ts }: VuuRow,
   keys: KeySet,
   selectedRows: Selection,
 ) => {
@@ -984,5 +988,7 @@ const toClientRowTree = (
     count,
     rowKey,
     isSelected ? getSelectionStatus(selectedRows, rowIndex) : 0,
+    ts,
+    isNew,
   ].concat(rest) as DataSourceRow;
 };
