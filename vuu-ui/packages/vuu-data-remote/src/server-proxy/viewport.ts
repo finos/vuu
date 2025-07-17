@@ -25,8 +25,8 @@ import {
   ClientToServerCloseTreeNode,
   VuuCreateVisualLink,
   VuuViewportCreateRequest,
-  ClientToServerDisable,
-  ClientToServerEnable,
+  VuuViewportDisableRequest,
+  VuuViewportEnableRequest,
   ClientToServerOpenTreeNode,
   VuuRemoveVisualLink,
   ClientToServerSelection,
@@ -651,7 +651,7 @@ export class Viewport {
     return {
       type: Message.ENABLE_VP,
       viewPortId: this.serverViewportId,
-    } as ClientToServerEnable;
+    } as VuuViewportEnableRequest;
   }
 
   disable(requestId: string) {
@@ -661,7 +661,7 @@ export class Viewport {
     return {
       type: Message.DISABLE_VP,
       viewPortId: this.serverViewportId,
-    } as ClientToServerDisable;
+    } as VuuViewportDisableRequest;
   }
 
   setConfig(requestId: string, config: WithFullConfig) {

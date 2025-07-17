@@ -1,4 +1,3 @@
-import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { Clock } from "@vuu-ui/vuu-utils";
 import { random } from "../../data-utils";
 import { buildDataColumnMap, Table } from "../../Table";
@@ -9,29 +8,40 @@ import { orderStatus as statusValues } from "./orderStatus";
 import { sides } from "./sides";
 import { algos } from "./algos";
 
-const childOrderData: VuuRowDataItemType[][] = [];
-const parentOrderData: VuuRowDataItemType[][] = [];
-
 const instrumentMap = buildDataColumnMap(schemas, "instruments");
 
-const PARENT_ORDER_COUNT = 75_000;
-const CHILD_ORDER_COUNT = 200_000;
+// const PARENT_ORDER_COUNT = 75_000;
+const PARENT_ORDER_COUNT = 5_000;
+const CHILD_ORDER_COUNT = 20_000;
+// const CHILD_ORDER_COUNT = 200_000;
 
 const avgChildOrderPerOrder = Math.round(
   CHILD_ORDER_COUNT / PARENT_ORDER_COUNT,
 );
 const childMaxMultiple = 10;
 
-const clock = new Clock({ year: 2025, month: 4, day: 15, hours: 8 });
+const clock = new Clock().goBack(120, "minutes");
+console.log(`starting order generation at ${clock}`);
 
-const start = performance.now();
+export const parentOrdersTable = new Table(
+  schemas.parentOrders,
+  [],
+  buildDataColumnMap(schemas, "parentOrders"),
+);
 
-let childOrderId = 0;
+export const childOrdersTable = new Table(
+  schemas.childOrders,
+  [],
+  buildDataColumnMap(schemas, "childOrders"),
+);
 
-for (let i = 0; i < PARENT_ORDER_COUNT; i++) {
-  clock.advance(random(0, 100));
+let parentOrderCount = 0;
+let childOrderCount = 0;
+let notifyNewOrders = false;
+
+function createParentAndChildOrders() {
+  parentOrderCount += 1;
   const instrument = instrumentsData[random(0, instrumentsData.length - 1)];
-
   const orderQuantity = 1000 * random(1, 100);
   const orderStatus = statusValues[random(0, statusValues.length - 1)];
   const filledQty =
@@ -41,14 +51,13 @@ for (let i = 0; i < PARENT_ORDER_COUNT; i++) {
         ? 0
         : orderQuantity - random(100, orderQuantity);
   const openQty = orderQuantity - filledQty;
-
   const account = accounts[random(0, accounts.length - 1)];
   const algo = algos[random(0, algos.length - 1)];
   const averagePrice = 0;
   const ccy = "GBP";
   const exchange = instrument[instrumentMap.exchange];
-  const parentOrderIdAsInt = i;
-  const parentOrderId = `${parentOrderIdAsInt}`;
+  const parentOrderIdAsInt = parentOrderCount;
+  const parentOrderId = parentOrderCount.toString().padStart(10, "0");
   const price = 100;
   const quantity = orderQuantity;
   const ric = instrument[instrumentMap.ric];
@@ -58,14 +67,14 @@ for (let i = 0; i < PARENT_ORDER_COUNT; i++) {
   const lastUpdate = clock.now;
   const created = clock.now;
 
-  const childOrderCount = random(
+  const numberOfChildOrders = random(
     0,
     avgChildOrderPerOrder * random(1, childMaxMultiple),
   );
 
   let remainingQty = orderQuantity;
-  for (let j = 0; j < childOrderCount; j++) {
-    // console.log(`create child`);
+  for (let j = 0; j < numberOfChildOrders; j++) {
+    childOrderCount += 1;
 
     const childOrderQuantity = Math.round(remainingQty / (childOrderCount - j));
     remainingQty -= childOrderQuantity;
@@ -77,77 +86,88 @@ for (let i = 0; i < PARENT_ORDER_COUNT; i++) {
           ? 0
           : childOrderQuantity - random(100, childOrderQuantity);
     const childOpenQty = childOrderQuantity - childFilledQty;
-
     const averagePrice = 0;
-    const childIdAsInt = childOrderId++;
-    const childId = `${childIdAsInt}`;
+    const childIdAsInt = childOrderCount;
+    const childId = childOrderCount.toString().padStart(10, "0");
     const lastUpdate = 0;
     const price = 100;
     const strategy = 0;
 
-    const row: VuuRowDataItemType[] = [
+    childOrdersTable.insert(
+      [
+        account,
+        averagePrice,
+        ccy,
+        exchange,
+        childFilledQty,
+        childId,
+        childIdAsInt,
+        childOpenQty,
+        parentOrderId,
+        price,
+        childOrderQuantity,
+        ric,
+        side,
+        childOrderStatus,
+        strategy,
+        volLimit,
+        lastUpdate,
+        created,
+      ],
+      notifyNewOrders,
+    );
+  }
+
+  parentOrdersTable.insert(
+    [
       account,
+      algo,
       averagePrice,
       ccy,
+      childOrderCount,
       exchange,
-      childFilledQty,
-      childId,
-      childIdAsInt,
-      childOpenQty,
+      filledQty,
       parentOrderId,
+      parentOrderIdAsInt,
+      openQty,
       price,
-      childOrderQuantity,
+      quantity,
       ric,
       side,
-      childOrderStatus,
-      strategy,
+      status,
       volLimit,
       lastUpdate,
       created,
-    ];
-
-    childOrderData.push(row);
-  }
-
-  const row: VuuRowDataItemType[] = [
-    account,
-    algo,
-    averagePrice,
-    ccy,
-    childOrderCount,
-    exchange,
-    filledQty,
-    parentOrderId,
-    parentOrderIdAsInt,
-    openQty,
-    price,
-    quantity,
-    ric,
-    side,
-    status,
-    volLimit,
-    lastUpdate,
-    created,
-  ];
-
-  parentOrderData.push(row);
+    ],
+    notifyNewOrders,
+  );
 }
-const end = performance.now();
 
-console.log(
-  `took ${end - start} to create ${parentOrderData.length} orders and ${childOrderData.length} child orders`,
-);
+function createInitialOrders() {
+  const start = performance.now();
+  for (let i = 0; i < PARENT_ORDER_COUNT; i++) {
+    clock.advance(random(0, 100));
+    createParentAndChildOrders();
+  }
+  const end = performance.now();
+  console.log(
+    `took ${end - start} to create ${parentOrdersTable.data.length} orders and ${childOrdersTable.data.length} child orders, last order created at ${clock}`,
+  );
+}
 
-export const parentOrdersTable = new Table(
-  schemas.parentOrders,
-  parentOrderData,
-  buildDataColumnMap(schemas, "parentOrders"),
-);
+let newOrderInterval: undefined | ReturnType<typeof setInterval> = undefined;
 
-export const childOrdersTable = new Table(
-  schemas.childOrders,
-  childOrderData,
-  buildDataColumnMap(schemas, "childOrders"),
-);
+export function startGeneratingNewOrders() {
+  newOrderInterval = setInterval(createParentAndChildOrders, 100);
+}
 
-export { childOrderData, parentOrderData };
+export function stopGeneratingNewOrders() {
+  clearInterval(newOrderInterval);
+}
+
+createInitialOrders();
+
+clock.showCurrentTime = true;
+notifyNewOrders = true;
+
+// startGeneratingNewOrders();

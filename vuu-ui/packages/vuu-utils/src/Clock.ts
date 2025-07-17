@@ -11,6 +11,7 @@ export interface ClockProps {
 export type TimeUnit = "minutes" | "seconds" | "ms";
 export class Clock {
   #millisSinceEpoch = 0;
+  #showCurrentTime = false;
 
   constructor(props?: ClockProps) {
     const today = new Date();
@@ -48,20 +49,35 @@ export class Clock {
     }
   }
 
+  goBack(value: number, units: TimeUnit = "ms") {
+    const multiplier = units === "ms" ? 1 : units === "seconds" ? 1000 : 60_000;
+    this.#millisSinceEpoch -= value * multiplier;
+    return this;
+  }
+
   advance(value: number, units: TimeUnit = "ms") {
     const multiplier = units === "ms" ? 1 : units === "seconds" ? 1000 : 60_000;
     this.#millisSinceEpoch += value * multiplier;
+    return this;
+  }
+
+  set showCurrentTime(value: boolean) {
+    this.#showCurrentTime = value;
   }
 
   toString() {
-    return new Date(this.#millisSinceEpoch).toISOString();
+    return new Date(this.now).toISOString();
   }
 
   get now() {
-    return this.#millisSinceEpoch;
+    return this.#showCurrentTime
+      ? new Date().getTime()
+      : this.#millisSinceEpoch;
   }
 
   get date() {
-    return new Date(this.#millisSinceEpoch);
+    return this.#showCurrentTime
+      ? new Date()
+      : new Date(this.#millisSinceEpoch);
   }
 }

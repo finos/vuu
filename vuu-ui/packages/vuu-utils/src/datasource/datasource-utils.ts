@@ -303,10 +303,21 @@ export type DataSourceDataMessageWithRows = Omit<
 > & {
   rows: DataSourceRow[];
 };
+export type DataSourceDataMessageWithSize = Omit<
+  DataSourceDataMessage,
+  "size"
+> & {
+  size: number;
+};
 export const messageHasDataRows = (
   message: DataSourceCallbackMessage,
 ): message is DataSourceDataMessageWithRows =>
   message.type === "viewport-update" && Array.isArray(message.rows);
+
+export const messageHasSize = (
+  message: DataSourceCallbackMessage,
+): message is DataSourceDataMessageWithSize =>
+  message.type === "viewport-update" && typeof message.size === "number";
 
 export const withConfigDefaults = (
   config: WithBaseFilter<DataSourceConfig>,

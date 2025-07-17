@@ -27,3 +27,4 @@ export * from "./column-expression-panel";
 export * from "./column-formatting-settings";
 export * from "./datasource-stats";
 export { TableProvider, useTableContext } from "./table-provider/TableProvider";
+export { FreezeControl } from "./freeze-control/FreezeControl";

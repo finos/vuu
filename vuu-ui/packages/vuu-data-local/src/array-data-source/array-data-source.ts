@@ -56,7 +56,12 @@ import {
 import { aggregateData } from "./aggregate-utils";
 import { buildDataToClientMap, toClientRow } from "./array-data-utils";
 import { GroupMap, collapseGroup, expandGroup, groupRows } from "./group-utils";
-import { sortRows } from "./sort-utils";
+import {
+  binarySearch,
+  ColIndexSortDef,
+  sortComparator,
+  sortRows,
+} from "./sort-utils";
 
 const { debug, info } = logger("ArrayDataSource");
 
@@ -126,6 +131,10 @@ export class ArrayDataSource
   private lastRangeServed: VuuRange = { from: 0, to: 0 };
   private rangeChangeRowset: "delta" | "full";
   private openTreeNodes: string[] = [];
+  // Experimental. There are some config changes - first concrete example is baseFilter applied to
+  // 'freeze' data, that should not immediately affect the displayed data, therefore not cause
+  // range reset.
+  private preserveScrollPositionAcrossConfigChange = false;
 
   /** Map reflecting positions of columns in client data sent to user */
   #columnMap: ColumnMap;
@@ -133,6 +142,7 @@ export class ArrayDataSource
     visualLink?: LinkDescriptorWithLabel;
   } = vanillaConfig;
   #data: DataSourceRow[];
+  #freezeTimestamp: number | undefined = undefined;
   #keys = new KeySet(NULL_RANGE);
   #links: LinkDescriptorWithLabel[] | undefined;
   #range = Range(0, 0);
@@ -213,8 +223,6 @@ export class ArrayDataSource
     }: DataSourceSubscribeProps,
     callback: DataSourceSubscribeCallback,
   ) {
-    console.log(`%cArrayDataSource subscribe`, "color: red;font-weight:bold;");
-
     this.clientCallback = callback;
     this.viewport = viewport;
     this.#status = "subscribed";
@@ -258,12 +266,7 @@ export class ArrayDataSource
       // invoke setter to action config
       this.config = config;
     } else {
-      this.clientCallback({
-        clientViewportId: this.viewport,
-        mode: "size-only",
-        type: "viewport-update",
-        size: this.#data.length,
-      });
+      this.sendSizeUpdateToClient();
       if (range && !this.#range.equals(range)) {
         this.range = range;
       } else if (this.#range !== NULL_RANGE) {
@@ -280,6 +283,7 @@ export class ArrayDataSource
   }
 
   unsubscribe() {
+    this.clientCallback = undefined;
     this.#status = "unsubscribed";
     this.emit("unsubscribed", this.viewport);
   }
@@ -415,15 +419,8 @@ export class ArrayDataSource
 
         let processedData: DataSourceRow[] | undefined;
         if (hasFilter(config) || hasBaseFilter(config)) {
-          const {
-            filterSpec: { filterStruct },
-          } = combineFilters(this._config);
-          if (filterStruct) {
-            const fn = filterPredicate(this.#columnMap, filterStruct);
-            processedData = this.#data.filter(fn);
-          } else {
-            throw Error("filter must include filterStruct");
-          }
+          const fn = this.getFilterPredicate();
+          processedData = this.#data.filter(fn);
         }
 
         if (hasSort(config)) {
@@ -465,19 +462,45 @@ export class ArrayDataSource
             );
           }
         }
-
-        this.processedData = processedData?.map((row, i) => {
-          const dolly = row.slice() as DataSourceRow;
-          dolly[0] = i;
-          dolly[1] = i;
-          return dolly;
-        });
+        if (processedData) {
+          this.processedData = this.indexProcessedData(processedData);
+        }
       }
 
       if (this.#status === "subscribed") {
-        this.setRange(this.#range.reset, true);
+        this.sendSizeUpdateToClient();
+        if (this.preserveScrollPositionAcrossConfigChange) {
+          this.preserveScrollPositionAcrossConfigChange = false;
+        } else {
+          this.setRange(this.#range.reset, true);
+        }
         this.emit("config", this._config, this.range, undefined, configChanges);
       }
+    }
+  }
+
+  private indexProcessedData(data: DataSourceRow[]) {
+    for (let i = 0; i < data.length; i++) {
+      data[i][0] = i;
+      data[i][1] = i;
+    }
+    return data;
+    // return data?.map((row, i) => {
+    //   const dolly = row.slice() as DataSourceRow;
+    //   dolly[0] = i;
+    //   dolly[1] = i;
+    //   return dolly;
+    // });
+  }
+
+  private getFilterPredicate() {
+    const {
+      filterSpec: { filterStruct },
+    } = combineFilters(this._config);
+    if (filterStruct) {
+      return filterPredicate(this.#columnMap, filterStruct);
+    } else {
+      throw Error("filter must include filterStruct");
     }
   }
 
@@ -550,10 +573,68 @@ export class ArrayDataSource
     (this.#data as DataSourceRow[]).push(dataSourceRow);
     const { from, to } = this.#range;
     const [rowIdx] = dataSourceRow;
-    if (rowIdx >= from && rowIdx < to) {
-      this.sendRowsToClient();
+    const isSorted = hasSort(this.config);
+    const isFiltered = hasFilter(this.config) || hasBaseFilter(this.config);
+    if (isSorted && isFiltered) {
+      const meetsFilterCriteria = this.getFilterPredicate();
+      if (meetsFilterCriteria(dataSourceRow)) {
+        this.insertIntoSortedData(dataSourceRow);
+      }
+    } else if (isSorted) {
+      this.insertIntoSortedData(dataSourceRow);
+    } else if (isFiltered) {
+      const fn = this.getFilterPredicate();
+      if (fn(dataSourceRow)) {
+        this.processedData?.push(dataSourceRow);
+        this.sendSizeUpdateToClient();
+        if (rowIdx >= from && rowIdx < to) {
+          this.sendRowsToClient();
+        }
+        this.emit("resize", this.#data.length);
+      }
+    } else {
+      this.sendSizeUpdateToClient();
+      if (rowIdx >= from && rowIdx < to) {
+        this.sendRowsToClient();
+      }
+      this.emit("resize", this.#data.length);
     }
   };
+
+  private insertIntoSortedData(row: DataSourceRow) {
+    const indexedSortDefs = this.config.sort.sortDefs.map<ColIndexSortDef>(
+      ({ column, sortType }) => [this.columnMap[column], sortType],
+    );
+
+    const comparator = sortComparator(indexedSortDefs);
+    const insertPos = binarySearch(
+      this.processedData as DataSourceRow[],
+      row,
+      comparator,
+    );
+
+    this.sendSizeUpdateToClient();
+
+    if (insertPos === -1) {
+      this.processedData?.unshift(row);
+      // this.#keys.reset(this.#range);
+      if (this.processedData) {
+        // horribly inefficient
+        this.processedData = this.indexProcessedData(this.processedData);
+      }
+
+      if (insertPos <= this.#range.to) {
+        this.sendRowsToClient(true);
+      }
+      if (this.processedData) {
+        this.emit("resize", this.processedData.length);
+      }
+    } else {
+      if (this.processedData) {
+        this.emit("resize", this.processedData.length);
+      }
+    }
+  }
 
   private validateDataValue(columnName: string, value: VuuRowDataItemType) {
     const columnDescriptor = this.columnDescriptors.find(
@@ -651,6 +732,15 @@ export class ArrayDataSource
     }
   }
 
+  sendSizeUpdateToClient() {
+    this.clientCallback?.({
+      clientViewportId: this.viewport,
+      mode: "size-only",
+      type: "viewport-update",
+      size: this.processedData ? this.processedData.length : this.#data.length,
+    });
+  }
+
   sendRowsToClient(forceFullRefresh = false, row?: DataSourceRow) {
     if (row) {
       this.clientCallback?.({
@@ -709,7 +799,7 @@ export class ArrayDataSource
         addedColumns,
         (col) => col.name,
       );
-      console.log(`columnsWithoutDescriptors`, {
+      console.warn(`columnsWithoutDescriptors`, {
         columnsWithoutDescriptors,
       });
     }
@@ -878,5 +968,44 @@ export class ArrayDataSource
       });
       return indexValues;
     }
+  }
+
+  // All in BaseDataSource
+  freeze() {
+    if (!this.isFrozen) {
+      this.#freezeTimestamp = new Date().getTime();
+      this.emit("freeze", true, this.#freezeTimestamp);
+      this.preserveScrollPositionAcrossConfigChange = true;
+      this.baseFilter = {
+        filter: `created < ${this.#freezeTimestamp}`,
+      };
+    } else {
+      throw Error(
+        "[BaseDataSource] cannot freeze, dataSource is already frozen",
+      );
+    }
+  }
+  unfreeze() {
+    if (this.isFrozen) {
+      const freezeTimestamp = this.#freezeTimestamp as number;
+      this.#freezeTimestamp = undefined;
+      this.emit("freeze", false, freezeTimestamp);
+      this.preserveScrollPositionAcrossConfigChange = true;
+      this.baseFilter = {
+        filter: "",
+      };
+    } else {
+      throw Error(
+        "[BaseDataSource] cannot freeze, dataSource is already frozen",
+      );
+    }
+  }
+
+  get freezeTimestamp() {
+    return this.#freezeTimestamp;
+  }
+
+  get isFrozen() {
+    return typeof this.#freezeTimestamp === "number";
   }
 }
