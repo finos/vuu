@@ -1,11 +1,5 @@
 name: Deploy to MVN Central
 
-env:
-    CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
-    CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
-    CI_GPG_PASSPHRASE: ${{ secrets.CI_GPG_PASSPHRASE }}
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 on:
   workflow_dispatch:
     inputs:
@@ -52,11 +46,11 @@ jobs:
           server-id: ossrh
           server-username: CI_DEPLOY_USERNAME
           server-password: CI_DEPLOY_PASSWORD
-          gpg-private-key: ${{ secrets.CI_GPG_PRIVATE_KEY }}
-          gpg-passphrase: CI_GPG_PASSPHRASE
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
       - name: Configure git
-        run: |
+        run: |          
           git config --global committer.email "infra@finos.org"
           git config --global committer.name "FINOS Admin"
           git config --global author.email "${GITHUB_ACTOR}@users.noreply.github.com"
@@ -64,4 +58,8 @@ jobs:
 
       - name: Build with Maven
         run: mvn --no-transfer-progress release:prepare release:perform -P sign-it -Dsign=true -s .settings/settings.xml -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
-
+        env:
+          CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
+          CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHASE }}
+          COMMIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
