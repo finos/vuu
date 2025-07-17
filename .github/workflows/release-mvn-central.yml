@@ -60,9 +60,10 @@ jobs:
       - name: Install GPG secret key
         run: |
           cat <(echo -e "${{ secrets.GPG_PRIVATE_KEY }}") | gpg --batch --yes --always-trust --import
+          gpg --list-keys
 
       - name: Build with Maven
-        run: mvn --no-transfer-progress release:prepare release:perform -P sign-it -Dsign=true -s .settings/settings.xml -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
+        run: mvn --no-transfer-progress release:prepare release:perform -P sign-it -Dsign=true -Darguments=-Dgpg.passphrase=$MAVEN_GPG_PASSPHRASE -Dgpg.passphrase=$MAVEN_GPG_PASSPHRASE -s .settings/settings.xml -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
         env:
           CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
           CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
