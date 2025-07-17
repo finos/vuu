@@ -46,7 +46,6 @@ jobs:
 
       - name: Configure git
         run: |
-          cat <(echo -e "${{ secrets.GPG_PRIVATE_KEY }}") | gpg --batch --yes --always-trust --import
           git config --global committer.email "infra@finos.org"
           git config --global committer.name "FINOS Admin"
           git config --global author.email "${GITHUB_ACTOR}@users.noreply.github.com"
