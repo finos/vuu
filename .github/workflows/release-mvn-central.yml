@@ -49,11 +49,6 @@ jobs:
           java-package: jdk
           distribution: temurin
           cache: 'maven'
-          server-id: ossrh
-          server-username: CI_DEPLOY_USERNAME
-          server-password: CI_DEPLOY_PASSWORD
-          gpg-private-key: ${{ secrets.CI_GPG_PRIVATE_KEY }}
-          gpg-passphrase: CI_GPG_PASSPHRASE
 
       - name: Configure git
         run: |
@@ -68,5 +63,15 @@ jobs:
           ssh-private-key: ${{ secrets.COMMIT_SSH_PRIVATE_KEY }}
           ssh-host: github.com
 
+      - name: Install GPG secret key
+        run: |
+          cat <(echo -e "${{ secrets.CI_GPG_PRIVATE_KEY }}") | gpg --batch --yes --always-trust --import
+          gpg --list-keys
+
       - name: Build with Maven
-        run: mvn --no-transfer-progress release:prepare release:perform -P sign-it -Dsign=true -s .settings/settings.xml -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
+        run: mvn --no-transfer-progress release:prepare release:perform -P sign-it -Dsign=true -Darguments=-Dgpg.passphrase=$MAVEN_GPG_PASSPHRASE -Dgpg.passphrase=$MAVEN_GPG_PASSPHRASE -s .settings/settings.xml -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
+        env:
+          CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
+          CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.CI_GPG_PASSPHRASE }}
+          COMMIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
