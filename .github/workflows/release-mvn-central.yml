@@ -1,11 +1,5 @@
 name: Deploy to MVN Central
 
-env:
-  CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
-  CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
-  CI_GPG_PASSPHRASE: ${{ secrets.CI_GPG_PASSPHRASE }}
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 on:
   workflow_dispatch:
     inputs:
