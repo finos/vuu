@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>price</artifactId>
+    <name>${artifactId}</name>
 
     <dependencies>
         <dependency>

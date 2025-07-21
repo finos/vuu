@@ -13,7 +13,7 @@
     </properties>
 
     <artifactId>benchmark</artifactId>
-    <name>benchmark</name>
+    <name>${artifactId}</name>
     <description>benchmark</description>
     <inceptionYear>2023</inceptionYear>
     <packaging>jar</packaging>

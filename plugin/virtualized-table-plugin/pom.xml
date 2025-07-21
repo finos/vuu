@@ -9,6 +9,7 @@
 
     <groupId>org.finos.vuu.plugin</groupId>
     <artifactId>virtualized-table-plugin</artifactId>
+    <name>${artifactId}</name>
 
     <dependencies>
         <dependency>
