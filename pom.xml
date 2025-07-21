@@ -97,6 +97,7 @@
         <release.goals>install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish</release.goals>
         <github.global.server>github</github.global.server>
         <github.oauth.token>${env.GITHUB_TOKEN}</github.oauth.token>
+        <awaitility.version>4.0.0</awaitility.version>
     </properties>
 
     <modules>
