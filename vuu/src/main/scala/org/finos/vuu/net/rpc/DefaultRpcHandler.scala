@@ -1,6 +1,7 @@
 package org.finos.vuu.net.rpc
 
 import com.typesafe.scalalogging.StrictLogging
+import org.finos.vuu.feature.{EmptyViewPortKeys, ViewPortKeys}
 import org.finos.vuu.net.{Error, RequestContext, RpcCall, RpcResponse, ViewServerMessage, VsMsg}
 import org.finos.vuu.viewport.{ViewPortAction, ViewPortRpcFailure, ViewPortRpcSuccess}
 
@@ -39,7 +40,7 @@ class DefaultRpcHandler extends RpcHandler with StrictLogging {
     val namedPars = rpc.namedParams
     val module = Option(msg).map(_.module).getOrElse("")
 
-    processRpcMethodHandler(method, new RpcParams(params, namedPars, None, ctx)) match {
+    processRpcMethodHandler(method, new RpcParams(params, namedPars, None, EmptyViewPortKeys, ctx)) match {
       case result: RpcFunctionSuccess => Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(method, result.optionalResult.orNull, error = null), module))
       case error: RpcFunctionFailure => Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(rpc.method, null, Error(error.error, error.code)), module))
     }
