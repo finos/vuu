@@ -8,6 +8,7 @@
     </parent>
 
     <artifactId>virtualized-table</artifactId>
+    <name>${artifactId}</name>
 
     <dependencies>
         <dependency>

@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>order</artifactId>
+    <name>${artifactId}</name>
 
     <dependencies>
         <dependency>

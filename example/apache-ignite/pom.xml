@@ -8,6 +8,8 @@
     </parent>
 
     <artifactId>apache-ignite</artifactId>
+    <name>${artifactId}</name>
+
     <properties>
         <ignite.version>2.16.0</ignite.version>
         <opencensus.version>0.31.1</opencensus.version>

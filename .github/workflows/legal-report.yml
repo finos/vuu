@@ -48,12 +48,12 @@ jobs:
         LINES_FOUND=`echo $LICENSE_REPORT | wc -l`
         if [ $LINES_FOUND -gt 1 ]; then echo $LICENSE_REPORT ; exit -1; fi
     - name: Upload license reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: license-reports
+        name: ${{ matrix.package-folder }}-license-reports
         path: '**/dependencies.html'
     - name: Upload license XML reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: license-xml-report
+        name: ${{ matrix.package-folder }}-license-xml-report
         path: '**/target/generated-resources/licenses.xml'
