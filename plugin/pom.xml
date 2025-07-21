@@ -9,6 +9,7 @@
 
     <artifactId>plugin</artifactId>
     <packaging>pom</packaging>
+    <name>${artifactId}</name>
 
     <modules>
         <module>ignite-plugin</module>

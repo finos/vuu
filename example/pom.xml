@@ -9,8 +9,8 @@
     </parent>
 
     <packaging>pom</packaging>
-
     <artifactId>example</artifactId>
+    <name>${artifactId}</name>
 
     <modules>
         <module>editable</module>
