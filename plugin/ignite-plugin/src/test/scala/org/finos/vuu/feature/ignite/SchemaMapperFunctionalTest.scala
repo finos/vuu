@@ -2,6 +2,7 @@ package org.finos.vuu.feature.ignite
 
 import org.finos.vuu.core.sort.SortDirection
 import org.finos.vuu.core.table.{ColumnValueProvider, Columns}
+import org.finos.vuu.feature.ViewPortKeys
 import org.finos.vuu.net.FilterSpec
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
 import org.finos.vuu.provider.VirtualizedProvider
@@ -81,7 +82,7 @@ class TestVirtualProvider(fakeDataSource:FakeDataSource[SchemaTestData]) extends
       .getOrElse(throw new Exception("query does not exist in store. make sure it is setup"))
   }
 
-  override def getUniqueValuesVPColumn(columnName: String, viewPortColumns: ViewPortColumns): Array[String] = ???
+  override def getUniqueValuesVPColumn(columnName: String, viewPortColumns: ViewPortColumns, vpKeys: ViewPortKeys): Array[String] = ???
 
-  override def getUniqueValuesStartingWithVPColumn(columnName: String, starts: String, viewPortColumns: ViewPortColumns): Array[String] = ???
+  override def getUniqueValuesStartingWithVPColumn(columnName: String, starts: String, viewPortColumns: ViewPortColumns, vpKeys: ViewPortKeys): Array[String] = ???
 }

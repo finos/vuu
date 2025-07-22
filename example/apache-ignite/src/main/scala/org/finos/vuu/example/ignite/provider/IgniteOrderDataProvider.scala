@@ -8,6 +8,7 @@ import org.finos.vuu.example.ignite.module.IgniteOrderDataModule
 import org.finos.vuu.example.ignite.provider.IgniteOrderDataProvider.columnNameByExternalField
 import org.finos.vuu.example.ignite.query.IndexCalculator
 import org.finos.vuu.example.ignite.schema.ChildOrderSchema
+import org.finos.vuu.feature.ViewPortKeys
 import org.finos.vuu.feature.ignite.IgniteSqlQuery
 import org.finos.vuu.plugin.virtualized.table.{VirtualizedRange, VirtualizedSessionTable, VirtualizedViewPortKeys}
 import org.finos.vuu.provider.VirtualizedProvider
@@ -82,9 +83,9 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)
   override def getUniqueValuesStartingWith(columnName: String, starts: String): Array[String] =
     igniteStore.getDistinct(columnName, starts, 10).toArray
 
-  override def getUniqueValuesVPColumn(columnName: String, viewPortColumns: ViewPortColumns): Array[String] = ???
+  override def getUniqueValuesVPColumn(columnName: String, viewPortColumns: ViewPortColumns, vpKeys: ViewPortKeys): Array[String] = ???
 
-  override def getUniqueValuesStartingWithVPColumn(columnName: String, starts: String, viewPortColumns: ViewPortColumns): Array[String] = ???
+  override def getUniqueValuesStartingWithVPColumn(columnName: String, starts: String, viewPortColumns: ViewPortColumns, vpKeys: ViewPortKeys): Array[String] = ???
 }
 
 object IgniteOrderDataProvider {

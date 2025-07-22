@@ -1,12 +1,13 @@
 package org.finos.vuu.core.table
 
 import com.typesafe.scalalogging.StrictLogging
+import org.finos.vuu.feature.ViewPortKeys
 import org.finos.vuu.viewport.ViewPortColumns
 
 trait ColumnValueProvider {
 
-  def getUniqueValuesVPColumn(columnName: String, viewPortColumns: ViewPortColumns): Array[String]
-  def getUniqueValuesStartingWithVPColumn(columnName: String, starts: String, viewPortColumns: ViewPortColumns): Array[String]
+  def getUniqueValuesVPColumn(columnName: String, viewPortColumns: ViewPortColumns, vpKeys: ViewPortKeys): Array[String]
+  def getUniqueValuesStartingWithVPColumn(columnName: String, starts: String, viewPortColumns: ViewPortColumns, vpKeys: ViewPortKeys): Array[String]
 
   @deprecated("to be replaced by getUniqueValuesVPColumn")
   def getUniqueValues(columnName: String): Array[String]
@@ -27,16 +28,16 @@ object InMemColumnValueProvider {
 class InMemColumnValueProvider(dataTable: InMemDataTable) extends ColumnValueProvider with StrictLogging {
   private val get10DistinctValues = DistinctValuesGetter(10)
 
-  def getUniqueValuesVPColumn(columnName: String, viewPortColumns: ViewPortColumns): Array[String] = {
+  def getUniqueValuesVPColumn(columnName: String, viewPortColumns: ViewPortColumns, vpKeys: ViewPortKeys): Array[String] = {
     viewPortColumns.getColumnForName(columnName) match {
-      case Some(column) => get10DistinctValues.fromVP(viewPortColumns, column)
+      case Some(column) => get10DistinctValues.fromVP(viewPortColumns, column, vpKeys)
       case None => logger.error(s"Column $columnName not found in table ${dataTable.name}"); Array.empty;
     }
   }
 
-  def getUniqueValuesStartingWithVPColumn(columnName: String, starts: String, viewPortColumns: ViewPortColumns): Array[String] = {
+  def getUniqueValuesStartingWithVPColumn(columnName: String, starts: String, viewPortColumns: ViewPortColumns, vpKeys: ViewPortKeys): Array[String] = {
     viewPortColumns.getColumnForName(columnName) match {
-      case Some(column) => get10DistinctValues.fromVP(viewPortColumns, column, _.toLowerCase.startsWith(starts.toLowerCase))
+      case Some(column) => get10DistinctValues.fromVP(viewPortColumns, column, vpKeys, _.toLowerCase.startsWith(starts.toLowerCase))
       case None => logger.error(s"Column $columnName not found in table ${dataTable.name}"); Array.empty;
     }
   }
@@ -59,8 +60,8 @@ class InMemColumnValueProvider(dataTable: InMemDataTable) extends ColumnValuePro
     def fromTable(c: Column, filter: Filter = _ => true): Array[String] =
       getDistinctValues(c, filter).take(n).toArray
 
-    def fromVP(viewPortColumns: ViewPortColumns, c: Column, filter: Filter = _ => true): Array[String] =
-      getDistinctValues(viewPortColumns, c, filter).take(n).toArray
+    def fromVP(viewPortColumns: ViewPortColumns, c: Column, vpKeys: ViewPortKeys, filter: Filter = _ => true): Array[String] =
+      getDistinctValuesForVP(viewPortColumns, c, vpKeys, filter).take(n).toArray
 
     private def getDistinctValues(c: Column, filter: Filter): Iterator[String] =
       dataTable.primaryKeys
@@ -70,8 +71,8 @@ class InMemColumnValueProvider(dataTable: InMemDataTable) extends ColumnValuePro
         .flatMap(valueToString)
         .filter(filter)
 
-    private def getDistinctValues(viewPortColumns: ViewPortColumns, column: Column, filter: Filter): Iterator[String] =
-      dataTable.primaryKeys
+    private def getDistinctValuesForVP(viewPortColumns: ViewPortColumns, column: Column, vpKeys: ViewPortKeys, filter: Filter): Iterator[String] =
+      vpKeys
         .iterator
         .map(dataTable.pullRow(_, viewPortColumns).get(column))
         .distinct
