@@ -2,11 +2,11 @@ package org.finos.vuu.core.module.basket.service
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketConstants.Side
-import org.finos.vuu.core.module.basket.BasketModule.{BasketTradingConstituentTable}
-import org.finos.vuu.core.table.{DataTable, RowData, RowWithData, TableContainer, ViewPortColumnCreator}
-import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
+import org.finos.vuu.core.module.basket.BasketModule
+import org.finos.vuu.core.module.basket.BasketModule.BasketTradingConstituentTable
+import org.finos.vuu.core.table._
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler}
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.order.oms.{CancelOrder, NewOrder, OmsApi}
 import org.finos.vuu.viewport._
@@ -18,7 +18,7 @@ trait BasketTradingServiceIF extends EditRpcHandler {
 }
 
 
-class BasketTradingService(val table: DataTable, val tableContainer: TableContainer, val omsApi: OmsApi)(implicit clock: Clock) extends RpcHandler with BasketTradingServiceIF with StrictLogging {
+class BasketTradingService(val table: DataTable, val tableContainer: TableContainer, val omsApi: OmsApi)(implicit clock: Clock) extends DefaultRpcHandler(Some(tableContainer)) with BasketTradingServiceIF with StrictLogging {
 
   import org.finos.vuu.core.module.basket.BasketModule.{BasketTradingColumnNames => BT, BasketTradingConstituentColumnNames => BTC}
 

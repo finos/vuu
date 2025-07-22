@@ -14,7 +14,6 @@ import org.finos.vuu.core.module.editable.EditableModule
 import org.finos.vuu.core.module.metrics.MetricsModule
 import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.module.simul.SimulationModule
-import org.finos.vuu.core.module.typeahead.TypeAheadModule
 import org.finos.vuu.core.module.vui.VuiStateModule
 import org.finos.vuu.example.rest.client.{HttpClient, StubbedBackend}
 import org.finos.vuu.example.rest.module.RestModule
@@ -68,7 +67,6 @@ object SimulMain extends App with StrictLogging {
     .withModule(SimulationModule())
     .withModule(MetricsModule())
     .withModule(VuiStateModule(store))
-    .withModule(TypeAheadModule())
     .withModule(AuthNModule(authenticator, loginTokenValidator))
     .withModule(EditableModule())
     .withModule(PermissionModule())

@@ -7,8 +7,8 @@ import org.finos.vuu.core.module.basket.BasketConstants.Side
 import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames => BCColumnName, BasketTradingColumnNames => BTColumnName, BasketTradingConstituentColumnNames => ColumnName}
 import org.finos.vuu.core.module.basket.result.ErrorReason
-import org.finos.vuu.core.table.{DataTable, JoinTable, RowData, RowWithData, TableContainer}
-import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
+import org.finos.vuu.core.table._
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler}
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.viewport._
 
@@ -23,7 +23,7 @@ trait BasketTradingConstituentJoinServiceIF extends EditRpcHandler {
   def addConstituent(ric: String)(ctx: RequestContext): ViewPortAction
 }
 
-class BasketTradingConstituentJoinService(val table: DataTable, val tableContainer: TableContainer)(implicit clock: Clock) extends BasketTradingConstituentJoinServiceIF with RpcHandler with StrictLogging {
+class BasketTradingConstituentJoinService(val table: DataTable, val tableContainer: TableContainer)(implicit clock: Clock) extends DefaultRpcHandler(Some(tableContainer)) with BasketTradingConstituentJoinServiceIF with StrictLogging {
 
   override def menuItems(): ViewPortMenu = ViewPortMenu("Direction",
     new SelectionViewPortMenuItem("Set Sell", "", this.setSell, "SET_SELECTION_SELL"),

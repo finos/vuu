@@ -1,14 +1,23 @@
 package org.finos.vuu.net.rpc
 
 import com.typesafe.scalalogging.StrictLogging
+import org.finos.vuu.core.module.typeahead.ViewportTypeAheadRpcHandler
+import org.finos.vuu.core.table.TableContainer
 import org.finos.vuu.net.{Error, RequestContext, RpcCall, RpcResponse, ViewServerMessage, VsMsg}
 import org.finos.vuu.viewport.{ViewPortAction, ViewPortRpcFailure, ViewPortRpcSuccess}
 
 import java.util.concurrent.ConcurrentHashMap
 
-class DefaultRpcHandler extends RpcHandler with StrictLogging {
+class DefaultRpcHandler(tableContainer: Option[TableContainer]) extends RpcHandler with StrictLogging {
 
   private val rpcHandlerMap = new ConcurrentHashMap[Rpc.FunctionName, Rpc.Function]()
+
+  tableContainer match {
+    case Some(tc) =>
+      val viewportTypeAheadRpcHandler = new ViewportTypeAheadRpcHandler(tc)
+      viewportTypeAheadRpcHandler.register(this)
+    case None => logger.info("ViewportTypeAheadRpcHandler not created.")
+  }
 
   /**
    * Register a handler for a given rpc function

@@ -5,11 +5,10 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.basket.BasketModule.BasketTradingConstituentColumnNames.InstanceIdRic
 import org.finos.vuu.core.table.{DataTable, RowWithData, TableContainer}
 import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
-import org.finos.vuu.order.oms.OmsApi
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler}
 import org.finos.vuu.viewport._
 
-class BasketTradingConstituentService(val table: DataTable, val tableContainer: TableContainer)(implicit clock: Clock) extends RpcHandler with EditRpcHandler with StrictLogging {
+class BasketTradingConstituentService(val table: DataTable, val tableContainer: TableContainer)(implicit clock: Clock) extends DefaultRpcHandler(Some(tableContainer)) with EditRpcHandler with StrictLogging {
 
   def onDeleteRow(key: String, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
     ViewPortEditSuccess()

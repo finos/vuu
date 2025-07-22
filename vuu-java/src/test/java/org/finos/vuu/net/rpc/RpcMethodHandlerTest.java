@@ -20,7 +20,7 @@ public class RpcMethodHandlerTest {
     public void should_register_java_function_as_rpc_in_default_handler() {
         final TestRpcService rpcService = new TestRpcService();
 
-        final DefaultRpcHandler defaultRpcHandler = new DefaultRpcHandler();
+        final DefaultRpcHandler defaultRpcHandler = new DefaultRpcHandler(Option.empty());
         defaultRpcHandler.registerRpc("helloWorld", rpcService::rpcFunction);
 
         RpcCall call = new RpcCall("service", "helloWorld", new Object[]{}, ScalaCollectionConverter.toScala(Collections.emptyMap()));

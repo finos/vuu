@@ -5,12 +5,12 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.auths.PermissionModule.ColumnNames._
 import org.finos.vuu.core.module.auths.PermissionSet
 import org.finos.vuu.core.module.auths.PermissionSet.{AlgoCoveragePermission, HighTouchPermission, SalesTradingPermission}
-import org.finos.vuu.core.table.{DataTable, EmptyRowData, RowWithData}
+import org.finos.vuu.core.table.{DataTable, EmptyRowData, RowWithData, TableContainer}
 import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.net.rpc.RpcHandler
+import org.finos.vuu.net.rpc.DefaultRpcHandler
 import org.finos.vuu.viewport._
 
-class PermissionsRpcService(val table: DataTable)(implicit clock: Clock) extends RpcHandler with StrictLogging {
+class PermissionsRpcService(val table: DataTable, tableContainer: TableContainer)(implicit clock: Clock) extends DefaultRpcHandler(Some(tableContainer)) with StrictLogging {
 
   private def addPermission(mask: Int, selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
     val users = selection.rowKeyIndex.map({ case (key, _) => key }).toList

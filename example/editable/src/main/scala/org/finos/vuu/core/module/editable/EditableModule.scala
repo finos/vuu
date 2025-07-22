@@ -32,9 +32,9 @@ object EditableModule extends DefaultModule {
         keyField = "process-id",
         columns = Columns.fromNames("process-id:String", "sequenceNumber:Int")
       ),
-      (table, _, _, _) => ViewPortDef(
+      (table, _, _, tableContainer) => ViewPortDef(
         columns = table.getTableDef.columns,
-        service = new FixSequenceRpcService()
+        service = new FixSequenceRpcService(tableContainer)
       )
     ).asModule()
   }

@@ -12,7 +12,7 @@ class DefaultRpcHandlerTest extends AnyFeatureSpec with Matchers with BeforeAndA
   private val msg = JsonViewServerMessage("requestId", "sessionId", "token", "user", null, module = "TEST_MODULE")
 
   override def beforeEach(): Unit = {
-    handler = new DefaultRpcHandler
+    handler = new DefaultRpcHandler(None)
   }
 
   Feature("Default Rpc Handler for Viewport Rpc") {

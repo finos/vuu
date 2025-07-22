@@ -4,6 +4,7 @@ import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContaine
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 
+@deprecated("Replaced by ViewportTypeAheadRpcHandler")
 object TypeAheadModule extends DefaultModule {
 
   final val NAME = "TYPEAHEAD"
