@@ -209,12 +209,6 @@
                 <!--scope>provided</scope-->
         </dependency>
 
-        <dependency>
-            <groupId>org.awaitility</groupId>
-            <artifactId>awaitility-scala</artifactId>
-            <version>${awaitility.version}</version>
-        </dependency>
-
     </dependencies>
 
     <profiles>

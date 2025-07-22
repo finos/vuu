@@ -1,6 +1,5 @@
 package org.finos.vuu.wsapi
 
-import org.awaitility.Awaitility.await
 import org.finos.vuu.api.{ColumnBuilder, TableDef, ViewPortDef}
 import org.finos.vuu.core.IVuuServer
 import org.finos.vuu.core.module.typeahead.ViewportTypeAheadRpcHandler
@@ -246,7 +245,9 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
     vuuClient.send(sessionId, tokenId, createViewPortRequest)
     val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
     val viewPortId = viewPortCreateResponse.get.viewPortId
-    await pollDelay(100, MILLISECONDS) until { () => true } // Wait for viewPortRunner to populate view port keys
+    // Verify viewport keys are populated. viewPortRunner cycle is 100ms
+    val tableSizeResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
+    tableSizeResponse.get.rows(0).vpSize shouldEqual 13
     viewPortId
   }
 
