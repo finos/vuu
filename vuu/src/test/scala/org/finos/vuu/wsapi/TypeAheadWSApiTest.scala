@@ -39,7 +39,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       responseBody.rpcName shouldEqual "getUniqueFieldValues"
 
       val result = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      result.data shouldEqual List("23564", "33657", "42262", "45321", "45897", "54875", "54876", "65879", "78458")
+      result.data shouldEqual List("23564", "33657", "42262", "45321", "45897", "54874", "54875", "54876", "65879", "78458")
 
       And("return No Action")
       responseBody.action shouldBe a[NoneAction]
@@ -222,7 +222,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       "row12" -> Map("Id" -> "row12", "Name" -> "Polly Phelps", "Account" -> 78458, "HiddenColumn" -> 10),
       "row13" -> Map("Id" -> "row13", "Name" -> "Polly Phelps", "Account" -> 54874, "HiddenColumn" -> 10),
       "row14" -> Map("Id" -> "row14", "Name" -> "Johnny Cash", "Account" -> 54875, "HiddenColumn" -> 10),
-      "row15" -> Map("Id" -> "row15", "Name" -> "Tome DeLay", "Account" -> 54876, "HiddenColumn" -> 10),
+      "row15" -> Map("Id" -> "row15", "Name" -> "Tom DeLay", "Account" -> 54876, "HiddenColumn" -> 10),
     ))
     val providerFactory = (table: DataTable, _: IVuuServer) => new TestProvider(table, dataSource)
 
