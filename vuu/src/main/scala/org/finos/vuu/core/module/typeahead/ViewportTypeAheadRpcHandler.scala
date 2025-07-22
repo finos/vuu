@@ -22,7 +22,7 @@ class ViewportTypeAheadRpcHandler(rpcRegistry: DefaultRpcHandler, tableContainer
       inputParam("module").toString,
       inputParam("column").toString,
       params.viewPortColumns.get,
-      params.vpKeys,
+      params.vpKeys.get,
       null //todo what to do about request context
     )
     new RpcFunctionSuccess(values)
@@ -38,7 +38,7 @@ class ViewportTypeAheadRpcHandler(rpcRegistry: DefaultRpcHandler, tableContainer
       inputParam("column").toString,
       inputParam("starts").toString,
       params.viewPortColumns.get,
-      params.vpKeys,
+      params.vpKeys.get,
       null //todo what to do about request context
     )
     new RpcFunctionSuccess(values) //how to control what viewport action to trigger?

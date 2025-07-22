@@ -1,6 +1,5 @@
 package org.finos.vuu.net.rpc
 
-import org.finos.vuu.feature.{EmptyViewPortKeys, ViewPortKeys}
 import org.finos.vuu.net.{ClientSessionId, Error, JsonViewServerMessage, RequestContext, RpcCall, RpcResponse}
 import org.finos.vuu.viewport.{ViewPortRpcFailure, ViewPortRpcSuccess}
 import org.scalatest.BeforeAndAfterEach
@@ -20,7 +19,7 @@ class DefaultRpcHandlerTest extends AnyFeatureSpec with Matchers with BeforeAndA
     Scenario("Can register and handle Rpc request that perform action") {
       handler.registerRpc("myMethod", _ => new RpcFunctionSuccess())
 
-      val result = handler.processViewPortRpcCall("myMethod", new RpcParams(Array("param1"), Map("namedParam1" -> "value1"), None, EmptyViewPortKeys, ctx))
+      val result = handler.processViewPortRpcCall("myMethod", new RpcParams(Array("param1"), Map("namedParam1" -> "value1"), None, None, ctx))
 
       result should be(ViewPortRpcSuccess())
     }
@@ -37,7 +36,7 @@ class DefaultRpcHandlerTest extends AnyFeatureSpec with Matchers with BeforeAndA
     Scenario("Rpc request with null params should return ViewPortRpcSuccess when the rpc method is successful") {
       handler.registerRpc("myMethod", _ => new RpcFunctionSuccess())
 
-      val result = handler.processViewPortRpcCall("myMethod", new RpcParams(null, null, None, EmptyViewPortKeys, ctx))
+      val result = handler.processViewPortRpcCall("myMethod", new RpcParams(null, null, None, None, ctx))
 
       result should be(ViewPortRpcSuccess())
     }
@@ -45,7 +44,7 @@ class DefaultRpcHandlerTest extends AnyFeatureSpec with Matchers with BeforeAndA
     Scenario("Rpc request should return ViewPortRpcFailure when the rpc method fails") {
       handler.registerRpc("myMethod", _ => RpcFunctionFailure(1, "error", new Exception("exception")))
 
-      val result = handler.processViewPortRpcCall("myMethod", new RpcParams(null, null, None, EmptyViewPortKeys, ctx))
+      val result = handler.processViewPortRpcCall("myMethod", new RpcParams(null, null, None, None, ctx))
 
       result should be(ViewPortRpcFailure("Exception occurred calling rpc myMethod"))
     }

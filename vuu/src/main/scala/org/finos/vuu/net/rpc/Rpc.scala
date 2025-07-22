@@ -13,7 +13,7 @@ class RpcParams(
                  val params: Array[Any],
                  val namedParams: Map[String, Any],
                  val viewPortColumns: Option[ViewPortColumns],
-                 val vpKeys: ViewPortKeys,
+                 val vpKeys: Option[ViewPortKeys],
                  val ctx: RequestContext)
 
 trait RpcFunctionResult {}
