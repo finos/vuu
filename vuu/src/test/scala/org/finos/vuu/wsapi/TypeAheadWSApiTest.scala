@@ -242,11 +242,11 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
   }
 
   private def createViewPort = {
-    val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(1, 100), columns = Array("Id", "Name", "Account"), SortSpec(List(SortDef("Account", "A"))), Array.empty[String], FilterSpec("Account > 20000"))
+    val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(1, 100), columns = Array("Id", "Name", "Account"), SortSpec(List(SortDef("Account", 'A'))), Array.empty[String], FilterSpec("Account > 20000"))
     vuuClient.send(sessionId, tokenId, createViewPortRequest)
     val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
     val viewPortId = viewPortCreateResponse.get.viewPortId
-    await pollDelay(100, MILLISECONDS) until {() => true}// Wait for viewPortRunner to populate view port keys
+    await pollDelay(100, MILLISECONDS) until { () => true } // Wait for viewPortRunner to populate view port keys
     viewPortId
   }
 
