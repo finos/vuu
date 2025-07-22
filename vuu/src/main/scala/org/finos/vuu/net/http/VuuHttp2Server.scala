@@ -4,11 +4,12 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.util.PathChecker
 import io.vertx.core.http.{HttpMethod, HttpServerOptions}
-import io.vertx.core.net.PemKeyCertOptions
+import io.vertx.core.net.{PemKeyCertOptions, PfxOptions}
 import io.vertx.core.{AbstractVerticle, Vertx, VertxOptions}
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.{BodyHandler, StaticHandler}
 import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
+import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSSLByPKCS, VuuSSLCipherSuite, VuuSSLDisabled, VuuSSLOptions}
 
 import java.io.File
 import java.util
@@ -49,16 +50,7 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
     try {
       val router = Router.router(vertx);
 
-      val httpOpts = new HttpServerOptions()
-
-      if (options.sslEnabled) {
-        httpOpts
-          .setPemKeyCertOptions(pemKeyCertOptions(options))
-          .setSsl(true)
-          .setUseAlpn(true)
-      } else {
-        httpOpts.setSsl(false)
-      }
+      val httpOpts = httpServerOptions(options.sslOptions)
 
       import io.vertx.ext.web.handler.CorsHandler
       val allowedHeaders = new util.HashSet[String]()
@@ -124,16 +116,50 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
     }
   }
 
-  private def pemKeyCertOptions(options: VuuHttp2ServerOptions): PemKeyCertOptions = {
-    PathChecker.throwOnFileNotExists(options.certPath, "options.certPath, doesn't appear to exist")
-    PathChecker.throwOnFileNotExists(options.keyPath, "options.keyPath, doesn't appear to exist")
+  private def httpServerOptions(options: VuuSSLOptions): HttpServerOptions = {
+    options match {
+      case VuuSSLDisabled() => new HttpServerOptions().setSsl(false)
+      case VuuSSLByCertAndKey(certPath, keyPath, _, cipherSuite) =>
+        applySharedOptions(new HttpServerOptions().setPemKeyCertOptions(pemKeyCertOptions(certPath, keyPath)), cipherSuite)
+      case VuuSSLByPKCS(pkcsPath, pkcsPassword, cipherSuite) =>
+        applySharedOptions(new HttpServerOptions().setPfxKeyCertOptions(pfxKeyCertOptions(pkcsPath, pkcsPassword)), cipherSuite)
+    }
+  }
 
-    logger.debug("Loading SSL Cert from: " + new File(options.certPath).getAbsolutePath)
-    logger.debug("Loading SSL Key from: " + new File(options.keyPath).getAbsolutePath)
+  private def applySharedOptions(httpServerOptions: HttpServerOptions, cipherSuite: Option[VuuSSLCipherSuite]) : HttpServerOptions = {
+    httpServerOptions.setSsl(true)
+    httpServerOptions.setUseAlpn(true)
+    cipherSuite match {
+      case None => httpServerOptions
+      case Some(cipherSuite) =>
+        for (cipher <- cipherSuite.ciphers) {
+          httpServerOptions.addEnabledCipherSuite(cipher)
+        }
+        for (protocol <- cipherSuite.protocols) {
+          httpServerOptions.addEnabledSecureTransportProtocol(protocol)
+        }
+        httpServerOptions
+    }
+  }
+
+  private def pfxKeyCertOptions(pkcsPath: String, pkcsPassword: String): PfxOptions =  {
+    PathChecker.throwOnFileNotExists(pkcsPath, "pkcsPath doesn't appear to exist")
+    logger.debug("Loading PKCS from: {}", new File(pkcsPath).getAbsolutePath)
+    new PfxOptions()
+      .setPath(pkcsPath)
+      .setPassword(pkcsPassword)
+  }
+
+  private def pemKeyCertOptions(certPath: String, keyPath: String): PemKeyCertOptions = {
+    PathChecker.throwOnFileNotExists(certPath, "certPath doesn't appear to exist")
+    PathChecker.throwOnFileNotExists(keyPath, "keyPath doesn't appear to exist")
+
+    logger.debug("Loading SSL Cert from: " + new File(certPath).getAbsolutePath)
+    logger.debug("Loading SSL Key from: " + new File(keyPath).getAbsolutePath)
 
     new PemKeyCertOptions()
-      .setCertPath(options.certPath)
-      .setKeyPath(options.keyPath)
+      .setCertPath(certPath)
+      .setKeyPath(keyPath)
   }
 }
 

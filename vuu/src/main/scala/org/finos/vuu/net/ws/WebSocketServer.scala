@@ -14,9 +14,6 @@ import org.finos.vuu.util.PathChecker
 
 import java.io.File
 
-//import io.netty.handler.ssl.SslContext;
-//import io.netty.handler.ssl.SslContextBuilder
-
 /**
  * A HTTP server which serves Web Socket requests at:
  *
