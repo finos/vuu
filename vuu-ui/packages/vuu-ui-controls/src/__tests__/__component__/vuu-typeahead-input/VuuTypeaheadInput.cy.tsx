@@ -1,14 +1,38 @@
+import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import {
   CurrencyWithTypeaheadAllowFreeText,
   CurrencyWithTypeaheadDisallowFreeText,
 } from "../../../../../../showcase/src/examples/UiControls/VuuTypeaheadInput.examples";
+import { CommitHandler } from "@vuu-ui/vuu-utils";
+
+const CurrencyWithTypeaheadAllowFreeTextFixture = ({
+  onCommit,
+}: {
+  onCommit?: CommitHandler;
+}) => (
+  <LocalDataSourceProvider>
+    <CurrencyWithTypeaheadAllowFreeText onCommit={onCommit} />
+  </LocalDataSourceProvider>
+);
+
+const CurrencyWithTypeaheadDisallowFreeTextFixture = ({
+  onCommit,
+}: {
+  onCommit?: CommitHandler;
+}) => (
+  <LocalDataSourceProvider>
+    <CurrencyWithTypeaheadDisallowFreeText onCommit={onCommit} />
+  </LocalDataSourceProvider>
+);
 
 describe("VuuTypeaheadInput", () => {
   describe("Given a TypeaheadInput that shows currency suggestions and allows free text", () => {
     describe("Then a matched input pattern will show currency suggestions", () => {
       it("first of which which can be selected to commit by pressing Enter", () => {
         const onCommit = cy.stub().as("onCommit");
-        cy.mount(<CurrencyWithTypeaheadAllowFreeText onCommit={onCommit} />);
+        cy.mount(
+          <CurrencyWithTypeaheadAllowFreeTextFixture onCommit={onCommit} />,
+        );
         cy.findByRole("combobox").type("G");
 
         cy.findByRole("listbox").should("be.visible");
@@ -36,7 +60,9 @@ describe("VuuTypeaheadInput", () => {
       });
       it("any of which which can be selected (and committed) by clicking", () => {
         const onCommit = cy.stub().as("onCommit");
-        cy.mount(<CurrencyWithTypeaheadAllowFreeText onCommit={onCommit} />);
+        cy.mount(
+          <CurrencyWithTypeaheadAllowFreeTextFixture onCommit={onCommit} />,
+        );
         cy.findByRole("combobox").type("G");
         cy.findByRole("listbox").should("be.visible");
         cy.findAllByRole("option").should("have.length", 2);
@@ -50,7 +76,9 @@ describe("VuuTypeaheadInput", () => {
       });
       it("which can be navigated with Arrow key", () => {
         const onCommit = cy.stub().as("onCommit");
-        cy.mount(<CurrencyWithTypeaheadAllowFreeText onCommit={onCommit} />);
+        cy.mount(
+          <CurrencyWithTypeaheadAllowFreeTextFixture onCommit={onCommit} />,
+        );
         cy.findByRole("combobox").type("G");
 
         cy.findByRole("listbox").should("be.visible");
@@ -79,7 +107,9 @@ describe("VuuTypeaheadInput", () => {
       });
       it("a complete match will always show one suggestion, Enter commits", () => {
         const onCommit = cy.stub().as("onCommit");
-        cy.mount(<CurrencyWithTypeaheadAllowFreeText onCommit={onCommit} />);
+        cy.mount(
+          <CurrencyWithTypeaheadAllowFreeTextFixture onCommit={onCommit} />,
+        );
         cy.findByRole("combobox").type("GBP");
         cy.findByRole("listbox").should("be.visible");
         cy.findAllByRole("option").should("have.length", 1);
@@ -109,7 +139,9 @@ describe("VuuTypeaheadInput", () => {
     describe("Then a non-matched input pattern will show no suggestions", () => {
       it("and any text can be committed", () => {
         const onCommit = cy.stub().as("onCommit");
-        cy.mount(<CurrencyWithTypeaheadAllowFreeText onCommit={onCommit} />);
+        cy.mount(
+          <CurrencyWithTypeaheadAllowFreeTextFixture onCommit={onCommit} />,
+        );
         cy.findByRole("combobox").type("abc");
 
         cy.findAllByRole("option").should("have.length", 1);
@@ -129,7 +161,9 @@ describe("VuuTypeaheadInput", () => {
       });
       it("then clearing previously committed text will automatically commit", () => {
         const onCommit = cy.stub().as("onCommit");
-        cy.mount(<CurrencyWithTypeaheadAllowFreeText onCommit={onCommit} />);
+        cy.mount(
+          <CurrencyWithTypeaheadAllowFreeTextFixture onCommit={onCommit} />,
+        );
         cy.findByRole("combobox").type("abc");
         cy.realPress("Enter");
         cy.get("@onCommit").should(
@@ -153,7 +187,9 @@ describe("VuuTypeaheadInput", () => {
   describe("Given a TypeaheadInput that shows currency suggestions and DISALLOWS free text", () => {
     it("Then a non-matched input pattern will show no suggestions", () => {
       const onCommit = cy.stub().as("onCommit");
-      cy.mount(<CurrencyWithTypeaheadAllowFreeText onCommit={onCommit} />);
+      cy.mount(
+        <CurrencyWithTypeaheadAllowFreeTextFixture onCommit={onCommit} />,
+      );
       cy.findByRole("combobox").type("abc");
 
       cy.findAllByRole("option").should("have.length", 1);
@@ -171,7 +207,9 @@ describe("VuuTypeaheadInput", () => {
     });
     it("Then commit will not be allowed when input text matches no suggestions", () => {
       const onCommit = cy.stub().as("onCommit");
-      cy.mount(<CurrencyWithTypeaheadDisallowFreeText onCommit={onCommit} />);
+      cy.mount(
+        <CurrencyWithTypeaheadDisallowFreeTextFixture onCommit={onCommit} />,
+      );
       cy.findByRole("combobox").type("abc");
       cy.realPress("Enter");
       cy.get("@onCommit").should("not.be.called");
@@ -179,7 +217,9 @@ describe("VuuTypeaheadInput", () => {
 
     it("Then warning will be shown if commit attempted on non matching text", () => {
       const onCommit = cy.stub().as("onCommit");
-      cy.mount(<CurrencyWithTypeaheadDisallowFreeText onCommit={onCommit} />);
+      cy.mount(
+        <CurrencyWithTypeaheadDisallowFreeTextFixture onCommit={onCommit} />,
+      );
       cy.findByRole("combobox").type("abc");
       cy.realPress("Enter");
 

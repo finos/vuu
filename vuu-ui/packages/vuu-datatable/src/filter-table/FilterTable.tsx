@@ -7,6 +7,7 @@ import { HTMLAttributes } from "react";
 import { useFilterTable } from "./useFilterTable";
 
 import filterTableCss from "./FilterTable.css";
+import { DataSourceProvider } from "@vuu-ui/vuu-utils";
 
 const classBase = "vuuFilterTable";
 
@@ -34,13 +35,15 @@ export const FilterTable = ({
   });
 
   return (
-    <div
-      {...htmlAttributes}
-      className={cx(classBase)}
-      style={{ ...styleProps }}
-    >
-      <FilterBar {...filterBarProps} />
-      <Table {...TableProps} height="auto" width="auto" />
-    </div>
+    <DataSourceProvider dataSource={TableProps.dataSource}>
+      <div
+        {...htmlAttributes}
+        className={cx(classBase)}
+        style={{ ...styleProps }}
+      >
+        <FilterBar {...filterBarProps} />
+        <Table {...TableProps} height="auto" width="auto" />
+      </div>
+    </DataSourceProvider>
   );
 };

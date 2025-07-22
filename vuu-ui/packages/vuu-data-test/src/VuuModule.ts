@@ -3,13 +3,11 @@ import {
   DataSourceConfig,
   DataSourceVisualLinkCreatedMessage,
   OpenDialogActionWithSchema,
-  SuggestionFetcher,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
 import {
   VuuRpcMenuRequest,
   VuuRpcViewportRequest,
-  TypeaheadParams,
   VuuMenu,
   VuuRowDataItemType,
   VuuTable,
@@ -26,12 +24,10 @@ import {
 import { isViewportRpcRequest, uuid } from "@vuu-ui/vuu-utils";
 import { Table, buildDataColumnMapFromSchema } from "./Table";
 import { TickingArrayDataSource } from "./TickingArrayDataSource";
-import { makeSuggestions } from "./makeSuggestions";
 import { RuntimeVisualLink } from "./RuntimeVisualLink";
 
 export interface IVuuModule<T extends string = string> {
   createDataSource: (tableName: T) => DataSource;
-  typeaheadHook: () => SuggestionFetcher;
 }
 
 export interface VuuModuleConstructorProps<T extends string = string> {
@@ -253,10 +249,6 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     }
   }
 
-  get typeaheadHook() {
-    return () => this.suggestionFetcher;
-  }
-
   protected get sessionTableMap() {
     return this.#sessionTableMap;
   }
@@ -287,23 +279,6 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
       );
     }
   }
-
-  private suggestionFetcher: SuggestionFetcher = ([
-    vuuTable,
-    column,
-    pattern,
-  ]: TypeaheadParams) => {
-    const table = this.#tables[vuuTable.table as T];
-    if (table) {
-      return makeSuggestions(table, column, pattern);
-    } else {
-      throw Error(
-        `${this.#name} suggestionFetcher, unknown table ${vuuTable.module} ${
-          vuuTable.table
-        }`,
-      );
-    }
-  };
 
   private openBulkEdits: ServiceHandler = async (rpcRequest) => {
     if (withParams(rpcRequest)) {
@@ -359,7 +334,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
         method: "???",
         namedParams: {},
         params: [],
-        type: "VIEW_PORT_RPC_REPONSE",
+        type: "VIEW_PORT_RPC_RESPONSE",
         vpId,
       } as VuuRpcViewportResponse;
     } else {

@@ -7,6 +7,7 @@ import { ColumnPicker } from "@vuu-ui/vuu-filters/src/filter-clause/ColumnPicker
 
 import "./FilterClause.examples.css";
 import { Input } from "@salt-ds/core";
+import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
 
 const FilterClauseTemplate = ({
   filterClauseModel = new FilterClauseModel({}),
@@ -86,6 +87,7 @@ export const PartialFilterClauseColumnOnly = () => {
   );
 };
 
+/** tags=data-consumer */
 export const PartialFilterClauseColumnAndOperator = () => {
   const filterClauseModel = useMemo(
     () =>
@@ -95,10 +97,23 @@ export const PartialFilterClauseColumnAndOperator = () => {
       }),
     [],
   );
+  return <FilterClauseTemplate filterClauseModel={filterClauseModel} />;
+};
+
+/** tags=data-consumer */
+export const PartialFilterClauseColumnAndOperatorWithDataSource = () => {
+  const { VuuDataSource } = useData();
+  const dataSource = useMemo(() => {
+    const schema = getSchema("instruments");
+    return new VuuDataSource({
+      columns: schema.columns.map(toColumnName),
+      table: schema.table,
+    });
+  }, [VuuDataSource]);
   return (
-    <LocalDataSourceProvider>
-      <FilterClauseTemplate filterClauseModel={filterClauseModel} />
-    </LocalDataSourceProvider>
+    <DataSourceProvider dataSource={dataSource}>
+      <PartialFilterClauseColumnAndOperator />
+    </DataSourceProvider>
   );
 };
 

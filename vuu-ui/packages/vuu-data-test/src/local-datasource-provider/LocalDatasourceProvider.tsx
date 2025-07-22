@@ -3,14 +3,7 @@ import type {
   DataSourceConstructorProps,
   ServerAPI,
 } from "@vuu-ui/vuu-data-types";
-import type {
-  VuuCreateVisualLink,
-  VuuRemoveVisualLink,
-  VuuRpcMenuRequest,
-  VuuRpcServiceRequest,
-  VuuRpcViewportRequest,
-  VuuTable,
-} from "@vuu-ui/vuu-protocol-types";
+import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { basketModule, basketSchemas, isBasketTable } from "../basket";
 import { isSimulTable, simulModule, simulSchemas } from "../simul";
 import { ReactNode } from "react";
@@ -38,29 +31,8 @@ const serverAPI: Pick<
       );
     }
   },
-  rpcCall: async <T = unknown,>(
-    message:
-      | VuuRpcServiceRequest
-      | VuuRpcMenuRequest
-      | VuuRpcViewportRequest
-      | VuuCreateVisualLink
-      | VuuRemoveVisualLink,
-  ) => {
-    if (
-      message.type === "RPC_CALL" &&
-      message.service === "TypeAheadRpcHandler"
-    ) {
-      const [vuuTable] = message.params;
-
-      if (isSimulTable(vuuTable)) {
-        const typeahead = simulModule.typeaheadHook();
-        return typeahead(message.params) as T;
-      } else if (isBasketTable(vuuTable)) {
-        const typeahead = basketModule.typeaheadHook();
-        return typeahead(message.params) as T;
-      }
-    }
-    throw Error("LocalDataSource provider only handles TypeAhead rpc calls");
+  rpcCall: async () => {
+    throw Error("LocalDataSource provider no longer supports rpc calls");
   },
 };
 

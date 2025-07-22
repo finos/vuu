@@ -28,12 +28,12 @@ import type {
   VuuTableListResponse,
   VuuTableMetaResponse,
   VuuLinkDescriptor,
-  VuuRpcServiceRequest,
   VuuTable,
   VuuRpcRequest,
   VuuCreateVisualLink,
   VuuRemoveVisualLink,
   VuuViewportRangeRequest,
+  VuuRpcServiceRequest,
 } from "@vuu-ui/vuu-protocol-types";
 import {
   isVuuMenuRpcRequest,
@@ -44,6 +44,8 @@ import {
   isSessionTable,
   isSessionTableActionMessage,
   isVisualLinkMessage,
+  isRpcServiceRequest,
+  hasViewPortContext,
 } from "@vuu-ui/vuu-utils";
 import {
   createSchemaFromTableMetadata,
@@ -52,7 +54,6 @@ import {
   stripRequestId,
 } from "../message-utils";
 import * as Message from "./messages";
-import { getRpcServiceModule } from "./rpc-services";
 import { NO_DATA_UPDATE, Viewport } from "./viewport";
 import { WebSocketConnection } from "../WebSocketConnection";
 
@@ -656,11 +657,31 @@ export class ServerProxy {
     }
   }
 
-  private rpcCall(message: WithRequestId<VuuRpcServiceRequest>) {
-    const [requestId, rpcRequest] =
-      stripRequestId<VuuRpcServiceRequest>(message);
-    const module = getRpcServiceModule(rpcRequest.service);
-    this.sendMessageToServer(rpcRequest, requestId, { module });
+  private rpcRequest(message: WithRequestId<VuuRpcServiceRequest>) {
+    if (hasViewPortContext(message)) {
+      const viewport = this.getViewportForClient(
+        message.context.viewPortId,
+        false,
+      );
+      if (viewport?.serverViewportId) {
+        const [requestId, rpcRequest] =
+          stripRequestId<VuuRpcServiceRequest>(message);
+        this.sendMessageToServer(
+          {
+            ...rpcRequest,
+            context: {
+              type: "VIEWPORT_CONTEXT",
+              viewPortId: viewport.serverViewportId,
+            },
+          },
+          requestId,
+        );
+      }
+    } else {
+      throw Error(
+        `[ServerProxy] rpcRequest only supports VIEWPORT_CONTEXT at present`,
+      );
+    }
   }
 
   public handleMessageFromClient(
@@ -719,6 +740,8 @@ export class ServerProxy {
       return this.viewportRpcCall(
         message as WithRequestId<VuuRpcViewportRequest>,
       );
+    } else if (isRpcServiceRequest(message)) {
+      return this.rpcRequest(message);
     } else if (isVuuMenuRpcRequest(message as VuuRpcRequest)) {
       return this.menuRpcCall(message as WithRequestId<VuuRpcMenuRequest>);
     } else if (message.type === "disconnect") {
@@ -753,8 +776,6 @@ export class ServerProxy {
           });
           return;
         }
-        case "RPC_CALL":
-          return this.rpcCall(message);
         default:
       }
     }
@@ -1149,20 +1170,21 @@ export class ServerProxy {
         }
         break;
 
-      case "RPC_RESP":
+      case "RPC_RESPONSE":
         {
-          const { method, result } = body;
+          const { action, error, result } = body;
           // check to see if the orderEntry is already open on the page
           this.postMessageToClient({
-            type: "RPC_RESP",
-            method,
+            action,
+            type: "RPC_RESPONSE",
+            error,
             result,
             requestId,
           });
         }
         break;
 
-      case "VIEW_PORT_RPC_REPONSE":
+      case "VIEW_PORT_RPC_RESPONSE":
         {
           const { method, action } = body;
           this.postMessageToClient({

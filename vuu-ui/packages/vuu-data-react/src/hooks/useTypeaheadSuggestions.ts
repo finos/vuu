@@ -1,9 +1,11 @@
 import { SuggestionFetcher, TableSchemaTable } from "@vuu-ui/vuu-data-types";
 import {
-  VuuRpcServiceRequest,
+  RpcResultError,
+  RpcResultSuccess,
   TypeaheadParams,
+  VuuRpcServiceRequest,
 } from "@vuu-ui/vuu-protocol-types";
-import { useData } from "@vuu-ui/vuu-utils";
+import { useDataSource } from "@vuu-ui/vuu-utils";
 import { useCallback } from "react";
 
 export const getTypeaheadParams = (
@@ -19,35 +21,53 @@ export const getTypeaheadParams = (
 };
 
 export const useTypeaheadSuggestions = () => {
-  const { getServerAPI } = useData();
+  const dataSource = useDataSource(false);
   return useCallback<SuggestionFetcher>(
-    async (params: TypeaheadParams) => {
-      const rpcMessage: VuuRpcServiceRequest =
-        params.length === 2
+    async ([{ module, table }, column, starts]: TypeaheadParams) => {
+      if (dataSource === undefined) {
+        console.warn(
+          `[useTypeaheadSuggestions] no dataSource provided (use DataSourceProvider)`,
+        );
+        return false;
+      }
+      const rpcMessage: Omit<VuuRpcServiceRequest, "context"> =
+        starts === undefined
           ? {
-              type: "RPC_CALL",
-              service: "TypeAheadRpcHandler",
-              method: "getUniqueFieldValues",
-              params,
+              params: {
+                column,
+                module,
+                table,
+              },
+              rpcName: "getUniqueFieldValues",
+              type: "RPC_REQUEST",
             }
           : {
-              type: "RPC_CALL",
-              service: "TypeAheadRpcHandler",
-              method: "getUniqueFieldValuesStartingWith",
-              params,
+              params: {
+                column,
+                module,
+                starts,
+                table,
+              },
+              rpcName: "getUniqueFieldValuesStartingWith",
+              type: "RPC_REQUEST",
             };
 
       try {
-        const serverAPI = await getServerAPI();
-        // We don't just return serverAPI.rpcCall . In the case of an
+        // We don't just return rpcCall . In the case of an
         // error we will be returning the rejected promise, bypassing
         // the catch block below.
-        const response = await serverAPI.rpcCall<string[]>(rpcMessage);
-        return response;
+        const response = await dataSource.rpcCall?.<
+          RpcResultSuccess | RpcResultError
+        >(rpcMessage);
+        if (response?.type === "SUCCESS_RESULT") {
+          return response.data as string[];
+        } else {
+          return false;
+        }
       } catch (err) {
         return false;
       }
     },
-    [getServerAPI],
+    [dataSource],
   );
 };

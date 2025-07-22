@@ -123,7 +123,7 @@ const cancelOrder: ServiceHandler = async (rpcRequest) => {
 const startOrders = async () => {
   startGeneratingNewOrders();
   return {
-    type: "VIEW_PORT_RPC_REPONSE",
+    type: "VIEW_PORT_RPC_RESPONSE",
     action: {
       type: "VP_RPC_SUCCESS",
     },
@@ -136,7 +136,7 @@ const startOrders = async () => {
 const stopOrders = async () => {
   stopGeneratingNewOrders();
   return {
-    type: "VIEW_PORT_RPC_REPONSE",
+    type: "VIEW_PORT_RPC_RESPONSE",
     action: {
       type: "VP_RPC_SUCCESS",
     },

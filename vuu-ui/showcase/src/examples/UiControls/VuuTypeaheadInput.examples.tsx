@@ -1,9 +1,14 @@
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import { getSchema } from "@vuu-ui/vuu-data-test";
 import { TableSchemaTable } from "@vuu-ui/vuu-data-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { VuuTypeaheadInput } from "@vuu-ui/vuu-ui-controls";
-import { CommitHandler } from "@vuu-ui/vuu-utils";
-import { CSSProperties } from "react";
+import {
+  CommitHandler,
+  DataSourceProvider,
+  toColumnName,
+  useData,
+} from "@vuu-ui/vuu-utils";
+import { CSSProperties, useMemo } from "react";
 
 const TypeaheadInputTemplate = ({
   allowFreeInput,
@@ -18,7 +23,6 @@ const TypeaheadInputTemplate = ({
   table?: TableSchemaTable;
 }) => {
   const handleCommit: CommitHandler = (evt, value) => {
-    console.log(`commit ${value}`);
     onCommit?.(evt, value);
   };
 
@@ -32,49 +36,69 @@ const TypeaheadInputTemplate = ({
   );
 };
 
+/** tags=data-consumer */
 export const CurrencyWithTypeaheadAllowFreeText = ({
   onCommit,
 }: {
   onCommit?: CommitHandler;
 }) => {
+  const { VuuDataSource } = useData();
+  const dataSource = useMemo(() => {
+    const schema = getSchema("instruments");
+    return new VuuDataSource({
+      columns: schema.columns.map(toColumnName),
+      table: schema.table,
+    });
+  }, [VuuDataSource]);
+
   return (
-    <LocalDataSourceProvider>
-      <div
-        style={{
-          alignItems: "center",
-          display: "flex",
-          padding: "0 3px",
-          width: 200,
-          height: 32,
-          border: "solid 1px lightgray",
-        }}
-      >
+    <div
+      style={{
+        alignItems: "center",
+        display: "flex",
+        padding: "0 3px",
+        width: 200,
+        height: 32,
+        border: "solid 1px lightgray",
+      }}
+    >
+      <DataSourceProvider dataSource={dataSource}>
         <TypeaheadInputTemplate onCommit={onCommit} />
-      </div>
-    </LocalDataSourceProvider>
+      </DataSourceProvider>
+    </div>
   );
 };
 
+/** tags=data-consumer */
 export const CurrencyWithTypeaheadDisallowFreeText = ({
   onCommit,
 }: {
   onCommit?: CommitHandler;
 }) => {
+  const { VuuDataSource } = useData();
+  const dataSource = useMemo(() => {
+    const schema = getSchema("instruments");
+    return new VuuDataSource({
+      columns: schema.columns.map(toColumnName),
+      table: schema.table,
+    });
+  }, [VuuDataSource]);
+
   return (
-    <LocalDataSourceProvider>
-      <div
-        style={{
-          alignItems: "center",
-          display: "flex",
-          padding: "0 3px",
-          width: 200,
-          height: 32,
-          border: "solid 1px lightgray",
-        }}
-      >
+    <div
+      style={{
+        alignItems: "center",
+        display: "flex",
+        padding: "0 3px",
+        width: 200,
+        height: 32,
+        border: "solid 1px lightgray",
+      }}
+    >
+      <DataSourceProvider dataSource={dataSource}>
         <TypeaheadInputTemplate allowFreeInput={false} onCommit={onCommit} />
-      </div>
-    </LocalDataSourceProvider>
+      </DataSourceProvider>
+    </div>
   );
 };
 
