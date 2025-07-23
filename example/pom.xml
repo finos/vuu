@@ -5,12 +5,12 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>vuu-parent</artifactId>
-        <version>0.9.65-SNAPSHOT</version>
+        <version>0.9.76-SNAPSHOT</version>
     </parent>
 
     <packaging>pom</packaging>
-
     <artifactId>example</artifactId>
+    <name>${artifactId}</name>
 
     <modules>
         <module>editable</module>

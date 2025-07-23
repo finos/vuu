@@ -44,6 +44,7 @@ export abstract class BaseDataSource
   protected _size = 0;
   protected _title: string | undefined;
 
+  #freezeTimestamp: number | undefined = undefined;
   #pageCount = 0;
 
   private awaitingConfirmationOfConfigChanges = false;
@@ -328,6 +329,35 @@ export abstract class BaseDataSource
         return otherChanges;
       }
     }
+  }
+
+  freeze() {
+    if (!this.isFrozen) {
+      this.#freezeTimestamp = new Date().getTime();
+      this.emit("freeze", true, this.#freezeTimestamp);
+    } else {
+      throw Error(
+        "[BaseDataSource] cannot freeze, dataSource is already frozen",
+      );
+    }
+  }
+  unfreeze() {
+    if (this.isFrozen) {
+      const freezeTimestamp = this.#freezeTimestamp as number;
+      this.#freezeTimestamp = undefined;
+      this.emit("freeze", false, freezeTimestamp);
+    } else {
+      throw Error(
+        "[BaseDataSource] cannot freeze, dataSource is already frozen",
+      );
+    }
+  }
+  get freezeTimestamp() {
+    return this.#freezeTimestamp;
+  }
+
+  get isFrozen() {
+    return typeof this.#freezeTimestamp === "number";
   }
 
   abstract rangeRequest(range: VuuRange): void;

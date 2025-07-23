@@ -5,17 +5,18 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>example</artifactId>
-        <version>0.9.65-SNAPSHOT</version>
+        <version>0.9.76-SNAPSHOT</version>
         <!--relativePath>../../pom.xml</relativePath-->
     </parent>
 
     <artifactId>rest-api</artifactId>
+    <name>${artifactId}</name>
 
     <dependencies>
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.65-SNAPSHOT</version>
+            <version>0.9.76-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.softwaremill.sttp.client4</groupId>

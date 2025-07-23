@@ -1,29 +1,29 @@
 import { Menu, MenuPanel, MenuTrigger } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { MenuActionHandler } from "@vuu-ui/vuu-context-menu";
 import {
   ColumnDescriptor,
   ColumnMenuPermissions,
 } from "@vuu-ui/vuu-table-types";
 import { IconButton } from "@vuu-ui/vuu-ui-controls";
-import { useTableContext } from "../table-provider/TableProvider";
 import cx from "clsx";
 import { HTMLAttributes, MouseEventHandler, useCallback } from "react";
-
-import columnMenuCss from "./ColumnMenu.css";
+import { defaultTableSettingsPermissions } from "../table-column-settings/TableSettingsPanel";
+import { useTableContext } from "../table-provider/TableProvider";
 import {
   buildAggregationMenuItems,
-  buildPinMenuItems,
   buildGroupMenu,
+  buildPinMenuItems,
+  buildSettingsMenuItems,
   buildSortMenu,
   buildVisibilityMenuItems,
   ColumnMenuActionType,
   getColumnMenuActionType,
   type MenuItemClickHandler,
-  buildSettingsMenuItems,
 } from "./column-menu-utils";
-import { MenuActionHandler } from "@vuu-ui/vuu-context-menu";
-import { defaultTableSettingsPermissions } from "../table-column-settings/TableSettingsPanel";
+
+import columnMenuCss from "./ColumnMenu.css";
 
 const classBase = "vuuColumnMenu";
 

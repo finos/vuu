@@ -2,18 +2,18 @@ import type { DataSourceRow } from "@vuu-ui/vuu-data-types";
 import type { VuuSort, VuuSortType } from "@vuu-ui/vuu-protocol-types";
 import { ColumnMap } from "@vuu-ui/vuu-utils";
 
-type SortDef = [number, VuuSortType];
+export type ColIndexSortDef = [number, VuuSortType];
 type SortPredicate = (
   r1: DataSourceRow,
   r2: DataSourceRow,
-  sortDefDef: SortDef,
+  sortDefDef: ColIndexSortDef,
 ) => SortCompareResult;
 type SortCompareResult = 0 | 1 | -1;
 type RowSortComparatorFactory = (
-  sortDefs: SortDef[],
+  sortDefs: ColIndexSortDef[],
   test?: SortPredicate,
 ) => RowSortComparator;
-type RowSortComparator = (
+export type RowSortComparator = (
   item1: DataSourceRow,
   item2: DataSourceRow,
 ) => SortCompareResult;
@@ -30,7 +30,9 @@ const defaultSortPredicate: SortPredicate = (r1, r2, [i, direction]) => {
   }
 };
 
-const sortComparator = (sortDefs: SortDef[]): RowSortComparator => {
+export const sortComparator = (
+  sortDefs: ColIndexSortDef[],
+): RowSortComparator => {
   if (sortDefs.length === 1) {
     return singleColComparator(sortDefs);
   } else if (sortDefs.length === 2) {
@@ -75,10 +77,33 @@ export const sortRows = (
   { sortDefs }: VuuSort,
   columnMap: ColumnMap,
 ) => {
-  const indexedSortDefs = sortDefs.map<SortDef>(({ column, sortType }) => [
-    columnMap[column],
-    sortType,
-  ]);
+  const indexedSortDefs = sortDefs.map<ColIndexSortDef>(
+    ({ column, sortType }) => [columnMap[column], sortType],
+  );
   const comparator = sortComparator(indexedSortDefs);
   return rows.slice().sort(comparator);
 };
+
+export function binarySearch(
+  items: DataSourceRow[],
+  item: DataSourceRow,
+  comparator: RowSortComparator,
+) {
+  let l = 0;
+  let h = items.length - 1;
+  let m;
+  let comparison;
+
+  while (l <= h) {
+    m = (l + h) >>> 1; /* equivalent to Math.floor((l + h) / 2) but faster */
+    comparison = comparator(items[m], item);
+    if (comparison < 0) {
+      l = m + 1;
+    } else if (comparison > 0) {
+      h = m - 1;
+    } else {
+      return m;
+    }
+  }
+  return ~l;
+}

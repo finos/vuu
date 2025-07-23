@@ -25,8 +25,8 @@ import {
   ClientToServerCloseTreeNode,
   VuuCreateVisualLink,
   VuuViewportCreateRequest,
-  ClientToServerDisable,
-  ClientToServerEnable,
+  VuuViewportDisableRequest,
+  VuuViewportEnableRequest,
   ClientToServerOpenTreeNode,
   VuuRemoveVisualLink,
   ClientToServerSelection,
@@ -651,7 +651,7 @@ export class Viewport {
     return {
       type: Message.ENABLE_VP,
       viewPortId: this.serverViewportId,
-    } as ClientToServerEnable;
+    } as VuuViewportEnableRequest;
   }
 
   disable(requestId: string) {
@@ -661,7 +661,7 @@ export class Viewport {
     return {
       type: Message.DISABLE_VP,
       viewPortId: this.serverViewportId,
-    } as ClientToServerDisable;
+    } as VuuViewportDisableRequest;
   }
 
   setConfig(requestId: string, config: WithFullConfig) {
@@ -950,8 +950,10 @@ export class Viewport {
   }
 }
 
+const isNew = false;
+
 const toClientRow = (
-  { rowIndex, rowKey, sel: isSelected, data }: VuuRow,
+  { rowIndex, rowKey, sel: isSelected, data, ts }: VuuRow,
   keys: KeySet,
   selectedRows: Selection,
 ) => {
@@ -964,11 +966,13 @@ const toClientRow = (
     0,
     rowKey,
     isSelected ? getSelectionStatus(selectedRows, rowIndex) : 0,
+    ts,
+    isNew,
   ].concat(data) as DataSourceRow;
 };
 
 const toClientRowTree = (
-  { rowIndex, rowKey, sel: isSelected, data }: VuuRow,
+  { rowIndex, rowKey, sel: isSelected, data, ts }: VuuRow,
   keys: KeySet,
   selectedRows: Selection,
 ) => {
@@ -984,5 +988,7 @@ const toClientRowTree = (
     count,
     rowKey,
     isSelected ? getSelectionStatus(selectedRows, rowIndex) : 0,
+    ts,
+    isNew,
   ].concat(rest) as DataSourceRow;
 };

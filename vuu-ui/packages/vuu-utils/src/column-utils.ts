@@ -289,10 +289,9 @@ export const metadataKeys = {
   COUNT: 5,
   KEY,
   SELECTED: 7,
-  // TIMESTAMP: 8,
-  // IS_NEW: 9,
-  // count: 10,
-  count: 8,
+  TIMESTAMP: 8,
+  IS_NEW: 9,
+  count: 10,
   // TODO following only used in datamodel
   PARENT_IDX: "parent_idx",
   IDX_POINTER: "idx_pointer",

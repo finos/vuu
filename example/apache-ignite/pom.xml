@@ -4,10 +4,12 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>example</artifactId>
-        <version>0.9.65-SNAPSHOT</version>
+        <version>0.9.76-SNAPSHOT</version>
     </parent>
 
     <artifactId>apache-ignite</artifactId>
+    <name>${artifactId}</name>
+
     <properties>
         <ignite.version>2.16.0</ignite.version>
         <opencensus.version>0.31.1</opencensus.version>
@@ -19,25 +21,25 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>order</artifactId>
-            <version>0.9.65-SNAPSHOT</version>
+            <version>0.9.76-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu.plugin</groupId>
             <artifactId>virtualized-table-plugin</artifactId>
-            <version>0.9.65-SNAPSHOT</version>
+            <version>0.9.76-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu.plugin</groupId>
             <artifactId>ignite-plugin</artifactId>
-            <version>0.9.65-SNAPSHOT</version>
+            <version>0.9.76-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.65-SNAPSHOT</version>
+            <version>0.9.76-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.ignite</groupId>

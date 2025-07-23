@@ -244,7 +244,6 @@ export function buildGroupMenu(
 
     switch (columnGroupStatus) {
       case "no-groupby":
-      case "single-groupby-other-column":
         return (
           <MenuItem
             data-menu-action-id="group-column"
@@ -252,6 +251,21 @@ export function buildGroupMenu(
             onClick={menuActionClickHandler}
           >{`Group by ${label}`}</MenuItem>
         );
+
+      case "single-groupby-other-column":
+        menuItems.push(
+          <MenuItem
+            data-menu-action-id="group-column"
+            key="group-column"
+            onClick={menuActionClickHandler}
+          >{`Group by ${label}`}</MenuItem>,
+          <MenuItem
+            data-menu-action-id="add-to-group"
+            key="add-to-group"
+            onClick={menuActionClickHandler}
+          >{`Add ${label} to groupby`}</MenuItem>,
+        );
+        break;
       case "single-groupby":
         menuItems.push(
           <MenuItem

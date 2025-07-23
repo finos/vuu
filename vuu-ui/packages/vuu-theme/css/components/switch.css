@@ -12,7 +12,7 @@
         padding: 0 2px;
         width: 26px;
     }
-    
+
     .saltSwitch:not(.saltSwitch-disabled):hover .saltSwitch-track {
         --switch-color: var(--vuu-color-pink-10);  
     }
@@ -25,7 +25,7 @@
         margin:0;
         width: 10px;
     }
-    
+ 
     .saltSwitch-checked {
         --switch-color: var(--vuu-color-purple-10);  
     }
@@ -55,5 +55,31 @@
         width: var(--vuu-icon-width, var(--vuu-icon-size, 12px));
     
     }
+
+    /* Large variant - currently just used in FreezeControl */
+    .saltSwitch.vuuLarge {
+
+        .saltSwitch-track {
+            border-radius: 12px;
+            height: 24px;
+            padding: 0 4px;
+            width: 42px;
+        }
+        
+        .saltSwitch-thumb {
+            border-radius: 8px;
+            height: 16px;
+            width: 16px;
+        }
+
+        &.saltSwitch-checked {
+            .saltSwitch-thumb:after {
+                --vuu-icon-size: 15px;
+                
+            }
+        }
+
+    }
+
 }
 

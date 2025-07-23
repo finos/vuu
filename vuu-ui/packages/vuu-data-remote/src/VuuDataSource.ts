@@ -249,6 +249,26 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     }
   }
 
+  freeze() {
+    super.freeze();
+    if (this.viewport) {
+      this.server?.send({
+        viewport: this.viewport,
+        type: "FREEZE_VP",
+      });
+    }
+  }
+
+  unfreeze() {
+    super.unfreeze();
+    if (this.viewport) {
+      this.server?.send({
+        viewport: this.viewport,
+        type: "UNFREEZE_VP",
+      });
+    }
+  }
+
   disable() {
     info?.(`disable #${this.viewport}, current status ${this.#status}`);
     if (this.viewport) {

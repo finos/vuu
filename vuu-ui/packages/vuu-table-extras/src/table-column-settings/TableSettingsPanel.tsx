@@ -72,7 +72,7 @@ export const TableSettingsPanel = ({
     allowColumnLabelCase = true,
     allowColumnDefaultWidth = true,
     allowGridSeparators = true,
-    allowCalculatedColumns,
+    allowCalculatedColumns = true,
     ...columnListPermissions
   } = permissions;
 

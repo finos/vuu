@@ -1,10 +1,11 @@
 name: Deploy to MVN Central
 
 env:
-    CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
-    CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
-    CI_GPG_PASSPHRASE: ${{ secrets.CI_GPG_PASSPHRASE }}
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
+  CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
+  CI_GPG_PASSPHRASE: ${{ secrets.CI_GPG_PASSPHRASE }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
 on:
   workflow_dispatch:
@@ -57,11 +58,17 @@ jobs:
 
       - name: Configure git
         run: |
+          gpg --list-keys
           git config --global committer.email "infra@finos.org"
           git config --global committer.name "FINOS Admin"
           git config --global author.email "${GITHUB_ACTOR}@users.noreply.github.com"
           git config --global author.name "${GITHUB_ACTOR}"
 
-      - name: Build with Maven
-        run: mvn --no-transfer-progress release:prepare release:perform -P sign-it -Dsign=true -s .settings/settings.xml -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}
+      - name: Setup SSH Access for Commit
+        uses: kielabokkie/ssh-key-and-known-hosts-action@v1.3.0
+        with:
+          ssh-private-key: ${{ secrets.COMMIT_SSH_PRIVATE_KEY }}
+          ssh-host: github.com
 
+      - name: Build with Maven
+        run: mvn --no-transfer-progress release:prepare release:perform -P sign-it -Dsign=true -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ github.event.inputs.developmentVersion }}

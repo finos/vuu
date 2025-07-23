@@ -4,23 +4,24 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>plugin</artifactId>
-        <version>0.9.65-SNAPSHOT</version>
+        <version>0.9.76-SNAPSHOT</version>
     </parent>
 
     <groupId>org.finos.vuu.plugin</groupId>
     <artifactId>virtualized-table-plugin</artifactId>
+    <name>${artifactId}</name>
 
     <dependencies>
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.65-SNAPSHOT</version>
+            <version>0.9.76-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.65-SNAPSHOT</version>
+            <version>0.9.76-SNAPSHOT</version>
             <classifier>tests</classifier>
             <type>test-jar</type>
             <scope>test</scope>
@@ -29,13 +30,13 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>price</artifactId>
-            <version>0.9.65-SNAPSHOT</version>
+            <version>0.9.76-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>order</artifactId>
-            <version>0.9.65-SNAPSHOT</version>
+            <version>0.9.76-SNAPSHOT</version>
         </dependency>
 
         <dependency>

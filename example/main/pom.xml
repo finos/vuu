@@ -5,60 +5,61 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>example</artifactId>
-        <version>0.9.65-SNAPSHOT</version>
+        <version>0.9.76-SNAPSHOT</version>
         <!--relativePath>../../pom.xml</relativePath-->
     </parent>
 
     <artifactId>main</artifactId>
+    <name>${artifactId}</name>
 
     <dependencies>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.65-SNAPSHOT</version>
+            <version>0.9.76-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>basket</artifactId>
-            <version>0.9.65-SNAPSHOT</version>
+            <version>0.9.76-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>virtualized-table</artifactId>
-            <version>0.9.65-SNAPSHOT</version>
+            <version>0.9.76-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>price</artifactId>
-            <version>0.9.65-SNAPSHOT</version>
+            <version>0.9.76-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>order</artifactId>
-            <version>0.9.65-SNAPSHOT</version>
+            <version>0.9.76-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>editable</artifactId>
-            <version>0.9.65-SNAPSHOT</version>
+            <version>0.9.76-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>permission</artifactId>
-            <version>0.9.65-SNAPSHOT</version>
+            <version>0.9.76-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>rest-api</artifactId>
-            <version>0.9.65-SNAPSHOT</version>
+            <version>0.9.76-SNAPSHOT</version>
         </dependency>
 
         <dependency>

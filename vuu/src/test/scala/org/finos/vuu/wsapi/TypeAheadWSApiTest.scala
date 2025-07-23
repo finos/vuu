@@ -13,6 +13,7 @@ import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
 import org.finos.vuu.wsapi.helpers.{FakeDataSource, TestProvider}
 
 import scala.collection.immutable.ListMap
+import scala.concurrent.duration.MILLISECONDS
 
 class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
@@ -37,7 +38,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       responseBody.rpcName shouldEqual "getUniqueFieldValues"
 
       val result = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      result.data shouldEqual List("12355", "45321", "89564", "42262", "65879", "88875", "45897", "23564", "33657", "99854")
+      result.data shouldEqual List("23564", "33657", "42262", "45321", "45897", "54874", "54875", "54876", "65879", "78458")
 
       And("return No Action")
       responseBody.action shouldBe a[NoneAction]
@@ -58,7 +59,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
       responseBody.rpcName shouldEqual "getUniqueFieldValuesStartingWith"
       val result = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
-      result.data shouldEqual List("Tom Sawyer", "Tom Thatcher")
+      result.data shouldEqual List("Tom Sawyer", "Tom DeLay")
     }
 
     Scenario("Start with a specified string that has no matching value") {
@@ -177,7 +178,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       val result2 = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody2.result)
 
       result1.data shouldEqual List("Sid Sawyer", "Sally Phelps")
-      result2.data shouldEqual List("Tom Sawyer", "Tom Thatcher")
+      result2.data shouldEqual List("Tom Sawyer", "Tom DeLay")
     }
   }
 
@@ -219,6 +220,8 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       "row11" -> Map("Id" -> "row11", "Name" -> "Sally Phelps", "Account" -> 99854, "HiddenColumn" -> 10),
       "row12" -> Map("Id" -> "row12", "Name" -> "Polly Phelps", "Account" -> 78458, "HiddenColumn" -> 10),
       "row13" -> Map("Id" -> "row13", "Name" -> "Polly Phelps", "Account" -> 54874, "HiddenColumn" -> 10),
+      "row14" -> Map("Id" -> "row14", "Name" -> "Johnny Cash", "Account" -> 54875, "HiddenColumn" -> 10),
+      "row15" -> Map("Id" -> "row15", "Name" -> "Tom DeLay", "Account" -> 54876, "HiddenColumn" -> 10),
     ))
     val providerFactory = (table: DataTable, _: IVuuServer) => new TestProvider(table, dataSource)
 
@@ -238,10 +241,13 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
   }
 
   private def createViewPort = {
-    val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(1, 100), columns = Array("Id", "Name", "Account"))
+    val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(1, 100), columns = Array("Id", "Name", "Account"), SortSpec(List(SortDef("Account", 'A'))), Array.empty[String], FilterSpec("Account > 20000"))
     vuuClient.send(sessionId, tokenId, createViewPortRequest)
     val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
     val viewPortId = viewPortCreateResponse.get.viewPortId
+    // Verify viewport keys are populated. viewPortRunner cycle is 100ms
+    val tableSizeResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
+    tableSizeResponse.get.rows(0).vpSize shouldEqual 13
     viewPortId
   }
 
