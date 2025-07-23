@@ -24,7 +24,7 @@ object VirtualTableModule extends DefaultModule{
       (table, vs) => new ReallyBigVirtualizedDataProvider(),
       (table, _, _, tableContainer) => ViewPortDef(
         columns = table.getTableDef.columns,
-        service = new DefaultRpcHandler(Some(tableContainer))
+        service = new DefaultRpcHandler()(tableContainer)
       )
     ).asModule()
   }
