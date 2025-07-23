@@ -6,7 +6,7 @@ import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler}
 import org.finos.vuu.viewport._
 
-class FixSequenceRpcService(tableContainer: TableContainer)(implicit clock: Clock) extends DefaultRpcHandler(Some(tableContainer)) with EditRpcHandler{
+class FixSequenceRpcService(implicit clock: Clock, tableContainer: TableContainer) extends DefaultRpcHandler with EditRpcHandler{
 
   def onDeleteRow(key: String, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
     ViewPortEditSuccess()

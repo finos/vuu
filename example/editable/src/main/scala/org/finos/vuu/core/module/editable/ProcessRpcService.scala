@@ -6,7 +6,7 @@ import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.DefaultRpcHandler
 import org.finos.vuu.viewport._
 
-class ProcessRpcService(val tableContainer: TableContainer)(implicit clock: Clock) extends DefaultRpcHandler(Some(tableContainer)) {
+class ProcessRpcService(implicit clock: Clock, val tableContainer: TableContainer) extends DefaultRpcHandler {
 
   private final val FIX_SEQ_RESET_TABLE = "fixSequenceReset"
 

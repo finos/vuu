@@ -3,13 +3,12 @@ package org.finos.vuu.person;
 import org.finos.vuu.core.table.DataTable;
 import org.finos.vuu.core.table.TableContainer;
 import org.finos.vuu.net.rpc.*;
-import scala.Option;
 
 public class PersonRpcHandler extends DefaultRpcHandler {
     private final DataTable table;
 
     public PersonRpcHandler(DataTable table, TableContainer tableContainer) {
-        super(Option.apply(tableContainer));
+        super(tableContainer);
         this.table = table;
 
         registerRpc("UpdateName", this::processUpdateNameRpcRequest);

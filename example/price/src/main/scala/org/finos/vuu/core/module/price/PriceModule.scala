@@ -14,7 +14,7 @@ import org.finos.vuu.provider.simulation.SimulatedPricesProvider
 import org.finos.vuu.viewport._
 
 
-class PricesService(val table: DataTable, val provider: Provider, tableContainer: TableContainer) extends DefaultRpcHandler(Some(tableContainer)) with StrictLogging {
+class PricesService(val table: DataTable, val provider: Provider)(implicit tableContainer: TableContainer) extends DefaultRpcHandler with StrictLogging {
 
   private val pricesProvider = provider.asInstanceOf[SimulatedPricesProvider]
 
@@ -58,7 +58,7 @@ object PriceModule {
         (table, vs) => new SimulatedPricesProvider(table, maxSleep = 800),
         (table, provider, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.columns,
-          service = new PricesService(table, provider, tableContainer)
+          service = new PricesService(table, provider)(tableContainer)
         )
       ).asModule()
   }

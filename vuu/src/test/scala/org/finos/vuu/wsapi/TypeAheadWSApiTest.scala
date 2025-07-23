@@ -203,7 +203,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
             .addString("Name")
             .addInt("Account")
             .build(),
-        service = new DefaultRpcHandler(Some(tableContainer))
+        service = new DefaultRpcHandler()(tableContainer)
       )
 
     val dataSource = new FakeDataSource(ListMap(

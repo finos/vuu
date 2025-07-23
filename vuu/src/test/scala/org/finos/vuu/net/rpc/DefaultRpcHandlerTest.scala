@@ -1,6 +1,11 @@
 package org.finos.vuu.net.rpc
 
+import org.finos.toolbox.jmx.MetricsProviderImpl
+import org.finos.toolbox.lifecycle.LifecycleContainer
+import org.finos.toolbox.time.DefaultClock
+import org.finos.vuu.core.table.TableContainer
 import org.finos.vuu.net.{ClientSessionId, Error, JsonViewServerMessage, RequestContext, RpcCall, RpcResponse}
+import org.finos.vuu.provider.VuuJoinTableProvider
 import org.finos.vuu.viewport.{ViewPortRpcFailure, ViewPortRpcSuccess}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -12,7 +17,11 @@ class DefaultRpcHandlerTest extends AnyFeatureSpec with Matchers with BeforeAndA
   private val msg = JsonViewServerMessage("requestId", "sessionId", "token", "user", null, module = "TEST_MODULE")
 
   override def beforeEach(): Unit = {
-    handler = new DefaultRpcHandler(None)
+    val clock = new DefaultClock
+    val lifecycleContainer = new LifecycleContainer()(clock)
+    val metricsProvider = new MetricsProviderImpl
+    val tableContainer = new TableContainer(new VuuJoinTableProvider()(clock, lifecycleContainer, metricsProvider))(metricsProvider, clock)
+    handler = new DefaultRpcHandler()(tableContainer)
   }
 
   Feature("Default Rpc Handler for Viewport Rpc") {

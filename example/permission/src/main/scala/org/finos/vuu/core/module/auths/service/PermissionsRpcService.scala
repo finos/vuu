@@ -10,7 +10,7 @@ import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.DefaultRpcHandler
 import org.finos.vuu.viewport._
 
-class PermissionsRpcService(val table: DataTable, tableContainer: TableContainer)(implicit clock: Clock) extends DefaultRpcHandler(Some(tableContainer)) with StrictLogging {
+class PermissionsRpcService(val table: DataTable)(implicit clock: Clock, tableContainer: TableContainer) extends DefaultRpcHandler with StrictLogging {
 
   private def addPermission(mask: Int, selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
     val users = selection.rowKeyIndex.map({ case (key, _) => key }).toList

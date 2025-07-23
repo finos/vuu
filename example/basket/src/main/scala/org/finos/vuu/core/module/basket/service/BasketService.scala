@@ -29,7 +29,7 @@ trait BasketServiceIF {
 }
 
 // TODO: see comment on processViewPortRpcCall for why we extends DefaultRpcHandler with RpcHandler
-class BasketService(val table: DataTable, val tableContainer: TableContainer, val omsApi: OmsApi)(implicit clock: Clock) extends DefaultRpcHandler(Some(tableContainer)) with RpcHandler with BasketServiceIF with StrictLogging {
+class BasketService(val table: DataTable, val omsApi: OmsApi)(implicit clock: Clock, val tableContainer: TableContainer) extends DefaultRpcHandler with RpcHandler with BasketServiceIF with StrictLogging {
 
   import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames => BC, BasketTradingColumnNames => BT, BasketTradingConstituentColumnNames => BTC}
 

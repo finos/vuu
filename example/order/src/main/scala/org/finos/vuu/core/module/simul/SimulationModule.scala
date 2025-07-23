@@ -18,7 +18,7 @@ import org.finos.vuu.provider.{ProviderContainer, RpcProvider}
 import org.finos.vuu.viewport._
 
 
-class InstrumentsService(val table: DataTable, val providerContainer: ProviderContainer, tableContainer: TableContainer) extends DefaultRpcHandler(Some(tableContainer)) with StrictLogging {
+class InstrumentsService(val table: DataTable, val providerContainer: ProviderContainer)(implicit tableContainer: TableContainer) extends DefaultRpcHandler with StrictLogging {
 
   def addRowsFromInstruments(selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
     val rics = selection.rowKeyIndex.map({ case (key, _) => key }).toList
@@ -145,7 +145,7 @@ object SimulationModule extends DefaultModule {
         (table, vs) => new SimulatedBigInstrumentsProvider(table),
         (table, _, providerContainer, tableContainer) => ViewPortDef(
           columns = table.getTableDef.columns,
-          service = new InstrumentsService(table, providerContainer, tableContainer)
+          service = new InstrumentsService(table, providerContainer)(tableContainer)
         )
       )
       .addTable(
@@ -181,7 +181,7 @@ object SimulationModule extends DefaultModule {
         (table, vs) => new ParentOrdersProvider(table, ordersModel),
         (table, provider, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.columns,
-          service = new ParentOrdersService(table, provider, tableContainer)
+          service = new ParentOrdersService(table, provider)(tableContainer)
         )
       )
       .addTable(

@@ -24,7 +24,7 @@ trait BasketTradingConstituentJoinServiceIF extends EditRpcHandler {
 }
 
 // TODO: see comment on processViewPortRpcCall for why we extends DefaultRpcHandler with RpcHandler
-class BasketTradingConstituentJoinService(val table: DataTable, val tableContainer: TableContainer)(implicit clock: Clock) extends DefaultRpcHandler(Some(tableContainer)) with RpcHandler with BasketTradingConstituentJoinServiceIF with StrictLogging {
+class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: Clock, val tableContainer: TableContainer) extends DefaultRpcHandler with RpcHandler with BasketTradingConstituentJoinServiceIF with StrictLogging {
 
   /**
    * We switched to DefaultRpcHandler instead of RpcHandler so that ViewportTypeAheadRpcHandler is enabled by default.

@@ -8,16 +8,12 @@ import org.finos.vuu.viewport.{ViewPortAction, ViewPortRpcFailure, ViewPortRpcSu
 
 import java.util.concurrent.ConcurrentHashMap
 
-class DefaultRpcHandler(tableContainer: Option[TableContainer]) extends RpcHandler with StrictLogging {
+class DefaultRpcHandler(implicit tableContainer: TableContainer) extends RpcHandler with StrictLogging {
 
   private val rpcHandlerMap = new ConcurrentHashMap[Rpc.FunctionName, Rpc.Function]()
 
-  tableContainer match {
-    case Some(tc) =>
-      val viewportTypeAheadRpcHandler = new ViewportTypeAheadRpcHandler(tc)
-      viewportTypeAheadRpcHandler.register(this)
-    case None => logger.info("ViewportTypeAheadRpcHandler not created.")
-  }
+  private val viewportTypeAheadRpcHandler = new ViewportTypeAheadRpcHandler(tableContainer)
+  viewportTypeAheadRpcHandler.register(this)
 
   /**
    * Register a handler for a given rpc function

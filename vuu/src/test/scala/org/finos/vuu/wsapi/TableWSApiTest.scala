@@ -77,14 +77,14 @@ class TableWSApiTest extends WebSocketApiTestBase {
           .build()
     )
 
-    val viewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tc: TableContainer) =>
+    val viewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
         columns =
           new ColumnBuilder()
             .addString("Id")
             .addInt("Account")
             .build(),
-        service = new DefaultRpcHandler(Some(tc))
+        service = new DefaultRpcHandler()(tableContainer)
       )
 
     val providerFactory = (table: DataTable, _: IVuuServer) => new TestProvider(table, new FakeDataSource(ListMap()))

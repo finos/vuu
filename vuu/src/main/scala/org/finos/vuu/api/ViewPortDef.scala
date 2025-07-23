@@ -8,7 +8,7 @@ object ViewPortDef {
     new ViewPortDef(columns, service)
   }
 
-  def default(columns: Array[Column], tableContainer: TableContainer): ViewPortDef = ViewPortDef(columns, new DefaultRpcHandler(Some(tableContainer)))
+  def default(columns: Array[Column], tableContainer: TableContainer): ViewPortDef = ViewPortDef(columns, new DefaultRpcHandler()(tableContainer))
 }
 
 class ViewPortDef(val columns: Array[Column], val service: RpcHandler) {}

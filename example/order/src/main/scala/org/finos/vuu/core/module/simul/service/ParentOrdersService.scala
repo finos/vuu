@@ -8,7 +8,7 @@ import org.finos.vuu.net.rpc.DefaultRpcHandler
 import org.finos.vuu.provider.Provider
 import org.finos.vuu.viewport._
 
-class ParentOrdersService(val table: DataTable, val provider: Provider, tableContainer: TableContainer) extends DefaultRpcHandler(Some(tableContainer)) with StrictLogging {
+class ParentOrdersService(val table: DataTable, val provider: Provider)(implicit tableContainer: TableContainer) extends DefaultRpcHandler with StrictLogging {
 
   final val parentsProvider = provider.asInstanceOf[ParentOrdersProvider]
 
