@@ -34,6 +34,7 @@ export const FilterClauseValueEditorText = forwardRef(
       className,
       column,
       onChangeValue,
+      onOpenChange,
       operator,
       table,
       value,
@@ -168,6 +169,9 @@ export const FilterClauseValueEditorText = forwardRef(
               className={className}
               data-field="value"
               onChange={handleInputChange}
+              onOpenChange={(open, reason) => {
+                onOpenChange?.(open, reason);
+              }}
               onSelectionChange={handleMultiValueSelectionChange}
               ref={forwardedRef}
               multiselect

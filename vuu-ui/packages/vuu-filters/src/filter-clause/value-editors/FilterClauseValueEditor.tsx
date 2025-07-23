@@ -16,7 +16,7 @@ const classBase = "vuuFilterClause";
 
 type FilterClauseValueEditorProps = Pick<
   ReturnType<typeof useFilterClause>,
-  "selectedColumn" | "inputProps" | "onChangeValue" | "onDeselectValue"
+  "selectedColumn" | "inputProps" | "onChangeValue" | "onDeselectValue" | "onOpenChange"
 > & {
   table?: TableSchemaTable;
 } & {
@@ -32,6 +32,7 @@ export const FilterClauseValueEditor = forwardRef(
       inputProps,
       onChangeValue,
       onDeselectValue,
+      onOpenChange,
       table,
       value,
     }: FilterClauseValueEditorProps,
@@ -64,6 +65,9 @@ export const FilterClauseValueEditor = forwardRef(
             column={selectedColumn}
             onDeselect={onDeselectValue}
             onChangeValue={onChangeValue}
+            onOpenChange={(open, reason) => {
+              onOpenChange?.(open, reason)
+            }}
             operator={operator}
             ref={forwardedRef}
             table={table}

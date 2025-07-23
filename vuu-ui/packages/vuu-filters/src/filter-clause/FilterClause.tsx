@@ -5,7 +5,6 @@ import {
   MultiValueFilterClause,
   SingleValueFilterClause,
 } from "@vuu-ui/vuu-filter-types";
-import { CloseReason } from "@vuu-ui/vuu-ui-controls";
 import cx from "clsx";
 import { HTMLAttributes, useMemo } from "react";
 import { FilterClauseModel } from "../FilterModel";
@@ -16,6 +15,7 @@ import { FilterClauseValueEditor } from "./value-editors/FilterClauseValueEditor
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import filterClauseCss from "./FilterClause.css";
 import { OperatorPicker } from "./OperatorPicker";
+import { OpenChangeReason } from "@salt-ds/core/dist-types/list-control/ListControlContext";
 
 export type FilterClauseCancelType = "Backspace" | "Escape";
 export type FilterClauseCancelHandler = (
@@ -28,7 +28,7 @@ export interface FilterClauseProps
   columnsByName: ColumnDescriptorsByName;
   filterClauseModel: FilterClauseModel;
   onCancel?: FilterClauseCancelHandler;
-  onDropdownClose?: (closeReason: CloseReason) => void;
+  onOpenChange?: (open: boolean, closeReason?: OpenChangeReason) => void;
   onDropdownOpen?: () => void;
   onFocusSave?: () => void;
   vuuTable: VuuTable;
@@ -40,7 +40,6 @@ export const FilterClause = ({
   className,
   columnsByName,
   onCancel,
-  onDropdownClose,
   onDropdownOpen,
   onFocusSave,
   filterClauseModel,
@@ -55,6 +54,7 @@ export const FilterClause = ({
     onSelectColumn,
     onSelectOperator,
     onDeselectValue,
+    onOpenChange,
     operatorRef,
     selectedColumn,
     valueRef,
@@ -103,6 +103,7 @@ export const FilterClause = ({
           inputProps={inputProps}
           key="value-field"
           onChangeValue={onChangeValue}
+          onOpenChange={onOpenChange}
           onDeselectValue={onDeselectValue}
           operator={filterClauseModel.op}
           ref={valueRef}

@@ -18,9 +18,10 @@ import {
   navigateToNextItemIfAtBoundary,
   tabToPreviousFilterCombinator,
 } from "./filterClauseFocusManagement";
+import { OpenChangeReason } from "@salt-ds/core/dist-types/list-control/ListControlContext";
 export type FilterClauseEditorHookProps = Pick<
   FilterClauseProps,
-  "columnsByName" | "filterClauseModel" | "onCancel" | "onFocusSave"
+  "columnsByName" | "filterClauseModel" | "onCancel" | "onFocusSave" | "onOpenChange"
 >;
 
 export type FilterClauseValueChangeHandler = (
@@ -33,6 +34,7 @@ export const useFilterClause = ({
   onCancel,
   columnsByName,
   onFocusSave,
+  onOpenChange,
 }: FilterClauseEditorHookProps) => {
   const [filterClause, setFilterClause] = useState<Partial<FilterClause>>(
     filterClauseModel.isValid ? filterClauseModel.asFilter() : {},
@@ -145,7 +147,7 @@ export const useFilterClause = ({
       } else if (evt.key === "Tab") {
         // if the clause is valid, skip to save
         if (filterClauseModel.isValid) {
-          evt.preventDefault();
+          //evt.preventDefault();
           evt.stopPropagation();
           // TODO focus cancel if not changed
           onFocusSave?.();
@@ -159,6 +161,14 @@ export const useFilterClause = ({
       removeAndNavigateToNextInputIfAtBoundary,
     ],
   );
+
+  const handleOpenChange = (open: boolean, closeReason?: OpenChangeReason) => {
+    const isMultiSelect = filterClauseModel.op === 'in';
+    if(!open && isMultiSelect && filterClauseModel.isValid) {
+        filterClauseModel.emit('filterClause', filterClause, true);
+    }
+    onOpenChange?.(open, closeReason);
+  }
 
   const inputProps = useMemo(
     () => ({
@@ -194,6 +204,7 @@ export const useFilterClause = ({
     onDeselectValue: handleDeselectValue,
     onSelectColumn,
     onSelectOperator,
+    onOpenChange: handleOpenChange,
     operatorRef,
     selectedColumn: columnsByName[filterClauseModel.column ?? ""],
     valueRef: setValueRef,

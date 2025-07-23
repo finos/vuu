@@ -40,6 +40,7 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
     multiselect,
     onChange,
     onSelectionChange,
+    onOpenChange,
     value: valueProp,
     ...props
   }: ExpandoComboboxProps<Item>,
@@ -103,7 +104,10 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
         inputProps={inputProps}
         multiselect={multiselect}
         onChange={handleChange}
-        onOpenChange={setOpen}
+        onOpenChange={(open, reason) => {
+          onOpenChange?.(open, reason);
+          setOpen(open);
+        }}
         onSelectionChange={handleSelectionChange}
         open={open}
         value={value}
