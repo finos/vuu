@@ -160,6 +160,10 @@ export class FilterClauseModel extends EventEmitter<FilterClauseModelEvents> {
     }
     return this.#filterClause as FilterClause;
   }
+
+  commit() {
+    this.emit("filterClause", this.#filterClause, true);
+  }
 }
 
 export class FilterModel extends EventEmitter<FilterModelEvents> {
