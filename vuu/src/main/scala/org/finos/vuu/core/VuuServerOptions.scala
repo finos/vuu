@@ -31,23 +31,15 @@ object VuuClientConnectionOptions {
 
 }
 
-trait VuuSSLCipherSuiteOptions {
+trait VuuSSLCipherSuite {
   def ciphers: List[String]
   def protocols: List[String]
-  def withCiphers(ciphers: List[String]) : VuuSSLCipherSuiteOptions
-  def withProtocols(protocols: List[String]) : VuuSSLCipherSuiteOptions
-}
-
-object VuuSSLCipherSuiteOptions {
-  def apply(): VuuSSLCipherSuiteOptions = {
-    VuuSSLCipherSuiteOptionsImpl(List(), List())
-  }
 }
 
 sealed trait VuuSSLOptions
 case class VuuSSLDisabled() extends VuuSSLOptions
-case class VuuSSLByCertAndKey(certPath: String, keyPath: String, passPhrase: Option[String] = None, cipherSuite: VuuSSLCipherSuiteOptions = VuuSSLCipherSuiteOptions()) extends VuuSSLOptions
-case class VuuSSLByPKCS(pkcsPath: String, pkcsPassword: String, cipherSuite: VuuSSLCipherSuiteOptions = VuuSSLCipherSuiteOptions()) extends VuuSSLOptions
+case class VuuSSLByCertAndKey(certPath: String, keyPath: String, passPhrase: Option[String] = None, cipherSuite: Option[VuuSSLCipherSuite] = None) extends VuuSSLOptions
+case class VuuSSLByPKCS(pkcsPath: String, pkcsPassword: String, cipherSuite: Option[VuuSSLCipherSuite] = None) extends VuuSSLOptions
 
 trait VuuWebSocketOptions {
   def wsPort: Int
@@ -92,7 +84,7 @@ private case class VuuWebSocketOptionsImpl(wsPort: Int,
   override def withBindAddress(address: String): VuuWebSocketOptions = this.copy(bindAddress = bindAddress)
   override def withWssDisabled(): VuuWebSocketOptions = this.withWss(VuuSSLDisabled())
   override def withWss(certPath: String, keyPath: String, passphrase: Option[String] = None): VuuWebSocketOptions =
-    this.withWss(VuuSSLByCertAndKey(certPath, keyPath, passphrase, VuuSSLCipherSuiteOptions()))
+    this.withWss(VuuSSLByCertAndKey(certPath, keyPath, passphrase, None))
   override def withWss(sslOptions: VuuSSLOptions): VuuWebSocketOptions =
     this.copy(sslOptions = sslOptions)
 }
@@ -107,11 +99,6 @@ case class VuuThreadingOptionsImpl(viewPortThreads: Int = 1, treeViewPortThreads
 case class VuuClientConnectionOptionsImpl(hasHeartbeat: Boolean) extends VuuClientConnectionOptions {
   override def withHeartbeat(): VuuClientConnectionOptions = this.copy(true)
   override def withHeartbeatDisabled(): VuuClientConnectionOptions = this.copy(false)
-}
-
-case class VuuSSLCipherSuiteOptionsImpl(ciphers: List[String], protocols: List[String]) extends VuuSSLCipherSuiteOptions {
-  override def withCiphers(ciphers: List[String]): VuuSSLCipherSuiteOptions = this.copy(ciphers = ciphers)
-  override def withProtocols(protocols: List[String]): VuuSSLCipherSuiteOptions = this.copy(protocols = protocols)
 }
 
 case class VuuServerConfig(httpOptions: VuuHttp2ServerOptions = VuuHttp2ServerOptions(),
