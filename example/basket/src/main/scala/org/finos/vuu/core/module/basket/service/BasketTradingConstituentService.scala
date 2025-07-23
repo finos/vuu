@@ -5,10 +5,20 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.basket.BasketModule.BasketTradingConstituentColumnNames.InstanceIdRic
 import org.finos.vuu.core.table.{DataTable, RowWithData, TableContainer}
 import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler}
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler, RpcHandler, RpcParams}
 import org.finos.vuu.viewport._
 
-class BasketTradingConstituentService(val table: DataTable, val tableContainer: TableContainer)(implicit clock: Clock) extends DefaultRpcHandler(Some(tableContainer)) with EditRpcHandler with StrictLogging {
+// TODO: see comment on processViewPortRpcCall for why we extends DefaultRpcHandler with RpcHandler
+class BasketTradingConstituentService(val table: DataTable, val tableContainer: TableContainer)(implicit clock: Clock) extends DefaultRpcHandler(Some(tableContainer)) with RpcHandler with EditRpcHandler with StrictLogging {
+
+  /**
+   * We switched to DefaultRpcHandler instead of RpcHandler so that ViewportTypeAheadRpcHandler is enabled by default.
+   * This class needs the processViewPortRpcCall from RpcHandler though.
+   * Ideally we should switch to use DefaultRpcHandler.processViewPortRpcCall
+   */
+  override def processViewPortRpcCall(methodName: String, rpcParams: RpcParams): ViewPortAction = {
+    super[RpcHandler].processViewPortRpcCall(methodName, rpcParams)
+  }
 
   def onDeleteRow(key: String, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
     ViewPortEditSuccess()
