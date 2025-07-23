@@ -7,6 +7,7 @@ import {
   Ref,
   SyntheticEvent,
   forwardRef,
+  useCallback,
   useMemo,
   useState,
 } from "react";
@@ -21,6 +22,11 @@ export interface ExpandoComboboxProps<Item = string>
   extends ComboBoxProps<Item> {
   itemToString?: (item: Item) => string;
 }
+
+export type ComboBoxOpenChangeHandler = Exclude<
+  ComboBoxProps["onOpenChange"],
+  undefined
+>;
 
 const defaultItemToString = (item: unknown) => {
   if (typeof item === "string") {
@@ -58,23 +64,37 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
     valueProp === undefined ? "" : valueProp.toString(),
   );
 
-  const handleChange = (evt: ChangeEvent<HTMLInputElement>) => {
-    const value = evt.target.value;
-    onChange?.(evt);
-    setValue(value);
-  };
+  const handleChange = useCallback(
+    (evt: ChangeEvent<HTMLInputElement>) => {
+      const value = evt.target.value;
+      onChange?.(evt);
+      setValue(value);
+    },
+    [onChange],
+  );
 
-  const handleSelectionChange = (evt: SyntheticEvent, newSelected: Item[]) => {
-    if (multiselect) {
-      onSelectionChange?.(evt, newSelected);
-    } else {
-      const [selectedValue] = newSelected;
-      setTimeout(() => {
+  const handleSelectionChange = useCallback(
+    (evt: SyntheticEvent, newSelected: Item[]) => {
+      if (multiselect) {
         onSelectionChange?.(evt, newSelected);
-        setValue(itemToString(selectedValue));
-      }, 100);
-    }
-  };
+      } else {
+        const [selectedValue] = newSelected;
+        setTimeout(() => {
+          onSelectionChange?.(evt, newSelected);
+          setValue(itemToString(selectedValue));
+        }, 100);
+      }
+    },
+    [onSelectionChange, itemToString, multiselect],
+  );
+
+  const handleOpenChange = useCallback<ComboBoxOpenChangeHandler>(
+    (open, reason) => {
+      onOpenChange?.(open, reason);
+      setOpen(open);
+    },
+    [onOpenChange],
+  );
 
   const inputProps = useMemo<ComboBoxProps<Item>["inputProps"]>(() => {
     return {
@@ -104,10 +124,7 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
         inputProps={inputProps}
         multiselect={multiselect}
         onChange={handleChange}
-        onOpenChange={(open, reason) => {
-          onOpenChange?.(open, reason);
-          setOpen(open);
-        }}
+        onOpenChange={handleOpenChange}
         onSelectionChange={handleSelectionChange}
         open={open}
         value={value}

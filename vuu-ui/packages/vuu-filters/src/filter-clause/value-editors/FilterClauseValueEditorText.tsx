@@ -169,9 +169,7 @@ export const FilterClauseValueEditorText = forwardRef(
               className={className}
               data-field="value"
               onChange={handleInputChange}
-              onOpenChange={(open, reason) => {
-                onOpenChange?.(open, reason);
-              }}
+              onOpenChange={onOpenChange}
               onSelectionChange={handleMultiValueSelectionChange}
               ref={forwardedRef}
               multiselect

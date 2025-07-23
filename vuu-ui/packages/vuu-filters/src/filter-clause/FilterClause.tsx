@@ -15,7 +15,6 @@ import { FilterClauseValueEditor } from "./value-editors/FilterClauseValueEditor
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import filterClauseCss from "./FilterClause.css";
 import { OperatorPicker } from "./OperatorPicker";
-import { OpenChangeReason } from "@salt-ds/core/dist-types/list-control/ListControlContext";
 
 export type FilterClauseCancelType = "Backspace" | "Escape";
 export type FilterClauseCancelHandler = (
@@ -28,7 +27,6 @@ export interface FilterClauseProps
   columnsByName: ColumnDescriptorsByName;
   filterClauseModel: FilterClauseModel;
   onCancel?: FilterClauseCancelHandler;
-  onOpenChange?: (open: boolean, closeReason?: OpenChangeReason) => void;
   onDropdownOpen?: () => void;
   onFocusSave?: () => void;
   vuuTable: VuuTable;

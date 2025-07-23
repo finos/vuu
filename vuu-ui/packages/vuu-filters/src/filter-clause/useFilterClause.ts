@@ -18,11 +18,11 @@ import {
   navigateToNextItemIfAtBoundary,
   tabToPreviousFilterCombinator,
 } from "./filterClauseFocusManagement";
-import { OpenChangeReason } from "@salt-ds/core/dist-types/list-control/ListControlContext";
+import { ComboBoxOpenChangeHandler } from "./ExpandoCombobox";
 export type FilterClauseEditorHookProps = Pick<
   FilterClauseProps,
-  "columnsByName" | "filterClauseModel" | "onCancel" | "onFocusSave" | "onOpenChange"
->;
+  "columnsByName" | "filterClauseModel" | "onCancel" | "onFocusSave"
+> & { onOpenChange?: ComboBoxOpenChangeHandler };
 
 export type FilterClauseValueChangeHandler = (
   value: string | string[] | number | number[],
@@ -162,13 +162,16 @@ export const useFilterClause = ({
     ],
   );
 
-  const handleOpenChange = (open: boolean, closeReason?: OpenChangeReason) => {
-    const isMultiSelect = filterClauseModel.op === 'in';
-    if(!open && isMultiSelect && filterClauseModel.isValid) {
-        filterClauseModel.emit('filterClause', filterClause, true);
-    }
-    onOpenChange?.(open, closeReason);
-  }
+  const handleOpenChange = useCallback<ComboBoxOpenChangeHandler>(
+    (open, closeReason) => {
+      const isMultiSelect = filterClauseModel.op === "in";
+      if (!open && isMultiSelect && filterClauseModel.isValid) {
+        filterClauseModel.commit();
+      }
+      onOpenChange?.(open, closeReason);
+    },
+    [filterClauseModel, onOpenChange],
+  );
 
   const inputProps = useMemo(
     () => ({
