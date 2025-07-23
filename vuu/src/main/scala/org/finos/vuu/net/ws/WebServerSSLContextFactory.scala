@@ -1,7 +1,7 @@
 package org.finos.vuu.net.ws
 
 import io.netty.handler.ssl.{SslContext, SslContextBuilder}
-import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSSLByPKCS, VuuSSLCipherSuite, VuuSSLDisabled, VuuSSLOptions}
+import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSSLByPKCS, VuuSSLCipherSuiteOptions, VuuSSLDisabled, VuuSSLOptions}
 import org.finos.vuu.util.PathChecker
 
 import java.io.{File, FileInputStream}
@@ -20,7 +20,7 @@ class WebServerSSLContextFactory {
     }
   }
 
-  private def createPKCSContext(pkcsPath: String, pkcsPassword: String, cipherSuite: Option[VuuSSLCipherSuite]): SslContext = {
+  private def createPKCSContext(pkcsPath: String, pkcsPassword: String, cipherSuite: VuuSSLCipherSuiteOptions): SslContext = {
     PathChecker.throwOnFileNotExists(pkcsPath, "vuu.pkcsPath, doesn't appear to exist")
     val keyStore = KeyStore.getInstance("PKCS12")
     Using(new FileInputStream(pkcsPath)) {
@@ -31,7 +31,7 @@ class WebServerSSLContextFactory {
     applyCipherSuite(SslContextBuilder.forServer(keyManagerFactory), cipherSuite)
   }
 
-  private def createCertAndKeyContext(certPath: String, keyPath: String, passPhrase: Option[String], cipherSuite: Option[VuuSSLCipherSuite]): SslContext = {
+  private def createCertAndKeyContext(certPath: String, keyPath: String, passPhrase: Option[String], cipherSuite: VuuSSLCipherSuiteOptions): SslContext = {
     PathChecker.throwOnFileNotExists(certPath, "vuu.certPath, doesn't appear to exist")
     PathChecker.throwOnFileNotExists(keyPath, "vuu.keyPath, doesn't appear to exist")
     passPhrase match {
@@ -42,15 +42,14 @@ class WebServerSSLContextFactory {
     }
   }
 
-  private def applyCipherSuite(sslContextBuilder: SslContextBuilder, cipherSuite: Option[VuuSSLCipherSuite]): SslContext = {
-    cipherSuite match {
-      case None => sslContextBuilder.build()
-      case Some(cipherSuite) =>
-        sslContextBuilder
-          .ciphers(cipherSuite.ciphers.asJava)
-          .protocols(cipherSuite.protocols.asJava)
-          .build()
+  private def applyCipherSuite(sslContextBuilder: SslContextBuilder, cipherSuite: VuuSSLCipherSuiteOptions): SslContext = {
+    if (cipherSuite.ciphers.nonEmpty) {
+      sslContextBuilder.ciphers(cipherSuite.ciphers.asJava)
     }
+    if (cipherSuite.protocols.nonEmpty) {
+      sslContextBuilder.protocols(cipherSuite.protocols.asJava)
+    }
+    sslContextBuilder.build()
   }
 
 }

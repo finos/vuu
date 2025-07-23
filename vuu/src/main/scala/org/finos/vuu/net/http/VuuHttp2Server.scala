@@ -9,7 +9,7 @@ import io.vertx.core.{AbstractVerticle, Vertx, VertxOptions}
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.{BodyHandler, StaticHandler}
 import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
-import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSSLByPKCS, VuuSSLCipherSuite, VuuSSLDisabled, VuuSSLOptions}
+import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSSLByPKCS, VuuSSLCipherSuiteOptions, VuuSSLDisabled, VuuSSLOptions}
 
 import java.io.File
 import java.util
@@ -126,20 +126,16 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
     }
   }
 
-  private def applySharedOptions(httpServerOptions: HttpServerOptions, cipherSuite: Option[VuuSSLCipherSuite]) : HttpServerOptions = {
+  private def applySharedOptions(httpServerOptions: HttpServerOptions, cipherSuite: VuuSSLCipherSuiteOptions) : HttpServerOptions = {
     httpServerOptions.setSsl(true)
     httpServerOptions.setUseAlpn(true)
-    cipherSuite match {
-      case None => httpServerOptions
-      case Some(cipherSuite) =>
-        for (cipher <- cipherSuite.ciphers) {
-          httpServerOptions.addEnabledCipherSuite(cipher)
-        }
-        for (protocol <- cipherSuite.protocols) {
-          httpServerOptions.addEnabledSecureTransportProtocol(protocol)
-        }
-        httpServerOptions
+    for (cipher <- cipherSuite.ciphers) {
+      httpServerOptions.addEnabledCipherSuite(cipher)
     }
+    for (protocol <- cipherSuite.protocols) {
+      httpServerOptions.addEnabledSecureTransportProtocol(protocol)
+    }
+    httpServerOptions
   }
 
   private def pfxKeyCertOptions(pkcsPath: String, pkcsPassword: String): PfxOptions =  {
