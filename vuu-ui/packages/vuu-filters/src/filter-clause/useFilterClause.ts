@@ -18,10 +18,11 @@ import {
   navigateToNextItemIfAtBoundary,
   tabToPreviousFilterCombinator,
 } from "./filterClauseFocusManagement";
+import { ComboBoxOpenChangeHandler } from "./ExpandoCombobox";
 export type FilterClauseEditorHookProps = Pick<
   FilterClauseProps,
   "columnsByName" | "filterClauseModel" | "onCancel" | "onFocusSave"
->;
+> & { onOpenChange?: ComboBoxOpenChangeHandler };
 
 export type FilterClauseValueChangeHandler = (
   value: string | string[] | number | number[],
@@ -33,6 +34,7 @@ export const useFilterClause = ({
   onCancel,
   columnsByName,
   onFocusSave,
+  onOpenChange,
 }: FilterClauseEditorHookProps) => {
   const [filterClause, setFilterClause] = useState<Partial<FilterClause>>(
     filterClauseModel.isValid ? filterClauseModel.asFilter() : {},
@@ -145,7 +147,7 @@ export const useFilterClause = ({
       } else if (evt.key === "Tab") {
         // if the clause is valid, skip to save
         if (filterClauseModel.isValid) {
-          evt.preventDefault();
+          //evt.preventDefault();
           evt.stopPropagation();
           // TODO focus cancel if not changed
           onFocusSave?.();
@@ -158,6 +160,17 @@ export const useFilterClause = ({
       onFocusSave,
       removeAndNavigateToNextInputIfAtBoundary,
     ],
+  );
+
+  const handleOpenChange = useCallback<ComboBoxOpenChangeHandler>(
+    (open, closeReason) => {
+      const isMultiSelect = filterClauseModel.op === "in";
+      if (!open && isMultiSelect && filterClauseModel.isValid) {
+        filterClauseModel.commit();
+      }
+      onOpenChange?.(open, closeReason);
+    },
+    [filterClauseModel, onOpenChange],
   );
 
   const inputProps = useMemo(
@@ -194,6 +207,7 @@ export const useFilterClause = ({
     onDeselectValue: handleDeselectValue,
     onSelectColumn,
     onSelectOperator,
+    onOpenChange: handleOpenChange,
     operatorRef,
     selectedColumn: columnsByName[filterClauseModel.column ?? ""],
     valueRef: setValueRef,
