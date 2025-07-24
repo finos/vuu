@@ -21,7 +21,7 @@ class DefaultRpcHandlerTest extends AnyFeatureSpec with Matchers with BeforeAndA
     implicit val lifecycleContainer: LifecycleContainer = new LifecycleContainer
     implicit val metricsProvider: MetricsProvider = new MetricsProviderImpl
     implicit val tableContainer: TableContainer = new TableContainer(new VuuJoinTableProvider)
-    handler = new DefaultRpcHandler()(tableContainer)
+    handler = new DefaultRpcHandler
   }
 
   Feature("Default Rpc Handler for Viewport Rpc") {
