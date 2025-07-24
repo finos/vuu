@@ -424,7 +424,7 @@ export interface VuuRpcViewportRequest {
 
 export interface VuuRpcViewportResponse {
   action: VuuRpcViewportAction;
-  type: "VIEW_PORT_RPC_REPONSE";
+  type: "VIEW_PORT_RPC_RESPONSE";
   method: string;
   namedParams: { [key: string]: VuuRowDataItemType | VuuTable };
   params: string[];

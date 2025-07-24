@@ -156,7 +156,7 @@ const viewportRpcResponse = (
   vpId: string,
   action?: Partial<VuuRpcViewportAction>,
 ): VuuRpcViewportResponse => ({
-  type: "VIEW_PORT_RPC_REPONSE",
+  type: "VIEW_PORT_RPC_RESPONSE",
   action: {
     type: "VP_RPC_SUCCESS",
     ...action,

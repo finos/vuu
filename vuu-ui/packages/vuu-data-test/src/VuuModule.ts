@@ -359,7 +359,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
         method: "???",
         namedParams: {},
         params: [],
-        type: "VIEW_PORT_RPC_REPONSE",
+        type: "VIEW_PORT_RPC_RESPONSE",
         vpId,
       } as VuuRpcViewportResponse;
     } else {

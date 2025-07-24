@@ -1162,7 +1162,7 @@ export class ServerProxy {
         }
         break;
 
-      case "VIEW_PORT_RPC_REPONSE":
+      case "VIEW_PORT_RPC_RESPONSE":
         {
           const { method, action } = body;
           this.postMessageToClient({
