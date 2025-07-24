@@ -30,6 +30,7 @@ class DefaultRpcHandler(implicit tableContainer: TableContainer) extends RpcHand
     rpcHandlerMap.put(functionName, handlerFunc)
   }
 
+  @deprecated("This method doesn't pass down result. Please use processRpcRequest instead.")
   override def processViewPortRpcCall(methodName: String, rpcParams: RpcParams): ViewPortAction = {
     val result = processRpcMethodHandler(methodName, rpcParams)
     result match {
