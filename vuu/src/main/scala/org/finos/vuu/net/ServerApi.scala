@@ -7,6 +7,10 @@ trait ServerApi {
 
   def process(msg: EnableViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage]
 
+  def process(msg: FreezeViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage]
+
+  def process(msg: UnfreezeViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage]
+
   def process(msg: ChangeViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage]
 
   def process(msg: CreateViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage]

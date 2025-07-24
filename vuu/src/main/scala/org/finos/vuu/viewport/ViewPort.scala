@@ -72,6 +72,10 @@ trait ViewPort {
 
   def setEnabled(enabled: Boolean): Unit
 
+  def freeze(): Unit
+
+  def unfreeze(): Unit
+
   def isEnabled: Boolean
 
   def hasGroupBy: Boolean = getGroupBy != NoGroupBy
@@ -202,6 +206,14 @@ class ViewPortImpl(val id: String,
   }
 
   override def isEnabled: Boolean = this.enabled
+
+  override def freeze(): Unit = {
+
+  }
+
+  override def unfreeze(): Unit = {
+
+  }
 
   @volatile
   private var viewPortVisualLink: Option[ViewPortVisualLink] = None

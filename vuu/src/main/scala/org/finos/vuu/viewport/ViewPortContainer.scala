@@ -317,6 +317,26 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
+  def freezeViewPort(vpId: String): Unit = {
+    this.viewPorts.get(vpId) match {
+      case null =>
+        logger.error(s"Could not find viewport to freeze $vpId")
+      case vp: ViewPort =>
+        vp.freeze()
+        logger.debug(s"Froze $vpId in container")
+    }
+  }
+
+  def unfreezeViewPort(vpId: String): Unit = {
+    this.viewPorts.get(vpId) match {
+      case null =>
+        logger.error(s"Could not find viewport to unfreeze $vpId")
+      case vp: ViewPort =>
+        vp.unfreeze()
+        logger.debug(s"Unfroze $vpId in container")
+    }
+  }
+
   override def openGroupByKey(vpId: String, treeKey: String): String = {
     Try(this.openNode(vpId, treeKey)) match {
       case Success(_) => "Done"
