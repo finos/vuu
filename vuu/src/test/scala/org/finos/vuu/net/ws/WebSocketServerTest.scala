@@ -190,7 +190,6 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
     lifecycle(client).dependsOn(viewServer)
     val viewServerClient: WebSocketViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer)
     lifecycle.start()
-    //Thread.sleep(500)
     viewServerClient
   }
 
