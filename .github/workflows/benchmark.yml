@@ -2,7 +2,7 @@ name: Benchmarks
 
 on: 
   schedule:
-    - cron:  '0 5,18 * * *'
+    - cron:  '0 0 29 2 1'
     
 jobs:
   build:
