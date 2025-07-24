@@ -18,7 +18,11 @@ import scala.jdk.CollectionConverters.SetHasAsJava
 
 class VuuHttp2ServerTest extends AnyFeatureSpec with AwaitilitySupport with Matchers with StrictLogging {
 
-  val portCounter = new AtomicInteger(31820)
+  private val certPath: String = getClass.getClassLoader.getResource("certs/cert.pem").getPath
+  private val keyPath: String = getClass.getClassLoader.getResource("certs/key.pem").getPath
+  private val pkcsPath: String = getClass.getClassLoader.getResource("certs/certificate.p12").getPath
+  private val portCounter = new AtomicInteger(31820)
+  private val pkcsPassword = "changeit"
 
   Feature("Check we can start the HTTP2 Server with various configurations") {
 
@@ -43,9 +47,7 @@ class VuuHttp2ServerTest extends AnyFeatureSpec with AwaitilitySupport with Matc
       val port = portCounter.getAndIncrement()
 
       val config = VuuHttp2ServerOptions()
-        .withSsl(VuuSSLByCertAndKey(
-          certPath = "example/main/src/main/resources/certs/cert.pem",
-          keyPath = "example/main/src/main/resources/certs/key.pem"))
+        .withSsl(VuuSSLByCertAndKey(certPath, keyPath))
         .withPort(port)
 
       val webServer = createAndStartWebServer(config)
@@ -61,9 +63,7 @@ class VuuHttp2ServerTest extends AnyFeatureSpec with AwaitilitySupport with Matc
       val port = portCounter.getAndIncrement()
 
       val config = VuuHttp2ServerOptions()
-        .withSsl(VuuSSLByPKCS(
-          pkcsPath = "example/main/src/main/resources/certs/certificate.p12",
-          pkcsPassword = "changeit"))
+        .withSsl(VuuSSLByPKCS(pkcsPath, pkcsPassword))
         .withPort(port)
 
       val webServer = createAndStartWebServer(config)
@@ -80,8 +80,8 @@ class VuuHttp2ServerTest extends AnyFeatureSpec with AwaitilitySupport with Matc
 
       val config = VuuHttp2ServerOptions()
         .withSsl(VuuSSLByPKCS(
-          pkcsPath = "example/main/src/main/resources/certs/certificate.p12",
-          pkcsPassword = "changeit",
+          pkcsPath,
+          pkcsPassword,
           cipherSuite = VuuSSLCipherSuiteOptions()
             .withCiphers(List("TLS_AES_256_GCM_SHA384"))
             .withProtocols(List("TLSv1.3"))))
@@ -99,10 +99,11 @@ class VuuHttp2ServerTest extends AnyFeatureSpec with AwaitilitySupport with Matc
 
       val port = portCounter.getAndIncrement()
 
+
       val config = VuuHttp2ServerOptions()
         .withSsl(VuuSSLByPKCS(
-          pkcsPath = "example/main/src/main/resources/certs/certificate.p12",
-          pkcsPassword = "changeit",
+          pkcsPath,
+          pkcsPassword,
           cipherSuite = VuuSSLCipherSuiteOptions()
             .withCiphers(List("TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"))
             .withProtocols(List("TLSv1.2"))))

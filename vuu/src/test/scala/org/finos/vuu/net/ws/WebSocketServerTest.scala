@@ -17,7 +17,11 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
-  val portCounter = new AtomicInteger(31820)
+  private val certPath: String = getClass.getClassLoader.getResource("certs/cert.pem").getPath
+  private val keyPath: String = getClass.getClassLoader.getResource("certs/key.pem").getPath
+  private val pkcsPath: String = getClass.getClassLoader.getResource("certs/certificate.p12").getPath
+  private val portCounter = new AtomicInteger(31820)
+  private val pkcsPassword = "changeit"
 
   Feature("Check we can start the WebSocketServer with various configurations") {
 
@@ -63,9 +67,7 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
         VuuWebSocketOptions()
           .withUri("websocket")
           .withSsl(
-            VuuSSLByCertAndKey(
-              certPath = "example/main/src/main/resources/certs/cert.pem",
-              keyPath = "example/main/src/main/resources/certs/key.pem"))
+            VuuSSLByCertAndKey(certPath, keyPath))
           .withWsPort(wsPort),
         VuuSecurityOptions()
       )
@@ -93,9 +95,7 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
         VuuWebSocketOptions()
           .withUri("websocket")
           .withSsl(
-            VuuSSLByPKCS(
-              pkcsPath = "example/main/src/main/resources/certs/certificate.p12",
-              pkcsPassword = "changeit"))
+            VuuSSLByPKCS(pkcsPath, pkcsPassword))
           .withWsPort(wsPort),
         VuuSecurityOptions()
       )
@@ -124,8 +124,8 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
           .withUri("websocket")
           .withSsl(
             VuuSSLByCertAndKey(
-              certPath = "example/main/src/main/resources/certs/cert.pem",
-              keyPath = "example/main/src/main/resources/certs/key.pem",
+              certPath,
+              keyPath,
               cipherSuite = VuuSSLCipherSuiteOptions()
                 .withCiphers(List("TLS_AES_256_GCM_SHA384"))
                 .withProtocols(List("TLSv1.3"))
@@ -159,8 +159,8 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
           .withUri("websocket")
           .withSsl(
             VuuSSLByCertAndKey(
-              certPath = "example/main/src/main/resources/certs/cert.pem",
-              keyPath = "example/main/src/main/resources/certs/key.pem",
+              certPath,
+              keyPath,
               cipherSuite = VuuSSLCipherSuiteOptions()
                 .withCiphers(List("TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"))
                 .withProtocols(List("TLSv1.2"))

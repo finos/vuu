@@ -63,8 +63,6 @@ class WebSocketClient(url: String, port: Int)(implicit lifecycle: LifecycleConta
 
     })
 
-    //Thread.sleep(2000)
-
     ch = b.connect(uri.getHost, port).sync.channel
   }
 
