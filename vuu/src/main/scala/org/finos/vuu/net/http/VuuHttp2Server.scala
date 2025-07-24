@@ -160,20 +160,25 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
 }
 
 
-class VuuHttp2Server(val options: VuuHttp2ServerOptions, val services: List[RestService])(implicit lifecycle: LifecycleContainer) extends Http2Server {
+class VuuHttp2Server(val options: VuuHttp2ServerOptions, val services: List[RestService]) extends Http2Server {
 
   private final val verticle = new VertxHttp2Verticle(options, services)
 
   val vxoptions = new VertxOptions();
 
+  @volatile
+  private var running = false
+
   private val vertx = Vertx.vertx(vxoptions);
 
   override def doStart(): Unit = {
-    vertx.deployVerticle(verticle);
+    vertx.deployVerticle(verticle)
+    running = true
   }
 
   override def doStop(): Unit = {
     vertx.close()
+    running = false
   }
 
   override def join(): Unit = {
@@ -187,4 +192,7 @@ class VuuHttp2Server(val options: VuuHttp2ServerOptions, val services: List[Rest
   }
 
   override val lifecycleId: String = "VertxHttp2Server"
+
+  def isRunning: Boolean = running
+
 }

@@ -5,7 +5,7 @@ import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.client.ClientHelperFns
-import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSSLByPKCS, VuuSSLCipherSuiteOptions, VuuSSLCipherSuiteOptionsImpl, VuuSSLDisabled, VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
+import org.finos.vuu.core._
 import org.finos.vuu.net.WebSocketViewServerClient
 import org.finos.vuu.net.http.VuuHttp2ServerOptions
 import org.finos.vuu.net.json.JsonVsSerializer
@@ -14,7 +14,6 @@ import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
 import java.util.concurrent.atomic.AtomicInteger
-import scala.collection.immutable.List
 
 class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
@@ -36,23 +35,17 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
           .withPort(0),
         VuuWebSocketOptions()
           .withUri("websocket")
-          .withWss(VuuSSLDisabled())
+          .withSsl(VuuSSLDisabled())
           .withWsPort(wsPort),
         VuuSecurityOptions()
       )
 
-      val viewServer = new VuuServer(config)
-      val client = new WebSocketClient(s"ws://localhost:$wsPort/websocket", wsPort)
-      lifeCycle(client).dependsOn(viewServer)
-      implicit val viewServerClient: WebSocketViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer)
-      lifeCycle.start()
+      implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      Thread.sleep(500)
       val token = ClientHelperFns.auth("Mikey", "lolcats")
       assertNotNull(token)
 
-      lifeCycle.thread.stop()
-      lifeCycle.stop()
+      stopLifeCycle()
     }
 
     Scenario("Start WebSocketServer with SSL using Cert and Key") {
@@ -69,7 +62,7 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
           .withPort(0),
         VuuWebSocketOptions()
           .withUri("websocket")
-          .withWss(
+          .withSsl(
             VuuSSLByCertAndKey(
               certPath = "example/main/src/main/resources/certs/cert.pem",
               keyPath = "example/main/src/main/resources/certs/key.pem"))
@@ -77,18 +70,12 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
         VuuSecurityOptions()
       )
 
-      val viewServer = new VuuServer(config)
-      val client = new WebSocketClient(s"wss://localhost:$wsPort/websocket", wsPort)
-      lifeCycle(client).dependsOn(viewServer)
-      implicit val viewServerClient: WebSocketViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer)
-      lifeCycle.start()
+      implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      Thread.sleep(500)
       val token = ClientHelperFns.auth("Mikey", "lolcats")
       assertNotNull(token)
 
-      lifeCycle.thread.stop()
-      lifeCycle.stop()
+      stopLifeCycle()
     }
 
     Scenario("Start WebSocketServer with SSL using PKCS and Password") {
@@ -105,7 +92,7 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
           .withPort(0),
         VuuWebSocketOptions()
           .withUri("websocket")
-          .withWss(
+          .withSsl(
             VuuSSLByPKCS(
               pkcsPath = "example/main/src/main/resources/certs/certificate.p12",
               pkcsPassword = "changeit"))
@@ -113,18 +100,12 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
         VuuSecurityOptions()
       )
 
-      val viewServer = new VuuServer(config)
-      val client = new WebSocketClient(s"wss://localhost:$wsPort/websocket", wsPort)
-      lifeCycle(client).dependsOn(viewServer)
-      implicit val viewServerClient: WebSocketViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer)
-      lifeCycle.start()
+      implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      Thread.sleep(500)
       val token = ClientHelperFns.auth("Mikey", "lolcats")
       assertNotNull(token)
 
-      lifeCycle.thread.stop()
-      lifeCycle.stop()
+      stopLifeCycle()
     }
 
     Scenario("Start WebSocketServer with SSL using TLS 1.3 only") {
@@ -141,31 +122,25 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
           .withPort(0),
         VuuWebSocketOptions()
           .withUri("websocket")
-          .withWss(
+          .withSsl(
             VuuSSLByCertAndKey(
               certPath = "example/main/src/main/resources/certs/cert.pem",
               keyPath = "example/main/src/main/resources/certs/key.pem",
-              cipherSuite = VuuSSLCipherSuiteOptionsImpl(
-                ciphers = List("TLS_AES_256_GCM_SHA384"),
-                protocols = List("TLSv1.3"))
+              cipherSuite = VuuSSLCipherSuiteOptions()
+                .withCiphers(List("TLS_AES_256_GCM_SHA384"))
+                .withProtocols(List("TLSv1.3"))
             )
           )
           .withWsPort(wsPort),
         VuuSecurityOptions()
       )
 
-      val viewServer = new VuuServer(config)
-      val client = new WebSocketClient(s"wss://localhost:$wsPort/websocket", wsPort)
-      lifeCycle(client).dependsOn(viewServer)
-      implicit val viewServerClient: WebSocketViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer)
-      lifeCycle.start()
+      implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      Thread.sleep(500)
       val token = ClientHelperFns.auth("Mikey", "lolcats")
       assertNotNull(token)
 
-      lifeCycle.thread.stop()
-      lifeCycle.stop()
+      stopLifeCycle()
     }
 
     Scenario("Start WebSocketServer with SSL using TLS 1.2 only") {
@@ -182,33 +157,46 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
           .withPort(0),
         VuuWebSocketOptions()
           .withUri("websocket")
-          .withWss(
+          .withSsl(
             VuuSSLByCertAndKey(
               certPath = "example/main/src/main/resources/certs/cert.pem",
               keyPath = "example/main/src/main/resources/certs/key.pem",
-              cipherSuite = VuuSSLCipherSuiteOptionsImpl(
-                ciphers = List("TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"),
-                protocols = List("TLSv1.2"))
+              cipherSuite = VuuSSLCipherSuiteOptions()
+                .withCiphers(List("TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"))
+                .withProtocols(List("TLSv1.2"))
             )
           )
           .withWsPort(wsPort),
         VuuSecurityOptions()
       )
 
-      val viewServer = new VuuServer(config)
-      val client = new WebSocketClient(s"wss://localhost:$wsPort/websocket", wsPort)
-      lifeCycle(client).dependsOn(viewServer)
-      implicit val viewServerClient: WebSocketViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer)
-      lifeCycle.start()
+      implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      Thread.sleep(500)
       val token = ClientHelperFns.auth("Mikey", "lolcats")
       assertNotNull(token)
 
-      lifeCycle.thread.stop()
-      lifeCycle.stop()
+      stopLifeCycle()
     }
 
+  }
+
+  private def createClient(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider): WebSocketViewServerClient = {
+    val viewServer = new VuuServer(config)
+    val protocol = config.wsOptions.sslOptions match {
+      case VuuSSLDisabled() => "ws"
+      case _ => "wss"
+    }
+    val client = new WebSocketClient(s"$protocol://localhost:${config.wsOptions.wsPort}/websocket", config.wsOptions.wsPort)
+    lifecycle(client).dependsOn(viewServer)
+    val viewServerClient: WebSocketViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer)
+    lifecycle.start()
+    //Thread.sleep(500)
+    viewServerClient
+  }
+
+  private def stopLifeCycle()(implicit lifecycle: LifecycleContainer): Unit = {
+    lifecycle.thread.stop()
+    lifecycle.stop()
   }
 
 }

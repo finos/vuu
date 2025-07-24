@@ -61,7 +61,7 @@ trait VuuWebSocketOptions {
   def withWss(certPath: String, keyPath: String, passphrase: Option[String] = None): VuuWebSocketOptions
   @deprecated
   def withWssDisabled(): VuuWebSocketOptions
-  def withWss(vuuSSLOptions: VuuSSLOptions): VuuWebSocketOptions
+  def withSsl(vuuSSLOptions: VuuSSLOptions): VuuWebSocketOptions
 }
 
 trait VuuThreadingOptions{
@@ -90,10 +90,10 @@ private case class VuuWebSocketOptionsImpl(wsPort: Int,
   override def withWsPort(port: Int): VuuWebSocketOptions = this.copy(wsPort = port)
   override def withUri(uri: String): VuuWebSocketOptions = this.copy(uri = uri)
   override def withBindAddress(address: String): VuuWebSocketOptions = this.copy(bindAddress = bindAddress)
-  override def withWssDisabled(): VuuWebSocketOptions = this.withWss(VuuSSLDisabled())
+  override def withWssDisabled(): VuuWebSocketOptions = this.withSsl(VuuSSLDisabled())
   override def withWss(certPath: String, keyPath: String, passphrase: Option[String] = None): VuuWebSocketOptions =
-    this.withWss(VuuSSLByCertAndKey(certPath, keyPath, passphrase, VuuSSLCipherSuiteOptions()))
-  override def withWss(sslOptions: VuuSSLOptions): VuuWebSocketOptions =
+    this.withSsl(VuuSSLByCertAndKey(certPath, keyPath, passphrase, VuuSSLCipherSuiteOptions()))
+  override def withSsl(sslOptions: VuuSSLOptions): VuuWebSocketOptions =
     this.copy(sslOptions = sslOptions)
 }
 
