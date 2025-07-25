@@ -5,7 +5,7 @@ import org.finos.vuu.core.IVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.rpc.DefaultRpcHandler
-import org.finos.vuu.net.{ErrorResponse, GetTableMetaRequest, GetTableMetaResponse, ViewPortRpcResponse}
+import org.finos.vuu.net.{ErrorResponse, GetTableMetaRequest, GetTableMetaResponse}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.ViewPortTable
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
@@ -77,14 +77,14 @@ class TableWSApiTest extends WebSocketApiTestBase {
           .build()
     )
 
-    val viewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, _: TableContainer) =>
+    val viewPortDefFactory = (_: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) =>
       ViewPortDef(
         columns =
           new ColumnBuilder()
             .addString("Id")
             .addInt("Account")
             .build(),
-        service = new DefaultRpcHandler()
+        service = new DefaultRpcHandler()(tableContainer)
       )
 
     val providerFactory = (table: DataTable, _: IVuuServer) => new TestProvider(table, new FakeDataSource(ListMap()))

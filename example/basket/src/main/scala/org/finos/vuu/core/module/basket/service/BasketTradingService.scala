@@ -2,11 +2,11 @@ package org.finos.vuu.core.module.basket.service
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketConstants.Side
-import org.finos.vuu.core.module.basket.BasketModule.{BasketTradingConstituentTable}
-import org.finos.vuu.core.table.{DataTable, RowData, RowWithData, TableContainer, ViewPortColumnCreator}
-import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
+import org.finos.vuu.core.module.basket.BasketModule
+import org.finos.vuu.core.module.basket.BasketModule.BasketTradingConstituentTable
+import org.finos.vuu.core.table._
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler, RpcHandler, RpcParams}
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.order.oms.{CancelOrder, NewOrder, OmsApi}
 import org.finos.vuu.viewport._
@@ -17,11 +17,19 @@ trait BasketTradingServiceIF extends EditRpcHandler {
   def takeOffMarket(basketInstanceId: String)(ctx: RequestContext): ViewPortAction
 }
 
-
-class BasketTradingService(val table: DataTable, val tableContainer: TableContainer, val omsApi: OmsApi)(implicit clock: Clock) extends RpcHandler with BasketTradingServiceIF with StrictLogging {
+// TODO: see comment on processViewPortRpcCall for why we extends DefaultRpcHandler with RpcHandler
+class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(implicit clock: Clock, val tableContainer: TableContainer) extends DefaultRpcHandler with RpcHandler with BasketTradingServiceIF with StrictLogging {
 
   import org.finos.vuu.core.module.basket.BasketModule.{BasketTradingColumnNames => BT, BasketTradingConstituentColumnNames => BTC}
 
+  /**
+   * We switched to DefaultRpcHandler instead of RpcHandler so that ViewportTypeAheadRpcHandler is enabled by default.
+   * This class needs the processViewPortRpcCall from RpcHandler though.
+   * Ideally we should switch to use DefaultRpcHandler.processViewPortRpcCall
+   */
+  override def processViewPortRpcCall(methodName: String, rpcParams: RpcParams): ViewPortAction = {
+    super[RpcHandler].processViewPortRpcCall(methodName, rpcParams)
+  }
 
   /**
    * Send basket to market rpc call

@@ -6,15 +6,15 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{AutoSubscribeTableDef, ViewPortDef}
 import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
-import org.finos.vuu.core.table.{Columns, DataTable}
+import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
 import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.net.rpc.RpcHandler
+import org.finos.vuu.net.rpc.DefaultRpcHandler
 import org.finos.vuu.provider.Provider
 import org.finos.vuu.provider.simulation.SimulatedPricesProvider
 import org.finos.vuu.viewport._
 
 
-class PricesService(val table: DataTable, val provider: Provider) extends RpcHandler with StrictLogging {
+class PricesService(val table: DataTable, val provider: Provider)(implicit tableContainer: TableContainer) extends DefaultRpcHandler with StrictLogging {
 
   private val pricesProvider = provider.asInstanceOf[SimulatedPricesProvider]
 
@@ -56,9 +56,9 @@ object PriceModule {
           joinFields = "ric"
         ),
         (table, vs) => new SimulatedPricesProvider(table, maxSleep = 800),
-        (table, provider, providerContainer, _) => ViewPortDef(
+        (table, provider, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.columns,
-          service = new PricesService(table, provider)
+          service = new PricesService(table, provider)(tableContainer)
         )
       ).asModule()
   }

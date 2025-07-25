@@ -37,7 +37,7 @@ object BasketModule extends DefaultModule {
         (table, _) => new BasketProvider(table),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.columns,
-          service = new BasketService(table, tableContainer, omsApi)
+          service = new BasketService(table, omsApi)(clock, tableContainer)
         )
       )
       .addTable(
@@ -71,7 +71,7 @@ object BasketModule extends DefaultModule {
         (table, vs) => new BasketTradingProvider(table, vs.tableContainer),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.columns,
-          service = new BasketTradingService(table, tableContainer, omsApi)
+          service = new BasketTradingService(table, omsApi)(clock, tableContainer)
         )
       )
       .addTable(
@@ -102,7 +102,7 @@ object BasketModule extends DefaultModule {
         (table, vs) => new BasketTradingConstituentProvider(table, omsApi),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.columns,
-          service = new BasketTradingConstituentService(table, tableContainer)
+          service = new BasketTradingConstituentService(table)(clock, tableContainer)
         )
       )
       .addTable(
@@ -144,7 +144,7 @@ object BasketModule extends DefaultModule {
         ),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.columns,
-          service = new BasketTradingConstituentJoinService(table, tableContainer)
+          service = new BasketTradingConstituentJoinService(table)(clock, tableContainer)
         )
       )
       .asModule()

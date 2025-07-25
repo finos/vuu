@@ -7,8 +7,8 @@ import org.finos.vuu.core.module.basket.BasketConstants.Side
 import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames => BCColumnName, BasketTradingColumnNames => BTColumnName, BasketTradingConstituentColumnNames => ColumnName}
 import org.finos.vuu.core.module.basket.result.ErrorReason
-import org.finos.vuu.core.table.{DataTable, JoinTable, RowData, RowWithData, TableContainer}
-import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
+import org.finos.vuu.core.table._
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler, RpcHandler, RpcParams}
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.viewport._
 
@@ -23,7 +23,17 @@ trait BasketTradingConstituentJoinServiceIF extends EditRpcHandler {
   def addConstituent(ric: String)(ctx: RequestContext): ViewPortAction
 }
 
-class BasketTradingConstituentJoinService(val table: DataTable, val tableContainer: TableContainer)(implicit clock: Clock) extends BasketTradingConstituentJoinServiceIF with RpcHandler with StrictLogging {
+// TODO: see comment on processViewPortRpcCall for why we extends DefaultRpcHandler with RpcHandler
+class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: Clock, val tableContainer: TableContainer) extends DefaultRpcHandler with RpcHandler with BasketTradingConstituentJoinServiceIF with StrictLogging {
+
+  /**
+   * We switched to DefaultRpcHandler instead of RpcHandler so that ViewportTypeAheadRpcHandler is enabled by default.
+   * This class needs the processViewPortRpcCall from RpcHandler though.
+   * Ideally we should switch to use DefaultRpcHandler.processViewPortRpcCall
+   */
+  override def processViewPortRpcCall(methodName: String, rpcParams: RpcParams): ViewPortAction = {
+    super[RpcHandler].processViewPortRpcCall(methodName, rpcParams)
+  }
 
   override def menuItems(): ViewPortMenu = ViewPortMenu("Direction",
     new SelectionViewPortMenuItem("Set Sell", "", this.setSell, "SET_SELECTION_SELL"),

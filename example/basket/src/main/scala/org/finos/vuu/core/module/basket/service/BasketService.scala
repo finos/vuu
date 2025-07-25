@@ -6,9 +6,9 @@ import org.finos.vuu.core.module.basket.BasketConstants.Side
 import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketModule.BasketConstituentTable
 import org.finos.vuu.core.module.price.PriceModule
-import org.finos.vuu.core.table.{DataTable, EmptyRowData, RowData, RowWithData, TableContainer}
-import org.finos.vuu.net.rpc.RpcHandler
+import org.finos.vuu.core.table._
 import org.finos.vuu.net.RequestContext
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcFunctionFailure, RpcFunctionSuccess, RpcHandler, RpcParams}
 import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.viewport._
 
@@ -28,9 +28,19 @@ trait BasketServiceIF {
   def createBasket(basketId: String, name: String)(ctx: RequestContext): ViewPortAction
 }
 
-class BasketService(val table: DataTable, val tableContainer: TableContainer, val omsApi: OmsApi)(implicit clock: Clock) extends RpcHandler with BasketServiceIF with StrictLogging {
+// TODO: see comment on processViewPortRpcCall for why we extends DefaultRpcHandler with RpcHandler
+class BasketService(val table: DataTable, val omsApi: OmsApi)(implicit clock: Clock, val tableContainer: TableContainer) extends DefaultRpcHandler with RpcHandler with BasketServiceIF with StrictLogging {
 
   import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames => BC, BasketTradingColumnNames => BT, BasketTradingConstituentColumnNames => BTC}
+
+  /**
+   * We switched to DefaultRpcHandler instead of RpcHandler so that ViewportTypeAheadRpcHandler is enabled by default.
+   * This class needs the processViewPortRpcCall from RpcHandler though.
+   * Ideally we should switch to use DefaultRpcHandler.processViewPortRpcCall
+   */
+  override def processViewPortRpcCall(methodName: String, rpcParams: RpcParams): ViewPortAction = {
+    super[RpcHandler].processViewPortRpcCall(methodName, rpcParams)
+  }
 
   private def getConstituentsForSourceBasket(basketId: String): List[RowData] = {
     val table = tableContainer.getTable(BasketConstituentTable)

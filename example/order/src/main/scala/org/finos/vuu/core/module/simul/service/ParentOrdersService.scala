@@ -2,13 +2,13 @@ package org.finos.vuu.core.module.simul.service
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.module.simul.provider.ParentOrdersProvider
-import org.finos.vuu.core.table.DataTable
+import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.net.rpc.RpcHandler
+import org.finos.vuu.net.rpc.DefaultRpcHandler
 import org.finos.vuu.provider.Provider
 import org.finos.vuu.viewport._
 
-class ParentOrdersService(val table: DataTable, val provider: Provider) extends RpcHandler with StrictLogging {
+class ParentOrdersService(val table: DataTable, val provider: Provider)(implicit tableContainer: TableContainer) extends DefaultRpcHandler with StrictLogging {
 
   final val parentsProvider = provider.asInstanceOf[ParentOrdersProvider]
 

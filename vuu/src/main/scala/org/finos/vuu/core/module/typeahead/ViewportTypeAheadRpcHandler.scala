@@ -6,9 +6,9 @@ import org.finos.vuu.net.{RequestContext, RpcNames}
 import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.viewport.ViewPortColumns
 
-class ViewportTypeAheadRpcHandler(rpcRegistry: DefaultRpcHandler, tableContainer: TableContainer) {
+class ViewportTypeAheadRpcHandler(tableContainer: TableContainer) {
 
-  def register(): Unit = {
+  def register(rpcRegistry: DefaultRpcHandler): Unit = {
     rpcRegistry.registerRpc(RpcNames.UniqueFieldValuesRpc, params => processGetUniqueFieldValuesRequest(params))
     rpcRegistry.registerRpc(RpcNames.UniqueFieldValuesStartWithRpc, params => processGetUniqueFieldValuesStartWithRequest(params))
   }

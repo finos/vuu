@@ -38,6 +38,7 @@ trait RpcHandler extends StrictLogging {
     this.getClass.getInterfaces.exists(_.getSimpleName == serviceIf)
   }
 
+  // Note this map is not used in DefaultRpcHandler, hence if using DefaultRpcHandler, register directly with DefaultRpcHandler.registerRpc
   val methodsAndParams: Map[String, Array[(String, Array[Type], Method)]] = this.getClass.getMethods.map(method => (method.getName, method.getGenericParameterTypes, method)).groupBy(_._1)
 
   /***

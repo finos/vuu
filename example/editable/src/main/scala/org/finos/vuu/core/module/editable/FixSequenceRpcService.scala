@@ -1,12 +1,12 @@
 package org.finos.vuu.core.module.editable
 
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.core.table.RowWithData
+import org.finos.vuu.core.table.{RowWithData, TableContainer}
 import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler}
 import org.finos.vuu.viewport._
 
-class FixSequenceRpcService(implicit clock: Clock) extends RpcHandler with EditRpcHandler{
+class FixSequenceRpcService(implicit clock: Clock, tableContainer: TableContainer) extends DefaultRpcHandler with EditRpcHandler{
 
   def onDeleteRow(key: String, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
     ViewPortEditSuccess()

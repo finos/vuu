@@ -198,7 +198,7 @@ export function isActionMessage(
 ) {
   return (
     rpcResponse.type === "VIEW_PORT_MENU_RESP" ||
-    rpcResponse.type === "VIEW_PORT_RPC_REPONSE"
+    rpcResponse.type === "VIEW_PORT_RPC_RESPONSE"
   );
 }
 

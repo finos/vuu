@@ -11,14 +11,14 @@ import org.finos.vuu.core.module.simul.provider._
 import org.finos.vuu.core.module.simul.service.ParentOrdersService
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
-import org.finos.vuu.net.rpc.RpcHandler
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcHandler}
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.provider.simulation.SimulatedBigInstrumentsProvider
 import org.finos.vuu.provider.{ProviderContainer, RpcProvider}
 import org.finos.vuu.viewport._
 
 
-class InstrumentsService(val table: DataTable, val providerContainer: ProviderContainer) extends RpcHandler with StrictLogging {
+class InstrumentsService(val table: DataTable, val providerContainer: ProviderContainer)(implicit tableContainer: TableContainer) extends DefaultRpcHandler with StrictLogging {
 
   def addRowsFromInstruments(selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
     val rics = selection.rowKeyIndex.map({ case (key, _) => key }).toList
@@ -138,14 +138,14 @@ object SimulationModule extends DefaultModule {
           name = "instruments",
           keyField = "ric",
           columns = Columns.fromNames("ric".string(), "description".string(), "bbg".string(), "isin".string(),
-                    "currency".string(), "exchange".string(), "lotSize".int()),
+            "currency".string(), "exchange".string(), "lotSize".int()),
           VisualLinks(),
           joinFields = "ric"
         ),
         (table, vs) => new SimulatedBigInstrumentsProvider(table),
-        (table, provider, providerContainer, _) => ViewPortDef(
+        (table, _, providerContainer, tableContainer) => ViewPortDef(
           columns = table.getTableDef.columns,
-          service = new InstrumentsService(table, providerContainer)
+          service = new InstrumentsService(table, providerContainer)(tableContainer)
         )
       )
       .addTable(
@@ -153,7 +153,7 @@ object SimulationModule extends DefaultModule {
           name = "orders",
           keyField = "orderId",
           Columns.fromNames("orderId".string(), "side".char(), "ric".string(), "ccy".string(), "quantity".double(),
-                            "trader".string(), "filledQuantity".double(), "lastUpdate".long(), "created".long()),
+            "trader".string(), "filledQuantity".double(), "lastUpdate".long(), "created".long()),
           VisualLinks(
             Link("ric", "instruments", "ric"),
             Link("ric", "prices", "ric")
@@ -167,9 +167,9 @@ object SimulationModule extends DefaultModule {
           name = "parentOrders",
           keyField = "id",
           Columns.fromNames("id".string(), "idAsInt".int(), "ric".string(), "childCount".int(), "price".double(),
-                            "quantity".int(), "side".string(), "account".string(), "exchange".string(),
-                            "ccy".string(), "algo".string(), "volLimit".double(), "filledQty".int(), "openQty".int(),
-                            "averagePrice".double(), "status".string(), "lastUpdate".long()),
+            "quantity".int(), "side".string(), "account".string(), "exchange".string(),
+            "ccy".string(), "algo".string(), "volLimit".double(), "filledQty".int(), "openQty".int(),
+            "averagePrice".double(), "status".string(), "lastUpdate".long()),
           VisualLinks(
             Link("ric", "prices", "ric")
           ),
@@ -179,9 +179,9 @@ object SimulationModule extends DefaultModule {
           joinFields = "id", "ric"
         ),
         (table, vs) => new ParentOrdersProvider(table, ordersModel),
-        (table, provider, providerContainer, _) => ViewPortDef(
+        (table, provider, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.columns,
-          service = new ParentOrdersService(table, provider)
+          service = new ParentOrdersService(table, provider)(tableContainer)
         )
       )
       .addTable(
@@ -206,9 +206,9 @@ object SimulationModule extends DefaultModule {
           name = "childOrders",
           keyField = "id",
           Columns.fromNames("parentOrderId".int(), "id".string(), "idAsInt".int(), "ric".string(), "price".double(),
-                            "quantity".int(), "side".string(), "account".string(), "exchange".string(), "ccy".string(),
-                            "strategy".string(), "volLimit".double(), "filledQty".int(), "openQty".int(), "averagePrice".double(),
-                            "status".string(), "lastUpdate".long()),
+            "quantity".int(), "side".string(), "account".string(), "exchange".string(), "ccy".string(),
+            "strategy".string(), "volLimit".double(), "filledQty".int(), "openQty".int(), "averagePrice".double(),
+            "status".string(), "lastUpdate".long()),
           VisualLinks(
             Link("parentOrderId", "parentOrders", "idAsInt")
           ),

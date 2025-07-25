@@ -2,15 +2,12 @@ package org.finos.vuu.example.virtualtable.module
 
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.{AutoSubscribeTableDef, ViewPortDef}
+import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.Columns
 import org.finos.vuu.example.virtualtable.provider.ReallyBigVirtualizedDataProvider
-import org.finos.vuu.net.rpc.RpcHandler
-import org.finos.vuu.plugin.virtualized.api
+import org.finos.vuu.net.rpc.DefaultRpcHandler
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
-
-class VirtualService extends RpcHandler
 
 object VirtualTableModule extends DefaultModule{
 
@@ -25,9 +22,9 @@ object VirtualTableModule extends DefaultModule{
         Columns.fromNames("orderId".string(), "quantity".int(), "price".long(), "side".string(), "trader".string())
       ),
       (table, vs) => new ReallyBigVirtualizedDataProvider(),
-      (table, _, _, _) => ViewPortDef(
+      (table, _, _, tableContainer) => ViewPortDef(
         columns = table.getTableDef.columns,
-        service = new VirtualService()
+        service = new DefaultRpcHandler()(tableContainer)
       )
     ).asModule()
   }

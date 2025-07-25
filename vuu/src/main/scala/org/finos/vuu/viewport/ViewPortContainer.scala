@@ -265,7 +265,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   def getViewPortDefinition(table: DataTable): ViewPortDef = {
     val viewPortDefFunc = getViewPortDefinitionCreator(table)
     if (viewPortDefFunc == null)
-      ViewPortDef.default(table.getTableDef.columns)
+      ViewPortDef.default(table.getTableDef.columns, tableContainer)
     else
       viewPortDefFunc(table.asTable, table.asTable.getProvider, providerContainer, tableContainer)
   }
