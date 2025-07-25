@@ -20,12 +20,13 @@ object InMemColumnValueProvider {
   def apply(dataTable: DataTable): InMemColumnValueProvider = {
     dataTable match {
       case inMemDataTable: InMemDataTable => new InMemColumnValueProvider(inMemDataTable)
+      case joinTable: JoinTable => new InMemColumnValueProvider(joinTable)
       case d => throw new UnsupportedOperationException(s"Cannot create InMemColumnValueProvider for data table ${d.name} as this is not InMemDataTable.")
     }
   }
 }
 
-class InMemColumnValueProvider(dataTable: InMemDataTable) extends ColumnValueProvider with StrictLogging {
+class InMemColumnValueProvider(dataTable: DataTable) extends ColumnValueProvider with StrictLogging {
   private val get10DistinctValues = DistinctValuesGetter(10)
 
   def getUniqueValuesVPColumn(columnName: String, viewPortColumns: ViewPortColumns, vpKeys: ViewPortKeys): Array[String] = {
