@@ -1,9 +1,10 @@
 package org.finos.vuu.core.table
 
 import org.finos.toolbox.jmx.MetricsProviderImpl
-import org.joda.time.LocalDateTime
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+
+import java.time.{LocalDateTime, ZoneId}
 
 class AutoSubscribeTableTest extends AnyFeatureSpec with Matchers {
 
@@ -13,7 +14,7 @@ class AutoSubscribeTableTest extends AnyFeatureSpec with Matchers {
 
       implicit val metrics = new MetricsProviderImpl
 
-      val dateTime = new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
+      val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
 
       //this scenario is supposed to mirror what would happen if we joined instruments to prices
       //by default we'd let the prices table ask its provider once for the data.

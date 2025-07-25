@@ -8,15 +8,15 @@ import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.net.{ClientSessionId, FilterSpec}
 import org.finos.vuu.provider.MockProvider
 import org.finos.vuu.viewport.tree.{BuildEntireTree, OnlyRecalculateTreeKeys, TreeBuilder, TreeNodeStateStore}
-import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
+import java.time.{LocalDateTime, ZoneId}
 import scala.collection.convert.ImplicitConversions.`list asScalaBuffer`
 
 class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
-  final val dateTime = new DateTime(2015, 7, 24, 11, 0, DateTimeZone.forID("Europe/London")).toDateTime.toInstant.getMillis
+  val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
 
   Feature("check tree building"){
 

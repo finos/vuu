@@ -9,11 +9,11 @@ import org.finos.vuu.viewport.ViewPortSetup
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.joda.time.LocalDateTime
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
 
+import java.time.{LocalDateTime, ZoneId}
 import java.util
 
 class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging with ViewPortSetup {
@@ -21,7 +21,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
   implicit val timeProvider: Clock = new DefaultClock
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
-  final val dateTime = new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
+  val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
 
   case class NamedKeyObserver(name: String) extends KeyObserver[RowKeyUpdate] {
     override def onUpdate(update: RowKeyUpdate): Unit = {}

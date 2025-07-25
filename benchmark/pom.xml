@@ -8,7 +8,6 @@
     </parent>
 
     <properties>
-        <lucene.version>8.11.0</lucene.version>
         <uberjar.name>benchmarks</uberjar.name>
     </properties>
 
@@ -38,11 +37,6 @@
         </dependency>
 
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_2.13</artifactId>
             <version>${scalatest.version}</version>
@@ -64,6 +58,7 @@
             <artifactId>jmh-core</artifactId>
             <version>${jmh.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.openjdk.jmh</groupId>
             <artifactId>jmh-generator-annprocess</artifactId>

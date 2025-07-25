@@ -13,10 +13,11 @@ import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderCont
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.finos.vuu.viewport._
-import org.joda.time.LocalDateTime
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
+
+import java.time.{LocalDateTime, ZoneId}
 
 
 class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
@@ -48,7 +49,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-      val dateTime = new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
+      val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
 
       val ordersDef = TableDef(
         name = "orders",
@@ -128,7 +129,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-      val dateTime = new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
+      val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
 
       val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, _) = setup()
 

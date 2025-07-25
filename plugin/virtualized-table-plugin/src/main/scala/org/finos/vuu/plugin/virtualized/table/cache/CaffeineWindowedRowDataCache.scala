@@ -1,6 +1,6 @@
 package org.finos.vuu.plugin.virtualized.table.cache
 
-import com.google.common.cache.{Cache, CacheBuilder, RemovalListener, RemovalNotification}
+import com.github.benmanes.caffeine.cache.{Cache, Caffeine, RemovalCause}
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.logging.LogAtFrequency
 import org.finos.toolbox.time.Clock
@@ -9,22 +9,19 @@ import org.finos.vuu.plugin.virtualized.table.WindowedCache
 
 import java.util.concurrent.atomic.AtomicInteger
 
-class GuavaWindowedRowDataCache(val cacheSize: Int)(implicit clock: Clock) extends WindowedCache[String, RowData] with StrictLogging {
+class CaffeineWindowedRowDataCache(val cacheSize: Int)(implicit clock: Clock) extends WindowedCache[String, RowData] with StrictLogging {
 
   val logAtFrequency = new LogAtFrequency(10_000)
   val removalCounter = new AtomicInteger()
 
-  val cache: Cache[String, RowData] = CacheBuilder.newBuilder()
+  val cache: Cache[String, RowData] = Caffeine.newBuilder()
     .maximumSize(cacheSize)
-    .removalListener((notification: RemovalNotification[String, RowData]) => {
-
+    .removalListener((_: String, _: RowData, _: RemovalCause) => {
       val count = removalCounter.incrementAndGet()
-
-      if(logAtFrequency.shouldLog()){
+      if (logAtFrequency.shouldLog()) {
         logger.debug(s"[ROWCACHE] Removing ${count} rowCache keys in last 10 seconds")
         removalCounter.set(0)
       }
-
     })
     .build()
 

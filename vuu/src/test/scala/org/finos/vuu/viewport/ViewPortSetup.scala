@@ -9,7 +9,6 @@ import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.{OutboundRowPublishQueue, PublishQueue}
-import org.joda.time.LocalDateTime
 
 trait ViewPortSetup {
 
@@ -59,8 +58,6 @@ trait ViewPortSetup {
   }
 
   def setup()(implicit lifecycleContainer: LifecycleContainer, timeProvider: Clock, metrics : MetricsProvider): (JoinTableProvider, DataTable, DataTable, DataTable, MockProvider, MockProvider, ViewPortContainer) = {
-
-    val dateTime = new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
 
     val ordersDef = TableDef(
       name = "orders",

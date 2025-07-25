@@ -159,12 +159,6 @@ class TableDef(val name: String,
   def getModule(): ViewServerModule = this.module
 }
 
-class LuceneTableDef(name: String, keyField: String, columns: Array[Column], joinFields: Seq[String],
-                     autosubscribe: Boolean = false, links: VisualLinks = VisualLinks(),
-                     val indexPath: IndexFilePath, val cleanupPolicy: CleanupPolicy)
-  extends TableDef(name, keyField, columns, joinFields, false, links, Indices()) {
-}
-
 trait JoinType
 
 object LeftOuterJoin extends JoinType{

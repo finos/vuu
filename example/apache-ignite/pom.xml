@@ -101,6 +101,25 @@
         </dependency>
 
         <dependency>
+            <groupId>org.scalamock</groupId>
+            <artifactId>scalamock_2.13</artifactId>
+            <version>${scalamock.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.typesafe</groupId>
+            <artifactId>config</artifactId>
+            <version>${typesafe.conf.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>io.opencensus</groupId>
             <artifactId>opencensus-api</artifactId>
             <version>${opencensus.version}</version>

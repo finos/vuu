@@ -6,10 +6,11 @@ import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api._
 import org.finos.vuu.core.table.{Columns, RowWithData, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider}
-import org.joda.time.LocalDateTime
 import org.scalatest.OneInstancePerTest
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+
+import java.time.{LocalDateTime, ZoneId}
 
 
 class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePerTest {
@@ -24,7 +25,7 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
 
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
-      val dateTime = new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
+      val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
 
       val ordersDef = TableDef("orders", "orderId", Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "ccyPairToUsd: String"), "ric", "orderId", "ccyPairToUsd")
 
@@ -109,7 +110,7 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
 
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
-      val dateTime = new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
+      val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
 
       val ordersDef = TableDef("orders", "orderId", Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "ccyPairToUsd: String"), "ric", "orderId", "ccyPairToUsd")
 

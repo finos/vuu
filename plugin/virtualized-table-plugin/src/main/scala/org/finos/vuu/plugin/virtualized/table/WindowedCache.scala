@@ -2,7 +2,7 @@ package org.finos.vuu.plugin.virtualized.table
 
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.table.RowData
-import org.finos.vuu.plugin.virtualized.table.cache.GuavaWindowedRowDataCache
+import org.finos.vuu.plugin.virtualized.table.cache.CaffeineWindowedRowDataCache
 
 trait WindowedCache[KEY, VALUE] {
   def put(key: KEY, v: VALUE): Unit
@@ -13,7 +13,7 @@ trait WindowedCache[KEY, VALUE] {
 
 object RowDataCache{
   def apply(cacheSize: Int)(implicit clock: Clock): WindowedCache[String, RowData] = {
-    new GuavaWindowedRowDataCache(cacheSize)
+    new CaffeineWindowedRowDataCache(cacheSize)
   }
 
 }
