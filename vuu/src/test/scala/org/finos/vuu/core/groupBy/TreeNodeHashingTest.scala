@@ -11,14 +11,15 @@ import org.finos.vuu.provider.MockProvider
 import org.finos.vuu.viewport.tree.TreeUtils._
 import org.finos.vuu.viewport.tree.{BuildEntireTree, TreeBuilder, TreeNodeStateStore}
 import org.finos.vuu.viewport.{GroupBy, ViewPortSetup}
-import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
+import java.time.{LocalDateTime, ZoneId}
+
 class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLogging with ViewPortSetup with GivenWhenThen{
 
-  final val dateTime = new DateTime(2015, 7, 24, 11, 0, DateTimeZone.forID("Europe/London")).toDateTime.toInstant.getMillis
+  val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
 
   Feature("Verify our ability to has tree updates in the builder") {
 

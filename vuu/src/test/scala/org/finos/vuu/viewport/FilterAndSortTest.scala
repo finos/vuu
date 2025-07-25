@@ -11,11 +11,12 @@ import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.provider.MockProvider
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.util.table.TableAsserts
-import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
+
+import java.time.{LocalDateTime, ZoneId}
 
 class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup with GivenWhenThen{
 
@@ -40,7 +41,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       implicit val lifecycle = new LifecycleContainer
 
-      val dateTime = new DateTime(2015, 7, 24, 11, 0, DateTimeZone.forID("Europe/London")).toDateTime.toInstant.getMillis
+      val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
 
       val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
 
@@ -150,7 +151,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       implicit val lifecycle = new LifecycleContainer
 
-      val dateTime = new DateTime(2015, 7, 24, 11, 0, DateTimeZone.forID("Europe/London")).toDateTime.toInstant.getMillis
+      val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
 
       val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
 
@@ -312,7 +313,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       implicit val lifecycle = new LifecycleContainer
 
-      val dateTime = new DateTime(2015, 7, 24, 11, 0, DateTimeZone.forID("Europe/London")).toDateTime.toInstant.getMillis
+      val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
 
       val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
 

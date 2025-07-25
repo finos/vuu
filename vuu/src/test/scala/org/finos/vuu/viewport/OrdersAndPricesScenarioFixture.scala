@@ -8,13 +8,14 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.plugin.DefaultPluginRegistry
-import org.joda.time.LocalDateTime
+
+import java.time.{LocalDateTime, ZoneId}
 
 object OrdersAndPricesScenarioFixture {
 
   def setup()(implicit lifecycleContainer: LifecycleContainer, timeProvider: Clock, metrics : MetricsProvider) = {
 
-    val dateTime = new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
+    val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
 
     val ordersDef = TableDef(
       name = "orders",
