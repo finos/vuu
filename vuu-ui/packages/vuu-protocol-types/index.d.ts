@@ -376,20 +376,20 @@ export declare type ClientMessageBody =
 
 // RPC
 
-export type GlobalRpcContext = {
+export declare type GlobalRpcContext = {
   type: "GLOBAL_CONTEXT";
 };
-export type ViewportRpcContext = {
+export declare type ViewportRpcContext = {
   type: "VIEWPORT_CONTEXT";
   viewPortId: string;
 };
-export type ViewportRowRpcContext = {
+export declare type ViewportRowRpcContext = {
   type: "VIEWPORT_ROW_CONTEXT";
   viewPortId: string;
   rowKey: string;
 };
 
-export type RpcContext =
+export declare type RpcContext =
   | GlobalRpcContext
   | ViewportRpcContext
   | ViewportRowRpcContext;
@@ -413,11 +413,11 @@ export declare type VuuRpcServiceRequest<T extends RpcContext = RpcContext> = {
   rpcName: TypeAheadMethod;
 };
 
-export type RpcResultSuccess = {
+export declare type RpcResultSuccess = {
   type: "SUCCESS_RESULT";
   data: unknown;
 };
-export type RpcResultError = {
+export declare type RpcResultError = {
   type: "ERROR_RESULT";
   errorMessage: string;
 };
