@@ -23,7 +23,7 @@ class WebSocketViewServerClient(ws: WebSocketClient, serializer: Serializer[Stri
   lifecycle(this).dependsOn(ws)
 
   override def doStart(): Unit = {
-    while (!ws.canWrite()) {
+    while (!ws.canWrite) {
 
     }
 

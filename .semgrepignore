@@ -25,6 +25,7 @@ vuu/src/test/scala/org/finos/vuu/viewport/CreateViewPortScenarioTest.scala
 vuu/src/test/scala/org/finos/vuu/net/ws/WebSocketServerClientTest.scala
 vuu/src/test/scala/org/finos/vuu/net/rpc/RpcModuleTest.scala
 vuu/src/test/resources/ws.html
+vuu/src/test/resources/certs/key.pem
 vuu-ui/sample-apps/standalone-table/scripts/build.mjs
 vuu-ui/sample-apps/app-vuu-basket-trader/scripts/build.mjs
 vuu-ui/sample-apps/app-vuu-example/scripts/build.mjs

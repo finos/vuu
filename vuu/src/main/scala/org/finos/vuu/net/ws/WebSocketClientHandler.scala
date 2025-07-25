@@ -12,7 +12,6 @@ import scala.concurrent.duration._
 class WebSocketClientHandler() extends SimpleChannelInboundHandler[AnyRef] with StrictLogging {
 
   private val queue = new ArrayBlockingQueue[String](1000)
-
   private final var handshaker: WebSocketClientHandshaker = null
   private var handshakeFuture: ChannelPromise = null
 
@@ -37,6 +36,7 @@ class WebSocketClientHandler() extends SimpleChannelInboundHandler[AnyRef] with 
     logger.trace("WebSocket Client disconnected!")
   }
 
+  def handshakeComplete: Boolean = handshakeFuture != null && handshakeFuture.isDone && handshakeFuture.isSuccess
 
   override def channelRead0(ctx: ChannelHandlerContext, msg: scala.AnyRef): Unit = {
     val ch: Channel = ctx.channel
@@ -72,4 +72,7 @@ class WebSocketClientHandler() extends SimpleChannelInboundHandler[AnyRef] with 
     }
     ctx.close
   }
+
+
+
 }

@@ -14,9 +14,6 @@ import org.finos.vuu.util.PathChecker
 
 import java.io.File
 
-//import io.netty.handler.ssl.SslContext;
-//import io.netty.handler.ssl.SslContextBuilder
-
 /**
  * A HTTP server which serves Web Socket requests at:
  *
@@ -57,25 +54,13 @@ class WebSocketServer(options: VuuWebSocketOptions, factory: ViewServerHandlerFa
 
   }
 
-  private def createSslContext(): SslContext = {
-    PathChecker.throwOnFileNotExists(options.certPath, "vuu.certPath, doesn't appear to exist")
-    PathChecker.throwOnFileNotExists(options.keyPath, "vuu.keyPath, doesn't appear to exist")
-    val sslCtx = options.passPhrase match {
-      case Some(passPhrase) =>
-        SslContextBuilder.forServer(new File(options.certPath), new File(options.keyPath), passPhrase)
-      case None =>
-        SslContextBuilder.forServer(new File(options.certPath), new File(options.keyPath))
-    }
-    sslCtx.build()
-  }
-
   override def doStop(): Unit = {
     bossGroup.shutdownGracefully()
     workerGroup.shutdownGracefully()
   }
 
   override def doInitialize(): Unit = {
-    val sslContext = Option.when(options.wssEnabled)(createSslContext())
+    val sslContext = new WebServerSSLContextFactory().buildContext(options.sslOptions)
 
     b.group(bossGroup, workerGroup)
       .channel(classOf[NioServerSocketChannel])
