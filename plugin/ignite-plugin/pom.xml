@@ -101,6 +101,18 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>org.scalamock</groupId>
+            <artifactId>scalamock_2.13</artifactId>
+            <version>${scalamock.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
     </dependencies>
 
