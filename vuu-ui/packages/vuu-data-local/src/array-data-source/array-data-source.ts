@@ -464,6 +464,8 @@ export class ArrayDataSource
         }
         if (processedData) {
           this.processedData = this.indexProcessedData(processedData);
+        } else {
+          this.processedData = undefined;
         }
       }
 
@@ -473,6 +475,13 @@ export class ArrayDataSource
           this.preserveScrollPositionAcrossConfigChange = false;
         } else {
           this.setRange(this.#range.reset, true);
+        }
+        if (
+          configChanges.filterChanged ||
+          configChanges.baseFilterChanged ||
+          configChanges.groupByChanged
+        ) {
+          this.emit("resize", this.size);
         }
         this.emit("config", this._config, this.range, undefined, configChanges);
       }
@@ -597,7 +606,7 @@ export class ArrayDataSource
       if (rowIdx >= from && rowIdx < to) {
         this.sendRowsToClient();
       }
-      this.emit("resize", this.#data.length);
+      this.emit("resize", this.size);
     }
   };
 

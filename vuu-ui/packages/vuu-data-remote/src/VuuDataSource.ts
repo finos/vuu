@@ -24,6 +24,7 @@ import {
   VuuRpcMenuRequest,
   VuuRpcRequest,
   VuuRpcResponse,
+  VuuRpcServiceRequest,
   VuuRpcViewportRequest,
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
@@ -32,6 +33,7 @@ import {
   BaseDataSource,
   combineFilters,
   debounce,
+  isRpcServiceRequest,
   isViewportMenusAction,
   isVisualLinksAction,
   itemsOrOrderChanged,
@@ -541,10 +543,17 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     rpcRequest: Omit<VuuRpcRequest, "vpId">,
   ) {
     if (this.viewport && this.server) {
-      return this.server?.rpcCall<T>({
-        ...rpcRequest,
-        vpId: this.viewport,
-      } as VuuRpcViewportRequest);
+      if (isRpcServiceRequest(rpcRequest)) {
+        return this.server?.rpcCall<T>({
+          ...rpcRequest,
+          context: { type: "VIEWPORT_CONTEXT", viewPortId: this.viewport },
+        } as VuuRpcServiceRequest);
+      } else {
+        return this.server?.rpcCall<T>({
+          ...rpcRequest,
+          vpId: this.viewport,
+        } as VuuRpcViewportRequest);
+      }
     } else {
       throw Error(`rpcCall server or viewport are undefined`);
     }

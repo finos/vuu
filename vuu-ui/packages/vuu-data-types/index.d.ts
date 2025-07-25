@@ -720,10 +720,11 @@ export interface ViewportMessageIn {
 
 // TODO use generic to type result
 export interface VuuUIMessageInRPC {
-  method: string;
+  action: unknown;
+  error?: null | unknown;
   result: unknown;
   requestId: string;
-  type: "RPC_RESP";
+  type: "RPC_RESPONSE";
 }
 
 export interface VuuUIMessageInRPCEditReject {

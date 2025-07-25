@@ -20,6 +20,9 @@ import {
   VuuRpcMenuSuccess,
   VuuTable,
   VuuRpcViewportResponse,
+  VuuViewportRpcTypeaheadRequest,
+  VuuRpcServiceRequest,
+  ViewportRpcContext,
 } from "@vuu-ui/vuu-protocol-types";
 
 const MENU_RPC_TYPES = [
@@ -34,6 +37,16 @@ const MENU_RPC_TYPES = [
   "VP_EDIT_DELETE_ROW_RPC",
   "VP_EDIT_SUBMIT_FORM_RPC",
 ];
+
+export const isRpcServiceRequest = (message: {
+  type: string;
+}): message is VuuRpcServiceRequest | Omit<VuuRpcServiceRequest, "context"> =>
+  message.type === "RPC_REQUEST";
+
+export const hasViewPortContext = (
+  message: VuuRpcServiceRequest,
+): message is VuuRpcServiceRequest<ViewportRpcContext> =>
+  message.context.type === "VIEWPORT_CONTEXT";
 
 export const isVuuMenuRpcRequest = (
   message: VuuRpcRequest | Omit<VuuRpcRequest, "vpId">,
@@ -55,6 +68,15 @@ export const isOpenDialogAction = (
 ): action is OpenDialogAction =>
   action !== undefined && action.type === "OPEN_DIALOG_ACTION";
 
+export const isTypeaheadRequest = (
+  request: Omit<VuuRpcRequest, "vpId">,
+): request is Omit<VuuViewportRpcTypeaheadRequest, "vpId"> => {
+  return (
+    isRpcServiceRequest(request) &&
+    (request.rpcName === "getUniqueFieldValues" ||
+      request.rpcName === "getUniqueFieldValuesStartingWith")
+  );
+};
 export function isViewportRpcRequest(
   request: VuuRpcRequest,
 ): request is VuuRpcViewportRequest;

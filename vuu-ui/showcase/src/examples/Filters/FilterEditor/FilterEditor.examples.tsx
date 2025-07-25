@@ -1,4 +1,4 @@
-import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
+import { getSchema } from "@vuu-ui/vuu-data-test";
 import type { SchemaColumn } from "@vuu-ui/vuu-data-types";
 import type { Filter } from "@vuu-ui/vuu-filter-types";
 import {
@@ -8,6 +8,7 @@ import {
   type FilterEditSaveHandler,
 } from "@vuu-ui/vuu-filters";
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 
 const instrumentsSchema = getSchema("instruments");
@@ -17,6 +18,15 @@ const FilterEditorTemplate = ({
   columnDescriptors = instrumentsSchema.columns,
   ...props
 }: Partial<FilterEditorProps>) => {
+  const { VuuDataSource } = useData();
+  const dataSource = useMemo(() => {
+    const schema = getSchema("instruments");
+    return new VuuDataSource({
+      columns: schema.columns.map(toColumnName),
+      table: schema.table,
+    });
+  }, [VuuDataSource]);
+
   const onCancel = useCallback<FilterEditCancelHandler>(() => {
     console.log(`cancel  filter edit`);
   }, []);
@@ -38,23 +48,25 @@ const FilterEditorTemplate = ({
   );
 
   return (
-    <FilterEditor
-      {...props}
-      columnDescriptors={columnDescriptors}
-      onCancel={onCancel}
-      onSave={onSave}
-      style={style}
-      vuuTable={instrumentsSchema.table}
-    />
+    <DataSourceProvider dataSource={dataSource}>
+      <FilterEditor
+        {...props}
+        columnDescriptors={columnDescriptors}
+        onCancel={onCancel}
+        onSave={onSave}
+        style={style}
+        vuuTable={instrumentsSchema.table}
+      />
+    </DataSourceProvider>
   );
 };
 
+/** tags=data-consumer */
 export const NewFilter = (props: Partial<FilterEditorProps>) => (
-  <LocalDataSourceProvider>
-    <FilterEditorTemplate {...props} />
-  </LocalDataSourceProvider>
+  <FilterEditorTemplate {...props} />
 );
 
+/** tags=data-consumer */
 export const NewFilterDateColumns = (props: Partial<FilterEditorProps>) => {
   const columnDescriptors = useMemo<ColumnDescriptor[]>(() => {
     const columns: SchemaColumn[] = [
@@ -75,16 +87,15 @@ export const NewFilterDateColumns = (props: Partial<FilterEditorProps>) => {
   }, []);
 
   return (
-    <LocalDataSourceProvider>
-      <FilterEditorTemplate
-        {...props}
-        columnDescriptors={columnDescriptors}
-        vuuTable={instrumentsSchema.table}
-      />
-    </LocalDataSourceProvider>
+    <FilterEditorTemplate
+      {...props}
+      columnDescriptors={columnDescriptors}
+      vuuTable={instrumentsSchema.table}
+    />
   );
 };
 
+/** tags=data-consumer */
 export const EditSimplerFilter = (props: Partial<FilterEditorProps>) => {
   const filter = useMemo<Filter>(() => {
     return {
@@ -94,13 +105,10 @@ export const EditSimplerFilter = (props: Partial<FilterEditorProps>) => {
     };
   }, []);
 
-  return (
-    <LocalDataSourceProvider>
-      <FilterEditorTemplate {...props} filter={filter} />
-    </LocalDataSourceProvider>
-  );
+  return <FilterEditorTemplate {...props} filter={filter} />;
 };
 
+/** tags=data-consumer */
 export const EditMultiClauseAndFilter = (props: Partial<FilterEditorProps>) => {
   const filter = useMemo<Filter>(() => {
     return {
@@ -120,13 +128,10 @@ export const EditMultiClauseAndFilter = (props: Partial<FilterEditorProps>) => {
     };
   }, []);
 
-  return (
-    <LocalDataSourceProvider>
-      <FilterEditorTemplate {...props} filter={filter} />
-    </LocalDataSourceProvider>
-  );
+  return <FilterEditorTemplate {...props} filter={filter} />;
 };
 
+/** tags=data-consumer */
 export const EditMultiClauseOrFilter = (props: Partial<FilterEditorProps>) => {
   const filter = useMemo<Filter>(() => {
     return {
@@ -146,9 +151,5 @@ export const EditMultiClauseOrFilter = (props: Partial<FilterEditorProps>) => {
     };
   }, []);
 
-  return (
-    <LocalDataSourceProvider>
-      <FilterEditorTemplate {...props} filter={filter} />
-    </LocalDataSourceProvider>
-  );
+  return <FilterEditorTemplate {...props} filter={filter} />;
 };

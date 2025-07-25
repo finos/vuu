@@ -169,7 +169,8 @@ const viewportRpcResponse = (
 
 const sendToMarket: ServiceHandler = async (rpcRequest) => {
   if (isViewportRpcRequest(rpcRequest)) {
-    const { params, vpId } = rpcRequest;
+    const { vpId } = rpcRequest;
+    const params = rpcRequest.params as string[];
     const [basketInstanceId] = params;
     basketTrading.update(basketInstanceId, "status", "ON_MARKET");
     return viewportRpcResponse(params, vpId);
@@ -179,7 +180,8 @@ const sendToMarket: ServiceHandler = async (rpcRequest) => {
 };
 const takeOffMarket: ServiceHandler = async (rpcRequest) => {
   if (isViewportRpcRequest(rpcRequest)) {
-    const { params, vpId } = rpcRequest;
+    const { vpId } = rpcRequest;
+    const params = rpcRequest.params as string[];
     const [basketInstanceId] = params;
     basketTrading.update(basketInstanceId, "status", "OFF-MARKET");
     return viewportRpcResponse(params, vpId);
@@ -190,7 +192,8 @@ const takeOffMarket: ServiceHandler = async (rpcRequest) => {
 
 const createNewBasket: ServiceHandler = async (rpcRequest) => {
   if (isViewportRpcRequest(rpcRequest)) {
-    const { params, vpId } = rpcRequest;
+    const { vpId } = rpcRequest;
+    const params = rpcRequest.params as string[];
     const [basketId, basketName] = params;
     const key = createTradingBasket(basketId, basketName);
     return viewportRpcResponse(params, vpId, { key });

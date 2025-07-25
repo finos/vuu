@@ -19,8 +19,11 @@ import type {
   VuuRpcRequest,
   VuuCreateVisualLink,
   VuuRemoveVisualLink,
+  RpcResultSuccess,
 } from "@vuu-ui/vuu-protocol-types";
 import {
+  isRpcServiceRequest,
+  isTypeaheadRequest,
   isViewportRpcRequest,
   isVuuMenuRpcRequest,
   metadataKeys,
@@ -174,7 +177,19 @@ export class TickingArrayDataSource extends ArrayDataSource {
   async rpcCall<T extends VuuRpcResponse = VuuRpcResponse>(
     rpcRequest: Omit<VuuRpcRequest, "vpId">,
   ): Promise<T> {
-    if (isViewportRpcRequest(rpcRequest)) {
+    if (isRpcServiceRequest(rpcRequest)) {
+      if (isTypeaheadRequest(rpcRequest)) {
+        const {
+          params: { column, starts },
+        } = rpcRequest;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        return {
+          type: "SUCCESS_RESULT",
+          data: this.getTypeaheadSuggestions(column, starts),
+        } as RpcResultSuccess;
+      }
+    } else if (isViewportRpcRequest(rpcRequest)) {
       const rpcService = this.#rpcServices?.find(
         (service) => service.rpcName === rpcRequest.rpcName,
       );
@@ -226,7 +241,8 @@ export class TickingArrayDataSource extends ArrayDataSource {
 
   getTypeaheadSuggestions(column: string, pattern?: string): Promise<string[]> {
     if (this.#table) {
-      return makeSuggestions(this.#table, column, pattern);
+      const columnIndex = this.columnMap[column];
+      return makeSuggestions(this.currentData, columnIndex, pattern);
     } else {
       throw Error(
         "cannot call getTypeaheadSuggestions on TickingDataSource if table has not been provided",

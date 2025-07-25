@@ -376,6 +376,24 @@ export declare type ClientMessageBody =
 
 // RPC
 
+export declare type GlobalRpcContext = {
+  type: "GLOBAL_CONTEXT";
+};
+export declare type ViewportRpcContext = {
+  type: "VIEWPORT_CONTEXT";
+  viewPortId: string;
+};
+export declare type ViewportRowRpcContext = {
+  type: "VIEWPORT_ROW_CONTEXT";
+  viewPortId: string;
+  rowKey: string;
+};
+
+export declare type RpcContext =
+  | GlobalRpcContext
+  | ViewportRpcContext
+  | ViewportRowRpcContext;
+
 export declare type VuuRpcRequest =
   | VuuRpcServiceRequest
   | VuuRpcViewportRequest
@@ -388,25 +406,37 @@ export declare type VuuRpcResponse =
   | VuuRpcMenuResponse
   | VuuRpcEditResponse;
 
-export declare type VuuRpcServiceRequest = {
-  type: "RPC_CALL";
-  service: "TypeAheadRpcHandler";
-} & (
-  | {
-      method: "getUniqueFieldValues";
-      params: [VuuTable, string];
-    }
-  | {
-      method: "getUniqueFieldValuesStartingWith";
-      params: [VuuTable, string, string];
-    }
-);
+export declare type VuuRpcServiceRequest<T extends RpcContext = RpcContext> = {
+  context: T;
+  type: "RPC_REQUEST";
+  params: Record<string, string>;
+  rpcName: TypeAheadMethod;
+};
 
+export declare type RpcResultSuccess = {
+  type: "SUCCESS_RESULT";
+  data: unknown;
+};
+export declare type RpcResultError = {
+  type: "ERROR_RESULT";
+  errorMessage: string;
+};
 export interface VuuRpcServiceResponse {
+  action: unknown;
   error: null | unknown;
-  type: "RPC_RESP";
-  method: "getUniqueFieldValues" | "getUniqueFieldValuesStartingWith";
-  result: string[];
+  rpcName: TypeAheadMethod;
+  type: "RPC_RESPONSE";
+  result: RpcResultSuccess | RpcResultError;
+}
+
+export interface VuuViewportRpcTypeaheadRequest extends VuuRpcServiceRequest {
+  rpcName: TypeAheadMethod;
+  params: {
+    column: string;
+    module: string;
+    starts?: string;
+    table: string;
+  };
 }
 
 export declare type RpcNamedParams = {
@@ -418,10 +448,9 @@ export interface VuuRpcViewportRequest {
   type: "VIEW_PORT_RPC_CALL";
   rpcName: string;
   namedParams: RpcNamedParams;
-  params: string[];
+  params: unknown[];
   vpId: string;
 }
-
 export interface VuuRpcViewportResponse {
   action: VuuRpcViewportAction;
   type: "VIEW_PORT_RPC_RESPONSE";
