@@ -1,10 +1,9 @@
 package org.finos.vuu.wsapi
 
-import org.finos.vuu.api.{ColumnBuilder, TableDef, ViewPortDef}
+import org.finos.vuu.api._
 import org.finos.vuu.core.IVuuServer
-import org.finos.vuu.core.module.typeahead.ViewportTypeAheadRpcHandler
-import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
-import org.finos.vuu.core.table.{DataTable, TableContainer}
+import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
+import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
 import org.finos.vuu.net._
 import org.finos.vuu.net.rpc.DefaultRpcHandler
 import org.finos.vuu.provider.{Provider, ProviderContainer}
@@ -13,12 +12,14 @@ import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
 import org.finos.vuu.wsapi.helpers.{FakeDataSource, TestProvider}
 
 import scala.collection.immutable.ListMap
-import scala.concurrent.duration.MILLISECONDS
 
 class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
   private val tableName = "TypeaheadTest"
   private val tableNameEmpty = "TypeaheadTestEmpty"
+  private val baseTableName = "TypeaheadTestBase"
+  private val rightTableName = "TypeaheadTestRight"
+  private val joinTableName = "TypeaheadTestJoin"
   private val moduleName = "TEST"
 
   Feature("[Web Socket API] Type ahead request") {
@@ -180,6 +181,46 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       result1.data shouldEqual List("Sid Sawyer", "Sally Phelps")
       result2.data shouldEqual List("Tom Sawyer", "Tom DeLay")
     }
+
+    Scenario("For a column in a join table") {
+
+      Given("a view port exist")
+      val viewPortId: String = createViewPortForJoinTable
+
+      When("request typeahead for Account column in join table")
+      val getTypeAheadRequest = createTypeAheadRequest(viewPortId, joinTableName, "Account")
+      val requestId = vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+
+      Then("return top 10 unique values in that column")
+      val response = vuuClient.awaitForResponse(requestId)
+
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
+      responseBody.rpcName shouldEqual "getUniqueFieldValues"
+
+      val result = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
+      result.data shouldEqual List("23564", "33657", "42262", "45321", "45897", "54874", "54875", "54876", "65879", "78458")
+
+      And("return No Action")
+      responseBody.action shouldBe a[NoneAction]
+    }
+
+    Scenario("Start with a specified string for a column in a join table") {
+
+      Given("a view port exist")
+      val viewPortId: String = createViewPortForJoinTable
+
+      When("request typeahead for Name column in join table with start string Tom")
+      val getTypeAheadRequest = createTypeAheadStartWithRequest(viewPortId, tableName, "Name", "Tom")
+      val requestId = vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+
+      Then("return all Name values that start with Tom")
+      val response = vuuClient.awaitForResponse(requestId)
+
+      val responseBody = assertBodyIsInstanceOf[RpcResponseNew](response)
+      responseBody.rpcName shouldEqual "getUniqueFieldValuesStartingWith"
+      val result = assertAndCastAsInstanceOf[RpcSuccessResult](responseBody.result)
+      result.data shouldEqual List("Tom Sawyer", "Tom DeLay")
+    }
   }
 
   protected def defineModuleWithTestTables(): ViewServerModule = {
@@ -225,7 +266,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
     ))
     val providerFactory = (table: DataTable, _: IVuuServer) => new TestProvider(table, dataSource)
 
-    val tableDef2 = TableDef(
+    val tableDefEmpty = TableDef(
       name = tableNameEmpty,
       keyField = "Id",
       columns =
@@ -234,13 +275,82 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
           .build()
     )
 
+    val baseTableDef = TableDef(
+      name = baseTableName,
+      keyField = "Id",
+      columns =
+        new ColumnBuilder()
+          .addString("Id")
+          .addString("Name")
+          .addInt("Account")
+          .addInt("HiddenColumn")
+          .build(),
+      VisualLinks(),
+      joinFields = "Id"
+    )
+    val baseProviderFactory = (table: DataTable, _: IVuuServer) => new TestProvider(table, dataSource)
+
+    val rightTableDef = TableDef(
+      name = rightTableName,
+      keyField = "Id",
+      columns =
+        new ColumnBuilder()
+          .addString("Id")
+          .addString("Description")
+          .build(),
+      VisualLinks(),
+      joinFields = "Id"
+    )
+
+    val rightDataSource = new FakeDataSource(ListMap(
+      "row1" -> Map("Id" -> "row1", "Description" -> "This is row1"),
+      "row2" -> Map("Id" -> "row2", "Description" -> "This is row2"),
+      "row3" -> Map("Id" -> "row3", "Description" -> "This is row3"),
+      "row4" -> Map("Id" -> "row4", "Description" -> "This is row4"),
+      "row5" -> Map("Id" -> "row5", "Description" -> "This is row5"),
+      "row6" -> Map("Id" -> "row6", "Description" -> "This is row6"),
+      "row7" -> Map("Id" -> "row7", "Description" -> "This is row7"),
+      "row8" -> Map("Id" -> "row8", "Description" -> "This is row8"),
+      "row9" -> Map("Id" -> "row9", "Description" -> "This is row9"),
+      "row10" -> Map("Id" -> "row10", "Description" -> "This is row10"),
+      "row11" -> Map("Id" -> "row11", "Description" -> "This is row11"),
+      "row12" -> Map("Id" -> "row12", "Description" -> "This is row12"),
+      "row13" -> Map("Id" -> "row13", "Description" -> "This is row13"),
+      "row14" -> Map("Id" -> "row14", "Description" -> "This is row14"),
+      "row15" -> Map("Id" -> "row15", "Description" -> "This is row15"),
+    ))
+    val rightProviderFactory = (table: DataTable, _: IVuuServer) => new TestProvider(table, rightDataSource)
+
+    val joinTableFunc: TableDefContainer => JoinTableDef = _ => JoinTableDef(
+      name = joinTableName,
+      baseTable = baseTableDef,
+      joinColumns = Columns.allFrom(baseTableDef),
+      joins =
+        JoinTo(
+          table = rightTableDef,
+          joinSpec = JoinSpec(left = "Id", right = "Id", LeftOuterJoin)
+        ),
+      links = VisualLinks(),
+      joinFields = Seq()
+    )
     ModuleFactory.withNamespace(moduleName)
       .addTableForTest(tableDef, viewPortDefFactory, providerFactory)
-      .addTableForTest(tableDef2)
+      .addTableForTest(tableDefEmpty)
+      .addTableForTest(baseTableDef, baseProviderFactory)
+      .addTableForTest(rightTableDef, rightProviderFactory)
+      .addJoinTableForTest(joinTableFunc)
       .asModule()
   }
 
+  private def createViewPortForJoinTable = {
+    createViewPortBase(joinTableName)
+  }
+
   private def createViewPort = {
+    createViewPortBase(tableName)
+  }
+
+  private def createViewPortBase(tableName: String) = {
     val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(1, 100), columns = Array("Id", "Name", "Account"), SortSpec(List(SortDef("Account", 'A'))), Array.empty[String], FilterSpec("Account > 20000"))
     vuuClient.send(sessionId, tokenId, createViewPortRequest)
     val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]

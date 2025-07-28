@@ -2,9 +2,9 @@ package org.finos.vuu.wsapi.helpers
 
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.{TableDef, ViewPortDef}
+import org.finos.vuu.api.{JoinTableDef, TableDef, ViewPortDef}
 import org.finos.vuu.core.IVuuServer
-import org.finos.vuu.core.module.ModuleFactoryNode
+import org.finos.vuu.core.module.{ModuleFactoryNode, TableDefContainer}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 
@@ -22,6 +22,16 @@ object TestExtension {
 
     def addTableForTest(
                          tableDef: TableDef,
+                         providerFactory: (DataTable, IVuuServer) => Provider
+                       )(implicit clock: Clock, lifecycle: LifecycleContainer): ModuleFactoryNode = {
+      moduleFactoryNode.addTable(
+        tableDef,
+        providerFactory
+      )
+    }
+
+    def addTableForTest(
+                         tableDef: TableDef,
                          ViewPortDefFactory: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef,
                          providerFactory: (DataTable, IVuuServer) => Provider
                        )(implicit clock: Clock, lifecycle: LifecycleContainer): ModuleFactoryNode = {
@@ -30,6 +40,12 @@ object TestExtension {
         providerFactory,
         ViewPortDefFactory
       )
+    }
+
+    def addJoinTableForTest(
+                             func: TableDefContainer => JoinTableDef
+                           ): ModuleFactoryNode = {
+      moduleFactoryNode.addJoinTable(func)
     }
 
   }
