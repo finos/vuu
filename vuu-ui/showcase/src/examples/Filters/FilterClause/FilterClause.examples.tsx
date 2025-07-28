@@ -18,15 +18,25 @@ const FilterClauseTemplate = ({
   filterClauseModel?: FilterClauseModel;
   tableSchema?: TableSchema;
 }) => {
+  const { VuuDataSource } = useData();
+  const dataSource = useMemo(() => {
+    return new VuuDataSource({
+      columns: tableSchema.columns.map(toColumnName),
+      table: tableSchema.table,
+    });
+  }, [VuuDataSource, tableSchema.columns, tableSchema.table]);
+
   return (
-    <div style={{ padding: "10px" }}>
-      <FilterClause
-        columnsByName={columnsByName}
-        data-testid="filterclause"
-        filterClauseModel={filterClauseModel}
-        vuuTable={tableSchema.table}
-      />
-    </div>
+    <DataSourceProvider dataSource={dataSource}>
+      <div style={{ padding: "10px" }}>
+        <FilterClause
+          columnsByName={columnsByName}
+          data-testid="filterclause"
+          filterClauseModel={filterClauseModel}
+          vuuTable={tableSchema.table}
+        />
+      </div>
+    </DataSourceProvider>
   );
 };
 
@@ -60,6 +70,7 @@ export const DefaultColumnPicker = () => {
   );
 };
 
+/** tags=data-consumer */
 export const NewFilterClause = () => {
   return (
     <LocalDataSourceProvider>
