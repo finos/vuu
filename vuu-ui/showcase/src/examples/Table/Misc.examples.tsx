@@ -15,6 +15,7 @@ import {
 import {
   Flexbox,
   FlexboxLayout,
+  layoutFromJson,
   LayoutProvider,
   View,
 } from "@vuu-ui/vuu-layout";
@@ -33,17 +34,20 @@ import {
   TableConfig,
   TableRowSelectHandler,
 } from "@vuu-ui/vuu-table-types";
-import { Toolbar } from "@vuu-ui/vuu-ui-controls";
+import { ContextPanelProvider, Toolbar } from "@vuu-ui/vuu-ui-controls";
 import {
   applyDefaultColumnConfig,
   defaultValueFormatter,
+  LayoutJSON,
   registerComponent,
   toColumnName,
   useData,
+  VuuShellLocation,
 } from "@vuu-ui/vuu-utils";
 import {
   CSSProperties,
   MouseEventHandler,
+  ReactElement,
   useCallback,
   useMemo,
   useState,
@@ -52,6 +56,7 @@ import { useAutoLoginToVuuServer } from "../utils";
 import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 
 import "./Misc.examples.css";
+import { ShowContextPanel } from "@vuu-ui/vuu-ui-controls/src/context-panel-provider/ContextPanelProvider";
 
 registerComponent("TableSettings", TableSettingsPanel, "view");
 
@@ -335,9 +340,78 @@ export const TableInLayoutWithContextPanel = () => {
           renderBufferSize={30}
           width="100%"
         />
-        <ContextPanel overlay></ContextPanel>
+        <ContextPanel id={VuuShellLocation.ContextPanel} overlay></ContextPanel>
       </FlexboxLayout>
     </LayoutProvider>
+  );
+};
+
+const NullContext = {
+  component: undefined,
+  expanded: false,
+  title: "",
+};
+export const TableInLayoutWithCustomContextPanel = () => {
+  useMemo(() => {
+    registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
+    registerComponent("TableSettings", TableSettingsPanel, "view");
+  }, []);
+  const tableConfig = useMemo<TableConfig>(() => {
+    return {
+      columns: getSchema("instruments").columns,
+      rowSeparators: true,
+      zebraStripes: true,
+    };
+  }, []);
+  const dataSource = useMemo(() => {
+    return vuuModule("SIMUL").createDataSource("instruments");
+  }, []);
+
+  const [{ component, expanded, title }, setContextState] = useState<{
+    component?: LayoutJSON;
+    expanded: boolean;
+    title: string;
+  }>(NullContext);
+
+  const showContextPanel = useCallback<ShowContextPanel>(
+    (componentType, title, props) => {
+      const component = { type: componentType, props } as LayoutJSON;
+      console.log(component);
+      setContextState({ component, expanded: true, title });
+    },
+    [],
+  );
+
+  const hideContextPanel = useCallback(() => {
+    setContextState(NullContext);
+  }, []);
+
+  const handleClose = useCallback(() => {
+    // setContextState(NullContext);
+  }, []);
+
+  return (
+    <ContextPanelProvider
+      hideContextPanel={hideContextPanel}
+      showContextPanel={showContextPanel}
+    >
+      <FlexboxLayout style={{ height: 645, width: "100%" }}>
+        <Table
+          config={tableConfig}
+          dataSource={dataSource}
+          renderBufferSize={30}
+          width="100%"
+        />
+        <ContextPanel
+          content={component}
+          expanded={expanded}
+          id={VuuShellLocation.ContextPanel}
+          onClose={handleClose}
+          overlay
+          title={title}
+        />
+      </FlexboxLayout>
+    </ContextPanelProvider>
   );
 };
 

@@ -3,7 +3,11 @@ import {
   layoutFromJson,
   useLayoutProviderDispatch,
 } from "@vuu-ui/vuu-layout";
-import { IconButton } from "@vuu-ui/vuu-ui-controls";
+import {
+  IconButton,
+  useContextPanel,
+  useHideContextPanel,
+} from "@vuu-ui/vuu-ui-controls";
 import { LayoutJSON, VuuShellLocation } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -48,16 +52,21 @@ export const ContextPanel = ({
     window: targetWindow,
   });
 
+  const hideContextPanel = useHideContextPanel();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const dispatchLayoutAction = useLayoutProviderDispatch();
   const handleClose = useCallback(() => {
-    dispatchLayoutAction({
-      path: `#${VuuShellLocation.ContextPanel}`,
-      propName: "expanded",
-      propValue: false,
-      type: "set-prop",
-    });
-  }, [dispatchLayoutAction]);
+    if (hideContextPanel) {
+      hideContextPanel();
+    } else {
+      dispatchLayoutAction({
+        path: `#${VuuShellLocation.ContextPanel}`,
+        propName: "expanded",
+        propValue: false,
+        type: "set-prop",
+      });
+    }
+  }, [dispatchLayoutAction, hideContextPanel]);
 
   const handleKeyDown = useCallback<KeyboardEventHandler>(
     (e) => {
@@ -101,14 +110,15 @@ export const ContextPanel = ({
         <div className={`${classBase}-header`}>
           <h2 className={`${classBase}-title`}>{title}</h2>
           <IconButton
+            appearance="transparent"
             className={`${classBase}-close`}
             data-embedded
             icon="close"
             onClick={handleClose}
             onKeyDown={handleKeyDown}
             ref={closeButtonRef}
+            sentiment="neutral"
             size={16}
-            variant="secondary"
           />
         </div>
         <div className={`${classBase}-content`}>{content}</div>

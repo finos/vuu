@@ -15,7 +15,7 @@
   width: 0px !important;
 }
 
-.vuuContextPanel-inner {
+.vuuView.vuuContextPanel-inner {
   background-color: var(--salt-container-primary-background);
   box-shadow: var(--vuu-side-panel-shadow, none);
   display: flex;
@@ -23,9 +23,7 @@
   height: 100%;
   min-width: 0 !important;
   overflow: auto;
-  padding-bottom: 24px;
-  padding-top: 24px;
-  padding: var(--vuu-side-panel-padding);
+  padding: 24px 8px 24px 24px;
   position: absolute !important;
   right: 0;
   top: 0;
@@ -53,5 +51,6 @@
 .vuuContextPanel-content {
   flex: 1 1 auto;
   overflow-y: auto;
+  padding-right: 16px;
   width: 100%;
 }

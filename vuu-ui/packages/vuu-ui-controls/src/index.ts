@@ -27,5 +27,6 @@ export * from "./vuu-typeahead-input";
 export {
   ContextPanelProvider,
   useContextPanel,
+  useHideContextPanel,
 } from "./context-panel-provider/ContextPanelProvider";
 export { SortableList, SortableOption } from "./sortable-list/SortableList";
