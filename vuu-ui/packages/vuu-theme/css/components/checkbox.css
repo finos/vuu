@@ -43,9 +43,10 @@
   }
 
   .saltCheckboxIcon-checked:after {
+    --vuu-icon-color: black;
     content: "";
     background-color: var(--vuu-icon-color);
-    left: var(--vuu-icon-left, auto);
+    left: var(--vuu-icon-left, -1px);
     --vuu-icon-size: calc(var(--salt-size-icon) + 2px);
     height: var(--vuu-icon-height, var(--vuu-icon-size, 12px));
     mask: var(--vuu-svg-tick) center center/var(--vuu-icon-size)
@@ -55,7 +56,7 @@
     mask-repeat: no-repeat;
     -webkit-mask-repeat: no-repeat;
     position: absolute;
-    top: var(--vuu-icon-top, auto);
+    top: var(--vuu-icon-top, -1px);
     width: var(--vuu-icon-width, var(--vuu-icon-size, 12px));
   }
 }

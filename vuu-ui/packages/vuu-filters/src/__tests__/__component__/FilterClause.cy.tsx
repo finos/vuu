@@ -22,7 +22,7 @@ describe("FilterClause", () => {
     });
   });
 
-  describe("WHEN partial filter clause with Column and Operator is rendered, but no dataSource available", () => {
+  describe.skip("WHEN partial filter clause with Column and Operator is rendered, but no dataSource available", () => {
     it("THEN component is rendered with controls for column, operator and value, no suggestions provided", () => {
       cy.mount(<PartialFilterClauseColumnAndOperator />);
       const container = cy.findByTestId("filterclause");

@@ -3,11 +3,7 @@ import {
   layoutFromJson,
   useLayoutProviderDispatch,
 } from "@vuu-ui/vuu-layout";
-import {
-  IconButton,
-  useContextPanel,
-  useHideContextPanel,
-} from "@vuu-ui/vuu-ui-controls";
+import { IconButton, useHideContextPanel } from "@vuu-ui/vuu-ui-controls";
 import { LayoutJSON, VuuShellLocation } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
