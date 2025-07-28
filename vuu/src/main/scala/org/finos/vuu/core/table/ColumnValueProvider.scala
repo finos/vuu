@@ -21,7 +21,7 @@ object InMemColumnValueProvider {
     dataTable match {
       case inMemDataTable: InMemDataTable => new InMemColumnValueProvider(inMemDataTable)
       case joinTable: JoinTable => new InMemColumnValueProvider(joinTable)
-      case d => throw new UnsupportedOperationException(s"Cannot create InMemColumnValueProvider for data table ${d.name} as this is not InMemDataTable.")
+      case d => throw new UnsupportedOperationException(s"Cannot create InMemColumnValueProvider for data table ${d.name}. Unsupported data table type ${d.getClass.getSimpleName}")
     }
   }
 }
