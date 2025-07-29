@@ -12,7 +12,7 @@ public class SortBenchmarkRunner {
     private final BenchmarkHelper benchmarkHelper = new BenchmarkHelper();
     private SortBenchmark benchmark;
 
-    @Param({"10000"})
+    @Param({ "10000", "100000", "500000", "1000000", "2000000", "5000000" })
     public int tableSize;
 
     @Setup
