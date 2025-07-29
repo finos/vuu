@@ -1,6 +1,6 @@
 package org.finos.vuu.state
 
-import java.time.Instant
+import java.time.{Instant, ZoneId}
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.ConcurrentHashMap
 import scala.jdk.CollectionConverters._
@@ -22,7 +22,7 @@ trait VuiStateStore {
 
   def getAll(): List[VuiHeader]
 
-  private val dateTimeFormat = DateTimeFormatter.ofPattern("YYYY-MM-dd_HHmmss.SSS")
+  private val dateTimeFormat = DateTimeFormatter.ofPattern("YYYY-MM-dd_HHmmss.SSS").withZone(ZoneId.of("UTC"))
 
   def timeToVersion(time: Long): String = {
     dateTimeFormat.format(Instant.ofEpochMilli(time))
