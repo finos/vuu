@@ -38,6 +38,13 @@
         </dependency>
 
         <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_2.13</artifactId>
             <version>${scalatest.version}</version>
