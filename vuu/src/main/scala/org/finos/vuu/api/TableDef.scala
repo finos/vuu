@@ -117,11 +117,15 @@ class SessionTableDef(name: String,
 
 class TableDef(val name: String,
                val keyField: String,
-               val columns: Array[Column],
+               val customColumns: Array[Column],
                val joinFields: Seq[String],
                val autosubscribe: Boolean = false,
                val links: VisualLinks = VisualLinks(),
                val indices: Indices) extends VuuInMemPluginLocator {
+
+  private val createdTimestampColumn: SimpleColumn = SimpleColumn(DefaultColumnNames.CreatedTime, customColumns.length, DataType.fromString("long"))
+  private val updatedTimestampColumn: SimpleColumn = SimpleColumn(DefaultColumnNames.CreatedTime, customColumns.length + 1, DataType.fromString("long"))
+  val columns: Array[Column] = customColumns ++ Array(createdTimestampColumn, updatedTimestampColumn)
 
   private var module: ViewServerModule = null;
   private var permissionFunc: (ViewPort, TableContainer) => RowPermissionChecker = null
