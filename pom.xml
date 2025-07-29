@@ -35,56 +35,20 @@
         <tag>HEAD</tag>
     </scm>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-stack-depchain</artifactId>
-                <version>${vertx.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.13.2</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-engine</artifactId>
-                <version>5.2.0</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit.platform</groupId>
-                <artifactId>junit-platform-runner</artifactId>
-                <version>1.2.0</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.assertj</groupId>
-                <artifactId>assertj-core</artifactId>
-                <version>3.26.3</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <scala.version>2.13.14</scala.version>
+        <maven.compiler.release>17</maven.compiler.release>
+        <scala.version>2.13.16</scala.version>
         <caffeine.version>3.2.1</caffeine.version>
         <metrics.version>4.2.5</metrics.version>
         <scalatest.version>3.2.19</scalatest.version>
-        <scalamock.version>6.0.0</scalamock.version>
+        <scalamock.version>7.4.0</scalamock.version>
         <scala.logging>3.9.5</scala.logging>
-        <jackson.version>2.17.2</jackson.version>
-        <antlr.version>4.11.1</antlr.version>
+        <jackson.version>2.19.2</jackson.version>
+        <antlr.version>4.13.2</antlr.version>
         <netty.version>4.1.123.Final</netty.version>
         <maven.scala.plugin>2.15.2</maven.scala.plugin>
-        <vertx.version>4.4.9</vertx.version>
+        <vertx.version>4.5.16</vertx.version>
         <typesafe.conf.version>1.4.2</typesafe.conf.version>
         <logback.version>1.5.18</logback.version>
         <slf4j.version>2.0.17</slf4j.version>
@@ -93,6 +57,10 @@
         <opencensus.version>0.31.1</opencensus.version>
         <prometheus.simpleclient.version>0.16.0</prometheus.simpleclient.version>
         <sttp.client4.version>4.0.9</sttp.client4.version>
+        <junit.version>4.13.2</junit.version>
+        <junit.jupiter.version>5.2.0</junit.jupiter.version>
+        <junit.platform.version>1.2.0</junit.platform.version>
+        <assertj.version>3.26.3</assertj.version>
         <maven.gpg.plugin.version>3.1.0</maven.gpg.plugin.version>
         <gpg.executable>gpg</gpg.executable>
         <publish.server.id>ossrh</publish.server.id>
@@ -152,7 +120,7 @@
     <build>
 
         <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
-            <plugins>
+        <plugins>
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>3.0.2</version>
@@ -205,16 +173,17 @@
 
             </plugins>
         </pluginManagement>
-<plugins>
-    <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.13.0</version>
-        <configuration>
-            <source>${maven.compiler.source}</source>
-            <release>${maven.compiler.target}</release>
-        </configuration>
-    </plugin>
-</plugins>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.14.0</version>
+                <configuration>
+                    <release>${maven.compiler.release}</release>
+                </configuration>
+            </plugin>
+        </plugins>
+
     </build>
 </project>
