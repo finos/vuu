@@ -20,7 +20,7 @@
     <dependencies>
         <dependency>
             <groupId>org.finos.vuu</groupId>
-            <artifactId>vuu</artifactId>
+            <artifactId>vuu-java</artifactId>
             <version>0.9.76-SNAPSHOT</version>
         </dependency>
 
@@ -52,23 +52,6 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.13</artifactId>
-            <version>${scalatest.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.scala-lang</groupId>
-                    <artifactId>scala-library</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.scala-lang</groupId>
-                    <artifactId>scala-reflect</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
     </dependencies>
