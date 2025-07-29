@@ -12,7 +12,7 @@
     </properties>
 
     <artifactId>benchmark</artifactId>
-    <name>${artifactId}</name>
+    <name>${project.artifactId}</name>
     <description>benchmark</description>
     <inceptionYear>2023</inceptionYear>
     <packaging>jar</packaging>
@@ -37,6 +37,18 @@
         </dependency>
 
         <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <version>${jmh.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <version>${jmh.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_2.13</artifactId>
             <version>${scalatest.version}</version>
@@ -51,18 +63,6 @@
                     <artifactId>scala-reflect</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.openjdk.jmh</groupId>
-            <artifactId>jmh-core</artifactId>
-            <version>${jmh.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.openjdk.jmh</groupId>
-            <artifactId>jmh-generator-annprocess</artifactId>
-            <version>${jmh.version}</version>
         </dependency>
 
     </dependencies>

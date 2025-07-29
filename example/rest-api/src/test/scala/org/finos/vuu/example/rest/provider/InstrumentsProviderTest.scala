@@ -1,6 +1,7 @@
 package org.finos.vuu.example.rest.provider
 
 import org.finos.toolbox.json.JsonUtil
+import org.finos.toolbox.json.JsonUtil.toRawJson
 import org.finos.vuu.core.table.{Columns, DataTable, RowData, RowWithData}
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.TableDef
@@ -11,7 +12,7 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
-import sttp.client4.testing.SyncBackendStub
+import sttp.client4.testing.{ResponseStub, SyncBackendStub}
 
 class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFactory with BeforeAndAfterEach {
   private implicit val clock: Clock = new TestFriendlyClock(10001)
@@ -25,7 +26,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
       val expectedRow = instruments.map(rowFromInstrument).head
       val mockBackend = SyncBackendStub
         .whenRequestMatches(req => req.uri.path.endsWith(List("instruments")) && req.uri.params.get("limit").nonEmpty)
-        .thenRespond(JsonUtil.toRawJson(instruments))
+        .thenRespond(ResponseStub.adjust(toRawJson(instruments)))
 
       getInstrumentsProvider(mockBackend).doStart()
 
@@ -37,7 +38,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
       val expectedRows = instruments.map(rowFromInstrument)
       val mockBackend = SyncBackendStub
         .whenRequestMatches(req => req.uri.path.endsWith(List("instruments")) && req.uri.params.get("limit").nonEmpty)
-        .thenRespond(JsonUtil.toRawJson(instruments))
+        .thenRespond(ResponseStub.adjust(toRawJson(instruments)))
 
       getInstrumentsProvider(mockBackend).doStart()
 
@@ -47,7 +48,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
 
     Scenario("skips updating table when response is not parsable") {
       val mockClientResponse = "Some body"
-      val mockBackend = SyncBackendStub.whenAnyRequest.thenRespond(mockClientResponse)
+      val mockBackend = SyncBackendStub.whenAnyRequest.thenRespond(ResponseStub.exact(mockClientResponse))
 
       getInstrumentsProvider(mockBackend).doStart()
 

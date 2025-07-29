@@ -19,16 +19,16 @@
         </dependency>
 
         <dependency>
-            <groupId>org.finos.vuu</groupId>
-            <artifactId>vuu</artifactId>
-            <version>0.9.76-SNAPSHOT</version>
-            <type>test-jar</type>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.finos.vuu</groupId>
+            <artifactId>vuu</artifactId>
+            <version>0.9.76-SNAPSHOT</version>
+            <type>test-jar</type>
             <scope>test</scope>
         </dependency>
 

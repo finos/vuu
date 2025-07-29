@@ -8,7 +8,7 @@
     </parent>
 
     <artifactId>vuu</artifactId>
-    <name>vuu</name>
+    <name>${project.artifactId}</name>
     <description>vuu</description>
     <inceptionYear>2015</inceptionYear>
     <packaging>jar</packaging>

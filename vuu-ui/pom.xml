@@ -8,7 +8,7 @@
     </parent>
 
     <artifactId>vuu-ui</artifactId>
-    <name>vuu-ui</name>
+    <name>${project.artifactId}</name>
     <inceptionYear>2015</inceptionYear>
     <packaging>jar</packaging>
 
@@ -22,6 +22,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
 
       <dependency>

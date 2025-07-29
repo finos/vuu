@@ -8,7 +8,7 @@
     </parent>
 
     <artifactId>toolbox</artifactId>
-    <name>toolbox</name>
+    <name>${project.artifactId}</name>
     <inceptionYear>2015</inceptionYear>
     <packaging>jar</packaging>
 

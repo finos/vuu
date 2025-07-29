@@ -77,20 +77,22 @@
         <scala.version>2.13.14</scala.version>
         <caffeine.version>3.2.1</caffeine.version>
         <metrics.version>4.2.5</metrics.version>
-        <curator.version>3.1.0</curator.version>
         <scalatest.version>3.2.19</scalatest.version>
         <scalamock.version>6.0.0</scalamock.version>
         <scala.logging>3.9.5</scala.logging>
         <jackson.version>2.17.2</jackson.version>
-        <aeron.version>1.17.0</aeron.version>
         <antlr.version>4.11.1</antlr.version>
-        <netty.version>4.1.100.Final</netty.version>
+        <netty.version>4.1.123.Final</netty.version>
         <maven.scala.plugin>2.15.2</maven.scala.plugin>
-        <vertx.version>4.4.6</vertx.version>
+        <vertx.version>4.4.9</vertx.version>
         <typesafe.conf.version>1.4.2</typesafe.conf.version>
-        <logback.version>1.5.6</logback.version>
-        <slf4j.version>2.0.13</slf4j.version>
-        <jmh.version>1.36</jmh.version>
+        <logback.version>1.5.18</logback.version>
+        <slf4j.version>2.0.17</slf4j.version>
+        <jmh.version>1.37</jmh.version>
+        <ignite.version>2.17.0</ignite.version>
+        <opencensus.version>0.31.1</opencensus.version>
+        <prometheus.simpleclient.version>0.16.0</prometheus.simpleclient.version>
+        <sttp.client4.version>4.0.9</sttp.client4.version>
         <maven.gpg.plugin.version>3.1.0</maven.gpg.plugin.version>
         <gpg.executable>gpg</gpg.executable>
         <publish.server.id>ossrh</publish.server.id>

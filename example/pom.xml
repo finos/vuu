@@ -10,7 +10,7 @@
 
     <packaging>pom</packaging>
     <artifactId>example</artifactId>
-    <name>${artifactId}</name>
+    <name>${project.artifactId}</name>
 
     <modules>
         <module>editable</module>
