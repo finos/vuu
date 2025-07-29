@@ -9,22 +9,13 @@
 
     <groupId>org.finos.vuu.plugin</groupId>
     <artifactId>virtualized-table-plugin</artifactId>
-    <name>${artifactId}</name>
+    <name>${project.artifactId}</name>
 
     <dependencies>
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
             <version>0.9.76-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.vuu</groupId>
-            <artifactId>vuu</artifactId>
-            <version>0.9.76-SNAPSHOT</version>
-            <classifier>tests</classifier>
-            <type>test-jar</type>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -52,11 +43,33 @@
         </dependency>
 
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>${caffeine.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
 
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.vuu</groupId>
+            <artifactId>vuu</artifactId>
+            <version>0.9.76-SNAPSHOT</version>
+            <classifier>tests</classifier>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.scalatest</groupId>
@@ -173,24 +186,6 @@
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
-                <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <release>${maven.compiler.target}</release>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.ow2.asm</groupId>
-                        <artifactId>asm</artifactId>
-                        <version>6.2</version> <!-- Use newer version of ASM -->
-                    </dependency>
-
-                </dependencies>
-            </plugin>
-
-            <plugin>
                 <groupId>org.scala-tools</groupId>
                 <artifactId>maven-scala-plugin</artifactId>
                 <version>${maven.scala.plugin}</version>
@@ -250,26 +245,6 @@
                         <goals>
                             <goal>test</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals><goal>jar</goal></goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals><goal>jar</goal></goals>
                     </execution>
                 </executions>
             </plugin>

@@ -73,7 +73,7 @@ You may prefer to run the backend using the IntelliJ IDE, if so, you will need t
 
 1. Install the Scala plugin: file -> settings -> plugins
 2. Install Scala 2.13.10
-3. Set project SDK version to 11: file -> project structure -> select an SDK -> require version 11
+3. Set project SDK version to 17: file -> project structure -> select an SDK -> require version 17
 4. Enable 'Use plugin registry': file -> settings -> build, execution, deployment -> Maven
 5. Open Maven tab on the right and click install on vuu-parent -> lifecycle -> install
 6. In the terminal, navigate to

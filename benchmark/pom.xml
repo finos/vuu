@@ -8,12 +8,11 @@
     </parent>
 
     <properties>
-        <lucene.version>8.11.0</lucene.version>
         <uberjar.name>benchmarks</uberjar.name>
     </properties>
 
     <artifactId>benchmark</artifactId>
-    <name>${artifactId}</name>
+    <name>${project.artifactId}</name>
     <description>benchmark</description>
     <inceptionYear>2023</inceptionYear>
     <packaging>jar</packaging>
@@ -21,7 +20,7 @@
     <dependencies>
         <dependency>
             <groupId>org.finos.vuu</groupId>
-            <artifactId>vuu</artifactId>
+            <artifactId>vuu-java</artifactId>
             <version>0.9.76-SNAPSHOT</version>
         </dependency>
 
@@ -38,8 +37,21 @@
         </dependency>
 
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <version>${jmh.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <version>${jmh.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
         </dependency>
 
         <dependency>
@@ -57,17 +69,6 @@
                     <artifactId>scala-reflect</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.openjdk.jmh</groupId>
-            <artifactId>jmh-core</artifactId>
-            <version>${jmh.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjdk.jmh</groupId>
-            <artifactId>jmh-generator-annprocess</artifactId>
-            <version>${jmh.version}</version>
         </dependency>
 
     </dependencies>
@@ -167,10 +168,8 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
                 <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <release>${maven.compiler.target}</release>
+                    <release>${maven.compiler.release}</release>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.openjdk.jmh</groupId>
@@ -179,14 +178,6 @@
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.ow2.asm</groupId>
-                        <artifactId>asm</artifactId>
-                        <version>6.2</version> <!-- Use newer version of ASM -->
-                    </dependency>
-
-                </dependencies>
             </plugin>
 
             <plugin>

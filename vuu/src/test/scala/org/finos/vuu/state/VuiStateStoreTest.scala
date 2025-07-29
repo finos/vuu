@@ -2,6 +2,7 @@ package org.finos.vuu.state
 
 import org.finos.vuu.viewport.TestTimeStamp
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
+import org.junit.Assert.assertEquals
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 
@@ -36,6 +37,8 @@ class VuiStateStoreTest extends AnyFeatureSpec {
       addChris(stateStore, "foo:{}")
 
       val key1 = stateStore.timeToVersion(clock.now())
+
+      assertEquals("2011-07-24_220000.000", key1)
 
       clock.sleep(100)
 

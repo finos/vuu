@@ -8,7 +8,7 @@
     </parent>
 
     <artifactId>vuu-ui</artifactId>
-    <name>vuu-ui</name>
+    <name>${project.artifactId}</name>
     <inceptionYear>2015</inceptionYear>
     <packaging>jar</packaging>
 
@@ -22,7 +22,26 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
         </dependency>
+
+      <dependency>
+        <groupId>org.scalatest</groupId>
+        <artifactId>scalatest_2.13</artifactId>
+        <version>${scalatest.version}</version>
+        <scope>test</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-reflect</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
 
     </dependencies>
 
@@ -159,18 +178,6 @@
         <sourceDirectory>src/main/java</sourceDirectory>
         <testSourceDirectory>src/test/java</testSourceDirectory>
         <plugins>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <!-- version>(whatever version is current)</version-->
-                <configuration>
-                    <!-- or whatever version you use -->
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                </configuration>
-            </plugin>
-
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

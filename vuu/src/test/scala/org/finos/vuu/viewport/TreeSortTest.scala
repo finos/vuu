@@ -8,15 +8,16 @@ import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortDef, SortSpec}
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
-import org.joda.time.{DateTime, DateTimeZone}
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
 
+import java.time.{LocalDateTime, ZoneId}
+
 class TreeSortTest extends AnyFeatureSpec with Matchers with GivenWhenThen with ViewPortSetup {
 
-  val dateTime: Long = new DateTime(2015, 7, 24, 11, 0, DateTimeZone.forID("Europe/London")).toDateTime.toInstant.getMillis
+  val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
 
   Scenario("test groupBy tree structure update") {
 

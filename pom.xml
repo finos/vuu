@@ -35,62 +35,32 @@
         <tag>HEAD</tag>
     </scm>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>io.vertx</groupId>
-                <artifactId>vertx-stack-depchain</artifactId>
-                <version>${vertx.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.13.2</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-engine</artifactId>
-                <version>5.2.0</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit.platform</groupId>
-                <artifactId>junit-platform-runner</artifactId>
-                <version>1.2.0</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.assertj</groupId>
-                <artifactId>assertj-core</artifactId>
-                <version>3.26.3</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <scala.version>2.13.14</scala.version>
+        <maven.compiler.release>17</maven.compiler.release>
+        <scala.version>2.13.16</scala.version>
+        <caffeine.version>3.2.1</caffeine.version>
         <metrics.version>4.2.5</metrics.version>
-        <curator.version>3.1.0</curator.version>
         <scalatest.version>3.2.19</scalatest.version>
-        <scalamock.version>6.0.0</scalamock.version>
+        <scalamock.version>7.4.0</scalamock.version>
         <scala.logging>3.9.5</scala.logging>
-        <jackson.version>2.17.2</jackson.version>
-        <aeron.version>1.17.0</aeron.version>
-        <antlr.version>4.11.1</antlr.version>
-        <netty.version>4.1.100.Final</netty.version>
+        <jackson.version>2.19.2</jackson.version>
+        <antlr.version>4.13.2</antlr.version>
+        <netty.version>4.1.123.Final</netty.version>
         <maven.scala.plugin>2.15.2</maven.scala.plugin>
-        <vertx.version>4.4.6</vertx.version>
+        <vertx.version>4.5.16</vertx.version>
         <typesafe.conf.version>1.4.2</typesafe.conf.version>
-        <logback.version>1.5.6</logback.version>
-        <slf4j.version>2.0.13</slf4j.version>
-        <jmh.version>1.36</jmh.version>
-        <guava.version>32.0.1-jre</guava.version>
+        <logback.version>1.5.18</logback.version>
+        <slf4j.version>2.0.17</slf4j.version>
+        <jmh.version>1.37</jmh.version>
+        <ignite.version>2.17.0</ignite.version>
+        <opencensus.version>0.31.1</opencensus.version>
+        <prometheus.simpleclient.version>0.16.0</prometheus.simpleclient.version>
+        <sttp.client4.version>4.0.9</sttp.client4.version>
+        <junit.version>4.13.2</junit.version>
+        <junit.jupiter.version>5.2.0</junit.jupiter.version>
+        <junit.platform.version>1.2.0</junit.platform.version>
+        <assertj.version>3.26.3</assertj.version>
         <maven.gpg.plugin.version>3.1.0</maven.gpg.plugin.version>
         <gpg.executable>gpg</gpg.executable>
         <publish.server.id>ossrh</publish.server.id>
@@ -109,110 +79,6 @@
         <module>plugin</module>
         <module>vuu-java</module>
     </modules>
-
-    <dependencies>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-scala_2.13</artifactId>
-            <version>${jackson.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.scala-lang</groupId>
-                    <artifactId>scala-library</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <version>${logback.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.typesafe.scala-logging</groupId>
-            <artifactId>scala-logging_2.13</artifactId>
-            <version>${scala.logging}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.scala-lang</groupId>
-                    <artifactId>scala-library</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.scala-lang</groupId>
-                    <artifactId>scala-reflect</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>log4j-over-slf4j</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.13</artifactId>
-            <version>${scalatest.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.scala-lang</groupId>
-                    <artifactId>scala-library</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.scala-lang</groupId>
-                    <artifactId>scala-reflect</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.scalamock</groupId>
-            <artifactId>scalamock_2.13</artifactId>
-            <version>${scalamock.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.scala-lang</groupId>
-                    <artifactId>scala-library</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-    </dependencies>
 
     <profiles>
         <profile>
@@ -254,16 +120,10 @@
     <build>
 
         <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
-            <plugins>
+        <plugins>
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>3.0.2</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-release-plugin</artifactId>
-                    <version>3.0.0-M4</version>
                 </plugin>
 
                 <plugin>
@@ -307,16 +167,17 @@
 
             </plugins>
         </pluginManagement>
-<plugins>
-    <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.13.0</version>
-        <configuration>
-            <source>${maven.compiler.source}</source>
-            <release>${maven.compiler.target}</release>
-        </configuration>
-    </plugin>
-</plugins>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.14.0</version>
+                <configuration>
+                    <release>${maven.compiler.release}</release>
+                </configuration>
+            </plugin>
+        </plugins>
+
     </build>
 </project>

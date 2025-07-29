@@ -1,13 +1,14 @@
 package org.finos.vuu.example.rest.client
 
 import org.finos.toolbox.json.JsonUtil
+import org.finos.toolbox.json.JsonUtil.toRawJson
 import org.scalatest.prop.TableDrivenPropertyChecks._
 import org.finos.vuu.example.rest.model.RandomInstrument
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
-import sttp.client4.testing.SyncBackendStub
+import sttp.client4.testing.{ResponseStub, SyncBackendStub}
 import sttp.model.StatusCode
 
 class InstrumentServiceClientTest extends AnyFeatureSpec with Matchers with MockFactory {
@@ -20,7 +21,7 @@ class InstrumentServiceClientTest extends AnyFeatureSpec with Matchers with Mock
 
       val stubbedBackend = SyncBackendStub
         .whenRequestMatches(req => req.uri.path.endsWith(List("instruments")) && req.uri.params.get("limit").get == "2")
-        .thenRespond(JsonUtil.toRawJson(instruments))
+        .thenRespond(ResponseStub.adjust(toRawJson(instruments)))
 
       val instrumentsClient = InstrumentServiceClient(HttpClient(stubbedBackend), BASE_URL)
       val res = instrumentsClient.getInstruments(limit = responseSize)
@@ -36,7 +37,7 @@ class InstrumentServiceClientTest extends AnyFeatureSpec with Matchers with Mock
       (400, "Bad request"),
     ))((errorCode, msg) => {
       Scenario(s"returns Failure with error WHEN server responds with an error: (code = $errorCode, msg = $msg)") {
-        val stubbedBackend = SyncBackendStub.whenAnyRequest.thenRespondWithCode(StatusCode(errorCode), msg)
+        val stubbedBackend = SyncBackendStub.whenAnyRequest.thenRespond(ResponseStub.adjust(msg, StatusCode(errorCode)))
 
         val instrumentsClient = InstrumentServiceClient(HttpClient(stubbedBackend), BASE_URL)
         val res = instrumentsClient.getInstruments(limit = 1)
@@ -59,7 +60,7 @@ class InstrumentServiceClientTest extends AnyFeatureSpec with Matchers with Mock
 
     Scenario("returns Failure WHEN server responds with 200 but body is not parsable to instruments") {
       val notParsable = """[{"name": "instrument", "field": "abc"}]"""
-      val stubbedBackend = SyncBackendStub.whenAnyRequest.thenRespond(notParsable)
+      val stubbedBackend = SyncBackendStub.whenAnyRequest.thenRespond(ResponseStub.exact(notParsable))
 
       val instrumentsClient = InstrumentServiceClient(HttpClient(stubbedBackend), BASE_URL)
       val res = instrumentsClient.getInstruments(limit = 1)

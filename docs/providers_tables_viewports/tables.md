@@ -99,6 +99,3 @@ With a declaration like below, you can achieve that:
 //insert example
 ```
 
-# Lucene Table
-
-TODO: Lucene tables are a work in progress, watch this space.
