@@ -2,12 +2,12 @@ name: Benchmarks
 
 on: 
   schedule:
-    - cron:  '0 0 29 2 1'
+    - cron:  '0 5,18 * * *'
     
 jobs:
   build:
+    if: ${{ github.event.repository.fork == false || github.event_name != 'schedule' }}
     runs-on: ubuntu-latest-16-cores
-
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
