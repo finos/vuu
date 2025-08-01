@@ -22,9 +22,10 @@ import {
   VuuRemoveVisualLink,
 } from "@vuu-ui/vuu-protocol-types";
 import { isViewportRpcRequest, uuid } from "@vuu-ui/vuu-utils";
-import { Table, buildDataColumnMapFromSchema } from "./Table";
-import { TickingArrayDataSource } from "./TickingArrayDataSource";
-import { RuntimeVisualLink } from "./RuntimeVisualLink";
+import { Table, buildDataColumnMapFromSchema } from "../../Table";
+import { TickingArrayDataSource } from "../../TickingArrayDataSource";
+import { RuntimeVisualLink } from "../../RuntimeVisualLink";
+import moduleContainer from "./ModuleContainer";
 
 export interface IVuuModule<T extends string = string> {
   createDataSource: (tableName: T) => DataSource;
@@ -97,6 +98,8 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     this.#tableServices = services;
     this.#tables = tables;
     this.#visualLinks = visualLinks;
+
+    moduleContainer.register(this);
   }
 
   private unregisterViewport = (viewportId: string) => {
@@ -116,6 +119,10 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
       }
     }
   };
+
+  get name() {
+    return this.#name;
+  }
 
   getSubscribedDataSource(vpId: string): DataSource {
     for (const subscriptions of this.#subscriptionMap.values()) {

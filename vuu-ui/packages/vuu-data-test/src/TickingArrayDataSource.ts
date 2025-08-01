@@ -31,7 +31,7 @@ import {
 } from "@vuu-ui/vuu-utils";
 import { makeSuggestions } from "./makeSuggestions";
 import { Table } from "./Table";
-import { RpcService, SessionTableMap } from "./VuuModule";
+import { RpcService, SessionTableMap } from "./core/module/VuuModule";
 
 const { KEY } = metadataKeys;
 

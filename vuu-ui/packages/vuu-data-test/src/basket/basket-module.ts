@@ -10,7 +10,11 @@ import pricesTable from "./reference-data/prices";
 import { joinTables, Table } from "../Table";
 import { BasketsTableName, schemas } from "./basket-schemas";
 import basketConstituentData from "./reference-data/constituents";
-import { RpcService, ServiceHandler, VuuModule } from "../VuuModule";
+import {
+  RpcService,
+  ServiceHandler,
+  VuuModule,
+} from "../core/module/VuuModule";
 
 const undefinedTables = {
   algoType: undefined,

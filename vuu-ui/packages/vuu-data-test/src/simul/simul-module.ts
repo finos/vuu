@@ -6,7 +6,7 @@ import {
 } from "@vuu-ui/vuu-protocol-types";
 import { isVuuMenuRpcRequest } from "@vuu-ui/vuu-utils";
 import { Table, joinTables } from "../Table";
-import { RpcService, ServiceHandler } from "../VuuModule";
+import { RpcService, ServiceHandler } from "../core/module/VuuModule";
 import { SimulModule } from "./SimulModule";
 import { instrumentsTable } from "./reference-data/instruments";
 import { instrumentsExtendedTable } from "./reference-data/instruments-extended";
