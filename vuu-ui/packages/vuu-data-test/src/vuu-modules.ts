@@ -1,10 +1,10 @@
 import { VuuModule } from "./core/module/VuuModule";
-import { basketModule } from "./basket/basket-module";
+import { basketModule } from "./basket/BasketModule";
 import { BasketsTableName } from "./basket/basket-schemas";
-import { simulModule } from "./simul/simul-module";
 import { SimulTableName } from "./simul/simul-schemas";
-import { testModule } from "./test/test-module";
+import { testModule } from "./test/TestModule";
 import { TestTableName } from "./test/test-schemas";
+import { simulModule } from "./simul/SimulModule";
 
 export type VuuModuleName = "BASKET" | "SIMUL" | "TEST";
 
