@@ -3,7 +3,7 @@ import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { isValidFilterClauseOp } from "@vuu-ui/vuu-utils";
 import { ComboBoxProps, Option } from "@salt-ds/core";
 import { ForwardedRef, SyntheticEvent, forwardRef } from "react";
-import { ExpandoCombobox } from "./ExpandoCombobox";
+import { ExpandoCombobox, ExpandoComboboxProps } from "./ExpandoCombobox";
 import { getOperators } from "./operator-utils";
 
 export type OperatorPickerProps = Pick<
@@ -12,10 +12,18 @@ export type OperatorPickerProps = Pick<
 > & {
   column: ColumnDescriptor;
   onSelect: (evt: SyntheticEvent, operator: FilterClauseOp) => void;
+  defaultDropdown?: ExpandoComboboxProps["defaultDropdown"];
 };
 
 export const OperatorPicker = forwardRef(function ColumnPicker(
-  { className, column, inputProps, onSelect, value }: OperatorPickerProps,
+  {
+    className,
+    column,
+    inputProps,
+    onSelect,
+    value,
+    defaultDropdown = true,
+  }: OperatorPickerProps,
   forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
   const handleSelectionChange = (
@@ -37,6 +45,7 @@ export const OperatorPicker = forwardRef(function ColumnPicker(
       ref={forwardedRef}
       title="operator"
       value={value}
+      defaultDropdown={defaultDropdown}
     >
       {getOperators(column).map((op) => (
         <Option value={op} key={op} />

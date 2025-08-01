@@ -19,6 +19,7 @@ import {
   tabToPreviousFilterCombinator,
 } from "./filterClauseFocusManagement";
 import { ComboBoxOpenChangeHandler } from "./ExpandoCombobox";
+
 export type FilterClauseEditorHookProps = Pick<
   FilterClauseProps,
   "columnsByName" | "filterClauseModel" | "onCancel" | "onFocusSave"
@@ -147,7 +148,7 @@ export const useFilterClause = ({
       } else if (evt.key === "Tab") {
         // if the clause is valid, skip to save
         if (filterClauseModel.isValid) {
-          //evt.preventDefault();
+          evt.preventDefault();
           evt.stopPropagation();
           // TODO focus cancel if not changed
           onFocusSave?.();
@@ -165,7 +166,12 @@ export const useFilterClause = ({
   const handleOpenChange = useCallback<ComboBoxOpenChangeHandler>(
     (open, closeReason) => {
       const isMultiSelect = filterClauseModel.op === "in";
-      if (!open && isMultiSelect && filterClauseModel.isValid) {
+      const filterHasNoValue =
+        !filterClauseModel.isValid &&
+        filterClauseModel.op !== undefined &&
+        filterClauseModel.column !== undefined;
+
+      if (!open && isMultiSelect && (filterClauseModel.isValid || filterHasNoValue)) {
         filterClauseModel.commit();
       }
       onOpenChange?.(open, closeReason);

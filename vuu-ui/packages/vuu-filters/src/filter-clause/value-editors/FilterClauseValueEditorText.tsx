@@ -15,7 +15,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { ExpandoCombobox } from "../ExpandoCombobox";
+import { ExpandoCombobox, ExpandoComboboxProps } from "../ExpandoCombobox";
 import { FilterClauseValueEditor } from "../filterClauseTypes";
 
 export interface FilterClauseTextValueEditorProps
@@ -25,6 +25,7 @@ export interface FilterClauseTextValueEditorProps
   // ref: RefObject<HTMLDivElement>;
   operator: string;
   value: string | string[];
+  defaultDropdown?: ExpandoComboboxProps["defaultDropdown"];
 }
 
 export const FilterClauseValueEditorText = forwardRef(
@@ -38,6 +39,7 @@ export const FilterClauseValueEditorText = forwardRef(
       operator,
       table,
       value,
+      defaultDropdown = true,
     }: FilterClauseTextValueEditorProps,
     forwardedRef: ForwardedRef<HTMLDivElement>,
   ) {
@@ -175,6 +177,7 @@ export const FilterClauseValueEditorText = forwardRef(
               multiselect
               truncate
               value={value}
+              defaultDropdown={defaultDropdown}
             >
               {typeaheadValues
                 // .filter((typeaheadValue) =>
@@ -197,6 +200,7 @@ export const FilterClauseValueEditorText = forwardRef(
               onSelectionChange={handleSingleValueSelectionChange}
               ref={forwardedRef}
               value={value}
+              defaultDropdown={defaultDropdown}
             >
               {typeaheadValues.map((state) => (
                 <Option value={state} key={state} disabled />
@@ -228,6 +232,7 @@ export const FilterClauseValueEditorText = forwardRef(
               onSelectionChange={handleSingleValueSelectionChange}
               ref={forwardedRef}
               value={value}
+              defaultDropdown={defaultDropdown}
             >
               {typeaheadValues.map((state) => (
                 <Option value={state} key={state} />
@@ -248,6 +253,8 @@ export const FilterClauseValueEditorText = forwardRef(
       handleMultiValueSelectionChange,
       value,
       handleSingleValueSelectionChange,
+      onOpenChange,
+      defaultDropdown
     ]);
 
     return getValueInputField();

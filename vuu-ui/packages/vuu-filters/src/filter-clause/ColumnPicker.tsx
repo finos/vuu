@@ -1,5 +1,5 @@
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { ExpandoCombobox } from "./ExpandoCombobox";
+import { ExpandoCombobox, ExpandoComboboxProps } from "./ExpandoCombobox";
 import { ComboBoxProps, Option } from "@salt-ds/core";
 import { ForwardedRef, SyntheticEvent, forwardRef } from "react";
 import { useExpandoComboBox } from "./useExpandoCombobox";
@@ -10,6 +10,7 @@ export type ColumnPickerProps = Pick<
 > & {
   columns: ColumnDescriptor[];
   onSelect: (evt: SyntheticEvent, columnName: string) => void;
+  defaultDropdown?: ExpandoComboboxProps["defaultDropdown"];
 };
 
 export const ColumnPicker = forwardRef(function ColumnPicker(
@@ -19,6 +20,7 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
     inputProps,
     onSelect,
     value: valueProp,
+    defaultDropdown = true,
   }: ColumnPickerProps,
   forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
@@ -35,6 +37,7 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
       data-field="column"
       ref={forwardedRef}
       title="column"
+      defaultDropdown={defaultDropdown}
     >
       {columns
         .filter(({ name }) =>

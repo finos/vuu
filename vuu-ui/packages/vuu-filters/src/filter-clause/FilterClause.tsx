@@ -15,12 +15,19 @@ import { FilterClauseValueEditor } from "./value-editors/FilterClauseValueEditor
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import filterClauseCss from "./FilterClause.css";
 import { OperatorPicker } from "./OperatorPicker";
+import { ExpandoComboboxProps } from "./ExpandoCombobox";
 
 export type FilterClauseCancelType = "Backspace" | "Escape";
 export type FilterClauseCancelHandler = (
   filterClause: FilterClauseModel,
   reason: FilterClauseCancelType,
 ) => void;
+
+export type ShowDefaultDropdown = {
+  forColumnPicker?: ExpandoComboboxProps["defaultDropdown"];
+  forOperatorPicker?: ExpandoComboboxProps["defaultDropdown"];
+  forValueEditor?: ExpandoComboboxProps["defaultDropdown"];
+};
 
 export interface FilterClauseProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
@@ -29,6 +36,7 @@ export interface FilterClauseProps
   onCancel?: FilterClauseCancelHandler;
   onDropdownOpen?: () => void;
   onFocusSave?: () => void;
+  showDefaultDropdown?: ShowDefaultDropdown;
   vuuTable: VuuTable;
 }
 
@@ -42,6 +50,7 @@ export const FilterClause = ({
   onFocusSave,
   filterClauseModel,
   vuuTable,
+  showDefaultDropdown,
   ...htmlAttributes
 }: FilterClauseProps) => {
   const {
@@ -82,6 +91,7 @@ export const FilterClause = ({
         onSelect={onSelectColumn}
         ref={columnRef}
         value={filterClauseModel.column ?? ""}
+        defaultDropdown={showDefaultDropdown?.forColumnPicker ?? true}
       />
       {selectedColumn?.name ? (
         <OperatorPicker
@@ -94,6 +104,7 @@ export const FilterClause = ({
           onSelect={onSelectOperator}
           ref={operatorRef}
           value={filterClauseModel.op ?? ""}
+          defaultDropdown={showDefaultDropdown?.forOperatorPicker ?? true}
         />
       ) : null}
       {filterClauseModel.op ? (
@@ -111,6 +122,7 @@ export const FilterClause = ({
             (filterClause as MultiValueFilterClause)?.values ??
             (filterClause as SingleValueFilterClause)?.value
           }
+          defaultDropdown={showDefaultDropdown?.forValueEditor ?? true}
         />
       ) : null}
     </div>

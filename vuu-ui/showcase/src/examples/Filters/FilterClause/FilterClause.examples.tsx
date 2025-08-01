@@ -2,7 +2,11 @@ import { Input } from "@salt-ds/core";
 import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
 import { SchemaColumn, TableSchema } from "@vuu-ui/vuu-data-types";
 import { ColumnDescriptorsByName } from "@vuu-ui/vuu-filter-types";
-import { FilterClause, FilterClauseModel } from "@vuu-ui/vuu-filters";
+import {
+  ShowDefaultDropdown,
+  FilterClause,
+  FilterClauseModel,
+} from "@vuu-ui/vuu-filters";
 import { ColumnPicker } from "@vuu-ui/vuu-filters/src/filter-clause/ColumnPicker";
 import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { ReactNode, useMemo } from "react";
@@ -13,10 +17,12 @@ const FilterClauseTemplate = ({
   filterClauseModel = new FilterClauseModel({}),
   tableSchema = getSchema("instruments"),
   columnsByName = columnDescriptorsByName(tableSchema.columns),
+  showDefaultDropdown,
 }: {
   columnsByName?: ColumnDescriptorsByName;
   filterClauseModel?: FilterClauseModel;
   tableSchema?: TableSchema;
+  showDefaultDropdown?: ShowDefaultDropdown;
 }) => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
@@ -34,6 +40,7 @@ const FilterClauseTemplate = ({
           data-testid="filterclause"
           filterClauseModel={filterClauseModel}
           vuuTable={tableSchema.table}
+          showDefaultDropdown={showDefaultDropdown}
         />
       </div>
     </DataSourceProvider>
@@ -109,6 +116,24 @@ export const PartialFilterClauseColumnAndOperator = () => {
     [],
   );
   return <FilterClauseTemplate filterClauseModel={filterClauseModel} />;
+};
+
+/** tags=data-consumer */
+export const PartialFilterClauseColumnAndOperatorWithoutDefaultDropdown = () => {
+  const filterClauseModel = useMemo(
+    () =>
+      new FilterClauseModel({
+        column: "currency",
+        op: "=",
+      }),
+    [],
+  );
+  return (
+    <FilterClauseTemplate
+      filterClauseModel={filterClauseModel}
+      showDefaultDropdown={{ forValueEditor: false }}
+    />
+  );
 };
 
 /** tags=data-consumer */
