@@ -611,6 +611,16 @@ export default [
                 },
               },
               {
+                id: "Filters/FilterClause/FilterClause/PartialFilterClauseColumnAndOperatorWithoutDefaultDropdown",
+                label:
+                  "PartialFilterClauseColumnAndOperatorWithoutDefaultDropdown",
+                nodeData: {
+                  componentName:
+                    "PartialFilterClauseColumnAndOperatorWithoutDefaultDropdown",
+                  path: "src/examples/Filters/FilterClause/FilterClause.examples.tsx",
+                },
+              },
+              {
                 id: "Filters/FilterClause/FilterClause/CompleteFilterClauseTextEquals",
                 label: "CompleteFilterClauseTextEquals",
                 nodeData: {

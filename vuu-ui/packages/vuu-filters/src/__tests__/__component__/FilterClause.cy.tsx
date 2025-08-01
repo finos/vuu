@@ -3,6 +3,7 @@ import {
   NewFilterClause,
   PartialFilterClauseColumnAndOperator,
   PartialFilterClauseColumnAndOperatorWithDataSource,
+  PartialFilterClauseColumnAndOperatorWithoutDefaultDropdown,
 } from "../../../../../showcase/src/examples/Filters/FilterClause/FilterClause.examples";
 
 describe("FilterClause", () => {
@@ -47,6 +48,22 @@ describe("FilterClause", () => {
         .find(".vuuFilterClauseValue input")
         .should("be.focused");
       cy.findAllByRole("option", { name: "GBP" }).should("be.visible");
+    });
+  });
+
+  describe("WHEN partial filter clause with Column and Operator is rendered and default dropdown is disabled for value editor", () => {
+    it("THEN component is rendered with controls for column, operator and value, no suggestions provided", () => {
+      cy.mount(
+        <LocalDataSourceProvider>
+          <PartialFilterClauseColumnAndOperatorWithoutDefaultDropdown />
+        </LocalDataSourceProvider>,
+      );
+      const container = cy.findByTestId("filterclause");
+      container.find(".vuuFilterClauseField").should("have.length", 3);
+      cy.findByTestId("filterclause")
+        .find(".vuuFilterClauseValue input")
+        .should("be.focused");
+      cy.findAllByRole("listbox").should("not.exist");
     });
   });
 });

@@ -11,6 +11,7 @@ import {
 import { isDateTimeDataValue } from "@vuu-ui/vuu-utils";
 import { ForwardedRef, forwardRef } from "react";
 import { FilterClauseValueEditorDate } from "./FilterClauseValueEditorDate";
+import { ExpandoComboboxProps } from "../ExpandoCombobox";
 
 const classBase = "vuuFilterClause";
 
@@ -26,6 +27,7 @@ type FilterClauseValueEditorProps = Pick<
 } & {
   operator?: SingleValueFilterClauseOp | "in";
   value?: string | string[] | number | number[] | boolean | boolean[];
+  defaultDropdown?: ExpandoComboboxProps["defaultDropdown"];
 };
 
 export const FilterClauseValueEditor = forwardRef(
@@ -39,6 +41,7 @@ export const FilterClauseValueEditor = forwardRef(
       onOpenChange,
       table,
       value,
+      defaultDropdown = true,
     }: FilterClauseValueEditorProps,
     forwardedRef: ForwardedRef<HTMLDivElement>,
   ) {
@@ -80,6 +83,7 @@ export const FilterClauseValueEditor = forwardRef(
                   ? value.map((val) => val.toString())
                   : (value.toString() as string | string[])
             }
+            defaultDropdown={defaultDropdown}
           />
         );
       case "int":
