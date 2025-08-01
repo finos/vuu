@@ -4,10 +4,11 @@ import type {
   ServerAPI,
 } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { basketModule, basketSchemas, isBasketTable } from "../basket";
-import { isSimulTable, simulModule, simulSchemas } from "../simul";
+import { basketSchemas, isBasketTable } from "../basket";
+import { isSimulTable, simulSchemas } from "../simul";
 import { ReactNode } from "react";
 import { DataProvider } from "@vuu-ui/vuu-utils";
+import moduleContainer from "../core/module/ModuleContainer";
 
 const serverAPI: Pick<
   ServerAPI,
@@ -58,13 +59,8 @@ class VuuDataSource {
       visualLink,
     };
 
-    if (isSimulTable(table)) {
-      return simulModule.createDataSource(table.table, viewport, config);
-    } else if (isBasketTable(table)) {
-      return basketModule.createDataSource(table.table, viewport, config);
-    } else {
-      throw Error(`unsupported module/table ${table.module}/${table.table}`);
-    }
+    const module = moduleContainer.get(table.module);
+    return module.createDataSource(table.table, viewport, config);
   }
 }
 

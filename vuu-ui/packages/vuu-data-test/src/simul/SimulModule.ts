@@ -1,4 +1,8 @@
-import { RpcService, VuuModule, VuuModuleConstructorProps } from "../VuuModule";
+import {
+  RpcService,
+  VuuModule,
+  VuuModuleConstructorProps,
+} from "../core/module/VuuModule";
 import { SimulTableName } from "./simul-schemas";
 
 /**

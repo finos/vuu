@@ -1,13 +1,13 @@
+import { Input } from "@salt-ds/core";
 import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
 import { SchemaColumn, TableSchema } from "@vuu-ui/vuu-data-types";
 import { ColumnDescriptorsByName } from "@vuu-ui/vuu-filter-types";
 import { FilterClause, FilterClauseModel } from "@vuu-ui/vuu-filters";
-import { ReactNode, useMemo } from "react";
 import { ColumnPicker } from "@vuu-ui/vuu-filters/src/filter-clause/ColumnPicker";
+import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { ReactNode, useMemo } from "react";
 
 import "./FilterClause.examples.css";
-import { Input } from "@salt-ds/core";
-import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
 
 const FilterClauseTemplate = ({
   filterClauseModel = new FilterClauseModel({}),
@@ -161,7 +161,7 @@ export const PartialFilterClauseDateColumnOnly = () => {
   const tableSchema: TableSchema = {
     columns: tableColumns,
     key: "id",
-    table: { table: "Test", module: "test" },
+    table: { table: "TestDates", module: "TEST" },
   };
 
   const columnsByName: ColumnDescriptorsByName = {

@@ -1,4 +1,4 @@
-import { VuuModule } from "./VuuModule";
+import { VuuModule } from "./core/module/VuuModule";
 import { basketModule } from "./basket/basket-module";
 import { BasketsTableName } from "./basket/basket-schemas";
 import { simulModule } from "./simul/simul-module";
@@ -22,5 +22,5 @@ const vuuModules: Record<
 // Note, this is useful but be aware that all modules will be bundled if this is imported.
 // If only a single module is required, better to import it directly.
 export const vuuModule = <T extends string = string>(
-  moduleName: VuuModuleName
+  moduleName: VuuModuleName,
 ) => vuuModules[moduleName] as VuuModule<T>;
