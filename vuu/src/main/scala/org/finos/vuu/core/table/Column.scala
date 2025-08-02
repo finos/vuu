@@ -3,6 +3,7 @@ package org.finos.vuu.core.table
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.column.CalculatedColumnClause
+import org.finos.vuu.core.table.datatype.{Decimal, EpochTimestamp}
 import org.finos.vuu.util.schema.ExternalEntitySchema
 import org.finos.vuu.util.types.{DefaultTypeConverters, TypeConverterContainerBuilder}
 
@@ -17,6 +18,8 @@ object DataType {
   final val IntegerDataType: Class[Int] = classOf[Int]
   final val LongDataType: Class[Long] = classOf[Long]
   final val DoubleDataType: Class[Double] = classOf[Double]
+  final val EpochTimestampType: Class[EpochTimestamp] = classOf[EpochTimestamp]
+  final val DecimalType: Class[Decimal] = classOf[Decimal]
   final val NoDataType: Class[AnyRef] = classOf[AnyRef]
 
   def fromString(s: String): Class[_] = {
@@ -27,12 +30,16 @@ object DataType {
       case "boolean" => BooleanDataType
       case "int" => IntegerDataType
       case "long" => LongDataType
+      case "epochtimestamp" => EpochTimestampType
+      case "decimal" => DecimalType
     }
   }
 
   def asString(c: Class[_]): String = {
     c.getTypeName match {
       case "java.lang.String" => "string"
+      case "org.finos.vuu.core.table.datatype.EpochTimestamp" => "epochtimestamp"
+      case "org.finos.vuu.core.table.datatype.Decimal" => "decimal"
       case x => x.toLowerCase
       //        case c: Class[Boolean] => "boolean"
       //        case c: Class[Int] => "int"
@@ -51,6 +58,9 @@ object DataType {
     .withConverter(DefaultTypeConverters.stringToIntConverter)
     .withConverter(DefaultTypeConverters.stringToLongConverter)
     .withConverter(DefaultTypeConverters.stringToDoubleConverter)
+    .withConverter(DefaultTypeConverters.stringToDoubleConverter)
+    .withConverter(DefaultTypeConverters.stringToEpochTimestampConverter)
+    .withConverter(DefaultTypeConverters.stringToDecimalConverter)
     .build()
 }
 

@@ -37,7 +37,17 @@ class ColumnBuilder {
     columns += (columnName + ":Char")
     this
   }
-  
+
+  def addEpochTimestamp(columnName: String): ColumnBuilder = {
+    columns += (columnName + ":EpochTimestamp")
+    this
+  }
+
+  def addDecimal(columnName: String, scale: Short): ColumnBuilder = {
+    columns += (columnName + ":Decimal" + scale)
+    this
+  }
+
   def build(): Array[Column] = Columns.fromNames(columns.result())
 }
 

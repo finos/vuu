@@ -1,10 +1,10 @@
 package org.finos.vuu.util.types
 
+import org.finos.vuu.core.table.datatype.{Decimal, EpochTimestamp}
 import org.finos.vuu.util.types.DefaultTypeConverters._
-import org.finos.vuu.util.types.TypeConverter
-import org.scalatest.prop.TableDrivenPropertyChecks._
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.prop.TableDrivenPropertyChecks._
 
 class DefaultTypeConvertersTest extends AnyFeatureSpec with Matchers {
 
@@ -17,6 +17,8 @@ class DefaultTypeConvertersTest extends AnyFeatureSpec with Matchers {
       ("String to Int", stringToIntConverter, "10", 10),
       ("String to Boolean", stringToBooleanConverter, "false", false),
       ("String to Char", stringToCharConverter, "A", 'A'),
+      ("String to EpochTimestamp", stringToEpochTimestampConverter, "20000", EpochTimestamp.apply(20000)),
+      ("String to Decimal", stringToDecimalConverter, "30000", Decimal.apply(30000)),
       ("Int to String", intToStringConverter, 10, "10"),
       ("Int to Long", intToLongConverter, 10, 10L),
       ("Int to Double", intToDoubleConverter, 10, 10.0),
