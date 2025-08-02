@@ -30,7 +30,7 @@ export const isNumber = (
 
 export type CommitHandler<
   E extends HTMLElement = HTMLInputElement,
-  T extends VuuRowDataItemType = VuuRowDataItemType,
+  T = VuuRowDataItemType,
 > = (
   evt: SyntheticEvent<E> | KeyboardEvent<E>,
   value: T,

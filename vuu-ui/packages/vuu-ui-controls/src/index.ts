@@ -19,6 +19,7 @@ export * from "./price-ticker";
 export * from "./split-button";
 export * from "./tabs-next";
 export * from "./tabstrip";
+export { TimeInput, type TimeInputProps } from "./time-input/TimeInput";
 export * from "./toolbar";
 export * from "./utils";
 export * from "./vuu-date-picker";
@@ -30,3 +31,7 @@ export {
   useHideContextPanel,
 } from "./context-panel-provider/ContextPanelProvider";
 export { SortableList, SortableOption } from "./sortable-list/SortableList";
+export {
+  VuuTimePicker,
+  type VuuTimePickerProps,
+} from "./vuu-time-picker/VuuTimePicker";

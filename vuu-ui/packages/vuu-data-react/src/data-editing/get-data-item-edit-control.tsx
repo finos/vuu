@@ -5,15 +5,21 @@ import type {
 import {
   VuuDatePicker,
   VuuInput,
+  VuuTimePicker,
   VuuTypeaheadInput,
   VuuTypeaheadInputProps,
 } from "@vuu-ui/vuu-ui-controls";
-import { CommitHandler, isDateTimeDataValue } from "@vuu-ui/vuu-utils";
+import {
+  CommitHandler,
+  isDateTimeDataValue,
+  isTimeDataValue,
+} from "@vuu-ui/vuu-utils";
 import { InputProps } from "@salt-ds/core";
 
 export interface DataItemEditControlProps {
   InputProps?: Partial<InputProps>;
   TypeaheadProps?: Pick<VuuTypeaheadInputProps, "highlightFirstSuggestion">;
+  className?: string;
   commitWhenCleared?: boolean;
   /**
    * A table column or form field Descriptor.
@@ -29,6 +35,7 @@ export type ValidationStatus = "initial" | true | string;
 export const getDataItemEditControl = ({
   InputProps,
   TypeaheadProps,
+  className,
   commitWhenCleared,
   dataDescriptor,
   errorMessage,
@@ -42,6 +49,10 @@ export const getDataItemEditControl = ({
     onCommit(evt, value.toString());
   };
 
+  const handleCommitDate: CommitHandler<HTMLElement, Date> = (evt, value) => {
+    onCommit(evt, value.toString());
+  };
+
   if (dataDescriptor.editable === false) {
     return (
       <VuuInput
@@ -51,13 +62,20 @@ export const getDataItemEditControl = ({
         readOnly
       />
     );
+  } else if (isTimeDataValue(dataDescriptor)) {
+    return (
+      <VuuTimePicker className={className} onCommit={handleCommitNumber} />
+    );
   } else if (isDateTimeDataValue(dataDescriptor)) {
-    return <VuuDatePicker onCommit={handleCommitNumber} />;
+    return (
+      <VuuDatePicker className={className} onCommit={handleCommitNumber} />
+    );
   } else if (dataDescriptor.serverDataType === "string" && table) {
     return (
       <VuuTypeaheadInput
         {...InputProps}
         {...TypeaheadProps}
+        className={className}
         column={dataDescriptor.name}
         onCommit={onCommit}
         table={table}
@@ -68,6 +86,7 @@ export const getDataItemEditControl = ({
     <VuuInput
       variant="secondary"
       {...InputProps}
+      className={className}
       commitWhenCleared={commitWhenCleared}
       onCommit={onCommit}
       errorMessage={errorMessage}
