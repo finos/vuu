@@ -1,7 +1,8 @@
-package org.finos.vuu.core.sort;
+package org.finos.vuu.core.filter
 
 import org.finos.vuu.core.auths.RowPermissionChecker
 import org.finos.vuu.core.sort.FilterAndSortFixture.setupTable
+import org.finos.vuu.core.sort.RowPermissionFilter
 import org.finos.vuu.core.table.RowData
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers;
