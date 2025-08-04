@@ -78,7 +78,8 @@ case class RowPermissionFilter(checker: RowPermissionChecker) extends Filter wit
   override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     val filtered = primaryKeys.filter(key => {
       try {
-        checker.canSeeRow(source.pullRow(key, vpColumns))
+        // calling source.pullRow(key) rather than source.pullRow(key, vpColumns) because user might remove the columns we need from view port
+        checker.canSeeRow(source.pullRow(key))
       } catch {
         case e: Exception =>
           logger.error(s"Error while checking row permission for keys $primaryKeys with checker $checker", e)
@@ -94,8 +95,7 @@ case class FrozenTimeFilter(frozenTime: Long) extends Filter with StrictLogging 
   override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     val filtered = primaryKeys.filter(key => {
       try {
-        // TO FIX: we shouldn't filter by vpColumns here???
-        val vuuCreatedTimestamp = source.pullRow(key, vpColumns).get(DefaultColumnNames.CreatedTimeColumnName).asInstanceOf[Long]
+        val vuuCreatedTimestamp = source.pullRow(key).get(DefaultColumnNames.CreatedTimeColumnName).asInstanceOf[Long]
         vuuCreatedTimestamp < frozenTime
       } catch {
         case e: Exception =>
@@ -113,8 +113,7 @@ case class RowPermissionAndFrozenTimeFilter(checker: RowPermissionChecker, froze
     val filtered = primaryKeys.filter(key => {
       try {
         val rowData = source.pullRow(key, vpColumns)
-        val vuuCreatedTimestamp = rowData.get(DefaultColumnNames.CreatedTimeColumnName).asInstanceOf[Long]
-        checker.canSeeRow(rowData) && vuuCreatedTimestamp < frozenTime
+        checker.canSeeRow(rowData) && rowData.get(DefaultColumnNames.CreatedTimeColumnName).asInstanceOf[Long] < frozenTime
       } catch {
         case e: Exception =>
           logger.error(s"Error while checking row permission and viewport frozen time for keys $primaryKeys with checker $checker and frozen time $frozenTime", e)
