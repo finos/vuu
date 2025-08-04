@@ -90,15 +90,33 @@ case class RowPermissionFilter(checker: RowPermissionChecker) extends Filter wit
   }
 }
 
-case class FreezeViewPortFilter(timestamp: Long) extends Filter with StrictLogging {
+case class FreezeViewPortFilter(frozenTime: Long) extends Filter with StrictLogging {
   override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     val filtered = primaryKeys.filter(key => {
       try {
         val vuuCreatedTimestamp = source.pullRow(key, vpColumns).get(DefaultColumnNames.CreatedTime).asInstanceOf[Long]
-        vuuCreatedTimestamp < timestamp
+        vuuCreatedTimestamp < frozenTime
       } catch {
         case e: Exception =>
-          logger.error(s"Error while freezing viewport with keys $primaryKeys and timestamp $timestamp", e)
+          logger.error(s"Error while freezing viewport with keys $primaryKeys and timestamp $frozenTime", e)
+          false
+      }
+    }).toArray
+
+    InMemTablePrimaryKeys(ImmutableArray.from[String](filtered))
+  }
+}
+
+case class RowPermissionAndFreezeViewPortFilter(checker: RowPermissionChecker, frozenTime: Long) extends Filter with StrictLogging {
+  override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
+    val filtered = primaryKeys.filter(key => {
+      try {
+        val rowData = source.pullRow(key, vpColumns)
+        val vuuCreatedTimestamp = rowData.get(DefaultColumnNames.CreatedTime).asInstanceOf[Long]
+        checker.canSeeRow(rowData) && vuuCreatedTimestamp < frozenTime
+      } catch {
+        case e: Exception =>
+          logger.error(s"Error while checking row permission and viewport frozen time for keys $primaryKeys with checker $checker and frozen time $frozenTime", e)
           false
       }
     }).toArray
@@ -151,21 +169,9 @@ case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAn
     }
 
     try {
-      val realizedFilter = checkerOption match {
-        case Some(checker) =>
-          viewPortFrozenTime match {
-            case Some(t) =>
-              TwoStepCompoundFilter(TwoStepCompoundFilter(RowPermissionFilter(checker), FreezeViewPortFilter(t)), filter)
-            case None =>
-              TwoStepCompoundFilter(RowPermissionFilter(checker), filter)
-          }
-        case None =>
-          viewPortFrozenTime match {
-            case Some(t) =>
-              TwoStepCompoundFilter(FreezeViewPortFilter(t), filter)
-            case None =>
-              filter
-          }
+      val realizedFilter = createDefaultFilter(checkerOption, viewPortFrozenTime) match {
+        case Some(defaultFilter) => TwoStepCompoundFilter(defaultFilter, filter)
+        case None => filter
       }
 
       val filteredKeys = realizedFilter.dofilter(source, primaryKeys, vpColumns)
@@ -178,6 +184,25 @@ case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAn
         logger.error("Error during filtering and sorting", e)
         //debugData(source, primaryKeys)
         EmptyTablePrimaryKeys
+    }
+  }
+
+  private def createDefaultFilter(checkerOption: Option[RowPermissionChecker], viewPortFrozenTime: Option[Long]): Option[Filter] = {
+    checkerOption match {
+      case Some(checker) =>
+        viewPortFrozenTime match {
+          case Some(frozenTime) =>
+            Some(RowPermissionAndFreezeViewPortFilter(checker, frozenTime))
+          case None =>
+            Some(RowPermissionFilter(checker))
+        }
+      case None =>
+        viewPortFrozenTime match {
+          case Some(t) =>
+            Some(FreezeViewPortFilter(t))
+          case None =>
+            None
+        }
     }
   }
 
