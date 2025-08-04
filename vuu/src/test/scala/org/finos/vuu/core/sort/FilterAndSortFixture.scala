@@ -3,6 +3,7 @@ package org.finos.vuu.core.sort
 import org.finos.toolbox.collection.{MapDiffResult, MapDiffUtils}
 import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.text.{AsciiUtil, CodeGenUtil}
+import org.finos.toolbox.time.DefaultClock
 import org.finos.vuu.api.{Index, Indices, TableDef}
 import org.finos.vuu.core.filter.FilterClause
 import org.finos.vuu.core.table.{Columns, RowWithData, InMemDataTable, ViewPortColumnCreator}
@@ -106,7 +107,7 @@ object FilterAndSortFixture {
       indices = Indices(indices.map(Index):_*),
       joinFields = "ric", "orderId", "ccyCross"
     )
-    val table: InMemDataTable = new InMemDataTable(tableDef, new TestFriendlyJoinTableProvider)(new MetricsProviderImpl)
+    val table: InMemDataTable = new InMemDataTable(tableDef, new TestFriendlyJoinTableProvider)(new MetricsProviderImpl, new DefaultClock)
     rows.foreach(row => table.processUpdate(row.key, row, 0L))
     table
   }

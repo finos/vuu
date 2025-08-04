@@ -42,7 +42,7 @@ class VuuInMemPlugin extends DefaultPlugin {
   override def viewPortFactory: ViewPortFactory = ???
   override def filterFactory: FilterFactory = ???
   override def sortFactory: SortFactory = ???
-  override def tableFactory(implicit metrics: MetricsProvider, clock: Clock): TableFactory = (tableDef: TableDef, tableContainer: TableContainer, joinTableProvider: JoinTableProvider) => {
+  override def tableFactory(implicit metrics: MetricsProvider, timeProvider: Clock): TableFactory = (tableDef: TableDef, tableContainer: TableContainer, joinTableProvider: JoinTableProvider) => {
     val table = new InMemDataTable(tableDef, joinTableProvider)
     tableContainer.addTable(table)
     table

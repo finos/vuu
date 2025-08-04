@@ -16,7 +16,7 @@ class TestPlugin extends Plugin with TableFactory {
   override def hasFeature(feature: Feature): Boolean = ???
   override def registerFeature(feature: Feature): Unit = ???
 
-  override def tableFactory(implicit metrics: MetricsProvider, clock: Clock): TableFactory = ???
+  override def tableFactory(implicit metrics: MetricsProvider, timeProvider: Clock): TableFactory = ???
 
   override def pluginType: PluginType = ???
 

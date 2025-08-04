@@ -9,7 +9,7 @@ object VuuIgnitePluginType extends PluginType
 
 object VuuIgnitePlugin extends DefaultPlugin {
 
-  override def tableFactory(implicit metrics: MetricsProvider, clock: Clock): TableFactory = {
+  override def tableFactory(implicit metrics: MetricsProvider, timeProvider: Clock): TableFactory = {
     null
   }
 

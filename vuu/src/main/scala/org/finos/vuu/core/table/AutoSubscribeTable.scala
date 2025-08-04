@@ -7,7 +7,7 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.provider.JoinTableProvider
 
-class AutoSubscribeTable(tableDef: TableDef, joinProvider: JoinTableProvider)(implicit override val metrics: MetricsProvider, clock: Clock) extends InMemDataTable(tableDef, joinProvider) with StrictLogging {
+class AutoSubscribeTable(tableDef: TableDef, joinProvider: JoinTableProvider)(implicit override val metrics: MetricsProvider, timeProvider: Clock) extends InMemDataTable(tableDef, joinProvider) with StrictLogging {
 
   private val onTrySubscribe = metrics.counter(plusName("trySubscribe.count"))
   private val totalSubscribe = metrics.counter(plusName("total.count"))

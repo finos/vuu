@@ -7,7 +7,7 @@ import org.finos.vuu.feature.{Feature, FilterFactory, JoinTableFactory, SessionT
 trait Plugin {
     def hasFeature(feature: Feature): Boolean
     def registerFeature(feature: Feature): Unit
-    def tableFactory(implicit metrics: MetricsProvider, clock: Clock): TableFactory
+    def tableFactory(implicit metrics: MetricsProvider, timeProvider: Clock): TableFactory
     def pluginType: PluginType
     def joinTableFactory(implicit metrics: MetricsProvider): JoinTableFactory
     def sessionTableFactory: SessionTableFactory
