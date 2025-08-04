@@ -98,7 +98,7 @@ case class FrozenTimeFilter(frozenTime: Long) extends Filter with StrictLogging 
         vuuCreatedTimestamp < frozenTime
       } catch {
         case e: Exception =>
-          logger.error(s"Error while freezing viewport with keys $primaryKeys and timestamp $frozenTime", e)
+          logger.error(s"Error while checking frozen time for keys $primaryKeys with frozen time $frozenTime", e)
           false
       }
     }).toArray
