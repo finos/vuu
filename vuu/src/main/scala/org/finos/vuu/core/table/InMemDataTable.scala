@@ -188,12 +188,12 @@ case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private 
       data.getOrDefault(key, EmptyRowData) match {
         case row: RowWithData =>
           val mergedData = merge(update, row)
-          mergedData.set(DefaultColumnNames.LastUpdatedTime, now)
+          mergedData.set(DefaultColumnNames.LastUpdatedTimeColumnName, now)
           data.put(key, mergedData)
           InMemDataTableData(data, primaryKeyValues)
         case EmptyRowData =>
-          update.set(DefaultColumnNames.CreatedTime, now)
-          update.set(DefaultColumnNames.LastUpdatedTime, now)
+          update.set(DefaultColumnNames.CreatedTimeColumnName, now)
+          update.set(DefaultColumnNames.LastUpdatedTimeColumnName, now)
           data.put(key, update)
           InMemDataTableData(data, primaryKeyValues + key)
       }

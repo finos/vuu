@@ -6,7 +6,7 @@ import org.finos.vuu.core.auths.RowPermissionChecker
 import org.finos.vuu.core.filter.{Filter, FilterClause}
 import org.finos.vuu.core.index._
 import org.finos.vuu.core.table.column.{Error, Success}
-import org.finos.vuu.core.table._
+import org.finos.vuu.core.table.{Column, DataType, EmptyTablePrimaryKeys, TablePrimaryKeys, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns, ViewPortVisualLink}
 
