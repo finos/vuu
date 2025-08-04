@@ -78,7 +78,7 @@ case class RowPermissionFilter(checker: RowPermissionChecker) extends Filter wit
   override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     val filtered = primaryKeys.filter(key => {
       try {
-      checker.canSeeRow(source.pullRow(key, vpColumns))
+        checker.canSeeRow(source.pullRow(key, vpColumns))
       } catch {
         case e: Exception =>
           logger.error(s"Error while checking row permission for keys $primaryKeys with checker $checker", e)
@@ -90,7 +90,7 @@ case class RowPermissionFilter(checker: RowPermissionChecker) extends Filter wit
   }
 }
 
-case class freezeViewPortFilter(timestamp: Long) extends Filter with StrictLogging {
+case class FreezeViewPortFilter(timestamp: Long) extends Filter with StrictLogging {
   override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     val filtered = primaryKeys.filter(key => {
       try {
@@ -135,7 +135,7 @@ case class AntlrBasedFilter(clause: FilterClause) extends Filter with StrictLogg
 
 
 trait FilterAndSort {
-  def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, permission: Option[RowPermissionChecker]): TablePrimaryKeys
+  def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, permission: Option[RowPermissionChecker], viewPortFrozenTime: Option[Long]): TablePrimaryKeys
 
   def filter: Filter
 
@@ -144,16 +144,28 @@ trait FilterAndSort {
 
 case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAndSort with StrictLogging {
 
-  override def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, checkerOption: Option[RowPermissionChecker]): TablePrimaryKeys = {
-    if(primaryKeys == null || primaryKeys.length == 0) {
+  override def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, checkerOption: Option[RowPermissionChecker], viewPortFrozenTime: Option[Long]): TablePrimaryKeys = {
+    if (primaryKeys == null || primaryKeys.length == 0) {
       // nothing to filter or sort
       return primaryKeys
     }
 
     try {
       val realizedFilter = checkerOption match {
-        case Some(checker) => TwoStepCompoundFilter(RowPermissionFilter(checker), filter)
-        case None => filter
+        case Some(checker) =>
+          viewPortFrozenTime match {
+            case Some(t) =>
+              TwoStepCompoundFilter(TwoStepCompoundFilter(RowPermissionFilter(checker), FreezeViewPortFilter(t)), filter)
+            case None =>
+              TwoStepCompoundFilter(RowPermissionFilter(checker), filter)
+          }
+        case None =>
+          viewPortFrozenTime match {
+            case Some(t) =>
+              TwoStepCompoundFilter(FreezeViewPortFilter(t), filter)
+            case None =>
+              filter
+          }
       }
 
       val filteredKeys = realizedFilter.dofilter(source, primaryKeys, vpColumns)

@@ -78,6 +78,8 @@ trait ViewPort {
 
   def isEnabled: Boolean
 
+  def viewPortFrozenTime: Option[Long]
+
   def hasGroupBy: Boolean = getGroupBy != NoGroupBy
 
   def size: Int
@@ -182,6 +184,7 @@ class ViewPortImpl(val id: String,
   private val viewPortLock = new Object
 
   @volatile private var enabled = true
+  @volatile private var viewPortFrozenTimestamp: Option[Long] = None
 
   @volatile private var requestId: String = ""
 
@@ -207,12 +210,14 @@ class ViewPortImpl(val id: String,
 
   override def isEnabled: Boolean = this.enabled
 
-  override def freeze(): Unit = {
+  override def viewPortFrozenTime: Option[Long] = this.viewPortFrozenTimestamp
 
+  override def freeze(): Unit = {
+    viewPortFrozenTimestamp = Some(timeProvider.now())
   }
 
   override def unfreeze(): Unit = {
-
+    viewPortFrozenTimestamp = None
   }
 
   @volatile

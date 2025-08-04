@@ -904,7 +904,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         val filterAndSort = viewPort.filterAndSort
 
         val (millis, _) = TimeIt.timeIt {
-          val sorted = filterAndSort.filterAndSort(viewPort.table, keys, viewPort.getColumns, viewPort.permissionChecker())
+          val sorted = filterAndSort.filterAndSort(viewPort.table, keys, viewPort.getColumns, viewPort.permissionChecker(), viewPort.viewPortFrozenTime)
           viewPort.setKeys(viewPort.getKeys.create(sorted))
         }
 
