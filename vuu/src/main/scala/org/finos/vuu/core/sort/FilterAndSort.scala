@@ -90,7 +90,7 @@ case class RowPermissionFilter(checker: RowPermissionChecker) extends Filter wit
   }
 }
 
-case class FreezeViewPortFilter(frozenTime: Long) extends Filter with StrictLogging {
+case class FrozenTimeFilter(frozenTime: Long) extends Filter with StrictLogging {
   override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     val filtered = primaryKeys.filter(key => {
       try {
@@ -107,7 +107,7 @@ case class FreezeViewPortFilter(frozenTime: Long) extends Filter with StrictLogg
   }
 }
 
-case class RowPermissionAndFreezeViewPortFilter(checker: RowPermissionChecker, frozenTime: Long) extends Filter with StrictLogging {
+case class RowPermissionAndFrozenTimetFilter(checker: RowPermissionChecker, frozenTime: Long) extends Filter with StrictLogging {
   override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     val filtered = primaryKeys.filter(key => {
       try {
@@ -192,14 +192,14 @@ case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAn
       case Some(checker) =>
         viewPortFrozenTime match {
           case Some(frozenTime) =>
-            Some(RowPermissionAndFreezeViewPortFilter(checker, frozenTime))
+            Some(RowPermissionAndFrozenTimetFilter(checker, frozenTime))
           case None =>
             Some(RowPermissionFilter(checker))
         }
       case None =>
         viewPortFrozenTime match {
           case Some(t) =>
-            Some(FreezeViewPortFilter(t))
+            Some(FrozenTimeFilter(t))
           case None =>
             None
         }
