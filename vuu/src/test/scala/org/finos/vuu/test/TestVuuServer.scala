@@ -32,6 +32,8 @@ class TestViewPort(val viewPort: ViewPort) extends ViewPort {
 
   override def unfreeze(): Unit = viewPort.unfreeze()
 
+  override def isFrozen: Boolean = viewPort.isFrozen
+
   override def viewPortFrozenTime: Option[Long] = viewPort.viewPortFrozenTime
 
   override def size: Int = viewPort.size

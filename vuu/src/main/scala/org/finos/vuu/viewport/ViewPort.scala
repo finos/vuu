@@ -78,6 +78,8 @@ trait ViewPort {
 
   def isEnabled: Boolean
 
+  def isFrozen: Boolean
+
   def viewPortFrozenTime: Option[Long]
 
   def hasGroupBy: Boolean = getGroupBy != NoGroupBy
@@ -209,6 +211,8 @@ class ViewPortImpl(val id: String,
   }
 
   override def isEnabled: Boolean = this.enabled
+
+  override def isFrozen: Boolean = this.viewPortFrozenTimestamp.isDefined
 
   override def viewPortFrozenTime: Option[Long] = this.viewPortFrozenTimestamp
 

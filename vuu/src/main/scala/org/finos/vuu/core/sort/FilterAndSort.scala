@@ -6,7 +6,7 @@ import org.finos.vuu.core.auths.RowPermissionChecker
 import org.finos.vuu.core.filter.{Filter, FilterClause}
 import org.finos.vuu.core.index._
 import org.finos.vuu.core.table.column.{Error, Success}
-import org.finos.vuu.core.table.{Column, DataType, EmptyTablePrimaryKeys, TablePrimaryKeys, ViewPortColumnCreator}
+import org.finos.vuu.core.table.{Column, DataType, DefaultColumnNames, EmptyTablePrimaryKeys, TablePrimaryKeys, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns, ViewPortVisualLink}
 
@@ -94,7 +94,7 @@ case class FrozenTimeFilter(frozenTime: Long) extends Filter with StrictLogging 
   override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     val filtered = primaryKeys.filter(key => {
       try {
-        val vuuCreatedTimestamp = source.pullRow(key, vpColumns).get(DefaultColumnNames.CreatedTime).asInstanceOf[Long]
+        val vuuCreatedTimestamp = source.pullRow(key, vpColumns).get(DefaultColumnNames.CreatedTimeColumnName).asInstanceOf[Long]
         vuuCreatedTimestamp < frozenTime
       } catch {
         case e: Exception =>
@@ -107,12 +107,12 @@ case class FrozenTimeFilter(frozenTime: Long) extends Filter with StrictLogging 
   }
 }
 
-case class RowPermissionAndFrozenTimetFilter(checker: RowPermissionChecker, frozenTime: Long) extends Filter with StrictLogging {
+case class RowPermissionAndFrozenTimeFilter(checker: RowPermissionChecker, frozenTime: Long) extends Filter with StrictLogging {
   override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     val filtered = primaryKeys.filter(key => {
       try {
         val rowData = source.pullRow(key, vpColumns)
-        val vuuCreatedTimestamp = rowData.get(DefaultColumnNames.CreatedTime).asInstanceOf[Long]
+        val vuuCreatedTimestamp = rowData.get(DefaultColumnNames.CreatedTimeColumnName).asInstanceOf[Long]
         checker.canSeeRow(rowData) && vuuCreatedTimestamp < frozenTime
       } catch {
         case e: Exception =>
@@ -192,7 +192,7 @@ case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAn
       case Some(checker) =>
         viewPortFrozenTime match {
           case Some(frozenTime) =>
-            Some(RowPermissionAndFrozenTimetFilter(checker, frozenTime))
+            Some(RowPermissionAndFrozenTimeFilter(checker, frozenTime))
           case None =>
             Some(RowPermissionFilter(checker))
         }

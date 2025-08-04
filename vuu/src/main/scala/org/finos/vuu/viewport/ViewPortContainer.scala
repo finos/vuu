@@ -77,10 +77,10 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     treeNodeStatesByVp.get(vpId)
   }
 
-  def handleRpcRequest(viewPortId: String, rpcName: String, params: Map[String, Any]) (ctx: RequestContext): RpcFunctionResult = {
+  def handleRpcRequest(viewPortId: String, rpcName: String, params: Map[String, Any])(ctx: RequestContext): RpcFunctionResult = {
     val viewPort = this.getViewPortById(viewPortId)
 
-    if(viewPort == null)
+    if (viewPort == null)
       throw new Exception(s"No viewport $viewPortId found for RPC Call for $rpcName")
 
     val viewPortDef = viewPort.getStructure.viewPortDef
@@ -91,7 +91,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   def callRpcService(vpId: String, method: String, params: Array[Any], namedParams: Map[String, Any], session: ClientSessionId)(ctx: RequestContext): ViewPortAction = {
     val viewPort = this.getViewPortById(vpId)
 
-    if(viewPort == null)
+    if (viewPort == null)
       throw new Exception(s"No viewport $vpId found for RPC Call for $method")
 
     val viewPortDef = viewPort.getStructure.viewPortDef
@@ -150,7 +150,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
-  def callRpcAddRow(vpId: String, key: String,  data: Map[String, Any], session: ClientSessionId): ViewPortAction = {
+  def callRpcAddRow(vpId: String, key: String, data: Map[String, Any], session: ClientSessionId): ViewPortAction = {
     val viewPort = this.getViewPortById(vpId)
     val viewPortDef = viewPort.getStructure.viewPortDef
     val service = viewPortDef.service
@@ -173,6 +173,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         throw new Exception(s"Service is not editable rpc")
     }
   }
+
   def callRpcEditRow(vpId: String, key: String, data: Map[String, Any], session: ClientSessionId): ViewPortEditAction = {
     val viewPort = this.getViewPortById(vpId)
     val viewPortDef = viewPort.getStructure.viewPortDef
@@ -184,6 +185,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         throw new Exception(s"Service is not editable rpc")
     }
   }
+
   def callRpcEditCell(vpId: String, key: String, column: String, data: AnyRef, session: ClientSessionId): ViewPortEditAction = {
     val viewPort = this.getViewPortById(vpId)
     val viewPortDef = viewPort.getStructure.viewPortDef
@@ -322,8 +324,12 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       case null =>
         logger.error(s"Could not find viewport to freeze $vpId")
       case vp: ViewPort =>
-        vp.freeze()
-        logger.debug(s"Froze $vpId in container")
+        if (vp.isFrozen) {
+          throw new Exception(s"Could not freeze viewport $vpId because it's already frozen")
+        } else {
+          vp.freeze()
+          logger.debug(s"Froze viewport $vpId in container")
+        }
     }
   }
 
@@ -333,7 +339,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         logger.error(s"Could not find viewport to unfreeze $vpId")
       case vp: ViewPort =>
         vp.unfreeze()
-        logger.debug(s"Unfroze $vpId in container")
+        logger.debug(s"Unfroze viewport $vpId in container")
     }
   }
 
@@ -599,8 +605,8 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     val filtAndSort = core.sort.UserDefinedFilterAndSort(aFilter, aSort)
 
-    val aTable = pluginRegistry.withPlugin(table.asTable.getTableDef.pluginType){
-        plugin => plugin.viewPortTableCreator.create(table, clientSession, groupBy, tableContainer)
+    val aTable = pluginRegistry.withPlugin(table.asTable.getTableDef.pluginType) {
+      plugin => plugin.viewPortTableCreator.create(table, clientSession, groupBy, tableContainer)
     }
 
     val viewPortDef = getViewPortDefinition(table.asTable)
@@ -763,7 +769,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   }
 
   def refreshOneTreeViewPort(viewPort: ViewPort): Unit = {
-    val (millis, _) = timeIt{
+    val (millis, _) = timeIt {
       refreshOneTreeViewPortInternal(viewPort)
     }
     totalTreeWorkHistogram.mark(millis)
@@ -787,20 +793,35 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         val oldTree = action.table.getTree
         val tree = timeItThen[Tree](
           {
-            TreeBuilder.create(action.table, viewPort.getGroupBy, viewPort.filterSpec, viewPort.getColumns, latestNodeState, action.oldTreeOption, Option(viewPort.getStructure.filtAndSort.sort), action, viewPort.permissionChecker()).buildEntireTree()},
-          (millis, tree) => { updateHistogram(viewPort, treeBuildHistograms, "tree.build.", millis)}
+            TreeBuilder.create(action.table, viewPort.getGroupBy, viewPort.filterSpec, viewPort.getColumns, latestNodeState, action.oldTreeOption, Option(viewPort.getStructure.filtAndSort.sort), action, viewPort.permissionChecker()).buildEntireTree()
+          },
+          (millis, tree) => {
+            updateHistogram(viewPort, treeBuildHistograms, "tree.build.", millis)
+          }
         )
         val keys = timeItThen[ImmutableArray[String]](
-          {tree.toKeys()},
-          (millis, _) => { updateHistogram(viewPort, treeToKeysHistograms, "tree.keys.", millis)}
+          {
+            tree.toKeys()
+          },
+          (millis, _) => {
+            updateHistogram(viewPort, treeToKeysHistograms, "tree.keys.", millis)
+          }
         )
         timeItThen[Unit](
-          {action.table.setTree(tree, InMemTablePrimaryKeys(keys))},
-          (millis, _) => { updateHistogram(viewPort, treeSetTreeHistograms, "tree.settree.", millis)}
+          {
+            action.table.setTree(tree, InMemTablePrimaryKeys(keys))
+          },
+          (millis, _) => {
+            updateHistogram(viewPort, treeSetTreeHistograms, "tree.settree.", millis)
+          }
         )
         timeItThen[Unit](
-          {viewPort.setKeys(viewPort.getKeys.create(InMemTablePrimaryKeys(keys)))},
-          (millis, _) => {updateHistogram(viewPort, treeSetKeysHistograms, "tree.setkeys.", millis)}
+          {
+            viewPort.setKeys(viewPort.getKeys.create(InMemTablePrimaryKeys(keys)))
+          },
+          (millis, _) => {
+            updateHistogram(viewPort, treeSetKeysHistograms, "tree.setkeys.", millis)
+          }
         )
         timeItThen[Unit](
           {
@@ -820,19 +841,35 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       case action: FastBuildBranchesOfTree =>
         val oldTree = action.table.getTree
         val tree = timeItThen[Tree](
-          {TreeBuilder.create(action.table, viewPort.getGroupBy, viewPort.filterSpec, viewPort.getColumns, latestNodeState, action.oldTreeOption, Option(viewPort.getStructure.filtAndSort.sort), action, viewPort.permissionChecker()).buildOnlyBranches()},
-          (millis, _) => { updateHistogram(viewPort, treeBuildHistograms, "tree.build.", millis)}
+          {
+            TreeBuilder.create(action.table, viewPort.getGroupBy, viewPort.filterSpec, viewPort.getColumns, latestNodeState, action.oldTreeOption, Option(viewPort.getStructure.filtAndSort.sort), action, viewPort.permissionChecker()).buildOnlyBranches()
+          },
+          (millis, _) => {
+            updateHistogram(viewPort, treeBuildHistograms, "tree.build.", millis)
+          }
         )
         val keys = timeItThen[ImmutableArray[String]](
-          {tree.toKeys()},
-          (millis, _) => {updateHistogram(viewPort, treeToKeysHistograms, "tree.keys.", millis)}
+          {
+            tree.toKeys()
+          },
+          (millis, _) => {
+            updateHistogram(viewPort, treeToKeysHistograms, "tree.keys.", millis)
+          }
         )
         timeItThen[Unit](
-          {action.table.setTree(tree, InMemTablePrimaryKeys(keys))},
-          (millis, _) => {updateHistogram(viewPort, treeSetTreeHistograms, "tree.settree.", millis)}
+          {
+            action.table.setTree(tree, InMemTablePrimaryKeys(keys))
+          },
+          (millis, _) => {
+            updateHistogram(viewPort, treeSetTreeHistograms, "tree.settree.", millis)
+          }
         )
-        timeItThen[Unit]({viewPort.setKeys(viewPort.getKeys.create(InMemTablePrimaryKeys(keys)))},
-          (millis, _) => {updateHistogram(viewPort, treeSetKeysHistograms, "tree.setkeys.", millis)}
+        timeItThen[Unit]({
+          viewPort.setKeys(viewPort.getKeys.create(InMemTablePrimaryKeys(keys)))
+        },
+          (millis, _) => {
+            updateHistogram(viewPort, treeSetKeysHistograms, "tree.setkeys.", millis)
+          }
         )
         timeItThen[Unit](
           {
@@ -850,19 +887,29 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         val tree = action.table.getTree.applyNewNodeState(latestNodeState, action)
         val keys = tree.toKeys()
         timeItThen[Unit](
-          {action.table.setTree(tree, InMemTablePrimaryKeys(keys))},
-          (millis, _) => {updateHistogram(viewPort, treeSetTreeHistograms, "tree.settree.", millis)}
+          {
+            action.table.setTree(tree, InMemTablePrimaryKeys(keys))
+          },
+          (millis, _) => {
+            updateHistogram(viewPort, treeSetTreeHistograms, "tree.settree.", millis)
+          }
         )
         timeItThen[Unit](
-          {viewPort.setKeys(viewPort.getKeys.create(InMemTablePrimaryKeys(keys)))},
-          (millis, _) => {updateHistogram(viewPort, treeSetKeysHistograms, "tree.setkeys.", millis)}
+          {
+            viewPort.setKeys(viewPort.getKeys.create(InMemTablePrimaryKeys(keys)))
+          },
+          (millis, _) => {
+            updateHistogram(viewPort, treeSetKeysHistograms, "tree.setkeys.", millis)
+          }
         )
         timeItThen[Unit](
           {
             val branchKeys = TreeUtils.diffOldVsNewBranches(oldTree, tree, oldTree.nodeState)
             viewPort.updateSpecificKeys(branchKeys)
           },
-          (millis, _) => {updateHistogram(viewPort, treeDiffBranchesHistograms, "tree.branchdiff.", millis)}
+          (millis, _) => {
+            updateHistogram(viewPort, treeDiffBranchesHistograms, "tree.branchdiff.", millis)
+          }
         )
         viewPort.setLastHashAndUpdateCount(currentStructureHash, currentUpdateCount)
     }
@@ -884,7 +931,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   }
 
   def refreshOneViewPort(viewPort: ViewPort): Unit = {
-    val (millis, _) = timeIt{
+    val (millis, _) = timeIt {
       refreshOneViewPortInternal(viewPort)
     }
     totalFlatWorkHistogram.mark(millis)
