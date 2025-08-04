@@ -1,14 +1,14 @@
 package org.finos.vuu.core.sort
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.filter.{Filter, FilterClause, NoFilter}
-import org.finos.vuu.core.index._
-import org.finos.vuu.core.table.{Column, DataType, EmptyTablePrimaryKeys, TablePrimaryKeys, ViewPortColumnCreator}
-import org.finos.vuu.viewport.{RowSource, ViewPortColumns, ViewPortVisualLink}
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.core.auths.RowPermissionChecker
+import org.finos.vuu.core.filter.{Filter, FilterClause}
+import org.finos.vuu.core.index._
 import org.finos.vuu.core.table.column.{Error, Success}
+import org.finos.vuu.core.table._
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
+import org.finos.vuu.viewport.{RowSource, ViewPortColumns, ViewPortVisualLink}
 
 case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Filter with StrictLogging {
 
@@ -82,6 +82,23 @@ case class RowPermissionFilter(checker: RowPermissionChecker) extends Filter wit
       } catch {
         case e: Exception =>
           logger.error(s"Error while checking row permission for keys $primaryKeys with checker $checker", e)
+          false
+      }
+    }).toArray
+
+    InMemTablePrimaryKeys(ImmutableArray.from[String](filtered))
+  }
+}
+
+case class freezeViewPortFilter(timestamp: Long) extends Filter with StrictLogging {
+  override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
+    val filtered = primaryKeys.filter(key => {
+      try {
+        val vuuCreatedTimestamp = source.pullRow(key, vpColumns).get(DefaultColumnNames.CreatedTime).asInstanceOf[Long]
+        vuuCreatedTimestamp < timestamp
+      } catch {
+        case e: Exception =>
+          logger.error(s"Error while freezing viewport with keys $primaryKeys and timestamp $timestamp", e)
           false
       }
     }).toArray
