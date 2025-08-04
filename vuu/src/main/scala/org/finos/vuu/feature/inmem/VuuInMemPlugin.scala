@@ -1,7 +1,6 @@
 package org.finos.vuu.feature.inmem
 
 import org.finos.toolbox.jmx.MetricsProvider
-import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{JoinTableDef, TableDef}
 import org.finos.vuu.core.table.{DataTable, InMemDataTable, JoinTable, TableContainer}
 import org.finos.vuu.feature._
