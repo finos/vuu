@@ -1,7 +1,6 @@
 package org.finos.vuu.plugin.virtualized
 
 import org.finos.toolbox.jmx.MetricsProvider
-import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.{InMemDataTable, TableContainer}
 import org.finos.vuu.feature.{FilterFactory, JoinTableFactory, SessionTableFactory, SortFactory, TableFactory, ViewPortCallableFactory, ViewPortFactory, ViewPortKeysCreator, ViewPortTableCreator, ViewPortTreeCallableFactory}
@@ -15,7 +14,7 @@ object VirtualizedTablePlugin extends DefaultPlugin {
 
   final val callableFactory = new VirtualizedViewPortCallableFactory
 
-  override def tableFactory(implicit metrics: MetricsProvider, timeProvider: Clock): TableFactory = (tableDef: TableDef, tableContainer: TableContainer, joinTableProvider: JoinTableProvider) => {
+  override def tableFactory(implicit metrics: MetricsProvider): TableFactory = (tableDef: TableDef, tableContainer: TableContainer, joinTableProvider: JoinTableProvider) => {
     val table = new InMemDataTable(tableDef, joinTableProvider)
     tableContainer.addTable(table)
     table
