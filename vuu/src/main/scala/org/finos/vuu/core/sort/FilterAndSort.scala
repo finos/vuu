@@ -94,6 +94,7 @@ case class FrozenTimeFilter(frozenTime: Long) extends Filter with StrictLogging 
   override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     val filtered = primaryKeys.filter(key => {
       try {
+        // TO FIX: we shouldn't filter by vpColumns here???
         val vuuCreatedTimestamp = source.pullRow(key, vpColumns).get(DefaultColumnNames.CreatedTimeColumnName).asInstanceOf[Long]
         vuuCreatedTimestamp < frozenTime
       } catch {
