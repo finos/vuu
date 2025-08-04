@@ -1,6 +1,7 @@
 package org.finos.vuu.feature.inmem
 
 import org.finos.toolbox.jmx.MetricsProvider
+import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{JoinTableDef, TableDef}
 import org.finos.vuu.core.table.{DataTable, InMemDataTable, JoinTable, TableContainer}
 import org.finos.vuu.feature._
@@ -41,7 +42,7 @@ class VuuInMemPlugin extends DefaultPlugin {
   override def viewPortFactory: ViewPortFactory = ???
   override def filterFactory: FilterFactory = ???
   override def sortFactory: SortFactory = ???
-  override def tableFactory(implicit metrics: MetricsProvider): TableFactory = (tableDef: TableDef, tableContainer: TableContainer, joinTableProvider: JoinTableProvider) => {
+  override def tableFactory(implicit metrics: MetricsProvider, clock: Clock): TableFactory = (tableDef: TableDef, tableContainer: TableContainer, joinTableProvider: JoinTableProvider) => {
     val table = new InMemDataTable(tableDef, joinTableProvider)
     tableContainer.addTable(table)
     table

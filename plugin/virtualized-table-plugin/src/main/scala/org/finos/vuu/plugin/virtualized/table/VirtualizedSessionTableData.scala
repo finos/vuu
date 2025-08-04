@@ -18,7 +18,7 @@ class VirtualizedSessionTableData(cacheSize: Int)(implicit clock: Clock) extends
     }
   }
 
-  override def update(key: String, update: RowData): TableData = {
+  override def update(key: String, update: RowData, now: Long): TableData = {
     rowCache.put(key, update)
     this
   }

@@ -10,7 +10,7 @@ class InMemSessionDataTable private (val clientSessionId: ClientSessionId,
                                      sessionTableDef: SessionTableDef,
                                      joinTableProvider: JoinTableProvider,
                                      final val creationTimestamp: Long)
-                                    (implicit metrics: MetricsProvider) extends InMemDataTable(sessionTableDef, joinTableProvider) with SessionTable {
+                                    (implicit metrics: MetricsProvider, clock: Clock) extends InMemDataTable(sessionTableDef, joinTableProvider) with SessionTable {
 
   def this(clientSessionId: ClientSessionId, sessionTableDef: SessionTableDef, joinTableProvider: JoinTableProvider)
           (implicit metrics: MetricsProvider, clock: Clock) = {

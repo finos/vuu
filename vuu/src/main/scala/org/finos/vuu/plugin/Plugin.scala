@@ -1,12 +1,13 @@
 package org.finos.vuu.plugin
 
 import org.finos.toolbox.jmx.MetricsProvider
+import org.finos.toolbox.time.Clock
 import org.finos.vuu.feature.{Feature, FilterFactory, JoinTableFactory, SessionTableFactory, SortFactory, TableFactory, ViewPortCallableFactory, ViewPortFactory, ViewPortKeysCreator, ViewPortTableCreator, ViewPortTreeCallableFactory}
 
 trait Plugin {
     def hasFeature(feature: Feature): Boolean
     def registerFeature(feature: Feature): Unit
-    def tableFactory(implicit metrics: MetricsProvider): TableFactory
+    def tableFactory(implicit metrics: MetricsProvider, clock: Clock): TableFactory
     def pluginType: PluginType
     def joinTableFactory(implicit metrics: MetricsProvider): JoinTableFactory
     def sessionTableFactory: SessionTableFactory
