@@ -6,9 +6,8 @@ import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames => B, BasketConstituentColumnNames => BC}
-import org.finos.vuu.core.module.basket.service.{BasketServiceIF, BasketTradingServiceIF}
+import org.finos.vuu.core.module.basket.service.{BasketServiceIF, BasketTradeId, BasketTradingServiceIF}
 import org.finos.vuu.core.module.price.PriceModule
-import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName}
 import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.test.VuuServerTestCase
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
@@ -61,9 +60,9 @@ class BasketCreateTest extends VuuServerTestCase {
 
           assertVpEq(combineQsForVp(viewportPrices)) {
             Table(
-              ("ric", "bid", "ask", "bidSize", "askSize", "last", "open", "close", "phase", "scenario", CreatedTimeColumnName, LastUpdatedTimeColumnName),
-              ("BP.L", 5.3, null, null, null, null, null, null, "C", null, null, null),
-              ("VOD.L", 1.3, 1.6, null, null, 1.5, null, null, "C", null, null, null),
+              ("ric", "bid", "ask", "bidSize", "askSize", "last", "open", "close", "phase", "scenario"),
+              ("BP.L", 5.3, null, null, null, null, null, null, "C", null),
+              ("VOD.L", 1.3, 1.6, null, null, 1.5, null, null, "C", null),
             )
           }
 
@@ -90,17 +89,17 @@ class BasketCreateTest extends VuuServerTestCase {
 
           assertVpEq(filterByVp(viewportBasketTrading, updates)) {
             Table(
-              ("instanceId", "basketId", "basketName", "units", "status", "filledPct", "totalNotionalUsd", "totalNotional", "fxRateToUsd", "side", CreatedTimeColumnName, LastUpdatedTimeColumnName),
-              (basketTradeInstanceId, ".FTSE", "TestBasket", 100, "OFF-MARKET", null, null, null, null, "BUY", null, null)
+              ("instanceId", "basketId", "basketName", "units", "status", "filledPct", "totalNotionalUsd", "totalNotional", "fxRateToUsd", "side"),
+              (basketTradeInstanceId, ".FTSE", "TestBasket", 100, "OFF-MARKET", null, null, null, null, "BUY")
             )
           }
 
           assertVpEq(filterByVp(viewportBasketTradingCons, updates)) {
             Table(
-              ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "filledQty", "orderStatus", CreatedTimeColumnName, LastUpdatedTimeColumnName),
-              (10L, "BUY", basketTradeInstanceId, s"$basketTradeInstanceId.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING", null, null),
-              (10L, "SELL", basketTradeInstanceId, s"$basketTradeInstanceId.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING", null, null),
-              (10L, "BUY", basketTradeInstanceId, s"$basketTradeInstanceId.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, 1.5, 2, 0, "PENDING", null, null),
+              ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "filledQty", "orderStatus"),
+              (10L, "BUY", basketTradeInstanceId, s"$basketTradeInstanceId.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "SELL", basketTradeInstanceId, s"$basketTradeInstanceId.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, 0, "PENDING"),
+              (10L, "BUY", basketTradeInstanceId, s"$basketTradeInstanceId.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, 1.5, 2, 0, "PENDING"),
             )
           }
       }
