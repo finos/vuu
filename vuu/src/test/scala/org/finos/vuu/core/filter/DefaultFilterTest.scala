@@ -31,25 +31,24 @@ class DefaultFilterTest extends AnyFeatureSpec with Matchers {
 
         Scenario("Should return rows for a given trader") {
             val rowPermissionFilter = RowPermissionFilter(AllowSpecificTraderRowPermissionChecker("steve"))
-          val expectedKeys = InMemTablePrimaryKeys(ImmutableArray.from[String](Array("LDN-0002", "NYC-0002", "NYC-0010")))
-            rowPermissionFilter.dofilter(data, data.primaryKeys, null) should contain theSameElementsAs expectedKeys
+          val expected = InMemTablePrimaryKeys(ImmutableArray.from(Array("LDN-0002", "NYC-0002", "NYC-0010")))
+            rowPermissionFilter.dofilter(data, data.primaryKeys, null) should contain theSameElementsAs expected
         }
     }
 
   Feature("Frozen Time Filter") {
     Scenario("Should only return rows created before frozen time") {
       val filter = FrozenTimeFilter(now)
-      val expectedKeys = InMemTablePrimaryKeys(ImmutableArray.from[String](Array("NYC-0004", "LDN-0003")))
-      filter.dofilter(dataWithCreationTime, dataWithCreationTime.primaryKeys, null) should contain theSameElementsAs expectedKeys
+      val expected = InMemTablePrimaryKeys(ImmutableArray.from(Array("NYC-0004", "LDN-0003")))
+      filter.dofilter(dataWithCreationTime, dataWithCreationTime.primaryKeys, null) should contain theSameElementsAs expected
     }
   }
 
   Feature("Row Permission And Frozen Time Filter") {
-    Scenario("Should only return rows created before frozen time") {
+    Scenario("Should only return permitted rows created before frozen time") {
       val filter = RowPermissionAndFrozenTimeFilter(AllowSpecificTraderRowPermissionChecker("steve"), now)
-      val expectedKeys = InMemTablePrimaryKeys(ImmutableArray.from[String](Array("LDN-0003")))
-      val keys = filter.dofilter(dataWithCreationTime, dataWithCreationTime.primaryKeys, null)
-      keys should contain theSameElementsAs expectedKeys
+      val expected = InMemTablePrimaryKeys(ImmutableArray.from(Array("LDN-0003")))
+      filter.dofilter(dataWithCreationTime, dataWithCreationTime.primaryKeys, null) should contain theSameElementsAs expected
     }
   }
 }
