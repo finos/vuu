@@ -2,9 +2,9 @@ package org.finos.vuu.wsapi
 
 import org.finos.vuu.api._
 import org.finos.vuu.core.IVuuServer
-import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
+import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
+import org.finos.vuu.core.table.DataTable
 import org.finos.vuu.core.table.DefaultColumnNames.CreatedTimeColumnName
-import org.finos.vuu.core.table.{Columns, DataTable}
 import org.finos.vuu.net._
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
@@ -14,9 +14,6 @@ import scala.collection.immutable.ListMap
 
 class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
   private val tableName = "FreezingVPTest"
-  private val baseTableName = "FreezingVPTestBase"
-  private val rightTableName = "FreezingVPTestRight"
-  private val joinTableName = "FreezingVPTestJoin"
   private val moduleName = "FreezingVPTEST"
   private val fakeViewPortId = "fakeId"
 
@@ -121,63 +118,9 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
     ))
     val providerFactory = (table: DataTable, _: IVuuServer) => new TestProvider(table, dataSource)
 
-    /*val baseTableDef = TableDef(
-      name = baseTableName,
-      keyField = "Id",
-      columns =
-        new ColumnBuilder()
-          .addString("Id")
-          .addString("Name")
-          .addInt("Account")
-          .addInt("HiddenColumn")
-          .build(),
-      VisualLinks(),
-      joinFields = "Id"
-    )
-    val baseProviderFactory = (table: DataTable, _: IVuuServer) => new TestProvider(table, dataSource)
-
-    val rightTableDef = TableDef(
-      name = rightTableName,
-      keyField = "Id",
-      columns =
-        new ColumnBuilder()
-          .addString("Id")
-          .addString("Description")
-          .build(),
-      VisualLinks(),
-      joinFields = "Id"
-    )
-
-    val rightDataSource = new FakeDataSource(ListMap(
-      "row1" -> Map("Id" -> "row1", "Description" -> "This is row1"),
-      "row2" -> Map("Id" -> "row2", "Description" -> "This is row2"),
-      "row3" -> Map("Id" -> "row3", "Description" -> "This is row3"),
-    ))
-    val rightProviderFactory = (table: DataTable, _: IVuuServer) => new TestProvider(table, rightDataSource)
-
-    val joinTableFunc: TableDefContainer => JoinTableDef = _ => JoinTableDef(
-      name = joinTableName,
-      baseTable = baseTableDef,
-      joinColumns = Columns.allFrom(baseTableDef),
-      joins =
-        JoinTo(
-          table = rightTableDef,
-          joinSpec = JoinSpec(left = "Id", right = "Id", LeftOuterJoin)
-        ),
-      links = VisualLinks(),
-      joinFields = Seq()
-    )*/
-
     ModuleFactory.withNamespace(moduleName)
       .addTableForTest(tableDef, providerFactory)
-      /*.addTableForTest(baseTableDef, baseProviderFactory)
-      .addTableForTest(rightTableDef, rightProviderFactory)
-      .addJoinTableForTest(joinTableFunc)*/
       .asModule()
-  }
-
-  private def createViewPortForJoinTable = {
-    createViewPortBase(joinTableName)
   }
 
   private def createViewPort = {
