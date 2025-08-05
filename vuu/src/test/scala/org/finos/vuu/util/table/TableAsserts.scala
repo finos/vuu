@@ -1,9 +1,10 @@
 package org.finos.vuu.util.table
 
 import org.finos.vuu.core.table.{EmptyRowData, RowWithData}
-import org.finos.vuu.viewport.{RowUpdateType, ViewPortUpdate}
+import org.finos.vuu.viewport.{RowUpdateType, ViewPortColumns, ViewPortUpdate}
 import org.finos.toolbox.collection.MapDiffUtils
 import org.finos.toolbox.text.AsciiUtil
+import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName}
 import org.scalatest.prop._
 
 object TableAsserts {
@@ -143,8 +144,8 @@ object TableAsserts {
   def generic19Assert(updates: Seq[ViewPortUpdate], expectation: TableFor19[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]): Unit = {
 
     val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType)
-      .filter(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns) != EmptyRowData)
-      .map(vpu => vpu.table.pullRowFiltered(vpu.key.key, vpu.vp.getColumns))
+      .filter(vpu => vpu.table.pullRow(vpu.key.key, getColumns(vpu.vp.getColumns)) != EmptyRowData)
+      .map(vpu => vpu.table.pullRowFiltered(vpu.key.key, getColumns(vpu.vp.getColumns)))
       .map(_.asInstanceOf[RowWithData].data).toArray
 
     val heading = expectation.heading
@@ -374,7 +375,7 @@ object TableAsserts {
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }
 
-  // TODO #1652 review this class and see if we can do it in a better way
+  /*// TODO #1652 review this class and see if we can do it in a better way
   def generic21Assert(updates: Seq[ViewPortUpdate], expectation: TableFor21[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _]): Unit = {
 
     val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType)
@@ -390,12 +391,12 @@ object TableAsserts {
 
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }
-
+*/
    def assertVpEq(updates: Seq[ViewPortUpdate])(expectation:Any): Unit = {
 
      //val expectation = block()
     expectation match {
-        case exp: TableFor21[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _] => generic21Assert(updates, exp)
+        //case exp: TableFor21[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _] => generic21Assert(updates, exp)
         case exp: TableFor19[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _] => generic19Assert(updates, exp)
         case exp: TableFor18[_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _] => generic18Assert(updates, exp)
         case exp: TableFor17[_, _, _, _, _, _, _, _, _, _, _, _, _, _,_, _, _] => generic17Assert(updates, exp)
@@ -462,6 +463,14 @@ object TableAsserts {
 
     println(tableAsString)
 
+  }
+
+  private def getColumns(columns: ViewPortColumns, rempveDefaultColumns: Boolean = true): ViewPortColumns = {
+    if (rempveDefaultColumns) {
+      new ViewPortColumns(columns.getColumns().filter(c => !c.name.equals(CreatedTimeColumnName) && !c.name.equals(LastUpdatedTimeColumnName)))
+    } else {
+      columns
+    }
   }
 
 }
