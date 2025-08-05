@@ -223,7 +223,7 @@ case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private 
 }
 
 
-class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider)(implicit val metrics: MetricsProvider, val timeProvider: Clock) extends DataTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
+class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider)(implicit val metrics: MetricsProvider, timeProvider: Clock) extends DataTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
 
   private final val indices = tableDef.indices.indices
     .map(index => tableDef.columnForName(index.column))
