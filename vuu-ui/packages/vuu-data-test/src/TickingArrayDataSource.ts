@@ -212,7 +212,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
         }) as Promise<T>;
       }
     }
-    throw Error(`no implementation for PRC service ${rpcRequest.type}`);
+    throw Error(`no implementation for RPC service ${rpcRequest.type}`);
   }
 
   async menuRpcCall(

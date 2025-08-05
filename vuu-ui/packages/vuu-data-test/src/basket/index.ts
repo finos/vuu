@@ -3,4 +3,4 @@ export {
   schemas as basketSchemas,
   isBasketTable,
 } from "./basket-schemas";
-export * from "./basket-module";
+export { basketModule } from "./BasketModule";

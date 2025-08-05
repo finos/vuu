@@ -167,8 +167,11 @@ export const joinTables = (
     })),
   };
 
+  console.log({ combinedSchema });
+
   const data: VuuRowDataItemType[][] = [];
   const combinedColumnMap = buildDataColumnMapFromSchema(combinedSchema);
+  console.log({ combinedColumnMap });
   // const start = performance.now();
   for (const row of table1.data) {
     const row2 = table2.findByKey(String(row[k1]));
@@ -182,7 +185,6 @@ export const joinTables = (
         const value = row2[m2[column.name]];
         out[combinedColumnMap[column.name]] = value;
       }
-
       data.push(out);
     }
   }
