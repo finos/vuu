@@ -1,5 +1,5 @@
 import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
-import { createBasketTradingRow, vuuModule } from "@vuu-ui/vuu-data-test";
+import { vuuModule } from "@vuu-ui/vuu-data-test";
 import { buildColumnMap } from "@vuu-ui/vuu-utils";
 import { Basket, BasketSelector } from "feature-basket-trading";
 import { useCallback, useMemo, useState } from "react";
@@ -22,9 +22,11 @@ export const DefaultBasketSelector = () => {
       "basketTrading",
     ) as ArrayDataSource;
     for (const [basketId, basketName, side, status] of testBaskets) {
-      dataSource["insert"](
-        createBasketTradingRow(basketId, basketName, status, side),
+      dataSource["insert"];
+      console.log(
+        `create BasketTradingRow ${basketId}m ${basketName} ${status} ${side}`,
       );
+      // createBasketTradingRow(basketId, basketName, status, side),
     }
     dataSource.select([1]);
     return [buildColumnMap(dataSource.columns), dataSource];
