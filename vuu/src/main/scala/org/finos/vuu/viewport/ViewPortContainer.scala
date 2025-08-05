@@ -312,7 +312,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   def enableViewPort(vpId: String): Unit = {
     this.viewPorts.get(vpId) match {
       case null =>
-        throw new Exception(s"Could not find viewport to enable $vpId")
+        logger.error(s"Could not find viewport to enable $vpId")
       case vp: ViewPort =>
         vp.setEnabled(true)
         logger.debug(s"Enabled $vpId in container")
