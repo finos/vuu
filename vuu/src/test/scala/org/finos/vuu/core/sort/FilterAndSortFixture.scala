@@ -12,9 +12,9 @@ import org.finos.vuu.test.TestFriendlyJoinTableProvider
 
 object FilterAndSortFixture {
   private val timeProvider = new DefaultClock
-  val now = timeProvider.now();
-  val previousHour = now - 3600000;
-  val nextHour = now + 3600000;
+  val now: Long = timeProvider.now();
+  val previousHour: Long = now - 3600000;
+  val nextHour: Long = now + 3600000;
 
 
   def getFilteredRows(table: InMemDataTable, clause: FilterClause): Iterable[RowWithData] = {
