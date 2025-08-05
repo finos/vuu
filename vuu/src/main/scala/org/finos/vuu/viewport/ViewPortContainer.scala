@@ -77,10 +77,10 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     treeNodeStatesByVp.get(vpId)
   }
 
-  def handleRpcRequest(viewPortId: String, rpcName: String, params: Map[String, Any])(ctx: RequestContext): RpcFunctionResult = {
+  def handleRpcRequest(viewPortId: String, rpcName: String, params: Map[String, Any]) (ctx: RequestContext): RpcFunctionResult = {
     val viewPort = this.getViewPortById(viewPortId)
 
-    if (viewPort == null)
+    if(viewPort == null)
       throw new Exception(s"No viewport $viewPortId found for RPC Call for $rpcName")
 
     val viewPortDef = viewPort.getStructure.viewPortDef
@@ -91,7 +91,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   def callRpcService(vpId: String, method: String, params: Array[Any], namedParams: Map[String, Any], session: ClientSessionId)(ctx: RequestContext): ViewPortAction = {
     val viewPort = this.getViewPortById(vpId)
 
-    if (viewPort == null)
+    if(viewPort == null)
       throw new Exception(s"No viewport $vpId found for RPC Call for $method")
 
     val viewPortDef = viewPort.getStructure.viewPortDef
@@ -150,7 +150,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
-  def callRpcAddRow(vpId: String, key: String, data: Map[String, Any], session: ClientSessionId): ViewPortAction = {
+  def callRpcAddRow(vpId: String, key: String,  data: Map[String, Any], session: ClientSessionId): ViewPortAction = {
     val viewPort = this.getViewPortById(vpId)
     val viewPortDef = viewPort.getStructure.viewPortDef
     val service = viewPortDef.service
