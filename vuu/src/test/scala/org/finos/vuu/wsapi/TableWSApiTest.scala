@@ -3,7 +3,7 @@ package org.finos.vuu.wsapi
 import org.finos.vuu.api.{ColumnBuilder, TableDef, ViewPortDef}
 import org.finos.vuu.core.IVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
-import org.finos.vuu.core.table.{DataTable, TableContainer}
+import org.finos.vuu.core.table.{DataTable, DefaultColumnNames, TableContainer}
 import org.finos.vuu.net.rpc.DefaultRpcHandler
 import org.finos.vuu.net.{ErrorResponse, GetTableMetaRequest, GetTableMetaResponse}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
@@ -38,8 +38,8 @@ class TableWSApiTest extends WebSocketApiTestBase {
       val response = vuuClient.awaitForResponse(requestId)
 
       val responseBody = assertBodyIsInstanceOf[GetTableMetaResponse](response)
-      responseBody.columns.length shouldEqual 1
-      responseBody.columns shouldEqual Array("Id")
+      responseBody.columns.length shouldEqual 3
+      responseBody.columns should contain theSameElementsAs Array("Id", DefaultColumnNames.CreatedTimeColumnName, DefaultColumnNames.LastUpdatedTimeColumnName)
     }
 
     Scenario("For a non existent table") {
