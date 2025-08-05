@@ -312,7 +312,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   def enableViewPort(vpId: String): Unit = {
     this.viewPorts.get(vpId) match {
       case null =>
-        logger.error(s"Could not find viewport to enable $vpId")
+        throw new Exception(s"Could not find viewport to enable $vpId")
       case vp: ViewPort =>
         vp.setEnabled(true)
         logger.debug(s"Enabled $vpId in container")
@@ -322,7 +322,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   def freezeViewPort(vpId: String): Unit = {
     this.viewPorts.get(vpId) match {
       case null =>
-        logger.error(s"Could not find viewport to freeze $vpId")
+        throw new Exception(s"Could not find viewport to freeze $vpId")
       case vp: ViewPort =>
         if (vp.isFrozen) {
           throw new Exception(s"Could not freeze viewport $vpId because it's already frozen")
@@ -336,7 +336,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   def unfreezeViewPort(vpId: String): Unit = {
     this.viewPorts.get(vpId) match {
       case null =>
-        logger.error(s"Could not find viewport to unfreeze $vpId")
+        throw new Exception(s"Could not find viewport to unfreeze $vpId")
       case vp: ViewPort =>
         vp.unfreeze()
         logger.debug(s"Unfroze viewport $vpId in container")
