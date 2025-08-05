@@ -5,7 +5,6 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api._
 import org.finos.vuu.client.messages.RequestId
-import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName}
 import org.finos.vuu.core.table._
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.ClientSessionId
@@ -194,15 +193,15 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       assertVpEq(filterByVpId(combineQs(orderPricesViewport), orderPricesViewport)){
         Table(
-          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   , CreatedTimeColumnName, LastUpdatedTimeColumnName),
-          ("NYC-0001","chris"   ,"VOD.L"   ,1311544800000L,100       ,220.0     ,222.0     ,null      ,null      ,null      , null, null),
-          ("NYC-0002","chris"   ,"VOD.L"   ,1311544800000L,200       ,220.0     ,222.0     ,null      ,null      ,null      , null, null),
-          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800000L,300       ,220.0     ,222.0     ,null      ,null      ,null      , null, null),
-          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800000L,400       ,220.0     ,222.0     ,null      ,null      ,null      , null, null),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000L,500       ,220.0     ,222.0     ,null      ,null      ,null      , null, null),
-          ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000L,600       ,220.0     ,222.0     ,null      ,null      ,null      , null, null),
-          ("NYC-0007","steve"   ,"BT.L"    ,1311544800000L,1000      ,500.0     ,501.0     ,null      ,null      ,null      , null, null),
-          ("NYC-0008","steve"   ,"BT.L"    ,1311544800000L,500       ,500.0     ,501.0     ,null      ,null      ,null      , null, null)
+          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
+          ("NYC-0001","chris"   ,"VOD.L"   ,1311544800000L,100       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0002","chris"   ,"VOD.L"   ,1311544800000L,200       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800000L,300       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800000L,400       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000L,500       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000L,600       ,220.0     ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0007","steve"   ,"BT.L"    ,1311544800000L,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
+          ("NYC-0008","steve"   ,"BT.L"    ,1311544800000L,500       ,500.0     ,501.0     ,null      ,null      ,null      )
         )
       }
 
@@ -230,13 +229,13 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       assertVpEq(filterByVpId(combineQs(orderPricesViewport), orderPricesViewport)){
         Table(
-          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   , CreatedTimeColumnName, LastUpdatedTimeColumnName),
-          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800000L,300       ,230       ,222.0     ,null      ,null      ,null      , null, null),
-          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800000L,400       ,230       ,222.0     ,null      ,null      ,null      , null, null),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000L,500       ,230       ,222.0     ,null      ,null      ,null      , null, null),
-          ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000L,600       ,230       ,222.0     ,null      ,null      ,null      , null, null),
-          ("NYC-0007","steve"   ,"BT.L"    ,1311544800000L,1000      ,500.0     ,501.0     ,null      ,null      ,null      , null, null),
-          ("NYC-0008","steve"   ,"BT.L"    ,1311544800000L,500       ,500.0     ,501.0     ,null      ,null      ,null      , null, null)
+          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
+          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800000L,300       ,230       ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800000L,400       ,230       ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000L,500       ,230       ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000L,600       ,230       ,222.0     ,null      ,null      ,null      ),
+          ("NYC-0007","steve"   ,"BT.L"    ,1311544800000L,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
+          ("NYC-0008","steve"   ,"BT.L"    ,1311544800000L,500       ,500.0     ,501.0     ,null      ,null      ,null      )
         )
       }
 
