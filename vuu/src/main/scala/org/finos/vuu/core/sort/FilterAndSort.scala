@@ -112,11 +112,11 @@ case class RowPermissionAndFrozenTimeFilter(checker: RowPermissionChecker, froze
   override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     val filtered = primaryKeys.filter(key => {
       try {
-        val rowData = source.pullRow(key, vpColumns)
+        val rowData = source.pullRow(key)
         checker.canSeeRow(rowData) && rowData.get(DefaultColumnNames.CreatedTimeColumnName).asInstanceOf[Long] < frozenTime
       } catch {
         case e: Exception =>
-          logger.error(s"Error while checking row permission and viewport frozen time for keys $primaryKeys with checker $checker and frozen time $frozenTime", e)
+          logger.error(s"Error while checking row permission and view port frozen time for keys $primaryKeys with checker $checker and frozen time $frozenTime", e)
           false
       }
     }).toArray

@@ -1,14 +1,17 @@
 package org.finos.vuu.core.filter
 
+import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.core.auths.RowPermissionChecker
-import org.finos.vuu.core.sort.FilterAndSortFixture.setupTable
-import org.finos.vuu.core.sort.RowPermissionFilter
+import org.finos.vuu.core.sort.FilterAndSortFixture.{now, setupTable, setupTableWithCreationTime}
+import org.finos.vuu.core.sort.{FrozenTimeFilter, RowPermissionAndFrozenTimeFilter, RowPermissionFilter}
 import org.finos.vuu.core.table.RowData
+import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers;
 
-class RowPermissionFilterTest extends AnyFeatureSpec with Matchers {
+class DefaultFilterTest extends AnyFeatureSpec with Matchers {
     private val data = setupTable()
+  private val dataWithCreationTime = setupTableWithCreationTime()
 
     Feature("Row Permission Filter") {
         Scenario("Should return all rows based with always happy permission checker") {
@@ -28,10 +31,27 @@ class RowPermissionFilterTest extends AnyFeatureSpec with Matchers {
 
         Scenario("Should return rows for a given trader") {
             val rowPermissionFilter = RowPermissionFilter(AllowSpecificTraderRowPermissionChecker("steve"))
-            rowPermissionFilter.dofilter(data, data.primaryKeys, null).size should equal(3)
+          val expectedKeys = InMemTablePrimaryKeys(ImmutableArray.from[String](Array("LDN-0002", "NYC-0002", "NYC-0010")))
+            rowPermissionFilter.dofilter(data, data.primaryKeys, null) should contain theSameElementsAs expectedKeys
         }
     }
 
+  Feature("Frozen Time Filter") {
+    Scenario("Should only return rows created before frozen time") {
+      val filter = FrozenTimeFilter(now)
+      val expectedKeys = InMemTablePrimaryKeys(ImmutableArray.from[String](Array("NYC-0004", "LDN-0003")))
+      filter.dofilter(dataWithCreationTime, dataWithCreationTime.primaryKeys, null) should contain theSameElementsAs expectedKeys
+    }
+  }
+
+  Feature("Row Permission And Frozen Time Filter") {
+    Scenario("Should only return rows created before frozen time") {
+      val filter = RowPermissionAndFrozenTimeFilter(AllowSpecificTraderRowPermissionChecker("steve"), now)
+      val expectedKeys = InMemTablePrimaryKeys(ImmutableArray.from[String](Array("LDN-0003")))
+      val keys = filter.dofilter(dataWithCreationTime, dataWithCreationTime.primaryKeys, null)
+      keys should contain theSameElementsAs expectedKeys
+    }
+  }
 }
 
 case class AlwaysHappyRowPermissionChecker() extends RowPermissionChecker {
