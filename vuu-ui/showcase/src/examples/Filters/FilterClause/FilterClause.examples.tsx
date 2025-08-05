@@ -13,10 +13,12 @@ const FilterClauseTemplate = ({
   filterClauseModel = new FilterClauseModel({}),
   tableSchema = getSchema("instruments"),
   columnsByName = columnDescriptorsByName(tableSchema.columns),
+  openDropdownOnFocus,
 }: {
   columnsByName?: ColumnDescriptorsByName;
   filterClauseModel?: FilterClauseModel;
   tableSchema?: TableSchema;
+  openDropdownOnFocus?: boolean;
 }) => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
@@ -34,6 +36,7 @@ const FilterClauseTemplate = ({
           data-testid="filterclause"
           filterClauseModel={filterClauseModel}
           vuuTable={tableSchema.table}
+          openDropdownOnFocus={openDropdownOnFocus}
         />
       </div>
     </DataSourceProvider>
@@ -83,6 +86,17 @@ export const NewFilterClauseNoCompletions = () => {
   return <FilterClauseTemplate />;
 };
 
+/** tags=data-consumer */
+export const NewFilterClauseWithDropdownOpenOnFocusDisabled = () => {
+  const filterClauseModel = useMemo(() => new FilterClauseModel({}), []);
+  return (
+    <FilterClauseTemplate
+      filterClauseModel={filterClauseModel}
+      openDropdownOnFocus={false}
+    />
+  );
+};
+
 export const PartialFilterClauseColumnOnly = () => {
   const filterClauseModel = useMemo(
     () =>
@@ -109,6 +123,40 @@ export const PartialFilterClauseColumnAndOperator = () => {
     [],
   );
   return <FilterClauseTemplate filterClauseModel={filterClauseModel} />;
+};
+
+/** tags=data-consumer */
+export const FilterColumnWithDropdownOpenOnFocusDisabled = () => {
+  const filterClauseModel = useMemo(
+    () =>
+      new FilterClauseModel({
+        column: "currency",
+      }),
+    [],
+  );
+  return (
+    <FilterClauseTemplate
+      filterClauseModel={filterClauseModel}
+      openDropdownOnFocus={false}
+    />
+  );
+};
+
+export const FilterColumnAndOperatorWithDropdownOpenOnFocusDisabled = () => {
+  const filterClauseModel = useMemo(
+    () =>
+      new FilterClauseModel({
+        column: "exchange",
+        op: "=",
+      }),
+    [],
+  );
+  return (
+    <FilterClauseTemplate
+      filterClauseModel={filterClauseModel}
+      openDropdownOnFocus={false}
+    />
+  );
 };
 
 /** tags=data-consumer */

@@ -228,7 +228,7 @@ export const FilterClauseValueEditorText = forwardRef(
               onSelectionChange={handleSingleValueSelectionChange}
               ref={forwardedRef}
               value={value}
-            >
+             >
               {typeaheadValues.map((state) => (
                 <Option value={state} key={state} />
               ))}
@@ -248,6 +248,7 @@ export const FilterClauseValueEditorText = forwardRef(
       handleMultiValueSelectionChange,
       value,
       handleSingleValueSelectionChange,
+      onOpenChange,
     ]);
 
     return getValueInputField();

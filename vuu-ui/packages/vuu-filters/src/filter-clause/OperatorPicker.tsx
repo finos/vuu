@@ -15,7 +15,13 @@ export type OperatorPickerProps = Pick<
 };
 
 export const OperatorPicker = forwardRef(function ColumnPicker(
-  { className, column, inputProps, onSelect, value }: OperatorPickerProps,
+  {
+    className,
+    column,
+    inputProps,
+    onSelect,
+    value,
+  }: OperatorPickerProps,
   forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
   const handleSelectionChange = (

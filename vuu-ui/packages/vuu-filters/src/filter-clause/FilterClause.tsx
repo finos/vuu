@@ -29,6 +29,7 @@ export interface FilterClauseProps
   onCancel?: FilterClauseCancelHandler;
   onDropdownOpen?: () => void;
   onFocusSave?: () => void;
+  openDropdownOnFocus?: boolean;
   vuuTable: VuuTable;
 }
 
@@ -42,8 +43,10 @@ export const FilterClause = ({
   onFocusSave,
   filterClauseModel,
   vuuTable,
+  openDropdownOnFocus = true,
   ...htmlAttributes
 }: FilterClauseProps) => {
+
   const {
     inputProps,
     columnRef,
@@ -61,6 +64,7 @@ export const FilterClause = ({
     onCancel,
     onFocusSave,
     columnsByName,
+    openDropdownOnFocus,
   });
 
   const targetWindow = useWindow();

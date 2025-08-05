@@ -102,16 +102,13 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
       ...inputPropsProp,
       onFocus: (evt) => {
         inputPropsProp?.onFocus?.(evt);
+
         setTimeout(() => {
           setOpen(true);
         }, 100);
       },
     };
   }, [inputPropsProp]);
-
-  // const matchingValues = values.filter((val) =>
-  //   val.toLowerCase().startsWith(value.trim().toLowerCase())
-  // );
 
   return (
     <div
