@@ -8,6 +8,7 @@ import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.IVuuServer
 import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.module.{StaticServedResource, TableDefContainer, ViewServerModule}
+import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName}
 import org.finos.vuu.core.table.TableTestHelper.{combineQs, emptyQueues}
 import org.finos.vuu.core.table._
 import org.finos.vuu.net.ClientSessionId
@@ -212,9 +213,9 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
       Then("verify the table is populated")
       assertVpEq(combinedUpdates) {
         Table(
-          ("ric", "description", "bbg", "currency", "exchange", "lotSize", "isin"),
-          ("BT.L", "British Telecom", "BT LN", "GBp", "XLON/SETS", null, null),
-          ("VOD.L", "Vodafone", "VOD LN", "GBp", "XLON/SETS", null, null)
+          ("ric", "description", "bbg", "currency", "exchange", "lotSize", "isin", CreatedTimeColumnName, LastUpdatedTimeColumnName),
+          ("BT.L", "British Telecom", "BT LN", "GBp", "XLON/SETS", null, null, null, null),
+          ("VOD.L", "Vodafone", "VOD LN", "GBp", "XLON/SETS", null, null, null, null)
         )
       }
 
@@ -241,8 +242,8 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
           Then("verify the table is populated")
           assertVpEq(combinedUpdates2) {
             Table(
-              ("ric"     ,"clientOrderId","currency","lastModifiedTime","quantity","price"   ,"priceType","exchange","orderId" ,"effectivePrice"),
-              ("VOD.L"   ,"clOrderId-1311544800-1","GBp"     ,1311544800L,null      ,null      ,null      ,"XLON/SETS",null      ,null      )
+              ("ric"     ,"clientOrderId","currency","lastModifiedTime","quantity","price"   ,"priceType","exchange","orderId" ,"effectivePrice", CreatedTimeColumnName, LastUpdatedTimeColumnName),
+              ("VOD.L"   ,"clOrderId-1311544800-1","GBp"     ,1311544800L,null      ,null      ,null      ,"XLON/SETS",null      ,null      , null, null)
             )
           }
       }
