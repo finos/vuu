@@ -21,7 +21,6 @@ const classBase = "vuuExpandoCombobox";
 export interface ExpandoComboboxProps<Item = string>
   extends ComboBoxProps<Item> {
   itemToString?: (item: Item) => string;
-  defaultDropdown?: boolean | undefined;
 }
 
 export type ComboBoxOpenChangeHandler = Exclude<
@@ -49,7 +48,6 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
     onSelectionChange,
     onOpenChange,
     value: valueProp,
-    defaultDropdown = true,
     ...props
   }: ExpandoComboboxProps<Item>,
   forwardedRef: ForwardedRef<HTMLDivElement>,
@@ -65,7 +63,6 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
   const [value, setValue] = useState(
     valueProp === undefined ? "" : valueProp.toString(),
   );
-  const [touched, setTouched] = useState<boolean>(false);
 
   const handleChange = useCallback(
     (evt: ChangeEvent<HTMLInputElement>) => {
@@ -105,17 +102,13 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
       ...inputPropsProp,
       onFocus: (evt) => {
         inputPropsProp?.onFocus?.(evt);
-        if (!defaultDropdown && !touched) {
-          setTouched(true);
-          return;
-        }
 
         setTimeout(() => {
           setOpen(true);
         }, 100);
       },
     };
-  }, [inputPropsProp, defaultDropdown, touched]);
+  }, [inputPropsProp]);
 
   return (
     <div

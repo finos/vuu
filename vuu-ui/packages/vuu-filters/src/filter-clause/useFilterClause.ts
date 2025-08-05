@@ -23,7 +23,7 @@ import { ComboBoxOpenChangeHandler } from "./ExpandoCombobox";
 export type FilterClauseEditorHookProps = Pick<
   FilterClauseProps,
   "columnsByName" | "filterClauseModel" | "onCancel" | "onFocusSave"
-> & { onOpenChange?: ComboBoxOpenChangeHandler };
+> & { onOpenChange?: ComboBoxOpenChangeHandler; openDropdownOnFocus?: boolean };
 
 export type FilterClauseValueChangeHandler = (
   value: string | string[] | number | number[],
@@ -36,6 +36,7 @@ export const useFilterClause = ({
   columnsByName,
   onFocusSave,
   onOpenChange,
+  openDropdownOnFocus = true,
 }: FilterClauseEditorHookProps) => {
   const [filterClause, setFilterClause] = useState<Partial<FilterClause>>(
     filterClauseModel.isValid ? filterClauseModel.asFilter() : {},
@@ -50,15 +51,26 @@ export const useFilterClause = ({
   const columnRef = useRef<HTMLDivElement>(null);
   const operatorRef = useRef<HTMLDivElement>(null);
   const valueRef = useRef<HTMLDivElement | null>(null);
+  const filterTouched = useRef(false);
+
+  const filterClauseTouched = useCallback(() => {
+    const unTouched = !openDropdownOnFocus && !filterTouched.current;
+    const setTouched = (state: boolean) => filterTouched.current = state;
+    if (unTouched) {
+      setTouched(true);
+      return false;
+    }
+    return true;
+  }, [openDropdownOnFocus]);
 
   const setValueRef = useCallback<RefCallback<HTMLDivElement>>(
     (el) => {
       valueRef.current = el;
-      if (!filterClauseModel.isValid) {
+      if (!filterClauseModel.isValid && filterClauseTouched()) {        
         el?.querySelector("input")?.focus();
       }
     },
-    [filterClauseModel.isValid],
+    [filterClauseModel.isValid, filterClauseTouched],
   );
 
   const removeAndNavigateToNextInputIfAtBoundary = useCallback(
@@ -171,7 +183,11 @@ export const useFilterClause = ({
         filterClauseModel.op !== undefined &&
         filterClauseModel.column !== undefined;
 
-      if (!open && isMultiSelect && (filterClauseModel.isValid || filterHasNoValue)) {
+      if (
+        !open &&
+        isMultiSelect &&
+        (filterClauseModel.isValid || filterHasNoValue)
+      ) {
         filterClauseModel.commit();
       }
       onOpenChange?.(open, closeReason);
@@ -191,19 +207,21 @@ export const useFilterClause = ({
   useEffect(() => {
     // leave the valueInput to callbackRef handler above, may
     // fire after the requestAnimationFrame
-    if (!filterClauseModel.isValid) {
-      const inputRef =
-        filterClauseModel.column === undefined
-          ? columnRef
-          : filterClauseModel.op === undefined
-            ? operatorRef
-            : null;
+    const inputRef =
+      filterClauseModel.column === undefined
+        ? columnRef
+        : filterClauseModel.op === undefined
+          ? operatorRef
+          : null;
 
-      requestAnimationFrame(() => {
-        inputRef?.current?.querySelector("input")?.focus();
-      });
+    if (!filterClauseModel.isValid && inputRef) {
+      if (filterClauseTouched()) {
+        requestAnimationFrame(() => {
+          inputRef.current?.querySelector("input")?.focus();
+        });
+      }
     }
-  }, [filterClauseModel]);
+  }, [filterClauseModel, filterClauseTouched]);
 
   return {
     inputProps,

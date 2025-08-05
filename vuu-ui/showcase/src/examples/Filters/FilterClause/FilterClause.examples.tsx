@@ -2,11 +2,7 @@ import { Input } from "@salt-ds/core";
 import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
 import { SchemaColumn, TableSchema } from "@vuu-ui/vuu-data-types";
 import { ColumnDescriptorsByName } from "@vuu-ui/vuu-filter-types";
-import {
-  ShowDefaultDropdown,
-  FilterClause,
-  FilterClauseModel,
-} from "@vuu-ui/vuu-filters";
+import { FilterClause, FilterClauseModel } from "@vuu-ui/vuu-filters";
 import { ColumnPicker } from "@vuu-ui/vuu-filters/src/filter-clause/ColumnPicker";
 import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { ReactNode, useMemo } from "react";
@@ -17,12 +13,12 @@ const FilterClauseTemplate = ({
   filterClauseModel = new FilterClauseModel({}),
   tableSchema = getSchema("instruments"),
   columnsByName = columnDescriptorsByName(tableSchema.columns),
-  showDefaultDropdown,
+  openDropdownOnFocus,
 }: {
   columnsByName?: ColumnDescriptorsByName;
   filterClauseModel?: FilterClauseModel;
   tableSchema?: TableSchema;
-  showDefaultDropdown?: ShowDefaultDropdown;
+  openDropdownOnFocus?: boolean;
 }) => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
@@ -40,7 +36,7 @@ const FilterClauseTemplate = ({
           data-testid="filterclause"
           filterClauseModel={filterClauseModel}
           vuuTable={tableSchema.table}
-          showDefaultDropdown={showDefaultDropdown}
+          openDropdownOnFocus={openDropdownOnFocus}
         />
       </div>
     </DataSourceProvider>
@@ -90,6 +86,17 @@ export const NewFilterClauseNoCompletions = () => {
   return <FilterClauseTemplate />;
 };
 
+/** tags=data-consumer */
+export const NewFilterClauseWithDropdownOpenOnFocusDisabled = () => {
+  const filterClauseModel = useMemo(() => new FilterClauseModel({}), []);
+  return (
+    <FilterClauseTemplate
+      filterClauseModel={filterClauseModel}
+      openDropdownOnFocus={false}
+    />
+  );
+};
+
 export const PartialFilterClauseColumnOnly = () => {
   const filterClauseModel = useMemo(
     () =>
@@ -119,11 +126,27 @@ export const PartialFilterClauseColumnAndOperator = () => {
 };
 
 /** tags=data-consumer */
-export const PartialFilterClauseColumnAndOperatorWithoutDefaultDropdown = () => {
+export const FilterColumnWithDropdownOpenOnFocusDisabled = () => {
   const filterClauseModel = useMemo(
     () =>
       new FilterClauseModel({
         column: "currency",
+      }),
+    [],
+  );
+  return (
+    <FilterClauseTemplate
+      filterClauseModel={filterClauseModel}
+      openDropdownOnFocus={false}
+    />
+  );
+};
+
+export const FilterColumnAndOperatorWithDropdownOpenOnFocusDisabled = () => {
+  const filterClauseModel = useMemo(
+    () =>
+      new FilterClauseModel({
+        column: "exchange",
         op: "=",
       }),
     [],
@@ -131,7 +154,7 @@ export const PartialFilterClauseColumnAndOperatorWithoutDefaultDropdown = () => 
   return (
     <FilterClauseTemplate
       filterClauseModel={filterClauseModel}
-      showDefaultDropdown={{ forValueEditor: false }}
+      openDropdownOnFocus={false}
     />
   );
 };
