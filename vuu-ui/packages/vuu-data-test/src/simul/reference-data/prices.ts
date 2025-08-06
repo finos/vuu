@@ -1,9 +1,10 @@
-import { buildDataColumnMap, Table } from "../../Table";
+import { buildDataColumnMap } from "../../Table";
 import { BaseUpdateGenerator } from "../../UpdateGenerator";
 import { schemas } from "../simul-schemas";
 import { instrumentsData, InstrumentColumnMap } from "./instruments";
 import { random } from "../../data-utils";
 import basketConstituentData from "../../basket/reference-data/constituents";
+import tableContainer from "../../core/table/TableContainer";
 
 type ask = number;
 type askSize = number;
@@ -116,7 +117,7 @@ for (const [,,,lastTrade,ric] of basketConstituentData) {
 // const end = performance.now();
 // console.log(`generating 100,000 prices took ${end - start} ms`);
 
-export const pricesTable = new Table(
+export const pricesTable = tableContainer.createTable(
   schemas.prices,
   pricesData,
   buildDataColumnMap(schemas, "prices"),
