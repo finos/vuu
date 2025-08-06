@@ -1,8 +1,9 @@
-import { buildDataColumnMap, Table } from "../../Table";
+import { buildDataColumnMap } from "../../Table";
 import { BaseUpdateGenerator } from "../../UpdateGenerator";
 import { schemas, SimulTableName } from "../../simul/simul-schemas";
 import basketConstituentData from "./constituents";
 import { initBidAsk, nextRandomDouble, random } from "../../data-utils";
+import tableContainer from "../../core/table/TableContainer";
 
 export type ask = number;
 export type askSize = number;
@@ -25,12 +26,12 @@ export type PricesDataRow = [
   open,
   phase,
   ric,
-  scenario
+  scenario,
 ];
 
 const { bid, bidSize, ask, askSize, last } = buildDataColumnMap(
   schemas,
-  "prices"
+  "prices",
 );
 const pricesUpdateGenerator = new BaseUpdateGenerator({
   bid,
@@ -70,11 +71,11 @@ for (const [,,,lastTrade,ric] of basketConstituentData) {
   }
 }
 
-const pricesTable = new Table(
+const pricesTable = tableContainer.createTable(
   schemas.prices,
   prices,
   buildDataColumnMap<SimulTableName>(schemas, "prices"),
-  pricesUpdateGenerator
+  pricesUpdateGenerator,
 );
 
 export default pricesTable;

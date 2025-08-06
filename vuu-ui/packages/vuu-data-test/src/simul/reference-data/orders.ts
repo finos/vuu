@@ -1,9 +1,10 @@
 import { currencies } from "./currencies";
 import { getRic } from "./instruments";
 import { random } from "../../data-utils";
-import { buildDataColumnMap, Table } from "../../Table";
+import { buildDataColumnMap } from "../../Table";
 import { schemas } from "../simul-schemas";
 import { sides } from "./sides";
+import tableContainer from "../../core/table/TableContainer";
 
 export type status = string;
 export type ccy = string;
@@ -92,7 +93,7 @@ for (let i = 0; i < 100; i++) {
 // const end = performance.now();
 // console.log(`generating 10,000 instruments took ${end - start} ms`);
 
-export const ordersTable = new Table(
+export const ordersTable = tableContainer.createTable(
   schemas.orders,
   ordersData,
   buildDataColumnMap(schemas, "orders"),

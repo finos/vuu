@@ -1,15 +1,17 @@
-import { ColumnMap, isViewportRpcRequest } from "@vuu-ui/vuu-utils";
-import { ServiceHandler, VuuModule } from "../core/module/VuuModule";
-import { BasketsTableName, schemas } from "./basket-schemas";
-import { joinTables, Table } from "../Table";
-import basketConstituentData from "./reference-data/constituents";
-import pricesTable from "./reference-data/prices";
 import {
   VuuMenu,
   VuuRowDataItemType,
   VuuRpcViewportAction,
   VuuRpcViewportResponse,
 } from "@vuu-ui/vuu-protocol-types";
+import { ColumnMap, isViewportRpcRequest } from "@vuu-ui/vuu-utils";
+import { ServiceHandler, VuuModule } from "../core/module/VuuModule";
+import tableContainer from "../core/table/TableContainer";
+import { BasketsTableName, schemas } from "./basket-schemas";
+import basketConstituentData from "./reference-data/constituents";
+import { type Table } from "../Table";
+
+const { createTable } = tableContainer;
 
 let basketIncrement = 1;
 
@@ -80,7 +82,7 @@ const tableMaps: Record<BasketsTableName, ColumnMap> = {
   priceStrategyType: buildDataColumnMap("priceStrategyType"),
 };
 
-const basketTradingConstituent = new Table(
+const basketTradingConstituent = tableContainer.createTable(
   schemas.basketTradingConstituent,
   [],
   tableMaps.basketTradingConstituent,
@@ -93,7 +95,7 @@ const basketTradingConstituent = new Table(
  */
 export class BasketModule extends VuuModule<BasketsTableName> {
   #tables: Record<BasketsTableName, Table> = {
-    algoType: new Table(
+    algoType: createTable(
       schemas.algoType,
       [
         ["Sniper", 0],
@@ -104,7 +106,7 @@ export class BasketModule extends VuuModule<BasketsTableName> {
       ],
       tableMaps.algoType,
     ),
-    basket: new Table(
+    basket: createTable(
       schemas.basket,
       [
         [".NASDAQ100", ".NASDAQ100", 0, 0],
@@ -114,24 +116,24 @@ export class BasketModule extends VuuModule<BasketsTableName> {
       ],
       tableMaps.basket,
     ),
-    basketConstituent: new Table(
+    basketConstituent: createTable(
       schemas.basketConstituent,
       basketConstituentData,
       tableMaps.basketConstituent,
     ),
-    basketTrading: new Table(
+    basketTrading: createTable(
       schemas.basketTrading,
       [],
       tableMaps.basketTrading,
     ),
     basketTradingConstituent,
-    basketTradingConstituentJoin: joinTables(
+    basketTradingConstituentJoin: tableContainer.createJoinTable(
       { module: "BASKET", table: "basketTradingConstituentJoin" },
-      basketTradingConstituent,
-      pricesTable,
+      { module: "BASKET", table: "basketTradingConstituent" },
+      { module: "SIMUL", table: "prices" },
       "ric",
     ),
-    priceStrategyType: new Table(
+    priceStrategyType: createTable(
       schemas.priceStrategyType,
       [
         ["Peg to Near Touch", 0],

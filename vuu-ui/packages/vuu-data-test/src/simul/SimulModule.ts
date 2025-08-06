@@ -10,7 +10,7 @@ import {
   ServiceHandler,
   VuuModule,
 } from "../core/module/VuuModule";
-import { joinTables, Table } from "../Table";
+import { Table } from "../Table";
 import { instrumentsTable } from "./reference-data/instruments";
 import { instrumentsExtendedTable } from "./reference-data/instruments-extended";
 import { ordersTable } from "./reference-data/orders";
@@ -22,6 +22,7 @@ import {
 } from "./reference-data/parent-child-orders";
 import { pricesTable } from "./reference-data/prices";
 import { schemas, type SimulTableName } from "./simul-schemas";
+import tableContainer from "../core/table/TableContainer";
 
 const undefinedTables = {
   childOrders: undefined,
@@ -48,10 +49,10 @@ export class SimulModule extends VuuModule<SimulTableName> {
     childOrders: childOrdersTable,
     instruments: instrumentsTable,
     instrumentsExtended: instrumentsExtendedTable,
-    instrumentPrices: joinTables(
+    instrumentPrices: tableContainer.createJoinTable(
       { module: "SIMUL", table: "instrumentPrices" },
-      instrumentsTable,
-      pricesTable,
+      { module: "SIMUL", table: "instruments" },
+      { module: "SIMUL", table: "prices" },
       "ric",
     ),
     orders: ordersTable,

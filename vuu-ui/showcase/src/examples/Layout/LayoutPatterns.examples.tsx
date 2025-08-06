@@ -1,20 +1,30 @@
 import { FlexboxLayout } from "@vuu-ui/vuu-layout";
-import { getSchema, vuuModule } from "@vuu-ui/vuu-data-test";
+import { getSchema } from "@vuu-ui/vuu-data-test";
 import type { TableConfig } from "@vuu-ui/vuu-table-types";
 import { Table } from "@vuu-ui/vuu-table";
 import { useMemo } from "react";
+import { toColumnName, useData } from "@vuu-ui/vuu-utils";
 
+const tableSchema = getSchema("instruments");
+
+/** tags=data-consumer */
 export const TableWithFooter = () => {
   const tableConfig = useMemo<TableConfig>(() => {
     return {
-      columns: getSchema("instruments").columns,
+      columns: tableSchema.columns,
       rowSeparators: true,
       zebraStripes: true,
     };
   }, []);
-  const dataSource = useMemo(() => {
-    return vuuModule("SIMUL").createDataSource("instruments");
-  }, []);
+  const { VuuDataSource } = useData();
+  const dataSource = useMemo(
+    () =>
+      new VuuDataSource({
+        columns: tableSchema.columns.map(toColumnName),
+        table: tableSchema.table,
+      }),
+    [VuuDataSource],
+  );
 
   return (
     <FlexboxLayout
