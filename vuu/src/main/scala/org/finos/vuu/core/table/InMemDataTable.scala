@@ -394,7 +394,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
 
   def delete(rowKey: String): Unit = {
     data.dataByKey(rowKey) match {
-      case EmptyRowData =>
+      case null =>
       case x: RowWithData =>
         removeFromIndices(rowKey, x)
         data = data.delete(rowKey)
