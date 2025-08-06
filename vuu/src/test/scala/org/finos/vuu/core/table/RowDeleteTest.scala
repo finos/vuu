@@ -89,7 +89,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
     }
 
-    Scenario("check a delete of a key that exist does nothing"){
+    Scenario("check a delete of a key that doesn't exist does nothing"){
       implicit val clock: Clock = new DefaultClock
 
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
