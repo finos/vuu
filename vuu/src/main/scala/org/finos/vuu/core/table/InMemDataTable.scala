@@ -166,7 +166,7 @@ object EmptyRowData extends RowData {
 }
 
 
-case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private val primaryKeyValuesInternal: TablePrimaryKeys) extends TableData {
+case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private val primaryKeyValuesInternal: TablePrimaryKeys)(implicit val timeProvider: Clock) extends TableData {
 
   def primaryKeyValues: TablePrimaryKeys = this.primaryKeyValuesInternal
 
@@ -181,10 +181,10 @@ case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private 
   protected def merge(update: RowData, data: RowData): RowData =
     MergeFunctions.mergeLeftToRight(update, data)
 
-  def update(key: String, update: RowData, now: Long): TableData = {
+  def update(key: String, update: RowData): TableData = {
 
     val table = data.synchronized {
-
+      val now = timeProvider.now()
       data.getOrDefault(key, EmptyRowData) match {
         case row: RowWithData =>
           val mergedData = merge(update, row)
