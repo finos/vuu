@@ -113,7 +113,7 @@ case class RowPermissionAndFrozenTimeFilter(checker: RowPermissionChecker, froze
     val filtered = primaryKeys.filter(key => {
       try {
         val rowData = source.pullRow(key)
-        checker.canSeeRow(rowData) && rowData.get(DefaultColumnNames.CreatedTimeColumnName).asInstanceOf[Long] < frozenTime
+        rowData.get(DefaultColumnNames.CreatedTimeColumnName).asInstanceOf[Long] < frozenTime && checker.canSeeRow(rowData)
       } catch {
         case e: Exception =>
           logger.error(s"Error while checking row permission and view port frozen time for keys $primaryKeys with checker $checker and frozen time $frozenTime", e)
