@@ -3,7 +3,7 @@ package org.finos.vuu.core.sort
 import org.finos.toolbox.collection.{MapDiffResult, MapDiffUtils}
 import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.text.{AsciiUtil, CodeGenUtil}
-import org.finos.toolbox.time.DefaultClock
+import org.finos.toolbox.time.{DefaultClock, TestFriendlyClock}
 import org.finos.vuu.api.{Index, Indices, TableDef}
 import org.finos.vuu.core.filter.FilterClause
 import org.finos.vuu.core.table.DefaultColumnNames.CreatedTimeColumnName
@@ -11,7 +11,7 @@ import org.finos.vuu.core.table.{Columns, InMemDataTable, RowWithData, ViewPortC
 import org.finos.vuu.test.TestFriendlyJoinTableProvider
 
 object FilterAndSortFixture {
-  private val timeProvider = new DefaultClock
+  private val timeProvider = new TestFriendlyClock(10001L)
   val now: Long = timeProvider.now();
   val previousHour: Long = now - 3600000;
   val nextHour: Long = now + 3600000;
