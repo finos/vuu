@@ -82,12 +82,65 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
       assertVpEq(updates2) {
         Table(
           ("ric"     ,"bid"     ,"ask"     ),
-          //("VOD.L"   ,220       ,223       ),
           ("BT.L"    ,220       ,223       ),
           ("TW.L"    ,220       ,223       )
         )
       }
 
+    }
+
+    Scenario("check a delete of a key that doesn't exist does nothing"){
+      implicit val clock: Clock = new DefaultClock
+
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+      implicit val metrics: MetricsProviderImpl = new MetricsProviderImpl
+
+      val joinProvider   = JoinTableProviderImpl()
+
+      val tableContainer = new TableContainer(joinProvider)
+
+      val outQueue          = new OutboundRowPublishQueue()
+
+      val providerContainer = new ProviderContainer(joinProvider)
+      val pluginRegistry = new DefaultPluginRegistry
+      pluginRegistry.registerPlugin(new VuuInMemPlugin)
+
+      val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer, pluginRegistry)
+
+      val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+
+      val table = new InMemDataTable(pricesDef, joinProvider)
+
+      val provider = new MockProvider(table)
+
+      val session = ClientSessionId("sess-01", "chris")
+
+      val vpcolumns = ViewPortColumnCreator.create(table, List("ric", "bid", "ask"))
+
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, table, DefaultRange, vpcolumns)
+
+      provider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220, "ask" -> 223))
+
+      table.primaryKeys.length should equal (1)
+
+      viewPortContainer.runOnce()
+
+      val updates = combineQs(viewPort)
+
+      assertVpEq(updates) {
+        Table(
+          ("ric", "bid", "ask"),
+          ("VOD.L", 220, 223)
+        )
+      }
+
+      provider.delete("TW.L")
+
+      viewPortContainer.runOnce()
+
+      val updates2 = combineQs(viewPort)
+
+      assert(updates2.isEmpty)
     }
 
     Scenario("check we correct delete from a primary key join table"){

@@ -1,5 +1,6 @@
 package org.finos.vuu.core.table
 
+import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.index._
 import org.finos.vuu.provider.{JoinTableProvider, Provider}
@@ -219,7 +220,7 @@ case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private 
 }
 
 
-class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider)(implicit val metrics: MetricsProvider) extends DataTable with KeyedObservableHelper[RowKeyUpdate] {
+class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider)(implicit val metrics: MetricsProvider) extends DataTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
 
   private final val indices = tableDef.indices.indices
     .map(index => tableDef.columnForName(index.column))
@@ -392,12 +393,15 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
     updateIndices(rowkey, rowUpdate)
   }
 
-  def delete(rowKey: String): Unit = {
+  def delete(rowKey: String): RowData = {
     data.dataByKey(rowKey) match {
-      case EmptyRowData =>
       case x: RowWithData =>
         removeFromIndices(rowKey, x)
         data = data.delete(rowKey)
+        x
+      case _ =>
+        logger.debug(s"Got a delete for key $rowKey, but it has no row data")
+        EmptyRowData
     }
   }
 
@@ -479,14 +483,15 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
 
     onUpdateCounter.inc()
 
-    val rowData = data.dataByKey(rowKey)
+    val rowData = delete(rowKey)
 
-    delete(rowKey)
+    rowData match {
+      case RowWithData(_, _) =>
+        sendDeleteToJoinSink(rowKey, rowData)
+        notifyListeners(rowKey, isDelete = true)
 
-    if (rowData != null)
-      sendDeleteToJoinSink(rowKey, rowData)
-
-    notifyListeners(rowKey, isDelete = true)
+      case EmptyRowData =>
+    }
 
     incrementUpdateCounter()
   }
