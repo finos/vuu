@@ -392,7 +392,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
   }
 
   def update(rowkey: String, rowUpdate: RowData): Unit = {
-    data = data.update(rowkey, rowUpdate, timeProvider.now())
+    data = data.update(rowkey, rowUpdate)
     updateIndices(rowkey, rowUpdate)
   }
 
