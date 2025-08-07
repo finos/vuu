@@ -398,7 +398,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
       case x: RowWithData =>
         removeFromIndices(rowKey, x)
         data = data.delete(rowKey)
-      case _ =>
+      case _ => logger.warn(s"Got a delete for key $rowKey but it has no row data")
     }
   }
 
