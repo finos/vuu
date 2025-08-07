@@ -38,12 +38,12 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
       When("request freezing view port")
       val freezeVPRequest = FreezeViewPortRequest(viewPortId)
-      val requestId = vuuClient.send(sessionId, tokenId, freezeVPRequest)
+      val freezeRequestId = vuuClient.send(sessionId, tokenId, freezeVPRequest)
 
       Then("view port is frozen")
-      val freezeVPResponse = vuuClient.awaitForResponse(requestId)
-      val responseBody = assertBodyIsInstanceOf[FreezeViewPortSuccess](freezeVPResponse)
-      responseBody.viewPortId shouldEqual viewPortId
+      val freezeVPResponse = vuuClient.awaitForResponse(freezeRequestId)
+      val freezeResponseBody = assertBodyIsInstanceOf[FreezeViewPortSuccess](freezeVPResponse)
+      freezeResponseBody.viewPortId shouldEqual viewPortId
 
       When("request unfreezing view port")
       val unfreezeVPRequest = UnfreezeViewPortRequest(viewPortId)
