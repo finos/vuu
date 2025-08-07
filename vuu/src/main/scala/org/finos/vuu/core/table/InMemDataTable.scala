@@ -393,12 +393,15 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
     updateIndices(rowkey, rowUpdate)
   }
 
-  def delete(rowKey: String): Unit = {
+  def delete(rowKey: String): RowData = {
     data.dataByKey(rowKey) match {
       case x: RowWithData =>
         removeFromIndices(rowKey, x)
         data = data.delete(rowKey)
-      case _ => logger.warn(s"Got a delete for key $rowKey but it has no row data")
+        x
+      case _ =>
+        logger.debug(s"Got a delete for key $rowKey, but it has no row data")
+        EmptyRowData
     }
   }
 
@@ -476,26 +479,21 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
 
   def processDelete(rowKey: String): Unit = {
 
-    val rowData = data.dataByKey(rowKey)
+    onDeleteMeter.mark()
 
-    if (rowData != null) {
+    onUpdateCounter.inc()
 
-      onDeleteMeter.mark()
+    val rowData = delete(rowKey)
 
-      onUpdateCounter.inc()
+    rowData match {
+      case RowWithData(_, _) =>
+        sendDeleteToJoinSink(rowKey, rowData)
+        notifyListeners(rowKey, isDelete = true)
 
-      delete(rowKey)
-
-      sendDeleteToJoinSink(rowKey, rowData)
-
-      notifyListeners(rowKey, isDelete = true)
-
-      incrementUpdateCounter()
-
-    } else {
-      logger.debug(s"Got a process delete message for key $rowKey but it doesn't exist")
+      case EmptyRowData =>
     }
 
+    incrementUpdateCounter()
   }
 
   override def getColumnValueProvider: ColumnValueProvider = columnValueProvider
