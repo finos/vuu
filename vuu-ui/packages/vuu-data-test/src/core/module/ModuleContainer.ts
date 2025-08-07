@@ -28,6 +28,10 @@ class ModuleContainer {
     }
     throw Error(`[ModuleFactory] module ${name} not found`);
   }
+
+  get moduleNames() {
+    return this.#modules.keys();
+  }
 }
 
 export default ModuleContainer.instance;
