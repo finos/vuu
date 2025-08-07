@@ -1,6 +1,7 @@
 package org.finos.vuu.core.module
 
 import org.finos.vuu.core.table.Columns
+import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName}
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -26,19 +27,22 @@ class ModuleSyntaxTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
           "description:String",
           "currency:String",
           "exchange:String",
-          "lotSize:Double"
+          "lotSize:Double",
+          CreatedTimeColumnName + ":Long",
+          LastUpdatedTimeColumnName + ":Long"
         )
       )
       instruments.joinFields should equal(Seq("ric"))
       
       val prices = module.tableDefs.tail.head
       prices.name should equal("prices")
-      prices.columns.size should equal(7)
+      prices.columns.size should equal(9)
       prices.joinFields should equal(Seq("ric"))
 
       val instrumentPrices = module.tableDefs.tail.tail.head
       instrumentPrices.name should equal("instrumentPrices")
-      instrumentPrices.columns.size should equal(prices.columns.size + instruments.columns.size - 1)
+      // TODO once https://github.com/finos/vuu/issues/1653 is done, review the expected value of columns.size in the next line
+      instrumentPrices.columns.size should equal(prices.columns.size + instruments.columns.size - 1 + 2)
 
       instrumentPrices.joinFields should equal(Seq())
     }

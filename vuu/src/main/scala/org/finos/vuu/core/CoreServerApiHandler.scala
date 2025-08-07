@@ -170,6 +170,28 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
     }
   }
 
+  override def process(msg: FreezeViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.freezeViewPort(msg.viewPortId)) match {
+      case Success(_) =>
+        logger.debug("View port froze")
+        vsMsg(FreezeViewPortSuccess(msg.viewPortId))(ctx)
+      case Failure(e) =>
+        logger.warn("Failed to freeze viewport", e)
+        vsMsg(FreezeViewPortReject(msg.viewPortId, e.toString))(ctx)
+    }
+  }
+
+  override def process(msg: UnfreezeViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.unfreezeViewPort(msg.viewPortId)) match {
+      case Success(_) =>
+        logger.debug("View port unfroze")
+        vsMsg(UnfreezeViewPortSuccess(msg.viewPortId))(ctx)
+      case Failure(e) =>
+        logger.warn("Failed to unfreeze viewport", e)
+        vsMsg(UnfreezeViewPortReject(msg.viewPortId, e.toString))(ctx)
+    }
+  }
+
   def vsMsg(body: MessageBody)(ctx: RequestContext): Option[JsonViewServerMessage] = {
     Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, body))
   }

@@ -8,6 +8,7 @@ import org.finos.vuu.viewport.{RowProcessor, RowSource, ViewPortColumns}
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.text.AsciiUtil
+import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.row.{InMemMapRowBuilder, RowBuilder}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 
@@ -94,8 +95,7 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
   }
 }
 
-case class RowKeyUpdate(key: String, source: RowSource, isDelete: Boolean = false)
-{
+case class RowKeyUpdate(key: String, source: RowSource, isDelete: Boolean = false) {
   override def toString: String = s"RowKeyUpdate($key, ${source.name})"
 }
 
@@ -166,7 +166,7 @@ object EmptyRowData extends RowData {
 }
 
 
-case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private val primaryKeyValuesInternal: TablePrimaryKeys) extends TableData {
+case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private val primaryKeyValuesInternal: TablePrimaryKeys)(implicit timeProvider: Clock) extends TableData {
 
   def primaryKeyValues: TablePrimaryKeys = this.primaryKeyValuesInternal
 
@@ -184,13 +184,16 @@ case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private 
   def update(key: String, update: RowData): TableData = {
 
     val table = data.synchronized {
-
+      val now = timeProvider.now()
       data.getOrDefault(key, EmptyRowData) match {
         case row: RowWithData =>
           val mergedData = merge(update, row)
+          mergedData.set(DefaultColumnNames.LastUpdatedTimeColumnName, now)
           data.put(key, mergedData)
           InMemDataTableData(data, primaryKeyValues)
         case EmptyRowData =>
+          update.set(DefaultColumnNames.CreatedTimeColumnName, now)
+          update.set(DefaultColumnNames.LastUpdatedTimeColumnName, now)
           data.put(key, update)
           InMemDataTableData(data, primaryKeyValues + key)
       }
@@ -220,7 +223,7 @@ case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private 
 }
 
 
-class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider)(implicit val metrics: MetricsProvider) extends DataTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
+class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider)(implicit val metrics: MetricsProvider, timeProvider: Clock) extends DataTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
 
   private final val indices = tableDef.indices.indices
     .map(index => tableDef.columnForName(index.column))
@@ -339,7 +342,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
 
   }
 
-   private def sendColumnToProcessor(key: String, column: Column, value: Any, rowProcessor: RowProcessor): Unit = {
+  private def sendColumnToProcessor(key: String, column: Column, value: Any, rowProcessor: RowProcessor): Unit = {
     rowProcessor.processColumn(column, value)
   }
 
@@ -462,6 +465,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
     }
   }
 
+  // TODO: #1647 remove the timeStamp here
   def processUpdate(rowKey: String, rowData: RowData, timeStamp: Long): Unit = {
 
     onUpdateMeter.mark()
