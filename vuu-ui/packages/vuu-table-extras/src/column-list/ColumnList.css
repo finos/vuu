@@ -13,7 +13,7 @@
     border-bottom: var(--vuuColumnListItem-border, solid) 1px
       var(--salt-separable-tertiary-borderColor);
     gap: var(--salt-spacing-200);
-    padding: var(--salt=spacin-100) 0;
+    padding: var(--salt-spacing-100) 0;
 
     .vuuIcon {
       --vuu-icon-color: var(--salt-content-secondary-foreground);
@@ -30,8 +30,6 @@
   --vuu-icon-svg: var(--vuu-svg-function);
 }
 
-
-
 .vuuColumnList-withColumnNavgation {
   .vuuColumnList-text:hover {
     font-weight: 600;
@@ -39,11 +37,16 @@
   }
 }
 
+.vuuColumnList-search {
+  padding: var(--salt-spacing-300);
+}
+
 .vuuColumnList-header {
   border-top: solid 2px var(--vuu-color-gray-30);
   flex: 0 0 40px;
   font-size: 14px;
   font-weight: 600;
+  padding-left: var(--salt-spacing-400);
   padding-top: 24px;
 }
 

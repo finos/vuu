@@ -1,5 +1,11 @@
-import { DragDropProvider, useSortable } from "@vuu-ui/vuu-utils";
-import { Checkbox, ListBox, Option, OptionProps, Switch } from "@salt-ds/core";
+import {
+  Checkbox,
+  Input,
+  ListBox,
+  Option,
+  OptionProps,
+  Switch,
+} from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import {
@@ -8,14 +14,17 @@ import {
 } from "@vuu-ui/vuu-table-types";
 import { Icon, IconButton } from "@vuu-ui/vuu-ui-controls";
 import {
+  DragDropProvider,
   getColumnLabel,
   queryClosest,
   reorderColumnItems,
+  useSortable,
 } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import {
   HTMLAttributes,
   MouseEventHandler,
+  RefCallback,
   SyntheticEvent,
   useCallback,
   useMemo,
@@ -24,9 +33,13 @@ import {
 import { ColumnItem } from "../table-column-settings/useTableSettings";
 
 import columnList from "./ColumnList.css";
+import { useColumnList } from "../table-column-settings/useColumnList";
 
 const classBase = "vuuColumnList";
 const classBaseListItem = "vuuColumnListItem";
+
+const searchIcon = <span data-icon="search" />;
+const NO_SELECTION: string[] = [] as const;
 
 const useSorting = (id: string, index: number, allowSort = true) => {
   const { handleRef: sortableHandleRef, ref: sortableRef } = useSortable({
@@ -63,6 +76,13 @@ export interface ColumnListProps
   permissions?: ColumnListPermissions;
 }
 
+const defaultPermissions: ColumnListPermissions = {
+  allowColumnSearch: false,
+  allowHideColumns: true,
+  allowRemoveColumns: true,
+  allowReorderColumns: true,
+};
+
 const ColumnListItem = ({
   className: classNameProp,
   index,
@@ -74,6 +94,10 @@ const ColumnListItem = ({
   item: ColumnItem;
   permissions: ColumnListPermissions;
 }) => {
+  const hideOnly = allowHideColumns && !allowRemoveColumns;
+  const removeOnly = !allowHideColumns && allowRemoveColumns;
+  const hideAndRemove = allowHideColumns && allowRemoveColumns;
+
   const { handleRef, ref } = useSorting(item.name, index, allowReorderColumns);
   return (
     <Option
@@ -92,19 +116,17 @@ const ColumnListItem = ({
           size={16}
         />
       ) : null}
-      {item?.isCalculated ? (
-        <Icon name="function" />
-      ) : (
+      {item?.isCalculated ? <Icon name="function" /> : null}
+      {hideAndRemove || hideOnly || removeOnly ? (
         <Checkbox
           className={`${classBase}-checkBox`}
-          checked={item?.subscribed}
-          readOnly={allowRemoveColumns === false}
+          checked={hideOnly ? item?.hidden !== true : item?.subscribed}
         />
-      )}
+      ) : null}
       <span className={`${classBase}-text`}>
         {getColumnLabel(item as ColumnDescriptor)}
       </span>
-      {allowHideColumns !== false ? (
+      {hideAndRemove ? (
         <Switch
           className={`${classBase}-switch`}
           checked={item?.hidden !== true}
@@ -115,19 +137,18 @@ const ColumnListItem = ({
   );
 };
 
-const defaultPermissions: ColumnListPermissions = {
-  allowHideColumns: true,
-  allowRemoveColumns: true,
-  allowReorderColumns: true,
-};
-
 export const ColumnList = ({
   className,
   columnItems,
   onChange,
   onNavigateToColumn,
   onReorderColumnItems,
-  permissions = defaultPermissions,
+  permissions: {
+    allowColumnSearch = defaultPermissions.allowColumnSearch,
+    allowHideColumns = defaultPermissions.allowHideColumns,
+    allowRemoveColumns = defaultPermissions.allowRemoveColumns,
+    allowReorderColumns = defaultPermissions.allowReorderColumns,
+  } = defaultPermissions,
   ...htmlAttributes
 }: ColumnListProps) => {
   const targetWindow = useWindow();
@@ -137,6 +158,23 @@ export const ColumnList = ({
     window: targetWindow,
   });
   const listRef = useRef<HTMLDivElement>(null);
+  const [permissions, hideOnly] = useMemo(
+    () => [
+      {
+        allowHideColumns,
+        allowRemoveColumns,
+        allowReorderColumns,
+      },
+      allowHideColumns && !allowRemoveColumns,
+    ],
+    [allowHideColumns, allowRemoveColumns, allowReorderColumns],
+  );
+
+  const {
+    onChange: onSearchInputChange,
+    searchState,
+    visibleColumnItems,
+  } = useColumnList({ columnItems });
 
   const handleChange = useCallback(
     ({ target }: SyntheticEvent) => {
@@ -150,15 +188,15 @@ export const ColumnList = ({
           const saltCheckbox = queryClosest(target, `.${classBase}-checkBox`);
           const saltSwitch = queryClosest(target, `.${classBase}-switch`);
 
-          if (saltCheckbox) {
+          if (saltCheckbox && !hideOnly) {
             onChange(name, "subscribed", input.checked);
-          } else if (saltSwitch) {
+          } else if (saltSwitch || hideOnly) {
             onChange(name, "hidden", input.checked === false);
           }
         }
       }
     },
-    [onChange],
+    [hideOnly, onChange],
   );
 
   const handleClick = useCallback<MouseEventHandler>(
@@ -185,6 +223,12 @@ export const ColumnList = ({
     }, 300);
   }, [columnItems, onReorderColumnItems]);
 
+  const searchCallbackRef = useCallback<RefCallback<HTMLElement>>((el) => {
+    setTimeout(() => {
+      el?.querySelector("input")?.focus();
+    }, 100);
+  }, []);
+
   return (
     <DragDropProvider onDragEnd={handleDragEnd}>
       <div
@@ -194,15 +238,29 @@ export const ColumnList = ({
             typeof onNavigateToColumn === "function",
         })}
       >
+        {allowColumnSearch ? (
+          <form className={`${classBase}-search`} role="search">
+            <Input
+              // inputProps={{ onKeyDown }}
+              startAdornment={searchIcon}
+              placeholder="Find column"
+              ref={searchCallbackRef}
+              value={searchState.searchText}
+              onChange={onSearchInputChange}
+            />
+          </form>
+        ) : null}
         <div className={`${classBase}-header`}>
-          <span>Column Selection</span>
+          <span>Column Name</span>
         </div>
-        <div className={`${classBase}-colHeadings`}>
-          <span>Column subscription</span>
-          <span>Visibility</span>
-        </div>
-        <ListBox ref={listRef}>
-          {columnItems.map((columnItem, index) => (
+        {allowHideColumns && allowRemoveColumns ? (
+          <div className={`${classBase}-colHeadings`}>
+            <span>Column subscription</span>
+            <span>Visibility</span>
+          </div>
+        ) : null}
+        <ListBox ref={listRef} selected={NO_SELECTION}>
+          {visibleColumnItems.map((columnItem, index) => (
             <ColumnListItem
               item={columnItem}
               index={index}
