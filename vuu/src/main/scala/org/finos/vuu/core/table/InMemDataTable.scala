@@ -166,7 +166,7 @@ object EmptyRowData extends RowData {
 }
 
 
-case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private val primaryKeyValuesInternal: TablePrimaryKeys)(implicit val timeProvider: Clock) extends TableData {
+case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private val primaryKeyValuesInternal: TablePrimaryKeys)(implicit timeProvider: Clock) extends TableData {
 
   def primaryKeyValues: TablePrimaryKeys = this.primaryKeyValuesInternal
 
