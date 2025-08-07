@@ -13,12 +13,12 @@ const FilterClauseTemplate = ({
   filterClauseModel = new FilterClauseModel({}),
   tableSchema = getSchema("instruments"),
   columnsByName = columnDescriptorsByName(tableSchema.columns),
-  openDropdownOnFocus,
+  dropdownOnAutofocus,
 }: {
   columnsByName?: ColumnDescriptorsByName;
   filterClauseModel?: FilterClauseModel;
   tableSchema?: TableSchema;
-  openDropdownOnFocus?: boolean;
+  dropdownOnAutofocus?: boolean;
 }) => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
@@ -36,7 +36,7 @@ const FilterClauseTemplate = ({
           data-testid="filterclause"
           filterClauseModel={filterClauseModel}
           vuuTable={tableSchema.table}
-          openDropdownOnFocus={openDropdownOnFocus}
+          dropdownOnAutofocus={dropdownOnAutofocus}
         />
       </div>
     </DataSourceProvider>
@@ -92,7 +92,7 @@ export const NewFilterClauseWithDropdownOpenOnFocusDisabled = () => {
   return (
     <FilterClauseTemplate
       filterClauseModel={filterClauseModel}
-      openDropdownOnFocus={false}
+      dropdownOnAutofocus={false}
     />
   );
 };
@@ -137,7 +137,7 @@ export const FilterColumnWithDropdownOpenOnFocusDisabled = () => {
   return (
     <FilterClauseTemplate
       filterClauseModel={filterClauseModel}
-      openDropdownOnFocus={false}
+      dropdownOnAutofocus={false}
     />
   );
 };
@@ -154,7 +154,24 @@ export const FilterColumnAndOperatorWithDropdownOpenOnFocusDisabled = () => {
   return (
     <FilterClauseTemplate
       filterClauseModel={filterClauseModel}
-      openDropdownOnFocus={false}
+      dropdownOnAutofocus={false}
+    />
+  );
+};
+
+export const MultipleColumnPickers = () => {
+  const filterClauseModel = useMemo(
+    () =>
+      new FilterClauseModel({
+        column: "exchange",
+        op: "=",
+      }),
+    [],
+  );
+  return (
+    <FilterClauseTemplate
+      filterClauseModel={filterClauseModel}
+      dropdownOnAutofocus={false}
     />
   );
 };

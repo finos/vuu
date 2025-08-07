@@ -26,6 +26,7 @@ type FilterClauseValueEditorProps = Pick<
 } & {
   operator?: SingleValueFilterClauseOp | "in";
   value?: string | string[] | number | number[] | boolean | boolean[];
+  dropdownOnAutofocus?: boolean,
 };
 
 export const FilterClauseValueEditor = forwardRef(
@@ -39,6 +40,7 @@ export const FilterClauseValueEditor = forwardRef(
       onOpenChange,
       table,
       value,
+      dropdownOnAutofocus = true,
     }: FilterClauseValueEditorProps,
     forwardedRef: ForwardedRef<HTMLDivElement>,
   ) {
@@ -80,6 +82,7 @@ export const FilterClauseValueEditor = forwardRef(
                   ? value.map((val) => val.toString())
                   : (value.toString() as string | string[])
             }
+            dropdownOnAutofocus={dropdownOnAutofocus}
           />
         );
       case "int":

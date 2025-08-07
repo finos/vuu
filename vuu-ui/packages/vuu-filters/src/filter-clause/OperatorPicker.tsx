@@ -12,16 +12,11 @@ export type OperatorPickerProps = Pick<
 > & {
   column: ColumnDescriptor;
   onSelect: (evt: SyntheticEvent, operator: FilterClauseOp) => void;
+  dropdownOnAutofocus?: boolean;
 };
 
 export const OperatorPicker = forwardRef(function ColumnPicker(
-  {
-    className,
-    column,
-    inputProps,
-    onSelect,
-    value,
-  }: OperatorPickerProps,
+  { className, column, inputProps, onSelect, value, dropdownOnAutofocus = true }: OperatorPickerProps,
   forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
   const handleSelectionChange = (
@@ -43,6 +38,7 @@ export const OperatorPicker = forwardRef(function ColumnPicker(
       ref={forwardedRef}
       title="operator"
       value={value}
+      dropdownOnAutofocus={dropdownOnAutofocus}
     >
       {getOperators(column).map((op) => (
         <Option value={op} key={op} />

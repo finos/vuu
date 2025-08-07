@@ -65,7 +65,7 @@ describe("FilterClause", () => {
         container.find(".vuuFilterClauseField").should("have.length", 1);
         cy.findByTestId("filterclause")
           .find(".vuuFilterClauseColumn input")
-          .should("not.be.focused");
+          .should("be.focused");
         cy.findAllByRole("listbox").should("not.exist");
       });
     });
@@ -80,7 +80,7 @@ describe("FilterClause", () => {
         container.find(".vuuFilterClauseField").should("have.length", 2);
         cy.findByTestId("filterclause")
           .find(".vuuFilterClauseOperator input")
-          .should("not.be.focused");
+          .should("be.focused");
         cy.findAllByRole("listbox").should("not.exist");
       });
     });
@@ -95,7 +95,7 @@ describe("FilterClause", () => {
         container.find(".vuuFilterClauseField").should("have.length", 3);
         cy.findByTestId("filterclause")
           .find(".vuuFilterClauseValue input")
-          .should("not.be.focused");
+          .should("be.focused");
         cy.findAllByRole("listbox").should("not.exist");
       });
     });
