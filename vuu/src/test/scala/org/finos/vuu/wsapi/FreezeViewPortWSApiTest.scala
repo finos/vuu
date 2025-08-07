@@ -94,6 +94,21 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       responseBody2.viewPortId shouldEqual viewPortId
       responseBody2.errorMessage shouldEqual s"java.lang.Exception: Could not freeze viewport $viewPortId because it's already frozen"
     }
+
+    Scenario("Unfreeze a view port that is not frozen") {
+      Given("a view port exists")
+      val viewPortId: String = createViewPort
+
+      When("request unfreezing view port")
+      val unfreezeVPRequest = UnfreezeViewPortRequest(viewPortId)
+      val requestId = vuuClient.send(sessionId, tokenId, unfreezeVPRequest)
+
+      Then("return failure response")
+      val unfreezeVPResponse = vuuClient.awaitForResponse(requestId)
+      val responseBody = assertBodyIsInstanceOf[UnfreezeViewPortReject](unfreezeVPResponse)
+      responseBody.viewPortId shouldEqual viewPortId
+      responseBody.errorMessage shouldEqual s"java.lang.Exception: Could not unfreeze viewport $viewPortId because it's not frozen"
+    }
   }
 
   protected def defineModuleWithTestTables(): ViewServerModule = {

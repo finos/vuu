@@ -338,8 +338,12 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       case null =>
         throw new Exception(s"Could not find viewport to unfreeze $vpId")
       case vp: ViewPort =>
-        vp.unfreeze()
-        logger.debug(s"Unfroze viewport $vpId in container")
+        if (vp.isFrozen) {
+          vp.unfreeze()
+          logger.debug(s"Unfroze viewport $vpId in container")
+        } else {
+          throw new Exception(s"Could not unfreeze viewport $vpId because it's not frozen")
+        }
     }
   }
 
