@@ -1,12 +1,17 @@
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { DataSourceConfig, SchemaColumn } from "@vuu-ui/vuu-data-types";
 import {
+  ColumnChangeHandler,
   ColumnItem,
   ColumnList,
   defaultTableSettingsPermissions,
   TableSettingsPanel,
 } from "@vuu-ui/vuu-table-extras";
-import { TableConfig, TableSettingsPermissions } from "@vuu-ui/vuu-table-types";
+import {
+  ColumnListPermissions,
+  TableConfig,
+  TableSettingsPermissions,
+} from "@vuu-ui/vuu-table-types";
 import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
 import {
   Checkbox,
@@ -186,6 +191,110 @@ export const ManyColumnList = () => {
       style={{ width: 300, height: 600 }}
       onChange={handleChange}
       onReorderColumnItems={handleReorderColumnItems}
+    />
+  );
+};
+export const ManyColumnListRemoveOnly = () => {
+  const initialColumns = useMemo<ColumnItem[]>(() => {
+    const schema = getSchema("TwoHundredColumns");
+    return schema.columns.map((col) => ({
+      ...col,
+      subscribed: true,
+      isCalculated: false,
+    }));
+  }, []);
+  const permissions = useMemo<ColumnListPermissions>(
+    () => ({
+      allowHideColumns: false,
+    }),
+    [],
+  );
+
+  const [columns, setColumns] = useState<ColumnItem[]>(initialColumns);
+
+  const handleReorderColumnItems = useCallback((columnItems: ColumnItem[]) => {
+    setColumns(columnItems);
+  }, []);
+
+  const handleChange = useCallback<ColumnChangeHandler>(
+    (columnName, propertyName, value) => {
+      console.log(`handleChange ${columnName} ${propertyName} = ${value}`);
+      setColumns((columns) =>
+        columns.map((col) => {
+          if (col.name === columnName) {
+            return {
+              ...col,
+              [propertyName]: value,
+            };
+          } else {
+            return col;
+          }
+        }),
+      );
+    },
+    [],
+  );
+
+  return (
+    <ColumnList
+      columnItems={columns}
+      style={{ width: 300, height: 600 }}
+      onChange={handleChange}
+      onReorderColumnItems={handleReorderColumnItems}
+      permissions={permissions}
+    />
+  );
+};
+
+export const ManyColumnListWithSearch = () => {
+  const initialColumns = useMemo<ColumnItem[]>(() => {
+    const schema = getSchema("TwoHundredColumns");
+    return schema.columns.map((col) => ({
+      ...col,
+      subscribed: true,
+      isCalculated: false,
+    }));
+  }, []);
+  const permissions = useMemo<ColumnListPermissions>(
+    () => ({
+      allowColumnSearch: true,
+      allowHideColumns: false,
+    }),
+    [],
+  );
+
+  const [columns, setColumns] = useState<ColumnItem[]>(initialColumns);
+
+  const handleReorderColumnItems = useCallback((columnItems: ColumnItem[]) => {
+    setColumns(columnItems);
+  }, []);
+
+  const handleChange = useCallback<ColumnChangeHandler>(
+    (columnName, propertyName, value) => {
+      console.log(`handleChange ${columnName} ${propertyName} = ${value}`);
+      setColumns((columns) =>
+        columns.map((col) => {
+          if (col.name === columnName) {
+            return {
+              ...col,
+              [propertyName]: value,
+            };
+          } else {
+            return col;
+          }
+        }),
+      );
+    },
+    [],
+  );
+
+  return (
+    <ColumnList
+      columnItems={columns}
+      style={{ width: 300, height: 600 }}
+      onChange={handleChange}
+      onReorderColumnItems={handleReorderColumnItems}
+      permissions={permissions}
     />
   );
 };
