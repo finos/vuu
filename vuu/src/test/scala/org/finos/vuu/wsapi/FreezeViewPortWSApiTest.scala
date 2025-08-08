@@ -25,12 +25,6 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
   private val testProviderFactory = new TestProviderFactory
 
   Feature("[Web Socket API] Freeze view port request") {
-    Scenario("test") {
-      Given("a view port exist")
-      val viewPortId: String = createViewPort(tableName1)
-
-      val freezeVPResponse = vuuClient.awaitForResponse("123")
-    }
     Scenario("Freeze a view port") {
       Given("a view port exist")
       val viewPortId: String = createViewPort(tableName1)
