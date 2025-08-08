@@ -84,7 +84,7 @@ object Columns {
    * @return JoinColumn based on all columns of a given table except the default columns
    */
   def allFrom(table: TableDef): Array[Column] = {
-    allFromExcept(table, CreatedTimeColumnName, LastUpdatedTimeColumnName)
+    allFromExcept(table)
   }
 
   def aliased(table: TableDef, aliases: (String, String)*): Array[Column] = {
