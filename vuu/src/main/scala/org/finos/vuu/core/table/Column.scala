@@ -86,6 +86,9 @@ object Columns {
     table.columns.map(c => new JoinColumn(c.name, c.index, c.dataType, table, c))
   }
 
+  /**
+   * @return JoinColumn based on all columns of a given table excepet the default columns
+   */
   def allFromExceptDefaultColumns(table: TableDef): Array[Column] = {
     allFromExcept(table, CreatedTimeColumnName, LastUpdatedTimeColumnName)
   }
@@ -95,9 +98,14 @@ object Columns {
     table.columns.filter(c => aliased.contains(c.name)) map (c => new AliasedJoinColumn(aliased(c.name), c.index, c.dataType, table, c).asInstanceOf[Column])
   }
 
+  /**
+   * Note: this method excludes the default columns of vuuCreatedTimestamp and vuuUpdatedTimestamp
+   */
   def allFromExcept(table: TableDef, excludeColumns: String*): Array[Column] = {
+    val defaultColumns = Set(CreatedTimeColumnName, LastUpdatedTimeColumnName)
+    val columnsToExclude = excludeColumns.filterNot(defaultColumns.contains)
 
-    val excluded = excludeColumns.map(s => s -> 1).toMap
+    val excluded = columnsToExclude.map(s => s -> 1).toMap
 
     table.columns.filterNot(c => excluded.contains(c.name)).map(c => new JoinColumn(c.name, c.index, c.dataType, table, c))
   }
