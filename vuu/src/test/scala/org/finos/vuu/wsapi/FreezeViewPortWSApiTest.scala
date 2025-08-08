@@ -9,11 +9,16 @@ import org.finos.vuu.net._
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
 import org.finos.vuu.wsapi.helpers.{FakeDataSource, TestProviderFactory}
+import org.scalatest.time.{Millis, Span}
 
 import scala.collection.immutable.ListMap
+import scala.reflect.ClassTag
 
 class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
-  private val tableName = "FreezingVPTest"
+  private val tableName1 = "FreezingVPTest1"
+  private val tableName2 = "FreezingVPTest2"
+  private val tableName3 = "FreezingVPTest3"
+  private val tableName4 = "FreezingVPTest4"
   private val leftTableName = "FreezingVPTestLeft"
   private val rightTableName = "FreezingVPTestRight"
   private val joinTableName = "FreezingVPTestJoin"
@@ -21,10 +26,11 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
   private val fakeViewPortId = "fakeId"
   private val testProviderFactory = new TestProviderFactory
 
+  // need to reset table before each test
   Feature("[Web Socket API] Freeze view port request") {
     Scenario("Freeze a view port") {
       Given("a view port exist")
-      val viewPortId: String = createViewPort
+      val viewPortId: String = createViewPort(tableName1)
 
       When("request freezing view port")
       val freezeVPRequest = FreezeViewPortRequest(viewPortId)
@@ -36,7 +42,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       responseBody.viewPortId shouldEqual viewPortId
 
       When("An existing row is updated and a new row is added to table")
-      updateTable()
+      updateTable(tableName1)
 
       Then("Should only update on rows created before frozen time")
       val tableRowUpdatesResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
@@ -45,7 +51,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
     Scenario("Unfreeze a view port") {
       Given("a view port exist")
-      val viewPortId: String = createViewPort
+      val viewPortId: String = createViewPort(tableName2)
 
       When("request freezing view port")
       val freezeVPRequest = FreezeViewPortRequest(viewPortId)
@@ -57,8 +63,10 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       freezeResponseBody.viewPortId shouldEqual viewPortId
 
       When("A new row is added to table")
-      addNewRow()
-      Then("Should not update")
+      addNewRow(tableName2)
+      /*      Then("Should not update on a new row when the table is frozen")
+            val message = vuuClient.awaitForMsgForGivenTimeout[TableRowUpdates](ClassTag(classOf[TableRowUpdates]), Span(150, Millis))
+            message.isEmpty shouldEqual true*/
 
       When("request unfreezing view port")
       val unfreezeVPRequest = UnfreezeViewPortRequest(viewPortId)
@@ -75,7 +83,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
     }
 
     Scenario("Freeze a view port that doesn't exist") {
-      When("request freezing view port")
+      When("request freezing view port that doesn't exist")
       val request = FreezeViewPortRequest(fakeViewPortId)
       val requestId = vuuClient.send(sessionId, tokenId, request)
 
@@ -87,7 +95,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
     }
 
     Scenario("Unfreeze a view port that doesn't exist") {
-      When("request unfreezing view port")
+      When("request unfreezing view port that doesn't exist")
       val request = UnfreezeViewPortRequest(fakeViewPortId)
       val requestId = vuuClient.send(sessionId, tokenId, request)
 
@@ -101,7 +109,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
     Scenario("Freeze a view port that is already frozen") {
       Given("a view port exists")
-      val viewPortId: String = createViewPort
+      val viewPortId: String = createViewPort(tableName3)
 
       When("request freezing view port")
       val freezeVPRequest1 = FreezeViewPortRequest(viewPortId)
@@ -125,7 +133,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
     Scenario("Unfreeze a view port that is not frozen") {
       Given("a view port exists")
-      val viewPortId: String = createViewPort
+      val viewPortId: String = createViewPort(tableName4)
 
       When("request unfreezing view port")
       val unfreezeVPRequest = UnfreezeViewPortRequest(viewPortId)
@@ -137,11 +145,102 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       responseBody.viewPortId shouldEqual viewPortId
       responseBody.errorMessage shouldEqual s"java.lang.Exception: Could not unfreeze viewport $viewPortId because it's not frozen"
     }
+
+    /*Scenario("Freeze a view port for a join table") {
+      Given("a view port exist")
+      val viewPortId: String = createViewPort
+
+      When("request freezing view port")
+      val freezeVPRequest = FreezeViewPortRequest(viewPortId)
+      val requestId = vuuClient.send(sessionId, tokenId, freezeVPRequest)
+
+      Then("view port is frozen")
+      val freezeVPResponse = vuuClient.awaitForResponse(requestId)
+      val responseBody = assertBodyIsInstanceOf[FreezeViewPortSuccess](freezeVPResponse)
+      responseBody.viewPortId shouldEqual viewPortId
+
+      When("An existing row is updated and a new row is added to table")
+      updateJoinTable()
+      /*
+      add a new row to left table
+      add a new row to right table
+      a row exist in left table
+      add a new row to right table
+     validate still shows only 3 rows
+       */
+
+      Then("Return only updates of rows created before frozen time")
+      val tableRowUpdatesResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
+      tableRowUpdatesResponse.get.rows(0).vpSize shouldEqual 3
+    }
+
+    Scenario("Unfreeze a view port for a join table") {
+      Given("a view port exist")
+      val viewPortId: String = createViewPortForJoinTable
+
+      When("request freezing view port")
+      val freezeVPRequest = FreezeViewPortRequest(viewPortId)
+      val freezeRequestId = vuuClient.send(sessionId, tokenId, freezeVPRequest)
+
+      Then("view port is frozen")
+      val freezeVPResponse = vuuClient.awaitForResponse(freezeRequestId)
+      val freezeResponseBody = assertBodyIsInstanceOf[FreezeViewPortSuccess](freezeVPResponse)
+      freezeResponseBody.viewPortId shouldEqual viewPortId
+
+      When("request unfreezing view port")
+      val unfreezeVPRequest = UnfreezeViewPortRequest(viewPortId)
+      val unfreezeRrequestId = vuuClient.send(sessionId, tokenId, unfreezeVPRequest)
+
+      Then("view port is unfrozen")
+      val unfreezeResponse = vuuClient.awaitForResponse(unfreezeRrequestId)
+      val unfreezeResponseBody = assertBodyIsInstanceOf[UnfreezeViewPortSuccess](unfreezeResponse)
+      unfreezeResponseBody.viewPortId shouldEqual viewPortId
+
+      When("A new row is added to left table")
+      addNewRow()
+
+      Then("Return updates of all rows")
+      val tableRowUpdatesResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
+      tableRowUpdatesResponse.get.rows(0).vpSize shouldEqual 4
+    }*/
   }
 
   protected def defineModuleWithTestTables(): ViewServerModule = {
-    val tableDef = TableDef(
-      name = tableName,
+    val tableDef1 = TableDef(
+      name = tableName1,
+      keyField = "Id",
+      columns =
+        new ColumnBuilder()
+          .addString("Id")
+          .addString("Name")
+          .addInt("Account")
+          .build()
+    )
+
+    val tableDef2 = TableDef(
+      name = tableName2,
+      keyField = "Id",
+      columns =
+        new ColumnBuilder()
+          .addString("Id")
+          .addString("Name")
+          .addInt("Account")
+          .build()
+    )
+
+    val tableDef3 = TableDef(
+      name = tableName3,
+      keyField = "Id",
+      columns =
+        new ColumnBuilder()
+          .addString("Id")
+          .addString("Name")
+          .addInt("Account")
+          .build()
+    )
+
+    val tableDef4 = TableDef(
+      name = tableName4,
       keyField = "Id",
       columns =
         new ColumnBuilder()
@@ -211,22 +310,17 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
     )
 
     ModuleFactory.withNamespace(moduleName)
-      .addTableForTest(tableDef, providerFactory)
+      .addTableForTest(tableDef1, providerFactory)
+      .addTableForTest(tableDef2, providerFactory)
+      .addTableForTest(tableDef3, providerFactory)
+      .addTableForTest(tableDef4, providerFactory)
       .addTableForTest(leftTableDef, leftProviderFactory)
       .addTableForTest(rightTableDef, rightProviderFactory)
       .addJoinTableForTest(joinTableFunc)
       .asModule()
   }
 
-  private def createViewPortForJoinTable = {
-    createViewPortBase(joinTableName)
-  }
-
-  private def createViewPort = {
-    createViewPortBase(tableName)
-  }
-
-  private def createViewPortBase(tableName: String) = {
+  private def createViewPort(tableName: String) = {
     val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(1, 100), columns = Array("Id", "Name", "Account"))
     vuuClient.send(sessionId, tokenId, createViewPortRequest)
     val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
@@ -237,7 +331,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
     viewPortId
   }
 
-  private def updateTable(): Unit = {
+  private def updateTable(tableName: String): Unit = {
     val lastHour: Long = timeProvider.now() - 3600000
     val nextHour: Long = timeProvider.now() + 3600000
     val newDataSource = new FakeDataSource(ListMap(
@@ -247,7 +341,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
     testProviderFactory.getProvider(tableName).update(newDataSource)
   }
 
-  private def addNewRow(): Unit = {
+  private def addNewRow(tableName: String): Unit = {
     val nextHour: Long = timeProvider.now() + 3600000
     val newDataSource = new FakeDataSource(ListMap(
       "row4" -> Map("Id" -> "row4", "Name" -> "Tom Thatcher", CreatedTimeColumnName -> nextHour), // add a new row
