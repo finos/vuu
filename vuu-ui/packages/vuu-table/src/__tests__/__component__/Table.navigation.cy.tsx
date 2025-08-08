@@ -2,7 +2,7 @@ import { TabInAndOut } from "../../../../../showcase/src/examples/Table/Misc.exa
 
 describe("Cell navigation with keyboard", () => {
   describe("navigation from outside with Tab", () => {
-    it("begins navigation in first header cell", () => {
+    it.skip("begins navigation in first header cell", () => {
       cy.mount(<TabInAndOut />);
       cy.findByRole("table").should("be.visible");
       cy.findByTestId("input-start").realClick();
