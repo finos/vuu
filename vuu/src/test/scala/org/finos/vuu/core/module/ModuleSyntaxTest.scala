@@ -42,7 +42,7 @@ class ModuleSyntaxTest extends AnyFeatureSpec with Matchers with GivenWhenThen {
       val instrumentPrices = module.tableDefs.tail.tail.head
       instrumentPrices.name should equal("instrumentPrices")
       instrumentPrices.columns.size should equal((prices.columns.size - 2) + (instruments.columns.size - 2) - 1 + 2)
-      // exclude default columns in left and right table and exclude join column
+      // exclude default columns in left and right table and exclude join column, and add default columns to the join table itself
 
       instrumentPrices.joinFields should equal(Seq())
     }
