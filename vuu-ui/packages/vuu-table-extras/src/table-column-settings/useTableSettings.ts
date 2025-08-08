@@ -22,34 +22,31 @@ import {
   useState,
 } from "react";
 import { ColumnChangeHandler } from "../column-list";
+import { ColumnItem } from "../column-list/useColumnList";
 
 export type ColumnLike = {
   name: string;
 };
 
-export type ColumnItem = Pick<
-  ColumnDescriptor,
-  "hidden" | "label" | "name" | "serverDataType"
-> & {
-  isCalculated: boolean;
-  subscribed: boolean;
-};
-
 const buildColumnItems = (
-  availableColumns: SchemaColumn[],
+  availableColumns: Array<SchemaColumn & { label?: string }>,
   configuredColumns: ColumnDescriptor[],
 ): ColumnItem[] => {
-  return availableColumns.map<ColumnItem>(({ name, serverDataType }) => {
-    const configuredColumn = configuredColumns.find((col) => col.name === name);
-    return {
-      hidden: configuredColumn?.hidden,
-      isCalculated: isCalculatedColumn(name),
-      label: configuredColumn?.label ?? name,
-      name,
-      serverDataType,
-      subscribed: configuredColumn !== undefined,
-    };
-  });
+  return availableColumns.map<ColumnItem>(
+    ({ name, label = name, serverDataType }) => {
+      const configuredColumn = configuredColumns.find(
+        (col) => col.name === name,
+      );
+      return {
+        hidden: configuredColumn?.hidden,
+        isCalculated: isCalculatedColumn(name),
+        label: configuredColumn?.label ?? label,
+        name,
+        serverDataType,
+        subscribed: configuredColumn !== undefined,
+      };
+    },
+  );
 };
 
 type ColumnState = {

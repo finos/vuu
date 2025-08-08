@@ -16,7 +16,6 @@ import { Icon, IconButton } from "@vuu-ui/vuu-ui-controls";
 import {
   DragDropProvider,
   getColumnLabel,
-  queryClosest,
   reorderColumnItems,
   useSortable,
 } from "@vuu-ui/vuu-utils";
@@ -25,18 +24,16 @@ import {
   HTMLAttributes,
   MouseEventHandler,
   RefCallback,
-  SyntheticEvent,
   useCallback,
   useMemo,
   useRef,
 } from "react";
-import { ColumnItem } from "../table-column-settings/useTableSettings";
+import { ColumnItem, useColumnList } from "./useColumnList";
 
-import columnList from "./ColumnList.css";
-import { useColumnList } from "../table-column-settings/useColumnList";
+import cssColumnList from "./ColumnList.css";
 
-const classBase = "vuuColumnList";
-const classBaseListItem = "vuuColumnListItem";
+export const classBase = "vuuColumnList";
+export const classBaseListItem = "vuuColumnListItem";
 
 const searchIcon = <span data-icon="search" />;
 const NO_SELECTION: string[] = [] as const;
@@ -154,50 +151,29 @@ export const ColumnList = ({
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-column-list",
-    css: columnList,
+    css: cssColumnList,
     window: targetWindow,
   });
   const listRef = useRef<HTMLDivElement>(null);
-  const [permissions, hideOnly] = useMemo(
-    () => [
-      {
-        allowHideColumns,
-        allowRemoveColumns,
-        allowReorderColumns,
-      },
-      allowHideColumns && !allowRemoveColumns,
-    ],
+  const permissions = useMemo(
+    () => ({
+      allowHideColumns,
+      allowRemoveColumns,
+      allowReorderColumns,
+    }),
     [allowHideColumns, allowRemoveColumns, allowReorderColumns],
   );
 
   const {
-    onChange: onSearchInputChange,
+    onChangeListItem,
+    onChangeSearchInput,
     searchState,
     visibleColumnItems,
-  } = useColumnList({ columnItems });
-
-  const handleChange = useCallback(
-    ({ target }: SyntheticEvent) => {
-      const input = target as HTMLInputElement;
-      const listItem = queryClosest(target, `.${classBaseListItem}`);
-      if (listItem) {
-        const {
-          dataset: { name },
-        } = listItem;
-        if (name) {
-          const saltCheckbox = queryClosest(target, `.${classBase}-checkBox`);
-          const saltSwitch = queryClosest(target, `.${classBase}-switch`);
-
-          if (saltCheckbox && !hideOnly) {
-            onChange(name, "subscribed", input.checked);
-          } else if (saltSwitch || hideOnly) {
-            onChange(name, "hidden", input.checked === false);
-          }
-        }
-      }
-    },
-    [hideOnly, onChange],
-  );
+  } = useColumnList({
+    columnItems,
+    permissions,
+    onChange,
+  });
 
   const handleClick = useCallback<MouseEventHandler>(
     (evt) => {
@@ -246,7 +222,7 @@ export const ColumnList = ({
               placeholder="Find column"
               ref={searchCallbackRef}
               value={searchState.searchText}
-              onChange={onSearchInputChange}
+              onChange={onChangeSearchInput}
             />
           </form>
         ) : null}
@@ -265,7 +241,7 @@ export const ColumnList = ({
               item={columnItem}
               index={index}
               key={columnItem.name}
-              onChange={handleChange}
+              onChange={onChangeListItem}
               onClick={handleClick}
               permissions={permissions}
               value={columnItem}

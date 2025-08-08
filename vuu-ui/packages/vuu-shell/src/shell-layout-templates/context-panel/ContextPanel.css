@@ -16,7 +16,7 @@
 }
 
 .vuuView.vuuContextPanel-inner {
-  background-color: var(--salt-container-primary-background);
+  background-color: inherit;
   box-shadow: var(--vuu-side-panel-shadow, none);
   display: flex;
   flex-direction: column;
