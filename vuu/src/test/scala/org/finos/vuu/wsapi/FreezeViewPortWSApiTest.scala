@@ -56,6 +56,10 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       val freezeResponseBody = assertBodyIsInstanceOf[FreezeViewPortSuccess](freezeVPResponse)
       freezeResponseBody.viewPortId shouldEqual viewPortId
 
+      When("A new row is added to table")
+      addNewRow()
+      Then("Should not update")
+
       When("request unfreezing view port")
       val unfreezeVPRequest = UnfreezeViewPortRequest(viewPortId)
       val unfreezeRrequestId = vuuClient.send(sessionId, tokenId, unfreezeVPRequest)
@@ -64,9 +68,6 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       val unfreezeResponse = vuuClient.awaitForResponse(unfreezeRrequestId)
       val unfreezeResponseBody = assertBodyIsInstanceOf[UnfreezeViewPortSuccess](unfreezeResponse)
       unfreezeResponseBody.viewPortId shouldEqual viewPortId
-
-      When("A new row is added to table")
-      addNewRow()
 
       Then("Return updates of all rows")
       val tableRowUpdatesResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
@@ -165,13 +166,17 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
         new ColumnBuilder()
           .addString("Id")
           .addString("Name")
-          .addInt("Account")
-          .addInt("HiddenColumn")
           .build(),
       VisualLinks(),
       joinFields = "Id"
     )
-    val leftProviderFactory = (table: DataTable, _: IVuuServer) => testProviderFactory.create(table, dataSource)
+    val leftDataSource = new FakeDataSource(ListMap(
+      "row1" -> Map("Id" -> "row1", "Name" -> "Becky Thatcher", CreatedTimeColumnName -> lastHour),
+      "row2" -> Map("Id" -> "row2", "Name" -> "Tom Sawyer", CreatedTimeColumnName -> lastHour),
+      "row3" -> Map("Id" -> "row3", "Name" -> "Huckleberry Finn", CreatedTimeColumnName -> lastHour),
+      "row4" -> Map("Id" -> "row4", "Name" -> "Channing Tatum", CreatedTimeColumnName -> lastHour),
+    ))
+    val leftProviderFactory = (table: DataTable, _: IVuuServer) => testProviderFactory.create(table, leftDataSource)
 
     val rightTableDef = TableDef(
       name = rightTableName,
@@ -245,9 +250,23 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
   private def addNewRow(): Unit = {
     val nextHour: Long = timeProvider.now() + 3600000
     val newDataSource = new FakeDataSource(ListMap(
-      "row4" -> Map("Id" -> "row4", "Name" -> "Tom Thatcher", "Account" -> 134, CreatedTimeColumnName -> nextHour), // add a new row
+      "row4" -> Map("Id" -> "row4", "Name" -> "Tom Thatcher", CreatedTimeColumnName -> nextHour), // add a new row
     ))
     testProviderFactory.getProvider(tableName).update(newDataSource)
+  }
+
+  private def updateJoinTable(): Unit = {
+    val nextHour: Long = timeProvider.now() + 3600000
+    val newDataSource = new FakeDataSource(ListMap(
+      "row5" -> Map("Id" -> "row5", "Name" -> "Charlie Hunnam", "Account" -> 145, CreatedTimeColumnName -> nextHour), // add a new row
+    ))
+    testProviderFactory.getProvider(leftTableName).update(newDataSource)
+
+    val newDataSource2 = new FakeDataSource(ListMap(
+      "row4" -> Map("Id" -> "row4", "Description" -> "This is row4", CreatedTimeColumnName -> nextHour), // add a new row
+      "row5" -> Map("Id" -> "row5", "Description" -> "This is row5", CreatedTimeColumnName -> nextHour), // add a new row
+    ))
+    testProviderFactory.getProvider(rightTableName).update(newDataSource2)
   }
 
 }
