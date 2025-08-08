@@ -251,7 +251,7 @@ object SimulationModule extends DefaultModule {
         JoinTableDef(
           name = "instrumentPrices",
           baseTable = tableDefs.get(NAME, "instruments"),
-          joinColumns = Columns.allFromExcept(tableDefs.get(NAME, "instruments")) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
+          joinColumns = Columns.allFromExceptDefaultColumns(tableDefs.get(NAME, "instruments")) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
           joins =
             JoinTo(
               table = tableDefs.get(PriceModule.NAME, "prices"),
