@@ -2,7 +2,7 @@ package org.finos.vuu.core.table
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName}
+import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName, allDefaultColumns}
 import org.finos.vuu.core.table.column.CalculatedColumnClause
 import org.finos.vuu.util.schema.ExternalEntitySchema
 import org.finos.vuu.util.types.{DefaultTypeConverters, TypeConverterContainerBuilder}
@@ -102,8 +102,7 @@ object Columns {
    * Note: this method excludes the default columns of vuuCreatedTimestamp and vuuUpdatedTimestamp
    */
   def allFromExcept(table: TableDef, excludeColumns: String*): Array[Column] = {
-    val defaultColumns = Set(CreatedTimeColumnName, LastUpdatedTimeColumnName)
-    val columnsToExclude = excludeColumns.filterNot(defaultColumns.contains)
+    val columnsToExclude = excludeColumns.filterNot(allDefaultColumns.contains)
 
     val excluded = columnsToExclude.map(s => s -> 1).toMap
 

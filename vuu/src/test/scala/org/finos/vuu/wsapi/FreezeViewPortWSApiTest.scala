@@ -9,10 +9,8 @@ import org.finos.vuu.net._
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
 import org.finos.vuu.wsapi.helpers.{FakeDataSource, TestProviderFactory}
-import org.scalatest.time.{Millis, Span}
 
 import scala.collection.immutable.ListMap
-import scala.reflect.ClassTag
 
 class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
   private val tableName1 = "FreezingVPTest1"
@@ -26,7 +24,6 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
   private val fakeViewPortId = "fakeId"
   private val testProviderFactory = new TestProviderFactory
 
-  // need to reset table before each test
   Feature("[Web Socket API] Freeze view port request") {
     Scenario("Freeze a view port") {
       Given("a view port exist")
@@ -64,9 +61,8 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
       When("A new row is added to table")
       addNewRow(tableName2)
-      /*      Then("Should not update on a new row when the table is frozen")
-            val message = vuuClient.awaitForMsgForGivenTimeout[TableRowUpdates](ClassTag(classOf[TableRowUpdates]), Span(150, Millis))
-            message.isEmpty shouldEqual true*/
+      Then("Should not update on a new row when the table is frozen")
+      // TODO wait for 100+ miliseconds and verify no TableRowUpdates received
 
       When("request unfreezing view port")
       val unfreezeVPRequest = UnfreezeViewPortRequest(viewPortId)
@@ -349,7 +345,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
     testProviderFactory.getProvider(tableName).update(newDataSource)
   }
 
-  private def updateJoinTable(): Unit = {
+/*  private def updateJoinTable(): Unit = {
     val nextHour: Long = timeProvider.now() + 3600000
     val newDataSource = new FakeDataSource(ListMap(
       "row5" -> Map("Id" -> "row5", "Name" -> "Charlie Hunnam", "Account" -> 145, CreatedTimeColumnName -> nextHour), // add a new row
@@ -361,6 +357,6 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       "row5" -> Map("Id" -> "row5", "Description" -> "This is row5", CreatedTimeColumnName -> nextHour), // add a new row
     ))
     testProviderFactory.getProvider(rightTableName).update(newDataSource2)
-  }
+  }*/
 
 }
