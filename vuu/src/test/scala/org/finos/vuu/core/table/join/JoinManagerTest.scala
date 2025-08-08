@@ -131,7 +131,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
     JoinTableDef(
       name = "orderPrices",
       baseTable = ordersDef,
-      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
+      joinColumns = Columns.allFromExceptDefaultColumns(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
       joins =
         JoinTo(
           table = pricesDef,
@@ -146,7 +146,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
     JoinTableDef(
       name = "orderPricesFx",
       baseTable = ordersDef,
-      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") ++ Columns.allFromExcept(fxDef, "ric"),
+      joinColumns = Columns.allFromExceptDefaultColumns(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") ++ Columns.allFromExcept(fxDef, "ric"),
       links = VisualLinks(),
       joinFields = Seq("orderId"),
       JoinTo(
@@ -164,7 +164,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
     JoinTableDef(
       name = "childOrderPrices",
       baseTable = childOrders,
-      joinColumns = Columns.allFrom(orderPrices) ++ Columns.allFromExcept(childOrders, "orderId"),
+      joinColumns = Columns.allFromExceptDefaultColumns(orderPrices) ++ Columns.allFromExcept(childOrders, "orderId"),
       joins =
         JoinTo(
           table = orderPrices,
@@ -179,7 +179,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
     JoinTableDef(
       name = "order2PricesAndFx",
       baseTable = orders2Def,
-      joinColumns = Columns.allFrom(orders2Def)
+      joinColumns = Columns.allFromExceptDefaultColumns(orders2Def)
         ++ Columns.allFromExcept(pricesDef, "ric")
         ++ Columns.allFromExcept(fxRates, "currencyPair"),
       links = VisualLinks(),

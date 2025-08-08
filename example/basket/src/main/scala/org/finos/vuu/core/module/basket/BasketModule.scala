@@ -131,7 +131,7 @@ object BasketModule extends DefaultModule {
         JoinTableDef(
           name = BasketTradingConstituentJoin,
           baseTable = tableDefs.get(NAME, BasketTradingConstituentTable),
-          joinColumns = Columns.allFrom(tableDefs.get(NAME, BasketTradingConstituentTable)) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
+          joinColumns = Columns.allFromExceptDefaultColumns(tableDefs.get(NAME, BasketTradingConstituentTable)) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
           VisualLinks(
             Link(BTC.BasketId, BasketTradingTable, BT.BasketId)
           ),

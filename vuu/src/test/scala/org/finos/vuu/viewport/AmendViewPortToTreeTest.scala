@@ -36,7 +36,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
     val joinDef = JoinTableDef(
       name = "orderPrices",
       baseTable = ordersDef,
-      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
+      joinColumns = Columns.allFromExceptDefaultColumns(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
       joins =
         JoinTo(
           table = pricesDef,
@@ -151,7 +151,7 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
     val joinDef = JoinTableDef(
       name = "orderPrices",
       baseTable = ordersDef,
-      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
+      joinColumns = Columns.allFromExceptDefaultColumns(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
       joins =
         JoinTo(
           table = pricesDef,

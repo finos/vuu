@@ -82,6 +82,7 @@ object Columns {
   /**
    * Note: this method returns all columns of a given table, including the default columns of vuuCreatedTimestamp and vuuUpdatedTimestamp
    */
+  @deprecated("Replaced by allFromExceptDefaultColumns")
   def allFrom(table: TableDef): Array[Column] = {
     table.columns.map(c => new JoinColumn(c.name, c.index, c.dataType, table, c))
   }

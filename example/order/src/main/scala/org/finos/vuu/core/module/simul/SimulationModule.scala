@@ -238,7 +238,7 @@ object SimulationModule extends DefaultModule {
         JoinTableDef(
           name = "orderEntryPrices",
           baseTable = tableDefs.get(NAME, "orderEntry"),
-          joinColumns = Columns.allFrom(tableDefs.get(NAME, "orderEntry")) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
+          joinColumns = Columns.allFromExceptDefaultColumns(tableDefs.get(NAME, "orderEntry")) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
           joins =
             JoinTo(
               table = tableDefs.get(PriceModule.NAME, "prices"),
@@ -251,7 +251,7 @@ object SimulationModule extends DefaultModule {
         JoinTableDef(
           name = "instrumentPrices",
           baseTable = tableDefs.get(NAME, "instruments"),
-          joinColumns = Columns.allFrom(tableDefs.get(NAME, "instruments")) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
+          joinColumns = Columns.allFromExcept(tableDefs.get(NAME, "instruments")) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
           joins =
             JoinTo(
               table = tableDefs.get(PriceModule.NAME, "prices"),
@@ -264,7 +264,7 @@ object SimulationModule extends DefaultModule {
         JoinTableDef(
           name = "ordersPrices",
           baseTable = tableDefs.get(NAME, "orders"),
-          joinColumns = Columns.allFrom(tableDefs.get(NAME, "orders")) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
+          joinColumns = Columns.allFromExceptDefaultColumns(tableDefs.get(NAME, "orders")) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
           joins =
             JoinTo(
               table = tableDefs.get(PriceModule.NAME, "prices"),
