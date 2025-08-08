@@ -433,7 +433,7 @@ export const isGroupColumn = (
 export const checkConfirmationPending = (previousConfig?: TableModel) => {
   if (previousConfig) {
     const [column] = previousConfig.columns;
-    if (isGroupColumn(column)) {
+    if (column !== undefined && isGroupColumn(column)) {
       return column.groupConfirmed;
     }
   }
