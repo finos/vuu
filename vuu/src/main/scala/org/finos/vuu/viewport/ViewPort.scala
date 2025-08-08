@@ -340,7 +340,7 @@ class ViewPortImpl(val id: String,
 
 
   override def getStructuralHashCode(): Int = {
-    37 * filterAndSort.hashCode() ^ getGroupBy.hashCode() ^ getColumns.hashCode() ^ permissionChecker().hashCode()
+    37 * filterAndSort.hashCode() ^ getGroupBy.hashCode() ^ getColumns.hashCode() ^ permissionChecker().hashCode() ^ viewPortFrozenTimestamp.hashCode()
   }
 
   private def getTreeNodeStateHash(): Int = {
