@@ -81,16 +81,9 @@ object Columns {
 
   /**
    * Note: this method returns all columns of a given table, including the default columns of vuuCreatedTimestamp and vuuUpdatedTimestamp
+   * @return JoinColumn based on all columns of a given table except the default columns
    */
-  @deprecated("Replaced by allFromExceptDefaultColumns")
   def allFrom(table: TableDef): Array[Column] = {
-    table.columns.map(c => new JoinColumn(c.name, c.index, c.dataType, table, c))
-  }
-
-  /**
-   * @return JoinColumn based on all columns of a given table excepet the default columns
-   */
-  def allFromExceptDefaultColumns(table: TableDef): Array[Column] = {
     allFromExcept(table, CreatedTimeColumnName, LastUpdatedTimeColumnName)
   }
 

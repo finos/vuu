@@ -324,7 +324,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
     val joinTableFunc: TableDefContainer => JoinTableDef = _ => JoinTableDef(
       name = joinTableName,
       baseTable = baseTableDef,
-      joinColumns = Columns.allFromExceptDefaultColumns(baseTableDef),
+      joinColumns = Columns.allFrom(baseTableDef),
       joins =
         JoinTo(
           table = rightTableDef,

@@ -17,7 +17,7 @@ object JoinModule {
           JoinTableDef(
             name = "instrumentPrice",
             baseTable = tableDefs.get(Instrument.NAME, "instrument"),
-            joinColumns = Columns.allFromExceptDefaultColumns(tableDefs.get(Instrument.NAME, "instrument")) ++ Columns.allFromExcept(tableDefs.get(Price.NAME, "price"), "ric"),
+            joinColumns = Columns.allFrom(tableDefs.get(Instrument.NAME, "instrument")) ++ Columns.allFromExcept(tableDefs.get(Price.NAME, "price"), "ric"),
             joins =
               JoinTo(
                 table = tableDefs.get(Price.NAME, "price"),

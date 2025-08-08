@@ -190,7 +190,6 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
     }
   }
 
-  // use earliest timestamp for creation and update last updated timestamp
   def processUpdate(rowKey: String, rowUpdate: RowData, joinTable: JoinTable, sourceTables: Map[String, DataTable]): JoinDataTableData = {
 
     val updateByKeyIndex = rowUpdateToArray(rowUpdate)

@@ -110,7 +110,7 @@ abstract class EditableViewPortTest extends AbstractViewPortTestCase with Matche
     val joinDef = JoinTableDef(
       name = "consInstrumentPrice",
       baseTable = constituentDef,
-      joinColumns = Columns.allFromExceptDefaultColumns(constituentDef) ++ Columns.allFromExcept(instrumentDef, "ric") ++ Columns.allFromExcept(pricesDef, "ric"),
+      joinColumns = Columns.allFrom(constituentDef) ++ Columns.allFromExcept(instrumentDef, "ric") ++ Columns.allFromExcept(pricesDef, "ric"),
       links = VisualLinks(),
       joinFields = List("ric"),
       joins =
