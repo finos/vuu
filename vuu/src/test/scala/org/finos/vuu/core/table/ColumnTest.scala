@@ -1,5 +1,6 @@
 package org.finos.vuu.core.table
 
+import org.finos.vuu.api.{ColumnBuilder, TableDef}
 import org.finos.vuu.util.types.TypeUtils
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -41,4 +42,41 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
 
   }
 
+  Feature("Columns.allFromExceptDefaultColumns") {
+    Scenario("Create join columns for all columns in table def except default columns") {
+      val tableDef = TableDef(
+        name = "TestTable",
+        keyField = "Id",
+        columns =
+          new ColumnBuilder()
+            .addString("Id")
+            .addString("Name")
+            .addInt("Account")
+            .build()
+      )
+
+      val joinColumns = Columns.allFromExceptDefaultColumns(tableDef)
+      joinColumns.length shouldEqual 3
+      joinColumns.map(_.name) should contain theSameElementsAs Array("Id", "Name", "Account")
+    }
+  }
+
+  Feature("Columns.allFromExcept") {
+    Scenario("Create join columns for all columns in table def except given columns and default columns") {
+      val tableDef = TableDef(
+        name = "TestTable",
+        keyField = "Id",
+        columns =
+          new ColumnBuilder()
+            .addString("Id")
+            .addString("Name")
+            .addInt("Account")
+            .build()
+      )
+
+      val joinColumns = Columns.allFromExcept(tableDef, "Name")
+      joinColumns.length shouldEqual 2
+      joinColumns.map(_.name) should contain theSameElementsAs Array("Id", "Account")
+    }
+  }
 }
