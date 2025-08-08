@@ -103,7 +103,7 @@ object Columns {
    * Note: this method excludes the default columns of vuuCreatedTimestamp and vuuUpdatedTimestamp
    */
   def allFromExcept(table: TableDef, excludeColumns: String*): Array[Column] = {
-    val columnsToExclude = excludeColumns ++ allDefaultColumns.contains
+    val columnsToExclude = excludeColumns ++ allDefaultColumns
 
     val excluded = columnsToExclude.map(s => s -> 1).toMap
 
