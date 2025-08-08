@@ -340,7 +340,6 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       case vp: ViewPort =>
         if (vp.isFrozen) {
           vp.unfreeze()
-          refreshOneTreeViewPort(vp)
           logger.debug(s"Unfroze viewport $vpId in container")
         } else {
           throw new Exception(s"Could not unfreeze viewport $vpId because it's not frozen")
@@ -904,11 +903,12 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   private def refreshOneViewPortInternal(viewPort: ViewPort): Unit = {
 
     if (viewPort.isEnabled) {
-
+System.out.println("MYDEBUG getStructuralHashCode")
       val currentStructureHash = viewPort.getStructuralHashCode()
       val currentUpdateCount = viewPort.getTableUpdateCount()
 
       if (shouldCalculateKeys(viewPort, currentStructureHash, currentUpdateCount)) {
+        System.out.println("shouldCalculateKeys true" )
 
         val keys = viewPort.table.primaryKeys
 
