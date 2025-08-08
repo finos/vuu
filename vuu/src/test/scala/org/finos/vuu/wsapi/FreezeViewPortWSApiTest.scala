@@ -38,7 +38,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       When("An existing row is updated and a new row is added to table")
       updateTable()
 
-      Then("Return only updates of rows created before frozen time")
+      Then("Should only update on rows created before frozen time")
       val tableRowUpdatesResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
       tableRowUpdatesResponse.get.rows(0).vpSize shouldEqual 3
     }
@@ -69,7 +69,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       val unfreezeResponseBody = assertBodyIsInstanceOf[UnfreezeViewPortSuccess](unfreezeResponse)
       unfreezeResponseBody.viewPortId shouldEqual viewPortId
 
-      Then("Return updates of all rows")
+      Then("Should update on all rows")
       val tableRowUpdatesResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
       tableRowUpdatesResponse.get.rows(0).vpSize shouldEqual 4
     }
