@@ -10,13 +10,13 @@ import {
   useRef,
   useState,
 } from "react";
-import { classBase, classBaseListItem, ColumnListProps } from "./ColumnList";
 import { queryClosest } from "@vuu-ui/vuu-utils";
 
-export interface ColumnSearchProps
-  extends Pick<ColumnListProps, "columnItems" | "onChange"> {
-  permissions: ColumnListPermissions;
-}
+export type ColumnChangeHandler = (
+  columnName: string,
+  propertyName: keyof ColumnDescriptor | "subscribed",
+  value: string | number | boolean,
+) => void;
 
 export type ColumnItem = Pick<
   ColumnDescriptor,
@@ -26,7 +26,17 @@ export type ColumnItem = Pick<
   subscribed: boolean;
 };
 
+export interface ColumnSearchProps {
+  classBase: string;
+  classBaseListItem: string;
+  columnItems: ColumnItem[];
+  onChange: ColumnChangeHandler;
+  permissions: ColumnListPermissions;
+}
+
 export const useColumnList = ({
+  classBase,
+  classBaseListItem,
   columnItems,
   onChange,
   permissions: { allowHideColumns, allowRemoveColumns },
@@ -87,7 +97,7 @@ export const useColumnList = ({
         }
       }
     },
-    [hideOnly, onChange],
+    [classBase, classBaseListItem, hideOnly, onChange],
   );
 
   return {

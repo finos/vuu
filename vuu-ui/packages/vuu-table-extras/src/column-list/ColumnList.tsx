@@ -28,7 +28,11 @@ import {
   useMemo,
   useRef,
 } from "react";
-import { ColumnItem, useColumnList } from "./useColumnList";
+import {
+  type ColumnItem,
+  type ColumnSearchProps,
+  useColumnList,
+} from "./useColumnList";
 
 import cssColumnList from "./ColumnList.css";
 
@@ -58,16 +62,9 @@ const useSorting = (id: string, index: number, allowSort = true) => {
   };
 };
 
-export type ColumnChangeHandler = (
-  columnName: string,
-  propertyName: keyof ColumnDescriptor | "subscribed",
-  value: string | number | boolean,
-) => void;
-
 export interface ColumnListProps
-  extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
-  columnItems: ColumnItem[];
-  onChange: ColumnChangeHandler;
+  extends Pick<ColumnSearchProps, "columnItems" | "onChange">,
+    Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   onNavigateToColumn?: (columnName: string) => void;
   onReorderColumnItems?: (columnItems: ColumnItem[]) => void;
   permissions?: ColumnListPermissions;
@@ -170,6 +167,8 @@ export const ColumnList = ({
     searchState,
     visibleColumnItems,
   } = useColumnList({
+    classBase,
+    classBaseListItem,
     columnItems,
     permissions,
     onChange,
