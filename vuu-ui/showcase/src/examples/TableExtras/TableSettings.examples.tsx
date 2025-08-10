@@ -27,7 +27,6 @@ import {
   FormField,
   FormFieldLabel,
 } from "@salt-ds/core";
-import { TableSettingsActionType } from "@vuu-ui/vuu-table-extras/src/column-menu/column-menu-utils";
 
 export const DefaultColumnList = () => {
   const initialColumns = useMemo<ColumnItem[]>(
