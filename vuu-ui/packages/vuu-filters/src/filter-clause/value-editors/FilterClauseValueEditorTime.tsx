@@ -43,11 +43,11 @@ export const FilterClauseValueEditorTime = (
   return (
     <VuuTimePicker
       data-field="value"
-      inputProps={inputProps}
+      // inputProps={inputProps}
       className={className}
       onBlur={onBlur}
       onCommit={handleCommit}
-      selectedDate={date}
+      // selectedDate={date}
     />
   );
 };
