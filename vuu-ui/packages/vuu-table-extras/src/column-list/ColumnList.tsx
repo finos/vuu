@@ -247,7 +247,9 @@ export const ColumnList = ({
               onChange={onChangeListItem}
               onClick={handleClick}
               permissions={permissions}
-              searchPattern={searchState.searchText}
+              searchPattern={
+                searchState.searchText.toLowerCase() as Lowercase<string>
+              }
               value={columnItem}
             />
           ))}
