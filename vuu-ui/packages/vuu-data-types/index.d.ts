@@ -118,12 +118,14 @@ export declare type DataValueTypeSimple =
   | "boolean"
   | "json"
   | DateTimeDataValueTypeSimple
+  | TimeDataValueTypeSimple
   | "checkbox";
 
 export declare type DataValueType =
   | DataValueTypeSimple
   | DataValueTypeDescriptor;
 
+export declare type TimeDataValueTypeSimple = "time";
 export declare type DateTimeDataValueTypeSimple = "date/time";
 
 export declare type DateTimeDataValueType =
@@ -158,6 +160,13 @@ export declare type DateTimeDataValueDescriptor = Omit<
   "type"
 > & {
   type: DateTimeDataValueType;
+};
+
+export declare type TimeDataValueDescriptor = Omit<
+  DataValueDescriptor,
+  "type"
+> & {
+  type: TimeDataValueType;
 };
 
 export interface DataSourceFilter extends VuuFilter {

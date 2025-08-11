@@ -37,7 +37,7 @@ export const getFocusedFieldDetails = (): [number, string] | [] => {
       return [getElementDataIndex(filterClause), getFilterClauseDetails(field)];
     }
   } else if (field?.matches(".saltCalendar")) {
-    console.log("muthafucker is ins a calendar");
+    console.log("its in a calendar");
   }
   // const filterClause = queryClosest(field, ".vuuFilterClause");
   // if (filterClause && field) {
