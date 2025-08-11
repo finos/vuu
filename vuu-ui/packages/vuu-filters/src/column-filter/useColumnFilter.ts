@@ -4,7 +4,7 @@ import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 export type FilterValue = string | number;
 
 export const assertValidValue = (
-  { serverDataType }: ColumnDescriptor,
+  { serverDataType: _ }: ColumnDescriptor,
   operator: FilterOp | "between",
   value?: FilterValue | FilterValue[],
 ) => {
@@ -33,7 +33,7 @@ export interface ColumnFilterHookProps {
   operator?: FilterOp | "between";
 }
 
-export const useColumnFilter = ({
-  column,
-  operator = "=",
-}: ColumnFilterHookProps) => {};
+// export const useColumnFilter = ({
+//   column,
+//   operator = "=",
+// }: ColumnFilterHookProps) => {};

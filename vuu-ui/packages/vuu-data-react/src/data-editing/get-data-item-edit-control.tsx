@@ -49,10 +49,6 @@ export const getDataItemEditControl = ({
     onCommit(evt, value.toString());
   };
 
-  const handleCommitDate: CommitHandler<HTMLElement, Date> = (evt, value) => {
-    onCommit(evt, value.toString());
-  };
-
   if (dataDescriptor.editable === false) {
     return (
       <VuuInput

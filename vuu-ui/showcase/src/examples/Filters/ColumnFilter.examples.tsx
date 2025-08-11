@@ -55,24 +55,13 @@ export const TimeColumnFilter = () => {
     [],
   );
 
-  const { VuuDataSource } = useData();
-  const dataSource = useMemo(() => {
-    const schema = getSchema(tableName);
-    return new VuuDataSource({
-      columns: schema.columns.map(toColumnName),
-      table: schema.table,
-    });
-  }, [VuuDataSource]);
-
   return (
-    // <DataSourceProvider dataSource={dataSource}>
     <div style={{ padding: 100 }}>
       <FormField>
         <FormFieldLabel>Last Update</FormFieldLabel>
         <ColumnFilter column={column} table={table} />
       </FormField>
     </div>
-    // </DataSourceProvider>
   );
 };
 
