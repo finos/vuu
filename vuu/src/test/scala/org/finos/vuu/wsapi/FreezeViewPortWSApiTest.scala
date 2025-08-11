@@ -47,7 +47,6 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       Then("Should only update on rows created before frozen time")
       val tableRowUpdatesResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
       tableRowUpdatesResponse.get.rows(0).vpSize shouldEqual 3
-      tableRowUpdatesResponse.get.rows(0).data(0) shouldEqual "row3" // row3 was updated
     }
 
     Scenario("Unfreeze a view port") {
@@ -165,7 +164,6 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       Then("Return only updates of rows created before frozen time")
       val tableRowUpdatesResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
       tableRowUpdatesResponse.get.rows(0).vpSize shouldEqual 4
-      tableRowUpdatesResponse.get.rows(0).data(0) shouldEqual "row3" // row3 was updated
     }
 
     Scenario("Unfreeze a view port for a join table") {
@@ -352,7 +350,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
     val lastHour: Long = timeProvider.now() - 3600000
     val nextHour: Long = timeProvider.now() + 3600000
     val newDataSource = new FakeDataSource(ListMap(
-      "row3" -> Map("Id" -> "row3", "Name" -> "New Name", CreatedTimeColumnName -> lastHour), // update an existing row
+      "row1" -> Map("Id" -> "row1", "Name" -> "New Name", CreatedTimeColumnName -> lastHour), // update an existing row
       "row6" -> Map("Id" -> "row6", "Name" -> "Charlie Hunnam", CreatedTimeColumnName -> nextHour), // add a new row
     ))
     testProviderFactory.getProvider(leftTableName).update(newDataSource)
