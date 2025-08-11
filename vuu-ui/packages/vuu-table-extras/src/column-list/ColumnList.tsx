@@ -35,6 +35,7 @@ import {
 } from "./useColumnList";
 
 import cssColumnList from "./ColumnList.css";
+import { useHighlighting } from "@vuu-ui/vuu-table";
 
 export const classBase = "vuuColumnList";
 export const classBaseListItem = "vuuColumnListItem";
@@ -82,17 +83,22 @@ const ColumnListItem = ({
   index,
   item,
   permissions: { allowHideColumns, allowRemoveColumns, allowReorderColumns },
+  searchPattern = "",
   ...optionProps
 }: OptionProps & {
   index: number;
   item: ColumnItem;
   permissions: ColumnListPermissions;
+  searchPattern?: Lowercase<string>;
 }) => {
   const hideOnly = allowHideColumns && !allowRemoveColumns;
   const removeOnly = !allowHideColumns && allowRemoveColumns;
   const hideAndRemove = allowHideColumns && allowRemoveColumns;
 
   const { handleRef, ref } = useSorting(item.name, index, allowReorderColumns);
+  const value = getColumnLabel(item as ColumnDescriptor);
+  const valueWithHighlighting = useHighlighting(value, searchPattern);
+
   return (
     <Option
       {...optionProps}
@@ -117,9 +123,7 @@ const ColumnListItem = ({
           checked={hideOnly ? item?.hidden !== true : item?.subscribed}
         />
       ) : null}
-      <span className={`${classBase}-text`}>
-        {getColumnLabel(item as ColumnDescriptor)}
-      </span>
+      <span className={`${classBase}-text`}>{valueWithHighlighting}</span>
       {hideAndRemove ? (
         <Switch
           className={`${classBase}-switch`}
@@ -243,6 +247,9 @@ export const ColumnList = ({
               onChange={onChangeListItem}
               onClick={handleClick}
               permissions={permissions}
+              searchPattern={
+                searchState.searchText.toLowerCase() as Lowercase<string>
+              }
               value={columnItem}
             />
           ))}
