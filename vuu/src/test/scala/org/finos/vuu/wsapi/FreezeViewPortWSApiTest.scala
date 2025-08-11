@@ -47,6 +47,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       Then("Should only update on rows created before frozen time")
       val tableRowUpdatesResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
       tableRowUpdatesResponse.get.rows(0).vpSize shouldEqual 3
+      tableRowUpdatesResponse.get.rows(0).data(0) shouldEqual "row3" // row3 was updated
     }
 
     Scenario("Unfreeze a view port") {
@@ -64,7 +65,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
       When("A new row is added to table")
       addNewRow(tableName2)
-      Then("Should not update on a new row when the table is frozen")
+      Then("Should not update on a new row when the view port is frozen")
       // TODO wait for 100+ miliseconds and verify no TableRowUpdates received
 
       When("request unfreezing view port")
@@ -164,6 +165,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       Then("Return only updates of rows created before frozen time")
       val tableRowUpdatesResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
       tableRowUpdatesResponse.get.rows(0).vpSize shouldEqual 4
+      tableRowUpdatesResponse.get.rows(0).data(0) shouldEqual "row3" // row3 was updated
     }
 
     Scenario("Unfreeze a view port for a join table") {
@@ -179,6 +181,11 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       val freezeResponseBody = assertBodyIsInstanceOf[FreezeViewPortSuccess](freezeVPResponse)
       freezeResponseBody.viewPortId shouldEqual viewPortId
 
+      When("A new row is added to join table")
+      addNewRowToLeftTable(leftTableName2)
+      Then("Should not update on a new row when the view port is frozen")
+      // TODO wait for 100+ miliseconds and verify no TableRowUpdates received
+
       When("request unfreezing view port")
       val unfreezeVPRequest = UnfreezeViewPortRequest(viewPortId)
       val unfreezeRrequestId = vuuClient.send(sessionId, tokenId, unfreezeVPRequest)
@@ -188,12 +195,9 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       val unfreezeResponseBody = assertBodyIsInstanceOf[UnfreezeViewPortSuccess](unfreezeResponse)
       unfreezeResponseBody.viewPortId shouldEqual viewPortId
 
-      When("A new row is added to left table")
-      addNewRowToJoinTable()
-
       Then("Return updates of all rows")
       val tableRowUpdatesResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
-      tableRowUpdatesResponse.get.rows(0).vpSize shouldEqual 4
+      tableRowUpdatesResponse.get.rows(0).vpSize shouldEqual 5
     }
   }
 
@@ -259,7 +263,6 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
     val rightTableDef1 = createRightTableDef(rightTableName1)
     val rightTableDef2 = createRightTableDef(rightTableName2)
-    System.out.println("MYDEBUG lastHour " + lastHour)
     val rightDataSource = new FakeDataSource(ListMap(
       "row1" -> Map("Id" -> "row1", "Description" -> "This is row1", CreatedTimeColumnName -> lastHour),
       "row2" -> Map("Id" -> "row2", "Description" -> "This is row2", CreatedTimeColumnName -> lastHour),
@@ -348,28 +351,19 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
   private def updateJoinTable(leftTableName: String): Unit = {
     val lastHour: Long = timeProvider.now() - 3600000
     val nextHour: Long = timeProvider.now() + 3600000
-    System.out.println("MYDEBUG update join table ")
-    System.out.println("MYDEBUG lastHour " + lastHour)
-    System.out.println("MYDEBUG nextHour " + nextHour)
     val newDataSource = new FakeDataSource(ListMap(
       "row3" -> Map("Id" -> "row3", "Name" -> "New Name", CreatedTimeColumnName -> lastHour), // update an existing row
-      "row6" -> Map("Id" -> "row6", "Name" -> "Tom Thatcher", "Account" -> 134, CreatedTimeColumnName -> nextHour), // add a new row
+      "row6" -> Map("Id" -> "row6", "Name" -> "Charlie Hunnam", CreatedTimeColumnName -> nextHour), // add a new row
     ))
     testProviderFactory.getProvider(leftTableName).update(newDataSource)
   }
 
-  private def addNewRowToJoinTable(): Unit = {
+  private def addNewRowToLeftTable(leftTableName: String): Unit = {
     val nextHour: Long = timeProvider.now() + 3600000
     val newDataSource = new FakeDataSource(ListMap(
-      "row6" -> Map("Id" -> "row6", "Name" -> "Charlie Hunnam", "Account" -> 145, CreatedTimeColumnName -> nextHour), // add a new row
+      "row6" -> Map("Id" -> "row6", "Name" -> "Charlie Hunnam", CreatedTimeColumnName -> nextHour), // add a new row
     ))
-    testProviderFactory.getProvider(leftTableName1).update(newDataSource)
-
-    /*val newDataSource2 = new FakeDataSource(ListMap(
-      "row4" -> Map("Id" -> "row4", "Description" -> "This is row4", CreatedTimeColumnName -> nextHour), // add a new row
-      "row5" -> Map("Id" -> "row5", "Description" -> "This is row5", CreatedTimeColumnName -> nextHour), // add a new row
-    ))
-    testProviderFactory.getProvider(rightTableName).update(newDataSource2)*/
+    testProviderFactory.getProvider(leftTableName).update(newDataSource)
   }
 
 }

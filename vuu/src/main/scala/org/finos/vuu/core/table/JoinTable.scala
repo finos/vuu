@@ -458,7 +458,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
               previous
             case data: RowWithData =>
               val createdTimeOfRow: Long = data.get(CreatedTimeColumnName).asInstanceOf[Long]
-              if (createdTimeOfRow < minCreatedTime) {
+              if (createdTimeOfRow > 0 && createdTimeOfRow < minCreatedTime) {
                 minCreatedTime = createdTimeOfRow
               }
               val lastUpdatedTimeOfRow: Long = data.get(LastUpdatedTimeColumnName).asInstanceOf[Long]
