@@ -15,7 +15,7 @@ interface FilterClauseValueEditorTimeProps
 export const FilterClauseValueEditorTime = (
   props: FilterClauseValueEditorTimeProps,
 ) => {
-  const { inputProps, className, onChangeValue, operator, value } = props;
+  const { className, onChangeValue, operator, value } = props;
   const toEpochMilliS = getEpochMillisConverter(operator);
 
   const [date, setDate] = useState<DateValue | undefined>(() =>
