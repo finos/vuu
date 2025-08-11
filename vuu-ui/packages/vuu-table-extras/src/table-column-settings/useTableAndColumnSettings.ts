@@ -133,7 +133,7 @@ export const useTableAndColumnSettings = ({
   );
 
   showTableSettingsRef.current = useCallback(() => {
-    showContextPanel("TableSettings", "DataGrid Settings", {
+    showContextPanel("TableSettings", "Table Settings", {
       availableColumns:
         availableColumns ??
         tableConfig.columns.map(({ name, serverDataType }) => ({
