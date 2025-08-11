@@ -397,7 +397,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
    * @return
    */
   override def pullRow(key: String): RowData = {
-    pullRow(key, viewPortColumns)
+    pullRowHelper(key, viewPortColumns, includeDefaultColumns = true)
   }
 
   override def pullRowFiltered(key: String, columns: ViewPortColumns): RowData = {
@@ -425,6 +425,10 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
   }
 
   override def pullRow(key: String, columns: ViewPortColumns): RowData = {
+    pullRowHelper(key, columns)
+  }
+
+  private def pullRowHelper(key: String, columns: ViewPortColumns, includeDefaultColumns: Boolean = false): RowData = {
 
     val columnsByTable = columns.getColumns()
       .filter(_.isInstanceOf[JoinColumn])
@@ -471,10 +475,10 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
         }
       })
 
-      val foldedMapWithDefaultColumns = foldedMap ++ Map(CreatedTimeColumnName -> minCreatedTime, LastUpdatedTimeColumnName -> maxLastUpdatedTime)
-      val joinedData = RowWithData(key, foldedMapWithDefaultColumns)
+      val dataMap = if (includeDefaultColumns) foldedMap ++ Map(CreatedTimeColumnName -> minCreatedTime, LastUpdatedTimeColumnName -> maxLastUpdatedTime) else foldedMap
+      val joinedData = RowWithData(key, dataMap)
       val calculatedData = calculatedColumns.map(c => c.name -> c.getData(joinedData)).toMap
-      RowWithData(key, foldedMapWithDefaultColumns ++ calculatedData)
+      RowWithData(key, dataMap ++ calculatedData)
     }
   }
 
