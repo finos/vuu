@@ -21,6 +21,12 @@
     .vuuIcon {
       --vuu-icon-color: var(--salt-content-secondary-foreground);
     }
+
+    .vuuHighlight {
+      color: var(--vuu-color-blue-40);
+      text-decoration: underline;
+    }
+
   }
 
   .vuuColumnList-text {

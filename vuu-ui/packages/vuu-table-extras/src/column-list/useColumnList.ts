@@ -53,29 +53,23 @@ export const useColumnList = ({
   );
 
   useMemo(() => {
-    if (searchState.searchText) {
+    const value = searchState.searchText.toLowerCase();
+    if (value) {
+      const pattern = value.toLowerCase();
       visibleColumnsRef.current = columnItems.filter(
-        (item) => item.name.indexOf(searchState.searchText) !== -1,
+        ({ name, label = name }) => label.toLowerCase().indexOf(pattern) !== -1,
       );
+    } else {
+      visibleColumnsRef.current = undefined;
     }
   }, [columnItems, searchState.searchText]);
 
-  const handleChangeSearchInput = useCallback<FormEventHandler>(
-    (evt) => {
-      const { value } = evt.target as HTMLInputElement;
-      if (value) {
-        visibleColumnsRef.current = columnItems.filter(
-          (item) => item.name.indexOf(value) !== -1,
-        );
-      } else {
-        visibleColumnsRef.current = undefined;
-      }
-      setSearchState({
-        searchText: value,
-      });
-    },
-    [columnItems],
-  );
+  const handleChangeSearchInput = useCallback<FormEventHandler>((evt) => {
+    const { value } = evt.target as HTMLInputElement;
+    setSearchState({
+      searchText: value,
+    });
+  }, []);
 
   const handleChangeListItem = useCallback(
     ({ target }: SyntheticEvent) => {
