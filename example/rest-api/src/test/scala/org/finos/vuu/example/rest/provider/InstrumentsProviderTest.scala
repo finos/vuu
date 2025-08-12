@@ -30,7 +30,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
 
       getInstrumentsProvider(mockBackend).doStart()
 
-      ((rowKey: String, rowUpdate: RowData, timeStamp: Long) => mockTable.processUpdate(rowKey, rowUpdate)).verify(expectedRow.get(KEY_FIELD).toString, expectedRow, *).once
+      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify(expectedRow.get(KEY_FIELD).toString, expectedRow).once
     }
 
     Scenario("can correctly make an external call, parse response and update the table WHEN server responds with multiple instruments") {
@@ -42,7 +42,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
 
       getInstrumentsProvider(mockBackend).doStart()
 
-      expectedRows.foreach(row => ((rowKey: String, rowUpdate: RowData, timeStamp: Long) => mockTable.processUpdate(rowKey, rowUpdate)).verify(row.get(KEY_FIELD).toString, row, *).once)
+      expectedRows.foreach(row => ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify(row.get(KEY_FIELD).toString, row).once)
     }
 
 
