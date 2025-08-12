@@ -43,6 +43,7 @@ case class TableDefs protected(realizedTableDefs: List[TableDef], tableDefs: Lis
 }
 
 case class ModuleFactoryNode protected(tableDefs: TableDefs,
+                                       @deprecated("Replaced by DefaultRpcHandler.rpcHandlerMap")
                                        rpc: List[IVuuServer => RpcHandler],
                                        vsName: String, staticServedResources: List[StaticServedResource],
                                        rest: List[IVuuServer => RestService],
@@ -83,6 +84,7 @@ case class ModuleFactoryNode protected(tableDefs: TableDefs,
     ModuleFactoryNode(tableDefs.addJoin(func), rpc, vsName, staticServedResources, rest, viewPortDefs, tableDefContainer, unrealizedViewPortDefs)
   }
 
+  @deprecated("Replaced by DefaultRpcHandler.rpcHandlerMap")
   def addRpcHandler(rpcFunc: IVuuServer => RpcHandler): ModuleFactoryNode = {
     ModuleFactoryNode(tableDefs, rpc ++ List(rpcFunc), vsName, staticServedResources, rest, viewPortDefs, tableDefContainer, unrealizedViewPortDefs)
   }
