@@ -47,7 +47,7 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
   def getTableDef: TableDef
 
-  def processUpdate(rowUpdate: RowData, timeStamp: Long): Unit = {
+  def processUpdate(rowUpdate: RowData): Unit = {
     processUpdate(rowUpdate.key(), rowUpdate)
   }
 
