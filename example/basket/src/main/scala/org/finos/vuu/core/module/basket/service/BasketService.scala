@@ -64,8 +64,8 @@ class BasketService(val table: DataTable, val omsApi: OmsApi)(implicit clock: Cl
   }
 
   def createBasket(params: RpcParams): RpcFunctionResult = {
-    val sourceBasketId: String = params.namedParams("sourceBasketId").toString
-    val basketTradeName: String = params.namedParams("basketTradeName").toString
+    val sourceBasketId: String = params.namedParams("sourceBasketId").asInstanceOf[String]
+    val basketTradeName: String = params.namedParams("basketTradeName").asInstanceOf[String]
     val basketTradeId = BasketTradeId.oneNew(params.ctx.session.user)
     val constituents = getConstituentsForSourceBasket(sourceBasketId)
 
