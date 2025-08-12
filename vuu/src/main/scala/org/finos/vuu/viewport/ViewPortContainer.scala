@@ -88,6 +88,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     viewPortDef.service.processRpcRequest(rpcName, new RpcParams(null, params, Some(viewPort.getColumns), Some(viewPort.getKeys), ctx))
   }
 
+  @deprecated("Replaced by DefaultRpcHandler.rpcHandlerMap")
   def callRpcService(vpId: String, method: String, params: Array[Any], namedParams: Map[String, Any], session: ClientSessionId)(ctx: RequestContext): ViewPortAction = {
     val viewPort = this.getViewPortById(vpId)
 

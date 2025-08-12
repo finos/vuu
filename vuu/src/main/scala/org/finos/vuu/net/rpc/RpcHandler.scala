@@ -38,6 +38,7 @@ trait RpcHandler extends StrictLogging {
     this.getClass.getInterfaces.exists(_.getSimpleName == serviceIf)
   }
 
+  @deprecated("Replaced by DefaultRpcHandler.rpcHandlerMap")
   // Note this map is not used in DefaultRpcHandler, hence if using DefaultRpcHandler, register directly with DefaultRpcHandler.registerRpc
   val methodsAndParams: Map[String, Array[(String, Array[Type], Method)]] = this.getClass.getMethods.map(method => (method.getName, method.getGenericParameterTypes, method)).groupBy(_._1)
 
@@ -46,6 +47,7 @@ trait RpcHandler extends StrictLogging {
    */
   def processRpcRequest(rpcName: String, params: RpcParams): RpcFunctionResult = new RpcFunctionFailure("Unsupported request type")
 
+  @deprecated("Replaced by DefaultRpcHandler.rpcHandlerMap")
   def processViewPortRpcCall(methodName: String, rcpParams: RpcParams):ViewPortAction = {
 
     val (params, ctx) = (rcpParams.params, rcpParams.ctx)
@@ -87,6 +89,7 @@ trait RpcHandler extends StrictLogging {
     }
   }
 
+  @deprecated("Replaced by DefaultRpcHandler.rpcHandlerMap")
   def processRpcCall(msg: ViewServerMessage, rpc: RpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
 
     if (!methodsAndParams.contains(rpc.method)) {
@@ -128,9 +131,10 @@ trait RpcHandler extends StrictLogging {
     }
   }
 
-  def toO(x: Any): AnyRef = x.asInstanceOf[AnyRef]
+  private def toO(x: Any): AnyRef = x.asInstanceOf[AnyRef]
 
-  def findBestMatchingMethod(rpc: RpcCall, methods: Array[(String, Array[java.lang.reflect.Type], Method)]): Option[Method] = {
+  @deprecated("Replaced by DefaultRpcHandler.rpcHandlerMap")
+  private def findBestMatchingMethod(rpc: RpcCall, methods: Array[(String, Array[java.lang.reflect.Type], Method)]): Option[Method] = {
 
     val size = rpc.params.length + 1
 
@@ -142,7 +146,7 @@ trait RpcHandler extends StrictLogging {
     }
   }
 
-  def findBestMatchingMethod(method: String, params: Array[Any], methods: Array[(String, Array[java.lang.reflect.Type], Method)]): Option[Method] = {
+  private def findBestMatchingMethod(method: String, params: Array[Any], methods: Array[(String, Array[java.lang.reflect.Type], Method)]): Option[Method] = {
 
     val size = params.length + 1
 
@@ -154,7 +158,7 @@ trait RpcHandler extends StrictLogging {
     }
   }
 
-  def paramsEqualsRpcParams(method: Method, params: Array[Any]): Boolean = {
+  private def paramsEqualsRpcParams(method: Method, params: Array[Any]): Boolean = {
 
     val assignable = params.zip(method.getGenericParameterTypes).map({ case (value, classParam) =>
       classParam.getClass.isAssignableFrom(value.getClass)
@@ -163,7 +167,8 @@ trait RpcHandler extends StrictLogging {
     assignable.length == params.length
   }
 
-  def paramsEqualsRpcParams(method: Method, rpcCall: RpcCall): Boolean = {
+  @deprecated("Replaced by DefaultRpcHandler.rpcHandlerMap")
+  private def paramsEqualsRpcParams(method: Method, rpcCall: RpcCall): Boolean = {
 
     val assignable = rpcCall.params.zip(method.getGenericParameterTypes).map({ case (value, classParam) =>
       classParam.getClass.isAssignableFrom(value.getClass)
@@ -172,7 +177,7 @@ trait RpcHandler extends StrictLogging {
     assignable.length == rpcCall.params.length
   }
 
-  def onError(message: String, code: Int): Option[ViewServerMessage] = {
+  private def onError(message: String, code: Int): Option[ViewServerMessage] = {
     None
   }
 

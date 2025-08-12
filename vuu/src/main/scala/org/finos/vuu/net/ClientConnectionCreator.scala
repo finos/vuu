@@ -164,6 +164,7 @@ class DefaultMessageHandler(val channel: Channel,
     }
   }
 
+  @deprecated("RpcCall is replaced by RpcRequest")
   def handleModuleRpcMsg(msg: ViewServerMessage, rpc: RpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
     moduleContainer.get(msg.module) match {
       case Some(module) =>

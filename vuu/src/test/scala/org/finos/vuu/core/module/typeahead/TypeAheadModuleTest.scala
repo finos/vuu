@@ -12,6 +12,7 @@ import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
+@deprecated("TypeAheadModule is replaced by ViewportTypeAheadRpcHandler")
 class TypeAheadModuleTest extends AnyFeatureSpec with Matchers with GivenWhenThen {
 
   def toVsMsg(body: RpcCall): ViewServerMessage = {

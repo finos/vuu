@@ -46,7 +46,10 @@ trait ServerApi {
   def process(msg: ViewPortMenuTableRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
 
   def process(msg: ViewPortMenuSelectionRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
+
+  @deprecated("ViewPortRpcCall is replaced by RpcRequest")
   def process(msg: ViewPortRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
+
   def process(msg: ViewPortEditCellRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
 
   def process(msg: ViewPortEditRowRpcCall)(ctx: RequestContext): Option[ViewServerMessage]

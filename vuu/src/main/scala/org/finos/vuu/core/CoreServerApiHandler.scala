@@ -15,7 +15,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
                            val tableContainer: TableContainer,
                            val providers: ProviderContainer)(implicit timeProvider: Clock) extends ServerApi with StrictLogging {
 
-
+  @deprecated("ViewPortRpcCall is replaced by RpcRequest")
   override def process(msg: ViewPortRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.callRpcService(msg.vpId, msg.rpcName, msg.params, msg.namedParams, ctx.session)(ctx)) match {
       case Success(action) =>
