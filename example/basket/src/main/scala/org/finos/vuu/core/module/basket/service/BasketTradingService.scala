@@ -6,7 +6,7 @@ import org.finos.vuu.core.module.basket.BasketConstants.Side
 import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketModule.BasketTradingConstituentTable
 import org.finos.vuu.core.table._
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcHandler, RpcParams}
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.order.oms.{CancelOrder, NewOrder, OmsApi}
 import org.finos.vuu.viewport._
@@ -17,21 +17,12 @@ trait BasketTradingServiceIF extends EditRpcHandler {
   def takeOffMarket(params: RpcParams): RpcFunctionResult
 }
 
-// TODO: see comment on processViewPortRpcCall for why we extends DefaultRpcHandler with RpcHandler
-class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(implicit clock: Clock, val tableContainer: TableContainer) extends DefaultRpcHandler with RpcHandler with BasketTradingServiceIF with StrictLogging {
+class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(implicit clock: Clock, val tableContainer: TableContainer) extends DefaultRpcHandler with BasketTradingServiceIF with StrictLogging {
 
   import org.finos.vuu.core.module.basket.BasketModule.{BasketTradingColumnNames => BT, BasketTradingConstituentColumnNames => BTC}
 
   registerRpc("sendToMarket", params => sendToMarket(params))
   registerRpc("takeOffMarket", params => takeOffMarket(params))
-  /**
-   * We switched to DefaultRpcHandler instead of RpcHandler so that ViewportTypeAheadRpcHandler is enabled by default.
-   * This class needs the processViewPortRpcCall from RpcHandler though.
-   * Ideally we should switch to use DefaultRpcHandler.processViewPortRpcCall
-   */
-  override def processViewPortRpcCall(methodName: String, rpcParams: RpcParams): ViewPortAction = {
-    super[RpcHandler].processViewPortRpcCall(methodName, rpcParams)
-  }
 
   /**
    * Send basket to market rpc call
