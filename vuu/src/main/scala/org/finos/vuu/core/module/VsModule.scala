@@ -12,8 +12,10 @@ import org.finos.toolbox.time.Clock
 import java.nio.file.Path
 
 trait RealizedViewServerModule extends ViewServerModule {
+  @deprecated("RpcCall is replaced by RpcRequest")
   def rpcHandlers: List[RpcHandler]
 
+  @deprecated("RpcCall is replaced by RpcRequest")
   def rpcHandlerByService(service: String): Option[RpcHandler] = {
     rpcHandlers.foreach(h => println("Found:" + h.getClass.getSimpleName + "serviceIF:" + h.implementsService(service)))
     rpcHandlers.find(p => p.implementsService(service))
@@ -33,6 +35,7 @@ trait  ViewServerModule {
 
   def serializationMixin: Object
 
+  @deprecated("RpcCall is replaced by RpcRequest")
   def rpcHandlersUnrealized: List[IVuuServer => RpcHandler]
 
   def getProviderForTable(table: DataTable, viewserver: IVuuServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider
