@@ -34,6 +34,7 @@ trait RpcHandler extends StrictLogging {
 
   lazy val menuMap: Map[String, ViewPortMenuItem] = menusAsMap()
 
+  @deprecated("Replaced by DefaultRpcHandler.rpcHandlerMap")
   def implementsService(serviceIf: String): Boolean = {
     this.getClass.getInterfaces.exists(_.getSimpleName == serviceIf)
   }
