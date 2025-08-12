@@ -1,14 +1,13 @@
 package org.finos.vuu.wsapi.helpers
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.provider.Provider
 
 case class TestProviderFactory() {
   private var providers: Map[String, TestProvider] = Map.empty[String, TestProvider]
 
-  def create(table: DataTable, dataSource: FakeDataSource)(implicit clock: Clock): TestProvider = {
+  def create(table: DataTable, dataSource: FakeDataSource): TestProvider = {
     val provider = new TestProvider(table, dataSource)
     providers = providers + (table.name -> provider)
     provider
@@ -22,7 +21,7 @@ case class TestProviderFactory() {
   }
 }
 
-class TestProvider(table: DataTable, fakeDataSource: FakeDataSource)(implicit clock: Clock) extends Provider with StrictLogging {
+class TestProvider(table: DataTable, fakeDataSource: FakeDataSource) extends Provider with StrictLogging {
 
   override def subscribe(key: String): Unit = {}
 
