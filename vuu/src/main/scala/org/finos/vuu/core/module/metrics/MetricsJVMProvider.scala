@@ -69,8 +69,8 @@ class MetricsJVMProvider(table: DataTable, viewPortContainer: ViewPortContainer)
     val heapMap = buildHeapData(heap) ++ buildMachineCores()
     val nonHeapMap = buildNonHeapData(nonHeap) ++ buildMachineCores()
 
-    table.processUpdate("heap", RowWithData("heap", heapMap), clock.now())
-    table.processUpdate("nonheap", RowWithData("nonheap", nonHeapMap), clock.now())
+    table.processUpdate("heap", RowWithData("heap", heapMap))
+    table.processUpdate("nonheap", RowWithData("nonheap", nonHeapMap))
   }
 
 }
