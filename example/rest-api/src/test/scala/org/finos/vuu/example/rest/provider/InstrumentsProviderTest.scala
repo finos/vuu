@@ -52,7 +52,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
 
       getInstrumentsProvider(mockBackend).doStart()
 
-      ((rowKey: String, rowUpdate: RowData, timeStamp: Long) => mockTable.processUpdate(rowKey, rowUpdate)).verify(*, *, *).never
+      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify(*, *).never
     }
 
     Scenario("skips updating table when response errors") {
@@ -60,7 +60,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
 
       getInstrumentsProvider(mockBackend).doStart()
 
-      ((rowKey: String, rowUpdate: RowData, timeStamp: Long) => mockTable.processUpdate(rowKey, rowUpdate)).verify(*, *, *).never
+      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify(*, *).never
     }
   }
 
