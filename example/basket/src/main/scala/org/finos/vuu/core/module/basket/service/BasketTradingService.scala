@@ -6,15 +6,15 @@ import org.finos.vuu.core.module.basket.BasketConstants.Side
 import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketModule.BasketTradingConstituentTable
 import org.finos.vuu.core.table._
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler, RpcHandler, RpcParams}
-import org.finos.vuu.net.{ClientSessionId, RequestContext}
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcHandler, RpcParams}
+import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.order.oms.{CancelOrder, NewOrder, OmsApi}
 import org.finos.vuu.viewport._
 
 trait BasketTradingServiceIF extends EditRpcHandler {
-  def sendToMarket(basketInstanceId: String)(ctx: RequestContext): ViewPortAction
+  def sendToMarket(params: RpcParams): RpcFunctionResult
 
-  def takeOffMarket(basketInstanceId: String)(ctx: RequestContext): ViewPortAction
+  def takeOffMarket(params: RpcParams): RpcFunctionResult
 }
 
 // TODO: see comment on processViewPortRpcCall for why we extends DefaultRpcHandler with RpcHandler
@@ -22,6 +22,8 @@ class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(implicit cl
 
   import org.finos.vuu.core.module.basket.BasketModule.{BasketTradingColumnNames => BT, BasketTradingConstituentColumnNames => BTC}
 
+  registerRpc("sendToMarket", params => sendToMarket(params))
+  registerRpc("takeOffMarket", params => takeOffMarket(params))
   /**
    * We switched to DefaultRpcHandler instead of RpcHandler so that ViewportTypeAheadRpcHandler is enabled by default.
    * This class needs the processViewPortRpcCall from RpcHandler though.
@@ -34,7 +36,8 @@ class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(implicit cl
   /**
    * Send basket to market rpc call
    */
-  override def sendToMarket(basketInstanceId: String)(ctx: RequestContext): ViewPortAction = {
+  override def sendToMarket(params: RpcParams): RpcFunctionResult = {
+    val basketInstanceId: String = params.namedParams("basketInstanceId").toString
     val tableRow = table.asTable.pullRow(basketInstanceId)
 
     logger.debug("Sending basket to market:" + basketInstanceId + " (row:" + tableRow + ")")
@@ -58,13 +61,14 @@ class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(implicit cl
 
     updateBasketTradeStatus(basketInstanceId, state = BasketStates.ON_MARKET)
 
-    ViewPortEditSuccess()
+    RpcFunctionSuccess(None)
   }
 
   /**
    * Take basket off market rpc call
    */
-  override def takeOffMarket(basketInstanceId: String)(ctx: RequestContext): ViewPortAction = {
+  override def takeOffMarket(params: RpcParams): RpcFunctionResult = {
+    val basketInstanceId: String = params.namedParams("basketInstanceId").toString
     val tableRow = table.asTable.pullRow(basketInstanceId)
 
     logger.debug("Tasking basket off market:" + basketInstanceId + " (row:" + tableRow + ")")
@@ -75,7 +79,7 @@ class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(implicit cl
       .flatMap(c => omsApi.getOrderId(clientOrderId = c.get(BTC.InstanceIdRic).toString))
       .foreach(orderId => omsApi.cancelOrder(CancelOrder(orderId)))
 
-    ViewPortEditSuccess()
+    RpcFunctionSuccess(None)
   }
 
   private def getConstituents(basketInstanceId: String): List[RowData] = {

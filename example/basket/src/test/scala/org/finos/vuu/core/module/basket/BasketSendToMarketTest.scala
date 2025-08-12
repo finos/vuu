@@ -6,8 +6,9 @@ import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.basket.BasketTestCaseHelper.{tickBasketDef, tickConstituentsDef, tickPrices}
-import org.finos.vuu.core.module.basket.service.{BasketServiceIF, BasketTradeId, BasketTradingServiceIF}
+import org.finos.vuu.core.module.basket.service.BasketServiceIF
 import org.finos.vuu.core.module.price.PriceModule
+import org.finos.vuu.net.rpc.RpcParams
 import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.test.VuuServerTestCase
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
@@ -70,10 +71,9 @@ class BasketSendToMarketTest extends VuuServerTestCase {
             )
           }
 
-          val tradingService = vuuServer.getViewPortRpcServiceProxy[BasketTradingServiceIF](vpBasketTrading)
-
+          val tradingService = vpBasketTrading.getStructure.viewPortDef.service
           And("send the basket to market")
-          tradingService.sendToMarket(basketTradeInstanceId)(vuuServer.requestContext)
+          tradingService.processRpcRequest("sendToMarket", new RpcParams(null, Map("basketInstanceId"-> basketTradeInstanceId), None, None, vuuServer.requestContext))
 
           vuuServer.runOnce()
 
@@ -86,7 +86,7 @@ class BasketSendToMarketTest extends VuuServerTestCase {
           }
 
           Then("Take the basket off the market")
-          tradingService.takeOffMarket(basketTradeInstanceId)(vuuServer.requestContext)
+          tradingService.processRpcRequest("takeOffMarket", new RpcParams(null, Map("basketInstanceId"-> basketTradeInstanceId), None, None, vuuServer.requestContext))
 
           vuuServer.runOnce()
 
