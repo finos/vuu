@@ -63,7 +63,7 @@ class BasketService(val table: DataTable, val omsApi: OmsApi)(implicit clock: Cl
     RowWithData(basketTradeInstanceId, Map(BT.InstanceId -> basketTradeInstanceId, BT.Status -> "OFF-MARKET", BT.BasketId -> sourceBasketId, BT.BasketName -> basketTradeName, BT.Side -> Side.Buy, BT.Units -> 1))
   }
 
-  def createBasket(params: RpcParams): RpcFunctionResult = {
+  override def createBasket(params: RpcParams): RpcFunctionResult = {
     val sourceBasketId: String = params.namedParams("sourceBasketId").asInstanceOf[String]
     val basketTradeName: String = params.namedParams("basketTradeName").asInstanceOf[String]
     val basketTradeId = BasketTradeId.oneNew(params.ctx.session.user)
