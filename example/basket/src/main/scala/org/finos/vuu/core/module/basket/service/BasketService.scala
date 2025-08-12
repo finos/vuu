@@ -7,10 +7,8 @@ import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketModule.BasketConstituentTable
 import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.table._
-import org.finos.vuu.net.RequestContext
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcFunctionFailure, RpcFunctionSuccess, RpcHandler, RpcParams}
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.order.oms.OmsApi
-import org.finos.vuu.viewport._
 
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -25,22 +23,14 @@ object BasketTradeId {
 }
 
 trait BasketServiceIF {
-  def createBasket(basketId: String, name: String)(ctx: RequestContext): ViewPortAction
+  def createBasket(params: RpcParams): RpcFunctionResult
 }
 
-// TODO: see comment on processViewPortRpcCall for why we extends DefaultRpcHandler with RpcHandler
-class BasketService(val table: DataTable, val omsApi: OmsApi)(implicit clock: Clock, val tableContainer: TableContainer) extends DefaultRpcHandler with RpcHandler with BasketServiceIF with StrictLogging {
+class BasketService(val table: DataTable, val omsApi: OmsApi)(implicit clock: Clock, val tableContainer: TableContainer) extends DefaultRpcHandler with BasketServiceIF with StrictLogging {
 
   import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames => BC, BasketTradingColumnNames => BT, BasketTradingConstituentColumnNames => BTC}
 
-  /**
-   * We switched to DefaultRpcHandler instead of RpcHandler so that ViewportTypeAheadRpcHandler is enabled by default.
-   * This class needs the processViewPortRpcCall from RpcHandler though.
-   * Ideally we should switch to use DefaultRpcHandler.processViewPortRpcCall
-   */
-  override def processViewPortRpcCall(methodName: String, rpcParams: RpcParams): ViewPortAction = {
-    super[RpcHandler].processViewPortRpcCall(methodName, rpcParams)
-  }
+  registerRpc("createBasket", params => createBasket(params))
 
   private def getConstituentsForSourceBasket(basketId: String): List[RowData] = {
     val table = tableContainer.getTable(BasketConstituentTable)
@@ -73,8 +63,10 @@ class BasketService(val table: DataTable, val omsApi: OmsApi)(implicit clock: Cl
     RowWithData(basketTradeInstanceId, Map(BT.InstanceId -> basketTradeInstanceId, BT.Status -> "OFF-MARKET", BT.BasketId -> sourceBasketId, BT.BasketName -> basketTradeName, BT.Side -> Side.Buy, BT.Units -> 1))
   }
 
-  def createBasket(sourceBasketId: String, basketTradeName: String)(ctx: RequestContext): ViewPortAction = {
-    val basketTradeId = BasketTradeId.oneNew(ctx.session.user)
+  def createBasket(params: RpcParams): RpcFunctionResult = {
+    val sourceBasketId: String = params.namedParams("sourceBasketId").toString
+    val basketTradeName: String = params.namedParams("basketTradeName").toString
+    val basketTradeId = BasketTradeId.oneNew(params.ctx.session.user)
     val constituents = getConstituentsForSourceBasket(sourceBasketId)
 
     tableContainer.getTable(BasketModule.BasketTradingTable) match {
@@ -100,7 +92,7 @@ class BasketService(val table: DataTable, val omsApi: OmsApi)(implicit clock: Cl
         logger.error("Cannot find the Basket Trading Constituent.")
     }
 
-    ViewPortCreateSuccess(basketTradeId)
+    RpcFunctionSuccess(Some(basketTradeId))
   }
 
   private def getLastPrice(priceTable: DataTable, ric: String): Option[Double] = {

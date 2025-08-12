@@ -6,12 +6,12 @@ import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames => B, BasketConstituentColumnNames => BC}
-import org.finos.vuu.core.module.basket.service.{BasketServiceIF, BasketTradeId, BasketTradingConstituentJoinServiceIF, BasketTradingServiceIF}
+import org.finos.vuu.core.module.basket.service.{BasketTradingConstituentJoinServiceIF, BasketTradingServiceIF}
 import org.finos.vuu.core.module.price.PriceModule
+import org.finos.vuu.net.rpc.{RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.test.{TestVuuServer, VuuServerTestCase}
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
-import org.finos.vuu.viewport.ViewPortCreateSuccess
 import org.scalatest.prop.Tables.Table
 
 class BasketMutateOffMarketTest extends VuuServerTestCase {
@@ -68,10 +68,10 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
           }
 
           Then("Get the Basket RPC Service and call create basket")
-          val basketService = vuuServer.getViewPortRpcServiceProxy[BasketServiceIF](vpBasket)
-          val vpAction = basketService.createBasket(".FTSE", "MyCustomBasket")(vuuServer.requestContext)
-          assert(vpAction.isInstanceOf[ViewPortCreateSuccess])
-          val basketTradeInstanceId = vpAction.asInstanceOf[ViewPortCreateSuccess].key
+          val basketService = vpBasket.getStructure.viewPortDef.service
+          val rpcResult = basketService.processRpcRequest("createBasket", new RpcParams(null, Map("sourceBasketId" -> ".FTSE", "basketTradeName" -> "MyCustomBasket"), None, None, vuuServer.requestContext))
+          assert(rpcResult.isInstanceOf[RpcFunctionSuccess])
+          val basketTradeInstanceId = rpcResult.asInstanceOf[RpcFunctionSuccess].optionalResult.get.asInstanceOf[String]
 
           val vpBasketTrading = vuuServer.createViewPort(BasketModule.NAME, BasketTradingTable)
 
@@ -243,9 +243,9 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
     constituentProvider.tick(s"BP.L.$basketId", Map(BC.RicBasketId -> s"BP.L.$basketId", BC.Ric -> "BP.L", BC.BasketId -> basketId, BC.Weighting -> 0.1, BC.Side -> "BUY", BC.Description -> "Beyond Petroleum"))
 
     val vpBasket = vuuServer.createViewPort(BasketModule.NAME, BasketModule.BasketTable)
-    val basketService = vuuServer.getViewPortRpcServiceProxy[BasketServiceIF](vpBasket)
-    val vpAction = basketService.createBasket(basketId, basketTradeName)(vuuServer.requestContext)
-    assert(vpAction.isInstanceOf[ViewPortCreateSuccess])
-    vpAction.asInstanceOf[ViewPortCreateSuccess].key
+    val basketService = vpBasket.getStructure.viewPortDef.service
+    val rpcResult = basketService.processRpcRequest("createBasket", new RpcParams(null, Map("sourceBasketId" -> basketId, "basketTradeName" -> basketTradeName), None, None, vuuServer.requestContext))
+    assert(rpcResult.isInstanceOf[RpcFunctionSuccess])
+    rpcResult.asInstanceOf[RpcFunctionSuccess].optionalResult.get.asInstanceOf[String]
   }
 }
