@@ -29,6 +29,7 @@ abstract class EditableViewPortTest extends AbstractViewPortTestCase with Matche
       override def tableDefContainer: TableDefContainer = ???
       override def tableDefs: List[TableDef] = ???
       override def serializationMixin: AnyRef = ???
+      @deprecated("RpcCall is replaced by RpcRequest")
       override def rpcHandlersUnrealized: List[IVuuServer => RpcHandler] = ???
       override def getProviderForTable(table: DataTable, viewserver: IVuuServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider = ???
       override def staticFileResources(): List[StaticServedResource] = ???

@@ -87,12 +87,14 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
     val vs = this
 
     val realized = new RealizedViewServerModule {
+      @deprecated("RpcCall is replaced by RpcRequest")
       override def rpcHandlers: List[RpcHandler] = module.rpcHandlersUnrealized.map(_.apply(vs))
       override def restServices: List[RestService] = module.restServicesUnrealized.map(_.apply(vs))
       override def name: String = module.name
       override def tableDefContainer: TableDefContainer = module.tableDefContainer
       override def tableDefs: List[TableDef] = module.tableDefs
       override def serializationMixin: AnyRef = module.serializationMixin
+      @deprecated("RpcCall is replaced by RpcRequest")
       override def rpcHandlersUnrealized: List[IVuuServer => RpcHandler] = module.rpcHandlersUnrealized
       override def restServicesUnrealized: List[IVuuServer => RestService] = module.restServicesUnrealized
       override def getProviderForTable(table: DataTable, viewserver: IVuuServer)(implicit time: Clock, life: LifecycleContainer): Provider = {

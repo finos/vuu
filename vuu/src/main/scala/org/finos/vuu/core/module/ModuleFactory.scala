@@ -138,6 +138,7 @@ case class ModuleFactoryNode protected(tableDefs: TableDefs,
 
       override def serializationMixin: AnyRef = null
 
+      @deprecated("RpcCall is replaced by RpcRequest")
       override def rpcHandlersUnrealized: List[IVuuServer => RpcHandler] = {
         rpc
       }
