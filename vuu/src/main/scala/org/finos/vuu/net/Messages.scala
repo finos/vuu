@@ -126,6 +126,7 @@ case class ChangeViewPortRangeSuccess(viewPortId: String, from: Int, to: Int) ex
 
 case class OpenTreeNodeRequest(vpId: String, treeKey: String) extends MessageBody
 
+@deprecated("Replaced by RpcRequest")
 case class ViewPortRpcCall(vpId: String, rpcName: String, params: Array[Any], namedParams: Map[String, Any]) extends MessageBody
 
 case class ViewPortRpcResponse(vpId: String, method: String, action: ViewPortAction) extends MessageBody
@@ -179,6 +180,7 @@ case class MenuRpcCall(module: String, method: String, params: Array[Any], named
 
 case class MenuRpcResponse(module: String, method: String, result: ViewPortAction) extends MessageBody
 
+@deprecated("Replaced by RpcRequest")
 case class RpcCall(service: String, method: String, params: Array[Any], namedParams: Map[String, Any]) extends MessageBody
 
 case class RpcResponse(method: String, result: Any, error: Error) extends MessageBody

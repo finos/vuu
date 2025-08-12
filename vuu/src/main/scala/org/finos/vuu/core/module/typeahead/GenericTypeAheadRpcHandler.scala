@@ -5,6 +5,7 @@ import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.RequestContext
 import org.finos.vuu.net.rpc.RpcHandler
 
+@deprecated("Replaced by ViewportTypeAheadRpcHandler")
 class GenericTypeAheadRpcHandler(val tableContainer: TableContainer) extends TypeAheadRpcHandler with RpcHandler with StrictLogging {
 
   def getUniqueFieldValues(tableMap: Map[String, String], column: String, ctx: RequestContext): Array[String] = {
