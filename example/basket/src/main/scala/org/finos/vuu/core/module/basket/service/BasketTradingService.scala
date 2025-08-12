@@ -28,7 +28,7 @@ class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(implicit cl
    * Send basket to market rpc call
    */
   override def sendToMarket(params: RpcParams): RpcFunctionResult = {
-    val basketInstanceId: String = params.namedParams("basketInstanceId").toString
+    val basketInstanceId: String = params.namedParams("basketInstanceId").asInstanceOf[String]
     val tableRow = table.asTable.pullRow(basketInstanceId)
 
     logger.debug("Sending basket to market:" + basketInstanceId + " (row:" + tableRow + ")")
@@ -59,7 +59,7 @@ class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(implicit cl
    * Take basket off market rpc call
    */
   override def takeOffMarket(params: RpcParams): RpcFunctionResult = {
-    val basketInstanceId: String = params.namedParams("basketInstanceId").toString
+    val basketInstanceId: String = params.namedParams("basketInstanceId").asInstanceOf[String]
     val tableRow = table.asTable.pullRow(basketInstanceId)
 
     logger.debug("Tasking basket off market:" + basketInstanceId + " (row:" + tableRow + ")")
