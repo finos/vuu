@@ -10,6 +10,7 @@ export type ColumnPickerProps = Pick<
 > & {
   columns: ColumnDescriptor[];
   onSelect: (evt: SyntheticEvent, columnName: string) => void;
+  dropdownOnAutofocus?: boolean;
 };
 
 export const ColumnPicker = forwardRef(function ColumnPicker(
@@ -19,6 +20,7 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
     inputProps,
     onSelect,
     value: valueProp,
+    dropdownOnAutofocus = true,
   }: ColumnPickerProps,
   forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
@@ -35,6 +37,7 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
       data-field="column"
       ref={forwardedRef}
       title="column"
+      dropdownOnAutofocus={dropdownOnAutofocus}
     >
       {columns
         .filter(({ name }) =>

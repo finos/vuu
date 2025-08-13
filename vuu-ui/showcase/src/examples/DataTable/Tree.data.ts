@@ -579,6 +579,16 @@ export default [
                 },
               },
               {
+                id: "Filters/FilterClause/FilterClause/MultipleFilterClauseControlsWithDropDownAutofocusDisabled",
+                label:
+                  "MultipleFilterClauseControlsWithDropDownAutofocusDisabled",
+                nodeData: {
+                  componentName:
+                    "MultipleFilterClauseControlsWithDropDownAutofocusDisabled",
+                  path: "src/examples/Filters/FilterClause/FilterClause.examples.tsx",
+                },
+              },
+              {
                 id: "Filters/FilterClause/FilterClause/NewFilterClause",
                 label: "NewFilterClause",
                 nodeData: {
@@ -621,18 +631,15 @@ export default [
               },
               {
                 id: "Filters/FilterClause/FilterClause/FilterColumnWithDropdownOpenOnFocusDisabled",
-                label:
-                  "FilterColumnWithDropdownOpenOnFocusDisabled",
+                label: "FilterColumnWithDropdownOpenOnFocusDisabled",
                 nodeData: {
-                  componentName:
-                    "FilterColumnWithDropdownOpenOnFocusDisabled",
+                  componentName: "FilterColumnWithDropdownOpenOnFocusDisabled",
                   path: "src/examples/Filters/FilterClause/FilterClause.examples.tsx",
                 },
               },
               {
                 id: "Filters/FilterClause/FilterClause/FilterColumnAndOperatorWithDropdownOpenOnFocusDisabled",
-                label:
-                  "FilterColumnAndOperatorWithDropdownOpenOnFocusDisabled",
+                label: "FilterColumnAndOperatorWithDropdownOpenOnFocusDisabled",
                 nodeData: {
                   componentName:
                     "FilterColumnAndOperatorWithDropdownOpenOnFocusDisabled",
