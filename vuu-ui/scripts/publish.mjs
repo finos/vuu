@@ -22,7 +22,6 @@ const packages = [
   "vuu-table",
   "vuu-table-extras",
   "vuu-table-types",
-  "vuu-tanstack-table",
   "vuu-theme",
   "vuu-ui-controls",
   "vuu-utils",

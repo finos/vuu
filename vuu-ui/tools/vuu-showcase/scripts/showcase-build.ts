@@ -38,7 +38,7 @@ const cssInlinePlugin = {
     build.onLoad(
       {
         filter:
-          /packages\/(vuu|grid)-(context-menu|datatable|filters|layout|popups|shell|table-extras|ui-controls|table|tanstack-table)\/.*.css$/,
+          /packages\/(vuu|grid)-(context-menu|datatable|filters|layout|popups|shell|table-extras|ui-controls|table)\/.*.css$/,
       },
       async (args) => {
         const css = await fs.promises.readFile(args.path, "utf8");
