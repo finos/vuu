@@ -1,14 +1,14 @@
 package org.finos.vuu.core.sort
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.filter.{Filter, FilterClause, NoFilter}
-import org.finos.vuu.core.index._
-import org.finos.vuu.core.table.{Column, DataType, EmptyTablePrimaryKeys, TablePrimaryKeys, ViewPortColumnCreator}
-import org.finos.vuu.viewport.{RowSource, ViewPortColumns, ViewPortVisualLink}
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.core.auths.RowPermissionChecker
+import org.finos.vuu.core.filter.{Filter, FilterClause}
+import org.finos.vuu.core.index._
 import org.finos.vuu.core.table.column.{Error, Success}
+import org.finos.vuu.core.table.{Column, DataType, DefaultColumnNames, EmptyTablePrimaryKeys, TablePrimaryKeys, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
+import org.finos.vuu.viewport.{RowSource, ViewPortColumns, ViewPortVisualLink}
 
 case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Filter with StrictLogging {
 
@@ -78,10 +78,45 @@ case class RowPermissionFilter(checker: RowPermissionChecker) extends Filter wit
   override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     val filtered = primaryKeys.filter(key => {
       try {
-      checker.canSeeRow(source.pullRow(key, vpColumns))
+        // calling source.pullRow(key) rather than source.pullRow(key, vpColumns) because user might remove the columns we need from view port
+        checker.canSeeRow(source.pullRow(key))
       } catch {
         case e: Exception =>
           logger.error(s"Error while checking row permission for keys $primaryKeys with checker $checker", e)
+          false
+      }
+    }).toArray
+
+    InMemTablePrimaryKeys(ImmutableArray.from[String](filtered))
+  }
+}
+
+case class FrozenTimeFilter(frozenTime: Long) extends Filter with StrictLogging {
+  override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
+    val filtered = primaryKeys.filter(key => {
+      try {
+        val vuuCreatedTimestamp = source.pullRow(key).get(DefaultColumnNames.CreatedTimeColumnName).asInstanceOf[Long]
+        vuuCreatedTimestamp < frozenTime
+      } catch {
+        case e: Exception =>
+          logger.error(s"Error while checking frozen time for keys $primaryKeys with frozen time $frozenTime", e)
+          false
+      }
+    }).toArray
+
+    InMemTablePrimaryKeys(ImmutableArray.from[String](filtered))
+  }
+}
+
+case class RowPermissionAndFrozenTimeFilter(checker: RowPermissionChecker, frozenTime: Long) extends Filter with StrictLogging {
+  override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
+    val filtered = primaryKeys.filter(key => {
+      try {
+        val rowData = source.pullRow(key)
+        rowData.get(DefaultColumnNames.CreatedTimeColumnName).asInstanceOf[Long] < frozenTime && checker.canSeeRow(rowData)
+      } catch {
+        case e: Exception =>
+          logger.error(s"Error while checking row permission and view port frozen time for keys $primaryKeys with checker $checker and frozen time $frozenTime", e)
           false
       }
     }).toArray
@@ -118,7 +153,7 @@ case class AntlrBasedFilter(clause: FilterClause) extends Filter with StrictLogg
 
 
 trait FilterAndSort {
-  def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, permission: Option[RowPermissionChecker]): TablePrimaryKeys
+  def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, permission: Option[RowPermissionChecker], viewPortFrozenTime: Option[Long]): TablePrimaryKeys
 
   def filter: Filter
 
@@ -127,15 +162,15 @@ trait FilterAndSort {
 
 case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAndSort with StrictLogging {
 
-  override def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, checkerOption: Option[RowPermissionChecker]): TablePrimaryKeys = {
-    if(primaryKeys == null || primaryKeys.length == 0) {
+  override def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, checkerOption: Option[RowPermissionChecker], viewPortFrozenTime: Option[Long]): TablePrimaryKeys = {
+    if (primaryKeys == null || primaryKeys.length == 0) {
       // nothing to filter or sort
       return primaryKeys
     }
 
     try {
-      val realizedFilter = checkerOption match {
-        case Some(checker) => TwoStepCompoundFilter(RowPermissionFilter(checker), filter)
+      val realizedFilter = createDefaultFilter(checkerOption, viewPortFrozenTime) match {
+        case Some(defaultFilter) => TwoStepCompoundFilter(defaultFilter, filter)
         case None => filter
       }
 
@@ -149,6 +184,25 @@ case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAn
         logger.error("Error during filtering and sorting", e)
         //debugData(source, primaryKeys)
         EmptyTablePrimaryKeys
+    }
+  }
+
+  private def createDefaultFilter(checkerOption: Option[RowPermissionChecker], viewPortFrozenTime: Option[Long]): Option[Filter] = {
+    checkerOption match {
+      case Some(checker) =>
+        viewPortFrozenTime match {
+          case Some(frozenTime) =>
+            Some(RowPermissionAndFrozenTimeFilter(checker, frozenTime))
+          case None =>
+            Some(RowPermissionFilter(checker))
+        }
+      case None =>
+        viewPortFrozenTime match {
+          case Some(t) =>
+            Some(FrozenTimeFilter(t))
+          case None =>
+            None
+        }
     }
   }
 

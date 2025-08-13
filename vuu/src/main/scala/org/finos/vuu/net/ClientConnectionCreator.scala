@@ -145,6 +145,8 @@ class DefaultMessageHandler(val channel: Channel,
       case req: RemoveViewPortRequest => serverApi.process(req)(ctx)
       case req: EnableViewPortRequest => serverApi.process(req)(ctx)
       case req: DisableViewPortRequest => serverApi.process(req)(ctx)
+      case req: FreezeViewPortRequest => serverApi.process(req)(ctx)
+      case req: UnfreezeViewPortRequest => serverApi.process(req)(ctx)
       case req: GetViewPortMenusRequest => serverApi.process(req)(ctx)
       case req: ViewPortMenuSelectionRpcCall => serverApi.process(req)(ctx)
       case req: ViewPortMenuRowRpcCall => serverApi.process(req)(ctx)

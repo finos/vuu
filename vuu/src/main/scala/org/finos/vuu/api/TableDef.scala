@@ -2,6 +2,7 @@ package org.finos.vuu.api
 
 import org.finos.vuu.core.auths.RowPermissionChecker
 import org.finos.vuu.core.module.ViewServerModule
+import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName}
 import org.finos.vuu.core.table._
 import org.finos.vuu.feature.inmem.VuuInMemPluginLocator
 import org.finos.vuu.viewport.ViewPort
@@ -117,11 +118,15 @@ class SessionTableDef(name: String,
 
 class TableDef(val name: String,
                val keyField: String,
-               val columns: Array[Column],
+               val customColumns: Array[Column],
                val joinFields: Seq[String],
                val autosubscribe: Boolean = false,
                val links: VisualLinks = VisualLinks(),
                val indices: Indices) extends VuuInMemPluginLocator {
+
+  private val createdTimeColumn: SimpleColumn = SimpleColumn(CreatedTimeColumnName, customColumns.length, DataType.fromString("long"))
+  private val updatedTimeColumn: SimpleColumn = SimpleColumn(LastUpdatedTimeColumnName, customColumns.length + 1, DataType.fromString("long"))
+  val columns: Array[Column] = customColumns ++ Array(createdTimeColumn, updatedTimeColumn)
 
   private var module: ViewServerModule = null;
   private var permissionFunc: (ViewPort, TableContainer) => RowPermissionChecker = null

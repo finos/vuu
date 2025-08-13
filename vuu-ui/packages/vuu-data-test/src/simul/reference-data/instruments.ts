@@ -1,10 +1,13 @@
 import { isinGenerator } from "./isin-generator";
+import tableContainer from "../../core/table/TableContainer";
 import { currencies } from "./currencies";
 import { locations, suffixes } from "./locations";
 import { lotsizes } from "./lotsizes";
 import { random } from "../../data-utils";
-import { buildDataColumnMap, Table } from "../../Table";
+import { buildDataColumnMap } from "../../Table";
 import { schemas } from "../simul-schemas";
+
+const { createTable } = tableContainer;
 
 export type bbg = string;
 export type currency = string;
@@ -96,7 +99,7 @@ export const getRic = (defaultRic: string) => {
   return row?.[InstrumentColumnMap.ric] ?? defaultRic;
 };
 
-export const instrumentsTable = new Table(
+export const instrumentsTable = createTable(
   schemas.instruments,
   instrumentsData,
   buildDataColumnMap(schemas, "instruments"),

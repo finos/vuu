@@ -102,6 +102,18 @@ case class EnableViewPortSuccess(viewPortId: String) extends MessageBody
 
 case class EnableViewPortReject(viewPortId: String) extends MessageBody
 
+case class FreezeViewPortRequest(viewPortId: String) extends MessageBody
+
+case class FreezeViewPortSuccess(viewPortId: String) extends MessageBody
+
+case class FreezeViewPortReject(viewPortId: String, errorMessage: String) extends MessageBody
+
+case class UnfreezeViewPortRequest(viewPortId: String) extends MessageBody
+
+case class UnfreezeViewPortSuccess(viewPortId: String) extends MessageBody
+
+case class UnfreezeViewPortReject(viewPortId: String, errorMessage: String) extends MessageBody
+
 case class ChangeViewPortRequest(viewPortId: String, columns: Array[String], sort: SortSpec = SortSpec(List()), groupBy: Array[String] = Array(), filterSpec: FilterSpec = null, aggregations: Array[Aggregations] = Array()) extends MessageBody
 
 case class ChangeViewPortSuccess(viewPortId: String, columns: Array[String], sort: SortSpec = SortSpec(List()), groupBy: Array[String] = Array(), filterSpec: FilterSpec = null, aggregations: Array[Aggregations] = Array()) extends MessageBody

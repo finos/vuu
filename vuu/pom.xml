@@ -171,6 +171,12 @@
             <artifactId>awaitility-scala</artifactId>
             <version>4.3.0</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>
