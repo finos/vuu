@@ -66,6 +66,14 @@ object ClientHelperFns {
     vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, DisableViewPortRequest(vpId)))
   }
 
+  def freezeViewPort(sessionId: String, token: String, user: String, requestId: String, vpId: String)(implicit vsClient: ViewServerClient): Unit = {
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, FreezeViewPortRequest(vpId)))
+  }
+
+  def unfreezeViewPort(sessionId: String, token: String, user: String, requestId: String, vpId: String)(implicit vsClient: ViewServerClient): Unit = {
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, UnfreezeViewPortRequest(vpId)))
+  }
+
   def closeTreeNodeAsync(sessionId: String, token: String, user: String, requestId: String, vpId: String, treeKey: String)(implicit vsClient: ViewServerClient): Unit = {
     vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, CloseTreeNodeRequest(vpId, treeKey)))
   }
@@ -79,7 +87,7 @@ object ClientHelperFns {
   }
 
   def rpcTableUpdate(sessionId: String, token: String, user: String, table: ViewPortTable, key: String, data: Map[String, Any])(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(RequestId.oneNew().toString, sessionId, token, user, RpcUpdate(table, key, data)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, RpcUpdate(table, key, data)))
   }
 
   def getViewPortMenusAsync(sessionId: String, token: String, user: String, vpId: String)(implicit vsClient: ViewServerClient): Unit = {

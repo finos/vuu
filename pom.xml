@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.finos.vuu</groupId>
     <artifactId>vuu-parent</artifactId>
-    <version>0.9.77-SNAPSHOT</version>
+    <version>0.9.79-SNAPSHOT</version>
     <name>vuu-parent</name>
     <description>Vuu - A View Server in Scala and React</description>
     <url>https://github.com/finos/vuu</url>
@@ -64,7 +64,7 @@
         <maven.gpg.plugin.version>3.1.0</maven.gpg.plugin.version>
         <gpg.executable>gpg</gpg.executable>
         <publish.server.id>ossrh</publish.server.id>
-        <release.goals>install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish</release.goals>
+        <release.goals>install org.sonatype.central:central-publishing-maven-plugin:0.8.0:publish</release.goals>
         <github.global.server>github</github.global.server>
         <github.oauth.token>${env.GITHUB_TOKEN}</github.oauth.token>
     </properties>
@@ -157,7 +157,7 @@
                 <plugin>
                     <groupId>org.sonatype.central</groupId>
                     <artifactId>central-publishing-maven-plugin</artifactId>
-                    <version>0.7.0</version>
+                    <version>0.8.0</version>
                     <extensions>true</extensions>
                     <configuration>
                         <publishingServerId>${publish.server.id}</publishingServerId>

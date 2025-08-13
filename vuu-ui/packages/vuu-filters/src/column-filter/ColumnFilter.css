@@ -1,0 +1,10 @@
+.vuuColumnFilter {
+    border: solid 1px var(--salt-editable-borderColor);
+    border-radius: 4px;
+    max-width: 200px;
+}
+
+.vuuColumnFilter-trigger {
+    --saltButton-borderRadius: 4px 0px 0px 4px;
+    --saltButton-padding: var(--salt-spacing-200);
+}

@@ -17,7 +17,6 @@ class ModuleContainer {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   register(module: VuuModule<any>) {
-    console.log(`register module ${module.name}`);
     this.#modules.set(module.name, module);
   }
 
@@ -27,6 +26,10 @@ class ModuleContainer {
       return module;
     }
     throw Error(`[ModuleFactory] module ${name} not found`);
+  }
+
+  get moduleNames() {
+    return this.#modules.keys();
   }
 }
 

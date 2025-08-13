@@ -31,15 +31,6 @@ export interface IVuuModule<T extends string = string> {
   createDataSource: (tableName: T) => DataSource;
 }
 
-export interface VuuModuleConstructorProps<T extends string = string> {
-  menus?: Record<T, VuuMenu | undefined>;
-  name: string;
-  schemas: Record<T, Readonly<TableSchema>>;
-  services?: Record<T, RpcService[] | undefined>;
-  tables: Record<T, Table>;
-  vuuLinks?: Record<T, VuuLink[] | undefined>;
-}
-
 export type SessionTableMap = Record<string, Table>;
 
 export type RpcServiceRequestWithParams = VuuRpcViewportRequest & {
@@ -73,33 +64,32 @@ type Subscription = {
   viewportId: string;
   dataSource: DataSource;
 };
-export class VuuModule<T extends string = string> implements IVuuModule<T> {
-  #menus: Record<T, VuuMenu | undefined> | undefined;
+export abstract class VuuModule<T extends string = string>
+  implements IVuuModule<T>
+{
   #name: string;
   #runtimeVisualLinks = new Map<string, RuntimeVisualLink>();
-  #schemas: Record<T, Readonly<TableSchema>>;
   #sessionTableMap: SessionTableMap = {};
-  #tables: Record<T, Table>;
   #tableServices: Record<T, RpcService[] | undefined> | undefined;
-  #visualLinks: Record<T, VuuLink[] | undefined> | undefined;
   #subscriptionMap: Map<string, Subscription[]> = new Map();
 
-  constructor({
-    menus,
-    name,
-    schemas,
-    services,
-    tables,
-    vuuLinks: visualLinks,
-  }: VuuModuleConstructorProps<T>) {
-    this.#menus = menus;
+  constructor(name: string) {
     this.#name = name;
-    this.#schemas = schemas;
-    this.#tableServices = services;
-    this.#tables = tables;
-    this.#visualLinks = visualLinks;
-
     moduleContainer.register(this);
+  }
+
+  protected abstract menus?: Record<T, VuuMenu | undefined> | undefined;
+  protected abstract schemas: Record<T, Readonly<TableSchema>>;
+  protected abstract tables: Record<T, Table>;
+  protected abstract services?: Record<T, RpcService[] | undefined> | undefined;
+  protected abstract visualLinks?: Record<T, VuuLink[] | undefined>;
+
+  getTableSchema(tableName: string) {
+    return this.schemas[tableName as T];
+  }
+
+  getTableList() {
+    return Object.keys(this.tables);
   }
 
   private unregisterViewport = (viewportId: string) => {
@@ -205,14 +195,14 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
     config?: DataSourceConfig,
   ) => {
     const getVisualLinks = (tableName: string) => {
-      const linksForTable = this.#visualLinks?.[tableName as T] as VuuLink[];
+      const linksForTable = this.visualLinks?.[tableName as T] as VuuLink[];
       return linksForTable === undefined
         ? undefined
         : this.getLinks(this.#subscriptionMap, linksForTable);
     };
 
     const columnDescriptors = this.getColumnDescriptors(tableName);
-    const table = this.#tables[tableName];
+    const table = this.tables[tableName];
     const sessionTable = this.#sessionTableMap[tableName];
 
     const dataSource: DataSource = new TickingArrayDataSource({
@@ -220,11 +210,11 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
       columnDescriptors,
       getVisualLinks,
       keyColumn:
-        this.#schemas[tableName] === undefined
+        this.schemas[tableName] === undefined
           ? this.#sessionTableMap[tableName].schema.key
-          : this.#schemas[tableName].key,
+          : this.schemas[tableName].key,
       table: table || sessionTable,
-      menu: this.#menus?.[tableName],
+      menu: this.menus?.[tableName],
       rpcServices: this.getServices(tableName),
       sessionTables: this.#sessionTableMap,
       viewport,
@@ -248,7 +238,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
   };
 
   getServices(tableName: T) {
-    const tableServices = this.#tableServices?.[tableName];
+    const tableServices = this.services?.[tableName];
     if (Array.isArray(tableServices)) {
       return this.#moduleServices.concat(tableServices);
     } else {
@@ -258,10 +248,6 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
 
   protected get sessionTableMap() {
     return this.#sessionTableMap;
-  }
-
-  protected get tables() {
-    return this.#tables;
   }
 
   private getSessionTable(sessionTableName: string) {
@@ -277,7 +263,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
 
   private getColumnDescriptors(tableName: T) {
     const schema =
-      this.#schemas[tableName] || this.getSessionTable(tableName)?.schema;
+      this.schemas[tableName] || this.getSessionTable(tableName)?.schema;
     if (schema) {
       return schema.columns;
     } else {
@@ -294,7 +280,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
       const table = namedParams.table as VuuTable;
 
       if (selectedRowIds && table) {
-        const dataTable = this.#tables[table.table as T];
+        const dataTable = this.tables[table.table as T];
         if (dataTable) {
           const sessionTable = this.createSessionTableFromSelectedRows(
             dataTable,
@@ -382,7 +368,7 @@ export class VuuModule<T extends string = string> implements IVuuModule<T> {
       const { vpId } = rpcRequest;
       const sessionTable = this.getSessionTable(vpId);
       const { table } = sessionTable.schema.table;
-      const baseTable = this.#tables[table as T];
+      const baseTable = this.tables[table as T];
       if (baseTable) {
         for (let i = 0; i < sessionTable.data.length; i++) {
           const newRow = sessionTable.data[i];

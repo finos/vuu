@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>vuu-parent</artifactId>
-        <version>0.9.77-SNAPSHOT</version>
+        <version>0.9.79-SNAPSHOT</version>
     </parent>
 
     <artifactId>vuu</artifactId>
@@ -17,7 +17,7 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>toolbox</artifactId>
-            <version>0.9.77-SNAPSHOT</version>
+            <version>0.9.79-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -171,6 +171,12 @@
             <artifactId>awaitility-scala</artifactId>
             <version>4.3.0</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>

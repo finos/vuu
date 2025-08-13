@@ -585,7 +585,11 @@ function updateTableConfig(
       ...state,
       columns,
     };
-  } else if (isGroupColumn(result.columns[0]) && confirmed === false) {
+  } else if (
+    result.columns.length > 0 &&
+    isGroupColumn(result.columns[0]) &&
+    confirmed === false
+  ) {
     // reset groupConfirmed to false, if true
   }
 
