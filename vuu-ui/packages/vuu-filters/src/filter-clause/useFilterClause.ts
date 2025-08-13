@@ -53,10 +53,6 @@ export const useFilterClause = ({
   const valueRef = useRef<HTMLDivElement | null>(null);
   const filterTouched = useRef(false);
 
-  const setTouched = useCallback(() => {
-    if (!filterTouched.current) filterTouched.current = true;
-  }, []);
-
   const setValueRef = useCallback<RefCallback<HTMLDivElement>>(
     (el) => {
       valueRef.current = el;
@@ -193,9 +189,9 @@ export const useFilterClause = ({
     () => ({
       onKeyDownCapture: handleKeyDownCaptureNavigation,
       tabIndex: -1,
-      onFocus: () => setTouched(),
+      onFocus: () => filterTouched.current = true,
     }),
-    [handleKeyDownCaptureNavigation, setTouched],
+    [handleKeyDownCaptureNavigation],
   );
 
   // Do we need this or can we leave it to the filterEditor
@@ -214,7 +210,7 @@ export const useFilterClause = ({
         inputRef.current?.querySelector("input")?.focus();
       });
     }
-  }, [filterClauseModel, setTouched]);
+  }, [filterClauseModel]);
 
   return {
     inputProps,
