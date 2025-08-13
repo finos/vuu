@@ -44,7 +44,6 @@ export const FilterClauseValueEditorText = forwardRef(
     forwardedRef: ForwardedRef<HTMLDivElement>,
   ) {
     const isMultiValue = operator === "in";
-    console.info(dropdownOnAutofocus);
 
     // If we have a multiselect text value which we are editing, this will render
     // a comma delimited list of the selected values. That is not what we display
