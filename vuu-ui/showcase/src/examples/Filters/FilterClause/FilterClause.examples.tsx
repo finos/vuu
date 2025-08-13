@@ -159,8 +159,8 @@ export const FilterColumnAndOperatorWithDropdownOpenOnFocusDisabled = () => {
   );
 };
 
-export const MultipleColumnPickers = () => {
-  const filterClauseModel = useMemo(
+export const MultipleFilterClauseControlsWithDropDownAutofocusDisabled = () => {
+  const model1 = useMemo(
     () =>
       new FilterClauseModel({
         column: "exchange",
@@ -168,11 +168,25 @@ export const MultipleColumnPickers = () => {
       }),
     [],
   );
+  const model2 = useMemo(
+    () =>
+      new FilterClauseModel({
+        column: "currency",
+        op: "=",
+      }),
+    [],
+  );
   return (
-    <FilterClauseTemplate
-      filterClauseModel={filterClauseModel}
-      dropdownOnAutofocus={false}
-    />
+    <>
+      {[model1, model2].map((model, idx) => (
+        <div key={idx} style={{ padding: "20px" }}>
+          <FilterClauseTemplate
+            filterClauseModel={model}
+            dropdownOnAutofocus={false}
+          />
+        </div>
+      ))}
+    </>
   );
 };
 
