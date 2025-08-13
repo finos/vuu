@@ -69,7 +69,7 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
   override def addConstituent(params: RpcParams): RpcFunctionResult = {
     val ric: String = params.namedParams("ric").asInstanceOf[String]
     if (table.size() == 0)
-      RpcFunctionFailure(null, s"Failed to add constituents to ${table.name} as adding row to empty table is currently not supported", null)
+      RpcFunctionFailure(1, s"Failed to add constituents to ${table.name} as adding row to empty table is currently not supported", null)
     else {
       val existingConstituentRow = table.pullRow(table.primaryKeys.head)
       val tradeId = existingConstituentRow.get(ColumnName.InstanceId).asInstanceOf[String]
@@ -95,7 +95,7 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
       updateJoinTable(Array(newRow)) match {
         case Right(_) => RpcFunctionSuccess(Some(newRow.key))
         case Left(errorReason) =>
-          RpcFunctionFailure(null, errorReason.reason, null)
+          RpcFunctionFailure(1, errorReason.reason, null)
       }
     }
   }
