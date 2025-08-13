@@ -84,6 +84,14 @@ export abstract class VuuModule<T extends string = string>
   protected abstract services?: Record<T, RpcService[] | undefined> | undefined;
   protected abstract visualLinks?: Record<T, VuuLink[] | undefined>;
 
+  getTableSchema(tableName: string) {
+    return this.schemas[tableName as T];
+  }
+
+  getTableList() {
+    return Object.keys(this.tables);
+  }
+
   private unregisterViewport = (viewportId: string) => {
     for (const [tableName, subscriptions] of this.#subscriptionMap) {
       if (subscriptions[0].viewportId.toString() === viewportId) {

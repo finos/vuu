@@ -44,7 +44,7 @@ object TableDef {
 
   def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks, indices: Indices, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, links = links, indices = indices)
-}
+  }
 
   def apply(name: String, keyField: String, columns: Array[Column], indices: Indices, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, indices = indices)
@@ -186,6 +186,11 @@ case class JoinTableDef(override val name: String, baseTable: TableDef, joinColu
 
 
   override def toString: String = s"JoinTableDef(name=$name)"
+
+  override def withPermissions(func: (ViewPort, TableContainer) => RowPermissionChecker): JoinTableDef = {
+    super.withPermissions(func)
+    this
+  }
 
   def getJoinDefinitionColumns(): Array[Column] = joinTableColumns
 

@@ -244,5 +244,55 @@ export const PartialFilterClauseDateColumnOnly = () => {
   );
 };
 
+export const PartialFilterClauseTimeColumnOnly = () => {
+  const tableColumns: SchemaColumn[] = [
+    {
+      name: "created",
+      serverDataType: "long",
+    },
+    {
+      name: "lastUpdate",
+      serverDataType: "long",
+    },
+  ];
+
+  const tableSchema: TableSchema = {
+    columns: tableColumns,
+    key: "id",
+    table: { table: "TestDates", module: "TEST" },
+  };
+
+  const columnsByName: ColumnDescriptorsByName = {
+    created: {
+      ...tableColumns[0],
+      type: "time",
+    },
+    lastUpdate: {
+      ...tableColumns[1],
+      type: "time",
+    },
+  };
+
+  const filterClauseModel = useMemo(() => {
+    const model = new FilterClauseModel({
+      column: "created",
+    });
+    model.on("filterClause", (clause) =>
+      console.log(`onFilterClause ${JSON.stringify(clause)}`),
+    );
+    return model;
+  }, []);
+
+  return (
+    <LocalDataSourceProvider>
+      <FilterClauseTemplate
+        columnsByName={columnsByName}
+        filterClauseModel={filterClauseModel}
+        tableSchema={tableSchema}
+      />
+    </LocalDataSourceProvider>
+  );
+};
+
 const columnDescriptorsByName = (columns: TableSchema["columns"]) =>
   columns.reduce((m, col) => ({ ...m, [col.name]: col }), {});

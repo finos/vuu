@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/vuu-theme",
-  "version": "0.13.19",
+  "version": "0.13.25",
   "license": "Apache-2.0",
   "style": "./index.css",
   "files": [

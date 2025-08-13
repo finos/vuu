@@ -10,9 +10,9 @@ import { HTMLAttributes, useMemo } from "react";
 import { CustomFilters } from "../custom-filters";
 import { QuickFilterProps, QuickFilters } from "../quick-filters";
 import { FilterMode, useFilterBar } from "./useFilterBar";
+import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 
 import filterBarCss from "./FilterBar.css";
-import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 
 export type FilterBarVariant =
   | "custom-filters-only"

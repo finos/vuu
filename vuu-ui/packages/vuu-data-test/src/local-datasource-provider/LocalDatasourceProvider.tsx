@@ -4,36 +4,36 @@ import type {
   ServerAPI,
 } from "@vuu-ui/vuu-data-types";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { basketSchemas, isBasketTable } from "../basket";
-import { isSimulTable, simulSchemas } from "../simul";
-import { ReactNode } from "react";
 import { DataProvider } from "@vuu-ui/vuu-utils";
+import { ReactNode } from "react";
 import moduleContainer from "../core/module/ModuleContainer";
+import tableContainer from "../core/table/TableContainer";
 
 const serverAPI: Pick<
   ServerAPI,
   "getTableList" | "getTableSchema" | "rpcCall"
 > = {
   getTableList: async () => {
-    return {
-      tables: Object.values(simulSchemas)
-        .concat(Object.values(basketSchemas))
-        .map((schema) => schema.table),
-    };
+    const tables = moduleContainer.moduleNames.reduce<Array<VuuTable>>(
+      (tableList, moduleName) => {
+        const moduleTables = moduleContainer.get(moduleName).getTableList();
+        moduleTables.forEach((tableName) => {
+          const table = tableContainer.getTable(tableName);
+          tableList.push(table.schema.table);
+        });
+        return tableList;
+      },
+      [],
+    );
+    return { tables };
   },
-  getTableSchema: async (vuuTable: VuuTable) => {
-    if (isSimulTable(vuuTable)) {
-      return simulSchemas[vuuTable.table];
-    } else if (isBasketTable(vuuTable)) {
-      return basketSchemas[vuuTable.table];
-    } else {
-      throw Error(
-        `unsupported module/table ${vuuTable.module}/${vuuTable.table}`,
-      );
-    }
+  getTableSchema: async ({ module, table }: VuuTable) => {
+    return moduleContainer.get(module).getTableSchema(table);
   },
   rpcCall: async () => {
-    throw Error("LocalDataSource provider no longer supports rpc calls");
+    throw Error(
+      "RpcCall no longer supported on LocalDataSOurceProvider ServerAPI",
+    );
   },
 };
 

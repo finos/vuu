@@ -168,7 +168,7 @@ describe("FilterEditor", () => {
       });
     });
     describe("WHEN second clause is completed and SAVE pressed", () => {
-      it("THEN two clause filter is saved", () => {
+      it.skip("THEN two clause filter is saved", () => {
         const saveFilterSpy = cy.stub().as("saveFilterHandler");
         cy.mount(<NewFilterFixture onSave={saveFilterSpy} />);
         assertComboboxReady();

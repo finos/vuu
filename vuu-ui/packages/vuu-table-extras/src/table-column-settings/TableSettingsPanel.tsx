@@ -15,6 +15,7 @@ import { ColumnList } from "../column-list";
 import { useTableSettings } from "./useTableSettings";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
 import { VuuInput } from "@vuu-ui/vuu-ui-controls";
+import cx from "clsx";
 
 import tableSettingsPanelCss from "./TableSettingsPanel.css";
 
@@ -147,13 +148,15 @@ export const TableSettingsPanel = ({
         </FormField>
       ) : null}
 
-      <ColumnList
-        columnItems={columnItems}
-        permissions={columnListPermissions}
-        onChange={onColumnChange}
-        onNavigateToColumn={onNavigateToColumn}
-        onReorderColumnItems={onReorderColumnItems}
-      />
+      <div className={cx(`${classBase}-columnListContainer`, "vuuScrollable")}>
+        <ColumnList
+          columnItems={columnItems}
+          permissions={columnListPermissions}
+          onChange={onColumnChange}
+          onNavigateToColumn={onNavigateToColumn}
+          onReorderColumnItems={onReorderColumnItems}
+        />
+      </div>
 
       {allowCalculatedColumns ? (
         <div className={`${classBase}-calculatedButtonbar`}>

@@ -41,7 +41,7 @@ describe("FilterClause", () => {
     it("THEN component is rendered with controls for column, operator and value, value suggestions are offered", () => {
       cy.mount(
         <LocalDataSourceProvider>
-          <PartialFilterClauseColumnAndOperatorWithDataSource />
+          <PartialFilterClauseColumnAndOperator />{" "}
         </LocalDataSourceProvider>,
       );
       const container = cy.findByTestId("filterclause");

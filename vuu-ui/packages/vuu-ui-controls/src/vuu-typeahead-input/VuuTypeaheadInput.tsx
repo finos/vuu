@@ -1,12 +1,12 @@
-import type { TableSchemaTable } from "@vuu-ui/vuu-data-types";
-import { NO_DATA_MATCH, type CommitHandler } from "@vuu-ui/vuu-utils";
 import { ComboBox, Option } from "@salt-ds/core";
+import { PillInputProps } from "@salt-ds/core/dist-types/pill-input";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import type { TableSchemaTable } from "@vuu-ui/vuu-data-types";
+import { NO_DATA_MATCH, type CommitHandler } from "@vuu-ui/vuu-utils";
+import cx from "clsx";
 import { useVuuTypeaheadInput } from "./useVuuTypeaheadInput";
-
 import vuuTypeaheadInputCss from "./VuuTypeaheadInput.css";
-import { PillInputProps } from "@salt-ds/core/dist-types/pill-input";
 
 const classBase = "vuuTypeaheadInput";
 const [noMatchingData] = NO_DATA_MATCH;
@@ -17,6 +17,7 @@ export interface VuuTypeaheadInputProps {
    * Defaults to true
    */
   allowFreeInput?: boolean;
+  className?: string;
   column: string;
   /**
    * A warning to display to the user if allowFreeText is false and they attempt
@@ -39,6 +40,7 @@ export interface VuuTypeaheadInputProps {
 
 export const VuuTypeaheadInput = ({
   allowFreeInput,
+  className,
   column,
   freeTextWarning,
   highlightFirstSuggestion,
@@ -80,7 +82,7 @@ export const VuuTypeaheadInput = ({
 
   return (
     <ComboBox
-      className={classBase}
+      className={cx(classBase, className)}
       // defaultHighlightedIndex={defaultHighlightedIndex}
       inputProps={inputProps}
       onChange={onChange}

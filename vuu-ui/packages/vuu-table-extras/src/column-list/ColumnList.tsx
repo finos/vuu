@@ -1,5 +1,11 @@
-import { DragDropProvider, useSortable } from "@vuu-ui/vuu-utils";
-import { Checkbox, ListBox, Option, OptionProps, Switch } from "@salt-ds/core";
+import {
+  Checkbox,
+  Input,
+  ListBox,
+  Option,
+  OptionProps,
+  Switch,
+} from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import {
@@ -8,25 +14,34 @@ import {
 } from "@vuu-ui/vuu-table-types";
 import { Icon, IconButton } from "@vuu-ui/vuu-ui-controls";
 import {
+  DragDropProvider,
   getColumnLabel,
-  queryClosest,
   reorderColumnItems,
+  useSortable,
 } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import {
   HTMLAttributes,
   MouseEventHandler,
-  SyntheticEvent,
+  RefCallback,
   useCallback,
   useMemo,
   useRef,
 } from "react";
-import { ColumnItem } from "../table-column-settings/useTableSettings";
+import {
+  type ColumnItem,
+  type ColumnSearchProps,
+  useColumnList,
+} from "./useColumnList";
 
-import columnList from "./ColumnList.css";
+import cssColumnList from "./ColumnList.css";
+import { useHighlighting } from "@vuu-ui/vuu-table";
 
-const classBase = "vuuColumnList";
-const classBaseListItem = "vuuColumnListItem";
+export const classBase = "vuuColumnList";
+export const classBaseListItem = "vuuColumnListItem";
+
+const searchIcon = <span data-icon="search" />;
+const NO_SELECTION: string[] = [] as const;
 
 const useSorting = (id: string, index: number, allowSort = true) => {
   const { handleRef: sortableHandleRef, ref: sortableRef } = useSortable({
@@ -48,33 +63,42 @@ const useSorting = (id: string, index: number, allowSort = true) => {
   };
 };
 
-export type ColumnChangeHandler = (
-  columnName: string,
-  propertyName: keyof ColumnDescriptor | "subscribed",
-  value: string | number | boolean,
-) => void;
-
 export interface ColumnListProps
-  extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
-  columnItems: ColumnItem[];
-  onChange: ColumnChangeHandler;
+  extends Pick<ColumnSearchProps, "columnItems" | "onChange">,
+    Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
   onNavigateToColumn?: (columnName: string) => void;
   onReorderColumnItems?: (columnItems: ColumnItem[]) => void;
   permissions?: ColumnListPermissions;
 }
+
+const defaultPermissions: ColumnListPermissions = {
+  allowColumnSearch: false,
+  allowHideColumns: true,
+  allowRemoveColumns: true,
+  allowReorderColumns: true,
+};
 
 const ColumnListItem = ({
   className: classNameProp,
   index,
   item,
   permissions: { allowHideColumns, allowRemoveColumns, allowReorderColumns },
+  searchPattern = "",
   ...optionProps
 }: OptionProps & {
   index: number;
   item: ColumnItem;
   permissions: ColumnListPermissions;
+  searchPattern?: Lowercase<string>;
 }) => {
+  const hideOnly = allowHideColumns && !allowRemoveColumns;
+  const removeOnly = !allowHideColumns && allowRemoveColumns;
+  const hideAndRemove = allowHideColumns && allowRemoveColumns;
+
   const { handleRef, ref } = useSorting(item.name, index, allowReorderColumns);
+  const value = getColumnLabel(item as ColumnDescriptor);
+  const valueWithHighlighting = useHighlighting(value, searchPattern);
+
   return (
     <Option
       {...optionProps}
@@ -92,19 +116,15 @@ const ColumnListItem = ({
           size={16}
         />
       ) : null}
-      {item?.isCalculated ? (
-        <Icon name="function" />
-      ) : (
+      {item?.isCalculated ? <Icon name="function" /> : null}
+      {hideAndRemove || hideOnly || removeOnly ? (
         <Checkbox
           className={`${classBase}-checkBox`}
-          checked={item?.subscribed}
-          readOnly={allowRemoveColumns === false}
+          checked={hideOnly ? item?.hidden !== true : item?.subscribed}
         />
-      )}
-      <span className={`${classBase}-text`}>
-        {getColumnLabel(item as ColumnDescriptor)}
-      </span>
-      {allowHideColumns !== false ? (
+      ) : null}
+      <span className={`${classBase}-text`}>{valueWithHighlighting}</span>
+      {hideAndRemove ? (
         <Switch
           className={`${classBase}-switch`}
           checked={item?.hidden !== true}
@@ -115,51 +135,48 @@ const ColumnListItem = ({
   );
 };
 
-const defaultPermissions: ColumnListPermissions = {
-  allowHideColumns: true,
-  allowRemoveColumns: true,
-  allowReorderColumns: true,
-};
-
 export const ColumnList = ({
   className,
   columnItems,
   onChange,
   onNavigateToColumn,
   onReorderColumnItems,
-  permissions = defaultPermissions,
+  permissions: {
+    allowColumnSearch = defaultPermissions.allowColumnSearch,
+    allowHideColumns = defaultPermissions.allowHideColumns,
+    allowRemoveColumns = defaultPermissions.allowRemoveColumns,
+    allowReorderColumns = defaultPermissions.allowReorderColumns,
+  } = defaultPermissions,
   ...htmlAttributes
 }: ColumnListProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-column-list",
-    css: columnList,
+    css: cssColumnList,
     window: targetWindow,
   });
   const listRef = useRef<HTMLDivElement>(null);
-
-  const handleChange = useCallback(
-    ({ target }: SyntheticEvent) => {
-      const input = target as HTMLInputElement;
-      const listItem = queryClosest(target, `.${classBaseListItem}`);
-      if (listItem) {
-        const {
-          dataset: { name },
-        } = listItem;
-        if (name) {
-          const saltCheckbox = queryClosest(target, `.${classBase}-checkBox`);
-          const saltSwitch = queryClosest(target, `.${classBase}-switch`);
-
-          if (saltCheckbox) {
-            onChange(name, "subscribed", input.checked);
-          } else if (saltSwitch) {
-            onChange(name, "hidden", input.checked === false);
-          }
-        }
-      }
-    },
-    [onChange],
+  const permissions = useMemo(
+    () => ({
+      allowHideColumns,
+      allowRemoveColumns,
+      allowReorderColumns,
+    }),
+    [allowHideColumns, allowRemoveColumns, allowReorderColumns],
   );
+
+  const {
+    onChangeListItem,
+    onChangeSearchInput,
+    searchState,
+    visibleColumnItems,
+  } = useColumnList({
+    classBase,
+    classBaseListItem,
+    columnItems,
+    permissions,
+    onChange,
+  });
 
   const handleClick = useCallback<MouseEventHandler>(
     (evt) => {
@@ -185,6 +202,12 @@ export const ColumnList = ({
     }, 300);
   }, [columnItems, onReorderColumnItems]);
 
+  const searchCallbackRef = useCallback<RefCallback<HTMLElement>>((el) => {
+    setTimeout(() => {
+      el?.querySelector("input")?.focus();
+    }, 100);
+  }, []);
+
   return (
     <DragDropProvider onDragEnd={handleDragEnd}>
       <div
@@ -194,22 +217,39 @@ export const ColumnList = ({
             typeof onNavigateToColumn === "function",
         })}
       >
+        {allowColumnSearch ? (
+          <form className={`${classBase}-search`} role="search">
+            <Input
+              // inputProps={{ onKeyDown }}
+              startAdornment={searchIcon}
+              placeholder="Find column"
+              ref={searchCallbackRef}
+              value={searchState.searchText}
+              onChange={onChangeSearchInput}
+            />
+          </form>
+        ) : null}
         <div className={`${classBase}-header`}>
-          <span>Column Selection</span>
+          <span>Column Name</span>
         </div>
-        <div className={`${classBase}-colHeadings`}>
-          <span>Column subscription</span>
-          <span>Visibility</span>
-        </div>
-        <ListBox ref={listRef}>
-          {columnItems.map((columnItem, index) => (
+        {allowHideColumns && allowRemoveColumns ? (
+          <div className={`${classBase}-colHeadings`}>
+            <span>Column subscription</span>
+            <span>Visibility</span>
+          </div>
+        ) : null}
+        <ListBox ref={listRef} selected={NO_SELECTION}>
+          {visibleColumnItems.map((columnItem, index) => (
             <ColumnListItem
               item={columnItem}
               index={index}
               key={columnItem.name}
-              onChange={handleChange}
+              onChange={onChangeListItem}
               onClick={handleClick}
               permissions={permissions}
+              searchPattern={
+                searchState.searchText.toLowerCase() as Lowercase<string>
+              }
               value={columnItem}
             />
           ))}

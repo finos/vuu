@@ -1,4 +1,8 @@
 export * from "./FilterModel";
+export {
+  ColumnFilter,
+  type ColumnFilterProps,
+} from "./column-filter/ColumnFilter";
 export * from "./filter-bar";
 export * from "./filter-clause";
 export * from "./filter-editor";
