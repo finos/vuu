@@ -7,10 +7,6 @@ import org.finos.toolbox.lifecycle.LifecycleContainer;
 import org.finos.toolbox.time.Clock;
 import org.finos.toolbox.time.DefaultClock;
 import org.finos.vuu.core.table.TableContainer;
-import org.finos.vuu.net.LoginRequest;
-import org.finos.vuu.net.RpcCall;
-import org.finos.vuu.net.RpcResponse;
-import org.finos.vuu.net.ViewServerMessage;
 import org.finos.vuu.provider.VuuJoinTableProvider;
 import org.finos.vuu.util.ScalaCollectionConverter;
 import org.junit.Test;
@@ -18,7 +14,6 @@ import scala.Option;
 import test.helper.ViewPortTestUtils;
 
 import java.util.Collections;
-import java.util.Map;
 
 public class RpcMethodHandlerTest {
 

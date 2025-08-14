@@ -2,9 +2,11 @@ package org.finos.vuu.test.rpc
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.client.messages.RequestId
-import org.finos.vuu.net.{ClientSessionId, JsonViewServerMessage, MessageBody, ViewPortAddRowRpcCall, ViewPortDeleteCellRpcCall, ViewPortDeleteRowRpcCall, ViewPortEditCellRpcCall, ViewPortEditRowRpcCall, ViewPortEditSubmitFormRpcCall, ViewPortMenuRpcResponse, ViewPortRpcCall, ViewPortRpcResponse, ViewServerHandler}
+import org.finos.vuu.net.{ClientSessionId, JsonViewServerMessage, MessageBody, RequestContext, RpcRequest, ViewPortAddRowRpcCall, ViewPortDeleteCellRpcCall, ViewPortDeleteRowRpcCall, ViewPortEditCellRpcCall, ViewPortEditRowRpcCall, ViewPortEditSubmitFormRpcCall, ViewServerHandler}
 import org.finos.vuu.net.json.Serializer
+import org.finos.vuu.net.rpc.RpcFunctionResult
 import org.finos.vuu.test.impl.TestChannel
+import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.viewport.{ViewPort, ViewPortAction, ViewPortAddRowAction, ViewPortDeleteCellAction, ViewPortDeleteRowAction, ViewPortEditCellAction, ViewPortEditRowAction, ViewPortFormSubmitAction}
 
 import java.lang.reflect.{InvocationHandler, Method}
@@ -172,7 +174,7 @@ class RpcDynamicProxy(viewport: ViewPort,
 
     val argsForMessage = args.map(_.asInstanceOf[Any]).dropRight(1)
 
-    val rpcMessage = ViewPortRpcCall(viewport.id, method.getName, argsForMessage, Map())
+    val rpcMessage = RpcRequest(RequestContext("reqId", ClientSessionId("sessionId", "user"), new OutboundRowPublishQueue(), "token"), method.getName, argsForMessage)
 
     val msg = JsonViewServerMessage(requestId, session.sessionId, token, user, rpcMessage)
 
@@ -186,7 +188,7 @@ class RpcDynamicProxy(viewport: ViewPort,
       case Some(packet) =>
         logger.trace("Got RPC response packet:" + packet)
         val responseMsg = serializer.deserialize(packet)
-        responseMsg.body.asInstanceOf[ViewPortRpcResponse].action
+        responseMsg.body.asInstanceOf[RpcFunctionResult]
       case None =>
         null
     }
