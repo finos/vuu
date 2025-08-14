@@ -69,7 +69,7 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
 
           Then("Get the Basket RPC Service and call create basket")
           val basketService = vpBasket.getStructure.viewPortDef.service
-          val rpcResult = basketService.processRpcRequest("createBasket", new RpcParams(null, Map("sourceBasketId" -> ".FTSE", "basketTradeName" -> "MyCustomBasket"), None, None, vuuServer.requestContext))
+          val rpcResult = basketService.processRpcRequest("createBasket", new RpcParams(Map("sourceBasketId" -> ".FTSE", "basketTradeName" -> "MyCustomBasket"), None, None, vuuServer.requestContext))
           assert(rpcResult.isInstanceOf[RpcFunctionSuccess])
           val basketTradeInstanceId = rpcResult.asInstanceOf[RpcFunctionSuccess].optionalResult.get.asInstanceOf[String]
 
@@ -210,7 +210,7 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
           vuuServer.runOnce()
 
           When("we edit the side of the parent basket to same side as current value")
-          basketTradingConstituentJoinService.processRpcRequest("addConstituent", new RpcParams(null, Map("ric" -> "0001.HK"), None, None, vuuServer.requestContext))
+          basketTradingConstituentJoinService.processRpcRequest("addConstituent", new RpcParams(Map("ric" -> "0001.HK"), None, None, vuuServer.requestContext))
           vuuServer.runOnce()
 
           Then("get all the updates that have occurred for all view ports from the outbound queue")
@@ -243,7 +243,7 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
 
     val vpBasket = vuuServer.createViewPort(BasketModule.NAME, BasketModule.BasketTable)
     val basketService = vpBasket.getStructure.viewPortDef.service
-    val rpcResult = basketService.processRpcRequest("createBasket", new RpcParams(null, Map("sourceBasketId" -> basketId, "basketTradeName" -> basketTradeName), None, None, vuuServer.requestContext))
+    val rpcResult = basketService.processRpcRequest("createBasket", new RpcParams(Map("sourceBasketId" -> basketId, "basketTradeName" -> basketTradeName), None, None, vuuServer.requestContext))
     assert(rpcResult.isInstanceOf[RpcFunctionSuccess])
     rpcResult.asInstanceOf[RpcFunctionSuccess].optionalResult.get.asInstanceOf[String]
   }
