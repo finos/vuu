@@ -68,7 +68,6 @@ object TestModule2 extends DefaultModule {
             links = VisualLinks(),
             joinFields = Seq()
           ))
-        .addRpcHandler( vs => new TestRpcHandler(vs.tableContainer))
         .asModule()
     }
 

@@ -4,7 +4,7 @@ import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api._
-import org.finos.vuu.core.{IVuuServer, VuuServer}
+import org.finos.vuu.core.IVuuServer
 import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.module.{StaticServedResource, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
@@ -24,8 +24,6 @@ trait AbstractSessionTestCase {
       override def name: String = theName
       override def tableDefs: List[TableDef] = ???
       override def serializationMixin: AnyRef = ???
-      @deprecated("RpcCall is replaced by RpcRequest")
-      override def rpcHandlersUnrealized: List[IVuuServer => RpcHandler] = ???
       override def getProviderForTable(table: DataTable, viewserver: IVuuServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider = ???
       override def staticFileResources(): List[StaticServedResource] = ???
       override def restServicesUnrealized: List[IVuuServer => RestService] = ???

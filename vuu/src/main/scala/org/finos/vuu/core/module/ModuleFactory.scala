@@ -43,8 +43,6 @@ case class TableDefs protected(realizedTableDefs: List[TableDef], tableDefs: Lis
 }
 
 case class ModuleFactoryNode protected(tableDefs: TableDefs,
-                                       @deprecated("Replaced by DefaultRpcHandler.rpcHandlerMap")
-                                       rpc: List[IVuuServer => RpcHandler],
                                        vsName: String, staticServedResources: List[StaticServedResource],
                                        rest: List[IVuuServer => RestService],
                                        viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef],
@@ -54,43 +52,38 @@ case class ModuleFactoryNode protected(tableDefs: TableDefs,
 
   def addTable(tableDef: TableDef, func: (DataTable, IVuuServer) => Provider): ModuleFactoryNode = {
     val createDefaultViewPortDefFunc = (table: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) => ViewPortDef.default(table.getTableDef.columns, tableContainer)
-    ModuleFactoryNode(tableDefs.add(tableDef, func), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> createDefaultViewPortDefFunc), tableDefContainer, unrealizedViewPortDefs)
+    ModuleFactoryNode(tableDefs.add(tableDef, func), vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> createDefaultViewPortDefFunc), tableDefContainer, unrealizedViewPortDefs)
   }
 
   def addTable(tableDef: TableDef, func: (DataTable, IVuuServer) => Provider, func2: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef): ModuleFactoryNode = {
-    ModuleFactoryNode(tableDefs.add(tableDef, func), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> func2), tableDefContainer, unrealizedViewPortDefs)
+    ModuleFactoryNode(tableDefs.add(tableDef, func), vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> func2), tableDefContainer, unrealizedViewPortDefs)
   }
 
   def addSessionTable(tableDef: TableDef, func2: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef): ModuleFactoryNode = {
-    ModuleFactoryNode(tableDefs.add(tableDef, (dt, vs) => NullProvider), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> func2), tableDefContainer, unrealizedViewPortDefs)
+    ModuleFactoryNode(tableDefs.add(tableDef, (dt, vs) => NullProvider), vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> func2), tableDefContainer, unrealizedViewPortDefs)
   }
 
   def addSessionTable(tableDef: TableDef, func: (DataTable, IVuuServer) => Provider, func2: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef): ModuleFactoryNode = {
-    ModuleFactoryNode(tableDefs.add(tableDef, func), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> func2), tableDefContainer, unrealizedViewPortDefs)
+    ModuleFactoryNode(tableDefs.add(tableDef, func), vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> func2), tableDefContainer, unrealizedViewPortDefs)
   }
 
   def addSessionTable(tableDef: TableDef): ModuleFactoryNode = {
     val createDefaultViewPortDefFunc = (table: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) => ViewPortDef.default(table.getTableDef.columns, tableContainer)
-    ModuleFactoryNode(tableDefs.add(tableDef, (dt, vs) => NullProvider), rpc, vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> createDefaultViewPortDefFunc), tableDefContainer, unrealizedViewPortDefs)
+    ModuleFactoryNode(tableDefs.add(tableDef, (dt, vs) => NullProvider), vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> createDefaultViewPortDefFunc), tableDefContainer, unrealizedViewPortDefs)
   }
 
   def addJoinTable(func: TableDefContainer => JoinTableDef): ModuleFactoryNode = {
     val createDefaultViewPortDefFunc = (table: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) => ViewPortDef.default(table.getTableDef.columns, tableContainer)
-    ModuleFactoryNode(tableDefs.addJoin(func), rpc, vsName, staticServedResources, rest, viewPortDefs, tableDefContainer, unrealizedViewPortDefs ++ Map(func -> createDefaultViewPortDefFunc))
+    ModuleFactoryNode(tableDefs.addJoin(func), vsName, staticServedResources, rest, viewPortDefs, tableDefContainer, unrealizedViewPortDefs ++ Map(func -> createDefaultViewPortDefFunc))
   }
 
   def addJoinTable(func: TableDefContainer => JoinTableDef, func2: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef): ModuleFactoryNode = {
     unrealizedViewPortDefs = unrealizedViewPortDefs ++ Map(func -> func2)
-    ModuleFactoryNode(tableDefs.addJoin(func), rpc, vsName, staticServedResources, rest, viewPortDefs, tableDefContainer, unrealizedViewPortDefs)
-  }
-
-  @deprecated("Replaced by DefaultRpcHandler.rpcHandlerMap")
-  def addRpcHandler(rpcFunc: IVuuServer => RpcHandler): ModuleFactoryNode = {
-    ModuleFactoryNode(tableDefs, rpc ++ List(rpcFunc), vsName, staticServedResources, rest, viewPortDefs, tableDefContainer, unrealizedViewPortDefs)
+    ModuleFactoryNode(tableDefs.addJoin(func), vsName, staticServedResources, rest, viewPortDefs, tableDefContainer, unrealizedViewPortDefs)
   }
 
   def addRestService(restFunc: IVuuServer => RestService): ModuleFactoryNode = {
-    ModuleFactoryNode(tableDefs, rpc, vsName, staticServedResources, rest ++ List(restFunc), viewPortDefs, tableDefContainer, unrealizedViewPortDefs)
+    ModuleFactoryNode(tableDefs, vsName, staticServedResources, rest ++ List(restFunc), viewPortDefs, tableDefContainer, unrealizedViewPortDefs)
   }
 
   /**
@@ -101,7 +94,7 @@ case class ModuleFactoryNode protected(tableDefs: TableDefs,
    * @param canBrowse    can users browse the contents of the directory (listings)
    */
   def addStaticResource(uriDirectory: String, path: Path, canBrowse: Boolean): ModuleFactoryNode = {
-    ModuleFactoryNode(tableDefs, rpc, vsName, staticServedResources ++ List(StaticServedResource(uriDirectory, path, canBrowse)), rest, viewPortDefs, tableDefContainer, unrealizedViewPortDefs)
+    ModuleFactoryNode(tableDefs, vsName, staticServedResources ++ List(StaticServedResource(uriDirectory, path, canBrowse)), rest, viewPortDefs, tableDefContainer, unrealizedViewPortDefs)
   }
 
   def asModule(): ViewServerModule = {
@@ -140,11 +133,6 @@ case class ModuleFactoryNode protected(tableDefs: TableDefs,
 
       override def serializationMixin: AnyRef = null
 
-      @deprecated("RpcCall is replaced by RpcRequest")
-      override def rpcHandlersUnrealized: List[IVuuServer => RpcHandler] = {
-        rpc
-      }
-
       override def getProviderForTable(table: DataTable, viewserver: IVuuServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider = {
         baseTables.find({ case (td, func) => td.name == table.name }).get._2(table, viewserver)
       }
@@ -166,7 +154,7 @@ object ModuleFactory {
   implicit def stringToString(s: String): FieldDefString = new FieldDefString(s)
 
   def withNamespace(ns: String)(implicit tableDefContainer: TableDefContainer): ModuleFactoryNode = {
-    ModuleFactoryNode(TableDefs(List(), List(), List()), List(), ns, List(), List(), Map(), tableDefContainer, Map())
+    ModuleFactoryNode(TableDefs(List(), List(), List()), ns, List(), List(), Map(), tableDefContainer, Map())
   }
 
 }

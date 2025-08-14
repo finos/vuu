@@ -18,8 +18,7 @@ import scala.Option;
 import test.helper.ViewPortTestUtils;
 
 import java.util.Collections;
-
-import static test.helper.ViewPortTestUtils.createRandomViewServerMessage;
+import java.util.Map;
 
 public class RpcMethodHandlerTest {
 
@@ -34,12 +33,12 @@ public class RpcMethodHandlerTest {
         final DefaultRpcHandler defaultRpcHandler = new DefaultRpcHandler(tableContainer);
         defaultRpcHandler.registerRpc("helloWorld", rpcService::rpcFunction);
 
-        RpcCall call = new RpcCall("service", "helloWorld", new Object[]{}, ScalaCollectionConverter.toScala(Collections.emptyMap()));
-        Option<ViewServerMessage> response = defaultRpcHandler.processRpcCall(createRandomViewServerMessage(new LoginRequest("token", "user")), call, ViewPortTestUtils.requestContext());
+        RpcFunctionResult response = defaultRpcHandler.processRpcRequest("helloWorld", new RpcParams(ScalaCollectionConverter.toScala(Collections.emptyMap()), Option.empty(), Option.empty(), ViewPortTestUtils.requestContext()));
 
-        Assertions.assertThat(response.get().body())
-                .isExactlyInstanceOf(RpcResponse.class)
-                .isEqualTo(new RpcResponse("helloWorld", "It Works", null));
+        Assertions.assertThat(response)
+                .isExactlyInstanceOf(RpcFunctionSuccess.class);
+        Assertions.assertThat(((RpcFunctionSuccess) response).optionalResult().get())
+                .isEqualTo("It Works");
     }
 
     static class TestRpcService {

@@ -70,7 +70,7 @@ class BasketCreateTest extends VuuServerTestCase {
 
           val basketService = viewportBasket.getStructure.viewPortDef.service
 
-          val rpcResult = basketService.processRpcRequest("createBasket", new RpcParams(null, Map("sourceBasketId" -> basketId, "basketTradeName" -> "TestBasket"), None, None, vuuServer.requestContext))
+          val rpcResult = basketService.processRpcRequest("createBasket", new RpcParams(Map("sourceBasketId" -> basketId, "basketTradeName" -> "TestBasket"), None, None, vuuServer.requestContext))
           vuuServer.runOnce()
           assert(rpcResult.isInstanceOf[RpcFunctionSuccess])
           val basketTradeInstanceId = rpcResult.asInstanceOf[RpcFunctionSuccess].optionalResult.get.asInstanceOf[String]

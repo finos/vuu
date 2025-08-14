@@ -49,7 +49,7 @@ class BasketConstituentMutateTest extends VuuServerTestCase {
           val basketTradingConstituentJoinService = vpBasketTradingConsJoin.getStructure.viewPortDef.service
           val selection = vpBasketTradingConsJoin.getSelection
           val vpSelection = ViewPortSelection(selection, vpBasketTradingConsJoin)
-          basketTradingConstituentJoinService.processRpcRequest("setSell", new RpcParams(null, Map("selection" -> vpSelection), None, None, vuuServer.requestContext))
+          basketTradingConstituentJoinService.processRpcRequest("setSell", new RpcParams(Map("selection" -> vpSelection), None, None, vuuServer.requestContext))
           vuuServer.runOnce()
 
           Then("get all the updates that have occurred for all view ports from the outbound queue")
