@@ -10,3 +10,8 @@ export * from "./filter-pill";
 export * from "./filter-utils";
 export * from "./inline-filter";
 export * from "./quick-filters";
+export {
+  SavedFilterPanel,
+  type SavedFilterDescriptor,
+  type SavedFilterPanelProps,
+} from "./saved-filters/SavedFilterPanel";
