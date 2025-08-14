@@ -26,7 +26,7 @@ import {
   renameCommand,
 } from "../filter-pill-menu/FilterPillMenuOptions";
 import { getFilterLabel } from "./getFilterLabel";
-import { getFilterTooltipText } from "./getFilterTooltipText";
+import { getFilterAsFormattedText } from "./getFilterTooltipText";
 
 import filterPillCss from "./FilterPill.css";
 import { ButtonProps } from "@salt-ds/core";
@@ -92,7 +92,7 @@ export const FilterPill = ({
     [getLabel, filter],
   );
 
-  const getTooltipTextl = getFilterTooltipText(columnsByName);
+  const getTooltipText = getFilterAsFormattedText(columnsByName);
 
   const id = useId(idProp);
 
@@ -164,7 +164,7 @@ export const FilterPill = ({
     anchorQuery: ".vuuFilterPill",
     id,
     placement: ["above", "below"],
-    tooltipContent: filterAsReactNode(filter, getTooltipTextl),
+    tooltipContent: filterAsReactNode(filter, getTooltipText),
   });
 
   const buttonProps: Partial<ButtonProps> = {

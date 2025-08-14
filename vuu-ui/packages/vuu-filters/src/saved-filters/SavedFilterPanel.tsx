@@ -1,23 +1,25 @@
 import { HTMLAttributes } from "react";
 import cx from "clsx";
-import { Filter } from "@vuu-ui/vuu-filter-types";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { FilterPill } from "../filter-pill";
+import { FilterPillNext } from "../filter-pill/FilterPillNext";
+import { useSavedFilterPanel } from "./useSavedFilterPanel";
 
 import savedFilterPanelCss from "./SavedFilterPanel.css";
+import { FilterPermissions } from "../filter-pill/FilterMenu";
 
 const classBase = "vuuSavedFilterPanel";
 
-export interface SavedFilterPanelProps extends HTMLAttributes<HTMLDivElement> {
-  filterDescriptors: Filter[];
-}
+const filterPillPermissions: FilterPermissions = {
+  allowEdit: true,
+  allowRename: true,
+  allowRemove: true,
+};
 
 export const SavedFilterPanel = ({
   className,
-  filterDescriptors,
   ...htmlAttributes
-}: SavedFilterPanelProps) => {
+}: HTMLAttributes<HTMLDivElement>) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-saved-filter-panel",
@@ -25,16 +27,25 @@ export const SavedFilterPanel = ({
     window: targetWindow,
   });
 
+  const { onClickFilter, onFilterMenuAction, savedFilters } =
+    useSavedFilterPanel();
+
   return (
-    <div {...htmlAttributes} className={cx(classBase, className)}>
-      {filterDescriptors.map((filter, i) => (
-        <FilterPill
-          allowClose={false}
-          filter={filter}
-          key={i}
-          selected={false}
-        />
-      ))}
+    <div
+      {...htmlAttributes}
+      className={cx(classBase, "vuuScrollable", className)}
+    >
+      <div className={`${classBase}-filterPill-container`}>
+        {savedFilters.map((filterDescriptor, i) => (
+          <FilterPillNext
+            {...filterDescriptor}
+            key={i}
+            onClick={onClickFilter}
+            onMenuAction={onFilterMenuAction}
+            permissions={filterPillPermissions}
+          />
+        ))}
+      </div>
     </div>
   );
 };

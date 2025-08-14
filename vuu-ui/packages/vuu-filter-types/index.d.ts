@@ -89,3 +89,5 @@ export declare type FilterState = {
   filters: Filter[];
   activeIndices: number[];
 };
+
+export declare type FilterChangeHandler = (filter: Filter | undefined) => void;

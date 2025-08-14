@@ -1,4 +1,5 @@
-import { SavedFilterDescriptor, SavedFilterPanel } from "@vuu-ui/vuu-filters";
+import { FilterProvider, SavedFilterPanel } from "@vuu-ui/vuu-filters";
+import { FilterDescriptor } from "@vuu-ui/vuu-filters";
 import { CSSProperties, useMemo } from "react";
 
 const style = {
@@ -6,59 +7,92 @@ const style = {
   width: 330,
 } as CSSProperties;
 
+const SavedFilterPanelTemplate = () => {
+  return (
+    <>
+      <SavedFilterPanel style={style} />
+    </>
+  );
+};
+
 export const EmptySavedFilterPanel = () => {
-  return <SavedFilterPanel filterDescriptors={[]} style={style} />;
+  return <SavedFilterPanelTemplate />;
 };
 
 export const SavedFilterPanelOneFilter = () => {
-  const filterDescriptors = useMemo<SavedFilterDescriptor[]>(
+  const filterDescriptors = useMemo<FilterDescriptor[]>(
     () => [
       {
-        name: "Test Filter",
-        filter: { column: "currency", op: ">", value: "GBP" },
+        active: false,
+        filter: {
+          column: "currency",
+          name: "Test Filter",
+          op: ">",
+          value: "GBP",
+        },
+        id: "filter-1",
       },
     ],
     [],
   );
   return (
-    <SavedFilterPanel filterDescriptors={filterDescriptors} style={style} />
+    <FilterProvider savedFilters={filterDescriptors}>
+      <SavedFilterPanelTemplate />
+    </FilterProvider>
   );
 };
 
-export const SavedFilterPanelFiveFilters = () => {
-  const filterDescriptors = useMemo<SavedFilterDescriptor[]>(
+export const SavedFilterPanelFiveFiltersCustomStyles = () => {
+  const filterDescriptors = useMemo<FilterDescriptor[]>(
     () => [
       {
-        name: "Test Filter 1",
-        filter: { column: "currency", op: "=", value: "GBP" },
-      },
-      {
-        name: "Test Filter 2",
-        filter: { column: "exchange", op: "=", value: "NASDAQ" },
-      },
-      {
-        name: "Test Filter 3 has quite a long name",
+        active: false,
         filter: {
+          column: "currency",
+          name: "Test Filter 1",
+          op: "=",
+          value: "GBP",
+        },
+        id: "filter-1",
+      },
+      {
+        active: false,
+        filter: {
+          column: "exchange",
+          name: "Test Filter 2",
+          op: "=",
+          value: "NASDAQ",
+        },
+        id: "filter-2",
+      },
+      {
+        active: false,
+        filter: {
+          name: "Test Filter 3 has quite a long name",
           op: "and",
           filters: [
             { column: "currency", op: "=", value: "GBP" },
             { column: "exchange", op: "=", value: "NASDAQ" },
           ],
         },
+        id: "filter-3",
       },
       {
-        name: "Test Filter 4",
+        active: false,
         filter: {
+          name: "Test Filter 4",
           op: "and",
           filters: [
             { column: "price", op: ">", value: 2000 },
             { column: "volume", op: ">", value: 1000 },
           ],
         },
+        id: "filter-4",
       },
       {
-        name: "Test Filter 5",
+        active: false,
         filter: {
+          name: "Test Filter 5",
           op: "and",
           filters: [
             { column: "price", op: ">", value: 2000 },
@@ -66,25 +100,49 @@ export const SavedFilterPanelFiveFilters = () => {
             { column: "created", op: "<", value: Date.now() },
           ],
         },
+        id: "test-5",
       },
     ],
     [],
   );
+
   return (
-    <SavedFilterPanel filterDescriptors={filterDescriptors} style={style} />
+    <>
+      <style>{` 
+      .vuuSavedFilterPanel {
+        --vuuSavedFilterPanel-background: rgb(21,39,59);
+        .vuuFilterPillNext {
+          border-radius: 18px;
+          display: inline-block;
+          height: 36px;
+        }
+      }
+      `}</style>
+      <FilterProvider savedFilters={filterDescriptors}>
+        <SavedFilterPanelTemplate />
+      </FilterProvider>
+    </>
   );
 };
 
 export const SavedFilterPanelManyFilters = () => {
-  const filterDescriptors = useMemo<SavedFilterDescriptor[]>(
+  const filterDescriptors = useMemo<FilterDescriptor[]>(
     () =>
       new Array(100).fill(0).map((_, i) => ({
-        name: `Test Filter ${i + 1}`,
-        filter: { column: "currency", op: "=", value: "GBP" },
+        active: false,
+        filter: {
+          column: "currency",
+          name: `Test Filter ${i + 1}`,
+          op: "=",
+          value: "GBP",
+        },
+        id: `filter-${i}`,
       })),
     [],
   );
   return (
-    <SavedFilterPanel filterDescriptors={filterDescriptors} style={style} />
+    <FilterProvider savedFilters={filterDescriptors}>
+      <SavedFilterPanelTemplate />
+    </FilterProvider>
   );
 };
