@@ -9,12 +9,7 @@ export declare type NumericFilterClauseOp =
   | "<";
 
 export declare type SingleValueFilterClauseOp =
-  | "="
-  | "!="
-  | ">"
-  | ">="
-  | "<="
-  | "<"
+  | NumericFilterClauseOp
   | "contains"
   | "starts"
   | "ends";
