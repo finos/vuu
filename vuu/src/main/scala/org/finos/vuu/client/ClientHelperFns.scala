@@ -111,10 +111,6 @@ object ClientHelperFns {
     awaitMsgBody[AuthenticateSuccess].get.token
   }
 
-  def rpcCallAsync(sessionId: String, token: String, user: String, service: String, method: String, params: Array[Any], module: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, RpcCall(service, method, params, Map()), module = module))
-  }
-
   def menuRpcCall(sessionId: String, token: String, user: String, service: String, method: String, params: Array[Any], module: String)(implicit vsClient: ViewServerClient): MenuRpcResponse = {
 
     vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, MenuRpcCall(service, method, params, Map()), module = module))
@@ -122,20 +118,6 @@ object ClientHelperFns {
     def awaitMsg(vsClient: ViewServerClient): MenuRpcResponse = {
       vsClient.awaitMsg.body match {
         case response: MenuRpcResponse => response
-        case _ => awaitMsg(vsClient)
-      }
-    }
-
-    awaitMsg(vsClient)
-  }
-
-  def rpcCall(sessionId: String, token: String, user: String, service: String, method: String, params: Array[Any], module: String)(implicit vsClient: ViewServerClient): RpcResponse = {
-
-    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, RpcCall(service, method, params, Map()), module = module))
-
-    def awaitMsg(vsClient: ViewServerClient): RpcResponse = {
-      vsClient.awaitMsg.body match {
-        case response: RpcResponse => response
         case _ => awaitMsg(vsClient)
       }
     }
