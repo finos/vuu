@@ -28,22 +28,18 @@ class DefaultRpcHandler(implicit tableContainer: TableContainer) extends RpcHand
     rpcHandlerMap.put(functionName, handlerFunc)
   }
 
-  private def processRpcMethodHandler(methodName: String, rpcParams: RpcParams) = {
-    if (rpcHandlerMap.containsKey(methodName)) {
+  override def processRpcRequest(rpcName: String, params: RpcParams): RpcFunctionResult = {
+    if (rpcHandlerMap.containsKey(rpcName)) {
       try {
-        val handler = rpcHandlerMap.get(methodName)
-        handler(rpcParams)
+        val handler = rpcHandlerMap.get(rpcName)
+        handler(params)
       } catch {
         case e: Exception =>
-          logger.error(s"Error processing rpc method $methodName", e)
+          logger.error(s"Error processing rpc method $rpcName", e)
           RpcFunctionFailure(1, e.toString, e)
       }
     } else {
-      new RpcFunctionFailure(s"Could not find rpcMethodHandler $methodName")
+      new RpcFunctionFailure(s"Could not find rpcMethodHandler $rpcName")
     }
   }
-
-  override def processRpcRequest(rpcName: String, params: RpcParams): RpcFunctionResult =
-    processRpcMethodHandler(rpcName, params)
-
 }
