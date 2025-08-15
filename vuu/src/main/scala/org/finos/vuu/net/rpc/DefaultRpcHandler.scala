@@ -3,8 +3,6 @@ package org.finos.vuu.net.rpc
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.module.typeahead.ViewportTypeAheadRpcHandler
 import org.finos.vuu.core.table.TableContainer
-import org.finos.vuu.net.{Error, RequestContext, RpcCall, RpcResponse, ViewServerMessage, VsMsg}
-import org.finos.vuu.viewport.{ViewPortAction, ViewPortRpcFailure, ViewPortRpcSuccess}
 
 import java.util.concurrent.ConcurrentHashMap
 
@@ -30,43 +28,18 @@ class DefaultRpcHandler(implicit tableContainer: TableContainer) extends RpcHand
     rpcHandlerMap.put(functionName, handlerFunc)
   }
 
-  @deprecated("This method doesn't pass down result. Please use processRpcRequest instead.")
-  override def processViewPortRpcCall(methodName: String, rpcParams: RpcParams): ViewPortAction = {
-    val result = processRpcMethodHandler(methodName, rpcParams)
-    result match {
-      case RpcFunctionSuccess(result) => ViewPortRpcSuccess()
-      case _: RpcFunctionFailure => ViewPortRpcFailure(s"Exception occurred calling rpc $methodName")
-    }
-  }
-
-  override def processRpcCall(msg: ViewServerMessage, rpc: RpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
-    val method = rpc.method
-    val params = rpc.params
-    val namedPars = rpc.namedParams
-    val module = Option(msg).map(_.module).getOrElse("")
-
-    processRpcMethodHandler(method, new RpcParams(params, namedPars, None, None, ctx)) match {
-      case result: RpcFunctionSuccess => Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(method, result.optionalResult.orNull, error = null), module))
-      case error: RpcFunctionFailure => Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, RpcResponse(rpc.method, null, Error(error.error, error.code)), module))
-    }
-  }
-
-  private def processRpcMethodHandler(methodName: String, rpcParams: RpcParams) = {
-    if (rpcHandlerMap.containsKey(methodName)) {
+  override def processRpcRequest(rpcName: String, params: RpcParams): RpcFunctionResult = {
+    if (rpcHandlerMap.containsKey(rpcName)) {
       try {
-        val handler = rpcHandlerMap.get(methodName)
-        handler(rpcParams)
+        val handler = rpcHandlerMap.get(rpcName)
+        handler(params)
       } catch {
         case e: Exception =>
-          logger.error(s"Error processing rpc method $methodName", e)
+          logger.error(s"Error processing rpc method $rpcName", e)
           RpcFunctionFailure(1, e.toString, e)
       }
     } else {
-      new RpcFunctionFailure(s"Could not find rpcMethodHandler $methodName")
+      new RpcFunctionFailure(s"Could not find rpcMethodHandler $rpcName")
     }
   }
-
-  override def processRpcRequest(rpcName: String, params: RpcParams): RpcFunctionResult =
-    processRpcMethodHandler(rpcName, params)
-
 }

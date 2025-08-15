@@ -6,12 +6,12 @@ import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames => B, BasketConstituentColumnNames => BC}
-import org.finos.vuu.core.module.basket.service.{BasketServiceIF, BasketTradeId, BasketTradingServiceIF}
+import org.finos.vuu.core.module.basket.service.BasketTradingServiceIF
 import org.finos.vuu.core.module.price.PriceModule
+import org.finos.vuu.net.rpc.{RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.test.VuuServerTestCase
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
-import org.finos.vuu.viewport.ViewPortCreateSuccess
 import org.scalatest.prop.Tables.Table
 
 class BasketCreateTest extends VuuServerTestCase {
@@ -68,12 +68,12 @@ class BasketCreateTest extends VuuServerTestCase {
 
           val viewportBasket = vuuServer.createViewPort(BasketModule.NAME, BasketTable)
 
-          val basketService = vuuServer.getViewPortRpcServiceProxy[BasketServiceIF](viewportBasket)
+          val basketService = viewportBasket.getStructure.viewPortDef.service
 
-          val vpAction = basketService.createBasket(basketId, "TestBasket")(vuuServer.requestContext)
+          val rpcResult = basketService.processRpcRequest("createBasket", new RpcParams(Map("sourceBasketId" -> basketId, "basketTradeName" -> "TestBasket"), None, None, vuuServer.requestContext))
           vuuServer.runOnce()
-          assert(vpAction.isInstanceOf[ViewPortCreateSuccess])
-          val basketTradeInstanceId = vpAction.asInstanceOf[ViewPortCreateSuccess].key
+          assert(rpcResult.isInstanceOf[RpcFunctionSuccess])
+          val basketTradeInstanceId = rpcResult.asInstanceOf[RpcFunctionSuccess].optionalResult.get.asInstanceOf[String]
 
           val viewportBasketTrading = vuuServer.createViewPort(BasketModule.NAME, BasketTradingTable)
           val viewportBasketTradingCons = vuuServer.createViewPort(BasketModule.NAME, BasketTradingConstituentTable)

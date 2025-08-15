@@ -16,28 +16,24 @@ exchange in [XLON, XAMS, NYSE]
 You may have noticed when you type in the filter in the grid you get a typeahead hint for the available values. If I had
 typed "exchange in [" the UI offers up to 10 values based on the contents of the tables.
 
-These suggestions are implemented as an RPC service within the type ahead module:
+These suggestions are implemented as an RPC service ViewportTypeAheadRpcHandler within the DefaultRpcHandler:
 
 ```scala
-
-object TypeAheadModule extends DefaultModule {
-
-  final val NAME = "TYPEAHEAD"
-
-  def apply()(implicit clock: Clock, lifecycle: LifecycleContainer): ViewServerModule = {
-    ModuleFactory.withNamespace(NAME)
-      .addRpcHandler(server => new GenericTypeAheadRpcHandler(server.tableContainer))
-      .asModule()
-  }
-}
+class DefaultRpcHandler(implicit tableContainer: TableContainer) extends RpcHandler with StrictLogging {
+  ...
+  private val viewportTypeAheadRpcHandler = new ViewportTypeAheadRpcHandler(tableContainer)
+  viewportTypeAheadRpcHandler.register(this)
 ```
 
-You can see we've defined an RpcHandler called GenericTypeAheadRpcHandler, which implements the interface:
+You can see we've defined an RpcHandler called ViewportTypeAheadRpcHandler:
 
 ```scala
-trait TypeAheadRpcHandler{
-  def getUniqueFieldValues(tableMap: Map[String, String], column: String, ctx: RequestContext): Array[String]
-  def getUniqueFieldValuesStartingWith(tableMap: Map[String, String], column: String, starts: String, ctx: RequestContext): Array[String]
+class ViewportTypeAheadRpcHandler(tableContainer: TableContainer) {
+  ...
+  def processGetUniqueFieldValuesRequest(params: RpcParams): RpcFunctionResult = {
+  ...
+  def processGetUniqueFieldValuesStartWithRequest(params: RpcParams): RpcFunctionResult = {
+  ...
 }
 ```
 
