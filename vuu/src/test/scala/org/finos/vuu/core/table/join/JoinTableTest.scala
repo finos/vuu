@@ -5,6 +5,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api._
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName, allDefaultColumns}
 import org.finos.vuu.core.table._
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.ClientSessionId
@@ -241,6 +242,34 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
     }
 
+    Scenario("check created timestamp and last updated timestamp are populated correctly"){
+
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+
+      val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
+      val timestamp1 = dateTime
+      val timestamp2 = dateTime + 1000
+
+      val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, _) = setup()
+
+      joinProvider.start()
+
+      ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L", CreatedTimeColumnName -> timestamp1, LastUpdatedTimeColumnName -> timestamp1))
+      pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220.0, "ask" -> 222.0, CreatedTimeColumnName -> timestamp2, LastUpdatedTimeColumnName -> timestamp2))
+
+      pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500.0, "ask" -> 501.0, CreatedTimeColumnName -> timestamp1, LastUpdatedTimeColumnName -> timestamp1))
+      ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "BT.L", CreatedTimeColumnName -> timestamp2, LastUpdatedTimeColumnName -> timestamp2))
+
+      joinProvider.runOnce()
+
+      val row1 = orderPrices.pullRow("NYC-0001")
+      row1.get(CreatedTimeColumnName) should equal(timestamp1)
+      row1.get(LastUpdatedTimeColumnName) should equal(timestamp2)
+
+      val row2 = orderPrices.pullRow("NYC-0002")
+      row2.get(CreatedTimeColumnName) should equal(timestamp1)
+      row2.get(LastUpdatedTimeColumnName) should equal(timestamp2)
+    }
   }
 
 }
