@@ -8,6 +8,7 @@ import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
 import org.finos.toolbox.collection.array.{ImmutableArray, ImmutableArrays}
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.vuu.core.row.{NoRowBuilder, RowBuilder}
+import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName, allDefaultColumns}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 
 import java.util
@@ -396,7 +397,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
    * @return
    */
   override def pullRow(key: String): RowData = {
-    pullRow(key, viewPortColumns)
+    pullRowHelper(key, viewPortColumns, includeDefaultColumns = true)
   }
 
   override def pullRowFiltered(key: String, columns: ViewPortColumns): RowData = {
@@ -424,6 +425,10 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
   }
 
   override def pullRow(key: String, columns: ViewPortColumns): RowData = {
+    pullRowHelper(key, columns)
+  }
+
+  private def pullRowHelper(key: String, columns: ViewPortColumns, includeDefaultColumns: Boolean = false): RowData = {
 
     val columnsByTable = columns.getColumns()
       .filter(_.isInstanceOf[JoinColumn])
@@ -437,12 +442,15 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     if (keysByTable == null || !keyExistsInLeftMostSourceTable(key))
       EmptyRowData
     else {
+      var minCreatedTime: Long = Long.MaxValue
+      var maxLastUpdatedTime: Long = Long.MinValue
+
       val foldedMap = columnsByTable.foldLeft(Map[String, Any]())({ case (previous, (tableName, columnList)) =>
 
         val table = sourceTables(tableName)
         val fk = keysByTable(tableName)
 
-        val sourceColumns = ViewPortColumnCreator.create(table,  columnList.map(jc => jc.sourceColumn).map(_.name))
+        val sourceColumns = ViewPortColumnCreator.create(table, columnList.map(jc => jc.sourceColumn).map(_.name) ++ allDefaultColumns)
 
         if (fk == null) {
           logger.debug(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key $key")
@@ -453,17 +461,24 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
             case EmptyRowData =>
               previous
             case data: RowWithData =>
+              val createdTimeOfRow: Long = data.get(CreatedTimeColumnName).asInstanceOf[Long]
+              if (createdTimeOfRow > 0 && createdTimeOfRow < minCreatedTime) {
+                minCreatedTime = createdTimeOfRow
+              }
+              val lastUpdatedTimeOfRow: Long = data.get(LastUpdatedTimeColumnName).asInstanceOf[Long]
+              if (lastUpdatedTimeOfRow > maxLastUpdatedTime) {
+                maxLastUpdatedTime = lastUpdatedTimeOfRow
+              }
               previous ++ columnList.map(column => column.name -> column.sourceColumn.getData(data)).toMap
 
           }
         }
       })
 
-      val joinedData = RowWithData(key, foldedMap)
-
+      val dataMap = if (includeDefaultColumns) foldedMap ++ Map(CreatedTimeColumnName -> minCreatedTime, LastUpdatedTimeColumnName -> maxLastUpdatedTime) else foldedMap
+      val joinedData = RowWithData(key, dataMap)
       val calculatedData = calculatedColumns.map(c => c.name -> c.getData(joinedData)).toMap
-
-      RowWithData(key, foldedMap ++ calculatedData)
+      RowWithData(key, dataMap ++ calculatedData)
     }
   }
 
