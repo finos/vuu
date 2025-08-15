@@ -1,6 +1,5 @@
 package org.finos.vuu.util.schema
 
-import org.finos.toolbox.time.TestFriendlyClock
 import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.test.FakeDataSource
 import org.scalatest.BeforeAndAfterEach
@@ -10,7 +9,6 @@ class SchemaMapperFunctionalTestBase extends AnyFeatureSpec with BeforeAndAfterE
 
   protected val fakeDataSource: FakeDataSource[SchemaTestData] = new FakeDataSource[SchemaTestData]
   protected var queryName: String = "myQuery"
-  private val clock = new TestFriendlyClock(10001L)
 
   override def beforeEach(): Unit = {
     queryName += java.util.UUID.randomUUID.toString // unique query name for each test run
@@ -21,7 +19,7 @@ class SchemaMapperFunctionalTestBase extends AnyFeatureSpec with BeforeAndAfterE
 
     getQueryResult(queryName)
       .map(rowValues => mapToRow(schemaMapper, keyFieldName, rowValues))
-      .foreach(row => table.processUpdate(row.key, row, clock.now()))
+      .foreach(row => table.processUpdate(row.key, row))
   }
 
   private def mapToRow(schemaMapper: SchemaMapper, keyFieldName: String, rowValues: List[Any]) = {

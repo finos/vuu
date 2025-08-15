@@ -34,13 +34,13 @@ class BasketTradingConstituentService(val table: DataTable)(implicit clock: Cloc
 
   private def onEditCell(key: String, columnName: String, data: Any, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
     val table = vp.table.asTable
-    table.processUpdate(key, RowWithData(key, Map(InstanceIdRic -> key, columnName -> data)), clock.now())
+    table.processUpdate(key, RowWithData(key, Map(InstanceIdRic -> key, columnName -> data)))
     ViewPortEditSuccess()
   }
 
   private def onEditRow(key: String, row: Map[String, Any], vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
     val table = vp.table.asTable
-    table.processUpdate(key, RowWithData(key, row), clock.now())
+    table.processUpdate(key, RowWithData(key, row))
     ViewPortEditSuccess()
   }
 

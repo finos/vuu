@@ -16,7 +16,7 @@ class FakeInMemoryTable(val instanceName: String, val tableDef: TableDef) extend
   override def newRow(key: String): RowBuilder = ???
   override def rowBuilder: RowBuilder = ???
 
-  override def processUpdate(rowKey: String, rowUpdate: RowData, timeStamp: Long): Unit =
+  override def processUpdate(rowKey: String, rowUpdate: RowData): Unit =
     rowMap += (rowKey -> rowUpdate)
 
   override def pullRow(key: String): RowData =

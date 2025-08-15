@@ -47,11 +47,11 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
   def getTableDef: TableDef
 
-  def processUpdate(rowUpdate: RowData, timeStamp: Long): Unit = {
-    processUpdate(rowUpdate.key(), rowUpdate, timeStamp)
+  def processUpdate(rowUpdate: RowData): Unit = {
+    processUpdate(rowUpdate.key(), rowUpdate)
   }
 
-  def processUpdate(rowKey: String, rowUpdate: RowData, timeStamp: Long): Unit
+  def processUpdate(rowKey: String, rowUpdate: RowData): Unit
 
   def hasRowChanged(row: RowWithData): Boolean = {
     val existingRow = this.pullRow(row.key)
@@ -465,8 +465,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
     }
   }
 
-  // TODO: #1647 remove the timeStamp here
-  def processUpdate(rowKey: String, rowData: RowData, timeStamp: Long): Unit = {
+  def processUpdate(rowKey: String, rowData: RowData): Unit = {
 
     onUpdateMeter.mark()
 

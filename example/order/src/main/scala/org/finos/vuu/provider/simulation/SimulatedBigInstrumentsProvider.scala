@@ -71,7 +71,7 @@ class SimulatedBigInstrumentsProvider(table: DataTable)(implicit clock: Clock, l
         logger.debug(s"Loaded ${i} instruments")
       }
 
-      table.processUpdate(row("ric").toString, RowWithData(row("ric").toString, row), System.currentTimeMillis())
+      table.processUpdate(row("ric").toString, RowWithData(row("ric").toString, row))
 
       i += 1
     })

@@ -63,9 +63,9 @@ class TypeAheadModuleTest extends AnyFeatureSpec with Matchers with GivenWhenThe
 
     val ordersTable = tables.createTable(ordersDef)
 
-    ordersTable.processUpdate("NYC-0008", RowWithData("NYC-0008", Map("orderId" -> "NYC-0008", "trader" -> "steve", "tradeTime" -> EPOCH_DEFAULT, "quantity" -> 500, "ric" -> "BT.L")), EPOCH_DEFAULT)
-    ordersTable.processUpdate("NYC-0009", RowWithData("NYC-0009", Map("orderId" -> "NYC-0009", "trader" -> "steve", "tradeTime" -> EPOCH_DEFAULT, "quantity" -> 500, "ric" -> "BT.L")), EPOCH_DEFAULT)
-    ordersTable.processUpdate("NYC-0010", RowWithData("NYC-0010", Map("orderId" -> "NYC-0010", "trader" -> "steve", "tradeTime" -> EPOCH_DEFAULT, "quantity" -> 500, "ric" -> "VOD.L")), EPOCH_DEFAULT)
+    ordersTable.processUpdate("NYC-0008", RowWithData("NYC-0008", Map("orderId" -> "NYC-0008", "trader" -> "steve", "tradeTime" -> EPOCH_DEFAULT, "quantity" -> 500, "ric" -> "BT.L")))
+    ordersTable.processUpdate("NYC-0009", RowWithData("NYC-0009", Map("orderId" -> "NYC-0009", "trader" -> "steve", "tradeTime" -> EPOCH_DEFAULT, "quantity" -> 500, "ric" -> "BT.L")))
+    ordersTable.processUpdate("NYC-0010", RowWithData("NYC-0010", Map("orderId" -> "NYC-0010", "trader" -> "steve", "tradeTime" -> EPOCH_DEFAULT, "quantity" -> 500, "ric" -> "VOD.L")))
 
     tables
   }

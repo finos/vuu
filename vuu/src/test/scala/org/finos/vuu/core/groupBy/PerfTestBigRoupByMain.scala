@@ -42,7 +42,7 @@ object PerfTestBigRoupByMain extends App with StrictLogging {
 
     val row = RowWithData(ric, Map("ask" -> 100, "bid" -> 101, "last" -> 105, "exchange" -> exchange))
 
-    table.processUpdate(ric, row, 1l)
+    table.processUpdate(ric, row)
   })
 
   val client = ClientSessionId("A", "B")

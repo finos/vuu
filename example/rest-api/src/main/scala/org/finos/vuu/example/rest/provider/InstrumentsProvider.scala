@@ -28,7 +28,7 @@ class InstrumentsProvider(table: DataTable, client: InstrumentServiceClient)
         .map(schemaMapper.toInternalRowMap)
         .foreach(rowData => {
           val key = rowData(keyField).toString
-          table.processUpdate(key, RowWithData(key, rowData), clock.now())
+          table.processUpdate(key, RowWithData(key, rowData))
       })
     }
   }

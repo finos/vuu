@@ -28,7 +28,7 @@ object PermissionModule extends DefaultModule{
       (table, vs) => new PermissionsProvider(table, vs.sessionContainer),
       (table, _, _, tableContainer) => ViewPortDef(
         columns = table.getTableDef.columns,
-        service = new PermissionsRpcService(table)(clock, tableContainer)
+        service = new PermissionsRpcService(table)(tableContainer)
       )
     ).asModule()
 

@@ -22,7 +22,7 @@ class MockProvider(table: DataTable)(implicit clock: Clock, lifecycle: Lifecycle
   }
 
   def tick(key: String, row: Map[String, Any]) =
-    table.processUpdate(key, new RowWithData(key, row), clock.now())
+    table.processUpdate(key, new RowWithData(key, row))
 
   def delete(key: String) = {
     table.processDelete(key)

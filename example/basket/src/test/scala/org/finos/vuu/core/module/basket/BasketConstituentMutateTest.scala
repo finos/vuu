@@ -74,7 +74,7 @@ class BasketConstituentMutateTest extends VuuServerTestCase {
   def GivenBasketTrade(tableContainer: TableContainer, basketName: String, side: String): String = {
     val table = tableContainer.getTable(BasketModule.BasketTradingTable)
     val rowKey = s"$uuid.$basketName"
-    table.processUpdate(rowKey, TestDataFactory.createBasketTradingRow(rowKey, basketName, side), clock.now())
+    table.processUpdate(rowKey, TestDataFactory.createBasketTradingRow(rowKey, basketName, side))
     rowKey
   }
 
@@ -92,7 +92,7 @@ class BasketConstituentMutateTest extends VuuServerTestCase {
     val baseTableDef = joinTable.getTableDef.asInstanceOf[JoinTableDef].baseTable
     joinTable.sourceTables.get(baseTableDef.name) match {
       case Some(table: DataTable) =>
-        table.processUpdate(row.key, row, clock.now())
+        table.processUpdate(row.key, row)
       case None =>
       //log and throw?
     }
@@ -102,7 +102,7 @@ class BasketConstituentMutateTest extends VuuServerTestCase {
     val table = tableContainer.getTable("prices")
     for ((ric, bid, ask) <- prices) {
       val rowKey = s"$uuid"
-      table.processUpdate(rowKey, TestDataFactory.createPricesRow(rowKey, ric, bid, ask), clock.now())
+      table.processUpdate(rowKey, TestDataFactory.createPricesRow(rowKey, ric, bid, ask))
     }
   }
 

@@ -87,10 +87,7 @@ class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(implicit cl
   }
 
   private def updateBasketTradeStatus(basketInstanceId: String, state: String): Unit = {
-    table.processUpdate(
-      basketInstanceId,
-      RowWithData(basketInstanceId, Map(BT.InstanceId -> basketInstanceId, BT.Status -> state)),
-      clock.now())
+    table.processUpdate(basketInstanceId, RowWithData(basketInstanceId, Map(BT.InstanceId -> basketInstanceId, BT.Status -> state)))
   }
 
   private def onEditCell(key: String, columnName: String, data: Any, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
@@ -102,7 +99,7 @@ class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(implicit cl
     }
     else {
       logger.debug("Changing cell value for key:" + key + "(" + columnName + ":" + data + ")")
-      table.processUpdate(key, RowWithData(key, Map(BT.InstanceId -> key, columnName -> data)), clock.now())
+      table.processUpdate(key, RowWithData(key, Map(BT.InstanceId -> key, columnName -> data)))
 
       columnName match {
         case BT.Units =>
@@ -112,7 +109,7 @@ class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(implicit cl
             val unitsAsInt = data.asInstanceOf[Int]
             val weighting = row.get(BTC.Weighting)
             val quantity = (weighting.asInstanceOf[Double] * unitsAsInt).toLong
-            constituentTable.processUpdate(row.key(), RowWithData(row.key(), Map(BTC.InstanceIdRic -> row.key(), BTC.Quantity -> quantity)), clock.now())
+            constituentTable.processUpdate(row.key(), RowWithData(row.key(), Map(BTC.InstanceIdRic -> row.key(), BTC.Quantity -> quantity)))
           })
         case BT.Side =>
           val constituentTable = tableContainer.getTable(BasketTradingConstituentTable)
@@ -122,7 +119,7 @@ class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(implicit cl
               case Side.Buy => Side.Sell
               case _ => Side.Buy
             }
-            constituentTable.processUpdate(row.key(), RowWithData(row.key(), Map(BTC.InstanceIdRic -> row.key(), BTC.Side -> newSide)), clock.now())
+            constituentTable.processUpdate(row.key(), RowWithData(row.key(), Map(BTC.InstanceIdRic -> row.key(), BTC.Side -> newSide)))
           })
         case _ =>
       }

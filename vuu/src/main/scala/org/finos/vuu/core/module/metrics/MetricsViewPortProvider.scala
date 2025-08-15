@@ -49,7 +49,7 @@ class MetricsViewPortProvider(table: DataTable, viewPortContainer: ViewPortConta
           val upMap = Map("id" -> key, "table" -> vp.table.name, "mean" -> snapshot.getMean, "max" -> snapshot.getMax, "structureHash" -> vp.getStructuralHashCode(), "updateCount" -> vp.getTableUpdateCount(),
             "keyBuildCount" -> vp.keyBuildCount, "75Perc" -> snapshot.get75thPercentile(), "99Perc" -> snapshot.get99thPercentile(), "99_9Perc" -> snapshot.get999thPercentile()
           )
-          table.processUpdate(key, RowWithData(key, upMap), clock.now())
+          table.processUpdate(key, RowWithData(key, upMap))
         } else {
           //table.processDelete(key)
         }

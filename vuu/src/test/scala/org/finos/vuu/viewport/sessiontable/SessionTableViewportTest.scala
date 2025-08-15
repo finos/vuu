@@ -70,7 +70,7 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
             "exchange" -> exchange
           )
 
-          sessionTable.processUpdate(clOrderId, RowWithData(clOrderId, dataMap), clock.now())
+          sessionTable.processUpdate(clOrderId, RowWithData(clOrderId, dataMap))
         })
 
         OpenDialogViewPortAction(ViewPortTable(sessionTable.name, baseTable.getTableDef.getModule().name))

@@ -34,10 +34,10 @@ class MetricsTableProviderTest extends AnyFeatureSpec with Matchers with MockFac
 
       metricsTableProvider.runOnce()
 
-      (mockTable.processUpdate(_: String, _: RowData, _: Long)).verify("instrumentsSessionTable_1", *, *).once
-      (mockTable.processUpdate(_: String, _: RowData, _: Long)).verify("instrumentsSessionTable_2", *, *).once
-      (mockTable.processUpdate(_: String, _: RowData, _: Long)).verify("fills_table", *, *).once
-      (mockTable.processUpdate(_: String, _: RowData, _: Long)).verify("other", *, *).once
+      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify("instrumentsSessionTable_1", *).once
+      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify("instrumentsSessionTable_2", *).once
+      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify("fills_table", *).once
+      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify("other", *).once
     }
   }
 }

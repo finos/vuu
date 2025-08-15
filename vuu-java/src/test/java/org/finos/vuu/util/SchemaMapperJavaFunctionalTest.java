@@ -1,8 +1,5 @@
 package org.finos.vuu.util;
 
-
-import org.finos.toolbox.time.Clock;
-import org.finos.toolbox.time.TestFriendlyClock;
 import org.finos.vuu.api.ColumnBuilder;
 import org.finos.vuu.api.TableDef;
 import org.finos.vuu.core.table.Columns;
@@ -33,7 +30,6 @@ public class SchemaMapperJavaFunctionalTest {
 
     private static String queryName = "myQuery";
     private static final FakeDataSource dataSource = new FakeDataSource();
-    private static final Clock clock  = new TestFriendlyClock(10001L);
 
     @Before
     public void setUp() {
@@ -164,7 +160,7 @@ public class SchemaMapperJavaFunctionalTest {
         var keyFieldName = table.getTableDef().keyField();
         getQueryResult(queryName).stream()
                 .map(rowValues -> mapToRow(schemaMapper, rowValues, keyFieldName))
-                .forEach(row -> table.processUpdate(row.key(), row, clock.now()));
+                .forEach(row -> table.processUpdate(row.key(), row));
     }
 
     private static RowWithData mapToRow(SchemaMapper schemaMapper, List<Object> valueList, String keyFieldName) {

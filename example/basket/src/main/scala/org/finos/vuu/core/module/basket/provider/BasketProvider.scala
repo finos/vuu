@@ -24,13 +24,11 @@ class BasketProvider(val table: DataTable)(implicit lifecycle: LifecycleContaine
     val builder = table.rowBuilder
 
     data.foreach(id => {
-      table.processUpdate(id,
-        builder.setKey(id)
-          .setString(idColumn, id)
-          .setString(nameColumn, id)
-          //as row clears out the data from the builder
-          .asRow,
-        clock.now())
+      table.processUpdate(id, builder.setKey(id)
+        .setString(idColumn, id)
+        .setString(nameColumn, id)
+        //as row clears out the data from the builder
+        .asRow)
     })
   }
   override val lifecycleId: String = "org.finos.vuu.core.module.basket.provider.BasketProvider"

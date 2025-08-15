@@ -59,7 +59,7 @@ public class BenchmarkHelper {
                     "close", 106,
                     "exchange", exchange
             ));
-            table.processUpdate(ric, row, clock.now());
+            table.processUpdate(ric, row);
         }
         return table;
     }

@@ -125,7 +125,7 @@ object FilterAndSortFixture {
       joinFields = "ric", "orderId", "ccyCross"
     )
     val table: InMemDataTable = new InMemDataTable(tableDef, new TestFriendlyJoinTableProvider)(new MetricsProviderImpl, new DefaultClock)
-    rows.foreach(row => table.processUpdate(row.key, row, 0L))
+    rows.foreach(row => table.processUpdate(row.key, row))
     table
   }
 

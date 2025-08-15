@@ -42,7 +42,7 @@ class BasketTradingProvider(val table: DataTable, val tableContainer: TableConta
 
       } ).sum
 
-      table.processUpdate(key, RowWithData(key, Map(InstanceId -> key, TotalNotionalUsd -> sumOfNotional.asInstanceOf[Long], TotalNotional -> sumOfNotional.asInstanceOf[Long])), clock.now())
+      table.processUpdate(key, RowWithData(key, Map(InstanceId -> key, TotalNotionalUsd -> sumOfNotional.asInstanceOf[Long], TotalNotional -> sumOfNotional.asInstanceOf[Long])))
     })
 
   }

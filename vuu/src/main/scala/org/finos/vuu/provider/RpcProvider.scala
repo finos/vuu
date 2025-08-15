@@ -1,12 +1,11 @@
 package org.finos.vuu.provider
 
 import org.finos.vuu.core.table.{DataTable, RowWithData}
-import org.finos.toolbox.time.Clock
 
-class RpcProvider(table: DataTable)(implicit timeProvider: Clock) extends Provider {
+class RpcProvider(table: DataTable) extends Provider {
 
   def tick(key: String, row: Map[String, Any]) = {
-    table.processUpdate(key, new RowWithData(key, row), timeProvider.now())
+    table.processUpdate(key, RowWithData(key, row))
   }
 
   def delete(key: String) = {

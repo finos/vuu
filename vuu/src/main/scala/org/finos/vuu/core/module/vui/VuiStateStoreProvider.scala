@@ -26,9 +26,7 @@ class VuiStateStoreProvider(val table: DataTable, val store: VuiStateStore)(impl
         "user" -> state.user,
         "id" -> state.id,
         "lastUpdate" -> state.lastUpdate)
-      ),
-        clock.now()
-      )
+      ))
     }
 
     for (oldState <- lastState) {

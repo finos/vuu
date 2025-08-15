@@ -263,7 +263,7 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecycle: LifecycleCon
 
           if (isPrimaryKeyDeleted(jtu)) jtu.joinTable.processDelete(jtu.rowUpdate.key)
           else
-            jtu.joinTable.processUpdate(jtu.rowUpdate.key, jtu.rowUpdate, jtu.time)
+            jtu.joinTable.processUpdate(jtu.rowUpdate.key, jtu.rowUpdate)
         })
     }
   }

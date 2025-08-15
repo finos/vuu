@@ -62,7 +62,7 @@ class BasketConstituentProvider(val table: DataTable)(implicit lifecycle: Lifecy
           .setString(sideCol, side)
           .asRow
 
-        table.processUpdate(rowData, clock.now())
+        table.processUpdate(rowData)
       }
     })
 

@@ -77,9 +77,9 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
     onRowDeleteFn = fn
   }
 
-  override def processUpdate(rowKey: String, rowData: RowData, timeStamp: Long): Unit = {
+  override def processUpdate(rowKey: String, rowData: RowData): Unit = {
     logger.debug(s"ChrisChris>> GroupBySession processUpdate $rowKey $rowData")
-    super.processUpdate(rowKey, rowData, timeStamp)
+    super.processUpdate(rowKey, rowData)
     incrementUpdateCounter()
   }
 

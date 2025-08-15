@@ -28,8 +28,8 @@ class MetricsViewPortParallelismProvider(table: DataTable, viewPortContainer: Vi
     val tree = Map("type" -> "tree", ViewPortParallelism.work_ms_in_1m -> treeFiveMinRate, ViewPortParallelism.work_par_ratio -> (treeFiveMinRate / 1000))
     val flat = Map("type" -> "flat", ViewPortParallelism.work_ms_in_1m -> flatFiveMinRate, ViewPortParallelism.work_par_ratio -> (flatFiveMinRate / 1000))
 
-    table.processUpdate("tree", RowWithData("tree", tree), clock.now())
-    table.processUpdate("flat", RowWithData("flat", flat), clock.now())
+    table.processUpdate("tree", RowWithData("tree", tree))
+    table.processUpdate("flat", RowWithData("flat", flat))
   }
 
   override def subscribe(key: String): Unit = {}

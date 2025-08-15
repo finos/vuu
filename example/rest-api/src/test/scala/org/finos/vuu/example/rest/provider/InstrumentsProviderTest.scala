@@ -30,7 +30,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
 
       getInstrumentsProvider(mockBackend).doStart()
 
-      (mockTable.processUpdate(_: String, _: RowData, _ : Long) ).verify(expectedRow.get(KEY_FIELD).toString, expectedRow, *).once
+      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify(expectedRow.get(KEY_FIELD).toString, expectedRow).once
     }
 
     Scenario("can correctly make an external call, parse response and update the table WHEN server responds with multiple instruments") {
@@ -42,7 +42,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
 
       getInstrumentsProvider(mockBackend).doStart()
 
-      expectedRows.foreach(row => (mockTable.processUpdate(_: String, _: RowData, _ : Long) ).verify(row.get(KEY_FIELD).toString, row, *).once)
+      expectedRows.foreach(row => ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify(row.get(KEY_FIELD).toString, row).once)
     }
 
 
@@ -52,7 +52,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
 
       getInstrumentsProvider(mockBackend).doStart()
 
-      (mockTable.processUpdate(_: String, _: RowData, _ : Long) ).verify(*, *, *).never
+      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify(*, *).never
     }
 
     Scenario("skips updating table when response errors") {
@@ -60,7 +60,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
 
       getInstrumentsProvider(mockBackend).doStart()
 
-      (mockTable.processUpdate(_: String, _: RowData, _ : Long) ).verify(*, *, *).never
+      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify(*, *).never
     }
   }
 

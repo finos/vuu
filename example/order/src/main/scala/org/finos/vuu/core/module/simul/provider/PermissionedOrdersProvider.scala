@@ -41,7 +41,7 @@ class PermissionedOrdersProvider(val table: DataTable, val model: ParentChildOrd
       "side" -> po.side, "account" -> po.account, "exchange" -> po.exchange, "ccy" -> po.ccy,
       "algo" -> po.algo, "volLimit" -> po.volLimit, "filledQty" -> po.filledQty, "openQty" -> po.openQty,
       "averagePrice" -> po.averagePrice, "status" -> po.status, "lastUpdate" -> clock.now(), "owner" -> po.owner, "mask" -> po.permissionMask
-    )), clock.now())
+    )))
   }
 
   override def subscribe(key: String): Unit = {}

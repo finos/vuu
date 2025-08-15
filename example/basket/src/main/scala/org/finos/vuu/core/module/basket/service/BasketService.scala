@@ -79,7 +79,7 @@ class BasketService(val table: DataTable, val omsApi: OmsApi)(implicit clock: Cl
 
     tableContainer.getTable(BasketModule.BasketTradingTable) match {
       case table: DataTable =>
-        table.processUpdate(basketTradeId, mkTradingBasketRow(sourceBasketId, basketTradeName, basketTradeId), clock.now())
+        table.processUpdate(basketTradeId, mkTradingBasketRow(sourceBasketId, basketTradeName, basketTradeId))
       case null =>
         logger.error("Cannot find the Basket Trading table.")
     }
@@ -94,7 +94,7 @@ class BasketService(val table: DataTable, val omsApi: OmsApi)(implicit clock: Cl
           val quantity = (weighting * 100).asInstanceOf[Long]
           val side = rowData.get(BTC.Side).toString
           val limitPrice = getLastPrice(priceTable, ric)
-          table.processUpdate(constituentKey, mkTradingConstituentRow(side, sourceBasketId, basketTradeId, constituentKey, quantity, weighting, limitPrice, rowData), clock.now())
+          table.processUpdate(constituentKey, mkTradingConstituentRow(side, sourceBasketId, basketTradeId, constituentKey, quantity, weighting, limitPrice, rowData))
         })
       case null =>
         logger.error("Cannot find the Basket Trading Constituent.")

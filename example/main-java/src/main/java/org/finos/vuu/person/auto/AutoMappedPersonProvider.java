@@ -42,7 +42,7 @@ public class AutoMappedPersonProvider implements Provider {
                     toScala(List.of(person.Id, person.Name, person.AccountNumber))
             );
             var row = new RowWithData(getKeyValue(rowMap), rowMap);
-            table.processUpdate(row.key(), row, clock.now());
+            table.processUpdate(row.key(), row);
         }
     }
 

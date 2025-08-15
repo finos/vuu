@@ -36,7 +36,7 @@ public class JavaExampleModule extends DefaultModule {
                                         .build(),
                                 toScalaSeq(List.of())
                         ),
-                        (table, vs) -> new PersonProvider(table, new PersonStore(), clock),
+                        (table, vs) -> new PersonProvider(table, new PersonStore()),
                         (table, provider, providerContainer, tableContainer) -> new ViewPortDef(
                                 table.getTableDef().columns(),
                                 new PersonRpcHandler(table, tableContainer)
