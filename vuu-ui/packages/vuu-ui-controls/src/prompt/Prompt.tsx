@@ -21,7 +21,7 @@ import { useWindow } from "@salt-ds/window";
 
 import promptCss from "./Prompt.css";
 
-const classBase = "vuuPromptNext";
+const classBase = "vuuPrompt";
 
 /**
  * Allow fine grained configuration of Prompt buttons

@@ -1,4 +1,4 @@
-.vuuPromptNext {
+.vuuPrompt {
     min-height: var(--vuuPrompt-minHeight, 257px);
     min-width: var(--vuuPrompt-minWidth,380px);
 
@@ -17,7 +17,7 @@
     }
 }
 
-.vuuPromptNext.saltDialog-warning {
+.vuuPrompt.saltDialog-warning {
     --salt-status-warning-borderColor: var(--vuu-color-yellow-20);   
     --variant-color: var(--vuu-color-yellow-20);
 

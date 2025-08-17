@@ -8,7 +8,7 @@ describe("WHEN rendered with open true", () => {
   it("THEN Prompt renders in portal", () => {
     cy.mount(<BareBonesPrompt />);
     cy.findByRole("dialog").should("be.visible");
-    cy.findByRole("dialog").should("have.class", "vuuPromptNext");
+    cy.findByRole("dialog").should("have.class", "vuuPrompt");
   });
 });
 describe("WHEN configured to show confirm button only, with custom label", () => {
