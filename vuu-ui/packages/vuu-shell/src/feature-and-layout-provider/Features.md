@@ -99,6 +99,6 @@ The ``PaletteItem` is configures here with `ViewProps` attributes that will dete
 - header
 - resize='defer`
 
-The most important prop passed to `PaletteItem` is the component - this is `Feature` whose props are the `DynamicFeatureProps` illustrated above. Note: `title` becomes `value` as `PaletteItem` is a List `Option` and requires this prop.
+The most important prop passed to `PaletteItem` is the component - this is `Feature` whose props are the `DynamicFeatureProps` illustrated above, minus the ViewProps, which are extracted to be passed to View.
 
 ## Users drags a PaletteItem

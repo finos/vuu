@@ -4,6 +4,7 @@ import {
   DialogActions,
   DialogContent,
   DialogHeader,
+  DialogHeaderProps,
   DialogProps,
 } from "@salt-ds/core";
 import cx from "clsx";
@@ -11,6 +12,7 @@ import {
   HTMLAttributes,
   MouseEventHandler,
   RefCallback,
+  RefObject,
   useCallback,
 } from "react";
 import { Icon, IconButton } from "../icon-button";
@@ -21,11 +23,36 @@ import promptCss from "./Prompt.css";
 
 const classBase = "vuuPromptNext";
 
+/**
+ * Allow fine grained configuration of Prompt buttons
+ * The ref is provided to facilitate programmatic focus.
+ */
+export interface PromptButtonProps {
+  disabled?: boolean;
+  label?: string;
+  ref?: RefObject<HTMLButtonElement | null>;
+}
+
 export interface PromptProps
   extends Pick<DialogProps, "onOpenChange" | "open" | "status">,
+    Pick<DialogHeaderProps, "disableAccent">,
     Omit<HTMLAttributes<HTMLDivElement>, "content" | "title"> {
+  /**
+   * For simple configuration, where just a cancel button label is required.
+   */
   cancelButtonLabel?: string;
+  /**
+   * Allow fine grained configuration of cancel button
+   */
+  cancelButtonProps?: PromptButtonProps;
+  /**
+   * For simple configuration, where just a confirm button label is required.
+   */
   confirmButtonLabel?: string;
+  /**
+   * Allow fine grained configuration of confirm button
+   */
+  confirmButtonProps?: PromptButtonProps;
   icon?: string;
   /**
    * Set this prop if one of the three built-in buttons should receive initial focus.
@@ -47,7 +74,10 @@ export const Prompt = ({
   children,
   className,
   cancelButtonLabel = "Cancel",
+  cancelButtonProps,
   confirmButtonLabel = "Confirm",
+  confirmButtonProps,
+  disableAccent,
   icon,
   initialFocusedItem,
   onCancel,
@@ -137,21 +167,32 @@ export const Prompt = ({
       ref={callbackRef}
       status={status}
     >
-      <DialogHeader header={header} actions={actions} />
+      <DialogHeader
+        disableAccent={disableAccent}
+        header={header}
+        actions={actions}
+      />
       <DialogContent>{children}</DialogContent>
       <DialogActions>
         {showCancelButton ? (
-          <Button className="vuuPromptCancelButton" onClick={handleCancel}>
-            {cancelButtonLabel}
+          <Button
+            className="vuuPromptCancelButton"
+            disabled={cancelButtonProps?.disabled}
+            onClick={handleCancel}
+            ref={cancelButtonProps?.ref}
+          >
+            {cancelButtonProps?.label ?? cancelButtonLabel}
           </Button>
         ) : null}
         {showConfirmButton ? (
           <Button
             className="vuuPromptConfirmButton"
+            disabled={confirmButtonProps?.disabled}
             sentiment="accented"
             onClick={handleConfirm}
+            ref={confirmButtonProps?.ref}
           >
-            {confirmButtonLabel}
+            {confirmButtonProps?.label ?? confirmButtonLabel}
           </Button>
         ) : null}
       </DialogActions>

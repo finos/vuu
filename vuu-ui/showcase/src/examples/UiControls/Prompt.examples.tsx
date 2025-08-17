@@ -4,7 +4,10 @@ import { FormField, FormFieldLabel, Input } from "@salt-ds/core";
 
 const PromptTemplate = ({
   children,
-  confirmLabel,
+  cancelButtonLabel,
+  confirmButtonLabel,
+  initialFocusedItem,
+  onCancel,
   onConfirm,
   open = true,
   showCancelButton,
@@ -14,9 +17,11 @@ const PromptTemplate = ({
   title = "Prompt Example",
 }: Pick<
   PromptProps,
-  | "confirmLabel"
-  | "cancelLabel"
+  | "confirmButtonLabel"
+  | "cancelButtonLabel"
+  | "initialFocusedItem"
   | "onConfirm"
+  | "onCancel"
   | "open"
   | "showCancelButton"
   | "showCloseButton"
@@ -26,18 +31,13 @@ const PromptTemplate = ({
   style?: CSSProperties;
   title?: string;
 }) => {
-  const handleCancel = () => {
-    console.log("cancelled");
-  };
-  const handleConfirm = () => {
-    console.log("confirmed");
-    onConfirm?.();
-  };
   return (
     <Prompt
-      confirmLabel={confirmLabel}
-      onCancel={handleCancel}
-      onConfirm={handleConfirm}
+      cancelButtonLabel={cancelButtonLabel}
+      confirmButtonLabel={confirmButtonLabel}
+      initialFocusedItem={initialFocusedItem}
+      onCancel={onCancel}
+      onConfirm={onConfirm}
       open={open}
       showCancelButton={showCancelButton}
       showCloseButton={showCloseButton}
@@ -52,6 +52,14 @@ const PromptTemplate = ({
 
 export const BareBonesPrompt = () => {
   return <PromptTemplate>This is Prompt text</PromptTemplate>;
+};
+
+export const FocusOnConfirm = () => {
+  return (
+    <PromptTemplate initialFocusedItem="confirm">
+      This is Prompt text
+    </PromptTemplate>
+  );
 };
 
 export const WithContentStyling = () => {
@@ -75,7 +83,7 @@ export const ReduceSize = () => {
     "--vuuPrompt-minWidth": "200px",
   } as CSSProperties;
   return (
-    <PromptTemplate confirmLabel="OK" style={style}>
+    <PromptTemplate confirmButtonLabel="OK" style={style}>
       This is Prompt text that will not wrap because minWidth has been
       specified, not width
     </PromptTemplate>
@@ -89,7 +97,7 @@ export const ConfirmOnly = () => {
   } as CSSProperties;
   return (
     <PromptTemplate
-      confirmLabel="OK"
+      confirmButtonLabel="OK"
       showCancelButton={false}
       showCloseButton={false}
       style={style}
@@ -122,7 +130,7 @@ export const UserInputCapture = () => {
 
   return (
     <PromptTemplate
-      confirmLabel="Save"
+      confirmButtonLabel="Save"
       onConfirm={onConfirm}
       showCancelButton={false}
       showCloseButton={false}

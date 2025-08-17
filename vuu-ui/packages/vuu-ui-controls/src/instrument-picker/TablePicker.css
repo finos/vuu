@@ -12,3 +12,7 @@
   padding: var(--salt-spacing-100) 0;
   z-index: var(--salt-zIndex-popout);
 }
+
+[data-floating-ui-portal] [data-floating-ui-portal] .vuuTablePicker-floating-table {
+  z-index: calc(var(--salt-zIndex-modal) + var(--salt-zIndex-popout));
+}
