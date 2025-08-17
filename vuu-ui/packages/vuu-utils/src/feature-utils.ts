@@ -42,14 +42,20 @@ declare global {
 }
 
 export interface DynamicFeatureDescriptor {
-  name: string;
-  title: string;
-  url: string;
+  /**
+   * url for css file for feature
+   */
   css?: string;
-  leftNavLocation: "vuu-features" | "vuu-tables";
   featureProps?: {
     vuuTables?: "*" | VuuTable[];
   };
+  leftNavLocation: "vuu-features" | "vuu-tables";
+  name: string;
+  title: string;
+  /**
+   * url for javascript bundle to load feature
+   */
+  url: string;
   viewProps?: ViewConfig;
 }
 
@@ -235,20 +241,7 @@ export const getCustomAndTableFeatures = (
           });
         }
       }
-    } /*else if (isVuuTables(vuuTables) && tableSchemas) {
-      const tableSchema = tableSchemas.find((tableSchema) =>
-        isSameTable(vuuTable, tableSchema.table),
-      );
-      if (tableSchema) {
-        tableFeatures.push({
-          ...feature,
-          ComponentProps: {
-            tableSchema,
-          },
-          ViewProps: viewProps,
-        });
-      }
-    }*/
+    }
   }
 
   for (const {

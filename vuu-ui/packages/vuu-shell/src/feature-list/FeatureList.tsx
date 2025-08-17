@@ -45,13 +45,15 @@ export const FeatureList = ({
       return features.map(({ label, type }, idx) => {
         return (
           <PaletteItem
-            closeable
+            ViewProps={{
+              closeable: true,
+              header: true,
+              resize: "defer",
+              resizeable: true,
+            }}
             component={featureFromJson({ type })}
             key={idx}
             value={label}
-            resizeable
-            resize="defer"
-            header
           >
             <Icon name="draggable" size={18} />
             <span className={`${classBase}-itemName`}>{label}</span>
@@ -63,15 +65,19 @@ export const FeatureList = ({
       return [
         <div className={`${classBase}-standalone`} key={0}>
           <Palette key="0" orientation="vertical">
-            {features.map((featureProps, i) => (
+            {features.map(({ ViewProps, ...featureProps }, i) => (
               <PaletteItem
-                closeable
+                ViewProps={{
+                  closeable: true,
+                  header: true,
+                  resize: "defer",
+                  resizeable: true,
+                  title: featureProps.title,
+                  ...ViewProps,
+                }}
                 component={<Feature {...featureProps} />}
                 key={i}
                 value={featureProps.title}
-                resizeable
-                resize="defer"
-                header
               >
                 <Icon name="draggable" size={18} />
                 <span className={`${classBase}-itemName`}>
@@ -88,22 +94,31 @@ export const FeatureList = ({
           <div className={`${classBase}-groupHeader`}>{heading}</div>
           <Palette orientation="vertical">
             {featureList.map(
-              (featureProps: DynamicFeatureProps<object>, i: Key) => (
-                <PaletteItem
-                  closeable
-                  component={<Feature {...featureProps} />}
-                  key={i}
-                  value={featureProps.title}
-                  resizeable
-                  resize="defer"
-                  header
-                >
-                  <Icon name="draggable" size={18} />
-                  <span className={`${classBase}-itemName`}>
-                    {featureProps.title}
-                  </span>
-                </PaletteItem>
-              ),
+              (
+                { ViewProps, ...featureProps }: DynamicFeatureProps<object>,
+                i: Key,
+              ) => {
+                return (
+                  <PaletteItem
+                    ViewProps={{
+                      closeable: true,
+                      header: true,
+                      resize: "defer",
+                      resizeable: true,
+                      title: featureProps.title,
+                      ...ViewProps,
+                    }}
+                    component={<Feature {...featureProps} />}
+                    key={i}
+                    value={featureProps.title}
+                  >
+                    <Icon name="draggable" size={18} />
+                    <span className={`${classBase}-itemName`}>
+                      {featureProps.title}
+                    </span>
+                  </PaletteItem>
+                );
+              },
             )}
           </Palette>
         </div>

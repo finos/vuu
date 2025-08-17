@@ -1,20 +1,25 @@
-import { ViewportRpcResponse } from "@vuu-ui/vuu-data-types";
+import { TableSchema, ViewportRpcResponse } from "@vuu-ui/vuu-data-types";
 import type { TableRowSelectHandler } from "@vuu-ui/vuu-table-types";
 import { OpenChangeHandler } from "@vuu-ui/vuu-ui-controls";
 import { CommitHandler, buildColumnMap, useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { NewBasketPanelProps } from "./NewBasketPanel";
 import { VuuRpcViewportRequest } from "@vuu-ui/vuu-protocol-types";
 
-export type NewBasketHookProps = Pick<
-  NewBasketPanelProps,
-  "basketSchema" | "onBasketCreated"
->;
+export type BasketCreatedHandler = (
+  basketName: string,
+  basketId: string,
+  instanceId: string,
+) => void;
 
-export const useNewBasketPanel = ({
+export interface NewBasketDialogHookProps {
+  basketSchema: TableSchema;
+  onBasketCreated: BasketCreatedHandler;
+}
+
+export const useNewBasketDialog = ({
   basketSchema,
   onBasketCreated,
-}: NewBasketHookProps) => {
+}: NewBasketDialogHookProps) => {
   const columnMap = buildColumnMap(basketSchema.columns);
   const [basketName, setBasketName] = useState("");
   const [basketId, setBasketId] = useState<string>();
@@ -85,14 +90,19 @@ export const useNewBasketPanel = ({
     [basketDataSource],
   );
 
+  const confirmButtonProps = {
+    label: "Save",
+    disabled: basketName === "" || basketId === undefined,
+    ref: saveButtonRef,
+  };
+
   return {
     columnMap,
+    confirmButtonProps,
     onChangeBasketName: handleChangeBasketName,
     onCloseInstrumentPicker: handleOpenChangeInstrumentPicker,
     onOpenChangeInstrumentPicker: handleOpenChangeInstrumentPicker,
     onSave: saveBasket,
     onSelectBasket: handleSelectBasket,
-    saveButtonDisabled: basketName === "" || basketId === undefined,
-    saveButtonRef,
   };
 };
