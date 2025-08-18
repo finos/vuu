@@ -10,3 +10,7 @@ export * from "./filter-pill";
 export * from "./filter-utils";
 export * from "./inline-filter";
 export * from "./quick-filters";
+export {
+  BasicColumnFilter,
+  type BasicColumnFilterProps,
+} from "./basic-column-filter/BasicColumnFilter";
