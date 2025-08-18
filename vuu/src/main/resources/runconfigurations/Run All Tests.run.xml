@@ -1,159 +1,17 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Run All Tests" type="ScalaTestRunConfiguration" factoryName="ScalaTest" show_console_on_std_err="false" show_console_on_std_out="false">
     <module name="vuu" />
-    <option name="VMParameters" value="--add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/jdk.internal.access=ALL-UNNAMED --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED --add-opens=java.management/com.sun.jmx.mbeanserver=ALL-UNNAMED --add-opens=jdk.internal.jvmstat/sun.jvmstat.monitor=ALL-UNNAMED --add-opens=java.base/sun.reflect.generics.reflectiveObjects=ALL-UNNAMED --add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.math=ALL-UNNAMED --add-opens=java.sql/java.sql=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.time=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.management/sun.management=ALL-UNNAMED --add-opens java.desktop/java.awt.font=ALL-UNNAMED" />
     <option name="allowRunningInParallel" value="false" />
-    <option name="alternativeJrePath" />
-    <option name="alternativeJrePathEnabled" value="false" />
-    <option name="classpathModifications">
-      <list />
-    </option>
-    <option name="envFilePaths">
-      <list />
-    </option>
-    <option name="envs">
-      <map />
-    </option>
-    <option name="passParentEnvs" value="true" />
-    <option name="programParameters" value="" />
     <option name="projectPathOnTarget" />
     <option name="selectedOptions">
       <list />
     </option>
     <option name="testKind" value="All in package" />
-    <option name="workingDirectory" value="C:\Users\jeany\IdeaProjects\vuu" />
-    <option name="classBuf">
-      <list>
-        <option value="org.finos.vuu.order.oms.OmsApiTest" />
-        <option value="org.finos.vuu.json.ObjectMappingTest" />
-        <option value="org.finos.vuu.json.JsonVsSerializerTest" />
-        <option value="org.finos.vuu.json.ViewPortMenuTest" />
-        <option value="org.finos.vuu.plugin.PluginFeatureTest" />
-        <option value="org.finos.vuu.plugin.virtualized.table.VirtualizedDataTableTest" />
-        <option value="org.finos.vuu.plugin.virtualized.table.VirtualizedTableKeysTest" />
-        <option value="org.finos.vuu.wsapi.TableWSApiTest" />
-        <option value="org.finos.vuu.wsapi.TypeAheadWSApiTest" />
-        <option value="org.finos.vuu.wsapi.FreezeViewPortWSApiTest" />
-        <option value="org.finos.vuu.example.ignite.IgniteOrderStoreTest" />
-        <option value="org.finos.vuu.example.ignite.provider.IgniteOrderDataQueryFunctionalTest" />
-        <option value="org.finos.vuu.example.ignite.provider.IgniteOrderDataQueryTest" />
-        <option value="org.finos.vuu.example.ignite.query.IndexCalculatorTest" />
-        <option value="org.finos.vuu.example.virtualized.table.VirtualizedViewPortTest" />
-        <option value="org.finos.vuu.example.rest.client.HttpClientTest" />
-        <option value="org.finos.vuu.example.rest.client.InstrumentServiceClientTest" />
-        <option value="org.finos.vuu.example.rest.provider.InstrumentsProviderTest" />
-        <option value="org.finos.vuu.csv.BasketLoaderTests" />
-        <option value="org.finos.vuu.core.VuuServerOptionsTest" />
-        <option value="org.finos.vuu.core.row.RowBuilderTest" />
-        <option value="org.finos.vuu.core.module.ModuleSyntaxTest" />
-        <option value="org.finos.vuu.core.module.editable.EditableTest" />
-        <option value="org.finos.vuu.core.module.modulefrommodule.ModuleConstructorTest" />
-        <option value="org.finos.vuu.core.module.authn.AuthNServerTest" />
-        <option value="org.finos.vuu.core.module.typeahead.TypeAheadModuleTest" />
-        <option value="org.finos.vuu.core.module.basket.BasketSendToMarketTest" />
-        <option value="org.finos.vuu.core.module.basket.BasketMutateOffMarketTest" />
-        <option value="org.finos.vuu.core.module.basket.BasketConstituentMutateTest" />
-        <option value="org.finos.vuu.core.module.basket.BasketCreateTest" />
-        <option value="org.finos.vuu.core.module.auths.PermissionsTest" />
-        <option value="org.finos.vuu.core.module.metrics.MetricsTableProviderTest" />
-        <option value="org.finos.vuu.core.index.IndexedFieldTest" />
-        <option value="org.finos.vuu.core.table.ColumnTest" />
-        <option value="org.finos.vuu.core.table.RpcTableTest" />
-        <option value="org.finos.vuu.core.table.DataTableTest" />
-        <option value="org.finos.vuu.core.table.DataTypesTest" />
-        <option value="org.finos.vuu.core.table.RowDeleteTest" />
-        <option value="org.finos.vuu.core.table.TableContainerTest" />
-        <option value="org.finos.vuu.core.table.JavaToScalaRowUpdates" />
-        <option value="org.finos.vuu.core.table.AutoSubscribeTableTest" />
-        <option value="org.finos.vuu.core.table.InMemSessionDataTableTest" />
-        <option value="org.finos.vuu.core.table.InMemColumnValueProviderTest" />
-        <option value="org.finos.vuu.core.table.join.JoinTableTest" />
-        <option value="org.finos.vuu.core.table.join.JoinManagerTest" />
-        <option value="org.finos.vuu.core.table.join.MultiJoinTableTest" />
-        <option value="org.finos.vuu.core.table.join.JoinsOfJoinsTableTest" />
-        <option value="org.finos.vuu.core.table.column.ResultTest" />
-        <option value="org.finos.vuu.core.table.column.FunctionsTest" />
-        <option value="org.finos.vuu.core.table.column.MathClausesTest" />
-        <option value="org.finos.vuu.core.table.column.StringFunctionsTest" />
-        <option value="org.finos.vuu.core.table.column.ComparisonClausesTest" />
-        <option value="org.finos.vuu.core.table.column.CalculatedColumnMathTest" />
-        <option value="org.finos.vuu.core.table.column.CalculatedColumnLogicTest" />
-        <option value="org.finos.vuu.core.table.column.CalculatedColumnParseTest" />
-        <option value="org.finos.vuu.core.table.column.CalculatedColumnClauseTest" />
-        <option value="org.finos.vuu.core.table.column.CalculatedColumnStringTest" />
-        <option value="org.finos.vuu.core.filter.FilterClauseTest" />
-        <option value="org.finos.vuu.core.filter.FilterParserTest" />
-        <option value="org.finos.vuu.core.filter.DefaultFilterTest" />
-        <option value="org.finos.vuu.core.filter.FilterGrammarTest" />
-        <option value="org.finos.vuu.core.groupBy.BuildBigGroupByTest" />
-        <option value="org.finos.vuu.core.groupBy.TreeNodeHashingTest" />
-        <option value="org.finos.vuu.core.sort.GenericSortTest" />
-        <option value="org.finos.vuu.core.sort.SortComparesTest" />
-        <option value="org.finos.vuu.feature.ignite.IgniteTestsBase" />
-        <option value="org.finos.vuu.feature.ignite.IgniteSqlQueryTest" />
-        <option value="org.finos.vuu.feature.ignite.SchemaMapperFunctionalTest" />
-        <option value="org.finos.vuu.feature.ignite.sort.IgniteSqlSortingTest" />
-        <option value="org.finos.vuu.feature.ignite.sort.IgniteSqlSortBuilderTest" />
-        <option value="org.finos.vuu.feature.ignite.utils.buildQueryEntityTest" />
-        <option value="org.finos.vuu.feature.ignite.filter.IgniteSqlFilteringTest" />
-        <option value="org.finos.vuu.feature.ignite.filter.IgniteFilterGrammarTest" />
-        <option value="org.finos.vuu.feature.ignite.filter.IgniteIndexFilteringTest" />
-        <option value="org.finos.vuu.feature.ignite.filter.IgniteSqlFilterClauseTest" />
-        <option value="org.finos.vuu.feature.ignite.filter.FilterColumnValueParserTest" />
-        <option value="org.finos.vuu.net.http.VuuHttp2ServerTest" />
-        <option value="org.finos.vuu.net.flowcontrol.FlowControllerTest" />
-        <option value="org.finos.vuu.net.ws.WebSocketServerTest" />
-        <option value="org.finos.vuu.net.rest.RestServiceTest" />
-        <option value="org.finos.vuu.net.rpc.RpcTest" />
-        <option value="org.finos.vuu.net.rpc.RpcModuleTest" />
-        <option value="org.finos.vuu.net.rpc.DefaultRpcHandlerTest" />
-        <option value="org.finos.vuu.util.schema.SchemaMapperTest" />
-        <option value="org.finos.vuu.util.schema.ExternalEntitySchemaTest" />
-        <option value="org.finos.vuu.util.schema.SchemaMapperFunctionalTest" />
-        <option value="org.finos.vuu.util.schema.SchemaMapperFunctionalTestBase" />
-        <option value="org.finos.vuu.util.types.TypeConverterTest" />
-        <option value="org.finos.vuu.util.types.DefaultTypeConvertersTest" />
-        <option value="org.finos.vuu.util.types.TypeConverterContainerTest" />
-        <option value="org.finos.vuu.state.VuiStateStoreTest" />
-        <option value="org.finos.vuu.viewport.TreeSortTest" />
-        <option value="org.finos.vuu.viewport.TreeOnOffTest" />
-        <option value="org.finos.vuu.viewport.FilterAndSortTest" />
-        <option value="org.finos.vuu.viewport.RangeSubtractTest" />
-        <option value="org.finos.vuu.viewport.ChangeViewPortTest" />
-        <option value="org.finos.vuu.viewport.DeleteViewPortTest" />
-        <option value="org.finos.vuu.viewport.TreeAndAggregateTest" />
-        <option value="org.finos.vuu.viewport.ViewPortColumnsTests" />
-        <option value="org.finos.vuu.viewport.ViewPortListenerTest" />
-        <option value="org.finos.vuu.viewport.TreeAndAggregate2Test" />
-        <option value="org.finos.vuu.viewport.AmendViewPortToTreeTest" />
-        <option value="org.finos.vuu.viewport.AbstractViewPortTestCase" />
-        <option value="org.finos.vuu.viewport.VisualLinkedViewPortTest" />
-        <option value="org.finos.vuu.viewport.TreeUpdateChildCountsTest" />
-        <option value="org.finos.vuu.viewport.UpdateSelectionViewPortTest" />
-        <option value="org.finos.vuu.viewport.OnlySendDiffRowsViewPortTest" />
-        <option value="org.finos.vuu.viewport.TreeBuilderAndAggregatesTest" />
-        <option value="org.finos.vuu.viewport.VisualLinkedTreeViewPortTest" />
-        <option value="org.finos.vuu.viewport.CalculatedColumnsViewPortTest" />
-        <option value="org.finos.vuu.viewport.thread.ResubmitExecutorTest" />
-        <option value="org.finos.vuu.viewport.performance.CalculateTreeOptimizationTest" />
-        <option value="org.finos.vuu.viewport.performance.DontRecalculateUnchangedViewPortTest" />
-        <option value="org.finos.vuu.viewport.disable.DisableViewPortTest" />
-        <option value="org.finos.vuu.viewport.editable.EditableViewportWithRpcTest" />
-        <option value="org.finos.vuu.viewport.sessiontable.EditSessionTableTest" />
-        <option value="org.finos.vuu.viewport.sessiontable.SessionTableViewportTest" />
-        <option value="org.finos.vuu.viewport.validation.CreateValidViewportTest" />
-        <option value="org.finos.vuu.viewport.empty.EmptyViewPortTest" />
-        <option value="org.finos.vuu.viewport.menurpc.CallMenuRpcFromViewPortTest" />
-        <option value="org.finos.vuu.api.CoreServerApiTest" />
-        <option value="org.finos.vuu.provider.simulation.SimulatedPricesProviderTest" />
-        <option value="org.finos.vuu.module.vuucel.VuuCelGrammarTest" />
-      </list>
-    </option>
     <option name="javaOptions" value="--add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/jdk.internal.access=ALL-UNNAMED --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED --add-opens=java.management/com.sun.jmx.mbeanserver=ALL-UNNAMED --add-opens=jdk.internal.jvmstat/sun.jvmstat.monitor=ALL-UNNAMED --add-opens=java.base/sun.reflect.generics.reflectiveObjects=ALL-UNNAMED --add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.math=ALL-UNNAMED --add-opens=java.sql/java.sql=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.time=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.management/sun.management=ALL-UNNAMED --add-opens java.desktop/java.awt.font=ALL-UNNAMED" />
     <option name="searchTest" value="In whole project" />
     <option name="shortenClasspath" value="NONE" />
     <option name="testPackagePath" value="org.finos.vuu" />
-    <option name="workingDirectory" value="C:\Users\jeany\IdeaProjects\vuu" />
+    <option name="workingDirectory" value="$PROJECT_DIR$" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
