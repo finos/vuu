@@ -20,7 +20,7 @@ class ConstituentInstrumentPricesRpcService(val tableContainer: TableContainer)(
     val baseTableDef = joinTable.getTableDef.asInstanceOf[JoinTableDef].baseTable
     joinTable.sourceTables.get(baseTableDef.name) match {
       case Some(table: DataTable) =>
-        table.processUpdate(key, RowWithData(key, Map("id" ->  key, columnName -> data)), clock.now())
+        table.processUpdate(key, RowWithData(key, Map("id" -> key, columnName -> data)))
         ViewPortEditSuccess()
       case None =>
         ViewPortEditFailure("Could not find base table")
@@ -38,7 +38,7 @@ class ConstituentInstrumentPricesRpcService(val tableContainer: TableContainer)(
 
   private def onEditRow(key: String, row: Map[String, Any], vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
     val table = vp.table.asTable
-    table.processUpdate(key, RowWithData(key, row), clock.now())
+    table.processUpdate(key, RowWithData(key, row))
     ViewPortEditSuccess()
   }
 

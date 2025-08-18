@@ -25,7 +25,7 @@ class AlgoProvider(val table: DataTable)(implicit lifecycle: LifecycleContainer,
     Algos.foreach {
       {
         case (id, text) =>
-          table.processUpdate(id.toString, RowWithData(id.toString, Map(PS.Id -> id, PS.AlgoType -> text)), clock.now())
+          table.processUpdate(id.toString, RowWithData(id.toString, Map(PS.Id -> id, PS.AlgoType -> text)))
       }
     }
 

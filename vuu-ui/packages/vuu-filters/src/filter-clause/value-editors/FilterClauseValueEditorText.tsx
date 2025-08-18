@@ -25,6 +25,7 @@ export interface FilterClauseTextValueEditorProps
   // ref: RefObject<HTMLDivElement>;
   operator: string;
   value: string | string[];
+  dropdownOnAutofocus?: boolean;
 }
 
 export const FilterClauseValueEditorText = forwardRef(
@@ -38,6 +39,7 @@ export const FilterClauseValueEditorText = forwardRef(
       operator,
       table,
       value,
+      dropdownOnAutofocus = true,
     }: FilterClauseTextValueEditorProps,
     forwardedRef: ForwardedRef<HTMLDivElement>,
   ) {
@@ -175,6 +177,7 @@ export const FilterClauseValueEditorText = forwardRef(
               multiselect
               truncate
               value={value}
+              dropdownOnAutofocus={dropdownOnAutofocus}
             >
               {typeaheadValues
                 // .filter((typeaheadValue) =>
@@ -197,6 +200,7 @@ export const FilterClauseValueEditorText = forwardRef(
               onSelectionChange={handleSingleValueSelectionChange}
               ref={forwardedRef}
               value={value}
+              dropdownOnAutofocus={dropdownOnAutofocus}
             >
               {typeaheadValues.map((state) => (
                 <Option value={state} key={state} disabled />
@@ -228,7 +232,8 @@ export const FilterClauseValueEditorText = forwardRef(
               onSelectionChange={handleSingleValueSelectionChange}
               ref={forwardedRef}
               value={value}
-             >
+              dropdownOnAutofocus={dropdownOnAutofocus}
+            >
               {typeaheadValues.map((state) => (
                 <Option value={state} key={state} />
               ))}
@@ -249,6 +254,7 @@ export const FilterClauseValueEditorText = forwardRef(
       value,
       handleSingleValueSelectionChange,
       onOpenChange,
+      dropdownOnAutofocus,
     ]);
 
     return getValueInputField();

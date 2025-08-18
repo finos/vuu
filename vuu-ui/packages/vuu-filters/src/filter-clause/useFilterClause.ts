@@ -23,7 +23,7 @@ import { ComboBoxOpenChangeHandler } from "./ExpandoCombobox";
 export type FilterClauseEditorHookProps = Pick<
   FilterClauseProps,
   "columnsByName" | "filterClauseModel" | "onCancel" | "onFocusSave"
-> & { onOpenChange?: ComboBoxOpenChangeHandler; openDropdownOnFocus?: boolean };
+> & { onOpenChange?: ComboBoxOpenChangeHandler; dropdownOnAutofocus?: boolean };
 
 export type FilterClauseValueChangeHandler = (
   value: string | string[] | number | number[],
@@ -36,7 +36,7 @@ export const useFilterClause = ({
   columnsByName,
   onFocusSave,
   onOpenChange,
-  openDropdownOnFocus = true,
+  dropdownOnAutofocus = true,
 }: FilterClauseEditorHookProps) => {
   const [filterClause, setFilterClause] = useState<Partial<FilterClause>>(
     filterClauseModel.isValid ? filterClauseModel.asFilter() : {},
@@ -53,24 +53,14 @@ export const useFilterClause = ({
   const valueRef = useRef<HTMLDivElement | null>(null);
   const filterTouched = useRef(false);
 
-  const filterClauseTouched = useCallback(() => {
-    const unTouched = !openDropdownOnFocus && !filterTouched.current;
-    const setTouched = (state: boolean) => filterTouched.current = state;
-    if (unTouched) {
-      setTouched(true);
-      return false;
-    }
-    return true;
-  }, [openDropdownOnFocus]);
-
   const setValueRef = useCallback<RefCallback<HTMLDivElement>>(
     (el) => {
       valueRef.current = el;
-      if (!filterClauseModel.isValid && filterClauseTouched()) {        
+      if (!filterClauseModel.isValid) {
         el?.querySelector("input")?.focus();
       }
     },
-    [filterClauseModel.isValid, filterClauseTouched],
+    [filterClauseModel.isValid],
   );
 
   const removeAndNavigateToNextInputIfAtBoundary = useCallback(
@@ -199,6 +189,7 @@ export const useFilterClause = ({
     () => ({
       onKeyDownCapture: handleKeyDownCaptureNavigation,
       tabIndex: -1,
+      onFocus: () => filterTouched.current = true,
     }),
     [handleKeyDownCaptureNavigation],
   );
@@ -215,13 +206,11 @@ export const useFilterClause = ({
           : null;
 
     if (!filterClauseModel.isValid && inputRef) {
-      if (filterClauseTouched()) {
-        requestAnimationFrame(() => {
-          inputRef.current?.querySelector("input")?.focus();
-        });
-      }
+      requestAnimationFrame(() => {
+        inputRef.current?.querySelector("input")?.focus();
+      });
     }
-  }, [filterClauseModel, filterClauseTouched]);
+  }, [filterClauseModel]);
 
   return {
     inputProps,
@@ -235,5 +224,6 @@ export const useFilterClause = ({
     operatorRef,
     selectedColumn: columnsByName[filterClauseModel.column ?? ""],
     valueRef: setValueRef,
+    showDropdownOnAutoFocus: dropdownOnAutofocus || filterTouched.current,
   };
 };

@@ -15,7 +15,8 @@ import type { BasketSelectorProps } from "./basket-selector";
 import defaultEditColumns from "./basket-table-edit/basketConstituentEditColumns";
 import defaultLiveColumns from "./basket-table-live/basketConstituentLiveColumns";
 import type { BasketChangeHandler } from "./basket-toolbar";
-import { type BasketCreatedHandler, NewBasketPanel } from "./new-basket-panel";
+import { NewBasketDialog } from "./new-basket-dialog/NewBasketDialog";
+import { type BasketCreatedHandler } from "./new-basket-dialog/useNewBasketDialog";
 import { useBasketTradingDataSources } from "./useBasketTradingDatasources";
 import { DragDropState } from "@vuu-ui/vuu-ui-controls";
 
@@ -179,7 +180,7 @@ export const useBasketTrading = () => {
       setBasketState((state) => ({
         ...state,
         dialog: (
-          <NewBasketPanel
+          <NewBasketDialog
             basketSchema={basketSchema}
             onClose={handleCloseNewBasketPanel}
             onBasketCreated={handleBasketCreated}

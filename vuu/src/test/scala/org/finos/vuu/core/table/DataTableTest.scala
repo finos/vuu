@@ -63,7 +63,7 @@ class DataTableTest extends AnyFeatureSpec with Matchers {
     val key = "VOD.L"
     val row = RowWithData(key, Map("ric" -> "VOD.L", "bid" -> 210))
     val table = new InMemDataTable(pricesDef, joinProvider)
-    table.processUpdate(key, row, timeProvider.now())
+    table.processUpdate(key, row)
 
     Scenario("WHEN row has changed at a given key THEN should return true") {
       val newRowAtSameKey = row.copy(data = row.data ++ Map("bid" -> 300))

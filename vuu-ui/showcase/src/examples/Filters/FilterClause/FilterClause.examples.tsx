@@ -13,12 +13,12 @@ const FilterClauseTemplate = ({
   filterClauseModel = new FilterClauseModel({}),
   tableSchema = getSchema("instruments"),
   columnsByName = columnDescriptorsByName(tableSchema.columns),
-  openDropdownOnFocus,
+  dropdownOnAutofocus,
 }: {
   columnsByName?: ColumnDescriptorsByName;
   filterClauseModel?: FilterClauseModel;
   tableSchema?: TableSchema;
-  openDropdownOnFocus?: boolean;
+  dropdownOnAutofocus?: boolean;
 }) => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
@@ -36,7 +36,7 @@ const FilterClauseTemplate = ({
           data-testid="filterclause"
           filterClauseModel={filterClauseModel}
           vuuTable={tableSchema.table}
-          openDropdownOnFocus={openDropdownOnFocus}
+          dropdownOnAutofocus={dropdownOnAutofocus}
         />
       </div>
     </DataSourceProvider>
@@ -92,7 +92,7 @@ export const NewFilterClauseWithDropdownOpenOnFocusDisabled = () => {
   return (
     <FilterClauseTemplate
       filterClauseModel={filterClauseModel}
-      openDropdownOnFocus={false}
+      dropdownOnAutofocus={false}
     />
   );
 };
@@ -137,7 +137,7 @@ export const FilterColumnWithDropdownOpenOnFocusDisabled = () => {
   return (
     <FilterClauseTemplate
       filterClauseModel={filterClauseModel}
-      openDropdownOnFocus={false}
+      dropdownOnAutofocus={false}
     />
   );
 };
@@ -154,8 +154,39 @@ export const FilterColumnAndOperatorWithDropdownOpenOnFocusDisabled = () => {
   return (
     <FilterClauseTemplate
       filterClauseModel={filterClauseModel}
-      openDropdownOnFocus={false}
+      dropdownOnAutofocus={false}
     />
+  );
+};
+
+export const MultipleFilterClauseControlsWithDropDownAutofocusDisabled = () => {
+  const model1 = useMemo(
+    () =>
+      new FilterClauseModel({
+        column: "exchange",
+        op: "=",
+      }),
+    [],
+  );
+  const model2 = useMemo(
+    () =>
+      new FilterClauseModel({
+        column: "currency",
+        op: "=",
+      }),
+    [],
+  );
+  return (
+    <>
+      {[model1, model2].map((model, idx) => (
+        <div key={idx} style={{ padding: "20px" }}>
+          <FilterClauseTemplate
+            filterClauseModel={model}
+            dropdownOnAutofocus={false}
+          />
+        </div>
+      ))}
+    </>
   );
 };
 

@@ -109,8 +109,8 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
           columnName match {
             case ColumnName.Weighting | ColumnName.LimitPrice =>
               val doubleValue = convertToDouble(data)
-              baseTable.processUpdate(key, RowWithData(key, Map(ColumnName.InstanceIdRic -> key, columnName -> doubleValue)), clock.now())
-            case _ => baseTable.processUpdate(key, RowWithData(key, Map(ColumnName.InstanceIdRic -> key, columnName -> data)), clock.now())
+              baseTable.processUpdate(key, RowWithData(key, Map(ColumnName.InstanceIdRic -> key, columnName -> doubleValue)))
+            case _ => baseTable.processUpdate(key, RowWithData(key, Map(ColumnName.InstanceIdRic -> key, columnName -> data)))
           }
           ViewPortEditSuccess()
         case None =>
@@ -133,7 +133,7 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
 
   private def onEditRow(key: String, row: Map[String, Any], vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
     val table = vp.table.asTable
-    table.processUpdate(key, RowWithData(key, row), clock.now())
+    table.processUpdate(key, RowWithData(key, row))
     ViewPortEditSuccess()
   }
 
@@ -179,7 +179,7 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
     getBaseTable() match {
       case Some(baseTable: DataTable) =>
         rows.foreach(row =>
-          baseTable.processUpdate(row.key, row, clock.now())
+          baseTable.processUpdate(row.key, row)
         )
         Right()
       case None =>

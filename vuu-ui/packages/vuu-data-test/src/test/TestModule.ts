@@ -2,6 +2,7 @@ import { VuuModule } from "../core/module/VuuModule";
 import { buildDataColumnMap, Table } from "../Table";
 import { defaultGenerators } from "../vuu-row-generator";
 import { schemas, TestTableName } from "./test-schemas";
+import tableContainer from "../core/table/TableContainer";
 
 const { RowGenerator } = defaultGenerators;
 
@@ -13,12 +14,12 @@ class TestModule extends VuuModule<TestTableName> {
   #schemas = schemas;
 
   #tables: Record<TestTableName, Table> = {
-    TestDates: new Table(
+    TestDates: tableContainer.createTable(
       schemas.TestDates,
       [],
       buildDataColumnMap(schemas, "TestDates"),
     ),
-    TwoHundredColumns: new Table(
+    TwoHundredColumns: tableContainer.createTable(
       schemas.TwoHundredColumns,
       new Array(100).fill(1).map((_, i) => manyColumnGenerator(i)),
       buildDataColumnMap(schemas, "TwoHundredColumns"),
