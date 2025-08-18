@@ -1,7 +1,5 @@
-import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
-import { getSchema, LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import { getSchema } from "@vuu-ui/vuu-data-test";
 import { TablePicker, TablePickerProps } from "@vuu-ui/vuu-ui-controls";
-import { useAutoLoginToVuuServer } from "../utils";
 
 const TablePickerTemplate = ({
   TableProps,
@@ -30,39 +28,18 @@ const TablePickerTemplate = ({
 const instrumentToString: TablePickerProps["rowToString"] = (row) =>
   `[${row.key}] ${row.data.description}`;
 
+/** tags=data-consumer */
 export const DefaultInstrumentPicker = () => (
-  <LocalDataSourceProvider>
-    <TablePickerTemplate
-      rowToString={instrumentToString}
-      TableProps={{
-        config: {
-          columns: [
-            { name: "bbg" },
-            { name: "currency", width: 80 },
-            { name: "description", minWidth: 130 },
-          ],
-        },
-      }}
-    />
-  </LocalDataSourceProvider>
+  <TablePickerTemplate
+    rowToString={instrumentToString}
+    TableProps={{
+      config: {
+        columns: [
+          { name: "bbg" },
+          { name: "currency", width: 80 },
+          { name: "description", minWidth: 130 },
+        ],
+      },
+    }}
+  />
 );
-
-export const VuuInstrumentPicker = () => {
-  useAutoLoginToVuuServer();
-  return (
-    <VuuDataSourceProvider>
-      <TablePickerTemplate
-        rowToString={instrumentToString}
-        TableProps={{
-          config: {
-            columns: [
-              { name: "bbg" },
-              { name: "currency", width: 80 },
-              { name: "description", minWidth: 130 },
-            ],
-          },
-        }}
-      />
-    </VuuDataSourceProvider>
-  );
-};

@@ -1,12 +1,11 @@
 package org.finos.vuu.core.module.editable
 
-import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.table.{RowWithData, TableContainer}
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.DefaultRpcHandler
 import org.finos.vuu.viewport._
 
-class ProcessRpcService(implicit clock: Clock, val tableContainer: TableContainer) extends DefaultRpcHandler {
+class ProcessRpcService(implicit val tableContainer: TableContainer) extends DefaultRpcHandler {
 
   private final val FIX_SEQ_RESET_TABLE = "fixSequenceReset"
 
@@ -20,7 +19,7 @@ class ProcessRpcService(implicit clock: Clock, val tableContainer: TableContaine
 
     val processId = row.get("id").toString
 
-    sessionTable.processUpdate(processId, RowWithData(processId, Map("process-id" -> processId, "sequenceNumber" -> 0)), clock.now())
+    sessionTable.processUpdate(processId, RowWithData(processId, Map("process-id" -> processId, "sequenceNumber" -> 0)))
 
     OpenDialogViewPortAction(ViewPortTable(sessionTable.name, sessionTable.tableDef.getModule().name), RenderComponent.InlineForm)
   }

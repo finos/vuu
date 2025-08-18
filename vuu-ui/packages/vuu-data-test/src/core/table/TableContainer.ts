@@ -116,6 +116,8 @@ class TableContainer {
       }
     });
 
+    this.addTable(newTable);
+
     return newTable;
   }
 

@@ -31,7 +31,7 @@ class MetricsTableProvider(table: DataTable, tableContainer: TableContainer)(imp
   def runOnce(): Unit = {
     try {
       tableContainer.getTables.foreach(vpTable =>
-        table.processUpdate(vpTable.table, RowWithData(vpTable.table, getMetricsData(vpTable)), clock.now())
+        table.processUpdate(vpTable.table, RowWithData(vpTable.table, getMetricsData(vpTable)))
       )
     } catch {
       case e: Exception => logger.error("Error occured in metrics", e)

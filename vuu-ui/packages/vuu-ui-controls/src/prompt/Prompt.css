@@ -1,0 +1,48 @@
+.vuuPrompt {
+    min-height: var(--vuuPrompt-minHeight, 257px);
+    min-width: var(--vuuPrompt-minWidth,380px);
+
+    .saltDialogHeader {
+        .vuuIcon {
+            width: 24px;
+            --vuu-icon-size: 20px;
+        }
+    }
+
+    .vuuPromptConfirmButton:focus {
+        outline-style: var(--salt-focused-outlineStyle);
+        outline-width: var(--salt-focused-outlineWidth);
+        outline-color: var(--salt-focused-outlineColor);
+        outline-offset: var(--salt-focused-outlineOffset);
+    }
+}
+
+.vuuPrompt.saltDialog-warning {
+    --salt-status-warning-borderColor: var(--vuu-color-yellow-20);   
+    --variant-color: var(--vuu-color-yellow-20);
+
+    border-radius: 4px !important;
+    min-height: var(--vuuPrompt-minHeight, 150px);
+    min-width: var(--vuuPrompt-minWidth, 280px);
+    padding-top:0 !important;
+
+    .saltDialogHeader {
+        background-color: var(--variant-color);
+        padding-left: var(--salt-spacing-100);
+        padding-bottom: var(--salt-spacing-100);
+        padding-right: var(--salt-spacing-100);
+
+        .saltDialogHeader-header {
+            align-items: end;
+            display: flex;
+            gap: var(--salt-spacing-100);
+        }
+    }
+
+    .saltDialogContent {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+    } 
+}
+
