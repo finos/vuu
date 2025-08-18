@@ -159,7 +159,7 @@ class SimulatedPricesProvider(val table: DataTable, @volatile var maxSleep: Int 
     currentModes.put(ric, Simulation(Close, this.timeProvider.now(), timeToOpen))
 
     setState(ric, newRow)
-    table.processUpdate(ric, RowWithData(ric, newRow), timeProvider.now())
+    table.processUpdate(ric, RowWithData(ric, newRow))
   }
 
   protected def processOne(ric: String, simulation: Simulation): Unit = {
@@ -184,7 +184,7 @@ class SimulatedPricesProvider(val table: DataTable, @volatile var maxSleep: Int 
 
     setState(ric, newRow)
 
-    table.processUpdate(ric, RowWithData(ric, newRow), timeProvider.now())
+    table.processUpdate(ric, RowWithData(ric, newRow))
   }
 
   private def getState(ric: String): Option[Map[String, Any]] = {

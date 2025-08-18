@@ -18,17 +18,17 @@ trait TestEditableServiceIF extends EditRpcHandler {
 class TestEditableService(val table: DataTable, val tableContainer: TableContainer)(implicit clock: Clock) extends RpcHandler with TestEditableServiceIF with StrictLogging {
 
   def addRow(key: String, data: Map[String, Any], vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
-    table.processUpdate(key, RowWithData(key, data), clock.now())
+    table.processUpdate(key, RowWithData(key, data))
     ViewPortEditSuccess()
   }
 
   def editRow(key: String, data: Map[String, Any], vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
-    table.processUpdate(key, RowWithData(key, data), clock.now())
+    table.processUpdate(key, RowWithData(key, data))
     ViewPortEditSuccess()
   }
 
   def editCell(key: String, column: String, data: Any, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
-    table.processUpdate(key, RowWithData(key, Map("rowId" -> key, column -> data)), clock.now())
+    table.processUpdate(key, RowWithData(key, Map("rowId" -> key, column -> data)))
     ViewPortEditSuccess()
   }
 
@@ -38,7 +38,7 @@ class TestEditableService(val table: DataTable, val tableContainer: TableContain
   }
 
   def deleteCell(key: String, column: String, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
-    table.processUpdate(key, RowWithData(key, Map("rowId" -> key, column -> null)), clock.now())
+    table.processUpdate(key, RowWithData(key, Map("rowId" -> key, column -> null)))
     ViewPortEditSuccess()
   }
 

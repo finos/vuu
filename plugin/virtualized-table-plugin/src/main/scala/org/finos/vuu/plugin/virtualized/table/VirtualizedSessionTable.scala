@@ -28,12 +28,12 @@ class VirtualizedSessionTable(clientSessionId: ClientSessionId,
   def processUpdateForIndex(index: Int, rowKey: String, rowData: RowWithData, timeStamp: Long): Unit = {
     if(isInCurrentRange(index)){
       data.setKeyAt(index, rowKey)
-      super.processUpdate(rowKey, rowData, timeStamp)
+      super.processUpdate(rowKey, rowData)
     }
   }
 
   def processDeleteForIndex(index: Int, rowKey: String, rowData: RowWithData, timeStamp: Long): Unit = {
-    super.processUpdate(rowKey, rowData, timeStamp)
+    super.processUpdate(rowKey, rowData)
   }
 
   def hasRowChangedAtIndex(index: Int, row: RowWithData): Boolean = {
@@ -55,7 +55,7 @@ class VirtualizedSessionTable(clientSessionId: ClientSessionId,
         logger.error("Trying to set range on non-virtualized data, something has gone bad.")
     }
   }
-  override def processUpdate(rowKey: String, rowData: RowData, timeStamp: Long): Unit = super.processUpdate(rowKey, rowData, timeStamp)
+  override def processUpdate(rowKey: String, rowData: RowData): Unit = super.processUpdate(rowKey, rowData)
 
   override def processDelete(rowKey: String): Unit = super.processDelete(rowKey)
 

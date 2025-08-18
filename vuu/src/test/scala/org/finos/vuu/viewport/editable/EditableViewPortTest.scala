@@ -66,7 +66,7 @@ abstract class EditableViewPortTest extends AbstractViewPortTestCase with Matche
             "exchange" -> exchange
           )
 
-          sessionTable.processUpdate(clOrderId, RowWithData(clOrderId, dataMap), clock.now())
+          sessionTable.processUpdate(clOrderId, RowWithData(clOrderId, dataMap))
         })
 
         OpenDialogViewPortAction(ViewPortTable(sessionTable.name, baseTable.getTableDef.getModule().name))

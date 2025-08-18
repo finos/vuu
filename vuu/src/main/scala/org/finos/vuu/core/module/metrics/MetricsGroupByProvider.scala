@@ -76,7 +76,7 @@ class MetricsGroupByProvider(table: DataTable, viewPortContainer: ViewPortContai
         if (vp != null) {
           val keyhash = key
           val upMap = Map("id" -> key, "table" -> vp.table.name, "realTable" -> vp.table.linkableName) ++ buildMap ++ toKeysMap ++ setKeysMap ++ setTree ++ diffBranchesMap
-          table.processUpdate(keyhash, RowWithData(keyhash, upMap), clock.now())
+          table.processUpdate(keyhash, RowWithData(keyhash, upMap))
         }
       })
 

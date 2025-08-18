@@ -35,7 +35,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
 
       val processId = row.get("id").toString
 
-      sessionTable.processUpdate(processId, RowWithData(processId, Map("process-id" -> processId, "sequenceNumber" -> 0)), clock.now())
+      sessionTable.processUpdate(processId, RowWithData(processId, Map("process-id" -> processId, "sequenceNumber" -> 0)))
 
       OpenDialogViewPortAction(ViewPortTable(sessionTable.name, sessionTable.tableDef.getModule().name), RenderComponent.InlineForm)
     }
@@ -52,13 +52,13 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
 
     private def onEditCell(key: String, columnName: String, data: Any, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
       val table = vp.table.asTable
-      table.processUpdate(key, RowWithData(key, Map(columnName -> data)), clock.now())
+      table.processUpdate(key, RowWithData(key, Map(columnName -> data)))
       ViewPortEditSuccess()
     }
 
     private def onEditRow(key: String, row: Map[String, Any], vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
       val table = vp.table.asTable
-      table.processUpdate(key, RowWithData(key, row), clock.now())
+      table.processUpdate(key, RowWithData(key, row))
       ViewPortEditSuccess()
     }
 

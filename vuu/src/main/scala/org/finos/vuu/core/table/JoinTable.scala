@@ -348,7 +348,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
   override def incrementUpdateCounter(): Unit = updateCounterInternal +=1
 
-  override def processUpdate(rowKey: String, rowUpdate: RowData, timeStamp: Long): Unit = {
+  override def processUpdate(rowKey: String, rowUpdate: RowData): Unit = {
 
     onUpdateMeter.mark()
 
