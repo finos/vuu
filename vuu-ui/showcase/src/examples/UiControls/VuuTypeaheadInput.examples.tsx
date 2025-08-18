@@ -24,6 +24,7 @@ const TypeaheadInputTemplate = ({
 }) => {
   const handleCommit: CommitHandler = (evt, value) => {
     onCommit?.(evt, value);
+    console.log(`commit ${value}`);
   };
 
   return (

@@ -2,10 +2,18 @@ import { Checkbox, Input, ListBoxProps } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { HTMLAttributes, RefCallback, forwardRef, useCallback } from "react";
+import {
+  FormEventHandler,
+  HTMLAttributes,
+  RefCallback,
+  forwardRef,
+  useCallback,
+  useRef,
+} from "react";
 import { ListBox, Option } from "@salt-ds/core";
 
 import searchableListCss from "./ColumnSearch.css";
+import { queryClosest } from "@vuu-ui/vuu-utils";
 
 const classBase = "vuuColumnSearch";
 
@@ -18,6 +26,11 @@ export interface ColumnSearchProps
 
 const searchIcon = <span data-icon="search" />;
 
+/**
+ * @deprecated
+ *
+ * use ColumnList instead
+ */
 export const ColumnSearch = forwardRef<HTMLDivElement, ColumnSearchProps>(
   function ColumnSearch(
     {
@@ -38,15 +51,35 @@ export const ColumnSearch = forwardRef<HTMLDivElement, ColumnSearchProps>(
       window: targetWindow,
     });
 
+    const selectedValues = useRef<string[]>([]);
+
     const searchCallbackRef = useCallback<RefCallback<HTMLElement>>((el) => {
       setTimeout(() => {
         el?.querySelector("input")?.focus();
       }, 100);
     }, []);
 
-    const handleChange = () => {
-      console.log(`handle change`);
-    };
+    const handleChange = useCallback<FormEventHandler<HTMLInputElement>>(
+      (e) => {
+        const input = e.target as HTMLInputElement;
+        const { columnName } = queryClosest(
+          input,
+          "[data-column-name]",
+          true,
+        ).dataset;
+        if (columnName) {
+          if (input.checked) {
+            selectedValues.current = selectedValues.current.concat(columnName);
+          } else {
+            selectedValues.current = selectedValues.current.filter(
+              (val) => val !== columnName,
+            );
+          }
+          onSelectionChange?.(e, selectedValues.current);
+        }
+      },
+      [onSelectionChange],
+    );
 
     return (
       <div
@@ -65,7 +98,7 @@ export const ColumnSearch = forwardRef<HTMLDivElement, ColumnSearchProps>(
         </div>
         <ListBox>
           {columns.map((column) => (
-            <Option key={column} value={column}>
+            <Option data-column-name={column} key={column} value={column}>
               <Checkbox onChange={handleChange} />
               <span>{column}</span>
             </Option>

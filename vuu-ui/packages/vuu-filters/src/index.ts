@@ -19,9 +19,12 @@ export * from "./filter-utils";
 export * from "./FilterModel";
 export * from "./inline-filter";
 export * from "./quick-filters";
-export { FilterNameForm } from "./saved-filters/FilterNameForm";
 export { SavedFilterPanel } from "./saved-filters/SavedFilterPanel";
 export type {
   FilterClickHandler,
   FilterDescriptor,
 } from "./saved-filters/useSavedFilterPanel";
+export {
+  FilterNamePrompt as SaveFilterConfirmPrompt,
+  type FilterNamePromptProps as SaveFilterConfirmPromptProps,
+} from "./saved-filters/FilterNamePrompt";
