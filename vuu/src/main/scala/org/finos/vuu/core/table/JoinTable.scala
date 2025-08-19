@@ -438,7 +438,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
   }
 
   override def pullRow(key: String, columns: ViewPortColumns): RowData = {
-    pullRow(key, columns)
+    pullRow(key, columns, includeDefaultColumns = false)
   }
 
   private def pullRow(key: String, columns: ViewPortColumns, includeDefaultColumns: Boolean = false): RowData = {
