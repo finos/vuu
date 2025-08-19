@@ -477,11 +477,16 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
         }
       })
 
-      val index = joinData.keyToIndexMap.get(key)
-      val dataMap = if (includeDefaultColumns) foldedMap ++ Map(CreatedTimeColumnName -> joinData.indexToCreatedTime.get(index), LastUpdatedTimeColumnName -> joinData.indexToLastUpdatedTime.get(index)) else foldedMap
-      val joinedData = RowWithData(key, dataMap)
+      var defaultDataMap: Map[String, Any] = Map.empty
+      if (includeDefaultColumns) {
+        val index = joinData.keyToIndexMap.get(key)
+        defaultDataMap = Map(
+          CreatedTimeColumnName -> joinData.indexToCreatedTime.get(index),
+          LastUpdatedTimeColumnName -> joinData.indexToLastUpdatedTime.get(index))
+      }
+      val joinedData = RowWithData(key, foldedMap)
       val calculatedData = calculatedColumns.map(c => c.name -> c.getData(joinedData)).toMap
-      RowWithData(key, dataMap ++ calculatedData)
+      RowWithData(key, foldedMap ++ defaultDataMap ++ calculatedData)
     }
   }
 
