@@ -1,4 +1,5 @@
 // TODO try and get TS path alias working to avoid relative paths like this
+import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import {
   DefaultFilterBar,
   FilterBarMultipleFilters,
@@ -78,7 +79,7 @@ describe("WHEN it initially renders", () => {
           filters: [filter, { ...filter, value: "USD" }],
           activeIndices: [1],
         }}
-      />
+      />,
     );
 
     cy.get("@onApplyFilter").should("be.calledWithExactly", {
@@ -122,7 +123,7 @@ describe("The mouse user", () => {
         <DefaultFilterBar
           onApplyFilter={onApplyFilter}
           onFilterStateChanged={onFilterStateChanged}
-        />
+        />,
       );
       findAddButton().realClick();
       cy.findAllByRole("combobox").eq(0).should("be.focused");
@@ -253,7 +254,7 @@ describe("The mouse user", () => {
         <DefaultFilterBar
           onApplyFilter={onApplyFilter}
           onFilterStateChanged={onFilterStateChanged}
-        />
+        />,
       );
       findAddButton().realClick();
       cy.findAllByRole("combobox").eq(0).should("be.focused");
@@ -304,12 +305,12 @@ describe("The mouse user", () => {
       findFilter('[data-index="0"]').should(
         "have.attr",
         "aria-checked",
-        "false"
+        "false",
       );
       findFilter('[data-index="1"]').should(
         "have.attr",
         "aria-checked",
-        "true"
+        "true",
       );
 
       cy.get("@filterStateChangeHandler").should("be.calledWithExactly", {
@@ -396,7 +397,7 @@ describe("The keyboard user", () => {
         cy.get(".vuuFilterClauseOperator input").should(
           "have.attr",
           "aria-expanded",
-          "true"
+          "true",
         );
       });
     });
@@ -426,7 +427,7 @@ describe("The keyboard user", () => {
         cy.get(".vuuFilterClauseValue input").should(
           "have.attr",
           "aria-expanded",
-          "true"
+          "true",
         );
       });
       describe("THEN WHEN user uses keyboard to select USD", () => {
@@ -475,7 +476,7 @@ const getDate = (t: "start-today" | "start-tomorrow" | "end-today") => {
       return new Date(
         today.getFullYear(),
         today.getMonth(),
-        today.getDate() + 1
+        today.getDate() + 1,
       );
     case "end-today":
       today.setHours(23, 59, 59, 999);
@@ -493,10 +494,12 @@ describe.only("WHEN a user applies a date filter", () => {
     const onApplyFilter = cy.stub().as("applyFilterHandler");
     const onFilterStateChanged = cy.stub().as("filterStateChangeHandler");
     cy.mount(
-      <DefaultFilterBar
-        onApplyFilter={onApplyFilter}
-        onFilterStateChanged={onFilterStateChanged}
-      />
+      <LocalDataSourceProvider>
+        <DefaultFilterBar
+          onApplyFilter={onApplyFilter}
+          onFilterStateChanged={onFilterStateChanged}
+        />
+      </LocalDataSourceProvider>,
     );
   });
 
@@ -551,7 +554,7 @@ describe.only("WHEN a user applies a date filter", () => {
       findAddButton().realClick();
       clickListItems(DATE_COLUMN, op);
       cy.findByRole("textbox", { name: "Start date" }).should("be.focused");
-      cy.realPress("ArrowDown")
+      cy.realPress("ArrowDown");
 
       // cy.get(".vuuDatePopup .vuuIconButton").realClick();
       cy.get(`${VISIBLE_MONTH} .saltCalendarDay-today`).realClick();
@@ -569,7 +572,7 @@ describe.only("WHEN a user applies a date filter", () => {
         filters: [expectedFilter],
         activeIndices: [0],
       });
-    })
+    }),
   );
 });
 
@@ -617,7 +620,7 @@ describe("Deleting and renaming filters", () => {
           op: "=",
           value: "EUR",
         },
-        "Test"
+        "Test",
       );
     });
   });

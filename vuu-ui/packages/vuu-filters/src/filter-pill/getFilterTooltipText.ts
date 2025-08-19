@@ -48,7 +48,7 @@ function formatFilterValue(
   return filter;
 }
 
-export const getFilterTooltipText =
+export const getFilterAsFormattedText =
   (columnsByName?: ColumnDescriptorsByName) => (filter: Filter) => {
     if (isMultiClauseFilter(filter)) {
       const [firstClause] = filterClauses(filter);

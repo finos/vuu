@@ -21,6 +21,7 @@ const classBase = "vuuInput";
 
 export interface VuuInputProps<T extends VuuRowDataItemType = string>
   extends Omit<InputProps, "validationStatus"> {
+  commitOnBlur?: boolean;
   commitWhenCleared?: boolean;
   errorMessage?: ReactNode;
   onCommit: CommitHandler;
@@ -36,6 +37,7 @@ export const VuuInput = forwardRef(function VuuInput<
 >(
   {
     className,
+    commitOnBlur = true,
     commitWhenCleared = false,
     errorMessage,
     id: idProp,
@@ -100,10 +102,12 @@ export const VuuInput = forwardRef(function VuuInput<
 
   const handleBlur = useCallback<FocusEventHandler<HTMLInputElement>>(
     (evt) => {
-      const { value } = evt.target as HTMLInputElement;
-      commitValue(evt, value);
+      if (commitOnBlur) {
+        const { value } = evt.target as HTMLInputElement;
+        commitValue(evt, value);
+      }
     },
-    [commitValue],
+    [commitOnBlur, commitValue],
   );
 
   const endAdornment = errorMessage ? (

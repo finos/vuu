@@ -67,7 +67,6 @@ export interface PromptProps
   showCloseButton?: boolean;
   showConfirmButton?: boolean;
   title: string;
-  variant?: "warn";
 }
 
 export const Prompt = ({
