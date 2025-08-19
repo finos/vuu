@@ -1,5 +1,6 @@
 package org.finos.vuu.plugin
 import org.finos.toolbox.jmx.MetricsProvider
+import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.feature.{Feature, FilterFactory, JoinTableFactory, SessionTableFactory, SortFactory, TableFactory, ViewPortCallableFactory, ViewPortFactory, ViewPortKeysCreator, ViewPortTableCreator, ViewPortTreeCallableFactory}
@@ -19,7 +20,7 @@ class TestPlugin extends Plugin with TableFactory {
 
   override def pluginType: PluginType = ???
 
-  override def joinTableFactory(implicit metrics: MetricsProvider): JoinTableFactory = ???
+  override def joinTableFactory(implicit metrics: MetricsProvider, timeProvider: Clock): JoinTableFactory = ???
 
   override def sessionTableFactory: SessionTableFactory = ???
 
