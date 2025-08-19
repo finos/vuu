@@ -7,6 +7,7 @@ import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
 import org.finos.toolbox.collection.array.{ImmutableArray, ImmutableArrays}
 import org.finos.toolbox.jmx.MetricsProvider
+import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.row.{NoRowBuilder, RowBuilder}
 import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName, allDefaultColumns}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
@@ -46,9 +47,9 @@ case class JoinDataTableData(
                               tableDef: JoinTableDef,
                               var keysByJoinIndex: Array[ImmutableArray[String]] = ImmutableArrays.empty[String](2),
                               keyToIndexMap: ConcurrentHashMap[String, Integer] = new ConcurrentHashMap[String, Integer](),
-                              indexToCreatedTime: ConcurrentHashMap[String, Integer] = new ConcurrentHashMap[String, Integer](),
-                              indexToLastUpdatedTime: ConcurrentHashMap[String, Integer] = new ConcurrentHashMap[String, Integer]()
-                            ) extends StrictLogging {
+                              indexToCreatedTime: ConcurrentHashMap[Integer, Long] = new ConcurrentHashMap[Integer, Long](),
+                              indexToLastUpdatedTime: ConcurrentHashMap[Integer, Long] = new ConcurrentHashMap[Integer, Long]()
+                            )(implicit timeProvider: Clock) extends StrictLogging {
 
   val rightTables: Array[String] = tableDef.rightTables
 
@@ -216,8 +217,9 @@ case class JoinDataTableData(
 
         //add reference from key to row index
         keyToIndexMap.put(rowKey, index)
-        indexToCreatedTime.put(index, )
-        indexToLastUpdatedTime.put(index, )
+        val now = timeProvider.now()
+        indexToCreatedTime.put(index, now)
+        indexToLastUpdatedTime.put(index, now)
 
         //create a new immutable array to store the foreign keys in
         val newKeysByJoinIndex = new Array[ImmutableArray[String]](joinFields.length)
@@ -272,7 +274,7 @@ case class JoinDataTableData(
 
       //else if that index does exist then
       case index =>
-        // update last updated time here
+        indexToLastUpdatedTime.put(index, timeProvider.now())
 
         var joinFieldIndex = 0
 
@@ -358,7 +360,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
   override def updateCounter: Long = updateCounterInternal
 
-  override def incrementUpdateCounter(): Unit = updateCounterInternal +=1
+  override def incrementUpdateCounter(): Unit = updateCounterInternal += 1
 
   override def processUpdate(rowKey: String, rowUpdate: RowData): Unit = {
 
@@ -606,7 +608,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
       val fk = keysByTable(tableName)
 
       //val sourceColumns = columnList.map(jc => jc.sourceColumn)
-      val sourceColumns = ViewPortColumnCreator.create(table,  columnList.map(jc => jc.sourceColumn).map(_.name))
+      val sourceColumns = ViewPortColumnCreator.create(table, columnList.map(jc => jc.sourceColumn).map(_.name))
 
       if (fk == null) {
         logger.debug(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key $key")
@@ -685,6 +687,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
   }
 
   override def getColumnValueProvider: ColumnValueProvider = InMemColumnValueProvider(this)
+
   override def newRow(key: String): RowBuilder = ???
 
   override def rowBuilder: RowBuilder = NoRowBuilder
