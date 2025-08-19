@@ -410,7 +410,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
    * @return
    */
   override def pullRow(key: String): RowData = {
-    pullRowHelper(key, viewPortColumns, includeDefaultColumns = true)
+    pullRow(key, viewPortColumns, includeDefaultColumns = true)
   }
 
   override def pullRowFiltered(key: String, columns: ViewPortColumns): RowData = {
@@ -438,10 +438,10 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
   }
 
   override def pullRow(key: String, columns: ViewPortColumns): RowData = {
-    pullRowHelper(key, columns)
+    pullRow(key, columns)
   }
 
-  private def pullRowHelper(key: String, columns: ViewPortColumns, includeDefaultColumns: Boolean = false): RowData = {
+  private def pullRow(key: String, columns: ViewPortColumns, includeDefaultColumns: Boolean = false): RowData = {
 
     val columnsByTable = columns.getColumns()
       .filter(_.isInstanceOf[JoinColumn])
@@ -455,7 +455,6 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     if (keysByTable == null || !keyExistsInLeftMostSourceTable(key))
       EmptyRowData
     else {
-
       val foldedMap = columnsByTable.foldLeft(Map[String, Any]())({ case (previous, (tableName, columnList)) =>
 
         val table = sourceTables(tableName)
