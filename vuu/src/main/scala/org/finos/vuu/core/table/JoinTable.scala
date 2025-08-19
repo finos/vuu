@@ -327,7 +327,7 @@ case class JoinDataTableData(
 
 }
 
-class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTable], joinProvider: JoinTableProvider)(implicit val metrics: MetricsProvider) extends DataTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
+class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTable], joinProvider: JoinTableProvider)(implicit val metrics: MetricsProvider, timeProvider: Clock) extends DataTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
 
   override protected def createDataTableData(): TableData = ???
 
@@ -341,7 +341,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
   val joinColumns: Int = tableDef.joins.size + tableDef.baseTable.joinFields.size
 
-  var joinData: JoinDataTableData = JoinDataTableData(tableDef, ImmutableArrays.empty[String](joinColumns))
+  var joinData: JoinDataTableData = JoinDataTableData(tableDef, ImmutableArrays.empty[String](joinColumns))(timeProvider)
 
   override def getTableDef: TableDef = tableDef
 
