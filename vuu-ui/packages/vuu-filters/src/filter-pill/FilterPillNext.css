@@ -1,0 +1,7 @@
+.vuuFilterPillNext {
+    --saltButton-background: black;
+}
+
+.vuuFilterPillNext-active {
+    --saltButton-background: red;
+}

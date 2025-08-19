@@ -1,0 +1,16 @@
+.vuuSavedFilterPanel {
+    background-color: var(--vuuSavedFilterPanel-background, var(--salt-container-secondary-background));
+    overflow: auto;
+    padding: var(--vuuSavedFilterPanel-padding, calc(var(--salt-spacing-200) * 3));
+
+    .vuuFilterPillNext {
+        max-width: 100%;
+    }
+}
+
+.vuuSavedFilterPanel-filterPill-container {
+    gap: var(--salt-spacing-400);
+    display: flex;
+    flex-wrap: wrap;
+    height: fit-content;
+}
