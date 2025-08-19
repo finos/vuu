@@ -455,15 +455,13 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     if (keysByTable == null || !keyExistsInLeftMostSourceTable(key))
       EmptyRowData
     else {
-      var minCreatedTime: Long = Long.MaxValue
-      var maxLastUpdatedTime: Long = Long.MinValue
 
       val foldedMap = columnsByTable.foldLeft(Map[String, Any]())({ case (previous, (tableName, columnList)) =>
 
         val table = sourceTables(tableName)
         val fk = keysByTable(tableName)
 
-        val sourceColumns = ViewPortColumnCreator.create(table, columnList.map(jc => jc.sourceColumn).map(_.name) ++ allDefaultColumns)
+        val sourceColumns = ViewPortColumnCreator.create(table, columnList.map(jc => jc.sourceColumn).map(_.name))
 
         if (fk == null) {
           logger.debug(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key $key")
@@ -474,21 +472,14 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
             case EmptyRowData =>
               previous
             case data: RowWithData =>
-              val createdTimeOfRow: Long = data.get(CreatedTimeColumnName).asInstanceOf[Long]
-              if (createdTimeOfRow > 0 && createdTimeOfRow < minCreatedTime) {
-                minCreatedTime = createdTimeOfRow
-              }
-              val lastUpdatedTimeOfRow: Long = data.get(LastUpdatedTimeColumnName).asInstanceOf[Long]
-              if (lastUpdatedTimeOfRow > maxLastUpdatedTime) {
-                maxLastUpdatedTime = lastUpdatedTimeOfRow
-              }
               previous ++ columnList.map(column => column.name -> column.sourceColumn.getData(data)).toMap
 
           }
         }
       })
 
-      val dataMap = if (includeDefaultColumns) foldedMap ++ Map(CreatedTimeColumnName -> minCreatedTime, LastUpdatedTimeColumnName -> maxLastUpdatedTime) else foldedMap
+      val index = joinData.keyToIndexMap.get(key)
+      val dataMap = if (includeDefaultColumns) foldedMap ++ Map(CreatedTimeColumnName -> joinData.indexToCreatedTime.get(index), LastUpdatedTimeColumnName -> joinData.indexToLastUpdatedTime.get(index)) else foldedMap
       val joinedData = RowWithData(key, dataMap)
       val calculatedData = calculatedColumns.map(c => c.name -> c.getData(joinedData)).toMap
       RowWithData(key, dataMap ++ calculatedData)
