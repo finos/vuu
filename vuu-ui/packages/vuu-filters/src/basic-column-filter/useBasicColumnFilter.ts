@@ -1,4 +1,4 @@
-import { ChangeEventHandler, RefCallback, useCallback, useState } from "react";
+import { ChangeEventHandler, useCallback, useState } from "react";
 import { BasicColumnFilterProps } from "./BasicColumnFilter";
 import { CommitHandler, filterAsQuery, NoFilter } from "@vuu-ui/vuu-utils";
 import { Filter, SingleValueFilterClauseOp } from "@vuu-ui/vuu-filter-types";
@@ -8,7 +8,7 @@ export type FilterValue = string | number;
 
 export type BasicColumnFilterHookProps = Pick<
   BasicColumnFilterProps,
-  "column" | "onApplyFilter" | "initialValue" | "active"
+  "column" | "onApplyFilter" | "initialValue"
 >;
 
 const filterOp: SingleValueFilterClauseOp = "=";
@@ -27,19 +27,9 @@ const asDataSourceFilter = (filter: Filter): DataSourceFilter => {
 export const useBasicColumnFilter = ({
   initialValue,
   column,
-  active,
   onApplyFilter,
 }: BasicColumnFilterHookProps) => {
   const [filterValue, setFilterValue] = useState(initialValue);
-  const rootRef = useCallback<RefCallback<HTMLDivElement>>(
-    (el) => {
-      if (el && active) {
-        const firstInput = el.querySelector("input");
-        firstInput?.focus();
-      }
-    },
-    [active],
-  );
 
   const handleInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (e) => {
@@ -61,6 +51,5 @@ export const useBasicColumnFilter = ({
     filterValue: filterValue ?? "",
     onInputChange: handleInputChange,
     onCommit: handleCommit,
-    rootRef,
   };
 };

@@ -1,9 +1,8 @@
-import { FormField, FormFieldLabel } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { getDataItemEditControl } from "@vuu-ui/vuu-data-react";
-import { HTMLAttributes } from "react";
+import { ForwardedRef, forwardRef, HTMLAttributes, ReactElement } from "react";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
@@ -15,6 +14,7 @@ import basicColumnFilterCss from "./BasicColumnFilter.css";
 export type FilterValue = string | number;
 
 const classBase = "vuuBasicColumnFilter";
+const searchIcon = <Icon name="search" size={18} />;
 
 export interface BasicColumnFilterProps
   extends HTMLAttributes<HTMLDivElement>,
@@ -32,20 +32,23 @@ export interface BasicColumnFilterProps
    */
   initialValue?: FilterValue;
   /**
-   * Active filter.
+   *Show search icon as start adornment.
    */
-  active?: boolean;
+  withStartAdornment?: boolean;
 }
 
-export const BasicColumnFilter = ({
-  column,
-  className,
-  table,
-  initialValue,
-  active = false,
-  onApplyFilter,
-  ...htmlAttributes
-}: BasicColumnFilterProps) => {
+export const BasicColumnFilter = forwardRef(function BasicColumnFilter(
+  {
+    column,
+    className,
+    table,
+    initialValue,
+    onApplyFilter,
+    withStartAdornment = true,
+    ...htmlAttributes
+  }: BasicColumnFilterProps,
+  forwardRef: ForwardedRef<HTMLDivElement>,
+) {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-basic-column-filter",
@@ -53,38 +56,37 @@ export const BasicColumnFilter = ({
     window: targetWindow,
   });
 
-  const { filterValue, rootRef, onInputChange, onCommit } =
-    useBasicColumnFilter({
-      column,
-      active,
-      initialValue,
-      onApplyFilter,
-    });
+  const { filterValue, onInputChange, onCommit } = useBasicColumnFilter({
+    column,
+    initialValue,
+    onApplyFilter,
+  });
 
   return (
-    <div {...htmlAttributes} className={cx(classBase, className)} ref={rootRef}>
-      <FormField key={column.label ?? column.name} data-field={column.name}>
-        <FormFieldLabel className={cx({ active })}>
-          {column.label ?? column.name}
-        </FormFieldLabel>
-        <div className={`${classBase}-edit-control`}>
-          <div className={`${classBase}-search-icon`}>
-            <Icon name="search" size={18} />
-          </div>
-          {getDataItemEditControl({
-            InputProps: {
-              inputProps: {
-                placeholder: "Find",
-                value: filterValue,
-                onChange: onInputChange,
-              },
+    <div
+      {...htmlAttributes}
+      className={cx(classBase, className)}
+      ref={forwardRef}
+    >
+      <div className={`${classBase}-edit-control`}>
+        {withStartAdornment && searchIcon}
+        {getDataItemEditControl({
+          InputProps: {
+            inputProps: {
+              placeholder: "Find",
+              value: filterValue,
+              onChange: onInputChange,
             },
-            dataDescriptor: column,
-            table,
-            onCommit,
-          })}
-        </div>
-      </FormField>
+          },
+          dataDescriptor: column,
+          table,
+          onCommit,
+        })}
+      </div>
     </div>
   );
-};
+}) as (
+  props: BasicColumnFilterProps & {
+    ref?: ForwardedRef<HTMLDivElement>;
+  },
+) => ReactElement<BasicColumnFilterProps>;

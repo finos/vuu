@@ -1,21 +1,26 @@
-import { getSchema, VuuTableName } from "@vuu-ui/vuu-data-test";
+import {
+  getSchema,
+  LocalDataSourceProvider,
+  VuuTableName,
+} from "@vuu-ui/vuu-data-test";
 import { BasicColumnFilter, BasicColumnFilterProps } from "@vuu-ui/vuu-filters";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 
 const tableName: VuuTableName = "instruments";
 
 type BasicColumnFilterTemplateProps = Pick<
   BasicColumnFilterProps,
-  "initialValue" | "active"
+  "initialValue" | "withStartAdornment"
 >;
 
 const BasicColumnFilterTemplate = ({
   initialValue,
-  active = true,
+  withStartAdornment,
 }: BasicColumnFilterTemplateProps) => {
+  const inputRef = useRef<HTMLInputElement>(null);
   const [ricColumn, ricTable] = useMemo<[ColumnDescriptor, VuuTable]>(
     () => [
       {
@@ -27,6 +32,10 @@ const BasicColumnFilterTemplate = ({
     ],
     [],
   );
+
+  useEffect(() => {
+    inputRef.current?.querySelector("input")?.focus();
+  }, []);
 
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
@@ -42,12 +51,13 @@ const BasicColumnFilterTemplate = ({
       <input defaultValue="Start here" />
       <div style={{ paddingTop: "10px", paddingBottom: "10px" }}>
         <BasicColumnFilter
-          data-testid="riccolumnfilter"
+          data-testid="basiccolumnfilter"
           column={ricColumn}
           table={ricTable}
           onApplyFilter={(filter) => console.info(filter)}
-          active={active}
           initialValue={initialValue}
+          ref={inputRef}
+          withStartAdornment={withStartAdornment}
         />
       </div>
       <input defaultValue="Exit here" />
@@ -55,14 +65,29 @@ const BasicColumnFilterTemplate = ({
   );
 };
 
+/** tags=data-consumer */
 export const DefaultBasicColumnPicker = () => {
-  return <BasicColumnFilterTemplate />;
+  return (
+    <LocalDataSourceProvider>
+      <BasicColumnFilterTemplate />
+    </LocalDataSourceProvider>
+  );
 };
 
+/** tags=data-consumer */
 export const BasicColumnPickerWithInitialValue = () => {
-  return <BasicColumnFilterTemplate initialValue="AAOO.L" />;
+  return (
+    <LocalDataSourceProvider>
+      <BasicColumnFilterTemplate initialValue="AAOO.L" />
+    </LocalDataSourceProvider>
+  );
 };
 
-export const BasicColumnPickerSetToInActive = () => {
-  return <BasicColumnFilterTemplate active={false} />;
+/** tags=data-consumer */
+export const BasicColumnPickerWithoutStartAdornment = () => {
+  return (
+    <LocalDataSourceProvider>
+      <BasicColumnFilterTemplate withStartAdornment={false} />
+    </LocalDataSourceProvider>
+  );
 };
