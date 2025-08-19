@@ -42,7 +42,13 @@ case class WrappedKeyObserver[T](wrapped: KeyObserver[T]) extends KeyObserver[T]
 
 case class ForeignKeyRef(foreignTable: DataTable, foreignKey: String)
 
-case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[ImmutableArray[String]] = ImmutableArrays.empty[String](2), keyToIndexMap: ConcurrentHashMap[String, Integer] = new ConcurrentHashMap[String, Integer]()) extends StrictLogging {
+case class JoinDataTableData(
+                              tableDef: JoinTableDef,
+                              var keysByJoinIndex: Array[ImmutableArray[String]] = ImmutableArrays.empty[String](2),
+                              keyToIndexMap: ConcurrentHashMap[String, Integer] = new ConcurrentHashMap[String, Integer](),
+                              indexToCreatedTime: ConcurrentHashMap[String, Integer] = new ConcurrentHashMap[String, Integer](),
+                              indexToLastUpdatedTime: ConcurrentHashMap[String, Integer] = new ConcurrentHashMap[String, Integer]()
+                            ) extends StrictLogging {
 
   val rightTables: Array[String] = tableDef.rightTables
 
@@ -182,6 +188,8 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
         logger.debug(s"Removing rowKey $rowKey from keyToIndexMap")
 
         keyToIndexMap.remove(rowKey)
+        indexToCreatedTime.remove(index)
+        indexToLastUpdatedTime.remove(index)
 
         val newIndices = newKeysByJoinIndex(0).toArray
 
@@ -208,6 +216,8 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
 
         //add reference from key to row index
         keyToIndexMap.put(rowKey, index)
+        indexToCreatedTime.put(index, )
+        indexToLastUpdatedTime.put(index, )
 
         //create a new immutable array to store the foreign keys in
         val newKeysByJoinIndex = new Array[ImmutableArray[String]](joinFields.length)
@@ -262,6 +272,7 @@ case class JoinDataTableData(tableDef: JoinTableDef, var keysByJoinIndex: Array[
 
       //else if that index does exist then
       case index =>
+        // update last updated time here
 
         var joinFieldIndex = 0
 
