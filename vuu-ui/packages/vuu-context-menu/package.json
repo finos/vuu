@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/vuu-context-menu",
-  "version": "0.13.25",
+  "version": "0.13.26",
   "author": "heswell",
   "main": "src/index.ts",
   "license": "Apache-2.0",
@@ -10,12 +10,12 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "devDependencies": {
-    "@vuu-ui/vuu-data-types": "0.13.25",
-    "@vuu-ui/vuu-protocol-types": "0.13.25",
-    "@vuu-ui/vuu-table-types": "0.13.25"
+    "@vuu-ui/vuu-data-types": "0.13.26",
+    "@vuu-ui/vuu-protocol-types": "0.13.26",
+    "@vuu-ui/vuu-table-types": "0.13.26"
   },
   "dependencies": {
-    "@vuu-ui/vuu-utils": "0.13.25",
+    "@vuu-ui/vuu-utils": "0.13.26",
     "@salt-ds/core": "1.43.0",
     "@salt-ds/styles": "0.2.1",
     "@salt-ds/window": "0.1.1"
