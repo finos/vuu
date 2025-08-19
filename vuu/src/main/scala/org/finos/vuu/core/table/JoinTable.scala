@@ -196,7 +196,7 @@ case class JoinDataTableData(
 
         for (i <- newIndices.indices) keyToIndexMap.put(newIndices(i), i)
 
-        JoinDataTableData(tableDef, newKeysByJoinIndex, keyToIndexMap)
+        JoinDataTableData(tableDef, newKeysByJoinIndex, keyToIndexMap, indexToCreatedTime, indexToLastUpdatedTime)
     }
   }
 
@@ -270,7 +270,7 @@ case class JoinDataTableData(
           joinFieldIndex += 1
         }
 
-        JoinDataTableData(tableDef, newKeysByJoinIndex, keyToIndexMap)
+        JoinDataTableData(tableDef, newKeysByJoinIndex, keyToIndexMap, indexToCreatedTime, indexToLastUpdatedTime)
 
       //else if that index does exist then
       case index =>
@@ -320,7 +320,7 @@ case class JoinDataTableData(
         }
 
 
-        JoinDataTableData(tableDef, keysByJoinIndex, keyToIndexMap)
+        JoinDataTableData(tableDef, keysByJoinIndex, keyToIndexMap, indexToCreatedTime, indexToLastUpdatedTime)
     }
 
   }
