@@ -12,13 +12,6 @@ import org.finos.toolbox.time.Clock
 import java.nio.file.Path
 
 trait RealizedViewServerModule extends ViewServerModule {
-  def rpcHandlers: List[RpcHandler]
-
-  def rpcHandlerByService(service: String): Option[RpcHandler] = {
-    rpcHandlers.foreach(h => println("Found:" + h.getClass.getSimpleName + "serviceIF:" + h.implementsService(service)))
-    rpcHandlers.find(p => p.implementsService(service))
-  }
-
   def restServices: List[RestService]
 }
 
@@ -32,8 +25,6 @@ trait  ViewServerModule {
   def tableDefContainer: TableDefContainer
 
   def serializationMixin: Object
-
-  def rpcHandlersUnrealized: List[IVuuServer => RpcHandler]
 
   def getProviderForTable(table: DataTable, viewserver: IVuuServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider
 
