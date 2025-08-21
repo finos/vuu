@@ -1,4 +1,4 @@
-import { VuuModule } from "../core/module/VuuModule";
+import { RpcMenuService, VuuModule } from "../core/module/VuuModule";
 import { buildDataColumnMap, Table } from "../Table";
 import { defaultGenerators } from "../vuu-row-generator";
 import { schemas, TestTableName } from "./test-schemas";
@@ -35,6 +35,13 @@ class TestModule extends VuuModule<TestTableName> {
   get services() {
     return undefined;
   }
+
+  get menuServices():
+    | Record<TestTableName, RpcMenuService[] | undefined>
+    | undefined {
+    return undefined;
+  }
+
   get schemas() {
     return this.#schemas;
   }

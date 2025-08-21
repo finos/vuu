@@ -4,8 +4,8 @@ import { getSchema, SimulTableName } from "@vuu-ui/vuu-data-test";
 import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
 import { Button } from "@salt-ds/core";
 import { TableConfig } from "@vuu-ui/vuu-table-types";
-import { DataSource, ViewportRpcResponse } from "@vuu-ui/vuu-data-types";
-import { VuuRpcViewportRequest } from "@vuu-ui/vuu-protocol-types";
+import { DataSource } from "@vuu-ui/vuu-data-types";
+import { VuuRpcServiceRequest } from "@vuu-ui/vuu-protocol-types";
 import { toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { FreezeControl } from "@vuu-ui/vuu-table-extras";
 
@@ -31,13 +31,12 @@ export const TableFreezing = () => {
 
   const startOrderCreation = useCallback(() => {
     dataSource
-      .rpcCall?.<ViewportRpcResponse>({
-        namedParams: {},
+      .rpcRequest?.({
         rpcName: "startGeneratingNewOrders",
-        type: "VIEW_PORT_RPC_CALL",
-      } as Omit<VuuRpcViewportRequest, "vpId">)
+        type: "RPC_REQUEST",
+      } as Omit<VuuRpcServiceRequest, "context">)
       .then((response) => {
-        if (response?.action.type === "VP_RPC_FAILURE") {
+        if (response?.type === "ERROR_RESULT") {
           console.log("PPC failure");
         } else {
           console.log("PPC success");
@@ -46,13 +45,12 @@ export const TableFreezing = () => {
   }, [dataSource]);
   const stopOrderCreation = useCallback(() => {
     dataSource
-      .rpcCall?.<ViewportRpcResponse>({
-        namedParams: {},
+      .rpcRequest?.({
         rpcName: "stopGeneratingNewOrders",
-        type: "VIEW_PORT_RPC_CALL",
-      } as Omit<VuuRpcViewportRequest, "vpId">)
+        type: "RPC_REQUEST",
+      } as Omit<VuuRpcServiceRequest, "context">)
       .then((response) => {
-        if (response?.action.type === "VP_RPC_FAILURE") {
+        if (response?.type === "ERROR_RESULT") {
           console.log("PPC failure");
         } else {
           console.log("PPC suvccess");

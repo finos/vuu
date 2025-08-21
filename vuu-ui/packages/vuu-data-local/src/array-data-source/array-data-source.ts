@@ -22,6 +22,8 @@ import type {
   VuuMenu,
   VuuRange,
   VuuRowDataItemType,
+  VuuRpcEditRequest,
+  VuuRpcEditResponse,
   VuuRpcRequest,
   VuuRpcResponse,
   VuuSort,
@@ -934,6 +936,10 @@ export class ArrayDataSource
   }
   async remoteProcedureCall<T extends VuuRpcResponse = VuuRpcResponse>() {
     return Promise.reject<T>();
+  }
+
+  async editRpcCall(): Promise<VuuRpcEditResponse> {
+    throw Error("ArrayDataSource does not implement editRpcCall");
   }
 
   async menuRpcCall(

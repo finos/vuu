@@ -6,22 +6,23 @@ import {
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
 import {
-  VuuRpcMenuRequest,
-  VuuRpcViewportRequest,
   VuuMenu,
   VuuRowDataItemType,
   VuuTable,
   VuuLink,
   LinkDescriptorWithLabel,
-  RpcNamedParams,
-  VuuRpcRequest,
-  VuuRpcResponse,
   VuuRpcMenuResponse,
-  VuuRpcViewportResponse,
   VuuCreateVisualLink,
   VuuRemoveVisualLink,
+  VuuRpcServiceRequest,
+  RpcResultSuccess,
+  RpcResultError,
+  VuuRpcMenuRequest,
+  VuuRpcEditRequest,
+  VuuRpcEditResponse,
+  VuuRpcEditCellRequest,
 } from "@vuu-ui/vuu-protocol-types";
-import { isViewportRpcRequest, uuid } from "@vuu-ui/vuu-utils";
+import { uuid } from "@vuu-ui/vuu-utils";
 import { Table, buildDataColumnMapFromSchema } from "../../Table";
 import { TickingArrayDataSource } from "../../TickingArrayDataSource";
 import { RuntimeVisualLink } from "../../RuntimeVisualLink";
@@ -33,31 +34,38 @@ export interface IVuuModule<T extends string = string> {
 
 export type SessionTableMap = Record<string, Table>;
 
-export type RpcServiceRequestWithParams = VuuRpcViewportRequest & {
-  namedParams: RpcNamedParams;
+export type LocalDataMenuParameters = {
+  selectedRowIds: string[];
+  table: VuuTable;
 };
-export type RpcServiceRequest =
-  | RpcServiceRequestWithParams
-  | VuuRpcViewportRequest
-  | VuuRpcMenuRequest;
-
-export const withParams = (
-  rpcRequest: VuuRpcRequest,
-): rpcRequest is RpcServiceRequestWithParams => "namedParams" in rpcRequest;
-
-export const withNamedParams = (
-  rpcRequest: RpcServiceRequest,
-): rpcRequest is RpcServiceRequestWithParams => "namedParams" in rpcRequest;
 
 export type ServiceHandler = (
-  rpcRequest: VuuRpcRequest & {
-    namedParams?: RpcNamedParams;
+  rpcRequest: VuuRpcServiceRequest,
+) => Promise<RpcResultSuccess | RpcResultError>;
+
+export type MenuServiceHandler = (
+  rpcRequest: VuuRpcMenuRequest & {
+    localDataParameters?: LocalDataMenuParameters;
   },
-) => Promise<VuuRpcResponse>;
+) => Promise<VuuRpcMenuResponse>;
+
+export type EditServiceHandler<
+  T extends VuuRpcEditRequest = VuuRpcEditRequest,
+> = (rpcRequest: T) => Promise<VuuRpcEditResponse>;
 
 export type RpcService = {
   rpcName: string;
   service: ServiceHandler;
+};
+
+export type RpcMenuService = {
+  rpcName: string;
+  service: MenuServiceHandler;
+};
+
+export type RpcEditService = {
+  type: "VP_EDIT_CELL_RPC";
+  service: EditServiceHandler;
 };
 
 type Subscription = {
@@ -81,6 +89,12 @@ export abstract class VuuModule<T extends string = string>
   protected abstract menus?: Record<T, VuuMenu | undefined> | undefined;
   protected abstract schemas: Record<T, Readonly<TableSchema>>;
   protected abstract tables: Record<T, Table>;
+  protected abstract editServices?:
+    | Record<T, RpcEditService[] | undefined>
+    | undefined;
+  protected abstract menuServices?:
+    | Record<T, RpcMenuService[] | undefined>
+    | undefined;
   protected abstract services?: Record<T, RpcService[] | undefined> | undefined;
   protected abstract visualLinks?: Record<T, VuuLink[] | undefined>;
 
@@ -112,6 +126,19 @@ export abstract class VuuModule<T extends string = string>
 
   get name() {
     return this.#name;
+  }
+
+  getSubscriptionByViewport(viewportId: string) {
+    for (const subscriptions of this.#subscriptionMap.values()) {
+      for (const subscription of subscriptions) {
+        if (subscription.viewportId === viewportId) {
+          return subscription;
+        }
+      }
+    }
+    throw Error(
+      `[VuuModule] getSubscriptionByViewport, no subscription found for ${viewportId}`,
+    );
   }
 
   getSubscribedDataSource(vpId: string): DataSource {
@@ -216,6 +243,8 @@ export abstract class VuuModule<T extends string = string>
       table: table || sessionTable,
       menu: this.menus?.[tableName],
       rpcServices: this.getServices(tableName),
+      rpcEditServices: this.getEditServices(tableName),
+      rpcMenuServices: this.getMenuServices(tableName),
       sessionTables: this.#sessionTableMap,
       viewport,
       visualLinkService: this.visualLinkService,
@@ -246,6 +275,24 @@ export abstract class VuuModule<T extends string = string>
     }
   }
 
+  getMenuServices(tableName: T) {
+    const tableServices = this.menuServices?.[tableName];
+    if (Array.isArray(tableServices)) {
+      return this.#moduleMenuServices.concat(tableServices);
+    } else {
+      return this.#moduleMenuServices;
+    }
+  }
+
+  getEditServices(tableName: T) {
+    const tableServices = this.editServices?.[tableName];
+    if (Array.isArray(tableServices)) {
+      return this.#moduleEditServices.concat(tableServices);
+    } else {
+      return this.#moduleEditServices;
+    }
+  }
+
   protected get sessionTableMap() {
     return this.#sessionTableMap;
   }
@@ -273,11 +320,32 @@ export abstract class VuuModule<T extends string = string>
     }
   }
 
-  private openBulkEdits: ServiceHandler = async (rpcRequest) => {
-    if (withParams(rpcRequest)) {
-      const { namedParams, vpId } = rpcRequest;
-      const selectedRowIds = namedParams.selectedRowIds as string[];
-      const table = namedParams.table as VuuTable;
+  private editCell: EditServiceHandler<VuuRpcEditCellRequest> = async (
+    rpcRequest,
+  ) => {
+    console.log(`edit cell`, {
+      rpcRequest,
+    });
+
+    // const { rowKey, field, value } = rpcRequest;
+    // const { dataSource } = this.getSubscriptionByViewport(rpcRequest.vpId);
+    // use the vpId to get the table
+
+    // dataSource.table?.update(rowKey, field, value);
+
+    return {
+      action: undefined,
+      type: "VP_EDIT_RPC_RESPONSE",
+      rpcName: "VP_EDIT_SUBMIT_FORM_RPC",
+      vpId: rpcRequest.vpId,
+    };
+  };
+
+  private openBulkEdits: MenuServiceHandler = async (rpcRequest) => {
+    if (rpcRequest.localDataParameters) {
+      const { localDataParameters, vpId } = rpcRequest;
+      const selectedRowIds = localDataParameters.selectedRowIds;
+      const table = localDataParameters.table;
 
       if (selectedRowIds && table) {
         const dataTable = this.tables[table.table as T];
@@ -319,20 +387,16 @@ export abstract class VuuModule<T extends string = string>
   };
 
   private endEditSession: ServiceHandler = async (rpcRequest) => {
-    if (isViewportRpcRequest(rpcRequest)) {
-      const { vpId } = rpcRequest;
-      delete this.#sessionTableMap[vpId];
-      return {
-        action: { type: "VP_RPC_SUCCESS" },
-        method: "???",
-        namedParams: {},
-        params: [],
-        type: "VIEW_PORT_RPC_RESPONSE",
-        vpId,
-      } as VuuRpcViewportResponse;
-    } else {
-      throw Error("endEditSession invalid request");
-    }
+    const { vpId } = rpcRequest;
+    delete this.#sessionTableMap[vpId];
+    return {
+      action: { type: "VP_RPC_SUCCESS" },
+      method: "???",
+      namedParams: {},
+      params: [],
+      type: "VIEW_PORT_RPC_RESPONSE",
+      vpId,
+    };
   };
 
   // Bulk-edit with input in session table
@@ -364,9 +428,9 @@ export abstract class VuuModule<T extends string = string>
 
   // Save session table data to main table
   private saveBulkEdits: ServiceHandler = async (rpcRequest) => {
-    if (withParams(rpcRequest)) {
-      const { vpId } = rpcRequest;
-      const sessionTable = this.getSessionTable(vpId);
+    if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
+      const { viewPortId } = rpcRequest.context;
+      const sessionTable = this.getSessionTable(viewPortId);
       const { table } = sessionTable.schema.table;
       const baseTable = this.tables[table as T];
       if (baseTable) {
@@ -374,19 +438,18 @@ export abstract class VuuModule<T extends string = string>
           const newRow = sessionTable.data[i];
           baseTable.updateRow(newRow);
         }
-
         return {
-          action: {
-            type: "VP_RPC_SUCCESS",
-          },
-          requestId: "request_id",
-          rpcName: "VP_BULK_EDIT_SUBMIT_RPC",
-          type: "VIEW_PORT_MENU_RESP",
-          vpId,
-        } as unknown as VuuRpcViewportResponse;
+          type: "SUCCESS_RESULT",
+          data: undefined,
+        };
+      } else {
+        throw Error(
+          `[VuuModule] saveBulkEdits session base table ${table} not found for session table ${sessionTable.name}`,
+        );
       }
+    } else {
+      throw Error("[BasketModule] createNewBasket invalid request type");
     }
-    throw Error("saveBulkEdits base table not found");
   };
 
   protected createSessionTableFromSelectedRows(
@@ -412,10 +475,6 @@ export abstract class VuuModule<T extends string = string>
    */
   #moduleServices: RpcService[] = [
     {
-      rpcName: "VP_BULK_EDIT_BEGIN_RPC",
-      service: this.openBulkEdits,
-    },
-    {
       rpcName: "VP_BULK_EDIT_COLUMN_CELLS_RPC",
       service: this.applyBulkEdits,
     },
@@ -426,6 +485,30 @@ export abstract class VuuModule<T extends string = string>
     {
       rpcName: "VP_BULK_EDIT_END_RPC",
       service: this.endEditSession,
+    },
+  ];
+
+  /**
+   * These services are available on any table. The client must configure the appropriate
+   * menu item(s) on Table(s). The services to implement these RPC calls are built-in to
+   * VuuModule
+   */
+  #moduleMenuServices: RpcMenuService[] = [
+    {
+      rpcName: "VP_BULK_EDIT_BEGIN_RPC",
+      service: this.openBulkEdits,
+    },
+  ];
+
+  /**
+   * These services are available on any table. The client must configure the appropriate
+   * menu item(s) on Table(s). The services to implement these RPC calls are built-in to
+   * VuuModule
+   */
+  #moduleEditServices: RpcEditService[] = [
+    {
+      type: "VP_EDIT_CELL_RPC",
+      service: this.editCell,
     },
   ];
 }

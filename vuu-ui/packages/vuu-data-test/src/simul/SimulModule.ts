@@ -2,10 +2,10 @@ import {
   ClientToServerMenuRowRPC,
   VuuLink,
   VuuMenu,
-  VuuRpcViewportResponse,
 } from "@vuu-ui/vuu-protocol-types";
 import { isVuuMenuRpcRequest } from "@vuu-ui/vuu-utils";
 import {
+  RpcMenuService,
   RpcService,
   ServiceHandler,
   VuuModule,
@@ -108,6 +108,18 @@ export class SimulModule extends VuuModule<SimulTableName> {
     return this.#schemas;
   }
 
+  get editServices() {
+    return undefined;
+  }
+
+  get menuServices():
+    | Record<SimulTableName, RpcMenuService[] | undefined>
+    | undefined {
+    return {
+      ...undefinedTables,
+    };
+  }
+
   get services(): Record<SimulTableName, RpcService[] | undefined> | undefined {
     return {
       ...undefinedTables,
@@ -184,7 +196,7 @@ export class SimulModule extends VuuModule<SimulTableName> {
       namedParams: {},
       params: [],
       vpId: "",
-    } as VuuRpcViewportResponse;
+    };
   };
   stopOrders = async () => {
     stopGeneratingNewOrders();
@@ -197,7 +209,7 @@ export class SimulModule extends VuuModule<SimulTableName> {
       namedParams: {},
       params: [],
       vpId: "",
-    } as VuuRpcViewportResponse;
+    };
   };
 }
 

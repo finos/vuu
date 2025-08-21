@@ -3,11 +3,10 @@ import {
   DataSourceRow,
   RpcResponseHandler,
   DataSourceSubscribeCallback,
-  ViewportRpcResponse,
 } from "@vuu-ui/vuu-data-types";
 import { useViewContext } from "@vuu-ui/vuu-layout";
 import { useNotifications } from "@vuu-ui/vuu-popups";
-import { VuuDataRow, VuuRpcViewportRequest } from "@vuu-ui/vuu-protocol-types";
+import { VuuDataRow } from "@vuu-ui/vuu-protocol-types";
 import { TableConfig, TableConfigChangeHandler } from "@vuu-ui/vuu-table-types";
 import { type ColumnMap, metadataKeys, Range } from "@vuu-ui/vuu-utils";
 import { ReactElement, useCallback, useEffect, useMemo, useState } from "react";
@@ -243,26 +242,26 @@ export const useBasketTrading = () => {
     (dragDropState: DragDropState) => {
       const constituentRow = dragDropState.payload as VuuDataRow;
       if (constituentRow && basketConstituentMap) {
-        const ric = constituentRow[basketConstituentMap.ric];
+        const ric = constituentRow[basketConstituentMap.ric] as string;
         dataSourceBasketTradingConstituentJoin
-          ?.rpcCall?.<ViewportRpcResponse>({
-            type: "VIEW_PORT_RPC_CALL",
+          ?.rpcRequest?.({
+            params: { ric },
             rpcName: "addConstituent",
-            namedParams: {},
-            params: [ric],
-          } as Omit<VuuRpcViewportRequest, "vpId">)
+            type: "RPC_REQUEST",
+          })
           .then((response) => {
-            if (response?.action.type === "VP_CREATE_SUCCESS") {
+            if (response?.type === "SUCCESS_RESULT") {
               notify?.({
                 type: "success",
                 header: "Add Constituent to Basket",
                 body: `${ric} added to basket`,
               });
-            } else if (response?.action.type === "VP_RPC_FAILURE") {
+            } else if (response?.type === "ERROR_RESULT") {
               notify?.({
                 type: "error",
                 header: "Add Constituent to Basket",
-                body: response?.action.msg ?? `Failed to add ${ric} to basket`,
+                body:
+                  response?.errorMessage ?? `Failed to add ${ric} to basket`,
               });
             }
           });

@@ -4,17 +4,15 @@ import {
   VuuColumnDataType,
   VuuDataRow,
   VuuRowDataItemType,
-  VuuRpcAction,
+  VuuRpcEditCellRequest,
 } from "@vuu-ui/vuu-protocol-types";
 import {
   buildColumnMap,
   getTypedValue,
-  isActionMessage,
   isErrorResponse,
   queryClosest,
   Range,
   shallowEquals,
-  vuuEditCellRequest,
 } from "@vuu-ui/vuu-utils";
 import {
   Button,
@@ -218,7 +216,12 @@ export const SessionEditingForm = ({
       const typedValue = getTypedValue(value, type, true);
       if (typeof rowKey === "string") {
         dataSource
-          .menuRpcCall(vuuEditCellRequest(rowKey, field, typedValue))
+          .editRpcCall({
+            type: "VP_EDIT_CELL_RPC",
+            rowKey,
+            field,
+            value: typedValue,
+          } as VuuRpcEditCellRequest)
           .then((response) => {
             if (isErrorResponse(response)) {
               console.log(`edit rejected ${response.error}`);
@@ -239,8 +242,9 @@ export const SessionEditingForm = ({
   );
 
   const applyAction = useCallback(
-    (action: VuuRpcAction) => {
-      if (action.type === "CLOSE_DIALOG_ACTION") {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (action: any) => {
+      if (action?.type === "CLOSE_DIALOG_ACTION") {
         onClose?.();
       }
     },
@@ -248,12 +252,12 @@ export const SessionEditingForm = ({
   );
 
   const handleSubmit = useCallback(async () => {
-    const rpcResponse = await dataSource.menuRpcCall({
+    const rpcResponse = await dataSource.editRpcCall({
       type: "VP_EDIT_SUBMIT_FORM_RPC",
     });
     if (isErrorResponse(rpcResponse)) {
       setErrorMessage(rpcResponse.error);
-    } else if (isActionMessage(rpcResponse)) {
+    } else {
       applyAction(rpcResponse.action);
     }
   }, [applyAction, dataSource]);

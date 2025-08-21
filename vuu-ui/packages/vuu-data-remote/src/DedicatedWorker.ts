@@ -13,7 +13,6 @@ import {
   VuuRemoveVisualLink,
   VuuRpcMenuRequest,
   VuuRpcServiceRequest,
-  VuuRpcViewportRequest,
 } from "@vuu-ui/vuu-protocol-types";
 
 const workerBlob = new Blob([getLoggingConfigForWorker() + workerSourceCode], {
@@ -66,7 +65,6 @@ export class DedicatedWorker {
     message:
       | VuuUIMessageOut
       | WithRequestId<
-          | VuuRpcViewportRequest
           | VuuCreateVisualLink
           | VuuRemoveVisualLink
           | VuuRpcServiceRequest
