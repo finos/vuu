@@ -40,9 +40,11 @@ export const FilterContext = createContext<FilterContextProps>({
 
 export const FilterProvider = ({
   children,
+  onFiltersSaved,
   savedFilters = [],
 }: Partial<Pick<FilterContextProps, "activeFilter" | "savedFilters">> & {
   children: ReactNode;
+  onFiltersSaved?: (filterDescriptors: FilterDescriptor[]) => void;
 }) => {
   const [filterDescriptors, setFilterDescriptors] = useState(savedFilters);
   const [dialog, setDialog] = useState<ReactElement | null>(null);
@@ -65,29 +67,42 @@ export const FilterProvider = ({
     [filterDescriptors],
   );
 
-  const deleteFilter = useCallback((filterId: string) => {
-    setFilterDescriptors((filterDescriptors) =>
-      filterDescriptors.filter(({ id }) => id !== filterId),
-    );
-  }, []);
-
-  const renameFilter = useCallback((filterId: string, filterName: string) => {
-    setFilterDescriptors((currentFilterDescriptors) => {
-      return currentFilterDescriptors.map<FilterDescriptor>((f) => {
-        if (f.id === filterId) {
-          return {
-            ...f,
-            filter: {
-              ...f.filter,
-              name: filterName,
-            },
-          };
-        } else {
-          return f;
-        }
+  const deleteFilter = useCallback(
+    (filterId: string) => {
+      setFilterDescriptors((filterDescriptors) => {
+        const newFilterDescriptors = filterDescriptors.filter(
+          ({ id }) => id !== filterId,
+        );
+        onFiltersSaved?.(newFilterDescriptors);
+        return newFilterDescriptors;
       });
-    });
-  }, []);
+    },
+    [onFiltersSaved],
+  );
+
+  const renameFilter = useCallback(
+    (filterId: string, filterName: string) => {
+      setFilterDescriptors((currentFilterDescriptors) => {
+        const newFilterDescriptors =
+          currentFilterDescriptors.map<FilterDescriptor>((f) => {
+            if (f.id === filterId) {
+              return {
+                ...f,
+                filter: {
+                  ...f.filter,
+                  name: filterName,
+                },
+              };
+            } else {
+              return f;
+            }
+          });
+        onFiltersSaved?.(newFilterDescriptors);
+        return newFilterDescriptors;
+      });
+    },
+    [onFiltersSaved],
+  );
 
   const PromptForFilterName = useCallback(
     ({ filter, id }: FilterDescriptor) => {
@@ -122,7 +137,7 @@ export const FilterProvider = ({
         />,
       );
     },
-    [],
+    [deleteFilter],
   );
 
   const handleFilterMenuAction = useCallback<FilterMenuActionHandler>(
@@ -145,41 +160,46 @@ export const FilterProvider = ({
     [findFilter, promptForConfirmationOfDelete, PromptForFilterName],
   );
 
-  const handleSaveFilter = useCallback((filterDescriptor: FilterDescriptor) => {
-    setFilterDescriptors((filterDescriptors) => {
-      if (filterDescriptor.active) {
-        return filterDescriptors
-          .map((filterDescriptor) =>
-            filterDescriptor.active
-              ? { ...filterDescriptor, active: false }
-              : filterDescriptor,
-          )
-          .concat(filterDescriptor);
-      } else {
-        return filterDescriptors.concat(filterDescriptor);
-      }
-    });
-  }, []);
+  const handleSaveFilter = useCallback(
+    (filterDescriptor: FilterDescriptor) => {
+      setFilterDescriptors((filterDescriptors) => {
+        const newFilterDescriptors = filterDescriptor.active
+          ? filterDescriptors
+              .map((filterDescriptor) =>
+                filterDescriptor.active
+                  ? { ...filterDescriptor, active: false }
+                  : filterDescriptor,
+              )
+              .concat(filterDescriptor)
+          : filterDescriptors.concat(filterDescriptor);
+        onFiltersSaved?.(newFilterDescriptors);
+        return newFilterDescriptors;
+      });
+    },
+    [onFiltersSaved],
+  );
 
   const setActiveFilter = useCallback(
     (filterId?: string) => {
       setFilterDescriptors((currentFilterDescriptors) => {
         const targetFilter = filterId ? findFilter(filterId) : undefined;
-        return currentFilterDescriptors.map<FilterDescriptor>((f) => {
-          if (f.id === filterId) {
-            return {
-              ...f,
-              active: !f.active,
-            };
-          } else if (!targetFilter?.active && f.active) {
-            return {
-              ...f,
-              active: false,
-            };
-          } else {
-            return f;
-          }
-        });
+        const newFilterDescriptors =
+          currentFilterDescriptors.map<FilterDescriptor>((f) => {
+            if (f.id === filterId) {
+              return {
+                ...f,
+                active: !f.active,
+              };
+            } else if (!targetFilter?.active && f.active) {
+              return {
+                ...f,
+                active: false,
+              };
+            } else {
+              return f;
+            }
+          });
+        return newFilterDescriptors;
       });
     },
     [findFilter],
