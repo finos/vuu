@@ -116,7 +116,7 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecycle: LifecycleCon
 
     val rowWithData = RowWithData(leftKey, toPublishData)
 
-    val jtu = JoinTableUpdate(JoinTable, rowWithData, timeProvider.now())
+    val jtu = JoinTableUpdate(JoinTable, rowWithData)
 
     logger.debug("[JoinTableProvider] Submitting joint table event:" + jtu)
 

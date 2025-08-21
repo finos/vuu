@@ -1,6 +1,7 @@
 package org.finos.vuu.plugin
 
 import org.finos.toolbox.jmx.MetricsProvider
+import org.finos.toolbox.time.Clock
 import org.finos.vuu.feature.{Feature, FilterFactory, JoinTableFactory, SessionTableFactory, SortFactory, TableFactory, ViewPortCallableFactory, ViewPortFactory, ViewPortKeysCreator, ViewPortTableCreator, ViewPortTreeCallableFactory}
 
 trait Plugin {
@@ -8,7 +9,7 @@ trait Plugin {
     def registerFeature(feature: Feature): Unit
     def tableFactory(implicit metrics: MetricsProvider): TableFactory
     def pluginType: PluginType
-    def joinTableFactory(implicit metrics: MetricsProvider): JoinTableFactory
+    def joinTableFactory(implicit metrics: MetricsProvider, timeProvider: Clock): JoinTableFactory
     def sessionTableFactory: SessionTableFactory
     def viewPortKeysCreator: ViewPortKeysCreator
     def viewPortFactory: ViewPortFactory
