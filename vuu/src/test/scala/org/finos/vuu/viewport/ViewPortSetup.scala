@@ -69,7 +69,7 @@ trait ViewPortSetup {
       columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
       joinFields =  "ric", "orderId")
 
-    val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+    val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double", "description:String"), "ric")
 
     val joinDef = JoinTableDef(
       name          = "orderPrices",
