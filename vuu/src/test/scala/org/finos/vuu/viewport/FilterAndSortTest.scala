@@ -7,7 +7,7 @@ import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.filter.{EqualsClause, LessThanClause, NoFilter}
 import org.finos.vuu.core.sort.{AlphaSort, AntlrBasedFilter, SortDirection, UserDefinedFilterAndSort}
 import org.finos.vuu.core.table.ViewPortColumnCreator
-import org.finos.vuu.net.ClientSessionId
+import org.finos.vuu.net.{ClientSessionId, SortDef, SortSpec}
 import org.finos.vuu.provider.MockProvider
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.util.table.TableAsserts
@@ -476,4 +476,41 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
   }
 
+  Scenario("When sorting a column of a join table, what if right table has no data"){
+
+    import TableAsserts._
+
+    implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+
+    val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
+
+    joinProvider.start()
+
+    ordersProvider.tick("NYC-00000", Map("orderId" -> "NYC-00000", "ric" -> "00VOD.L"))
+    pricesProvider.tick("00VOD.L", Map("ric" -> "00VOD.L", "last" -> 123.0d))
+    joinProvider.runOnce()
+
+    val queue = new OutboundRowPublishQueue()
+    val columns = ViewPortColumnCreator.create(orderPrices, Array("orderId", "ric", "last").toList)
+    val viewport = viewPortContainer.create(RequestId.oneNew(), ClientSessionId("A", "B"), queue, orderPrices, ViewPortRange(0, 5), columns, SortSpec(List(SortDef("last", 'A'))))
+    viewPortContainer.runOnce()
+    assertVpEq(combineQs(viewport)) {
+      Table(
+        ("orderId", "ric", "last"),
+        ("NYC-00000", "00VOD.L", 123.0d),
+      )
+    }
+
+    ordersProvider.tick("NYC-00001", Map("orderId" -> "NYC-00001", "ric" -> "01VOD.L"))
+    joinProvider.runOnce()
+
+    viewPortContainer.runOnce()
+    assertVpEq(combineQs(viewport)) {
+      Table(
+        ("orderId", "ric", "last"),
+        ("NYC-00000", "00VOD.L", 123.0d),
+        ("NYC-00001", "01VOD.L", 0.0d),
+      )
+    }
+  }
 }
