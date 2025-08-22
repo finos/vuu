@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>example</artifactId>
-        <version>0.9.79</version>
+        <version>0.9.80-SNAPSHOT</version>
     </parent>
 
     <artifactId>main-java</artifactId>
@@ -15,42 +15,42 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.79</version>
+            <version>0.9.80-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu-java</artifactId>
-            <version>0.9.79</version>
+            <version>0.9.80-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>basket</artifactId>
-            <version>0.9.79</version>
+            <version>0.9.80-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>price</artifactId>
-            <version>0.9.79</version>
+            <version>0.9.80-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>order</artifactId>
-            <version>0.9.79</version>
+            <version>0.9.80-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>editable</artifactId>
-            <version>0.9.79</version>
+            <version>0.9.80-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>permission</artifactId>
-            <version>0.9.79</version>
+            <version>0.9.80-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -74,7 +74,7 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.79</version>
+            <version>0.9.80-SNAPSHOT</version>
             <classifier>tests</classifier>
             <type>test-jar</type>
             <scope>test</scope>
