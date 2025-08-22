@@ -7,7 +7,7 @@ import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.filter.{EqualsClause, LessThanClause, NoFilter}
 import org.finos.vuu.core.sort.{AlphaSort, AntlrBasedFilter, SortDirection, UserDefinedFilterAndSort}
 import org.finos.vuu.core.table.ViewPortColumnCreator
-import org.finos.vuu.net.{ClientSessionId, SortDef, SortSpec}
+import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.provider.MockProvider
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.util.table.TableAsserts
