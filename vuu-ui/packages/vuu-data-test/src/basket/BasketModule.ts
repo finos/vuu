@@ -1,11 +1,10 @@
+import { VuuMenu, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
+import { ColumnMap } from "@vuu-ui/vuu-utils";
 import {
-  VuuMenu,
-  VuuRowDataItemType,
-  VuuRpcViewportAction,
-  VuuRpcViewportResponse,
-} from "@vuu-ui/vuu-protocol-types";
-import { ColumnMap, isViewportRpcRequest } from "@vuu-ui/vuu-utils";
-import { ServiceHandler, VuuModule } from "../core/module/VuuModule";
+  RpcMenuService,
+  ServiceHandler,
+  VuuModule,
+} from "../core/module/VuuModule";
 import tableContainer from "../core/table/TableContainer";
 import { BasketsTableName, schemas } from "./basket-schemas";
 import basketConstituentData from "./reference-data/constituents";
@@ -33,22 +32,6 @@ export const createBasketTradingRow = (
   1_250_000,
   100,
 ];
-
-const viewportRpcResponse = (
-  params: string[],
-  vpId: string,
-  action?: Partial<VuuRpcViewportAction>,
-): VuuRpcViewportResponse => ({
-  type: "VIEW_PORT_RPC_RESPONSE",
-  action: {
-    type: "VP_RPC_SUCCESS",
-    ...action,
-  },
-  method: "???",
-  namedParams: {},
-  params,
-  vpId,
-});
 
 const undefinedTables = {
   algoType: undefined,
@@ -198,6 +181,18 @@ export class BasketModule extends VuuModule<BasketsTableName> {
     };
   }
 
+  get editServices() {
+    return undefined;
+  }
+
+  get menuServices():
+    | Record<BasketsTableName, RpcMenuService[] | undefined>
+    | undefined {
+    return {
+      ...undefinedTables,
+    };
+  }
+
   get tables() {
     return this.#tables;
   }
@@ -265,50 +260,49 @@ export class BasketModule extends VuuModule<BasketsTableName> {
   }
 
   private createNewBasket: ServiceHandler = async (rpcRequest) => {
-    if (isViewportRpcRequest(rpcRequest)) {
-      const { vpId } = rpcRequest;
-      const params = rpcRequest.params as string[];
-      const [basketId, basketName] = params;
-      const key = this.createTradingBasket(basketId, basketName);
-      return viewportRpcResponse(params, vpId, { key });
+    if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
+      const { sourceBasketId, tradeBasketName } = rpcRequest.params;
+      const key = this.createTradingBasket(sourceBasketId, tradeBasketName);
+      return {
+        type: "SUCCESS_RESULT",
+        data: key,
+      };
     } else {
-      throw Error(`createNewBasket invalid rpcRequest`);
+      throw Error("[BasketModule] createNewBasket invalid request type");
     }
   };
 
   private sendToMarket: ServiceHandler = async (rpcRequest) => {
-    if (isViewportRpcRequest(rpcRequest)) {
-      const { vpId } = rpcRequest;
-      const params = rpcRequest.params as string[];
-      const [basketInstanceId] = params;
+    if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
+      const { basketInstanceId } = rpcRequest.params;
       this.tables.basketTrading.update(basketInstanceId, "status", "ON_MARKET");
-      return viewportRpcResponse(params, vpId);
+      return {
+        type: "SUCCESS_RESULT",
+        data: undefined,
+      };
     } else {
-      throw Error(`sendToMarket invalid rpcRequest`);
+      throw Error("[BasketModule] createNewBasket invalid request type");
     }
   };
   private takeOffMarket: ServiceHandler = async (rpcRequest) => {
-    if (isViewportRpcRequest(rpcRequest)) {
-      const { vpId } = rpcRequest;
-      const params = rpcRequest.params as string[];
-      const [basketInstanceId] = params;
+    if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
+      const { basketInstanceId } = rpcRequest.params;
       this.tables.basketTrading.update(
         basketInstanceId,
         "status",
         "OFF-MARKET",
       );
-      return viewportRpcResponse(params, vpId);
+      return {
+        type: "SUCCESS_RESULT",
+        data: undefined,
+      };
     } else {
-      throw Error(`takeOffMarket invalid rpcRequest`);
+      throw Error("[BasketModule] createNewBasket invalid request type");
     }
   };
 
-  private addConstituent: ServiceHandler = async (rpcRequest) => {
-    if (isViewportRpcRequest(rpcRequest)) {
-      throw Error(`addConstituent not implemented`);
-    } else {
-      throw Error(`addConstituent invalid rpcRequest`);
-    }
+  private addConstituent: ServiceHandler = async () => {
+    throw Error(`addConstituent not implemented`);
   };
 }
 
