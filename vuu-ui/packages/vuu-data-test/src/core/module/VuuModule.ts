@@ -20,7 +20,6 @@ import {
   VuuRpcMenuRequest,
   VuuRpcEditRequest,
   VuuRpcEditResponse,
-  VuuRpcEditCellRequest,
 } from "@vuu-ui/vuu-protocol-types";
 import { uuid } from "@vuu-ui/vuu-utils";
 import { Table, buildDataColumnMapFromSchema } from "../../Table";
@@ -320,25 +319,34 @@ export abstract class VuuModule<T extends string = string>
     }
   }
 
-  private editCell: EditServiceHandler<VuuRpcEditCellRequest> = async (
+  private editCell: EditServiceHandler<VuuRpcEditRequest> = async (
     rpcRequest,
   ) => {
     console.log(`edit cell`, {
       rpcRequest,
     });
+    if (rpcRequest.type === "VP_EDIT_CELL_RPC") {
+      const { rowKey, field, value } = rpcRequest;
+      // NO, this is applying edits directly to the underlying table, bypassing the session tab;e
+      const { dataSource } = this.getSubscriptionByViewport(rpcRequest.vpId);
+      if (dataSource.table) {
+        const table = this.tables[dataSource.table.table as T];
+        table.update(rowKey, field, value);
 
-    // const { rowKey, field, value } = rpcRequest;
-    // const { dataSource } = this.getSubscriptionByViewport(rpcRequest.vpId);
-    // use the vpId to get the table
-
-    // dataSource.table?.update(rowKey, field, value);
-
-    return {
-      action: undefined,
-      type: "VP_EDIT_RPC_RESPONSE",
-      rpcName: "VP_EDIT_SUBMIT_FORM_RPC",
-      vpId: rpcRequest.vpId,
-    };
+        return {
+          action: undefined,
+          type: "VP_EDIT_RPC_RESPONSE",
+          rpcName: "VP_EDIT_SUBMIT_FORM_RPC",
+          vpId: rpcRequest.vpId,
+        };
+      } else {
+        throw Error(
+          "[VuuModule] editCell dataSOurce does not have valid table",
+        );
+      }
+    } else {
+      throw Error("[VuuModule] editCell invalid rpc message type");
+    }
   };
 
   private openBulkEdits: MenuServiceHandler = async (rpcRequest) => {
@@ -387,26 +395,26 @@ export abstract class VuuModule<T extends string = string>
   };
 
   private endEditSession: ServiceHandler = async (rpcRequest) => {
-    const { vpId } = rpcRequest;
-    delete this.#sessionTableMap[vpId];
-    return {
-      action: { type: "VP_RPC_SUCCESS" },
-      method: "???",
-      namedParams: {},
-      params: [],
-      type: "VIEW_PORT_RPC_RESPONSE",
-      vpId,
-    };
+    if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
+      const { viewPortId } = rpcRequest.context;
+      delete this.#sessionTableMap[viewPortId];
+      return {
+        type: "SUCCESS_RESULT",
+        data: undefined,
+      };
+    } else {
+      throw Error(`[VuuModule] endEditSession invalid rpc type`);
+    }
   };
 
   // Bulk-edit with input in session table
   private applyBulkEdits: ServiceHandler = async (rpcRequest) => {
-    if (withParams(rpcRequest)) {
-      const { vpId } = rpcRequest;
-      const sessionTable = this.getSessionTable(vpId);
+    if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
+      const { viewPortId } = rpcRequest.context;
+      const sessionTable = this.getSessionTable(viewPortId);
       for (let i = 0; i < sessionTable.data.length; i++) {
         const newRow = sessionTable.data[i];
-        const { column, value } = rpcRequest.namedParams;
+        const { column, value } = rpcRequest.params;
         const keyIndex = sessionTable.map[sessionTable.schema.key];
         sessionTable.update(
           String(newRow[keyIndex]),
@@ -415,15 +423,12 @@ export abstract class VuuModule<T extends string = string>
         );
       }
       return {
-        action: {
-          type: "NO_ACTION",
-        },
-        rpcName: "VP_BULK_EDIT_COLUMN_CELLS_RPC",
-        type: "VIEW_PORT_MENU_RESP",
-        vpId,
-      } as VuuRpcMenuResponse;
+        type: "SUCCESS_RESULT",
+        data: undefined,
+      };
+    } else {
+      throw Error(`[VuuModule] applyBulkEdits invalid rpc type`);
     }
-    throw Error("applyBulkEdits expects column and value as namedParams");
   };
 
   // Save session table data to main table

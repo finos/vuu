@@ -938,7 +938,10 @@ export class ArrayDataSource
     return Promise.reject<T>();
   }
 
-  async editRpcCall(): Promise<VuuRpcEditResponse> {
+  async editRpcCall(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    rpcRequest: Omit<VuuRpcEditRequest, "vpId">,
+  ): Promise<VuuRpcEditResponse> {
     throw Error("ArrayDataSource does not implement editRpcCall");
   }
 

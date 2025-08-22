@@ -8,7 +8,6 @@ import {
   TypeaheadSuggestionProvider,
   VuuUIMessageIn,
   VuuUIMessageInRPC,
-  VuuUIMessageInRPCEditReject,
   VuuUIMessageInTableMeta,
   VuuUIMessageOutViewport,
   WithBaseFilter,

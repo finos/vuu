@@ -10,7 +10,6 @@ import {
   VuuRpcMenuRequest,
   OpenDialogAction,
   VuuRpcEditCellRequest,
-  VuuRowDataItemType,
   VuuRpcRequest,
   VuuRpcEditAddRowRequest,
   VuuDataRowDto,

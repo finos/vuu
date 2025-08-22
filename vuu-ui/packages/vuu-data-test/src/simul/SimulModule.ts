@@ -3,8 +3,8 @@ import {
   VuuLink,
   VuuMenu,
 } from "@vuu-ui/vuu-protocol-types";
-import { isVuuMenuRpcRequest } from "@vuu-ui/vuu-utils";
 import {
+  MenuServiceHandler,
   RpcMenuService,
   RpcService,
   ServiceHandler,
@@ -117,18 +117,18 @@ export class SimulModule extends VuuModule<SimulTableName> {
     | undefined {
     return {
       ...undefinedTables,
-    };
-  }
-
-  get services(): Record<SimulTableName, RpcService[] | undefined> | undefined {
-    return {
-      ...undefinedTables,
       orders: [
         {
           rpcName: "CANCEL_ORDER",
           service: this.cancelOrder,
         },
       ],
+    };
+  }
+
+  get services(): Record<SimulTableName, RpcService[] | undefined> | undefined {
+    return {
+      ...undefinedTables,
       parentOrders: [
         {
           rpcName: "startGeneratingNewOrders",
@@ -162,53 +162,37 @@ export class SimulModule extends VuuModule<SimulTableName> {
     };
   }
 
-  cancelOrder: ServiceHandler = async (rpcRequest) => {
-    if (isVuuMenuRpcRequest(rpcRequest)) {
-      const { rowKey, vpId } = rpcRequest as ClientToServerMenuRowRPC;
-      const table = this.tables.orders;
-      const row = table.findByKey(rowKey);
-      row[table.map.status] = "Cancelled";
-      table.updateRow(row);
+  cancelOrder: MenuServiceHandler = async (rpcRequest) => {
+    const { rowKey, vpId } = rpcRequest as ClientToServerMenuRowRPC;
+    const table = this.tables.orders;
+    const row = table.findByKey(rowKey);
+    row[table.map.status] = "Cancelled";
+    table.updateRow(row);
 
-      return {
-        action: {
-          type: "SHOW_NOTIFICATION_ACTION",
-          message: `Order id: ${rowKey}`,
-          title: "Order cancelled",
-        },
-        rpcName: "CANCEL_ORDER",
-        type: "VIEW_PORT_MENU_RESP",
-        vpId,
-      };
-    } else {
-      throw Error("cancelOrder invalid rpcRequest");
-    }
-  };
-
-  startOrders = async () => {
-    startGeneratingNewOrders();
     return {
-      type: "VIEW_PORT_RPC_RESPONSE",
       action: {
-        type: "VP_RPC_SUCCESS",
+        type: "SHOW_NOTIFICATION_ACTION",
+        message: `Order id: ${rowKey}`,
+        title: "Order cancelled",
       },
-      method: "???",
-      namedParams: {},
-      params: [],
-      vpId: "",
+      rpcName: "CANCEL_ORDER",
+      type: "VIEW_PORT_MENU_RESP",
+      vpId,
     };
   };
-  stopOrders = async () => {
+
+  startOrders: ServiceHandler = async () => {
+    startGeneratingNewOrders();
+    return {
+      type: "SUCCESS_RESULT",
+      data: undefined,
+    };
+  };
+  stopOrders: ServiceHandler = async () => {
     stopGeneratingNewOrders();
     return {
-      type: "VIEW_PORT_RPC_RESPONSE",
-      action: {
-        type: "VP_RPC_SUCCESS",
-      },
-      method: "???",
-      namedParams: {},
-      params: [],
-      vpId: "",
+      type: "SUCCESS_RESULT",
+      data: undefined,
     };
   };
 }

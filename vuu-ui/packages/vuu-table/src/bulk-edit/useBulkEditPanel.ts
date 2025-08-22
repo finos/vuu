@@ -1,9 +1,5 @@
 import { buildValidationChecker } from "@vuu-ui/vuu-data-react";
-import {
-  RpcResultError,
-  RpcResultSuccess,
-  VuuRpcServiceRequest,
-} from "@vuu-ui/vuu-protocol-types";
+import { VuuRpcServiceRequest } from "@vuu-ui/vuu-protocol-types";
 import {
   DataCellEditNotification,
   DataValueTypeDescriptor,
@@ -120,9 +116,7 @@ export const useBulkEditPanel = ({
 
   const handleBulkChange: EditValueChangeHandler = useCallback(
     async (column, value) => {
-      const response = await dataSource.rpcRequest?.<
-        RpcResultSuccess | RpcResultError
-      >({
+      const response = await dataSource.rpcRequest?.({
         params: { column: column.name, value },
         rpcName: "VP_BULK_EDIT_COLUMN_CELLS_RPC",
         type: "RPC_REQUEST",
