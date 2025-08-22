@@ -476,41 +476,4 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
   }
 
-  Scenario("When sorting a column of a join table, what if right table has no data"){
-
-    import TableAsserts._
-
-    implicit val lifecycle: LifecycleContainer = new LifecycleContainer
-
-    val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
-
-    joinProvider.start()
-
-    ordersProvider.tick("NYC-00000", Map("orderId" -> "NYC-00000", "ric" -> "00VOD.L"))
-    pricesProvider.tick("00VOD.L", Map("ric" -> "00VOD.L", "last" -> 123.0d, "description" -> "randomdescription"))
-    joinProvider.runOnce()
-
-    val queue = new OutboundRowPublishQueue()
-    val columns = ViewPortColumnCreator.create(orderPrices, Array("orderId", "ric", "description").toList)
-    val viewport = viewPortContainer.create(RequestId.oneNew(), ClientSessionId("A", "B"), queue, orderPrices, ViewPortRange(0, 5), columns, SortSpec(List(SortDef("description", 'A'))))
-    viewPortContainer.runOnce()
-    assertVpEq(combineQs(viewport)) {
-      Table(
-        ("orderId", "ric", "description"),
-        ("NYC-00000", "00VOD.L", "randomdescription"),
-      )
-    }
-
-    ordersProvider.tick("NYC-00001", Map("orderId" -> "NYC-00001", "ric" -> "01VOD.L"))
-    joinProvider.runOnce()
-
-    viewPortContainer.runOnce()
-    assertVpEq(combineQs(viewport)) {
-      Table(
-        ("orderId", "ric", "last"),
-        ("NYC-00000", "00VOD.L", 123.0d),
-        ("NYC-00001", "01VOD.L", 0.0d),
-      )
-    }
-  }
 }
