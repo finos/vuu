@@ -46,13 +46,6 @@ object SortCompares {
   }
 
   def compareString(o1: RowData, o2: RowData, column: Column, direction: Char): Int = {
-    val ch1 = o1.get(column).asInstanceOf[Char]
-    val str1 = o1.get(column).asInstanceOf[String]
-    val long1 = o1.get(column).asInstanceOf[Long]
-    val int1 = o1.get(column).asInstanceOf[Int]
-    val b1 = o1.get(column).asInstanceOf[Boolean]
-    val d1 = o1.get(column).asInstanceOf[Double]
-
     val c1 = o1.get(column).asInstanceOf[String]
     val c2 = o2.get(column).asInstanceOf[String]
 
@@ -62,11 +55,6 @@ object SortCompares {
 
   def compareDouble(o1: RowData, o2: RowData, column: Column, direction: Char): Int = {
     val c1 = o1.get(column).asInstanceOf[Double]
-    val ch1 = o1.get(column).asInstanceOf[Char]
-    val str1 = o1.get(column).asInstanceOf[String]
-    val long1 = o1.get(column).asInstanceOf[Long]
-    val int1 = o1.get(column).asInstanceOf[Int]
-    val b1 = o1.get(column).asInstanceOf[Boolean]
     val c2 = o2.get(column).asInstanceOf[Double]
     compareWithDirection(c1, c2)(direction)
   }
