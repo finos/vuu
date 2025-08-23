@@ -411,7 +411,7 @@ export const useVuuMenuActions = ({
       if (sessionDs) {
         showDialog(
           <BulkEditPanel
-            dataSource={sessionDs}
+            sessionDs={sessionDs}
             onSubmit={handleSubmit}
             parentDs={ds}
             onValidationStatusChange={handleChange}

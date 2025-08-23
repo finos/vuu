@@ -1,17 +1,13 @@
 import { Button, DialogActions } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { DataSource } from "@vuu-ui/vuu-data-types";
-import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { useCallback, useState } from "react";
-import { BulkEditPanel } from "./BulkEditPanel";
+import { BulkEditPanel, BulkEditPanelProps } from "./BulkEditPanel";
 
 import bulkEditPanelCss from "./BulkEditPanel.css";
 
-export interface BulkEditDialogProps {
-  columns?: ColumnDescriptor[];
-  sessionDs: DataSource;
-  parentDs: DataSource;
+export interface BulkEditDialogProps
+  extends Pick<BulkEditPanelProps, "columns" | "parentDs" | "sessionDs"> {
   closeDialog: () => void;
 }
 
@@ -51,7 +47,7 @@ export const BulkEditDialog = ({
     <>
       <BulkEditPanel
         columns={columns}
-        dataSource={sessionDs}
+        sessionDs={sessionDs}
         onSubmit={handleSubmit}
         parentDs={parentDs}
         onValidationStatusChange={handleValidationStatusChange}

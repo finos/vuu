@@ -322,16 +322,19 @@ export abstract class VuuModule<T extends string = string>
   private editCell: EditServiceHandler<VuuRpcEditRequest> = async (
     rpcRequest,
   ) => {
-    console.log(`edit cell`, {
-      rpcRequest,
-    });
     if (rpcRequest.type === "VP_EDIT_CELL_RPC") {
       const { rowKey, field, value } = rpcRequest;
-      // NO, this is applying edits directly to the underlying table, bypassing the session tab;e
-      const { dataSource } = this.getSubscriptionByViewport(rpcRequest.vpId);
-      if (dataSource.table) {
-        const table = this.tables[dataSource.table.table as T];
-        table.update(rowKey, field, value);
+      // are we editing a session table ? Session table name is same as viewport id
+      let targetTable = this.#sessionTableMap[rpcRequest.vpId];
+      if (!targetTable) {
+        const { dataSource } = this.getSubscriptionByViewport(rpcRequest.vpId);
+        if (dataSource.table) {
+          targetTable = this.tables[dataSource.table.table as T];
+        }
+      }
+
+      if (targetTable) {
+        targetTable.update(rowKey, field, value);
 
         return {
           action: undefined,
@@ -340,16 +343,14 @@ export abstract class VuuModule<T extends string = string>
           vpId: rpcRequest.vpId,
         };
       } else {
-        throw Error(
-          "[VuuModule] editCell dataSOurce does not have valid table",
-        );
+        throw Error("[VuuModule] editCell unable to find table for dataSource");
       }
     } else {
       throw Error("[VuuModule] editCell invalid rpc message type");
     }
   };
 
-  private openBulkEdits: MenuServiceHandler = async (rpcRequest) => {
+  private beginBulkEdit: MenuServiceHandler = async (rpcRequest) => {
     if (rpcRequest.localDataParameters) {
       const { localDataParameters, vpId } = rpcRequest;
       const selectedRowIds = localDataParameters.selectedRowIds;
@@ -501,7 +502,7 @@ export abstract class VuuModule<T extends string = string>
   #moduleMenuServices: RpcMenuService[] = [
     {
       rpcName: "VP_BULK_EDIT_BEGIN_RPC",
-      service: this.openBulkEdits,
+      service: this.beginBulkEdit,
     },
   ];
 
