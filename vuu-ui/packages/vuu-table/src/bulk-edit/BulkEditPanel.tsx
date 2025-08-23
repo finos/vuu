@@ -14,9 +14,17 @@ const classBase = "vuuBulkEditPanel";
 
 export interface BulkEditPanelProps extends HTMLAttributes<HTMLDivElement> {
   columns?: ColumnDescriptor[];
-  dataSource: DataSource;
+  /**
+   * The session dataSource. This is where the edits will be processed until final
+   * confirmation, at which point edits will be applied to parent dataSource and
+   * the session table torm down.
+   */
+  sessionDs: DataSource;
   response?: RpcResponse;
   mainTableName?: string;
+  /**
+   * The parent dataSource. This is where the edits will be applied once confirmed
+   */
   parentDs: DataSource;
   onValidationStatusChange: (isValid: boolean) => void;
 }
@@ -24,9 +32,10 @@ export interface BulkEditPanelProps extends HTMLAttributes<HTMLDivElement> {
 export const BulkEditPanel = ({
   className,
   columns,
-  dataSource,
+  sessionDs,
   parentDs,
   onValidationStatusChange,
+  style,
   ...htmlAttributes
 }: BulkEditPanelProps): ReactElement => {
   const targetWindow = useWindow();
@@ -39,7 +48,7 @@ export const BulkEditPanel = ({
   const { onBulkChange, onDataEdited, onRowChange, tableConfig } =
     useBulkEditPanel({
       columns,
-      dataSource,
+      sessionDs,
       onValidationStatusChange,
     });
 
@@ -57,7 +66,7 @@ export const BulkEditPanel = ({
     <div
       {...htmlAttributes}
       className={cx(classBase, className)}
-      style={{ display: "flex", flexDirection: "column" }}
+      style={{ ...style, display: "flex", flexDirection: "column" }}
     >
       <div className={`${classBase}-toolbar`} />
       <div className={`${classBase}-table`}>
@@ -65,7 +74,7 @@ export const BulkEditPanel = ({
           allowDragColumnHeader={false}
           config={tableConfig}
           customHeader={bulkEditRow}
-          dataSource={dataSource}
+          dataSource={sessionDs}
           height={380}
           width={600}
           showColumnHeaderMenus={false}

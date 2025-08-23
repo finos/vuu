@@ -45,12 +45,12 @@ const isSameArray = (arr1: ErrorTuple, arr2: ErrorTuple) => {
 
 export type BulkEditPanelHookProps = Pick<
   BulkEditPanelProps,
-  "columns" | "dataSource" | "onValidationStatusChange"
+  "columns" | "sessionDs" | "onValidationStatusChange"
 >;
 
 export const useBulkEditPanel = ({
   columns,
-  dataSource,
+  sessionDs: dataSource,
   onValidationStatusChange,
 }: BulkEditPanelHookProps) => {
   const errorsRef = useRef<ErrorTuple[]>([]);
