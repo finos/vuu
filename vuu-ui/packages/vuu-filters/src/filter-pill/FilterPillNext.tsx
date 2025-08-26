@@ -79,6 +79,7 @@ export const FilterPillNext = ({
       onMenuAction={onMenuAction}
       onOpenChange={onContextMenuOpenChange}
       open={contextMenuOpen}
+      permissions={permissions}
     />
   );
 
