@@ -34,10 +34,10 @@ class SortComparesTest extends AnyFeatureSpec with Matchers with BeforeAndAfterE
       unordered.sorted(TestComparator.compare) shouldEqual ascending.reverse
     }
 
-    Scenario("can sort null value") {
+    Scenario("can support nulls and they go last in ascending order") {
       TestComparator.register((o1, o2) => SortCompares.compareString(o1, o2, col, 'A'))
       val data = List(rowData4, rowData3, rowData5)
-      val sortedData = List(rowData4, rowData5, rowData3)
+      val sortedData = List(rowData3, rowData4, rowData5)
       data.sorted(TestComparator.compare) shouldEqual sortedData
     }
   }
@@ -168,6 +168,38 @@ class SortComparesTest extends AnyFeatureSpec with Matchers with BeforeAndAfterE
       val sortedData = List(rowData5, rowData6, rowData3)
       data.sorted(TestComparator.compare) shouldEqual sortedData
     }
+
+  }
+
+  Feature("compareBoolean") {
+    val rowData1 = RowWithData("id-1", Map("boolField" -> true))
+    val rowData2 = RowWithData("id-2", Map("boolField" -> false))
+    val rowData3 = RowWithData("id-3", Map())
+    val rowData4 = RowWithData("id-4", Map())
+
+    val ascending = List(rowData2, rowData1)
+    val unordered = List(rowData1, rowData2)
+    val col = column("boolField")
+
+    Scenario("can support `A` sort direction") {
+      TestComparator.register((o1, o2) => SortCompares.compareBoolean(o1, o2, col, 'A'))
+
+      unordered.sorted(TestComparator.compare) shouldEqual ascending
+    }
+
+    Scenario("can support `D` sort direction") {
+      TestComparator.register((o1, o2) => SortCompares.compareBoolean(o1, o2, col, 'D'))
+
+      unordered.sorted(TestComparator.compare) shouldEqual ascending.reverse
+    }
+
+    Scenario("can sort null value") {
+      TestComparator.register((o1, o2) => SortCompares.compareBoolean(o1, o2, col, 'A'))
+      val data = List(rowData2, rowData1, rowData3, rowData4)
+      val sortedData = List(rowData2, rowData3, rowData4, rowData1)
+      data.sorted(TestComparator.compare) shouldEqual sortedData
+    }
+
   }
 
   private def column(name: String): Column = SimpleColumn(name, -1, classOf[Any])
