@@ -26,7 +26,7 @@ export const DeleteFilterPrompt = ({
       onClose={onClose}
       onConfirm={onConfirm}
       open={open}
-      title="Save Filter"
+      title="Delete Filter"
     >
       <span>{`Do you want to delete '${filterDescriptor.filter.name}' ?`}</span>
       {children}
