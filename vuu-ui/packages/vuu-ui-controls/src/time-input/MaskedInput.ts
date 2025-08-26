@@ -1,5 +1,22 @@
+import { EventEmitter, TimeString } from "@vuu-ui/vuu-utils";
+
 type TimeUnit = "hours" | "minutes" | "seconds";
 export type Digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
+
+type NullSelection = {
+  end: null;
+  start: null;
+};
+type Selection =
+  | {
+      end: number;
+      start: number;
+    }
+  | NullSelection;
+
+const NullSelection: NullSelection = { end: null, start: null };
+const FullSelection: Selection = { end: 0, start: 8 };
+const CursorAtEnd: Selection = { end: 8, start: 8 };
 
 const incrementTime = (value: string, unit: TimeUnit) => {
   if (value === "hh" || value == "mm" || value === "ss") {
@@ -37,7 +54,11 @@ const decrementTime = (value: string, unit: TimeUnit) => {
   return value;
 };
 
-export class MaskedInput {
+export type MaskedInputEvents = {
+  change: (value: TimeString) => void;
+};
+
+export class MaskedInput extends EventEmitter<MaskedInputEvents> {
   #input: HTMLInputElement | null;
   #pattern = "hh:mm:ss";
   #selectionStart = -1;
@@ -52,6 +73,7 @@ export class MaskedInput {
     inputEl: HTMLInputElement | null = null,
     showTemplateWhileEditing = true,
   ) {
+    super();
     this.#input = inputEl;
     this.#showTemplateWhileEditing = showTemplateWhileEditing;
     this.#value = value;
@@ -92,8 +114,10 @@ export class MaskedInput {
 
   set hours(value: string) {
     if (this.#input) {
-      this.#value = `${value}:${this.minutes}:${this.seconds}`;
+      const newValue = `${value}:${this.minutes}:${this.seconds}`;
+      this.#value = newValue;
       this.#input.value = this.#value;
+      this.emit("change", newValue as TimeString);
     }
   }
 
@@ -103,8 +127,10 @@ export class MaskedInput {
 
   set minutes(value: string) {
     if (this.#input) {
-      this.#value = `${this.hours}:${value}:${this.seconds}`;
+      const newValue = `${this.hours}:${value}:${this.seconds}`;
+      this.#value = newValue;
       this.#input.value = this.#value;
+      this.emit("change", newValue as TimeString);
     }
   }
 
@@ -114,8 +140,10 @@ export class MaskedInput {
 
   set seconds(value: string) {
     if (this.#input) {
-      this.#value = `${this.hours}:${this.minutes}:${value}`;
+      const newValue = `${this.hours}:${this.minutes}:${value}`;
+      this.#value = newValue;
       this.#input.value = this.#value;
+      this.emit("change", newValue as TimeString);
     }
   }
 
@@ -125,17 +153,6 @@ export class MaskedInput {
 
   set value(value: string) {
     this.#value = value;
-  }
-
-  get selection() {
-    const { selectionStart, selectionEnd } = this;
-    if (selectionStart === -1 || selectionEnd === -1) {
-      return "";
-    } else if (selectionStart === selectionEnd) {
-      return "";
-    } else {
-      return this.value;
-    }
   }
 
   clear(unit: TimeUnit) {
@@ -156,11 +173,13 @@ export class MaskedInput {
         this.value = value.slice(0, 6).concat(pattern.slice(6));
       }
       this.#input.value = this.value;
+      this.emit("change", this.value as TimeString);
     }
   }
 
   select(unit: TimeUnit, halfUnit = false) {
     if (this.#input) {
+      console.log(`select ${unit}`);
       const offset = halfUnit ? 1 : 0;
       if (unit === "hours") {
         this.selectionStart = this.#input.selectionStart = 0 + offset;
@@ -190,6 +209,7 @@ export class MaskedInput {
   }
 
   moveFocus(direction: "left" | "right") {
+    console.log(`move focus ${direction} selected ${this.#unitSelected}`);
     if (direction === "right") {
       if (
         this.#unitSelected === "hours" ||
@@ -213,8 +233,21 @@ export class MaskedInput {
         this.#halfUnitSelected === "minutes"
       ) {
         this.select("hours");
+      } else {
+        const selection = this.getSelection();
+        console.log({ selection });
+        if (selection === CursorAtEnd) {
+          console.log("cursor at end");
+          this.select("seconds");
+        }
       }
     }
+  }
+
+  pasteValue(value: TimeString) {
+    this.#halfUnitSelected = undefined;
+    this.#unitSelected = undefined;
+    this.#value = value;
   }
 
   incrementValue() {
@@ -318,6 +351,7 @@ export class MaskedInput {
           this.selectionStart -= offset;
           this.selectionEnd -= offset;
           this.#input.value = this.value;
+          this.emit("change", this.value as TimeString);
 
           requestAnimationFrame(() => {
             this.#input?.setSelectionRange(
@@ -374,10 +408,37 @@ export class MaskedInput {
     }
   }
 
+  private getSelection(): Selection {
+    if (this.#input) {
+      const { selectionEnd, selectionStart } = this.#input;
+      if (selectionEnd === null || selectionStart === null) {
+        return NullSelection;
+      } else if (selectionStart === 0 && selectionEnd === 8) {
+        return FullSelection;
+      } else if (selectionStart === 8 && selectionEnd === 8) {
+        return CursorAtEnd;
+      } else {
+        return {
+          end: selectionEnd,
+          start: selectionStart,
+        };
+      }
+    } else {
+      throw Error(`[MasketInput] selection referenced, but no input`);
+    }
+  }
+
   click() {
     if (this.#input) {
-      const cursorPos = this.#input.selectionStart ?? 0;
-      this.select(this.getUnitAtCursorPos(cursorPos));
+      const selection = this.getSelection();
+      if (selection === NullSelection) {
+        this.select("hours");
+      } else if (selection === FullSelection) {
+        // do nothing
+      } else {
+        const cursorPos = this.#input.selectionStart ?? 0;
+        this.select(this.getUnitAtCursorPos(cursorPos));
+      }
     }
   }
   doubleClick() {
@@ -401,12 +462,14 @@ export class MaskedInput {
   }
 
   focus = () => {
+    console.log("maskefinput focus");
     if (this.#input) {
       if (this.value === "") {
         if (this.#showTemplateWhileEditing) {
           this.value = this.#input.value = this.#pattern;
         } else {
           this.value = this.#input.value = "00:00:00";
+          this.emit("change", this.value as TimeString);
         }
       }
       requestAnimationFrame(() => {
@@ -423,6 +486,7 @@ export class MaskedInput {
   blur = () => {
     if (this.#input && this.#input.value === this.#pattern) {
       this.value = this.#input.value = "";
+      this.emit("change", this.value as TimeString);
     } else {
       this.removeSelection();
     }
