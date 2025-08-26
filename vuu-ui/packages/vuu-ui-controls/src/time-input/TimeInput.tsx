@@ -1,50 +1,63 @@
+import { useForkRef } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { HTMLAttributes } from "react";
+import { forwardRef, HTMLAttributes } from "react";
 import { TimeInputHookProps, useTimeInput } from "./useTimeInput";
 
 import timeInputCss from "./TimeInput.css";
-import { TimeString } from "@vuu-ui/vuu-utils";
 
-const zeroTime: TimeString = "00:00:00";
+const classBase = "vuuTimeInput";
 
 export interface TimeInputProps
   extends TimeInputHookProps,
-    Omit<HTMLAttributes<HTMLInputElement>, "defaultValue">,
+    Omit<
+      HTMLAttributes<HTMLInputElement>,
+      "defaultValue" | "onChange" | "value"
+    >,
     Partial<Pick<HTMLInputElement, "placeholder">> {}
 
-export const TimeInput = ({
-  className,
-  date,
-  defaultValue = zeroTime,
-  onCommit,
-  placeholder = "hh:mm:ss",
-  showTemplateWhileEditing,
-}: TimeInputProps) => {
-  const targetWindow = useWindow();
-  useComponentCssInjection({
-    testId: "vuu-time-input",
-    css: timeInputCss,
-    window: targetWindow,
-  });
+export const TimeInput = forwardRef<HTMLInputElement, TimeInputProps>(
+  function TimeInput(
+    {
+      className,
+      date,
+      defaultValue,
+      onChange,
+      onCommit,
+      placeholder = "hh:mm:ss",
+      showTemplateWhileEditing,
+      ...htmlAttributes
+    },
+    ref,
+  ) {
+    const targetWindow = useWindow();
+    useComponentCssInjection({
+      testId: "vuu-time-input",
+      css: timeInputCss,
+      window: targetWindow,
+    });
 
-  const { inputRef, eventHandlers } = useTimeInput({
-    date,
-    defaultValue,
-    onCommit,
-    showTemplateWhileEditing,
-  });
+    const { inputRef, eventHandlers } = useTimeInput({
+      date,
+      defaultValue,
+      onChange,
+      onCommit,
+      showTemplateWhileEditing,
+    });
 
-  return (
-    <input
-      {...eventHandlers}
-      aria-placeholder={placeholder}
-      className={cx("TimeInput", className)}
-      defaultValue={defaultValue}
-      placeholder={placeholder}
-      ref={inputRef}
-      spellCheck="false"
-    />
-  );
-};
+    return (
+      <input
+        {...htmlAttributes}
+        {...eventHandlers}
+        aria-placeholder={placeholder}
+        className={cx(classBase, className)}
+        defaultValue={defaultValue}
+        key={defaultValue}
+        placeholder={placeholder}
+        ref={useForkRef(ref, inputRef)}
+        spellCheck="false"
+      />
+    );
+  },
+);

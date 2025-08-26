@@ -94,12 +94,19 @@ export const ColumnFilter = ({
       ) : null}
       {getDataItemEditControl({
         dataDescriptor: column,
+        defaultValue: Array.isArray(value)
+          ? (value[0] as string)
+          : (value as string),
         onCommit,
         table,
       })}
       {operator === "between"
         ? getDataItemEditControl({
+            className: `${classBase}-rangeHigh`,
             dataDescriptor: column,
+            defaultValue: Array.isArray(value)
+              ? (value[1] as string)
+              : undefined,
             onCommit,
             table,
           })

@@ -1,9 +1,7 @@
-.TimeInput {
-    font-family: monospace;
+.vuuTimeInput {
     width: 80px;
 
-
-&:focus::-webkit-input-placeholder {
-    color: transparent;
-}
+    &:focus::-webkit-input-placeholder {
+        color: transparent;
+    }
 }

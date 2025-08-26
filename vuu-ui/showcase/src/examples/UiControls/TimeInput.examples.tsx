@@ -1,7 +1,7 @@
-import { Input } from "@salt-ds/core";
-import { TimeInput } from "@vuu-ui/vuu-ui-controls";
-import { CommitHandler } from "@vuu-ui/vuu-utils";
-import { useCallback } from "react";
+import { Button, Input } from "@salt-ds/core";
+import { TimeInput, TimeInputProps } from "@vuu-ui/vuu-ui-controls";
+import { CommitHandler, TimeString } from "@vuu-ui/vuu-utils";
+import { useCallback, useState } from "react";
 
 export const NativeHtmlTimeInput = () => {
   return (
@@ -37,13 +37,25 @@ export const NativeHtmlTimeInput = () => {
   );
 };
 
-export const VuuTimeInputShowTemplateWhileEditing = () => {
+const TimeInputTemplate = ({
+  defaultValue,
+  onChange,
+  showTemplateWhileEditing,
+}: Partial<TimeInputProps>) => {
+  const [initialValue, setInitialValue] = useState<TimeString | undefined>(
+    defaultValue,
+  );
+
   const handleCommit = useCallback<CommitHandler<HTMLInputElement, Date>>(
     (e, value) => {
       console.log(`commit value ${value}`);
     },
     [],
   );
+
+  const setTime = useCallback((time: TimeString) => {
+    setInitialValue(time);
+  }, []);
 
   return (
     <div
@@ -55,61 +67,57 @@ export const VuuTimeInputShowTemplateWhileEditing = () => {
         width: 120,
       }}
     >
-      <Input />
-      <TimeInput onCommit={handleCommit} />
-      <Input />
-    </div>
-  );
-};
+      <div style={{ display: "flex", gap: 12 }}>
+        <Button onClick={() => setTime("00:00:00")}>00:00:00</Button>
+        <Button onClick={() => setTime("09:00:00")}>09:00:00</Button>
+        <Button onClick={() => setTime("15:30:00")}>15:30:00</Button>
+      </div>
 
-export const VuuTimeInput = () => {
-  const handleCommit = useCallback<CommitHandler<HTMLInputElement, Date>>(
-    (e, value) => {
-      console.log(`commit value ${value}`);
-    },
-    [],
-  );
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 12,
-        padding: 20,
-        width: 120,
-      }}
-    >
-      <Input />
-      <TimeInput onCommit={handleCommit} showTemplateWhileEditing={false} />
-      <Input />
-    </div>
-  );
-};
-
-export const VuuTimeInputDefaultValue = () => {
-  const handleCommit = useCallback<CommitHandler<HTMLInputElement, Date>>(
-    (e, value) => {
-      console.log(`commit value ${value}`);
-    },
-    [],
-  );
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 12,
-        padding: 20,
-        width: 120,
-      }}
-    >
-      <Input />
+      <Input data-testid="pre-timeinput" />
       <TimeInput
-        defaultValue="00:59:59"
+        data-testid="timeinput"
+        defaultValue={initialValue}
+        onChange={onChange}
         onCommit={handleCommit}
-        showTemplateWhileEditing={false}
+        showTemplateWhileEditing={showTemplateWhileEditing}
       />
-      <Input />
+      <Input data-testid="post-timeinput" />
     </div>
   );
 };
+
+export const VuuTimeInputShowTemplateWhileEditing = () => <TimeInputTemplate />;
+
+export const TestTimeInput = ({
+  defaultValue,
+}: Pick<TimeInputProps, "defaultValue">) => (
+  <TimeInputTemplate
+    defaultValue={defaultValue}
+    showTemplateWhileEditing={false}
+  />
+);
+
+export const VuuTimeInput = () => (
+  <TimeInputTemplate defaultValue="00:00:00" showTemplateWhileEditing={false} />
+);
+
+export const VuuTimeInputDefaultValue = () => (
+  <TimeInputTemplate defaultValue="00:59:59" showTemplateWhileEditing={false} />
+);
+
+// TODO
+// export const VuuTimeInputControlled = () => {
+//   const [value, setValue] = useState<TimeString>("09:00:00");
+
+//   const handleChange = useCallback((value: TimeString) => {
+//     console.log(`value changes ${value}`);
+//   }, []);
+
+//   return (
+//     <TimeInputTemplate
+//       onChange={handleChange}
+//       value={value}
+//       showTemplateWhileEditing={false}
+//     />
+//   );
+// };

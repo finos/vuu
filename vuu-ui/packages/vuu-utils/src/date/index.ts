@@ -10,6 +10,8 @@ export {
   supportedDateTimePatterns,
 } from "./types";
 export {
+  asTimeString,
+  isValidTimeString,
   type DateStringISO,
   toCalendarDate,
   stringIsInvalidTime,

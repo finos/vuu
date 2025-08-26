@@ -3,11 +3,13 @@ import { useWindow } from "@salt-ds/window";
 import { CommitHandler } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { HTMLAttributes, useCallback } from "react";
-import { TimeInput } from "../time-input/TimeInput";
+import { TimeInput, TimeInputProps } from "../time-input/TimeInput";
 
 import timePickerCss from "./VuuTimePicker.css";
 
-export interface VuuTimePickerProps extends HTMLAttributes<HTMLDivElement> {
+export interface VuuTimePickerProps
+  extends Pick<TimeInputProps, "defaultValue">,
+    Omit<HTMLAttributes<HTMLDivElement>, "defaultValue"> {
   onCommit: CommitHandler<HTMLElement, number>;
 }
 
@@ -15,6 +17,7 @@ const classBase = "vuuTimePicker";
 
 export const VuuTimePicker = ({
   className,
+  defaultValue = "00:00:00",
   onCommit,
   ...htmlAttributes
 }: VuuTimePickerProps) => {
@@ -34,7 +37,11 @@ export const VuuTimePicker = ({
 
   return (
     <div {...htmlAttributes} className={cx(classBase, className)}>
-      <TimeInput onCommit={handleCommit} />
+      <TimeInput
+        defaultValue={defaultValue}
+        onCommit={handleCommit}
+        showTemplateWhileEditing={false}
+      />
     </div>
   );
 };
