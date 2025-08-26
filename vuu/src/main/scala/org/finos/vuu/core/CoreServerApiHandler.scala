@@ -15,18 +15,6 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
                            val tableContainer: TableContainer,
                            val providers: ProviderContainer)(implicit timeProvider: Clock) extends ServerApi with StrictLogging {
 
-
-  override def process(msg: ViewPortRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.callRpcService(msg.vpId, msg.rpcName, msg.params, msg.namedParams, ctx.session)(ctx)) match {
-      case Success(action) =>
-        logger.debug("Processed VP RPC call " + msg)
-        vsMsg(ViewPortRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
-      case Failure(e) =>
-        logger.warn("Failed to process VP RPC call", e)
-        vsMsg(ViewPortMenuRpcReject(msg.vpId, msg.rpcName, e.getMessage))(ctx)
-    }
-  }
-
   override def process(msg: ViewPortMenuCellRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.callRpcCell(msg.vpId, msg.rpcName, ctx.session, msg.rowKey, msg.field, msg.value)) match {
       case Success(action) =>

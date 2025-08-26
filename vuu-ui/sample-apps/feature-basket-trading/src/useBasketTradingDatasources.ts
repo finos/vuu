@@ -3,12 +3,11 @@ import {
   DataSource,
   DataSourceConfig,
   TableSchema,
-  ViewportRpcResponse,
 } from "@vuu-ui/vuu-data-types";
 import { useCallback, useMemo, useState } from "react";
 import { useNotifications } from "@vuu-ui/vuu-popups";
-import { VuuRpcViewportRequest } from "@vuu-ui/vuu-protocol-types";
 import { buildColumnMap, ColumnMap, useData } from "@vuu-ui/vuu-utils";
+import { VuuRpcServiceRequest } from "@vuu-ui/vuu-protocol-types";
 
 export type basketDataSourceKey =
   | "data-source-basket"
@@ -158,20 +157,19 @@ export const useBasketTradingDataSources = ({
   const handleSendToMarket = useCallback(
     (basketInstanceId: string) => {
       basketState?.dataSourceBasketTradingControl
-        .rpcCall?.<ViewportRpcResponse>({
-          namedParams: {},
-          params: [basketInstanceId],
+        .rpcRequest?.({
+          params: { basketInstanceId },
           rpcName: "sendToMarket",
-          type: "VIEW_PORT_RPC_CALL",
-        } as Omit<VuuRpcViewportRequest, "vpId">)
+          type: "RPC_REQUEST",
+        } as Omit<VuuRpcServiceRequest, "context">)
         .then((response) => {
-          if (response?.action.type === "VP_RPC_FAILURE") {
+          if (response?.type === "ERROR_RESULT") {
             notify({
               type: "error",
               header: "Failed to Send to market",
               body: "Please contact your support team",
             });
-            console.error(response.action.msg);
+            console.error(response.errorMessage);
           }
         });
     },
@@ -181,20 +179,19 @@ export const useBasketTradingDataSources = ({
   const handleTakeOffMarket = useCallback(
     (basketInstanceId: string) => {
       basketState?.dataSourceBasketTradingControl
-        .rpcCall?.<ViewportRpcResponse>({
-          namedParams: {},
-          params: [basketInstanceId],
+        .rpcRequest?.({
+          params: { basketInstanceId },
           rpcName: "takeOffMarket",
-          type: "VIEW_PORT_RPC_CALL",
-        } as Omit<VuuRpcViewportRequest, "vpId">)
+          type: "RPC_REQUEST",
+        } as Omit<VuuRpcServiceRequest, "context">)
         .then((response) => {
-          if (response?.action.type === "VP_RPC_FAILURE") {
+          if (response?.type === "ERROR_RESULT") {
             notify({
               type: "error",
               header: "Failed to take off market",
               body: "Please contact your support team",
             });
-            console.error(response.action.msg);
+            console.error(response.errorMessage);
           }
         });
     },

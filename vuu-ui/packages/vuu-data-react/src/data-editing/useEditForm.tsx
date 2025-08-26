@@ -9,7 +9,6 @@ import {
   dataSourceRowToEntity,
   messageHasDataRows,
   queryClosest,
-  viewportRpcRequest,
 } from "@vuu-ui/vuu-utils";
 import { Button } from "@salt-ds/core";
 import {
@@ -151,9 +150,11 @@ export const useEditForm = ({
   );
 
   const submitChanges = useCallback(async () => {
-    const rpcResponse = await currentDataSource.current?.rpcCall?.(
-      viewportRpcRequest("VP_BULK_EDIT_SUBMIT_RPC"),
-    );
+    const rpcResponse = await currentDataSource.current?.rpcRequest?.({
+      params: {},
+      rpcName: "VP_BULK_EDIT_SUBMIT_RPC",
+      type: "RPC_REQUEST",
+    });
     console.log({ rpcResponse });
   }, []);
 

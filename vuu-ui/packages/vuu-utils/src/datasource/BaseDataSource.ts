@@ -14,6 +14,8 @@ import {
   LinkDescriptorWithLabel,
   VuuAggregation,
   VuuRange,
+  VuuRpcEditRequest,
+  VuuRpcEditResponse,
   VuuSort,
 } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter } from "../event-emitter";
@@ -361,4 +363,13 @@ export abstract class BaseDataSource
   }
 
   abstract rangeRequest(range: VuuRange): void;
+
+  async editRpcCall(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    rpcRequest: Omit<VuuRpcEditRequest, "vpId">,
+  ): Promise<VuuRpcEditResponse> {
+    throw Error(
+      `[BaseDataSource] editRpcCall not supported in BaseDataSource, it must be implemented in child class`,
+    );
+  }
 }

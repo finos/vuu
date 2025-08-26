@@ -17,9 +17,12 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
   private val tableName2 = "FreezingVPTest2"
   private val tableName3 = "FreezingVPTest3"
   private val tableName4 = "FreezingVPTest4"
-  private val leftTableName = "FreezingVPTestLeft"
-  private val rightTableName = "FreezingVPTestRight"
-  private val joinTableName = "FreezingVPTestJoin"
+  private val leftTableName1 = "FreezingVPTestLeft1"
+  private val leftTableName2 = "FreezingVPTestLeft2"
+  private val rightTableName1 = "FreezingVPTestRight1"
+  private val rightTableName2 = "FreezingVPTestRight2"
+  private val joinTableName1 = "FreezingVPTestJoin1"
+  private val joinTableName2 = "FreezingVPTestJoin2"
   private val moduleName = "FreezingVPTEST"
   private val fakeViewPortId = "fakeId"
   private val testProviderFactory = new TestProviderFactory
@@ -61,7 +64,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
       When("A new row is added to table")
       addNewRow(tableName2)
-      Then("Should not update on a new row when the table is frozen")
+      Then("Should not update on a new row when the view port is frozen")
       // TODO wait for 100+ miliseconds and verify no TableRowUpdates received
 
       When("request unfreezing view port")
@@ -142,9 +145,9 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       responseBody.errorMessage shouldEqual s"java.lang.Exception: Could not unfreeze viewport $viewPortId because it's not frozen"
     }
 
-    /*Scenario("Freeze a view port for a join table") {
+    Scenario("Freeze a view port for a join table") {
       Given("a view port exist")
-      val viewPortId: String = createViewPort
+      val viewPortId: String = createViewPortForJoinTable(joinTableName1)
 
       When("request freezing view port")
       val freezeVPRequest = FreezeViewPortRequest(viewPortId)
@@ -156,23 +159,16 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       responseBody.viewPortId shouldEqual viewPortId
 
       When("An existing row is updated and a new row is added to table")
-      updateJoinTable()
-      /*
-      add a new row to left table
-      add a new row to right table
-      a row exist in left table
-      add a new row to right table
-     validate still shows only 3 rows
-       */
+      updateJoinTable(leftTableName1)
 
       Then("Return only updates of rows created before frozen time")
       val tableRowUpdatesResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
-      tableRowUpdatesResponse.get.rows(0).vpSize shouldEqual 3
+      tableRowUpdatesResponse.get.rows(0).vpSize shouldEqual 4
     }
 
     Scenario("Unfreeze a view port for a join table") {
       Given("a view port exist")
-      val viewPortId: String = createViewPortForJoinTable
+      val viewPortId: String = createViewPortForJoinTable(joinTableName2)
 
       When("request freezing view port")
       val freezeVPRequest = FreezeViewPortRequest(viewPortId)
@@ -183,6 +179,11 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       val freezeResponseBody = assertBodyIsInstanceOf[FreezeViewPortSuccess](freezeVPResponse)
       freezeResponseBody.viewPortId shouldEqual viewPortId
 
+      When("A new row is added to join table")
+      addNewRowToLeftTable(leftTableName2)
+      Then("Should not update on a new row when the view port is frozen")
+      // TODO wait for 100+ miliseconds and verify no TableRowUpdates received
+
       When("request unfreezing view port")
       val unfreezeVPRequest = UnfreezeViewPortRequest(viewPortId)
       val unfreezeRrequestId = vuuClient.send(sessionId, tokenId, unfreezeVPRequest)
@@ -192,18 +193,15 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       val unfreezeResponseBody = assertBodyIsInstanceOf[UnfreezeViewPortSuccess](unfreezeResponse)
       unfreezeResponseBody.viewPortId shouldEqual viewPortId
 
-      When("A new row is added to left table")
-      addNewRow()
-
       Then("Return updates of all rows")
       val tableRowUpdatesResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
-      tableRowUpdatesResponse.get.rows(0).vpSize shouldEqual 4
-    }*/
+      tableRowUpdatesResponse.get.rows(0).vpSize shouldEqual 5
+    }
   }
 
-  protected def defineModuleWithTestTables(): ViewServerModule = {
-    val tableDef1 = TableDef(
-      name = tableName1,
+  private def createTableDef(tableName: String): TableDef = {
+    TableDef(
+      name = tableName,
       keyField = "Id",
       columns =
         new ColumnBuilder()
@@ -212,50 +210,11 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
           .addInt("Account")
           .build()
     )
+  }
 
-    val tableDef2 = TableDef(
-      name = tableName2,
-      keyField = "Id",
-      columns =
-        new ColumnBuilder()
-          .addString("Id")
-          .addString("Name")
-          .addInt("Account")
-          .build()
-    )
-
-    val tableDef3 = TableDef(
-      name = tableName3,
-      keyField = "Id",
-      columns =
-        new ColumnBuilder()
-          .addString("Id")
-          .addString("Name")
-          .addInt("Account")
-          .build()
-    )
-
-    val tableDef4 = TableDef(
-      name = tableName4,
-      keyField = "Id",
-      columns =
-        new ColumnBuilder()
-          .addString("Id")
-          .addString("Name")
-          .addInt("Account")
-          .build()
-    )
-
-    val lastHour: Long = timeProvider.now() - 3600000
-    val dataSource = new FakeDataSource(ListMap(
-      "row1" -> Map("Id" -> "row1", "Name" -> "Becky Thatcher", "Account" -> 123, CreatedTimeColumnName -> lastHour),
-      "row2" -> Map("Id" -> "row2", "Name" -> "Tom Sawyer", "Account" -> 456, CreatedTimeColumnName -> lastHour),
-      "row3" -> Map("Id" -> "row3", "Name" -> "Huckleberry Finn", "Account" -> 789, CreatedTimeColumnName -> lastHour),
-    ))
-    val providerFactory = (table: DataTable, _: IVuuServer) => testProviderFactory.create(table, dataSource)
-
-    val leftTableDef = TableDef(
-      name = leftTableName,
+  private def createLeftTableDef(tableName: String): TableDef = {
+    TableDef(
+      name = tableName,
       keyField = "Id",
       columns =
         new ColumnBuilder()
@@ -265,16 +224,11 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       VisualLinks(),
       joinFields = "Id"
     )
-    val leftDataSource = new FakeDataSource(ListMap(
-      "row1" -> Map("Id" -> "row1", "Name" -> "Becky Thatcher", CreatedTimeColumnName -> lastHour),
-      "row2" -> Map("Id" -> "row2", "Name" -> "Tom Sawyer", CreatedTimeColumnName -> lastHour),
-      "row3" -> Map("Id" -> "row3", "Name" -> "Huckleberry Finn", CreatedTimeColumnName -> lastHour),
-      "row4" -> Map("Id" -> "row4", "Name" -> "Channing Tatum", CreatedTimeColumnName -> lastHour),
-    ))
-    val leftProviderFactory = (table: DataTable, _: IVuuServer) => testProviderFactory.create(table, leftDataSource)
+  }
 
-    val rightTableDef = TableDef(
-      name = rightTableName,
+  private def createRightTableDef(tableName: String): TableDef = {
+    TableDef(
+      name = tableName,
       keyField = "Id",
       columns =
         new ColumnBuilder()
@@ -284,21 +238,57 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       VisualLinks(),
       joinFields = "Id"
     )
+  }
 
+  protected def defineModuleWithTestTables(): ViewServerModule = {
+    val lastHour: Long = timeProvider.now() - 3600000
+    val dataSource = new FakeDataSource(ListMap(
+      "row1" -> Map("Id" -> "row1", "Name" -> "Becky Thatcher", "Account" -> 123, CreatedTimeColumnName -> lastHour),
+      "row2" -> Map("Id" -> "row2", "Name" -> "Tom Sawyer", "Account" -> 456, CreatedTimeColumnName -> lastHour),
+      "row3" -> Map("Id" -> "row3", "Name" -> "Huckleberry Finn", "Account" -> 789, CreatedTimeColumnName -> lastHour),
+    ))
+    val providerFactory = (table: DataTable, _: IVuuServer) => testProviderFactory.create(table, dataSource)
+
+    val leftTableDef1 = createLeftTableDef(leftTableName1)
+    val leftTableDef2 = createLeftTableDef(leftTableName2)
+    val leftDataSource = new FakeDataSource(ListMap(
+      "row1" -> Map("Id" -> "row1", "Name" -> "Becky Thatcher"),
+      "row2" -> Map("Id" -> "row2", "Name" -> "Tom Sawyer"),
+      "row3" -> Map("Id" -> "row3", "Name" -> "Huckleberry Finn"),
+      "row4" -> Map("Id" -> "row4", "Name" -> "Channing Tatum"),
+    ))
+    val leftProviderFactory = (table: DataTable, _: IVuuServer) => testProviderFactory.create(table, leftDataSource)
+
+    val rightTableDef1 = createRightTableDef(rightTableName1)
+    val rightTableDef2 = createRightTableDef(rightTableName2)
     val rightDataSource = new FakeDataSource(ListMap(
       "row1" -> Map("Id" -> "row1", "Description" -> "This is row1"),
       "row2" -> Map("Id" -> "row2", "Description" -> "This is row2"),
       "row3" -> Map("Id" -> "row3", "Description" -> "This is row3"),
+      "row5" -> Map("Id" -> "row5", "Description" -> "This is row5"),
     ))
     val rightProviderFactory = (table: DataTable, _: IVuuServer) => testProviderFactory.create(table, rightDataSource)
 
-    val joinTableFunc: TableDefContainer => JoinTableDef = _ => JoinTableDef(
-      name = joinTableName,
-      baseTable = leftTableDef,
-      joinColumns = Columns.allFrom(leftTableDef),
+    val joinTableFunc1: TableDefContainer => JoinTableDef = _ => JoinTableDef(
+      name = joinTableName1,
+      baseTable = leftTableDef1,
+      joinColumns = Columns.allFrom(leftTableDef1) ++ Columns.allFrom(rightTableDef1),
       joins =
         JoinTo(
-          table = rightTableDef,
+          table = rightTableDef1,
+          joinSpec = JoinSpec(left = "Id", right = "Id", LeftOuterJoin)
+        ),
+      links = VisualLinks(),
+      joinFields = Seq()
+    )
+
+    val joinTableFunc2: TableDefContainer => JoinTableDef = _ => JoinTableDef(
+      name = joinTableName2,
+      baseTable = leftTableDef2,
+      joinColumns = Columns.allFrom(leftTableDef2) ++ Columns.allFrom(rightTableDef2),
+      joins =
+        JoinTo(
+          table = rightTableDef2,
           joinSpec = JoinSpec(left = "Id", right = "Id", LeftOuterJoin)
         ),
       links = VisualLinks(),
@@ -306,24 +296,35 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
     )
 
     ModuleFactory.withNamespace(moduleName)
-      .addTableForTest(tableDef1, providerFactory)
-      .addTableForTest(tableDef2, providerFactory)
-      .addTableForTest(tableDef3, providerFactory)
-      .addTableForTest(tableDef4, providerFactory)
-      .addTableForTest(leftTableDef, leftProviderFactory)
-      .addTableForTest(rightTableDef, rightProviderFactory)
-      .addJoinTableForTest(joinTableFunc)
+      .addTableForTest(createTableDef(tableName1), providerFactory)
+      .addTableForTest(createTableDef(tableName2), providerFactory)
+      .addTableForTest(createTableDef(tableName3), providerFactory)
+      .addTableForTest(createTableDef(tableName4), providerFactory)
+      .addTableForTest(leftTableDef1, leftProviderFactory)
+      .addTableForTest(leftTableDef2, leftProviderFactory)
+      .addTableForTest(rightTableDef1, rightProviderFactory)
+      .addTableForTest(rightTableDef2, rightProviderFactory)
+      .addJoinTableForTest(joinTableFunc1)
+      .addJoinTableForTest(joinTableFunc2)
       .asModule()
   }
 
+  private def createViewPortForJoinTable(tableName: String) = {
+    createViewPortBase(tableName, Array("Id", "Name", "Description"), 4)
+  }
+
   private def createViewPort(tableName: String) = {
-    val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(1, 100), columns = Array("Id", "Name", "Account"))
+    createViewPortBase(tableName, Array("Id", "Name", "Account"), 3)
+  }
+
+  private def createViewPortBase(tableName: String, columns: Array[String], expectedNumberOfRows: Int) = {
+    val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(0, 100), columns = columns)
     vuuClient.send(sessionId, tokenId, createViewPortRequest)
     val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
     val viewPortId = viewPortCreateResponse.get.viewPortId
     // Verify viewport keys are populated. viewPortRunner cycle is 100ms
     val tableSizeResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
-    tableSizeResponse.get.rows(0).vpSize shouldEqual 3
+    tableSizeResponse.get.rows(0).vpSize shouldEqual expectedNumberOfRows
     viewPortId
   }
 
@@ -345,18 +346,19 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
     testProviderFactory.getProvider(tableName).update(newDataSource)
   }
 
-/*  private def updateJoinTable(): Unit = {
-    val nextHour: Long = timeProvider.now() + 3600000
+  private def updateJoinTable(leftTableName: String): Unit = {
     val newDataSource = new FakeDataSource(ListMap(
-      "row5" -> Map("Id" -> "row5", "Name" -> "Charlie Hunnam", "Account" -> 145, CreatedTimeColumnName -> nextHour), // add a new row
+      "row1" -> Map("Id" -> "row1", "Name" -> "New Name"), // update an existing row
+      "row6" -> Map("Id" -> "row6", "Name" -> "Charlie Hunnam"), // add a new row
     ))
     testProviderFactory.getProvider(leftTableName).update(newDataSource)
+  }
 
-    val newDataSource2 = new FakeDataSource(ListMap(
-      "row4" -> Map("Id" -> "row4", "Description" -> "This is row4", CreatedTimeColumnName -> nextHour), // add a new row
-      "row5" -> Map("Id" -> "row5", "Description" -> "This is row5", CreatedTimeColumnName -> nextHour), // add a new row
+  private def addNewRowToLeftTable(leftTableName: String): Unit = {
+    val newDataSource = new FakeDataSource(ListMap(
+      "row6" -> Map("Id" -> "row6", "Name" -> "Charlie Hunnam"), // add a new row
     ))
-    testProviderFactory.getProvider(rightTableName).update(newDataSource2)
-  }*/
+    testProviderFactory.getProvider(leftTableName).update(newDataSource)
+  }
 
 }

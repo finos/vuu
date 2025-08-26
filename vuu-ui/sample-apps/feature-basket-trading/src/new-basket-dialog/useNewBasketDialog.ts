@@ -1,9 +1,8 @@
-import { TableSchema, ViewportRpcResponse } from "@vuu-ui/vuu-data-types";
+import { TableSchema } from "@vuu-ui/vuu-data-types";
 import type { TableRowSelectHandler } from "@vuu-ui/vuu-table-types";
 import { OpenChangeHandler } from "@vuu-ui/vuu-ui-controls";
 import { CommitHandler, buildColumnMap, useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { VuuRpcViewportRequest } from "@vuu-ui/vuu-protocol-types";
 
 export type BasketCreatedHandler = (
   basketName: string,
@@ -43,18 +42,17 @@ export const useNewBasketDialog = ({
   const saveBasket = useCallback(() => {
     if (basketName && basketId) {
       basketDataSource
-        .rpcCall?.<ViewportRpcResponse>({
-          namedParams: {},
-          params: [basketId, basketName],
+        .rpcRequest?.({
+          params: { sourceBasketId: basketId, basketTradeName: basketName },
           rpcName: "createBasket",
-          type: "VIEW_PORT_RPC_CALL",
-        } as Omit<VuuRpcViewportRequest, "vpId">)
+          type: "RPC_REQUEST",
+        })
         .then((response) => {
-          if (response?.action.type === "VP_CREATE_SUCCESS") {
-            if (response?.action.key) {
-              onBasketCreated(basketName, basketId, response.action.key);
+          if (response?.type === "SUCCESS_RESULT") {
+            if (typeof response?.data === "string") {
+              onBasketCreated(basketName, basketId, response.data);
             }
-          } else if (response?.action.type === "VP_RPC_FAILURE") {
+          } else {
             // notify?.({
             //   type: NotificationLevel.Error,
             //   header: "Add Constituent to Basket",

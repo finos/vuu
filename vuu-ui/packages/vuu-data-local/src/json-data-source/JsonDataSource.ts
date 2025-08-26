@@ -7,6 +7,7 @@ import type {
   VuuRowDataItemType,
   VuuRpcResponse,
   VuuRpcRequest,
+  VuuRpcEditResponse,
 } from "@vuu-ui/vuu-protocol-types";
 import type {
   DataSourceFilter,
@@ -424,6 +425,10 @@ export class JsonDataSource
       rpcRequest,
     });
     return undefined;
+  }
+
+  async editRpcCall(): Promise<VuuRpcEditResponse> {
+    throw Error("JSONDataSource does not implement editRpcCall");
   }
 
   applyEdit(

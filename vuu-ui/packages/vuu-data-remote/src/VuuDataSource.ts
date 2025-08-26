@@ -15,17 +15,18 @@ import {
 } from "@vuu-ui/vuu-data-types";
 import {
   LinkDescriptorWithLabel,
+  RpcResultError,
+  RpcResultSuccess,
   VuuCreateVisualLink,
-  VuuDataRowDto,
   VuuGroupBy,
   VuuMenu,
   VuuRange,
-  VuuRowDataItemType,
+  VuuRpcEditError,
+  VuuRpcEditRequest,
+  VuuRpcEditResponse,
   VuuRpcMenuRequest,
-  VuuRpcRequest,
   VuuRpcResponse,
   VuuRpcServiceRequest,
-  VuuRpcViewportRequest,
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
 
@@ -33,7 +34,6 @@ import {
   BaseDataSource,
   combineFilters,
   debounce,
-  isRpcServiceRequest,
   isViewportMenusAction,
   isVisualLinksAction,
   itemsOrOrderChanged,
@@ -42,9 +42,6 @@ import {
   selectionCount,
   throttle,
   uuid,
-  vuuAddRowRequest,
-  vuuDeleteRowRequest,
-  vuuEditCellRequest,
 } from "@vuu-ui/vuu-utils";
 import ConnectionManager from "./ConnectionManager";
 import { isDataSourceConfigMessage } from "./data-source";
@@ -538,29 +535,18 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     return Promise.reject<T>();
   }
 
-  /**  @deprecated */
-  async rpcCall<T extends VuuRpcResponse = VuuRpcResponse>(
-    rpcRequest: Omit<VuuRpcRequest, "vpId">,
-  ) {
+  async rpcRequest(rpcRequest: Omit<VuuRpcServiceRequest, "context">) {
     if (this.viewport && this.server) {
-      if (isRpcServiceRequest(rpcRequest)) {
-        return this.server?.rpcCall<T>({
-          ...rpcRequest,
-          context: { type: "VIEWPORT_CONTEXT", viewPortId: this.viewport },
-        } as VuuRpcServiceRequest);
-      } else {
-        return this.server?.rpcCall<T>({
-          ...rpcRequest,
-          vpId: this.viewport,
-        } as VuuRpcViewportRequest);
-      }
+      return this.server?.rpcCall<RpcResultSuccess | RpcResultError>({
+        ...rpcRequest,
+        context: { type: "VIEWPORT_CONTEXT", viewPortId: this.viewport },
+      } as VuuRpcServiceRequest);
     } else {
       throw Error(`rpcCall server or viewport are undefined`);
     }
   }
 
-  /**  @deprecated */
-  async menuRpcCall(rpcRequest: Omit<VuuRpcRequest, "vpId">) {
+  async menuRpcCall(rpcRequest: Omit<VuuRpcMenuRequest, "vpId">) {
     if (this.viewport) {
       return this.server?.rpcCall<MenuRpcResponse>({
         ...rpcRequest,
@@ -569,34 +555,51 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     }
   }
 
-  applyEdit(rowKey: string, columnName: string, value: VuuRowDataItemType) {
-    return this.menuRpcCall(vuuEditCellRequest(rowKey, columnName, value)).then(
-      (response) => {
-        if (response?.error) {
-          return response.error;
-        } else {
-          return true;
-        }
-      },
-    );
+  async editRpcCall(rpcRequest: Omit<VuuRpcEditRequest, "vpId">) {
+    if (this.viewport && this.server) {
+      return this.server.rpcCall<VuuRpcEditResponse>({
+        ...rpcRequest,
+        vpId: this.viewport,
+      });
+    } else {
+      return {
+        error: "Either viewport or server is undefined",
+        type: "VP_EDIT_RPC_REJECT",
+      } as VuuRpcEditError;
+    }
   }
 
-  insertRow(rowKey: string, data: VuuDataRowDto) {
-    return this.menuRpcCall(vuuAddRowRequest(rowKey, data)).then((response) => {
-      if (response?.error) {
-        return response.error;
-      } else {
-        return true;
-      }
-    });
+  applyEdit() {
+    return Promise.resolve("not supported");
+    // return this.menuRpcCall(vuuEditCellRequest(rowKey, columnName, value)).then(
+    //   (response) => {
+    //     if (response?.error) {
+    //       return response.error;
+    //     } else {
+    //       return true;
+    //     }
+    //   },
+    // );
   }
-  deleteRow(rowKey: string) {
-    return this.menuRpcCall(vuuDeleteRowRequest(rowKey)).then((response) => {
-      if (response?.error) {
-        return response.error;
-      } else {
-        return true;
-      }
-    });
+
+  insertRow() {
+    return Promise.resolve("not supported");
+    // return this.menuRpcCall(vuuAddRowRequest(rowKey, data)).then((response) => {
+    //   if (response?.error) {
+    //     return response.error;
+    //   } else {
+    //     return true;
+    //   }
+    // });
+  }
+  deleteRow() {
+    return Promise.resolve("not supported");
+    // return this.menuRpcCall(vuuDeleteRowRequest(rowKey)).then((response) => {
+    //   if (response?.error) {
+    //     return response.error;
+    //   } else {
+    //     return true;
+    //   }
+    // });
   }
 }

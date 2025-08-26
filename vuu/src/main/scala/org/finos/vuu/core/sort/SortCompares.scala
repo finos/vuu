@@ -46,11 +46,19 @@ object SortCompares {
   }
 
   def compareString(o1: RowData, o2: RowData, column: Column, direction: Char): Int = {
-    val c1 = o1.get(column).asInstanceOf[String]
-    val c2 = o2.get(column).asInstanceOf[String]
+    val c1 = getString(o1.get(column))
+    val c2 = getString(o2.get(column))
 
     val resultIfAscending = c1.compareToIgnoreCase(c2)
     switchSignIfDescending(resultIfAscending, direction = direction)
+  }
+
+  private def getString(value: Any): String = {
+    if (value == null) {
+      ""
+    } else {
+      value.asInstanceOf[String]
+    }
   }
 
   def compareDouble(o1: RowData, o2: RowData, column: Column, direction: Char): Int = {

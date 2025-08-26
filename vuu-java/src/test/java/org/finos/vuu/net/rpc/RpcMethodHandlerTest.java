@@ -7,10 +7,6 @@ import org.finos.toolbox.lifecycle.LifecycleContainer;
 import org.finos.toolbox.time.Clock;
 import org.finos.toolbox.time.DefaultClock;
 import org.finos.vuu.core.table.TableContainer;
-import org.finos.vuu.net.LoginRequest;
-import org.finos.vuu.net.RpcCall;
-import org.finos.vuu.net.RpcResponse;
-import org.finos.vuu.net.ViewServerMessage;
 import org.finos.vuu.provider.VuuJoinTableProvider;
 import org.finos.vuu.util.ScalaCollectionConverter;
 import org.junit.Test;
@@ -18,8 +14,6 @@ import scala.Option;
 import test.helper.ViewPortTestUtils;
 
 import java.util.Collections;
-
-import static test.helper.ViewPortTestUtils.createRandomViewServerMessage;
 
 public class RpcMethodHandlerTest {
 
@@ -34,12 +28,12 @@ public class RpcMethodHandlerTest {
         final DefaultRpcHandler defaultRpcHandler = new DefaultRpcHandler(tableContainer);
         defaultRpcHandler.registerRpc("helloWorld", rpcService::rpcFunction);
 
-        RpcCall call = new RpcCall("service", "helloWorld", new Object[]{}, ScalaCollectionConverter.toScala(Collections.emptyMap()));
-        Option<ViewServerMessage> response = defaultRpcHandler.processRpcCall(createRandomViewServerMessage(new LoginRequest("token", "user")), call, ViewPortTestUtils.requestContext());
+        RpcFunctionResult response = defaultRpcHandler.processRpcRequest("helloWorld", new RpcParams(ScalaCollectionConverter.toScala(Collections.emptyMap()), Option.empty(), Option.empty(), ViewPortTestUtils.requestContext()));
 
-        Assertions.assertThat(response.get().body())
-                .isExactlyInstanceOf(RpcResponse.class)
-                .isEqualTo(new RpcResponse("helloWorld", "It Works", null));
+        Assertions.assertThat(response)
+                .isExactlyInstanceOf(RpcFunctionSuccess.class);
+        Assertions.assertThat(((RpcFunctionSuccess) response).optionalResult().get())
+                .isEqualTo("It Works");
     }
 
     static class TestRpcService {

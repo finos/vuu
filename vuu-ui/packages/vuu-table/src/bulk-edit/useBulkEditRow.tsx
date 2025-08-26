@@ -159,7 +159,6 @@ export const useBulkEditRow = ({
         if (columnName) {
           const column = descriptors.find((c) => c.name === columnName);
           if (column && errorMessages[columnName] === undefined) {
-            console.log("apply BulkChange on", columnName);
             const { serverDataType = "string" } = column;
             const typedValue = getTypedValue(value, serverDataType, true);
             onBulkChange(column, typedValue);

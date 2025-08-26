@@ -139,7 +139,6 @@ class DefaultMessageHandler(val channel: Channel,
       case req: GetTableMetaRequest => serverApi.process(req)(ctx)
       case req: HeartBeatResponse => serverApi.process(req)(ctx)
       case req: RpcUpdate => serverApi.process(req)(ctx)
-      case req: RpcCall => handleModuleRpcMsg(msg, req)(ctx)
       case req: GetViewPortVisualLinksRequest => serverApi.process(req)(ctx)
       case req: CreateVisualLinkRequest => serverApi.process(req)(ctx)
       case req: RemoveViewPortRequest => serverApi.process(req)(ctx)
@@ -159,29 +158,9 @@ class DefaultMessageHandler(val channel: Channel,
       case req: ViewPortDeleteRowRpcCall => serverApi.process(req)(ctx)
       case req: ViewPortDeleteCellRpcCall => serverApi.process(req)(ctx)
       case req: ViewPortEditSubmitFormRpcCall => serverApi.process(req)(ctx)
-      case req: ViewPortRpcCall => serverApi.process(req)(ctx)
       case req: RpcRequest => serverApi.process(req)(ctx)
     }
   }
-
-  def handleModuleRpcMsg(msg: ViewServerMessage, rpc: RpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
-    moduleContainer.get(msg.module) match {
-      case Some(module) =>
-        module.rpcHandlerByService(rpc.service) match {
-          case Some(service) =>
-            service.processRpcCall(msg, rpc)(ctx)
-          case None =>
-            logger.error(s"Could not find impl for service ${rpc.service}")
-            Some(VsMsg(msg.requestId, msg.sessionId, msg.token, msg.user,
-              RpcResponse(rpc.method, null, Error(s"Handler not found for rpc call $rpc for service ${rpc.service} in module ${msg.module}", -1)))
-            )
-        }
-      case None =>
-        Some(VsMsg(msg.requestId, msg.sessionId, msg.token, msg.user,
-          RpcResponse(rpc.method, null, Error(s"Handler not found for rpc call $rpc in module ${msg.module}", -1))))
-    }
-  }
-
 }
 
 case class ClientSessionId(sessionId: String, user: String) extends Ordered[ClientSessionId] {

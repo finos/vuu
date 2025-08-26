@@ -3,6 +3,7 @@ import {
   VuuGroupBy,
   VuuMenu,
   VuuRange,
+  VuuRpcEditError,
   VuuRpcRequest,
   VuuRpcResponse,
   VuuTable,
@@ -103,6 +104,13 @@ class MockDataSourceImpl extends BaseDataSource implements DataSource {
   closeTreeNode(keyOrIndex: string | number, cascade?: boolean) {
     console.log(`[MockDataSource] closeTree ${keyOrIndex} ${cascade}`);
   }
+  async editRpcCall(rpcRequest: Omit<VuuRpcRequest, "vpId">) {
+    console.log(`editRpcCall ${JSON.stringify(rpcRequest)}`);
+    return {
+      error: "Either viewport or server is undefined",
+      type: "VP_EDIT_RPC_REJECT",
+    } as VuuRpcEditError;
+  }
   async menuRpcCall(rpcRequest: Omit<VuuRpcRequest, "vpId">) {
     console.log(`menuRpcCall ${JSON.stringify(rpcRequest)}`);
   }
@@ -121,7 +129,7 @@ class MockDataSourceImpl extends BaseDataSource implements DataSource {
   };
 
   selectedRowsCount = 0;
-  rpcCall?:
+  rpcRequest?:
     | (<T extends VuuRpcResponse = VuuRpcResponse>(
         rpcRequest: Omit<VuuRpcRequest, "vpId">,
       ) => Promise<T>)

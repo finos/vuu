@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>plugin</artifactId>
-        <version>0.9.79-SNAPSHOT</version>
+        <version>0.9.80-SNAPSHOT</version>
     </parent>
 
     <groupId>org.finos.vuu.plugin</groupId>
@@ -15,19 +15,19 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.79-SNAPSHOT</version>
+            <version>0.9.80-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>price</artifactId>
-            <version>0.9.79-SNAPSHOT</version>
+            <version>0.9.80-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>order</artifactId>
-            <version>0.9.79-SNAPSHOT</version>
+            <version>0.9.80-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -65,7 +65,7 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.79-SNAPSHOT</version>
+            <version>0.9.80-SNAPSHOT</version>
             <classifier>tests</classifier>
             <type>test-jar</type>
             <scope>test</scope>

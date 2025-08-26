@@ -7,19 +7,12 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core._
 import org.finos.vuu.core.module.TableDefContainer
-import org.finos.vuu.core.module.authn.AuthNModule
-import org.finos.vuu.core.module.auths.PermissionModule
 import org.finos.vuu.core.module.metrics.MetricsModule
-import org.finos.vuu.core.module.price.PriceModule
-import org.finos.vuu.core.module.simul.SimulationModule
-import org.finos.vuu.core.module.typeahead.TypeAheadModule
-import org.finos.vuu.core.module.vui.VuiStateModule
 import org.finos.vuu.example.ignite.loader.IgniteOrderGenerator
 import org.finos.vuu.example.ignite.module.IgniteOrderDataModule
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
 import org.finos.vuu.net.http.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
 import org.finos.vuu.net.{AlwaysHappyLoginValidator, Authenticator, LoggedInTokenValidator}
-import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
 import org.finos.vuu.state.MemoryBackedVuiStateStore
 
@@ -78,8 +71,7 @@ object IgniteVuuMain extends App with StrictLogging {
     VuuThreadingOptions()
       .withViewPortThreads(4)
       .withTreeThreads(4)
-  ).withModule(TypeAheadModule())
-    .withModule(MetricsModule())
+  ).withModule(MetricsModule())
     .withModule(IgniteOrderDataModule(igniteOrderStore))
     .withPlugin(VirtualizedTablePlugin)
 

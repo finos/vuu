@@ -126,11 +126,6 @@ case class ChangeViewPortRangeSuccess(viewPortId: String, from: Int, to: Int) ex
 
 case class OpenTreeNodeRequest(vpId: String, treeKey: String) extends MessageBody
 
-case class ViewPortRpcCall(vpId: String, rpcName: String, params: Array[Any], namedParams: Map[String, Any]) extends MessageBody
-
-case class ViewPortRpcResponse(vpId: String, method: String, action: ViewPortAction) extends MessageBody
-
-
 case class ViewPortMenuSelectionRpcCall(vpId: String, rpcName: String) extends MessageBody
 
 case class ViewPortMenuCellRpcCall(vpId: String, rpcName: String, rowKey: String, field: String, value: Object) extends MessageBody
@@ -178,10 +173,6 @@ case class Error(message: String, code: Int)
 case class MenuRpcCall(module: String, method: String, params: Array[Any], namedParams: Map[String, Any]) extends MessageBody
 
 case class MenuRpcResponse(module: String, method: String, result: ViewPortAction) extends MessageBody
-
-case class RpcCall(service: String, method: String, params: Array[Any], namedParams: Map[String, Any]) extends MessageBody
-
-case class RpcResponse(method: String, result: Any, error: Error) extends MessageBody
 
 case class RpcUpdate(table: ViewPortTable, key: String, data: Map[String, Any]) extends MessageBody
 

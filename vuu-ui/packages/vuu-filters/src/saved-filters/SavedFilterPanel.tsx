@@ -1,4 +1,4 @@
-import { HTMLAttributes } from "react";
+import { HTMLAttributes, useMemo } from "react";
 import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -10,7 +10,7 @@ import { FilterPermissions } from "../filter-pill/FilterMenu";
 
 const classBase = "vuuSavedFilterPanel";
 
-const filterPillPermissions: FilterPermissions = {
+const defaultFilterPillPermissions: FilterPermissions = {
   allowEdit: true,
   allowRename: true,
   allowRemove: true,
@@ -18,14 +18,27 @@ const filterPillPermissions: FilterPermissions = {
 
 export const SavedFilterPanel = ({
   className,
+  filterPillPermissions = defaultFilterPillPermissions,
   ...htmlAttributes
-}: HTMLAttributes<HTMLDivElement>) => {
+}: HTMLAttributes<HTMLDivElement> & {
+  filterPillPermissions?: FilterPermissions;
+}) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-saved-filter-panel",
     css: savedFilterPanelCss,
     window: targetWindow,
   });
+
+  const permissions = useMemo<FilterPermissions>(() => {
+    const {
+      allowClose = defaultFilterPillPermissions.allowClose,
+      allowEdit = defaultFilterPillPermissions.allowEdit,
+      allowRemove = defaultFilterPillPermissions.allowRename,
+      allowRename = defaultFilterPillPermissions.allowRename,
+    } = filterPillPermissions;
+    return { allowClose, allowEdit, allowRemove, allowRename };
+  }, [filterPillPermissions]);
 
   const { onClickFilter, onFilterMenuAction, savedFilters } =
     useSavedFilterPanel();
@@ -42,7 +55,7 @@ export const SavedFilterPanel = ({
             key={i}
             onClick={onClickFilter}
             onMenuAction={onFilterMenuAction}
-            permissions={filterPillPermissions}
+            permissions={permissions}
           />
         ))}
       </div>
