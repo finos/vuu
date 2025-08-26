@@ -1,7 +1,14 @@
-import { CommitHandler, DateStringISO, TimeString } from "@vuu-ui/vuu-utils";
 import {
+  CommitHandler,
+  DateStringISO,
+  isValidTimeString,
+  TimeString,
+} from "@vuu-ui/vuu-utils";
+import {
+  ChangeEventHandler,
   ClipboardEventHandler,
   KeyboardEventHandler,
+  MouseEventHandler,
   RefCallback,
   useCallback,
   useMemo,
@@ -16,19 +23,28 @@ const isDigit = (char: string): char is Digit =>
 export interface TimeInputHookProps {
   date?: Date | DateStringISO;
   defaultValue?: TimeString;
+  onChange?: (time: TimeString) => void;
   onCommit: CommitHandler<HTMLInputElement, Date>;
   showTemplateWhileEditing?: boolean;
 }
 
+export const zeroTime: TimeString = "00:00:00";
+
 export const useTimeInput = ({
   defaultValue,
+  onChange,
   onCommit,
   showTemplateWhileEditing = true,
 }: TimeInputHookProps) => {
-  const maskedInput = useMemo<MaskedInput>(
-    () => new MaskedInput(defaultValue, null, showTemplateWhileEditing),
-    [defaultValue, showTemplateWhileEditing],
-  );
+  const mousedDownRef = useRef(false);
+  const maskedInput = useMemo<MaskedInput>(() => {
+    console.log("create new mask");
+    const mask = new MaskedInput(defaultValue, null, showTemplateWhileEditing);
+    mask.on("change", (value) => {
+      onChange?.(value);
+    });
+    return mask;
+  }, [defaultValue, onChange, showTemplateWhileEditing]);
 
   const setInputEl = useCallback<RefCallback<HTMLInputElement>>(
     (el) => {
@@ -85,8 +101,8 @@ export const useTimeInput = ({
   );
 
   const handleClick = useCallback(() => {
-    maskedInput.click();
-  }, [maskedInput]);
+    // maskedInput.click();
+  }, []);
 
   const handleDoubleClick = useCallback(() => {
     maskedInput.doubleClick();
@@ -94,33 +110,63 @@ export const useTimeInput = ({
 
   const handlePaste = useCallback<ClipboardEventHandler<HTMLInputElement>>(
     (e) => {
-      console.log(`paste ${e.clipboardData.getData("text")}`);
+      const value = e.clipboardData.getData("text");
+      if (isValidTimeString(value)) {
+        maskedInput.pasteValue(value);
+      }
+    },
+    [maskedInput],
+  );
+
+  const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
+    (e) => {
+      console.log(`onchange ${e.target.value}`);
     },
     [],
   );
 
-  // const handleMouseUp = useCallback<MouseEventHandler<HTMLInputElement>>(
-  //   (e) => {
-  //     const input = e.target as HTMLInputElement;
-  //     console.log(
-  //       `mouseup sytart ${input.selectionStart} end ${input.selectionEnd}`,
-  //     );
-  //     if (input.selectionStart === 0 && input.selectionEnd === 8) {
-  //       console.log("full select");
-  //     }
-  //   },
-  //   [],
-  // );
+  const handleFocus = useCallback(() => {
+    if (mousedDownRef.current) {
+      mousedDownRef.current = false;
+    } else {
+      maskedInput.focus();
+    }
+  }, [maskedInput]);
+
+  const handleMouseDown = useCallback<MouseEventHandler>((e) => {
+    mousedDownRef.current = true;
+    const input = e.target as HTMLInputElement;
+    console.log(
+      `mousedown start ${input.selectionStart} end ${input.selectionEnd}`,
+    );
+  }, []);
+
+  const handleMouseUp = useCallback<MouseEventHandler<HTMLInputElement>>(
+    (e) => {
+      console.log(`mouseup`);
+      const input = e.target as HTMLInputElement;
+      console.log(
+        `mouseup start ${input.selectionStart} end ${input.selectionEnd}`,
+      );
+      if (input.selectionStart === 0 && input.selectionEnd === 8) {
+        console.log("full select");
+      }
+      maskedInput.click();
+    },
+    [maskedInput],
+  );
 
   return {
     inputRef: setInputEl,
     eventHandlers: {
       onBlur: maskedInput.blur,
+      onChange: handleChange,
       onClick: handleClick,
       onDoubleClick: handleDoubleClick,
-      onFocus: maskedInput.focus,
+      onFocus: handleFocus,
       onKeyDown: handleKeyDown,
-      // onMouseUp: handleMouseUp,
+      onMouseDown: handleMouseDown,
+      onMouseUp: handleMouseUp,
       onPaste: handlePaste,
     },
   };

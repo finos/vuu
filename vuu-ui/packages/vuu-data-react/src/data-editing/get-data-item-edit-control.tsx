@@ -15,6 +15,7 @@ import {
   isTimeDataValue,
 } from "@vuu-ui/vuu-utils";
 import { InputProps } from "@salt-ds/core";
+import { asTimeString } from "@vuu-ui/vuu-utils";
 
 export interface DataItemEditControlProps {
   InputProps?: Partial<InputProps>;
@@ -25,6 +26,7 @@ export interface DataItemEditControlProps {
    * A table column or form field Descriptor.
    */
   dataDescriptor: DataValueDescriptor;
+  defaultValue?: string | number | readonly string[];
   errorMessage?: string;
   onCommit: CommitHandler<HTMLElement>;
   table?: TableSchemaTable;
@@ -38,6 +40,7 @@ export const getDataItemEditControl = ({
   className,
   commitWhenCleared,
   dataDescriptor,
+  defaultValue,
   errorMessage,
   onCommit,
   table,
@@ -60,7 +63,11 @@ export const getDataItemEditControl = ({
     );
   } else if (isTimeDataValue(dataDescriptor)) {
     return (
-      <VuuTimePicker className={className} onCommit={handleCommitNumber} />
+      <VuuTimePicker
+        className={className}
+        defaultValue={asTimeString(defaultValue, true)}
+        onCommit={handleCommitNumber}
+      />
     );
   } else if (isDateTimeDataValue(dataDescriptor)) {
     return (

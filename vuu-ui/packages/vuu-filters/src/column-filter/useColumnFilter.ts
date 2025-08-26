@@ -1,7 +1,7 @@
 import { FilterOp } from "@vuu-ui/vuu-filter-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
-export type FilterValue = string | number;
+export type FilterValue = string | number | [string, string] | [number, number];
 
 export const assertValidValue = (
   { serverDataType: _ }: ColumnDescriptor,

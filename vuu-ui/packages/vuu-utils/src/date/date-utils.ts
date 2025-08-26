@@ -30,6 +30,34 @@ export const stringIsValidTime = (val: string): val is TimeString =>
 export const stringIsInvalidTime = (val: string) =>
   stringIsTimeShaped(val) && !stringIsValidTime(val);
 
+const TIME_PATTERN = /^[01][0-9]:[0-5][0-9]:[0-5][0-9]$/;
+export const isValidTimeString = (value: unknown): value is TimeString =>
+  typeof value === "string" && TIME_PATTERN.test(value);
+
+export function asTimeString(value: unknown, allowUndefined: false): TimeString;
+export function asTimeString(
+  value: unknown,
+  allowUndefined?: true,
+): TimeString | undefined;
+export function asTimeString(
+  value: unknown,
+  allowUndefined = false,
+): TimeString | undefined {
+  if (value === undefined) {
+    if (allowUndefined) {
+      return value;
+    } else {
+      throw Error("[date-utils] asTimeString, value cannot be undefined");
+    }
+  } else if (isValidTimeString(value)) {
+    return value;
+  } else {
+    throw Error(
+      `[date-utils] asTimeString, value ${value} is not valid TimeString`,
+    );
+  }
+}
+
 export interface Time {
   hours: number;
   minutes: number;

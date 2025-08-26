@@ -1,12 +1,80 @@
 import { getSchema, VuuTableName } from "@vuu-ui/vuu-data-test";
-import { ColumnFilter } from "@vuu-ui/vuu-filters";
+import { ColumnFilter, ColumnFilterProps } from "@vuu-ui/vuu-filters";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { FormField, FormFieldLabel, Input } from "@salt-ds/core";
-import { useMemo } from "react";
+import { ReactNode, useMemo } from "react";
 
 const tableName: VuuTableName = "instruments";
+
+const FancyStyle = ({ children }: { children: ReactNode }) => (
+  <>
+    <style>
+      {`
+        .TestColumnFilter {
+          background: #15273b; 
+          height: 100%;
+          padding: 20px;
+          width: 330px;
+          .saltFormField {
+            height: 40px;
+            width: fit-content;
+            .saltFormFieldLabel {
+              align-self: center;
+              color: white;
+              font-size: 14px;
+            }
+            .vuuColumnFilter {
+              background: #1d2e3e;
+              padding: 4px;
+              .vuuTimePicker {
+
+                .TimeInput {
+                  background: transparent;
+                  border: none;
+                  font-family: var(--salt-typography-fontFamily);
+                  font-size: 14px;
+                  text-align: center;
+                  width: 70px;
+                  &::selection {
+                    background-color: #3a98f9;
+                    color: white;
+                  }
+
+                }
+              }
+            }
+            .vuuTimePicker {
+            padding: 0 8px;
+              .TimeInput {
+                border: none;
+                font-family: var(--salt-typography-fontFamily);
+                font-size: 14px;
+              }
+            }
+          }
+        }
+    `}
+    </style>
+    {children}
+  </>
+);
+
+const ColumnFilterTemplate = ({
+  column,
+  label,
+  table,
+}: Pick<ColumnFilterProps, "column" | "table"> & { label: string }) => {
+  return (
+    <div style={{ padding: 100 }}>
+      <FormField>
+        <FormFieldLabel>{label}</FormFieldLabel>
+        <ColumnFilter column={column} table={table} />
+      </FormField>
+    </div>
+  );
+};
 
 /** tags=data-consumer */
 export const TextColumnFilter = () => {
@@ -32,12 +100,7 @@ export const TextColumnFilter = () => {
 
   return (
     <DataSourceProvider dataSource={dataSource}>
-      <div style={{ padding: 100 }}>
-        <FormField>
-          <FormFieldLabel>RIC</FormFieldLabel>
-          <ColumnFilter column={column} table={table} />
-        </FormField>
-      </div>
+      <ColumnFilterTemplate column={column} label="RIC" table={table} />
     </DataSourceProvider>
   );
 };
@@ -56,12 +119,57 @@ export const TimeColumnFilter = () => {
   );
 
   return (
+    <ColumnFilterTemplate column={column} label="Last Update" table={table} />
+  );
+};
+
+export const TimeColumnRangeFilter = () => {
+  const column = useMemo<ColumnDescriptor>(
+    () => ({
+      name: "lastUpdate",
+      serverDataType: "long",
+      type: "time",
+    }),
+    [],
+  );
+
+  return (
     <div style={{ padding: 100 }}>
       <FormField>
         <FormFieldLabel>Last Update</FormFieldLabel>
-        <ColumnFilter column={column} table={table} />
+        <ColumnFilter
+          column={column}
+          value={["00:00:00", "23:59:59"]}
+          operator="between"
+        />
       </FormField>
     </div>
+  );
+};
+
+export const TimeColumnRangeFilterWithStyle = () => {
+  const column = useMemo<ColumnDescriptor>(
+    () => ({
+      name: "lastUpdate",
+      serverDataType: "long",
+      type: "time",
+    }),
+    [],
+  );
+
+  return (
+    <FancyStyle>
+      <div className="TestColumnFilter">
+        <FormField labelPlacement="left">
+          <FormFieldLabel>May 15,2025</FormFieldLabel>
+          <ColumnFilter
+            column={column}
+            value={["00:00:00", "23:59:59"]}
+            operator="between"
+          />
+        </FormField>
+      </div>
+    </FancyStyle>
   );
 };
 
