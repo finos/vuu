@@ -1,8 +1,9 @@
 import {
-  CommitHandler,
+  type CommitHandler,
   DateStringISO,
   isValidTimeString,
-  TimeString,
+  Time,
+  type TimeString,
 } from "@vuu-ui/vuu-utils";
 import {
   ChangeEventHandler,
@@ -15,7 +16,6 @@ import {
   useRef,
 } from "react";
 import { Digit, MaskedInput } from "./MaskedInput";
-import { stringIsValidTime, Time } from "@vuu-ui/vuu-utils";
 
 const isDigit = (char: string): char is Digit =>
   char.length === 1 && /[0-9]/.test(char);
@@ -26,25 +26,31 @@ export interface TimeInputHookProps {
   onChange?: (time: TimeString) => void;
   onCommit: CommitHandler<HTMLInputElement, Date>;
   showTemplateWhileEditing?: boolean;
+  value?: TimeString;
 }
-
-export const zeroTime: TimeString = "00:00:00";
 
 export const useTimeInput = ({
   defaultValue,
   onChange,
   onCommit,
   showTemplateWhileEditing = true,
+  value,
 }: TimeInputHookProps) => {
+  console.log(`useTimeInput defaultValue = ${defaultValue} value=${value}`);
   const mousedDownRef = useRef(false);
   const maskedInput = useMemo<MaskedInput>(() => {
-    console.log("create new mask");
     const mask = new MaskedInput(defaultValue, null, showTemplateWhileEditing);
     mask.on("change", (value) => {
       onChange?.(value);
     });
     return mask;
   }, [defaultValue, onChange, showTemplateWhileEditing]);
+
+  useMemo(() => {
+    if (isValidTimeString(value)) {
+      maskedInput.value = value;
+    }
+  }, [maskedInput, value]);
 
   const setInputEl = useCallback<RefCallback<HTMLInputElement>>(
     (el) => {
@@ -58,7 +64,7 @@ export const useTimeInput = ({
 
   const commitValue = useCallback<CommitHandler<HTMLInputElement, string>>(
     (evt, value) => {
-      if (stringIsValidTime(value)) {
+      if (isValidTimeString(value)) {
         onCommit(evt, Time(value).asDate(), "text-input");
       } else if (value === "hh:mm:ss") {
         console.log("no value set");

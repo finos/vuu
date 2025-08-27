@@ -30,7 +30,7 @@ const FancyStyle = ({ children }: { children: ReactNode }) => (
               padding: 4px;
               .vuuTimePicker {
 
-                .TimeInput {
+                .vuuTimeInput {
                   background: transparent;
                   border: none;
                   font-family: var(--salt-typography-fontFamily);
@@ -46,11 +46,12 @@ const FancyStyle = ({ children }: { children: ReactNode }) => (
               }
             }
             .vuuTimePicker {
-            padding: 0 8px;
-              .TimeInput {
+              padding: 0 8px;
+              .vuuTimeInput {
                 border: none;
                 font-family: var(--salt-typography-fontFamily);
                 font-size: 14px;
+                outline: none;
               }
             }
           }
