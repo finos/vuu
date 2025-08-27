@@ -38,11 +38,7 @@ export const VuuTimePicker = ({
 
   return (
     <div {...htmlAttributes} className={cx(classBase, className)}>
-      <TimeInput
-        defaultValue={defaultValue}
-        onCommit={handleCommit}
-        showTemplateWhileEditing={false}
-      />
+      <TimeInput defaultValue={defaultValue} onCommit={handleCommit} />
     </div>
   );
 };

@@ -122,6 +122,10 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
     return this.#value.slice(6, 8) as Seconds;
   }
 
+  get value() {
+    return this.#value;
+  }
+
   /**
    * Setting the value this way invokes 'controlled' mode
    */

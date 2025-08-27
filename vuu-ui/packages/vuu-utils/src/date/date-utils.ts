@@ -4,14 +4,12 @@ export function toCalendarDate(d: Date) {
   return new CalendarDate(d.getFullYear(), d.getMonth() + 1, d.getDate());
 }
 
-type oneToFive = 1 | 2 | 3 | 4 | 5;
-type zeroToFive = 0 | oneToFive;
-type sixToNine = 6 | 7 | 8 | 9;
-type zeroToNine = zeroToFive | sixToNine;
-type oneToNine = oneToFive | sixToNine;
-
+export type oneToFive = 1 | 2 | 3 | 4 | 5;
+export type zeroToFive = 0 | oneToFive;
+export type sixToNine = 6 | 7 | 8 | 9;
+export type zeroToNine = zeroToFive | sixToNine;
+export type oneToNine = oneToFive | sixToNine;
 export type TimeUnit = "hours" | "minutes" | "seconds";
-
 export type Hours = `${0 | 1}${zeroToNine}` | `2${0 | 1 | 2 | 3}`;
 export type Minutes = `${zeroToFive}${zeroToNine}`;
 export type Seconds = `${zeroToFive}${zeroToNine}`;
@@ -22,7 +20,10 @@ export type TimeUnitValue<T extends TimeUnit> = T extends "hours"
     ? Minutes
     : Seconds;
 
-export type TimeString = `${Hours}:${Minutes}:${Seconds}`;
+// This should work, works fine in TypeScript playground, but crashes tsc
+// export type TimeString = `${Hours}:${Minutes}:${Seconds}`;
+export type TimeString =
+  `${number}${number}:${number}${number}:${number}${number}`;
 
 type YYYY = `19${zeroToNine}${zeroToNine}` | `20${zeroToNine}${zeroToNine}`;
 type MM = `0${oneToNine}` | `1${0 | 1 | 2}`;

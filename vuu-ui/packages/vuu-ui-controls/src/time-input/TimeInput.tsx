@@ -26,7 +26,6 @@ export const TimeInput = forwardRef<HTMLInputElement, TimeInputProps>(
       onChange,
       onCommit,
       placeholder = "hh:mm:ss",
-      showTemplateWhileEditing,
       value,
       ...htmlAttributes
     },
@@ -45,7 +44,6 @@ export const TimeInput = forwardRef<HTMLInputElement, TimeInputProps>(
       defaultValue,
       onChange,
       onCommit,
-      showTemplateWhileEditing,
       value,
     });
 
