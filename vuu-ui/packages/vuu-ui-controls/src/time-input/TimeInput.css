@@ -1,4 +1,5 @@
 .vuuTimeInput {
+    font-family: var(--salt-typography-fontFamily);
     width: 80px;
 
     &:focus::-webkit-input-placeholder {

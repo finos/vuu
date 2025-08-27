@@ -10,9 +10,17 @@ type sixToNine = 6 | 7 | 8 | 9;
 type zeroToNine = zeroToFive | sixToNine;
 type oneToNine = oneToFive | sixToNine;
 
-type Hours = `${0 | 1}${zeroToNine}` | `2${0 | 1 | 2 | 3}`;
-type Minutes = `${zeroToFive}${zeroToNine}`;
-type Seconds = `${zeroToFive}${zeroToNine}`;
+export type TimeUnit = "hours" | "minutes" | "seconds";
+
+export type Hours = `${0 | 1}${zeroToNine}` | `2${0 | 1 | 2 | 3}`;
+export type Minutes = `${zeroToFive}${zeroToNine}`;
+export type Seconds = `${zeroToFive}${zeroToNine}`;
+
+export type TimeUnitValue<T extends TimeUnit> = T extends "hours"
+  ? Hours
+  : T extends "minutes"
+    ? Minutes
+    : Seconds;
 
 export type TimeString = `${Hours}:${Minutes}:${Seconds}`;
 
@@ -22,17 +30,65 @@ type DD = `${0}${oneToNine}` | `${1 | 2}${zeroToNine}` | `3${0 | 1}`;
 
 export type DateStringISO = `${YYYY}-${MM}-${DD}`;
 
-const validTimeShape = /\d\d:\d\d:\d\d/;
-const validTimePattern = /(?:[0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]/;
-export const stringIsTimeShaped = (val: string) => validTimeShape.test(val);
-export const stringIsValidTime = (val: string): val is TimeString =>
-  validTimePattern.test(val);
-export const stringIsInvalidTime = (val: string) =>
-  stringIsTimeShaped(val) && !stringIsValidTime(val);
+export const zeroTime: TimeString = "00:00:00";
+export const zeroTimeUnit: TimeUnitValue<TimeUnit> = "00";
 
-const TIME_PATTERN = /^[01][0-9]:[0-5][0-9]:[0-5][0-9]$/;
+export function incrementTimeUnitValue<T extends TimeUnit>(
+  unit: T,
+  value: TimeUnitValue<T>,
+) {
+  const num = parseInt(value);
+  if (unit === "hours" && num < 23) {
+    return `${num + 1}`.padStart(2, "0").slice(-2) as Hours;
+  } else if (unit === "hours" && num === 23) {
+    return "00" as Hours;
+  } else if (num < 59) {
+    return `${num + 1}`.padStart(2, "0").slice(-2) as TimeUnitValue<T>;
+  } else if (num === 59) {
+    return "00" as TimeUnitValue<T>;
+  }
+  return value;
+}
+
+export function decrementTimeUnitValue<T extends TimeUnit>(
+  unit: T,
+  value: TimeUnitValue<T>,
+) {
+  const num = parseInt(value);
+  if (unit === "hours" && num > 0) {
+    return `${num - 1}`.padStart(2, "0").slice(-2) as Hours;
+  } else if (unit === "hours" && num === 0) {
+    return "23" as Hours;
+  } else if (num > 0) {
+    return `${num - 1}`.padStart(2, "0").slice(-2) as TimeUnitValue<T>;
+  } else if (num === 0) {
+    return "59" as TimeUnitValue<T>;
+  }
+  return value;
+}
+
+// TODO accept numeric values with appropriate type checks
+export function updateTimeString<T extends TimeUnit>(
+  timeString: TimeString,
+  unit: T,
+  value: TimeUnitValue<T>,
+): TimeString {
+  const newTimeString =
+    unit === "hours"
+      ? value.concat(timeString.slice(2))
+      : unit === "minutes"
+        ? timeString.slice(0, 3).concat(value).concat(timeString.slice(5))
+        : timeString.slice(0, 6).concat(value);
+  if (isValidTimeString(newTimeString)) {
+    return newTimeString;
+  } else {
+    throw Error(`[date-utils] udateTimeSting invalid result ${newTimeString}`);
+  }
+}
+
+const validTimePattern = /(?:[0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]/;
 export const isValidTimeString = (value: unknown): value is TimeString =>
-  typeof value === "string" && TIME_PATTERN.test(value);
+  typeof value === "string" && validTimePattern.test(value);
 
 export function asTimeString(value: unknown, allowUndefined: false): TimeString;
 export function asTimeString(

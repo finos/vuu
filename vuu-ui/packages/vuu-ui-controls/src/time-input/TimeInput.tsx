@@ -27,10 +27,12 @@ export const TimeInput = forwardRef<HTMLInputElement, TimeInputProps>(
       onCommit,
       placeholder = "hh:mm:ss",
       showTemplateWhileEditing,
+      value,
       ...htmlAttributes
     },
     ref,
   ) {
+    console.log(`TimeInput defaultValue = ${defaultValue}, value=${value}`);
     const targetWindow = useWindow();
     useComponentCssInjection({
       testId: "vuu-time-input",
@@ -44,6 +46,7 @@ export const TimeInput = forwardRef<HTMLInputElement, TimeInputProps>(
       onChange,
       onCommit,
       showTemplateWhileEditing,
+      value,
     });
 
     return (
@@ -57,6 +60,7 @@ export const TimeInput = forwardRef<HTMLInputElement, TimeInputProps>(
         placeholder={placeholder}
         ref={useForkRef(ref, inputRef)}
         spellCheck="false"
+        value={value}
       />
     );
   },
