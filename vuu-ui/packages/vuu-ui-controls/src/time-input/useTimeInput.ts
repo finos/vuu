@@ -25,7 +25,6 @@ export interface TimeInputHookProps {
   defaultValue?: TimeString;
   onChange?: (time: TimeString) => void;
   onCommit: CommitHandler<HTMLInputElement, Date>;
-  showTemplateWhileEditing?: boolean;
   value?: TimeString;
 }
 
@@ -33,33 +32,29 @@ export const useTimeInput = ({
   defaultValue,
   onChange,
   onCommit,
-  showTemplateWhileEditing = true,
   value,
 }: TimeInputHookProps) => {
   console.log(`useTimeInput defaultValue = ${defaultValue} value=${value}`);
   const mousedDownRef = useRef(false);
-  const maskedInput = useMemo<MaskedInput>(() => {
-    const mask = new MaskedInput(defaultValue, null, showTemplateWhileEditing);
-    mask.on("change", (value) => {
-      onChange?.(value);
-    });
-    return mask;
-  }, [defaultValue, onChange, showTemplateWhileEditing]);
-
+  const maskedInputRef = useRef<MaskedInput | undefined>(undefined);
   useMemo(() => {
-    if (isValidTimeString(value)) {
-      maskedInput.value = value;
+    if (maskedInputRef.current === undefined) {
+      maskedInputRef.current = new MaskedInput(defaultValue, null);
+      maskedInputRef.current.on("change", (value) => {
+        onChange?.(value);
+      });
     }
-  }, [maskedInput, value]);
 
-  const setInputEl = useCallback<RefCallback<HTMLInputElement>>(
-    (el) => {
-      if (el) {
-        maskedInput.input = el;
-      }
-    },
-    [maskedInput],
-  );
+    if (isValidTimeString(value) && value !== maskedInputRef.current?.value) {
+      maskedInputRef.current.value = value;
+    }
+  }, [defaultValue, onChange, value]);
+
+  const setInputEl = useCallback<RefCallback<HTMLInputElement>>((el) => {
+    if (el && maskedInputRef.current) {
+      maskedInputRef.current.input = el;
+    }
+  }, []);
   const back = useRef(false);
 
   const commitValue = useCallback<CommitHandler<HTMLInputElement, string>>(
@@ -79,31 +74,33 @@ export const useTimeInput = ({
 
   const handleKeyDown = useCallback<KeyboardEventHandler<HTMLInputElement>>(
     (e) => {
-      console.log(`handleKeyDown ${e.key} cursorPos ${maskedInput.cursorPos}`);
-      if (e.key === "Backspace") {
-        maskedInput.backspace();
-        back.current = true;
-      } else if (isDigit(e.key)) {
-        maskedInput.update(e.key);
-      } else if (e.key === "ArrowLeft") {
-        maskedInput.moveFocus("left");
-      } else if (e.key === "ArrowRight") {
-        maskedInput.moveFocus("right");
-      } else if (e.key === "ArrowUp") {
-        maskedInput.incrementValue();
-      } else if (e.key === "ArrowDown") {
-        maskedInput.decrementValue();
-      } else if (e.key === "v" && e.metaKey) {
-        // keyboard paste, do not prevent default
-        return;
-      } else if (e.key === "Tab") {
-        return;
-      } else if (e.key === "Enter") {
-        commitValue(e, maskedInput.value);
+      const { current: maskedInput } = maskedInputRef;
+      if (maskedInput) {
+        if (e.key === "Backspace") {
+          maskedInput.backspace();
+          back.current = true;
+        } else if (isDigit(e.key)) {
+          maskedInput.update(e.key);
+        } else if (e.key === "ArrowLeft") {
+          maskedInput.moveFocus("left");
+        } else if (e.key === "ArrowRight") {
+          maskedInput.moveFocus("right");
+        } else if (e.key === "ArrowUp") {
+          maskedInput.incrementValue();
+        } else if (e.key === "ArrowDown") {
+          maskedInput.decrementValue();
+        } else if (e.key === "v" && e.metaKey) {
+          // keyboard paste, do not prevent default
+          return;
+        } else if (e.key === "Tab") {
+          return;
+        } else if (e.key === "Enter") {
+          commitValue(e, maskedInput.value);
+        }
       }
       e.preventDefault();
     },
-    [commitValue, maskedInput],
+    [commitValue],
   );
 
   const handleClick = useCallback(() => {
@@ -111,17 +108,17 @@ export const useTimeInput = ({
   }, []);
 
   const handleDoubleClick = useCallback(() => {
-    maskedInput.doubleClick();
-  }, [maskedInput]);
+    maskedInputRef.current?.doubleClick();
+  }, []);
 
   const handlePaste = useCallback<ClipboardEventHandler<HTMLInputElement>>(
     (e) => {
       const value = e.clipboardData.getData("text");
       if (isValidTimeString(value)) {
-        maskedInput.pasteValue(value);
+        maskedInputRef.current?.pasteValue(value);
       }
     },
-    [maskedInput],
+    [],
   );
 
   const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
@@ -135,9 +132,9 @@ export const useTimeInput = ({
     if (mousedDownRef.current) {
       mousedDownRef.current = false;
     } else {
-      maskedInput.focus();
+      maskedInputRef.current?.focus();
     }
-  }, [maskedInput]);
+  }, []);
 
   const handleMouseDown = useCallback<MouseEventHandler>((e) => {
     mousedDownRef.current = true;
@@ -157,15 +154,15 @@ export const useTimeInput = ({
       if (input.selectionStart === 0 && input.selectionEnd === 8) {
         console.log("full select");
       }
-      maskedInput.click();
+      maskedInputRef.current?.click();
     },
-    [maskedInput],
+    [],
   );
 
   return {
     inputRef: setInputEl,
     eventHandlers: {
-      onBlur: maskedInput.blur,
+      onBlur: maskedInputRef.current?.blur,
       onChange: handleChange,
       onClick: handleClick,
       onDoubleClick: handleDoubleClick,

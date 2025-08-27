@@ -40,7 +40,6 @@ export const NativeHtmlTimeInput = () => {
 const TimeInputTemplate = ({
   defaultValue,
   onChange,
-  showTemplateWhileEditing,
   value: valueProp,
 }: Partial<TimeInputProps>) => {
   const [value, setValue] = useState(valueProp);
@@ -82,7 +81,6 @@ const TimeInputTemplate = ({
         defaultValue={defaultValue}
         onChange={onChange}
         onCommit={handleCommit}
-        showTemplateWhileEditing={showTemplateWhileEditing}
         value={value}
       />
       <Input data-testid="post-timeinput" />
@@ -90,23 +88,16 @@ const TimeInputTemplate = ({
   );
 };
 
-export const VuuTimeInputShowTemplateWhileEditing = () => <TimeInputTemplate />;
-
 export const TestTimeInput = ({
   defaultValue,
 }: Pick<TimeInputProps, "defaultValue">) => (
-  <TimeInputTemplate
-    defaultValue={defaultValue}
-    showTemplateWhileEditing={false}
-  />
+  <TimeInputTemplate defaultValue={defaultValue} />
 );
 
-export const VuuTimeInput = () => (
-  <TimeInputTemplate defaultValue="00:00:00" showTemplateWhileEditing={false} />
-);
+export const VuuTimeInput = () => <TimeInputTemplate defaultValue="00:00:00" />;
 
 export const VuuTimeInputDefaultValue = () => (
-  <TimeInputTemplate defaultValue="00:59:59" showTemplateWhileEditing={false} />
+  <TimeInputTemplate defaultValue="00:59:59" />
 );
 
 // TODO
@@ -118,11 +109,5 @@ export const VuuTimeInputControlled = () => {
     setValue(value);
   }, []);
 
-  return (
-    <TimeInputTemplate
-      onChange={handleChange}
-      value={value}
-      showTemplateWhileEditing={false}
-    />
-  );
+  return <TimeInputTemplate onChange={handleChange} value={value} />;
 };
