@@ -12,7 +12,7 @@ class NaiveImmutableArray[T <: Object :ClassTag](val array: Array[T] = Array.emp
   override def addAll(arr: ImmutableArray[T]): ImmutableArray[T] = this.++(arr)
 
   override def ++(arr: ImmutableArray[T]): ImmutableArray[T] = {
-    new NaiveImmutableArray[T](array = this.array ++ arr.toArray)
+    new NaiveImmutableArray[T](array = Array.concat(this.array, arr.toArray ))
   }
 
   override def iterator: Iterator[T] = array.iterator
