@@ -6,8 +6,8 @@ import {
   type TimeString,
 } from "@vuu-ui/vuu-utils";
 import {
-  ChangeEventHandler,
   ClipboardEventHandler,
+  FocusEventHandler,
   KeyboardEventHandler,
   MouseEventHandler,
   RefCallback,
@@ -34,7 +34,6 @@ export const useTimeInput = ({
   onCommit,
   value,
 }: TimeInputHookProps) => {
-  console.log(`useTimeInput defaultValue = ${defaultValue} value=${value}`);
   const mousedDownRef = useRef(false);
   const maskedInputRef = useRef<MaskedInput | undefined>(undefined);
   useMemo(() => {
@@ -45,9 +44,13 @@ export const useTimeInput = ({
       });
     }
 
-    if (isValidTimeString(value) && value !== maskedInputRef.current?.value) {
+    if (value && value !== maskedInputRef.current.value) {
       maskedInputRef.current.value = value;
     }
+    // if (isValidTimeString(value) && value !== maskedInputRef.current.value) {
+    //   console.log(`set (controlled) value ${value}`);
+    //   maskedInputRef.current.value = value;
+    // }
   }, [defaultValue, onChange, value]);
 
   const setInputEl = useCallback<RefCallback<HTMLInputElement>>((el) => {
@@ -103,10 +106,6 @@ export const useTimeInput = ({
     [commitValue],
   );
 
-  const handleClick = useCallback(() => {
-    // maskedInput.click();
-  }, []);
-
   const handleDoubleClick = useCallback(() => {
     maskedInputRef.current?.doubleClick();
   }, []);
@@ -121,14 +120,8 @@ export const useTimeInput = ({
     [],
   );
 
-  const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
-    (e) => {
-      console.log(`onchange ${e.target.value}`);
-    },
-    [],
-  );
-
-  const handleFocus = useCallback(() => {
+  const handleFocus = useCallback<FocusEventHandler<HTMLInputElement>>(() => {
+    // If keboard has been used, how do we detect SHIFT + TAB
     if (mousedDownRef.current) {
       mousedDownRef.current = false;
     } else {
@@ -136,35 +129,18 @@ export const useTimeInput = ({
     }
   }, []);
 
-  const handleMouseDown = useCallback<MouseEventHandler>((e) => {
+  const handleMouseDown = useCallback<MouseEventHandler>(() => {
     mousedDownRef.current = true;
-    const input = e.target as HTMLInputElement;
-    console.log(
-      `mousedown start ${input.selectionStart} end ${input.selectionEnd}`,
-    );
   }, []);
 
-  const handleMouseUp = useCallback<MouseEventHandler<HTMLInputElement>>(
-    (e) => {
-      console.log(`mouseup`);
-      const input = e.target as HTMLInputElement;
-      console.log(
-        `mouseup start ${input.selectionStart} end ${input.selectionEnd}`,
-      );
-      if (input.selectionStart === 0 && input.selectionEnd === 8) {
-        console.log("full select");
-      }
-      maskedInputRef.current?.click();
-    },
-    [],
-  );
+  const handleMouseUp = useCallback<MouseEventHandler<HTMLInputElement>>(() => {
+    maskedInputRef.current?.click();
+  }, []);
 
   return {
     inputRef: setInputEl,
     eventHandlers: {
       onBlur: maskedInputRef.current?.blur,
-      onChange: handleChange,
-      onClick: handleClick,
       onDoubleClick: handleDoubleClick,
       onFocus: handleFocus,
       onKeyDown: handleKeyDown,

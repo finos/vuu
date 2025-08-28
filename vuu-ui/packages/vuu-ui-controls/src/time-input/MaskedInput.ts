@@ -3,6 +3,7 @@ import {
   EventEmitter,
   Hours,
   incrementTimeUnitValue,
+  isValidTimeString,
   Minutes,
   Seconds,
   TimeString,
@@ -37,7 +38,8 @@ export type MaskedInputEvents = {
 export class MaskedInput extends EventEmitter<MaskedInputEvents> {
   #controlled = false;
   #input: HTMLInputElement | null;
-  #pattern = "hh:mm:ss";
+  #isFocused = false;
+  #isIncrementalChange = false;
   #selectionStart = -1;
   #selectionEnd = -1;
   #value;
@@ -68,6 +70,10 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
     }
   }
 
+  get isFocused() {
+    return this.#isFocused;
+  }
+
   get selectionStart() {
     return this.#selectionStart;
   }
@@ -84,6 +90,7 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
 
   private setValue(value: TimeString) {
     if (!this.#controlled) {
+      this.#isIncrementalChange = false;
       this.#value = value;
       if (this.#input) {
         this.#input.value = value;
@@ -110,18 +117,6 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
     }
   }
 
-  get hours() {
-    return this.#value.slice(0, 2) as Hours;
-  }
-
-  get minutes() {
-    return this.#value.slice(3, 5) as Minutes;
-  }
-
-  get seconds() {
-    return this.#value.slice(6, 8) as Seconds;
-  }
-
   get value() {
     return this.#value;
   }
@@ -130,12 +125,20 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
    * Setting the value this way invokes 'controlled' mode
    */
   set value(value: TimeString) {
-    console.log(`set controlled value ${value}`);
     this.#controlled = true;
     this.#value = value;
-    requestAnimationFrame(() => {
-      this.restoreSelection();
-    });
+    if (this.isFocused) {
+      const isIncremental = this.#isIncrementalChange;
+      this.#isIncrementalChange = false;
+
+      requestAnimationFrame(() => {
+        if (isValidTimeString(value) && !isIncremental) {
+          this.advanceSelection();
+        } else {
+          this.restoreSelection();
+        }
+      });
+    }
   }
 
   clear(unit: TimeUnit) {
@@ -193,8 +196,21 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
     }
   }
 
+  advanceSelection() {
+    if (this.#unitSelected) {
+      this.select(this.#unitSelected, true);
+    } else if (this.#halfUnitSelected === "hours") {
+      this.select("minutes");
+    } else if (this.#halfUnitSelected === "minutes") {
+      this.select("seconds");
+    } else if (this.#halfUnitSelected === "seconds") {
+      this.select("seconds");
+    } else {
+      throw Error("unreachable code, in theory");
+    }
+  }
+
   moveFocus(direction: "left" | "right") {
-    console.log(`move focus ${direction} selected ${this.#unitSelected}`);
     if (direction === "right") {
       if (
         this.#unitSelected === "hours" ||
@@ -220,9 +236,7 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
         this.select("hours");
       } else {
         const selection = this.getSelection();
-        console.log({ selection });
         if (selection === CursorAtEnd) {
-          console.log("cursor at end");
           this.select("seconds");
         }
       }
@@ -251,6 +265,7 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
 
   incrementValue() {
     if (this.#input) {
+      this.#isIncrementalChange = true;
       const unit = this.getUnitAtCursorPos();
       const unitValue = this.getUnitValue(unit);
       const newUnitValue = incrementTimeUnitValue(unit, unitValue);
@@ -261,6 +276,7 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
 
   decrementValue() {
     if (this.#input) {
+      this.#isIncrementalChange = true;
       const unit = this.getUnitAtCursorPos();
       const unitValue = this.getUnitValue(unit);
       const newUnitValue = decrementTimeUnitValue(unit, unitValue);
@@ -284,7 +300,6 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
         this.select("hours");
       } else {
         if (cursorPos > 0) {
-          //   console.log(`Backspace val = ${this.#value} cursorPos ${cursorPos}`);
           const offset =
             this.selectionStart === 6 || this.selectionStart === 3 ? 2 : 1;
           const newValue = this.#value
@@ -316,31 +331,20 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
           .split("")
           .toSpliced(cursorPos, 1, key)
           .join("") as TimeString;
-        this.#value = newValue;
-        this.#input.value = this.#value;
-        if (this.#unitSelected) {
-          this.select(this.#unitSelected, true);
-        } else if (this.#halfUnitSelected === "hours") {
-          this.select("minutes");
-        } else if (this.#halfUnitSelected === "minutes") {
-          this.select("seconds");
-        } else if (this.#halfUnitSelected === "seconds") {
-          this.select("seconds");
-        } else {
-          console.log("NEVER HAPPENS");
-          if (this.selectionStart === 1 || this.selectionStart === 4) {
-            this.selectionStart += 2;
-            this.selectionEnd += 2;
-          } else {
-            this.selectionStart += 1;
-            this.selectionEnd += 1;
+
+        this.setValue(newValue);
+
+        if (!isValidTimeString(newValue)) {
+          if (this.#unitSelected) {
+            this.select(this.#unitSelected);
+            this.#input.classList.add("invalid");
           }
-          requestAnimationFrame(() => {
-            this.#input?.setSelectionRange(
-              this.#selectionStart,
-              this.selectionEnd,
-            );
-          });
+        } else {
+          this.#input.classList.remove("invalid");
+
+          if (!this.#controlled) {
+            this.advanceSelection();
+          }
         }
       }
     }
@@ -381,11 +385,9 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
   }
   doubleClick() {
     if (this.#input) {
-      //   if (this.value !== this.#pattern) {
       const { selectionStart, selectionEnd } = this.#input;
       if (selectionStart === null || selectionEnd === null) {
         // do nothing
-        // } else if (selectionStart === selectionEnd) {
       } else {
         if (selectionStart < 3) {
           this.select("hours");
@@ -400,16 +402,9 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
   }
 
   focus = () => {
-    console.log("maskefinput focus");
     if (this.#input) {
-      // if (this.#value === "") {
-      //   if (this.#showTemplateWhileEditing) {
-      //     this.#value = this.#input.value = this.#pattern;
-      //   } else {
-      //     this.#value = this.#input.value = "00:00:00";
-      //     this.emit("change", this.value as TimeString);
-      //   }
-      // }
+      this.#isFocused = true;
+
       requestAnimationFrame(() => {
         this.select("hours");
         setTimeout(() => {
@@ -422,11 +417,7 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
   };
 
   blur = () => {
-    // if (this.#input && this.#input.value === this.#pattern) {
-    //   this.#value = this.#input.value = "";
-    //   this.emit("change", this.#value as TimeString);
-    // } else {
     this.removeSelection();
-    // }
+    this.#isFocused = false;
   };
 }

@@ -48,6 +48,14 @@ const TimeInputTemplate = ({
     setValue(valueProp);
   }, [valueProp]);
 
+  const handleChange = useCallback(
+    (value: TimeString) => {
+      console.log(`change value ${value}`);
+      onChange?.(value);
+    },
+    [onChange],
+  );
+
   const handleCommit = useCallback<CommitHandler<HTMLInputElement, Date>>(
     (e, value) => {
       console.log(`commit value ${value}`);
@@ -79,7 +87,7 @@ const TimeInputTemplate = ({
       <TimeInput
         data-testid="timeinput"
         defaultValue={defaultValue}
-        onChange={onChange}
+        onChange={handleChange}
         onCommit={handleCommit}
         value={value}
       />
