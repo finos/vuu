@@ -9,7 +9,7 @@ import org.finos.toolbox.collection.array.{ImmutableArray, ImmutableArrays}
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.row.{NoRowBuilder, RowBuilder}
-import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName, allDefaultColumns}
+import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 
 import java.util
@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap
 import scala.collection.mutable
 
 /**
- * When we are a ViewPort listening on a join table, we want to register our interest
+ * When we are a ViewPort listening on a join table, we want to register our interest,
  * but we want updates via Join Manager, not via the underlying tables (at mo)
  *
  * So we wrap the listener and discard the message.
@@ -81,8 +81,6 @@ case class JoinDataTableData(
 
     val primaryKeyIndex = keyToIndexMap.get(origPrimaryKey)
     var keyIndex = 0
-
-    //logger.info(s"Getting foreign keys for $origPrimaryKey ix = $primaryKeyIndex")
 
     if (primaryKeyIndex == null)
       return null
@@ -233,10 +231,10 @@ case class JoinDataTableData(
           //if we have a key for this table in the update
           if (key != null) {
 
-            //then add a new ummutable array entry
+            //then add a new immutable array entry
             val newKeysByJoinIndexData = keysByJoinIndex(joinFieldIndex).+(key.asInstanceOf[String])
 
-            //set the index value to be the immutale array of foriegn keys
+            //set the index value to be the immutable array of foreign keys
             newKeysByJoinIndex(joinFieldIndex) = newKeysByJoinIndexData
 
             //if the key value for the join index was null in the incoming message
@@ -403,7 +401,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
 
   /**
-   * Pull row ith only a key returns the immutable RowData object as its stored within the table.
+   * Pull row ith only a key returns the immutable RowData object as it's stored within the table.
    * When doing bulk operations on data such as index hits or filters.
    *
    * @param key
@@ -417,7 +415,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     pullRow(key, columns)
   }
 
-  lazy val viewPortColumns = ViewPortColumnCreator.create(this, this.tableDef.columns.map(_.name).toList)
+  lazy val viewPortColumns: ViewPortColumns = ViewPortColumnCreator.create(this, this.tableDef.columns.map(_.name).toList)
 
   private def keyExistsInLeftMostSourceTable(key: String): Boolean = {
     val keysByTable = joinData.getKeyValuesByTable(key)
@@ -498,55 +496,6 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     val asArray = asRowData.toArray(columns.getColumns())
 
     asArray
-
-//    val columnsByTable = columns.getColumns()
-//      .filter(_.isInstanceOf[JoinColumn])
-//      .map(c => c.asInstanceOf[JoinColumn])
-//      .groupBy(_.sourceTable.name)
-//
-//    val keysByTable = joinData.getKeyValuesByTable(key)
-//
-//    if (keysByTable == null || !keyExistsInLeftMostSourceTable(key))
-//      Array()
-//    else {
-//
-//      val foldedMap = columnsByTable.foldLeft(Map[JoinColumn, Any]())({ case (previous, (tableName, columnList)) =>
-//
-//        val table = sourceTables(tableName)
-//
-//        val fk = if (keysByTable == null) null
-//        else
-//          keysByTable.get(tableName) match {
-//            case Some(fk) => fk
-//            case None => null
-//          }
-//
-//        //val sourceColumns = columnList.map(jc => jc.sourceColumn)
-//        val sourceColumns = ViewPortColumnCreator.create(table,  columnList.map(jc => jc.sourceColumn).map(_.name))
-//
-//        if (fk == null) {
-//          logger.info(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key $key")
-//          previous
-//        }
-//        else {
-//          table.pullRow(fk, sourceColumns) match {
-//            case EmptyRowData =>
-//              previous
-//            case data: RowWithData =>
-//              previous ++ columnList.map(column => (column -> column.sourceColumn.getData(data)))
-//          }
-//        }
-//      })
-//
-//      if (foldedMap.isEmpty) {
-//        Array()
-//      } else {
-//        columns.getColumns().map(c => foldedMap.get(c.asInstanceOf[JoinColumn]) match {
-//          case None => ""
-//          case Some(x) => x
-//        }).toArray[Any]
-//      }
-//    }
   }
 
   def notifyListeners(rowKey: String): Unit = {
@@ -630,7 +579,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     joinData.getKeyValuesByTable(pk)
   }
 
-  //in a join table, we must propogate the registration to all child tables also
+  //in a join table, we must propagate the registration to all child tables also
   override def addKeyObserver(key: String, observer: KeyObserver[RowKeyUpdate]): Boolean = {
 
     val keysByTable = getFKForPK(key)
@@ -645,7 +594,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
       sourceTables.foreach({ case (name, table) =>
         keysByTable.get(name) match {
           case Some(foreignKey) if foreignKey != null => table.addKeyObserver(foreignKey, wrapped)
-          case Some(null) => logger.trace("Foreign key not ready yet")
+          case Some(null) => logger.trace(s"Foreign key not ready yet for ${table.getTableDef.name} (in join with ${this.getTableDef.name} key = $key")
           case _ =>
             logger.error(s"Could not load foreign key for ${table.getTableDef.name} (in join with ${this.getTableDef.name} key = $key")
         }
@@ -656,7 +605,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
   }
 
-  //in a join table, we must propogate the removal of registration to all child tables also
+  //in a join table, we must propagate the removal of registration to all child tables also
   override def removeKeyObserver(key: String, observer: KeyObserver[RowKeyUpdate]): Boolean = {
 
     val keysByTable = getFKForPK(key)
