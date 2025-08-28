@@ -147,6 +147,21 @@ declare global {
         ```
         * */
       (chainer: "not.be.activeDescendant"): Chainable<Subject>;
+
+      /**
+       * Checks if there is a text selection in effect that
+       * matches the expectation.
+       *
+       * @example
+       ```
+       cy.findByTestId('test-input).should('have.selectionRange',0, 2)
+       ```
+       * */
+      (
+        chainer: "have.selectionRange",
+        from: number,
+        to: number,
+      ): Chainable<Subject>;
     }
   }
 }
@@ -163,7 +178,7 @@ const isHighlighted: ChaiPlugin = (_chai) => {
     // make sure it's an Element
     new _chai.Assertion(
       root.nodeType,
-      `Expected an Element but got '${String(root)}'`
+      `Expected an Element but got '${String(root)}'`,
     ).to.equal(1);
 
     const className = this._obj.attr("class");
@@ -173,7 +188,7 @@ const isHighlighted: ChaiPlugin = (_chai) => {
       `expected root to include CSS class #{exp}, got #{act} instead.`,
       `expected root not to have class #{exp}.`,
       "saltHighlighted",
-      className
+      className,
     );
   }
 
@@ -195,7 +210,7 @@ const hasFocusVisible: ChaiPlugin = (_chai) => {
     // make sure it's an Element
     new _chai.Assertion(
       root.nodeType,
-      `Expected an Element but got '${String(root)}'`
+      `Expected an Element but got '${String(root)}'`,
     ).to.equal(1);
 
     const className = this._obj.attr("class");
@@ -205,7 +220,7 @@ const hasFocusVisible: ChaiPlugin = (_chai) => {
       `expected root to include CSS class #{exp}, got #{act} instead.`,
       `expected root not to have class #{exp}.`,
       "saltFocusVisible",
-      className
+      className,
     );
   }
 
@@ -227,7 +242,7 @@ const hasAriaSelected: ChaiPlugin = (_chai) => {
     // make sure it's an Element
     new _chai.Assertion(
       root.nodeType,
-      `Expected an Element but got '${String(root)}'`
+      `Expected an Element but got '${String(root)}'`,
     ).to.equal(1);
 
     const ariaSelected = this._obj.attr("aria-selected");
@@ -237,7 +252,7 @@ const hasAriaSelected: ChaiPlugin = (_chai) => {
       `expected root to have aria-selected #{exp}, got #{act} instead.`,
       `expected root to have aria-selected = #{exp}, got #{act} instead`,
       "true",
-      ariaSelected
+      ariaSelected,
     );
   }
 
@@ -259,7 +274,7 @@ const isInTheViewport: ChaiPlugin = (_chai, utils) => {
     // make sure it's an Element
     new _chai.Assertion(
       root.nodeType,
-      `Expected an Element but got '${String(root)}'`
+      `Expected an Element but got '${String(root)}'`,
     ).to.equal(1);
 
     const viewportHeight = Cypress.config(`viewportHeight`);
@@ -269,7 +284,7 @@ const isInTheViewport: ChaiPlugin = (_chai, utils) => {
       !(rect.bottom < 0 || rect.top - viewportHeight >= 0),
       `expected \n${elementToString(root)} to be in the viewport.`,
       `expected \n${elementToString(root)} to not be in the viewport`,
-      null
+      null,
     );
   }
 
@@ -293,7 +308,7 @@ const isViewportSize: ChaiPlugin = (_chai, utils) => {
     // make sure it's an Element
     new _chai.Assertion(
       root.nodeType,
-      `Expected an Element but got '${String(root)}'`
+      `Expected an Element but got '${String(root)}'`,
     ).to.equal(1);
 
     const viewportHeight = Cypress.config(`viewportHeight`);
@@ -303,12 +318,12 @@ const isViewportSize: ChaiPlugin = (_chai, utils) => {
     this.assert(
       rect.height === viewportHeight && rect.width === viewportWidth,
       `expected \n${elementToString(
-        root
+        root,
       )} to be sized to fill viewport (${viewportWidth} x ${viewportHeight}), actual height ${
         rect.height
       }, width: ${rect.width} .`,
       `expected \n${elementToString(root)} to not be sized to fill viewport.`,
-      null
+      null,
     );
   }
 
@@ -331,7 +346,7 @@ const isActiveDescendant: ChaiPlugin = (_chai) => {
     // make sure it's an Element
     new _chai.Assertion(
       root.nodeType,
-      `Expected an Element but got '${String(root)}'`
+      `Expected an Element but got '${String(root)}'`,
     ).to.equal(1);
 
     const id = root.id;
@@ -340,7 +355,7 @@ const isActiveDescendant: ChaiPlugin = (_chai) => {
         $focused.attr("aria-activedescendant") === id,
         "expected #{this} to be #{exp}",
         "expected #{this} not to be #{exp}",
-        "active descendant"
+        "active descendant",
       );
     });
   }
@@ -350,5 +365,40 @@ const isActiveDescendant: ChaiPlugin = (_chai) => {
 
 // registers our assertion function "isFocused" with Chai
 chai.use(isActiveDescendant);
+
+/**
+ * Checks if the element text includes a text selection range
+ *
+ * @example
+ * cy.findByTestId('test-input).should('have.selectionRange',0,3)
+ */
+const hasSelectionRange: ChaiPlugin = (_chai, utils) => {
+  function assertHasSelectedRange(
+    this: AssertionStatic,
+    rangeFrom: number,
+    rangeTo: number,
+  ) {
+    const root = this._obj.get(0);
+    // make sure it's an Element
+    new _chai.Assertion(
+      root.nodeType,
+      `Expected an Element but got '${String(root)}'`,
+    ).to.equal(1);
+
+    const { selectionStart, selectionEnd } = root;
+
+    this.assert(
+      rangeFrom === selectionStart && rangeTo === selectionEnd,
+      `expected root to have selectionRange from:${rangeFrom} to: ${rangeTo}, got from: ${selectionStart} to: ${selectionEnd} instead.`,
+      `expected root not to have selectionRange from:${rangeFrom} to: ${rangeTo}`,
+      "selectedRange",
+    );
+  }
+
+  _chai.Assertion.addMethod("selectionRange", assertHasSelectedRange);
+};
+
+// registers our assertion function "hasSelectedRange" with Chai
+chai.use(hasSelectionRange);
 
 export {};
