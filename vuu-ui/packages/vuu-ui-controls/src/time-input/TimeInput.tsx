@@ -31,7 +31,6 @@ export const TimeInput = forwardRef<HTMLInputElement, TimeInputProps>(
     },
     ref,
   ) {
-    console.log(`TimeInput defaultValue = ${defaultValue}, value=${value}`);
     const targetWindow = useWindow();
     useComponentCssInjection({
       testId: "vuu-time-input",
@@ -56,6 +55,7 @@ export const TimeInput = forwardRef<HTMLInputElement, TimeInputProps>(
         defaultValue={defaultValue}
         key={defaultValue}
         placeholder={placeholder}
+        readOnly
         ref={useForkRef(ref, inputRef)}
         spellCheck="false"
         value={value}

@@ -29,6 +29,34 @@ describe("TimeInput", () => {
         cy.findByTestId("pre-timeinput").find("input").focus();
         cy.realPress("Tab");
         cy.findByTestId("timeinput").should("be.focused");
+        cy.findByTestId("timeinput").should("have.selectionRange", 0, 2);
+      });
+      describe("WHEN left/right arrow keys used", () => {
+        it("THEN right arrow key shifts selection right", () => {
+          cy.mount(<TestTimeInput defaultValue="00:00:00" />);
+          cy.findByTestId("pre-timeinput").find("input").focus();
+          cy.realPress("Tab");
+          cy.realPress("ArrowRight");
+          cy.findByTestId("timeinput").should("have.selectionRange", 3, 5);
+          cy.realPress("ArrowRight");
+          cy.findByTestId("timeinput").should("have.selectionRange", 6, 8);
+          cy.realPress("ArrowRight");
+          cy.findByTestId("timeinput").should("have.selectionRange", 6, 8);
+        });
+        it("THEN left arrow key shifts selection left", () => {
+          cy.mount(<TestTimeInput defaultValue="00:00:00" />);
+          cy.findByTestId("pre-timeinput").find("input").focus();
+          cy.realPress("Tab");
+          cy.realPress("ArrowRight");
+          cy.realPress("ArrowRight");
+          cy.findByTestId("timeinput").should("have.selectionRange", 6, 8);
+          cy.realPress("ArrowLeft");
+          cy.findByTestId("timeinput").should("have.selectionRange", 3, 5);
+          cy.realPress("ArrowLeft");
+          cy.findByTestId("timeinput").should("have.selectionRange", 0, 2);
+          cy.realPress("ArrowLeft");
+          cy.findByTestId("timeinput").should("have.selectionRange", 0, 2);
+        });
       });
     });
   });

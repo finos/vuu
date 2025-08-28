@@ -5,4 +5,10 @@
     &:focus::-webkit-input-placeholder {
         color: transparent;
     }
+
+}
+
+.invalid::selection {
+    background-color: red !important;
+    color: white !important;
 }
