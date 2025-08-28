@@ -1,16 +1,16 @@
 package org.finos.vuu.core.table
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.api.{JoinTableDef, TableDef}
-import org.finos.vuu.core.index.IndexedField
-import org.finos.vuu.provider.JoinTableProvider
-import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
 import org.finos.toolbox.collection.array.{ImmutableArray, ImmutableArrays}
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.api.{JoinTableDef, TableDef}
+import org.finos.vuu.core.index.IndexedField
 import org.finos.vuu.core.row.{NoRowBuilder, RowBuilder}
 import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
+import org.finos.vuu.provider.JoinTableProvider
+import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap
@@ -306,8 +306,12 @@ case class JoinDataTableData(
               observers.foreach(ob => {
                 logger.debug(s"[join] changing observer $ob to point from $oldKey to $newKey based on join provider update")
                 val wrapped = WrappedKeyObserver(ob)
-                foreignTable.removeKeyObserver(oldKey, wrapped)
-                if (newKey != null) foreignTable.addKeyObserver(newKey.asInstanceOf[String], wrapped)
+                if (oldKey != null) {
+                  foreignTable.removeKeyObserver(oldKey, wrapped)
+                }
+                if (newKey != null) {
+                  foreignTable.addKeyObserver(newKey.asInstanceOf[String], wrapped)
+                }
               })
 
             }
