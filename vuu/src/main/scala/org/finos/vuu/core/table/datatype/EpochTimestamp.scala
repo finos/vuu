@@ -1,11 +1,26 @@
 package org.finos.vuu.core.table.datatype
 
+import org.finos.toolbox.time.Clock
+
+import java.time.Instant
+import java.util.concurrent.TimeUnit.{MILLISECONDS, SECONDS}
+
+object EpochTimestamp {
+
+  def apply(clock: Clock): EpochTimestamp = {
+    EpochTimestamp(MILLISECONDS.toNanos(clock.now()))
+  }
+
+  def apply(instant: Instant): EpochTimestamp = {
+    EpochTimestamp(SECONDS.toNanos(instant.getEpochSecond) + instant.getNano)
+  }
+
+}
+
 /**
  * A class representing an Instant in time
- * @param nanos the number of nanoseconds since Jan 1st 1970 00:00:00 UTC
+ * @param nanos the number of nanoseconds since 01/01/1970 00:00:00.000000000 UTC
  */
 case class EpochTimestamp(nanos: Long) {
-
-  def getNanos: Long = nanos
 
 }

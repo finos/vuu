@@ -13,7 +13,7 @@ trait Serializer[R, SERTYPE] {
 
 object JsonVsSerializer extends Serializer[String, MessageBody] {
 
-  def getMapper = {
+  def getMapper: ObjectMapper = {
     val mapper = new ObjectMapper()
     mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
     mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
