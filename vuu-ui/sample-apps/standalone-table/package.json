@@ -1,6 +1,6 @@
 {
   "name": "standalone-table",
-  "version": "0.13.31",
+  "version": "0.13.32",
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -17,12 +17,12 @@
   "devDependencies": {},
   "dependencies": {
     "@fontsource/open-sans": "^4.5.13",
-    "@vuu-ui/vuu-icons": "0.13.31",
-    "@vuu-ui/vuu-layout": "0.13.31",
-    "@vuu-ui/vuu-shell": "0.13.31",
-    "@vuu-ui/vuu-table": "0.13.31",
-    "@vuu-ui/vuu-theme": "0.13.31",
-    "@vuu-ui/vuu-utils": "0.13.31",
+    "@vuu-ui/vuu-icons": "0.13.32",
+    "@vuu-ui/vuu-layout": "0.13.32",
+    "@vuu-ui/vuu-shell": "0.13.32",
+    "@vuu-ui/vuu-table": "0.13.32",
+    "@vuu-ui/vuu-theme": "0.13.32",
+    "@vuu-ui/vuu-utils": "0.13.32",
     "clsx": "^2.0.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"

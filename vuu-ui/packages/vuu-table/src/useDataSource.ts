@@ -168,12 +168,6 @@ export const useDataSource = ({
         } else {
           dataSource.range = rangeRef.current = range;
         }
-        // emit a range event omitting the renderBufferSize
-        // This isn't great, we're using the dataSource as a conduit to emit a
-        // message that has nothing to do with the dataSource itself. Client
-        // is the DataSourceState component.
-        // WHY CANT THIS BE DONE WITHIN DataSource ?
-        // dataSource.emit("range", range);
       }
     },
     [

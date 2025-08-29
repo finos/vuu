@@ -237,12 +237,13 @@ export class ArrayDataSource
 
     let config = this._config;
 
+    if (range) {
+      this.setRange(range);
+    }
     const hasConfigProps =
       aggregations || columns || filterSpec || groupBy || sort;
+
     if (hasConfigProps) {
-      if (range) {
-        this.setRange(range);
-      }
       config = {
         ...config,
         aggregations: aggregations || this._config.aggregations,
