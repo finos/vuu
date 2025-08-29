@@ -230,4 +230,119 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
 
   }
 
+  Scenario("Check join of join of joins in reverse order") {
+
+    val dateTime = 1437728400000L
+
+    val ordersDef = TableDef(
+      name = "orders",
+      keyField = "orderId",
+      columns = Columns.fromNames("orderId:String", "ric:String", "tradeTime:Long", "quantity:Double"),
+      joinFields =  "orderId","ric")
+
+    val instrumentDef = TableDef(
+      name = "instruments",
+      keyField = "ric",
+      columns = Columns.fromNames("ric:String", "currency:String"),
+      joinFields = "ric","currency")
+
+    val currencyDef = TableDef(
+      "currencies",
+      "currency",
+      Columns.fromNames("currency:String", "country:String"),
+      "currency")
+
+    val join1Def = JoinTableDef(
+      name          = "instrumentToCurrency",
+      baseTable     = instrumentDef,
+      joinColumns   = Columns.allFrom(instrumentDef) ++ Columns.allFromExcept(currencyDef, "currency"),
+      joins  =
+        JoinTo(
+          table = currencyDef,
+          joinSpec = JoinSpec( left = "currency", right = "currency", LeftOuterJoin)
+        ),
+      links = VisualLinks(),
+      joinFields = Seq("ric")
+    )
+
+    val join2Def = JoinTableDef(
+      name          = "orderToInstrument",
+      baseTable     = ordersDef,
+      joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(join1Def, "ric"),
+      joins  =
+        JoinTo(
+          table = join1Def,
+          joinSpec = JoinSpec( left = "ric", right = "ric", LeftOuterJoin)
+        ),
+      links = VisualLinks(),
+      joinFields = Seq("orderId")
+    )
+
+    val joinProvider   = JoinTableProviderImpl()
+
+    val tableContainer = new TableContainer(joinProvider)
+
+    val orders = tableContainer.createTable(ordersDef)
+    val instruments = tableContainer.createTable(instrumentDef)
+    val currencies = tableContainer.createTable(currencyDef)
+
+    val instrumentToCurrency = tableContainer.createJoinTable(join1Def)
+    val orderToInstrument = tableContainer.createJoinTable(join2Def)
+
+    val ordersProvider = new MockProvider(orders)
+    val instrumentsProvider = new MockProvider(instruments)
+    val currenciesProvider = new MockProvider(currencies)
+
+    val providerContainer = new ProviderContainer(joinProvider)
+
+    val viewPortContainer = setupViewPort(tableContainer, providerContainer)
+
+    joinProvider.start()
+
+    joinProvider.runOnce()
+
+    val session = ClientSessionId("sess-01", "chris")
+
+    val outQueue = new OutboundRowPublishQueue()
+
+    val vpcolumns = ViewPortColumnCreator.create(orderToInstrument, List("orderId", "ric", "currency", "country"))
+
+    val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orderToInstrument, DefaultRange, vpcolumns)
+
+    viewPortContainer.runOnce()
+
+    assertVpEq(filterByVpId(combineQs(viewPort), viewPort)){
+      Table(
+        ("orderId" ,"ric"     ,"currency"   ,"country"   ),
+      )
+    }
+
+    ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
+    ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "AIR.PA"))
+
+    joinProvider.runOnce()
+    viewPortContainer.runOnce()
+
+    instrumentsProvider.tick("VOD.L", Map("ric" -> "VOD.L", "currency" -> "GBP"))
+    instrumentsProvider.tick("AIR.PA", Map("ric" -> "AIR.PA", "currency" -> "EUR"))
+
+    joinProvider.runOnce()
+    viewPortContainer.runOnce()
+
+    currenciesProvider.tick("GBP", Map("currency" -> "GBP", "country" -> "UK"))
+    currenciesProvider.tick("EUR", Map("currency" -> "EUR", "country" -> "FR"))
+
+    joinProvider.runOnce()
+    viewPortContainer.runOnce()
+
+    assertVpEq(filterByVpId(combineQs(viewPort), viewPort)){
+      Table(
+        ("orderId" ,"ric"     ,"currency"   ,"country"   ),
+         ("NYC-0001","VOD.L"   ,"GBP"     ,"UK"     ),
+        ("NYC-0002","AIR.PA"  ,"EUR"     ,"FR"     )
+      )
+    }
+
+  }
+
 }
