@@ -79,11 +79,12 @@ case class JoinDataTableData(
 
   def getKeyValuesByTable(origPrimaryKey: String): Map[String, String] = {
 
-    val primaryKeyIndex = keyToIndexMap.get(origPrimaryKey)
-    var keyIndex = 0
+    val primaryKeyIndex = if (origPrimaryKey == null) null else keyToIndexMap.get(origPrimaryKey)
 
     if (primaryKeyIndex == null)
       return null
+
+    var keyIndex = 0
 
     val map = new mutable.HashMap[String, String]()
 
@@ -307,9 +308,11 @@ case class JoinDataTableData(
                 logger.debug(s"[join] changing observer $ob to point from $oldKey to $newKey based on join provider update")
                 val wrapped = WrappedKeyObserver(ob)
                 if (oldKey != null) {
+                  logger.trace(s"[join] removing observer $ob on $oldKey")
                   foreignTable.removeKeyObserver(oldKey, wrapped)
                 }
                 if (newKey != null) {
+                  logger.trace(s"[join] adding observer $ob on $newKey")
                   foreignTable.addKeyObserver(newKey.asInstanceOf[String], wrapped)
                 }
               })
