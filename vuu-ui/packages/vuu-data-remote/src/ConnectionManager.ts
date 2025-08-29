@@ -11,7 +11,6 @@ import {
   VuuRemoveVisualLink,
   VuuRpcMenuRequest,
   VuuRpcServiceRequest,
-  VuuRpcViewportRequest,
   VuuTableList,
   VuuTableListRequest,
   VuuTableMetaRequest,
@@ -181,7 +180,6 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
       message:
         | VuuRpcServiceRequest
         | VuuRpcMenuRequest
-        | VuuRpcViewportRequest
         | VuuCreateVisualLink
         | VuuRemoveVisualLink,
     ) => this.asyncRequest<T>(message),
@@ -202,7 +200,6 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
       | VuuRpcMenuRequest
       | VuuTableListRequest
       | VuuTableMetaRequest
-      | VuuRpcViewportRequest
       | VuuCreateVisualLink
       | VuuRemoveVisualLink,
   ): Promise<T> => {

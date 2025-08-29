@@ -85,17 +85,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     val viewPortDef = viewPort.getStructure.viewPortDef
 
-    viewPortDef.service.processRpcRequest(rpcName, new RpcParams(null, params, Some(viewPort.getColumns), Some(viewPort.getKeys), ctx))
-  }
-
-  def callRpcService(vpId: String, method: String, params: Array[Any], namedParams: Map[String, Any], session: ClientSessionId)(ctx: RequestContext): ViewPortAction = {
-    val viewPort = this.getViewPortById(vpId)
-
-    if(viewPort == null)
-      throw new Exception(s"No viewport $vpId found for RPC Call for $method")
-
-    val viewPortDef = viewPort.getStructure.viewPortDef
-    viewPortDef.service.processViewPortRpcCall(method, new RpcParams(params, namedParams, Some(viewPort.getColumns), Some(viewPort.getKeys), ctx))
+    viewPortDef.service.processRpcRequest(rpcName, new RpcParams(params, Some(viewPort.getColumns), Some(viewPort.getKeys), ctx))
   }
 
   def callRpcCell(vpId: String, rpcName: String, session: ClientSessionId, rowKey: String, field: String, singleValue: Object): ViewPortAction = {
@@ -173,6 +163,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         throw new Exception(s"Service is not editable rpc")
     }
   }
+
   def callRpcEditRow(vpId: String, key: String, data: Map[String, Any], session: ClientSessionId): ViewPortEditAction = {
     val viewPort = this.getViewPortById(vpId)
     val viewPortDef = viewPort.getStructure.viewPortDef
@@ -184,6 +175,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         throw new Exception(s"Service is not editable rpc")
     }
   }
+
   def callRpcEditCell(vpId: String, key: String, column: String, data: AnyRef, session: ClientSessionId): ViewPortEditAction = {
     val viewPort = this.getViewPortById(vpId)
     val viewPortDef = viewPort.getStructure.viewPortDef
@@ -314,6 +306,34 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       case vp: ViewPort =>
         vp.setEnabled(true)
         logger.debug(s"Enabled $vpId in container")
+    }
+  }
+
+  def freezeViewPort(vpId: String): Unit = {
+    this.viewPorts.get(vpId) match {
+      case null =>
+        throw new Exception(s"Could not find viewport to freeze $vpId")
+      case vp: ViewPort =>
+        if (vp.isFrozen) {
+          throw new Exception(s"Could not freeze viewport $vpId because it's already frozen")
+        } else {
+          vp.freeze()
+          logger.debug(s"Froze viewport $vpId in container")
+        }
+    }
+  }
+
+  def unfreezeViewPort(vpId: String): Unit = {
+    this.viewPorts.get(vpId) match {
+      case null =>
+        throw new Exception(s"Could not find viewport to unfreeze $vpId")
+      case vp: ViewPort =>
+        if (vp.isFrozen) {
+          vp.unfreeze()
+          logger.debug(s"Unfroze viewport $vpId in container")
+        } else {
+          throw new Exception(s"Could not unfreeze viewport $vpId because it's not frozen")
+        }
     }
   }
 
@@ -884,7 +904,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         val filterAndSort = viewPort.filterAndSort
 
         val (millis, _) = TimeIt.timeIt {
-          val sorted = filterAndSort.filterAndSort(viewPort.table, keys, viewPort.getColumns, viewPort.permissionChecker())
+          val sorted = filterAndSort.filterAndSort(viewPort.table, keys, viewPort.getColumns, viewPort.permissionChecker(), viewPort.viewPortFrozenTime)
           viewPort.setKeys(viewPort.getKeys.create(sorted))
         }
 

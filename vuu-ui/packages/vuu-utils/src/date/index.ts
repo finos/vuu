@@ -9,7 +9,16 @@ export {
   type DateTimePattern,
   supportedDateTimePatterns,
 } from "./types";
-export { toCalendarDate } from "./date-utils";
+export {
+  asTimeString,
+  isValidTimeString,
+  type DateStringISO,
+  toCalendarDate,
+  stringIsInvalidTime,
+  stringIsValidTime,
+  Time,
+  type TimeString,
+} from "./date-utils";
 export {
   dateTimePattern,
   defaultPatternsByType,

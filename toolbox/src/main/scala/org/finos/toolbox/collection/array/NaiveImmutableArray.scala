@@ -1,9 +1,6 @@
 package org.finos.toolbox.collection.array
 
-import java.lang.Object
 import scala.reflect.ClassTag
-
-
 
 class NaiveImmutableArray[T <: Object :ClassTag](val array: Array[T] = Array.empty) extends ImmutableArray[T]{
 
@@ -51,7 +48,7 @@ class NaiveImmutableArray[T <: Object :ClassTag](val array: Array[T] = Array.emp
 
   override def set(index: Int, element: T): ImmutableArray[T] = {
     val previous = array.slice(0, index)
-    val after = array.slice(index + 1, this.length - 1)
+    val after = array.slice(index + 1, this.length)
     new NaiveImmutableArray[T](previous ++ Array(element) ++ after)
   }
 

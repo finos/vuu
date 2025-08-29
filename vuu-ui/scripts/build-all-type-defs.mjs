@@ -25,7 +25,6 @@ const packages = [
   "vuu-popups",
   "vuu-shell",
   "vuu-table",
-  "vuu-tanstack-table",
   "vuu-table-extras",
   "vuu-ui-controls",
   "vuu-utils",

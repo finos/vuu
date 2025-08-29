@@ -1,0 +1,27 @@
+.vuuColumnFilter {
+    border: solid 1px var(--salt-editable-borderColor);
+    border-radius: 6px;
+    max-width: 200px;
+
+
+    .vuuColumnFilter-rangeHigh {
+        position: relative;
+    }
+
+    .vuuColumnFilter-rangeHigh::before {
+        content: "";
+        width: 1px;
+        position: absolute;
+        background: var(--salt-separable-primary-borderColor);
+        /* Accomodate button border */
+        left: 0;
+        top: calc(-1 * var(--salt-spacing-100));
+        bottom: calc(-1 * var(--salt-spacing-100));
+    }
+
+}
+
+.vuuColumnFilter-trigger {
+    --saltButton-borderRadius: 4px 0px 0px 4px;
+    --saltButton-padding: var(--salt-spacing-200);
+}

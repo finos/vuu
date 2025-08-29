@@ -8,32 +8,25 @@ import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames => BCColumnName, BasketTradingColumnNames => BTColumnName, BasketTradingConstituentColumnNames => ColumnName}
 import org.finos.vuu.core.module.basket.result.ErrorReason
 import org.finos.vuu.core.table._
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler, RpcHandler, RpcParams}
-import org.finos.vuu.net.{ClientSessionId, RequestContext}
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler, RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
+import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.viewport._
 
 import scala.util.control.NonFatal
 
 
 trait BasketTradingConstituentJoinServiceIF extends EditRpcHandler {
-  def setSell(selection: ViewPortSelection, session: ClientSessionId): ViewPortAction
+  def setSell(params: RpcParams): RpcFunctionResult
 
-  def setBuy(selection: ViewPortSelection, session: ClientSessionId): ViewPortAction
+  def setBuy(params: RpcParams): RpcFunctionResult
 
-  def addConstituent(ric: String)(ctx: RequestContext): ViewPortAction
+  def addConstituent(params: RpcParams): RpcFunctionResult
 }
 
-// TODO: see comment on processViewPortRpcCall for why we extends DefaultRpcHandler with RpcHandler
-class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: Clock, val tableContainer: TableContainer) extends DefaultRpcHandler with RpcHandler with BasketTradingConstituentJoinServiceIF with StrictLogging {
-
-  /**
-   * We switched to DefaultRpcHandler instead of RpcHandler so that ViewportTypeAheadRpcHandler is enabled by default.
-   * This class needs the processViewPortRpcCall from RpcHandler though.
-   * Ideally we should switch to use DefaultRpcHandler.processViewPortRpcCall
-   */
-  override def processViewPortRpcCall(methodName: String, rpcParams: RpcParams): ViewPortAction = {
-    super[RpcHandler].processViewPortRpcCall(methodName, rpcParams)
-  }
+class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: Clock, val tableContainer: TableContainer) extends DefaultRpcHandler with BasketTradingConstituentJoinServiceIF with StrictLogging {
+  registerRpc("setSell", params => setSell(params))
+  registerRpc("setBuy", params => setBuy(params))
+  registerRpc("addConstituent", params => addConstituent(params))
 
   override def menuItems(): ViewPortMenu = ViewPortMenu("Direction",
     new SelectionViewPortMenuItem("Set Sell", "", this.setSell, "SET_SELECTION_SELL"),
@@ -54,8 +47,18 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
 
   override def onFormClose(): ViewPortFormCloseAction = ViewPortFormCloseAction("", this.onFormClose)
 
+  override def setSell(params: RpcParams): RpcFunctionResult = {
+    val selection: ViewPortSelection = params.namedParams("selection").asInstanceOf[ViewPortSelection]
+    updateSelectedForRpc(selection, Map(ColumnName.Side -> Side.Sell))
+  }
+
   def setSell(selection: ViewPortSelection, session: ClientSessionId): ViewPortAction = {
     updateSelected(selection, Map(ColumnName.Side -> Side.Sell))
+  }
+
+  override def setBuy(params: RpcParams): RpcFunctionResult = {
+    val selection: ViewPortSelection = params.namedParams("selection").asInstanceOf[ViewPortSelection]
+    updateSelectedForRpc(selection, Map(ColumnName.Side -> Side.Buy))
   }
 
   def setBuy(selection: ViewPortSelection, session: ClientSessionId): ViewPortAction = {
@@ -63,9 +66,10 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
   }
 
   //this is RCP call and method name is part of contract with UI
-  def addConstituent(ric: String)(ctx: RequestContext): ViewPortAction = {
+  override def addConstituent(params: RpcParams): RpcFunctionResult = {
+    val ric: String = params.namedParams("ric").asInstanceOf[String]
     if (table.size() == 0)
-      ViewPortEditFailure(s"Failed to add constituents to ${table.name} as adding row to empty table is currently not supported")
+      RpcFunctionFailure(1, s"Failed to add constituents to ${table.name} as adding row to empty table is currently not supported", null)
     else {
       val existingConstituentRow = table.pullRow(table.primaryKeys.head)
       val tradeId = existingConstituentRow.get(ColumnName.InstanceId).asInstanceOf[String]
@@ -76,7 +80,7 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
 
       val basketConstituentRows = getConstituentsWith(ric) //todo what to do when multiple result?
       val description =
-        if(basketConstituentRows.nonEmpty)
+        if (basketConstituentRows.nonEmpty)
           basketConstituentRows.head.get(BCColumnName.Description).asInstanceOf[String]
         else ""
 
@@ -89,9 +93,9 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
 
       //todo should we guard against adding row for ric that already exist?
       updateJoinTable(Array(newRow)) match {
-        case Right(_) => ViewPortCreateSuccess(newRow.key)
+        case Right(_) => RpcFunctionSuccess(Some(newRow.key))
         case Left(errorReason) =>
-          ViewPortRpcFailure(errorReason.reason)
+          RpcFunctionFailure(1, errorReason.reason, null)
       }
     }
   }
@@ -109,8 +113,8 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
           columnName match {
             case ColumnName.Weighting | ColumnName.LimitPrice =>
               val doubleValue = convertToDouble(data)
-              baseTable.processUpdate(key, RowWithData(key, Map(ColumnName.InstanceIdRic -> key, columnName -> doubleValue)), clock.now())
-            case _ => baseTable.processUpdate(key, RowWithData(key, Map(ColumnName.InstanceIdRic -> key, columnName -> data)), clock.now())
+              baseTable.processUpdate(key, RowWithData(key, Map(ColumnName.InstanceIdRic -> key, columnName -> doubleValue)))
+            case _ => baseTable.processUpdate(key, RowWithData(key, Map(ColumnName.InstanceIdRic -> key, columnName -> data)))
           }
           ViewPortEditSuccess()
         case None =>
@@ -133,7 +137,7 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
 
   private def onEditRow(key: String, row: Map[String, Any], vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
     val table = vp.table.asTable
-    table.processUpdate(key, RowWithData(key, row), clock.now())
+    table.processUpdate(key, RowWithData(key, row))
     ViewPortEditSuccess()
   }
 
@@ -179,11 +183,28 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
     getBaseTable() match {
       case Some(baseTable: DataTable) =>
         rows.foreach(row =>
-          baseTable.processUpdate(row.key, row, clock.now())
+          baseTable.processUpdate(row.key, row)
         )
         Right()
       case None =>
         Left(ErrorReason(s"Could not find base table for ${table.name}"))
+    }
+  }
+
+  private def updateSelectedForRpc(selection: ViewPortSelection, updates: Map[String, Any]): RpcFunctionSuccess = {
+    val selectedKeys = selection.rowKeyIndex.map({ case (key, _) => key }).toList
+    val updateRows = selectedKeys.map(key => {
+      //require source table primary key for join table updates
+      val sourceTableKey = Map(ColumnName.InstanceIdRic -> key)
+      RowWithData(key, sourceTableKey ++ updates)
+    })
+
+    updateJoinTable(updateRows.toArray) match {
+      case Right(_) => RpcFunctionSuccess(None)
+      case Left(errorReason) =>
+        logger.debug(s"Could not update selection values${errorReason.reason}")
+        //TODO #1663 do we want to send success or failure
+        RpcFunctionSuccess(None)
     }
   }
 

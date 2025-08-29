@@ -18,6 +18,7 @@ import type {
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditResponse,
   DataSourceFilter,
+  DataSource,
 } from "@vuu-ui/vuu-data-types";
 import {
   BaseDataSource,
@@ -55,7 +56,7 @@ const toClientRow = (row: DataSourceRow, keys: KeySet) => {
   return clientRow;
 };
 
-export class TreeDataSource extends BaseDataSource {
+export class TreeDataSource extends BaseDataSource implements DataSource {
   public columnDescriptors: ColumnDescriptor[];
   private clientCallback: DataSourceSubscribeCallback | undefined;
   private expandedRows = new Set<string>();

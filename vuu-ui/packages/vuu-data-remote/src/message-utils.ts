@@ -1,24 +1,9 @@
+import { TableSchema, WithRequestId } from "@vuu-ui/vuu-data-types";
 import {
-  TableSchema,
-  VuuUIMessageOut,
-  WithRequestId,
-} from "@vuu-ui/vuu-data-types";
-import {
-  VuuRpcMenuRequest,
-  VuuRpcViewportRequest,
   VuuTableMetaResponse,
   VuuRow,
-  VuuRpcServiceRequest,
   VuuRange,
 } from "@vuu-ui/vuu-protocol-types";
-
-export const isVuuRpcRequest = (
-  message:
-    | VuuUIMessageOut
-    | VuuRpcServiceRequest
-    | VuuRpcMenuRequest
-    | VuuRpcViewportRequest,
-): message is VuuRpcViewportRequest => message["type"] === "VIEW_PORT_RPC_CALL";
 
 export const stripRequestId = <T>({
   requestId,

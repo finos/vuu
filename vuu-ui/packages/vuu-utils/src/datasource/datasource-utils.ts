@@ -8,7 +8,6 @@ import {
   TypeaheadSuggestionProvider,
   VuuUIMessageIn,
   VuuUIMessageInRPC,
-  VuuUIMessageInRPCEditReject,
   VuuUIMessageInTableMeta,
   VuuUIMessageOutViewport,
   WithBaseFilter,
@@ -23,6 +22,7 @@ import {
   VuuFilter,
   VuuRemoveVisualLink,
   VuuRowDataItemType,
+  VuuRpcEditError,
   VuuSort,
 } from "@vuu-ui/vuu-protocol-types";
 import { ColumnMap } from "../column-utils";
@@ -285,8 +285,7 @@ export const messageHasResult = (msg: object): msg is VuuUIMessageInRPC =>
 
 export const isErrorResponse = (
   response?: Partial<RpcResponse>,
-): response is VuuUIMessageInRPCEditReject =>
-  response?.type === "VP_EDIT_RPC_REJECT";
+): response is VuuRpcEditError => response?.type === "VP_EDIT_RPC_REJECT";
 
 export const isVisualLinkMessage = (
   msg: unknown,

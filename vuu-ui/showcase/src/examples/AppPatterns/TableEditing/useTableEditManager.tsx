@@ -8,11 +8,7 @@ import {
   VuuRpcResponse,
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
-import {
-  isOpenBulkEditResponse,
-  useData,
-  viewportRpcRequest,
-} from "@vuu-ui/vuu-utils";
+import { isOpenBulkEditResponse, useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 
 export const useTableEditManager = (vuuTable: VuuTable) => {
@@ -34,9 +30,11 @@ export const useTableEditManager = (vuuTable: VuuTable) => {
         setOpen(true);
 
         if (sessionRef.current) {
-          sessionRef.current.rpcCall?.(
-            viewportRpcRequest("VP_BULK_EDIT_END_RPC"),
-          );
+          sessionRef.current.rpcRequest?.({
+            params: {},
+            rpcName: "VP_BULK_EDIT_END_RPC",
+            type: "RPC_REQUEST",
+          });
         }
         dataSource
           .menuRpcCall({

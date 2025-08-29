@@ -6,9 +6,9 @@ import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.JoinTableDef
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.basket.TestHelper.TestDataFactory
-import org.finos.vuu.core.module.basket.service.BasketTradingConstituentJoinServiceIF
 import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.table.{DataTable, JoinTable, RowWithData, TableContainer}
+import org.finos.vuu.net.rpc.RpcParams
 import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.test.VuuServerTestCase
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
@@ -20,6 +20,7 @@ import org.scalatest.prop.Tables.Table
 class BasketConstituentMutateTest extends VuuServerTestCase {
 
   import BasketModule._
+
   implicit val clock: Clock = new TestFriendlyClock(10001L)
   implicit val lifecycle: LifecycleContainer = new LifecycleContainer()
   implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
@@ -45,10 +46,10 @@ class BasketConstituentMutateTest extends VuuServerTestCase {
           vpBasketTradingConsJoin.setSelection(Array(1, 2))
 
           And("select set sell context menu")
-          val basketTradingConstituentJoinService = vuuServer.getViewPortRpcServiceProxy[BasketTradingConstituentJoinServiceIF](vpBasketTradingConsJoin)
+          val basketTradingConstituentJoinService = vpBasketTradingConsJoin.getStructure.viewPortDef.service
           val selection = vpBasketTradingConsJoin.getSelection
           val vpSelection = ViewPortSelection(selection, vpBasketTradingConsJoin)
-          basketTradingConstituentJoinService.setSell(vpSelection, vuuServer.session)
+          basketTradingConstituentJoinService.processRpcRequest("setSell", new RpcParams(Map("selection" -> vpSelection), None, None, vuuServer.requestContext))
           vuuServer.runOnce()
 
           Then("get all the updates that have occurred for all view ports from the outbound queue")
@@ -59,7 +60,7 @@ class BasketConstituentMutateTest extends VuuServerTestCase {
 
           assertVpEq(filterByVp(vpBasketTradingConsJoin, updates)) {
             Table(
-              ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "bid",  "ask", "filledQty", "orderStatus"),
+              ("quantity", "side", "instanceId", "instanceIdRic", "basketId", "ric", "description", "notionalUsd", "notionalLocal", "venue", "algo", "algoParams", "pctFilled", "weighting", "priceSpread", "limitPrice", "priceStrategyId", "bid", "ask", "filledQty", "orderStatus"),
               (10L, "BUY", "testUser-00001", "testUser-00001.BP.L", ".FTSE", "BP.L", "Beyond Petroleum", null, null, null, -1, null, null, 0.1, null, null, 2, 2.1, 2.4, 0, "PENDING"),
               (10L, "SELL", "testUser-00001", "testUser-00001.BT.L", ".FTSE", "BT.L", "British Telecom", null, null, null, -1, null, null, 0.1, null, null, 2, null, null, 0, "PENDING"),
               (10L, "SELL", "testUser-00001", "testUser-00001.VOD.L", ".FTSE", "VOD.L", "Vodafone", null, null, null, -1, null, null, 0.1, null, null, 2, 1.1, 1.4, 0, "PENDING")
@@ -74,7 +75,7 @@ class BasketConstituentMutateTest extends VuuServerTestCase {
   def GivenBasketTrade(tableContainer: TableContainer, basketName: String, side: String): String = {
     val table = tableContainer.getTable(BasketModule.BasketTradingTable)
     val rowKey = s"$uuid.$basketName"
-    table.processUpdate(rowKey, TestDataFactory.createBasketTradingRow(rowKey, basketName, side), clock.now())
+    table.processUpdate(rowKey, TestDataFactory.createBasketTradingRow(rowKey, basketName, side))
     rowKey
   }
 
@@ -92,7 +93,7 @@ class BasketConstituentMutateTest extends VuuServerTestCase {
     val baseTableDef = joinTable.getTableDef.asInstanceOf[JoinTableDef].baseTable
     joinTable.sourceTables.get(baseTableDef.name) match {
       case Some(table: DataTable) =>
-        table.processUpdate(row.key, row, clock.now())
+        table.processUpdate(row.key, row)
       case None =>
       //log and throw?
     }
@@ -102,7 +103,7 @@ class BasketConstituentMutateTest extends VuuServerTestCase {
     val table = tableContainer.getTable("prices")
     for ((ric, bid, ask) <- prices) {
       val rowKey = s"$uuid"
-      table.processUpdate(rowKey, TestDataFactory.createPricesRow(rowKey, ric, bid, ask), clock.now())
+      table.processUpdate(rowKey, TestDataFactory.createPricesRow(rowKey, ric, bid, ask))
     }
   }
 

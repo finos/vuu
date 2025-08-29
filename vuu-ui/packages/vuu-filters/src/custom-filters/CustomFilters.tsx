@@ -1,4 +1,4 @@
-import { Prompt } from "@vuu-ui/vuu-popups";
+import { Prompt } from "@vuu-ui/vuu-ui-controls";
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { IconButton } from "@vuu-ui/vuu-ui-controls";
 import { HTMLAttributes, ReactElement, useRef } from "react";
@@ -99,16 +99,7 @@ export const CustomFilters = ({
           variant="secondary"
         />
 
-        {promptProps ? (
-          <Prompt
-            {...promptProps}
-            PopupProps={{
-              anchorElement: rootRef,
-              offsetTop: 16,
-              placement: "below-center",
-            }}
-          />
-        ) : null}
+        {promptProps ? <Prompt {...promptProps} open /> : null}
       </div>
       {filterModel && vuuTable && (
         <FilterEditor

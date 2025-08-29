@@ -43,7 +43,7 @@
   }
 
   .saltCheckboxIcon-checked:after {
-    --vuu-icon-color: black;
+    --vuu-icon-color: white;
     content: "";
     background-color: var(--vuu-icon-color);
     left: var(--vuu-icon-left, -1px);

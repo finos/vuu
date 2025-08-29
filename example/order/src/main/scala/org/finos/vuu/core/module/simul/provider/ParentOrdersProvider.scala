@@ -41,7 +41,7 @@ class ParentOrdersProvider(val table: DataTable, val model: ParentChildOrdersMod
       "side" -> po.side, "account" -> po.account, "exchange" -> po.exchange, "ccy" -> po.ccy,
       "algo" -> po.algo, "volLimit" -> po.volLimit, "filledQty" -> po.filledQty, "openQty" -> po.openQty,
       "averagePrice" -> po.averagePrice, "status" -> po.status, "lastUpdate" -> clock.now()
-    )), clock.now())
+    )))
   }
 
   override def subscribe(key: String): Unit = {}

@@ -15,18 +15,6 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
                            val tableContainer: TableContainer,
                            val providers: ProviderContainer)(implicit timeProvider: Clock) extends ServerApi with StrictLogging {
 
-
-  override def process(msg: ViewPortRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.callRpcService(msg.vpId, msg.rpcName, msg.params, msg.namedParams, ctx.session)(ctx)) match {
-      case Success(action) =>
-        logger.debug("Processed VP RPC call " + msg)
-        vsMsg(ViewPortRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
-      case Failure(e) =>
-        logger.warn("Failed to process VP RPC call", e)
-        vsMsg(ViewPortMenuRpcReject(msg.vpId, msg.rpcName, e.getMessage))(ctx)
-    }
-  }
-
   override def process(msg: ViewPortMenuCellRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.callRpcCell(msg.vpId, msg.rpcName, ctx.session, msg.rowKey, msg.field, msg.value)) match {
       case Success(action) =>
@@ -167,6 +155,28 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
       case Failure(e) =>
         logger.warn("Failed to disable viewport", e)
         vsMsg(DisableViewPortReject(msg.viewPortId))(ctx)
+    }
+  }
+
+  override def process(msg: FreezeViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.freezeViewPort(msg.viewPortId)) match {
+      case Success(_) =>
+        logger.debug("View port froze")
+        vsMsg(FreezeViewPortSuccess(msg.viewPortId))(ctx)
+      case Failure(e) =>
+        logger.warn("Failed to freeze viewport", e)
+        vsMsg(FreezeViewPortReject(msg.viewPortId, e.toString))(ctx)
+    }
+  }
+
+  override def process(msg: UnfreezeViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.unfreezeViewPort(msg.viewPortId)) match {
+      case Success(_) =>
+        logger.debug("View port unfroze")
+        vsMsg(UnfreezeViewPortSuccess(msg.viewPortId))(ctx)
+      case Failure(e) =>
+        logger.warn("Failed to unfreeze viewport", e)
+        vsMsg(UnfreezeViewPortReject(msg.viewPortId, e.toString))(ctx)
     }
   }
 

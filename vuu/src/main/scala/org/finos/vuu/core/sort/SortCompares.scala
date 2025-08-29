@@ -49,8 +49,20 @@ object SortCompares {
     val c1 = o1.get(column).asInstanceOf[String]
     val c2 = o2.get(column).asInstanceOf[String]
 
-    val resultIfAscending = c1.compareToIgnoreCase(c2)
+    val resultIfAscending = safeCompareString(c1, c2)
     switchSignIfDescending(resultIfAscending, direction = direction)
+  }
+
+  private def safeCompareString(c1: String, c2: String): Int = {
+    if (c1 eq c2) { //Short circuit on reference equality
+      0
+    } else if (c1 == null) {
+      1
+    } else if (c2 == null) {
+      -1
+    } else {
+      c1.compareToIgnoreCase(c2)
+    }
   }
 
   def compareDouble(o1: RowData, o2: RowData, column: Column, direction: Char): Int = {
@@ -92,5 +104,5 @@ object SortCompares {
     switchSignIfDescending(resultIfAscending, direction)
   }
 
-  private def switchSignIfDescending(res: Int, direction: Char): Int = if (direction == 'A') res else res * -1
+  private def switchSignIfDescending(res: Int, direction: Char): Int = if (direction == 'A') res else -res
 }

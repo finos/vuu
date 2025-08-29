@@ -8,15 +8,15 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{JoinTableDef, TableDef, ViewPortDef}
 import org.finos.vuu.core.module.{ModuleContainer, RealizedViewServerModule, StaticServedResource, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
-import org.finos.vuu.feature.inmem.{VuuInMemPlugin, VuuInMemPluginType}
+import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net._
-import org.finos.vuu.net.flowcontrol.{DefaultFlowController, FlowController, FlowControllerFactory, NoHeartbeatFlowController}
+import org.finos.vuu.net.flowcontrol.FlowControllerFactory
 import org.finos.vuu.net.http.{Http2Server, VuuHttp2Server}
 import org.finos.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer, Serializer}
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.rpc.{JsonSubTypeRegistry, RpcHandler}
 import org.finos.vuu.net.ws.WebSocketServer
-import org.finos.vuu.plugin.{Plugin, PluginRegistry}
+import org.finos.vuu.plugin.PluginRegistry
 import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, Provider, ProviderContainer}
 import org.finos.vuu.viewport._
 
@@ -145,13 +145,11 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
     val vs = this
 
     val realized = new RealizedViewServerModule {
-      override def rpcHandlers: List[RpcHandler] = module.rpcHandlersUnrealized.map(_.apply(vs))
       override def restServices: List[RestService] = module.restServicesUnrealized.map(_.apply(vs))
       override def name: String = module.name
       override def tableDefContainer: TableDefContainer = module.tableDefContainer
       override def tableDefs: List[TableDef] = module.tableDefs
       override def serializationMixin: AnyRef = module.serializationMixin
-      override def rpcHandlersUnrealized: List[IVuuServer => RpcHandler] = module.rpcHandlersUnrealized
       override def restServicesUnrealized: List[IVuuServer => RestService] = module.restServicesUnrealized
       override def getProviderForTable(table: DataTable, viewserver: IVuuServer)(implicit time: Clock, life: LifecycleContainer): Provider = {
         module.getProviderForTable(table, viewserver)(time, life)

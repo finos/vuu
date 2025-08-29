@@ -3,12 +3,19 @@ package org.finos.vuu.core.sort
 import org.finos.toolbox.collection.{MapDiffResult, MapDiffUtils}
 import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.text.{AsciiUtil, CodeGenUtil}
+import org.finos.toolbox.time.{DefaultClock, TestFriendlyClock}
 import org.finos.vuu.api.{Index, Indices, TableDef}
 import org.finos.vuu.core.filter.FilterClause
-import org.finos.vuu.core.table.{Columns, RowWithData, InMemDataTable, ViewPortColumnCreator}
+import org.finos.vuu.core.table.DefaultColumnNames.CreatedTimeColumnName
+import org.finos.vuu.core.table.{Columns, InMemDataTable, RowWithData, ViewPortColumnCreator}
 import org.finos.vuu.test.TestFriendlyJoinTableProvider
 
 object FilterAndSortFixture {
+  private val timeProvider = new TestFriendlyClock(10001L)
+  val now: Long = timeProvider.now();
+  val previousHour: Long = now - 3600000;
+  val nextHour: Long = now + 3600000;
+
 
   def getFilteredRows(table: InMemDataTable, clause: FilterClause): Iterable[RowWithData] = {
     val vpColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)
@@ -18,7 +25,7 @@ object FilterAndSortFixture {
     resultRows
   }
 
-  def assertRows(result: Set[RowWithData], expected:  Set[RowWithData]): Unit ={
+  def assertRows(result: Set[RowWithData], expected: Set[RowWithData]): Unit = {
     val diff = MapDiffUtils.diff(
       Map("rows" -> result.map(_.data)),
       Map("rows" -> expected.map(_.data))
@@ -36,7 +43,7 @@ object FilterAndSortFixture {
     val diffHeaders = Array("exp key", "exp val", "exp datatype", "act key", "act val", "act datatype")
 
     val expectedNotSeen = diff.leftNotRight.map(kpv => Array[Any]("", "", "", kpv.path, kpv.value, kpv.theType)).toArray
-    val seenUnexpected  = diff.rightNotLeft.map(kpv => Array[Any](kpv.path, kpv.value, kpv.theType, "", "", "")).toArray
+    val seenUnexpected = diff.rightNotLeft.map(kpv => Array[Any](kpv.path, kpv.value, kpv.theType, "", "", "")).toArray
     val different = diff.bothButDiff.map(tuple => {
       val (left, right) = tuple
       Array[Any](left.path, left.value, left.theType, right.path, right.value, right.theType)
@@ -57,7 +64,7 @@ object FilterAndSortFixture {
     val viewPortColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)
     val result = sort.doSort(table, table.primaryKeys, viewPortColumns)
     val vpColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)
-    val asTable = result.toArray.map( key => (key, table.pullRow(key, vpColumns).asInstanceOf[RowWithData] ) ).toList
+    val asTable = result.toArray.map(key => (key, table.pullRow(key, vpColumns).asInstanceOf[RowWithData])).toList
     asTable
   }
 
@@ -89,6 +96,17 @@ object FilterAndSortFixture {
     )
   }
 
+  def setupTableWithCreationTime(): InMemDataTable = {
+    setupTable(List.empty,
+      row("tradeTime" -> 5L, "quantity" -> 500.0d, "ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD", CreatedTimeColumnName -> previousHour),
+      row("tradeTime" -> 2L, "quantity" -> 100.0d, "ric" -> "VOD.L", "orderId" -> "LDN-0001", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", CreatedTimeColumnName -> now),
+      row("tradeTime" -> 1L, "quantity" -> 100.0d, "ric" -> "BT.L", "orderId" -> "LDN-0002", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", CreatedTimeColumnName -> nextHour),
+      row("tradeTime" -> 3L, "quantity" -> 100.0d, "ric" -> "VOD.L", "orderId" -> "LDN-0003", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", CreatedTimeColumnName -> previousHour),
+      row("tradeTime" -> 5L, "quantity" -> 100.0d, "ric" -> "BT.L", "orderId" -> "LDN-0008", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", CreatedTimeColumnName -> now),
+      row("tradeTime" -> 6L, "quantity" -> 100.0d, "ric" -> "VOD.L", "orderId" -> "NYC-0002", "onMkt" -> false, "trader" -> "steve", "ccyCross" -> "GBPUSD", CreatedTimeColumnName -> nextHour)
+    )
+  }
+
   def setupTable(indices: List[String], rows: RowWithData*): InMemDataTable = {
     val columns = Columns.fromNames(
       "orderId:String",
@@ -103,11 +121,11 @@ object FilterAndSortFixture {
       name = "orders",
       keyField = "orderId",
       columns = columns,
-      indices = Indices(indices.map(Index):_*),
+      indices = Indices(indices.map(Index): _*),
       joinFields = "ric", "orderId", "ccyCross"
     )
-    val table: InMemDataTable = new InMemDataTable(tableDef, new TestFriendlyJoinTableProvider)(new MetricsProviderImpl)
-    rows.foreach(row => table.processUpdate(row.key, row, 0L))
+    val table: InMemDataTable = new InMemDataTable(tableDef, new TestFriendlyJoinTableProvider)(new MetricsProviderImpl, new DefaultClock)
+    rows.foreach(row => table.processUpdate(row.key, row))
     table
   }
 

@@ -1,0 +1,9 @@
+.vuuBasicColumnFilter {
+  border: solid 1px var(--salt-editable-borderColor);
+  border-radius: 4px;
+  max-width: 210px;
+
+  .vuuBasicColumnFilter-edit-control {
+    display: flex;
+  }
+}

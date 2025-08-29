@@ -19,6 +19,10 @@
     {
       "id": "CVE-2025-5889",
       "reason": "Lib used only in dev tooling (ESLint) no possibility of attack"
+    },
+    {
+      "id": "CVE-2025-54798",
+      "reason": "Only used in tests, will remove once cypress updated"
     }
   ]
 }

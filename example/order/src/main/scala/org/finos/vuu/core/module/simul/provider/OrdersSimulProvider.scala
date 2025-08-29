@@ -101,7 +101,7 @@ class OrderSimulator(table: DataTable)(implicit time: Clock) {
 
     val asMap = toMap(od)
 
-    table.processUpdate(od.orderId, RowWithData(od.orderId, asMap), time.now())
+    table.processUpdate(od.orderId, RowWithData(od.orderId, asMap))
   }
 
   private def toMap(od: OrderDetail): Map[String, Any] = {
@@ -125,7 +125,7 @@ class OrderSimulator(table: DataTable)(implicit time: Clock) {
       .map(_ * quantityPerFill)
       .map(v => asMap + ("filledQuantity" -> v))
       .foreach(m => {
-        table.processUpdate(od.orderId, RowWithData(od.orderId, m), time.now())
+        table.processUpdate(od.orderId, RowWithData(od.orderId, m))
         time.sleep(secsPerFill * 50)
       })
   }

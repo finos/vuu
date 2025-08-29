@@ -12,8 +12,26 @@ import {
 } from "react";
 import type { DataSourceFilter } from "@vuu-ui/vuu-data-types";
 import { Input, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
-import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
+import { getSchema } from "@vuu-ui/vuu-data-test";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
+
+const useInstrumentsDataSource = () => {
+  const instrumentsSchema = getSchema("instruments");
+  const dataSourceProps = useMemo(
+    () => ({
+      columns: instrumentsSchema.columns.map(toColumnName),
+      table: instrumentsSchema.table,
+    }),
+    [instrumentsSchema],
+  );
+
+  const { VuuDataSource } = useData();
+  return useMemo(
+    () => new VuuDataSource(dataSourceProps),
+    [VuuDataSource, dataSourceProps],
+  );
+};
 
 const lastUpdatedColumn = {
   name: "lastUpdated",
@@ -156,12 +174,17 @@ export const FilterBarNoSuggestions = (props: Partial<FilterBarProps>) => (
   <FilterBarTemplate {...props} />
 );
 
-export const DefaultFilterBar = (props: Partial<FilterBarProps>) => (
-  <LocalDataSourceProvider>
-    <FilterBarTemplate {...props} />
-  </LocalDataSourceProvider>
-);
+/** tags=data-consumer */
+export const DefaultFilterBar = (props: Partial<FilterBarProps>) => {
+  const dataSource = useInstrumentsDataSource();
+  return (
+    <DataSourceProvider dataSource={dataSource}>
+      <FilterBarTemplate {...props} />
+    </DataSourceProvider>
+  );
+};
 
+/** tags=data-consumer */
 export const DefaultFilterBarColumnLabels = (
   props: Partial<FilterBarProps>,
 ) => {
@@ -179,16 +202,21 @@ export const DefaultFilterBarColumnLabels = (
     { label: "Price", name: "price", serverDataType: "double" },
     { label: "Date", name: "date", serverDataType: "long" },
   ];
+  const dataSource = useInstrumentsDataSource();
+
   return (
-    <LocalDataSourceProvider>
+    <DataSourceProvider dataSource={dataSource}>
       <FilterBarTemplate {...props} columnDescriptors={columnDescriptors} />
-    </LocalDataSourceProvider>
+    </DataSourceProvider>
   );
 };
 
+/** tags=data-consumer */
 export const FilterBarOneSimpleFilter = () => {
+  const dataSource = useInstrumentsDataSource();
+
   return (
-    <LocalDataSourceProvider>
+    <DataSourceProvider dataSource={dataSource}>
       <FilterBarTemplate
         filterState={{
           filters: [
@@ -197,71 +225,83 @@ export const FilterBarOneSimpleFilter = () => {
           activeIndices: [],
         }}
       />
-    </LocalDataSourceProvider>
+    </DataSourceProvider>
   );
 };
 
+/** tags=data-consumer */
 export const FilterBarOneMultiValueFilter = () => {
+  const dataSource = useInstrumentsDataSource();
+
   return (
-    <FilterBarTemplate
-      filterState={{
-        filters: [
-          {
-            column: "currency",
-            name: "Filter One",
-            op: "in",
-            values: ["CAD", "EUR"],
-          },
-        ],
-        activeIndices: [],
-      }}
-    />
+    <DataSourceProvider dataSource={dataSource}>
+      <FilterBarTemplate
+        filterState={{
+          filters: [
+            {
+              column: "currency",
+              name: "Filter One",
+              op: "in",
+              values: ["CAD", "EUR"],
+            },
+          ],
+          activeIndices: [],
+        }}
+      />
+    </DataSourceProvider>
   );
 };
 
+/** tags=data-consumer */
 export const FilterBarMultipleFilters = ({
   onFilterDeleted,
   onFilterRenamed,
 }: Partial<FilterBarProps>) => {
+  const dataSource = useInstrumentsDataSource();
+
   return (
-    <FilterBarTemplate
-      filterState={{
-        filters: [
-          { column: "currency", name: "Filter One", op: "=", value: "EUR" },
-          { column: "exchange", name: "Filter Two", op: "=", value: "XLON" },
-          {
-            column: "ric",
-            name: "Filter Three",
-            op: "in",
-            values: ["AAPL", "BP.L", "VOD.L"],
-          },
-          {
-            column: "ric",
-            name: "Filter Four",
-            op: "in",
-            values: ["AAPL", "BP.L", "VOD.L", "TSLA"],
-          },
-          {
-            op: "and",
-            name: "Filter Five",
-            filters: [
-              { column: "ric", op: "in", values: ["AAPL", "VOD.L"] },
-              { column: "exchange", op: "=", value: "NASDAQ" },
-              { column: "price", op: ">", value: 1000 },
-            ],
-          },
-        ],
-        activeIndices: [],
-      }}
-      onFilterDeleted={onFilterDeleted}
-      onFilterRenamed={onFilterRenamed}
-    />
+    <DataSourceProvider dataSource={dataSource}>
+      <FilterBarTemplate
+        filterState={{
+          filters: [
+            { column: "currency", name: "Filter One", op: "=", value: "EUR" },
+            { column: "exchange", name: "Filter Two", op: "=", value: "XLON" },
+            {
+              column: "ric",
+              name: "Filter Three",
+              op: "in",
+              values: ["AAPL", "BP.L", "VOD.L"],
+            },
+            {
+              column: "ric",
+              name: "Filter Four",
+              op: "in",
+              values: ["AAPL", "BP.L", "VOD.L", "TSLA"],
+            },
+            {
+              op: "and",
+              name: "Filter Five",
+              filters: [
+                { column: "ric", op: "in", values: ["AAPL", "VOD.L"] },
+                { column: "exchange", op: "=", value: "NASDAQ" },
+                { column: "price", op: ">", value: 1000 },
+              ],
+            },
+          ],
+          activeIndices: [],
+        }}
+        onFilterDeleted={onFilterDeleted}
+        onFilterRenamed={onFilterRenamed}
+      />
+    </DataSourceProvider>
   );
 };
 
+/** tags=data-consumer */
 export const FilterBarMultipleFilterSets = () => {
   const [filterSets, setFilterSets] = useState(initialFilterSets);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const dataSource = useInstrumentsDataSource();
 
   const handleChangeSelectedIndex = useCallback(
     (evt: SyntheticEvent<HTMLButtonElement>) => {
@@ -284,22 +324,24 @@ export const FilterBarMultipleFilterSets = () => {
   );
 
   return (
-    <div>
-      <ToggleButtonGroup
-        value={selectedIndex}
-        onChange={handleChangeSelectedIndex}
-      >
-        {filterSets.map((fs, i) => (
-          <ToggleButton key={i} value={i}>
-            {`Filter Set ${i + 1} (${fs.filters.length} filters)`}
-          </ToggleButton>
-        ))}
-      </ToggleButtonGroup>
-      <DefaultFilterBarCore
-        filterState={filterSets[selectedIndex]}
-        onFilterStateChanged={handleChangeFilterState}
-      />
-    </div>
+    <DataSourceProvider dataSource={dataSource}>
+      <div>
+        <ToggleButtonGroup
+          value={selectedIndex}
+          onChange={handleChangeSelectedIndex}
+        >
+          {filterSets.map((fs, i) => (
+            <ToggleButton key={i} value={i}>
+              {`Filter Set ${i + 1} (${fs.filters.length} filters)`}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+        <DefaultFilterBarCore
+          filterState={filterSets[selectedIndex]}
+          onFilterStateChanged={handleChangeFilterState}
+        />
+      </div>
+    </DataSourceProvider>
   );
 };
 
@@ -349,37 +391,52 @@ const initialFilterSets: FilterState[] = [
   },
 ];
 
+/** tags=data-consumer */
 export const QuickFilters = () => {
+  const dataSource = useInstrumentsDataSource();
+
   return (
     <>
-      <style>{`
+      <DataSourceProvider dataSource={dataSource}>
+        <style>{`
       .vuuFilterBar-quick-filter { width: 100%; }
     `}</style>
-      <FilterBarTemplate
-        className="quick-filters"
-        variant="quick-filters-only"
-      />
+        <FilterBarTemplate
+          className="quick-filters"
+          variant="quick-filters-only"
+        />
+      </DataSourceProvider>
     </>
   );
 };
 
+/** tags=data-consumer */
 export const QuickFiltersThreeColumns = () => {
+  const dataSource = useInstrumentsDataSource();
+
   return (
-    <FilterBarTemplate
-      variant="quick-filters-only"
-      QuickFilterProps={{ quickFilterColumns: ["bbg"] }}
-    />
+    <DataSourceProvider dataSource={dataSource}>
+      <FilterBarTemplate
+        variant="quick-filters-only"
+        QuickFilterProps={{ quickFilterColumns: ["bbg"] }}
+      />
+    </DataSourceProvider>
   );
 };
 
+/** tags=data-consumer */
 export const FullFilters = () => {
+  const dataSource = useInstrumentsDataSource();
+
   return (
     <>
       <style>{`
       .filter-container { background: var(--salt-container-secondary-background);}
       .vuuFilterBar { width: 100%; }
   `}</style>
-      <FilterBarTemplate variant="full-filters" />
+      <DataSourceProvider dataSource={dataSource}>
+        <FilterBarTemplate variant="full-filters" />
+      </DataSourceProvider>
     </>
   );
 };

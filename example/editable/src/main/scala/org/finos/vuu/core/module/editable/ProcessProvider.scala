@@ -16,7 +16,7 @@ class ProcessProvider(val table: DataTable)(implicit lifecycle: LifecycleContain
     (0 until 10).foreach { i =>
       val procNum = "proc-" + i
       val data = RowWithData(procNum, Map("id" -> procNum, "name" -> ("My Process " + i), "uptime" -> 5000L, "status" -> "running"))
-      table.processUpdate(procNum, data, clock.now())
+      table.processUpdate(procNum, data)
     }
   }
 

@@ -102,6 +102,18 @@ case class EnableViewPortSuccess(viewPortId: String) extends MessageBody
 
 case class EnableViewPortReject(viewPortId: String) extends MessageBody
 
+case class FreezeViewPortRequest(viewPortId: String) extends MessageBody
+
+case class FreezeViewPortSuccess(viewPortId: String) extends MessageBody
+
+case class FreezeViewPortReject(viewPortId: String, errorMessage: String) extends MessageBody
+
+case class UnfreezeViewPortRequest(viewPortId: String) extends MessageBody
+
+case class UnfreezeViewPortSuccess(viewPortId: String) extends MessageBody
+
+case class UnfreezeViewPortReject(viewPortId: String, errorMessage: String) extends MessageBody
+
 case class ChangeViewPortRequest(viewPortId: String, columns: Array[String], sort: SortSpec = SortSpec(List()), groupBy: Array[String] = Array(), filterSpec: FilterSpec = null, aggregations: Array[Aggregations] = Array()) extends MessageBody
 
 case class ChangeViewPortSuccess(viewPortId: String, columns: Array[String], sort: SortSpec = SortSpec(List()), groupBy: Array[String] = Array(), filterSpec: FilterSpec = null, aggregations: Array[Aggregations] = Array()) extends MessageBody
@@ -113,11 +125,6 @@ case class ChangeViewPortRange(viewPortId: String, from: Int, to: Int) extends M
 case class ChangeViewPortRangeSuccess(viewPortId: String, from: Int, to: Int) extends MessageBody
 
 case class OpenTreeNodeRequest(vpId: String, treeKey: String) extends MessageBody
-
-case class ViewPortRpcCall(vpId: String, rpcName: String, params: Array[Any], namedParams: Map[String, Any]) extends MessageBody
-
-case class ViewPortRpcResponse(vpId: String, method: String, action: ViewPortAction) extends MessageBody
-
 
 case class ViewPortMenuSelectionRpcCall(vpId: String, rpcName: String) extends MessageBody
 
@@ -166,10 +173,6 @@ case class Error(message: String, code: Int)
 case class MenuRpcCall(module: String, method: String, params: Array[Any], namedParams: Map[String, Any]) extends MessageBody
 
 case class MenuRpcResponse(module: String, method: String, result: ViewPortAction) extends MessageBody
-
-case class RpcCall(service: String, method: String, params: Array[Any], namedParams: Map[String, Any]) extends MessageBody
-
-case class RpcResponse(method: String, result: Any, error: Error) extends MessageBody
 
 case class RpcUpdate(table: ViewPortTable, key: String, data: Map[String, Any]) extends MessageBody
 

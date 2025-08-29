@@ -21,7 +21,6 @@ import type {
   ClientMessageBody,
   VuuRpcMenuRequest,
   VuuClientMessage,
-  VuuRpcViewportRequest,
   LinkDescriptorWithLabel,
   VuuViewportCreateResponse,
   VuuServerMessage,
@@ -50,7 +49,6 @@ import {
 import {
   createSchemaFromTableMetadata,
   groupRowsByViewport,
-  isVuuRpcRequest,
   stripRequestId,
 } from "../message-utils";
 import * as Message from "./messages";
@@ -641,21 +639,6 @@ export class ServerProxy {
       );
     }
   }
-  private viewportRpcCall(message: WithRequestId<VuuRpcViewportRequest>) {
-    const viewport = this.getViewportForClient(message.vpId, false);
-    if (viewport?.serverViewportId) {
-      const [requestId, { namedParams = {}, ...rpcRequest }] =
-        stripRequestId<VuuRpcViewportRequest>(message);
-      this.sendMessageToServer(
-        {
-          ...rpcRequest,
-          namedParams,
-          vpId: viewport.serverViewportId,
-        },
-        requestId,
-      );
-    }
-  }
 
   private rpcRequest(message: WithRequestId<VuuRpcServiceRequest>) {
     if (hasViewPortContext(message)) {
@@ -736,10 +719,6 @@ export class ServerProxy {
           default:
         }
       }
-    } else if (isVuuRpcRequest(message)) {
-      return this.viewportRpcCall(
-        message as WithRequestId<VuuRpcViewportRequest>,
-      );
     } else if (isRpcServiceRequest(message)) {
       return this.rpcRequest(message);
     } else if (isVuuMenuRpcRequest(message as VuuRpcRequest)) {
@@ -1179,18 +1158,6 @@ export class ServerProxy {
             type: "RPC_RESPONSE",
             error,
             result,
-            requestId,
-          });
-        }
-        break;
-
-      case "VIEW_PORT_RPC_RESPONSE":
-        {
-          const { method, action } = body;
-          this.postMessageToClient({
-            type: "VIEW_PORT_RPC_RESPONSE",
-            rpcName: method,
-            action,
             requestId,
           });
         }

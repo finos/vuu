@@ -1,32 +1,73 @@
-import {
-  useVuuMenuActions,
-  VuuDataSourceProvider,
-} from "@vuu-ui/vuu-data-react";
-import { getSchema, VuuTableName } from "@vuu-ui/vuu-data-test";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
+import { getSchema } from "@vuu-ui/vuu-data-test";
 import { DialogProvider } from "@vuu-ui/vuu-popups";
-import { Table, TableProps } from "@vuu-ui/vuu-table";
+import { BulkEditPanel, Table, TableProps } from "@vuu-ui/vuu-table";
 import {
   applyDefaultColumnConfig,
+  DataSourceProvider,
   toColumnName,
   useData,
 } from "@vuu-ui/vuu-utils";
-import { useMemo, useState } from "react";
+import { ReactElement, useMemo, useState } from "react";
 import { getDefaultColumnConfig } from "./columnMetaData";
 import { DemoTableContainer } from "./DemoTableContainer";
-import { useAutoLoginToVuuServer } from "../utils";
 import { DataSource } from "@vuu-ui/vuu-data-types";
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 
-const BulkEditTableTemplate = ({
-  table = "instruments",
-}: {
-  table?: VuuTableName;
-}) => {
+const schema = getSchema("instruments");
+
+export const DefaultBulkEditPanel = () => {
+  const { VuuDataSource } = useData();
+  const [bulkEditPanel, setBulkEditPanel] = useState<ReactElement | null>(null);
+  const parentDs = useMemo<DataSource>(
+    () =>
+      new VuuDataSource({
+        columns: schema.columns.map(toColumnName),
+        table: schema.table,
+      }),
+    [VuuDataSource],
+  );
+
+  const handleValidationStatusChange = (isValid: boolean) => {
+    console.log(`isValid ${isValid}`);
+  };
+
+  useMemo(async () => {
+    parentDs.select([0, 1, 2, 3]);
+    const response = await parentDs?.menuRpcCall?.({
+      type: "VIEW_PORT_MENUS_SELECT_RPC",
+      rpcName: "VP_BULK_EDIT_BEGIN_RPC",
+    });
+
+    const { table } = response.action;
+    const sessionDs = new VuuDataSource({
+      columns: ["ric", "lotSize"],
+      table,
+      viewport: table.table,
+    });
+
+    console.log({ response });
+
+    setBulkEditPanel(
+      <BulkEditPanel
+        onValidationStatusChange={handleValidationStatusChange}
+        parentDs={parentDs}
+        sessionDs={sessionDs}
+      />,
+    );
+  }, [VuuDataSource, parentDs]);
+
+  return (
+    <DataSourceProvider dataSource={parentDs}>
+      {bulkEditPanel}
+    </DataSourceProvider>
+  );
+};
+
+const BulkEditTableTemplate = () => {
   const [dataSource, setDataSource] = useState<DataSource | undefined>(
     undefined,
   );
-  const schema = getSchema(table);
   const { VuuDataSource } = useData();
 
   useMemo(async () => {
@@ -35,7 +76,7 @@ const BulkEditTableTemplate = ({
       table: schema.table,
     });
     setDataSource(ds);
-  }, [VuuDataSource, schema]);
+  }, [VuuDataSource]);
 
   const tableProps = useMemo<Pick<TableProps, "config">>(
     () => ({
@@ -44,7 +85,7 @@ const BulkEditTableTemplate = ({
         rowSeparators: true,
       },
     }),
-    [schema],
+    [],
   );
 
   const { menuBuilder, menuActionHandler } = useVuuMenuActions({
@@ -63,23 +104,11 @@ const BulkEditTableTemplate = ({
   ) : null;
 };
 
+/** tags=data-consumer */
 export const BulkEditTable = () => {
   return (
-    <LocalDataSourceProvider>
-      <DialogProvider>
-        <BulkEditTableTemplate />
-      </DialogProvider>
-    </LocalDataSourceProvider>
-  );
-};
-
-export const BulkEditTableVuu = () => {
-  useAutoLoginToVuuServer({ authenticate: false, secure: false });
-  return (
-    <VuuDataSourceProvider>
-      <DialogProvider>
-        <BulkEditTableTemplate />
-      </DialogProvider>
-    </VuuDataSourceProvider>
+    <DialogProvider>
+      <BulkEditTableTemplate />
+    </DialogProvider>
   );
 };

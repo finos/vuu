@@ -7,6 +7,10 @@ trait ServerApi {
 
   def process(msg: EnableViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage]
 
+  def process(msg: FreezeViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage]
+
+  def process(msg: UnfreezeViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage]
+
   def process(msg: ChangeViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage]
 
   def process(msg: CreateViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage]
@@ -42,7 +46,7 @@ trait ServerApi {
   def process(msg: ViewPortMenuTableRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
 
   def process(msg: ViewPortMenuSelectionRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
-  def process(msg: ViewPortRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
+
   def process(msg: ViewPortEditCellRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
 
   def process(msg: ViewPortEditRowRpcCall)(ctx: RequestContext): Option[ViewServerMessage]

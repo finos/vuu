@@ -5,7 +5,7 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.provider.Provider
 
-class SimulatedInstrumentProvider(instruments: Array[Array[String]], table: DataTable)(implicit timeProvider: Clock) extends Provider with StrictLogging {
+class SimulatedInstrumentProvider(instruments: Array[Array[String]], table: DataTable) extends Provider with StrictLogging {
 
   override def subscribe(key: String): Unit = ???
 
@@ -26,7 +26,7 @@ class SimulatedInstrumentProvider(instruments: Array[Array[String]], table: Data
 
         logger.debug(s"[INSTRUMENTS] Adding row $rowData")
 
-        table.processUpdate(ric, rowData, timeProvider.now())
+        table.processUpdate(ric, rowData)
 
       } else {
         logger.debug(s"dropped $row")

@@ -40,7 +40,6 @@ export const useFilterTableFeature = ({
   tableSchema,
 }: FilterTableFeatureProps) => {
   const { load, save, title } = useViewContext();
-
   const {
     filterState,
     onFilterDeleted,

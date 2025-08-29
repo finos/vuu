@@ -12,6 +12,11 @@ import {
 import "./LayoutContainer.examples.css";
 import { OptionGroup } from "@salt-ds/core";
 
+const viewProps = {
+  resizeable: true,
+  header: true,
+};
+
 export const SimplePalette = () => (
   <LayoutProvider>
     <Flexbox style={{ width: 900, height: 800 }}>
@@ -36,24 +41,21 @@ export const SimplePalette = () => (
               />
             }
             value="Blue Monday"
-            resizeable
-            header
+            ViewProps={viewProps}
           ></PaletteItem>
           <PaletteItem
             component={
               <Component style={{ backgroundColor: "brown", height: "100%" }} />
             }
             value="Brown Sugar"
-            resizeable
-            header
+            ViewProps={viewProps}
           ></PaletteItem>
           <PaletteItem
             component={
               <Component style={{ backgroundColor: "green", height: "100%" }} />
             }
             value="Green Day"
-            resizeable
-            header
+            ViewProps={viewProps}
           ></PaletteItem>
           <PaletteItem
             component={
@@ -62,8 +64,7 @@ export const SimplePalette = () => (
               />
             }
             value="Lemonheads"
-            resizeable
-            header
+            ViewProps={viewProps}
           ></PaletteItem>
         </Palette>
       </View>
@@ -98,32 +99,28 @@ export const StructuredPalette = () => (
             />
           }
           value="Blue Monday"
-          resizeable
-          header
+          ViewProps={viewProps}
         ></PaletteItem>
         <PaletteItem
           component={
             <Component style={{ backgroundColor: "brown", height: "100%" }} />
           }
           value="Brown Sugar"
-          resizeable
-          header
+          ViewProps={viewProps}
         ></PaletteItem>
         <PaletteItem
           component={
             <Component style={{ backgroundColor: "green", height: "100%" }} />
           }
           value="Green Day"
-          resizeable
-          header
+          ViewProps={viewProps}
         ></PaletteItem>
         <PaletteItem
           component={
             <Component style={{ backgroundColor: "yellow", height: "100%" }} />
           }
           value="Lemonheads"
-          resizeable
-          header
+          ViewProps={viewProps}
         ></PaletteItem>
       </OptionGroup>
       <OptionGroup label="Layouts" key="Layouts">
@@ -132,24 +129,21 @@ export const StructuredPalette = () => (
             <Component style={{ backgroundColor: "yellow", height: "100%" }} />
           }
           value="Lemonheads"
-          resizeable
-          header
+          ViewProps={viewProps}
         ></PaletteItem>
         <PaletteItem
           component={
             <Component style={{ backgroundColor: "yellow", height: "100%" }} />
           }
           value="Lemonheads"
-          resizeable
-          header
+          ViewProps={viewProps}
         ></PaletteItem>
         <PaletteItem
           component={
             <Component style={{ backgroundColor: "yellow", height: "100%" }} />
           }
           value="Lemonheads"
-          resizeable
-          header
+          ViewProps={viewProps}
         ></PaletteItem>
       </OptionGroup>
       <OptionGroup label="Components" key="Components">
@@ -158,40 +152,35 @@ export const StructuredPalette = () => (
             <Component style={{ backgroundColor: "yellow", height: "100%" }} />
           }
           value="Lemonheads"
-          resizeable
-          header
+          ViewProps={viewProps}
         ></PaletteItem>
         <PaletteItem
           component={
             <Component style={{ backgroundColor: "yellow", height: "100%" }} />
           }
           value="Lemonheads"
-          resizeable
-          header
+          ViewProps={viewProps}
         ></PaletteItem>
         <PaletteItem
           component={
             <Component style={{ backgroundColor: "yellow", height: "100%" }} />
           }
           value="Lemonheads"
-          resizeable
-          header
+          ViewProps={viewProps}
         ></PaletteItem>
         <PaletteItem
           component={
             <Component style={{ backgroundColor: "yellow", height: "100%" }} />
           }
           value="Lemonheads"
-          resizeable
-          header
+          ViewProps={viewProps}
         ></PaletteItem>
         <PaletteItem
           component={
             <Component style={{ backgroundColor: "yellow", height: "100%" }} />
           }
           value="Lemonheads"
-          resizeable
-          header
+          ViewProps={viewProps}
         ></PaletteItem>
       </OptionGroup>
     </Palette>

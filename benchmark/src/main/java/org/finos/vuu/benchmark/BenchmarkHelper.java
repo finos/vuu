@@ -46,7 +46,7 @@ public class BenchmarkHelper {
                 Indices.apply(toScala(List.of(Index.apply("exchange")))),
                 toScalaSeq(List.of("ric"))
         );
-        var table = new InMemDataTable(pricesDef, joinProvider, metricsProvider);
+        var table = new InMemDataTable(pricesDef, joinProvider, metricsProvider, clock);
 
         for (int i = 0; i <= size; i++) {
             var ric = "TST-" + i;
@@ -59,7 +59,7 @@ public class BenchmarkHelper {
                     "close", 106,
                     "exchange", exchange
             ));
-            table.processUpdate(ric, row, clock.now());
+            table.processUpdate(ric, row);
         }
         return table;
     }

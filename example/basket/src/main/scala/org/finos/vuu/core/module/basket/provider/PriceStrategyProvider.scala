@@ -1,11 +1,10 @@
 package org.finos.vuu.core.module.basket.provider
 
 import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.provider.DefaultProvider
 
-class PriceStrategyProvider(val table: DataTable)(implicit lifecycle: LifecycleContainer, clock: Clock) extends DefaultProvider{
+class PriceStrategyProvider(val table: DataTable)(implicit lifecycle: LifecycleContainer) extends DefaultProvider{
 
   lifecycle(this)
 
@@ -24,7 +23,7 @@ class PriceStrategyProvider(val table: DataTable)(implicit lifecycle: LifecycleC
     Strategies.foreach {
       {
         case (id, text) =>
-          table.processUpdate(id.toString, RowWithData(id.toString, Map(PS.Id -> id, PS.PriceStrategy -> text)), clock.now())
+          table.processUpdate(id.toString, RowWithData(id.toString, Map(PS.Id -> id, PS.PriceStrategy -> text)))
       }
     }
 

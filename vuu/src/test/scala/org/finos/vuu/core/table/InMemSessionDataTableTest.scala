@@ -27,8 +27,8 @@ class InMemSessionDataTableTest extends AnyFeatureSpec with Matchers {
 
   Feature("Metrics update") {
     Scenario("Should correctly update metrics WHEN processUpdate called") {
-      inMemSessionDataTable.processUpdate("1", RowWithData("1", Map("id" -> 1, "field" -> "value1")), clock.now())
-      inMemSessionDataTable.processUpdate("2", RowWithData("2", Map("id" -> 2, "field" -> "value2")), clock.now())
+      inMemSessionDataTable.processUpdate("1", RowWithData("1", Map("id" -> 1, "field" -> "value1")))
+      inMemSessionDataTable.processUpdate("2", RowWithData("2", Map("id" -> 2, "field" -> "value2")))
 
       val counter = metricsProvider.counter(inMemSessionDataTable.name + ".processUpdates.Counter")
       val meter = metricsProvider.meter(inMemSessionDataTable.name + ".processUpdates.Meter")

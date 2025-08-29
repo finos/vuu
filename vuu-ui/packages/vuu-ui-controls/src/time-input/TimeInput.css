@@ -1,0 +1,7 @@
+.vuuTimeInput {
+    width: 80px;
+
+    &:focus::-webkit-input-placeholder {
+        color: transparent;
+    }
+}

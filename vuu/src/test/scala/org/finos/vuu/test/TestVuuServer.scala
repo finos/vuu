@@ -17,12 +17,24 @@ import org.finos.vuu.viewport.{GroupBy, RowSource, ViewPort, ViewPortColumns, Vi
 
 import java.util.concurrent.ConcurrentHashMap
 
-class TestViewPort(val viewPort: ViewPort) extends ViewPort{
+class TestViewPort(val viewPort: ViewPort) extends ViewPort {
   override def updateSpecificKeys(keys: ImmutableArray[String]): Unit = viewPort.updateSpecificKeys(keys)
+
   override def setRequestId(request: String): Unit = viewPort.setRequestId(request)
+
   override def getRequestId: String = viewPort.getRequestId
+
   override def setEnabled(enabled: Boolean): Unit = viewPort.setEnabled(enabled)
+
   override def isEnabled: Boolean = viewPort.isEnabled
+
+  override def freeze(): Unit = viewPort.freeze()
+
+  override def unfreeze(): Unit = viewPort.unfreeze()
+
+  override def isFrozen: Boolean = viewPort.isFrozen
+
+  override def viewPortFrozenTime: Option[Long] = viewPort.viewPortFrozenTime
 
   override def size: Int = viewPort.size
 
@@ -102,16 +114,26 @@ class TestViewPort(val viewPort: ViewPort) extends ViewPort{
 
 trait TestVuuServer extends IVuuServer {
   def registerProvider(dataTable: DataTable, provider: Provider): Unit
+
   def registerPlugin(plugin: Plugin): Unit
+
   def login(user: String, token: String): Unit
+
   def getProvider(module: String, table: String): MockProvider
+
   def createViewPort(module: String, tableName: String): TestViewPort
+
   def createViewPort(module: String, tableName: String, viewPortRange: ViewPortRange): TestViewPort
 
   def session: ClientSessionId
+
   def runOnce(): Unit
+
   def overrideViewPortDef(table: String, vpDefFunc: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef): Unit
+
   def getViewPortRpcServiceProxy[TYPE: _root_.scala.reflect.ClassTag](viewport: ViewPort): TYPE
+
   def requestContext: RequestContext
+
   def tableContainer: TableContainer
 }

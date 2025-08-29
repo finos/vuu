@@ -46,7 +46,6 @@ import {
   metadataKeys,
   toColumnName,
   useData,
-  viewportRpcRequest,
 } from "@vuu-ui/vuu-utils";
 import { useCallback } from "react";
 import {
@@ -397,7 +396,11 @@ export const useVuuMenuActions = ({
 
       const sessionDs = ds.createSessionDataSource?.(action.table);
       const handleSubmit = () => {
-        sessionDs?.rpcCall?.(viewportRpcRequest("VP_BULK_EDIT_SUBMIT_RPC"));
+        sessionDs?.rpcRequest?.({
+          params: {},
+          rpcName: "VP_BULK_EDIT_SUBMIT_RPC",
+          type: "RPC_REQUEST",
+        });
         closeDialog();
       };
 
@@ -408,7 +411,7 @@ export const useVuuMenuActions = ({
       if (sessionDs) {
         showDialog(
           <BulkEditPanel
-            dataSource={sessionDs}
+            sessionDs={sessionDs}
             onSubmit={handleSubmit}
             parentDs={ds}
             onValidationStatusChange={handleChange}
