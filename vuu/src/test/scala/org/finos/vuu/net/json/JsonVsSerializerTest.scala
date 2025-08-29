@@ -1,10 +1,9 @@
-package org.finos.vuu.json
+package org.finos.vuu.net.json
 
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type
 import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver
 import org.finos.vuu.net._
-import org.finos.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer}
 import org.finos.vuu.net.rpc.{JsonSubTypeRegistry, VsJsonTypeResolver}
 import org.finos.vuu.viewport.ViewPortTable
 import org.scalatest.featurespec.AnyFeatureSpec
