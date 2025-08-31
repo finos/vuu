@@ -9,6 +9,10 @@
         }
     }
 
+    .saltDialogActions {
+        align-items: center;
+    }
+
     .vuuPromptConfirmButton:focus {
         outline-style: var(--salt-focused-outlineStyle);
         outline-width: var(--salt-focused-outlineWidth);

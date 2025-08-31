@@ -7,6 +7,7 @@ export interface FeatureErrorBoundaryProps extends DynamicFeatureProps {
 
 export class FeatureErrorBoundary extends React.Component<
   FeatureErrorBoundaryProps,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   any
 > {
   constructor(props: FeatureErrorBoundaryProps) {

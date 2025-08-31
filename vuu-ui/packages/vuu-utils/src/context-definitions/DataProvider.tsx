@@ -18,7 +18,3 @@ export const DataProvider = ({
 };
 
 export const useData = () => useContext(DataContext);
-export const useDataSourceExtensions = () => {
-  const { dataSourceExtensions } = useContext(DataContext);
-  return dataSourceExtensions;
-};

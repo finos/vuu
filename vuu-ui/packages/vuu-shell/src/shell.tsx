@@ -1,15 +1,16 @@
 import { ConnectionManager } from "@vuu-ui/vuu-data-remote";
 import type { LayoutChangeHandler } from "@vuu-ui/vuu-layout";
 import { LayoutProvider, StackLayout } from "@vuu-ui/vuu-layout";
-import {
-  DialogProvider,
-  NotificationsProvider,
-  useNotifications,
-} from "@vuu-ui/vuu-popups";
+import { NotificationsProvider, useNotifications } from "@vuu-ui/vuu-popups";
 import { VuuUser, logger, registerComponent } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { HTMLAttributes, ReactNode, useCallback, useMemo } from "react";
+import {
+  type HTMLAttributes,
+  type ReactNode,
+  useCallback,
+  useMemo,
+} from "react";
 import { AppHeader } from "./app-header";
 import { ApplicationProvider } from "./application-provider";
 import {
@@ -30,6 +31,7 @@ import {
 import shellCss from "./shell.css";
 import { loadingJSON } from "./workspace-management/defaultWorkspaceJSON";
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
+import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
 
 registerComponent("ApplicationSettings", UserSettingsPanel, "view");
 
@@ -196,11 +198,11 @@ export const Shell = ({
       userSettingsSchema={userSettingsSchema}
     >
       <WorkspaceProvider {...workspaceProps}>
-        <DialogProvider>
+        <ModalProvider>
           <NotificationsProvider>
             <VuuApplication {...props} user={user} />
           </NotificationsProvider>
-        </DialogProvider>
+        </ModalProvider>
       </WorkspaceProvider>
     </ApplicationProvider>
   );

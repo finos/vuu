@@ -1,11 +1,12 @@
 import { Prompt, type PromptProps } from "@vuu-ui/vuu-ui-controls";
-import { CSSProperties, FormEvent, ReactNode, useRef } from "react";
+import { CSSProperties, FormEvent, ReactNode, useMemo, useRef } from "react";
 import { FormField, FormFieldLabel, Input } from "@salt-ds/core";
 
 const PromptTemplate = ({
   children,
   cancelButtonLabel,
   confirmButtonLabel,
+  customAction,
   initialFocusedItem,
   onCancel,
   onConfirm,
@@ -19,6 +20,7 @@ const PromptTemplate = ({
   PromptProps,
   | "confirmButtonLabel"
   | "cancelButtonLabel"
+  | "customAction"
   | "initialFocusedItem"
   | "onConfirm"
   | "onCancel"
@@ -35,6 +37,7 @@ const PromptTemplate = ({
     <Prompt
       cancelButtonLabel={cancelButtonLabel}
       confirmButtonLabel={confirmButtonLabel}
+      customAction={customAction}
       initialFocusedItem={initialFocusedItem}
       onCancel={onCancel}
       onConfirm={onConfirm}
@@ -57,6 +60,15 @@ export const BareBonesPrompt = () => {
 export const FocusOnConfirm = () => {
   return (
     <PromptTemplate initialFocusedItem="confirm">
+      This is Prompt text
+    </PromptTemplate>
+  );
+};
+
+export const WithCustomAction = () => {
+  const customAction = useMemo(() => <span>Confirm to continue</span>, []);
+  return (
+    <PromptTemplate customAction={customAction} initialFocusedItem="confirm">
       This is Prompt text
     </PromptTemplate>
   );
