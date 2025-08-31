@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/vuu-ui-controls",
-  "version": "0.13.29",
+  "version": "0.13.32",
   "description": "VUU UI Controls",
   "main": "src/index.ts",
   "author": "heswell",
@@ -11,17 +11,17 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "devDependencies": {
-    "@vuu-ui/vuu-data-types": "0.13.29",
-    "@vuu-ui/vuu-protocol-types": "0.13.29",
-    "@vuu-ui/vuu-table-types": "0.13.29"
+    "@vuu-ui/vuu-data-types": "0.13.32",
+    "@vuu-ui/vuu-protocol-types": "0.13.32",
+    "@vuu-ui/vuu-table-types": "0.13.32"
   },
   "dependencies": {
-    "@vuu-ui/vuu-context-menu": "0.13.29",
-    "@vuu-ui/vuu-data-react": "0.13.29",
-    "@vuu-ui/vuu-layout": "0.13.29",
-    "@vuu-ui/vuu-popups": "0.13.29",
-    "@vuu-ui/vuu-table": "0.13.29",
-    "@vuu-ui/vuu-utils": "0.13.29",
+    "@vuu-ui/vuu-context-menu": "0.13.32",
+    "@vuu-ui/vuu-data-react": "0.13.32",
+    "@vuu-ui/vuu-layout": "0.13.32",
+    "@vuu-ui/vuu-popups": "0.13.32",
+    "@vuu-ui/vuu-table": "0.13.32",
+    "@vuu-ui/vuu-utils": "0.13.32",
     "@salt-ds/core": "1.43.0",
     "@salt-ds/icons": "1.13.2",
     "@salt-ds/styles": "0.2.1",
