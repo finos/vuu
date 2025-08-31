@@ -53,13 +53,15 @@ export const logger = (category: string) => {
   const errorEnabled = warnEnabled || loggingLevel === "error";
 
   const info = infoEnabled
-    ? (message: string) => console.info(`[${category}] ${message}`)
+    ? (message: string) =>
+        console.info(`${Date.now()} [${category}] ${message}`)
     : NO_OP;
   const warn = warnEnabled
     ? (message: string) => console.warn(`[${category}] ${message}`)
     : NO_OP;
   const debug = debugEnabled
-    ? (message: string) => console.debug(`[${category}] ${message}`)
+    ? (message: string) =>
+        console.debug(`${Date.now()} [${category}] ${message}`)
     : NO_OP;
   const error = errorEnabled
     ? (message: string) => console.error(`[${category}] ${message}`)

@@ -12,7 +12,6 @@ export type DataSourceConstructor = {
 
 export interface DataContextProps {
   VuuDataSource: DataSourceConstructor;
-  dataSourceExtensions?: unknown;
   isLocalData: boolean;
   getServerAPI: () => Promise<
     Pick<ServerAPI, "getTableList" | "getTableSchema" | "rpcCall">

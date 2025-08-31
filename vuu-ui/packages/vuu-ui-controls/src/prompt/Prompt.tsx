@@ -11,6 +11,7 @@ import cx from "clsx";
 import {
   HTMLAttributes,
   MouseEventHandler,
+  ReactNode,
   RefCallback,
   RefObject,
   useCallback,
@@ -53,6 +54,11 @@ export interface PromptProps
    * Allow fine grained configuration of confirm button
    */
   confirmButtonProps?: PromptButtonProps;
+
+  /**
+   * A custom action will be displayed in Prompt button bar, before cancel/confirm buttons.
+   */
+  customAction?: ReactNode;
   icon?: string;
   /**
    * Set this prop if one of the three built-in buttons should receive initial focus.
@@ -76,6 +82,7 @@ export const Prompt = ({
   cancelButtonProps,
   confirmButtonLabel = "Confirm",
   confirmButtonProps,
+  customAction = null,
   disableAccent,
   icon,
   initialFocusedItem,
@@ -173,6 +180,7 @@ export const Prompt = ({
       />
       <DialogContent>{children}</DialogContent>
       <DialogActions>
+        {customAction}
         {showCancelButton ? (
           <Button
             className="vuuPromptCancelButton"
