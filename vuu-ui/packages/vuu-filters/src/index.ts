@@ -10,6 +10,7 @@ export {
   FilterPillNext,
   type FilterPillNextProps,
 } from "./filter-pill/FilterPillNext";
+export { type FilterPermissions } from "./filter-pill/FilterMenu";
 export {
   FilterProvider,
   useActiveFilter,

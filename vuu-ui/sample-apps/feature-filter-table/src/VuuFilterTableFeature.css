@@ -1,5 +1,6 @@
 .vuuFilterTableFeature {
   --vuuMeasuredContainer-flex: 1 1 1px;
+  --vuuDatasourceStats-gap: var(--salt-spacing-200);
   min-height: 100px;
 }
 

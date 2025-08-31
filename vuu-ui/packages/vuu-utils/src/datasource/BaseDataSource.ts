@@ -116,6 +116,7 @@ export abstract class BaseDataSource
     // subscribe. This ensures we will subscribe with latest value.
     if (range) {
       this._range = range;
+      this.emit("range", range);
     }
   }
 
