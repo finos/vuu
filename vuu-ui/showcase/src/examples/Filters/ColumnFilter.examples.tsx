@@ -3,8 +3,9 @@ import { ColumnFilter, ColumnFilterProps } from "@vuu-ui/vuu-filters";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
-import { FormField, FormFieldLabel, Input } from "@salt-ds/core";
-import { ReactNode, useMemo } from "react";
+import { Button, FormField, FormFieldLabel, Input } from "@salt-ds/core";
+import { ReactNode, useMemo, useState } from "react";
+import { ColumnFilterValue } from "@vuu-ui/vuu-filters/src/column-filter/ColumnFilter";
 
 const tableName: VuuTableName = "instruments";
 
@@ -65,12 +66,33 @@ const ColumnFilterTemplate = ({
   column,
   label,
   table,
-}: Pick<ColumnFilterProps, "column" | "table"> & { label: string }) => {
+  value,
+  operator,
+  showOperatorPicker = false,
+  onFilterChange,
+}: Pick<
+  ColumnFilterProps,
+  | "column"
+  | "table"
+  | "value"
+  | "operator"
+  | "onFilterChange"
+  | "showOperatorPicker"
+> & {
+  label: string;
+}) => {
   return (
     <div style={{ padding: 100 }}>
       <FormField>
         <FormFieldLabel>{label}</FormFieldLabel>
-        <ColumnFilter column={column} table={table} />
+        <ColumnFilter
+          column={column}
+          table={table}
+          showOperatorPicker={showOperatorPicker}
+          value={value}
+          operator={operator}
+          onFilterChange={onFilterChange}
+        />
       </FormField>
     </div>
   );
@@ -101,6 +123,54 @@ export const TextColumnFilter = () => {
   return (
     <DataSourceProvider dataSource={dataSource}>
       <ColumnFilterTemplate column={column} label="RIC" table={table} />
+    </DataSourceProvider>
+  );
+};
+
+export const TextColumnFilterControlled = () => {
+  //TODO - need to update column filter examples to use state
+  const [filterValue, setFilterValue] = useState<ColumnFilterValue | undefined>(
+    "AAOP.N",
+  );
+
+  const handleFilterChange = (value: ColumnFilterValue | undefined) => {
+    setFilterValue(value);
+    console.log(value);
+  };
+
+  const [column, table] = useMemo<[ColumnDescriptor, VuuTable]>(
+    () => [
+      {
+        name: "ric",
+        serverDataType: "string",
+      },
+      { module: "SIMUL", table: tableName },
+    ],
+    [],
+  );
+
+  const { VuuDataSource } = useData();
+  const dataSource = useMemo(() => {
+    const schema = getSchema(tableName);
+    return new VuuDataSource({
+      columns: schema.columns.map(toColumnName),
+      table: schema.table,
+    });
+  }, [VuuDataSource]);
+
+  return (
+    <DataSourceProvider dataSource={dataSource}>
+      <div style={{ display: "flex", gap: 5 }}>
+        <Button onClick={() => setFilterValue("AAOQ.OQ")}>AAOQ.OQ</Button>
+        <Button onClick={() => setFilterValue("AAOU.MI")}>AAOU.MI</Button>
+      </div>
+      <ColumnFilterTemplate
+        column={column}
+        label="RIC"
+        table={table}
+        value={filterValue}
+        onFilterChange={handleFilterChange}
+      />
     </DataSourceProvider>
   );
 };
@@ -170,6 +240,48 @@ export const TimeColumnRangeFilterWithStyle = () => {
         </FormField>
       </div>
     </FancyStyle>
+  );
+};
+
+export const TimeColumnRangeFilterControlled = () => {
+  const [timeValue, setTimeValue] = useState<ColumnFilterValue | undefined>([
+    "07:00:00",
+    "08:00:00",
+  ]);
+
+  const column = useMemo<ColumnDescriptor>(
+    () => ({
+      name: "orderCreationTime",
+      serverDataType: "long",
+      type: "time",
+    }),
+    [],
+  );
+
+  const handleFilterChange = (value: ColumnFilterValue | undefined) => {
+    setTimeValue(value);
+    console.log(value);
+  };
+
+  return (
+    <>
+      <div style={{ display: "flex", gap: 5 }}>
+        <Button onClick={() => setTimeValue(["02:00:00", "03:00:00"])}>
+          02:00:00 - 03:00:00
+        </Button>
+        <Button onClick={() => setTimeValue(["04:00:00", "05:00:00"])}>
+          04:00:00 - 05:00:00
+        </Button>
+      </div>
+
+      <ColumnFilterTemplate
+        column={column}
+        label="Time"
+        value={timeValue}
+        operator="between"
+        onFilterChange={handleFilterChange}
+      />
+    </>
   );
 };
 

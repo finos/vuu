@@ -13,62 +13,84 @@ import cx from "clsx";
 
 import columnFilterCss from "./ColumnFilter.css";
 import { getDataItemEditControl } from "@vuu-ui/vuu-data-react";
-import { useCallback, useMemo } from "react";
-import { CommitHandler } from "@vuu-ui/vuu-utils";
+import { ForwardedRef, forwardRef, ReactElement, useMemo } from "react";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import {
-  assertValidValue,
-  ColumnFilterHookProps,
-  FilterValue,
-} from "./useColumnFilter";
+import { assertValidValue, Operator, useColumnFilter } from "./useColumnFilter";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { FilterOp } from "@vuu-ui/vuu-filter-types";
 
 const classBase = "vuuColumnFilter";
+export type FilterValue = string | readonly string[] | number;
+export type ColumnFilterValue = FilterValue | [FilterValue, FilterValue];
 
-export interface ColumnFilterProps
-  extends ColumnFilterHookProps,
-    SegmentedButtonGroupProps {
+export interface ColumnFilterProps extends SegmentedButtonGroupProps {
+  column: ColumnDescriptor;
+  operator?: FilterOp | "between";
   showOperatorPicker?: boolean;
   /**
    * VuuTable is required if typeahead support is expected.
    */
   table?: VuuTable;
-
   /**
-   * Initial filter value. Pair of values expewcted when operator is
+   * Filter value. Pair of values expected when operator is
    * 'between'
    */
-  value?: FilterValue | [FilterValue, FilterValue];
+  value?: ColumnFilterValue;
+  /**
+   * Filter change events.
+   */
+  onFilterChange?: (
+    value: ColumnFilterValue | undefined,
+    columnName: string,
+    op: Operator,
+  ) => void;
 }
 
-export const ColumnFilter = ({
-  column,
-  className,
-  operator = "=",
-  showOperatorPicker = false,
-  table,
-  value,
-  ...buttonGroupProps
-}: ColumnFilterProps) => {
+export const ColumnFilter = forwardRef(function ColumnFilter(
+  {
+    column,
+    className,
+    operator = "=",
+    showOperatorPicker = false,
+    table,
+    value,
+    onFilterChange,
+    ...buttonGroupProps
+  }: ColumnFilterProps,
+  forwardRef: ForwardedRef<HTMLDivElement>,
+) {
   const targetWindow = useWindow();
   useComponentCssInjection({
-    testId: "vuu-filter-bar",
+    testId: "vuu-column-filter",
     css: columnFilterCss,
     window: targetWindow,
   });
 
-  useMemo(
-    () => assertValidValue(column, operator, value),
-    [column, operator, value],
-  );
+  const {
+    op,
+    filterValue,
+    inputProps,
+    rangeInputProps,
+    onOperatorChange,
+    handleCommit,
+    handleRangeCommit,
+  } = useColumnFilter({
+    column,
+    operator,
+    value,
+    onFilterChange,
+  });
 
-  const onCommit = useCallback<CommitHandler<HTMLElement>>((e, value) => {
-    console.log(`onCommit ${value}`);
-  }, []);
+  useMemo(
+    () => assertValidValue(column, op, filterValue),
+    [column, op, filterValue],
+  );
 
   return (
     <SegmentedButtonGroup
       {...buttonGroupProps}
       className={cx(classBase, className)}
+      ref={forwardRef}
     >
       {showOperatorPicker ? (
         <Menu placement="bottom-start">
@@ -80,37 +102,48 @@ export const ColumnFilter = ({
               data-embedded
               sentiment="neutral"
             >
-              {operator}
+              {op}
             </Button>
           </MenuTrigger>
           <MenuPanel>
-            <MenuItem>=</MenuItem>
-            <MenuItem>!=</MenuItem>
-            <MenuItem>starts</MenuItem>
-            <MenuItem>ends</MenuItem>
-            <MenuItem>contains</MenuItem>
+            <MenuItem onClick={() => onOperatorChange("=")}>=</MenuItem>
+            <MenuItem onClick={() => onOperatorChange("!=")}>!=</MenuItem>
+            <MenuItem onClick={() => onOperatorChange("starts")}>
+              starts
+            </MenuItem>
+            <MenuItem onClick={() => onOperatorChange("ends")}>ends</MenuItem>
+            <MenuItem onClick={() => onOperatorChange("contains")}>
+              contains
+            </MenuItem>
+            <MenuItem onClick={() => onOperatorChange("between")}>
+              between
+            </MenuItem>
           </MenuPanel>
         </Menu>
       ) : null}
       {getDataItemEditControl({
+        InputProps: { inputProps },
         dataDescriptor: column,
-        defaultValue: Array.isArray(value)
-          ? (value[0] as string)
-          : (value as string),
-        onCommit,
+        onCommit: handleCommit,
+        defaultValue: Array.isArray(filterValue) ? filterValue[0] : filterValue,
         table,
       })}
-      {operator === "between"
+      {op === "between"
         ? getDataItemEditControl({
             className: `${classBase}-rangeHigh`,
+            InputProps: { inputProps: rangeInputProps },
             dataDescriptor: column,
-            defaultValue: Array.isArray(value)
-              ? (value[1] as string)
-              : undefined,
-            onCommit,
+            onCommit: handleRangeCommit,
+            defaultValue: Array.isArray(filterValue)
+              ? filterValue[1]
+              : filterValue,
             table,
           })
         : null}
     </SegmentedButtonGroup>
   );
-};
+}) as (
+  props: ColumnFilterProps & {
+    ref?: ForwardedRef<HTMLDivElement>;
+  },
+) => ReactElement<ColumnFilterProps>;
