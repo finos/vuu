@@ -1,4 +1,4 @@
-import { FilterOp } from "@vuu-ui/vuu-filter-types";
+import { FilterClauseOp, FilterOp } from "@vuu-ui/vuu-filter-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
   ColumnFilterProps,
@@ -8,15 +8,27 @@ import {
 import {
   ChangeEventHandler,
   useCallback,
-  useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
 import { CommitHandler, queryClosest } from "@vuu-ui/vuu-utils";
 import { VuuTypeaheadInputProps } from "@vuu-ui/vuu-ui-controls";
+import { getOperators } from "../filter-clause/operator-utils";
 
 export type Operator = FilterOp | "between";
+
+export const assertValidOperator = (
+  allowedOperators: FilterClauseOp[],
+  column: ColumnDescriptor,
+  op: Operator,
+) => {
+  if (!allowedOperators.find((filterClauseOp) => filterClauseOp === op)) {
+    console.warn(
+      `[useColumnFilter] '${op} not supported for column ${column.name}'`,
+    );
+  }
+};
 
 export const assertValidValue = (
   { serverDataType: _ }: ColumnDescriptor,
@@ -56,11 +68,14 @@ export const useColumnFilter = ({
 }: ColumnFilterHookProps) => {
   const filterValue = useRef(value);
   const [op, setOp] = useState(operator);
+  const allowedOperators = useMemo(() => getOperators(column), [column]);
 
-  useEffect(() => {
+  useMemo(() => {
     if (value && value !== filterValue.current) {
       filterValue.current = value;
-      onFilterChange?.(value, column.name, op);
+      setTimeout(() => {
+        onFilterChange?.(value, column.name, op);
+      }, 100);
     }
   }, [value, column, op, onFilterChange]);
 
@@ -168,6 +183,7 @@ export const useColumnFilter = ({
 
   return {
     op,
+    allowedOperators,
     filterValue: filterValue.current,
     inputProps,
     rangeInputProps,

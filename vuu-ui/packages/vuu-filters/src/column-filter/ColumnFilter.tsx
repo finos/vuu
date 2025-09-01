@@ -15,9 +15,8 @@ import columnFilterCss from "./ColumnFilter.css";
 import { getDataItemEditControl } from "@vuu-ui/vuu-data-react";
 import { ForwardedRef, forwardRef, ReactElement, useMemo } from "react";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { assertValidValue, Operator, useColumnFilter } from "./useColumnFilter";
+import { assertValidOperator, assertValidValue, Operator, useColumnFilter } from "./useColumnFilter";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { FilterOp } from "@vuu-ui/vuu-filter-types";
 
 const classBase = "vuuColumnFilter";
 export type FilterValue = string | readonly string[] | number;
@@ -25,7 +24,10 @@ export type ColumnFilterValue = FilterValue | [FilterValue, FilterValue];
 
 export interface ColumnFilterProps extends SegmentedButtonGroupProps {
   column: ColumnDescriptor;
-  operator?: FilterOp | "between";
+  operator?: Operator;
+  /**
+   * Display operator picker.
+   */
   showOperatorPicker?: boolean;
   /**
    * VuuTable is required if typeahead support is expected.
@@ -68,6 +70,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
 
   const {
     op,
+    allowedOperators,
     filterValue,
     inputProps,
     rangeInputProps,
@@ -75,11 +78,16 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
     handleCommit,
     handleRangeCommit,
   } = useColumnFilter({
-    column,
     operator,
+    column,
     value,
     onFilterChange,
   });
+
+  useMemo(
+    () => assertValidOperator(allowedOperators, column, operator),
+    [column, operator, allowedOperators],
+  );
 
   useMemo(
     () => assertValidValue(column, op, filterValue),
@@ -106,23 +114,19 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
             </Button>
           </MenuTrigger>
           <MenuPanel>
-            <MenuItem onClick={() => onOperatorChange("=")}>=</MenuItem>
-            <MenuItem onClick={() => onOperatorChange("!=")}>!=</MenuItem>
-            <MenuItem onClick={() => onOperatorChange("starts")}>
-              starts
-            </MenuItem>
-            <MenuItem onClick={() => onOperatorChange("ends")}>ends</MenuItem>
-            <MenuItem onClick={() => onOperatorChange("contains")}>
-              contains
-            </MenuItem>
-            <MenuItem onClick={() => onOperatorChange("between")}>
-              between
-            </MenuItem>
+            {allowedOperators.map((operator) => (
+              <MenuItem
+                key={operator}
+                onClick={() => onOperatorChange(operator)}
+              >
+                {operator}
+              </MenuItem>
+            ))}
           </MenuPanel>
         </Menu>
       ) : null}
       {getDataItemEditControl({
-        InputProps: { inputProps },
+        InputProps: { inputProps },        
         dataDescriptor: column,
         onCommit: handleCommit,
         defaultValue: Array.isArray(filterValue) ? filterValue[0] : filterValue,
