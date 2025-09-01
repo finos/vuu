@@ -1,5 +1,4 @@
 import type { DataSource, DataValueDescriptor } from "@vuu-ui/vuu-data-types";
-import { useDialogContext } from "@vuu-ui/vuu-popups";
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import {
   CommitHandler,
@@ -29,6 +28,7 @@ import {
   FormEditState,
   buildFormEditState,
 } from "./form-edit-state";
+import { useModal } from "@vuu-ui/vuu-ui-controls";
 
 export interface EditFormHookProps {
   dataSource?: DataSource;
@@ -118,7 +118,7 @@ export const useEditForm = ({
   formFieldDescriptors,
   onSubmit,
 }: EditFormHookProps) => {
-  const { showDialog, closeDialog } = useDialogContext();
+  const { showDialog, closeDialog } = useModal();
 
   const currentDataSource = useRef<DataSource>(undefined);
   const formFieldsContainerRef = useRef<HTMLDivElement>(null);

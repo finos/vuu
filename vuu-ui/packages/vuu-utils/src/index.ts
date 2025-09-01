@@ -79,7 +79,7 @@ export * from "./useLayoutEffectSkipFirst";
 
 /** Context declarations hosted in utils to minimize intra package dependencies */
 export * from "./ShellContext";
-export * from "./context-definitions/DataContext";
+export { DataContext } from "./context-definitions/DataContext";
 export * from "./context-definitions/DataProvider";
 export {
   DataSourceProvider,

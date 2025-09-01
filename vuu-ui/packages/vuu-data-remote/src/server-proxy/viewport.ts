@@ -451,8 +451,7 @@ export class Viewport {
     }
     infoEnabled &&
       info(
-        `(bufferSize ${this.bufferSize}) rangeRequest (${range.from}:${range.to}) 
-            current: window client (${this.dataWindow.clientRange.from}:${this.dataWindow.clientRange.to}), full (${this.dataWindow.range.from}:${this.dataWindow.range.to}) `,
+        `(bufferSize ${this.bufferSize}) rangeRequest (${range.from}:${range.to}) current: window client (${this.dataWindow.clientRange.from}:${this.dataWindow.clientRange.to}), full (${this.dataWindow.range.from}:${this.dataWindow.range.to}) `,
       );
 
     // If we can satisfy the range request from the buffer, we will.
@@ -471,9 +470,7 @@ export class Viewport {
       );
       infoEnabled &&
         info(
-          `updated: window client (${this.dataWindow.clientRange.from}:${this.dataWindow.clientRange.to}), full (${this.dataWindow.range.from}:${this.dataWindow.range.to})
-          serverDataRequired ${serverDataRequired ? "Y" : "N"}
-          ${clientRows.length} rows returned from local buffer`,
+          `updated: dataWindow clientRange (${this.dataWindow.clientRange.from}:${this.dataWindow.clientRange.to}), fullRange (${this.dataWindow.range.from}:${this.dataWindow.range.to}) serverDataRequired ${serverDataRequired ? "Y" : "N"} ${clientRows.length} rows returned from local buffer`,
         );
       // console.log(
       //   `[Viewport] updated: window client (${this.dataWindow.clientRange.from}:${this.dataWindow.clientRange.to}), full (${this.dataWindow.range.from}:${this.dataWindow.range.to})

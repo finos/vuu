@@ -1,19 +1,18 @@
-import { useDialogContext } from "@vuu-ui/vuu-popups";
-import { LayoutMetadataDto } from "@vuu-ui/vuu-utils";
-import { useCallback, useMemo } from "react";
-import { SaveLayoutPanel } from "./SaveLayoutPanel";
-import { useWorkspace } from "./WorkspaceProvider";
 import {
   ContextMenuItemDescriptor,
   MenuActionHandler,
   MenuBuilder,
 } from "@vuu-ui/vuu-context-menu";
-import { TabContextMenuOptions } from "@vuu-ui/vuu-ui-controls";
+import { TabContextMenuOptions, useModal } from "@vuu-ui/vuu-ui-controls";
+import { type LayoutMetadataDto } from "@vuu-ui/vuu-utils";
+import { useCallback, useMemo } from "react";
+import { SaveLayoutPanel } from "./SaveLayoutPanel";
+import { useWorkspace } from "./WorkspaceProvider";
 
 export const useWorkspaceContextMenuItems = () => {
   const { saveLayout } = useWorkspace();
 
-  const { showDialog, closeDialog } = useDialogContext();
+  const { showDialog, closeDialog } = useModal();
 
   const handleCloseDialog = useCallback(() => {
     closeDialog();

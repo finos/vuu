@@ -1,6 +1,6 @@
 import { WebSocketProtocol } from "@vuu-ui/vuu-data-types";
 import { VuuClientMessage, VuuServerMessage } from "@vuu-ui/vuu-protocol-types";
-import { DeferredPromise, EventEmitter } from "@vuu-ui/vuu-utils";
+import { DeferredPromise, EventEmitter, logger } from "@vuu-ui/vuu-utils";
 
 export type ConnectingStatus = "connecting" | "reconnecting";
 export type ConnectedStatus = "connected" | "reconnected";
@@ -26,6 +26,8 @@ export interface WebSocketConnectionState<
   connectionPhase: ConnectingStatus;
   connectionStatus: T;
 }
+
+const { info } = logger("WebSocketConnection");
 
 const isNotConnecting = (
   connectionState: WebSocketConnectionState<InternalConnectionStatus>,
@@ -312,10 +314,18 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
 
   private receive = (evt: MessageEvent) => {
     const vuuMessageFromServer = parseWebSocketMessage(evt.data);
+    if (vuuMessageFromServer.body.type === "CHANGE_VP_RANGE_SUCCESS") {
+      info?.(`CHANGE_VP_RANGE_SUCCESS<#${vuuMessageFromServer.requestId}>`);
+    }
     this.#callback(vuuMessageFromServer);
   };
 
   send = (msg: VuuClientMessage) => {
+    if (msg.body.type === "CHANGE_VP_RANGE") {
+      info?.(
+        `CHANGE_VP_RANGE<#${msg.requestId}> ${msg.body.from}-${msg.body.to}`,
+      );
+    }
     this.#ws?.send(JSON.stringify(msg));
   };
 
