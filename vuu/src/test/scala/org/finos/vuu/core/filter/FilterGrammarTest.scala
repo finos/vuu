@@ -2,11 +2,13 @@ package org.finos.vuu.core.filter
 
 import org.antlr.v4.runtime.misc.ParseCancellationException
 import org.finos.vuu.core.filter.FilterSpecParser.{parse => filterClause}
-import org.finos.vuu.core.sort.FilterAndSortFixture.{row, _}
+import org.finos.vuu.core.sort.FilterAndSortFixture._
 import org.finos.vuu.core.table.RowWithData
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks._
+
+import scala.collection.immutable
 
 class FilterGrammarTest extends AnyFeatureSpec with Matchers {
   def assertParsable(filter: String): Unit = filterClause(filter) shouldBe a[FilterClause]
@@ -277,10 +279,10 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
       )
     }
 
-    Scenario("filter on a non-existent column skips filtering and returns result unchanged") {
+    Scenario("filter on a non-existent column returns empty results") {
       val table = setupTable2()
       val clause = filterClause("ccyCross = \"$GBPUSD\" and nonExistent = 10")
-      getFilteredRows(table, clause).map(_.key).toSet shouldEqual table.primaryKeys.toSet
+      getFilteredRows(table, clause).map(_.key).toSet shouldEqual immutable.Set.empty
     }
   }
 }
