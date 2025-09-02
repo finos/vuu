@@ -122,7 +122,8 @@ class TableDef(val name: String,
                val joinFields: Seq[String],
                val autosubscribe: Boolean = false,
                val links: VisualLinks = VisualLinks(),
-               val indices: Indices) extends VuuInMemPluginLocator {
+               val indices: Indices,
+               val invisible: Boolean = false) extends VuuInMemPluginLocator {
 
   private val createdTimeColumn: SimpleColumn = SimpleColumn(CreatedTimeColumnName, customColumns.length, DataType.fromString("long"))
   private val updatedTimeColumn: SimpleColumn = SimpleColumn(LastUpdatedTimeColumnName, customColumns.length + 1, DataType.fromString("long"))
