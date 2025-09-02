@@ -316,7 +316,6 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
     val table = tableContainer.getTable(msg.table.table)
 
     if (table == null || table.getTableDef.invisible) {
-      errorMsg(s"no table found for ${msg.table}")(ctx)
       vsMsg(CreateViewPortReject(msg.table, s"no table found for ${msg.table}"))(ctx)
     } else {
 
