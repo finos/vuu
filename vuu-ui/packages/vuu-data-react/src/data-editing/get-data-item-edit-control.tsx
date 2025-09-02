@@ -27,6 +27,7 @@ export interface DataItemEditControlProps {
    */
   dataDescriptor: DataValueDescriptor;
   defaultValue?: string | number | readonly string[];
+  value?: string | number | readonly string[]; //TODO - will be used in VuuTimePicker
   errorMessage?: string;
   onCommit: CommitHandler<HTMLElement>;
   table?: TableSchemaTable;

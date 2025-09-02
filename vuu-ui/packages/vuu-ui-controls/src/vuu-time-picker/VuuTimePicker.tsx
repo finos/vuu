@@ -30,6 +30,7 @@ export const VuuTimePicker = ({
 
   const handleCommit = useCallback<CommitHandler<HTMLInputElement, Date>>(
     (e, value) => {
+      // TOCHECK - onCommit call required here?.. and value in numeric?
       console.log(value);
     },
     [],
