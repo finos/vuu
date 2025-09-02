@@ -315,9 +315,10 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
 
     val table = tableContainer.getTable(msg.table.table)
 
-    if (table == null || table.getTableDef.invisible)
+    if (table == null || table.getTableDef.invisible) {
       errorMsg(s"no table found for ${msg.table}")(ctx)
-    else {
+      vsMsg(CreateViewPortReject(msg.table, s"no table found for ${msg.table}"))(ctx)
+    } else {
 
       val columns = if (msg.columns.length == 1 && msg.columns(0) == "*") {
         logger.trace("[CreateViewPortRequest] Wildcard specified for columns, going to return all")
