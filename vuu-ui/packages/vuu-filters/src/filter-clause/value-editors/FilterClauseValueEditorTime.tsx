@@ -22,7 +22,7 @@ export const FilterClauseValueEditorTime = (
     getInitialState(value),
   );
 
-  const handleCommit = useCallback<CommitHandler<HTMLElement, number>>(
+  const handleCommit = useCallback<CommitHandler<HTMLInputElement, string>>(
     (e, selectedDateInputValue) => {
       console.log("change time");
       if (selectedDateInputValue) {

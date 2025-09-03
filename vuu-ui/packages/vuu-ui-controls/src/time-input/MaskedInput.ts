@@ -1,6 +1,21 @@
-import { EventEmitter, TimeString } from "@vuu-ui/vuu-utils";
+import {
+  createSyntheticEvent,
+  decrementTimeUnitValue,
+  EventEmitter,
+  Hours,
+  incrementTimeUnitValue,
+  isValidTimeString,
+  Minutes,
+  Seconds,
+  TimeString,
+  TimeUnit,
+  TimeUnitValue,
+  updateTimeString,
+  zeroTime,
+  zeroTimeUnit,
+} from "@vuu-ui/vuu-utils";
+import { ChangeEventHandler } from "react";
 
-type TimeUnit = "hours" | "minutes" | "seconds";
 export type Digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
 
 type NullSelection = {
@@ -18,70 +33,54 @@ const NullSelection: NullSelection = { end: null, start: null };
 const FullSelection: Selection = { end: 0, start: 8 };
 const CursorAtEnd: Selection = { end: 8, start: 8 };
 
-const incrementTime = (value: string, unit: TimeUnit) => {
-  if (value === "hh" || value == "mm" || value === "ss") {
-    return "00";
-  } else if (/\d\d/.test(value)) {
-    const num = parseInt(value);
-    if (unit === "hours" && num < 23) {
-      return `${num + 1}`.padStart(2, "0").slice(-2);
-    } else if (unit === "hours" && num === 23) {
-      return "00";
-    } else if (num < 59) {
-      return `${num + 1}`.padStart(2, "0").slice(-2);
-    } else if (num === 59) {
-      return "00";
-    }
-  }
-  return value;
-};
-
-const decrementTime = (value: string, unit: TimeUnit) => {
-  if (value === "hh" || value == "mm" || value === "ss") {
-    return "00";
-  } else if (/\d\d/.test(value)) {
-    const num = parseInt(value);
-    if (unit === "hours" && num > 0) {
-      return `${num - 1}`.padStart(2, "0").slice(-2);
-    } else if (unit === "hours" && num === 0) {
-      return "23";
-    } else if (num > 0) {
-      return `${num - 1}`.padStart(2, "0").slice(-2);
-    } else if (num === 0) {
-      return "59";
-    }
-  }
-  return value;
-};
-
 export type MaskedInputEvents = {
-  change: (value: TimeString) => void;
+  change: ChangeEventHandler<HTMLInputElement>;
 };
 
 export class MaskedInput extends EventEmitter<MaskedInputEvents> {
-  #input: HTMLInputElement | null;
-  #pattern = "hh:mm:ss";
+  #controlled = false;
+  #input: HTMLInputElement | null = null;
+  #isFocused = false;
+  #isIncrementalChange = false;
   #selectionStart = -1;
   #selectionEnd = -1;
-  #showTemplateWhileEditing = true;
   #value;
   #unitSelected?: TimeUnit;
   #halfUnitSelected?: TimeUnit;
 
   constructor(
-    value = "",
+    defaultValue: TimeString | undefined,
     inputEl: HTMLInputElement | null = null,
-    showTemplateWhileEditing = true,
   ) {
     super();
-    this.#input = inputEl;
-    this.#showTemplateWhileEditing = showTemplateWhileEditing;
-    this.#value = value;
+    if (inputEl) {
+      this.input = inputEl;
+    }
+    this.#value = defaultValue ?? zeroTime;
   }
 
   set input(el: HTMLInputElement) {
+    if (this.#input) {
+      throw Error(
+        "MaskedInput cannot be reused, create a new instance for a new input",
+      );
+    }
     this.#input = el;
+    el.addEventListener("change", this.emitSyntheticChangeEvent);
   }
+
+  /**
+   * The change event is fired programatically. This will only be handled
+   * by a native event handler ( not a React handler). We handle this event
+   * and convert to a React (Synthetic) event.
+   */
+  private emitSyntheticChangeEvent = (e: Event) => {
+    const syntheticEvent = createSyntheticEvent(
+      e,
+    ) as React.ChangeEvent<HTMLInputElement>;
+
+    this.emit("change", syntheticEvent);
+  };
 
   get cursorPos() {
     return this.selectionStart;
@@ -92,6 +91,10 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
     if (this.#input) {
       this.#input.setSelectionRange(value, value);
     }
+  }
+
+  get isFocused() {
+    return this.#isFocused;
   }
 
   get selectionStart() {
@@ -108,42 +111,44 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
     this.#selectionEnd = value;
   }
 
-  get hours() {
-    return this.#value.slice(0, 2);
-  }
+  private setValue(value: TimeString) {
+    if (!this.#controlled) {
+      this.#isIncrementalChange = false;
+      this.#value = value;
+    }
 
-  set hours(value: string) {
     if (this.#input) {
-      const newValue = `${value}:${this.minutes}:${this.seconds}`;
-      this.#value = newValue;
-      this.#input.value = this.#value;
-      this.emit("change", newValue as TimeString);
+      // HM this updateds the input value, even if we are controlled.
+      // Thats not right, but if we don't update it, the event will
+      // not carry thwe right value. I don;t thibnk we can simulate
+      // the correct behaviour
+      this.#input.value = value;
+      // this triggers the native change event, which we convert
+      // // to synthetic event and emit in input setter above
+      this.#input.dispatchEvent(
+        new Event("change", {
+          bubbles: true,
+          composed: true,
+        }),
+      );
     }
   }
 
-  get minutes() {
-    return this.#value.slice(3, 5);
+  private setUnitValue(unit: TimeUnit, value: Hours | Minutes | Seconds) {
+    const newTimeString = updateTimeString(this.#value, unit, value);
+    this.setValue(newTimeString);
   }
 
-  set minutes(value: string) {
-    if (this.#input) {
-      const newValue = `${this.hours}:${value}:${this.seconds}`;
-      this.#value = newValue;
-      this.#input.value = this.#value;
-      this.emit("change", newValue as TimeString);
-    }
-  }
-
-  get seconds() {
-    return this.#value.slice(6, 8);
-  }
-
-  set seconds(value: string) {
-    if (this.#input) {
-      const newValue = `${this.hours}:${this.minutes}:${value}`;
-      this.#value = newValue;
-      this.#input.value = this.#value;
-      this.emit("change", newValue as TimeString);
+  private getUnitValue<T extends TimeUnit>(unit: T): TimeUnitValue<T> {
+    switch (unit) {
+      case "hours":
+        return this.#value.slice(0, 2) as TimeUnitValue<T>;
+      case "minutes":
+        return this.#value.slice(3, 5) as TimeUnitValue<T>;
+      case "seconds":
+        return this.#value.slice(6, 8) as TimeUnitValue<T>;
+      default:
+        throw Error(`[MaskedInout] invalue unit ${unit}`);
     }
   }
 
@@ -151,35 +156,47 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
     return this.#value;
   }
 
-  set value(value: string) {
+  /**
+   * Setting the value this way invokes 'controlled' mode
+   */
+  set value(value: TimeString) {
+    this.#controlled = true;
     this.#value = value;
+    if (this.isFocused) {
+      const isIncremental = this.#isIncrementalChange;
+      this.#isIncrementalChange = false;
+
+      requestAnimationFrame(() => {
+        if (isIncremental) {
+          this.restoreSelection();
+        } else {
+          this.advanceSelection();
+        }
+      });
+    }
   }
 
   clear(unit: TimeUnit) {
     if (this.#input) {
-      const { value } = this;
-      const pattern = this.#showTemplateWhileEditing
-        ? this.#pattern
-        : "00:00:00";
-
+      let newValue = this.#value;
       if (unit === "hours") {
-        this.value = pattern.slice(0, 2).concat(value.slice(2));
+        newValue = zeroTimeUnit.concat(this.#value.slice(2)) as TimeString;
       } else if (unit === "minutes") {
-        this.value = value
+        newValue = this.#value
           .slice(0, 3)
-          .concat(pattern.slice(3, 5))
-          .concat(value.slice(5));
+          .concat(zeroTimeUnit)
+          .concat(this.#value.slice(5)) as TimeString;
       } else if (unit === "seconds") {
-        this.value = value.slice(0, 6).concat(pattern.slice(6));
+        newValue = this.#value.slice(0, 6).concat(zeroTimeUnit) as TimeString;
       }
-      this.#input.value = this.value;
-      this.emit("change", this.value as TimeString);
+      if (newValue !== this.#value) {
+        this.setValue(newValue);
+      }
     }
   }
 
   select(unit: TimeUnit, halfUnit = false) {
     if (this.#input) {
-      console.log(`select ${unit}`);
       const offset = halfUnit ? 1 : 0;
       if (unit === "hours") {
         this.selectionStart = this.#input.selectionStart = 0 + offset;
@@ -208,8 +225,27 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
     this.#halfUnitSelected = undefined;
   }
 
+  restoreSelection() {
+    if (this.#unitSelected) {
+      this.select(this.#unitSelected);
+    }
+  }
+
+  advanceSelection() {
+    if (this.#unitSelected) {
+      this.select(this.#unitSelected, true);
+    } else if (this.#halfUnitSelected === "hours") {
+      this.select("minutes");
+    } else if (this.#halfUnitSelected === "minutes") {
+      this.select("seconds");
+    } else if (this.#halfUnitSelected === "seconds") {
+      this.select("seconds");
+    } else {
+      throw Error("unreachable code, in theory");
+    }
+  }
+
   moveFocus(direction: "left" | "right") {
-    console.log(`move focus ${direction} selected ${this.#unitSelected}`);
     if (direction === "right") {
       if (
         this.#unitSelected === "hours" ||
@@ -235,9 +271,7 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
         this.select("hours");
       } else {
         const selection = this.getSelection();
-        console.log({ selection });
         if (selection === CursorAtEnd) {
-          console.log("cursor at end");
           this.select("seconds");
         }
       }
@@ -250,84 +284,45 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
     this.#value = value;
   }
 
+  private getUnitAtCursorPos(cursorPos = this.cursorPos): TimeUnit {
+    if (cursorPos >= 0 && cursorPos < 3) {
+      return "hours";
+    } else if (cursorPos < 6) {
+      return "minutes";
+    } else if (cursorPos <= 8) {
+      return "seconds";
+    } else {
+      throw Error(
+        `[MaskedInput] getUnitAtCursorPos invalid cursor position ${cursorPos}`,
+      );
+    }
+  }
+
   incrementValue() {
-    const { cursorPos } = this;
     if (this.#input) {
-      if (cursorPos >= 0 && cursorPos <= 2) {
-        const value = this.hours;
-        const nextValue = incrementTime(value, "hours");
-        if (nextValue !== value) {
-          this.hours = nextValue;
-          this.select("hours");
-        }
-      } else if (cursorPos >= 3 && cursorPos < 6) {
-        const value = this.minutes;
-        const nextValue = incrementTime(value, "hours");
-        if (nextValue !== value) {
-          this.minutes = nextValue;
-          this.select("minutes");
-        }
-      } else if (cursorPos >= 5 && cursorPos <= 8) {
-        const value = this.seconds;
-        const nextValue = incrementTime(value, "seconds");
-        if (nextValue !== value) {
-          this.seconds = nextValue;
-          this.select("seconds");
-        }
-      }
+      this.#isIncrementalChange = true;
+      const unit = this.getUnitAtCursorPos();
+      const unitValue = this.getUnitValue(unit);
+      const newUnitValue = incrementTimeUnitValue(unit, unitValue);
+      this.setUnitValue(unit, newUnitValue);
+      this.select(unit);
     }
   }
 
   decrementValue() {
-    const { cursorPos } = this;
     if (this.#input) {
-      if (this.#unitSelected === "hours") {
-        const value = this.hours;
-        const nextValue = decrementTime(value, "hours");
-        if (nextValue !== value) {
-          this.hours = nextValue;
-          this.select("hours");
-        }
-      } else if (this.#unitSelected) {
-        const value = this[this.#unitSelected];
-        const nextValue = decrementTime(value, this.#unitSelected);
-        if (nextValue !== value) {
-          this[this.#unitSelected] = nextValue;
-          this.select(this.#unitSelected);
-        }
-      } else {
-        if (cursorPos >= 0 && cursorPos <= 2) {
-          const value = this.hours;
-          const nextValue = decrementTime(value, "hours");
-          if (nextValue !== value) {
-            this.hours = nextValue;
-            this.select("hours");
-          }
-        } else if (cursorPos >= 3 && cursorPos < 6) {
-          const value = this.minutes;
-          const nextValue = decrementTime(value, "hours");
-          if (nextValue !== value) {
-            this.minutes = nextValue;
-            this.select("minutes");
-          }
-        } else if (cursorPos >= 5 && cursorPos <= 8) {
-          const value = this.seconds;
-          const nextValue = decrementTime(value, "seconds");
-          if (nextValue !== value) {
-            this.seconds = nextValue;
-            this.select("seconds");
-          }
-        }
-      }
+      this.#isIncrementalChange = true;
+      const unit = this.getUnitAtCursorPos();
+      const unitValue = this.getUnitValue(unit);
+      const newUnitValue = decrementTimeUnitValue(unit, unitValue);
+      this.setUnitValue(unit, newUnitValue);
+      this.select(unit);
     }
   }
 
   backspace() {
     if (this.#input) {
-      const { cursorPos, value } = this;
-      const pattern = this.#showTemplateWhileEditing
-        ? this.#pattern
-        : "00:00:00";
+      const { cursorPos } = this;
 
       if (this.#unitSelected === "seconds") {
         this.clear("seconds");
@@ -339,19 +334,16 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
         this.clear("hours");
         this.select("hours");
       } else {
-        console.log("NEVER HAPPENS");
         if (cursorPos > 0) {
-          //   console.log(`Backspace val = ${this.#value} cursorPos ${cursorPos}`);
           const offset =
             this.selectionStart === 6 || this.selectionStart === 3 ? 2 : 1;
-          this.value = value
+          const newValue = this.#value
             .slice(0, cursorPos - offset)
-            .concat(pattern.slice(cursorPos - offset, cursorPos))
-            .concat(value.slice(cursorPos));
+            .concat(zeroTime.slice(cursorPos - offset, cursorPos))
+            .concat(this.#value.slice(cursorPos)) as TimeString;
           this.selectionStart -= offset;
           this.selectionEnd -= offset;
-          this.#input.value = this.value;
-          this.emit("change", this.value as TimeString);
+          this.setValue(newValue);
 
           requestAnimationFrame(() => {
             this.#input?.setSelectionRange(
@@ -368,43 +360,26 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
     if (this.#input) {
       const { cursorPos } = this;
       if (cursorPos < 8) {
-        this.value = this.value.split("").toSpliced(cursorPos, 1, key).join("");
-        this.#input.value = this.value;
-        if (this.#unitSelected) {
-          this.select(this.#unitSelected, true);
-        } else if (this.#halfUnitSelected === "hours") {
-          this.select("minutes");
-        } else if (this.#halfUnitSelected === "minutes") {
-          this.select("seconds");
-        } else if (this.#halfUnitSelected === "seconds") {
-          this.select("seconds");
-        } else {
-          console.log("NEVER HAPPENS");
-          if (this.selectionStart === 1 || this.selectionStart === 4) {
-            this.selectionStart += 2;
-            this.selectionEnd += 2;
-          } else {
-            this.selectionStart += 1;
-            this.selectionEnd += 1;
+        const newValue = this.#value
+          .split("")
+          .toSpliced(cursorPos, 1, key)
+          .join("") as TimeString;
+
+        this.setValue(newValue);
+
+        if (!isValidTimeString(newValue)) {
+          if (this.#unitSelected) {
+            this.select(this.#unitSelected);
+            this.#input.classList.add("invalid");
           }
-          requestAnimationFrame(() => {
-            this.#input?.setSelectionRange(
-              this.#selectionStart,
-              this.selectionEnd,
-            );
-          });
+        } else {
+          this.#input.classList.remove("invalid");
+
+          if (!this.#controlled) {
+            this.advanceSelection();
+          }
         }
       }
-    }
-  }
-
-  getUnitAtCursorPos(cursorPos: number): TimeUnit {
-    if (cursorPos < 3) {
-      return "hours";
-    } else if (cursorPos < 6) {
-      return "minutes";
-    } else {
-      return "seconds";
     }
   }
 
@@ -430,6 +405,7 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
 
   click() {
     if (this.#input) {
+      this.#isFocused = true;
       const selection = this.getSelection();
       if (selection === NullSelection) {
         this.select("hours");
@@ -443,11 +419,9 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
   }
   doubleClick() {
     if (this.#input) {
-      //   if (this.value !== this.#pattern) {
       const { selectionStart, selectionEnd } = this.#input;
       if (selectionStart === null || selectionEnd === null) {
         // do nothing
-        // } else if (selectionStart === selectionEnd) {
       } else {
         if (selectionStart < 3) {
           this.select("hours");
@@ -462,16 +436,9 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
   }
 
   focus = () => {
-    console.log("maskefinput focus");
     if (this.#input) {
-      if (this.value === "") {
-        if (this.#showTemplateWhileEditing) {
-          this.value = this.#input.value = this.#pattern;
-        } else {
-          this.value = this.#input.value = "00:00:00";
-          this.emit("change", this.value as TimeString);
-        }
-      }
+      this.#isFocused = true;
+
       requestAnimationFrame(() => {
         this.select("hours");
         setTimeout(() => {
@@ -484,11 +451,7 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
   };
 
   blur = () => {
-    if (this.#input && this.#input.value === this.#pattern) {
-      this.value = this.#input.value = "";
-      this.emit("change", this.value as TimeString);
-    } else {
-      this.removeSelection();
-    }
+    this.removeSelection();
+    this.#isFocused = false;
   };
 }

@@ -89,6 +89,7 @@ export const useColumnFilter = ({
 
   const handleCommit = useCallback<CommitHandler<HTMLElement>>(
     (e, newValue) => {
+      console.log(`[useColumnFilter] handleCommit ${newValue}`);
       if (Array.isArray(filterValue.current)) {
         filterValue.current = [
           newValue as FilterValue,
