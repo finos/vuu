@@ -14,17 +14,22 @@ import cx from "clsx";
 import columnFilterCss from "./ColumnFilter.css";
 import { getDataItemEditControl } from "@vuu-ui/vuu-data-react";
 import { ForwardedRef, forwardRef, ReactElement, useMemo } from "react";
+import {
+  assertValidOperator,
+  assertValidValue,
+  ColumnFilterHookProps,
+  useColumnFilter,
+} from "./useColumnFilter";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { assertValidOperator, assertValidValue, Operator, useColumnFilter } from "./useColumnFilter";
-import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
 const classBase = "vuuColumnFilter";
-export type FilterValue = string | readonly string[] | number;
-export type ColumnFilterValue = FilterValue | [FilterValue, FilterValue];
 
-export interface ColumnFilterProps extends SegmentedButtonGroupProps {
-  column: ColumnDescriptor;
-  operator?: Operator;
+export interface ColumnFilterProps
+  extends SegmentedButtonGroupProps,
+    Pick<
+      ColumnFilterHookProps,
+      "column" | "operator" | "value" | "onFilterChange"
+    > {
   /**
    * Display operator picker.
    */
@@ -33,19 +38,6 @@ export interface ColumnFilterProps extends SegmentedButtonGroupProps {
    * VuuTable is required if typeahead support is expected.
    */
   table?: VuuTable;
-  /**
-   * Filter value. Pair of values expected when operator is
-   * 'between'
-   */
-  value?: ColumnFilterValue;
-  /**
-   * Filter change events.
-   */
-  onFilterChange?: (
-    value: ColumnFilterValue | undefined,
-    columnName: string,
-    op: Operator,
-  ) => void;
 }
 
 export const ColumnFilter = forwardRef(function ColumnFilter(
@@ -74,7 +66,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
     filterValue,
     inputProps,
     rangeInputProps,
-    onOperatorChange,
+    handleOperatorChange,
     handleCommit,
     handleRangeCommit,
   } = useColumnFilter({
@@ -114,19 +106,19 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
             </Button>
           </MenuTrigger>
           <MenuPanel>
-            {allowedOperators.map((operator) => (
+            {allowedOperators.map((allowedOp) => (
               <MenuItem
-                key={operator}
-                onClick={() => onOperatorChange(operator)}
+                key={`allowedOp`}
+                onClick={() => handleOperatorChange(allowedOp)}
               >
-                {operator}
+                {allowedOp}
               </MenuItem>
             ))}
           </MenuPanel>
         </Menu>
       ) : null}
       {getDataItemEditControl({
-        InputProps: { inputProps },        
+        InputProps: { inputProps },
         dataDescriptor: column,
         onCommit: handleCommit,
         defaultValue: Array.isArray(filterValue) ? filterValue[0] : filterValue,
