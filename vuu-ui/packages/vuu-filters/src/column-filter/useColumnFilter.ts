@@ -1,10 +1,5 @@
-import { FilterClauseOp, FilterOp } from "@vuu-ui/vuu-filter-types";
+import { FilterClauseOp, FilterValue } from "@vuu-ui/vuu-filter-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import {
-  ColumnFilterProps,
-  ColumnFilterValue,
-  FilterValue,
-} from "./ColumnFilter";
 import {
   ChangeEventHandler,
   useCallback,
@@ -16,7 +11,7 @@ import { CommitHandler, queryClosest } from "@vuu-ui/vuu-utils";
 import { VuuTypeaheadInputProps } from "@vuu-ui/vuu-ui-controls";
 import { getOperators } from "../filter-clause/operator-utils";
 
-export type Operator = FilterOp | "between";
+export type Operator = FilterClauseOp | "between";
 
 export const assertValidOperator = (
   allowedOperators: FilterClauseOp[],
@@ -33,7 +28,7 @@ export const assertValidOperator = (
 export const assertValidValue = (
   { serverDataType: _ }: ColumnDescriptor,
   operator: Operator,
-  value?: ColumnFilterValue,
+  value?: FilterValue,
 ) => {
   if (value !== undefined) {
     if (operator === "between") {
@@ -45,7 +40,7 @@ export const assertValidValue = (
         throw Error(
           `[useColumnFilter] 'between operator requires two values, received ${value}'`,
         );
-      } else if (typeof value[0] !== typeof value[1]) {
+      } else if (value[0] && value[1] && typeof value[0] !== typeof value[1]) {
         throw Error(
           `[useColumnFilter] 'between operator values must be of same type, received ${typeof value[0]} and ${typeof value[1]}`,
         );
@@ -55,10 +50,23 @@ export const assertValidValue = (
   }
 };
 
-export type ColumnFilterHookProps = Pick<
-  ColumnFilterProps,
-  "column" | "onFilterChange" | "defaultValue" | "value" | "operator"
->;
+export type ColumnFilterHookProps = {
+  column: ColumnDescriptor;
+  operator?: Operator;
+  /**
+   * Filter value. Pair of values expected when operator is
+   * 'between'
+   */
+  value?: FilterValue;
+  /**
+   * Filter change events.
+   */
+  onFilterChange?: (
+    value: FilterValue,
+    column: ColumnDescriptor,
+    op: Operator,
+  ) => void;
+};
 
 export const useColumnFilter = ({
   operator = "=",
@@ -66,7 +74,8 @@ export const useColumnFilter = ({
   column,
   onFilterChange,
 }: ColumnFilterHookProps) => {
-  const filterValue = useRef(value);
+  const getDefaultValue = (op: Operator) => (op === "between" ? ["", ""] : "");
+  const filterValue = useRef(value ?? getDefaultValue(operator));
   const [op, setOp] = useState(operator);
   const allowedOperators = useMemo(() => getOperators(column), [column]);
 
@@ -74,27 +83,20 @@ export const useColumnFilter = ({
     if (value && value !== filterValue.current) {
       filterValue.current = value;
       setTimeout(() => {
-        onFilterChange?.(value, column.name, op);
+        onFilterChange?.(value, column, op);
       }, 100);
     }
   }, [value, column, op, onFilterChange]);
 
-  const handleOperatorChange = useCallback(
-    (op: Operator) => {
-      setOp(op);
-      onFilterChange?.(filterValue.current, column.name, op);
-    },
-    [column, onFilterChange],
-  );
+  const handleOperatorChange = useCallback((changedOp: Operator) => {
+    setOp(changedOp);
+  }, []);
 
   const handleCommit = useCallback<CommitHandler<HTMLElement>>(
     (e, newValue) => {
       console.log(`[useColumnFilter] handleCommit ${newValue}`);
       if (Array.isArray(filterValue.current)) {
-        filterValue.current = [
-          newValue as FilterValue,
-          filterValue.current[1] as FilterValue,
-        ];
+        filterValue.current = [newValue as FilterValue, filterValue.current[1]];
         if (
           filterValue.current &&
           (filterValue.current[0] === undefined ||
@@ -103,12 +105,11 @@ export const useColumnFilter = ({
           console.info(
             "Range start or end value missing - ignoring onFilterChange",
           );
-          return;
         }
       } else {
         filterValue.current = newValue as FilterValue;
       }
-      onFilterChange?.(filterValue.current, column.name, op);
+      onFilterChange?.(filterValue.current, column, op);
     },
     [op, column, onFilterChange],
   );
@@ -116,10 +117,7 @@ export const useColumnFilter = ({
   const handleRangeCommit = useCallback<CommitHandler<HTMLElement>>(
     (e, newValue) => {
       if (Array.isArray(filterValue.current)) {
-        filterValue.current = [
-          filterValue.current[0] as FilterValue,
-          newValue as FilterValue,
-        ];
+        filterValue.current = [filterValue.current[0], newValue as FilterValue];
         if (
           filterValue.current &&
           (filterValue.current[0] === undefined ||
@@ -128,12 +126,11 @@ export const useColumnFilter = ({
           console.info(
             "Range start or end value missing - ignoring onFilterChange",
           );
-          return;
         }
       } else {
         filterValue.current = newValue as FilterValue;
       }
-      onFilterChange?.(filterValue.current, column.name, op);
+      onFilterChange?.(filterValue.current, column, op);
     },
     [op, column, onFilterChange],
   );
@@ -141,22 +138,20 @@ export const useColumnFilter = ({
   const handleInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (e) => {
       if (Array.isArray(filterValue.current)) {
-        const input = queryClosest(e.target, ".saltPillInput");
-        const updated: [FilterValue, FilterValue] = [
-          (!input?.className?.includes("rangeHigh")
+        const editControl = queryClosest(e.target, "[data-edit-control]", true);
+        const updated: FilterValue = [
+          !editControl?.className?.includes("rangeHigh")
             ? e.target.value
-            : filterValue.current[0]) as FilterValue,
-          (input?.className?.includes("rangeHigh")
+            : filterValue.current[0],
+          editControl?.className?.includes("rangeHigh")
             ? e.target.value
-            : filterValue.current[1]) as FilterValue,
+            : filterValue.current[1],
         ];
         filterValue.current = updated;
-        if (updated[0] !== undefined && updated[1] !== undefined) {
-          onFilterChange?.(updated, column.name, op);
-        }
+        onFilterChange?.(updated, column, op);
       } else {
-        filterValue.current = e.target.value as FilterValue;
-        onFilterChange?.(e.target.value as FilterValue, column.name, op);
+        filterValue.current = e.target.value;
+        onFilterChange?.(e.target.value, column, op);
       }
     },
     [op, column, onFilterChange],
@@ -190,6 +185,6 @@ export const useColumnFilter = ({
     rangeInputProps,
     handleCommit,
     handleRangeCommit,
-    onOperatorChange: handleOperatorChange,
+    handleOperatorChange,
   };
 };

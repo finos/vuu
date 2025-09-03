@@ -53,6 +53,7 @@ export const getDataItemEditControl = ({
   if (dataDescriptor.editable === false) {
     return (
       <VuuInput
+        data-edit-control="data-edit-control"
         variant="secondary"
         {...InputProps}
         onCommit={onCommit}
@@ -64,6 +65,7 @@ export const getDataItemEditControl = ({
       const { value, onChange } = InputProps.inputProps;
       return (
         <VuuTimePicker
+          data-edit-control="data-edit-control"
           className={className}
           value={asTimeString(value, true)}
           onChange={onChange}
@@ -73,7 +75,11 @@ export const getDataItemEditControl = ({
     }
   } else if (isDateTimeDataValue(dataDescriptor)) {
     return (
-      <VuuDatePicker className={className} onCommit={handleCommitNumber} />
+      <VuuDatePicker
+        className={className}
+        onCommit={handleCommitNumber}
+        data-edit-control="data-edit-control"
+      />
     );
   } else if (dataDescriptor.serverDataType === "string" && table) {
     return (
@@ -84,6 +90,7 @@ export const getDataItemEditControl = ({
         column={dataDescriptor.name}
         onCommit={onCommit}
         table={table}
+        data-edit-control="data-edit-control"
       />
     );
   }
@@ -95,6 +102,7 @@ export const getDataItemEditControl = ({
       commitWhenCleared={commitWhenCleared}
       onCommit={onCommit}
       errorMessage={errorMessage}
+      data-edit-control="data-edit-control"
     />
   );
 };
