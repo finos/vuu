@@ -2,10 +2,11 @@ import {
   type CommitHandler,
   DateStringISO,
   isValidTimeString,
-  Time,
   type TimeString,
 } from "@vuu-ui/vuu-utils";
 import {
+  ChangeEvent,
+  ChangeEventHandler,
   ClipboardEventHandler,
   FocusEventHandler,
   KeyboardEventHandler,
@@ -23,8 +24,8 @@ const isDigit = (char: string): char is Digit =>
 export interface TimeInputHookProps {
   date?: Date | DateStringISO;
   defaultValue?: TimeString;
-  onChange?: (time: TimeString) => void;
-  onCommit: CommitHandler<HTMLInputElement, Date>;
+  onChange?: ChangeEventHandler<HTMLInputElement>;
+  onCommit: CommitHandler<HTMLInputElement, TimeString>;
   value?: TimeString;
 }
 
@@ -39,18 +40,17 @@ export const useTimeInput = ({
   useMemo(() => {
     if (maskedInputRef.current === undefined) {
       maskedInputRef.current = new MaskedInput(defaultValue, null);
-      maskedInputRef.current.on("change", (value) => {
-        onChange?.(value);
-      });
+      maskedInputRef.current.on(
+        "change",
+        (e: ChangeEvent<HTMLInputElement>) => {
+          onChange?.(e);
+        },
+      );
     }
 
     if (value && value !== maskedInputRef.current.value) {
       maskedInputRef.current.value = value;
     }
-    // if (isValidTimeString(value) && value !== maskedInputRef.current.value) {
-    //   console.log(`set (controlled) value ${value}`);
-    //   maskedInputRef.current.value = value;
-    // }
   }, [defaultValue, onChange, value]);
 
   const setInputEl = useCallback<RefCallback<HTMLInputElement>>((el) => {
@@ -63,13 +63,11 @@ export const useTimeInput = ({
   const commitValue = useCallback<CommitHandler<HTMLInputElement, string>>(
     (evt, value) => {
       if (isValidTimeString(value)) {
-        onCommit(evt, Time(value).asDate(), "text-input");
+        onCommit(evt, value, "text-input");
       } else if (value === "hh:mm:ss") {
         console.log("no value set");
-        // onCommit(evt, Boolean(value), "text-input");
       } else {
         console.log(`value is not valid`);
-        // onCommit(evt, value, "text-input");
       }
     },
     [onCommit],

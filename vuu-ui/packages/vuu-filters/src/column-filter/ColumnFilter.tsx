@@ -15,7 +15,12 @@ import columnFilterCss from "./ColumnFilter.css";
 import { getDataItemEditControl } from "@vuu-ui/vuu-data-react";
 import { ForwardedRef, forwardRef, ReactElement, useMemo } from "react";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { assertValidOperator, assertValidValue, Operator, useColumnFilter } from "./useColumnFilter";
+import {
+  assertValidOperator,
+  assertValidValue,
+  Operator,
+  useColumnFilter,
+} from "./useColumnFilter";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
 const classBase = "vuuColumnFilter";
@@ -126,10 +131,9 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
         </Menu>
       ) : null}
       {getDataItemEditControl({
-        InputProps: { inputProps },        
+        InputProps: { inputProps },
         dataDescriptor: column,
         onCommit: handleCommit,
-        defaultValue: Array.isArray(filterValue) ? filterValue[0] : filterValue,
         table,
       })}
       {op === "between"
@@ -138,9 +142,6 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
             InputProps: { inputProps: rangeInputProps },
             dataDescriptor: column,
             onCommit: handleRangeCommit,
-            defaultValue: Array.isArray(filterValue)
-              ? filterValue[1]
-              : filterValue,
             table,
           })
         : null}

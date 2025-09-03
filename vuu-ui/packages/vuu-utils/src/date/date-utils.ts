@@ -20,7 +20,7 @@ export type TimeUnitValue<T extends TimeUnit> = T extends "hours"
     ? Minutes
     : Seconds;
 
-// This should work, works fine in TypeScript playground, but crashes tsc
+// This should work, works fine in TypeScript playground, but hangs tsc
 // export type TimeString = `${Hours}:${Minutes}:${Seconds}`;
 export type TimeString =
   `${number}${number}:${number}${number}:${number}${number}`;

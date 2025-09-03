@@ -1,7 +1,7 @@
 import { Button, Input } from "@salt-ds/core";
 import { TimeInput, TimeInputProps } from "@vuu-ui/vuu-ui-controls";
-import { CommitHandler, TimeString } from "@vuu-ui/vuu-utils";
-import { useCallback, useMemo, useState } from "react";
+import { asTimeString, CommitHandler, TimeString } from "@vuu-ui/vuu-utils";
+import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
 
 export const NativeHtmlTimeInput = () => {
   return (
@@ -48,15 +48,16 @@ const TimeInputTemplate = ({
     setValue(valueProp);
   }, [valueProp]);
 
-  const handleChange = useCallback(
-    (value: TimeString) => {
+  const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
+    (e) => {
+      const { value } = e.target;
       console.log(`change value ${value}`);
-      onChange?.(value);
+      onChange?.(e);
     },
     [onChange],
   );
 
-  const handleCommit = useCallback<CommitHandler<HTMLInputElement, Date>>(
+  const handleCommit = useCallback<CommitHandler<HTMLInputElement, TimeString>>(
     (e, value) => {
       console.log(`commit value ${value}`);
     },
@@ -65,6 +66,7 @@ const TimeInputTemplate = ({
 
   const setTime = useCallback((time: TimeString) => {
     console.log(`set time ${time}`);
+    setValue(time);
   }, []);
 
   return (
@@ -108,14 +110,17 @@ export const VuuTimeInputDefaultValue = () => (
   <TimeInputTemplate defaultValue="00:59:59" />
 );
 
-// TODO
 export const VuuTimeInputControlled = () => {
   const [value, setValue] = useState<TimeString>("09:00:00");
 
-  const handleChange = useCallback((value: TimeString) => {
-    console.log(`setValue ${value}`);
-    setValue(value);
-  }, []);
+  const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
+    (e) => {
+      const { value } = e.target;
+      console.log(`setValue ${value}`);
+      setValue(asTimeString(value, false));
+    },
+    [],
+  );
 
   return <TimeInputTemplate onChange={handleChange} value={value} />;
 };

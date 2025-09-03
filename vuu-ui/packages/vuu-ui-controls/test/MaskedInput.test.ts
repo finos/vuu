@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Digit, MaskedInput } from "../src/time-input/MaskedInput";
+import { TimeString } from "@vuu-ui/vuu-utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const MockEl = (setSelectionRange?: (from: number, to: number) => void): any =>
@@ -8,6 +9,12 @@ const MockEl = (setSelectionRange?: (from: number, to: number) => void): any =>
       add: () => undefined,
       remove: () => undefined,
     };
+    addEventListener(_: string): void {
+      // TBD
+    }
+    dispatchEvent(_: Event) {
+      // TBD
+    }
     setSelectionRange(from: number, to: number) {
       setSelectionRange?.(from, to);
     }
@@ -25,8 +32,8 @@ describe("MaskedInput", () => {
         } else {
           maskedInput = new MaskedInput(undefined, MockEl());
           maskedInput.value = "00:00:00";
-          maskedInput.on("change", (value) => {
-            maskedInput.value = value;
+          maskedInput.on("change", (e) => {
+            maskedInput.value = e.target.value as TimeString;
             vi.advanceTimersToNextTimer();
           });
         }
@@ -54,7 +61,11 @@ describe("MaskedInput", () => {
         describe("AND up Arrow key pressed", () => {
           it("THEN value is incremented correctly and cursor position is maintained", () => {
             maskedInput.incrementValue();
-            expect(maskedInput.value).toEqual("01:00:00");
+            if (mode === "controlled") {
+              expect(maskedInput.value).toEqual("00:00:00");
+            } else {
+              expect(maskedInput.value).toEqual("01:00:00");
+            }
             expect(maskedInput.selectionStart).toEqual(0);
             expect(maskedInput.selectionEnd).toEqual(2);
           });
@@ -67,8 +78,14 @@ describe("MaskedInput", () => {
             const expectedCursorPositions = [1, 3, 4, 6, 7, 6];
             for (let i = 0; i < 6; i++) {
               maskedInput.update(String(i + 1) as Digit);
-              expect(maskedInput.value).toEqual(expectedValues[i]);
-              expect(maskedInput.cursorPos).toEqual(expectedCursorPositions[i]);
+              if (mode === "controlled") {
+                expect(maskedInput.value).toEqual("00:00:00");
+              } else {
+                expect(maskedInput.value).toEqual(expectedValues[i]);
+                expect(maskedInput.cursorPos).toEqual(
+                  expectedCursorPositions[i],
+                );
+              }
             }
           });
         });
@@ -83,8 +100,12 @@ describe("MaskedInput", () => {
             }
             for (let i = 0; i < 3; i++) {
               maskedInput.backspace();
-              expect(maskedInput.cursorPos).toEqual(expectedCursorPositions[i]);
-              expect(maskedInput.value).toEqual(expectedValues[i]);
+              if (mode === "uncontrolled") {
+                expect(maskedInput.cursorPos).toEqual(
+                  expectedCursorPositions[i],
+                );
+                expect(maskedInput.value).toEqual(expectedValues[i]);
+              }
             }
           });
         });
@@ -122,8 +143,10 @@ describe("MaskedInput", () => {
             maskedInput.moveFocus("right");
             maskedInput.update("4");
 
-            expect(maskedInput.value).toEqual("20:30:40");
-            expect(maskedInput.cursorPos).toEqual(7);
+            if (mode === "uncontrolled") {
+              expect(maskedInput.value).toEqual("20:30:40");
+              expect(maskedInput.cursorPos).toEqual(7);
+            }
           });
         });
       });

@@ -1,4 +1,5 @@
 import {
+  createSyntheticEvent,
   decrementTimeUnitValue,
   EventEmitter,
   Hours,
@@ -13,6 +14,7 @@ import {
   zeroTime,
   zeroTimeUnit,
 } from "@vuu-ui/vuu-utils";
+import { ChangeEventHandler } from "react";
 
 export type Digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
 
@@ -32,12 +34,12 @@ const FullSelection: Selection = { end: 0, start: 8 };
 const CursorAtEnd: Selection = { end: 8, start: 8 };
 
 export type MaskedInputEvents = {
-  change: (value: TimeString) => void;
+  change: ChangeEventHandler<HTMLInputElement>;
 };
 
 export class MaskedInput extends EventEmitter<MaskedInputEvents> {
   #controlled = false;
-  #input: HTMLInputElement | null;
+  #input: HTMLInputElement | null = null;
   #isFocused = false;
   #isIncrementalChange = false;
   #selectionStart = -1;
@@ -51,13 +53,34 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
     inputEl: HTMLInputElement | null = null,
   ) {
     super();
-    this.#input = inputEl;
+    if (inputEl) {
+      this.input = inputEl;
+    }
     this.#value = defaultValue ?? zeroTime;
   }
 
   set input(el: HTMLInputElement) {
+    if (this.#input) {
+      throw Error(
+        "MaskedInput cannot be reused, create a new instance for a new input",
+      );
+    }
     this.#input = el;
+    el.addEventListener("change", this.emitSyntheticChangeEvent);
   }
+
+  /**
+   * The change event is fired programatically. This will only be handled
+   * by a native event handler ( not a React handler). We handle this event
+   * and convert to a React (Synthetic) event.
+   */
+  private emitSyntheticChangeEvent = (e: Event) => {
+    const syntheticEvent = createSyntheticEvent(
+      e,
+    ) as React.ChangeEvent<HTMLInputElement>;
+
+    this.emit("change", syntheticEvent);
+  };
 
   get cursorPos() {
     return this.selectionStart;
@@ -92,11 +115,23 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
     if (!this.#controlled) {
       this.#isIncrementalChange = false;
       this.#value = value;
-      if (this.#input) {
-        this.#input.value = value;
-      }
     }
-    this.emit("change", value);
+
+    if (this.#input) {
+      // HM this updateds the input value, even if we are controlled.
+      // Thats not right, but if we don't update it, the event will
+      // not carry thwe right value. I don;t thibnk we can simulate
+      // the correct behaviour
+      this.#input.value = value;
+      // this triggers the native change event, which we convert
+      // // to synthetic event and emit in input setter above
+      this.#input.dispatchEvent(
+        new Event("change", {
+          bubbles: true,
+          composed: true,
+        }),
+      );
+    }
   }
 
   private setUnitValue(unit: TimeUnit, value: Hours | Minutes | Seconds) {
@@ -132,10 +167,10 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
       this.#isIncrementalChange = false;
 
       requestAnimationFrame(() => {
-        if (isValidTimeString(value) && !isIncremental) {
-          this.advanceSelection();
-        } else {
+        if (isIncremental) {
           this.restoreSelection();
+        } else {
+          this.advanceSelection();
         }
       });
     }
@@ -143,20 +178,20 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
 
   clear(unit: TimeUnit) {
     if (this.#input) {
+      let newValue = this.#value;
       if (unit === "hours") {
-        this.#value = zeroTimeUnit.concat(this.#value.slice(2)) as TimeString;
+        newValue = zeroTimeUnit.concat(this.#value.slice(2)) as TimeString;
       } else if (unit === "minutes") {
-        this.#value = this.#value
+        newValue = this.#value
           .slice(0, 3)
           .concat(zeroTimeUnit)
           .concat(this.#value.slice(5)) as TimeString;
       } else if (unit === "seconds") {
-        this.#value = this.#value
-          .slice(0, 6)
-          .concat(zeroTimeUnit) as TimeString;
+        newValue = this.#value.slice(0, 6).concat(zeroTimeUnit) as TimeString;
       }
-      this.#input.value = this.#value;
-      this.emit("change", this.#value as TimeString);
+      if (newValue !== this.#value) {
+        this.setValue(newValue);
+      }
     }
   }
 
@@ -306,11 +341,9 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
             .slice(0, cursorPos - offset)
             .concat(zeroTime.slice(cursorPos - offset, cursorPos))
             .concat(this.#value.slice(cursorPos)) as TimeString;
-          this.#value = newValue;
           this.selectionStart -= offset;
           this.selectionEnd -= offset;
-          this.#input.value = this.#value;
-          this.emit("change", this.#value as TimeString);
+          this.setValue(newValue);
 
           requestAnimationFrame(() => {
             this.#input?.setSelectionRange(
@@ -372,6 +405,7 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
 
   click() {
     if (this.#input) {
+      this.#isFocused = true;
       const selection = this.getSelection();
       if (selection === NullSelection) {
         this.select("hours");
