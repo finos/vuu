@@ -26,8 +26,6 @@ export interface DataItemEditControlProps {
    * A table column or form field Descriptor.
    */
   dataDescriptor: DataValueDescriptor;
-  defaultValue?: string | number | readonly string[];
-  value?: string | number | readonly string[]; //TODO - will be used in VuuTimePicker
   errorMessage?: string;
   onCommit: CommitHandler<HTMLElement>;
   table?: TableSchemaTable;
@@ -41,7 +39,6 @@ export const getDataItemEditControl = ({
   className,
   commitWhenCleared,
   dataDescriptor,
-  defaultValue,
   errorMessage,
   onCommit,
   table,
@@ -63,13 +60,17 @@ export const getDataItemEditControl = ({
       />
     );
   } else if (isTimeDataValue(dataDescriptor)) {
-    return (
-      <VuuTimePicker
-        className={className}
-        defaultValue={asTimeString(defaultValue, true)}
-        onCommit={handleCommitNumber}
-      />
-    );
+    if (InputProps?.inputProps) {
+      const { value, onChange } = InputProps.inputProps;
+      return (
+        <VuuTimePicker
+          className={className}
+          value={asTimeString(value, true)}
+          onChange={onChange}
+          onCommit={onCommit}
+        />
+      );
+    }
   } else if (isDateTimeDataValue(dataDescriptor)) {
     return (
       <VuuDatePicker className={className} onCommit={handleCommitNumber} />

@@ -1,7 +1,9 @@
 .vuuColumnFilter {
     border: solid 1px var(--salt-editable-borderColor);
-    border-radius: 6px;
     max-width: 200px;
+    padding-left: 4px;
+    padding-right: 4px;
+    width: var(--vuuColumnFilter-width, fit-content);
 
 
     .vuuColumnFilter-rangeHigh {
@@ -14,9 +16,26 @@
         position: absolute;
         background: var(--salt-separable-primary-borderColor);
         /* Accomodate button border */
-        left: 0;
-        top: calc(-1 * var(--salt-spacing-100));
-        bottom: calc(-1 * var(--salt-spacing-100));
+        left: calc(-1 * var(--salt-spacing-100));
+        top: -1px;
+        bottom: -1px;
+    }
+
+    .vuuTimePicker {
+        border-radius: 6px;
+    }
+
+    .vuuTimePicker + .vuuTimePicker {
+        margin-left: var(--salt-spacing-100);
+    }
+
+    .vuuTimeInput {
+        border: none;
+        outline: none;
+    }
+
+    .vuuTimeInput:focus-visible {
+        outline: none;
     }
 
 }

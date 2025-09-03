@@ -2,11 +2,7 @@ import { getSchema, VuuTableName } from "@vuu-ui/vuu-data-test";
 import { ColumnFilter, ColumnFilterProps } from "@vuu-ui/vuu-filters";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import {
-  DataSourceProvider,
-  toColumnName,
-  useData,
-} from "@vuu-ui/vuu-utils";
+import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { Button, FormField, FormFieldLabel, Input } from "@salt-ds/core";
 import { ReactNode, useCallback, useMemo, useState } from "react";
 import { ColumnFilterValue } from "@vuu-ui/vuu-filters/src/column-filter/ColumnFilter";
@@ -37,7 +33,7 @@ const FancyStyle = ({ children }: { children: ReactNode }) => (
               padding: 4px;
               .vuuTimePicker {
 
-                .TimeInput {
+                .vuuTimeInput {
                   background: transparent;
                   border: none;
                   font-family: var(--salt-typography-fontFamily);
@@ -53,11 +49,12 @@ const FancyStyle = ({ children }: { children: ReactNode }) => (
               }
             }
             .vuuTimePicker {
-            padding: 0 8px;
-              .TimeInput {
+              padding: 0 8px;
+              .vuuTimeInput {
                 border: none;
                 font-family: var(--salt-typography-fontFamily);
                 font-size: 14px;
+                outline: none;
               }
             }
           }
@@ -368,7 +365,16 @@ export const MultipleFilters = () => {
 
   return (
     <DataSourceProvider dataSource={dataSource}>
-      <div style={{ border: "solid 1px lightgray", height: 400, width: 600 }}>
+      <div
+        style={{
+          border: "solid 1px lightgray",
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+          height: 400,
+          width: 600,
+        }}
+      >
         <Input placeholder="Start here" />
         <FormField>
           <FormFieldLabel>RIC</FormFieldLabel>
