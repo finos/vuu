@@ -138,12 +138,12 @@ export const useColumnFilter = ({
   const handleInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (e) => {
       if (Array.isArray(filterValue.current)) {
-        const input = queryClosest(e.target, ".saltInput", true);
+        const editControl = queryClosest(e.target, "[data-edit-control]", true);
         const updated: FilterValue = [
-          !input?.className?.includes("rangeHigh")
+          !editControl?.className?.includes("rangeHigh")
             ? e.target.value
             : filterValue.current[0],
-          input?.className?.includes("rangeHigh")
+          editControl?.className?.includes("rangeHigh")
             ? e.target.value
             : filterValue.current[1],
         ];

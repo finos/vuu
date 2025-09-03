@@ -191,7 +191,9 @@ export const TextColumnFilterValueSetViaBtn = () => {
 };
 
 /** tags=data-consumer */
-export const NumericColumnFilterValueWithBetweenOp = () => {
+export const NumericColumnFilterValueWithBetweenOp = (
+  props: Partial<ColumnFilterProps>,
+) => {
   const [filterValue, setFilterValue] = useState<FilterValue>(["35", "45.3"]);
 
   const handleFilterChange = useCallback((value: FilterValue) => {
@@ -221,7 +223,9 @@ export const NumericColumnFilterValueWithBetweenOp = () => {
   return (
     <DataSourceProvider dataSource={dataSource}>
       <div style={{ display: "flex", gap: 5 }}>
-        <Button onClick={() => setFilterValue(["10.96", "20.12"])}>[10.96, 20.12]</Button>
+        <Button onClick={() => setFilterValue(["10.96", "20.12"])}>
+          [10.96, 20.12]
+        </Button>
         <Button onClick={() => setFilterValue(["100", "200"])}>
           [100, 200]
         </Button>
@@ -233,6 +237,7 @@ export const NumericColumnFilterValueWithBetweenOp = () => {
         table={table}
         value={filterValue}
         onFilterChange={handleFilterChange}
+        {...props}
       />
     </DataSourceProvider>
   );
@@ -263,7 +268,7 @@ export const TimeColumnFilter = () => {
   );
 };
 
-export const TimeColumnRangeFilter = () => {
+export const TimeColumnRangeFilter = (props: Partial<ColumnFilterProps>) => {
   const [filterValue, setFilterValue] = useState<FilterValue>([
     "00:00:00",
     "00:01:02",
@@ -286,6 +291,7 @@ export const TimeColumnRangeFilter = () => {
           operator="between"
           value={filterValue}
           onFilterChange={(value) => setFilterValue(value)}
+          {...props}
         />
       </FormField>
     </div>
