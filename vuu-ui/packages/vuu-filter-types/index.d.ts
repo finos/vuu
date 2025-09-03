@@ -91,3 +91,5 @@ export declare type FilterState = {
 };
 
 export declare type FilterChangeHandler = (filter: Filter | undefined) => void;
+
+export declare type FilterValue = string | number | readonly string[];

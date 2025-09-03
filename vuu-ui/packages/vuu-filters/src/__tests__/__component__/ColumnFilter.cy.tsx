@@ -1,5 +1,8 @@
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { TextColumnFilterValueSetViaBtn } from "../../../../../showcase/src/examples/Filters/ColumnFilter.examples";
+import {
+  TextColumnFilterValueSetViaBtn,
+  NumericColumnFilterValueWithBetweenOp,
+} from "../../../../../showcase/src/examples/Filters/ColumnFilter.examples";
 
 describe("ColumnFilter", () => {
   describe("WHEN text columnfilter is rendered", () => {
@@ -31,6 +34,37 @@ describe("ColumnFilter", () => {
       input.should("have.value", "AAOQ.OQ");
       cy.contains("button", "AAOU.MI").realClick();
       input.should("have.value", "AAOU.MI");
+    });
+  });
+
+  describe("WHEN numeric columnfilter is rendered", () => {
+    beforeEach(() => {
+      cy.mount(
+        <LocalDataSourceProvider>
+          <NumericColumnFilterValueWithBetweenOp />
+        </LocalDataSourceProvider>,
+      );
+    });
+
+    it("THEN the component is rendered with an initial value", () => {
+      const container = cy.findByTestId("columnfilter");
+      container.should("have.class", "vuuColumnFilter");
+      container.find("input").as("inputs");
+      cy.get("@inputs").should("have.length", 2);
+      cy.get("@inputs").eq(0).should("have.value", "35");
+      cy.get("@inputs").eq(1).should("have.value", "45.3");
+    });
+
+    it("THEN component renders a new value provided via state set from outside the container", () => {
+      const container = cy.findByTestId("columnfilter");
+      container.find("input").as("inputs");
+      cy.get("@inputs").should("have.length", 2);
+      cy.contains("button", "[10.96, 20.12]").realClick();
+      cy.get("@inputs").eq(0).should("have.value", "10.96");
+      cy.get("@inputs").eq(1).should("have.value", "20.12");
+      cy.contains("button", "[100, 200]").realClick();
+      cy.get("@inputs").eq(0).should("have.value", "100");
+      cy.get("@inputs").eq(1).should("have.value", "200");
     });
   });
 });
