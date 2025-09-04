@@ -53,6 +53,10 @@ object TableDef {
   def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, indices = Indices())
   }
+
+  def apply(name: String, keyField: String, columns: Array[Column], invisible: Boolean, joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields, indices = Indices(), invisible = invisible)
+  }
 }
 
 object AutoSubscribeTableDef {

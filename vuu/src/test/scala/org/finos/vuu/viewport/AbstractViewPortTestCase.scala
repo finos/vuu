@@ -36,8 +36,6 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
   def createDefaultViewPortInfra()(implicit clock: Clock, metrics: MetricsProvider): (ViewPortContainer, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue) = {
     implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-    val dateTime = 1437728400000L //new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
-
     val ordersDef = TableDef(
       name = "orders",
       keyField = "orderId",
@@ -85,11 +83,65 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
     (viewPortContainer, orders, ordersProvider, session, outQueue)
   }
 
+  def createDefaultViewPortInfraWithInvisibleTable()(implicit clock: Clock, metrics: MetricsProvider): (ViewPortContainer, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue) = {
+    implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+
+    val ordersDef = TableDef(
+      name = "orders",
+      keyField = "orderId",
+      columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Int"),
+      invisible = true,
+      joinFields = "ric", "orderId"
+    )
+
+    val pricesDef = TableDef(
+      "prices",
+      "ric",
+      Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
+      invisible = true,
+      "ric")
+
+    val joinDef = JoinTableDef(
+      name = "orderPrices",
+      baseTable = ordersDef,
+      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
+      joins =
+        JoinTo(
+          table = pricesDef,
+          joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
+        ),
+      links = VisualLinks(),
+      joinFields = Seq()
+    )
+
+    val joinProvider = JoinTableProviderImpl()
+
+    val tableContainer = new TableContainer(joinProvider)
+
+    val orders = tableContainer.createTable(ordersDef)
+    val prices = tableContainer.createTable(pricesDef)
+    val orderPrices = tableContainer.createJoinTable(joinDef)
+
+    val ordersProvider = new MockProvider(orders)
+    val pricesProvider = new MockProvider(prices)
+
+    val providerContainer = new ProviderContainer(joinProvider)
+
+    val viewPortContainer = setupViewPort(tableContainer, providerContainer)
+
+    joinProvider.start()
+
+    joinProvider.runOnce()
+
+    val session = ClientSessionId("sess-01", "chris")
+
+    val outQueue = new OutboundRowPublishQueue()
+
+    (viewPortContainer, orders, ordersProvider, session, outQueue)
+  }
 
   def createDefaultOrderPricesViewPortInfra()(implicit clock: Clock, metrics: MetricsProvider): (ViewPortContainer, DataTable, MockProvider, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue) = {
-    implicit val lifecycle = new LifecycleContainer
-
-    val dateTime = 1437728400000L //new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
+    implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
     val ordersDef = TableDef(
       name = "orders",
