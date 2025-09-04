@@ -70,6 +70,7 @@ const checkboxColumnDescriptor: ColumnDescriptor = {
   label: "",
   name: "",
   width: 25,
+  resizeable: false,
   sortable: false,
   isSystemColumn: true,
   type: {

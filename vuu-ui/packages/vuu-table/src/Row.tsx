@@ -137,6 +137,7 @@ export const Row = memo(
       <div
         {...htmlAttributes}
         aria-expanded={ariaExpanded}
+        aria-selected={selectionStatus & True ? "true" : undefined}
         aria-level={ariaLevel}
         role="row"
         className={className}
