@@ -1,6 +1,9 @@
 import type { DataSourceFilter } from "@vuu-ui/vuu-data-types";
 import {
   AndFilter,
+  ColumnFilterDescriptor,
+  ColumnFilterOp,
+  ColumnFilterValue,
   Filter,
   FilterClauseOp,
   FilterWithPartialClause,
@@ -17,6 +20,8 @@ import {
 import { EventEmitter } from "../event-emitter";
 import { VuuFilter, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { getTypedValue } from "../form-utils";
+import { addFilter } from "@vuu-ui/vuu-filters";
+import { parseFilter } from "@vuu-ui/vuu-filter-parser";
 
 const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "=",
@@ -177,6 +182,167 @@ export class FilterAggregator extends EventEmitter<FilterEvents> {
       return {
         filter: Array.from(this.#filters.entries())
           .map((args) => createFilterClause(...args))
+          .join(" and "),
+      };
+    }
+  }
+}
+
+export function buildColumnFilterForBetween(
+  column: ColumnDescriptor,
+  range: string[],
+): Filter | undefined {
+  const lowerRange: Filter | undefined =
+    range[0] === undefined
+      ? undefined
+      : { column: column.name, op: ">=", value: range[0] };
+
+  const upperRange: Filter | undefined =
+    range[1] === undefined
+      ? undefined
+      : { column: column.name, op: "<=", value: range[1] };
+
+  if (upperRange === undefined) return lowerRange;
+  return addFilter(lowerRange, upperRange, { combineWith: "and" });
+}
+
+export function buildColumnFilter(
+  column: ColumnDescriptor,
+  operator: ColumnFilterOp,
+  value: ColumnFilterValue,
+): Filter | undefined {
+  if (operator === "between") {
+    if (Array.isArray(value)) {
+      return buildColumnFilterForBetween(column, value);
+    }
+  } else if (operator === "in") {
+    if (Array.isArray(value)) {
+      return {
+        column: column.name,
+        op: operator,
+        values: value,
+      };
+    }
+  }
+  return {
+    column: column.name,
+    op: operator as SingleValueFilterClauseOp,
+    value: value.toString(),
+  };
+}
+
+const buildBetweenQueryString = (columnName: string, range: string[]) => {
+  const lowerRange: string | undefined =
+    range[0] === undefined ? undefined : `${columnName} >= ${range[0]}`;
+
+  const upperRange: string | undefined =
+    range[1] === undefined ? undefined : `${columnName} <= ${range[1]}`;
+
+  if (upperRange === undefined) return lowerRange;
+  return `${lowerRange} and ${upperRange}`;
+};
+
+const buildColumnFilterString = (
+  columnName: string,
+  op: ColumnFilterOp,
+  value: ColumnFilterValue,
+) => {
+  if (Array.isArray(value)) return buildBetweenQueryString(columnName, value);
+  return typeof value === "string"
+    ? `${columnName} ${op} "${value}"`
+    : `${columnName} ${op} ${value}`;
+};
+
+export type ColumnFilterEvents = {
+  onAdd: (filter: VuuFilter) => void;
+  onRemove: (filter: VuuFilter) => void;
+  onReset: (filter: VuuFilter) => void;
+};
+export class ColumnFilterStore extends EventEmitter<ColumnFilterEvents> {
+  #columns = new Map<string, ColumnDescriptor>();
+  #filters = new Map<string, ColumnFilterDescriptor>();
+
+  loadStore(query: VuuFilter) {
+    // Clear previous state
+    this.#columns.clear();
+    this.#filters.clear();
+
+    if (query.filter) {
+      const f = parseFilter(query.filter);
+
+      const addToStore = (f: Filter) => {
+        if (f.column) {
+          const columnDescriptor: ColumnDescriptor = { name: f.column }; //serverDataType?
+          this.#columns.set(f.column, columnDescriptor);
+
+          const existing = this.#filters.get(f.column);
+          if (isSingleValueFilter(f)) {
+            this.#filters.set(f.column, {
+              column: columnDescriptor,
+              op: f.op,
+              filterValue: existing
+                ? [existing.filterValue as string, f.value as string] //for range filter - ordering of filter after parsing may be an issue?
+                : (f.value as ColumnFilterValue),
+            });
+          }
+        }
+      };
+
+      if (isMultiClauseFilter(f)) {
+        f.filters.forEach((f) => addToStore(f));
+      } else if (isFilterClause(f)) {
+        addToStore(f);
+      }
+    }
+  }
+
+  addFilter(
+    column: ColumnDescriptor,
+    op: ColumnFilterOp,
+    value: ColumnFilterValue,
+  ) {
+    this.#columns.set(column.name, column);
+    const { serverDataType = "string" } = column;
+    const typedValue = Array.isArray(value)
+      ? value
+      : getTypedValue(value.toString(), serverDataType, true);
+
+    this.#filters.set(column.name, { column, op, filterValue: typedValue });
+    this.emit("onAdd", this.filter);
+  }
+
+  removeFilter(column: ColumnDescriptor) {
+    if (this.#columns.has(column.name)) {
+      this.#columns.delete(column.name);
+      this.#filters.delete(column.name);
+      this.emit("onRemove", this.filter);
+      return true;
+    } else {
+      this.emit("onRemove", this.filter);
+      return false;
+    }
+  }
+
+  resetFilters() {
+    this.#columns.clear();
+    this.#filters.clear();
+    this.emit("onReset", this.filter);
+  }
+
+  get filter(): VuuFilter {
+    const { size } = this.#filters;
+    if (size === 0) {
+      return { filter: "" };
+    } else {
+      return {
+        filter: Array.from(this.#filters.entries())
+          .map(([column, descriptor]) =>
+            buildColumnFilterString(
+              column,
+              descriptor.op,
+              descriptor.filterValue,
+            ),
+          )
           .join(" and "),
       };
     }
