@@ -344,6 +344,38 @@ export const TableInLayoutWithContextPanel = () => {
   );
 };
 
+export const CheckboxTableInLayoutWithContextPanel = () => {
+  useMemo(() => {
+    registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
+    registerComponent("TableSettings", TableSettingsPanel, "view");
+  }, []);
+  const tableConfig = useMemo<TableConfig>(() => {
+    return {
+      columns: getSchema("instruments").columns,
+      rowSeparators: true,
+      zebraStripes: true,
+    };
+  }, []);
+  const dataSource = useMemo(() => {
+    return vuuModule("SIMUL").createDataSource("instruments");
+  }, []);
+
+  return (
+    <LayoutProvider>
+      <FlexboxLayout style={{ height: 645, width: "100%" }}>
+        <Table
+          config={tableConfig}
+          dataSource={dataSource}
+          renderBufferSize={30}
+          selectionModel="checkbox"
+          width="100%"
+        />
+        <ContextPanel id={VuuShellLocation.ContextPanel} overlay></ContextPanel>
+      </FlexboxLayout>
+    </LayoutProvider>
+  );
+};
+
 const NullContext = {
   component: undefined,
   expanded: false,

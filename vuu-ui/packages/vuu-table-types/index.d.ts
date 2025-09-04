@@ -240,6 +240,11 @@ export declare type ColumnAlignment = "left" | "right";
 export interface ColumnDescriptor extends DataValueDescriptor {
   aggregate?: VuuAggType;
   align?: ColumnAlignment;
+  /**
+   * ColumnMenu is enabled across all columns with a Table prop 'showColumnHeaderMenus'.
+   * This property can be used to disable this feature for a single column.
+   */
+  allowColumnHeaderMenu?: false;
   className?: string;
   /**
    * Allows custom content to be rendered into the column header. This will be an identifier.
