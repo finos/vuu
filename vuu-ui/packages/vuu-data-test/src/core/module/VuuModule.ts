@@ -105,7 +105,7 @@ export abstract class VuuModule<T extends string = string>
     return Object.keys(this.tables);
   }
 
-  private unregisterViewport = (viewportId: string) => {
+  protected unregisterViewport = (viewportId: string) => {
     for (const [tableName, subscriptions] of this.#subscriptionMap) {
       if (subscriptions[0].viewportId.toString() === viewportId) {
         this.#subscriptionMap.delete(tableName);
@@ -296,7 +296,7 @@ export abstract class VuuModule<T extends string = string>
     return this.#sessionTableMap;
   }
 
-  private getSessionTable(sessionTableName: string) {
+  protected getSessionTable(sessionTableName: string) {
     const sessionTable = this.#sessionTableMap[sessionTableName];
     if (sessionTable) {
       return sessionTable;

@@ -237,9 +237,9 @@ export class ArrayDataSource
 
     let config = this._config;
 
-    if (range) {
-      this.setRange(range);
-    }
+    // if (range) {
+    //   this.setRange(range);
+    // }
     const hasConfigProps =
       aggregations || columns || filterSpec || groupBy || sort;
 
