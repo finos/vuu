@@ -1,4 +1,9 @@
-import { FilterClauseOp, FilterValue } from "@vuu-ui/vuu-filter-types";
+import {
+  ColumnFilterChangeHandler,
+  ColumnFilterOp,
+  ColumnFilterValue,
+  FilterClauseOp,
+} from "@vuu-ui/vuu-filter-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
   ChangeEventHandler,
@@ -11,12 +16,10 @@ import { CommitHandler, queryClosest } from "@vuu-ui/vuu-utils";
 import { VuuTypeaheadInputProps } from "@vuu-ui/vuu-ui-controls";
 import { getOperators } from "../filter-clause/operator-utils";
 
-export type Operator = FilterClauseOp | "between";
-
 export const assertValidOperator = (
   allowedOperators: FilterClauseOp[],
   column: ColumnDescriptor,
-  op: Operator,
+  op: ColumnFilterOp,
 ) => {
   if (!allowedOperators.find((filterClauseOp) => filterClauseOp === op)) {
     console.warn(
@@ -27,8 +30,8 @@ export const assertValidOperator = (
 
 export const assertValidValue = (
   { serverDataType: _ }: ColumnDescriptor,
-  operator: Operator,
-  value?: FilterValue,
+  operator: ColumnFilterOp,
+  value?: ColumnFilterValue,
 ) => {
   if (value !== undefined) {
     if (operator === "between") {
@@ -52,20 +55,16 @@ export const assertValidValue = (
 
 export type ColumnFilterHookProps = {
   column: ColumnDescriptor;
-  operator?: Operator;
+  operator?: ColumnFilterOp;
   /**
    * Filter value. Pair of values expected when operator is
    * 'between'
    */
-  value?: FilterValue;
+  value?: ColumnFilterValue;
   /**
    * Filter change events.
    */
-  onFilterChange?: (
-    value: FilterValue,
-    column: ColumnDescriptor,
-    op: Operator,
-  ) => void;
+  onFilterChange?: ColumnFilterChangeHandler;
 };
 
 export const useColumnFilter = ({
@@ -74,7 +73,8 @@ export const useColumnFilter = ({
   column,
   onFilterChange,
 }: ColumnFilterHookProps) => {
-  const getDefaultValue = (op: Operator) => (op === "between" ? ["", ""] : "");
+  const getDefaultValue = (op: ColumnFilterOp) =>
+    op === "between" ? ["", ""] : "";
   const filterValue = useRef(value ?? getDefaultValue(operator));
   const [op, setOp] = useState(operator);
   const allowedOperators = useMemo(() => getOperators(column), [column]);
@@ -88,7 +88,7 @@ export const useColumnFilter = ({
     }
   }, [value, column, op, onFilterChange]);
 
-  const handleOperatorChange = useCallback((changedOp: Operator) => {
+  const handleOperatorChange = useCallback((changedOp: ColumnFilterOp) => {
     setOp(changedOp);
   }, []);
 
@@ -96,7 +96,10 @@ export const useColumnFilter = ({
     (e, newValue) => {
       console.log(`[useColumnFilter] handleCommit ${newValue}`);
       if (Array.isArray(filterValue.current)) {
-        filterValue.current = [newValue as FilterValue, filterValue.current[1]];
+        filterValue.current = [
+          newValue as ColumnFilterValue,
+          filterValue.current[1],
+        ];
         if (
           filterValue.current &&
           (filterValue.current[0] === undefined ||
@@ -107,7 +110,7 @@ export const useColumnFilter = ({
           );
         }
       } else {
-        filterValue.current = newValue as FilterValue;
+        filterValue.current = newValue as ColumnFilterValue;
       }
       onFilterChange?.(filterValue.current, column, op);
     },
@@ -117,7 +120,10 @@ export const useColumnFilter = ({
   const handleRangeCommit = useCallback<CommitHandler<HTMLElement>>(
     (e, newValue) => {
       if (Array.isArray(filterValue.current)) {
-        filterValue.current = [filterValue.current[0], newValue as FilterValue];
+        filterValue.current = [
+          filterValue.current[0],
+          newValue as ColumnFilterValue,
+        ];
         if (
           filterValue.current &&
           (filterValue.current[0] === undefined ||
@@ -128,7 +134,7 @@ export const useColumnFilter = ({
           );
         }
       } else {
-        filterValue.current = newValue as FilterValue;
+        filterValue.current = newValue as ColumnFilterValue;
       }
       onFilterChange?.(filterValue.current, column, op);
     },
@@ -139,11 +145,11 @@ export const useColumnFilter = ({
     (e) => {
       if (Array.isArray(filterValue.current)) {
         const editControl = queryClosest(e.target, "[data-edit-control]", true);
-        const updated: FilterValue = [
-          !editControl?.className?.includes("rangeHigh")
+        const updated: ColumnFilterValue = [
+          !editControl.className?.includes("rangeHigh")
             ? e.target.value
             : filterValue.current[0],
-          editControl?.className?.includes("rangeHigh")
+          editControl.className?.includes("rangeHigh")
             ? e.target.value
             : filterValue.current[1],
         ];
