@@ -18,13 +18,13 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
 
 /**
- * This fixture deals with the scenario where we want to create a table
- * that is the join of Instruments and Prices (InstrumentPrices)
- * and then we want to create a subsequent join which is InstrumentPrices to FxRates.
- * This involves being able to base join tables onto of existing Join tables.
- *
- */
-class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
+  * This fixture deals with the scenario where we want to create a table
+  * that is the join of Instruments and Prices (InstrumentPrices)
+  * and then we want to create a subsequent join which is InstrumentPrices to FxRates.
+  * This involves being able to base join tables onto of existing Join tables.
+  *
+  */
+class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup{
 
   implicit val timeProvider: Clock = new DefaultClock
   implicit val lifecycle: LifecycleContainer = new LifecycleContainer
@@ -40,7 +40,7 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
     viewPortContainer
   }
 
-  Scenario("check a tick all the way through from source to join table") {
+  Scenario("check a tick all the way through from source to join table"){
 
     val dateTime = 1437728400000L
 
@@ -48,21 +48,21 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
       name = "orders",
       keyField = "orderId",
       columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "ccyCross:String"),
-      joinFields = "ric", "orderId", "ccyCross")
+      joinFields =  "ric", "orderId", "ccyCross")
 
     val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
 
     val fxDef = TableDef("fx", "cross", Columns.fromNames("cross:String", "fxbid:Double", "fxask:Double"), "cross")
 
     val joinDef = JoinTableDef(
-      name = "orderPrices",
-      baseTable = ordersDef,
-      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
-      joins =
+      name          = "orderPrices",
+      baseTable     = ordersDef,
+      joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
+      joins  =
         JoinTo(
           table = pricesDef,
-          joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
-        ),
+          joinSpec = JoinSpec( left = "ric", right = "ric", LeftOuterJoin)
+      ),
       links = VisualLinks(),
       joinFields = Seq("ccyCross", "orderId")
     )
@@ -74,17 +74,17 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") ++ Columns.allFrom(fxDef),
       links = VisualLinks(),
       joinFields = Seq("ccyCross", "orderId"),
-      JoinTo(
-        table = pricesDef,
-        joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
-      ),
-      JoinTo(
-        table = fxDef,
-        joinSpec = JoinSpec(left = "ccyCross", right = "cross", LeftOuterJoin)
+        JoinTo(
+          table = pricesDef,
+          joinSpec = JoinSpec( left = "ric", right = "ric", LeftOuterJoin)
+        ),
+        JoinTo(
+          table = fxDef,
+          joinSpec = JoinSpec( left = "ccyCross", right = "cross", LeftOuterJoin)
       )
     )
 
-    val joinProvider = JoinTableProviderImpl()
+    val joinProvider   = JoinTableProviderImpl()
 
     val tableContainer = new TableContainer(joinProvider)
 
@@ -126,16 +126,16 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
 
     viewPortContainer.runOnce()
 
-    assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
+    assertVpEq(filterByVpId(combineQs(viewPort), viewPort)){
       Table(
-        ("orderId", "trader", "tradeTime", "quantity", "ric", "fxbid", "fxask"),
-        ("NYC-0001", "chris", 1437728400000L, 100, "VOD.L", 0.703, 0.703),
-        ("NYC-0002", "chris", 1437728400000L, 100, "BT.L", 1.213, 1.223)
+        ("orderId" ,"trader"  ,"tradeTime","quantity","ric"     ,"fxbid"   ,"fxask"   ),
+        ("NYC-0001","chris"   ,1437728400000L,100       ,"VOD.L"   ,0.703     ,0.703     ),
+        ("NYC-0002","chris"   ,1437728400000L,100       ,"BT.L"    ,1.213     ,1.223     )
       )
     }
   }
 
-  Scenario("Check join of joins with data arriving out of order") {
+  Scenario("Check join of joins with data arriving out of order"){
 
     val dateTime = 1437728400000L
 
@@ -143,20 +143,20 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
       name = "orders",
       keyField = "orderId",
       columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "ccyCross:String"),
-      joinFields = "ric", "orderId", "ccyCross")
+      joinFields =  "ric", "orderId", "ccyCross")
 
     val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
 
     val fxDef = TableDef("fx", "cross", Columns.fromNames("cross:String", "fxbid:Double", "fxask:Double"), "cross")
 
     val joinDef = JoinTableDef(
-      name = "orderPrices",
-      baseTable = ordersDef,
-      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
-      joins =
+      name          = "orderPrices",
+      baseTable     = ordersDef,
+      joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
+      joins  =
         JoinTo(
           table = pricesDef,
-          joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
+          joinSpec = JoinSpec( left = "ric", right = "ric", LeftOuterJoin)
         ),
       links = VisualLinks(),
       joinFields = Seq("ccyCross", "orderId")
@@ -171,15 +171,15 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
       joinFields = Seq("ccyCross", "orderId"),
       JoinTo(
         table = pricesDef,
-        joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
+        joinSpec = JoinSpec( left = "ric", right = "ric", LeftOuterJoin)
       ),
       JoinTo(
         table = fxDef,
-        joinSpec = JoinSpec(left = "ccyCross", right = "cross", LeftOuterJoin)
+        joinSpec = JoinSpec( left = "ccyCross", right = "cross", LeftOuterJoin)
       )
     )
 
-    val joinProvider = JoinTableProviderImpl()
+    val joinProvider   = JoinTableProviderImpl()
 
     val tableContainer = new TableContainer(joinProvider)
 
@@ -221,11 +221,11 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
 
     viewPortContainer.runOnce()
 
-    assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
+    assertVpEq(filterByVpId(combineQs(viewPort), viewPort)){
       Table(
-        ("orderId", "trader", "tradeTime", "quantity", "ric", "fxbid", "fxask"),
-        ("NYC-0001", "chris", 1437728400000L, 100, "VOD.L", 0.703, 0.703),
-        ("NYC-0002", "chris", 1437728400000L, 100, "BT.L", 1.213, 1.223)
+        ("orderId" ,"trader"  ,"tradeTime","quantity","ric"     ,"fxbid"   ,"fxask"   ),
+        ("NYC-0001","chris"   ,1437728400000L,100       ,"VOD.L"   ,0.703     ,0.703     ),
+        ("NYC-0002","chris"   ,1437728400000L,100       ,"BT.L"    ,1.213     ,1.223     )
       )
     }
 
@@ -240,13 +240,13 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
       name = "orders",
       keyField = "orderId",
       columns = Columns.fromNames("orderId:String", "ric:String", "tradeTime:Long", "quantity:Double"),
-      joinFields = "orderId", "ric")
+      joinFields =  "orderId","ric")
 
     val instrumentDef = TableDef(
       name = "instruments",
       keyField = "ric",
       columns = Columns.fromNames("ric:String", "currency:String"),
-      joinFields = "ric", "currency")
+      joinFields = "ric","currency")
 
     val currencyDef = TableDef(
       "currencies",
@@ -255,32 +255,32 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
       "currency")
 
     val join1Def = JoinTableDef(
-      name = "instrumentToCurrency",
-      baseTable = instrumentDef,
-      joinColumns = Columns.allFrom(instrumentDef) ++ Columns.allFromExcept(currencyDef, "currency"),
-      joins =
+      name          = "instrumentToCurrency",
+      baseTable     = instrumentDef,
+      joinColumns   = Columns.allFrom(instrumentDef) ++ Columns.allFromExcept(currencyDef, "currency"),
+      joins  =
         JoinTo(
           table = currencyDef,
-          joinSpec = JoinSpec(left = "currency", right = "currency", LeftOuterJoin)
+          joinSpec = JoinSpec( left = "currency", right = "currency", LeftOuterJoin)
         ),
       links = VisualLinks(),
       joinFields = Seq("ric")
     )
 
     val join2Def = JoinTableDef(
-      name = "orderToInstrument",
-      baseTable = ordersDef,
-      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(join1Def, "ric"),
-      joins =
+      name          = "orderToInstrument",
+      baseTable     = ordersDef,
+      joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(join1Def, "ric"),
+      joins  =
         JoinTo(
           table = join1Def,
-          joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
+          joinSpec = JoinSpec( left = "ric", right = "ric", LeftOuterJoin)
         ),
       links = VisualLinks(),
       joinFields = Seq("orderId")
     )
 
-    val joinProvider = JoinTableProviderImpl()
+    val joinProvider   = JoinTableProviderImpl()
 
     val tableContainer = new TableContainer(joinProvider)
 
@@ -313,9 +313,9 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
 
     viewPortContainer.runOnce()
 
-    assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
+    assertVpEq(filterByVpId(combineQs(viewPort), viewPort)){
       Table(
-        ("orderId", "ric", "currency", "country"),
+        ("orderId" ,"ric"     ,"currency"   ,"country"   ),
       )
     }
 
@@ -337,11 +337,11 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
     joinProvider.runOnce()
     viewPortContainer.runOnce()
 
-    assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
+    assertVpEq(filterByVpId(combineQs(viewPort), viewPort)){
       Table(
-        ("orderId", "ric", "currency", "country"),
-        ("NYC-0001", "VOD.L", "GBP", "UK"),
-        ("NYC-0002", "AIR.PA", "EUR", "FR")
+        ("orderId" ,"ric"     ,"currency"   ,"country"   ),
+         ("NYC-0001","VOD.L"   ,"GBP"     ,"UK"     ),
+        ("NYC-0002","AIR.PA"  ,"EUR"     ,"FR"     )
       )
     }
 
