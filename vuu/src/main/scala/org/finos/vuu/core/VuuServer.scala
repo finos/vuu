@@ -6,7 +6,7 @@ import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import org.finos.toolbox.thread.{LifeCycleRunOncePerThreadExecutorRunner, LifeCycleRunner, WorkItem}
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{JoinTableDef, TableDef, ViewPortDef}
-import org.finos.vuu.core.module.{ModuleContainer, RealizedViewServerModule, StaticServedResource, TableDefContainer, ViewServerModule}
+import org.finos.vuu.core.module._
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net._
@@ -14,7 +14,7 @@ import org.finos.vuu.net.flowcontrol.FlowControllerFactory
 import org.finos.vuu.net.http.{Http2Server, VuuHttp2Server}
 import org.finos.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer, Serializer}
 import org.finos.vuu.net.rest.RestService
-import org.finos.vuu.net.rpc.{JsonSubTypeRegistry, RpcHandler}
+import org.finos.vuu.net.rpc.JsonSubTypeRegistry
 import org.finos.vuu.net.ws.WebSocketServer
 import org.finos.vuu.plugin.PluginRegistry
 import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, Provider, ProviderContainer}
@@ -42,7 +42,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
   final val sessionContainer = new ClientSessionContainerImpl()
 
-  final val joinProvider: JoinTableProvider = JoinTableProviderImpl()
+  final val joinProvider: JoinTableProvider = JoinTableProviderImpl(config.joinProvider)
 
   final val tableContainer = new TableContainer(joinProvider)
 

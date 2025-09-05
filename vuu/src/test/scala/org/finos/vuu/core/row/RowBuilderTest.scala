@@ -5,7 +5,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.{Columns, InMemDataTable}
-import org.finos.vuu.provider.VuuJoinTableProvider
+import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, VuuJoinTableProvider}
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -30,7 +30,7 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
       implicit val metrics: MetricsProviderImpl = new MetricsProviderImpl
 
       val tableDef = getTableDef
-      val joinTableProvider: VuuJoinTableProvider = new VuuJoinTableProvider()
+      val joinTableProvider: JoinTableProvider = JoinTableProviderImpl()
 
       val (ricColumn, descColumn, currColumn, exchangeColumn, lotSizeColumn) =
         (
@@ -65,7 +65,7 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
       implicit val metrics: MetricsProviderImpl = new MetricsProviderImpl
 
       val tableDef = getTableDef
-      val joinTableProvider: VuuJoinTableProvider = new VuuJoinTableProvider()
+      val joinTableProvider: JoinTableProvider = JoinTableProviderImpl()
 
       val (ricColumn, descColumn, currColumn, exchangeColumn, lotSizeColumn) =
         (

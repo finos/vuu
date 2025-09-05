@@ -28,7 +28,12 @@ object VuuClientConnectionOptions {
   def apply(): VuuClientConnectionOptions = {
     VuuClientConnectionOptionsImpl(true)
   }
+}
 
+object VuuJoinTableProviderOptions {
+  def apply() : VuuJoinTableProviderOptions = {
+    VuuJoinProviderOptionsImpl.apply(batchSize = 100, maxQueueSize = 20_000)
+  }
 }
 
 trait VuuSSLCipherSuiteOptions {
@@ -77,6 +82,13 @@ trait VuuClientConnectionOptions {
   def withHeartbeatDisabled(): VuuClientConnectionOptions
 }
 
+trait VuuJoinTableProviderOptions {
+  def batchSize: Int
+  def maxQueueSize: Int
+  def withBatchSize(maxQueueDepth: Int): VuuJoinTableProviderOptions
+  def withMaxQueueDepth(maxQueueDepth: Int): VuuJoinTableProviderOptions
+}
+
 case class VuuSecurityOptionsImpl(authenticator: Authenticator, loginTokenValidator: LoginTokenValidator) extends VuuSecurityOptions{
   override def withAuthenticator(authenticator: Authenticator): VuuSecurityOptions = this.copy(authenticator = authenticator)
   override def withLoginValidator(tokenValidator: LoginTokenValidator): VuuSecurityOptions = this.copy(loginTokenValidator = tokenValidator)
@@ -114,11 +126,17 @@ case class VuuSSLCipherSuiteOptionsImpl(ciphers: List[String], protocols: List[S
   override def withProtocols(protocols: List[String]): VuuSSLCipherSuiteOptions = this.copy(protocols = protocols)
 }
 
+case class VuuJoinProviderOptionsImpl(batchSize: Int, maxQueueSize: Int) extends VuuJoinTableProviderOptions {
+  override def withBatchSize(batchSize: Int): VuuJoinTableProviderOptions = this.copy(batchSize = batchSize)
+  override def withMaxQueueDepth(maxQueueSize: Int): VuuJoinTableProviderOptions = this.copy(maxQueueSize = maxQueueSize)
+}
+
 case class VuuServerConfig(httpOptions: VuuHttp2ServerOptions = VuuHttp2ServerOptions(),
                            wsOptions: VuuWebSocketOptions = VuuWebSocketOptions(),
                            security: VuuSecurityOptions = VuuSecurityOptions(),
                            threading: VuuThreadingOptions = VuuThreadingOptions(),
                            clientConnection: VuuClientConnectionOptions = VuuClientConnectionOptions(),
+                           joinProvider: VuuJoinTableProviderOptions = VuuJoinTableProviderOptions(),
                            modules: List[ViewServerModule] = List(),
                            plugins: List[Plugin] = List()) {
   def withModule(module: ViewServerModule): VuuServerConfig = {
