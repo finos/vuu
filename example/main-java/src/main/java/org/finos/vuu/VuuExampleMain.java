@@ -72,12 +72,12 @@ public class VuuExampleMain {
                 new scala.collection.mutable.ListBuffer<ViewServerModule>().toList(),
                 new scala.collection.mutable.ListBuffer<Plugin>().toList()
         ).withModule(PriceModule.apply(clock, lifecycle, tableDefContainer))
-                .withModule(SimulationModule.apply(clock, lifecycle, tableDefContainer))
-                .withModule(MetricsModule.apply(clock, lifecycle, metrics, tableDefContainer))
-                .withModule(VuiStateModule.apply(store, clock, lifecycle, tableDefContainer))
-                .withModule(AuthNModule.apply(authenticator, loginTokenValidator, clock, lifecycle, tableDefContainer))
-                //the modules above are scala, the modules below are java...
-                .withModule(new JavaExampleModule().create(tableDefContainer, clock));
+         .withModule(SimulationModule.apply(clock, lifecycle, tableDefContainer))
+         .withModule(MetricsModule.apply(clock, lifecycle, metrics, tableDefContainer))
+         .withModule(VuiStateModule.apply(store, clock, lifecycle, tableDefContainer))
+         .withModule(AuthNModule.apply(authenticator, loginTokenValidator, clock, lifecycle, tableDefContainer))
+         //the modules above are scala, the modules below are java...
+         .withModule(new JavaExampleModule().create(tableDefContainer, clock))       ;
 
         final VuuServer vuuServer = new VuuServer(config, lifecycle, clock, metrics);
 
