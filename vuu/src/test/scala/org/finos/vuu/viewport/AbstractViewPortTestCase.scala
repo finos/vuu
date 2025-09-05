@@ -83,14 +83,14 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
     (viewPortContainer, orders, ordersProvider, session, outQueue)
   }
 
-  def createDefaultViewPortInfraWithInvisibleTable()(implicit clock: Clock, metrics: MetricsProvider): (ViewPortContainer, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue) = {
+  def createDefaultViewPortInfraWithPrivateTable()(implicit clock: Clock, metrics: MetricsProvider): (ViewPortContainer, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue) = {
     implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
     val ordersDef = TableDef(
       name = "orders",
       keyField = "orderId",
       columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Int"),
-      invisible = true,
+      visibility = Private,
       joinFields = "ric", "orderId"
     )
 
@@ -98,7 +98,7 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
       "prices",
       "ric",
       Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
-      invisible = true,
+      visibility = Private,
       "ric")
 
     val joinDef = JoinTableDef(

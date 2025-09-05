@@ -2,7 +2,7 @@ package org.finos.vuu.core
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.AvailableViewPortVisualLink
+import org.finos.vuu.api.{AvailableViewPortVisualLink, Public}
 import org.finos.vuu.core.table.{DataType, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net._
 import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionSuccess}
@@ -315,7 +315,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
 
     val table = tableContainer.getTable(msg.table.table)
 
-    if (table == null || table.getTableDef.invisible) {
+    if (table == null || table.getTableDef.visibility != Public) {
       vsMsg(CreateViewPortReject(msg.table, s"no table found for ${msg.table}"))(ctx)
     } else {
 

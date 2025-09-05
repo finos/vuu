@@ -24,6 +24,15 @@ object Link {
   }
 }
 
+// Used in table definition to indicate the visibility level of a table
+class Visibility
+
+// All users can create view port to see the table
+case object Public extends Visibility
+
+// No users can create view port to see the table. Only for vuu internal use, e.g. base tables for a join table.
+case object Private extends Visibility
+
 object SessionTableDef {
   def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
     new SessionTableDef(name, keyField, columns, joinFields, indices = Indices())
@@ -54,8 +63,8 @@ object TableDef {
     new TableDef(name, keyField, columns, joinFields, indices = Indices())
   }
 
-  def apply(name: String, keyField: String, columns: Array[Column], invisible: Boolean, joinFields: String*): TableDef = {
-    new TableDef(name, keyField, columns, joinFields, indices = Indices(), invisible = invisible)
+  def apply(name: String, keyField: String, columns: Array[Column], visibility: Visibility, joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields, indices = Indices(), visibility = visibility)
   }
 }
 
@@ -127,7 +136,7 @@ class TableDef(val name: String,
                val autosubscribe: Boolean = false,
                val links: VisualLinks = VisualLinks(),
                val indices: Indices,
-               val invisible: Boolean = false) extends VuuInMemPluginLocator {
+               val visibility: Visibility = Public) extends VuuInMemPluginLocator {
 
   private val createdTimeColumn: SimpleColumn = SimpleColumn(CreatedTimeColumnName, customColumns.length, DataType.fromString("long"))
   private val updatedTimeColumn: SimpleColumn = SimpleColumn(LastUpdatedTimeColumnName, customColumns.length + 1, DataType.fromString("long"))

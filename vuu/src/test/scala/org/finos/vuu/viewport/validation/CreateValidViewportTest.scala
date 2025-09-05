@@ -32,7 +32,7 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       exception.getMessage should startWith("Invalid columns specified in viewport request")
     }
 
-    Scenario("create viewport for visible table, return success message") {
+    Scenario("create viewport for public table, return success message") {
       implicit val clock: Clock = new TestFriendlyClock(1311544800)
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
@@ -48,12 +48,12 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       result.get.body.asInstanceOf[CreateViewPortSuccess].table shouldBe "orders"
     }
 
-    Scenario("create viewport for invisible table, return reject message") {
+    Scenario("create viewport for private table, return reject message") {
       implicit val clock: Clock = new TestFriendlyClock(1311544800)
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       Given("we've created a viewport with orders in")
-      val (viewPortContainer, _, _, _, outQueue) = createDefaultViewPortInfraWithInvisibleTable()
+      val (viewPortContainer, _, _, _, outQueue) = createDefaultViewPortInfraWithPrivateTable()
       val api = new CoreServerApiHandler(viewPortContainer, tableContainer = viewPortContainer.tableContainer, providers = viewPortContainer.providerContainer)
 
       val ctx = RequestContext("req-101", ClientSessionId("A", "A"), outQueue, "token-0001")
@@ -69,7 +69,7 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       Given("we've created a viewport with orders in")
-      val (viewPortContainer, _, _, _, outQueue) = createDefaultViewPortInfraWithInvisibleTable()
+      val (viewPortContainer, _, _, _, outQueue) = createDefaultViewPortInfraWithPrivateTable()
 
       val api = new CoreServerApiHandler(viewPortContainer, tableContainer = viewPortContainer.tableContainer, providers = viewPortContainer.providerContainer)
       val ctx = RequestContext("req-101", ClientSessionId("A", "A"), outQueue, "token-0001")
