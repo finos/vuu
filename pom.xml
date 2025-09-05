@@ -40,7 +40,7 @@
         <maven.compiler.release>17</maven.compiler.release>
         <scala.version>2.13.16</scala.version>
         <caffeine.version>3.2.1</caffeine.version>
-        <metrics.version>4.2.5</metrics.version>
+        <metrics.version>4.2.36</metrics.version>
         <scalatest.version>3.2.19</scalatest.version>
         <scalamock.version>7.4.0</scalamock.version>
         <scala.logging>3.9.5</scala.logging>
