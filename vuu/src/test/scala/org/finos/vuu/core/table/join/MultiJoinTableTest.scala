@@ -37,6 +37,7 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
 
       val joinDef = JoinTableDef(
         name          = "orderPrices",
+        visibility = Public,
         baseTable     = ordersDef,
         joinColumns   = Columns.allFrom(ordersDef) ++
                         Columns.allFromExcept(pricesDef, "ric") ++
@@ -122,6 +123,7 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
 
       val joinDef = JoinTableDef(
         name          = "orderPrices",
+        visibility = Public,
         baseTable     = ordersDef,
         joinColumns   = Columns.allFrom(ordersDef) ++
           Columns.allFromExcept(pricesDef, "ric") ++
