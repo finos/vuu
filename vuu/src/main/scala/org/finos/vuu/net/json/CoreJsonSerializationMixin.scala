@@ -11,6 +11,8 @@ import org.finos.vuu.net._
 @JsonSubTypes(Array(
   new Type(value = classOf[AuthenticateRequest], name = "AUTH"),
   new Type(value = classOf[CreateViewPortRequest], name = "CREATE_VP"),
+  new Type(value = classOf[CreateViewPortSuccess], name = "CREATE_VP_SUCCESS"),
+  new Type(value = classOf[CreateViewPortReject], name = "CREATE_VP_REJECT"),
   new Type(value = classOf[DisableViewPortRequest], name = "DISABLE_VP"),
   new Type(value = classOf[DisableViewPortSuccess], name = "DISABLE_VP_SUCCESS"),
   new Type(value = classOf[DisableViewPortReject], name = "DISABLE_VP_REJECT"),
@@ -26,8 +28,6 @@ import org.finos.vuu.net._
   new Type(value = classOf[RemoveViewPortRequest], name = "REMOVE_VP"),
   new Type(value = classOf[RemoveViewPortSuccess], name = "REMOVE_VP_SUCCESS"),
   new Type(value = classOf[RemoveViewPortReject], name = "REMOVE_VP_REJECT"),
-  new Type(value = classOf[CreateViewPortSuccess], name = "CREATE_VP_SUCCESS"),
-  new Type(value = classOf[CreateViewPortReject], name = "CREATE_VP_REJECT"),
   new Type(value = classOf[ChangeViewPortRange], name = "CHANGE_VP_RANGE"),
   new Type(value = classOf[ChangeViewPortRangeSuccess], name = "CHANGE_VP_RANGE_SUCCESS"),
   new Type(value = classOf[ChangeViewPortRequest], name = "CHANGE_VP"),
