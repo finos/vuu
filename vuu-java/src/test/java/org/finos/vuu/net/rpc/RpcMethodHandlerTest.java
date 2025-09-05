@@ -7,7 +7,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer;
 import org.finos.toolbox.time.Clock;
 import org.finos.toolbox.time.DefaultClock;
 import org.finos.vuu.core.table.TableContainer;
-import org.finos.vuu.provider.VuuJoinTableProvider;
+import org.finos.vuu.provider.JoinTableProviderImpl;
 import org.finos.vuu.util.ScalaCollectionConverter;
 import org.junit.Test;
 import scala.Option;
@@ -24,7 +24,7 @@ public class RpcMethodHandlerTest {
         Clock clock = new DefaultClock();
         LifecycleContainer lifecycleContainer = new LifecycleContainer(clock);
         MetricsProvider metricsProvider = new MetricsProviderImpl();
-        TableContainer tableContainer = new TableContainer(new VuuJoinTableProvider(clock, lifecycleContainer, metricsProvider), metricsProvider, clock);
+        TableContainer tableContainer = new TableContainer(JoinTableProviderImpl.apply(lifecycleContainer), metricsProvider, clock);
         final DefaultRpcHandler defaultRpcHandler = new DefaultRpcHandler(tableContainer);
         defaultRpcHandler.registerRpc("helloWorld", rpcService::rpcFunction);
 

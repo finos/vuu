@@ -71,6 +71,7 @@ public class VuuExampleMain
                         .withViewPortThreads(4),
                 VuuClientConnectionOptions.apply()
                         .withHeartbeat(),
+                VuuJoinTableProviderOptions.apply(),
                 new scala.collection.mutable.ListBuffer<ViewServerModule>().toList(),
                 new scala.collection.mutable.ListBuffer<Plugin>().toList()
         ).withModule(PriceModule.apply(clock, lifecycle, tableDefContainer))

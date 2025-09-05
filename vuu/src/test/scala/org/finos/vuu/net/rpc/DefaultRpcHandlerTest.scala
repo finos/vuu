@@ -5,7 +5,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.table.TableContainer
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
-import org.finos.vuu.provider.VuuJoinTableProvider
+import org.finos.vuu.provider.JoinTableProviderImpl
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -18,7 +18,7 @@ class DefaultRpcHandlerTest extends AnyFeatureSpec with Matchers with BeforeAndA
     implicit val clock: Clock = new DefaultClock
     implicit val lifecycleContainer: LifecycleContainer = new LifecycleContainer
     implicit val metricsProvider: MetricsProvider = new MetricsProviderImpl
-    implicit val tableContainer: TableContainer = new TableContainer(new VuuJoinTableProvider)
+    implicit val tableContainer: TableContainer = new TableContainer(JoinTableProviderImpl())
     handler = new DefaultRpcHandler
   }
 

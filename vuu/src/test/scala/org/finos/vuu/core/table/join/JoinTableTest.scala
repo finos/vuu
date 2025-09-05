@@ -5,7 +5,8 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock, TestFriendlyClock}
 import org.finos.vuu.api._
 import org.finos.vuu.client.messages.RequestId
-import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName, allDefaultColumns}
+import org.finos.vuu.core.VuuJoinProviderOptionsImpl
+import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName}
 import org.finos.vuu.core.table._
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.ClientSessionId
@@ -126,6 +127,86 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       updates.filter( vp => vp.vpUpdate == RowUpdateType).foreach(update => update.table.readRow(update.key.key, List("orderId", "trader", "tradeTime", "ric", "bid", "ask"), printToConsoleProcessor ))
     }
 
+    Scenario("check large number of ticks all the way through from source to join table"){
+
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+
+      val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
+
+      val ordersDef = TableDef(
+        name = "orders",
+        keyField = "orderId",
+        columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
+        joinFields =  "ric", "orderId")
+
+      val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+
+      val joinDef = JoinTableDef(
+        name          = "orderPrices",
+        baseTable     = ordersDef,
+        joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
+        joins  =
+          JoinTo(
+            table = pricesDef,
+            joinSpec = JoinSpec( left = "ric", right = "ric", LeftOuterJoin)
+          ),
+        links = VisualLinks(),
+        joinFields = Seq()
+      )
+
+      val batchSize = 10
+      val maxQueueSize = 100
+      val joinProvider   = JoinTableProviderImpl(VuuJoinProviderOptionsImpl.apply(batchSize = batchSize, maxQueueSize = maxQueueSize))
+
+      val tableContainer = new TableContainer(joinProvider)
+
+      val orders = tableContainer.createTable(ordersDef)
+      val prices = tableContainer.createTable(pricesDef)
+      val orderPrices = tableContainer.createJoinTable(joinDef)
+
+      val ordersProvider = new MockProvider(orders)
+      val pricesProvider = new MockProvider(prices)
+
+      val providerContainer = new ProviderContainer(joinProvider)
+
+      val viewPortContainer = setupViewPort(tableContainer, providerContainer)
+
+      joinProvider.start()
+
+      pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220.0, "ask" -> 222.0))
+
+      pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500.0, "ask" -> 501.0))
+
+      for (quantity <- 1 to maxQueueSize + 1) {
+        ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> quantity, "ric" -> "VOD.L"))
+        ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> quantity, "ric" -> "BT.L"))
+        if (quantity % batchSize == 0) {
+          joinProvider.runOnce()
+        }
+      }
+
+      joinProvider.runOnce()
+
+      val session = ClientSessionId("sess-01", "chris")
+
+      val outQueue = new OutboundRowPublishQueue()
+
+      val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric"))
+
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orderPrices, DefaultRange, vpcolumns)
+
+      viewPortContainer.runOnce()
+
+      assertVpEq(filterByVpId(combineQs(viewPort), viewPort)){
+        Table(
+          ("orderId" ,"trader"     ,"tradeTime"   ,"quantity" , "ric"  ),
+          ("NYC-0001","chris"   ,1437732000000L     ,maxQueueSize + 1 , "VOD.L"    ),
+          ("NYC-0002","chris"  ,1437732000000L     ,maxQueueSize + 1  , "BT.L"   )
+        )
+      }
+
+      }
+
     Scenario("check that registering and deregistering listeners on join table propagates to source tables"){
 
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
@@ -176,7 +257,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       prices.isKeyObservedBy("VOD.L", ko2) should be (true)
     }
 
-    Scenario("Check deleting keys from join table and see if it propogates correctly"){
+    Scenario("Check deleting keys from join table and see if it propagates correctly"){
 
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
