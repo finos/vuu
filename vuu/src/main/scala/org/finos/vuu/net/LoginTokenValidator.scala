@@ -3,12 +3,12 @@ package org.finos.vuu.net
 import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap}
 
 trait LoginTokenValidator {
-  def login(msg: LoginRequest): ViewServerMessage
+  def login(msg: LoginRequest, vuuServerId: String): ViewServerMessage
 }
 
-class AlwaysHappyLoginValidator(val vuuServerId: String = "vuuServer") extends LoginTokenValidator {
+class AlwaysHappyLoginValidator extends LoginTokenValidator {
 
-  override def login(msg: LoginRequest): ViewServerMessage = {
+  override def login(msg: LoginRequest, vuuServerId: String): ViewServerMessage = {
     JsonViewServerMessage("", "", msg.token, msg.user, LoginSuccess(msg.token, vuuServerId))
   }
 }
@@ -16,7 +16,7 @@ class AlwaysHappyLoginValidator(val vuuServerId: String = "vuuServer") extends L
 class ServerUserPrincipal(val token: String, val userName: String) {
 }
 
-class LoggedInTokenValidator(val vuuServerId: String = "vuuServer") extends LoginTokenValidator {
+class LoggedInTokenValidator extends LoginTokenValidator {
 
   private val tokenUserMap: ConcurrentMap[String, ServerUserPrincipal] = new ConcurrentHashMap[String, ServerUserPrincipal]()
 
@@ -24,7 +24,7 @@ class LoggedInTokenValidator(val vuuServerId: String = "vuuServer") extends Logi
     tokenUserMap.put(token, userPrincipal)
   }
 
-  override def login(msg: LoginRequest): ViewServerMessage = {
+  override def login(msg: LoginRequest, vuuServerId: String): ViewServerMessage = {
     if (tokenUserMap.containsKey(msg.token)) {
       JsonViewServerMessage("", "", msg.token, msg.user, LoginSuccess(msg.token, vuuServerId))
     } else {

@@ -23,6 +23,7 @@ class RequestProcessor(authenticator: Authenticator,
                        serializer: Serializer[String, MessageBody],
                        moduleContainer: ModuleContainer,
                        flowControllerFactory: FlowControllerFactory,
+                       vuuServerId: String
                       )(implicit timeProvider: Clock) extends StrictLogging {
 
   @volatile private var session: ClientSessionId = null
@@ -33,9 +34,9 @@ class RequestProcessor(authenticator: Authenticator,
       case body: AuthenticateRequest =>
         authenticator.authenticate(body.username, body.password)
       case body: LoginRequest =>
-        tokenValidator.login(body).body match {
+        tokenValidator.login(body, vuuServerId).body match {
           case success: LoginSuccess =>
-            createSession(msg.requestId, body, clientSessionContainer, channel, success.vuuServerId)
+            createSession(msg.requestId, body, clientSessionContainer, channel, vuuServerId)
           case failure: LoginFailure =>
             handleMessageWithNoSession(failure.errorMsg, channel)
             None

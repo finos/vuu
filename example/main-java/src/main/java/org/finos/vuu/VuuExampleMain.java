@@ -25,8 +25,6 @@ import org.finos.vuu.state.MemoryBackedVuiStateStore;
 import org.finos.vuu.state.VuiStateStore;
 import scala.Option;
 
-import java.util.UUID;
-
 /**
  * Example Java App using Vuu.
  *
@@ -46,9 +44,8 @@ public class VuuExampleMain {
 
         lifecycle.autoShutdownHook();
 
-        final String vuuServerId = UUID.randomUUID().toString();
         final Authenticator authenticator = new AlwaysHappyAuthenticator();
-        final LoggedInTokenValidator loginTokenValidator = new LoggedInTokenValidator(vuuServerId);
+        final LoggedInTokenValidator loginTokenValidator = new LoggedInTokenValidator();
 
         final String webRoot = "vuu-ui/deployed_apps/app-vuu-example";
         final String certPath = "example/main/src/main/resources/certs/cert.pem";
@@ -66,7 +63,7 @@ public class VuuExampleMain {
                         .withBindAddress("0.0.0.0"),
                 VuuSecurityOptions.apply()
                         .withAuthenticator(authenticator)
-                        .withLoginValidator(new AlwaysHappyLoginValidator(vuuServerId)),
+                        .withLoginValidator(new AlwaysHappyLoginValidator()),
                 VuuThreadingOptions.apply()
                         .withTreeThreads(4)
                         .withViewPortThreads(4),
@@ -75,12 +72,12 @@ public class VuuExampleMain {
                 new scala.collection.mutable.ListBuffer<ViewServerModule>().toList(),
                 new scala.collection.mutable.ListBuffer<Plugin>().toList()
         ).withModule(PriceModule.apply(clock, lifecycle, tableDefContainer))
-         .withModule(SimulationModule.apply(clock, lifecycle, tableDefContainer))
-         .withModule(MetricsModule.apply(clock, lifecycle, metrics, tableDefContainer))
-         .withModule(VuiStateModule.apply(store, clock, lifecycle, tableDefContainer))
-         .withModule(AuthNModule.apply(authenticator, loginTokenValidator, clock, lifecycle, tableDefContainer))
-         //the modules above are scala, the modules below are java...
-         .withModule(new JavaExampleModule().create(tableDefContainer, clock))       ;
+                .withModule(SimulationModule.apply(clock, lifecycle, tableDefContainer))
+                .withModule(MetricsModule.apply(clock, lifecycle, metrics, tableDefContainer))
+                .withModule(VuiStateModule.apply(store, clock, lifecycle, tableDefContainer))
+                .withModule(AuthNModule.apply(authenticator, loginTokenValidator, clock, lifecycle, tableDefContainer))
+                //the modules above are scala, the modules below are java...
+                .withModule(new JavaExampleModule().create(tableDefContainer, clock));
 
         final VuuServer vuuServer = new VuuServer(config, lifecycle, clock, metrics);
 
