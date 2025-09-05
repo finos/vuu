@@ -2,7 +2,12 @@ import { getSchema, VuuTableName } from "@vuu-ui/vuu-data-test";
 import { ColumnFilter, ColumnFilterProps } from "@vuu-ui/vuu-filters";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
+import {
+  ColumnFilterStore,
+  DataSourceProvider,
+  toColumnName,
+  useData,
+} from "@vuu-ui/vuu-utils";
 import { Button, FormField, FormFieldLabel, Input } from "@salt-ds/core";
 import { ReactNode, useCallback, useMemo, useState } from "react";
 import {
@@ -86,6 +91,14 @@ const ColumnFilterTemplate = ({
 > & {
   label?: string;
 }) => {
+  const columnFilterStore = new ColumnFilterStore();
+  columnFilterStore.on("onAdd", (store) => {
+    console.log(store);
+  });
+  columnFilterStore.on("onRemove", (store) => {
+    console.log(store);
+  });
+
   const onCommit = (
     val: ColumnFilterValue,
     column: ColumnDescriptor,
@@ -94,6 +107,11 @@ const ColumnFilterTemplate = ({
     const range = Array.isArray(val) ? `${val[0]} and ${val[1]}` : val;
     console.info(`${column.name} ${op} ${range}`);
     onFilterChange?.(val, column, op);
+    if (val) {
+      columnFilterStore.addFilter(column, op, val);
+    } else {
+      columnFilterStore.removeFilter(column);
+    }
   };
 
   return (
@@ -352,12 +370,9 @@ export const TimeColumnRangeFilterValueSetViaBtn = () => {
     [],
   );
 
-  const handleFilterChange = useCallback<ColumnFilterChangeHandler>(
-    (value) => {
-      setTimeValue(value);
-    },
-    [],
-  );
+  const handleFilterChange = useCallback<ColumnFilterChangeHandler>((value) => {
+    setTimeValue(value);
+  }, []);
 
   return (
     <>
