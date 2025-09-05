@@ -23,9 +23,12 @@ import org.finos.vuu.test.{TestViewPort, TestVuuServer}
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.viewport.{DefaultRange, ViewPort, ViewPortAction, ViewPortActionMixin, ViewPortContainer, ViewPortRange}
 
+import java.util.UUID
 import scala.reflect.classTag
 
 class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clock, lifecycle: LifecycleContainer, metrics: MetricsProvider) extends TestVuuServer with LifecycleEnabled with StrictLogging {
+
+  private final val vuuServerId: String = UUID.randomUUID().toString
 
   private val serializer: Serializer[String, MessageBody] = JsonVsSerializer
 
@@ -58,7 +61,7 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
 
   val serverApi = new CoreServerApiHandler(viewPortContainer, tableContainer, providerContainer)
 
-  val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer, flowControllerFactory)
+  val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer, flowControllerFactory, vuuServerId)
 
   val queue = new OutboundRowPublishQueue()
 
