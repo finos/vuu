@@ -20,7 +20,6 @@ import {
 import { EventEmitter } from "../event-emitter";
 import { VuuFilter, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { getTypedValue } from "../form-utils";
-import { addFilter } from "@vuu-ui/vuu-filters";
 import { parseFilter } from "@vuu-ui/vuu-filter-parser";
 
 const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
@@ -188,61 +187,31 @@ export class FilterAggregator extends EventEmitter<FilterEvents> {
   }
 }
 
-export function buildColumnFilterForBetween(
-  column: ColumnDescriptor,
-  range: string[],
-): Filter | undefined {
-  const lowerRange: Filter | undefined =
-    range[0] === undefined
-      ? undefined
-      : { column: column.name, op: ">=", value: range[0] };
-
-  const upperRange: Filter | undefined =
-    range[1] === undefined
-      ? undefined
-      : { column: column.name, op: "<=", value: range[1] };
-
-  if (upperRange === undefined) return lowerRange;
-  return addFilter(lowerRange, upperRange, { combineWith: "and" });
-}
-
-export function buildColumnFilter(
-  column: ColumnDescriptor,
-  operator: ColumnFilterOp,
-  value: ColumnFilterValue,
-): Filter | undefined {
-  if (operator === "between") {
-    if (Array.isArray(value)) {
-      return buildColumnFilterForBetween(column, value);
-    }
-  } else if (operator === "in") {
-    if (Array.isArray(value)) {
-      return {
-        column: column.name,
-        op: operator,
-        values: value,
-      };
-    }
-  }
-  return {
-    column: column.name,
-    op: operator as SingleValueFilterClauseOp,
-    value: value.toString(),
-  };
-}
+export type ColumnFilterStoreEvents = {
+  onAdd: (filter: VuuFilter) => void;
+  onRemove: (filter: VuuFilter) => void;
+  onReset: (filter: VuuFilter) => void;
+  onLoad: (values: [string, ColumnFilterValue][]) => void;
+};
 
 const buildBetweenQueryString = (columnName: string, range: string[]) => {
   const lowerRange: string | undefined =
-    range[0] === undefined ? undefined : `${columnName} >= ${range[0]}`;
+    range[0] !== undefined && range[0].length > 0
+      ? `${columnName} >= ${range[0]}`
+      : undefined;
 
   const upperRange: string | undefined =
-    range[1] === undefined ? undefined : `${columnName} <= ${range[1]}`;
+    range[1] !== undefined && range[1].length > 0
+      ? `${columnName} <= ${range[1]}`
+      : undefined;
 
+  if (lowerRange === undefined) return lowerRange;
   if (upperRange === undefined) return lowerRange;
   return `${lowerRange} and ${upperRange}`;
 };
 
-const buildColumnFilterString = (
+//Supports only SingleValue & Range filters
+export const buildColumnFilterString = (
   columnName: string,
   op: ColumnFilterOp,
   value: ColumnFilterValue,
@@ -253,12 +222,7 @@ const buildColumnFilterString = (
     : `${columnName} ${op} ${value}`;
 };
 
-export type ColumnFilterEvents = {
-  onAdd: (filter: VuuFilter) => void;
-  onRemove: (filter: VuuFilter) => void;
-  onReset: (filter: VuuFilter) => void;
-};
-export class ColumnFilterStore extends EventEmitter<ColumnFilterEvents> {
+export class ColumnFilterStore extends EventEmitter<ColumnFilterStoreEvents> {
   #columns = new Map<string, ColumnDescriptor>();
   #filters = new Map<string, ColumnFilterDescriptor>();
 
@@ -266,6 +230,7 @@ export class ColumnFilterStore extends EventEmitter<ColumnFilterEvents> {
     // Clear previous state
     this.#columns.clear();
     this.#filters.clear();
+    const values = new Map<string, ColumnFilterValue>();
 
     if (query.filter) {
       const f = parseFilter(query.filter);
@@ -277,12 +242,15 @@ export class ColumnFilterStore extends EventEmitter<ColumnFilterEvents> {
 
           const existing = this.#filters.get(f.column);
           if (isSingleValueFilter(f)) {
+            const v = existing
+              ? [existing.filterValue as string, f.value as string]
+              : (f.value as ColumnFilterValue);
+
+            values.set(f.column, v);
             this.#filters.set(f.column, {
               column: columnDescriptor,
               op: f.op,
-              filterValue: existing
-                ? [existing.filterValue as string, f.value as string] //for range filter - ordering of filter after parsing may be an issue?
-                : (f.value as ColumnFilterValue),
+              filterValue: v,
             });
           }
         }
@@ -293,6 +261,7 @@ export class ColumnFilterStore extends EventEmitter<ColumnFilterEvents> {
       } else if (isFilterClause(f)) {
         addToStore(f);
       }
+      this.emit("onLoad", values.size > 0 ? Array.from(values.entries()) : []);
     }
   }
 
