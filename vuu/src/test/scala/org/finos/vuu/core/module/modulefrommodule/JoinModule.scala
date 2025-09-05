@@ -2,7 +2,7 @@ package org.finos.vuu.core.module.modulefrommodule
 
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.{JoinSpec, JoinTableDef, JoinTo, LeftOuterJoin, VisualLinks}
+import org.finos.vuu.api.{JoinSpec, JoinTableDef, JoinTo, LeftOuterJoin, Public, VisualLinks}
 import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.Columns
 
@@ -16,6 +16,7 @@ object JoinModule {
         tableDefs =>
           JoinTableDef(
             name = "instrumentPrice",
+            visibility = Public,
             baseTable = tableDefs.get(Instrument.NAME, "instrument"),
             joinColumns = Columns.allFrom(tableDefs.get(Instrument.NAME, "instrument")) ++ Columns.allFromExcept(tableDefs.get(Price.NAME, "price"), "ric"),
             joins =

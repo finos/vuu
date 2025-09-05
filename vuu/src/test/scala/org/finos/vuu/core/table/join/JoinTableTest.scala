@@ -26,15 +26,17 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
   implicit val timeProvider: Clock = new DefaultClock
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
-  case class NamedKeyObserver(name: String) extends KeyObserver[RowKeyUpdate]{
+  case class NamedKeyObserver(name: String) extends KeyObserver[RowKeyUpdate] {
     override def onUpdate(update: RowKeyUpdate): Unit = {}
+
     override def hashCode(): Int = name.hashCode
+
     override def equals(obj: scala.Any): Boolean = {
       obj.isInstanceOf[NamedKeyObserver] && obj.asInstanceOf[NamedKeyObserver].name == this.name
     }
   }
 
-  Feature("check we can create join tables and tick data through"){
+  Feature("check we can create join tables and tick data through") {
 
     def setupViewPort(tableContainer: TableContainer, providerContainer: ProviderContainer) = {
 
@@ -46,7 +48,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       viewPortContainer
     }
 
-    Scenario("check a tick all the way through from source to join table"){
+    Scenario("check a tick all the way through from source to join table") {
 
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
@@ -56,18 +58,19 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
         name = "orders",
         keyField = "orderId",
         columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
-        joinFields =  "ric", "orderId")
+        joinFields = "ric", "orderId")
 
       val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
 
       val joinDef = JoinTableDef(
-        name          = "orderPrices",
-        baseTable     = ordersDef,
-        joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
-        joins  =
+        name = "orderPrices",
+        visibility = Public,
+        baseTable = ordersDef,
+        joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
+        joins =
           JoinTo(
             table = pricesDef,
-            joinSpec = JoinSpec( left = "ric", right = "ric", LeftOuterJoin)
+            joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
           ),
         links = VisualLinks(),
         joinFields = Seq()
@@ -75,7 +78,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       //val joinDef =  JoinTableDef("ordersPrices", ordersDef, pricesDef, JoinSpec("ric", "ric"), Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") )
 
-      val joinProvider   = JoinTableProviderImpl()
+      val joinProvider = JoinTableProviderImpl()
 
       val tableContainer = new TableContainer(joinProvider)
 
@@ -112,21 +115,22 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       val combinedUpdates = combineQs(viewPort)
 
-      combinedUpdates.length should be (3)
+      combinedUpdates.length should be(3)
 
       val updates = combinedUpdates.take(2)
 
       val printToConsoleProcessor = new RowProcessor {
         override def processColumn(column: Column, value: Any): Unit = println(s"Column: ${column.name} = $value")
+
         override def missingRow(): Unit = println("missing row")
 
         override def missingRowData(rowKey: String, column: Column): Unit = {}
       }
 
-      updates.filter( vp => vp.vpUpdate == RowUpdateType).foreach(update => update.table.readRow(update.key.key, List("orderId", "trader", "tradeTime", "ric", "bid", "ask"), printToConsoleProcessor ))
+      updates.filter(vp => vp.vpUpdate == RowUpdateType).foreach(update => update.table.readRow(update.key.key, List("orderId", "trader", "tradeTime", "ric", "bid", "ask"), printToConsoleProcessor))
     }
 
-    Scenario("check that registering and deregistering listeners on join table propagates to source tables"){
+    Scenario("check that registering and deregistering listeners on join table propagates to source tables") {
 
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
@@ -149,22 +153,22 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       val ko2 = NamedKeyObserver("ko-2")
 
       //first check we don't barf when regsitering a subscriber for a key that doesn't exist
-      orderPrices.addKeyObserver("NYC-001", ko1) should be (true)
+      orderPrices.addKeyObserver("NYC-001", ko1) should be(true)
 
-      orderPrices.addKeyObserver("NYC-0001", ko1) should be (true)
-      orderPrices.addKeyObserver("NYC-0001", ko2) should be (false)
+      orderPrices.addKeyObserver("NYC-0001", ko1) should be(true)
+      orderPrices.addKeyObserver("NYC-0001", ko2) should be(false)
 
-      orders.isKeyObservedBy("NYC-0001", ko1) should be (true)
-      orders.isKeyObservedBy("NYC-0001", ko2) should be (true)
+      orders.isKeyObservedBy("NYC-0001", ko1) should be(true)
+      orders.isKeyObservedBy("NYC-0001", ko2) should be(true)
 
-      orders.isKeyObservedBy("NYC-0002", ko2) should be (false)
+      orders.isKeyObservedBy("NYC-0002", ko2) should be(false)
 
-      prices.isKeyObservedBy("VOD.L", ko1) should be (true)
-      prices.isKeyObservedBy("VOD.L", ko2) should be (true)
+      prices.isKeyObservedBy("VOD.L", ko1) should be(true)
+      prices.isKeyObservedBy("VOD.L", ko2) should be(true)
 
       orderPrices.removeKeyObserver("NYC-0001", ko1)
-      orders.isKeyObservedBy("NYC-0001", ko1) should be (false)
-      prices.isKeyObservedBy("VOD.L", ko1) should be (false)
+      orders.isKeyObservedBy("NYC-0001", ko1) should be(false)
+      prices.isKeyObservedBy("VOD.L", ko1) should be(false)
 
       orderPrices.addKeyObserver("NYC-0002", ko2)
 
@@ -172,11 +176,11 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       joinProvider.runOnce()
 
-      prices.isKeyObservedBy("BT.L", ko2) should be (false)
-      prices.isKeyObservedBy("VOD.L", ko2) should be (true)
+      prices.isKeyObservedBy("BT.L", ko2) should be(false)
+      prices.isKeyObservedBy("VOD.L", ko2) should be(true)
     }
 
-    Scenario("Check deleting keys from join table and see if it propogates correctly"){
+    Scenario("Check deleting keys from join table and see if it propogates correctly") {
 
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
@@ -192,17 +196,17 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       runContainersOnce(vpContainer, joinProvider)
 
-      assertVpEq(filterByVpId(combineQs(orderPricesViewport), orderPricesViewport)){
+      assertVpEq(filterByVpId(combineQs(orderPricesViewport), orderPricesViewport)) {
         Table(
-          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-          ("NYC-0001","chris"   ,"VOD.L"   ,1311544800000L,100       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0002","chris"   ,"VOD.L"   ,1311544800000L,200       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800000L,300       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800000L,400       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000L,500       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000L,600       ,220.0     ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0007","steve"   ,"BT.L"    ,1311544800000L,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
-          ("NYC-0008","steve"   ,"BT.L"    ,1311544800000L,500       ,500.0     ,501.0     ,null      ,null      ,null      )
+          ("orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open", "close"),
+          ("NYC-0001", "chris", "VOD.L", 1311544800000L, 100, 220.0, 222.0, null, null, null),
+          ("NYC-0002", "chris", "VOD.L", 1311544800000L, 200, 220.0, 222.0, null, null, null),
+          ("NYC-0003", "chris", "VOD.L", 1311544800000L, 300, 220.0, 222.0, null, null, null),
+          ("NYC-0004", "chris", "VOD.L", 1311544800000L, 400, 220.0, 222.0, null, null, null),
+          ("NYC-0005", "chris", "VOD.L", 1311544800000L, 500, 220.0, 222.0, null, null, null),
+          ("NYC-0006", "steve", "VOD.L", 1311544800000L, 600, 220.0, 222.0, null, null, null),
+          ("NYC-0007", "steve", "BT.L", 1311544800000L, 1000, 500.0, 501.0, null, null, null),
+          ("NYC-0008", "steve", "BT.L", 1311544800000L, 500, 500.0, 501.0, null, null, null)
         )
       }
 
@@ -228,15 +232,15 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       val array = orderPrices.pullRowAsArray("NYC-0001", ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList))
 
-      assertVpEq(filterByVpId(combineQs(orderPricesViewport), orderPricesViewport)){
+      assertVpEq(filterByVpId(combineQs(orderPricesViewport), orderPricesViewport)) {
         Table(
-          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-          ("NYC-0003","chris"   ,"VOD.L"   ,1311544800000L,300       ,230       ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0004","chris"   ,"VOD.L"   ,1311544800000L,400       ,230       ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1311544800000L,500       ,230       ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0006","steve"   ,"VOD.L"   ,1311544800000L,600       ,230       ,222.0     ,null      ,null      ,null      ),
-          ("NYC-0007","steve"   ,"BT.L"    ,1311544800000L,1000      ,500.0     ,501.0     ,null      ,null      ,null      ),
-          ("NYC-0008","steve"   ,"BT.L"    ,1311544800000L,500       ,500.0     ,501.0     ,null      ,null      ,null      )
+          ("orderId", "trader", "ric", "tradeTime", "quantity", "bid", "ask", "last", "open", "close"),
+          ("NYC-0003", "chris", "VOD.L", 1311544800000L, 300, 230, 222.0, null, null, null),
+          ("NYC-0004", "chris", "VOD.L", 1311544800000L, 400, 230, 222.0, null, null, null),
+          ("NYC-0005", "chris", "VOD.L", 1311544800000L, 500, 230, 222.0, null, null, null),
+          ("NYC-0006", "steve", "VOD.L", 1311544800000L, 600, 230, 222.0, null, null, null),
+          ("NYC-0007", "steve", "BT.L", 1311544800000L, 1000, 500.0, 501.0, null, null, null),
+          ("NYC-0008", "steve", "BT.L", 1311544800000L, 500, 500.0, 501.0, null, null, null)
         )
       }
 

@@ -27,6 +27,7 @@ object OrdersAndPricesScenarioFixture {
 
     val joinDef = JoinTableDef(
       name          = "orderPrices",
+      visibility = Public,
       baseTable     = ordersDef,
       joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
       joins  =

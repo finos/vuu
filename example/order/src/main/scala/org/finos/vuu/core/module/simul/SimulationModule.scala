@@ -237,6 +237,7 @@ object SimulationModule extends DefaultModule {
       .addJoinTable(tableDefs =>
         JoinTableDef(
           name = "orderEntryPrices",
+          visibility = Public,
           baseTable = tableDefs.get(NAME, "orderEntry"),
           joinColumns = Columns.allFrom(tableDefs.get(NAME, "orderEntry")) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
           joins =
@@ -250,6 +251,7 @@ object SimulationModule extends DefaultModule {
       .addJoinTable(tableDefs =>
         JoinTableDef(
           name = "instrumentPrices",
+          visibility = Public,
           baseTable = tableDefs.get(NAME, "instruments"),
           joinColumns = Columns.allFrom(tableDefs.get(NAME, "instruments")) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
           joins =
@@ -263,6 +265,7 @@ object SimulationModule extends DefaultModule {
       .addJoinTable(tableDefs =>
         JoinTableDef(
           name = "ordersPrices",
+          visibility = Public,
           baseTable = tableDefs.get(NAME, "orders"),
           joinColumns = Columns.allFrom(tableDefs.get(NAME, "orders")) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
           joins =
