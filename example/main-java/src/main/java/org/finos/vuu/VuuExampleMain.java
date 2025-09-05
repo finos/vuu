@@ -25,18 +25,18 @@ import org.finos.vuu.state.MemoryBackedVuiStateStore;
 import org.finos.vuu.state.VuiStateStore;
 import scala.Option;
 
+import java.util.UUID;
+
 /**
  * Example Java App using Vuu.
  *
  */
-public class VuuExampleMain
-{
+public class VuuExampleMain {
     /*
         //to allow self signed certs
         chrome://flags/#allow-insecure-localhost
     */
-    public static void main( String[] args )
-    {
+    public static void main(String[] args) {
         final MetricsProvider metrics = new MetricsProviderImpl();
         final Clock clock = new DefaultClock();
         final LifecycleContainer lifecycle = new LifecycleContainer(clock);
@@ -46,8 +46,9 @@ public class VuuExampleMain
 
         lifecycle.autoShutdownHook();
 
+        final String vuuServerId = UUID.randomUUID().toString();
         final Authenticator authenticator = new AlwaysHappyAuthenticator();
-        final LoggedInTokenValidator loginTokenValidator = new LoggedInTokenValidator();
+        final LoggedInTokenValidator loginTokenValidator = new LoggedInTokenValidator(vuuServerId);
 
         final String webRoot = "vuu-ui/deployed_apps/app-vuu-example";
         final String certPath = "example/main/src/main/resources/certs/cert.pem";
@@ -65,7 +66,7 @@ public class VuuExampleMain
                         .withBindAddress("0.0.0.0"),
                 VuuSecurityOptions.apply()
                         .withAuthenticator(authenticator)
-                        .withLoginValidator(new AlwaysHappyLoginValidator()),
+                        .withLoginValidator(new AlwaysHappyLoginValidator(vuuServerId)),
                 VuuThreadingOptions.apply()
                         .withTreeThreads(4)
                         .withViewPortThreads(4),

@@ -8,7 +8,7 @@ import org.finos.vuu.plugin.Plugin
 
 object VuuSecurityOptions{
   def apply(): VuuSecurityOptions = {
-    VuuSecurityOptionsImpl(new AlwaysHappyAuthenticator, new AlwaysHappyLoginValidator)
+    VuuSecurityOptionsImpl(new AlwaysHappyAuthenticator, new AlwaysHappyLoginValidator("vuuServer"))
   }
 }
 

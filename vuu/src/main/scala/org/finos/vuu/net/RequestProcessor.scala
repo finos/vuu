@@ -29,23 +29,27 @@ class RequestProcessor(authenticator: Authenticator,
 
   def handle(msg: ViewServerMessage, channel: Channel): Option[ViewServerMessage] = {
 
-
     msg.body match {
       case body: AuthenticateRequest =>
         authenticator.authenticate(body.username, body.password)
       case body: LoginRequest =>
-        tokenValidator.login(body) match {
-          case Left(accept) =>
-            createSession(msg.requestId, body, clientSessionContainer, channel)
-          case Right(errorMsg) =>
-            handleMessageWithNoSession(errorMsg, channel)
+        tokenValidator.login(body).body match {
+          case success: LoginSuccess =>
+            createSession(msg.requestId, body, clientSessionContainer, channel, success.vuuServerId)
+          case failure: LoginFailure =>
+            handleMessageWithNoSession(failure.errorMsg, channel)
             None
         }
       case body => handleViewServerMessage(msg, channel)
     }
   }
 
-  protected def createSession(requestId: String, request: LoginRequest, clientSessionContainer: ClientSessionContainer, channel: Channel): Option[ViewServerMessage] = {
+  protected def createSession(
+                               requestId: String,
+                               request: LoginRequest,
+                               clientSessionContainer: ClientSessionContainer,
+                               channel: Channel,
+                               vuuServerId: String): Option[ViewServerMessage] = {
 
     val session = SessionId.oneNew()
     val user = request.user
@@ -58,7 +62,7 @@ class RequestProcessor(authenticator: Authenticator,
 
     clientSessionContainer.register(id, handler)
 
-    Some(JsonViewServerMessage(requestId, session, request.token, request.user, LoginSuccess(request.token)))
+    Some(JsonViewServerMessage(requestId, session, request.token, request.user, LoginSuccess(request.token, vuuServerId)))
   }
 
 
