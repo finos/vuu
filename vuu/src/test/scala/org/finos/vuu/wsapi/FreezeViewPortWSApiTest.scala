@@ -271,7 +271,6 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
     val joinTableFunc1: TableDefContainer => JoinTableDef = _ => JoinTableDef(
       name = joinTableName1,
-      visibility = Public,
       baseTable = leftTableDef1,
       joinColumns = Columns.allFrom(leftTableDef1) ++ Columns.allFrom(rightTableDef1),
       joins =
@@ -285,7 +284,6 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
     val joinTableFunc2: TableDefContainer => JoinTableDef = _ => JoinTableDef(
       name = joinTableName2,
-      visibility = Public,
       baseTable = leftTableDef2,
       joinColumns = Columns.allFrom(leftTableDef2) ++ Columns.allFrom(rightTableDef2),
       joins =

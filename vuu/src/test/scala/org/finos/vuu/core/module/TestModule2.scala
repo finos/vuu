@@ -55,7 +55,6 @@ object TestModule2 extends DefaultModule {
         .addJoinTable( tableDefs =>
           JoinTableDef(
             name = "instrumentPrices",
-            visibility = Public,
             baseTable = tableDefs.get("TEST", "instruments"),
             joinColumns = Columns.allFrom(tableDefs.get("TEST", "instruments")) ++
                           Columns.allFromExcept(tableDefs.get("TEST", "prices"), "ric"),

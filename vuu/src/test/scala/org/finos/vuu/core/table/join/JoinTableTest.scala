@@ -64,7 +64,6 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       val joinDef = JoinTableDef(
         name = "orderPrices",
-        visibility = Public,
         baseTable = ordersDef,
         joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
         joins =

@@ -56,7 +56,6 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
 
     val joinDef = JoinTableDef(
       name = "orderPrices",
-      visibility = Public,
       baseTable = ordersDef,
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
       joins =
@@ -152,7 +151,6 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
 
     val joinDef = JoinTableDef(
       name = "orderPrices",
-      visibility = Public,
       baseTable = ordersDef,
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
       joins =
@@ -258,7 +256,6 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
 
     val join1Def = JoinTableDef(
       name = "instrumentToCurrency",
-      visibility = Public,
       baseTable = instrumentDef,
       joinColumns = Columns.allFrom(instrumentDef) ++ Columns.allFromExcept(currencyDef, "currency"),
       joins =
@@ -272,7 +269,6 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
 
     val join2Def = JoinTableDef(
       name = "orderToInstrument",
-      visibility = Public,
       baseTable = ordersDef,
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(join1Def, "ric"),
       joins =

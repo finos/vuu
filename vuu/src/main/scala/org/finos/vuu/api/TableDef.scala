@@ -257,6 +257,11 @@ case class JoinTableDef(
   }
 }
 
+object JoinTableDef {
+  def apply(name: String, baseTable: TableDef, joinColumns: Array[Column], links: VisualLinks, joinFields: Seq[String], joins: JoinTo): JoinTableDef = {
+    new JoinTableDef(name, Public, baseTable, joinColumns, links, joinFields, joins)
+  }
+}
 //case class JoinTableDef(override val name: String, left: TableDef, right: TableDef, joinDef: JoinDefinition, joinColumns: Array[Column]) extends TableDef(name, joinDef.leftKeyField, joinColumns){
 //  def getJoinDefinitionColumns():Array[Column] = {
 //     Array(columnForName(left.keyField), columnForName(joinDef.rightKeyField))
