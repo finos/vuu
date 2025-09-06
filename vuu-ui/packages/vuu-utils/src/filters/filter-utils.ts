@@ -187,22 +187,15 @@ export class FilterAggregator extends EventEmitter<FilterEvents> {
   }
 }
 
-export type ColumnFilterStoreEvents = {
-  onAdd: (filter: VuuFilter) => void;
-  onRemove: (filter: VuuFilter) => void;
-  onReset: (filter: VuuFilter) => void;
-  onLoad: (values: [string, ColumnFilterValue][]) => void;
-};
-
-const buildBetweenQueryString = (columnName: string, range: string[]) => {
+const buildBetweenQueryString = (column: ColumnDescriptor, range: string[]) => {
   const lowerRange: string | undefined =
     range[0] !== undefined && range[0].length > 0
-      ? `${columnName} >= ${range[0]}`
+      ? `${column.name} >= ${range[0]}` //TODO - conversion required - for e.g. time range  values
       : undefined;
 
   const upperRange: string | undefined =
     range[1] !== undefined && range[1].length > 0
-      ? `${columnName} <= ${range[1]}`
+      ? `${column.name} <= ${range[1]}` //TODO - conversion required - for e.g. time range  values
       : undefined;
 
   if (lowerRange === undefined) return lowerRange;
@@ -212,57 +205,27 @@ const buildBetweenQueryString = (columnName: string, range: string[]) => {
 
 //Supports only SingleValue & Range filters
 export const buildColumnFilterString = (
-  columnName: string,
+  column: ColumnDescriptor,
   op: ColumnFilterOp,
   value: ColumnFilterValue,
 ) => {
-  if (Array.isArray(value)) return buildBetweenQueryString(columnName, value);
+  if (Array.isArray(value)) return buildBetweenQueryString(column, value);
   return typeof value === "string"
-    ? `${columnName} ${op} "${value}"`
-    : `${columnName} ${op} ${value}`;
+    ? `${column.name} ${op} "${value}"`
+    : `${column.name} ${op} ${value}`; //TODO - conversion required - for e.g. time values
 };
 
+export type ColumnFilterStoreEvents = {
+  onChange: (filter: VuuFilter) => void;
+};
 export class ColumnFilterStore extends EventEmitter<ColumnFilterStoreEvents> {
   #columns = new Map<string, ColumnDescriptor>();
   #filters = new Map<string, ColumnFilterDescriptor>();
+  #values = new Map<string, ColumnFilterValue>();
 
-  loadStore(query: VuuFilter) {
-    // Clear previous state
-    this.#columns.clear();
-    this.#filters.clear();
-    const values = new Map<string, ColumnFilterValue>();
-
-    if (query.filter) {
-      const f = parseFilter(query.filter);
-
-      const addToStore = (f: Filter) => {
-        if (f.column) {
-          const columnDescriptor: ColumnDescriptor = { name: f.column }; //serverDataType?
-          this.#columns.set(f.column, columnDescriptor);
-
-          const existing = this.#filters.get(f.column);
-          if (isSingleValueFilter(f)) {
-            const v = existing
-              ? [existing.filterValue as string, f.value as string]
-              : (f.value as ColumnFilterValue);
-
-            values.set(f.column, v);
-            this.#filters.set(f.column, {
-              column: columnDescriptor,
-              op: f.op,
-              filterValue: v,
-            });
-          }
-        }
-      };
-
-      if (isMultiClauseFilter(f)) {
-        f.filters.forEach((f) => addToStore(f));
-      } else if (isFilterClause(f)) {
-        addToStore(f);
-      }
-      this.emit("onLoad", values.size > 0 ? Array.from(values.entries()) : []);
-    }
+  constructor(query: VuuFilter = { filter: "" }) {
+    super();
+    this.filter = query;
   }
 
   addFilter(
@@ -274,20 +237,26 @@ export class ColumnFilterStore extends EventEmitter<ColumnFilterStoreEvents> {
     const { serverDataType = "string" } = column;
     const typedValue = Array.isArray(value)
       ? value
-      : getTypedValue(value.toString(), serverDataType, true);
+      : (getTypedValue(value, serverDataType, true) as ColumnFilterValue); //Check getTypedValue
 
-    this.#filters.set(column.name, { column, op, filterValue: typedValue });
-    this.emit("onAdd", this.filter);
+    this.#values.set(column.name, typedValue);
+    this.#filters.set(column.name, {
+      column,
+      op,
+      filterValue: typedValue,
+    });
+    this.emit("onChange", this.filter);
   }
 
   removeFilter(column: ColumnDescriptor) {
     if (this.#columns.has(column.name)) {
       this.#columns.delete(column.name);
       this.#filters.delete(column.name);
-      this.emit("onRemove", this.filter);
+      this.#values.delete(column.name);
+      this.emit("onChange", this.filter);
       return true;
     } else {
-      this.emit("onRemove", this.filter);
+      this.emit("onChange", this.filter);
       return false;
     }
   }
@@ -295,7 +264,12 @@ export class ColumnFilterStore extends EventEmitter<ColumnFilterStoreEvents> {
   resetFilters() {
     this.#columns.clear();
     this.#filters.clear();
-    this.emit("onReset", this.filter);
+    this.#values.clear();
+    this.emit("onChange", this.filter);
+  }
+
+  get columnValues(): Map<string, ColumnFilterValue> {
+    return this.#values;
   }
 
   get filter(): VuuFilter {
@@ -303,17 +277,60 @@ export class ColumnFilterStore extends EventEmitter<ColumnFilterStoreEvents> {
     if (size === 0) {
       return { filter: "" };
     } else {
-      return {
-        filter: Array.from(this.#filters.entries())
-          .map(([column, descriptor]) =>
+      const result = Array.from(this.#filters.entries())
+        .map(([column, descriptor]) => {
+          const colDesc = this.#columns.get(column);
+          if (colDesc)
             buildColumnFilterString(
-              column,
+              colDesc,
               descriptor.op,
               descriptor.filterValue,
-            ),
-          )
-          .join(" and "),
+            );
+        })
+        .filter((value) => value !== undefined);
+      return {
+        filter: result.join(result.length > 1 ? " and " : ""),
       };
+    }
+  }
+
+  set filter(query: VuuFilter) {
+    this.#columns.clear();
+    this.#filters.clear();
+    this.#values.clear();
+
+    if (query.filter) {
+      const f = parseFilter(query.filter);
+
+      const addToStore = (f: Filter) => {
+        if (f.column) {
+          // TODO - serverDataType?
+          // How do we get hold of the server data type especially when store is
+          // setup using a filter string? Does Filter object need updating?
+          const columnDescriptor: ColumnDescriptor = { name: f.column };
+          this.#columns.set(f.column, columnDescriptor);
+
+          const existing = this.#filters.get(f.column);
+          if (isSingleValueFilter(f)) {
+            const v = existing
+              ? [existing.filterValue as string, f.value as string]
+              : (f.value as ColumnFilterValue);
+
+            this.#values.set(f.column, v as ColumnFilterValue);
+            this.#filters.set(f.column, {
+              column: columnDescriptor,
+              op: f.op,
+              filterValue: v as ColumnFilterValue,
+            });
+          }
+        }
+      };
+
+      if (isMultiClauseFilter(f)) {
+        f.filters.forEach((f) => addToStore(f));
+      } else if (isFilterClause(f)) {
+        addToStore(f);
+      }
     }
   }
 }

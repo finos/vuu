@@ -28,7 +28,7 @@ export interface ColumnFilterProps
   extends SegmentedButtonGroupProps,
     Pick<
       ColumnFilterHookProps,
-      "column" | "operator" | "value" | "onFilterChange"
+      "column" | "operator" | "value" | "onColumnFilterChange"
     > {
   /**
    * Display operator picker.
@@ -48,7 +48,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
     showOperatorPicker = false,
     table,
     value,
-    onFilterChange,
+    onColumnFilterChange,
     ...buttonGroupProps
   }: ColumnFilterProps,
   forwardRef: ForwardedRef<HTMLDivElement>,
@@ -73,7 +73,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
     operator,
     column,
     value,
-    onFilterChange,
+    onColumnFilterChange,
   });
 
   useMemo(
