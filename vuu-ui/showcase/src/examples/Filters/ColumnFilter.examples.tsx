@@ -2,11 +2,19 @@ import { getSchema, VuuTableName } from "@vuu-ui/vuu-data-test";
 import { ColumnFilter, ColumnFilterProps } from "@vuu-ui/vuu-filters";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
+import {
+  ColumnFilterStore,
+  DataSourceProvider,
+  toColumnName,
+  useData,
+} from "@vuu-ui/vuu-utils";
 import { Button, FormField, FormFieldLabel, Input } from "@salt-ds/core";
 import { ReactNode, useCallback, useMemo, useState } from "react";
-import { Operator } from "@vuu-ui/vuu-filters/src/column-filter/useColumnFilter";
-import { FilterValue } from "@vuu-ui/vuu-filter-types";
+import {
+  ColumnFilterChangeHandler,
+  ColumnFilterOp,
+  ColumnFilterValue,
+} from "@vuu-ui/vuu-filter-types";
 
 const tableName: VuuTableName = "instruments";
 
@@ -71,26 +79,40 @@ const ColumnFilterTemplate = ({
   value,
   operator,
   showOperatorPicker = false,
-  onFilterChange,
+  onColumnFilterChange,
 }: Pick<
   ColumnFilterProps,
   | "column"
   | "table"
   | "value"
   | "operator"
-  | "onFilterChange"
+  | "onColumnFilterChange"
   | "showOperatorPicker"
 > & {
   label?: string;
 }) => {
+  const filterStore = useMemo(
+    () => new ColumnFilterStore({ filter: 'ric = "AAOQ.OQ"' }),
+    [],
+  );
+
+  useMemo(() => {
+    filterStore.on("onChange", (store) => {
+      console.log(store);
+    });
+  }, [filterStore]);
+
   const onCommit = (
-    val: FilterValue,
+    val: ColumnFilterValue,
     column: ColumnDescriptor,
-    op: Operator,
+    op: ColumnFilterOp,
   ) => {
-    const range = Array.isArray(val) ? `${val[0]} and ${val[1]}` : val;
-    console.info(`${column.name} ${op} ${range}`);
-    onFilterChange?.(val, column, op);
+    onColumnFilterChange?.(val, column, op);
+    if (val) {
+      filterStore.addFilter(column, op, val);
+    } else {
+      filterStore.removeFilter(column);
+    }
   };
 
   return (
@@ -103,7 +125,7 @@ const ColumnFilterTemplate = ({
         showOperatorPicker={showOperatorPicker}
         value={value}
         operator={operator}
-        onFilterChange={onCommit}
+        onColumnFilterChange={onCommit}
       />
     </FormField>
   );
@@ -111,7 +133,7 @@ const ColumnFilterTemplate = ({
 
 /** tags=data-consumer */
 export const TextColumnFilter = () => {
-  const [filterValue, setFilterValue] = useState<FilterValue>("");
+  const [filterValue, setFilterValue] = useState<ColumnFilterValue>("");
   const [column, table] = useMemo<[ColumnDescriptor, VuuTable]>(
     () => [
       {
@@ -139,7 +161,7 @@ export const TextColumnFilter = () => {
         label="RIC"
         table={table}
         value={filterValue}
-        onFilterChange={(value) => setFilterValue(value || "")}
+        onColumnFilterChange={(value) => setFilterValue(value || "")}
       />
     </DataSourceProvider>
   );
@@ -147,11 +169,14 @@ export const TextColumnFilter = () => {
 
 /** tags=data-consumer */
 export const TextColumnFilterValueSetViaBtn = () => {
-  const [filterValue, setFilterValue] = useState<FilterValue>("AAOP.N");
+  const [filterValue, setFilterValue] = useState<ColumnFilterValue>("AAOP.N");
 
-  const handleFilterChange = useCallback((value: FilterValue) => {
-    setFilterValue(value);
-  }, []);
+  const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
+    (value) => {
+      setFilterValue(value);
+    },
+    [],
+  );
 
   const [column, table] = useMemo<[ColumnDescriptor, VuuTable]>(
     () => [
@@ -184,7 +209,7 @@ export const TextColumnFilterValueSetViaBtn = () => {
         label={"RIC"}
         table={table}
         value={filterValue}
-        onFilterChange={handleFilterChange}
+        onColumnFilterChange={handleColumnFilterChange}
       />
     </DataSourceProvider>
   );
@@ -194,11 +219,17 @@ export const TextColumnFilterValueSetViaBtn = () => {
 export const NumericColumnFilterValueWithBetweenOp = (
   props: Partial<ColumnFilterProps>,
 ) => {
-  const [filterValue, setFilterValue] = useState<FilterValue>(["35", "45.3"]);
+  const [filterValue, setFilterValue] = useState<ColumnFilterValue>([
+    "35",
+    "45.3",
+  ]);
 
-  const handleFilterChange = useCallback((value: FilterValue) => {
-    setFilterValue(value);
-  }, []);
+  const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
+    (value) => {
+      setFilterValue(value);
+    },
+    [],
+  );
 
   const [column, table] = useMemo<[ColumnDescriptor, VuuTable]>(
     () => [
@@ -236,7 +267,7 @@ export const NumericColumnFilterValueWithBetweenOp = (
         operator="between"
         table={table}
         value={filterValue}
-        onFilterChange={handleFilterChange}
+        onColumnFilterChange={handleColumnFilterChange}
         {...props}
       />
     </DataSourceProvider>
@@ -244,7 +275,7 @@ export const NumericColumnFilterValueWithBetweenOp = (
 };
 
 export const TimeColumnFilter = () => {
-  const [filterValue, setFilterValue] = useState<FilterValue>("00:00:01");
+  const [filterValue, setFilterValue] = useState<ColumnFilterValue>("00:00:01");
   const [column, table] = useMemo<[ColumnDescriptor, VuuTable]>(
     () => [
       {
@@ -263,13 +294,13 @@ export const TimeColumnFilter = () => {
       label="Last Update"
       table={table}
       value={filterValue}
-      onFilterChange={(value) => setFilterValue(value)}
+      onColumnFilterChange={(value) => setFilterValue(value)}
     />
   );
 };
 
 export const TimeColumnRangeFilter = (props: Partial<ColumnFilterProps>) => {
-  const [filterValue, setFilterValue] = useState<FilterValue>([
+  const [filterValue, setFilterValue] = useState<ColumnFilterValue>([
     "00:00:00",
     "00:01:02",
   ]);
@@ -290,7 +321,7 @@ export const TimeColumnRangeFilter = (props: Partial<ColumnFilterProps>) => {
           column={column}
           operator="between"
           value={filterValue}
-          onFilterChange={(value) => setFilterValue(value)}
+          onColumnFilterChange={(value) => setFilterValue(value)}
           {...props}
         />
       </FormField>
@@ -299,7 +330,7 @@ export const TimeColumnRangeFilter = (props: Partial<ColumnFilterProps>) => {
 };
 
 export const TimeColumnRangeFilterWithStyle = () => {
-  const [filterValue, setFilterValue] = useState<FilterValue>([
+  const [filterValue, setFilterValue] = useState<ColumnFilterValue>([
     "00:00:00",
     "00:01:02",
   ]);
@@ -322,7 +353,7 @@ export const TimeColumnRangeFilterWithStyle = () => {
             label={"Last Update"}
             column={column}
             value={filterValue}
-            onFilterChange={(value) => setFilterValue(value)}
+            onColumnFilterChange={(value) => setFilterValue(value)}
             operator="between"
           />
         </FormField>
@@ -332,7 +363,7 @@ export const TimeColumnRangeFilterWithStyle = () => {
 };
 
 export const TimeColumnRangeFilterValueSetViaBtn = () => {
-  const [timeValue, setTimeValue] = useState<FilterValue>([
+  const [timeValue, setTimeValue] = useState<ColumnFilterValue>([
     "07:00:00",
     "08:00:00",
   ]);
@@ -346,9 +377,12 @@ export const TimeColumnRangeFilterValueSetViaBtn = () => {
     [],
   );
 
-  const handleFilterChange = useCallback((value: FilterValue) => {
-    setTimeValue(value);
-  }, []);
+  const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
+    (value) => {
+      setTimeValue(value);
+    },
+    [],
+  );
 
   return (
     <>
@@ -366,7 +400,7 @@ export const TimeColumnRangeFilterValueSetViaBtn = () => {
         label="Time"
         value={timeValue}
         operator="between"
-        onFilterChange={handleFilterChange}
+        onColumnFilterChange={handleColumnFilterChange}
       />
     </>
   );
@@ -374,9 +408,9 @@ export const TimeColumnRangeFilterValueSetViaBtn = () => {
 
 /** tags=data-consumer */
 export const MultipleFilters = () => {
-  const [textValue, setTextValue] = useState<FilterValue>("AAOP.N");
-  const [timeValue, setTimeValue] = useState<FilterValue>("07:00:00");
-  const [rangeTimeValue, setRangeTimeValue] = useState<FilterValue>([
+  const [textValue, setTextValue] = useState<ColumnFilterValue>("AAOP.N");
+  const [timeValue, setTimeValue] = useState<ColumnFilterValue>("07:00:00");
+  const [rangeTimeValue, setRangeTimeValue] = useState<ColumnFilterValue>([
     "07:00:00",
     "08:00:00",
   ]);
@@ -423,7 +457,7 @@ export const MultipleFilters = () => {
             column={columns.ric}
             table={schema.table}
             value={textValue}
-            onFilterChange={(val) => setTextValue(val)}
+            onColumnFilterChange={(val) => setTextValue(val)}
           />
         </FormField>
         <FormField>
@@ -433,7 +467,7 @@ export const MultipleFilters = () => {
             showOperatorPicker
             table={schema.table}
             value={textValue}
-            onFilterChange={(val) => setTextValue(val)}
+            onColumnFilterChange={(val) => setTextValue(val)}
           />
         </FormField>
         <FormField>
@@ -441,7 +475,7 @@ export const MultipleFilters = () => {
           <ColumnFilter
             column={columns.lastUpdate}
             value={timeValue}
-            onFilterChange={(val) => setTimeValue(val)}
+            onColumnFilterChange={(val) => setTimeValue(val)}
           />
         </FormField>
         <FormField>
@@ -449,7 +483,7 @@ export const MultipleFilters = () => {
           <ColumnFilter
             column={columns.lastUpdate}
             value={rangeTimeValue}
-            onFilterChange={(val) => setRangeTimeValue(val)}
+            onColumnFilterChange={(val) => setRangeTimeValue(val)}
             operator="between"
           />
         </FormField>
