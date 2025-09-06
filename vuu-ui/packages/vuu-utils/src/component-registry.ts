@@ -73,6 +73,9 @@ export type ComponentType =
   | "data-edit-validator"
   | "row-class-generator";
 
+/**
+ * The CellRenderer Options provide configuration for the Column Settings panel
+ */
 type CellRendererOptions = {
   configEditor?: string;
   description?: string;

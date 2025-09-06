@@ -108,6 +108,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
       this.tableSchema = table.schema;
       table.on("insert", this.insert);
       table.on("update", this.updateRow);
+      table.on("delete", this.deleteRow);
     }
   }
 

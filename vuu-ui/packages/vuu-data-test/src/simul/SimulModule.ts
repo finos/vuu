@@ -129,6 +129,12 @@ export class SimulModule extends VuuModule<SimulTableName> {
   get services(): Record<SimulTableName, RpcService[] | undefined> | undefined {
     return {
       ...undefinedTables,
+      instruments: [
+        {
+          rpcName: "DELETE_ROW",
+          service: this.deleteRow,
+        },
+      ],
       parentOrders: [
         {
           rpcName: "startGeneratingNewOrders",
