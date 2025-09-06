@@ -491,3 +491,12 @@ export declare type CustomHeader = CustomHeaderComponent | CustomHeaderElement;
  * [rowIndex, colIndex]
  */
 export declare type CellPos = [number, number];
+
+/**
+ * A callback prop, called when a custom row action is invoked. This will
+ * typically be from a buttom rendered within a row cell
+ */
+export declare type RowActionHandler<T extends string = string> = (
+  rowActionId: T,
+  row: DataSourceRow,
+) => void;

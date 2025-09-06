@@ -4,7 +4,7 @@ import { ColumnMap, EventEmitter } from "@vuu-ui/vuu-utils";
 import { UpdateGenerator } from "./rowUpdates";
 
 export type TableEvents = {
-  delete: (row: VuuRowDataItemType[]) => void;
+  delete: (key: string) => void;
   insert: (row: VuuRowDataItemType[]) => void;
   update: (row: VuuRowDataItemType[], columnName?: string) => void;
 };
@@ -53,6 +53,19 @@ export class Table extends EventEmitter<TableEvents> {
 
   get name() {
     return this.#schema.table.table;
+  }
+
+  delete(key: string, emitEvent = true) {
+    const index = this.#index.get(key) ?? -1;
+    if (index !== -1) {
+      this.#index.delete(key);
+      this.#data.splice(index, 1);
+      if (emitEvent) {
+        this.emit("delete", key);
+      }
+    } else {
+      throw Error(`[Table] delete key ${key} not found`);
+    }
   }
 
   insert(row: VuuRowDataItemType[], emitEvent = true) {
