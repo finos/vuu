@@ -95,8 +95,7 @@ export declare type FilterChangeHandler = (filter: Filter | undefined) => void;
 export declare type ColumnFilterValue =
   | string
   | number
-  | boolean
-  | readonly string[];
+  | [string, string];
 
 export declare type ColumnFilterOp = FilterClauseOp | "between";
 
