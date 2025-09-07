@@ -1,7 +1,7 @@
 import { useForkRef } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import {
+import type {
   DataSource,
   SchemaColumn,
   Selection,
@@ -12,6 +12,7 @@ import {
   CustomHeader,
   DataCellEditNotification,
   GroupToggleTarget,
+  RowActionHandler,
   RowProps,
   ShowColumnHeaderMenus,
   TableConfig,
@@ -189,6 +190,12 @@ export interface TableProps
   renderBufferSize?: number;
 
   /**
+   * Provide functionality for custom row actions. e.g. buttons embedded within row cells.
+   * These will be available to any custom renderers via TableContext. e.g. a Row may
+   * provide a 'Delete' or 'Cancel' button. Implement this functionality in a rowActionHandler.
+   */
+  rowActionHandlers?: Record<string, RowActionHandler>;
+  /**
    * When a row is selected and onSelect provided, onSelect will be invoked with a
    * DataSourceRowObject, derived from the internal representation of a data row,
    * DataSourceRow. The data attribute of DataSourceRowObject is a simple map of
@@ -299,6 +306,7 @@ const TableCore = ({
   onSelectionChange,
   renderBufferSize = 0,
   revealSelected,
+  rowActionHandlers,
   rowHeight,
   rowToObject,
   scrollingApiRef,
@@ -418,6 +426,7 @@ const TableCore = ({
     <TableProvider
       dataSource={dataSource}
       menuActionHandler={handleColumnAction}
+      rowActionHandlers={rowActionHandlers}
     >
       {showPaginationControls !== true ? (
         <div
@@ -556,6 +565,7 @@ export const Table = forwardRef(function Table(
     onSelectionChange,
     renderBufferSize,
     revealSelected,
+    rowActionHandlers,
     rowHeight: rowHeightProp,
     rowToObject,
     scrollingApiRef,
@@ -706,6 +716,7 @@ export const Table = forwardRef(function Table(
               showPaginationControls ? 0 : Math.max(5, renderBufferSize ?? 0)
             }
             revealSelected={revealSelected}
+            rowActionHandlers={rowActionHandlers}
             rowHeight={rowHeight}
             rowToObject={rowToObject}
             scrollingApiRef={scrollingApiRef}

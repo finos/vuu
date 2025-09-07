@@ -32,7 +32,7 @@ public class BenchmarkHelper {
     private final Clock clock = new DefaultClock();
     private final LifecycleContainer lifecycleContainer = new LifecycleContainer(clock);
     private final MetricsProvider metricsProvider = new MetricsProviderImpl();
-    private final JoinTableProvider joinProvider = JoinTableProviderImpl.apply(clock, lifecycleContainer, metricsProvider);
+    private final JoinTableProvider joinProvider = JoinTableProviderImpl.apply(lifecycleContainer);
 
     public Clock getClock() {
         return clock;

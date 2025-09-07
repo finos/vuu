@@ -44,7 +44,11 @@ export const HeaderCell = ({
   });
   const dragDropSortHook = allowDragColumnHeader ? useSortable : doNothing;
   const { ref: sortableRef } = dragDropSortHook({ id, index });
-  const { HeaderCellContentRenderer, HeaderCellLabelRenderer } = column;
+  const {
+    allowColumnHeaderMenu = true,
+    HeaderCellContentRenderer,
+    HeaderCellLabelRenderer,
+  } = column;
   const rootRef = useRef<HTMLDivElement>(null);
   const { isResizing, ...resizeProps } = useTableColumnResize({
     column,
@@ -66,7 +70,7 @@ export const HeaderCell = ({
       ? [<HeaderCellContentRenderer column={column} key="content" />]
       : [];
 
-    if (showColumnHeaderMenus) {
+    if (showColumnHeaderMenus && allowColumnHeaderMenu) {
       const menuPermissions =
         showColumnHeaderMenus === true ? undefined : showColumnHeaderMenus;
       const columnMenu = (
@@ -88,6 +92,7 @@ export const HeaderCell = ({
   }, [
     HeaderCellContentRenderer,
     HeaderCellLabelRenderer,
+    allowColumnHeaderMenu,
     column,
     showColumnHeaderMenus,
   ]);

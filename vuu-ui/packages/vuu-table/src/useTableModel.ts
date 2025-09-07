@@ -67,9 +67,11 @@ const getDataType = (
 };
 
 const checkboxColumnDescriptor: ColumnDescriptor = {
+  allowColumnHeaderMenu: false,
   label: "",
   name: "",
   width: 25,
+  resizeable: false,
   sortable: false,
   isSystemColumn: true,
   type: {
@@ -110,6 +112,7 @@ const getDefaultAlignment = (serverDataType?: VuuColumnDataType) =>
 
 export interface ColumnActionInit {
   availableWidth: number;
+  selectionModel?: TableSelectionModel;
   type: "init";
   tableConfig: TableConfig;
   dataSource: DataSource;

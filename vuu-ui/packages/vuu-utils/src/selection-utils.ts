@@ -338,7 +338,8 @@ export const selectionCount = (selected: Selection = NO_SELECTION) => {
   for (const selectionItem of selected) {
     if (Array.isArray(selectionItem)) {
       const [from, to] = selectionItem;
-      count += to - (from + 1);
+      // we've already counted the entry as 1, add the rest of the range
+      count += to - from;
     }
   }
   return count;

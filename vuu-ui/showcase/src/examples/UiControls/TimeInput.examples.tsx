@@ -1,7 +1,7 @@
 import { Button, Input } from "@salt-ds/core";
 import { TimeInput, TimeInputProps } from "@vuu-ui/vuu-ui-controls";
-import { CommitHandler, TimeString } from "@vuu-ui/vuu-utils";
-import { useCallback, useState } from "react";
+import { asTimeString, CommitHandler, TimeString } from "@vuu-ui/vuu-utils";
+import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
 
 export const NativeHtmlTimeInput = () => {
   return (
@@ -40,13 +40,24 @@ export const NativeHtmlTimeInput = () => {
 const TimeInputTemplate = ({
   defaultValue,
   onChange,
-  showTemplateWhileEditing,
+  value: valueProp,
 }: Partial<TimeInputProps>) => {
-  const [initialValue, setInitialValue] = useState<TimeString | undefined>(
-    defaultValue,
+  const [value, setValue] = useState(valueProp);
+
+  useMemo(() => {
+    setValue(valueProp);
+  }, [valueProp]);
+
+  const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
+    (e) => {
+      const { value } = e.target;
+      console.log(`change value ${value}`);
+      onChange?.(e);
+    },
+    [onChange],
   );
 
-  const handleCommit = useCallback<CommitHandler<HTMLInputElement, Date>>(
+  const handleCommit = useCallback<CommitHandler<HTMLInputElement, TimeString>>(
     (e, value) => {
       console.log(`commit value ${value}`);
     },
@@ -54,7 +65,8 @@ const TimeInputTemplate = ({
   );
 
   const setTime = useCallback((time: TimeString) => {
-    setInitialValue(time);
+    console.log(`set time ${time}`);
+    setValue(time);
   }, []);
 
   return (
@@ -76,48 +88,39 @@ const TimeInputTemplate = ({
       <Input data-testid="pre-timeinput" />
       <TimeInput
         data-testid="timeinput"
-        defaultValue={initialValue}
-        onChange={onChange}
+        defaultValue={defaultValue}
+        onChange={handleChange}
         onCommit={handleCommit}
-        showTemplateWhileEditing={showTemplateWhileEditing}
+        value={value}
       />
       <Input data-testid="post-timeinput" />
     </div>
   );
 };
 
-export const VuuTimeInputShowTemplateWhileEditing = () => <TimeInputTemplate />;
-
 export const TestTimeInput = ({
   defaultValue,
 }: Pick<TimeInputProps, "defaultValue">) => (
-  <TimeInputTemplate
-    defaultValue={defaultValue}
-    showTemplateWhileEditing={false}
-  />
+  <TimeInputTemplate defaultValue={defaultValue} />
 );
 
-export const VuuTimeInput = () => (
-  <TimeInputTemplate defaultValue="00:00:00" showTemplateWhileEditing={false} />
-);
+export const VuuTimeInput = () => <TimeInputTemplate defaultValue="00:00:00" />;
 
 export const VuuTimeInputDefaultValue = () => (
-  <TimeInputTemplate defaultValue="00:59:59" showTemplateWhileEditing={false} />
+  <TimeInputTemplate defaultValue="00:59:59" />
 );
 
-// TODO
-// export const VuuTimeInputControlled = () => {
-//   const [value, setValue] = useState<TimeString>("09:00:00");
+export const VuuTimeInputControlled = () => {
+  const [value, setValue] = useState<TimeString>("09:00:00");
 
-//   const handleChange = useCallback((value: TimeString) => {
-//     console.log(`value changes ${value}`);
-//   }, []);
+  const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
+    (e) => {
+      const { value } = e.target;
+      console.log(`setValue ${value}`);
+      setValue(asTimeString(value, false));
+    },
+    [],
+  );
 
-//   return (
-//     <TimeInputTemplate
-//       onChange={handleChange}
-//       value={value}
-//       showTemplateWhileEditing={false}
-//     />
-//   );
-// };
+  return <TimeInputTemplate onChange={handleChange} value={value} />;
+};

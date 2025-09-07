@@ -105,7 +105,7 @@ export abstract class VuuModule<T extends string = string>
     return Object.keys(this.tables);
   }
 
-  private unregisterViewport = (viewportId: string) => {
+  protected unregisterViewport = (viewportId: string) => {
     for (const [tableName, subscriptions] of this.#subscriptionMap) {
       if (subscriptions[0].viewportId.toString() === viewportId) {
         this.#subscriptionMap.delete(tableName);
@@ -296,16 +296,56 @@ export abstract class VuuModule<T extends string = string>
     return this.#sessionTableMap;
   }
 
-  private getSessionTable(sessionTableName: string) {
+  protected getSessionTable(sessionTableName: string): Table;
+  protected getSessionTable(
+    sessionTableName: string,
+    throwIfNotFound: true,
+  ): Table;
+  protected getSessionTable(
+    sessionTableName: string,
+    throwIfNotFound: false,
+  ): Table | undefined;
+  protected getSessionTable(sessionTableName: string, throwIfNotFound = true) {
     const sessionTable = this.#sessionTableMap[sessionTableName];
     if (sessionTable) {
       return sessionTable;
-    } else {
+    } else if (throwIfNotFound) {
       throw Error(
         `getSessionTable: no session table with name ${sessionTableName}`,
       );
     }
   }
+
+  protected deleteRow: ServiceHandler = async (rpcRequest) => {
+    if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
+      const { viewPortId } = rpcRequest.context;
+      const { key } = rpcRequest.params;
+      const sessionTable = this.getSessionTable(viewPortId, false);
+      if (sessionTable) {
+        sessionTable.delete(key);
+        return {
+          type: "SUCCESS_RESULT",
+          data: undefined,
+        };
+      } else {
+        const { dataSource } = this.getSubscriptionByViewport(viewPortId);
+        if (dataSource.table) {
+          const table = this.tables[dataSource.table.table as T];
+          if (table) {
+            table.delete(key);
+            return {
+              type: "SUCCESS_RESULT",
+              data: undefined,
+            };
+          }
+        }
+      }
+    }
+    return {
+      type: "ERROR_RESULT",
+      errorMessage: "something went wrong",
+    };
+  };
 
   private getColumnDescriptors(tableName: T) {
     const schema =

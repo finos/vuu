@@ -173,8 +173,11 @@ const includesNoValues = (filter?: Filter | null): boolean => {
 interface CommonFilter {
   colName?: string;
   otherColFilters?: Filter[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mode?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   values?: any;
   op?: "or" | "and";
   column?: string;
@@ -183,6 +186,7 @@ interface CommonFilter {
 
 export interface OtherFilter extends CommonFilter {
   type: FilterType;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   values?: any[];
 }
 
@@ -209,7 +213,9 @@ const merge = (f1: Filter, f2: Filter): Filter | undefined => {
       ...f1,
       values: [
         ...f1.values,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...(f2.values as any[]).filter(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (v: string | number) => !(f1.values as any[]).includes(v),
         ),
       ],
@@ -379,6 +385,7 @@ export const filterEquals = (f1?: Filter, f2?: Filter, strict = false) => {
         f1.value === f2.value) ||
         (isMultiValueFilter(f1) &&
           isMultiValueFilter(f2) &&
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           sameValues(f1.values as any[], f2.values)))
     );
   }

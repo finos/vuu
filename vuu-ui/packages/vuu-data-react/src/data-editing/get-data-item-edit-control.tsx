@@ -26,7 +26,6 @@ export interface DataItemEditControlProps {
    * A table column or form field Descriptor.
    */
   dataDescriptor: DataValueDescriptor;
-  defaultValue?: string | number | readonly string[];
   errorMessage?: string;
   onCommit: CommitHandler<HTMLElement>;
   table?: TableSchemaTable;
@@ -40,7 +39,6 @@ export const getDataItemEditControl = ({
   className,
   commitWhenCleared,
   dataDescriptor,
-  defaultValue,
   errorMessage,
   onCommit,
   table,
@@ -55,6 +53,7 @@ export const getDataItemEditControl = ({
   if (dataDescriptor.editable === false) {
     return (
       <VuuInput
+        data-edit-control="data-edit-control"
         variant="secondary"
         {...InputProps}
         onCommit={onCommit}
@@ -62,16 +61,25 @@ export const getDataItemEditControl = ({
       />
     );
   } else if (isTimeDataValue(dataDescriptor)) {
-    return (
-      <VuuTimePicker
-        className={className}
-        defaultValue={asTimeString(defaultValue, true)}
-        onCommit={handleCommitNumber}
-      />
-    );
+    if (InputProps?.inputProps) {
+      const { value, onChange } = InputProps.inputProps;
+      return (
+        <VuuTimePicker
+          data-edit-control="data-edit-control"
+          className={className}
+          value={asTimeString(value, true)}
+          onChange={onChange}
+          onCommit={onCommit}
+        />
+      );
+    }
   } else if (isDateTimeDataValue(dataDescriptor)) {
     return (
-      <VuuDatePicker className={className} onCommit={handleCommitNumber} />
+      <VuuDatePicker
+        className={className}
+        onCommit={handleCommitNumber}
+        data-edit-control="data-edit-control"
+      />
     );
   } else if (dataDescriptor.serverDataType === "string" && table) {
     return (
@@ -82,6 +90,7 @@ export const getDataItemEditControl = ({
         column={dataDescriptor.name}
         onCommit={onCommit}
         table={table}
+        data-edit-control="data-edit-control"
       />
     );
   }
@@ -93,6 +102,7 @@ export const getDataItemEditControl = ({
       commitWhenCleared={commitWhenCleared}
       onCommit={onCommit}
       errorMessage={errorMessage}
+      data-edit-control="data-edit-control"
     />
   );
 };

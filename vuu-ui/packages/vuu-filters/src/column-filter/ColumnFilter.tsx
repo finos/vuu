@@ -13,62 +13,84 @@ import cx from "clsx";
 
 import columnFilterCss from "./ColumnFilter.css";
 import { getDataItemEditControl } from "@vuu-ui/vuu-data-react";
-import { useCallback, useMemo } from "react";
-import { CommitHandler } from "@vuu-ui/vuu-utils";
-import { VuuTable } from "@vuu-ui/vuu-protocol-types";
+import { ForwardedRef, forwardRef, ReactElement, useMemo } from "react";
 import {
+  assertValidOperator,
   assertValidValue,
   ColumnFilterHookProps,
-  FilterValue,
+  useColumnFilter,
 } from "./useColumnFilter";
+import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 
 const classBase = "vuuColumnFilter";
 
 export interface ColumnFilterProps
-  extends ColumnFilterHookProps,
-    SegmentedButtonGroupProps {
+  extends SegmentedButtonGroupProps,
+    Pick<
+      ColumnFilterHookProps,
+      "column" | "operator" | "value" | "onFilterChange"
+    > {
+  /**
+   * Display operator picker.
+   */
   showOperatorPicker?: boolean;
   /**
    * VuuTable is required if typeahead support is expected.
    */
   table?: VuuTable;
-
-  /**
-   * Initial filter value. Pair of values expewcted when operator is
-   * 'between'
-   */
-  value?: FilterValue | [FilterValue, FilterValue];
 }
 
-export const ColumnFilter = ({
-  column,
-  className,
-  operator = "=",
-  showOperatorPicker = false,
-  table,
-  value,
-  ...buttonGroupProps
-}: ColumnFilterProps) => {
+export const ColumnFilter = forwardRef(function ColumnFilter(
+  {
+    column,
+    className,
+    operator = "=",
+    showOperatorPicker = false,
+    table,
+    value,
+    onFilterChange,
+    ...buttonGroupProps
+  }: ColumnFilterProps,
+  forwardRef: ForwardedRef<HTMLDivElement>,
+) {
   const targetWindow = useWindow();
   useComponentCssInjection({
-    testId: "vuu-filter-bar",
+    testId: "vuu-column-filter",
     css: columnFilterCss,
     window: targetWindow,
   });
 
+  const {
+    op,
+    allowedOperators,
+    filterValue,
+    inputProps,
+    rangeInputProps,
+    handleOperatorChange,
+    handleCommit,
+    handleRangeCommit,
+  } = useColumnFilter({
+    operator,
+    column,
+    value,
+    onFilterChange,
+  });
+
   useMemo(
-    () => assertValidValue(column, operator, value),
-    [column, operator, value],
+    () => assertValidOperator(allowedOperators, column, operator),
+    [column, operator, allowedOperators],
   );
 
-  const onCommit = useCallback<CommitHandler<HTMLElement>>((e, value) => {
-    console.log(`onCommit ${value}`);
-  }, []);
+  useMemo(
+    () => assertValidValue(column, op, filterValue),
+    [column, op, filterValue],
+  );
 
   return (
     <SegmentedButtonGroup
       {...buttonGroupProps}
       className={cx(classBase, className)}
+      ref={forwardRef}
     >
       {showOperatorPicker ? (
         <Menu placement="bottom-start">
@@ -80,37 +102,40 @@ export const ColumnFilter = ({
               data-embedded
               sentiment="neutral"
             >
-              {operator}
+              {op}
             </Button>
           </MenuTrigger>
           <MenuPanel>
-            <MenuItem>=</MenuItem>
-            <MenuItem>!=</MenuItem>
-            <MenuItem>starts</MenuItem>
-            <MenuItem>ends</MenuItem>
-            <MenuItem>contains</MenuItem>
+            {allowedOperators.map((allowedOp) => (
+              <MenuItem
+                key={`allowedOp`}
+                onClick={() => handleOperatorChange(allowedOp)}
+              >
+                {allowedOp}
+              </MenuItem>
+            ))}
           </MenuPanel>
         </Menu>
       ) : null}
       {getDataItemEditControl({
+        InputProps: { inputProps },
         dataDescriptor: column,
-        defaultValue: Array.isArray(value)
-          ? (value[0] as string)
-          : (value as string),
-        onCommit,
+        onCommit: handleCommit,
         table,
       })}
-      {operator === "between"
+      {op === "between"
         ? getDataItemEditControl({
             className: `${classBase}-rangeHigh`,
+            InputProps: { inputProps: rangeInputProps },
             dataDescriptor: column,
-            defaultValue: Array.isArray(value)
-              ? (value[1] as string)
-              : undefined,
-            onCommit,
+            onCommit: handleRangeCommit,
             table,
           })
         : null}
     </SegmentedButtonGroup>
   );
-};
+}) as (
+  props: ColumnFilterProps & {
+    ref?: ForwardedRef<HTMLDivElement>;
+  },
+) => ReactElement<ColumnFilterProps>;

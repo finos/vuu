@@ -4,6 +4,7 @@ import {
   expandSelection,
   getSelectionStatus,
   RowSelected,
+  selectionCount,
   selectItem,
 } from "../src/selection-utils";
 
@@ -180,6 +181,32 @@ describe("selection-utils", () => {
       expect(expandSelection([[2, 5], 7, [9, 11]])).toEqual([
         2, 3, 4, 5, 7, 9, 10, 11,
       ]);
+    });
+  });
+
+  describe("selectionCount", () => {
+    it("correctly reports no item", () => {
+      expect(selectionCount([])).toEqual(0);
+    });
+    it("correctly counts a single item", () => {
+      expect(selectionCount([1])).toEqual(1);
+    });
+    it("correctly counts multiple single items", () => {
+      expect(selectionCount([1, 5, 9])).toEqual(3);
+    });
+    it("correctly counts a single range", () => {
+      expect(selectionCount([[1, 3]])).toEqual(3);
+    });
+    it("correctly counts multiple ranges", () => {
+      expect(
+        selectionCount([
+          [1, 3],
+          [9, 11],
+        ]),
+      ).toEqual(6);
+    });
+    it("correctly counts mized ranges and single items", () => {
+      expect(selectionCount([[1, 3], 5, [9, 11], 15, 19])).toEqual(9);
     });
   });
 });

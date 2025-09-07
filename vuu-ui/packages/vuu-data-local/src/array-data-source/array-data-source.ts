@@ -13,6 +13,7 @@ import {
   TableSchema,
   WithBaseFilter,
   WithFullConfig,
+  DataSourceDeleteHandler,
 } from "@vuu-ui/vuu-data-types";
 import { filterPredicate, parseFilter } from "@vuu-ui/vuu-filter-parser";
 import type {
@@ -237,12 +238,13 @@ export class ArrayDataSource
 
     let config = this._config;
 
+    // if (range) {
+    //   this.setRange(range);
+    // }
     const hasConfigProps =
       aggregations || columns || filterSpec || groupBy || sort;
+
     if (hasConfigProps) {
-      if (range) {
-        this.setRange(range);
-      }
       config = {
         ...config,
         aggregations: aggregations || this._config.aggregations,
@@ -717,6 +719,32 @@ export class ArrayDataSource
       if (dataIndex >= from && dataIndex < to) {
         this.sendRowsToClient(false, dataSourceRow);
       }
+    }
+  };
+
+  deleteRow: DataSourceDeleteHandler = async (key) => {
+    // TODO take sorting, filtering. grouping into account
+
+    const dataIndex = this.#data.findIndex((row) => row[KEY] === key);
+    if (dataIndex !== -1) {
+      if (this.processedData) {
+        // do stuff
+      }
+
+      this.#data.splice(dataIndex, 1);
+      for (let i = dataIndex; i < this.#data.length; i++) {
+        this.#data[i][0] -= 1;
+      }
+
+      this.sendSizeUpdateToClient();
+
+      const { from, to } = this.#range;
+      if (dataIndex >= from && dataIndex < to) {
+        this.sendRowsToClient(true);
+      }
+      return true;
+    } else {
+      return "row not found";
     }
   };
 

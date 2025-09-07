@@ -1,6 +1,5 @@
 import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
 import { getSchema } from "@vuu-ui/vuu-data-test";
-import { DialogProvider } from "@vuu-ui/vuu-popups";
 import { BulkEditPanel, Table, TableProps } from "@vuu-ui/vuu-table";
 import {
   applyDefaultColumnConfig,
@@ -13,6 +12,7 @@ import { getDefaultColumnConfig } from "./columnMetaData";
 import { DemoTableContainer } from "./DemoTableContainer";
 import { DataSource } from "@vuu-ui/vuu-data-types";
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
+import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
 
 const schema = getSchema("instruments");
 
@@ -107,8 +107,8 @@ const BulkEditTableTemplate = () => {
 /** tags=data-consumer */
 export const BulkEditTable = () => {
   return (
-    <DialogProvider>
+    <ModalProvider>
       <BulkEditTableTemplate />
-    </DialogProvider>
+    </ModalProvider>
   );
 };

@@ -20,7 +20,9 @@ import {
   VuuViewportRpcTypeaheadRequest,
   VuuRpcServiceRequest,
   ViewportRpcContext,
+  OpenComponentInDialogAction,
 } from "@vuu-ui/vuu-protocol-types";
+import { isView as componentInRegistry } from "./component-registry";
 
 const MENU_RPC_TYPES = [
   "VIEW_PORT_MENUS_SELECT_RPC",
@@ -180,5 +182,21 @@ export function isSessionTableActionMessage(
     isOpenDialogAction(rpcResponse.action) &&
     isSessionTable(rpcResponse.action.table) &&
     rpcResponse.action?.renderComponent === "inline-form"
+  );
+}
+
+export function isCustomComponentActionMessage(
+  rpcResponse: VuuRpcResponse | Omit<VuuRpcResponse, "vpId">,
+): rpcResponse is VuuRpcMenuSuccess<
+  OpenComponentInDialogAction & {
+    tableSchema: TableSchema;
+  }
+> {
+  return (
+    isActionMessage(rpcResponse) &&
+    isOpenDialogAction(rpcResponse.action) &&
+    isSessionTable(rpcResponse.action.table) &&
+    typeof rpcResponse.action.renderComponent === "string" &&
+    componentInRegistry(rpcResponse.action.renderComponent)
   );
 }

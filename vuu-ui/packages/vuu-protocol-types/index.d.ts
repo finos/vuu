@@ -704,6 +704,11 @@ export interface OpenDialogAction {
   type: "OPEN_DIALOG_ACTION";
   table: VuuTable;
 }
+
+export interface OpenComponentInDialogAction extends OpenDialogAction {
+  renderComponent: string;
+}
+
 export interface NoAction {
   type: "NO_ACTION";
 }
