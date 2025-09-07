@@ -208,8 +208,12 @@ export const isTextColumn = ({ serverDataType }: ColumnDescriptor) =>
     ? false
     : serverDataType === "char" || serverDataType === "string";
 
-export const toColumnDescriptor = (name: string): ColumnDescriptor => ({
+export const toColumnDescriptor = (
+  name: string,
+  serverDataType?: ColumnDescriptor["serverDataType"],
+): ColumnDescriptor => ({
   name,
+  serverDataType,
 });
 
 /**

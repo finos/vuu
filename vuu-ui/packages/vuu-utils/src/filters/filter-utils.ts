@@ -21,6 +21,14 @@ import { EventEmitter } from "../event-emitter";
 import { VuuFilter, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { getTypedValue } from "../form-utils";
 import { parseFilter } from "@vuu-ui/vuu-filter-parser";
+import {
+  asTimeString,
+  isValidTimeString,
+  Time,
+  TimeString,
+  toCalendarDate,
+} from "../date";
+import { isDateTimeDataValue, toColumnDescriptor } from "../column-utils";
 
 const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "=",
@@ -187,15 +195,42 @@ export class FilterAggregator extends EventEmitter<FilterEvents> {
   }
 }
 
+const convertValueToServerFormat = (
+  column: ColumnDescriptor,
+  value: ColumnFilterValue,
+): ColumnFilterValue | Time => {
+  if (isValidTimeString(value)) {
+    return Time(value as TimeString)
+      .asDate(new Date())
+      .getTime(); //TOCHECK
+  } else if (isDateTimeDataValue(column)) {
+    return new Date(value as number).getTime(); //TOCHECK
+  }
+  return value;
+};
+
+const convertValueToUIFormat = (
+  column: ColumnDescriptor,
+  value: ColumnFilterValue,
+): ColumnFilterValue => {
+  if (isValidTimeString(value)) {
+    return asTimeString(value, false);
+  } else if (isDateTimeDataValue(column)) {
+    return toCalendarDate(new Date(value as number)).toString();
+  } else {
+    return value;
+  }
+};
+
 const buildBetweenQueryString = (column: ColumnDescriptor, range: string[]) => {
   const lowerRange: string | undefined =
     range[0] !== undefined && range[0].length > 0
-      ? `${column.name} >= ${range[0]}` //TODO - conversion required - for e.g. time range  values
+      ? `${column.name} >= ${convertValueToServerFormat(column, range[0])}`
       : undefined;
 
   const upperRange: string | undefined =
     range[1] !== undefined && range[1].length > 0
-      ? `${column.name} <= ${range[1]}` //TODO - conversion required - for e.g. time range  values
+      ? `${column.name} <= ${convertValueToServerFormat(column, range[1])}`
       : undefined;
 
   if (lowerRange === undefined) return lowerRange;
@@ -209,10 +244,12 @@ export const buildColumnFilterString = (
   op: ColumnFilterOp,
   value: ColumnFilterValue,
 ) => {
-  if (Array.isArray(value)) return buildBetweenQueryString(column, value);
-  return typeof value === "string"
+  if (Array.isArray(value)) {
+    return buildBetweenQueryString(column, value);
+  }
+  return typeof value === "string" && !isValidTimeString(value)
     ? `${column.name} ${op} "${value}"`
-    : `${column.name} ${op} ${value}`; //TODO - conversion required - for e.g. time values
+    : `${column.name} ${op} ${convertValueToServerFormat(column, value)}`;
 };
 
 export type ColumnFilterStoreEvents = {
@@ -233,11 +270,18 @@ export class ColumnFilterStore extends EventEmitter<ColumnFilterStoreEvents> {
     op: ColumnFilterOp,
     value: ColumnFilterValue,
   ) {
-    this.#columns.set(column.name, column);
+    if (!this.#columns.has(column.name)) {
+      this.#columns.set(column.name, column);
+    }
+
     const { serverDataType = "string" } = column;
     const typedValue = Array.isArray(value)
       ? value
-      : (getTypedValue(value, serverDataType, true) as ColumnFilterValue); //Check getTypedValue
+      : (getTypedValue(
+          value.toString(),
+          serverDataType,
+          true,
+        ) as ColumnFilterValue);
 
     this.#values.set(column.name, typedValue);
     this.#filters.set(column.name, {
@@ -279,10 +323,10 @@ export class ColumnFilterStore extends EventEmitter<ColumnFilterStoreEvents> {
     } else {
       const result = Array.from(this.#filters.entries())
         .map(([column, descriptor]) => {
-          const colDesc = this.#columns.get(column);
-          if (colDesc)
-            buildColumnFilterString(
-              colDesc,
+          const columnDescriptor = this.#columns.get(column);
+          if (columnDescriptor)
+            return buildColumnFilterString(
+              columnDescriptor,
               descriptor.op,
               descriptor.filterValue,
             );
@@ -304,17 +348,24 @@ export class ColumnFilterStore extends EventEmitter<ColumnFilterStoreEvents> {
 
       const addToStore = (f: Filter) => {
         if (f.column) {
-          // TODO - serverDataType?
-          // How do we get hold of the server data type especially when store is
-          // setup using a filter string? Does Filter object need updating?
-          const columnDescriptor: ColumnDescriptor = { name: f.column };
-          this.#columns.set(f.column, columnDescriptor);
+          const defaultColumnDescriptor = toColumnDescriptor(f.column);
+          if (!this.#columns.has(f.column)) {
+            this.#columns.set(f.column, defaultColumnDescriptor);
+          }
+          const columnDescriptor: ColumnDescriptor =
+            this.#columns.get(f.column) || defaultColumnDescriptor;
 
           const existing = this.#filters.get(f.column);
           if (isSingleValueFilter(f)) {
             const v = existing
-              ? [existing.filterValue as string, f.value as string]
-              : (f.value as ColumnFilterValue);
+              ? [
+                  existing.filterValue as string,
+                  convertValueToUIFormat(columnDescriptor, f.value as string),
+                ]
+              : convertValueToUIFormat(
+                  columnDescriptor,
+                  f.value as ColumnFilterValue,
+                );
 
             this.#values.set(f.column, v as ColumnFilterValue);
             this.#filters.set(f.column, {
