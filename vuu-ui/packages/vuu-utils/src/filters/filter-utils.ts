@@ -201,10 +201,10 @@ const convertValueToServerFormat = (
 ): ColumnFilterValue | Time => {
   if (isValidTimeString(value)) {
     return Time(value as TimeString)
-      .asDate(new Date())
-      .getTime(); //TOCHECK
+      .asDate()
+      .getTime();
   } else if (isDateTimeDataValue(column)) {
-    return new Date(value as number).getTime(); //TOCHECK
+    return new Date(value as number).getTime(); //value is already in utc milliseconds? conversion may not be required
   }
   return value;
 };
