@@ -28,7 +28,11 @@ import {
   TimeString,
   toCalendarDate,
 } from "../date";
-import { isDateTimeDataValue, toColumnDescriptor } from "../column-utils";
+import {
+  isDateTimeDataValue,
+  isTimeDataValue,
+  toColumnDescriptor,
+} from "../column-utils";
 
 const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "=",
@@ -213,7 +217,7 @@ const convertValueToUIFormat = (
   column: ColumnDescriptor,
   value: ColumnFilterValue,
 ): ColumnFilterValue => {
-  if (isValidTimeString(value)) {
+  if (isTimeDataValue(column)) {
     return asTimeString(value, false);
   } else if (isDateTimeDataValue(column)) {
     return toCalendarDate(new Date(value as number)).toString();
@@ -260,9 +264,19 @@ export class ColumnFilterStore extends EventEmitter<ColumnFilterStoreEvents> {
   #filters = new Map<string, ColumnFilterDescriptor>();
   #values = new Map<string, ColumnFilterValue>();
 
-  constructor(query: VuuFilter = { filter: "" }) {
+  constructor(
+    query: VuuFilter = { filter: "" },
+    columnDescriptors: ColumnDescriptor[] = [],
+  ) {
     super();
     this.filter = query;
+    this.loadColumnDescriptors(columnDescriptors);
+  }
+
+  private loadColumnDescriptors(columnDescriptors: ColumnDescriptor[]) {
+    columnDescriptors.forEach((descriptor) => {
+      this.#columns.set(descriptor.name, descriptor);
+    });
   }
 
   addFilter(
