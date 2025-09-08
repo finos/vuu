@@ -90,7 +90,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       val response = vuuClient.awaitForResponse(requestId)
       val responseBody = assertBodyIsInstanceOf[FreezeViewPortReject](response)
       responseBody.viewPortId shouldEqual fakeViewPortId
-      responseBody.errorMessage shouldEqual s"java.lang.Exception: Could not find viewport to freeze $fakeViewPortId"
+      responseBody.errorMessage shouldEqual s"Could not find viewport to freeze $fakeViewPortId"
     }
 
     Scenario("Unfreeze a view port that doesn't exist") {
@@ -103,7 +103,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
       val responseBody = assertBodyIsInstanceOf[UnfreezeViewPortReject](response)
       responseBody.viewPortId shouldEqual fakeViewPortId
-      responseBody.errorMessage shouldEqual s"java.lang.Exception: Could not find viewport to unfreeze $fakeViewPortId"
+      responseBody.errorMessage shouldEqual s"Could not find viewport to unfreeze $fakeViewPortId"
     }
 
     Scenario("Freeze a view port that is already frozen") {
@@ -127,7 +127,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       val response2 = vuuClient.awaitForResponse(requestId2)
       val responseBody2 = assertBodyIsInstanceOf[FreezeViewPortReject](response2)
       responseBody2.viewPortId shouldEqual viewPortId
-      responseBody2.errorMessage shouldEqual s"java.lang.Exception: Could not freeze viewport $viewPortId because it's already frozen"
+      responseBody2.errorMessage shouldEqual s"Could not freeze viewport $viewPortId because it's already frozen"
     }
 
     Scenario("Unfreeze a view port that is not frozen") {
@@ -142,7 +142,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       val unfreezeVPResponse = vuuClient.awaitForResponse(requestId)
       val responseBody = assertBodyIsInstanceOf[UnfreezeViewPortReject](unfreezeVPResponse)
       responseBody.viewPortId shouldEqual viewPortId
-      responseBody.errorMessage shouldEqual s"java.lang.Exception: Could not unfreeze viewport $viewPortId because it's not frozen"
+      responseBody.errorMessage shouldEqual s"Could not unfreeze viewport $viewPortId because it's not frozen"
     }
 
     Scenario("Freeze a view port for a join table") {

@@ -143,7 +143,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
         vsMsg(EnableViewPortSuccess(msg.viewPortId))(ctx)
       case Failure(e) =>
         logger.warn("Failed to enable viewport", e)
-        vsMsg(RemoveViewPortReject(msg.viewPortId))(ctx)
+        vsMsg(EnableViewPortReject(msg.viewPortId))(ctx)
     }
   }
 
@@ -165,7 +165,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
         vsMsg(FreezeViewPortSuccess(msg.viewPortId))(ctx)
       case Failure(e) =>
         logger.warn("Failed to freeze viewport", e)
-        vsMsg(FreezeViewPortReject(msg.viewPortId, e.toString))(ctx)
+        vsMsg(FreezeViewPortReject(msg.viewPortId, e.getMessage))(ctx)
     }
   }
 
@@ -176,7 +176,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
         vsMsg(UnfreezeViewPortSuccess(msg.viewPortId))(ctx)
       case Failure(e) =>
         logger.warn("Failed to unfreeze viewport", e)
-        vsMsg(UnfreezeViewPortReject(msg.viewPortId, e.toString))(ctx)
+        vsMsg(UnfreezeViewPortReject(msg.viewPortId, e.getMessage))(ctx)
     }
   }
 
@@ -296,7 +296,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
           ChangeViewPortSuccess(newViewPort.id, viewport.getColumns.getColumns().map(_.name).toArray, sort, msg.groupBy, msg.filterSpec, msg.aggregations)))
 
       case None =>
-        Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, ErrorResponse(s"Could not find vp ${msg.viewPortId} in session ${ctx.session}")))
+        Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, ChangeViewPortReject(msg.viewPortId, s"Could not find vp ${msg.viewPortId} in session ${ctx.session}")))
     }
 
   }
