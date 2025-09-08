@@ -145,6 +145,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
   def mkeOrderPricesFxDef(ordersDef: TableDef, pricesDef: TableDef, fxDef: TableDef): JoinTableDef = {
     JoinTableDef(
       name = "orderPricesFx",
+      visibility = Public,
       baseTable = ordersDef,
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") ++ Columns.allFromExcept(fxDef, "ric"),
       links = VisualLinks(),
@@ -178,6 +179,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
   def mkeOrder2PricesRatesDef(orders2Def: TableDef, pricesDef: TableDef, fxRates: TableDef): JoinTableDef = {
     JoinTableDef(
       name = "order2PricesAndFx",
+      visibility = Public,
       baseTable = orders2Def,
       joinColumns = Columns.allFrom(orders2Def)
         ++ Columns.allFromExcept(pricesDef, "ric")
