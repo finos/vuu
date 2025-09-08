@@ -41,10 +41,7 @@ vi.mock("../../src/date/date-utils", async () => {
     ...actual,
     Time: (timeString: string) => ({
       asDate: vi.fn(() => {
-        const d = new Date("2025-05-15");
-        d.setHours(Number(timeString.split(":")[0]));
-        d.setMinutes(Number(timeString.split(":")[1]));
-        d.setSeconds(Number(timeString.split(":")[2]));
+        const d = new Date(`2025-05-15T${timeString}Z`);
         return d;
       }),
       toString: () => timeString,
@@ -101,7 +98,7 @@ describe("ColumnFilterStore", () => {
   it("handles time filter with single value", () => {
     const store = new ColumnFilterStore();
     store.addFilter(lastUpdateDescriptor, "=", "12:34:56");
-    expect(store.filter).toEqual({ filter: "lastUpdate = 1747308896000" });
+    expect(store.filter).toEqual({ filter: "lastUpdate = 1747312496000" });
     expect(store.columnValues.get("lastUpdate")).toBe("12:34:56");
   });
 
@@ -109,7 +106,7 @@ describe("ColumnFilterStore", () => {
     const store = new ColumnFilterStore();
     store.addFilter(lastUpdateDescriptor, "between", ["09:00:00", "10:00:00"]);
     expect(store.filter).toEqual({
-      filter: "lastUpdate >= 1747296000000 and lastUpdate <= 1747299600000",
+      filter: "lastUpdate >= 1747299600000 and lastUpdate <= 1747303200000",
     });
   });
 
@@ -128,7 +125,7 @@ describe("ColumnFilterStore", () => {
       filter: 'lastUpdate >= "09:00:00" and lastUpdate <= "10:00:00"',
     };
     expect(store.filter).toEqual({
-      filter: "lastUpdate >= 1747296000000 and lastUpdate <= 1747299600000",
+      filter: "lastUpdate >= 1747299600000 and lastUpdate <= 1747303200000",
     });
   });
 

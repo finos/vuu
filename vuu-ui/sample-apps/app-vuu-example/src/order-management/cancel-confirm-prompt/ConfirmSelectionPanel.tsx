@@ -16,7 +16,9 @@ export const ConfirmSelectionPanel = ({
     <div className={classBase}>
       <Table
         allowDragColumnHeader={false}
-        config={{ columns: dataSource.columns.map(toColumnDescriptor) }}
+        config={{
+          columns: dataSource.columns.map((col) => toColumnDescriptor(col)),
+        }}
         dataSource={dataSource}
         height={380}
         width={600}
