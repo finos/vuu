@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/experimental-ct-react';
 import React from 'react';
-import { TestVuuInput } from './TestVuuInput';
+import { TestVuuInput } from './VuuInput.test-component';
 
 test.describe('VuuInput', () => {
   test.describe('Given a default VuuInput', () => {
