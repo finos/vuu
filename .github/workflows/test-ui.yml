@@ -102,8 +102,8 @@ jobs:
             echo "❌ **Tests failed or report not generated**" >> $GITHUB_STEP_SUMMARY
           fi
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🔍 **Test Location**: \`packages/vuu-ui-controls/src/__tests__/__component__/vuu-input/\`" >> $GITHUB_STEP_SUMMARY
-          echo "📝 **Test Files**: \`VuuInput.playwright.test.tsx\`" >> $GITHUB_STEP_SUMMARY
+          echo "🔍 **Test Location**: \`packages/vuu-ui-controls/src/__tests__/__component__/\`" >> $GITHUB_STEP_SUMMARY
+          echo "📝 **Test Pattern**: \`*.playwright.test.tsx\`" >> $GITHUB_STEP_SUMMARY
 
   # ensure the vuu example still builds
   vuu-app-build:
