@@ -725,10 +725,22 @@ export class ArrayDataSource
   deleteRow: DataSourceDeleteHandler = async (key) => {
     // TODO take sorting, filtering. grouping into account
 
+    const start = performance.now();
     const dataIndex = this.#data.findIndex((row) => row[KEY] === key);
+    let doomedIndex: number | undefined = undefined;
+
     if (dataIndex !== -1) {
       if (this.processedData) {
-        // do stuff
+        for (let i = 0; i < this.processedData.length; i++) {
+          if (this.processedData[i][KEY] === key) {
+            doomedIndex = i;
+          } else if (this.processedData[i][0] > dataIndex) {
+            this.processedData[i][0] -= 1;
+          }
+        }
+        if (doomedIndex !== undefined) {
+          this.processedData.splice(doomedIndex, 1);
+        }
       }
 
       this.#data.splice(dataIndex, 1);
@@ -736,12 +748,18 @@ export class ArrayDataSource
         this.#data[i][0] -= 1;
       }
 
+      const end = performance.now();
+      console.log(`deleteRow, updating indices took ${end - start}ms`);
       this.sendSizeUpdateToClient();
 
       const { from, to } = this.#range;
-      if (dataIndex >= from && dataIndex < to) {
+      const deletedIndex = doomedIndex ?? dataIndex;
+      if (deletedIndex >= from && deletedIndex < to) {
         this.sendRowsToClient(true);
       }
+
+      this.emit("resize", this.size);
+
       return true;
     } else {
       return "row not found";

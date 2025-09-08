@@ -56,6 +56,7 @@ export class Table extends EventEmitter<TableEvents> {
   }
 
   delete(key: string, emitEvent = true) {
+    console.log(`[Table] delete key ${key}`);
     const index = this.#index.get(key) ?? -1;
     if (index !== -1) {
       this.#index.delete(key);
