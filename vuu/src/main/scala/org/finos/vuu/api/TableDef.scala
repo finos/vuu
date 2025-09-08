@@ -28,10 +28,10 @@ object Link {
 trait Visibility
 
 // All users can create view port to see the table
-case object Public extends Visibility
+object Public extends Visibility
 
 // No users can create view port to see the table. Only for vuu internal use, e.g. base tables for a join table.
-case object Private extends Visibility
+object Private extends Visibility
 
 object SessionTableDef {
   def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
