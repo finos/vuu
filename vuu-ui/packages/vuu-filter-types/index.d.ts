@@ -107,7 +107,7 @@ export declare type ColumnFilterDescriptor = {
 };
 
 export declare type ColumnFilterChangeHandler = (
-  value: FilterValue,
+  value: ColumnFilterValue,
   column: ColumnDescriptor,
-  op: Operator,
+  op: ColumnFilterOp,
 ) => void;
