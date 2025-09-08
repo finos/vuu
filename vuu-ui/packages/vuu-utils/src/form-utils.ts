@@ -5,6 +5,7 @@ import {
 import { KeyboardEvent, SyntheticEvent } from "react";
 import { queryClosest } from "./html-utils";
 import { stringIsValidDecimal, stringIsValidInt } from "./data-utils";
+import { isValidTimeString } from "./date";
 
 /**
  * Use with the following convention:
@@ -66,6 +67,8 @@ export function getTypedValue(
     case "long": {
       if (stringIsValidInt(value)) {
         return parseInt(value, 10);
+      } else if (isValidTimeString(value)) {  //TOCHECK
+        return value;
       } else if (throwIfInvalid) {
         throw Error(`value ${value} is not a valid ${type}`);
       } else {
