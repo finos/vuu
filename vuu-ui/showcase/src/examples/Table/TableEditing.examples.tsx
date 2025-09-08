@@ -18,7 +18,7 @@ import {
   useData,
 } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
-import { DropdownCell } from "@vuu-ui/vuu-table-extras";
+import { DataSourceStats, DropdownCell } from "@vuu-ui/vuu-table-extras";
 import { IconButtonCell } from "@vuu-ui/vuu-table-extras";
 
 registerComponent("dropdown-cell", DropdownCell, "cell-renderer", {
@@ -81,16 +81,19 @@ const TableTemplate = ({
   );
 
   return (
-    <Table
-      config={config}
-      dataSource={dataSource}
-      height={645}
-      onDataEdited={handleDataEdited}
-      renderBufferSize={10}
-      rowActionHandlers={rowActionHandlers}
-      selectionModel={selectionModel}
-      width={9200}
-    />
+    <>
+      <Table
+        config={config}
+        dataSource={dataSource}
+        height={645}
+        onDataEdited={handleDataEdited}
+        renderBufferSize={10}
+        rowActionHandlers={rowActionHandlers}
+        selectionModel={selectionModel}
+        width={9200}
+      />
+      <DataSourceStats dataSource={dataSource} style={{ height: 32 }} />
+    </>
   );
 };
 
