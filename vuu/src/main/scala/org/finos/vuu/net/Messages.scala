@@ -48,7 +48,7 @@ case class AuthenticateFailure(msg: String) extends MessageBody
 
 case class LoginRequest(token: String, user: String) extends MessageBody
 
-case class LoginSuccess(token: String) extends MessageBody
+case class LoginSuccess(token: String, vuuServerId: String) extends MessageBody
 
 case class LoginFailure(token: String, errorMsg: String) extends MessageBody
 

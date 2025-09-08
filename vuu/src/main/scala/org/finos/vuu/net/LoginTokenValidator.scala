@@ -3,17 +3,17 @@ package org.finos.vuu.net
 import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap}
 
 trait LoginTokenValidator {
-  def login(msg: LoginRequest): Either[ViewServerMessage, String]
+  def login(msg: LoginRequest, vuuServerId: String): ViewServerMessage
 }
 
 class AlwaysHappyLoginValidator extends LoginTokenValidator {
 
-  override def login(msg: LoginRequest): Either[ViewServerMessage, String] = {
-    Left(JsonViewServerMessage("", "", msg.token, msg.user, LoginSuccess(msg.token)))
+  override def login(msg: LoginRequest, vuuServerId: String): ViewServerMessage = {
+    JsonViewServerMessage("", "", msg.token, msg.user, LoginSuccess(msg.token, vuuServerId))
   }
 }
 
-class ServerUserPrincipal(val token: String, val userName: String){
+class ServerUserPrincipal(val token: String, val userName: String) {
 }
 
 class LoggedInTokenValidator extends LoginTokenValidator {
@@ -24,11 +24,11 @@ class LoggedInTokenValidator extends LoginTokenValidator {
     tokenUserMap.put(token, userPrincipal)
   }
 
-  override def login(msg: LoginRequest): Either[ViewServerMessage, String] = {
-    if(tokenUserMap.containsKey(msg.token)){
-      Left(JsonViewServerMessage("", "", msg.token, msg.user, LoginSuccess(msg.token)))
-    }else{
-      Right("User token not found")
+  override def login(msg: LoginRequest, vuuServerId: String): ViewServerMessage = {
+    if (tokenUserMap.containsKey(msg.token)) {
+      JsonViewServerMessage("", "", msg.token, msg.user, LoginSuccess(msg.token, vuuServerId))
+    } else {
+      JsonViewServerMessage("", "", msg.token, msg.user, LoginFailure(msg.token, "User token not found"))
     }
   }
 }

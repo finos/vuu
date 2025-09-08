@@ -29,14 +29,12 @@ import scala.Option;
  * Example Java App using Vuu.
  *
  */
-public class VuuExampleMain
-{
+public class VuuExampleMain {
     /*
         //to allow self signed certs
         chrome://flags/#allow-insecure-localhost
     */
-    public static void main( String[] args )
-    {
+    public static void main(String[] args) {
         final MetricsProvider metrics = new MetricsProviderImpl();
         final Clock clock = new DefaultClock();
         final LifecycleContainer lifecycle = new LifecycleContainer(clock);

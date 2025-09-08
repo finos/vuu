@@ -18,9 +18,10 @@ class ViewServerHandlerFactoryImpl(authenticator: Authenticator,
                                    serverApi: ServerApi, jsonVsSerializer: Serializer[String, MessageBody],
                                    moduleContainer: ModuleContainer,
                                    flowControllerFactory: FlowControllerFactory,
+                                   vuuServerId: String,
                                   )(implicit val timeProvider: Clock) extends ViewServerHandlerFactory {
   override def create(): ViewServerHandler = {
-    val requestProcessor = new RequestProcessor(authenticator, tokenValidator, sessionContainer, serverApi, jsonVsSerializer, moduleContainer, flowControllerFactory)
+    val requestProcessor = new RequestProcessor(authenticator, tokenValidator, sessionContainer, serverApi, jsonVsSerializer, moduleContainer, flowControllerFactory, vuuServerId)
     new ViewServerHandler(jsonVsSerializer, requestProcessor)
   }
 }
