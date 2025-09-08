@@ -143,7 +143,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
         vsMsg(EnableViewPortSuccess(msg.viewPortId))(ctx)
       case Failure(e) =>
         logger.warn("Failed to enable viewport", e)
-        vsMsg(RemoveViewPortReject(msg.viewPortId))(ctx)
+        vsMsg(EnableViewPortReject(msg.viewPortId))(ctx)
     }
   }
 
