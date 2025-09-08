@@ -52,7 +52,6 @@
     "typecheck": "tsc --noEmit --project tsconfig-typecheck.json",
     "patch-package": "patch-package",
     "postinstall": "npm run patch-package",
-    "test-ct": "playwright test -c playwright-ct.config.ts"
   },
   "dependencies": {
     "@dnd-kit/react": "^0.1.19",
