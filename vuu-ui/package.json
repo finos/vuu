@@ -51,7 +51,7 @@
     "pub:debug": "node ./scripts/publish.mjs --debug",
     "typecheck": "tsc --noEmit --project tsconfig-typecheck.json",
     "patch-package": "patch-package",
-    "postinstall": "npm run patch-package",
+    "postinstall": "npm run patch-package"
   },
   "dependencies": {
     "@dnd-kit/react": "^0.1.19",
