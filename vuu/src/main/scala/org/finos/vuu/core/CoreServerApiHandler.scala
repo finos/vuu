@@ -165,7 +165,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
         vsMsg(FreezeViewPortSuccess(msg.viewPortId))(ctx)
       case Failure(e) =>
         logger.warn("Failed to freeze viewport", e)
-        vsMsg(FreezeViewPortReject(msg.viewPortId, e.toString))(ctx)
+        vsMsg(FreezeViewPortReject(msg.viewPortId, e.getMessage))(ctx)
     }
   }
 
