@@ -25,7 +25,7 @@ object Link {
 }
 
 // Used in table definition to indicate the visibility level of a table
-class Visibility
+trait Visibility
 
 // All users can create view port to see the table
 case object Public extends Visibility
