@@ -46,8 +46,8 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      val token = ClientHelperFns.auth("Mikey", "lolcats")
-      assertNotNull(token)
+      val sessionId = ClientHelperFns.login("Mikey", "lolcats")
+      assertNotNull(sessionId)
 
       stopLifeCycle()
     }
@@ -74,8 +74,8 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      val token = ClientHelperFns.auth("Mikey", "lolcats")
-      assertNotNull(token)
+      val sessionId = ClientHelperFns.login("Mikey", "lolcats")
+      assertNotNull(sessionId)
 
       stopLifeCycle()
     }
@@ -102,8 +102,8 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      val token = ClientHelperFns.auth("Mikey", "lolcats")
-      assertNotNull(token)
+      val sessionId = ClientHelperFns.login("Mikey", "lolcats")
+      assertNotNull(sessionId)
 
       stopLifeCycle()
     }
@@ -137,8 +137,8 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      val token = ClientHelperFns.auth("Mikey", "lolcats")
-      assertNotNull(token)
+      val sessionId = ClientHelperFns.login("Mikey", "lolcats")
+      assertNotNull(sessionId)
 
       stopLifeCycle()
     }
@@ -172,8 +172,8 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      val token = ClientHelperFns.auth("Mikey", "lolcats")
-      assertNotNull(token)
+      val sessionId = ClientHelperFns.login("Mikey", "lolcats")
+      assertNotNull(sessionId)
 
       stopLifeCycle()
     }
