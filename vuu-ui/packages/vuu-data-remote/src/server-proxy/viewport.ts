@@ -32,7 +32,7 @@ import {
   ClientToServerSelection,
   VuuViewportRangeRequest,
   LinkDescriptorWithLabel,
-  VuuViewportCreateResponse,
+  VuuViewportCreateSuccessResponse,
   VuuAggregation,
   VuuMenu,
   VuuRange,
@@ -299,7 +299,7 @@ export class Viewport {
       sort,
       groupBy,
       table,
-    }: VuuViewportCreateResponse,
+    }: VuuViewportCreateSuccessResponse,
     baseTableSchema: TableSchema,
   ) {
     this.serverViewportId = viewPortId;
@@ -836,7 +836,8 @@ export class Viewport {
             if (row) {
               out.push(toClient(row, keys, selectedRows));
             } else {
-              throw Error("[Viewport] missing row not in data cache");
+              console.warn("[Viewport] missing row not in data cache");
+              //throw Error("[Viewport] missing row not in data cache");
             }
           }
           for (const row of this.pendingUpdates) {

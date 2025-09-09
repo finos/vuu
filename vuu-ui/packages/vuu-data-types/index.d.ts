@@ -30,6 +30,8 @@ import type {
   VuuTableList,
   VuuRpcEditRequest,
   VuuRpcEditResponse,
+  VuuLoginSuccessResponse,
+  VuuLoginFailResponse,
 } from "@vuu-ui/vuu-protocol-types";
 import type {
   DataSourceConfigChanges,
@@ -792,6 +794,8 @@ export declare type VuuUiMessageInRequestResponse =
   | VuuUIMessageInTableMeta;
 
 export declare type VuuUIMessageIn =
+  | VuuLoginSuccessResponse
+  | VuuLoginFailResponse
   | VuuUiMessageInRequestResponse
   | VuuUIMessageInConnected
   | VuuUIMessageInConnectionFailed

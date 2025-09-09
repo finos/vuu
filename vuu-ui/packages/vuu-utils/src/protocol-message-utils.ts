@@ -21,6 +21,9 @@ import {
   VuuRpcServiceRequest,
   ViewportRpcContext,
   OpenComponentInDialogAction,
+  VuuLoginFailResponse,
+  VuuLoginSuccessResponse,
+  VuuLoginResponse,
 } from "@vuu-ui/vuu-protocol-types";
 import { isView as componentInRegistry } from "./component-registry";
 
@@ -50,6 +53,10 @@ export const hasViewPortContext = (
 export const isVuuMenuRpcRequest = (
   message: VuuRpcRequest | Omit<VuuRpcRequest, "vpId">,
 ): message is VuuRpcMenuRequest => MENU_RPC_TYPES.includes(message["type"]);
+
+export const isLoginResponse = (message: object): message is VuuLoginResponse =>
+  "type" in message &&
+  (message.type === "LOGIN_SUCCESS" || message.type === "LOGIN_FAIL");
 
 export const isRequestResponse = (
   message: object,
