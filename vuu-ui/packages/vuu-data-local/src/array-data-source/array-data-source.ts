@@ -493,17 +493,17 @@ export class ArrayDataSource
   }
 
   private indexProcessedData(data: DataSourceRow[]) {
-    for (let i = 0; i < data.length; i++) {
-      data[i][0] = i;
-      data[i][1] = i;
-    }
-    return data;
-    // return data?.map((row, i) => {
-    //   const dolly = row.slice() as DataSourceRow;
-    //   dolly[0] = i;
-    //   dolly[1] = i;
-    //   return dolly;
-    // });
+    // for (let i = 0; i < data.length; i++) {
+    //   data[i][0] = i;
+    //   data[i][1] = i;
+    // }
+    // return data;
+    return data?.map((row, i) => {
+      const dolly = row.slice() as DataSourceRow;
+      dolly[0] = i;
+      dolly[1] = i;
+      return dolly;
+    });
   }
 
   private getFilterPredicate() {
@@ -723,9 +723,6 @@ export class ArrayDataSource
   };
 
   deleteRow: DataSourceDeleteHandler = async (key) => {
-    // TODO take sorting, filtering. grouping into account
-
-    const start = performance.now();
     const dataIndex = this.#data.findIndex((row) => row[KEY] === key);
     let doomedIndex: number | undefined = undefined;
 
@@ -734,7 +731,7 @@ export class ArrayDataSource
         for (let i = 0; i < this.processedData.length; i++) {
           if (this.processedData[i][KEY] === key) {
             doomedIndex = i;
-          } else if (this.processedData[i][0] > dataIndex) {
+          } else if (doomedIndex !== undefined) {
             this.processedData[i][0] -= 1;
           }
         }
@@ -748,13 +745,12 @@ export class ArrayDataSource
         this.#data[i][0] -= 1;
       }
 
-      const end = performance.now();
-      console.log(`deleteRow, updating indices took ${end - start}ms`);
       this.sendSizeUpdateToClient();
 
       const { from, to } = this.#range;
       const deletedIndex = doomedIndex ?? dataIndex;
       if (deletedIndex >= from && deletedIndex < to) {
+        this.#keys.reset(this.range);
         this.sendRowsToClient(true);
       }
 
