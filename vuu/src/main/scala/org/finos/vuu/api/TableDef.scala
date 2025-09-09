@@ -59,6 +59,10 @@ object TableDef {
     new TableDef(name, keyField, columns, joinFields, indices = indices)
   }
 
+  def apply(name: String, keyField: String, columns: Array[Column], indices: Indices, visibility: Visibility, joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields, indices = indices, visibility = visibility)
+  }
+
   def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, indices = Indices())
   }
