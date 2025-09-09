@@ -31,8 +31,6 @@ class RequestProcessor(authenticator: Authenticator,
   def handle(msg: ViewServerMessage, channel: Channel): Option[ViewServerMessage] = {
 
     msg.body match {
-      case body: AuthenticateRequest =>
-        authenticator.authenticate(body.username, body.password)
       case body: LoginRequest =>
         tokenValidator.login(body, vuuServerId).body match {
           case success: LoginSuccess =>
