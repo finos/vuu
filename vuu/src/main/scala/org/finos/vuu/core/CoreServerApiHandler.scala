@@ -379,6 +379,16 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
     }
   }
 
+  override def process(msg: SelectRowRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.changeSelection(ctx.session, ctx.queue, msg.vpId, ViewPortSelectedIndices(msg.selection))) match {
+      case Success(vp) =>
+        vsMsg(SelectRowSuccess(vp.id, vp.getSelection.values.toArray))(ctx)
+      case Failure(e) =>
+        logger.error("Could not change VP selection:", e.getMessage)
+        vsMsg(SelectRowReject(msg.vpId, "Could not change VP selection:" + e.getMessage))(ctx)
+    }
+  }
+
   override def process(msg: GetViewPortVisualLinksRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.getViewPortVisualLinks(ctx.session, msg.vpId)) match {
       case Success(linksAndViewPorts) =>
