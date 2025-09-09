@@ -2,6 +2,7 @@ package org.finos.vuu.core.table
 
 import org.finos.vuu.core.table.datatype.{Decimal, EpochTimestamp}
 import org.finos.vuu.api.{ColumnBuilder, TableDef}
+import org.finos.vuu.core.table.datatype.{Decimal, EpochTimestamp}
 import org.finos.vuu.util.types.TypeUtils
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
