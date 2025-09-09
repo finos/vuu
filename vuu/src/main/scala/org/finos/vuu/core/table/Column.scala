@@ -2,7 +2,7 @@ package org.finos.vuu.core.table
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName, allDefaultColumns}
+import org.finos.vuu.core.table.DefaultColumnNames.allDefaultColumns
 import org.finos.vuu.core.table.column.CalculatedColumnClause
 import org.finos.vuu.core.table.datatype.{Decimal, EpochTimestamp}
 import org.finos.vuu.util.schema.ExternalEntitySchema
@@ -42,9 +42,6 @@ object DataType {
       case "org.finos.vuu.core.table.datatype.EpochTimestamp" => "epochtimestamp"
       case "org.finos.vuu.core.table.datatype.Decimal" => "decimal"
       case x => x.toLowerCase
-      //        case c: Class[Boolean] => "boolean"
-      //        case c: Class[Int] => "int"
-      //        case c: Class[Long] => "long"
     }
   }
 
@@ -58,7 +55,6 @@ object DataType {
     .withConverter(DefaultTypeConverters.stringToBooleanConverter)
     .withConverter(DefaultTypeConverters.stringToIntConverter)
     .withConverter(DefaultTypeConverters.stringToLongConverter)
-    .withConverter(DefaultTypeConverters.stringToDoubleConverter)
     .withConverter(DefaultTypeConverters.stringToDoubleConverter)
     .withConverter(DefaultTypeConverters.stringToEpochTimestampConverter)
     .withConverter(DefaultTypeConverters.stringToDecimalConverter)

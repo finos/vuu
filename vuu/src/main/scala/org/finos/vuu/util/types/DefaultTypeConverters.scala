@@ -30,6 +30,9 @@ object DefaultTypeConverters {
 
   val charToStringConverter: TypeConverter[Character, String] = TypeConverter(classOf[Character], classOf[String], withNullSafety[Character, String](_, _.toString))
 
+  val epochTimestampToStringConverter : TypeConverter[EpochTimestamp, String] = TypeConverter(classOf[EpochTimestamp], classOf[String], withNullSafety[EpochTimestamp, String](_, _.toString))
+
+  val decimalToStringConverter : TypeConverter[Decimal, String] = TypeConverter(classOf[Decimal], classOf[String], withNullSafety[Decimal, String](_, _.toString))
 
   private def withNullSafety[T1, T2 >: Null](v: T1, fn: T1 => T2): T2 = Option(v).map(fn).orNull
 
@@ -39,6 +42,8 @@ object DefaultTypeConverters {
     stringToIntConverter,
     stringToCharConverter,
     stringToBooleanConverter,
+    stringToDecimalConverter,
+    stringToEpochTimestampConverter,
     intToStringConverter,
     intToLongConverter,
     intToDoubleConverter,
@@ -50,7 +55,8 @@ object DefaultTypeConverters {
     doubleToLongConverter,
     booleanToStringConverter,
     charToStringConverter,
+    epochTimestampToStringConverter,
+    decimalToStringConverter,
   )
-
 
 }

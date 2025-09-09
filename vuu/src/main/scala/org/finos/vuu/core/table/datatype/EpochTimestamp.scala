@@ -2,17 +2,17 @@ package org.finos.vuu.core.table.datatype
 
 import org.finos.toolbox.time.Clock
 
-import java.time.Instant
-import java.util.concurrent.TimeUnit.{MILLISECONDS, SECONDS}
+import java.time.{Duration, Instant}
+import java.util.concurrent.TimeUnit.MILLISECONDS
 
 object EpochTimestamp {
 
   def apply(clock: Clock): EpochTimestamp = {
-    EpochTimestamp(MILLISECONDS.toNanos(clock.now()))
+    new EpochTimestamp(MILLISECONDS.toNanos(clock.now()))
   }
 
   def apply(instant: Instant): EpochTimestamp = {
-    EpochTimestamp(SECONDS.toNanos(instant.getEpochSecond) + instant.getNano)
+    new EpochTimestamp(Duration.between(Instant.EPOCH, instant).toNanos)
   }
 
 }

@@ -27,7 +27,7 @@ class RowUpdateSerializerTest extends AnyFeatureSpec with Matchers with StrictLo
             "bar",
             1,
             EpochTimestamp(1),
-            Decimal(BigDecimal("101.1"), 6)
+            Decimal(BigDecimal("101.1"))
           )
     )
 
@@ -41,7 +41,7 @@ class RowUpdateSerializerTest extends AnyFeatureSpec with Matchers with StrictLo
 
     assertEquals("{\"viewPortId\":\"Vp1\",\"vpSize\":1,\"rowIndex\":0,\"rowKey\":\":KEY1\"," +
       "\"updateType\":\"U\",\"ts\":100,\"sel\":0,\"vpVersion\":\"Request1\"," +
-      "\"data\":[\"foo\",\"bar\",1,1,101100000]}", serialized)
+      "\"data\":[\"foo\",\"bar\",1,1,10110000000]}", serialized)
 
     val deserialized = mapper.readValue(serialized, classOf[RowUpdate])
 
@@ -58,7 +58,7 @@ class RowUpdateSerializerTest extends AnyFeatureSpec with Matchers with StrictLo
     assertEquals("bar", deserialized.data(1))
     assertEquals("1", deserialized.data(2))
     assertEquals("1", deserialized.data(3))
-    assertEquals("101100000", deserialized.data(4))
+    assertEquals("10110000000", deserialized.data(4))
   }
 
 }
