@@ -30,9 +30,7 @@ test.describe('Given a VuuInput box with input validation', () => {
       const errorIcon = component.locator('.vuuInput-errorIcon');
       await errorIcon.hover();
       
-      // Wait for tooltip to appear
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      // Wait for tooltip to appear using Playwright's built-in waiting
       await expect(component.locator('.saltTooltip')).toBeVisible();
     });
   });
