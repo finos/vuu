@@ -31,6 +31,7 @@ trait ServerApi {
 
   def process(msg: RpcUpdate)(ctx: RequestContext): Option[ViewServerMessage]
 
+  @deprecated
   def process(msg: SetSelectionRequest)(ctx: RequestContext): Option[ViewServerMessage]
 
   def process(msg: SelectRowRequest)(ctx: RequestContext): Option[ViewServerMessage]

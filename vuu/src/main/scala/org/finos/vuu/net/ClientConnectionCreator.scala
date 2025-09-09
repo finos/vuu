@@ -135,6 +135,7 @@ class DefaultMessageHandler(val channel: Channel,
       case req: OpenTreeNodeRequest => serverApi.process(req)(ctx)
       case req: CloseTreeNodeRequest => serverApi.process(req)(ctx)
       case req: SetSelectionRequest => serverApi.process(req)(ctx)
+      case req: SelectRowRequest => serverApi.process(req)(ctx)
       case req: GetTableList => serverApi.process(req)(ctx)
       case req: GetTableMetaRequest => serverApi.process(req)(ctx)
       case req: HeartBeatResponse => serverApi.process(req)(ctx)
