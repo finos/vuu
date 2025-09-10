@@ -17,6 +17,7 @@ import {
   applyWidthToColumns,
   checkConfirmationPending,
   existingSort,
+  flattenColumnGroup,
   getCellRenderer,
   getColumnHeaderContentRenderer,
   getColumnHeaderLabelRenderer,
@@ -591,9 +592,12 @@ function updateTableConfig(
   } else if (
     result.columns.length > 0 &&
     isGroupColumn(result.columns[0]) &&
-    confirmed === false
+    confirmed
   ) {
-    // reset groupConfirmed to false, if true
+    result = {
+      ...state,
+      columns: flattenColumnGroup(result.columns),
+    };
   }
 
   if (sort.sortDefs.length > 0) {

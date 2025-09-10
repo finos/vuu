@@ -1,6 +1,6 @@
 import { vi } from "vitest";
 import {
-  VuuViewportCreateResponse,
+  VuuViewportCreateSuccessResponse,
   ServerToClientTableRows,
   VuuRow,
   VuuServerMessage,
@@ -198,7 +198,7 @@ export const createSubscription = ({
   viewport = `client-vp-${key}`
 } = {}): [
   ServerProxySubscribeMessage, 
-  VuuServerMessage<VuuViewportCreateResponse>,
+  VuuServerMessage<VuuViewportCreateSuccessResponse>,
   VuuServerMessage<VuuTableMetaResponse>
 ] => [
   { 

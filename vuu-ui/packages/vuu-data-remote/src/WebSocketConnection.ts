@@ -27,7 +27,7 @@ export interface WebSocketConnectionState<
   connectionStatus: T;
 }
 
-const { info } = logger("WebSocketConnection");
+const { debug, debugEnabled, info } = logger("WebSocketConnection");
 
 const isNotConnecting = (
   connectionState: WebSocketConnectionState<InternalConnectionStatus>,
@@ -316,6 +316,14 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
     const vuuMessageFromServer = parseWebSocketMessage(evt.data);
     if (vuuMessageFromServer.body.type === "CHANGE_VP_RANGE_SUCCESS") {
       info?.(`CHANGE_VP_RANGE_SUCCESS<#${vuuMessageFromServer.requestId}>`);
+    }
+    if (debugEnabled) {
+      if (vuuMessageFromServer.body.type !== "HB") {
+        debug(`${vuuMessageFromServer.body.type}`);
+        if (vuuMessageFromServer.body.type === "CHANGE_VP_SUCCESS") {
+          debug(JSON.stringify(vuuMessageFromServer.body));
+        }
+      }
     }
     this.#callback(vuuMessageFromServer);
   };
