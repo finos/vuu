@@ -48,7 +48,10 @@ import type {
   VuuTableListRequest,
   VuuTableMetaRequest,
 } from "@vuu-ui/vuu-protocol-types";
-import { DataValueTypeDescriptor } from "@vuu-ui/vuu-table-types";
+import {
+  ColumnDescriptor,
+  DataValueTypeDescriptor,
+} from "@vuu-ui/vuu-table-types";
 import { PostMessageToClientCallback } from "@vuu-ui/vuu-data-remote";
 import type { DataSourceConfigChanges, IEventEmitter } from "@vuu-ui/vuu-utils";
 
