@@ -360,6 +360,7 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
     if (this.#input) {
       const { cursorPos } = this;
       if (cursorPos < 8) {
+        const originalValue = this.#value;
         const newValue = this.#value
           .split("")
           .toSpliced(cursorPos, 1, key)
@@ -375,7 +376,13 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
         } else {
           this.#input.classList.remove("invalid");
 
-          if (!this.#controlled) {
+          if (this.#controlled && newValue === originalValue) {
+            // Special case - user has overtyped a digit with same digit,
+            // value has not changed, so will not be set, which would normally
+            // trigger advance in controlled mode. Advance so next digit
+            // typed will be in correct position
+            this.advanceSelection();
+          } else if (!this.#controlled) {
             this.advanceSelection();
           }
         }

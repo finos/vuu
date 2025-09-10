@@ -20,10 +20,6 @@ export * from "./filter-utils";
 export * from "./FilterModel";
 export * from "./inline-filter";
 export * from "./quick-filters";
-export {
-  BasicColumnFilter,
-  type BasicColumnFilterProps,
-} from "./basic-column-filter/BasicColumnFilter";
 export { SavedFilterPanel } from "./saved-filters/SavedFilterPanel";
 export type {
   FilterClickHandler,

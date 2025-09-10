@@ -21,6 +21,7 @@ export interface DataItemEditControlProps {
   InputProps?: Partial<InputProps>;
   TypeaheadProps?: Pick<VuuTypeaheadInputProps, "highlightFirstSuggestion">;
   className?: string;
+  commitOnBlur?: boolean;
   commitWhenCleared?: boolean;
   /**
    * A table column or form field Descriptor.
@@ -37,6 +38,7 @@ export const getDataItemEditControl = ({
   InputProps,
   TypeaheadProps,
   className,
+  commitOnBlur,
   commitWhenCleared,
   dataDescriptor,
   errorMessage,
@@ -99,6 +101,7 @@ export const getDataItemEditControl = ({
       variant="secondary"
       {...InputProps}
       className={className}
+      commitOnBlur={commitOnBlur}
       commitWhenCleared={commitWhenCleared}
       onCommit={onCommit}
       errorMessage={errorMessage}
