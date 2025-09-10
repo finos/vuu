@@ -21,8 +21,6 @@ import {
   VuuRpcServiceRequest,
   ViewportRpcContext,
   OpenComponentInDialogAction,
-  VuuLoginFailResponse,
-  VuuLoginSuccessResponse,
   VuuLoginResponse,
 } from "@vuu-ui/vuu-protocol-types";
 import { isView as componentInRegistry } from "./component-registry";

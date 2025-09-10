@@ -536,7 +536,7 @@ export const useTable = ({
           const byColIndex = `[aria-colindex='${column.ariaColIndex}']`;
           resizeCells.current = Array.from(
             containerRef.current?.querySelectorAll(
-              `.vuuTableCell${byColIndex},.vuuTableHeaderCell${byColIndex}`,
+              `.vuuTableCell${byColIndex},.vuuTableHeaderCell${byColIndex},.vuuTableGroupHeaderCell${byColIndex}`,
             ) ?? [],
           );
           dispatchTableModelAction({
