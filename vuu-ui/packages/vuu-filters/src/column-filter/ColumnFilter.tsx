@@ -13,23 +13,15 @@ import cx from "clsx";
 
 import columnFilterCss from "./ColumnFilter.css";
 import { getDataItemEditControl } from "@vuu-ui/vuu-data-react";
-import { ForwardedRef, forwardRef, ReactElement, useMemo } from "react";
-import {
-  assertValidOperator,
-  assertValidValue,
-  ColumnFilterHookProps,
-  useColumnFilter,
-} from "./useColumnFilter";
+import { ForwardedRef, forwardRef, ReactElement } from "react";
+import { ColumnFilterHookProps, useColumnFilter } from "./useColumnFilter";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 
 const classBase = "vuuColumnFilter";
 
 export interface ColumnFilterProps
   extends SegmentedButtonGroupProps,
-    Pick<
-      ColumnFilterHookProps,
-      "column" | "operator" | "value" | "onColumnFilterChange"
-    > {
+    ColumnFilterHookProps {
   /**
    * Display operator picker.
    */
@@ -44,6 +36,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
   {
     column,
     className,
+    onCommit: onCommitProp,
     operator = "=",
     showOperatorPicker = false,
     table,
@@ -63,28 +56,18 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
   const {
     op,
     allowedOperators,
-    filterValue,
     inputProps,
     rangeInputProps,
     handleOperatorChange,
-    handleCommit,
-    handleRangeCommit,
+    onCommit,
+    onCommitRange,
   } = useColumnFilter({
+    onCommit: onCommitProp,
     operator,
     column,
     value,
     onColumnFilterChange,
   });
-
-  useMemo(
-    () => assertValidOperator(allowedOperators, column, operator),
-    [column, operator, allowedOperators],
-  );
-
-  useMemo(
-    () => assertValidValue(column, op, filterValue),
-    [column, op, filterValue],
-  );
 
   return (
     <SegmentedButtonGroup
@@ -119,16 +102,19 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
       ) : null}
       {getDataItemEditControl({
         InputProps: { inputProps },
+        commitOnBlur: false,
+        commitWhenCleared: true,
         dataDescriptor: column,
-        onCommit: handleCommit,
+        onCommit,
         table,
       })}
       {op === "between"
         ? getDataItemEditControl({
             className: `${classBase}-rangeHigh`,
+            commitWhenCleared: true,
             InputProps: { inputProps: rangeInputProps },
             dataDescriptor: column,
-            onCommit: handleRangeCommit,
+            onCommit: onCommitRange,
             table,
           })
         : null}
