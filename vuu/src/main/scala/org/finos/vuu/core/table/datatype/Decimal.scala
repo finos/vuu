@@ -24,5 +24,6 @@ object Decimal {
  */
 case class Decimal(value: Long) {
 
+  override def toString: String = value.toString
 
 }

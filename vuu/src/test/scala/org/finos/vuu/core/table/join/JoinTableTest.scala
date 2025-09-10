@@ -8,6 +8,7 @@ import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.VuuJoinProviderOptionsImpl
 import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName}
 import org.finos.vuu.core.table._
+import org.finos.vuu.core.table.datatype.{Decimal, EpochTimestamp}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.plugin.DefaultPluginRegistry
@@ -19,7 +20,7 @@ import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
 
-import java.time.{LocalDateTime, ZoneId}
+import java.time.{Instant, LocalDateTime, ZoneId}
 
 
 class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
@@ -51,15 +52,15 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-      val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
+      val dateTime: Instant = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant
 
       val ordersDef = TableDef(
         name = "orders",
         keyField = "orderId",
-        columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
+        columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:EpochTimestamp", "quantity:Double"),
         joinFields =  "ric", "orderId")
 
-      val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+      val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Decimal", "open:Double", "close:Double"), "ric")
 
       val joinDef = JoinTableDef(
         name          = "orderPrices",
@@ -93,11 +94,11 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       joinProvider.start()
 
-      ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
-      pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220.0, "ask" -> 222.0))
+      ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "tradeTime" -> EpochTimestamp(dateTime), "quantity" -> 100, "ric" -> "VOD.L"))
+      pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220.0, "ask" -> 222.0, "last" -> Decimal(BigDecimal(221.0004))))
 
-      pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500.0, "ask" -> 501.0))
-      ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "BT.L"))
+      pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500.0, "ask" -> 501.0, "last" -> Decimal(BigDecimal(500.0004))))
+      ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> EpochTimestamp(dateTime), "quantity" -> 100, "ric" -> "BT.L"))
 
       joinProvider.runOnce()
 
@@ -105,7 +106,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       val outQueue = new OutboundRowPublishQueue()
 
-      val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric"))
+      val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "last"))
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orderPrices, DefaultRange, vpcolumns)
 
@@ -124,7 +125,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
         override def missingRowData(rowKey: String, column: Column): Unit = {}
       }
 
-      updates.filter( vp => vp.vpUpdate == RowUpdateType).foreach(update => update.table.readRow(update.key.key, List("orderId", "trader", "tradeTime", "ric", "bid", "ask"), printToConsoleProcessor ))
+      updates.filter( vp => vp.vpUpdate == RowUpdateType).foreach(update => update.table.readRow(update.key.key, List("orderId", "trader", "tradeTime", "ric", "bid", "ask", "last"), printToConsoleProcessor ))
     }
 
     Scenario("check large number of ticks all the way through from source to join table"){

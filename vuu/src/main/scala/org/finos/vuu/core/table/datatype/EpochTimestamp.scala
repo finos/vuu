@@ -23,4 +23,6 @@ object EpochTimestamp {
  */
 case class EpochTimestamp(nanos: Long) {
 
+  override def toString: String = nanos.toString
+
 }
