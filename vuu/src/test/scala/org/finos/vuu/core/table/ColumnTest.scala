@@ -58,12 +58,14 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
             .addString("Id")
             .addString("Name")
             .addInt("Account")
+            .addEpochTimestamp("ExecutionTimestamp")
+            .addDecimal("Price")
             .build()
       )
 
       val joinColumns = Columns.allFrom(tableDef)
-      joinColumns.length shouldEqual 3
-      joinColumns.map(_.name) should contain theSameElementsAs Array("Id", "Name", "Account")
+      joinColumns.length shouldEqual 5
+      joinColumns.map(_.name) should contain theSameElementsAs Array("Id", "Name", "Account", "Price", "ExecutionTimestamp")
     }
   }
 
