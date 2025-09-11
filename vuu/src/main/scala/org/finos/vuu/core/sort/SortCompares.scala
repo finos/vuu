@@ -4,9 +4,8 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.table.datatype.{Decimal, EpochTimestamp}
 import org.finos.vuu.core.table.{Column, DataType, RowData}
 
-import java.lang
+import java.util.function.ToIntBiFunction
 import scala.annotation.tailrec
-import math.Ordered.orderingToOrdered
 
 object SortCompares extends StrictLogging {
 
@@ -38,23 +37,33 @@ object SortCompares extends StrictLogging {
   }
 
   def compareChar(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
-    compareValueType[Char](o1, o2, column, isAscending, (v1: Char, v2: Char) => v1.compare(v2))
+    val c1 = o1.get(column).asInstanceOf[Char]
+    val c2 = o2.get(column).asInstanceOf[Char]
+    applyDirection(if (c1 == c2) 0 else if (c1 > c2) 1 else -1, isAscending)
   }
 
   def compareDouble(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
-    compareValueType[Double](o1, o2, column, isAscending, (v1: Double, v2: Double) => v1.compare(v2))
+    val c1 = o1.get(column).asInstanceOf[Double]
+    val c2 = o2.get(column).asInstanceOf[Double]
+    applyDirection(if (c1 == c2) 0 else if (c1 > c2) 1 else -1, isAscending)
   }
 
   def compareInt(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
-    compareValueType[Int](o1, o2, column, isAscending, (v1: Int, v2: Int) => v1.compare(v2))
+    val c1 = o1.get(column).asInstanceOf[Int]
+    val c2 = o2.get(column).asInstanceOf[Int]
+    applyDirection(if (c1 == c2) 0 else if (c1 > c2) 1 else -1, isAscending)
   }
 
   def compareLong(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
-    compareValueType[Long](o1, o2, column, isAscending, (v1: Long, v2: Long) => v1.compare(v2))
+    val c1 = o1.get(column).asInstanceOf[Long]
+    val c2 = o2.get(column).asInstanceOf[Long]
+    if (c1 == c2) 0 else if ((c1 > c2 && isAscending) || (c2 > c1 && !isAscending)) 1 else -1
   }
 
   def compareBoolean(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
-    compareValueType[Boolean](o1, o2, column, isAscending, (v1: Boolean, v2: Boolean) => v1.compare(v2))
+    val c1 = o1.get(column).asInstanceOf[Boolean]
+    val c2 = o2.get(column).asInstanceOf[Boolean]
+    if (c1 == c2) 0 else if ((c1 && isAscending) || (c2 && !isAscending)) 1 else -1
   }
 
   def compareString(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
@@ -77,7 +86,7 @@ object SortCompares extends StrictLogging {
     })
   }
 
-  private def compareReferenceType[T <: AnyRef](o1: RowData, o2: RowData, column: Column, isAscending: Boolean, compareFunction: (T, T) => Int): Int = {
+  private def compareReferenceType[T <: AnyRef](o1: RowData, o2: RowData, column: Column, isAscending: Boolean, compareFunction: ToIntBiFunction[T,T]): Int = {
     val c1 = o1.get(column).asInstanceOf[T]
     val c2 = o2.get(column).asInstanceOf[T]
     if (c1 eq c2) { //Short circuit for reference equality
@@ -87,18 +96,8 @@ object SortCompares extends StrictLogging {
     } else if (c2 == null) {
       if (isAscending) -1 else 1
     } else {
-      compareWithDirection(c1, c2, isAscending, compareFunction)
+      if (isAscending) compareFunction.applyAsInt(c1, c2) else compareFunction.applyAsInt(c2, c1)
     }
-  }
-
-  private def compareValueType[T <: AnyVal](o1: RowData, o2: RowData, column: Column, isAscending: Boolean, compareFunction: (T, T) => Int): Int = {
-    val c1 = o1.get(column).asInstanceOf[T]
-    val c2 = o2.get(column).asInstanceOf[T]
-    compareWithDirection(c1, c2, isAscending, compareFunction)
-  }
-
-  private def compareWithDirection[T](v1: T, v2: T, isAscending: Boolean, compareFunction: (T, T) => Int): Int = {
-    if (isAscending) compareFunction.apply(v1, v2) else compareFunction.apply(v2, v1)
   }
 
 }
