@@ -1,108 +1,104 @@
 package org.finos.vuu.core.sort
 
+import com.typesafe.scalalogging.StrictLogging
+import org.finos.vuu.core.table.datatype.{Decimal, EpochTimestamp}
 import org.finos.vuu.core.table.{Column, DataType, RowData}
 
 import java.lang
 import scala.annotation.tailrec
 import math.Ordered.orderingToOrdered
 
-object SortCompares {
+object SortCompares extends StrictLogging {
 
   @tailrec
   def compare(o1: RowData, o2: RowData, columns: List[Column], sortDirections: List[Char], columnIndex: Int): Int = {
 
     val activeColumn = columns(columnIndex)
-    val direction    = sortDirections(columnIndex)
+    val isAscending = sortDirections(columnIndex) == 'A'
 
-    val compareValue = if(activeColumn.dataType.equals(DataType.StringDataType)){
-        compareString(o1, o2, activeColumn, direction)
-    }else if(activeColumn.dataType.equals(DataType.CharDataType)){
-        compareChar(o1, o2, activeColumn, direction)
-    } else if (activeColumn.dataType.equals(DataType.IntegerDataType)) {
-      compareInt(o1, o2, activeColumn, direction)
-    } else if (activeColumn.dataType.equals(DataType.BooleanDataType)) {
-      compareBoolean(o1, o2, activeColumn, direction)
-    } else if (activeColumn.dataType.equals(DataType.DoubleDataType)) {
-      compareDouble(o1, o2, activeColumn, direction)
-    } else if (activeColumn.dataType.equals(DataType.LongDataType)) {
-      compareLong(o1, o2, activeColumn, direction)
-    }else {
-      throw new Exception("have field but don't know what it is....")
+    val compareValue = activeColumn.dataType match {
+      case DataType.CharDataType => compareChar(o1, o2, activeColumn, isAscending)
+      case DataType.IntegerDataType => compareInt(o1, o2, activeColumn, isAscending)
+      case DataType.BooleanDataType => compareBoolean(o1, o2, activeColumn, isAscending)
+      case DataType.DoubleDataType => compareDouble(o1, o2, activeColumn, isAscending)
+      case DataType.LongDataType => compareLong(o1, o2, activeColumn, isAscending)
+      case DataType.StringDataType => compareString(o1, o2, activeColumn, isAscending)
+      case DataType.EpochTimestampType => compareEpochTimestamp(o1, o2, activeColumn, isAscending)
+      case DataType.DecimalType => compareDecimal(o1, o2, activeColumn, isAscending)
+      case _ =>
+        logger.warn(s"Unable to sort datatype ${activeColumn.dataType}")
+        0
     }
 
-    if(compareValue != 0){
-       compareValue
-    }else if(columnIndex == (columns.length - 1)){
+    if (compareValue != 0 || columnIndex == (columns.length - 1)) {
       compareValue
-    }else{
+    } else {
       compare(o1, o2, columns, sortDirections, columnIndex + 1)
     }
   }
 
-  def compareChar(o1: RowData, o2: RowData, column: Column, direction: Char): Int = {
-    val c1 = o1.get(column).asInstanceOf[Char]
-    val c2 = o2.get(column).asInstanceOf[Char]
-    compareWithDirection(c1, c2)(direction)
+  def compareChar(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
+    compareValueType[Char](o1, o2, column, isAscending, (v1: Char, v2: Char) => v1.compare(v2))
   }
 
-  def compareString(o1: RowData, o2: RowData, column: Column, direction: Char): Int = {
-    val c1 = o1.get(column).asInstanceOf[String]
-    val c2 = o2.get(column).asInstanceOf[String]
-
-    val resultIfAscending = safeCompareString(c1, c2)
-    switchSignIfDescending(resultIfAscending, direction = direction)
+  def compareDouble(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
+    compareValueType[Double](o1, o2, column, isAscending, (v1: Double, v2: Double) => v1.compare(v2))
   }
 
-  private def safeCompareString(c1: String, c2: String): Int = {
-    if (c1 eq c2) { //Short circuit on reference equality
+  def compareInt(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
+    compareValueType[Int](o1, o2, column, isAscending, (v1: Int, v2: Int) => v1.compare(v2))
+  }
+
+  def compareLong(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
+    compareValueType[Long](o1, o2, column, isAscending, (v1: Long, v2: Long) => v1.compare(v2))
+  }
+
+  def compareBoolean(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
+    compareValueType[Boolean](o1, o2, column, isAscending, (v1: Boolean, v2: Boolean) => v1.compare(v2))
+  }
+
+  def compareString(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
+    compareReferenceType[String](o1, o2, column, isAscending, (v1: String, v2: String) => {
+      v1.compareToIgnoreCase(v2)
+    })
+  }
+
+  def compareEpochTimestamp(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
+    compareOrderedReferenceType[EpochTimestamp](o1, o2, column, isAscending)
+  }
+
+  def compareDecimal(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int =  {
+    compareOrderedReferenceType[Decimal](o1, o2, column, isAscending)
+  }
+
+  private def compareOrderedReferenceType[T <: AnyRef with Ordered[T]](o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
+    compareReferenceType[T](o1, o2, column, isAscending, (v1: T, v2: T) => {
+      v1.compare(v2)
+    })
+  }
+
+  private def compareReferenceType[T <: AnyRef](o1: RowData, o2: RowData, column: Column, isAscending: Boolean, compareFunction: (T, T) => Int): Int = {
+    val c1 = o1.get(column).asInstanceOf[T]
+    val c2 = o2.get(column).asInstanceOf[T]
+    if (c1 eq c2) { //Short circuit for reference equality
       0
     } else if (c1 == null) {
-      1
+      if (isAscending) 1 else -1
     } else if (c2 == null) {
-      -1
+      if (isAscending) -1 else 1
     } else {
-      c1.compareToIgnoreCase(c2)
+      compareWithDirection(c1, c2, isAscending, compareFunction)
     }
   }
 
-  def compareDouble(o1: RowData, o2: RowData, column: Column, direction: Char): Int = {
-    val c1 = o1.get(column).asInstanceOf[Double]
-    val c2 = o2.get(column).asInstanceOf[Double]
-    compareWithDirection(c1, c2)(direction)
+  private def compareValueType[T <: AnyVal](o1: RowData, o2: RowData, column: Column, isAscending: Boolean, compareFunction: (T, T) => Int): Int = {
+    val c1 = o1.get(column).asInstanceOf[T]
+    val c2 = o2.get(column).asInstanceOf[T]
+    compareWithDirection(c1, c2, isAscending, compareFunction)
   }
 
-  def compareBoolean(o1: RowData, o2: RowData, column: Column, direction: Char): Int = {
-    val c1 = o1.get(column).asInstanceOf[Boolean]
-    val c2 = o2.get(column).asInstanceOf[Boolean]
-
-    val lessThan = if (direction == 'A') 1 else -1
-    val greaterThan = if (direction == 'A') -1 else 1
-
-    if (c1 == true && c2 == false) {
-      lessThan
-    } else if (c1 == false && c2 == true) {
-      greaterThan
-    } else {
-      0
-    }
+  private def compareWithDirection[T](v1: T, v2: T, isAscending: Boolean, compareFunction: (T, T) => Int): Int = {
+    if (isAscending) compareFunction.apply(v1, v2) else compareFunction.apply(v2, v1)
   }
 
-  def compareInt(o1: RowData, o2: RowData, column: Column, direction: Char): Int = {
-    val c1 = o1.get(column).asInstanceOf[Int]
-    val c2 = o2.get(column).asInstanceOf[Int]
-    compareWithDirection(c1, c2)(direction)
-  }
-
-  def compareLong(o1: RowData, o2: RowData, column: Column, direction: Char): Int = {
-    val c1 = o1.get(column).asInstanceOf[Long]
-    val c2 = o2.get(column).asInstanceOf[Long]
-    compareWithDirection(c1, c2)(direction)
-  }
-
-  private def compareWithDirection[T: Ordering](v1: T, v2: T)(direction: Char): Int = {
-    val resultIfAscending = v1.compare(v2)
-    switchSignIfDescending(resultIfAscending, direction)
-  }
-
-  private def switchSignIfDescending(res: Int, direction: Char): Int = if (direction == 'A') res else -res
 }

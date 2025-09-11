@@ -6,7 +6,7 @@ import org.finos.vuu.core.auths.RowPermissionChecker
 import org.finos.vuu.core.filter.{Filter, FilterClause}
 import org.finos.vuu.core.index._
 import org.finos.vuu.core.table.column.{Error, Success}
-import org.finos.vuu.core.table.{Column, DataType, DefaultColumnNames, EmptyTablePrimaryKeys, TablePrimaryKeys, ViewPortColumnCreator}
+import org.finos.vuu.core.table._
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns, ViewPortVisualLink}
 
@@ -20,20 +20,19 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Fi
     } else {
       source.asTable.indexForColumn(childColumn) match {
         case Some(index: StringIndexedField) if childColumn.dataType == DataType.StringDataType =>
-          val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key._1).get(parentColumn).asInstanceOf[String]).toList
-          filterIndexByValues[String](index, parentSelField)
+          filterIndexByValues(parentSelectionKeys, parentColumn, index)
         case Some(index: IntIndexedField) if childColumn.dataType == DataType.IntegerDataType =>
-          val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key._1).get(parentColumn).asInstanceOf[Int]).toList
-          filterIndexByValues(index, parentSelField)
+          filterIndexByValues(parentSelectionKeys, parentColumn, index)
         case Some(index: LongIndexedField) if childColumn.dataType == DataType.LongDataType =>
-          val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key._1).get(parentColumn).asInstanceOf[Long]).toList
-          filterIndexByValues(index, parentSelField)
+          filterIndexByValues(parentSelectionKeys, parentColumn, index)
         case Some(index: DoubleIndexedField) if childColumn.dataType == DataType.DoubleDataType =>
-          val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key._1).get(parentColumn).asInstanceOf[Double]).toList
-          filterIndexByValues(index, parentSelField)
+          filterIndexByValues(parentSelectionKeys, parentColumn, index)
         case Some(index: BooleanIndexedField) if childColumn.dataType == DataType.BooleanDataType =>
-          val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key._1).get(parentColumn).asInstanceOf[Boolean]).toList
-          filterIndexByValues(index, parentSelField)
+          filterIndexByValues(parentSelectionKeys, parentColumn, index)
+        case Some(index: EpochTimestampIndexedField) if childColumn.dataType == DataType.EpochTimestampType =>
+          filterIndexByValues(parentSelectionKeys, parentColumn, index)
+        case Some(index: DecimalIndexedField) if childColumn.dataType == DataType.DecimalType =>
+          filterIndexByValues(parentSelectionKeys, parentColumn, index)
         case _ =>
           val parentDataValues = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key._1).get(parentColumn) -> 0)
           doFilterByBruteForce(parentDataValues, childColumn, source, primaryKeys)
@@ -41,10 +40,10 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Fi
     }
   }
 
-  def filterIndexByValues[TYPE](index: IndexedField[TYPE], parentSelected: List[TYPE]): TablePrimaryKeys = {
-    InMemTablePrimaryKeys(index.find(parentSelected))
+  private def filterIndexByValues[TYPE](parentSelectionKeys: Map[String, Int], parentColumn: Column, index: IndexedField[TYPE]): TablePrimaryKeys = {
+    val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key._1).get(parentColumn).asInstanceOf[TYPE]).toList
+    InMemTablePrimaryKeys(index.find(parentSelField))
   }
-
 
   private def doFilterByBruteForce(parentDataValues: Map[Any, Int], childColumn: Column, source: RowSource, primaryKeys: TablePrimaryKeys): TablePrimaryKeys = {
     val pks = primaryKeys.toArray

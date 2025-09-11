@@ -2,7 +2,6 @@ package org.finos.vuu.core.table.datatype
 
 import org.finos.toolbox.time.Clock
 
-import java.lang.Comparable
 import java.time.{Duration, Instant}
 import java.util.concurrent.TimeUnit.MILLISECONDS
 
@@ -19,7 +18,7 @@ object EpochTimestamp {
 }
 
 /**
- * A class representing an Instant in time
+ * A class representing an Instant in time. 4 bytes smaller than java.time.Instant.
  * @param nanos the number of nanoseconds since 01/01/1970 00:00:00.000000000 UTC
  */
 case class EpochTimestamp(nanos: Long) extends Ordered[EpochTimestamp] {
