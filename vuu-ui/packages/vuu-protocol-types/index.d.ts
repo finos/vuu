@@ -26,6 +26,32 @@ export interface VuuServerMessage<
   user: string;
 }
 
+export interface ClientToServerAuth {
+  type: "AUTH";
+  username: string;
+  password: string;
+}
+
+export interface VuuLoginRequest {
+  token: string;
+  type: "LOGIN";
+  user: string;
+}
+
+export declare type VuuLoginResponse =
+  | VuuLoginSuccessResponse
+  | VuuLoginFailResponse;
+export interface VuuLoginSuccessResponse {
+  token: string;
+  type: "LOGIN_SUCCESS";
+  vuuServerId: string;
+}
+export interface VuuLoginFailResponse {
+  errorMsg: string;
+  token: string;
+  type: "LOGIN_FAIL";
+}
+
 /**
  * Metadata messages
  *
@@ -125,7 +151,10 @@ export interface VuuViewportCreateRequest {
   table: VuuTable;
 }
 
-export interface VuuViewportCreateResponse {
+export declare type VuuViewportCreateResponse =
+  | VuuViewportCreateSuccessResponse
+  | VuuViewportCreateFailResponse;
+export interface VuuViewportCreateSuccessResponse {
   aggregations: VuuAggregation[];
   columns: VuuColumns;
   filterSpec: VuuFilter;
@@ -133,6 +162,17 @@ export interface VuuViewportCreateResponse {
   range: VuuRange;
   sort: VuuSort;
   type: "CREATE_VP_SUCCESS";
+  table: string;
+  viewPortId: string;
+}
+export interface VuuViewportCreateFailResponse {
+  aggregations: VuuAggregation[];
+  columns: VuuColumns;
+  filterSpec: VuuFilter;
+  groupBy: VuuGroupBy;
+  range: VuuRange;
+  sort: VuuSort;
+  type: "CREATE_VP_REJECT";
   table: string;
   viewPortId: string;
 }
@@ -242,7 +282,7 @@ export interface ServerToClientTableRows {
 }
 export declare type ServerMessageBody =
   | ServerToClientHeartBeat
-  | ServerToClientLoginSuccess
+  | VuuLoginResponse
   | VuuViewportCreateResponse
   | VuuViewportChangeResponse
   | VuuViewportRangeResponse
@@ -266,16 +306,6 @@ export declare type ServerMessageBody =
   | VuuRpcEditSuccess
   | VuuRpcEditSuccess
   | VuuRpcEditError;
-export interface ClientToServerAuth {
-  type: "AUTH";
-  username: string;
-  password: string;
-}
-export interface ClientToServerLogin {
-  token: string;
-  type: "LOGIN";
-  user: string;
-}
 export interface ClientToServerHeartBeat {
   type: "HB_RESP";
   ts: number;
@@ -320,7 +350,7 @@ export declare type VuuRpcMessagesOut =
 
 export declare type ClientMessageBody =
   | ClientToServerAuth
-  | ClientToServerLogin
+  | VuuLoginRequest
   | ClientToServerHeartBeat
   | VuuViewportDisableRequest
   | VuuViewportEnableRequest
@@ -684,10 +714,6 @@ export declare type VuuGroupBy = string[];
 export interface ServerToClientHeartBeat {
   type: "HB";
   ts: number;
-}
-export interface ServerToClientLoginSuccess {
-  type: "LOGIN_SUCCESS";
-  token: string;
 }
 
 export declare type VuuTableList = Pick<VuuTableListResponse, "tables">;

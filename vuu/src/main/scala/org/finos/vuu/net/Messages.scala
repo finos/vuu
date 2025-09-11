@@ -40,12 +40,6 @@ case class JsonViewServerMessage(requestId: String, sessionId: String, token: St
 @JsonTypeIdResolver(classOf[VsJsonTypeResolver])
 trait MessageBody
 
-case class AuthenticateRequest(username: String, password: String) extends MessageBody
-
-case class AuthenticateSuccess(token: String) extends MessageBody
-
-case class AuthenticateFailure(msg: String) extends MessageBody
-
 case class LoginRequest(token: String, user: String) extends MessageBody
 
 case class LoginSuccess(token: String, vuuServerId: String) extends MessageBody

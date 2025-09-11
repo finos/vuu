@@ -60,8 +60,6 @@ class JsonVsSerializerTest extends AnyFeatureSpec with Matchers{
 
       JsonSubTypeRegistry.register(classOf[MessageBody], classOf[CoreJsonSerializationMixin])
 
-      roundTrip(AuthenticateRequest("chris", "foobar"))
-      roundTrip(AuthenticateSuccess("christoken"))
       roundTrip(LoginRequest("AAA11122233", "chris"))
       roundTrip(LoginSuccess("AAA11122233", "vuuServerId"))
       roundTrip(HeartBeat(123l))

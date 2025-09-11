@@ -9,10 +9,6 @@ import scala.util.{Failure, Success, Try}
 
 object ClientHelperFns {
 
-  def authAsync(user: String, password: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage("", "", "", "", AuthenticateRequest(user, password)))
-  }
-
   def loginAsync(token: String, user: String)(implicit vsClient: ViewServerClient): Unit = {
     vsClient.send(JsonViewServerMessage("", "", "", "", LoginRequest(token, user)))
   }
@@ -104,11 +100,6 @@ object ClientHelperFns {
 
   def changeVpRangeAsync(sessionId: String, token: String, user: String, vpId: String, range: ViewPortRange)(implicit vsClient: ViewServerClient): Unit = {
     vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, ChangeViewPortRange(vpId, range.from, range.to)))
-  }
-
-  def auth(user: String, password: String)(implicit vsClient: ViewServerClient): String = {
-    vsClient.send(JsonViewServerMessage("", "", "", "", AuthenticateRequest(user, password)))
-    awaitMsgBody[AuthenticateSuccess].get.token
   }
 
   def menuRpcCall(sessionId: String, token: String, user: String, service: String, method: String, params: Array[Any], module: String)(implicit vsClient: ViewServerClient): MenuRpcResponse = {

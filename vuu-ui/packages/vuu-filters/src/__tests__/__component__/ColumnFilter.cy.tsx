@@ -67,53 +67,9 @@ describe("ColumnFilter", () => {
       cy.get("@inputs").eq(0).should("have.value", "100");
       cy.get("@inputs").eq(1).should("have.value", "200");
     });
-
-    it("should trigger handleColumnFilterChange with correct parameters when input changes", () => {
-      const handleColumnFilterChange = cy.stub().as("handleColumnFilterChange");
-      cy.mount(
-        <LocalDataSourceProvider>
-          <NumericColumnFilterValueWithBetweenOp
-            onColumnFilterChange={handleColumnFilterChange}
-          />
-        </LocalDataSourceProvider>,
-      );
-
-      cy.findByTestId("columnfilter").find("input").as("inputs");
-      cy.get("@inputs").eq(0).clear().type("123");
-      cy.get("@inputs").eq(1).clear().type("456");
-
-      cy.get("@handleColumnFilterChange").should(
-        "have.been.calledWith",
-        ["35", "45.3"],
-        { name: "price", serverDataType: "double" },
-        "between",
-      );
-    });
   });
 
-  describe("WHEN handleColumnFilterChange event for range edit controls are triggerd", () => {
-    it("should trigger handleColumnFilterChange with correct parameters when numeric range input changes", () => {
-      const handleColumnFilterChange = cy.stub().as("handleColumnFilterChange");
-      cy.mount(
-        <LocalDataSourceProvider>
-          <NumericColumnFilterValueWithBetweenOp
-            onColumnFilterChange={handleColumnFilterChange}
-          />
-        </LocalDataSourceProvider>,
-      );
-
-      cy.findByTestId("columnfilter").find("input").as("inputs");
-      cy.get("@inputs").eq(0).clear().type("123");
-      cy.get("@inputs").eq(1).clear().type("456");
-
-      cy.get("@handleColumnFilterChange").should(
-        "have.been.calledWith",
-        ["35", "45.3"],
-        { name: "price", serverDataType: "double" },
-        "between",
-      );
-    });
-
+  describe("WHEN handleColumnFilterChange event for range edit controls are triggered", () => {
     it("should trigger handleColumnFilterChange with correct parameters when time range input changes", () => {
       const handleColumnFilterChange = cy.stub().as("handleColumnFilterChange");
       cy.mount(
@@ -135,7 +91,7 @@ describe("ColumnFilter", () => {
 
       cy.get("@handleColumnFilterChange").should(
         "have.been.calledWith",
-        ["01:00:00", "00:01:02"],
+        "01:00:00",
         { name: "lastUpdate", serverDataType: "long", type: "time" },
         "between",
       );

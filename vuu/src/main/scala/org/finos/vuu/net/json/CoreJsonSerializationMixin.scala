@@ -9,9 +9,6 @@ import org.finos.vuu.net._
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes(Array(
-  new Type(value = classOf[AuthenticateRequest], name = "AUTH"),
-  new Type(value = classOf[AuthenticateSuccess], name = "AUTH_SUCCESS"),
-  new Type(value = classOf[AuthenticateFailure], name = "AUTH_FAIL"),
   new Type(value = classOf[CreateViewPortRequest], name = "CREATE_VP"),
   new Type(value = classOf[CreateViewPortSuccess], name = "CREATE_VP_SUCCESS"),
   new Type(value = classOf[CreateViewPortReject], name = "CREATE_VP_REJECT"),

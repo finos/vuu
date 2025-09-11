@@ -17,14 +17,12 @@ class ModuleConstructorTest extends AnyFeatureSpec with Matchers with GivenWhenT
 
     Scenario("Add a module from a module") {
 
-      implicit val metrics: MetricsProvider = new MetricsProviderImpl
       implicit val clock: Clock = new DefaultClock
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
       implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
 
       val authenticator = new Authenticator {
         override def authenticator(user: String, password: String): Option[String] = ???
-        override def authenticate(user: String, password: String): Option[ViewServerMessage] = ???
       }
 
       When("we create a config with modules that reference each other")

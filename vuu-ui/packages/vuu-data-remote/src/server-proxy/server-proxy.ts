@@ -22,7 +22,7 @@ import type {
   VuuRpcMenuRequest,
   VuuClientMessage,
   LinkDescriptorWithLabel,
-  VuuViewportCreateResponse,
+  VuuViewportCreateSuccessResponse,
   VuuServerMessage,
   VuuTableListResponse,
   VuuTableMetaResponse,
@@ -33,6 +33,7 @@ import type {
   VuuRemoveVisualLink,
   VuuViewportRangeRequest,
   VuuRpcServiceRequest,
+  VuuViewportCreateResponse,
 } from "@vuu-ui/vuu-protocol-types";
 import {
   isVuuMenuRpcRequest,
@@ -109,7 +110,7 @@ type PendingRequest<T = unknown> = {
 };
 
 interface PendingLogin {
-  resolve: (value: string) => void; // TODO
+  resolve: (sessionId: string) => void;
   reject: () => void;
 }
 
@@ -178,6 +179,8 @@ export class ServerProxy {
             // TODO should we just call viewport.reconnected()
             viewport.status = "subscribed";
             viewport.serverViewportId = msg.viewPortId;
+          } else {
+            // handle reject
           }
         });
       });
@@ -235,7 +238,6 @@ export class ServerProxy {
       this.viewports.set(message.viewport, viewport);
       // Use client side viewport id as request id, so that when we process the response, which
       // will provide the serverside viewport id, we can establish a mapping between the two.
-      //TODO handle CREATE_VP error, but server does not send it at the moment
       const pendingSubscription = this.awaitResponseToMessage(
         viewport.subscribe(),
         message.viewport,
@@ -243,7 +245,7 @@ export class ServerProxy {
 
       const pendingResponses = [pendingSubscription, pendingTableSchema];
       const awaitPendingReponses = Promise.all(pendingResponses) as Promise<
-        [VuuViewportCreateResponse, TableSchema]
+        [VuuViewportCreateSuccessResponse, TableSchema]
       >;
 
       awaitPendingReponses.then(([subscribeResponse, tableSchema]) => {
@@ -848,15 +850,16 @@ export class ServerProxy {
       case "LOGIN_SUCCESS":
         if (sessionId) {
           this.sessionId = sessionId;
-          // we should tear down the pending Login now
           this.pendingLogin?.resolve(sessionId);
           this.pendingLogin = undefined;
+          this.postMessageToClient(body);
         } else {
           throw Error("LOGIN_SUCCESS did not provide sessionId");
         }
         break;
-      // TODO login rejected
-
+      case "LOGIN_FAIL":
+        this.postMessageToClient(body);
+        break;
       case "REMOVE_VP_SUCCESS":
         {
           const viewport = viewports.get(body.viewPortId);

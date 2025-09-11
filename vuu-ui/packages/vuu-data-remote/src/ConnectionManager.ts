@@ -8,6 +8,7 @@ import {
 } from "@vuu-ui/vuu-data-types";
 import {
   VuuCreateVisualLink,
+  VuuLoginResponse,
   VuuRemoveVisualLink,
   VuuRpcMenuRequest,
   VuuRpcServiceRequest,
@@ -19,6 +20,7 @@ import {
   DeferredPromise,
   EventEmitter,
   isConnectionQualityMetrics,
+  isLoginResponse,
   isRequestResponse,
   isTableSchemaMessage,
   messageHasResult,
@@ -40,6 +42,7 @@ export type PostMessageToClientCallback = (
 
 export type ConnectionEvents = WebSocketConnectionEvents & {
   "connection-metrics": (message: ConnectionQualityMetrics) => void;
+  "session-status": (loginResponse: VuuLoginResponse) => void;
 };
 
 type RegisteredViewport = {
@@ -105,6 +108,8 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
           `[ConnectionManager] ${message.type} message received, viewport not found`,
         );
       }
+    } else if (isLoginResponse(message)) {
+      this.emit("session-status", message);
     } else if (isWebSocketConnectionMessage(message)) {
       this.#connectionState = message;
       this.emit("connection-status", message);

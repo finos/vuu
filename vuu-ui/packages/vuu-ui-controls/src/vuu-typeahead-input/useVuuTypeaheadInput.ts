@@ -120,21 +120,24 @@ export const useVuuTypeaheadInput = ({
     }
   }, [table, column, getSuggestions, value, NO_FREE_TEXT]);
 
-  const handleChange: ChangeEventHandler<HTMLInputElement> = (evt) => {
-    const { value: newValue } = evt.target;
-    const { current: value } = valueRef;
-    if (value === "" && newValue) {
-      setOpen(true);
-      const input = rootRef.current?.querySelector("input");
-      if (input && highlightFirstSuggestion) {
-        pendingListFocusRef.current = true;
+  const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
+    (evt) => {
+      const { value: newValue } = evt.target;
+      const { current: value } = valueRef;
+      if (value === "" && newValue) {
+        setOpen(true);
+        const input = rootRef.current?.querySelector("input");
+        if (input && highlightFirstSuggestion) {
+          pendingListFocusRef.current = true;
+        }
+      } else if (newValue === "" && value) {
+        // treat clear value as a commit event
+        onCommit(evt, "");
       }
-    } else if (newValue === "" && value) {
-      // treat clear value as a commit event
-      onCommit(evt, "");
-    }
-    setValue(newValue);
-  };
+      setValue(newValue);
+    },
+    [highlightFirstSuggestion, onCommit, setValue, valueRef],
+  );
 
   const handleSelectionChange = (
     evt: SyntheticEvent,
