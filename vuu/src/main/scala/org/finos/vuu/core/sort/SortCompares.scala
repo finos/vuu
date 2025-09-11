@@ -39,25 +39,25 @@ object SortCompares extends StrictLogging {
   def compareChar(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
     val c1 = o1.get(column).asInstanceOf[Char]
     val c2 = o2.get(column).asInstanceOf[Char]
-    applyDirection(if (c1 == c2) 0 else if (c1 > c2) 1 else -1, isAscending)
+    if (c1 == c2) 0 else if ((isAscending && c1 > c2) || (!isAscending && c2 > c1)) 1 else -1
   }
 
   def compareDouble(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
     val c1 = o1.get(column).asInstanceOf[Double]
     val c2 = o2.get(column).asInstanceOf[Double]
-    applyDirection(if (c1 == c2) 0 else if (c1 > c2) 1 else -1, isAscending)
+    if (c1 == c2) 0 else if ((isAscending && c1 > c2) || (!isAscending && c2 > c1)) 1 else -1
   }
 
   def compareInt(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
     val c1 = o1.get(column).asInstanceOf[Int]
     val c2 = o2.get(column).asInstanceOf[Int]
-    applyDirection(if (c1 == c2) 0 else if (c1 > c2) 1 else -1, isAscending)
+    if (c1 == c2) 0 else if ((isAscending && c1 > c2) || (!isAscending && c2 > c1)) 1 else -1
   }
 
   def compareLong(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
     val c1 = o1.get(column).asInstanceOf[Long]
     val c2 = o2.get(column).asInstanceOf[Long]
-    if (c1 == c2) 0 else if ((c1 > c2 && isAscending) || (c2 > c1 && !isAscending)) 1 else -1
+    if (c1 == c2) 0 else if ((isAscending && c1 > c2) || (!isAscending && c2 > c1)) 1 else -1
   }
 
   def compareBoolean(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
