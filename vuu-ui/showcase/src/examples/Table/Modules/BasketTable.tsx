@@ -1,11 +1,13 @@
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
-import { BasketsTableName, getSchema, vuuModule } from "@vuu-ui/vuu-data-test";
+import { BasketsTableName, getSchema } from "@vuu-ui/vuu-data-test";
 import { Table, TableProps } from "@vuu-ui/vuu-table";
+import { toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
 
 export const BasketTable = ({ tableName }: { tableName: BasketsTableName }) => {
   const schema = getSchema(tableName);
+  const { VuuDataSource } = useData();
 
   const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(
     () => ({
@@ -14,10 +16,12 @@ export const BasketTable = ({ tableName }: { tableName: BasketsTableName }) => {
         rowSeparators: true,
         zebraStripes: true,
       },
-      dataSource:
-        vuuModule<BasketsTableName>("BASKET").createDataSource(tableName),
+      dataSource: new VuuDataSource({
+        columns: schema.columns.map(toColumnName),
+        table: schema.table,
+      }),
     }),
-    [schema.columns, tableName],
+    [VuuDataSource, schema.columns, schema.table],
   );
 
   const { menuBuilder, menuActionHandler } = useVuuMenuActions({

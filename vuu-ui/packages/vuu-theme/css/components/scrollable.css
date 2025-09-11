@@ -1,8 +1,10 @@
 .salt-theme.vuu-theme {
   .vuuScrollable {
+    --scrollable-size: var(--vuuScrollable-size, 4px); 
+
     ::-webkit-scrollbar {
-      width: 4px;
-      height: 4px;
+      height: var(--scrollable-size);
+      width: var(--scrollable-size);
     }
 
     ::-webkit-scrollbar-track {
@@ -10,8 +12,8 @@
     }
 
     ::-webkit-scrollbar-thumb {
-      border-radius: 4px;
-      background: #d9d9d9;
+      border-radius: calc(var(--scrollable-size) / 2);
+      background: var(--vuuScrollable-scrollThumb-background, #d9d9d9);
     }
   }
 }

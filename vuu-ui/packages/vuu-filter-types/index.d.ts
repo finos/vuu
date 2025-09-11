@@ -9,12 +9,7 @@ export declare type NumericFilterClauseOp =
   | "<";
 
 export declare type SingleValueFilterClauseOp =
-  | "="
-  | "!="
-  | ">"
-  | ">="
-  | "<="
-  | "<"
+  | NumericFilterClauseOp
   | "contains"
   | "starts"
   | "ends";
@@ -94,3 +89,24 @@ export declare type FilterState = {
   filters: Filter[];
   activeIndices: number[];
 };
+
+export declare type FilterChangeHandler = (filter: Filter | undefined) => void;
+
+export declare type ColumnFilterValue =
+  | string
+  | number
+  | [string, string];
+
+export declare type ColumnFilterOp = FilterClauseOp | "between";
+
+export declare type ColumnFilterDescriptor = {
+  column: ColumnDescriptor;
+  op: ColumnFilterOp;
+  filterValue: ColumnFilterValue;
+};
+
+export declare type ColumnFilterChangeHandler = (
+  value: ColumnFilterValue,
+  column: ColumnDescriptor,
+  op: ColumnFilterOp,
+) => void;

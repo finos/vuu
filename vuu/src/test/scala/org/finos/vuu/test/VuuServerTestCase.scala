@@ -10,8 +10,6 @@ import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
-import scala.collection.immutable.Seq
-
 abstract class VuuServerTestCase extends AnyFeatureSpec with GivenWhenThen with Matchers {
     def withVuuServer(modules: ViewServerModule*)(block:TestVuuServer => Unit)(implicit clock: Clock, lifecycle: LifecycleContainer, metrics: MetricsProvider): Unit = {
 

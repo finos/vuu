@@ -13,6 +13,7 @@ import {
   TableSchema,
   WithBaseFilter,
   WithFullConfig,
+  DataSourceDeleteHandler,
 } from "@vuu-ui/vuu-data-types";
 import { filterPredicate, parseFilter } from "@vuu-ui/vuu-filter-parser";
 import type {
@@ -22,6 +23,8 @@ import type {
   VuuMenu,
   VuuRange,
   VuuRowDataItemType,
+  VuuRpcEditRequest,
+  VuuRpcEditResponse,
   VuuRpcRequest,
   VuuRpcResponse,
   VuuSort,
@@ -235,12 +238,13 @@ export class ArrayDataSource
 
     let config = this._config;
 
+    // if (range) {
+    //   this.setRange(range);
+    // }
     const hasConfigProps =
       aggregations || columns || filterSpec || groupBy || sort;
+
     if (hasConfigProps) {
-      if (range) {
-        this.setRange(range);
-      }
       config = {
         ...config,
         aggregations: aggregations || this._config.aggregations,
@@ -489,17 +493,17 @@ export class ArrayDataSource
   }
 
   private indexProcessedData(data: DataSourceRow[]) {
-    for (let i = 0; i < data.length; i++) {
-      data[i][0] = i;
-      data[i][1] = i;
-    }
-    return data;
-    // return data?.map((row, i) => {
-    //   const dolly = row.slice() as DataSourceRow;
-    //   dolly[0] = i;
-    //   dolly[1] = i;
-    //   return dolly;
-    // });
+    // for (let i = 0; i < data.length; i++) {
+    //   data[i][0] = i;
+    //   data[i][1] = i;
+    // }
+    // return data;
+    return data?.map((row, i) => {
+      const dolly = row.slice() as DataSourceRow;
+      dolly[0] = i;
+      dolly[1] = i;
+      return dolly;
+    });
   }
 
   private getFilterPredicate() {
@@ -715,6 +719,46 @@ export class ArrayDataSource
       if (dataIndex >= from && dataIndex < to) {
         this.sendRowsToClient(false, dataSourceRow);
       }
+    }
+  };
+
+  deleteRow: DataSourceDeleteHandler = async (key) => {
+    const dataIndex = this.#data.findIndex((row) => row[KEY] === key);
+    let doomedIndex: number | undefined = undefined;
+
+    if (dataIndex !== -1) {
+      if (this.processedData) {
+        for (let i = 0; i < this.processedData.length; i++) {
+          if (this.processedData[i][KEY] === key) {
+            doomedIndex = i;
+          } else if (doomedIndex !== undefined) {
+            this.processedData[i][0] -= 1;
+          }
+        }
+        if (doomedIndex !== undefined) {
+          this.processedData.splice(doomedIndex, 1);
+        }
+      }
+
+      this.#data.splice(dataIndex, 1);
+      for (let i = dataIndex; i < this.#data.length; i++) {
+        this.#data[i][0] -= 1;
+      }
+
+      this.sendSizeUpdateToClient();
+
+      const { from, to } = this.#range;
+      const deletedIndex = doomedIndex ?? dataIndex;
+      if (deletedIndex >= from && deletedIndex < to) {
+        this.#keys.reset(this.range);
+        this.sendRowsToClient(true);
+      }
+
+      this.emit("resize", this.size);
+
+      return true;
+    } else {
+      return "row not found";
     }
   };
 
@@ -934,6 +978,13 @@ export class ArrayDataSource
   }
   async remoteProcedureCall<T extends VuuRpcResponse = VuuRpcResponse>() {
     return Promise.reject<T>();
+  }
+
+  async editRpcCall(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    rpcRequest: Omit<VuuRpcEditRequest, "vpId">,
+  ): Promise<VuuRpcEditResponse> {
+    throw Error("ArrayDataSource does not implement editRpcCall");
   }
 
   async menuRpcCall(

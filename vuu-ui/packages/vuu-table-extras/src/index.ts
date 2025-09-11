@@ -13,10 +13,7 @@ export {
   defaultTableSettingsPermissions,
   TableSettingsPanel,
 } from "./table-column-settings/TableSettingsPanel";
-export {
-  type ColumnItem,
-  useTableSettings,
-} from "./table-column-settings/useTableSettings";
+export { useTableSettings } from "./table-column-settings/useTableSettings";
 export {
   columnSettingsFromColumnMenuPermissions,
   tableSettingsFromColumnMenuPermissions,
@@ -25,6 +22,14 @@ export {
 export * from "./column-expression-input";
 export * from "./column-expression-panel";
 export * from "./column-formatting-settings";
-export * from "./datasource-stats";
+export {
+  DataSourceStats,
+  type DataSourceStatsProps,
+} from "./datasource-stats/DatasourceStats";
 export { TableProvider, useTableContext } from "./table-provider/TableProvider";
 export { FreezeControl } from "./freeze-control/FreezeControl";
+export {
+  type ColumnChangeHandler,
+  type ColumnItem,
+  ColumnList,
+} from "./column-list";

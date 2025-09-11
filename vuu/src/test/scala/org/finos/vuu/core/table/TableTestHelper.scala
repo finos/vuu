@@ -37,18 +37,18 @@ object TableTestHelper {
       name = "orders",
       keyField = "orderId",
       columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
-      joinFields =  "ric", "orderId")
+      joinFields = "ric", "orderId")
 
     val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
 
     val joinDef = JoinTableDef(
-      name          = "orderPrices",
-      baseTable     = ordersDef,
-      joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
-      joins  =
+      name = "orderPrices",
+      baseTable = ordersDef,
+      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
+      joins =
         JoinTo(
           table = pricesDef,
-          joinSpec = JoinSpec( left = "ric", right = "ric", LeftOuterJoin)
+          joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
         ),
       links = VisualLinks(),
       joinFields = Seq()
@@ -56,7 +56,7 @@ object TableTestHelper {
 
     //val joinDef =  JoinTableDef("ordersPrices", ordersDef, pricesDef, JoinSpec("ric", "ric"), Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") )
 
-    val joinProvider   = JoinTableProviderImpl()
+    val joinProvider = JoinTableProviderImpl()
 
     val tableContainer = new TableContainer(joinProvider)
 

@@ -12,7 +12,6 @@ import org.finos.vuu.core.module.authn.AuthNModule;
 import org.finos.vuu.core.module.metrics.MetricsModule;
 import org.finos.vuu.core.module.price.PriceModule;
 import org.finos.vuu.core.module.simul.SimulationModule;
-import org.finos.vuu.core.module.typeahead.TypeAheadModule;
 import org.finos.vuu.core.module.vui.VuiStateModule;
 import org.finos.vuu.module.JavaExampleModule;
 import org.finos.vuu.net.AlwaysHappyLoginValidator;
@@ -30,14 +29,12 @@ import scala.Option;
  * Example Java App using Vuu.
  *
  */
-public class VuuExampleMain
-{
+public class VuuExampleMain {
     /*
         //to allow self signed certs
         chrome://flags/#allow-insecure-localhost
     */
-    public static void main( String[] args )
-    {
+    public static void main(String[] args) {
         final MetricsProvider metrics = new MetricsProviderImpl();
         final Clock clock = new DefaultClock();
         final LifecycleContainer lifecycle = new LifecycleContainer(clock);
@@ -72,13 +69,13 @@ public class VuuExampleMain
                         .withViewPortThreads(4),
                 VuuClientConnectionOptions.apply()
                         .withHeartbeat(),
+                VuuJoinTableProviderOptions.apply(),
                 new scala.collection.mutable.ListBuffer<ViewServerModule>().toList(),
                 new scala.collection.mutable.ListBuffer<Plugin>().toList()
         ).withModule(PriceModule.apply(clock, lifecycle, tableDefContainer))
          .withModule(SimulationModule.apply(clock, lifecycle, tableDefContainer))
          .withModule(MetricsModule.apply(clock, lifecycle, metrics, tableDefContainer))
          .withModule(VuiStateModule.apply(store, clock, lifecycle, tableDefContainer))
-         .withModule(TypeAheadModule.apply(clock, lifecycle, tableDefContainer))
          .withModule(AuthNModule.apply(authenticator, loginTokenValidator, clock, lifecycle, tableDefContainer))
          //the modules above are scala, the modules below are java...
          .withModule(new JavaExampleModule().create(tableDefContainer, clock))       ;

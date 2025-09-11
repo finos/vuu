@@ -23,9 +23,12 @@ import org.finos.vuu.test.{TestViewPort, TestVuuServer}
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.viewport.{DefaultRange, ViewPort, ViewPortAction, ViewPortActionMixin, ViewPortContainer, ViewPortRange}
 
+import java.util.UUID
 import scala.reflect.classTag
 
 class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clock, lifecycle: LifecycleContainer, metrics: MetricsProvider) extends TestVuuServer with LifecycleEnabled with StrictLogging {
+
+  private final val vuuServerId: String = UUID.randomUUID().toString
 
   private val serializer: Serializer[String, MessageBody] = JsonVsSerializer
 
@@ -58,7 +61,7 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
 
   val serverApi = new CoreServerApiHandler(viewPortContainer, tableContainer, providerContainer)
 
-  val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer, flowControllerFactory)
+  val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer, flowControllerFactory, vuuServerId)
 
   val queue = new OutboundRowPublishQueue()
 
@@ -87,13 +90,11 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
     val vs = this
 
     val realized = new RealizedViewServerModule {
-      override def rpcHandlers: List[RpcHandler] = module.rpcHandlersUnrealized.map(_.apply(vs))
       override def restServices: List[RestService] = module.restServicesUnrealized.map(_.apply(vs))
       override def name: String = module.name
       override def tableDefContainer: TableDefContainer = module.tableDefContainer
       override def tableDefs: List[TableDef] = module.tableDefs
       override def serializationMixin: AnyRef = module.serializationMixin
-      override def rpcHandlersUnrealized: List[IVuuServer => RpcHandler] = module.rpcHandlersUnrealized
       override def restServicesUnrealized: List[IVuuServer => RestService] = module.restServicesUnrealized
       override def getProviderForTable(table: DataTable, viewserver: IVuuServer)(implicit time: Clock, life: LifecycleContainer): Provider = {
         module.getProviderForTable(table, viewserver)(time, life)

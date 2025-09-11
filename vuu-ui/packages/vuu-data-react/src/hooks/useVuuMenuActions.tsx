@@ -13,7 +13,7 @@ import {
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
 import { getFilterPredicate } from "@vuu-ui/vuu-filter-parser";
-import { useDialogContext, useNotifications } from "@vuu-ui/vuu-popups";
+import { useNotifications } from "@vuu-ui/vuu-popups";
 import type {
   ClientToServerMenuCellRPC,
   ClientToServerMenuRowRPC,
@@ -39,14 +39,15 @@ import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
   ColumnMap,
   dataSourceRowToDataRowDto,
+  getLayoutComponent,
   hasShowNotificationAction,
   isActionMessage,
+  isCustomComponentActionMessage,
   isOpenBulkEditResponse,
   isSessionTableActionMessage,
   metadataKeys,
   toColumnName,
   useData,
-  viewportRpcRequest,
 } from "@vuu-ui/vuu-utils";
 import { useCallback } from "react";
 import {
@@ -54,6 +55,7 @@ import {
   FormFieldDescriptor,
   SessionEditingForm,
 } from "../session-editing-form";
+import { useModal } from "@vuu-ui/vuu-ui-controls";
 
 export interface VuuMenuActionHookResult {
   menuBuilder: MenuBuilder<TableMenuLocation, TableContextMenuOptions>;
@@ -350,7 +352,7 @@ export const useVuuMenuActions = ({
       [dataSource],
     );
 
-  const { showDialog, closeDialog } = useDialogContext();
+  const { showDialog, closeDialog, showPrompt } = useModal();
   const showNotification = useNotifications();
 
   const showBulkEditDialog = useCallback(
@@ -381,6 +383,29 @@ export const useVuuMenuActions = ({
     [VuuDataSource, closeDialog, showDialog],
   );
 
+  const showCustomComponentInDialog = useCallback(
+    (componentId: string, ds: DataSource, table: VuuTable) => {
+      const sessionDs = new VuuDataSource({
+        columns: ds.columns,
+        table,
+        viewport: table.table,
+      });
+
+      const handleOpenChangePrompt = (open: boolean) => {
+        if (!open) {
+          ds.unsubscribe();
+        }
+      };
+
+      const Component = getLayoutComponent(componentId);
+      showPrompt(<Component dataSource={sessionDs} />, {
+        title: "Confirm operation on selected rows",
+        onOpenChange: handleOpenChangePrompt,
+      });
+    },
+    [VuuDataSource, showPrompt],
+  );
+
   const showSessionEditingForm = useCallback(
     (
       ds: DataSource,
@@ -397,7 +422,11 @@ export const useVuuMenuActions = ({
 
       const sessionDs = ds.createSessionDataSource?.(action.table);
       const handleSubmit = () => {
-        sessionDs?.rpcCall?.(viewportRpcRequest("VP_BULK_EDIT_SUBMIT_RPC"));
+        sessionDs?.rpcRequest?.({
+          params: {},
+          rpcName: "VP_BULK_EDIT_SUBMIT_RPC",
+          type: "RPC_REQUEST",
+        });
         closeDialog();
       };
 
@@ -408,7 +437,7 @@ export const useVuuMenuActions = ({
       if (sessionDs) {
         showDialog(
           <BulkEditPanel
-            dataSource={sessionDs}
+            sessionDs={sessionDs}
             onSubmit={handleSubmit}
             parentDs={ds}
             onValidationStatusChange={handleChange}
@@ -492,6 +521,12 @@ export const useVuuMenuActions = ({
                   );
                 } else if (isSessionTableActionMessage(rpcResponse)) {
                   showSessionEditingForm(dataSource, rpcResponse.action);
+                } else if (isCustomComponentActionMessage(rpcResponse)) {
+                  showCustomComponentInDialog(
+                    rpcResponse.action.renderComponent,
+                    dataSource,
+                    rpcResponse.action.table,
+                  );
                 }
               }
             }
@@ -515,6 +550,7 @@ export const useVuuMenuActions = ({
       dataSource,
       onRpcResponse,
       showBulkEditDialog,
+      showCustomComponentInDialog,
       showNotification,
       showSessionEditingForm,
     ],

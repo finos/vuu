@@ -57,7 +57,11 @@ trait ViewPortSetup {
     pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500.0, "ask" -> 501.0))
   }
 
-  def setup()(implicit lifecycleContainer: LifecycleContainer, timeProvider: Clock, metrics : MetricsProvider): (JoinTableProvider, DataTable, DataTable, DataTable, MockProvider, MockProvider, ViewPortContainer) = {
+  def setup()(implicit lifecycleContainer: LifecycleContainer, timeProvider: Clock, metrics: MetricsProvider): (JoinTableProvider, DataTable, DataTable, DataTable, MockProvider, MockProvider, ViewPortContainer) = {
+    setupForJoinType(LeftOuterJoin)
+  }
+
+  def setupForJoinType(joinType: JoinType)(implicit lifecycleContainer: LifecycleContainer, timeProvider: Clock, metrics: MetricsProvider): (JoinTableProvider, DataTable, DataTable, DataTable, MockProvider, MockProvider, ViewPortContainer) = {
 
     val ordersDef = TableDef(
       name = "orders",
@@ -74,7 +78,7 @@ trait ViewPortSetup {
       joins  =
         JoinTo(
           table = pricesDef,
-          joinSpec = JoinSpec( left = "ric", right = "ric", LeftOuterJoin)
+          joinSpec = JoinSpec( left = "ric", right = "ric", joinType)
         ),
       links = VisualLinks(),
       joinFields = Seq()

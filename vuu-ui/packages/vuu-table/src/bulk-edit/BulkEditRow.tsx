@@ -11,6 +11,7 @@ import { useHeaderProps } from "../table-header";
 import { useBulkEditRow } from "./useBulkEditRow";
 
 import bulkEditRowCss from "./BulkEditRow.css";
+import { isNotHidden } from "@vuu-ui/vuu-utils";
 
 const classBase = "vuuBulkEditRow";
 
@@ -65,7 +66,7 @@ export const BulkEditRow = ({
       role={ariaRole}
     >
       <VirtualColSpan width={virtualColSpan} />
-      {columns.map((column, i) => {
+      {columns.filter(isNotHidden).map((column, i) => {
         const errorMessage = errorMessages[column.name];
         return (
           <div

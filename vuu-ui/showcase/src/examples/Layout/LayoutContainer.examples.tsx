@@ -397,6 +397,13 @@ export const ComplexNestedLayout = () => {
   const handleLayoutChange = () => {
     console.log(`handleLayoutChange`);
   };
+
+  const viewProps = {
+    closeable: true,
+    resizeable: true,
+    header: true,
+  };
+
   return (
     <LayoutProvider onLayoutChange={handleLayoutChange}>
       <LayoutContainer style={{ height: "100vh", width: "100vw" }}>
@@ -429,9 +436,7 @@ export const ComplexNestedLayout = () => {
                     />
                   }
                   value="Blue Monday"
-                  closeable
-                  resizeable
-                  header
+                  ViewProps={viewProps}
                 ></PaletteItem>
                 <PaletteItem
                   component={
@@ -440,9 +445,7 @@ export const ComplexNestedLayout = () => {
                     />
                   }
                   value="Brown Sugar"
-                  closeable
-                  resizeable
-                  header
+                  ViewProps={viewProps}
                 ></PaletteItem>
                 <PaletteItem
                   component={
@@ -451,9 +454,7 @@ export const ComplexNestedLayout = () => {
                     />
                   }
                   value="Green Day"
-                  closeable
-                  resizeable
-                  header
+                  ViewProps={viewProps}
                 ></PaletteItem>
                 <PaletteItem
                   component={
@@ -462,9 +463,7 @@ export const ComplexNestedLayout = () => {
                     />
                   }
                   value="Lemonheads"
-                  closeable
-                  resizeable
-                  header
+                  ViewProps={viewProps}
                 ></PaletteItem>
               </Palette>
             </View>

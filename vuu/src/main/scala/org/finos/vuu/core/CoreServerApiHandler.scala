@@ -2,7 +2,7 @@ package org.finos.vuu.core
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.AvailableViewPortVisualLink
+import org.finos.vuu.api.{AvailableViewPortVisualLink, Public}
 import org.finos.vuu.core.table.{DataType, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net._
 import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionSuccess}
@@ -14,18 +14,6 @@ import scala.util.{Failure, Success, Try}
 class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
                            val tableContainer: TableContainer,
                            val providers: ProviderContainer)(implicit timeProvider: Clock) extends ServerApi with StrictLogging {
-
-
-  override def process(msg: ViewPortRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.callRpcService(msg.vpId, msg.rpcName, msg.params, msg.namedParams, ctx.session)(ctx)) match {
-      case Success(action) =>
-        logger.debug("Processed VP RPC call " + msg)
-        vsMsg(ViewPortRpcResponse(msg.vpId, msg.rpcName, action))(ctx)
-      case Failure(e) =>
-        logger.warn("Failed to process VP RPC call", e)
-        vsMsg(ViewPortMenuRpcReject(msg.vpId, msg.rpcName, e.getMessage))(ctx)
-    }
-  }
 
   override def process(msg: ViewPortMenuCellRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.callRpcCell(msg.vpId, msg.rpcName, ctx.session, msg.rowKey, msg.field, msg.value)) match {
@@ -155,7 +143,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
         vsMsg(EnableViewPortSuccess(msg.viewPortId))(ctx)
       case Failure(e) =>
         logger.warn("Failed to enable viewport", e)
-        vsMsg(RemoveViewPortReject(msg.viewPortId))(ctx)
+        vsMsg(EnableViewPortReject(msg.viewPortId))(ctx)
     }
   }
 
@@ -167,6 +155,28 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
       case Failure(e) =>
         logger.warn("Failed to disable viewport", e)
         vsMsg(DisableViewPortReject(msg.viewPortId))(ctx)
+    }
+  }
+
+  override def process(msg: FreezeViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.freezeViewPort(msg.viewPortId)) match {
+      case Success(_) =>
+        logger.debug("View port froze")
+        vsMsg(FreezeViewPortSuccess(msg.viewPortId))(ctx)
+      case Failure(e) =>
+        logger.warn("Failed to freeze viewport", e)
+        vsMsg(FreezeViewPortReject(msg.viewPortId, e.getMessage))(ctx)
+    }
+  }
+
+  override def process(msg: UnfreezeViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.unfreezeViewPort(msg.viewPortId)) match {
+      case Success(_) =>
+        logger.debug("View port unfroze")
+        vsMsg(UnfreezeViewPortSuccess(msg.viewPortId))(ctx)
+      case Failure(e) =>
+        logger.warn("Failed to unfreeze viewport", e)
+        vsMsg(UnfreezeViewPortReject(msg.viewPortId, e.getMessage))(ctx)
     }
   }
 
@@ -286,7 +296,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
           ChangeViewPortSuccess(newViewPort.id, viewport.getColumns.getColumns().map(_.name).toArray, sort, msg.groupBy, msg.filterSpec, msg.aggregations)))
 
       case None =>
-        Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, ErrorResponse(s"Could not find vp ${msg.viewPortId} in session ${ctx.session}")))
+        Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, ChangeViewPortReject(msg.viewPortId, s"Could not find vp ${msg.viewPortId} in session ${ctx.session}")))
     }
 
   }
@@ -305,9 +315,9 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
 
     val table = tableContainer.getTable(msg.table.table)
 
-    if (table == null)
-      errorMsg(s"no table found for ${msg.table}")(ctx)
-    else {
+    if (table == null || table.getTableDef.visibility != Public) {
+      vsMsg(CreateViewPortReject(msg.table, s"no table found for ${msg.table}"))(ctx)
+    } else {
 
       val columns = if (msg.columns.length == 1 && msg.columns(0) == "*") {
         logger.trace("[CreateViewPortRequest] Wildcard specified for columns, going to return all")

@@ -3,11 +3,10 @@ package org.finos.vuu.provider
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.Clock
 
 import java.util.concurrent.ConcurrentHashMap
 
-class MockProvider(table: DataTable)(implicit clock: Clock, lifecycle: LifecycleContainer) extends Provider with StrictLogging {
+class MockProvider(table: DataTable)(implicit lifecycle: LifecycleContainer) extends Provider with StrictLogging {
 
   lifecycle(this)
 
@@ -22,7 +21,7 @@ class MockProvider(table: DataTable)(implicit clock: Clock, lifecycle: Lifecycle
   }
 
   def tick(key: String, row: Map[String, Any]) =
-    table.processUpdate(key, new RowWithData(key, row), clock.now())
+    table.processUpdate(key, new RowWithData(key, row))
 
   def delete(key: String) = {
     table.processDelete(key)

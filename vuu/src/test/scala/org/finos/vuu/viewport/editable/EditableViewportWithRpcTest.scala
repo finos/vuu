@@ -7,38 +7,35 @@ import org.finos.vuu.api.JoinTableDef
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper.combineQs
 import org.finos.vuu.core.table._
-import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.finos.vuu.viewport._
 import org.scalatest.prop.Tables.Table
 
-class ConstituentInstrumentPricesRpcService(val tableContainer: TableContainer)(implicit clock: Clock) extends RpcHandler with EditRpcHandler{
+class ConstituentInstrumentPricesRpcService()(implicit clock: Clock, val tableContainer: TableContainer) extends DefaultRpcHandler() with EditRpcHandler {
+  registerRpc("sendToMarket", params => sendToMarket(params))
 
   private def onEditCell(key: String, columnName: String, data: Any, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
     val joinTable = vp.table.asTable.asInstanceOf[JoinTable]
     val baseTableDef = joinTable.getTableDef.asInstanceOf[JoinTableDef].baseTable
     joinTable.sourceTables.get(baseTableDef.name) match {
       case Some(table: DataTable) =>
-        table.processUpdate(key, RowWithData(key, Map("id" ->  key, columnName -> data)), clock.now())
+        table.processUpdate(key, RowWithData(key, Map("id" -> key, columnName -> data)))
         ViewPortEditSuccess()
       case None =>
         ViewPortEditFailure("Could not find base table")
     }
   }
 
-  def sendToMarket()(ctx: RequestContext): ViewPortAction = {
+  def sendToMarket(params: RpcParams): RpcFunctionResult = {
     logger.trace("Calling sendToMarket()")
-    ViewPortEditSuccess()
-  }
-  def createBasket(name: String)(ctx: RequestContext): ViewPortAction = {
-    logger.trace("Calling createBasket()")
-    ViewPortEditSuccess()
+    RpcFunctionSuccess(None)
   }
 
   private def onEditRow(key: String, row: Map[String, Any], vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
     val table = vp.table.asTable
-    table.processUpdate(key, RowWithData(key, row), clock.now())
+    table.processUpdate(key, RowWithData(key, row))
     ViewPortEditSuccess()
   }
 
@@ -89,7 +86,7 @@ class EditableViewportWithRpcTest extends EditableViewPortTest {
       val (consInstPrice, _) = tablesAndProviders("consInstrumentPrice")
 
       Given("We define a viewport callback on process with an rpc service attached...")
-      viewPortContainer.addViewPortDefinition(consInstPrice.getTableDef.name, createViewPortDefFunc(tableContainer, new ConstituentInstrumentPricesRpcService(tableContainer), clock))
+      viewPortContainer.addViewPortDefinition(consInstPrice.getTableDef.name, createViewPortDefFunc(tableContainer, new ConstituentInstrumentPricesRpcService()(clock, tableContainer), clock))
 
       And("we've ticked in some data")
       consProvider.tick("bskt1.vod.l", Map("id" -> "bskt1.vod.l", "ric" -> "VOD.L", "quantity" -> 1000L))
@@ -136,13 +133,8 @@ class EditableViewportWithRpcTest extends EditableViewPortTest {
       }
 
       When("we call a viewport specific rpc call (sendToMarket)")
-      viewPortContainer.callRpcService(viewPort.id, "sendToMarket", Array(), Map(), session)(context) match {
-        case action: ViewPortAction =>
-          println(action)
-          action.getClass shouldEqual classOf[ViewPortEditSuccess]
-        case _ =>
-          fail("Should not be here in test, means call has failed")
-      }
+      val rpcResult = viewPort.getStructure.viewPortDef.service.processRpcRequest("sendToMarket", new RpcParams(Map(), None, None, context))
+      rpcResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
     }
   }
 }

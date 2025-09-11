@@ -10,20 +10,19 @@ import {
   VuuRpcMenuRequest,
   OpenDialogAction,
   VuuRpcEditCellRequest,
-  VuuRowDataItemType,
   VuuRpcRequest,
   VuuRpcEditAddRowRequest,
   VuuDataRowDto,
   VuuRpcEditDeleteRowRequest,
-  VuuRpcViewportRequest,
   VuuRpcResponse,
   VuuRpcMenuSuccess,
   VuuTable,
-  VuuRpcViewportResponse,
   VuuViewportRpcTypeaheadRequest,
   VuuRpcServiceRequest,
   ViewportRpcContext,
+  OpenComponentInDialogAction,
 } from "@vuu-ui/vuu-protocol-types";
+import { isView as componentInRegistry } from "./component-registry";
 
 const MENU_RPC_TYPES = [
   "VIEW_PORT_MENUS_SELECT_RPC",
@@ -77,17 +76,6 @@ export const isTypeaheadRequest = (
       request.rpcName === "getUniqueFieldValuesStartingWith")
   );
 };
-export function isViewportRpcRequest(
-  request: VuuRpcRequest,
-): request is VuuRpcViewportRequest;
-export function isViewportRpcRequest(
-  request: Omit<VuuRpcRequest, "vpId">,
-): request is Omit<VuuRpcViewportRequest, "vpId">;
-export function isViewportRpcRequest(
-  request: Omit<VuuRpcRequest, "vpId">,
-): request is VuuRpcViewportRequest | Omit<VuuRpcViewportRequest, "vpId"> {
-  return request.type === "VIEW_PORT_RPC_CALL";
-}
 
 export function isEditCellRequest(
   request: VuuRpcRequest,
@@ -99,52 +87,6 @@ export function isEditCellRequest(
   request: VuuRpcRequest | Omit<VuuRpcRequest, "vpId">,
 ): request is VuuRpcEditCellRequest | Omit<VuuRpcEditCellRequest, "vpId"> {
   return request.type === "VP_EDIT_CELL_RPC";
-}
-
-export function vuuEditCellRequest(
-  rowKey: string,
-  field: string,
-  value: VuuRowDataItemType,
-  vpId: string,
-): VuuRpcEditCellRequest;
-export function vuuEditCellRequest(
-  rowKey: string,
-  field: string,
-  value: VuuRowDataItemType,
-): Omit<VuuRpcEditCellRequest, "vpId">;
-export function vuuEditCellRequest(
-  rowKey: string,
-  field: string,
-  value: VuuRowDataItemType,
-  vpId?: string,
-): VuuRpcEditCellRequest | Omit<VuuRpcEditCellRequest, "vpId"> {
-  return {
-    rowKey,
-    field,
-    value,
-    type: "VP_EDIT_CELL_RPC",
-    vpId,
-  };
-}
-
-export function viewportRpcRequest(
-  rpcName: string,
-  vpId: string,
-): VuuRpcViewportRequest;
-export function viewportRpcRequest(
-  rpcName: string,
-): Omit<VuuRpcViewportRequest, "vpId">;
-export function viewportRpcRequest(
-  rpcName: string,
-  vpId?: string,
-): VuuRpcViewportRequest | Omit<VuuRpcViewportRequest, "vpId"> {
-  return {
-    namedParams: {},
-    params: [],
-    rpcName,
-    type: "VIEW_PORT_RPC_CALL",
-    vpId,
-  };
 }
 
 export function vuuAddRowRequest(
@@ -187,14 +129,6 @@ export function vuuDeleteRowRequest(
   };
 }
 
-// export type WithTableSchema<
-//   T extends VuuRpcMenuSuccess | VuuRpcViewportResponse = VuuRpcMenuSuccess,
-// > = T & {
-//   action: T extends VuuRpcMenuSuccess
-//     ? VuuRpcMenuSuccess["action"] & { tableSchema: TableSchema }
-//     : VuuRpcViewportResponse["action"] & { tableSchema: TableSchema };
-// };
-
 export const isSessionTable = (table?: unknown) => {
   if (
     table !== null &&
@@ -209,19 +143,14 @@ export const isSessionTable = (table?: unknown) => {
 
 export function isActionMessage(
   rpcResponse: VuuRpcResponse,
-): rpcResponse is VuuRpcViewportResponse | VuuRpcMenuSuccess;
+): rpcResponse is VuuRpcMenuSuccess;
 export function isActionMessage(
   rpcResponse: Omit<VuuRpcResponse, "vpId">,
-): rpcResponse is
-  | Omit<VuuRpcViewportResponse, "vpId">
-  | Omit<VuuRpcMenuSuccess, "vpId">;
+): rpcResponse is Omit<VuuRpcMenuSuccess, "vpId">;
 export function isActionMessage(
   rpcResponse: VuuRpcResponse | Omit<VuuRpcResponse, "vpId">,
 ) {
-  return (
-    rpcResponse.type === "VIEW_PORT_MENU_RESP" ||
-    rpcResponse.type === "VIEW_PORT_RPC_RESPONSE"
-  );
+  return rpcResponse.type === "VIEW_PORT_MENU_RESP";
 }
 
 export function isSessionTableActionMessage(
@@ -256,7 +185,18 @@ export function isSessionTableActionMessage(
   );
 }
 
-export const isRpcSuccess = (
-  response: VuuRpcResponse | Omit<VuuRpcResponse, "vpId">,
-): response is VuuRpcViewportResponse =>
-  isActionMessage(response) && response.action.type === "VP_RPC_SUCCESS";
+export function isCustomComponentActionMessage(
+  rpcResponse: VuuRpcResponse | Omit<VuuRpcResponse, "vpId">,
+): rpcResponse is VuuRpcMenuSuccess<
+  OpenComponentInDialogAction & {
+    tableSchema: TableSchema;
+  }
+> {
+  return (
+    isActionMessage(rpcResponse) &&
+    isOpenDialogAction(rpcResponse.action) &&
+    isSessionTable(rpcResponse.action.table) &&
+    typeof rpcResponse.action.renderComponent === "string" &&
+    componentInRegistry(rpcResponse.action.renderComponent)
+  );
+}

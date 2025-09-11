@@ -1,0 +1,46 @@
+.vuuColumnFilter {
+    border: solid 1px var(--salt-editable-borderColor);
+    max-width: 200px;
+    padding-left: 4px;
+    padding-right: 4px;
+    width: var(--vuuColumnFilter-width, fit-content);
+
+
+    .vuuColumnFilter-rangeHigh {
+        position: relative;
+    }
+
+    .vuuColumnFilter-rangeHigh::before {
+        content: "";
+        width: 1px;
+        position: absolute;
+        background: var(--salt-separable-primary-borderColor);
+        /* Accomodate button border */
+        left: calc(-1 * var(--salt-spacing-100));
+        top: -1px;
+        bottom: -1px;
+    }
+
+    .vuuTimePicker {
+        border-radius: 6px;
+    }
+
+    .vuuTimePicker + .vuuTimePicker {
+        margin-left: var(--salt-spacing-100);
+    }
+
+    .vuuTimeInput {
+        border: none;
+        outline: none;
+    }
+
+    .vuuTimeInput:focus-visible {
+        outline: none;
+    }
+
+}
+
+.vuuColumnFilter-trigger {
+    --saltButton-borderRadius: 4px 0px 0px 4px;
+    --saltButton-padding: var(--salt-spacing-200);
+}

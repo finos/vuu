@@ -5,20 +5,10 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.basket.BasketModule.BasketTradingConstituentColumnNames.InstanceIdRic
 import org.finos.vuu.core.table.{DataTable, RowWithData, TableContainer}
 import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler, RpcHandler, RpcParams}
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler}
 import org.finos.vuu.viewport._
 
-// TODO: see comment on processViewPortRpcCall for why we extends DefaultRpcHandler with RpcHandler
-class BasketTradingConstituentService(val table: DataTable)(implicit clock: Clock, val tableContainer: TableContainer) extends DefaultRpcHandler with RpcHandler with EditRpcHandler with StrictLogging {
-
-  /**
-   * We switched to DefaultRpcHandler instead of RpcHandler so that ViewportTypeAheadRpcHandler is enabled by default.
-   * This class needs the processViewPortRpcCall from RpcHandler though.
-   * Ideally we should switch to use DefaultRpcHandler.processViewPortRpcCall
-   */
-  override def processViewPortRpcCall(methodName: String, rpcParams: RpcParams): ViewPortAction = {
-    super[RpcHandler].processViewPortRpcCall(methodName, rpcParams)
-  }
+class BasketTradingConstituentService(val table: DataTable)(implicit clock: Clock, val tableContainer: TableContainer) extends DefaultRpcHandler with EditRpcHandler with StrictLogging {
 
   def onDeleteRow(key: String, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
     ViewPortEditSuccess()
@@ -34,13 +24,13 @@ class BasketTradingConstituentService(val table: DataTable)(implicit clock: Cloc
 
   private def onEditCell(key: String, columnName: String, data: Any, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
     val table = vp.table.asTable
-    table.processUpdate(key, RowWithData(key, Map(InstanceIdRic -> key, columnName -> data)), clock.now())
+    table.processUpdate(key, RowWithData(key, Map(InstanceIdRic -> key, columnName -> data)))
     ViewPortEditSuccess()
   }
 
   private def onEditRow(key: String, row: Map[String, Any], vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
     val table = vp.table.asTable
-    table.processUpdate(key, RowWithData(key, row), clock.now())
+    table.processUpdate(key, RowWithData(key, row))
     ViewPortEditSuccess()
   }
 

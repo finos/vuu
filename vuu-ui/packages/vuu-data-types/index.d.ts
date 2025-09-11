@@ -9,7 +9,6 @@ import type {
   LinkDescriptorWithLabel,
   NoAction,
   OpenDialogAction,
-  TypeAheadMethod,
   VuuAggregation,
   VuuColumnDataType,
   VuuColumns,
@@ -20,17 +19,17 @@ import type {
   VuuMenu,
   VuuRange,
   VuuRowDataItemType,
-  VuuRpcRequest,
   VuuRpcViewportResponse,
   VuuSort,
   VuuTable,
-  VuuRpcRequest,
   VuuRpcServiceRequest,
   VuuRpcMenuRequest,
   VuuRpcViewportRequest,
   VuuCreateVisualLink,
   VuuRemoveVisualLink,
   VuuTableList,
+  VuuRpcEditRequest,
+  VuuRpcEditResponse,
 } from "@vuu-ui/vuu-protocol-types";
 import type {
   DataSourceConfigChanges,
@@ -118,12 +117,14 @@ export declare type DataValueTypeSimple =
   | "boolean"
   | "json"
   | DateTimeDataValueTypeSimple
+  | TimeDataValueTypeSimple
   | "checkbox";
 
 export declare type DataValueType =
   | DataValueTypeSimple
   | DataValueTypeDescriptor;
 
+export declare type TimeDataValueTypeSimple = "time";
 export declare type DateTimeDataValueTypeSimple = "date/time";
 
 export declare type DateTimeDataValueType =
@@ -158,6 +159,13 @@ export declare type DateTimeDataValueDescriptor = Omit<
   "type"
 > & {
   type: DateTimeDataValueType;
+};
+
+export declare type TimeDataValueDescriptor = Omit<
+  DataValueDescriptor,
+  "type"
+> & {
+  type: TimeDataValueType;
 };
 
 export interface DataSourceFilter extends VuuFilter {
@@ -627,19 +635,17 @@ export interface DataSource
   insertRow?: DataSourceInsertHandler;
   links?: LinkDescriptorWithLabel[];
   menu?: VuuMenu;
-  /** @deprecated, use remoteProcedureCall instead */
+  editRpcCall: (
+    rpcRequest: Omit<VuuRpcEditRequest, "vpId">,
+  ) => Promise<VuuRpcEditResponse>;
   menuRpcCall: (
-    rpcRequest: Omit<VuuRpcRequest, "vpId">,
+    rpcRequest: Omit<VuuRpcMenuRequest, "vpId">,
   ) => Promise<VuuRpcMenuResponse>;
-  /* @deprecated, use remoteProcedureCall instead */
-  rpcCall?: <T extends VuuRpcResponse = VuuRpcResponse>(
-    rpcRequest: Omit<VuuRpcRequest, "vpId">,
-  ) => Promise<T>;
+  rpcRequest?: (
+    request: Omit<VuuRpcServiceRequest, "context">,
+  ) => Promise<RpcResultSuccess | RpcResultError>;
   openTreeNode: (keyOrIndex: string | number) => void;
   range: Range;
-  remoteProcedureCall: <T extends VuuRpcResponse = VuuRpcResponse>(
-    message: VuuRpcRequest,
-  ) => Promise<T>;
   select: SelectionChangeHandler;
   readonly selectedRowsCount: number;
   sendBroadcastMessage?: (message: DataSourceBroadcastMessage) => void;
@@ -909,12 +915,6 @@ export declare type VuuUIMessageOutViewport =
   | VuuUIMessageOutSetTitle
   | VuuUIMessageOutSuspend
   | VuuUIMessageOutViewRange;
-
-export interface TypeAheadRpcRequest {
-  method: TypeAheadMethod;
-  params: [VuuTable, ...string[]];
-  type: "RPC_CALL";
-}
 
 export declare type WithRequestId<T> = T & { requestId: string };
 

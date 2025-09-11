@@ -1,6 +1,5 @@
 package org.finos.vuu.person.manual;
 
-import org.finos.toolbox.time.Clock;
 import org.finos.vuu.core.table.DataTable;
 import org.finos.vuu.core.table.RowWithData;
 import org.finos.vuu.person.Person;
@@ -13,12 +12,10 @@ public class PersonProvider implements Provider {
 
     private final DataTable table;
     private final PersonStore personStore;
-    private final Clock clock;
 
-    public PersonProvider(final DataTable table, PersonStore personStore, Clock clock){
+    public PersonProvider(final DataTable table, PersonStore personStore){
         this.table = table;
         this.personStore = personStore;
-        this.clock = clock;
     }
 
     @Override
@@ -26,7 +23,7 @@ public class PersonProvider implements Provider {
 
         for (Person person : personStore.GetAll()) {
             var row = new RowWithData(person.Id, Map.of( "Id", person.Id, "Name", person.Name, "Account", person.AccountNumber));
-            table.processUpdate(person.Id, row , clock.now());
+            table.processUpdate(person.Id, row);
         }
     }
 

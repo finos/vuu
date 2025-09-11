@@ -2,6 +2,7 @@ package org.finos.vuu.core.table
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.api.TableDef
+import org.finos.vuu.core.table.DefaultColumnNames.allDefaultColumns
 import org.finos.vuu.core.table.column.CalculatedColumnClause
 import org.finos.vuu.core.table.datatype.{Decimal, EpochTimestamp}
 import org.finos.vuu.util.schema.ExternalEntitySchema
@@ -41,9 +42,6 @@ object DataType {
       case "org.finos.vuu.core.table.datatype.EpochTimestamp" => "epochtimestamp"
       case "org.finos.vuu.core.table.datatype.Decimal" => "decimal"
       case x => x.toLowerCase
-      //        case c: Class[Boolean] => "boolean"
-      //        case c: Class[Int] => "int"
-      //        case c: Class[Long] => "long"
     }
   }
 
@@ -57,7 +55,6 @@ object DataType {
     .withConverter(DefaultTypeConverters.stringToBooleanConverter)
     .withConverter(DefaultTypeConverters.stringToIntConverter)
     .withConverter(DefaultTypeConverters.stringToLongConverter)
-    .withConverter(DefaultTypeConverters.stringToDoubleConverter)
     .withConverter(DefaultTypeConverters.stringToDoubleConverter)
     .withConverter(DefaultTypeConverters.stringToEpochTimestampConverter)
     .withConverter(DefaultTypeConverters.stringToDecimalConverter)
@@ -88,8 +85,12 @@ object Columns {
     table.columns.filter(c => names.contains(c.name)).map(c => new JoinColumn(c.name, c.index, c.dataType, table, c))
   }
 
+  /**
+   * Note: this method returns all columns of a given table, including the default columns of vuuCreatedTimestamp and vuuUpdatedTimestamp
+   * @return JoinColumn based on all columns of a given table except the default columns
+   */
   def allFrom(table: TableDef): Array[Column] = {
-    table.columns.map(c => new JoinColumn(c.name, c.index, c.dataType, table, c))
+    allFromExcept(table)
   }
 
   def aliased(table: TableDef, aliases: (String, String)*): Array[Column] = {
@@ -97,9 +98,13 @@ object Columns {
     table.columns.filter(c => aliased.contains(c.name)) map (c => new AliasedJoinColumn(aliased(c.name), c.index, c.dataType, table, c).asInstanceOf[Column])
   }
 
+  /**
+   * Note: this method excludes the default columns of vuuCreatedTimestamp and vuuUpdatedTimestamp
+   */
   def allFromExcept(table: TableDef, excludeColumns: String*): Array[Column] = {
+    val columnsToExclude = excludeColumns ++ allDefaultColumns
 
-    val excluded = excludeColumns.map(s => s -> 1).toMap
+    val excluded = columnsToExclude.map(s => s -> 1).toMap
 
     table.columns.filterNot(c => excluded.contains(c.name)).map(c => new JoinColumn(c.name, c.index, c.dataType, table, c))
   }

@@ -29,6 +29,7 @@ export interface FilterClauseProps
   onCancel?: FilterClauseCancelHandler;
   onDropdownOpen?: () => void;
   onFocusSave?: () => void;
+  dropdownOnAutofocus?: boolean;
   vuuTable: VuuTable;
 }
 
@@ -42,6 +43,7 @@ export const FilterClause = ({
   onFocusSave,
   filterClauseModel,
   vuuTable,
+  dropdownOnAutofocus = true,
   ...htmlAttributes
 }: FilterClauseProps) => {
   const {
@@ -56,11 +58,13 @@ export const FilterClause = ({
     operatorRef,
     selectedColumn,
     valueRef,
+    showDropdownOnAutoFocus,
   } = useFilterClause({
     filterClauseModel,
     onCancel,
     onFocusSave,
     columnsByName,
+    dropdownOnAutofocus,
   });
 
   const targetWindow = useWindow();
@@ -82,6 +86,7 @@ export const FilterClause = ({
         onSelect={onSelectColumn}
         ref={columnRef}
         value={filterClauseModel.column ?? ""}
+        dropdownOnAutofocus={showDropdownOnAutoFocus}
       />
       {selectedColumn?.name ? (
         <OperatorPicker
@@ -94,6 +99,7 @@ export const FilterClause = ({
           onSelect={onSelectOperator}
           ref={operatorRef}
           value={filterClauseModel.op ?? ""}
+          dropdownOnAutofocus={showDropdownOnAutoFocus}
         />
       ) : null}
       {filterClauseModel.op ? (
@@ -111,6 +117,7 @@ export const FilterClause = ({
             (filterClause as MultiValueFilterClause)?.values ??
             (filterClause as SingleValueFilterClause)?.value
           }
+          dropdownOnAutofocus={showDropdownOnAutoFocus}
         />
       ) : null}
     </div>

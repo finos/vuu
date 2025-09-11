@@ -1,10 +1,9 @@
 package org.finos.vuu.provider
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{JoinTableDef, TableDef}
+import org.finos.vuu.core.VuuJoinTableProviderOptions
 import org.finos.vuu.core.table.{DataTable, JoinTable, JoinTableUpdate, RowWithData}
 import org.finos.vuu.provider.join.{JoinDefToJoinTable, JoinManagerEventDataSink, JoinRelations, RightToLeftKeys}
 
@@ -45,11 +44,11 @@ import java.util.concurrent.{ArrayBlockingQueue, ConcurrentHashMap}
  * },
  * }
  */
-class VuuJoinTableProvider(implicit timeProvider: Clock, lifecycle: LifecycleContainer, metrics: MetricsProvider) extends JoinTableProvider with StrictLogging {
+class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecycle: LifecycleContainer) extends JoinTableProvider with StrictLogging {
 
   lifecycle(this)
 
-  private val outboundQueue = new ArrayBlockingQueue[JoinTableUpdate](20000)
+  private val outboundQueue = new ArrayBlockingQueue[JoinTableUpdate](options.maxQueueSize)
   private val joinRelations = new JoinRelations()
   private val joinSink = new JoinManagerEventDataSink()
   private val rightToLeftKeys = new RightToLeftKeys()
@@ -116,12 +115,12 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecycle: LifecycleCon
 
     val rowWithData = RowWithData(leftKey, toPublishData)
 
-    val jtu = JoinTableUpdate(JoinTable, rowWithData, timeProvider.now())
+    val jtu = JoinTableUpdate(JoinTable, rowWithData)
 
     logger.debug("[JoinTableProvider] Submitting joint table event:" + jtu)
 
     //get the processing off the join thread
-    outboundQueue.offer(jtu)
+    outboundQueue.put(jtu)
   }
 
   def eventToRightKey(joinTableDef: JoinTableDef, tableName: String, ev: util.HashMap[String, Any], rightColumn: String): String = {
@@ -252,7 +251,7 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecycle: LifecycleCon
   }
 
   override def runOnce(): Unit = {
-    val updates = new java.util.ArrayList[JoinTableUpdate](100)
+    val updates = new java.util.ArrayList[JoinTableUpdate](options.batchSize)
 
     outboundQueue.drainTo(updates) match {
 
@@ -263,7 +262,7 @@ class VuuJoinTableProvider(implicit timeProvider: Clock, lifecycle: LifecycleCon
 
           if (isPrimaryKeyDeleted(jtu)) jtu.joinTable.processDelete(jtu.rowUpdate.key)
           else
-            jtu.joinTable.processUpdate(jtu.rowUpdate.key, jtu.rowUpdate, jtu.time)
+            jtu.joinTable.processUpdate(jtu.rowUpdate.key, jtu.rowUpdate)
         })
     }
   }

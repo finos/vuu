@@ -1,32 +1,59 @@
-import { DataSource } from "@vuu-ui/vuu-data-types";
 import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { HTMLAttributes, useCallback, useEffect, useState } from "react";
+import { HTMLAttributes, ReactNode } from "react";
 
 import dataSourceStats from "./DatasourceStats.css";
-import { formatDate, Range } from "@vuu-ui/vuu-utils";
+import {
+  DatasourceStatsHookProps,
+  useDatasourceStats,
+} from "./useDatasourceStats";
 
-interface DataSourceStatsProps extends HTMLAttributes<HTMLSpanElement> {
-  dataSource: DataSource;
+export type ItemLabel =
+  | string
+  | {
+      singlular: string;
+      plural: string;
+    };
+
+export interface DataSourceStatsProps
+  extends DatasourceStatsHookProps,
+    Omit<HTMLAttributes<HTMLDivElement>, "children"> {
+  /**
+   * children will be displayed when selection present. Intended
+   * use case is display of action button(s) that will operate on
+   * selected rows.
+   */
+  children?: ReactNode;
+  /**
+   * Label will be used in display of selected row count, e.g
+   * '6 trades selected', where 'trade' is the itemLabel, will
+   *  default to 'row'
+   */
+  itemLabel?: ItemLabel;
 }
 
 const classBase = "vuuDatasourceStats";
 
 const numberFormatter = new Intl.NumberFormat();
-const timeFormatter = formatDate({ time: "hh:mm:ss" });
 
-const formatTime = (ts: number | undefined) => {
-  if (typeof ts === "number") {
-    return timeFormatter(new Date(ts));
+const getLabel = (label: ItemLabel, count = 1) => {
+  if (count === 1) {
+    return typeof label === "string" ? label : label.singlular;
   } else {
-    return undefined;
+    return typeof label === "string" ? `${label}s` : label.plural;
   }
 };
 
 export const DataSourceStats = ({
-  className: classNameProp,
+  children,
+  className,
   dataSource,
+  itemLabel = "row",
+  showFreezeStatus = true,
+  showRowStats = true,
+  showSelectionStats = true,
+  ...htmlAttributes
 }: DataSourceStatsProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -35,59 +62,61 @@ export const DataSourceStats = ({
     window: targetWindow,
   });
 
-  const [range, setRange] = useState<Range>(dataSource.range);
-  const [size, setSize] = useState(dataSource.size);
-  const [freezeTime, setFreezeTime] = useState(
-    formatTime(dataSource.freezeTimestamp),
-  );
+  const { freezeTime, range, selectedCount, size } = useDatasourceStats({
+    dataSource,
+    showFreezeStatus,
+    showRowStats,
+    showSelectionStats,
+  });
 
-  const handleFreeze = useCallback(
-    (isFrozen: boolean, freezeTimestamp: number) => {
-      console.log(`DatasourceStats isFrozen ${isFrozen}`);
-      if (isFrozen) {
-        setFreezeTime(formatTime(freezeTimestamp));
-      } else {
-        setFreezeTime(undefined);
-      }
-    },
-    [],
-  );
-
-  useEffect(() => {
-    setSize(dataSource.size);
-    dataSource.on("resize", setSize);
-    dataSource.on("range", setRange);
-    dataSource.on("freeze", handleFreeze);
-    return () => {
-      dataSource.removeListener("resize", setSize);
-      dataSource.removeListener("range", setRange);
-    };
-  }, [dataSource, handleFreeze]);
-
-  const className = cx(classBase, classNameProp);
   const from = numberFormatter.format(range.firstRowInViewport);
-  const to = numberFormatter.format(range.lastRowInViewport);
+  const to = numberFormatter.format(Math.min(range.lastRowInViewport, size));
   const value = numberFormatter.format(size);
+  const showSelection = showSelectionStats && selectedCount > 0;
 
   if (size === 0) {
     return (
-      <div className={className}>
+      <div {...htmlAttributes} className={cx(classBase, className)}>
         <span className={`${classBase}-label`}>No Rows to display</span>
       </div>
     );
   } else {
     return (
-      <div className={className}>
-        <span className={`${classBase}-label`}>Rows</span>
-        <span className={`${classBase}-range`}>{from}</span>
-        <span>-</span>
-        <span className={`${classBase}-range`}>{to}</span>
-        <span>of</span>
-        <span className={`${classBase}-size`}>{value}</span>
-        {freezeTime !== undefined ? (
-          <span
-            className={`${classBase}-label`}
-          >{`(frozen at ${freezeTime})`}</span>
+      <div
+        {...htmlAttributes}
+        className={cx(classBase, className, {
+          [`${classBase}-withSelection`]: showSelection,
+        })}
+      >
+        {showRowStats ? (
+          <div className={`${classBase}-statsPanel ${classBase}-rowStats`}>
+            <span className={`${classBase}-label`}>Row count</span>
+            <span className={`${classBase}-range`}>
+              <span className={`${classBase}-value`}>{from}</span>
+              <span className={`${classBase}-label`}>-</span>
+              <span className={`${classBase}-value`}>{to}</span>
+            </span>
+            <span className={`${classBase}-label`}>of</span>
+            <span className={`${classBase}-value`}>{value}</span>
+          </div>
+        ) : null}
+        {showFreezeStatus && freezeTime !== undefined ? (
+          <div className={`${classBase}-statsPanel ${classBase}-freezeStatus`}>
+            <span
+              className={`${classBase}-label`}
+            >{`(frozen at ${freezeTime})`}</span>
+          </div>
+        ) : null}
+        {showSelection ? (
+          <div
+            className={`${classBase}-statsPanel ${classBase}-selectionStats`}
+          >
+            <span className={`${classBase}-value`}>{selectedCount}</span>
+            <span
+              className={`${classBase}-label`}
+            >{`selected ${getLabel(itemLabel, selectedCount)}`}</span>
+            <span className={`${classBase}-actions`}>{children}</span>
+          </div>
         ) : null}
       </div>
     );

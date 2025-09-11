@@ -1,5 +1,4 @@
 import type { DataSource, DataValueDescriptor } from "@vuu-ui/vuu-data-types";
-import { useDialogContext } from "@vuu-ui/vuu-popups";
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import {
   CommitHandler,
@@ -9,7 +8,6 @@ import {
   dataSourceRowToEntity,
   messageHasDataRows,
   queryClosest,
-  viewportRpcRequest,
 } from "@vuu-ui/vuu-utils";
 import { Button } from "@salt-ds/core";
 import {
@@ -30,6 +28,7 @@ import {
   FormEditState,
   buildFormEditState,
 } from "./form-edit-state";
+import { useModal } from "@vuu-ui/vuu-ui-controls";
 
 export interface EditFormHookProps {
   dataSource?: DataSource;
@@ -119,7 +118,7 @@ export const useEditForm = ({
   formFieldDescriptors,
   onSubmit,
 }: EditFormHookProps) => {
-  const { showDialog, closeDialog } = useDialogContext();
+  const { showDialog, closeDialog } = useModal();
 
   const currentDataSource = useRef<DataSource>(undefined);
   const formFieldsContainerRef = useRef<HTMLDivElement>(null);
@@ -151,9 +150,11 @@ export const useEditForm = ({
   );
 
   const submitChanges = useCallback(async () => {
-    const rpcResponse = await currentDataSource.current?.rpcCall?.(
-      viewportRpcRequest("VP_BULK_EDIT_SUBMIT_RPC"),
-    );
+    const rpcResponse = await currentDataSource.current?.rpcRequest?.({
+      params: {},
+      rpcName: "VP_BULK_EDIT_SUBMIT_RPC",
+      type: "RPC_REQUEST",
+    });
     console.log({ rpcResponse });
   }, []);
 

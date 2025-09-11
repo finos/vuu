@@ -5,6 +5,7 @@ import type {
   DateTimeDataValueDescriptor,
   SchemaColumn,
   TableSchema,
+  TimeDataValueDescriptor,
 } from "@vuu-ui/vuu-data-types";
 import type {
   VuuAggType,
@@ -189,6 +190,11 @@ export const isDateTimeDataValue = (
   (isTypeDescriptor(column.type) ? column.type.name : column.type) ===
   "date/time";
 
+export const isTimeDataValue = (
+  column: ColumnDescriptor,
+): column is TimeDataValueDescriptor =>
+  (isTypeDescriptor(column.type) ? column.type.name : column.type) === "time";
+
 export const isPinned = (column: ColumnDescriptor) =>
   typeof column.pin === "string";
 
@@ -202,8 +208,12 @@ export const isTextColumn = ({ serverDataType }: ColumnDescriptor) =>
     ? false
     : serverDataType === "char" || serverDataType === "string";
 
-export const toColumnDescriptor = (name: string): ColumnDescriptor => ({
+export const toColumnDescriptor = (
+  name: string,
+  serverDataType?: ColumnDescriptor["serverDataType"],
+): ColumnDescriptor => ({
   name,
+  serverDataType,
 });
 
 /**
@@ -433,7 +443,7 @@ export const isGroupColumn = (
 export const checkConfirmationPending = (previousConfig?: TableModel) => {
   if (previousConfig) {
     const [column] = previousConfig.columns;
-    if (isGroupColumn(column)) {
+    if (column !== undefined && isGroupColumn(column)) {
       return column.groupConfirmed;
     }
   }

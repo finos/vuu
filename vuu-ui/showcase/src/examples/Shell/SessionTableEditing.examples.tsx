@@ -1,6 +1,5 @@
 import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
 import { DataSource } from "@vuu-ui/vuu-data-types";
-import { useDialog } from "@vuu-ui/vuu-popups";
 import { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { SessionEditingForm } from "@vuu-ui/vuu-data-react";
@@ -12,6 +11,7 @@ import {
   MenuBuilder,
   useContextMenu,
 } from "@vuu-ui/vuu-context-menu";
+import { ModalProvider, useModal } from "@vuu-ui/vuu-ui-controls";
 
 const openFile: ActionWithParams = {
   id: "openFile",
@@ -177,11 +177,8 @@ const getDataSource = (action: ActionWithParams): DataSource => {
   });
 };
 
-export const ContextMenuActions = () => {
-  const { dialog, setDialogState } = useDialog();
-  const closeDialog = () => {
-    setDialogState(undefined);
-  };
+const ContextMenuActionsTemplate = () => {
+  const { showPrompt } = useModal();
 
   const menuDescriptors: ContextMenuItemDescriptor[] = useMemo(
     () => [
@@ -201,20 +198,17 @@ export const ContextMenuActions = () => {
   const handleMenuAction: MenuActionHandler = (menuItemId) => {
     const actionDescriptor = actionDescriptors[menuItemId];
     if (hasParams(actionDescriptor)) {
-      setDialogState({
-        content: (
-          <SessionEditingForm
-            config={{
-              key: "",
-              title: actionDescriptor.description,
-              fields: actionDescriptor.params,
-            }}
-            dataSource={getDataSource(actionDescriptor)}
-            onClose={closeDialog}
-          />
-        ),
-        title: "Edit Parameters",
-      });
+      showPrompt(
+        <SessionEditingForm
+          config={{
+            key: "",
+            title: actionDescriptor.description,
+            fields: actionDescriptor.params,
+          }}
+          dataSource={getDataSource(actionDescriptor)}
+        />,
+        { title: "Edit Parameters" },
+      );
     }
     return true;
   };
@@ -234,7 +228,12 @@ export const ContextMenuActions = () => {
         style={{ height: 200, width: 200, backgroundColor: "red" }}
         location="left"
       />
-      {dialog}
     </ContextMenuProvider>
   );
 };
+
+export const ContextMenuActions = () => (
+  <ModalProvider>
+    <ContextMenuActionsTemplate />
+  </ModalProvider>
+);

@@ -1,12 +1,13 @@
 import { Clock } from "@vuu-ui/vuu-utils";
+import tableContainer from "../../core/table/TableContainer";
 import { random } from "../../data-utils";
-import { buildDataColumnMap, Table } from "../../Table";
+import { buildDataColumnMap } from "../../Table";
 import { schemas } from "../simul-schemas";
 import { accounts } from "./accounts";
+import { algos } from "./algos";
 import { instrumentsData } from "./instruments";
 import { orderStatus as statusValues } from "./orderStatus";
 import { sides } from "./sides";
-import { algos } from "./algos";
 
 const instrumentMap = buildDataColumnMap(schemas, "instruments");
 
@@ -21,15 +22,15 @@ const avgChildOrderPerOrder = Math.round(
 const childMaxMultiple = 10;
 
 const clock = new Clock().goBack(120, "minutes");
-console.log(`starting order generation at ${clock}`);
+// console.log(`starting order generation at ${clock}`);
 
-export const parentOrdersTable = new Table(
+export const parentOrdersTable = tableContainer.createTable(
   schemas.parentOrders,
   [],
   buildDataColumnMap(schemas, "parentOrders"),
 );
 
-export const childOrdersTable = new Table(
+export const childOrdersTable = tableContainer.createTable(
   schemas.childOrders,
   [],
   buildDataColumnMap(schemas, "childOrders"),
@@ -144,15 +145,15 @@ function createParentAndChildOrders() {
 }
 
 function createInitialOrders() {
-  const start = performance.now();
+  // const start = performance.now();
   for (let i = 0; i < PARENT_ORDER_COUNT; i++) {
     clock.advance(random(0, 100));
     createParentAndChildOrders();
   }
-  const end = performance.now();
-  console.log(
-    `took ${end - start} to create ${parentOrdersTable.data.length} orders and ${childOrdersTable.data.length} child orders, last order created at ${clock}`,
-  );
+  // const end = performance.now();
+  // console.log(
+  //   `took ${end - start} to create ${parentOrdersTable.data.length} orders and ${childOrdersTable.data.length} child orders, last order created at ${clock}`,
+  // );
 }
 
 let newOrderInterval: undefined | ReturnType<typeof setInterval> = undefined;

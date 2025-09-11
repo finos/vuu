@@ -1,13 +1,12 @@
-import { getSchema } from "@vuu-ui/vuu-data-test";
+import { EditForm } from "@vuu-ui/vuu-data-react";
+import { getSchema, LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import { DataValueDescriptor } from "@vuu-ui/vuu-data-types";
 import { DockLayout, Drawer } from "@vuu-ui/vuu-layout";
-import { RefCallback, useCallback, useMemo } from "react";
 import { Table } from "@vuu-ui/vuu-table";
 import { TableConfig } from "@vuu-ui/vuu-table-types";
-import { EditForm } from "@vuu-ui/vuu-data-react";
+import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
+import { RefCallback, useCallback, useMemo } from "react";
 import { useTableEditManager } from "./useTableEditManager";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { DataValueDescriptor } from "@vuu-ui/vuu-data-types";
-import { DialogProvider } from "@vuu-ui/vuu-popups";
 
 const instrumentsTable = { module: "SIMUL", table: "instruments" };
 
@@ -62,7 +61,7 @@ const TableWithInlineEditForm = () => {
   }, []);
 
   return (
-    <DialogProvider>
+    <ModalProvider>
       <DockLayout style={{ height: 700 }}>
         <Drawer inline={true} open={open} position="right" defaultOpen={false}>
           <EditForm
@@ -81,7 +80,7 @@ const TableWithInlineEditForm = () => {
           width="100%"
         />
       </DockLayout>
-    </DialogProvider>
+    </ModalProvider>
   );
 };
 

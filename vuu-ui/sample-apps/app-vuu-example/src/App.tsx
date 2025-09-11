@@ -22,10 +22,12 @@ import {
 } from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
 import { getDefaultColumnConfig } from "./columnMetaData";
-// import { useRpcResponseHandler } from "./useRpcResponseHandler";
+
+import { ConfirmSelectionPanel } from "./order-management/cancel-confirm-prompt/ConfirmSelectionPanel";
 
 import "./App.css";
 
+registerComponent("cancel-confirm", ConfirmSelectionPanel, "view");
 registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
 registerComponent("TableSettings", TableSettingsPanel, "view");
 
@@ -66,9 +68,6 @@ const {
 const dynamicFeatures = Object.values(features);
 
 export const App = ({ user }: { user: VuuUser }) => {
-  // this is causing full app re-render when tables are loaded
-  // const { handleRpcResponse } = useRpcResponseHandler();
-
   const dragSource = useMemo(
     () => ({
       "basket-instruments": { dropTargets: "basket-constituents" },

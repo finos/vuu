@@ -1,10 +1,10 @@
-import { SchemaColumn, TableSchema } from "@vuu-ui/vuu-data-types";
-import { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
+import { TableSchema } from "@vuu-ui/vuu-data-types";
+import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { ColumnMap, EventEmitter } from "@vuu-ui/vuu-utils";
 import { UpdateGenerator } from "./rowUpdates";
 
 export type TableEvents = {
-  delete: (row: VuuRowDataItemType[]) => void;
+  delete: (key: string) => void;
   insert: (row: VuuRowDataItemType[]) => void;
   update: (row: VuuRowDataItemType[], columnName?: string) => void;
 };
@@ -49,6 +49,23 @@ export class Table extends EventEmitter<TableEvents> {
 
   get schema() {
     return this.#schema;
+  }
+
+  get name() {
+    return this.#schema.table.table;
+  }
+
+  delete(key: string, emitEvent = true) {
+    const index = this.#index.get(key) ?? -1;
+    if (index !== -1) {
+      this.#index.delete(key);
+      this.#data.splice(index, 1);
+      if (emitEvent) {
+        this.emit("delete", key);
+      }
+    } else {
+      throw Error(`[Table] delete key ${key} not found`);
+    }
   }
 
   insert(row: VuuRowDataItemType[], emitEvent = true) {
@@ -116,110 +133,3 @@ export function buildDataColumnMap<TableName extends string = string>(
 ) {
   return buildDataColumnMapFromSchema(schemas[tableName]);
 }
-
-const getServerDataType = (
-  columnName: string,
-  { columns: cols1, table: t1 }: TableSchema,
-  { columns: cols2, table: t2 }: TableSchema,
-) => {
-  const col1 = cols1.find((col) => col.name === columnName);
-  const col2 = cols2.find((col) => col.name === columnName);
-  if (col1 && col2) {
-    if (col1.serverDataType === col2.serverDataType) {
-      return col1.serverDataType;
-    } else {
-      throw Error(
-        `both tables ${t1.table} and ${t2.table} implement column ${columnName}, but with types differ`,
-      );
-    }
-  } else if (col1) {
-    return col1.serverDataType;
-  } else if (col2) {
-    return col2.serverDataType;
-  } else {
-    throw Error(`WTF how is this possible`);
-  }
-};
-
-// Just copies source tables, then registers update listeners.
-// Not terribly efficient, but good enough for showcase
-export const joinTables = (
-  joinTable: VuuTable,
-  table1: Table,
-  table2: Table,
-  joinColumn: string,
-) => {
-  const { map: m1, schema: schema1 } = table1;
-  const { map: m2, schema: schema2 } = table2;
-  const k1 = m1[joinColumn];
-  const k2 = m2[joinColumn];
-
-  const combinedColumns = new Set(
-    [...schema1.columns, ...schema2.columns].map((col) => col.name).sort(),
-  );
-
-  const combinedSchema: TableSchema = {
-    key: joinColumn,
-    table: joinTable,
-    columns: Array.from(combinedColumns).map<SchemaColumn>((columnName) => ({
-      name: columnName,
-      serverDataType: getServerDataType(columnName, schema1, schema2),
-    })),
-  };
-
-  const data: VuuRowDataItemType[][] = [];
-  const combinedColumnMap = buildDataColumnMapFromSchema(combinedSchema);
-  // const start = performance.now();
-  for (const row of table1.data) {
-    const row2 = table2.findByKey(String(row[k1]));
-    if (row2) {
-      const out = [];
-      for (const column of table1.schema.columns) {
-        const value = row[m1[column.name]];
-        out[combinedColumnMap[column.name]] = value;
-      }
-      for (const column of table2.schema.columns) {
-        const value = row2[m2[column.name]];
-        out[combinedColumnMap[column.name]] = value;
-      }
-
-      data.push(out);
-    }
-  }
-  // const end = performance.now();
-  // console.log(`took ${end - start} ms to create join table ${joinTable.table}`);
-
-  const newTable = new Table(combinedSchema, data, combinedColumnMap);
-
-  table1.on("insert", (row) => {
-    const row2 = table2.findByKey(String(row[k1]));
-    if (row2) {
-      const out = [];
-      for (const column of table1.schema.columns) {
-        const value = row[m1[column.name]];
-        out[combinedColumnMap[column.name]] = value;
-      }
-      for (const column of table2.schema.columns) {
-        const value = row2[m2[column.name]];
-        out[combinedColumnMap[column.name]] = value;
-      }
-      newTable.insert(out);
-    }
-  });
-
-  table2.on("update", (row) => {
-    const keyValue = row[k2] as string;
-    const targetRow = newTable.findByKey(keyValue);
-    if (targetRow) {
-      const updatedRow = targetRow.slice();
-      for (const { name } of table2.schema.columns) {
-        if (row[m2[name]] !== updatedRow[combinedColumnMap[name]]) {
-          updatedRow[combinedColumnMap[name]] = row[m2[name]];
-        }
-      }
-      newTable.updateRow(updatedRow);
-    }
-  });
-
-  return newTable;
-};

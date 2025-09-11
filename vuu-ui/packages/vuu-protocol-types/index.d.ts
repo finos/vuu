@@ -257,7 +257,6 @@ export declare type ServerMessageBody =
   | VuuRpcMenuSuccess
   | VuuRpcMenuError
   | VuuRpcServiceResponse
-  | VuuRpcViewportResponse
   | VuuViewportVisualLinksResponse
   | ServerToClientOpenTreeNodeSuccess
   | ServerToClientCloseTreeNodeSuccess
@@ -339,19 +338,14 @@ export declare type ClientMessageBody =
   | VuuCreateVisualLink
   | VuuRemoveVisualLink
   | VuuRpcMenuRequest
-  | VuuRpcViewportRequest
   | VuuRpcRequest;
 
 /**
  * RPC type messages
  *
- * Vuu supports three distinct class of RPC message
+ * Vuu supports two types of RPC message
  *
- * 1) RPC
- *    This is a 'standalone' RPC call unrelated to any particular viewport. The only example
- *    right now is the typeahead service
- *
- * 2) Viewport RPC
+ * 2) VuuRpcServiceRequest
  *
  *    There are no generic messages in this category, they will tend to be specific to a
  *    business module. Examples found in the Vuu project include rpcNames "createBasket",
@@ -362,7 +356,7 @@ export declare type ClientMessageBody =
  *      - "VP_BULK_EDIT_COLUMN_CELLS_RPC"
  *    These are not yet impelmented in the Vuu server and liable to change
  *
- * 3) Menu RPC
+ * 3) VuuRpcMenuRequest
  *
  *    These are RPC calls submitted when user clicks a menu item from the menu structure
  *    defined on the server (see VIEW_PORT_MENUS_RESP above). There are 4 categories of
@@ -396,13 +390,11 @@ export declare type RpcContext =
 
 export declare type VuuRpcRequest =
   | VuuRpcServiceRequest
-  | VuuRpcViewportRequest
   | VuuRpcMenuRequest
   | VuuRpcEditRequest;
 
 export declare type VuuRpcResponse =
   | VuuRpcServiceResponse
-  | VuuRpcViewportResponse
   | VuuRpcMenuResponse
   | VuuRpcEditResponse;
 
@@ -410,7 +402,7 @@ export declare type VuuRpcServiceRequest<T extends RpcContext = RpcContext> = {
   context: T;
   type: "RPC_REQUEST";
   params: Record<string, string>;
-  rpcName: TypeAheadMethod;
+  rpcName: TypeAheadMethod | string;
 };
 
 export declare type RpcResultSuccess = {
@@ -437,27 +429,6 @@ export interface VuuViewportRpcTypeaheadRequest extends VuuRpcServiceRequest {
     starts?: string;
     table: string;
   };
-}
-
-export declare type RpcNamedParams = {
-  [key: string]: VuuRowDataItemType | VuuTable | string[];
-};
-
-// ViewportRPC
-export interface VuuRpcViewportRequest {
-  type: "VIEW_PORT_RPC_CALL";
-  rpcName: string;
-  namedParams: RpcNamedParams;
-  params: unknown[];
-  vpId: string;
-}
-export interface VuuRpcViewportResponse {
-  action: VuuRpcViewportAction;
-  type: "VIEW_PORT_RPC_RESPONSE";
-  method: string;
-  namedParams: { [key: string]: VuuRowDataItemType | VuuTable };
-  params: string[];
-  vpId: string;
 }
 
 // MenuRPC
@@ -733,6 +704,11 @@ export interface OpenDialogAction {
   type: "OPEN_DIALOG_ACTION";
   table: VuuTable;
 }
+
+export interface OpenComponentInDialogAction extends OpenDialogAction {
+  renderComponent: string;
+}
+
 export interface NoAction {
   type: "NO_ACTION";
 }

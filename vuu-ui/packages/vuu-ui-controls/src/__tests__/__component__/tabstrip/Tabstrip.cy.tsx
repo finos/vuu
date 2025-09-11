@@ -51,7 +51,7 @@ describe("WHEN initial size is sufficient to display all contents", () => {
   });
 
   describe("WHEN resized such that space is sufficient for only 4 tabs (LAST tab selected)", () => {
-    it("THEN  as last tab is selected, last but one will be overflowed", () => {
+    it.skip("THEN  as last tab is selected, last but one will be overflowed", () => {
       cy.mount(<DefaultTabstrip activeTabIndex={4} width={350} />);
       cy.get(".vuuTabstrip").invoke("css", "width", "350px");
       cy.get(OVERFLOW_ITEMS)

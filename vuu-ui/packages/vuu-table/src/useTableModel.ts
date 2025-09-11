@@ -67,9 +67,11 @@ const getDataType = (
 };
 
 const checkboxColumnDescriptor: ColumnDescriptor = {
+  allowColumnHeaderMenu: false,
   label: "",
   name: "",
   width: 25,
+  resizeable: false,
   sortable: false,
   isSystemColumn: true,
   type: {
@@ -110,6 +112,7 @@ const getDefaultAlignment = (serverDataType?: VuuColumnDataType) =>
 
 export interface ColumnActionInit {
   availableWidth: number;
+  selectionModel?: TableSelectionModel;
   type: "init";
   tableConfig: TableConfig;
   dataSource: DataSource;
@@ -585,7 +588,11 @@ function updateTableConfig(
       ...state,
       columns,
     };
-  } else if (isGroupColumn(result.columns[0]) && confirmed === false) {
+  } else if (
+    result.columns.length > 0 &&
+    isGroupColumn(result.columns[0]) &&
+    confirmed === false
+  ) {
     // reset groupConfirmed to false, if true
   }
 

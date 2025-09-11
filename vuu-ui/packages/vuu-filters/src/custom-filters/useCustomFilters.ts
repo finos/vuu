@@ -1,5 +1,5 @@
 import { ColumnDescriptorsByName, Filter } from "@vuu-ui/vuu-filter-types";
-import { PromptProps } from "@vuu-ui/vuu-popups";
+import { PromptProps } from "@vuu-ui/vuu-ui-controls";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
   EditableLabelProps,
@@ -158,17 +158,19 @@ export const useCustomFilters = ({
         focusFilterPill();
       };
       return {
+        className: "vuuFilterDeletePrompt",
         confirmButtonLabel: "Remove",
         icon: "warn-triangle",
+        initialFocusedItem: "confirm",
         onCancel: close,
         onClose: close,
         onConfirm: () => {
           setPromptProps(null);
           deleteConfirmed(filter);
         },
-        text: `Are you sure you want to delete  ${filter.name}`,
+        children: `Are you sure you want to delete filter '${filter.name}'`,
         title: "Remove Filter",
-        variant: "warn",
+        status: "warning",
       } as PromptProps;
     },
     [deleteConfirmed, focusFilterPill],

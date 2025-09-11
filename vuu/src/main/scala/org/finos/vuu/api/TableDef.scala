@@ -2,6 +2,7 @@ package org.finos.vuu.api
 
 import org.finos.vuu.core.auths.RowPermissionChecker
 import org.finos.vuu.core.module.ViewServerModule
+import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName}
 import org.finos.vuu.core.table._
 import org.finos.vuu.feature.inmem.VuuInMemPluginLocator
 import org.finos.vuu.viewport.ViewPort
@@ -23,6 +24,15 @@ object Link {
   }
 }
 
+// Used in table definition to indicate the visibility level of a table
+trait Visibility
+
+// All users can create view port to see the table
+object Public extends Visibility
+
+// No users can create view port to see the table. Only for vuu internal use, e.g. base tables for a join table.
+object Private extends Visibility
+
 object SessionTableDef {
   def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
     new SessionTableDef(name, keyField, columns, joinFields, indices = Indices())
@@ -31,7 +41,7 @@ object SessionTableDef {
 
 object JoinSessionTableDef {
   def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
-    null//new JoinSessionTableDef(name, keyField, columns, joinFields, indices = Indices())
+    null //new JoinSessionTableDef(name, keyField, columns, joinFields, indices = Indices())
   }
 }
 
@@ -43,14 +53,22 @@ object TableDef {
 
   def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks, indices: Indices, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, links = links, indices = indices)
-}
+  }
 
   def apply(name: String, keyField: String, columns: Array[Column], indices: Indices, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, indices = indices)
   }
 
+  def apply(name: String, keyField: String, columns: Array[Column], indices: Indices, visibility: Visibility, joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields, indices = indices, visibility = visibility)
+  }
+
   def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, indices = Indices())
+  }
+
+  def apply(name: String, keyField: String, columns: Array[Column], visibility: Visibility, joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields, indices = Indices(), visibility = visibility)
   }
 }
 
@@ -104,7 +122,7 @@ case class AvailableViewPortVisualLink(parentVpId: String, link: Link) {
   override def toString: String = "(" + parentVpId.split("-").last + ")" + link.fromColumn + " to " + link.toTable + "." + link.toColumn
 }
 
-class JoinSessionTableDef(name: String, baseTable: TableDef, joinColumns: Array[Column], joinFields: Seq[String], joins: JoinTo*) extends JoinTableDef(name, baseTable, joinColumns, links = VisualLinks(), joinFields) with VuuInMemPluginLocator
+class JoinSessionTableDef(name: String, visibility: Visibility, baseTable: TableDef, joinColumns: Array[Column], joinFields: Seq[String], joins: JoinTo*) extends JoinTableDef(name, visibility, baseTable, joinColumns, links = VisualLinks(), joinFields) with VuuInMemPluginLocator
 
 class SessionTableDef(name: String,
                       keyField: String,
@@ -117,11 +135,16 @@ class SessionTableDef(name: String,
 
 class TableDef(val name: String,
                val keyField: String,
-               val columns: Array[Column],
+               val customColumns: Array[Column],
                val joinFields: Seq[String],
                val autosubscribe: Boolean = false,
                val links: VisualLinks = VisualLinks(),
-               val indices: Indices) extends VuuInMemPluginLocator {
+               val indices: Indices,
+               val visibility: Visibility = Public) extends VuuInMemPluginLocator {
+
+  private val createdTimeColumn: SimpleColumn = SimpleColumn(CreatedTimeColumnName, customColumns.length, DataType.fromString("long"))
+  private val updatedTimeColumn: SimpleColumn = SimpleColumn(LastUpdatedTimeColumnName, customColumns.length + 1, DataType.fromString("long"))
+  val columns: Array[Column] = customColumns ++ Array(createdTimeColumn, updatedTimeColumn)
 
   private var module: ViewServerModule = null;
   private var permissionFunc: (ViewPort, TableContainer) => RowPermissionChecker = null
@@ -132,9 +155,9 @@ class TableDef(val name: String,
   }
 
   def permissionChecker(viewPort: ViewPort, tableContainer: TableContainer): Option[RowPermissionChecker] = {
-    if(permissionFunc != null){
+    if (permissionFunc != null) {
       Some(permissionFunc(viewPort, tableContainer))
-    }else{
+    } else {
       None
     }
   }
@@ -161,7 +184,7 @@ class TableDef(val name: String,
 
 trait JoinType
 
-object LeftOuterJoin extends JoinType{
+object LeftOuterJoin extends JoinType {
   override def toString: String = "LeftOuterJoin"
 }
 
@@ -172,7 +195,16 @@ case class JoinSpec(left: String, right: String, joinType: JoinType = InnerJoin)
 
 case class JoinTo(table: TableDef, joinSpec: JoinSpec)
 
-case class JoinTableDef(override val name: String, baseTable: TableDef, joinColumns: Array[Column], override val links: VisualLinks, override val joinFields: Seq[String], joins: JoinTo*) extends TableDef(name, baseTable.keyField, joinColumns, joinFields, indices = Indices(), autosubscribe = false) with VuuInMemPluginLocator{
+case class JoinTableDef(
+                         override val name: String,
+                         override val visibility: Visibility,
+                         baseTable: TableDef,
+                         joinColumns: Array[Column],
+                         override val links: VisualLinks,
+                         override val joinFields: Seq[String],
+                         joins: JoinTo*)
+  extends TableDef(name, baseTable.keyField, joinColumns, joinFields, indices = Indices(), autosubscribe = false, visibility = visibility)
+    with VuuInMemPluginLocator {
 
   lazy val joinTableColumns = getJoinDefinitionColumnsInternal()
   lazy val rightTables = joins.map(join => join.table.name).toArray
@@ -181,6 +213,11 @@ case class JoinTableDef(override val name: String, baseTable: TableDef, joinColu
 
 
   override def toString: String = s"JoinTableDef(name=$name)"
+
+  override def withPermissions(func: (ViewPort, TableContainer) => RowPermissionChecker): JoinTableDef = {
+    super.withPermissions(func)
+    this
+  }
 
   def getJoinDefinitionColumns(): Array[Column] = joinTableColumns
 
@@ -224,6 +261,11 @@ case class JoinTableDef(override val name: String, baseTable: TableDef, joinColu
   }
 }
 
+object JoinTableDef {
+  def apply(name: String, baseTable: TableDef, joinColumns: Array[Column], links: VisualLinks, joinFields: Seq[String], joins: JoinTo): JoinTableDef = {
+    new JoinTableDef(name, Public, baseTable, joinColumns, links, joinFields, joins)
+  }
+}
 //case class JoinTableDef(override val name: String, left: TableDef, right: TableDef, joinDef: JoinDefinition, joinColumns: Array[Column]) extends TableDef(name, joinDef.leftKeyField, joinColumns){
 //  def getJoinDefinitionColumns():Array[Column] = {
 //     Array(columnForName(left.keyField), columnForName(joinDef.rightKeyField))

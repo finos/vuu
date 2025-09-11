@@ -1,22 +1,24 @@
+import { Input } from "@salt-ds/core";
 import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
 import { SchemaColumn, TableSchema } from "@vuu-ui/vuu-data-types";
 import { ColumnDescriptorsByName } from "@vuu-ui/vuu-filter-types";
 import { FilterClause, FilterClauseModel } from "@vuu-ui/vuu-filters";
-import { ReactNode, useMemo } from "react";
 import { ColumnPicker } from "@vuu-ui/vuu-filters/src/filter-clause/ColumnPicker";
+import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { ReactNode, useMemo } from "react";
 
 import "./FilterClause.examples.css";
-import { Input } from "@salt-ds/core";
-import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
 
 const FilterClauseTemplate = ({
   filterClauseModel = new FilterClauseModel({}),
   tableSchema = getSchema("instruments"),
   columnsByName = columnDescriptorsByName(tableSchema.columns),
+  dropdownOnAutofocus,
 }: {
   columnsByName?: ColumnDescriptorsByName;
   filterClauseModel?: FilterClauseModel;
   tableSchema?: TableSchema;
+  dropdownOnAutofocus?: boolean;
 }) => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
@@ -34,6 +36,7 @@ const FilterClauseTemplate = ({
           data-testid="filterclause"
           filterClauseModel={filterClauseModel}
           vuuTable={tableSchema.table}
+          dropdownOnAutofocus={dropdownOnAutofocus}
         />
       </div>
     </DataSourceProvider>
@@ -83,6 +86,17 @@ export const NewFilterClauseNoCompletions = () => {
   return <FilterClauseTemplate />;
 };
 
+/** tags=data-consumer */
+export const NewFilterClauseWithDropdownOpenOnFocusDisabled = () => {
+  const filterClauseModel = useMemo(() => new FilterClauseModel({}), []);
+  return (
+    <FilterClauseTemplate
+      filterClauseModel={filterClauseModel}
+      dropdownOnAutofocus={false}
+    />
+  );
+};
+
 export const PartialFilterClauseColumnOnly = () => {
   const filterClauseModel = useMemo(
     () =>
@@ -109,6 +123,71 @@ export const PartialFilterClauseColumnAndOperator = () => {
     [],
   );
   return <FilterClauseTemplate filterClauseModel={filterClauseModel} />;
+};
+
+/** tags=data-consumer */
+export const FilterColumnWithDropdownOpenOnFocusDisabled = () => {
+  const filterClauseModel = useMemo(
+    () =>
+      new FilterClauseModel({
+        column: "currency",
+      }),
+    [],
+  );
+  return (
+    <FilterClauseTemplate
+      filterClauseModel={filterClauseModel}
+      dropdownOnAutofocus={false}
+    />
+  );
+};
+
+export const FilterColumnAndOperatorWithDropdownOpenOnFocusDisabled = () => {
+  const filterClauseModel = useMemo(
+    () =>
+      new FilterClauseModel({
+        column: "exchange",
+        op: "=",
+      }),
+    [],
+  );
+  return (
+    <FilterClauseTemplate
+      filterClauseModel={filterClauseModel}
+      dropdownOnAutofocus={false}
+    />
+  );
+};
+
+export const MultipleFilterClauseControlsWithDropDownAutofocusDisabled = () => {
+  const model1 = useMemo(
+    () =>
+      new FilterClauseModel({
+        column: "exchange",
+        op: "=",
+      }),
+    [],
+  );
+  const model2 = useMemo(
+    () =>
+      new FilterClauseModel({
+        column: "currency",
+        op: "=",
+      }),
+    [],
+  );
+  return (
+    <>
+      {[model1, model2].map((model, idx) => (
+        <div key={idx} style={{ padding: "20px" }}>
+          <FilterClauseTemplate
+            filterClauseModel={model}
+            dropdownOnAutofocus={false}
+          />
+        </div>
+      ))}
+    </>
+  );
 };
 
 /** tags=data-consumer */
@@ -161,7 +240,7 @@ export const PartialFilterClauseDateColumnOnly = () => {
   const tableSchema: TableSchema = {
     columns: tableColumns,
     key: "id",
-    table: { table: "Test", module: "test" },
+    table: { table: "TestDates", module: "TEST" },
   };
 
   const columnsByName: ColumnDescriptorsByName = {
@@ -178,6 +257,56 @@ export const PartialFilterClauseDateColumnOnly = () => {
   const filterClauseModel = useMemo(() => {
     const model = new FilterClauseModel({
       column: "tradeDate",
+    });
+    model.on("filterClause", (clause) =>
+      console.log(`onFilterClause ${JSON.stringify(clause)}`),
+    );
+    return model;
+  }, []);
+
+  return (
+    <LocalDataSourceProvider>
+      <FilterClauseTemplate
+        columnsByName={columnsByName}
+        filterClauseModel={filterClauseModel}
+        tableSchema={tableSchema}
+      />
+    </LocalDataSourceProvider>
+  );
+};
+
+export const PartialFilterClauseTimeColumnOnly = () => {
+  const tableColumns: SchemaColumn[] = [
+    {
+      name: "created",
+      serverDataType: "long",
+    },
+    {
+      name: "lastUpdate",
+      serverDataType: "long",
+    },
+  ];
+
+  const tableSchema: TableSchema = {
+    columns: tableColumns,
+    key: "id",
+    table: { table: "TestDates", module: "TEST" },
+  };
+
+  const columnsByName: ColumnDescriptorsByName = {
+    created: {
+      ...tableColumns[0],
+      type: "time",
+    },
+    lastUpdate: {
+      ...tableColumns[1],
+      type: "time",
+    },
+  };
+
+  const filterClauseModel = useMemo(() => {
+    const model = new FilterClauseModel({
+      column: "created",
     });
     model.on("filterClause", (clause) =>
       console.log(`onFilterClause ${JSON.stringify(clause)}`),

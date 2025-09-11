@@ -1,7 +1,5 @@
 import { SuggestionFetcher, TableSchemaTable } from "@vuu-ui/vuu-data-types";
 import {
-  RpcResultError,
-  RpcResultSuccess,
   TypeaheadParams,
   VuuRpcServiceRequest,
 } from "@vuu-ui/vuu-protocol-types";
@@ -56,9 +54,7 @@ export const useTypeaheadSuggestions = () => {
         // We don't just return rpcCall . In the case of an
         // error we will be returning the rejected promise, bypassing
         // the catch block below.
-        const response = await dataSource.rpcCall?.<
-          RpcResultSuccess | RpcResultError
-        >(rpcMessage);
+        const response = await dataSource.rpcRequest?.(rpcMessage);
         if (response?.type === "SUCCESS_RESULT") {
           return response.data as string[];
         } else {

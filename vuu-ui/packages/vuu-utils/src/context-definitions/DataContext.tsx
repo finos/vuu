@@ -12,7 +12,6 @@ export type DataSourceConstructor = {
 
 export interface DataContextProps {
   VuuDataSource: DataSourceConstructor;
-  dataSourceExtensions?: unknown;
   isLocalData: boolean;
   getServerAPI: () => Promise<
     Pick<ServerAPI, "getTableList" | "getTableSchema" | "rpcCall">
@@ -33,7 +32,7 @@ const getServerAPI = () => {
 
 class NullDataSourceConstructor {
   constructor(_: DataSourceConstructorProps) {
-    throw Error("no DataeProvider has been installed");
+    throw Error("no DataProvider has been installed");
   }
 }
 

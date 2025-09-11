@@ -43,8 +43,8 @@ class ColumnBuilder {
     this
   }
 
-  def addDecimal(columnName: String, scale: Short): ColumnBuilder = {
-    columns += (columnName + ":Decimal" + scale)
+  def addDecimal(columnName: String): ColumnBuilder = {
+    columns += (columnName + ":Decimal")
     this
   }
 

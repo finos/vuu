@@ -8,9 +8,10 @@ import {
   NumericFilterClauseOp,
   SingleValueFilterClauseOp,
 } from "@vuu-ui/vuu-filter-types";
-import { isDateTimeDataValue } from "@vuu-ui/vuu-utils";
+import { isDateTimeDataValue, isTimeDataValue } from "@vuu-ui/vuu-utils";
 import { ForwardedRef, forwardRef } from "react";
 import { FilterClauseValueEditorDate } from "./FilterClauseValueEditorDate";
+import { FilterClauseValueEditorTime } from "./FilterClauseValueEditorTime";
 
 const classBase = "vuuFilterClause";
 
@@ -26,6 +27,7 @@ type FilterClauseValueEditorProps = Pick<
 } & {
   operator?: SingleValueFilterClauseOp | "in";
   value?: string | string[] | number | number[] | boolean | boolean[];
+  dropdownOnAutofocus?: boolean,
 };
 
 export const FilterClauseValueEditor = forwardRef(
@@ -39,6 +41,7 @@ export const FilterClauseValueEditor = forwardRef(
       onOpenChange,
       table,
       value,
+      dropdownOnAutofocus = true,
     }: FilterClauseValueEditorProps,
     forwardedRef: ForwardedRef<HTMLDivElement>,
   ) {
@@ -51,7 +54,16 @@ export const FilterClauseValueEditor = forwardRef(
         <FilterClauseValueEditorDate
           inputProps={inputProps}
           className={cx(`${classBase}Field`, `${classBase}Value`)}
-          // ref={forwardedRef}
+          value={value as number}
+          operator={operator as NumericFilterClauseOp}
+          onChangeValue={onChangeValue}
+        />
+      );
+    } else if (isTimeDataValue(selectedColumn)) {
+      return (
+        <FilterClauseValueEditorTime
+          inputProps={inputProps}
+          className={cx(`${classBase}Field`, `${classBase}Value`)}
           value={value as number}
           operator={operator as NumericFilterClauseOp}
           onChangeValue={onChangeValue}
@@ -80,6 +92,7 @@ export const FilterClauseValueEditor = forwardRef(
                   ? value.map((val) => val.toString())
                   : (value.toString() as string | string[])
             }
+            dropdownOnAutofocus={dropdownOnAutofocus}
           />
         );
       case "int":

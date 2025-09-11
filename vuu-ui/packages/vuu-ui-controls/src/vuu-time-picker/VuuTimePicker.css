@@ -1,0 +1,9 @@
+.vuuTimePicker {
+    align-items: center;
+    display: inline-flex;
+    justify-content: center;
+
+    .TimeInput {
+        outline: none;
+    }
+}

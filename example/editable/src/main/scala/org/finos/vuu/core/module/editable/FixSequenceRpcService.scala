@@ -22,13 +22,13 @@ class FixSequenceRpcService(implicit clock: Clock, tableContainer: TableContaine
 
   private def onEditCell(key: String, columnName: String, data: Any, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
     val table = vp.table.asTable
-    table.processUpdate(key, RowWithData(key, Map(columnName -> data)), clock.now())
+    table.processUpdate(key, RowWithData(key, Map(columnName -> data)))
     ViewPortEditSuccess()
   }
 
   private def onEditRow(key: String, row: Map[String, Any], vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
     val table = vp.table.asTable
-    table.processUpdate(key, RowWithData(key, row), clock.now())
+    table.processUpdate(key, RowWithData(key, row))
     ViewPortEditSuccess()
   }
 

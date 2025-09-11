@@ -21,6 +21,7 @@ const classBase = "vuuExpandoCombobox";
 export interface ExpandoComboboxProps<Item = string>
   extends ComboBoxProps<Item> {
   itemToString?: (item: Item) => string;
+  dropdownOnAutofocus?: boolean;
 }
 
 export type ComboBoxOpenChangeHandler = Exclude<
@@ -48,6 +49,7 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
     onSelectionChange,
     onOpenChange,
     value: valueProp,
+    dropdownOnAutofocus = true,
     ...props
   }: ExpandoComboboxProps<Item>,
   forwardedRef: ForwardedRef<HTMLDivElement>,
@@ -102,16 +104,14 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
       ...inputPropsProp,
       onFocus: (evt) => {
         inputPropsProp?.onFocus?.(evt);
+        if (!dropdownOnAutofocus) return;
+
         setTimeout(() => {
           setOpen(true);
         }, 100);
       },
     };
-  }, [inputPropsProp]);
-
-  // const matchingValues = values.filter((val) =>
-  //   val.toLowerCase().startsWith(value.trim().toLowerCase())
-  // );
+  }, [inputPropsProp, dropdownOnAutofocus]);
 
   return (
     <div

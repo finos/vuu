@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.api._
 import org.finos.vuu.core.table.join.JoinAsserts._
 import org.finos.vuu.core.table.{Columns, KeyObserver, RowKeyUpdate, TableContainer}
-import org.finos.vuu.provider.{JoinTableProvider, VuuJoinTableProvider}
+import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, VuuJoinTableProvider}
 import org.finos.vuu.viewport.ViewPortSetup
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
@@ -145,6 +145,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
   def mkeOrderPricesFxDef(ordersDef: TableDef, pricesDef: TableDef, fxDef: TableDef): JoinTableDef = {
     JoinTableDef(
       name = "orderPricesFx",
+      visibility = Public,
       baseTable = ordersDef,
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") ++ Columns.allFromExcept(fxDef, "ric"),
       links = VisualLinks(),
@@ -178,6 +179,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
   def mkeOrder2PricesRatesDef(orders2Def: TableDef, pricesDef: TableDef, fxRates: TableDef): JoinTableDef = {
     JoinTableDef(
       name = "order2PricesAndFx",
+      visibility = Public,
       baseTable = orders2Def,
       joinColumns = Columns.allFrom(orders2Def)
         ++ Columns.allFromExcept(pricesDef, "ric")
@@ -206,7 +208,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
 
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-      implicit val joinTableProvider: JoinTableProvider = new VuuJoinTableProvider()
+      implicit val joinTableProvider: JoinTableProvider = JoinTableProviderImpl()
 
       val ordersDef = mkeOrdersDef()
 
@@ -258,7 +260,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
     Scenario("Left Outer Join, Right key update") {
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-      implicit val joinTableProvider: JoinTableProvider = new VuuJoinTableProvider()
+      implicit val joinTableProvider: JoinTableProvider = JoinTableProviderImpl()
 
       val ordersDef = mkeOrdersDef()
 
@@ -307,7 +309,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
 
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-      implicit val joinTableProvider: JoinTableProvider = new VuuJoinTableProvider()
+      implicit val joinTableProvider: JoinTableProvider = JoinTableProviderImpl()
 
       val ordersDef = mkeOrders2Def()
       val pricesDef = mkePricesDef()
@@ -359,7 +361,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
 
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-      implicit val joinTableProvider: JoinTableProvider = new VuuJoinTableProvider()
+      implicit val joinTableProvider: JoinTableProvider = JoinTableProviderImpl()
 
       val ordersDef = mkeOrdersDef()
 
@@ -415,7 +417,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
     Scenario("Left Outer Join, Delete Right Record") {
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-      implicit val joinTableProvider : JoinTableProvider = new VuuJoinTableProvider()
+      implicit val joinTableProvider : JoinTableProvider = JoinTableProviderImpl()
 
       val ordersDef = mkeOrdersDef()
 
@@ -465,7 +467,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
     Scenario("Left Outer Join of Joins") {
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-      implicit val joinTableProvider: VuuJoinTableProvider = new VuuJoinTableProvider()
+      implicit val joinTableProvider: JoinTableProvider = JoinTableProviderImpl()
 
       val ordersDef = mkeOrdersDef()
       val pricesDef = mkePricesDef()

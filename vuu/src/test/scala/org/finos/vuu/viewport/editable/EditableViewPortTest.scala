@@ -29,7 +29,6 @@ abstract class EditableViewPortTest extends AbstractViewPortTestCase with Matche
       override def tableDefContainer: TableDefContainer = ???
       override def tableDefs: List[TableDef] = ???
       override def serializationMixin: AnyRef = ???
-      override def rpcHandlersUnrealized: List[IVuuServer => RpcHandler] = ???
       override def getProviderForTable(table: DataTable, viewserver: IVuuServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider = ???
       override def staticFileResources(): List[StaticServedResource] = ???
       override def restServicesUnrealized: List[IVuuServer => RestService] = ???
@@ -66,7 +65,7 @@ abstract class EditableViewPortTest extends AbstractViewPortTestCase with Matche
             "exchange" -> exchange
           )
 
-          sessionTable.processUpdate(clOrderId, RowWithData(clOrderId, dataMap), clock.now())
+          sessionTable.processUpdate(clOrderId, RowWithData(clOrderId, dataMap))
         })
 
         OpenDialogViewPortAction(ViewPortTable(sessionTable.name, baseTable.getTableDef.getModule().name))
@@ -109,6 +108,7 @@ abstract class EditableViewPortTest extends AbstractViewPortTestCase with Matche
 
     val joinDef = JoinTableDef(
       name = "consInstrumentPrice",
+      visibility = Public,
       baseTable = constituentDef,
       joinColumns = Columns.allFrom(constituentDef) ++ Columns.allFromExcept(instrumentDef, "ric") ++ Columns.allFromExcept(pricesDef, "ric"),
       links = VisualLinks(),

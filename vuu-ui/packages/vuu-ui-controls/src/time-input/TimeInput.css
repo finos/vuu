@@ -1,0 +1,28 @@
+.salt-density-high .vuuTimeInput {
+    --time-input-width: 60px;
+}
+.salt-density-medium .vuuTimeInput {
+    --time-input-width: 70px;
+}
+.salt-density-low .vuuTimeInput {
+    --time-input-width: 80px;
+}
+.salt-density-touch .vuuTimeInput {
+    --time-input-width: 90px;
+}
+
+.vuuTimeInput {
+    border-width: 1px;
+    font-family: var(--salt-typography-fontFamily);
+    width: var(--vuuTimeInput-width, var(--time-input-width));
+
+    &:focus::-webkit-input-placeholder {
+        color: transparent;
+    }
+
+}
+
+.invalid {
+    border-color: red;
+}
+

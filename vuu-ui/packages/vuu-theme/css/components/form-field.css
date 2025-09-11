@@ -1,0 +1,7 @@
+.salt-theme.vuu-theme {
+
+    .saltFormField:has(.vuuColumnFilter){
+        width: fit-content;
+    }
+
+}

@@ -1,4 +1,4 @@
-import { registerComponent, uuid } from "@vuu-ui/vuu-utils";
+import { queryClosest, registerComponent, uuid } from "@vuu-ui/vuu-utils";
 import { ListBox, ListBoxProps, Option, OptionProps } from "@salt-ds/core";
 
 import { useComponentCssInjection } from "@salt-ds/styles";
@@ -6,15 +6,18 @@ import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import {
   HTMLAttributes,
-  MouseEvent,
+  MouseEventHandler,
   ReactElement,
   cloneElement,
   memo,
+  useCallback,
 } from "react";
 import { useLayoutProviderDispatch } from "../layout-provider";
 import { View, ViewProps } from "../layout-view";
 
 import paletteCss from "./Palette.css";
+
+const classBase = "vuuPalette";
 
 const clonePaletteItem = (paletteItem: HTMLElement) => {
   const dolly = paletteItem.cloneNode(true) as HTMLElement;
@@ -23,17 +26,28 @@ const clonePaletteItem = (paletteItem: HTMLElement) => {
   return dolly;
 };
 
+const wrapInView = (
+  component: ReactElement,
+  viewProps?: Partial<ViewProps>,
+) => {
+  const id = uuid();
+  return (
+    <View id={id} key={id} {...viewProps}>
+      {component}
+    </View>
+  );
+};
 export interface PaletteItemProps extends OptionProps {
   /**
    * This is the payload that will be created when the
    * palette item is dropped
    */
+  ViewProps?: Pick<
+    ViewProps,
+    "allowRename" | "closeable" | "header" | "resizeable" | "resize" | "title"
+  >;
   component: ReactElement;
-  closeable?: boolean;
-  header?: boolean;
   idx?: number;
-  resize?: "defer";
-  resizeable?: boolean;
 }
 
 export const PaletteItem = memo(
@@ -42,9 +56,8 @@ export const PaletteItem = memo(
     component,
     idx,
     key,
-    resizeable,
-    header,
-    closeable,
+    value,
+    ViewProps,
     ...props
   }: PaletteItemProps) => {
     const targetWindow = useWindow();
@@ -53,12 +66,46 @@ export const PaletteItem = memo(
       css: paletteCss,
       window: targetWindow,
     });
+    const dispatch = useLayoutProviderDispatch();
+
+    const handleMouseDown = useCallback<MouseEventHandler<HTMLDivElement>>(
+      (e) => {
+        const el = queryClosest(e.target, ".vuuPaletteItem", true);
+        const { height, left, top, width } = el.getBoundingClientRect();
+
+        dispatch({
+          dragRect: {
+            left,
+            top,
+            right: left + width,
+            bottom: top + 150,
+            width,
+            height,
+          },
+          dragElement: clonePaletteItem(el),
+          evt: e.nativeEvent,
+          instructions: {
+            DoNotRemove: true,
+            DoNotTransform: true,
+            DriftHomeIfNoDropTarget: true,
+            RemoveDraggableOnDragEnd: true,
+            dragThreshold: 10,
+          },
+          path: "*",
+          payload: wrapInView(component, ViewProps),
+          type: "drag-start",
+        });
+      },
+      [ViewProps, component, dispatch],
+    );
 
     return (
       <Option
         className={cx("vuuPaletteItem", className)}
         data-draggable
         data-index={idx}
+        onMouseDown={handleMouseDown}
+        value={value}
         {...props}
       />
     );
@@ -87,64 +134,6 @@ export const Palette = ({
   orientation = "horizontal",
   ...props
 }: PaletteProps) => {
-  const dispatch = useLayoutProviderDispatch();
-  const classBase = "vuuPalette";
-
-  function handleMouseDown(evt: MouseEvent) {
-    const target = evt.target as HTMLElement;
-    const listItemElement = target.closest(".vuuPaletteItem") as HTMLElement;
-    const idx = parseInt(listItemElement.dataset?.index ?? "-1");
-    const {
-      props: { caption, component: payload, key, template, ...props },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } = children[idx] as any;
-    const { ViewProps: componentViewProps } = payload.props;
-    const { height, left, top, width } =
-      listItemElement.getBoundingClientRect();
-    const id = uuid();
-    console.log({
-      ViewProps,
-      props,
-    });
-    const component = template ? (
-      payload
-    ) : (
-      <View
-        id={id}
-        key={id}
-        {...ViewProps}
-        {...props}
-        {...componentViewProps}
-        title={props.label}
-      >
-        {payload}
-      </View>
-    );
-
-    dispatch({
-      dragRect: {
-        left,
-        top,
-        right: left + width,
-        bottom: top + 150,
-        width,
-        height,
-      },
-      dragElement: clonePaletteItem(listItemElement),
-      evt: evt.nativeEvent,
-      instructions: {
-        DoNotRemove: true,
-        DoNotTransform: true,
-        DriftHomeIfNoDropTarget: true,
-        RemoveDraggableOnDragEnd: true,
-        dragThreshold: 10,
-      },
-      path: "*",
-      payload: component,
-      type: "drag-start",
-    });
-  }
-
   return (
     <ListBox
       {...ListBoxProps}
@@ -157,7 +146,6 @@ export const Palette = ({
           ? cloneElement(child, {
               idx,
               key: idx,
-              onMouseDown: handleMouseDown,
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } as any)
           : child,

@@ -1,13 +1,16 @@
 package org.finos.vuu.provider
 
-import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.VuuJoinTableProviderOptions
 
 object JoinTableProviderImpl {
 
-  def apply()(implicit timeProvider: Clock, lifecycle: LifecycleContainer, metrics: MetricsProvider): JoinTableProvider = {
-    new VuuJoinTableProvider()
+  def apply()(implicit lifecycleContainer: LifecycleContainer): JoinTableProvider = {
+    apply(VuuJoinTableProviderOptions())
+  }
+
+  def apply(vuuJoinTableProviderOptions: VuuJoinTableProviderOptions)(implicit lifecycle: LifecycleContainer): JoinTableProvider = {
+    new VuuJoinTableProvider(vuuJoinTableProviderOptions)
   }
 
 }

@@ -2,10 +2,13 @@ package org.finos.vuu.core.table.join
 
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.toolbox.time.{Clock, DefaultClock, TestFriendlyClock}
 import org.finos.vuu.api._
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.VuuJoinProviderOptionsImpl
+import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName}
 import org.finos.vuu.core.table._
+import org.finos.vuu.core.table.datatype.{Decimal, EpochTimestamp}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.plugin.DefaultPluginRegistry
@@ -17,7 +20,7 @@ import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
 
-import java.time.{LocalDateTime, ZoneId}
+import java.time.{Instant, LocalDateTime, ZoneId}
 
 
 class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
@@ -49,15 +52,15 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-      val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
+      val dateTime: Instant = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant
 
       val ordersDef = TableDef(
         name = "orders",
         keyField = "orderId",
-        columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
+        columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:EpochTimestamp", "quantity:Double"),
         joinFields =  "ric", "orderId")
 
-      val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+      val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Decimal", "open:Double", "close:Double"), "ric")
 
       val joinDef = JoinTableDef(
         name          = "orderPrices",
@@ -91,11 +94,11 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       joinProvider.start()
 
-      ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
-      pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220.0, "ask" -> 222.0))
+      ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "tradeTime" -> EpochTimestamp(dateTime), "quantity" -> 100, "ric" -> "VOD.L"))
+      pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220.0, "ask" -> 222.0, "last" -> Decimal(BigDecimal(221.0004))))
 
-      pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500.0, "ask" -> 501.0))
-      ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "BT.L"))
+      pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500.0, "ask" -> 501.0, "last" -> Decimal(BigDecimal(500.0004))))
+      ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> EpochTimestamp(dateTime), "quantity" -> 100, "ric" -> "BT.L"))
 
       joinProvider.runOnce()
 
@@ -103,7 +106,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       val outQueue = new OutboundRowPublishQueue()
 
-      val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric"))
+      val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "last"))
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orderPrices, DefaultRange, vpcolumns)
 
@@ -122,8 +125,88 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
         override def missingRowData(rowKey: String, column: Column): Unit = {}
       }
 
-      updates.filter( vp => vp.vpUpdate == RowUpdateType).foreach(update => update.table.readRow(update.key.key, List("orderId", "trader", "tradeTime", "ric", "bid", "ask"), printToConsoleProcessor ))
+      updates.filter( vp => vp.vpUpdate == RowUpdateType).foreach(update => update.table.readRow(update.key.key, List("orderId", "trader", "tradeTime", "ric", "bid", "ask", "last"), printToConsoleProcessor ))
     }
+
+    Scenario("check large number of ticks all the way through from source to join table"){
+
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+
+      val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
+
+      val ordersDef = TableDef(
+        name = "orders",
+        keyField = "orderId",
+        columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
+        joinFields =  "ric", "orderId")
+
+      val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+
+      val joinDef = JoinTableDef(
+        name          = "orderPrices",
+        baseTable     = ordersDef,
+        joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
+        joins  =
+          JoinTo(
+            table = pricesDef,
+            joinSpec = JoinSpec( left = "ric", right = "ric", LeftOuterJoin)
+          ),
+        links = VisualLinks(),
+        joinFields = Seq()
+      )
+
+      val batchSize = 10
+      val maxQueueSize = 100
+      val joinProvider   = JoinTableProviderImpl(VuuJoinProviderOptionsImpl.apply(batchSize = batchSize, maxQueueSize = maxQueueSize))
+
+      val tableContainer = new TableContainer(joinProvider)
+
+      val orders = tableContainer.createTable(ordersDef)
+      val prices = tableContainer.createTable(pricesDef)
+      val orderPrices = tableContainer.createJoinTable(joinDef)
+
+      val ordersProvider = new MockProvider(orders)
+      val pricesProvider = new MockProvider(prices)
+
+      val providerContainer = new ProviderContainer(joinProvider)
+
+      val viewPortContainer = setupViewPort(tableContainer, providerContainer)
+
+      joinProvider.start()
+
+      pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220.0, "ask" -> 222.0))
+
+      pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500.0, "ask" -> 501.0))
+
+      for (quantity <- 1 to maxQueueSize + 1) {
+        ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> quantity, "ric" -> "VOD.L"))
+        ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> quantity, "ric" -> "BT.L"))
+        if (quantity % batchSize == 0) {
+          joinProvider.runOnce()
+        }
+      }
+
+      joinProvider.runOnce()
+
+      val session = ClientSessionId("sess-01", "chris")
+
+      val outQueue = new OutboundRowPublishQueue()
+
+      val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric"))
+
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orderPrices, DefaultRange, vpcolumns)
+
+      viewPortContainer.runOnce()
+
+      assertVpEq(filterByVpId(combineQs(viewPort), viewPort)){
+        Table(
+          ("orderId" ,"trader"     ,"tradeTime"   ,"quantity" , "ric"  ),
+          ("NYC-0001","chris"   ,1437732000000L     ,maxQueueSize + 1 , "VOD.L"    ),
+          ("NYC-0002","chris"  ,1437732000000L     ,maxQueueSize + 1  , "BT.L"   )
+        )
+      }
+
+      }
 
     Scenario("check that registering and deregistering listeners on join table propagates to source tables"){
 
@@ -175,7 +258,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       prices.isKeyObservedBy("VOD.L", ko2) should be (true)
     }
 
-    Scenario("Check deleting keys from join table and see if it propogates correctly"){
+    Scenario("Check deleting keys from join table and see if it propagates correctly"){
 
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
@@ -241,6 +324,83 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
     }
 
+    Scenario("check created timestamp and last updated timestamp are populated correctly for LeftOuterJoin") {
+      val testFriendlyClock: TestFriendlyClock = new TestFriendlyClock(1000L)
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer()(testFriendlyClock)
+      val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
+      val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, _) = setupForJoinType(LeftOuterJoin)(lifecycle, testFriendlyClock, metrics)
+
+      joinProvider.start()
+
+      ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
+      pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220.0, "ask" -> 222.0))
+
+      testFriendlyClock.advanceBy(1000)
+      pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500.0, "ask" -> 501.0))
+      ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "BT.L"))
+
+      joinProvider.runOnce()
+
+      val row1 = orderPrices.pullRow("NYC-0001")
+      val row1CreatedTime = row1.get(CreatedTimeColumnName).asInstanceOf[Long]
+      val row1LastUpdatedTime = row1.get(LastUpdatedTimeColumnName).asInstanceOf[Long]
+      row1CreatedTime shouldEqual row1LastUpdatedTime
+
+      val row2 = orderPrices.pullRow("NYC-0002")
+      val row2CreatedTime = row2.get(CreatedTimeColumnName).asInstanceOf[Long]
+      val row2LastUpdatedTime = row2.get(LastUpdatedTimeColumnName).asInstanceOf[Long]
+      row2CreatedTime shouldEqual row2LastUpdatedTime
+
+      testFriendlyClock.advanceBy(1000)
+      ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 200, "ric" -> "BT.L"))
+
+      joinProvider.runOnce()
+
+      val updatedRow = orderPrices.pullRow("NYC-0002")
+      val updatedRowCreatedTime = updatedRow.get(CreatedTimeColumnName).asInstanceOf[Long]
+      val updatedRowLastUpdatedTime = updatedRow.get(LastUpdatedTimeColumnName).asInstanceOf[Long]
+      updatedRowCreatedTime shouldEqual row2CreatedTime
+      updatedRowLastUpdatedTime should be > row2LastUpdatedTime
+    }
+
+    Scenario("check created timestamp and last updated timestamp are populated correctly for InnerJoin") {
+      val testFriendlyClock: TestFriendlyClock = new TestFriendlyClock(1000L)
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer()(testFriendlyClock)
+      val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
+      val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, _) = setupForJoinType(InnerJoin)(lifecycle, testFriendlyClock, metrics)
+
+      joinProvider.start()
+
+      ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
+      pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220.0, "ask" -> 222.0))
+
+      testFriendlyClock.advanceBy(1000)
+      pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500.0, "ask" -> 501.0))
+      ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "BT.L"))
+
+      joinProvider.runOnce()
+
+      val row1 = orderPrices.pullRow("NYC-0001")
+      val row1CreatedTime = row1.get(CreatedTimeColumnName).asInstanceOf[Long]
+      val row1LastUpdatedTime = row1.get(LastUpdatedTimeColumnName).asInstanceOf[Long]
+      row1CreatedTime shouldEqual row1LastUpdatedTime
+
+      val row2 = orderPrices.pullRow("NYC-0002")
+      val row2CreatedTime = row2.get(CreatedTimeColumnName).asInstanceOf[Long]
+      val row2LastUpdatedTime = row2.get(LastUpdatedTimeColumnName).asInstanceOf[Long]
+      row2CreatedTime shouldEqual row2LastUpdatedTime
+
+      testFriendlyClock.advanceBy(1000)
+      ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 200, "ric" -> "BT.L"))
+
+      joinProvider.runOnce()
+
+      val updatedRow = orderPrices.pullRow("NYC-0002")
+      val updatedRowCreatedTime = updatedRow.get(CreatedTimeColumnName).asInstanceOf[Long]
+      val updatedRowLastUpdatedTime = updatedRow.get(LastUpdatedTimeColumnName).asInstanceOf[Long]
+      updatedRowCreatedTime shouldEqual row2CreatedTime
+      updatedRowLastUpdatedTime should be > row2LastUpdatedTime
+    }
   }
 
 }

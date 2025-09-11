@@ -52,7 +52,6 @@ object TestModule{
             service = new MyCustomRpcHandler
           )
         )
-      .addRpcHandler(vs => new MyCustomRpcHandler)
       .asModule()
   }
 }

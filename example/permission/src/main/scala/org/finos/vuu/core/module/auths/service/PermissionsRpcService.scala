@@ -1,7 +1,6 @@
 package org.finos.vuu.core.module.auths.service
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.auths.PermissionModule.ColumnNames._
 import org.finos.vuu.core.module.auths.PermissionSet
 import org.finos.vuu.core.module.auths.PermissionSet.{AlgoCoveragePermission, HighTouchPermission, SalesTradingPermission}
@@ -10,7 +9,7 @@ import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.DefaultRpcHandler
 import org.finos.vuu.viewport._
 
-class PermissionsRpcService(val table: DataTable)(implicit clock: Clock, tableContainer: TableContainer) extends DefaultRpcHandler with StrictLogging {
+class PermissionsRpcService(val table: DataTable)(implicit tableContainer: TableContainer) extends DefaultRpcHandler with StrictLogging {
 
   private def addPermission(mask: Int, selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
     val users = selection.rowKeyIndex.map({ case (key, _) => key }).toList
@@ -21,7 +20,7 @@ class PermissionsRpcService(val table: DataTable)(implicit clock: Clock, tableCo
         case row: RowWithData =>
           val permissions = row.get(Bitmask).asInstanceOf[Int]
           val newPermissions = PermissionSet.addRole(permissions, mask)
-          table.processUpdate(user, RowWithData(user, Map(User -> user, Bitmask -> newPermissions)), clock.now())
+          table.processUpdate(user, RowWithData(user, Map(User -> user, Bitmask -> newPermissions)))
       }
     })
     NoAction()
@@ -36,7 +35,7 @@ class PermissionsRpcService(val table: DataTable)(implicit clock: Clock, tableCo
         case row: RowWithData =>
           val permissions = row.get(Bitmask).asInstanceOf[Int]
           val newPermissions = PermissionSet.removeRole(permissions, mask)
-          table.processUpdate(user, RowWithData(user, Map(User -> user, Bitmask -> newPermissions)), clock.now())
+          table.processUpdate(user, RowWithData(user, Map(User -> user, Bitmask -> newPermissions)))
       }
     })
     NoAction()

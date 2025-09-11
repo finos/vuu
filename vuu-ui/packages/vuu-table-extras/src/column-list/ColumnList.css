@@ -5,19 +5,28 @@
   --vuuListItem-padding: 0;
   display: flex;
   flex-direction: column;
+  padding: 0 var(--salt-spacing-100);
 
+  .saltListBox {
+    background-color: inherit;
+  }
 
   .saltOption {
     align-items: center;
-    background-color: var(--salt-container-primary-background);
+    background-color: inherit;
     border-bottom: var(--vuuColumnListItem-border, solid) 1px
       var(--salt-separable-tertiary-borderColor);
     gap: var(--salt-spacing-200);
-    padding: var(--salt=spacin-100) 0;
-
+    height: calc(var(--salt-size-base) + var(--salt-spacing-200));
     .vuuIcon {
       --vuu-icon-color: var(--salt-content-secondary-foreground);
     }
+
+    .vuuHighlight {
+      color: var(--vuu-color-blue-40);
+      text-decoration: underline;
+    }
+
   }
 
   .vuuColumnList-text {
@@ -30,8 +39,6 @@
   --vuu-icon-svg: var(--vuu-svg-function);
 }
 
-
-
 .vuuColumnList-withColumnNavgation {
   .vuuColumnList-text:hover {
     font-weight: 600;
@@ -39,12 +46,20 @@
   }
 }
 
+.vuuColumnList-search {
+  --saltInput-paddingLeft: var(--salt-spacing-300);
+  padding: var(--salt-spacing-200) var(--salt-spacing-300) var(--salt-spacing-300) var(--salt-spacing-300);
+}
+
 .vuuColumnList-header {
+  align-items: center;
   border-top: solid 2px var(--vuu-color-gray-30);
-  flex: 0 0 40px;
+  display: flex;
   font-size: 14px;
   font-weight: 600;
-  padding-top: 24px;
+  flex: 0 0 var(--vuuColumnList-headerHeight, 32px);
+  padding-left: var(--salt-spacing-400);
+
 }
 
 .vuuColumnList-colHeadings {

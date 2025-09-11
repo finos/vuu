@@ -72,7 +72,15 @@ trait ViewPort {
 
   def setEnabled(enabled: Boolean): Unit
 
+  def freeze(): Unit
+
+  def unfreeze(): Unit
+
   def isEnabled: Boolean
+
+  def isFrozen: Boolean
+
+  def viewPortFrozenTime: Option[Long]
 
   def hasGroupBy: Boolean = getGroupBy != NoGroupBy
 
@@ -178,6 +186,7 @@ class ViewPortImpl(val id: String,
   private val viewPortLock = new Object
 
   @volatile private var enabled = true
+  @volatile private var viewPortFrozenTimestamp: Option[Long] = None
 
   @volatile private var requestId: String = ""
 
@@ -202,6 +211,18 @@ class ViewPortImpl(val id: String,
   }
 
   override def isEnabled: Boolean = this.enabled
+
+  override def isFrozen: Boolean = this.viewPortFrozenTimestamp.isDefined
+
+  override def viewPortFrozenTime: Option[Long] = this.viewPortFrozenTimestamp
+
+  override def freeze(): Unit = {
+    viewPortFrozenTimestamp = Some(timeProvider.now())
+  }
+
+  override def unfreeze(): Unit = {
+    viewPortFrozenTimestamp = None
+  }
 
   @volatile
   private var viewPortVisualLink: Option[ViewPortVisualLink] = None
@@ -319,7 +340,7 @@ class ViewPortImpl(val id: String,
 
 
   override def getStructuralHashCode(): Int = {
-    37 * filterAndSort.hashCode() ^ getGroupBy.hashCode() ^ getColumns.hashCode() ^ permissionChecker().hashCode()
+    37 * filterAndSort.hashCode() ^ getGroupBy.hashCode() ^ getColumns.hashCode() ^ permissionChecker().hashCode() ^ viewPortFrozenTimestamp.hashCode()
   }
 
   private def getTreeNodeStateHash(): Int = {
@@ -554,13 +575,13 @@ class ViewPortImpl(val id: String,
   }
 
   private def addObserver(key: String) = {
-    //logger.info("adding observer for key:" + key)
+    logger.debug("Adding observer for key:" + key)
     table.addKeyObserver(key, this)
   }
 
   private def removeObserver(oldKey: String) = {
     if (table.isKeyObservedBy(oldKey, this)) {
-      //logger.info("removing observer for key:" + oldKey)
+      logger.debug("Removing observer for key:" + oldKey)
       table.removeKeyObserver(oldKey, this)
     }
   }

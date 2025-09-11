@@ -56,14 +56,18 @@ export const useVuuTypeaheadInput = ({
   const pendingListFocusRef = useRef(false);
 
   const { current: value } = valueRef;
+  const commitTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleKeyDown = useCallback<KeyboardEventHandler<HTMLInputElement>>(
     (evt) => {
       const { current: value } = valueRef;
       if (evt.key === "Enter" && value !== "") {
         if (allowFreeInput) {
-          onCommit?.(evt, value, "text-input");
-          setOpen(false);
+          commitTimeout.current = setTimeout(() => {
+            onCommit?.(evt, value, "text-input");
+            setOpen(false);
+            commitTimeout.current = null;
+          }, 200);
         } else {
           setTypeaheadValues(NO_FREE_TEXT);
         }
@@ -136,6 +140,10 @@ export const useVuuTypeaheadInput = ({
     evt: SyntheticEvent,
     [newSelected]: string[],
   ) => {
+    if (commitTimeout.current) {
+      clearTimeout(commitTimeout.current);
+      commitTimeout.current = null;
+    }
     setValue(newSelected);
     onCommit(
       evt as SyntheticEvent<HTMLInputElement>,

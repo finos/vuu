@@ -240,16 +240,24 @@ export const useTable = ({
   useLayoutEffectSkipFirst(() => {
     dispatchTableModelAction({
       availableWidth,
+      selectionModel,
       type: "init",
       tableConfig: tableConfigRef.current,
       dataSource,
     });
-  }, [availableWidth, config, dataSource, dispatchTableModelAction]);
+  }, [
+    availableWidth,
+    config,
+    dataSource,
+    dispatchTableModelAction,
+    selectionModel,
+  ]);
 
   const applyTableConfigChange = useCallback(
     (config: TableConfig) => {
       dispatchTableModelAction({
         availableWidth,
+        selectionModel,
         type: "init",
         tableConfig: config,
         dataSource,
@@ -257,7 +265,13 @@ export const useTable = ({
       tableConfigRef.current = config;
       onConfigChange?.(stripInternalProperties(config));
     },
-    [availableWidth, dataSource, dispatchTableModelAction, onConfigChange],
+    [
+      availableWidth,
+      dataSource,
+      dispatchTableModelAction,
+      onConfigChange,
+      selectionModel,
+    ],
   );
 
   const columnMap = useMemo(
@@ -327,13 +341,20 @@ export const useTable = ({
       dispatchTableModelAction({
         availableWidth,
         dataSource,
+        selectionModel,
         tableConfig,
         type: "init",
       });
       tableConfigRef.current = tableConfig;
       onConfigChange?.(stripInternalProperties(tableConfig));
     },
-    [availableWidth, dataSource, dispatchTableModelAction, onConfigChange],
+    [
+      availableWidth,
+      dataSource,
+      dispatchTableModelAction,
+      onConfigChange,
+      selectionModel,
+    ],
   );
 
   const handleDataSourceConfigChanged = useCallback(

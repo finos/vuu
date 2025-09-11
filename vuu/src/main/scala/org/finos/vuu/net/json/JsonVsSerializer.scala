@@ -17,7 +17,6 @@ object JsonVsSerializer extends Serializer[String, MessageBody] {
     val mapper = new ObjectMapper()
     mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
     mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
-    //mapper.addMixIn(classOf[MessageBody], classOf[CoreJsonSerializationMixin])
     mapper.registerModule(DefaultScalaModule)
     mapper
   }
