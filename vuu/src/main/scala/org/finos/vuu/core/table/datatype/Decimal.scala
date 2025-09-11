@@ -4,14 +4,22 @@ object Decimal {
 
   private final val PRECISION = 8
   private final val MULTIPLIER = BigDecimal(10).pow(PRECISION).setScale(PRECISION)
-  final val MAX_VALUE: BigDecimal = Long.MaxValue / MULTIPLIER
-  final val MIN_VALUE: BigDecimal = Long.MinValue / MULTIPLIER
+  final val MaxValue: BigDecimal = Long.MaxValue / MULTIPLIER
+  final val MinValue: BigDecimal = Long.MinValue / MULTIPLIER
 
-  def apply(originalValue: BigDecimal): Decimal = {
-    if (originalValue.compareTo(MAX_VALUE) > 0 || originalValue.compareTo(MIN_VALUE) < 0) {
+  def apply(originalValue: Double): Decimal = {
+    if (originalValue > MaxValue || originalValue < MinValue) {
       throw new IllegalArgumentException(s"$originalValue does not fit inside Decimal")
     } else {
-      new Decimal((originalValue * MULTIPLIER).longValue)
+      Decimal((originalValue * MULTIPLIER).longValue)
+    }
+  }
+
+  def apply(originalValue: BigDecimal): Decimal = {
+    if (originalValue.compareTo(MaxValue) > 0 || originalValue.compareTo(MinValue) < 0) {
+      throw new IllegalArgumentException(s"$originalValue does not fit inside Decimal")
+    } else {
+      Decimal((originalValue * MULTIPLIER).longValue)
     }
   }
 
@@ -22,8 +30,9 @@ object Decimal {
  *
  * @param value the value post-multiplication
  */
-case class Decimal(value: Long) {
+case class Decimal(value: Long) extends Ordered[Decimal] {
 
   override def toString: String = value.toString
 
+  override def compare(that: Decimal): Int = value.compareTo(that.value)
 }

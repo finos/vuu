@@ -28,7 +28,7 @@ class DecimalTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Check creation via BigDecimal - Number is maximum supported") {
 
-      val input = Decimal.MAX_VALUE
+      val input = Decimal.MaxValue
 
       val decimal = Decimal(input)
 
@@ -46,7 +46,7 @@ class DecimalTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Check creation via BigDecimal - Number is minimum supported") {
 
-      val input = Decimal.MIN_VALUE
+      val input = Decimal.MinValue
 
       val decimal = Decimal(input)
 
