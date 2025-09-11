@@ -12,6 +12,7 @@
 }
 
 .vuuTimeInput {
+    background: var(--vuuTimeInput-background, inherit);
     border-width: 1px;
     font-family: var(--salt-typography-fontFamily);
     width: var(--vuuTimeInput-width, var(--time-input-width));

@@ -19,13 +19,13 @@ vi.mock("@vuu-ui/vuu-filter-parser", () => ({
       return { column: "price", op: ">", value: 100 };
     }
     if (
-      filterString === 'lastUpdate >= "09:00:00" and lastUpdate <= "10:00:00"'
+      filterString === 'lastUpdate > "09:00:00" and lastUpdate < "10:00:00"'
     ) {
       return {
         op: "and",
         filters: [
-          { column: "lastUpdate", op: ">=", value: "09:00:00" },
-          { column: "lastUpdate", op: "<=", value: "10:00:00" },
+          { column: "lastUpdate", op: ">", value: "09:00:00" },
+          { column: "lastUpdate", op: "<", value: "10:00:00" },
         ],
       };
     }
@@ -92,7 +92,7 @@ describe("ColumnFilterStore", () => {
   it("handles between operator for numeric columns", () => {
     const store = new ColumnFilterStore();
     store.addFilter(priceDescriptor, "between", ["10", "20"]);
-    expect(store.filter).toEqual({ filter: "price >= 10 and price <= 20" });
+    expect(store.filter).toEqual({ filter: "price > 10 and price < 20" });
   });
 
   it("handles time filter with single value", () => {
@@ -106,7 +106,7 @@ describe("ColumnFilterStore", () => {
     const store = new ColumnFilterStore();
     store.addFilter(lastUpdateDescriptor, "between", ["09:00:00", "10:00:00"]);
     expect(store.filter).toEqual({
-      filter: "lastUpdate >= 1747299600000 and lastUpdate <= 1747303200000",
+      filter: "lastUpdate > 1747299600000 and lastUpdate < 1747303200000",
     });
   });
 
@@ -122,10 +122,10 @@ describe("ColumnFilterStore", () => {
   it("loads filter from query string for time range", () => {
     const store = new ColumnFilterStore({ filter: "" }, [lastUpdateDescriptor]);
     store.filter = {
-      filter: 'lastUpdate >= "09:00:00" and lastUpdate <= "10:00:00"',
+      filter: 'lastUpdate > "09:00:00" and lastUpdate < "10:00:00"',
     };
     expect(store.filter).toEqual({
-      filter: "lastUpdate >= 1747299600000 and lastUpdate <= 1747303200000",
+      filter: "lastUpdate > 1747299600000 and lastUpdate < 1747303200000",
     });
   });
 
