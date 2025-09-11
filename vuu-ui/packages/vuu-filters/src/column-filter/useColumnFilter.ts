@@ -6,7 +6,7 @@ import {
 } from "@vuu-ui/vuu-filter-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
-import { CommitHandler, queryClosest } from "@vuu-ui/vuu-utils";
+import { CommitHandler } from "@vuu-ui/vuu-utils";
 import { VuuTypeaheadInputProps } from "@vuu-ui/vuu-ui-controls";
 import { getOperators } from "../filter-clause/operator-utils";
 
@@ -66,6 +66,10 @@ export type ColumnFilterHookProps = {
    */
   onColumnFilterChange?: ColumnFilterChangeHandler;
   /**
+   * Filter change events on second control in range filter
+   */
+  onColumnRangeFilterChange?: ColumnFilterChangeHandler;
+  /**
    * Called when user 'commits' filter value, either by pressing enter,
    * tabbing away from control or making selection from list
    */
@@ -78,6 +82,7 @@ export const useColumnFilter = ({
   value,
   column,
   onColumnFilterChange,
+  onColumnRangeFilterChange,
 }: ColumnFilterHookProps) => {
   const [op, setOp] = useState(operator);
   const allowedOperators = useMemo(() => getOperators(column), [column]);
@@ -112,22 +117,18 @@ export const useColumnFilter = ({
 
   const handleInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (e) => {
-      if (Array.isArray(value)) {
-        const editControl = queryClosest(e.target, "[data-edit-control]", true);
-        const updated: ColumnFilterValue = [
-          !editControl.className.includes("rangeHigh")
-            ? e.target.value
-            : value[0],
-          editControl.className?.includes("rangeHigh")
-            ? e.target.value
-            : value[1],
-        ];
-        onColumnFilterChange?.(updated, column, op);
-      } else {
-        onColumnFilterChange?.(e.target.value, column, op);
-      }
+      onColumnFilterChange?.(e.target.value, column, op);
     },
-    [value, onColumnFilterChange, column, op],
+    [onColumnFilterChange, column, op],
+  );
+
+  const handleRangeInputChange = useCallback<
+    ChangeEventHandler<HTMLInputElement>
+  >(
+    (e) => {
+      onColumnRangeFilterChange?.(e.target.value, column, op);
+    },
+    [onColumnRangeFilterChange, column, op],
   );
 
   const inputProps = useMemo<VuuTypeaheadInputProps["inputProps"]>(
@@ -142,11 +143,11 @@ export const useColumnFilter = ({
     () =>
       Array.isArray(value)
         ? {
-            onChange: handleInputChange,
+            onChange: handleRangeInputChange,
             value: value[1],
           }
         : undefined,
-    [handleInputChange, value],
+    [handleRangeInputChange, value],
   );
 
   return {

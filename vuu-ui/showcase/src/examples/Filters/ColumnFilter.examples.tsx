@@ -130,7 +130,7 @@ const ColumnFilterTemplate = ({
   }, []);
 
   const handleColumnFilterChange = (
-    val: ColumnFilterValue,
+    val: string | number,
     column: ColumnDescriptor,
     op: ColumnFilterOp,
   ) => {
@@ -434,6 +434,22 @@ export const TimeColumnRangeFilterValueSetViaBtn = () => {
   );
 };
 
+const insertOrReplace = <T extends ColumnFilterValue>(
+  value: T,
+  newValue: string | number,
+  index: 0 | 1,
+): T => {
+  if (Array.isArray(value)) {
+    if (index === 0) {
+      return [newValue, value[1]] as T;
+    } else {
+      return [value[0], newValue] as T;
+    }
+  } else {
+    return newValue as T;
+  }
+};
+
 /** tags=data-consumer */
 export const MultipleFiltersWithColumnFilterStore = () => {
   const defaultValues = useMemo<Record<string, ColumnFilterValue>>(
@@ -477,7 +493,29 @@ export const MultipleFiltersWithColumnFilterStore = () => {
 
   const onColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
     (value, column) => {
-      setValues((v) => ({ ...v, [column.name]: value }));
+      console.log(`onColumnFilterChange ${JSON.stringify(value)}`);
+      setValues((v) => {
+        const newValue = {
+          ...v,
+          [column.name]: insertOrReplace(v[column.name], value, 0),
+        };
+        console.log(`newValue = ${JSON.stringify(newValue)}`);
+        return newValue;
+      });
+    },
+    [],
+  );
+  const onColumnRangeFilterChange = useCallback<ColumnFilterChangeHandler>(
+    (value, column) => {
+      console.log(`onColumnFilterChange ${JSON.stringify(value)}`);
+      setValues((v) => {
+        const newValue = {
+          ...v,
+          [column.name]: insertOrReplace(v[column.name], value, 1),
+        };
+        console.log(`newValue = ${JSON.stringify(newValue)}`);
+        return newValue;
+      });
     },
     [],
   );
@@ -546,6 +584,7 @@ export const MultipleFiltersWithColumnFilterStore = () => {
               column={columns.lastUpdate}
               operator="between"
               onColumnFilterChange={onColumnFilterChange}
+              onColumnRangeFilterChange={onColumnRangeFilterChange}
               onCommit={onCommit}
               value={values.lastUpdate}
             />
@@ -578,6 +617,7 @@ export const MultipleFiltersWithColumnFilterStore = () => {
               table={schema.table}
               value={values.volume}
               onColumnFilterChange={onColumnFilterChange}
+              onColumnRangeFilterChange={onColumnRangeFilterChange}
               onCommit={onCommit}
             />
           </FormField>

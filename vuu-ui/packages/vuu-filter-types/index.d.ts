@@ -92,10 +92,7 @@ export declare type FilterState = {
 
 export declare type FilterChangeHandler = (filter: Filter | undefined) => void;
 
-export declare type ColumnFilterValue =
-  | string
-  | number
-  | [string, string];
+export declare type ColumnFilterValue = string | number | [string, string];
 
 export declare type ColumnFilterOp = FilterClauseOp | "between";
 
@@ -106,7 +103,7 @@ export declare type ColumnFilterDescriptor = {
 };
 
 export declare type ColumnFilterChangeHandler = (
-  value: ColumnFilterValue,
+  value: string | number,
   column: ColumnDescriptor,
   op: ColumnFilterOp,
 ) => void;

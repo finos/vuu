@@ -91,7 +91,7 @@ describe("ColumnFilter", () => {
 
       cy.get("@handleColumnFilterChange").should(
         "have.been.calledWith",
-        ["01:00:00", "00:01:02"],
+        "01:00:00",
         { name: "lastUpdate", serverDataType: "long", type: "time" },
         "between",
       );

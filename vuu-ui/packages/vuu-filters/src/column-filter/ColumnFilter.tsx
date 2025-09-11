@@ -42,6 +42,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
     table,
     value,
     onColumnFilterChange,
+    onColumnRangeFilterChange,
     ...buttonGroupProps
   }: ColumnFilterProps,
   forwardRef: ForwardedRef<HTMLDivElement>,
@@ -67,6 +68,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
     column,
     value,
     onColumnFilterChange,
+    onColumnRangeFilterChange,
   });
 
   return (
