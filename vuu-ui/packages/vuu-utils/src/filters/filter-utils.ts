@@ -226,15 +226,16 @@ const convertValueToUIFormat = (
   }
 };
 
+//TODO extend this to support <= and >=
 const buildBetweenQueryString = (column: ColumnDescriptor, range: string[]) => {
   const lowerRange: string | undefined =
     range[0] !== undefined && range[0].length > 0
-      ? `${column.name} >= ${convertValueToServerFormat(column, range[0])}`
+      ? `${column.name} > ${convertValueToServerFormat(column, range[0])}`
       : undefined;
 
   const upperRange: string | undefined =
     range[1] !== undefined && range[1].length > 0
-      ? `${column.name} <= ${convertValueToServerFormat(column, range[1])}`
+      ? `${column.name} < ${convertValueToServerFormat(column, range[1])}`
       : undefined;
 
   if (lowerRange === undefined) return lowerRange;
