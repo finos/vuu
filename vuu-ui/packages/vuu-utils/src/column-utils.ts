@@ -208,8 +208,12 @@ export const isTextColumn = ({ serverDataType }: ColumnDescriptor) =>
     ? false
     : serverDataType === "char" || serverDataType === "string";
 
-export const toColumnDescriptor = (name: string): ColumnDescriptor => ({
+export const toColumnDescriptor = (
+  name: string,
+  serverDataType?: ColumnDescriptor["serverDataType"],
+): ColumnDescriptor => ({
   name,
+  serverDataType,
 });
 
 /**
@@ -1047,12 +1051,17 @@ export function replaceColumn<
   return columns.map((col) => (col.name === column.name ? column : col));
 }
 
+const vuuTimestampColumns = ["vuuCreatedTimestamp", "vuuUpdatedTimestamp"];
+
+const notVuuTimestamps = (column: { name: string }) =>
+  !vuuTimestampColumns.includes(column.name);
+
 export const applyDefaultColumnConfig = (
   { columns, table }: TableSchema,
   getDefaultColumnConfig?: DefaultColumnConfiguration,
 ) => {
   if (typeof getDefaultColumnConfig === "function") {
-    return columns.map((column) => {
+    return columns.filter(notVuuTimestamps).map((column) => {
       const config = getDefaultColumnConfig(table.table, column.name);
       if (config) {
         return {

@@ -1,15 +1,15 @@
 {
   "name": "@vuu-ui/vuu-table-types",
-  "version": "0.13.35",
+  "version": "0.13.40",
   "main": "",
   "scripts": {
     "build": "node ../../scripts/run-build-typelib.mjs"
   },
   "types": "index.d.ts",
   "devDependencies": {
-    "@vuu-ui/vuu-data-types": "0.13.35",
-    "@vuu-ui/vuu-filter-types": "0.13.35",
-    "@vuu-ui/vuu-protocol-types": "0.13.35"
+    "@vuu-ui/vuu-data-types": "0.13.40",
+    "@vuu-ui/vuu-filter-types": "0.13.40",
+    "@vuu-ui/vuu-protocol-types": "0.13.40"
   },
   "author": "heswell",
   "license": "Apache-2.0",

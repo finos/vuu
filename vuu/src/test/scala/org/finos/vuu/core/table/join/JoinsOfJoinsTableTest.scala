@@ -68,9 +68,10 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
     )
 
     val joinDefFx = JoinTableDef(
-      name          = "orderPricesFx",
-      baseTable     = ordersDef,
-      joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") ++ Columns.allFrom(fxDef),
+      name = "orderPricesFx",
+      visibility = Public,
+      baseTable = ordersDef,
+      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") ++ Columns.allFrom(fxDef),
       links = VisualLinks(),
       joinFields = Seq("ccyCross", "orderId"),
         JoinTo(
@@ -162,9 +163,10 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
     )
 
     val joinDefFx = JoinTableDef(
-      name          = "orderPricesFx",
-      baseTable     = ordersDef,
-      joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") ++ Columns.allFrom(fxDef),
+      name = "orderPricesFx",
+      visibility = Public,
+      baseTable = ordersDef,
+      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") ++ Columns.allFrom(fxDef),
       links = VisualLinks(),
       joinFields = Seq("ccyCross", "orderId"),
       JoinTo(

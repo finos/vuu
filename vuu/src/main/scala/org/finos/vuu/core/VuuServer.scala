@@ -20,12 +20,15 @@ import org.finos.vuu.plugin.PluginRegistry
 import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, Provider, ProviderContainer}
 import org.finos.vuu.viewport.{InMemViewPortTreeCallable, InMemViewPortTreeWorkItem, ViewPort, ViewPortAction, ViewPortActionMixin, ViewPortContainer}
 
+import java.util.UUID
 import java.util.concurrent.{Callable, FutureTask}
 
 /**
  * Vuu Server
  */
 class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider) extends LifecycleEnabled with StrictLogging with IVuuServer {
+
+  final val vuuServerId: String = UUID.randomUUID().toString
 
   final val serializer: Serializer[String, MessageBody] = JsonVsSerializer
 
@@ -58,7 +61,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
   final val serverApi = new CoreServerApiHandler(viewPortContainer, tableContainer, providerContainer)
 
-  final val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer, flowControllerFactory)
+  final val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer, flowControllerFactory, vuuServerId)
 
   //order of creation here is important
   final val server = new WebSocketServer(config.wsOptions, factory)

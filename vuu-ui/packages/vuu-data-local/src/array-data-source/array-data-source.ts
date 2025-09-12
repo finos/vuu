@@ -493,17 +493,17 @@ export class ArrayDataSource
   }
 
   private indexProcessedData(data: DataSourceRow[]) {
-    for (let i = 0; i < data.length; i++) {
-      data[i][0] = i;
-      data[i][1] = i;
-    }
-    return data;
-    // return data?.map((row, i) => {
-    //   const dolly = row.slice() as DataSourceRow;
-    //   dolly[0] = i;
-    //   dolly[1] = i;
-    //   return dolly;
-    // });
+    // for (let i = 0; i < data.length; i++) {
+    //   data[i][0] = i;
+    //   data[i][1] = i;
+    // }
+    // return data;
+    return data?.map((row, i) => {
+      const dolly = row.slice() as DataSourceRow;
+      dolly[0] = i;
+      dolly[1] = i;
+      return dolly;
+    });
   }
 
   private getFilterPredicate() {
@@ -723,12 +723,21 @@ export class ArrayDataSource
   };
 
   deleteRow: DataSourceDeleteHandler = async (key) => {
-    // TODO take sorting, filtering. grouping into account
-
     const dataIndex = this.#data.findIndex((row) => row[KEY] === key);
+    let doomedIndex: number | undefined = undefined;
+
     if (dataIndex !== -1) {
       if (this.processedData) {
-        // do stuff
+        for (let i = 0; i < this.processedData.length; i++) {
+          if (this.processedData[i][KEY] === key) {
+            doomedIndex = i;
+          } else if (doomedIndex !== undefined) {
+            this.processedData[i][0] -= 1;
+          }
+        }
+        if (doomedIndex !== undefined) {
+          this.processedData.splice(doomedIndex, 1);
+        }
       }
 
       this.#data.splice(dataIndex, 1);
@@ -739,9 +748,14 @@ export class ArrayDataSource
       this.sendSizeUpdateToClient();
 
       const { from, to } = this.#range;
-      if (dataIndex >= from && dataIndex < to) {
+      const deletedIndex = doomedIndex ?? dataIndex;
+      if (deletedIndex >= from && deletedIndex < to) {
+        this.#keys.reset(this.range);
         this.sendRowsToClient(true);
       }
+
+      this.emit("resize", this.size);
+
       return true;
     } else {
       return "row not found";

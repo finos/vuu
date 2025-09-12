@@ -1,4 +1,5 @@
 .vuuContextPanel {
+  background: var(--vuuContextPanel-background, var(--salt-container-primary-background));
   position: relative;
   transition: width 0.3s ease-in-out;
   width: var(--vuu-side-panel-width, 0px) !important;
@@ -9,6 +10,10 @@
   --vuu-side-panel-width: var(--vuuContextPanel-width, 300px) !important;
   --vuu-side-panel-shadow: -4px 4px 4px rgba(0, 0, 0, 0.1);
   --vuu-side-panel-padding: var(--vuuContextPanel-padding, 24px);
+
+  .vuuView.vuuContextPanel-inner {
+    padding: 24px 8px 24px 24px;
+  }
 }
 
 .vuuContextPanel-overlay {
@@ -23,7 +28,6 @@
   height: 100%;
   min-width: 0 !important;
   overflow: auto;
-  padding: 24px 8px 24px 24px;
   position: absolute !important;
   right: 0;
   top: 0;
