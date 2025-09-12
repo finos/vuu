@@ -25,6 +25,8 @@ case class EpochTimestamp(nanos: Long) extends Ordered[EpochTimestamp] {
 
   override def toString: String = nanos.toString
 
-  override def compare(that: EpochTimestamp): Int = nanos.compareTo(that.nanos)
+  override def compare(that: EpochTimestamp): Int =  {
+    if (this.nanos == that.nanos) 0 else if (this.nanos > that.nanos) 1 else -1
+  }
 }
 

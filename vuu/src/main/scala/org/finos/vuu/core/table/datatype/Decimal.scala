@@ -34,5 +34,7 @@ case class Decimal(value: Long) extends Ordered[Decimal] {
 
   override def toString: String = value.toString
 
-  override def compare(that: Decimal): Int = value.compareTo(that.value)
+  override def compare(that: Decimal): Int =  {
+    if (this.value == that.value) 0 else if (this.value > that.value) 1 else -1
+  }
 }
