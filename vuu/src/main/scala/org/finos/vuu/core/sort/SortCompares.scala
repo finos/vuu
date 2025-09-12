@@ -1,7 +1,6 @@
 package org.finos.vuu.core.sort
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.table.datatype.{Decimal, EpochTimestamp}
 import org.finos.vuu.core.table.{Column, DataType, RowData}
 
 import java.util.function.ToIntBiFunction
@@ -55,7 +54,6 @@ object SortCompares extends StrictLogging {
   def compareLong(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
     val c1 = o1.get(column).asInstanceOf[Long]
     val c2 = o2.get(column).asInstanceOf[Long]
-    if (c1 == c2) 0 else if ((c1 > c2 && isAscending) || (c2 > c1 && !isAscending)) 1 else -1
     if (c1 == c2) 0 else if ((isAscending && c1 > c2) || (!isAscending && c2 > c1)) 1 else -1
   }
 
