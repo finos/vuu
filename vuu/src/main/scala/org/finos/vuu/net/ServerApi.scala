@@ -36,6 +36,14 @@ trait ServerApi {
 
   def process(msg: SelectRowRequest)(ctx: RequestContext): Option[ViewServerMessage]
 
+  def process(msg: DeselectRowRequest)(ctx: RequestContext): Option[ViewServerMessage]
+
+  def process(msg: SelectRowRangeRequest)(ctx: RequestContext): Option[ViewServerMessage]
+
+  def process(msg: SelectAllRequest)(ctx: RequestContext): Option[ViewServerMessage]
+
+  def process(msg: DeselectAllRequest)(ctx: RequestContext): Option[ViewServerMessage]
+
   def process(msg: GetViewPortVisualLinksRequest)(ctx: RequestContext): Option[ViewServerMessage]
 
   def process(msg: CreateVisualLinkRequest)(ctx: RequestContext): Option[ViewServerMessage]
