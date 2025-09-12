@@ -655,9 +655,40 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     treeNodeStatesByVp.put(viewPortId, newStateStore)
   }
 
+  @deprecated
   def changeSelection(clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], vpId: String, selection: ViewPortSelectedIndices): ViewPort = {
     val viewPort = viewPorts.get(vpId)
     viewPort.setSelection(selection.indices)
+    viewPort
+  }
+
+  def selectRow(vpId: String, rowKey: String, preserveExistingSeletion: Boolean): ViewPort = {
+    val viewPort = viewPorts.get(vpId)
+    viewPort.selectRow(rowKey, preserveExistingSeletion)
+    viewPort
+  }
+
+  def deselectRow(vpId: String, rowKey: String, preserveExistingSeletion: Boolean): ViewPort = {
+    val viewPort = viewPorts.get(vpId)
+    viewPort.deselectRow(rowKey, preserveExistingSeletion)
+    viewPort
+  }
+
+  def selectRowRange(vpId: String, fromRowKey: String, toRowKey: String, preserveExistingSeletion: Boolean): ViewPort = {
+    val viewPort = viewPorts.get(vpId)
+    viewPort.selectRowRange(fromRowKey, toRowKey, preserveExistingSeletion)
+    viewPort
+  }
+
+  def selectAll(vpId: String): ViewPort = {
+    val viewPort = viewPorts.get(vpId)
+    viewPort.selectAll()
+    viewPort
+  }
+
+  def deselectAll(vpId: String): ViewPort = {
+    val viewPort = viewPorts.get(vpId)
+    viewPort.deselectAll()
     viewPort
   }
 

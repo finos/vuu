@@ -98,6 +98,16 @@ trait ViewPort {
 
   def setSelection(rowIndices: Array[Int]): Unit
 
+  def selectRow(rowKey: String, preserveExistingSelection: Boolean): Unit
+
+  def deselectRow(rowKey: String, preserveExistingSelection: Boolean): Unit
+
+  def selectRowRange(fromRowKey: String, toRowKey: String, preserveExistingSelection: Boolean): Unit
+
+  def selectAll(): Unit
+
+  def deselectAll(): Unit
+
   def setVisualLink(link: ViewPortVisualLink): Unit
 
   def removeVisualLink(): Unit
@@ -259,6 +269,36 @@ class ViewPortImpl(val id: String,
       for ((key, idx) <- selection ++ oldSelection) {
         publishHighPriorityUpdate(key, idx)
       }
+    }
+  }
+
+  override def selectRow(rowKey: String, preserveExistingSelection: Boolean): Unit = {
+    viewPortLock.synchronized {
+      // TODO
+    }
+  }
+
+  override def deselectRow(rowKey: String, preserveExistingSelection: Boolean): Unit = {
+    viewPortLock.synchronized {
+      // TODO
+    }
+  }
+
+  override def selectRowRange(fromRowKey: String, toRowKey: String, preserveExistingSelection: Boolean): Unit = {
+    viewPortLock.synchronized {
+      // TODO
+    }
+  }
+
+  override def selectAll(): Unit = {
+    viewPortLock.synchronized {
+      // TODO
+    }
+  }
+
+  override def deselectAll(): Unit = {
+    viewPortLock.synchronized {
+      // TODO
     }
   }
 

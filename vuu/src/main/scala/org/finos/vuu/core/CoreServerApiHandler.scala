@@ -380,12 +380,52 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: SelectRowRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.changeSelection(ctx.session, ctx.queue, msg.vpId, ViewPortSelectedIndices(msg.selection))) match {
+    Try(viewPortContainer.selectRow(ctx.session, msg.vpId, msg.rowKey, msg.preserveExistingSelection)) match {
       case Success(vp) =>
-        vsMsg(SelectRowSuccess(vp.id, vp.getSelection.values.toArray))(ctx)
+        vsMsg(SelectRowSuccess(vp.id, vp.getSelection.keys.toArray))(ctx)
       case Failure(e) =>
         logger.error("Could not change VP selection:", e.getMessage)
-        vsMsg(SelectRowReject(msg.vpId, "Could not change VP selection:" + e.getMessage))(ctx)
+        vsMsg(SelectRowReject(msg.vpId, "Could not select row on VP:" + e.getMessage))(ctx)
+    }
+  }
+
+  override def process(msg: DeselectRowRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.deselectRow(ctx.session, msg.vpId, msg.rowKey, msg.preserveExistingSelection)) match {
+      case Success(vp) =>
+        vsMsg(DeselectRowSuccess(vp.id, vp.getSelection.keys.toArray))(ctx)
+      case Failure(e) =>
+        logger.error("Could not change VP selection:", e.getMessage)
+        vsMsg(DeselectRowReject(msg.vpId, "Could not select row on VP:" + e.getMessage))(ctx)
+    }
+  }
+
+  override def process(msg: SelectRowRangeRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.selectRowRange(ctx.session, msg.vpId, msg.fromRowKey, msg.toRowKey, msg.preserveExistingSeletion)) match {
+      case Success(vp) =>
+        vsMsg(SelectRowRangeSuccess(vp.id, vp.getSelection.keys.toArray))(ctx)
+      case Failure(e) =>
+        logger.error("Could not select row range on VP:", e.getMessage)
+        vsMsg(SelectRowRangeReject(msg.vpId, "Could not select row range on VP:" + e.getMessage))(ctx)
+    }
+  }
+
+  override def process(msg: SelectAllRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.selectAll(msg.vpId)) match {
+      case Success(vp) =>
+        vsMsg(SelectAllSuccess(vp.id))(ctx)
+      case Failure(e) =>
+        logger.error("Could not change VP selection:", e.getMessage)
+        vsMsg(SelectAllReject(msg.vpId, "Could not select all:" + e.getMessage))(ctx)
+    }
+  }
+
+  override def process(msg: DeselectAllRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.deselectAll(msg.vpId)) match {
+      case Success(vp) =>
+        vsMsg(DeselectAllSuccess(vp.id))(ctx)
+      case Failure(e) =>
+        logger.error("Could not deselect all:", e.getMessage)
+        vsMsg(DeselectAllReject(msg.vpId, "Could not deselect all:" + e.getMessage))(ctx)
     }
   }
 
