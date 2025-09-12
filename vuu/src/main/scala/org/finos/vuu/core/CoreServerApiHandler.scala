@@ -369,6 +369,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
     }
   }
 
+  @deprecated
   override def process(msg: SetSelectionRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.changeSelection(ctx.session, ctx.queue, msg.vpId, ViewPortSelectedIndices(msg.selection))) match {
       case Success(vp) =>
@@ -378,9 +379,9 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
         errorMsg("Could not change VP selection:" + e.getMessage)(ctx)
     }
   }
-
+// TODO #1721 update error messages
   override def process(msg: SelectRowRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.selectRow(ctx.session, msg.vpId, msg.rowKey, msg.preserveExistingSelection)) match {
+    Try(viewPortContainer.selectRow(msg.vpId, msg.rowKey, msg.preserveExistingSelection)) match {
       case Success(vp) =>
         vsMsg(SelectRowSuccess(vp.id, vp.getSelection.keys.toArray))(ctx)
       case Failure(e) =>
@@ -390,7 +391,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: DeselectRowRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.deselectRow(ctx.session, msg.vpId, msg.rowKey, msg.preserveExistingSelection)) match {
+    Try(viewPortContainer.deselectRow(msg.vpId, msg.rowKey, msg.preserveExistingSelection)) match {
       case Success(vp) =>
         vsMsg(DeselectRowSuccess(vp.id, vp.getSelection.keys.toArray))(ctx)
       case Failure(e) =>
@@ -400,7 +401,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: SelectRowRangeRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.selectRowRange(ctx.session, msg.vpId, msg.fromRowKey, msg.toRowKey, msg.preserveExistingSeletion)) match {
+    Try(viewPortContainer.selectRowRange(msg.vpId, msg.fromRowKey, msg.toRowKey, msg.preserveExistingSeletion)) match {
       case Success(vp) =>
         vsMsg(SelectRowRangeSuccess(vp.id, vp.getSelection.keys.toArray))(ctx)
       case Failure(e) =>
