@@ -19,7 +19,10 @@ import { asTimeString } from "@vuu-ui/vuu-utils";
 
 export interface DataItemEditControlProps {
   InputProps?: Partial<InputProps>;
-  TypeaheadProps?: Pick<VuuTypeaheadInputProps, "highlightFirstSuggestion">;
+  TypeaheadProps?: Pick<
+    VuuTypeaheadInputProps,
+    "highlightFirstSuggestion" | "minCharacterCountToTriggerSuggestions"
+  >;
   className?: string;
   commitOnBlur?: boolean;
   commitWhenCleared?: boolean;

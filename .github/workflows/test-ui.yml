@@ -71,6 +71,40 @@ jobs:
           working-directory: ./vuu-ui
           browser: edge
 
+  playwright-component:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Node & dependencies
+        uses: ./.github/actions/setup-vuu-ui
+      - name: Install Playwright Browsers
+        run: cd ./vuu-ui && npx playwright install --with-deps chromium firefox webkit
+      - name: Run Playwright component tests
+        run: cd ./vuu-ui && npm run test:playwright:ct
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: vuu-ui/playwright-report/
+          retention-days: 10
+      - name: Add Playwright Results to Summary
+        if: always()
+        run: |
+          echo "## 🎭 Playwright Component Tests" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f "vuu-ui/playwright-report/index.html" ]; then
+            echo "✅ **Tests completed successfully**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "📊 **Report available**: Download the 'playwright-report' artifact to view detailed results" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Tests failed or report not generated**" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔍 **Test Location**: \`packages/vuu-ui-controls/src/__tests__/__component__/\`" >> $GITHUB_STEP_SUMMARY
+          echo "📝 **Test Pattern**: \`*.playwright.test.tsx\`" >> $GITHUB_STEP_SUMMARY
+
   # ensure the vuu example still builds
   vuu-app-build:
     runs-on: ubuntu-latest

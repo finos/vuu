@@ -1,6 +1,5 @@
 package org.finos.vuu.core.sort
 
-import org.finos.vuu.core.table.datatype.{Decimal, EpochTimestamp}
 import org.finos.vuu.core.table.{Column, RowData, RowWithData, SimpleColumn}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -67,10 +66,10 @@ class SortComparesTest extends AnyFeatureSpec with Matchers with BeforeAndAfterE
       unordered.sorted(TestComparator.compare) shouldEqual ascending.reverse
     }
 
-    Scenario("can sort null value") {
+    Scenario("can sort null value and they go last in ascending order") {
       TestComparator.register((o1, o2) => SortCompares.compareInt(o1, o2, col, isAscending = true))
       val data = List(rowData5, rowData3, rowData6)
-      val sortedData = List(rowData5, rowData6, rowData3)
+      val sortedData = List(rowData3, rowData5, rowData6)
       data.sorted(TestComparator.compare) shouldEqual sortedData
     }
   }
@@ -99,10 +98,10 @@ class SortComparesTest extends AnyFeatureSpec with Matchers with BeforeAndAfterE
       unordered.sorted(TestComparator.compare) shouldEqual ascending.reverse
     }
 
-    Scenario("can sort null value") {
+    Scenario("can sort null value and they go last in ascending order") {
       TestComparator.register((o1, o2) => SortCompares.compareLong(o1, o2, col, isAscending = true))
       val data = List(rowData5, rowData3, rowData6)
-      val sortedData = List(rowData5, rowData6, rowData3)
+      val sortedData = List(rowData3, rowData5, rowData6)
       data.sorted(TestComparator.compare) shouldEqual sortedData
     }
   }
@@ -131,10 +130,10 @@ class SortComparesTest extends AnyFeatureSpec with Matchers with BeforeAndAfterE
       unordered.sorted(TestComparator.compare) shouldEqual ascending.reverse
     }
 
-    Scenario("can sort null value") {
+    Scenario("can sort null value and they go last in ascending order") {
       TestComparator.register((o1, o2) => SortCompares.compareDouble(o1, o2, col, isAscending = true))
       val data = List(rowData5, rowData3, rowData6)
-      val sortedData = List(rowData5, rowData6, rowData3)
+      val sortedData = List(rowData3, rowData5, rowData6)
       data.sorted(TestComparator.compare) shouldEqual sortedData
     }
   }
@@ -163,10 +162,10 @@ class SortComparesTest extends AnyFeatureSpec with Matchers with BeforeAndAfterE
       unordered.sorted(TestComparator.compare) shouldEqual ascending.reverse
     }
 
-    Scenario("can sort null value") {
+    Scenario("can sort null value and they go last in ascending order") {
       TestComparator.register((o1, o2) => SortCompares.compareChar(o1, o2, col, isAscending = true))
       val data = List(rowData5, rowData3, rowData6)
-      val sortedData = List(rowData5, rowData6, rowData3)
+      val sortedData = List(rowData3, rowData5, rowData6)
       data.sorted(TestComparator.compare) shouldEqual sortedData
     }
 
@@ -194,10 +193,10 @@ class SortComparesTest extends AnyFeatureSpec with Matchers with BeforeAndAfterE
       unordered.sorted(TestComparator.compare) shouldEqual ascending.reverse
     }
 
-    Scenario("can sort null value") {
+    Scenario("can sort null value and they go last in ascending order") {
       TestComparator.register((o1, o2) => SortCompares.compareBoolean(o1, o2, col, isAscending = true))
       val data = List(rowData2, rowData1, rowData3, rowData4)
-      val sortedData = List(rowData2, rowData3, rowData4, rowData1)
+      val sortedData = List(rowData2, rowData1, rowData3, rowData4)
       data.sorted(TestComparator.compare) shouldEqual sortedData
     }
 
