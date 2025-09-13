@@ -3,8 +3,13 @@
     display: none;
   }
 
+  .saltPillInput-endAdornmentContainer {
+    padding:0;
+  }
+
   .saltButton {
-    height: 18px;
+    --vuuButton-borderColor: transparent;
+    height: 24px;
     width: 24px;
   }
 
@@ -19,8 +24,8 @@
 
   .saltButton:after {
     --vuu-icon-color: var(--salt-content-primary-foreground);
-    --vuu-icon-size: 19px;
-    --vuu-icon-transform: rotate(90deg);
+    --vuu-icon-size: 10px;
+    --vuu-icon-transform: rotate(45deg);
 
     content: "";
     background-color: var(--vuu-icon-color);
@@ -29,6 +34,7 @@
       var(--vuu-icon-size);
     mask-repeat: no-repeat;
     position: absolute;
+    top: 3px;
     transform: var(--vuu-icon-transform, none);
     width: var(--vuu-icon-size);
   }

@@ -1,7 +1,8 @@
 import { getSchema } from "@vuu-ui/vuu-data-test";
-import { TableSchemaTable } from "@vuu-ui/vuu-data-types";
-import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { VuuTypeaheadInput } from "@vuu-ui/vuu-ui-controls";
+import {
+  VuuTypeaheadInput,
+  type VuuTypeaheadInputProps,
+} from "@vuu-ui/vuu-ui-controls";
 import {
   CommitHandler,
   DataSourceProvider,
@@ -12,15 +13,12 @@ import { CSSProperties, useMemo } from "react";
 
 const TypeaheadInputTemplate = ({
   allowFreeInput,
-  column = { name: "currency", serverDataType: "string" },
+  column = "currency",
+  minCharacterCountToTriggerSuggestions = 1,
   onCommit,
   table = { module: "SIMUL", table: "instrumentsExtended" },
-}: {
-  allowFreeInput?: boolean;
-  column?: ColumnDescriptor;
-  onCommit?: CommitHandler;
+}: Partial<VuuTypeaheadInputProps> & {
   style?: CSSProperties;
-  table?: TableSchemaTable;
 }) => {
   const handleCommit: CommitHandler = (evt, value) => {
     onCommit?.(evt, value);
@@ -30,7 +28,10 @@ const TypeaheadInputTemplate = ({
   return (
     <VuuTypeaheadInput
       allowFreeInput={allowFreeInput}
-      column={column.name}
+      column={column}
+      minCharacterCountToTriggerSuggestions={
+        minCharacterCountToTriggerSuggestions
+      }
       onCommit={handleCommit}
       table={table}
     />
@@ -65,6 +66,42 @@ export const CurrencyWithTypeaheadAllowFreeText = ({
     >
       <DataSourceProvider dataSource={dataSource}>
         <TypeaheadInputTemplate onCommit={onCommit} />
+      </DataSourceProvider>
+    </div>
+  );
+};
+
+/** tags=data-consumer */
+export const ShowsSuggestionsNoTextRequired = ({
+  onCommit,
+}: {
+  onCommit?: CommitHandler;
+}) => {
+  const { VuuDataSource } = useData();
+  const dataSource = useMemo(() => {
+    const schema = getSchema("instruments");
+    return new VuuDataSource({
+      columns: schema.columns.map(toColumnName),
+      table: schema.table,
+    });
+  }, [VuuDataSource]);
+
+  return (
+    <div
+      style={{
+        alignItems: "center",
+        display: "flex",
+        padding: "0 3px",
+        width: 200,
+        height: 32,
+        border: "solid 1px lightgray",
+      }}
+    >
+      <DataSourceProvider dataSource={dataSource}>
+        <TypeaheadInputTemplate
+          minCharacterCountToTriggerSuggestions={0}
+          onCommit={onCommit}
+        />
       </DataSourceProvider>
     </div>
   );

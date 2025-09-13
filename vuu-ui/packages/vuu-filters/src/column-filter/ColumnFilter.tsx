@@ -16,11 +16,13 @@ import { getDataItemEditControl } from "@vuu-ui/vuu-data-react";
 import { ForwardedRef, forwardRef, ReactElement } from "react";
 import { ColumnFilterHookProps, useColumnFilter } from "./useColumnFilter";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
+import { VuuTypeaheadInputHookProps } from "@vuu-ui/vuu-ui-controls/src/vuu-typeahead-input/useVuuTypeaheadInput";
 
 const classBase = "vuuColumnFilter";
 
 export interface ColumnFilterProps
   extends SegmentedButtonGroupProps,
+    Pick<VuuTypeaheadInputHookProps, "minCharacterCountToTriggerSuggestions">,
     ColumnFilterHookProps {
   /**
    * Display operator picker.
@@ -36,6 +38,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
   {
     column,
     className,
+    minCharacterCountToTriggerSuggestions,
     onCommit: onCommitProp,
     operator = "=",
     showOperatorPicker = false,
@@ -104,6 +107,9 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
       ) : null}
       {getDataItemEditControl({
         InputProps: { inputProps },
+        TypeaheadProps: {
+          minCharacterCountToTriggerSuggestions,
+        },
         commitOnBlur: false,
         commitWhenCleared: true,
         dataDescriptor: column,

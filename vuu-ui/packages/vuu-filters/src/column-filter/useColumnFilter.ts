@@ -60,7 +60,7 @@ export type ColumnFilterHookProps = {
    * Filter value. Pair of values expected when operator is
    * 'between'
    */
-  value?: ColumnFilterValue;
+  value: ColumnFilterValue;
   /**
    * Filter change events.
    */
