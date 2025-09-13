@@ -1,41 +1,19 @@
 import { ComboBox, Option } from "@salt-ds/core";
-import { PillInputProps } from "@salt-ds/core/dist-types/pill-input";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import type { TableSchemaTable } from "@vuu-ui/vuu-data-types";
-import { NO_DATA_MATCH, type CommitHandler } from "@vuu-ui/vuu-utils";
+import { NO_DATA_MATCH } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
-import { useVuuTypeaheadInput } from "./useVuuTypeaheadInput";
+import {
+  useVuuTypeaheadInput,
+  VuuTypeaheadInputHookProps,
+} from "./useVuuTypeaheadInput";
 import vuuTypeaheadInputCss from "./VuuTypeaheadInput.css";
 
 const classBase = "vuuTypeaheadInput";
 const [noMatchingData] = NO_DATA_MATCH;
 
-export interface VuuTypeaheadInputProps {
-  /**
-   * Allows a text string to be submitted that does not match any suggestion
-   * Defaults to true
-   */
-  allowFreeInput?: boolean;
+export interface VuuTypeaheadInputProps extends VuuTypeaheadInputHookProps {
   className?: string;
-  column: string;
-  /**
-   * A warning to display to the user if allowFreeText is false and they attempt
-   * to commit text which does not match any suggestions. A default message will
-   * be shown if not provided
-   */
-  freeTextWarning?: string;
-  /**
-   * When suggestions are displayed, should first option be highlighted ?
-   * Highlighted option will be selected if Enter pressed. If this option
-   * is not applied and no suggestion is highlighted, Enter will commit
-   * current text. This will be desirable if filter operator  will be
-   * 'contains', not if filter operator will be '='.
-   */
-  highlightFirstSuggestion?: boolean;
-  inputProps?: PillInputProps["inputProps"];
-  onCommit: CommitHandler<HTMLInputElement>;
-  table: TableSchemaTable;
 }
 
 export const VuuTypeaheadInput = ({
@@ -45,6 +23,7 @@ export const VuuTypeaheadInput = ({
   freeTextWarning,
   highlightFirstSuggestion,
   inputProps: inputPropsProp,
+  minCharacterCountToTriggerSuggestions,
   onCommit,
   table,
 }: VuuTypeaheadInputProps) => {
@@ -72,6 +51,7 @@ export const VuuTypeaheadInput = ({
     freeTextWarning,
     highlightFirstSuggestion,
     inputProps: inputPropsProp,
+    minCharacterCountToTriggerSuggestions,
     onCommit,
     table,
   });

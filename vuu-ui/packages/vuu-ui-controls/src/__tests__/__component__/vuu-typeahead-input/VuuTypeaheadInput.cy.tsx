@@ -2,6 +2,7 @@ import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import {
   CurrencyWithTypeaheadAllowFreeText,
   CurrencyWithTypeaheadDisallowFreeText,
+  ShowsSuggestionsNoTextRequired,
 } from "../../../../../../showcase/src/examples/UiControls/VuuTypeaheadInput.examples";
 import { CommitHandler } from "@vuu-ui/vuu-utils";
 
@@ -235,6 +236,26 @@ describe("VuuTypeaheadInput", () => {
           "contain",
           "Please select a value from the list of suggestions",
         );
+    });
+  });
+  describe("Given a TypeaheadInput that shows suggestions with no text input", () => {
+    it("Then clicking the inut shows suggestions", () => {
+      cy.mount(
+        <LocalDataSourceProvider>
+          <ShowsSuggestionsNoTextRequired />
+        </LocalDataSourceProvider>,
+      );
+      cy.findByRole("combobox").realClick();
+      cy.findAllByRole("option").should("have.length", 5);
+    });
+    it("Then clicking the trigger shows suggestions", () => {
+      cy.mount(
+        <LocalDataSourceProvider>
+          <ShowsSuggestionsNoTextRequired />
+        </LocalDataSourceProvider>,
+      );
+      cy.findByRole("button", { name: "Show options" }).realClick();
+      cy.findAllByRole("option").should("have.length", 5);
     });
   });
 });

@@ -98,19 +98,21 @@ const FancyStyle = ({ children }: { children: ReactNode }) => (
 const ColumnFilterTemplate = ({
   column,
   label,
-  table,
-  value,
+  minCharacterCountToTriggerSuggestions,
+  onColumnFilterChange,
   operator,
   showOperatorPicker = false,
-  onColumnFilterChange,
+  table,
+  value,
 }: Pick<
   ColumnFilterProps,
   | "column"
+  | "minCharacterCountToTriggerSuggestions"
+  | "onColumnFilterChange"
+  | "operator"
+  | "showOperatorPicker"
   | "table"
   | "value"
-  | "operator"
-  | "onColumnFilterChange"
-  | "showOperatorPicker"
 > & {
   label?: string;
 }) => {
@@ -148,6 +150,9 @@ const ColumnFilterTemplate = ({
       <ColumnFilter
         data-testid="columnfilter"
         column={column}
+        minCharacterCountToTriggerSuggestions={
+          minCharacterCountToTriggerSuggestions
+        }
         operator={operator}
         onColumnFilterChange={handleColumnFilterChange}
         onCommit={handleCommit}
@@ -160,8 +165,12 @@ const ColumnFilterTemplate = ({
 };
 
 /** tags=data-consumer */
-export const TextColumnFilter = () => {
-  const [filterValue, setFilterValue] = useState<ColumnFilterValue>("");
+export const TextColumnFilter = ({
+  minCharacterCountToTriggerSuggestions = 1,
+}: {
+  minCharacterCountToTriggerSuggestions: 0 | 1 | 2 | 3;
+}) => {
+  const [value, setValue] = useState<ColumnFilterValue>("");
   const [column, table] = useMemo<[ColumnDescriptor, VuuTable]>(
     () => [
       {
@@ -182,18 +191,33 @@ export const TextColumnFilter = () => {
     });
   }, [VuuDataSource]);
 
+  const onColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
+    (newValue) => {
+      setValue(newValue);
+    },
+    [],
+  );
+
   return (
     <DataSourceProvider dataSource={dataSource}>
       <ColumnFilterTemplate
         column={column}
         label="RIC"
+        minCharacterCountToTriggerSuggestions={
+          minCharacterCountToTriggerSuggestions
+        }
         table={table}
-        value={filterValue}
-        onColumnFilterChange={(value) => setFilterValue(value || "")}
+        value={value}
+        onColumnFilterChange={onColumnFilterChange}
       />
     </DataSourceProvider>
   );
 };
+
+/** tags=data-consumer */
+export const SuggestionsWithoutText = () => (
+  <TextColumnFilter minCharacterCountToTriggerSuggestions={0} />
+);
 
 /** tags=data-consumer */
 export const TextColumnFilterValueSetViaBtn = () => {
