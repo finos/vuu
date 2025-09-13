@@ -22,6 +22,7 @@ import {
   ViewportRpcContext,
   OpenComponentInDialogAction,
   VuuLoginResponse,
+  VuuRowDataItemType,
 } from "@vuu-ui/vuu-protocol-types";
 import { isView as componentInRegistry } from "./component-registry";
 
@@ -94,6 +95,31 @@ export function isEditCellRequest(
   return request.type === "VP_EDIT_CELL_RPC";
 }
 
+export function vuuEditCellRequest(
+  rowKey: string,
+  field: string,
+  value: VuuRowDataItemType,
+  vpId: string,
+): VuuRpcEditCellRequest;
+export function vuuEditCellRequest(
+  rowKey: string,
+  field: string,
+  value: VuuRowDataItemType,
+): Omit<VuuRpcEditCellRequest, "vpId">;
+export function vuuEditCellRequest(
+  rowKey: string,
+  field: string,
+  value: VuuRowDataItemType,
+  vpId?: string,
+): VuuRpcEditCellRequest | Omit<VuuRpcEditCellRequest, "vpId"> {
+  return {
+    rowKey,
+    field,
+    value,
+    type: "VP_EDIT_CELL_RPC",
+    vpId,
+  };
+}
 export function vuuAddRowRequest(
   rowKey: string,
   data: VuuDataRowDto,

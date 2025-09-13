@@ -21,6 +21,7 @@ import {
   VuuGroupBy,
   VuuMenu,
   VuuRange,
+  VuuRowDataItemType,
   VuuRpcEditError,
   VuuRpcEditRequest,
   VuuRpcEditResponse,
@@ -42,6 +43,7 @@ import {
   selectionCount,
   throttle,
   uuid,
+  vuuEditCellRequest,
 } from "@vuu-ui/vuu-utils";
 import ConnectionManager from "./ConnectionManager";
 import { isDataSourceConfigMessage } from "./data-source";
@@ -569,17 +571,16 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     }
   }
 
-  applyEdit() {
-    return Promise.resolve("not supported");
-    // return this.menuRpcCall(vuuEditCellRequest(rowKey, columnName, value)).then(
-    //   (response) => {
-    //     if (response?.error) {
-    //       return response.error;
-    //     } else {
-    //       return true;
-    //     }
-    //   },
-    // );
+  applyEdit(rowKey: string, columnName: string, value: VuuRowDataItemType) {
+    return this.editRpcCall(vuuEditCellRequest(rowKey, columnName, value)).then(
+      (response) => {
+        if (response.type === "VP_EDIT_RPC_REJECT") {
+          return response.error;
+        } else {
+          return true;
+        }
+      },
+    );
   }
 
   insertRow() {
