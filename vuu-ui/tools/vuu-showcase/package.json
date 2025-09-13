@@ -27,8 +27,8 @@
     "@vuu-ui/vuu-ui-controls": "0.13.40",
     "@vuu-ui/vuu-utils": "0.13.40",
     "@fontsource/open-sans": "^4.5.13",
-    "@salt-ds/core": "1.43.0",
-    "@salt-ds/theme": "1.28.0",
+    "@salt-ds/core": "1.48.0",
+    "@salt-ds/theme": "1.32.0",
     "symlink-dir": "^6.0.5",
     "watcher": "2.3.1"
   },

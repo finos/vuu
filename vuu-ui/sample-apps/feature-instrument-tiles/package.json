@@ -30,7 +30,7 @@
     "@vuu-ui/vuu-table-extras": "0.13.40",
     "@vuu-ui/vuu-theme": "0.13.40",
     "@vuu-ui/vuu-utils": "0.13.40",
-    "@salt-ds/core": "1.43.0"
+    "@salt-ds/core": "1.48.0"
   },
   "peerDependencies": {
     "clsx": "^2.0.0",
