@@ -4,14 +4,15 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.table.Column
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.collection.set.ImmutableUniqueArraySet
+import org.finos.vuu.core.table.datatype.{Decimal, EpochTimestamp}
 
 import java.util.concurrent.ConcurrentSkipListMap
 import scala.jdk.CollectionConverters._
 
 trait IndexedField[TYPE] {
-  def insert(indexedValue: TYPE, rowKeys: String)
+  def insert(indexedValue: TYPE, rowKeys: String): Unit
 
-  def remove(indexedValue: TYPE, rowKeys: String)
+  def remove(indexedValue: TYPE, rowKeys: String): Unit
 
   def column: Column
 
@@ -35,6 +36,10 @@ trait LongIndexedField extends IndexedField[Long]
 trait IntIndexedField extends IndexedField[Int]
 
 trait StringIndexedField extends IndexedField[String]
+
+trait EpochTimestampIndexedField extends IndexedField[EpochTimestamp]
+
+trait DecimalIndexedField extends IndexedField[Decimal]
 
 class SkipListIndexedStringField(val column: Column) extends StringIndexedField with StrictLogging {
   private final val skipList = new ConcurrentSkipListMap[Int, ImmutableArray[String]]()
@@ -109,7 +114,7 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
   }
 
   def lessThanOrEqual(bound: TYPE): ImmutableArray[String] = {
-
+    logger.debug("Hit Index (LTE): " + this.column.name)
     val result = (skipList.headMap(bound, true))
     IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableUniqueArraySet.empty[String](chunkSize = 5000))((arr, prev) => prev.++(arr)).distinct
   }
@@ -121,6 +126,7 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
   }
 
   def greaterThanOrEqual(bound: TYPE): ImmutableArray[String] = {
+    logger.debug("Hit Index (GTE): " + this.column.name)
     val result = (skipList.tailMap(bound, true))
     IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableUniqueArraySet.empty[String](chunkSize = 5000))((arr, prev) => prev.++(arr)).distinct
   }
@@ -136,3 +142,7 @@ class SkipListIndexedIntField(column: Column) extends SkipListIndexedField[Int](
 class SkipListIndexedLongField(column: Column) extends SkipListIndexedField[Long](column) with LongIndexedField {}
 
 class SkipListIndexedBooleanField(column: Column) extends SkipListIndexedField[Boolean](column) with BooleanIndexedField {}
+
+class SkipListIndexedEpochTimestampField(column: Column) extends SkipListIndexedField[EpochTimestamp](column) with EpochTimestampIndexedField {}
+
+class SkipListIndexedDecimalField(column: Column) extends SkipListIndexedField[Decimal](column) with DecimalIndexedField {}

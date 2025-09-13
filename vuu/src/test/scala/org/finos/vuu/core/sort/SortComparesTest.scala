@@ -1,5 +1,6 @@
 package org.finos.vuu.core.sort
 
+import org.finos.vuu.core.table.datatype.{Decimal, EpochTimestamp}
 import org.finos.vuu.core.table.{Column, RowData, RowWithData, SimpleColumn}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -23,19 +24,19 @@ class SortComparesTest extends AnyFeatureSpec with Matchers with BeforeAndAfterE
     val col = column("stringField")
 
     Scenario("can support `A` sort direction") {
-      TestComparator.register((o1, o2) => SortCompares.compareString(o1, o2, col, 'A'))
+      TestComparator.register((o1, o2) => SortCompares.compareString(o1, o2, col, isAscending = true))
 
       unordered.sorted(TestComparator.compare) shouldEqual ascending
     }
 
     Scenario("can support `D` sort direction") {
-      TestComparator.register((o1, o2) => SortCompares.compareString(o1, o2, col, 'D'))
+      TestComparator.register((o1, o2) => SortCompares.compareString(o1, o2, col, isAscending = false))
 
       unordered.sorted(TestComparator.compare) shouldEqual ascending.reverse
     }
 
     Scenario("can support nulls and they go last in ascending order") {
-      TestComparator.register((o1, o2) => SortCompares.compareString(o1, o2, col, 'A'))
+      TestComparator.register((o1, o2) => SortCompares.compareString(o1, o2, col, isAscending = true))
       val data = List(rowData4, rowData3, rowData5)
       val sortedData = List(rowData3, rowData4, rowData5)
       data.sorted(TestComparator.compare) shouldEqual sortedData
@@ -55,19 +56,19 @@ class SortComparesTest extends AnyFeatureSpec with Matchers with BeforeAndAfterE
     val col = column("intField")
 
     Scenario("can support `A` sort direction") {
-      TestComparator.register((o1, o2) => SortCompares.compareInt(o1, o2, col, 'A'))
+      TestComparator.register((o1, o2) => SortCompares.compareInt(o1, o2, col, isAscending = true))
 
       unordered.sorted(TestComparator.compare) shouldEqual ascending
     }
 
     Scenario("can support `D` sort direction") {
-      TestComparator.register((o1, o2) => SortCompares.compareInt(o1, o2, col, 'D'))
+      TestComparator.register((o1, o2) => SortCompares.compareInt(o1, o2, col, isAscending = false))
 
       unordered.sorted(TestComparator.compare) shouldEqual ascending.reverse
     }
 
     Scenario("can sort null value") {
-      TestComparator.register((o1, o2) => SortCompares.compareInt(o1, o2, col, 'A'))
+      TestComparator.register((o1, o2) => SortCompares.compareInt(o1, o2, col, isAscending = true))
       val data = List(rowData5, rowData3, rowData6)
       val sortedData = List(rowData5, rowData6, rowData3)
       data.sorted(TestComparator.compare) shouldEqual sortedData
@@ -87,19 +88,19 @@ class SortComparesTest extends AnyFeatureSpec with Matchers with BeforeAndAfterE
     val col = column("longField")
 
     Scenario("can support `A` sort direction") {
-      TestComparator.register((o1, o2) => SortCompares.compareLong(o1, o2, col, 'A'))
+      TestComparator.register((o1, o2) => SortCompares.compareLong(o1, o2, col, isAscending = true))
 
       unordered.sorted(TestComparator.compare) shouldEqual ascending
     }
 
     Scenario("can support `D` sort direction") {
-      TestComparator.register((o1, o2) => SortCompares.compareLong(o1, o2, col, 'D'))
+      TestComparator.register((o1, o2) => SortCompares.compareLong(o1, o2, col, isAscending = false))
 
       unordered.sorted(TestComparator.compare) shouldEqual ascending.reverse
     }
 
     Scenario("can sort null value") {
-      TestComparator.register((o1, o2) => SortCompares.compareLong(o1, o2, col, 'A'))
+      TestComparator.register((o1, o2) => SortCompares.compareLong(o1, o2, col, isAscending = true))
       val data = List(rowData5, rowData3, rowData6)
       val sortedData = List(rowData5, rowData6, rowData3)
       data.sorted(TestComparator.compare) shouldEqual sortedData
@@ -119,19 +120,19 @@ class SortComparesTest extends AnyFeatureSpec with Matchers with BeforeAndAfterE
     val col = column("doubleField")
 
     Scenario("can support `A` sort direction") {
-      TestComparator.register((o1, o2) => SortCompares.compareDouble(o1, o2, col, 'A'))
+      TestComparator.register((o1, o2) => SortCompares.compareDouble(o1, o2, col, isAscending = true))
 
       unordered.sorted(TestComparator.compare) shouldEqual ascending
     }
 
     Scenario("can support `D` sort direction") {
-      TestComparator.register((o1, o2) => SortCompares.compareDouble(o1, o2, col, 'D'))
+      TestComparator.register((o1, o2) => SortCompares.compareDouble(o1, o2, col, isAscending = false))
 
       unordered.sorted(TestComparator.compare) shouldEqual ascending.reverse
     }
 
     Scenario("can sort null value") {
-      TestComparator.register((o1, o2) => SortCompares.compareDouble(o1, o2, col, 'A'))
+      TestComparator.register((o1, o2) => SortCompares.compareDouble(o1, o2, col, isAscending = true))
       val data = List(rowData5, rowData3, rowData6)
       val sortedData = List(rowData5, rowData6, rowData3)
       data.sorted(TestComparator.compare) shouldEqual sortedData
@@ -151,19 +152,19 @@ class SortComparesTest extends AnyFeatureSpec with Matchers with BeforeAndAfterE
     val col = column("charField")
 
     Scenario("can support `A` sort direction") {
-      TestComparator.register((o1, o2) => SortCompares.compareChar(o1, o2, col, 'A'))
+      TestComparator.register((o1, o2) => SortCompares.compareChar(o1, o2, col, isAscending = true))
 
       unordered.sorted(TestComparator.compare) shouldEqual ascending
     }
 
     Scenario("can support `D` sort direction") {
-      TestComparator.register((o1, o2) => SortCompares.compareChar(o1, o2, col, 'D'))
+      TestComparator.register((o1, o2) => SortCompares.compareChar(o1, o2, col, isAscending = false))
 
       unordered.sorted(TestComparator.compare) shouldEqual ascending.reverse
     }
 
     Scenario("can sort null value") {
-      TestComparator.register((o1, o2) => SortCompares.compareChar(o1, o2, col, 'A'))
+      TestComparator.register((o1, o2) => SortCompares.compareChar(o1, o2, col, isAscending = true))
       val data = List(rowData5, rowData3, rowData6)
       val sortedData = List(rowData5, rowData6, rowData3)
       data.sorted(TestComparator.compare) shouldEqual sortedData
@@ -182,24 +183,88 @@ class SortComparesTest extends AnyFeatureSpec with Matchers with BeforeAndAfterE
     val col = column("boolField")
 
     Scenario("can support `A` sort direction") {
-      TestComparator.register((o1, o2) => SortCompares.compareBoolean(o1, o2, col, 'A'))
+      TestComparator.register((o1, o2) => SortCompares.compareBoolean(o1, o2, col, isAscending = true))
 
       unordered.sorted(TestComparator.compare) shouldEqual ascending
     }
 
     Scenario("can support `D` sort direction") {
-      TestComparator.register((o1, o2) => SortCompares.compareBoolean(o1, o2, col, 'D'))
+      TestComparator.register((o1, o2) => SortCompares.compareBoolean(o1, o2, col, isAscending = false))
 
       unordered.sorted(TestComparator.compare) shouldEqual ascending.reverse
     }
 
     Scenario("can sort null value") {
-      TestComparator.register((o1, o2) => SortCompares.compareBoolean(o1, o2, col, 'A'))
+      TestComparator.register((o1, o2) => SortCompares.compareBoolean(o1, o2, col, isAscending = true))
       val data = List(rowData2, rowData1, rowData3, rowData4)
       val sortedData = List(rowData2, rowData3, rowData4, rowData1)
       data.sorted(TestComparator.compare) shouldEqual sortedData
     }
 
+  }
+
+  Feature("compareEpochTimeStamp") {
+    val rowData1 = RowWithData("id-2", Map("epochField" -> EpochTimestamp(-10L)))
+    val rowData2 = RowWithData("id-3", Map("epochField" -> EpochTimestamp(0L)))
+    val rowData3 = RowWithData("id-1", Map("epochField" -> EpochTimestamp(7L)))
+    val rowData4 = RowWithData("id-4", Map("epochField" -> EpochTimestamp(10L)))
+    val rowData5 = RowWithData("id-5", Map())
+    val rowData6 = RowWithData("id-6", Map())
+
+    val ascending = List(rowData1, rowData2, rowData3, rowData4)
+    val unordered = List(rowData3, rowData1, rowData4, rowData2)
+    val col = column("epochField")
+
+    Scenario("can support `A` sort direction") {
+      TestComparator.register((o1, o2) => SortCompares.compareEpochTimestamp(o1, o2, col, isAscending = true))
+
+      unordered.sorted(TestComparator.compare) shouldEqual ascending
+    }
+
+    Scenario("can support `D` sort direction") {
+      TestComparator.register((o1, o2) => SortCompares.compareEpochTimestamp(o1, o2, col, isAscending = false))
+
+      unordered.sorted(TestComparator.compare) shouldEqual ascending.reverse
+    }
+
+    Scenario("can sort null value and they go last in ascending order") {
+      TestComparator.register((o1, o2) => SortCompares.compareEpochTimestamp(o1, o2, col, isAscending = true))
+      val data = List(rowData5, rowData3, rowData6)
+      val sortedData = List(rowData3, rowData5, rowData6)
+      data.sorted(TestComparator.compare) shouldEqual sortedData
+    }
+  }
+
+  Feature("compareDecimal") {
+    val rowData1 = RowWithData("id-2", Map("decimalField" -> Decimal(-10L)))
+    val rowData2 = RowWithData("id-3", Map("decimalField" -> Decimal(0L)))
+    val rowData3 = RowWithData("id-1", Map("decimalField" -> Decimal(7L)))
+    val rowData4 = RowWithData("id-4", Map("decimalField" -> Decimal(10L)))
+    val rowData5 = RowWithData("id-5", Map())
+    val rowData6 = RowWithData("id-6", Map())
+
+    val ascending = List(rowData1, rowData2, rowData3, rowData4)
+    val unordered = List(rowData3, rowData1, rowData4, rowData2)
+    val col = column("decimalField")
+
+    Scenario("can support `A` sort direction") {
+      TestComparator.register((o1, o2) => SortCompares.compareDecimal(o1, o2, col, isAscending = true))
+
+      unordered.sorted(TestComparator.compare) shouldEqual ascending
+    }
+
+    Scenario("can support `D` sort direction") {
+      TestComparator.register((o1, o2) => SortCompares.compareDecimal(o1, o2, col, isAscending = false))
+
+      unordered.sorted(TestComparator.compare) shouldEqual ascending.reverse
+    }
+
+    Scenario("can sort null value and they go last in ascending order") {
+      TestComparator.register((o1, o2) => SortCompares.compareDecimal(o1, o2, col, isAscending = true))
+      val data = List(rowData5, rowData3, rowData6)
+      val sortedData = List(rowData3, rowData5, rowData6)
+      data.sorted(TestComparator.compare) shouldEqual sortedData
+    }
   }
 
   private def column(name: String): Column = SimpleColumn(name, -1, classOf[Any])
