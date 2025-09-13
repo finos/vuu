@@ -76,6 +76,7 @@
     "@rollup/plugin-json": "6.1.0",
     "@rollup/plugin-node-resolve": "15.3.0",
     "@rollup/plugin-replace": "6.0.1",
+    "@salt-ds/core": "1.48.0",
     "@testing-library/cypress": "10.0.3",
     "@testing-library/dom": "^9.0.0",
     "@types/jsdom": "^21.1.2",
