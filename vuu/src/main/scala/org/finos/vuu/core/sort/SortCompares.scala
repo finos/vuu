@@ -15,12 +15,12 @@ object SortCompares extends StrictLogging {
     val isAscending = sortDirections(columnIndex) == 'A'
 
     val compareValue = activeColumn.dataType match {
-      case DataType.CharDataType => compareChar(o1, o2, activeColumn, isAscending)
-      case DataType.IntegerDataType => compareInt(o1, o2, activeColumn, isAscending)
-      case DataType.BooleanDataType => compareBoolean(o1, o2, activeColumn, isAscending)
-      case DataType.DoubleDataType => compareDouble(o1, o2, activeColumn, isAscending)
-      case DataType.LongDataType => compareLong(o1, o2, activeColumn, isAscending)
       case DataType.StringDataType => compareString(o1, o2, activeColumn, isAscending)
+      case DataType.LongDataType => compareLong(o1, o2, activeColumn, isAscending)
+      case DataType.IntegerDataType => compareInt(o1, o2, activeColumn, isAscending)
+      case DataType.DoubleDataType => compareDouble(o1, o2, activeColumn, isAscending)
+      case DataType.BooleanDataType => compareBoolean(o1, o2, activeColumn, isAscending)
+      case DataType.CharDataType => compareChar(o1, o2, activeColumn, isAscending)
       case _ =>
         logger.warn(s"Unable to sort datatype ${activeColumn.dataType}")
         0
@@ -34,39 +34,31 @@ object SortCompares extends StrictLogging {
   }
 
   def compareChar(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
-    val c1 = o1.get(column).asInstanceOf[Char]
-    val c2 = o2.get(column).asInstanceOf[Char]
-    if (c1 == c2) 0 else if ((isAscending && c1 > c2) || (!isAscending && c2 > c1)) 1 else -1
+    compareComparable[java.lang.Character](o1, o2, column, isAscending)
   }
 
   def compareDouble(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
-    val c1 = o1.get(column).asInstanceOf[Double]
-    val c2 = o2.get(column).asInstanceOf[Double]
-    if (c1 == c2) 0 else if ((isAscending && c1 > c2) || (!isAscending && c2 > c1)) 1 else -1
+    compareComparable[java.lang.Double](o1, o2, column, isAscending)
   }
 
   def compareInt(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
-    val c1 = o1.get(column).asInstanceOf[Int]
-    val c2 = o2.get(column).asInstanceOf[Int]
-    if (c1 == c2) 0 else if ((isAscending && c1 > c2) || (!isAscending && c2 > c1)) 1 else -1
+    compareComparable[java.lang.Integer](o1, o2, column, isAscending)
   }
 
   def compareLong(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
-    val c1 = o1.get(column).asInstanceOf[Long]
-    val c2 = o2.get(column).asInstanceOf[Long]
-    if (c1 == c2) 0 else if ((isAscending && c1 > c2) || (!isAscending && c2 > c1)) 1 else -1
+    compareComparable[java.lang.Long](o1, o2, column, isAscending)
   }
 
   def compareBoolean(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
-    val c1 = o1.get(column).asInstanceOf[Boolean]
-    val c2 = o2.get(column).asInstanceOf[Boolean]
-    if (c1 == c2) 0 else if ((c1 && isAscending) || (c2 && !isAscending)) 1 else -1
+    compareComparable[java.lang.Boolean](o1, o2, column, isAscending)
   }
 
   def compareString(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
-    compareReferenceType[String](o1, o2, column, isAscending, (v1: String, v2: String) => {
-      v1.compareToIgnoreCase(v2)
-    })
+    compareReferenceType[String](o1, o2, column, isAscending, (v1: String, v2: String) => v1.compareToIgnoreCase(v2))
+  }
+
+  private def compareComparable[T <: AnyRef with Comparable[T]](o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
+    compareReferenceType(o1, o2, column, isAscending, (c1: T, c2: T) => c1.compareTo(c2))
   }
 
   private def compareReferenceType[T <: AnyRef](o1: RowData, o2: RowData, column: Column, isAscending: Boolean, compareFunction: ToIntBiFunction[T,T]): Int = {
@@ -78,8 +70,10 @@ object SortCompares extends StrictLogging {
       if (isAscending) 1 else -1
     } else if (c2 == null) {
       if (isAscending) -1 else 1
+    } else if (isAscending) {
+      compareFunction.applyAsInt(c1, c2)
     } else {
-      if (isAscending) compareFunction.applyAsInt(c1, c2) else compareFunction.applyAsInt(c2, c1)
+      compareFunction.applyAsInt(c2, c1)
     }
   }
 
