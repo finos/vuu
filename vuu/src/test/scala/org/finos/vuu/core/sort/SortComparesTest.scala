@@ -1,5 +1,6 @@
 package org.finos.vuu.core.sort
 
+import org.finos.vuu.core.table.datatype.{Decimal, EpochTimestamp}
 import org.finos.vuu.core.table.{Column, RowData, RowWithData, SimpleColumn}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.featurespec.AnyFeatureSpec

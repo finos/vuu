@@ -1,6 +1,7 @@
 package org.finos.vuu.core.sort
 
 import com.typesafe.scalalogging.StrictLogging
+import org.finos.vuu.core.table.datatype.{Decimal, EpochTimestamp}
 import org.finos.vuu.core.table.{Column, DataType, RowData}
 
 import java.util.function.ToIntBiFunction
@@ -18,6 +19,8 @@ object SortCompares extends StrictLogging {
       case DataType.StringDataType => compareString(o1, o2, activeColumn, isAscending)
       case DataType.LongDataType => compareLong(o1, o2, activeColumn, isAscending)
       case DataType.IntegerDataType => compareInt(o1, o2, activeColumn, isAscending)
+      case DataType.EpochTimestampType => compareEpochTimestamp(o1, o2, activeColumn, isAscending)
+      case DataType.DecimalType => compareDecimal(o1, o2, activeColumn, isAscending)
       case DataType.DoubleDataType => compareDouble(o1, o2, activeColumn, isAscending)
       case DataType.BooleanDataType => compareBoolean(o1, o2, activeColumn, isAscending)
       case DataType.CharDataType => compareChar(o1, o2, activeColumn, isAscending)
@@ -55,6 +58,14 @@ object SortCompares extends StrictLogging {
 
   def compareString(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
     compareReferenceType[String](o1, o2, column, isAscending, (v1: String, v2: String) => v1.compareToIgnoreCase(v2))
+  }
+
+  def compareEpochTimestamp(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
+    compareComparable[EpochTimestamp](o1, o2, column, isAscending)
+  }
+
+  def compareDecimal(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
+    compareComparable[Decimal](o1, o2, column, isAscending)
   }
 
   private def compareComparable[T <: AnyRef with Comparable[T]](o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
