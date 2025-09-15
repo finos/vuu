@@ -662,21 +662,21 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     viewPort
   }
 
-  def selectRow(vpId: String, rowKey: String, preserveExistingSeletion: Boolean): ViewPort = {
+  def selectRow(vpId: String, rowKey: String, preserveExistingSelection: Boolean): ViewPort = {
     val viewPort = viewPorts.get(vpId)
-    viewPort.selectRow(rowKey, preserveExistingSeletion)
+    viewPort.selectRow(rowKey, preserveExistingSelection)
     viewPort
   }
 
-  def deselectRow(vpId: String, rowKey: String, preserveExistingSeletion: Boolean): ViewPort = {
+  def deselectRow(vpId: String, rowKey: String, preserveExistingSelection: Boolean): ViewPort = {
     val viewPort = viewPorts.get(vpId)
-    viewPort.deselectRow(rowKey, preserveExistingSeletion)
+    viewPort.deselectRow(rowKey, preserveExistingSelection)
     viewPort
   }
 
-  def selectRowRange(vpId: String, fromRowKey: String, toRowKey: String, preserveExistingSeletion: Boolean): ViewPort = {
+  def selectRowRange(vpId: String, fromRowKey: String, toRowKey: String, preserveExistingSelection: Boolean): ViewPort = {
     val viewPort = viewPorts.get(vpId)
-    viewPort.selectRowRange(fromRowKey, toRowKey, preserveExistingSeletion)
+    viewPort.selectRowRange(fromRowKey, toRowKey, preserveExistingSelection)
     viewPort
   }
 
