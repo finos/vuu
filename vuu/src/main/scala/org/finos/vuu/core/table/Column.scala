@@ -148,7 +148,6 @@ case class SimpleColumn(name: String, index: Int, dataType: Class[_]) extends Co
 }
 
 class AliasedJoinColumn(name: String, index: Int, dataType: Class[_], sourceTable: TableDef, sourceColumn: Column) extends JoinColumn(name, index, dataType, sourceTable, sourceColumn) {
-  override def hashCode(): Int = (sourceTable.name + "." + sourceColumn + "@" + name).hashCode
 
   override def getData(data: RowData): Any = data.get(sourceColumn.name)
 
@@ -157,9 +156,12 @@ class AliasedJoinColumn(name: String, index: Int, dataType: Class[_], sourceTabl
 
 class JoinColumn(name: String, index: Int, dataType: Class[_], val sourceTable: TableDef, val sourceColumn: Column) extends SimpleColumn(name, index, dataType) {
 
-  override def toString: String = s"JoinColumn($name, ${sourceTable.name}:${sourceColumn.name})"
+  private lazy val lazyToString = s"${sourceTable.name}.$sourceColumn@$name"
+  private lazy val lazyHash = lazyToString.hashCode
 
-  override def hashCode(): Int = (sourceTable.name + "." + sourceColumn + "@" + name).hashCode
+  override def toString: String = lazyToString
+
+  override def hashCode(): Int = lazyHash
 
   override def getDataFullyQualified(data: RowData): Any = data.get(sourceTable.fullyQuallifiedColumnName(name))
 
