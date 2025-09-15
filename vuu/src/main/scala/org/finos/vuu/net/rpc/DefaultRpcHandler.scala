@@ -1,3 +1,4 @@
+
 package org.finos.vuu.net.rpc
 
 import com.typesafe.scalalogging.StrictLogging

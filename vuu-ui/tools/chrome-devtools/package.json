@@ -13,6 +13,6 @@
   "dependencies": {
     "chrome-launcher": "^0.15.2",
     "chrome-remote-interface": "^0.32.2",
-    "devtools-protocol": "^0.0.1132318"
+    "devtools-protocol": "^0.0.1515189"
   }
 }

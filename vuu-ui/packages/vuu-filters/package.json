@@ -23,7 +23,7 @@
     "@vuu-ui/vuu-ui-controls": "0.13.40",
     "@vuu-ui/vuu-table": "0.13.40",
     "@vuu-ui/vuu-utils": "0.13.40",
-    "@salt-ds/core": "1.43.0",
+    "@salt-ds/core": "1.48.0",
     "@salt-ds/styles": "0.2.1",
     "@salt-ds/window": "0.1.1"
   },

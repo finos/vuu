@@ -1,10 +1,13 @@
+import { PillInputProps } from "@salt-ds/core/dist-types/pill-input";
 import { useTypeaheadSuggestions } from "@vuu-ui/vuu-data-react";
+import { TableSchemaTable } from "@vuu-ui/vuu-data-types";
 import type { TypeaheadParams } from "@vuu-ui/vuu-protocol-types";
 import {
   dispatchKeyboardEvent,
   getVuuTable,
   useStateRef,
   NO_DATA_MATCH,
+  type CommitHandler,
 } from "@vuu-ui/vuu-utils";
 import {
   ComponentPropsWithoutRef,
@@ -18,18 +21,43 @@ import {
   type RefCallback,
   type SyntheticEvent,
 } from "react";
-import type { VuuTypeaheadInputProps } from "./VuuTypeaheadInput";
 
-export type VuuTypeaheadInputHookProps = Pick<
-  VuuTypeaheadInputProps,
-  | "allowFreeInput"
-  | "column"
-  | "freeTextWarning"
-  | "highlightFirstSuggestion"
-  | "inputProps"
-  | "onCommit"
-  | "table"
->;
+const meetsMinTextLengthThreshold = (value: string, minLength: number) =>
+  value.length >= minLength;
+
+export interface VuuTypeaheadInputHookProps {
+  /**
+   * Allows a text string to be submitted that does not match any suggestion
+   * Defaults to true
+   */
+  allowFreeInput?: boolean;
+  column: string;
+  /**
+   * A warning to display to the user if allowFreeText is false and they attempt
+   * to commit text which does not match any suggestions. A default message will
+   * be shown if not provided
+   */
+  freeTextWarning?: string;
+  /**
+   * When suggestions are displayed, should first option be highlighted ?
+   * Highlighted option will be selected if Enter pressed. If this option
+   * is not applied and no suggestion is highlighted, Enter will commit
+   * current text. This will be desirable if filter operator  will be
+   * 'contains', not if filter operator will be '='.
+   */
+  highlightFirstSuggestion?: boolean;
+  inputProps?: PillInputProps["inputProps"];
+  /**
+   * If zero, suggestions will be shown even without any text input.
+   * Suggestions will be displayed on click, or, if focused via keynoard,
+   * on ArrowDown.
+   * If n, where n > 0, then n characters must be typed before suggestion
+   * list will be fetched.
+   */
+  minCharacterCountToTriggerSuggestions?: 0 | 1 | 2 | 3;
+  onCommit: CommitHandler<HTMLInputElement>;
+  table: TableSchemaTable;
+}
 
 const defaultFreeTextWarning =
   "Please select a value from the list of suggestions. If no suggestions match your text, then the value is not valid. If you believe this should be a valid value, please reach out to the support team";
@@ -40,6 +68,7 @@ export const useVuuTypeaheadInput = ({
   freeTextWarning,
   highlightFirstSuggestion = true,
   inputProps: inputPropsProp,
+  minCharacterCountToTriggerSuggestions = 1,
   onCommit,
   table,
 }: VuuTypeaheadInputHookProps) => {
@@ -71,6 +100,8 @@ export const useVuuTypeaheadInput = ({
         } else {
           setTypeaheadValues(NO_FREE_TEXT);
         }
+      } else if (evt.key === "Enter" && value === "") {
+        console.log("ENTER no value");
       }
     },
     [NO_FREE_TEXT, allowFreeInput, onCommit, valueRef],
@@ -85,12 +116,18 @@ export const useVuuTypeaheadInput = ({
   useEffect(() => {
     if (table) {
       const vuuTable = getVuuTable(table);
-      if (value) {
+      if (
+        meetsMinTextLengthThreshold(
+          value,
+          minCharacterCountToTriggerSuggestions,
+        )
+      ) {
         const params: TypeaheadParams = value
           ? [vuuTable, column, value]
           : [vuuTable, column];
         getSuggestions(params)
           .then((suggestions) => {
+            console.log({ suggestions });
             if (suggestions === false) {
               // TODO is this right
               setTypeaheadValues([]);
@@ -118,7 +155,14 @@ export const useVuuTypeaheadInput = ({
         setTypeaheadValues([]);
       }
     }
-  }, [table, column, getSuggestions, value, NO_FREE_TEXT]);
+  }, [
+    table,
+    column,
+    getSuggestions,
+    value,
+    NO_FREE_TEXT,
+    minCharacterCountToTriggerSuggestions,
+  ]);
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (evt) => {
@@ -158,6 +202,7 @@ export const useVuuTypeaheadInput = ({
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen && valueRef.current === "") {
       // ignore this, don't open dropdown unless user has typed at least one character
+      setOpen(newOpen);
     } else {
       setOpen(newOpen);
     }
