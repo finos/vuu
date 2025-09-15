@@ -349,7 +349,14 @@ class ViewPortImpl(val id: String,
 
   override def deselectAll(): Unit = {
     viewPortLock.synchronized {
-      // TODO
+      selection = Map()
+      val fromIndex = range.get().from
+      val toIndex = range.get().to
+
+      val keysToUpdate = keys.sliceToKeys(fromIndex, toIndex + 1).map(k => (k, this.rowKeyToIndex.get(k))).toMap
+      for ((key, idx) <- keysToUpdate) {
+        publishHighPriorityUpdate(key, idx)
+      }
     }
   }
 
