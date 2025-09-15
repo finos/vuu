@@ -37,7 +37,7 @@ class VsJsonTypeResolver extends TypeIdResolver with StrictLogging {
   }
 
   override def idFromValue(value: scala.Any): String = {
-    logger.debug("idFromValue $value")
+    logger.debug(s"idFromValue $value")
     idFromValueAndType(value, value.getClass)
   }
 

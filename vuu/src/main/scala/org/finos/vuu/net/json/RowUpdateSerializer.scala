@@ -2,6 +2,8 @@ package org.finos.vuu.net.json
 
 import com.fasterxml.jackson.core.{JsonGenerator, JsonParser}
 import com.fasterxml.jackson.databind._
+import com.typesafe.scalalogging.StrictLogging
+import org.finos.vuu.core.table.datatype.{Decimal, EpochTimestamp}
 import org.finos.vuu.net.RowUpdate
 
 import scala.jdk.CollectionConverters.IteratorHasAsScala
@@ -29,7 +31,7 @@ class RowUpdateDeserializer extends JsonDeserializer[RowUpdate] {
   }
 }
 
-class RowUpdateSerializer extends JsonSerializer[RowUpdate] {
+class RowUpdateSerializer extends JsonSerializer[RowUpdate] with StrictLogging  {
 
   override def serialize(value: RowUpdate, gen: JsonGenerator, serializerProvider: SerializerProvider): Unit = {
     gen.writeStartObject()
@@ -43,7 +45,7 @@ class RowUpdateSerializer extends JsonSerializer[RowUpdate] {
     gen.writeStringField("vpVersion", value.vpVersion)
     gen.writeArrayFieldStart("data")
 
-    value.data.foreach(datum => datum match {
+    value.data.foreach {
       case null => gen.writeString("")
       case None => gen.writeString("")
       case s: String => gen.writeString(s)
@@ -52,10 +54,12 @@ class RowUpdateSerializer extends JsonSerializer[RowUpdate] {
       case l: Long => gen.writeNumber(l)
       case b: Boolean => gen.writeBoolean(b)
       case c: Char => gen.writeString(c.toString)
-      case _ =>
-        println("WTF...")
+      case epoch: EpochTimestamp => gen.writeNumber(epoch.nanos)
+      case decimal: Decimal => gen.writeNumber(decimal.value)
+      case unknown: Any =>
+        logger.error(s"Unexpected type ${unknown.getClass}")
+        gen.writeString("")
     }
-    )
 
     gen.writeEndArray()
     gen.writeEndObject()

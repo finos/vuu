@@ -10,6 +10,7 @@ import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.text.AsciiUtil
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.row.{InMemMapRowBuilder, RowBuilder}
+import org.finos.vuu.core.table.datatype.{Decimal, EpochTimestamp}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 
 import java.util
@@ -248,6 +249,10 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
         new SkipListIndexedDoubleField(c)
       case DataType.BooleanDataType =>
         new SkipListIndexedBooleanField(c)
+      case DataType.EpochTimestampType =>
+        new SkipListIndexedEpochTimestampField(c)
+      case DataType.DecimalType =>
+        new SkipListIndexedDecimalField(c)
     }
   }
 
@@ -368,6 +373,10 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
               index.asInstanceOf[IndexedField[Double]].insert(x.asInstanceOf[Double], rowkey)
             case DataType.BooleanDataType =>
               index.asInstanceOf[IndexedField[Boolean]].insert(x.asInstanceOf[Boolean], rowkey)
+            case DataType.EpochTimestampType =>
+              index.asInstanceOf[IndexedField[EpochTimestamp]].insert(x.asInstanceOf[EpochTimestamp], rowkey)
+            case DataType.DecimalType =>
+              index.asInstanceOf[IndexedField[Decimal]].insert(x.asInstanceOf[Decimal], rowkey)
           }
       }
     })

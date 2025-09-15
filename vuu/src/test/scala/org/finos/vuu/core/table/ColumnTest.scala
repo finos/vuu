@@ -1,6 +1,8 @@
 package org.finos.vuu.core.table
 
+import org.finos.vuu.core.table.datatype.{Decimal, EpochTimestamp}
 import org.finos.vuu.api.{ColumnBuilder, TableDef}
+import org.finos.vuu.core.table.datatype.{Decimal, EpochTimestamp}
 import org.finos.vuu.util.types.TypeUtils
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -17,6 +19,8 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
       (DataType.IntegerDataType, "27", 27),
       (DataType.LongDataType, "33", 33L),
       (DataType.DoubleDataType, "33.55", 33.55),
+      (DataType.EpochTimestampType, "100000000", EpochTimestamp.apply(100000000)),
+      (DataType.DecimalType, "200000000", Decimal.apply(200000000)),
     ))((dataType, stringInput, expectedOutput) => {
       Scenario(s"can parse string '$stringInput' to `$dataType` type") {
         val parsedValue = DataType.parseToDataType(stringInput, dataType)
@@ -32,6 +36,8 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
       (DataType.IntegerDataType, "27.5"),
       (DataType.LongDataType, "33.5"),
       (DataType.DoubleDataType, "12x1"),
+      (DataType.EpochTimestampType, "44.5"),
+      (DataType.DecimalType, "46.5"),
     ))((dataType, stringInput) => {
       Scenario(s"should return empty when string '$stringInput' cannot be parsed to `$dataType` type") {
         val parsedValue = DataType.parseToDataType(stringInput, dataType)
@@ -52,12 +58,14 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
             .addString("Id")
             .addString("Name")
             .addInt("Account")
+            .addEpochTimestamp("ExecutionTimestamp")
+            .addDecimal("Price")
             .build()
       )
 
       val joinColumns = Columns.allFrom(tableDef)
-      joinColumns.length shouldEqual 3
-      joinColumns.map(_.name) should contain theSameElementsAs Array("Id", "Name", "Account")
+      joinColumns.length shouldEqual 5
+      joinColumns.map(_.name) should contain theSameElementsAs Array("Id", "Name", "Account", "Price", "ExecutionTimestamp")
     }
   }
 

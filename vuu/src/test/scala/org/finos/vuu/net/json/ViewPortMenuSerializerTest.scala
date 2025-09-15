@@ -1,8 +1,7 @@
-package org.finos.vuu.json
+package org.finos.vuu.net.json
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.net.json.JsonVsSerializer
 import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.viewport._
 import org.scalatest.GivenWhenThen

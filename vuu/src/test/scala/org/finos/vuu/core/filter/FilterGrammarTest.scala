@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.misc.ParseCancellationException
 import org.finos.vuu.core.filter.FilterSpecParser.{parse => filterClause}
 import org.finos.vuu.core.sort.FilterAndSortFixture.{row, _}
 import org.finos.vuu.core.table.RowWithData
+import org.finos.vuu.core.table.datatype.{Decimal, EpochTimestamp}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks._
@@ -150,7 +151,7 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
   Feature("Applying the parsed filters yields expected results") {
     Scenario("Equality comparison to STRING") {
       assertFilteredRows("ric = \"AAPL.L\"",
-        row("tradeTime" -> 5L, "quantity" -> null, "ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD")
+        row("tradeTime" -> 5L, "quantity" -> null, "ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD", "price" -> Decimal(227.88), "lastUpdated" -> EpochTimestamp(1))
       )
     }
 
@@ -170,7 +171,7 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Belonging to set (indexed)") {
       assertFilteredRows("ric in [\"AAPL.L\",\"BT.L\"]",
-        row("tradeTime" -> 5L, "quantity" -> null, "ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD"),
+        row("tradeTime" -> 5L, "quantity" -> null, "ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD", "price" -> Decimal(227.88), "lastUpdated" -> EpochTimestamp(1)),
         row("tradeTime" -> 1L, "quantity" -> 100.0d, "ric" -> "BT.L", "orderId" -> "LDN-0002", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
         row("tradeTime" -> 5L, "quantity" -> 100.0d, "ric" -> "BT.L", "orderId" -> "LDN-0008", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD")
       )

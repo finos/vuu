@@ -5,8 +5,7 @@ import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.viewport.GroupBy
 
 import java.util.concurrent.ConcurrentHashMap
-import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
-import scala.jdk.CollectionConverters.IteratorHasAsScala
+import scala.jdk.CollectionConverters.{CollectionHasAsScala, IteratorHasAsScala}
 
 object EmptyTree extends Tree {
 
@@ -82,10 +81,10 @@ trait Tree {
     else if (!node.isRoot && !isOpen(latestNode))
       Array(node.key)
     else if (node.isRoot) {
-      Array() ++ latestNode.getChildren.flatMap(child => processNode(child))
+      Array() ++ latestNode.getChildren.asScala.flatMap(child => processNode(child))
     }
     else {
-      Array(node.key) ++ latestNode.getChildren.flatMap(child => processNode(child))
+      Array(node.key) ++ latestNode.getChildren.asScala.flatMap(child => processNode(child))
     }
   }
 }
