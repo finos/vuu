@@ -1,6 +1,5 @@
 package org.finos.vuu.feature
 
-import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.core.table.TablePrimaryKeys
 
 trait ViewPortKeys extends Iterable[String] {

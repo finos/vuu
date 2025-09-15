@@ -96,6 +96,7 @@ trait ViewPort {
 
   def setRange(range: ViewPortRange): Unit
 
+  @deprecated
   def setSelection(rowIndices: Array[Int]): Unit
 
   def selectRow(rowKey: String, preserveExistingSelection: Boolean): Unit
@@ -262,6 +263,7 @@ class ViewPortImpl(val id: String,
       sendUpdatesOnChange(range.get())
   }
 
+  @deprecated
   override def setSelection(rowIndices: Array[Int]): Unit = {
     viewPortLock.synchronized {
       val oldSelection = selection.map(kv => (kv._1, this.rowKeyToIndex.get(kv._1)))
@@ -274,13 +276,44 @@ class ViewPortImpl(val id: String,
 
   override def selectRow(rowKey: String, preserveExistingSelection: Boolean): Unit = {
     viewPortLock.synchronized {
-      // TODO
+      if (!this.rowKeyToIndex.containsKey(rowKey)) {
+        throw new Exception(s"Rowkey $rowKey not found in view port $id")
+      }
+
+      val oldSelection = selection.map(kv => (kv._1, this.rowKeyToIndex.get(kv._1)))
+
+      val index = this.rowKeyToIndex.get(rowKey)
+      if(preserveExistingSelection){
+        selection = selection + (rowKey -> index)
+      }else{
+        selection = Map(rowKey -> index)
+      }
+
+      for ((key, idx) <- selection ++ oldSelection) {
+        publishHighPriorityUpdate(key, idx)
+      }
     }
   }
 
   override def deselectRow(rowKey: String, preserveExistingSelection: Boolean): Unit = {
     viewPortLock.synchronized {
-      // TODO
+      if (!this.selection.contains(rowKey)) {
+        throw new Exception(s"Rowkey $rowKey not found in existing selection of view port $id")
+      }
+
+      val oldSelection = selection.map(kv => (kv._1, this.rowKeyToIndex.get(kv._1)))
+
+      val index = this.rowKeyToIndex.get(rowKey)
+      if (preserveExistingSelection) {
+        selection = selection - rowKey
+      } else {
+        // When preserveExistingSelection is false, deselect a row means clearing all selected rows
+        selection = Map()
+      }
+
+      for ((key, idx) <- selection ++ oldSelection) {
+        publishHighPriorityUpdate(key, idx)
+      }
     }
   }
 
