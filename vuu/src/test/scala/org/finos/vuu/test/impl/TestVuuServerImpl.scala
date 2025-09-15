@@ -9,17 +9,17 @@ import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.module._
 import org.finos.vuu.core.table.{DataTable, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.core.{CoreServerApiHandler, IVuuServer}
-import org.finos.vuu.feature.inmem.{VuuInMemPlugin, VuuInMemPluginType}
+import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
 import org.finos.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer, Serializer}
 import org.finos.vuu.net.rest.RestService
-import org.finos.vuu.net.rpc.{JsonSubTypeRegistry, RpcHandler}
+import org.finos.vuu.net.rpc.JsonSubTypeRegistry
 import org.finos.vuu.net._
 import org.finos.vuu.net.flowcontrol.FlowControllerFactory
 import org.finos.vuu.plugin.{DefaultPluginRegistry, Plugin}
 import org.finos.vuu.provider._
 import org.finos.vuu.test.rpc.RpcDynamicProxy
-import org.finos.vuu.test.{TestViewPort, TestVuuServer}
+import org.finos.vuu.test.TestVuuServer
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.viewport.{DefaultRange, ViewPort, ViewPortAction, ViewPortActionMixin, ViewPortContainer, ViewPortRange}
 
@@ -149,14 +149,14 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
     }
   }
 
-  override def createViewPort(module: String, tableName: String, viewPortRange: ViewPortRange): TestViewPort = {
+  override def createViewPort(module: String, tableName: String, viewPortRange: ViewPortRange): ViewPort = {
     val table = tableContainer.getTable(tableName)
     val columns = ViewPortColumnCreator.create(table, table.getTableDef.columns.map(_.name).toList)
     val viewport = viewPortContainer.create(RequestId.oneNew(), session, queue, table, viewPortRange, columns)
-    new TestViewPort(viewport)
+    viewport
   }
 
-  override def createViewPort(module: String, tableName: String): TestViewPort = createViewPort(module, tableName, DefaultRange)
+  override def createViewPort(module: String, tableName: String): ViewPort = createViewPort(module, tableName, DefaultRange)
 
   override def session: ClientSessionId = {
     clientSessionId
