@@ -319,7 +319,25 @@ class ViewPortImpl(val id: String,
 
   override def selectRowRange(fromRowKey: String, toRowKey: String, preserveExistingSelection: Boolean): Unit = {
     viewPortLock.synchronized {
-      // TODO
+      if (!this.rowKeyToIndex.containsKey(fromRowKey)) {
+        throw new Exception(s"Rowkey $fromRowKey not found in view port $id")
+      } else if (!this.rowKeyToIndex.containsKey(toRowKey)) {
+        throw new Exception(s"Rowkey $toRowKey not found in view port $id")
+      }
+
+      val oldSelection = selection.map(kv => (kv._1, this.rowKeyToIndex.get(kv._1)))
+
+      val fromIndex = this.rowKeyToIndex.get(fromRowKey)
+      val toIndex = this.rowKeyToIndex.get(toRowKey)
+      if (preserveExistingSelection) {
+        selection = selection ++ keys.sliceToKeys(fromIndex, toIndex + 1).map(k => (k, this.rowKeyToIndex.get(k))).toMap
+      } else {
+        selection = keys.sliceToKeys(fromIndex, toIndex + 1).map(k => (k, this.rowKeyToIndex.get(k))).toMap
+      }
+
+      for ((key, idx) <- selection ++ oldSelection) {
+        publishHighPriorityUpdate(key, idx)
+      }
     }
   }
 
