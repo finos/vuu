@@ -253,7 +253,7 @@ case class JoinTableDef(
 
     val joinFieldColumns = joins.toArray.zip(startIndex to endIndex).map({ case (join, index) => {
       val baseColumn = join.table.columnForName(join.joinSpec.right)
-      new JoinColumn(baseColumn.name, index, baseColumn.dataType, join.table, baseColumn)
+      SimpleJoinColumn(baseColumn.name, index, baseColumn.dataType, join.table, baseColumn)
     }
     })
 

@@ -76,7 +76,7 @@ object Columns {
   }).toArray
 
   def from(table: TableDef, names: Seq[String]): Array[Column] = {
-    table.columns.filter(c => names.contains(c.name)).map(c => new JoinColumn(c.name, c.index, c.dataType, table, c))
+    table.columns.filter(c => names.contains(c.name)).map(c => SimpleJoinColumn(c.name, c.index, c.dataType, table, c))
   }
 
   /**
@@ -89,7 +89,7 @@ object Columns {
 
   def aliased(table: TableDef, aliases: (String, String)*): Array[Column] = {
     val aliased = aliases.map(tuple => tuple._1 -> tuple._2).toMap
-    table.columns.filter(c => aliased.contains(c.name)) map (c => new AliasedJoinColumn(aliased(c.name), c.index, c.dataType, table, c).asInstanceOf[Column])
+    table.columns.filter(c => aliased.contains(c.name)) map (c => AliasedJoinColumn(aliased(c.name), c.index, c.dataType, table, c).asInstanceOf[Column])
   }
 
   /**
@@ -100,7 +100,7 @@ object Columns {
 
     val excluded = columnsToExclude.map(s => s -> 1).toMap
 
-    table.columns.filterNot(c => excluded.contains(c.name)).map(c => new JoinColumn(c.name, c.index, c.dataType, table, c))
+    table.columns.filterNot(c => excluded.contains(c.name)).map(c => SimpleJoinColumn(c.name, c.index, c.dataType, table, c))
   }
 
   /**
@@ -126,7 +126,7 @@ trait Column {
 
 }
 
-trait SourceColumn {
+trait JoinColumn extends Column {
   def sourceTable: TableDef
   def sourceColumn: Column
 }
@@ -175,7 +175,7 @@ case class SimpleColumn(name: String, index: Int, dataType: Class[_]) extends Co
 
 }
 
-case class JoinColumn(name: String, index: Int, dataType: Class[_], sourceTable: TableDef, sourceColumn: Column) extends Column with SourceColumn {
+case class SimpleJoinColumn(name: String, index: Int, dataType: Class[_], sourceTable: TableDef, sourceColumn: Column) extends JoinColumn {
 
   override def toString: String = s"${sourceTable.name}.$sourceColumn@$name"
 
@@ -189,7 +189,7 @@ case class JoinColumn(name: String, index: Int, dataType: Class[_], sourceTable:
 
   override def equals(obj: scala.Any): Boolean = {
     obj match {
-      case other: JoinColumn =>
+      case other: SimpleJoinColumn =>
         this.sourceTable.name == other.sourceTable.name &&
           this.sourceColumn.name == other.sourceColumn.name &&
           this.name == other.name &&
@@ -199,7 +199,7 @@ case class JoinColumn(name: String, index: Int, dataType: Class[_], sourceTable:
   }
 }
 
-case class AliasedJoinColumn(name: String, index: Int, dataType: Class[_], sourceTable: TableDef, sourceColumn: Column) extends Column with SourceColumn {
+case class AliasedJoinColumn(name: String, index: Int, dataType: Class[_], sourceTable: TableDef, sourceColumn: Column) extends JoinColumn {
 
   override def toString: String = s"${sourceTable.name}.$sourceColumn@alias($name)"
 
