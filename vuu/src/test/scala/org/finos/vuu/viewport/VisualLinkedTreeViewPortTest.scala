@@ -87,7 +87,7 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       viewPortOrders.getKeys.length shouldEqual 12
 
       When("we select some rows in the grid")
-      viewPortContainer.changeSelection(session, outQueue, viewPortPricesGroupBy.id, ViewPortSelectedIndices(Array(5)))
+      viewPortContainer.selectRow(viewPortPricesGroupBy.id, "NYC-0004", preserveExistingSelection = false)
       viewPortContainer.runGroupByOnce()
       viewPortContainer.runOnce()
 
@@ -107,7 +107,7 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       }
 
       And("if we expend the selection to include BP.L in the prices table")
-      viewPortContainer.changeSelection(session, outQueue, viewPortPricesGroupBy.id, ViewPortSelectedIndices(Array(3, 5)))
+      viewPortContainer.selectRowRange(viewPortPricesGroupBy.id, "NYC-0002", "NYC-0004", preserveExistingSelection = false)
 
       viewPortContainer.runOnce()
       viewPortContainer.runGroupByOnce()
@@ -143,7 +143,7 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       viewPortOrders.getKeys.length shouldEqual 9
 
       And("if we set selection to none")
-      viewPortContainer.changeSelection(session, outQueue, viewPortPricesGroupBy.id, ViewPortSelectedIndices(Array()))
+      viewPortContainer.deselectAll(viewPortPricesGroupBy.id)
       viewPortContainer.runOnce()
 
       Then("we should show all by default in the viewport")

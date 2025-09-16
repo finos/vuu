@@ -90,7 +90,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       viewPortOrders.getKeys.length shouldEqual 12
 
       When("we select some rows in the grid")
-      viewPortContainer.changeSelection(session, outQueue, viewPortPrices.id, ViewPortSelectedIndices(Array(1)))
+      viewPortContainer.selectRow(viewPortPrices.id, "NYC-0001", preserveExistingSelection = false)
 
       Then("Check the selected rows is updated in the vp")
       assertVpEqWithMeta(combineQs(viewPortPrices)) {
@@ -116,7 +116,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       }
 
       And("if we expend the selection to include BP.L in the prices table")
-      viewPortContainer.changeSelection(session, outQueue, viewPortPrices.id, ViewPortSelectedIndices(Array(1, 2)))
+      viewPortContainer.selectRowRange(viewPortPrices.id, "NYC-0001", "NYC-0002", preserveExistingSelection = false)
 
       viewPortContainer.runOnce()
 
@@ -135,7 +135,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       }
 
       And("if we set selection to none")
-      viewPortContainer.changeSelection(session, outQueue, viewPortPrices.id, ViewPortSelectedIndices(Array()))
+      viewPortContainer.deselectAll(viewPortPrices.id)
       viewPortContainer.runOnce()
 
       Then("we should show all by default in the viewport")
@@ -159,7 +159,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
 
       Then("Change the viewport to sort by quantity")
       viewPortContainer.change(RequestId.oneNew(), session, viewPortOrders.id, ViewPortRange(0, 10), vpcolumnsOrders, SortSpec(List(SortDef("quantity", 'D'))))
-      viewPortContainer.changeSelection(session, outQueue, viewPortPrices.id, ViewPortSelectedIndices(Array(1)))
+      viewPortContainer.selectRow(viewPortPrices.id, "NYC-0001", preserveExistingSelection = false)
 
       viewPortContainer.runOnce()
 
@@ -305,7 +305,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       viewPortOrders1.getKeys.length shouldEqual 12
 
       When("we select second row in the grid")
-      viewPortContainer.changeSelection(session, outQueue, viewPortOrders2.id, ViewPortSelectedIndices(Array(1)))
+      viewPortContainer.selectRow(viewPortOrders2.id, "NYC-0001", preserveExistingSelection = false)
 
       Then("Check the selected rows is updated in the vp")
       assertVpEqWithMeta(combineQs(viewPortOrders2)) {

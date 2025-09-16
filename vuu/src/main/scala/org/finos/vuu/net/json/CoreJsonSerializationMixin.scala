@@ -56,8 +56,6 @@ import org.finos.vuu.net._
   new Type(value = classOf[OpenTreeNodeReject], name = "OPEN_TREE_REJECT"),
   new Type(value = classOf[CloseTreeNodeSuccess], name = "CLOSE_TREE_SUCCESS"),
   new Type(value = classOf[CloseTreeNodeReject], name = "CLOSE_TREE_REJECT"),
-  new Type(value = classOf[SetSelectionRequest], name = "SET_SELECTION"),
-  new Type(value = classOf[SetSelectionSuccess], name = "SET_SELECTION_SUCCESS"),
   new Type(value = classOf[SelectRowRequest], name = "SELECT_ROW"),
   new Type(value = classOf[SelectRowSuccess], name = "SELECT_ROW_SUCCESS"),
   new Type(value = classOf[SelectRowReject], name = "SELECT_ROW_REJECT"),

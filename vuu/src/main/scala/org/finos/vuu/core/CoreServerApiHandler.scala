@@ -369,16 +369,6 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
     }
   }
 
-  @deprecated
-  override def process(msg: SetSelectionRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.changeSelection(ctx.session, ctx.queue, msg.vpId, ViewPortSelectedIndices(msg.selection))) match {
-      case Success(vp) =>
-        vsMsg(SetSelectionSuccess(vp.id, vp.getSelection.values.toArray))(ctx)
-      case Failure(e) =>
-        logger.error("Could not change VP selection:", e.getMessage)
-        errorMsg("Could not change VP selection:" + e.getMessage)(ctx)
-    }
-  }
 // TODO #1721 update error messages
   override def process(msg: SelectRowRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.selectRow(msg.vpId, msg.rowKey, msg.preserveExistingSelection)) match {

@@ -134,7 +134,6 @@ class DefaultMessageHandler(val channel: Channel,
       case req: ChangeViewPortRange => serverApi.process(req)(ctx)
       case req: OpenTreeNodeRequest => serverApi.process(req)(ctx)
       case req: CloseTreeNodeRequest => serverApi.process(req)(ctx)
-      case req: SetSelectionRequest => serverApi.process(req)(ctx)
       case req: SelectRowRequest => serverApi.process(req)(ctx)
       case req: DeselectRowRequest => serverApi.process(req)(ctx)
       case req: SelectRowRangeRequest => serverApi.process(req)(ctx)

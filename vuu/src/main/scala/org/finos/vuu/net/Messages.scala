@@ -186,12 +186,6 @@ case class OpenTreeNodeSuccess(vpId: String, treeKey: String) extends MessageBod
 
 case class OpenTreeNodeReject(vpId: String, treeKey: String) extends MessageBody
 
-@deprecated
-case class SetSelectionRequest(vpId: String, selection: Array[Int]) extends MessageBody
-
-@deprecated
-case class SetSelectionSuccess(vpId: String, selection: Array[Int]) extends MessageBody
-
 case class SelectRowRequest(vpId: String, rowKey: String, preserveExistingSelection: Boolean) extends MessageBody
 
 case class SelectRowSuccess(vpId: String, selection: Array[String]) extends MessageBody

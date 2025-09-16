@@ -27,8 +27,6 @@ case object SizeUpdateType extends ViewPortUpdateType
 
 object DefaultRange extends ViewPortRange(0, 123)
 
-case class ViewPortSelectedIndices(indices: Array[Int])
-
 case class ViewPortSelection(rowKeyIndex: Map[String, Int], viewPort: ViewPort)
 
 case class ViewPortVisualLink(childVp: ViewPort, parentVp: ViewPort, childColumn: Column, parentColumn: Column) {
@@ -96,9 +94,6 @@ trait ViewPort {
   def table: RowSource
 
   def setRange(range: ViewPortRange): Unit
-
-  @deprecated
-  def setSelection(rowIndices: Array[Int]): Unit
 
   def selectRow(rowKey: String, preserveExistingSelection: Boolean): Unit
 
@@ -264,19 +259,9 @@ class ViewPortImpl(val id: String,
       sendUpdatesOnChange(range.get())
   }
 
-  @deprecated
-  override def setSelection(rowIndices: Array[Int]): Unit = {
-    viewPortLock.synchronized {
-      val oldSelection = selection.map(kv => (kv._1, this.rowKeyToIndex.get(kv._1)))
-      selection = rowIndices.filter(this.keys.get(_) != null).map(idx => (this.keys.get(idx), idx)).toMap
-      for ((key, idx) <- selection ++ oldSelection) {
-        publishHighPriorityUpdate(key, idx)
-      }
-    }
-  }
-
   override def selectRow(rowKey: String, preserveExistingSelection: Boolean): Unit = {
     viewPortLock.synchronized {
+      // TODO fix this if
       if (!rowKeyToIndex.containsKey(rowKey)) {
         throw new Exception(s"Rowkey $rowKey not found in view port $id")
       }
@@ -319,6 +304,7 @@ class ViewPortImpl(val id: String,
 
   override def selectRowRange(fromRowKey: String, toRowKey: String, preserveExistingSelection: Boolean): Unit = {
     viewPortLock.synchronized {
+      // TODO fix this if
       if (!rowKeyToIndex.containsKey(fromRowKey)) {
         throw new Exception(s"Rowkey $fromRowKey not found in view port $id")
       } else if (!rowKeyToIndex.containsKey(toRowKey)) {
@@ -328,9 +314,9 @@ class ViewPortImpl(val id: String,
       val oldSelection = selection.map(kv => (kv._1, rowKeyToIndex.get(kv._1)))
 
       val fromIndex = rowKeyToIndex.get(fromRowKey)
-      val toIndex = rowKeyToIndex.get(toRowKey)
+      val toIndex = rowKeyToIndex.get(toRowKey) + 1
       if (preserveExistingSelection) {
-        selection = selection ++ keys.sliceToKeys(fromIndex, toIndex + 1).map(k => (k, rowKeyToIndex.get(k))).toMap
+        selection = selection ++ keys.sliceToKeys(fromIndex, toIndex).map(k => (k, rowKeyToIndex.get(k))).toMap
       } else {
         selection = keys.sliceToKeys(fromIndex, toIndex + 1).map(k => (k, rowKeyToIndex.get(k))).toMap
       }
@@ -346,7 +332,7 @@ class ViewPortImpl(val id: String,
       selection = rowKeyToIndex.asScala.toMap
       val fromIndex = range.get().from
       val toIndex = range.get().to
-      val keysToUpdate = keys.sliceToKeys(fromIndex, toIndex + 1).map(k => (k, rowKeyToIndex.get(k))).toMap
+      val keysToUpdate = keys.sliceToKeys(fromIndex, toIndex).map(k => (k, rowKeyToIndex.get(k))).toMap
       for ((key, idx) <- keysToUpdate) {
         publishHighPriorityUpdate(key, idx)
       }
