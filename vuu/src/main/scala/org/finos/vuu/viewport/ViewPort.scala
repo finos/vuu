@@ -303,23 +303,23 @@ class ViewPortImpl(val id: String,
 
   override def selectRowRange(fromRowKey: String, toRowKey: String, preserveExistingSelection: Boolean): Unit = {
     viewPortLock.synchronized {
-      // NOTE we assume fromRowKey and toRowKey are within the range of view port hence should be in rowKeyToIndex map
-      if (!rowKeyToIndex.containsKey(fromRowKey)) {
+      val indexMap = keys.zipWithIndex.toMap
+      if (!indexMap.contains(fromRowKey)) {
         throw new Exception(s"Rowkey $fromRowKey not found in view port $id")
-      } else if (!rowKeyToIndex.containsKey(toRowKey)) {
+      } else if (!indexMap.contains(toRowKey)) {
         throw new Exception(s"Rowkey $toRowKey not found in view port $id")
       }
 
-      val oldSelection = selection.map(kv => (kv._1, rowKeyToIndex.get(kv._1)))
+      val oldSelection = selection.map(kv => (kv._1, indexMap(kv._1)))
 
-      val index1 = rowKeyToIndex.get(fromRowKey)
-      val index2 = rowKeyToIndex.get(toRowKey)
+      val index1 = indexMap(fromRowKey)
+      val index2 = indexMap(toRowKey)
       val fromIndex = if (index1 < index2) index1 else index2
       val toIndex = if (index1 > index2) index1 + 1 else index2 + 1
       if (preserveExistingSelection) {
-        selection = selection ++ keys.sliceToKeys(fromIndex, toIndex).map(k => (k, rowKeyToIndex.get(k))).toMap
+        selection = selection ++ keys.sliceToKeys(fromIndex, toIndex).map(k => (k, indexMap(k))).toMap
       } else {
-        selection = keys.sliceToKeys(fromIndex, toIndex + 1).map(k => (k, rowKeyToIndex.get(k))).toMap
+        selection = keys.sliceToKeys(fromIndex, toIndex + 1).map(k => (k, indexMap(k))).toMap
       }
 
       for ((key, idx) <- selection ++ oldSelection) {
