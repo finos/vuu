@@ -89,7 +89,7 @@ object Columns {
 
   def aliased(table: TableDef, aliases: (String, String)*): Array[Column] = {
     val aliased = aliases.map(tuple => tuple._1 -> tuple._2).toMap
-    table.columns.filter(c => aliased.contains(c.name)) map (c => AliasedJoinColumn(aliased(c.name), c.index, c.dataType, table, c).asInstanceOf[Column])
+    table.columns.filter(c => aliased.contains(c.name)) map (c => JoinColumn(aliased(c.name), c.index, c.dataType, table, c, isAlias = true).asInstanceOf[Column])
   }
 
   /**
@@ -129,6 +129,18 @@ trait Column {
 trait JoinColumn extends Column {
   def sourceTable: TableDef
   def sourceColumn: Column
+}
+
+object JoinColumn {
+
+  def apply(name: String, index: Int, dataType: Class[_], sourceTable: TableDef, sourceColumn: Column, isAlias: Boolean): JoinColumn = {
+    if (isAlias) {
+      AliasedJoinColumn(name, index, dataType, sourceTable, sourceColumn)
+    } else {
+      SimpleJoinColumn(name, index, dataType, sourceTable, sourceColumn)
+    }
+  }
+
 }
 
 case class NoColumn() extends Column {
@@ -175,7 +187,7 @@ case class SimpleColumn(name: String, index: Int, dataType: Class[_]) extends Co
 
 }
 
-case class SimpleJoinColumn(name: String, index: Int, dataType: Class[_], sourceTable: TableDef, sourceColumn: Column) extends JoinColumn {
+private case class SimpleJoinColumn(name: String, index: Int, dataType: Class[_], sourceTable: TableDef, sourceColumn: Column) extends JoinColumn {
 
   override def toString: String = s"${sourceTable.name}.$sourceColumn@$name"
 
@@ -199,7 +211,7 @@ case class SimpleJoinColumn(name: String, index: Int, dataType: Class[_], source
   }
 }
 
-case class AliasedJoinColumn(name: String, index: Int, dataType: Class[_], sourceTable: TableDef, sourceColumn: Column) extends JoinColumn {
+private case class AliasedJoinColumn(name: String, index: Int, dataType: Class[_], sourceTable: TableDef, sourceColumn: Column) extends JoinColumn {
 
   override def toString: String = s"${sourceTable.name}.$sourceColumn@alias($name)"
 
