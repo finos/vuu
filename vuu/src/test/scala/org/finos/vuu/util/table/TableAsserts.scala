@@ -449,7 +449,7 @@ object TableAsserts {
 
   private def getColumns(columns: ViewPortColumns, rempveDefaultColumns: Boolean = true): ViewPortColumns = {
     if (rempveDefaultColumns) {
-      new ViewPortColumns(columns.getColumns().filter(c => !c.name.equals(CreatedTimeColumnName) && !c.name.equals(LastUpdatedTimeColumnName)))
+      ViewPortColumns(columns.getColumns().filter(c => !c.name.equals(CreatedTimeColumnName) && !c.name.equals(LastUpdatedTimeColumnName)))
     } else {
       columns
     }

@@ -17,16 +17,14 @@ object ViewPortColumnCreator {
 
   def create(table: DataTable, columns: List[String]): ViewPortColumns = {
 
-    //val staticColumns = columns.map( col => table.getTableDef.columnForName(col)).toList
-
-    val vpColumns = new ViewPortColumns(List())
+    var vpColumns: ViewPortColumns = ViewPortColumns()
 
     columns.foreach( column => {
       if (isCalculatedColumn(column)) {
         val (name, dataType, definition) = parseCalcColumn(column)
-        vpColumns.addColumn(CalculatedColumnFactory.parse(vpColumns, name, dataType, definition))
+        vpColumns = ViewPortColumns(CalculatedColumnFactory.parse(vpColumns, name, dataType, definition), vpColumns)
       } else {
-        vpColumns.addColumn(table.getTableDef.columnForName(column))
+        vpColumns = ViewPortColumns(table.getTableDef.columnForName(column), vpColumns)
       }
     })
 

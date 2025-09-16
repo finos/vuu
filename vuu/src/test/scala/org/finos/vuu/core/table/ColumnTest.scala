@@ -1,6 +1,7 @@
 package org.finos.vuu.core.table
 
 import org.finos.vuu.api.{ColumnBuilder, TableDef}
+import org.finos.vuu.core.table.column.NullCalculatedColumnClause
 import org.finos.vuu.util.types.TypeUtils
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -79,4 +80,92 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
       joinColumns.map(_.name) should contain theSameElementsAs Array("Id", "Account")
     }
   }
+
+  Feature("Equals and Hashcode") {
+
+    Scenario("Simple column equals and hashcode") {
+
+      val column1 = SimpleColumn("cakes", 0, DataType.StringDataType)
+
+      val column2 = SimpleColumn("pies", 0, DataType.StringDataType)
+      column1 shouldNot equal(column2)
+
+      val column3 = SimpleColumn("cakes", 0, DataType.IntegerDataType)
+      column1 shouldNot equal (column3)
+
+      val column4 = SimpleColumn("cakes", 0, DataType.StringDataType)
+      column1 shouldEqual column4
+      column1.hashCode() shouldEqual column4.hashCode()
+    }
+
+    Scenario("Simple join column equals and hashcode") {
+
+      val joinedColumn = SimpleColumn("type", 0, DataType.StringDataType)
+      val tableDef = TableDef.apply("treats", "type", Array(joinedColumn))
+      val column1 = SimpleJoinColumn("cakes", 0, DataType.StringDataType, tableDef, joinedColumn)
+
+      val column2 = SimpleJoinColumn("pies", 0, DataType.StringDataType, tableDef, joinedColumn)
+      column1 shouldNot equal(column2)
+
+      val column3 = SimpleJoinColumn("cakes", 0, DataType.IntegerDataType, tableDef, joinedColumn)
+      column1 shouldNot equal (column3)
+
+      val column4 = SimpleJoinColumn("cakes", 0, DataType.StringDataType, tableDef, joinedColumn)
+      column1 shouldEqual column4
+      column1.hashCode() shouldEqual column4.hashCode()
+
+      val joinedColumn2 = SimpleColumn("lol", 0, DataType.StringDataType)
+      val tableDef2 = TableDef.apply("treats", "type", Array(joinedColumn2))
+      val column5 = SimpleJoinColumn("cakes", 0, DataType.StringDataType, tableDef2, joinedColumn2)
+      column1 shouldNot equal (column5)
+
+      val tableDef3 = TableDef.apply("snacks", "type", Array(joinedColumn))
+      val column6 = SimpleJoinColumn("cakes", 0, DataType.StringDataType, tableDef3, joinedColumn)
+      column1 shouldNot equal (column6)
+    }
+
+    Scenario("Simple join alias column equals and hashcode") {
+
+      val joinedColumn = SimpleColumn("type", 0, DataType.StringDataType)
+      val tableDef = TableDef.apply("treats", "type", Array(joinedColumn))
+      val column1 = AliasedJoinColumn("cakes", 0, DataType.StringDataType, tableDef, joinedColumn)
+
+      val column2 = AliasedJoinColumn("pies", 0, DataType.StringDataType, tableDef, joinedColumn)
+      column1 shouldNot equal(column2)
+
+      val column3 = AliasedJoinColumn("cakes", 0, DataType.IntegerDataType, tableDef, joinedColumn)
+      column1 shouldNot equal (column3)
+
+      val column4 = AliasedJoinColumn("cakes", 0, DataType.StringDataType, tableDef, joinedColumn)
+      column1 shouldEqual column4
+      column1.hashCode() shouldEqual column4.hashCode()
+
+      val joinedColumn2 = SimpleColumn("lol", 0, DataType.StringDataType)
+      val tableDef2 = TableDef.apply("treats", "type", Array(joinedColumn2))
+      val column5 = AliasedJoinColumn("cakes", 0, DataType.StringDataType, tableDef2, joinedColumn2)
+      column1 shouldNot equal (column5)
+
+      val tableDef3 = TableDef.apply("snacks", "type", Array(joinedColumn))
+      val column6 = AliasedJoinColumn("cakes", 0, DataType.StringDataType, tableDef3, joinedColumn)
+      column1 shouldNot equal (column6)
+    }
+
+    Scenario("Calculated column equals and hashcode") {
+
+      val clause = new NullCalculatedColumnClause
+      val column1 = CalculatedColumn("cakes", clause, 0, DataType.StringDataType)
+
+      val column2 = CalculatedColumn("pies", clause, 0, DataType.StringDataType)
+      column1 shouldNot equal(column2)
+
+      val column3 = CalculatedColumn("cakes", clause, 0, DataType.IntegerDataType)
+      column1 shouldNot equal (column3)
+
+      val column4 = CalculatedColumn("cakes", clause, 0, DataType.StringDataType)
+      column1 shouldEqual column4
+      column1.hashCode() shouldEqual column4.hashCode()
+    }
+
+  }
+
 }

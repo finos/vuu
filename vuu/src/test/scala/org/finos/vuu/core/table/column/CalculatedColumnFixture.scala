@@ -28,7 +28,7 @@ object CalculatedColumnFixture extends StrictLogging {
     logger.debug("OUT" + tree.toStringTree(parser)) // print LISP-style tree
   }
 
-  def parseToColumn(columns: ViewPortColumns, calcDef: String): Column = {
+  def parseAndUpdateColumns(columns: ViewPortColumns, calcDef: String): ViewPortColumns = {
     val name :: dataType :: calcdsl :: _ = calcDef.split(":").toList
     val dt = DataType.fromString(dataType)
     val input = CharStreams.fromString(calcdsl)
@@ -41,8 +41,7 @@ object CalculatedColumnFixture extends StrictLogging {
     val eval = new CalculatedColumnVisitor(columns)
     val clause = eval.visit(tree)
     val column = CalculatedColumn(name, clause, columns.count(), dt)
-    columns.addColumn(column)
-    column
+    ViewPortColumns(column, columns)
   }
 
   val tableColumns: List[Column] = Columns.fromNames(
@@ -146,9 +145,11 @@ object CalculatedColumnFixture extends StrictLogging {
 
   def withCalculatedColumns(rows: List[RowWithData], columns: List[Column], calcs: String*)(expectedFn: => Any): Unit = {
 
-    val vpColumns = new ViewPortColumns(columns)
+    var vpColumns = ViewPortColumns(columns)
 
-    calcs.foreach(parseToColumn(vpColumns, _))
+    for (calc <- calcs) {
+      vpColumns = parseAndUpdateColumns(vpColumns, calc)
+    }
 
     expectedFn match {
       case table: TableFor11[_, _, _, _, _, _, _, _, _, _, _] => generic11Assert(rows, vpColumns, table)
