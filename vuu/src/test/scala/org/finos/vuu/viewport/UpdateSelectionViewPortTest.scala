@@ -591,6 +591,13 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
           (0, "NYC-0000", "chris", "VOD.L", 100),
           (0, "NYC-0001", "chris", "VOD.L", 101),
           (0, "NYC-0002", "chris", "VOD.L", 102),
+          (0, "NYC-0003", "chris", "VOD.L", 103),
+          (0, "NYC-0004", "chris", "VOD.L", 104),
+          (0, "NYC-0005", "chris", "VOD.L", 105),
+          (0, "NYC-0006", "chris", "VOD.L", 106),
+          (0, "NYC-0007", "chris", "VOD.L", 107),
+          (0, "NYC-0008", "chris", "VOD.L", 108),
+          (0, "NYC-0009", "chris", "VOD.L", 109),
         )
       }
 
