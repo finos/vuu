@@ -310,16 +310,16 @@ class ViewPortImpl(val id: String,
         throw new Exception(s"Rowkey $toRowKey not found in view port $id")
       }
 
-      val oldSelection = selection.filter(kv => indexMap.contains(kv._1)).map(kv => (kv._1, indexMap(kv._1)))
+      val oldSelection = selection.filter(kv => indexMap.contains(kv._1)).map(kv => (kv._1, indexMap.getOrElse(kv._1, -1)))
 
-      val index1 = indexMap(fromRowKey)
-      val index2 = indexMap(toRowKey)
+      val index1 = indexMap.getOrElse(fromRowKey, -1)
+      val index2 = indexMap.getOrElse(toRowKey, -1)
       val fromIndex = if (index1 < index2) index1 else index2
       val toIndex = if (index1 > index2) index1 + 1 else index2 + 1
       if (preserveExistingSelection) {
-        selection = selection ++ keys.sliceToKeys(fromIndex, toIndex).map(k => (k, indexMap(k))).toMap
+        selection = selection ++ keys.sliceToKeys(fromIndex, toIndex).map(k => (k, indexMap.getOrElse(k, -1))).toMap
       } else {
-        selection = keys.sliceToKeys(fromIndex, toIndex).map(k => (k, indexMap(k))).toMap
+        selection = keys.sliceToKeys(fromIndex, toIndex).map(k => (k, indexMap.getOrElse(k, -1))).toMap
       }
 
       for ((key, idx) <- selection ++ oldSelection) {
