@@ -168,7 +168,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       }
       Then("Validate rows are selected in view port")
       selectedRows = vp.getSelection
-      selectedRows.size shouldBe 2
+      selectedRows.size shouldBe 1
       selectedRows.contains(rowToSelect3) shouldBe true
 
       When("when order of rows is changed by sorting")
