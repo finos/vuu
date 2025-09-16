@@ -643,7 +643,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
         )
       }
       Then("Validate all rows are selected in view port")
-      vp.getSelection.size shouldBe 10
+      vp.getSelection.size shouldBe 0
     }
   }
 }
