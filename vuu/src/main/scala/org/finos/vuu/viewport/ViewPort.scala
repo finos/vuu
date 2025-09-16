@@ -313,8 +313,10 @@ class ViewPortImpl(val id: String,
 
       val oldSelection = selection.map(kv => (kv._1, rowKeyToIndex.get(kv._1)))
 
-      val fromIndex = rowKeyToIndex.get(fromRowKey)
-      val toIndex = rowKeyToIndex.get(toRowKey) + 1
+      val index1 = rowKeyToIndex.get(fromRowKey)
+      val index2 = rowKeyToIndex.get(toRowKey) + 1
+      val fromIndex = if (index1 < index2) index1 else index2
+      val toIndex = if (index1 > index2) index1 else index2
       if (preserveExistingSelection) {
         selection = selection ++ keys.sliceToKeys(fromIndex, toIndex).map(k => (k, rowKeyToIndex.get(k))).toMap
       } else {
