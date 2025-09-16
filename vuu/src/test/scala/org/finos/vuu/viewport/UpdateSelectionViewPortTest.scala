@@ -187,6 +187,51 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       selectedRows.contains("NYC-0003") shouldBe true
     }
 
+    Scenario("Deselect a row without preserving existing selection") {
+      Given("A view port of 10 orders is created")
+      val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
+      createNOrderRows(ordersProvider, 10)(clock)
+
+      val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), vpcolumns)
+      viewPortContainer.runOnce()
+
+      assertVpEqWithMeta(combineQs(viewPort))(defaultViewPortUpdate)
+
+      And("Select a range of rows")
+      var vp = viewPortContainer.selectRowRange(viewPort.id, "NYC-0001", "NYC-0003", preserveExistingSelection = true)
+
+      Then("Check selection is updated")
+      assertVpEqWithMeta(combineQs(viewPort)) {
+        Table(
+          ("sel", "orderId", "trader", "ric", "quantity"),
+          (1, "NYC-0001", "chris", "VOD.L", 101),
+          (1, "NYC-0002", "chris", "VOD.L", 102),
+          (1, "NYC-0003", "chris", "VOD.L", 103),
+        )
+      }
+      Then("Validate row is selected in view port")
+      var selectedRows = vp.getSelection
+      selectedRows.size shouldBe 3
+
+      Given("Deselect a row without preserving existing selection")
+      val rowToDeselect = "NYC-0002"
+      vp = viewPortContainer.deselectRow(viewPort.id, rowToDeselect, preserveExistingSelection = false)
+
+      Then("Check selection is updated")
+      assertVpEqWithMeta(combineQs(viewPort)) {
+        Table(
+          ("sel", "orderId", "trader", "ric", "quantity"),
+          (0, "NYC-0001", "chris", "VOD.L", 101),
+          (0, "NYC-0002", "chris", "VOD.L", 102),
+          (0, "NYC-0003", "chris", "VOD.L", 103),
+        )
+      }
+      Then("Validate all rows are deselected")
+      selectedRows = vp.getSelection
+      selectedRows.size shouldBe 0
+    }
+
     Scenario("Change row index after rows are selected") {
       Given("A view port of 10 orders is created")
       val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
