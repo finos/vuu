@@ -9,13 +9,14 @@ import org.finos.vuu.net.{SortDef, SortSpec}
 import org.finos.vuu.util.table.TableAsserts.assertVpEqWithMeta
 import org.scalatest.GivenWhenThen
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.prop.TableFor5
 import org.scalatest.prop.Tables.Table
 
 class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers with GivenWhenThen {
 
   implicit val clock: Clock = new TestFriendlyClock(TestTimeStamp.EPOCH_DEFAULT)
   implicit val metrics: MetricsProvider = new MetricsProviderImpl
-  val defaultViewPortUpdate = Table(
+  val defaultViewPortUpdate: TableFor5[Int, String, String, String, Int] = Table(
     ("sel", "orderId", "trader", "ric", "quantity"),
     (0, "NYC-0000", "chris", "VOD.L", 100),
     (0, "NYC-0001", "chris", "VOD.L", 101),
@@ -459,7 +460,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
         )
       }
       Then("Validate row is selected in view port")
-      val selectedRows = vp.getSelection
+      var selectedRows = vp.getSelection
       selectedRows.size shouldBe 3
       selectedRows.contains("NYC-0001") shouldBe true
       selectedRows.contains("NYC-0002") shouldBe true
@@ -485,6 +486,11 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
           (0, "NYC-0009", "chris", "VOD.L", 109),
         )
       }
+      selectedRows = viewPortChanged.getSelection
+      selectedRows.size shouldBe 3
+      selectedRows.get("NYC-0001") shouldBe 1
+      selectedRows.get("NYC-0002") shouldBe 2
+      selectedRows.get("NYC-0003") shouldBe 3
     }
 
     Scenario("Select a range of rows that do not exist") {
