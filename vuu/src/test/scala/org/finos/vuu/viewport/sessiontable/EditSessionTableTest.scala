@@ -114,7 +114,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       viewPortContainer.runOnce()
 
       And("change the selection, so we have first row selected")
-      viewPortContainer.changeSelection(session, outQueue, viewPort.id, ViewPortSelectedIndices(Array(0)))
+      viewPortContainer.selectRow(viewPort.id, "proc-1", preserveExistingSelection = false)
 
       Then("call rpc call to create session table, this should create an OpenDialogViewPortAction")
       val action = viewPortContainer.callRpcSelection(viewPort.id, "OPEN_EDIT_RESET_FIX", session).asInstanceOf[OpenDialogViewPortAction]

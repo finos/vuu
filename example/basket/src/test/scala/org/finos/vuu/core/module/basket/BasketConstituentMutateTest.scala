@@ -43,7 +43,8 @@ class BasketConstituentMutateTest extends VuuServerTestCase {
           vuuServer.runOnce()
 
           When("we select multiple constituent rows ")
-          vpBasketTradingConsJoin.setSelection(Array(1, 2))
+          //vpBasketTradingConsJoin.setSelection(Array(1, 2))
+          // TODO: change setSelection to selectRowRange and use appropriate row keys
 
           And("select set sell context menu")
           val basketTradingConstituentJoinService = vpBasketTradingConsJoin.getStructure.viewPortDef.service

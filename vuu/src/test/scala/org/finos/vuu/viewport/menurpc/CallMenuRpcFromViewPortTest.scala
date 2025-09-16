@@ -131,7 +131,7 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
         )
       }
 
-      vpContainer.changeSelection(session, outQueue, viewPort.id, ViewPortSelectedIndices(Array(0)))
+      vpContainer.selectRow(viewPort.id, "BT.L", preserveExistingSelection = false)
 
       val result = vpContainer.callRpcSelection(viewPort.id, "TEST_SELECT", session)
 
