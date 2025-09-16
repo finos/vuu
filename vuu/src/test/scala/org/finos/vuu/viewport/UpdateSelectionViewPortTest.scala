@@ -379,6 +379,53 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       selectedRows.contains("NYC-0003") shouldBe true
     }
 
+    Scenario("Select a range of rows with reverse order") {
+      Given("A view port of 10 orders is created")
+      val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
+      createNOrderRows(ordersProvider, 10)(clock)
+
+      val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), vpcolumns, sort = SortSpec(List(SortDef("quantity", 'A'))))
+      viewPortContainer.runOnce()
+
+      assertVpEqWithMeta(combineQs(viewPort)) {
+        Table(
+          ("sel", "orderId", "trader", "ric", "quantity"),
+          (0, "NYC-0000", "chris", "VOD.L", 100),
+          (0, "NYC-0001", "chris", "VOD.L", 101),
+          (0, "NYC-0002", "chris", "VOD.L", 102),
+          (0, "NYC-0003", "chris", "VOD.L", 103),
+          (0, "NYC-0004", "chris", "VOD.L", 104),
+          (0, "NYC-0005", "chris", "VOD.L", 105),
+          (0, "NYC-0006", "chris", "VOD.L", 106),
+          (0, "NYC-0007", "chris", "VOD.L", 107),
+          (0, "NYC-0008", "chris", "VOD.L", 108),
+          (0, "NYC-0009", "chris", "VOD.L", 109)
+        )
+      }
+
+      And("Select a range of rows from bottom to top")
+      val fromKey = "NYC-0009"
+      val toKey = "NYC-0007"
+      var vp = viewPortContainer.selectRowRange(viewPort.id, fromKey, toKey, preserveExistingSelection = true)
+
+      Then("Check selection is updated")
+      assertVpEqWithMeta(combineQs(viewPort)) {
+        Table(
+          ("sel", "orderId", "trader", "ric", "quantity"),
+          (1, "NYC-0007", "chris", "VOD.L", 107),
+          (1, "NYC-0008", "chris", "VOD.L", 108),
+          (1, "NYC-0009", "chris", "VOD.L", 109),
+        )
+      }
+      Then("Validate row is selected in view port")
+      var selectedRows = vp.getSelection
+      selectedRows.size shouldBe 3
+      selectedRows.contains("NYC-0009") shouldBe true
+      selectedRows.contains("NYC-0008") shouldBe true
+      selectedRows.contains("NYC-0007") shouldBe true
+    }
+
     Scenario("Change row index after a range of rows are selected") {
       Given("A view port of 10 orders is created")
       val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
