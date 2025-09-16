@@ -76,7 +76,7 @@ object Columns {
   }).toArray
 
   def from(table: TableDef, names: Seq[String]): Array[Column] = {
-    table.columns.filter(c => names.contains(c.name)).map(c => SimpleJoinColumn(c.name, c.index, c.dataType, table, c))
+    table.columns.filter(c => names.contains(c.name)).map(c => JoinColumn(c.name, c.index, c.dataType, table, c, isAlias = false))
   }
 
   /**
@@ -100,7 +100,7 @@ object Columns {
 
     val excluded = columnsToExclude.map(s => s -> 1).toMap
 
-    table.columns.filterNot(c => excluded.contains(c.name)).map(c => SimpleJoinColumn(c.name, c.index, c.dataType, table, c))
+    table.columns.filterNot(c => excluded.contains(c.name)).map(c => JoinColumn(c.name, c.index, c.dataType, table, c, isAlias = false))
   }
 
   /**
