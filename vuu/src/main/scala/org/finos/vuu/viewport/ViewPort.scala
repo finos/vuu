@@ -310,7 +310,7 @@ class ViewPortImpl(val id: String,
         throw new Exception(s"Rowkey $toRowKey not found in view port $id")
       }
 
-      val oldSelection = selection.map(kv => (kv._1, indexMap(kv._1)))
+      val oldSelection = selection.filter(kv => indexMap.contains(kv._1)).map(kv => (kv._1, indexMap(kv._1)))
 
       val index1 = indexMap(fromRowKey)
       val index2 = indexMap(toRowKey)
