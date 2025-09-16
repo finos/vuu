@@ -211,5 +211,5 @@ class FilterClauseTest extends AnyFeatureSpec with Matchers {
   }
 
   private def givenARow(assetClass: String) = RowWithData("key", Map("assetClass" -> assetClass))
-  private def givenVpColumns(names: List[String]) = new ViewPortColumns(names.map(SimpleColumn(_, -1, classOf[Any])))
+  private def givenVpColumns(names: List[String]) = ViewPortColumns(names.map(SimpleColumn(_, -1, classOf[Any])))
 }

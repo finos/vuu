@@ -2,38 +2,40 @@ package org.finos.vuu.viewport
 
 import org.finos.vuu.core.table.{CalculatedColumn, Column, RowData, RowWithData, ViewPortColumnCreator}
 
-class ViewPortColumns(sourceColumns: List[Column]) {
+trait ViewPortColumns {
+  def columnExists(name: String): Boolean
+  def getColumns(): List[Column]
+  def getColumnForName(name: String): Option[Column]
+  def count(): Int
+  def pullRow(key: String, row: RowData): RowData
+  def pullRowAlwaysFilter(key: String, row: RowData): RowData
+}
 
-  @volatile private var columns: List[Column] = sourceColumns
+object ViewPortColumns {
 
-  private def canEqual(a: Any): Boolean = a.isInstanceOf[ViewPortColumns]
+  def apply(): ViewPortColumns = ViewPortColumnsImpl(List())
 
-  override def equals(that: Any): Boolean =
-    that match {
-      case that: ViewPortColumns =>
-        that.canEqual(this) &&
-          this.columns.size == that.columns.size &&
-          0 == this.columns.sortBy(c => c.name)
-            .zip(that.columns.sortBy(c => c.name))
-            .count(columnPair => columnPair._1.name != columnPair._2.name || columnPair._1.dataType != columnPair._2.dataType)
-      case _ => false
-    }
-
-  override def hashCode(): Int = columns.sortBy(c => c.name).map(_.hashCode()).hashCode()
-
-  def addColumn(column: Column): Unit = {
-    columns = columns ++ List(column)
+  def apply(columns: List[Column]): ViewPortColumns = {
+    ViewPortColumnsImpl(columns)
   }
 
-  def columnExists(name: String): Boolean = {
-    columns.exists(_.name == name)
+  def apply(column: Column, viewPortColumns: ViewPortColumns): ViewPortColumns = {
+    ViewPortColumnsImpl(viewPortColumns.getColumns() :+ column)
   }
 
-  def getColumns(): List[Column] = columns
+}
 
-  def getColumnForName(name: String): Option[Column] = {
+private case class ViewPortColumnsImpl(sourceColumns: List[Column]) extends ViewPortColumns {
+
+  override def columnExists(name: String): Boolean = {
+    getColumns().exists(_.name == name)
+  }
+
+  override def getColumns(): List[Column] = sourceColumns
+
+  override def getColumnForName(name: String): Option[Column] = {
     val evaluatedName = getEvaluatedName(name)
-    columns.find(_.name == evaluatedName)
+    getColumns().find(_.name == evaluatedName)
   }
 
   private def getEvaluatedName(name: String): String = {
@@ -45,12 +47,11 @@ class ViewPortColumns(sourceColumns: List[Column]) {
     }
   }
 
-  def count(): Int = columns.size
+  override def count(): Int = getColumns().size
 
-  private lazy val hasCalculatedColumn = columns.exists(c => c.isInstanceOf[CalculatedColumn])
+  private lazy val hasCalculatedColumn = sourceColumns.exists(c => c.isInstanceOf[CalculatedColumn])
 
-  def pullRow(key: String, row: RowData): RowData = {
-
+  override def pullRow(key: String, row: RowData): RowData = {
     if (!hasCalculatedColumn) {
       row
     } else {
@@ -58,8 +59,17 @@ class ViewPortColumns(sourceColumns: List[Column]) {
     }
   }
 
-  def pullRowAlwaysFilter(key: String, row: RowData): RowData = {
+  override def pullRowAlwaysFilter(key: String, row: RowData): RowData = {
     val rowData = this.getColumns().map(c => c.name -> row.get(c)).toMap
     RowWithData(key, rowData)
+  }
+
+  private lazy val hash: Int = sourceColumns.hashCode()
+
+  override def hashCode(): Int = hash
+
+  override def equals(obj: Any): Boolean = obj match {
+    case that: ViewPortColumnsImpl => that.sourceColumns == sourceColumns
+    case _ => false
   }
 }

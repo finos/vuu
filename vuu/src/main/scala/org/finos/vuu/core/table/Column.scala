@@ -2,7 +2,7 @@ package org.finos.vuu.core.table
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName, allDefaultColumns}
+import org.finos.vuu.core.table.DefaultColumnNames.allDefaultColumns
 import org.finos.vuu.core.table.column.CalculatedColumnClause
 import org.finos.vuu.util.schema.ExternalEntitySchema
 import org.finos.vuu.util.types.{DefaultTypeConverters, TypeConverterContainerBuilder}
@@ -124,10 +124,14 @@ trait Column {
 
   def getDataFullyQualified(data: RowData): Any
 
-  override def hashCode(): Int = name.hashCode()
 }
 
-object NoColumn extends Column {
+trait SourceColumn {
+  def sourceTable: TableDef
+  def sourceColumn: Column
+}
+
+case class NoColumn() extends Column {
   override def name: String = "NoColumn"
 
   override def index: Int = -1
@@ -137,6 +141,16 @@ object NoColumn extends Column {
   override def getData(data: RowData): Any = None
 
   override def getDataFullyQualified(data: RowData): Any = None
+
+  override def hashCode(): Int = -1
+
+  override def equals(obj: scala.Any): Boolean = {
+    obj match {
+      case _ : NoColumn => true
+      case _ => false
+    }
+  }
+
 }
 
 case class SimpleColumn(name: String, index: Int, dataType: Class[_]) extends Column {
@@ -145,35 +159,69 @@ case class SimpleColumn(name: String, index: Int, dataType: Class[_]) extends Co
   }
 
   override def getDataFullyQualified(data: RowData): Any = getData(data)
+
+  private lazy val hash: Int = name.hashCode * dataType.hashCode()
+
+  override def hashCode(): Int = hash
+
+  override def equals(obj: scala.Any): Boolean = {
+    obj match {
+      case other: SimpleColumn =>
+        this.name == other.name &&
+          this.dataType == other.dataType
+      case _ => false
+    }
+  }
+
 }
 
-class AliasedJoinColumn(name: String, index: Int, dataType: Class[_], sourceTable: TableDef, sourceColumn: Column) extends JoinColumn(name, index, dataType, sourceTable, sourceColumn) {
+case class JoinColumn(name: String, index: Int, dataType: Class[_], sourceTable: TableDef, sourceColumn: Column) extends Column with SourceColumn {
 
-  override def getData(data: RowData): Any = data.get(sourceColumn.name)
+  override def toString: String = s"${sourceTable.name}.$sourceColumn@$name"
 
-  override def getDataFullyQualified(data: RowData): Any = data.get(sourceTable.fullyQuallifiedColumnName(sourceColumn.name))
-}
-
-class JoinColumn(name: String, index: Int, dataType: Class[_], val sourceTable: TableDef, val sourceColumn: Column) extends SimpleColumn(name, index, dataType) {
-
-  private lazy val lazyToString = s"${sourceTable.name}.$sourceColumn@$name"
-  private lazy val lazyHash = lazyToString.hashCode
-
-  override def toString: String = lazyToString
-
-  override def hashCode(): Int = lazyHash
+  override def getData(data: RowData): Any = data.get(name)
 
   override def getDataFullyQualified(data: RowData): Any = data.get(sourceTable.fullyQuallifiedColumnName(name))
 
-  override def getData(data: RowData): Any = data.get(name)
+  private lazy val hash: Int = name.hashCode * dataType.hashCode() * sourceTable.name.hashCode * sourceColumn.name.hashCode
+
+  override def hashCode(): Int = hash
 
   override def equals(obj: scala.Any): Boolean = {
     obj match {
       case other: JoinColumn =>
-        other.sourceColumn.name == this.sourceColumn.name && other.sourceTable.name == this.sourceTable.name
+        this.sourceTable.name == other.sourceTable.name &&
+          this.sourceColumn.name == other.sourceColumn.name &&
+          this.name == other.name &&
+          this.dataType == other.dataType
       case _ => false
     }
   }
+}
+
+case class AliasedJoinColumn(name: String, index: Int, dataType: Class[_], sourceTable: TableDef, sourceColumn: Column) extends Column with SourceColumn {
+
+  override def toString: String = s"${sourceTable.name}.$sourceColumn@alias($name)"
+
+  override def getData(data: RowData): Any = data.get(sourceColumn.name)
+
+  override def getDataFullyQualified(data: RowData): Any = data.get(sourceTable.fullyQuallifiedColumnName(sourceColumn.name))
+
+  private lazy val hash: Int = name.hashCode * dataType.hashCode() * sourceTable.name.hashCode * sourceColumn.name.hashCode
+
+  override def hashCode(): Int = hash
+
+  override def equals(obj: scala.Any): Boolean = {
+    obj match {
+      case other: AliasedJoinColumn =>
+        this.sourceTable.name == other.sourceTable.name &&
+          this.sourceColumn.name == other.sourceColumn.name &&
+          this.name == other.name &&
+          this.dataType == other.dataType
+      case _ => false
+    }
+  }
+
 }
 
 case class CalculatedColumn(name: String, clause: CalculatedColumnClause, index: Int, dataType: Class[_]) extends Column with StrictLogging {
@@ -184,4 +232,12 @@ case class CalculatedColumn(name: String, clause: CalculatedColumnClause, index:
   )
 
   override def getDataFullyQualified(data: RowData): Any = getData(data)
+
+  override def hashCode(): Int = name.hashCode * dataType.hashCode()
+
+  override def equals(obj: Any): Boolean = obj match {
+    case that: CalculatedColumn => that.name == name && that.dataType == this.dataType
+    case _ => false
+  }
+
 }
