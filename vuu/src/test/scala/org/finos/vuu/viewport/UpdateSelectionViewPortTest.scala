@@ -456,7 +456,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       selectedRows.contains("NYC-0003") shouldBe true
     }
 
-    Scenario("Change row index after rows are selected") {
+    Scenario("Change row index after a range of rows are selected") {
       Given("A view port of 10 orders is created")
       val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
       createNOrderRows(ordersProvider, 10)(clock)
