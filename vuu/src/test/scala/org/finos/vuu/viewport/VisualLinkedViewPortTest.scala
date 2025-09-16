@@ -90,7 +90,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       viewPortOrders.getKeys.length shouldEqual 12
 
       When("we select some rows in the grid")
-      viewPortContainer.selectRow(viewPortPrices.id, "NYC-0001", preserveExistingSelection = false)
+      viewPortContainer.selectRow(viewPortPrices.id, "BT.L", preserveExistingSelection = false)
 
       Then("Check the selected rows is updated in the vp")
       assertVpEqWithMeta(combineQs(viewPortPrices)) {
@@ -116,7 +116,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       }
 
       And("if we expend the selection to include BP.L in the prices table")
-      viewPortContainer.selectRowRange(viewPortPrices.id, "NYC-0001", "NYC-0002", preserveExistingSelection = false)
+      viewPortContainer.selectRowRange(viewPortPrices.id, "BT.L", "BP.L", preserveExistingSelection = false)
 
       viewPortContainer.runOnce()
 
@@ -159,7 +159,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
 
       Then("Change the viewport to sort by quantity")
       viewPortContainer.change(RequestId.oneNew(), session, viewPortOrders.id, ViewPortRange(0, 10), vpcolumnsOrders, SortSpec(List(SortDef("quantity", 'D'))))
-      viewPortContainer.selectRow(viewPortPrices.id, "NYC-0001", preserveExistingSelection = false)
+      viewPortContainer.selectRow(viewPortPrices.id, "BT.L", preserveExistingSelection = false)
 
       viewPortContainer.runOnce()
 
