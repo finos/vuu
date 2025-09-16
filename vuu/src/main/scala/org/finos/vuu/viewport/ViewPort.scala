@@ -319,7 +319,7 @@ class ViewPortImpl(val id: String,
       if (preserveExistingSelection) {
         selection = selection ++ keys.sliceToKeys(fromIndex, toIndex).map(k => (k, indexMap(k))).toMap
       } else {
-        selection = keys.sliceToKeys(fromIndex, toIndex + 1).map(k => (k, indexMap(k))).toMap
+        selection = keys.sliceToKeys(fromIndex, toIndex).map(k => (k, indexMap(k))).toMap
       }
 
       for ((key, idx) <- selection ++ oldSelection) {
