@@ -488,9 +488,9 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       }
       selectedRows = viewPortChanged.getSelection
       selectedRows.size shouldBe 3
-      selectedRows.get("NYC-0001") shouldBe 1
-      selectedRows.get("NYC-0002") shouldBe 2
-      selectedRows.get("NYC-0003") shouldBe 3
+      selectedRows("NYC-0001") shouldBe 1
+      selectedRows("NYC-0002") shouldBe 2
+      selectedRows("NYC-0003") shouldBe 3
     }
 
     Scenario("Select a range of rows that do not exist") {
