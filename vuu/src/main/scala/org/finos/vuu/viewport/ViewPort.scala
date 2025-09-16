@@ -17,8 +17,7 @@ import org.finos.vuu.viewport.tree.TreeNodeState
 import java.util
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
-import scala.collection.JavaConverters._
-import scala.jdk.CollectionConverters
+
 class ViewPortUpdateType
 
 case object RowUpdateType extends ViewPortUpdateType
@@ -261,7 +260,7 @@ class ViewPortImpl(val id: String,
 
   override def selectRow(rowKey: String, preserveExistingSelection: Boolean): Unit = {
     viewPortLock.synchronized {
-      // TODO fix this if
+      // NOTE we assume rowKey is within the range of view port hence should be in rowKeyToIndex map
       if (!rowKeyToIndex.containsKey(rowKey)) {
         throw new Exception(s"Rowkey $rowKey not found in view port $id")
       }
@@ -269,9 +268,9 @@ class ViewPortImpl(val id: String,
       val oldSelection = selection.map(kv => (kv._1, rowKeyToIndex.get(kv._1)))
 
       val index = rowKeyToIndex.get(rowKey)
-      if(preserveExistingSelection){
+      if (preserveExistingSelection) {
         selection = selection + (rowKey -> index)
-      }else{
+      } else {
         selection = Map(rowKey -> index)
       }
 
@@ -304,7 +303,7 @@ class ViewPortImpl(val id: String,
 
   override def selectRowRange(fromRowKey: String, toRowKey: String, preserveExistingSelection: Boolean): Unit = {
     viewPortLock.synchronized {
-      // TODO fix this if
+      // NOTE we assume fromRowKey and toRowKey are within the range of view port hence should be in rowKeyToIndex map
       if (!rowKeyToIndex.containsKey(fromRowKey)) {
         throw new Exception(s"Rowkey $fromRowKey not found in view port $id")
       } else if (!rowKeyToIndex.containsKey(toRowKey)) {
@@ -331,10 +330,9 @@ class ViewPortImpl(val id: String,
 
   override def selectAll(): Unit = {
     viewPortLock.synchronized {
-      selection = rowKeyToIndex.asScala.toMap
-      val fromIndex = range.get().from
-      val toIndex = range.get().to
-      val keysToUpdate = keys.sliceToKeys(fromIndex, toIndex).map(k => (k, rowKeyToIndex.get(k))).toMap
+      selection = keys.zipWithIndex.toMap
+      // send updates for rows in range
+      val keysToUpdate = keys.sliceToKeys(range.get().from, range.get().to).map(k => (k, rowKeyToIndex.get(k))).toMap
       for ((key, idx) <- keysToUpdate) {
         publishHighPriorityUpdate(key, idx)
       }
@@ -344,9 +342,8 @@ class ViewPortImpl(val id: String,
   override def deselectAll(): Unit = {
     viewPortLock.synchronized {
       selection = Map()
-      val fromIndex = range.get().from
-      val toIndex = range.get().to
-      val keysToUpdate = keys.sliceToKeys(fromIndex, toIndex + 1).map(k => (k, this.rowKeyToIndex.get(k))).toMap
+      // send updates for rows in range
+      val keysToUpdate = keys.sliceToKeys(range.get().from, range.get().to).map(k => (k, this.rowKeyToIndex.get(k))).toMap
       for ((key, idx) <- keysToUpdate) {
         publishHighPriorityUpdate(key, idx)
       }
