@@ -28,14 +28,14 @@ object ViewPortColumns {
 private case class ViewPortColumnsImpl(sourceColumns: List[Column]) extends ViewPortColumns {
 
   override def columnExists(name: String): Boolean = {
-    sourceColumns.exists(c => c.name == name)
+    sourceColumns.exists(_.name == name)
   }
 
   override def getColumns: List[Column] = sourceColumns
 
   override def getColumnForName(name: String): Option[Column] = {
     val evaluatedName = getEvaluatedName(name)
-    sourceColumns.find(c => c.name == evaluatedName)
+    sourceColumns.find(_.name == evaluatedName)
   }
 
   private def getEvaluatedName(name: String): String = {
@@ -53,7 +53,9 @@ private case class ViewPortColumnsImpl(sourceColumns: List[Column]) extends View
 
   private lazy val joinColumnsByTable: Map[String, List[JoinColumn]] = {
     if (hasJoinColumn) {
-      sourceColumns.filter(_.isInstanceOf[JoinColumn]).map(_.asInstanceOf[JoinColumn]).groupBy(_.sourceTable.name)
+      sourceColumns.filter(_.isInstanceOf[JoinColumn])
+        .map(_.asInstanceOf[JoinColumn])
+        .groupBy(_.sourceTable.name)
     } else {
       Map.empty
     }
@@ -63,7 +65,7 @@ private case class ViewPortColumnsImpl(sourceColumns: List[Column]) extends View
 
   private lazy val joinViewPortColumns: Map[String, ViewPortColumns] = {
     if (hasJoinColumn) {
-      joinColumnsByTable.view.mapValues(f => ViewPortColumnCreator.create(f.head.sourceTable, f.map(f => f.name))).toMap
+      joinColumnsByTable.view.mapValues(f => ViewPortColumnCreator.create(f.head.sourceTable, f.map(_.name))).toMap
     } else {
       Map.empty
     }
