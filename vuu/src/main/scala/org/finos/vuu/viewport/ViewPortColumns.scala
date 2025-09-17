@@ -19,10 +19,6 @@ object ViewPortColumns {
     ViewPortColumnsImpl(columns)
   }
 
-  def apply(column: Column, viewPortColumns: ViewPortColumns): ViewPortColumns = {
-    ViewPortColumnsImpl(viewPortColumns.getColumns() :+ column)
-  }
-
 }
 
 private case class ViewPortColumnsImpl(sourceColumns: List[Column]) extends ViewPortColumns {

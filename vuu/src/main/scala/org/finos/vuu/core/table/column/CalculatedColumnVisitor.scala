@@ -5,11 +5,10 @@ import org.antlr.v4.runtime.tree.{ErrorNode, ParseTree, TerminalNode}
 import org.finos.vuu.core.table.{Column, DataType}
 import org.finos.vuu.grammar.CalculatedColumnParser.{FunctionContext, OperatorContext}
 import org.finos.vuu.grammar.{CalculatedColumnBaseVisitor, CalculatedColumnLexer, CalculatedColumnParser}
-import org.finos.vuu.viewport.ViewPortColumns
 
 import scala.jdk.CollectionConverters._
 
-class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedColumnBaseVisitor[CalculatedColumnClause] with StrictLogging {
+class CalculatedColumnVisitor(val columns: Iterable[Column]) extends CalculatedColumnBaseVisitor[CalculatedColumnClause] with StrictLogging {
 
   override def visitExpression(ctx: CalculatedColumnParser.ExpressionContext): CalculatedColumnClause = {
     logger.trace("VISIT: Expression:" + ctx)
@@ -245,7 +244,7 @@ class CalculatedColumnVisitor(val columns: ViewPortColumns) extends CalculatedCo
   }
 
   private def getColumn(name: String): Option[Column] = {
-    columns.getColumnForName(name)
+    columns.find(p => p.name == name)
   }
 
   //  override def aggregateResult(aggregate: CalculatedColumnClause, nextResult: CalculatedColumnClause): CalculatedColumnClause = {

@@ -3,6 +3,8 @@ package org.finos.vuu.core.table
 import org.finos.vuu.core.table.column.CalculatedColumnFactory
 import org.finos.vuu.viewport.ViewPortColumns
 
+import scala.collection.mutable.ListBuffer
+
 object ViewPortColumnCreator {
 
   def isCalculatedColumn(column: String): Boolean = {
@@ -17,18 +19,18 @@ object ViewPortColumnCreator {
 
   def create(table: DataTable, columns: List[String]): ViewPortColumns = {
 
-    var vpColumns: ViewPortColumns = ViewPortColumns()
+    val vpColumns: ListBuffer[Column] = ListBuffer()
 
     columns.foreach( column => {
       if (isCalculatedColumn(column)) {
         val (name, dataType, definition) = parseCalcColumn(column)
-        vpColumns = ViewPortColumns(CalculatedColumnFactory.parse(vpColumns, name, dataType, definition), vpColumns)
+        vpColumns.addOne(CalculatedColumnFactory.parse(vpColumns, name, dataType, definition))
       } else {
-        vpColumns = ViewPortColumns(table.getTableDef.columnForName(column), vpColumns)
+        vpColumns.addOne(table.getTableDef.columnForName(column))
       }
     })
 
-    vpColumns
+    ViewPortColumns(vpColumns.toList)
   }
 
 }
