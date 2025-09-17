@@ -146,7 +146,7 @@ object CalculatedColumnFixture extends StrictLogging {
 
   def withCalculatedColumns(rows: List[RowWithData], columns: List[Column], calcs: String*)(expectedFn: => Any): Unit = {
 
-    val columnBuffer: ListBuffer[Column] = ListBuffer()
+    val columnBuffer: ListBuffer[Column] = ListBuffer().addAll(columns)
 
     for (calc <- calcs) {
       columnBuffer.addOne(parseColumn(columnBuffer, calc))
