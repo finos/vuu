@@ -448,30 +448,28 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
   private def pullRow(key: String, columns: ViewPortColumns, includeDefaultColumns: Boolean = false): RowData = {
 
-    val columnsByTable = columns.getColumns()
-      .filter(_.isInstanceOf[JoinColumn])
-      .map(c => c.asInstanceOf[JoinColumn]).groupBy(_.sourceTable.name)
-
-    val calculatedColumns = columns.getColumns()
-      .filter(_.isInstanceOf[CalculatedColumn])
-
     val keysByTable = joinData.getKeyValuesByTable(key)
 
     if (keysByTable == null || !keyExistsInLeftMostSourceTable(key))
       EmptyRowData
     else {
-      val foldedMap = columnsByTable.foldLeft(Map[String, Any]())({ case (previous, (tableName, columnList)) =>
+      val columnsByTable = columns.getColumns()
+        .filter(_.isInstanceOf[JoinColumn])
+        .map(c => c.asInstanceOf[JoinColumn])
+        .groupBy(_.sourceTable.name)
+
+      val foldedMap = columnsByTable.foldLeft(Map[String, Any]())({
+        case (previous, (tableName, columnList)) =>
 
         val table = sourceTables(tableName)
         val fk = keysByTable(tableName)
-
-        val sourceColumns = ViewPortColumnCreator.create(table, columnList.map(jc => jc.sourceColumn).map(_.name))
 
         if (fk == null) {
           logger.debug(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key $key")
           previous
         }
         else {
+          val sourceColumns = ViewPortColumnCreator.create(table, columnList.map(jc => jc.sourceColumn).map(_.name))
           table.pullRow(fk, sourceColumns) match {
             case EmptyRowData =>
               previous
@@ -482,19 +480,27 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
         }
       })
 
-      var defaultDataMap: Map[String, Any] = Map.empty
-      if (includeDefaultColumns) {
+      //Append default columns if required
+      val joinedData = if (includeDefaultColumns) {
         val index = joinData.keyToIndexMap.get(key)
-        defaultDataMap = Map(
+        val defaultDataMap = Map(
           CreatedTimeColumnName -> joinData.indexToCreatedTime.get(index),
           LastUpdatedTimeColumnName -> joinData.indexToLastUpdatedTime.get(index))
+        RowWithData(key, foldedMap ++ defaultDataMap)
+      } else {
+        RowWithData(key, foldedMap)
       }
-      val joinedData = RowWithData(key, foldedMap)
-      val calculatedData = calculatedColumns.map(c => c.name -> c.getData(joinedData)).toMap
-      RowWithData(key, foldedMap ++ defaultDataMap ++ calculatedData)
+
+      //Append calculated columns if required
+      if (columns.hasCalculatedColumn()) {
+        val calculatedColumns = columns.getColumns().filter(_.isInstanceOf[CalculatedColumn])
+        val calculatedData = calculatedColumns.map(c => c.name -> c.getData(joinedData)).toMap
+        RowWithData(key, joinedData.data ++ calculatedData)
+      } else {
+        joinedData
+      }
     }
   }
-
 
   override def pullRowAsArray(key: String, columns: ViewPortColumns): Array[Any] = {
 

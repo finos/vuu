@@ -7,6 +7,7 @@ trait ViewPortColumns {
   def getColumns(): List[Column]
   def getColumnForName(name: String): Option[Column]
   def count(): Int
+  def hasCalculatedColumn(): Boolean
   def pullRow(key: String, row: RowData): RowData
   def pullRowAlwaysFilter(key: String, row: RowData): RowData
 }
@@ -45,10 +46,12 @@ private case class ViewPortColumnsImpl(sourceColumns: List[Column]) extends View
 
   override def count(): Int = getColumns().size
 
-  private lazy val hasCalculatedColumn = sourceColumns.exists(c => c.isInstanceOf[CalculatedColumn])
+  private lazy val hasCalcColumn = sourceColumns.exists(c => c.isInstanceOf[CalculatedColumn])
+
+  override def hasCalculatedColumn(): Boolean = hasCalcColumn
 
   override def pullRow(key: String, row: RowData): RowData = {
-    if (!hasCalculatedColumn) {
+    if (!hasCalculatedColumn()) {
       row
     } else {
       this.pullRowAlwaysFilter(key, row)
