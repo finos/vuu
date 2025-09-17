@@ -324,7 +324,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
       case null =>
         Array[Any]()
       case row: RowWithData =>
-        row.toArray(columns.getColumns())
+        row.toArray(columns.getColumns)
     }
   }
 

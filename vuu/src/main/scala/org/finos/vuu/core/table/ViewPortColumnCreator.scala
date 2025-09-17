@@ -1,5 +1,6 @@
 package org.finos.vuu.core.table
 
+import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.column.CalculatedColumnFactory
 import org.finos.vuu.viewport.ViewPortColumns
 
@@ -18,6 +19,10 @@ object ViewPortColumnCreator {
   }
 
   def create(table: DataTable, columns: List[String]): ViewPortColumns = {
+    create(table.getTableDef, columns)
+  }
+
+  def create(tableDef: TableDef, columns: List[String]): ViewPortColumns = {
 
     val vpColumns: ListBuffer[Column] = ListBuffer()
 
@@ -26,7 +31,7 @@ object ViewPortColumnCreator {
         val (name, dataType, definition) = parseCalcColumn(column)
         vpColumns.addOne(CalculatedColumnFactory.parse(vpColumns, name, dataType, definition))
       } else {
-        vpColumns.addOne(table.getTableDef.columnForName(column))
+        vpColumns.addOne(tableDef.columnForName(column))
       }
     })
 

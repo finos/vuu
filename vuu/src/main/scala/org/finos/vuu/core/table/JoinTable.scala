@@ -446,36 +446,35 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     pullRow(key, columns, includeDefaultColumns = false)
   }
 
-  private def pullRow(key: String, columns: ViewPortColumns, includeDefaultColumns: Boolean = false): RowData = {
+  private def pullRow(key: String, viewPortColumns: ViewPortColumns, includeDefaultColumns: Boolean): RowData = {
 
     val keysByTable = joinData.getKeyValuesByTable(key)
 
     if (keysByTable == null || !keyExistsInLeftMostSourceTable(key))
       EmptyRowData
     else {
-      val columnsByTable = columns.getColumns()
-        .filter(_.isInstanceOf[JoinColumn])
-        .map(c => c.asInstanceOf[JoinColumn])
-        .groupBy(_.sourceTable.name)
+      val columnsByTable = viewPortColumns.getJoinColumnsByTable
 
       val foldedMap = columnsByTable.foldLeft(Map[String, Any]())({
-        case (previous, (tableName, columnList)) =>
+        case (previous, (sourceTableName, columnList)) =>
 
-        val table = sourceTables(tableName)
-        val fk = keysByTable(tableName)
+        val table = sourceTables(sourceTableName)
+        val fk = keysByTable(sourceTableName)
 
         if (fk == null) {
-          logger.debug(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key $key")
+          logger.debug(s"No foreign key for table ${sourceTableName} found in join ${tableDef.name} for primary key $key")
           previous
-        }
-        else {
-          val sourceColumns = ViewPortColumnCreator.create(table, columnList.map(jc => jc.sourceColumn).map(_.name))
-          table.pullRow(fk, sourceColumns) match {
-            case EmptyRowData =>
-              previous
-            case data: RowWithData =>
-              previous ++ columnList.map(column => column.name -> column.sourceColumn.getData(data)).toMap
-
+        } else {
+          val sourceColumns = viewPortColumns.getJoinViewPortColumns(sourceTableName)
+          if (sourceColumns.nonEmpty) {
+            table.pullRow(fk, sourceColumns.get) match {
+              case EmptyRowData =>
+                previous
+              case data: RowWithData =>
+                previous ++ columnList.map(column => column.name -> column.sourceColumn.getData(data)).toMap
+            }
+          } else {
+            previous
           }
         }
       })
@@ -485,16 +484,16 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
         val index = joinData.keyToIndexMap.get(key)
         val defaultDataMap = Map(
           CreatedTimeColumnName -> joinData.indexToCreatedTime.get(index),
-          LastUpdatedTimeColumnName -> joinData.indexToLastUpdatedTime.get(index))
+          LastUpdatedTimeColumnName -> joinData.indexToLastUpdatedTime.get(index)
+        )
         RowWithData(key, foldedMap ++ defaultDataMap)
       } else {
         RowWithData(key, foldedMap)
       }
 
       //Append calculated columns if required
-      if (columns.hasCalculatedColumn()) {
-        val calculatedColumns = columns.getColumns().filter(_.isInstanceOf[CalculatedColumn])
-        val calculatedData = calculatedColumns.map(c => c.name -> c.getData(joinedData)).toMap
+      if (viewPortColumns.hasCalculatedColumns) {
+        val calculatedData = viewPortColumns.getCalculatedColumns.map(c => c.name -> c.getData(joinedData)).toMap
         RowWithData(key, joinedData.data ++ calculatedData)
       } else {
         joinedData
@@ -506,7 +505,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
     val asRowData = pullRow(key, columns)
 
-    val asArray = asRowData.toArray(columns.getColumns())
+    val asArray = asRowData.toArray(columns.getColumns)
 
     asArray
   }
@@ -564,7 +563,6 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
       val table = sourceTables(tableName)
       val fk = keysByTable(tableName)
 
-      //val sourceColumns = columnList.map(jc => jc.sourceColumn)
       val sourceColumns = ViewPortColumnCreator.create(table, columnList.map(jc => jc.sourceColumn).map(_.name))
 
       if (fk == null) {

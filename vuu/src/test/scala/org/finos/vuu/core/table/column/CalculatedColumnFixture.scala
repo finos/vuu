@@ -142,7 +142,7 @@ object CalculatedColumnFixture extends StrictLogging {
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }
 
-  private def rowToMap(row: RowData, columns: ViewPortColumns) = columns.getColumns().map(c => c.name -> c.getData(row)).toMap
+  private def rowToMap(row: RowData, columns: ViewPortColumns) = columns.getColumns.map(c => c.name -> c.getData(row)).toMap
 
   def withCalculatedColumns(rows: List[RowWithData], columns: List[Column], calcs: String*)(expectedFn: => Any): Unit = {
 

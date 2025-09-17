@@ -1,13 +1,16 @@
 package org.finos.vuu.viewport
 
-import org.finos.vuu.core.table.{CalculatedColumn, Column, RowData, RowWithData, ViewPortColumnCreator}
+import org.finos.vuu.core.table.{CalculatedColumn, Column, JoinColumn, RowData, RowWithData, ViewPortColumnCreator}
 
 trait ViewPortColumns {
   def columnExists(name: String): Boolean
-  def getColumns(): List[Column]
+  def getColumns: List[Column]
   def getColumnForName(name: String): Option[Column]
-  def count(): Int
-  def hasCalculatedColumn(): Boolean
+  def hasJoinColumns: Boolean
+  def getJoinColumnsByTable: Map[String, List[JoinColumn]]
+  def getJoinViewPortColumns(sourceTable: String): Option[ViewPortColumns]
+  def hasCalculatedColumns: Boolean
+  def getCalculatedColumns: List[CalculatedColumn]
   def pullRow(key: String, row: RowData): RowData
   def pullRowAlwaysFilter(key: String, row: RowData): RowData
 }
@@ -25,14 +28,14 @@ object ViewPortColumns {
 private case class ViewPortColumnsImpl(sourceColumns: List[Column]) extends ViewPortColumns {
 
   override def columnExists(name: String): Boolean = {
-    getColumns().exists(_.name == name)
+    sourceColumns.exists(c => c.name == name)
   }
 
-  override def getColumns(): List[Column] = sourceColumns
+  override def getColumns: List[Column] = sourceColumns
 
   override def getColumnForName(name: String): Option[Column] = {
     val evaluatedName = getEvaluatedName(name)
-    getColumns().find(_.name == evaluatedName)
+    sourceColumns.find(c => c.name == evaluatedName)
   }
 
   private def getEvaluatedName(name: String): String = {
@@ -44,14 +47,46 @@ private case class ViewPortColumnsImpl(sourceColumns: List[Column]) extends View
     }
   }
 
-  override def count(): Int = getColumns().size
+  private lazy val hasJoinColumn = sourceColumns.exists(_.isInstanceOf[JoinColumn])
 
-  private lazy val hasCalcColumn = sourceColumns.exists(c => c.isInstanceOf[CalculatedColumn])
+  override def hasJoinColumns: Boolean = hasJoinColumn
 
-  override def hasCalculatedColumn(): Boolean = hasCalcColumn
+  private lazy val joinColumnsByTable: Map[String, List[JoinColumn]] = {
+    if (hasJoinColumn) {
+      sourceColumns.filter(_.isInstanceOf[JoinColumn]).map(_.asInstanceOf[JoinColumn]).groupBy(_.sourceTable.name)
+    } else {
+      Map.empty
+    }
+  }
+
+  override def getJoinColumnsByTable: Map[String, List[JoinColumn]] = joinColumnsByTable
+
+  private lazy val joinViewPortColumns: Map[String, ViewPortColumns] = {
+    if (hasJoinColumn) {
+      joinColumnsByTable.view.mapValues(f => ViewPortColumnCreator.create(f.head.sourceTable, f.map(f => f.name))).toMap
+    } else {
+      Map.empty
+    }
+  }
+
+  override def getJoinViewPortColumns(sourceTable: String): Option[ViewPortColumns] = joinViewPortColumns.get(sourceTable)
+
+  private lazy val hasCalculatedColumn: Boolean = sourceColumns.exists(_.isInstanceOf[CalculatedColumn])
+
+  override def hasCalculatedColumns: Boolean = hasCalculatedColumn
+
+  private lazy val calculatedColumns: List[CalculatedColumn] = {
+    if (hasCalculatedColumn) {
+      sourceColumns.filter(_.isInstanceOf[CalculatedColumn]).map(_.asInstanceOf[CalculatedColumn])
+    } else {
+      List.empty
+    }
+  }
+
+  override def getCalculatedColumns: List[CalculatedColumn] = calculatedColumns
 
   override def pullRow(key: String, row: RowData): RowData = {
-    if (!hasCalculatedColumn()) {
+    if (!hasCalculatedColumns) {
       row
     } else {
       this.pullRowAlwaysFilter(key, row)
@@ -59,7 +94,7 @@ private case class ViewPortColumnsImpl(sourceColumns: List[Column]) extends View
   }
 
   override def pullRowAlwaysFilter(key: String, row: RowData): RowData = {
-    val rowData = this.getColumns().map(c => c.name -> row.get(c)).toMap
+    val rowData = sourceColumns.map(c => c.name -> row.get(c)).toMap
     RowWithData(key, rowData)
   }
 
@@ -71,4 +106,5 @@ private case class ViewPortColumnsImpl(sourceColumns: List[Column]) extends View
     case that: ViewPortColumnsImpl => that.sourceColumns == sourceColumns
     case _ => false
   }
+
 }

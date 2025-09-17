@@ -5,6 +5,22 @@ import org.scalatest.featurespec.AnyFeatureSpec
 
 class ViewPortColumnsTests extends AnyFeatureSpec {
 
+  Feature("Construction") {
+    Scenario("Check basic behaviour") {
+      val columns = Columns.fromNames("firstColumn:String", "secondColumn:String").toList
+      val vpColumns = ViewPortColumns(columns)
+
+      assert(vpColumns.getColumns == columns)
+      assert(vpColumns.columnExists("firstColumn"))
+      assert(vpColumns.getColumnForName("firstColumn").get == columns.head)
+      assert(!vpColumns.columnExists("thirdColumn"))
+      assert(!vpColumns.hasJoinColumns)
+      assert(vpColumns.getJoinColumnsByTable.isEmpty)
+      assert(!vpColumns.hasCalculatedColumns)
+      assert(vpColumns.getCalculatedColumns.isEmpty)
+    }
+  }
+
   Feature("compare two view port columns") {
 
     Scenario("when all the columns names are same equality check should return true and hashcode should be equal") {
