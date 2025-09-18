@@ -17,7 +17,7 @@ trait ViewPortColumns {
 
 object ViewPortColumns {
 
-  private final val emptyViewPortColumns = ViewPortColumnsImpl(List())
+  private final val emptyViewPortColumns = ViewPortColumnsImpl(List.empty)
 
   def apply(): ViewPortColumns = emptyViewPortColumns
 
