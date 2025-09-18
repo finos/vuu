@@ -9,6 +9,8 @@ import org.finos.vuu.util.table.TableAsserts.genericLogic
 import org.finos.vuu.viewport.ViewPortColumns
 import org.scalatest.prop.{TableFor11, TableFor12, TableFor13}
 
+import scala.collection.mutable.ListBuffer
+
 object CalculatedColumnFixture extends StrictLogging {
 
   def CalcColumn(name: String, dataType: String, calcDef: String): String = {
@@ -28,7 +30,7 @@ object CalculatedColumnFixture extends StrictLogging {
     logger.debug("OUT" + tree.toStringTree(parser)) // print LISP-style tree
   }
 
-  def parseAndUpdateColumns(columns: ViewPortColumns, calcDef: String): ViewPortColumns = {
+  def parseColumn(columns: Iterable[Column], calcDef: String): Column = {
     val name :: dataType :: calcdsl :: _ = calcDef.split(":").toList
     val dt = DataType.fromString(dataType)
     val input = CharStreams.fromString(calcdsl)
@@ -40,8 +42,7 @@ object CalculatedColumnFixture extends StrictLogging {
     logger.debug("Parse OUT" + tree.toStringTree(parser))
     val eval = new CalculatedColumnVisitor(columns)
     val clause = eval.visit(tree)
-    val column = CalculatedColumn(name, clause, columns.count(), dt)
-    ViewPortColumns(column, columns)
+    CalculatedColumn(name, clause, columns.size, dt)
   }
 
   val tableColumns: List[Column] = Columns.fromNames(
@@ -141,15 +142,17 @@ object CalculatedColumnFixture extends StrictLogging {
     genericLogic(headingAsArray, arraysOfMaps, expectationAsMap)
   }
 
-  private def rowToMap(row: RowData, columns: ViewPortColumns) = columns.getColumns().map(c => c.name -> c.getData(row)).toMap
+  private def rowToMap(row: RowData, columns: ViewPortColumns) = columns.getColumns.map(c => c.name -> c.getData(row)).toMap
 
   def withCalculatedColumns(rows: List[RowWithData], columns: List[Column], calcs: String*)(expectedFn: => Any): Unit = {
 
-    var vpColumns = ViewPortColumns(columns)
+    val columnBuffer: ListBuffer[Column] = ListBuffer().addAll(columns)
 
     for (calc <- calcs) {
-      vpColumns = parseAndUpdateColumns(vpColumns, calc)
+      columnBuffer.addOne(parseColumn(columnBuffer, calc))
     }
+
+    val vpColumns = ViewPortColumns(columnBuffer.toList)
 
     expectedFn match {
       case table: TableFor11[_, _, _, _, _, _, _, _, _, _, _] => generic11Assert(rows, vpColumns, table)

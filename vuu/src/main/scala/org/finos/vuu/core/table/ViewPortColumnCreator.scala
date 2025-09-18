@@ -1,7 +1,10 @@
 package org.finos.vuu.core.table
 
+import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.column.CalculatedColumnFactory
 import org.finos.vuu.viewport.ViewPortColumns
+
+import scala.collection.mutable.ListBuffer
 
 object ViewPortColumnCreator {
 
@@ -16,19 +19,23 @@ object ViewPortColumnCreator {
   }
 
   def create(table: DataTable, columns: List[String]): ViewPortColumns = {
+    create(table.getTableDef, columns)
+  }
 
-    var vpColumns: ViewPortColumns = ViewPortColumns()
+  def create(tableDef: TableDef, columns: List[String]): ViewPortColumns = {
+
+    val vpColumns: ListBuffer[Column] = ListBuffer()
 
     columns.foreach( column => {
       if (isCalculatedColumn(column)) {
         val (name, dataType, definition) = parseCalcColumn(column)
-        vpColumns = ViewPortColumns(CalculatedColumnFactory.parse(vpColumns, name, dataType, definition), vpColumns)
+        vpColumns.addOne(CalculatedColumnFactory.parse(vpColumns, name, dataType, definition))
       } else {
-        vpColumns = ViewPortColumns(table.getTableDef.columnForName(column), vpColumns)
+        vpColumns.addOne(tableDef.columnForName(column))
       }
     })
 
-    vpColumns
+    ViewPortColumns(vpColumns.toList)
   }
 
 }

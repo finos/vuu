@@ -193,7 +193,7 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
 
   private def getOnlyTreeColumnsAsMap(key: String, columns: ViewPortColumns, node: TreeNode): Map[String, Any] = {
 
-    columns.getColumns().map(c => {
+    columns.getColumns.map(c => {
       val aggregation = node.getAggregationFor(c)
 
       val r = if (aggregation == null)
@@ -209,7 +209,7 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
 
   private def getOnlyTreeColumns(key: String, columns: ViewPortColumns, node: TreeNode): Array[Any] = {
     val keysByColumn = node.keysByColumn
-    columns.getColumns().map(c => {
+    columns.getColumns.map(c => {
 
       val aggregation = node.getAggregationFor(c)
 
