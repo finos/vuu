@@ -1,9 +1,8 @@
 import { DataSourceRow } from "@vuu-ui/vuu-data-types";
 import {
-  AndFilter,
   Filter,
+  MultiClauseFilter,
   MultiValueFilterClause,
-  OrFilter,
   SingleValueFilterClause,
 } from "@vuu-ui/vuu-filter-types";
 import { ColumnMap } from "@vuu-ui/vuu-utils";
@@ -60,9 +59,9 @@ export function filterPredicate(
     case "contains":
       return testContains(columnMap, filter);
     case "and":
-      return testAND(columnMap, filter as AndFilter);
+      return testAND(columnMap, filter as MultiClauseFilter<"and">);
     case "or":
-      return testOR(columnMap, filter as OrFilter);
+      return testOR(columnMap, filter as MultiClauseFilter<"or">);
     default:
       console.log(`unrecognized filter type ${filter.op}`);
       return () => true;
@@ -163,12 +162,18 @@ const testContains = (
   };
 };
 
-const testAND = (columnMap: ColumnMap, filter: AndFilter): FilterPredicate => {
+const testAND = (
+  columnMap: ColumnMap,
+  filter: MultiClauseFilter<"and">,
+): FilterPredicate => {
   const filters = filter.filters.map((f1) => filterPredicate(columnMap, f1));
   return (row) => filters.every((fn) => fn(row));
 };
 
-function testOR(columnMap: ColumnMap, filter: OrFilter): FilterPredicate {
+function testOR(
+  columnMap: ColumnMap,
+  filter: MultiClauseFilter<"or">,
+): FilterPredicate {
   const filters = filter.filters.map((f1) => filterPredicate(columnMap, f1));
   return (row) => filters.some((fn) => fn(row));
 }
