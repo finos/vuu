@@ -17,7 +17,7 @@ const getUniqueValues = (
   const set = new Set();
   for (const row of data) {
     const value = row[columnIndex];
-    if (!set.has(value)) {
+    if (value !== undefined && !set.has(value)) {
       set.add(value);
       uniqueValues.push(value);
     }

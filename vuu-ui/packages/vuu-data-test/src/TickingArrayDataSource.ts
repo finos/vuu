@@ -252,7 +252,14 @@ export class TickingArrayDataSource extends ArrayDataSource {
   getTypeaheadSuggestions(column: string, pattern?: string): Promise<string[]> {
     if (this.#table) {
       const columnIndex = this.columnMap[column];
-      return makeSuggestions(this.currentData, columnIndex, pattern);
+      if (columnIndex === undefined) {
+        console.warn(
+          `[TickingArrayDataSource] getTypeaheadSuggestions. No column ${column}`,
+        );
+        return Promise.resolve([]);
+      } else {
+        return makeSuggestions(this.currentData, columnIndex, pattern);
+      }
     } else {
       throw Error(
         "cannot call getTypeaheadSuggestions on TickingDataSource if table has not been provided",

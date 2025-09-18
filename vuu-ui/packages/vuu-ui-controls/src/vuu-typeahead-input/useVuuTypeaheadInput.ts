@@ -127,7 +127,6 @@ export const useVuuTypeaheadInput = ({
           : [vuuTable, column];
         getSuggestions(params)
           .then((suggestions) => {
-            console.log({ suggestions });
             if (suggestions === false) {
               // TODO is this right
               setTypeaheadValues([]);

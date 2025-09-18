@@ -1,6 +1,5 @@
 import type { DataSourceFilter } from "@vuu-ui/vuu-data-types";
 import {
-  AndFilter,
   ColumnFilterDescriptor,
   ColumnFilterOp,
   ColumnFilterValue,
@@ -9,7 +8,6 @@ import {
   FilterWithPartialClause,
   MultiClauseFilter,
   MultiValueFilterClause,
-  OrFilter,
   SingleValueFilterClause,
   SingleValueFilterClauseOp,
 } from "@vuu-ui/vuu-filter-types";
@@ -18,7 +16,7 @@ import {
   RuntimeColumnDescriptor,
 } from "@vuu-ui/vuu-table-types";
 import { EventEmitter } from "../event-emitter";
-import { VuuFilter, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
+import { VuuFilter } from "@vuu-ui/vuu-protocol-types";
 import { getTypedValue } from "../form-utils";
 import { parseFilter } from "@vuu-ui/vuu-filter-parser";
 import {
@@ -70,9 +68,11 @@ export const isMultiValueFilter = (
 
 export const isInFilter = (f: Partial<Filter>): f is MultiValueFilterClause =>
   f.op === "in";
-export const isAndFilter = (f: Partial<Filter>): f is AndFilter =>
-  f.op === "and";
-export const isOrFilter = (f: Partial<Filter>): f is OrFilter => f.op === "or";
+export const isAndFilter = (
+  f: Partial<Filter>,
+): f is MultiClauseFilter<"and"> => f.op === "and";
+export const isOrFilter = (f: Partial<Filter>): f is MultiClauseFilter<"or"> =>
+  f.op === "or";
 
 export const isCompleteFilter = (filter: Partial<Filter>): filter is Filter =>
   isSingleValueFilter(filter) &&
@@ -153,26 +153,20 @@ const collectFiltersForColumn = (
   };
 };
 
-export type FilterEvents = {
-  filter: (vuuFilter: VuuFilter) => void;
-};
-
-const createFilterClause = (column: string, value: VuuRowDataItemType) =>
-  typeof value === "string"
-    ? `${column} contains "${value}"`
-    : `${column} = ${value}`;
-
-export class FilterAggregator extends EventEmitter<FilterEvents> {
+export class FilterAggregator {
   #columns = new Map<string, ColumnDescriptor>();
-  #filters = new Map<string, VuuRowDataItemType>();
+  #filters = new Map<string, SingleValueFilterClause>();
 
   addFilter(column: ColumnDescriptor, value: string | number) {
     this.#columns.set(column.name, column);
     const { serverDataType = "string" } = column;
     const typedValue = getTypedValue(value.toString(), serverDataType, true);
 
-    this.#filters.set(column.name, typedValue);
-    // this.emit("filter", this.filter);
+    this.#filters.set(column.name, {
+      column: column.name,
+      op: "=",
+      value: typedValue,
+    });
   }
 
   removeFilter(column: ColumnDescriptor) {
@@ -185,15 +179,17 @@ export class FilterAggregator extends EventEmitter<FilterEvents> {
     }
   }
 
-  get filter(): VuuFilter {
+  get filter(): Filter | undefined {
     const { size } = this.#filters;
     if (size === 0) {
-      return { filter: "" };
+      return undefined;
+    } else if (size === 1) {
+      const [filter] = this.#filters.values();
+      return filter;
     } else {
       return {
-        filter: Array.from(this.#filters.entries())
-          .map((args) => createFilterClause(...args))
-          .join(" and "),
+        op: "and",
+        filters: Array.from(this.#filters.values()),
       };
     }
   }

@@ -1,3 +1,4 @@
+import { DataValueDescriptor } from "@vuu-ui/vuu-data-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
 export declare type NumericFilterClauseOp =
@@ -46,19 +47,14 @@ export declare type FilterClause =
   | SingleValueFilterClause
   | MultiValueFilterClause;
 
-export interface MultiClauseFilter extends NamedFilter {
+export interface MultiClauseFilter<
+  T extends FilterCombinatorOp = FilterCombinatorOp,
+> extends NamedFilter {
   column?: never;
-  op: FilterCombinatorOp;
+  op: T;
   filters: Filter[];
 }
 
-export interface AndFilter extends MultiClauseFilter {
-  op: "and";
-}
-
-export interface OrFilter extends MultiClauseFilter {
-  op: "or";
-}
 /**
  * A Filter structure that can represent any of the filters supported by the Vuu server.
  * Note that a filter in this form is never passed directly to the Vuu server. For that,
@@ -107,3 +103,10 @@ export declare type ColumnFilterChangeHandler = (
   column: ColumnDescriptor,
   op: ColumnFilterOp,
 ) => void;
+
+export type ColumnFilterVariant = "pick" | "search" | "range";
+export interface ColumnFilterDescriptor extends DataValueDescriptor {
+  defaultValue: ColumnFilterValue;
+  op?: ColumnFilterOp;
+  variant?: ColumnFilterVariant;
+}

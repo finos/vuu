@@ -180,7 +180,7 @@ export const useBulkEditRow = ({
     [handleChange],
   );
 
-  const { onKeyDown } = useEditableCell();
+  const onKeyDown = useEditableCell();
 
   return {
     errorMessages,

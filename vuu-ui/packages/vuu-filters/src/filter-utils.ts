@@ -1,6 +1,5 @@
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
-  AndFilter,
   Filter,
   FilterClause,
   FilterCombinatorOp,
@@ -291,7 +290,7 @@ export const splitFilterOnColumn = (
     return [undefined, filter];
   }
   const [[columnFilter = undefined], filters] = partition(
-    (filter as AndFilter).filters,
+    (filter as MultiClauseFilter<"and">).filters,
     (f) => f.column === columnName,
   );
   return filters.length === 1

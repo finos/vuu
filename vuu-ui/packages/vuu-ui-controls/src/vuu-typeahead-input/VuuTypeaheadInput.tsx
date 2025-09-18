@@ -27,6 +27,10 @@ export const VuuTypeaheadInput = ({
   onCommit,
   table,
 }: VuuTypeaheadInputProps) => {
+  console.log(
+    `[VuuTypeaheadInput] minCharacterCountToTriggerSuggestions=${minCharacterCountToTriggerSuggestions}`,
+  );
+
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-typeahead-input",

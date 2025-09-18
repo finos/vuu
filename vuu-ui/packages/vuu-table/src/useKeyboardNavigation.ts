@@ -59,6 +59,14 @@ export const isNavigationKey = (
   }
 };
 
+const editCellWithEditInProgress = (el: HTMLElement | null) => {
+  if (el) {
+    const input = el.querySelector("input");
+    return input && document.activeElement === input;
+  }
+  return false;
+};
+
 const focusControlWithinCell = (e: KeyboardEvent, el: HTMLElement | null) => {
   if (e.shiftKey && e.key.match(/Arrow(Left|Right)/)) {
     if (el?.classList.contains("vuuTableHeaderCell")) {
@@ -370,13 +378,17 @@ export const useKeyboardNavigation = ({
         return;
       }
       if (rowCount > 0 && isNavigationKey(e.key, navigationStyle)) {
-        e.preventDefault();
-        e.stopPropagation();
-        if (navigationStyle === "row") {
-          moveHighlightedRow(e.key);
-        } else if (navigationStyle !== "none") {
-          if (!focusControlWithinCell(e, cell)) {
-            navigateChildItems(navigationStyle, e.key, e.shiftKey);
+        if (e.key === "ArrowDown" && editCellWithEditInProgress(cell)) {
+          console.log(`editCellWithEditInProgress`);
+        } else {
+          e.preventDefault();
+          e.stopPropagation();
+          if (navigationStyle === "row") {
+            moveHighlightedRow(e.key);
+          } else if (navigationStyle !== "none") {
+            if (!focusControlWithinCell(e, cell)) {
+              navigateChildItems(navigationStyle, e.key, e.shiftKey);
+            }
           }
         }
       }
