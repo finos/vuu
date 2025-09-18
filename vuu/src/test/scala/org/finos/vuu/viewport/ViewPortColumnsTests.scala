@@ -18,6 +18,7 @@ class ViewPortColumnsTests extends AnyFeatureSpec {
       assert(!vpColumns.columnExists("thirdColumn"))
       assert(!vpColumns.hasJoinColumns)
       assert(vpColumns.getJoinColumnsByTable.isEmpty)
+      assert(vpColumns.getJoinViewPortColumns("lol") == ViewPortColumns())
       assert(!vpColumns.hasCalculatedColumns)
       assert(vpColumns.getCalculatedColumns.isEmpty)
     }
@@ -54,13 +55,11 @@ class ViewPortColumnsTests extends AnyFeatureSpec {
       assert(vpColumnsByTable.contains("prices"))
       assert(vpColumnsByTable("prices").size == 1)
       val orderJoinVpColumns = vpColumns.getJoinViewPortColumns("orders")
-      assert(orderJoinVpColumns.isDefined)
-      assert(orderJoinVpColumns.get.getColumns.size == 3)
-      assert(orderJoinVpColumns.get.getColumns == ordersDef.columns.filter(c => List("orderId", "trader", "ric").contains(c.name)).toList)
+      assert(orderJoinVpColumns.getColumns.size == 3)
+      assert(orderJoinVpColumns.getColumns == ordersDef.columns.filter(c => List("orderId", "trader", "ric").contains(c.name)).toList)
       val priceJoinVpColumns = vpColumns.getJoinViewPortColumns("prices")
-      assert(priceJoinVpColumns.isDefined)
-      assert(priceJoinVpColumns.get.getColumns.size == 1)
-      assert(priceJoinVpColumns.get.getColumns == pricesDef.columns.filter(_.name == "bid").toList)
+      assert(priceJoinVpColumns.getColumns.size == 1)
+      assert(priceJoinVpColumns.getColumns == pricesDef.columns.filter(_.name == "bid").toList)
     }
 
     Scenario("Viewport with calculations") {
