@@ -8,7 +8,7 @@ trait ViewPortColumns {
   def getColumnForName(name: String): Option[Column]
   def hasJoinColumns: Boolean
   def getJoinColumnsByTable: Map[String, List[JoinColumn]]
-  def getJoinViewPortColumns(sourceTable: String): Option[ViewPortColumns]
+  def getJoinViewPortColumns(sourceTable: String): ViewPortColumns
   def hasCalculatedColumns: Boolean
   def getCalculatedColumns: List[CalculatedColumn]
   def pullRow(key: String, row: RowData): RowData
@@ -17,7 +17,9 @@ trait ViewPortColumns {
 
 object ViewPortColumns {
 
-  def apply(): ViewPortColumns = ViewPortColumnsImpl(List())
+  private final val emptyViewPortColumns = ViewPortColumnsImpl(List())
+
+  def apply(): ViewPortColumns = emptyViewPortColumns
 
   def apply(columns: List[Column]): ViewPortColumns = {
     ViewPortColumnsImpl(columns)
@@ -71,7 +73,7 @@ private case class ViewPortColumnsImpl(sourceColumns: List[Column]) extends View
     }
   }
 
-  override def getJoinViewPortColumns(sourceTable: String): Option[ViewPortColumns] = joinViewPortColumns.get(sourceTable)
+  override def getJoinViewPortColumns(sourceTable: String): ViewPortColumns = joinViewPortColumns.getOrElse(sourceTable, ViewPortColumns())
 
   private lazy val hasCalculatedColumn: Boolean = sourceColumns.exists(_.isInstanceOf[CalculatedColumn])
 

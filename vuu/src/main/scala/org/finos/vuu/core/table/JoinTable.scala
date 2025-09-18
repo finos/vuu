@@ -466,16 +466,12 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
           previous
         } else {
           val sourceColumns = viewPortColumns.getJoinViewPortColumns(sourceTableName)
-          if (sourceColumns.nonEmpty) {
-            table.pullRow(fk, sourceColumns.get) match {
+          table.pullRow(fk, sourceColumns) match {
               case EmptyRowData =>
                 previous
               case data: RowWithData =>
                 previous ++ columnList.map(column => column.name -> column.sourceColumn.getData(data)).toMap
             }
-          } else {
-            previous
-          }
         }
       })
 
