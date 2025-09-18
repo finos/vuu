@@ -479,26 +479,27 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
         }
       })
 
-      //Append default columns if required
-      val joinedData = if (includeDefaultColumns) {
-        val index = joinData.keyToIndexMap.get(key)
-        val defaultDataMap = Map(
-          CreatedTimeColumnName -> joinData.indexToCreatedTime.get(index),
-          LastUpdatedTimeColumnName -> joinData.indexToLastUpdatedTime.get(index)
-        )
-        RowWithData(key, foldedMap ++ defaultDataMap)
-      } else {
-        RowWithData(key, foldedMap)
-      }
-
-      //Append calculated columns if required
-      if (viewPortColumns.hasCalculatedColumns) {
-        val calculatedData = viewPortColumns.getCalculatedColumns.map(c => c.name -> c.getData(joinedData)).toMap
-        RowWithData(key, joinedData.data ++ calculatedData)
-      } else {
-        joinedData
+      //Build the final row data
+      (includeDefaultColumns, viewPortColumns.hasCalculatedColumns) match {
+        case (false, false) => RowWithData(key, foldedMap)
+        case (true, false) => RowWithData(key, foldedMap ++ getDefaultColumnMap(key))
+        case (false, true) => RowWithData(key, foldedMap ++ getCalculatedData(viewPortColumns, key, foldedMap))
+        case (true, true) => RowWithData(key, foldedMap ++ getDefaultColumnMap(key) ++ getCalculatedData(viewPortColumns, key, foldedMap))
       }
     }
+  }
+
+  private def getDefaultColumnMap(key: String): Map[String, Any] = {
+    val index = joinData.keyToIndexMap.get(key)
+    Map(
+      CreatedTimeColumnName -> joinData.indexToCreatedTime.get(index),
+      LastUpdatedTimeColumnName -> joinData.indexToLastUpdatedTime.get(index)
+    )
+  }
+
+  private def getCalculatedData(joinColumns: ViewPortColumns, key: String, joinData: Map[String, Any]): Map[String, Any] = {
+    val rowData = RowWithData(key, joinData)
+    joinColumns.getCalculatedColumns.map(c => c.name -> c.getData(rowData)).toMap
   }
 
   override def pullRowAsArray(key: String, columns: ViewPortColumns): Array[Any] = {
