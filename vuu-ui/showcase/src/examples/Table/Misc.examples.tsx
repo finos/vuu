@@ -278,7 +278,7 @@ export const FlexLayoutTables = () => {
       new VuuDataSource({ table: schema.table }),
       new VuuDataSource({ table: schema.table }),
     ];
-  }, []);
+  }, [VuuDataSource, schema]);
 
   return (
     <LayoutProvider>
@@ -322,7 +322,7 @@ export const TableInLayoutWithContextPanel = () => {
       rowSeparators: true,
       zebraStripes: true,
     };
-  }, []);
+  }, [schema]);
   const dataSource = useMemo(
     () => new VuuDataSource({ table: schema.table }),
     [VuuDataSource, schema.table],
@@ -478,7 +478,7 @@ export const AutoTableAsFlexChild = () => {
       rowSeparators: true,
       zebraStripes: true,
     };
-  }, []);
+  }, [schema]);
   const { VuuDataSource } = useData();
   const dataSource = useMemo(
     () => new VuuDataSource({ table: schema.table }),
