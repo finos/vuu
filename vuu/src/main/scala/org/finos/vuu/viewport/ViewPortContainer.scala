@@ -437,7 +437,13 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
   private def parseSort(sort: SortSpec, vpColumns: ViewPortColumns): Sort = {
     if (sort.sortDefs.nonEmpty)
-      SortImpl(sort, sort.sortDefs.map(sd => vpColumns.getColumnForName(sd.column).get))
+      SortImpl(
+        spec = sort,
+        columns = sort.sortDefs
+          .map(sd => vpColumns.getColumnForName(sd.column))
+          .filter(_.nonEmpty)
+          .map(_.get)
+      )
     else
       NoSort
   }
