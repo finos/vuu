@@ -1,5 +1,6 @@
 .salt-theme.vuu-theme {
   --vuuTableRow-selectionBlock-borderColor: var(--vuu-color-purple-10);
+  --vuuTableCell-contextOpen-outlineColor: var(--vuu-color-orange-50);
 
   &.salt-density-high {
     --vuu-table-row-height: 20px;

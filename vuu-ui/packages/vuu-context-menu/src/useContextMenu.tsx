@@ -18,8 +18,10 @@ export type ShowContextMenu = (
   e: EventLike,
   location: string,
   options: unknown,
-  contextMenuProps?: Pick<ContextMenuProps, "onOpenChange" | "x" | "y">,
-) => void;
+  contextMenuProps?: Partial<
+    Pick<ContextMenuProps, "onOpenChange" | "x" | "y">
+  >,
+) => boolean;
 
 // The argument allows a top-level menuBuilder to operate outside the Context
 export const useContextMenu = (
@@ -109,12 +111,14 @@ export const useContextMenu = (
               y={y}
             />,
           );
+          return true;
         }
       } else {
         console.warn(
           "useContextMenu, no menuBuilders configured. These should be supplied via the ContextMenuProvider(s)",
         );
       }
+      return false;
     },
     [buildMenuOptions, ctx, handleOpenChange, menuActionHandler, menuBuilder],
   );

@@ -500,3 +500,19 @@ export declare type RowActionHandler<T extends string = string> = (
   rowActionId: T,
   row: DataSourceRow,
 ) => void;
+
+export declare type TableMenuLocation = "grid" | "header" | "filter";
+
+export interface TableContextMenuOptions {
+  columnMap: ColumnMap;
+  column: ColumnDescriptor;
+  columns?: ColumnDescriptor[];
+  row: DataSourceRow;
+  selectedRows: DataSourceRow[];
+  viewport?: string;
+}
+
+export interface TableContextMenuDef {
+  menuBuilder: MenuBuilder<TableMenuLocation, TableContextMenuOptions>;
+  menuActionHandler: MenuActionHandler;
+}

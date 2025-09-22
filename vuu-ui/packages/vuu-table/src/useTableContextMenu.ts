@@ -1,7 +1,11 @@
 import { useContextMenu } from "@vuu-ui/vuu-context-menu";
 import { DataSource, DataSourceRow } from "@vuu-ui/vuu-data-types";
-import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { buildColumnMap, ColumnMap } from "@vuu-ui/vuu-utils";
+import {
+  ColumnDescriptor,
+  TableContextMenuOptions,
+  TableMenuLocation,
+} from "@vuu-ui/vuu-table-types";
+import { buildColumnMap } from "@vuu-ui/vuu-utils";
 import { MouseEvent, useCallback } from "react";
 import { getAriaColIndex, getAriaRowIndex } from "./table-dom-utils";
 
@@ -18,23 +22,12 @@ export interface TableContextMenuHookProps {
 
 const NO_ROWS: DataSourceRow[] = [] as const;
 
-export type TableMenuLocation = "grid" | "header" | "filter";
-
-export interface TableContextMenuOptions {
-  columnMap: ColumnMap;
-  column: ColumnDescriptor;
-  columns?: ColumnDescriptor[];
-  row: DataSourceRow;
-  selectedRows: DataSourceRow[];
-  viewport?: string;
-}
-
 export const isTableLocation = (
   location: string,
 ): location is TableMenuLocation =>
   ["grid", "header", "filter"].includes(location);
 
-const getDataSourceRpw = (rows: DataSourceRow[], rowIndex: number) => {
+const getDataSourceRow = (rows: DataSourceRow[], rowIndex: number) => {
   const row = rows.find(([idx]) => idx === rowIndex);
   if (row) {
     return row;
@@ -65,8 +58,9 @@ export const useTableContextMenu = ({
         const columnMap = buildColumnMap(columns);
         const rowIndex = getAriaRowIndex(rowEl) - headerCount - 1;
         const cellIndex = getAriaColIndex(cellEl) - 1;
-        const row = getDataSourceRpw(data, rowIndex);
+        const row = getDataSourceRow(data, rowIndex);
         const column = columns[cellIndex];
+
         // TODO does it really make sense to collect selected rows ?
         // We only have access to rows in local cache
         const menuOptions: TableContextMenuOptions = {
@@ -77,7 +71,16 @@ export const useTableContextMenu = ({
           selectedRows: selectedRowsCount === 0 ? NO_ROWS : getSelectedRows(),
           viewport: dataSource.viewport,
         };
-        showContextMenu(evt, "grid", menuOptions);
+
+        const menuShowing = showContextMenu(evt, "grid", menuOptions, {
+          onOpenChange: (isOpen: boolean) => {
+            console.log(`[useTableContextMenu] onOpenChange ${isOpen}`);
+            cellEl.classList.remove("ContextOpen");
+          },
+        });
+        if (menuShowing) {
+          cellEl.classList.add("ContextOpen");
+        }
       }
     },
     [columns, data, dataSource, getSelectedRows, headerCount, showContextMenu],
