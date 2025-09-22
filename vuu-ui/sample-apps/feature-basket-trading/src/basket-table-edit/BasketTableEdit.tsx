@@ -1,9 +1,4 @@
-import {
-  Table,
-  TableContextMenuOptions,
-  TableMenuLocation,
-  TableProps,
-} from "@vuu-ui/vuu-table";
+import { Table, TableProps } from "@vuu-ui/vuu-table";
 import { registerComponent } from "@vuu-ui/vuu-utils";
 import { ColHeaderAddSymbol } from "../cell-renderers";
 
@@ -13,6 +8,10 @@ import {
   MenuActionHandler,
   MenuBuilder,
 } from "@vuu-ui/vuu-context-menu";
+import {
+  TableContextMenuOptions,
+  TableMenuLocation,
+} from "@vuu-ui/vuu-table-types";
 
 registerComponent(
   "col-header-add-symbol",

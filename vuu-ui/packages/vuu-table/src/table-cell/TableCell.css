@@ -6,6 +6,7 @@
   display: inline-block;
   white-space: nowrap;
   height: 100%;
+  outline-offset: -2px;
   overflow: hidden;
   padding: var(--vuuTableCell-padding, 0 11px 0 12px);
   text-overflow: ellipsis;
@@ -27,7 +28,6 @@
     --vuuTableCell-outline,
     solid var(--salt-focused-outlineColor) 2px
   );
-  outline-offset: -2px;
   /** This is to achieve a white background to outline dashes */
   box-shadow: inset 0 0 0 var(--cell-outline-width) white;
   border-bottom: none;
@@ -45,4 +45,11 @@
 }
 .vuuTableCell-editable:focus {
   outline: none;
+}
+
+.vuuTableCell.ContextOpen {
+  outline: var(
+    --vuuTableCell-outline,
+    solid var(--vuuTableCell-contextOpen-outlineColor, var(--salt-focused-outlineColor)) 2px
+  );
 }

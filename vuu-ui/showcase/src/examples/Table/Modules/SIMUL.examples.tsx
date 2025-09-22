@@ -1,21 +1,7 @@
-import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
-import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
-import { getSchema, SimulTableName } from "@vuu-ui/vuu-data-test";
 import { NotificationsProvider } from "@vuu-ui/vuu-popups";
-import { Table, TableProps } from "@vuu-ui/vuu-table";
-import type {
-  ColumnDescriptor,
-  ColumnLayout,
-  DefaultColumnConfiguration,
-} from "@vuu-ui/vuu-table-types";
-import {
-  applyDefaultColumnConfig,
-  toColumnName,
-  useData,
-} from "@vuu-ui/vuu-utils";
-import { useCallback, useMemo } from "react";
+import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import "../BuySellRowClassNameGenerator";
-import { DemoTableContainer } from "../DemoTableContainer";
+import { SimulTable, SimulTableProps } from "../SimulTableTemplate";
 
 const getDefaultColumnConfig = (
   tableName: string,
@@ -69,77 +55,6 @@ const getDefaultColumnConfig = (
         },
       };
   }
-};
-
-export type SimulTableProps = Partial<TableProps> & {
-  columnLayout?: ColumnLayout;
-  getDefaultColumnConfig?: DefaultColumnConfiguration;
-  rowClassNameGenerators?: string[];
-  tableName?: SimulTableName;
-};
-
-const SimulTable = ({
-  columnLayout,
-  getDefaultColumnConfig,
-  height = 625,
-  renderBufferSize = 10,
-  rowClassNameGenerators,
-  tableName = "instruments",
-  ...props
-}: SimulTableProps) => {
-  const { VuuDataSource } = useData();
-
-  const tableSchema = getSchema(tableName);
-
-  const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(
-    () => ({
-      config: {
-        columnLayout,
-        columns: applyDefaultColumnConfig(tableSchema, getDefaultColumnConfig),
-        rowClassNameGenerators,
-        rowSeparators: true,
-        zebraStripes: true,
-      },
-      dataSource: new VuuDataSource({
-        columns: tableSchema.columns.map(toColumnName),
-        table: tableSchema.table,
-      }),
-    }),
-    [
-      columnLayout,
-      tableSchema,
-      getDefaultColumnConfig,
-      rowClassNameGenerators,
-      VuuDataSource,
-    ],
-  );
-
-  const handleConfigChange = useCallback(() => {
-    // console.log(JSON.stringify(config, null, 2));
-  }, []);
-
-  const { menuBuilder, menuActionHandler } = useVuuMenuActions({
-    dataSource: tableProps.dataSource,
-  });
-
-  return (
-    <>
-      <ContextMenuProvider
-        menuActionHandler={menuActionHandler}
-        menuBuilder={menuBuilder}
-      >
-        <DemoTableContainer>
-          <Table
-            {...tableProps}
-            height={height}
-            onConfigChange={handleConfigChange}
-            renderBufferSize={renderBufferSize}
-            {...props}
-          />
-        </DemoTableContainer>
-      </ContextMenuProvider>
-    </>
-  );
 };
 
 /** tags=data-consumer */

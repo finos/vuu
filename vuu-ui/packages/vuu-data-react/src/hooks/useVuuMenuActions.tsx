@@ -32,10 +32,13 @@ import {
   BulkEditDialog,
   BulkEditPanel,
   isTableLocation,
+} from "@vuu-ui/vuu-table";
+import type {
+  ColumnDescriptor,
+  TableContextMenuDef,
   TableContextMenuOptions,
   TableMenuLocation,
-} from "@vuu-ui/vuu-table";
-import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+} from "@vuu-ui/vuu-table-types";
 import {
   ColumnMap,
   dataSourceRowToDataRowDto,
@@ -56,11 +59,6 @@ import {
   SessionEditingForm,
 } from "../session-editing-form";
 import { useModal } from "@vuu-ui/vuu-ui-controls";
-
-export interface VuuMenuActionHookResult {
-  menuBuilder: MenuBuilder<TableMenuLocation, TableContextMenuOptions>;
-  menuActionHandler: MenuActionHandler;
-}
 
 export interface MenuActionConfig {
   vuuMenu?: VuuMenu;
@@ -309,7 +307,7 @@ export const useVuuMenuActions = ({
   clientSideMenuActionHandler,
   dataSource,
   onRpcResponse,
-}: VuuMenuActionHookProps): VuuMenuActionHookResult => {
+}: VuuMenuActionHookProps): TableContextMenuDef => {
   const { VuuDataSource } = useData();
   const menuBuilder: MenuBuilder<TableMenuLocation, TableContextMenuOptions> =
     useCallback(
