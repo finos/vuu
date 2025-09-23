@@ -43,16 +43,9 @@ jobs:
     - name: Validate XML report
       run: |
         LICENSE_REPORT=`xq "//dependency[licenses/license/name!=${{ env.ALLOW_LICENSES }}]" ./${{ env.REPORT_PATH }}`
-        LINES_FOUND=`echo $LICENSE_REPORT | wc -l`
-        echo "License issues found ..."
-        if [ $LINES_FOUND -gt 1 ]; then echo $LICENSE_REPORT ; exit -1; fi
+        LINES_FOUND=`echo $LICENSE_REPORT | wc -l`        
+        if [ $LINES_FOUND -gt 1 ]; then echo "License issues found! $LICENSE_REPORT" ; exit -1; fi
       working-directory: ${{ matrix.package-folder }}
-
-    - name: Upload license reports
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ matrix.package-folder }}-license-reports
-        path: '**/dependencies.html'
 
     - name: Upload license XML reports
       uses: actions/upload-artifact@v4
