@@ -92,6 +92,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
     super({
       ...arrayDataSourceProps,
       data: data ?? table?.data ?? [],
+      dataMap: table?.map,
     });
     this._menu = menu;
 

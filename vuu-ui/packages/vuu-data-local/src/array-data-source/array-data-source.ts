@@ -19,6 +19,7 @@ import { filterPredicate, parseFilter } from "@vuu-ui/vuu-filter-parser";
 import type {
   LinkDescriptorWithLabel,
   VuuAggregation,
+  VuuColumns,
   VuuGroupBy,
   VuuMenu,
   VuuRange,
@@ -197,6 +198,12 @@ export class ArrayDataSource
     this.#columnMap = buildColumnMap(columns);
     this.dataIndices = buildDataToClientMap(this.#columnMap, this.dataMap);
     this.#data = data.map<DataSourceRow>(toDataSourceRow(this.key));
+
+    console.log({
+      columnMap: this.#columnMap,
+      map: dataMap,
+      dataIndices: this.dataIndices,
+    });
 
     this.config = {
       ...this._config,
@@ -398,15 +405,26 @@ export class ArrayDataSource
     return this.tableSchema.table;
   }
 
+  get columns() {
+    return this._config.columns;
+  }
+
+  set columns(columns: string[]) {
+    this.config = {
+      ...this._config,
+      columns,
+    };
+  }
+
   get config() {
     return this._config;
   }
 
   set config(config: WithBaseFilter<WithFullConfig>) {
+    const originalConfig = this._config;
     const configChanges = this.applyConfig(config);
     if (configChanges) {
       if (config) {
-        const originalConfig = this._config;
         const newConfig: DataSourceConfig =
           config?.filterSpec?.filter &&
           config?.filterSpec.filterStruct === undefined
@@ -425,6 +443,10 @@ export class ArrayDataSource
         if (hasFilter(config) || hasBaseFilter(config)) {
           const fn = this.getFilterPredicate();
           processedData = this.#data.filter(fn);
+        }
+
+        if (configChanges.columnsChanged) {
+          this.processNewColumns(originalConfig.columns, config.columns);
         }
 
         if (hasSort(config)) {
@@ -490,6 +512,22 @@ export class ArrayDataSource
         this.emit("config", this._config, this.range, undefined, configChanges);
       }
     }
+  }
+
+  private processNewColumns(originalColumns: VuuColumns, columns: VuuColumns) {
+    const addedColumns = getAddedItems(originalColumns, columns);
+    if (addedColumns.length > 0) {
+      const columnsWithoutDescriptors = getMissingItems(
+        this.columnDescriptors,
+        addedColumns,
+        (col) => col.name,
+      );
+      console.warn(`columnsWithoutDescriptors`, {
+        columnsWithoutDescriptors,
+      });
+    }
+    this.#columnMap = buildColumnMap(columns);
+    this.dataIndices = buildDataToClientMap(this.#columnMap, this.dataMap);
   }
 
   private indexProcessedData(data: DataSourceRow[]) {
@@ -838,31 +876,6 @@ export class ArrayDataSource
       //   "color:green;font-weight:bold;",
       // );
     }
-  }
-
-  get columns() {
-    return this._config.columns;
-  }
-
-  set columns(columns: string[]) {
-    const addedColumns = getAddedItems(this.config.columns, columns);
-    if (addedColumns.length > 0) {
-      const columnsWithoutDescriptors = getMissingItems(
-        this.columnDescriptors,
-        addedColumns,
-        (col) => col.name,
-      );
-      console.warn(`columnsWithoutDescriptors`, {
-        columnsWithoutDescriptors,
-      });
-    }
-    this.#columnMap = buildColumnMap(columns);
-    this.dataIndices = buildDataToClientMap(this.#columnMap, this.dataMap);
-
-    this.config = {
-      ...this._config,
-      columns,
-    };
   }
 
   get aggregations() {

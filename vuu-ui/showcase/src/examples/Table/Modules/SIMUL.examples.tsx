@@ -1,6 +1,7 @@
 import { NotificationsProvider } from "@vuu-ui/vuu-popups";
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import "../BuySellRowClassNameGenerator";
+import "../row-classname-generators/BuySellRowClassNameGenerator";
+import "../row-classname-generators/FilledRowClassNameGenerator";
 import { SimulTable, SimulTableProps } from "../SimulTableTemplate";
 
 const getDefaultColumnConfig = (
@@ -84,7 +85,7 @@ export const Prices = () => {
   );
 };
 
-const rowClassGenerators = ["buy-sell-rows"];
+const rowClassGenerators = ["buy-sell-rows", "filled-rows"];
 
 /** tags=data-consumer */
 export const Orders = () => {
