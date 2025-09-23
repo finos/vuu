@@ -33,15 +33,21 @@ jobs:
     - name: Install XQ
       run: pip install xq
 
-    - name: Generate XML report
-      run: mvn install -Dskiptests
+    - name: Maven build
+      run: mvn clean install -DskipTests
+      working-directory: ${{ matrix.package-folder }}
+
+    - name: License XML report
+      run: mvn org.codehaus.mojo:license-maven-plugin:2.0.0:download-licenses
+      working-directory: ${{ matrix.package-folder }}
 
     - name: Validate XML report
       run: |
-        LICENSE_REPORT=`xq "//dependency[licenses/license/name!=${{ env.ALLOW_LICENSES }}]" ./${{ matrix.package-folder }}/${{ env.REPORT_PATH }}`
+        LICENSE_REPORT=`xq "//dependency[licenses/license/name!=${{ env.ALLOW_LICENSES }}]" ./${{ env.REPORT_PATH }}`
         LINES_FOUND=`echo $LICENSE_REPORT | wc -l`
         echo "License issues found ..."
         if [ $LINES_FOUND -gt 1 ]; then echo $LICENSE_REPORT ; exit -1; fi
+      working-directory: ${{ matrix.package-folder }}
 
     - name: Upload license reports
       uses: actions/upload-artifact@v4
