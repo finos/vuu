@@ -35,7 +35,6 @@ jobs:
 
     - name: Maven build
       run: mvn clean install -DskipTests
-      working-directory: ${{ matrix.package-folder }}
 
     - name: License XML report
       run: mvn org.codehaus.mojo:license-maven-plugin:2.0.0:download-licenses
