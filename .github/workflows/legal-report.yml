@@ -6,31 +6,18 @@ on:
       - '**/pom.xml'
       - '.github/workflows/legal-report.yml'
 
+env:
+  ALLOW_LICENSES: "'The Apache Software License, Version 2.0' and licenses/license/name!='BSD' and licenses/license/name!='BSD-style license' and licenses/license/name!='Apache License, Version 2.0'"
+  REPORT_PATH: "target/generated-resources/licenses.xml"
+
 jobs:
-
-  legal-report:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Set up JDK 1.17
-      uses: actions/setup-java@v1
-      with:
-        java-version: 1.17
-        cache: maven
-
-    - name: Build project with Maven
-      run: mvn clean install -DskipTests
-
-    - name: License report
-      run: mvn org.apache.maven.plugins:maven-site-plugin:3.21.0:site org.apache.maven.plugins:maven-project-info-reports-plugin:3.4.1:licenses -P legal-report
 
   legal-scanning:
     runs-on: ubuntu-latest
+
     strategy:
       matrix:
-        package-folder: [".", vuu-ui, toolbox, vuu]
+        package-folder: [toolbox, vuu, vuu-java]
 
     steps:
     - uses: actions/checkout@v3
@@ -46,16 +33,17 @@ jobs:
     - name: Install XQ
       run: pip install xq
 
-    - name: Build with Maven
-      run: mvn clean install
-
-    - name: License XML report
-      run: mvn org.codehaus.mojo:license-maven-plugin:2.0.0:download-licenses
+    - name: Generate XML report
+      run: | 
+        mvn clean
+        mvn install -pl ${{ matrix.package-folder }} -Dskiptests
+        mvn org.codehaus.mojo:license-maven-plugin:2.0.0:download-licenses -pl ${{ matrix.package-folder }}
 
     - name: Validate XML report
       run: |
-        LICENSE_REPORT=`xq "//dependency[licenses/license/name!='The Apache Software License, Version 2.0' and licenses/license/name!='BSD' and licenses/license/name!='BSD-style license' and licenses/license/name!='Apache License, Version 2.0']" ${{ matrix.package-folder }}/target/generated-resources/licenses.xml`
+        LICENSE_REPORT=`xq "//dependency[licenses/license/name!=${{ env.ALLOW_LICENSES }}]" ./${{ matrix.package-folder }}/${{ env.REPORT_PATH }}`
         LINES_FOUND=`echo $LICENSE_REPORT | wc -l`
+        echo "License issues found ..."
         if [ $LINES_FOUND -gt 1 ]; then echo $LICENSE_REPORT ; exit -1; fi
 
     - name: Upload license reports
