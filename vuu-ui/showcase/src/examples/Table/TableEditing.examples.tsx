@@ -43,7 +43,6 @@ const TableTemplate = ({
   tableName?: VuuTableName;
 }) => {
   const schema = getSchema(tableName);
-
   const { VuuDataSource } = useData();
   const [dataSource, config] = useMemo<[DataSource, TableConfig]>(() => {
     const dataSource =

@@ -1,6 +1,6 @@
 import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
-import { vuuModule } from "@vuu-ui/vuu-data-test";
-import { buildColumnMap } from "@vuu-ui/vuu-utils";
+import { getSchema } from "@vuu-ui/vuu-data-test";
+import { buildColumnMap, useData } from "@vuu-ui/vuu-utils";
 import { Basket, BasketSelector } from "feature-basket-trading";
 import { useCallback, useMemo, useState } from "react";
 
@@ -17,10 +17,13 @@ const testBaskets = [
 ];
 
 export const DefaultBasketSelector = () => {
+  const schema = getSchema("basketTrading");
+  const { VuuDataSource } = useData();
+
   const [columnMap, dataSource] = useMemo(() => {
-    const dataSource = vuuModule("BASKET").createDataSource(
-      "basketTrading",
-    ) as ArrayDataSource;
+    const dataSource = new VuuDataSource({
+      table: schema.table,
+    }) as ArrayDataSource;
     for (const [basketId, basketName, side, status] of testBaskets) {
       dataSource["insert"];
       console.log(
@@ -30,7 +33,7 @@ export const DefaultBasketSelector = () => {
     }
     dataSource.select([1]);
     return [buildColumnMap(dataSource.columns), dataSource];
-  }, []);
+  }, [VuuDataSource, schema]);
 
   const [selectedBasket, setSelectedBasket] = useState(
     new Basket(dataSource.data[1], columnMap),

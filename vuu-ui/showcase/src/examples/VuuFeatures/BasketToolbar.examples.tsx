@@ -1,9 +1,10 @@
-import { vuuModule } from "@vuu-ui/vuu-data-test";
 import { Basket, BasketToolbar } from "feature-basket-trading";
 import { useCallback, useMemo, useState } from "react";
-import { BasketSelectorProps } from "sample-apps/feature-basket-trading/src/basket-selector";
-import { BasketChangeHandler } from "sample-apps/feature-basket-trading/src/basket-toolbar";
-import { BasketStatus } from "sample-apps/feature-basket-trading/src/VuuBasketTradingFeature";
+import { BasketSelectorProps } from "feature-basket-trading/src/basket-selector";
+import { BasketChangeHandler } from "feature-basket-trading/src/basket-toolbar";
+import { BasketStatus } from "feature-basket-trading/src/VuuBasketTradingFeature";
+import { getSchema } from "@vuu-ui/vuu-data-test";
+import { useData } from "@vuu-ui/vuu-utils";
 
 const testBasket: Basket = {
   dataSourceRow: [] as any,
@@ -20,12 +21,20 @@ const testBasket: Basket = {
 };
 
 export const BasketToolbarDesign = () => {
+  const schema = getSchema("basketTrading");
+  const { VuuDataSource } = useData();
+
   const [basketStatus, setBasketStatus] = useState<BasketStatus>("design");
 
   const [basket, setBasket] = useState<Basket>(testBasket);
 
-  const dataSourceBasketTradingSearch =
-    vuuModule("BASKET").createDataSource("basketTrading");
+  const dataSourceBasketTradingSearch = useMemo(
+    () =>
+      new VuuDataSource({
+        table: schema.table,
+      }),
+    [VuuDataSource, schema],
+  );
 
   const basketSelectorProps = useMemo<BasketSelectorProps>(
     () => ({
@@ -61,9 +70,16 @@ export const BasketToolbarDesign = () => {
 
 export const BasketToolbarOnMarket = () => {
   const [basketStatus, setBasketStatus] = useState<BasketStatus>("on-market");
+  const schema = getSchema("basketTrading");
+  const { VuuDataSource } = useData();
 
-  const dataSourceBasketTradingSearch =
-    vuuModule("BASKET").createDataSource("basketTrading");
+  const dataSourceBasketTradingSearch = useMemo(
+    () =>
+      new VuuDataSource({
+        table: schema.table,
+      }),
+    [VuuDataSource, schema],
+  );
 
   const basketSelectorProps = useMemo<BasketSelectorProps>(
     () => ({

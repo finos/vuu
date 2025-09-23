@@ -5,7 +5,6 @@ import {
   getSchema,
   LocalDataSourceProvider,
   SimulTableName,
-  vuuModule,
 } from "@vuu-ui/vuu-data-test";
 import {
   DataSource,
@@ -118,7 +117,6 @@ const TableTemplate = ({
   schema: TableSchema;
 } & Partial<TableProps>) => {
   const { VuuDataSource } = useData();
-
   const tableConfig = useMemo<TableConfig>(() => {
     return (
       config ?? {
@@ -245,8 +243,6 @@ const VuuTableTemplate = ({ schema }: { schema: TableSchema }) => {
     [schema.columns],
   );
 
-  console.log({ columns: schema.columns });
-
   return (
     <Table
       config={config}
@@ -268,20 +264,22 @@ export const VuuInstruments = () => {
 };
 
 export const FlexLayoutTables = () => {
+  const schema = getSchema("instruments");
+  const { VuuDataSource } = useData();
   const tableConfig = useMemo<TableConfig>(() => {
     return {
-      columns: getSchema("instruments").columns,
+      columns: schema.columns,
       rowSeparators: true,
       zebraStripes: true,
     };
-  }, []);
+  }, [schema]);
 
   const [ds1, ds2, ds3, ds4] = useMemo(() => {
     return [
-      vuuModule("SIMUL").createDataSource("instruments"),
-      vuuModule("SIMUL").createDataSource("instruments"),
-      vuuModule("SIMUL").createDataSource("instruments"),
-      vuuModule("SIMUL").createDataSource("instruments"),
+      new VuuDataSource({ table: schema.table }),
+      new VuuDataSource({ table: schema.table }),
+      new VuuDataSource({ table: schema.table }),
+      new VuuDataSource({ table: schema.table }),
     ];
   }, []);
 
@@ -314,20 +312,24 @@ export const FlexLayoutTables = () => {
 };
 
 export const TableInLayoutWithContextPanel = () => {
+  const schema = getSchema("instruments");
+  const { VuuDataSource } = useData();
+
   useMemo(() => {
     registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
     registerComponent("TableSettings", TableSettingsPanel, "view");
   }, []);
   const tableConfig = useMemo<TableConfig>(() => {
     return {
-      columns: getSchema("instruments").columns,
+      columns: schema.columns,
       rowSeparators: true,
       zebraStripes: true,
     };
   }, []);
-  const dataSource = useMemo(() => {
-    return vuuModule("SIMUL").createDataSource("instruments");
-  }, []);
+  const dataSource = useMemo(
+    () => new VuuDataSource({ table: schema.table }),
+    [VuuDataSource, schema.table],
+  );
 
   return (
     <LayoutProvider>
@@ -349,16 +351,19 @@ export const CheckboxTableInLayoutWithContextPanel = () => {
     registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
     registerComponent("TableSettings", TableSettingsPanel, "view");
   }, []);
+  const { VuuDataSource } = useData();
+  const schema = getSchema("instruments");
   const tableConfig = useMemo<TableConfig>(() => {
     return {
-      columns: getSchema("instruments").columns,
+      columns: schema.columns,
       rowSeparators: true,
       zebraStripes: true,
     };
-  }, []);
-  const dataSource = useMemo(() => {
-    return vuuModule("SIMUL").createDataSource("instruments");
-  }, []);
+  }, [schema]);
+  const dataSource = useMemo(
+    () => new VuuDataSource({ table: schema.table }),
+    [VuuDataSource, schema.table],
+  );
 
   return (
     <LayoutProvider>
@@ -393,9 +398,12 @@ export const TableInLayoutWithCustomContextPanel = () => {
       zebraStripes: true,
     };
   }, []);
-  const dataSource = useMemo(() => {
-    return vuuModule("SIMUL").createDataSource("instruments");
-  }, []);
+  const { VuuDataSource } = useData();
+  const schema = getSchema("instruments");
+  const dataSource = useMemo(
+    () => new VuuDataSource({ table: schema.table }),
+    [VuuDataSource, schema.table],
+  );
 
   const [{ component, expanded, title }, setContextState] = useState<{
     component?: LayoutJSON;
@@ -453,9 +461,12 @@ export const AutoTable = () => {
       zebraStripes: true,
     };
   }, []);
-  const dataSource = useMemo(() => {
-    return vuuModule("SIMUL").createDataSource("instruments");
-  }, []);
+  const { VuuDataSource } = useData();
+  const schema = getSchema("instruments");
+  const dataSource = useMemo(
+    () => new VuuDataSource({ table: schema.table }),
+    [VuuDataSource, schema.table],
+  );
 
   return (
     <Table config={tableConfig} dataSource={dataSource} renderBufferSize={0} />
@@ -463,16 +474,19 @@ export const AutoTable = () => {
 };
 
 export const AutoTableAsFlexChild = () => {
+  const schema = getSchema("instruments");
   const tableConfig = useMemo<TableConfig>(() => {
     return {
-      columns: getSchema("instruments").columns,
+      columns: schema.columns,
       rowSeparators: true,
       zebraStripes: true,
     };
   }, []);
-  const dataSource = useMemo(() => {
-    return vuuModule("SIMUL").createDataSource("instruments");
-  }, []);
+  const { VuuDataSource } = useData();
+  const dataSource = useMemo(
+    () => new VuuDataSource({ table: schema.table }),
+    [VuuDataSource, schema.table],
+  );
 
   return (
     <div
@@ -792,8 +806,15 @@ const SymbolHeader = (_: HeaderCellProps) => {
 registerComponent("symbol-header", SymbolHeader, "cell-renderer", {});
 
 export const CustomColumnRenderer = () => {
+  const { VuuDataSource } = useData();
+  const schema = getSchema("instruments");
+  const dataSource = useMemo(
+    () => new VuuDataSource({ table: schema.table }),
+    [VuuDataSource, schema.table],
+  );
   const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(() => {
     const tableName: SimulTableName = "instruments";
+
     return {
       config: {
         columns: applyDefaultColumnConfig(
@@ -809,10 +830,9 @@ export const CustomColumnRenderer = () => {
         rowSeparators: true,
         zebraStripes: true,
       },
-      dataSource:
-        vuuModule<SimulTableName>("SIMUL").createDataSource(tableName),
+      dataSource,
     };
-  }, []);
+  }, [dataSource]);
 
   const onSelect = useCallback<TableRowSelectHandler>((row) => {
     console.log({ row });

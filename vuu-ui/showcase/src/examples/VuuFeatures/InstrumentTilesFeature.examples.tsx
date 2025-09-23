@@ -1,6 +1,6 @@
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { LayoutProvider, View } from "@vuu-ui/vuu-layout";
-import { Feature, useWorkspace } from "@vuu-ui/vuu-shell";
+import { Feature } from "@vuu-ui/vuu-shell";
 import { DynamicFeatureProps, registerComponent } from "@vuu-ui/vuu-utils";
 import { InstrumentTilesFeature } from "../../features/InstrumentTiles.feature";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
@@ -10,17 +10,8 @@ registerComponent("InstrumentTilesFeature", InstrumentTilesFeature, "view");
 export const DefaultInstrumentTilesFeature = () => {
   const schema = getSchema("instrumentPrices");
 
-  //-----------------------------------------------------------------------------------
-  // Note the following functionality is provided by the Shell in a full application.
-  // Likewise the Shell provides the LayoutProvider wrapper. Again, in a full Vuu
-  // application, the Palette wraps each feature in a View.
-  //-----------------------------------------------------------------------------------
-  const { workspaceJSON } = useWorkspace();
-
-  // ----------------------------------------------------------------------------------
-
   return (
-    <LayoutProvider workspaceJSON={workspaceJSON}>
+    <LayoutProvider>
       <View
         Header={VuuBlotterHeader}
         id="instrument-tiles-feature"
