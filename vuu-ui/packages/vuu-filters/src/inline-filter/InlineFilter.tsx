@@ -14,6 +14,7 @@ import {
 import { useInlineFilter } from "./useInlineFilter";
 
 import inlineFilteCss from "./InlineFilter.css";
+import { ColumnFilterNextProps } from "../column-filter-next/ColumnFilterNext";
 
 const classBase = "vuuInlineFilter";
 
@@ -32,9 +33,9 @@ const InputProps: Partial<InputProps> = {
   variant: "primary",
 };
 
-const TypeaheadProps = {
+const TypeaheadProps: ColumnFilterNextProps["TypeaheadProps"] = {
   highlightFirstSuggestion: false,
-  // minCharacterCountToTriggerSuggestions: 0,
+  minCharacterCountToTriggerSuggestions: 0,
 };
 
 export const InlineFilter = ({

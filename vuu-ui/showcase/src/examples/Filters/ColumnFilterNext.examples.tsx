@@ -71,6 +71,40 @@ export const SimpleControlledTextColumnFilter = () => {
     </DataSourceProvider>
   );
 };
+
+export const ShowSuggestionsWithNoTextInput = () => {
+  const { VuuDataSource } = useData();
+  const [value, setValue] = useState<ColumnFilterValue>("");
+  const dataSource = useMemo(() => {
+    return new VuuDataSource({ table: schema.table });
+  }, [VuuDataSource]);
+
+  const handleCommit = useCallback<ColumnFilterCommitHandler>(
+    (column, operator, value) => {
+      console.log(`commit ${column.name} ${value}`);
+      setValue(value);
+    },
+    [],
+  );
+
+  return (
+    <DataSourceProvider dataSource={dataSource}>
+      <ContainerTemplate>
+        <FormField>
+          <FormFieldLabel>BBG</FormFieldLabel>
+          <ColumnFilterNext
+            TypeaheadProps={{ minCharacterCountToTriggerSuggestions: 0 }}
+            column={{ name: "bbg", serverDataType: "string" }}
+            onColumnFilterChange={setValue}
+            onCommit={handleCommit}
+            table={{ module: "SIMUL", table: "instruments" }}
+            value={value}
+          />
+        </FormField>
+      </ContainerTemplate>
+    </DataSourceProvider>
+  );
+};
 export const SimpleUnControlledTextColumnFilter = () => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {

@@ -11,7 +11,7 @@ export const useInlineFilter = ({
 }) => {
   const { columns = [], virtualColSpan = 0 } = useHeaderProps();
 
-  const { onKeyDown } = useEditableCell();
+  const onKeyDown = useEditableCell();
 
   const handleFilterApplied = useCallback<FilterAppliedHandler>(
     (filter) => {
