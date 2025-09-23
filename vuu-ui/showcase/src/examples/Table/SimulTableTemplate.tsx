@@ -3,6 +3,7 @@ import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
 import { getSchema, SimulTableName } from "@vuu-ui/vuu-data-test";
 import { Table, TableProps } from "@vuu-ui/vuu-table";
 import {
+  ColumnDescriptor,
   ColumnLayout,
   DefaultColumnConfiguration,
   TableContextMenuDef,
@@ -17,6 +18,7 @@ import { DemoTableContainer } from "./DemoTableContainer";
 
 export type SimulTableProps = Partial<TableProps> & {
   columnLayout?: ColumnLayout;
+  columns?: ColumnDescriptor[];
   getDefaultColumnConfig?: DefaultColumnConfiguration;
   rowClassNameGenerators?: string[];
   tableContextMenuHook?: () => TableContextMenuDef;
@@ -25,6 +27,8 @@ export type SimulTableProps = Partial<TableProps> & {
 
 export const SimulTable = ({
   columnLayout,
+  columns: columnsProp,
+  dataSource: dataSourceProp,
   getDefaultColumnConfig,
   height = 625,
   renderBufferSize = 10,
@@ -43,21 +47,27 @@ export const SimulTable = ({
     () => ({
       config: {
         columnLayout,
-        columns: applyDefaultColumnConfig(tableSchema, getDefaultColumnConfig),
+        columns:
+          columnsProp ??
+          applyDefaultColumnConfig(tableSchema, getDefaultColumnConfig),
         rowClassNameGenerators,
         rowSeparators: true,
         zebraStripes: true,
       },
-      dataSource: new VuuDataSource({
-        columns: tableSchema.columns.map(toColumnName),
-        table: tableSchema.table,
-      }),
+      dataSource:
+        dataSourceProp ??
+        new VuuDataSource({
+          columns: tableSchema.columns.map(toColumnName),
+          table: tableSchema.table,
+        }),
     }),
     [
       columnLayout,
+      columnsProp,
       tableSchema,
       getDefaultColumnConfig,
       rowClassNameGenerators,
+      dataSourceProp,
       VuuDataSource,
     ],
   );
