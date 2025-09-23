@@ -1,11 +1,12 @@
 import { Table, TableProps } from "@vuu-ui/vuu-table";
 import { useMemo } from "react";
-import { TestTableName, getSchema, vuuModule } from "@vuu-ui/vuu-data-test";
+import { TestTableName, getSchema } from "@vuu-ui/vuu-data-test";
 import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
 import { SchemaColumn } from "@vuu-ui/vuu-data-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { DemoTableContainer } from "./DemoTableContainer";
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
+import { useData } from "@vuu-ui/vuu-utils";
 
 const extendColumnConfig = (
   columns: SchemaColumn[],
@@ -17,6 +18,7 @@ const TestTable = ({
   ...props
 }: Partial<TableProps> & { tableName: TestTableName }) => {
   const schema = getSchema(tableName);
+  const { VuuDataSource } = useData();
 
   const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(
     () => ({
@@ -28,9 +30,9 @@ const TestTable = ({
         rowSeparators: true,
         zebraStripes: true,
       },
-      dataSource: vuuModule<TestTableName>("TEST").createDataSource(tableName),
+      dataSource: new VuuDataSource({ table: schema.table }),
     }),
-    [props, schema.columns, tableName],
+    [VuuDataSource, props, schema],
   );
 
   const { menuBuilder, menuActionHandler } = useVuuMenuActions({

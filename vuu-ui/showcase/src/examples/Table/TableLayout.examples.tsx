@@ -3,7 +3,6 @@ import {
   LocalDataSourceProvider,
   SimulTableName,
   getSchema,
-  vuuModule,
 } from "@vuu-ui/vuu-data-test";
 import {
   DataSource,
@@ -118,13 +117,16 @@ const InlineDrawer = ({
   position,
   peekaboo = false,
 }: InlineDrawerProps) => {
+  const { VuuDataSource } = useData();
+  const schema = getSchema("instruments");
+
   const list = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
 
-  const dataSource = useMemo(() => {
-    const ds = vuuModule("SIMUL").createDataSource("instruments");
-    return ds;
-  }, []);
+  const dataSource = useMemo(
+    () => new VuuDataSource({ table: schema.table }),
+    [VuuDataSource, schema],
+  );
 
   const handleSelectionChange: SelectionChangeHandler = useCallback(
     (selection: Selection) => {
@@ -190,8 +192,10 @@ export const RightInlineDrawerPeek = () => (
 );
 
 export const SingleHeadingRow = () => {
+  const tableName: SimulTableName = "instruments";
+  const schema = getSchema(tableName);
+  const { VuuDataSource } = useData();
   const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(() => {
-    const tableName: SimulTableName = "instruments";
     return {
       // prettier-ignore
       config: {
@@ -207,8 +211,7 @@ export const SingleHeadingRow = () => {
         rowSeparators: true,
         zebraStripes: true,
       },
-      dataSource:
-        vuuModule<SimulTableName>("SIMUL").createDataSource(tableName),
+      dataSource: new VuuDataSource({ table: schema.table }),
     };
   }, []);
 
@@ -231,8 +234,11 @@ const SimpleCustomHeader = ({ ariaRole, ariaRowIndex }: BaseRowProps) => {
 };
 
 export const CustomHeaderComponent = () => {
+  const { VuuDataSource } = useData();
+  const tableName: SimulTableName = "instruments";
+  const schema = getSchema(tableName);
+
   const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(() => {
-    const tableName: SimulTableName = "instruments";
     return {
       // prettier-ignore
       config: {
@@ -248,10 +254,9 @@ export const CustomHeaderComponent = () => {
         rowSeparators: true,
         zebraStripes: true,
       },
-      dataSource:
-        vuuModule<SimulTableName>("SIMUL").createDataSource(tableName),
+      dataSource: new VuuDataSource({ table: schema.table }),
     };
-  }, []);
+  }, [VuuDataSource, schema]);
 
   return (
     <Table

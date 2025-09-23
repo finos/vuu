@@ -2,7 +2,6 @@ export * from "./ArrayProxy";
 export * from "./schemas";
 export * from "./TickingArrayDataSource";
 export * from "./vuu-row-generator";
-export * from "./vuu-modules";
 export * from "./simul";
 export * from "./basket";
 export * from "./test";

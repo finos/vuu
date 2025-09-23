@@ -1,22 +1,25 @@
+import { SaltProvider } from "@salt-ds/core";
+import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
+import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import {
   Density,
   getUrlParameter,
   ThemeMode,
   TreeSourceNode,
 } from "@vuu-ui/vuu-utils";
-import { SaltProvider } from "@salt-ds/core";
+import cx from "clsx";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import {
   getTargetTreeNode,
   isComponentDescriptor,
   loadTheme,
 } from "./shared-utils";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import cx from "clsx";
+import { DataLocation } from "./showcase-main/ShowcaseProvider";
+import { simulModule } from "@vuu-ui/vuu-data-test";
 
 import "./Showcase.css";
-import { DataLocation } from "./showcase-main/ShowcaseProvider";
-import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
+
+console.log(typeof simulModule);
 
 const asThemeMode = (input: string | undefined): ThemeMode => {
   if (input === "light" || input === "dark") {
