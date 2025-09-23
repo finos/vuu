@@ -34,10 +34,7 @@ jobs:
       run: pip install xq
 
     - name: Generate XML report
-      run: | 
-        mvn clean
-        mvn install -pl ${{ matrix.package-folder }} -Dskiptests
-        mvn org.codehaus.mojo:license-maven-plugin:2.0.0:download-licenses -pl ${{ matrix.package-folder }}
+      run: mvn install -Dskiptests
 
     - name: Validate XML report
       run: |
