@@ -112,6 +112,7 @@ export const ParentOrders = () => (
   <SimulTable
     tableName="parentOrders"
     getDefaultColumnConfig={getDefaultColumnConfig}
+    rowClassNameGenerators={rowClassGenerators}
   />
 );
 

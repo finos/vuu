@@ -1,5 +1,10 @@
-import { TableSchema } from "@vuu-ui/vuu-data-types";
+import { SchemaColumn, TableSchema } from "@vuu-ui/vuu-data-types";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
+
+const VUU_TIMESTAMP_COLUMNS: SchemaColumn[] = [
+  { name: "vuuCreatedTimestamp", serverDataType: "long" },
+  { name: "vuuUpdatedTimestamp", serverDataType: "long" },
+];
 
 export type SimulTableName =
   | "instruments"
@@ -23,6 +28,7 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
         { name: "isin", serverDataType: "string" },
         { name: "lotSize", serverDataType: "int" },
         { name: "ric", serverDataType: "string" },
+        ...VUU_TIMESTAMP_COLUMNS,
       ],
       key: "ric",
       table: { module: "SIMUL", table: "instruments" },
@@ -41,6 +47,7 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
         { name: "lastUpdated", serverDataType: "long" },
         { name: "price", serverDataType: "double" },
         { name: "date", serverDataType: "long" },
+        ...VUU_TIMESTAMP_COLUMNS,
       ],
       key: "ric",
       table: { module: "SIMUL", table: "instrumentsExtended" },
@@ -53,18 +60,17 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
         { name: "bid", serverDataType: "double" },
         { name: "bidSize", serverDataType: "double" },
         { name: "close", serverDataType: "double" },
-        { name: "created", serverDataType: "long" },
         { name: "currency", serverDataType: "string" },
         { name: "description", serverDataType: "string" },
         { name: "exchange", serverDataType: "string" },
         { name: "isin", serverDataType: "string" },
         { name: "last", serverDataType: "double" },
-        { name: "lastUpdate", serverDataType: "long" },
         { name: "lotSize", serverDataType: "int" },
         { name: "open", serverDataType: "double" },
         { name: "phase", serverDataType: "string" },
         { name: "ric", serverDataType: "string" },
         { name: "scenario", serverDataType: "string" },
+        ...VUU_TIMESTAMP_COLUMNS,
       ],
       key: "ric",
       table: { module: "SIMUL", table: "instrumentPrices" },
@@ -73,7 +79,6 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
       columns: [
         { name: "status", serverDataType: "string" },
         { name: "ccy", serverDataType: "string" },
-        { name: "created", serverDataType: "long" },
         { name: "filledQuantity", serverDataType: "double" },
         { name: "lastUpdate", serverDataType: "long" },
         { name: "orderId", serverDataType: "string" },
@@ -81,6 +86,7 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
         { name: "ric", serverDataType: "string" },
         { name: "side", serverDataType: "string" },
         { name: "trader", serverDataType: "string" },
+        ...VUU_TIMESTAMP_COLUMNS,
       ],
       key: "orderId",
       table: { module: "SIMUL", table: "orders" },
@@ -103,8 +109,7 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
         { name: "status", serverDataType: "string" },
         { name: "strategy", serverDataType: "string" },
         { name: "volLimit", serverDataType: "int" },
-        { name: "lastUpdate", serverDataType: "long" },
-        { name: "created", serverDataType: "long" },
+        ...VUU_TIMESTAMP_COLUMNS,
       ],
       key: "id",
       table: { module: "SIMUL", table: "childOrders" },
@@ -127,8 +132,7 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
         { name: "side", serverDataType: "string" },
         { name: "status", serverDataType: "string" },
         { name: "volLimit", serverDataType: "int" },
-        { name: "lastUpdate", serverDataType: "long" },
-        { name: "created", serverDataType: "long" },
+        ...VUU_TIMESTAMP_COLUMNS,
       ],
       key: "id",
       table: { module: "SIMUL", table: "parentOrders" },
@@ -145,8 +149,7 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
         { name: "phase", serverDataType: "string" },
         { name: "ric", serverDataType: "string" },
         { name: "scenario", serverDataType: "string" },
-        { name: "lastUpdate", serverDataType: "long" },
-        { name: "created", serverDataType: "long" },
+        ...VUU_TIMESTAMP_COLUMNS,
       ],
       key: "ric",
       table: { module: "SIMUL", table: "prices" },

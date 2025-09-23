@@ -7,10 +7,14 @@ import "./buy-sell.css";
 export const buySellFormatter: RowClassGenerator = {
   id: "buy-sell-rows",
   fn: (row: DataSourceRow, columnMap: ColumnMap) => {
-    if (row[columnMap.side].toUpperCase() === "BUY") {
-      return "sideBuy";
-    } else if (row[columnMap.side].toUpperCase() === "SELL") {
-      return "sideSell";
+    const val = row[columnMap.side];
+    if (typeof val === "string") {
+      const uppercaseVal = val.toUpperCase();
+      if (uppercaseVal === "BUY") {
+        return "sideBuy";
+      } else if (uppercaseVal === "SELL") {
+        return "sideSell";
+      }
     }
   },
 };
