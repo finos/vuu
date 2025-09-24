@@ -390,7 +390,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: SelectRowRangeRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.selectRowRange(msg.vpId, msg.fromRowKey, msg.toRowKey, msg.preserveExistingSeletion)) match {
+    Try(viewPortContainer.selectRowRange(msg.vpId, msg.fromRowKey, msg.toRowKey, msg.preserveExistingSelection)) match {
       case Success(vp) =>
         vsMsg(SelectRowRangeSuccess(vp.id, vp.getSelection.toArray))(ctx)
       case Failure(e) =>

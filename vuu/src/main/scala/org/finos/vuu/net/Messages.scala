@@ -198,7 +198,7 @@ case class DeselectRowSuccess(vpId: String, selection: Array[String]) extends Me
 
 case class DeselectRowReject(vpId: String, errorMsg: String) extends MessageBody
 
-case class SelectRowRangeRequest(vpId: String, fromRowKey: String, toRowKey: String, preserveExistingSeletion: Boolean) extends MessageBody
+case class SelectRowRangeRequest(vpId: String, fromRowKey: String, toRowKey: String, preserveExistingSelection: Boolean) extends MessageBody
 
 case class SelectRowRangeSuccess(vpId: String, selection: Array[String]) extends MessageBody
 
