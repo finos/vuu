@@ -59,10 +59,10 @@ jobs:
                 
         # Check for ones that arent allowed        
         for license1 in "${LICENSES[@]}"; do
-          echo "Checking $license1"
+          echo "Checking '$license1'"
           found=false
           for license2 in "${ALLOWED_LICENCES[@]}"; do
-            echo "Comparing against $license2"
+            echo "Comparing against '$license2''"
             if [[ "$license1" == "$license2" ]]; then
               found=true
               break
