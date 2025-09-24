@@ -43,6 +43,7 @@ jobs:
         #!/bin/bash
         
         ALLOWED_LICENCES=(
+          "Apache 2.0"
           "Apache 2.0 License"
           "Apache License 2.0"
           "Apache License, Version 2.0"
