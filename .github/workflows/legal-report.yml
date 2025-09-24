@@ -7,7 +7,9 @@ on:
       - '.github/workflows/legal-report.yml'
 
 env:
-  ALLOW_LICENSES: "'The Apache Software License, Version 2.0' and licenses/license/name!='BSD' and licenses/license/name!='BSD-style license' and licenses/license/name!='Apache License, Version 2.0'"
+  ALLOW_LICENSES: "licenses/license/name!='The Apache Software License, Version 2.0' and licenses/license/name!='BSD' and
+   licenses/license/name!='BSD-style license' and licenses/license/name!='Apache License, Version 2.0' and 
+   licenses/license/name!='Eclipse Public License - v 1.0' and licenses/license/name!='GNU General Public License'"
   REPORT_PATH: "target/generated-resources/licenses.xml"
 
 jobs:
@@ -42,7 +44,7 @@ jobs:
 
     - name: Validate XML report
       run: |
-        LICENSE_REPORT=`xq "//dependency[licenses/license/name!=${{ env.ALLOW_LICENSES }}]" ./${{ env.REPORT_PATH }}`
+        LICENSE_REPORT=`xq "//dependency[${{ env.ALLOW_LICENSES }}]" ./${{ env.REPORT_PATH }}`
         echo "REPORT: $LICENSE_REPORT"
         LINES_FOUND=$(echo "$LICENSE_REPORT" | wc -l)        
         if [ "$LINES_FOUND" -gt 1 ]; then 
