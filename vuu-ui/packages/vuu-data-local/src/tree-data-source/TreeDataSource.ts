@@ -6,6 +6,8 @@ import type {
   VuuRowDataItemType,
   VuuRpcResponse,
   VuuRpcRequest,
+  SelectRequest,
+  SelectRowRequest,
 } from "@vuu-ui/vuu-protocol-types";
 import type {
   DataSourceRow,
@@ -13,7 +15,6 @@ import type {
   DataSourceStatus,
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
-  Selection,
   MenuRpcResponse,
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditResponse,
@@ -23,7 +24,6 @@ import type {
 import {
   BaseDataSource,
   getParentRow,
-  isSelected,
   isSingleValueFilter,
   KeySet,
   lastPathSegment,
@@ -273,23 +273,43 @@ export class TreeDataSource extends BaseDataSource implements DataSource {
   private indexOfRowWithKey = (key: string) =>
     this.#data.findIndex((row) => row[KEY] === key);
 
-  // Incoming Selection references visibleRow indices
-  select(selected: Selection) {
+  select(selectRequest: Omit<SelectRequest, "vpId">) {
     // todo get a diff
     const updatedRows: DataSourceRow[] = [];
-    for (const row of this.visibleRows) {
-      const { [IDX]: rowIndex, [SELECTED]: sel } = row;
-      const wasSelected = sel === 1;
-      const nowSelected = isSelected(selected, rowIndex);
-      if (nowSelected !== wasSelected) {
-        const selectedRow = row.slice() as DataSourceRow;
-        const selectedValue = nowSelected ? 1 : 0;
-        selectedRow[SELECTED] = selectedValue;
-        const dataRowIdx = this.visibleRowIndex[rowIndex];
-        this.visibleRows[rowIndex] = selectedRow;
-        this.#data[dataRowIdx][SELECTED] = selectedValue;
-        updatedRows.push(selectedRow);
+
+    switch (selectRequest.type) {
+      case "SELECT_ROW": {
+        const { preserveExistingSelection, rowKey } = selectRequest as Omit<
+          SelectRowRequest,
+          "vpId"
+        >;
+        for (const row of this.visibleRows) {
+          const { [IDX]: rowIndex, [KEY]: key, [SELECTED]: sel } = row;
+          if (
+            sel === 1 &&
+            preserveExistingSelection === false &&
+            key !== rowKey
+          ) {
+            const deselectedRow = row.slice() as DataSourceRow;
+            deselectedRow[SELECTED] = 0;
+            this.visibleRows[rowIndex] = deselectedRow;
+            updatedRows.push(deselectedRow);
+          } else if (key === rowKey) {
+            const selectedRow = row.slice() as DataSourceRow;
+            selectedRow[SELECTED] = 1;
+            this.visibleRows[rowIndex] = selectedRow;
+            updatedRows.push(selectedRow);
+          }
+        }
+
+        break;
       }
+      case "DESELECT_ROW": {
+        break;
+      }
+
+      default:
+      // ignore
     }
 
     if (updatedRows.length > 0) {

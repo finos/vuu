@@ -1,7 +1,7 @@
 import {
   TableRowClickHandlerInternal,
   TableRowSelectHandlerInternal,
-  TableRowSelectionChangeHandlerInternal,
+  SelectionChangeHandler,
   TableSelectionModel,
 } from "@vuu-ui/vuu-table-types";
 import {
@@ -21,9 +21,30 @@ import {
 import { getRowElementByAriaIndex } from "./table-dom-utils";
 import { TableProps } from "./Table";
 
-const { KEY, SELECTED } = metadataKeys;
+const { IDX, KEY, SELECTED } = metadataKeys;
+
+const orderedRowKeys = (
+  activeRowIdentifier: RowIdentifier | undefined,
+  newRowIdentifier: RowIdentifier,
+  rangeSelect = false,
+): [string, string] | [string] => {
+  if (rangeSelect && activeRowIdentifier) {
+    if (newRowIdentifier.rowIdx > activeRowIdentifier.rowIdx) {
+      return [activeRowIdentifier.rowKey, newRowIdentifier.rowKey];
+    } else {
+      return [newRowIdentifier.rowKey, activeRowIdentifier.rowKey];
+    }
+  } else {
+    return [newRowIdentifier.rowKey];
+  }
+};
 
 const defaultSelectionKeys = ["Enter", " "];
+
+type RowIdentifier = {
+  rowIdx: number;
+  rowKey: string;
+};
 
 export interface SelectionHookProps
   extends Pick<TableProps, "defaultSelectedIndexValues" | "onSelectionChange"> {
@@ -31,7 +52,7 @@ export interface SelectionHookProps
   highlightedIndexRef: RefObject<number | undefined>;
   selectionKeys?: string[];
   selectionModel: TableSelectionModel;
-  onSelectionChange: TableRowSelectionChangeHandlerInternal;
+  onSelectionChange: SelectionChangeHandler;
   onSelect?: TableRowSelectHandlerInternal;
 }
 
@@ -44,7 +65,7 @@ export const useSelection = ({
   onSelectionChange,
 }: SelectionHookProps) => {
   selectionModel === "extended" || selectionModel === "checkbox";
-  const lastActiveRef = useRef<string | undefined>(undefined);
+  const lastActiveRef = useRef<RowIdentifier | undefined>(undefined);
 
   const isSelectionEvent = useCallback(
     (evt: KeyboardEvent<HTMLElement>) => selectionKeys.includes(evt.key),
@@ -53,8 +74,9 @@ export const useSelection = ({
 
   const handleRowClick = useCallback<TableRowClickHandlerInternal>(
     (e, row, rangeSelect, keepExistingSelection) => {
-      const { [KEY]: rowKey } = row;
+      const { [IDX]: rowIdx, [KEY]: rowKey } = row;
       const { current: activeRowKey } = lastActiveRef;
+      const newRowIdentifier = { rowIdx, rowKey } as RowIdentifier;
 
       const selectOperation = row[SELECTED] ? deselectItem : selectItem;
 
@@ -65,17 +87,21 @@ export const useSelection = ({
         }
       }
 
-      const rangeRowKey = rangeSelect ? activeRowKey : undefined;
+      const [fromRowKey, toRowKey] = orderedRowKeys(
+        activeRowKey,
+        newRowIdentifier,
+        rangeSelect,
+      );
 
       const selectRequest = selectOperation(
         selectionModel,
-        rowKey,
+        fromRowKey,
         rangeSelect,
         keepExistingSelection,
-        rangeRowKey,
+        toRowKey,
       );
 
-      lastActiveRef.current = rowKey;
+      lastActiveRef.current = newRowIdentifier;
 
       if (selectRequest) {
         onSelect?.(selectOperation === selectItem ? row : null);

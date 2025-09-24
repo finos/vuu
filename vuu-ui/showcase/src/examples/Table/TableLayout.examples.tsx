@@ -4,15 +4,14 @@ import {
   SimulTableName,
   getSchema,
 } from "@vuu-ui/vuu-data-test";
-import {
-  DataSource,
-  Selection,
-  SelectionChangeHandler,
-  TableSchema,
-} from "@vuu-ui/vuu-data-types";
+import { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
 import { DockLayout, Drawer } from "@vuu-ui/vuu-layout";
 import { Table, TableProps, useHeaderProps } from "@vuu-ui/vuu-table";
-import { BaseRowProps, TableConfig } from "@vuu-ui/vuu-table-types";
+import {
+  BaseRowProps,
+  SelectionChangeHandler,
+  TableConfig,
+} from "@vuu-ui/vuu-table-types";
 import { ListBox, Option } from "@salt-ds/core";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
@@ -128,9 +127,12 @@ const InlineDrawer = ({
     [VuuDataSource, schema],
   );
 
-  const handleSelectionChange: SelectionChangeHandler = useCallback(
-    (selection: Selection) => {
-      if (selection.length > 0) {
+  const handleSelectionChange = useCallback<SelectionChangeHandler>(
+    (selectionChange) => {
+      if (
+        selectionChange.type === "SELECT_ROW" ||
+        selectionChange.type === "SELECT_ROW_RANGE"
+      ) {
         setOpen(true);
         dataSource
           .menuRpcCall({

@@ -6,7 +6,6 @@ import type {
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
   DataSourceVisualLinkCreatedMessage,
-  SelectionItem,
 } from "@vuu-ui/vuu-data-types";
 import type {
   LinkDescriptorWithLabel,
@@ -151,25 +150,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
   }
 
   private getSelectedRowIds() {
-    return this.selectedRows.reduce<string[]>(
-      (rowIds: string[], selection: SelectionItem) => {
-        if (Array.isArray(selection)) {
-          for (let i = selection[0]; i <= selection[1]; i++) {
-            const row = this.data[i];
-            if (row) {
-              rowIds.push(row[KEY]);
-            }
-          }
-        } else {
-          const row = this.data[selection];
-          if (row) {
-            rowIds.push(row[KEY]);
-          }
-        }
-        return rowIds;
-      },
-      [],
-    );
+    return Array.from(this.selectedRows);
   }
 
   async applyEdit(

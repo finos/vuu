@@ -164,7 +164,7 @@ class MockServerImpl implements ServerAPI {
       case "DISABLE_VP_SUCCESS":
       case "ENABLE_VP_SUCCESS":
       case "REMOVE_VP_SUCCESS":
-      case "SET_SELECTION_SUCCESS":
+      case "SELECT_ROW_SUCCESS":
         // ignore
         break;
       default:

@@ -40,8 +40,6 @@ import {
   itemsOrOrderChanged,
   logger,
   Range,
-  selectionCount,
-  SelectRequest,
   throttle,
   uuid,
   vuuEditCellRequest,
@@ -116,7 +114,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     }
 
     this.#status = "subscribing";
-    this.#selectedRowsCount = selectionCount(selectedIndexValues);
+    // this.#selectedRowsCount = selectionCount(selectedIndexValues);
 
     this.server = await ConnectionManager.serverAPI;
 

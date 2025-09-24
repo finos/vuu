@@ -19,7 +19,6 @@ import {
   DataSourceStatus,
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
-  SelectionChangeHandler,
   ServerAPI,
   TableSchema,
   WithBaseFilter,
@@ -124,7 +123,7 @@ class MockDataSourceImpl extends BaseDataSource implements DataSource {
     console.log(`remoteProcedureCall ${JSON.stringify(message)}`);
     return {} as T;
   };
-  select: SelectionChangeHandler = () => {
+  select = () => {
     console.log("select");
   };
 

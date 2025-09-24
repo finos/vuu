@@ -311,7 +311,7 @@ export interface DeselectRowReject {
 }
 
 export interface SelectRowRangeRequest {
-  preserveExistingSeletion: boolean;
+  preserveExistingSelection: boolean;
   fromRowKey: string;
   toRowKey: string;
   type: "SELECT_ROW_RANGE";

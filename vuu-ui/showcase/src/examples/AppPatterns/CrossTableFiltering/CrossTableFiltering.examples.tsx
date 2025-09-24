@@ -3,7 +3,7 @@ import {
   getSchema,
   TickingArrayDataSource,
 } from "@vuu-ui/vuu-data-test";
-import { SelectionChangeHandler, TableSchema } from "@vuu-ui/vuu-data-types";
+import { TableSchema } from "@vuu-ui/vuu-data-types";
 import {
   Flexbox,
   FlexboxLayout,
@@ -13,6 +13,7 @@ import {
 } from "@vuu-ui/vuu-layout";
 import { Table, TableProps } from "@vuu-ui/vuu-table";
 import {
+  SelectionChangeHandler,
   TableConfig,
   TableRowClickHandler,
   TableRowSelectHandler,
@@ -209,8 +210,8 @@ export const SimpleCrossTableFiltering = () => {
   }, []);
 
   const handleParentRowSelectionChange = useCallback<SelectionChangeHandler>(
-    (selection) => {
-      console.log({ selection });
+    (selectionChange) => {
+      console.log({ selectionChange });
     },
     [],
   );

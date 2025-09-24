@@ -525,11 +525,6 @@ export interface TypeaheadSuggestionProvider {
   ) => Promise<string[]>;
 }
 
-export declare type RangeTuple = [from: number, to: number];
-export declare type SelectionItem = number | RangeTuple;
-export declare type Selection = SelectionItem[];
-export declare type SelectionChangeHandler = (selection: Selection) => void;
-
 export declare type WithBaseFilter<T> = T & {
   baseFilterSpec?: DataSourceFilter;
 };

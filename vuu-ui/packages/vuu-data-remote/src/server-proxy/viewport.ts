@@ -12,7 +12,6 @@ import {
   DataSourceVisualLinkRemovedMessage,
   DataSourceVisualLinksMessage,
   DataUpdateMode,
-  Selection,
   TableSchema,
   WithFullConfig,
   ServerProxySubscribeMessage,

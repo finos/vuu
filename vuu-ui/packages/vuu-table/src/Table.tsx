@@ -1,12 +1,7 @@
 import { useForkRef } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import type {
-  DataSource,
-  SchemaColumn,
-  Selection,
-  SelectionChangeHandler,
-} from "@vuu-ui/vuu-data-types";
+import type { DataSource, SchemaColumn } from "@vuu-ui/vuu-data-types";
 import { TableProvider } from "@vuu-ui/vuu-table-extras";
 import {
   CustomHeader,
@@ -14,6 +9,7 @@ import {
   GroupToggleTarget,
   RowActionHandler,
   RowProps,
+  SelectionChangeHandler,
   ShowColumnHeaderMenus,
   TableConfig,
   TableConfigChangeHandler,

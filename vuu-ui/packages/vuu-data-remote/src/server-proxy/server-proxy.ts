@@ -274,11 +274,11 @@ export class ServerProxy {
           }
         }
 
-        if (message.selectedIndexValues) {
-          infoEnabled &&
-            info(`selected = ${JSON.stringify(message.selectedIndexValues)}`);
-          this.select(viewport, { selected: message.selectedIndexValues });
-        }
+        // if (message.selectedIndexValues) {
+        //   infoEnabled &&
+        //     info(`selected = ${JSON.stringify(message.selectedIndexValues)}`);
+        //   this.select(viewport, { selected: message.selectedIndexValues });
+        // }
 
         // In the case of a reconnect, we may have resubscribed a disabled viewport,
         // reset the disabled state on server

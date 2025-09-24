@@ -1,7 +1,11 @@
 import { getSchema } from "@vuu-ui/vuu-data-test";
-import { SelectionChangeHandler, TableSchema } from "@vuu-ui/vuu-data-types";
+import { TableSchema } from "@vuu-ui/vuu-data-types";
 import { Table, TableProps } from "@vuu-ui/vuu-table";
-import { ColumnLayout, TableConfig } from "@vuu-ui/vuu-table-types";
+import {
+  ColumnLayout,
+  SelectionChangeHandler,
+  TableConfig,
+} from "@vuu-ui/vuu-table-types";
 import { toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
 
@@ -121,8 +125,8 @@ export const CellBlockRowSelection = () => {
 
 /** tags=data-consumer */
 export const PreSelectedRowByIndex = () => {
-  const handleSelectionChange: SelectionChangeHandler = (selection) => {
-    console.log(`selection changed ${JSON.stringify(selection)}`);
+  const handleSelectionChange: SelectionChangeHandler = (selectionChange) => {
+    console.log(`selection changed ${JSON.stringify(selectionChange)}`);
   };
   return (
     <DataTableTemplate

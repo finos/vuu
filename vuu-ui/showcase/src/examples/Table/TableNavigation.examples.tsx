@@ -1,9 +1,13 @@
-import { SelectionChangeHandler, TableSchema } from "@vuu-ui/vuu-data-types";
+import { TableSchema } from "@vuu-ui/vuu-data-types";
 import { Table, TableProps } from "@vuu-ui/vuu-table";
 import { useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { useAutoLoginToVuuServer } from "../utils";
-import { TableConfig, TableRowSelectHandler } from "@vuu-ui/vuu-table-types";
+import {
+  SelectionChangeHandler,
+  TableConfig,
+  TableRowSelectHandler,
+} from "@vuu-ui/vuu-table-types";
 import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
 
 const TableTemplate = ({
@@ -35,9 +39,12 @@ const TableTemplate = ({
   const onSelect = useCallback<TableRowSelectHandler>((row) => {
     console.log("onSelect", { row });
   }, []);
-  const onSelectionChange = useCallback<SelectionChangeHandler>((selected) => {
-    console.log("onSelectionChange", { selected });
-  }, []);
+  const onSelectionChange = useCallback<SelectionChangeHandler>(
+    (selectionChange) => {
+      console.log("onSelectionChange", { selectionChange });
+    },
+    [],
+  );
 
   return (
     <Table

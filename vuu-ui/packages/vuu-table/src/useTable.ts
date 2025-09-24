@@ -3,7 +3,6 @@ import {
   DataSourceConfigChangeHandler,
   DataSourceRow,
   DataSourceSubscribedMessage,
-  SelectionChangeHandler,
 } from "@vuu-ui/vuu-data-types";
 import { VuuRowDataItemType, VuuSortType } from "@vuu-ui/vuu-protocol-types";
 import {
@@ -19,11 +18,11 @@ import {
   ColumnMoveHandler,
   DataCellEditEvent,
   RuntimeColumnDescriptor,
+  SelectionChangeHandler,
   TableColumnResizeHandler,
   TableConfig,
   TableRowClickHandlerInternal,
   TableRowSelectHandlerInternal,
-  TableRowSelectionChangeHandlerInternal,
   TableSelectionModel,
 } from "@vuu-ui/vuu-table-types";
 import {
@@ -702,10 +701,10 @@ export const useTable = ({
   );
 
   const handleSelectionChange: SelectionChangeHandler =
-    useCallback<TableRowSelectionChangeHandlerInternal>(
+    useCallback<SelectionChangeHandler>(
       (selectRequest) => {
         dataSource.select?.(selectRequest);
-        // onSelectionChange?.(selected);
+        onSelectionChange?.(selectRequest);
       },
       [dataSource, onSelectionChange],
     );
