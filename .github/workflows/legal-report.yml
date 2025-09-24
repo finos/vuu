@@ -44,7 +44,7 @@ jobs:
         
         ALLOWED_LICENCES=(
           "Apache 2.0 License"
-          "Apache Licence 2.0"
+          "Apache License 2.0"
           "Apache-2.0"
           "BSD"
           "Eclipse Public License - v 1.0"
@@ -58,11 +58,9 @@ jobs:
         readarray -t LICENSES < <(cat target/generated-resources/licenses.xml | xq -x '//name' | sort -u)
                 
         # Check for ones that arent allowed        
-        for license1 in "${LICENSES[@]}"; do
-          echo "Checking '$license1'"
+        for license1 in "${LICENSES[@]}"; do          
           found=false
-          for license2 in "${ALLOWED_LICENCES[@]}"; do
-            echo "Comparing against '$license2''"
+          for license2 in "${ALLOWED_LICENCES[@]}"; do            
             if [[ "$license1" == "$license2" ]]; then
               found=true
               break
