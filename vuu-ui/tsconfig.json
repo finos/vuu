@@ -15,7 +15,14 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "jsx": "react-jsx",
-    "sourceMap": true
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@vuu-ui/vuu-ui-controls": ["./packages/vuu-ui-controls/src"],
+      "@vuu-ui/vuu-utils": ["./packages/vuu-utils/src"],
+      "@vuu-ui/vuu-popups": ["./packages/vuu-popups/src"],
+      "@vuu-ui/vuu-context-menu": ["./packages/vuu-context-menu/src"]
+    }
   },
   "include": [
     "cypress",
