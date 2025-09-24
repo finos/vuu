@@ -239,7 +239,7 @@ object UpdateType {
 @JsonDeserialize(using = classOf[RowUpdateDeserializer])
 case class RowUpdate(vpVersion: String, viewPortId: String, vpSize: Int, rowIndex: Int, rowKey: String, updateType: String, ts: Long, selected: Int, data: Array[Any])
 
-/** *
+/***
  * New api for websocket messages - work in progress
  */
 
