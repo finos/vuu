@@ -43,7 +43,7 @@ jobs:
           "Apache License, Version 2.0"
         )
         cat target/generated-resources/licenses.xml
-        LICENSES=$(xq '.licenseSummary.dependencies.dependency[].licenses.licence[].name' target/generated-resources/licenses.xml | sort | uniq)
+        LICENSES=$(xq '//dependency[licenses.licence/name' target/generated-resources/licenses.xml | sort | uniq)
         echo "LICENSES: $LICENSES"
         for license in $LICENSES; do
           if [[ ! " ${ALLOWED_LICENSES[@]} " =~ " ${license} " ]]; then
