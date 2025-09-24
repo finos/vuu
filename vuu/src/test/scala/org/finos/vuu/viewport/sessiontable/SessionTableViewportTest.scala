@@ -51,7 +51,7 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
 
         val sessionTable = tableContainer.createSimpleSessionTable(baseTable, sessionId)
 
-        val rows = selection.rowKeyIndex.keys.map(selection.viewPort.table.pullRow(_)).toList
+        val rows = selection.selectionKeys.map(selection.viewPort.table.pullRow(_)).toList
 
         rows.foreach(row => {
 

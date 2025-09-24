@@ -24,17 +24,13 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
     (0, "NYC-0003", "chris", "VOD.L", 103),
     (0, "NYC-0004", "chris", "VOD.L", 104),
     (0, "NYC-0005", "chris", "VOD.L", 105),
-    (0, "NYC-0006", "chris", "VOD.L", 106),
-    (0, "NYC-0007", "chris", "VOD.L", 107),
-    (0, "NYC-0008", "chris", "VOD.L", 108),
-    (0, "NYC-0009", "chris", "VOD.L", 109)
   )
 
   Feature("Check our maintenance of selection on the server side") {
     Scenario("Select a row and preserve existing selection") {
-      Given("A view port of 10 orders is created")
+      Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 10)(clock)
+      createNOrderRows(ordersProvider, 6)(clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), vpcolumns)
@@ -50,7 +46,12 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       assertVpEqWithMeta(combineQs(viewPort)) {
         Table(
           ("sel", "orderId", "trader", "ric", "quantity"),
+          (0, "NYC-0000", "chris", "VOD.L", 100),
           (1, "NYC-0001", "chris", "VOD.L", 101),
+          (0, "NYC-0002", "chris", "VOD.L", 102),
+          (0, "NYC-0003", "chris", "VOD.L", 103),
+          (0, "NYC-0004", "chris", "VOD.L", 104),
+          (0, "NYC-0005", "chris", "VOD.L", 105),
         )
       }
       Then("Validate row is selected in view port")
@@ -66,8 +67,13 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       assertVpEqWithMeta(combineQs(viewPort)) {
         Table(
           ("sel", "orderId", "trader", "ric", "quantity"),
+          ("sel", "orderId", "trader", "ric", "quantity"),
+          (0, "NYC-0000", "chris", "VOD.L", 100),
           (1, "NYC-0001", "chris", "VOD.L", 101),
           (1, "NYC-0002", "chris", "VOD.L", 102),
+          (0, "NYC-0003", "chris", "VOD.L", 103),
+          (0, "NYC-0004", "chris", "VOD.L", 104),
+          (0, "NYC-0005", "chris", "VOD.L", 105),
         )
       }
       Then("Validate rows are selected in view port")
@@ -78,7 +84,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
     }
 
     Scenario("Select a row without preserving existing selection") {
-      Given("A view port of 10 orders is created")
+      Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
       createNOrderRows(ordersProvider, 10)(clock)
 
@@ -96,7 +102,16 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       assertVpEqWithMeta(combineQs(viewPort)) {
         Table(
           ("sel", "orderId", "trader", "ric", "quantity"),
+          (0, "NYC-0000", "chris", "VOD.L", 100),
           (1, "NYC-0001", "chris", "VOD.L", 101),
+          (0, "NYC-0002", "chris", "VOD.L", 102),
+          (0, "NYC-0003", "chris", "VOD.L", 103),
+          (0, "NYC-0004", "chris", "VOD.L", 104),
+          (0, "NYC-0005", "chris", "VOD.L", 105),
+          (0, "NYC-0006", "chris", "VOD.L", 106),
+          (0, "NYC-0007", "chris", "VOD.L", 107),
+          (0, "NYC-0008", "chris", "VOD.L", 108),
+          (0, "NYC-0009", "chris", "VOD.L", 109)
         )
       }
       Then("Validate row is selected in view port")
@@ -112,8 +127,16 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       assertVpEqWithMeta(combineQs(viewPort)) {
         Table(
           ("sel", "orderId", "trader", "ric", "quantity"),
+          (0, "NYC-0000", "chris", "VOD.L", 100),
           (1, "NYC-0001", "chris", "VOD.L", 101),
           (1, "NYC-0002", "chris", "VOD.L", 102),
+          (0, "NYC-0003", "chris", "VOD.L", 103),
+          (0, "NYC-0004", "chris", "VOD.L", 104),
+          (0, "NYC-0005", "chris", "VOD.L", 105),
+          (0, "NYC-0006", "chris", "VOD.L", 106),
+          (0, "NYC-0007", "chris", "VOD.L", 107),
+          (0, "NYC-0008", "chris", "VOD.L", 108),
+          (0, "NYC-0009", "chris", "VOD.L", 109)
         )
       }
       Then("Validate rows are selected in view port")
@@ -130,9 +153,17 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       assertVpEqWithMeta(combineQs(viewPort)) {
         Table(
           ("sel", "orderId", "trader", "ric", "quantity"),
+          ("sel", "orderId", "trader", "ric", "quantity"),
+          (0, "NYC-0000", "chris", "VOD.L", 100),
           (0, "NYC-0001", "chris", "VOD.L", 101),
           (0, "NYC-0002", "chris", "VOD.L", 102),
           (1, "NYC-0003", "chris", "VOD.L", 103),
+          (0, "NYC-0004", "chris", "VOD.L", 104),
+          (0, "NYC-0005", "chris", "VOD.L", 105),
+          (0, "NYC-0006", "chris", "VOD.L", 106),
+          (0, "NYC-0007", "chris", "VOD.L", 107),
+          (0, "NYC-0008", "chris", "VOD.L", 108),
+          (0, "NYC-0009", "chris", "VOD.L", 109)
         )
       }
       Then("Validate rows are selected in view port")
@@ -142,7 +173,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
     }
 
     Scenario("Deselect a row and preserve existing selection") {
-      Given("A view port of 10 orders is created")
+      Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
       createNOrderRows(ordersProvider, 10)(clock)
 
@@ -159,9 +190,16 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       assertVpEqWithMeta(combineQs(viewPort)) {
         Table(
           ("sel", "orderId", "trader", "ric", "quantity"),
+          (0, "NYC-0000", "chris", "VOD.L", 100),
           (1, "NYC-0001", "chris", "VOD.L", 101),
           (1, "NYC-0002", "chris", "VOD.L", 102),
           (1, "NYC-0003", "chris", "VOD.L", 103),
+          (0, "NYC-0004", "chris", "VOD.L", 104),
+          (0, "NYC-0005", "chris", "VOD.L", 105),
+          (0, "NYC-0006", "chris", "VOD.L", 106),
+          (0, "NYC-0007", "chris", "VOD.L", 107),
+          (0, "NYC-0008", "chris", "VOD.L", 108),
+          (0, "NYC-0009", "chris", "VOD.L", 109)
         )
       }
       Then("Validate row is selected in view port")
@@ -176,9 +214,16 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       assertVpEqWithMeta(combineQs(viewPort)) {
         Table(
           ("sel", "orderId", "trader", "ric", "quantity"),
+          (0, "NYC-0000", "chris", "VOD.L", 100),
           (1, "NYC-0001", "chris", "VOD.L", 101),
           (0, "NYC-0002", "chris", "VOD.L", 102),
           (1, "NYC-0003", "chris", "VOD.L", 103),
+          (0, "NYC-0004", "chris", "VOD.L", 104),
+          (0, "NYC-0005", "chris", "VOD.L", 105),
+          (0, "NYC-0006", "chris", "VOD.L", 106),
+          (0, "NYC-0007", "chris", "VOD.L", 107),
+          (0, "NYC-0008", "chris", "VOD.L", 108),
+          (0, "NYC-0009", "chris", "VOD.L", 109)
         )
       }
       Then("Validate remaining rows are still selected in view port")
@@ -189,7 +234,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
     }
 
     Scenario("Deselect a row without preserving existing selection") {
-      Given("A view port of 10 orders is created")
+      Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
       createNOrderRows(ordersProvider, 10)(clock)
 
@@ -206,9 +251,16 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       assertVpEqWithMeta(combineQs(viewPort)) {
         Table(
           ("sel", "orderId", "trader", "ric", "quantity"),
+          (0, "NYC-0000", "chris", "VOD.L", 100),
           (1, "NYC-0001", "chris", "VOD.L", 101),
           (1, "NYC-0002", "chris", "VOD.L", 102),
           (1, "NYC-0003", "chris", "VOD.L", 103),
+          (0, "NYC-0004", "chris", "VOD.L", 104),
+          (0, "NYC-0005", "chris", "VOD.L", 105),
+          (0, "NYC-0006", "chris", "VOD.L", 106),
+          (0, "NYC-0007", "chris", "VOD.L", 107),
+          (0, "NYC-0008", "chris", "VOD.L", 108),
+          (0, "NYC-0009", "chris", "VOD.L", 109)
         )
       }
       Then("Validate row is selected in view port")
@@ -221,12 +273,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
 
       Then("Check selection is updated")
       assertVpEqWithMeta(combineQs(viewPort)) {
-        Table(
-          ("sel", "orderId", "trader", "ric", "quantity"),
-          (0, "NYC-0001", "chris", "VOD.L", 101),
-          (0, "NYC-0002", "chris", "VOD.L", 102),
-          (0, "NYC-0003", "chris", "VOD.L", 103),
-        )
+        defaultViewPortUpdate
       }
       Then("Validate all rows are deselected")
       selectedRows = vp.getSelection
@@ -234,9 +281,9 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
     }
 
     Scenario("Change row index after rows are selected") {
-      Given("A view port of 10 orders is created")
+      Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 10)(clock)
+      createNOrderRows(ordersProvider, 6)(clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), vpcolumns, sort = SortSpec(List(SortDef("quantity", 'A'))))
@@ -274,18 +321,14 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
           (0, "NYC-0003", "chris", "VOD.L", 103),
           (0, "NYC-0004", "chris", "VOD.L", 104),
           (0, "NYC-0005", "chris", "VOD.L", 105),
-          (0, "NYC-0006", "chris", "VOD.L", 106),
-          (0, "NYC-0007", "chris", "VOD.L", 107),
-          (0, "NYC-0008", "chris", "VOD.L", 108),
-          (0, "NYC-0009", "chris", "VOD.L", 109),
         )
       }
     }
 
     Scenario("Select a row that doesn't exist") {
-      Given("A view port of 10 orders is created")
+      Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 10)(clock)
+      createNOrderRows(ordersProvider, 6)(clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), vpcolumns)
@@ -301,9 +344,9 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
     }
 
     Scenario("Select a range of rows and preserve existing selection") {
-      Given("A view port of 10 orders is created")
+      Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 10)(clock)
+      createNOrderRows(ordersProvider, 6)(clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), vpcolumns, sort = SortSpec(List(SortDef("quantity", 'A'))))
@@ -312,14 +355,19 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       assertVpEqWithMeta(combineQs(viewPort))(defaultViewPortUpdate)
 
       And("Select a row")
-      val rowToSelect1 = "NYC-0009"
+      val rowToSelect1 = "NYC-0005"
       var vp = viewPortContainer.selectRow(viewPort.id, rowToSelect1, preserveExistingSelection = true)
 
       Then("Check selection is updated")
       assertVpEqWithMeta(combineQs(viewPort)) {
         Table(
           ("sel", "orderId", "trader", "ric", "quantity"),
-          (1, "NYC-0009", "chris", "VOD.L", 109),
+          (0, "NYC-0000", "chris", "VOD.L", 100),
+          (0, "NYC-0001", "chris", "VOD.L", 101),
+          (0, "NYC-0002", "chris", "VOD.L", 102),
+          (0, "NYC-0003", "chris", "VOD.L", 103),
+          (0, "NYC-0004", "chris", "VOD.L", 104),
+          (1, "NYC-0005", "chris", "VOD.L", 105),
         )
       }
       Then("Validate row is selected in view port")
@@ -336,10 +384,12 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       assertVpEqWithMeta(combineQs(viewPort)) {
         Table(
           ("sel", "orderId", "trader", "ric", "quantity"),
+          (0, "NYC-0000", "chris", "VOD.L", 100),
           (1, "NYC-0001", "chris", "VOD.L", 101),
           (1, "NYC-0002", "chris", "VOD.L", 102),
           (1, "NYC-0003", "chris", "VOD.L", 103),
-          (1, "NYC-0009", "chris", "VOD.L", 109),
+          (0, "NYC-0004", "chris", "VOD.L", 104),
+          (1, "NYC-0005", "chris", "VOD.L", 105),
         )
       }
       Then("Validate row is selected in view port")
@@ -348,13 +398,13 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       selectedRows.contains("NYC-0001") shouldBe true
       selectedRows.contains("NYC-0002") shouldBe true
       selectedRows.contains("NYC-0003") shouldBe true
-      selectedRows.contains("NYC-0009") shouldBe true
+      selectedRows.contains("NYC-0005") shouldBe true
     }
 
     Scenario("Select a range of rows without preserving existing selection") {
-      Given("A view port of 10 orders is created")
+      Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 10)(clock)
+      createNOrderRows(ordersProvider, 6)(clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), vpcolumns, sort = SortSpec(List(SortDef("quantity", 'A'))))
@@ -363,14 +413,19 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       assertVpEqWithMeta(combineQs(viewPort))(defaultViewPortUpdate)
 
       And("Select a row")
-      val rowToSelect1 = "NYC-0009"
+      val rowToSelect1 = "NYC-0005"
       var vp = viewPortContainer.selectRow(viewPort.id, rowToSelect1, preserveExistingSelection = true)
 
       Then("Check selection is updated")
       assertVpEqWithMeta(combineQs(viewPort)) {
         Table(
           ("sel", "orderId", "trader", "ric", "quantity"),
-          (1, "NYC-0009", "chris", "VOD.L", 109),
+          (0, "NYC-0000", "chris", "VOD.L", 100),
+          (0, "NYC-0001", "chris", "VOD.L", 101),
+          (0, "NYC-0002", "chris", "VOD.L", 102),
+          (0, "NYC-0003", "chris", "VOD.L", 103),
+          (0, "NYC-0004", "chris", "VOD.L", 104),
+          (1, "NYC-0005", "chris", "VOD.L", 105),
         )
       }
       Then("Validate row is selected in view port")
@@ -387,10 +442,12 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       assertVpEqWithMeta(combineQs(viewPort)) {
         Table(
           ("sel", "orderId", "trader", "ric", "quantity"),
+          (0, "NYC-0000", "chris", "VOD.L", 100),
           (1, "NYC-0001", "chris", "VOD.L", 101),
           (1, "NYC-0002", "chris", "VOD.L", 102),
           (1, "NYC-0003", "chris", "VOD.L", 103),
-          (0, "NYC-0009", "chris", "VOD.L", 109),
+          (0, "NYC-0004", "chris", "VOD.L", 104),
+          (0, "NYC-0005", "chris", "VOD.L", 105),
         )
       }
       Then("Validate row is selected in view port")
@@ -402,9 +459,9 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
     }
 
     Scenario("Select a range of rows with reverse order") {
-      Given("A view port of 10 orders is created")
+      Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 10)(clock)
+      createNOrderRows(ordersProvider, 6)(clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), vpcolumns, sort = SortSpec(List(SortDef("quantity", 'A'))))
@@ -413,31 +470,34 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       assertVpEqWithMeta(combineQs(viewPort))(defaultViewPortUpdate)
 
       And("Select a range of rows from bottom to top")
-      val fromKey = "NYC-0009"
-      val toKey = "NYC-0007"
-      var vp = viewPortContainer.selectRowRange(viewPort.id, fromKey, toKey, preserveExistingSelection = true)
+      val fromKey = "NYC-0005"
+      val toKey = "NYC-0003"
+      val vp = viewPortContainer.selectRowRange(viewPort.id, fromKey, toKey, preserveExistingSelection = true)
 
       Then("Check selection is updated")
       assertVpEqWithMeta(combineQs(viewPort)) {
         Table(
           ("sel", "orderId", "trader", "ric", "quantity"),
-          (1, "NYC-0007", "chris", "VOD.L", 107),
-          (1, "NYC-0008", "chris", "VOD.L", 108),
-          (1, "NYC-0009", "chris", "VOD.L", 109),
+          (0, "NYC-0000", "chris", "VOD.L", 100),
+          (0, "NYC-0001", "chris", "VOD.L", 101),
+          (0, "NYC-0002", "chris", "VOD.L", 102),
+          (1, "NYC-0003", "chris", "VOD.L", 103),
+          (1, "NYC-0004", "chris", "VOD.L", 104),
+          (1, "NYC-0005", "chris", "VOD.L", 105),
         )
       }
       Then("Validate row is selected in view port")
-      var selectedRows = vp.getSelection
+      val selectedRows = vp.getSelection
       selectedRows.size shouldBe 3
-      selectedRows.contains("NYC-0009") shouldBe true
-      selectedRows.contains("NYC-0008") shouldBe true
-      selectedRows.contains("NYC-0007") shouldBe true
+      selectedRows.contains("NYC-0005") shouldBe true
+      selectedRows.contains("NYC-0004") shouldBe true
+      selectedRows.contains("NYC-0003") shouldBe true
     }
 
     Scenario("Change row index after a range of rows are selected") {
-      Given("A view port of 10 orders is created")
+      Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 10)(clock)
+      createNOrderRows(ordersProvider, 6)(clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), vpcolumns, sort = SortSpec(List(SortDef("quantity", 'A'))))
@@ -454,9 +514,12 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       assertVpEqWithMeta(combineQs(viewPort)) {
         Table(
           ("sel", "orderId", "trader", "ric", "quantity"),
+          (0, "NYC-0000", "chris", "VOD.L", 100),
           (1, "NYC-0001", "chris", "VOD.L", 101),
           (1, "NYC-0002", "chris", "VOD.L", 102),
           (1, "NYC-0003", "chris", "VOD.L", 103),
+          (0, "NYC-0004", "chris", "VOD.L", 104),
+          (0, "NYC-0005", "chris", "VOD.L", 105),
         )
       }
       Then("Validate row is selected in view port")
@@ -480,23 +543,16 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
           (1, "NYC-0003", "chris", "VOD.L", 103),
           (0, "NYC-0004", "chris", "VOD.L", 104),
           (0, "NYC-0005", "chris", "VOD.L", 105),
-          (0, "NYC-0006", "chris", "VOD.L", 106),
-          (0, "NYC-0007", "chris", "VOD.L", 107),
-          (0, "NYC-0008", "chris", "VOD.L", 108),
-          (0, "NYC-0009", "chris", "VOD.L", 109),
         )
       }
       selectedRows = viewPortChanged.getSelection
       selectedRows.size shouldBe 3
-      selectedRows("NYC-0001") shouldBe 1
-      selectedRows("NYC-0002") shouldBe 2
-      selectedRows("NYC-0003") shouldBe 3
     }
 
     Scenario("Select a range of rows that do not exist") {
-      Given("A view port of 10 orders is created")
+      Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 10)(clock)
+      createNOrderRows(ordersProvider, 6)(clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), vpcolumns)
@@ -517,9 +573,9 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
     }
 
     Scenario("Select all rows") {
-      Given("A view port of 10 orders is created")
+      Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 10)(clock)
+      createNOrderRows(ordersProvider, 6)(clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 3), vpcolumns, sort = SortSpec(List(SortDef("quantity", 'A'))))
@@ -548,23 +604,19 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       }
       Then("Validate all rows are selected in view port")
       val selectedRows = vp.getSelection
-      selectedRows.size shouldBe 10
+      selectedRows.size shouldBe 6
       selectedRows.contains("NYC-0000") shouldBe true
       selectedRows.contains("NYC-0001") shouldBe true
       selectedRows.contains("NYC-0002") shouldBe true
       selectedRows.contains("NYC-0003") shouldBe true
       selectedRows.contains("NYC-0004") shouldBe true
       selectedRows.contains("NYC-0005") shouldBe true
-      selectedRows.contains("NYC-0006") shouldBe true
-      selectedRows.contains("NYC-0007") shouldBe true
-      selectedRows.contains("NYC-0008") shouldBe true
-      selectedRows.contains("NYC-0009") shouldBe true
     }
 
     Scenario("Deselect all rows") {
-      Given("A view port of 10 orders is created")
+      Given("A view port of 6 orders is created")
       val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
-      createNOrderRows(ordersProvider, 10)(clock)
+      createNOrderRows(ordersProvider, 6)(clock)
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "quantity", "ric"))
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), vpcolumns, sort = SortSpec(List(SortDef("quantity", 'A'))))
@@ -585,14 +637,10 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
           (1, "NYC-0003", "chris", "VOD.L", 103),
           (1, "NYC-0004", "chris", "VOD.L", 104),
           (1, "NYC-0005", "chris", "VOD.L", 105),
-          (1, "NYC-0006", "chris", "VOD.L", 106),
-          (1, "NYC-0007", "chris", "VOD.L", 107),
-          (1, "NYC-0008", "chris", "VOD.L", 108),
-          (1, "NYC-0009", "chris", "VOD.L", 109),
         )
       }
       Then("Validate all rows are selected in view port")
-      vp.getSelection.size shouldBe 10
+      vp.getSelection.size shouldBe 6
 
       And("Deselect all rows")
       vp = viewPortContainer.deselectAll(viewPort.id)

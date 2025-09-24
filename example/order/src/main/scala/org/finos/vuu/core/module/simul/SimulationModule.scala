@@ -21,10 +21,9 @@ import org.finos.vuu.viewport._
 class InstrumentsService(val table: DataTable, val providerContainer: ProviderContainer)(implicit tableContainer: TableContainer) extends DefaultRpcHandler with StrictLogging {
 
   def addRowsFromInstruments(selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
-    val rics = selection.rowKeyIndex.map({ case (key, _) => key }).toList
     providerContainer.getProviderForTable("orderEntry") match {
       case Some(provider) =>
-        rics.foreach(ric => {
+        selection.selectionKeys.foreach(ric => {
           val uuid = RequestId.oneNew()
           provider.asInstanceOf[RpcProvider].tick(uuid, Map("clOrderId" -> uuid, "ric" -> ric, "quantity" -> 10_000, "orderType" -> "Limit"))
         })
@@ -103,7 +102,7 @@ class OrderEntryRpcHandlerImpl(val vpContainer: ViewPortContainer, val tableCont
   override def addRowsFromInstruments(sourceVpId: String)(ctx: RequestContext): List[String] = {
     vpContainer.get(ctx.session, sourceVpId) match {
       case Some(vp) =>
-        val rics = vp.getSelection.map({ case (key, rowIndex) => key }).toList
+        val rics = vp.getSelection.toList
         providerContainer.getProviderForTable("orderEntry") match {
           case Some(provider) =>
             rics.foreach(ric => {

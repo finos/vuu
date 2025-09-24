@@ -39,7 +39,7 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
   def createRpcHandler(mockProvider: MockProvider): RpcHandler = {
     new RpcHandler {
       def testSelect(selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
-        println("In testSelect" + selection.rowKeyIndex.mkString(","))
+        println("In testSelect" + selection.selectionKeys.mkString(","))
         NoAction()
       }
 

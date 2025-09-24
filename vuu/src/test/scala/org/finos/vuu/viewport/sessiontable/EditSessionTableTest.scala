@@ -31,7 +31,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
 
       val sessionTable = tableContainer.createSimpleSessionTable(baseTable, session)
 
-      val row = selection.rowKeyIndex.keys.map(selection.viewPort.table.pullRow(_)).toList.head
+      val row = selection.selectionKeys.map(selection.viewPort.table.pullRow(_)).toList.head
 
       val processId = row.get("id").toString
 

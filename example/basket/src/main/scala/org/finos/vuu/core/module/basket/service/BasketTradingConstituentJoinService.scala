@@ -192,8 +192,7 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
   }
 
   private def updateSelectedForRpc(selection: ViewPortSelection, updates: Map[String, Any]): RpcFunctionSuccess = {
-    val selectedKeys = selection.rowKeyIndex.map({ case (key, _) => key }).toList
-    val updateRows = selectedKeys.map(key => {
+    val updateRows = selection.selectionKeys.map(key => {
       //require source table primary key for join table updates
       val sourceTableKey = Map(ColumnName.InstanceIdRic -> key)
       RowWithData(key, sourceTableKey ++ updates)
@@ -209,8 +208,7 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
   }
 
   private def updateSelected(selection: ViewPortSelection, updates: Map[String, Any]): ViewPortAction = {
-    val selectedKeys = selection.rowKeyIndex.map({ case (key, _) => key }).toList
-    val updateRows = selectedKeys.map(key => {
+    val updateRows = selection.selectionKeys.map(key => {
       //require source table primary key for join table updates
       val sourceTableKey = Map(ColumnName.InstanceIdRic -> key)
       RowWithData(key, sourceTableKey ++ updates)

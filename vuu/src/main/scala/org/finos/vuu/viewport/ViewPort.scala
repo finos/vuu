@@ -26,7 +26,7 @@ case object SizeUpdateType extends ViewPortUpdateType
 
 object DefaultRange extends ViewPortRange(0, 123)
 
-case class ViewPortSelection(rowKeyIndex: Map[String, Int], viewPort: ViewPort)
+case class ViewPortSelection(selectionKeys: Set[String], viewPort: ViewPort)
 
 case class ViewPortVisualLink(childVp: ViewPort, parentVp: ViewPort, childColumn: Column, parentColumn: Column) {
   override def toString: String = "ViewPortVisualLink(" + childVp.id + "->" + parentVp.id + ", on " + childColumn.name + " = " + parentColumn.name + ")"
@@ -124,7 +124,7 @@ trait ViewPort {
 
   def getColumns: ViewPortColumns
 
-  def getSelection: Map[String, Int]
+  def getSelection: Set[String]
 
   def getRowKeyMappingSize_ForTest: Int
 
@@ -264,19 +264,12 @@ class ViewPortImpl(val id: String,
       if (!rowKeyToIndex.containsKey(rowKey)) {
         throw new Exception(s"Rowkey $rowKey not found in view port $id")
       }
-
-      val oldSelection = selection.map(kv => (kv._1, rowKeyToIndex.get(kv._1)))
-
-      val index = rowKeyToIndex.get(rowKey)
       if (preserveExistingSelection) {
-        selection = selection + (rowKey -> index)
+        selection = selection + rowKey
       } else {
-        selection = Map(rowKey -> index)
+        selection = Set(rowKey)
       }
-
-      for ((key, idx) <- selection ++ oldSelection) {
-        publishHighPriorityUpdate(key, idx)
-      }
+      sendUpdatesOnChange(range.get())
     }
   }
 
@@ -286,18 +279,13 @@ class ViewPortImpl(val id: String,
         throw new Exception(s"Rowkey $rowKey not found in existing selection of view port $id")
       }
 
-      val oldSelection = selection.map(kv => (kv._1, rowKeyToIndex.get(kv._1)))
-
       if (preserveExistingSelection) {
         selection = selection - rowKey
       } else {
         // When preserveExistingSelection is false, deselect a row means clearing all selected rows
-        selection = Map()
+        selection = Set()
       }
-
-      for ((key, idx) <- selection ++ oldSelection) {
-        publishHighPriorityUpdate(key, idx)
-      }
+      sendUpdatesOnChange(range.get())
     }
   }
 
@@ -310,47 +298,34 @@ class ViewPortImpl(val id: String,
         throw new Exception(s"Rowkey $toRowKey not found in view port $id")
       }
 
-      val oldSelection = selection.filter(kv => indexMap.contains(kv._1)).map(kv => (kv._1, indexMap.getOrElse(kv._1, -1)))
-
       val index1 = indexMap.getOrElse(fromRowKey, -1)
       val index2 = indexMap.getOrElse(toRowKey, -1)
       val fromIndex = if (index1 < index2) index1 else index2
       val toIndex = if (index1 > index2) index1 + 1 else index2 + 1
       if (preserveExistingSelection) {
-        selection = selection ++ keys.sliceToKeys(fromIndex, toIndex).map(k => (k, indexMap.getOrElse(k, -1))).toMap
+        selection = selection ++ keys.sliceToKeys(fromIndex, toIndex)
       } else {
-        selection = keys.sliceToKeys(fromIndex, toIndex).map(k => (k, indexMap.getOrElse(k, -1))).toMap
+        selection = keys.sliceToKeys(fromIndex, toIndex).map(k => k).toSet
       }
-
-      for ((key, idx) <- selection ++ oldSelection) {
-        publishHighPriorityUpdate(key, idx)
-      }
+      sendUpdatesOnChange(range.get())
     }
   }
 
   override def selectAll(): Unit = {
     viewPortLock.synchronized {
-      selection = keys.zipWithIndex.toMap
-      // send updates for rows in range
-      val keysToUpdate = keys.sliceToKeys(range.get().from, range.get().to).map(k => (k, rowKeyToIndex.get(k))).toMap
-      for ((key, idx) <- keysToUpdate) {
-        publishHighPriorityUpdate(key, idx)
-      }
+      selection = keys.map(k => k).toSet
+      sendUpdatesOnChange(range.get())
     }
   }
 
   override def deselectAll(): Unit = {
     viewPortLock.synchronized {
-      selection = Map()
-      // send updates for rows in range
-      val keysToUpdate = keys.sliceToKeys(range.get().from, range.get().to).map(k => (k, this.rowKeyToIndex.get(k))).toMap
-      for ((key, idx) <- keysToUpdate) {
-        publishHighPriorityUpdate(key, idx)
-      }
+      selection = Set()
+      sendUpdatesOnChange(range.get())
     }
   }
 
-  override def getSelection: Map[String, Int] = selection
+  override def getSelection: Set[String] = selection
 
   def setRange(newRange: ViewPortRange): Unit = {
     viewPortLock.synchronized {
@@ -421,7 +396,7 @@ class ViewPortImpl(val id: String,
   @volatile
   private var keys: ViewPortKeys = EmptyViewPortKeys
   @volatile
-  private var selection: Map[String, Int] = Map()
+  private var selection: Set[String] = Set[String]()
 
   private val subscribedKeys = new ConcurrentHashMap[String, String]()
   private val rowKeyToIndex = new ConcurrentHashMap[String, Int]()
