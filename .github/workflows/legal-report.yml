@@ -49,6 +49,7 @@ jobs:
           "Apache License, Version 2.0"
           "Apache-2.0"
           "BSD"
+          "BSD 3-Clause \"New\" or \"Revised\" License (BSD-3-Clause)"
           "Eclipse Public License - v 1.0"
           "GNU Lesser General Public License"
           "MIT License"
@@ -59,7 +60,9 @@ jobs:
         #Parse unique licenses in dependencies
         readarray -t LICENSES < <(cat target/generated-resources/licenses.xml | xq -x '//name' | sort -u)
                 
-        # Check for ones that arent allowed        
+        BANNED=()        
+                
+        # Collect the ones that arent allowed        
         for license1 in "${LICENSES[@]}"; do          
           found=false
           for license2 in "${ALLOWED_LICENCES[@]}"; do            
@@ -67,14 +70,19 @@ jobs:
               found=true
               break
             fi
-          done
-        
+          done        
           if [[ "$found" == false ]]; then
-            echo "Error: '$license1' is not allowed."
-            exit 1
-          fi
-        
+            BANNED+=("$license1")
+          fi        
         done
+        
+        if [ ${#BANNED[@]} -ne 0]; then
+          echo "Banned licenses found:"
+          for license in "${BANNED[@]}"; do
+             echo " - $license" 
+          done
+          exit -1
+        fi
 
       working-directory: ${{ matrix.package-folder }}
 
