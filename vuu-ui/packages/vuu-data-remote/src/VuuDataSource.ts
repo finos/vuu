@@ -1,11 +1,10 @@
-import {
+import type {
   DataSource,
   DataSourceCallbackMessage,
   DataSourceConstructorProps,
   DataSourceStatus,
   DataSourceVisualLinkCreatedMessage,
   OptimizeStrategy,
-  Selection,
   ServerAPI,
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
@@ -13,10 +12,11 @@ import {
   WithBaseFilter,
   WithFullConfig,
 } from "@vuu-ui/vuu-data-types";
-import {
+import type {
   LinkDescriptorWithLabel,
   RpcResultError,
   RpcResultSuccess,
+  SelectRequest,
   VuuCreateVisualLink,
   VuuGroupBy,
   VuuMenu,
@@ -41,6 +41,7 @@ import {
   logger,
   Range,
   selectionCount,
+  SelectRequest,
   throttle,
   uuid,
   vuuEditCellRequest,
@@ -300,15 +301,13 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     }
   }
 
-  select(selected: Selection) {
-    this.#selectedRowsCount = selectionCount(selected);
+  select(selectRequest: Omit<SelectRequest, "vpId">) {
     if (this.viewport) {
       this.server?.send({
-        viewport: this.viewport,
-        type: "select",
-        selected,
-      });
-      this.emit("row-selection", selected, this.#selectedRowsCount);
+        ...selectRequest,
+        vpId: this.viewport,
+      } as SelectRequest);
+      this.emit("row-selection");
     }
   }
 

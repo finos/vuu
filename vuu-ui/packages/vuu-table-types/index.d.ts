@@ -91,6 +91,10 @@ export declare type TableRowSelectHandlerInternal = (
   row: DataSourceRow | null,
 ) => void;
 
+export declare type TableRowSelectionChangeHandlerInternal = (
+  selectRequest: Omit<SelectRequest, "vpId">,
+) => void;
+
 /**
  * Fired when user clicks a row, returning the row object (DataSourceRowObject)
  */

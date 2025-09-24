@@ -2,7 +2,6 @@ import { DataSourceRow } from "@vuu-ui/vuu-data-types";
 import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import { metadataKeys } from "./column-utils";
 import { WindowRange } from "./range-utils";
-import { isRowSelectedLast } from "./selection-utils";
 
 const { SELECTED } = metadataKeys;
 
@@ -31,21 +30,6 @@ export class MovingWindow {
     if (this.isWithinRange(index)) {
       const internalIndex = index - this.#range.from;
       this.data[internalIndex] = data;
-
-      // Hack until we can deal with this more elegantly. When we have a block
-      // select operation, first row is selected (and updated via server), then
-      // remaining rows are selected when we select the block-end row. We get an
-      // update for all rows except first. Because we're extending the select status
-      // on the client, we have to adjust the first row selected (its still selected
-      // but is no longer the 'last selected row in block')
-      // Maybe answer is to apply ALL the selection status code here, not in Viewport
-      if (data[SELECTED]) {
-        const previousRow = this.data[internalIndex - 1];
-        if (isRowSelectedLast(previousRow)) {
-          this.data[internalIndex - 1] = previousRow.slice() as DataSourceRow;
-          this.data[internalIndex - 1][SELECTED] -= 4;
-        }
-      }
     }
   }
 

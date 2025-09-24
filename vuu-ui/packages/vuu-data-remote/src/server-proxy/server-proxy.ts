@@ -10,7 +10,6 @@ import type {
   VuuUIMessageOutConfig,
   VuuUIMessageOutConnect,
   VuuUIMessageOutOpenTreeNode,
-  VuuUIMessageOutSelect,
   VuuUIMessageOutSetTitle,
   VuuUIMessageOutSubscribe,
   VuuUIMessageOutUnsubscribe,
@@ -34,6 +33,7 @@ import type {
   VuuViewportRangeRequest,
   VuuRpcServiceRequest,
   VuuViewportCreateResponse,
+  SelectRequest,
 } from "@vuu-ui/vuu-protocol-types";
 import {
   isVuuMenuRpcRequest,
@@ -46,6 +46,7 @@ import {
   isVisualLinkMessage,
   isRpcServiceRequest,
   hasViewPortContext,
+  isSelectRequest,
 } from "@vuu-ui/vuu-utils";
 import {
   createSchemaFromTableMetadata,
@@ -497,13 +498,9 @@ export class ServerProxy {
     }
   }
 
-  private select(
-    viewport: Viewport,
-    message: Pick<VuuUIMessageOutSelect, "selected">,
-  ) {
+  private select(viewport: Viewport, message: SelectRequest) {
     const requestId = nextRequestId();
-    const { selected } = message;
-    const request = viewport.selectRequest(requestId, selected);
+    const request = viewport.selectRequest(message);
     this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
 
@@ -680,7 +677,8 @@ export class ServerProxy {
       | WithRequestId<VuuRpcServiceRequest>
       | WithRequestId<VuuRpcMenuRequest>
       | WithRequestId<VuuCreateVisualLink>
-      | WithRequestId<VuuRemoveVisualLink>,
+      | WithRequestId<VuuRemoveVisualLink>
+      | SelectRequest,
   ) {
     if (isViewportMessage(message) || isVisualLinkMessage(message)) {
       if (message.type === "disable") {
@@ -700,8 +698,6 @@ export class ServerProxy {
             return this.setViewRange(viewport, message);
           case "config":
             return this.setConfig(viewport, message);
-          case "select":
-            return this.select(viewport, message);
           case "suspend":
             return this.suspendViewport(viewport);
           case "resume":
@@ -721,6 +717,9 @@ export class ServerProxy {
           default:
         }
       }
+    } else if (isSelectRequest(message)) {
+      const viewport = this.getViewportForClient(message.vpId);
+      return this.select(viewport, message);
     } else if (isRpcServiceRequest(message)) {
       return this.rpcRequest(message);
     } else if (isVuuMenuRpcRequest(message as VuuRpcRequest)) {
@@ -872,13 +871,20 @@ export class ServerProxy {
         }
         break;
 
-      case Message.SET_SELECTION_SUCCESS:
-        {
-          const viewport = this.viewports.get(body.vpId);
-          if (viewport) {
-            viewport.completeOperation(requestId);
-          }
-        }
+      case "SELECT_ROW_SUCCESS":
+      case "DESELECT_ROW_SUCCESS":
+      case "SELECT_ROW_RANGE_SUCCESS":
+      case "SELECT_ALL_SUCCESS":
+      case "DESELECT_ALL_SUCCESS":
+        console.log(`select success ${body.type}`);
+        break;
+
+      case "SELECT_ROW_REJECT":
+      case "DESELECT_ROW_REJECT":
+      case "SELECT_ROW_RANGE_REJECT":
+      case "SELECT_ALL_REJECT":
+      case "DESELECT_ALL_REJECT":
+        console.warn(`select error ${body.type} ${body.errorMsg}`);
         break;
 
       case Message.CHANGE_VP_SUCCESS:

@@ -32,6 +32,7 @@ import type {
   VuuRpcEditResponse,
   VuuLoginSuccessResponse,
   VuuLoginFailResponse,
+  SelectRequest,
 } from "@vuu-ui/vuu-protocol-types";
 import type {
   DataSourceConfigChanges,
@@ -438,10 +439,7 @@ export declare type DataSourceSubscribeCallback = (
 export declare type OptimizeStrategy = "none" | "throttle" | "debounce";
 
 export declare type DataSourceEventHandler = (viewportId: string) => void;
-export declare type RowSelectionEventHandler = (
-  selection: Selection,
-  selectedRowCount: number,
-) => void;
+export declare type RowSelectionEventHandler = () => void;
 
 export type DataSourceConfigChangeHandler = (
   config: WithBaseFilter<WithFullConfig>,
@@ -579,6 +577,8 @@ export interface DataSource
    * see 'freeze' above. If frozen, the time at which freeze was applied.
    */
   freezeTimestamp?: number | undefined;
+  select?: (selectRequest: Omit<SelectRequest, "vpId">) => void;
+
   status: DataSourceStatus;
   /**
    *
@@ -651,7 +651,6 @@ export interface DataSource
   ) => Promise<RpcResultSuccess | RpcResultError>;
   openTreeNode: (keyOrIndex: string | number) => void;
   range: Range;
-  select: SelectionChangeHandler;
   readonly selectedRowsCount: number;
   sendBroadcastMessage?: (message: DataSourceBroadcastMessage) => void;
   readonly size: number;
@@ -916,9 +915,6 @@ export declare type VuuUIMessageOutViewport =
   | VuuUIMessageOutOpenTreeNode
   | VuuUIMessageOutRemoveLink
   | VuuUIMessageOutResume
-  | VuuUIMessageOutSelect
-  | VuuUIMessageOutSelectAll
-  | VuuUIMessageOutSelectNone
   | VuuUIMessageOutSetTitle
   | VuuUIMessageOutSuspend
   | VuuUIMessageOutViewRange;
@@ -931,7 +927,8 @@ export declare type VuuUIMessageOut =
   | VuuUIMessageOutSubscribe
   | VuuUIMessageOutUnsubscribe
   | VuuUIMessageOutViewport
-  | WithRequestId<VuuTableListRequest | VuuTableMetaRequest>;
+  | WithRequestId<VuuTableListRequest | VuuTableMetaRequest>
+  | SelectRequest;
 
 export type ConnectOptions = {
   url: string;

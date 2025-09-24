@@ -27,94 +27,9 @@
   background: var(--salt-selectable-background-hover);
 }
 
-.vuuTableRow-selected,
-.vuuTableRow-selectedEnd {
-  /* --row-borderColor: var(--salt-separable-secondary-borderColor); */
-  background-color: var(--salt-selectable-background-selected);
-}
 
-.vuuTableRow-selectedEnd {
-  z-index: 1;
-}
-
-.vuuTableRow-selectedStart {
-  --selection-decorator-marginTop: 1px;
-  --vuu-selection-decorator-left-radius: 5px 0 0 0;
-  --vuu-selection-decorator-right-radius: 0 5px 0 0;
-
-  border-radius: 5px 5px 0 0;
-}
-
-.vuuTableRow-selectedEnd {
-  --vuu-selection-decorator-left-radius: 0 0 0 5px;
-  --vuu-selection-decorator-right-radius: 0 0 5px 0;
-  border-radius: 0 0 5px 5px;
-}
-
-.vuuTableRow-selectedStart.vuuTableRow-selectedEnd {
-  --vuu-selection-decorator-left-radius: 5px 0 0 5px;
-  --vuu-selection-decorator-right-radius: 0 5px 5px 0;
-  border-radius: 5px 5px 5px 5px;
-}
-
-.vuuTableRow-selectedStart:after {
-  content: "";
-  position: absolute;
-  top: 0px;
-  left: 4px;
-  height: 1px;
-  background: var(--vuuTableRow-selectionBlock-borderColor);
-  width: calc(var(--content-width) - 8px);
-  z-index: 1;
-}
-
-.vuuTableRow-selectedEnd {
-  border-bottom-color: var(
-    --vuuTableRow-selectionBlock-borderColor,
-    var(--row-borderColor)
-  );
-}
-
-.vuuTableRow-selectedStart.vuuTableRow-selectedEnd {
-  .vuuTableRow-selectionDecorator {
-    height: calc(var(--row-height) - 1px);
-  }
-}
-
-.vuuTableRow-selectionDecorator {
-  background: var(--table-background);
-  display: inline-block;
-  position: relative;
-  height: var(--row-height);
-  margin-top: var(--selection-decorator-marginTop, 0px);
-  width: 4px;
-  z-index: 2;
-}
-
-.vuuTableRow-selectionDecorator.vuuStickyLeft {
-  left: 0;
-  position: sticky;
-}
-
-.vuuTableRow-selectionDecorator.vuuStickyRight {
-  right: 0;
-  position: sticky;
-}
-
-.vuuTableRow-selectedStart .vuuTableRow-selectionDecorator:before,
-.vuuTableRow-selectedEnd .vuuTableRow-selectionDecorator:before {
-  content: "";
-  inset: -1px 0 0 0;
-  position: absolute;
-  background: var(--table-background);
-}
-
-.vuuTableRow-selectionDecorator.vuuStickyLeft:before {
-  border-radius: var(--vuu-selection-decorator-left-radius, 0);
-}
-
-.vuuTableRow-selectionDecorator.vuuStickyRight:before {
-  border-radius: var(--vuu-selection-decorator-right-radius, 0);
+.vuuTableRow[aria-selected="true"] {
+  background-color: var(--VuuTableRow-selected-background, var(--salt-selectable-background-selected));
 }
 
 .vuuTableRow[aria-expanded="true"] {

@@ -1,12 +1,7 @@
 import type { DataSourceRow, Selection } from "@vuu-ui/vuu-data-types";
-import {
-  ColumnMap,
-  getSelectionStatus,
-  KeySet,
-  metadataKeys,
-} from "@vuu-ui/vuu-utils";
+import { ColumnMap, KeySet, metadataKeys } from "@vuu-ui/vuu-utils";
 
-const { RENDER_IDX, SELECTED } = metadataKeys;
+const { RENDER_IDX } = metadataKeys;
 
 export const toClientRow = (
   row: DataSourceRow,
@@ -27,7 +22,6 @@ export const toClientRow = (
     clientRow = row.slice() as DataSourceRow;
   }
   clientRow[RENDER_IDX] = keys.keyFor(rowIndex);
-  clientRow[SELECTED] = getSelectionStatus(selection, rowIndex);
   return clientRow;
 };
 

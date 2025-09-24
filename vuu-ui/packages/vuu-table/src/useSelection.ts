@@ -1,17 +1,16 @@
 import {
   TableRowClickHandlerInternal,
   TableRowSelectHandlerInternal,
+  TableRowSelectionChangeHandlerInternal,
   TableSelectionModel,
 } from "@vuu-ui/vuu-table-types";
 import {
   deselectItem,
   dispatchMouseEvent,
-  isRowSelected,
   metadataKeys,
   queryClosest,
   selectItem,
 } from "@vuu-ui/vuu-utils";
-import { Selection } from "@vuu-ui/vuu-data-types";
 import {
   KeyboardEvent,
   KeyboardEventHandler,
@@ -22,9 +21,7 @@ import {
 import { getRowElementByAriaIndex } from "./table-dom-utils";
 import { TableProps } from "./Table";
 
-const { IDX } = metadataKeys;
-
-const NO_SELECTION: Selection = [];
+const { KEY, SELECTED } = metadataKeys;
 
 const defaultSelectionKeys = ["Enter", " "];
 
@@ -34,12 +31,12 @@ export interface SelectionHookProps
   highlightedIndexRef: RefObject<number | undefined>;
   selectionKeys?: string[];
   selectionModel: TableSelectionModel;
+  onSelectionChange: TableRowSelectionChangeHandlerInternal;
   onSelect?: TableRowSelectHandlerInternal;
 }
 
 export const useSelection = ({
   containerRef,
-  defaultSelectedIndexValues = NO_SELECTION,
   highlightedIndexRef,
   selectionKeys = defaultSelectionKeys,
   selectionModel,
@@ -47,8 +44,7 @@ export const useSelection = ({
   onSelectionChange,
 }: SelectionHookProps) => {
   selectionModel === "extended" || selectionModel === "checkbox";
-  const lastActiveRef = useRef(-1);
-  const selectedRef = useRef<Selection>(defaultSelectedIndexValues);
+  const lastActiveRef = useRef<string | undefined>(undefined);
 
   const isSelectionEvent = useCallback(
     (evt: KeyboardEvent<HTMLElement>) => selectionKeys.includes(evt.key),
@@ -57,11 +53,10 @@ export const useSelection = ({
 
   const handleRowClick = useCallback<TableRowClickHandlerInternal>(
     (e, row, rangeSelect, keepExistingSelection) => {
-      const { [IDX]: idx } = row;
-      const { current: active } = lastActiveRef;
-      const { current: selected } = selectedRef;
+      const { [KEY]: rowKey } = row;
+      const { current: activeRowKey } = lastActiveRef;
 
-      const selectOperation = isRowSelected(row) ? deselectItem : selectItem;
+      const selectOperation = row[SELECTED] ? deselectItem : selectItem;
 
       if (selectionModel === "checkbox") {
         const cell = queryClosest(e.target, ".vuuTableCell");
@@ -70,20 +65,22 @@ export const useSelection = ({
         }
       }
 
-      const newSelected = selectOperation(
+      const rangeRowKey = rangeSelect ? activeRowKey : undefined;
+
+      const selectRequest = selectOperation(
         selectionModel,
-        selected,
-        idx,
+        rowKey,
         rangeSelect,
         keepExistingSelection,
-        active,
+        rangeRowKey,
       );
 
-      selectedRef.current = newSelected;
-      lastActiveRef.current = idx;
+      lastActiveRef.current = rowKey;
 
-      onSelect?.(selectOperation === selectItem ? row : null);
-      onSelectionChange?.(newSelected);
+      if (selectRequest) {
+        onSelect?.(selectOperation === selectItem ? row : null);
+        onSelectionChange?.(selectRequest);
+      }
     },
     [onSelect, onSelectionChange, selectionModel],
   );

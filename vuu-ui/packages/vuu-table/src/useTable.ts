@@ -23,6 +23,7 @@ import {
   TableConfig,
   TableRowClickHandlerInternal,
   TableRowSelectHandlerInternal,
+  TableRowSelectionChangeHandlerInternal,
   TableSelectionModel,
 } from "@vuu-ui/vuu-table-types";
 import {
@@ -700,13 +701,14 @@ export const useTable = ({
     [dataSource],
   );
 
-  const handleSelectionChange: SelectionChangeHandler = useCallback(
-    (selected) => {
-      dataSource.select(selected);
-      onSelectionChange?.(selected);
-    },
-    [dataSource, onSelectionChange],
-  );
+  const handleSelectionChange: SelectionChangeHandler =
+    useCallback<TableRowSelectionChangeHandlerInternal>(
+      (selectRequest) => {
+        dataSource.select?.(selectRequest);
+        // onSelectionChange?.(selected);
+      },
+      [dataSource, onSelectionChange],
+    );
 
   const handleSelect = useCallback<TableRowSelectHandlerInternal>(
     (row) => {

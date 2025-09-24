@@ -29,7 +29,6 @@ import {
   VuuViewportEnableRequest,
   ClientToServerOpenTreeNode,
   VuuRemoveVisualLink,
-  ClientToServerSelection,
   VuuViewportRangeRequest,
   LinkDescriptorWithLabel,
   VuuViewportCreateSuccessResponse,
@@ -40,15 +39,9 @@ import {
   VuuSort,
   VuuTable,
   VuuGroupDataRow,
+  SelectRequest,
 } from "@vuu-ui/vuu-protocol-types";
-import {
-  expandSelection,
-  getFullRange,
-  getSelectionStatus,
-  KeySet,
-  logger,
-  RangeMonitor,
-} from "@vuu-ui/vuu-utils";
+import { getFullRange, KeySet, logger, RangeMonitor } from "@vuu-ui/vuu-utils";
 import {
   gapBetweenLastRowSentToClient,
   getFirstAndLastRows,
@@ -161,7 +154,6 @@ export class Viewport {
   })[] = [];
   private postMessageToClient: (message: DataSourceCallbackMessage) => void;
   private rowCountChanged = false;
-  private selectedRows: Selection = [];
   private lastUpdateStatus: LastUpdateStatus = NO_UPDATE_STATUS;
   private updateThrottleTimer: number | undefined = undefined;
   private lastRowsReturnedToClient: [number, number] = [-1, -1];
@@ -536,7 +528,7 @@ export class Viewport {
         return [
           serverRequest,
           clientRows.map((row) => {
-            return toClient(row, this.keys, this.selectedRows);
+            return toClient(row, this.keys);
           }),
         ];
       } else if (debounceRequest) {
@@ -635,7 +627,7 @@ export class Viewport {
       const toClient = this.isTree ? toClientRowTree : toClientRow;
       for (const row of records) {
         if (row) {
-          out.push(toClient(row, keys, this.selectedRows));
+          out.push(toClient(row, keys));
         }
       }
     }
@@ -692,17 +684,18 @@ export class Viewport {
     );
   }
 
-  selectRequest(requestId: string, selected: Selection) {
-    // This is a simplistic implementation, there is a possibility we might be out of sync with
-    // server if server responses are too slow.
-    this.selectedRows = selected;
-    this.awaitOperation(requestId, { type: "selection", data: selected });
-    info?.(`selectRequest: ${selected}`);
-    return {
-      type: "SET_SELECTION",
-      vpId: this.serverViewportId,
-      selection: expandSelection(selected),
-    } as ClientToServerSelection;
+  selectRequest(request: SelectRequest): SelectRequest {
+    info?.(`selectRequest: ${request.type}`);
+    if (this.serverViewportId) {
+      return {
+        ...request,
+        vpId: this.serverViewportId,
+      };
+    } else {
+      throw Error(
+        `[Viewport] cannot process ${request.type} before serverViewportId has been set`,
+      );
+    }
   }
 
   private removePendingRangeRequest(firstIndex: number, lastIndex: number) {
@@ -810,7 +803,7 @@ export class Viewport {
     }
 
     if (this.hasUpdates) {
-      const { keys, selectedRows } = this;
+      const { keys } = this;
       const toClient = this.isTree ? toClientRowTree : toClientRow;
 
       if (this.updateThrottleTimer) {
@@ -834,14 +827,14 @@ export class Viewport {
           for (let i = missingRows.from; i < missingRows.to; i++) {
             const row = this.dataWindow.getAtIndex(i);
             if (row) {
-              out.push(toClient(row, keys, selectedRows));
+              out.push(toClient(row, keys));
             } else {
               console.warn("[Viewport] missing row not in data cache");
               //throw Error("[Viewport] missing row not in data cache");
             }
           }
           for (const row of this.pendingUpdates) {
-            out.push(toClient(row, keys, selectedRows));
+            out.push(toClient(row, keys));
           }
 
           // for (const row of this.dataWindow.getData()) {
@@ -852,7 +845,7 @@ export class Viewport {
           );
         } else {
           for (const row of this.pendingUpdates) {
-            out.push(toClient(row, keys, selectedRows));
+            out.push(toClient(row, keys));
           }
         }
 
@@ -953,7 +946,6 @@ const isNew = false;
 const toClientRow = (
   { rowIndex, rowKey, sel: isSelected, data, ts }: VuuRow,
   keys: KeySet,
-  selectedRows: Selection,
 ) => {
   return [
     rowIndex,
@@ -963,7 +955,7 @@ const toClientRow = (
     0,
     0,
     rowKey,
-    isSelected ? getSelectionStatus(selectedRows, rowIndex) : 0,
+    isSelected,
     ts,
     isNew,
   ].concat(data) as DataSourceRow;
@@ -972,7 +964,6 @@ const toClientRow = (
 const toClientRowTree = (
   { rowIndex, rowKey, sel: isSelected, data, ts }: VuuRow,
   keys: KeySet,
-  selectedRows: Selection,
 ) => {
   const [depth, isExpanded /* path */, , isLeaf /* label */, , count, ...rest] =
     data as VuuGroupDataRow;
@@ -985,7 +976,7 @@ const toClientRowTree = (
     depth,
     count,
     rowKey,
-    isSelected ? getSelectionStatus(selectedRows, rowIndex) : 0,
+    isSelected,
     ts,
     isNew,
   ].concat(rest) as DataSourceRow;
