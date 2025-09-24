@@ -30,7 +30,7 @@ jobs:
       run: pip install xq
 
     - name: Maven build
-      run: mvn clean install -DskipTests
+      run: mvn clean install -am -DskipTests
 
     - name: License XML report
       run: mvn org.codehaus.mojo:license-maven-plugin:2.0.0:download-licenses
@@ -41,7 +41,7 @@ jobs:
         #!/bin/bash
         
         #Parse unique licenses in dependencies
-        readarray -t LICENSES < <(xq -r '.licenseSummary.dependencies.dependency[].licenses.license[].name' target/generated-resources/licenses.xml | sort -u
+        readarray -t LICENSES < <(xq -r '.licenseSummary.dependencies.dependency[].licenses.license[].name' target/generated-resources/licenses.xml | sort -u)
         
         #print the array
         for license in "${LICENSES[@]}"; do
