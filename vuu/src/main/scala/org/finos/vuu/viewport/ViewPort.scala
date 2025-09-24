@@ -396,7 +396,7 @@ class ViewPortImpl(val id: String,
   @volatile
   private var keys: ViewPortKeys = EmptyViewPortKeys
   @volatile
-  private var selection: Set[String] = Set[String]()
+  private var selection: Set[String] = Set[String]().empty
 
   private val subscribedKeys = new ConcurrentHashMap[String, String]()
   private val rowKeyToIndex = new ConcurrentHashMap[String, Int]()
