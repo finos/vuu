@@ -372,7 +372,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   override def process(msg: SelectRowRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.selectRow(msg.vpId, msg.rowKey, msg.preserveExistingSelection)) match {
       case Success(vp) =>
-        vsMsg(SelectRowSuccess(vp.id, vp.getSelection.toArray))(ctx)
+        vsMsg(SelectRowSuccess(vp.id, vp.getSelection.size))(ctx)
       case Failure(e) =>
         logger.error(s"Could not select row with key ${msg.rowKey} in view port ${msg.vpId}:", e.getMessage)
         vsMsg(SelectRowReject(msg.vpId, "Could not select row " + msg.rowKey + ":" + e.getMessage))(ctx)
@@ -382,7 +382,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   override def process(msg: DeselectRowRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.deselectRow(msg.vpId, msg.rowKey, msg.preserveExistingSelection)) match {
       case Success(vp) =>
-        vsMsg(DeselectRowSuccess(vp.id, vp.getSelection.toArray))(ctx)
+        vsMsg(DeselectRowSuccess(vp.id, vp.getSelection.size))(ctx)
       case Failure(e) =>
         logger.error(s"Could not deselect row with key ${msg.rowKey} in view port ${msg.vpId}:", e.getMessage)
         vsMsg(DeselectRowReject(msg.vpId, "Could not deselect row" + msg.rowKey + ":" + e.getMessage))(ctx)
@@ -392,7 +392,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   override def process(msg: SelectRowRangeRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.selectRowRange(msg.vpId, msg.fromRowKey, msg.toRowKey, msg.preserveExistingSelection)) match {
       case Success(vp) =>
-        vsMsg(SelectRowRangeSuccess(vp.id, vp.getSelection.toArray))(ctx)
+        vsMsg(SelectRowRangeSuccess(vp.id, vp.getSelection.size))(ctx)
       case Failure(e) =>
         logger.error(s"Could not select row range from ${msg.fromRowKey} to ${msg.toRowKey} in view port ${msg.vpId}:", e.getMessage)
         vsMsg(SelectRowRangeReject(msg.vpId, "Could not select row range from " + msg.fromRowKey + " to " + msg.toRowKey + ":" + e.getMessage))(ctx)
@@ -402,7 +402,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   override def process(msg: SelectAllRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.selectAll(msg.vpId)) match {
       case Success(vp) =>
-        vsMsg(SelectAllSuccess(vp.id))(ctx)
+        vsMsg(SelectAllSuccess(vp.id, vp.getSelection.size))(ctx)
       case Failure(e) =>
         logger.error(s"Could not select all rows in view port ${msg.vpId}:", e.getMessage)
         vsMsg(SelectAllReject(msg.vpId, "Could not select all:" + e.getMessage))(ctx)

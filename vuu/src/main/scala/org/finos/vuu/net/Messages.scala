@@ -188,25 +188,25 @@ case class OpenTreeNodeReject(vpId: String, treeKey: String) extends MessageBody
 
 case class SelectRowRequest(vpId: String, rowKey: String, preserveExistingSelection: Boolean) extends MessageBody
 
-case class SelectRowSuccess(vpId: String, selection: Array[String]) extends MessageBody
+case class SelectRowSuccess(vpId: String, selectedRowCount: Int) extends MessageBody
 
 case class SelectRowReject(vpId: String, errorMsg: String) extends MessageBody
 
 case class DeselectRowRequest(vpId: String, rowKey: String, preserveExistingSelection: Boolean) extends MessageBody
 
-case class DeselectRowSuccess(vpId: String, selection: Array[String]) extends MessageBody
+case class DeselectRowSuccess(vpId: String, selectedRowCount: Int) extends MessageBody
 
 case class DeselectRowReject(vpId: String, errorMsg: String) extends MessageBody
 
 case class SelectRowRangeRequest(vpId: String, fromRowKey: String, toRowKey: String, preserveExistingSelection: Boolean) extends MessageBody
 
-case class SelectRowRangeSuccess(vpId: String, selection: Array[String]) extends MessageBody
+case class SelectRowRangeSuccess(vpId: String, selectedRowCount: Int) extends MessageBody
 
 case class SelectRowRangeReject(vpId: String, errorMsg: String) extends MessageBody
 
 case class SelectAllRequest(vpId: String) extends MessageBody
 
-case class SelectAllSuccess(vpId: String) extends MessageBody
+case class SelectAllSuccess(vpId: String, selectedRowCount: Int) extends MessageBody
 
 case class SelectAllReject(vpId: String, errorMsg: String) extends MessageBody
 
