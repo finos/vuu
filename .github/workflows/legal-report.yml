@@ -42,12 +42,36 @@ jobs:
       run: |
         #!/bin/bash
         
+        ALLOWED_LICENCES=(
+          "Apache 2.0 License"
+          "Apache Licence 2.0"
+          "Apache-2.0"
+          "BSD"
+          "Eclipse Public License - v 1.0"
+          "GNU Lesser General Public License"
+          "MIT License"
+          "The Apache Software License, Version 2.0"
+          "the Apache License, ASL Version 2.0"
+        )
+        
         #Parse unique licenses in dependencies
         readarray -t LICENSES < <(cat target/generated-resources/licenses.xml | xq -x '//name' | sort -u)
+                
+        # Check for ones that arent allowed        
+        for license1 in "${LICENSES[@]}"; do
+          found = false
+          for license2 in "${ALLOWED_LICENSES[@]}"; do
+            if [[ "$license1" == "$license2" ]]; then
+              found = true
+              break
+            fi
+          done
         
-        #print the array
-        for license in "${LICENSES[@]}"; do
-          echo $license
+          if [[ "$found" == false ]]; then
+            echo "Error: '$license1' is not allowed."
+            exit 1
+          fi
+        
         done
 
       working-directory: ${{ matrix.package-folder }}
