@@ -76,12 +76,12 @@ jobs:
           fi        
         done
         
-        if [ ${#BANNED[@]} -ne 0]; then
+        if [ ${#BANNED[@]} -ne 0 ]; then
           echo "Banned licenses found:"
           for license in "${BANNED[@]}"; do
              echo " - $license" 
           done
-          exit -1
+          exit 1
         fi
 
       working-directory: ${{ matrix.package-folder }}
