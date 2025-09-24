@@ -27,7 +27,9 @@ jobs:
         cache: 'maven'
 
     - name: Install XQ
-      run: pip install xq
+      run: |
+        sudo apt-get update
+        sudo apt-get install xq
 
     - name: Maven build
       run: mvn clean install -pl ${{ matrix.package-folder }} -am -DskipTests
