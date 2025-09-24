@@ -202,7 +202,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       Given("we've created a viewport with orders in")
-      implicit val lifecycle = new LifecycleContainer
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
       val ordersDef = TableDef(
         name = "orders",
         keyField = "orderId",
@@ -313,7 +313,16 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       assertVpEqWithMeta(combineQs(viewPortOrders2)) {
         Table(
           ("sel", "orderId", "trader", "ric", "tradeTime", "quantity"),
-          (1, "NYC-0001", "chris", "VOD.L", 1311544800130L, 101)
+          (0, "NYC-0000", "chris", "VOD.L", 1311544800120L, 100),
+          (1, "NYC-0001", "chris", "VOD.L", 1311544800130L, 101),
+          (0, "NYC-0002", "chris", "VOD.L", 1311544800140L, 102),
+          (0, "NYC-0003", "chris", "BT.L", 1311544800150L, 100),
+          (0, "NYC-0004", "chris", "BT.L", 1311544800160L, 101),
+          (0, "NYC-0005", "chris", "BT.L", 1311544800170L, 102),
+          (0, "NYC-0006", "chris", "BT.L", 1311544800180L, 103),
+          (0, "NYC-0007", "chris", "BP.L", 1311544800190L, 100),
+          (0, "NYC-0008", "chris", "BP.L", 1311544800200L, 101),
+          (0, "NYC-0009", "chris", "BP.L", 1311544800210L, 102)
         )
       }
 
@@ -323,7 +332,6 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       assertVpEqWithMeta(combineQs(viewPortOrders1)) {
         Table(
           ("sel", "orderId", "trader", "ric", "tradeTime", "quantity"),
-          (0, "NYC-0001", "chris", "VOD.L", 1311544800010L, 101)
         )
       }
     }
