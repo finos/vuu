@@ -43,7 +43,7 @@ jobs:
         #!/bin/bash
         
         #Parse unique licenses in dependencies
-        readarray -t LICENSES < <(xq -r '.licenseSummary.dependencies.dependency[].licenses.license[].name' target/generated-resources/licenses.xml | sort -u)
+        readarray -t LICENSES < <(cat target/generated-resources/licenses.xml | xq -x '//name' | sort -u)
         
         #print the array
         for license in "${LICENSES[@]}"; do
