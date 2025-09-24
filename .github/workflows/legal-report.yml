@@ -44,13 +44,14 @@ jobs:
 
     - name: Validate XML report
       run: |
-        LICENSES=`xq ".results.result[].dependency.licenses.licence[].name' <<< ${{ env.REPORT_PATH }}`
+        LICENSES=`xq '.results.result[].dependency.licenses.licence[].name' <<< ${{ env.REPORT_PATH }} | sort | uniq`
         echo "LICENSES: $LICENSES"
-        LINES_FOUND=$(echo "$LICENSES" | wc -l)        
-        if [ "$LINES_FOUND" -gt 1 ]; then 
-          echo "License issues found! $LICENSE_REPORT"
-          exit 1
-        fi
+        for license in $LICENSES; do
+          if [[ ! " ${ALLOWED_LICENSES[@]} " =~ " ${license} " ]]; then
+            echo "Disallowed license found: $license"
+            exit 1
+          fi
+        done
       working-directory: ${{ matrix.package-folder }}
 
     - name: Upload license XML reports
