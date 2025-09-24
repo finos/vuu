@@ -44,8 +44,11 @@ jobs:
       run: |
         LICENSE_REPORT=`xq "//dependency[licenses/license/name!=${{ env.ALLOW_LICENSES }}]" ./${{ env.REPORT_PATH }}`
         echo "REPORT: $LICENSE_REPORT"
-        LINES_FOUND=`echo $LICENSE_REPORT | wc -l`        
-        if [ $LINES_FOUND -gt 1 ]; then echo "License issues found! $LICENSE_REPORT" ; exit -1; fi
+        LINES_FOUND=$(echo "$LICENSE_REPORT" | wc -l)        
+        if [ "$LINES_FOUND" -gt 1 ]; then 
+          echo "License issues found! $LICENSE_REPORT"
+          exit 1
+        fi
       working-directory: ${{ matrix.package-folder }}
 
     - name: Upload license XML reports
