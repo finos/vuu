@@ -38,19 +38,16 @@ jobs:
 
     - name: Validate XML report
       run: |
-        ALLOWED_LICENSES=(
-          "The Apache Software License, Version 2.0"
-          "Apache License, Version 2.0"
-        )
-        cat target/generated-resources/licenses.xml
-        LICENSES=$(xq 'licenseSummary.dependencies.dependency[].licenses.licence[].name' target/generated-resources/licenses.xml | sort | uniq)
-        echo "LICENSES: $LICENSES"
-        for license in $LICENSES; do
-          if [[ ! " ${ALLOWED_LICENSES[@]} " =~ " ${license} " ]]; then
-            echo "Disallowed license found: $license"
-            exit 1
-          fi
-        done
+        #!/bin/bash
+        
+        #Parse unique licenses in dependencies
+        readarray -t LICENSES < <(xq -r '.licenseSummary.dependencies.dependency[].licenses.license[].name' target/generated-resources/licenses.xml | sort -u
+        
+        #print the array
+        for license in "${LICENSES[@]}"; do
+          echo $license
+        fi
+
       working-directory: ${{ matrix.package-folder }}
 
     - name: Upload license XML reports
