@@ -49,12 +49,20 @@ jobs:
           "Apache License, Version 2.0"
           "Apache-2.0"
           "BSD"
+          "BSD licence"
+          "BSD-3-Clause"
           "BSD 3-Clause \"New\" or \"Revised\" License (BSD-3-Clause)"
+          "Eclipse Public License 1.0"
           "Eclipse Public License - v 1.0"
+          "Eclipse Public License - v 2.0"
           "GNU Lesser General Public License"
+          "MIT"
           "MIT License"
+          "New BSD License"          
           "The Apache Software License, Version 2.0"
           "the Apache License, ASL Version 2.0"
+          "The BSD License"
+          "Unicode/ICU License"
         )
         
         #Parse unique licenses in dependencies
