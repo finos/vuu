@@ -44,9 +44,9 @@ jobs:
 
     - name: Validate XML report
       run: |
-        LICENSE_REPORT=`xq "//dependency[${{ env.ALLOW_LICENSES }}]" ./${{ env.REPORT_PATH }}`
-        echo "REPORT: $LICENSE_REPORT"
-        LINES_FOUND=$(echo "$LICENSE_REPORT" | wc -l)        
+        LICENSES=`xq ".results.result[].dependency.licenses.licence[].name' <<< ${{ env.REPORT_PATH }}`
+        echo "LICENSES: $LICENSES"
+        LINES_FOUND=$(echo "$LICENSES" | wc -l)        
         if [ "$LINES_FOUND" -gt 1 ]; then 
           echo "License issues found! $LICENSE_REPORT"
           exit 1
