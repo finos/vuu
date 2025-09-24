@@ -95,8 +95,10 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       Then("Check the selected rows is updated in the vp")
       assertVpEqWithMeta(combineQs(viewPortPrices)) {
         Table(
-          ("sel"     ,"ric"     ,"bid"     ,"ask"     ,"last"    ,"open"    ),
-          (1         ,"BT.L"    ,200.0     ,201.0     ,200.5     ,null      ),
+          ("sel", "ric", "bid", "ask", "last", "open"),
+          (0, "BP.L", 300.0, 301.0, 300.5, null),
+          (1, "BT.L", 200.0, 201.0, 200.5, null),
+          (0, "VOD.L", 100.0, 101.0, 100.5, null),
         )
       }
 
