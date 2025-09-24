@@ -7,28 +7,17 @@ on:
       - '.github/workflows/legal-report.yml'
 
 jobs:
-  legal-report:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up JDK 1.17
-      uses: actions/setup-java@v1
-      with:
-        java-version: 1.17
-        cache: maven
-    - name: Build with Maven
-      run: mvn clean install
-    - name: License report
-      run: mvn org.apache.maven.plugins:maven-site-plugin:3.12.1:site org.apache.maven.plugins:maven-project-info-reports-plugin:3.4.1:licenses -P legal-report
 
   legal-scanning:
     runs-on: ubuntu-latest
+
     strategy:
       matrix:
-        package-folder: [".", vuu-ui, toolbox, vuu]
+        package-folder: [toolbox, vuu, vuu-java]
 
     steps:
     - uses: actions/checkout@v3
+
     - name: Set up JDK 1.17
       uses: actions/setup-java@v4
       with:
@@ -36,22 +25,76 @@ jobs:
         java-package: jdk
         distribution: temurin
         cache: 'maven'
+
     - name: Install XQ
-      run: pip install xq
-    - name: Build with Maven
-      run: mvn clean install
+      run: |
+        sudo apt-get update
+        sudo apt-get install xq
+
+    - name: Maven build
+      run: mvn clean install -pl ${{ matrix.package-folder }} -am -DskipTests
+
     - name: License XML report
       run: mvn org.codehaus.mojo:license-maven-plugin:2.0.0:download-licenses
+      working-directory: ${{ matrix.package-folder }}
+
     - name: Validate XML report
       run: |
-        LICENSE_REPORT=`xq "//dependency[licenses/license/name!='The Apache Software License, Version 2.0' and licenses/license/name!='BSD' and licenses/license/name!='BSD-style license' and licenses/license/name!='Apache License, Version 2.0']" ${{ matrix.package-folder }}/target/generated-resources/licenses.xml`
-        LINES_FOUND=`echo $LICENSE_REPORT | wc -l`
-        if [ $LINES_FOUND -gt 1 ]; then echo $LICENSE_REPORT ; exit -1; fi
-    - name: Upload license reports
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ matrix.package-folder }}-license-reports
-        path: '**/dependencies.html'
+        #!/bin/bash
+        
+        ALLOWED_LICENCES=(
+          "Apache 2.0"
+          "Apache 2.0 License"
+          "Apache License 2.0"
+          "Apache License, Version 2.0"
+          "Apache-2.0"
+          "BSD"
+          "BSD licence"
+          "BSD Licence 3"
+          "BSD-3-Clause"
+          "BSD 3-Clause \"New\" or \"Revised\" License (BSD-3-Clause)"
+          "Eclipse Public License 1.0"
+          "Eclipse Public License - v 1.0"
+          "Eclipse Public License - v 2.0"
+          "GNU Lesser General Public License"
+          "MIT"
+          "MIT License"
+          "New BSD License"          
+          "The Apache Software License, Version 2.0"
+          "the Apache License, ASL Version 2.0"
+          "The BSD License"
+          "Unicode/ICU License"
+        )
+        
+        #Parse unique licenses in dependencies
+        readarray -t LICENSES < <(cat target/generated-resources/licenses.xml | xq -x '//name' | sort -u)
+                
+        BANNED=()        
+                
+        # Collect the ones that arent allowed        
+        for license1 in "${LICENSES[@]}"; do          
+          found=false
+          for license2 in "${ALLOWED_LICENCES[@]}"; do            
+            if [[ "$license1" == "$license2" ]]; then
+              found=true
+              break
+            fi
+          done        
+          if [[ "$found" == false ]]; then
+            BANNED+=("$license1")
+          fi        
+        done
+        
+        if [ ${#BANNED[@]} -ne 0 ]; then
+          echo "Banned licenses found:"
+          for license in "${BANNED[@]}"; do
+             echo " - $license" 
+          done
+          exit 1
+        fi
+
+      working-directory: ${{ matrix.package-folder }}
+
     - name: Upload license XML reports
       uses: actions/upload-artifact@v4
       with:
