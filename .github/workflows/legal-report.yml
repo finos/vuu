@@ -46,7 +46,7 @@ jobs:
         #print the array
         for license in "${LICENSES[@]}"; do
           echo $license
-        fi
+        done
 
       working-directory: ${{ matrix.package-folder }}
 
