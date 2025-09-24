@@ -30,8 +30,7 @@ jobs:
       run: pip install xq
 
     - name: Maven build
-      run: mvn clean install -am -DskipTests
-      working-directory: ${{ matrix.package-folder }}
+      run: mvn clean install -pl ${{ matrix.package-folder }} -am -DskipTests
 
     - name: License XML report
       run: mvn org.codehaus.mojo:license-maven-plugin:2.0.0:download-licenses
