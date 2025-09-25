@@ -21,7 +21,9 @@ export interface DataItemEditControlProps {
   InputProps?: Partial<InputProps>;
   TypeaheadProps?: Pick<
     VuuTypeaheadInputProps,
-    "highlightFirstSuggestion" | "minCharacterCountToTriggerSuggestions"
+    | "highlightFirstSuggestion"
+    | "minCharacterCountToTriggerSuggestions"
+    | "selectOnTab"
   >;
   className?: string;
   commitOnBlur?: boolean;

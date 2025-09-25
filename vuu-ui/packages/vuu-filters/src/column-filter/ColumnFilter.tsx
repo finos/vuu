@@ -10,13 +10,13 @@ import {
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-
-import columnFilterCss from "./ColumnFilter.css";
 import { getDataItemEditControl } from "@vuu-ui/vuu-data-react";
 import { ForwardedRef, forwardRef, ReactElement } from "react";
 import { ColumnFilterHookProps, useColumnFilter } from "./useColumnFilter";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { VuuTypeaheadInputHookProps } from "@vuu-ui/vuu-ui-controls/src/vuu-typeahead-input/useVuuTypeaheadInput";
+
+import columnFilterCss from "./ColumnFilter.css";
 
 const classBase = "vuuColumnFilter";
 

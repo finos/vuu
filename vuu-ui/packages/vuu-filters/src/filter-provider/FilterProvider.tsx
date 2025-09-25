@@ -176,7 +176,7 @@ export const FilterProvider = ({
   );
 
   /**
-   * Allows switching between saved filtere. ALternatively, an anonymous
+   * Allows switching between saved filters. Alternatively, an anonymous
    * filter can be assigned. This is to allow for a dynamically created
    * filter to be active.
    */

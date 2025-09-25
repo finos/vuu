@@ -69,10 +69,10 @@ export const isMultiValueFilter = (
 export const isInFilter = (f: Partial<Filter>): f is MultiValueFilterClause =>
   f.op === "in";
 export const isAndFilter = (
-  f: Partial<Filter>,
-): f is MultiClauseFilter<"and"> => f.op === "and";
-export const isOrFilter = (f: Partial<Filter>): f is MultiClauseFilter<"or"> =>
-  f.op === "or";
+  f?: Partial<Filter>,
+): f is MultiClauseFilter<"and"> => f?.op === "and";
+export const isOrFilter = (f?: Partial<Filter>): f is MultiClauseFilter<"or"> =>
+  f?.op === "or";
 
 export const isCompleteFilter = (filter: Partial<Filter>): filter is Filter =>
   isSingleValueFilter(filter) &&
@@ -153,12 +153,49 @@ const collectFiltersForColumn = (
   };
 };
 
+/**
+ * A limited subset of all possible filters that is currently
+ * supported by a FilterContainer
+ */
+export type FilterContainerFilter =
+  | SingleValueFilterClause
+  | MultiClauseFilter<"and", SingleValueFilterClause>;
+
+export const getColumnValueFromFilter = (
+  column: ColumnDescriptor,
+  filter?: FilterContainerFilter,
+) => {
+  if (isSingleValueFilter(filter)) {
+    if (filter?.column === column.name) {
+      return filter.value;
+    }
+  } else if (isAndFilter(filter)) {
+    const filterForColumn = filter.filters.find(
+      (f) => f.column === column.name,
+    );
+    if (isSingleValueFilter(filterForColumn)) {
+      return filterForColumn.value;
+    }
+  }
+
+  return "";
+};
+
 export class FilterAggregator {
-  #columns = new Map<string, ColumnDescriptor>();
+  // #columns = new Map<string, ColumnDescriptor>();
   #filters = new Map<string, SingleValueFilterClause>();
 
+  constructor(filter?: FilterContainerFilter) {
+    if (isSingleValueFilter(filter)) {
+      this.#filters.set(filter.column, filter);
+    } else if (isAndFilter(filter)) {
+      filter.filters.forEach((f) => this.#filters.set(f.column, f));
+    }
+    console.log(JSON.stringify(this.filter, null, 2));
+  }
+
   addFilter(column: ColumnDescriptor, value: string | number) {
-    this.#columns.set(column.name, column);
+    // this.#columns.set(column.name, column);
     const { serverDataType = "string" } = column;
     const typedValue = getTypedValue(value.toString(), serverDataType, true);
 
@@ -170,8 +207,8 @@ export class FilterAggregator {
   }
 
   removeFilter(column: ColumnDescriptor) {
-    if (this.#columns.has(column.name)) {
-      this.#columns.delete(column.name);
+    if (this.#filters.has(column.name)) {
+      // this.#columns.delete(column.name);
       this.#filters.delete(column.name);
       return true;
     } else {

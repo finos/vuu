@@ -8,8 +8,9 @@ import { LayoutJSON, VuuShellLocation } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import {
+import React, {
   KeyboardEventHandler,
+  ReactElement,
   ReactNode,
   useCallback,
   useLayoutEffect,
@@ -24,7 +25,7 @@ const classBase = "vuuContextPanel";
 export interface ContextPanelProps {
   [key: string]: unknown;
   className?: string;
-  content?: LayoutJSON;
+  content?: ReactElement | LayoutJSON;
   expanded?: boolean;
   id?: string;
   onClose?: () => void;
@@ -81,7 +82,11 @@ export const ContextPanel = ({
 
   const content = useMemo(
     () =>
-      contentProp && expanded ? layoutFromJson(contentProp, "context-0") : null,
+      contentProp && expanded
+        ? React.isValidElement(contentProp)
+          ? contentProp
+          : layoutFromJson(contentProp, "context-0")
+        : null,
     [contentProp, expanded],
   );
 

@@ -379,7 +379,7 @@ export const useKeyboardNavigation = ({
       }
       if (rowCount > 0 && isNavigationKey(e.key, navigationStyle)) {
         if (e.key === "ArrowDown" && editCellWithEditInProgress(cell)) {
-          console.log(`editCellWithEditInProgress`);
+          //  do nothing editCellWithEditInProgress
         } else {
           e.preventDefault();
           e.stopPropagation();
