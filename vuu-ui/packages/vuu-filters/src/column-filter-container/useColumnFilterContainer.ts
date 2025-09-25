@@ -1,0 +1,151 @@
+import {
+  ColumnFilterOp,
+  ColumnFilterValue,
+  Filter,
+  MultiClauseFilter,
+  SingleValueFilterClause,
+} from "@vuu-ui/vuu-filter-types";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { createContext, useCallback, useContext, useMemo, useRef } from "react";
+import { ColumnFilterCommitHandler } from "../column-filter/useColumnFilter";
+import { FilterAggregator } from "@vuu-ui/vuu-utils";
+
+export type ColumnFilterChangeHandler = (
+  value: string | number,
+  column: ColumnDescriptor,
+  op: ColumnFilterOp,
+) => void;
+
+export interface ColumnFilterContextProps {
+  filterContainerInstalled: boolean;
+  onChange?: ColumnFilterChangeHandler;
+  onCommit?: ColumnFilterCommitHandler;
+  register?: (column: ColumnDescriptor) => void;
+  getValue?: (column: ColumnDescriptor) => ColumnFilterValue;
+}
+
+export const ColumnFilterContext = createContext<ColumnFilterContextProps>({
+  filterContainerInstalled: false,
+});
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+//@ts-ignore type-check incorrectly flags this as error, its perfectly valid
+export function useFilterContext(
+  throwIfNoContainer?: false,
+): ColumnFilterContextProps;
+export function useFilterContext(
+  throwIfNoContainer: true,
+): Required<ColumnFilterContextProps>;
+export function useFilterContext(throwIfNoContainer = false) {
+  const ctx = useContext(ColumnFilterContext);
+  if (ctx) {
+    return {
+      register: ctx.register,
+      getValue: ctx.getValue,
+      onChange: ctx.onChange,
+      onCommit: ctx.onCommit,
+    };
+  } else if (throwIfNoContainer) {
+    throw Error(
+      `[useColumnFilterContainer:useFilterContext] no FilterContainer installed`,
+    );
+  } else {
+    return { filterContainerInstalled: false };
+  }
+}
+
+export type FilterAppliedHandler = (filter: Filter) => void;
+export type ColumnFilterContainerHookProps = {
+  filter?: SingleValueFilterClause | MultiClauseFilter<"and">;
+  onFilterApplied?: FilterAppliedHandler;
+  onFilterCleared?: () => void;
+};
+
+type ColumnFilterValueMap = Record<string, ColumnFilterValue>;
+
+// const defaultValueForColumn = (
+//   _column: ColumnDescriptor,
+//   op: ColumnFilterOp = "=",
+// ): ColumnFilterValue => {
+//   if (op === "between") {
+//     return ["", ""];
+//   } else {
+//     return "";
+//   }
+// };
+
+export const useColumnFilterContainer = ({
+  filter,
+  onFilterApplied,
+  onFilterCleared,
+}: ColumnFilterContainerHookProps): ColumnFilterContextProps => {
+  const valueRef = useRef<ColumnFilterValueMap>({});
+
+  const filterAggregator = useMemo(() => new FilterAggregator(), []);
+
+  console.log(`[useColumnFilter], filter: ${JSON.stringify(filter)}`);
+
+  const register = useCallback((column: ColumnDescriptor) => {
+    valueRef.current[column.name] = "";
+  }, []);
+
+  const getValue = useCallback(
+    (column: ColumnDescriptor, fallbackValue?: ColumnFilterValue) => {
+      const value = valueRef.current[column.name];
+      if (value !== undefined) {
+        return value;
+      } else if (fallbackValue !== undefined) {
+        return fallbackValue;
+      } else {
+        throw Error(
+          `[useColumnFilterContainer] column ${column.name} has not been registered`,
+        );
+      }
+    },
+    [],
+  );
+
+  const handleInputChange = useCallback<ColumnFilterChangeHandler>(
+    (value, column) => {
+      console.log(
+        `[useColumnFilterContainer] handleInputChange ${column.name} ${value}`,
+      );
+      valueRef.current[column.name] = value;
+    },
+    [],
+  );
+
+  const handleCommit = useCallback<ColumnFilterCommitHandler>(
+    (column, op, value = "") => {
+      if (value === "") {
+        if (!filterAggregator.removeFilter(column)) {
+          // filter didn't exist, ignore
+          return;
+        }
+      } else {
+        if (typeof value === "string" || typeof value === "number") {
+          filterAggregator.addFilter(column, value);
+        } else {
+          throw Error(
+            `[useInlineFilter] handleCommit value ${typeof value} supports string, number only`,
+          );
+        }
+      }
+      const { filter } = filterAggregator;
+      if (filter) {
+        onFilterApplied?.(filter);
+      } else {
+        onFilterCleared?.();
+      }
+    },
+    [filterAggregator, onFilterApplied, onFilterCleared],
+  );
+
+  return {
+    filterContainerInstalled: true,
+    onChange: handleInputChange,
+    onCommit: handleCommit,
+    getValue,
+    register,
+  };
+};

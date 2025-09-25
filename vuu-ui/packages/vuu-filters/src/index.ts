@@ -2,6 +2,14 @@ export {
   ColumnFilter,
   type ColumnFilterProps,
 } from "./column-filter/ColumnFilter";
+export {
+  ColumnFilterNext,
+  type ColumnFilterNextProps,
+} from "./column-filter-next/ColumnFilterNext";
+export {
+  ColumnFilterContainer,
+  FilterContainerColumnFilter,
+} from "./column-filter-container/ColumnFilterContainer";
 export * from "./filter-bar";
 export * from "./filter-clause";
 export * from "./filter-editor";

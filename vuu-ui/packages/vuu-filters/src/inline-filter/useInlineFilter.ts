@@ -1,49 +1,33 @@
 import { useEditableCell, useHeaderProps } from "@vuu-ui/vuu-table";
-import {
-  CommitHandler,
-  FilterAggregator,
-  getFieldName,
-} from "@vuu-ui/vuu-utils";
-import { useCallback, useMemo } from "react";
+import { filterAsQuery } from "@vuu-ui/vuu-utils";
+import { useCallback } from "react";
 import { FilterValueChangeHandler } from "./InlineFilter";
+import { FilterAppliedHandler } from "../column-filter-container/useColumnFilterContainer";
 
 export const useInlineFilter = ({
   onChange,
 }: {
   onChange: FilterValueChangeHandler;
 }) => {
-  const filterAggregator = useMemo(() => new FilterAggregator(), []);
   const { columns = [], virtualColSpan = 0 } = useHeaderProps();
 
-  const handleCommit = useCallback<CommitHandler<HTMLElement>>(
-    (evt, value = "") => {
-      const fieldName = getFieldName(evt.target);
-      const column = columns.find((c) => c.name === fieldName);
-      if (column) {
-        if (value === "") {
-          if (filterAggregator.removeFilter(column)) {
-            onChange(filterAggregator.filter);
-          }
-        } else {
-          if (typeof value === "string" || typeof value === "number") {
-            filterAggregator.addFilter(column, value);
-            onChange(filterAggregator.filter);
-          } else {
-            throw Error(
-              `[useInlineFilter] handleCommit value ${typeof value} supports string, number only`,
-            );
-          }
-        }
-      }
+  const onKeyDown = useEditableCell();
+
+  const handleFilterApplied = useCallback<FilterAppliedHandler>(
+    (filter) => {
+      onChange({ filter: filterAsQuery(filter) });
     },
-    [columns, filterAggregator, onChange],
+    [onChange],
   );
 
-  const { onKeyDown } = useEditableCell();
+  const handleFilterCleared = useCallback(() => {
+    onChange({ filter: "" });
+  }, [onChange]);
 
   return {
     columns,
-    onCommit: handleCommit,
+    onFilterApplied: handleFilterApplied,
+    onFilterCleared: handleFilterCleared,
     onKeyDown,
     virtualColSpan,
   };
