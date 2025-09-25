@@ -12,6 +12,11 @@
     <artifactId>example</artifactId>
     <name>${project.artifactId}</name>
 
+    <properties>
+        <!-- Don't publish any example modules during release -->
+        <release.goals>clean</release.goals>
+    </properties>
+
     <modules>
         <module>editable</module>
         <module>main</module>
