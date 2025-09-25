@@ -2,13 +2,15 @@ import {
   ColumnFilterOp,
   ColumnFilterValue,
   Filter,
-  MultiClauseFilter,
-  SingleValueFilterClause,
 } from "@vuu-ui/vuu-filter-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { createContext, useCallback, useContext, useMemo, useRef } from "react";
 import { ColumnFilterCommitHandler } from "../column-filter/useColumnFilter";
-import { FilterAggregator } from "@vuu-ui/vuu-utils";
+import {
+  FilterAggregator,
+  getColumnValueFromFilter,
+  type FilterContainerFilter,
+} from "@vuu-ui/vuu-utils";
 
 export type ColumnFilterChangeHandler = (
   value: string | number,
@@ -20,7 +22,7 @@ export interface ColumnFilterContextProps {
   filterContainerInstalled: boolean;
   onChange?: ColumnFilterChangeHandler;
   onCommit?: ColumnFilterCommitHandler;
-  register?: (column: ColumnDescriptor) => void;
+  register?: (column: ColumnDescriptor) => string;
   getValue?: (column: ColumnDescriptor) => ColumnFilterValue;
 }
 
@@ -31,12 +33,17 @@ export const ColumnFilterContext = createContext<ColumnFilterContextProps>({
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 //@ts-ignore type-check incorrectly flags this as error, its perfectly valid
 export function useFilterContext(
+  column: ColumnDescriptor,
   throwIfNoContainer?: false,
 ): ColumnFilterContextProps;
 export function useFilterContext(
+  column: ColumnDescriptor,
   throwIfNoContainer: true,
 ): Required<ColumnFilterContextProps>;
-export function useFilterContext(throwIfNoContainer = false) {
+export function useFilterContext(
+  column: ColumnDescriptor,
+  throwIfNoContainer = false,
+) {
   const ctx = useContext(ColumnFilterContext);
   if (ctx) {
     return {
@@ -56,7 +63,7 @@ export function useFilterContext(throwIfNoContainer = false) {
 
 export type FilterAppliedHandler = (filter: Filter) => void;
 export type ColumnFilterContainerHookProps = {
-  filter?: SingleValueFilterClause | MultiClauseFilter<"and">;
+  filter?: FilterContainerFilter;
   onFilterApplied?: FilterAppliedHandler;
   onFilterCleared?: () => void;
 };
@@ -81,13 +88,23 @@ export const useColumnFilterContainer = ({
 }: ColumnFilterContainerHookProps): ColumnFilterContextProps => {
   const valueRef = useRef<ColumnFilterValueMap>({});
 
-  const filterAggregator = useMemo(() => new FilterAggregator(), []);
+  const filterAggregator = useMemo(
+    () => new FilterAggregator(filter),
+    [filter],
+  );
 
   console.log(`[useColumnFilter], filter: ${JSON.stringify(filter)}`);
 
-  const register = useCallback((column: ColumnDescriptor) => {
-    valueRef.current[column.name] = "";
-  }, []);
+  const register = useCallback(
+    (column: ColumnDescriptor) => {
+      const defaultValue = getColumnValueFromFilter(column, filter) as
+        | string
+        | number;
+      valueRef.current[column.name] = defaultValue;
+      return defaultValue;
+    },
+    [filter],
+  );
 
   const getValue = useCallback(
     (column: ColumnDescriptor, fallbackValue?: ColumnFilterValue) => {

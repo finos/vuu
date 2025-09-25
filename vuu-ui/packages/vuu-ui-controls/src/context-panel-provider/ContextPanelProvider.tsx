@@ -1,4 +1,4 @@
-import {
+import React, {
   createContext,
   ReactElement,
   ReactNode,
@@ -19,10 +19,15 @@ import {
   DialogHeader,
 } from "@salt-ds/core";
 
+/**
+ * If component is a string, the component will be read from the
+ * comoponent registry. In that case, componentProps can be used
+ * to pass props to the component.
+ */
 export type ShowContextPanel = (
-  componentType: string,
+  component: string | ReactElement,
   title: string,
-  componentProps: unknown,
+  componentProps?: unknown,
 ) => void;
 
 export interface ContextPanelProps {
@@ -63,24 +68,28 @@ export const ContextPanelProvider = ({
   const hideContextPanel = hideContextPanelProp ?? inheritedHideContextPanel;
 
   const showContextPanel = useCallback<ShowContextPanel>(
-    (componentType, title, props) => {
+    (elementOrComponentType, title, props) => {
       if (showContextPanelProp) {
-        showContextPanelProp(componentType, title, props);
+        showContextPanelProp(elementOrComponentType, title, props);
       } else if (inheritedShowContextPanel !== UndefinedShowContextPanel) {
-        inheritedShowContextPanel(componentType, title, props);
+        inheritedShowContextPanel(elementOrComponentType, title, props);
       } else if (!isUnconfiguredProperty(showComponentInContextPanel)) {
-        showComponentInContextPanel(
-          { type: componentType, props } as LayoutJSON,
-          title,
-        );
-      } else {
-        const component = layoutFromJson(
-          {
-            type: componentType,
-            props,
-          } as LayoutJSON,
-          "",
-        );
+        const component =
+          typeof elementOrComponentType === "string"
+            ? ({ type: elementOrComponentType, props } as LayoutJSON)
+            : elementOrComponentType;
+        showComponentInContextPanel(component, title);
+      } else if (typeof elementOrComponentType === "string") {
+        const component =
+          typeof elementOrComponentType === "string"
+            ? layoutFromJson(
+                {
+                  type: elementOrComponentType,
+                  props,
+                } as LayoutJSON,
+                "",
+              )
+            : elementOrComponentType;
 
         setDialog(
           <Dialog open={true} onOpenChange={handleOpenChange}>

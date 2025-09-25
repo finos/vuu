@@ -42,14 +42,11 @@ export const FilterContainerColumnFilter = ({
     onChange: onFilterContextChange,
     onCommit: onFilterContextCommit,
     register,
-  } = useFilterContext(true);
+  } = useFilterContext(column, true);
 
   console.log(`%c[FilterContainerColumnFilter] render`, "color:red");
 
-  useMemo(() => {
-    // we will re-register if value changes ...
-    register(column);
-  }, [column, register]);
+  const defaultValue = useMemo(() => register(column), [column, register]);
 
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
     (column, op, value) => {
@@ -62,7 +59,7 @@ export const FilterContainerColumnFilter = ({
     <ColumnFilterNext
       {...props}
       column={column}
-      defaultValue=""
+      defaultValue={defaultValue}
       onColumnFilterChange={onFilterContextChange}
       onCommit={handleCommit}
     />

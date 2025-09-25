@@ -1,4 +1,4 @@
-import { ComboBox, Option } from "@salt-ds/core";
+import { ComboBox, ComboBoxProps, Option } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { NO_DATA_MATCH } from "@vuu-ui/vuu-utils";
@@ -12,7 +12,9 @@ import vuuTypeaheadInputCss from "./VuuTypeaheadInput.css";
 const classBase = "vuuTypeaheadInput";
 const [noMatchingData] = NO_DATA_MATCH;
 
-export interface VuuTypeaheadInputProps extends VuuTypeaheadInputHookProps {
+export interface VuuTypeaheadInputProps
+  extends VuuTypeaheadInputHookProps,
+    Pick<ComboBoxProps, "selectOnTab"> {
   className?: string;
 }
 
@@ -25,12 +27,9 @@ export const VuuTypeaheadInput = ({
   inputProps: inputPropsProp,
   minCharacterCountToTriggerSuggestions,
   onCommit,
+  selectOnTab,
   table,
 }: VuuTypeaheadInputProps) => {
-  console.log(
-    `[VuuTypeaheadInput] minCharacterCountToTriggerSuggestions=${minCharacterCountToTriggerSuggestions}`,
-  );
-
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-typeahead-input",
@@ -75,6 +74,7 @@ export const VuuTypeaheadInput = ({
       onSelectionChange={onSelectionChange}
       open={open}
       ref={ref}
+      selectOnTab={selectOnTab}
       value={value}
     >
       {typeaheadValues.map((state) => (

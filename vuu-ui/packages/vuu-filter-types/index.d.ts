@@ -49,10 +49,11 @@ export declare type FilterClause =
 
 export interface MultiClauseFilter<
   T extends FilterCombinatorOp = FilterCombinatorOp,
+  F extends Filter = Filter,
 > extends NamedFilter {
   column?: never;
   op: T;
-  filters: Filter[];
+  filters: F[];
 }
 
 /**
