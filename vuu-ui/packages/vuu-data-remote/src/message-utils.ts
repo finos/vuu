@@ -5,6 +5,12 @@ import {
   VuuRange,
 } from "@vuu-ui/vuu-protocol-types";
 
+export const hasRequestId = <T extends object>(
+  message: T,
+): message is WithRequestId<T> => {
+  return "requestId" in message;
+};
+
 export const stripRequestId = <T>({
   requestId,
   ...rest

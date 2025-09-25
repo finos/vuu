@@ -1,13 +1,10 @@
-import {
-  DataSource,
-  Selection,
-  SelectionChangeHandler,
-} from "@vuu-ui/vuu-data-types";
+import { DataSource } from "@vuu-ui/vuu-data-types";
 import {
   VuuRpcMenuRequest,
   VuuRpcResponse,
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
+import { SelectionChangeHandler } from "@vuu-ui/vuu-table-types";
 import { isOpenBulkEditResponse, useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 
@@ -25,8 +22,8 @@ export const useTableEditManager = (vuuTable: VuuTable) => {
   }, [VuuDataSource, vuuTable]);
 
   const handleSelectionChange = useCallback<SelectionChangeHandler>(
-    (selection: Selection) => {
-      if (selection.length > 0) {
+    ({ type }) => {
+      if (type === "SELECT_ROW" || type === "SELECT_ROW_RANGE") {
         setOpen(true);
 
         if (sessionRef.current) {

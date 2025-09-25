@@ -1,6 +1,5 @@
 import { RowProps, RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
-  RowSelected,
   isGroupColumn,
   isJsonColumn,
   isJsonGroup,
@@ -78,7 +77,7 @@ export const Row = memo(
       [IDX]: rowIndex,
       [IS_EXPANDED]: isExpanded,
       [IS_LEAF]: isLeaf,
-      [SELECTED]: selectionStatus,
+      [SELECTED]: isSelected,
     } = row;
 
     const handleRowClick = useCallback(
@@ -90,8 +89,6 @@ export const Row = memo(
       [onClick, row],
     );
 
-    const { True, First, Last } = RowSelected;
-
     const className = cx(
       classBase,
       classNameProp,
@@ -99,9 +96,6 @@ export const Row = memo(
       {
         [`${classBase}-even`]: zebraStripes && rowIndex % 2 === 0,
         [`${classBase}-highlighted`]: highlighted,
-        [`${classBase}-selected`]: selectionStatus & True,
-        [`${classBase}-selectedStart`]: selectionStatus & First,
-        [`${classBase}-selectedEnd`]: selectionStatus & Last,
       },
     );
 
@@ -137,7 +131,7 @@ export const Row = memo(
       <div
         {...htmlAttributes}
         aria-expanded={ariaExpanded}
-        aria-selected={selectionStatus & True ? "true" : undefined}
+        aria-selected={isSelected ? "true" : undefined}
         aria-level={ariaLevel}
         role="row"
         className={className}

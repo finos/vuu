@@ -6,11 +6,7 @@ import {
   LocalDataSourceProvider,
   SimulTableName,
 } from "@vuu-ui/vuu-data-test";
-import {
-  DataSource,
-  SelectionChangeHandler,
-  TableSchema,
-} from "@vuu-ui/vuu-data-types";
+import { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
 import {
   Flexbox,
   FlexboxLayout,
@@ -29,6 +25,7 @@ import {
   GroupColumnDescriptor,
   HeaderCellProps,
   RuntimeColumnDescriptor,
+  SelectionChangeHandler,
   TableConfig,
   TableRowSelectHandler,
 } from "@vuu-ui/vuu-table-types";
@@ -837,9 +834,12 @@ export const CustomColumnRenderer = () => {
   const onSelect = useCallback<TableRowSelectHandler>((row) => {
     console.log({ row });
   }, []);
-  const onSelectionChange = useCallback<SelectionChangeHandler>((selected) => {
-    console.log({ selected });
-  }, []);
+  const onSelectionChange = useCallback<SelectionChangeHandler>(
+    (selectionChange) => {
+      console.log({ selectionChange });
+    },
+    [],
+  );
 
   return (
     <Table

@@ -8,6 +8,7 @@ import type {
 } from "@vuu-ui/vuu-data-types";
 import type { Filter } from "@vuu-ui/vuu-filter-types";
 import type {
+  SelectRequest,
   VuuAggType,
   VuuRowDataItemType,
   VuuSortType,
@@ -516,3 +517,8 @@ export interface TableContextMenuDef {
   menuBuilder: MenuBuilder<TableMenuLocation, TableContextMenuOptions>;
   menuActionHandler: MenuActionHandler;
 }
+
+export declare type SelectionChange = Omit<SelectRequest, "vpId">;
+export declare type SelectionChangeHandler = (
+  selectionChange: SelectionChange,
+) => void;

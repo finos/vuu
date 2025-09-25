@@ -1,7 +1,11 @@
-import { getSchema, LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { SelectionChangeHandler, TableSchema } from "@vuu-ui/vuu-data-types";
+import { getSchema } from "@vuu-ui/vuu-data-test";
+import { TableSchema } from "@vuu-ui/vuu-data-types";
 import { Table, TableProps } from "@vuu-ui/vuu-table";
-import { ColumnLayout, TableConfig } from "@vuu-ui/vuu-table-types";
+import {
+  ColumnLayout,
+  SelectionChangeHandler,
+  TableConfig,
+} from "@vuu-ui/vuu-table-types";
 import { toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
 
@@ -67,6 +71,7 @@ const DataTableTemplate = ({
   );
 };
 
+/** tags=data-consumer */
 export const CheckboxSelection = ({
   columnLayout,
   height = 645,
@@ -85,102 +90,51 @@ export const CheckboxSelection = ({
   }, [columnLayout]);
 
   return (
-    <LocalDataSourceProvider>
-      <DataTableTemplate
-        allowCellBlockSelection
-        config={config}
-        height={height}
-        selectionModel="checkbox"
-        width={width}
-      />
-    </LocalDataSourceProvider>
+    <DataTableTemplate
+      allowCellBlockSelection
+      config={config}
+      height={height}
+      selectionModel="checkbox"
+      width={width}
+    />
   );
 };
 
+/** tags=data-consumer */
 export const CellBlockSelectionOnly = () => {
-  return (
-    <LocalDataSourceProvider>
-      <DataTableTemplate allowCellBlockSelection selectionModel="none" />
-    </LocalDataSourceProvider>
-  );
+  return <DataTableTemplate allowCellBlockSelection selectionModel="none" />;
 };
 
+/** tags=data-consumer */
 export const CellBlockCheckboxSelection = () => {
   return (
-    <LocalDataSourceProvider>
-      <DataTableTemplate allowCellBlockSelection selectionModel="checkbox" />
-    </LocalDataSourceProvider>
+    <DataTableTemplate allowCellBlockSelection selectionModel="checkbox" />
   );
 };
 
+/** tags=data-consumer */
 export const CellBlockRowSelection = () => {
   return (
-    <LocalDataSourceProvider>
-      <DataTableTemplate
-        allowCellBlockSelection
-        selectionModel="extended"
-        navigationStyle="row"
-      />
-    </LocalDataSourceProvider>
+    <DataTableTemplate
+      allowCellBlockSelection
+      selectionModel="extended"
+      navigationStyle="row"
+    />
   );
 };
 
-export const PreSelectedRowByIndex = () => {
-  const handleSelectionChange: SelectionChangeHandler = (selection) => {
-    console.log(`selection changed ${JSON.stringify(selection)}`);
-  };
-  return (
-    <LocalDataSourceProvider>
-      <DataTableTemplate
-        allowCellBlockSelection
-        defaultSelectedIndexValues={[4]}
-        onSelectionChange={handleSelectionChange}
-        selectionModel="extended"
-        navigationStyle="row"
-      />
-    </LocalDataSourceProvider>
-  );
-};
-
-export const PreSelectedRowsByIndex = () => {
-  return (
-    <LocalDataSourceProvider>
-      <DataTableTemplate
-        allowCellBlockSelection
-        defaultSelectedIndexValues={[2, 4, 6, 8]}
-        selectionModel="extended"
-        navigationStyle="row"
-      />
-    </LocalDataSourceProvider>
-  );
-};
-
-export const PreSelectedRangeByIndex = () => {
-  return (
-    <LocalDataSourceProvider>
-      <DataTableTemplate
-        allowCellBlockSelection
-        defaultSelectedIndexValues={[[2, 8]]}
-        selectionModel="extended"
-        navigationStyle="row"
-      />
-    </LocalDataSourceProvider>
-  );
-};
-
+/** tags=data-consumer */
 export const PreSelectedRowByKey = () => {
   const handleSelectionChange: SelectionChangeHandler = (selection) => {
     console.log(`selection changed ${JSON.stringify(selection)}`);
   };
   return (
-    <LocalDataSourceProvider>
-      <DataTableTemplate
-        allowCellBlockSelection
-        defaultSelectedKeyValues={["AAOZ.N"]}
-        onSelectionChange={handleSelectionChange}
-        selectionModel="extended"
-        navigationStyle="row"
-      />
-    </LocalDataSourceProvider>
+    <DataTableTemplate
+      allowCellBlockSelection
+      defaultSelectedKeyValues={["AAOZ.N"]}
+      onSelectionChange={handleSelectionChange}
+      selectionModel="extended"
+      navigationStyle="row"
+    />
   );
 };

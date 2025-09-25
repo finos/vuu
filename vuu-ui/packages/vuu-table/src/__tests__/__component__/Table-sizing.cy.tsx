@@ -7,6 +7,7 @@ import {
   MaxViewportRowLimitRowsExceedLimit,
   MaxViewportRowLimitFewRows,
 } from "../../../../../showcase/src/examples/Table/TableLayout.examples";
+import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 
 const haveHeight = (value: number) => (el: JQuery<HTMLElement>) =>
   expect(el.height()).eq(value);
@@ -72,7 +73,9 @@ describe("explicit sizing", () => {
 
   it("vertical scrollbars required, checkbox selection, columns fit sizing, width greater than combined default column width", () => {
     cy.mount(
-      <CheckboxSelection columnLayout="fit" height={625} width={1000} />,
+      <LocalDataSourceProvider>
+        <CheckboxSelection columnLayout="fit" height={625} width={1000} />
+      </LocalDataSourceProvider>,
     );
     cy.findByTestId("table").should(haveWidth(1000));
     cy.findByTestId("table").should(haveHeight(625));

@@ -7,6 +7,8 @@ import {
   VuuUIMessageIn,
 } from "@vuu-ui/vuu-data-types";
 import {
+  SelectRequest,
+  SelectResponse,
   VuuCreateVisualLink,
   VuuLoginResponse,
   VuuRemoveVisualLink,
@@ -189,6 +191,9 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
         | VuuRemoveVisualLink,
     ) => this.asyncRequest<T>(message),
 
+    select: async (selectRequest: SelectRequest) =>
+      this.asyncRequest<SelectResponse>(selectRequest),
+
     getTableList: async () =>
       this.asyncRequest<VuuTableList>({ type: "GET_TABLE_LIST" }),
 
@@ -206,7 +211,8 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
       | VuuTableListRequest
       | VuuTableMetaRequest
       | VuuCreateVisualLink
-      | VuuRemoveVisualLink,
+      | VuuRemoveVisualLink
+      | SelectRequest,
   ): Promise<T> => {
     const requestId = uuid();
     this.#worker.send({

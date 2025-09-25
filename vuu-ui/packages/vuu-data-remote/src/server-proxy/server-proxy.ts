@@ -10,7 +10,6 @@ import type {
   VuuUIMessageOutConfig,
   VuuUIMessageOutConnect,
   VuuUIMessageOutOpenTreeNode,
-  VuuUIMessageOutSelect,
   VuuUIMessageOutSetTitle,
   VuuUIMessageOutSubscribe,
   VuuUIMessageOutUnsubscribe,
@@ -34,6 +33,7 @@ import type {
   VuuViewportRangeRequest,
   VuuRpcServiceRequest,
   VuuViewportCreateResponse,
+  SelectRequest,
 } from "@vuu-ui/vuu-protocol-types";
 import {
   isVuuMenuRpcRequest,
@@ -46,10 +46,12 @@ import {
   isVisualLinkMessage,
   isRpcServiceRequest,
   hasViewPortContext,
+  isSelectRequest,
 } from "@vuu-ui/vuu-utils";
 import {
   createSchemaFromTableMetadata,
   groupRowsByViewport,
+  hasRequestId,
   stripRequestId,
 } from "../message-utils";
 import * as Message from "./messages";
@@ -273,11 +275,11 @@ export class ServerProxy {
           }
         }
 
-        if (message.selectedIndexValues) {
-          infoEnabled &&
-            info(`selected = ${JSON.stringify(message.selectedIndexValues)}`);
-          this.select(viewport, { selected: message.selectedIndexValues });
-        }
+        // if (message.selectedIndexValues) {
+        //   infoEnabled &&
+        //     info(`selected = ${JSON.stringify(message.selectedIndexValues)}`);
+        //   this.select(viewport, { selected: message.selectedIndexValues });
+        // }
 
         // In the case of a reconnect, we may have resubscribed a disabled viewport,
         // reset the disabled state on server
@@ -497,14 +499,10 @@ export class ServerProxy {
     }
   }
 
-  private select(
-    viewport: Viewport,
-    message: Pick<VuuUIMessageOutSelect, "selected">,
-  ) {
-    const requestId = nextRequestId();
-    const { selected } = message;
-    const request = viewport.selectRequest(requestId, selected);
-    this.sendIfReady(request, requestId, viewport.status === "subscribed");
+  private select(viewport: Viewport, message: WithRequestId<SelectRequest>) {
+    const [requestId, selectRequest] = stripRequestId<SelectRequest>(message);
+    const request = viewport.selectRequest(selectRequest);
+    this.sendMessageToServer(request, requestId);
   }
 
   private disableViewport(viewport: Viewport) {
@@ -680,7 +678,8 @@ export class ServerProxy {
       | WithRequestId<VuuRpcServiceRequest>
       | WithRequestId<VuuRpcMenuRequest>
       | WithRequestId<VuuCreateVisualLink>
-      | WithRequestId<VuuRemoveVisualLink>,
+      | WithRequestId<VuuRemoveVisualLink>
+      | WithRequestId<SelectRequest>,
   ) {
     if (isViewportMessage(message) || isVisualLinkMessage(message)) {
       if (message.type === "disable") {
@@ -700,8 +699,6 @@ export class ServerProxy {
             return this.setViewRange(viewport, message);
           case "config":
             return this.setConfig(viewport, message);
-          case "select":
-            return this.select(viewport, message);
           case "suspend":
             return this.suspendViewport(viewport);
           case "resume":
@@ -720,6 +717,13 @@ export class ServerProxy {
             return this.setTitle(viewport, message);
           default:
         }
+      }
+    } else if (isSelectRequest(message)) {
+      if (hasRequestId<SelectRequest>(message)) {
+        const viewport = this.getViewportForClient(message.vpId);
+        return this.select(viewport, message);
+      } else {
+        console.warn(`selectRequest must have requestId`);
       }
     } else if (isRpcServiceRequest(message)) {
       return this.rpcRequest(message);
@@ -872,13 +876,35 @@ export class ServerProxy {
         }
         break;
 
-      case Message.SET_SELECTION_SUCCESS:
-        {
-          const viewport = this.viewports.get(body.vpId);
-          if (viewport) {
-            viewport.completeOperation(requestId);
-          }
-        }
+      case "SELECT_ALL_SUCCESS":
+      case "SELECT_ROW_SUCCESS":
+      case "SELECT_ROW_RANGE_SUCCESS":
+      case "DESELECT_ROW_SUCCESS": {
+        const { type, selectedRowCount } = body;
+        this.postMessageToClient({
+          requestId,
+          type,
+          selectedRowCount,
+        });
+        break;
+      }
+      case "DESELECT_ALL_SUCCESS": {
+        const { type } = body;
+        this.postMessageToClient({
+          requestId,
+          type,
+          selectedRowCount: 0,
+        });
+
+        break;
+      }
+
+      case "SELECT_ROW_REJECT":
+      case "DESELECT_ROW_REJECT":
+      case "SELECT_ROW_RANGE_REJECT":
+      case "SELECT_ALL_REJECT":
+      case "DESELECT_ALL_REJECT":
+        console.warn(`select error ${body.type} ${body.errorMsg}`);
         break;
 
       case Message.CHANGE_VP_SUCCESS:

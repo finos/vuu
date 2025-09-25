@@ -1,11 +1,10 @@
-import {
+import type {
   DataSource,
   DataSourceCallbackMessage,
   DataSourceConstructorProps,
   DataSourceStatus,
   DataSourceVisualLinkCreatedMessage,
   OptimizeStrategy,
-  Selection,
   ServerAPI,
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
@@ -13,10 +12,11 @@ import {
   WithBaseFilter,
   WithFullConfig,
 } from "@vuu-ui/vuu-data-types";
-import {
+import type {
   LinkDescriptorWithLabel,
   RpcResultError,
   RpcResultSuccess,
+  SelectRequest,
   VuuCreateVisualLink,
   VuuGroupBy,
   VuuMenu,
@@ -35,12 +35,12 @@ import {
   BaseDataSource,
   combineFilters,
   debounce,
+  isSelectSuccessWithRowCount,
   isViewportMenusAction,
   isVisualLinksAction,
   itemsOrOrderChanged,
   logger,
   Range,
-  selectionCount,
   throttle,
   uuid,
   vuuEditCellRequest,
@@ -94,10 +94,8 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     callback: DataSourceSubscribeCallback,
   ) {
     super.subscribe(subscribeProps, callback);
-    const {
-      selectedIndexValues,
-      viewport = this.viewport || (this.viewport = uuid()),
-    } = subscribeProps;
+    const { viewport = this.viewport || (this.viewport = uuid()) } =
+      subscribeProps;
 
     if (this.#status === "disabled" || this.#status === "disabling") {
       this.enable(callback);
@@ -115,7 +113,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     }
 
     this.#status = "subscribing";
-    this.#selectedRowsCount = selectionCount(selectedIndexValues);
+    // this.#selectedRowsCount = selectionCount(selectedIndexValues);
 
     this.server = await ConnectionManager.serverAPI;
 
@@ -130,7 +128,6 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
         ...dataSourceConfig,
         bufferSize,
         range: this._range,
-        selectedIndexValues: selectedIndexValues,
         table: this.table,
         title: this._title,
         viewport,
@@ -300,15 +297,18 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     }
   }
 
-  select(selected: Selection) {
-    this.#selectedRowsCount = selectionCount(selected);
-    if (this.viewport) {
-      this.server?.send({
-        viewport: this.viewport,
-        type: "select",
-        selected,
-      });
-      this.emit("row-selection", selected, this.#selectedRowsCount);
+  async select(selectRequest: Omit<SelectRequest, "vpId">) {
+    if (this.viewport && this.server) {
+      const response = await this.server.select({
+        ...selectRequest,
+        vpId: this.viewport,
+      } as SelectRequest);
+      if (isSelectSuccessWithRowCount(response)) {
+        this.#selectedRowsCount = response.selectedRowCount;
+        this.emit("row-selection", response.selectedRowCount);
+      } else {
+        console.warn(`select error`);
+      }
     }
   }
 

@@ -1,20 +1,16 @@
-import type { DataSourceRow, Selection } from "@vuu-ui/vuu-data-types";
-import {
-  ColumnMap,
-  getSelectionStatus,
-  KeySet,
-  metadataKeys,
-} from "@vuu-ui/vuu-utils";
+import type { DataSourceRow } from "@vuu-ui/vuu-data-types";
+import { ColumnMap, KeySet, metadataKeys } from "@vuu-ui/vuu-utils";
 
-const { RENDER_IDX, SELECTED } = metadataKeys;
+const { KEY, RENDER_IDX, SELECTED } = metadataKeys;
 
 export const toClientRow = (
   row: DataSourceRow,
   keys: KeySet,
-  selection: Selection,
+  selectedRows: Set<string>,
   dataIndices?: number[],
 ) => {
   const [rowIndex] = row;
+  const selectedAll = selectedRows.has("*");
   let clientRow;
   if (dataIndices) {
     // If client has specified a different ordering of columns from the way they are
@@ -27,7 +23,7 @@ export const toClientRow = (
     clientRow = row.slice() as DataSourceRow;
   }
   clientRow[RENDER_IDX] = keys.keyFor(rowIndex);
-  clientRow[SELECTED] = getSelectionStatus(selection, rowIndex);
+  clientRow[SELECTED] = selectedAll || selectedRows.has(row[KEY]) ? 1 : 0;
   return clientRow;
 };
 

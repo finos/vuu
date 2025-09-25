@@ -8,6 +8,8 @@ import type {
   VuuRpcResponse,
   VuuRpcRequest,
   VuuRpcEditResponse,
+  SelectRequest,
+  SelectRowRequest,
 } from "@vuu-ui/vuu-protocol-types";
 import type {
   DataSourceFilter,
@@ -19,14 +21,12 @@ import type {
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
   WithFullConfig,
-  Selection,
   MenuRpcResponse,
   VuuUIMessageInRPCEditReject,
   VuuUIMessageInRPCEditResponse,
 } from "@vuu-ui/vuu-data-types";
 import {
   EventEmitter,
-  isSelected,
   JsonData,
   jsonToDataSourceRows,
   KeySet,
@@ -227,18 +227,42 @@ export class JsonDataSource
     });
   }
 
-  select(selected: Selection) {
+  // TODO - finish this implementation
+  select(selectRequest: Omit<SelectRequest, "vpId">) {
     const updatedRows: DataSourceRow[] = [];
-    for (const row of this.#data) {
-      const { [IDX]: rowIndex, [SELECTED]: sel } = row;
-      const wasSelected = sel === 1;
-      const nowSelected = isSelected(selected, rowIndex);
-      if (nowSelected !== wasSelected) {
-        const selectedRow = row.slice() as DataSourceRow;
-        selectedRow[SELECTED] = nowSelected ? 1 : 0;
-        this.#data[rowIndex] = selectedRow;
-        updatedRows.push(selectedRow);
+    switch (selectRequest.type) {
+      case "SELECT_ROW": {
+        const { preserveExistingSelection, rowKey } = selectRequest as Omit<
+          SelectRowRequest,
+          "vpId"
+        >;
+        for (const row of this.#data) {
+          const { [IDX]: rowIndex, [KEY]: key, [SELECTED]: sel } = row;
+          if (
+            sel === 1 &&
+            preserveExistingSelection === false &&
+            key !== rowKey
+          ) {
+            const deselectedRow = row.slice() as DataSourceRow;
+            deselectedRow[SELECTED] = 0;
+            this.#data[rowIndex] = deselectedRow;
+            updatedRows.push(deselectedRow);
+          } else if (key === rowKey) {
+            const selectedRow = row.slice() as DataSourceRow;
+            selectedRow[SELECTED] = 1;
+            this.#data[rowIndex] = selectedRow;
+            updatedRows.push(selectedRow);
+          }
+        }
+
+        break;
       }
+      case "DESELECT_ROW": {
+        break;
+      }
+
+      default:
+      // ignore
     }
 
     if (updatedRows.length > 0) {

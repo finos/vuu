@@ -4,13 +4,12 @@ import { TreeDataSource } from "@vuu-ui/vuu-data-local";
 import { useMemo, useRef } from "react";
 import { TableConfig } from "@vuu-ui/vuu-table-types";
 import {
-  isRowSelected,
   metadataKeys,
   type RowToObjectMapper,
   type TreeSourceNode,
 } from "@vuu-ui/vuu-utils";
 
-const { DEPTH, IS_LEAF, KEY, IDX } = metadataKeys;
+const { DEPTH, IS_LEAF, KEY, IDX, SELECTED } = metadataKeys;
 
 interface Props extends Omit<TableProps, "config" | "dataSource"> {
   config?: Pick<
@@ -33,7 +32,7 @@ const rowToTreeNodeObject: RowToObjectMapper = (row, columnMap) => {
     key,
     index,
     isGroupRow: !isLeaf,
-    isSelected: isRowSelected(row),
+    isSelected: row[SELECTED] !== 0,
     data: {
       label: row[labelColIdx],
       nodeData: row[firstColIdx],

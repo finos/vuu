@@ -12,7 +12,6 @@ export interface DataSourceHookProps
   extends Pick<
     TableProps,
     | "dataSource"
-    | "defaultSelectedIndexValues"
     | "defaultSelectedKeyValues"
     | "renderBufferSize"
     | "revealSelected"
@@ -23,7 +22,6 @@ export interface DataSourceHookProps
 
 export const useDataSource = ({
   dataSource,
-  defaultSelectedIndexValues,
   defaultSelectedKeyValues,
   onSizeChange,
   onSubscribed,
@@ -160,7 +158,6 @@ export const useDataSource = ({
             {
               range,
               revealSelected,
-              selectedIndexValues: defaultSelectedIndexValues,
               selectedKeyValues: defaultSelectedKeyValues,
             },
             datasourceMessageHandler,
@@ -174,7 +171,6 @@ export const useDataSource = ({
       dataSource,
       dataWindow,
       datasourceMessageHandler,
-      defaultSelectedIndexValues,
       defaultSelectedKeyValues,
       renderBufferSize,
       revealSelected,

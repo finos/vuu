@@ -1,5 +1,6 @@
 import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
 import { getSchema } from "@vuu-ui/vuu-data-test";
+import { SelectRowRequest } from "@vuu-ui/vuu-protocol-types";
 import { buildColumnMap, useData } from "@vuu-ui/vuu-utils";
 import { Basket, BasketSelector } from "feature-basket-trading";
 import { useCallback, useMemo, useState } from "react";
@@ -31,7 +32,11 @@ export const DefaultBasketSelector = () => {
       );
       // createBasketTradingRow(basketId, basketName, status, side),
     }
-    dataSource.select([1]);
+    dataSource.select({
+      preserveExistingSelection: false,
+      type: "SELECT_ROW",
+      rowKey: "Blue-0002",
+    } as Omit<SelectRowRequest, "vpId">);
     return [buildColumnMap(dataSource.columns), dataSource];
   }, [VuuDataSource, schema]);
 

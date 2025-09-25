@@ -29,8 +29,6 @@ export const OPEN_TREE_REJECT = "OPEN_TREE_REJECT";
 export const REMOVE_VP = "REMOVE_VP";
 export const REMOVE_VP_REJECT = "REMOVE_VP_REJECT";
 export const MENU_RPC_RESP = "MENU_RPC_RESP";
-export const SET_SELECTION = "SET_SELECTION";
-export const SET_SELECTION_SUCCESS = "SET_SELECTION_SUCCESS";
 
 export const TABLE_ROW = "TABLE_ROW";
 export const SIZE = "SIZE";

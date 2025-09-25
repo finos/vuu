@@ -32,6 +32,9 @@ import type {
   VuuRpcEditResponse,
   VuuLoginSuccessResponse,
   VuuLoginFailResponse,
+  SelectRequest,
+  SelectResponse,
+  SelectSuccessWithRowCount,
 } from "@vuu-ui/vuu-protocol-types";
 import type {
   DataSourceConfigChanges,
@@ -350,7 +353,8 @@ export declare type DataSourceCallbackMessage =
   | DataSourceSubscribedMessage
   | DataSourceVisualLinkCreatedMessage
   | DataSourceVisualLinkRemovedMessage
-  | DataSourceVisualLinksMessage;
+  | DataSourceVisualLinksMessage
+  | WithRequestId<SelectSuccessWithRowCount>;
 
 export declare type ConfigChangeColumnsMessage = {
   type: "columns";
@@ -427,7 +431,6 @@ export interface DataSourceSubscribeProps
   viewport?: string;
   range?: Range;
   revealSelected?: boolean;
-  selectedIndexValues?: Selection;
   selectedKeyValues?: string[];
   title?: string;
 }
@@ -439,7 +442,6 @@ export declare type OptimizeStrategy = "none" | "throttle" | "debounce";
 
 export declare type DataSourceEventHandler = (viewportId: string) => void;
 export declare type RowSelectionEventHandler = (
-  selection: Selection,
   selectedRowCount: number,
 ) => void;
 
@@ -527,11 +529,6 @@ export interface TypeaheadSuggestionProvider {
   ) => Promise<string[]>;
 }
 
-export declare type RangeTuple = [from: number, to: number];
-export declare type SelectionItem = number | RangeTuple;
-export declare type Selection = SelectionItem[];
-export declare type SelectionChangeHandler = (selection: Selection) => void;
-
 export declare type WithBaseFilter<T> = T & {
   baseFilterSpec?: DataSourceFilter;
 };
@@ -579,6 +576,8 @@ export interface DataSource
    * see 'freeze' above. If frozen, the time at which freeze was applied.
    */
   freezeTimestamp?: number | undefined;
+  select?: (selectRequest: Omit<SelectRequest, "vpId">) => void;
+
   status: DataSourceStatus;
   /**
    *
@@ -651,7 +650,6 @@ export interface DataSource
   ) => Promise<RpcResultSuccess | RpcResultError>;
   openTreeNode: (keyOrIndex: string | number) => void;
   range: Range;
-  select: SelectionChangeHandler;
   readonly selectedRowsCount: number;
   sendBroadcastMessage?: (message: DataSourceBroadcastMessage) => void;
   readonly size: number;
@@ -916,9 +914,6 @@ export declare type VuuUIMessageOutViewport =
   | VuuUIMessageOutOpenTreeNode
   | VuuUIMessageOutRemoveLink
   | VuuUIMessageOutResume
-  | VuuUIMessageOutSelect
-  | VuuUIMessageOutSelectAll
-  | VuuUIMessageOutSelectNone
   | VuuUIMessageOutSetTitle
   | VuuUIMessageOutSuspend
   | VuuUIMessageOutViewRange;
@@ -931,7 +926,8 @@ export declare type VuuUIMessageOut =
   | VuuUIMessageOutSubscribe
   | VuuUIMessageOutUnsubscribe
   | VuuUIMessageOutViewport
-  | WithRequestId<VuuTableListRequest | VuuTableMetaRequest>;
+  | WithRequestId<VuuTableListRequest | VuuTableMetaRequest>
+  | SelectRequest;
 
 export type ConnectOptions = {
   url: string;
@@ -957,6 +953,7 @@ export interface ServerAPI {
       | VuuCreateVisualLink
       | VuuRemoveVisualLink,
   ) => Promise<T>;
+  select: (selectRequest: SelectRequest) => Promise<SelectResponse>;
   send: (message: VuuUIMessageOut) => void;
   subscribe: (
     message: ServerProxySubscribeMessage,

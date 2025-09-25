@@ -7,7 +7,6 @@ import {
   DataSourceRow,
   DataSourceStatus,
   DataSourceSubscribedMessage,
-  Selection,
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
   TableSchema,
@@ -18,6 +17,9 @@ import {
 import { filterPredicate, parseFilter } from "@vuu-ui/vuu-filter-parser";
 import type {
   LinkDescriptorWithLabel,
+  SelectRequest,
+  SelectRowRangeRequest,
+  SelectRowRequest,
   VuuAggregation,
   VuuColumns,
   VuuGroupBy,
@@ -52,7 +54,6 @@ import {
   logger,
   metadataKeys,
   rangeNewItems,
-  selectionCount,
   uuid,
   vanillaConfig,
   withConfigDefaults,
@@ -81,16 +82,18 @@ export interface ArrayDataSourceConstructorProps
 }
 
 const toDataSourceRow =
-  (key: number) =>
-  (data: VuuRowDataItemType[], index: number): DataSourceRow => {
+  (indexOfKeyColumn: number, index?: Map<string, number>) =>
+  (data: VuuRowDataItemType[], idx: number): DataSourceRow => {
+    const key = `${data[indexOfKeyColumn]}`;
+    index?.set(key, idx);
     return [
-      index,
-      index,
+      idx,
+      idx,
       true,
       false,
       1,
       0,
-      String(data[key]),
+      key,
       0,
       0, // ts
       false, // isNew
@@ -150,12 +153,12 @@ export class ArrayDataSource
   #keys = new KeySet(NULL_RANGE);
   #links: LinkDescriptorWithLabel[] | undefined;
   #range = Range(0, 0);
-  #selectedRowsCount = 0;
   #status: DataSourceStatus = "initialising";
   #title: string | undefined;
 
   protected _menu: VuuMenu | undefined;
-  protected selectedRows: Selection = [];
+  protected selectedRows = new Set<string>();
+  protected index = new Map<string, number>();
 
   public tableSchema: TableSchema;
   public viewport: string;
@@ -197,13 +200,7 @@ export class ArrayDataSource
     const columns = columnDescriptors.map((col) => col.name);
     this.#columnMap = buildColumnMap(columns);
     this.dataIndices = buildDataToClientMap(this.#columnMap, this.dataMap);
-    this.#data = data.map<DataSourceRow>(toDataSourceRow(this.key));
-
-    console.log({
-      columnMap: this.#columnMap,
-      map: dataMap,
-      dataIndices: this.dataIndices,
-    });
+    this.#data = data.map<DataSourceRow>(toDataSourceRow(this.key, this.index));
 
     this.config = {
       ...this._config,
@@ -225,8 +222,8 @@ export class ArrayDataSource
       aggregations,
       baseFilterSpec,
       range,
-      selectedIndexValues,
-      selectedKeyValues,
+      // selectedIndexValues,
+      // selectedKeyValues,
       sort,
       groupBy,
       filterSpec,
@@ -236,18 +233,15 @@ export class ArrayDataSource
     this.clientCallback = callback;
     this.viewport = viewport;
     this.#status = "subscribed";
-    this.selectedRows =
-      selectedIndexValues ??
-      this.convertKeysToIndexValues(selectedKeyValues) ??
-      [];
-    this.#selectedRowsCount = selectionCount(this.selectedRows);
+    // this.selectedRows =
+    //   selectedIndexValues ??
+    //   this.convertKeysToIndexValues(selectedKeyValues) ??
+    //   [];
+    // this.#selectedRowsCount = selectionCount(this.selectedRows);
     this.lastRangeServed = { from: 0, to: 0 };
 
     let config = this._config;
 
-    // if (range) {
-    //   this.setRange(range);
-    // }
     const hasConfigProps =
       aggregations || columns || filterSpec || groupBy || sort;
 
@@ -330,12 +324,63 @@ export class ArrayDataSource
     this.emit("enabled", this.viewport);
   }
 
-  select(selected: Selection) {
-    this.#selectedRowsCount = selectionCount(selected);
-    debug?.(`select ${JSON.stringify(selected)}`);
-    this.selectedRows = selected;
+  select(selectRequest: Omit<SelectRequest, "vpId">) {
+    switch (selectRequest.type) {
+      case "SELECT_ROW": {
+        const { preserveExistingSelection, rowKey } = selectRequest as Omit<
+          SelectRowRequest,
+          "vpId"
+        >;
+        if (!preserveExistingSelection) {
+          this.selectedRows.clear();
+        }
+        this.selectedRows.add(rowKey);
+        break;
+      }
+      case "DESELECT_ROW": {
+        const { preserveExistingSelection, rowKey } = selectRequest as Omit<
+          SelectRowRequest,
+          "vpId"
+        >;
+        if (!preserveExistingSelection) {
+          this.selectedRows.clear();
+        } else {
+          this.selectedRows.delete(rowKey);
+        }
+        break;
+      }
+      case "SELECT_ROW_RANGE": {
+        const { preserveExistingSelection, fromRowKey, toRowKey } =
+          selectRequest as Omit<SelectRowRangeRequest, "vpId">;
+
+        if (!preserveExistingSelection) {
+          this.selectedRows.clear();
+        }
+
+        const fromIdx = this.index.get(fromRowKey);
+        const toIdx = this.index.get(toRowKey);
+        if (typeof fromIdx === "number" && typeof toIdx === "number") {
+          for (let i = fromIdx; i <= toIdx; i++) {
+            const { [KEY]: rowKey } = this.#data[i];
+            this.selectedRows.add(rowKey);
+          }
+        }
+
+        break;
+      }
+      case "SELECT_ALL": {
+        this.selectedRows.clear();
+        this.selectedRows.add("*");
+        break;
+      }
+      case "DESELECT_ALL": {
+        this.selectedRows.clear();
+        break;
+      }
+    }
+
     this.setRange(this.#range, true);
-    this.emit("row-selection", selected, this.#selectedRowsCount);
+    this.emit("row-selection", this.selectedRows.size);
   }
 
   private getRowKey(keyOrIndex: string | number) {
@@ -595,7 +640,7 @@ export class ArrayDataSource
   }
 
   get selectedRowsCount() {
-    return this.#selectedRowsCount;
+    return this.selectedRows.size;
   }
 
   get size() {

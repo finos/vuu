@@ -9,6 +9,7 @@ import { DeferredPromise, getLoggingConfigForWorker } from "@vuu-ui/vuu-utils";
 // Note: inlined-worker is a generated file, it must be built
 import { workerSourceCode } from "./inlined-worker";
 import {
+  SelectRequest,
   VuuCreateVisualLink,
   VuuRemoveVisualLink,
   VuuRpcMenuRequest,
@@ -69,6 +70,7 @@ export class DedicatedWorker {
           | VuuRemoveVisualLink
           | VuuRpcServiceRequest
           | VuuRpcMenuRequest
+          | SelectRequest
         >,
   ) {
     (await this.#worker).postMessage(message);

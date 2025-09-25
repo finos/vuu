@@ -23,6 +23,9 @@ import {
   OpenComponentInDialogAction,
   VuuLoginResponse,
   VuuRowDataItemType,
+  SelectRequest,
+  SelectResponse,
+  SelectSuccessWithRowCount,
 } from "@vuu-ui/vuu-protocol-types";
 import { isView as componentInRegistry } from "./component-registry";
 
@@ -38,6 +41,26 @@ const MENU_RPC_TYPES = [
   "VP_EDIT_DELETE_ROW_RPC",
   "VP_EDIT_SUBMIT_FORM_RPC",
 ];
+
+export const isSelectRequest = (message: object): message is SelectRequest =>
+  "type" in message &&
+  (message.type === "SELECT_ROW" ||
+    message.type === "DESELECT_ROW" ||
+    message.type === "SELECT_ROW_RANGE" ||
+    message.type === "SELECT_ALL" ||
+    message.type === "DESELECT_ALL");
+
+export const isSelectSuccessWithRowCount = (
+  response: SelectResponse | SelectSuccessWithRowCount,
+): response is SelectSuccessWithRowCount =>
+  [
+    "SELECT_ROW_SUCCESS",
+    "DESELECT_ROW_SUCCESS",
+    "SELECT_ROW_RANGE_SUCCESS",
+    "SELECT_ALL_SUCCESS",
+    "DESELECT_ALL_SUCCESS",
+  ].includes(response.type ?? "") &&
+  typeof (response as SelectSuccessWithRowCount).selectedRowCount === "number";
 
 export const isRpcServiceRequest = (message: {
   type: string;

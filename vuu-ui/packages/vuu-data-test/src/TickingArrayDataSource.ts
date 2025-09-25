@@ -6,7 +6,6 @@ import type {
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
   DataSourceVisualLinkCreatedMessage,
-  SelectionItem,
 } from "@vuu-ui/vuu-data-types";
 import type {
   LinkDescriptorWithLabel,
@@ -23,7 +22,7 @@ import type {
   VuuRpcMenuResponse,
   VuuRpcServiceRequest,
 } from "@vuu-ui/vuu-protocol-types";
-import { isTypeaheadRequest, metadataKeys, Range } from "@vuu-ui/vuu-utils";
+import { isTypeaheadRequest, Range } from "@vuu-ui/vuu-utils";
 import {
   RpcEditService,
   RpcMenuService,
@@ -32,8 +31,6 @@ import {
 } from "./core/module/VuuModule";
 import { makeSuggestions } from "./makeSuggestions";
 import { Table } from "./Table";
-
-const { KEY } = metadataKeys;
 
 export type VisualLinkHandler = (
   message: VuuCreateVisualLink | VuuRemoveVisualLink,
@@ -151,25 +148,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
   }
 
   private getSelectedRowIds() {
-    return this.selectedRows.reduce<string[]>(
-      (rowIds: string[], selection: SelectionItem) => {
-        if (Array.isArray(selection)) {
-          for (let i = selection[0]; i <= selection[1]; i++) {
-            const row = this.data[i];
-            if (row) {
-              rowIds.push(row[KEY]);
-            }
-          }
-        } else {
-          const row = this.data[selection];
-          if (row) {
-            rowIds.push(row[KEY]);
-          }
-        }
-        return rowIds;
-      },
-      [],
-    );
+    return Array.from(this.selectedRows);
   }
 
   async applyEdit(

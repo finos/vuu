@@ -1843,9 +1843,11 @@ describe("ServerProxy", () => {
 
       // prettier-ignore
       serverProxy.handleMessageFromClient({
-        viewport: "client-vp-1",
-        type: "select",
-        selected: [1],
+        preserveExistingSelection: false,
+        requestId: 'client-request-1',
+        rowKey: 'key-01',
+        type: "SELECT_ROW",
+        vpId: "client-vp-1",
       });
 
       expect(postMessageToClient).toHaveBeenCalledTimes(0);
@@ -1853,13 +1855,14 @@ describe("ServerProxy", () => {
       expect(connection.send).toHaveBeenCalledTimes(1);
       expect(connection.send).toHaveBeenCalledWith({
         body: {
+          preserveExistingSelection: false,
+          rowKey: "key-01",
+          type: "SELECT_ROW",
           vpId: "server-vp-1",
-          type: "SET_SELECTION",
-          selection: [1],
         },
         module: "CORE",
         user: "user",
-        requestId: "1",
+        requestId: "client-request-1",
         sessionId: "dsdsd",
         token: "test",
       });
@@ -1870,9 +1873,11 @@ describe("ServerProxy", () => {
 
       // prettier-ignore
       serverProxy.handleMessageFromClient({
-        viewport: "client-vp-1",
-        type: "select",
-        selected: [4],
+        preserveExistingSelection: false,
+        requestId: 'client-request-2',
+        rowKey: 'key-02',
+        type: "SELECT_ROW",
+        vpId: "client-vp-1",
       });
 
       expect(postMessageToClient).toHaveBeenCalledTimes(0);
@@ -1880,13 +1885,14 @@ describe("ServerProxy", () => {
 
       expect(connection.send).toHaveBeenCalledWith({
         body: {
+          preserveExistingSelection: false,
+          rowKey: "key-02",
+          type: "SELECT_ROW",
           vpId: "server-vp-1",
-          type: "SET_SELECTION",
-          selection: [4],
         },
         module: "CORE",
         user: "user",
-        requestId: "1",
+        requestId: "client-request-2",
         sessionId: "dsdsd",
         token: "test",
       });
@@ -2830,7 +2836,7 @@ describe("ServerProxy", () => {
           {
             mode: "update",
             rows: [
-              [0,0,true,false,0,0,'key-00',0,1,false,'key-00', 'name 00',2000,true],
+              [0,0,true,false,0,0,'key-00',1,1,false,'key-00', 'name 00',2000,true],
           ],
             type: 'viewport-update',
             clientViewportId: 'client-vp-1'

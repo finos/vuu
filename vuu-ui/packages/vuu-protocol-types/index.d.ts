@@ -61,7 +61,7 @@ export interface VuuLoginFailResponse {
  * - retrieve any menu defined on a given table
  * - retrieve any available Visual Links for a specific viewport
  *
- * Visual Links differ in one impoortant regard from the other three
+ * Visual Links differ in one important regard from the other three
  * forms of metadata in that they are not static. The take into
  * account existing active subscriptions within the users session
  * and can therefore change from one call to another.
@@ -258,8 +258,125 @@ export interface VuuViewportUnfreezeResponse {
   viewPortId: string;
 }
 
-export interface ServerToClientSelectSuccess {
-  type: "SET_SELECTION_SUCCESS";
+export declare type SelectRequest =
+  | SelectRowRequest
+  | DeselectRowRequest
+  | SelectRowRangeRequest
+  | SelectAllRequest
+  | DeselectAllRequest;
+
+export declare type SelectResponse =
+  | SelectRowResponse
+  | DeselectRowResponse
+  | SelectRowRangeResponse
+  | SelectAllResponse
+  | DeselectAllResponse;
+
+export declare type SuccessfulSelectResponse =
+  | SelectRowSuccess
+  | DeselectRowSuccess
+  | SelectRowRangeSuccess
+  | SelectAllSuccess
+  | DeselectAllSuccess;
+export interface SelectRowRequest {
+  preserveExistingSelection: boolean;
+  rowKey: string;
+  type: "SELECT_ROW";
+  vpId: string;
+}
+
+export declare type SelectRowResponse = SelectRowSuccess | SelectRowReject;
+
+export declare interface SelectSuccessWithRowCount {
+  selectedRowCount: number;
+  type:
+    | "SELECT_ROW_SUCCESS"
+    | "DESELECT_ROW_SUCCESS"
+    | "SELECT_ROW_RANGE_SUCCESS"
+    | "SELECT_ALL_SUCCESS"
+    | "DESELECT_ALL_SUCCESS";
+}
+
+export interface SelectRowSuccess extends SelectSuccessWithRowCount {
+  type: "SELECT_ROW_SUCCESS";
+  vpId: string;
+}
+export interface SelectRowReject {
+  errorMsg: string;
+  type: "SELECT_ROW_REJECT";
+  vpId: string;
+}
+
+export interface DeselectRowRequest {
+  preserveExistingSelection: boolean;
+  rowKey: string;
+  type: "DESELECT_ROW";
+  vpId: string;
+}
+
+export declare type DeselectRowResponse =
+  | DeselectRowSuccess
+  | DeselectRowReject;
+export interface DeselectRowSuccess extends SelectSuccessWithRowCount {
+  type: "DESELECT_ROW_SUCCESS";
+  vpId: string;
+}
+export interface DeselectRowReject {
+  errorMsg: string;
+  type: "DESELECT_ROW_REJECT";
+  vpId: string;
+}
+
+export interface SelectRowRangeRequest {
+  preserveExistingSelection: boolean;
+  fromRowKey: string;
+  toRowKey: string;
+  type: "SELECT_ROW_RANGE";
+  vpId: string;
+}
+export declare type SelectRowRangeResponse =
+  | SelectRowRangeSuccess
+  | SelectRowRangeReject;
+export interface SelectRowRangeSuccess extends SelectSuccessWithRowCount {
+  type: "SELECT_ROW_RANGE_SUCCESS";
+  vpId: string;
+}
+export interface SelectRowRangeReject {
+  errorMsg: string;
+  type: "SELECT_ROW_RANGE_REJECT";
+  vpId: string;
+}
+
+export interface SelectAllRequest {
+  type: "SELECT_ALL";
+  vpId: string;
+}
+export declare type SelectAllResponse = SelectAllSuccess | SelectAllReject;
+export interface SelectAllSuccess extends SelectSuccessWithRowCount {
+  type: "SELECT_ALL_SUCCESS";
+  vpId: string;
+}
+export interface SelectAllReject {
+  errorMsg: string;
+  type: "SELECT_ALL_REJECT";
+  vpId: string;
+}
+
+export interface DeselectAllRequest {
+  type: "DESELECT_ALL";
+  vpId: string;
+}
+
+export declare type DeselectAllResponse =
+  | DeselectAllSuccess
+  | DeselectAllReject;
+export interface DeselectAllSuccess {
+  type: "DESELECT_ALL_SUCCESS";
+  vpId: string;
+}
+export interface DeselectAllReject {
+  errorMsg: string;
+  type: "DESELECT_ALL_REJECT";
   vpId: string;
 }
 
@@ -289,7 +406,6 @@ export declare type ServerMessageBody =
   | VuuViewportDisableResponse
   | VuuViewportEnableResponse
   | VuuViewportRemoveResponse
-  | ServerToClientSelectSuccess
   | VuuTableMetaResponse
   | VuuTableListResponse
   | ServerToClientTableRows
@@ -297,6 +413,7 @@ export declare type ServerMessageBody =
   | VuuRpcMenuSuccess
   | VuuRpcMenuError
   | VuuRpcServiceResponse
+  | SelectResponse
   | VuuViewportVisualLinksResponse
   | ServerToClientOpenTreeNodeSuccess
   | ServerToClientCloseTreeNodeSuccess
@@ -309,11 +426,6 @@ export declare type ServerMessageBody =
 export interface ClientToServerHeartBeat {
   type: "HB_RESP";
   ts: number;
-}
-export interface ClientToServerSelection {
-  type: "SET_SELECTION";
-  selection: number[];
-  vpId: string;
 }
 export interface ClientToServerOpenTreeNode {
   type: "OPEN_TREE_NODE";
@@ -359,10 +471,10 @@ export declare type ClientMessageBody =
   | VuuViewportCreateRequest
   | VuuViewportChangeRequest
   | VuuViewportRemoveRequest
-  | ClientToServerSelection
   | VuuViewportRangeRequest
   | VuuViewportVisualLinksRequest
   | VuuViewportMenusRequest
+  | SelectRequest
   | ClientToServerOpenTreeNode
   | ClientToServerCloseTreeNode
   | VuuCreateVisualLink

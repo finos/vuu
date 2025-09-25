@@ -1,5 +1,5 @@
 import { WebSocketConstructorProps } from "./IWebsocket";
-import { VuuTableList } from "@vuu-ui/vuu-protocol-types";
+import { SelectResponse, VuuTableList } from "@vuu-ui/vuu-protocol-types";
 import { IKeySet } from "@vuu-ui/vuu-utils";
 import { IViewport } from "../IViewport";
 import { ServerAPI, TableSchema } from "@vuu-ui/vuu-data-types";
@@ -16,6 +16,9 @@ export type ServerConstructorProps = {
 };
 
 export const NullServer: ServerAPI = {
+  select: function (): Promise<SelectResponse> {
+    throw new Error("Function not implemented.");
+  },
   send: function (): void {
     throw new Error("Function not implemented.");
   },

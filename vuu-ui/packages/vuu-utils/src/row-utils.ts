@@ -2,15 +2,13 @@
 import type {
   DataSourceRow,
   DataSourceRowObject,
-  Selection,
 } from "@vuu-ui/vuu-data-types";
-import type { MutableRefObject } from "react";
 import { ColumnMap, metadataKeys } from "./column-utils";
-import { getSelectionStatus, isRowSelected } from "./selection-utils";
 import { IKeySet } from "./keyset";
 import { VuuRow } from "@vuu-ui/vuu-protocol-types";
+import { RefObject } from "react";
 
-const { IS_LEAF, KEY, IDX } = metadataKeys;
+const { IS_LEAF, KEY, IDX, SELECTED } = metadataKeys;
 
 export type RowOffsetFunc = (
   row: DataSourceRow,
@@ -43,7 +41,7 @@ export const actualRowPositioning = (rowHeight: number): RowPositioning => [
 export const virtualRowPositioning = (
   rowHeight: number,
   virtualisedExtent: number,
-  pctScrollTop: MutableRefObject<number>,
+  pctScrollTop: RefObject<number>,
 ): RowPositioning => [
   (row, offset = 0) => {
     const rowOffset = pctScrollTop.current * virtualisedExtent;
@@ -74,7 +72,7 @@ export const asDataSourceRowObject: RowToObjectMapper = (
     key,
     index,
     isGroupRow: !isLeaf,
-    isSelected: isRowSelected(row),
+    isSelected: row[SELECTED] !== 0,
     data: {},
   };
 
@@ -85,11 +83,9 @@ export const asDataSourceRowObject: RowToObjectMapper = (
   return rowObject;
 };
 
-const NO_SELECTION: Selection = [];
 export const vuuRowToDataSourceRow = (
-  { rowIndex, rowKey, sel: isSelected, ts, data }: VuuRow,
+  { rowIndex, rowKey, sel: isSelected = 0, ts, data }: VuuRow,
   keys: IKeySet,
-  selectedRows: Selection = NO_SELECTION,
 ) => {
   return [
     rowIndex,
@@ -99,7 +95,7 @@ export const vuuRowToDataSourceRow = (
     0,
     0,
     rowKey,
-    isSelected ? getSelectionStatus(selectedRows, rowIndex) : 0,
+    isSelected,
     ts,
     false, // IsNew
   ].concat(data) as DataSourceRow;

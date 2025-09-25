@@ -3,7 +3,6 @@
   --vuu-table-cell-outlineWidth: 1px;
   --table-height: var(--measured-px-height);
   --table-width: var(--measured-px-width);
-  --vuu-table-next-selection-bookend-width: 4px;
   --vuu-table-embedded-control-height: calc(var(--row-height) - 3px);
   --vuu-table-col-header-height: var(--vuuTableHeaderCell-height, 25px);
   --vuu-table-col-heading-height: 25px;
@@ -164,7 +163,7 @@
     --vuuTableColHeadings-background,
     var(--table-background)
   );
-  padding: 0 var(--vuu-table-next-selection-bookend-width, 0);
+  padding: 0 var(--vuuTableRow-selectionDecorator-width, 0);
   position: sticky;
   top: 0;
   /* ensure header row sits atop everything else when scrolling down */
