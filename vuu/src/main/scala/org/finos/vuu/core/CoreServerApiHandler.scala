@@ -365,17 +365,57 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
         vsMsg(ChangeViewPortRangeSuccess(vp.id, msg.from, msg.to))(ctx)
       case Failure(e) =>
         logger.error("Could not change VP range:", e)
-        errorMsg("Could not change VP range:" + e.getMessage)(ctx)
+        errorMsg("Could not change VP range")(ctx)
     }
   }
 
-  override def process(msg: SetSelectionRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.changeSelection(ctx.session, ctx.queue, msg.vpId, ViewPortSelectedIndices(msg.selection))) match {
+  override def process(msg: SelectRowRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.selectRow(msg.vpId, msg.rowKey, msg.preserveExistingSelection)) match {
       case Success(vp) =>
-        vsMsg(SetSelectionSuccess(vp.id, vp.getSelection.values.toArray))(ctx)
+        vsMsg(SelectRowSuccess(vp.id, vp.getSelection.size))(ctx)
       case Failure(e) =>
-        logger.error("Could not change VP selection:", e.getMessage)
-        errorMsg("Could not change VP selection:" + e.getMessage)(ctx)
+        logger.error(s"Could not select row with key ${msg.rowKey} in view port ${msg.vpId}:", e.getMessage)
+        vsMsg(SelectRowReject(msg.vpId, "Could not select row " + msg.rowKey))(ctx)
+    }
+  }
+
+  override def process(msg: DeselectRowRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.deselectRow(msg.vpId, msg.rowKey, msg.preserveExistingSelection)) match {
+      case Success(vp) =>
+        vsMsg(DeselectRowSuccess(vp.id, vp.getSelection.size))(ctx)
+      case Failure(e) =>
+        logger.error(s"Could not deselect row with key ${msg.rowKey} in view port ${msg.vpId}:", e.getMessage)
+        vsMsg(DeselectRowReject(msg.vpId, "Could not deselect row" + msg.rowKey))(ctx)
+    }
+  }
+
+  override def process(msg: SelectRowRangeRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.selectRowRange(msg.vpId, msg.fromRowKey, msg.toRowKey, msg.preserveExistingSelection)) match {
+      case Success(vp) =>
+        vsMsg(SelectRowRangeSuccess(vp.id, vp.getSelection.size))(ctx)
+      case Failure(e) =>
+        logger.error(s"Could not select row range from ${msg.fromRowKey} to ${msg.toRowKey} in view port ${msg.vpId}:", e.getMessage)
+        vsMsg(SelectRowRangeReject(msg.vpId, "Could not select row range from " + msg.fromRowKey + " to " + msg.toRowKey))(ctx)
+    }
+  }
+
+  override def process(msg: SelectAllRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.selectAll(msg.vpId)) match {
+      case Success(vp) =>
+        vsMsg(SelectAllSuccess(vp.id, vp.getSelection.size))(ctx)
+      case Failure(e) =>
+        logger.error(s"Could not select all rows in view port ${msg.vpId}:", e.getMessage)
+        vsMsg(SelectAllReject(msg.vpId, "Could not select all"))(ctx)
+    }
+  }
+
+  override def process(msg: DeselectAllRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
+    Try(viewPortContainer.deselectAll(msg.vpId)) match {
+      case Success(vp) =>
+        vsMsg(DeselectAllSuccess(vp.id))(ctx)
+      case Failure(e) =>
+        logger.error(s"Could not deselect all rows in view port ${msg.vpId}:", e.getMessage)
+        vsMsg(DeselectAllReject(msg.vpId, "Could not deselect all"))(ctx)
     }
   }
 
@@ -385,7 +425,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
         vsMsg(GetViewPortVisualLinksResponse(msg.vpId, linksAndViewPorts.map({ case (link, viewPort) => AvailableViewPortVisualLink(viewPort.id, link) })))(ctx)
       case Failure(e) =>
         logger.error("Could not load links for viewport:", e.getMessage)
-        errorMsg("Could not load links for viewport" + e.getMessage)(ctx)
+        errorMsg("Could not load links for viewport")(ctx)
     }
   }
 
@@ -395,7 +435,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
         vsMsg(CreateVisualLinkSuccess(childVpId = msg.childVpId, parentVpId = msg.parentVpId, childColumnName = msg.childColumnName, parentColumnName = msg.parentColumnName))(ctx)
       case Failure(e) =>
         logger.error("Could not establish Visual Link:", e.getMessage)
-        errorMsg("Could not establish Visual Link" + e.getMessage)(ctx)
+        errorMsg("Could not establish Visual Link")(ctx)
     }
   }
 
@@ -404,8 +444,8 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
       case Success(_) =>
         vsMsg(RemoveVisualLinkSuccess(childVpId = msg.childVpId))(ctx)
       case Failure(e) =>
-        logger.error("Could not establish Visual Link:", e.getMessage)
-        errorMsg("Could not establish Visual Link" + e.getMessage)(ctx)
+        logger.error("Could not remove Visual Link:", e.getMessage)
+        errorMsg("Could not remove Visual Link")(ctx)
     }
   }
 

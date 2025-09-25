@@ -39,7 +39,7 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
   def createRpcHandler(mockProvider: MockProvider): RpcHandler = {
     new RpcHandler {
       def testSelect(selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
-        println("In testSelect" + selection.rowKeyIndex.mkString(","))
+        println("In testSelect" + selection.selectionKeys.mkString(","))
         NoAction()
       }
 
@@ -131,7 +131,7 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
         )
       }
 
-      vpContainer.changeSelection(session, outQueue, viewPort.id, ViewPortSelectedIndices(Array(0)))
+      vpContainer.selectRow(viewPort.id, "BT.L", preserveExistingSelection = false)
 
       val result = vpContainer.callRpcSelection(viewPort.id, "TEST_SELECT", session)
 

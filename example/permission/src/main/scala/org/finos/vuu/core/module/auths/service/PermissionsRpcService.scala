@@ -12,8 +12,7 @@ import org.finos.vuu.viewport._
 class PermissionsRpcService(val table: DataTable)(implicit tableContainer: TableContainer) extends DefaultRpcHandler with StrictLogging {
 
   private def addPermission(mask: Int, selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
-    val users = selection.rowKeyIndex.map({ case (key, _) => key }).toList
-    users.foreach( user => {
+    selection.selectionKeys.foreach(user => {
       table.pullRow(user) match {
         case EmptyRowData =>
           logger.error("Could not find row for user:" + user)
@@ -27,8 +26,7 @@ class PermissionsRpcService(val table: DataTable)(implicit tableContainer: Table
   }
 
   private def removePermission(mask: Int, selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
-    val users = selection.rowKeyIndex.map({ case (key, _) => key }).toList
-    users.foreach(user => {
+    selection.selectionKeys.foreach(user => {
       table.pullRow(user) match {
         case EmptyRowData =>
           logger.error("Could not find row for user:" + user)

@@ -180,9 +180,35 @@ case class OpenTreeNodeSuccess(vpId: String, treeKey: String) extends MessageBod
 
 case class OpenTreeNodeReject(vpId: String, treeKey: String) extends MessageBody
 
-case class SetSelectionRequest(vpId: String, selection: Array[Int]) extends MessageBody
+case class SelectRowRequest(vpId: String, rowKey: String, preserveExistingSelection: Boolean) extends MessageBody
 
-case class SetSelectionSuccess(vpId: String, selection: Array[Int]) extends MessageBody
+case class SelectRowSuccess(vpId: String, selectedRowCount: Int) extends MessageBody
+
+case class SelectRowReject(vpId: String, errorMsg: String) extends MessageBody
+
+case class DeselectRowRequest(vpId: String, rowKey: String, preserveExistingSelection: Boolean) extends MessageBody
+
+case class DeselectRowSuccess(vpId: String, selectedRowCount: Int) extends MessageBody
+
+case class DeselectRowReject(vpId: String, errorMsg: String) extends MessageBody
+
+case class SelectRowRangeRequest(vpId: String, fromRowKey: String, toRowKey: String, preserveExistingSelection: Boolean) extends MessageBody
+
+case class SelectRowRangeSuccess(vpId: String, selectedRowCount: Int) extends MessageBody
+
+case class SelectRowRangeReject(vpId: String, errorMsg: String) extends MessageBody
+
+case class SelectAllRequest(vpId: String) extends MessageBody
+
+case class SelectAllSuccess(vpId: String, selectedRowCount: Int) extends MessageBody
+
+case class SelectAllReject(vpId: String, errorMsg: String) extends MessageBody
+
+case class DeselectAllRequest(vpId: String) extends MessageBody
+
+case class DeselectAllSuccess(vpId: String) extends MessageBody
+
+case class DeselectAllReject(vpId: String, errorMsg: String) extends MessageBody
 
 case class GetViewPortVisualLinksRequest(vpId: String) extends MessageBody
 
@@ -220,8 +246,11 @@ case class RpcRequest(context: RpcContext, rpcName: String, params: Map[String, 
   new Type(value = classOf[ViewPortRowContext], name = "VIEWPORT_ROW_CONTEXT"),
 ))
 trait RpcContext
+
 case class GlobalContext() extends RpcContext
+
 case class ViewPortContext(viewPortId: String) extends RpcContext
+
 case class ViewPortRowContext(viewPortId: String, rowKey: String) extends RpcContext
 
 case class RpcResponseNew(rpcName: String, result: RpcResult, action: UIAction) extends MessageBody
@@ -232,7 +261,9 @@ case class RpcResponseNew(rpcName: String, result: RpcResult, action: UIAction) 
   new Type(value = classOf[RpcErrorResult], name = "ERROR_RESULT"),
 ))
 trait RpcResult
+
 case class RpcSuccessResult(data: Any) extends RpcResult
+
 case class RpcErrorResult(errorMessage: String) extends RpcResult
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
@@ -241,7 +272,9 @@ case class RpcErrorResult(errorMessage: String) extends RpcResult
   new Type(value = classOf[ShowNotificationAction], name = "SHOW_NOTIFICATION_ACTION"),
 ))
 trait UIAction
+
 case class NoneAction() extends UIAction
+
 case class ShowNotificationAction(notificationType: String, title: String, message: String) extends UIAction
 
 object NotificationType {

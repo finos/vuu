@@ -90,13 +90,15 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       viewPortOrders.getKeys.length shouldEqual 12
 
       When("we select some rows in the grid")
-      viewPortContainer.changeSelection(session, outQueue, viewPortPrices.id, ViewPortSelectedIndices(Array(1)))
+      viewPortContainer.selectRow(viewPortPrices.id, "BT.L", preserveExistingSelection = false)
 
       Then("Check the selected rows is updated in the vp")
       assertVpEqWithMeta(combineQs(viewPortPrices)) {
         Table(
-          ("sel"     ,"ric"     ,"bid"     ,"ask"     ,"last"    ,"open"    ),
-          (1         ,"BT.L"    ,200.0     ,201.0     ,200.5     ,null      ),
+          ("sel", "ric", "bid", "ask", "last", "open"),
+          (0, "BP.L", 300.0, 301.0, 300.5, null),
+          (1, "BT.L", 200.0, 201.0, 200.5, null),
+          (0, "VOD.L", 100.0, 101.0, 100.5, null),
         )
       }
 
@@ -116,7 +118,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       }
 
       And("if we expend the selection to include BP.L in the prices table")
-      viewPortContainer.changeSelection(session, outQueue, viewPortPrices.id, ViewPortSelectedIndices(Array(1, 2)))
+      viewPortContainer.selectRowRange(viewPortPrices.id, "BT.L", "BP.L", preserveExistingSelection = false)
 
       viewPortContainer.runOnce()
 
@@ -135,7 +137,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       }
 
       And("if we set selection to none")
-      viewPortContainer.changeSelection(session, outQueue, viewPortPrices.id, ViewPortSelectedIndices(Array()))
+      viewPortContainer.deselectAll(viewPortPrices.id)
       viewPortContainer.runOnce()
 
       Then("we should show all by default in the viewport")
@@ -159,7 +161,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
 
       Then("Change the viewport to sort by quantity")
       viewPortContainer.change(RequestId.oneNew(), session, viewPortOrders.id, ViewPortRange(0, 10), vpcolumnsOrders, SortSpec(List(SortDef("quantity", 'D'))))
-      viewPortContainer.changeSelection(session, outQueue, viewPortPrices.id, ViewPortSelectedIndices(Array(1)))
+      viewPortContainer.selectRow(viewPortPrices.id, "BT.L", preserveExistingSelection = false)
 
       viewPortContainer.runOnce()
 
@@ -200,7 +202,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       Given("we've created a viewport with orders in")
-      implicit val lifecycle = new LifecycleContainer
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
       val ordersDef = TableDef(
         name = "orders",
         keyField = "orderId",
@@ -305,13 +307,22 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       viewPortOrders1.getKeys.length shouldEqual 12
 
       When("we select second row in the grid")
-      viewPortContainer.changeSelection(session, outQueue, viewPortOrders2.id, ViewPortSelectedIndices(Array(1)))
+      viewPortContainer.selectRow(viewPortOrders2.id, "NYC-0001", preserveExistingSelection = false)
 
       Then("Check the selected rows is updated in the vp")
       assertVpEqWithMeta(combineQs(viewPortOrders2)) {
         Table(
           ("sel", "orderId", "trader", "ric", "tradeTime", "quantity"),
-          (1, "NYC-0001", "chris", "VOD.L", 1311544800130L, 101)
+          (0, "NYC-0000", "chris", "VOD.L", 1311544800120L, 100),
+          (1, "NYC-0001", "chris", "VOD.L", 1311544800130L, 101),
+          (0, "NYC-0002", "chris", "VOD.L", 1311544800140L, 102),
+          (0, "NYC-0003", "chris", "BT.L", 1311544800150L, 100),
+          (0, "NYC-0004", "chris", "BT.L", 1311544800160L, 101),
+          (0, "NYC-0005", "chris", "BT.L", 1311544800170L, 102),
+          (0, "NYC-0006", "chris", "BT.L", 1311544800180L, 103),
+          (0, "NYC-0007", "chris", "BP.L", 1311544800190L, 100),
+          (0, "NYC-0008", "chris", "BP.L", 1311544800200L, 101),
+          (0, "NYC-0009", "chris", "BP.L", 1311544800210L, 102)
         )
       }
 
@@ -321,7 +332,6 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       assertVpEqWithMeta(combineQs(viewPortOrders1)) {
         Table(
           ("sel", "orderId", "trader", "ric", "tradeTime", "quantity"),
-          (0, "NYC-0001", "chris", "VOD.L", 1311544800010L, 101)
         )
       }
     }
