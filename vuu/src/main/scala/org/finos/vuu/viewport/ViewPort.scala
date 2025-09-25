@@ -303,9 +303,9 @@ class ViewPortImpl(val id: String,
       val fromIndex = Math.min(index1, index2)
       val toIndex = Math.max(index1 + 1, index2 + 1)
       if (preserveExistingSelection) {
-        selection = selection ++ keys.sliceToKeys(fromIndex, toIndex)
+        selection = selection ++ keys.sliceToArray(fromIndex, toIndex)
       } else {
-        selection = keys.sliceToKeys(fromIndex, toIndex).toSet
+        selection = keys.sliceToArray(fromIndex, toIndex).toSet
       }
       sendUpdatesOnChange(range.get())
     }
