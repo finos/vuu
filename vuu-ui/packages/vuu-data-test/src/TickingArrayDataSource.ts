@@ -22,7 +22,7 @@ import type {
   VuuRpcMenuResponse,
   VuuRpcServiceRequest,
 } from "@vuu-ui/vuu-protocol-types";
-import { isTypeaheadRequest, metadataKeys, Range } from "@vuu-ui/vuu-utils";
+import { isTypeaheadRequest, Range } from "@vuu-ui/vuu-utils";
 import {
   RpcEditService,
   RpcMenuService,
@@ -31,8 +31,6 @@ import {
 } from "./core/module/VuuModule";
 import { makeSuggestions } from "./makeSuggestions";
 import { Table } from "./Table";
-
-const { KEY } = metadataKeys;
 
 export type VisualLinkHandler = (
   message: VuuCreateVisualLink | VuuRemoveVisualLink,

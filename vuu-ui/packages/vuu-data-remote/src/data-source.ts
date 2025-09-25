@@ -5,10 +5,7 @@ import type {
   DataSourceDataSizeMessage,
   WithRequestId,
 } from "@vuu-ui/vuu-data-types";
-import type {
-  SelectRequest,
-  SelectSuccessWithRowCount,
-} from "@vuu-ui/vuu-protocol-types";
+import type { SelectSuccessWithRowCount } from "@vuu-ui/vuu-protocol-types";
 
 export const isSizeOnly = (
   message: DataSourceCallbackMessage,

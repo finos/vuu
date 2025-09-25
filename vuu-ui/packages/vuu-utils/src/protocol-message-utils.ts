@@ -25,7 +25,6 @@ import {
   VuuRowDataItemType,
   SelectRequest,
   SelectResponse,
-  SuccessfulSelectResponse,
   SelectSuccessWithRowCount,
 } from "@vuu-ui/vuu-protocol-types";
 import { isView as componentInRegistry } from "./component-registry";

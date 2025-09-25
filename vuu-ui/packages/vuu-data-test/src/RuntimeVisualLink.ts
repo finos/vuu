@@ -1,10 +1,4 @@
-import {
-  DataSource,
-  DataSourceRow,
-  RowSelectionEventHandler,
-} from "@vuu-ui/vuu-data-types";
-import { buildColumnMap } from "@vuu-ui/vuu-utils";
-import { TickingArrayDataSource } from "./TickingArrayDataSource";
+import { DataSource, RowSelectionEventHandler } from "@vuu-ui/vuu-data-types";
 
 export class RuntimeVisualLink {
   #childColumnName: string;
