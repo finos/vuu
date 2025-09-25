@@ -47,7 +47,7 @@ type RowIdentifier = {
 };
 
 export interface SelectionHookProps
-  extends Pick<TableProps, "defaultSelectedIndexValues" | "onSelectionChange"> {
+  extends Pick<TableProps, "onSelectionChange"> {
   containerRef: RefObject<HTMLElement | null>;
   highlightedIndexRef: RefObject<number | undefined>;
   selectionKeys?: string[];

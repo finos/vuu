@@ -35,6 +35,7 @@ import {
   BaseDataSource,
   combineFilters,
   debounce,
+  isSelectSuccessWithRowCount,
   isViewportMenusAction,
   isVisualLinksAction,
   itemsOrOrderChanged,
@@ -93,10 +94,8 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     callback: DataSourceSubscribeCallback,
   ) {
     super.subscribe(subscribeProps, callback);
-    const {
-      selectedIndexValues,
-      viewport = this.viewport || (this.viewport = uuid()),
-    } = subscribeProps;
+    const { viewport = this.viewport || (this.viewport = uuid()) } =
+      subscribeProps;
 
     if (this.#status === "disabled" || this.#status === "disabling") {
       this.enable(callback);
@@ -129,7 +128,6 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
         ...dataSourceConfig,
         bufferSize,
         range: this._range,
-        selectedIndexValues: selectedIndexValues,
         table: this.table,
         title: this._title,
         viewport,
@@ -299,13 +297,18 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     }
   }
 
-  select(selectRequest: Omit<SelectRequest, "vpId">) {
-    if (this.viewport) {
-      this.server?.send({
+  async select(selectRequest: Omit<SelectRequest, "vpId">) {
+    if (this.viewport && this.server) {
+      const response = await this.server.select({
         ...selectRequest,
         vpId: this.viewport,
       } as SelectRequest);
-      this.emit("row-selection");
+      if (isSelectSuccessWithRowCount(response)) {
+        this.#selectedRowsCount = response.selectedRowCount;
+        this.emit("row-selection", response.selectedRowCount);
+      } else {
+        console.warn(`select error`);
+      }
     }
   }
 

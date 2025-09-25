@@ -13,6 +13,7 @@ import { DemoTableContainer } from "./DemoTableContainer";
 import { DataSource } from "@vuu-ui/vuu-data-types";
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
+import { SelectRowRangeRequest } from "@vuu-ui/vuu-protocol-types";
 
 const schema = getSchema("instruments");
 
@@ -33,7 +34,12 @@ export const DefaultBulkEditPanel = () => {
   };
 
   useMemo(async () => {
-    parentDs.select([0, 1, 2, 3]);
+    parentDs.select?.({
+      preserveExistingSelection: false,
+      type: "SELECT_ROW_RANGE",
+      fromRowKey: "AAOO.L",
+      toRowKey: "AAOY.L",
+    } as SelectRowRangeRequest);
     const response = await parentDs?.menuRpcCall?.({
       type: "VIEW_PORT_MENUS_SELECT_RPC",
       rpcName: "VP_BULK_EDIT_BEGIN_RPC",
@@ -45,8 +51,6 @@ export const DefaultBulkEditPanel = () => {
       table,
       viewport: table.table,
     });
-
-    console.log({ response });
 
     setBulkEditPanel(
       <BulkEditPanel

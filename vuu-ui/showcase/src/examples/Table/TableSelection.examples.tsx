@@ -124,46 +124,6 @@ export const CellBlockRowSelection = () => {
 };
 
 /** tags=data-consumer */
-export const PreSelectedRowByIndex = () => {
-  const handleSelectionChange: SelectionChangeHandler = (selectionChange) => {
-    console.log(`selection changed ${JSON.stringify(selectionChange)}`);
-  };
-  return (
-    <DataTableTemplate
-      allowCellBlockSelection
-      defaultSelectedIndexValues={[4]}
-      onSelectionChange={handleSelectionChange}
-      selectionModel="extended"
-      navigationStyle="row"
-    />
-  );
-};
-
-/** tags=data-consumer */
-export const PreSelectedRowsByIndex = () => {
-  return (
-    <DataTableTemplate
-      allowCellBlockSelection
-      defaultSelectedIndexValues={[2, 4, 6, 8]}
-      selectionModel="extended"
-      navigationStyle="row"
-    />
-  );
-};
-
-/** tags=data-consumer */
-export const PreSelectedRangeByIndex = () => {
-  return (
-    <DataTableTemplate
-      allowCellBlockSelection
-      defaultSelectedIndexValues={[[2, 8]]}
-      selectionModel="extended"
-      navigationStyle="row"
-    />
-  );
-};
-
-/** tags=data-consumer */
 export const PreSelectedRowByKey = () => {
   const handleSelectionChange: SelectionChangeHandler = (selection) => {
     console.log(`selection changed ${JSON.stringify(selection)}`);

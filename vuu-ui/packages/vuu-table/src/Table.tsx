@@ -97,10 +97,6 @@ export interface TableProps
   dataSource: DataSource;
 
   /**
-   * define rows ro be initially selected based on row index positions
-   */
-  defaultSelectedIndexValues?: Selection;
-  /**
    * define rows ro be initially selected based on row key value. Not all DataSource
    * implementations support this feature.
    */
@@ -282,7 +278,6 @@ const TableCore = ({
   containerRef,
   customHeader,
   dataSource,
-  defaultSelectedIndexValues,
   defaultSelectedKeyValues,
   disableFocus = false,
   groupToggleTarget,
@@ -361,7 +356,6 @@ const TableCore = ({
     config,
     containerRef,
     dataSource,
-    defaultSelectedIndexValues,
     defaultSelectedKeyValues,
     disableFocus,
     highlightedIndex: highlightedIndexProp,
@@ -540,7 +534,6 @@ export const Table = forwardRef(function Table(
     config,
     customHeader,
     dataSource,
-    defaultSelectedIndexValues,
     defaultSelectedKeyValues,
     disableFocus,
     groupToggleTarget,
@@ -604,11 +597,6 @@ export const Table = forwardRef(function Table(
   }
   if (dataSource === undefined) {
     throw Error("vuu Table requires dataSource prop");
-  }
-  if (defaultSelectedIndexValues && defaultSelectedKeyValues) {
-    throw Error(
-      `defaultSelectedIndexValues and defaultSelectedKeyValues can not be used in combination. Use at most one.`,
-    );
   }
 
   if (showPaginationControls && renderBufferSize !== undefined) {
@@ -691,7 +679,6 @@ export const Table = forwardRef(function Table(
             containerRef={containerRef}
             customHeader={customHeader}
             dataSource={dataSource}
-            defaultSelectedIndexValues={defaultSelectedIndexValues}
             defaultSelectedKeyValues={defaultSelectedKeyValues}
             disableFocus={disableFocus}
             groupToggleTarget={groupToggleTarget}

@@ -153,7 +153,6 @@ export class ArrayDataSource
   #keys = new KeySet(NULL_RANGE);
   #links: LinkDescriptorWithLabel[] | undefined;
   #range = Range(0, 0);
-  #selectedRowsCount = 0;
   #status: DataSourceStatus = "initialising";
   #title: string | undefined;
 
@@ -381,7 +380,7 @@ export class ArrayDataSource
     }
 
     this.setRange(this.#range, true);
-    this.emit("row-selection");
+    this.emit("row-selection", this.selectedRows.size);
   }
 
   private getRowKey(keyOrIndex: string | number) {
@@ -641,7 +640,7 @@ export class ArrayDataSource
   }
 
   get selectedRowsCount() {
-    return this.#selectedRowsCount;
+    return this.selectedRows.size;
   }
 
   get size() {

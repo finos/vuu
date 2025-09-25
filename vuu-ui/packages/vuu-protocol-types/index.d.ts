@@ -272,6 +272,12 @@ export declare type SelectResponse =
   | SelectAllResponse
   | DeselectAllResponse;
 
+export declare type SuccessfulSelectResponse =
+  | SelectRowSuccess
+  | DeselectRowSuccess
+  | SelectRowRangeSuccess
+  | SelectAllSuccess
+  | DeselectAllSuccess;
 export interface SelectRowRequest {
   preserveExistingSelection: boolean;
   rowKey: string;
@@ -280,7 +286,18 @@ export interface SelectRowRequest {
 }
 
 export declare type SelectRowResponse = SelectRowSuccess | SelectRowReject;
-export interface SelectRowSuccess {
+
+export declare interface SelectSuccessWithRowCount {
+  selectedRowCount: number;
+  type:
+    | "SELECT_ROW_SUCCESS"
+    | "DESELECT_ROW_SUCCESS"
+    | "SELECT_ROW_RANGE_SUCCESS"
+    | "SELECT_ALL_SUCCESS"
+    | "DESELECT_ALL_SUCCESS";
+}
+
+export interface SelectRowSuccess extends SelectSuccessWithRowCount {
   type: "SELECT_ROW_SUCCESS";
   vpId: string;
 }
@@ -300,7 +317,7 @@ export interface DeselectRowRequest {
 export declare type DeselectRowResponse =
   | DeselectRowSuccess
   | DeselectRowReject;
-export interface DeselectRowSuccess {
+export interface DeselectRowSuccess extends SelectSuccessWithRowCount {
   type: "DESELECT_ROW_SUCCESS";
   vpId: string;
 }
@@ -320,7 +337,7 @@ export interface SelectRowRangeRequest {
 export declare type SelectRowRangeResponse =
   | SelectRowRangeSuccess
   | SelectRowRangeReject;
-export interface SelectRowRangeSuccess {
+export interface SelectRowRangeSuccess extends SelectSuccessWithRowCount {
   type: "SELECT_ROW_RANGE_SUCCESS";
   vpId: string;
 }
@@ -335,7 +352,7 @@ export interface SelectAllRequest {
   vpId: string;
 }
 export declare type SelectAllResponse = SelectAllSuccess | SelectAllReject;
-export interface SelectAllSuccess {
+export interface SelectAllSuccess extends SelectSuccessWithRowCount {
   type: "SELECT_ALL_SUCCESS";
   vpId: string;
 }

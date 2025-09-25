@@ -105,7 +105,6 @@ export interface TableHookProps
       | "availableColumns"
       | "config"
       | "dataSource"
-      | "defaultSelectedIndexValues"
       | "defaultSelectedKeyValues"
       | "disableFocus"
       | "highlightedIndex"
@@ -159,7 +158,6 @@ export const useTable = ({
   config,
   containerRef,
   dataSource,
-  defaultSelectedIndexValues,
   defaultSelectedKeyValues,
   disableFocus,
   highlightedIndex: highlightedIndexProp,
@@ -311,7 +309,6 @@ export const useTable = ({
 
   const { data, dataRef, getSelectedRows, range, setRange } = useDataSource({
     dataSource,
-    defaultSelectedIndexValues,
     defaultSelectedKeyValues,
     renderBufferSize,
     revealSelected,
@@ -723,7 +720,6 @@ export const useTable = ({
     onRowClick: selectionHookOnRowClick,
   } = useSelection({
     containerRef,
-    defaultSelectedIndexValues: defaultSelectedIndexValues,
     highlightedIndexRef,
     onSelect: handleSelect,
     onSelectionChange: handleSelectionChange,
@@ -732,7 +728,9 @@ export const useTable = ({
 
   const handleSelectCellBlock = useCallback(
     (cellBlock: TableCellBlock) => {
-      handleSelectionChange([]);
+      handleSelectionChange({
+        type: "DESELECT_ALL",
+      });
       onSelectCellBlock?.(cellBlock);
     },
     [handleSelectionChange, onSelectCellBlock],

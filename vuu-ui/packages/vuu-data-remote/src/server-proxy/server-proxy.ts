@@ -51,6 +51,7 @@ import {
 import {
   createSchemaFromTableMetadata,
   groupRowsByViewport,
+  hasRequestId,
   stripRequestId,
 } from "../message-utils";
 import * as Message from "./messages";
@@ -498,10 +499,10 @@ export class ServerProxy {
     }
   }
 
-  private select(viewport: Viewport, message: SelectRequest) {
-    const requestId = nextRequestId();
-    const request = viewport.selectRequest(message);
-    this.sendIfReady(request, requestId, viewport.status === "subscribed");
+  private select(viewport: Viewport, message: WithRequestId<SelectRequest>) {
+    const [requestId, selectRequest] = stripRequestId<SelectRequest>(message);
+    const request = viewport.selectRequest(selectRequest);
+    this.sendMessageToServer(request, requestId);
   }
 
   private disableViewport(viewport: Viewport) {
@@ -678,7 +679,7 @@ export class ServerProxy {
       | WithRequestId<VuuRpcMenuRequest>
       | WithRequestId<VuuCreateVisualLink>
       | WithRequestId<VuuRemoveVisualLink>
-      | SelectRequest,
+      | WithRequestId<SelectRequest>,
   ) {
     if (isViewportMessage(message) || isVisualLinkMessage(message)) {
       if (message.type === "disable") {
@@ -718,8 +719,12 @@ export class ServerProxy {
         }
       }
     } else if (isSelectRequest(message)) {
-      const viewport = this.getViewportForClient(message.vpId);
-      return this.select(viewport, message);
+      if (hasRequestId<SelectRequest>(message)) {
+        const viewport = this.getViewportForClient(message.vpId);
+        return this.select(viewport, message);
+      } else {
+        console.warn(`selectRequest must have requestId`);
+      }
     } else if (isRpcServiceRequest(message)) {
       return this.rpcRequest(message);
     } else if (isVuuMenuRpcRequest(message as VuuRpcRequest)) {
@@ -871,13 +876,28 @@ export class ServerProxy {
         }
         break;
 
-      case "SELECT_ROW_SUCCESS":
-      case "DESELECT_ROW_SUCCESS":
-      case "SELECT_ROW_RANGE_SUCCESS":
       case "SELECT_ALL_SUCCESS":
-      case "DESELECT_ALL_SUCCESS":
-        console.log(`select success ${body.type}`);
+      case "SELECT_ROW_SUCCESS":
+      case "SELECT_ROW_RANGE_SUCCESS":
+      case "DESELECT_ROW_SUCCESS": {
+        const { type, selectedRowCount } = body;
+        this.postMessageToClient({
+          requestId,
+          type,
+          selectedRowCount,
+        });
         break;
+      }
+      case "DESELECT_ALL_SUCCESS": {
+        const { type } = body;
+        this.postMessageToClient({
+          requestId,
+          type,
+          selectedRowCount: 0,
+        });
+
+        break;
+      }
 
       case "SELECT_ROW_REJECT":
       case "DESELECT_ROW_REJECT":

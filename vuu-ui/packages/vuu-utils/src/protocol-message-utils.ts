@@ -24,6 +24,9 @@ import {
   VuuLoginResponse,
   VuuRowDataItemType,
   SelectRequest,
+  SelectResponse,
+  SuccessfulSelectResponse,
+  SelectSuccessWithRowCount,
 } from "@vuu-ui/vuu-protocol-types";
 import { isView as componentInRegistry } from "./component-registry";
 
@@ -47,6 +50,18 @@ export const isSelectRequest = (message: object): message is SelectRequest =>
     message.type === "SELECT_ROW_RANGE" ||
     message.type === "SELECT_ALL" ||
     message.type === "DESELECT_ALL");
+
+export const isSelectSuccessWithRowCount = (
+  response: SelectResponse | SelectSuccessWithRowCount,
+): response is SelectSuccessWithRowCount =>
+  [
+    "SELECT_ROW_SUCCESS",
+    "DESELECT_ROW_SUCCESS",
+    "SELECT_ROW_RANGE_SUCCESS",
+    "SELECT_ALL_SUCCESS",
+    "DESELECT_ALL_SUCCESS",
+  ].includes(response.type ?? "") &&
+  typeof (response as SelectSuccessWithRowCount).selectedRowCount === "number";
 
 export const isRpcServiceRequest = (message: {
   type: string;

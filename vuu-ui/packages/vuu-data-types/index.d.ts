@@ -33,6 +33,8 @@ import type {
   VuuLoginSuccessResponse,
   VuuLoginFailResponse,
   SelectRequest,
+  SelectResponse,
+  SelectSuccessWithRowCount,
 } from "@vuu-ui/vuu-protocol-types";
 import type {
   DataSourceConfigChanges,
@@ -351,7 +353,8 @@ export declare type DataSourceCallbackMessage =
   | DataSourceSubscribedMessage
   | DataSourceVisualLinkCreatedMessage
   | DataSourceVisualLinkRemovedMessage
-  | DataSourceVisualLinksMessage;
+  | DataSourceVisualLinksMessage
+  | WithRequestId<SelectSuccessWithRowCount>;
 
 export declare type ConfigChangeColumnsMessage = {
   type: "columns";
@@ -428,7 +431,6 @@ export interface DataSourceSubscribeProps
   viewport?: string;
   range?: Range;
   revealSelected?: boolean;
-  selectedIndexValues?: Selection;
   selectedKeyValues?: string[];
   title?: string;
 }
@@ -439,7 +441,9 @@ export declare type DataSourceSubscribeCallback = (
 export declare type OptimizeStrategy = "none" | "throttle" | "debounce";
 
 export declare type DataSourceEventHandler = (viewportId: string) => void;
-export declare type RowSelectionEventHandler = () => void;
+export declare type RowSelectionEventHandler = (
+  selectedRowCount: number,
+) => void;
 
 export type DataSourceConfigChangeHandler = (
   config: WithBaseFilter<WithFullConfig>,
@@ -949,6 +953,7 @@ export interface ServerAPI {
       | VuuCreateVisualLink
       | VuuRemoveVisualLink,
   ) => Promise<T>;
+  select: (selectRequest: SelectRequest) => Promise<SelectResponse>;
   send: (message: VuuUIMessageOut) => void;
   subscribe: (
     message: ServerProxySubscribeMessage,

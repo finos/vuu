@@ -12,6 +12,7 @@ import type {
 } from "./IWebsocket";
 import { ServerConstructorProps, ViewportProps } from "./IServerProxy";
 import {
+  SelectResponse,
   VuuRange,
   VuuServerMessage,
   VuuTableList,
@@ -57,6 +58,10 @@ class MockServerImpl implements ServerAPI {
       table,
     });
     this.#webSocket.send(serverMessage);
+  }
+
+  async select(): Promise<SelectResponse> {
+    throw new Error("Function not implemented.");
   }
 
   send(message: VuuUIMessageOut) {

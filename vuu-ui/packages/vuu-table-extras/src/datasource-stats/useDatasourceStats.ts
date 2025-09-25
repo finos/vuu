@@ -40,12 +40,9 @@ export const useDatasourceStats = ({
     [],
   );
 
-  const handleRowSelection = useCallback<RowSelectionEventHandler>(
-    (_, count) => {
-      setSelectedCount(count);
-    },
-    [],
-  );
+  const handleRowSelection = useCallback<RowSelectionEventHandler>((count) => {
+    setSelectedCount(count);
+  }, []);
 
   const handleSize = useCallback((size: number) => {
     setSize(size);

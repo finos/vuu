@@ -3,8 +3,12 @@ import type {
   DataSourceConfig,
   DataSourceConfigMessage,
   DataSourceDataSizeMessage,
+  WithRequestId,
 } from "@vuu-ui/vuu-data-types";
-import type {} from "@vuu-ui/vuu-protocol-types";
+import type {
+  SelectRequest,
+  SelectSuccessWithRowCount,
+} from "@vuu-ui/vuu-protocol-types";
 
 export const isSizeOnly = (
   message: DataSourceCallbackMessage,
@@ -49,7 +53,10 @@ const datasourceMessages = [
 
 export const shouldMessageBeRoutedToDataSource = (
   message: unknown,
-): message is DataSourceCallbackMessage => {
+): message is Exclude<
+  DataSourceCallbackMessage,
+  WithRequestId<SelectSuccessWithRowCount>
+> => {
   const type = (message as DataSourceCallbackMessage).type;
   return datasourceMessages.includes(type);
 };

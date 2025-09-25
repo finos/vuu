@@ -84,7 +84,7 @@ export const asDataSourceRowObject: RowToObjectMapper = (
 };
 
 export const vuuRowToDataSourceRow = (
-  { rowIndex, rowKey, sel: isSelected, ts, data }: VuuRow,
+  { rowIndex, rowKey, sel: isSelected = 0, ts, data }: VuuRow,
   keys: IKeySet,
 ) => {
   return [
