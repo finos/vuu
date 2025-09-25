@@ -283,7 +283,7 @@ class ViewPortImpl(val id: String,
         selection = selection - rowKey
       } else {
         // When preserveExistingSelection is false, deselect a row means clearing all selected rows
-        selection = Set().empty
+        selection = Set.empty
       }
       sendUpdatesOnChange(range.get())
     }
@@ -305,7 +305,7 @@ class ViewPortImpl(val id: String,
       if (preserveExistingSelection) {
         selection = selection ++ keys.sliceToKeys(fromIndex, toIndex)
       } else {
-        selection = keys.sliceToKeys(fromIndex, toIndex).map(k => k).toSet
+        selection = keys.sliceToKeys(fromIndex, toIndex).toSet
       }
       sendUpdatesOnChange(range.get())
     }
@@ -320,7 +320,7 @@ class ViewPortImpl(val id: String,
 
   override def deselectAll(): Unit = {
     viewPortLock.synchronized {
-      selection = Set().empty
+      selection = Set.empty
       sendUpdatesOnChange(range.get())
     }
   }
@@ -396,7 +396,7 @@ class ViewPortImpl(val id: String,
   @volatile
   private var keys: ViewPortKeys = EmptyViewPortKeys
   @volatile
-  private var selection: Set[String] = Set[String]().empty
+  private var selection: Set[String] = Set.empty
 
   private val subscribedKeys = new ConcurrentHashMap[String, String]()
   private val rowKeyToIndex = new ConcurrentHashMap[String, Int]()

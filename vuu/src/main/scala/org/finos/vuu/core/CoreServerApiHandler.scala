@@ -444,8 +444,8 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
       case Success(_) =>
         vsMsg(RemoveVisualLinkSuccess(childVpId = msg.childVpId))(ctx)
       case Failure(e) =>
-        logger.error("Could not establish Visual Link:", e.getMessage)
-        errorMsg("Could not establish Visual Link")(ctx)
+        logger.error("Could not remove Visual Link:", e.getMessage)
+        errorMsg("Could not remove Visual Link")(ctx)
     }
   }
 
