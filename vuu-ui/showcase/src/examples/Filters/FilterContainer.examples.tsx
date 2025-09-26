@@ -18,11 +18,12 @@ import {
   useData,
 } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
-import { DemoTableContainer } from "../../Table/DemoTableContainer";
+import { DemoTableContainer } from "../Table/DemoTableContainer";
 import { FormField, FormFieldLabel } from "@salt-ds/core";
 import { DataSourceFilter, TableSchemaTable } from "@vuu-ui/vuu-data-types";
 import { FilterAppliedHandler } from "@vuu-ui/vuu-filters/src/column-filter-container/useColumnFilterContainer";
 import { FilterContainerProps } from "@vuu-ui/vuu-filters/src/column-filter-container/ColumnFilterContainer";
+import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
 
 const schema = getSchema("instruments");
 
@@ -33,6 +34,85 @@ const typeaheadPropsZero: ColumnFilterNextProps["TypeaheadProps"] = {
 const typeaheadPropsOne: ColumnFilterNextProps["TypeaheadProps"] = {
   minCharacterCountToTriggerSuggestions: 1,
   selectOnTab: false,
+};
+
+export const SimpleFilterContainer = () => {
+  const { VuuDataSource } = useData();
+  const [filter, setFilter] =
+    useState<FilterContainerProps["filter"]>(undefined);
+
+  const dataSource = useMemo(
+    () =>
+      new VuuDataSource({
+        columns: schema.columns.map(toColumnName),
+        table: schema.table,
+      }),
+    [VuuDataSource],
+  );
+
+  const table = useMemo<TableSchemaTable>(
+    () => ({ module: "SIMUL", table: "instruments" }),
+    [],
+  );
+
+  const onFilterApplied = useCallback<FilterAppliedHandler>(
+    (filterStruct) => {
+      const vuuFilter: DataSourceFilter = {
+        filter: filterAsQuery(filterStruct),
+        filterStruct,
+      };
+      dataSource.filter = vuuFilter;
+      setFilter(filterStruct as FilterContainerProps["filter"]);
+    },
+    [dataSource],
+  );
+
+  const onFilterCleared = useCallback(() => {
+    dataSource.filter = { filter: "" };
+    setFilter(undefined);
+  }, [dataSource]);
+
+  return (
+    <DataSourceProvider dataSource={dataSource}>
+      <ColumnFilterContainer
+        filter={filter}
+        onFilterApplied={onFilterApplied}
+        onFilterCleared={onFilterCleared}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+          padding: 12,
+        }}
+      >
+        <FormField>
+          <FormFieldLabel>BBG</FormFieldLabel>
+          <FilterContainerColumnFilter
+            TypeaheadProps={typeaheadPropsOne}
+            column={{ name: "bbg", serverDataType: "string" }}
+            table={table}
+          />
+        </FormField>
+        <FormField>
+          <FormFieldLabel>Currency</FormFieldLabel>
+          <FilterContainerColumnFilter
+            TypeaheadProps={typeaheadPropsZero}
+            column={{ name: "currency", serverDataType: "string" }}
+            table={table}
+          />
+        </FormField>
+        <FormField>
+          <FormFieldLabel>Exchange</FormFieldLabel>
+          <FilterContainerColumnFilter
+            TypeaheadProps={typeaheadPropsZero}
+            column={{ name: "exchange", serverDataType: "string" }}
+            table={table}
+          />
+        </FormField>
+      </ColumnFilterContainer>
+      <DataSourceStats dataSource={dataSource} />
+    </DataSourceProvider>
+  );
 };
 
 const TableWithFiltersTemplate = () => {

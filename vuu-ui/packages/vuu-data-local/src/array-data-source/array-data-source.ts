@@ -540,19 +540,20 @@ export class ArrayDataSource
         }
       }
 
+      if (
+        configChanges.filterChanged ||
+        configChanges.baseFilterChanged ||
+        configChanges.groupByChanged
+      ) {
+        this.emit("resize", this.size);
+      }
+
       if (this.#status === "subscribed") {
         this.sendSizeUpdateToClient();
         if (this.preserveScrollPositionAcrossConfigChange) {
           this.preserveScrollPositionAcrossConfigChange = false;
         } else {
           this.setRange(this.#range.reset, true);
-        }
-        if (
-          configChanges.filterChanged ||
-          configChanges.baseFilterChanged ||
-          configChanges.groupByChanged
-        ) {
-          this.emit("resize", this.size);
         }
         this.emit("config", this._config, this.range, undefined, configChanges);
       }

@@ -136,7 +136,6 @@ export const useColumnFilterContainer = ({
     (column, op, value = "") => {
       if (value === "") {
         if (!filterAggregator.removeFilter(column)) {
-          // filter didn't exist, ignore
           return;
         }
       } else {
