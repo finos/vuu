@@ -206,6 +206,9 @@ export class FilterAggregator {
     });
   }
 
+  /**
+   * Remove filter for this colun. Return false if no filter found, otw true
+   */
   removeFilter(column: ColumnDescriptor) {
     if (this.#filters.has(column.name)) {
       // this.#columns.delete(column.name);

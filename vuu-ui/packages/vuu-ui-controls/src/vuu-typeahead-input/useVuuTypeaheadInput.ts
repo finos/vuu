@@ -125,8 +125,12 @@ export const useVuuTypeaheadInput = ({
         const params: TypeaheadParams = value
           ? [vuuTable, column, value]
           : [vuuTable, column];
+        console.log(
+          `[useVuuTypeaheadInput] get suggestions matching ${value} ...`,
+        );
         getSuggestions(params)
           .then((suggestions) => {
+            console.log(`... ${JSON.stringify(suggestions)}`);
             if (suggestions === false) {
               // TODO is this right
               setTypeaheadValues([]);
