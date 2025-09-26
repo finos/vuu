@@ -105,6 +105,7 @@ export const ShowSuggestionsWithNoTextInput = () => {
     </DataSourceProvider>
   );
 };
+
 export const SimpleUnControlledTextColumnFilter = () => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
@@ -113,13 +114,13 @@ export const SimpleUnControlledTextColumnFilter = () => {
 
   const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
     (value, column) => {
-      console.log(`commit ${column.name} ${value}`);
+      console.log(`handleColumnFilterChange ${column.name} ${value}`);
     },
     [],
   );
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
     (column, operator, value) => {
-      console.log(`commit ${column.name} ${value}`);
+      console.log(`handleCommit ${column.name} ${value}`);
     },
     [],
   );
@@ -135,6 +136,78 @@ export const SimpleUnControlledTextColumnFilter = () => {
             onCommit={handleCommit}
             table={{ module: "SIMUL", table: "instruments" }}
             defaultValue=""
+          />
+        </FormField>
+      </ContainerTemplate>
+    </DataSourceProvider>
+  );
+};
+
+export const UnControlledNumericColumnFilter = () => {
+  const { VuuDataSource } = useData();
+  const dataSource = useMemo(() => {
+    return new VuuDataSource({ table: schema.table });
+  }, [VuuDataSource]);
+
+  const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
+    (value, column) => {
+      console.log(`handleColumnFilterChange ${column.name} ${value}`);
+    },
+    [],
+  );
+  const handleCommit = useCallback<ColumnFilterCommitHandler>(
+    (column, operator, value) => {
+      console.log(`commit ${column.name} ${value}`);
+    },
+    [],
+  );
+
+  return (
+    <DataSourceProvider dataSource={dataSource}>
+      <ContainerTemplate>
+        <FormField>
+          <FormFieldLabel>Price</FormFieldLabel>
+          <ColumnFilterNext
+            column={{ name: "price", serverDataType: "double" }}
+            onColumnFilterChange={handleColumnFilterChange}
+            onCommit={handleCommit}
+            defaultValue=""
+          />
+        </FormField>
+      </ContainerTemplate>
+    </DataSourceProvider>
+  );
+};
+export const UnControlledNumericColumnFilterBetween = () => {
+  const { VuuDataSource } = useData();
+  const dataSource = useMemo(() => {
+    return new VuuDataSource({ table: schema.table });
+  }, [VuuDataSource]);
+
+  const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
+    (value, column) => {
+      console.log(`handleColumnFilterChange ${column.name} ${value}`);
+    },
+    [],
+  );
+  const handleCommit = useCallback<ColumnFilterCommitHandler>(
+    (column, operator, value) => {
+      console.log(`commit ${column.name} ${value}`);
+    },
+    [],
+  );
+
+  return (
+    <DataSourceProvider dataSource={dataSource}>
+      <ContainerTemplate>
+        <FormField>
+          <FormFieldLabel>Price</FormFieldLabel>
+          <ColumnFilterNext
+            column={{ name: "price", serverDataType: "double" }}
+            defaultValue=""
+            onColumnFilterChange={handleColumnFilterChange}
+            onCommit={handleCommit}
+            operator="between"
           />
         </FormField>
       </ContainerTemplate>

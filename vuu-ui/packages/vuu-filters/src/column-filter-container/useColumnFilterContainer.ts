@@ -122,25 +122,15 @@ export const useColumnFilterContainer = ({
     [],
   );
 
-  const handleInputChange = useCallback<ColumnFilterChangeHandler>(
-    (value, column) => {
-      console.log(
-        `[useColumnFilterContainer] handleInputChange ${column.name} ${value}`,
-      );
-      valueRef.current[column.name] = value;
-    },
-    [],
-  );
-
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
     (column, op, value = "") => {
       if (value === "") {
-        if (!filterAggregator.removeFilter(column)) {
+        if (!filterAggregator.remove(column)) {
           return;
         }
       } else {
         if (typeof value === "string" || typeof value === "number") {
-          filterAggregator.addFilter(column, value);
+          filterAggregator.add(column, value);
         } else {
           throw Error(
             `[useInlineFilter] handleCommit value ${typeof value} supports string, number only`,
@@ -155,6 +145,20 @@ export const useColumnFilterContainer = ({
       }
     },
     [filterAggregator, onFilterApplied, onFilterCleared],
+  );
+
+  const handleInputChange = useCallback<ColumnFilterChangeHandler>(
+    (value, column) => {
+      console.log(
+        `[useColumnFilterContainer] handleInputChange ${column.name} ${value}`,
+      );
+      if (filterAggregator.has(column)) {
+        console.log(`filteraggregator has column ${column.name}`);
+        handleCommit(column, "=", "");
+      }
+      valueRef.current[column.name] = value;
+    },
+    [filterAggregator, handleCommit],
   );
 
   return {

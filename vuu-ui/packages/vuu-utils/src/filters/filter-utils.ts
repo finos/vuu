@@ -182,7 +182,6 @@ export const getColumnValueFromFilter = (
 };
 
 export class FilterAggregator {
-  // #columns = new Map<string, ColumnDescriptor>();
   #filters = new Map<string, SingleValueFilterClause>();
 
   constructor(filter?: FilterContainerFilter) {
@@ -194,8 +193,7 @@ export class FilterAggregator {
     console.log(JSON.stringify(this.filter, null, 2));
   }
 
-  addFilter(column: ColumnDescriptor, value: string | number) {
-    // this.#columns.set(column.name, column);
+  add(column: ColumnDescriptor, value: string | number) {
     const { serverDataType = "string" } = column;
     const typedValue = getTypedValue(value.toString(), serverDataType, true);
 
@@ -206,12 +204,15 @@ export class FilterAggregator {
     });
   }
 
+  has({ name }: ColumnDescriptor) {
+    return this.#filters.has(name);
+  }
+
   /**
    * Remove filter for this colun. Return false if no filter found, otw true
    */
-  removeFilter(column: ColumnDescriptor) {
+  remove(column: ColumnDescriptor) {
     if (this.#filters.has(column.name)) {
-      // this.#columns.delete(column.name);
       this.#filters.delete(column.name);
       return true;
     } else {
