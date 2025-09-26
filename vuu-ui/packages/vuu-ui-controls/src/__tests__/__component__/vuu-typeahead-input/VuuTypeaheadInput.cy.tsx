@@ -187,6 +187,10 @@ describe("VuuTypeaheadInput", () => {
 
   describe("Given a TypeaheadInput that shows currency suggestions and DISALLOWS free text", () => {
     it("Then a non-matched input pattern will show no suggestions", () => {
+      // BUG: This test incorrectly uses CurrencyWithTypeaheadAllowFreeTextFixture instead of 
+      // CurrencyWithTypeaheadDisallowFreeTextFixture. The test description says "DISALLOWS free text"
+      // but it's actually testing the "ALLOWS free text" behavior.
+      // We elected not to fix this bug because Playwright is the strategic direction for component testing.
       const onCommit = cy.stub().as("onCommit");
       cy.mount(
         <CurrencyWithTypeaheadAllowFreeTextFixture onCommit={onCommit} />,

@@ -82,6 +82,8 @@ jobs:
         uses: actions/checkout@v3
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
+      - name: Build Worker
+        run: cd ./vuu-ui && npm run build:worker
       - name: Install Playwright Browser
         run: cd ./vuu-ui && npx playwright install --with-deps ${{ matrix.browser }}
       - name: Run Playwright component tests

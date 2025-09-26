@@ -32,12 +32,13 @@ if [ -f "$JSON_FILE" ]; then
   
   # Extract browser-specific stats from JSON report
   for browser in "${BROWSERS[@]}"; do
-    ALL=$(jq -r '[.. | objects | select(.projectName? == "'$browser'") | .results[]?] | length' "$JSON_FILE")
-    PASSED=$(jq -r '[.. | objects | select(.projectName? == "'$browser'") | .results[]? | select(.status == "passed")] | length' "$JSON_FILE")
-    FAILED=$(jq -r '[.. | objects | select(.projectName? == "'$browser'") | .results[]? | select(.status == "failed")] | length' "$JSON_FILE")
-    FLAKY=$(jq -r '[.. | objects | select(.projectName? == "'$browser'") | .results[]? | select(.status == "flaky")] | length' "$JSON_FILE")
-    SKIPPED=$(jq -r '[.. | objects | select(.projectName? == "'$browser'") | .results[]? | select(.status == "skipped")] | length' "$JSON_FILE")
-    DURATION=$(jq -r '[.. | objects | select(.projectName? == "'$browser'") | .results[]? | .duration // 0] | if length > 0 then add / 1000 | round else 0 end' "$JSON_FILE")
+    # Count overall test status, not individual results
+    ALL=$(jq -r '[.. | objects | select(.projectName? == "'$browser'") | select(.status?)] | length' "$JSON_FILE")
+    PASSED=$(jq -r '[.. | objects | select(.projectName? == "'$browser'") | select(.status == "passed")] | length' "$JSON_FILE")
+    FAILED=$(jq -r '[.. | objects | select(.projectName? == "'$browser'") | select(.status == "failed")] | length' "$JSON_FILE")
+    FLAKY=$(jq -r '[.. | objects | select(.projectName? == "'$browser'") | select(.status == "flaky")] | length' "$JSON_FILE")
+    SKIPPED=$(jq -r '[.. | objects | select(.projectName? == "'$browser'") | select(.status == "skipped")] | length' "$JSON_FILE")
+    DURATION=$(jq -r '[.. | objects | select(.projectName? == "'$browser'") | .results[]?.duration // 0] | if length > 0 then add / 1000 | round else 0 end' "$JSON_FILE")
     
     echo "| $(echo $browser | tr '[:lower:]' '[:upper:]') | $ALL | $PASSED | $FAILED | $FLAKY | $SKIPPED | ${DURATION}s |"
     
