@@ -81,17 +81,29 @@ export const createSchemaFromTableMetadata = ({
   };
 };
 
+/**
+ * This is called when we have row updates to process and
+ * we have rows in local cache to fill client range.
+ * We check here to see if there is any gap between this
+ * set of updates and the last set of rows sent to client.
+ * If so, it indicates that we have previously received
+ * updates but that we did not have all ther rows needed
+ * to satisfy client range request, so they were not sent
+ * to client. Now we can send them all.
+ */
 export const gapBetweenLastRowSentToClient = (
   lastRowsReturnedToClient: [number, number],
   pendingUpdates: VuuRow[],
   clientRange: VuuRange,
+  rowCount: number,
 ): VuuRange | undefined => {
   const firstPendingUpdate = pendingUpdates.at(0);
   const lastPendingUpdate = pendingUpdates.at(-1);
 
   if (firstPendingUpdate && lastPendingUpdate) {
-    const [firstRowIndex, lastRowIndex] = lastRowsReturnedToClient;
+    const maxTo = Math.min(rowCount, clientRange.to);
 
+    const [firstRowIndex, lastRowIndex] = lastRowsReturnedToClient;
     if (
       lastRowIndex < firstPendingUpdate.rowIndex - 1 &&
       clientRange.from < firstPendingUpdate.rowIndex
@@ -102,12 +114,24 @@ export const gapBetweenLastRowSentToClient = (
       };
     } else if (
       firstRowIndex > lastPendingUpdate.rowIndex + 1 &&
-      clientRange.to > lastPendingUpdate.rowIndex
+      maxTo > lastPendingUpdate.rowIndex
     ) {
       return {
         from: lastPendingUpdate.rowIndex + 1,
-        to: Math.min(clientRange.to, firstRowIndex),
+        to: Math.min(maxTo, firstRowIndex),
       };
+    } else if (firstRowIndex === -1 && lastRowIndex === -1) {
+      if (clientRange.from < firstPendingUpdate.rowIndex) {
+        return {
+          from: clientRange.from,
+          to: firstPendingUpdate.rowIndex,
+        };
+      } else if (maxTo > lastPendingUpdate.rowIndex + 1) {
+        return {
+          from: lastPendingUpdate.rowIndex + 1,
+          to: maxTo,
+        };
+      }
     }
   }
 };

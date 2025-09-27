@@ -154,13 +154,13 @@ export const createTableGroupRows = (
 };
 
 export const updateTableRow = (
-  viewPortId,
-  rowIndex,
-  updatedVal,
-  { vpSize = 100, ts = 2 } = {},
+  viewPortId: string,
+  rowIndex: number,
+  updatedVal: string | number | boolean,
+  { key = "", vpSize = 100, ts = 2 } = {},
 ): VuuRow => {
-  const key = ("0" + rowIndex).slice(-2);
-  const rowKey = `key-${key}`;
+  const keyVal = key || ("0" + rowIndex).slice(-2);
+  const rowKey = `key-${keyVal}`;
   return {
     ...COMMON_ROW_ATTRS,
     viewPortId,
@@ -169,7 +169,7 @@ export const updateTableRow = (
     rowKey,
     ts,
     updateType: "U",
-    data: [rowKey, `name ${key}`, updatedVal, true],
+    data: [rowKey, `name ${keyVal}`, updatedVal, true],
   };
 };
 
@@ -343,6 +343,16 @@ class ServerAPI {
         viewPortId,
         from,
         to,
+      },
+    });
+  }
+
+  receiveWebsocketData(rows: VuuRow[]) {
+    this.#serverProxy.handleMessageFromServer({
+      ...COMMON_ATTRS,
+      body: {
+        ...COMMON_TABLE_ROW_ATTRS,
+        rows,
       },
     });
   }
