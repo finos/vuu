@@ -34,7 +34,6 @@ import type {
   VuuRpcServiceRequest,
   VuuViewportCreateResponse,
   SelectRequest,
-  VuuDataRow,
 } from "@vuu-ui/vuu-protocol-types";
 import {
   isVuuMenuRpcRequest,
