@@ -64,7 +64,7 @@
         <maven.gpg.plugin.version>3.1.0</maven.gpg.plugin.version>
         <gpg.executable>gpg</gpg.executable>
         <publish.server.id>ossrh</publish.server.id>
-        <release.goals>install org.sonatype.central:central-publishing-maven-plugin:0.8.0:publish</release.goals>
+        <release.goals>install -DskipTests org.sonatype.central:central-publishing-maven-plugin:0.8.0:publish</release.goals>
         <github.global.server>github</github.global.server>
         <github.oauth.token>${env.GITHUB_TOKEN}</github.oauth.token>
     </properties>
