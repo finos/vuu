@@ -952,16 +952,12 @@ export class ServerProxy {
 
           const viewportRowMap = groupRowsByViewport(body.rows);
           if (process.env.NODE_ENV === "development" && debugEnabled) {
-            const [firstRow, secondRow] = body.rows;
+            const [firstRow] = body.rows;
             if (body.rows.length === 0) {
               infoEnabled && info("handleMessageFromServer TABLE_ROW 0 rows");
             } else if (firstRow?.rowIndex === -1) {
               if (body.rows.length === 1) {
                 if (firstRow.updateType === "SIZE") {
-                  infoEnabled &&
-                    info(
-                      `handleMessageFromServer [${firstRow.viewPortId}] TABLE_ROW SIZE ONLY ${firstRow.vpSize}`,
-                    );
                   infoEnabled &&
                     info(
                       `handleMessageFromServer [${firstRow.viewPortId}] TABLE_ROW SIZE ONLY ${firstRow.vpSize}`,
@@ -977,17 +973,17 @@ export class ServerProxy {
                   info(
                     `handleMessageFromServer TABLE_ROW ${
                       body.rows.length
-                    } rows, SIZE ${firstRow.vpSize}, [${
-                      secondRow?.rowIndex
-                    }] - [${body.rows[body.rows.length - 1]?.rowIndex}]`,
+                    } rows, SIZE ${firstRow.vpSize}, [${body.rows
+                      .map((r) => r.rowIndex)
+                      .join(",")}]`,
                   );
               }
             } else {
               infoEnabled &&
                 info(
-                  `handleMessageFromServer TABLE_ROW ${body.rows.length} rows [${
-                    firstRow?.rowIndex
-                  }] - [${body.rows[body.rows.length - 1]?.rowIndex}]`,
+                  `handleMessageFromServer TABLE_ROW ${body.rows.length} rows [${body.rows
+                    .map((r) => r.rowIndex)
+                    .join(",")}]`,
                 );
             }
           }

@@ -220,6 +220,10 @@ export class Viewport {
   // Records SIZE only updates
   private setLastSizeOnlyUpdateSize = (size: number) => {
     this.lastUpdateStatus.size = size;
+    if (size === 0) {
+      this.lastRowsReturnedToClient[0] = -1;
+      this.lastRowsReturnedToClient[1] = -1;
+    }
   };
   private setLastUpdate = (mode: DataUpdateMode) => {
     const { ts: lastTS, mode: lastMode } = this.lastUpdateStatus;
@@ -821,6 +825,7 @@ export class Viewport {
           this.lastRowsReturnedToClient,
           this.pendingUpdates,
           this.dataWindow.clientRange,
+          this.dataWindow.rowCount,
         );
         if (missingRows) {
           for (let i = missingRows.from; i < missingRows.to; i++) {
@@ -829,7 +834,6 @@ export class Viewport {
               out.push(toClient(row, keys));
             } else {
               console.warn("[Viewport] missing row not in data cache");
-              //throw Error("[Viewport] missing row not in data cache");
             }
           }
           for (const row of this.pendingUpdates) {
@@ -848,9 +852,16 @@ export class Viewport {
           }
         }
 
-        // This assumes pendingUpdates are in rowIndex order
         this.lastRowsReturnedToClient[0] = out.at(0)?.[0] ?? -1;
         this.lastRowsReturnedToClient[1] = out.at(-1)?.[0] ?? -1;
+      } else if (this.pendingUpdates.length > 0) {
+        // We have updates, but local cache does not have all rows to fill client range.
+        // That means we must be processing a full range refresh, but don't yet have all
+        // the data to send to client. When remaining rows are received, we will forward
+        // rows to client.
+        // Reset the lastRowsReturnedToClient. otherwise we would skip these pending updates
+        this.lastRowsReturnedToClient[0] = -1;
+        this.lastRowsReturnedToClient[1] = -1;
       }
       this.pendingUpdates.length = 0;
       this.hasUpdates = false;
