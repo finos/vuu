@@ -1,6 +1,6 @@
 import { Filter } from "@vuu-ui/vuu-filter-types";
 import { describe, expect, it } from "vitest";
-import { addFilter } from "../src/filter-utils";
+import { addFilter, getFilterClausesForDisplay } from "../src/filter-utils";
 
 describe("filter-utils", () => {
   describe("addFilter", () => {
@@ -180,5 +180,96 @@ describe("filter-utils", () => {
       ],
       op: "or",
     });
+  });
+});
+
+describe("getFilterClausesForDisplay", () => {
+  it("handles single clause filters", () => {
+    expect(
+      getFilterClausesForDisplay({
+        column: "currency",
+        op: "=",
+        value: "GBP",
+      }),
+    ).toEqual([["currency", "GBP"]]);
+  });
+  it("handles between filters", () => {
+    expect(
+      getFilterClausesForDisplay({
+        op: "and",
+        filters: [
+          {
+            column: "price",
+            op: ">",
+            value: 1000,
+          },
+          {
+            column: "price",
+            op: "<",
+            value: 2000,
+          },
+        ],
+      }),
+    ).toEqual([["price", "1000 - 2000"]]);
+  });
+  it("handles multi clause", () => {
+    expect(
+      getFilterClausesForDisplay({
+        op: "and",
+        filters: [
+          {
+            column: "currency",
+            op: "=",
+            value: "GBP",
+          },
+          {
+            column: "exchange",
+            op: "=",
+            value: "XLON/SETS",
+          },
+        ],
+      }),
+    ).toEqual([
+      ["currency", "GBP"],
+      ["exchange", "XLON/SETS"],
+    ]);
+  });
+  it("handles multi clause, with between", () => {
+    expect(
+      getFilterClausesForDisplay({
+        op: "and",
+        filters: [
+          {
+            column: "currency",
+            op: "=",
+            value: "GBP",
+          },
+          {
+            column: "exchange",
+            op: "=",
+            value: "XLON/SETS",
+          },
+          {
+            op: "and",
+            filters: [
+              {
+                column: "price",
+                op: ">",
+                value: 1000,
+              },
+              {
+                column: "price",
+                op: "<",
+                value: 2000,
+              },
+            ],
+          },
+        ],
+      }),
+    ).toEqual([
+      ["currency", "GBP"],
+      ["exchange", "XLON/SETS"],
+      ["price", "1000 - 2000"],
+    ]);
   });
 });

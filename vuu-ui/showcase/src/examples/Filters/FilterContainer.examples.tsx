@@ -109,6 +109,13 @@ export const SimpleFilterContainer = () => {
             table={table}
           />
         </FormField>
+        <FormField>
+          <FormFieldLabel>Price</FormFieldLabel>
+          <FilterContainerColumnFilter
+            column={{ name: "price", serverDataType: "double" }}
+            operator="between"
+          />
+        </FormField>
       </ColumnFilterContainer>
       <DataSourceStats dataSource={dataSource} />
     </DataSourceProvider>

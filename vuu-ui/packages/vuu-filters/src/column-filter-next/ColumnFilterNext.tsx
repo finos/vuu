@@ -1,108 +1,78 @@
 import {
-  ChangeEventHandler,
-  useCallback,
-  useMemo,
-  type HTMLAttributes,
-} from "react";
-import cx from "clsx";
-import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+  SegmentedButtonGroup,
+  type SegmentedButtonGroupProps,
+} from "@salt-ds/core";
 import {
   DataItemEditControlProps,
   getDataItemEditControl,
 } from "@vuu-ui/vuu-data-react";
-import { InputProps, useControlled } from "@salt-ds/core";
+import cx from "clsx";
+import { ForwardedRef, forwardRef } from "react";
 import {
-  ColumnFilterChangeHandler,
-  ColumnFilterOp,
-  ColumnFilterValue,
-} from "@vuu-ui/vuu-filter-types";
-import { CommitHandler } from "@vuu-ui/vuu-utils";
-import { ColumnFilterCommitHandler } from "../column-filter/useColumnFilter";
+  ColumnFilterNextHookProps,
+  useColumnFilterNext,
+} from "./useColumnFilterNext";
 
 const classBase = "vuuFilterColumnNext";
 
-const injectInputProps = (
-  InputProps: InputProps | undefined,
-  inputProps: InputProps["inputProps"],
-): InputProps => {
-  if (InputProps === undefined) {
-    return {
-      inputProps,
-    };
-  } else {
-    return {
-      ...InputProps,
-      inputProps: {
-        ...InputProps.inputProps,
-        ...inputProps,
-      },
-    };
-  }
-};
-
 export interface ColumnFilterNextProps
-  extends Omit<HTMLAttributes<HTMLDivElement>, "onChange">,
-    Pick<DataItemEditControlProps, "InputProps" | "TypeaheadProps" | "table"> {
-  column: ColumnDescriptor;
-  defaultValue?: ColumnFilterValue;
-  onColumnFilterChange?: ColumnFilterChangeHandler;
-  onCommit: ColumnFilterCommitHandler;
-  operator?: ColumnFilterOp;
-  value?: ColumnFilterValue;
-}
+  extends ColumnFilterNextHookProps,
+    Omit<SegmentedButtonGroupProps, "defaultValue">,
+    Pick<DataItemEditControlProps, "TypeaheadProps" | "table"> {}
 
-export const ColumnFilterNext = ({
-  InputProps: InputPropsProp,
-  TypeaheadProps,
-  className,
-  column,
-  defaultValue,
-  onColumnFilterChange,
-  onCommit: onCommitProp,
-  operator = "=",
-  table,
-  value: valueProp,
-  ...htmlAttributes
-}: ColumnFilterNextProps) => {
-  const [value, setValue] = useControlled({
-    controlled: valueProp,
-    default: defaultValue,
-    name: "ColumnFilterNext",
-    state: "value",
-  });
-
-  const onChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
-    (e) => {
-      const { value = "" } = e.target;
-      setValue(value);
-      onColumnFilterChange?.(e.target.value, column, operator);
-    },
-    [column, onColumnFilterChange, operator, setValue],
-  );
-
-  const handleCommit = useCallback<CommitHandler<HTMLElement>>(
-    (e, value = "") => {
-      setValue(value as ColumnFilterValue);
-      onCommitProp(column, operator, value as ColumnFilterValue);
-    },
-    [column, onCommitProp, operator, setValue],
-  );
-
-  const InputProps = useMemo(
-    () => injectInputProps(InputPropsProp, { onChange, value }),
-    [InputPropsProp, onChange, value],
-  );
+export const ColumnFilterNext = forwardRef(function ColumnFilterNext(
+  {
+    InputProps: InputPropsProp,
+    TypeaheadProps,
+    className,
+    column,
+    defaultValue,
+    onColumnFilterChange,
+    onColumnRangeFilterChange,
+    onCommit: onCommitProp,
+    operator = "=",
+    table,
+    value: valueProp,
+    ...buttonGroupProps
+  }: ColumnFilterNextProps,
+  forwardRef: ForwardedRef<HTMLDivElement>,
+) {
+  const { InputProps, InputPropsRange, onCommit, onCommitRange } =
+    useColumnFilterNext({
+      InputProps: InputPropsProp,
+      column,
+      defaultValue,
+      onColumnFilterChange,
+      onColumnRangeFilterChange,
+      onCommit: onCommitProp,
+      operator,
+      value: valueProp,
+    });
 
   return (
-    <div {...htmlAttributes} className={cx(classBase, className)}>
+    <SegmentedButtonGroup
+      {...buttonGroupProps}
+      className={cx(classBase, className)}
+      ref={forwardRef}
+    >
       {getDataItemEditControl({
         InputProps,
         TypeaheadProps,
         commitWhenCleared: true,
         dataDescriptor: column,
-        onCommit: handleCommit,
+        onCommit,
         table,
       })}
-    </div>
+      {operator === "between"
+        ? getDataItemEditControl({
+            className: `${classBase}-rangeHigh`,
+            commitWhenCleared: true,
+            InputProps: InputPropsRange,
+            dataDescriptor: column,
+            onCommit: onCommitRange,
+            table,
+          })
+        : null}
+    </SegmentedButtonGroup>
   );
-};
+});
