@@ -71,6 +71,16 @@ export const isInFilter = (f: Partial<Filter>): f is MultiValueFilterClause =>
 export const isAndFilter = (
   f?: Partial<Filter>,
 ): f is MultiClauseFilter<"and"> => f?.op === "and";
+
+export const isBetweenFilter = (
+  f: Filter,
+): f is MultiClauseFilter<"and", SingleValueFilterClause> =>
+  isAndFilter(f) &&
+  f.filters.length === 2 &&
+  f.filters[0].column === f.filters[1].column &&
+  f.filters[0].op === ">" &&
+  f.filters[1].op === "<";
+
 export const isOrFilter = (f?: Partial<Filter>): f is MultiClauseFilter<"or"> =>
   f?.op === "or";
 
@@ -182,7 +192,10 @@ export const getColumnValueFromFilter = (
 };
 
 export class FilterAggregator {
-  #filters = new Map<string, SingleValueFilterClause>();
+  #filters = new Map<
+    string,
+    SingleValueFilterClause | MultiClauseFilter<"and", SingleValueFilterClause>
+  >();
 
   constructor(filter?: FilterContainerFilter) {
     if (isSingleValueFilter(filter)) {
@@ -193,15 +206,28 @@ export class FilterAggregator {
     console.log(JSON.stringify(this.filter, null, 2));
   }
 
-  add(column: ColumnDescriptor, value: string | number) {
+  add(column: ColumnDescriptor, value: ColumnFilterValue) {
     const { serverDataType = "string" } = column;
-    const typedValue = getTypedValue(value.toString(), serverDataType, true);
+    if (Array.isArray(value)) {
+      const value1 = getTypedValue(value[0].toString(), serverDataType, true);
+      const value2 = getTypedValue(value[0].toString(), serverDataType, true);
 
-    this.#filters.set(column.name, {
-      column: column.name,
-      op: "=",
-      value: typedValue,
-    });
+      this.#filters.set(column.name, {
+        op: "and",
+        filters: [
+          { column: column.name, op: ">", value: value1 },
+          { column: column.name, op: "<", value: value2 },
+        ],
+      });
+    } else {
+      const typedValue = getTypedValue(value.toString(), serverDataType, true);
+
+      this.#filters.set(column.name, {
+        column: column.name,
+        op: "=",
+        value: typedValue,
+      });
+    }
   }
 
   has({ name }: ColumnDescriptor) {

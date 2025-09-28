@@ -41,3 +41,4 @@ export {
   TabbedFilterContainer,
   type TabbedFilterContainerProps,
 } from "./tabbed-filter-container/TabbedFilterContainer";
+export { FilterDisplay } from "./filter-display/FilterDisplay";

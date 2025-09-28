@@ -2,6 +2,7 @@ import cx from "clsx";
 import {
   useCallback,
   useMemo,
+  useRef,
   type HTMLAttributes,
   type ReactNode,
 } from "react";
@@ -11,7 +12,10 @@ import {
   useFilterContext,
   type ColumnFilterContainerHookProps,
 } from "./useColumnFilterContainer";
-import { ColumnFilterValue } from "@vuu-ui/vuu-filter-types";
+import {
+  ColumnFilterChangeHandler,
+  ColumnFilterValue,
+} from "@vuu-ui/vuu-filter-types";
 import {
   ColumnFilterNext,
   ColumnFilterNextProps,
@@ -27,15 +31,13 @@ export interface FilterContainerProps
 }
 
 export interface FilterContainerColumnFilterProps
-  extends Omit<
-    ColumnFilterNextProps,
-    "defaultValue" | "onChange" | "onCommit" | "value"
-  > {
+  extends Omit<ColumnFilterNextProps, "defaultValue" | "onCommit" | "value"> {
   defaultValue?: ColumnFilterValue;
 }
 
 export const FilterContainerColumnFilter = ({
   column,
+  operator = "=",
   ...props
 }: FilterContainerColumnFilterProps) => {
   const {
@@ -46,7 +48,11 @@ export const FilterContainerColumnFilter = ({
 
   console.log(`%c[FilterContainerColumnFilter] render`, "color:red");
 
-  const defaultValue = useMemo(() => register(column), [column, register]);
+  const defaultValue = useMemo(
+    () => register(column, operator),
+    [column, operator, register],
+  );
+  const valueRef = useRef<ColumnFilterValue>(defaultValue);
 
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
     (column, op, value) => {
@@ -55,13 +61,33 @@ export const FilterContainerColumnFilter = ({
     [onFilterContextCommit],
   );
 
+  const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
+    (value, column, op) => {
+      const { current: v } = valueRef;
+      valueRef.current = Array.isArray(v) ? [`${value}`, v[1]] : value;
+      onFilterContextChange(valueRef.current, column, op);
+    },
+    [onFilterContextChange],
+  );
+
+  const handleColumnRangeFilterChange = useCallback<ColumnFilterChangeHandler>(
+    (value, column, op) => {
+      const { current: v } = valueRef;
+      valueRef.current = Array.isArray(v) ? [v[0], `${value}`] : value;
+      onFilterContextChange(valueRef.current, column, op);
+    },
+    [onFilterContextChange],
+  );
+
   return (
     <ColumnFilterNext
       {...props}
       column={column}
       defaultValue={defaultValue}
-      onColumnFilterChange={onFilterContextChange}
+      onColumnFilterChange={handleColumnFilterChange}
+      onColumnRangeFilterChange={handleColumnRangeFilterChange}
       onCommit={handleCommit}
+      operator={operator}
     />
   );
 };

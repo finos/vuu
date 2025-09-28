@@ -10,6 +10,7 @@ import {
 import {
   extractFilterForColumn,
   isAndFilter,
+  isBetweenFilter,
   isInFilter,
   isMultiClauseFilter,
   isMultiValueFilter,
@@ -463,4 +464,21 @@ export const getNumericFilter = (
   if (op === undefined) return undefined;
   if (value === undefined || isNaN(value)) return undefined;
   return { column, op, value };
+};
+
+type FilterClauseList = Array<[string, string]>;
+
+export const getFilterClausesForDisplay = (
+  filter: Filter,
+  clauses: FilterClauseList = [],
+): FilterClauseList => {
+  if (isSingleValueFilter(filter)) {
+    clauses.push([filter.column, filter.value.toString()]);
+  } else if (isBetweenFilter(filter)) {
+    const [f1, f2] = filter.filters;
+    clauses.push([f1.column, `${f1.value} - ${f2.value}`]);
+  } else if (isAndFilter(filter)) {
+    filter.filters.forEach((f) => getFilterClausesForDisplay(f, clauses));
+  }
+  return clauses;
 };

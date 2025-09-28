@@ -13,7 +13,7 @@ import {
 } from "@vuu-ui/vuu-utils";
 
 export type ColumnFilterChangeHandler = (
-  value: string | number,
+  value: ColumnFilterValue,
   column: ColumnDescriptor,
   op: ColumnFilterOp,
 ) => void;
@@ -22,7 +22,10 @@ export interface ColumnFilterContextProps {
   filterContainerInstalled: boolean;
   onChange?: ColumnFilterChangeHandler;
   onCommit?: ColumnFilterCommitHandler;
-  register?: (column: ColumnDescriptor) => string;
+  register?: (
+    column: ColumnDescriptor,
+    operator: ColumnFilterOp,
+  ) => ColumnFilterValue;
   getValue?: (column: ColumnDescriptor) => ColumnFilterValue;
 }
 
@@ -81,6 +84,8 @@ type ColumnFilterValueMap = Record<string, ColumnFilterValue>;
 //   }
 // };
 
+export const EmptyTuple: ColumnFilterValue = ["", ""];
+
 export const useColumnFilterContainer = ({
   filter,
   onFilterApplied,
@@ -96,10 +101,11 @@ export const useColumnFilterContainer = ({
   console.log(`[useColumnFilter], filter: ${JSON.stringify(filter)}`);
 
   const register = useCallback(
-    (column: ColumnDescriptor) => {
-      const defaultValue = getColumnValueFromFilter(column, filter) as
-        | string
-        | number;
+    (column: ColumnDescriptor, op: ColumnFilterOp) => {
+      const defaultValue =
+        op === "between"
+          ? EmptyTuple
+          : (getColumnValueFromFilter(column, filter) as string | number);
       valueRef.current[column.name] = defaultValue;
       return defaultValue;
     },
@@ -124,7 +130,26 @@ export const useColumnFilterContainer = ({
 
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
     (column, op, value = "") => {
-      if (value === "") {
+      if (Array.isArray(value)) {
+        if (op !== "between") {
+          throw Error(
+            `[useInlineFilter] array value is not valid for operator ${op}`,
+          );
+        }
+        if (value[0] === "" && value[1] === "") {
+          if (!filterAggregator.remove(column)) {
+            return;
+          }
+        } else {
+          if (typeof value[0] === "string" && typeof value[1] === "string") {
+            filterAggregator.add(column, value);
+          } else {
+            throw Error(
+              `[useInlineFilter] handleCommit value  [${typeof value[0]},${typeof value[1]}] for operator ${op} supports [string,string] only`,
+            );
+          }
+        }
+      } else if (value === "") {
         if (!filterAggregator.remove(column)) {
           return;
         }

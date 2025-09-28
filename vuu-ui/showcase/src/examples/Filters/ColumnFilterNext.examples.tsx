@@ -190,6 +190,12 @@ export const UnControlledNumericColumnFilterBetween = () => {
     },
     [],
   );
+  const handleColumnRangeFilterChange = useCallback<ColumnFilterChangeHandler>(
+    (value, column) => {
+      console.log(`handleColumnFilterChange ${column.name} ${value}`);
+    },
+    [],
+  );
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
     (column, operator, value) => {
       console.log(`commit ${column.name} ${value}`);
@@ -204,8 +210,9 @@ export const UnControlledNumericColumnFilterBetween = () => {
           <FormFieldLabel>Price</FormFieldLabel>
           <ColumnFilterNext
             column={{ name: "price", serverDataType: "double" }}
-            defaultValue=""
+            defaultValue={["", ""]}
             onColumnFilterChange={handleColumnFilterChange}
+            onColumnRangeFilterChange={handleColumnRangeFilterChange}
             onCommit={handleCommit}
             operator="between"
           />
@@ -254,6 +261,7 @@ const FilterDisplay = ({ filter }: { filter?: Filter }) => (
 export const ContainerManagedMultipleColumnFilters = () => {
   const { VuuDataSource } = useData();
   const [filter, setFilter] = useState<Filter | undefined>(undefined);
+  const clearFilter = () => setFilter(undefined);
   const dataSource = useMemo(() => {
     return new VuuDataSource({ table: schema.table });
   }, [VuuDataSource]);
@@ -266,7 +274,10 @@ export const ContainerManagedMultipleColumnFilters = () => {
   return (
     <DataSourceProvider dataSource={dataSource}>
       <ContainerTemplate flexDirection="row" width={700}>
-        <ColumnFilterContainer onFilterApplied={setFilter}>
+        <ColumnFilterContainer
+          onFilterCleared={clearFilter}
+          onFilterApplied={setFilter}
+        >
           <FormField>
             <FormFieldLabel>BBG</FormFieldLabel>
             <FilterContainerColumnFilter
@@ -286,6 +297,13 @@ export const ContainerManagedMultipleColumnFilters = () => {
             <FilterContainerColumnFilter
               column={{ name: "exchange", serverDataType: "string" }}
               table={table}
+            />
+          </FormField>
+          <FormField>
+            <FormFieldLabel>Price</FormFieldLabel>
+            <FilterContainerColumnFilter
+              column={{ name: "price", serverDataType: "double" }}
+              operator="between"
             />
           </FormField>
         </ColumnFilterContainer>

@@ -1,0 +1,6 @@
+.vuuFilterDisplay {
+    display: grid;
+    column-gap: 12px;
+    grid-template-columns: auto auto;
+    width: fit-content;
+}
