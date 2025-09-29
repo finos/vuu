@@ -1,22 +1,31 @@
 package org.finos.vuu.net.http
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.net.rest.RestService
-import org.finos.vuu.util.PathChecker
 import io.vertx.core.http.{HttpMethod, HttpServerOptions}
 import io.vertx.core.net.{PemKeyCertOptions, PfxOptions}
 import io.vertx.core.{AbstractVerticle, Vertx, VertxOptions}
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.{BodyHandler, StaticHandler}
-import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
+import org.finos.toolbox.lifecycle.LifecycleEnabled
 import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSSLByPKCS, VuuSSLCipherSuiteOptions, VuuSSLDisabled, VuuSSLOptions}
+import org.finos.vuu.net.rest.RestService
+import org.finos.vuu.util.PathChecker
 
 import java.io.File
 import java.util
 
-object VuuHttp2Server {
-  def apply(options: VuuHttp2ServerOptions, services: List[RestService])(implicit lifecycle: LifecycleContainer): Http2Server = {
-    new VuuHttp2Server(options, services)
+object Http2Server {
+
+  def apply(options: VuuHttp2ServerOptions): Http2Server = {
+    apply(options, List.empty)
+  }
+
+  def apply(options: VuuHttp2ServerOptions, services: List[RestService]): Http2Server = {
+    if (options.isEnabled) {
+      VuuHttp2Server(options, services)
+    } else {
+      DisabledHttp2Server()
+    }
   }
 }
 
@@ -159,17 +168,39 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
   }
 }
 
+case class DisabledHttp2Server() extends Http2Server {
 
-class VuuHttp2Server(val options: VuuHttp2ServerOptions, val services: List[RestService]) extends Http2Server {
+  override def join(): Unit = {
+    //Nothing to do
+  }
+
+  override def doStart(): Unit = {
+    //Nothing to do
+  }
+
+  override def doStop(): Unit = {
+    //Nothing to do
+  }
+
+  override def doInitialize(): Unit = {
+    //Nothing to do
+  }
+
+  override def doDestroy(): Unit = {
+    //Nothing to do
+  }
+
+  override val lifecycleId: String = "DisabledHttp2Server"
+
+}
+
+case class VuuHttp2Server(options: VuuHttp2ServerOptions, services: List[RestService]) extends Http2Server {
 
   private final val verticle = new VertxHttp2Verticle(options, services)
-
-  val vxoptions = new VertxOptions();
+  private final val vertx = Vertx.vertx(new VertxOptions())
 
   @volatile
   private var running = false
-
-  private val vertx = Vertx.vertx(vxoptions);
 
   override def doStart(): Unit = {
     vertx.deployVerticle(verticle)

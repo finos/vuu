@@ -16,6 +16,7 @@ case class ClassPathWebRoot() extends VuuHttp2ServerWebRootType
 case class AbsolutePathWebRoot(path: String, directoryListings: Boolean = false) extends VuuHttp2ServerWebRootType
 
 trait VuuHttp2ServerOptions {
+  def isEnabled: Boolean
   def sslOptions: VuuSSLOptions
   def webRoot: VuuHttp2ServerWebRootType
   def port: Int
@@ -28,6 +29,7 @@ trait VuuHttp2ServerOptions {
   def withWebRoot(webRoot: VuuHttp2ServerWebRootType): VuuHttp2ServerOptions
   def withPort(port: Int): VuuHttp2ServerOptions
   def withBindAddress(bindAddress: String): VuuHttp2ServerOptions
+  def withIsEnabled(isEnabled: Boolean): VuuHttp2ServerOptions
 }
 
 object VuuHttp2ServerOptions {
@@ -36,7 +38,8 @@ object VuuHttp2ServerOptions {
   }
 }
 
-private case class VuuHttp2ServerOptionsImpl(sslOptions: VuuSSLOptions = VuuSSLDisabled(),
+private case class VuuHttp2ServerOptionsImpl(isEnabled: Boolean = true,
+                                             sslOptions: VuuSSLOptions = VuuSSLDisabled(),
                                              webRoot: VuuHttp2ServerWebRootType = WebRootDisabled(),
                                              port: Int,
                                              bindAddress: String = "") extends VuuHttp2ServerOptions {
@@ -60,4 +63,6 @@ private case class VuuHttp2ServerOptionsImpl(sslOptions: VuuSSLOptions = VuuSSLD
   }
 
   override def withBindAddress(bindAddress: String): VuuHttp2ServerOptions = this.copy(bindAddress = bindAddress)
+
+  override def withIsEnabled(isEnabled: Boolean): VuuHttp2ServerOptions = this.copy(isEnabled = isEnabled)
 }

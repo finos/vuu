@@ -68,7 +68,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
   final private val restServices: List[RestService] = moduleContainer.getAll().flatMap(vsm => vsm.restServices)
 
-  final val httpServer: Http2Server = VuuHttp2Server(config.httpOptions, restServices)
+  final val httpServer: Http2Server = Http2Server(config.httpOptions, restServices)
 
   private final val joinProviderRunner = new LifeCycleRunner("joinProviderRunner", () => joinProvider.runOnce())
   lifecycle(joinProviderRunner).dependsOn(joinProvider)
