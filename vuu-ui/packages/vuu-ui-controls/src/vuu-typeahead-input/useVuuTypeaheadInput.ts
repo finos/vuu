@@ -11,6 +11,7 @@ import {
 } from "@vuu-ui/vuu-utils";
 import {
   ComponentPropsWithoutRef,
+  FocusEventHandler,
   KeyboardEventHandler,
   useCallback,
   useEffect,
@@ -113,7 +114,7 @@ export const useVuuTypeaheadInput = ({
     inputRef.current = input;
   }, []);
 
-  useEffect(() => {
+  const refreshSuggestions = useCallback(() => {
     if (table) {
       const vuuTable = getVuuTable(table);
       if (
@@ -125,12 +126,8 @@ export const useVuuTypeaheadInput = ({
         const params: TypeaheadParams = value
           ? [vuuTable, column, value]
           : [vuuTable, column];
-        console.log(
-          `[useVuuTypeaheadInput] get suggestions matching ${value} ...`,
-        );
         getSuggestions(params)
           .then((suggestions) => {
-            console.log(`... ${JSON.stringify(suggestions)}`);
             if (suggestions === false) {
               // TODO is this right
               setTypeaheadValues([]);
@@ -159,13 +156,17 @@ export const useVuuTypeaheadInput = ({
       }
     }
   }, [
-    table,
+    NO_FREE_TEXT,
     column,
     getSuggestions,
-    value,
-    NO_FREE_TEXT,
     minCharacterCountToTriggerSuggestions,
+    table,
+    value,
   ]);
+
+  useEffect(() => {
+    refreshSuggestions();
+  }, [refreshSuggestions]);
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (evt) => {
@@ -211,9 +212,18 @@ export const useVuuTypeaheadInput = ({
     }
   };
 
+  const handleInputFocus = useCallback<FocusEventHandler<HTMLInputElement>>(
+    (e) => {
+      inputPropsProp?.onFocus?.(e);
+      refreshSuggestions();
+    },
+    [inputPropsProp, refreshSuggestions],
+  );
+
   const inputProps: ComponentPropsWithoutRef<"input"> = {
     ...inputPropsProp,
     autoComplete: "off",
+    onFocus: handleInputFocus,
   };
 
   const [noFreeText] = NO_FREE_TEXT;

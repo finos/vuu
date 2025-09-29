@@ -21,7 +21,7 @@ export {
 } from "./filter-pill/FilterPillNext";
 export {
   FilterProvider,
-  useActiveFilter,
+  useCurrentFilter as useActiveFilter,
   useSavedFilters,
 } from "./filter-provider/FilterProvider";
 export * from "./filter-utils";
@@ -33,10 +33,7 @@ export {
   type FilterNamePromptProps as SaveFilterConfirmPromptProps,
 } from "./saved-filters/FilterNamePrompt";
 export { SavedFilterPanel } from "./saved-filters/SavedFilterPanel";
-export type {
-  FilterClickHandler,
-  FilterDescriptor,
-} from "./saved-filters/useSavedFilterPanel";
+export type { FilterClickHandler } from "./saved-filters/useSavedFilterPanel";
 export {
   TabbedFilterContainer,
   type TabbedFilterContainerProps,

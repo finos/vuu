@@ -14,7 +14,6 @@ import {
 } from "@vuu-ui/vuu-filters";
 import { ReactElement, useCallback, useRef, useState } from "react";
 import { parseFilter } from "@vuu-ui/vuu-filter-parser";
-import { uuid } from "@vuu-ui/vuu-utils";
 import { Filter } from "@vuu-ui/vuu-filter-types";
 
 const DummyFilterPanel = () => {
@@ -27,11 +26,7 @@ const DummyFilterPanel = () => {
     (name: string) => {
       if (filterRef.current) {
         setDialog(null);
-        saveFilter({
-          active: true,
-          filter: { ...filterRef.current, name },
-          id: uuid(),
-        });
+        saveFilter(name);
       }
     },
     [saveFilter],

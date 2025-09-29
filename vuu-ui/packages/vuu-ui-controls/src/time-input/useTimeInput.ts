@@ -131,9 +131,13 @@ export const useTimeInput = ({
     mousedDownRef.current = true;
   }, []);
 
-  const handleMouseUp = useCallback<MouseEventHandler<HTMLInputElement>>(() => {
-    maskedInputRef.current?.click();
-  }, []);
+  const handleMouseUp = useCallback<MouseEventHandler<HTMLInputElement>>(
+    (e) => {
+      e.preventDefault();
+      maskedInputRef.current?.click();
+    },
+    [],
+  );
 
   return {
     inputRef: setInputEl,

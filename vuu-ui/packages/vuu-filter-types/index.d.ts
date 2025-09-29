@@ -100,7 +100,7 @@ export declare type ColumnFilterDescriptor = {
 };
 
 export declare type ColumnFilterChangeHandler = (
-  value: string | number,
+  value: ColumnFilterValue,
   column: ColumnDescriptor,
   op: ColumnFilterOp,
 ) => void;
@@ -110,4 +110,27 @@ export interface ColumnFilterDescriptor extends DataValueDescriptor {
   defaultValue: ColumnFilterValue;
   op?: ColumnFilterOp;
   variant?: ColumnFilterVariant;
+}
+
+/**
+ * A limited subset of all possible filters that is currently
+ * supported by a FilterContainer
+ */
+export declare type FilterContainerFilter =
+  | SingleValueFilterClause
+  | MultiClauseFilter<
+      "and",
+      | SingleValueFilterClause
+      | MultiClauseFilter<"and", SingleValueFilterClause>
+    >;
+
+export interface FilterContainerFilterDescriptor {
+  active: boolean;
+  id: string;
+  filter: FilterContainerFilter | null;
+}
+
+export interface FilterContainerFilterDescriptorWithFilter
+  extends FilterContainerFilterDescriptor {
+  filter: FilterContainerFilter;
 }

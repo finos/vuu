@@ -5,6 +5,7 @@ import {
   ColumnFilterValue,
   Filter,
   FilterClauseOp,
+  FilterContainerFilter,
   FilterWithPartialClause,
   MultiClauseFilter,
   MultiValueFilterClause,
@@ -73,7 +74,7 @@ export const isAndFilter = (
 ): f is MultiClauseFilter<"and"> => f?.op === "and";
 
 export const isBetweenFilter = (
-  f: Filter,
+  f?: Filter,
 ): f is MultiClauseFilter<"and", SingleValueFilterClause> =>
   isAndFilter(f) &&
   f.filters.length === 2 &&
@@ -163,28 +164,33 @@ const collectFiltersForColumn = (
   };
 };
 
-/**
- * A limited subset of all possible filters that is currently
- * supported by a FilterContainer
- */
-export type FilterContainerFilter =
-  | SingleValueFilterClause
-  | MultiClauseFilter<"and", SingleValueFilterClause>;
+// Just until we fully support bool values in filters
+const stringifyBoolean = (value: string | number | boolean) =>
+  typeof value === "boolean" ? "${filter.value}" : value;
 
 export const getColumnValueFromFilter = (
   column: ColumnDescriptor,
   filter?: FilterContainerFilter,
-) => {
+): ColumnFilterValue => {
   if (isSingleValueFilter(filter)) {
     if (filter?.column === column.name) {
-      return filter.value;
+      return stringifyBoolean(filter.value);
+    }
+  } else if (isBetweenFilter(filter)) {
+    if (filter.filters[0].column === column.name) {
+      const [{ value: v1 }, { value: v2 }] = filter.filters;
+      return [`${v1}`, `${v2}`];
+    } else {
+      return ["", ""];
     }
   } else if (isAndFilter(filter)) {
-    const filterForColumn = filter.filters.find(
-      (f) => f.column === column.name,
+    const filterForColumn = filter.filters.find((f) =>
+      isBetweenFilter(f)
+        ? f.filters[0].column === column.name
+        : f.column === column.name,
     );
     if (isSingleValueFilter(filterForColumn)) {
-      return filterForColumn.value;
+      return stringifyBoolean(filterForColumn.value);
     }
   }
 
@@ -200,25 +206,46 @@ export class FilterAggregator {
   constructor(filter?: FilterContainerFilter) {
     if (isSingleValueFilter(filter)) {
       this.#filters.set(filter.column, filter);
+    } else if (isBetweenFilter(filter)) {
+      this.#filters.set(filter.filters[0].column, filter);
     } else if (isAndFilter(filter)) {
-      filter.filters.forEach((f) => this.#filters.set(f.column, f));
+      filter.filters.forEach((f) => {
+        if (isBetweenFilter(f)) {
+          this.#filters.set(f.filters[0].column, f);
+        } else {
+          this.#filters.set(f.column, f);
+        }
+      });
     }
-    console.log(JSON.stringify(this.filter, null, 2));
   }
 
   add(column: ColumnDescriptor, value: ColumnFilterValue) {
     const { serverDataType = "string" } = column;
     if (Array.isArray(value)) {
-      const value1 = getTypedValue(value[0].toString(), serverDataType, true);
-      const value2 = getTypedValue(value[0].toString(), serverDataType, true);
+      const value1 = getTypedValue(value[0].toString(), serverDataType);
+      const value2 = getTypedValue(value[1].toString(), serverDataType);
 
-      this.#filters.set(column.name, {
-        op: "and",
-        filters: [
-          { column: column.name, op: ">", value: value1 },
-          { column: column.name, op: "<", value: value2 },
-        ],
-      });
+      if (value1 !== undefined && value2 !== undefined) {
+        this.#filters.set(column.name, {
+          op: "and",
+          filters: [
+            { column: column.name, op: ">", value: value1 },
+            { column: column.name, op: "<", value: value2 },
+          ],
+        });
+      } else if (value1 !== undefined) {
+        this.#filters.set(column.name, {
+          column: column.name,
+          op: "=",
+          value: value1,
+        });
+      } else if (value2 !== undefined) {
+        this.#filters.set(column.name, {
+          column: column.name,
+          op: "<",
+          value: value2,
+        });
+      }
     } else {
       const typedValue = getTypedValue(value.toString(), serverDataType, true);
 
@@ -246,7 +273,7 @@ export class FilterAggregator {
     }
   }
 
-  get filter(): Filter | undefined {
+  get filter(): FilterContainerFilter | undefined {
     const { size } = this.#filters;
     if (size === 0) {
       return undefined;

@@ -1,12 +1,12 @@
+import { FilterContainerFilterDescriptor } from "@vuu-ui/vuu-filter-types";
 import { Prompt, PromptProps } from "@vuu-ui/vuu-ui-controls";
 import cx from "clsx";
 import { HTMLAttributes } from "react";
-import { FilterDescriptor } from "./useSavedFilterPanel";
 
 export interface DeleteFilterPromptProps
   extends Pick<PromptProps, "onConfirm" | "onClose" | "open">,
     HTMLAttributes<HTMLDivElement> {
-  filterDescriptor: FilterDescriptor;
+  filterDescriptor: FilterContainerFilterDescriptor;
 }
 
 export const DeleteFilterPrompt = ({
@@ -28,7 +28,7 @@ export const DeleteFilterPrompt = ({
       open={open}
       title="Delete Filter"
     >
-      <span>{`Do you want to delete '${filterDescriptor.filter.name}' ?`}</span>
+      <span>{`Do you want to delete '${filterDescriptor.filter?.name}' ?`}</span>
       {children}
     </Prompt>
   );

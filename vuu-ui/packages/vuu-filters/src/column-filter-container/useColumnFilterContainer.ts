@@ -2,15 +2,12 @@ import {
   ColumnFilterOp,
   ColumnFilterValue,
   Filter,
+  FilterContainerFilter,
 } from "@vuu-ui/vuu-filter-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { createContext, useCallback, useContext, useMemo, useRef } from "react";
 import { ColumnFilterCommitHandler } from "../column-filter/useColumnFilter";
-import {
-  FilterAggregator,
-  getColumnValueFromFilter,
-  type FilterContainerFilter,
-} from "@vuu-ui/vuu-utils";
+import { FilterAggregator, getColumnValueFromFilter } from "@vuu-ui/vuu-utils";
 
 export type ColumnFilterChangeHandler = (
   value: ColumnFilterValue,
@@ -64,10 +61,12 @@ export function useFilterContext(
   }
 }
 
-export type FilterAppliedHandler = (filter: Filter) => void;
+export type FilterAppliedHandler<F extends Filter = Filter> = (
+  filter: F,
+) => void;
 export type ColumnFilterContainerHookProps = {
   filter?: FilterContainerFilter;
-  onFilterApplied?: FilterAppliedHandler;
+  onFilterApplied?: FilterAppliedHandler<FilterContainerFilter>;
   onFilterCleared?: () => void;
 };
 
@@ -97,8 +96,6 @@ export const useColumnFilterContainer = ({
     () => new FilterAggregator(filter),
     [filter],
   );
-
-  console.log(`[useColumnFilter], filter: ${JSON.stringify(filter)}`);
 
   const register = useCallback(
     (column: ColumnDescriptor, op: ColumnFilterOp) => {
@@ -174,11 +171,9 @@ export const useColumnFilterContainer = ({
 
   const handleInputChange = useCallback<ColumnFilterChangeHandler>(
     (value, column) => {
-      console.log(
-        `[useColumnFilterContainer] handleInputChange ${column.name} ${value}`,
-      );
+      // If the filterAggregator has this column, then the value has previously been committed.
+      // As soon as user starts editing the value, we un-commit.
       if (filterAggregator.has(column)) {
-        console.log(`filteraggregator has column ${column.name}`);
         handleCommit(column, "=", "");
       }
       valueRef.current[column.name] = value;
