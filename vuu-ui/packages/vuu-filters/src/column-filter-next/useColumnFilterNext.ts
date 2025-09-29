@@ -77,7 +77,7 @@ export const useColumnFilterNext = ({
   });
 
   const handleCommit = useCallback<CommitHandler<HTMLElement>>(
-    (_e, newValue) => {
+    (_e, newValue = "") => {
       if (Array.isArray(value)) {
         setValue([`${newValue}`, value[1]]);
         onCommit?.(column, operator, [`${newValue}`, value[1]]);
@@ -90,17 +90,30 @@ export const useColumnFilterNext = ({
   );
 
   const handleRangeCommit = useCallback<CommitHandler<HTMLElement>>(
-    (_e, newValue) => {
-      const [firstValue] = value as [string, string];
-      onCommit?.(column, operator, [firstValue, `${newValue}`]);
+    (_e, newValue = "") => {
+      if (Array.isArray(value)) {
+        const [firstValue] = value as [string, string];
+        setValue([value[0], `${newValue}`]);
+        onCommit?.(column, operator, [firstValue, `${newValue}`]);
+      } else if (value !== "") {
+        // If we have already committed the first value, filter has been
+        // saved as a single value  '='.
+        const currentValue = `${value}`;
+        setValue([currentValue, `${newValue}`]);
+        onCommit?.(column, operator, [currentValue, `${newValue}`]);
+      } else {
+        throw Error(
+          `[useColumnFilterNext] value has been initialised incorrectly for range filter`,
+        );
+      }
     },
-    [onCommit, column, operator, value],
+    [value, setValue, onCommit, column, operator],
   );
 
   const onChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (e) => {
       const { value = "" } = e.target;
-      setValue((v) => (Array.isArray(v) ? [value, v[1]] : undefined));
+      setValue((v) => (Array.isArray(v) ? [value, v[1]] : value));
       onColumnFilterChange?.(e.target.value, column, operator);
     },
     [column, onColumnFilterChange, operator, setValue],
@@ -109,7 +122,7 @@ export const useColumnFilterNext = ({
   const onRangeInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (e) => {
       const { value = "" } = e.target;
-      setValue((v) => (Array.isArray(v) ? [v[0], value] : undefined));
+      setValue((v) => (Array.isArray(v) ? [v[0], value] : value));
 
       onColumnRangeFilterChange?.(value, column, operator);
     },

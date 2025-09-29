@@ -7,6 +7,7 @@ import { useSavedFilterPanel } from "./useSavedFilterPanel";
 
 import savedFilterPanelCss from "./SavedFilterPanel.css";
 import { FilterPermissions } from "../filter-pill/FilterMenu";
+import { filterDescriptorHasFilter } from "../filter-provider/FilterProvider";
 
 const classBase = "vuuSavedFilterPanel";
 
@@ -43,13 +44,15 @@ export const SavedFilterPanel = ({
   const { onClickFilter, onFilterMenuAction, savedFilters } =
     useSavedFilterPanel();
 
+  const filtersToDisplay = savedFilters.filter(filterDescriptorHasFilter);
+
   return (
     <div
       {...htmlAttributes}
       className={cx(classBase, "vuuScrollable", className)}
     >
       <div className={`${classBase}-filterPill-container`}>
-        {savedFilters.map((filterDescriptor, i) => (
+        {filtersToDisplay.map((filterDescriptor, i) => (
           <FilterPillNext
             {...filterDescriptor}
             key={i}

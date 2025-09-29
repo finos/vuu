@@ -3,7 +3,11 @@ import {
   ColumnFilterContainer,
   ColumnFilterNextProps,
   FilterContainerColumnFilter,
+  FilterDisplay,
+  FilterProvider,
   TabbedFilterContainer,
+  TabbedFilterContainerProps,
+  useActiveFilter,
 } from "@vuu-ui/vuu-filters";
 import { Table } from "@vuu-ui/vuu-table";
 import {
@@ -17,12 +21,12 @@ import {
   toColumnName,
   useData,
 } from "@vuu-ui/vuu-utils";
-import { useCallback, useMemo, useState } from "react";
+import { ReactNode, useCallback, useMemo, useState } from "react";
 import { DemoTableContainer } from "../Table/DemoTableContainer";
 import { FormField, FormFieldLabel } from "@salt-ds/core";
 import { DataSourceFilter, TableSchemaTable } from "@vuu-ui/vuu-data-types";
 import { FilterAppliedHandler } from "@vuu-ui/vuu-filters/src/column-filter-container/useColumnFilterContainer";
-import { FilterContainerProps } from "@vuu-ui/vuu-filters/src/column-filter-container/ColumnFilterContainer";
+import { ColumnFilterContainerProps } from "@vuu-ui/vuu-filters/src/column-filter-container/ColumnFilterContainer";
 import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
 
 const schema = getSchema("instruments");
@@ -39,7 +43,7 @@ const typeaheadPropsOne: ColumnFilterNextProps["TypeaheadProps"] = {
 export const SimpleFilterContainer = () => {
   const { VuuDataSource } = useData();
   const [filter, setFilter] =
-    useState<FilterContainerProps["filter"]>(undefined);
+    useState<ColumnFilterContainerProps["filter"]>(undefined);
 
   const dataSource = useMemo(
     () =>
@@ -62,7 +66,7 @@ export const SimpleFilterContainer = () => {
         filterStruct,
       };
       dataSource.filter = vuuFilter;
-      setFilter(filterStruct as FilterContainerProps["filter"]);
+      setFilter(filterStruct as ColumnFilterContainerProps["filter"]);
     },
     [dataSource],
   );
@@ -110,13 +114,14 @@ export const SimpleFilterContainer = () => {
           />
         </FormField>
         <FormField>
-          <FormFieldLabel>Price</FormFieldLabel>
+          <FormFieldLabel>Lot Size</FormFieldLabel>
           <FilterContainerColumnFilter
-            column={{ name: "price", serverDataType: "double" }}
+            column={{ name: "lotSize", serverDataType: "int" }}
             operator="between"
           />
         </FormField>
       </ColumnFilterContainer>
+      <FilterDisplay filter={filter} />
       <DataSourceStats dataSource={dataSource} />
     </DataSourceProvider>
   );
@@ -126,7 +131,7 @@ const TableWithFiltersTemplate = () => {
   const showContextPanel = useContextPanel();
   const { VuuDataSource } = useData();
   const [filter, setFilter] =
-    useState<FilterContainerProps["filter"]>(undefined);
+    useState<ColumnFilterContainerProps["filter"]>(undefined);
 
   const dataSource = useMemo(
     () =>
@@ -156,7 +161,7 @@ const TableWithFiltersTemplate = () => {
         filterStruct,
       };
       dataSource.filter = vuuFilter;
-      setFilter(filterStruct as FilterContainerProps["filter"]);
+      setFilter(filterStruct as ColumnFilterContainerProps["filter"]);
     },
     [dataSource],
   );
@@ -196,6 +201,13 @@ const TableWithFiltersTemplate = () => {
               TypeaheadProps={typeaheadPropsZero}
               column={{ name: "exchange", serverDataType: "string" }}
               table={table}
+            />
+          </FormField>
+          <FormField>
+            <FormFieldLabel>Lot Size</FormFieldLabel>
+            <FilterContainerColumnFilter
+              column={{ name: "lotSize", serverDataType: "int" }}
+              operator="between"
             />
           </FormField>
         </ColumnFilterContainer>
@@ -246,11 +258,13 @@ export const TableWithFilters = () => {
   );
 };
 
-const TableWithTabbedFilterContainerTemplate = () => {
+const TableWithTabbedFilterContainerTemplate = ({
+  children,
+}: Pick<TabbedFilterContainerProps, "children">) => {
   const showContextPanel = useContextPanel();
   const { VuuDataSource } = useData();
-  const [filter, setFilter] =
-    useState<FilterContainerProps["filter"]>(undefined);
+
+  const { currentFilter } = useActiveFilter();
 
   const dataSource = useMemo(
     () =>
@@ -261,10 +275,17 @@ const TableWithTabbedFilterContainerTemplate = () => {
     [VuuDataSource],
   );
 
-  const table = useMemo<TableSchemaTable>(
-    () => ({ module: "SIMUL", table: "instruments" }),
-    [],
-  );
+  useMemo(() => {
+    if (currentFilter && currentFilter.filter !== null) {
+      const vuuFilter: DataSourceFilter = {
+        filter: filterAsQuery(currentFilter?.filter),
+        filterStruct: currentFilter?.filter,
+      };
+      dataSource.filter = vuuFilter;
+    } else {
+      dataSource.filter = { filter: "" };
+    }
+  }, [currentFilter, dataSource]);
 
   const config = useMemo(
     () => ({
@@ -273,68 +294,15 @@ const TableWithTabbedFilterContainerTemplate = () => {
     [],
   );
 
-  const onFilterApplied = useCallback<FilterAppliedHandler>(
-    (filterStruct) => {
-      const vuuFilter: DataSourceFilter = {
-        filter: filterAsQuery(filterStruct),
-        filterStruct,
-      };
-      dataSource.filter = vuuFilter;
-      setFilter(filterStruct as FilterContainerProps["filter"]);
-    },
-    [dataSource],
-  );
-
-  const onFilterCleared = useCallback(() => {
-    dataSource.filter = { filter: "" };
-    setFilter(undefined);
-  }, [dataSource]);
-
   const showFilters = useCallback(() => {
     const columnFilterContainer = (
       <DataSourceProvider dataSource={dataSource}>
-        <TabbedFilterContainer
-          filter={filter}
-          onFilterApplied={onFilterApplied}
-          onFilterCleared={onFilterCleared}
-        >
-          <FormField>
-            <FormFieldLabel>BBG</FormFieldLabel>
-            <FilterContainerColumnFilter
-              TypeaheadProps={typeaheadPropsOne}
-              column={{ name: "bbg", serverDataType: "string" }}
-              table={table}
-            />
-          </FormField>
-          <FormField>
-            <FormFieldLabel>Currency</FormFieldLabel>
-            <FilterContainerColumnFilter
-              TypeaheadProps={typeaheadPropsZero}
-              column={{ name: "currency", serverDataType: "string" }}
-              table={table}
-            />
-          </FormField>
-          <FormField>
-            <FormFieldLabel>Exchange</FormFieldLabel>
-            <FilterContainerColumnFilter
-              TypeaheadProps={typeaheadPropsZero}
-              column={{ name: "exchange", serverDataType: "string" }}
-              table={table}
-            />
-          </FormField>
-        </TabbedFilterContainer>
+        <TabbedFilterContainer>{children}</TabbedFilterContainer>
       </DataSourceProvider>
     );
 
     showContextPanel(columnFilterContainer, "filters");
-  }, [
-    dataSource,
-    filter,
-    onFilterApplied,
-    onFilterCleared,
-    showContextPanel,
-    table,
-  ]);
+  }, [children, dataSource, showContextPanel]);
 
   return (
     <>
@@ -352,7 +320,12 @@ const TableWithTabbedFilterContainerTemplate = () => {
   );
 };
 
-export const TableWithTabbedFilterContainer = () => {
+export const TableWithTabbedFilterContainerAndFilterProvider = () => {
+  const table = useMemo<TableSchemaTable>(
+    () => ({ module: "SIMUL", table: "instruments" }),
+    [],
+  );
+
   return (
     <>
       <style>{`
@@ -361,11 +334,45 @@ export const TableWithTabbedFilterContainer = () => {
             padding: 12px;
         }
     `}</style>
-      <DemoTableContainer>
-        <ContextPanelProvider>
-          <TableWithTabbedFilterContainerTemplate />
-        </ContextPanelProvider>
-      </DemoTableContainer>
+      <FilterProvider>
+        <DemoTableContainer>
+          <ContextPanelProvider>
+            <TableWithTabbedFilterContainerTemplate>
+              <FormField>
+                <FormFieldLabel>BBG</FormFieldLabel>
+                <FilterContainerColumnFilter
+                  TypeaheadProps={typeaheadPropsOne}
+                  column={{ name: "bbg", serverDataType: "string" }}
+                  table={table}
+                />
+              </FormField>
+              <FormField>
+                <FormFieldLabel>Currency</FormFieldLabel>
+                <FilterContainerColumnFilter
+                  TypeaheadProps={typeaheadPropsZero}
+                  column={{ name: "currency", serverDataType: "string" }}
+                  table={table}
+                />
+              </FormField>
+              <FormField>
+                <FormFieldLabel>Exchange</FormFieldLabel>
+                <FilterContainerColumnFilter
+                  TypeaheadProps={typeaheadPropsZero}
+                  column={{ name: "exchange", serverDataType: "string" }}
+                  table={table}
+                />
+              </FormField>
+              <FormField>
+                <FormFieldLabel>Lot Size</FormFieldLabel>
+                <FilterContainerColumnFilter
+                  column={{ name: "lotSize", serverDataType: "int" }}
+                  operator="between"
+                />
+              </FormField>
+            </TableWithTabbedFilterContainerTemplate>
+          </ContextPanelProvider>
+        </DemoTableContainer>
+      </FilterProvider>
     </>
   );
 };

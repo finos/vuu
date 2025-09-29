@@ -12,7 +12,7 @@ const classBase = "vuuFilterDisplay";
 
 export interface FilterDisplayProps extends HTMLAttributes<HTMLDivElement> {
   columns?: ColumnDescriptor[];
-  filter: Filter;
+  filter: Filter | undefined;
 }
 
 const getColumnLabel = (columnName: string, columns?: ColumnDescriptor[]) => {

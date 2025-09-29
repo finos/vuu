@@ -545,17 +545,27 @@ export class ArrayDataSource
         configChanges.baseFilterChanged ||
         configChanges.groupByChanged
       ) {
-        this.emit("resize", this.size);
+        requestAnimationFrame(() => {
+          this.emit("resize", this.size);
+        });
       }
 
       if (this.#status === "subscribed") {
-        this.sendSizeUpdateToClient();
-        if (this.preserveScrollPositionAcrossConfigChange) {
-          this.preserveScrollPositionAcrossConfigChange = false;
-        } else {
-          this.setRange(this.#range.reset, true);
-        }
-        this.emit("config", this._config, this.range, undefined, configChanges);
+        requestAnimationFrame(() => {
+          this.sendSizeUpdateToClient();
+          if (this.preserveScrollPositionAcrossConfigChange) {
+            this.preserveScrollPositionAcrossConfigChange = false;
+          } else {
+            this.setRange(this.#range.reset, true);
+          }
+          this.emit(
+            "config",
+            this._config,
+            this.range,
+            undefined,
+            configChanges,
+          );
+        });
       }
     }
   }

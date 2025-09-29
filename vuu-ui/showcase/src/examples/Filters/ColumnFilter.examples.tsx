@@ -132,7 +132,7 @@ const ColumnFilterTemplate = ({
   }, []);
 
   const handleColumnFilterChange = (
-    val: string | number,
+    val: ColumnFilterValue,
     column: ColumnDescriptor,
     op: ColumnFilterOp,
   ) => {
@@ -460,7 +460,7 @@ export const TimeColumnRangeFilterValueSetViaBtn = () => {
 
 const insertOrReplace = <T extends ColumnFilterValue>(
   value: T,
-  newValue: string | number,
+  newValue: ColumnFilterValue,
   index: 0 | 1,
 ): T => {
   if (Array.isArray(value)) {

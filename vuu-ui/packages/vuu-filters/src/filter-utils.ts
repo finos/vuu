@@ -469,10 +469,12 @@ export const getNumericFilter = (
 type FilterClauseList = Array<[string, string]>;
 
 export const getFilterClausesForDisplay = (
-  filter: Filter,
+  filter?: Filter,
   clauses: FilterClauseList = [],
 ): FilterClauseList => {
-  if (isSingleValueFilter(filter)) {
+  if (filter === undefined) {
+    return clauses;
+  } else if (isSingleValueFilter(filter)) {
     clauses.push([filter.column, filter.value.toString()]);
   } else if (isBetweenFilter(filter)) {
     const [f1, f2] = filter.filters;

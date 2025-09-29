@@ -10,6 +10,7 @@ import {
   ColumnFilterNext,
   ColumnFilterContainer,
   FilterContainerColumnFilter,
+  FilterDisplay,
 } from "@vuu-ui/vuu-filters";
 import { ColumnFilterCommitHandler } from "@vuu-ui/vuu-filters/src/column-filter/useColumnFilter";
 import { DataSourceProvider, useData } from "@vuu-ui/vuu-utils";
@@ -47,8 +48,7 @@ export const SimpleControlledTextColumnFilter = () => {
   }, [VuuDataSource]);
 
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
-    (column, operator, value) => {
-      console.log(`commit ${column.name} ${value}`);
+    (_column, _operator, value) => {
       setValue(value);
     },
     [],
@@ -80,7 +80,7 @@ export const ShowSuggestionsWithNoTextInput = () => {
   }, [VuuDataSource]);
 
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
-    (column, operator, value) => {
+    (column, _operator, value) => {
       console.log(`commit ${column.name} ${value}`);
       setValue(value);
     },
@@ -119,7 +119,7 @@ export const SimpleUnControlledTextColumnFilter = () => {
     [],
   );
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
-    (column, operator, value) => {
+    (column, _operator, value) => {
       console.log(`handleCommit ${column.name} ${value}`);
     },
     [],
@@ -156,7 +156,7 @@ export const UnControlledNumericColumnFilter = () => {
     [],
   );
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
-    (column, operator, value) => {
+    (column, _operator, value) => {
       console.log(`commit ${column.name} ${value}`);
     },
     [],
@@ -254,9 +254,44 @@ export const ContainerManagedTextColumnFilter = () => {
   );
 };
 
-const FilterDisplay = ({ filter }: { filter?: Filter }) => (
-  <div>{JSON.stringify(filter, null, 2)}</div>
-);
+export const ContainerManagedBetweenColumnFilter = () => {
+  const { VuuDataSource } = useData();
+  const [filter, setFilter] = useState<Filter | undefined>(undefined);
+  const clearFilter = () => setFilter(undefined);
+
+  const dataSource = useMemo(() => {
+    return new VuuDataSource({ table: schema.table });
+  }, [VuuDataSource]);
+
+  const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
+    (value, column) => {
+      console.log(`commit ${column.name} ${value}`);
+    },
+    [],
+  );
+
+  return (
+    <DataSourceProvider dataSource={dataSource}>
+      <ContainerTemplate flexDirection="row" width={700}>
+        <ColumnFilterContainer
+          onFilterCleared={clearFilter}
+          onFilterApplied={setFilter}
+        >
+          <FormField>
+            <FormFieldLabel>Lot Size</FormFieldLabel>
+            <FilterContainerColumnFilter
+              column={{ name: "lotSize", serverDataType: "int" }}
+              onColumnFilterChange={handleColumnFilterChange}
+              operator="between"
+              table={{ module: "SIMUL", table: "instruments" }}
+            />
+          </FormField>
+        </ColumnFilterContainer>
+        <FilterDisplay filter={filter} />
+      </ContainerTemplate>
+    </DataSourceProvider>
+  );
+};
 
 export const ContainerManagedMultipleColumnFilters = () => {
   const { VuuDataSource } = useData();
