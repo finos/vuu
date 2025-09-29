@@ -7,7 +7,11 @@ import {
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { createContext, useCallback, useContext, useMemo, useRef } from "react";
 import { ColumnFilterCommitHandler } from "../column-filter/useColumnFilter";
-import { FilterAggregator, getColumnValueFromFilter } from "@vuu-ui/vuu-utils";
+import {
+  FilterAggregator,
+  getColumnValueFromFilter,
+  isSingleValueFilter,
+} from "@vuu-ui/vuu-utils";
 
 export type ColumnFilterChangeHandler = (
   value: ColumnFilterValue,
@@ -174,7 +178,16 @@ export const useColumnFilterContainer = ({
       // If the filterAggregator has this column, then the value has previously been committed.
       // As soon as user starts editing the value, we un-commit.
       if (filterAggregator.has(column)) {
-        handleCommit(column, "=", "");
+        if (Array.isArray(value)) {
+          const filter = filterAggregator.get(column);
+          if (isSingleValueFilter(filter)) {
+            // do nothing, the first value has been committed
+          } else {
+            handleCommit(column, "between", ["", ""]);
+          }
+        } else {
+          handleCommit(column, "=", "");
+        }
       }
       valueRef.current[column.name] = value;
     },
