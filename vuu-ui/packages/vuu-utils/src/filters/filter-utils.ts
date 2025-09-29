@@ -261,6 +261,10 @@ export class FilterAggregator {
     return this.#filters.has(name);
   }
 
+  get({ name }: ColumnDescriptor) {
+    return this.#filters.get(name);
+  }
+
   /**
    * Remove filter for this colun. Return false if no filter found, otw true
    */
