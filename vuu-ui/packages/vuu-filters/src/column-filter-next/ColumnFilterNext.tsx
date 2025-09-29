@@ -65,9 +65,9 @@ export const ColumnFilterNext = forwardRef(function ColumnFilterNext(
       })}
       {operator === "between"
         ? getDataItemEditControl({
+            InputProps: InputPropsRange,
             className: `${classBase}-rangeHigh`,
             commitWhenCleared: true,
-            InputProps: InputPropsRange,
             dataDescriptor: column,
             onCommit: onCommitRange,
             table,
