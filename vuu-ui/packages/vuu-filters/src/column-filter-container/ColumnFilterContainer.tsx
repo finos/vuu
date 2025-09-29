@@ -64,7 +64,6 @@ export const FilterContainerColumnFilter = ({
   const [value, setValue] = useState(initialValue);
   const valueRef = useRef<ColumnFilterValue>(initialValue);
 
-  // // This feels like a brute-force approach to identify a cleared filter
   const { currentFilter } = useCurrentFilter();
   useMemo(() => {
     if (isNullFilter(currentFilter) && notEmpty(valueRef.current)) {
@@ -72,8 +71,21 @@ export const FilterContainerColumnFilter = ({
       setValue(valueRef.current);
     } else if (filterDescriptorHasFilter(currentFilter)) {
       const v = getColumnValueFromFilter(column, currentFilter.filter);
-      console.log(`getColumnValueFromFilter ${column.name}= ${v}`);
-      if (v !== valueRef.current) {
+      if (
+        operator === "between" &&
+        !Array.isArray(v) &&
+        Array.isArray(valueRef.current)
+      ) {
+        // A between filter with only the first item filled is converted to an '=' filter
+        // in FilterAggregator. Translate value back to range value here
+        const [v1, v2] = valueRef.current;
+        if (`${v}` === v1 && v2 === "") {
+          return;
+        } else {
+          valueRef.current = [`${v}`, ""];
+          setValue(valueRef.current);
+        }
+      } else if (v !== valueRef.current) {
         valueRef.current = v;
         setValue(v);
       }

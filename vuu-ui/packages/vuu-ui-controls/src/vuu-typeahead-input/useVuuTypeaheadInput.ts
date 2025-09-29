@@ -86,6 +86,19 @@ export const useVuuTypeaheadInput = ({
   const pendingListFocusRef = useRef(false);
 
   const { current: value } = valueRef;
+
+  useMemo(() => {
+    console.log(
+      `[useVuuTypeaheadInput] inputProps value has changed ${inputPropsProp?.value} valueRef value ${valueRef.current}`,
+    );
+    if (
+      inputPropsProp?.value !== undefined &&
+      inputPropsProp?.value !== valueRef.current
+    ) {
+      setValue(`${inputPropsProp.value}`);
+    }
+  }, [inputPropsProp?.value, setValue, valueRef]);
+
   const commitTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleKeyDown = useCallback<KeyboardEventHandler<HTMLInputElement>>(
@@ -165,6 +178,7 @@ export const useVuuTypeaheadInput = ({
   ]);
 
   useEffect(() => {
+    // This will preload suggestions for controls with no char input minimum
     refreshSuggestions();
   }, [refreshSuggestions]);
 

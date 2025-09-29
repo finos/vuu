@@ -222,6 +222,55 @@ export const UnControlledNumericColumnFilterBetween = () => {
   );
 };
 
+export const ControlledNumericColumnFilterBetween = () => {
+  const { VuuDataSource } = useData();
+  const dataSource = useMemo(() => {
+    return new VuuDataSource({ table: schema.table });
+  }, [VuuDataSource]);
+  const [value, setValue] = useState<[string, string]>(["", ""]);
+
+  const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
+    (value, column) => {
+      console.log(`handleColumnFilterChange ${column.name} ${value}`);
+      setValue(([, v2]) => [`${value}`, v2]);
+    },
+    [],
+  );
+  const handleColumnRangeFilterChange = useCallback<ColumnFilterChangeHandler>(
+    (value, column) => {
+      console.log(`handleColumnFilterChange ${column.name} ${value}`);
+      setValue(([v1]) => [v1, `${value}`]);
+    },
+    [],
+  );
+  const handleCommit = useCallback<ColumnFilterCommitHandler>(
+    (column, operator, value) => {
+      if (Array.isArray(value)) {
+        console.log(`commit ${column.name} ['${value[0]}':'${value[1]}']`);
+      }
+    },
+    [],
+  );
+
+  return (
+    <DataSourceProvider dataSource={dataSource}>
+      <ContainerTemplate>
+        <FormField>
+          <FormFieldLabel>Price</FormFieldLabel>
+          <ColumnFilterNext
+            column={{ name: "price", serverDataType: "double" }}
+            onColumnFilterChange={handleColumnFilterChange}
+            onColumnRangeFilterChange={handleColumnRangeFilterChange}
+            onCommit={handleCommit}
+            operator="between"
+            value={value}
+          />
+        </FormField>
+      </ContainerTemplate>
+    </DataSourceProvider>
+  );
+};
+
 export const ContainerManagedTextColumnFilter = () => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {

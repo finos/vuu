@@ -573,14 +573,14 @@ export class ArrayDataSource
   private processNewColumns(originalColumns: VuuColumns, columns: VuuColumns) {
     const addedColumns = getAddedItems(originalColumns, columns);
     if (addedColumns.length > 0) {
-      const columnsWithoutDescriptors = getMissingItems(
-        this.columnDescriptors,
-        addedColumns,
-        (col) => col.name,
-      );
-      console.warn(`columnsWithoutDescriptors`, {
-        columnsWithoutDescriptors,
-      });
+      // const columnsWithoutDescriptors = getMissingItems(
+      //   this.columnDescriptors,
+      //   addedColumns,
+      //   (col) => col.name,
+      // );
+      // console.warn(`columnsWithoutDescriptors`, {
+      //   columnsWithoutDescriptors,
+      // });
     }
     this.#columnMap = buildColumnMap(columns);
     this.dataIndices = buildDataToClientMap(this.#columnMap, this.dataMap);

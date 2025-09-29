@@ -137,6 +137,7 @@ export const useColumnFilterNext = ({
       }),
     [InputPropsProp, onChange, value],
   );
+
   const InputPropsRange = useMemo(
     () =>
       injectInputProps(
