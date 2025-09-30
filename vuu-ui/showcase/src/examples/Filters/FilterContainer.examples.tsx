@@ -21,7 +21,7 @@ import {
   toColumnName,
   useData,
 } from "@vuu-ui/vuu-utils";
-import { ReactNode, useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { DemoTableContainer } from "../Table/DemoTableContainer";
 import { FormField, FormFieldLabel } from "@salt-ds/core";
 import { DataSourceFilter, TableSchemaTable } from "@vuu-ui/vuu-data-types";
@@ -338,6 +338,19 @@ export const TableWithTabbedFilterContainerAndFilterProvider = () => {
         <DemoTableContainer>
           <ContextPanelProvider>
             <TableWithTabbedFilterContainerTemplate>
+              <FormField>
+                <FormFieldLabel>Vuu Created</FormFieldLabel>
+                <FilterContainerColumnFilter
+                  TypeaheadProps={typeaheadPropsOne}
+                  column={{
+                    name: "vuuCreatedTimestamp",
+                    serverDataType: "long",
+                    type: "time",
+                  }}
+                  operator="between"
+                  table={table}
+                />
+              </FormField>
               <FormField>
                 <FormFieldLabel>BBG</FormFieldLabel>
                 <FilterContainerColumnFilter

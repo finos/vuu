@@ -63,31 +63,43 @@ export const FilterContainerColumnFilter = ({
 
   const [value, setValue] = useState(initialValue);
   const valueRef = useRef<ColumnFilterValue>(initialValue);
-
   const { currentFilter } = useCurrentFilter();
+
+  // This is primarily to guard against client passing non-stable 'column' reference
+  // which would trigger the commit check below.
+  const currentFilterRef = useRef(currentFilter.id);
+
   useMemo(() => {
-    if (isNullFilter(currentFilter) && notEmpty(valueRef.current)) {
-      valueRef.current = Array.isArray(valueRef.current) ? ["", ""] : "";
-      setValue(valueRef.current);
-    } else if (filterDescriptorHasFilter(currentFilter)) {
-      const v = getColumnValueFromFilter(column, currentFilter.filter);
-      if (
-        operator === "between" &&
-        !Array.isArray(v) &&
-        Array.isArray(valueRef.current)
-      ) {
-        // A between filter with only the first item filled is converted to an '=' filter
-        // in FilterAggregator. Translate value back to range value here
-        const [v1, v2] = valueRef.current;
-        if (`${v}` === v1 && v2 === "") {
-          return;
-        } else {
-          valueRef.current = [`${v}`, ""];
-          setValue(valueRef.current);
+    if (currentFilterRef.current !== currentFilter.id) {
+      currentFilterRef.current = currentFilter.id;
+
+      if (isNullFilter(currentFilter) && notEmpty(valueRef.current)) {
+        valueRef.current = Array.isArray(valueRef.current) ? ["", ""] : "";
+        setValue(valueRef.current);
+      } else if (filterDescriptorHasFilter(currentFilter)) {
+        const v = getColumnValueFromFilter(
+          column,
+          operator,
+          currentFilter.filter,
+        );
+        if (
+          operator === "between" &&
+          !Array.isArray(v) &&
+          Array.isArray(valueRef.current)
+        ) {
+          // A between filter with only the first item filled is converted to an '=' filter
+          // in FilterAggregator. Translate value back to range value here
+          const [v1, v2] = valueRef.current;
+          if (`${v}` === v1 && v2 === "") {
+            return;
+          } else {
+            valueRef.current = [`${v}`, ""];
+            setValue(valueRef.current);
+          }
+        } else if (v !== valueRef.current) {
+          valueRef.current = v;
+          setValue(v);
         }
-      } else if (v !== valueRef.current) {
-        valueRef.current = v;
-        setValue(v);
       }
     }
     // We only want this to run when the filter id changes, not when

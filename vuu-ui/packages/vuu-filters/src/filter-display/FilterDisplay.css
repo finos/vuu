@@ -3,6 +3,7 @@
     column-gap: 12px;
     grid-template-columns: auto auto;
     grid-template-rows: repeat(30px);
+    padding: var(--salt-spacing-100);
     width: fit-content;
 
     .vuuFilterDisplay-column {

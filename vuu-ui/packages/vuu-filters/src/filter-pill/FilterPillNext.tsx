@@ -10,6 +10,7 @@ import {
 } from "./useFilterPillNext";
 
 import filterPillNextCss from "./FilterPillNext.css";
+import { FilterDisplay } from "../filter-display/FilterDisplay";
 
 export interface FilterPillNextProps
   extends FilterPillNextHookProps,
@@ -46,7 +47,6 @@ export const FilterPillNext = ({
     onContextMenu,
     onContextMenuOpenChange,
     onMenuAction,
-    tooltipText,
     virtualElement,
   } = useFilterPillNext({
     active,
@@ -85,7 +85,11 @@ export const FilterPillNext = ({
 
   return showTooltip ? (
     <>
-      <Tooltip className={`${classBase}-tooltip`} content={tooltipText}>
+      <Tooltip
+        className={`${classBase}-tooltip`}
+        content={<FilterDisplay filter={filter} />}
+        placement="top"
+      >
         {filterPill}
       </Tooltip>
       {filterMenu}
