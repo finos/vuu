@@ -43,7 +43,6 @@ import {
   buildColumnMap,
   combineFilters,
   getAddedItems,
-  getMissingItems,
   hasBaseFilter,
   hasFilter,
   hasGroupBy,

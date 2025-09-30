@@ -102,14 +102,12 @@ export const useColumnFilterContainer = ({
   );
 
   const register = useCallback(
-    (column: ColumnDescriptor, op: ColumnFilterOp) => {
-      const defaultValue =
-        op === "between"
-          ? EmptyTuple
-          : (getColumnValueFromFilter(column, filter) as string | number);
-      valueRef.current[column.name] = defaultValue;
-      return defaultValue;
-    },
+    (column: ColumnDescriptor, op: ColumnFilterOp) =>
+      (valueRef.current[column.name] = getColumnValueFromFilter(
+        column,
+        op,
+        filter,
+      )),
     [filter],
   );
 
@@ -179,6 +177,7 @@ export const useColumnFilterContainer = ({
       // As soon as user starts editing the value, we un-commit.
       if (filterAggregator.has(column)) {
         if (Array.isArray(value)) {
+          // TODO check whether first value has been changed
           const filter = filterAggregator.get(column);
           if (isSingleValueFilter(filter)) {
             // do nothing, the first value has been committed

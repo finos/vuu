@@ -170,11 +170,20 @@ const stringifyBoolean = (value: string | number | boolean) =>
 
 export const getColumnValueFromFilter = (
   column: ColumnDescriptor,
+  operator: ColumnFilterOp,
   filter?: FilterContainerFilter,
 ): ColumnFilterValue => {
   if (isSingleValueFilter(filter)) {
-    if (filter?.column === column.name) {
-      return stringifyBoolean(filter.value);
+    if (filter.column === column.name) {
+      if (operator === "between") {
+        if (filter.op === "=") {
+          return [`${filter.value}`, ""];
+        } else if (filter.op === "<") {
+          return ["", `${filter.value}`];
+        }
+      } else {
+        return stringifyBoolean(filter.value);
+      }
     }
   } else if (isBetweenFilter(filter)) {
     if (filter.filters[0].column === column.name) {
@@ -193,15 +202,27 @@ export const getColumnValueFromFilter = (
       return stringifyBoolean(filterForColumn.value);
     }
   }
-
-  return "";
+  if (operator === "between") {
+    if (column.type === "time") {
+      return ["00:00:00", "23:59:59"];
+    } else {
+      return ["", ""];
+    }
+  } else {
+    return "";
+  }
 };
 
+/**
+ * Manages a filter that can be updated one clause at a time.
+ * Works with FilterContainer to aggregate multiple filter
+ * clauses edited via individual controls. It is just a wrapper
+ * around a Map, does not support switching filters - create a
+ * new FilterAggregator for a new filter.
+ *
+ */
 export class FilterAggregator {
-  #filters = new Map<
-    string,
-    SingleValueFilterClause | MultiClauseFilter<"and", SingleValueFilterClause>
-  >();
+  #filters = new Map<string, FilterContainerFilter>();
 
   constructor(filter?: FilterContainerFilter) {
     if (isSingleValueFilter(filter)) {
@@ -288,7 +309,7 @@ export class FilterAggregator {
       return {
         op: "and",
         filters: Array.from(this.#filters.values()),
-      };
+      } as FilterContainerFilter;
     }
   }
 }
