@@ -62,7 +62,7 @@
     "@typescript-eslint/parser": "^5.41.0",
     "clsx": "^2.0.0",
     "html-to-image": "^1.11.11",
-    "patch-package": "^8.0.0",
+    "patch-package": "^8.0.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "rollup-plugin-webpack-stats": "^0.2.5",
