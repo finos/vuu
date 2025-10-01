@@ -147,7 +147,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
     return this.#getVisualLinks?.(this.table.table);
   }
 
-  private getSelectedRowIds() {
+  getSelectedRowIds() {
     return Array.from(this.selectedRows);
   }
 
