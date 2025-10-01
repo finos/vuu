@@ -30,6 +30,7 @@ import {
 import {
   isDateTimeDataValue,
   isTimeDataValue,
+  isTypeDescriptor,
   toColumnDescriptor,
 } from "../column-utils";
 
@@ -241,10 +242,16 @@ export class FilterAggregator {
   }
 
   add(column: ColumnDescriptor, value: ColumnFilterValue) {
-    const { serverDataType = "string" } = column;
+    const { serverDataType = "string", type } = column;
+    const dataType = isTypeDescriptor(type)
+      ? type.name
+      : (type ?? serverDataType);
+    console.log(
+      `FilterAggregator add ${column.name} ${serverDataType} ${JSON.stringify(type)} ${JSON.stringify(value)}`,
+    );
     if (Array.isArray(value)) {
-      const value1 = getTypedValue(value[0].toString(), serverDataType);
-      const value2 = getTypedValue(value[1].toString(), serverDataType);
+      const value1 = getTypedValue(value[0].toString(), dataType);
+      const value2 = getTypedValue(value[1].toString(), dataType);
 
       if (value1 !== undefined && value2 !== undefined) {
         this.#filters.set(column.name, {
@@ -268,7 +275,7 @@ export class FilterAggregator {
         });
       }
     } else {
-      const typedValue = getTypedValue(value.toString(), serverDataType, true);
+      const typedValue = getTypedValue(value.toString(), dataType, true);
 
       this.#filters.set(column.name, {
         column: column.name,

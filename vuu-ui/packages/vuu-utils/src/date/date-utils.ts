@@ -128,6 +128,7 @@ class TimeImpl implements Time {
   #hours: number;
   #minutes: number;
   #seconds: number;
+
   constructor(timeString: TimeString) {
     const [hours, minutes, seconds] = timeString.split(":");
     this.#hours = parseInt(hours);
@@ -165,3 +166,6 @@ class TimeImpl implements Time {
 
 export const Time = (timeString: TimeString): Time =>
   new TimeImpl(timeString) as Time;
+
+Time.millisToTimeString = (timestamp: number) =>
+  new Date(timestamp).toTimeString().slice(0, 8) as TimeString;
