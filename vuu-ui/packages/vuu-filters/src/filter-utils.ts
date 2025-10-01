@@ -16,7 +16,9 @@ import {
   isMultiValueFilter,
   isOrFilter,
   isSingleValueFilter,
+  isTimeDataValue,
   partition,
+  Time,
 } from "@vuu-ui/vuu-utils";
 
 export const AND = "and";
@@ -470,6 +472,7 @@ type FilterClauseList = Array<[string, string]>;
 
 export const getFilterClausesForDisplay = (
   filter?: Filter,
+  columns: ColumnDescriptor[] = [],
   clauses: FilterClauseList = [],
 ): FilterClauseList => {
   if (filter === undefined) {
@@ -478,9 +481,23 @@ export const getFilterClausesForDisplay = (
     clauses.push([filter.column, filter.value.toString()]);
   } else if (isBetweenFilter(filter)) {
     const [f1, f2] = filter.filters;
-    clauses.push([f1.column, `${f1.value} - ${f2.value}`]);
+    const column = columns.find((c) => c.name === f1.column);
+    if (
+      isTimeDataValue(column) &&
+      typeof f1.value === "number" &&
+      typeof f2.value === "number"
+    ) {
+      clauses.push([
+        f1.column,
+        `${Time.millisToTimeString(f1.value)} - ${Time.millisToTimeString(f2.value)}`,
+      ]);
+    } else {
+      clauses.push([f1.column, `${f1.value} - ${f2.value}`]);
+    }
   } else if (isAndFilter(filter)) {
-    filter.filters.forEach((f) => getFilterClausesForDisplay(f, clauses));
+    filter.filters.forEach((f) =>
+      getFilterClausesForDisplay(f, columns, clauses),
+    );
   }
   return clauses;
 };

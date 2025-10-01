@@ -36,24 +36,27 @@ export const FilterDisplay = forwardRef(function FilterDisplay(
     window: targetWindow,
   });
 
-  const filterClauseList = getFilterClausesForDisplay(filter);
+  const filterClauseList = getFilterClausesForDisplay(filter, columns);
   return (
     <div
       {...htmlAttributes}
       className={cx(classBase, className)}
       ref={forwardedRef}
     >
-      {filterClauseList.reduce<Array<ReactElement>>((list, [column, value]) => {
-        list.push(
-          <span className={`${classBase}-column`} key={list.length}>
-            {getColumnLabel(column)}
-          </span>,
-          <span className={`${classBase}-value`} key={list.length + 1}>
-            {value}
-          </span>,
-        );
-        return list;
-      }, [])}
+      {filterClauseList.reduce<Array<ReactElement>>(
+        (list, [columnName, value]) => {
+          list.push(
+            <span className={`${classBase}-column`} key={list.length}>
+              {getColumnLabel(columnName)}
+            </span>,
+            <span className={`${classBase}-value`} key={list.length + 1}>
+              {value}
+            </span>,
+          );
+          return list;
+        },
+        [],
+      )}
     </div>
   );
 });

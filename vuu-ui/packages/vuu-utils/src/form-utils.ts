@@ -5,7 +5,8 @@ import {
 import { KeyboardEvent, SyntheticEvent } from "react";
 import { queryClosest } from "./html-utils";
 import { stringIsValidDecimal, stringIsValidInt } from "./data-utils";
-import { isValidTimeString } from "./date";
+import { isValidTimeString, Time } from "./date";
+import { DataValueTypeSimple } from "@vuu-ui/vuu-data-types";
 
 /**
  * Use with the following convention:
@@ -49,17 +50,17 @@ export type CommitHandler<
  */
 export function getTypedValue(
   value: string,
-  type: VuuColumnDataType | "number",
+  type: VuuColumnDataType | DataValueTypeSimple,
   throwIfInvalid?: false,
 ): VuuRowDataItemType | undefined;
 export function getTypedValue(
   value: string,
-  type: VuuColumnDataType | "number",
+  type: VuuColumnDataType | DataValueTypeSimple,
   throwIfInvalid: true,
 ): VuuRowDataItemType;
 export function getTypedValue(
   value: string,
-  type: VuuColumnDataType | "number",
+  type: VuuColumnDataType | DataValueTypeSimple,
   throwIfInvalid = false,
 ): VuuRowDataItemType | undefined {
   switch (type) {
@@ -67,7 +68,8 @@ export function getTypedValue(
     case "long": {
       if (stringIsValidInt(value)) {
         return parseInt(value, 10);
-      } else if (isValidTimeString(value)) {  //TOCHECK
+      } else if (isValidTimeString(value)) {
+        //TOCHECK
         return value;
       } else if (throwIfInvalid) {
         throw Error(`value ${value} is not a valid ${type}`);
@@ -89,6 +91,15 @@ export function getTypedValue(
 
     case "boolean":
       return value === "true" ? true : false;
+
+    case "time":
+      if (isValidTimeString(value)) {
+        return +Time(value).asDate();
+      } else if (throwIfInvalid) {
+        throw Error(`value ${value} is not a valid ${type}`);
+      } else {
+        return undefined;
+      }
     default:
       return value;
   }

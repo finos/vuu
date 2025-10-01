@@ -28,6 +28,7 @@ import { DataSourceFilter, TableSchemaTable } from "@vuu-ui/vuu-data-types";
 import { FilterAppliedHandler } from "@vuu-ui/vuu-filters/src/column-filter-container/useColumnFilterContainer";
 import { ColumnFilterContainerProps } from "@vuu-ui/vuu-filters/src/column-filter-container/ColumnFilterContainer";
 import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
 const schema = getSchema("instruments");
 
@@ -44,6 +45,24 @@ export const SimpleFilterContainer = () => {
   const { VuuDataSource } = useData();
   const [filter, setFilter] =
     useState<ColumnFilterContainerProps["filter"]>(undefined);
+
+  const [columns, [vuuCreatedTime, bbg, currency, exchange, lotSize]] = useMemo<
+    [ColumnDescriptor[], ColumnDescriptor[]]
+  >(() => {
+    const cols: ColumnDescriptor[] = [
+      {
+        label: "Vuu Created Time",
+        name: "vuuCreatedTime",
+        serverDataType: "long",
+        type: "time",
+      },
+      { name: "bbg", serverDataType: "string", label: "BBG" },
+      { name: "currency", serverDataType: "string" },
+      { name: "exchange", serverDataType: "string" },
+      { name: "lotSize", serverDataType: "int" },
+    ];
+    return [cols, cols];
+  }, []);
 
   const dataSource = useMemo(
     () =>
@@ -83,6 +102,7 @@ export const SimpleFilterContainer = () => {
         onFilterApplied={onFilterApplied}
         onFilterCleared={onFilterCleared}
         style={{
+          justifyContent: "flex-start",
           display: "flex",
           flexDirection: "column",
           gap: 12,
@@ -90,10 +110,19 @@ export const SimpleFilterContainer = () => {
         }}
       >
         <FormField>
+          <FormFieldLabel>Created Time</FormFieldLabel>
+          <FilterContainerColumnFilter
+            TypeaheadProps={typeaheadPropsOne}
+            column={vuuCreatedTime}
+            operator="between"
+            table={table}
+          />
+        </FormField>
+        <FormField>
           <FormFieldLabel>BBG</FormFieldLabel>
           <FilterContainerColumnFilter
             TypeaheadProps={typeaheadPropsOne}
-            column={{ name: "bbg", serverDataType: "string" }}
+            column={bbg}
             table={table}
           />
         </FormField>
@@ -101,7 +130,7 @@ export const SimpleFilterContainer = () => {
           <FormFieldLabel>Currency</FormFieldLabel>
           <FilterContainerColumnFilter
             TypeaheadProps={typeaheadPropsZero}
-            column={{ name: "currency", serverDataType: "string" }}
+            column={currency}
             table={table}
           />
         </FormField>
@@ -109,20 +138,20 @@ export const SimpleFilterContainer = () => {
           <FormFieldLabel>Exchange</FormFieldLabel>
           <FilterContainerColumnFilter
             TypeaheadProps={typeaheadPropsZero}
-            column={{ name: "exchange", serverDataType: "string" }}
+            column={exchange}
             table={table}
           />
         </FormField>
         <FormField>
           <FormFieldLabel>Lot Size</FormFieldLabel>
-          <FilterContainerColumnFilter
-            column={{ name: "lotSize", serverDataType: "int" }}
-            operator="between"
-          />
+          <FilterContainerColumnFilter column={lotSize} operator="between" />
         </FormField>
+        <FilterDisplay columns={columns} filter={filter} />
+        <DataSourceStats dataSource={dataSource} />
+        <div style={{ background: "lightgray", whiteSpace: "preserve" }}>
+          {JSON.stringify(filter, null, 2)}
+        </div>
       </ColumnFilterContainer>
-      <FilterDisplay filter={filter} />
-      <DataSourceStats dataSource={dataSource} />
     </DataSourceProvider>
   );
 };
