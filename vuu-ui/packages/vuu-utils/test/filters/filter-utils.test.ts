@@ -589,6 +589,39 @@ describe("getColumnValueFromFilter", () => {
       ),
     ).toEqual(["100", "200"]);
   });
+  it("returns value from a nested between filter clause", () => {
+    expect(
+      getColumnValueFromFilter(
+        { name: "price", serverDataType: "string" },
+        "between",
+        {
+          op: "and",
+          filters: [
+            {
+              column: "currency",
+              op: "=",
+              value: "GBP",
+            },
+            {
+              op: "and",
+              filters: [
+                {
+                  column: "price",
+                  op: ">",
+                  value: "100",
+                },
+                {
+                  column: "price",
+                  op: "<",
+                  value: "200",
+                },
+              ],
+            },
+          ],
+        },
+      ),
+    ).toEqual(["100", "200"]);
+  });
   it("returns default value from a  between filter clause when not found", () => {
     expect(
       getColumnValueFromFilter(

@@ -201,6 +201,9 @@ export const getColumnValueFromFilter = (
     );
     if (isSingleValueFilter(filterForColumn)) {
       return stringifyBoolean(filterForColumn.value);
+    } else if (operator === "between" && isBetweenFilter(filterForColumn)) {
+      const [{ value: v1 }, { value: v2 }] = filterForColumn.filters;
+      return [`${v1}`, `${v2}`];
     }
   }
   if (operator === "between") {

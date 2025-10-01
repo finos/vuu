@@ -6,8 +6,20 @@ import { lotsizes } from "./lotsizes";
 import { random } from "../../data-utils";
 import { buildDataColumnMap } from "../../Table";
 import { schemas } from "../simul-schemas";
+import { Clock } from "@vuu-ui/vuu-utils";
 
 const { createTable } = tableContainer;
+
+const today = new Date();
+const clock = new Clock({
+  year: today.getFullYear(),
+  month: today.getMonth() + 1,
+  day: today.getDate(),
+  hours: 7,
+  minutes: 0,
+  seconds: 0,
+  milliseconds: 0,
+});
 
 export type bbg = string;
 export type currency = string;
@@ -27,6 +39,7 @@ export type InstrumentsDataRow = [
   number,
   ric,
   price,
+  date,
   date,
 ];
 
@@ -72,7 +85,8 @@ for (const char1 of chars1) {
 
         const exchange = locations[suffix][1];
         const price = randomPrice();
-        const date = new Date().getTime();
+
+        const timestamp = clock.now;
 
         instrumentsData.push([
           bbg,
@@ -83,9 +97,11 @@ for (const char1 of chars1) {
           lotSize,
           ric,
           price,
-          date,
+          timestamp,
+          timestamp,
         ]);
         count++;
+        clock.advance(random(0, 10000));
       }
     }
   }
