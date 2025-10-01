@@ -5,6 +5,7 @@ import {
   ColumnFilterChangeHandler,
   ColumnFilterValue,
   Filter,
+  FilterContainerFilter,
 } from "@vuu-ui/vuu-filter-types";
 import {
   ColumnFilterNext,
@@ -12,6 +13,7 @@ import {
   FilterContainerColumnFilter,
   FilterDisplay,
 } from "@vuu-ui/vuu-filters";
+import { ColumnFilterContainerProps } from "@vuu-ui/vuu-filters/src/column-filter-container/ColumnFilterContainer";
 import { ColumnFilterCommitHandler } from "@vuu-ui/vuu-filters/src/column-filter/useColumnFilter";
 import { DataSourceProvider, useData } from "@vuu-ui/vuu-utils";
 import { ReactNode, useCallback, useMemo, useState } from "react";
@@ -358,9 +360,11 @@ export const ContainerManagedTextColumnFilter = () => {
   );
 };
 
-export const ContainerManagedNumericColumnFilter = () => {
+export const ContainerManagedNumericColumnFilter = ({
+  filter: filterProp,
+}: Pick<ColumnFilterContainerProps, "filter">) => {
   const { VuuDataSource } = useData();
-  const [filter, setFilter] = useState<Filter | undefined>(undefined);
+  const [filter, setFilter] = useState<Filter | undefined>(filterProp);
   const clearFilter = () => setFilter(undefined);
 
   const dataSource = useMemo(() => {
@@ -388,9 +392,19 @@ export const ContainerManagedNumericColumnFilter = () => {
   );
 };
 
-export const ContainerManagedBetweenColumnFilter = () => {
+export const ContainerManagedNumericColumnFilterWithFilter = () => (
+  <ContainerManagedNumericColumnFilter
+    filter={{ column: "lotSize", op: "=", value: 100 }}
+  />
+);
+
+export const ContainerManagedBetweenColumnFilter = ({
+  filter: filterProp,
+}: Pick<ColumnFilterContainerProps, "filter">) => {
   const { VuuDataSource } = useData();
-  const [filter, setFilter] = useState<Filter | undefined>(undefined);
+  const [filter, setFilter] = useState<FilterContainerFilter | undefined>(
+    filterProp,
+  );
   const clearFilter = () => setFilter(undefined);
 
   const dataSource = useMemo(() => {
@@ -408,6 +422,7 @@ export const ContainerManagedBetweenColumnFilter = () => {
     <DataSourceProvider dataSource={dataSource}>
       <ContainerTemplate flexDirection="row" width={700}>
         <ColumnFilterContainer
+          filter={filter}
           onFilterCleared={clearFilter}
           onFilterApplied={setFilter}
         >
@@ -426,6 +441,18 @@ export const ContainerManagedBetweenColumnFilter = () => {
     </DataSourceProvider>
   );
 };
+
+export const ContainerManagedBetweenColumnFilterWithFilter = () => (
+  <ContainerManagedBetweenColumnFilter
+    filter={{
+      op: "and",
+      filters: [
+        { column: "lotSize", op: ">", value: 100 },
+        { column: "lotSize", op: "<", value: 200 },
+      ],
+    }}
+  />
+);
 
 export const ContainerManagedBetweenColumnTimeFilter = () => {
   const { VuuDataSource } = useData();

@@ -41,10 +41,12 @@ const typeaheadPropsOne: ColumnFilterNextProps["TypeaheadProps"] = {
   selectOnTab: false,
 };
 
-export const SimpleFilterContainer = () => {
+const SimpleFilterContainerTemplate = ({
+  filter: filterProp,
+}: Pick<ColumnFilterContainerProps, "filter">) => {
   const { VuuDataSource } = useData();
   const [filter, setFilter] =
-    useState<ColumnFilterContainerProps["filter"]>(undefined);
+    useState<ColumnFilterContainerProps["filter"]>(filterProp);
 
   const [columns, [vuuCreatedTime, bbg, currency, exchange, lotSize]] = useMemo<
     [ColumnDescriptor[], ColumnDescriptor[]]
@@ -155,6 +157,33 @@ export const SimpleFilterContainer = () => {
     </DataSourceProvider>
   );
 };
+
+export const SimpleFilterContainerEmpty = () => (
+  <SimpleFilterContainerTemplate />
+);
+export const WithSimpleFilter = () => (
+  <SimpleFilterContainerTemplate
+    filter={{ column: "currency", op: "=", value: "GBP" }}
+  />
+);
+export const WithMultiCLauseFilter = () => (
+  <SimpleFilterContainerTemplate
+    filter={{
+      op: "and",
+      filters: [
+        { column: "currency", op: "=", value: "GBP" },
+        { column: "exchange", op: "=", value: "XLON/SETS" },
+        {
+          op: "and",
+          filters: [
+            { column: "lotSize", op: ">", value: 100 },
+            { column: "lotSize", op: "<", value: 200 },
+          ],
+        },
+      ],
+    }}
+  />
+);
 
 const TableWithFiltersTemplate = () => {
   const showContextPanel = useContextPanel();
