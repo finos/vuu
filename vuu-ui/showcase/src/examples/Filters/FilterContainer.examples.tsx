@@ -1,8 +1,12 @@
+import { FormField, FormFieldLabel } from "@salt-ds/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
+import { DataSourceFilter, TableSchemaTable } from "@vuu-ui/vuu-data-types";
 import {
-  ColumnFilterContainer,
   ColumnFilterProps,
+  FilterAppliedHandler,
+  FilterContainer,
   FilterContainerColumnFilter,
+  FilterContainerProps,
   FilterDisplay,
   FilterProvider,
   TabbedFilterContainer,
@@ -10,6 +14,8 @@ import {
   useActiveFilter,
 } from "@vuu-ui/vuu-filters";
 import { Table } from "@vuu-ui/vuu-table";
+import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
   ContextPanelProvider,
   IconButton,
@@ -23,12 +29,6 @@ import {
 } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 import { DemoTableContainer } from "../Table/DemoTableContainer";
-import { FormField, FormFieldLabel } from "@salt-ds/core";
-import { DataSourceFilter, TableSchemaTable } from "@vuu-ui/vuu-data-types";
-import { FilterAppliedHandler } from "@vuu-ui/vuu-filters/src/filter-container/useColumnFilterContainer";
-import { ColumnFilterContainerProps } from "@vuu-ui/vuu-filters/src/column-filter-container/ColumnFilterContainer";
-import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
-import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
 const schema = getSchema("instruments");
 
@@ -43,10 +43,10 @@ const typeaheadPropsOne: ColumnFilterProps["TypeaheadProps"] = {
 
 const SimpleFilterContainerTemplate = ({
   filter: filterProp,
-}: Pick<ColumnFilterContainerProps, "filter">) => {
+}: Pick<FilterContainerProps, "filter">) => {
   const { VuuDataSource } = useData();
   const [filter, setFilter] =
-    useState<ColumnFilterContainerProps["filter"]>(filterProp);
+    useState<FilterContainerProps["filter"]>(filterProp);
 
   const [columns, [vuuCreatedTime, bbg, currency, exchange, lotSize]] = useMemo<
     [ColumnDescriptor[], ColumnDescriptor[]]
@@ -87,7 +87,7 @@ const SimpleFilterContainerTemplate = ({
         filterStruct,
       };
       dataSource.filter = vuuFilter;
-      setFilter(filterStruct as ColumnFilterContainerProps["filter"]);
+      setFilter(filterStruct as FilterContainerProps["filter"]);
     },
     [dataSource],
   );
@@ -99,7 +99,7 @@ const SimpleFilterContainerTemplate = ({
 
   return (
     <DataSourceProvider dataSource={dataSource}>
-      <ColumnFilterContainer
+      <FilterContainer
         filter={filter}
         onFilterApplied={onFilterApplied}
         onFilterCleared={onFilterCleared}
@@ -153,7 +153,7 @@ const SimpleFilterContainerTemplate = ({
         <div style={{ background: "lightgray", whiteSpace: "preserve" }}>
           {JSON.stringify(filter, null, 2)}
         </div>
-      </ColumnFilterContainer>
+      </FilterContainer>
     </DataSourceProvider>
   );
 };
@@ -189,7 +189,7 @@ const TableWithFiltersTemplate = () => {
   const showContextPanel = useContextPanel();
   const { VuuDataSource } = useData();
   const [filter, setFilter] =
-    useState<ColumnFilterContainerProps["filter"]>(undefined);
+    useState<FilterContainerProps["filter"]>(undefined);
 
   const dataSource = useMemo(
     () =>
@@ -219,7 +219,7 @@ const TableWithFiltersTemplate = () => {
         filterStruct,
       };
       dataSource.filter = vuuFilter;
-      setFilter(filterStruct as ColumnFilterContainerProps["filter"]);
+      setFilter(filterStruct as FilterContainerProps["filter"]);
     },
     [dataSource],
   );
@@ -232,7 +232,7 @@ const TableWithFiltersTemplate = () => {
   const showFilters = useCallback(() => {
     const columnFilterContainer = (
       <DataSourceProvider dataSource={dataSource}>
-        <ColumnFilterContainer
+        <FilterContainer
           filter={filter}
           onFilterApplied={onFilterApplied}
           onFilterCleared={onFilterCleared}
@@ -268,7 +268,7 @@ const TableWithFiltersTemplate = () => {
               operator="between"
             />
           </FormField>
-        </ColumnFilterContainer>
+        </FilterContainer>
       </DataSourceProvider>
     );
 
@@ -304,7 +304,6 @@ export const TableWithFilters = () => {
       <style>{`
         .vuuFilterContainer {
             height: 100%;
-            padding: 12px;
         }
     `}</style>
       <DemoTableContainer>
@@ -389,7 +388,6 @@ export const TableWithTabbedFilterContainerAndFilterProvider = () => {
       <style>{`
         .vuuFilterContainer {
             height: 100%;
-            padding: 12px;
         }
     `}</style>
       <FilterProvider>

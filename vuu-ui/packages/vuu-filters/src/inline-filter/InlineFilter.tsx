@@ -9,7 +9,7 @@ import cx from "clsx";
 import { HTMLAttributes } from "react";
 import {
   FilterContainer,
-  FilterContainerFilter as ColumnFilter,
+  FilterContainerColumnFilter as ColumnFilter,
 } from "../filter-container/FilterContainer";
 import { useInlineFilter } from "./useInlineFilter";
 

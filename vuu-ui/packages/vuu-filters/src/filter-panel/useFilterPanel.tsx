@@ -28,9 +28,6 @@ export const useFilterPanel = ({
     setCurrentFilter(NULL_FILTER);
   }, [setCurrentFilter]);
 
-  const disableClear = false;
-  const disableSave = false;
-
   const handleConfirm = useCallback(
     (name: string) => {
       setSaveFilterPrompt(null);
@@ -70,8 +67,8 @@ export const useFilterPanel = ({
 
   return {
     clearFilter,
-    disableClear,
-    disableSave,
+    disableClear: currentFilter.filter === null,
+    disableSave: currentFilter.filter === null,
     filter: currentFilter.filter ?? filter,
     onFilterApplied: handleFilterApplied,
     onFilterCleared: handleFilterCleared,
