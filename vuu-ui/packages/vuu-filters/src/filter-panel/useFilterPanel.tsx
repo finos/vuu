@@ -1,12 +1,12 @@
 import { ReactElement, useCallback, useState } from "react";
-import { ColumnFilterContainerProps } from "../column-filter-container/ColumnFilterContainer";
+import { FilterContainerProps } from "../filter-container/FilterContainer";
 import {
   EMPTY_FILTER,
   NULL_FILTER,
   useCurrentFilter,
   useSavedFilters,
 } from "../filter-provider/FilterProvider";
-import { FilterAppliedHandler } from "../column-filter-container/useColumnFilterContainer";
+import { FilterAppliedHandler } from "../filter-container/useFilterContainer";
 import { FilterNamePrompt } from "../saved-filters/FilterNamePrompt";
 import { FilterContainerFilter } from "@vuu-ui/vuu-filter-types";
 
@@ -15,7 +15,7 @@ export const useFilterPanel = ({
   onFilterApplied,
   onFilterCleared,
 }: Pick<
-  ColumnFilterContainerProps,
+  FilterContainerProps,
   "filter" | "onFilterApplied" | "onFilterCleared"
 >) => {
   const { currentFilter, setCurrentFilter } = useCurrentFilter();

@@ -9,7 +9,7 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import type { HTMLAttributes, ReactNode } from "react";
-import { ColumnFilterContainerProps } from "../column-filter-container/ColumnFilterContainer";
+import { FilterContainerProps } from "../filter-container/FilterContainer";
 import { FilterPanel } from "../filter-panel/FilterPanel";
 import { SavedFilterPanel } from "../saved-filters/SavedFilterPanel";
 
@@ -20,7 +20,7 @@ const classBase = "vuuTabbedFilterContainer";
 export interface TabbedFilterContainerProps
   extends HTMLAttributes<HTMLDivElement>,
     Pick<
-      ColumnFilterContainerProps,
+      FilterContainerProps,
       "filter" | "onFilterApplied" | "onFilterCleared"
     > {
   children: ReactNode;

@@ -1,78 +1,50 @@
 import {
-  Button,
-  Menu,
-  MenuItem,
-  MenuPanel,
-  MenuTrigger,
   SegmentedButtonGroup,
-  SegmentedButtonGroupProps,
+  type SegmentedButtonGroupProps,
 } from "@salt-ds/core";
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
+import {
+  DataItemEditControlProps,
+  getDataItemEditControl,
+} from "@vuu-ui/vuu-data-react";
 import cx from "clsx";
-import { getDataItemEditControl } from "@vuu-ui/vuu-data-react";
-import { ForwardedRef, forwardRef, ReactElement } from "react";
+import { ForwardedRef, forwardRef } from "react";
 import { ColumnFilterHookProps, useColumnFilter } from "./useColumnFilter";
-import { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { VuuTypeaheadInputHookProps } from "@vuu-ui/vuu-ui-controls/src/vuu-typeahead-input/useVuuTypeaheadInput";
-
-import columnFilterCss from "./ColumnFilter.css";
 
 const classBase = "vuuColumnFilter";
 
 export interface ColumnFilterProps
-  extends SegmentedButtonGroupProps,
-    Pick<VuuTypeaheadInputHookProps, "minCharacterCountToTriggerSuggestions">,
-    ColumnFilterHookProps {
-  /**
-   * Display operator picker.
-   */
-  showOperatorPicker?: boolean;
-  /**
-   * VuuTable is required if typeahead support is expected.
-   */
-  table?: VuuTable;
-}
+  extends ColumnFilterHookProps,
+    Omit<SegmentedButtonGroupProps, "defaultValue">,
+    Pick<DataItemEditControlProps, "TypeaheadProps" | "table"> {}
 
 export const ColumnFilter = forwardRef(function ColumnFilter(
   {
-    column,
+    InputProps: InputPropsProp,
+    TypeaheadProps,
     className,
-    minCharacterCountToTriggerSuggestions,
-    onCommit: onCommitProp,
-    operator = "=",
-    showOperatorPicker = false,
-    table,
-    value,
+    column,
+    defaultValue,
     onColumnFilterChange,
     onColumnRangeFilterChange,
+    onCommit: onCommitProp,
+    operator = "=",
+    table,
+    value: valueProp,
     ...buttonGroupProps
   }: ColumnFilterProps,
   forwardRef: ForwardedRef<HTMLDivElement>,
 ) {
-  const targetWindow = useWindow();
-  useComponentCssInjection({
-    testId: "vuu-column-filter",
-    css: columnFilterCss,
-    window: targetWindow,
-  });
-
-  const {
-    op,
-    allowedOperators,
-    inputProps,
-    rangeInputProps,
-    handleOperatorChange,
-    onCommit,
-    onCommitRange,
-  } = useColumnFilter({
-    onCommit: onCommitProp,
-    operator,
-    column,
-    value,
-    onColumnFilterChange,
-    onColumnRangeFilterChange,
-  });
+  const { InputProps, InputPropsRange, onCommit, onCommitRange } =
+    useColumnFilter({
+      InputProps: InputPropsProp,
+      column,
+      defaultValue,
+      onColumnFilterChange,
+      onColumnRangeFilterChange,
+      onCommit: onCommitProp,
+      operator,
+      value: valueProp,
+    });
 
   return (
     <SegmentedButtonGroup
@@ -80,47 +52,19 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
       className={cx(classBase, className)}
       ref={forwardRef}
     >
-      {showOperatorPicker ? (
-        <Menu placement="bottom-start">
-          <MenuTrigger>
-            <Button
-              appearance="solid"
-              aria-label="Open Menu"
-              className={`${classBase}-trigger`}
-              data-embedded
-              sentiment="neutral"
-            >
-              {op}
-            </Button>
-          </MenuTrigger>
-          <MenuPanel>
-            {allowedOperators.map((allowedOp) => (
-              <MenuItem
-                key={`allowedOp`}
-                onClick={() => handleOperatorChange(allowedOp)}
-              >
-                {allowedOp}
-              </MenuItem>
-            ))}
-          </MenuPanel>
-        </Menu>
-      ) : null}
       {getDataItemEditControl({
-        InputProps: { inputProps },
-        TypeaheadProps: {
-          minCharacterCountToTriggerSuggestions,
-        },
-        commitOnBlur: false,
+        InputProps,
+        TypeaheadProps,
         commitWhenCleared: true,
         dataDescriptor: column,
         onCommit,
         table,
       })}
-      {op === "between"
+      {operator === "between"
         ? getDataItemEditControl({
+            InputProps: InputPropsRange,
             className: `${classBase}-rangeHigh`,
             commitWhenCleared: true,
-            InputProps: { inputProps: rangeInputProps },
             dataDescriptor: column,
             onCommit: onCommitRange,
             table,
@@ -128,8 +72,4 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
         : null}
     </SegmentedButtonGroup>
   );
-}) as (
-  props: ColumnFilterProps & {
-    ref?: ForwardedRef<HTMLDivElement>;
-  },
-) => ReactElement<ColumnFilterProps>;
+});

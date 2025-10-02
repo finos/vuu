@@ -5,20 +5,26 @@ import { ForwardedRef, forwardRef, HTMLAttributes } from "react";
 
 import filterPanelCss from "./FilterPanel.css";
 import {
-  ColumnFilterContainer,
-  ColumnFilterContainerProps,
-} from "../column-filter-container/ColumnFilterContainer";
+  FilterContainer,
+  FilterContainerProps,
+} from "../filter-container/FilterContainer";
 import { Button } from "@salt-ds/core";
 import { useFilterPanel } from "./useFilterPanel";
 
 const classBase = "vuuFilterPanel";
 
+export type FilterPanelPermissions = {
+  allowSaveFilter: boolean;
+};
+
 export interface FilterPanelProps
   extends HTMLAttributes<HTMLDivElement>,
     Pick<
-      ColumnFilterContainerProps,
+      FilterContainerProps,
       "filter" | "onFilterApplied" | "onFilterCleared"
-    > {}
+    > {
+  permissions?: FilterPanelPermissions;
+}
 
 export const FilterPanel = forwardRef(function FilterDisplay(
   {
@@ -27,6 +33,7 @@ export const FilterPanel = forwardRef(function FilterDisplay(
     filter: filterProp,
     onFilterApplied: onFilterAppliedProp,
     onFilterCleared: onFilterClearedProp,
+    permissions,
     ...htmlAttributes
   }: FilterPanelProps,
   forwardedRef: ForwardedRef<HTMLDivElement>,
@@ -59,20 +66,22 @@ export const FilterPanel = forwardRef(function FilterDisplay(
       className={cx(classBase, className)}
       ref={forwardedRef}
     >
-      <ColumnFilterContainer
+      <FilterContainer
         filter={filter}
         onFilterApplied={onFilterApplied}
         onFilterCleared={onFilterCleared}
       >
         {children}
-      </ColumnFilterContainer>
+      </FilterContainer>
       <div className={`${classBase}-toolbar`}>
         <Button disabled={disableClear} onClick={clearFilter}>
           Clear
         </Button>
-        <Button disabled={disableSave} onClick={saveFilter}>
-          Save
-        </Button>
+        {permissions?.allowSaveFilter !== false ? (
+          <Button disabled={disableSave} onClick={saveFilter}>
+            Save
+          </Button>
+        ) : null}
       </div>
       {saveFilterPrompt}
     </div>

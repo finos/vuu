@@ -1,11 +1,7 @@
 export {
-  ColumnFilterContainer,
-  FilterContainerColumnFilter,
-} from "./column-filter-container/ColumnFilterContainer";
-export {
-  ColumnFilterNext,
-  type ColumnFilterNextProps,
-} from "./column-filter-next/ColumnFilterNext";
+  FilterContainer as ColumnFilterContainer,
+  FilterContainerFilter as FilterContainerColumnFilter,
+} from "./filter-container/FilterContainer";
 export {
   ColumnFilter,
   type ColumnFilterProps,

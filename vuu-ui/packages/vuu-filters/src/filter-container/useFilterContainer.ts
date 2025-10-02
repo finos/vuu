@@ -76,20 +76,9 @@ export type ColumnFilterContainerHookProps = {
 
 type ColumnFilterValueMap = Record<string, ColumnFilterValue>;
 
-// const defaultValueForColumn = (
-//   _column: ColumnDescriptor,
-//   op: ColumnFilterOp = "=",
-// ): ColumnFilterValue => {
-//   if (op === "between") {
-//     return ["", ""];
-//   } else {
-//     return "";
-//   }
-// };
-
 export const EmptyTuple: ColumnFilterValue = ["", ""];
 
-export const useColumnFilterContainer = ({
+export const useFilterContainer = ({
   filter,
   onFilterApplied,
   onFilterCleared,
