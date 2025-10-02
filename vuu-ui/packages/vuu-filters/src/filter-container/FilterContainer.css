@@ -1,0 +1,6 @@
+.vuuFilterContainer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--salt-spacing-100)
+
+}

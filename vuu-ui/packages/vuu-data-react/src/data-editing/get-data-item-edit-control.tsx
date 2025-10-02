@@ -16,6 +16,7 @@ import {
 } from "@vuu-ui/vuu-utils";
 import { InputProps } from "@salt-ds/core";
 import { asTimeString } from "@vuu-ui/vuu-utils";
+import { ToggleFilter } from "@vuu-ui/vuu-filters";
 
 /**
  * variant can be used to provide a rendering hint to the filter control rendered.
@@ -42,6 +43,14 @@ export interface DataItemEditControlProps {
   errorMessage?: string;
   onCommit: CommitHandler<HTMLElement>;
   table?: TableSchemaTable;
+  /**
+   * Where provided, only these values will be offered as suggestions.
+   * They will be validated against server with Typeahead service, so
+   * unavailable options are not offered.
+   * Recommended for toggle filters, not usually necessary for other
+   * filter variants.
+   */
+  values?: string[];
   variant?: FilterControlVariant;
 }
 
@@ -57,6 +66,7 @@ export const getDataItemEditControl = ({
   errorMessage,
   onCommit,
   table,
+  values,
   variant,
 }: DataItemEditControlProps) => {
   const handleCommitNumber: CommitHandler<HTMLElement, number> = (
@@ -100,18 +110,31 @@ export const getDataItemEditControl = ({
       />
     );
   } else if (dataDescriptor.serverDataType === "string" && table) {
-    return (
-      <VuuTypeaheadInput
-        {...InputProps}
-        {...TypeaheadProps}
-        className={className}
-        column={dataDescriptor.name}
-        data-edit-control
-        data-variant={dataVariant}
-        onCommit={onCommit}
-        table={table}
-      />
-    );
+    if (variant === "toggle" && values?.length) {
+      return (
+        <ToggleFilter
+          className={className}
+          column={dataDescriptor.name}
+          data-edit-control
+          onCommit={onCommit}
+          table={table}
+          values={values}
+        />
+      );
+    } else {
+      return (
+        <VuuTypeaheadInput
+          {...InputProps}
+          {...TypeaheadProps}
+          className={className}
+          column={dataDescriptor.name}
+          data-edit-control
+          data-variant={dataVariant}
+          onCommit={onCommit}
+          table={table}
+        />
+      );
+    }
   }
 
   return (

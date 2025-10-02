@@ -1,20 +1,14 @@
 import {
   ColumnFilterChangeHandler,
+  ColumnFilterCommitHandler,
   ColumnFilterOp,
   ColumnFilterValue,
-  FilterClauseOp,
 } from "@vuu-ui/vuu-filter-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { InputProps, useControlled } from "@salt-ds/core";
 import { ChangeEventHandler, useCallback, useMemo } from "react";
 import { CommitHandler } from "@vuu-ui/vuu-utils";
 import { DataItemEditControlProps } from "@vuu-ui/vuu-data-react";
-
-export type ColumnFilterCommitHandler = (
-  column: ColumnDescriptor,
-  op: FilterClauseOp | "between",
-  value: ColumnFilterValue,
-) => void;
 
 const injectInputProps = (
   InputProps: InputProps | undefined,

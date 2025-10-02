@@ -1,25 +1,26 @@
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { TableSchemaTable } from "@vuu-ui/vuu-data-types";
-import {
+import type {
   ColumnFilterChangeHandler,
+  ColumnFilterCommitHandler,
   ColumnFilterValue,
   Filter,
   FilterContainerFilter,
 } from "@vuu-ui/vuu-filter-types";
 import {
   ColumnFilter,
-  ColumnFilterContainer,
+  FilterContainer,
   ColumnFilterProps,
-  FilterContainerColumnFilter,
   FilterDisplay,
+  FilterContainerProps,
+  FilterContainerColumnFilter,
 } from "@vuu-ui/vuu-filters";
-import { FilterContainerProps } from "@vuu-ui/vuu-filters/src/filter-container/FilterContainer";
-import { ColumnFilterCommitHandler } from "@vuu-ui/vuu-filters/src/column-filter/useColumnFilter";
 import { DataSourceProvider, useData } from "@vuu-ui/vuu-utils";
 import { ReactNode, useCallback, useMemo, useState } from "react";
 
-const schema = getSchema("instrumentsExtended");
+const instrumentsSchema = getSchema("instruments");
+const ordersSchema = getSchema("parentOrders");
 
 const ContainerTemplate = ({
   children,
@@ -48,7 +49,7 @@ export const ControlledTextColumnFilter = () => {
   const { VuuDataSource } = useData();
   const [value, setValue] = useState<ColumnFilterValue>("");
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: schema.table });
+    return new VuuDataSource({ table: instrumentsSchema.table });
   }, [VuuDataSource]);
 
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
@@ -81,7 +82,7 @@ export const ControlledTextColumnFilterPopulated = () => {
   const { VuuDataSource } = useData();
   const [value, setValue] = useState<ColumnFilterValue>("AAOP.N");
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: schema.table });
+    return new VuuDataSource({ table: instrumentsSchema.table });
   }, [VuuDataSource]);
 
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
@@ -117,7 +118,7 @@ export const ShowSuggestionsWithNoTextInput = () => {
   const { VuuDataSource } = useData();
   const [value, setValue] = useState<ColumnFilterValue>("");
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: schema.table });
+    return new VuuDataSource({ table: instrumentsSchema.table });
   }, [VuuDataSource]);
 
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
@@ -150,7 +151,7 @@ export const ShowSuggestionsWithNoTextInput = () => {
 export const UnControlledTextColumnFilter = () => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: schema.table });
+    return new VuuDataSource({ table: instrumentsSchema.table });
   }, [VuuDataSource]);
 
   const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
@@ -187,7 +188,7 @@ export const UnControlledTextColumnFilter = () => {
 export const UnControlledNumericColumnFilter = () => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: schema.table });
+    return new VuuDataSource({ table: instrumentsSchema.table });
   }, [VuuDataSource]);
 
   const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
@@ -222,7 +223,7 @@ export const UnControlledNumericColumnFilter = () => {
 export const UnControlledNumericColumnFilterBetween = () => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: schema.table });
+    return new VuuDataSource({ table: instrumentsSchema.table });
   }, [VuuDataSource]);
 
   const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
@@ -266,7 +267,7 @@ export const UnControlledNumericColumnFilterBetween = () => {
 export const ControlledNumericRangeFilter = () => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: schema.table });
+    return new VuuDataSource({ table: instrumentsSchema.table });
   }, [VuuDataSource]);
   const [value, setValue] = useState<[string, string]>(["35", "45.3"]);
 
@@ -326,7 +327,7 @@ export const ControlledTimeRangeFilter = ({
 }: Pick<ColumnFilterProps, "onColumnFilterChange">) => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: schema.table });
+    return new VuuDataSource({ table: instrumentsSchema.table });
   }, [VuuDataSource]);
   const [value, setValue] = useState<[string, string]>([
     "00:00:00",
@@ -384,15 +385,13 @@ export const ControlledTimeRangeFilter = ({
 export const ControlledToggleFilter = () => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: schema.table });
+    return new VuuDataSource({ table: ordersSchema.table });
   }, [VuuDataSource]);
   const [value, setValue] = useState<ColumnFilterValue>("");
 
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
-    (column, operator, value) => {
-      if (Array.isArray(value)) {
-        console.log(`commit ${column.name} ['${value[0]}':'${value[1]}']`);
-      }
+    (_column, _operator, value) => {
+      setValue(value);
     },
     [],
   );
@@ -401,17 +400,19 @@ export const ControlledToggleFilter = () => {
     <DataSourceProvider dataSource={dataSource}>
       <ContainerTemplate>
         <FormField>
-          <FormFieldLabel>Price</FormFieldLabel>
+          <FormFieldLabel>Side</FormFieldLabel>
           <ColumnFilter
+            TypeaheadProps={{ minCharacterCountToTriggerSuggestions: 0 }}
             column={{
-              name: "vuuCreatedTimestamp",
-              serverDataType: "long",
-              type: "time",
+              name: "side",
+              serverDataType: "string",
             }}
             onColumnFilterChange={setValue}
             onCommit={handleCommit}
-            operator="between"
+            table={ordersSchema.table}
             value={value}
+            values={["BUY", "SELL"]}
+            variant="toggle"
           />
         </FormField>
       </ContainerTemplate>
@@ -422,7 +423,7 @@ export const ControlledToggleFilter = () => {
 export const ContainerManagedTextColumnFilter = () => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: schema.table });
+    return new VuuDataSource({ table: instrumentsSchema.table });
   }, [VuuDataSource]);
 
   const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
@@ -435,7 +436,7 @@ export const ContainerManagedTextColumnFilter = () => {
   return (
     <DataSourceProvider dataSource={dataSource}>
       <ContainerTemplate>
-        <ColumnFilterContainer>
+        <FilterContainer>
           <FormField>
             <FormFieldLabel>BBG</FormFieldLabel>
             <FilterContainerColumnFilter
@@ -445,7 +446,7 @@ export const ContainerManagedTextColumnFilter = () => {
               defaultValue=""
             />
           </FormField>
-        </ColumnFilterContainer>
+        </FilterContainer>
       </ContainerTemplate>
     </DataSourceProvider>
   );
@@ -459,13 +460,13 @@ export const ContainerManagedNumericColumnFilter = ({
   const clearFilter = () => setFilter(undefined);
 
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: schema.table });
+    return new VuuDataSource({ table: instrumentsSchema.table });
   }, [VuuDataSource]);
 
   return (
     <DataSourceProvider dataSource={dataSource}>
       <ContainerTemplate flexDirection="row" width={700}>
-        <ColumnFilterContainer
+        <FilterContainer
           onFilterCleared={clearFilter}
           onFilterApplied={setFilter}
         >
@@ -476,7 +477,7 @@ export const ContainerManagedNumericColumnFilter = ({
               table={{ module: "SIMUL", table: "instruments" }}
             />
           </FormField>
-        </ColumnFilterContainer>
+        </FilterContainer>
         <FilterDisplay filter={filter} />
       </ContainerTemplate>
     </DataSourceProvider>
@@ -499,7 +500,7 @@ export const ContainerManagedBetweenColumnFilter = ({
   const clearFilter = () => setFilter(undefined);
 
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: schema.table });
+    return new VuuDataSource({ table: instrumentsSchema.table });
   }, [VuuDataSource]);
 
   const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
@@ -512,7 +513,7 @@ export const ContainerManagedBetweenColumnFilter = ({
   return (
     <DataSourceProvider dataSource={dataSource}>
       <ContainerTemplate flexDirection="row" width={700}>
-        <ColumnFilterContainer
+        <FilterContainer
           filter={filter}
           onFilterCleared={clearFilter}
           onFilterApplied={setFilter}
@@ -526,7 +527,7 @@ export const ContainerManagedBetweenColumnFilter = ({
               table={{ module: "SIMUL", table: "instruments" }}
             />
           </FormField>
-        </ColumnFilterContainer>
+        </FilterContainer>
         <FilterDisplay filter={filter} />
       </ContainerTemplate>
     </DataSourceProvider>
@@ -553,7 +554,7 @@ export const ContainerManagedBetweenColumnTimeFilter = () => {
   console.log(JSON.stringify(filter, null, 2));
 
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: schema.table });
+    return new VuuDataSource({ table: instrumentsSchema.table });
   }, [VuuDataSource]);
 
   const handleColumnFilterChange = useCallback<ColumnFilterChangeHandler>(
@@ -566,7 +567,7 @@ export const ContainerManagedBetweenColumnTimeFilter = () => {
   return (
     <DataSourceProvider dataSource={dataSource}>
       <ContainerTemplate flexDirection="row" width={700}>
-        <ColumnFilterContainer
+        <FilterContainer
           onFilterCleared={clearFilter}
           onFilterApplied={setFilter}
         >
@@ -583,7 +584,7 @@ export const ContainerManagedBetweenColumnTimeFilter = () => {
               table={{ module: "SIMUL", table: "instruments" }}
             />
           </FormField>
-        </ColumnFilterContainer>
+        </FilterContainer>
         <FilterDisplay filter={filter} />
       </ContainerTemplate>
     </DataSourceProvider>
@@ -595,7 +596,7 @@ export const ContainerManagedMultipleColumnFilters = () => {
   const [filter, setFilter] = useState<Filter | undefined>(undefined);
   const clearFilter = () => setFilter(undefined);
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table: schema.table });
+    return new VuuDataSource({ table: instrumentsSchema.table });
   }, [VuuDataSource]);
 
   const table = useMemo<TableSchemaTable>(
@@ -606,7 +607,7 @@ export const ContainerManagedMultipleColumnFilters = () => {
   return (
     <DataSourceProvider dataSource={dataSource}>
       <ContainerTemplate flexDirection="row" width={700}>
-        <ColumnFilterContainer
+        <FilterContainer
           onFilterCleared={clearFilter}
           onFilterApplied={setFilter}
         >
@@ -638,7 +639,7 @@ export const ContainerManagedMultipleColumnFilters = () => {
               operator="between"
             />
           </FormField>
-        </ColumnFilterContainer>
+        </FilterContainer>
         <FilterDisplay filter={filter} />
       </ContainerTemplate>
     </DataSourceProvider>

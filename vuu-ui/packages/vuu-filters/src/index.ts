@@ -1,13 +1,17 @@
 export {
-  FilterContainer as ColumnFilterContainer,
-  FilterContainerFilter as FilterContainerColumnFilter,
-} from "./filter-container/FilterContainer";
-export {
   ColumnFilter,
   type ColumnFilterProps,
 } from "./column-filter/ColumnFilter";
 export * from "./filter-bar";
 export * from "./filter-clause";
+export {
+  FilterContainer,
+  FilterContainerColumnFilter,
+  type FilterContainerColumnFilterProps,
+  type FilterContainerProps,
+} from "./filter-container/FilterContainer";
+export type { FilterAppliedHandler } from "./filter-container/useFilterContainer";
+export { FilterDisplay } from "./filter-display/FilterDisplay";
 export * from "./filter-editor";
 export * from "./filter-pill";
 export { type FilterPermissions } from "./filter-pill/FilterMenu";
@@ -34,4 +38,7 @@ export {
   TabbedFilterContainer,
   type TabbedFilterContainerProps,
 } from "./tabbed-filter-container/TabbedFilterContainer";
-export { FilterDisplay } from "./filter-display/FilterDisplay";
+export {
+  ToggleFilter,
+  type ToggleFilterProps,
+} from "./toggle-filter/ToggleFilter";

@@ -21,6 +21,7 @@
     "@vuu-ui/vuu-context-menu": "0.13.45",
     "@vuu-ui/vuu-data-remote": "0.13.45",
     "@vuu-ui/vuu-filter-parser": "0.13.45",
+    "@vuu-ui/vuu-filters": "0.13.45",
     "@vuu-ui/vuu-layout": "0.13.45",
     "@vuu-ui/vuu-popups": "0.13.45",
     "@vuu-ui/vuu-ui-controls": "0.13.45",

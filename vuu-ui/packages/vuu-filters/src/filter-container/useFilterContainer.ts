@@ -1,4 +1,6 @@
 import {
+  ColumnFilterChangeHandler,
+  ColumnFilterCommitHandler,
   ColumnFilterOp,
   ColumnFilterValue,
   Filter,
@@ -6,18 +8,11 @@ import {
 } from "@vuu-ui/vuu-filter-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { createContext, useCallback, useContext, useMemo, useRef } from "react";
-import { ColumnFilterCommitHandler } from "../column-filter/useColumnFilter";
 import {
   FilterAggregator,
   getColumnValueFromFilter,
   isSingleValueFilter,
 } from "@vuu-ui/vuu-utils";
-
-export type ColumnFilterChangeHandler = (
-  value: ColumnFilterValue,
-  column: ColumnDescriptor,
-  op: ColumnFilterOp,
-) => void;
 
 export interface ColumnFilterContextProps {
   filterContainerInstalled: boolean;

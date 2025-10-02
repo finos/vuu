@@ -105,7 +105,13 @@ export declare type ColumnFilterChangeHandler = (
   op: ColumnFilterOp,
 ) => void;
 
-export type ColumnFilterVariant = "pick" | "search" | "range";
+export declare type ColumnFilterCommitHandler = (
+  column: ColumnDescriptor,
+  op: FilterClauseOp | "between",
+  value: ColumnFilterValue,
+) => void;
+
+export declare type ColumnFilterVariant = "pick" | "search" | "range";
 export interface ColumnFilterDescriptor extends DataValueDescriptor {
   defaultValue: ColumnFilterValue;
   op?: ColumnFilterOp;

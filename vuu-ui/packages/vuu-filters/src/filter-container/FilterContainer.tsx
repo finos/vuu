@@ -15,16 +15,20 @@ import {
 } from "./useFilterContainer";
 import {
   ColumnFilterChangeHandler,
+  ColumnFilterCommitHandler,
   ColumnFilterValue,
 } from "@vuu-ui/vuu-filter-types";
 import { ColumnFilter, ColumnFilterProps } from "../column-filter/ColumnFilter";
-import { ColumnFilterCommitHandler } from "../column-filter/useColumnFilter";
 import {
   filterDescriptorHasFilter,
   isNullFilter,
   useCurrentFilter,
 } from "../filter-provider/FilterProvider";
 import { getColumnValueFromFilter } from "@vuu-ui/vuu-utils";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+
+import filterContainerCss from "./FilterContainer.css";
 
 const classBase = "vuuFilterContainer";
 
@@ -37,16 +41,23 @@ export interface FilterContainerProps
   children: ReactNode;
 }
 
-export interface FilterContainerFilterProps
+export interface FilterContainerColumnFilterProps
   extends Omit<ColumnFilterProps, "defaultValue" | "onCommit" | "value"> {
   defaultValue?: ColumnFilterValue;
 }
 
-export const FilterContainerFilter = ({
+export const FilterContainerColumnFilter = ({
   column,
   operator = "=",
   ...props
-}: FilterContainerFilterProps) => {
+}: FilterContainerColumnFilterProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-filter-container",
+    css: filterContainerCss,
+    window: targetWindow,
+  });
+
   const {
     onChange: onFilterContextChange,
     onCommit: onFilterContextCommit,

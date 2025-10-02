@@ -15,7 +15,10 @@ const classBase = "vuuColumnFilter";
 export interface ColumnFilterProps
   extends ColumnFilterHookProps,
     Omit<SegmentedButtonGroupProps, "defaultValue">,
-    Pick<DataItemEditControlProps, "TypeaheadProps" | "table" | "variant"> {}
+    Pick<
+      DataItemEditControlProps,
+      "TypeaheadProps" | "table" | "values" | "variant"
+    > {}
 
 export const ColumnFilter = forwardRef(function ColumnFilter(
   {
@@ -30,6 +33,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
     operator = "=",
     table,
     value: valueProp,
+    values,
     variant,
     ...buttonGroupProps
   }: ColumnFilterProps,
@@ -60,6 +64,8 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
         dataDescriptor: column,
         onCommit,
         table,
+        values,
+        variant,
       })}
       {operator === "between"
         ? getDataItemEditControl({
