@@ -62,27 +62,27 @@ class RpcTest extends AnyFeatureSpec with Matchers {
 
       val ctx = RequestContext("", ClientSessionId("", ""), null, "")
 
-      val ret = myRpcHandler.processRpcRequest("doSomething", new RpcParams(Map("param1" -> "test", "param2" -> 1234.34), None, None, ctx))
+      val ret = myRpcHandler.processRpcRequest("doSomething", new RpcParams(Map("param1" -> "test", "param2" -> 1234.34), null, ctx))
       ret.isInstanceOf[RpcFunctionSuccess] shouldBe true
       ret.asInstanceOf[RpcFunctionSuccess].optionalResult.get shouldBe true
 
-      val ret2 = myRpcHandler.processRpcRequest("doSomething2", new RpcParams(Map("param1" -> true), None, None, ctx))
+      val ret2 = myRpcHandler.processRpcRequest("doSomething2", new RpcParams(Map("param1" -> true), null, ctx))
       ret2.isInstanceOf[RpcFunctionSuccess] shouldBe true
       ret2.asInstanceOf[RpcFunctionSuccess].optionalResult.get shouldBe false
 
-      val ret3 = myRpcHandler.processRpcRequest("doSomethingElse", new RpcParams(Map(), None, None, ctx))
+      val ret3 = myRpcHandler.processRpcRequest("doSomethingElse", new RpcParams(Map(), null, ctx))
       ret3.isInstanceOf[RpcFunctionSuccess] shouldBe true
       ret3.asInstanceOf[RpcFunctionSuccess].optionalResult.isEmpty shouldBe true
 
-      val ret4 = myRpcHandler.processRpcRequest("onClick", new RpcParams(Map("map" -> Map[String, Any]("field" -> "value", "field2" -> 123)), None, None, ctx))
+      val ret4 = myRpcHandler.processRpcRequest("onClick", new RpcParams(Map("map" -> Map[String, Any]("field" -> "value", "field2" -> 123)), null, ctx))
       ret4.isInstanceOf[RpcFunctionSuccess] shouldBe true
       ret4.asInstanceOf[RpcFunctionSuccess].optionalResult.get should be("got map Map(field -> value, field2 -> 123)")
 
-      val ret5 = myRpcHandler.processRpcRequest("onClickArray", new RpcParams(Map("array" -> Array("Foo", "Bar", "Ping")), None, None, ctx))
+      val ret5 = myRpcHandler.processRpcRequest("onClickArray", new RpcParams(Map("array" -> Array("Foo", "Bar", "Ping")), null, ctx))
       ret5.isInstanceOf[RpcFunctionSuccess] shouldBe true
       ret5.asInstanceOf[RpcFunctionSuccess].optionalResult.get should be("got array Foo, Bar, Ping")
 
-      val ret6 = myRpcHandler.processRpcRequest("customObject", new RpcParams(Map("custom" -> customObject), None, None, ctx))
+      val ret6 = myRpcHandler.processRpcRequest("customObject", new RpcParams(Map("custom" -> customObject), null, ctx))
       ret6.isInstanceOf[RpcFunctionSuccess] shouldBe true
       ret6.asInstanceOf[RpcFunctionSuccess].optionalResult.get.asInstanceOf[String].startsWith("got a custom object org.finos.vuu.net.rpc.RpcTest$CustomObject") shouldBe true
     }

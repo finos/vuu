@@ -26,7 +26,7 @@ class DefaultRpcHandlerTest extends AnyFeatureSpec with Matchers with BeforeAndA
     Scenario("Can register and handle Rpc request that perform action") {
       handler.registerRpc("myMethod", _ => new RpcFunctionSuccess())
 
-      val result = handler.processRpcRequest("myMethod", new RpcParams(Map("namedParam1" -> "value1"), None, None, ctx))
+      val result = handler.processRpcRequest("myMethod", new RpcParams(Map("namedParam1" -> "value1"), null, ctx))
 
       result should be(RpcFunctionSuccess(None))
     }
@@ -43,7 +43,7 @@ class DefaultRpcHandlerTest extends AnyFeatureSpec with Matchers with BeforeAndA
     Scenario("Rpc request with null params should return ViewPortRpcSuccess when the rpc method is successful") {
       handler.registerRpc("myMethod", _ => new RpcFunctionSuccess())
 
-      val result = handler.processRpcRequest("myMethod", new RpcParams(null, None, None, ctx))
+      val result = handler.processRpcRequest("myMethod", new RpcParams(null, null, ctx))
 
       result should be(RpcFunctionSuccess(None))
     }
@@ -51,7 +51,7 @@ class DefaultRpcHandlerTest extends AnyFeatureSpec with Matchers with BeforeAndA
     Scenario("Rpc request should return ViewPortRpcFailure when the rpc method fails") {
       handler.registerRpc("myMethod", _ => RpcFunctionFailure(1, "error", new Exception("exception")))
 
-      val result = handler.processRpcRequest("myMethod", new RpcParams(null, None, None, ctx))
+      val result = handler.processRpcRequest("myMethod", new RpcParams(null, null, ctx))
 
       result.isInstanceOf[RpcFunctionFailure] shouldBe true
       result.asInstanceOf[RpcFunctionFailure].code shouldBe 1

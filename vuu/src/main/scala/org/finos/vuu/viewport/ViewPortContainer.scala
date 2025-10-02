@@ -85,7 +85,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     val viewPortDef = viewPort.getStructure.viewPortDef
 
-    viewPortDef.service.processRpcRequest(rpcName, new RpcParams(params, Some(viewPort.getColumns), Some(viewPort.getKeys), ctx))
+    viewPortDef.service.processRpcRequest(rpcName, new RpcParams(params, viewPort, ctx))
   }
 
   def callRpcCell(vpId: String, rpcName: String, session: ClientSessionId, rowKey: String, field: String, singleValue: Object): ViewPortAction = {

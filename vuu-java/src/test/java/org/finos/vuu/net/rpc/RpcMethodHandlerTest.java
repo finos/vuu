@@ -10,7 +10,6 @@ import org.finos.vuu.core.table.TableContainer;
 import org.finos.vuu.provider.JoinTableProviderImpl;
 import org.finos.vuu.util.ScalaCollectionConverter;
 import org.junit.Test;
-import scala.Option;
 import test.helper.ViewPortTestUtils;
 
 import java.util.Collections;
@@ -28,7 +27,7 @@ public class RpcMethodHandlerTest {
         final DefaultRpcHandler defaultRpcHandler = new DefaultRpcHandler(tableContainer);
         defaultRpcHandler.registerRpc("helloWorld", rpcService::rpcFunction);
 
-        RpcFunctionResult response = defaultRpcHandler.processRpcRequest("helloWorld", new RpcParams(ScalaCollectionConverter.toScala(Collections.emptyMap()), Option.empty(), Option.empty(), ViewPortTestUtils.requestContext()));
+        RpcFunctionResult response = defaultRpcHandler.processRpcRequest("helloWorld", new RpcParams(ScalaCollectionConverter.toScala(Collections.emptyMap()), null, ViewPortTestUtils.requestContext()));
 
         Assertions.assertThat(response)
                 .isExactlyInstanceOf(RpcFunctionSuccess.class);

@@ -1,8 +1,7 @@
 package org.finos.vuu.net.rpc
 
-import org.finos.vuu.feature.ViewPortKeys
 import org.finos.vuu.net.RequestContext
-import org.finos.vuu.viewport.ViewPortColumns
+import org.finos.vuu.viewport.ViewPort
 
 object Rpc {
   type Function = RpcParams => RpcFunctionResult
@@ -11,8 +10,7 @@ object Rpc {
 
 class RpcParams(
                  val namedParams: Map[String, Any],
-                 val viewPortColumns: Option[ViewPortColumns],
-                 val vpKeys: Option[ViewPortKeys],
+                 val viewPort: ViewPort,
                  val ctx: RequestContext)
 
 trait RpcFunctionResult {}

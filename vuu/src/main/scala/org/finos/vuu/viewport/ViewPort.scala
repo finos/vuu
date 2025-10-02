@@ -172,7 +172,8 @@ trait ViewPort {
 }
 
 //when we make a structural change to the viewport, it is via one of these fields
-case class ViewPortStructuralFields(table: RowSource, columns: ViewPortColumns,
+case class ViewPortStructuralFields(table: RowSource,
+                                    columns: ViewPortColumns,
                                     viewPortDef: ViewPortDef,
                                     filtAndSort: FilterAndSort,
                                     filterSpec: FilterSpec,
