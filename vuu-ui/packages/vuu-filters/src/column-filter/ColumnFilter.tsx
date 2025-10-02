@@ -15,7 +15,7 @@ const classBase = "vuuColumnFilter";
 export interface ColumnFilterProps
   extends ColumnFilterHookProps,
     Omit<SegmentedButtonGroupProps, "defaultValue">,
-    Pick<DataItemEditControlProps, "TypeaheadProps" | "table"> {}
+    Pick<DataItemEditControlProps, "TypeaheadProps" | "table" | "variant"> {}
 
 export const ColumnFilter = forwardRef(function ColumnFilter(
   {
@@ -30,6 +30,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
     operator = "=",
     table,
     value: valueProp,
+    variant,
     ...buttonGroupProps
   }: ColumnFilterProps,
   forwardRef: ForwardedRef<HTMLDivElement>,
@@ -65,6 +66,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
             InputProps: InputPropsRange,
             className: `${classBase}-rangeHigh`,
             commitWhenCleared: true,
+            variant,
             dataDescriptor: column,
             onCommit: onCommitRange,
             table,

@@ -381,6 +381,44 @@ export const ControlledTimeRangeFilter = ({
   );
 };
 
+export const ControlledToggleFilter = () => {
+  const { VuuDataSource } = useData();
+  const dataSource = useMemo(() => {
+    return new VuuDataSource({ table: schema.table });
+  }, [VuuDataSource]);
+  const [value, setValue] = useState<ColumnFilterValue>("");
+
+  const handleCommit = useCallback<ColumnFilterCommitHandler>(
+    (column, operator, value) => {
+      if (Array.isArray(value)) {
+        console.log(`commit ${column.name} ['${value[0]}':'${value[1]}']`);
+      }
+    },
+    [],
+  );
+
+  return (
+    <DataSourceProvider dataSource={dataSource}>
+      <ContainerTemplate>
+        <FormField>
+          <FormFieldLabel>Price</FormFieldLabel>
+          <ColumnFilter
+            column={{
+              name: "vuuCreatedTimestamp",
+              serverDataType: "long",
+              type: "time",
+            }}
+            onColumnFilterChange={setValue}
+            onCommit={handleCommit}
+            operator="between"
+            value={value}
+          />
+        </FormField>
+      </ContainerTemplate>
+    </DataSourceProvider>
+  );
+};
+
 export const ContainerManagedTextColumnFilter = () => {
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {

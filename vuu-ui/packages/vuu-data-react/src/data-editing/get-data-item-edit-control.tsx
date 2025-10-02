@@ -17,6 +17,13 @@ import {
 import { InputProps } from "@salt-ds/core";
 import { asTimeString } from "@vuu-ui/vuu-utils";
 
+/**
+ * variant can be used to provide a rendering hint to the filter control rendered.
+ * 'toggle' for A ToggleButtonGroup, only suitable for up to 3 value choices
+ * 'search' to render a search icon and require at least one character to be entered.
+ * 'pick' to show a dropdown list, even before any text is entered, best for smaller lists
+ */
+export type FilterControlVariant = "search" | "pick" | "toggle";
 export interface DataItemEditControlProps {
   InputProps?: Partial<InputProps>;
   TypeaheadProps?: Pick<
@@ -35,6 +42,7 @@ export interface DataItemEditControlProps {
   errorMessage?: string;
   onCommit: CommitHandler<HTMLElement>;
   table?: TableSchemaTable;
+  variant?: FilterControlVariant;
 }
 
 export type ValidationStatus = "initial" | true | string;
@@ -49,6 +57,7 @@ export const getDataItemEditControl = ({
   errorMessage,
   onCommit,
   table,
+  variant,
 }: DataItemEditControlProps) => {
   const handleCommitNumber: CommitHandler<HTMLElement, number> = (
     evt,
@@ -56,6 +65,8 @@ export const getDataItemEditControl = ({
   ) => {
     onCommit(evt, value.toString());
   };
+
+  const dataVariant = variant && variant !== "toggle" ? variant : undefined;
 
   if (dataDescriptor.editable === false) {
     return (
@@ -95,9 +106,10 @@ export const getDataItemEditControl = ({
         {...TypeaheadProps}
         className={className}
         column={dataDescriptor.name}
+        data-edit-control
+        data-variant={dataVariant}
         onCommit={onCommit}
         table={table}
-        data-edit-control
       />
     );
   }
