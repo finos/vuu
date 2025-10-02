@@ -4,7 +4,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static scala.jdk.CollectionConverters.*;
+import static scala.jdk.CollectionConverters.IterableHasAsScala;
+import static scala.jdk.CollectionConverters.MapHasAsJava;
+import static scala.jdk.CollectionConverters.MapHasAsScala;
+import static scala.jdk.CollectionConverters.SeqHasAsJava;
+import static scala.jdk.CollectionConverters.SetHasAsJava;
 
 public class ScalaCollectionConverter {
 

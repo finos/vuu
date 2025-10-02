@@ -183,7 +183,6 @@ case class ViewPortStructuralFields(table: RowSource,
                                     permissionChecker: Option[RowPermissionChecker])
 
 class ViewPortImpl(val id: String,
-                   //table: RowSource,
                    val session: ClientSessionId,
                    val outboundQ: PublishQueue[ViewPortUpdate],
                    val structuralFields: AtomicReference[ViewPortStructuralFields],
