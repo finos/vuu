@@ -133,7 +133,7 @@ class EditableViewportWithRpcTest extends EditableViewPortTest {
       }
 
       When("we call a viewport specific rpc call (sendToMarket)")
-      val rpcResult = viewPort.getStructure.viewPortDef.service.processRpcRequest("sendToMarket", new RpcParams(Map(), None, None, context))
+      val rpcResult = viewPort.getStructure.viewPortDef.service.processRpcRequest("sendToMarket", new RpcParams(Map(), viewPort, context))
       rpcResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
     }
   }

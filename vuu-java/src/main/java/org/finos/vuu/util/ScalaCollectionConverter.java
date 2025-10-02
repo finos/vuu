@@ -1,32 +1,62 @@
 package org.finos.vuu.util;
 
-import scala.jdk.CollectionConverters;
-
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import static scala.jdk.CollectionConverters.IterableHasAsScala;
+import static scala.jdk.CollectionConverters.MapHasAsJava;
+import static scala.jdk.CollectionConverters.MapHasAsScala;
+import static scala.jdk.CollectionConverters.SeqHasAsJava;
+import static scala.jdk.CollectionConverters.SetHasAsJava;
 
 public class ScalaCollectionConverter {
 
     private ScalaCollectionConverter() { }
 
+    public static <K, V> scala.collection.immutable.Map<K, V> emptyMap() {
+        return toScala(Map.of());
+    }
+
     public static <K, V> scala.collection.immutable.Map<K, V> toScala(Map<K, V> m) {
-        return scala.collection.immutable.Map.from(CollectionConverters.MapHasAsScala(m).asScala());
+        return scala.collection.immutable.Map.from(MapHasAsScala(m).asScala());
+    }
+
+    public static <T> scala.collection.immutable.Iterable<T> emptyIterable() {
+        return toScala(List.of());
     }
 
     public static <T> scala.collection.Iterable<T> toScala(Iterable<T> l) {
-        return CollectionConverters.IterableHasAsScala(l).asScala();
+        return IterableHasAsScala(l).asScala();
+    }
+
+    public static <T> scala.collection.immutable.List<T> emptyList() {
+        return toScala(List.of());
     }
 
     public static <T> scala.collection.immutable.List<T> toScala(List<T> l) {
-        return CollectionConverters.IterableHasAsScala(l).asScala().toList();
+        return IterableHasAsScala(l).asScala().toList();
+    }
+
+    public static <T> scala.collection.immutable.Seq<T> emptySeq() {
+        return toScalaSeq(List.of());
     }
 
     public static <T> scala.collection.immutable.Seq<T> toScalaSeq(List<T> l) {
-        return CollectionConverters.IterableHasAsScala(l).asScala().toSeq();
+        return IterableHasAsScala(l).asScala().toSeq();
     }
 
     public static <T> List<T> toJava(scala.collection.immutable.List<T> l) {
-        return CollectionConverters.SeqHasAsJava(l).asJava();
+        return SeqHasAsJava(l).asJava();
     }
+
+    public static <T> Set<T> toJava(scala.collection.immutable.Set<T> l) {
+        return SetHasAsJava(l).asJava();
+    }
+
+    public static <K,V> Map<K,V> toJava(scala.collection.immutable.Map<K,V> l) {
+        return MapHasAsJava(l).asJava();
+    }
+
 }
 

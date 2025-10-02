@@ -21,8 +21,8 @@ class ViewportTypeAheadRpcHandler(tableContainer: TableContainer) {
       inputParam("table").toString, //how to report error when expected param missing or fail to cast to right type
       inputParam("module").toString,
       inputParam("column").toString,
-      params.viewPortColumns.get,
-      params.vpKeys.get,
+      params.viewPort.getColumns,
+      params.viewPort.getKeys,
       null //todo what to do about request context
     )
     new RpcFunctionSuccess(values)
@@ -37,8 +37,8 @@ class ViewportTypeAheadRpcHandler(tableContainer: TableContainer) {
       inputParam("module").toString,
       inputParam("column").toString,
       inputParam("starts").toString,
-      params.viewPortColumns.get,
-      params.vpKeys.get,
+      params.viewPort.getColumns,
+      params.viewPort.getKeys,
       null //todo what to do about request context
     )
     new RpcFunctionSuccess(values) //how to control what viewport action to trigger?

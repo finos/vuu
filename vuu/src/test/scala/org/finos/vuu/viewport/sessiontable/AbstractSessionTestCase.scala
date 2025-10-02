@@ -34,7 +34,7 @@ trait AbstractSessionTestCase {
   final val TEST_TIME = 1450770869442L
   var counter: Int = 0
 
-  def setupEditableSessionTableInfra()(implicit clock: Clock, metrics: MetricsProvider): (ViewPortContainer, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue, DataTable, TableContainer) = {
+  def setupEditableSessionTableInfra()(implicit clock: Clock, metrics: MetricsProvider): (ViewPortContainer, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue, DataTable, TableContainer, DataTable) = {
     implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
     val module = createViewServerModule("TEST")
@@ -53,8 +53,15 @@ trait AbstractSessionTestCase {
       columns = Columns.fromNames("process-id:String", "sequenceNumber:Long")
     )
 
+    val stopProcessDef = SessionTableDef(
+      name = "stopProcess",
+      keyField = "process-id",
+      columns = Columns.fromNames("process-id:String", "status:String")
+    )
+
     processDef.setModule(module)
     fixSequenceDef.setModule(module)
+    stopProcessDef.setModule(module)
 
     val joinProvider = JoinTableProviderImpl()
 
@@ -62,6 +69,7 @@ trait AbstractSessionTestCase {
 
     val process = tableContainer.createTable(processDef)
     val fixSequence = tableContainer.createTable(fixSequenceDef)
+    val stopProcess = tableContainer.createTable(stopProcessDef)
 
     val processProvider = new MockProvider(process)
 
@@ -75,7 +83,7 @@ trait AbstractSessionTestCase {
 
     val outQueue = new OutboundRowPublishQueue()
 
-    (viewPortContainer, process, processProvider, session, outQueue, fixSequence, tableContainer)
+    (viewPortContainer, process, processProvider, session, outQueue, fixSequence, tableContainer, stopProcess)
 
   }
 
@@ -83,6 +91,5 @@ trait AbstractSessionTestCase {
     val func = (t: DataTable, provider: Provider, pc: ProviderContainer, table: TableContainer) => ViewPortDef(t.getTableDef.columns, rpcHandler)
     func
   }
-
 
 }

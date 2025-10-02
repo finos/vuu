@@ -50,7 +50,7 @@ class BasketSendToMarketTest extends VuuServerTestCase {
           Then("Get the Basket RPC Service and call create basket")
           val basketService = vpBasket.getStructure.viewPortDef.service
 
-          val rpcResult = basketService.processRpcRequest("createBasket", new RpcParams(Map("sourceBasketId" -> ".FTSE", "basketTradeName" -> "TestBasket"), None, None, vuuServer.requestContext))
+          val rpcResult = basketService.processRpcRequest("createBasket", new RpcParams(Map("sourceBasketId" -> ".FTSE", "basketTradeName" -> "TestBasket"), vpBasket, vuuServer.requestContext))
           assert(rpcResult.isInstanceOf[RpcFunctionSuccess])
           val basketTradeInstanceId = rpcResult.asInstanceOf[RpcFunctionSuccess].optionalResult.get.asInstanceOf[String]
 
@@ -71,7 +71,7 @@ class BasketSendToMarketTest extends VuuServerTestCase {
 
           val tradingService = vpBasketTrading.getStructure.viewPortDef.service
           And("send the basket to market")
-          tradingService.processRpcRequest("sendToMarket", new RpcParams(Map("basketInstanceId"-> basketTradeInstanceId), None, None, vuuServer.requestContext))
+          tradingService.processRpcRequest("sendToMarket", new RpcParams(Map("basketInstanceId"-> basketTradeInstanceId), vpBasketTrading, vuuServer.requestContext))
 
           vuuServer.runOnce()
 
@@ -84,7 +84,7 @@ class BasketSendToMarketTest extends VuuServerTestCase {
           }
 
           Then("Take the basket off the market")
-          tradingService.processRpcRequest("takeOffMarket", new RpcParams(Map("basketInstanceId"-> basketTradeInstanceId), None, None, vuuServer.requestContext))
+          tradingService.processRpcRequest("takeOffMarket", new RpcParams(Map("basketInstanceId"-> basketTradeInstanceId), vpBasketTrading, vuuServer.requestContext))
 
           vuuServer.runOnce()
 
