@@ -9,18 +9,15 @@ import {
 } from "react";
 import {
   ColumnFilterContext,
-  useColumnFilterContainer,
+  useFilterContainer,
   useFilterContext,
   type ColumnFilterContainerHookProps,
-} from "./useColumnFilterContainer";
+} from "./useFilterContainer";
 import {
   ColumnFilterChangeHandler,
   ColumnFilterValue,
 } from "@vuu-ui/vuu-filter-types";
-import {
-  ColumnFilterNext,
-  ColumnFilterNextProps,
-} from "../column-filter-next/ColumnFilterNext";
+import { ColumnFilter, ColumnFilterProps } from "../column-filter/ColumnFilter";
 import { ColumnFilterCommitHandler } from "../column-filter/useColumnFilter";
 import {
   filterDescriptorHasFilter,
@@ -34,22 +31,22 @@ const classBase = "vuuFilterContainer";
 const notEmpty = (value: ColumnFilterValue) =>
   Array.isArray(value) ? value[0] !== "" && value[1] !== "" : value !== "";
 
-export interface ColumnFilterContainerProps
+export interface FilterContainerProps
   extends HTMLAttributes<HTMLDivElement>,
     ColumnFilterContainerHookProps {
   children: ReactNode;
 }
 
-export interface FilterContainerColumnFilterProps
-  extends Omit<ColumnFilterNextProps, "defaultValue" | "onCommit" | "value"> {
+export interface FilterContainerFilterProps
+  extends Omit<ColumnFilterProps, "defaultValue" | "onCommit" | "value"> {
   defaultValue?: ColumnFilterValue;
 }
 
-export const FilterContainerColumnFilter = ({
+export const FilterContainerFilter = ({
   column,
   operator = "=",
   ...props
-}: FilterContainerColumnFilterProps) => {
+}: FilterContainerFilterProps) => {
   const {
     onChange: onFilterContextChange,
     onCommit: onFilterContextCommit,
@@ -137,7 +134,7 @@ export const FilterContainerColumnFilter = ({
   );
 
   return (
-    <ColumnFilterNext
+    <ColumnFilter
       {...props}
       column={column}
       onColumnFilterChange={handleColumnFilterChange}
@@ -149,15 +146,25 @@ export const FilterContainerColumnFilter = ({
   );
 };
 
-export const ColumnFilterContainer = ({
+/**
+ * FilterContainer is a generic UI container for a collection of Filter
+ * controls. Each control manages a single filter clause and the Filter
+ * Container aggregates these clauses into a single filter. FilterContainer
+ * provides a FilterContainerFilter which can be used to provide children.
+ * This is a wrapper around ColumnFilter, which adds some plumbing to allow
+ * the container to track changes and manage each individual contribution to
+ * the top-level filter.
+ * See FilterPanel and InlineFilter for examples of FilterContainer usage.
+ */
+export const FilterContainer = ({
   children,
   className,
   filter,
   onFilterApplied,
   onFilterCleared,
   ...htmlAttributes
-}: ColumnFilterContainerProps) => {
-  const filterContextProps = useColumnFilterContainer({
+}: FilterContainerProps) => {
+  const filterContextProps = useFilterContainer({
     filter,
     onFilterApplied,
     onFilterCleared,

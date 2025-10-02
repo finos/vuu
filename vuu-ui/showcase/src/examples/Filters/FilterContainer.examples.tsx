@@ -1,7 +1,7 @@
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import {
   ColumnFilterContainer,
-  ColumnFilterNextProps,
+  ColumnFilterProps,
   FilterContainerColumnFilter,
   FilterDisplay,
   FilterProvider,
@@ -25,18 +25,18 @@ import { useCallback, useMemo, useState } from "react";
 import { DemoTableContainer } from "../Table/DemoTableContainer";
 import { FormField, FormFieldLabel } from "@salt-ds/core";
 import { DataSourceFilter, TableSchemaTable } from "@vuu-ui/vuu-data-types";
-import { FilterAppliedHandler } from "@vuu-ui/vuu-filters/src/column-filter-container/useColumnFilterContainer";
+import { FilterAppliedHandler } from "@vuu-ui/vuu-filters/src/filter-container/useColumnFilterContainer";
 import { ColumnFilterContainerProps } from "@vuu-ui/vuu-filters/src/column-filter-container/ColumnFilterContainer";
 import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
 const schema = getSchema("instruments");
 
-const typeaheadPropsZero: ColumnFilterNextProps["TypeaheadProps"] = {
+const typeaheadPropsZero: ColumnFilterProps["TypeaheadProps"] = {
   minCharacterCountToTriggerSuggestions: 0,
   selectOnTab: false,
 };
-const typeaheadPropsOne: ColumnFilterNextProps["TypeaheadProps"] = {
+const typeaheadPropsOne: ColumnFilterProps["TypeaheadProps"] = {
   minCharacterCountToTriggerSuggestions: 1,
   selectOnTab: false,
 };

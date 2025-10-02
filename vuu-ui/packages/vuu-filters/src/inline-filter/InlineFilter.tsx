@@ -8,13 +8,13 @@ import { BaseRowProps } from "@vuu-ui/vuu-table-types";
 import cx from "clsx";
 import { HTMLAttributes } from "react";
 import {
-  ColumnFilterContainer,
-  FilterContainerColumnFilter as ColumnFilter,
-} from "../column-filter-container/ColumnFilterContainer";
+  FilterContainer,
+  FilterContainerFilter as ColumnFilter,
+} from "../filter-container/FilterContainer";
 import { useInlineFilter } from "./useInlineFilter";
 
 import inlineFilteCss from "./InlineFilter.css";
-import { ColumnFilterNextProps } from "../column-filter-next/ColumnFilterNext";
+import { ColumnFilterProps } from "../column-filter/ColumnFilter";
 
 const classBase = "vuuInlineFilter";
 
@@ -33,7 +33,7 @@ const InputProps: Partial<InputProps> = {
   variant: "primary",
 };
 
-const TypeaheadProps: ColumnFilterNextProps["TypeaheadProps"] = {
+const TypeaheadProps: ColumnFilterProps["TypeaheadProps"] = {
   highlightFirstSuggestion: false,
   minCharacterCountToTriggerSuggestions: 0,
 };
@@ -62,7 +62,7 @@ export const InlineFilter = ({
   });
 
   return (
-    <ColumnFilterContainer
+    <FilterContainer
       {...htmlAttributes}
       className={classBase}
       onFilterApplied={onFilterApplied}
@@ -86,6 +86,6 @@ export const InlineFilter = ({
           table={table}
         />
       ))}
-    </ColumnFilterContainer>
+    </FilterContainer>
   );
 };
