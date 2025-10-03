@@ -20,10 +20,10 @@ export {
   type FilterPillNextProps,
 } from "./filter-pill/FilterPillNext";
 export {
-  FilterProvider,
-  useCurrentFilter as useActiveFilter,
+  useCurrentFilter,
   useSavedFilters,
-} from "./filter-provider/FilterProvider";
+} from "./filter-provider/FilterContext";
+export { FilterProvider } from "./filter-provider/FilterProvider";
 export * from "./filter-utils";
 export * from "./FilterModel";
 export * from "./inline-filter";
@@ -32,7 +32,10 @@ export {
   FilterNamePrompt as SaveFilterConfirmPrompt,
   type FilterNamePromptProps as SaveFilterConfirmPromptProps,
 } from "./saved-filters/FilterNamePrompt";
-export { SavedFilterPanel } from "./saved-filters/SavedFilterPanel";
+export {
+  SavedFilterPanel,
+  type SavedFilterPanelProps,
+} from "./saved-filters/SavedFilterPanel";
 export type { FilterClickHandler } from "./saved-filters/useSavedFilterPanel";
 export {
   TabbedFilterContainer,

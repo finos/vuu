@@ -1,6 +1,10 @@
 import { Filter } from "@vuu-ui/vuu-filter-types";
 import { describe, expect, it } from "vitest";
-import { addFilter, getFilterClausesForDisplay } from "../src/filter-utils";
+import {
+  addFilter,
+  findMatchingFilter,
+  getFilterClausesForDisplay,
+} from "../src/filter-utils";
 
 describe("filter-utils", () => {
   describe("addFilter", () => {
@@ -271,5 +275,83 @@ describe("getFilterClausesForDisplay", () => {
       ["exchange", "XLON/SETS"],
       ["price", "1000 - 2000"],
     ]);
+  });
+
+  describe("findMatchingFilter", () => {
+    it("finds a match within list of FilterContainerFilterDescriptor", () => {
+      const target = findMatchingFilter(
+        [
+          {
+            active: false,
+            filter: {
+              name: "Exchange",
+              column: "exchange",
+              op: "=",
+              value: "XLON/SETS",
+            },
+            id: "filter-1",
+          },
+          {
+            active: false,
+            filter: {
+              name: "Filter One",
+              column: "currency",
+              op: "=",
+              value: "GBP",
+            },
+            id: "filter-1",
+          },
+        ],
+        {
+          column: "currency",
+          op: "=",
+          value: "GBP",
+        },
+      );
+
+      expect(target).toEqual({
+        active: false,
+        filter: {
+          name: "Filter One",
+          column: "currency",
+          op: "=",
+          value: "GBP",
+        },
+        id: "filter-1",
+      });
+    });
+    it("returns undefined when no match found", () => {
+      const target = findMatchingFilter(
+        [
+          {
+            active: false,
+            filter: {
+              name: "Exchange",
+              column: "exchange",
+              op: "=",
+              value: "XLON/SETS",
+            },
+            id: "filter-1",
+          },
+          {
+            active: false,
+            filter: {
+              name: "Filter One",
+              column: "currency",
+              op: "=",
+              value: "USD",
+            },
+            id: "filter-1",
+          },
+        ],
+        {
+          column: "currency",
+          op: "=",
+          value: "GBP",
+        },
+      );
+
+      expect(target).toBeUndefined();
+    });
   });
 });

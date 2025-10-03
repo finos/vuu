@@ -3,12 +3,15 @@ import {
   Filter,
   FilterClause,
   FilterCombinatorOp,
+  FilterContainerFilter,
+  FilterContainerFilterDescriptor,
   FilterWithPartialClause,
   MultiClauseFilter,
   NumericFilterClauseOp,
 } from "@vuu-ui/vuu-filter-types";
 import {
   extractFilterForColumn,
+  filtersAreEqual,
   isAndFilter,
   isBetweenFilter,
   isInFilter,
@@ -470,8 +473,12 @@ export const getNumericFilter = (
 
 type FilterClauseList = Array<[string, string]>;
 
+/**
+ * Restructure a FilterContainerFilter into a list of [column, value] tuples
+ * suitable for display in a text based control.
+ */
 export const getFilterClausesForDisplay = (
-  filter?: Filter,
+  filter?: FilterContainerFilter,
   columns: ColumnDescriptor[] = [],
   clauses: FilterClauseList = [],
 ): FilterClauseList => {
@@ -487,10 +494,14 @@ export const getFilterClausesForDisplay = (
       typeof f1.value === "number" &&
       typeof f2.value === "number"
     ) {
+      const { name, label = name } = column;
       clauses.push([
-        f1.column,
+        label,
         `${Time.millisToTimeString(f1.value)} - ${Time.millisToTimeString(f2.value)}`,
       ]);
+    } else if (column) {
+      const { name, label = name } = column;
+      clauses.push([label, `${f1.value} - ${f2.value}`]);
     } else {
       clauses.push([f1.column, `${f1.value} - ${f2.value}`]);
     }
@@ -501,3 +512,16 @@ export const getFilterClausesForDisplay = (
   }
   return clauses;
 };
+
+/**
+ * Given a list of FilterContainerFilterDescriptors and a FilterContainerFilter,
+ * find filter descriptor from the list with an equal filter. If
+ * none exists, return undefined, otherwise return the matched filter descriptor
+ */
+export const findMatchingFilter = (
+  filterDescriptors: FilterContainerFilterDescriptor[],
+  filter: FilterContainerFilter,
+) =>
+  filterDescriptors.find(
+    ({ filter: f }) => f !== null && f !== filter && filtersAreEqual(f, filter),
+  );

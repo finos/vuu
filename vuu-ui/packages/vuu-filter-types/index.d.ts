@@ -130,10 +130,14 @@ export declare type FilterContainerFilter =
       | MultiClauseFilter<"and", SingleValueFilterClause>
     >;
 
+/**
+ * Defines a filter that is managed by a FilterProvider/FilterContainer
+ * and can be persisted.
+ */
 export interface FilterContainerFilterDescriptor {
   active: boolean;
-  id: string;
   filter: FilterContainerFilter | null;
+  id: string;
 }
 
 export interface FilterContainerFilterDescriptorWithFilter

@@ -11,8 +11,10 @@ import cx from "clsx";
 import type { HTMLAttributes, ReactNode } from "react";
 import { FilterContainerProps } from "../filter-container/FilterContainer";
 import { FilterPanel } from "../filter-panel/FilterPanel";
-import { SavedFilterPanel } from "../saved-filters/SavedFilterPanel";
-
+import {
+  SavedFilterPanel,
+  SavedFilterPanelProps,
+} from "../saved-filters/SavedFilterPanel";
 import tabbedFilterContainerCss from "./TabbedFilterContainer.css";
 
 const classBase = "vuuTabbedFilterContainer";
@@ -22,11 +24,13 @@ export interface TabbedFilterContainerProps
     Pick<
       FilterContainerProps,
       "filter" | "onFilterApplied" | "onFilterCleared"
-    > {
+    >,
+    Pick<SavedFilterPanelProps, "availableColumns"> {
   children: ReactNode;
 }
 
 export const TabbedFilterContainer = ({
+  availableColumns,
   children,
   className,
   filter,
@@ -62,7 +66,7 @@ export const TabbedFilterContainer = ({
           </FilterPanel>
         </TabNextPanel>
         <TabNextPanel value="saved-filters" key="saved-filters">
-          <SavedFilterPanel />
+          <SavedFilterPanel availableColumns={availableColumns} />
         </TabNextPanel>
       </TabsNext>
     </div>
