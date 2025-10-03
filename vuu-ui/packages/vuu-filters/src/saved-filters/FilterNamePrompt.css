@@ -1,0 +1,5 @@
+.vuuFilterNamePrompt {
+    .saltText-warning {
+        padding: var(--salt-spacing-400) 0;
+    }
+}

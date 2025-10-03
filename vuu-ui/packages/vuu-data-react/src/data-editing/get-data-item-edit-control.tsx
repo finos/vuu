@@ -119,6 +119,7 @@ export const getDataItemEditControl = ({
           onCommit={onCommit}
           table={table}
           values={values}
+          value={InputProps?.inputProps?.value ?? "all"}
         />
       );
     } else {

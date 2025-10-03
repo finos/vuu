@@ -5,7 +5,7 @@ import {
   NULL_FILTER,
   useCurrentFilter,
   useSavedFilters,
-} from "../filter-provider/FilterProvider";
+} from "../filter-provider/FilterContext";
 import { FilterAppliedHandler } from "../filter-container/useFilterContainer";
 import { FilterNamePrompt } from "../saved-filters/FilterNamePrompt";
 import { FilterContainerFilter } from "@vuu-ui/vuu-filter-types";

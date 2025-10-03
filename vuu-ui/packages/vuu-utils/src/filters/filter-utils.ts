@@ -233,9 +233,6 @@ export class FilterAggregator {
     const dataType = isTypeDescriptor(type)
       ? type.name
       : (type ?? serverDataType);
-    console.log(
-      `FilterAggregator add ${column.name} ${serverDataType} ${JSON.stringify(type)} ${JSON.stringify(value)}`,
-    );
     if (Array.isArray(value)) {
       const value1 = getTypedValue(value[0].toString(), dataType);
       const value2 = getTypedValue(value[1].toString(), dataType);
@@ -307,3 +304,51 @@ export class FilterAggregator {
     }
   }
 }
+
+type BetweenFilter = MultiClauseFilter<"and", SingleValueFilterClause>;
+type ChildFilterClause = SingleValueFilterClause | BetweenFilter;
+
+const betweenFiltersAreEqual = (f1: BetweenFilter, f2: BetweenFilter) => {
+  const [from1, to1] = f1.filters;
+  const [from2, to2] = f2.filters;
+  return filtersAreEqual(from1, from2) && filtersAreEqual(to1, to2);
+};
+
+const singleValueFilterClausesAreEqual = (
+  f1: SingleValueFilterClause,
+  f2: SingleValueFilterClause,
+) => f1.column === f2.column && f1.op === f2.op && f1.value === f2.value;
+
+const findEqualFilter =
+  (filters: ChildFilterClause[]) => (filter: ChildFilterClause) => {
+    if (isBetweenFilter(filter)) {
+      const target = filters.find(
+        (f) => isBetweenFilter(f) && betweenFiltersAreEqual(f, filter),
+      );
+      return target !== undefined;
+    } else {
+      // A FilterContainerFilter only has one filter clause per column
+      const target = filters.find((f) => f.column === filter.column);
+      if (target) {
+        return target.op === filter.op && target.value === filter.value;
+      }
+    }
+    return false;
+  };
+
+export const filtersAreEqual = (
+  f1: FilterContainerFilter,
+  f2: FilterContainerFilter,
+): boolean => {
+  if (isSingleValueFilter(f1) && isSingleValueFilter(f2)) {
+    return singleValueFilterClausesAreEqual(f1, f2);
+  } else if (isBetweenFilter(f1) && isBetweenFilter(f2)) {
+    return betweenFiltersAreEqual(f1, f2);
+  } else if (isAndFilter(f1) && isAndFilter(f2)) {
+    if (f1.filters.length === f2.filters.length) {
+      return f1.filters.every(findEqualFilter(f2.filters));
+    }
+  }
+
+  return false;
+};

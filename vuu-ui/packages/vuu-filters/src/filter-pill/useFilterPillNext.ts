@@ -3,7 +3,7 @@ import { useControlled } from "@salt-ds/core";
 import { MouseEventHandler, useCallback, useMemo, useState } from "react";
 import { FilterMenuActionHandler } from "./FilterMenu";
 import { getFilterAsFormattedText } from "./getFilterTooltipText";
-import { Filter } from "@vuu-ui/vuu-filter-types";
+import { FilterContainerFilter } from "@vuu-ui/vuu-filter-types";
 
 export interface FilterPillNextHookProps {
   active?: boolean;
@@ -14,7 +14,7 @@ export interface FilterPillNextHookProps {
    */
   appearence?: "split-button" | "button";
   defaultActive?: boolean;
-  filter: Filter;
+  filter: FilterContainerFilter;
   onMenuAction?: FilterMenuActionHandler;
 }
 

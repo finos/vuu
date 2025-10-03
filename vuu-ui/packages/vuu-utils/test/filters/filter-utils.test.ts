@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   FilterAggregator,
+  filtersAreEqual,
   getColumnValueFromFilter,
 } from "../../src/filters/filter-utils";
 
@@ -539,5 +540,174 @@ describe("getColumnValueFromFilter", () => {
         },
       ),
     ).toEqual(["", "200"]);
+  });
+});
+
+describe("filtersAreEqual", () => {
+  it("works with singleValueFilterClause", () => {
+    expect(
+      filtersAreEqual(
+        { column: "exchange", op: "=", value: "XLON" },
+        { column: "exchange", op: "=", value: "XLON" },
+      ),
+    ).toEqual(true);
+    expect(
+      filtersAreEqual(
+        { column: "exchange", op: "starts", value: "XLO" },
+        { column: "exchange", op: "=", value: "XLON" },
+      ),
+    ).toEqual(false);
+    expect(
+      filtersAreEqual(
+        { column: "currency", op: "=", value: "GBP" },
+        { column: "exchange", op: "=", value: "XLON" },
+      ),
+    ).toEqual(false);
+  });
+  it("works with betweenClause", () => {
+    expect(
+      filtersAreEqual(
+        {
+          op: "and",
+          filters: [
+            { column: "price", op: ">", value: 100 },
+            { column: "price", op: "<", value: 200 },
+          ],
+        },
+        {
+          op: "and",
+          filters: [
+            { column: "price", op: ">", value: 100 },
+            { column: "price", op: "<", value: 200 },
+          ],
+        },
+      ),
+    ).toEqual(true);
+    expect(
+      filtersAreEqual(
+        {
+          op: "and",
+          filters: [
+            { column: "price", op: ">", value: 100 },
+            { column: "price", op: "<", value: 250 },
+          ],
+        },
+        {
+          op: "and",
+          filters: [
+            { column: "price", op: ">", value: 100 },
+            { column: "price", op: "<", value: 200 },
+          ],
+        },
+      ),
+    ).toEqual(false);
+  });
+
+  it("works with Multi Clause and  Filter", () => {
+    expect(
+      filtersAreEqual(
+        {
+          op: "and",
+          filters: [
+            { column: "currency", op: "=", value: "GBP" },
+            { column: "price", op: "<", value: 200 },
+          ],
+        },
+        {
+          op: "and",
+          filters: [
+            { column: "price", op: "<", value: 200 },
+            { column: "currency", op: "=", value: "GBP" },
+          ],
+        },
+      ),
+    ).toEqual(true);
+    expect(
+      filtersAreEqual(
+        {
+          op: "and",
+          filters: [
+            { column: "exchange", op: "=", value: "XLON" },
+            { column: "price", op: "<", value: 200 },
+          ],
+        },
+        {
+          op: "and",
+          filters: [
+            { column: "currency", op: "=", value: "GBP" },
+            { column: "price", op: "<", value: 200 },
+          ],
+        },
+      ),
+    ).toEqual(false);
+  });
+
+  it("works with nested between filter", () => {
+    expect(
+      filtersAreEqual(
+        {
+          op: "and",
+          filters: [
+            { column: "currency", op: "=", value: "GBP" },
+            {
+              op: "and",
+              filters: [
+                { column: "price", op: ">", value: 100 },
+                { column: "price", op: "<", value: 250 },
+              ],
+            },
+
+            { column: "price", op: "<", value: 200 },
+          ],
+        },
+        {
+          op: "and",
+          filters: [
+            { column: "price", op: "<", value: 200 },
+            { column: "currency", op: "=", value: "GBP" },
+            {
+              op: "and",
+              filters: [
+                { column: "price", op: ">", value: 100 },
+                { column: "price", op: "<", value: 250 },
+              ],
+            },
+          ],
+        },
+      ),
+    ).toEqual(true);
+    expect(
+      filtersAreEqual(
+        {
+          op: "and",
+          filters: [
+            { column: "exchange", op: "=", value: "XLON" },
+            { column: "price", op: "<", value: 200 },
+          ],
+        },
+        {
+          op: "and",
+          filters: [
+            { column: "currency", op: "=", value: "GBP" },
+            { column: "price", op: "<", value: 200 },
+          ],
+        },
+      ),
+    ).toEqual(false);
+  });
+
+  it("returns false if filters are different type", () => {
+    expect(
+      filtersAreEqual(
+        { column: "currency", op: "=", value: "GBP" },
+        {
+          op: "and",
+          filters: [
+            { column: "currency", op: "=", value: "GBP" },
+            { column: "exchange", op: "=", value: "XLON" },
+          ],
+        },
+      ),
+    ).toEqual(false);
   });
 });

@@ -8,7 +8,7 @@ import { CommitHandler, getVuuTable } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { useTypeaheadSuggestions } from "@vuu-ui/vuu-data-react";
 import { TypeaheadParams } from "@vuu-ui/vuu-protocol-types";
-import { useMemo, useState } from "react";
+import { SyntheticEvent, useCallback, useMemo, useState } from "react";
 
 export interface ToggleFilterProps extends ToggleButtonGroupProps {
   column: string;
@@ -24,13 +24,14 @@ export const ToggleFilter = ({
   column,
   onCommit,
   table,
+  value: valueProp,
   values,
   ...ToggleButtonGroupProps
 }: ToggleFilterProps) => {
   const [typeaheadValues, setTypeaheadValues] = useState<string[]>([]);
   const getSuggestions = useTypeaheadSuggestions();
 
-  console.log({ typeaheadValues });
+  const value = valueProp === "" ? "all" : valueProp;
 
   useMemo(() => {
     const vuuTable = getVuuTable(table);
@@ -45,10 +46,24 @@ export const ToggleFilter = ({
     });
   }, [column, getSuggestions, table]);
 
+  const handleChange = useCallback(
+    (e: SyntheticEvent<HTMLButtonElement>) => {
+      const value = e.currentTarget.value;
+      if (value === "all") {
+        onCommit(e, "");
+      } else {
+        onCommit(e, value);
+      }
+    },
+    [onCommit],
+  );
+
   return (
     <ToggleButtonGroup
       {...ToggleButtonGroupProps}
       className={cx(classBase, className)}
+      onChange={handleChange}
+      value={value}
     >
       <ToggleButton key="all" value="all">
         ALL

@@ -1,6 +1,6 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { Filter } from "@vuu-ui/vuu-filter-types";
+import { FilterContainerFilter } from "@vuu-ui/vuu-filter-types";
 import cx from "clsx";
 import { ForwardedRef, forwardRef, HTMLAttributes, ReactElement } from "react";
 import { getFilterClausesForDisplay } from "../filter-utils";
@@ -12,7 +12,7 @@ const classBase = "vuuFilterDisplay";
 
 export interface FilterDisplayProps extends HTMLAttributes<HTMLDivElement> {
   columns?: ColumnDescriptor[];
-  filter: Filter | undefined;
+  filter: FilterContainerFilter | undefined;
 }
 
 const getColumnLabel = (columnName: string, columns?: ColumnDescriptor[]) => {

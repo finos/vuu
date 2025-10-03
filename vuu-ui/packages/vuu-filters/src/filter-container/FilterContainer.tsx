@@ -19,11 +19,11 @@ import {
   ColumnFilterValue,
 } from "@vuu-ui/vuu-filter-types";
 import { ColumnFilter, ColumnFilterProps } from "../column-filter/ColumnFilter";
+import { filterDescriptorHasFilter } from "../filter-provider/FilterProvider";
 import {
-  filterDescriptorHasFilter,
   isNullFilter,
   useCurrentFilter,
-} from "../filter-provider/FilterProvider";
+} from "../filter-provider/FilterContext";
 import { getColumnValueFromFilter } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";

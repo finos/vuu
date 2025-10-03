@@ -11,7 +11,7 @@ import {
   FilterProvider,
   TabbedFilterContainer,
   TabbedFilterContainerProps,
-  useActiveFilter,
+  useCurrentFilter,
 } from "@vuu-ui/vuu-filters";
 import { Table } from "@vuu-ui/vuu-table";
 import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
@@ -316,12 +316,13 @@ export const TableWithFilters = () => {
 };
 
 const TableWithTabbedFilterContainerTemplate = ({
+  availableColumns,
   children,
-}: Pick<TabbedFilterContainerProps, "children">) => {
+}: Pick<TabbedFilterContainerProps, "children" | "availableColumns">) => {
   const showContextPanel = useContextPanel();
   const { VuuDataSource } = useData();
 
-  const { currentFilter } = useActiveFilter();
+  const { currentFilter } = useCurrentFilter();
 
   const dataSource = useMemo(
     () =>
@@ -354,12 +355,14 @@ const TableWithTabbedFilterContainerTemplate = ({
   const showFilters = useCallback(() => {
     const columnFilterContainer = (
       <DataSourceProvider dataSource={dataSource}>
-        <TabbedFilterContainer>{children}</TabbedFilterContainer>
+        <TabbedFilterContainer availableColumns={availableColumns}>
+          {children}
+        </TabbedFilterContainer>
       </DataSourceProvider>
     );
 
     showContextPanel(columnFilterContainer, "filters");
-  }, [children, dataSource, showContextPanel]);
+  }, [availableColumns, children, dataSource, showContextPanel]);
 
   return (
     <>
@@ -383,6 +386,25 @@ export const TableWithTabbedFilterContainerAndFilterProvider = () => {
     [],
   );
 
+  const [
+    availableColumns,
+    [vuuCreatedTimestamp, bbg, currency, exchange, lotSize],
+  ] = useMemo<[Array<ColumnDescriptor>, Array<ColumnDescriptor>]>(() => {
+    const columns: ColumnDescriptor[] = [
+      {
+        label: "Vuu Created TS",
+        name: "vuuCreatedTimestamp",
+        serverDataType: "long",
+        type: "time",
+      },
+      { name: "bbg", serverDataType: "string" },
+      { name: "currency", serverDataType: "string" },
+      { name: "exchange", serverDataType: "string" },
+      { name: "lotSize", serverDataType: "int" },
+    ];
+    return [columns, columns];
+  }, []);
+
   return (
     <>
       <style>{`
@@ -393,16 +415,14 @@ export const TableWithTabbedFilterContainerAndFilterProvider = () => {
       <FilterProvider>
         <DemoTableContainer>
           <ContextPanelProvider>
-            <TableWithTabbedFilterContainerTemplate>
+            <TableWithTabbedFilterContainerTemplate
+              availableColumns={availableColumns}
+            >
               <FormField>
                 <FormFieldLabel>Vuu Created</FormFieldLabel>
                 <FilterContainerColumnFilter
                   TypeaheadProps={typeaheadPropsOne}
-                  column={{
-                    name: "vuuCreatedTimestamp",
-                    serverDataType: "long",
-                    type: "time",
-                  }}
+                  column={vuuCreatedTimestamp}
                   operator="between"
                   table={table}
                 />
@@ -411,7 +431,7 @@ export const TableWithTabbedFilterContainerAndFilterProvider = () => {
                 <FormFieldLabel>BBG</FormFieldLabel>
                 <FilterContainerColumnFilter
                   TypeaheadProps={typeaheadPropsOne}
-                  column={{ name: "bbg", serverDataType: "string" }}
+                  column={bbg}
                   table={table}
                 />
               </FormField>
@@ -419,7 +439,7 @@ export const TableWithTabbedFilterContainerAndFilterProvider = () => {
                 <FormFieldLabel>Currency</FormFieldLabel>
                 <FilterContainerColumnFilter
                   TypeaheadProps={typeaheadPropsZero}
-                  column={{ name: "currency", serverDataType: "string" }}
+                  column={currency}
                   table={table}
                 />
               </FormField>
@@ -427,14 +447,14 @@ export const TableWithTabbedFilterContainerAndFilterProvider = () => {
                 <FormFieldLabel>Exchange</FormFieldLabel>
                 <FilterContainerColumnFilter
                   TypeaheadProps={typeaheadPropsZero}
-                  column={{ name: "exchange", serverDataType: "string" }}
+                  column={exchange}
                   table={table}
                 />
               </FormField>
               <FormField>
                 <FormFieldLabel>Lot Size</FormFieldLabel>
                 <FilterContainerColumnFilter
-                  column={{ name: "lotSize", serverDataType: "int" }}
+                  column={lotSize}
                   operator="between"
                 />
               </FormField>

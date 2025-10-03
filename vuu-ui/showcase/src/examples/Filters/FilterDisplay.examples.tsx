@@ -1,8 +1,8 @@
-import { Filter } from "@vuu-ui/vuu-filter-types";
+import { FilterContainerFilter } from "@vuu-ui/vuu-filter-types";
 import { FilterDisplay } from "@vuu-ui/vuu-filters";
 
 export const SingleFilterClause = () => {
-  const filter: Filter = {
+  const filter: FilterContainerFilter = {
     column: "currency",
     op: "=",
     value: "GBP",
@@ -11,7 +11,7 @@ export const SingleFilterClause = () => {
 };
 
 export const BetweenFilterClause = () => {
-  const filter: Filter = {
+  const filter: FilterContainerFilter = {
     op: "and",
     filters: [
       {
@@ -30,7 +30,7 @@ export const BetweenFilterClause = () => {
 };
 
 export const MultipleFilterClauses = () => {
-  const filter: Filter = {
+  const filter: FilterContainerFilter = {
     op: "and",
     filters: [
       {
@@ -49,7 +49,7 @@ export const MultipleFilterClauses = () => {
 };
 
 export const MultipleFilterClausesWithBetween = () => {
-  const filter: Filter = {
+  const filter: FilterContainerFilter = {
     op: "and",
     filters: [
       {

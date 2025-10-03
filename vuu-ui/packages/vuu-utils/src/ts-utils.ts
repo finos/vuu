@@ -13,6 +13,8 @@ export const isObject = (o: unknown): o is object =>
 export type OptionalProperty<T, K extends keyof T> = Omit<T, K> &
   Partial<Pick<T, K>>;
 
+export type ValueOf<T> = T[keyof T];
+
 /**
  * test whether a given react element implements a custom toJSON
  * serialisation (static) method.

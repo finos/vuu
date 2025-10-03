@@ -5,7 +5,6 @@ import type {
   ColumnFilterChangeHandler,
   ColumnFilterCommitHandler,
   ColumnFilterValue,
-  Filter,
   FilterContainerFilter,
 } from "@vuu-ui/vuu-filter-types";
 import {
@@ -16,6 +15,7 @@ import {
   FilterContainerProps,
   FilterContainerColumnFilter,
 } from "@vuu-ui/vuu-filters";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { DataSourceProvider, useData } from "@vuu-ui/vuu-utils";
 import { ReactNode, useCallback, useMemo, useState } from "react";
 
@@ -387,11 +387,12 @@ export const ControlledToggleFilter = () => {
   const dataSource = useMemo(() => {
     return new VuuDataSource({ table: ordersSchema.table });
   }, [VuuDataSource]);
-  const [value, setValue] = useState<ColumnFilterValue>("");
+  const [value, setValue] = useState<ColumnFilterValue>("all");
 
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
     (_column, _operator, value) => {
       setValue(value);
+      console.log();
     },
     [],
   );
@@ -456,7 +457,9 @@ export const ContainerManagedNumericColumnFilter = ({
   filter: filterProp,
 }: Pick<FilterContainerProps, "filter">) => {
   const { VuuDataSource } = useData();
-  const [filter, setFilter] = useState<Filter | undefined>(filterProp);
+  const [filter, setFilter] = useState<FilterContainerFilter | undefined>(
+    filterProp,
+  );
   const clearFilter = () => setFilter(undefined);
 
   const dataSource = useMemo(() => {
@@ -487,6 +490,53 @@ export const ContainerManagedNumericColumnFilter = ({
 export const ContainerManagedNumericColumnFilterWithFilter = () => (
   <ContainerManagedNumericColumnFilter
     filter={{ column: "lotSize", op: "=", value: 100 }}
+  />
+);
+export const ContainerManagedToggleFilter = ({
+  filter: filterProp,
+}: Pick<FilterContainerProps, "filter">) => {
+  const { VuuDataSource } = useData();
+  const [filter, setFilter] = useState<FilterContainerFilter | undefined>(
+    filterProp,
+  );
+  const clearFilter = () => setFilter(undefined);
+
+  const dataSource = useMemo(() => {
+    return new VuuDataSource({ table: ordersSchema.table });
+  }, [VuuDataSource]);
+
+  const column: ColumnDescriptor = {
+    label: "Side",
+    name: "side",
+    serverDataType: "string",
+  };
+
+  return (
+    <DataSourceProvider dataSource={dataSource}>
+      <ContainerTemplate flexDirection="row" width={700}>
+        <FilterContainer
+          onFilterCleared={clearFilter}
+          onFilterApplied={setFilter}
+        >
+          <FormField>
+            <FormFieldLabel>Side</FormFieldLabel>
+            <FilterContainerColumnFilter
+              column={column}
+              table={{ module: "SIMUL", table: "parentOrders" }}
+              values={["BUY", "SELL"]}
+              variant="toggle"
+            />
+          </FormField>
+        </FilterContainer>
+        <FilterDisplay columns={[column]} filter={filter} />
+      </ContainerTemplate>
+    </DataSourceProvider>
+  );
+};
+
+export const ContainerManagedToggleFilterWithFilter = () => (
+  <ContainerManagedToggleFilter
+    filter={{ column: "side", op: "=", value: "BUY" }}
   />
 );
 
@@ -548,7 +598,9 @@ export const ContainerManagedBetweenColumnFilterWithFilter = () => (
 
 export const ContainerManagedBetweenColumnTimeFilter = () => {
   const { VuuDataSource } = useData();
-  const [filter, setFilter] = useState<Filter | undefined>(undefined);
+  const [filter, setFilter] = useState<FilterContainerFilter | undefined>(
+    undefined,
+  );
   const clearFilter = () => setFilter(undefined);
 
   console.log(JSON.stringify(filter, null, 2));
@@ -593,7 +645,9 @@ export const ContainerManagedBetweenColumnTimeFilter = () => {
 
 export const ContainerManagedMultipleColumnFilters = () => {
   const { VuuDataSource } = useData();
-  const [filter, setFilter] = useState<Filter | undefined>(undefined);
+  const [filter, setFilter] = useState<FilterContainerFilter | undefined>(
+    undefined,
+  );
   const clearFilter = () => setFilter(undefined);
   const dataSource = useMemo(() => {
     return new VuuDataSource({ table: instrumentsSchema.table });

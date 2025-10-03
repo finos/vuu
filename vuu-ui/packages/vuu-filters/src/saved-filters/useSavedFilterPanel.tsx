@@ -1,5 +1,5 @@
 import { SyntheticEvent, useCallback } from "react";
-import { useSavedFilters } from "../filter-provider/FilterProvider";
+import { useSavedFilters } from "../filter-provider/FilterContext";
 
 export type FilterClickHandler = (filterId: string) => void;
 

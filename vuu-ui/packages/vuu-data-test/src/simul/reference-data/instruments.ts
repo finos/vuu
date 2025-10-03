@@ -37,8 +37,8 @@ export type InstrumentsDataRow = [
   exchange,
   string,
   number,
-  ric,
   price,
+  ric,
   date,
   date,
 ];
@@ -50,9 +50,10 @@ export const InstrumentColumnMap = {
   exchange: 3,
   string: 4,
   number: 5,
-  ric: 6,
-  price: 7,
-  date: 8,
+  price: 6,
+  ric: 7,
+  vuuCreatedTimestamp: 8,
+  vuuUpdatedTimestamp: 9,
 } as const;
 
 const instrumentsData: InstrumentsDataRow[] = [];
@@ -95,8 +96,8 @@ for (const char1 of chars1) {
           exchange,
           String(isin),
           lotSize,
-          ric,
           price,
+          ric,
           timestamp,
           timestamp,
         ]);
