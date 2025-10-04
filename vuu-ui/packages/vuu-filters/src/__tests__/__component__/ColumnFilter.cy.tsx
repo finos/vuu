@@ -1,8 +1,8 @@
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import {
-  TextColumnFilterValueSetViaBtn,
-  NumericColumnFilterValueWithBetweenOp,
-  TimeColumnRangeFilter,
+  ControlledTextColumnFilterPopulated,
+  ControlledNumericRangeFilter,
+  ControlledTimeRangeFilter,
 } from "../../../../../showcase/src/examples/Filters/ColumnFilter.examples";
 
 describe("ColumnFilter", () => {
@@ -10,7 +10,7 @@ describe("ColumnFilter", () => {
     beforeEach(() => {
       cy.mount(
         <LocalDataSourceProvider>
-          <TextColumnFilterValueSetViaBtn />
+          <ControlledTextColumnFilterPopulated />
         </LocalDataSourceProvider>,
       );
     });
@@ -42,7 +42,7 @@ describe("ColumnFilter", () => {
     beforeEach(() => {
       cy.mount(
         <LocalDataSourceProvider>
-          <NumericColumnFilterValueWithBetweenOp />
+          <ControlledNumericRangeFilter />
         </LocalDataSourceProvider>,
       );
     });
@@ -73,9 +73,11 @@ describe("ColumnFilter", () => {
     it("should trigger handleColumnFilterChange with correct parameters when time range input changes", () => {
       const handleColumnFilterChange = cy.stub().as("handleColumnFilterChange");
       cy.mount(
-        <TimeColumnRangeFilter
-          onColumnFilterChange={handleColumnFilterChange}
-        />,
+        <LocalDataSourceProvider>
+          <ControlledTimeRangeFilter
+            onColumnFilterChange={handleColumnFilterChange}
+          />
+        </LocalDataSourceProvider>,
       );
 
       cy.findByTestId("columnfilter").find("input").as("inputs");
@@ -92,8 +94,8 @@ describe("ColumnFilter", () => {
       cy.get("@handleColumnFilterChange").should(
         "have.been.calledWith",
         "01:00:00",
-        { name: "lastUpdate", serverDataType: "long", type: "time" },
-        "between",
+        { name: "vuuCreatedTimestamp", serverDataType: "long", type: "time" },
+        "=",
       );
     });
   });

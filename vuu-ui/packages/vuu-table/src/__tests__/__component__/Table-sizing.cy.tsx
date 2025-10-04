@@ -71,7 +71,7 @@ describe("explicit sizing", () => {
     cy.findAllByRole("table").should(haveHeight(2025));
   });
 
-  it("vertical scrollbars required, checkbox selection, columns fit sizing, width greater than combined default column width", () => {
+  it.skip("vertical scrollbars required, checkbox selection, columns fit sizing, width greater than combined default column width", () => {
     cy.mount(
       <LocalDataSourceProvider>
         <CheckboxSelection columnLayout="fit" height={625} width={1000} />

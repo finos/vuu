@@ -108,6 +108,16 @@ export function asTimeString(
     }
   } else if (isValidTimeString(value)) {
     return value;
+  } else if (typeof value === "number") {
+    // we are assuming we have a value representing milliseconds since epoch.
+    // If not, we will get an unpredictable time here. Is this too risky ?
+    return Time.millisToTimeString(value);
+  } else if (typeof value === "string") {
+    // see if we have a long value, test if we can create time
+    const valueAsInt = parseInt(value);
+    if (!isNaN(valueAsInt)) {
+      return Time.millisToTimeString(valueAsInt);
+    }
   } else {
     throw Error(
       `[date-utils] asTimeString, value ${value} is not valid TimeString`,
@@ -128,6 +138,7 @@ class TimeImpl implements Time {
   #hours: number;
   #minutes: number;
   #seconds: number;
+
   constructor(timeString: TimeString) {
     const [hours, minutes, seconds] = timeString.split(":");
     this.#hours = parseInt(hours);
@@ -165,3 +176,6 @@ class TimeImpl implements Time {
 
 export const Time = (timeString: TimeString): Time =>
   new TimeImpl(timeString) as Time;
+
+Time.millisToTimeString = (timestamp: number) =>
+  new Date(timestamp).toTimeString().slice(0, 8) as TimeString;

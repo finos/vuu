@@ -1,66 +1,43 @@
 import {
   ColumnFilterChangeHandler,
+  ColumnFilterCommitHandler,
   ColumnFilterOp,
   ColumnFilterValue,
-  FilterClauseOp,
 } from "@vuu-ui/vuu-filter-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
+import { InputProps, useControlled } from "@salt-ds/core";
+import { ChangeEventHandler, useCallback, useMemo } from "react";
 import { CommitHandler } from "@vuu-ui/vuu-utils";
-import { VuuTypeaheadInputProps } from "@vuu-ui/vuu-ui-controls";
-import { getOperators } from "../filter-clause/operator-utils";
+import { DataItemEditControlProps } from "@vuu-ui/vuu-data-react";
 
-export const assertValidOperator = (
-  allowedOperators: FilterClauseOp[],
-  column: ColumnDescriptor,
-  op: ColumnFilterOp,
-) => {
-  if (op !== "between" && !allowedOperators.includes(op)) {
-    console.warn(
-      `[useColumnFilter] '${op} not supported for column ${column.name}'`,
-    );
+const injectInputProps = (
+  InputProps: InputProps | undefined,
+  inputProps: InputProps["inputProps"],
+): InputProps => {
+  if (InputProps === undefined) {
+    return {
+      inputProps,
+    };
+  } else {
+    return {
+      ...InputProps,
+      inputProps: {
+        ...InputProps.inputProps,
+        ...inputProps,
+      },
+    };
   }
 };
 
-export type ColumnFilterCommitHandler = (
-  column: ColumnDescriptor,
-  op: FilterClauseOp | "between",
-  value: ColumnFilterValue,
-) => void;
-
-export const assertValidValue = (
-  { serverDataType: _ }: ColumnDescriptor,
-  operator: ColumnFilterOp,
-  value?: ColumnFilterValue,
-) => {
-  if (value !== undefined) {
-    if (operator === "between") {
-      if (!Array.isArray(value) || value.length !== 2) {
-        throw Error(
-          `[useColumnFilter] between operator requires array of two values, received ${value}`,
-        );
-      } else if (
-        value[0] !== undefined &&
-        value[1] !== undefined &&
-        typeof value[0] !== typeof value[1]
-      ) {
-        throw Error(
-          `[useColumnFilter] 'between operator values must be of same type, received ${typeof value[0]} and ${typeof value[1]}`,
-        );
-      }
-    }
-    // TODO validate value(s) against serverDataType
-  }
-};
-
-export type ColumnFilterHookProps = {
+export interface ColumnFilterHookProps
+  extends Pick<DataItemEditControlProps, "InputProps"> {
   column: ColumnDescriptor;
-  operator?: ColumnFilterOp;
   /**
-   * Filter value. Pair of values expected when operator is
-   * 'between'
+   * Filter defaultValue. Pair of values expected when operator is
+   * 'between'. If provided, component is uncontrolled
    */
-  value: ColumnFilterValue;
+
+  defaultValue?: ColumnFilterValue;
   /**
    * Filter change events.
    */
@@ -74,89 +51,111 @@ export type ColumnFilterHookProps = {
    * tabbing away from control or making selection from list
    */
   onCommit: ColumnFilterCommitHandler;
-};
+  operator?: ColumnFilterOp;
+  /**
+   * Filter value. Pair of values expected when operator is
+   * 'between'. If provided, component is controlled.
+   */
+  value?: ColumnFilterValue;
+}
 
 export const useColumnFilter = ({
-  onCommit,
-  operator = "=",
-  value,
+  InputProps: InputPropsProp,
   column,
+  defaultValue,
   onColumnFilterChange,
   onColumnRangeFilterChange,
+  onCommit,
+  operator = "=",
+  value: valueProp,
 }: ColumnFilterHookProps) => {
-  const [op, setOp] = useState(operator);
-  const allowedOperators = useMemo(() => getOperators(column), [column]);
-
-  useMemo(() => {
-    assertValidOperator(allowedOperators, column, operator);
-    assertValidValue(column, op, value);
-  }, [allowedOperators, column, operator, op, value]);
-
-  const handleOperatorChange = useCallback((changedOp: ColumnFilterOp) => {
-    setOp(changedOp);
-  }, []);
+  const [value, setValue] = useControlled({
+    controlled: valueProp,
+    default: defaultValue,
+    name: "ColumnFilterNext",
+    state: "value",
+  });
 
   const handleCommit = useCallback<CommitHandler<HTMLElement>>(
-    (_e, newValue) => {
+    (_e, newValue = "") => {
       if (Array.isArray(value)) {
-        onCommit?.(column, op, [`${newValue}`, value[1]]);
+        setValue([`${newValue}`, value[1]]);
+        onCommit?.(column, operator, [`${newValue}`, value[1]]);
       } else {
-        onCommit?.(column, op, `${newValue}`);
+        setValue(newValue as ColumnFilterValue);
+        onCommit?.(column, operator, `${newValue}`);
       }
     },
-    [value, onCommit, column, op],
+    [value, setValue, onCommit, column, operator],
   );
 
   const handleRangeCommit = useCallback<CommitHandler<HTMLElement>>(
-    (_e, newValue) => {
-      const [firstValue] = value as [string, string];
-      onCommit?.(column, op, [firstValue, `${newValue}`]);
+    (_e, newValue = "") => {
+      if (Array.isArray(value)) {
+        const [firstValue] = value as [string, string];
+        setValue([value[0], `${newValue}`]);
+        onCommit?.(column, operator, [firstValue, `${newValue}`]);
+      } else if (value !== "") {
+        // If we have already committed the first value, filter has been
+        // saved as a single value  '='.
+        const currentValue = `${value}`;
+        setValue([currentValue, `${newValue}`]);
+        onCommit?.(column, operator, [currentValue, `${newValue}`]);
+      } else {
+        throw Error(
+          `[useColumnFilterNext] value has been initialised incorrectly for range filter`,
+        );
+      }
     },
-    [onCommit, column, op, value],
+    [value, setValue, onCommit, column, operator],
   );
 
-  const handleInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
+  const onChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (e) => {
-      onColumnFilterChange?.(e.target.value, column, op);
+      const { value = "" } = e.target;
+      setValue((v) => (Array.isArray(v) ? [value, v[1]] : value));
+      onColumnFilterChange?.(e.target.value, column, operator);
     },
-    [onColumnFilterChange, column, op],
+    [column, onColumnFilterChange, operator, setValue],
   );
 
-  const handleRangeInputChange = useCallback<
-    ChangeEventHandler<HTMLInputElement>
-  >(
+  const onRangeInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
     (e) => {
-      onColumnRangeFilterChange?.(e.target.value, column, op);
+      const { value = "" } = e.target;
+      setValue((v) => (Array.isArray(v) ? [v[0], value] : value));
+
+      onColumnRangeFilterChange?.(value, column, operator);
     },
-    [onColumnRangeFilterChange, column, op],
+    [setValue, onColumnRangeFilterChange, column, operator],
   );
 
-  const inputProps = useMemo<VuuTypeaheadInputProps["inputProps"]>(
-    () => ({
-      onChange: handleInputChange,
-      value: Array.isArray(value) ? value[0] : value,
-    }),
-    [handleInputChange, value],
-  );
-
-  const rangeInputProps = useMemo<VuuTypeaheadInputProps["inputProps"]>(
+  const InputProps = useMemo(
     () =>
-      Array.isArray(value)
-        ? {
-            onChange: handleRangeInputChange,
-            value: value[1],
-          }
-        : undefined,
-    [handleRangeInputChange, value],
+      injectInputProps(InputPropsProp, {
+        onChange,
+        value: Array.isArray(value) ? value[0] : value,
+      }),
+    [InputPropsProp, onChange, value],
+  );
+
+  const InputPropsRange = useMemo(
+    () =>
+      injectInputProps(
+        InputPropsProp,
+        Array.isArray(value)
+          ? {
+              onChange: onRangeInputChange,
+              value: value[1],
+            }
+          : undefined,
+      ),
+    [InputPropsProp, onRangeInputChange, value],
   );
 
   return {
-    op,
-    allowedOperators,
-    inputProps,
-    rangeInputProps,
+    InputProps,
+    InputPropsRange,
     onCommit: handleCommit,
     onCommitRange: handleRangeCommit,
-    handleOperatorChange,
   };
 };

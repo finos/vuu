@@ -1,22 +1,27 @@
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
-  AndFilter,
   Filter,
   FilterClause,
   FilterCombinatorOp,
+  FilterContainerFilter,
+  FilterContainerFilterDescriptor,
   FilterWithPartialClause,
   MultiClauseFilter,
   NumericFilterClauseOp,
 } from "@vuu-ui/vuu-filter-types";
 import {
   extractFilterForColumn,
+  filtersAreEqual,
   isAndFilter,
+  isBetweenFilter,
   isInFilter,
   isMultiClauseFilter,
   isMultiValueFilter,
   isOrFilter,
   isSingleValueFilter,
+  isTimeDataValue,
   partition,
+  Time,
 } from "@vuu-ui/vuu-utils";
 
 export const AND = "and";
@@ -291,7 +296,7 @@ export const splitFilterOnColumn = (
     return [undefined, filter];
   }
   const [[columnFilter = undefined], filters] = partition(
-    (filter as AndFilter).filters,
+    (filter as MultiClauseFilter<"and">).filters,
     (f) => f.column === columnName,
   );
   return filters.length === 1
@@ -465,3 +470,58 @@ export const getNumericFilter = (
   if (value === undefined || isNaN(value)) return undefined;
   return { column, op, value };
 };
+
+type FilterClauseList = Array<[string, string]>;
+
+/**
+ * Restructure a FilterContainerFilter into a list of [column, value] tuples
+ * suitable for display in a text based control.
+ */
+export const getFilterClausesForDisplay = (
+  filter?: FilterContainerFilter,
+  columns: ColumnDescriptor[] = [],
+  clauses: FilterClauseList = [],
+): FilterClauseList => {
+  if (filter === undefined) {
+    return clauses;
+  } else if (isSingleValueFilter(filter)) {
+    clauses.push([filter.column, filter.value.toString()]);
+  } else if (isBetweenFilter(filter)) {
+    const [f1, f2] = filter.filters;
+    const column = columns.find((c) => c.name === f1.column);
+    if (
+      isTimeDataValue(column) &&
+      typeof f1.value === "number" &&
+      typeof f2.value === "number"
+    ) {
+      const { name, label = name } = column;
+      clauses.push([
+        label,
+        `${Time.millisToTimeString(f1.value)} - ${Time.millisToTimeString(f2.value)}`,
+      ]);
+    } else if (column) {
+      const { name, label = name } = column;
+      clauses.push([label, `${f1.value} - ${f2.value}`]);
+    } else {
+      clauses.push([f1.column, `${f1.value} - ${f2.value}`]);
+    }
+  } else if (isAndFilter(filter)) {
+    filter.filters.forEach((f) =>
+      getFilterClausesForDisplay(f, columns, clauses),
+    );
+  }
+  return clauses;
+};
+
+/**
+ * Given a list of FilterContainerFilterDescriptors and a FilterContainerFilter,
+ * find filter descriptor from the list with an equal filter. If
+ * none exists, return undefined, otherwise return the matched filter descriptor
+ */
+export const findMatchingFilter = (
+  filterDescriptors: FilterContainerFilterDescriptor[],
+  filter: FilterContainerFilter,
+) =>
+  filterDescriptors.find(
+    ({ filter: f }) => f !== null && f !== filter && filtersAreEqual(f, filter),
+  );

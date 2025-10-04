@@ -1,70 +1,62 @@
-import { FormField, FormFieldLabel } from "@salt-ds/core";
-import { Prompt, PromptProps, VuuInput } from "@vuu-ui/vuu-ui-controls";
-import { CommitHandler } from "@vuu-ui/vuu-utils";
 import {
-  ChangeEventHandler,
-  HTMLAttributes,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+  FormField,
+  FormFieldHelperText,
+  FormFieldLabel,
+  Text,
+} from "@salt-ds/core";
+import { Prompt, PromptProps, VuuInput } from "@vuu-ui/vuu-ui-controls";
+import { HTMLAttributes, useEffect, useRef } from "react";
 import cx from "clsx";
+import {
+  FilterNamePromptHookProps,
+  Status,
+  useFilterNamePrompt,
+} from "./useFilterNamePrompt";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+
+import filterNamePromptCss from "./FilterNamePrompt.css";
+
+const DUPLICATE_NAME_MESSAGE = "A filter with this name already exists";
 
 export interface FilterNamePromptProps
-  extends Pick<PromptProps, "onClose" | "open" | "title">,
-    Omit<HTMLAttributes<HTMLDivElement>, "title"> {
-  filterName?: string;
-  onConfirm: (filterName: string) => void;
-}
-
-const isValidName = (name: unknown): name is string =>
-  typeof name === "string" && name.trim().length > 0;
+  extends FilterNamePromptHookProps,
+    Pick<PromptProps, "onClose" | "open" | "title">,
+    Omit<HTMLAttributes<HTMLDivElement>, "title"> {}
 
 export const FilterNamePrompt = ({
   className,
-  filterName = "",
+  filterName,
   onClose,
-  onConfirm,
+  onConfirm: onConfirmProp,
   open = true,
   title,
   ...htmlAttributes
 }: FilterNamePromptProps) => {
-  const filterNameRef = useRef(filterName);
-  const [isValid, setIsValid] = useState(filterName !== "");
-  const confirmRef = useRef<HTMLButtonElement>(null);
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-saved-filter-panel",
+    css: filterNamePromptCss,
+    window: targetWindow,
+  });
+
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleConfirm = useCallback(() => {
-    onConfirm(filterNameRef.current);
-  }, [onConfirm]);
+  const {
+    confirmButtonProps,
+    nameOfDuplicateFilter,
+    onChange,
+    onCommit,
+    onConfirm,
+    status,
+    value,
+  } = useFilterNamePrompt({
+    filterName,
+    onConfirm: onConfirmProp,
+  });
 
-  const handleChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
-    (e) => {
-      const value = e.target.value;
-      filterNameRef.current = value;
-      setIsValid(isValidName(value));
-    },
-    [],
-  );
-
-  const handleCommit = useCallback<CommitHandler>(
-    (e, value) => {
-      if (isValidName(value)) {
-        onConfirm(value);
-      }
-    },
-    [onConfirm],
-  );
-
-  const confirmButtonProps = useMemo(
-    () => ({
-      disabled: !isValid,
-      ref: confirmRef,
-    }),
-    [isValid],
-  );
+  const formFieldHelperText =
+    status === Status.DuplicateName ? DUPLICATE_NAME_MESSAGE : undefined;
 
   useEffect(() => {
     setTimeout(() => {
@@ -78,7 +70,7 @@ export const FilterNamePrompt = ({
       className={cx("vuuFilterNamePrompt", className)}
       confirmButtonProps={confirmButtonProps}
       onClose={onClose}
-      onConfirm={handleConfirm}
+      onConfirm={onConfirm}
       open={open}
       title={title}
     >
@@ -87,12 +79,19 @@ export const FilterNamePrompt = ({
         <VuuInput
           commitOnBlur={false}
           inputRef={inputRef}
-          onChange={handleChange}
-          onCommit={handleCommit}
-          defaultValue={filterNameRef.current}
+          onChange={onChange}
+          onCommit={onCommit}
+          defaultValue={value}
           placeholder="Please enter"
         />
+        {formFieldHelperText ? (
+          <FormFieldHelperText>{formFieldHelperText}</FormFieldHelperText>
+        ) : null}
       </FormField>
+      <Text color="warning">
+        An identical filter has already been saved, see{" "}
+        <b>{nameOfDuplicateFilter}</b>
+      </Text>
     </Prompt>
   );
 };

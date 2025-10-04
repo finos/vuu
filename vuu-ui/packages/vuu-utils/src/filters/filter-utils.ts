@@ -1,15 +1,13 @@
 import type { DataSourceFilter } from "@vuu-ui/vuu-data-types";
 import {
-  AndFilter,
-  ColumnFilterDescriptor,
   ColumnFilterOp,
   ColumnFilterValue,
   Filter,
   FilterClauseOp,
+  FilterContainerFilter,
   FilterWithPartialClause,
   MultiClauseFilter,
   MultiValueFilterClause,
-  OrFilter,
   SingleValueFilterClause,
   SingleValueFilterClauseOp,
 } from "@vuu-ui/vuu-filter-types";
@@ -17,22 +15,8 @@ import {
   ColumnDescriptor,
   RuntimeColumnDescriptor,
 } from "@vuu-ui/vuu-table-types";
-import { EventEmitter } from "../event-emitter";
-import { VuuFilter, VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { getTypedValue } from "../form-utils";
-import { parseFilter } from "@vuu-ui/vuu-filter-parser";
-import {
-  asTimeString,
-  isValidTimeString,
-  Time,
-  TimeString,
-  toCalendarDate,
-} from "../date";
-import {
-  isDateTimeDataValue,
-  isTimeDataValue,
-  toColumnDescriptor,
-} from "../column-utils";
+import { isTypeDescriptor } from "../column-utils";
 
 const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "=",
@@ -70,9 +54,21 @@ export const isMultiValueFilter = (
 
 export const isInFilter = (f: Partial<Filter>): f is MultiValueFilterClause =>
   f.op === "in";
-export const isAndFilter = (f: Partial<Filter>): f is AndFilter =>
-  f.op === "and";
-export const isOrFilter = (f: Partial<Filter>): f is OrFilter => f.op === "or";
+export const isAndFilter = (
+  f?: Partial<Filter>,
+): f is MultiClauseFilter<"and"> => f?.op === "and";
+
+export const isBetweenFilter = (
+  f?: Filter,
+): f is MultiClauseFilter<"and", SingleValueFilterClause> =>
+  isAndFilter(f) &&
+  f.filters.length === 2 &&
+  f.filters[0].column === f.filters[1].column &&
+  f.filters[0].op === ">" &&
+  f.filters[1].op === "<";
+
+export const isOrFilter = (f?: Partial<Filter>): f is MultiClauseFilter<"or"> =>
+  f?.op === "or";
 
 export const isCompleteFilter = (filter: Partial<Filter>): filter is Filter =>
   isSingleValueFilter(filter) &&
@@ -153,250 +149,206 @@ const collectFiltersForColumn = (
   };
 };
 
-export type FilterEvents = {
-  filter: (vuuFilter: VuuFilter) => void;
-};
+// Just until we fully support bool values in filters
+const stringifyBoolean = (value: string | number | boolean) =>
+  typeof value === "boolean" ? "${filter.value}" : value;
 
-const createFilterClause = (column: string, value: VuuRowDataItemType) =>
-  typeof value === "string"
-    ? `${column} contains "${value}"`
-    : `${column} = ${value}`;
-
-export class FilterAggregator extends EventEmitter<FilterEvents> {
-  #columns = new Map<string, ColumnDescriptor>();
-  #filters = new Map<string, VuuRowDataItemType>();
-
-  addFilter(column: ColumnDescriptor, value: string | number) {
-    this.#columns.set(column.name, column);
-    const { serverDataType = "string" } = column;
-    const typedValue = getTypedValue(value.toString(), serverDataType, true);
-
-    this.#filters.set(column.name, typedValue);
-    // this.emit("filter", this.filter);
-  }
-
-  removeFilter(column: ColumnDescriptor) {
-    if (this.#columns.has(column.name)) {
-      this.#columns.delete(column.name);
-      this.#filters.delete(column.name);
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  get filter(): VuuFilter {
-    const { size } = this.#filters;
-    if (size === 0) {
-      return { filter: "" };
-    } else {
-      return {
-        filter: Array.from(this.#filters.entries())
-          .map((args) => createFilterClause(...args))
-          .join(" and "),
-      };
-    }
-  }
-}
-
-const convertValueToServerFormat = (
+export const getColumnValueFromFilter = (
   column: ColumnDescriptor,
-  value: ColumnFilterValue,
-): ColumnFilterValue | Time => {
-  if (isValidTimeString(value)) {
-    return Time(value as TimeString)
-      .asDate()
-      .getTime();
-  } else if (isDateTimeDataValue(column)) {
-    return new Date(value as number).getTime(); //value is already in utc milliseconds? conversion may not be required
-  }
-  return value;
-};
-
-const convertValueToUIFormat = (
-  column: ColumnDescriptor,
-  value: ColumnFilterValue,
+  operator: ColumnFilterOp,
+  filter?: FilterContainerFilter,
 ): ColumnFilterValue => {
-  if (isTimeDataValue(column)) {
-    return asTimeString(value, false);
-  } else if (isDateTimeDataValue(column)) {
-    return toCalendarDate(new Date(value as number)).toString();
-  } else {
-    return value;
-  }
-};
-
-//TODO extend this to support <= and >=
-const buildBetweenQueryString = (column: ColumnDescriptor, range: string[]) => {
-  const lowerRange: string | undefined =
-    range[0] !== undefined && range[0].length > 0
-      ? `${column.name} > ${convertValueToServerFormat(column, range[0])}`
-      : undefined;
-
-  const upperRange: string | undefined =
-    range[1] !== undefined && range[1].length > 0
-      ? `${column.name} < ${convertValueToServerFormat(column, range[1])}`
-      : undefined;
-
-  if (lowerRange === undefined) return lowerRange;
-  if (upperRange === undefined) return lowerRange;
-  return `${lowerRange} and ${upperRange}`;
-};
-
-//Supports only SingleValue & Range filters
-export const buildColumnFilterString = (
-  column: ColumnDescriptor,
-  op: ColumnFilterOp,
-  value: ColumnFilterValue,
-) => {
-  if (Array.isArray(value)) {
-    return buildBetweenQueryString(column, value);
-  }
-  return typeof value === "string" && !isValidTimeString(value)
-    ? `${column.name} ${op} "${value}"`
-    : `${column.name} ${op} ${convertValueToServerFormat(column, value)}`;
-};
-
-export type ColumnFilterStoreEvents = {
-  onChange: (filter: VuuFilter) => void;
-};
-export class ColumnFilterStore extends EventEmitter<ColumnFilterStoreEvents> {
-  #columns = new Map<string, ColumnDescriptor>();
-  #filters = new Map<string, ColumnFilterDescriptor>();
-  #values = new Map<string, ColumnFilterValue>();
-
-  constructor(
-    query: VuuFilter = { filter: "" },
-    columnDescriptors: ColumnDescriptor[] = [],
-  ) {
-    super();
-    this.filter = query;
-    this.loadColumnDescriptors(columnDescriptors);
-  }
-
-  private loadColumnDescriptors(columnDescriptors: ColumnDescriptor[]) {
-    columnDescriptors.forEach((descriptor) => {
-      this.#columns.set(descriptor.name, descriptor);
-    });
-  }
-
-  addFilter(
-    column: ColumnDescriptor,
-    op: ColumnFilterOp,
-    value: ColumnFilterValue,
-  ) {
-    if (!this.#columns.has(column.name)) {
-      this.#columns.set(column.name, column);
-    }
-
-    const { serverDataType = "string" } = column;
-    const typedValue = Array.isArray(value)
-      ? value
-      : (getTypedValue(
-          value.toString(),
-          serverDataType,
-          true,
-        ) as ColumnFilterValue);
-
-    this.#values.set(column.name, typedValue);
-    this.#filters.set(column.name, {
-      column,
-      op,
-      filterValue: typedValue,
-    });
-    this.emit("onChange", this.filter);
-  }
-
-  removeFilter(column: ColumnDescriptor) {
-    if (this.#columns.has(column.name)) {
-      this.#columns.delete(column.name);
-      this.#filters.delete(column.name);
-      this.#values.delete(column.name);
-      this.emit("onChange", this.filter);
-      return true;
-    } else {
-      this.emit("onChange", this.filter);
-      return false;
-    }
-  }
-
-  resetFilters() {
-    this.#columns.clear();
-    this.#filters.clear();
-    this.#values.clear();
-    this.emit("onChange", this.filter);
-  }
-
-  get columnValues(): Map<string, ColumnFilterValue> {
-    return this.#values;
-  }
-
-  get filter(): VuuFilter {
-    const { size } = this.#filters;
-    if (size === 0) {
-      return { filter: "" };
-    } else {
-      const result = Array.from(this.#filters.entries())
-        .map(([column, descriptor]) => {
-          const columnDescriptor = this.#columns.get(column);
-          if (columnDescriptor)
-            return buildColumnFilterString(
-              columnDescriptor,
-              descriptor.op,
-              descriptor.filterValue,
-            );
-        })
-        .filter((value) => value !== undefined);
-      return {
-        filter: result.join(result.length > 1 ? " and " : ""),
-      };
-    }
-  }
-
-  set filter(query: VuuFilter) {
-    this.#columns.clear();
-    this.#filters.clear();
-    this.#values.clear();
-
-    if (query.filter) {
-      const f = parseFilter(query.filter);
-
-      const addToStore = (f: Filter) => {
-        if (f.column) {
-          const defaultColumnDescriptor = toColumnDescriptor(f.column);
-          if (!this.#columns.has(f.column)) {
-            this.#columns.set(f.column, defaultColumnDescriptor);
-          }
-          const columnDescriptor: ColumnDescriptor =
-            this.#columns.get(f.column) || defaultColumnDescriptor;
-
-          const existing = this.#filters.get(f.column);
-          if (isSingleValueFilter(f)) {
-            const v = existing
-              ? [
-                  existing.filterValue as string,
-                  convertValueToUIFormat(columnDescriptor, f.value as string),
-                ]
-              : convertValueToUIFormat(
-                  columnDescriptor,
-                  f.value as ColumnFilterValue,
-                );
-
-            this.#values.set(f.column, v as ColumnFilterValue);
-            this.#filters.set(f.column, {
-              column: columnDescriptor,
-              op: f.op,
-              filterValue: v as ColumnFilterValue,
-            });
-          }
+  if (isSingleValueFilter(filter)) {
+    if (filter.column === column.name) {
+      if (operator === "between") {
+        if (filter.op === "=") {
+          return [`${filter.value}`, ""];
+        } else if (filter.op === "<") {
+          return ["", `${filter.value}`];
         }
-      };
-
-      if (isMultiClauseFilter(f)) {
-        f.filters.forEach((f) => addToStore(f));
-      } else if (isFilterClause(f)) {
-        addToStore(f);
+      } else {
+        return stringifyBoolean(filter.value);
       }
     }
+  } else if (isBetweenFilter(filter)) {
+    if (filter.filters[0].column === column.name) {
+      const [{ value: v1 }, { value: v2 }] = filter.filters;
+      return [`${v1}`, `${v2}`];
+    } else {
+      return ["", ""];
+    }
+  } else if (isAndFilter(filter)) {
+    const filterForColumn = filter.filters.find((f) =>
+      isBetweenFilter(f)
+        ? f.filters[0].column === column.name
+        : f.column === column.name,
+    );
+    if (isSingleValueFilter(filterForColumn)) {
+      return stringifyBoolean(filterForColumn.value);
+    } else if (operator === "between" && isBetweenFilter(filterForColumn)) {
+      const [{ value: v1 }, { value: v2 }] = filterForColumn.filters;
+      return [`${v1}`, `${v2}`];
+    }
+  }
+  if (operator === "between") {
+    if (column.type === "time") {
+      return ["00:00:00", "23:59:59"];
+    } else {
+      return ["", ""];
+    }
+  } else {
+    return "";
+  }
+};
+
+/**
+ * Manages a filter that can be updated one clause at a time.
+ * Works with FilterContainer to aggregate multiple filter
+ * clauses edited via individual controls. It is just a wrapper
+ * around a Map, does not support switching filters - create a
+ * new FilterAggregator for a new filter.
+ *
+ */
+export class FilterAggregator {
+  #filters = new Map<string, FilterContainerFilter>();
+
+  constructor(filter?: FilterContainerFilter) {
+    if (isSingleValueFilter(filter)) {
+      this.#filters.set(filter.column, filter);
+    } else if (isBetweenFilter(filter)) {
+      this.#filters.set(filter.filters[0].column, filter);
+    } else if (isAndFilter(filter)) {
+      filter.filters.forEach((f) => {
+        if (isBetweenFilter(f)) {
+          this.#filters.set(f.filters[0].column, f);
+        } else {
+          this.#filters.set(f.column, f);
+        }
+      });
+    }
+  }
+
+  add(column: ColumnDescriptor, value: ColumnFilterValue) {
+    const { serverDataType = "string", type } = column;
+    const dataType = isTypeDescriptor(type)
+      ? type.name
+      : (type ?? serverDataType);
+    if (Array.isArray(value)) {
+      const value1 = getTypedValue(value[0].toString(), dataType);
+      const value2 = getTypedValue(value[1].toString(), dataType);
+
+      if (value1 !== undefined && value2 !== undefined) {
+        this.#filters.set(column.name, {
+          op: "and",
+          filters: [
+            { column: column.name, op: ">", value: value1 },
+            { column: column.name, op: "<", value: value2 },
+          ],
+        });
+      } else if (value1 !== undefined) {
+        this.#filters.set(column.name, {
+          column: column.name,
+          op: "=",
+          value: value1,
+        });
+      } else if (value2 !== undefined) {
+        this.#filters.set(column.name, {
+          column: column.name,
+          op: "<",
+          value: value2,
+        });
+      }
+    } else {
+      const typedValue = getTypedValue(value.toString(), dataType, true);
+
+      this.#filters.set(column.name, {
+        column: column.name,
+        op: "=",
+        value: typedValue,
+      });
+    }
+  }
+
+  has({ name }: ColumnDescriptor) {
+    return this.#filters.has(name);
+  }
+
+  get({ name }: ColumnDescriptor) {
+    return this.#filters.get(name);
+  }
+
+  /**
+   * Remove filter for this column. Return false if no filter found, otw true
+   */
+  remove(column: ColumnDescriptor) {
+    if (this.#filters.has(column.name)) {
+      this.#filters.delete(column.name);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  get filter(): FilterContainerFilter | undefined {
+    const { size } = this.#filters;
+    if (size === 0) {
+      return undefined;
+    } else if (size === 1) {
+      const [filter] = this.#filters.values();
+      return filter;
+    } else {
+      return {
+        op: "and",
+        filters: Array.from(this.#filters.values()),
+      } as FilterContainerFilter;
+    }
   }
 }
+
+type BetweenFilter = MultiClauseFilter<"and", SingleValueFilterClause>;
+type ChildFilterClause = SingleValueFilterClause | BetweenFilter;
+
+const betweenFiltersAreEqual = (f1: BetweenFilter, f2: BetweenFilter) => {
+  const [from1, to1] = f1.filters;
+  const [from2, to2] = f2.filters;
+  return filtersAreEqual(from1, from2) && filtersAreEqual(to1, to2);
+};
+
+const singleValueFilterClausesAreEqual = (
+  f1: SingleValueFilterClause,
+  f2: SingleValueFilterClause,
+) => f1.column === f2.column && f1.op === f2.op && f1.value === f2.value;
+
+const findEqualFilter =
+  (filters: ChildFilterClause[]) => (filter: ChildFilterClause) => {
+    if (isBetweenFilter(filter)) {
+      const target = filters.find(
+        (f) => isBetweenFilter(f) && betweenFiltersAreEqual(f, filter),
+      );
+      return target !== undefined;
+    } else {
+      // A FilterContainerFilter only has one filter clause per column
+      const target = filters.find((f) => f.column === filter.column);
+      if (target) {
+        return target.op === filter.op && target.value === filter.value;
+      }
+    }
+    return false;
+  };
+
+export const filtersAreEqual = (
+  f1: FilterContainerFilter,
+  f2: FilterContainerFilter,
+): boolean => {
+  if (isSingleValueFilter(f1) && isSingleValueFilter(f2)) {
+    return singleValueFilterClausesAreEqual(f1, f2);
+  } else if (isBetweenFilter(f1) && isBetweenFilter(f2)) {
+    return betweenFiltersAreEqual(f1, f2);
+  } else if (isAndFilter(f1) && isAndFilter(f2)) {
+    if (f1.filters.length === f2.filters.length) {
+      return f1.filters.every(findEqualFilter(f2.filters));
+    }
+  }
+
+  return false;
+};

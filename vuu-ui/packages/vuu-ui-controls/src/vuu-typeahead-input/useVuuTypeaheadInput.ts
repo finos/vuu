@@ -11,6 +11,7 @@ import {
 } from "@vuu-ui/vuu-utils";
 import {
   ComponentPropsWithoutRef,
+  FocusEventHandler,
   KeyboardEventHandler,
   useCallback,
   useEffect,
@@ -85,6 +86,19 @@ export const useVuuTypeaheadInput = ({
   const pendingListFocusRef = useRef(false);
 
   const { current: value } = valueRef;
+
+  useMemo(() => {
+    console.log(
+      `[useVuuTypeaheadInput] inputProps value has changed ${inputPropsProp?.value} valueRef value ${valueRef.current}`,
+    );
+    if (
+      inputPropsProp?.value !== undefined &&
+      inputPropsProp?.value !== valueRef.current
+    ) {
+      setValue(`${inputPropsProp.value}`);
+    }
+  }, [inputPropsProp?.value, setValue, valueRef]);
+
   const commitTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleKeyDown = useCallback<KeyboardEventHandler<HTMLInputElement>>(
@@ -113,7 +127,7 @@ export const useVuuTypeaheadInput = ({
     inputRef.current = input;
   }, []);
 
-  useEffect(() => {
+  const refreshSuggestions = useCallback(() => {
     if (table) {
       const vuuTable = getVuuTable(table);
       if (
@@ -127,7 +141,6 @@ export const useVuuTypeaheadInput = ({
           : [vuuTable, column];
         getSuggestions(params)
           .then((suggestions) => {
-            console.log({ suggestions });
             if (suggestions === false) {
               // TODO is this right
               setTypeaheadValues([]);
@@ -156,13 +169,18 @@ export const useVuuTypeaheadInput = ({
       }
     }
   }, [
-    table,
+    NO_FREE_TEXT,
     column,
     getSuggestions,
-    value,
-    NO_FREE_TEXT,
     minCharacterCountToTriggerSuggestions,
+    table,
+    value,
   ]);
+
+  useEffect(() => {
+    // This will preload suggestions for controls with no char input minimum
+    refreshSuggestions();
+  }, [refreshSuggestions]);
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (evt) => {
@@ -208,9 +226,18 @@ export const useVuuTypeaheadInput = ({
     }
   };
 
+  const handleInputFocus = useCallback<FocusEventHandler<HTMLInputElement>>(
+    (e) => {
+      inputPropsProp?.onFocus?.(e);
+      refreshSuggestions();
+    },
+    [inputPropsProp, refreshSuggestions],
+  );
+
   const inputProps: ComponentPropsWithoutRef<"input"> = {
     ...inputPropsProp,
     autoComplete: "off",
+    onFocus: handleInputFocus,
   };
 
   const [noFreeText] = NO_FREE_TEXT;

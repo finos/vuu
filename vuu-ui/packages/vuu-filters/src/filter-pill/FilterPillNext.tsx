@@ -10,10 +10,17 @@ import {
 } from "./useFilterPillNext";
 
 import filterPillNextCss from "./FilterPillNext.css";
+import { FilterDisplay } from "../filter-display/FilterDisplay";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
 export interface FilterPillNextProps
   extends FilterPillNextHookProps,
     Omit<HTMLAttributes<HTMLButtonElement>, "id"> {
+  /**
+   * If provided, these will be used in tooltip to provide
+   * richer representation of filter.
+   */
+  columns?: ColumnDescriptor[];
   id: string;
   permissions?: FilterPermissions;
   showTooltip?: boolean;
@@ -24,6 +31,7 @@ const classBase = "vuuFilterPillNext";
 export const FilterPillNext = ({
   active,
   appearence,
+  columns,
   className,
   defaultActive,
   filter,
@@ -46,7 +54,6 @@ export const FilterPillNext = ({
     onContextMenu,
     onContextMenuOpenChange,
     onMenuAction,
-    tooltipText,
     virtualElement,
   } = useFilterPillNext({
     active,
@@ -85,7 +92,11 @@ export const FilterPillNext = ({
 
   return showTooltip ? (
     <>
-      <Tooltip className={`${classBase}-tooltip`} content={tooltipText}>
+      <Tooltip
+        className={`${classBase}-tooltip`}
+        content={<FilterDisplay columns={columns} filter={filter} />}
+        placement="top"
+      >
         {filterPill}
       </Tooltip>
       {filterMenu}

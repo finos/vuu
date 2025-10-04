@@ -1,3 +1,4 @@
+import { DataValueDescriptor } from "@vuu-ui/vuu-data-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
 export declare type NumericFilterClauseOp =
@@ -46,19 +47,15 @@ export declare type FilterClause =
   | SingleValueFilterClause
   | MultiValueFilterClause;
 
-export interface MultiClauseFilter extends NamedFilter {
+export interface MultiClauseFilter<
+  T extends FilterCombinatorOp = FilterCombinatorOp,
+  F extends Filter = Filter,
+> extends NamedFilter {
   column?: never;
-  op: FilterCombinatorOp;
-  filters: Filter[];
+  op: T;
+  filters: F[];
 }
 
-export interface AndFilter extends MultiClauseFilter {
-  op: "and";
-}
-
-export interface OrFilter extends MultiClauseFilter {
-  op: "or";
-}
 /**
  * A Filter structure that can represent any of the filters supported by the Vuu server.
  * Note that a filter in this form is never passed directly to the Vuu server. For that,
@@ -103,7 +100,47 @@ export declare type ColumnFilterDescriptor = {
 };
 
 export declare type ColumnFilterChangeHandler = (
-  value: string | number,
+  value: ColumnFilterValue,
   column: ColumnDescriptor,
   op: ColumnFilterOp,
 ) => void;
+
+export declare type ColumnFilterCommitHandler = (
+  column: ColumnDescriptor,
+  op: FilterClauseOp | "between",
+  value: ColumnFilterValue,
+) => void;
+
+export declare type ColumnFilterVariant = "pick" | "search" | "range";
+export interface ColumnFilterDescriptor extends DataValueDescriptor {
+  defaultValue: ColumnFilterValue;
+  op?: ColumnFilterOp;
+  variant?: ColumnFilterVariant;
+}
+
+/**
+ * A limited subset of all possible filters that is currently
+ * supported by a FilterContainer
+ */
+export declare type FilterContainerFilter =
+  | SingleValueFilterClause
+  | MultiClauseFilter<
+      "and",
+      | SingleValueFilterClause
+      | MultiClauseFilter<"and", SingleValueFilterClause>
+    >;
+
+/**
+ * Defines a filter that is managed by a FilterProvider/FilterContainer
+ * and can be persisted.
+ */
+export interface FilterContainerFilterDescriptor {
+  active: boolean;
+  filter: FilterContainerFilter | null;
+  id: string;
+}
+
+export interface FilterContainerFilterDescriptorWithFilter
+  extends FilterContainerFilterDescriptor {
+  filter: FilterContainerFilter;
+}

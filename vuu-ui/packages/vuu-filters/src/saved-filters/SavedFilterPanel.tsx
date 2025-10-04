@@ -1,12 +1,14 @@
-import { HTMLAttributes, useMemo } from "react";
-import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import cx from "clsx";
+import { HTMLAttributes, useMemo } from "react";
+import { FilterPermissions } from "../filter-pill/FilterMenu";
 import { FilterPillNext } from "../filter-pill/FilterPillNext";
+import { filterDescriptorHasFilter } from "../filter-provider/FilterProvider";
 import { useSavedFilterPanel } from "./useSavedFilterPanel";
 
 import savedFilterPanelCss from "./SavedFilterPanel.css";
-import { FilterPermissions } from "../filter-pill/FilterMenu";
 
 const classBase = "vuuSavedFilterPanel";
 
@@ -16,13 +18,22 @@ const defaultFilterPillPermissions: FilterPermissions = {
   allowRemove: true,
 };
 
+export interface SavedFilterPanelProps extends HTMLAttributes<HTMLDivElement> {
+  /**
+   * ColumnDescriptors are not required but is passed will be
+   * used to provide labels and correct value formatting for
+   * displayed filters, e.g in tooltips
+   */
+  availableColumns?: ColumnDescriptor[];
+  filterPillPermissions?: FilterPermissions;
+}
+
 export const SavedFilterPanel = ({
+  availableColumns,
   className,
   filterPillPermissions = defaultFilterPillPermissions,
   ...htmlAttributes
-}: HTMLAttributes<HTMLDivElement> & {
-  filterPillPermissions?: FilterPermissions;
-}) => {
+}: SavedFilterPanelProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-saved-filter-panel",
@@ -43,15 +54,18 @@ export const SavedFilterPanel = ({
   const { onClickFilter, onFilterMenuAction, savedFilters } =
     useSavedFilterPanel();
 
+  const filtersToDisplay = savedFilters.filter(filterDescriptorHasFilter);
+
   return (
     <div
       {...htmlAttributes}
       className={cx(classBase, "vuuScrollable", className)}
     >
       <div className={`${classBase}-filterPill-container`}>
-        {savedFilters.map((filterDescriptor, i) => (
+        {filtersToDisplay.map((filterDescriptor, i) => (
           <FilterPillNext
             {...filterDescriptor}
+            columns={availableColumns}
             key={i}
             onClick={onClickFilter}
             onMenuAction={onFilterMenuAction}

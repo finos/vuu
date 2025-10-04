@@ -1,4 +1,4 @@
-import { getSchema } from "@vuu-ui/vuu-data-test";
+import { getSchema, type VuuTableName } from "@vuu-ui/vuu-data-test";
 import {
   VuuTypeaheadInput,
   type VuuTypeaheadInputProps,
@@ -16,26 +16,66 @@ const TypeaheadInputTemplate = ({
   column = "currency",
   minCharacterCountToTriggerSuggestions = 1,
   onCommit,
-  table = { module: "SIMUL", table: "instrumentsExtended" },
+  tableName = "instrumentsExtended",
+  withoutTypeahead = false,
 }: Partial<VuuTypeaheadInputProps> & {
+  tableName?: VuuTableName;
   style?: CSSProperties;
+  withoutTypeahead?: boolean;
 }) => {
+  const table = { module: "SIMUL", table: tableName };
+  const { VuuDataSource } = useData();
+  const dataSource = useMemo(() => {
+    const schema = getSchema(tableName);
+    return new VuuDataSource({
+      columns: schema.columns.map(toColumnName),
+      table: schema.table,
+    });
+  }, [VuuDataSource, tableName]);
+
   const handleCommit: CommitHandler = (evt, value) => {
     onCommit?.(evt, value);
     console.log(`commit ${value}`);
   };
 
-  return (
-    <VuuTypeaheadInput
-      allowFreeInput={allowFreeInput}
-      column={column}
-      minCharacterCountToTriggerSuggestions={
-        minCharacterCountToTriggerSuggestions
-      }
-      onCommit={handleCommit}
-      table={table}
-    />
-  );
+  if (withoutTypeahead) {
+    return (
+      <VuuTypeaheadInput
+        allowFreeInput={allowFreeInput}
+        column={column}
+        minCharacterCountToTriggerSuggestions={
+          minCharacterCountToTriggerSuggestions
+        }
+        onCommit={handleCommit}
+        table={table}
+      />
+    );
+  } else {
+    return (
+      <DataSourceProvider dataSource={dataSource}>
+        <div
+          style={{
+            alignItems: "center",
+            display: "flex",
+            padding: "0 3px",
+            width: 200,
+            height: 32,
+            border: "solid 1px lightgray",
+          }}
+        >
+          <VuuTypeaheadInput
+            allowFreeInput={allowFreeInput}
+            column={column}
+            minCharacterCountToTriggerSuggestions={
+              minCharacterCountToTriggerSuggestions
+            }
+            onCommit={handleCommit}
+            table={table}
+          />
+        </div>
+      </DataSourceProvider>
+    );
+  }
 };
 
 /** tags=data-consumer */
@@ -44,31 +84,7 @@ export const CurrencyWithTypeaheadAllowFreeText = ({
 }: {
   onCommit?: CommitHandler;
 }) => {
-  const { VuuDataSource } = useData();
-  const dataSource = useMemo(() => {
-    const schema = getSchema("instruments");
-    return new VuuDataSource({
-      columns: schema.columns.map(toColumnName),
-      table: schema.table,
-    });
-  }, [VuuDataSource]);
-
-  return (
-    <div
-      style={{
-        alignItems: "center",
-        display: "flex",
-        padding: "0 3px",
-        width: 200,
-        height: 32,
-        border: "solid 1px lightgray",
-      }}
-    >
-      <DataSourceProvider dataSource={dataSource}>
-        <TypeaheadInputTemplate onCommit={onCommit} />
-      </DataSourceProvider>
-    </div>
-  );
+  return <TypeaheadInputTemplate onCommit={onCommit} />;
 };
 
 /** tags=data-consumer */
@@ -77,33 +93,11 @@ export const ShowsSuggestionsNoTextRequired = ({
 }: {
   onCommit?: CommitHandler;
 }) => {
-  const { VuuDataSource } = useData();
-  const dataSource = useMemo(() => {
-    const schema = getSchema("instruments");
-    return new VuuDataSource({
-      columns: schema.columns.map(toColumnName),
-      table: schema.table,
-    });
-  }, [VuuDataSource]);
-
   return (
-    <div
-      style={{
-        alignItems: "center",
-        display: "flex",
-        padding: "0 3px",
-        width: 200,
-        height: 32,
-        border: "solid 1px lightgray",
-      }}
-    >
-      <DataSourceProvider dataSource={dataSource}>
-        <TypeaheadInputTemplate
-          minCharacterCountToTriggerSuggestions={0}
-          onCommit={onCommit}
-        />
-      </DataSourceProvider>
-    </div>
+    <TypeaheadInputTemplate
+      minCharacterCountToTriggerSuggestions={0}
+      onCommit={onCommit}
+    />
   );
 };
 
@@ -113,63 +107,28 @@ export const CurrencyWithTypeaheadDisallowFreeText = ({
 }: {
   onCommit?: CommitHandler;
 }) => {
-  const { VuuDataSource } = useData();
-  const dataSource = useMemo(() => {
-    const schema = getSchema("instruments");
-    return new VuuDataSource({
-      columns: schema.columns.map(toColumnName),
-      table: schema.table,
-    });
-  }, [VuuDataSource]);
+  return <TypeaheadInputTemplate allowFreeInput={false} onCommit={onCommit} />;
+};
 
+/** tags=data-consumer */
+export const RicWithTypeaheadDisallowFreeText = ({
+  onCommit,
+}: {
+  onCommit?: CommitHandler;
+}) => {
   return (
-    <div
-      style={{
-        alignItems: "center",
-        display: "flex",
-        padding: "0 3px",
-        width: 200,
-        height: 32,
-        border: "solid 1px lightgray",
-      }}
-    >
-      <DataSourceProvider dataSource={dataSource}>
-        <TypeaheadInputTemplate allowFreeInput={false} onCommit={onCommit} />
-      </DataSourceProvider>
-    </div>
+    <TypeaheadInputTemplate
+      allowFreeInput={false}
+      column="ric"
+      onCommit={onCommit}
+    />
   );
 };
 
 export const CurrencyNoTypeaheadAllowFreeText = () => {
-  return (
-    <div
-      style={{
-        alignItems: "center",
-        display: "flex",
-        padding: "0 3px",
-        width: 200,
-        height: 32,
-        border: "solid 1px lightgray",
-      }}
-    >
-      <TypeaheadInputTemplate />
-    </div>
-  );
+  return <TypeaheadInputTemplate withoutTypeahead />;
 };
 
 export const CurrencyNoTypeaheadDisallowFreeText = () => {
-  return (
-    <div
-      style={{
-        alignItems: "center",
-        display: "flex",
-        padding: "0 3px",
-        width: 200,
-        height: 32,
-        border: "solid 1px lightgray",
-      }}
-    >
-      <TypeaheadInputTemplate allowFreeInput={false} />
-    </div>
-  );
+  return <TypeaheadInputTemplate allowFreeInput={false} withoutTypeahead />;
 };
