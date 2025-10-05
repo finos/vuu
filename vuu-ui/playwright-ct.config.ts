@@ -1,41 +1,54 @@
 import { defineConfig, devices } from '@playwright/experimental-ct-react';
+import { createFilter } from "vite";
+import MagicString from "magic-string";
 
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
+// Custom CSS inline plugin that targets all packages
+function cssInline() {
+  const exclude = ["**/**.stories.tsx"];
+  const include = [
+    "**/packages/**/*.{tsx,jsx}",
+  ];
+
+  const filter = createFilter(include, exclude);
+
+  return {
+    name: "vite-plugin-inline-css",
+    enforce: "pre",
+    transform(src, id) {
+      if (filter(id)) {
+        const s = new MagicString(src);
+        s.replaceAll('.css";', '.css?inline";');
+        return {
+          code: s.toString(),
+          map: s.generateMap({ hires: true, source: id }),
+        };
+      }
+    },
+  };
+}
+
 export default defineConfig({
   testDir: './packages/vuu-ui-controls/src/__tests__/__component__',
   testMatch: '**/*.playwright.test.tsx',
-  /* The base directory, relative to the config file, for snapshot files created with toMatchSnapshot and toHaveScreenshot. */
   snapshotDir: './__snapshots__',
-  /* Maximum time one test can run for. */
   timeout: 10 * 1000,
-  /* Run tests in files in parallel */
   fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: process.env.CI ? 'blob' : 'list',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
-
-    /* Port to use for Playwright component endpoint. */
     ctPort: 3100,
-    
-    /* Vite configuration for component testing */
     ctViteConfig: {
       resolve: {
-        alias: {
-          '@vuu-ui/vuu-ui-controls': './packages/vuu-ui-controls/src',
-          '@vuu-ui/vuu-utils': './packages/vuu-utils/src',
-        },
+        extensions: ['.tsx', '.ts', '.jsx', '.js'],
+        mainFields: ['module', 'main'],
+        conditions: ['import', 'module', 'browser', 'default'],
       },
+      plugins: [
+        cssInline(), // Use the custom CSS inline plugin
+      ],
       build: {
         rollupOptions: {
           external: [
