@@ -351,7 +351,7 @@ export const useVuuMenuActions = ({
     );
 
   const { showDialog, closeDialog, showPrompt } = useModal();
-  const showNotification = useNotifications();
+  const { showNotification } = useNotifications();
 
   const showBulkEditDialog = useCallback(
     (ds: DataSource, table: VuuTable, columns?: ColumnDescriptor[]) => {
@@ -507,9 +507,10 @@ export const useVuuMenuActions = ({
                     action: { message, title = "Success" },
                   } = rpcResponse;
                   showNotification({
-                    type: "success",
-                    body: message,
+                    level: "success",
+                    content: message,
                     header: title,
+                    type: "toast",
                   });
                 } else if (isOpenBulkEditResponse(rpcResponse)) {
                   showBulkEditDialog(

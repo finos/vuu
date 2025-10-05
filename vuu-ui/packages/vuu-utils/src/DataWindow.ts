@@ -20,7 +20,7 @@ export type DataRow = [
   /** selected */
   number,
   /** data values  */
-  ...DataItem[]
+  ...DataItem[],
 ];
 export type RangeLike = { from: number; to: number };
 
@@ -101,7 +101,7 @@ export class DataWindow {
     return this.data[start] !== undefined && this.data[end] !== undefined;
   }
 
-  getData(from: number, to: number): any[] {
+  getData(from: number, to: number): DataRow[] {
     const { from: clientFrom } = this.range;
     const startOffset = Math.max(0, from - clientFrom);
     const endOffset = Math.min(to - clientFrom, this.rowCount ?? to);

@@ -1,3 +1,5 @@
+import { ValueOf } from "./json-types";
+
 /**
  * The Vuu Shell creates the outermost application layout. This includes some
  * 'special' identifiers that can be targetted by layout commands to effect or
@@ -12,5 +14,4 @@ export const VuuShellLocation = {
   WorkspaceContainer: "vuu-workspace-container",
 } as const;
 
-export type VuuShellLocation =
-  (typeof VuuShellLocation)[keyof typeof VuuShellLocation];
+export type VuuShellLocation = ValueOf<typeof VuuShellLocation>;

@@ -37,7 +37,7 @@ export const useBasketTradingDataSources = ({
   basketInstanceId?: string;
 }) => {
   const [basketState, setBasketState] = useState<BasketTableState>();
-  const notify = useNotifications();
+  const { showNotification } = useNotifications();
   const { id, loadSession, saveSession, title } = useViewContext();
   const { getServerAPI, VuuDataSource } = useData();
 
@@ -164,16 +164,17 @@ export const useBasketTradingDataSources = ({
         } as Omit<VuuRpcServiceRequest, "context">)
         .then((response) => {
           if (response?.type === "ERROR_RESULT") {
-            notify({
-              type: "error",
+            showNotification({
+              content: "Please contact your support team",
               header: "Failed to Send to market",
-              body: "Please contact your support team",
+              level: "error",
+              type: "toast",
             });
             console.error(response.errorMessage);
           }
         });
     },
-    [basketState, notify],
+    [basketState, showNotification],
   );
 
   const handleTakeOffMarket = useCallback(
@@ -186,16 +187,17 @@ export const useBasketTradingDataSources = ({
         } as Omit<VuuRpcServiceRequest, "context">)
         .then((response) => {
           if (response?.type === "ERROR_RESULT") {
-            notify({
-              type: "error",
+            showNotification({
+              content: "Please contact your support team",
               header: "Failed to take off market",
-              body: "Please contact your support team",
+              level: "error",
+              type: "toast",
             });
             console.error(response.errorMessage);
           }
         });
     },
-    [basketState, notify],
+    [basketState, showNotification],
   );
 
   // Note: we do not need to return the BasketConstituent dataSource, we just stash it

@@ -738,6 +738,14 @@ export class Viewport {
     return false;
   };
 
+  clearCache() {
+    this.dataWindow.setRowCount(0);
+    this.postMessageToClient({
+      clientViewportId: this.clientViewportId,
+      type: "viewport-clear",
+    });
+  }
+
   updateRows(rows: VuuRow[]) {
     const [firstRow, lastRow] = getFirstAndLastRows(rows);
     if (firstRow && lastRow) {

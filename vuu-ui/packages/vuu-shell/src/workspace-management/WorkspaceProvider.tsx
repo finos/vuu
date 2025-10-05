@@ -99,7 +99,7 @@ export const WorkspaceProvider = ({
   // TODO this default should probably be a loading state rather than the placeholder
   // It will be replaced as soon as the localStorage/remote layout is resolved
   const [, forceRefresh] = useState({});
-  const notify = useNotifications();
+  const { showNotification } = useNotifications();
   const persistenceManager = usePersistenceManager();
   const applicationJSONRef = useRef<ApplicationJSON>(loadingApplicationJSON);
 
@@ -150,10 +150,11 @@ export const WorkspaceProvider = ({
         setLayoutMetadata(metadata);
       })
       .catch((error: Error) => {
-        notify({
-          type: "error",
+        showNotification({
+          content: "Could not load list of available layouts",
           header: "Failed to Load Layouts",
-          body: "Could not load list of available layouts",
+          level: "error",
+          type: "toast",
         });
         console.error("Error occurred while retrieving metadata", error);
       });
@@ -183,10 +184,11 @@ export const WorkspaceProvider = ({
         }
       })
       .catch((error: Error) => {
-        notify({
-          type: "error",
+        showNotification({
+          content: "Could not load your latest view",
           header: "Failed to Load Layout",
-          body: "Could not load your latest view",
+          level: "error",
+          type: "toast",
         });
         console.error(
           "Error occurred while retrieving application layout",
@@ -198,7 +200,7 @@ export const WorkspaceProvider = ({
     activeLayoutIndex,
     customWorkspaceJSON,
     layoutJSON,
-    notify,
+    showNotification,
     persistenceManager,
     setApplicationJSON,
     showTabs,
@@ -237,31 +239,34 @@ export const WorkspaceProvider = ({
         persistenceManager
           ?.createLayout(metadata, ensureLayoutHasTitle(layoutToSave, metadata))
           .then((metadata) => {
-            notify({
-              type: "success",
+            showNotification({
+              content: `${metadata.name} saved successfully`,
               header: "Layout Saved Successfully",
-              body: `${metadata.name} saved successfully`,
+              level: "success",
+              type: "toast",
             });
             setLayoutMetadata((prev) => [...prev, metadata]);
           })
           .catch((error: Error) => {
-            notify({
-              type: "error",
+            showNotification({
+              content: `Failed to save layout ${metadata.name}`,
               header: "Failed to Save Layout",
-              body: `Failed to save layout ${metadata.name}`,
+              level: "error",
+              type: "toast",
             });
             console.error("Error occurred while saving layout", error);
           });
       } else {
         console.error("Tried to save invalid layout", layoutToSave);
-        notify({
-          type: "error",
+        showNotification({
+          content: "Cannot save invalid layout",
           header: "Failed to Save Layout",
-          body: "Cannot save invalid layout",
+          level: "error",
+          type: "toast",
         });
       }
     },
-    [notify, persistenceManager],
+    [showNotification, persistenceManager],
   );
 
   const saveApplicationSettings = useCallback(
@@ -311,15 +316,16 @@ export const WorkspaceProvider = ({
           }
         })
         .catch((error: Error) => {
-          notify({
-            type: "error",
+          showNotification({
+            content: "Failed to load the requested layout",
             header: "Failed to Load Layout",
-            body: "Failed to load the requested layout",
+            level: "error",
+            type: "toast",
           });
           console.error("Error occurred while loading layout", error);
         });
     },
-    [notify, persistenceManager, setWorkspaceJSON],
+    [showNotification, persistenceManager, setWorkspaceJSON],
   );
 
   return (

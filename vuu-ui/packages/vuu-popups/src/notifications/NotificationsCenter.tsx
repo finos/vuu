@@ -1,11 +1,21 @@
-import { useMemo, useState } from "react";
-import { NotificationsContext } from "./NotificationsProvider";
 import { getUniqueId } from "@vuu-ui/vuu-utils";
+import { ReactNode, useCallback, useMemo, useState } from "react";
+import {
+  isToastNotification,
+  isWorkspaceNotification,
+  Notification,
+  NotificationsContext,
+  ToastNotificationDescriptor as ToastNotificationType,
+} from "./NotificationsContext";
 import { ToastNotification } from "./ToastNotification";
-import { Notification } from "./notificationTypes";
+import { WorkspaceNotification } from "./WorkspaceNotification";
 
 export interface NotificationsCenterProps {
   notificationsContext: NotificationsContext;
+}
+
+interface ToastNotificationWithId extends ToastNotificationType {
+  id: string;
 }
 
 // animation times in milliseconds
@@ -22,11 +32,15 @@ const toastContainerContentGap = 10;
 export const NotificationsCenter = ({
   notificationsContext,
 }: NotificationsCenterProps) => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [workspaceNotification, setWorkspaceNotification] =
+    useState<ReactNode>(null);
+  const [notifications, setNotifications] = useState<ToastNotificationWithId[]>(
+    [],
+  );
 
-  useMemo(() => {
-    notificationsContext.setNotify((notification) => {
-      const newNotification: Notification = {
+  const showNotification = useCallback((notification: Notification) => {
+    if (isToastNotification(notification)) {
+      const newNotification: ToastNotificationWithId = {
         ...notification,
         id: getUniqueId(),
       };
@@ -37,11 +51,26 @@ export const NotificationsCenter = ({
         },
         toastDisplayDuration + horizontalTransitionDuration * 2,
       );
-    });
-  }, [notificationsContext]);
+    } else if (isWorkspaceNotification(notification)) {
+      setWorkspaceNotification(
+        <WorkspaceNotification>{notification.content}</WorkspaceNotification>,
+      );
+    } else {
+      throw Error("[NotificationsCenter] invalid notification received");
+    }
+  }, []);
+
+  const hideNotification = useCallback(() => {
+    setWorkspaceNotification(null);
+  }, []);
+
+  useMemo(() => {
+    notificationsContext.setNotify(showNotification, hideNotification);
+  }, [hideNotification, notificationsContext, showNotification]);
 
   return (
     <>
+      {workspaceNotification}
       {notifications.map((notification, i) => (
         <ToastNotification
           top={toastOffsetTop + (toastHeight + toastContainerContentGap) * i}

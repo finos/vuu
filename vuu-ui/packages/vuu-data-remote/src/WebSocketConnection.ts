@@ -54,6 +54,11 @@ export const isWebSocketConnectionMessage = (
   }
 };
 
+export const isConnected = (
+  status: ConnectionStatus,
+): status is ConnectedStatus =>
+  status === "connected" || status === "reconnected";
+
 export type VuuServerMessageCallback = (msg: VuuServerMessage) => void;
 
 export type RetryLimits = {

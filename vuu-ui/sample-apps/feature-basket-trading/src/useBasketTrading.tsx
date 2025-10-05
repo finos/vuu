@@ -60,7 +60,7 @@ const NO_STATE = { basketInstanceId: undefined } as {
 
 export const useBasketTrading = () => {
   const { load, save } = useViewContext();
-  const notify = useNotifications();
+  const { showNotification } = useNotifications();
 
   const editConfig = useMemo<TableConfig>(() => {
     const config = load?.("basket-edit-table-config") as TableConfig;
@@ -251,23 +251,29 @@ export const useBasketTrading = () => {
           })
           .then((response) => {
             if (response?.type === "SUCCESS_RESULT") {
-              notify?.({
-                type: "success",
+              showNotification?.({
+                content: `${ric} added to basket`,
                 header: "Add Constituent to Basket",
-                body: `${ric} added to basket`,
+                level: "success",
+                type: "toast",
               });
             } else if (response?.type === "ERROR_RESULT") {
-              notify?.({
-                type: "error",
-                header: "Add Constituent to Basket",
-                body:
+              showNotification?.({
+                content:
                   response?.errorMessage ?? `Failed to add ${ric} to basket`,
+                header: "Add Constituent to Basket",
+                level: "error",
+                type: "toast",
               });
             }
           });
       }
     },
-    [basketConstituentMap, dataSourceBasketTradingConstituentJoin, notify],
+    [
+      basketConstituentMap,
+      dataSourceBasketTradingConstituentJoin,
+      showNotification,
+    ],
   );
 
   const handleConfigChangeEdit = useCallback<TableConfigChangeHandler>(

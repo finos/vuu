@@ -56,7 +56,11 @@ import {
 } from "../message-utils";
 import * as Message from "./messages";
 import { NO_DATA_UPDATE, Viewport } from "./viewport";
-import { WebSocketConnection } from "../WebSocketConnection";
+import {
+  WebSocketConnection,
+  WebSocketConnectionCloseReason,
+  WebSocketConnectionState,
+} from "../WebSocketConnection";
 
 export type PostMessageToClientCallback = (
   message: VuuUIMessageIn | DataSourceCallbackMessage,
@@ -149,7 +153,19 @@ export class ServerProxy {
     this.mapClientToServerViewport = new Map();
 
     connection.on("reconnected", this.reconnect);
+    connection.on("closed", this.connectionClosed);
+    connection.on("connection-status", this.connectionStatusChanged);
   }
+
+  private connectionClosed = (reason: WebSocketConnectionCloseReason) => {
+    console.log(`[ServerProxy] connectionClosed reason ${reason}`);
+  };
+
+  private connectionStatusChanged = (message: WebSocketConnectionState) => {
+    if (message.connectionStatus === "disconnected") {
+      this.clearAllViewports();
+    }
+  };
 
   private reconnect = async () => {
     await this.login(this.authToken);
@@ -216,20 +232,21 @@ export class ServerProxy {
     }
   }
 
+  public clearAllViewports() {
+    this.viewports.forEach((viewport) => {
+      viewport.clearCache();
+    });
+  }
+
   public disconnect() {
     this.viewports.forEach((viewport) => {
       const { clientViewportId } = viewport;
-      // would it be better to await these calls ?
-      // Once ACKed, these will clear up entries in local viewport map
       this.unsubscribe(clientViewportId);
       this.postMessageToClient({
         clientViewportId,
         type: "viewport-clear",
       });
     });
-
-    // this.viewports.clear();
-    // this.mapClientToServerViewport.clear();
   }
 
   public subscribe(message: ServerProxySubscribeMessage) {

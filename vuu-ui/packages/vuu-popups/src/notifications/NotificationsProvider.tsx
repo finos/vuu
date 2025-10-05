@@ -1,15 +1,10 @@
 import React, { ReactElement, useContext } from "react";
 import { NotificationsCenter } from "./NotificationsCenter";
-import { Notification } from "./notificationTypes";
-
-export type DispatchNotification = (
-  notification: Omit<Notification, "id">,
-) => void;
-
-export type NotificationsContext = {
-  notify: DispatchNotification;
-  setNotify: (dispatcher: DispatchNotification) => void;
-};
+import {
+  DispatchHideNotification,
+  DispatchShowNotification,
+  NotificationsContext,
+} from "./NotificationsContext";
 
 /*
   The Context is not exposed outside this module, only the notify
@@ -21,12 +16,20 @@ export type NotificationsContext = {
   dispatched.
 */
 class NotificationsContextObject implements NotificationsContext {
-  #notify: DispatchNotification = () =>
+  #showNotification: DispatchShowNotification = () =>
+    console.log("have you forgotten to provide a NotificationsCenter?");
+  #hideNotification: DispatchHideNotification = () =>
     console.log("have you forgotten to provide a NotificationsCenter?");
   // We want the public notify method to be stable, setNotify call should not trigger re-renders
-  notify: DispatchNotification = (notification) => this.#notify(notification);
-  setNotify = (dispatcher: DispatchNotification) => {
-    this.#notify = dispatcher;
+  showNotification: DispatchShowNotification = (notification) =>
+    this.#showNotification(notification);
+  hideNotification: DispatchHideNotification = () => this.#hideNotification();
+  setNotify = (
+    showNotificationDispatcher: DispatchShowNotification,
+    hideNotificationDispatcher: DispatchHideNotification,
+  ) => {
+    this.#showNotification = showNotificationDispatcher;
+    this.#hideNotification = hideNotificationDispatcher;
   };
 }
 
@@ -47,6 +50,7 @@ export const NotificationsProvider = (props: {
 };
 
 export const useNotifications = () => {
-  const { notify } = useContext(NotificationsContext);
-  return notify;
+  const { hideNotification, showNotification } =
+    useContext(NotificationsContext);
+  return { hideNotification, showNotification };
 };

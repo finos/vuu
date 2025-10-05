@@ -5,4 +5,7 @@ export * from "./constants";
 export * from "./data-source";
 export * from "./message-utils";
 export * from "./VuuDataSource";
-export type { WebSocketConnectionState } from "./WebSocketConnection";
+export {
+  isConnected,
+  type WebSocketConnectionState,
+} from "./WebSocketConnection";

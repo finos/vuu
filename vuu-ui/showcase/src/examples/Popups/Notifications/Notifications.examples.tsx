@@ -1,9 +1,9 @@
 import { ChangeEvent, useState } from "react";
 import {
   NotificationsProvider,
-  NotificationLevel,
-  ToastNotification,
   useNotifications,
+  ToastNotification,
+  NotificationLevel,
 } from "@vuu-ui/vuu-popups";
 import {
   Dropdown,
@@ -19,13 +19,14 @@ const Notifications = () => {
   const [header, setHeader] = useState<string>("Header");
   const [body, setBody] = useState<string>("Body");
 
-  const notify = useNotifications();
+  const { showNotification } = useNotifications();
 
   const handleNotification = () => {
-    notify({
-      type,
+    showNotification({
+      level: type,
       header,
-      body,
+      content: body,
+      type: "toast",
     });
   };
 
@@ -83,10 +84,10 @@ export const SuccessNotificationToast = () => (
     top={20}
     animated={false}
     notification={{
-      type: "success",
+      content: "[Layout Name] Saved Successfully",
       header: "Layout Saved Successfully",
-      body: "[Layout Name] Saved Successfully",
-      id: "0",
+      level: "success",
+      type: "toast",
     }}
   />
 );
@@ -96,10 +97,10 @@ export const ErrorNotificationToast = () => (
     top={20}
     animated={false}
     notification={{
-      type: "error",
+      content: "This didn't work",
       header: "This Didn't Work",
-      body: "This didn't work",
-      id: "0",
+      level: "error",
+      type: "toast",
     }}
   />
 );
@@ -109,10 +110,10 @@ export const WarningNotificationToast = () => (
     top={20}
     animated={false}
     notification={{
-      type: "warning",
+      content: "This probably won't work",
       header: "This probably won't work",
-      body: "This probably won't work",
-      id: "0",
+      level: "warning",
+      type: "toast",
     }}
   />
 );
@@ -122,10 +123,10 @@ export const InfoNotificationToast = () => (
     top={20}
     animated={false}
     notification={{
-      type: "info",
+      content: "This is Info Body",
       header: "This is Info Title",
-      body: "This is Info Body",
-      id: "0",
+      level: "info",
+      type: "toast",
     }}
   />
 );
