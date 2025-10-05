@@ -1,7 +1,6 @@
-import { ConnectionManager } from "@vuu-ui/vuu-data-remote";
 import type { LayoutChangeHandler } from "@vuu-ui/vuu-layout";
 import { LayoutProvider, StackLayout } from "@vuu-ui/vuu-layout";
-import { NotificationsProvider, useNotifications } from "@vuu-ui/vuu-popups";
+import { NotificationsProvider } from "@vuu-ui/vuu-popups";
 import { VuuUser, logger, registerComponent } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -32,6 +31,7 @@ import shellCss from "./shell.css";
 import { loadingJSON } from "./workspace-management/defaultWorkspaceJSON";
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
+import { useRemoteConnection } from "@vuu-ui/vuu-data-react";
 
 registerComponent("ApplicationSettings", UserSettingsPanel, "view");
 
@@ -98,7 +98,6 @@ const VuuApplication = ({
     window: targetWindow,
   });
 
-  const notify = useNotifications();
   const { workspaceJSON, saveApplicationLayout } = useWorkspace();
 
   const { buildMenuOptions, handleMenuAction } = useWorkspaceContextMenuItems();
@@ -114,29 +113,7 @@ const VuuApplication = ({
     [saveApplicationLayout],
   );
 
-  useMemo(async () => {
-    if (serverUrl && user.token) {
-      const connectionResult = await ConnectionManager.connect({
-        token: user.token,
-        url: serverUrl,
-        username: user.username,
-      });
-      if (connectionResult === "rejected") {
-        notify({
-          type: "error",
-          body: "Unable to connect to VUU Server",
-          header: "Error",
-        });
-      }
-    } else {
-      console.warn(
-        `Shell: serverUrl: '${serverUrl}', token: '${Array(user.token.length)
-          .fill("#")
-          .join("")}'  
-        `,
-      );
-    }
-  }, [notify, serverUrl, user.token, user.username]);
+  useRemoteConnection({ serverUrl, user });
 
   const isLayoutLoading = workspaceJSON === loadingJSON;
 

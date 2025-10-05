@@ -4,7 +4,6 @@ import { ContextPanel } from "../context-panel";
 import { SidePanel } from "../side-panel";
 import { ShellLayoutTemplateHook } from "../useShellLayout";
 import { useMemo } from "react";
-import { ApplicationStatusBar } from "../../app-status-bar";
 
 export const useFullHeightLeftPanel: ShellLayoutTemplateHook = ({
   appHeader,
@@ -31,7 +30,6 @@ export const useFullHeightLeftPanel: ShellLayoutTemplateHook = ({
             key="main-content"
             style={{ flex: 1 }}
           />
-          <ApplicationStatusBar />
         </Flexbox>
         <ContextPanel id={VuuShellLocation.ContextPanel} overlay></ContextPanel>
       </Flexbox>

@@ -7,6 +7,7 @@ import { getSchema } from "@vuu-ui/vuu-data-test";
 import { useData } from "@vuu-ui/vuu-utils";
 
 const testBasket: Basket = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dataSourceRow: [] as any,
   basketId: ".FTSE",
   basketName: "Test Basket",

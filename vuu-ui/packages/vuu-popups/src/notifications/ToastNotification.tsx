@@ -4,7 +4,7 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { useEffect, useState } from "react";
 import { Portal } from "../portal";
-import type { Notification } from "./notificationTypes";
+import type { ToastNotificationDescriptor } from "./NotificationsProvider";
 
 import toastNotificationCss from "./ToastNotification.css";
 
@@ -17,7 +17,7 @@ const verticalTransitionDuration = 300;
 
 export type ToastNotificationProps = {
   top: number;
-  notification: Notification;
+  notification: ToastNotificationDescriptor;
   animated?: boolean;
 };
 
@@ -66,12 +66,12 @@ export const ToastNotification = (props: ToastNotificationProps) => {
             : "none",
         }}
       >
-        <Icon name={icon[notification.type]} />
+        <Icon name={icon[notification.level]} />
         <div className={`${classBase}-toastContent`}>
           <strong className={`${classBase}-toastHeader`}>
             {notification.header}
           </strong>
-          <div>{notification.body}</div>
+          <div>{notification.content}</div>
         </div>
       </div>
     </Portal>

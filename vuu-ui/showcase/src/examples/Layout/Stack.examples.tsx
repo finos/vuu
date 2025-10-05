@@ -1,11 +1,12 @@
 import {
   Component,
   FlexboxLayout as Flexbox,
+  LayoutChangeHandler,
   LayoutProvider,
   StackLayout,
   View,
 } from "@vuu-ui/vuu-layout";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 const allowAddTab = true;
 const allowCloseTab = true;
@@ -208,9 +209,9 @@ export const TabsWithinTabs = () => (
 );
 
 export const TabsWithFlexChildren = () => {
-  const handleLayoutChange = (layout: any) => {
+  const handleLayoutChange = useCallback<LayoutChangeHandler>((layout) => {
     console.log(JSON.stringify(layout, null, 2));
-  };
+  }, []);
 
   return (
     <LayoutProvider onLayoutChange={handleLayoutChange}>

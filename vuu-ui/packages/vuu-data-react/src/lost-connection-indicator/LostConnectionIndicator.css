@@ -1,0 +1,30 @@
+.vuuLostConnectionIndicator {
+
+    --spinner-color: var(--vuuSpinner-color, #E23434);
+
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: var(--salt-spacing-300);
+    justify-content: center;
+
+
+    .vuuLostConnectionIndicator-spinner {
+        animation: spinner-rounded-comet-anim 1.0s infinite linear;
+        width: 75px;
+        height: 75px;
+        border-radius: 50%;
+        background: radial-gradient(farthest-side,var(--spinner-color) 94%,#0000) top/9px 9px no-repeat,
+                conic-gradient(#0000 30%,var(--spinner-color));
+        mask: radial-gradient(farthest-side,#0000 calc(100% - 4px),#000 0);
+    }
+}
+
+@keyframes spinner-rounded-comet-anim {
+   100% {
+      transform: rotate(1turn);
+   }
+}
+
+
+

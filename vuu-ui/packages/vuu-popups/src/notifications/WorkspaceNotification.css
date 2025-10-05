@@ -1,0 +1,11 @@
+.vuuWorkspaceNotification {
+    position: absolute;
+    z-index: var(--salt-zIndex-notification);
+
+    .vuuWorkspaceNotification-content {
+        align-items: center;
+        background: var(--salt-container-primary-background);
+        display: flex;
+        justify-content: center
+    }
+}

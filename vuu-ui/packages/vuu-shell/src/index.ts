@@ -1,6 +1,5 @@
 export * from "./application-provider";
 export * from "./app-header";
-export * from "./connection-status";
 export * from "./feature";
 export * from "./feature-and-layout-provider";
 export * from "./left-nav";

@@ -51,9 +51,9 @@ export const SingleChild = () => {
 };
 
 export const SimpleTower = () => {
-  const handleSplitterMoved = (sizes: any) => {
+  const handleSplitterMoved = useCallback<SplitterMoveHandler>((sizes) => {
     console.log(`splitter moved ${JSON.stringify(sizes)}`);
-  };
+  }, []);
   return (
     <div style={{ width: 700, height: 600, display: "flex", gap: 25 }}>
       <Flexbox
@@ -147,9 +147,9 @@ export const TowerWithCollapsibleViews = () => {
 };
 
 export const ThreeChildTower = () => {
-  const handleSplitterMoved = (sizes: any) => {
+  const handleSplitterMoved = useCallback<SplitterMoveHandler>((sizes) => {
     console.log(`splitter moved ${JSON.stringify(sizes)}`);
-  };
+  }, []);
   return (
     <div style={{ width: 700, height: 600, display: "flex", gap: 25 }}>
       <Flexbox

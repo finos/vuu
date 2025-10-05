@@ -215,7 +215,7 @@ export const SingleHeadingRow = () => {
       },
       dataSource: new VuuDataSource({ table: schema.table }),
     };
-  }, []);
+  }, [VuuDataSource, schema.table]);
 
   return (
     <Table {...tableProps} height={645} renderBufferSize={10} width={800} />
