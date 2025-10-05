@@ -198,7 +198,9 @@ export abstract class BaseDataSource
     this.awaitingConfirmationOfConfigChanges = false;
     const configChanges = this.applyConfig(config);
     if (configChanges) {
-      this.emit("config", this.config, this.range, confirmed, configChanges);
+      requestAnimationFrame(() => {
+        this.emit("config", this.config, this.range, confirmed, configChanges);
+      });
     }
   }
 

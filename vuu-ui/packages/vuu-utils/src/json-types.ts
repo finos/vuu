@@ -1,7 +1,7 @@
 import { NamedFilter } from "@vuu-ui/vuu-filter-types";
 import { CSSProperties, ReactElement } from "react";
+import { ValueOf } from "./ts-utils";
 
-export type ValueOf<T> = T[keyof T];
 export interface ApplicationSettings {
   leftNav?: {
     activeTabIndex: number;

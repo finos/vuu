@@ -2,22 +2,22 @@
   --filter-borderColor: var(--salt-separable-secondary-borderColor);
   --filter-color: var(--salt-content-primary-foreground-disabled);
   --filter-padding: 1px 1px 1px 0;
-  --item-content-height: 22px;
+  --item-content-height: 20px;
   height: var(--salt-size-base);
+
+  .vuuInlineFilterCell {
+    /* the padding ensures the outline is not clipped */
+    --saltInput-paddingLeft: 2px;
+    --filter-padding: 0 2px;
+  }
 
   .vuuInlineFilterCell:has(input:focus) {
     --filter-borderColor: transparent;
-    --item-content-height: 20px;
 
     outline-width: 2px;
     outline-offset: -2px;
     outline-style: dotted;
     outline-color: var(--salt-focused-outlineColor);
-
-    /* the padding ensures the outline is not clipped */
-    --filter-padding: 0 2px;
-    /* prevents shift when we apply the padding */
-    --saltInput-paddingLeft: 2px;
 
     .saltInput-input {
       outline: none;
@@ -34,11 +34,6 @@
 
   .vuuInlineFilterCell:focus {
     --filter-borderColor: transparent;
-    --item-content-height: 20px;
-    /* the padding ensures the outline is not clipped */
-    --filter-padding: 0 2px;
-    /* prevents shift when we apply the padding */
-    --saltInput-paddingLeft: 2px;
   }
 
   .vuuInlineFilterCell {
@@ -58,8 +53,11 @@
       input::placeholder {
         color: var(--filter-color);
       }
-    }
 
+      .saltButton:after {
+        --vuu-icon-size: 6px;
+      }
+    }
 
     .saltInput-primary.vuuInput {
       border-style: solid;
@@ -72,6 +70,7 @@
         color: var(--filter-color);
       }
     }
+
   }
 
   .vuuInlineFilter-virtualColSpan {

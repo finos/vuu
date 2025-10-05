@@ -43,7 +43,6 @@ import {
   buildColumnMap,
   combineFilters,
   getAddedItems,
-  getMissingItems,
   hasBaseFilter,
   hasFilter,
   hasGroupBy,
@@ -540,21 +539,32 @@ export class ArrayDataSource
         }
       }
 
-      if (this.#status === "subscribed") {
-        this.sendSizeUpdateToClient();
-        if (this.preserveScrollPositionAcrossConfigChange) {
-          this.preserveScrollPositionAcrossConfigChange = false;
-        } else {
-          this.setRange(this.#range.reset, true);
-        }
-        if (
-          configChanges.filterChanged ||
-          configChanges.baseFilterChanged ||
-          configChanges.groupByChanged
-        ) {
+      if (
+        configChanges.filterChanged ||
+        configChanges.baseFilterChanged ||
+        configChanges.groupByChanged
+      ) {
+        requestAnimationFrame(() => {
           this.emit("resize", this.size);
-        }
-        this.emit("config", this._config, this.range, undefined, configChanges);
+        });
+      }
+
+      if (this.#status === "subscribed") {
+        requestAnimationFrame(() => {
+          this.sendSizeUpdateToClient();
+          if (this.preserveScrollPositionAcrossConfigChange) {
+            this.preserveScrollPositionAcrossConfigChange = false;
+          } else {
+            this.setRange(this.#range.reset, true);
+          }
+          this.emit(
+            "config",
+            this._config,
+            this.range,
+            undefined,
+            configChanges,
+          );
+        });
       }
     }
   }
@@ -562,14 +572,14 @@ export class ArrayDataSource
   private processNewColumns(originalColumns: VuuColumns, columns: VuuColumns) {
     const addedColumns = getAddedItems(originalColumns, columns);
     if (addedColumns.length > 0) {
-      const columnsWithoutDescriptors = getMissingItems(
-        this.columnDescriptors,
-        addedColumns,
-        (col) => col.name,
-      );
-      console.warn(`columnsWithoutDescriptors`, {
-        columnsWithoutDescriptors,
-      });
+      // const columnsWithoutDescriptors = getMissingItems(
+      //   this.columnDescriptors,
+      //   addedColumns,
+      //   (col) => col.name,
+      // );
+      // console.warn(`columnsWithoutDescriptors`, {
+      //   columnsWithoutDescriptors,
+      // });
     }
     this.#columnMap = buildColumnMap(columns);
     this.dataIndices = buildDataToClientMap(this.#columnMap, this.dataMap);

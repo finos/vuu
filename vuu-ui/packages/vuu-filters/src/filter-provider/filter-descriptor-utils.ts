@@ -1,17 +1,17 @@
-import { FilterDescriptor } from "../saved-filters/useSavedFilterPanel";
+import { FilterContainerFilterDescriptor } from "@vuu-ui/vuu-filter-types";
 
 export function findFilter(
-  filterDescriptors: FilterDescriptor[],
+  filterDescriptors: FilterContainerFilterDescriptor[],
   filterId: string,
   throwIfNotFound?: true,
-): FilterDescriptor;
+): FilterContainerFilterDescriptor;
 export function findFilter(
-  filterDescriptors: FilterDescriptor[],
+  filterDescriptors: FilterContainerFilterDescriptor[],
   filterId: string,
   throwIfNotFound: false,
-): FilterDescriptor | undefined;
+): FilterContainerFilterDescriptor | undefined;
 export function findFilter(
-  filterDescriptors: FilterDescriptor[],
+  filterDescriptors: FilterContainerFilterDescriptor[],
   filterId: string,
   throwIfNotFound = true,
 ) {
@@ -23,14 +23,15 @@ export function findFilter(
   }
 }
 
-export const deactivateFilter = (filterDescriptors: FilterDescriptor[]) =>
-  activateFilter(filterDescriptors, undefined);
+export const deactivateFilter = (
+  filterDescriptors: FilterContainerFilterDescriptor[],
+) => activateFilter(filterDescriptors, undefined);
 
 export const activateFilter = (
-  filterDescriptors: FilterDescriptor[],
+  filterDescriptors: FilterContainerFilterDescriptor[],
   activeFilterId?: string,
 ) =>
-  filterDescriptors.map<FilterDescriptor>((f) => {
+  filterDescriptors.map<FilterContainerFilterDescriptor>((f) => {
     if (f.id === activeFilterId) {
       return {
         ...f,
@@ -47,13 +48,13 @@ export const activateFilter = (
   });
 
 export const insertOrReplaceFilter = (
-  filterDescriptors: FilterDescriptor[],
-  filterDescriptor: FilterDescriptor,
+  filterDescriptors: FilterContainerFilterDescriptor[],
+  filterDescriptor: FilterContainerFilterDescriptor,
 ) => {
   if (!filterDescriptors.some(({ id }) => id === filterDescriptor.id)) {
     return deactivateFilter(filterDescriptors).concat(filterDescriptor);
   } else {
-    return filterDescriptors.map<FilterDescriptor>((f) => {
+    return filterDescriptors.map<FilterContainerFilterDescriptor>((f) => {
       if (f.id === filterDescriptor.id) {
         return filterDescriptor;
       } else if (f.active) {
@@ -69,12 +70,12 @@ export const insertOrReplaceFilter = (
 };
 
 export const renameFilter = (
-  filterDescriptors: FilterDescriptor[],
+  filterDescriptors: FilterContainerFilterDescriptor[],
   filterId: string,
   name: string,
 ) =>
-  filterDescriptors.map<FilterDescriptor>((f) => {
-    if (f.id === filterId) {
+  filterDescriptors.map<FilterContainerFilterDescriptor>((f) => {
+    if (f.id === filterId && f.filter !== null) {
       return {
         ...f,
         filter: {

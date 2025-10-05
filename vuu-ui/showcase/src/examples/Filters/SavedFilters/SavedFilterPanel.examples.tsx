@@ -1,5 +1,5 @@
+import { FilterContainerFilterDescriptor } from "@vuu-ui/vuu-filter-types";
 import { FilterProvider, SavedFilterPanel } from "@vuu-ui/vuu-filters";
-import { FilterDescriptor } from "@vuu-ui/vuu-filters";
 import { CSSProperties, useMemo } from "react";
 
 const style = {
@@ -20,7 +20,7 @@ export const EmptySavedFilterPanel = () => {
 };
 
 export const SavedFilterPanelOneFilter = () => {
-  const filterDescriptors = useMemo<FilterDescriptor[]>(
+  const filterDescriptors = useMemo<FilterContainerFilterDescriptor[]>(
     () => [
       {
         active: false,
@@ -43,7 +43,7 @@ export const SavedFilterPanelOneFilter = () => {
 };
 
 export const SavedFilterPanelFiveFiltersCustomStyles = () => {
-  const filterDescriptors = useMemo<FilterDescriptor[]>(
+  const filterDescriptors = useMemo<FilterContainerFilterDescriptor[]>(
     () => [
       {
         active: false,
@@ -126,7 +126,7 @@ export const SavedFilterPanelFiveFiltersCustomStyles = () => {
 };
 
 export const SavedFilterPanelManyFilters = () => {
-  const filterDescriptors = useMemo<FilterDescriptor[]>(
+  const filterDescriptors = useMemo<FilterContainerFilterDescriptor[]>(
     () =>
       new Array(100).fill(0).map((_, i) => ({
         active: false,

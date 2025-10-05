@@ -17,6 +17,8 @@ type open = number;
 type phase = string;
 type ric = string;
 type scenario = string;
+type vuuCreatedTimestamp = number;
+type vuuUpdatedTimestamp = number;
 
 export type InstrumentPricesDataRow = [
   ask,
@@ -34,7 +36,9 @@ export type InstrumentPricesDataRow = [
   open,
   phase,
   ric,
-  scenario
+  scenario,
+  vuuCreatedTimestamp,
+  vuuUpdatedTimestamp,
 ];
 
 export const InstrumentPricesColumnMap = {
@@ -53,7 +57,9 @@ export const InstrumentPricesColumnMap = {
   open: 12,
   phase: 13,
   ric: 14,
-  scenari: 15,
+  scenario: 15,
+  vuuCreatedTimestamp: 16,
+  vuuUpdatedTimestamp: 17,
 };
 
 const instrumentPrices: InstrumentPricesDataRow[] = [];
@@ -63,7 +69,7 @@ const instrumentPrices: InstrumentPricesDataRow[] = [];
 
 for (let i = 0; i < instrumentsData.length; i++) {
   // prettier-ignore
-  const [bbg,currency,description,exchange,isin,lotSize,ric] = instrumentsData[i];
+  const [bbg,currency,description,exchange,isin,lotSize,/* skip price*/ ,ric] = instrumentsData[i];
   const [ask, askSize, bid, bidSize, close, last, open, phase, , scenario] =
     pricesData[i];
 
@@ -84,6 +90,8 @@ for (let i = 0; i < instrumentsData.length; i++) {
     phase,
     ric,
     scenario,
+    0,
+    0,
   ]);
 }
 

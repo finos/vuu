@@ -191,9 +191,9 @@ export const isDateTimeDataValue = (
   "date/time";
 
 export const isTimeDataValue = (
-  column: ColumnDescriptor,
+  column?: ColumnDescriptor,
 ): column is TimeDataValueDescriptor =>
-  (isTypeDescriptor(column.type) ? column.type.name : column.type) === "time";
+  (isTypeDescriptor(column?.type) ? column.type.name : column?.type) === "time";
 
 export const isPinned = (column: ColumnDescriptor) =>
   typeof column.pin === "string";
