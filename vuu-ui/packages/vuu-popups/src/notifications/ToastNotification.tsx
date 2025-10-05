@@ -4,7 +4,7 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { useEffect, useState } from "react";
 import { Portal } from "../portal";
-import type { ToastNotificationDescriptor } from "./NotificationsProvider";
+import type { ToastNotificationDescriptor } from "./NotificationsContext";
 
 import toastNotificationCss from "./ToastNotification.css";
 

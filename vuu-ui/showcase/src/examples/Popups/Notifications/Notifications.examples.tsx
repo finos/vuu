@@ -1,9 +1,9 @@
 import { ChangeEvent, useState } from "react";
 import {
   NotificationsProvider,
-  NotificationLevel,
   useNotifications,
   ToastNotification,
+  NotificationLevel,
 } from "@vuu-ui/vuu-popups";
 import {
   Dropdown,

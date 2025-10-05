@@ -1,3 +1,4 @@
+import { getUniqueId } from "@vuu-ui/vuu-utils";
 import { ReactNode, useCallback, useMemo, useState } from "react";
 import {
   isToastNotification,
@@ -5,8 +6,7 @@ import {
   Notification,
   NotificationsContext,
   ToastNotificationDescriptor as ToastNotificationType,
-} from "./NotificationsProvider";
-import { getUniqueId } from "@vuu-ui/vuu-utils";
+} from "./NotificationsContext";
 import { ToastNotification } from "./ToastNotification";
 import { WorkspaceNotification } from "./WorkspaceNotification";
 
