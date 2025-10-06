@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/vuu-data-remote",
-  "version": "0.13.46",
+  "version": "0.13.47",
   "main": "src/index.ts",
   "author": "heswell",
   "license": "Apache-2.0",
@@ -12,13 +12,13 @@
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
   "devDependencies": {
-    "@vuu-ui/vuu-data-types": "0.13.46",
-    "@vuu-ui/vuu-table-types": "0.13.46",
-    "@vuu-ui/vuu-filter-types": "0.13.46",
-    "@vuu-ui/vuu-protocol-types": "0.13.46"
+    "@vuu-ui/vuu-data-types": "0.13.47",
+    "@vuu-ui/vuu-table-types": "0.13.47",
+    "@vuu-ui/vuu-filter-types": "0.13.47",
+    "@vuu-ui/vuu-protocol-types": "0.13.47"
   },
   "dependencies": {
-    "@vuu-ui/vuu-filter-parser": "0.13.46",
-    "@vuu-ui/vuu-utils": "0.13.46"
+    "@vuu-ui/vuu-filter-parser": "0.13.47",
+    "@vuu-ui/vuu-utils": "0.13.47"
   }
 }
