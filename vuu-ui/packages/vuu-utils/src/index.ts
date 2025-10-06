@@ -50,7 +50,6 @@ export * from "./layout-types";
 export * from "./list-utils";
 export * from "./local-storage-utils";
 export * from "./logging-utils";
-export * from "./menu-utils";
 export * from "./module-utils";
 export * from "./moving-window";
 export * from "./nanoid";

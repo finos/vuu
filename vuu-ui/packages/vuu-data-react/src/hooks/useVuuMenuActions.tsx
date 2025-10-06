@@ -1,7 +1,9 @@
 import { Button } from "@salt-ds/core";
 import {
   type ContextMenuItemDescriptor,
+  hasShowNotificationAction,
   isGroupMenuItemDescriptor,
+  isOpenBulkEditResponse,
   type MenuActionHandler,
   type MenuBuilder,
 } from "@vuu-ui/vuu-context-menu";
@@ -43,10 +45,8 @@ import {
   ColumnMap,
   dataSourceRowToDataRowDto,
   getLayoutComponent,
-  hasShowNotificationAction,
   isActionMessage,
   isCustomComponentActionMessage,
-  isOpenBulkEditResponse,
   isSessionTableActionMessage,
   metadataKeys,
   toColumnName,

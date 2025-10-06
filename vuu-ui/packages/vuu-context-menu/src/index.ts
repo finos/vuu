@@ -4,7 +4,9 @@ export {
   type MenuBuilder,
 } from "./ContextMenuProvider";
 export {
+  hasShowNotificationAction,
   isGroupMenuItemDescriptor,
+  isOpenBulkEditResponse,
   type ContextMenuGroupItemDescriptor,
   type ContextMenuItemDescriptor,
 } from "./menu-utils";
