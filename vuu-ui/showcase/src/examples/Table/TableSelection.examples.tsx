@@ -19,6 +19,7 @@ type DataTableProps = Partial<
 
 const DataTableTemplate = ({
   allowCellBlockSelection,
+  allowSelectAll,
   config: configProp,
   dataSource: dataSourceProp,
   height = 500,
@@ -56,6 +57,7 @@ const DataTableTemplate = ({
     <Table
       {...props}
       allowCellBlockSelection={allowCellBlockSelection}
+      allowSelectAll={allowSelectAll}
       config={tableConfig}
       data-testid="table"
       dataSource={dataSource}
@@ -92,6 +94,7 @@ export const CheckboxSelection = ({
   return (
     <DataTableTemplate
       allowCellBlockSelection
+      allowSelectAll
       config={config}
       height={height}
       selectionModel="checkbox"

@@ -12,8 +12,8 @@ import {
   CustomHeader,
   CustomHeaderComponent,
   CustomHeaderElement,
+  HeaderCellProps,
   RuntimeColumnDescriptor,
-  ShowColumnHeaderMenus,
   TableColumnResizeHandler,
   TableConfig,
   TableHeadings,
@@ -39,8 +39,15 @@ export type ColumnSortHandler = (
 const isHeaderElement = (h: CustomHeader): h is CustomHeaderElement =>
   isValidElement(h);
 
-export interface TableHeaderProps {
-  allowDragColumnHeader: boolean;
+export interface TableHeaderProps
+  extends Pick<
+    HeaderCellProps,
+    | "allRowsSelected"
+    | "allowDragColumnHeader"
+    | "allowSelectAll"
+    | "onCheckBoxColumnHeaderClick"
+    | "showColumnHeaderMenus"
+  > {
   classBase?: string;
   columns: RuntimeColumnDescriptor[];
   customHeader?: CustomHeader | CustomHeader[];
@@ -51,7 +58,6 @@ export interface TableHeaderProps {
   onMoveGroupColumn: (columns: ColumnDescriptor[]) => void;
   onRemoveGroupColumn: (column: RuntimeColumnDescriptor) => void;
   onSortColumn: ColumnSortHandler;
-  showColumnHeaderMenus?: ShowColumnHeaderMenus;
   tableConfig: TableConfig;
   tableId: string;
   virtualColSpan?: number;
@@ -60,10 +66,13 @@ export interface TableHeaderProps {
 export const TableHeader = memo(
   ({
     allowDragColumnHeader,
+    allowSelectAll,
+    allRowsSelected,
     classBase = "vuuTable",
     columns,
     customHeader,
     headings,
+    onCheckBoxColumnHeaderClick,
     onHeightMeasured,
     onMoveColumn,
     onMoveGroupColumn,
@@ -206,10 +215,13 @@ export const TableHeader = memo(
               ) : (
                 <HeaderCell
                   allowDragColumnHeader={allowDragColumnHeader}
+                  allowSelectAll={allowSelectAll}
+                  allRowsSelected={allRowsSelected}
                   column={col}
                   index={i}
                   id={`${tableId}-${col.name}`}
                   key={col.name}
+                  onCheckBoxColumnHeaderClick={onCheckBoxColumnHeaderClick}
                   onClick={onClick}
                   onResize={onResizeColumn}
                   showColumnHeaderMenus={showColumnHeaderMenus}

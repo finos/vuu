@@ -32,6 +32,7 @@ const defaultColumnMenuPermissions: Readonly<ColumnMenuPermissions> = {
   allowGroup: true,
   allowAggregation: true,
   allowHide: true,
+  allowRemove: true,
   allowPin: true,
   allowColumnSettings: true,
   allowTableSettings: defaultTableSettingsPermissions,
@@ -52,6 +53,7 @@ export const ColumnMenu = ({
     allowGroup,
     allowAggregation,
     allowHide,
+    allowRemove,
     allowPin,
     allowColumnSettings,
     allowTableSettings,
@@ -98,6 +100,7 @@ export const ColumnMenu = ({
     column,
     menuActionClickHandler,
     allowHide,
+    allowRemove,
   );
   const pinMenu = buildPinMenuItems(column, menuActionClickHandler, allowPin);
   const settingsMenuItems = buildSettingsMenuItems(

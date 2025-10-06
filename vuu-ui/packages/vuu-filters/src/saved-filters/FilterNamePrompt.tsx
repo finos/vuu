@@ -88,10 +88,12 @@ export const FilterNamePrompt = ({
           <FormFieldHelperText>{formFieldHelperText}</FormFieldHelperText>
         ) : null}
       </FormField>
-      <Text color="warning">
-        An identical filter has already been saved, see{" "}
-        <b>{nameOfDuplicateFilter}</b>
-      </Text>
+      {nameOfDuplicateFilter ? (
+        <Text color="warning">
+          An identical filter has already been saved, see{" "}
+          <b>{nameOfDuplicateFilter}</b>
+        </Text>
+      ) : null}
     </Prompt>
   );
 };

@@ -17,6 +17,7 @@ import {
   RefObject,
   useCallback,
   useRef,
+  useState,
 } from "react";
 import { getRowElementByAriaIndex } from "./table-dom-utils";
 import { TableProps } from "./Table";
@@ -47,7 +48,7 @@ type RowIdentifier = {
 };
 
 export interface SelectionHookProps
-  extends Pick<TableProps, "onSelectionChange"> {
+  extends Pick<TableProps, "allowSelectCheckboxRow" | "onSelectionChange"> {
   containerRef: RefObject<HTMLElement | null>;
   highlightedIndexRef: RefObject<number | undefined>;
   selectionKeys?: string[];
@@ -57,6 +58,7 @@ export interface SelectionHookProps
 }
 
 export const useSelection = ({
+  allowSelectCheckboxRow,
   containerRef,
   highlightedIndexRef,
   selectionKeys = defaultSelectionKeys,
@@ -66,6 +68,7 @@ export const useSelection = ({
 }: SelectionHookProps) => {
   selectionModel === "extended" || selectionModel === "checkbox";
   const lastActiveRef = useRef<RowIdentifier | undefined>(undefined);
+  const [allRowsSelected, setAllRowsSelected] = useState(false);
 
   const isSelectionEvent = useCallback(
     (evt: KeyboardEvent<HTMLElement>) => selectionKeys.includes(evt.key),
@@ -80,7 +83,7 @@ export const useSelection = ({
 
       const selectOperation = row[SELECTED] ? deselectItem : selectItem;
 
-      if (selectionModel === "checkbox") {
+      if (selectionModel === "checkbox" && allowSelectCheckboxRow !== true) {
         const cell = queryClosest(e.target, ".vuuTableCell");
         if (!cell?.querySelector(".vuuCheckboxRowSelector")) {
           return;
@@ -107,8 +110,18 @@ export const useSelection = ({
         onSelect?.(selectOperation === selectItem ? row : null);
         onSelectionChange?.(selectRequest);
       }
+
+      if (allRowsSelected && selectOperation === deselectItem) {
+        setAllRowsSelected(false);
+      }
     },
-    [onSelect, onSelectionChange, selectionModel],
+    [
+      allRowsSelected,
+      allowSelectCheckboxRow,
+      onSelect,
+      onSelectionChange,
+      selectionModel,
+    ],
   );
 
   const handleKeyDown = useCallback<KeyboardEventHandler<HTMLElement>>(
@@ -127,7 +140,24 @@ export const useSelection = ({
     [containerRef, highlightedIndexRef, isSelectionEvent],
   );
 
+  const handleCheckboxColumnHeaderClick = useCallback(() => {
+    setAllRowsSelected((allSelected) => {
+      if (allSelected) {
+        onSelectionChange({
+          type: "DESELECT_ALL",
+        });
+      } else {
+        onSelectionChange({
+          type: "SELECT_ALL",
+        });
+      }
+      return !allSelected;
+    });
+  }, [onSelectionChange]);
+
   return {
+    allRowsSelected,
+    onCheckBoxColumnHeaderClick: handleCheckboxColumnHeaderClick,
     onKeyDown: handleKeyDown,
     onRowClick: handleRowClick,
   };
