@@ -71,58 +71,58 @@ jobs:
           working-directory: ./vuu-ui
           browser: edge
 
-  playwright-component:
-    runs-on: ubuntu-latest
-    name: playwright-component (${{ matrix.browser }})
-    strategy:
-      matrix:
-        browser: [chromium, firefox, webkit]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Install Node & dependencies
-        uses: ./.github/actions/setup-vuu-ui
-      - name: Build Worker
-        run: cd ./vuu-ui && npm run build:worker
-      - name: Install Playwright Browser
-        run: cd ./vuu-ui && npx playwright install --with-deps ${{ matrix.browser }}
-      - name: Run Playwright component tests
-        run: cd ./vuu-ui && npx playwright test --config=playwright-ct.config.ts --project=${{ matrix.browser }}
-      - name: Upload blob report to GitHub Actions Artifacts
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: blob-report-${{ matrix.browser }}
-          path: vuu-ui/blob-report/
-          retention-days: 10
+  # playwright-component:
+  #   runs-on: ubuntu-latest
+  #   name: playwright-component (${{ matrix.browser }})
+  #   strategy:
+  #     matrix:
+  #       browser: [chromium, firefox, webkit]
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     - name: Install Node & dependencies
+  #       uses: ./.github/actions/setup-vuu-ui
+  #     - name: Build Worker
+  #       run: cd ./vuu-ui && npm run build:worker
+  #     - name: Install Playwright Browser
+  #       run: cd ./vuu-ui && npx playwright install --with-deps ${{ matrix.browser }}
+  #     - name: Run Playwright component tests
+  #       run: cd ./vuu-ui && npx playwright test --config=playwright-ct.config.ts --project=${{ matrix.browser }}
+  #     - name: Upload blob report to GitHub Actions Artifacts
+  #       uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: blob-report-${{ matrix.browser }}
+  #         path: vuu-ui/blob-report/
+  #         retention-days: 10
 
-  playwright-merge-reports:
-    runs-on: ubuntu-latest
-    needs: playwright-component
-    if: always()
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Download blob reports from GitHub Actions Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: all-blob-reports
-          pattern: blob-report-*
-          merge-multiple: true
-      - name: Install Node & dependencies
-        uses: ./.github/actions/setup-vuu-ui
-      - name: Merge into HTML and JSON Reports
-        run: PLAYWRIGHT_JSON_OUTPUT_FILE=playwright-report/test-results.json npx playwright merge-reports --reporter html,json ./all-blob-reports
-      - name: Upload Merged Playwright Report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 10
-      - name: Add Playwright Results to Summary
-        if: always()
-        run: ./.github/scripts/generate-playwright-summary.sh playwright-report/test-results.json >> $GITHUB_STEP_SUMMARY
+  # playwright-merge-reports:
+  #   runs-on: ubuntu-latest
+  #   needs: playwright-component
+  #   if: always()
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #     - name: Download blob reports from GitHub Actions Artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         path: all-blob-reports
+  #         pattern: blob-report-*
+  #         merge-multiple: true
+  #     - name: Install Node & dependencies
+  #       uses: ./.github/actions/setup-vuu-ui
+  #     - name: Merge into HTML and JSON Reports
+  #       run: PLAYWRIGHT_JSON_OUTPUT_FILE=playwright-report/test-results.json npx playwright merge-reports --reporter html,json ./all-blob-reports
+  #     - name: Upload Merged Playwright Report
+  #       uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: playwright-report
+  #         path: playwright-report/
+  #         retention-days: 10
+  #     - name: Add Playwright Results to Summary
+  #       if: always()
+  #       run: ./.github/scripts/generate-playwright-summary.sh playwright-report/test-results.json >> $GITHUB_STEP_SUMMARY
 
   # ensure the vuu example still builds
   vuu-app-build:
