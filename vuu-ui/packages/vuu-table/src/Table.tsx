@@ -86,6 +86,16 @@ export interface TableProps
   allowDragDrop?: boolean | dragStrategy;
 
   /**
+   * Allow all rows be selected, use with checkbox coliumn.
+   */
+  allowSelectAll?: boolean;
+
+  /**
+   * If checkbox selection is in effect, can user select row by clicking row. If
+   * false, checkbox must be clicked explicitly.
+   */
+  allowSelectCheckboxRow?: boolean;
+  /**
    * required if a fully featured column picker is to be available
    */
   availableColumns?: SchemaColumn[];
@@ -273,6 +283,8 @@ const TableCore = ({
   allowCellBlockSelection,
   allowDragColumnHeader = true,
   allowDragDrop,
+  allowSelectAll,
+  allowSelectCheckboxRow,
   availableColumns,
   config,
   containerRef,
@@ -321,6 +333,7 @@ const TableCore = ({
 }) => {
   const id = useId(idProp);
   const {
+    allRowsSelected,
     cellBlock,
     columnMap,
     columns,
@@ -333,6 +346,7 @@ const TableCore = ({
     headerState: { height: headerHeight, count: headerCount },
     headings,
     highlightedIndex,
+    onCheckBoxColumnHeaderClick,
     onDataEdited,
     onHeaderHeightMeasured,
     onMoveColumn,
@@ -352,6 +366,7 @@ const TableCore = ({
   } = useTable({
     allowCellBlockSelection,
     allowDragDrop,
+    allowSelectCheckboxRow,
     availableColumns,
     config,
     containerRef,
@@ -442,10 +457,13 @@ const TableCore = ({
           {showColumnHeaders ? (
             <TableHeader
               allowDragColumnHeader={allowDragColumnHeader}
+              allowSelectAll={allowSelectAll}
+              allRowsSelected={allRowsSelected}
               // columns={scrollProps.columnsWithinViewport}
               columns={columns}
               customHeader={customHeader}
               headings={headings}
+              onCheckBoxColumnHeaderClick={onCheckBoxColumnHeaderClick}
               onHeightMeasured={onHeaderHeightMeasured}
               onMoveColumn={onMoveColumn}
               onMoveGroupColumn={onMoveGroupColumn}
@@ -530,6 +548,8 @@ export const Table = forwardRef(function Table(
     allowDragColumnHeader,
     allowDragDrop,
     availableColumns,
+    allowSelectAll,
+    allowSelectCheckboxRow,
     className: classNameProp,
     config,
     customHeader,
@@ -674,6 +694,8 @@ export const Table = forwardRef(function Table(
             allowCellBlockSelection={allowCellBlockSelection}
             allowDragColumnHeader={allowDragColumnHeader}
             allowDragDrop={allowDragDrop}
+            allowSelectAll={allowSelectAll}
+            allowSelectCheckboxRow={allowSelectCheckboxRow}
             availableColumns={availableColumns}
             config={config}
             containerRef={containerRef}

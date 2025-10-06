@@ -102,6 +102,7 @@ export interface TableHookProps
       TableProps,
       | "allowCellBlockSelection"
       | "allowDragDrop"
+      | "allowSelectCheckboxRow"
       | "availableColumns"
       | "config"
       | "dataSource"
@@ -153,6 +154,7 @@ const addColumn = (
 
 export const useTable = ({
   allowCellBlockSelection,
+  allowSelectCheckboxRow,
   allowDragDrop = false,
   availableColumns,
   config,
@@ -716,9 +718,12 @@ export const useTable = ({
   );
 
   const {
+    allRowsSelected,
+    onCheckBoxColumnHeaderClick,
     onKeyDown: selectionHookKeyDown,
     onRowClick: selectionHookOnRowClick,
   } = useSelection({
+    allowSelectCheckboxRow,
     containerRef,
     highlightedIndexRef,
     onSelect: handleSelect,
@@ -900,6 +905,7 @@ export const useTable = ({
 
   return {
     ...containerProps,
+    allRowsSelected,
     "aria-rowcount": dataSource.size,
     cellBlock,
     columnMap,
@@ -914,6 +920,7 @@ export const useTable = ({
     headings,
     highlightedIndex: highlightedIndexRef.current,
     onBlur: editingBlur,
+    onCheckBoxColumnHeaderClick,
     onDoubleClick: editingDoubleClick,
     onFocus: handleFocus,
     onKeyDown: handleKeyDown,

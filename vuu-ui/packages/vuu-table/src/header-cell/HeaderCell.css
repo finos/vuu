@@ -165,3 +165,7 @@
   height: var(--vuu-table-col-heading-height);
   padding: 0 !important;
 }
+
+.vuuTableHeaderCell:has(.saltCheckbox){
+  padding-left: 6px;
+}

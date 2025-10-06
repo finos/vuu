@@ -417,6 +417,7 @@ export interface ColumnMenuPermissions extends SettingsPermissions {
   allowGroup?: boolean;
   allowAggregation?: boolean;
   allowHide?: boolean;
+  allowRemove?: boolean;
   allowPin: boolean;
 }
 
@@ -471,10 +472,13 @@ export interface RowProps extends BaseRowProps {
 export interface HeaderCellProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "id" | "onClick"> {
   allowDragColumnHeader?: boolean;
+  allowSelectAll?: boolean;
+  allRowsSelected?: boolean;
   classBase?: string;
   column: RuntimeColumnDescriptor;
   id: string;
   index: number;
+  onCheckBoxColumnHeaderClick?: () => void;
   onClick?: (evt: React.MouseEvent | React.KeyboardEvent) => void;
   onResize?: TableColumnResizeHandler;
   showColumnHeaderMenus?: ShowColumnHeaderNMenus;

@@ -325,31 +325,36 @@ export function buildGroupMenu(
 export const buildVisibilityMenuItems = (
   column: ColumnDescriptor,
   menuActionClickHandler: MenuItemClickHandler,
-  isAllowed = true,
+  allowHide = true,
+  allowRemove = true,
 ): MenuElements | null => {
-  if (!isAllowed) {
+  if (!allowHide && !allowRemove) {
     return null;
   }
   const menuItems: MenuElements = [];
   const { name, label = name } = column;
-  menuItems.push(
-    <MenuItem
-      data-menu-action-id="hide-column"
-      key="hide-column"
-      onClick={menuActionClickHandler}
-    >
-      {`Hide ${label} column`}
-    </MenuItem>,
-  );
-  menuItems.push(
-    <MenuItem
-      data-menu-action-id="remove-column"
-      key="remove-column"
-      onClick={menuActionClickHandler}
-    >
-      {`Remove ${label} column`}
-    </MenuItem>,
-  );
+  if (allowHide) {
+    menuItems.push(
+      <MenuItem
+        data-menu-action-id="hide-column"
+        key="hide-column"
+        onClick={menuActionClickHandler}
+      >
+        {`Hide ${label} column`}
+      </MenuItem>,
+    );
+  }
+  if (allowRemove) {
+    menuItems.push(
+      <MenuItem
+        data-menu-action-id="remove-column"
+        key="remove-column"
+        onClick={menuActionClickHandler}
+      >
+        {`Remove ${label} column`}
+      </MenuItem>,
+    );
+  }
 
   return menuItems;
 };

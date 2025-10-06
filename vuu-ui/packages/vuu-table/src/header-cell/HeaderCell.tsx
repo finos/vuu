@@ -1,8 +1,9 @@
+import { Checkbox, useForkRef } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { ColumnMenu } from "@vuu-ui/vuu-table-extras";
 import { HeaderCellProps } from "@vuu-ui/vuu-table-types";
-import { useSortable } from "@vuu-ui/vuu-utils";
+import { isTypeDescriptor, useSortable } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import {
   KeyboardEventHandler,
@@ -15,7 +16,6 @@ import { SortIndicator } from "../column-header-pill";
 import { ColumnResizer, useTableColumnResize } from "../column-resizing";
 import { useCell } from "../useCell";
 
-import { useForkRef } from "@salt-ds/core";
 import headerCellCss from "./HeaderCell.css";
 
 const classBase = "vuuTableHeaderCell";
@@ -27,10 +27,13 @@ const doNothing = () => {
 
 export const HeaderCell = ({
   allowDragColumnHeader = true,
+  allowSelectAll,
+  allRowsSelected,
   className: classNameProp,
   column,
   id,
   index,
+  onCheckBoxColumnHeaderClick,
   onClick,
   onResize,
   showColumnHeaderMenus = true,
@@ -57,43 +60,66 @@ export const HeaderCell = ({
   });
 
   const headerItems = useMemo(() => {
-    const sortIndicator = <SortIndicator column={column} />;
-    const columnLabel = HeaderCellLabelRenderer ? (
-      <HeaderCellLabelRenderer
-        className={`${classBase}-label`}
-        column={column}
-      />
-    ) : (
-      <div className={`${classBase}-label`}>{column.label ?? column.name}</div>
-    );
-    const columnContent = HeaderCellContentRenderer
-      ? [<HeaderCellContentRenderer column={column} key="content" />]
-      : [];
+    const renderCheckbox =
+      allowSelectAll &&
+      column.isSystemColumn &&
+      isTypeDescriptor(column.type) &&
+      column.type.name === "checkbox";
 
-    if (showColumnHeaderMenus && allowColumnHeaderMenu) {
-      const menuPermissions =
-        showColumnHeaderMenus === true ? undefined : showColumnHeaderMenus;
-      const columnMenu = (
-        <ColumnMenu column={column} menuPermissions={menuPermissions} />
-      );
-
-      if (column.align === "right") {
-        return [sortIndicator, columnLabel, columnContent, columnMenu];
-      } else {
-        return [columnMenu, columnLabel, sortIndicator, columnContent];
-      }
+    if (renderCheckbox) {
+      console.log(`HeaderCell checkbox allrowsselected ${allRowsSelected}`);
+      return [
+        <Checkbox
+          checked={allRowsSelected}
+          className="vuuCheckboxRowSelector"
+          key="checkbox"
+          onClick={onCheckBoxColumnHeaderClick}
+        />,
+      ];
     } else {
-      if (column.align === "right") {
-        return [sortIndicator, columnLabel, columnContent];
+      const sortIndicator = <SortIndicator column={column} />;
+      const columnLabel = HeaderCellLabelRenderer ? (
+        <HeaderCellLabelRenderer
+          className={`${classBase}-label`}
+          column={column}
+        />
+      ) : (
+        <div className={`${classBase}-label`}>
+          {column.label ?? column.name}
+        </div>
+      );
+      const columnContent = HeaderCellContentRenderer
+        ? [<HeaderCellContentRenderer column={column} key="content" />]
+        : [];
+
+      if (showColumnHeaderMenus && allowColumnHeaderMenu) {
+        const menuPermissions =
+          showColumnHeaderMenus === true ? undefined : showColumnHeaderMenus;
+        const columnMenu = (
+          <ColumnMenu column={column} menuPermissions={menuPermissions} />
+        );
+
+        if (column.align === "right") {
+          return [sortIndicator, columnLabel, columnContent, columnMenu];
+        } else {
+          return [columnMenu, columnLabel, sortIndicator, columnContent];
+        }
       } else {
-        return [columnLabel, sortIndicator, columnContent];
+        if (column.align === "right") {
+          return [sortIndicator, columnLabel, columnContent];
+        } else {
+          return [columnLabel, sortIndicator, columnContent];
+        }
       }
     }
   }, [
     HeaderCellContentRenderer,
     HeaderCellLabelRenderer,
+    allRowsSelected,
     allowColumnHeaderMenu,
+    allowSelectAll,
     column,
+    onCheckBoxColumnHeaderClick,
     showColumnHeaderMenus,
   ]);
 
