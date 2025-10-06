@@ -2,6 +2,7 @@ export * from "./calendar";
 export * from "./column-picker";
 export * from "./common-hooks";
 export {
+  type ShowContextPanel,
   ContextPanelProvider,
   useContextPanel,
   useHideContextPanel,

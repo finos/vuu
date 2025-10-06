@@ -523,5 +523,6 @@ export const findMatchingFilter = (
   filter: FilterContainerFilter,
 ) =>
   filterDescriptors.find(
-    ({ filter: f }) => f !== null && f !== filter && filtersAreEqual(f, filter),
+    ({ active, filter: f }) =>
+      !active && f !== null && f !== filter && filtersAreEqual(f, filter),
   );
