@@ -24,13 +24,16 @@ export interface TabbedFilterContainerProps
     Pick<
       FilterContainerProps,
       "filter" | "onFilterApplied" | "onFilterCleared"
-    >,
-    Pick<SavedFilterPanelProps, "availableColumns"> {
+    > {
+  SavedFilterPanelProps?: Pick<
+    SavedFilterPanelProps,
+    "availableColumns" | "filterPillPermissions"
+  >;
   children: ReactNode;
 }
 
 export const TabbedFilterContainer = ({
-  availableColumns,
+  SavedFilterPanelProps,
   children,
   className,
   filter,
@@ -66,7 +69,7 @@ export const TabbedFilterContainer = ({
           </FilterPanel>
         </TabNextPanel>
         <TabNextPanel value="saved-filters" key="saved-filters">
-          <SavedFilterPanel availableColumns={availableColumns} />
+          <SavedFilterPanel {...SavedFilterPanelProps} />
         </TabNextPanel>
       </TabsNext>
     </div>

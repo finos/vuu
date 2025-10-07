@@ -4,7 +4,8 @@ import {
   FilterContainerFilterDescriptor,
 } from "@vuu-ui/vuu-filter-types";
 import { FilterMenuActionHandler } from "../filter-pill/FilterMenu";
-import { createContext, useContext } from "react";
+import { createContext, useCallback, useContext } from "react";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
 export interface FilterContextProps {
   currentFilter: FilterContainerFilterDescriptor;
@@ -65,7 +66,11 @@ export function useCurrentFilter() {
   return { currentFilter, onApplyFilter, setCurrentFilter };
 }
 
-export function useSavedFilters() {
+interface SavedFilterHookProps {
+  availableColumns?: ColumnDescriptor[];
+}
+
+export function useSavedFilters(props?: SavedFilterHookProps) {
   const {
     currentFilter,
     onApplyFilter,
@@ -74,10 +79,18 @@ export function useSavedFilters() {
     saveFilter,
     setCurrentFilter,
   } = useContext(FilterContext);
+
+  const handleFilterMenuAction = useCallback<FilterMenuActionHandler>(
+    (filterId, filterAction) => {
+      onFilterMenuAction?.(filterId, filterAction, props?.availableColumns);
+    },
+    [onFilterMenuAction, props?.availableColumns],
+  );
+
   return {
     currentFilter,
     onApplyFilter,
-    onFilterMenuAction,
+    onFilterMenuAction: handleFilterMenuAction,
     savedFilters,
     saveFilter,
     setCurrentFilter,

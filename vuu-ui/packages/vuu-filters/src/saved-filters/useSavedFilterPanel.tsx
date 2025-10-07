@@ -1,14 +1,19 @@
 import { SyntheticEvent, useCallback } from "react";
 import { useSavedFilters } from "../filter-provider/FilterContext";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
 export type FilterClickHandler = (filterId: string) => void;
 
-export const useSavedFilterPanel = () => {
+interface SavedFilterPanelProps {
+  availableColumns?: ColumnDescriptor[];
+}
+
+export const useSavedFilterPanel = (props?: SavedFilterPanelProps) => {
   const {
     savedFilters = [],
     setCurrentFilter,
     onFilterMenuAction,
-  } = useSavedFilters();
+  } = useSavedFilters({ availableColumns: props?.availableColumns });
 
   const handleClickFilter = useCallback(
     (e: SyntheticEvent) => {

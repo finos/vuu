@@ -25,6 +25,7 @@ import {
   NULL_FILTER,
   NullFilterDescriptor,
 } from "./FilterContext";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
 export const UNSAVED_FILTER = "unsaved-filter";
 
@@ -110,9 +111,13 @@ export const FilterProvider = ({
   );
 
   const promptForConfirmationOfDelete = useCallback(
-    (filterDescriptor: FilterContainerFilterDescriptor) => {
+    (
+      filterDescriptor: FilterContainerFilterDescriptor,
+      columns?: ColumnDescriptor[],
+    ) => {
       setDialog(
         <DeleteFilterPrompt
+          columns={columns}
           filterDescriptor={filterDescriptor}
           onConfirm={() => {
             setDialog(null);
@@ -126,7 +131,7 @@ export const FilterProvider = ({
   );
 
   const handleFilterMenuAction = useCallback<FilterMenuActionHandler>(
-    (filterId, actionType) => {
+    (filterId, actionType, columns) => {
       const targetFilter = findFilter(filterDescriptors, filterId);
       switch (actionType) {
         case "close":
@@ -139,7 +144,7 @@ export const FilterProvider = ({
           if (filterId === UNSAVED_FILTER) {
             console.log("remove unsaved filter");
           } else {
-            promptForConfirmationOfDelete(targetFilter);
+            promptForConfirmationOfDelete(targetFilter, columns);
           }
           break;
         case "rename":

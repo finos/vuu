@@ -197,6 +197,18 @@ describe("getFilterClausesForDisplay", () => {
       }),
     ).toEqual([["currency", "GBP"]]);
   });
+  it("takes column labels into account", () => {
+    expect(
+      getFilterClausesForDisplay(
+        {
+          column: "currency",
+          op: "=",
+          value: "GBP",
+        },
+        [{ name: "currency", label: "CCY" }],
+      ),
+    ).toEqual([["CCY", "GBP"]]);
+  });
   it("handles between filters", () => {
     expect(
       getFilterClausesForDisplay({

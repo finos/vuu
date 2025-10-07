@@ -1,4 +1,5 @@
 import { Menu, MenuItem, MenuPanel, MenuProps } from "@salt-ds/core";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { ReactElement, useMemo } from "react";
 
 export type FilterPermissions = {
@@ -31,6 +32,10 @@ export type FilterAction = "close" | "remove" | "edit" | "rename";
 export type FilterMenuActionHandler = <T extends FilterAction = FilterAction>(
   filterId: string,
   filterAction: T,
+  /**
+   * SOme menu action handlers may use columns to enrich filter display
+   */
+  columns?: ColumnDescriptor[],
 ) => void;
 
 export const FilterMenu = ({
