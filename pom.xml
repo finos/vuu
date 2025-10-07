@@ -48,6 +48,7 @@
         <antlr.version>4.13.2</antlr.version>
         <netty.version>4.1.127.Final</netty.version>
         <maven.scala.plugin>2.15.2</maven.scala.plugin>
+        <scala.maven.plugin>4.9.6</scala.maven.plugin>
         <vertx.version>4.5.21</vertx.version>
         <typesafe.conf.version>1.4.5</typesafe.conf.version>
         <logback.version>1.5.18</logback.version>
@@ -146,6 +147,34 @@
                 <plugin>
                     <artifactId>maven-site-plugin</artifactId>
                     <version>3.21.0</version>
+                </plugin>
+
+                <plugin>
+                    <artifactId>maven-project-info-reports-plugin</artifactId>
+                    <version>3.9.0</version>
+                </plugin>
+
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.7</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>net.alchim31.maven</groupId>
+                    <artifactId>scala-maven-plugin</artifactId>
+                    <version>${scala.maven.plugin}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>3.1.0</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>3.2.1</version>
                 </plugin>
 
                 <plugin>

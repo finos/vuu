@@ -205,10 +205,10 @@ class  DirectedAcyclicGraph[NODE] private (var edgeSet : Set[DefaultEdge[NODE]],
 }
 
 trait LifecycleEnabled{
-  def doStart()
-  def doStop()
-  def doInitialize()
-  def doDestroy()
+  def doStart() : Unit
+  def doStop() : Unit
+  def doInitialize() : Unit
+  def doDestroy() : Unit
   val lifecycleId: String
   override def toString: String = getClass.getSimpleName
 }

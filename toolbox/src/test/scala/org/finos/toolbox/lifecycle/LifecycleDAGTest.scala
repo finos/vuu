@@ -58,7 +58,7 @@ class LifecycleDAGTest extends AnyFeatureSpec with Matchers {
 
     Scenario("check that we can create a DAG"){
 
-      implicit val clock = new TestFriendlyClock(1000l)
+      implicit val clock = new TestFriendlyClock(1000L)
 
       implicit val lifecycle = new LifecycleContainer
 

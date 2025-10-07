@@ -44,7 +44,7 @@ class LifecycleTest extends AnyFeatureSpec with Matchers {
 
     Scenario("add non-dependent components at same level and check the start order"){
 
-      implicit val clock = new TestFriendlyClock(1000l)
+      implicit val clock = new TestFriendlyClock(1000L)
 
       implicit val lifecycle = new LifecycleContainer
 
