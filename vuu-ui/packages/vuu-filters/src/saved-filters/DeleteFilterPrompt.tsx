@@ -3,16 +3,19 @@ import { Prompt, PromptProps } from "@vuu-ui/vuu-ui-controls";
 import cx from "clsx";
 import { HTMLAttributes } from "react";
 import { FilterDisplay } from "../filter-display/FilterDisplay";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
 export interface DeleteFilterPromptProps
   extends Pick<PromptProps, "onConfirm" | "onClose" | "open">,
     HTMLAttributes<HTMLDivElement> {
+  columns?: ColumnDescriptor[];
   filterDescriptor: FilterContainerFilterDescriptor;
 }
 
 export const DeleteFilterPrompt = ({
   children,
   className,
+  columns,
   filterDescriptor,
   onClose,
   onConfirm,
@@ -33,7 +36,7 @@ export const DeleteFilterPrompt = ({
       {children ? (
         children
       ) : filterDescriptor.filter ? (
-        <FilterDisplay filter={filterDescriptor.filter} />
+        <FilterDisplay columns={columns} filter={filterDescriptor.filter} />
       ) : null}
     </Prompt>
   );

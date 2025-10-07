@@ -485,7 +485,13 @@ export const getFilterClausesForDisplay = (
   if (filter === undefined) {
     return clauses;
   } else if (isSingleValueFilter(filter)) {
-    clauses.push([filter.column, filter.value.toString()]);
+    const column = columns.find((c) => c.name === filter.column);
+    if (column) {
+      const { name, label = name } = column;
+      clauses.push([label, filter.value.toString()]);
+    } else {
+      clauses.push([filter.column, filter.value.toString()]);
+    }
   } else if (isBetweenFilter(filter)) {
     const [f1, f2] = filter.filters;
     const column = columns.find((c) => c.name === f1.column);

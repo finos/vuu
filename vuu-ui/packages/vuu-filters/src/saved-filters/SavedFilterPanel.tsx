@@ -52,7 +52,7 @@ export const SavedFilterPanel = ({
   }, [filterPillPermissions]);
 
   const { onClickFilter, onFilterMenuAction, savedFilters } =
-    useSavedFilterPanel();
+    useSavedFilterPanel({ availableColumns });
 
   const filtersToDisplay = savedFilters.filter(filterDescriptorHasFilter);
 

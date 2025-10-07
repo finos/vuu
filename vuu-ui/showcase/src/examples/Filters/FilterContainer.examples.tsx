@@ -316,9 +316,9 @@ export const TableWithFilters = () => {
 };
 
 const TableWithTabbedFilterContainerTemplate = ({
-  availableColumns,
+  SavedFilterPanelProps,
   children,
-}: Pick<TabbedFilterContainerProps, "children" | "availableColumns">) => {
+}: Pick<TabbedFilterContainerProps, "children" | "SavedFilterPanelProps">) => {
   const showContextPanel = useContextPanel();
   const { VuuDataSource } = useData();
 
@@ -355,14 +355,14 @@ const TableWithTabbedFilterContainerTemplate = ({
   const showFilters = useCallback(() => {
     const columnFilterContainer = (
       <DataSourceProvider dataSource={dataSource}>
-        <TabbedFilterContainer availableColumns={availableColumns}>
+        <TabbedFilterContainer SavedFilterPanelProps={SavedFilterPanelProps}>
           {children}
         </TabbedFilterContainer>
       </DataSourceProvider>
     );
 
     showContextPanel(columnFilterContainer, "filters");
-  }, [availableColumns, children, dataSource, showContextPanel]);
+  }, [SavedFilterPanelProps, children, dataSource, showContextPanel]);
 
   return (
     <>
@@ -387,9 +387,14 @@ export const TableWithTabbedFilterContainerAndFilterProvider = () => {
   );
 
   const [
-    availableColumns,
+    SavedFilterPanelProps,
     [vuuCreatedTimestamp, bbg, currency, exchange, lotSize],
-  ] = useMemo<[Array<ColumnDescriptor>, Array<ColumnDescriptor>]>(() => {
+  ] = useMemo<
+    [
+      TabbedFilterContainerProps["SavedFilterPanelProps"],
+      Array<ColumnDescriptor>,
+    ]
+  >(() => {
     const columns: ColumnDescriptor[] = [
       {
         label: "Vuu Created TS",
@@ -402,7 +407,7 @@ export const TableWithTabbedFilterContainerAndFilterProvider = () => {
       { name: "exchange", serverDataType: "string" },
       { name: "lotSize", serverDataType: "int" },
     ];
-    return [columns, columns];
+    return [{ availableColumns: columns }, columns];
   }, []);
 
   return (
@@ -416,7 +421,7 @@ export const TableWithTabbedFilterContainerAndFilterProvider = () => {
         <DemoTableContainer>
           <ContextPanelProvider>
             <TableWithTabbedFilterContainerTemplate
-              availableColumns={availableColumns}
+              SavedFilterPanelProps={SavedFilterPanelProps}
             >
               <FormField>
                 <FormFieldLabel>Vuu Created</FormFieldLabel>
