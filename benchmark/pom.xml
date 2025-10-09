@@ -9,6 +9,8 @@
 
     <properties>
         <uberjar.name>benchmarks</uberjar.name>
+        <!-- Don't publish any example modules during release -->
+        <release.goals>clean</release.goals>
     </properties>
 
     <artifactId>benchmark</artifactId>
