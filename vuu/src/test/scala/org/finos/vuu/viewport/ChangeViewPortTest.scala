@@ -8,7 +8,7 @@ import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper._
 import org.finos.vuu.core.table.{Columns, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
-import org.finos.vuu.net.{ClientSessionId, FilterSpec}
+import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortDef, SortSpec}
 import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
@@ -129,11 +129,78 @@ class ChangeViewPortTest extends AnyFeatureSpec{
 
       assertVpEq(combinedUpdates3){
         Table(
-          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    )
-//          ("NYC-0001","chris"   ,"VOD.L"   ,1437728400000l,100       ,220.0     ,222.0     ,30        ,null      ),
-//          ("NYC-0002","chris"   ,"BT.L"    ,1437728400000l,100       ,500.0     ,501.0     ,40        ,null      )
+          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ))
+      }
+
+
+    }
+
+    Scenario("Change the sort and check view port reflects this"){
+
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+
+      val dateTime = 1437728400000L//new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
+
+      val ordersDef = TableDef(
+        name = "orders",
+        keyField = "orderId",
+        columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
+        joinFields =  "ric", "orderId")
+
+      val joinProvider   = JoinTableProviderImpl()
+
+      val tableContainer = new TableContainer(joinProvider)
+
+      val orders = tableContainer.createTable(ordersDef)
+
+      val ordersProvider = new MockProvider(orders)
+
+      val providerContainer = new ProviderContainer(joinProvider)
+
+      val viewPortContainer = setupViewPort(tableContainer, providerContainer)
+
+      joinProvider.start()
+
+      ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
+      ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "BT.L"))
+
+      joinProvider.runOnce()
+
+      val session = ClientSessionId("sess-01", "chris")
+
+      val outQueue = new OutboundRowPublishQueue()
+
+      val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
+
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, DefaultRange, vpcolumns)
+
+      viewPortContainer.runOnce()
+
+      val combinedUpdates = combineQs(viewPort)
+
+      assertVpEq(combinedUpdates){
+        Table(
+          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
+          ("NYC-0001","chris"   ,"VOD.L"   ,1437728400000L,100),
+          ("NYC-0002","chris"   ,"BT.L"    ,1437728400000L,100)
         )
       }
+
+      //Test invalid columns are ignored
+      viewPortContainer.change(RequestId.oneNew(), session, viewPort.id, DefaultRange, vpcolumns,
+        sort = SortSpec.apply(List(SortDef("orderId", 'D'), SortDef("lolcats", 'D'))),
+        filterSpec = FilterSpec(""))
+
+      viewPortContainer.runOnce()
+
+      val combinedUpdates2 = combineQs(viewPort)
+
+      assertVpEq(combinedUpdates2){
+        Table(
+          ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
+          ("NYC-0001","chris"   ,"VOD.L"   ,1437728400000L,100),
+          ("NYC-0002","chris"   ,"BT.L"    ,1437728400000L,100)
+        )}
 
     }
 
