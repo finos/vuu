@@ -55,6 +55,10 @@ object TableDef {
     new TableDef(name, keyField, columns, joinFields, links = links, indices = indices)
   }
 
+  def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks, visibility: Visibility, joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields, links = links, indices = Indices(), visibility = visibility)
+  }
+
   def apply(name: String, keyField: String, columns: Array[Column], indices: Indices, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, indices = indices)
   }
@@ -70,6 +74,7 @@ object TableDef {
   def apply(name: String, keyField: String, columns: Array[Column], visibility: Visibility, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, indices = Indices(), visibility = visibility)
   }
+
 }
 
 object AutoSubscribeTableDef {
