@@ -1,4 +1,6 @@
 import { DataSource, RowSelectionEventHandler } from "@vuu-ui/vuu-data-types";
+import { TickingArrayDataSource } from "./TickingArrayDataSource";
+import { buildColumnMap } from "@vuu-ui/vuu-utils";
 
 export class RuntimeVisualLink {
   #childColumnName: string;
@@ -34,50 +36,34 @@ export class RuntimeVisualLink {
 
   //TODO this must be rewritten now that selection mechanism has changed
   handleParentSelectEvent: RowSelectionEventHandler = () => {
-    // if (this.#childDataSource) {
-    //   const selectedValues = this.pickUniqueSelectedValues(selection);
-    //   if (selectedValues.length === 0) {
-    //     this.#childDataSource.baseFilter = undefined;
-    //   } else if (selectedValues.length === 1) {
-    //     this.#childDataSource.baseFilter = {
-    //       filter: `${this.#childColumnName} = "${selectedValues[0]}"`,
-    //     };
-    //   } else {
-    //     this.#childDataSource.baseFilter = {
-    //       filter: `${this.#childColumnName} in ["${selectedValues.join('","')}"]`,
-    //     };
-    //   }
-    // }
+    if (this.#childDataSource) {
+      const selectedValues = this.pickUniqueSelectedValues();
+      if (selectedValues.length === 0) {
+        this.#childDataSource.baseFilter = undefined;
+      } else if (selectedValues.length === 1) {
+        this.#childDataSource.baseFilter = {
+          filter: `${this.#childColumnName} = "${selectedValues[0]}"`,
+        };
+      } else {
+        this.#childDataSource.baseFilter = {
+          filter: `${this.#childColumnName} in ["${selectedValues.join('","')}"]`,
+        };
+      }
+    }
   };
 
-  // private pickUniqueSelectedValues(selection: Selection) {
-  //   const data = (this.#parentDataSource as TickingArrayDataSource).currentData;
-  //   const selectedRows = selection.reduce<DataSourceRow[]>(
-  //     (rows, selected: SelectionItem) => {
-  //       if (Array.isArray(selected)) {
-  //         for (let i = selected[0]; i <= selected[1]; i++) {
-  //           const row = data[i];
-  //           if (row) {
-  //             rows.push(row);
-  //           }
-  //         }
-  //       } else {
-  //         const row = data[selected];
-  //         if (row) {
-  //           rows.push(row);
-  //         }
-  //       }
-  //       return rows;
-  //     },
-  //     [],
-  //   );
+  private pickUniqueSelectedValues() {
+    const dataSource = this.#parentDataSource as TickingArrayDataSource;
+    const map = buildColumnMap(dataSource.columns);
+    const colIndex = map[this.#parentColumnName];
+    const set = new Set();
 
-  //   const map = buildColumnMap(this.#parentDataSource.columns);
-  //   const set = new Set();
-  //   const colIndex = map[this.#parentColumnName];
-  //   for (const row of selectedRows) {
-  //     set.add(row[colIndex]);
-  //   }
-  //   return Array.from(set) as string[];
-  // }
+    for (const key of dataSource.getSelectedRowIds()) {
+      const row = dataSource.getRowAtIndex(dataSource.indexOfRowWithKey(key));
+      if (row) {
+        set.add(row[colIndex]);
+      }
+    }
+    return Array.from(set) as string[];
+  }
 }
