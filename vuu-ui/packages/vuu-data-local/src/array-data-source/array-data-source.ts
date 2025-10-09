@@ -221,8 +221,6 @@ export class ArrayDataSource
       aggregations,
       baseFilterSpec,
       range,
-      // selectedIndexValues,
-      // selectedKeyValues,
       sort,
       groupBy,
       filterSpec,
@@ -232,11 +230,6 @@ export class ArrayDataSource
     this.clientCallback = callback;
     this.viewport = viewport;
     this.#status = "subscribed";
-    // this.selectedRows =
-    //   selectedIndexValues ??
-    //   this.convertKeysToIndexValues(selectedKeyValues) ??
-    //   [];
-    // this.#selectedRowsCount = selectionCount(this.selectedRows);
     this.lastRangeServed = { from: 0, to: 0 };
 
     let config = this._config;
@@ -666,7 +659,7 @@ export class ArrayDataSource
   }
 
   getRowAtIndex(rowIndex: number) {
-    return this.processedData?.[rowIndex];
+    return (this.processedData ?? this.#data)[rowIndex];
   }
 
   protected delete(row: VuuRowDataItemType[]) {
@@ -790,7 +783,7 @@ export class ArrayDataSource
     }
   };
 
-  private indexOfRowWithKey = (key: string) =>
+  indexOfRowWithKey = (key: string) =>
     this.#data.findIndex((row) => row[KEY] === key);
 
   protected update = (row: VuuRowDataItemType[], columnName: string) => {
@@ -1083,19 +1076,6 @@ export class ArrayDataSource
         throw Error("menuRpcCall invalid rpcRequest");
       }
     });
-  }
-
-  private convertKeysToIndexValues(keys?: string[]) {
-    if (Array.isArray(keys)) {
-      const indexValues: number[] = [];
-      keys.forEach((key) => {
-        const rowIdx = this.indexOfRowWithKey(key);
-        if (rowIdx !== -1) {
-          indexValues.push(rowIdx);
-        }
-      });
-      return indexValues;
-    }
   }
 
   // All in BaseDataSource

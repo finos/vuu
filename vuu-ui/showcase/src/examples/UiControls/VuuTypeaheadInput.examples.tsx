@@ -1,4 +1,5 @@
 import { getSchema, type VuuTableName } from "@vuu-ui/vuu-data-test";
+import { DataSource } from "@vuu-ui/vuu-data-types";
 import {
   VuuTypeaheadInput,
   type VuuTypeaheadInputProps,
@@ -6,6 +7,7 @@ import {
 import {
   CommitHandler,
   DataSourceProvider,
+  Range,
   toColumnName,
   useData,
 } from "@vuu-ui/vuu-utils";
@@ -14,11 +16,13 @@ import { CSSProperties, useMemo } from "react";
 const TypeaheadInputTemplate = ({
   allowFreeInput,
   column = "currency",
+  dataSource: dataSourceProp,
   minCharacterCountToTriggerSuggestions = 1,
   onCommit,
   tableName = "instrumentsExtended",
   withoutTypeahead = false,
 }: Partial<VuuTypeaheadInputProps> & {
+  dataSource?: DataSource;
   tableName?: VuuTableName;
   style?: CSSProperties;
   withoutTypeahead?: boolean;
@@ -27,11 +31,14 @@ const TypeaheadInputTemplate = ({
   const { VuuDataSource } = useData();
   const dataSource = useMemo(() => {
     const schema = getSchema(tableName);
-    return new VuuDataSource({
-      columns: schema.columns.map(toColumnName),
-      table: schema.table,
-    });
-  }, [VuuDataSource, tableName]);
+    return (
+      dataSourceProp ??
+      new VuuDataSource({
+        columns: schema.columns.map(toColumnName),
+        table: schema.table,
+      })
+    );
+  }, [VuuDataSource, dataSourceProp, tableName]);
 
   const handleCommit: CommitHandler = (evt, value) => {
     onCommit?.(evt, value);
@@ -131,4 +138,31 @@ export const CurrencyNoTypeaheadAllowFreeText = () => {
 
 export const CurrencyNoTypeaheadDisallowFreeText = () => {
   return <TypeaheadInputTemplate allowFreeInput={false} withoutTypeahead />;
+};
+
+export const SingleColumnDataSource = () => {
+  const { VuuDataSource } = useData();
+  const dataSource = useMemo(() => {
+    const schema = getSchema("instruments");
+    const ds = new VuuDataSource({
+      columns: ["ric"],
+      table: schema.table,
+    });
+    ds.subscribe(
+      {
+        range: Range(0, 0),
+      },
+      (msg) => console.log({ msg }),
+    );
+    return ds;
+  }, [VuuDataSource]);
+
+  return (
+    <TypeaheadInputTemplate
+      allowFreeInput={false}
+      column="ric"
+      dataSource={dataSource}
+      tableName="instruments"
+    />
+  );
 };
