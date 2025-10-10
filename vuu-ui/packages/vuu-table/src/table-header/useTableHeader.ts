@@ -133,8 +133,10 @@ export const useTableHeader = ({
       const headerCell = queryClosest(evt.target, ".vuuTableHeaderCell");
       const colIdx = parseInt(headerCell?.dataset.index ?? "-1");
       const column = visibleColumnAtIndex(columns, colIdx);
-      const isAdditive = evt.shiftKey;
-      column && onSortColumn(column, isAdditive);
+      if (column && column.sortable !== false) {
+        const isAdditive = evt.shiftKey;
+        onSortColumn(column, isAdditive);
+      }
     },
     [columns, onSortColumn],
   );
