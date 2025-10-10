@@ -1,17 +1,17 @@
 package org.finos.vuu.core.index
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.table.Column
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.collection.set.ImmutableUniqueArraySet
+import org.finos.vuu.core.table.Column
 
 import java.util.concurrent.ConcurrentSkipListMap
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 trait IndexedField[TYPE] {
-  def insert(indexedValue: TYPE, rowKeys: String)
+  def insert(indexedValue: TYPE, rowKeys: String): Unit
 
-  def remove(indexedValue: TYPE, rowKeys: String)
+  def remove(indexedValue: TYPE, rowKeys: String): Unit
 
   def column: Column
 

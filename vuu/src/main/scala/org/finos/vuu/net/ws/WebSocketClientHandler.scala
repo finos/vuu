@@ -3,11 +3,11 @@ package org.finos.vuu.net.ws
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.channel.{Channel, ChannelHandlerContext, ChannelPromise, SimpleChannelInboundHandler}
 import io.netty.handler.codec.http.FullHttpResponse
-import io.netty.handler.codec.http.websocketx._
+import io.netty.handler.codec.http.websocketx.*
 import io.netty.util.CharsetUtil
 
 import java.util.concurrent.{ArrayBlockingQueue, TimeUnit}
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 class WebSocketClientHandler() extends SimpleChannelInboundHandler[AnyRef] with StrictLogging {
 
@@ -15,7 +15,7 @@ class WebSocketClientHandler() extends SimpleChannelInboundHandler[AnyRef] with 
   private final var handshaker: WebSocketClientHandshaker = null
   private var handshakeFuture: ChannelPromise = null
 
-  def this(handshaker: WebSocketClientHandshaker) {
+  def this(handshaker: WebSocketClientHandshaker) = {
     this()
     this.handshaker = handshaker
   }
@@ -24,15 +24,15 @@ class WebSocketClientHandler() extends SimpleChannelInboundHandler[AnyRef] with 
     queue.poll(10.seconds.toMillis, TimeUnit.MILLISECONDS)
   }
 
-  override def handlerAdded(ctx: ChannelHandlerContext) {
+  override def handlerAdded(ctx: ChannelHandlerContext): Unit = {
     handshakeFuture = ctx.newPromise
   }
 
-  override def channelActive(ctx: ChannelHandlerContext) {
+  override def channelActive(ctx: ChannelHandlerContext): Unit = {
     handshaker.handshake(ctx.channel)
   }
 
-  override def channelInactive(ctx: ChannelHandlerContext) {
+  override def channelInactive(ctx: ChannelHandlerContext): Unit = {
     logger.trace("WebSocket Client disconnected!")
   }
 
@@ -65,8 +65,7 @@ class WebSocketClientHandler() extends SimpleChannelInboundHandler[AnyRef] with 
     }
   }
 
-  override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
-    cause.printStackTrace
+  override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
     if (!handshakeFuture.isDone) {
       handshakeFuture.setFailure(cause)
     }

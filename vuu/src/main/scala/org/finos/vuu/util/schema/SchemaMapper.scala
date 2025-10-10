@@ -2,7 +2,7 @@ package org.finos.vuu.util.schema
 
 import org.finos.vuu.core.table.Column
 import org.finos.vuu.util.schema.SchemaMapper.InvalidSchemaMapException
-import org.finos.vuu.util.types.{DefaultTypeConverters, TypeConverter, TypeConverterContainer, TypeConverterContainerBuilder, TypeUtils}
+import org.finos.vuu.util.types.*
 
 import scala.util.Try
 
@@ -104,10 +104,10 @@ object SchemaMapperBuilder {
   }
 }
 
-case class SchemaMapperBuilder private (private val externalSchema: ExternalEntitySchema,
-                                        private val internalColumns: Array[Column],
-                                        private val fieldsMap: Map[String, String],
-                                        private val typeConverterContainer: TypeConverterContainer) {
+case class SchemaMapperBuilder (externalSchema: ExternalEntitySchema,
+                                internalColumns: Array[Column],
+                                fieldsMap: Map[String, String],
+                                typeConverterContainer: TypeConverterContainer) {
 
   /**
    * This method replaces the default map `external-field -> internal-vuu-column`. Default map is basically

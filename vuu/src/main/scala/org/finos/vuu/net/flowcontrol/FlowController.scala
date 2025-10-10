@@ -1,7 +1,7 @@
 package org.finos.vuu.net.flowcontrol
 
-import org.finos.vuu.net.ViewServerMessage
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.net.ViewServerMessage
 
 trait FlowControlOp
 
@@ -12,7 +12,7 @@ case class BatchSize(size: Int) extends FlowControlOp
 case class Disconnect() extends FlowControlOp
 
 trait FlowController {
-  def process(msg: ViewServerMessage)
+  def process(msg: ViewServerMessage): Unit
 
   def shouldSend(): FlowControlOp
 }

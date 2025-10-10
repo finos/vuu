@@ -3,7 +3,7 @@ package org.finos.vuu.core.table
 import org.slf4j.LoggerFactory
 
 import java.util.concurrent.ConcurrentHashMap
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 trait KeyedObservable[T] {
   def getObserversByKey(): Map[String, Array[KeyObserver[T]]]
@@ -26,7 +26,7 @@ trait KeyedObservable[T] {
 }
 
 trait KeyObserver[T] {
-  def onUpdate(update: T)
+  def onUpdate(update: T): Unit
 }
 
 trait KeyedObservableHelper[T] extends KeyedObservable[T] {

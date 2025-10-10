@@ -24,8 +24,8 @@ trait ExternalEntitySchema {
   def toMap(values: List[_]): Map[FieldName, Any] = fields.map(_.name).zip(values).toMap
 }
 
-private case class DefaultExternalEntitySchema private (override val fields: List[SchemaField],
-                                                        override val indexes: List[SchemaIndex]) extends ExternalEntitySchema
+private case class DefaultExternalEntitySchema (override val fields: List[SchemaField],
+                                                override val indexes: List[SchemaIndex]) extends ExternalEntitySchema
 
 object EntitySchema {
   type FieldName = String
@@ -46,8 +46,8 @@ object ExternalEntitySchemaBuilder {
   final class InvalidIndexException(error: String) extends RuntimeException(error)
 }
 
-case class ExternalEntitySchemaBuilder private (private val fields: ListBuffer[(FieldName, ExternalDataType)],
-                                                private val indexes: ListBuffer[SchemaIndex]) {
+case class ExternalEntitySchemaBuilder (fields: ListBuffer[(FieldName, ExternalDataType)],
+                                        indexes: ListBuffer[SchemaIndex]) {
 
   def withField(fieldName: FieldName, dataType: ExternalDataType): ExternalEntitySchemaBuilder =
     this.copy(fields = fields.addOne(fieldName -> dataType))

@@ -42,7 +42,7 @@ class OutboundRowPublishQueue extends PublishQueue[ViewPortUpdate] {
 
   override def popUpTo(i: Int): Seq[ViewPortUpdate] = coallescingQ.popUpTo(i)
 
-  override def isEmpty: Boolean = coallescingQ.isEmpty
+  override def isEmpty: Boolean = coallescingQ.isEmpty()
 
   override def pop: ViewPortUpdate = coallescingQ.pop()
 

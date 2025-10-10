@@ -1,20 +1,20 @@
 package org.finos.vuu.core.table
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.index._
-import org.finos.vuu.provider.{JoinTableProvider, Provider}
-import org.finos.vuu.viewport.{RowProcessor, RowSource, ViewPortColumns}
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.text.AsciiUtil
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.api.TableDef
+import org.finos.vuu.core.index.*
 import org.finos.vuu.core.row.{InMemMapRowBuilder, RowBuilder}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
+import org.finos.vuu.provider.{JoinTableProvider, Provider}
+import org.finos.vuu.viewport.{RowProcessor, RowSource, ViewPortColumns}
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 
 trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
@@ -115,9 +115,7 @@ case class JoinTableUpdate(joinTable: DataTable, rowUpdate: RowWithData) {
 
 case class RowWithData(key: String, data: Map[String, Any]) extends RowData {
 
-  def this(key: String, data: java.util.Map[String, Any]) {
-    this(key, data.asScala.toMap)
-  }
+  def this(key: String, data: java.util.Map[String, Any]) = this(key, data.asScala.toMap)
 
   override def size(): Int = data.size
 

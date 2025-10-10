@@ -1,7 +1,7 @@
 package org.finos.vuu.net
 
 import com.typesafe.scalalogging.StrictLogging
-import io.netty.channel.{Channel, ChannelFuture, ChannelFutureListener}
+import io.netty.channel.{Channel, ChannelFuture}
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.client.messages.RequestId
@@ -12,7 +12,7 @@ import org.finos.vuu.util.PublishQueue
 import org.finos.vuu.viewport.{RowUpdateType, SizeUpdateType, ViewPortUpdate}
 
 import java.util.concurrent.ConcurrentHashMap
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 trait InboundMessageHandler {
   def handle(msg: ViewServerMessage): Option[ViewServerMessage]
@@ -193,9 +193,11 @@ trait ClientSessionContainer {
 
   def getSessions(): List[ClientSessionId]
 
+  def runOnce(): Unit
+
 }
 
-class ClientSessionContainerImpl() extends ClientSessionContainer with StrictLogging {
+class ClientSessionContainerImpl extends ClientSessionContainer with StrictLogging {
 
   private val sessions = new ConcurrentHashMap[ClientSessionId, MessageHandler]()
 
@@ -216,16 +218,9 @@ class ClientSessionContainerImpl() extends ClientSessionContainer with StrictLog
     Option(handler)
   }
 
-  def runOnce(): Unit = {
+  override def runOnce(): Unit = {
     if(!sessions.isEmpty) {
       SetHasAsScala(sessions.entrySet()).asScala.foreach(entry => entry.getValue.sendUpdates())
     }
   }
 }
-
-
-trait ClientConnectionCreator {
-  def accept()
-}
-
-
