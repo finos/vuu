@@ -8,6 +8,7 @@ import cx from "clsx";
 import {
   KeyboardEventHandler,
   MouseEventHandler,
+  SyntheticEvent,
   useCallback,
   useMemo,
   useRef,
@@ -59,6 +60,14 @@ export const HeaderCell = ({
     rootRef,
   });
 
+  const handleCheckBoxClick = useCallback(
+    (e: SyntheticEvent) => {
+      e.stopPropagation();
+      onCheckBoxColumnHeaderClick?.();
+    },
+    [onCheckBoxColumnHeaderClick],
+  );
+
   const headerItems = useMemo(() => {
     const renderCheckbox =
       allowSelectAll &&
@@ -73,7 +82,7 @@ export const HeaderCell = ({
           checked={allRowsSelected}
           className="vuuCheckboxRowSelector"
           key="checkbox"
-          onClick={onCheckBoxColumnHeaderClick}
+          onClick={handleCheckBoxClick}
         />,
       ];
     } else {
@@ -119,7 +128,7 @@ export const HeaderCell = ({
     allowColumnHeaderMenu,
     allowSelectAll,
     column,
-    onCheckBoxColumnHeaderClick,
+    handleCheckBoxClick,
     showColumnHeaderMenus,
   ]);
 
