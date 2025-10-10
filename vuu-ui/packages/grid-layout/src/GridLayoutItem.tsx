@@ -95,8 +95,6 @@ export const GridLayoutItem = ({
     window: targetWindow,
   });
 
-  console.log(`[GridLayoutItem#${id}] render`);
-
   const dispatch = useGridLayoutDispatch();
   // TODO pass the styleProp in here to initialise the model value
   const {

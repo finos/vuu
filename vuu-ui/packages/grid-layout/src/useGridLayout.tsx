@@ -214,7 +214,6 @@ export const useGridLayout = ({
 
   const updateGridChildItems = useCallback<GridChildPositionChangeHandler>(
     (updates, { placeholders, splitters } = NonContentResetOptions) => {
-      console.log("[useGridLayout] updateGridChildItems", { updates });
       updates.forEach(([id, { column: columnPosition, row: rowPosition }]) => {
         if (columnPosition) {
           setGridColumn(id, columnPosition);
@@ -254,8 +253,6 @@ export const useGridLayout = ({
 
   const handleDragStart = useCallback<GridLayoutDragStartHandler>(
     (evt, options) => {
-      console.log(`[useGridLayout] handleDragStart layoutId ${layoutId}`);
-
       const { current: grid } = containerRef;
       if (grid) {
         requestAnimationFrame(() => {
@@ -267,24 +264,21 @@ export const useGridLayout = ({
         });
       }
     },
-    [containerRef, layoutId, removeGridItem],
+    [containerRef, removeGridItem],
   );
 
   const handleDragEnd = useCallback<GridLayoutDragEndHandler>(() => {
     const { current: grid } = containerRef;
-    console.log(`[useGridLayout] drag end layoutId ${layoutId}`);
     if (grid) {
       grid.classList.remove("vuuDragging");
     }
-  }, [layoutId]);
+  }, []);
 
   const addChildComponent = useCallback(
     (
       component: ReactElement,
       { column, header, id, row, title, type }: GridModelChildItem,
     ) => {
-      console.log(`[useGridLayout] addChildComponent #${id}`);
-
       // TODO we want to store components internally in a map, as well as providing an
       // array for rendering. The map will be used for persistence, to tie the component
       // to layout props - Q do we need to, can't the layout props be derived from the
@@ -724,9 +718,6 @@ export const useGridLayout = ({
 
   const handleTrackResize = useCallback<GridTrackResizeHandler>(
     (trackType, tracks) => {
-      console.log(
-        `[useGridLayout] handleTrackResize ${trackType} [${tracks.join(" ")}]`,
-      );
       if (containerRef.current) {
         if (trackType === "column") {
           containerRef.current.style.gridTemplateColumns = tracks.join(" ");

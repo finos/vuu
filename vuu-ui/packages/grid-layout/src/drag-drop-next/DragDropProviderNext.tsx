@@ -58,9 +58,9 @@ export const DragDropProviderNext = ({
     dragContext.on("drop", onDrop);
 
     const cleanupCallbacks: Array<() => void> = [];
-    console.log(
-      `[DragDropProviderNext#${layoutId}] useEffect dragSources [${[...dragContext.internalDragSources.keys()]}]`,
-    );
+    // console.log(
+    //   `[DragDropProviderNext#${layoutId}] useEffect dragSources [${[...dragContext.internalDragSources.keys()]}]`,
+    // );
     // TODO this is for declarative drag drop sources, not supported for now
     // dragContext.internalDragSources.forEach(({ orientation }, id) => {
     //   const el = document.getElementById(id);

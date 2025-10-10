@@ -22,7 +22,7 @@ export const useGridChildProps = ({
 
   let childItem = gridModel?.getChildItem(id);
   if (childItem) {
-    console.log(`already registered child item ${id}`);
+    // console.log(`already registered child item ${id}`);
   } else {
     const { column, row } = getGridPosition(style?.gridArea ?? "1/1/2/2");
     childItem = new GridModelChildItem({

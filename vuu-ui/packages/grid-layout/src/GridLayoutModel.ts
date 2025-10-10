@@ -328,9 +328,6 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
 
     if (gridItem.stackId) {
       const tabState = this.gridModel.getTabState(gridItem.stackId, "throw");
-      console.log("were removing an item from a stack", {
-        tabState,
-      });
       tabState.removeTab(gridItem.id);
     } else {
       const [colItemUpdates, rowItemUpdates] =
@@ -351,7 +348,6 @@ export class GridLayoutModel extends EventEmitter<GridLayoutModelEvents> {
         const [unusedColLines, unusedRowLines] =
           this.gridModel.findUnusedGridLines();
         // TODO do we ever hit this code any more ?
-        console.log({ unusedColLines, unusedRowLines });
         if (unusedColLines.length === 1) {
           const trackIndex = unusedColLines[0] - 1;
           const colUpdates = this.removeTrack(trackIndex, "horizontal");
