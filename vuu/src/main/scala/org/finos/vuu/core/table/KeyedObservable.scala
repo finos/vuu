@@ -3,7 +3,7 @@ package org.finos.vuu.core.table
 import org.slf4j.LoggerFactory
 
 import java.util.concurrent.ConcurrentHashMap
-import scala.jdk.CollectionConverters.*
+import scala.jdk.CollectionConverters.MapHasAsScala
 
 trait KeyedObservable[T] {
   def getObserversByKey(): Map[String, Array[KeyObserver[T]]]
@@ -18,7 +18,7 @@ trait KeyedObservable[T] {
 
   def isKeyObservedBy(key: String, observer: KeyObserver[T]): Boolean
 
-  def notifyObservers(key: String, observers: List[KeyObserver[T]], msg: T) = {
+  def notifyObservers(key: String, observers: List[KeyObserver[T]], msg: T): Unit = {
     observers.foreach(_.onUpdate(msg))
   }
 

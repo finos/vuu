@@ -12,7 +12,7 @@ import org.finos.vuu.util.PublishQueue
 import org.finos.vuu.viewport.{RowUpdateType, SizeUpdateType, ViewPortUpdate}
 
 import java.util.concurrent.ConcurrentHashMap
-import scala.jdk.CollectionConverters.*
+import scala.jdk.CollectionConverters.{CollectionHasAsScala, SetHasAsScala}
 
 trait InboundMessageHandler {
   def handle(msg: ViewServerMessage): Option[ViewServerMessage]
