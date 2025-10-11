@@ -6,7 +6,7 @@ import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.text.AsciiUtil
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.index.*
+import org.finos.vuu.core.index.{IndexedField, SkipListIndexedBooleanField, SkipListIndexedDoubleField, SkipListIndexedIntField, SkipListIndexedLongField, SkipListIndexedStringField}
 import org.finos.vuu.core.row.{InMemMapRowBuilder, RowBuilder}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.provider.{JoinTableProvider, Provider}
@@ -14,8 +14,7 @@ import org.finos.vuu.viewport.{RowProcessor, RowSource, ViewPortColumns}
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap
-import scala.jdk.CollectionConverters.*
-
+import scala.jdk.CollectionConverters.MapHasAsScala
 
 trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 

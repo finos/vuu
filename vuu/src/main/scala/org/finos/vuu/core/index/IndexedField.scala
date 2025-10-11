@@ -6,7 +6,7 @@ import org.finos.toolbox.collection.set.ImmutableUniqueArraySet
 import org.finos.vuu.core.table.Column
 
 import java.util.concurrent.ConcurrentSkipListMap
-import scala.jdk.CollectionConverters.*
+import scala.jdk.CollectionConverters.IteratorHasAsScala
 
 trait IndexedField[TYPE] {
   def insert(indexedValue: TYPE, rowKeys: String): Unit

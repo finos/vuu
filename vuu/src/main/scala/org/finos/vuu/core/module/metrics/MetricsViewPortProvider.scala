@@ -9,7 +9,7 @@ import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.provider.Provider
 import org.finos.vuu.viewport.ViewPortContainer
 
-import scala.jdk.CollectionConverters.*
+import scala.jdk.CollectionConverters.MapHasAsScala
 
 class MetricsViewPortProvider(table: DataTable, viewPortContainer: ViewPortContainer)(implicit clock: Clock, lifecycleContainer: LifecycleContainer,
                                                                                       metrics: MetricsProvider) extends Provider with StrictLogging {
