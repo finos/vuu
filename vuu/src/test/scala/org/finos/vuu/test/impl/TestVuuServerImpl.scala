@@ -6,22 +6,22 @@ import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{JoinTableDef, SessionTableDef, TableDef, ViewPortDef}
 import org.finos.vuu.client.messages.RequestId
-import org.finos.vuu.core.module._
+import org.finos.vuu.core.module.*
 import org.finos.vuu.core.table.{DataTable, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.core.{CoreServerApiHandler, IVuuServer}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
+import org.finos.vuu.net.*
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
+import org.finos.vuu.net.flowcontrol.FlowControllerFactory
 import org.finos.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer, Serializer}
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.rpc.JsonSubTypeRegistry
-import org.finos.vuu.net._
-import org.finos.vuu.net.flowcontrol.FlowControllerFactory
 import org.finos.vuu.plugin.{DefaultPluginRegistry, Plugin}
-import org.finos.vuu.provider._
-import org.finos.vuu.test.rpc.RpcDynamicProxy
+import org.finos.vuu.provider.*
 import org.finos.vuu.test.TestVuuServer
+import org.finos.vuu.test.rpc.RpcDynamicProxy
 import org.finos.vuu.util.OutboundRowPublishQueue
-import org.finos.vuu.viewport.{DefaultRange, ViewPort, ViewPortAction, ViewPortActionMixin, ViewPortContainer, ViewPortRange}
+import org.finos.vuu.viewport.*
 
 import java.util.UUID
 import scala.reflect.classTag
@@ -35,10 +35,10 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
   JsonSubTypeRegistry.register(classOf[MessageBody], classOf[CoreJsonSerializationMixin])
   JsonSubTypeRegistry.register(classOf[ViewPortAction], classOf[ViewPortActionMixin])
 
-  val sessionContainer = new ClientSessionContainerImpl()
+  val sessionContainer: ClientSessionContainer = new ClientSessionContainerImpl()
 
-  val authenticator = new AlwaysHappyAuthenticator
-  val tokenValidator = new AlwaysHappyLoginValidator
+  val authenticator: Authenticator = new AlwaysHappyAuthenticator
+  val tokenValidator: LoginTokenValidator = new AlwaysHappyLoginValidator
   val flowControllerFactory = FlowControllerFactory(hasHeartbeat = false)
 
   val joinProvider: JoinTableProvider = JoinTableProviderImpl()

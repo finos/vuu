@@ -121,7 +121,7 @@ object FilterAndSortFixture {
       name = "orders",
       keyField = "orderId",
       columns = columns,
-      indices = Indices(indices.map(Index): _*),
+      indices = Indices(indices.map(f => Index(f)) *),
       joinFields = "ric", "orderId", "ccyCross"
     )
     val table: InMemDataTable = new InMemDataTable(tableDef, new TestFriendlyJoinTableProvider)(new MetricsProviderImpl, new DefaultClock)

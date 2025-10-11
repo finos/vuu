@@ -37,7 +37,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
     Scenario("Check if we sort viewport 3x ASC, DESC, ASC in 3 cycles, do we lose the ticking"){
 
-      import TableAsserts._
+      import TableAsserts.*
 
       implicit val lifecycle = new LifecycleContainer
 
@@ -60,11 +60,11 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       assertVpEq(combineQs(viewport)){
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          ("NYC-00000","chris"   ,"00VOD.L" ,1437732000000l,100       ),
-          ("NYC-00010","chris"   ,"10VOD.L" ,1437732000000l,100       ),
-          ("NYC-00020","chris"   ,"20VOD.L" ,1437732000000l,100       ),
-          ("NYC-00030","chris"   ,"30VOD.L" ,1437732000000l,100       ),
-          ("NYC-00040","chris"   ,"40VOD.L" ,1437732000000l,100       )
+          ("NYC-00000","chris"   ,"00VOD.L" ,1437732000000L,100       ),
+          ("NYC-00010","chris"   ,"10VOD.L" ,1437732000000L,100       ),
+          ("NYC-00020","chris"   ,"20VOD.L" ,1437732000000L,100       ),
+          ("NYC-00030","chris"   ,"30VOD.L" ,1437732000000L,100       ),
+          ("NYC-00040","chris"   ,"40VOD.L" ,1437732000000L,100       )
         )
       }
 
@@ -73,7 +73,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       assertVpEq(combineQs(viewport)){
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          ("NYC-00040","chris"   ,"40VOD.L" ,1437732000000l,300      )
+          ("NYC-00040","chris"   ,"40VOD.L" ,1437732000000L,300      )
         )
       }
 
@@ -108,7 +108,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       assertVpEq(combineQs(viewport)){
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          ("NYC-00050","chris"   ,"50VOD.L" ,1437732000000l,300      )
+          ("NYC-00050","chris"   ,"50VOD.L" ,1437732000000L,300      )
         )
       }
 
@@ -126,11 +126,11 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       assertVpEq(combineQs(viewport)){
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          ("NYC-00000","chris"   ,"00VOD.L" ,1437732000000l,100       ),
-          ("NYC-00010","chris"   ,"10VOD.L" ,1437732000000l,100       ),
-          ("NYC-00011","chris"   ,"11VOD.L" ,1437732000000l,100       ),
-          ("NYC-00012","chris"   ,"12VOD.L" ,1437732000000l,100       ),
-          ("NYC-00013","chris"   ,"13VOD.L" ,1437732000000l,100       )
+          ("NYC-00000","chris"   ,"00VOD.L" ,1437732000000L,100       ),
+          ("NYC-00010","chris"   ,"10VOD.L" ,1437732000000L,100       ),
+          ("NYC-00011","chris"   ,"11VOD.L" ,1437732000000L,100       ),
+          ("NYC-00012","chris"   ,"12VOD.L" ,1437732000000L,100       ),
+          ("NYC-00013","chris"   ,"13VOD.L" ,1437732000000L,100       )
         )
       }
 
@@ -139,7 +139,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       assertVpEq(combineQs(viewport)){
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          ("NYC-00011","chris"   ,"11VOD.L" ,1437732000000l,300      )
+          ("NYC-00011","chris"   ,"11VOD.L" ,1437732000000L,300      )
         )
       }
 
@@ -147,7 +147,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
     Scenario("check we can filter and sort as part of viewport"){
 
-      import TableAsserts._
+      import TableAsserts.*
 
       implicit val lifecycle = new LifecycleContainer
 
@@ -248,7 +248,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       assertVpEq(updates3){
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-          ("NYC-0001","chris"   ,"VOD.L"   ,1437732000000l,100       ,221.0     ,226.0     ,null      ,226.0     ,null      )
+          ("NYC-0001","chris"   ,"VOD.L"   ,1437732000000L,100       ,221.0     ,226.0     ,null      ,226.0     ,null      )
         )
       }
 
@@ -269,12 +269,12 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       assertVpEq(updates4){
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity","bid"     ,"ask"     ,"last"    ,"open"    ,"close"   ),
-          ("NYC-0002","chris"   ,"VOD.L"   ,1437732000000l,200       ,221.0     ,226.0     ,null      ,226.0     ,null      ),
-          ("NYC-0003","chris"   ,"VOD.L"   ,1437732000000l,300       ,221.0     ,226.0     ,null      ,226.0     ,null      ),
-          ("NYC-0004","chris"   ,"VOD.L"   ,1437732000000l,400       ,221.0     ,226.0     ,null      ,226.0     ,null      ),
-          ("NYC-0005","chris"   ,"VOD.L"   ,1437732000000l,500       ,221.0     ,226.0     ,null      ,226.0     ,null      ),
-          ("NYC-0006","chris"   ,"VOD.L"   ,1437732000000l,600       ,221.0     ,226.0     ,null      ,226.0     ,null      ),
-          ("NYC-0008","chris"   ,"BT.L"    ,1437732000000l,500       ,500.0     ,501.0     ,null      ,null      ,null      )
+          ("NYC-0002","chris"   ,"VOD.L"   ,1437732000000L,200       ,221.0     ,226.0     ,null      ,226.0     ,null      ),
+          ("NYC-0003","chris"   ,"VOD.L"   ,1437732000000L,300       ,221.0     ,226.0     ,null      ,226.0     ,null      ),
+          ("NYC-0004","chris"   ,"VOD.L"   ,1437732000000L,400       ,221.0     ,226.0     ,null      ,226.0     ,null      ),
+          ("NYC-0005","chris"   ,"VOD.L"   ,1437732000000L,500       ,221.0     ,226.0     ,null      ,226.0     ,null      ),
+          ("NYC-0006","chris"   ,"VOD.L"   ,1437732000000L,600       ,221.0     ,226.0     ,null      ,226.0     ,null      ),
+          ("NYC-0008","chris"   ,"BT.L"    ,1437732000000L,500       ,500.0     ,501.0     ,null      ,null      ,null      )
         )
       }
 
@@ -309,7 +309,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
     Scenario("check we can filter and sort on a calcd column") {
 
-      import TableAsserts._
+      import TableAsserts.*
 
       implicit val lifecycle = new LifecycleContainer
 

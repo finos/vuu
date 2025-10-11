@@ -3,8 +3,8 @@ package org.finos.vuu.core.module.metrics
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.{LifeCycleComponentContext, LifecycleContainer, LifecycleEnabled}
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
+import org.finos.vuu.core.table.TableMockFactory.*
 import org.finos.vuu.core.table.{DataTable, RowData, TableContainer}
-import org.finos.vuu.core.table.TableMockFactory._
 import org.finos.vuu.test.TestFriendlyJoinTableProvider
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -16,7 +16,7 @@ class MetricsTableProviderTest extends AnyFeatureSpec with Matchers with MockFac
   private implicit val lifecycleContainer: LifecycleContainer = stub[LifecycleContainer]
   private val lifeCycleComponentContext = stub[LifeCycleComponentContext]
   (lifecycleContainer.apply _).when(*).returns(lifeCycleComponentContext)
-  (lifeCycleComponentContext.dependsOn: LifecycleEnabled => Unit).when(*).returns()
+  (lifeCycleComponentContext.dependsOn: LifecycleEnabled => Unit).when(*).returns((): Unit)
 
   private val joinProvider = new TestFriendlyJoinTableProvider()
   private val mockTable = stub[DataTable]
@@ -34,10 +34,10 @@ class MetricsTableProviderTest extends AnyFeatureSpec with Matchers with MockFac
 
       metricsTableProvider.runOnce()
 
-      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify("instrumentsSessionTable_1", *).once
-      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify("instrumentsSessionTable_2", *).once
-      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify("fills_table", *).once
-      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify("other", *).once
+      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify("instrumentsSessionTable_1", *).once()
+      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify("instrumentsSessionTable_2", *).once()
+      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify("fills_table", *).once()
+      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify("other", *).once()
     }
   }
 }
