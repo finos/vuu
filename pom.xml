@@ -224,6 +224,10 @@
                 <version>3.14.0</version>
                 <configuration>
                     <release>${maven.compiler.release}</release>
+                    <showWarnings>true</showWarnings>
+                    <compilerArgs>
+                        <arg>-Xlint:all,-processing,-serial</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
         </plugins>

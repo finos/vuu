@@ -61,7 +61,6 @@
                 <artifactId>maven-source-plugin</artifactId>
                 <executions>
                     <execution>
-
                         <phase>compile</phase>
                         <goals>
                             <goal>jar</goal>
