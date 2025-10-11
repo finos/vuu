@@ -81,7 +81,7 @@ trait Tree {
     else if (!node.isRoot && !isOpen(latestNode))
       Array(node.key)
     else if (node.isRoot) {
-      Array() ++ latestNode.getChildren.asScala.flatMap(child => processNode(child)).toArray
+      latestNode.getChildren.asScala.flatMap(child => processNode(child)).toArray
     }
     else {
       Array(node.key) ++ latestNode.getChildren.asScala.flatMap(child => processNode(child))
