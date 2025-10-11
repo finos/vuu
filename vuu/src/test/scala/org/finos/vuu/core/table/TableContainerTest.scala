@@ -86,7 +86,7 @@ object TableMockFactory extends AnyFlatSpec with MockFactory {
 
     if (moduleName.nonEmpty) {
       val module = stub[ViewServerModule]
-      (module.name _).when().returns(moduleName.get)
+      (() => module.name).when().returns(moduleName.get)
       tableDef.setModule(module)
     }
 
@@ -95,15 +95,15 @@ object TableMockFactory extends AnyFlatSpec with MockFactory {
 
   def createMockSessionTable(tableName: String, tableDefName: String): SessionTable = {
     val table = stub[SessionTable]
-    (table.name _).when().returns(tableName)
-    (table.getTableDef _).when().returns(createTestTableDef(tableDefName, isSessionDef = true))
+    (() => table.name).when().returns(tableName)
+    (() => table.getTableDef).when().returns(createTestTableDef(tableDefName, isSessionDef = true))
     table
   }
 
   def createMockTable(tableName: String, tableDefName: String, moduleName: Option[String] = None, sessionDef: Boolean = false): DataTable = {
     val table = stub[DataTable]
-    (table.name _).when().returns(tableName)
-    (table.getTableDef _).when().returns(createTestTableDef(tableDefName, moduleName, isSessionDef = sessionDef))
+    (() => table.name).when().returns(tableName)
+    (() => table.getTableDef).when().returns(createTestTableDef(tableDefName, moduleName, isSessionDef = sessionDef))
     table
   }
 }

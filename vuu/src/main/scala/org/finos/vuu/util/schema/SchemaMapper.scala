@@ -6,7 +6,6 @@ import org.finos.vuu.util.types.{DefaultTypeConverters, TypeConverter, TypeConve
 
 import scala.util.Try
 
-
 /**
  * This class provides utility methods related to mapping external fields to internal columns
  * and vice versa.
@@ -104,10 +103,10 @@ object SchemaMapperBuilder {
   }
 }
 
-case class SchemaMapperBuilder private (private val externalSchema: ExternalEntitySchema,
-                                        private val internalColumns: Array[Column],
-                                        private val fieldsMap: Map[String, String],
-                                        private val typeConverterContainer: TypeConverterContainer) {
+case class SchemaMapperBuilder (externalSchema: ExternalEntitySchema,
+                                internalColumns: Array[Column],
+                                fieldsMap: Map[String, String],
+                                typeConverterContainer: TypeConverterContainer) {
 
   /**
    * This method replaces the default map `external-field -> internal-vuu-column`. Default map is basically

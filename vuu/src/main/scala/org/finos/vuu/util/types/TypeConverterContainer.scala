@@ -31,8 +31,7 @@ object TypeConverterContainerBuilder {
   def apply(): TypeConverterContainerBuilder = new TypeConverterContainerBuilder(List.empty, withDefaults = true)
 }
 
-case class TypeConverterContainerBuilder private (private val converters: List[TypeConverter[_, _]],
-                                                  private val withDefaults: Boolean) {
+case class TypeConverterContainerBuilder (converters: List[TypeConverter[_, _]], withDefaults: Boolean) {
   def withConverter[From, To](t: TypeConverter[From, To]): TypeConverterContainerBuilder = {
     this.copy(converters = converters ++ List(t))
   }

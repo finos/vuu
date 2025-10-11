@@ -1,12 +1,12 @@
 package org.finos.vuu.core.filter
 
 import org.antlr.v4.runtime.misc.ParseCancellationException
-import org.finos.vuu.core.filter.FilterSpecParser.{parse => filterClause}
-import org.finos.vuu.core.sort.FilterAndSortFixture.{row, _}
+import org.finos.vuu.core.filter.FilterSpecParser.parse as filterClause
+import org.finos.vuu.core.sort.FilterAndSortFixture.*
 import org.finos.vuu.core.table.RowWithData
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.prop.TableDrivenPropertyChecks._
+import org.scalatest.prop.TableDrivenPropertyChecks.*
 
 class FilterGrammarTest extends AnyFeatureSpec with Matchers {
   def assertParsable(filter: String): Unit = filterClause(filter) shouldBe a[FilterClause]
@@ -251,11 +251,11 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Lesser than equal") {
       assertFilteredRows("quantity <= 105",
-        row("ric" -> "VOD.L", "orderId" -> "LDN-0001", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", "tradeTime" -> 2l, "quantity" -> 100.0d),
+        row("ric" -> "VOD.L", "orderId" -> "LDN-0001", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", "tradeTime" -> 2L, "quantity" -> 100.0d),
         row("tradeTime" -> 6L, "quantity" -> 105.0d, "ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
-        row("ric" -> "BT.L", "orderId" -> "LDN-0002", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 1l, "quantity" -> 100.0d),
-        row("ric" -> "BT.L", "orderId" -> "LDN-0008", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", "tradeTime" -> 5l, "quantity" -> 100.0d),
-        row("ric" -> "VOD.L", "orderId" -> "NYC-0002", "onMkt" -> false, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6l, "quantity" -> 100.0d)
+        row("ric" -> "BT.L", "orderId" -> "LDN-0002", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 1, "quantity" -> 100.0d),
+        row("ric" -> "BT.L", "orderId" -> "LDN-0008", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", "tradeTime" -> 5L, "quantity" -> 100.0d),
+        row("ric" -> "VOD.L", "orderId" -> "NYC-0002", "onMkt" -> false, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> 100.0d)
       )
     }
 

@@ -1,20 +1,20 @@
 package org.finos.vuu.core.module.metrics
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.table.{DataTable, RowWithData}
-import org.finos.vuu.provider.Provider
-import org.finos.vuu.viewport.ViewPortContainer
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.thread.LifeCycleRunner
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.table.{DataTable, RowWithData}
+import org.finos.vuu.provider.Provider
+import org.finos.vuu.viewport.ViewPortContainer
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.MapHasAsScala
 
 class MetricsViewPortProvider(table: DataTable, viewPortContainer: ViewPortContainer)(implicit clock: Clock, lifecycleContainer: LifecycleContainer,
                                                                                       metrics: MetricsProvider) extends Provider with StrictLogging {
 
-  private val runner = new LifeCycleRunner("metricsViewPortProviderThread", () => runOnce, minCycleTime = 1_000)
+  private val runner = new LifeCycleRunner("metricsViewPortProviderThread", () => runOnce(), minCycleTime = 1_000)
 
   lifecycleContainer(this).dependsOn(runner)
 

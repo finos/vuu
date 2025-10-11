@@ -3,7 +3,7 @@ package org.finos.vuu.json
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type
 import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver
-import org.finos.vuu.net._
+import org.finos.vuu.net.*
 import org.finos.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer}
 import org.finos.vuu.net.rpc.{JsonSubTypeRegistry, VsJsonTypeResolver}
 import org.finos.vuu.viewport.ViewPortTable
@@ -63,9 +63,9 @@ class JsonVsSerializerTest extends AnyFeatureSpec with Matchers{
 
       roundTrip(LoginRequest("AAA11122233", "chris"))
       roundTrip(LoginSuccess("AAA11122233", "vuuServerId"))
-      roundTrip(HeartBeat(123l))
-      roundTrip(HeartBeatResponse(123l))
-      roundTrip(RpcUpdate(ViewPortTable("orderEntry", "CORE"), "Foo", Map("Foo" -> 123, "Bar" -> true, "Whizzle" -> "TANG", "HooHa" -> 344567l)))
+      roundTrip(HeartBeat(123L))
+      roundTrip(HeartBeatResponse(123L))
+      roundTrip(RpcUpdate(ViewPortTable("orderEntry", "CORE"), "Foo", Map("Foo" -> 123, "Bar" -> true, "Whizzle" -> "TANG", "HooHa" -> 344567L)))
       roundTrip(RpcSuccess(ViewPortTable("orderEntry", "CORE"), "Foo"))
       roundTrip(RpcReject(ViewPortTable("orderEntry", "CORE"), "Foo", "cause you aint pretty"))
       roundTrip(OpenTreeNodeSuccess("orderEntry", "..."))

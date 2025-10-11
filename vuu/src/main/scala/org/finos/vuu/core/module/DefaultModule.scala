@@ -29,5 +29,5 @@ class FieldDefString(str: String) {
 
 abstract class DefaultModule {
   //pimped string impl for field definition
-  implicit def stringToFieldDef(s: String) = new FieldDefString(s)
+  implicit def stringToFieldDef(s: String): FieldDefString = new FieldDefString(s)
 }

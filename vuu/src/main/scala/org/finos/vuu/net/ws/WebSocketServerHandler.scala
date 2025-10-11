@@ -1,14 +1,13 @@
 package org.finos.vuu.net.ws
 
-
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.buffer.Unpooled
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
-import io.netty.handler.codec.http.HttpHeaderNames._
-import io.netty.handler.codec.http.HttpMethod._
-import io.netty.handler.codec.http.HttpResponseStatus._
-import io.netty.handler.codec.http.HttpVersion._
-import io.netty.handler.codec.http.websocketx._
+import io.netty.handler.codec.http.HttpHeaderNames.{CONTENT_LENGTH, CONTENT_TYPE, HOST}
+import io.netty.handler.codec.http.HttpMethod.GET
+import io.netty.handler.codec.http.HttpResponseStatus.{BAD_REQUEST, FORBIDDEN, NOT_FOUND, OK}
+import io.netty.handler.codec.http.HttpVersion.HTTP_1_1
+import io.netty.handler.codec.http.websocketx.{CloseWebSocketFrame, PingWebSocketFrame, PongWebSocketFrame, TextWebSocketFrame, WebSocketFrame, WebSocketServerHandshaker, WebSocketServerHandshakerFactory}
 import io.netty.handler.codec.http.{DefaultFullHttpResponse, FullHttpRequest, FullHttpResponse}
 import io.netty.util.CharsetUtil
 import org.finos.vuu.net.ViewServerHandler
@@ -32,11 +31,11 @@ class WebSocketServerHandler(handler: ViewServerHandler,
   }
 
   @Override
-  override def channelReadComplete(ctx: ChannelHandlerContext) = {
+  override def channelReadComplete(ctx: ChannelHandlerContext): Unit = {
     ctx.flush();
   }
 
-  private def handleHttpRequest(ctx: ChannelHandlerContext, req: FullHttpRequest) {
+  private def handleHttpRequest(ctx: ChannelHandlerContext, req: FullHttpRequest): Unit = {
     // Handle a bad request.
     if (!req.decoderResult().isSuccess()) {
       sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HTTP_1_1, BAD_REQUEST));
@@ -103,7 +102,7 @@ class WebSocketServerHandler(handler: ViewServerHandler,
 
   }
 
-  def sendHttpResponse(ctx: ChannelHandlerContext, req: FullHttpRequest, res: FullHttpResponse) {
+  def sendHttpResponse(ctx: ChannelHandlerContext, req: FullHttpRequest, res: FullHttpResponse): Unit = {
     // Generate an error page if response getStatus code is not OK (200).
     if (res.status().code() != 200) {
       val buf = Unpooled.copiedBuffer(res.status().toString(), CharsetUtil.UTF_8);
@@ -119,7 +118,7 @@ class WebSocketServerHandler(handler: ViewServerHandler,
     val f = ctx.channel().writeAndFlush(res);
   }
 
-  override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
+  override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
     logger.warn("Exception: Closing context", cause)
     ctx.close();
   }

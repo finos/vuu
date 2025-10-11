@@ -1,18 +1,18 @@
 package org.finos.vuu.core.module
 
-import org.finos.vuu.api.{JoinTableDef, TableDef, ViewPortDef}
-import org.finos.vuu.core.{IVuuServer, VuuServer}
-import org.finos.vuu.core.table.{DataTable, TableContainer}
-import org.finos.vuu.net.rest.RestService
-import org.finos.vuu.net.rpc.RpcHandler
-import org.finos.vuu.provider.{NullProvider, Provider, ProviderContainer}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.api.{JoinTableDef, TableDef, ViewPortDef}
+import org.finos.vuu.core.table.{DataTable, TableContainer}
+import org.finos.vuu.core.{IVuuServer, VuuServer}
+import org.finos.vuu.net.rest.RestService
+import org.finos.vuu.provider.{NullProvider, Provider, ProviderContainer}
 
 import java.nio.file.Path
 
-
-case class TableDefs protected(realizedTableDefs: List[TableDef], tableDefs: List[(TableDef, (DataTable, IVuuServer) => Provider)], joinDefs: List[TableDefContainer => JoinTableDef]) {
+case class TableDefs (realizedTableDefs: List[TableDef],
+                      tableDefs: List[(TableDef, (DataTable, IVuuServer) => Provider)],
+                      joinDefs: List[TableDefContainer => JoinTableDef]) {
 
   def add(tableDef: TableDef, func: (DataTable, IVuuServer) => Provider): TableDefs = {
     TableDefs(realizedTableDefs, tableDefs ++ List((tableDef, func)), joinDefs)
@@ -42,7 +42,7 @@ case class TableDefs protected(realizedTableDefs: List[TableDef], tableDefs: Lis
   }
 }
 
-case class ModuleFactoryNode protected(tableDefs: TableDefs,
+case class ModuleFactoryNode (tableDefs: TableDefs,
                                        vsName: String, staticServedResources: List[StaticServedResource],
                                        rest: List[IVuuServer => RestService],
                                        viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef],

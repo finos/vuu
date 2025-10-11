@@ -32,7 +32,7 @@ abstract class BinaryMathFunction(clauses: List[CalculatedColumnClause], op: Bin
     this.dataType match {
       case ClauseDataType.LONG    => mathLong(clauses, data, op.apply(_, _).toLong)
       case ClauseDataType.INTEGER => mathInt(clauses, data, op.apply(_, _).toInt)
-      case ClauseDataType.DOUBLE  => mathDouble(clauses, data, op.apply)
+      case ClauseDataType.DOUBLE  => mathDouble(clauses, data, op.apply(_, _))
       case t                      => errorTemplate(s"unable to apply math operation `${op.name}` to data-type `$t`.")
     }
   }

@@ -5,10 +5,9 @@ import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.thread.LifeCycleRunner
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.core.table.DataTable
+import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.provider.Provider
 import org.finos.vuu.viewport.ViewPortContainer
-import org.finos.vuu.core.table.{DataTable, RowWithData}
 
 import java.lang.management.{ManagementFactory, MemoryUsage}
 
@@ -32,7 +31,7 @@ class MetricsJVMProvider(table: DataTable, viewPortContainer: ViewPortContainer)
   override val lifecycleId: String = "MetricsJVMProvider"
 
   def toMb(bytes: Long): Double = {
-    (bytes / 1024) / 1024
+    (bytes.toDouble / 1024) / 1024
   }
 
   def buildMachineCores(): Map[String, Any] = {

@@ -71,9 +71,7 @@ class RowViewPortMenuItem(override val name: String, filter: String, val func: (
 
 class ViewPortMenuItem(val name: String, val filter: String, val rpcName: String) extends ViewPortMenu {
 
-  def this(name: String) {
-    this(name, "", "")
-  }
+  def this(name: String) = this(name, "", "")
 
 }
 
