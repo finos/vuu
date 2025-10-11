@@ -3,11 +3,11 @@ package org.finos.vuu.net.ws
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.channel.{Channel, ChannelHandlerContext, ChannelPromise, SimpleChannelInboundHandler}
 import io.netty.handler.codec.http.FullHttpResponse
-import io.netty.handler.codec.http.websocketx.*
+import io.netty.handler.codec.http.websocketx.{CloseWebSocketFrame, PongWebSocketFrame, TextWebSocketFrame, WebSocketClientHandshaker, WebSocketFrame}
 import io.netty.util.CharsetUtil
 
 import java.util.concurrent.{ArrayBlockingQueue, TimeUnit}
-import scala.concurrent.duration.*
+import scala.concurrent.duration.DurationInt
 
 class WebSocketClientHandler() extends SimpleChannelInboundHandler[AnyRef] with StrictLogging {
 

@@ -1,14 +1,13 @@
 package org.finos.vuu.net.ws
 
-
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.buffer.Unpooled
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
-import io.netty.handler.codec.http.HttpHeaderNames.*
-import io.netty.handler.codec.http.HttpMethod.*
-import io.netty.handler.codec.http.HttpResponseStatus.*
-import io.netty.handler.codec.http.HttpVersion.*
-import io.netty.handler.codec.http.websocketx.*
+import io.netty.handler.codec.http.HttpHeaderNames.{CONTENT_LENGTH, CONTENT_TYPE, HOST}
+import io.netty.handler.codec.http.HttpMethod.GET
+import io.netty.handler.codec.http.HttpResponseStatus.{BAD_REQUEST, FORBIDDEN, NOT_FOUND, OK}
+import io.netty.handler.codec.http.HttpVersion.HTTP_1_1
+import io.netty.handler.codec.http.websocketx.{CloseWebSocketFrame, PingWebSocketFrame, PongWebSocketFrame, TextWebSocketFrame, WebSocketFrame, WebSocketServerHandshaker, WebSocketServerHandshakerFactory}
 import io.netty.handler.codec.http.{DefaultFullHttpResponse, FullHttpRequest, FullHttpResponse}
 import io.netty.util.CharsetUtil
 import org.finos.vuu.net.ViewServerHandler

@@ -2,10 +2,9 @@ package org.finos.vuu.util.schema
 
 import org.finos.vuu.core.table.Column
 import org.finos.vuu.util.schema.SchemaMapper.InvalidSchemaMapException
-import org.finos.vuu.util.types.*
+import org.finos.vuu.util.types.{DefaultTypeConverters, TypeConverter, TypeConverterContainer, TypeConverterContainerBuilder, TypeUtils}
 
 import scala.util.Try
-
 
 /**
  * This class provides utility methods related to mapping external fields to internal columns
