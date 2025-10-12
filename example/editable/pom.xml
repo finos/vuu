@@ -6,7 +6,6 @@
         <groupId>org.finos.vuu</groupId>
         <artifactId>example</artifactId>
         <version>0.9.91-SNAPSHOT</version>
-        <!--relativePath>../../pom.xml</relativePath-->
     </parent>
 
     <artifactId>editable</artifactId>
@@ -74,27 +73,6 @@
 
     </dependencies>
 
-    <profiles>
-
-        <profile>
-            <id>legal-report</id>
-            <reporting>
-                <plugins>
-                    <plugin>
-                        <groupId>org.scala-tools</groupId>
-                        <artifactId>maven-scala-plugin</artifactId>
-                        <version>${maven.scala.plugin}</version>
-                        <configuration>
-                            <excludes>
-                                <exclude>**/*.scala</exclude>
-                            </excludes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </reporting>
-        </profile>
-    </profiles>
-
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <testSourceDirectory>src/test/java</testSourceDirectory>
@@ -106,7 +84,6 @@
                 <artifactId>maven-source-plugin</artifactId>
                 <executions>
                     <execution>
-
                         <phase>compile</phase>
                         <goals>
                             <goal>jar</goal>
@@ -118,7 +95,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <!--version>3.0.0-M4</version-->
             </plugin>
 
             <plugin>
@@ -135,9 +111,8 @@
             </plugin>
 
             <plugin>
-                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
-                <version>${maven.scala.plugin}</version>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
                 <executions>
                     <execution>
                         <goals>
@@ -149,6 +124,10 @@
                 <configuration>
                     <sourceDir>src/main/scala</sourceDir>
                     <testSourceDir>src/test/scala</testSourceDir>
+                    <args>
+                        <arg>-deprecation</arg>
+                        <arg>-Xsource:3</arg>
+                    </args>
                     <jvmArgs>
                         <jvmArg>-Xms64m</jvmArg>
                         <jvmArg>-Xmx1024m</jvmArg>
@@ -159,7 +138,6 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.2.0</version>
                 <executions>
                     <execution>
                         <phase>generate-sources</phase>
@@ -175,11 +153,9 @@
                 </executions>
             </plugin>
 
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.1.2</version>
                 <executions>
                     <execution>
                         <goals>
@@ -193,16 +169,15 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.7</version>
                 <configuration>
                     <!--skipTests>true</skipTests-->
                 </configuration>
             </plugin>
+
             <!-- enable scalatest -->
             <plugin>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest-maven-plugin</artifactId>
-                <version>2.0.2</version>
                 <configuration>
                     <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
                     <junitxml>.</junitxml>
@@ -220,17 +195,5 @@
 
         </plugins>
     </build>
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
-                <version>${maven.scala.plugin}</version>
-                <configuration>
-                    <scalaVersion>${scala.version}</scalaVersion>
-                </configuration>
-            </plugin>
-        </plugins>
-    </reporting>
 
 </project>

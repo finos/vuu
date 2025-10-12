@@ -185,7 +185,7 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
         rows.foreach(row =>
           baseTable.processUpdate(row.key, row)
         )
-        Right()
+        Right((): Unit)
       case None =>
         Left(ErrorReason(s"Could not find base table for ${table.name}"))
     }

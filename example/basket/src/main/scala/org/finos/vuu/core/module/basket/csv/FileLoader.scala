@@ -17,7 +17,7 @@ object FileLoader {
 
   def readCsvContent(file: File): CsvContent = {
     val bufferedSource = Source.fromFile(file)
-    val csv = for (line <- bufferedSource.getLines) yield line.split(",").map(_.trim)
+    val csv = for (line <- bufferedSource.getLines()) yield line.split(",").map(_.trim())
     val array = csv.toArray
     bufferedSource.close
     new CsvContent(array)
