@@ -41,7 +41,7 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
         .withBindAddress("0.0.0.0")
         .withUri("websocket")
         .withWsPort(ws)
-        .withWssDisabled(),
+        .withSslDisabled(),
       VuuSecurityOptions()
         .withAuthenticator(new AlwaysHappyAuthenticator)
         .withLoginValidator(new AlwaysHappyLoginValidator),

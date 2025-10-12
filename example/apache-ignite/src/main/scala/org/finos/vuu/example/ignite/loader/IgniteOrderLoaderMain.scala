@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.LongAdder
 
 object IgniteOrderLoaderMain extends App {
   implicit val clock: Clock = new DefaultClock()
-  implicit val lifecycleContainer = new LifecycleContainer()
+  implicit val lifecycleContainer: LifecycleContainer = new LifecycleContainer()
   implicit val randomNumbers: SeededRandomNumbers = new SeededRandomNumbers(clock.now())
   implicit val orderStore: OrderStore = IgniteOrderStore()
 

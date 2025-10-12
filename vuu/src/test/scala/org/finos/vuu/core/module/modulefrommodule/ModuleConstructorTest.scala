@@ -37,7 +37,7 @@ class ModuleConstructorTest extends AnyFeatureSpec with Matchers with GivenWhenT
         VuuWebSocketOptions()
           .withUri("websocket")
           .withWsPort(8090)
-          .withWss("certPath", "keyPath")
+          .withSsl(VuuSSLByCertAndKey("certPath", "keyPath"))
           .withBindAddress("0.0.0.0"),
         VuuSecurityOptions()
           .withAuthenticator(authenticator)

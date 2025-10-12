@@ -57,13 +57,13 @@ object IgniteVuuMain extends App with StrictLogging {
   val config = VuuServerConfig(
     VuuHttp2ServerOptions()
       .withWebRoot(AbsolutePathWebRoot(webRoot, directoryListings = true))
-      .withSsl(certPath, keyPath)
+      .withSsl(VuuSSLByCertAndKey(certPath, keyPath))
       .withBindAddress("0.0.0.0")
       .withPort(8443),
     VuuWebSocketOptions()
       .withUri("websocket")
       .withWsPort(8090)
-      .withWss(certPath, keyPath)
+      .withSsl(VuuSSLByCertAndKey(certPath, keyPath))
       .withBindAddress("0.0.0.0"),
     VuuSecurityOptions()
       .withAuthenticator(authenticator)
