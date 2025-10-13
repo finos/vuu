@@ -46,7 +46,7 @@ class LifecycleTest extends AnyFeatureSpec with Matchers {
 
       implicit val clock = new TestFriendlyClock(1000L)
 
-      implicit val lifecycle = new LifecycleContainer
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
       lifecycle.add(CompX())
       lifecycle.add(CompY())
