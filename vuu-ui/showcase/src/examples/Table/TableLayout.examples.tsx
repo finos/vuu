@@ -5,7 +5,7 @@ import {
   getSchema,
 } from "@vuu-ui/vuu-data-test";
 import { DataSource, TableSchema } from "@vuu-ui/vuu-data-types";
-import { DockLayout, Drawer } from "@vuu-ui/vuu-layout";
+import { DockLayout, Drawer, ResizeStrategy } from "@vuu-ui/vuu-layout";
 import { Table, TableProps, useHeaderProps } from "@vuu-ui/vuu-table";
 import {
   BaseRowProps,
@@ -109,12 +109,16 @@ type InlineDrawerProps = {
   inline?: boolean;
   position: "left" | "right" | "top" | "bottom";
   peekaboo?: boolean;
+  resizeStrategy?: ResizeStrategy;
+  width?: number | "100%";
 };
 
 const InlineDrawer = ({
   inline = false,
   position,
   peekaboo = false,
+  resizeStrategy,
+  width = "100%",
 }: InlineDrawerProps) => {
   const { VuuDataSource } = useData();
   const schema = getSchema("instruments");
@@ -182,7 +186,8 @@ const InlineDrawer = ({
           dataSource={dataSource}
           navigationStyle="row"
           onSelectionChange={handleSelectionChange}
-          width="100%"
+          resizeStrategy={resizeStrategy}
+          width={width}
         />
       </DockLayout>
     </LocalDataSourceProvider>
@@ -191,6 +196,10 @@ const InlineDrawer = ({
 
 export const RightInlineDrawerPeek = () => (
   <InlineDrawer position="right" inline />
+);
+
+export const RightInlineDrawerPeekResizeDefer = () => (
+  <InlineDrawer position="left" inline resizeStrategy="defer" />
 );
 
 export const SingleHeadingRow = () => {

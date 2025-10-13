@@ -349,11 +349,12 @@ export class ArrayDataSource
           this.selectedRows.clear();
         }
 
-        const fromIdx = this.index.get(fromRowKey);
-        const toIdx = this.index.get(toRowKey);
+        const fromIdx = this.indexOfRowWithKey(fromRowKey);
+        const toIdx = this.indexOfRowWithKey(toRowKey);
+        const rows = this.currentData;
         if (typeof fromIdx === "number" && typeof toIdx === "number") {
           for (let i = fromIdx; i <= toIdx; i++) {
-            const { [KEY]: rowKey } = this.#data[i];
+            const { [KEY]: rowKey } = rows[i];
             this.selectedRows.add(rowKey);
           }
         }
@@ -789,7 +790,7 @@ export class ArrayDataSource
   }
 
   indexOfRowWithKey = (key: string) =>
-    this.#data.findIndex((row) => row[KEY] === key);
+    this.currentData.findIndex((row) => row[KEY] === key);
 
   protected update = (row: VuuRowDataItemType[], columnName: string) => {
     // TODO take sorting, filtering. grouping into account
