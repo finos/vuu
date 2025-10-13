@@ -1,6 +1,6 @@
 package org.finos.vuu.net.http
 
-import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSSLCipherSuiteOptions, VuuSSLDisabled, VuuSSLOptions}
+import org.finos.vuu.core.{VuuSSLDisabled, VuuSSLOptions}
 import org.finos.vuu.net.{Authenticator, LoginTokenValidator}
 
 trait VuuSecurityOptions {
@@ -21,9 +21,6 @@ trait VuuHttp2ServerOptions {
   def webRoot: VuuHttp2ServerWebRootType
   def port: Int
   def bindAddress: String
-  @deprecated
-  def withSsl(certPath: String, keyPath: String): VuuHttp2ServerOptions
-  @deprecated
   def withSslDisabled(): VuuHttp2ServerOptions
   def withSsl(vuuSSLOptions: VuuSSLOptions): VuuHttp2ServerOptions
   def withWebRoot(webRoot: VuuHttp2ServerWebRootType): VuuHttp2ServerOptions
@@ -49,10 +46,6 @@ private case class VuuHttp2ServerOptionsImpl(isEnabled: Boolean = true,
   }
 
   override def withSslDisabled(): VuuHttp2ServerOptions = this.withSsl(VuuSSLDisabled())
-
-  def withSsl(certPath: String, keyPath: String): VuuHttp2ServerOptions = {
-    this.withSsl(VuuSSLByCertAndKey(certPath, keyPath, None, VuuSSLCipherSuiteOptions()))
-  }
 
   def withSsl(sslOptions: VuuSSLOptions): VuuHttp2ServerOptions = {
     this.copy(sslOptions = sslOptions)

@@ -54,12 +54,12 @@ public class VuuExampleMain {
         final VuuServerConfig config = new VuuServerConfig(
                 VuuHttp2ServerOptions.apply()
                         .withWebRoot(new AbsolutePathWebRoot(webRoot, true))
-                        .withSsl(certPath, keyPath)
+                        .withSsl(new VuuSSLByCertAndKey(certPath, keyPath, Option.empty(), VuuSSLCipherSuiteOptions.apply()))
                         .withPort(8443),
                 VuuWebSocketOptions.apply()
                         .withUri("websocket")
                         .withWsPort(8090)
-                        .withWss(certPath, keyPath, Option.apply(null))
+                        .withSsl(new VuuSSLByCertAndKey(certPath, keyPath, Option.empty(), VuuSSLCipherSuiteOptions.apply()))
                         .withBindAddress("0.0.0.0"),
                 VuuSecurityOptions.apply()
                         .withAuthenticator(authenticator)

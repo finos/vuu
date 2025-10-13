@@ -16,7 +16,6 @@
         <module>virtualized-table-plugin</module>
     </modules>
 
-
     <profiles>
         <profile>
             <id>sign-it</id>

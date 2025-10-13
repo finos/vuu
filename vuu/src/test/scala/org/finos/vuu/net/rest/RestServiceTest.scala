@@ -2,7 +2,7 @@ package org.finos.vuu.net.rest
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.module.vui.VuiStateModule
-import org.finos.vuu.core.{VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
+import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
 import org.finos.vuu.net.http.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
 import org.finos.vuu.state.MemoryBackedVuiStateStore
 import io.vertx.core.json.JsonObject
@@ -43,7 +43,7 @@ class RestServiceTest extends AnyFeatureSpec with Matchers with StrictLogging {
       val config = VuuServerConfig(
         VuuHttp2ServerOptions()
           .withWebRoot(AbsolutePathWebRoot("vuu/src/main/resources/www", directoryListings = true))
-          .withSsl("vuu/src/main/resources/certs/cert.pem", "vuu/src/main/resources/certs/key.pem")
+          .withSsl(VuuSSLByCertAndKey("vuu/src/main/resources/certs/cert.pem", "vuu/src/main/resources/certs/key.pem"))
           .withPort(https),
         VuuWebSocketOptions()
           .withUri("websocket")

@@ -6,7 +6,7 @@ import org.finos.vuu.core.module.auths.PermissionSet
 import org.finos.vuu.core.module.simul.model.{ChildOrder, ParentOrder}
 
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.{ConcurrentHashMap, DelayQueue, Delayed, TimeUnit}
+import java.util.concurrent.{DelayQueue, Delayed, TimeUnit}
 
 //case class ParentOrder(id: Int, ric: String, price: Double, quantity: Int, side: String, account: String, exchange: String, ccy: String, algo: String, volLimit: Double, filledQty: Int, openQty: Int, averagePrice: Double, status: String, remainingQty: Int, activeChildren: Int, owner: String = "", permissionMask: Int = 0)
 //
@@ -37,7 +37,7 @@ trait DelayQueueAction extends Delayed {
   def remainingMillis(): Long = timeToRun - clock.now()
 
   override def getDelay(unit: TimeUnit): Long = {
-    unit.convert(remainingMillis, TimeUnit.MILLISECONDS)
+    unit.convert(remainingMillis(), TimeUnit.MILLISECONDS)
   }
 
   override def compareTo(o: Delayed): Int = {
@@ -81,7 +81,7 @@ class ParentChildOrdersModel(implicit clock: Clock,
                              //orderStore: OrderStore) {
 
   private final val queue = new DelayQueue[DelayQueueAction]()
-  private final var cycleNumber = 0l
+  private final var cycleNumber = 0L
   private var orderId = 0
   private var childOrderId = new AtomicInteger(0);
   private final val MAX_ORDERS = 7000

@@ -71,9 +71,9 @@
                             </execution>
                         </executions>
                     </plugin>
+
                   <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.2.0</version>
                     <executions>
                       <execution>
                         <id>copy-resources</id>
@@ -95,31 +95,9 @@
                     </executions>
                   </plugin>
 
-                  <!--plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>exec-maven-plugin</artifactId>
-                    <version>3.0.0</version>
-                    <executions>
-                      <execution>
-                        <id>rm-yarn-lock</id>
-                        <phase>clean</phase>
-                        <goals>
-                          <goal>exec</goal>
-                        </goals>
-                      </execution>
-                    </executions>
-                    <configuration>
-                      <executable>rm</executable>
-                      <arguments>
-                        <argument>yarn.lock</argument>
-                      </arguments>
-                    </configuration>
-                  </plugin-->
-
                   <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>exec-maven-plugin</artifactId>
-                    <version>3.0.0</version>
                     <executions>
                       <execution>
                         <id>step_0_yarn-build</id>
@@ -145,30 +123,6 @@
                     </configuration>
                   </plugin>
 
-                  <!--plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>exec-maven-plugin</artifactId>
-                    <version>3.0.0</version>
-                    <executions>
-                      <execution>
-                        <id>yarn-build-app</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                          <goal>exec</goal>
-                        </goals>
-                      </execution>
-                    </executions>
-                    <configuration>
-                      <executable>yarn</executable>
-                      <workingDirectory>${project.basedir}/../vuu-ui</workingDirectory -->
-                      <!--arguments>
-                        <argument>build:app</argument>
-                      </arguments-->
-                      <!--environmentVariables>
-                          <LANG>en_US</LANG>
-                      </environmentVariables>
-                    </configuration>
-                  </plugin-->
                 </plugins>
             </build>
         </profile>
@@ -195,13 +149,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <!--version>3.0.0-M4</version-->
             </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.3.0</version>
 
                 <executions>
                     <execution>
@@ -219,7 +171,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.7</version>
                 <configuration>
                     <!--skipTests>false</skipTests-->
                 </configuration>
@@ -228,7 +179,6 @@
             <plugin>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest-maven-plugin</artifactId>
-                <version>2.0.0</version>
                 <configuration>
                     <!--skipTests>true</skipTests-->
                     <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
@@ -249,7 +199,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.2</version>
 
                 <executions>
                     <execution>
@@ -262,16 +211,4 @@
 
         </plugins>
     </build>
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
-                <version>${maven.scala.plugin}</version>
-                <configuration>
-                    <scalaVersion>${scala.version}</scalaVersion>
-                </configuration>
-            </plugin>
-        </plugins>
-    </reporting>
 </project>

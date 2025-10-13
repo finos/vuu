@@ -106,11 +106,12 @@ class OrderSimulator(table: DataTable)(implicit time: Clock) {
 
   private def toMap(od: OrderDetail): Map[String, Any] = {
 
-    def objToMap(cc: AnyRef) =
-      (Map[String, Any]() /: cc.getClass.getDeclaredFields) { (a, f) =>
-        f.setAccessible(true)
-        a + (f.getName -> f.get(cc))
+    def objToMap(cc: AnyRef): Map[String, Any] = {
+      cc.getClass.getDeclaredFields.foldLeft(Map[String, Any]()) { (map, field) =>
+        field.setAccessible(true)
+        map + (field.getName -> field.get(cc))
       }
+    }
 
     objToMap(od)
   }
@@ -132,10 +133,10 @@ class OrderSimulator(table: DataTable)(implicit time: Clock) {
 
   def fillOrders() = {
 
-    val enum = orders.elements()
+    val orderDetails = orders.elements()
 
-    while (enum.hasMoreElements) {
-      val next = enum.nextElement()
+    while (orderDetails.hasMoreElements) {
+      val next = orderDetails.nextElement()
       fillOrder(next)
     }
 

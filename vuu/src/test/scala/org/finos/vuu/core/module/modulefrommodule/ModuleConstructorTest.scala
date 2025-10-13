@@ -1,12 +1,11 @@
 package org.finos.vuu.core.module.modulefrommodule
 
-import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.module.TableDefContainer
-import org.finos.vuu.core.{VuuSecurityOptions, VuuServerConfig, VuuThreadingOptions, VuuWebSocketOptions}
-import org.finos.vuu.net.{AlwaysHappyLoginValidator, Authenticator, ViewServerMessage}
+import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSecurityOptions, VuuServerConfig, VuuThreadingOptions, VuuWebSocketOptions}
 import org.finos.vuu.net.http.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
+import org.finos.vuu.net.{AlwaysHappyLoginValidator, Authenticator}
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -31,14 +30,14 @@ class ModuleConstructorTest extends AnyFeatureSpec with Matchers with GivenWhenT
           //only specify webroot if we want to load the source locally, we'll load it from the jar
           //otherwise
           .withWebRoot(AbsolutePathWebRoot("webRoot", directoryListings = true))
-          .withSsl("certPath", "keyPath")
+          .withSsl(VuuSSLByCertAndKey("certPath", "keyPath"))
           //don't leave me on in prod pls....
           .withBindAddress("0.0.0.0")
           .withPort(8443),
         VuuWebSocketOptions()
           .withUri("websocket")
           .withWsPort(8090)
-          .withWss("certPath", "keyPath")
+          .withSsl(VuuSSLByCertAndKey("certPath", "keyPath"))
           .withBindAddress("0.0.0.0"),
         VuuSecurityOptions()
           .withAuthenticator(authenticator)

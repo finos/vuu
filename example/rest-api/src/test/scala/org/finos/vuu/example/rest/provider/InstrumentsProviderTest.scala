@@ -1,11 +1,10 @@
 package org.finos.vuu.example.rest.provider
 
-import org.finos.toolbox.json.JsonUtil
 import org.finos.toolbox.json.JsonUtil.toRawJson
-import org.finos.vuu.core.table.{Columns, DataTable, RowData, RowWithData}
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.module.ModuleFactory.stringToString
+import org.finos.vuu.core.table.{Columns, DataTable, RowData, RowWithData}
 import org.finos.vuu.example.rest.client.{HttpClient, InstrumentServiceClient}
 import org.finos.vuu.example.rest.model.{Instrument, RandomInstrument}
 import org.scalamock.scalatest.MockFactory
@@ -30,7 +29,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
 
       getInstrumentsProvider(mockBackend).doStart()
 
-      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify(expectedRow.get(KEY_FIELD).toString, expectedRow).once
+      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify(expectedRow.get(KEY_FIELD).toString, expectedRow).once()
     }
 
     Scenario("can correctly make an external call, parse response and update the table WHEN server responds with multiple instruments") {
@@ -42,7 +41,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
 
       getInstrumentsProvider(mockBackend).doStart()
 
-      expectedRows.foreach(row => ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify(row.get(KEY_FIELD).toString, row).once)
+      expectedRows.foreach(row => ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify(row.get(KEY_FIELD).toString, row).once())
     }
 
 
@@ -52,7 +51,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
 
       getInstrumentsProvider(mockBackend).doStart()
 
-      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify(*, *).never
+      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify(*, *).never()
     }
 
     Scenario("skips updating table when response errors") {
@@ -60,12 +59,12 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
 
       getInstrumentsProvider(mockBackend).doStart()
 
-      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify(*, *).never
+      ((rowKey: String, rowUpdate: RowData) => mockTable.processUpdate(rowKey, rowUpdate)).verify(*, *).never()
     }
   }
 
   def getInstrumentsProvider(backendStub: SyncBackendStub): InstrumentsProvider = {
-    (mockTable.getTableDef _).when().returns(testTableDef())
+    (() => mockTable.getTableDef).when().returns(testTableDef())
     val instrumentsClient = InstrumentServiceClient(HttpClient(backendStub), BASE_URL)
     new InstrumentsProvider(mockTable, instrumentsClient)
   }

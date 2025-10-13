@@ -104,9 +104,11 @@ object httpServerOptions {
       .withBindAddress("0.0.0.0")
       .withPort(8443)
 
-    val sslEnabled = c.getBoolean(ConfigKeys.sslEnabled)
-    if (sslEnabled) options.withSsl(c.getString(ConfigKeys.certPath), c.getString(ConfigKeys.keyPath))
-    else options.withSslDisabled()
+    if (c.getBoolean(ConfigKeys.sslEnabled)) {
+      options.withSsl(VuuSSLByCertAndKey(c.getString(ConfigKeys.certPath), c.getString(ConfigKeys.keyPath)))
+    } else {
+      options.withSslDisabled()
+    }
   }
 }
 
@@ -117,8 +119,10 @@ object webSocketOptions {
       .withWsPort(8090)
       .withBindAddress("0.0.0.0")
 
-    val sslEnabled = c.getBoolean(ConfigKeys.sslEnabled)
-    if (sslEnabled) options.withWss(c.getString(ConfigKeys.certPath), c.getString(ConfigKeys.keyPath))
-    else options.withWssDisabled()
+    if (c.getBoolean(ConfigKeys.sslEnabled)) {
+      options.withSsl(VuuSSLByCertAndKey(c.getString(ConfigKeys.certPath), c.getString(ConfigKeys.keyPath)))
+    } else {
+      options.withSslDisabled()
+    }
   }
 }
