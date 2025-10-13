@@ -8,9 +8,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
       - uses: actions/setup-node@v3
         with:
           node-version: "20.x"
+
       - name: Set up JDK 1.17
         uses: actions/setup-java@v4
         with:
@@ -18,11 +20,6 @@ jobs:
           java-package: jdk
           distribution: temurin
           cache: 'maven'
-      - uses: actions/cache@v3
-        with:
-          path: ${{ env.HOME }}/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+
       - name: Build with Maven
         run: mvn -B test --file pom.xml
