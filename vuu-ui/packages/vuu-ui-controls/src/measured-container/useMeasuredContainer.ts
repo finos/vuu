@@ -21,8 +21,16 @@ export interface ClientSize {
   clientWidth: number;
 }
 
+const NullClientSize: Partial<ClientSize> = {
+  clientHeight: -1,
+  clientWidth: -1,
+};
+
 export interface MeasuredProps
-  extends Pick<MeasuredContainerProps, "height" | "onResize" | "width"> {
+  extends Pick<
+    MeasuredContainerProps,
+    "height" | "onResize" | "resizeStrategy" | "width"
+  > {
   defaultHeight?: number;
   defaultWidth?: number;
 }
@@ -107,8 +115,13 @@ export const useMeasuredContainer = ({
   defaultWidth = 0,
   height,
   onResize: onResizeProp,
+  resizeStrategy = "responsive",
   width,
 }: MeasuredProps): MeasuredContainerHookResult => {
+  const deferResize = resizeStrategy === "defer";
+  const sizeRef = useRef<Partial<ClientSize>>(NullClientSize);
+  const resizeHandleRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<MeasuredState>({
     css: getInitialCssSize(height, width),
@@ -158,8 +171,8 @@ export const useMeasuredContainer = ({
     });
   }, [height, width]);
 
-  const onResize: ResizeHandler = useCallback(
-    ({ clientWidth, clientHeight }: Partial<ClientSize>) => {
+  const handleResize = useCallback(
+    (clientWidth: number | undefined, clientHeight: number | undefined) => {
       const { css, inner, outer } = size;
       let newState: MeasuredState = size;
 
@@ -211,10 +224,29 @@ export const useMeasuredContainer = ({
     [defaultHeight, defaultWidth, fixedHeight, fixedWidth, height, size, width],
   );
 
+  const onResize: ResizeHandler = useCallback(
+    ({ clientHeight, clientWidth }: Partial<ClientSize>) => {
+      console.log(`onResize ${clientWidth} * ${clientHeight}`);
+      if (deferResize) {
+        sizeRef.current.clientHeight = clientHeight;
+        sizeRef.current.clientWidth = clientWidth;
+        //
+        if (resizeHandleRef.current !== null) {
+          clearTimeout(resizeHandleRef.current);
+        }
+        resizeHandleRef.current = setTimeout(() => {
+          handleResize(clientWidth, clientHeight);
+        }, 40);
+      } else {
+        handleResize(clientWidth, clientHeight);
+      }
+    },
+    [deferResize, handleResize],
+  );
+
   useEffect(() => {
     if (size.inner) {
       if (containerRef.current) {
-        // reassign using clientWidth to correctly account for borders
         size.inner.width = containerRef.current.clientWidth;
         onResizeProp?.(size.inner);
       }

@@ -7,6 +7,8 @@ import cx from "clsx";
 
 import measuredContainerCss from "./MeasuredContainer.css";
 
+export type ResizeStrategy = "defer" | "responsive";
+
 export interface MeasuredContainerProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onResize"> {
   /**
@@ -17,6 +19,7 @@ export interface MeasuredContainerProps
    */
   height?: number | string;
   onResize?: (size: MeasuredSize) => void;
+  resizeStrategy?: ResizeStrategy;
   width?: number | string;
 }
 
@@ -28,6 +31,7 @@ export const MeasuredContainer = forwardRef(function MeasuredContainer(
     className,
     height,
     onResize,
+    resizeStrategy,
     style,
     width,
     ...htmlAttributes
@@ -44,6 +48,7 @@ export const MeasuredContainer = forwardRef(function MeasuredContainer(
   const { containerRef, ...containerMeasurements } = useMeasuredContainer({
     height,
     onResize,
+    resizeStrategy,
     width,
   });
 

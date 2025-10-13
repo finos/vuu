@@ -34,7 +34,6 @@ export class RuntimeVisualLink {
     this.#childDataSource.baseFilter = { filter: "" };
   }
 
-  //TODO this must be rewritten now that selection mechanism has changed
   handleParentSelectEvent: RowSelectionEventHandler = () => {
     if (this.#childDataSource) {
       const selectedValues = this.pickUniqueSelectedValues();
@@ -59,7 +58,7 @@ export class RuntimeVisualLink {
     const set = new Set();
 
     for (const key of dataSource.getSelectedRowIds()) {
-      const row = dataSource.getRowAtIndex(dataSource.indexOfRowWithKey(key));
+      const row = dataSource.getRowByKey(key);
       if (row) {
         set.add(row[colIndex]);
       }

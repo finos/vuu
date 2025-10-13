@@ -1,6 +1,25 @@
 import { defineConfig, devices } from '@playwright/experimental-ct-react';
 import { createFilter } from "vite";
 import MagicString from "magic-string";
+import tsconfigPaths from "vite-tsconfig-paths";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+/**
+ * Path Resolution Strategy for Playwright Component Tests
+ * 
+ * We use vite-tsconfig-paths (same as Cypress) to resolve @vuu-ui/* imports.
+ * It resolves through npm workspaces to each package's "main" field, which
+ * points to source files (src/index.ts) rather than built files.
+ * 
+ * This approach:
+ * - Matches the Cypress setup exactly
+ * - Keeps path configuration isolated from the main tsconfig.json
+ * - Prevents affecting published package type definitions
+ * - Is cleaner than maintaining manual Vite aliases for all packages
+ */
 
 // Custom CSS inline plugin that targets all packages
 function cssInline() {
@@ -47,6 +66,7 @@ export default defineConfig({
         conditions: ['import', 'module', 'browser', 'default'],
       },
       plugins: [
+        tsconfigPaths({ projects: [path.join(__dirname, 'playwright/tsconfig.json')] }),
         cssInline(), // Use the custom CSS inline plugin
       ],
       build: {

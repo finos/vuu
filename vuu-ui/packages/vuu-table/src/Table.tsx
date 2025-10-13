@@ -321,7 +321,11 @@ const TableCore = ({
   size,
 }: Omit<
   TableProps,
-  "maxViewportRowLimit" | "rowHeight" | "searchPattern" | "viewportRowLimit"
+  | "maxViewportRowLimit"
+  | "resizeStrategy"
+  | "rowHeight"
+  | "searchPattern"
+  | "viewportRowLimit"
 > & {
   containerRef: RefObject<HTMLDivElement | null>;
   /**
@@ -574,6 +578,7 @@ export const Table = forwardRef(function Table(
     onSelectionChange,
     renderBufferSize,
     revealSelected,
+    resizeStrategy,
     rowActionHandlers,
     rowHeight: rowHeightProp,
     rowToObject,
@@ -676,6 +681,7 @@ export const Table = forwardRef(function Table(
         id={id}
         onResize={setSize}
         ref={useForkRef(containerRef, forwardedRef)}
+        resizeStrategy={resizeStrategy}
         style={
           {
             ...styleProp,
