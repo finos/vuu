@@ -38,14 +38,8 @@
 
         <dependency>
             <groupId>org.scala-lang</groupId>
-            <artifactId>scala-library</artifactId>
-            <version>${scala.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-reflect</artifactId>
-            <version>${scala.version}</version>
+            <artifactId>scala3-library_3</artifactId>
+            <version>${scala3.version}</version>
         </dependency>
 
         <dependency>
@@ -80,25 +74,20 @@
 
         <dependency>
             <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.13</artifactId>
+            <artifactId>scalatest_3</artifactId>
             <version>${scalatest.version}</version>
-
             <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.scala-lang</groupId>
                     <artifactId>scala-library</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>org.scala-lang</groupId>
-                    <artifactId>scala-reflect</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.scalamock</groupId>
-            <artifactId>scalamock_2.13</artifactId>
+            <artifactId>scalamock_3</artifactId>
             <version>${scalamock.version}</version>
             <scope>test</scope>
             <exclusions>
@@ -160,7 +149,6 @@
                 <artifactId>maven-source-plugin</artifactId>
                 <executions>
                     <execution>
-
                         <phase>compile</phase>
                         <goals>
                             <goal>jar</goal>
@@ -199,11 +187,11 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <scalaVersion>${scala3.version}</scalaVersion>
                     <sourceDir>src/main/scala</sourceDir>
                     <testSourceDir>src/test/scala</testSourceDir>
                     <args>
                         <arg>-deprecation</arg>
-                        <arg>-Xsource:3</arg>
                     </args>
                     <jvmArgs>
                         <jvmArg>-Xms64m</jvmArg>
