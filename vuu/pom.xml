@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>vuu-parent</artifactId>
-        <version>0.9.91-SNAPSHOT</version>
+        <version>0.9.92-SNAPSHOT</version>
     </parent>
 
     <artifactId>vuu</artifactId>
@@ -17,7 +17,7 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>toolbox</artifactId>
-            <version>0.9.91-SNAPSHOT</version>
+            <version>0.9.92-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -366,7 +366,7 @@
                     <arguments>
                         <argument>-Xmx10G</argument>
                         <argument>-classpath</argument>
-                        <classpath/>
+                        <classpath />
                         <argument>-Dvuu.webroot=../vuu-ui/deployed_apps/app-vuu-example</argument>
                         <argument>-Dvuu.keyPath=src/main/resources/certs/key.pem</argument>
                         <argument>-Dvuu.certPath=src/main/resources/certs/cert.pem</argument>
