@@ -1,10 +1,10 @@
 package org.finos.vuu.client
-import org.finos.vuu.net._
-
+import org.finos.vuu.net.*
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.viewport.{DefaultRange, ViewPortRange, ViewPortTable}
 
-import scala.reflect.ClassTag
+import scala.annotation.tailrec
+import scala.reflect.{ClassTag, classTag}
 import scala.util.{Failure, Success, Try}
 
 object ClientHelperFns {
@@ -116,14 +116,13 @@ object ClientHelperFns {
     vsClient.send(JsonViewServerMessage("", "", "", "", LoginRequest(token, user)))
     vsClient.awaitMsg.sessionId
   }
-
-  import scala.reflect.runtime.universe.{TypeTag, typeTag}
-
-  private def await[TYPE: TypeTag](implicit client: ViewServerClient): ViewServerMessage = {
+  
+  @tailrec
+  private def await[TYPE: ClassTag](implicit client: ViewServerClient): ViewServerMessage = {
 
     val msg = client.awaitMsg
 
-    val clazz = typeTag[TYPE].mirror.runtimeClass(typeTag[TYPE].tpe)
+    val clazz = classTag[TYPE].runtimeClass
 
     val body = msg.body
 

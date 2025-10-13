@@ -4,7 +4,7 @@ import org.finos.vuu.viewport.TestTimeStamp
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.junit.Assert.assertEquals
 import org.scalatest.featurespec.AnyFeatureSpec
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers.shouldEqual
 
 class VuiStateStoreTest extends AnyFeatureSpec {
 

@@ -39,7 +39,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       import TableAsserts.*
 
-      implicit val lifecycle = new LifecycleContainer
+      given lifecycle: LifecycleContainer = new LifecycleContainer
 
       val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
 
@@ -149,7 +149,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       import TableAsserts.*
 
-      implicit val lifecycle = new LifecycleContainer
+      given lifecycle: LifecycleContainer = new LifecycleContainer
 
       val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
 
@@ -311,7 +311,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       import TableAsserts.*
 
-      implicit val lifecycle = new LifecycleContainer
+      given lifecycle: LifecycleContainer = new LifecycleContainer
 
       val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
 

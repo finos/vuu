@@ -107,7 +107,7 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
 
       implicit val timeProvider: Clock = new DefaultClock
 
-      implicit val lifecycle = new LifecycleContainer
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 

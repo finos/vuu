@@ -4,7 +4,7 @@ object MergeFunctions {
 
   def mergeLeftToRight(update: RowData, data: RowData): RowData = {
 
-    assert(update.key() == data.key(), s"check we're updating the same row ${update.key()} != ${data.key()}")
+    assert(update.key == data.key, s"check we're updating the same row ${update.key} != ${data.key}")
 
     var newData: RowData = data
 

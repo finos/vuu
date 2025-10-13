@@ -15,9 +15,8 @@ import java.security.SecureRandom
 
 class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
                   implicit val timeProvider: Clock,
-                  implicit val lifecycle: LifecycleContainer,
-                  implicit val tableDefContainer: TableDefContainer){
-
+                  val lifecycle: LifecycleContainer,
+                  val tableDefContainer: TableDefContainer){
 
   def startServerAndClient(): TestVuuClient = {
 

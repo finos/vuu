@@ -95,7 +95,7 @@ case class GenericSort2(spec: SortSpec, columns: List[Column])(implicit clock: C
       val snapshotKeys = new Array[String](snapshot.length)
 
       snapshot.indices.foreach { i =>
-        snapshotKeys(i) = snapshot(i).key()
+        snapshotKeys(i) = snapshot(i).key
       }
 
       ImmutableArray.fromArray(snapshotKeys)
