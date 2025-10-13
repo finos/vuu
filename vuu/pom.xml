@@ -33,7 +33,7 @@
             <exclusions>
                 <exclusion>
                     <groupId>org.scala-lang</groupId>
-                    <artifactId>scala-library</artifactId>
+                    <artifactId>scala3-library_3</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -138,7 +138,7 @@
             <exclusions>
                 <exclusion>
                     <groupId>org.scala-lang</groupId>
-                    <artifactId>scala-library</artifactId>
+                    <artifactId>scala3-library_3</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -151,7 +151,7 @@
             <exclusions>
                 <exclusion>
                     <groupId>org.scala-lang</groupId>
-                    <artifactId>scala-library</artifactId>
+                    <artifactId>scala3-library_3</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
