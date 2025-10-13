@@ -11,6 +11,7 @@ import {
   Flexbox,
   FlexboxLayout,
   LayoutProvider,
+  ResizeStrategy,
   View,
 } from "@vuu-ui/vuu-layout";
 import { ContextPanel } from "@vuu-ui/vuu-shell";
@@ -260,7 +261,11 @@ export const VuuInstruments = () => {
   );
 };
 
-export const FlexLayoutTables = () => {
+export const FlexLayoutTables = ({
+  resizeStrategy,
+}: {
+  resizeStrategy?: ResizeStrategy;
+}) => {
   const schema = getSchema("instruments");
   const { VuuDataSource } = useData();
   const tableConfig = useMemo<TableConfig>(() => {
@@ -287,26 +292,46 @@ export const FlexLayoutTables = () => {
       >
         <FlexboxLayout resizeable style={{ flexDirection: "row", flex: 1 }}>
           <View resizeable style={{ flex: 1 }}>
-            <Table config={tableConfig} dataSource={ds1} />
+            <Table
+              config={tableConfig}
+              dataSource={ds1}
+              resizeStrategy={resizeStrategy}
+            />
           </View>
 
           <View resizeable style={{ flex: 1 }}>
-            <Table config={tableConfig} dataSource={ds2} />
+            <Table
+              config={tableConfig}
+              dataSource={ds2}
+              resizeStrategy={resizeStrategy}
+            />
           </View>
         </FlexboxLayout>
         <FlexboxLayout resizeable style={{ flexDirection: "row", flex: 1 }}>
           <View resizeable style={{ flex: 1 }}>
-            <Table config={tableConfig} dataSource={ds3} />
+            <Table
+              config={tableConfig}
+              dataSource={ds3}
+              resizeStrategy={resizeStrategy}
+            />
           </View>
 
           <View resizeable style={{ flex: 1 }}>
-            <Table config={tableConfig} dataSource={ds4} />
+            <Table
+              config={tableConfig}
+              dataSource={ds4}
+              resizeStrategy={resizeStrategy}
+            />
           </View>
         </FlexboxLayout>
       </FlexboxLayout>
     </LayoutProvider>
   );
 };
+
+export const FlexLayoutTablesResizeDefer = () => (
+  <FlexLayoutTables resizeStrategy="defer" />
+);
 
 export const TableInLayoutWithContextPanel = () => {
   const schema = getSchema("instruments");
