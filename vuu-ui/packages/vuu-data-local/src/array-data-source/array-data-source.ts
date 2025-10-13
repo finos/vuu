@@ -658,10 +658,6 @@ export class ArrayDataSource
     this.setRange(range);
   }
 
-  getRowAtIndex(rowIndex: number) {
-    return (this.processedData ?? this.#data)[rowIndex];
-  }
-
   protected delete(row: VuuRowDataItemType[]) {
     console.log(`delete row ${row.join(",")}`);
   }
@@ -782,6 +778,15 @@ export class ArrayDataSource
       }
     }
   };
+
+  getRowByKey(key: string) {
+    const data = this.processedData ?? this.#data;
+    return data.find((row) => row[KEY] === key);
+  }
+
+  getRowAtIndex(rowIndex: number) {
+    return (this.processedData ?? this.#data)[rowIndex];
+  }
 
   indexOfRowWithKey = (key: string) =>
     this.#data.findIndex((row) => row[KEY] === key);
