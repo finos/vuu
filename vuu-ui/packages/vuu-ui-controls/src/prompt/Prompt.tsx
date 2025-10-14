@@ -67,7 +67,7 @@ export interface PromptProps
    */
   initialFocusedItem?: "confirm" | "cancel" | "close";
   onCancel?: () => void;
-  onConfirm?: () => void;
+  onConfirm?: () => void | false;
   onClose?: () => void;
   showCancelButton?: boolean;
   showCloseButton?: boolean;
@@ -141,8 +141,9 @@ export const Prompt = ({
   const handleConfirm = useCallback<
     MouseEventHandler<HTMLButtonElement>
   >(() => {
-    onConfirm?.();
-    close();
+    if (onConfirm?.() !== false) {
+      close();
+    }
   }, [close, onConfirm]);
 
   const actions = showCloseButton ? (
