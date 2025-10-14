@@ -9,7 +9,7 @@ import io.netty.util.CharsetUtil
 import java.util.concurrent.{ArrayBlockingQueue, TimeUnit}
 import scala.concurrent.duration.DurationInt
 
-class WebSocketClientHandler() extends SimpleChannelInboundHandler[AnyRef] with StrictLogging {
+class WebSocketClientHandler extends SimpleChannelInboundHandler[AnyRef] with StrictLogging {
 
   private val queue = new ArrayBlockingQueue[String](1000)
   private final var handshaker: WebSocketClientHandshaker = null
@@ -43,7 +43,7 @@ class WebSocketClientHandler() extends SimpleChannelInboundHandler[AnyRef] with 
     if (!handshaker.isHandshakeComplete) {
       handshaker.finishHandshake(ch, msg.asInstanceOf[FullHttpResponse])
       logger.trace("WebSocket Client connected!")
-      handshakeFuture.setSuccess
+      handshakeFuture.setSuccess()
       return
     }
     if (msg.isInstanceOf[FullHttpResponse]) {
