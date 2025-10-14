@@ -1,13 +1,13 @@
 package org.finos.toolbox.lifecycle
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.toolbox.time.TestFriendlyClock
+import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
 class LifecycleDAGTest extends AnyFeatureSpec with Matchers {
 
-  class CompA()(implicit val lifecycle: LifecycleContainer) extends DefaultLifecycleEnabled with StrictLogging{
+  class CompA()(using val lifecycle: LifecycleContainer) extends DefaultLifecycleEnabled with StrictLogging{
     override def doStart(): Unit = {
       logger.debug("Starting A")
     }
@@ -19,7 +19,7 @@ class LifecycleDAGTest extends AnyFeatureSpec with Matchers {
     override val lifecycleId: String = "A"
   }
 
-  class CompB(compA: CompA) (implicit val lifecycle: LifecycleContainer) extends LifecycleEnabled with StrictLogging{
+  class CompB(compA: CompA) (using val lifecycle: LifecycleContainer) extends LifecycleEnabled with StrictLogging{
 
     lifecycle(this).dependsOn(compA)
 
@@ -40,7 +40,7 @@ class LifecycleDAGTest extends AnyFeatureSpec with Matchers {
     override val lifecycleId: String = "B"
   }
 
-  class CompC(compA: CompA, compB: CompB)(implicit val lifecycle: LifecycleContainer) extends DefaultLifecycleEnabled with StrictLogging{
+  class CompC(compA: CompA, compB: CompB)(using val lifecycle: LifecycleContainer) extends DefaultLifecycleEnabled with StrictLogging{
 
     lifecycle(this).dependsOn(compA, compB)
     //lifecycle(this).dependsOn(compB)
@@ -58,9 +58,9 @@ class LifecycleDAGTest extends AnyFeatureSpec with Matchers {
 
     Scenario("check that we can create a DAG"){
 
-      implicit val clock = new TestFriendlyClock(1000L)
+      given clock : Clock = new TestFriendlyClock(1000L)
 
-      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+      given lifecycle: LifecycleContainer = new LifecycleContainer
 
       val a = new CompA()
 

@@ -3,7 +3,7 @@ package org.finos.vuu.core.table.join
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.api._
+import org.finos.vuu.api.*
 import org.finos.vuu.core.table.{Columns, RowWithData, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider}
 import org.scalatest.OneInstancePerTest
@@ -19,11 +19,11 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
 
     Scenario("simple multi table join"){
 
-      implicit val timeProvider: Clock = new DefaultClock
+      given timeProvider: Clock = new DefaultClock
 
-      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+      given lifecycle: LifecycleContainer = new LifecycleContainer
 
-      implicit val metrics: MetricsProvider = new MetricsProviderImpl
+      given metrics: MetricsProvider = new MetricsProviderImpl
 
       val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
 
@@ -105,11 +105,11 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
 
     Scenario("simple multi table join, new join manager"){
 
-      implicit val timeProvider: Clock = new DefaultClock
+      given timeProvider: Clock = new DefaultClock
 
-      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+      given lifecycle: LifecycleContainer = new LifecycleContainer
 
-      implicit val metrics: MetricsProvider = new MetricsProviderImpl
+      given metrics: MetricsProvider = new MetricsProviderImpl
 
       val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
 

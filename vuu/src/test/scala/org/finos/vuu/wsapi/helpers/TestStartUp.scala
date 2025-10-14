@@ -3,8 +3,8 @@ package org.finos.vuu.wsapi.helpers
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.*
 import org.finos.vuu.core.module.{TableDefContainer, ViewServerModule}
-import org.finos.vuu.core._
 import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
 import org.finos.vuu.net.http.{VuuHttp2ServerOptions, WebRootDisabled}
 import org.finos.vuu.net.json.JsonVsSerializer
@@ -14,7 +14,7 @@ import org.finos.vuu.net.{AlwaysHappyLoginValidator, ViewServerClient, WebSocket
 import java.security.SecureRandom
 
 class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
-                  implicit val timeProvider: Clock,
+                  using val timeProvider: Clock,
                   val lifecycle: LifecycleContainer,
                   val tableDefContainer: TableDefContainer){
 
