@@ -13,7 +13,7 @@ export const useSavedFilterPanel = (props?: SavedFilterPanelProps) => {
     savedFilters = [],
     setCurrentFilter,
     onFilterMenuAction,
-  } = useSavedFilters({ availableColumns: props?.availableColumns });
+  } = useSavedFilters(undefined, { availableColumns: props?.availableColumns });
 
   const handleClickFilter = useCallback(
     (e: SyntheticEvent) => {

@@ -1,11 +1,9 @@
 import {
-  FilterChangeHandler,
   FilterContainerFilter,
   FilterContainerFilterDescriptor,
   FilterContainerFilterDescriptorWithFilter,
 } from "@vuu-ui/vuu-filter-types";
-import { ReactElement, ReactNode, useCallback, useState } from "react";
-import { FilterMenuActionHandler } from "../filter-pill/FilterMenu";
+import { ReactElement, ReactNode, useCallback, useMemo, useState } from "react";
 import { FilterNamePrompt } from "../saved-filters/FilterNamePrompt";
 import { DeleteFilterPrompt } from "../saved-filters/DeleteFilterPrompt";
 import {
@@ -19,15 +17,15 @@ import {
   EMPTY_FILTER,
   EmptyFilterDescriptor,
   FilterContext,
+  FilterContextFilterMenuActionHandler,
   FilterContextProps,
   isEmptyFilter,
   isNullFilter,
   NULL_FILTER,
   NullFilterDescriptor,
+  UNSAVED_FILTER,
 } from "./FilterContext";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-
-export const UNSAVED_FILTER = "unsaved-filter";
 
 export const filterDescriptorHasFilter = (
   f: FilterContainerFilterDescriptor,
@@ -46,52 +44,59 @@ const findFilterByName = (
 export const FilterProvider = ({
   children,
   onFiltersSaved,
-  savedFilters = [],
-}: Partial<Pick<FilterContextProps, "currentFilter" | "savedFilters">> & {
+  savedFilters: savedFiltersProp,
+}: Partial<Pick<FilterContextProps, "savedFilters">> & {
   children: ReactNode;
   onFiltersSaved?: (
     filterDescriptors: FilterContainerFilterDescriptor[],
   ) => void;
 }) => {
-  const [filterDescriptors, setFilterDescriptors] = useState(savedFilters);
+  const [, forceRefresh] = useState({});
+  const savedFilters = useMemo<Map<string, FilterContainerFilterDescriptor[]>>(
+    () => savedFiltersProp ?? new Map(),
+    [savedFiltersProp],
+  );
+
   const [dialog, setDialog] = useState<ReactElement | null>(null);
 
-  const handleApplyFilter = useCallback<FilterChangeHandler>(() => {
-    console.log("filter changed");
-  }, []);
-
   const deleteFilter = useCallback(
-    (filterId: string) => {
-      setFilterDescriptors((filterDescriptors) => {
+    (key: string, filterId: string) => {
+      const filterDescriptors = savedFilters.get(key);
+      if (filterDescriptors === undefined) {
+        throw Error(`[FilterProvider] deleteFilter, key ${key} not found`);
+      } else {
         const newFilterDescriptors = filterDescriptors.filter(
           ({ id }) => id !== filterId,
         );
+        savedFilters.set(key, newFilterDescriptors);
         if (filterId !== UNSAVED_FILTER) {
           onFiltersSaved?.(newFilterDescriptors);
         }
-        return newFilterDescriptors;
-      });
+      }
     },
-    [onFiltersSaved],
+    [onFiltersSaved, savedFilters],
   );
 
   const applyNewName = useCallback(
-    (filterId: string, name: string) => {
-      setFilterDescriptors((currentFilterDescriptors) => {
+    (key: string, filterId: string, name: string) => {
+      const filterDescriptors = savedFilters.get(key);
+      if (filterDescriptors === undefined) {
+        throw Error(`[FilterProvider] applyNewName, key ${key} not found`);
+      } else {
         const newFilterDescriptors = renameFilter(
-          currentFilterDescriptors,
+          filterDescriptors,
           filterId,
           name,
         );
+        savedFilters.set(key, newFilterDescriptors);
         onFiltersSaved?.(newFilterDescriptors);
-        return newFilterDescriptors;
-      });
+      }
     },
-    [onFiltersSaved],
+    [onFiltersSaved, savedFilters],
   );
 
-  const PromptForFilterName = useCallback(
-    ({ filter, id }: FilterContainerFilterDescriptor) => {
+  const promptForFilterName = useCallback(
+    (key: string, { filter, id }: FilterContainerFilterDescriptor) => {
       const originalFilterName = filter?.name ?? "";
       setDialog(
         <FilterNamePrompt
@@ -101,7 +106,7 @@ export const FilterProvider = ({
           onConfirm={(name) => {
             setDialog(null);
             if (originalFilterName !== name) {
-              applyNewName(id, name);
+              applyNewName(key, id, name);
             }
           }}
         />,
@@ -112,6 +117,7 @@ export const FilterProvider = ({
 
   const promptForConfirmationOfDelete = useCallback(
     (
+      key: string,
       filterDescriptor: FilterContainerFilterDescriptor,
       columns?: ColumnDescriptor[],
     ) => {
@@ -121,7 +127,7 @@ export const FilterProvider = ({
           filterDescriptor={filterDescriptor}
           onConfirm={() => {
             setDialog(null);
-            deleteFilter(filterDescriptor.id);
+            deleteFilter(key, filterDescriptor.id);
           }}
           onClose={() => setDialog(null)}
         />,
@@ -130,33 +136,42 @@ export const FilterProvider = ({
     [deleteFilter],
   );
 
-  const handleFilterMenuAction = useCallback<FilterMenuActionHandler>(
-    (filterId, actionType, columns) => {
-      const targetFilter = findFilter(filterDescriptors, filterId);
-      switch (actionType) {
-        case "close":
-          console.log(`close filter ${filterId}`);
-          break;
-        case "edit":
-          console.log(`edit filter ${filterId}`);
-          break;
-        case "remove":
-          if (filterId === UNSAVED_FILTER) {
-            console.log("remove unsaved filter");
-          } else {
-            promptForConfirmationOfDelete(targetFilter, columns);
+  const handleFilterMenuAction =
+    useCallback<FilterContextFilterMenuActionHandler>(
+      (key: string, filterId, actionType, columns) => {
+        const filterDescriptors = savedFilters.get(key);
+        if (filterDescriptors === undefined) {
+          throw Error(`[FilterProvider] applyNewName, key ${key} not found`);
+        } else {
+          const targetFilter = findFilter(filterDescriptors, filterId);
+          switch (actionType) {
+            case "close":
+              console.log(`close filter ${filterId}`);
+              break;
+            case "edit":
+              console.log(`edit filter ${filterId}`);
+              break;
+            case "remove":
+              if (filterId === UNSAVED_FILTER) {
+                console.log("remove unsaved filter");
+              } else {
+                promptForConfirmationOfDelete(key, targetFilter, columns);
+              }
+              break;
+            case "rename":
+              return promptForFilterName(key, targetFilter);
           }
-          break;
-        case "rename":
-          return PromptForFilterName(targetFilter);
-      }
-    },
-    [filterDescriptors, promptForConfirmationOfDelete, PromptForFilterName],
-  );
+        }
+      },
+      [promptForConfirmationOfDelete, promptForFilterName, savedFilters],
+    );
 
   const handleSaveFilter = useCallback(
-    (name: string) => {
-      setFilterDescriptors((filterDescriptors) => {
+    (key: string, name: string) => {
+      const filterDescriptors = savedFilters.get(key);
+      if (filterDescriptors === undefined) {
+        throw Error(`[FilterProvider] applyNewName, key ${key} not found`);
+      } else {
         const activeFilter = findActiveFilter(filterDescriptors);
         if (activeFilter.filter === null) {
           throw Error("[FilterProvider] cannot save an empty filter");
@@ -166,26 +181,26 @@ export const FilterProvider = ({
         // the name is unique and has actually changed
         if (activeFilter === filterWithSameName) {
           // name has not changed
-          return filterDescriptors;
+          return;
         } else if (filterWithSameName !== undefined) {
           // we are renaming the active filter, but another filter already has the same name,
           // keep the active filter, remove the duplicate.
-          return filterDescriptors.reduce<FilterContainerFilterDescriptor[]>(
-            (list, filterDescriptor) => {
-              if (filterDescriptor === activeFilter) {
-                list.push({
-                  active: true,
-                  filter: { ...filterDescriptor.filter, name },
-                  id: uuid(),
-                  name,
-                } as FilterContainerFilterDescriptor);
-              } else if (filterDescriptor.filter?.name !== name) {
-                list.push(filterDescriptor);
-              }
-              return list;
-            },
-            [],
-          );
+          const newFilterDescriptors = filterDescriptors.reduce<
+            FilterContainerFilterDescriptor[]
+          >((list, filterDescriptor) => {
+            if (filterDescriptor === activeFilter) {
+              list.push({
+                active: true,
+                filter: { ...filterDescriptor.filter, name },
+                id: uuid(),
+                name,
+              } as FilterContainerFilterDescriptor);
+            } else if (filterDescriptor.filter?.name !== name) {
+              list.push(filterDescriptor);
+            }
+            return list;
+          }, []);
+          savedFilters.set(key, newFilterDescriptors);
         } else {
           const newFilterDescriptors = filterDescriptors.map(
             (filterDescriptor) =>
@@ -198,12 +213,13 @@ export const FilterProvider = ({
                   } as FilterContainerFilterDescriptor)
                 : filterDescriptor,
           );
+          savedFilters.set(key, newFilterDescriptors);
           onFiltersSaved?.(newFilterDescriptors);
-          return newFilterDescriptors;
         }
-      });
+      }
+      forceRefresh({});
     },
-    [onFiltersSaved],
+    [onFiltersSaved, savedFilters],
   );
 
   /**
@@ -212,46 +228,47 @@ export const FilterProvider = ({
    * filter to be active.
    */
   const setCurrentFilter = useCallback(
-    (filter: string | FilterContainerFilter) => {
+    (key: string, filter: string | FilterContainerFilter) => {
+      const filterDescriptors = savedFilters.get(key) ?? [];
+
       if (filter === NULL_FILTER) {
-        setFilterDescriptors((currentFilterDescriptors) =>
-          insertOrReplaceFilter(currentFilterDescriptors, NullFilterDescriptor),
+        const newFilterDescriptors = insertOrReplaceFilter(
+          filterDescriptors,
+          NullFilterDescriptor,
         );
+        savedFilters.set(key, newFilterDescriptors);
       } else if (filter === EMPTY_FILTER) {
-        setFilterDescriptors((currentFilterDescriptors) =>
-          insertOrReplaceFilter(
-            currentFilterDescriptors,
-            EmptyFilterDescriptor,
-          ),
+        const newFilterDescriptors = insertOrReplaceFilter(
+          filterDescriptors,
+          EmptyFilterDescriptor,
         );
+        savedFilters.set(key, newFilterDescriptors);
       } else if (typeof filter === "string") {
-        setFilterDescriptors((currentFilterDescriptors) =>
-          activateFilter(currentFilterDescriptors, filter),
-        );
+        const newFilterDescriptors = activateFilter(filterDescriptors, filter);
+        savedFilters.set(key, newFilterDescriptors);
       } else if (filter) {
-        setFilterDescriptors((currentFilterDescriptors) =>
-          insertOrReplaceFilter(currentFilterDescriptors, {
-            active: true,
-            filter,
-            id: UNSAVED_FILTER,
-          }),
-        );
+        const newFilterDescriptors = insertOrReplaceFilter(filterDescriptors, {
+          active: true,
+          filter,
+          id: UNSAVED_FILTER,
+        });
+        savedFilters.set(key, newFilterDescriptors);
       } else {
-        deleteFilter(UNSAVED_FILTER);
+        deleteFilter(key, UNSAVED_FILTER);
       }
+
+      forceRefresh({});
     },
-    [deleteFilter],
+    [deleteFilter, savedFilters],
   );
 
   return (
     <FilterContext.Provider
       value={{
-        currentFilter: findActiveFilter(filterDescriptors),
-        onApplyFilter: handleApplyFilter,
         onFilterMenuAction: handleFilterMenuAction,
         deleteFilter,
         saveFilter: handleSaveFilter,
-        savedFilters: filterDescriptors.filter(filterDescriptorHasFilter),
+        savedFilters,
         setCurrentFilter,
       }}
     >

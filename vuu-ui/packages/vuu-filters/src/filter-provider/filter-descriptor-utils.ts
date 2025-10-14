@@ -1,4 +1,5 @@
 import { FilterContainerFilterDescriptor } from "@vuu-ui/vuu-filter-types";
+import { EMPTY_FILTER, NULL_FILTER, UNSAVED_FILTER } from "./FilterContext";
 
 export function findFilter(
   filterDescriptors: FilterContainerFilterDescriptor[],
@@ -27,6 +28,11 @@ export const deactivateFilter = (
   filterDescriptors: FilterContainerFilterDescriptor[],
 ) => activateFilter(filterDescriptors, undefined);
 
+const namedFilters = (filterDescriptor: FilterContainerFilterDescriptor) =>
+  filterDescriptor.id !== EMPTY_FILTER &&
+  filterDescriptor.id !== NULL_FILTER &&
+  filterDescriptor.id !== UNSAVED_FILTER;
+
 export const activateFilter = (
   filterDescriptors: FilterContainerFilterDescriptor[],
   activeFilterId?: string,
@@ -52,7 +58,9 @@ export const insertOrReplaceFilter = (
   filterDescriptor: FilterContainerFilterDescriptor,
 ) => {
   if (!filterDescriptors.some(({ id }) => id === filterDescriptor.id)) {
-    return deactivateFilter(filterDescriptors).concat(filterDescriptor);
+    return deactivateFilter(filterDescriptors)
+      .filter(namedFilters)
+      .concat(filterDescriptor);
   } else {
     return filterDescriptors.map<FilterContainerFilterDescriptor>((f) => {
       if (f.id === filterDescriptor.id) {
