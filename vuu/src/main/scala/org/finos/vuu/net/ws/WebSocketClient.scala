@@ -53,7 +53,7 @@ class WebSocketClient(url: String, port: Int)(implicit lifecycle: LifecycleConta
         applySSL(ch, pipeline)
         pipeline.addLast("http-codec", new HttpClientCodec())
         pipeline.addLast("aggregator", new HttpObjectAggregator(WebSocketConstants.MAX_CONTENT_LENGTH))
-        pipeline.addLast("compression", new WebSocketClientCompressionHandler(WebSocketConstants.COMPRESSION_MAX_ALLOCATION))
+        pipeline.addLast("compression", new WebSocketClientCompressionHandler(WebSocketConstants.MAX_CONTENT_LENGTH))
         pipeline.addLast("handler", handler)
       }
 
