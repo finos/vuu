@@ -6,6 +6,7 @@ export type FilterClickHandler = (filterId: string) => void;
 
 interface SavedFilterPanelProps {
   availableColumns?: ColumnDescriptor[];
+  filterProviderKey?: string;
 }
 
 export const useSavedFilterPanel = (props?: SavedFilterPanelProps) => {
@@ -13,7 +14,9 @@ export const useSavedFilterPanel = (props?: SavedFilterPanelProps) => {
     savedFilters = [],
     setCurrentFilter,
     onFilterMenuAction,
-  } = useSavedFilters(undefined, { availableColumns: props?.availableColumns });
+  } = useSavedFilters(props?.filterProviderKey, {
+    availableColumns: props?.availableColumns,
+  });
 
   const handleClickFilter = useCallback(
     (e: SyntheticEvent) => {

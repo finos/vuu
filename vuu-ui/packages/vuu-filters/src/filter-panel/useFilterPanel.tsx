@@ -12,14 +12,16 @@ import { FilterContainerFilter } from "@vuu-ui/vuu-filter-types";
 
 export const useFilterPanel = ({
   filter,
+  filterProviderKey,
   onFilterApplied,
   onFilterCleared,
 }: Pick<
   FilterContainerProps,
-  "filter" | "onFilterApplied" | "onFilterCleared"
+  "filter" | "filterProviderKey" | "onFilterApplied" | "onFilterCleared"
 >) => {
-  const { currentFilter, setCurrentFilter } = useCurrentFilter();
-  const { saveFilter } = useSavedFilters();
+  const { currentFilter, setCurrentFilter } =
+    useCurrentFilter(filterProviderKey);
+  const { saveFilter } = useSavedFilters(filterProviderKey);
   const [saveFilterPrompt, setSaveFilterPrompt] = useState<ReactElement | null>(
     null,
   );

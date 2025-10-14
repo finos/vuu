@@ -23,7 +23,7 @@ export interface TabbedFilterContainerProps
   extends HTMLAttributes<HTMLDivElement>,
     Pick<
       FilterContainerProps,
-      "filter" | "onFilterApplied" | "onFilterCleared"
+      "filter" | "filterProviderKey" | "onFilterApplied" | "onFilterCleared"
     > {
   SavedFilterPanelProps?: Pick<
     SavedFilterPanelProps,
@@ -37,6 +37,7 @@ export const TabbedFilterContainer = ({
   children,
   className,
   filter,
+  filterProviderKey,
   onFilterApplied,
   onFilterCleared,
   ...htmlAttributes
@@ -62,6 +63,7 @@ export const TabbedFilterContainer = ({
         <TabNextPanel value="ad-hoc-filter" key="ad-hoc-filter">
           <FilterPanel
             filter={filter}
+            filterProviderKey={filterProviderKey}
             onFilterApplied={onFilterApplied}
             onFilterCleared={onFilterCleared}
           >
@@ -69,7 +71,10 @@ export const TabbedFilterContainer = ({
           </FilterPanel>
         </TabNextPanel>
         <TabNextPanel value="saved-filters" key="saved-filters">
-          <SavedFilterPanel {...SavedFilterPanelProps} />
+          <SavedFilterPanel
+            {...SavedFilterPanelProps}
+            filterProviderKey={filterProviderKey}
+          />
         </TabNextPanel>
       </TabsNext>
     </div>

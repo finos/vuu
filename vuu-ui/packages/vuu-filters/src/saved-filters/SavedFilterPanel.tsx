@@ -9,6 +9,7 @@ import { filterDescriptorHasFilter } from "../filter-provider/FilterProvider";
 import { useSavedFilterPanel } from "./useSavedFilterPanel";
 
 import savedFilterPanelCss from "./SavedFilterPanel.css";
+import { FilterContainerProps } from "../filter-container/FilterContainer";
 
 const classBase = "vuuSavedFilterPanel";
 
@@ -18,7 +19,9 @@ const defaultFilterPillPermissions: FilterPermissions = {
   allowRemove: true,
 };
 
-export interface SavedFilterPanelProps extends HTMLAttributes<HTMLDivElement> {
+export interface SavedFilterPanelProps
+  extends HTMLAttributes<HTMLDivElement>,
+    Pick<FilterContainerProps, "filterProviderKey"> {
   /**
    * ColumnDescriptors are not required but is passed will be
    * used to provide labels and correct value formatting for
@@ -32,6 +35,7 @@ export const SavedFilterPanel = ({
   availableColumns,
   className,
   filterPillPermissions = defaultFilterPillPermissions,
+  filterProviderKey,
   ...htmlAttributes
 }: SavedFilterPanelProps) => {
   const targetWindow = useWindow();
@@ -52,7 +56,7 @@ export const SavedFilterPanel = ({
   }, [filterPillPermissions]);
 
   const { onClickFilter, onFilterMenuAction, savedFilters } =
-    useSavedFilterPanel({ availableColumns });
+    useSavedFilterPanel({ availableColumns, filterProviderKey });
 
   const filtersToDisplay = savedFilters.filter(filterDescriptorHasFilter);
 

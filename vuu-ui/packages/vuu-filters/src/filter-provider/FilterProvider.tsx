@@ -18,7 +18,6 @@ import {
   EmptyFilterDescriptor,
   FilterContext,
   FilterContextFilterMenuActionHandler,
-  FilterContextProps,
   isEmptyFilter,
   isNullFilter,
   NULL_FILTER,
@@ -41,19 +40,32 @@ const findFilterByName = (
   name: string,
 ) => filterDescriptors.find((f) => f.filter?.name === name);
 
+type SavedFilterMap = Map<string, FilterContainerFilterDescriptor[]>;
+type SavedFilterRecord = Record<string, FilterContainerFilterDescriptor[]>;
+
+const mapToRecord = (savedFilters: SavedFilterMap) => {
+  const record: SavedFilterRecord = {};
+  savedFilters.forEach((filterDescriptors, key) => {
+    record[key] = filterDescriptors;
+  });
+  return record;
+};
+
+export interface FilterProviderProps {
+  children: ReactNode;
+  onFiltersSaved?: (savedFilters: SavedFilterRecord) => void;
+  savedFilters?: SavedFilterRecord;
+}
+
 export const FilterProvider = ({
   children,
   onFiltersSaved,
   savedFilters: savedFiltersProp,
-}: Partial<Pick<FilterContextProps, "savedFilters">> & {
-  children: ReactNode;
-  onFiltersSaved?: (
-    filterDescriptors: FilterContainerFilterDescriptor[],
-  ) => void;
-}) => {
+}: FilterProviderProps) => {
   const [, forceRefresh] = useState({});
-  const savedFilters = useMemo<Map<string, FilterContainerFilterDescriptor[]>>(
-    () => savedFiltersProp ?? new Map(),
+  const savedFilters = useMemo<SavedFilterMap>(
+    () =>
+      savedFiltersProp ? new Map(Object.entries(savedFiltersProp)) : new Map(),
     [savedFiltersProp],
   );
 
@@ -70,7 +82,7 @@ export const FilterProvider = ({
         );
         savedFilters.set(key, newFilterDescriptors);
         if (filterId !== UNSAVED_FILTER) {
-          onFiltersSaved?.(newFilterDescriptors);
+          onFiltersSaved?.(mapToRecord(savedFilters));
         }
       }
     },
@@ -89,7 +101,7 @@ export const FilterProvider = ({
           name,
         );
         savedFilters.set(key, newFilterDescriptors);
-        onFiltersSaved?.(newFilterDescriptors);
+        onFiltersSaved?.(mapToRecord(savedFilters));
       }
     },
     [onFiltersSaved, savedFilters],
@@ -214,7 +226,7 @@ export const FilterProvider = ({
                 : filterDescriptor,
           );
           savedFilters.set(key, newFilterDescriptors);
-          onFiltersSaved?.(newFilterDescriptors);
+          onFiltersSaved?.(mapToRecord(savedFilters));
         }
       }
       forceRefresh({});
