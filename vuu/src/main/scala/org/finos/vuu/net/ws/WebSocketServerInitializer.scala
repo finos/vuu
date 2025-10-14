@@ -26,7 +26,7 @@ class WebSocketServerInitializer(val websocketPath: String,
     pipeline.addLast("http-codec", new HttpServerCodec())
     pipeline.addLast("aggregator", new HttpObjectAggregator(WebSocketConstants.MAX_CONTENT_LENGTH))
     pipeline.addLast("compression", new WebSocketServerCompressionHandler(WebSocketConstants.MAX_CONTENT_LENGTH))
-    pipeline.addLast("protocol", new WebSocketServerProtocolHandler(s"/$websocketPath", null, true, WebSocketConstants.MAX_FRAME_SIZE))
+    pipeline.addLast("protocol", new WebSocketServerProtocolHandler(s"/$websocketPath", null, true, WebSocketConstants.MAX_CONTENT_LENGTH))
     //each tcp session will have a local view server handler,
     //this allows us to call (handler.close() when disconnected
     pipeline.addLast("handler", new WebSocketServerHandler(factory.create()))

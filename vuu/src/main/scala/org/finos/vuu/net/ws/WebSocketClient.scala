@@ -42,8 +42,9 @@ class WebSocketClient(url: String, port: Int)(implicit lifecycle: LifecycleConta
   override def doStart(): Unit = {
 
     handler = new WebSocketClientHandler(
-      WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null,
-        true, new DefaultHttpHeaders, WebSocketConstants.MAX_FRAME_SIZE))
+      WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null, true, new DefaultHttpHeaders,
+        WebSocketConstants.MAX_CONTENT_LENGTH)
+    )
     val b: Bootstrap = new Bootstrap
     b.group(group).channel(classOf[NioSocketChannel]).handler(new ChannelInitializer[SocketChannel] {
 
