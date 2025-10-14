@@ -69,7 +69,7 @@ class ArrayBackedMovingWindow[DATA <: AnyRef](val bufferSize: Int)(implicit m: C
     }
   }
 
-  override def getRange(): WindowRange = range.copy()
+  override def getRange: WindowRange = range.copy()
 
   override def iterator: Iterator[DATA] = this.internalData.iterator
 

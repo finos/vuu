@@ -3,12 +3,12 @@ package org.finos.vuu.core.groupBy
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.DefaultClock
+import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.net.{ClientSessionId, FilterSpec}
 import org.finos.vuu.provider.MockProvider
-import org.finos.vuu.viewport.tree.TreeUtils._
+import org.finos.vuu.viewport.tree.TreeUtils.*
 import org.finos.vuu.viewport.tree.{BuildEntireTree, TreeBuilder, TreeNodeStateStore}
 import org.finos.vuu.viewport.{GroupBy, ViewPortSetup}
 import org.scalatest.GivenWhenThen
@@ -41,9 +41,9 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
     Scenario("check we calculate branch hashes correctly") {
 
-      implicit val clock = new DefaultClock
-      implicit val lifecycle = new LifecycleContainer
-      implicit val metrics: MetricsProvider = new MetricsProviderImpl
+      given clock: Clock = new DefaultClock
+      given lifecycle: LifecycleContainer = new LifecycleContainer
+      given metrics: MetricsProvider = new MetricsProviderImpl
 
       val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
 
@@ -115,9 +115,9 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
     Scenario("Check we use nodestate correctly"){
 
-      implicit val clock = new DefaultClock
-      implicit val lifecycle = new LifecycleContainer
-      implicit val metrics: MetricsProvider = new MetricsProviderImpl
+      given clock: Clock = new DefaultClock
+      given lifecycle: LifecycleContainer = new LifecycleContainer
+      given metrics: MetricsProvider = new MetricsProviderImpl
 
       val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, viewPortContainer) = setup()
 

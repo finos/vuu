@@ -10,5 +10,5 @@ object EmptyViewPortKeys extends ViewPortKeys {
   override def sliceToKeys(from: Int, to: Int): ViewPortKeys = EmptyViewPortKeys
   override def toArray(): Array[String] = Array()
   override def length: Int = 0
-  override def iterator: Iterator[String] = Array().iterator
+  override def iterator: Iterator[String] = Array[String]().iterator
 }

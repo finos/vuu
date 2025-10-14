@@ -1,7 +1,7 @@
 package org.finos.toolbox.lifecycle
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.toolbox.time.TestFriendlyClock
+import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -11,7 +11,7 @@ class LifecycleTest extends AnyFeatureSpec with Matchers {
 
   val stopSeq = new scala.collection.mutable.ListBuffer[String]()
 
-  case class CompX()(implicit lifecycle: LifecycleContainer) extends DefaultLifecycleEnabled with StrictLogging {
+  case class CompX()(using lifecycle: LifecycleContainer) extends DefaultLifecycleEnabled with StrictLogging {
 
     override val lifecycleId: String = "X"
 
@@ -22,7 +22,7 @@ class LifecycleTest extends AnyFeatureSpec with Matchers {
 
   }
 
-  case class CompY()(implicit lifecycle: LifecycleContainer) extends DefaultLifecycleEnabled with StrictLogging {
+  case class CompY()(using lifecycle: LifecycleContainer) extends DefaultLifecycleEnabled with StrictLogging {
     override val lifecycleId: String = "Y"
     println("-->" + lifecycleId)
     lifecycle(this)
@@ -31,7 +31,7 @@ class LifecycleTest extends AnyFeatureSpec with Matchers {
 
   }
 
-  case class CompZ()(implicit lifecycle: LifecycleContainer) extends DefaultLifecycleEnabled with StrictLogging {
+  case class CompZ()(using lifecycle: LifecycleContainer) extends DefaultLifecycleEnabled with StrictLogging {
     override val lifecycleId: String = "Z"
     println("-->" + lifecycleId)
     lifecycle(this)
@@ -44,9 +44,9 @@ class LifecycleTest extends AnyFeatureSpec with Matchers {
 
     Scenario("add non-dependent components at same level and check the start order"){
 
-      implicit val clock = new TestFriendlyClock(1000L)
+      given clock: Clock = new TestFriendlyClock(1000L)
 
-      implicit val lifecycle = new LifecycleContainer
+      given lifecycle: LifecycleContainer = new LifecycleContainer
 
       lifecycle.add(CompX())
       lifecycle.add(CompY())

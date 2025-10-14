@@ -49,7 +49,7 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
         .setDouble(lotSizeColumn, 1000.123)
         .asRow
 
-      row.key() should equal("FOO.L")
+      row.key should equal("FOO.L")
       row.get(ricColumn) should equal("FOO.L")
       row.get(descColumn) should equal("Foo Inc")
       row.get(currColumn) should equal("GBP")
@@ -85,7 +85,7 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
         .setDouble(lotSizeColumn, 1000.123)
         .asRow
 
-      row.key() should equal("FOO.L")
+      row.key should equal("FOO.L")
       row.get(ricColumn) should equal("FOO.L")
       row.get(descColumn) should equal("Foo Inc")
       row.get(currColumn) should equal("GBP")
@@ -104,7 +104,7 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
         .setDouble(lotSizeColumn, 1010.123)
         .asRow
 
-      row2.key() should equal("BAR.L")
+      row2.key should equal("BAR.L")
       row2.get(ricColumn) should equal("BAR.L")
       row2.get(descColumn) should equal("Bar Inc")
       row2.get(currColumn) should equal("USD")

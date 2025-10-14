@@ -28,14 +28,14 @@ object ViewPortMenu {
 
 //@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 //@JsonTypeIdResolver(classOf[VsJsonTypeResolver])
-@JsonSerialize(using = classOf[ViewPortMenuSerializer])
-@JsonDeserialize(using = classOf[ViewPortMenuDeserializer])
+@JsonSerialize(`using` = classOf[ViewPortMenuSerializer])
+@JsonDeserialize(`using` = classOf[ViewPortMenuDeserializer])
 trait ViewPortMenu
 
 //@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 //@JsonTypeIdResolver(classOf[VsJsonTypeResolver])
-@JsonSerialize(using = classOf[ViewPortMenuSerializer])
-@JsonDeserialize(using = classOf[ViewPortMenuDeserializer])
+@JsonSerialize(`using` = classOf[ViewPortMenuSerializer])
+@JsonDeserialize(`using` = classOf[ViewPortMenuDeserializer])
 class ViewPortMenuFolder(val name: String, val menus: Seq[ViewPortMenu]) extends ViewPortMenu {}
 
 object EmptyViewPortMenu extends ViewPortMenu {

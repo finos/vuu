@@ -10,7 +10,7 @@ object EmptyTablePrimaryKeys extends TablePrimaryKeys{
   override def remove(key: String): TablePrimaryKeys = EmptyTablePrimaryKeys
   override def -(key: String): TablePrimaryKeys = EmptyTablePrimaryKeys
   override def sliceTableKeys(from: Int, until: Int): TablePrimaryKeys = EmptyTablePrimaryKeys
-  override def iterator: Iterator[String] = Array().iterator
+  override def iterator: Iterator[String] = Array[String]().iterator
 
   override def get(index: Int): String = null
   override def set(index: Int, key: String): TablePrimaryKeys = this

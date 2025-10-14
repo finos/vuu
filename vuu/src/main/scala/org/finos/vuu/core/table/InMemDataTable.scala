@@ -47,7 +47,7 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
   def getTableDef: TableDef
 
   def processUpdate(rowUpdate: RowData): Unit = {
-    processUpdate(rowUpdate.key(), rowUpdate)
+    processUpdate(rowUpdate.key, rowUpdate)
   }
 
   def processUpdate(rowKey: String, rowUpdate: RowData): Unit
@@ -99,13 +99,13 @@ case class RowKeyUpdate(key: String, source: RowSource, isDelete: Boolean = fals
 }
 
 trait RowData {
-  def key(): String
+  def key: String
   def get(field: String): Any
   def get(column: Column): Any
   def getFullyQualified(column: Column): Any
   def set(field: String, value: Any): RowData
   def toArray(columns: List[Column]): Array[Any]
-  def size(): Int
+  def size: Int
 }
 
 case class JoinTableUpdate(joinTable: DataTable, rowUpdate: RowWithData) {
@@ -116,7 +116,7 @@ case class RowWithData(key: String, data: Map[String, Any]) extends RowData {
 
   def this(key: String, data: java.util.Map[String, Any]) = this(key, data.asScala.toMap)
 
-  override def size(): Int = data.size
+  override def size: Int = data.size
 
   override def getFullyQualified(column: Column): Any = column.getDataFullyQualified(this)
 
@@ -147,9 +147,9 @@ case class RowWithData(key: String, data: Map[String, Any]) extends RowData {
 
 object EmptyRowData extends RowData {
 
-  override def key(): String = null
+  override def key: String = null
 
-  override def size(): Int = 0
+  override def size: Int = 0
 
   override def toArray(columns: List[Column]): Array[Any] = Array()
 

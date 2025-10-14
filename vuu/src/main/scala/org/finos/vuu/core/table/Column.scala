@@ -64,15 +64,13 @@ object Columns {
 
     val splitDef = nameAndDt.split(":").toList
 
-    splitDef.size match {
-      case 2 =>
-        val name :: dataType :: _ = nameAndDt.split(":").toList
+    splitDef match {
+      case name :: dataType :: _ =>
         val dtClass = DataType.fromString(dataType)
         SimpleColumn(name, index, dtClass)
-      case 1 =>
-        throw new Exception("Not datatype defined for column:" + splitDef)
+      case _ => throw new Exception(s"Invalid format: $nameAndDt")
     }
-
+    
   }).toArray
 
   def from(table: TableDef, names: Seq[String]): Array[Column] = {

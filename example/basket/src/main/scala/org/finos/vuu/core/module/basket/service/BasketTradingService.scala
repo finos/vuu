@@ -104,7 +104,7 @@ class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(implicit cl
             val unitsAsInt = data.asInstanceOf[Int]
             val weighting = row.get(BTC.Weighting)
             val quantity = (weighting.asInstanceOf[Double] * unitsAsInt).toLong
-            constituentTable.processUpdate(row.key(), RowWithData(row.key(), Map(BTC.InstanceIdRic -> row.key(), BTC.Quantity -> quantity)))
+            constituentTable.processUpdate(row.key, RowWithData(row.key, Map(BTC.InstanceIdRic -> row.key, BTC.Quantity -> quantity)))
           })
         case BT.Side =>
           val constituentTable = tableContainer.getTable(BasketTradingConstituentTable)
@@ -114,7 +114,7 @@ class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(implicit cl
               case Side.Buy => Side.Sell
               case _ => Side.Buy
             }
-            constituentTable.processUpdate(row.key(), RowWithData(row.key(), Map(BTC.InstanceIdRic -> row.key(), BTC.Side -> newSide)))
+            constituentTable.processUpdate(row.key, RowWithData(row.key, Map(BTC.InstanceIdRic -> row.key, BTC.Side -> newSide)))
           })
         case _ =>
       }

@@ -235,8 +235,6 @@ class SimulatedPricesProviderTest extends AnyFeatureSpec with Matchers {
       val currentBid = 100.0
       val currentAsk = 100.0
       val (bid: Double, ask: Double) = provider.generateNextBidAsk(currentBid, currentAsk, spreadMultipler, priceMaxDelta, provider.nextRandomDouble)
-      assert(bid != null)
-      assert(ask != null)
       assert(bid != ask)
     }
 
@@ -244,8 +242,6 @@ class SimulatedPricesProviderTest extends AnyFeatureSpec with Matchers {
       val currentBid = 60.037092313809325
       val currentAsk = 60.08621991205602
       val (bid: Double, ask: Double) = provider.generateNextBidAsk(currentBid, currentAsk, spreadMultipler, priceMaxDelta, provider.nextRandomDouble)
-      assert(bid != null)
-      assert(ask != null)
       assert(bid != ask)
     }
 
@@ -253,8 +249,6 @@ class SimulatedPricesProviderTest extends AnyFeatureSpec with Matchers {
       val currentBid = 0
       val currentAsk = 1
       val (bid: Double, ask: Double) = provider.generateNextBidAsk(currentBid, currentAsk, spreadMultipler, priceMaxDelta, provider.nextRandomDouble)
-      assert(bid != null)
-      assert(ask != null)
       assert(bid != ask)
     }
   }
