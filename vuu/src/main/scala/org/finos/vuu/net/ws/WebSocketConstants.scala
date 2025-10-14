@@ -1,5 +1,5 @@
 package org.finos.vuu.net.ws
 
 object WebSocketConstants {
-  final val MAX_FRAME_SIZE = 200000
+  final val MAX_CONTENT_LENGTH = 262_144 //256 KB
 }

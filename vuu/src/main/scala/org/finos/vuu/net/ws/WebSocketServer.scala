@@ -65,7 +65,7 @@ class WebSocketServer(options: VuuWebSocketOptions, factory: ViewServerHandlerFa
     b.group(bossGroup, workerGroup)
       .channel(classOf[NioServerSocketChannel])
       .handler(new LoggingHandler(LogLevel.INFO))
-      .childHandler(new WebSocketServerInitializer(factory, sslContext));
+      .childHandler(new WebSocketServerInitializer(options.uri, factory, sslContext));
 
   }
 

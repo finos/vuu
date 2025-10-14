@@ -41,3 +41,7 @@ website-desktop/package-lock.json
 # Generated docs
 docs/contributing.md
 vuu-ui/packages/vuu-data-remote/src/inlined-worker.js
+
+# Ignite temp files
+**/ignite/work/
+**/ignite/README.txt
