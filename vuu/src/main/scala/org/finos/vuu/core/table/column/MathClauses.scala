@@ -30,9 +30,9 @@ abstract class BinaryMathFunction(clauses: List[CalculatedColumnClause], op: Bin
 
   override def calculate(data: RowData): OptionResult[AnyVal] = {
     this.dataType match {
-      case ClauseDataType.LONG    => mathLong(clauses, data, op.apply(_, _).toLong)
-      case ClauseDataType.INTEGER => mathInt(clauses, data, op.apply(_, _).toInt)
-      case ClauseDataType.DOUBLE  => mathDouble(clauses, data, op.apply(_, _))
+      case ClauseDataType.LONG    => mathLong(clauses, data, (v1, v2) => op.apply(v1.toDouble, v2.toDouble).toLong)
+      case ClauseDataType.INTEGER => mathInt(clauses, data, (v1, v2) => op.apply(v1.toDouble, v2.toDouble).toInt)
+      case ClauseDataType.DOUBLE  => mathDouble(clauses, data, (v1, v2) => op.apply(v1, v2))
       case t                      => errorTemplate(s"unable to apply math operation `${op.name}` to data-type `$t`.")
     }
   }
@@ -87,12 +87,12 @@ abstract class BinaryMathFunction(clauses: List[CalculatedColumnClause], op: Bin
 
 private sealed abstract class BinaryMathOp(val name: String, val apply: (Double, Double) => Double)
 private object BinaryMathOp {
-  final case object Add extends BinaryMathOp("addition", (a, b) => a + b)
-  final case object Subtract extends BinaryMathOp("subtraction", (a, b) => a - b)
-  final case object Multiply extends BinaryMathOp("multiplication", (a, b) => a * b)
-  final case object Divide extends BinaryMathOp("division", (a, b) => a / b)
-  final case object Max extends BinaryMathOp("max", (a, b) => Math.max(a , b))
-  final case object Min extends BinaryMathOp("min", (a, b) => Math.min(a , b))
+  case object Add extends BinaryMathOp("addition", (a, b) => a + b)
+  case object Subtract extends BinaryMathOp("subtraction", (a, b) => a - b)
+  case object Multiply extends BinaryMathOp("multiplication", (a, b) => a * b)
+  case object Divide extends BinaryMathOp("division", (a, b) => a / b)
+  case object Max extends BinaryMathOp("max", (a, b) => Math.max(a , b))
+  case object Min extends BinaryMathOp("min", (a, b) => Math.min(a , b))
 }
 
 case class MultiplicationClause(clauses: List[CalculatedColumnClause]) extends BinaryMathFunction(clauses, BinaryMathOp.Multiply)

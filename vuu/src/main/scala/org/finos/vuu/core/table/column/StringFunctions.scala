@@ -28,9 +28,9 @@ abstract class StringMatchFunction(clauses: List[CalculatedColumnClause], op: St
 
 private sealed abstract class StringMatchOp(val apply: (String, String) => Boolean)
 private object StringMatchOp {
-  final case object Starts extends StringMatchOp((str, subStr) => str.startsWith(subStr))
-  final case object Ends extends StringMatchOp((str, subStr) => str.endsWith(subStr))
-  final case object Contains extends StringMatchOp((str, subStr) => str.contains(subStr))
+  case object Starts extends StringMatchOp((str, subStr) => str.startsWith(subStr))
+  case object Ends extends StringMatchOp((str, subStr) => str.endsWith(subStr))
+  case object Contains extends StringMatchOp((str, subStr) => str.contains(subStr))
 }
 
 case class LowerFunction(clauses: List[CalculatedColumnClause]) extends CalculatedColumnClause {
@@ -61,7 +61,9 @@ case class RightFunction(clauses: List[CalculatedColumnClause]) extends Substrin
 
 abstract class SubstringFunction(clauses: List[CalculatedColumnClause], op: SubstringOp) extends CalculatedColumnClause {
   assertMinimumLength(clauses, 2)
-  private val sourceClause :: countClause :: _ = clauses
+
+  private val sourceClause = clauses.head
+  private val countClause = clauses(1)
   private val baseFn = BaseFunction(List(TextFunction(sourceClause), countClause), errorTemplate(_))
 
   override def dataType: ClauseDataType = ClauseDataType.STRING
@@ -74,8 +76,8 @@ abstract class SubstringFunction(clauses: List[CalculatedColumnClause], op: Subs
 
 private sealed abstract class SubstringOp(val apply: (String, Int) => String)
 private object SubstringOp {
-  final case object Left extends SubstringOp((str, n) => str.substring(0, Math.min(n, str.length)))
-  final case object Right extends SubstringOp((str, n) => str.substring(str.length - Math.min(n, str.length)))
+  case object Left extends SubstringOp((str, n) => str.substring(0, Math.min(n, str.length)))
+  case object Right extends SubstringOp((str, n) => str.substring(str.length - Math.min(n, str.length)))
 }
 
 object TextFunction {
