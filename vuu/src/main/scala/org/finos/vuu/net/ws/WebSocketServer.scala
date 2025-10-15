@@ -59,14 +59,11 @@ class WebSocketServer(options: VuuWebSocketOptions, factory: ViewServerHandlerFa
     workerGroup.shutdownGracefully()
   }
 
-  override def doInitialize(): Unit = {
-    val sslContext = new WebServerSSLContextFactory().buildContext(options.sslOptions)
-
+  override def doInitialize(): Unit = {    
     b.group(bossGroup, workerGroup)
       .channel(classOf[NioServerSocketChannel])
       .handler(new LoggingHandler(LogLevel.INFO))
-      .childHandler(new WebSocketServerInitializer(options.uri, factory, sslContext));
-
+      .childHandler(new WebSocketServerInitializer(options, factory))
   }
 
   override def doDestroy(): Unit = {}

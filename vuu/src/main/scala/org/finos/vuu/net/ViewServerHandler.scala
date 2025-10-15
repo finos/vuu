@@ -3,11 +3,11 @@ package org.finos.vuu.net
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.channel.Channel
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
-import org.finos.vuu.core.module.ModuleContainer
-import org.finos.vuu.net.json.Serializer
 import org.finos.toolbox.json.JsonUtil
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.net.flowcontrol.{FlowController, FlowControllerFactory}
+import org.finos.vuu.core.module.ModuleContainer
+import org.finos.vuu.net.flowcontrol.FlowControllerFactory
+import org.finos.vuu.net.json.Serializer
 
 trait ViewServerHandlerFactory {
   def create(): ViewServerHandler
@@ -31,7 +31,6 @@ class ViewServerHandler(serializer: Serializer[String, MessageBody], processor: 
 
   def close(): Unit = {
     logger.debug("closing session on disconnect")
-    //processor.close()
   }
 
   def handle(text: String, channel: Channel): Unit = {

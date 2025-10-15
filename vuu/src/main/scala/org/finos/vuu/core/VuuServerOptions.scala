@@ -59,11 +59,13 @@ trait VuuWebSocketOptions {
   def uri: String
   def bindAddress: String
   def sslOptions: VuuSSLOptions
+  def compressionEnabled: Boolean
   def withWsPort(port: Int): VuuWebSocketOptions
   def withUri(uri: String): VuuWebSocketOptions
   def withBindAddress(address: String): VuuWebSocketOptions
   def withSslDisabled(): VuuWebSocketOptions
   def withSsl(vuuSSLOptions: VuuSSLOptions): VuuWebSocketOptions
+  def withCompression(withCompression: Boolean): VuuWebSocketOptions
 }
 
 trait VuuThreadingOptions{
@@ -94,7 +96,8 @@ case class VuuSecurityOptionsImpl(authenticator: Authenticator, loginTokenValida
 private case class VuuWebSocketOptionsImpl(wsPort: Int,
                                    uri: String,
                                    bindAddress: String,
-                                   sslOptions: VuuSSLOptions = VuuSSLDisabled()
+                                   sslOptions: VuuSSLOptions = VuuSSLDisabled(),
+                                   compressionEnabled: Boolean = true       
                                    ) extends VuuWebSocketOptions {
   override def withWsPort(port: Int): VuuWebSocketOptions = this.copy(wsPort = port)
   override def withUri(uri: String): VuuWebSocketOptions = this.copy(uri = uri)
@@ -102,6 +105,8 @@ private case class VuuWebSocketOptionsImpl(wsPort: Int,
   override def withSslDisabled(): VuuWebSocketOptions = this.withSsl(VuuSSLDisabled())
   override def withSsl(sslOptions: VuuSSLOptions): VuuWebSocketOptions =
     this.copy(sslOptions = sslOptions)
+  override def withCompression(compressionEnabled: Boolean): VuuWebSocketOptions = 
+    this.copy(compressionEnabled = compressionEnabled)
 }
 
 case class VuuThreadingOptionsImpl(viewPortThreads: Int = 1, treeViewPortThreads: Int = 1) extends VuuThreadingOptions {
