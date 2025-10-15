@@ -47,6 +47,7 @@ export function useFilterContext(
   const ctx = useContext(ColumnFilterContext);
   if (ctx) {
     return {
+      filterProviderKey: ctx.filterProviderKey,
       register: ctx.register,
       getValue: ctx.getValue,
       onChange: ctx.onChange,

@@ -18,18 +18,11 @@ import {
   EmptyFilterDescriptor,
   FilterContext,
   FilterContextFilterMenuActionHandler,
-  isEmptyFilter,
-  isNullFilter,
   NULL_FILTER,
   NullFilterDescriptor,
   UNSAVED_FILTER,
 } from "./FilterContext";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-
-export const filterDescriptorHasFilter = (
-  f: FilterContainerFilterDescriptor,
-): f is FilterContainerFilterDescriptorWithFilter =>
-  !isEmptyFilter(f) && !isNullFilter(f);
 
 const findActiveFilter = (
   filterDescriptors: FilterContainerFilterDescriptor[],
@@ -241,6 +234,9 @@ export const FilterProvider = ({
    */
   const setCurrentFilter = useCallback(
     (key: string, filter: string | FilterContainerFilter) => {
+      console.log(
+        `[FilterProvider] setCurrentFilter ${JSON.stringify(filter)}`,
+      );
       const filterDescriptors = savedFilters.get(key) ?? [];
 
       if (filter === NULL_FILTER) {
@@ -280,7 +276,7 @@ export const FilterProvider = ({
         onFilterMenuAction: handleFilterMenuAction,
         deleteFilter,
         saveFilter: handleSaveFilter,
-        savedFilters,
+        filterDescriptors: savedFilters,
         setCurrentFilter,
       }}
     >

@@ -1,10 +1,21 @@
 import {
   FilterContainerFilter,
   FilterContainerFilterDescriptor,
+  FilterContainerFilterDescriptorWithFilter,
 } from "@vuu-ui/vuu-filter-types";
 import { FilterAction } from "../filter-pill/FilterMenu";
 import { createContext, useCallback, useContext } from "react";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+
+export const filterDescriptorHasFilter = (
+  f: FilterContainerFilterDescriptor,
+): f is FilterContainerFilterDescriptorWithFilter =>
+  !isEmptyFilter(f) && !isNullFilter(f);
+
+const isSavedFilter = (
+  f: FilterContainerFilterDescriptor,
+): f is FilterContainerFilterDescriptorWithFilter =>
+  f.id !== UNSAVED_FILTER && f.id !== NULL_FILTER && f.id !== EMPTY_FILTER;
 
 const getCurrentFilter = (
   key: string,
@@ -35,7 +46,7 @@ export type FilterContextFilterMenuActionHandler = <
 export interface FilterContextProps {
   deleteFilter: (key: string, filterId: string) => void;
   saveFilter: (key: string, name: string) => void;
-  savedFilters: Map<string, FilterContainerFilterDescriptor[]>;
+  filterDescriptors: Map<string, FilterContainerFilterDescriptor[]>;
   onFilterMenuAction?: FilterContextFilterMenuActionHandler;
   setCurrentFilter: (
     key: string,
@@ -65,7 +76,7 @@ export const EmptyFilterDescriptor: FilterContainerFilterDescriptor = {
 };
 
 export const FilterContext = createContext<FilterContextProps>({
-  savedFilters: new Map<string, FilterContainerFilterDescriptor[]>(),
+  filterDescriptors: new Map<string, FilterContainerFilterDescriptor[]>(),
   deleteFilter: () =>
     console.warn(
       "[FilterContext] deleteFilter, no FilterProvider has been configured",
@@ -81,27 +92,17 @@ export const FilterContext = createContext<FilterContextProps>({
     ),
 });
 
-export function useCurrentFilter(key = "GLOBAL") {
-  const { savedFilters, setCurrentFilter: setCurrentFilterProp } =
-    useContext(FilterContext);
-
-  const setCurrentFilter = useCallback(
-    (filter: string | FilterContainerFilter) => {
-      setCurrentFilterProp(key, filter);
-    },
-    [key, setCurrentFilterProp],
-  );
-  const currentFilter = getCurrentFilter(key, savedFilters);
-  return { currentFilter, setCurrentFilter };
-}
-
 interface SavedFilterHookProps {
   availableColumns?: ColumnDescriptor[];
 }
 
 export function useSavedFilters(key = "GLOBAL", props?: SavedFilterHookProps) {
-  const { onFilterMenuAction, savedFilters, saveFilter, setCurrentFilter } =
-    useContext(FilterContext);
+  const {
+    onFilterMenuAction,
+    filterDescriptors,
+    saveFilter,
+    setCurrentFilter,
+  } = useContext(FilterContext);
 
   const handleFilterMenuAction = useCallback(
     (filterId: string, filterAction: FilterAction) => {
@@ -130,9 +131,9 @@ export function useSavedFilters(key = "GLOBAL", props?: SavedFilterHookProps) {
   );
 
   return {
-    currentFilter: getCurrentFilter(key, savedFilters),
+    currentFilter: getCurrentFilter(key, filterDescriptors),
     onFilterMenuAction: handleFilterMenuAction,
-    savedFilters: savedFilters?.get(key),
+    savedFilters: filterDescriptors?.get(key)?.filter(isSavedFilter),
     saveFilter: handleSaveFilter,
     setCurrentFilter: handleSetCurrentFilter,
   };

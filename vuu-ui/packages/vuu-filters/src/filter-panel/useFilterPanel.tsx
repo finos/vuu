@@ -3,7 +3,6 @@ import { FilterContainerProps } from "../filter-container/FilterContainer";
 import {
   EMPTY_FILTER,
   NULL_FILTER,
-  useCurrentFilter,
   useSavedFilters,
 } from "../filter-provider/FilterContext";
 import { FilterAppliedHandler } from "../filter-container/useFilterContainer";
@@ -19,9 +18,8 @@ export const useFilterPanel = ({
   FilterContainerProps,
   "filter" | "filterProviderKey" | "onFilterApplied" | "onFilterCleared"
 >) => {
-  const { currentFilter, setCurrentFilter } =
-    useCurrentFilter(filterProviderKey);
-  const { saveFilter } = useSavedFilters(filterProviderKey);
+  const { saveFilter, currentFilter, setCurrentFilter } =
+    useSavedFilters(filterProviderKey);
   const [saveFilterPrompt, setSaveFilterPrompt] = useState<ReactElement | null>(
     null,
   );

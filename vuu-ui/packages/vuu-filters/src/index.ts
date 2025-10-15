@@ -19,10 +19,7 @@ export {
   FilterPillNext,
   type FilterPillNextProps,
 } from "./filter-pill/FilterPillNext";
-export {
-  useCurrentFilter,
-  useSavedFilters,
-} from "./filter-provider/FilterContext";
+export { useSavedFilters } from "./filter-provider/FilterContext";
 export { FilterProvider } from "./filter-provider/FilterProvider";
 export * from "./filter-utils";
 export * from "./FilterModel";

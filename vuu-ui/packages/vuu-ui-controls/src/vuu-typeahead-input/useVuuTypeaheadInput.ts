@@ -88,9 +88,6 @@ export const useVuuTypeaheadInput = ({
   const { current: value } = valueRef;
 
   useMemo(() => {
-    console.log(
-      `[useVuuTypeaheadInput] inputProps value has changed ${inputPropsProp?.value} valueRef value ${valueRef.current}`,
-    );
     if (
       inputPropsProp?.value !== undefined &&
       inputPropsProp?.value !== valueRef.current

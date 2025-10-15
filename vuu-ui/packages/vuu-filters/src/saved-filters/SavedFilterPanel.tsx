@@ -5,7 +5,6 @@ import cx from "clsx";
 import { HTMLAttributes, useMemo } from "react";
 import { FilterPermissions } from "../filter-pill/FilterMenu";
 import { FilterPillNext } from "../filter-pill/FilterPillNext";
-import { filterDescriptorHasFilter } from "../filter-provider/FilterProvider";
 import { useSavedFilterPanel } from "./useSavedFilterPanel";
 
 import savedFilterPanelCss from "./SavedFilterPanel.css";
@@ -58,15 +57,13 @@ export const SavedFilterPanel = ({
   const { onClickFilter, onFilterMenuAction, savedFilters } =
     useSavedFilterPanel({ availableColumns, filterProviderKey });
 
-  const filtersToDisplay = savedFilters.filter(filterDescriptorHasFilter);
-
   return (
     <div
       {...htmlAttributes}
       className={cx(classBase, "vuuScrollable", className)}
     >
       <div className={`${classBase}-filterPill-container`}>
-        {filtersToDisplay.map((filterDescriptor, i) => (
+        {savedFilters.map((filterDescriptor, i) => (
           <FilterPillNext
             {...filterDescriptor}
             columns={availableColumns}
