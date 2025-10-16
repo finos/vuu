@@ -13,8 +13,11 @@ object ViewPortColumnCreator {
   }
 
   def parseCalcColumn(column: String): (String, String, String) = {
-    assert(column.split(":").length == 3)
-    val (name :: dataType :: definition :: _) = column.split(":").toList
+    val split = column.split(":")
+    assert(split.length == 3)
+    val name = split.head
+    val dataType = split(1)
+    val definition = split(2)
     (name, dataType, definition)
   }
 

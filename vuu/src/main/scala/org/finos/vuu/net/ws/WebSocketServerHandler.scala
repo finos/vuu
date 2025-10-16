@@ -2,7 +2,7 @@ package org.finos.vuu.net.ws
 
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
-import io.netty.handler.codec.http.websocketx.{CloseWebSocketFrame, PingWebSocketFrame, PongWebSocketFrame, TextWebSocketFrame, WebSocketFrame}
+import io.netty.handler.codec.http.websocketx.{TextWebSocketFrame, WebSocketFrame}
 import org.finos.vuu.net.ViewServerHandler
 
 /**
@@ -18,18 +18,6 @@ class WebSocketServerHandler(val handler: ViewServerHandler) extends SimpleChann
         val request = text.text();
         logger.trace("[WS SERVER] on msg " + request)
         handler.handle(request, ctx.channel())
-
-      case ping: PingWebSocketFrame =>
-        logger.trace("Received ping")
-        val pong = new PongWebSocketFrame(ping.content().retain())
-        ctx.writeAndFlush(pong)
-
-      case pong: PongWebSocketFrame =>
-        logger.trace("Received pong")
-
-      case close: CloseWebSocketFrame =>
-        logger.trace("Received close frame")
-        ctx.close()
 
       case _ =>
         val message = "Unsupported frame type: " + webSocketFrame.getClass.getName;

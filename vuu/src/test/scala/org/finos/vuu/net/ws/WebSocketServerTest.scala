@@ -5,7 +5,7 @@ import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.client.ClientHelperFns
-import org.finos.vuu.core._
+import org.finos.vuu.core.*
 import org.finos.vuu.net.WebSocketViewServerClient
 import org.finos.vuu.net.http.VuuHttp2ServerOptions
 import org.finos.vuu.net.json.JsonVsSerializer
@@ -41,6 +41,34 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
           .withUri("websocket")
           .withSsl(VuuSSLDisabled())
           .withWsPort(wsPort),
+        VuuSecurityOptions()
+      )
+
+      implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
+
+      val sessionId = ClientHelperFns.login("Mikey", "lolcats")
+      assertNotNull(sessionId)
+
+      stopLifeCycle()
+    }
+
+    Scenario("Start WebSocketServer with no Compression") {
+
+      implicit val metrics: MetricsProvider = new MetricsProviderImpl
+      implicit val timeProvider: Clock = new DefaultClock
+      implicit val lifeCycle: LifecycleContainer = new LifecycleContainer
+
+      val wsPort = portCounter.getAndIncrement()
+
+      val config = VuuServerConfig(
+        VuuHttp2ServerOptions()
+          .withSsl(VuuSSLDisabled())
+          .withPort(0),
+        VuuWebSocketOptions()
+          .withUri("websocket")
+          .withSsl(VuuSSLDisabled())
+          .withWsPort(wsPort)
+          .withCompression(false),
         VuuSecurityOptions()
       )
 
