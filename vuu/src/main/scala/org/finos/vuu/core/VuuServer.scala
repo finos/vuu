@@ -78,14 +78,14 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
   private val viewPortRunner = if(config.threading.viewportThreads == 1){
     new LifeCycleRunner("viewPortRunner", () => viewPortContainer.runOnce())
-  }else {
-      new LifeCycleRunOncePerThreadExecutorRunner[ViewPort](s"viewPortExecutorRunner[${config.threading.viewportThreads}]", config.threading.viewportThreads, () => {
-        viewPortContainer.getViewPorts.filter(vp => vp.isEnabled && !vp.hasGroupBy).map(vp => {
-          pluginRegistry.withPlugin(vp.table.asTable.getTableDef.pluginType) {
-            plugin => plugin.viewPortCallableFactory.createWorkItem(vp, viewPortContainer)
-          }
-        })
+  } else {
+    new LifeCycleRunOncePerThreadExecutorRunner[ViewPort](s"viewPortExecutorRunner[${config.threading.viewportThreads}]", config.threading.viewportThreads, () => {
+      viewPortContainer.getViewPorts.filter(vp => vp.isEnabled && !vp.hasGroupBy).map(vp => {
+        pluginRegistry.withPlugin(vp.table.asTable.getTableDef.pluginType) {
+          plugin => plugin.viewPortCallableFactory.createWorkItem(vp, viewPortContainer)
+        }
       })
+    })
     {
       override def newCallable(r: FutureTask[ViewPort]): Callable[ViewPort] = {
         pluginRegistry.withPlugin(r.get().table.asTable.getTableDef.pluginType) {
