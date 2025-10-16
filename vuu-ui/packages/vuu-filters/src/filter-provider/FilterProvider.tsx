@@ -1,7 +1,6 @@
 import {
   FilterContainerFilter,
   FilterContainerFilterDescriptor,
-  FilterContainerFilterDescriptorWithFilter,
 } from "@vuu-ui/vuu-filter-types";
 import { ReactElement, ReactNode, useCallback, useMemo, useState } from "react";
 import { FilterNamePrompt } from "../saved-filters/FilterNamePrompt";
