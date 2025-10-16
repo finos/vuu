@@ -5,10 +5,10 @@ import cx from "clsx";
 import { HTMLAttributes, useMemo } from "react";
 import { FilterPermissions } from "../filter-pill/FilterMenu";
 import { FilterPillNext } from "../filter-pill/FilterPillNext";
-import { filterDescriptorHasFilter } from "../filter-provider/FilterProvider";
 import { useSavedFilterPanel } from "./useSavedFilterPanel";
 
 import savedFilterPanelCss from "./SavedFilterPanel.css";
+import { FilterContainerProps } from "../filter-container/FilterContainer";
 
 const classBase = "vuuSavedFilterPanel";
 
@@ -18,7 +18,9 @@ const defaultFilterPillPermissions: FilterPermissions = {
   allowRemove: true,
 };
 
-export interface SavedFilterPanelProps extends HTMLAttributes<HTMLDivElement> {
+export interface SavedFilterPanelProps
+  extends HTMLAttributes<HTMLDivElement>,
+    Pick<FilterContainerProps, "filterProviderKey"> {
   /**
    * ColumnDescriptors are not required but is passed will be
    * used to provide labels and correct value formatting for
@@ -32,6 +34,7 @@ export const SavedFilterPanel = ({
   availableColumns,
   className,
   filterPillPermissions = defaultFilterPillPermissions,
+  filterProviderKey,
   ...htmlAttributes
 }: SavedFilterPanelProps) => {
   const targetWindow = useWindow();
@@ -52,9 +55,7 @@ export const SavedFilterPanel = ({
   }, [filterPillPermissions]);
 
   const { onClickFilter, onFilterMenuAction, savedFilters } =
-    useSavedFilterPanel({ availableColumns });
-
-  const filtersToDisplay = savedFilters.filter(filterDescriptorHasFilter);
+    useSavedFilterPanel({ availableColumns, filterProviderKey });
 
   return (
     <div
@@ -62,7 +63,7 @@ export const SavedFilterPanel = ({
       className={cx(classBase, "vuuScrollable", className)}
     >
       <div className={`${classBase}-filterPill-container`}>
-        {filtersToDisplay.map((filterDescriptor, i) => (
+        {savedFilters.map((filterDescriptor, i) => (
           <FilterPillNext
             {...filterDescriptor}
             columns={availableColumns}

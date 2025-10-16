@@ -16,6 +16,7 @@ import {
 
 export interface ColumnFilterContextProps {
   filterContainerInstalled: boolean;
+  filterProviderKey?: string;
   onChange?: ColumnFilterChangeHandler;
   onCommit?: ColumnFilterCommitHandler;
   register?: (
@@ -46,6 +47,7 @@ export function useFilterContext(
   const ctx = useContext(ColumnFilterContext);
   if (ctx) {
     return {
+      filterProviderKey: ctx.filterProviderKey,
       register: ctx.register,
       getValue: ctx.getValue,
       onChange: ctx.onChange,
@@ -65,6 +67,7 @@ export type FilterAppliedHandler<F extends Filter = Filter> = (
 ) => void;
 export type ColumnFilterContainerHookProps = {
   filter?: FilterContainerFilter;
+  filterProviderKey?: string;
   onFilterApplied?: FilterAppliedHandler<FilterContainerFilter>;
   onFilterCleared?: () => void;
 };
@@ -75,6 +78,7 @@ export const EmptyTuple: ColumnFilterValue = ["", ""];
 
 export const useFilterContainer = ({
   filter,
+  filterProviderKey = "GLOBAL",
   onFilterApplied,
   onFilterCleared,
 }: ColumnFilterContainerHookProps): ColumnFilterContextProps => {
@@ -179,6 +183,7 @@ export const useFilterContainer = ({
 
   return {
     filterContainerInstalled: true,
+    filterProviderKey,
     onChange: handleInputChange,
     onCommit: handleCommit,
     getValue,

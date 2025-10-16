@@ -21,7 +21,7 @@ export interface FilterPanelProps
   extends HTMLAttributes<HTMLDivElement>,
     Pick<
       FilterContainerProps,
-      "filter" | "onFilterApplied" | "onFilterCleared"
+      "filter" | "filterProviderKey" | "onFilterApplied" | "onFilterCleared"
     > {
   permissions?: FilterPanelPermissions;
 }
@@ -31,6 +31,7 @@ export const FilterPanel = forwardRef(function FilterDisplay(
     children,
     className,
     filter: filterProp,
+    filterProviderKey,
     onFilterApplied: onFilterAppliedProp,
     onFilterCleared: onFilterClearedProp,
     permissions,
@@ -56,6 +57,7 @@ export const FilterPanel = forwardRef(function FilterDisplay(
     saveFilterPrompt,
   } = useFilterPanel({
     filter: filterProp,
+    filterProviderKey,
     onFilterApplied: onFilterAppliedProp,
     onFilterCleared: onFilterClearedProp,
   });
@@ -68,6 +70,7 @@ export const FilterPanel = forwardRef(function FilterDisplay(
     >
       <FilterContainer
         filter={filter}
+        filterProviderKey={filterProviderKey}
         onFilterApplied={onFilterApplied}
         onFilterCleared={onFilterCleared}
       >

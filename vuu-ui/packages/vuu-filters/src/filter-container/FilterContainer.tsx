@@ -19,10 +19,10 @@ import {
   ColumnFilterValue,
 } from "@vuu-ui/vuu-filter-types";
 import { ColumnFilter, ColumnFilterProps } from "../column-filter/ColumnFilter";
-import { filterDescriptorHasFilter } from "../filter-provider/FilterProvider";
 import {
+  filterDescriptorHasFilter,
   isNullFilter,
-  useCurrentFilter,
+  useSavedFilters,
 } from "../filter-provider/FilterContext";
 import { getColumnValueFromFilter } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
@@ -39,6 +39,7 @@ export interface FilterContainerProps
   extends HTMLAttributes<HTMLDivElement>,
     ColumnFilterContainerHookProps {
   children: ReactNode;
+  filterProviderKey?: string;
 }
 
 export interface FilterContainerColumnFilterProps
@@ -59,6 +60,7 @@ export const FilterContainerColumnFilter = ({
   });
 
   const {
+    filterProviderKey,
     onChange: onFilterContextChange,
     onCommit: onFilterContextCommit,
     register,
@@ -71,7 +73,7 @@ export const FilterContainerColumnFilter = ({
 
   const [value, setValue] = useState(initialValue);
   const valueRef = useRef<ColumnFilterValue>(initialValue);
-  const { currentFilter } = useCurrentFilter();
+  const { currentFilter } = useSavedFilters(filterProviderKey);
 
   // This is primarily to guard against client passing non-stable 'column' reference
   // which would trigger the commit check below.
@@ -171,12 +173,14 @@ export const FilterContainer = ({
   children,
   className,
   filter,
+  filterProviderKey,
   onFilterApplied,
   onFilterCleared,
   ...htmlAttributes
 }: FilterContainerProps) => {
   const filterContextProps = useFilterContainer({
     filter,
+    filterProviderKey,
     onFilterApplied,
     onFilterCleared,
   });

@@ -1,23 +1,60 @@
 import {
-  FilterChangeHandler,
   FilterContainerFilter,
   FilterContainerFilterDescriptor,
+  FilterContainerFilterDescriptorWithFilter,
 } from "@vuu-ui/vuu-filter-types";
-import { FilterMenuActionHandler } from "../filter-pill/FilterMenu";
+import { FilterAction } from "../filter-pill/FilterMenu";
 import { createContext, useCallback, useContext } from "react";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 
+export const filterDescriptorHasFilter = (
+  f: FilterContainerFilterDescriptor,
+): f is FilterContainerFilterDescriptorWithFilter =>
+  !isEmptyFilter(f) && !isNullFilter(f);
+
+const isSavedFilter = (
+  f: FilterContainerFilterDescriptor,
+): f is FilterContainerFilterDescriptorWithFilter =>
+  f.id !== UNSAVED_FILTER && f.id !== NULL_FILTER && f.id !== EMPTY_FILTER;
+
+const getCurrentFilter = (
+  key: string,
+  savedFilters: Map<string, FilterContainerFilterDescriptor[]>,
+) => {
+  const filterDescriptors = savedFilters.get(key);
+  if (filterDescriptors) {
+    const activeFilter = filterDescriptors.find((f) => f.active);
+    if (activeFilter) {
+      return activeFilter;
+    }
+  }
+  return NullFilterDescriptor;
+};
+
+export type FilterContextFilterMenuActionHandler = <
+  T extends FilterAction = FilterAction,
+>(
+  key: string,
+  filterId: string,
+  filterAction: T,
+  /**
+   * Some menu action handlers may use columns to enrich filter display
+   */
+  columns?: ColumnDescriptor[],
+) => void;
+
 export interface FilterContextProps {
-  currentFilter: FilterContainerFilterDescriptor;
-  deleteFilter: (filterId: string) => void;
-  saveFilter: (name: string) => void;
-  savedFilters?: FilterContainerFilterDescriptor[];
-  // TODO do we need this ?
-  onApplyFilter: FilterChangeHandler;
-  onFilterMenuAction?: FilterMenuActionHandler;
-  setCurrentFilter: (filter: string | FilterContainerFilter) => void;
+  deleteFilter: (key: string, filterId: string) => void;
+  saveFilter: (key: string, name: string) => void;
+  filterDescriptors: Map<string, FilterContainerFilterDescriptor[]>;
+  onFilterMenuAction?: FilterContextFilterMenuActionHandler;
+  setCurrentFilter: (
+    key: string,
+    filter: string | FilterContainerFilter,
+  ) => void;
 }
 
+export const UNSAVED_FILTER = "unsaved-filter";
 export const EMPTY_FILTER = "empty-filter";
 export const NULL_FILTER = "null-filter";
 
@@ -39,12 +76,7 @@ export const EmptyFilterDescriptor: FilterContainerFilterDescriptor = {
 };
 
 export const FilterContext = createContext<FilterContextProps>({
-  currentFilter: NullFilterDescriptor,
-  savedFilters: [],
-  onApplyFilter: () =>
-    console.warn(
-      "[FilterContext] onApplyFilter, no FilterProvider has been configured",
-    ),
+  filterDescriptors: new Map<string, FilterContainerFilterDescriptor[]>(),
   deleteFilter: () =>
     console.warn(
       "[FilterContext] deleteFilter, no FilterProvider has been configured",
@@ -60,39 +92,49 @@ export const FilterContext = createContext<FilterContextProps>({
     ),
 });
 
-export function useCurrentFilter() {
-  const { currentFilter, onApplyFilter, setCurrentFilter } =
-    useContext(FilterContext);
-  return { currentFilter, onApplyFilter, setCurrentFilter };
-}
-
 interface SavedFilterHookProps {
   availableColumns?: ColumnDescriptor[];
 }
 
-export function useSavedFilters(props?: SavedFilterHookProps) {
+export function useSavedFilters(key = "GLOBAL", props?: SavedFilterHookProps) {
   const {
-    currentFilter,
-    onApplyFilter,
     onFilterMenuAction,
-    savedFilters,
+    filterDescriptors,
     saveFilter,
     setCurrentFilter,
   } = useContext(FilterContext);
 
-  const handleFilterMenuAction = useCallback<FilterMenuActionHandler>(
-    (filterId, filterAction) => {
-      onFilterMenuAction?.(filterId, filterAction, props?.availableColumns);
+  const handleFilterMenuAction = useCallback(
+    (filterId: string, filterAction: FilterAction) => {
+      onFilterMenuAction?.(
+        key,
+        filterId,
+        filterAction,
+        props?.availableColumns,
+      );
     },
-    [onFilterMenuAction, props?.availableColumns],
+    [key, onFilterMenuAction, props?.availableColumns],
+  );
+
+  const handleSaveFilter = useCallback(
+    (name: string) => {
+      saveFilter(key, name);
+    },
+    [key, saveFilter],
+  );
+
+  const handleSetCurrentFilter = useCallback(
+    (filter: string | FilterContainerFilter) => {
+      setCurrentFilter(key, filter);
+    },
+    [key, setCurrentFilter],
   );
 
   return {
-    currentFilter,
-    onApplyFilter,
+    currentFilter: getCurrentFilter(key, filterDescriptors),
     onFilterMenuAction: handleFilterMenuAction,
-    savedFilters,
-    saveFilter,
-    setCurrentFilter,
+    savedFilters: filterDescriptors?.get(key)?.filter(isSavedFilter),
+    saveFilter: handleSaveFilter,
+    setCurrentFilter: handleSetCurrentFilter,
   };
 }

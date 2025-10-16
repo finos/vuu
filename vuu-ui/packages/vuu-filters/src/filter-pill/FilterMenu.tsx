@@ -20,6 +20,15 @@ const defaultPermissions: FilterPermissions = {
   allowRemove: true,
 };
 
+export type FilterMenuActionHandler = <T extends FilterAction = FilterAction>(
+  filterId: string,
+  filterAction: T,
+  /**
+   * Some menu action handlers may use columns to enrich filter display
+   */
+  columns?: ColumnDescriptor[],
+) => void;
+
 export interface FilterMenuProps
   extends Pick<MenuProps, "getVirtualElement" | "onOpenChange" | "open"> {
   filterId: string;
@@ -28,15 +37,6 @@ export interface FilterMenuProps
 }
 
 export type FilterAction = "close" | "remove" | "edit" | "rename";
-
-export type FilterMenuActionHandler = <T extends FilterAction = FilterAction>(
-  filterId: string,
-  filterAction: T,
-  /**
-   * SOme menu action handlers may use columns to enrich filter display
-   */
-  columns?: ColumnDescriptor[],
-) => void;
 
 export const FilterMenu = ({
   filterId,
