@@ -6,7 +6,7 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.client.messages.SessionId
 import org.finos.vuu.core.module.ModuleContainer
-import org.finos.vuu.net.flowcontrol.{DefaultFlowController, FlowController, FlowControllerFactory}
+import org.finos.vuu.net.flowcontrol.FlowControllerFactory
 import org.finos.vuu.net.json.Serializer
 import org.finos.vuu.util.{OutboundRowPublishQueue, PublishQueue}
 import org.finos.vuu.viewport.ViewPortUpdate
@@ -24,12 +24,11 @@ class RequestProcessor(authenticator: Authenticator,
                        moduleContainer: ModuleContainer,
                        flowControllerFactory: FlowControllerFactory,
                        vuuServerId: String
-                      )(implicit timeProvider: Clock) extends StrictLogging {
+                      )(using timeProvider: Clock) extends StrictLogging {
 
   @volatile private var session: ClientSessionId = null
 
   def handle(msg: ViewServerMessage, channel: Channel): Option[ViewServerMessage] = {
-
     msg.body match {
       case body: LoginRequest =>
         tokenValidator.login(body, vuuServerId).body match {
@@ -43,7 +42,7 @@ class RequestProcessor(authenticator: Authenticator,
     }
   }
 
-  protected def createSession(
+  private def createSession(
                                requestId: String,
                                request: LoginRequest,
                                clientSessionContainer: ClientSessionContainer,
@@ -64,16 +63,15 @@ class RequestProcessor(authenticator: Authenticator,
     Some(JsonViewServerMessage(requestId, session, request.token, request.user, LoginSuccess(request.token, vuuServerId)))
   }
 
-
-  protected def createMessageHandler(channel: Channel, sessionId: ClientSessionId): MessageHandler = {
-    val queue = new OutboundRowPublishQueue()
+  private def createMessageHandler(channel: Channel, sessionId: ClientSessionId): MessageHandler = {
+    val queue = OutboundRowPublishQueue()
     val flowController = flowControllerFactory.create()
-    new DefaultMessageHandler(channel, queue, sessionId, serverApi, serializer, flowController, clientSessionContainer, moduleContainer)
+    DefaultMessageHandler(channel, queue, sessionId, serverApi, serializer, flowController, clientSessionContainer, moduleContainer)
   }
 
-  protected def handleViewServerMessage(msg: ViewServerMessage, channel: Channel): Option[ViewServerMessage] = {
+  private def handleViewServerMessage(msg: ViewServerMessage, channel: Channel): Option[ViewServerMessage] = {
 
-    val sessionId = msgToSessionId(msg)
+    val sessionId = msgToSessionId(msg, channel)
 
     clientSessionContainer.getHandler(sessionId) match {
       case Some(handler) =>
@@ -84,16 +82,16 @@ class RequestProcessor(authenticator: Authenticator,
     }
   }
 
-  protected def msgToSessionId(msg: ViewServerMessage): ClientSessionId = {
+  private def msgToSessionId(msg: ViewServerMessage, channel: Channel): ClientSessionId = {
     ClientSessionId(msg.sessionId, msg.user)
   }
 
-  protected def handleMessageWithNoSession(msg: ViewServerMessage, channel: Channel): Unit = {
+  private def handleMessageWithNoSession(msg: ViewServerMessage, channel: Channel): Unit = {
     channel.writeAndFlush(new TextWebSocketFrame("error, you have no session"))
     channel.close()
   }
 
-  protected def handleMessageWithNoSession(msg: String, channel: Channel): Unit = {
+  private def handleMessageWithNoSession(msg: String, channel: Channel): Unit = {
     channel.writeAndFlush(new TextWebSocketFrame(msg))
     channel.close()
   }

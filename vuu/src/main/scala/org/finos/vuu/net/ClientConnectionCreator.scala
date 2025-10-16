@@ -186,7 +186,6 @@ trait ClientSessionContainer {
 
   def register(sessionId: ClientSessionId, messageHandler: MessageHandler): Unit
 
-  //def addConnection(session: ClientSessionId, channel: Channel, handler: InboundMessageHandler): Unit
   def getHandler(sessionId: ClientSessionId): Option[MessageHandler]
 
   def remove(sessionId: ClientSessionId): Unit
@@ -212,7 +211,6 @@ class ClientSessionContainerImpl extends ClientSessionContainer with StrictLoggi
     sessions.put(sessionId, messageHandler)
   }
 
-  //def addConnection(session: ClientSessionId, channel: Channel, handler: InboundMessageHandler): Unit
   override def getHandler(sessionId: ClientSessionId): Option[MessageHandler] = {
     val handler = sessions.get(sessionId)
     Option(handler)
