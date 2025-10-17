@@ -6,7 +6,7 @@ import org.scalatest.matchers.should.Matchers
 
 class ChunkedUniqueImmutableArraySetTest extends AnyFeatureSpec with Matchers {
 
-  implicit val time: Clock = new DefaultClock
+  given time: Clock = DefaultClock()
 
   Feature("check immutable array impl") {
 
@@ -49,9 +49,9 @@ class ChunkedUniqueImmutableArraySetTest extends AnyFeatureSpec with Matchers {
       unioned.indexOf("Here") should equal(2)
     }
 
-    Scenario("Create a chunked array and then remove an item"){
+    Scenario("Create a chunked array and then remove items"){
 
-      var array = ImmutableUniqueArraySet.empty[String](3)
+      var array = ImmutableUniqueArraySet.empty[String](5)
 
       val chunks = array.asInstanceOf[ChunkedUniqueImmutableArraySet[String]].chunks
 
@@ -85,13 +85,25 @@ class ChunkedUniqueImmutableArraySetTest extends AnyFeatureSpec with Matchers {
 
       result5.map( x => x).toList should equal(List())
       result5.length shouldEqual(0)
+
+      val result6 = result5.-("Mikey!")
+      result6 shouldEqual(result5)
     }
 
-//    Scenario("Add from array"){
-//
-//      ImmutableUniqueArraySet.from(Array())
-//
-//    }
+    Scenario("Create a singleton set and then remove an item, with various chunk sizes"){
+
+      val array = ImmutableUniqueArraySet.from[String](Array("Mikey"), 1)
+
+      val result = array.-("Mikey")
+
+      result.isEmpty shouldEqual true
+
+      val array2 = ImmutableUniqueArraySet.from[String](Array("Mikey"))
+
+      val result2 = array.-("Mikey")
+
+      result2.isEmpty shouldEqual true
+    }
 
   }
 }

@@ -10,7 +10,7 @@ object ImmutableUniqueArraySet{
   def empty[T <: Object :ClassTag](chunkSize: Int = 1000): ImmutableArray[T] = {
     new ChunkedUniqueImmutableArraySet[T](Set(), Array(), chunkSize = chunkSize)
   }
-  def from[T <: Object](array: Array[T], chunkSize: Int = 1000)(implicit c: ClassTag[T]) = {
+  def from[T <: Object](array: Array[T], chunkSize: Int = 1000)(using c: ClassTag[T]): ImmutableArray[T] = {
     val newChunks = new Array[Array[T]](1)
     newChunks(0) = new Array[T](chunkSize)
     val immutable = new ChunkedUniqueImmutableArraySet(Set[T](), newChunks, chunkSize = chunkSize)
@@ -123,7 +123,7 @@ class ChunkedUniqueImmutableArraySet[T <: Object :ClassTag](private val uniqueCh
   private def indexMinusOne(): Int = lastUsedIndex - 1
 
   private def setFullChunks(oldChunks: Array[Array[T]], newChunks: Array[Array[T]]): Unit = {
-    for (a <- 0 until oldChunks.length) {
+    for (a <- oldChunks.indices) {
       if (oldChunks(a).length == chunkSize) {
         newChunks(a) = oldChunks(a)
       }
@@ -131,7 +131,7 @@ class ChunkedUniqueImmutableArraySet[T <: Object :ClassTag](private val uniqueCh
   }
 
   private def setChunks(oldChunks: Array[Array[T]], newChunks: Array[Array[T]]): Unit = {
-    for (a <- 0 until oldChunks.length) {
+    for (a <- oldChunks.indices) {
       newChunks(a) = oldChunks(a)
     }
   }
@@ -187,7 +187,7 @@ class ChunkedUniqueImmutableArraySet[T <: Object :ClassTag](private val uniqueCh
 
       //create any empty chunks required till we get to required chunks
       //create empty chunks
-      (currentChunks to requiredChunks - 1).foreach(i =>
+      (currentChunks until requiredChunks).foreach(i =>
         newChunks(i) = new Array[T](chunkSize)
       )
 
@@ -232,7 +232,8 @@ class ChunkedUniqueImmutableArraySet[T <: Object :ClassTag](private val uniqueCh
     }
 
     //println(s"getIndex($index) -> ($activeChunk)($indexInChunk)")
-    chunks(activeChunk)(indexInChunk)
+    val chunk = chunks(activeChunk)
+    chunk(indexInChunk)
   }
 
   override def indexOf(element: T): Int = {
@@ -276,24 +277,28 @@ class ChunkedUniqueImmutableArraySet[T <: Object :ClassTag](private val uniqueCh
     } else {
 
       val elem = getIndex(idxOf)
-
       val chunkOf = indexToChunk(idxOf)
 
       val newChunks = createChunks(this.countOfChunks)
 
+      //Copy the old chunks before the index over to the new chunks
       setChunksUpTo(chunks, newChunks, chunkOf)
 
+      //Set empty chunks in the new chunks for everything after the index
       for (chunkIx <- chunkOf until chunks.length) {
         newChunks(chunkIx) = emptyChunk()
       }
 
+      //Find our starting positions
       val lastChunkStart = chunkOf * chunkSize
 
+      //Copy the chunk data before the index over to the new chunk
       for (a <- lastChunkStart until idxOf) {
         setInPlace(a, getIndex(a), newChunks)
       }
 
-      for (a <- idxOf until this.length) {
+      //Copy over the data after the index into the new chunks
+      for (a <- idxOf until (this.length - 1)) {
         setInPlace(a, getIndex(a + 1), newChunks)
       }
 
