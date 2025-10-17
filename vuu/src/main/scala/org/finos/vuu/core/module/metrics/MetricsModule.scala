@@ -10,12 +10,12 @@ import org.finos.vuu.core.module.metrics.MetricsSchema.MetricsTree.all_columns
 
 object MetricsSchema{
 
-  final object ViewPortParallelism{
+  object ViewPortParallelism{
     final val work_ms_in_1m = "work_ms_in_1m"
     final val work_par_ratio = "work_par_ratio"
   }
 
-  final object MetricsTree{
+  object MetricsTree{
     val id: String = "id"
     val table: String = "table"
     val realTable: String = "realTable"

@@ -196,7 +196,10 @@ class CalculatedColumnVisitor(val columns: Iterable[Column]) extends CalculatedC
       processOperatorTerm(ctx)
     }
     else{
-      val leftChild :: op :: rightChild :: _ = children
+
+      val leftChild = children.head
+      val op = children(1)
+      val rightChild = children(2)
 
       logger.debug(" left:" + leftChild.getText + " op:" + op.getText + " right:" + rightChild.getText)
 
