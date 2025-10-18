@@ -226,7 +226,6 @@ export const useMeasuredContainer = ({
 
   const onResize: ResizeHandler = useCallback(
     ({ clientHeight, clientWidth }: Partial<ClientSize>) => {
-      console.log(`onResize ${clientWidth} * ${clientHeight}`);
       if (deferResize) {
         sizeRef.current.clientHeight = clientHeight;
         sizeRef.current.clientWidth = clientWidth;

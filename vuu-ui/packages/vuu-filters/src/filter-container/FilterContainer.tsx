@@ -50,6 +50,7 @@ export interface FilterContainerColumnFilterProps
 export const FilterContainerColumnFilter = ({
   column,
   operator = "=",
+  variant,
   ...props
 }: FilterContainerColumnFilterProps) => {
   const targetWindow = useWindow();
@@ -155,6 +156,7 @@ export const FilterContainerColumnFilter = ({
       onCommit={handleCommit}
       operator={operator}
       value={value}
+      variant={variant}
     />
   );
 };
