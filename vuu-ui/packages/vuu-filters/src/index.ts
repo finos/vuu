@@ -42,3 +42,4 @@ export {
   ToggleFilter,
   type ToggleFilterProps,
 } from "./toggle-filter/ToggleFilter";
+export { FilterPanel } from "./filter-panel/FilterPanel";

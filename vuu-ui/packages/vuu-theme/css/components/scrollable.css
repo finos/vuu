@@ -1,19 +1,22 @@
 .salt-theme.vuu-theme {
   .vuuScrollable {
-    --scrollable-size: var(--vuuScrollable-size, 4px); 
+    --scrollable-size: var(--vuuScrollable-size, 10px); 
 
-    ::-webkit-scrollbar {
+
+    &::-webkit-scrollbar {
       height: var(--scrollable-size);
       width: var(--scrollable-size);
     }
 
-    ::-webkit-scrollbar-track {
+    &::-webkit-scrollbar-track {
       background: transparent;
     }
 
-    ::-webkit-scrollbar-thumb {
-      border-radius: calc(var(--scrollable-size) / 2);
+    &::-webkit-scrollbar-thumb {
       background: var(--vuuScrollable-scrollThumb-background, #d9d9d9);
+      background-clip: content-box;
+      border: solid 2px transparent;
+      border-radius: calc(var(--scrollable-size) / 2);
     }
   }
 }
