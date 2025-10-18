@@ -1,0 +1,5 @@
+.vuuToggleFilter {
+    .vuuToggleFilter-onlyAvailableValue:not([aria-checked="true"],:hover) {
+        background-color: var(--vuuToggleFilter-implicitActive-bg, var(--salt-actionable-bold-background));
+    }
+}

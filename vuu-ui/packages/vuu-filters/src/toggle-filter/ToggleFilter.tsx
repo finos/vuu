@@ -3,48 +3,76 @@ import {
   ToggleButtonGroup,
   ToggleButtonGroupProps,
 } from "@salt-ds/core";
-import { TableSchemaTable } from "@vuu-ui/vuu-data-types";
-import { CommitHandler, getVuuTable } from "@vuu-ui/vuu-utils";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+import { CommitHandler } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
-import { useTypeaheadSuggestions } from "@vuu-ui/vuu-data-react";
-import { TypeaheadParams } from "@vuu-ui/vuu-protocol-types";
-import { SyntheticEvent, useCallback, useMemo, useState } from "react";
+import { ForwardedRef, forwardRef, SyntheticEvent, useCallback } from "react";
+import { type ToggleFilterHookProps, useToggleFilter } from "./useToggleFilter";
 
-export interface ToggleFilterProps extends ToggleButtonGroupProps {
-  column: string;
+type Value = ToggleButtonGroupProps["value"];
+
+const getValues = (
+  defaultValue: Value | undefined,
+  value: Value | undefined,
+) => {
+  if (defaultValue === undefined && value === undefined) {
+    return ["all"];
+  } else if (defaultValue !== undefined && value !== undefined) {
+    throw Error(
+      "[ToggleFilter] only one of defaultValue/value must be provided",
+    );
+  } else if (defaultValue === "") {
+    return ["all"];
+  } else if (value === "") {
+    return [undefined, "all"];
+  } else {
+    return [defaultValue, value];
+  }
+};
+
+import toggleFilterCss from "./ToggleFilter.css";
+/**
+ * ToggleFilter is designed to work with a FilterProvider and
+ * DataSourceProvider. With a DataSourceProvider, values will
+ * be validated against available values from datasource.
+ * With both FilterProvider and a DataSourceProvider, changes to
+ * the currentFilter will also trigger re-evaluation of available
+ * values from dataSource.
+ * With neither of these Providers available, the ToggleFilter is
+ * behaving like a regular ToggleButtonGroup.
+ */
+export interface ToggleFilterProps
+  extends ToggleButtonGroupProps,
+    ToggleFilterHookProps {
   onCommit: CommitHandler<HTMLElement>;
-  table: TableSchemaTable;
-  values: string[];
 }
 
 const classBase = "vuuToggleFilter";
 
-export const ToggleFilter = ({
-  className,
-  column,
-  onCommit,
-  table,
-  value: valueProp,
-  values,
-  ...ToggleButtonGroupProps
-}: ToggleFilterProps) => {
-  const [typeaheadValues, setTypeaheadValues] = useState<string[]>([]);
-  const getSuggestions = useTypeaheadSuggestions();
+export const ToggleFilter = forwardRef(function ToggleFilter(
+  {
+    className,
+    column,
+    defaultValue: defaultValueProp,
+    onCommit,
+    table,
+    value: valueProp,
+    values,
+    ...ToggleButtonGroupProps
+  }: ToggleFilterProps,
+  forwardedRef: ForwardedRef<HTMLDivElement>,
+) {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-toggle-filter",
+    css: toggleFilterCss,
+    window: targetWindow,
+  });
 
-  const value = valueProp === "" ? "all" : valueProp;
+  const [defaultValue, value] = getValues(defaultValueProp, valueProp);
 
-  useMemo(() => {
-    const vuuTable = getVuuTable(table);
-    const params: TypeaheadParams = [vuuTable, column];
-    getSuggestions(params).then((suggestions) => {
-      if (suggestions === false) {
-        // TODO is this right
-        setTypeaheadValues([]);
-      } else {
-        setTypeaheadValues(suggestions);
-      }
-    });
-  }, [column, getSuggestions, table]);
+  const onlyAvailableValue = useToggleFilter({ column, table, values });
 
   const handleChange = useCallback(
     (e: SyntheticEvent<HTMLButtonElement>) => {
@@ -62,21 +90,26 @@ export const ToggleFilter = ({
     <ToggleButtonGroup
       {...ToggleButtonGroupProps}
       className={cx(classBase, className)}
+      defaultValue={defaultValue}
       onChange={handleChange}
+      ref={forwardedRef}
       value={value}
     >
       <ToggleButton key="all" value="all">
         ALL
       </ToggleButton>
-      {values.map((value) => (
+      {values.map((toggleValue) => (
         <ToggleButton
-          key={value}
-          value={value}
-          disabled={!typeaheadValues.includes(value) && value === "all"}
+          className={cx({
+            [`${classBase}-onlyAvailableValue`]:
+              onlyAvailableValue === toggleValue,
+          })}
+          key={toggleValue}
+          value={toggleValue}
         >
-          {value}
+          {toggleValue}
         </ToggleButton>
       ))}
     </ToggleButtonGroup>
   );
-};
+});

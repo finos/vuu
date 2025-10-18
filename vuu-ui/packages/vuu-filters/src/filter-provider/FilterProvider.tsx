@@ -233,9 +233,6 @@ export const FilterProvider = ({
    */
   const setCurrentFilter = useCallback(
     (key: string, filter: string | FilterContainerFilter) => {
-      console.log(
-        `[FilterProvider] setCurrentFilter ${JSON.stringify(filter)}`,
-      );
       const filterDescriptors = savedFilters.get(key) ?? [];
 
       if (filter === NULL_FILTER) {
