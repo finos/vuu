@@ -53,13 +53,6 @@ export const FilterContainerColumnFilter = ({
   variant,
   ...props
 }: FilterContainerColumnFilterProps) => {
-  const targetWindow = useWindow();
-  useComponentCssInjection({
-    testId: "vuu-filter-container",
-    css: filterContainerCss,
-    window: targetWindow,
-  });
-
   const {
     filterProviderKey,
     onChange: onFilterContextChange,
@@ -180,6 +173,13 @@ export const FilterContainer = ({
   onFilterCleared,
   ...htmlAttributes
 }: FilterContainerProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-filter-container",
+    css: filterContainerCss,
+    window: targetWindow,
+  });
+
   const filterContextProps = useFilterContainer({
     filter,
     filterProviderKey,
@@ -188,7 +188,10 @@ export const FilterContainer = ({
   });
   return (
     <ColumnFilterContext.Provider value={filterContextProps}>
-      <div {...htmlAttributes} className={cx(classBase, className)}>
+      <div
+        {...htmlAttributes}
+        className={cx(classBase, className, "vuuScrollable")}
+      >
         {children}
       </div>
     </ColumnFilterContext.Provider>

@@ -1,7 +1,7 @@
 import {
   EditMultiClauseOrFilter,
   NewFilter,
-} from "../../../../../showcase/src/examples/Filters/FilterEditor/FilterEditor.examples";
+} from "../../../../../showcase/src/examples/Filters/FilterEditor.examples";
 import { FilterBarOneSimpleFilter } from "../../../../../showcase/src/examples/Filters/FilterBar/FilterBar.examples";
 
 import { clickFilterPillTrigger, clickMenuItem } from "./filter-test-utils";

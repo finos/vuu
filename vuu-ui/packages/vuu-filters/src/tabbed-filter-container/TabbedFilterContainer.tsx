@@ -49,8 +49,6 @@ export const TabbedFilterContainer = ({
     window: targetWindow,
   });
 
-  console.log(`[TabbedFilterContainer] render`);
-
   return (
     <div {...htmlAttributes} className={cx(classBase, className)}>
       <TabsNext defaultValue="ad-hoc-filter">
