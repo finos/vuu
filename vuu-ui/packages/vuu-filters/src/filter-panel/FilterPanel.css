@@ -1,7 +1,17 @@
 .vuuFilterPanel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--vuuFilterPanel-gap, var(--salt-spacing-100));
+    height: var(--vuuFilterPanel-height, auto);
+    padding: var(--vuuFilterPanel-padding, 0);
+
+    --vuuFilterContainer-flex: 1 1 auto; 
+
     .vuuFilterPanel-toolbar {
-        display: flex;
         align-items: center;
+        display: flex;
+        flex: 0 0 var(--salt-size-base);
+        padding: var(--salt-spacing-200) 0;
         justify-content: space-between;
     }
 }
