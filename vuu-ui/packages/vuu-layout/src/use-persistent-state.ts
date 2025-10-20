@@ -11,7 +11,6 @@ import { useCallback } from "react";
  * (see layoutFromJSON).
  */
 const persistentState = new Map<string, any>();
-const sessionState = new Map<string, any>();
 
 export const getPersistentState = (id: string) => persistentState.get(id);
 export const hasPersistentState = (id: string) => persistentState.has(id);
@@ -19,54 +18,6 @@ export const setPersistentState = (id: string, value: any) =>
   persistentState.set(id, value);
 
 export const usePersistentState = () => {
-  const loadSessionState = useCallback((id: string, key?: string) => {
-    const state = sessionState.get(id);
-    if (state) {
-      if (key !== undefined && state[key] !== undefined) {
-        return state[key];
-      }
-      if (key !== undefined) {
-        return undefined;
-      }
-      return state;
-    }
-  }, []);
-
-  const saveSessionState = useCallback(
-    (id: string, key: string, data: unknown) => {
-      if (key === undefined) {
-        sessionState.set(id, data);
-      } else if (sessionState.has(id)) {
-        const state = sessionState.get(id);
-        sessionState.set(id, {
-          ...state,
-          [key]: data,
-        });
-      } else {
-        sessionState.set(id, { [key]: data });
-      }
-    },
-    [],
-  );
-
-  const purgeSessionState = useCallback((id: string, key?: string) => {
-    if (sessionState.has(id)) {
-      if (key === undefined) {
-        sessionState.delete(id);
-      } else {
-        const state = sessionState.get(id);
-        if (state[key]) {
-          const { [key]: _doomedState, ...rest } = sessionState.get(id);
-          if (Object.keys(rest).length > 0) {
-            sessionState.set(id, rest);
-          } else {
-            sessionState.delete(id);
-          }
-        }
-      }
-    }
-  }, []);
-
   const loadState = useCallback((id: string, key?: string) => {
     const state = persistentState.get(id);
     if (state) {
@@ -113,11 +64,8 @@ export const usePersistentState = () => {
   }, []);
 
   return {
-    loadSessionState,
     loadState,
-    saveSessionState,
     saveState,
     purgeState,
-    purgeSessionState,
   };
 };

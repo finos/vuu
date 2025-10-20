@@ -8,6 +8,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useNotifications } from "@vuu-ui/vuu-popups";
 import { buildColumnMap, ColumnMap, useData } from "@vuu-ui/vuu-utils";
 import { VuuRpcServiceRequest } from "@vuu-ui/vuu-protocol-types";
+import { useSessionDataSource } from "@vuu-ui/vuu-data-react";
 
 export type basketDataSourceKey =
   | "data-source-basket"
@@ -38,8 +39,9 @@ export const useBasketTradingDataSources = ({
 }) => {
   const [basketState, setBasketState] = useState<BasketTableState>();
   const { showNotification } = useNotifications();
-  const { id, loadSession, saveSession, title } = useViewContext();
-  const { getServerAPI, VuuDataSource } = useData();
+  const { id, title } = useViewContext();
+  const { getServerAPI } = useData();
+  const { getDataSource } = useSessionDataSource();
 
   useMemo(async () => {
     const serverAPI = await getServerAPI();
@@ -65,42 +67,34 @@ export const useBasketTradingDataSources = ({
       : undefined;
 
     const basketTradingControlKey = `data-source-basket-trading-control`;
-    let dataSourceBasketTradingControl = loadSession?.(
+    const dataSourceBasketTradingControl = getDataSource(
       basketTradingControlKey,
-    ) as DataSource;
-    if (!dataSourceBasketTradingControl) {
-      dataSourceBasketTradingControl = new VuuDataSource({
+      {
         bufferSize: 0,
         filterSpec,
         viewport: `${id}-${basketTradingControlKey}`,
         table: basketTradingSchema.table,
         columns: basketTradingSchema.columns.map((col) => col.name),
         title,
-      });
-      saveSession?.(dataSourceBasketTradingControl, basketTradingControlKey);
-    }
+      },
+    );
 
     const basketTradingSearchKey = `data-source-basket-trading-search`;
-    let dataSourceBasketTradingSearch = loadSession?.(
+    const dataSourceBasketTradingSearch = getDataSource(
       basketTradingSearchKey,
-    ) as DataSource;
-    if (!dataSourceBasketTradingSearch) {
-      dataSourceBasketTradingSearch = new VuuDataSource({
+      {
         bufferSize: 100,
         viewport: `${id}-${basketTradingSearchKey}`,
         table: basketTradingSchema.table,
         columns: basketTradingSchema.columns.map((col) => col.name),
         title,
-      });
-      saveSession?.(dataSourceBasketTradingSearch, basketTradingSearchKey);
-    }
+      },
+    );
 
     const basketTradingConstituentJoinKey = `data-source-basket-trading-constituent-join`;
-    let dataSourceBasketTradingConstituentJoin = loadSession?.(
+    const dataSourceBasketTradingConstituentJoin = getDataSource(
       basketTradingConstituentJoinKey,
-    ) as DataSource;
-    if (!dataSourceBasketTradingConstituentJoin) {
-      dataSourceBasketTradingConstituentJoin = new VuuDataSource({
+      {
         bufferSize: 100,
         filterSpec,
         viewport: `${id}-${basketTradingConstituentJoinKey}`,
@@ -109,28 +103,18 @@ export const useBasketTradingDataSources = ({
           (col) => col.name,
         ),
         title,
-      });
-      saveSession?.(
-        dataSourceBasketTradingConstituentJoin,
-        basketTradingConstituentJoinKey,
-      );
-    }
+      },
+    );
 
     const basketConstituentsKey = `data-source-basket-constituent`;
-    let dataSourceBasketConstituents = loadSession?.(
-      basketConstituentsKey,
-    ) as DataSource;
-    if (!dataSourceBasketConstituents) {
-      dataSourceBasketConstituents = new VuuDataSource({
-        bufferSize: 100,
-        sort: { sortDefs: [{ column: "description", sortType: "A" }] },
-        viewport: `${id}-${basketConstituentsKey}`,
-        table: basketConstituentSchema.table,
-        columns: basketConstituentSchema.columns.map((col) => col.name),
-        title,
-      });
-      saveSession?.(dataSourceBasketConstituents, basketConstituentsKey);
-    }
+    const dataSourceBasketConstituents = getDataSource(basketConstituentsKey, {
+      bufferSize: 100,
+      sort: { sortDefs: [{ column: "description", sortType: "A" }] },
+      viewport: `${id}-${basketConstituentsKey}`,
+      table: basketConstituentSchema.table,
+      columns: basketConstituentSchema.columns.map((col) => col.name),
+      title,
+    });
 
     setBasketState({
       basketSchema,
@@ -144,15 +128,7 @@ export const useBasketTradingDataSources = ({
       dataSourceBasketTradingSearch,
       dataSourceBasketTradingConstituentJoin,
     });
-  }, [
-    VuuDataSource,
-    basketInstanceId,
-    getServerAPI,
-    id,
-    loadSession,
-    saveSession,
-    title,
-  ]);
+  }, [basketInstanceId, getDataSource, getServerAPI, id, title]);
 
   const handleSendToMarket = useCallback(
     (basketInstanceId: string) => {

@@ -4,21 +4,25 @@ import {
   useVuuMenuActions,
 } from "@vuu-ui/vuu-data-react";
 import {
+  DataSourceConfig,
+  DataSourceConfigChangeHandler,
   DataSourceVisualLinkCreatedMessage,
   SchemaColumn,
 } from "@vuu-ui/vuu-data-types";
 import { usePersistFilterState } from "@vuu-ui/vuu-datatable";
 import { FilterBarProps, QuickFilterProps } from "@vuu-ui/vuu-filters";
 import { useViewContext } from "@vuu-ui/vuu-layout";
-import { useShellContext } from "@vuu-ui/vuu-utils";
+import { isConfigChanged, useShellContext } from "@vuu-ui/vuu-utils";
 import { TableConfig, TableConfigChangeHandler } from "@vuu-ui/vuu-table-types";
 import {
   FilterTableFeatureProps,
   applyDefaultColumnConfig,
 } from "@vuu-ui/vuu-utils";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { FilterMode } from "@vuu-ui/vuu-filters/src/filter-bar/useFilterBar";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FilterMode } from "@vuu-ui/vuu-filters";
 import { useVisualLinks } from "@vuu-ui/vuu-data-react";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
+import { useIdMemo } from "@salt-ds/core";
 
 const NO_CONFIG: FilterTableConfig = {};
 
@@ -31,6 +35,7 @@ const defaultTableConfig: Partial<TableConfig> = {
 
 type FilterTableConfig = {
   "available-columns"?: SchemaColumn[];
+  "datasource-config"?: DataSourceConfig;
   "filter-config"?: Pick<FilterBarProps, "filterMode"> &
     Pick<QuickFilterProps, "quickFilterColumns">;
   "table-config"?: TableConfig;
@@ -39,7 +44,7 @@ type FilterTableConfig = {
 export const useFilterTableFeature = ({
   tableSchema,
 }: FilterTableFeatureProps) => {
-  const { load, save, title } = useViewContext();
+  const { id, load, save, title } = useViewContext();
   const {
     filterState,
     onFilterDeleted,
@@ -51,15 +56,48 @@ export const useFilterTableFeature = ({
 
   const {
     "available-columns": availableColumnsFromState,
+    "datasource-config": datasourceConfigFromState,
     "filter-config": filterConfigFromState,
     "table-config": tableConfigFromState,
   } = useMemo<FilterTableConfig>(() => load?.() ?? NO_CONFIG, [load]);
+
+  const sessionKey = useIdMemo(id);
 
   const [quickFilterColumns, setQuickFilterColumns] = useState<string[]>(
     filterConfigFromState?.quickFilterColumns ?? [],
   );
 
-  const dataSource = useSessionDataSource({ tableSchema });
+  const handleDataSourceConfigChange =
+    useCallback<DataSourceConfigChangeHandler>(
+      (
+        config: DataSourceConfig | undefined,
+        _range: VuuRange,
+        confirmed?: boolean,
+      ) => {
+        if (confirmed !== false) {
+          const { noChanges } = isConfigChanged(
+            dataSourceConfigRef.current,
+            config,
+          );
+          if (noChanges === false) {
+            dataSourceConfigRef.current = config;
+            save?.(config, "datasource-config");
+          }
+        }
+      },
+      [save],
+    );
+
+  const dataSourceConfigRef = useRef<DataSourceConfig | undefined>(undefined);
+
+  const { getDataSource } = useSessionDataSource({
+    onConfigChange: handleDataSourceConfigChange,
+  });
+
+  const dataSource = getDataSource(sessionKey, {
+    ...datasourceConfigFromState,
+    table: tableSchema.table,
+  });
 
   useVisualLinks(dataSource);
 

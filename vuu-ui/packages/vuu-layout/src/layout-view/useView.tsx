@@ -21,13 +21,7 @@ export const useView = ({
 }: ViewHookProps) => {
   const layoutDispatch = useLayoutProviderDispatch();
 
-  const {
-    loadState,
-    loadSessionState,
-    purgeState,
-    saveState,
-    saveSessionState,
-  } = usePersistentState();
+  const { loadState, purgeState, saveState } = usePersistentState();
 
   const [dispatchViewAction, contributions] = useViewActionDispatcher(
     id,
@@ -72,14 +66,6 @@ export const useView = ({
     },
     [id, layoutDispatch, saveState],
   );
-  const loadSession = useCallback(
-    (key?: string) => loadSessionState(id, key),
-    [id, loadSessionState],
-  );
-  const saveSession = useCallback(
-    (state: unknown, key: string) => saveSessionState(id, key, state),
-    [id, saveSessionState],
-  );
 
   const onConfigChange = useCallback<ConfigChangeHandler>(
     ({ type: key, ...config }) => {
@@ -93,13 +79,11 @@ export const useView = ({
     contributions,
     dispatchViewAction,
     load,
-    loadSession,
     onConfigChange,
     onEditTitle,
     purge,
     restoredState,
     save,
-    saveSession,
     title,
   };
 };

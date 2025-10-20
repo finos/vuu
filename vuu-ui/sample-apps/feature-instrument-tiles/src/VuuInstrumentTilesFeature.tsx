@@ -1,4 +1,3 @@
-import { VuuDataSource } from "@vuu-ui/vuu-data-remote";
 import {
   DataSource,
   DataSourceConfig,
@@ -14,6 +13,8 @@ import { useDataSource } from "./useDataSource";
 
 import "./VuuInstrumentTilesFeature.css";
 import { VuuRange } from "@vuu-ui/vuu-protocol-types";
+import { useSessionDataSource } from "@vuu-ui/vuu-data-react";
+import { useIdMemo } from "@salt-ds/core";
 
 const classBase = "VuuInstrumentTilesFeature";
 
@@ -26,12 +27,14 @@ const { KEY } = metadataKeys;
 const VuuInstrumentTilesFeature = ({
   instrumentPricesSchema,
 }: InstrumentTilesFeatureProps) => {
-  const { id, save, loadSession, saveSession, title } = useViewContext();
-
+  const { id, save, title } = useViewContext();
+  const { getDataSource } = useSessionDataSource();
   const instrumentKeys = useMemo(
     () => ["AAA.L", "AAV.L", "ABB.MC", "ABK.N", "CDQ.L"],
     [],
   );
+
+  const sessionKey = useIdMemo(id);
 
   const filter: DataSourceFilter = useMemo(
     () => ({
@@ -60,13 +63,7 @@ const VuuInstrumentTilesFeature = ({
   );
 
   const dataSource: DataSource = useMemo(() => {
-    let ds = loadSession?.("data-source") as VuuDataSource;
-    if (ds) {
-      console.log({ ds });
-      return ds;
-    }
-
-    ds = new VuuDataSource({
+    return getDataSource(sessionKey, {
       bufferSize: 200,
       viewport: id,
       table: instrumentPricesSchema.table,
@@ -74,17 +71,13 @@ const VuuInstrumentTilesFeature = ({
       filterSpec: filter,
       title,
     });
-    ds.on("config", handleDataSourceConfigChange);
-    saveSession?.(ds, "data-source");
-    return ds;
   }, [
     filter,
-    handleDataSourceConfigChange,
+    getDataSource,
     id,
-    loadSession,
-    saveSession,
     instrumentPricesSchema.columns,
     instrumentPricesSchema.table,
+    sessionKey,
     title,
   ]);
 
