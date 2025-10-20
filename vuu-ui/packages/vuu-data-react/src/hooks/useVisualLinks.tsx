@@ -1,4 +1,4 @@
-import { DataSource } from "@vuu-ui/vuu-data-types";
+import type { DataSource } from "@vuu-ui/vuu-data-types";
 import { useViewContext } from "@vuu-ui/vuu-layout";
 import { IconButton } from "@vuu-ui/vuu-ui-controls";
 import { useCallback, useEffect } from "react";
@@ -57,12 +57,13 @@ export const useVisualLinks = (dataSource: DataSource) => {
       location: "post-title",
       content: (
         <IconButton
+          appearance="transparent"
           aria-label="remove-link"
           icon="link"
           onClick={removeVisualLink}
           onMouseEnter={highlightVisualLinkTarget}
           onMouseLeave={clearVisualLinkTarget}
-          variant="secondary"
+          sentiment="neutral"
         />
       ),
     });

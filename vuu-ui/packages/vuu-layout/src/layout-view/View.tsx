@@ -15,7 +15,10 @@ import React, {
 import { Header as VuuHeader } from "../layout-header/Header";
 import { useView } from "./useView";
 import { useViewResize } from "./useViewResize";
-import { ViewContext, ViewContextAPI } from "../layout-view-actions";
+import {
+  ViewContext,
+  ViewContextAPI,
+} from "../layout-view-actions/ViewContext";
 import { ViewProps } from "./viewTypes";
 
 import viewCss from "./View.css";

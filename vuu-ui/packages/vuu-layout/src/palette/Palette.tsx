@@ -1,5 +1,5 @@
-import { queryClosest, registerComponent, uuid } from "@vuu-ui/vuu-utils";
 import { ListBox, ListBoxProps, Option, OptionProps } from "@salt-ds/core";
+import { queryClosest, registerComponent, uuid } from "@vuu-ui/vuu-utils";
 
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
@@ -13,7 +13,8 @@ import {
   useCallback,
 } from "react";
 import { useLayoutProviderDispatch } from "../layout-provider";
-import { View, ViewProps } from "../layout-view";
+import { View } from "../layout-view/View";
+import type { ViewProps } from "../layout-view/viewTypes";
 
 import paletteCss from "./Palette.css";
 

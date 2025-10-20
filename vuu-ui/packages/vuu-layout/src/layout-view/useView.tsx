@@ -2,7 +2,7 @@ import { RefObject, useCallback, useMemo } from "react";
 import { useLayoutProviderDispatch } from "../layout-provider/LayoutProvider";
 import { usePersistentState } from "../use-persistent-state";
 import { useViewActionDispatcher } from "../layout-view-actions/useViewActionDispatcher";
-import { ConfigChangeHandler } from "../layout-view-actions";
+import { ConfigChangeHandler } from "../layout-view-actions/ViewContext";
 
 export interface ViewHookProps {
   id: string;

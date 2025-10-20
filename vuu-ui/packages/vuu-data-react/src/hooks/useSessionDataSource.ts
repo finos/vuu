@@ -22,9 +22,6 @@ export const useSessionDataSource = (props?: SessionStateHookProps) => {
     (sessionKey: string, config?: DataSourceConstructorProps) => {
       let ds = sessionState.get(sessionKey);
       if (ds) {
-        console.log(
-          `[useSessionDatasource] da ${sessionKey} found in session state`,
-        );
         if (config) {
           // this won't do anything if dataSource config already matches this
           // This is only really used when injecting a dataSource into session
@@ -41,12 +38,6 @@ export const useSessionDataSource = (props?: SessionStateHookProps) => {
       }
 
       if (config?.columns) {
-        console.log(
-          `[useSessionDatasource] ds ${sessionKey} NOT found in session state, creating new VuuDataSource
-        config : ${JSON.stringify(config)}
-      `,
-        );
-
         ds = new VuuDataSource({
           ...config,
           viewport: sessionKey,
@@ -59,7 +50,7 @@ export const useSessionDataSource = (props?: SessionStateHookProps) => {
         return ds;
       } else {
         throw Error(
-          `[useSessionDataSource] unable to create new DataSource, tableSchema has not been provided `,
+          `[useSessionDataSource] unable to create new DataSource, columns have not been defined `,
         );
       }
     },

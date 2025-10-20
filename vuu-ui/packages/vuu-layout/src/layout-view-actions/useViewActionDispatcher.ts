@@ -2,15 +2,14 @@ import { useSessionDataSource } from "@vuu-ui/vuu-data-react";
 import { RefObject, SyntheticEvent, useCallback } from "react";
 import { useLayoutProviderDispatch } from "../layout-provider/LayoutProvider";
 import { DragStartAction } from "../layout-reducer";
-import type {
+import {
   BroadcastMessageHandler,
-  Contribution,
-  ViewAction,
-} from "../layout-view";
-import { useViewBroadcastChannel } from "../layout-view/useViewBroadcastChannel";
+  useViewBroadcastChannel,
+} from "../layout-view/useViewBroadcastChannel";
 import { usePersistentState } from "../use-persistent-state";
 import { useViewContributions } from "./useViewContributions";
 import { QueryResponse, ViewDispatch } from "./ViewContext";
+import { Contribution, ViewAction } from "../layout-view/viewTypes";
 
 export const useViewActionDispatcher = (
   id: string,

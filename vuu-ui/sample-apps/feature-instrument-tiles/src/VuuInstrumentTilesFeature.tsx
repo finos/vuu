@@ -1,3 +1,5 @@
+import { useIdMemo } from "@salt-ds/core";
+import { useSessionDataSource } from "@vuu-ui/vuu-data-react";
 import {
   DataSource,
   DataSourceConfig,
@@ -5,6 +7,7 @@ import {
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
 import { useViewContext } from "@vuu-ui/vuu-layout";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import { buildColumnMap, metadataKeys } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo } from "react";
 import { InstrumentTile } from "./InstrumentTile";
@@ -12,9 +15,6 @@ import { InstrumentTileContainer } from "./InstrumentTileContainer";
 import { useDataSource } from "./useDataSource";
 
 import "./VuuInstrumentTilesFeature.css";
-import { VuuRange } from "@vuu-ui/vuu-protocol-types";
-import { useSessionDataSource } from "@vuu-ui/vuu-data-react";
-import { useIdMemo } from "@salt-ds/core";
 
 const classBase = "VuuInstrumentTilesFeature";
 
@@ -28,7 +28,23 @@ const VuuInstrumentTilesFeature = ({
   instrumentPricesSchema,
 }: InstrumentTilesFeatureProps) => {
   const { id, save, title } = useViewContext();
-  const { getDataSource } = useSessionDataSource();
+
+  const handleDataSourceConfigChange = useCallback(
+    (
+      config: DataSourceConfig | undefined,
+      _range: VuuRange,
+      confirmed?: boolean,
+    ) => {
+      if (confirmed !== false) {
+        save?.(config, "datasource-config");
+      }
+    },
+    [save],
+  );
+
+  const { getDataSource } = useSessionDataSource({
+    onConfigChange: handleDataSourceConfigChange,
+  });
   const instrumentKeys = useMemo(
     () => ["AAA.L", "AAV.L", "ABB.MC", "ABK.N", "CDQ.L"],
     [],
@@ -47,19 +63,6 @@ const VuuInstrumentTilesFeature = ({
     }),
 
     [instrumentKeys],
-  );
-
-  const handleDataSourceConfigChange = useCallback(
-    (
-      config: DataSourceConfig | undefined,
-      _range: VuuRange,
-      confirmed?: boolean,
-    ) => {
-      if (confirmed !== false) {
-        save?.(config, "datasource-config");
-      }
-    },
-    [save],
   );
 
   const dataSource: DataSource = useMemo(() => {

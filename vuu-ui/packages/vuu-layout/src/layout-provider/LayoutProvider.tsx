@@ -26,13 +26,13 @@ import {
   type LayoutChangeReason,
   type LayoutReducerAction,
 } from "../layout-reducer";
-import type { SaveAction } from "../layout-view";
 import { findTarget, getChildProp, getProp, getProps, typeOf } from "../utils";
 import {
   LayoutProviderContext,
   LayoutProviderDispatch,
 } from "./LayoutProviderContext";
 import { useLayoutDragDrop } from "./useLayoutDragDrop";
+import { SaveAction } from "../layout-view/viewTypes";
 
 const { info } = logger("LayoutProvider");
 

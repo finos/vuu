@@ -1,6 +1,8 @@
+import { useIdMemo } from "@salt-ds/core";
 import {
   MenuActionConfig,
   useSessionDataSource,
+  useVisualLinks,
   useVuuMenuActions,
 } from "@vuu-ui/vuu-data-react";
 import {
@@ -10,19 +12,22 @@ import {
   SchemaColumn,
 } from "@vuu-ui/vuu-data-types";
 import { usePersistFilterState } from "@vuu-ui/vuu-datatable";
-import { FilterBarProps, QuickFilterProps } from "@vuu-ui/vuu-filters";
+import {
+  FilterBarProps,
+  FilterMode,
+  QuickFilterProps,
+} from "@vuu-ui/vuu-filters";
 import { useViewContext } from "@vuu-ui/vuu-layout";
-import { isConfigChanged, useShellContext } from "@vuu-ui/vuu-utils";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import { TableConfig, TableConfigChangeHandler } from "@vuu-ui/vuu-table-types";
 import {
   FilterTableFeatureProps,
   applyDefaultColumnConfig,
+  isConfigChanged,
+  toColumnName,
+  useShellContext,
 } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FilterMode } from "@vuu-ui/vuu-filters";
-import { useVisualLinks } from "@vuu-ui/vuu-data-react";
-import { VuuRange } from "@vuu-ui/vuu-protocol-types";
-import { useIdMemo } from "@salt-ds/core";
 
 const NO_CONFIG: FilterTableConfig = {};
 
@@ -96,6 +101,9 @@ export const useFilterTableFeature = ({
 
   const dataSource = getDataSource(sessionKey, {
     ...datasourceConfigFromState,
+    columns:
+      datasourceConfigFromState?.columns ??
+      tableSchema.columns.map(toColumnName),
     table: tableSchema.table,
   });
 
