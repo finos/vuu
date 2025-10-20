@@ -1,4 +1,5 @@
-import { VuuDataSource } from "@vuu-ui/vuu-data-remote";
+import { useIdMemo } from "@salt-ds/core";
+import { useSessionDataSource } from "@vuu-ui/vuu-data-react";
 import {
   DataSource,
   DataSourceConfig,
@@ -6,6 +7,7 @@ import {
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
 import { useViewContext } from "@vuu-ui/vuu-layout";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import { buildColumnMap, metadataKeys } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo } from "react";
 import { InstrumentTile } from "./InstrumentTile";
@@ -13,7 +15,6 @@ import { InstrumentTileContainer } from "./InstrumentTileContainer";
 import { useDataSource } from "./useDataSource";
 
 import "./VuuInstrumentTilesFeature.css";
-import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 
 const classBase = "VuuInstrumentTilesFeature";
 
@@ -26,25 +27,7 @@ const { KEY } = metadataKeys;
 const VuuInstrumentTilesFeature = ({
   instrumentPricesSchema,
 }: InstrumentTilesFeatureProps) => {
-  const { id, save, loadSession, saveSession, title } = useViewContext();
-
-  const instrumentKeys = useMemo(
-    () => ["AAA.L", "AAV.L", "ABB.MC", "ABK.N", "CDQ.L"],
-    [],
-  );
-
-  const filter: DataSourceFilter = useMemo(
-    () => ({
-      filter: `ric in [${instrumentKeys.map((i) => `"${i}"`).join(",")}]`,
-      filterStruct: {
-        op: "in",
-        column: "ric",
-        values: instrumentKeys,
-      },
-    }),
-
-    [instrumentKeys],
-  );
+  const { id, save, title } = useViewContext();
 
   const handleDataSourceConfigChange = useCallback(
     (
@@ -59,14 +42,31 @@ const VuuInstrumentTilesFeature = ({
     [save],
   );
 
-  const dataSource: DataSource = useMemo(() => {
-    let ds = loadSession?.("data-source") as VuuDataSource;
-    if (ds) {
-      console.log({ ds });
-      return ds;
-    }
+  const { getDataSource } = useSessionDataSource({
+    onConfigChange: handleDataSourceConfigChange,
+  });
+  const instrumentKeys = useMemo(
+    () => ["AAA.L", "AAV.L", "ABB.MC", "ABK.N", "CDQ.L"],
+    [],
+  );
 
-    ds = new VuuDataSource({
+  const sessionKey = useIdMemo(id);
+
+  const filter: DataSourceFilter = useMemo(
+    () => ({
+      filter: `ric in [${instrumentKeys.map((i) => `"${i}"`).join(",")}]`,
+      filterStruct: {
+        op: "in",
+        column: "ric",
+        values: instrumentKeys,
+      },
+    }),
+
+    [instrumentKeys],
+  );
+
+  const dataSource: DataSource = useMemo(() => {
+    return getDataSource(sessionKey, {
       bufferSize: 200,
       viewport: id,
       table: instrumentPricesSchema.table,
@@ -74,17 +74,13 @@ const VuuInstrumentTilesFeature = ({
       filterSpec: filter,
       title,
     });
-    ds.on("config", handleDataSourceConfigChange);
-    saveSession?.(ds, "data-source");
-    return ds;
   }, [
     filter,
-    handleDataSourceConfigChange,
+    getDataSource,
     id,
-    loadSession,
-    saveSession,
     instrumentPricesSchema.columns,
     instrumentPricesSchema.table,
+    sessionKey,
     title,
   ]);
 

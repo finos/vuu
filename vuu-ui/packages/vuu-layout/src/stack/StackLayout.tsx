@@ -5,8 +5,8 @@ import {
   useLayoutProviderDispatch,
 } from "../layout-provider";
 import { getDefaultTabLabel } from "../layout-reducer";
-import { useViewBroadcastChannel } from "../layout-view";
-import { useViewActionDispatcher } from "../layout-view-actions";
+import { useViewActionDispatcher } from "../layout-view-actions/useViewActionDispatcher";
+import { useViewBroadcastChannel } from "../layout-view/useViewBroadcastChannel";
 import { usePersistentState } from "../use-persistent-state";
 import { Stack } from "./Stack";
 import { StackProps, TabLabelFactory } from "./stackTypes";

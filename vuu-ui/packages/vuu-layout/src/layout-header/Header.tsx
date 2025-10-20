@@ -1,9 +1,9 @@
-import { EditableLabel, IconButton } from "@vuu-ui/vuu-ui-controls";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { EditableLabel, IconButton } from "@vuu-ui/vuu-ui-controls";
 import cx from "clsx";
 import { HTMLAttributes, MouseEvent, ReactElement, cloneElement } from "react";
-import { Contribution } from "../layout-view";
+import { Contribution } from "../layout-view/viewTypes";
 import { useHeader } from "./useHeader";
 
 import headerCss from "./Header.css";

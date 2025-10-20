@@ -1,22 +1,15 @@
-import { DataSource } from "@vuu-ui/vuu-data-types";
-import {
-  ReactElement,
-  RefObject,
-  SyntheticEvent,
-  useCallback,
-  useState,
-} from "react";
+import { useSessionDataSource } from "@vuu-ui/vuu-data-react";
+import { RefObject, SyntheticEvent, useCallback } from "react";
 import { useLayoutProviderDispatch } from "../layout-provider/LayoutProvider";
 import { DragStartAction } from "../layout-reducer";
-import { usePersistentState } from "../use-persistent-state";
-import { QueryReponse, ViewDispatch } from "./ViewContext";
-import type {
+import {
   BroadcastMessageHandler,
-  Contribution,
-  ContributionLocation,
-  ViewAction,
-} from "../layout-view";
-import { useViewBroadcastChannel } from "../layout-view/useViewBroadcastChannel";
+  useViewBroadcastChannel,
+} from "../layout-view/useViewBroadcastChannel";
+import { usePersistentState } from "../use-persistent-state";
+import { useViewContributions } from "./useViewContributions";
+import { QueryResponse, ViewDispatch } from "./ViewContext";
+import { Contribution, ViewAction } from "../layout-view/viewTypes";
 
 export const useViewActionDispatcher = (
   id: string,
@@ -24,39 +17,22 @@ export const useViewActionDispatcher = (
   viewPath?: string,
   dropTargets?: string[],
 ): [ViewDispatch, Contribution[] | undefined] => {
-  const { loadSessionState, purgeSessionState, purgeState, saveSessionState } =
-    usePersistentState();
+  const { purgeState } = usePersistentState();
 
-  const [contributions, setContributions] = useState<Contribution[]>(
-    loadSessionState(id, "contributions") ?? [],
-  );
+  const { clearDataSource: clearDataSourceFromSessionState } =
+    useSessionDataSource();
+
+  const { clearContributions, contributions, updateContributions } =
+    useViewContributions({ sessionKey: id });
+
   const dispatchLayoutAction = useLayoutProviderDispatch();
-  const updateContributions = useCallback(
-    (location: ContributionLocation, content: ReactElement) => {
-      const updatedContributions = contributions.concat([
-        { location, content },
-      ]);
-      saveSessionState(id, "contributions", updatedContributions);
-      setContributions(updatedContributions);
-    },
-    [contributions, id, saveSessionState],
-  );
-
-  const clearContributions = useCallback(() => {
-    purgeSessionState(id, "contributions");
-    setContributions([]);
-  }, [id, purgeSessionState]);
 
   // This assumes datasource has been stored in session state
   // we should extend to accommodate multiple dataSources
   const unsubscribeAndClearState = useCallback(() => {
-    const ds = loadSessionState(id, "data-source") as DataSource;
-    if (ds) {
-      ds.unsubscribe();
-    }
-    purgeSessionState(id);
+    clearDataSourceFromSessionState(id, true);
     purgeState(id);
-  }, [id, loadSessionState, purgeSessionState, purgeState]);
+  }, [clearDataSourceFromSessionState, id, purgeState]);
 
   const handleRemove = useCallback(() => {
     unsubscribeAndClearState();
@@ -116,7 +92,7 @@ export const useViewActionDispatcher = (
     async <A extends ViewAction = ViewAction>(
       action: A,
       evt?: MouseEvent | SyntheticEvent,
-    ): Promise<boolean | QueryReponse | void> => {
+    ): Promise<boolean | QueryResponse | void> => {
       const { type } = action;
       switch (type) {
         case "collapse":

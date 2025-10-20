@@ -1,14 +1,10 @@
-import {
-  SetPropsAction,
-  useLayoutProviderDispatch,
-  useViewContext,
-} from "@vuu-ui/vuu-layout";
-import { registerComponent, VuuShellLocation } from "@vuu-ui/vuu-utils";
 import { Button } from "@salt-ds/core";
-import type { DataSource } from "@vuu-ui/vuu-data-types";
-import type { TableSearchProps } from "@vuu-ui/vuu-ui-controls/src";
-import { MouseEventHandler, useCallback, useMemo } from "react";
+import { useSessionDataSource } from "@vuu-ui/vuu-data-react";
+import { SetPropsAction, useLayoutProviderDispatch } from "@vuu-ui/vuu-layout";
 import { TableSearch } from "@vuu-ui/vuu-ui-controls";
+import type { TableSearchProps } from "@vuu-ui/vuu-ui-controls/src";
+import { registerComponent, VuuShellLocation } from "@vuu-ui/vuu-utils";
+import { MouseEventHandler, useCallback, useMemo } from "react";
 
 import "./ColHeaderAddSymbol.css";
 
@@ -18,10 +14,10 @@ const classBase = "vuuColHeaderAddSymbol";
 
 export const ColHeaderAddSymbol = () => {
   const dispatchLayoutAction = useLayoutProviderDispatch();
-  const { loadSession } = useViewContext();
+  const { getDataSource } = useSessionDataSource();
 
   const dataSource = useMemo(() => {
-    const ds = loadSession?.("data-source-basket-constituent") as DataSource;
+    const ds = getDataSource("data-source-basket-constituent");
     if (ds) {
       return ds;
     } else {
@@ -29,7 +25,7 @@ export const ColHeaderAddSymbol = () => {
         "ColHeaderAddSymbol expects Basket Constituent datasource to be available in session store",
       );
     }
-  }, [loadSession]);
+  }, [getDataSource]);
 
   const handleClick = useCallback<MouseEventHandler>(
     (e) => {
@@ -62,7 +58,12 @@ export const ColHeaderAddSymbol = () => {
 
   return (
     <span className={classBase}>
-      <Button variant="primary" data-icon="add" onClick={handleClick} />
+      <Button
+        appearance="solid"
+        data-icon="add"
+        onClick={handleClick}
+        sentiment="neutral"
+      />
     </span>
   );
 };

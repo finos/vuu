@@ -4,7 +4,7 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, useMemo, useState } from "react";
 import {
-  QueryReponse,
+  QueryResponse,
   useViewContext,
 } from "../layout-view-actions/ViewContext";
 
@@ -36,7 +36,7 @@ export const LayoutStartPanel = (htmlAttributes: LayoutStartPanelProps) => {
       query: "PARENT_CONTAINER",
     }).then((response) => {
       if (
-        (response as QueryReponse)?.parentContainerId ===
+        (response as QueryResponse)?.parentContainerId ===
         VuuShellLocation.Workspace
       ) {
         setDisplayState("initial");

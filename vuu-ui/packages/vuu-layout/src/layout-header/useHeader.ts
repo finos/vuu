@@ -6,7 +6,7 @@ import {
   useState,
 } from "react";
 import type { HeaderProps } from "./Header";
-import { useViewDispatch } from "../layout-view-actions";
+import { useViewDispatch } from "../layout-view-actions/ViewContext";
 import { queryClosest } from "@vuu-ui/vuu-utils";
 
 export interface HeaderHookProps

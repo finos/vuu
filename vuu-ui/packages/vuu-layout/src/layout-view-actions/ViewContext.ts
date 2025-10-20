@@ -1,7 +1,7 @@
 import React, { SyntheticEvent, useContext } from "react";
-import type { ViewAction } from "../layout-view";
+import { ViewAction } from "../layout-view/viewTypes";
 
-export type QueryReponse = { [key: string]: unknown };
+export type QueryResponse = { [key: string]: unknown };
 
 export type ConfigChangeHandler = (config: {
   [key: string]: unknown;
@@ -11,7 +11,7 @@ export type ConfigChangeHandler = (config: {
 export type ViewDispatch = <Action extends ViewAction = ViewAction>(
   action: Action,
   evt?: SyntheticEvent,
-) => Promise<boolean | QueryReponse | void>;
+) => Promise<boolean | QueryResponse | void>;
 
 /**
  * This API is available to any Feature hosted within Vuu (as all Features are wrapped
@@ -26,12 +26,10 @@ export interface ViewContextAPI {
   dispatch?: ViewDispatch | null;
   id?: string;
   load?: <T = unknown>(key?: string) => T;
-  loadSession?: (key?: string) => unknown;
   onConfigChange?: ConfigChangeHandler;
   path?: string;
   purge?: (key: string) => void;
   save?: (state: unknown, key: string) => void;
-  saveSession?: (state: unknown, key: string) => void;
   setComponentProps: (props: { [key: string]: unknown }) => void;
   title?: string;
 }

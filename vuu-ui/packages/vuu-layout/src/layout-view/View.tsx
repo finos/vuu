@@ -15,7 +15,10 @@ import React, {
 import { Header as VuuHeader } from "../layout-header/Header";
 import { useView } from "./useView";
 import { useViewResize } from "./useViewResize";
-import { ViewContext, ViewContextAPI } from "../layout-view-actions";
+import {
+  ViewContext,
+  ViewContextAPI,
+} from "../layout-view-actions/ViewContext";
 import { ViewProps } from "./viewTypes";
 
 import viewCss from "./View.css";
@@ -84,13 +87,11 @@ const View = forwardRef(function View(
     contributions,
     dispatchViewAction,
     load,
-    loadSession,
     onConfigChange,
     onEditTitle,
     purge,
     restoredState,
     save,
-    saveSession,
     title,
   } = useView({
     id,
@@ -123,23 +124,19 @@ const View = forwardRef(function View(
       path,
       title,
       load,
-      loadSession,
       onConfigChange,
       purge,
       save,
-      saveSession,
       setComponentProps,
     }),
     [
       dispatchViewAction,
       id,
       load,
-      loadSession,
       onConfigChange,
       path,
       purge,
       save,
-      saveSession,
       setComponentProps,
       title,
     ],

@@ -4,8 +4,8 @@ import {
   LayoutReducerAction,
   QueryAction,
 } from "../layout-reducer";
-import { SaveAction } from "../layout-view";
 import { LayoutJSON } from "@vuu-ui/vuu-utils";
+import { SaveAction } from "../layout-view/viewTypes";
 
 const unconfiguredLayoutProviderDispatch: LayoutProviderDispatch = (action) =>
   console.log(
