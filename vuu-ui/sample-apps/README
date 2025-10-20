@@ -14,7 +14,7 @@ To build Sample App with both the Vuu Blotter and the FilteredGrid
 npm run build:app --features feature-filtered-grid,feature-vuu-blotter
 ```
 
-A Feature must have the following properties
+A Feature must have the following properties:
 
 - index.ts entrypoint at top level of feature folder
 - index.ts exposes a default export which is a React Component

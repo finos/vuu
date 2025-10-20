@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>example</artifactId>
-        <version>0.9.93-SNAPSHOT</version>
+        <version>0.9.94-SNAPSHOT</version>
     </parent>
 
     <artifactId>main</artifactId>
@@ -16,49 +16,49 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.93-SNAPSHOT</version>
+            <version>0.9.94-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>basket</artifactId>
-            <version>0.9.93-SNAPSHOT</version>
+            <version>0.9.94-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>virtualized-table</artifactId>
-            <version>0.9.93-SNAPSHOT</version>
+            <version>0.9.94-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>price</artifactId>
-            <version>0.9.93-SNAPSHOT</version>
+            <version>0.9.94-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>order</artifactId>
-            <version>0.9.93-SNAPSHOT</version>
+            <version>0.9.94-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>editable</artifactId>
-            <version>0.9.93-SNAPSHOT</version>
+            <version>0.9.94-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>permission</artifactId>
-            <version>0.9.93-SNAPSHOT</version>
+            <version>0.9.94-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>rest-api</artifactId>
-            <version>0.9.93-SNAPSHOT</version>
+            <version>0.9.94-SNAPSHOT</version>
         </dependency>
 
         <dependency>
