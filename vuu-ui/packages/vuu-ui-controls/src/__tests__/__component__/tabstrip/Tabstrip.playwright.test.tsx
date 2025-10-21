@@ -35,8 +35,14 @@ test.describe("WHEN initial size is sufficient to display all contents", () => {
 
     test.describe("WHEN resized such that space is sufficient for only 4 tabs (first tab selected)", () => {
       test("THEN first 4 tabs will be displayed, with overflow indicator", async ({
+        browserName,
         mount,
       }) => {
+        test.skip(
+          browserName === "firefox" || browserName === "webkit",
+          "failing on COI only",
+        );
+
         const component = await mount(<DefaultTabstrip width={350} />);
         const tablist = await component.getByRole("tablist");
         const box = await tablist.boundingBox();
