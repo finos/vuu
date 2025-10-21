@@ -1,6 +1,6 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { Badge, Switch } from "@salt-ds/core";
+import { Switch } from "@salt-ds/core";
 import freezeControlCss from "./FreezeControl.css";
 import { useFreezeControl, type FreezeProps } from "./useFreezeControl";
 import { HTMLAttributes } from "react";
@@ -10,11 +10,16 @@ const classBase = "FreezeControl";
 
 export interface FreezeControlProps
   extends HTMLAttributes<HTMLDivElement>,
-    FreezeProps {}
+    FreezeProps {
+  activeLabel?: string;
+  lockedLabel?: string;
+}
 
 export const FreezeControl = ({
+  activeLabel = "Active",
   dataSource,
   className,
+  lockedLabel = "Locked",
   ...htmlAttributes
 }: FreezeControlProps) => {
   const targetWindow = useWindow();
@@ -24,25 +29,15 @@ export const FreezeControl = ({
     window: targetWindow,
   });
 
-  const { label, isFrozen, lastUpdateMessage, newRecordCount, onSwitchChange } =
-    useFreezeControl({ dataSource });
+  const { frozen, onSwitchChange } = useFreezeControl({
+    dataSource,
+  });
 
   return (
-    <Badge value={newRecordCount} max={99}>
-      <div
-        {...htmlAttributes}
-        className={cx(classBase, className, {
-          [`${classBase}-showBadge`]: newRecordCount > 0,
-        })}
-      >
-        <span className={`${classBase}-label`}>{label}</span>
-        <Switch
-          checked={isFrozen}
-          onChange={onSwitchChange}
-          className="vuuLarge"
-        />
-        <span className={`${classBase}-lastUpdated`}>{lastUpdateMessage}</span>
-      </div>
-    </Badge>
+    <div {...htmlAttributes} className={cx(classBase, className)}>
+      <span className={`${classBase}-label-active`}>{activeLabel}</span>
+      <Switch checked={frozen} onChange={onSwitchChange} className="vuuLarge" />
+      <span className={`${classBase}-label-frozen`}>{lockedLabel}</span>
+    </div>
   );
 };
