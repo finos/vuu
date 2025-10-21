@@ -538,22 +538,6 @@ export interface DataSource
     Partial<TypeaheadSuggestionProvider> {
   aggregations: VuuAggregation[];
   applyEdit: DataSourceEditHandler;
-  /**
-   * set config without triggering config event. Use this method when initialising
-   * a dataSource that has been restored from session state. The dataSource will
-   * not yet be subscribed. Triggering the config event is unnecessary and might
-   * cause a React exception if the event were to cause a render.
-   * @param config DataSourceConfig
-   * @returns true if config has been applied (will not be if existig config is same)
-   */
-  applyConfig: (
-    config: WithBaseFilter<DataSourceConfig>,
-    /**
-     * If new config is missing attributes and these attributes are present on
-     * existing config, shoule the existing attributes be preserved ?
-     */
-    preserveExistingConfigAttributes?: boolean,
-  ) => DataSourceConfigChanges | undefined;
   closeTreeNode: (keyOrIndex: string | number, cascade?: boolean) => void;
   columns: string[];
   config: WithBaseFilter<WithFullConfig>;

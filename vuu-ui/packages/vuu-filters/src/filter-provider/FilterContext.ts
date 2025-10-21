@@ -123,9 +123,16 @@ export function useSavedFilters(key = "GLOBAL", props?: SavedFilterHookProps) {
     [key, saveFilter],
   );
 
+  /**
+   * Set the current filter, using the filterProviderKey specified
+   * in hook call. Alternatively, a localKey can be provided in this
+   * call to override the key above. This can be useful where
+   * setCurrentFilter is called from a hook where the key is not in
+   * scope at the point where  useSavedFilters is called.
+   */
   const handleSetCurrentFilter = useCallback(
-    (filter: string | FilterContainerFilter) => {
-      setCurrentFilter(key, filter);
+    (filter: string | FilterContainerFilter, localKey = key) => {
+      setCurrentFilter(localKey, filter);
     },
     [key, setCurrentFilter],
   );
