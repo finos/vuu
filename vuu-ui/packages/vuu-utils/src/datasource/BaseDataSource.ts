@@ -288,8 +288,7 @@ export abstract class BaseDataSource
     this.emit("title-changed", this.viewport ?? "", title);
   }
 
-  // Public while we use this from useSessionDataSource
-  public applyConfig(
+  private applyConfig(
     config: WithBaseFilter<DataSourceConfig>,
     preserveExistingConfigAttributes = false,
   ): DataSourceConfigChanges | undefined {

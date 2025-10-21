@@ -603,7 +603,7 @@ export class ArrayDataSource
     }
   }
 
-  applyConfig(
+  private applyConfig(
     config: WithBaseFilter<DataSourceConfig>,
     preserveExistingConfigAttributes = false,
   ): DataSourceConfigChanges | undefined {

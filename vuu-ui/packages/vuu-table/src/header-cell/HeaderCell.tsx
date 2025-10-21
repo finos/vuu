@@ -76,7 +76,6 @@ export const HeaderCell = ({
       column.type.name === "checkbox";
 
     if (renderCheckbox) {
-      console.log(`HeaderCell checkbox allrowsselected ${allRowsSelected}`);
       return [
         <Checkbox
           checked={allRowsSelected}

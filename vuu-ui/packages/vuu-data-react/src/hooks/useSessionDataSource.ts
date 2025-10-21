@@ -22,14 +22,6 @@ export const useSessionDataSource = (props?: SessionStateHookProps) => {
     (sessionKey: string, config?: DataSourceConstructorProps) => {
       let ds = sessionState.get(sessionKey);
       if (ds) {
-        if (config) {
-          // this won't do anything if dataSource config already matches this
-          // This is only really used when injecting a dataSource into session
-          // state in Showcase examples
-          // Do we definitely need this ? If not apply config can be provate
-          ds.applyConfig(config, true);
-        }
-
         if (ds.range.from > 0) {
           // UI does not currently restore scroll position, so always reset to top of dataset
           ds.range = ds.range.reset;

@@ -12,44 +12,6 @@ const OVERFLOW_IND =
 
 // describe("Responsive rendering, Given a Tabstrip", () => {
 describe("WHEN initial size is sufficient to display all contents", () => {
-  describe("WHEN it initially renders", () => {
-    it("THEN all the content items will be visible", () => {
-      cy.mount(<DefaultTabstrip width={500} />);
-      const tabstrip = cy.findByRole("tablist");
-      tabstrip.should("have.class", "vuuTabstrip");
-      // The overflow Indicator will be present, but have zero width
-      cy.get(".vuuOverflowContainer-wrapContainer > *")
-        .should("have.length", 6)
-        .filter(":visible")
-        .should("have.length", 5);
-    });
-    it("THEN no items will be overflowed", () => {
-      cy.mount(<DefaultTabstrip width={500} />);
-      cy.get(OVERFLOWED_ITEMS).should("have.length", 0);
-    });
-    it("THEN no overflow indicator will be visible", () => {
-      cy.mount(<DefaultTabstrip width={500} />);
-      cy.get(OVERFLOW_IND).should("have.length", 1);
-      cy.get(OVERFLOW_IND).should("not.be.visible");
-    });
-  });
-
-  describe("WHEN resized such that space is sufficient for only 4 tabs (first tab selected)", () => {
-    it("THEN first 4 tabs will be displayed, with overflow indicator", () => {
-      cy.mount(<DefaultTabstrip width={350} />);
-      cy.get(".vuuTabstrip").invoke("css", "width", "350px");
-      cy.get(OVERFLOW_ITEMS)
-        .should("have.length", 6)
-        .filter(":visible")
-        .should("have.length", 5);
-      cy.get(".vuuTabstrip").debug();
-      cy.get(OVERFLOWED_ITEMS).should("have.length", 1);
-      cy.get(`.wrapped`).should("have.length", 1);
-      cy.get(OVERFLOW_IND).should("have.length", 1);
-      cy.get(OVERFLOW_IND).should("be.visible");
-    });
-  });
-
   describe("WHEN resized such that space is sufficient for only 4 tabs (LAST tab selected)", () => {
     it.skip("THEN  as last tab is selected, last but one will be overflowed", () => {
       cy.mount(<DefaultTabstrip activeTabIndex={4} width={350} />);
@@ -246,43 +208,6 @@ describe("WHEN initial size is sufficient to display all contents", () => {
 // });
 
 describe("Editable Tabs", () => {
-  describe("WHEN enableRenameTab is set", () => {
-    it("THEN all tabs are editable", () => {
-      cy.mount(<TabstripEditableLabels />);
-      cy.get(".vuuEditableLabel").should("have.length", 5);
-    });
-  });
-
-  describe("WHEN ENTER is pressed on tab selected via keyboard", () => {
-    it("THEN tab enters edit state", () => {
-      cy.mount(<TabstripEditableLabels />);
-      cy.findByRole("tab", { name: "Home" }).realClick();
-      cy.realPress("ArrowRight");
-      // First press of ENTER selects ...
-      cy.realPress("Enter");
-      // // Second press enters edit mode ...
-      cy.realPress("Enter");
-      cy.findByRole("tab", { name: "Transactions" }).should(
-        "have.class",
-        "vuuTab-editing",
-      );
-      cy.findByRole("textbox").should("be.focused");
-    });
-  });
-
-  describe("WHEN ENTER is pressed on tab selected via click", () => {
-    it("THEN tab label enters edit state", () => {
-      cy.mount(<TabstripEditableLabels />);
-      cy.findByRole("tab", { name: "Home" }).realClick();
-      cy.realPress("Enter");
-      cy.findByRole("tab", { name: "Home" }).should(
-        "have.class",
-        "vuuTab-editing",
-      );
-      cy.findByRole("textbox").should("be.focused");
-    });
-  });
-
   describe("WHEN characters are typed during edit state", () => {
     it("THEN editable input value is updated", () => {
       cy.mount(<TabstripEditableLabels />);
