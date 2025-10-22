@@ -46,7 +46,6 @@ export type DataSourceColumnMenuActionType =
 export type ColumnDisplayColumnMenuActionType =
   | "pin-column-left"
   | "pin-column-right"
-  | "pin-column-floating"
   | "unpin-column"
   | "hide-column";
 
@@ -79,7 +78,6 @@ export const isColumnMenuActionType = (
     "remove-from-group",
     "pin-column-left",
     "pin-column-right",
-    "pin-column-floating",
     "unpin-column",
     "hide-column",
     "remove-column",
@@ -381,16 +379,6 @@ export const buildPinMenuItems = (
     </MenuItem>
   );
 
-  const pinFloating = (
-    <MenuItem
-      data-menu-action-id="pin-column-floating"
-      key="pin-column-floating"
-      onClick={menuActionClickHandler}
-    >
-      Pin floating
-    </MenuItem>
-  );
-
   const pinRight = (
     <MenuItem
       data-menu-action-id="pin-column-right"
@@ -409,7 +397,6 @@ export const buildPinMenuItems = (
         </MenuTrigger>
         <MenuPanel>
           {pinLeft}
-          {pinFloating}
           {pinRight}
         </MenuPanel>
       </Menu>,
@@ -430,10 +417,7 @@ export const buildPinMenuItems = (
           <MenuTrigger>
             <MenuItem>Pin Column</MenuItem>
           </MenuTrigger>
-          <MenuPanel>
-            {pinFloating}
-            {pinRight}
-          </MenuPanel>
+          <MenuPanel>{pinRight}</MenuPanel>
         </Menu>,
       );
     } else if (pin === "floating") {
@@ -454,10 +438,7 @@ export const buildPinMenuItems = (
           <MenuTrigger>
             <MenuItem>Pin Column</MenuItem>
           </MenuTrigger>
-          <MenuPanel>
-            {pinFloating}
-            {pinRight}
-          </MenuPanel>
+          <MenuPanel>{pinRight}</MenuPanel>
         </Menu>,
       );
     }
