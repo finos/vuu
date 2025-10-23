@@ -39,6 +39,19 @@ class HMACUtilsTest extends AnyFeatureSpec with Matchers{
       }
     }
 
+    Scenario("Check invalid data part to decoder") {
+
+      val unsigned = verifyAndRemoveSignature("l@l.cats", secret)
+
+      unsigned match {
+        case x: Left[String, String] => {
+          x.value should equal("Invalid data input")
+        }
+        case y: Right[String, String] =>
+          fail(y.value)
+      }
+    }
+
     Scenario("Check invalid signature part to decoder") {
 
       val unsigned = verifyAndRemoveSignature("lol.cats", secret)

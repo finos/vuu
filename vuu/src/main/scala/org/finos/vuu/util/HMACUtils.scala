@@ -10,7 +10,7 @@ object HMACUtils {
 
   private final val ALGORITHM = "HmacSHA512"
 
-  def sign(data: String, secret: String): String = {    
+  def sign(data: String, secret: String): String = {
     val signature = getSignature(data, secret)
     val base64Data = Base64.getUrlEncoder.withoutPadding.encodeToString(data.getBytes(StandardCharsets.UTF_8))
     s"$base64Data.$signature"
@@ -18,17 +18,26 @@ object HMACUtils {
 
   def verifyAndRemoveSignature(signed: String, secret: String): Either[String, String] = {
     val parts = signed.split("\\.")
-    if (parts.length != 2) 
+    if (parts.length != 2)
       return Left("Invalid number of parts")
 
-    val data = new String(Base64.getUrlDecoder.decode(parts(0)), StandardCharsets.UTF_8)
+    val data = safeDecodeBase64(parts(0)) match  {
+      case scala.util.Success(value) => value
+      case scala.util.Failure(_) => return Left("Invalid data input")
+    }
     val receivedSig = parts(1)
-    
+
     val encodedExpectedSig = getSignature(data, secret)
-    if (encodedExpectedSig != receivedSig) 
+    if (encodedExpectedSig != receivedSig)
       return Left("Invalid signature")
-      
+
     Right(data)
+  }
+
+  private def safeDecodeBase64(input: String): Try[String] = {
+    Try {
+      String(Base64.getUrlDecoder.decode(input), StandardCharsets.UTF_8)
+    }
   }
 
   private def getSignature(data: String, secret: String): String = {
