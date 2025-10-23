@@ -1,7 +1,8 @@
 package org.finos.vuu.net.json
 
 import com.fasterxml.jackson.core.{JsonGenerator, JsonParser}
-import com.fasterxml.jackson.databind._
+import com.fasterxml.jackson.databind.*
+import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.net.RowUpdate
 
 import scala.jdk.CollectionConverters.IteratorHasAsScala
@@ -29,7 +30,7 @@ class RowUpdateDeserializer extends JsonDeserializer[RowUpdate] {
   }
 }
 
-class RowUpdateSerializer extends JsonSerializer[RowUpdate] {
+class RowUpdateSerializer extends JsonSerializer[RowUpdate] with StrictLogging  {
 
   override def serialize(value: RowUpdate, gen: JsonGenerator, serializerProvider: SerializerProvider): Unit = {
     gen.writeStartObject()
@@ -43,19 +44,20 @@ class RowUpdateSerializer extends JsonSerializer[RowUpdate] {
     gen.writeStringField("vpVersion", value.vpVersion)
     gen.writeArrayFieldStart("data")
 
-    value.data.foreach(datum => datum match {
+    value.data.zipWithIndex.foreach {
       case null => gen.writeString("")
-      case None => gen.writeString("")
-      case s: String => gen.writeString(s)
-      case i: Int => gen.writeNumber(i)
-      case d: Double => gen.writeNumber(d)
-      case l: Long => gen.writeNumber(l)
-      case b: Boolean => gen.writeBoolean(b)
-      case c: Char => gen.writeString(c.toString)
-      case _ =>
-        println("WTF...")
+      case (null, _) => gen.writeString("")
+      case (None, _) => gen.writeString("")
+      case (s: String, _) => gen.writeString(s)
+      case (i: Int, _) => gen.writeNumber(i)
+      case (d: Double, _) => gen.writeNumber(d)
+      case (l: Long, _) => gen.writeNumber(l)
+      case (b: Boolean, _) => gen.writeBoolean(b)
+      case (c: Char, _) => gen.writeString(c.toString)
+      case (unknown: Any, index) =>
+        logger.warn(s"Unexpected type ${unknown.getClass} at index $index")
+        gen.writeString("")
     }
-    )
 
     gen.writeEndArray()
     gen.writeEndObject()
