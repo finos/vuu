@@ -1,5 +1,7 @@
 package org.finos.vuu.net
 
+import org.finos.vuu.core.auths.VuuUser
+
 import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap}
 
 trait LoginTokenValidator {
@@ -13,14 +15,11 @@ class AlwaysHappyLoginValidator extends LoginTokenValidator {
   }
 }
 
-class ServerUserPrincipal(val token: String, val userName: String) {
-}
-
 class LoggedInTokenValidator extends LoginTokenValidator {
 
-  private val tokenUserMap: ConcurrentMap[String, ServerUserPrincipal] = new ConcurrentHashMap[String, ServerUserPrincipal]()
+  private val tokenUserMap: ConcurrentMap[String, VuuUser] = new ConcurrentHashMap[String, VuuUser]()
 
-  def register(token: String, userPrincipal: ServerUserPrincipal): Unit = {
+  def register(token: String, userPrincipal: VuuUser): Unit = {
     tokenUserMap.put(token, userPrincipal)
   }
 

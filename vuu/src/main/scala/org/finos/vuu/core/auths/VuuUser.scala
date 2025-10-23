@@ -1,4 +1,4 @@
-package org.finos.vuu.net.auth
+package org.finos.vuu.core.auths
 
 trait VuuUser {
 
