@@ -44,17 +44,18 @@ class RowUpdateSerializer extends JsonSerializer[RowUpdate] with StrictLogging  
     gen.writeStringField("vpVersion", value.vpVersion)
     gen.writeArrayFieldStart("data")
 
-    value.data.foreach {
+    value.data.zipWithIndex.foreach {
       case null => gen.writeString("")
-      case None => gen.writeString("")
-      case s: String => gen.writeString(s)
-      case i: Int => gen.writeNumber(i)
-      case d: Double => gen.writeNumber(d)
-      case l: Long => gen.writeNumber(l)
-      case b: Boolean => gen.writeBoolean(b)
-      case c: Char => gen.writeString(c.toString)
-      case unknown: Any =>
-        logger.error(s"Unexpected type ${unknown.getClass} with value ${unknown}")
+      case (null, _) => gen.writeString("")
+      case (None, _) => gen.writeString("")
+      case (s: String, _) => gen.writeString(s)
+      case (i: Int, _) => gen.writeNumber(i)
+      case (d: Double, _) => gen.writeNumber(d)
+      case (l: Long, _) => gen.writeNumber(l)
+      case (b: Boolean, _) => gen.writeBoolean(b)
+      case (c: Char, _) => gen.writeString(c.toString)
+      case (unknown: Any, index) =>
+        logger.error(s"Unexpected type ${unknown.getClass} with value $unknown at index $index")
         gen.writeString("")
     }
 
