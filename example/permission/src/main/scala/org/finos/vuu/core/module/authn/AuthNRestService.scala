@@ -4,6 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import io.vertx.core.http.Cookie
 import io.vertx.ext.web.RoutingContext
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.{Authenticator, LoggedInTokenValidator, ServerUserPrincipal}
 
@@ -89,9 +90,10 @@ class AuthNRestService(val authenticator: Authenticator, val tokenValidator: Log
     if (username == null || password == null ) {
       reply404(ctx)
     } else {
-      authenticator.authenticator(username, password) match {
+      val credentials = Map("username" -> username, "password" -> password)
+      authenticator.authenticate(credentials) match {
         case Some(token) =>
-          tokenValidator.register(token, new ServerUserPrincipal(token, username))
+          tokenValidator.register(token, VuuUser(username))
           ctx.response()
             .addCookie(Cookie.cookie(VuuAuthCookie.Name, token).setMaxAge(TimeUnit.MINUTES.toSeconds(240)))
             .putHeader(VuuAuthCookie.Name, token)

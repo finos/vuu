@@ -11,7 +11,7 @@ import { FlexboxLayout, LayoutProvider } from "@vuu-ui/vuu-layout";
 import "./Tabstrip.examples.css";
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 
-const SPLITTER_WIDTH = 3;
+const SPLITTER_WIDTH = 9;
 
 const TabstripTemplate = ({
   activeTabIndex: activeTabIndexProp = 0,

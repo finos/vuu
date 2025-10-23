@@ -5,7 +5,7 @@ import org.finos.vuu.net.Authenticator
 
 class AlwaysHappyAuthenticator extends Authenticator {
 
-  override def authenticator(user: String, password: String): Option[String] = {
+  override def authenticate(credentials: Map[String, Object]): Option[String] = {
     val token = TokenId.oneNew()
     Some(token)
   }

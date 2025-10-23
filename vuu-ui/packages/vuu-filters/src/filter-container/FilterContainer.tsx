@@ -78,7 +78,15 @@ export const FilterContainerColumnFilter = ({
       currentFilterRef.current = currentFilter.id;
 
       if (isNullFilter(currentFilter) && notEmpty(valueRef.current)) {
-        valueRef.current = Array.isArray(valueRef.current) ? ["", ""] : "";
+        if (Array.isArray(valueRef.current)) {
+          if (column.type === "time") {
+            valueRef.current = ["00:00:00", "23:59:59"];
+          } else {
+            valueRef.current = ["", ""];
+          }
+        } else {
+          valueRef.current = "";
+        }
         setValue(valueRef.current);
       } else if (filterDescriptorHasFilter(currentFilter)) {
         const v = getColumnValueFromFilter(
