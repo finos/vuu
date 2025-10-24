@@ -4,12 +4,13 @@ import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.*
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.{TableDefContainer, ViewServerModule}
-import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
+import org.finos.vuu.net.auth.LoginTokenService
 import org.finos.vuu.net.http.{VuuHttp2ServerOptions, WebRootDisabled}
 import org.finos.vuu.net.json.JsonVsSerializer
 import org.finos.vuu.net.ws.WebSocketClient
-import org.finos.vuu.net.{AlwaysHappyLoginValidator, ViewServerClient, WebSocketViewServerClient}
+import org.finos.vuu.net.{ViewServerClient, WebSocketViewServerClient}
 
 import java.security.SecureRandom
 
@@ -30,7 +31,7 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
     val ws = rand.nextInt(500) + minValue
 
     val module: ViewServerModule = moduleFactoryFunc()
-
+        
     val config = VuuServerConfig(
       VuuHttp2ServerOptions()
         .withWebRoot(WebRootDisabled())
@@ -41,9 +42,7 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
         .withUri("websocket")
         .withWsPort(ws)
         .withSslDisabled(),
-      VuuSecurityOptions()
-        .withAuthenticator(new AlwaysHappyAuthenticator)
-        .withLoginValidator(new AlwaysHappyLoginValidator),
+      VuuSecurityOptions(),
       VuuThreadingOptions(),
       VuuClientConnectionOptions()
         .withHeartbeatDisabled()
@@ -53,8 +52,8 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
     val viewServer = new VuuServer(config)
 
     val client = new WebSocketClient(s"ws://localhost:$ws/websocket", ws) //todo review params - port specified twice
-    val viewServerClient: ViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer)
-    val vuuClient = new TestVuuClient(viewServerClient)
+    val viewServerClient: ViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer())
+    val vuuClient = new TestVuuClient(viewServerClient, config.security.loginTokenService)
 
     //set up a dependency on ws server from ws client.
     lifecycle(client).dependsOn(viewServer)

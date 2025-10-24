@@ -67,7 +67,7 @@ class BuildBigGroupByTestScenario() extends StrictLogging {
 
     logger.trace("[PERF] Complete Table Build")
 
-    val client = ClientSessionId("A", "B")
+    val client = ClientSessionId("A", "B", "C")
 
     val groupByTable = TreeSessionTable(table, client, joinProvider)(metrics, clock)
 

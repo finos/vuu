@@ -1,7 +1,7 @@
 package org.finos.vuu.wsapi
 
 import org.finos.vuu.api._
-import org.finos.vuu.core.IVuuServer
+import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
 import org.finos.vuu.net._
@@ -264,7 +264,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       "row14" -> Map("Id" -> "row14", "Name" -> "Johnny Cash", "Account" -> 54875, "HiddenColumn" -> 10),
       "row15" -> Map("Id" -> "row15", "Name" -> "Tom DeLay", "Account" -> 54876, "HiddenColumn" -> 10),
     ))
-    val providerFactory = (table: DataTable, _: IVuuServer) => new TestProvider(table, dataSource)
+    val providerFactory = (table: DataTable, _: AbstractVuuServer) => new TestProvider(table, dataSource)
 
     val tableDefEmpty = TableDef(
       name = tableNameEmpty,
@@ -288,7 +288,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       VisualLinks(),
       joinFields = "Id"
     )
-    val baseProviderFactory = (table: DataTable, _: IVuuServer) => new TestProvider(table, dataSource)
+    val baseProviderFactory = (table: DataTable, _: AbstractVuuServer) => new TestProvider(table, dataSource)
 
     val rightTableDef = TableDef(
       name = rightTableName,
@@ -319,7 +319,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       "row14" -> Map("Id" -> "row14", "Description" -> "This is row14"),
       "row15" -> Map("Id" -> "row15", "Description" -> "This is row15"),
     ))
-    val rightProviderFactory = (table: DataTable, _: IVuuServer) => new TestProvider(table, rightDataSource)
+    val rightProviderFactory = (table: DataTable, _: AbstractVuuServer) => new TestProvider(table, rightDataSource)
 
     val joinTableFunc: TableDefContainer => JoinTableDef = _ => JoinTableDef(
       name = joinTableName,

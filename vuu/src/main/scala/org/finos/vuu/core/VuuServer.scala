@@ -9,13 +9,14 @@ import org.finos.vuu.api.{JoinTableDef, TableDef, ViewPortDef}
 import org.finos.vuu.core.module.{ModuleContainer, RealizedViewServerModule, StaticServedResource, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
+import org.finos.vuu.net.auth.{Authenticator, LoginTokenService}
 import org.finos.vuu.net.flowcontrol.FlowControllerFactory
 import org.finos.vuu.net.http.Http2Server
-import org.finos.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer, Serializer}
+import org.finos.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer}
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.rpc.JsonSubTypeRegistry
 import org.finos.vuu.net.ws.WebSocketServer
-import org.finos.vuu.net.{Authenticator, ClientSessionContainer, ClientSessionContainerImpl, LoginTokenValidator, MessageBody, ViewServerHandlerFactoryImpl}
+import org.finos.vuu.net.{ClientSessionContainer, ClientSessionContainerImpl, MessageBody, ViewServerHandlerFactoryImpl}
 import org.finos.vuu.plugin.PluginRegistry
 import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, Provider, ProviderContainer}
 import org.finos.vuu.viewport.{InMemViewPortTreeCallable, InMemViewPortTreeWorkItem, ViewPort, ViewPortAction, ViewPortActionMixin, ViewPortContainer}
@@ -26,11 +27,11 @@ import java.util.concurrent.{Callable, FutureTask}
 /**
  * Vuu Server
  */
-class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider) extends LifecycleEnabled with StrictLogging with IVuuServer {
+class VuuServer(config: VuuServerConfig)
+               (using lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider) 
+  extends LifecycleEnabled with StrictLogging with AbstractVuuServer {
 
   final val vuuServerId: String = UUID.randomUUID().toString
-
-  final val serializer: Serializer[String, MessageBody] = JsonVsSerializer
 
   final val pluginRegistry: PluginRegistry = PluginRegistry()
   pluginRegistry.registerPlugin(new VuuInMemPlugin())
@@ -38,8 +39,7 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
   JsonSubTypeRegistry.register(classOf[MessageBody], classOf[CoreJsonSerializationMixin])
   JsonSubTypeRegistry.register(classOf[ViewPortAction], classOf[ViewPortActionMixin])
 
-  final val authenticator: Authenticator = config.security.authenticator
-  final val tokenValidator: LoginTokenValidator = config.security.loginTokenValidator
+  final val loginTokenService: LoginTokenService = config.security.loginTokenService
 
   final val flowControllerFactory: FlowControllerFactory =  FlowControllerFactory(config.clientConnection.hasHeartbeat)
 
@@ -61,14 +61,15 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
 
   final val serverApi = new CoreServerApiHandler(viewPortContainer, tableContainer, providerContainer)
 
-  final val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer, flowControllerFactory, vuuServerId)
+  final val factory = new ViewServerHandlerFactoryImpl(loginTokenService, sessionContainer, serverApi,
+    moduleContainer, flowControllerFactory, vuuServerId)
 
   //order of creation here is important
   final val server = new WebSocketServer(config.wsOptions, factory)
 
   final private val restServices: List[RestService] = moduleContainer.getAll().flatMap(vsm => vsm.restServices)
 
-  final val httpServer: Http2Server = Http2Server(config.httpOptions, restServices)
+  private final val httpServer: Http2Server = Http2Server(config.httpOptions, restServices)
 
   private final val joinProviderRunner = new LifeCycleRunner("joinProviderRunner", () => joinProvider.runOnce())
   lifecycle(joinProviderRunner).dependsOn(joinProvider)
@@ -153,8 +154,8 @@ class VuuServer(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer,
       override def tableDefContainer: TableDefContainer = module.tableDefContainer
       override def tableDefs: List[TableDef] = module.tableDefs
       override def serializationMixin: AnyRef = module.serializationMixin
-      override def restServicesUnrealized: List[IVuuServer => RestService] = module.restServicesUnrealized
-      override def getProviderForTable(table: DataTable, viewserver: IVuuServer)(implicit time: Clock, life: LifecycleContainer): Provider = {
+      override def restServicesUnrealized: List[AbstractVuuServer => RestService] = module.restServicesUnrealized
+      override def getProviderForTable(table: DataTable, viewserver: AbstractVuuServer)(using time: Clock, life: LifecycleContainer): Provider = {
         module.getProviderForTable(table, viewserver)(time, life)
       }
       override def staticFileResources(): List[StaticServedResource] = module.staticFileResources()

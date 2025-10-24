@@ -76,7 +76,7 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
 
     joinProvider.runOnce()
 
-    val session = ClientSessionId("sess-01", "chris")
+    val session = ClientSessionId("sess-01", "chris", "channel")
 
     val outQueue = new OutboundRowPublishQueue()
 
@@ -134,7 +134,7 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
 
     joinProvider.runOnce()
 
-    val session = ClientSessionId("sess-01", "chris")
+    val session = ClientSessionId("sess-01", "chris", "channel")
 
     val outQueue = new OutboundRowPublishQueue()
 
@@ -191,7 +191,7 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
 
     joinProvider.runOnce()
 
-    val session = ClientSessionId("sess-01", "chris")
+    val session = ClientSessionId("sess-01", "chris", "channel")
 
     val outQueue = new OutboundRowPublishQueue()
 

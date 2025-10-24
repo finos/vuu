@@ -52,7 +52,7 @@ class RpcTableTest extends AnyFeatureSpec with Matchers with OneInstancePerTest 
 
       val provider = new RpcProvider(orderEntry)
 
-      val session = new ClientSessionId("sess-01", "chris")
+      val session = new ClientSessionId("sess-01", "chris", "channel")
 
       val vpcolumns = ViewPortColumnCreator.create(orderEntry, List("clOrderId", "ric", "quantity", "orderType", "price", "priceLevel"))
 

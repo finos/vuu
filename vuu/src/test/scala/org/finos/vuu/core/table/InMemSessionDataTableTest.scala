@@ -12,7 +12,7 @@ import org.scalatest.matchers.should.Matchers
 class InMemSessionDataTableTest extends AnyFeatureSpec with Matchers {
   private implicit val metricsProvider: MetricsProvider = new MetricsProviderImpl()
   private implicit val clock: Clock = new DefaultClock()
-  private val clientSessionId = ClientSessionId(sessionId = "sessionId", user = "user")
+  private val clientSessionId = ClientSessionId(sessionId = "sessionId", user = "user", channelId = "channel")
   private val joinProvider = new TestFriendlyJoinTableProvider()
 
   private val sessionTableDef: SessionTableDef = new SessionTableDef(

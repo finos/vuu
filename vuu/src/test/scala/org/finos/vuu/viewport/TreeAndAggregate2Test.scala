@@ -41,7 +41,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
 
       val viewport = viewPortContainer.create(RequestId.oneNew(),
-        ClientSessionId("A", "B"),
+        ClientSessionId("A", "B", "C"),
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
         FilterSpec(""),
@@ -178,7 +178,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
 
       val viewport = viewPortContainer.create(RequestId.oneNew(),
-        ClientSessionId("A", "B"),
+        ClientSessionId("A", "B", "C"),
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
         FilterSpec(""),
@@ -244,7 +244,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList ++ List("traderRic:String:=concatenate(trader, ric)"))
 
       val viewport = viewPortContainer.create(RequestId.oneNew(),
-        ClientSessionId("A", "B"),
+        ClientSessionId("A", "B", "C"),
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
         FilterSpec(""),
@@ -306,7 +306,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList ++ List("traderRic:String:=concatenate(trader, ric)"))
 
       val viewport = viewPortContainer.create(RequestId.oneNew(),
-        ClientSessionId("A", "B"),
+        ClientSessionId("A", "B", "C"),
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
         FilterSpec(""),
@@ -365,7 +365,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList ++ List("traderRic:String:=concatenate(trader, ric)"))
 
       val viewport = viewPortContainer.create(RequestId.oneNew(),
-        ClientSessionId("A", "B"),
+        ClientSessionId("A", "B", "C"),
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
         FilterSpec(""),
@@ -423,7 +423,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList ++ List("traderRic:String:=concatenate(trader, ric)"))
 
       val viewport = viewPortContainer.create(RequestId.oneNew(),
-        ClientSessionId("A", "B"),
+        ClientSessionId("A", "B", "C"),
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
         FilterSpec(""),

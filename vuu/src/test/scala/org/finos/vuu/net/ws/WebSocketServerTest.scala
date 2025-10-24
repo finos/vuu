@@ -216,7 +216,7 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
     }
     val client = new WebSocketClient(s"$protocol://localhost:${config.wsOptions.wsPort}/websocket", config.wsOptions.wsPort)
     lifecycle(client).dependsOn(viewServer)
-    val viewServerClient: WebSocketViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer)
+    val viewServerClient: WebSocketViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer())
     lifecycle.start()
     viewServerClient
   }

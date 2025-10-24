@@ -5,13 +5,13 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock, TestFriendlyClock}
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.client.messages.RequestId
-import org.finos.vuu.core.table.TableTestHelper._
+import org.finos.vuu.core.table.TableTestHelper.*
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
-import org.finos.vuu.util.table.TableAsserts._
+import org.finos.vuu.util.table.TableAsserts.*
 import org.finos.vuu.viewport.{DefaultRange, GroupBy, ViewPortContainer}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -47,7 +47,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       val provider = new MockProvider(table)
 
-      val session = ClientSessionId("sess-01", "chris")
+      val session = ClientSessionId("sess-01", "chris", "channel")
 
       val vpcolumns = ViewPortColumnCreator.create(table, List("ric", "bid", "ask"))
 
@@ -113,7 +113,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       val provider = new MockProvider(table)
 
-      val session = ClientSessionId("sess-01", "chris")
+      val session = ClientSessionId("sess-01", "chris", "channel")
 
       val vpcolumns = ViewPortColumnCreator.create(table, List("ric", "bid", "ask"))
 
@@ -165,7 +165,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       joinProvider.start()
 
-      val session = ClientSessionId("sess-01", "chris")
+      val session = ClientSessionId("sess-01", "chris", "channel")
 
       val vpcolumns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
 
@@ -243,7 +243,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       joinProvider.start()
 
-      val session = ClientSessionId("sess-01", "chris")
+      val session = ClientSessionId("sess-01", "chris", "channel")
 
       val vpcolumns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
 

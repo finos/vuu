@@ -1,7 +1,7 @@
 package org.finos.vuu.wsapi
 
 import org.finos.vuu.api._
-import org.finos.vuu.core.IVuuServer
+import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.DefaultColumnNames.CreatedTimeColumnName
 import org.finos.vuu.core.table.{Columns, DataTable}
@@ -247,7 +247,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       "row2" -> Map("Id" -> "row2", "Name" -> "Tom Sawyer", "Account" -> 456, CreatedTimeColumnName -> lastHour),
       "row3" -> Map("Id" -> "row3", "Name" -> "Huckleberry Finn", "Account" -> 789, CreatedTimeColumnName -> lastHour),
     ))
-    val providerFactory = (table: DataTable, _: IVuuServer) => testProviderFactory.create(table, dataSource)
+    val providerFactory = (table: DataTable, _: AbstractVuuServer) => testProviderFactory.create(table, dataSource)
 
     val leftTableDef1 = createLeftTableDef(leftTableName1)
     val leftTableDef2 = createLeftTableDef(leftTableName2)
@@ -257,7 +257,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       "row3" -> Map("Id" -> "row3", "Name" -> "Huckleberry Finn"),
       "row4" -> Map("Id" -> "row4", "Name" -> "Channing Tatum"),
     ))
-    val leftProviderFactory = (table: DataTable, _: IVuuServer) => testProviderFactory.create(table, leftDataSource)
+    val leftProviderFactory = (table: DataTable, _: AbstractVuuServer) => testProviderFactory.create(table, leftDataSource)
 
     val rightTableDef1 = createRightTableDef(rightTableName1)
     val rightTableDef2 = createRightTableDef(rightTableName2)
@@ -267,7 +267,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       "row3" -> Map("Id" -> "row3", "Description" -> "This is row3"),
       "row5" -> Map("Id" -> "row5", "Description" -> "This is row5"),
     ))
-    val rightProviderFactory = (table: DataTable, _: IVuuServer) => testProviderFactory.create(table, rightDataSource)
+    val rightProviderFactory = (table: DataTable, _: AbstractVuuServer) => testProviderFactory.create(table, rightDataSource)
 
     val joinTableFunc1: TableDefContainer => JoinTableDef = _ => JoinTableDef(
       name = joinTableName1,

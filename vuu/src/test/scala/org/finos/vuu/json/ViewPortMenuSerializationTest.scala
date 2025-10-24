@@ -1,10 +1,11 @@
 package org.finos.vuu.json
 
 import com.typesafe.scalalogging.StrictLogging
+import org.finos.toolbox.json.JsonUtil
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.json.JsonVsSerializer
 import org.finos.vuu.net.rpc.RpcHandler
-import org.finos.vuu.viewport._
+import org.finos.vuu.viewport.*
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -62,7 +63,7 @@ class ViewPortMenuTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
 
       val rpcServer = new TestRpcServer
 
-      val mapper = JsonVsSerializer.getMapper
+      val mapper = JsonUtil.mapper
 
       val menu = rpcServer.menuItems()
 

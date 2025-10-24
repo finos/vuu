@@ -38,7 +38,7 @@ class TreeAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhenTh
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
 
       val viewport = viewPortContainer.create(RequestId.oneNew(),
-        ClientSessionId("A", "B"),
+        ClientSessionId("A", "B", "C"),
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
         FilterSpec(""),
@@ -181,7 +181,7 @@ class TreeAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhenTh
     val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
 
     val viewport = viewPortContainer.create(RequestId.oneNew(),
-      ClientSessionId("A", "B"),
+      ClientSessionId("A", "B", "C"),
       queue, orderPrices, ViewPortRange(0, 20), columns,
       SortSpec(List()),
       FilterSpec(""),

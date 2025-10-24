@@ -2,8 +2,8 @@ package org.finos.vuu.test.impl
 
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.buffer.ByteBufAllocator
-import io.netty.channel.{Channel, ChannelConfig, ChannelFuture, ChannelId, ChannelMetadata, ChannelPipeline, ChannelProgressivePromise, ChannelPromise, DefaultChannelPromise, EventLoop}
 import io.netty.channel.local.LocalChannel
+import io.netty.channel.{Channel, ChannelConfig, ChannelFuture, ChannelId, ChannelMetadata, ChannelPipeline, ChannelProgressivePromise, ChannelPromise, DefaultChannelId, DefaultChannelPromise, EventLoop}
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 import io.netty.util.{Attribute, AttributeKey}
 import io.vertx.core.impl.CloseFuture
@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 class TestChannel() extends Channel with StrictLogging {
   private val queue = new ConcurrentLinkedQueue[String]()
 
-  override def id(): ChannelId = ???
+  override def id(): ChannelId = DefaultChannelId.newInstance()
 
   override def eventLoop(): EventLoop = ???
 

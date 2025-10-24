@@ -1,14 +1,13 @@
 package org.finos.vuu.core
 
 import org.finos.vuu.core.module.ViewServerModule
-import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
+import org.finos.vuu.net.auth.LoginTokenService
 import org.finos.vuu.net.http.{VuuHttp2ServerOptions, VuuSecurityOptions}
-import org.finos.vuu.net.{AlwaysHappyLoginValidator, Authenticator, LoginTokenValidator}
 import org.finos.vuu.plugin.Plugin
 
 object VuuSecurityOptions{
   def apply(): VuuSecurityOptions = {
-    VuuSecurityOptionsImpl(new AlwaysHappyAuthenticator, new AlwaysHappyLoginValidator)
+    VuuSecurityOptionsImpl(LoginTokenService())
   }
 }
 
@@ -88,9 +87,8 @@ trait VuuJoinTableProviderOptions {
   def withMaxQueueDepth(maxQueueDepth: Int): VuuJoinTableProviderOptions
 }
 
-case class VuuSecurityOptionsImpl(authenticator: Authenticator, loginTokenValidator: LoginTokenValidator) extends VuuSecurityOptions{
-  override def withAuthenticator(authenticator: Authenticator): VuuSecurityOptions = this.copy(authenticator = authenticator)
-  override def withLoginValidator(tokenValidator: LoginTokenValidator): VuuSecurityOptions = this.copy(loginTokenValidator = tokenValidator)
+case class VuuSecurityOptionsImpl(loginTokenService: LoginTokenService) extends VuuSecurityOptions{
+  override def withLoginTokenService(loginTokenService: LoginTokenService): VuuSecurityOptions = this.copy(loginTokenService = loginTokenService)
 }
 
 private case class VuuWebSocketOptionsImpl(wsPort: Int,

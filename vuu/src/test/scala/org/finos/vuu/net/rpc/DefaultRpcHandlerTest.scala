@@ -12,7 +12,7 @@ import org.scalatest.matchers.should.Matchers
 
 class DefaultRpcHandlerTest extends AnyFeatureSpec with Matchers with BeforeAndAfterEach {
   private var handler: DefaultRpcHandler = _
-  private val ctx = RequestContext("requestId", ClientSessionId("sessionId", "user"), null, "token")
+  private val ctx = RequestContext("requestId", ClientSessionId("sessionId", "user", "channel"), null, "token")
 
   override def beforeEach(): Unit = {
     implicit val clock: Clock = new DefaultClock

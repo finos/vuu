@@ -44,7 +44,7 @@ class TreeOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       joinProvider.runOnce()
 
       val queue = new OutboundRowPublishQueue()
-      val session = ClientSessionId("A", "B")
+      val session = ClientSessionId("A", "B", "C")
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
       val range = ViewPortRange(0, 20)
       val viewPort = viewPortContainer.create(RequestId.oneNew(), session, queue, orderPrices, range, columns)

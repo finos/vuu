@@ -40,7 +40,7 @@ class TreeSortTest extends AnyFeatureSpec with Matchers with GivenWhenThen with 
     val vpColumns = ViewPortColumnCreator.create(orderPrices, columns.map(_.name).toList)
 
     val viewport = viewPortContainer.create(RequestId.oneNew(),
-      ClientSessionId("A", "B"),
+      ClientSessionId("A", "B", "C"),
       queue, orderPrices, ViewPortRange(0, 20), vpColumns,
       SortSpec(List(
         SortDef("trader", 'D'),

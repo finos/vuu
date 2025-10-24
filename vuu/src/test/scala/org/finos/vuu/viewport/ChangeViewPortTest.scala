@@ -3,16 +3,16 @@ package org.finos.vuu.viewport
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.api._
+import org.finos.vuu.api.*
 import org.finos.vuu.client.messages.RequestId
-import org.finos.vuu.core.table.TableTestHelper._
+import org.finos.vuu.core.table.TableTestHelper.*
 import org.finos.vuu.core.table.{Columns, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.{ClientSessionId, FilterSpec}
 import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
-import org.finos.vuu.util.table.TableAsserts._
+import org.finos.vuu.util.table.TableAsserts.*
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.prop.Tables.Table
 
@@ -85,7 +85,7 @@ class ChangeViewPortTest extends AnyFeatureSpec{
 
       joinProvider.runOnce()
 
-      val session = ClientSessionId("sess-01", "chris")
+      val session = ClientSessionId("sess-01", "chris", "channel")
 
       val outQueue = new OutboundRowPublishQueue()
 

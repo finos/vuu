@@ -6,7 +6,7 @@ import io.netty.handler.codec.http.websocketx.{TextWebSocketFrame, WebSocketFram
 import org.finos.vuu.net.ViewServerHandler
 
 /**
- * Handles heartbeats and messages
+ * Handles messages
  */
 class WebSocketServerHandler(val handler: ViewServerHandler) extends SimpleChannelInboundHandler[WebSocketFrame] with StrictLogging {
 
@@ -15,7 +15,7 @@ class WebSocketServerHandler(val handler: ViewServerHandler) extends SimpleChann
     webSocketFrame match {
 
       case text: TextWebSocketFrame =>
-        val request = text.text();
+        val request = text.text()
         logger.trace("[WS SERVER] on msg " + request)
         handler.handle(request, ctx.channel())
 

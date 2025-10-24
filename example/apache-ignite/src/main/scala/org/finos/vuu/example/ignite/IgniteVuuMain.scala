@@ -5,14 +5,14 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.jmx.{JmxInfra, MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.core._
+import org.finos.vuu.core.*
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.metrics.MetricsModule
 import org.finos.vuu.example.ignite.loader.IgniteOrderGenerator
 import org.finos.vuu.example.ignite.module.IgniteOrderDataModule
-import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
+import org.finos.vuu.net.auth.{Authenticator, LoginTokenService}
 import org.finos.vuu.net.http.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
-import org.finos.vuu.net.{AlwaysHappyLoginValidator, Authenticator, LoggedInTokenValidator}
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
 import org.finos.vuu.state.MemoryBackedVuiStateStore
 
@@ -39,8 +39,7 @@ object IgniteVuuMain extends App with StrictLogging {
 
   lifecycle.autoShutdownHook()
 
-  val authenticator: Authenticator = new AlwaysHappyAuthenticator
-  val loginTokenValidator: LoggedInTokenValidator = new LoggedInTokenValidator
+  val loginTokenService = LoginTokenService.apply(VuuUser("test"))
 
   val defaultConfig = ConfigFactory.load()
 
@@ -66,8 +65,7 @@ object IgniteVuuMain extends App with StrictLogging {
       .withSsl(VuuSSLByCertAndKey(certPath, keyPath))
       .withBindAddress("0.0.0.0"),
     VuuSecurityOptions()
-      .withAuthenticator(authenticator)
-      .withLoginValidator(new AlwaysHappyLoginValidator),
+      .withLoginTokenService(loginTokenService),
     VuuThreadingOptions()
       .withViewPortThreads(4)
       .withTreeThreads(4)
