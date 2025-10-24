@@ -31,7 +31,7 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
     val ws = rand.nextInt(500) + minValue
 
     val module: ViewServerModule = moduleFactoryFunc()
-
+        
     val config = VuuServerConfig(
       VuuHttp2ServerOptions()
         .withWebRoot(WebRootDisabled())
@@ -42,8 +42,7 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
         .withUri("websocket")
         .withWsPort(ws)
         .withSslDisabled(),
-      VuuSecurityOptions()
-        .withLoginTokenService(LoginTokenService.apply(VuuUser("Test"))),
+      VuuSecurityOptions(),
       VuuThreadingOptions(),
       VuuClientConnectionOptions()
         .withHeartbeatDisabled()
@@ -54,7 +53,7 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
 
     val client = new WebSocketClient(s"ws://localhost:$ws/websocket", ws) //todo review params - port specified twice
     val viewServerClient: ViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer())
-    val vuuClient = new TestVuuClient(viewServerClient)
+    val vuuClient = new TestVuuClient(viewServerClient, config.security.loginTokenService)
 
     //set up a dependency on ws server from ws client.
     lifecycle(client).dependsOn(viewServer)

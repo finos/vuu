@@ -40,6 +40,8 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
 
   final val loginTokenService: LoginTokenService = LoginTokenService()
 
+  val flowControllerFactory = FlowControllerFactory(hasHeartbeat = false)
+  
   val joinProvider: JoinTableProvider = JoinTableProviderImpl()
 
   val tableContainer = new TableContainer(joinProvider)

@@ -6,7 +6,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.TimeIt.timeIt
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.table._
+import org.finos.vuu.core.table.*
 import org.finos.vuu.core.tree.TreeSessionTable
 import org.finos.vuu.net.{ClientSessionId, FilterSpec}
 import org.finos.vuu.provider.JoinTableProviderImpl
@@ -45,7 +45,7 @@ object PerfTestBigRoupByMain extends App with StrictLogging {
     table.processUpdate(ric, row)
   })
 
-  val client = ClientSessionId("A", "B")
+  val client = ClientSessionId("A", "B", "C")
 
   val groupByTable = TreeSessionTable(table, client, joinProvider)(metrics, clock)
 

@@ -35,8 +35,7 @@ public abstract class WebSocketApiJavaTestBase {
         tableDefContainer  = new TableDefContainer();
 
         vuuClient = testStartUp();
-        tokenId = vuuClient.createAuthToken();
-        var sessionOption = OptionConverters.toJava(vuuClient.login(tokenId, "testUser"));
+        var sessionOption = OptionConverters.toJava(vuuClient.login("testUser"));
         Assert.assertTrue("login request returns response successfully", sessionOption.isPresent());
         sessionId = sessionOption.get();
     }

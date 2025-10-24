@@ -4,9 +4,8 @@ import com.typesafe.scalalogging.StrictLogging
 import io.vertx.core.http.Cookie
 import io.vertx.ext.web.RoutingContext
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.core.auths.VuuUser
+import org.finos.vuu.net.auth.Authenticator
 import org.finos.vuu.net.rest.RestService
-import org.finos.vuu.net.auth.{Authenticator, LoginTokenService}
 
 import java.util.concurrent.TimeUnit
 import scala.util.{Failure, Success, Try}
@@ -19,8 +18,7 @@ object VuuLoginPage{
   final val Path = "/public/index.html"
 }
 
-class LogoutRestService(val authenticator: Authenticator[_],
-                        val loginTokenService: LoginTokenService)(implicit clock: Clock) extends RestService with StrictLogging {
+class LogoutRestService(val authenticator: Authenticator[_])(implicit clock: Clock) extends RestService with StrictLogging {
   private final val service = "logout"
 
   override def getServiceName: String = service
@@ -51,8 +49,7 @@ class LogoutRestService(val authenticator: Authenticator[_],
   override def onDelete(ctx: RoutingContext): Unit = reply404(ctx)
 }
 
-class AuthNRestService(val authenticator: Authenticator[Map[String,Object]], 
-                       val loginTokenService: LoginTokenService)
+class AuthNRestService(val authenticator: Authenticator[Map[String,Object]])
                       (implicit clock: Clock) extends RestService with StrictLogging {
 
   private final val service = "authn"

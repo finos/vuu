@@ -11,12 +11,12 @@ import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.vui.VuiStateModule
 import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
-import org.finos.vuu.net.auth.{AlwaysHappyAuthenticator, Authenticator}
+import org.finos.vuu.net.auth.{Authenticator, LoginTokenService}
 import org.finos.vuu.net.http.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
-import org.finos.vuu.net.LoggedInTokenValidator
 import org.finos.vuu.state.MemoryBackedVuiStateStore
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+import org.finos.vuu.core.auths.VuuUser
 
 import java.util.concurrent.atomic.AtomicBoolean
 import scala.concurrent.ExecutionContext
@@ -37,8 +37,9 @@ class AuthNServerTest extends AnyFeatureSpec with Matchers with StrictLogging {
       implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
 
       val store = new MemoryBackedVuiStateStore()
-      val authenticator: Authenticator = new AlwaysHappyAuthenticator
-      val loginTokenValidator: LoggedInTokenValidator = new LoggedInTokenValidator
+      val loginTokenService: LoginTokenService = LoginTokenService()
+      val authNRestAuthenticator = Authenticator(loginTokenService,
+        (v1: Map[String, AnyRef]) => Right[String, VuuUser](VuuUser(String.valueOf(v1("username")))))
 
       lifecycle.autoShutdownHook()
 
@@ -54,8 +55,9 @@ class AuthNServerTest extends AnyFeatureSpec with Matchers with StrictLogging {
           .withUri("websocket")
           .withWsPort(ws),
         VuuSecurityOptions()
+          .withLoginTokenService(loginTokenService)
       ).withModule(VuiStateModule(store))
-       .withModule(AuthNModule(authenticator, loginTokenValidator))
+       .withModule(AuthNModule(authNRestAuthenticator))
 
       val viewServer = new VuuServer(config)
 

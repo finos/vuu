@@ -1,8 +1,7 @@
 package org.finos.vuu.net.json
 
-import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import org.finos.toolbox.json.JsonUtil
 import org.finos.vuu.net.{JsonViewServerMessage, ViewServerMessage}
 
 trait JsonVsSerializer {
@@ -14,17 +13,13 @@ trait JsonVsSerializer {
 object JsonVsSerializer  {
 
   def apply(): JsonVsSerializer = {
-    val mapper = ObjectMapper()
-    mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
-    mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
-    mapper.registerModule(DefaultScalaModule)
-    apply(mapper)
+    apply(JsonUtil.mapper)
   }
 
   def apply(objectMapper: ObjectMapper): JsonVsSerializer = {
     JsonVsSerializerImpl(objectMapper)
   }
-    
+
 }
 
 case class JsonVsSerializerImpl(objectMapper: ObjectMapper) extends JsonVsSerializer {

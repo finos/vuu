@@ -1,8 +1,10 @@
 package org.finos.vuu.wsapi.helpers
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.client.messages.{RequestId}
+import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.net.*
+import org.finos.vuu.net.auth.LoginTokenService
 import org.scalatest.concurrent.TimeLimits.failAfter
 import org.scalatest.concurrent.{Signaler, ThreadSignaler}
 import org.scalatest.time.Span
@@ -14,7 +16,7 @@ import scala.annotation.tailrec
 import scala.language.postfixOps
 import scala.reflect.ClassTag
 
-class TestVuuClient(vsClient: ViewServerClient) extends StrictLogging {
+class TestVuuClient(vsClient: ViewServerClient, loginTokenService: LoginTokenService) extends StrictLogging {
 
   type SessionId = String
   type Token = String
@@ -92,10 +94,9 @@ class TestVuuClient(vsClient: ViewServerClient) extends StrictLogging {
     }
   }
 
-  def createAuthToken(): Token = UUID.randomUUID().toString
-
-  def login(token: String, user: String): Option[String] = {
-    send("not used", "not used", LoginRequest(token, user))
+  def login(user: String): Option[String] = {
+    val token = loginTokenService.getToken(VuuUser(user))
+    send("", token, LoginRequest(token))
     awaitForMsg[LoginSuccess]
       .map(x => x.sessionId)
   }

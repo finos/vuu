@@ -5,7 +5,6 @@ import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSecurityOptions, VuuServerConfig, VuuThreadingOptions, VuuWebSocketOptions}
 import org.finos.vuu.net.http.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
-import org.finos.vuu.net.AlwaysHappyLoginValidator
 import org.finos.vuu.net.auth.Authenticator
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -20,10 +19,6 @@ class ModuleConstructorTest extends AnyFeatureSpec with Matchers with GivenWhenT
       implicit val clock: Clock = new DefaultClock
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
       implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
-
-      val authenticator = new Authenticator {
-        //override def authenticate(credentials: Map[String, Object]): Option[String] = ???
-      }
 
       When("we create a config with modules that reference each other")
       val config = VuuServerConfig(
@@ -40,9 +35,7 @@ class ModuleConstructorTest extends AnyFeatureSpec with Matchers with GivenWhenT
           .withWsPort(8090)
           .withSsl(VuuSSLByCertAndKey("certPath", "keyPath"))
           .withBindAddress("0.0.0.0"),
-        VuuSecurityOptions()
-          .withAuthenticator(authenticator)
-          .withLoginValidator(new AlwaysHappyLoginValidator),
+        VuuSecurityOptions(),
         VuuThreadingOptions()
           .withViewPortThreads(1)
           .withTreeThreads(1)

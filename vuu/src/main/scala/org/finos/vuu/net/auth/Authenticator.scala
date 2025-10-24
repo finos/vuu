@@ -4,7 +4,6 @@ import org.finos.vuu.core.auths.VuuUser
 
 trait Authenticator[T] {
 
-  def tokenService: LoginTokenService
   def authenticate(input: T): Either[String, String]
 
 }
@@ -16,7 +15,7 @@ object Authenticator {
   }
 
   def apply[T <: AnyRef](tokenService: LoginTokenService,
-                         authFunction: Function[T, Either[String, VuuUser]]): AuthenticatorImpl[T] = {
+                         authFunction: Function[T, Either[String, VuuUser]]): Authenticator[T] = {
     AuthenticatorImpl(tokenService, authFunction)
   }
 

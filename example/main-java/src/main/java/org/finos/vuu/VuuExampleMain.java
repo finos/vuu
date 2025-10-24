@@ -31,6 +31,7 @@ import org.finos.vuu.plugin.Plugin;
 import org.finos.vuu.state.MemoryBackedVuiStateStore;
 import org.finos.vuu.state.VuiStateStore;
 import scala.Option;
+import scala.util.Left;
 import scala.util.Right;
 
 /**
@@ -54,9 +55,17 @@ public class VuuExampleMain {
 
         final LoginTokenService loginTokenService = LoginTokenService.apply();
 
-        final Authenticator<scala.collection.immutable.Map<String, Object>> authNRestAuthenticator =
+        final Authenticator<scala.collection.immutable.Map<String, Object>> authenticator =
                 Authenticator.apply(loginTokenService,
-                v1 -> new Right<>(VuuUser.apply(String.valueOf(v1.get("username").get()))));
+                //Simple happy auth that takes the username from a request map
+                v1 -> {
+                    var userName = v1.get("username");
+                    if (userName.isEmpty()) {
+                        return new Left<>("Authentication failed");
+                    } else {
+                        return new Right<>(VuuUser.apply(String.valueOf(userName.get())));
+                    }
+                });
 
         final String webRoot = "vuu-ui/deployed_apps/app-vuu-example";
         final String certPath = "example/main/src/main/resources/certs/cert.pem";
@@ -86,7 +95,7 @@ public class VuuExampleMain {
          .withModule(SimulationModule.apply(clock, lifecycle, tableDefContainer))
          .withModule(MetricsModule.apply(clock, lifecycle, metrics, tableDefContainer))
          .withModule(VuiStateModule.apply(store, clock, lifecycle, tableDefContainer))
-         .withModule(AuthNModule.apply(authNRestAuthenticator, loginTokenService, clock, lifecycle, tableDefContainer))
+         .withModule(AuthNModule.apply(authenticator, clock, lifecycle, tableDefContainer))
          //the modules above are scala, the modules below are java...
          .withModule(new JavaExampleModule().create(tableDefContainer, clock))       ;
 

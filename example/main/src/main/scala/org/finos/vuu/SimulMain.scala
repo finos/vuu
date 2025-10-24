@@ -68,7 +68,7 @@ object SimulMain extends App with StrictLogging {
     .withModule(SimulationModule())
     .withModule(MetricsModule())
     .withModule(VuiStateModule(store))
-    .withModule(AuthNModule(authNRestAuthenticator, loginTokenService))
+    .withModule(AuthNModule(authNRestAuthenticator))
     .withModule(EditableModule())
     .withModule(PermissionModule())
     .withModule(BasketModule(omsApi))
