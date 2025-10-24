@@ -3,8 +3,8 @@ import {
   DataSourceSubscribeCallback,
 } from "@vuu-ui/vuu-data-types";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { formatDate, messageHasSize, useData } from "@vuu-ui/vuu-utils";
-import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
+import { messageHasSize, useData } from "@vuu-ui/vuu-utils";
+import { SyntheticEvent, useCallback, useMemo, useState } from "react";
 
 export interface FreezeProps {
   dataSource: DataSource;
@@ -12,18 +12,7 @@ export interface FreezeProps {
 
 type FreezeState = {
   isFrozen: boolean;
-  label: string;
-  lastUpdateMessage: string;
   newRecordCount: number;
-};
-
-const timeFormatter = formatDate({ time: "hh:mm:ss" });
-
-const formatFreezeTime = (ts?: number) => {
-  if (ts === undefined) {
-    throw Error("[useFreezeControl] formatFreezeTime, freezeTime undefined");
-  }
-  return timeFormatter(new Date(ts));
 };
 
 const FreezeState = (
@@ -31,10 +20,6 @@ const FreezeState = (
   newRecordCount: number,
 ): FreezeState => ({
   isFrozen: dataSource.isFrozen ?? false,
-  label: dataSource.isFrozen ? "View Frozen" : "Freeze View",
-  lastUpdateMessage: dataSource.isFrozen
-    ? `at ${formatFreezeTime(dataSource.freezeTimestamp)}`
-    : "",
   newRecordCount,
 });
 
@@ -42,7 +27,7 @@ export const useFreezeControl = ({ dataSource }: FreezeProps) => {
   const { VuuDataSource } = useData();
   const table = useMemo<VuuTable>(() => {
     if (dataSource.table === undefined) {
-      throw Error(`[useFreezeControls] dataSource must have VuuTable`);
+      throw new Error(`[useFreezeControls] dataSource must have VuuTable`);
     }
     return dataSource.table;
   }, [dataSource]);
@@ -55,7 +40,10 @@ export const useFreezeControl = ({ dataSource }: FreezeProps) => {
 
     const dataCallback: DataSourceSubscribeCallback = (message) => {
       if (messageHasSize(message)) {
-        setFreezeState(FreezeState(dataSource, message.size));
+        setFreezeState((prev) => ({
+          ...prev,
+          newRecordCount: message.size,
+        }));
       }
     };
 
@@ -64,7 +52,7 @@ export const useFreezeControl = ({ dataSource }: FreezeProps) => {
       ds.subscribe(
         {
           filterSpec: {
-            filter: `created > ${ts}`,
+            filter: `vuuUpdatedTimestamp > ${ts}`,
           },
         },
         dataCallback,
@@ -76,11 +64,12 @@ export const useFreezeControl = ({ dataSource }: FreezeProps) => {
     };
 
     return [start, stop];
-  }, [VuuDataSource, dataSource, table]);
+  }, [VuuDataSource, table]);
 
-  const handleSwitchChange = useCallback<ChangeEventHandler<HTMLInputElement>>(
-    (evt) => {
-      if (evt.target.checked) {
+  const handleToggleChange = useCallback(
+    (evt: SyntheticEvent<HTMLButtonElement>) => {
+      const value = (evt.target as HTMLButtonElement).value;
+      if (value === "frozen") {
         dataSource.freeze?.();
         startTrackingNewRows(dataSource.freezeTimestamp as number);
       } else {
@@ -94,6 +83,6 @@ export const useFreezeControl = ({ dataSource }: FreezeProps) => {
 
   return {
     ...freezeState,
-    onSwitchChange: handleSwitchChange,
+    onToggleChange: handleToggleChange,
   };
 };

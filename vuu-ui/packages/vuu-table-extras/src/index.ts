@@ -28,6 +28,7 @@ export {
 } from "./datasource-stats/DatasourceStats";
 export { TableProvider, useTableContext } from "./table-provider/TableProvider";
 export { FreezeControl } from "./freeze-control/FreezeControl";
+export { FrozenBanner } from "./freeze-control/FrozenBanner";
 export {
   type ColumnChangeHandler,
   type ColumnItem,

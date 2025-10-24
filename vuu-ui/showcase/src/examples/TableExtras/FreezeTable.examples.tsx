@@ -1,13 +1,16 @@
 import { Table } from "@vuu-ui/vuu-table";
 import { useCallback, useMemo } from "react";
 import { getSchema, SimulTableName } from "@vuu-ui/vuu-data-test";
-import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
+import {
+  DataSourceStats,
+  FreezeControl,
+  FrozenBanner,
+} from "@vuu-ui/vuu-table-extras";
 import { Button } from "@salt-ds/core";
 import { TableConfig } from "@vuu-ui/vuu-table-types";
 import { DataSource } from "@vuu-ui/vuu-data-types";
 import { VuuRpcServiceRequest } from "@vuu-ui/vuu-protocol-types";
 import { toColumnName, useData } from "@vuu-ui/vuu-utils";
-import { FreezeControl } from "@vuu-ui/vuu-table-extras";
 
 /** tags=data-consumer */
 export const TableFreezing = () => {
@@ -25,6 +28,9 @@ export const TableFreezing = () => {
       new VuuDataSource({
         columns: schema.columns.map(toColumnName),
         table: schema.table,
+        sort: { sortDefs: [{ column: "id", sortType: "D" }] },
+        // The table holds 5,000 values at present. I found this very hard to visualise so just took the most recent 5.
+        filterSpec: { filter: "idAsInt > 4995" },
       }),
     ];
   }, [VuuDataSource]);
@@ -60,13 +66,21 @@ export const TableFreezing = () => {
 
   return (
     <div style={{ height: 700 }}>
-      <div style={{ alignItems: "center", display: "flex", height: 50 }}>
+      <div
+        style={{
+          alignItems: "center",
+          display: "flex",
+          height: 50,
+          gap: "10px",
+        }}
+      >
         <Button onClick={() => startOrderCreation()}>
           Start Order Creation
         </Button>
         <Button onClick={() => stopOrderCreation()}>Stop Order Creation</Button>
         <FreezeControl dataSource={dataSource} />
       </div>
+      <FrozenBanner dataSource={dataSource} />
       <Table
         config={config}
         dataSource={dataSource}
