@@ -1,5 +1,6 @@
 .FreezeControl {
   display: inline-flex;
+  --freeze-control-flash-duration: 0.25s;
 
   .FreezeControl-buttonRow {
     background-color: var(--salt-container-secondary-background);
@@ -49,7 +50,8 @@
 }
 
 .FreezeControl-customBadge-flashing {
-  animation: flashGreenRed 1s steps(1, end) infinite;
+  animation: flashGreenRed var(--freeze-control-flash-duration, 0.25s)
+    steps(1, end) infinite;
 }
 
 @keyframes flashGreenRed {

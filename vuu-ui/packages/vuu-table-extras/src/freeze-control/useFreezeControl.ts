@@ -27,7 +27,7 @@ export const useFreezeControl = ({ dataSource }: FreezeProps) => {
   const { VuuDataSource } = useData();
   const table = useMemo<VuuTable>(() => {
     if (dataSource.table === undefined) {
-      throw new Error(`[useFreezeControls] dataSource must have VuuTable`);
+      throw Error(`[useFreezeControls] dataSource must have VuuTable`);
     }
     return dataSource.table;
   }, [dataSource]);
@@ -52,7 +52,7 @@ export const useFreezeControl = ({ dataSource }: FreezeProps) => {
       ds.subscribe(
         {
           filterSpec: {
-            filter: `vuuUpdatedTimestamp > ${ts}`,
+            filter: `vuuCreatedTimestamp > ${ts}`,
           },
         },
         dataCallback,

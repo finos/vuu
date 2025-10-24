@@ -1,31 +1,29 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
-import freezeControlCss from "./FreezeControl.css";
 import { useFreezeControl, type FreezeProps } from "./useFreezeControl";
 import { HTMLAttributes, useEffect, useRef, useState } from "react";
 import cx from "clsx";
 
-const classBase = "FreezeControl";
-
-// Class names
-const CLASS_BUTTON_ROW = `${classBase}-buttonRow`;
-const CLASS_BUTTON_WRAPPER = `${classBase}-buttonWrapper`;
-const CLASS_BUTTON_WRAPPER_ACTIVE = `${classBase}-buttonWrapper-active`;
-const CLASS_NEW_ORDERS = `${classBase}-newOrders`;
-const CLASS_CUSTOM_BADGE = `${classBase}-customBadge`;
-const CLASS_CUSTOM_BADGE_FLASHING = `${classBase}-customBadge-flashing`;
+import freezeControlCss from "./FreezeControl.css";
 
 // Duration to keep flashing after last new record (in milliseconds)
 const FLASH_DURATION_MS = 3000;
 
 export interface FreezeControlProps
   extends HTMLAttributes<HTMLDivElement>,
-    FreezeProps {}
+    FreezeProps {
+  /**
+   * Duration of the flash animation for the badge (in seconds).
+   * @default 0.25
+   */
+  flashDuration?: number;
+}
 
 export const FreezeControl = ({
   dataSource,
   className,
+  flashDuration = 0.25,
   ...htmlAttributes
 }: FreezeControlProps) => {
   const targetWindow = useWindow();
@@ -58,23 +56,32 @@ export const FreezeControl = ({
   }, [newRecordCount, isFrozen]);
 
   return (
-    <div {...htmlAttributes} className={cx(classBase, className)}>
-      <div className={CLASS_BUTTON_ROW}>
+    <div
+      {...htmlAttributes}
+      className={cx("FreezeControl", className)}
+      style={
+        {
+          ...htmlAttributes.style,
+          "--freeze-control-flash-duration": `${flashDuration}s`,
+        } as React.CSSProperties
+      }
+    >
+      <div className={`FreezeControl-buttonRow`}>
         <ToggleButtonGroup
           className="vuuStateButtonGroup"
           onChange={onToggleChange}
           value={isFrozen ? "frozen" : "live"}
         >
           <div
-            className={cx(CLASS_BUTTON_WRAPPER, {
-              [CLASS_BUTTON_WRAPPER_ACTIVE]: !isFrozen,
+            className={cx(`FreezeControl-buttonWrapper`, {
+              [`FreezeControl-buttonWrapper-active`]: !isFrozen,
             })}
           >
             <ToggleButton value="live">Live</ToggleButton>
           </div>
           <div
-            className={cx(CLASS_BUTTON_WRAPPER, {
-              [CLASS_BUTTON_WRAPPER_ACTIVE]: isFrozen,
+            className={cx(`FreezeControl-buttonWrapper`, {
+              [`FreezeControl-buttonWrapper-active`]: isFrozen,
             })}
           >
             <ToggleButton value="frozen">
@@ -83,11 +90,11 @@ export const FreezeControl = ({
           </div>
         </ToggleButtonGroup>
         {isFrozen && (
-          <div className={CLASS_NEW_ORDERS}>
+          <div className={`FreezeControl-newOrders`}>
             New Orders
             <div
-              className={cx(CLASS_CUSTOM_BADGE, {
-                [CLASS_CUSTOM_BADGE_FLASHING]: isFlashing,
+              className={cx(`FreezeControl-customBadge`, {
+                [`FreezeControl-customBadge-flashing`]: isFlashing,
               })}
             >
               {newRecordCount}
