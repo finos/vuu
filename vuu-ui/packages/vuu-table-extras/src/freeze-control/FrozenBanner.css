@@ -1,0 +1,10 @@
+.FrozenBanner {
+  align-items: center;
+  background-color: var(--salt-actionable-secondary-background-active);
+  border-radius: 4px;
+  color: var(--salt-actionable-secondary-foreground-active);
+  display: flex;
+  font-size: var(--salt-text-fontSize);
+  height: var(--salt-size-base);
+  padding: 0 var(--salt-spacing-200);
+}
