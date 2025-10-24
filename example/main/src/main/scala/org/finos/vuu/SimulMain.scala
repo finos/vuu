@@ -5,7 +5,8 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.jmx.{JmxInfra, MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.core._
+import org.finos.vuu.core.*
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.authn.AuthNModule
 import org.finos.vuu.core.module.auths.PermissionModule
@@ -18,9 +19,8 @@ import org.finos.vuu.core.module.vui.VuiStateModule
 import org.finos.vuu.example.rest.client.{HttpClient, StubbedBackend}
 import org.finos.vuu.example.rest.module.RestModule
 import org.finos.vuu.example.virtualtable.module.VirtualTableModule
-import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
+import org.finos.vuu.net.auth.{Authenticator, LoginTokenService}
 import org.finos.vuu.net.http.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
-import org.finos.vuu.net.{AlwaysHappyLoginValidator, Authenticator, LoggedInTokenValidator}
 import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
 import org.finos.vuu.state.MemoryBackedVuiStateStore
@@ -47,8 +47,10 @@ object SimulMain extends App with StrictLogging {
 
   lifecycle.autoShutdownHook()
 
-  val authenticator: Authenticator = new AlwaysHappyAuthenticator
-  val loginTokenValidator: LoggedInTokenValidator = new LoggedInTokenValidator
+  val loginTokenService = LoginTokenService()
+
+  val authNRestAuthenticator = Authenticator(loginTokenService,
+    (v1: Map[String, AnyRef]) => Right[String, VuuUser](VuuUser(String.valueOf(v1("username")))))
 
   private val defaultConfig = ConfigFactory.load()
 
@@ -56,8 +58,7 @@ object SimulMain extends App with StrictLogging {
     httpServerOptions(defaultConfig),
     webSocketOptions(defaultConfig),
     VuuSecurityOptions()
-      .withAuthenticator(authenticator)
-      .withLoginValidator(new AlwaysHappyLoginValidator),
+      .withLoginTokenService(loginTokenService),
     VuuThreadingOptions()
       .withViewPortThreads(4)
       .withTreeThreads(4),
@@ -67,7 +68,7 @@ object SimulMain extends App with StrictLogging {
     .withModule(SimulationModule())
     .withModule(MetricsModule())
     .withModule(VuiStateModule(store))
-    .withModule(AuthNModule(authenticator, loginTokenValidator))
+    .withModule(AuthNModule(authNRestAuthenticator, loginTokenService))
     .withModule(EditableModule())
     .withModule(PermissionModule())
     .withModule(BasketModule(omsApi))

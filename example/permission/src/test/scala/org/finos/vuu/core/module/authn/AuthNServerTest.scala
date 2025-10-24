@@ -11,9 +11,9 @@ import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.vui.VuiStateModule
 import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
-import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
+import org.finos.vuu.net.auth.{AlwaysHappyAuthenticator, Authenticator}
 import org.finos.vuu.net.http.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
-import org.finos.vuu.net.{Authenticator, LoggedInTokenValidator}
+import org.finos.vuu.net.LoggedInTokenValidator
 import org.finos.vuu.state.MemoryBackedVuiStateStore
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers

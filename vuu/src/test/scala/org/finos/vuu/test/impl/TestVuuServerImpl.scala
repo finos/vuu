@@ -6,14 +6,15 @@ import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{JoinTableDef, SessionTableDef, TableDef, ViewPortDef}
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.*
 import org.finos.vuu.core.table.{DataTable, TableContainer, ViewPortColumnCreator}
-import org.finos.vuu.core.{CoreServerApiHandler, IVuuServer}
+import org.finos.vuu.core.{AbstractVuuServer, CoreServerApiHandler}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.*
-import org.finos.vuu.net.auth.AlwaysHappyAuthenticator
+import org.finos.vuu.net.auth.{Authenticator, LoginTokenService}
 import org.finos.vuu.net.flowcontrol.FlowControllerFactory
-import org.finos.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer, Serializer}
+import org.finos.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer}
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.rpc.JsonSubTypeRegistry
 import org.finos.vuu.plugin.{DefaultPluginRegistry, Plugin}
@@ -30,16 +31,14 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
 
   private final val vuuServerId: String = UUID.randomUUID().toString
 
-  private val serializer: Serializer[String, MessageBody] = JsonVsSerializer
+  private val serializer: JsonVsSerializer = JsonVsSerializer()
 
   JsonSubTypeRegistry.register(classOf[MessageBody], classOf[CoreJsonSerializationMixin])
   JsonSubTypeRegistry.register(classOf[ViewPortAction], classOf[ViewPortActionMixin])
 
   val sessionContainer: ClientSessionContainer = new ClientSessionContainerImpl()
 
-  val authenticator: Authenticator = new AlwaysHappyAuthenticator
-  val tokenValidator: LoginTokenValidator = new AlwaysHappyLoginValidator
-  val flowControllerFactory = FlowControllerFactory(hasHeartbeat = false)
+  final val loginTokenService: LoginTokenService = LoginTokenService()
 
   val joinProvider: JoinTableProvider = JoinTableProviderImpl()
 
@@ -61,7 +60,7 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
 
   val serverApi = new CoreServerApiHandler(viewPortContainer, tableContainer, providerContainer)
 
-  val factory = new ViewServerHandlerFactoryImpl(authenticator, tokenValidator, sessionContainer, serverApi, JsonVsSerializer, moduleContainer, flowControllerFactory, vuuServerId)
+  val factory = new ViewServerHandlerFactoryImpl(loginTokenService, sessionContainer, serverApi, moduleContainer, flowControllerFactory, vuuServerId)
 
   val queue = new OutboundRowPublishQueue()
 
@@ -85,7 +84,7 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
     table.setProvider(provider)
   }
 
-  private def registerModule(module: ViewServerModule): IVuuServer = {
+  private def registerModule(module: ViewServerModule): AbstractVuuServer = {
 
     val vs = this
 
@@ -95,8 +94,8 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
       override def tableDefContainer: TableDefContainer = module.tableDefContainer
       override def tableDefs: List[TableDef] = module.tableDefs
       override def serializationMixin: AnyRef = module.serializationMixin
-      override def restServicesUnrealized: List[IVuuServer => RestService] = module.restServicesUnrealized
-      override def getProviderForTable(table: DataTable, viewserver: IVuuServer)(implicit time: Clock, life: LifecycleContainer): Provider = {
+      override def restServicesUnrealized: List[AbstractVuuServer => RestService] = module.restServicesUnrealized
+      override def getProviderForTable(table: DataTable, viewserver: AbstractVuuServer)(implicit time: Clock, life: LifecycleContainer): Provider = {
         module.getProviderForTable(table, viewserver)(time, life)
       }
 
@@ -182,13 +181,14 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
 
   override def login(user: String, token: String): Unit = {
     handler = factory.create()
-    val packet = serializer.serialize(JsonViewServerMessage(RequestId.oneNew(), "", "", "", LoginRequest("TOKEN", user)))
+    val token = loginTokenService.getToken(VuuUser(user))
+    val packet = serializer.serialize(JsonViewServerMessage(RequestId.oneNew(), "", "", "", LoginRequest(token)))
     handler.handle(packet, channel)
 
     channel.popMsg match {
       case Some(msgPacket) =>
         val msg = serializer.deserialize(msgPacket)
-        clientSessionId = ClientSessionId(msg.sessionId, user)
+        clientSessionId = ClientSessionId(msg.sessionId, user, channel.id().asLongText())
     }
   }
 

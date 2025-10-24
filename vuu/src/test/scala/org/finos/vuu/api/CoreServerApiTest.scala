@@ -17,7 +17,7 @@ import org.scalatest.{BeforeAndAfterEach, GivenWhenThen}
 class CoreServerApiTest extends AnyFeatureSpec with BeforeAndAfterEach with GivenWhenThen {
   var coreServerApi: CoreServerApiHandler = _
   override def beforeEach(): Unit = {
-    implicit val clock: TestFriendlyClock = new TestFriendlyClock(1311544800l)
+    implicit val clock: TestFriendlyClock = new TestFriendlyClock(1311544800L)
     implicit val lifecycle: LifecycleContainer = new LifecycleContainer
     implicit val metrics: MetricsProvider = new MetricsProviderImpl
     val joinTableProvider = JoinTableProviderImpl()
@@ -35,7 +35,7 @@ class CoreServerApiTest extends AnyFeatureSpec with BeforeAndAfterEach with Give
       Given("a heart beat response")
       val heartBeatResponse = HeartBeatResponse(100000)
       val requestContext = RequestContext("reqId",
-        ClientSessionId("sessionId", "user"), new OutboundRowPublishQueue(), "token")
+        ClientSessionId("sessionId", "user", "channel"), new OutboundRowPublishQueue(), "token")
       val maybeMessage = coreServerApi.process(heartBeatResponse)(requestContext)
 
       Then("core server api should process successfully")

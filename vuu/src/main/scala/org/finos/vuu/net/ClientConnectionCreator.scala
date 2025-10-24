@@ -5,9 +5,10 @@ import io.netty.channel.{Channel, ChannelFuture}
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.ModuleContainer
 import org.finos.vuu.net.flowcontrol.{BatchSize, Disconnect, FlowController, SendHeartbeat}
-import org.finos.vuu.net.json.Serializer
+import org.finos.vuu.net.json.JsonVsSerializer
 import org.finos.vuu.util.PublishQueue
 import org.finos.vuu.viewport.{RowUpdateType, SizeUpdateType, ViewPortUpdate}
 
@@ -33,12 +34,12 @@ class DefaultMessageHandler(val channel: Channel,
                             val outboundQueue: PublishQueue[ViewPortUpdate],
                             val session: ClientSessionId,
                             serverApi: ServerApi,
-                            serializer: Serializer[String, MessageBody],
+                            serializer: JsonVsSerializer,
                             flowController: FlowController,
                             sessionContainer: ClientSessionContainer,
                             moduleContainer: ModuleContainer)(implicit timeProvider: Clock) extends MessageHandler with StrictLogging {
 
-  val closeFuture: ChannelFuture = channel.closeFuture()
+  private val closeFuture: ChannelFuture = channel.closeFuture()
 
   closeFuture.addListener((f: ChannelFuture) => {
     logger.trace("Calling disconnect() from future callback")
@@ -167,7 +168,7 @@ class DefaultMessageHandler(val channel: Channel,
   }
 }
 
-case class ClientSessionId(sessionId: String, user: String) extends Ordered[ClientSessionId] {
+case class ClientSessionId(sessionId: String, user: String, channelId: String) extends Ordered[ClientSessionId] {
   override def equals(obj: scala.Any): Boolean = {
     if (obj == null) false
     else if (canEqual(obj)) {

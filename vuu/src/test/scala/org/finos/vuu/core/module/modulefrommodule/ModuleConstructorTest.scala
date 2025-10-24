@@ -5,7 +5,8 @@ import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSecurityOptions, VuuServerConfig, VuuThreadingOptions, VuuWebSocketOptions}
 import org.finos.vuu.net.http.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
-import org.finos.vuu.net.{AlwaysHappyLoginValidator, Authenticator}
+import org.finos.vuu.net.AlwaysHappyLoginValidator
+import org.finos.vuu.net.auth.Authenticator
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -21,7 +22,7 @@ class ModuleConstructorTest extends AnyFeatureSpec with Matchers with GivenWhenT
       implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
 
       val authenticator = new Authenticator {
-        override def authenticator(user: String, password: String): Option[String] = ???
+        //override def authenticate(credentials: Map[String, Object]): Option[String] = ???
       }
 
       When("we create a config with modules that reference each other")

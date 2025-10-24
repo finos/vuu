@@ -1,13 +1,11 @@
 package org.finos.vuu.net.http
 
 import org.finos.vuu.core.{VuuSSLDisabled, VuuSSLOptions}
-import org.finos.vuu.net.{Authenticator, LoginTokenValidator}
+import org.finos.vuu.net.auth.{Authenticator, LoginTokenService}
 
 trait VuuSecurityOptions {
-  def authenticator: Authenticator
-  def loginTokenValidator: LoginTokenValidator
-  def withAuthenticator(authenticator: Authenticator): VuuSecurityOptions
-  def withLoginValidator(tokenValidator: LoginTokenValidator): VuuSecurityOptions
+  def loginTokenService: LoginTokenService
+  def withLoginTokenService(tokenValidator: LoginTokenService): VuuSecurityOptions
 }
 
 sealed trait VuuHttp2ServerWebRootType

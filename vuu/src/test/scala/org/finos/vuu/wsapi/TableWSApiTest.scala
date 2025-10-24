@@ -1,7 +1,7 @@
 package org.finos.vuu.wsapi
 
 import org.finos.vuu.api.{ColumnBuilder, TableDef, ViewPortDef}
-import org.finos.vuu.core.IVuuServer
+import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
@@ -88,7 +88,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
         service = new DefaultRpcHandler()(tableContainer)
       )
 
-    val providerFactory = (table: DataTable, _: IVuuServer) => new TestProvider(table, new FakeDataSource(ListMap()))
+    val providerFactory = (table: DataTable, _: AbstractVuuServer) => new TestProvider(table, new FakeDataSource(ListMap()))
     val tableDef2 = TableDef(
       name = "TableMetaDefaultVPTest",
       keyField = "Id",

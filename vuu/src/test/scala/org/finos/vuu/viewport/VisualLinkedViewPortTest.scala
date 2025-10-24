@@ -234,7 +234,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
 
       joinProvider.runOnce()
 
-      val session = ClientSessionId("sess-01", "chris")
+      val session = ClientSessionId("sess-01", "chris", "channel")
 
       val outQueue = new OutboundRowPublishQueue()
       val vpcolumnsOrders1 = ViewPortColumnCreator.create(orders1, List("orderId", "trader", "tradeTime", "quantity", "ric"))

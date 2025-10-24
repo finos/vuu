@@ -3,38 +3,36 @@ package org.finos.vuu.net.json
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import org.finos.vuu.net.{JsonViewServerMessage, MessageBody, ViewServerMessage}
+import org.finos.vuu.net.{JsonViewServerMessage, ViewServerMessage}
 
-trait Serializer[R, SERTYPE] {
-  def serialize(message: ViewServerMessage): R
+trait JsonVsSerializer {
+  def serialize(message: ViewServerMessage): String
 
-  def deserialize(message: R): ViewServerMessage
+  def deserialize(message: String): ViewServerMessage
 }
 
-object JsonVsSerializer extends Serializer[String, MessageBody] {
+object JsonVsSerializer  {
 
-  def getMapper = {
-    val mapper = new ObjectMapper()
+  def apply(): JsonVsSerializer = {
+    val mapper = ObjectMapper()
     mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
     mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
-    //mapper.addMixIn(classOf[MessageBody], classOf[CoreJsonSerializationMixin])
     mapper.registerModule(DefaultScalaModule)
-    mapper
+    apply(mapper)
   }
 
-  def deserialize(s: String): JsonViewServerMessage = {
-    val mapper = getMapper
-    mapper.readValue(s, classOf[JsonViewServerMessage])
+  def apply(objectMapper: ObjectMapper): JsonVsSerializer = {
+    JsonVsSerializerImpl(objectMapper)
   }
-
-
-  def serialize(message: ViewServerMessage): String = {
-    val mapper = getMapper
-    mapper.writeValueAsString(message)
-  }
-
+    
 }
 
+case class JsonVsSerializerImpl(objectMapper: ObjectMapper) extends JsonVsSerializer {
+
+  override def serialize(message: ViewServerMessage): String = objectMapper.writeValueAsString(message)
+
+  override def deserialize(message: String): ViewServerMessage = objectMapper.readValue(message, classOf[JsonViewServerMessage])
+}
 
 
 

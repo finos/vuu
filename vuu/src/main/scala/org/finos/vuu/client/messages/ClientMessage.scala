@@ -11,13 +11,13 @@ object RequestId {
 
   private val requestId: AtomicLong = new AtomicLong(0);
 
-  def oneNew() = {
+  def oneNew(): String = {
     "REQ-" + requestId.getAndIncrement()
   }
 }
 
 object SessionId {
-  def oneNew() = {
+  def oneNew(): String = {
     "SESS-" + UUID.randomUUID().toString
   }
 }
@@ -25,25 +25,10 @@ object SessionId {
 object ViewPortId {
   private val viewportId: AtomicLong = new AtomicLong(0);
 
-  def oneNew() = {
+  def oneNew(): String = {
     "VP-" + "%08d".format(viewportId.getAndIncrement())
   }
 }
-
-object TokenId {
-
-  def oneNew() = {
-    UUID.randomUUID().toString
-  }
-}
-
-object ClientOrderId {
-
-  def oneNew() = {
-    "cl-"+ UUID.randomUUID().toString
-  }
-}
-
 
 trait ClientMessage
 

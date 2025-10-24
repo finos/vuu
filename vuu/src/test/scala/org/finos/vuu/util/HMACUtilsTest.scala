@@ -4,14 +4,18 @@ import org.finos.vuu.util.HMACUtils.{sign, verifyAndRemoveSignature}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
-class HMACUtilsTest extends AnyFeatureSpec with Matchers{
+import java.security.SecureRandom
+
+class HMACUtilsTest extends AnyFeatureSpec with Matchers {
 
   Feature("HMAC logic for tokens") {
 
-    val input = "MikeyLikesCakes.AndPies.AndBeer."
-    val secret = "Steve likes h@m sandwiches"
+    val secret = Array[Byte](64)
+    SecureRandom().nextBytes(secret)
 
     Scenario("Check round trip") {
+
+      val input = "MikeyLikesCakes.AndPies.AndBeer."
 
       val signed = sign(input, secret)
 

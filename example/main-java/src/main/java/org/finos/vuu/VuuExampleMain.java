@@ -5,7 +5,16 @@ import org.finos.toolbox.jmx.MetricsProviderImpl;
 import org.finos.toolbox.lifecycle.LifecycleContainer;
 import org.finos.toolbox.time.Clock;
 import org.finos.toolbox.time.DefaultClock;
-import org.finos.vuu.core.*;
+import org.finos.vuu.core.VuuClientConnectionOptions;
+import org.finos.vuu.core.VuuJoinTableProviderOptions;
+import org.finos.vuu.core.VuuSSLByCertAndKey;
+import org.finos.vuu.core.VuuSSLCipherSuiteOptions;
+import org.finos.vuu.core.VuuSecurityOptions;
+import org.finos.vuu.core.VuuServer;
+import org.finos.vuu.core.VuuServerConfig;
+import org.finos.vuu.core.VuuThreadingOptions;
+import org.finos.vuu.core.VuuWebSocketOptions;
+import org.finos.vuu.core.auths.VuuUser;
 import org.finos.vuu.core.module.TableDefContainer;
 import org.finos.vuu.core.module.ViewServerModule;
 import org.finos.vuu.core.module.authn.AuthNModule;
@@ -14,16 +23,15 @@ import org.finos.vuu.core.module.price.PriceModule;
 import org.finos.vuu.core.module.simul.SimulationModule;
 import org.finos.vuu.core.module.vui.VuiStateModule;
 import org.finos.vuu.module.JavaExampleModule;
-import org.finos.vuu.net.AlwaysHappyLoginValidator;
-import org.finos.vuu.net.Authenticator;
-import org.finos.vuu.net.LoggedInTokenValidator;
-import org.finos.vuu.net.auth.AlwaysHappyAuthenticator;
+import org.finos.vuu.net.auth.Authenticator;
+import org.finos.vuu.net.auth.LoginTokenService;
 import org.finos.vuu.net.http.AbsolutePathWebRoot;
 import org.finos.vuu.net.http.VuuHttp2ServerOptions;
 import org.finos.vuu.plugin.Plugin;
 import org.finos.vuu.state.MemoryBackedVuiStateStore;
 import org.finos.vuu.state.VuiStateStore;
 import scala.Option;
+import scala.util.Right;
 
 /**
  * Example Java App using Vuu.
@@ -44,8 +52,11 @@ public class VuuExampleMain {
 
         lifecycle.autoShutdownHook();
 
-        final Authenticator authenticator = new AlwaysHappyAuthenticator();
-        final LoggedInTokenValidator loginTokenValidator = new LoggedInTokenValidator();
+        final LoginTokenService loginTokenService = LoginTokenService.apply();
+
+        final Authenticator<scala.collection.immutable.Map<String, Object>> authNRestAuthenticator =
+                Authenticator.apply(loginTokenService,
+                v1 -> new Right<>(VuuUser.apply(String.valueOf(v1.get("username").get()))));
 
         final String webRoot = "vuu-ui/deployed_apps/app-vuu-example";
         final String certPath = "example/main/src/main/resources/certs/cert.pem";
@@ -62,8 +73,7 @@ public class VuuExampleMain {
                         .withSsl(new VuuSSLByCertAndKey(certPath, keyPath, Option.empty(), VuuSSLCipherSuiteOptions.apply()))
                         .withBindAddress("0.0.0.0"),
                 VuuSecurityOptions.apply()
-                        .withAuthenticator(authenticator)
-                        .withLoginValidator(new AlwaysHappyLoginValidator()),
+                        .withLoginTokenService(loginTokenService),
                 VuuThreadingOptions.apply()
                         .withTreeThreads(4)
                         .withViewPortThreads(4),
@@ -76,7 +86,7 @@ public class VuuExampleMain {
          .withModule(SimulationModule.apply(clock, lifecycle, tableDefContainer))
          .withModule(MetricsModule.apply(clock, lifecycle, metrics, tableDefContainer))
          .withModule(VuiStateModule.apply(store, clock, lifecycle, tableDefContainer))
-         .withModule(AuthNModule.apply(authenticator, loginTokenValidator, clock, lifecycle, tableDefContainer))
+         .withModule(AuthNModule.apply(authNRestAuthenticator, loginTokenService, clock, lifecycle, tableDefContainer))
          //the modules above are scala, the modules below are java...
          .withModule(new JavaExampleModule().create(tableDefContainer, clock))       ;
 

@@ -1,7 +1,7 @@
 package org.finos.vuu.net
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.net.json.{CoreJsonSerializationMixin, Serializer}
+import org.finos.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer}
 import org.finos.vuu.net.rpc.JsonSubTypeRegistry
 import org.finos.vuu.net.ws.WebSocketClient
 import org.finos.vuu.viewport.{ViewPortAction, ViewPortActionMixin}
@@ -15,7 +15,7 @@ trait ViewServerClient extends LifecycleEnabled {
   def awaitMsg: ViewServerMessage
 }
 
-class WebSocketViewServerClient(ws: WebSocketClient, serializer: Serializer[String, MessageBody])(implicit lifecycle: LifecycleContainer) extends ViewServerClient with StrictLogging {
+class WebSocketViewServerClient(ws: WebSocketClient, serializer: JsonVsSerializer)(implicit lifecycle: LifecycleContainer) extends ViewServerClient with StrictLogging {
 
   JsonSubTypeRegistry.register(classOf[MessageBody], classOf[CoreJsonSerializationMixin])
   JsonSubTypeRegistry.register(classOf[ViewPortAction], classOf[ViewPortActionMixin])

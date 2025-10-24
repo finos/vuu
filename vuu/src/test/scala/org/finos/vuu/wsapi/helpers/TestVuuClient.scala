@@ -1,13 +1,14 @@
 package org.finos.vuu.wsapi.helpers
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.client.messages.{RequestId, TokenId}
-import org.finos.vuu.net._
+import org.finos.vuu.client.messages.{RequestId}
+import org.finos.vuu.net.*
 import org.scalatest.concurrent.TimeLimits.failAfter
 import org.scalatest.concurrent.{Signaler, ThreadSignaler}
 import org.scalatest.time.Span
-import org.scalatest.time.SpanSugar._
+import org.scalatest.time.SpanSugar.*
 
+import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import scala.annotation.tailrec
 import scala.language.postfixOps
@@ -91,7 +92,7 @@ class TestVuuClient(vsClient: ViewServerClient) extends StrictLogging {
     }
   }
 
-  def createAuthToken(): Token = TokenId.oneNew()
+  def createAuthToken(): Token = UUID.randomUUID().toString
 
   def login(token: String, user: String): Option[String] = {
     send("not used", "not used", LoginRequest(token, user))

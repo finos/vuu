@@ -2,15 +2,15 @@ package org.finos.vuu.test.rpc
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.net.json.JsonVsSerializer
 import org.finos.vuu.net.{ClientSessionId, JsonViewServerMessage, MessageBody, ViewPortAddRowRpcCall, ViewPortDeleteCellRpcCall, ViewPortDeleteRowRpcCall, ViewPortEditCellRpcCall, ViewPortEditRowRpcCall, ViewPortEditSubmitFormRpcCall, ViewServerHandler}
-import org.finos.vuu.net.json.Serializer
 import org.finos.vuu.test.impl.TestChannel
 import org.finos.vuu.viewport.{ViewPort, ViewPortAddRowAction, ViewPortDeleteCellAction, ViewPortDeleteRowAction, ViewPortEditCellAction, ViewPortEditRowAction, ViewPortFormSubmitAction}
 
 import java.lang.reflect.{InvocationHandler, Method}
 
 class RpcDynamicProxy(viewport: ViewPort,
-                      handler: ViewServerHandler, serializer: Serializer[String, MessageBody],
+                      handler: ViewServerHandler, serializer: JsonVsSerializer,
                       session: ClientSessionId, token: String, user: String) extends InvocationHandler with StrictLogging {
 
   final val channel = new TestChannel
