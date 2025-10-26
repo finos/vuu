@@ -73,6 +73,7 @@ import { useTableContextMenu } from "./useTableContextMenu";
 import {
   ColumnActionHide,
   ColumnActionPin,
+  ColumnActionRemove,
   useTableModel,
 } from "./useTableModel";
 import { ScrollRequestHandler, useTableScroll } from "./useTableScroll";
@@ -274,10 +275,9 @@ export const useTable = ({
     ],
   );
 
-  const columnMap = useMemo(
-    () => buildColumnMap(dataSource.columns),
-    [dataSource.columns],
-  );
+  const columnMap = useMemo(() => {
+    return buildColumnMap(dataSource.columns);
+  }, [dataSource.columns]);
 
   const onSubscribed = useCallback(
     ({ tableSchema }: DataSourceSubscribedMessage) => {
@@ -309,7 +309,14 @@ export const useTable = ({
     showPaginationControls,
   });
 
-  const { data, dataRef, getSelectedRows, range, setRange } = useDataSource({
+  const {
+    data,
+    dataRef,
+    getSelectedRows,
+    range,
+    removeColumnDataFromCache,
+    setRange,
+  } = useDataSource({
     dataSource,
     defaultSelectedKeyValues,
     renderBufferSize,
@@ -400,6 +407,24 @@ export const useTable = ({
     [dataSource, tableConfig, applyTableConfigChange],
   );
 
+  //TODO careful with autoSubscribeColumns
+  const removeColumn = useCallback(
+    (action: ColumnActionRemove) => {
+      const { column } = action;
+      const newTableConfig = {
+        ...tableConfig,
+        columns: tableConfig.columns.filter((col) => col.name !== column.name),
+      };
+      // this will not trigger a render, simply splice the removed column from cached row arrays
+      const indexOfRemovedColumn = columnMap[column.name];
+      removeColumnDataFromCache(indexOfRemovedColumn);
+      // this will trigger a render and will render with the correct data, even before
+      // we receive refresh from server
+      applyTableConfigChange(newTableConfig);
+    },
+    [applyTableConfigChange, columnMap, removeColumnDataFromCache, tableConfig],
+  );
+
   const hideColumns = useCallback(
     (action: ColumnActionHide) => {
       const { columns } = action;
@@ -460,6 +485,11 @@ export const useTable = ({
             type: "hideColumns",
             columns: [action.column],
           });
+        case "removeColumn":
+          return removeColumn({
+            type: "removeColumn",
+            column: action.column,
+          });
         case "pinColumn":
           return pinColumn(action);
         default:
@@ -467,7 +497,7 @@ export const useTable = ({
       }
       // }
     },
-    [hideColumns, pinColumn],
+    [hideColumns, pinColumn, removeColumn],
   );
 
   const handleDisplaySettingsAction = useCallback<TableSettingsActionHandler>(

@@ -1,5 +1,5 @@
 import { isValidNumber } from "@vuu-ui/vuu-utils";
-import { RefCallback, useCallback, useMemo, useState } from "react";
+import { RefCallback, useCallback, useMemo, useRef, useState } from "react";
 
 interface MeasuredHeightHookProps {
   onHeightMeasured?: (height: number) => void;
@@ -11,15 +11,19 @@ export const useMeasuredHeight = ({
   height: heightProp = 0,
 }: MeasuredHeightHookProps) => {
   const [measuredHeight, setMeasuredHeight] = useState(heightProp);
+  const lastMeasuredHeight = useRef(-1);
 
   const resizeObserver = useMemo(() => {
     return new ResizeObserver((entries: ResizeObserverEntry[]) => {
       for (const entry of entries) {
         const [{ blockSize: measuredSize }] = entry.borderBoxSize;
         const newHeight = Math.round(measuredSize);
-        if (isValidNumber(newHeight)) {
-          setMeasuredHeight(newHeight);
-          onHeightMeasured?.(newHeight);
+        if (lastMeasuredHeight.current !== newHeight) {
+          if (isValidNumber(newHeight)) {
+            lastMeasuredHeight.current = newHeight;
+            setMeasuredHeight(newHeight);
+            onHeightMeasured?.(newHeight);
+          }
         }
       }
     });
@@ -32,7 +36,8 @@ export const useMeasuredHeight = ({
           const { height } = el.getBoundingClientRect();
           resizeObserver.observe(el);
           // avoids tiny sub-pixel discrepancies
-          setMeasuredHeight(Math.round(height));
+          const measuredHeight = Math.round(height);
+          setMeasuredHeight(measuredHeight);
         }
       } else {
         resizeObserver.disconnect();

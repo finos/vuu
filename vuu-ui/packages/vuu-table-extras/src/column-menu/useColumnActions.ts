@@ -76,7 +76,11 @@ export const useColumnActions = ({
         case "add-to-group": return (dataSource.groupBy = addGroupColumn(dataSource.groupBy ?? [], column)), true;
         case "remove-group": return (dataSource.groupBy = []), true;
         case "remove-from-group": return (dataSource.groupBy = removeGroupColumn(dataSource.groupBy ?? [], column)), true;
-        case "remove-column": return (dataSource.columns = dataSource.columns.filter(name => name !== column.name)), true
+        case "remove-column": {
+          dataSource.columns = dataSource.columns.filter(name => name !== column.name);
+          onColumnDisplayAction?.({type: "removeColumn", column});
+          return true;
+        }
         // case "filter-remove-column": return (dataSource.filter = removeFilterColumn(dataSource.filter, column)), true;
         // case "remove-filters": return (dataSource.filter = {filter:""}), true;
         case "agg-avg": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Average)), true;

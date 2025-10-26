@@ -377,10 +377,11 @@ export interface ColumnSettingsProps {
 }
 
 export interface ColumnListPermissions {
-  allowReorderColumns?: boolean;
-  allowRemoveColumns?: boolean;
-  allowHideColumns?: boolean;
   allowColumnSearch?: boolean;
+  allowHideColumns?: boolean;
+  allowRemoveColumns?: boolean;
+  allowReorderColumns?: boolean;
+  allowSelectAll?: boolean;
 }
 
 export interface TableSettingsPermissions extends ColumnListPermissions {

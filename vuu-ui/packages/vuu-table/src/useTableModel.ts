@@ -34,6 +34,7 @@ import {
   sortPinnedColumns,
   stripFilterFromColumns,
   subscribedOnly,
+  toColumnName,
 } from "@vuu-ui/vuu-utils";
 
 import {
@@ -122,6 +123,10 @@ export interface ColumnActionInit {
 export interface ColumnActionHide {
   type: "hideColumns";
   columns: ColumnDescriptor[];
+}
+export interface ColumnActionRemove {
+  type: "removeColumn";
+  column: ColumnDescriptor;
 }
 
 export interface ColumnActionShow {
@@ -560,6 +565,7 @@ function updateColumnProp(
   } as InternalTableModel;
 }
 
+// TODO rename to make clear its dataSOurce config
 function updateTableConfig(
   state: InternalTableModel,
   {

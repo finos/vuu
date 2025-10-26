@@ -208,6 +208,10 @@ export const ColumnList = ({
     }, 100);
   }, []);
 
+  const handleToggleAll = useCallback(() => {
+    console.log("toggle all");
+  }, []);
+
   return (
     <DragDropProvider onDragEnd={handleDragEnd}>
       <div
@@ -230,6 +234,14 @@ export const ColumnList = ({
           </form>
         ) : null}
         <div className={`${classBase}-header`}>
+          {allowHideColumns || allowRemoveColumns ? (
+            <Checkbox
+              className={`${classBase}-checkBox`}
+              checked={false}
+              onClick={handleToggleAll}
+            />
+          ) : null}
+
           <span>Column Name</span>
         </div>
         {allowHideColumns && allowRemoveColumns ? (
