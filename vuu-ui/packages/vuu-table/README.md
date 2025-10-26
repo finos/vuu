@@ -43,5 +43,5 @@ dataSource event handlers
 
 Column Operations from Table Menu
 
-- remove columns, directly removes column from dataSource.columns
+- remove columns, directly removes column from dataSource.columns. dataSOuce fires `config` event
 - hide column, updates tableModel config to set hidden flag true on columnDescriptor

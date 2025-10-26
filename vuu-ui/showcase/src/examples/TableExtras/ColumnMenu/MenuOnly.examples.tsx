@@ -2,7 +2,6 @@ import {
   ColumnMenu,
   ColumnSettingsPanel,
   TableProvider,
-  TableSettingsPanel,
   useColumnActions,
   useTableAndColumnSettings,
 } from "@vuu-ui/vuu-table-extras";
@@ -16,7 +15,6 @@ import { FlexboxLayout, LayoutProvider } from "@vuu-ui/vuu-layout";
 import { ContextPanel } from "@vuu-ui/vuu-shell";
 
 registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
-registerComponent("TableSettings", TableSettingsPanel, "view");
 
 const tableSchema = getSchema("instruments");
 

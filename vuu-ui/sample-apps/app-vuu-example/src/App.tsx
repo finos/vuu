@@ -29,7 +29,6 @@ import "./App.css";
 
 registerComponent("cancel-confirm", ConfirmSelectionPanel, "view");
 registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
-registerComponent("TableSettings", TableSettingsPanel, "view");
 
 assertComponentsRegistered([
   { componentName: "Flexbox", component: FlexboxLayout },

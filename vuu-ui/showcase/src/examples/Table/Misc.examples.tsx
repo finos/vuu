@@ -31,6 +31,7 @@ import {
   TableRowSelectHandler,
 } from "@vuu-ui/vuu-table-types";
 import { ContextPanelProvider, Toolbar } from "@vuu-ui/vuu-ui-controls";
+import { ShowContextPanel } from "@vuu-ui/vuu-ui-controls/src/context-panel-provider/ContextPanelProvider";
 import {
   applyDefaultColumnConfig,
   defaultValueFormatter,
@@ -51,9 +52,6 @@ import { useAutoLoginToVuuServer } from "../utils";
 import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 
 import "./Misc.examples.css";
-import { ShowContextPanel } from "@vuu-ui/vuu-ui-controls/src/context-panel-provider/ContextPanelProvider";
-
-registerComponent("TableSettings", TableSettingsPanel, "view");
 
 export const TestTable = ({
   columnLayout,
@@ -339,7 +337,6 @@ export const TableInLayoutWithContextPanel = () => {
 
   useMemo(() => {
     registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
-    registerComponent("TableSettings", TableSettingsPanel, "view");
   }, []);
   const tableConfig = useMemo<TableConfig>(() => {
     return {
@@ -371,7 +368,6 @@ export const TableInLayoutWithContextPanel = () => {
 export const CheckboxTableInLayoutWithContextPanel = () => {
   useMemo(() => {
     registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
-    registerComponent("TableSettings", TableSettingsPanel, "view");
   }, []);
   const { VuuDataSource } = useData();
   const schema = getSchema("instruments");
@@ -411,7 +407,6 @@ const NullContext = {
 export const TableInLayoutWithCustomContextPanel = () => {
   useMemo(() => {
     registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
-    registerComponent("TableSettings", TableSettingsPanel, "view");
   }, []);
   const tableConfig = useMemo<TableConfig>(() => {
     return {

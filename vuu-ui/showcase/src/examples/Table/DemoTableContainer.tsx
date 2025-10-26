@@ -16,7 +16,6 @@ if (
   console.warn("unable to load all required components");
 } else {
   registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
-  registerComponent("TableSettings", TableSettingsPanel, "view");
 }
 
 export const DemoTableContainer = ({

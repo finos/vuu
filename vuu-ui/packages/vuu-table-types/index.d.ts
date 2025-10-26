@@ -405,7 +405,7 @@ export interface TableSettingsProps {
   onDataSourceConfigChange: (dataSourceConfig: DataSourceConfig) => void;
   onNavigateToColumn?: (columnName: string) => void;
   tableConfig: TableConfig;
-  permissions?: TableSettingsPermissions;
+  permissions?: TableSettingsPermissions | boolean;
 }
 
 export interface SettingsPermissions {

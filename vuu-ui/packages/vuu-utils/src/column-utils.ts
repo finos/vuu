@@ -925,6 +925,14 @@ export const subscribedOnly =
   (columnNames?: string[]) => (column: ColumnDescriptor) =>
     column.source === "client" || columnNames?.includes(column.name);
 
+/**
+ * Called from TableSettings.ColumnList when a column is added to subscription.
+ *
+ * @param subscribedColumns
+ * @param availableColumns
+ * @param columnName
+ * @returns
+ */
 export const addColumnToSubscribedColumns = (
   subscribedColumns: ColumnDescriptor[],
   availableColumns: SchemaColumn[],
@@ -936,13 +944,13 @@ export const addColumnToSubscribedColumns = (
       column.name === n;
   if (subscribedColumns.findIndex(byColName()) !== -1) {
     throw Error(
-      `column-utils, addColumnToSubscribedColumns column ${columnName} is already subscribed`,
+      `[column-utils], addColumnToSubscribedColumns column ${columnName} is already subscribed`,
     );
   }
   const indexOfAvailableColumn = availableColumns.findIndex(byColName());
   if (indexOfAvailableColumn === -1) {
     throw Error(
-      `column-utils, addColumnToSubscribedColumns column ${columnName} is not available`,
+      `[column-utils] addColumnToSubscribedColumns column ${columnName} is not available`,
     );
   }
 
@@ -950,29 +958,7 @@ export const addColumnToSubscribedColumns = (
     ...availableColumns[indexOfAvailableColumn],
   } as ColumnDescriptor;
 
-  // find the nearest preceding available column which is subscribed
-  let index = -1;
-  for (let i = indexOfAvailableColumn - 1; i >= 0; i--) {
-    const { name } = availableColumns[i];
-    index = subscribedColumns.findIndex(byColName(name));
-    if (index !== -1) {
-      break;
-    }
-  }
-
-  if (index === -1) {
-    return [newColumn].concat(subscribedColumns);
-  } else {
-    const results: ColumnDescriptor[] = [];
-    for (let i = 0; i < subscribedColumns.length; i++) {
-      results.push(subscribedColumns[i]);
-      if (i === index) {
-        results.push(newColumn);
-        index = Number.MAX_SAFE_INTEGER;
-      }
-    }
-    return results;
-  }
+  return subscribedColumns.concat(newColumn);
 };
 
 const CalculatedColumnPattern = /.*:.*:.*/;
