@@ -7,7 +7,6 @@ import org.awaitility.Awaitility.await
 import org.awaitility.scala.AwaitilitySupport
 import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSSLByPKCS, VuuSSLCipherSuiteOptions, VuuSSLDisabled}
 import org.finos.vuu.net.rest.EchoRestService
-import org.junit.Assert.assertNull
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -166,7 +165,7 @@ class VuuHttp2ServerTest extends AnyFeatureSpec with AwaitilitySupport with Matc
       })
 
     countDownLatch.await(1, TimeUnit.SECONDS)
-    assertNull(errorMessage.get())
+    errorMessage.get() shouldEqual null
   }
 
 }

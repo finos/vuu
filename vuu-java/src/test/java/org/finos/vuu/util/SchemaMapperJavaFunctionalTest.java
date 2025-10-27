@@ -10,10 +10,9 @@ import org.finos.vuu.util.schema.SchemaMapper;
 import org.finos.vuu.util.schema.SchemaMapperBuilder;
 import org.finos.vuu.util.types.TypeConverter;
 import org.finos.vuu.util.types.TypeConverterContainerBuilder;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import scala.jdk.javaapi.OptionConverters;
 import test.helper.FakeDataSource;
 
@@ -21,22 +20,22 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-import static org.finos.vuu.util.ScalaCollectionConverter.*;
-import static org.junit.Assert.assertEquals;
+import static org.finos.vuu.util.ScalaCollectionConverter.toScala;
+import static org.finos.vuu.util.ScalaCollectionConverter.toScalaSeq;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
-@RunWith(Enclosed.class)
 public class SchemaMapperJavaFunctionalTest {
 
     private static String queryName = "myQuery";
     private static final FakeDataSource dataSource = new FakeDataSource();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         queryName += java.util.UUID.randomUUID().toString(); // unique query name for each test run
     }
 
-    public static class UpdateInMemoryTable {
+    @Nested
+    class UpdateInMemoryTable {
         @Test
         public void when_table_columns_and_entity_fields_match_exactly() throws Exception {
 
@@ -61,11 +60,11 @@ public class SchemaMapperJavaFunctionalTest {
             getDataAndUpdateTable(queryName, schemaMapper, table);
 
             var existingRows = table.pullAllRows();
-            assertEquals(existingRows.size(), 1);
+            assertEquals(1, existingRows.size());
             var exitingFirstRow = existingRows.iterator().next();
-            assertEquals(exitingFirstRow.get("Id"), "testId1");
-            assertEquals(exitingFirstRow.get("ClientId"), 5);
-            assertEquals(exitingFirstRow.get("NotionalValue"), 10.5);
+            assertEquals("testId1", exitingFirstRow.get("Id"));
+            assertEquals(5, exitingFirstRow.get("ClientId"));
+            assertEquals(10.5, exitingFirstRow.get("NotionalValue"));
         }
 
         @Test
@@ -102,11 +101,11 @@ public class SchemaMapperJavaFunctionalTest {
             getDataAndUpdateTable(queryName, schemaMapper, table);
 
             var existingRows = table.pullAllRows();
-            assertEquals(existingRows.size(), 1);
+            assertEquals(1, existingRows.size());
             var exitingFirstRow = existingRows.iterator().next();
-            assertEquals(exitingFirstRow.get("Id"), "testId1");
-            assertEquals(exitingFirstRow.get("ClientId"), 5);
-            assertEquals(exitingFirstRow.get("SomeOtherName"), 10.5);
+            assertEquals("testId1", exitingFirstRow.get("Id"));
+            assertEquals(5, exitingFirstRow.get("ClientId"));
+            assertEquals(10.5, exitingFirstRow.get("SomeOtherName"));
 
         }
 
@@ -148,10 +147,10 @@ public class SchemaMapperJavaFunctionalTest {
             getDataAndUpdateTable(queryName, schemaMapper, table);
 
             var existingRows = table.pullAllRows();
-            assertEquals(existingRows.size(), 1);
+            assertEquals(1, existingRows.size());
             var exitingFirstRow = existingRows.iterator().next();
-            assertEquals(exitingFirstRow.get("Id"), "10");
-            assertEquals(exitingFirstRow.get("doubleValue"), 1.0001d);
+            assertEquals("10", exitingFirstRow.get("Id"));
+            assertEquals(1.0001d, exitingFirstRow.get("doubleValue"));
         }
     }
 
