@@ -8,14 +8,13 @@ import org.finos.vuu.core.module.ViewServerModule;
 import org.finos.vuu.net.ViewServerMessage;
 import org.finos.vuu.wsapi.helpers.TestStartUp;
 import org.finos.vuu.wsapi.helpers.TestVuuClient;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import scala.Option;
 import scala.jdk.javaapi.OptionConverters;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class WebSocketApiJavaTestBase {
@@ -36,7 +35,7 @@ public abstract class WebSocketApiJavaTestBase {
 
         vuuClient = testStartUp();
         var sessionOption = OptionConverters.toJava(vuuClient.login("testUser"));
-        Assert.assertTrue("login request returns response successfully", sessionOption.isPresent());
+        assertTrue(sessionOption.isPresent(), "login request returns response successfully");
         sessionId = sessionOption.get();
     }
 
@@ -49,7 +48,7 @@ public abstract class WebSocketApiJavaTestBase {
 
     protected <BodyType> BodyType assertBodyIsInstanceOf(Option<ViewServerMessage> message, String messageDescription) {
         var messageOptional = OptionConverters.toJava(message);
-        assertTrue(messageDescription + " is present", messageOptional.isPresent());
+        assertTrue(messageOptional.isPresent(), messageDescription + " is present");
         return ((BodyType) messageOptional.get().body());
     }
 

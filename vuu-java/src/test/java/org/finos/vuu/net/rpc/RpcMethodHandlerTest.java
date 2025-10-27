@@ -9,7 +9,7 @@ import org.finos.toolbox.time.DefaultClock;
 import org.finos.vuu.core.table.TableContainer;
 import org.finos.vuu.provider.JoinTableProviderImpl;
 import org.finos.vuu.util.ScalaCollectionConverter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import test.helper.ViewPortTestUtils;
 
 import java.util.Collections;
