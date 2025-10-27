@@ -13,7 +13,7 @@ trait JsonVsSerializer {
 object JsonVsSerializer  {
 
   def apply(): JsonVsSerializer = {
-    apply(JsonUtil.mapper)
+    apply(JsonUtil.createMapper())
   }
 
   def apply(objectMapper: ObjectMapper): JsonVsSerializer = {

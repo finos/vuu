@@ -2,7 +2,8 @@ package org.finos.vuu.net.json
 
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type
 import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
-import org.finos.vuu.net._
+import org.finos.vuu.core.auths.VuuUserImpl
+import org.finos.vuu.net.*
 
 /**
  * Mixing represents the mapping for all core functionality in VS.
@@ -94,5 +95,6 @@ import org.finos.vuu.net._
   new Type(value = classOf[ViewPortEditRpcResponse], name = "VP_EDIT_RPC_RESPONSE"),
   new Type(value = classOf[RpcRequest], name = "RPC_REQUEST"),
   new Type(value = classOf[RpcResponseNew], name = "RPC_RESPONSE"),
+  new Type(value = classOf[VuuUserImpl], name = "USER"),
 ))
 trait CoreJsonSerializationMixin {}

@@ -95,7 +95,11 @@ class TestVuuClient(vsClient: ViewServerClient, loginTokenService: LoginTokenSer
   }
 
   def login(user: String): Option[String] = {
-    val token = loginTokenService.getToken(VuuUser(user))
+    login(VuuUser(user))
+  }
+
+  def login(user: VuuUser): Option[String] = {
+    val token = loginTokenService.getToken(user)
     send("", token, LoginRequest(token))
     awaitForMsg[LoginSuccess]
       .map(x => x.sessionId)

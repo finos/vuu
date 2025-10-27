@@ -63,7 +63,7 @@ class ViewPortMenuTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
 
       val rpcServer = new TestRpcServer
 
-      val mapper = JsonUtil.mapper
+      val mapper = JsonUtil.createMapper()
 
       val menu = rpcServer.menuItems()
 
