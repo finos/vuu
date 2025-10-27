@@ -21,7 +21,7 @@ class EmptyViewPortTest extends VuuServerTestCase {
       withVuuServer(TestModule()) {
         vuuServer =>
 
-          vuuServer.login("testUser", "testToken")
+          vuuServer.login("testUser")
 
           val viewport = vuuServer.createViewPort("TEST", "instruments")
 

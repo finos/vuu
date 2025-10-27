@@ -11,14 +11,6 @@ trait Authenticator[T] {
 object Authenticator {
 
   /**
-   * @param tokenService, the service being used by this instance of Vuu
-   * @return An authenticator that always passes and returns a token for the userId String passed in.
-   */
-  def apply(tokenService: LoginTokenService): Authenticator[String] = {
-    apply(tokenService, userId => Right(VuuUser(userId)))
-  }
-
-  /**
    * @param tokenService , the service being used by this instance of Vuu
    * @param authFunction , the function to call to determine if authentication should pass or fail.
    * @return An authenticator that calls an authFunction and returns a valid token if it succeeds.

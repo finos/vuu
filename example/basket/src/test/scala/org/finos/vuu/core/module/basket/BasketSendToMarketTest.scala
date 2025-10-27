@@ -26,12 +26,12 @@ class BasketSendToMarketTest extends VuuServerTestCase {
 
       val omsApi = OmsApi()
 
-      import BasketModule._
+      import BasketModule.*
 
       withVuuServer(PriceModule(), BasketModule(omsApi)) {
         vuuServer =>
 
-          vuuServer.login("testUser", "testToken")
+          vuuServer.login("testUser")
 
           vuuServer.overrideViewPortDef("prices", (table, _, _, _) => ViewPortDef(table.getTableDef.columns, null))
 

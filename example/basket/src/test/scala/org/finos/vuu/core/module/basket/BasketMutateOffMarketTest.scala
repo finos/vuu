@@ -5,7 +5,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.module.TableDefContainer
-import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames => B, BasketConstituentColumnNames => BC}
+import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames as B, BasketConstituentColumnNames as BC}
 import org.finos.vuu.core.module.basket.service.BasketTradingServiceIF
 import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.net.rpc.{RpcFunctionSuccess, RpcParams}
@@ -18,8 +18,8 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
 
   Feature("Basket Service Test Case") {
     Scenario("Check the creation of the baskets and constituents") {
-      import BasketModule._
-      import BasketTestCaseHelper._
+      import BasketModule.*
+      import BasketTestCaseHelper.*
       implicit val clock: Clock = new TestFriendlyClock(10001L)
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer()
       implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
@@ -28,7 +28,7 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
       withVuuServer(PriceModule(), BasketModule(omsApi)) {
         vuuServer =>
 
-          vuuServer.login("testUser", "testToken")
+          vuuServer.login("testUser")
 
           vuuServer.overrideViewPortDef("prices", (table, _, _, _) => ViewPortDef(table.getTableDef.columns, null))
 
@@ -142,7 +142,7 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
     }
 
     Scenario("Check updating trade basket side with no change does not update constituents side") {
-      import BasketModule._
+      import BasketModule.*
       implicit val clock: Clock = new TestFriendlyClock(10001L)
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer()
       implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
@@ -152,7 +152,7 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
       withVuuServer(PriceModule(), BasketModule(omsApi)) {
         vuuServer =>
 
-          vuuServer.login("testUser", "testToken2")
+          vuuServer.login("testUser")
 
           val basketTradeInstanceId = GivenBasketTradeExist(vuuServer, ".FTSE", "MyCustomBasket")
 
@@ -189,7 +189,7 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
 
     //TODO join table cannot be tested currently as it doesnt get updated when underlying table gets updated
     ignore("Adding new constituents by ric should add it to basket trading") {
-      import BasketModule._
+      import BasketModule.*
       implicit val clock: Clock = new TestFriendlyClock(10001L)
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer()
       implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
@@ -199,7 +199,7 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
       withVuuServer(PriceModule(), BasketModule(omsApi)) {
         vuuServer =>
 
-          vuuServer.login("testUser", "testToken2")
+          vuuServer.login("testUser")
 
           val basketTradeInstanceId = GivenBasketTradeExist(vuuServer, ".FTSE", "MyCustomBasket")
 

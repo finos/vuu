@@ -2,6 +2,7 @@ package org.finos.vuu.test
 
 import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.AbstractVuuServer
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.plugin.Plugin
@@ -13,7 +14,9 @@ trait TestVuuServer extends AbstractVuuServer {
 
   def registerPlugin(plugin: Plugin): Unit
 
-  def login(user: String, token: String): Unit
+  def login(user: String): Unit
+
+  def login(user: VuuUser): Unit
 
   def getProvider(module: String, table: String): MockProvider
 

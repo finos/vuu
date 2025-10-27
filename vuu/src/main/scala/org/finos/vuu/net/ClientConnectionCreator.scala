@@ -169,7 +169,15 @@ class DefaultMessageHandler(val channel: Channel,
 
 case class ClientSessionId(sessionId: String, user: String, channelId: String) extends Ordered[ClientSessionId] {
 
-  override def compare(that: ClientSessionId): Int = sessionId.compareTo(that.sessionId)
+  override def compare(that: ClientSessionId): Int =  {
+    val comp = sessionId.compareTo(that.sessionId)
+    if (comp == 0) {
+      val comp2 = channelId.compareTo(that.channelId)
+      if (comp2 != 0) comp2 else user.compareTo(that.user)
+    } else {
+      comp
+    }
+  }
 
 }
 

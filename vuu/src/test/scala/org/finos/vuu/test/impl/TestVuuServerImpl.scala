@@ -12,7 +12,7 @@ import org.finos.vuu.core.table.{DataTable, TableContainer, ViewPortColumnCreato
 import org.finos.vuu.core.{AbstractVuuServer, CoreServerApiHandler}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.*
-import org.finos.vuu.net.auth.{Authenticator, LoginTokenService}
+import org.finos.vuu.net.auth.LoginTokenService
 import org.finos.vuu.net.flowcontrol.FlowControllerFactory
 import org.finos.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer}
 import org.finos.vuu.net.rest.RestService
@@ -181,16 +181,18 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
   val channel = new TestChannel
   var clientSessionId: ClientSessionId = null
 
-  override def login(user: String, token: String): Unit = {
+  override def login(user: String): Unit = login(VuuUser(user))
+
+  override def login(user: VuuUser): Unit = {
     handler = factory.create()
-    val token = loginTokenService.getToken(VuuUser(user))
+    val token = loginTokenService.getToken(user)
     val packet = serializer.serialize(JsonViewServerMessage(RequestId.oneNew(), "", "", "", LoginRequest(token)))
     handler.handle(packet, channel)
 
     channel.popMsg match {
       case Some(msgPacket) =>
         val msg = serializer.deserialize(msgPacket)
-        clientSessionId = ClientSessionId(msg.sessionId, user, channel.id().asLongText())
+        clientSessionId = ClientSessionId(msg.sessionId, user.name, channel.id().asLongText())
     }
   }
 
@@ -200,7 +202,7 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
 
   override def getViewPortRpcServiceProxy[TYPE : _root_.scala.reflect.ClassTag](viewport: ViewPort):TYPE = {
 
-    val interceptor = new RpcDynamicProxy(viewport, handler, serializer, session, "FOO", "BAR")
+    val interceptor = RpcDynamicProxy(viewport, handler, serializer, session, channel)
 
     val clazz: Class[_] = classTag[TYPE].runtimeClass
 

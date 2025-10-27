@@ -23,7 +23,7 @@ class EditableTest extends VuuServerTestCase {
       withVuuServer(EditableTestModule()) {
         vuuServer =>
 
-          vuuServer.login("testUser", "testToken")
+          vuuServer.login("testUser")
 
           val viewport = vuuServer.createViewPort(EditableTestModule.NAME, "editTestTable")
 

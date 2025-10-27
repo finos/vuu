@@ -3,7 +3,7 @@ package org.finos.vuu.test.rpc
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.net.json.JsonVsSerializer
-import org.finos.vuu.net.{ClientSessionId, JsonViewServerMessage, MessageBody, ViewPortAddRowRpcCall, ViewPortDeleteCellRpcCall, ViewPortDeleteRowRpcCall, ViewPortEditCellRpcCall, ViewPortEditRowRpcCall, ViewPortEditSubmitFormRpcCall, ViewServerHandler}
+import org.finos.vuu.net.{ClientSessionId, JsonViewServerMessage, ViewPortAddRowRpcCall, ViewPortDeleteCellRpcCall, ViewPortDeleteRowRpcCall, ViewPortEditCellRpcCall, ViewPortEditRowRpcCall, ViewPortEditSubmitFormRpcCall, ViewServerHandler}
 import org.finos.vuu.test.impl.TestChannel
 import org.finos.vuu.viewport.{ViewPort, ViewPortAddRowAction, ViewPortDeleteCellAction, ViewPortDeleteRowAction, ViewPortEditCellAction, ViewPortEditRowAction, ViewPortFormSubmitAction}
 
@@ -11,16 +11,15 @@ import java.lang.reflect.{InvocationHandler, Method}
 
 class RpcDynamicProxy(viewport: ViewPort,
                       handler: ViewServerHandler, serializer: JsonVsSerializer,
-                      session: ClientSessionId, token: String, user: String) extends InvocationHandler with StrictLogging {
-
-  final val channel = new TestChannel
+                      session: ClientSessionId,
+                      channel: TestChannel) extends InvocationHandler with StrictLogging {
 
   private def processEditCellAction(proxy: Any, method: Method): ViewPortEditCellAction = {
     ViewPortEditCellAction("", (key, col, theValue, vp, session) => {
 
       val requestId = RequestId.oneNew()
       val rpcMessage = ViewPortEditCellRpcCall(viewport.id, key, col, theValue)
-      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, token, user, rpcMessage)
+      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, "", session.user, rpcMessage)
 
       val packet = serializer.serialize(vpMsg)
 
@@ -45,7 +44,7 @@ class RpcDynamicProxy(viewport: ViewPort,
 
       val requestId = RequestId.oneNew()
       val rpcMessage = ViewPortEditRowRpcCall(viewport.id, key, map.asInstanceOf[Map[String, Object]])
-      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, token, user, rpcMessage)
+      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, "", session.user, rpcMessage)
 
       val packet = serializer.serialize(vpMsg)
 
@@ -70,7 +69,7 @@ class RpcDynamicProxy(viewport: ViewPort,
 
       val requestId = RequestId.oneNew()
       val rpcMessage = ViewPortAddRowRpcCall(viewport.id, key, map.asInstanceOf[Map[String, Object]])
-      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, token, user, rpcMessage)
+      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, "", session.user, rpcMessage)
 
       val packet = serializer.serialize(vpMsg)
 
@@ -96,7 +95,7 @@ class RpcDynamicProxy(viewport: ViewPort,
 
       val requestId = RequestId.oneNew()
       val rpcMessage = ViewPortDeleteRowRpcCall(viewport.id, key)
-      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, token, user, rpcMessage)
+      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, "", session.user, rpcMessage)
 
       val packet = serializer.serialize(vpMsg)
 
@@ -121,7 +120,7 @@ class RpcDynamicProxy(viewport: ViewPort,
 
       val requestId = RequestId.oneNew()
       val rpcMessage = ViewPortEditSubmitFormRpcCall(viewport.id)
-      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, token, user, rpcMessage)
+      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, "", session.user, rpcMessage)
 
       val packet = serializer.serialize(vpMsg)
 
@@ -146,7 +145,7 @@ class RpcDynamicProxy(viewport: ViewPort,
 
       val requestId = RequestId.oneNew()
       val rpcMessage = ViewPortDeleteCellRpcCall(viewport.id, key, column)
-      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, token, user, rpcMessage)
+      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, "", session.user, rpcMessage)
 
       val packet = serializer.serialize(vpMsg)
 
