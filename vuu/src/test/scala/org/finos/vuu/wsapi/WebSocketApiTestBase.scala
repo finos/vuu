@@ -3,11 +3,13 @@ package org.finos.vuu.wsapi
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.module.{TableDefContainer, ViewServerModule}
-import org.finos.vuu.net._
+import org.finos.vuu.net.*
 import org.finos.vuu.wsapi.helpers.{TestStartUp, TestVuuClient}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{BeforeAndAfterAll, GivenWhenThen}
+
+import scala.annotation.tailrec
 
 abstract class WebSocketApiTestBase extends AnyFeatureSpec with BeforeAndAfterAll with GivenWhenThen with Matchers {
 
@@ -52,6 +54,18 @@ abstract class WebSocketApiTestBase extends AnyFeatureSpec with BeforeAndAfterAl
     data.asInstanceOf[T]
   }
 
+  @tailrec
+  protected final def waitForData(expectedRowCount: Int): Unit = {
+    val tableSizeResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
+    tableSizeResponse match {
+      case None => fail("No table row updates")
+      case Some(value) =>
+        val dataCount = value.rows.count(p => p.updateType == "U")
+        if (dataCount < expectedRowCount) {
+          waitForData(expectedRowCount - dataCount)
+        }
+    }
+  }
 
 }
 
