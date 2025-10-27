@@ -87,7 +87,6 @@ export const useColumnActions = ({
         case "agg-sum": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Sum)), true;
         // 2) Column display options ...
         case "hide-column": return onColumnDisplayAction?.({type: "hideColumn", column}), true;
-        case "pin-column-floating": return onColumnDisplayAction?.({type: "pinColumn", column, pin: "floating"}), true;
         case "pin-column-left": return onColumnDisplayAction?.({type: "pinColumn", column, pin: "left"}), true;
         case "pin-column-right": return onColumnDisplayAction?.({type: "pinColumn", column, pin: "right"}), true;
         case "unpin-column": return onColumnDisplayAction?.({type: "pinColumn", column, pin: false}), true

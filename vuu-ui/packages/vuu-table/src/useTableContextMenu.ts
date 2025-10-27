@@ -11,7 +11,6 @@ import { getAriaColIndex, getAriaRowIndex } from "./table-dom-utils";
 
 export interface TableContextMenuHookProps {
   allowContextMenu?: boolean;
-  // columns: RuntimeColumnDescriptor[];
   columns: ColumnDescriptor[];
   data: DataSourceRow[];
   dataSource: DataSource;

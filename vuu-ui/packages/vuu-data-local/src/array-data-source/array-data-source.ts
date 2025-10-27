@@ -1090,7 +1090,7 @@ export class ArrayDataSource
       this.emit("freeze", true, this.#freezeTimestamp);
       this.preserveScrollPositionAcrossConfigChange = true;
       this.baseFilter = {
-        filter: `created < ${this.#freezeTimestamp}`,
+        filter: `vuuCreatedTimestamp < ${this.#freezeTimestamp}`,
       };
     } else {
       throw Error(

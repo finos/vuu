@@ -1,20 +1,29 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { Badge, Switch } from "@salt-ds/core";
-import freezeControlCss from "./FreezeControl.css";
+import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { useFreezeControl, type FreezeProps } from "./useFreezeControl";
-import { HTMLAttributes } from "react";
+import { HTMLAttributes, useEffect, useRef, useState } from "react";
 import cx from "clsx";
 
-const classBase = "FreezeControl";
+import freezeControlCss from "./FreezeControl.css";
+
+// Duration to keep flashing after last new record (in milliseconds)
+const FLASH_DURATION_MS = 3000;
 
 export interface FreezeControlProps
   extends HTMLAttributes<HTMLDivElement>,
-    FreezeProps {}
+    FreezeProps {
+  /**
+   * Duration of the flash animation for the badge (in seconds).
+   * @default 0.25
+   */
+  flashDuration?: number;
+}
 
 export const FreezeControl = ({
   dataSource,
   className,
+  flashDuration = 0.25,
   ...htmlAttributes
 }: FreezeControlProps) => {
   const targetWindow = useWindow();
@@ -24,25 +33,75 @@ export const FreezeControl = ({
     window: targetWindow,
   });
 
-  const { label, isFrozen, lastUpdateMessage, newRecordCount, onSwitchChange } =
-    useFreezeControl({ dataSource });
+  const { isFrozen, newRecordCount, onToggleChange } = useFreezeControl({
+    dataSource,
+  });
+
+  const [isFlashing, setIsFlashing] = useState(false);
+  const flashTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Check if we're frozen and have new records and set the flash with a 3 second timeout
+  useEffect(() => {
+    if (isFrozen && newRecordCount > 0) {
+      setIsFlashing(true);
+
+      if (flashTimeoutRef.current) {
+        clearTimeout(flashTimeoutRef.current);
+      }
+
+      flashTimeoutRef.current = setTimeout(() => {
+        setIsFlashing(false);
+      }, FLASH_DURATION_MS);
+    }
+  }, [newRecordCount, isFrozen]);
 
   return (
-    <Badge value={newRecordCount} max={99}>
-      <div
-        {...htmlAttributes}
-        className={cx(classBase, className, {
-          [`${classBase}-showBadge`]: newRecordCount > 0,
-        })}
-      >
-        <span className={`${classBase}-label`}>{label}</span>
-        <Switch
-          checked={isFrozen}
-          onChange={onSwitchChange}
-          className="vuuLarge"
-        />
-        <span className={`${classBase}-lastUpdated`}>{lastUpdateMessage}</span>
+    <div
+      {...htmlAttributes}
+      className={cx("FreezeControl", className)}
+      style={
+        {
+          ...htmlAttributes.style,
+          "--freeze-control-flash-duration": `${flashDuration}s`,
+        } as React.CSSProperties
+      }
+    >
+      <div className={`FreezeControl-buttonRow`}>
+        <ToggleButtonGroup
+          className="vuuStateButtonGroup"
+          onChange={onToggleChange}
+          value={isFrozen ? "frozen" : "live"}
+        >
+          <div
+            className={cx(`FreezeControl-buttonWrapper`, {
+              [`FreezeControl-buttonWrapper-active`]: !isFrozen,
+            })}
+          >
+            <ToggleButton value="live">Live</ToggleButton>
+          </div>
+          <div
+            className={cx(`FreezeControl-buttonWrapper`, {
+              [`FreezeControl-buttonWrapper-active`]: isFrozen,
+            })}
+          >
+            <ToggleButton value="frozen">
+              {isFrozen ? "Frozen" : "Freeze"}
+            </ToggleButton>
+          </div>
+        </ToggleButtonGroup>
+        {isFrozen && (
+          <div className={`FreezeControl-newOrders`}>
+            New Orders
+            <div
+              className={cx(`FreezeControl-customBadge`, {
+                [`FreezeControl-customBadge-flashing`]: isFlashing,
+              })}
+            >
+              {newRecordCount}
+            </div>
+          </div>
+        )}
       </div>
-    </Badge>
+    </div>
   );
 };
