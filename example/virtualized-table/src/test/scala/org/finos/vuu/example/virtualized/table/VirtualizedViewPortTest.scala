@@ -28,7 +28,7 @@ class VirtualizedViewPortTest extends VuuServerTestCase {
 
           vuuServer.registerPlugin(VirtualizedTablePlugin)
 
-          vuuServer.login("testUser", "testToken")
+          vuuServer.login("testUser")
 
           val viewport = vuuServer.createViewPort(VirtualTableModule.NAME, "bigOrders", ViewPortRange(0, 10))
 

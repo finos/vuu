@@ -5,7 +5,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.DefaultClock
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.client.messages.RequestId
-import org.finos.vuu.core.table.TableTestHelper._
+import org.finos.vuu.core.table.TableTestHelper.*
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.plugin.DefaultPluginRegistry
@@ -52,7 +52,7 @@ class RpcTableTest extends AnyFeatureSpec with Matchers with OneInstancePerTest 
 
       val provider = new RpcProvider(orderEntry)
 
-      val session = new ClientSessionId("sess-01", "chris")
+      val session = ClientSessionId("sess-01", "chris", "channel")
 
       val vpcolumns = ViewPortColumnCreator.create(orderEntry, List("clOrderId", "ric", "quantity", "orderType", "price", "priceLevel"))
 

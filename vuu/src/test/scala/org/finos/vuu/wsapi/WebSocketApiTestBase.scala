@@ -25,9 +25,8 @@ abstract class WebSocketApiTestBase extends AnyFeatureSpec with BeforeAndAfterAl
     tableDefContainer = new TableDefContainer
 
     vuuClient = testStartUp()
-
-    tokenId = vuuClient.createAuthToken()
-    val sessionOption = vuuClient.login(tokenId, "testUser")
+    
+    val sessionOption = vuuClient.login("testUser")
     assert(sessionOption.isDefined)
     sessionId = sessionOption.get
   }

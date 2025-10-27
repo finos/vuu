@@ -32,7 +32,7 @@ class BasketCreateTest extends VuuServerTestCase {
       withVuuServer(PriceModule(), BasketModule(omsApi)) {
         vuuServer =>
 
-          vuuServer.login("testUser", "testToken")
+          vuuServer.login("testUser")
           val basketId = ".FTSE"
 
           vuuServer.overrideViewPortDef("prices", (table, _, _, _) => ViewPortDef(table.getTableDef.columns, null))

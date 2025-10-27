@@ -1,6 +1,6 @@
 package org.finos.vuu.client
-import org.finos.vuu.net.*
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.net.*
 import org.finos.vuu.viewport.{DefaultRange, ViewPortRange, ViewPortTable}
 
 import scala.annotation.tailrec
@@ -9,8 +9,8 @@ import scala.util.{Failure, Success, Try}
 
 object ClientHelperFns {
 
-  def loginAsync(token: String, user: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage("", "", "", "", LoginRequest(token, user)))
+  def loginAsync(token: String)(implicit vsClient: ViewServerClient): Unit = {
+    vsClient.send(JsonViewServerMessage("", "", "", "", LoginRequest(token)))
   }
 
   def createVpAsync(sessionId: String, token: String, user: String, requestId: String, table: ViewPortTable, columns: Array[String], sortBy: SortSpec, groupBy: Array[String] = Array(),
@@ -102,6 +102,7 @@ object ClientHelperFns {
 
     vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, MenuRpcCall(service, method, params, Map()), module = module))
 
+    @tailrec
     def awaitMsg(vsClient: ViewServerClient): MenuRpcResponse = {
       vsClient.awaitMsg.body match {
         case response: MenuRpcResponse => response
@@ -112,8 +113,8 @@ object ClientHelperFns {
     awaitMsg(vsClient)
   }
 
-  def login(token: String, user: String)(implicit vsClient: ViewServerClient): String = {
-    vsClient.send(JsonViewServerMessage("", "", "", "", LoginRequest(token, user)))
+  def login(token: String)(implicit vsClient: ViewServerClient): String = {
+    vsClient.send(JsonViewServerMessage("", "", "", "", LoginRequest(token)))
     vsClient.awaitMsg.sessionId
   }
   

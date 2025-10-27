@@ -4,8 +4,8 @@ import com.typesafe.scalalogging.StrictLogging
 import io.vertx.core.http.Cookie
 import io.vertx.ext.web.RoutingContext
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.net.auth.Authenticator
 import org.finos.vuu.net.rest.RestService
-import org.finos.vuu.net.{Authenticator, LoggedInTokenValidator, ServerUserPrincipal}
 
 import java.util.concurrent.TimeUnit
 import scala.util.{Failure, Success, Try}
@@ -18,7 +18,7 @@ object VuuLoginPage{
   final val Path = "/public/index.html"
 }
 
-class LogoutRestService(val authenticator: Authenticator, val tokenValidator: LoggedInTokenValidator)(implicit clock: Clock) extends RestService with StrictLogging {
+class LogoutRestService(val authenticator: Authenticator[_])(implicit clock: Clock) extends RestService with StrictLogging {
   private final val service = "logout"
 
   override def getServiceName: String = service
@@ -49,7 +49,8 @@ class LogoutRestService(val authenticator: Authenticator, val tokenValidator: Lo
   override def onDelete(ctx: RoutingContext): Unit = reply404(ctx)
 }
 
-class AuthNRestService(val authenticator: Authenticator, val tokenValidator: LoggedInTokenValidator)(implicit clock: Clock) extends RestService with StrictLogging {
+class AuthNRestService(val authenticator: Authenticator[Map[String,Object]])
+                      (implicit clock: Clock) extends RestService with StrictLogging {
 
   private final val service = "authn"
 
@@ -89,15 +90,15 @@ class AuthNRestService(val authenticator: Authenticator, val tokenValidator: Log
     if (username == null || password == null ) {
       reply404(ctx)
     } else {
-      authenticator.authenticator(username, password) match {
-        case Some(token) =>
-          tokenValidator.register(token, new ServerUserPrincipal(token, username))
+      val credentials = Map("username" -> username, "password" -> password)
+      authenticator.authenticate(credentials) match {
+        case Right(value) =>
           ctx.response()
-            .addCookie(Cookie.cookie(VuuAuthCookie.Name, token).setMaxAge(TimeUnit.MINUTES.toSeconds(240)))
-            .putHeader(VuuAuthCookie.Name, token)
+            .addCookie(Cookie.cookie(VuuAuthCookie.Name, value).setMaxAge(TimeUnit.MINUTES.toSeconds(240)))
+            .putHeader(VuuAuthCookie.Name, value)
             .setStatusCode(201)
             .end()
-        case None =>
+        case Left(value) =>
           ctx.response()
             .setStatusCode(403)
             .end()

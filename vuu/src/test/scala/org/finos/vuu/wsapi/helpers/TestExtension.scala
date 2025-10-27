@@ -1,7 +1,7 @@
 package org.finos.vuu.wsapi.helpers
 
 import org.finos.vuu.api.{JoinTableDef, TableDef, ViewPortDef}
-import org.finos.vuu.core.IVuuServer
+import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactoryNode, TableDefContainer}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
@@ -20,7 +20,7 @@ object TestExtension {
 
     def addTableForTest(
                          tableDef: TableDef,
-                         providerFactory: (DataTable, IVuuServer) => Provider
+                         providerFactory: (DataTable, AbstractVuuServer) => Provider
                        ): ModuleFactoryNode = {
       moduleFactoryNode.addTable(
         tableDef,
@@ -31,7 +31,7 @@ object TestExtension {
     def addTableForTest(
                          tableDef: TableDef,
                          ViewPortDefFactory: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef,
-                         providerFactory: (DataTable, IVuuServer) => Provider
+                         providerFactory: (DataTable, AbstractVuuServer) => Provider
                        ): ModuleFactoryNode = {
       moduleFactoryNode.addTable(
         tableDef,

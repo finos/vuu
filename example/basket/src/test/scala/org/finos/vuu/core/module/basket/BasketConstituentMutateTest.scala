@@ -31,7 +31,7 @@ class BasketConstituentMutateTest extends VuuServerTestCase {
       withVuuServer(PriceModule(), BasketModule(omsApi)) {
         vuuServer =>
 
-          vuuServer.login("testUser", "testToken")
+          vuuServer.login("testUser")
 
           val basketName = "test_basket1"
           val tradeId = GivenBasketTrade(vuuServer.tableContainer, basketName, "BUY")

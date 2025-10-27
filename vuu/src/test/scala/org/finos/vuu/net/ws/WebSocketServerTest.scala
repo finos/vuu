@@ -6,6 +6,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.client.ClientHelperFns
 import org.finos.vuu.core.*
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.net.WebSocketViewServerClient
 import org.finos.vuu.net.http.VuuHttp2ServerOptions
 import org.finos.vuu.net.json.JsonVsSerializer
@@ -46,7 +47,8 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      val sessionId = ClientHelperFns.login("Mikey", "lolcats")
+      val token = config.security.loginTokenService.getToken(VuuUser("Mikey"))
+      val sessionId = ClientHelperFns.login(token)
       assertNotNull(sessionId)
 
       stopLifeCycle()
@@ -74,7 +76,8 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      val sessionId = ClientHelperFns.login("Mikey", "lolcats")
+      val token = config.security.loginTokenService.getToken(VuuUser("Mikey"))
+      val sessionId = ClientHelperFns.login(token)
       assertNotNull(sessionId)
 
       stopLifeCycle()
@@ -102,7 +105,8 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      val sessionId = ClientHelperFns.login("Mikey", "lolcats")
+      val token = config.security.loginTokenService.getToken(VuuUser("Mikey"))
+      val sessionId = ClientHelperFns.login(token)
       assertNotNull(sessionId)
 
       stopLifeCycle()
@@ -130,7 +134,8 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      val sessionId = ClientHelperFns.login("Mikey", "lolcats")
+      val token = config.security.loginTokenService.getToken(VuuUser("Mikey"))
+      val sessionId = ClientHelperFns.login(token)
       assertNotNull(sessionId)
 
       stopLifeCycle()
@@ -165,7 +170,8 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      val sessionId = ClientHelperFns.login("Mikey", "lolcats")
+      val token = config.security.loginTokenService.getToken(VuuUser("Mikey"))
+      val sessionId = ClientHelperFns.login(token)
       assertNotNull(sessionId)
 
       stopLifeCycle()
@@ -200,7 +206,8 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
 
-      val sessionId = ClientHelperFns.login("Mikey", "lolcats")
+      val token = config.security.loginTokenService.getToken(VuuUser("Mikey"))
+      val sessionId = ClientHelperFns.login(token)
       assertNotNull(sessionId)
 
       stopLifeCycle()
@@ -216,7 +223,7 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
     }
     val client = new WebSocketClient(s"$protocol://localhost:${config.wsOptions.wsPort}/websocket", config.wsOptions.wsPort)
     lifecycle(client).dependsOn(viewServer)
-    val viewServerClient: WebSocketViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer)
+    val viewServerClient: WebSocketViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer())
     lifecycle.start()
     viewServerClient
   }

@@ -8,7 +8,11 @@ import org.finos.toolbox.time.DefaultClock;
 import org.finos.vuu.api.Index;
 import org.finos.vuu.api.Indices;
 import org.finos.vuu.api.TableDef;
-import org.finos.vuu.core.table.*;
+import org.finos.vuu.core.table.Column;
+import org.finos.vuu.core.table.Columns;
+import org.finos.vuu.core.table.InMemDataTable;
+import org.finos.vuu.core.table.RowWithData;
+import org.finos.vuu.core.table.ViewPortColumnCreator;
 import org.finos.vuu.core.tree.TreeSessionTable;
 import org.finos.vuu.net.ClientSessionId;
 import org.finos.vuu.net.FilterSpec;
@@ -65,7 +69,7 @@ public class BenchmarkHelper {
     }
 
     public TreeBuilder createTreeBuilder(InMemDataTable table) {
-        var client = new ClientSessionId("A", "B");
+        var client = new ClientSessionId("A", "B", "C");
 
         var groupByTable = TreeSessionTable.apply(table, client, joinProvider, metricsProvider, clock);
         var exchange = table.getTableDef().columnForName("exchange");

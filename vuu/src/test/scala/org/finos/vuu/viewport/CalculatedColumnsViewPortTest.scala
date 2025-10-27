@@ -260,7 +260,7 @@ class CalculatedColumnsViewPortTest extends AbstractViewPortTestCase with Matche
 
       joinProvider.runOnce()
 
-      val session = ClientSessionId("sess-01", "chris")
+      val session = ClientSessionId("sess-01", "chris", "channel")
 
       val outQueue = new OutboundRowPublishQueue()
 

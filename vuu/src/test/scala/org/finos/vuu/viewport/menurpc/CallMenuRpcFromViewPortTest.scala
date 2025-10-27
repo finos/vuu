@@ -91,7 +91,7 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
 
     val viewPortContainer = setupViewPort(tableContainer, providerContainer)
 
-    val session = ClientSessionId("sess-01", "chris")
+    val session = ClientSessionId("sess-01", "chris", "channel")
 
     val outQueue = new OutboundRowPublishQueue()
     val highPriorityQueue = new OutboundRowPublishQueue()

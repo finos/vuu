@@ -5,7 +5,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api._
 import org.finos.vuu.client.messages.RequestId
-import org.finos.vuu.core.IVuuServer
+import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.module.{StaticServedResource, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.TableTestHelper.{combineQs, emptyQueues}
@@ -33,9 +33,9 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
       override def tableDefContainer: TableDefContainer = ???
       override def tableDefs: List[TableDef] = ???
       override def serializationMixin: AnyRef = ???
-      override def getProviderForTable(table: DataTable, viewserver: IVuuServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider = ???
+      override def getProviderForTable(table: DataTable, viewserver: AbstractVuuServer)(implicit time: Clock, lifecycleContainer: LifecycleContainer): Provider = ???
       override def staticFileResources(): List[StaticServedResource] = ???
-      override def restServicesUnrealized: List[IVuuServer => RestService] = ???
+      override def restServicesUnrealized: List[AbstractVuuServer => RestService] = ???
       override def viewPortDefs: Map[String, (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef] = ???
     }
   }
@@ -169,7 +169,7 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
 
     joinProvider.runOnce()
 
-    val session = ClientSessionId("sess-01", "chris")
+    val session = ClientSessionId("sess-01", "chris", "channel")
 
     val outQueue = new OutboundRowPublishQueue()
 

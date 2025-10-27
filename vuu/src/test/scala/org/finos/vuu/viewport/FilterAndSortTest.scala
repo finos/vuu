@@ -53,7 +53,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       val columns = ViewPortColumnCreator.create(orders, orders.getTableDef.columns.map(_.name).toList)
 
-      val viewport = viewPortContainer.create(RequestId.oneNew(), ClientSessionId("A", "B"), queue, orders, ViewPortRange(0, 5), columns)
+      val viewport = viewPortContainer.create(RequestId.oneNew(), ClientSessionId("A", "B", "C"), queue, orders, ViewPortRange(0, 5), columns)
 
       viewPortContainer.runOnce()
 
@@ -181,7 +181,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       //val columns = orderPrices.getTableDef.columns
 
-      val viewport = viewPortContainer.create(RequestId.oneNew(), ClientSessionId("A", "B"), queue, orderPrices, ViewPortRange(0, 20), columns)
+      val viewport = viewPortContainer.create(RequestId.oneNew(), ClientSessionId("A", "B", "C"), queue, orderPrices, ViewPortRange(0, 20), columns)
 
       viewPortContainer.runOnce()
 
@@ -343,7 +343,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       //val columns = orderPrices.getTableDef.columns
 
-      val viewport = viewPortContainer.create(RequestId.oneNew(), ClientSessionId("A", "B"), queue, orderPrices, ViewPortRange(0, 20), columns)
+      val viewport = viewPortContainer.create(RequestId.oneNew(), ClientSessionId("A", "B", "C"), queue, orderPrices, ViewPortRange(0, 20), columns)
 
       viewPortContainer.runOnce()
 

@@ -5,12 +5,12 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.ModuleContainer
 import org.finos.vuu.core.table.TableContainer
-import org.finos.vuu.net.{Authenticator, ClientSessionContainer}
+import org.finos.vuu.net.ClientSessionContainer
+import org.finos.vuu.net.auth.Authenticator
 import org.finos.vuu.viewport.ViewPortContainer
 
-trait IVuuServer {
+trait AbstractVuuServer {
   def sessionContainer: ClientSessionContainer
-  def authenticator: Authenticator
   def tableContainer: TableContainer
   def viewPortContainer: ViewPortContainer
   def moduleContainer: ModuleContainer

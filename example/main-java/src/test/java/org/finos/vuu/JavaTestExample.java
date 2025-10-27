@@ -38,7 +38,7 @@ public class JavaTestExample extends VuuServerTestCase {
 
         withVuuServer(toScalaSeq(module), (vuuServer) -> {
 
-            vuuServer.login("test", "test");
+            vuuServer.login("test");
 
             ViewPort viewport = vuuServer.createViewPort(JavaExampleModule.NAME, "myTable");
 

@@ -43,10 +43,10 @@ abstract class OrderComparisonClause(leftClause: CalculatedColumnClause, rightCl
 
 sealed abstract class OrderOp { def apply[T](v1: T, v2: T)(implicit  ordering: Ordering[T]): Boolean }
 object OrderOp {
-  final case object GT extends OrderOp {
+  case object GT extends OrderOp {
     override def apply[T](v1: T, v2: T)(implicit ordering: Ordering[T]): Boolean = ordering.gt(v1, v2)
   }
-  final case object LT extends OrderOp {
+  case object LT extends OrderOp {
     override def apply[T](v1: T, v2: T)(implicit ordering: Ordering[T]): Boolean = ordering.lt(v1, v2)
   }
 }

@@ -44,11 +44,13 @@ class JsonVsSerializerTest extends AnyFeatureSpec with Matchers{
 
     val message = JsonViewServerMessage("REQ:123", "SESS:456", "AAA", "chris", body)
 
-    val json = JsonVsSerializer.serialize(message)
+    val serializer = JsonVsSerializer()
+    
+    val json = serializer.serialize(message)
 
     println("To Json = " + json)
 
-    val o = JsonVsSerializer.deserialize(json)
+    val o = serializer.deserialize(json)
 
     o should equal(message)
 
@@ -61,8 +63,8 @@ class JsonVsSerializerTest extends AnyFeatureSpec with Matchers{
 
       JsonSubTypeRegistry.register(classOf[MessageBody], classOf[CoreJsonSerializationMixin])
 
-      roundTrip(LoginRequest("AAA11122233", "chris"))
-      roundTrip(LoginSuccess("AAA11122233", "vuuServerId"))
+      roundTrip(LoginRequest("AAA11122233"))
+      roundTrip(LoginSuccess("vuuServerId"))
       roundTrip(HeartBeat(123L))
       roundTrip(HeartBeatResponse(123L))
       roundTrip(RpcUpdate(ViewPortTable("orderEntry", "CORE"), "Foo", Map("Foo" -> 123, "Bar" -> true, "Whizzle" -> "TANG", "HooHa" -> 344567L)))
@@ -76,32 +78,6 @@ class JsonVsSerializerTest extends AnyFeatureSpec with Matchers{
 //        RowUpdate("Vp1", 1, 0,":KEY1", 100l, Array("foo", "bar", 1)),
 //        RowUpdate("Vp2", 1, 0,":KEY1", 100l, Array("bundle", "cheese", 1, true))
 //      )))
-
-    }
-
-    Scenario("test mixing registry"){
-
-      JsonSubTypeRegistry.register(classOf[Animal], classOf[LandAnimalMixin])
-      JsonSubTypeRegistry.register(classOf[Animal], classOf[SeaAnimalMixin])
-
-      val registry = JsonSubTypeRegistry
-
-      def roundTripToObj(c: Container): Unit = {
-
-        val mapper = JsonVsSerializer.getMapper
-
-        val json = mapper.writeValueAsString(c)
-
-        println(json)
-
-        val o2 = mapper.readValue(json, classOf[Container])
-
-        assert(c == o2)
-      }
-
-      roundTripToObj(Container(Rhino(true)))
-
-      roundTripToObj(Container(Whale(true, true)))
 
     }
 
