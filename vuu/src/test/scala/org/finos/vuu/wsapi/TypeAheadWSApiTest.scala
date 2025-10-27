@@ -11,6 +11,7 @@ import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
 import org.finos.vuu.wsapi.helpers.{FakeDataSource, TestProvider}
 
+import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 
 class TypeAheadWSApiTest extends WebSocketApiTestBase {
@@ -359,6 +360,19 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
     val viewPortId = viewPortCreateResponse.get.viewPortId
     waitForData(expectedRowCount)
     viewPortId
+  }
+
+  @tailrec
+  private def waitForData(expectedRowCount: Int): Unit = {
+    val tableSizeResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
+    tableSizeResponse match {
+      case None => fail("No table row updates")
+      case Some(value) =>
+        val dataCount = value.rows.count(p => p.updateType == "U")
+        if (dataCount < expectedRowCount) {
+          waitForData(expectedRowCount - dataCount)
+        }
+    }
   }
 
   private def createTypeAheadRequest(viewPortId: String, tableName: String, columnName: String): RpcRequest = {
