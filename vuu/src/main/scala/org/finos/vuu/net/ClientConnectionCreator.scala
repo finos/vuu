@@ -5,7 +5,6 @@ import io.netty.channel.{Channel, ChannelFuture}
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.client.messages.RequestId
-import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.ModuleContainer
 import org.finos.vuu.net.flowcontrol.{BatchSize, Disconnect, FlowController, SendHeartbeat}
 import org.finos.vuu.net.json.JsonVsSerializer
@@ -169,18 +168,9 @@ class DefaultMessageHandler(val channel: Channel,
 }
 
 case class ClientSessionId(sessionId: String, user: String, channelId: String) extends Ordered[ClientSessionId] {
-  override def equals(obj: scala.Any): Boolean = {
-    if (obj == null) false
-    else if (canEqual(obj)) {
-      sessionId == obj.asInstanceOf[ClientSessionId].sessionId
-    } else {
-      false
-    }
-  }
-
-  override def hashCode(): Int = sessionId.hashCode
 
   override def compare(that: ClientSessionId): Int = sessionId.compareTo(that.sessionId)
+
 }
 
 trait ClientSessionContainer {
