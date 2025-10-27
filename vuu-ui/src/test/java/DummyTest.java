@@ -1,9 +1,9 @@
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class DummyTest {
 
   @Test
-  public void testDumy(){
+  public void testDummy(){
     assert true == true;
   }
 

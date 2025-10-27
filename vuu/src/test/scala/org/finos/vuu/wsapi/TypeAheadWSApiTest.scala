@@ -1,16 +1,17 @@
 package org.finos.vuu.wsapi
 
-import org.finos.vuu.api._
+import org.finos.vuu.api.*
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
-import org.finos.vuu.net._
+import org.finos.vuu.net.*
 import org.finos.vuu.net.rpc.DefaultRpcHandler
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
 import org.finos.vuu.wsapi.helpers.{FakeDataSource, TestProvider}
 
+import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 
 class TypeAheadWSApiTest extends WebSocketApiTestBase {
@@ -343,22 +344,35 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
   }
 
   private def createViewPortForJoinTable = {
-    createViewPortBase(joinTableName)
+    createViewPortBase(joinTableName, 12)
   }
 
   private def createViewPort = {
-    createViewPortBase(tableName)
+    createViewPortBase(tableName, 12)
   }
 
-  private def createViewPortBase(tableName: String) = {
-    val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(1, 100), columns = Array("Id", "Name", "Account"), SortSpec(List(SortDef("Account", 'A'))), Array.empty[String], FilterSpec("Account > 20000"))
+  private def createViewPortBase(tableName: String, expectedRowCount: Int) = {
+    val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName),
+      ViewPortRange(1, 100), columns = Array("Id", "Name", "Account"),
+      SortSpec(List(SortDef("Account", 'A'))), Array.empty[String], FilterSpec("Account > 20000"))
     vuuClient.send(sessionId, tokenId, createViewPortRequest)
     val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
     val viewPortId = viewPortCreateResponse.get.viewPortId
-    // Verify viewport keys are populated. viewPortRunner cycle is 100ms
-    val tableSizeResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
-    tableSizeResponse.get.rows(0).vpSize shouldEqual 13
+    waitForData(expectedRowCount)
     viewPortId
+  }
+
+  @tailrec
+  private def waitForData(expectedRowCount: Int): Unit = {
+    val tableSizeResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
+    tableSizeResponse match {
+      case None => fail("No table row updates")
+      case Some(value) =>
+        val dataCount = value.rows.count(p => p.updateType == "U")
+        if (dataCount < expectedRowCount) {
+          waitForData(expectedRowCount - dataCount)
+        }
+    }
   }
 
   private def createTypeAheadRequest(viewPortId: String, tableName: String, columnName: String): RpcRequest = {

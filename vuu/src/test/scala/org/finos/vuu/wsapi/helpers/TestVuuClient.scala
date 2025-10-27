@@ -10,7 +10,6 @@ import org.scalatest.concurrent.{Signaler, ThreadSignaler}
 import org.scalatest.time.Span
 import org.scalatest.time.SpanSugar.*
 
-import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import scala.annotation.tailrec
 import scala.language.postfixOps
@@ -100,7 +99,7 @@ class TestVuuClient(vsClient: ViewServerClient, loginTokenService: LoginTokenSer
 
   def login(user: VuuUser): Option[String] = {
     val token = loginTokenService.getToken(user)
-    send("", token, LoginRequest(token))
+    send("", "", LoginRequest(token))
     awaitForMsg[LoginSuccess]
       .map(x => x.sessionId)
   }

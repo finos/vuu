@@ -10,7 +10,6 @@ import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.net.WebSocketViewServerClient
 import org.finos.vuu.net.http.VuuHttp2ServerOptions
 import org.finos.vuu.net.json.JsonVsSerializer
-import org.junit.Assert.assertNotNull
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -49,7 +48,7 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val token = config.security.loginTokenService.getToken(VuuUser("Mikey"))
       val sessionId = ClientHelperFns.login(token)
-      assertNotNull(sessionId)
+      sessionId should not equal null
 
       stopLifeCycle()
     }
@@ -78,7 +77,7 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val token = config.security.loginTokenService.getToken(VuuUser("Mikey"))
       val sessionId = ClientHelperFns.login(token)
-      assertNotNull(sessionId)
+      sessionId should not equal null
 
       stopLifeCycle()
     }
@@ -107,7 +106,7 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val token = config.security.loginTokenService.getToken(VuuUser("Mikey"))
       val sessionId = ClientHelperFns.login(token)
-      assertNotNull(sessionId)
+      sessionId should not equal null
 
       stopLifeCycle()
     }
@@ -136,7 +135,7 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val token = config.security.loginTokenService.getToken(VuuUser("Mikey"))
       val sessionId = ClientHelperFns.login(token)
-      assertNotNull(sessionId)
+      sessionId should not equal null
 
       stopLifeCycle()
     }
@@ -172,7 +171,7 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val token = config.security.loginTokenService.getToken(VuuUser("Mikey"))
       val sessionId = ClientHelperFns.login(token)
-      assertNotNull(sessionId)
+      sessionId should not equal null
 
       stopLifeCycle()
     }
@@ -208,7 +207,7 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       val token = config.security.loginTokenService.getToken(VuuUser("Mikey"))
       val sessionId = ClientHelperFns.login(token)
-      assertNotNull(sessionId)
+      sessionId should not equal null
 
       stopLifeCycle()
     }
