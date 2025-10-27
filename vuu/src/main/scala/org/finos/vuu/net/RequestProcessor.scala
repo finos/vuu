@@ -29,8 +29,9 @@ class RequestProcessor(loginTokenService: LoginTokenService,
   def handle(msg: ViewServerMessage, channel: Channel): Option[ViewServerMessage] = {
     msg.body match {
       case body: LoginRequest =>
-        loginTokenService.login(body, vuuServerId) match {
-          case Right(vuuUser) => createSession(msg.requestId, vuuUser, clientSessionContainer, channel, vuuServerId)
+        loginTokenService.login(body) match {
+          case Right(vuuUser) =>
+            createSession(msg.requestId, vuuUser, clientSessionContainer, channel, vuuServerId)
           case Left(errorMessage) =>
             handleMessageWithNoSession(errorMessage, channel)
             None
