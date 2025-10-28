@@ -318,19 +318,23 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
   }
 
   private receive = (evt: MessageEvent) => {
-    const vuuMessageFromServer = parseWebSocketMessage(evt.data);
-    if (vuuMessageFromServer.body.type === "CHANGE_VP_RANGE_SUCCESS") {
-      info?.(`CHANGE_VP_RANGE_SUCCESS<#${vuuMessageFromServer.requestId}>`);
-    }
-    if (debugEnabled) {
-      if (vuuMessageFromServer.body.type !== "HB") {
-        debug(`${vuuMessageFromServer.body.type}`);
-        if (vuuMessageFromServer.body.type === "CHANGE_VP_SUCCESS") {
-          debug(JSON.stringify(vuuMessageFromServer.body));
+    if (evt.data === "Invalid token") {
+      throw Error("[WebSocketConnection] Invalid token");
+    } else {
+      const vuuMessageFromServer = parseWebSocketMessage(evt.data);
+      if (vuuMessageFromServer.body.type === "CHANGE_VP_RANGE_SUCCESS") {
+        info?.(`CHANGE_VP_RANGE_SUCCESS<#${vuuMessageFromServer.requestId}>`);
+      }
+      if (debugEnabled) {
+        if (vuuMessageFromServer.body.type !== "HB") {
+          debug(`${vuuMessageFromServer.body.type}`);
+          if (vuuMessageFromServer.body.type === "CHANGE_VP_SUCCESS") {
+            debug(JSON.stringify(vuuMessageFromServer.body));
+          }
         }
       }
+      this.#callback(vuuMessageFromServer);
     }
-    this.#callback(vuuMessageFromServer);
   };
 
   send = (msg: VuuClientMessage) => {

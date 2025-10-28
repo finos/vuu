@@ -18,11 +18,11 @@ const WS = "ws"; // to stop semGrep complaining
 function assertWebsocketArgs(url, insecure) {
   if (url.startsWith(WS + "s://") && insecure) {
     console.warn(
-      "WARN: Passed websocket url is secure. Ignoring `--insecure` flag."
+      "WARN: Passed websocket url is secure. Ignoring `--insecure` flag.",
     );
   } else if (url.startsWith(WS + "://") && !insecure) {
     console.warn(
-      `WARN: Use '--insecure' flag if websocket connection (${url}) is not secure.`
+      `WARN: Use '--insecure' flag if websocket connection (${url}) is not secure.`,
     );
   }
 }
@@ -37,7 +37,7 @@ function toWebsocketUrl(url, insecure) {
   }
 }
 
-const entryPoints = ["index.tsx", "login.tsx", "demo.tsx"];
+const entryPoints = ["index.tsx", "login.tsx"];
 
 const outdir = "../../deployed_apps/app-vuu-example";
 let configFile = "./config/localhost.config.json";
@@ -51,7 +51,7 @@ const configPath = getCommandLineArg("--config", true);
 const features = getCommandLineArg(
   "--features",
   true,
-  "feature-filter-table,feature-instrument-tiles,feature-basket-trading"
+  "feature-filter-table,feature-instrument-tiles,feature-basket-trading",
 );
 if (configPath) {
   configFile = configPath;
@@ -95,7 +95,7 @@ async function writeFeatureEntriesToConfigJson(featureBundles) {
      */
     const featureFilePath = (featureName, files, matchPattern) => {
       const file = files.find(({ fileName }) =>
-        fileName.endsWith(matchPattern)
+        fileName.endsWith(matchPattern),
       );
       if (file && matchPattern === ".js") {
         return `../feature-${featureName}/${file.fileName}`;
@@ -106,7 +106,7 @@ async function writeFeatureEntriesToConfigJson(featureBundles) {
 
     featureBundles.forEach(({ name, files }) => {
       const { description = name, vuu } = readJson(
-        path.resolve(`../feature-${name}/package.json`)
+        path.resolve(`../feature-${name}/package.json`),
       );
       features[name] = {
         title: description,
@@ -126,7 +126,7 @@ async function writeFeatureEntriesToConfigJson(featureBundles) {
         } else {
           resolve();
         }
-      }
+      },
     );
   });
 }
@@ -165,13 +165,13 @@ async function main() {
           { recursive: true },
           (err) => {
             if (err) throw err;
-          }
+          },
         );
       } else {
         // delete once we no longer need to support node16 < .7
         copyFolderSync(
           path.resolve("public", file),
-          path.resolve(outdir, file)
+          path.resolve(outdir, file),
         );
       }
     }

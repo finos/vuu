@@ -22,7 +22,6 @@ export const VIEW_PORT_MENU_RESP = "VIEW_PORT_MENU_RESP";
 export const VIEW_PORT_MENU_REJ = "VIEW_PORT_MENU_REJ";
 export const HB = "HB";
 export const HB_RESP = "HB_RESP";
-export const LOGIN = "LOGIN";
 export const OPEN_TREE_NODE = "OPEN_TREE_NODE";
 export const OPEN_TREE_SUCCESS = "OPEN_TREE_SUCCESS";
 export const OPEN_TREE_REJECT = "OPEN_TREE_REJECT";

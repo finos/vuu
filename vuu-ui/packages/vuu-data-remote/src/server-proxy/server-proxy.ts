@@ -221,10 +221,7 @@ export class ServerProxy {
       this.authToken = authToken;
       this.user = user;
       return new Promise((resolve, reject) => {
-        this.sendMessageToServer(
-          { type: Message.LOGIN, token: this.authToken, user },
-          "",
-        );
+        this.sendMessageToServer({ type: "LOGIN", token: this.authToken }, "");
         this.pendingLogin = { resolve, reject };
       });
     } else if (this.authToken === "") {

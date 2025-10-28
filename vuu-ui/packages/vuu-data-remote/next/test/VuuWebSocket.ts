@@ -52,7 +52,7 @@ export class VuuWebSocket implements IWebSocket {
   }
 
   login() {
-    this.send({ type: "LOGIN", token: this.#authToken, user: "user" });
+    this.send({ type: "LOGIN", token: this.#authToken });
   }
 
   messageHandler = (evt: MessageEvent) => {
