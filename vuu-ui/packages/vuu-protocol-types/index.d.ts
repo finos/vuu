@@ -35,20 +35,17 @@ export interface ClientToServerAuth {
 export interface VuuLoginRequest {
   token: string;
   type: "LOGIN";
-  user: string;
 }
 
 export declare type VuuLoginResponse =
   | VuuLoginSuccessResponse
   | VuuLoginFailResponse;
 export interface VuuLoginSuccessResponse {
-  token: string;
   type: "LOGIN_SUCCESS";
   vuuServerId: string;
 }
 export interface VuuLoginFailResponse {
   errorMsg: string;
-  token: string;
   type: "LOGIN_FAIL";
 }
 

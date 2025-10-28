@@ -1,333 +1,375 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8" />
-<title>Websocket Test</title>
-<style>
-    body {
-        font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-</style>
-<script>
+  <head>
+    <meta charset="utf-8" />
+    <title>Websocket Test</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+    </style>
+    <script>
+      let _authHost = "https://localhost:8443";
+      let _authToken = undefined;
+      let _username = "test";
+      let _password = "test";
+      let _rangeFrom = 0;
+      let _rangeTo = 20;
+      let _requestId = 1;
+      let _sessionId = undefined;
+      let _viewPortId = undefined;
+      let _websocketUrl = "ws://localhost:8090/websocket";
+      let _websocket;
+      let _websocketError = "";
+      let _websocketStatus = "";
+      let _id = 1;
 
-let _authHost = 'https://localhost:8443'
-let _authToken = undefined;
-let _username = 'test'
-let _password = 'test'
-let _rangeFrom = 0;
-let _rangeTo = 20;
-let _requestId = 1;
-let _sessionId = undefined;
-let _viewPortId = undefined;
-let _websocketUrl = 'ws://localhost:8090/websocket'
-let _websocket;
-let _websocketError = '';
-let _websocketStatus = '';
-let _id = 1;
+      const socketOnOpen = () => {
+        setStatus("open");
+      };
 
+      const socketOnClose = () => {
+        setStatus("closed");
+      };
 
-const socketOnOpen = () => {
-    setStatus('open')
-}
+      const socketOnError = (evt) => {
+        setStatus("error");
+        console.log("onErrro", {
+          evt,
+        }),
+          showError("onError");
+      };
 
-const socketOnClose = () => {
-    setStatus('closed')
-}
-
-const socketOnError = (evt) => {
-    setStatus('error');
-    console.log('onErrro', {
-        evt
-    }),
-    showError('onError')
-}   
-
-const socketOnMessage = (evt) => {
-    try {
-        const {sessionId, body: {type, ...vuuMessageBody}} = JSON.parse(evt.data);
-        if (type === 'HB'){
+      const socketOnMessage = (evt) => {
+        try {
+          const {
+            sessionId,
+            body: { type, ...vuuMessageBody },
+          } = JSON.parse(evt.data);
+          if (type === "HB") {
             // TODO update UI
             sendHeartBeat();
-        } else switch(type){
-            case 'LOGIN_SUCCESS':
-                return setLoginResult(true, sessionId)
-            case "CREATE_VP_SUCCESS":
-                return setCreateVpResult(true, vuuMessageBody)
-            case "CHANGE_VP_RANGE_SUCCESS":
-                return setChangeVpRangeResult(true, vuuMessageBody)
-            case "TABLE_ROW":
-                return showTableData(vuuMessageBody)
-            default:
-                console.log(`unknown message type ${type}`)
-
+          } else
+            switch (type) {
+              case "LOGIN_SUCCESS":
+                return setLoginResult(true, sessionId);
+              case "CREATE_VP_SUCCESS":
+                return setCreateVpResult(true, vuuMessageBody);
+              case "CHANGE_VP_RANGE_SUCCESS":
+                return setChangeVpRangeResult(true, vuuMessageBody);
+              case "TABLE_ROW":
+                return showTableData(vuuMessageBody);
+              default:
+                console.log(`unknown message type ${type}`);
+            }
+        } catch (e) {
+          console.log(`error from VUU server '${evt.data}'`);
         }
-    } catch(e){
-        console.log(`error from VUU server '${evt.data}'`)
-    }
-}
+      };
 
-const clearError = (id) => {
-    return (evt) => {
-        //TODO clear up event listeners
-        const doomedElement = document.getElementById(id);
-        doomedElement.remove();
-    }
-}
+      const clearError = (id) => {
+        return (evt) => {
+          //TODO clear up event listeners
+          const doomedElement = document.getElementById(id);
+          doomedElement.remove();
+        };
+      };
 
-const showError = (message) => {
-    const id = `el=${_id++}`;
-    const container = divWebsocketErrors;
-    const errorContainer = document.createElement('div');
-    errorContainer.id = id;
-    errorContainer.className = "error-container";
-    const clearButton = document.createElement('button');
-    clearButton.innerText = "Clear";
-    clearButton.addEventListener('click', clearError(id));
-    const errorText = document.createElement('span');
-    errorText.innerText = message;
-    errorContainer.appendChild(errorText);
-    errorContainer.appendChild(clearButton);
-    container.appendChild(errorContainer)
-}
+      const showError = (message) => {
+        const id = `el=${_id++}`;
+        const container = divWebsocketErrors;
+        const errorContainer = document.createElement("div");
+        errorContainer.id = id;
+        errorContainer.className = "error-container";
+        const clearButton = document.createElement("button");
+        clearButton.innerText = "Clear";
+        clearButton.addEventListener("click", clearError(id));
+        const errorText = document.createElement("span");
+        errorText.innerText = message;
+        errorContainer.appendChild(errorText);
+        errorContainer.appendChild(clearButton);
+        container.appendChild(errorContainer);
+      };
 
-const setStatus = (status) => {
-    const element = document.getElementById("spanWebsocketStatus");
-    element.innerText = status;
-}
+      const setStatus = (status) => {
+        const element = document.getElementById("spanWebsocketStatus");
+        element.innerText = status;
+      };
 
-const setAuthToken = (authToken) => {
-    const element = document.getElementById("spanAuthToken");
-    element.innerText = authToken;
-}
+      const setAuthToken = (authToken) => {
+        const element = document.getElementById("spanAuthToken");
+        element.innerText = authToken;
+      };
 
-const setLoginResult = (success, sessionId, errorMessage) => {
-    _sessionId = sessionId;
-    const element = document.getElementById("spanLoginResult");
-    if (success){
-        element.innerText = `LOGIN_SUCCESS sessionId: ${sessionId}`
-    } else {
-
-    }
-}
-
-const setCreateVpResult = (success, message, errorMessage) => {
-    const element = document.getElementById("spanCreateVpResult");
-    if (success){
-        _viewPortId = message.viewPortId;
-        element.innerText = `CREATE_VP_SUCCESS viewportId ${message.viewPortId}`
-    } else {
-
-    }
-}
-
-const setChangeVpRangeResult = (success, message, errorMessage) => {
-    const element = document.getElementById("spanChangeVpRangeResult");
-    if (success){
-        _viewPortId = message.viewPortId;
-        element.innerText = `CHANGE_VP_RANGE_SUCCESS range from: ${message.from} to: ${message.to}`
-    } else {
-
-    }
-}
-
-const setViewportSize = (size) => {
-    const spanSize = document.getElementById("spanVpSize");
-    spanSize.innerText = `viewport row count: ${size}`;
-}
-
-const setRowDataSummary = (message) => {
-    const container = document.getElementById("divRowDataContainer");
-    const rowsEntry = document.createElement('div');
-
-    rowsEntry.innerText = message;
-    container.appendChild(rowsEntry);
-}
-
-const showTableData = (message) => {
-    const rowData = [];
-    for (let row of message.rows){
-        const {updateType, vpSize} = row;
-        if (updateType === 'SIZE'){
-            setViewportSize(vpSize)
+      const setLoginResult = (success, sessionId, errorMessage) => {
+        _sessionId = sessionId;
+        const element = document.getElementById("spanLoginResult");
+        if (success) {
+          element.innerText = `LOGIN_SUCCESS sessionId: ${sessionId}`;
         } else {
-            rowData.push(row)
         }
-    }
+      };
 
-    if (rowData.length > 0){
-        const [firstRow] = rowData;
-        const lastRow = rowData[rowData.length-1];
-        const message = `${rowData.length} data rows received  firstIndex: ${firstRow.rowIndex} lastIndex ${lastRow.rowIndex}`
+      const setCreateVpResult = (success, message, errorMessage) => {
+        const element = document.getElementById("spanCreateVpResult");
+        if (success) {
+          _viewPortId = message.viewPortId;
+          element.innerText = `CREATE_VP_SUCCESS viewportId ${message.viewPortId}`;
+        } else {
+        }
+      };
 
-        setRowDataSummary(message)
-    }
-}
+      const setChangeVpRangeResult = (success, message, errorMessage) => {
+        const element = document.getElementById("spanChangeVpRangeResult");
+        if (success) {
+          _viewPortId = message.viewPortId;
+          element.innerText = `CHANGE_VP_RANGE_SUCCESS range from: ${message.from} to: ${message.to}`;
+        } else {
+        }
+      };
 
+      const setViewportSize = (size) => {
+        const spanSize = document.getElementById("spanVpSize");
+        spanSize.innerText = `viewport row count: ${size}`;
+      };
 
-function createWebsocket(url){
-    try {
-        _websocket = new WebSocket(url);
-        _websocket.onopen = socketOnOpen;
-        _websocket.onerror = socketOnError;
-        _websocket.onmessage = socketOnMessage;
-    } catch(err){
-        showError(err.message)
-    }
-}
+      const setRowDataSummary = (message) => {
+        const container = document.getElementById("divRowDataContainer");
+        const rowsEntry = document.createElement("div");
 
-const handleWebsocketUrlChange = (evt) =>  _websocketUrl = evt.target.value;
-const handleUsernameChange = (evt) =>  _username = evt.target.value;
-const handlePasswordChange = (evt) =>  _password = evt.starget.value;
-const handleRangeFromChange = (evt) =>  _rangeFrom = parseInt(evt.target.value,10);
-const handleRangeToChange = (evt) =>  _rangeTo = parseInt(evt.target.value,10);
+        rowsEntry.innerText = message;
+        container.appendChild(rowsEntry);
+      };
 
-const handleCreateWebsocketClick = (evt) => {
-    createWebsocket(_websocketUrl);
-}
+      const showTableData = (message) => {
+        const rowData = [];
+        for (let row of message.rows) {
+          const { updateType, vpSize } = row;
+          if (updateType === "SIZE") {
+            setViewportSize(vpSize);
+          } else {
+            rowData.push(row);
+          }
+        }
 
-const sendMessage = (message, requestId) => {
-    _websocket.send(JSON.stringify({
-        body:message,
-        module: "CORE",
-        requestId,
-        sessionId: _sessionId,
-        token: _authToken
-    }));
-}
+        if (rowData.length > 0) {
+          const [firstRow] = rowData;
+          const lastRow = rowData[rowData.length - 1];
+          const message = `${rowData.length} data rows received  firstIndex: ${firstRow.rowIndex} lastIndex ${lastRow.rowIndex}`;
 
-const sendHeartBeat = () => {
-    sendMessage({type: "HB_RESP", ts: +new Date()}, "NA")    
-}
+          setRowDataSummary(message);
+        }
+      };
 
-const getAuthToken = async (username, password) =>
-  fetch(`${_authHost}/api/authn`, {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      "access-control-allow-origin": location.host,
-    },
-    body: JSON.stringify({ username, password }),
-  }).then((response) => {
-    if (response.ok) {
-      const authToken = response.headers.get("vuu-auth-token");
-      if (typeof authToken === "string" && authToken.length > 0) {
-        return authToken;
-      } else {
-        throw Error(`Authentication failed auth token not returned by server`);
+      function createWebsocket(url) {
+        try {
+          _websocket = new WebSocket(url);
+          _websocket.onopen = socketOnOpen;
+          _websocket.onerror = socketOnError;
+          _websocket.onmessage = socketOnMessage;
+        } catch (err) {
+          showError(err.message);
+        }
       }
-    } else {
-      throw Error(
-        `Authentication failed ${response.status} ${response.statusText}`
-      );
-    }
-  });
 
+      const handleWebsocketUrlChange = (evt) =>
+        (_websocketUrl = evt.target.value);
+      const handleUsernameChange = (evt) => (_username = evt.target.value);
+      const handlePasswordChange = (evt) => (_password = evt.starget.value);
+      const handleRangeFromChange = (evt) =>
+        (_rangeFrom = parseInt(evt.target.value, 10));
+      const handleRangeToChange = (evt) =>
+        (_rangeTo = parseInt(evt.target.value, 10));
 
-const handleAuthenticate = async () => {
-    try {
-        _authToken = await getAuthToken(_username, _password);
-        setAuthToken(_authToken)
-    } catch(e){
-        console.log({e})
-    }
-}
+      const handleCreateWebsocketClick = (evt) => {
+        createWebsocket(_websocketUrl);
+      };
 
-const handleLogin = async () => {
-    try {
-        sendMessage({type: "LOGIN", token: _authToken, user: "user"})
-    } catch(e){
-        console.log({e})
-    }
-}
+      const sendMessage = (message, requestId) => {
+        _websocket.send(
+          JSON.stringify({
+            body: message,
+            module: "CORE",
+            requestId,
+            sessionId: _sessionId,
+            token: _authToken,
+          }),
+        );
+      };
 
-const handleSubscribe = () => {
-    sendMessage({
-        columns: ["bbg","currency","description","exchange","isin","lotSize","ric"],
-        range: {from: 0, to: 0},
-         type: "CREATE_VP",
-         table: {table: "instruments", module: "SIMUL"},
-    });
-    // {,"range":{"from":0,"to":0},"columns":["bbg","currency","description","exchange","isin","lotSize","ric"],"sort":{"sortDefs":[]},"groupBy":[],"filterSpec":{"filter":""}}}
-}
+      const sendHeartBeat = () => {
+        sendMessage({ type: "HB_RESP", ts: +new Date() }, "NA");
+      };
 
-const handleSetRange = () => {
-    try {
-        sendMessage({type: "CHANGE_VP_RANGE", viewPortId: _viewPortId, from: _rangeFrom, to: _rangeTo})
-    } catch(e){
-        console.log({e})
-    }
- 
-}
+      const getAuthToken = async (username, password) =>
+        fetch(`${_authHost}/api/authn`, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            "access-control-allow-origin": location.host,
+          },
+          body: JSON.stringify({ username, password }),
+        }).then((response) => {
+          if (response.ok) {
+            const authToken = response.headers.get("vuu-auth-token");
+            if (typeof authToken === "string" && authToken.length > 0) {
+              return authToken;
+            } else {
+              throw Error(
+                `Authentication failed auth token not returned by server`,
+              );
+            }
+          } else {
+            throw Error(
+              `Authentication failed ${response.status} ${response.statusText}`,
+            );
+          }
+        });
 
-const addEventHandlers = () => {
-    document.getElementById('txtWebsocketUrl').addEventListener('input', handleWebsocketUrlChange)
-    document.getElementById('btnCreateWebsocket').addEventListener('click', handleCreateWebsocketClick)
+      const handleAuthenticate = async () => {
+        try {
+          _authToken = await getAuthToken(_username, _password);
+          setAuthToken(_authToken);
+        } catch (e) {
+          console.log({ e });
+        }
+      };
 
-    document.getElementById('txtUsername').addEventListener('input', handleUsernameChange)
-    document.getElementById('txtPassword').addEventListener('input', handlePasswordChange)
-    document.getElementById('btnAuthenticate').addEventListener('click', handleAuthenticate)
+      const handleLogin = async () => {
+        try {
+          sendMessage({ type: "LOGIN", token: _authToken });
+        } catch (e) {
+          console.log({ e });
+        }
+      };
 
-    document.getElementById('btnLogin').addEventListener('click', handleLogin)
-    document.getElementById('btnCreateVp').addEventListener('click', handleSubscribe)
+      const handleSubscribe = () => {
+        sendMessage({
+          columns: [
+            "bbg",
+            "currency",
+            "description",
+            "exchange",
+            "isin",
+            "lotSize",
+            "ric",
+          ],
+          range: { from: 0, to: 0 },
+          type: "CREATE_VP",
+          table: { table: "instruments", module: "SIMUL" },
+        });
+        // {,"range":{"from":0,"to":0},"columns":["bbg","currency","description","exchange","isin","lotSize","ric"],"sort":{"sortDefs":[]},"groupBy":[],"filterSpec":{"filter":""}}}
+      };
 
-    document.getElementById('txtRangeFrom').addEventListener('input', handleRangeFromChange)
-    document.getElementById('txtRangeTo').addEventListener('input', handleRangeToChange)
-    document.getElementById('btnSetRange').addEventListener('click', handleSetRange)
+      const handleSetRange = () => {
+        try {
+          sendMessage({
+            type: "CHANGE_VP_RANGE",
+            viewPortId: _viewPortId,
+            from: _rangeFrom,
+            to: _rangeTo,
+          });
+        } catch (e) {
+          console.log({ e });
+        }
+      };
 
-}
+      const addEventHandlers = () => {
+        document
+          .getElementById("txtWebsocketUrl")
+          .addEventListener("input", handleWebsocketUrlChange);
+        document
+          .getElementById("btnCreateWebsocket")
+          .addEventListener("click", handleCreateWebsocketClick);
 
-</script>
-</head>
-<body>
+        document
+          .getElementById("txtUsername")
+          .addEventListener("input", handleUsernameChange);
+        document
+          .getElementById("txtPassword")
+          .addEventListener("input", handlePasswordChange);
+        document
+          .getElementById("btnAuthenticate")
+          .addEventListener("click", handleAuthenticate);
+
+        document
+          .getElementById("btnLogin")
+          .addEventListener("click", handleLogin);
+        document
+          .getElementById("btnCreateVp")
+          .addEventListener("click", handleSubscribe);
+
+        document
+          .getElementById("txtRangeFrom")
+          .addEventListener("input", handleRangeFromChange);
+        document
+          .getElementById("txtRangeTo")
+          .addEventListener("input", handleRangeToChange);
+        document
+          .getElementById("btnSetRange")
+          .addEventListener("click", handleSetRange);
+      };
+    </script>
+  </head>
+  <body>
     <section>
-        <h2>Websocket</h2>
-        <label for="txtWebsocketUrl">Websocket URL</label>
-        <input id="txtWebsocketUrl" style="width: 200px" value="ws://localhost:8090/websocket"/>
-        <button id="btnCreateWebsocket">Create Websocket</button>
-        <span id="spanWebsocketStatus"></span>
-        <div id="divWebsocketErrors"/>
+      <h2>Websocket</h2>
+      <label for="txtWebsocketUrl">Websocket URL</label>
+      <input
+        id="txtWebsocketUrl"
+        style="width: 200px"
+        value="ws://localhost:8090/websocket"
+      />
+      <button id="btnCreateWebsocket">Create Websocket</button>
+      <span id="spanWebsocketStatus"></span>
+      <div id="divWebsocketErrors" />
     </section>
 
     <section>
-        <h2>Auth</h2>
-        <label for="txtUsername">Username</label>
-        <input id="txtUsername" style="width: 100px" value="test"/>
-        <label for="txtPassword">Password</label>
-        <input id="txtPassword" style="width: 100px" value="test"/>
-        <button id="btnAuthenticate">Get Auth Token</button>
-        <span id="spanAuthToken"></span>
+      <h2>Auth</h2>
+      <label for="txtUsername">Username</label>
+      <input id="txtUsername" style="width: 100px" value="test" />
+      <label for="txtPassword">Password</label>
+      <input id="txtPassword" style="width: 100px" value="test" />
+      <button id="btnAuthenticate">Get Auth Token</button>
+      <span id="spanAuthToken"></span>
     </section>
 
     <section>
-        <h2>VUU Websocket Protocol</h2>
-        <h4>LOGIN</h4>
-            <button id="btnLogin">LOGIN</button>
-            <span id="spanLoginResult"></span>
-        <h4>HB</h4>
-            <span id="spanHeartBeat"></span>
-            <h4>CREATE_VP</h4>
-            <button id="btnCreateVp">Subscribe</button>
-            <span id="spanCreateVpResult"></span>
-            <div id="divVpData">
-                <h6>TABLE_ROW</h6>
-                <div>
-                    <label for="txtRangeFrom">From</label>
-                    <input id="txtRangeFrom" style="width: 60px" type="number" value="0"/>
-                    <label for="txtRangeTo">To</label>
-                    <input id="txtRangeTo" style="width: 60px" type="number" value="20"/>
-                    <button id="btnSetRange">CHANGE_VP_RANGE</button>
-                    <span id="spanChangeVpRangeResult"></span>
-                </div>
-                <br />
-                <div id="spanVpSize"></div>
-                <br />
-                <div id="divRowDataContainer"></div>
-            </div>
+      <h2>VUU Websocket Protocol</h2>
+      <h4>LOGIN</h4>
+      <button id="btnLogin">LOGIN</button>
+      <span id="spanLoginResult"></span>
+      <h4>HB</h4>
+      <span id="spanHeartBeat"></span>
+      <h4>CREATE_VP</h4>
+      <button id="btnCreateVp">Subscribe</button>
+      <span id="spanCreateVpResult"></span>
+      <div id="divVpData">
+        <h6>TABLE_ROW</h6>
+        <div>
+          <label for="txtRangeFrom">From</label>
+          <input
+            id="txtRangeFrom"
+            style="width: 60px"
+            type="number"
+            value="0"
+          />
+          <label for="txtRangeTo">To</label>
+          <input id="txtRangeTo" style="width: 60px" type="number" value="20" />
+          <button id="btnSetRange">CHANGE_VP_RANGE</button>
+          <span id="spanChangeVpRangeResult"></span>
+        </div>
+        <br />
+        <div id="spanVpSize"></div>
+        <br />
+        <div id="divRowDataContainer"></div>
+      </div>
     </section>
 
     <script>
-        addEventHandlers();
+      addEventHandlers();
     </script>
-    </body>
+  </body>
 </html>
