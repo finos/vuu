@@ -322,9 +322,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
     vuuClient.send(sessionId, tokenId, createViewPortRequest)
     val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
     val viewPortId = viewPortCreateResponse.get.viewPortId
-    // Verify viewport keys are populated. viewPortRunner cycle is 100ms
-    val tableSizeResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
-    tableSizeResponse.get.rows(0).vpSize shouldEqual expectedNumberOfRows
+    waitForData(expectedNumberOfRows)
     viewPortId
   }
 
