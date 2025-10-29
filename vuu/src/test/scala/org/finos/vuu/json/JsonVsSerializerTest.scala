@@ -64,11 +64,19 @@ class JsonVsSerializerTest extends AnyFeatureSpec with Matchers{
     Scenario("test unhandled types") {
 
       assertThrows[Exception] {
+        JsonSubTypeRegistry.getClassForType(classOf[BigDecimal], "PIZZA")
+      }
+
+      assertThrows[Exception] {
         JsonSubTypeRegistry.getClassForType(classOf[MessageBody], "PIZZA")
       }
 
       assertThrows[Exception] {
         JsonSubTypeRegistry.getTypeForClass(classOf[MessageBody], classOf[BigDecimal])
+      }
+
+      assertThrows[Exception] {
+        JsonSubTypeRegistry.getTypeForClass(classOf[BigDecimal], classOf[MessageBody])
       }
 
     }
