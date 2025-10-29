@@ -31,6 +31,9 @@ export interface DataSourceStatsProps
    *  default to 'row'
    */
   itemLabel?: ItemLabel;
+
+  selectionActions?: ReactNode;
+  tooltrayActions?: ReactNode;
 }
 
 const classBase = "vuuDatasourceStats";
@@ -53,6 +56,7 @@ export const DataSourceStats = ({
   showFreezeStatus = true,
   showRowStats = true,
   showSelectionStats = true,
+  tooltrayActions,
   ...htmlAttributes
 }: DataSourceStatsProps) => {
   const targetWindow = useWindow();
@@ -116,6 +120,11 @@ export const DataSourceStats = ({
               className={`${classBase}-label`}
             >{`selected ${getLabel(itemLabel, selectedCount)}`}</span>
             <span className={`${classBase}-actions`}>{children}</span>
+          </div>
+        ) : null}
+        {tooltrayActions ? (
+          <div className={`${classBase}-statsPanel ${classBase}-tooltray`}>
+            <span className={`${classBase}-actions`}>{tooltrayActions}</span>
           </div>
         ) : null}
       </div>

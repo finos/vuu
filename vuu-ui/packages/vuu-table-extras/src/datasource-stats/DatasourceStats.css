@@ -1,5 +1,6 @@
 .vuuDatasourceStats {
   align-items: center;
+  background: var(--vuuDatasourceStats-background, var(--salt-container-secondary-background));
   display: grid;
   font-size: var(--vuuDatasourceStats-fontSize, 10px);
   gap: var(--vuuDatasourceStats-gap, var(--salt-spacing-100));
@@ -9,36 +10,38 @@
   height: var(--vuuDatasourceStats-height, 100%);
   padding: 0 var(--salt-spacing-200);
 
-  .vuuDatasourceStats-statsPanel {
-    align-items: center;
-    display: flex;
-    gap: var(--salt-spacing-100);
-    width: fit-content;
+    .vuuDatasourceStats-statsPanel {
+      align-items: center;
+      display: flex;
+      gap: var(--salt-spacing-100);
+      width: fit-content;
+    }
+
+    .vuuDatasourceStats-rowStats {
+      justify-self: flex-start;
+      grid-area: panel-start;
+    }
+    .vuuDatasourceStats-freezeStatus {
+      justify-self: flex-start;
+      grid-area: panel-start;
+    }
+    .vuuDatasourceStats-selectionStats {
+      justify-self: center;
+      grid-area: panel-center;
+    }
+
+  .vuuDatasourceStats-label {
+    color: var(--salt-content-secondary-foreground);
   }
 
-  .vuuDatasourceStats-rowStats {
-    justify-self: flex-start;
-    grid-area: panel-start;
+  .vuuDatasourceStats-value {
+    color: var(--salt-content-primary-foreground);
   }
-  .vuuDatasourceStats-freezeStatus {
-    justify-self: flex-start;
-    grid-area: panel-start;
+  .vuuDatasourceStats-tooltray {
+    justify-self: end;;
+    margin: 0 var(--salt-spacing-200);
+    grid-area: panel-end;
   }
-  .vuuDatasourceStats-selectionStats {
-    justify-self: center;
-    grid-area: panel-center;
-  }
-
-.vuuDatasourceStats-label {
-  color: var(--salt-content-secondary-foreground);
-}
-
-.vuuDatasourceStats-value {
-  color: var(--salt-content-primary-foreground);
-}
-.vuuDatasourceStats-actions {
-  margin: 0 var(--salt-spacing-200);
-}
 
 }
 

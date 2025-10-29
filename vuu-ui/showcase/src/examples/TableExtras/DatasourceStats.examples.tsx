@@ -79,7 +79,6 @@ const WithStyle = ({ children }: { children: ReactNode }) => {
           padding: var(--salt-spacing-100);
           transition: flex-basis .2s linear;
           .vuuDatasourceStats {
-            background: rgb(21,39,59);
             border-radius: 4px;
             font-size: 14px;
             height: 100%;

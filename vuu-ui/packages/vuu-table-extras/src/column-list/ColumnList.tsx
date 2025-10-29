@@ -224,7 +224,6 @@ export const ColumnList = ({
         {allowColumnSearch ? (
           <form className={`${classBase}-search`} role="search">
             <Input
-              // inputProps={{ onKeyDown }}
               startAdornment={searchIcon}
               placeholder="Find column"
               ref={searchCallbackRef}

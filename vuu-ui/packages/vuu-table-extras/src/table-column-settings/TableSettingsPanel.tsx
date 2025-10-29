@@ -18,7 +18,6 @@ import { VuuInput } from "@vuu-ui/vuu-ui-controls";
 import cx from "clsx";
 
 import tableSettingsPanelCss from "./TableSettingsPanel.css";
-import { toColumnName } from "@vuu-ui/vuu-utils";
 
 const classBase = "vuuTableSettingsPanel";
 
@@ -62,10 +61,6 @@ export const TableSettingsPanel = ({
     css: tableSettingsPanelCss,
     window: targetWindow,
   });
-
-  console.log(
-    `[TableSettingsPanel] ${tableConfigProp.columns.map(toColumnName).join(",")}`,
-  );
 
   const permissions =
     permissionsProp === undefined || permissionsProp === true
