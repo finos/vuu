@@ -87,7 +87,7 @@ public class VuuExampleMain {
                         .withTreeThreads(4)
                         .withViewPortThreads(4),
                 VuuClientConnectionOptions.apply()
-                        .withHeartbeat(),
+                        .withHeartbeatEnabled(),
                 VuuJoinTableProviderOptions.apply(),
                 new scala.collection.mutable.ListBuffer<ViewServerModule>().toList(),
                 new scala.collection.mutable.ListBuffer<Plugin>().toList()

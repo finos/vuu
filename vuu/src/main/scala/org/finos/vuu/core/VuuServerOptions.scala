@@ -76,7 +76,8 @@ trait VuuThreadingOptions{
 
 trait VuuClientConnectionOptions {
   def hasHeartbeat: Boolean
-  def withHeartbeat(): VuuClientConnectionOptions
+  def withHeartbeat(hasHeartbeat: Boolean): VuuClientConnectionOptions
+  def withHeartbeatEnabled(): VuuClientConnectionOptions
   def withHeartbeatDisabled(): VuuClientConnectionOptions
 }
 
@@ -115,7 +116,8 @@ case class VuuThreadingOptionsImpl(viewPortThreads: Int = 1, treeViewPortThreads
 }
 
 case class VuuClientConnectionOptionsImpl(hasHeartbeat: Boolean) extends VuuClientConnectionOptions {
-  override def withHeartbeat(): VuuClientConnectionOptions = this.copy(true)
+  override def withHeartbeat(hasHeartbeat: Boolean): VuuClientConnectionOptions = this.copy(hasHeartbeat = hasHeartbeat)
+  override def withHeartbeatEnabled(): VuuClientConnectionOptions = this.copy(true)
   override def withHeartbeatDisabled(): VuuClientConnectionOptions = this.copy(false)
 }
 
