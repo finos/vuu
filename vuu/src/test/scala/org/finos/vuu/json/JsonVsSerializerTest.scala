@@ -40,7 +40,7 @@ case class Container(animal: Animal)
 
 class JsonVsSerializerTest extends AnyFeatureSpec with Matchers{
 
-  def roundTrip(body: MessageBody) = {
+  def roundTrip(body: MessageBody): Unit = {
 
     val message = JsonViewServerMessage("REQ:123", "SESS:456", "AAA", "chris", body)
 
@@ -62,6 +62,8 @@ class JsonVsSerializerTest extends AnyFeatureSpec with Matchers{
     Scenario("test login message"){
 
       JsonSubTypeRegistry.register(classOf[MessageBody], classOf[CoreJsonSerializationMixin])
+      JsonSubTypeRegistry.getClassForType(classOf[MessageBody], "LOGIN") shouldEqual classOf[LoginRequest]
+      JsonSubTypeRegistry.getTypeForClass(classOf[MessageBody], classOf[LoginRequest]) shouldEqual "LOGIN"
 
       roundTrip(LoginRequest("AAA11122233"))
       roundTrip(LoginSuccess("vuuServerId"))
