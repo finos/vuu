@@ -59,9 +59,22 @@ class JsonVsSerializerTest extends AnyFeatureSpec with Matchers{
 
   Feature("test serialization"){
 
+    JsonSubTypeRegistry.register(classOf[MessageBody], classOf[CoreJsonSerializationMixin])
+
+    Scenario("test unhandled types") {
+
+      assertThrows[Exception] {
+        JsonSubTypeRegistry.getClassForType(classOf[MessageBody], "PIZZA")
+      }
+
+      assertThrows[Exception] {
+        JsonSubTypeRegistry.getTypeForClass(classOf[MessageBody], classOf[BigDecimal])
+      }
+
+    }
+
     Scenario("test login message"){
 
-      JsonSubTypeRegistry.register(classOf[MessageBody], classOf[CoreJsonSerializationMixin])
       JsonSubTypeRegistry.getClassForType(classOf[MessageBody], "LOGIN") shouldEqual classOf[LoginRequest]
       JsonSubTypeRegistry.getTypeForClass(classOf[MessageBody], classOf[LoginRequest]) shouldEqual "LOGIN"
 
