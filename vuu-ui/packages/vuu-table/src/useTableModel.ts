@@ -34,7 +34,6 @@ import {
   sortPinnedColumns,
   stripFilterFromColumns,
   subscribedOnly,
-  toColumnName,
 } from "@vuu-ui/vuu-utils";
 
 import {

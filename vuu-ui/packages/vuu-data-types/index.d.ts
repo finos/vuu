@@ -261,6 +261,13 @@ export interface DataSourceDisabledMessage extends MessageWithClientViewportId {
 export interface DataSourceEnabledMessage extends MessageWithClientViewportId {
   type: "enabled";
 }
+export interface DataSourceFrozenMessage extends MessageWithClientViewportId {
+  type: "frozen";
+}
+
+export interface DataSourceUnfrozenMessage extends MessageWithClientViewportId {
+  type: "unfrozen";
+}
 
 export interface DataSourceColumnsMessage extends MessageWithClientViewportId {
   type: "columns";
@@ -349,6 +356,8 @@ export declare type DataSourceCallbackMessage =
   | DataSourceDebounceRequest
   | DataSourceDisabledMessage
   | DataSourceEnabledMessage
+  | DataSourceFrozenMessage
+  | DataSourceUnfrozenMessage
   | DataSourceMenusMessage
   | DataSourceSubscribedMessage
   | DataSourceVisualLinkCreatedMessage

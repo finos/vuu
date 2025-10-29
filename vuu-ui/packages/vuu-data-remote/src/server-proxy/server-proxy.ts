@@ -533,6 +533,20 @@ export class ServerProxy {
     }
   }
 
+  private freezeViewport(viewport: Viewport) {
+    const requestId = nextRequestId();
+    const request = viewport.freeze(requestId);
+    this.sendIfReady(request, requestId, viewport.status === "subscribed");
+  }
+
+  private unfreezeViewport(viewport: Viewport) {
+    if (viewport.frozen) {
+      const requestId = nextRequestId();
+      const request = viewport.unfreeze(requestId);
+      this.sendIfReady(request, requestId, viewport.status === "subscribed");
+    }
+  }
+
   private suspendViewport(viewport: Viewport) {
     viewport.suspend();
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -719,6 +733,10 @@ export class ServerProxy {
             return this.resumeViewport(viewport);
           case "enable":
             return this.enableViewport(viewport);
+          case "FREEZE_VP":
+            return this.freezeViewport(viewport);
+          case "UNFREEZE_VP":
+            return this.unfreezeViewport(viewport);
           case "openTreeNode":
             return this.openTreeNode(viewport, message);
           case "closeTreeNode":

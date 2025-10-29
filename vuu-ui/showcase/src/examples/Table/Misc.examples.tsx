@@ -18,7 +18,6 @@ import { ContextPanel, ContextPanelProps } from "@vuu-ui/vuu-shell";
 import { GroupHeaderCell, Table, TableProps } from "@vuu-ui/vuu-table";
 import {
   ColumnPicker,
-  ColumnPickerAction,
   ColumnSettingsPanel,
   DataSourceStats,
   SelectedColumnsChangeHandler,

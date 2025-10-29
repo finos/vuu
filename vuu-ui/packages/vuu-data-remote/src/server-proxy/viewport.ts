@@ -18,6 +18,8 @@ import {
   VuuUIMessageOutOpenTreeNode,
   VuuUIMessageOutCloseTreeNode,
   WithRequestId,
+  DataSourceFrozenMessage,
+  DataSourceUnfrozenMessage,
 } from "@vuu-ui/vuu-data-types";
 import {
   VuuViewportChangeRequest,
@@ -39,6 +41,8 @@ import {
   VuuTable,
   VuuGroupDataRow,
   SelectRequest,
+  FreezeViewportRequest,
+  UnfreezeViewportRequest,
 } from "@vuu-ui/vuu-protocol-types";
 import { getFullRange, KeySet, logger, RangeMonitor } from "@vuu-ui/vuu-utils";
 import {
@@ -62,6 +66,12 @@ interface Disable {
 }
 interface Enable {
   type: "enable";
+}
+interface Freeze {
+  type: "freeze";
+}
+interface Unfreeze {
+  type: "unfreeze";
 }
 interface ChangeViewportRange {
   type: "CHANGE_VP_RANGE";
@@ -89,6 +99,8 @@ type AsyncOperation =
   | ChangeViewportRange
   | Disable
   | Enable
+  | Freeze
+  | Unfreeze
   | VuuCreateVisualLink
   | VuuRemoveVisualLink;
 
@@ -161,6 +173,7 @@ export class Viewport {
 
   public clientViewportId: string;
   public disabled = false;
+  public frozen = false;
   public isTree = false;
   public links?: LinkDescriptorWithLabel[];
   public linkedParent?: LinkedParent;
@@ -410,6 +423,18 @@ export class Viewport {
         type: "enabled",
         clientViewportId,
       } as DataSourceEnabledMessage;
+    } else if (type === "freeze") {
+      this.disabled = true; // assuming its _SUCCESS, of course
+      return {
+        type: "frozen",
+        clientViewportId,
+      } as DataSourceFrozenMessage;
+    } else if (type === "unfreeze") {
+      this.frozen = false;
+      return {
+        type: "unfrozen",
+        clientViewportId,
+      } as DataSourceUnfrozenMessage;
     } else if (type === "CREATE_VISUAL_LINK") {
       const [colName, parentViewportId, parentColName] = params;
       this.linkedParent = {
@@ -654,6 +679,25 @@ export class Viewport {
       type: Message.DISABLE_VP,
       viewPortId: this.serverViewportId,
     } as VuuViewportDisableRequest;
+  }
+
+  freeze(requestId: string) {
+    this.awaitOperation(requestId, { type: "freeze" });
+    info?.(`freeze: ${this.serverViewportId}`);
+    return {
+      type: "FREEZE_VP",
+      viewPortId: this.serverViewportId,
+    } as FreezeViewportRequest;
+  }
+
+  unfreeze(requestId: string) {
+    this.awaitOperation(requestId, { type: "unfreeze" });
+    info?.(`unfreeze: ${this.serverViewportId}`);
+    this.suspended = false;
+    return {
+      type: "UNFREEZE_VP",
+      viewPortId: this.serverViewportId,
+    } as UnfreezeViewportRequest;
   }
 
   setConfig(requestId: string, config: WithFullConfig) {
