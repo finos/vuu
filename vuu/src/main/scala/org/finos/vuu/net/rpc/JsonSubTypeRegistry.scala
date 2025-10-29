@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.{DatabindContext, JavaType}
 import com.typesafe.scalalogging.StrictLogging
 
 import java.util.concurrent.ConcurrentHashMap
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 class VsJsonTypeResolver extends TypeIdResolver with StrictLogging {
 
@@ -55,56 +55,47 @@ class VsJsonTypeResolver extends TypeIdResolver with StrictLogging {
 
 object JsonSubTypeRegistry extends StrictLogging {
 
-  private val genericsToConcreteTypes = new ConcurrentHashMap[Class[_], ConcurrentHashMap[String, Class[_]]]()
+  private val genericsToConcreteTypes: java.util.Map[Class[_], java.util.Map[String, Class[_]]] =
+    new ConcurrentHashMap[Class[_], java.util.Map[String, Class[_]]]()
 
   def register(genericType: Class[_], mixinWithAnnotations: Class[_]): Unit = {
 
-    if (!genericsToConcreteTypes.containsKey(genericType))
-      genericsToConcreteTypes.put(genericType, new ConcurrentHashMap[String, Class[_]]())
+    genericsToConcreteTypes.computeIfAbsent(genericType, f => new ConcurrentHashMap[String, Class[_]]())
 
     val subtypes = mixinWithAnnotations.getAnnotation(classOf[JsonSubTypes])
 
     subtypes.value().foreach(subType => {
 
-      if (genericsToConcreteTypes.get(genericType).containsKey(subType.name()))
-        logger.warn(s"Tried to register ${subType.name()} mapping to ${subType.value()} but already registered to ${genericsToConcreteTypes.get(genericType).get(subType.name())}")
-      else
-        genericsToConcreteTypes.get(genericType).put(subType.name(), subType.value())
+      val existing = genericsToConcreteTypes.get(genericType).putIfAbsent(subType.name(), subType.value())
+      if (existing != null && existing != subType.value()) {
+        logger.warn(s"Tried to register ${subType.name()} mapping to ${subType.value()} but already registered to $existing")
+      }
+
     })
 
   }
 
   def getTypeForClass(genericType: Class[_], specificType: Class[_]): String = {
 
-    if (genericsToConcreteTypes.get(genericType).containsValue(specificType)) {
+    val entrySet = SetHasAsScala(genericsToConcreteTypes.getOrDefault(genericType, java.util.Map.of()).entrySet()).asScala
 
-      val entrySet = SetHasAsScala(genericsToConcreteTypes.get(genericType).entrySet()).asScala
-
-      entrySet.find(entry => entry.getValue.equals(specificType)) match {
-        case Some(theMatch) =>
-          theMatch.getKey
-        case None =>
-          throw new Exception(s"no mapping found for ${specificType} to generic ${genericType}")
-      }
-
-    } else {
-      throw new Exception(s"no mapping registered for ${genericType}")
+    entrySet.find(entry => entry.getValue.equals(specificType)) match {
+      case Some(theMatch) =>
+        theMatch.getKey
+      case None =>
+        throw new Exception(s"no mapping found for ${specificType} to generic ${genericType}")
     }
 
   }
 
   def getClassForType(genericType: Class[_], typeStr: String): Class[_] = {
 
-    if (genericsToConcreteTypes.get(genericType).containsKey(typeStr)) {
+    val entrySet = SetHasAsScala(genericsToConcreteTypes.getOrDefault(genericType, java.util.Map.of()).entrySet()).asScala
 
-      SetHasAsScala(genericsToConcreteTypes.get(genericType).entrySet()).asScala.find(entry => entry.getKey.equals(typeStr)) match {
-        case Some(theMatch) => theMatch.getValue
-        case None =>
-          throw new Exception(s"no mapping found for ${typeStr} to generic ${genericType}")
-      }
-
-    } else {
-      throw new Exception(s"no mapping registered for ${genericType}")
+    entrySet.find(entry => entry.getKey.equals(typeStr)) match {
+      case Some(theMatch) => theMatch.getValue
+      case None =>
+        throw new Exception(s"no mapping found for ${typeStr} to generic ${genericType}")
     }
 
   }
