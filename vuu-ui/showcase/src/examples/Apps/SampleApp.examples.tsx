@@ -6,10 +6,7 @@ import {
   Shell,
   SidePanelProps,
 } from "@vuu-ui/vuu-shell";
-import {
-  ColumnSettingsPanel,
-  TableSettingsPanel,
-} from "@vuu-ui/vuu-table-extras";
+import { ColumnSettingsPanel } from "@vuu-ui/vuu-table-extras";
 import { DragDropProvider } from "@vuu-ui/vuu-ui-controls";
 import {
   DynamicFeatureDescriptor,
@@ -24,7 +21,6 @@ import { sysLayouts } from "../_test-data/sysLayoutMetadata";
 import "./SampleApp.examples.css";
 
 registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
-registerComponent("TableSettings", TableSettingsPanel, "view");
 
 const user = { username: "why-the-lucky-stiff", token: "test-token" };
 

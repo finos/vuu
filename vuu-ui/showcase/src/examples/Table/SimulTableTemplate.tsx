@@ -26,6 +26,7 @@ export type SimulTableProps = Partial<TableProps> & {
 };
 
 export const SimulTable = ({
+  EmptyDisplay,
   columnLayout,
   columns: columnsProp,
   dataSource: dataSourceProp,
@@ -89,6 +90,7 @@ export const SimulTable = ({
         <DemoTableContainer>
           <Table
             {...tableProps}
+            EmptyDisplay={EmptyDisplay}
             height={height}
             onConfigChange={handleConfigChange}
             renderBufferSize={renderBufferSize}

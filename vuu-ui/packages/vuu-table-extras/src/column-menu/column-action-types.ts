@@ -11,8 +11,15 @@ export interface ColumnHideAction {
   type: "hideColumn";
   column: ColumnDescriptor;
 }
+export interface ColumnRemoveAction {
+  type: "removeColumn";
+  column: ColumnDescriptor;
+}
 
-export type ColumnDisplayAction = ColumnPinAction | ColumnHideAction;
+export type ColumnDisplayAction =
+  | ColumnPinAction
+  | ColumnHideAction
+  | ColumnRemoveAction;
 
 export type ColumnDisplayActionHandler = (action: ColumnDisplayAction) => void;
 

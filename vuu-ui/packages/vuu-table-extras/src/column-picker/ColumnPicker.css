@@ -1,0 +1,78 @@
+.vuuColumnPicker {
+
+    container-type: inline-size;
+    display: flex;  
+    flex-direction: column;
+    gap: var(--salt-spacing-300);
+    overflow: hidden;
+    padding: var(--salt-spacing-300) 0;
+
+    .saltListBox {
+        background-color: inherit;
+    }
+
+    .saltOption {
+        align-items: center;
+        background-color: inherit;
+        border-bottom: var(--vuuColumnListItem-border, solid) 1px
+        var(--salt-separable-tertiary-borderColor);
+        gap: var(--salt-spacing-200);
+        height: calc(var(--salt-size-base) + var(--salt-spacing-200));
+        .vuuIcon {
+            --vuu-icon-color: var(--salt-content-secondary-foreground);
+        }
+
+        .vuuHighlight {
+            color: var(--vuu-color-blue-40);
+            text-decoration: underline;
+        }
+
+    }
+
+    .vuuColumnPickerListItem-action {
+        margin-left: auto;
+        visibility: hidden;
+    }
+
+    .saltOption:hover {
+        .vuuColumnPickerListItem-action {
+            visibility: visible;
+        }
+    }
+
+    .vuuColumnPicker-search {
+        --saltInput-paddingLeft: var(--salt-spacing-300);
+        padding: var(--salt-spacing-200) var(--salt-spacing-300) 0 var(--salt-spacing-300);
+    }
+
+    .vuuColumnPicker-scrollContainer {
+
+        flex: 1 1 0px;
+        overflow: auto;
+
+
+        .vuuColumnPicker-sectionHeader {
+            align-items: center;
+            background-color: white;
+            display: flex;
+            height: 32px;
+            padding: 0 var(--salt-spacing-300);
+            position: sticky;
+            top:0;
+            z-index: 1;
+        }
+
+        .vuuColumnPicker-availableHeader {
+            top: 32px;
+        }
+
+
+        .vuuColumnPicker-availableList {
+            .saltOption {
+                padding-left: var(--salt-spacing-300);
+            }
+        }
+
+    }
+
+}

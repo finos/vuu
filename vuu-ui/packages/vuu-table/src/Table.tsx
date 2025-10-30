@@ -427,10 +427,6 @@ const TableCore = ({
   const headersReady = showColumnHeaders === false || headerHeight > 0;
   const readyToRenderTableBody = headersReady && data.length > 0;
 
-  if (dataSource.size === 0 && EmptyDisplay) {
-    return <EmptyDisplay />;
-  }
-
   return (
     <TableProvider
       dataSource={dataSource}
@@ -447,6 +443,13 @@ const TableCore = ({
           <div className={`${classBase}-scrollbarContent`} />
         </div>
       ) : null}
+
+      {dataSource.size === 0 && EmptyDisplay ? (
+        <div className={`${classBase}-emptyDisplay`}>
+          <EmptyDisplay />{" "}
+        </div>
+      ) : null}
+
       <div
         className={contentContainerClassName}
         ref={scrollProps.contentContainerRef}

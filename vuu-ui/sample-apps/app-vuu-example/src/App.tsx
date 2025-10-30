@@ -10,10 +10,7 @@ import {
   ShellContextProvider,
   ShellLayoutProps,
 } from "@vuu-ui/vuu-shell";
-import {
-  ColumnSettingsPanel,
-  TableSettingsPanel,
-} from "@vuu-ui/vuu-table-extras";
+import { ColumnSettingsPanel } from "@vuu-ui/vuu-table-extras";
 import { DragDropProvider } from "@vuu-ui/vuu-ui-controls";
 import type { VuuUser } from "@vuu-ui/vuu-utils";
 import {
@@ -29,7 +26,6 @@ import "./App.css";
 
 registerComponent("cancel-confirm", ConfirmSelectionPanel, "view");
 registerComponent("ColumnSettings", ColumnSettingsPanel, "view");
-registerComponent("TableSettings", TableSettingsPanel, "view");
 
 assertComponentsRegistered([
   { componentName: "Flexbox", component: FlexboxLayout },

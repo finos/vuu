@@ -31,6 +31,15 @@ export const defaultTableSettingsPermissions: Readonly<TableSettingsPermissions>
     allowHideColumns: true,
     allowCalculatedColumns: true,
   };
+export const noTableSettingsPermissions: Readonly<TableSettingsPermissions> = {
+  allowColumnLabelCase: false,
+  allowColumnDefaultWidth: false,
+  allowGridSeparators: false,
+  allowReorderColumns: false,
+  allowRemoveColumns: false,
+  allowHideColumns: false,
+  allowCalculatedColumns: false,
+};
 
 /**
   The TableSettingsPanel assumes 'ownership' of the tableSettings.
@@ -44,7 +53,7 @@ export const TableSettingsPanel = ({
   onDataSourceConfigChange,
   onNavigateToColumn,
   tableConfig: tableConfigProp,
-  permissions = defaultTableSettingsPermissions,
+  permissions: permissionsProp,
 }: TableSettingsProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -52,6 +61,13 @@ export const TableSettingsPanel = ({
     css: tableSettingsPanelCss,
     window: targetWindow,
   });
+
+  const permissions =
+    permissionsProp === undefined || permissionsProp === true
+      ? defaultTableSettingsPermissions
+      : permissionsProp === false
+        ? noTableSettingsPermissions
+        : permissionsProp;
 
   const {
     columnItems,

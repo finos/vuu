@@ -249,3 +249,28 @@
 .DragColumn {
   box-shadow: var(--salt-overlayable-shadow-drag);
 }
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  90% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.vuuTable-emptyDisplay {
+  animation: fadeIn .8s;
+  align-items: center;
+  display: flex;
+  inset:0;
+  justify-content: center;
+  position: absolute
+}
+
+.vuuTable-emptyDisplay ~ .vuuTable-contentContainer {
+  visibility: hidden;
+}}

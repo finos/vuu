@@ -261,6 +261,13 @@ export interface DataSourceDisabledMessage extends MessageWithClientViewportId {
 export interface DataSourceEnabledMessage extends MessageWithClientViewportId {
   type: "enabled";
 }
+export interface DataSourceFrozenMessage extends MessageWithClientViewportId {
+  type: "frozen";
+}
+
+export interface DataSourceUnfrozenMessage extends MessageWithClientViewportId {
+  type: "unfrozen";
+}
 
 export interface DataSourceColumnsMessage extends MessageWithClientViewportId {
   type: "columns";
@@ -349,6 +356,8 @@ export declare type DataSourceCallbackMessage =
   | DataSourceDebounceRequest
   | DataSourceDisabledMessage
   | DataSourceEnabledMessage
+  | DataSourceFrozenMessage
+  | DataSourceUnfrozenMessage
   | DataSourceMenusMessage
   | DataSourceSubscribedMessage
   | DataSourceVisualLinkCreatedMessage
@@ -419,6 +428,13 @@ export interface WithSort extends DataSourceConfig {
 
 export interface DataSourceConstructorProps
   extends WithBaseFilter<DataSourceConfig> {
+  /**
+   * If provided, these column names will always be included in subscription, even
+   * if not directly requested, via columns property. Useful where columns may not
+   * be required/wanted in table, but are required for other purposes, e.g to support
+   * filters on columns not in rendered table.
+   */
+  autosubscribeColumns?: string[];
   bufferSize?: number;
   table: VuuTable;
   title?: string;

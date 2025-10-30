@@ -27,6 +27,7 @@ import {
   FormField,
   FormFieldLabel,
 } from "@salt-ds/core";
+import { noTableSettingsPermissions } from "@vuu-ui/vuu-table-extras/src/table-column-settings/TableSettingsPanel";
 
 export const DefaultColumnList = () => {
   const initialColumns = useMemo<ColumnItem[]>(
@@ -287,13 +288,19 @@ export const ManyColumnListWithSearchStyled = () => (
 const ConfigurableTableSettingsTemplate = ({
   availableColumns,
   tableConfig,
-  permissions: permissionsProp = defaultTableSettingsPermissions,
+  permissions: permissionsProp,
 }: Pick<
   TableSettingsProps,
   "availableColumns" | "tableConfig" | "permissions"
 >) => {
-  const [permissions, setPermissions] =
-    useState<TableSettingsPermissions>(permissionsProp);
+  const [permissions, setPermissions] = useState<TableSettingsPermissions>(
+    permissionsProp === undefined || permissionsProp === true
+      ? defaultTableSettingsPermissions
+      : permissionsProp === false
+        ? noTableSettingsPermissions
+        : permissionsProp,
+  );
+
   const handleConfigChange = (config: TableConfig) => {
     console.log("handleConfigChange", {
       config,

@@ -236,22 +236,30 @@ export interface VuuViewportRemoveResponse {
   viewPortId: string;
 }
 
-export interface VuuViewportFreezeRequest {
+export interface FreezeViewportRequest {
   type: "FREEZE_VP";
   viewPortId: string;
 }
 
-export interface VuuViewportFreezeResponse {
+export interface FreezeViewportSuccess {
   type: "FREEZE_VP_SUCCESS";
   viewPortId: string;
 }
-export interface VuuViewportUnfreezeRequest {
+export interface FreezeViewportReject {
+  type: "FREEZE_VP_REJECT";
+  viewPortId: string;
+}
+export interface UnfreezeViewportRequest {
   type: "UNFREEZE_VP";
   viewPortId: string;
 }
 
-export interface VuuViewportUnfreezeResponse {
+export interface UnfreezeViewportSuccess {
   type: "UNFREEZE_VP_SUCCESS";
+  viewPortId: string;
+}
+export interface UnfreezeViewportReject {
+  type: "UNFREEZE_VP_REJECT";
   viewPortId: string;
 }
 
@@ -477,7 +485,9 @@ export declare type ClientMessageBody =
   | VuuCreateVisualLink
   | VuuRemoveVisualLink
   | VuuRpcMenuRequest
-  | VuuRpcRequest;
+  | VuuRpcRequest
+  | FreezeViewportRequest
+  | UnfreezeViewportRequest;
 
 /**
  * RPC type messages

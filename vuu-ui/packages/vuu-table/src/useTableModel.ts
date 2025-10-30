@@ -123,6 +123,10 @@ export interface ColumnActionHide {
   type: "hideColumns";
   columns: ColumnDescriptor[];
 }
+export interface ColumnActionRemove {
+  type: "removeColumn";
+  column: ColumnDescriptor;
+}
 
 export interface ColumnActionShow {
   type: "showColumns";
@@ -560,6 +564,7 @@ function updateColumnProp(
   } as InternalTableModel;
 }
 
+// TODO rename to make clear its dataSOurce config
 function updateTableConfig(
   state: InternalTableModel,
   {

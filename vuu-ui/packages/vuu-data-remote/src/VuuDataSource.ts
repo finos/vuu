@@ -54,6 +54,30 @@ type RangeRequest = (range: VuuRange) => void;
 
 const { info, infoEnabled } = logger("VuuDataSource");
 
+/**
+ * Autosubscribe columns ar always included in a subscription.
+ * The same columns may or may not be included in subscription
+ * requested by client and client may change column list over
+ * lifetime of dataSource. Always make sure we include the
+ * autosubscription columns, but never repeat them
+ */
+const ensureAutosubscribeColumnsIncluded = (
+  columns: string[],
+  autosubscribeColumns: string[] = [],
+) => {
+  if (autosubscribeColumns.length === 0) {
+    return columns;
+  } else {
+    const out = columns.slice();
+    autosubscribeColumns.forEach((name) => {
+      if (!out.includes(name)) {
+        out.push(name);
+      }
+    });
+    return out;
+  }
+};
+
 /*---------------------------------------------------------------------
  A VuuDataSource manages a single subscription via the ServerProxy
   ---------------------------------------------------------------------*/
@@ -62,6 +86,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
   private server: ServerAPI | null = null;
   rangeRequest: RangeRequest;
 
+  #autosubscribeColumns: string[] = [];
   #pendingVisualLink?: LinkDescriptorWithLabel;
   #links: LinkDescriptorWithLabel[] | undefined;
   #menu: VuuMenu | undefined;
@@ -87,6 +112,10 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
 
     // this.rangeRequest = this.throttleRangeRequest;
     this.rangeRequest = this.rawRangeRequest;
+
+    if (props.autosubscribeColumns) {
+      this.#autosubscribeColumns = props.autosubscribeColumns;
+    }
   }
 
   async subscribe(
@@ -119,14 +148,17 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
 
     const { bufferSize } = this;
 
+    const { columns, ...dataSourceConfig } = combineFilters(this.config);
+
     // TODO and await response here
-
-    const dataSourceConfig = combineFilters(this.config);
-
     this.server?.subscribe(
       {
         ...dataSourceConfig,
         bufferSize,
+        columns: ensureAutosubscribeColumnsIncluded(
+          columns,
+          this.#autosubscribeColumns,
+        ),
         range: this._range,
         table: this.table,
         title: this._title,
@@ -426,10 +458,20 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
   set config(config: WithBaseFilter<WithFullConfig>) {
     if (config !== this.config) {
       super.config = config;
+
+      const { columns, ...dataSourceConfig } = combineFilters(this.config);
+      const serverConfig = {
+        ...dataSourceConfig,
+        columns: ensureAutosubscribeColumnsIncluded(
+          columns,
+          this.#autosubscribeColumns,
+        ),
+      };
+
       this.server?.send({
         viewport: this.viewport,
         type: "config",
-        config: combineFilters(this._config),
+        config: serverConfig,
       });
     }
   }

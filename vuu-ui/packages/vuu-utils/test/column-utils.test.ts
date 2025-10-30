@@ -1,6 +1,9 @@
 //Testing for issue #639
 import { describe, expect, it } from "vitest";
-import { applyWidthToColumns } from "../src/column-utils";
+import {
+  addColumnToSubscribedColumns,
+  applyWidthToColumns,
+} from "../src/column-utils";
 import type { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { getColumnsInViewport } from "../src/column-utils";
 
@@ -431,5 +434,78 @@ describe("applyWidthToColumns", () => {
         });
       });
     });
+  });
+});
+
+describe("addColumnToSubscribedColumns", () => {
+  it("throws when column to be added is not in available", () => {
+    expect(() =>
+      addColumnToSubscribedColumns([], [], "vuuCreatedTimestamp"),
+    ).toThrowError(
+      "[column-utils] addColumnToSubscribedColumns column vuuCreatedTimestamp is not available",
+    );
+    expect(() =>
+      addColumnToSubscribedColumns(
+        [{ name: "price" }],
+        [{ name: "price", serverDataType: "double" }],
+        "vuuCreatedTimestamp",
+      ),
+    ).toThrowError(
+      "[column-utils] addColumnToSubscribedColumns column vuuCreatedTimestamp is not available",
+    );
+  });
+  it("throws when column to be added is already subscribed", () => {
+    expect(() =>
+      addColumnToSubscribedColumns(
+        [{ name: "price" }],
+        [{ name: "price", serverDataType: "double" }],
+        "price",
+      ),
+    ).toThrowError(
+      "[column-utils], addColumnToSubscribedColumns column price is already subscribed",
+    );
+  });
+
+  it("adds new columns to end of subscribed columns", () => {
+    expect(
+      addColumnToSubscribedColumns(
+        [
+          { name: "price", serverDataType: "double" },
+          { name: "quantity", serverDataType: "long" },
+        ],
+        [
+          { name: "price", serverDataType: "double" },
+          { name: "quantity", serverDataType: "long" },
+          { name: "lotSize", serverDataType: "long" },
+          { name: "vuuCreatedTimestamp", serverDataType: "long" },
+        ],
+        "vuuCreatedTimestamp",
+      ),
+    ).toEqual([
+      { name: "price", serverDataType: "double" },
+      { name: "quantity", serverDataType: "long" },
+      { name: "vuuCreatedTimestamp", serverDataType: "long" },
+    ]);
+  });
+  it("ignores sort order of subscribed columns", () => {
+    expect(
+      addColumnToSubscribedColumns(
+        [
+          { name: "quantity", serverDataType: "long" },
+          { name: "price", serverDataType: "double" },
+        ],
+        [
+          { name: "price", serverDataType: "double" },
+          { name: "quantity", serverDataType: "long" },
+          { name: "lotSize", serverDataType: "long" },
+          { name: "vuuCreatedTimestamp", serverDataType: "long" },
+        ],
+        "vuuCreatedTimestamp",
+      ),
+    ).toEqual([
+      { name: "quantity", serverDataType: "long" },
+      { name: "price", serverDataType: "double" },
+      { name: "vuuCreatedTimestamp", serverDataType: "long" },
+    ]);
   });
 });

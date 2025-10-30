@@ -152,7 +152,6 @@ export abstract class BaseDataSource
       ...this._config,
       columns,
     };
-    this.emit("config", this._config, this.range);
   }
 
   get filter() {

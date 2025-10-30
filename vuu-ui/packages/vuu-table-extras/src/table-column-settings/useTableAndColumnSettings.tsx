@@ -5,13 +5,15 @@ import {
   ColumnSettingsProps,
   SettingsPermissions,
   TableConfig,
-  TableSettingsProps,
 } from "@vuu-ui/vuu-table-types";
 import { getCalculatedColumnDetails } from "@vuu-ui/vuu-utils";
 import { useCallback, useRef, useState } from "react";
 import { DisplayColumnSettingsAction } from "@vuu-ui/vuu-table-extras/src/column-menu/column-action-types";
 import { useContextPanel } from "@vuu-ui/vuu-ui-controls";
-import { defaultTableSettingsPermissions } from "./TableSettingsPanel";
+import {
+  defaultTableSettingsPermissions,
+  TableSettingsPanel,
+} from "./TableSettingsPanel";
 
 export interface TableAndColumnSettingsHookProps {
   availableColumns: SchemaColumn[];
@@ -133,20 +135,24 @@ export const useTableAndColumnSettings = ({
   );
 
   showTableSettingsRef.current = useCallback(() => {
-    showContextPanel("TableSettings", "Table Settings", {
-      availableColumns:
-        availableColumns ??
-        tableConfig.columns.map(({ name, serverDataType }) => ({
-          name,
-          serverDataType,
-        })),
-      onAddCalculatedColumn: handleAddCalculatedColumn,
-      onConfigChange,
-      onDataSourceConfigChange,
-      onNavigateToColumn: handleNavigateToColumn,
-      permissions: settingsPermissions?.allowTableSettings,
-      tableConfig,
-    } as TableSettingsProps);
+    const tableSettings = (
+      <TableSettingsPanel
+        availableColumns={
+          availableColumns ??
+          tableConfig.columns.map(({ name, serverDataType }) => ({
+            name,
+            serverDataType,
+          }))
+        }
+        onAddCalculatedColumn={handleAddCalculatedColumn}
+        onConfigChange={onConfigChange}
+        onDataSourceConfigChange={onDataSourceConfigChange}
+        onNavigateToColumn={handleNavigateToColumn}
+        permissions={settingsPermissions?.allowTableSettings}
+        tableConfig={tableConfig}
+      />
+    );
+    showContextPanel(tableSettings, "Table Settings");
   }, [
     availableColumns,
     handleAddCalculatedColumn,

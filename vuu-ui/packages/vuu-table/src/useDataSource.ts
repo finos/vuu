@@ -177,11 +177,20 @@ export const useDataSource = ({
     ],
   );
 
+  const removeColumnDataFromCache = useCallback(
+    (indexOfRemovedColumn: number) => {
+      dataWindow.spliceDataAtIndex(indexOfRemovedColumn);
+      data.current = dataWindow.data;
+    },
+    [dataWindow],
+  );
+
   return {
     data: data.current,
     dataRef: data,
     getSelectedRows,
     range: rangeRef.current,
+    removeColumnDataFromCache,
     setRange,
   };
 };

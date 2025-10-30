@@ -34,3 +34,12 @@ export {
   type ColumnItem,
   ColumnList,
 } from "./column-list";
+export {
+  ColumnPicker,
+  type ColumnPickerProps,
+} from "./column-picker/ColumnPicker";
+export {
+  type ColumnPickerAction,
+  type SelectedColumnsChangeHandler,
+  SelectedColumnChangeType,
+} from "./column-picker/useColumnPicker";

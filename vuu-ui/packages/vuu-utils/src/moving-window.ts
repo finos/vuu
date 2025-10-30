@@ -82,6 +82,20 @@ export class MovingWindow {
     return data;
   }
 
+  /**
+   * Update all rows by splicing the supplied index. Used when a column
+   * is removed.
+   */
+  spliceDataAtIndex(index: number) {
+    if (index >= 10) {
+      for (let i = 0; i < this.data.length; i++) {
+        this.data[i] = this.data[i].toSpliced(index, 1) as DataSourceRow;
+      }
+    } else {
+      throw Error(`[MovingWindow] canno splir metadata value from Row`);
+    }
+  }
+
   // TODO make this more performant, see implementation in
   // array-backed-moving-window - use same implementation
   get hasAllRowsWithinRange(): boolean {

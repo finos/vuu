@@ -27,7 +27,7 @@ export const schemas: Readonly<Record<TestTableName, Readonly<TableSchema>>> = {
       ...col,
       serverDataType: "string",
     })),
-    key: "column01",
+    key: "column_1",
     table: { module: "TEST", table: "TwoHundredColumns" },
   },
 };
