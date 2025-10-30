@@ -23,6 +23,11 @@ const nonSelectedColumns = ({
     ({ name }) => selectedColumns.findIndex((c) => c.name === name) === -1,
   );
 
+const byColumnName = (
+  { name: n1, label: l1 = n1 }: ColumnDescriptor,
+  { name: n2, label: l2 = n2 }: ColumnDescriptor,
+) => (l1 > l2 ? 1 : l2 > l1 ? -1 : 0);
+
 const findColumn = (target: EventTarget, columns: ColumnDescriptor[]) => {
   const listItem = queryClosest(target, ".saltOption", true);
   const { name } = listItem.dataset;
@@ -63,7 +68,7 @@ export interface ColumPickerHookProps {
 }
 
 export const useColumnPicker = ({
-  availableColumns,
+  availableColumns: availableColumnsProp,
   defaultSelectedColumns,
   onChangeSelectedColumns,
   selectedColumns: selectedColumnsProp,
@@ -71,6 +76,11 @@ export const useColumnPicker = ({
   const [searchState, setSearchState] = useState<{
     searchText: string;
   }>({ searchText: "" });
+
+  const availableColumns = useMemo(
+    () => availableColumnsProp.toSorted(byColumnName),
+    [availableColumnsProp],
+  );
 
   const [selectedColumns, setSelectedColumns] = useControlled({
     controlled: selectedColumnsProp,
