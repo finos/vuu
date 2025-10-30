@@ -14,7 +14,7 @@ const createMockDataSource = (isFrozen = false): Partial<DataSource> => ({
 });
 
 test.describe("Given a FreezeControl", () => {
-  test("THEN it loads with Live and Freeze buttons, with Live selected", async ({
+  test("THEN it loads with Freeze and Active buttons, with Active selected", async ({
     mount,
   }) => {
     const dataSource = createMockDataSource(false);
@@ -24,19 +24,19 @@ test.describe("Given a FreezeControl", () => {
       </LocalDataSourceProvider>,
     );
 
-    const liveButton = component.locator('button[value="live"]');
+    const activeButton = component.locator('button[value="live"]');
     const freezeButton = component.locator('button[value="frozen"]');
 
-    await expect(liveButton).toBeVisible();
+    await expect(activeButton).toBeVisible();
     await expect(freezeButton).toBeVisible();
 
     const buttonGroup = component.locator(".saltToggleButtonGroup");
     await expect(buttonGroup).toBeVisible();
 
-    const liveWrapper = component
+    const activeWrapper = component
       .locator(".FreezeControl-buttonWrapper-active")
       .first();
-    await expect(liveWrapper).toBeVisible();
+    await expect(activeWrapper).toBeVisible();
   });
 
   test("WHEN frozen THEN New Orders section appears with counter at 0", async ({

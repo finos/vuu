@@ -63,7 +63,7 @@ export const getTargetTreeNode = <T = unknown>(
   ) {
     return treeNode;
   } else if (throwIfNotFound) {
-    throw Error("dsdsdsdsdsd");
+    throw Error(`Target tree node not found for path: ${pathname}`);
   }
 };
 

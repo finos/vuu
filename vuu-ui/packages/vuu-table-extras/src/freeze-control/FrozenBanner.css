@@ -1,6 +1,7 @@
 .FrozenBanner {
+  --freeze-control-active-button-color: var(--salt-palette-error-background);
   align-items: center;
-  background-color: var(--salt-actionable-secondary-background-active);
+  background-color: var(--freeze-control-active-button-color);
   border-radius: 4px;
   color: var(--salt-actionable-secondary-foreground-active);
   display: flex;
