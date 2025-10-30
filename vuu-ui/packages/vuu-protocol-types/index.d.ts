@@ -241,6 +241,9 @@ export interface FreezeViewportRequest {
   viewPortId: string;
 }
 
+export declare type FreezeViewportResponse =
+  | FreezeViewportSuccess
+  | FreezeViewportReject;
 export interface FreezeViewportSuccess {
   type: "FREEZE_VP_SUCCESS";
   viewPortId: string;
@@ -249,6 +252,10 @@ export interface FreezeViewportReject {
   type: "FREEZE_VP_REJECT";
   viewPortId: string;
 }
+export declare type UnfreezeViewportResponse =
+  | UnfreezeViewportSuccess
+  | UnfreezeViewportReject;
+
 export interface UnfreezeViewportRequest {
   type: "UNFREEZE_VP";
   viewPortId: string;
@@ -427,7 +434,9 @@ export declare type ServerMessageBody =
   | ServerToClientError
   | VuuRpcEditSuccess
   | VuuRpcEditSuccess
-  | VuuRpcEditError;
+  | VuuRpcEditError
+  | FreezeViewportResponse
+  | UnfreezeViewportResponse;
 export interface ClientToServerHeartBeat {
   type: "HB_RESP";
   ts: number;

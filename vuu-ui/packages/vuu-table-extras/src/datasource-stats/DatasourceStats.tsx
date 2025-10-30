@@ -2,12 +2,12 @@ import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { HTMLAttributes, ReactNode } from "react";
-
-import dataSourceStats from "./DatasourceStats.css";
 import {
   DatasourceStatsHookProps,
   useDatasourceStats,
 } from "./useDatasourceStats";
+
+import dataSourceStats from "./DatasourceStats.css";
 
 export type ItemLabel =
   | string

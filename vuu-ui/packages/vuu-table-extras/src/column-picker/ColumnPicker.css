@@ -1,9 +1,12 @@
 .vuuColumnPicker {
 
+    --columnpicker-background: var(--vuuColumnPicker-background, var(--salt-container-primary-background));
+    background: var(--columnpicker-background);
     container-type: inline-size;
     display: flex;  
     flex-direction: column;
     gap: var(--salt-spacing-300);
+    height: var(--vuuColumnPicker-height, auto);
     overflow: hidden;
     padding: var(--salt-spacing-300) 0;
 
@@ -53,7 +56,7 @@
 
         .vuuColumnPicker-sectionHeader {
             align-items: center;
-            background-color: white;
+            background: var(--columnpicker-background);
             display: flex;
             height: 32px;
             padding: 0 var(--salt-spacing-300);

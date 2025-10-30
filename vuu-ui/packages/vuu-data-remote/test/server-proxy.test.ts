@@ -289,6 +289,97 @@ describe("ServerProxy", () => {
     });
 
     it(`
+      1) sends zero count to client when table is initially empty
+      2) sends each rowcount and row when rows arrive individually, 
+      does not wait for full range when all rows are available`, async () => {
+      const [serverProxy, postMessageToClient] = await createFixtures({
+        bufferSize: 10,
+      });
+
+      postMessageToClient.mockClear();
+
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [sizeRow("server-vp-1", 0)],
+        },
+      });
+
+      expect(postMessageToClient).toHaveBeenCalledWith({
+        mode: "size-only",
+        type: "viewport-update",
+        clientViewportId: "client-vp-1",
+        size: 0,
+      });
+
+      postMessageToClient.mockClear();
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [
+            sizeRow("server-vp-1", 1),
+            ...createTableRows("server-vp-1", 0, 1, 1),
+          ],
+        },
+      });
+      // prettier-ignore
+      expect(postMessageToClient).toHaveBeenCalledWith({
+        mode: "update",
+        type: "viewport-update",
+        clientViewportId: "client-vp-1",
+        rows: [
+          [0,0,true,false,0,0,'key-00',0,1, false, 'key-00', 'name 00',1000,true],
+        ],
+        size: 1,
+      });
+
+      postMessageToClient.mockClear();
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [
+            sizeRow("server-vp-1", 2),
+            ...createTableRows("server-vp-1", 1, 2, 2),
+          ],
+        },
+      });
+      // prettier-ignore
+      expect(postMessageToClient).toHaveBeenCalledWith({
+        mode: "update",
+        type: "viewport-update",
+        clientViewportId: "client-vp-1",
+        rows: [
+          [1,1,true,false,0,0,'key-01',0,1, false, 'key-01', 'name 01',1001,true],
+        ],
+        size: 2,
+      });
+      postMessageToClient.mockClear();
+      serverProxy.handleMessageFromServer({
+        ...COMMON_ATTRS,
+        body: {
+          ...COMMON_TABLE_ROW_ATTRS,
+          rows: [
+            ...createTableRows("server-vp-1", 2, 3, 3),
+            sizeRow("server-vp-1", 3),
+          ],
+        },
+      });
+      // prettier-ignore
+      expect(postMessageToClient).toHaveBeenCalledWith({
+        mode: "update",
+        type: "viewport-update",
+        clientViewportId: "client-vp-1",
+        rows: [
+          [2,2,true,false,0,0,'key-02',0,1, false, 'key-02', 'name 02',1002,true],
+        ],
+        size: 3,
+      });
+    });
+
+    it(`
       1) sends data to client when initial full dataset is received
       2) sets rowcount to 0
       3) sends fresh data to client in 2 batches, SIZE record at end of first batch, which is NOT enough to fill client range`, async () => {

@@ -424,7 +424,7 @@ export class Viewport {
         clientViewportId,
       } as DataSourceEnabledMessage;
     } else if (type === "freeze") {
-      this.disabled = true; // assuming its _SUCCESS, of course
+      this.frozen = true; // assuming its _SUCCESS, of course
       return {
         type: "frozen",
         clientViewportId,
@@ -693,7 +693,7 @@ export class Viewport {
   unfreeze(requestId: string) {
     this.awaitOperation(requestId, { type: "unfreeze" });
     info?.(`unfreeze: ${this.serverViewportId}`);
-    this.suspended = false;
+    this.frozen = false;
     return {
       type: "UNFREEZE_VP",
       viewPortId: this.serverViewportId,
