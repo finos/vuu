@@ -72,12 +72,17 @@ export const TableFreezing = () => {
           display: "flex",
           height: 50,
           gap: "10px",
+          justifyContent: "space-between",
         }}
       >
-        <Button onClick={() => startOrderCreation()}>
-          Start Order Creation
-        </Button>
-        <Button onClick={() => stopOrderCreation()}>Stop Order Creation</Button>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <Button onClick={() => startOrderCreation()}>
+            Start Order Creation
+          </Button>
+          <Button onClick={() => stopOrderCreation()}>
+            Stop Order Creation
+          </Button>
+        </div>
         <FreezeControl dataSource={dataSource} />
       </div>
       <FrozenBanner dataSource={dataSource} />
@@ -87,7 +92,6 @@ export const TableFreezing = () => {
         height={600}
         navigationStyle="row"
         renderBufferSize={5}
-        width={723}
       />
       <DataSourceStats dataSource={dataSource} />
     </div>

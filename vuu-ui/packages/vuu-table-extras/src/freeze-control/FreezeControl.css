@@ -1,6 +1,8 @@
 .FreezeControl {
   display: inline-flex;
   --freeze-control-flash-duration: 0.25s;
+  --freeze-control-active-button-color: var(--salt-palette-error-background);
+  --freeze-control-badge-color: var(--salt-palette-success-background);
 
   .FreezeControl-buttonRow {
     background-color: var(--salt-container-secondary-background);
@@ -14,19 +16,28 @@
   .FreezeControl-buttonWrapper {
     border-radius: 50px;
     padding: 0 var(--salt-spacing-150);
+    background-color: var(--salt-container-secondary-background);
   }
 
   .FreezeControl-buttonWrapper-active {
-    background-color: var(--salt-actionable-secondary-background-active);
+    background-color: var(--freeze-control-active-button-color);
   }
 
-  .saltToggleButtonGroup.vuuStateButtonGroup
-    .saltToggleButton[aria-pressed="true"] {
+  .FreezeControl-buttonWrapper-active .saltToggleButton {
+    background-color: var(--freeze-control-active-button-color);
+    color: var(--salt-actionable-secondary-foreground-active);
+  }
+
+  .saltToggleButtonGroup.vuuStateButtonGroup {
+    background-color: var(--salt-container-secondary-background);
+  }
+
+  .saltToggleButtonGroup.vuuStateButtonGroup .saltToggleButton {
     background-color: transparent;
   }
 
   .FreezeControl-customBadge {
-    background-color: var(--salt-container-primary-background);
+    background-color: transparent;
     border-radius: 50%;
     color: var(--salt-text-primary-foreground);
     display: flex;
@@ -42,7 +53,7 @@
 
   .FreezeControl-newOrders {
     align-items: center;
-    background-color: transparent;
+    background-color: var(--salt-container-secondary-background);
     display: flex;
     font-size: var(--salt-text-fontSize);
     padding: 0 var(--salt-spacing-200);
@@ -56,12 +67,12 @@
 
 @keyframes flashGreenRed {
   0% {
-    background-color: var(--salt-status-success-background);
+    background-color: var(--freeze-control-badge-color);
   }
   50% {
-    background-color: var(--salt-container-primary-background);
+    background-color: transparent;
   }
   100% {
-    background-color: var(--salt-status-success-background);
+    background-color: var(--freeze-control-badge-color);
   }
 }

@@ -74,19 +74,19 @@ export const FreezeControl = ({
         >
           <div
             className={cx(`FreezeControl-buttonWrapper`, {
-              [`FreezeControl-buttonWrapper-active`]: !isFrozen,
-            })}
-          >
-            <ToggleButton value="live">Live</ToggleButton>
-          </div>
-          <div
-            className={cx(`FreezeControl-buttonWrapper`, {
               [`FreezeControl-buttonWrapper-active`]: isFrozen,
             })}
           >
             <ToggleButton value="frozen">
               {isFrozen ? "Frozen" : "Freeze"}
             </ToggleButton>
+          </div>
+          <div
+            className={cx(`FreezeControl-buttonWrapper`, {
+              [`FreezeControl-buttonWrapper-active`]: !isFrozen,
+            })}
+          >
+            <ToggleButton value="live">Active</ToggleButton>
           </div>
         </ToggleButtonGroup>
         {isFrozen && (
