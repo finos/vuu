@@ -976,6 +976,29 @@ export class ServerProxy {
           }
         }
         break;
+
+      case "FREEZE_VP_SUCCESS":
+        {
+          const viewport = this.viewports.get(body.viewPortId);
+          if (viewport) {
+            const response = viewport.completeOperation(requestId);
+            if (response) {
+              this.postMessageToClient(response);
+            }
+          }
+        }
+        break;
+      case "UNFREEZE_VP_SUCCESS":
+        {
+          const viewport = this.viewports.get(body.viewPortId);
+          if (viewport) {
+            const response = viewport.completeOperation(requestId);
+            if (response) {
+              this.postMessageToClient(response);
+            }
+          }
+        }
+        break;
       case "TABLE_ROW":
         {
           // console.log(
