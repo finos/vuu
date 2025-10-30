@@ -1,20 +1,24 @@
+import { ContentStatus } from "@salt-ds/lab";
 import { getSchema } from "@vuu-ui/vuu-data-test";
-import { TableSchema } from "@vuu-ui/vuu-data-types";
 import type { DataSourceFilter } from "@vuu-ui/vuu-data-types";
+import { TableSchema } from "@vuu-ui/vuu-data-types";
 import { FilterTable } from "@vuu-ui/vuu-datatable";
 import type { FilterState } from "@vuu-ui/vuu-filter-types";
 import type { FilterBarProps } from "@vuu-ui/vuu-filters";
-import type { TableConfig } from "@vuu-ui/vuu-table-types";
-import { CSSProperties, useCallback, useMemo, useState } from "react";
-import { toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { View } from "@vuu-ui/vuu-layout";
+import { TableProps } from "@vuu-ui/vuu-table";
+import type { TableConfig } from "@vuu-ui/vuu-table-types";
+import { toColumnName, useData } from "@vuu-ui/vuu-utils";
+import { CSSProperties, useCallback, useMemo, useState } from "react";
 
 type FilterTableTemplateProps = {
   style?: CSSProperties;
   tableSchema?: TableSchema;
-} & Partial<FilterBarProps>;
+} & Partial<FilterBarProps> &
+  Pick<TableProps, "EmptyDisplay">;
 
 const FilterTableTemplate = ({
+  EmptyDisplay,
   style,
   tableSchema = getSchema("instruments"),
   QuickFilterProps,
@@ -68,6 +72,7 @@ const FilterTableTemplate = ({
       <FilterTable
         FilterBarProps={filterBarProps}
         TableProps={{
+          EmptyDisplay,
           config: tableConfig,
           dataSource,
           renderBufferSize: 20,
@@ -80,6 +85,19 @@ const FilterTableTemplate = ({
 /** tags=data-consumer */
 export const FilterTableInstruments = () => {
   return <FilterTableTemplate />;
+};
+
+const EmptyStatus = () => (
+  <ContentStatus
+    message="there are no instruments to display"
+    status="info"
+    title="No data available"
+  />
+);
+
+/** tags=data-consumer */
+export const WithEmptyStatus = () => {
+  return <FilterTableTemplate EmptyDisplay={EmptyStatus} />;
 };
 
 /** tags=data-consumer */
