@@ -3,7 +3,8 @@ package org.finos.vuu.viewport
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api._
+import org.finos.vuu.api.*
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.ClientSessionId
@@ -33,7 +34,7 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
     viewPortContainer
   }
 
-  def createDefaultViewPortInfra()(implicit clock: Clock, metrics: MetricsProvider): (ViewPortContainer, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue) = {
+  def createDefaultViewPortInfra()(implicit clock: Clock, metrics: MetricsProvider): (ViewPortContainer, DataTable, MockProvider, VuuUser, ClientSessionId, OutboundRowPublishQueue) = {
     implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
     val ordersDef = TableDef(
@@ -76,11 +77,13 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
 
     joinProvider.runOnce()
 
+    val user = VuuUser("chris")
+
     val session = ClientSessionId("sess-01", "chris", "channel")
 
     val outQueue = new OutboundRowPublishQueue()
 
-    (viewPortContainer, orders, ordersProvider, session, outQueue)
+    (viewPortContainer, orders, ordersProvider, user, session, outQueue)
   }
 
   def createDefaultViewPortInfraWithPrivateTable()(implicit clock: Clock, metrics: MetricsProvider): (ViewPortContainer, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue) = {
@@ -134,6 +137,8 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
 
     joinProvider.runOnce()
 
+
+
     val session = ClientSessionId("sess-01", "chris", "channel")
 
     val outQueue = new OutboundRowPublishQueue()
@@ -141,7 +146,7 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
     (viewPortContainer, orders, ordersProvider, session, outQueue)
   }
 
-  def createDefaultOrderPricesViewPortInfra()(implicit clock: Clock, metrics: MetricsProvider): (ViewPortContainer, DataTable, MockProvider, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue) = {
+  def createDefaultOrderPricesViewPortInfra()(implicit clock: Clock, metrics: MetricsProvider): (ViewPortContainer, DataTable, MockProvider, DataTable, MockProvider, VuuUser, ClientSessionId, OutboundRowPublishQueue) = {
     implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
     val ordersDef = TableDef(
@@ -191,11 +196,13 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
 
     joinProvider.runOnce()
 
+    val user = VuuUser("chris")
+
     val session = ClientSessionId("sess-01", "chris", "channel")
 
     val outQueue = new OutboundRowPublishQueue()
 
-    (viewPortContainer, orders, ordersProvider, prices, pricesProvider, session, outQueue)
+    (viewPortContainer, orders, ordersProvider, prices, pricesProvider, user, session, outQueue)
   }
 
   def createPricesRow(pricesProvider: MockProvider, ric: String, bid: Double, ask: Double, last: Double, close: Double): Unit = {
