@@ -5,6 +5,7 @@ import io.netty.channel.{Channel, ChannelFuture}
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.ModuleContainer
 import org.finos.vuu.net.flowcontrol.{BatchSize, Disconnect, FlowController, SendHeartbeat}
 import org.finos.vuu.net.json.JsonVsSerializer
@@ -31,6 +32,7 @@ trait MessageHandler extends InboundMessageHandler with OutboundMessageHandler {
 
 class DefaultMessageHandler(val channel: Channel,
                             val outboundQueue: PublishQueue[ViewPortUpdate],
+                            val user: VuuUser,
                             val session: ClientSessionId,
                             serverApi: ServerApi,
                             serializer: JsonVsSerializer,
@@ -124,7 +126,7 @@ class DefaultMessageHandler(val channel: Channel,
   }
 
   override def handle(msg: ViewServerMessage): Option[ViewServerMessage] = {
-    val ctx = RequestContext(msg.requestId, session, outboundQueue, msg.token)
+    val ctx = RequestContext(msg.requestId, user, session, outboundQueue, msg.token)
 
     flowController.process(msg)
 

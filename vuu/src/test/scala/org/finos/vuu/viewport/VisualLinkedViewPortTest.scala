@@ -3,8 +3,9 @@ package org.finos.vuu.viewport
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
-import org.finos.vuu.api._
+import org.finos.vuu.api.*
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.TableTestHelper.combineQs
 import org.finos.vuu.core.table.{Columns, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.{ClientSessionId, SortDef, SortSpec}
@@ -25,7 +26,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       Given("we've created a viewport with orders in")
-      val (viewPortContainer, orders, ordersProvider, prices, pricesProvider, session, outQueue) = createDefaultOrderPricesViewPortInfra()
+      val (viewPortContainer, orders, ordersProvider, prices, pricesProvider, user, session, outQueue) = createDefaultOrderPricesViewPortInfra()
 
       val vpcolumnsOrders = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
       val vpcolumnsPrices = ViewPortColumnCreator.create(prices, List("ric", "bid", "ask", "last", "open"))
@@ -41,8 +42,8 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       createNOrderRows(ordersProvider, 4, ric = "BT.L", idOffset = 3)(clock)
       createNOrderRows(ordersProvider, 5, ric = "BP.L", idOffset = 7)(clock)
 
-      val viewPortOrders = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), vpcolumnsOrders)
-      val viewPortPrices = viewPortContainer.create(RequestId.oneNew(), session, outQueue, prices, ViewPortRange(0, 10), vpcolumnsPrices)
+      val viewPortOrders = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), vpcolumnsOrders)
+      val viewPortPrices = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, prices, ViewPortRange(0, 10), vpcolumnsPrices)
 
       viewPortContainer.runOnce()
 
@@ -234,6 +235,8 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
 
       joinProvider.runOnce()
 
+      val user = VuuUser("chris")
+      
       val session = ClientSessionId("sess-01", "chris", "channel")
 
       val outQueue = new OutboundRowPublishQueue()
@@ -249,8 +252,8 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       createNOrderRows(ordersProvider2, 4, ric = "BT.L", idOffset = 3)(clock)
       createNOrderRows(ordersProvider2, 5, ric = "BP.L", idOffset = 7)(clock)
 
-      val viewPortOrders1 = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders1, ViewPortRange(0, 10), vpcolumnsOrders1)
-      val viewPortOrders2 = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders2, ViewPortRange(0, 10), vpcolumnsOrders2)
+      val viewPortOrders1 = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders1, ViewPortRange(0, 10), vpcolumnsOrders1)
+      val viewPortOrders2 = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders2, ViewPortRange(0, 10), vpcolumnsOrders2)
 
       viewPortContainer.runOnce()
 
@@ -342,7 +345,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       Given("we've created a viewport with orders in")
-      val (viewPortContainer, orders, ordersProvider, prices, pricesProvider, session, outQueue) = createDefaultOrderPricesViewPortInfra()
+      val (viewPortContainer, orders, ordersProvider, prices, pricesProvider, user, session, outQueue) = createDefaultOrderPricesViewPortInfra()
 
       val vpcolumnsOrders = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
       val vpcolumnsPrices = ViewPortColumnCreator.create(prices, List("ric", "bid", "ask", "last", "open"))
@@ -355,8 +358,8 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       createNOrderRows(ordersProvider, 4, ric = "BT.L", idOffset = 3)(clock)
       createNOrderRows(ordersProvider, 5, ric = "BP.L", idOffset = 7)(clock)
 
-      val viewPortOrders = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), vpcolumnsOrders)
-      val viewPortPrices = viewPortContainer.create(RequestId.oneNew(), session, outQueue, prices, ViewPortRange(0, 10), vpcolumnsPrices)
+      val viewPortOrders = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), vpcolumnsOrders)
+      val viewPortPrices = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, prices, ViewPortRange(0, 10), vpcolumnsPrices)
 
       viewPortContainer.runOnce()
 

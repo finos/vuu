@@ -4,9 +4,9 @@ import com.typesafe.scalalogging.LazyLogging
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.ViewPortDef
-import org.finos.vuu.core.auths.RowPermissionChecker
+import org.finos.vuu.core.auths.{RowPermissionChecker, VuuUser}
 import org.finos.vuu.core.sort.ModelType.SortSpecInternal
-import org.finos.vuu.core.sort._
+import org.finos.vuu.core.sort.*
 import org.finos.vuu.core.table.{Column, KeyObserver, RowKeyUpdate}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.feature.{EmptyViewPortKeys, ViewPortKeys}
@@ -87,6 +87,8 @@ trait ViewPort {
   def id: String
 
   def filterAndSort: FilterAndSort
+
+  def user: VuuUser
 
   def session: ClientSessionId
 
@@ -183,6 +185,7 @@ case class ViewPortStructuralFields(table: RowSource,
                                     permissionChecker: Option[RowPermissionChecker])
 
 class ViewPortImpl(val id: String,
+                   val user: VuuUser,
                    val session: ClientSessionId,
                    val outboundQ: PublishQueue[ViewPortUpdate],
                    val structuralFields: AtomicReference[ViewPortStructuralFields],

@@ -4,6 +4,7 @@ import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortDef, SortSpec}
 import org.finos.vuu.util.OutboundRowPublishQueue
@@ -40,6 +41,7 @@ class TreeSortTest extends AnyFeatureSpec with Matchers with GivenWhenThen with 
     val vpColumns = ViewPortColumnCreator.create(orderPrices, columns.map(_.name).toList)
 
     val viewport = viewPortContainer.create(RequestId.oneNew(),
+      VuuUser("B"),
       ClientSessionId("A", "B", "C"),
       queue, orderPrices, ViewPortRange(0, 20), vpColumns,
       SortSpec(List(

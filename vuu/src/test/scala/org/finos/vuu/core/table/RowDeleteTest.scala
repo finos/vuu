@@ -5,6 +5,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock, TestFriendlyClock}
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.TableTestHelper.*
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.ClientSessionId
@@ -47,11 +48,13 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       val provider = new MockProvider(table)
 
+      val user = VuuUser("chris")
+      
       val session = ClientSessionId("sess-01", "chris", "channel")
 
       val vpcolumns = ViewPortColumnCreator.create(table, List("ric", "bid", "ask"))
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, table, DefaultRange, vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, table, DefaultRange, vpcolumns)
 
       provider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220, "ask" -> 223))
       provider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 220, "ask" -> 223))
@@ -113,11 +116,13 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       val provider = new MockProvider(table)
 
+      val user = VuuUser("chris")
+      
       val session = ClientSessionId("sess-01", "chris", "channel")
 
       val vpcolumns = ViewPortColumnCreator.create(table, List("ric", "bid", "ask"))
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, table, DefaultRange, vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, table, DefaultRange, vpcolumns)
 
       provider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220, "ask" -> 223))
 
@@ -165,11 +170,13 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       joinProvider.start()
 
+      val user = VuuUser("chris")
+      
       val session = ClientSessionId("sess-01", "chris", "channel")
 
       val vpcolumns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orderPrices, DefaultRange, vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orderPrices, DefaultRange, vpcolumns)
 
       ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
       ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
@@ -243,11 +250,13 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       joinProvider.start()
 
+      val user = VuuUser("chris")
+      
       val session = ClientSessionId("sess-01", "chris", "channel")
 
       val vpcolumns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orderPrices, DefaultRange, vpcolumns,
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orderPrices, DefaultRange, vpcolumns,
         groupBy = GroupBy(orderPrices, vpcolumns.getColumnForName("trader").get)
           .withSum("quantity")
           .withCount("trader")

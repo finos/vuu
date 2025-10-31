@@ -4,10 +4,11 @@ import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
 import org.finos.vuu.util.OutboundRowPublishQueue
-import org.finos.vuu.util.table.TableAsserts._
+import org.finos.vuu.util.table.TableAsserts.*
 import org.finos.vuu.viewport.tree.{OnlyRecalculateTreeKeys, TreeBuildOptimizer}
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -41,6 +42,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
 
       val viewport = viewPortContainer.create(RequestId.oneNew(),
+        VuuUser("B"),
         ClientSessionId("A", "B", "C"),
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
@@ -178,6 +180,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
 
       val viewport = viewPortContainer.create(RequestId.oneNew(),
+        VuuUser("B"),
         ClientSessionId("A", "B", "C"),
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
@@ -244,6 +247,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList ++ List("traderRic:String:=concatenate(trader, ric)"))
 
       val viewport = viewPortContainer.create(RequestId.oneNew(),
+        VuuUser("B"),
         ClientSessionId("A", "B", "C"),
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
@@ -306,6 +310,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList ++ List("traderRic:String:=concatenate(trader, ric)"))
 
       val viewport = viewPortContainer.create(RequestId.oneNew(),
+        VuuUser("B"),
         ClientSessionId("A", "B", "C"),
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
@@ -365,6 +370,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList ++ List("traderRic:String:=concatenate(trader, ric)"))
 
       val viewport = viewPortContainer.create(RequestId.oneNew(),
+        VuuUser("B"),
         ClientSessionId("A", "B", "C"),
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
@@ -423,6 +429,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList ++ List("traderRic:String:=concatenate(trader, ric)"))
 
       val viewport = viewPortContainer.create(RequestId.oneNew(),
+        VuuUser("B"),
         ClientSessionId("A", "B", "C"),
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),

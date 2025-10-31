@@ -4,6 +4,7 @@ import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.TestFriendlyClock
 import org.finos.vuu.core.CoreServerApiHandler
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.TableContainer
 import org.finos.vuu.feature.inmem.{VuuInMemPlugin, VuuInMemPluginType}
 import org.finos.vuu.net.{ClientSessionId, HeartBeatResponse, RequestContext}
@@ -34,7 +35,7 @@ class CoreServerApiTest extends AnyFeatureSpec with BeforeAndAfterEach with Give
     Scenario("should process heartbeat successfully") {
       Given("a heart beat response")
       val heartBeatResponse = HeartBeatResponse(100000)
-      val requestContext = RequestContext("reqId",
+      val requestContext = RequestContext("reqId", VuuUser("user"),
         ClientSessionId("sessionId", "user", "channel"), new OutboundRowPublishQueue(), "token")
       val maybeMessage = coreServerApi.process(heartBeatResponse)(requestContext)
 

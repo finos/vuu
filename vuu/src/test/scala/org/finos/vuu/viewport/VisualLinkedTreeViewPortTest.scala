@@ -20,7 +20,7 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
     Scenario("create viewport, update selection, see selection come back") {
 
       Given("we've created a viewport with orders in")
-      val (viewPortContainer, orders, ordersProvider, prices, pricesProvider, session, outQueue) = createDefaultOrderPricesViewPortInfra()
+      val (viewPortContainer, orders, ordersProvider, prices, pricesProvider, user, session, outQueue) = createDefaultOrderPricesViewPortInfra()
 
       val vpcolumnsOrders = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
       val vpcolumnsPrices = ViewPortColumnCreator.create(prices, List("ric", "bid", "ask", "last", "open", "exchange"))
@@ -33,8 +33,8 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       createNOrderRows(ordersProvider, 4, ric = "BT.L", idOffset = 3)(clock)
       createNOrderRows(ordersProvider, 5, ric = "BP.L", idOffset = 7)(clock)
 
-      val viewPortOrders = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), vpcolumnsOrders)
-      val viewPortPricesGroupBy = viewPortContainer.create(RequestId.oneNew(), session, outQueue, prices, ViewPortRange(0, 10), vpcolumnsPrices, groupBy = GroupBy(List(vpcolumnsPrices.getColumnForName("exchange").get), List()))
+      val viewPortOrders = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), vpcolumnsOrders)
+      val viewPortPricesGroupBy = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, prices, ViewPortRange(0, 10), vpcolumnsPrices, groupBy = GroupBy(List(vpcolumnsPrices.getColumnForName("exchange").get), List()))
 
       viewPortContainer.runOnce()
       viewPortContainer.runGroupByOnce()
