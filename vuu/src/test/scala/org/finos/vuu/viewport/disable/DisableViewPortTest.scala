@@ -21,13 +21,13 @@ class DisableViewPortTest extends AbstractViewPortTestCase with Matchers with Gi
     Scenario("Check that a viewport is not emptied when disabled") {
 
       Given("we've created a viewport with orders in and a calc'd column 2")
-      val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
+      val (viewPortContainer, orders, ordersProvider, user, session, outQueue) = createDefaultViewPortInfra()
 
       val viewPortColumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
 
       createNOrderRowsNoSleep(ordersProvider, 10)(clock)
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), viewPortColumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), viewPortColumns)
 
       viewPortContainer.runOnce()
 

@@ -37,7 +37,7 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       Given("tables with public visibility created")
-      val (viewPortContainer, _, _, _, _, user, clientSession, outQueue) = createDefaultViewPortInfra()
+      val (viewPortContainer, _, _, user, clientSession, outQueue) = createDefaultViewPortInfra()
 
       val api = new CoreServerApiHandler(viewPortContainer, tableContainer = viewPortContainer.tableContainer, providers = viewPortContainer.providerContainer)
       val ctx = RequestContext("req-101", user, clientSession, outQueue, "token-0001")
@@ -53,7 +53,7 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       Given("tables with private visibility created")
-      val (viewPortContainer, _, _, _, _, user, clientSession, outQueue) = createDefaultViewPortInfraWithPrivateTable()
+      val (viewPortContainer, _, _, user, clientSession, outQueue) = createDefaultViewPortInfraWithPrivateTable()
       val api = new CoreServerApiHandler(viewPortContainer, tableContainer = viewPortContainer.tableContainer, providers = viewPortContainer.providerContainer)
 
       val ctx = RequestContext("req-101", user, clientSession, outQueue, "token-0001")
@@ -69,7 +69,7 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       Given("tables with public visibility created")
-      val (viewPortContainer, _, _, _, _, user, clientSession, outQueue) = createDefaultViewPortInfraWithPrivateTable()
+      val (viewPortContainer, _, _, user, clientSession, outQueue) = createDefaultViewPortInfraWithPrivateTable()
 
       val api = new CoreServerApiHandler(viewPortContainer, tableContainer = viewPortContainer.tableContainer, providers = viewPortContainer.providerContainer)
       val ctx = RequestContext("req-101", user, clientSession, outQueue, "token-0001")
@@ -85,7 +85,7 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       Given("tables with public visibility created")
-      val (viewPortContainer, _, _, _, _, user, clientSession, outQueue) = createDefaultViewPortInfra()
+      val (viewPortContainer, _, _, user, clientSession, outQueue) = createDefaultViewPortInfra()
 
       val api = new CoreServerApiHandler(viewPortContainer, tableContainer = viewPortContainer.tableContainer, providers = viewPortContainer.providerContainer)
       val ctx = RequestContext("req-101", user, clientSession, outQueue, "token-0001")
@@ -101,7 +101,7 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       Given("tables with private visibility created")
-      val (viewPortContainer, _, _, _, _, user, clientSession, outQueue) = createDefaultViewPortInfraWithPrivateTable()
+      val (viewPortContainer, _, _, user, clientSession, outQueue) = createDefaultViewPortInfraWithPrivateTable()
       val api = new CoreServerApiHandler(viewPortContainer, tableContainer = viewPortContainer.tableContainer, providers = viewPortContainer.providerContainer)
 
       val ctx = RequestContext("req-101", user, clientSession, outQueue, "token-0001")

@@ -5,6 +5,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.{TableDef, ViewPortDef, VisualLinks}
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.table.{Columns, DataTable, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
@@ -14,7 +15,7 @@ import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, Provider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
-import org.finos.vuu.viewport._
+import org.finos.vuu.viewport.*
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
@@ -67,7 +68,7 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
     }
   }
 
-  def createInstrumentsRpc(): (ViewPortContainer, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue) = {
+  def createInstrumentsRpc(): (ViewPortContainer, DataTable, MockProvider, VuuUser, ClientSessionId, OutboundRowPublishQueue) = {
 
     implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
@@ -91,12 +92,14 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
 
     val viewPortContainer = setupViewPort(tableContainer, providerContainer)
 
+    val user = VuuUser("chris")
+    
     val session = ClientSessionId("sess-01", "chris", "channel")
 
     val outQueue = new OutboundRowPublishQueue()
     val highPriorityQueue = new OutboundRowPublishQueue()
 
-    (viewPortContainer, instruments, instrumentsProvider, session, outQueue)
+    (viewPortContainer, instruments, instrumentsProvider, user, session, outQueue)
   }
 
   def createViewPortDef(): (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef = {
@@ -108,13 +111,13 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
 
     Scenario("Invoke a viewport related rpc function") {
 
-      val (vpContainer, instruments, instrumentsProvider, session, outQueue) = createInstrumentsRpc()
+      val (vpContainer, instruments, instrumentsProvider, user, session, outQueue) = createInstrumentsRpc()
 
       vpContainer.addViewPortDefinition(instruments.getTableDef.name, createViewPortDef())
 
       val vpcolumnsOrders = ViewPortColumnCreator.create(instruments, instruments.getTableDef.columns.map(_.name).toList )
 
-      val viewPort = vpContainer.create(RequestId.oneNew(), session, outQueue, instruments, DefaultRange, vpcolumnsOrders)
+      val viewPort = vpContainer.create(RequestId.oneNew(), user, session, outQueue, instruments, DefaultRange, vpcolumnsOrders)
 
       instrumentsProvider.tick("VOD.L", Map("ric" -> "VOD.L", "description" -> "Vodafone", "bbg" -> "VOD LN", "currency" -> "GBp", "exchange" -> "XLON/SETS"))
       instrumentsProvider.tick("BT.L", Map("ric" -> "BT.L", "description" -> "British Telecom", "bbg" -> "BT LN", "currency" -> "GBp", "exchange" -> "XLON/SETS"))

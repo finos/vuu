@@ -153,12 +153,12 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
   override def createViewPort(module: String, tableName: String, viewPortRange: ViewPortRange): ViewPort = {
     val table = tableContainer.getTable(tableName)
     val columns = ViewPortColumnCreator.create(table, table.getTableDef.columns.map(_.name).toList)
-    val viewport = viewPortContainer.create(RequestId.oneNew(), session, queue, table, viewPortRange, columns)
+    val viewport = viewPortContainer.create(RequestId.oneNew(), user, session, queue, table, viewPortRange, columns)
     viewport
   }
 
   override def createViewPort(module: String, tableName: String): ViewPort = createViewPort(module, tableName, DefaultRange)
-
+  
   override def session: ClientSessionId = {
     clientSessionId
   }
@@ -180,10 +180,12 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
   var handler: ViewServerHandler = null
   val channel = new TestChannel
   var clientSessionId: ClientSessionId = null
+  var user: VuuUser = null;
 
   override def login(user: String): Unit = login(VuuUser(user))
 
   override def login(user: VuuUser): Unit = {
+    this.user = user
     handler = factory.create()
     val token = loginTokenService.getToken(user)
     val packet = serializer.serialize(JsonViewServerMessage(RequestId.oneNew(), "", "", "", LoginRequest(token)))
@@ -215,7 +217,7 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
   }
 
   override def requestContext: RequestContext = {
-    RequestContext(RequestId.oneNew(), clientSessionId, queue, "TOKEN")
+    RequestContext(RequestId.oneNew(), user, clientSessionId, queue, "TOKEN")
   }
 
   override def registerPlugin(plugin: Plugin): Unit = pluginRegistry.registerPlugin(plugin)

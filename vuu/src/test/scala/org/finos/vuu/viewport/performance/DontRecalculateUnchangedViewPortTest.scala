@@ -21,13 +21,13 @@ class DontRecalculateUnchangedViewPortTest extends AbstractViewPortTestCase with
     Scenario("Create Viewport, run cycle count and check we recalc only when required") {
 
       Given("we've created a viewport with orders in")
-      val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
+      val (viewPortContainer, orders, ordersProvider, user, session, outQueue) = createDefaultViewPortInfra()
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
 
       createNOrderRows(ordersProvider, 10)(clock)
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 20), vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 20), vpcolumns)
 
       val hashCode1 = viewPort.getStructuralHashCode()
       val updateCount1 = viewPort.getTableUpdateCount()

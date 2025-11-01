@@ -3,8 +3,9 @@ package org.finos.vuu.viewport.sessiontable
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api._
+import org.finos.vuu.api.*
 import org.finos.vuu.core.AbstractVuuServer
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.module.{StaticServedResource, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
@@ -34,7 +35,7 @@ trait AbstractSessionTestCase {
   final val TEST_TIME = 1450770869442L
   var counter: Int = 0
 
-  def setupEditableSessionTableInfra()(implicit clock: Clock, metrics: MetricsProvider): (ViewPortContainer, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue, DataTable, TableContainer, DataTable) = {
+  def setupEditableSessionTableInfra()(implicit clock: Clock, metrics: MetricsProvider): (ViewPortContainer, DataTable, MockProvider, VuuUser, ClientSessionId, OutboundRowPublishQueue, DataTable, TableContainer, DataTable) = {
     implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
     val module = createViewServerModule("TEST")
@@ -79,11 +80,13 @@ trait AbstractSessionTestCase {
     joinProvider.start()
     joinProvider.runOnce()
 
+    val user = VuuUser("chris")
+    
     val session = ClientSessionId("sess-01", "chris", "channel")
 
     val outQueue = new OutboundRowPublishQueue()
 
-    (viewPortContainer, process, processProvider, session, outQueue, fixSequence, tableContainer, stopProcess)
+    (viewPortContainer, process, processProvider, user, session, outQueue, fixSequence, tableContainer, stopProcess)
 
   }
 

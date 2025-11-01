@@ -77,8 +77,8 @@ class EditableViewportWithRpcTest extends EditableViewPortTest {
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
-      val (viewPortContainer, tablesAndProviders, session, outQueue, tableContainer, joinTableManager) = setupEditableTableInfra()
-      val context = RequestContext("AAA", session, outQueue, "AAABBBCC")
+      val (viewPortContainer, tablesAndProviders, user, session, outQueue, tableContainer, joinTableManager) = setupEditableTableInfra()
+      val context = RequestContext("AAA", user, session, outQueue, "AAABBBCC")
 
       val (constituent, consProvider) = tablesAndProviders("constituent")
       val (instrument, instrumentProvider) = tablesAndProviders("instrument")
@@ -102,7 +102,7 @@ class EditableViewportWithRpcTest extends EditableViewPortTest {
 
       Given("We create a viewport on the consInstPrice table (view only)")
       val vpColumns = ViewPortColumnCreator.create(consInstPrice, consInstPrice.getTableDef.columns.map(_.name).toList)
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, consInstPrice, DefaultRange, vpColumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, consInstPrice, DefaultRange, vpColumns)
 
       joinTableManager.runOnce()
       viewPortContainer.runOnce()

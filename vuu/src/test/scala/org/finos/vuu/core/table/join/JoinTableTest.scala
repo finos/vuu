@@ -274,7 +274,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       tickInData(ordersProvider, pricesProvider)
 
-      val orderPricesViewport = vpContainer.create(RequestId.oneNew(), ClientSessionId("A", "B", "C"), 
+      val orderPricesViewport = vpContainer.create(RequestId.oneNew(), VuuUser("B"), ClientSessionId("A", "B", "C"), 
         queue, orderPrices, ViewPortRange(0, 20), 
         ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList))
 
