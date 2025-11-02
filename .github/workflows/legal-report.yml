@@ -98,7 +98,7 @@ jobs:
       working-directory: ${{ matrix.package-folder }}
 
     - name: Upload license XML reports
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: ${{ matrix.package-folder }}-license-xml-report
         path: '**/target/generated-resources/licenses.xml'
