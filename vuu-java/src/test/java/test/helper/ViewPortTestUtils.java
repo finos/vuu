@@ -1,5 +1,6 @@
 package test.helper;
 
+import org.finos.vuu.core.auths.VuuUser;
 import org.finos.vuu.net.ClientSessionId;
 import org.finos.vuu.net.JsonViewServerMessage;
 import org.finos.vuu.net.MessageBody;
@@ -22,6 +23,6 @@ public class ViewPortTestUtils {
     }
 
     public static RequestContext requestContext() {
-        return new RequestContext("", new ClientSessionId("", "", ""), null, "");
+        return new RequestContext("", VuuUser.apply(""), new ClientSessionId("", "", ""), null, "");
     }
 }
