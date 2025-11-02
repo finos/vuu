@@ -1323,10 +1323,16 @@ export const reorderColumnItems = <
   orderedNames: string[],
 ): T[] => {
   const columns: T[] = [];
+  let previousName = "";
   for (const name of orderedNames) {
-    const columnItem = columnItems.find((c) => c.name === name);
-    if (columnItem) {
-      columns.push(columnItem);
+    // Because of the way ordered names are captured, it can happen that a duplicate entry
+    // is captured for the dropped item. Ignore it. Only observed on slow clients.
+    if (previousName !== name) {
+      const columnItem = columnItems.find((c) => c.name === name);
+      if (columnItem) {
+        columns.push(columnItem);
+      }
+      previousName = name;
     }
   }
   return columns;

@@ -372,7 +372,10 @@ export class ArrayDataSource
     }
 
     this.setRange(this.#range, true);
-    this.emit("row-selection", this.selectedRows.size);
+    this.emit(
+      "row-selection",
+      selectRequest.type === "SELECT_ALL" ? this.size : this.selectedRows.size,
+    );
   }
 
   private getRowKey(keyOrIndex: string | number) {
