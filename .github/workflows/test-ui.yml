@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
       - run: cd ./vuu-ui && npm run build:worker
@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
       - run: cd ./vuu-ui && npm run test:vite
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
       - name: Build Worker
@@ -79,7 +79,7 @@ jobs:
         browser: [chromium, firefox, webkit]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
       - name: Build Worker
@@ -102,7 +102,7 @@ jobs:
     if: always()
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
       - name: Download blob reports from GitHub Actions Artifacts
         uses: actions/download-artifact@v4
         with:
@@ -129,7 +129,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
       - name: Install Node & dependencies
         uses: ./.github/actions/setup-vuu-ui
       - name: Build Vuu Libraries
