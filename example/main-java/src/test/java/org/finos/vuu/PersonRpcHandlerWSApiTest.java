@@ -144,12 +144,14 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
         var viewPortCreateResponse = vuuClient.awaitForResponse(viewPortRequestId);
 
         CreateViewPortSuccess responseBody = assertBodyIsInstanceOf(viewPortCreateResponse, "View port create response");
-        return responseBody.viewPortId();
+        var viewportId =  responseBody.viewPortId();
+        waitForData(1);
+        return viewportId;
     }
-
 
     @Override
     public ViewServerModule defineModuleWithTestTables() {
         return new JavaExampleModule().create(new TableDefContainer(), new DefaultClock());
     }
+
 }

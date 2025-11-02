@@ -4,6 +4,7 @@ import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.util.OutboundRowPublishQueue
@@ -44,10 +45,11 @@ class TreeOnOffTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       joinProvider.runOnce()
 
       val queue = new OutboundRowPublishQueue()
+      val user = VuuUser("B")
       val session = ClientSessionId("A", "B", "C")
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
       val range = ViewPortRange(0, 20)
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, queue, orderPrices, range, columns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, queue, orderPrices, range, columns)
 
       runContainersOnce(viewPortContainer, joinProvider)
 

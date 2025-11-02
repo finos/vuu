@@ -19,7 +19,7 @@ class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with G
 
     Scenario("Check when we move vp down and back and tick, rows come through"){
 
-      val (viewPortContainer, orders, ordersProvider, session, outQueue) = createDefaultViewPortInfra()
+      val (viewPortContainer, orders, ordersProvider, user, session, outQueue) = createDefaultViewPortInfra()
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
 
@@ -27,7 +27,7 @@ class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with G
 
       createNOrderRows(ordersProvider, 30)(clock)
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orders, ViewPortRange(0, 10), vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), vpcolumns)
 
       viewPortContainer.runOnce()
 

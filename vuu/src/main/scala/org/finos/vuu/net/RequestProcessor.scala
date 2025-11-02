@@ -13,7 +13,9 @@ import org.finos.vuu.net.json.JsonVsSerializer
 import org.finos.vuu.util.{OutboundRowPublishQueue, PublishQueue}
 import org.finos.vuu.viewport.ViewPortUpdate
 
-case class RequestContext(requestId: String, session: ClientSessionId,
+case class RequestContext(requestId: String,
+                          user: VuuUser,
+                          session: ClientSessionId,
                           queue: PublishQueue[ViewPortUpdate],
                           token: String)
 
@@ -57,10 +59,10 @@ class RequestProcessor(loginTokenService: LoginTokenService,
     Some(JsonViewServerMessage(requestId, session, "", user.name, LoginSuccess(vuuServerId)))
   }
 
-  private def createMessageHandler(channel: Channel, sessionId: ClientSessionId, vuuUser: VuuUser): MessageHandler = {
+  private def createMessageHandler(channel: Channel, sessionId: ClientSessionId, user: VuuUser): MessageHandler = {
     val queue = OutboundRowPublishQueue()
     val flowController = flowControllerFactory.create()
-    DefaultMessageHandler(channel, queue, sessionId, serverApi, serializer, flowController, clientSessionContainer, moduleContainer)
+    DefaultMessageHandler(channel, queue, user, sessionId, serverApi, serializer, flowController, clientSessionContainer, moduleContainer)
   }
 
   private def handleViewServerMessage(msg: ViewServerMessage, channel: Channel): Option[ViewServerMessage] = {

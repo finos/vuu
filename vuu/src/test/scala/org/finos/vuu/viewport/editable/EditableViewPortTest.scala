@@ -3,17 +3,18 @@ package org.finos.vuu.viewport.editable
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api._
+import org.finos.vuu.api.*
 import org.finos.vuu.core.AbstractVuuServer
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.module.{StaticServedResource, TableDefContainer, ViewServerModule}
-import org.finos.vuu.core.table._
+import org.finos.vuu.core.table.*
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.rpc.RpcHandler
-import org.finos.vuu.provider._
+import org.finos.vuu.provider.*
 import org.finos.vuu.util.OutboundRowPublishQueue
-import org.finos.vuu.viewport._
+import org.finos.vuu.viewport.*
 import org.scalatest.GivenWhenThen
 import org.scalatest.matchers.should.Matchers
 
@@ -80,7 +81,7 @@ abstract class EditableViewPortTest extends AbstractViewPortTestCase with Matche
   //final val TEST_TIME = 1450770869442L
   var counter: Int = 0
 
-  def setupEditableTableInfra()(implicit clock: Clock, metrics: MetricsProvider, lifecycle: LifecycleContainer): (ViewPortContainer, Map[String, (DataTable, MockProvider)], ClientSessionId, OutboundRowPublishQueue, TableContainer, JoinTableProvider) = {
+  def setupEditableTableInfra()(implicit clock: Clock, metrics: MetricsProvider, lifecycle: LifecycleContainer): (ViewPortContainer, Map[String, (DataTable, MockProvider)], VuuUser, ClientSessionId, OutboundRowPublishQueue, TableContainer, JoinTableProvider) = {
 
     val module = createViewServerModule("TEST")
 
@@ -149,6 +150,8 @@ abstract class EditableViewPortTest extends AbstractViewPortTestCase with Matche
     joinProvider.start()
     joinProvider.runOnce()
 
+    val user = VuuUser("chris")
+    
     val session = ClientSessionId("sess-01", "chris", "channel")
 
     val outQueue = new OutboundRowPublishQueue()
@@ -158,7 +161,7 @@ abstract class EditableViewPortTest extends AbstractViewPortTestCase with Matche
                         prices.name -> (prices, pricesProvider),
                         consInstrumentPrices.name -> (consInstrumentPrices, null))
 
-    (viewPortContainer,  mapTables, session, outQueue, tableContainer, joinProvider)
+    (viewPortContainer,  mapTables, user, session, outQueue, tableContainer, joinProvider)
   }
 
   def createViewPortDefFunc(tableContainer: TableContainer, rpcHandler: RpcHandler, clock: Clock): (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef = {

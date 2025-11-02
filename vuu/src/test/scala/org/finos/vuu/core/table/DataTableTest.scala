@@ -5,6 +5,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.TableTestHelper.*
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.ClientSessionId
@@ -40,11 +41,13 @@ class DataTableTest extends AnyFeatureSpec with Matchers {
 
       val provider = new MockProvider(table)
 
+      val user: VuuUser = VuuUser("chris")
+      
       val session = ClientSessionId("sess-01", "chris", "channel")
 
       val vpcolumns = List("ric", "bid", "ask")
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, table, DefaultRange, ViewPortColumnCreator.create(table, vpcolumns))
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, table, DefaultRange, ViewPortColumnCreator.create(table, vpcolumns))
 
       provider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220, "ask" -> 223))
 

@@ -150,7 +150,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
 
     Scenario("Create a session table based on a menu item user action and populate it with callbacks") {
 
-      val (viewPortContainer, process, processProvider, session, outQueue, fixSequence, tableContainer, _) = setupEditableSessionTableInfra()
+      val (viewPortContainer, process, processProvider, user, session, outQueue, fixSequence, tableContainer, _) = setupEditableSessionTableInfra()
 
       Given("We create a viewport on the process table (view only)")
       val vpcolumns = ViewPortColumnCreator.create(process, process.getTableDef.columns.map(_.name).toList)
@@ -165,7 +165,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       processProvider.tick("proc-2", Map("id" -> "proc-2", "name" -> "My Process 2", "uptime" -> 5000L, "status" -> "running"))
 
       Then("we create a viewport...")
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, process, DefaultRange, vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, process, DefaultRange, vpcolumns)
 
       viewPortContainer.runOnce()
 
@@ -185,7 +185,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       val sessionTable = tableContainer.getTable(action.table.table)
       val sessionColumns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.columns.map(_.name).toList)
 
-      val sessionViewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, sessionTable, DefaultRange, sessionColumns)
+      val sessionViewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, sessionTable, DefaultRange, sessionColumns)
 
       viewPortContainer.runOnce()
 
@@ -216,7 +216,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
 
     Scenario("Create a session table based on a generic rpc call and populate it with callbacks") {
 
-      val (viewPortContainer, process, processProvider, session, outQueue, _, tableContainer, stopProcess) = setupEditableSessionTableInfra()
+      val (viewPortContainer, process, processProvider, user, session, outQueue, _, tableContainer, stopProcess) = setupEditableSessionTableInfra()
 
       Given("We create a viewport on the process table (view only)")
       val vpcolumns = ViewPortColumnCreator.create(process, process.getTableDef.columns.map(_.name).toList)
@@ -234,7 +234,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       processProvider.tick("proc-3", Map("id" -> "proc-3", "name" -> "My Process 3", "uptime" -> 5000L, "status" -> "running"))
 
       Then("we create a viewport...")
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, process, DefaultRange, vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, process, DefaultRange, vpcolumns)
 
       viewPortContainer.runOnce()
 
@@ -242,7 +242,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       viewPortContainer.selectAll(viewPort.id)
 
       Then("call rpc call to create session table, this should create an OpenDialogViewPortAction")
-      val response = viewPortContainer.handleRpcRequest(viewPort.id, "OPEN_STOP_PROCESS", Map.empty)(RequestContext(RequestId.oneNew(), session, outQueue, "lol")).asInstanceOf[RpcFunctionSuccess]
+      val response = viewPortContainer.handleRpcRequest(viewPort.id, "OPEN_STOP_PROCESS", Map.empty)(RequestContext(RequestId.oneNew(), user, session, outQueue, "lol")).asInstanceOf[RpcFunctionSuccess]
 
       val action = response.optionalResult.get.asInstanceOf[OpenDialogViewPortAction]
       action.renderComponent should equal("inline-form")
@@ -255,7 +255,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       val sessionTable = tableContainer.getTable(action.table.table)
       val sessionColumns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.columns.map(_.name).toList)
 
-      val sessionViewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, sessionTable, DefaultRange, sessionColumns)
+      val sessionViewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, sessionTable, DefaultRange, sessionColumns)
 
       viewPortContainer.runOnce()
 

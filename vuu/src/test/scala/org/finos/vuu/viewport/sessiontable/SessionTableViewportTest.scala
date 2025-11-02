@@ -3,20 +3,21 @@ package org.finos.vuu.viewport.sessiontable
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
-import org.finos.vuu.api._
+import org.finos.vuu.api.*
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.AbstractVuuServer
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.module.{StaticServedResource, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.TableTestHelper.{combineQs, emptyQueues}
-import org.finos.vuu.core.table._
+import org.finos.vuu.core.table.*
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, Provider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
-import org.finos.vuu.viewport._
+import org.finos.vuu.viewport.*
 import org.scalatest.GivenWhenThen
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
@@ -81,7 +82,7 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
     }
   }
 
-  def createDefaultSessionTableInfra()(implicit clock: Clock, lifecycle:LifecycleContainer, metrics: MetricsProvider): (ViewPortContainer, DataTable, MockProvider, DataTable, MockProvider, ClientSessionId, OutboundRowPublishQueue, DataTable, TableContainer) = {
+  def createDefaultSessionTableInfra()(implicit clock: Clock, lifecycle:LifecycleContainer, metrics: MetricsProvider): (ViewPortContainer, DataTable, MockProvider, DataTable, MockProvider, VuuUser, ClientSessionId, OutboundRowPublishQueue, DataTable, TableContainer) = {
     //implicit val lifecycle = new LifecycleContainer
 
     val dateTime = 1437728400000L //new LocalDateTime(2015, 7, 24, 11, 0).toDateTime.toInstant.getMillis
@@ -169,11 +170,13 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
 
     joinProvider.runOnce()
 
+    val user = VuuUser("chris")
+    
     val session = ClientSessionId("sess-01", "chris", "channel")
 
     val outQueue = new OutboundRowPublishQueue()
 
-    (viewPortContainer, instruments, instrumentsProvider, prices, pricesProvider, session, outQueue, basketOrders, tableContainer)
+    (viewPortContainer, instruments, instrumentsProvider, prices, pricesProvider, user, session, outQueue, basketOrders, tableContainer)
   }
 
   def createViewPortDefFunc(tableContainer: TableContainer, clock: Clock): (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef = {
@@ -189,14 +192,14 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
 
-      val (viewPortContainer, instruments, instrumentsProvider, prices, pricesProvider, session, outQueue, basketOrders, tableContainer) = createDefaultSessionTableInfra()
+      val (viewPortContainer, instruments, instrumentsProvider, prices, pricesProvider, user, session, outQueue, basketOrders, tableContainer) = createDefaultSessionTableInfra()
 
       val vpcolumns = ViewPortColumnCreator.create(instruments, instruments.getTableDef.columns.map(_.name).toList)
 
       Given("We have a viewport on instruments with an rpc service attached...")
       viewPortContainer.addViewPortDefinition(instruments.getTableDef.name, createViewPortDefFunc(tableContainer, clock))
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, instruments, DefaultRange, vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, instruments, DefaultRange, vpcolumns)
 
       viewPortContainer.runOnce()
 
@@ -231,7 +234,7 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
         case x: OpenDialogViewPortAction =>
           val basketTable = tableContainer.getTable(x.table.table)
           val vpColumns2 = ViewPortColumnCreator.create(basketTable, basketTable.getTableDef.columns.map(_.name).toList)
-          val viewPort2 = viewPortContainer.create(RequestId.oneNew(), session, outQueue, basketTable, DefaultRange, vpColumns2)
+          val viewPort2 = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, basketTable, DefaultRange, vpColumns2)
 
           viewPortContainer.runOnce()
 

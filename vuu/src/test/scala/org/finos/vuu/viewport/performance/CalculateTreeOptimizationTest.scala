@@ -3,13 +3,14 @@ package org.finos.vuu.viewport.performance
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.api._
+import org.finos.vuu.api.*
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.{Columns, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
-import org.finos.vuu.util.table.TableAsserts._
+import org.finos.vuu.util.table.TableAsserts.*
 import org.finos.vuu.viewport.ViewPortTestFns.setupViewPort
 import org.finos.vuu.viewport.{DefaultRange, GroupBy, ViewPortSetup}
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -71,13 +72,15 @@ class CalculateTreeOptimizationTest extends AnyFeatureSpec with ViewPortSetup {
 
     joinProvider.runOnce()
 
+    val user = VuuUser("chris")
+    
     val session = ClientSessionId("sess-01", "chris", "channel")
 
     val outQueue = new OutboundRowPublishQueue()
 
     val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask"))
 
-    val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orderPrices, DefaultRange, vpcolumns)
+    val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orderPrices, DefaultRange, vpcolumns)
 
     runContainersOnce(viewPortContainer, joinProvider)
 

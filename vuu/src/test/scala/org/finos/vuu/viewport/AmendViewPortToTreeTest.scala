@@ -5,6 +5,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api.*
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.{Columns, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
@@ -71,13 +72,15 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
 
     joinProvider.runOnce()
 
+    val user = VuuUser("chris")
+    
     val session = ClientSessionId("sess-01", "chris", "channel")
 
     val outQueue = new OutboundRowPublishQueue()
 
     val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask"))
 
-    val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orderPrices, DefaultRange, vpcolumns)
+    val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orderPrices, DefaultRange, vpcolumns)
 
     runContainersOnce(viewPortContainer, joinProvider)
 
@@ -190,13 +193,15 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
 
     joinProvider.runOnce()
 
+    val user = VuuUser("chris")
+    
     val session = ClientSessionId("sess-01", "chris", "channel")
 
     val outQueue = new OutboundRowPublishQueue()
 
     val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask"))//.map(orderPrices.getTableDef.columnForName(_))
 
-    val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orderPrices, DefaultRange, vpcolumns)
+    val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orderPrices, DefaultRange, vpcolumns)
 
     runContainersOnce(viewPortContainer, joinProvider)
 

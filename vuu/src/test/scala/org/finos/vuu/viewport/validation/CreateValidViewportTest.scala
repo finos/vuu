@@ -18,13 +18,13 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       Given("we've created a viewport with orders in")
-      val (viewPortContainer, _, _, _, _, _, outQueue) = createDefaultOrderPricesViewPortInfra()
+      val (viewPortContainer, _, _, _, _, user, clientSession, outQueue) = createDefaultOrderPricesViewPortInfra()
 
       val api = new CoreServerApiHandler(viewPortContainer, tableContainer = viewPortContainer.tableContainer, providers = viewPortContainer.providerContainer)
 
       val vpcolumnsOrders = List("orderId", "trader", "tradeTime", "quantity", "ric", "foo-bar")
 
-      val ctx = RequestContext("req-101", ClientSessionId("A", "A", "A"), outQueue, "token-0001")
+      val ctx = RequestContext("req-101", user, clientSession, outQueue, "token-0001")
 
       val exception = intercept[Exception] {
         api.process(CreateViewPortRequest(ViewPortTable("orders", "TEST"), ViewPortRange(0, 100), vpcolumnsOrders.toArray))(ctx)
@@ -37,10 +37,10 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       Given("tables with public visibility created")
-      val (viewPortContainer, _, _, _, outQueue) = createDefaultViewPortInfra()
+      val (viewPortContainer, _, _, user, clientSession, outQueue) = createDefaultViewPortInfra()
 
       val api = new CoreServerApiHandler(viewPortContainer, tableContainer = viewPortContainer.tableContainer, providers = viewPortContainer.providerContainer)
-      val ctx = RequestContext("req-101", ClientSessionId("A", "A", "A"), outQueue, "token-0001")
+      val ctx = RequestContext("req-101", user, clientSession, outQueue, "token-0001")
 
       val result: Option[ViewServerMessage] = api.process(CreateViewPortRequest(ViewPortTable("orders", "TEST"), ViewPortRange(0, 100), Array("orderId")))(ctx)
       result.isDefined shouldBe true
@@ -53,10 +53,10 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       Given("tables with private visibility created")
-      val (viewPortContainer, _, _, _, outQueue) = createDefaultViewPortInfraWithPrivateTable()
+      val (viewPortContainer, _, _, user, clientSession, outQueue) = createDefaultViewPortInfraWithPrivateTable()
       val api = new CoreServerApiHandler(viewPortContainer, tableContainer = viewPortContainer.tableContainer, providers = viewPortContainer.providerContainer)
 
-      val ctx = RequestContext("req-101", ClientSessionId("A", "A", "A"), outQueue, "token-0001")
+      val ctx = RequestContext("req-101", user, clientSession, outQueue, "token-0001")
 
       val result: Option[ViewServerMessage] = api.process(CreateViewPortRequest(ViewPortTable("orders", "TEST"), ViewPortRange(0, 100), Array("orderId")))(ctx)
       result.isDefined shouldBe true
@@ -69,10 +69,10 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       Given("tables with public visibility created")
-      val (viewPortContainer, _, _, _, outQueue) = createDefaultViewPortInfraWithPrivateTable()
+      val (viewPortContainer, _, _, user, clientSession, outQueue) = createDefaultViewPortInfraWithPrivateTable()
 
       val api = new CoreServerApiHandler(viewPortContainer, tableContainer = viewPortContainer.tableContainer, providers = viewPortContainer.providerContainer)
-      val ctx = RequestContext("req-101", ClientSessionId("A", "A", "A"), outQueue, "token-0001")
+      val ctx = RequestContext("req-101", user, clientSession, outQueue, "token-0001")
 
       val result: Option[ViewServerMessage] = api.process(CreateViewPortRequest(ViewPortTable("random_table", "TEST"), ViewPortRange(0, 100), Array("orderId")))(ctx)
       result.isDefined shouldBe true
@@ -85,10 +85,10 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       Given("tables with public visibility created")
-      val (viewPortContainer, _, _, _, outQueue) = createDefaultViewPortInfra()
+      val (viewPortContainer, _, _, user, clientSession, outQueue) = createDefaultViewPortInfra()
 
       val api = new CoreServerApiHandler(viewPortContainer, tableContainer = viewPortContainer.tableContainer, providers = viewPortContainer.providerContainer)
-      val ctx = RequestContext("req-101", ClientSessionId("A", "A", "A"), outQueue, "token-0001")
+      val ctx = RequestContext("req-101", user, clientSession, outQueue, "token-0001")
 
       val result: Option[ViewServerMessage] = api.process(CreateViewPortRequest(ViewPortTable("orderPrices", "TEST"), ViewPortRange(0, 100), Array("orderId")))(ctx)
       result.isDefined shouldBe true
@@ -101,10 +101,10 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       Given("tables with private visibility created")
-      val (viewPortContainer, _, _, _, outQueue) = createDefaultViewPortInfraWithPrivateTable()
+      val (viewPortContainer, _, _, user, clientSession, outQueue) = createDefaultViewPortInfraWithPrivateTable()
       val api = new CoreServerApiHandler(viewPortContainer, tableContainer = viewPortContainer.tableContainer, providers = viewPortContainer.providerContainer)
 
-      val ctx = RequestContext("req-101", ClientSessionId("A", "A", "A"), outQueue, "token-0001")
+      val ctx = RequestContext("req-101", user, clientSession, outQueue, "token-0001")
 
       val result: Option[ViewServerMessage] = api.process(CreateViewPortRequest(ViewPortTable("orderPrices", "TEST"), ViewPortRange(0, 100), Array("orderId")))(ctx)
       result.isDefined shouldBe true

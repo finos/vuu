@@ -4,10 +4,11 @@ import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.{RowWithData, ViewPortColumnCreator}
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
 import org.finos.vuu.util.OutboundRowPublishQueue
-import org.finos.vuu.util.table.TableAsserts._
+import org.finos.vuu.util.table.TableAsserts.*
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -38,6 +39,7 @@ class TreeAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhenTh
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
 
       val viewport = viewPortContainer.create(RequestId.oneNew(),
+        VuuUser("B"),
         ClientSessionId("A", "B", "C"),
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
@@ -181,6 +183,7 @@ class TreeAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhenTh
     val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
 
     val viewport = viewPortContainer.create(RequestId.oneNew(),
+      VuuUser("B"),
       ClientSessionId("A", "B", "C"),
       queue, orderPrices, ViewPortRange(0, 20), columns,
       SortSpec(List()),

@@ -336,7 +336,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
       val filter = msg.filterSpec
 
       val viewPort = if (msg.groupBy.isEmpty)
-        viewPortContainer.create(ctx.requestId, ctx.session, ctx.queue, table, msg.range, vpColumns, sort, filter, NoGroupBy)
+        viewPortContainer.create(ctx.requestId, ctx.user, ctx.session, ctx.queue, table, msg.range, vpColumns, sort, filter, NoGroupBy)
       else {
 
         val groupByColumns = msg.groupBy.filter(vpColumns.getColumnForName(_).get != null).flatMap(vpColumns.getColumnForName).toList
@@ -345,7 +345,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
 
         val groupBy = new GroupBy(groupByColumns, aggs)
 
-        viewPortContainer.create(ctx.requestId, ctx.session, ctx.queue, table, msg.range, vpColumns, sort, filter, groupBy)
+        viewPortContainer.create(ctx.requestId, ctx.user, ctx.session, ctx.queue, table, msg.range, vpColumns, sort, filter, groupBy)
       }
 
       vsMsg(CreateViewPortSuccess(viewPort.id, viewPort.table.name, msg.range, msg.columns, msg.sort, msg.groupBy, msg.filterSpec, msg.aggregations))(ctx)

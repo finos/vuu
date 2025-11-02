@@ -5,6 +5,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api.*
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.TableTestHelper.*
 import org.finos.vuu.core.table.{Columns, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
@@ -85,13 +86,15 @@ class ChangeViewPortTest extends AnyFeatureSpec{
 
       joinProvider.runOnce()
 
+      val user = VuuUser("chris")
+      
       val session = ClientSessionId("sess-01", "chris", "channel")
 
       val outQueue = new OutboundRowPublishQueue()
 
       val vpcolumns = ViewPortColumnCreator.create(orderPrices, List("orderId", "trader", "tradeTime", "quantity", "ric", "bid", "ask"))//.map(orderPrices.getTableDef.columnForName(_)).toList
 
-      val viewPort = viewPortContainer.create(RequestId.oneNew(), session, outQueue, orderPrices, DefaultRange, vpcolumns)
+      val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orderPrices, DefaultRange, vpcolumns)
 
       viewPortContainer.runOnce()
 

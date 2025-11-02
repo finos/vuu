@@ -3,6 +3,7 @@ package org.finos.vuu.net.rpc
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.TableContainer
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.provider.JoinTableProviderImpl
@@ -12,7 +13,7 @@ import org.scalatest.matchers.should.Matchers
 
 class DefaultRpcHandlerTest extends AnyFeatureSpec with Matchers with BeforeAndAfterEach {
   private var handler: DefaultRpcHandler = _
-  private val ctx = RequestContext("requestId", ClientSessionId("sessionId", "user", "channel"), null, "token")
+  private val ctx = RequestContext("requestId", VuuUser("user"), ClientSessionId("sessionId", "user", "channel"), null, "token")
 
   override def beforeEach(): Unit = {
     implicit val clock: Clock = new DefaultClock
