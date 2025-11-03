@@ -104,7 +104,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       val user = VuuUser("chris")
       
-      val session = ClientSessionId("sess-01", "chris", "channel")
+      val session = ClientSessionId("sess-01", "channel")
 
       val outQueue = new OutboundRowPublishQueue()
 
@@ -192,7 +192,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       val user = VuuUser("chris")
       
-      val session = ClientSessionId("sess-01", "chris", "channel")
+      val session = ClientSessionId("sess-01", "channel")
 
       val outQueue = new OutboundRowPublishQueue()
 
@@ -274,7 +274,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
       tickInData(ordersProvider, pricesProvider)
 
-      val orderPricesViewport = vpContainer.create(RequestId.oneNew(), VuuUser("B"), ClientSessionId("A", "B", "C"), 
+      val orderPricesViewport = vpContainer.create(RequestId.oneNew(), VuuUser("B"), ClientSessionId("A", "C"),
         queue, orderPrices, ViewPortRange(0, 20), 
         ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList))
 

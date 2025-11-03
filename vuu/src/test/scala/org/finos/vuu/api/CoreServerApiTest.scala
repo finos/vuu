@@ -36,7 +36,7 @@ class CoreServerApiTest extends AnyFeatureSpec with BeforeAndAfterEach with Give
       Given("a heart beat response")
       val heartBeatResponse = HeartBeatResponse(100000)
       val requestContext = RequestContext("reqId", VuuUser("user"),
-        ClientSessionId("sessionId", "user", "channel"), new OutboundRowPublishQueue(), "token")
+        ClientSessionId("sessionId", "channel"), new OutboundRowPublishQueue(), "token")
       val maybeMessage = coreServerApi.process(heartBeatResponse)(requestContext)
 
       Then("core server api should process successfully")

@@ -40,7 +40,7 @@ class TreeAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhenTh
 
       val viewport = viewPortContainer.create(RequestId.oneNew(),
         VuuUser("B"),
-        ClientSessionId("A", "B", "C"),
+        ClientSessionId("A", "C"),
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
         FilterSpec(""),
@@ -184,7 +184,7 @@ class TreeAndAggregateTest extends AnyFeatureSpec with Matchers with GivenWhenTh
 
     val viewport = viewPortContainer.create(RequestId.oneNew(),
       VuuUser("B"),
-      ClientSessionId("A", "B", "C"),
+      ClientSessionId("A", "C"),
       queue, orderPrices, ViewPortRange(0, 20), columns,
       SortSpec(List()),
       FilterSpec(""),

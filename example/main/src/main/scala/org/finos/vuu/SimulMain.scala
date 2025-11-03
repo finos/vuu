@@ -25,6 +25,10 @@ import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
 import org.finos.vuu.state.MemoryBackedVuiStateStore
 
+import java.util.concurrent.ConcurrentHashMap
+import scala.collection.JavaConverters.{asScalaIteratorConverter, iterableAsScalaIterableConverter}
+import scala.collection.immutable
+
 /*
 //to allow self signed certs
 chrome://flags/#allow-insecure-localhost
@@ -49,8 +53,14 @@ object SimulMain extends App with StrictLogging {
 
   val loginTokenService = LoginTokenService()
 
-  val authNRestAuthenticator = Authenticator(loginTokenService,
-    (v1: Map[String, AnyRef]) => Right[String, VuuUser](VuuUser(String.valueOf(v1("username")))))
+  private val users: java.util.Set[String] = ConcurrentHashMap.newKeySet[String]()
+  
+  private val authNRestAuthenticator = Authenticator(loginTokenService,
+    (v1: Map[String, AnyRef]) => {
+      val username = String.valueOf(v1("username"))
+      users.add(username)
+      Right[String, VuuUser](VuuUser(username))
+    })
 
   private val defaultConfig = ConfigFactory.load()
 
@@ -70,7 +80,7 @@ object SimulMain extends App with StrictLogging {
     .withModule(VuiStateModule(store))
     .withModule(AuthNModule(authNRestAuthenticator))
     .withModule(EditableModule())
-    .withModule(PermissionModule())
+    .withModule(PermissionModule(() => users.asScala))
     .withModule(BasketModule(omsApi))
     .withModule(RestModule(HttpClient(StubbedBackend()), defaultConfig.getConfig(ConfigKeys.restModuleConfig)))
     .withModule(VirtualTableModule())

@@ -181,7 +181,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   def vsMsg(body: MessageBody)(ctx: RequestContext): Option[JsonViewServerMessage] = {
-    Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, body))
+    Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.user.name, body))
   }
 
   override def process(msg: GetTableList)(ctx: RequestContext): Option[ViewServerMessage] = {
@@ -292,11 +292,11 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
 
         //logger.info(s"Setting columns to ${columns.map(_.name).mkString(",")} ")
 
-        Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user,
+        Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.user.name,
           ChangeViewPortSuccess(newViewPort.id, viewport.getColumns.getColumns.map(_.name).toArray, sort, msg.groupBy, msg.filterSpec, msg.aggregations)))
 
       case None =>
-        Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, ChangeViewPortReject(msg.viewPortId, s"Could not find vp ${msg.viewPortId} in session ${ctx.session}")))
+        Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.user.name, ChangeViewPortReject(msg.viewPortId, s"Could not find vp ${msg.viewPortId} in session ${ctx.session}")))
     }
 
   }
@@ -354,7 +354,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   protected def errorMsg(s: String)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.session.user, ErrorResponse(s)))
+    Some(VsMsg(ctx.requestId, ctx.session.sessionId, ctx.token, ctx.user.name, ErrorResponse(s)))
   }
 
 

@@ -49,7 +49,7 @@ class RequestProcessor(loginTokenService: LoginTokenService,
                             vuuServerId: String): Option[ViewServerMessage] = {
 
     val session = SessionId.oneNew()
-    val id = ClientSessionId(session, user.name, channel.id().asLongText())
+    val id = ClientSessionId(session, channel.id().asLongText())
 
     logger.debug(s"Creating Session for user ${user.name} with $id ")
     val handler = createMessageHandler(channel, id, user)
@@ -79,7 +79,7 @@ class RequestProcessor(loginTokenService: LoginTokenService,
   }
 
   private def msgToSessionId(msg: ViewServerMessage, channel: Channel): ClientSessionId = {
-    ClientSessionId(msg.sessionId, msg.user, channel.id.asLongText())
+    ClientSessionId(msg.sessionId, channel.id.asLongText())
   }
 
   private def handleMessageWithNoSession(msg: ViewServerMessage, channel: Channel): Unit = {

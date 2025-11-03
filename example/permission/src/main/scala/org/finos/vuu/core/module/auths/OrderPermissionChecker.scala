@@ -20,7 +20,7 @@ class OrderPermissionChecker(val vp: ViewPort, tableContainer: TableContainer)(i
   @volatile private var permissionUserMask = PermissionSet.NoPermissions
 
   def runOnce(): Unit = {
-    val user = vp.session.user
+    val user = vp.user.name
     permissionUserMask = permissionTable.asTable.pullRow(user) match {
       case row: RowWithData =>
         row.get(Bitmask).asInstanceOf[Int]

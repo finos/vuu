@@ -49,7 +49,7 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
 
       joinProvider.runOnce()
 
-      val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "B", "C"), joinProvider)
+      val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "C"), joinProvider)
 
       val columns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.columns.map(_.name).toList)
 
@@ -86,7 +86,7 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
 
       joinProvider.runOnce()
 
-      val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "B", "C"), joinProvider)
+      val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "C"), joinProvider)
 
       val columns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.columns.map(_.name).toList)
 
@@ -123,7 +123,7 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
 
       joinProvider.runOnce()
 
-      val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "B", "C"), joinProvider)
+      val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "C"), joinProvider)
 
       val columns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.columns.map(_.name).toList)
 
@@ -161,7 +161,7 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
 
       joinProvider.runOnce()
 
-      val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "B", "C"), joinProvider)
+      val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "C"), joinProvider)
 
       val columns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.columns.map(_.name).toList)
 

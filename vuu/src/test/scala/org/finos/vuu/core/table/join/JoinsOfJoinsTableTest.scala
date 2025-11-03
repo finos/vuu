@@ -119,7 +119,7 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
 
     val user = VuuUser("chris")
     
-    val session = ClientSessionId("sess-01", "chris", "channel")
+    val session = ClientSessionId("sess-01", "channel")
 
     val outQueue = new OutboundRowPublishQueue()
 
@@ -216,7 +216,7 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
 
     val user = VuuUser("chris")
     
-    val session = ClientSessionId("sess-01", "chris", "channel")
+    val session = ClientSessionId("sess-01", "channel")
 
     val outQueue = new OutboundRowPublishQueue()
 
@@ -310,7 +310,7 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
 
     val user = VuuUser("chris")
     
-    val session = ClientSessionId("sess-01", "chris", "channel")
+    val session = ClientSessionId("sess-01", "channel")
 
     val outQueue = new OutboundRowPublishQueue()
 

@@ -43,7 +43,7 @@ class DataTableTest extends AnyFeatureSpec with Matchers {
 
       val user: VuuUser = VuuUser("chris")
       
-      val session = ClientSessionId("sess-01", "chris", "channel")
+      val session = ClientSessionId("sess-01", "channel")
 
       val vpcolumns = List("ric", "bid", "ask")
 

@@ -23,6 +23,7 @@ public class ViewPortTestUtils {
     }
 
     public static RequestContext requestContext() {
-        return new RequestContext("", VuuUser.apply(""), new ClientSessionId("", "", ""), null, "");
+        return new RequestContext("", VuuUser.apply(""),
+                new ClientSessionId("", ""), null, "");
     }
 }

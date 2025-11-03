@@ -66,7 +66,7 @@ class BasketService(val table: DataTable, val omsApi: OmsApi)(implicit clock: Cl
   override def createBasket(params: RpcParams): RpcFunctionResult = {
     val sourceBasketId: String = params.namedParams("sourceBasketId").asInstanceOf[String]
     val basketTradeName: String = params.namedParams("basketTradeName").asInstanceOf[String]
-    val basketTradeId = BasketTradeId.oneNew(params.ctx.session.user)
+    val basketTradeId = BasketTradeId.oneNew(params.ctx.user.name)
     val constituents = getConstituentsForSourceBasket(sourceBasketId)
 
     tableContainer.getTable(BasketModule.BasketTradingTable) match {

@@ -43,7 +43,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
 
       val viewport = viewPortContainer.create(RequestId.oneNew(),
         VuuUser("B"),
-        ClientSessionId("A", "B", "C"),
+        ClientSessionId("A", "C"),
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
         FilterSpec(""),
@@ -181,7 +181,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
 
       val viewport = viewPortContainer.create(RequestId.oneNew(),
         VuuUser("B"),
-        ClientSessionId("A", "B", "C"),
+        ClientSessionId("A", "C"),
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
         FilterSpec(""),
@@ -248,7 +248,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
 
       val viewport = viewPortContainer.create(RequestId.oneNew(),
         VuuUser("B"),
-        ClientSessionId("A", "B", "C"),
+        ClientSessionId("A", "C"),
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
         FilterSpec(""),
@@ -311,7 +311,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
 
       val viewport = viewPortContainer.create(RequestId.oneNew(),
         VuuUser("B"),
-        ClientSessionId("A", "B", "C"),
+        ClientSessionId("A", "C"),
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
         FilterSpec(""),
@@ -371,7 +371,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
 
       val viewport = viewPortContainer.create(RequestId.oneNew(),
         VuuUser("B"),
-        ClientSessionId("A", "B", "C"),
+        ClientSessionId("A", "C"),
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
         FilterSpec(""),
@@ -430,7 +430,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
 
       val viewport = viewPortContainer.create(RequestId.oneNew(),
         VuuUser("B"),
-        ClientSessionId("A", "B", "C"),
+        ClientSessionId("A", "C"),
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
         FilterSpec(""),

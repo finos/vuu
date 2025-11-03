@@ -54,7 +54,7 @@ class DefaultMessageHandler(val channel: Channel,
 
       val formatted = formatDataOutbound(updates)
 
-      val json = serializer.serialize(JsonViewServerMessage("", session.sessionId, "", session.user, formatted))
+      val json = serializer.serialize(JsonViewServerMessage("", session.sessionId, "", user.name, formatted))
 
       logger.debug("ASYNC-SVR-OUT:" + json)
 
@@ -67,7 +67,7 @@ class DefaultMessageHandler(val channel: Channel,
     flowController.shouldSend() match {
       case op: SendHeartbeat =>
         logger.debug("Sending heartbeat")
-        val json = serializer.serialize(JsonViewServerMessage("NA", session.sessionId, "", session.user, HeartBeat(timeProvider.now())))
+        val json = serializer.serialize(JsonViewServerMessage("NA", session.sessionId, "", user.name, HeartBeat(timeProvider.now())))
         channel.writeAndFlush(new TextWebSocketFrame(json))
       case op: Disconnect =>
 
@@ -169,16 +169,11 @@ class DefaultMessageHandler(val channel: Channel,
   }
 }
 
-case class ClientSessionId(sessionId: String, user: String, channelId: String) extends Ordered[ClientSessionId] {
+case class ClientSessionId(sessionId: String, channelId: String) extends Ordered[ClientSessionId] {
 
   override def compare(that: ClientSessionId): Int =  {
     val comp = sessionId.compareTo(that.sessionId)
-    if (comp == 0) {
-      val comp2 = channelId.compareTo(that.channelId)
-      if (comp2 != 0) comp2 else user.compareTo(that.user)
-    } else {
-      comp
-    }
+    if (comp != 0) comp else channelId.compareTo(that.channelId)
   }
 
 }

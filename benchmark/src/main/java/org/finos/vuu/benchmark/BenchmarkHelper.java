@@ -69,7 +69,7 @@ public class BenchmarkHelper {
     }
 
     public TreeBuilder createTreeBuilder(InMemDataTable table) {
-        var client = new ClientSessionId("A", "B", "C");
+        var client = new ClientSessionId("A", "C");
 
         var groupByTable = TreeSessionTable.apply(table, client, joinProvider, metricsProvider, clock);
         var exchange = table.getTableDef().columnForName("exchange");

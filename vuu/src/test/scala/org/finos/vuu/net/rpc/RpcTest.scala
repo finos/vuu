@@ -60,7 +60,7 @@ class RpcTest extends AnyFeatureSpec with Matchers {
       val myRpcHandler = new MyCustomRpcHandler()(null)
       val customObject = new CustomObject("test")
 
-      val ctx = RequestContext("", VuuUser(""), ClientSessionId("", "", ""), null, "")
+      val ctx = RequestContext("", VuuUser(""), ClientSessionId("", ""), null, "")
 
       val ret = myRpcHandler.processRpcRequest("doSomething", new RpcParams(Map("param1" -> "test", "param2" -> 1234.34), null, ctx))
       ret.isInstanceOf[RpcFunctionSuccess] shouldBe true
