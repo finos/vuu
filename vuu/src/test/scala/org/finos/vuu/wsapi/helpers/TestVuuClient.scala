@@ -22,8 +22,8 @@ class TestVuuClient(vsClient: ViewServerClient, loginTokenService: LoginTokenSer
 
   val timeout: Span = 30 seconds
 
-  def send(sessionId: String, token: String, body: MessageBody): String = {
-    val msg = createViewServerMessage(sessionId, token, body)
+  def send(sessionId: String, body: MessageBody): String = {
+    val msg = createViewServerMessage(sessionId, body)
     vsClient.send(msg)
     msg.requestId
   }
@@ -99,7 +99,7 @@ class TestVuuClient(vsClient: ViewServerClient, loginTokenService: LoginTokenSer
 
   def login(user: VuuUser): Option[String] = {
     val token = loginTokenService.getToken(user)
-    send("", "", LoginRequest(token))
+    send("", LoginRequest(token))
     awaitForMsg[LoginSuccess]
       .map(x => x.sessionId)
   }
@@ -113,11 +113,9 @@ class TestVuuClient(vsClient: ViewServerClient, loginTokenService: LoginTokenSer
     Option(responsesMap.remove(requestId))
 
 
-  private def createViewServerMessage(sessionId: String, token: String, body: MessageBody): ViewServerMessage = {
+  private def createViewServerMessage(sessionId: String, body: MessageBody): ViewServerMessage = {
     JsonViewServerMessage(RequestId.oneNew(),
       sessionId,
-      token,
-      "testUser",
       body,
       "DoesntReallyMatter")
   }

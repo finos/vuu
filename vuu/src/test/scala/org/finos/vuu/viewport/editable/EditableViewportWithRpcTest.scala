@@ -78,7 +78,7 @@ class EditableViewportWithRpcTest extends EditableViewPortTest {
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
       val (viewPortContainer, tablesAndProviders, user, session, outQueue, tableContainer, joinTableManager) = setupEditableTableInfra()
-      val context = RequestContext("AAA", user, session, outQueue, "AAABBBCC")
+      val context = RequestContext("AAA", user, session, outQueue)
 
       val (constituent, consProvider) = tablesAndProviders("constituent")
       val (instrument, instrumentProvider) = tablesAndProviders("instrument")

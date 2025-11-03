@@ -242,7 +242,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       viewPortContainer.selectAll(viewPort.id)
 
       Then("call rpc call to create session table, this should create an OpenDialogViewPortAction")
-      val response = viewPortContainer.handleRpcRequest(viewPort.id, "OPEN_STOP_PROCESS", Map.empty)(RequestContext(RequestId.oneNew(), user, session, outQueue, "lol")).asInstanceOf[RpcFunctionSuccess]
+      val response = viewPortContainer.handleRpcRequest(viewPort.id, "OPEN_STOP_PROCESS", Map.empty)(RequestContext(RequestId.oneNew(), user, session, outQueue)).asInstanceOf[RpcFunctionSuccess]
 
       val action = response.optionalResult.get.asInstanceOf[OpenDialogViewPortAction]
       action.renderComponent should equal("inline-form")

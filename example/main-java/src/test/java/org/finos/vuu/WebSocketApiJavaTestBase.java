@@ -25,7 +25,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 public abstract class WebSocketApiJavaTestBase {
 
     protected TestVuuClient vuuClient;
-    protected String tokenId;
     protected String sessionId;
 
     protected Clock clock;

@@ -54,7 +54,7 @@ class DefaultMessageHandler(val channel: Channel,
 
       val formatted = formatDataOutbound(updates)
 
-      val json = serializer.serialize(JsonViewServerMessage("", session.sessionId, "", user.name, formatted))
+      val json = serializer.serialize(JsonViewServerMessage("", session.sessionId, formatted))
 
       logger.debug("ASYNC-SVR-OUT:" + json)
 
@@ -67,7 +67,7 @@ class DefaultMessageHandler(val channel: Channel,
     flowController.shouldSend() match {
       case op: SendHeartbeat =>
         logger.debug("Sending heartbeat")
-        val json = serializer.serialize(JsonViewServerMessage("NA", session.sessionId, "", user.name, HeartBeat(timeProvider.now())))
+        val json = serializer.serialize(JsonViewServerMessage("NA", session.sessionId, HeartBeat(timeProvider.now())))
         channel.writeAndFlush(new TextWebSocketFrame(json))
       case op: Disconnect =>
 
@@ -126,7 +126,7 @@ class DefaultMessageHandler(val channel: Channel,
   }
 
   override def handle(msg: ViewServerMessage): Option[ViewServerMessage] = {
-    val ctx = RequestContext(msg.requestId, user, session, outboundQueue, msg.token)
+    val ctx = RequestContext(msg.requestId, user, session, outboundQueue)
 
     flowController.process(msg)
 

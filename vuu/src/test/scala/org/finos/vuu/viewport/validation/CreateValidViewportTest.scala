@@ -24,7 +24,7 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
 
       val vpcolumnsOrders = List("orderId", "trader", "tradeTime", "quantity", "ric", "foo-bar")
 
-      val ctx = RequestContext("req-101", user, clientSession, outQueue, "token-0001")
+      val ctx = RequestContext("req-101", user, clientSession, outQueue)
 
       val exception = intercept[Exception] {
         api.process(CreateViewPortRequest(ViewPortTable("orders", "TEST"), ViewPortRange(0, 100), vpcolumnsOrders.toArray))(ctx)
@@ -40,7 +40,7 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       val (viewPortContainer, _, _, user, clientSession, outQueue) = createDefaultViewPortInfra()
 
       val api = new CoreServerApiHandler(viewPortContainer, tableContainer = viewPortContainer.tableContainer, providers = viewPortContainer.providerContainer)
-      val ctx = RequestContext("req-101", user, clientSession, outQueue, "token-0001")
+      val ctx = RequestContext("req-101", user, clientSession, outQueue)
 
       val result: Option[ViewServerMessage] = api.process(CreateViewPortRequest(ViewPortTable("orders", "TEST"), ViewPortRange(0, 100), Array("orderId")))(ctx)
       result.isDefined shouldBe true
@@ -56,7 +56,7 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       val (viewPortContainer, _, _, user, clientSession, outQueue) = createDefaultViewPortInfraWithPrivateTable()
       val api = new CoreServerApiHandler(viewPortContainer, tableContainer = viewPortContainer.tableContainer, providers = viewPortContainer.providerContainer)
 
-      val ctx = RequestContext("req-101", user, clientSession, outQueue, "token-0001")
+      val ctx = RequestContext("req-101", user, clientSession, outQueue)
 
       val result: Option[ViewServerMessage] = api.process(CreateViewPortRequest(ViewPortTable("orders", "TEST"), ViewPortRange(0, 100), Array("orderId")))(ctx)
       result.isDefined shouldBe true
@@ -72,7 +72,7 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       val (viewPortContainer, _, _, user, clientSession, outQueue) = createDefaultViewPortInfraWithPrivateTable()
 
       val api = new CoreServerApiHandler(viewPortContainer, tableContainer = viewPortContainer.tableContainer, providers = viewPortContainer.providerContainer)
-      val ctx = RequestContext("req-101", user, clientSession, outQueue, "token-0001")
+      val ctx = RequestContext("req-101", user, clientSession, outQueue)
 
       val result: Option[ViewServerMessage] = api.process(CreateViewPortRequest(ViewPortTable("random_table", "TEST"), ViewPortRange(0, 100), Array("orderId")))(ctx)
       result.isDefined shouldBe true
@@ -88,7 +88,7 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       val (viewPortContainer, _, _, user, clientSession, outQueue) = createDefaultViewPortInfra()
 
       val api = new CoreServerApiHandler(viewPortContainer, tableContainer = viewPortContainer.tableContainer, providers = viewPortContainer.providerContainer)
-      val ctx = RequestContext("req-101", user, clientSession, outQueue, "token-0001")
+      val ctx = RequestContext("req-101", user, clientSession, outQueue)
 
       val result: Option[ViewServerMessage] = api.process(CreateViewPortRequest(ViewPortTable("orderPrices", "TEST"), ViewPortRange(0, 100), Array("orderId")))(ctx)
       result.isDefined shouldBe true
@@ -104,7 +104,7 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       val (viewPortContainer, _, _, user, clientSession, outQueue) = createDefaultViewPortInfraWithPrivateTable()
       val api = new CoreServerApiHandler(viewPortContainer, tableContainer = viewPortContainer.tableContainer, providers = viewPortContainer.providerContainer)
 
-      val ctx = RequestContext("req-101", user, clientSession, outQueue, "token-0001")
+      val ctx = RequestContext("req-101", user, clientSession, outQueue)
 
       val result: Option[ViewServerMessage] = api.process(CreateViewPortRequest(ViewPortTable("orderPrices", "TEST"), ViewPortRange(0, 100), Array("orderId")))(ctx)
       result.isDefined shouldBe true

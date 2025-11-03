@@ -42,7 +42,7 @@ class JsonVsSerializerTest extends AnyFeatureSpec with Matchers{
 
   def roundTrip(body: MessageBody): Unit = {
 
-    val message = JsonViewServerMessage("REQ:123", "SESS:456", "AAA", "chris", body)
+    val message = JsonViewServerMessage("REQ:123", "SESS:456", body)
 
     val serializer = JsonVsSerializer()
     

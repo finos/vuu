@@ -16,14 +16,12 @@ public class ViewPortTestUtils {
 
         return new JsonViewServerMessage("req_id_" + random.nextInt(),
                 "session_id_" + random.nextInt(),
-                "msg_id_" + random.nextInt(),
-                "username_" + random.nextInt(),
                 messageBody,
                 "MODULE");
     }
 
     public static RequestContext requestContext() {
         return new RequestContext("", VuuUser.apply(""),
-                new ClientSessionId("", ""), null, "");
+                new ClientSessionId("", ""), null);
     }
 }

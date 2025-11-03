@@ -18,7 +18,6 @@ abstract class WebSocketApiTestBase extends AnyFeatureSpec with BeforeAndAfterAl
   implicit var tableDefContainer: TableDefContainer = _
   var viewServerClient: ViewServerClient = _
   var vuuClient: TestVuuClient = _
-  var tokenId: String = _
   var sessionId: String = _
 
   override def beforeAll(): Unit = {
