@@ -58,7 +58,7 @@ object SimulMain extends App with StrictLogging {
   private val authNRestAuthenticator = Authenticator(loginTokenService,
     (v1: Map[String, AnyRef]) => {
       val username = String.valueOf(v1("username"))
-      users.add(username)
+      //users.add(username) TODO This blocks vertx for some reason. I don't have the time to figure out why.
       Right[String, VuuUser](VuuUser(username))
     })
 
