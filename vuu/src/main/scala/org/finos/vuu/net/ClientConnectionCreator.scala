@@ -67,7 +67,7 @@ class DefaultMessageHandler(val channel: Channel,
     flowController.shouldSend() match {
       case op: SendHeartbeat =>
         logger.debug("Sending heartbeat")
-        val json = serializer.serialize(JsonViewServerMessage("NA", session.sessionId, HeartBeat(timeProvider.now())))
+        val json = serializer.serialize(JsonViewServerMessage("", session.sessionId, HeartBeat(timeProvider.now())))
         channel.writeAndFlush(new TextWebSocketFrame(json))
       case op: Disconnect =>
 
