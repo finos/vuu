@@ -74,7 +74,7 @@ class CalculateTreeOptimizationTest extends AnyFeatureSpec with ViewPortSetup {
 
     val user = VuuUser("chris")
     
-    val session = ClientSessionId("sess-01", "chris", "channel")
+    val session = ClientSessionId("sess-01", "channel")
 
     val outQueue = new OutboundRowPublishQueue()
 

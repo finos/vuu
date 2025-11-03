@@ -53,7 +53,7 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       joinProvider.runOnce()
 
-      val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "B", "C"), joinProvider)
+      val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "C"), joinProvider)
 
       val vpColumns = ViewPortColumnCreator.create(sessionTable, sessionTable.columns().map(_.name).toList)
 
@@ -127,7 +127,7 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
       joinProvider.runOnce()
 
-      val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "B", "C"), joinProvider)
+      val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "C"), joinProvider)
 
       val vpColumns = ViewPortColumnCreator.create(sessionTable, sessionTable.columns().map(_.name).toList)
 

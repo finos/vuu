@@ -16,7 +16,7 @@ class VirtualizedDataTableTest extends AnyFeatureSpec with Matchers with GivenWh
   private implicit val metrics: MetricsProvider = new MetricsProviderImpl
   private implicit val clock: Clock = new TestFriendlyClock(DefaultTestStartTime.TestStartTime)
 
-  private val sessionId = ClientSessionId("AAAA", "user", "channel")
+  private val sessionId = ClientSessionId("AAAA", "channel")
   private val joinProvider = new TestFriendlyJoinTableProvider
 
   private val ordersTableDef = VirtualizedSessionTableDef("bigOrders", "orderId", Columns.fromNames("orderId:String", "ric:String", "quantity:Int", "trader: String"))

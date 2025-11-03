@@ -155,7 +155,7 @@ trait ViewPort {
   def ForTest_getRowKeyToRowIndex: ConcurrentHashMap[String, Int]
 
   override def toString: String = {
-    "VP(user:" + session.user + ",table:" + table.name + ",size: " + size + ",id:" + id + ") @" + session.sessionId
+    "VP(user:" + user.name + ",table:" + table.name + ",size: " + size + ",id:" + id + ") @" + session.sessionId
   }
 
   def delete(): Unit

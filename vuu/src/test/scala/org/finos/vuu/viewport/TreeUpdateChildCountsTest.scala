@@ -43,7 +43,7 @@ class TreeUpdateChildCountsTest extends AnyFeatureSpec with Matchers with GivenW
 
     val viewport = viewPortContainer.create(RequestId.oneNew(),
       VuuUser("B"),
-      ClientSessionId("A", "B", "C"),
+      ClientSessionId("A", "C"),
       queue, orderPrices, ViewPortRange(0, 20), vpColumns,
       SortSpec(List()),
       FilterSpec(""),
@@ -100,7 +100,7 @@ class TreeUpdateChildCountsTest extends AnyFeatureSpec with Matchers with GivenW
 
     val viewport = viewPortContainer.create(RequestId.oneNew(),
       VuuUser("B"),
-      ClientSessionId("A", "B", "C"),
+      ClientSessionId("A", "C"),
       queue, orderPrices, ViewPortRange(0, 20), vpColumns,
       SortSpec(List()),
       FilterSpec(""),

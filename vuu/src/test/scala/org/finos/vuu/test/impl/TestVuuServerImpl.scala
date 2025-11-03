@@ -194,7 +194,7 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
     channel.popMsg match {
       case Some(msgPacket) =>
         val msg = serializer.deserialize(msgPacket)
-        clientSessionId = ClientSessionId(msg.sessionId, user.name, channel.id().asLongText())
+        clientSessionId = ClientSessionId(msg.sessionId, channel.id().asLongText())
     }
   }
 
@@ -204,7 +204,7 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
 
   override def getViewPortRpcServiceProxy[TYPE : _root_.scala.reflect.ClassTag](viewport: ViewPort):TYPE = {
 
-    val interceptor = RpcDynamicProxy(viewport, handler, serializer, session, channel)
+    val interceptor = RpcDynamicProxy(viewport, handler, serializer, user, session, channel)
 
     val clazz: Class[_] = classTag[TYPE].runtimeClass
 

@@ -12,12 +12,12 @@ object PermissionModule extends DefaultModule{
 
   private final val NAME = "AUTHS"
 
-  def apply()(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
+  def apply(users: () => Iterable[String])(implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
 
     import ColumnNames._
 
-  ModuleFactory.withNamespace(NAME)
-    .addTable(
+    ModuleFactory.withNamespace(NAME)
+      .addTable(
       TableDef(
         name = "permission",
         keyField = User,
@@ -25,7 +25,7 @@ object PermissionModule extends DefaultModule{
         VisualLinks(),
         joinFields = User
       ),
-      (table, vs) => new PermissionsProvider(table, vs.sessionContainer),
+      (table, vs) => new PermissionsProvider(table, users),
       (table, _, _, tableContainer) => ViewPortDef(
         columns = table.getTableDef.columns,
         service = new PermissionsRpcService(table)(tableContainer)

@@ -45,7 +45,7 @@ object PerfTestBigRoupByMain extends App with StrictLogging {
     table.processUpdate(ric, row)
   })
 
-  val client = ClientSessionId("A", "B", "C")
+  val client = ClientSessionId("A", "C")
 
   val groupByTable = TreeSessionTable(table, client, joinProvider)(metrics, clock)
 

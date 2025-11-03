@@ -55,7 +55,7 @@ class RpcTableTest extends AnyFeatureSpec with Matchers with OneInstancePerTest 
 
       val user = VuuUser("chris")
       
-      val session = ClientSessionId("sess-01", "chris", "channel")
+      val session = ClientSessionId("sess-01", "channel")
 
       val vpcolumns = ViewPortColumnCreator.create(orderEntry, List("clOrderId", "ric", "quantity", "orderType", "price", "priceLevel"))
 

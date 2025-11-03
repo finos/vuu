@@ -6,10 +6,11 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.auths.PermissionModule.ColumnNames
 import org.finos.vuu.core.module.auths.PermissionSet
 import org.finos.vuu.core.table.{DataTable, EmptyRowData, RowWithData}
-import org.finos.vuu.net.ClientSessionContainer
 import org.finos.vuu.provider.Provider
 
-class PermissionsProvider(val table: DataTable, val sessionsContainer: ClientSessionContainer)(implicit clock: Clock, lifecycleContainer: LifecycleContainer) extends Provider {
+class PermissionsProvider(val table: DataTable,
+                          val users: () => Iterable[String])
+                         (implicit clock: Clock, lifecycleContainer: LifecycleContainer) extends Provider {
 
   private val runner = new LifeCycleRunner("PermissionsProvider", () => runOnce(), minCycleTime = 10_000)
 
@@ -17,20 +18,24 @@ class PermissionsProvider(val table: DataTable, val sessionsContainer: ClientSes
 
   def runOnce(): Unit = {
 
-    import ColumnNames._
+    import ColumnNames.*
 
-    sessionsContainer.getSessions().foreach( session => {
+    users.apply().foreach( user => {
 
-      table.pullRow(session.user) match {
-        case EmptyRowData => table.processUpdate(session.user, RowWithData(session.user,
-          Map(User -> session.user, Bitmask -> PermissionSet.NoPermissions, BitmaskAsString -> PermissionSet.toBinaryString(PermissionSet.NoPermissions), BitmaskAsRoles -> PermissionSet.rolesToString(PermissionSet.NoPermissions))))
+      table.pullRow(user) match {
+        case EmptyRowData => table.processUpdate(user, RowWithData(user,
+          Map(
+            User -> user,
+            Bitmask -> PermissionSet.NoPermissions,
+            BitmaskAsString -> PermissionSet.toBinaryString(PermissionSet.NoPermissions),
+            BitmaskAsRoles -> PermissionSet.rolesToString(PermissionSet.NoPermissions)
+          )
+        ))
         case row: RowWithData =>
-//          if(!table.hasChanged(row)){
-//
-//          }
-
-          val newData = row.data ++ Map(BitmaskAsString ->  PermissionSet.toBinaryString(row.get(Bitmask).asInstanceOf[Int]),  BitmaskAsRoles -> PermissionSet.rolesToString(row.get(Bitmask).asInstanceOf[Int]))
-          table.processUpdate(session.user, RowWithData(session.user, newData))
+          val newData = row.data ++ Map(
+            BitmaskAsString ->  PermissionSet.toBinaryString(row.get(Bitmask).asInstanceOf[Int]),
+            BitmaskAsRoles -> PermissionSet.rolesToString(row.get(Bitmask).asInstanceOf[Int]))
+          table.processUpdate(user, RowWithData(user, newData))
       }
 
     })
