@@ -26,8 +26,7 @@ import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
 import org.finos.vuu.state.MemoryBackedVuiStateStore
 
 import java.util.concurrent.ConcurrentHashMap
-import scala.collection.JavaConverters.{asScalaIteratorConverter, iterableAsScalaIterableConverter}
-import scala.collection.immutable
+import scala.jdk.CollectionConverters.*
 
 /*
 //to allow self signed certs
