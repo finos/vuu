@@ -1,6 +1,7 @@
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { TableSchema } from "@vuu-ui/vuu-data-types";
 import { Table, TableProps } from "@vuu-ui/vuu-table";
+import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
 import {
   ColumnLayout,
   SelectionChangeHandler,
@@ -54,22 +55,27 @@ const DataTableTemplate = ({
   }, [VuuDataSource, dataSourceProp, schema]);
 
   return (
-    <Table
-      {...props}
-      allowCellBlockSelection={allowCellBlockSelection}
-      allowSelectAll={allowSelectAll}
-      config={tableConfig}
-      data-testid="table"
-      dataSource={dataSource}
-      height={height}
-      maxViewportRowLimit={maxViewportRowLimit}
-      navigationStyle={navigationStyle}
-      renderBufferSize={20}
-      rowHeight={rowHeight}
-      selectionModel={selectionModel}
-      viewportRowLimit={viewportRowLimit}
-      width={width}
-    />
+    <>
+      <Table
+        {...props}
+        allowCellBlockSelection={allowCellBlockSelection}
+        allowSelectAll={allowSelectAll}
+        config={tableConfig}
+        data-testid="table"
+        dataSource={dataSource}
+        height={height}
+        maxViewportRowLimit={maxViewportRowLimit}
+        navigationStyle={navigationStyle}
+        renderBufferSize={20}
+        rowHeight={rowHeight}
+        selectionModel={selectionModel}
+        viewportRowLimit={viewportRowLimit}
+        width={width}
+      />
+      <div style={{ height: 40 }}>
+        <DataSourceStats dataSource={dataSource} itemLabel="instrument" />
+      </div>
+    </>
   );
 };
 

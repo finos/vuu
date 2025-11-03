@@ -19,7 +19,6 @@ import {
   useSortable,
 } from "@vuu-ui/vuu-utils";
 
-import columnPickerCss from "./ColumnPicker.css";
 import { Input, ListBox, Option, OptionProps } from "@salt-ds/core";
 import {
   ColumPickerHookProps,
@@ -28,6 +27,8 @@ import {
 } from "./useColumnPicker";
 import { IconButton } from "@vuu-ui/vuu-ui-controls";
 import { useHighlighting } from "@vuu-ui/vuu-table";
+
+import columnPickerCss from "./ColumnPicker.css";
 
 const classBase = "vuuColumnPicker";
 export const classBaseListItem = "vuuColumnPickerListItem";
