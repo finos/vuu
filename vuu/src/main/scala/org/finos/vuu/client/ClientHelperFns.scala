@@ -10,7 +10,7 @@ import scala.util.{Failure, Success, Try}
 object ClientHelperFns {
 
   def loginAsync(token: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage("", "", LoginRequest(token)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), "", LoginRequest(token)))
   }
 
   def createVpAsync(sessionId: String, token: String, user: String, requestId: String, table: ViewPortTable, columns: Array[String], sortBy: SortSpec, groupBy: Array[String] = Array(),
@@ -114,7 +114,7 @@ object ClientHelperFns {
   }
 
   def login(token: String)(implicit vsClient: ViewServerClient): String = {
-    vsClient.send(JsonViewServerMessage("", "", LoginRequest(token)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), "", LoginRequest(token)))
     vsClient.awaitMsg.sessionId
   }
   

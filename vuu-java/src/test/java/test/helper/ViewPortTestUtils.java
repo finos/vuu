@@ -1,5 +1,7 @@
 package test.helper;
 
+import org.finos.vuu.client.messages.RequestId;
+import org.finos.vuu.client.messages.SessionId;
 import org.finos.vuu.core.auths.VuuUser;
 import org.finos.vuu.net.ClientSessionId;
 import org.finos.vuu.net.JsonViewServerMessage;
@@ -14,8 +16,8 @@ public class ViewPortTestUtils {
     public static ViewServerMessage createRandomViewServerMessage(MessageBody messageBody) {
         final Random random = new Random();
 
-        return new JsonViewServerMessage("req_id_" + random.nextInt(),
-                "session_id_" + random.nextInt(),
+        return new JsonViewServerMessage(RequestId.oneNew(),
+                SessionId.oneNew(),
                 messageBody,
                 "MODULE");
     }
