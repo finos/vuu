@@ -29,8 +29,6 @@ import {
 const SERVER_MESSAGE_CONSTANTS = {
   module: "CORE",
   sessionId: "dsdsd",
-  token: "test",
-  user: "user",
 };
 
 describe("ServerProxy", () => {
@@ -667,8 +665,6 @@ describe("ServerProxy", () => {
         module: "CORE",
         requestId: "client-vp-1",
         sessionId: "dsdsd",
-        token: "test",
-        user: "user",
       });
 
       postMessageToClient.mockClear();
@@ -894,8 +890,6 @@ describe("ServerProxy", () => {
         module: "CORE",
         requestId: "1",
         sessionId: "dsdsd",
-        token: "test",
-        user: "user",
       });
 
       serverProxy.handleMessageFromServer({
@@ -1048,7 +1042,6 @@ describe("ServerProxy", () => {
       });
 
       expect(connection.send).toHaveBeenCalledWith({
-        user: "user",
         body: {
           viewPortId: "server-vp-1",
           type: "CHANGE_VP_RANGE",
@@ -1058,7 +1051,6 @@ describe("ServerProxy", () => {
         module: "CORE",
         requestId: "1",
         sessionId: "dsdsd",
-        token: "test",
       });
     });
 
@@ -1161,7 +1153,6 @@ describe("ServerProxy", () => {
       });
 
       expect(connection.send).toHaveBeenCalledWith({
-        user: "user",
         body: {
           viewPortId: "server-vp-1",
           type: "CHANGE_VP_RANGE",
@@ -1171,7 +1162,6 @@ describe("ServerProxy", () => {
         module: "CORE",
         requestId: "1",
         sessionId: "dsdsd",
-        token: "test",
       });
 
       postMessageToClient.mockClear();
@@ -1690,7 +1680,6 @@ describe("ServerProxy", () => {
 
       // TODO test for the call to get nmetadata as well
       expect(connection.send).toHaveBeenCalledWith({
-        user: "user",
         body: {
           viewPortId: "server-vp-1",
           type: "CHANGE_VP_RANGE",
@@ -1700,7 +1689,6 @@ describe("ServerProxy", () => {
         module: "CORE",
         requestId: "1",
         sessionId: "dsdsd",
-        token: "test",
       });
 
       postMessageToClient.mockClear();
@@ -1765,7 +1753,6 @@ describe("ServerProxy", () => {
 
       // buffer size is 20 so we will have requested +/- 10 around the client range
       expect(connection.send).toHaveBeenCalledWith({
-        user: "user",
         body: {
           viewPortId: "server-vp-1",
           type: "CHANGE_VP_RANGE",
@@ -1775,7 +1762,6 @@ describe("ServerProxy", () => {
         module: "CORE",
         requestId: "1",
         sessionId: "dsdsd",
-        token: "test",
       });
 
       // 3) Server ACKs range change
@@ -1821,7 +1807,6 @@ describe("ServerProxy", () => {
       expect(postMessageToClient).toHaveBeenCalledTimes(0);
 
       // expect(connection.send).toHaveBeenCalledWith({
-      //   user: "user",
       //   body: {
       //     viewPortId: "server-vp-1",
       //     type: "CHANGE_VP_RANGE",
@@ -1831,7 +1816,6 @@ describe("ServerProxy", () => {
       //   module: "CORE",
       //   requestId: "1",
       //   sessionId: "dsdsd",
-      //   token: "test",
       // });
     });
   });
@@ -2097,10 +2081,8 @@ describe("ServerProxy", () => {
           vpId: "server-vp-1",
         },
         module: "CORE",
-        user: "user",
         requestId: "client-request-1",
         sessionId: "dsdsd",
-        token: "test",
       });
 
       TEST_setRequestId(1);
@@ -2127,10 +2109,8 @@ describe("ServerProxy", () => {
           vpId: "server-vp-1",
         },
         module: "CORE",
-        user: "user",
         requestId: "client-request-2",
         sessionId: "dsdsd",
-        token: "test",
       });
     });
   });
@@ -2659,10 +2639,8 @@ describe("ServerProxy", () => {
           groupBy: ["col-4"],
         },
         module: "CORE",
-        user: "user",
         requestId: "1",
         sessionId: "dsdsd",
-        token: "test",
       });
 
       serverProxy.handleMessageFromServer({
@@ -2725,10 +2703,8 @@ describe("ServerProxy", () => {
           groupBy: ["col-4"],
         },
         module: "CORE",
-        user: "user",
         requestId: "1",
         sessionId: "dsdsd",
-        token: "test",
       });
 
       serverProxy.handleMessageFromServer({
@@ -2811,10 +2787,8 @@ describe("ServerProxy", () => {
           groupBy: ["col-4"],
         },
         module: "CORE",
-        user: "user",
         requestId: "1",
         sessionId: "dsdsd",
-        token: "test",
       });
 
       serverProxy.handleMessageFromServer({
@@ -2899,10 +2873,8 @@ describe("ServerProxy", () => {
           groupBy: ["col-4"],
         },
         module: "CORE",
-        user: "user",
         requestId: "1",
         sessionId: "dsdsd",
-        token: "test",
       });
 
       serverProxy.handleMessageFromServer({
@@ -3605,10 +3577,8 @@ describe("ServerProxy", () => {
           groupBy: ["col-4"],
         },
         module: "CORE",
-        user: "user",
         requestId: "1",
         sessionId: "dsdsd",
-        token: "test",
       });
 
       serverProxy.handleMessageFromServer({
@@ -4386,8 +4356,6 @@ describe("ServerProxy", () => {
         module: "CORE",
         requestId: "1",
         sessionId: "dsdsd",
-        token: "test",
-        user: "user",
       });
     });
 

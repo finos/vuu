@@ -88,8 +88,6 @@ export class MockWebSocket implements IWebSocket {
       body,
       module: "CORE",
       requestId,
-      token: "",
-      user: "user",
     });
   }
 }

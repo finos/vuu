@@ -11,8 +11,6 @@ export interface VuuClientMessage<
   module: string;
   requestId: string;
   sessionId: string;
-  token: string;
-  user: string;
 }
 
 export interface VuuServerMessage<
@@ -22,8 +20,6 @@ export interface VuuServerMessage<
   module: string;
   requestId: string;
   sessionId?: string;
-  token: string;
-  user: string;
 }
 
 export interface ClientToServerAuth {
