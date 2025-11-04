@@ -325,6 +325,10 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
     }
   }
 
+  override def pullRowAsArray(key: String, columns: ViewPortColumns, includeDefaultColumns: Boolean): Array[Any] = {
+    pullRowAsArray(key, columns)
+  }
+
   override def readRow(key: String, columns: List[String], rowProcessor: RowProcessor): Unit = {
 
     data.dataByKey(key) match {

@@ -7,7 +7,7 @@ import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.auths.{RowPermissionChecker, VuuUser}
 import org.finos.vuu.core.sort.ModelType.SortSpecInternal
 import org.finos.vuu.core.sort.*
-import org.finos.vuu.core.table.{Column, KeyObserver, RowKeyUpdate}
+import org.finos.vuu.core.table.{Column, DefaultColumnNames, KeyObserver, RowKeyUpdate}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.feature.{EmptyViewPortKeys, ViewPortKeys}
 import org.finos.vuu.net.{ClientSessionId, FilterSpec}
@@ -126,6 +126,8 @@ trait ViewPort {
 
   def getColumns: ViewPortColumns
 
+  def hasDefaultColumns: Boolean
+
   def getSelection: Set[String]
 
   def getRowKeyMappingSize_ForTest: Int
@@ -191,6 +193,8 @@ class ViewPortImpl(val id: String,
                    val structuralFields: AtomicReference[ViewPortStructuralFields],
                    val range: AtomicReference[ViewPortRange]
                   )(implicit timeProvider: Clock) extends ViewPort with KeyObserver[RowKeyUpdate] with LazyLogging {
+
+  private lazy val lazyHasDefaultColumns: Boolean = DefaultColumnNames.allDefaultColumns.exists(p => getColumns.columnExists(p))
 
   private val viewPortLock = new Object
 
@@ -383,6 +387,8 @@ class ViewPortImpl(val id: String,
   }
 
   override def getColumns: ViewPortColumns = structuralFields.get().columns
+
+  override def hasDefaultColumns: Boolean = lazyHasDefaultColumns
 
   override def getRange: ViewPortRange = range.get()
 

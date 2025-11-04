@@ -11,9 +11,11 @@ class FakeInMemoryTable(val instanceName: String, val tableDef: TableDef) extend
   private val rowMap = scala.collection.mutable.HashMap.empty[String, RowData]
 
   override def name: String = instanceName
+
   override def getTableDef: TableDef = tableDef
 
   override def newRow(key: String): RowBuilder = ???
+
   override def rowBuilder: RowBuilder = ???
 
   override def processUpdate(rowKey: String, rowUpdate: RowData): Unit =
@@ -22,7 +24,7 @@ class FakeInMemoryTable(val instanceName: String, val tableDef: TableDef) extend
   override def pullRow(key: String): RowData =
     rowMap.getOrElse(key, throw new Exception(s"Could not find row data for key $key in table $name"))
 
-  def pullAllRows() : List[RowData] =  rowMap.values.toList
+  def pullAllRows(): List[RowData] = rowMap.values.toList
 
   override protected def createDataTableData(): TableData = ???
 
@@ -49,6 +51,8 @@ class FakeInMemoryTable(val instanceName: String, val tableDef: TableDef) extend
   override def pullRowFiltered(key: String, columns: ViewPortColumns): RowData = ???
 
   override def pullRowAsArray(key: String, columns: ViewPortColumns): Array[Any] = ???
+
+  override def pullRowAsArray(key: String, columns: ViewPortColumns, includeDefaultColumns: Boolean): Array[Any] = ???
 
   override def getObserversByKey(): Map[String, Array[KeyObserver[RowKeyUpdate]]] = ???
 
