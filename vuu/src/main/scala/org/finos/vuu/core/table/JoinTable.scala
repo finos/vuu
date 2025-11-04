@@ -499,8 +499,8 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
   }
 
   override def pullRowAsArray(key: String, columns: ViewPortColumns): Array[Any] = {
-
-    val asRowData = pullRow(key, columns)
+    val includeDefaultColumns: Boolean = columns.columnExists(DefaultColumnNames.CreatedTimeColumnName) || columns.columnExists(DefaultColumnNames.LastUpdatedTimeColumnName);
+    val asRowData = pullRow(key, columns, includeDefaultColumns)
 
     val asArray = asRowData.toArray(columns.getColumns)
 
