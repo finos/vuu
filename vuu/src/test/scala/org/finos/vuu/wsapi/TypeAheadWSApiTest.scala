@@ -30,7 +30,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
       When("request typeahead for Account column")
       val getTypeAheadRequest = createTypeAheadRequest(viewPortId, tableName, "Account")
-      val requestId = vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+      val requestId = vuuClient.send(sessionId, getTypeAheadRequest)
 
       Then("return top 10 unique values in that column")
       val response = vuuClient.awaitForResponse(requestId)
@@ -52,7 +52,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
       When("request typeahead for Name column with start string Tom")
       val getTypeAheadRequest = createTypeAheadStartWithRequest(viewPortId, tableName, "Name", "Tom")
-      val requestId = vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+      val requestId = vuuClient.send(sessionId, getTypeAheadRequest)
 
       Then("return all Name values that start with Tom")
       val response = vuuClient.awaitForResponse(requestId)
@@ -70,7 +70,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
       When("request typeahead for Name column with start string NoMatching")
       val getTypeAheadRequest = createTypeAheadStartWithRequest(viewPortId, tableName, "Name", "NoMatch")
-      val requestId = vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+      val requestId = vuuClient.send(sessionId, getTypeAheadRequest)
 
       Then("return success response with empty list")
       val response = vuuClient.awaitForResponse(requestId)
@@ -88,7 +88,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
       When("request typeahead for column that is hidden")
       val getTypeAheadRequest = createTypeAheadRequest(viewPortId, tableName, "HiddenColumn")
-      val requestId = vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+      val requestId = vuuClient.send(sessionId, getTypeAheadRequest)
 
       Then("return success response with empty list")
       val response = vuuClient.awaitForResponse(requestId)
@@ -106,7 +106,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
       When("request typeahead for column that does not exist")
       val getTypeAheadRequest = createTypeAheadRequest(viewPortId, tableName, "ColumnThatDoesNotExist")
-      val requestId = vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+      val requestId = vuuClient.send(sessionId, getTypeAheadRequest)
 
       Then("return success response with empty list")
       val response = vuuClient.awaitForResponse(requestId)
@@ -121,7 +121,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
       When("request typeahead for Account column")
       val getTypeAheadRequest = createTypeAheadRequest("viewPortThatDoesNotExist", tableName, "Account")
-      val requestId = vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+      val requestId = vuuClient.send(sessionId, getTypeAheadRequest)
 
       Then("return helpful error response")
       val response = vuuClient.awaitForResponse(requestId)
@@ -146,7 +146,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
       When("request typeahead for column when table is empty")
       val getTypeAheadRequest = createTypeAheadRequest(viewPortId, tableNameEmpty, "Account")
-      val requestId = vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+      val requestId = vuuClient.send(sessionId, getTypeAheadRequest)
 
       Then("return success response with empty list")
       val response = vuuClient.awaitForResponse(requestId)
@@ -166,8 +166,8 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       When("request typeahead for different view ports")
       val getTypeAheadRequest1 = createTypeAheadStartWithRequest(viewPortId1, tableName, "Name", "S")
       val getTypeAheadRequest2 = createTypeAheadStartWithRequest(viewPortId2, tableName, "Name", "T")
-      val requestId1 = vuuClient.send(sessionId, tokenId, getTypeAheadRequest1)
-      val requestId2 = vuuClient.send(sessionId, tokenId, getTypeAheadRequest2)
+      val requestId1 = vuuClient.send(sessionId, getTypeAheadRequest1)
+      val requestId2 = vuuClient.send(sessionId, getTypeAheadRequest2)
 
       Then("return success response for each request")
       val response1 = vuuClient.awaitForResponse(requestId1)
@@ -189,7 +189,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
       When("request typeahead for Account column in join table")
       val getTypeAheadRequest = createTypeAheadRequest(viewPortId, joinTableName, "Account")
-      val requestId = vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+      val requestId = vuuClient.send(sessionId, getTypeAheadRequest)
 
       Then("return top 10 unique values in that column")
       val response = vuuClient.awaitForResponse(requestId)
@@ -211,7 +211,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
       When("request typeahead for Name column in join table with start string Tom")
       val getTypeAheadRequest = createTypeAheadStartWithRequest(viewPortId, tableName, "Name", "Tom")
-      val requestId = vuuClient.send(sessionId, tokenId, getTypeAheadRequest)
+      val requestId = vuuClient.send(sessionId, getTypeAheadRequest)
 
       Then("return all Name values that start with Tom")
       val response = vuuClient.awaitForResponse(requestId)
@@ -354,7 +354,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
     val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName),
       ViewPortRange(1, 100), columns = Array("Id", "Name", "Account"),
       SortSpec(List(SortDef("Account", 'A'))), Array.empty[String], FilterSpec("Account > 20000"))
-    vuuClient.send(sessionId, tokenId, createViewPortRequest)
+    vuuClient.send(sessionId, createViewPortRequest)
     val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
     val viewPortId = viewPortCreateResponse.get.viewPortId
     waitForData(expectedRowCount)

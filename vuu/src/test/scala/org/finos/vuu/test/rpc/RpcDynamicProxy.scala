@@ -22,7 +22,7 @@ class RpcDynamicProxy(viewport: ViewPort,
 
       val requestId = RequestId.oneNew()
       val rpcMessage = ViewPortEditCellRpcCall(viewport.id, key, col, theValue)
-      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, "", user.name, rpcMessage)
+      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, rpcMessage)
 
       val packet = serializer.serialize(vpMsg)
 
@@ -47,7 +47,7 @@ class RpcDynamicProxy(viewport: ViewPort,
 
       val requestId = RequestId.oneNew()
       val rpcMessage = ViewPortEditRowRpcCall(viewport.id, key, map.asInstanceOf[Map[String, Object]])
-      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, "", user.name, rpcMessage)
+      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, rpcMessage)
 
       val packet = serializer.serialize(vpMsg)
 
@@ -72,7 +72,7 @@ class RpcDynamicProxy(viewport: ViewPort,
 
       val requestId = RequestId.oneNew()
       val rpcMessage = ViewPortAddRowRpcCall(viewport.id, key, map.asInstanceOf[Map[String, Object]])
-      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, "", user.name, rpcMessage)
+      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, rpcMessage)
 
       val packet = serializer.serialize(vpMsg)
 
@@ -98,7 +98,7 @@ class RpcDynamicProxy(viewport: ViewPort,
 
       val requestId = RequestId.oneNew()
       val rpcMessage = ViewPortDeleteRowRpcCall(viewport.id, key)
-      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, "", user.name, rpcMessage)
+      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, rpcMessage)
 
       val packet = serializer.serialize(vpMsg)
 
@@ -123,7 +123,7 @@ class RpcDynamicProxy(viewport: ViewPort,
 
       val requestId = RequestId.oneNew()
       val rpcMessage = ViewPortEditSubmitFormRpcCall(viewport.id)
-      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, "", user.name, rpcMessage)
+      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, rpcMessage)
 
       val packet = serializer.serialize(vpMsg)
 
@@ -148,7 +148,7 @@ class RpcDynamicProxy(viewport: ViewPort,
 
       val requestId = RequestId.oneNew()
       val rpcMessage = ViewPortDeleteCellRpcCall(viewport.id, key, column)
-      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, "", user.name, rpcMessage)
+      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, rpcMessage)
 
       val packet = serializer.serialize(vpMsg)
 

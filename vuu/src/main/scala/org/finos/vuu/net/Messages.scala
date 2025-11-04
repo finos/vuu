@@ -19,22 +19,18 @@ trait ViewServerMessage {
 
   def sessionId: String
 
-  def user: String
-
-  def token: String
-
   def body: MessageBody
 
   def module: String
 }
 
 object VsMsg {
-  def apply(requestId: String, sessionId: String, token: String, user: String, body: MessageBody, module: String = "CORE"): JsonViewServerMessage = {
-    JsonViewServerMessage(requestId, sessionId, token, user, body, module)
+  def apply(requestId: String, sessionId: String, body: MessageBody, module: String = "CORE"): JsonViewServerMessage = {
+    JsonViewServerMessage(requestId, sessionId, body, module)
   }
 }
 
-case class JsonViewServerMessage(requestId: String, sessionId: String, token: String, user: String, body: MessageBody, module: String = "CORE") extends ViewServerMessage
+case class JsonViewServerMessage(requestId: String, sessionId: String, body: MessageBody, module: String = "CORE") extends ViewServerMessage
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonTypeIdResolver(classOf[VsJsonTypeResolver])

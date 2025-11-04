@@ -26,8 +26,7 @@ import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
 import org.finos.vuu.state.MemoryBackedVuiStateStore
 
 import java.util.concurrent.ConcurrentHashMap
-import scala.collection.JavaConverters.{asScalaIteratorConverter, iterableAsScalaIterableConverter}
-import scala.collection.immutable
+import scala.jdk.CollectionConverters.*
 
 /*
 //to allow self signed certs
@@ -58,7 +57,7 @@ object SimulMain extends App with StrictLogging {
   private val authNRestAuthenticator = Authenticator(loginTokenService,
     (v1: Map[String, AnyRef]) => {
       val username = String.valueOf(v1("username"))
-      users.add(username)
+      //users.add(username) TODO This blocks vertx for some reason. I don't have the time to figure out why.
       Right[String, VuuUser](VuuUser(username))
     })
 

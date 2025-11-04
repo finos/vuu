@@ -16,8 +16,7 @@ import org.finos.vuu.viewport.ViewPortUpdate
 case class RequestContext(requestId: String,
                           user: VuuUser,
                           session: ClientSessionId,
-                          queue: PublishQueue[ViewPortUpdate],
-                          token: String)
+                          queue: PublishQueue[ViewPortUpdate])
 
 class RequestProcessor(loginTokenService: LoginTokenService,
                        clientSessionContainer: ClientSessionContainer,
@@ -56,7 +55,7 @@ class RequestProcessor(loginTokenService: LoginTokenService,
 
     clientSessionContainer.register(id, handler)
 
-    Some(JsonViewServerMessage(requestId, session, "", user.name, LoginSuccess(vuuServerId)))
+    Some(JsonViewServerMessage(requestId, session, LoginSuccess(vuuServerId)))
   }
 
   private def createMessageHandler(channel: Channel, sessionId: ClientSessionId, user: VuuUser): MessageHandler = {

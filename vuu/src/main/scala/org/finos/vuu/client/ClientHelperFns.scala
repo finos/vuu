@@ -10,97 +10,97 @@ import scala.util.{Failure, Success, Try}
 object ClientHelperFns {
 
   def loginAsync(token: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage("", "", "", "", LoginRequest(token)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), "", LoginRequest(token)))
   }
 
   def createVpAsync(sessionId: String, token: String, user: String, requestId: String, table: ViewPortTable, columns: Array[String], sortBy: SortSpec, groupBy: Array[String] = Array(),
                     range: ViewPortRange = DefaultRange, filterSpec: FilterSpec)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, CreateViewPortRequest(table, range, columns, sort = sortBy, filterSpec = filterSpec, groupBy = groupBy)))
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, CreateViewPortRequest(table, range, columns, sort = sortBy, filterSpec = filterSpec, groupBy = groupBy)))
   }
 
   def openTreeNodeAsync(sessionId: String, token: String, user: String, requestId: String, vpId: String, treeKey: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, OpenTreeNodeRequest(vpId, treeKey)))
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, OpenTreeNodeRequest(vpId, treeKey)))
   }
 
   def getVisualLinks(sessionId: String, token: String, user: String, requestId: String, vpId: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, GetViewPortVisualLinksRequest(vpId)))
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, GetViewPortVisualLinksRequest(vpId)))
   }
 
   def createVisualLink(sessionId: String, token: String, user: String, requestId: String, childVpId: String, parentVpId: String, childColumnName: String, parentColumnName: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, CreateVisualLinkRequest(childVpId, parentVpId, childColumnName, parentColumnName)))
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, CreateVisualLinkRequest(childVpId, parentVpId, childColumnName, parentColumnName)))
   }
 
   def removeViewPort(sessionId: String, token: String, user: String, requestId: String, vpId: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, RemoveViewPortRequest(vpId)))
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, RemoveViewPortRequest(vpId)))
   }
 
   def viewPortMenuSelectionRpcCall(sessionId: String, token: String, user: String, requestId: String, vpId: String, rpcName: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, ViewPortMenuSelectionRpcCall(vpId, rpcName)))
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, ViewPortMenuSelectionRpcCall(vpId, rpcName)))
   }
 
   def viewPortMenuRowRpcCall(sessionId: String, token: String, user: String, requestId: String, vpId: String, rpcName: String, rowKey: String, row: Map[String, Object])(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, ViewPortMenuRowRpcCall(vpId, rpcName, rowKey, row)))
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, ViewPortMenuRowRpcCall(vpId, rpcName, rowKey, row)))
   }
 
   def viewPortMenuCellRpcCall(sessionId: String, token: String, user: String, requestId: String, vpId: String, rpcName: String, rowKey: String, field: String, value: Object)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, ViewPortMenuCellRpcCall(vpId, rpcName, rowKey, field, value)))
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, ViewPortMenuCellRpcCall(vpId, rpcName, rowKey, field, value)))
   }
 
   def viewPortMenuTableRpcCall(sessionId: String, token: String, user: String, requestId: String, vpId: String, rpcName: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, ViewPortMenuTableRpcCall(vpId, rpcName)))
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, ViewPortMenuTableRpcCall(vpId, rpcName)))
   }
 
   def enableViewPort(sessionId: String, token: String, user: String, requestId: String, vpId: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, EnableViewPortRequest(vpId)))
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, EnableViewPortRequest(vpId)))
   }
 
   def disableViewPort(sessionId: String, token: String, user: String, requestId: String, vpId: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, DisableViewPortRequest(vpId)))
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, DisableViewPortRequest(vpId)))
   }
 
   def freezeViewPort(sessionId: String, token: String, user: String, requestId: String, vpId: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, FreezeViewPortRequest(vpId)))
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, FreezeViewPortRequest(vpId)))
   }
 
   def unfreezeViewPort(sessionId: String, token: String, user: String, requestId: String, vpId: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, UnfreezeViewPortRequest(vpId)))
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, UnfreezeViewPortRequest(vpId)))
   }
 
   def closeTreeNodeAsync(sessionId: String, token: String, user: String, requestId: String, vpId: String, treeKey: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, CloseTreeNodeRequest(vpId, treeKey)))
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, CloseTreeNodeRequest(vpId, treeKey)))
   }
 
   def changeVpAsync(sessionId: String, token: String, user: String, requestId: String, vpId: String, columns: Array[String], sortBy: SortSpec, groupBy: Array[String] = Array(), filterSpec: FilterSpec, aggregations: Array[Aggregations] = Array())(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, ChangeViewPortRequest(vpId, columns, sort = sortBy, filterSpec = filterSpec, groupBy = groupBy, aggregations = aggregations)))
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, ChangeViewPortRequest(vpId, columns, sort = sortBy, filterSpec = filterSpec, groupBy = groupBy, aggregations = aggregations)))
   }
 
   def tableListAsync(sessionId: String, token: String, user: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, GetTableList()))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, GetTableList()))
   }
 
   def rpcTableUpdate(sessionId: String, token: String, user: String, table: ViewPortTable, key: String, data: Map[String, Any])(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, RpcUpdate(table, key, data)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, RpcUpdate(table, key, data)))
   }
 
   def getViewPortMenusAsync(sessionId: String, token: String, user: String, vpId: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, GetViewPortMenusRequest(vpId)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, GetViewPortMenusRequest(vpId)))
   }
 
   def tableMetaAsync(sessionId: String, token: String, user: String, table: ViewPortTable, requestId: String)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(requestId, sessionId, token, user, GetTableMetaRequest(table)))
+    vsClient.send(JsonViewServerMessage(requestId, sessionId, GetTableMetaRequest(table)))
   }
 
   def heartbeatRespAsync(sessionId: String, token: String, user: String, ts: Long)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(VsMsg(RequestId.oneNew(), sessionId, token, user, HeartBeatResponse(ts)))
+    vsClient.send(VsMsg(RequestId.oneNew(), sessionId, HeartBeatResponse(ts)))
   }
 
   def changeVpRangeAsync(sessionId: String, token: String, user: String, vpId: String, range: ViewPortRange)(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, ChangeViewPortRange(vpId, range.from, range.to)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, ChangeViewPortRange(vpId, range.from, range.to)))
   }
 
   def menuRpcCall(sessionId: String, token: String, user: String, service: String, method: String, params: Array[Any], module: String)(implicit vsClient: ViewServerClient): MenuRpcResponse = {
 
-    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, MenuRpcCall(service, method, params, Map()), module = module))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, MenuRpcCall(service, method, params, Map()), module = module))
 
     @tailrec
     def awaitMsg(vsClient: ViewServerClient): MenuRpcResponse = {
@@ -114,7 +114,7 @@ object ClientHelperFns {
   }
 
   def login(token: String)(implicit vsClient: ViewServerClient): String = {
-    vsClient.send(JsonViewServerMessage("", "", "", "", LoginRequest(token)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), "", LoginRequest(token)))
     vsClient.awaitMsg.sessionId
   }
   
@@ -136,16 +136,16 @@ object ClientHelperFns {
   }
 
   def createVp(sessionId: String, token: String, user: String, table: ViewPortTable, columns: Array[String], range: ViewPortRange = DefaultRange, sort: SortSpec = SortSpec(List()))(implicit vsClient: ViewServerClient): ViewServerMessage = {
-    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, CreateViewPortRequest(table, range, columns, sort)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, CreateViewPortRequest(table, range, columns, sort)))
     await[CreateViewPortSuccess]
   }
 
   def changeVpAsync(sessionId: String, token: String, vpId: String, user: String, table: String, columns: Array[String], sortSpec: SortSpec, groupBy: Array[String])(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, ChangeViewPortRequest(vpId, columns, sortSpec, groupBy)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, ChangeViewPortRequest(vpId, columns, sortSpec, groupBy)))
   }
 
   def changeVp(sessionId: String, token: String, vpId: String, user: String, table: String, columns: Array[String], sortSpec: SortSpec, groupBy: Array[String])(implicit vsClient: ViewServerClient): ViewServerMessage = {
-    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, ChangeViewPortRequest(vpId, columns, sortSpec, groupBy)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, ChangeViewPortRequest(vpId, columns, sortSpec, groupBy)))
 
     def awaitMsg(vsClient: ViewServerClient): ViewServerMessage = {
       val msg = vsClient.awaitMsg
@@ -160,22 +160,22 @@ object ClientHelperFns {
   }
 
   def openVpTreeNode(sessionId: String, token: String, user: String, vpId: String, treeKey: String)(implicit vsClient: ViewServerClient): ViewServerMessage = {
-    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, OpenTreeNodeRequest(vpId, treeKey)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, OpenTreeNodeRequest(vpId, treeKey)))
     vsClient.awaitMsg
   }
 
   def closeVpTreeNode(sessionId: String, token: String, user: String, vpId: String, treeKey: String)(implicit vsClient: ViewServerClient): ViewServerMessage = {
-    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, CloseTreeNodeRequest(vpId, treeKey)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, CloseTreeNodeRequest(vpId, treeKey)))
     vsClient.awaitMsg
   }
 
   def createVpGroupBy(sessionId: String, token: String, user: String, table: ViewPortTable, columns: Array[String], range: ViewPortRange = DefaultRange, groupBy: Array[String])(implicit vsClient: ViewServerClient): ViewServerMessage = {
-    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, CreateViewPortRequest(table, range, columns, groupBy = groupBy)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, CreateViewPortRequest(table, range, columns, groupBy = groupBy)))
     vsClient.awaitMsg
   }
 
   def changeVpRange(sessionId: String, token: String, user: String, vpId: String, range: ViewPortRange)(implicit vsClient: ViewServerClient): ViewServerMessage = {
-    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, token, user, ChangeViewPortRange(vpId, range.from, range.to)))
+    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, ChangeViewPortRange(vpId, range.from, range.to)))
     vsClient.awaitMsg
   }
 

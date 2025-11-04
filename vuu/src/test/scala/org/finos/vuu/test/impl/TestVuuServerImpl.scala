@@ -188,7 +188,7 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
     this.user = user
     handler = factory.create()
     val token = loginTokenService.getToken(user)
-    val packet = serializer.serialize(JsonViewServerMessage(RequestId.oneNew(), "", "", "", LoginRequest(token)))
+    val packet = serializer.serialize(JsonViewServerMessage(RequestId.oneNew(), "", LoginRequest(token)))
     handler.handle(packet, channel)
 
     channel.popMsg match {
@@ -217,7 +217,7 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
   }
 
   override def requestContext: RequestContext = {
-    RequestContext(RequestId.oneNew(), user, clientSessionId, queue, "TOKEN")
+    RequestContext(RequestId.oneNew(), user, clientSessionId, queue)
   }
 
   override def registerPlugin(plugin: Plugin): Unit = pluginRegistry.registerPlugin(plugin)

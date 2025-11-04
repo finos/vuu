@@ -38,7 +38,7 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
                 ))
         );
 
-        var requestId = vuuClient.send(sessionId, tokenId, typeAheadRequest);
+        var requestId = vuuClient.send(sessionId, typeAheadRequest);
         var response = vuuClient.awaitForResponse(requestId);
 
         RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "Typeahead Request response");
@@ -64,7 +64,7 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
                 ))
         );
 
-        var requestId = vuuClient.send(sessionId, tokenId, rpcRequest);
+        var requestId = vuuClient.send(sessionId, rpcRequest);
         var response = vuuClient.awaitForResponse(requestId);
 
         RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "GetAccountId Request response");
@@ -90,7 +90,7 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
                 ))
         );
 
-        var requestId = vuuClient.send(sessionId, tokenId, rpcRequest);
+        var requestId = vuuClient.send(sessionId, rpcRequest);
         var response = vuuClient.awaitForResponse(requestId);
 
         RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "UpdateName Request response");
@@ -111,7 +111,7 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
                 null
         );
 
-        var requestId = vuuClient.send(sessionId, tokenId, rpcRequest);
+        var requestId = vuuClient.send(sessionId, rpcRequest);
         var response = vuuClient.awaitForResponse(requestId);
 
         RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "DoesNotExist Request response");
@@ -140,7 +140,7 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
                 new Aggregations[0]
         );
 
-        var viewPortRequestId = vuuClient.send(sessionId, tokenId, createViewPortRequest);
+        var viewPortRequestId = vuuClient.send(sessionId, createViewPortRequest);
         var viewPortCreateResponse = vuuClient.awaitForResponse(viewPortRequestId);
 
         CreateViewPortSuccess responseBody = assertBodyIsInstanceOf(viewPortCreateResponse, "View port create response");

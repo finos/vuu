@@ -29,7 +29,7 @@ object LoginTokenService {
    * For single Vuu instances only.
    */
   def apply(): LoginTokenService = {
-    val bytes = Array[Byte](64)
+    val bytes = Array.ofDim[Byte](128)
     SecureRandom().nextBytes(bytes)
     apply(bytes)
   }

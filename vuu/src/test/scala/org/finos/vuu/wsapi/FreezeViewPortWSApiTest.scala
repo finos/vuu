@@ -34,7 +34,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
       When("request freezing view port")
       val freezeVPRequest = FreezeViewPortRequest(viewPortId)
-      val requestId = vuuClient.send(sessionId, tokenId, freezeVPRequest)
+      val requestId = vuuClient.send(sessionId, freezeVPRequest)
 
       Then("view port is frozen")
       val freezeVPResponse = vuuClient.awaitForResponse(requestId)
@@ -55,7 +55,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
       When("request freezing view port")
       val freezeVPRequest = FreezeViewPortRequest(viewPortId)
-      val freezeRequestId = vuuClient.send(sessionId, tokenId, freezeVPRequest)
+      val freezeRequestId = vuuClient.send(sessionId, freezeVPRequest)
 
       Then("view port is frozen")
       val freezeVPResponse = vuuClient.awaitForResponse(freezeRequestId)
@@ -69,7 +69,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
       When("request unfreezing view port")
       val unfreezeVPRequest = UnfreezeViewPortRequest(viewPortId)
-      val unfreezeRrequestId = vuuClient.send(sessionId, tokenId, unfreezeVPRequest)
+      val unfreezeRrequestId = vuuClient.send(sessionId, unfreezeVPRequest)
 
       Then("view port is unfrozen")
       val unfreezeResponse = vuuClient.awaitForResponse(unfreezeRrequestId)
@@ -84,7 +84,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
     Scenario("Freeze a view port that doesn't exist") {
       When("request freezing view port that doesn't exist")
       val request = FreezeViewPortRequest(fakeViewPortId)
-      val requestId = vuuClient.send(sessionId, tokenId, request)
+      val requestId = vuuClient.send(sessionId, request)
 
       Then("return failure response")
       val response = vuuClient.awaitForResponse(requestId)
@@ -96,7 +96,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
     Scenario("Unfreeze a view port that doesn't exist") {
       When("request unfreezing view port that doesn't exist")
       val request = UnfreezeViewPortRequest(fakeViewPortId)
-      val requestId = vuuClient.send(sessionId, tokenId, request)
+      val requestId = vuuClient.send(sessionId, request)
 
       Then("return failure response")
       val response = vuuClient.awaitForResponse(requestId)
@@ -112,7 +112,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
       When("request freezing view port")
       val freezeVPRequest1 = FreezeViewPortRequest(viewPortId)
-      val requestId1 = vuuClient.send(sessionId, tokenId, freezeVPRequest1)
+      val requestId1 = vuuClient.send(sessionId, freezeVPRequest1)
 
       Then("view port is frozen")
       val freezeVPResponse = vuuClient.awaitForResponse(requestId1)
@@ -121,7 +121,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
       When("request freezing view port again")
       val freezeVPRequest2 = FreezeViewPortRequest(viewPortId)
-      val requestId2 = vuuClient.send(sessionId, tokenId, freezeVPRequest2)
+      val requestId2 = vuuClient.send(sessionId, freezeVPRequest2)
 
       Then("return failure response")
       val response2 = vuuClient.awaitForResponse(requestId2)
@@ -136,7 +136,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
       When("request unfreezing view port")
       val unfreezeVPRequest = UnfreezeViewPortRequest(viewPortId)
-      val requestId = vuuClient.send(sessionId, tokenId, unfreezeVPRequest)
+      val requestId = vuuClient.send(sessionId, unfreezeVPRequest)
 
       Then("return failure response")
       val unfreezeVPResponse = vuuClient.awaitForResponse(requestId)
@@ -151,7 +151,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
       When("request freezing view port")
       val freezeVPRequest = FreezeViewPortRequest(viewPortId)
-      val requestId = vuuClient.send(sessionId, tokenId, freezeVPRequest)
+      val requestId = vuuClient.send(sessionId, freezeVPRequest)
 
       Then("view port is frozen")
       val freezeVPResponse = vuuClient.awaitForResponse(requestId)
@@ -172,7 +172,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
       When("request freezing view port")
       val freezeVPRequest = FreezeViewPortRequest(viewPortId)
-      val freezeRequestId = vuuClient.send(sessionId, tokenId, freezeVPRequest)
+      val freezeRequestId = vuuClient.send(sessionId, freezeVPRequest)
 
       Then("view port is frozen")
       val freezeVPResponse = vuuClient.awaitForResponse(freezeRequestId)
@@ -186,7 +186,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
       When("request unfreezing view port")
       val unfreezeVPRequest = UnfreezeViewPortRequest(viewPortId)
-      val unfreezeRrequestId = vuuClient.send(sessionId, tokenId, unfreezeVPRequest)
+      val unfreezeRrequestId = vuuClient.send(sessionId, unfreezeVPRequest)
 
       Then("view port is unfrozen")
       val unfreezeResponse = vuuClient.awaitForResponse(unfreezeRrequestId)
@@ -319,7 +319,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
   private def createViewPortBase(tableName: String, columns: Array[String], expectedNumberOfRows: Int) = {
     val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(0, 100), columns = columns)
-    vuuClient.send(sessionId, tokenId, createViewPortRequest)
+    vuuClient.send(sessionId, createViewPortRequest)
     val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
     val viewPortId = viewPortCreateResponse.get.viewPortId
     waitForData(expectedNumberOfRows)
