@@ -8,6 +8,7 @@ import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.thread.Async
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.vui.VuiStateModule
 import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
@@ -16,7 +17,6 @@ import org.finos.vuu.net.http.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
 import org.finos.vuu.state.MemoryBackedVuiStateStore
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
-import org.finos.vuu.core.auths.VuuUser
 
 import java.util.concurrent.atomic.AtomicBoolean
 import scala.concurrent.ExecutionContext
@@ -38,8 +38,6 @@ class AuthNServerTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
       val store = new MemoryBackedVuiStateStore()
       val loginTokenService: LoginTokenService = LoginTokenService()
-      val authNRestAuthenticator = Authenticator(loginTokenService,
-        (v1: Map[String, AnyRef]) => Right[String, VuuUser](VuuUser(String.valueOf(v1("username")))))
 
       lifecycle.autoShutdownHook()
 
@@ -57,7 +55,7 @@ class AuthNServerTest extends AnyFeatureSpec with Matchers with StrictLogging {
         VuuSecurityOptions()
           .withLoginTokenService(loginTokenService)
       ).withModule(VuiStateModule(store))
-       .withModule(AuthNModule(authNRestAuthenticator))
+       .withModule(AuthNModule(loginTokenService))
 
       val viewServer = new VuuServer(config)
 

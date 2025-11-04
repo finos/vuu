@@ -6,7 +6,6 @@ import org.finos.toolbox.jmx.{JmxInfra, MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.*
-import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.authn.AuthNModule
 import org.finos.vuu.core.module.auths.PermissionModule
@@ -19,7 +18,7 @@ import org.finos.vuu.core.module.vui.VuiStateModule
 import org.finos.vuu.example.rest.client.{HttpClient, StubbedBackend}
 import org.finos.vuu.example.rest.module.RestModule
 import org.finos.vuu.example.virtualtable.module.VirtualTableModule
-import org.finos.vuu.net.auth.{Authenticator, LoginTokenService}
+import org.finos.vuu.net.auth.LoginTokenService
 import org.finos.vuu.net.http.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
 import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
@@ -50,16 +49,9 @@ object SimulMain extends App with StrictLogging {
 
   lifecycle.autoShutdownHook()
 
-  val loginTokenService = LoginTokenService()
+  private val loginTokenService = LoginTokenService()
 
   private val users: java.util.Set[String] = ConcurrentHashMap.newKeySet[String]()
-  
-  private val authNRestAuthenticator = Authenticator(loginTokenService,
-    (v1: Map[String, AnyRef]) => {
-      val username = String.valueOf(v1("username"))
-      //users.add(username) TODO This blocks vertx for some reason. I don't have the time to figure out why.
-      Right[String, VuuUser](VuuUser(username))
-    })
 
   private val defaultConfig = ConfigFactory.load()
 
@@ -77,7 +69,7 @@ object SimulMain extends App with StrictLogging {
     .withModule(SimulationModule())
     .withModule(MetricsModule())
     .withModule(VuiStateModule(store))
-    .withModule(AuthNModule(authNRestAuthenticator))
+    .withModule(AuthNModule(loginTokenService, Option.apply(users)))
     .withModule(EditableModule())
     .withModule(PermissionModule(() => users.asScala))
     .withModule(BasketModule(omsApi))

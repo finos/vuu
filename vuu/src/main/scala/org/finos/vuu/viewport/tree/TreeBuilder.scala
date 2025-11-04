@@ -65,7 +65,7 @@ class TreeBuilderImpl(val table: TreeSessionTableImpl, val groupBy: GroupBy, val
         case None => theFilter
       }
 
-      realizedFilter.dofilter(table.sourceTable, table.sourceTable.primaryKeys, vpColumns)
+      realizedFilter.doFilter(table.sourceTable, table.sourceTable.primaryKeys, vpColumns)
 
     } else
       table.sourceTable.primaryKeys

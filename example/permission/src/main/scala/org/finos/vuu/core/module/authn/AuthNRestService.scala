@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import io.vertx.core.http.Cookie
 import io.vertx.ext.web.RoutingContext
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.net.auth.Authenticator
+import org.finos.vuu.net.auth.{Authenticator, LoginTokenService}
 import org.finos.vuu.net.rest.RestService
 
 import java.util.concurrent.TimeUnit
@@ -49,10 +49,11 @@ class LogoutRestService(val authenticator: Authenticator[_])(implicit clock: Clo
   override def onDelete(ctx: RoutingContext): Unit = reply404(ctx)
 }
 
-class AuthNRestService(val authenticator: Authenticator[Map[String,Object]])
+class AuthNRestService(val loginTokenService: LoginTokenService, val users: Option[java.util.Set[String]])
                       (implicit clock: Clock) extends RestService with StrictLogging {
 
   private final val service = "authn"
+  private final val authenticator: Authenticator[String] = AuthenticatorWithUserList(loginTokenService, users)
 
   override def getServiceName: String = service
 
@@ -90,8 +91,7 @@ class AuthNRestService(val authenticator: Authenticator[Map[String,Object]])
     if (username == null || password == null ) {
       reply404(ctx)
     } else {
-      val credentials = Map("username" -> username, "password" -> password)
-      authenticator.authenticate(credentials) match {
+      authenticator.authenticate(username) match {
         case Right(value) =>
           ctx.response()
             .addCookie(Cookie.cookie(VuuAuthCookie.Name, value).setMaxAge(TimeUnit.MINUTES.toSeconds(240)))

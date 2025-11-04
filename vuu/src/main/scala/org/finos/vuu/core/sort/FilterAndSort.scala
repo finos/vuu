@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.core.auths.RowPermissionChecker
 import org.finos.vuu.core.filter.{Filter, FilterClause}
-import org.finos.vuu.core.index._
+import org.finos.vuu.core.index.*
 import org.finos.vuu.core.table.column.{Error, Success}
 import org.finos.vuu.core.table.{Column, DataType, DefaultColumnNames, EmptyTablePrimaryKeys, TablePrimaryKeys, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
@@ -58,7 +58,7 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Fi
     InMemTablePrimaryKeys(ImmutableArray.from(filtered))
   }
 
-  override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
+  override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
 
     val parentSelectionKeys = viewPortVisualLink.parentVp.getSelection
     val parentColumn = viewPortVisualLink.parentColumn
@@ -75,7 +75,7 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Fi
 }
 
 case class RowPermissionFilter(checker: RowPermissionChecker) extends Filter with StrictLogging {
-  override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
+  override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     val filtered = primaryKeys.filter(key => {
       try {
         // calling source.pullRow(key) rather than source.pullRow(key, vpColumns) because user might remove the columns we need from view port
@@ -92,7 +92,7 @@ case class RowPermissionFilter(checker: RowPermissionChecker) extends Filter wit
 }
 
 case class FrozenTimeFilter(frozenTime: Long) extends Filter with StrictLogging {
-  override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
+  override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     val filtered = primaryKeys.filter(key => {
       try {
         val vuuCreatedTimestamp = source.pullRow(key).get(DefaultColumnNames.CreatedTimeColumnName).asInstanceOf[Long]
@@ -109,7 +109,7 @@ case class FrozenTimeFilter(frozenTime: Long) extends Filter with StrictLogging 
 }
 
 case class RowPermissionAndFrozenTimeFilter(checker: RowPermissionChecker, frozenTime: Long) extends Filter with StrictLogging {
-  override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
+  override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     val filtered = primaryKeys.filter(key => {
       try {
         val rowData = source.pullRow(key)
@@ -126,11 +126,11 @@ case class RowPermissionAndFrozenTimeFilter(checker: RowPermissionChecker, froze
 }
 
 case class TwoStepCompoundFilter(first: Filter, second: Filter) extends Filter with StrictLogging {
-  override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
+  override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
 
-    val firstStep = first.dofilter(source, primaryKeys, vpColumns)
+    val firstStep = first.doFilter(source, primaryKeys, vpColumns)
 
-    val secondStep = second.dofilter(source, firstStep, vpColumns)
+    val secondStep = second.doFilter(source, firstStep, vpColumns)
 
     secondStep
   }
@@ -138,7 +138,7 @@ case class TwoStepCompoundFilter(first: Filter, second: Filter) extends Filter w
 
 case class AntlrBasedFilter(clause: FilterClause) extends Filter with StrictLogging {
 
-  override def dofilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
+  override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     logger.debug(s"starting filter with ${primaryKeys.length}")
     clause.filterAllSafe(source, primaryKeys, vpColumns) match {
       case Success(filteredKeys) =>
@@ -174,7 +174,7 @@ case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAn
         case None => filter
       }
 
-      val filteredKeys = realizedFilter.dofilter(source, primaryKeys, vpColumns)
+      val filteredKeys = realizedFilter.doFilter(source, primaryKeys, vpColumns)
 
       val sortedKeys = sort.doSort(source, filteredKeys, vpColumns)
       logger.trace("sorted")
