@@ -49,6 +49,9 @@
     width: var(--salt-size-base);
     min-width: var(--salt-size-base);
     margin-left: var(--salt-spacing-100);
+    position: relative;
+    line-height: 1;
+    overflow: visible;
   }
 
   .FreezeControl-newOrders {
@@ -63,6 +66,21 @@
 .FreezeControl-customBadge-flashing {
   animation: flashGreenRed var(--freeze-control-flash-duration, 0.25s)
     steps(1, end) infinite;
+}
+
+.FreezeControl-customBadge[data-overflow="true"] {
+  padding-right: 0.2em;
+}
+
+.FreezeControl-plus {
+  font-size: 0.8em;
+  line-height: 1;
+  position: absolute;
+  top: 0.1em;
+  right: -0.05em;
+  font-weight: bold;
+  color: inherit;
+  pointer-events: none;
 }
 
 @keyframes flashGreenRed {

@@ -55,6 +55,9 @@ export const FreezeControl = ({
     }
   }, [newRecordCount, isFrozen]);
 
+  const badgeValue = Math.min(newRecordCount, 99);
+  const isOverflow = newRecordCount > 99;
+
   return (
     <div
       {...htmlAttributes}
@@ -95,9 +98,12 @@ export const FreezeControl = ({
             <div
               className={cx(`FreezeControl-customBadge`, {
                 [`FreezeControl-customBadge-flashing`]: isFlashing,
+                [`FreezeControl-customBadge-overflow`]: isOverflow,
               })}
+              data-overflow={isOverflow ? "true" : undefined}
             >
-              {newRecordCount}
+              {badgeValue}
+              {isOverflow && <span className="FreezeControl-plus">+</span>}
             </div>
           </div>
         )}
