@@ -855,8 +855,6 @@ export class ServerProxy {
       this.connection.send({
         requestId,
         sessionId: this.sessionId,
-        token: this.authToken,
-        user: this.user,
         module,
         body,
       } as VuuClientMessage);

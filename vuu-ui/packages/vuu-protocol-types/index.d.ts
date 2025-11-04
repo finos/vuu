@@ -11,8 +11,6 @@ export interface VuuClientMessage<
   module: string;
   requestId: string;
   sessionId: string;
-  token: string;
-  user: string;
 }
 
 export interface VuuServerMessage<
