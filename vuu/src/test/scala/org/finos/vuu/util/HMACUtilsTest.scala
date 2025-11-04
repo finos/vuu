@@ -10,7 +10,7 @@ class HMACUtilsTest extends AnyFeatureSpec with Matchers {
 
   Feature("HMAC logic for tokens") {
 
-    val secret = Array[Byte](64)
+    val secret = Array.ofDim[Byte](128)
     SecureRandom().nextBytes(secret)
 
     Scenario("Check round trip") {
