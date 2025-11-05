@@ -1,11 +1,11 @@
 package org.finos.vuu.wsapi
 
-import org.finos.vuu.api._
+import org.finos.vuu.api.*
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.DefaultColumnNames.CreatedTimeColumnName
-import org.finos.vuu.core.table.{Columns, DataTable}
-import org.finos.vuu.net._
+import org.finos.vuu.core.table.{Columns, DataTable, DefaultColumnNames}
+import org.finos.vuu.net.*
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
 import org.finos.vuu.wsapi.helpers.{FakeDataSource, TestProviderFactory}
@@ -310,7 +310,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
   }
 
   private def createViewPortForJoinTable(tableName: String) = {
-    createViewPortBase(tableName, Array("Id", "Name", "Description"), 4)
+    createViewPortBase(tableName, Array("Id", "Name", "Description", DefaultColumnNames.CreatedTimeColumnName), 4)
   }
 
   private def createViewPort(tableName: String) = {

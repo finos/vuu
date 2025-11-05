@@ -54,6 +54,8 @@ trait RowSource extends KeyedObservable[RowKeyUpdate] {
   //def pullRowWithSelection(key: String, columns: List[Column], selected: Map[String, Any]): RowData
   def pullRowAsArray(key: String, columns: ViewPortColumns): Array[Any]
 
+  def pullRowAsArray(key: String, columns: ViewPortColumns, includeDefaultColumns: Boolean): Array[Any]
+
   //def pullRowAsArrayWithSelection(key: String, columns: List[Column], selected: Map[String, Any]): Array[Any]
   def asTable: DataTable
   //  def addSessionListener(listener: SessionListener): Unit
