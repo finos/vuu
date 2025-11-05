@@ -4,6 +4,7 @@ import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { useFreezeControl, type FreezeProps } from "./useFreezeControl";
 import { HTMLAttributes, useEffect, useRef, useState } from "react";
 import cx from "clsx";
+import { calculateBadgeState } from "./freezeControlBadge";
 
 import freezeControlCss from "./FreezeControl.css";
 
@@ -55,8 +56,7 @@ export const FreezeControl = ({
     }
   }, [newRecordCount, isFrozen]);
 
-  const badgeValue = Math.min(newRecordCount, 99);
-  const isOverflow = newRecordCount > 99;
+  const { badgeValue, isOverflow } = calculateBadgeState(newRecordCount);
 
   return (
     <div
