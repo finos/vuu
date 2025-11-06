@@ -9,11 +9,11 @@ export type VuuExample = {
 };
 
 export const pathFromKey = (key: string) => key.slice(5).split("|").join("/");
-export const keysFromPath = (path: string) => {
+export const keyFromPath = (path: string) => {
   if (path === "/") {
     return undefined;
   } else {
-    return [`$root${path.split("/").join("|")}`];
+    return `$root${path.split("/").join("|")}`;
   }
 };
 

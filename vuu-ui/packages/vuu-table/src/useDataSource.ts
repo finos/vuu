@@ -4,16 +4,20 @@ import type {
   DataSourceSubscribedMessage,
   DataSourceSuspenseProps,
 } from "@vuu-ui/vuu-data-types";
-import { VuuRange } from "@vuu-ui/vuu-protocol-types";
+import { SelectRowRequest, VuuRange } from "@vuu-ui/vuu-protocol-types";
 import { MovingWindow, NULL_RANGE, Range } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TableProps } from "./Table";
+import { metadataKeys } from "@vuu-ui/vuu-utils";
+
+const { KEY } = metadataKeys;
 
 export interface DataSourceHookProps
   extends Pick<
     TableProps,
+    | "autoSelectFirstRow"
+    | "autoSelectRowKey"
     | "dataSource"
-    | "defaultSelectedKeyValues"
     | "renderBufferSize"
     | "revealSelected"
   > {
@@ -23,8 +27,9 @@ export interface DataSourceHookProps
 }
 
 export const useDataSource = ({
+  autoSelectFirstRow,
+  autoSelectRowKey,
   dataSource,
-  defaultSelectedKeyValues,
   onSizeChange,
   onSubscribed,
   renderBufferSize = 0,
@@ -37,6 +42,9 @@ export const useDataSource = ({
   const hasUpdated = useRef(false);
   const rangeRef = useRef<Range>(NULL_RANGE);
   const totalRowCountRef = useRef(0);
+  const rowAutoSelected = useRef(false);
+
+  const autoSelect = autoSelectRowKey ?? autoSelectFirstRow;
 
   const dataWindow = useMemo(
     () => new MovingWindow(NULL_RANGE),
@@ -72,6 +80,17 @@ export const useDataSource = ({
     [dataWindow],
   );
 
+  const selectRow = useCallback(
+    (rowKey: string) => {
+      dataSource.select?.({
+        preserveExistingSelection: false,
+        rowKey,
+        type: "SELECT_ROW",
+      } as SelectRowRequest);
+    },
+    [dataSource],
+  );
+
   const datasourceMessageHandler: DataSourceSubscribeCallback = useCallback(
     (message) => {
       if (message.type === "subscribed") {
@@ -92,16 +111,15 @@ export const useDataSource = ({
           }
         }
         if (message.rows) {
-          // Removed because known to cause issues when multiple server requests
-          // are handled  - a newer range can be overwritten with an out-of-date
-          // range. If we need this for some reason, amke sure server sends up
-          // top date range
-          // if (message.range) {
-          //   if (message.range.to !== dataWindow.range.to) {
-          //     dataWindow.setRange(message.range);
-          //   }
-          // }
           setData(message.rows);
+          if (autoSelect && rowAutoSelected.current === false) {
+            rowAutoSelected.current = true;
+            if (typeof autoSelect === "string") {
+              selectRow(autoSelect);
+            } else {
+              selectRow(message.rows[0][KEY]);
+            }
+          }
         } else if (message.size === 0) {
           setData([]);
         } else if (typeof message.size === "number") {
@@ -122,7 +140,7 @@ export const useDataSource = ({
         console.log(`useDataSource unexpected message ${message.type}`);
       }
     },
-    [dataWindow, onSizeChange, onSubscribed, setData],
+    [autoSelect, dataWindow, onSizeChange, onSubscribed, selectRow, setData],
   );
 
   const getSelectedRows = useCallback(() => {
@@ -147,7 +165,7 @@ export const useDataSource = ({
     if (dataSource.status === "disabled") {
       dataSource.enable?.(datasourceMessageHandler);
     }
-  }, [dataSource, datasourceMessageHandler, renderBufferSize]);
+  }, [dataSource, datasourceMessageHandler]);
 
   const setRange = useCallback(
     (viewportRange: VuuRange) => {
@@ -164,7 +182,9 @@ export const useDataSource = ({
             {
               range,
               revealSelected,
-              selectedKeyValues: defaultSelectedKeyValues,
+              selectedKeyValues: autoSelectRowKey
+                ? [autoSelectRowKey]
+                : undefined,
             },
             datasourceMessageHandler,
           );
@@ -174,10 +194,10 @@ export const useDataSource = ({
       }
     },
     [
+      autoSelectRowKey,
       dataSource,
       dataWindow,
       datasourceMessageHandler,
-      defaultSelectedKeyValues,
       renderBufferSize,
       revealSelected,
     ],

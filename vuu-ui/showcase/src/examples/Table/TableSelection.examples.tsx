@@ -133,14 +133,30 @@ export const CellBlockRowSelection = () => {
 };
 
 /** tags=data-consumer */
-export const PreSelectedRowByKey = () => {
+export const AutoSelectFirstRow = () => {
   const handleSelectionChange: SelectionChangeHandler = (selection) => {
     console.log(`selection changed ${JSON.stringify(selection)}`);
   };
   return (
     <DataTableTemplate
       allowCellBlockSelection
-      defaultSelectedKeyValues={["AAOZ.N"]}
+      autoSelectFirstRow
+      onSelectionChange={handleSelectionChange}
+      selectionModel="extended"
+      navigationStyle="row"
+    />
+  );
+};
+
+/** tags=data-consumer */
+export const AutoSelectByKey = () => {
+  const handleSelectionChange: SelectionChangeHandler = (selection) => {
+    console.log(`selection changed ${JSON.stringify(selection)}`);
+  };
+  return (
+    <DataTableTemplate
+      allowCellBlockSelection
+      autoSelectRowKey="AAOU.MI"
       onSelectionChange={handleSelectionChange}
       selectionModel="extended"
       navigationStyle="row"

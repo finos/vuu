@@ -19,9 +19,7 @@ export const ShowcaseTreeSelected = () => {
       <div style={{ flex: "1 1 0" }}>
         <TreeTable
           rowHeight={30}
-          defaultSelectedKeyValues={[
-            "$root|Filters|FilterBar|FilterBar|DefaultFilterBar",
-          ]}
+          autoSelectRowKey="$root|Filters|FilterBar|FilterBar|DefaultFilterBar"
           showColumnHeaders={false}
           source={showcaseData}
         />
@@ -36,9 +34,7 @@ export const ShowcaseTreeSelectedAutoReveal = () => {
   return (
     <TreeTable
       rowHeight={30}
-      defaultSelectedKeyValues={[
-        "$root|Filters|FilterBar|FilterBar|DefaultFilterBar",
-      ]}
+      autoSelectRowKey="$root|Filters|FilterBar|FilterBar|DefaultFilterBar"
       revealSelected
       showColumnHeaders={false}
       source={showcaseData}
