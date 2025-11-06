@@ -29,11 +29,11 @@ case class AuthenticatorImpl[T <: AnyRef](tokenService: LoginTokenService,
   override def authenticate(input: T): Either[String, String] = {
     authFunction.apply(input) match {
       case Right(value) =>  {
-        logger.info(s"${value.name} has successfully authenticated")
+        logger.info(s"[AUTH] Successful authentication by ${value.name}")
         Right(tokenService.getToken(value))
       }
       case Left(value) => {
-        logger.warn(s"Authentication failed: $value")
+        logger.warn(s"[AUTH] Authentication failed: $value")
         Left("Authentication failed")
       }
     }

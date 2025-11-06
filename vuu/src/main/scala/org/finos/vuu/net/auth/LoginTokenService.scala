@@ -57,7 +57,7 @@ case class AlwaysHappyLoginTokenService(vuuUser: VuuUser) extends LoginTokenServ
 case class LoginTokenServiceImpl(secret: Array[Byte]) extends LoginTokenService with StrictLogging {
 
   override def getToken(user: VuuUser): String = {
-    logger.info(s"Obtaining token for ${user.name}")
+    logger.info(s"[LOGIN] Obtaining token for ${user.name}")
     val payload = JsonUtil.toRawJson(user)
     HMACUtils.sign(payload, secret)
   }
@@ -67,14 +67,14 @@ case class LoginTokenServiceImpl(secret: Array[Byte]) extends LoginTokenService 
       case Right(value) =>
         val vuuUser: VuuUser = JsonUtil.fromJson(value)
         if (Instant.now().isBefore(vuuUser.expiry)) {
-          logger.info(s"Successful login for ${vuuUser.name}")
+          logger.info(s"[LOGIN] Successful login for ${vuuUser.name}")
           Right(vuuUser)
         } else {
-          logger.warn(s"Token for ${vuuUser.name} expired at ${vuuUser.expiry}")
+          logger.warn(s"[LOGIN] Token for ${vuuUser.name} expired at ${vuuUser.expiry}")
           Left("Token has expired")
         }
       case Left(value) =>
-        logger.warn(s"Invalid token: $value")
+        logger.warn(s"[LOGIN] Invalid token: $value")
         Left("Invalid token")
     }
   }

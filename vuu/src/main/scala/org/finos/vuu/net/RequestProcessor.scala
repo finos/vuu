@@ -47,7 +47,7 @@ class RequestProcessor(loginTokenService: LoginTokenService,
                             channel: Channel,
                             vuuServerId: String): Option[ViewServerMessage] = {
 
-    logger.info(s"Creating session for ${user.name}")
+    logger.debug(s"Creating session for ${user.name}")
     val session = SessionId.oneNew()
     val id = ClientSessionId(session, channel.id().asLongText())
 
