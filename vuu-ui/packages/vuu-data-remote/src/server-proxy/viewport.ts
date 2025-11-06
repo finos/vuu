@@ -180,7 +180,7 @@ export class Viewport {
   public serverViewportId?: string;
   // TODO roll disabled/suspended into status
   public suspended = false;
-  public suspendTimer: number | null = null;
+  public suspendTimer: ReturnType<typeof setTimeout> | null = null;
   public table: VuuTable;
   public title: string | undefined;
 
@@ -412,6 +412,7 @@ export class Viewport {
       // should we do this here ?
       // this.selection = data;
     } else if (type === "disable") {
+      this.suspended = false;
       this.disabled = true; // assuming its _SUCCESS, of course
       return {
         type: "disabled",
@@ -674,7 +675,6 @@ export class Viewport {
   disable(requestId: string) {
     this.awaitOperation(requestId, { type: "disable" });
     info?.(`disable: ${this.serverViewportId}`);
-    this.suspended = false;
     return {
       type: Message.DISABLE_VP,
       viewPortId: this.serverViewportId,

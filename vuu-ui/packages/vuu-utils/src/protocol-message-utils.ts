@@ -26,6 +26,8 @@ import {
   SelectRequest,
   SelectResponse,
   SelectSuccessWithRowCount,
+  VuuViewportCreateSuccessResponse,
+  VuuViewportCreateResponse,
 } from "@vuu-ui/vuu-protocol-types";
 import { isView as componentInRegistry } from "./component-registry";
 
@@ -105,6 +107,11 @@ export const isTypeaheadRequest = (
       request.rpcName === "getUniqueFieldValuesStartingWith")
   );
 };
+
+export const isCreateVpSuccess = (
+  response: VuuViewportCreateResponse,
+): response is VuuViewportCreateSuccessResponse =>
+  response.type === "CREATE_VP_SUCCESS";
 
 export function isEditCellRequest(
   request: VuuRpcRequest,

@@ -436,6 +436,7 @@ export interface DataSourceConstructorProps
    */
   autosubscribeColumns?: string[];
   bufferSize?: number;
+  suspenseProps?: DataSourceSuspenseProps;
   table: VuuTable;
   title?: string;
   url?: string;
@@ -549,6 +550,11 @@ export declare type WithBaseFilter<T> = T & {
   baseFilterSpec?: DataSourceFilter;
 };
 
+export declare type DataSourceSuspenseProps = {
+  escalateToDisable: boolean;
+  escalateDelay?: number;
+};
+
 export interface DataSource
   extends IEventEmitter<DataSourceEvents>,
     Partial<TypeaheadSuggestionProvider> {
@@ -588,9 +594,11 @@ export interface DataSource
    * component is dragged to a new location. When dropped, the component will be unmounted and very quickly
    * remounted by React. For the duration of this operation, we suspend updates . Updating an unmounted
    * React component would cause a React error.
-   * If an suspend is requested and not resumed within 3 seconds, it will automatically be promoted to a disable.,
+   * If an suspend is requested and not resumed within 3 seconds, it will automatically be promoted to a disable,
+   * unless escalateToDisable: false is specified. Further, the default escalation delay of 3 seconds can be
+   * overridden with escalateDelay, which is a millissecond value.
    */
-  suspend?: () => void;
+  suspend?: (escalateToDisable?: boolean, escalateDelay?: number) => void;
   resume?: (callback?: DataSourceSubscribeCallback) => void;
 
   deleteRow?: DataSourceDeleteHandler;
@@ -827,6 +835,18 @@ export interface VuuUIMessageOutUnsubscribe {
   viewport: string;
 }
 export interface VuuUIMessageOutSuspend {
+  /**
+   * suspend is purely a client-side mechanism to avoid sending
+   * updates to ui thread. This is intended to be used whilst a component
+   * is unmounted to avoid a react error, e.g during a drag drop operation.
+   * Can be escalated to a disable operation which is serverside.
+   * Default is true.
+   */
+  escalateToDisable?: boolean;
+  /**
+   * If escalteToDelay is enabled, the delay, in ms, before escaltion is invoked.
+   */
+  escalateDelay?: number;
   type: "suspend";
   viewport: string;
 }

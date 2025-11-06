@@ -244,12 +244,17 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     }
   }
 
-  suspend() {
+  suspend(
+    escalateToDisable = this._defaultSuspenseProps.escalateToDisable,
+    escalateDelay = this._defaultSuspenseProps.escalateDelay,
+  ) {
     if (this.#status !== "unsubscribed") {
       info?.(`suspend #${this.viewport}, current status ${this.#status}`);
       if (this.viewport) {
         this.#status = "suspended";
         this.server?.send({
+          escalateDelay,
+          escalateToDisable,
           type: "suspend",
           viewport: this.viewport,
         });
