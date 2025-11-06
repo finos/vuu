@@ -1,5 +1,6 @@
 package org.finos.vuu.net.auth
 
+import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.json.JsonUtil
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.net.LoginRequest
@@ -53,9 +54,10 @@ case class AlwaysHappyLoginTokenService(vuuUser: VuuUser) extends LoginTokenServ
 }
 
 
-case class LoginTokenServiceImpl(secret: Array[Byte]) extends LoginTokenService {
+case class LoginTokenServiceImpl(secret: Array[Byte]) extends LoginTokenService with StrictLogging {
 
   override def getToken(user: VuuUser): String = {
+    logger.info(s"[LOGIN] Obtaining token for ${user.name}")
     val payload = JsonUtil.toRawJson(user)
     HMACUtils.sign(payload, secret)
   }
@@ -65,11 +67,15 @@ case class LoginTokenServiceImpl(secret: Array[Byte]) extends LoginTokenService 
       case Right(value) =>
         val vuuUser: VuuUser = JsonUtil.fromJson(value)
         if (Instant.now().isBefore(vuuUser.expiry)) {
+          logger.info(s"[LOGIN] Successful login for ${vuuUser.name}")
           Right(vuuUser)
         } else {
+          logger.warn(s"[LOGIN] Token for ${vuuUser.name} expired at ${vuuUser.expiry}")
           Left("Token has expired")
         }
-      case Left(value) => Left("Invalid token")
+      case Left(value) =>
+        logger.warn(s"[LOGIN] Invalid token: $value")
+        Left("Invalid token")
     }
   }
 

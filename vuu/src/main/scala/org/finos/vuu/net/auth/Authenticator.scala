@@ -1,5 +1,6 @@
 package org.finos.vuu.net.auth
 
+import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.auths.VuuUser
 
 trait Authenticator[T] {
@@ -23,12 +24,18 @@ object Authenticator {
 }
 
 case class AuthenticatorImpl[T <: AnyRef](tokenService: LoginTokenService,
-                                          authFunction: Function[T, Either[String, VuuUser]]) extends Authenticator[T] {
+                                          authFunction: Function[T, Either[String, VuuUser]]) extends Authenticator[T] with StrictLogging {
 
   override def authenticate(input: T): Either[String, String] = {
     authFunction.apply(input) match {
-      case Right(value) => Right(tokenService.getToken(value))
-      case Left(value) => Left(s"Authentication failed: $value")
+      case Right(value) =>  {
+        logger.info(s"[AUTH] Successful authentication by ${value.name}")
+        Right(tokenService.getToken(value))
+      }
+      case Left(value) => {
+        logger.warn(s"[AUTH] Authentication failed: $value")
+        Left("Authentication failed")
+      }
     }
   }
   

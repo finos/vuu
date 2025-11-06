@@ -14,7 +14,6 @@ import org.finos.vuu.core.VuuServer;
 import org.finos.vuu.core.VuuServerConfig;
 import org.finos.vuu.core.VuuThreadingOptions;
 import org.finos.vuu.core.VuuWebSocketOptions;
-import org.finos.vuu.core.auths.VuuUser;
 import org.finos.vuu.core.module.TableDefContainer;
 import org.finos.vuu.core.module.ViewServerModule;
 import org.finos.vuu.core.module.authn.AuthNModule;
@@ -23,7 +22,6 @@ import org.finos.vuu.core.module.price.PriceModule;
 import org.finos.vuu.core.module.simul.SimulationModule;
 import org.finos.vuu.core.module.vui.VuiStateModule;
 import org.finos.vuu.module.JavaExampleModule;
-import org.finos.vuu.net.auth.Authenticator;
 import org.finos.vuu.net.auth.LoginTokenService;
 import org.finos.vuu.net.http.AbsolutePathWebRoot;
 import org.finos.vuu.net.http.VuuHttp2ServerOptions;
@@ -31,8 +29,6 @@ import org.finos.vuu.plugin.Plugin;
 import org.finos.vuu.state.MemoryBackedVuiStateStore;
 import org.finos.vuu.state.VuiStateStore;
 import scala.Option;
-import scala.util.Left;
-import scala.util.Right;
 
 /**
  * Example Java App using Vuu.
@@ -54,18 +50,6 @@ public class VuuExampleMain {
         lifecycle.autoShutdownHook();
 
         final LoginTokenService loginTokenService = LoginTokenService.apply();
-
-        final Authenticator<scala.collection.immutable.Map<String, Object>> authenticator =
-                Authenticator.apply(loginTokenService,
-                //Simple happy auth that takes the username from a request map
-                v1 -> {
-                    var userName = v1.get("username");
-                    if (userName.isEmpty()) {
-                        return new Left<>("Authentication failed");
-                    } else {
-                        return new Right<>(VuuUser.apply(String.valueOf(userName.get())));
-                    }
-                });
 
         final String webRoot = "vuu-ui/deployed_apps/app-vuu-example";
         final String certPath = "example/main/src/main/resources/certs/cert.pem";
@@ -95,7 +79,7 @@ public class VuuExampleMain {
          .withModule(SimulationModule.apply(clock, lifecycle, tableDefContainer))
          .withModule(MetricsModule.apply(clock, lifecycle, metrics, tableDefContainer))
          .withModule(VuiStateModule.apply(store, clock, lifecycle, tableDefContainer))
-         .withModule(AuthNModule.apply(authenticator, clock, lifecycle, tableDefContainer))
+         .withModule(AuthNModule.apply(loginTokenService, Option.empty(), clock, lifecycle, tableDefContainer))
          //the modules above are scala, the modules below are java...
          .withModule(new JavaExampleModule().create(tableDefContainer, clock))       ;
 

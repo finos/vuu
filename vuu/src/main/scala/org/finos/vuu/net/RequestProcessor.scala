@@ -47,13 +47,13 @@ class RequestProcessor(loginTokenService: LoginTokenService,
                             channel: Channel,
                             vuuServerId: String): Option[ViewServerMessage] = {
 
+    logger.debug(s"Creating session for ${user.name}")
     val session = SessionId.oneNew()
     val id = ClientSessionId(session, channel.id().asLongText())
 
-    logger.debug(s"Creating Session for user ${user.name} with $id ")
     val handler = createMessageHandler(channel, id, user)
-
     clientSessionContainer.register(id, handler)
+    logger.debug(s"Created session for user ${user.name} with $id")
 
     Some(JsonViewServerMessage(requestId, session, LoginSuccess(vuuServerId)))
   }

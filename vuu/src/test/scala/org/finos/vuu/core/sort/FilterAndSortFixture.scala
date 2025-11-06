@@ -20,7 +20,7 @@ object FilterAndSortFixture {
   def getFilteredRows(table: InMemDataTable, clause: FilterClause): Iterable[RowWithData] = {
     val vpColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)
     val filter = AntlrBasedFilter(clause)
-    val resultKeys = filter.dofilter(table, table.primaryKeys, vpColumns)
+    val resultKeys = filter.doFilter(table, table.primaryKeys, vpColumns)
     val resultRows = resultKeys.map(key => table.pullRow(key, vpColumns).asInstanceOf[RowWithData])
     resultRows
   }
