@@ -6,7 +6,10 @@ import {
   VuuServerMessage,
   VuuTableMetaResponse,
 } from "@vuu-ui/vuu-protocol-types";
-import { ServerProxy } from "../src/server-proxy/server-proxy";
+import {
+  ServerProxy,
+  TEST_setRequestId,
+} from "../src/server-proxy/server-proxy";
 
 import { PostMessageToClientCallback } from "../src";
 import {
@@ -226,8 +229,6 @@ export const createSubscription = ({
       type: 'CREATE_VP_SUCCESS',
       viewPortId: `server-vp-${key}`,
     },
-    token: "",
-    user: "user"
   }, {
     module: "TEST",
     requestId: `1`,
@@ -238,8 +239,6 @@ export const createSubscription = ({
       table: {module: "TEST", table: "test-table"},
       type: "TABLE_META_RESP"
     },
-    token: "",
-    user: "user"
 
   }
 ];
@@ -250,11 +249,11 @@ export const subscribe = async (
 ) => {
   const [clientSubscription, serverSubscriptionAck, tableMetaResponse] =
     createSubscription({ bufferSize, key, to });
-  serverProxy.subscribe(clientSubscription);
-  serverProxy.handleMessageFromServer(serverSubscriptionAck);
-  serverProxy.handleMessageFromServer(tableMetaResponse);
-  // allow the promises pending for the subscription and metadata to resolve
-  await new Promise((resolve) => window.setTimeout(resolve, 0));
+  return new Promise((resolve) => {
+    serverProxy.subscribe(clientSubscription).then(resolve);
+    serverProxy.handleMessageFromServer(serverSubscriptionAck);
+    serverProxy.handleMessageFromServer(tableMetaResponse);
+  });
 };
 
 export type SubscriptionDetails = {
@@ -292,6 +291,7 @@ export const createFixtures = async (
 ): Promise<
   [ServerProxy, PostMessageToClientCallback & Mock, MockedConnection]
 > => {
+  TEST_setRequestId(1);
   const postMessageToClient = vi.fn();
   const connection = createConnection();
   const serverProxy = await createServerProxyAndSubscribeToViewport(

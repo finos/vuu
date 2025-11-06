@@ -6,6 +6,7 @@ import type {
   DataSourceFilter,
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
+  DataSourceSuspenseProps,
   WithBaseFilter,
   WithFullConfig,
 } from "@vuu-ui/vuu-data-types";
@@ -32,6 +33,10 @@ export type RuntimeConfig = WithBaseFilter<WithFullConfig> & {
   visualLink?: LinkDescriptorWithLabel;
 };
 
+export const defaultSuspenseProps: DataSourceSuspenseProps = {
+  escalateToDisable: true,
+};
+
 export abstract class BaseDataSource
   extends EventEmitter<DataSourceEvents>
   implements Pick<DataSource, "config">
@@ -45,6 +50,7 @@ export abstract class BaseDataSource
   protected _range = Range(0, 0);
   protected _size = 0;
   protected _title: string | undefined;
+  protected _defaultSuspenseProps: DataSourceSuspenseProps;
 
   #freezeTimestamp: number | undefined = undefined;
   #pageCount = 0;
@@ -58,6 +64,7 @@ export abstract class BaseDataSource
     filterSpec,
     groupBy,
     sort,
+    suspenseProps = defaultSuspenseProps,
     title,
     viewport,
   }: Omit<DataSourceConstructorProps, "table">) {
@@ -71,7 +78,7 @@ export abstract class BaseDataSource
       groupBy: groupBy || this._config.groupBy,
       sort: sort || this._config.sort,
     };
-
+    this._defaultSuspenseProps = suspenseProps;
     this._title = title;
     this.viewport = viewport ?? "";
   }

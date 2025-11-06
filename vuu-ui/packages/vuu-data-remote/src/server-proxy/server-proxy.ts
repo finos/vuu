@@ -21,7 +21,6 @@ import type {
   VuuRpcMenuRequest,
   VuuClientMessage,
   LinkDescriptorWithLabel,
-  VuuViewportCreateSuccessResponse,
   VuuServerMessage,
   VuuTableListResponse,
   VuuTableMetaResponse,
@@ -47,6 +46,7 @@ import {
   isRpcServiceRequest,
   hasViewPortContext,
   isSelectRequest,
+  isCreateVpSuccess,
 } from "@vuu-ui/vuu-utils";
 import {
   createSchemaFromTableMetadata,
@@ -246,7 +246,7 @@ export class ServerProxy {
     });
   }
 
-  public subscribe(message: ServerProxySubscribeMessage) {
+  public async subscribe(message: ServerProxySubscribeMessage) {
     // guard against subscribe message when a viewport is already subscribed
     if (!this.mapClientToServerViewport.has(message.viewport)) {
       const pendingTableSchema = this.getTableMeta(message.table);
@@ -254,17 +254,18 @@ export class ServerProxy {
       this.viewports.set(message.viewport, viewport);
       // Use client side viewport id as request id, so that when we process the response, which
       // will provide the serverside viewport id, we can establish a mapping between the two.
-      const pendingSubscription = this.awaitResponseToMessage(
-        viewport.subscribe(),
-        message.viewport,
-      );
+      const pendingSubscription =
+        this.awaitResponseToMessage<VuuViewportCreateResponse>(
+          viewport.subscribe(),
+          message.viewport,
+        );
 
-      const pendingResponses = [pendingSubscription, pendingTableSchema];
-      const awaitPendingReponses = Promise.all(pendingResponses) as Promise<
-        [VuuViewportCreateSuccessResponse, TableSchema]
-      >;
+      const [subscribeResponse, tableSchema] = await Promise.all([
+        pendingSubscription,
+        pendingTableSchema,
+      ]);
 
-      awaitPendingReponses.then(([subscribeResponse, tableSchema]) => {
+      if (isCreateVpSuccess(subscribeResponse)) {
         const { viewPortId: serverViewportId } = subscribeResponse;
         const { status: previousViewportStatus } = viewport;
         // switch storage key from client viewportId to server viewportId
@@ -288,12 +289,6 @@ export class ServerProxy {
             );
           }
         }
-
-        // if (message.selectedIndexValues) {
-        //   infoEnabled &&
-        //     info(`selected = ${JSON.stringify(message.selectedIndexValues)}`);
-        //   this.select(viewport, { selected: message.selectedIndexValues });
-        // }
 
         // In the case of a reconnect, we may have resubscribed a disabled viewport,
         // reset the disabled state on server
@@ -333,7 +328,9 @@ export class ServerProxy {
               });
             });
         }
-      });
+      } else {
+        //TODO handle CREATE_VP_REJECT
+      }
     } else {
       error(`spurious subscribe call ${message.viewport}`);
     }
@@ -547,14 +544,18 @@ export class ServerProxy {
     }
   }
 
-  private suspendViewport(viewport: Viewport) {
+  private suspendViewport(
+    viewport: Viewport,
+    escalateToDisable = true,
+    escalateDelay = 3000,
+  ) {
     viewport.suspend();
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore its a number, this isn't node.js
-    viewport.suspendTimer = setTimeout(() => {
-      info?.("suspendTimer expired, escalate suspend to disable");
-      this.disableViewport(viewport);
-    }, 3000);
+    if (escalateToDisable) {
+      viewport.suspendTimer = setTimeout(() => {
+        info?.("suspendTimer expired, escalate suspend to disable");
+        this.disableViewport(viewport);
+      }, escalateDelay);
+    }
   }
   private resumeViewport(viewport: Viewport) {
     if (viewport.suspendTimer) {
@@ -727,8 +728,14 @@ export class ServerProxy {
             return this.setViewRange(viewport, message);
           case "config":
             return this.setConfig(viewport, message);
-          case "suspend":
-            return this.suspendViewport(viewport);
+          case "suspend": {
+            const { escalateToDisable, escalateDelay } = message;
+            return this.suspendViewport(
+              viewport,
+              escalateToDisable,
+              escalateDelay,
+            );
+          }
           case "resume":
             return this.resumeViewport(viewport);
           case "enable":

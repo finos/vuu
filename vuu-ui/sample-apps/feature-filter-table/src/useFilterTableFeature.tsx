@@ -8,6 +8,7 @@ import {
 import {
   DataSourceConfig,
   DataSourceConfigChangeHandler,
+  DataSourceSuspenseProps,
   DataSourceVisualLinkCreatedMessage,
   SchemaColumn,
 } from "@vuu-ui/vuu-data-types";
@@ -44,6 +45,10 @@ type FilterTableConfig = {
   "filter-config"?: Pick<FilterBarProps, "filterMode"> &
     Pick<QuickFilterProps, "quickFilterColumns">;
   "table-config"?: TableConfig;
+};
+
+const NoSuspense: DataSourceSuspenseProps = {
+  escalateToDisable: false,
 };
 
 export const useFilterTableFeature = ({
@@ -104,6 +109,7 @@ export const useFilterTableFeature = ({
     columns:
       datasourceConfigFromState?.columns ??
       tableSchema.columns.map(toColumnName),
+    suspenseProps: NoSuspense,
     table: tableSchema.table,
   });
 

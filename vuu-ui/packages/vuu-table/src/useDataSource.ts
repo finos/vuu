@@ -1,12 +1,13 @@
-import {
+import type {
   DataSourceRow,
-  DataSourceSubscribedMessage,
   DataSourceSubscribeCallback,
+  DataSourceSubscribedMessage,
+  DataSourceSuspenseProps,
 } from "@vuu-ui/vuu-data-types";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import { MovingWindow, NULL_RANGE, Range } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TableProps } from "./Table";
-import { VuuRange } from "@vuu-ui/vuu-protocol-types";
 
 export interface DataSourceHookProps
   extends Pick<
@@ -16,6 +17,7 @@ export interface DataSourceHookProps
     | "renderBufferSize"
     | "revealSelected"
   > {
+  suspenseProps?: DataSourceSuspenseProps;
   onSizeChange: (size: number) => void;
   onSubscribed: (subscription: DataSourceSubscribedMessage) => void;
 }
@@ -27,6 +29,7 @@ export const useDataSource = ({
   onSubscribed,
   renderBufferSize = 0,
   revealSelected,
+  suspenseProps,
 }: DataSourceHookProps) => {
   const [, forceUpdate] = useState<unknown>(null);
   const data = useRef<DataSourceRow[]>([]);
@@ -133,9 +136,12 @@ export const useDataSource = ({
     }
     return () => {
       isMounted.current = false;
-      dataSource.suspend?.();
+      dataSource.suspend?.(
+        suspenseProps?.escalateToDisable,
+        suspenseProps?.escalateDelay,
+      );
     };
-  }, [dataSource, datasourceMessageHandler]);
+  }, [dataSource, datasourceMessageHandler, suspenseProps]);
 
   useEffect(() => {
     if (dataSource.status === "disabled") {
