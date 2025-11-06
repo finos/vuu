@@ -1,4 +1,9 @@
-import { test, expect } from "@playwright/experimental-ct-react";
+import {
+  test,
+  expect,
+  type MountResult,
+} from "@playwright/experimental-ct-react";
+import type { Locator } from "@playwright/experimental-ct-core";
 import { FreezeControl } from "../../../freeze-control/FreezeControl";
 import React from "react";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
@@ -12,6 +17,23 @@ const createMockDataSource = (isFrozen = false): Partial<DataSource> => ({
   subscribe: async () => void 0,
   unsubscribe: () => void 0,
 });
+
+// Section below just to improve test readability
+type ComponentFixture = MountResult;
+type LocatorType = Locator;
+
+const verifyBadgeEquals = async (badge: LocatorType, expectedValue: number) => {
+  await expect(badge).toHaveText(String(expectedValue));
+};
+
+const verifyNoOverflow = async (badge: LocatorType) => {
+  await expect(badge).not.toHaveAttribute("data-overflow", "true");
+  await expect(badge).not.toHaveClass(/FreezeControl-customBadge-overflow/);
+};
+
+const verifyPlusSignNotVisible = async (component: ComponentFixture) => {
+  await expect(component.locator(".FreezeControl-plus")).not.toBeVisible();
+};
 
 test.describe("Given a FreezeControl", () => {
   test("THEN it loads with Freeze and Active buttons, with Active selected", async ({
@@ -56,5 +78,23 @@ test.describe("Given a FreezeControl", () => {
     const badge = component.locator(".FreezeControl-customBadge");
     await expect(badge).toBeVisible();
     await expect(badge).toHaveText("0");
+  });
+
+  test("WHEN badge value is 99 or less THEN it displays the exact number", async ({
+    mount,
+  }) => {
+    const dataSource = createMockDataSource(true);
+    const component = await mount(
+      <LocalDataSourceProvider>
+        <FreezeControl dataSource={dataSource as DataSource} />
+      </LocalDataSourceProvider>,
+    );
+
+    const badge = component.locator(".FreezeControl-customBadge");
+    await expect(badge).toBeVisible();
+
+    await verifyBadgeEquals(badge, 0);
+    await verifyNoOverflow(badge);
+    await verifyPlusSignNotVisible(component);
   });
 });

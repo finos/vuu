@@ -4,6 +4,7 @@ import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { useFreezeControl, type FreezeProps } from "./useFreezeControl";
 import { HTMLAttributes, useEffect, useRef, useState } from "react";
 import cx from "clsx";
+import { calculateBadgeState } from "./freezeControlBadge";
 
 import freezeControlCss from "./FreezeControl.css";
 
@@ -55,6 +56,8 @@ export const FreezeControl = ({
     }
   }, [newRecordCount, isFrozen]);
 
+  const { badgeValue, isOverflow } = calculateBadgeState(newRecordCount);
+
   return (
     <div
       {...htmlAttributes}
@@ -95,9 +98,12 @@ export const FreezeControl = ({
             <div
               className={cx(`FreezeControl-customBadge`, {
                 [`FreezeControl-customBadge-flashing`]: isFlashing,
+                [`FreezeControl-customBadge-overflow`]: isOverflow,
               })}
+              data-overflow={isOverflow ? "true" : undefined}
             >
-              {newRecordCount}
+              {badgeValue}
+              {isOverflow && <span className="FreezeControl-plus">+</span>}
             </div>
           </div>
         )}
