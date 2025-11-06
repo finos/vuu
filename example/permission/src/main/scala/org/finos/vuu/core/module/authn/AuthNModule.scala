@@ -9,8 +9,8 @@ object AuthNModule extends DefaultModule {
 
   final val NAME = "authn"
 
-  def apply(loginTokenService: LoginTokenService, users: Option[java.util.Set[String]] = None)
-           (implicit clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
+  def apply(loginTokenService: LoginTokenService, users: Option[Map[String,String]] = None)
+           (using clock: Clock, lifecycle: LifecycleContainer, tableDefContainer: TableDefContainer): ViewServerModule = {
 
     ModuleFactory.withNamespace(NAME)
       .addRestService(_ => new AuthNRestService(loginTokenService, users))

@@ -7,10 +7,11 @@ import org.finos.vuu.core.module.auths.PermissionModule.ColumnNames
 import org.finos.vuu.core.module.auths.PermissionSet
 import org.finos.vuu.core.table.{DataTable, EmptyRowData, RowWithData}
 import org.finos.vuu.provider.Provider
+import org.finos.vuu.viewport.ViewPortContainer
 
 class PermissionsProvider(val table: DataTable,
-                          val users: () => Iterable[String])
-                         (implicit clock: Clock, lifecycleContainer: LifecycleContainer) extends Provider {
+                          val viewPortContainer: ViewPortContainer)
+                         (using clock: Clock, lifecycleContainer: LifecycleContainer) extends Provider {
 
   private val runner = new LifeCycleRunner("PermissionsProvider", () => runOnce(), minCycleTime = 10_000)
 
@@ -20,7 +21,9 @@ class PermissionsProvider(val table: DataTable,
 
     import ColumnNames.*
 
-    users.apply().foreach( user => {
+    val users = viewPortContainer.getViewPorts.map(f => f.user.name).toSet
+
+    users.foreach( user => {
 
       table.pullRow(user) match {
         case EmptyRowData => table.processUpdate(user, RowWithData(user,

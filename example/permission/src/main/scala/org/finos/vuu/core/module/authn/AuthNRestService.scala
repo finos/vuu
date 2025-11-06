@@ -18,7 +18,7 @@ object VuuLoginPage{
   final val Path = "/public/index.html"
 }
 
-class LogoutRestService(val authenticator: Authenticator[_])(implicit clock: Clock) extends RestService with StrictLogging {
+class LogoutRestService(val authenticator: Authenticator[_])(using clock: Clock) extends RestService with StrictLogging {
   private final val service = "logout"
 
   override def getServiceName: String = service
@@ -49,11 +49,11 @@ class LogoutRestService(val authenticator: Authenticator[_])(implicit clock: Clo
   override def onDelete(ctx: RoutingContext): Unit = reply404(ctx)
 }
 
-class AuthNRestService(val loginTokenService: LoginTokenService, val users: Option[java.util.Set[String]])
-                      (implicit clock: Clock) extends RestService with StrictLogging {
+class AuthNRestService(val loginTokenService: LoginTokenService, val users: Option[Map[String, String]])
+                      (using clock: Clock) extends RestService with StrictLogging {
 
   private final val service = "authn"
-  private final val authenticator: Authenticator[String] = AuthenticatorWithUserList(loginTokenService, users)
+  private final val authenticator: Authenticator[(String,String)] = AuthenticatorWithUserList(loginTokenService, users)
 
   override def getServiceName: String = service
 
@@ -91,7 +91,7 @@ class AuthNRestService(val loginTokenService: LoginTokenService, val users: Opti
     if (username == null || password == null ) {
       reply404(ctx)
     } else {
-      authenticator.authenticate(username) match {
+      authenticator.authenticate((username,password)) match {
         case Right(value) =>
           ctx.response()
             .addCookie(Cookie.cookie(VuuAuthCookie.Name, value).setMaxAge(TimeUnit.MINUTES.toSeconds(240)))

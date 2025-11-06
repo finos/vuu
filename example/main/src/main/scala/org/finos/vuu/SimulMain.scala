@@ -51,8 +51,6 @@ object SimulMain extends App with StrictLogging {
 
   private val loginTokenService = LoginTokenService()
 
-  private val users: java.util.Set[String] = ConcurrentHashMap.newKeySet[String]()
-
   private val defaultConfig = ConfigFactory.load()
 
   val config = VuuServerConfig(
@@ -69,9 +67,9 @@ object SimulMain extends App with StrictLogging {
     .withModule(SimulationModule())
     .withModule(MetricsModule())
     .withModule(VuiStateModule(store))
-    .withModule(AuthNModule(loginTokenService, Option.apply(users)))
+    .withModule(AuthNModule(loginTokenService))
     .withModule(EditableModule())
-    .withModule(PermissionModule(() => users.asScala))
+    .withModule(PermissionModule())
     .withModule(BasketModule(omsApi))
     .withModule(RestModule(HttpClient(StubbedBackend()), defaultConfig.getConfig(ConfigKeys.restModuleConfig)))
     .withModule(VirtualTableModule())
