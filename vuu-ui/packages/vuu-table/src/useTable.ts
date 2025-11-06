@@ -104,10 +104,11 @@ export interface TableHookProps
       | "allowCellBlockSelection"
       | "allowDragDrop"
       | "allowSelectCheckboxRow"
+      | "autoSelectFirstRow"
+      | "autoSelectRowKey"
       | "availableColumns"
       | "config"
       | "dataSource"
-      | "defaultSelectedKeyValues"
       | "disableFocus"
       | "highlightedIndex"
       | "id"
@@ -157,11 +158,12 @@ export const useTable = ({
   allowCellBlockSelection,
   allowSelectCheckboxRow,
   allowDragDrop = false,
+  autoSelectFirstRow,
+  autoSelectRowKey,
   availableColumns,
   config,
   containerRef,
   dataSource,
-  defaultSelectedKeyValues,
   disableFocus,
   highlightedIndex: highlightedIndexProp,
   id,
@@ -317,8 +319,9 @@ export const useTable = ({
     removeColumnDataFromCache,
     setRange,
   } = useDataSource({
+    autoSelectFirstRow,
+    autoSelectRowKey,
     dataSource,
-    defaultSelectedKeyValues,
     renderBufferSize,
     revealSelected,
     onSizeChange: onDataRowcountChange,

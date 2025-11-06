@@ -11,7 +11,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   getTargetTreeNode,
-  keysFromPath,
+  keyFromPath,
   loadTheme,
   pathFromKey,
 } from "../shared-utils";
@@ -99,7 +99,7 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
             >
               <TreeNavPanel
                 className="ShowcaseNav"
-                defaultSelectedKeyValues={keysFromPath(pathname)}
+                autoSelectRowKey={keyFromPath(pathname)}
                 onSelect={handleSelect}
                 resizeable
                 source={treeSource}

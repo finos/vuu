@@ -12,14 +12,14 @@ const classBase = "vuuTreeNavPanel";
 export interface TreeNavPanelProps
   extends Pick<
       TreeTableProps,
-      "className" | "defaultSelectedKeyValues" | "onSelect" | "style"
+      "className" | "autoSelectRowKey" | "onSelect" | "style"
     >,
     Pick<ViewProps, "resizeable"> {
   source: TreeSourceNode[];
 }
 export const TreeNavPanel = ({
   className,
-  defaultSelectedKeyValues,
+  autoSelectRowKey,
   onSelect,
   resizeable,
   source,
@@ -39,7 +39,7 @@ export const TreeNavPanel = ({
       <div className={`${classBase}-treeContainer`}>
         <TreeTable
           dataSource={dataSource}
-          defaultSelectedKeyValues={defaultSelectedKeyValues}
+          autoSelectRowKey={autoSelectRowKey}
           rowHeight={30}
           showColumnHeaders={false}
           onSelect={onSelect}

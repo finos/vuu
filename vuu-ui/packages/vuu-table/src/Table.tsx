@@ -96,6 +96,14 @@ export interface TableProps
    */
   allowSelectCheckboxRow?: boolean;
   /**
+   * if provided, first row of table will be selected on initial render.
+   */
+  autoSelectFirstRow?: true;
+  /**
+   * if provided, row with matching key will be selected. If not present, will silently fail.
+   */
+  autoSelectRowKey?: string;
+  /**
    * required if a fully featured column picker is to be available
    */
   availableColumns?: SchemaColumn[];
@@ -105,12 +113,6 @@ export interface TableProps
    */
   config: TableConfig;
   dataSource: DataSource;
-
-  /**
-   * define rows ro be initially selected based on row key value. Not all DataSource
-   * implementations support this feature.
-   */
-  defaultSelectedKeyValues?: string[];
 
   disableFocus?: boolean;
   /**
@@ -212,7 +214,7 @@ export interface TableProps
    * Only applicable to grouped data. If there are selected rows which are not top-level
    * items and group items above are not already expanded, expand all group items in
    * the hierarchy above selected item. Selected items will thus always be visible, initially.
-   * This affects items set at load time via defaultSelectedKeyValues as well as items
+   * This affects items set at load time via autoSelectRowKey as well as items
    * selected programatically (ie not directly by user).
    * Nodes can of course be collapsed by user at runtime which may hide selected rows.
    * Note: this is not supported by all DataSource implementations
@@ -285,12 +287,13 @@ const TableCore = ({
   allowDragDrop,
   allowSelectAll,
   allowSelectCheckboxRow,
+  autoSelectFirstRow,
+  autoSelectRowKey,
   availableColumns,
   config,
   containerRef,
   customHeader,
   dataSource,
-  defaultSelectedKeyValues,
   disableFocus = false,
   groupToggleTarget,
   highlightedIndex: highlightedIndexProp,
@@ -371,11 +374,12 @@ const TableCore = ({
     allowCellBlockSelection,
     allowDragDrop,
     allowSelectCheckboxRow,
+    autoSelectFirstRow,
+    autoSelectRowKey,
     availableColumns,
     config,
     containerRef,
     dataSource,
-    defaultSelectedKeyValues,
     disableFocus,
     highlightedIndex: highlightedIndexProp,
     id,
@@ -557,11 +561,12 @@ export const Table = forwardRef(function Table(
     availableColumns,
     allowSelectAll,
     allowSelectCheckboxRow,
+    autoSelectFirstRow,
+    autoSelectRowKey,
     className: classNameProp,
     config,
     customHeader,
     dataSource,
-    defaultSelectedKeyValues,
     disableFocus,
     groupToggleTarget,
     height,
@@ -705,12 +710,13 @@ export const Table = forwardRef(function Table(
             allowDragDrop={allowDragDrop}
             allowSelectAll={allowSelectAll}
             allowSelectCheckboxRow={allowSelectCheckboxRow}
+            autoSelectFirstRow={autoSelectFirstRow}
+            autoSelectRowKey={autoSelectRowKey}
             availableColumns={availableColumns}
             config={config}
             containerRef={containerRef}
             customHeader={customHeader}
             dataSource={dataSource}
-            defaultSelectedKeyValues={defaultSelectedKeyValues}
             disableFocus={disableFocus}
             groupToggleTarget={groupToggleTarget}
             highlightedIndex={highlightedIndex}
