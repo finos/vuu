@@ -3,12 +3,16 @@ package org.finos.vuu.core.sort
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.core.auths.RowPermissionChecker
-import org.finos.vuu.core.filter.{Filter, FilterClause}
+import org.finos.vuu.core.filter.{AndClause, CompoundFilter, Filter, FilterClause, FilterOutEverythingFilter, FilterSpecParser, NoFilter}
 import org.finos.vuu.core.index.*
 import org.finos.vuu.core.table.column.{Error, Success}
 import org.finos.vuu.core.table.{Column, DataType, DefaultColumnNames, EmptyTablePrimaryKeys, TablePrimaryKeys, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
+import org.finos.vuu.net.FilterSpec
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns, ViewPortVisualLink}
+
+import scala.collection.immutable.{AbstractSeq, LinearSeq}
+import scala.util.{Try, Success, Failure}
 
 case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Filter with StrictLogging {
 
@@ -41,10 +45,9 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Fi
     }
   }
 
-  def filterIndexByValues[TYPE](index: IndexedField[TYPE], parentSelected: List[TYPE]): TablePrimaryKeys = {
+  private def filterIndexByValues[TYPE](index: IndexedField[TYPE], parentSelected: List[TYPE]): TablePrimaryKeys = {
     InMemTablePrimaryKeys(index.find(parentSelected))
   }
-
 
   private def doFilterByBruteForce(parentDataValues: List[Any], childColumn: Column, source: RowSource, primaryKeys: TablePrimaryKeys): TablePrimaryKeys = {
     val pks = primaryKeys.toArray
@@ -78,8 +81,9 @@ case class RowPermissionFilter(checker: RowPermissionChecker) extends Filter wit
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     val filtered = primaryKeys.filter(key => {
       try {
+        false
         // calling source.pullRow(key) rather than source.pullRow(key, vpColumns) because user might remove the columns we need from view port
-        checker.canSeeRow(source.pullRow(key))
+        //checker.canSeeRow(source.pullRow(key))
       } catch {
         case e: Exception =>
           logger.error(s"Error while checking row permission for keys $primaryKeys with checker $checker", e)
@@ -91,69 +95,30 @@ case class RowPermissionFilter(checker: RowPermissionChecker) extends Filter wit
   }
 }
 
-case class FrozenTimeFilter(frozenTime: Long) extends Filter with StrictLogging {
-  override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
-    val filtered = primaryKeys.filter(key => {
-      try {
-        val vuuCreatedTimestamp = source.pullRow(key).get(DefaultColumnNames.CreatedTimeColumnName).asInstanceOf[Long]
-        vuuCreatedTimestamp < frozenTime
-      } catch {
-        case e: Exception =>
-          logger.error(s"Error while checking frozen time for keys $primaryKeys with frozen time $frozenTime", e)
-          false
-      }
-    }).toArray
-
-    InMemTablePrimaryKeys(ImmutableArray.from[String](filtered))
-  }
-}
-
-case class RowPermissionAndFrozenTimeFilter(checker: RowPermissionChecker, frozenTime: Long) extends Filter with StrictLogging {
-  override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
-    val filtered = primaryKeys.filter(key => {
-      try {
-        val rowData = source.pullRow(key)
-        rowData.get(DefaultColumnNames.CreatedTimeColumnName).asInstanceOf[Long] < frozenTime && checker.canSeeRow(rowData)
-      } catch {
-        case e: Exception =>
-          logger.error(s"Error while checking row permission and view port frozen time for keys $primaryKeys with checker $checker and frozen time $frozenTime", e)
-          false
-      }
-    }).toArray
-
-    InMemTablePrimaryKeys(ImmutableArray.from[String](filtered))
-  }
-}
-
-case class TwoStepCompoundFilter(first: Filter, second: Filter) extends Filter with StrictLogging {
-  override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
-
-    val firstStep = first.doFilter(source, primaryKeys, vpColumns)
-
-    val secondStep = second.doFilter(source, firstStep, vpColumns)
-
-    secondStep
-  }
-}
-
 case class AntlrBasedFilter(clause: FilterClause) extends Filter with StrictLogging {
 
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
-    logger.debug(s"starting filter with ${primaryKeys.length}")
+    logger.trace(s"starting filter with ${primaryKeys.length}")
     clause.filterAllSafe(source, primaryKeys, vpColumns) match {
-      case Success(filteredKeys) =>
-        logger.debug(s"complete filter with ${filteredKeys.length}")
+      case scala.util.Success(filteredKeys) =>
+        logger.trace(s"complete filter with ${filteredKeys.length}")
         filteredKeys
       case Error(msg) =>
         logger.error(s"Unexpected error occurred while filtering (skipping filters): \n$msg")
         primaryKeys
     }
   }
+
+  def combine(other: AntlrBasedFilter): AntlrBasedFilter = {
+    val combinedClause = AndClause(List(clause, other.clause))
+    AntlrBasedFilter(combinedClause)
+  }
+  
 }
 
-
 trait FilterAndSort {
-  def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, permission: Option[RowPermissionChecker], viewPortFrozenTime: Option[Long]): TablePrimaryKeys
+  def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, 
+                    permission: Option[RowPermissionChecker], viewPortFrozenTime: Option[Long]): TablePrimaryKeys
 
   def filter: Filter
 
@@ -170,7 +135,7 @@ case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAn
 
     try {
       val realizedFilter = createDefaultFilter(checkerOption, viewPortFrozenTime) match {
-        case Some(defaultFilter) => TwoStepCompoundFilter(defaultFilter, filter)
+        case Some(defaultFilter) => CompoundFilter(defaultFilter, filter)
         case None => filter
       }
 
@@ -188,24 +153,48 @@ case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAn
   }
 
   private def createDefaultFilter(checkerOption: Option[RowPermissionChecker], viewPortFrozenTime: Option[Long]): Option[Filter] = {
-    checkerOption match {
-      case Some(checker) =>
-        viewPortFrozenTime match {
-          case Some(frozenTime) =>
-            Some(RowPermissionAndFrozenTimeFilter(checker, frozenTime))
-          case None =>
-            Some(RowPermissionFilter(checker))
-        }
-      case None =>
-        viewPortFrozenTime match {
-          case Some(t) =>
-            Some(FrozenTimeFilter(t))
-          case None =>
-            None
-        }
+    val frozenTimeFilter = viewPortFrozenTime match {
+      case Some(value) => Option.apply(createFrozenTimeFilter(value))
+      case None => Option.empty
+    }
+    val rowPermissionFilter = checkerOption match {
+      case Some(value) => Option.apply(createRowPermissionFilter(value))
+      case None => Option.empty
+    }
+    
+    if (frozenTimeFilter.nonEmpty && rowPermissionFilter.nonEmpty) {
+      
+      
+    } else if (frozenTimeFilter.nonEmpty) {
+      frozenTimeFilter
+    } else if (rowPermissionFilter.nonEmpty) {
+      rowPermissionFilter
+    } else {
+      Option.empty
     }
   }
 
+  private def createFrozenTimeFilter(frozenTime: Long): Filter = {
+    val frozenTimeSpec = FilterSpec(s"${DefaultColumnNames.CreatedTimeColumnName} < $frozenTime")
+    Try(FilterSpecParser.parse(frozenTimeSpec.filter)) match {
+      case scala.util.Success(clause) =>
+        AntlrBasedFilter(clause)
+      case scala.util.Failure(err) =>
+        logger.error(s"Could not create frozen time filter from ${frozenTimeSpec.filter}", err)
+        FilterOutEverythingFilter
+    }    
+  }
+
+  private def createRowPermissionFilter(checker: RowPermissionChecker): Filter = {    
+    Try(FilterSpecParser.parse(checker.filterSpec.filter)) match {
+      case scala.util.Success(clause) =>
+        AntlrBasedFilter(clause)
+      case scala.util.Failure(err) =>
+        logger.error(s"Could not create row permission filter from ${checker.filterSpec.filter}", err)
+        FilterOutEverythingFilter
+    }
+  }
+  
 }
 
 
