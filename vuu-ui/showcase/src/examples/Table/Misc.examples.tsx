@@ -14,16 +14,9 @@ import {
   ResizeStrategy,
   View,
 } from "@vuu-ui/vuu-layout";
-import { ContextPanel, ContextPanelProps } from "@vuu-ui/vuu-shell";
+import { ContextPanel } from "@vuu-ui/vuu-shell";
 import { GroupHeaderCell, Table, TableProps } from "@vuu-ui/vuu-table";
-import {
-  ColumnPicker,
-  ColumnSettingsPanel,
-  DataSourceStats,
-  SelectedColumnsChangeHandler,
-} from "@vuu-ui/vuu-table-extras";
-import { useContextPanel } from "@vuu-ui/vuu-ui-controls";
-
+import { ColumnSettingsPanel } from "@vuu-ui/vuu-table-extras";
 import {
   ColumnDescriptor,
   ColumnLayout,
@@ -36,10 +29,9 @@ import {
 } from "@vuu-ui/vuu-table-types";
 import {
   ContextPanelProvider,
-  IconButton,
+  ShowContextPanel,
   Toolbar,
 } from "@vuu-ui/vuu-ui-controls";
-import { ShowContextPanel } from "@vuu-ui/vuu-ui-controls/src/context-panel-provider/ContextPanelProvider";
 import {
   applyDefaultColumnConfig,
   defaultValueFormatter,
@@ -51,7 +43,6 @@ import {
 } from "@vuu-ui/vuu-utils";
 import {
   CSSProperties,
-  isValidElement,
   MouseEventHandler,
   useCallback,
   useMemo,
@@ -371,118 +362,6 @@ export const TableInLayoutWithContextPanel = () => {
         <ContextPanel id={VuuShellLocation.ContextPanel} overlay></ContextPanel>
       </FlexboxLayout>
     </LayoutProvider>
-  );
-};
-
-const WithFooterAndColumnPickerTemplate = ({
-  ContextPanelProps,
-}: {
-  ContextPanelProps?: ContextPanelProps;
-}) => {
-  const schema = getSchema("TwoHundredColumns");
-  const { VuuDataSource } = useData();
-  const showContextPanel = useContextPanel();
-
-  const initialTableConfig = useMemo<TableConfig>(() => {
-    const selectedColumns = schema.columns.slice(0, 10);
-    return {
-      columns: selectedColumns,
-      rowSeparators: true,
-      zebraStripes: true,
-    };
-  }, [schema]);
-
-  const [tableConfig, setTableConfig] = useState(initialTableConfig);
-
-  const dataSource = useMemo(
-    () => new VuuDataSource({ table: schema.table }),
-    [VuuDataSource, schema.table],
-  );
-
-  const handleChangeSelectedColumns = useCallback<SelectedColumnsChangeHandler>(
-    (columns) => {
-      setTableConfig((config) => ({
-        ...config,
-        columns,
-      }));
-    },
-    [],
-  );
-
-  const toggleColumnPicker = useCallback(() => {
-    showContextPanel(
-      <ColumnPicker
-        availableColumns={schema.columns}
-        onChangeSelectedColumns={handleChangeSelectedColumns}
-        defaultSelectedColumns={tableConfig.columns}
-        style={{ height: "100%" }}
-      />,
-      "Column Picker",
-    );
-  }, [
-    handleChangeSelectedColumns,
-    schema,
-    showContextPanel,
-    tableConfig.columns,
-  ]);
-
-  return (
-    <FlexboxLayout style={{ height: 645, width: "100%" }}>
-      <div
-        className="container"
-        style={{ flex: 1, display: "flex", flexDirection: "column" }}
-      >
-        <div className="table-container" style={{ flex: 1 }}>
-          <Table
-            config={tableConfig}
-            dataSource={dataSource}
-            renderBufferSize={30}
-            width="100%"
-          />
-        </div>
-        <div className="table-footer" style={{ height: 40 }}>
-          <DataSourceStats
-            dataSource={dataSource}
-            tooltrayActions={
-              <IconButton icon="settings" onClick={toggleColumnPicker} />
-            }
-          />
-        </div>
-      </div>
-
-      <ContextPanel
-        {...ContextPanelProps}
-        id={VuuShellLocation.ContextPanel}
-        overlay
-      />
-    </FlexboxLayout>
-  );
-};
-
-export const WithFooterAndColumnPicker = () => {
-  const [contextPanelProps, setContextPanelProps] = useState<
-    ContextPanelProps | undefined
-  >(undefined);
-
-  const showContextPanel = useCallback<ShowContextPanel>((content, title) => {
-    if (isValidElement(content)) {
-      setContextPanelProps({ content, expanded: true, title });
-    }
-  }, []);
-
-  const hideContextPanel = () => {
-    setContextPanelProps(undefined);
-  };
-
-  return (
-    <ContextPanelProvider
-      hideContextPanel={hideContextPanel}
-      showContextPanel={showContextPanel}
-    >
-      <WithFooterAndColumnPickerTemplate
-        ContextPanelProps={contextPanelProps}
-      />
-    </ContextPanelProvider>
   );
 };
 

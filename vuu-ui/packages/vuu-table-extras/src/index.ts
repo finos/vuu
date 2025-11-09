@@ -39,7 +39,11 @@ export {
   type ColumnPickerProps,
 } from "./column-picker/ColumnPicker";
 export {
+  type ColumnsChangeHandler,
+  ColumnModel,
+  SelectedColumnChangeType,
+} from "./column-picker/ColumnModel";
+export {
   type ColumnPickerAction,
   type SelectedColumnsChangeHandler,
-  SelectedColumnChangeType,
 } from "./column-picker/useColumnPicker";
