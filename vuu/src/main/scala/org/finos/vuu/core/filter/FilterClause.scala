@@ -9,6 +9,9 @@ import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 
 sealed trait FilterClause {
+  
+  def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys): Result[TablePrimaryKeys]
+      
   def filterAllSafe(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): Result[TablePrimaryKeys] =
     this.validate(vpColumns).fold(errMsg => Error(errMsg), _ => Result(this.filterAll(rows, rowKeys, vpColumns)))
 
