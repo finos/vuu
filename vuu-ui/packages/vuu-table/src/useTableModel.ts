@@ -83,6 +83,11 @@ const checkboxColumnDescriptor: ColumnDescriptor = {
   },
 };
 
+const pinnedCheckboxColumnDescriptor: ColumnDescriptor = {
+  ...checkboxColumnDescriptor,
+  pin: "left",
+};
+
 /**
  * TableModel represents state used internally to manage Table. It is
  * derived initially from the TableConfig provided by user, along with the
@@ -305,10 +310,16 @@ function init(
   }
 
   if (selectionModel === "checkbox") {
+    const somePinnedLeft = runtimeColumns.some((col) => col.pin === "left");
     runtimeColumns.splice(
       0,
       0,
-      toRuntimeColumnDescriptor(checkboxColumnDescriptor, -1),
+      toRuntimeColumnDescriptor(
+        somePinnedLeft
+          ? pinnedCheckboxColumnDescriptor
+          : checkboxColumnDescriptor,
+        -1,
+      ),
     );
   }
 

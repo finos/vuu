@@ -40,7 +40,12 @@ export {
 } from "./column-picker/ColumnPicker";
 export {
   type ColumnsChangeHandler,
+  type ColumnEvents,
+  ColumnChangeSource,
   ColumnModel,
+  isColumnAdded,
+  isColumnRemoved,
+  isColumnsReordered,
   SelectedColumnChangeType,
 } from "./column-picker/ColumnModel";
 export {
