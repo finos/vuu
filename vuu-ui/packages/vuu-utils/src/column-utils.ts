@@ -917,6 +917,26 @@ export const getTypeFormattingFromColumn = (
 };
 
 /**
+ * Check that columnDescriptors are included in provided list of subscribec column names (unless they
+ * atr 'client side' columns).
+ */
+export const assertAllColumnsAreIncludedInSubscription = (
+  columns: ColumnDescriptor[],
+  columnNames: string[],
+) => {
+  const unsubscribedColumns: string[] = [];
+  for (const column of columns) {
+    if (column.source !== "client" && !columnNames?.includes(column.name)) {
+      unsubscribedColumns.push(column.name);
+    }
+  }
+  if (unsubscribedColumns.length > 0) {
+    throw Error(
+      `[column-utils] assertAllColumnsAreIncludedInSubscription columns not included in subscription: ${unsubscribedColumns.join(", ")}`,
+    );
+  }
+};
+/**
  * Return a filter predicate that will reject columns, names of which
  * are not in provided list. Exception made for columns explicitly
  * configured as client columns.

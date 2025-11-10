@@ -450,10 +450,7 @@ export class ArrayDataSource
   }
 
   set columns(columns: string[]) {
-    this.config = {
-      ...this._config,
-      columns,
-    };
+    // ignore calls to set columns, ArrayDataSource always carries all columns
   }
 
   get config() {

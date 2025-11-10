@@ -33,24 +33,6 @@ export interface ContextMenuHookProps {
   onDisplaySettingsAction?: (action: DisplaySettingsAction) => void;
 }
 
-// const removeFilterColumn = (
-//   dataSourceFilter: DataSourceFilter,
-//   column: RuntimeColumnDescriptor,
-// ) => {
-//   if (dataSourceFilter.filterStruct && column) {
-//     const [filterStruct, filter] = removeColumnFromFilter(
-//       column,
-//       dataSourceFilter.filterStruct,
-//     );
-//     return {
-//       filter,
-//       filterStruct,
-//     };
-//   } else {
-//     return dataSourceFilter;
-//   }
-// };
-
 const { Average, Count, Distinct, High, Low, Sum } = AggregationType;
 
 export const useColumnActions = ({
@@ -81,8 +63,6 @@ export const useColumnActions = ({
           onColumnDisplayAction?.({type: "removeColumn", column});
           return true;
         }
-        // case "filter-remove-column": return (dataSource.filter = removeFilterColumn(dataSource.filter, column)), true;
-        // case "remove-filters": return (dataSource.filter = {filter:""}), true;
         case "agg-avg": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Average)), true;
         case "agg-high": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, High)), true;
         case "agg-low": return dataSource.aggregations = (setAggregations(dataSource.aggregations, column, Low)), true;

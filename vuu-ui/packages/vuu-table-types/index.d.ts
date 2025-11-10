@@ -485,7 +485,24 @@ export interface HeaderCellProps
   showColumnHeaderMenus?: ShowColumnHeaderNMenus;
 }
 
-export declare type TableConfigChangeHandler = (config: TableConfig) => void;
+export interface TableConfigChangeColumnRemoved {
+  type: "column-removed";
+  column: ColumnDescriptor;
+}
+
+export interface TableConfigChangeColumnPinned {
+  type: "column-pinned";
+  column: ColumnDescriptor;
+}
+
+export declare type TableConfigChangeType =
+  | TableConfigChangeColumnRemoved
+  | TableConfigChangeColumnPinned;
+
+export declare type TableConfigChangeHandler = (
+  config: TableConfig,
+  configChangeType?: TableConfigChangeType,
+) => void;
 
 export declare type CustomHeaderComponent = ComponentType<BaseRowProps>;
 export declare type CustomHeaderElement =

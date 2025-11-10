@@ -87,7 +87,7 @@ export const CheckboxSelection = ({
 }: {
   columnLayout?: ColumnLayout;
   height?: number;
-  width?: number;
+  width?: "100%" | number;
 }) => {
   const config = useMemo<Partial<TableConfig>>(() => {
     return {
@@ -108,6 +108,11 @@ export const CheckboxSelection = ({
     />
   );
 };
+
+/** tags=data-consumer */
+export const CheckboxSelectionFillWidth = () => (
+  <CheckboxSelection width="100%" />
+);
 
 /** tags=data-consumer */
 export const CellBlockSelectionOnly = () => {

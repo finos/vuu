@@ -1,10 +1,13 @@
-import {
+import type {
   DataSourceConfig,
   DataSourceConfigChangeHandler,
   DataSourceRow,
   DataSourceSubscribedMessage,
 } from "@vuu-ui/vuu-data-types";
-import { VuuRowDataItemType, VuuSortType } from "@vuu-ui/vuu-protocol-types";
+import type {
+  VuuRowDataItemType,
+  VuuSortType,
+} from "@vuu-ui/vuu-protocol-types";
 import {
   ColumnDisplayActionHandler,
   columnSettingsFromColumnMenuPermissions,
@@ -13,7 +16,7 @@ import {
   useColumnActions,
   useTableAndColumnSettings,
 } from "@vuu-ui/vuu-table-extras";
-import {
+import type {
   ColumnDescriptor,
   ColumnMoveHandler,
   DataCellEditEvent,
@@ -21,6 +24,7 @@ import {
   SelectionChangeHandler,
   TableColumnResizeHandler,
   TableConfig,
+  TableConfigChangeType,
   TableRowClickHandlerInternal,
   TableRowSelectHandlerInternal,
   TableSelectionModel,
@@ -257,7 +261,7 @@ export const useTable = ({
   ]);
 
   const applyTableConfigChange = useCallback(
-    (config: TableConfig) => {
+    (config: TableConfig, changeType?: TableConfigChangeType) => {
       dispatchTableModelAction({
         availableWidth,
         selectionModel,
@@ -266,7 +270,7 @@ export const useTable = ({
         dataSource,
       });
       tableConfigRef.current = config;
-      onConfigChange?.(stripInternalProperties(config));
+      onConfigChange?.(stripInternalProperties(config), changeType);
     },
     [
       availableWidth,
@@ -423,7 +427,10 @@ export const useTable = ({
       removeColumnDataFromCache(indexOfRemovedColumn);
       // this will trigger a render and will render with the correct data, even before
       // we receive refresh from server
-      applyTableConfigChange(newTableConfig);
+      applyTableConfigChange(newTableConfig, {
+        type: "column-removed",
+        column,
+      });
     },
     [applyTableConfigChange, columnMap, removeColumnDataFromCache, tableConfig],
   );
@@ -444,14 +451,20 @@ export const useTable = ({
   );
 
   const pinColumn = useCallback(
-    (action: ColumnActionPin) => {
-      applyTableConfigChange({
-        ...tableConfig,
-        columns: updateColumn(tableConfig.columns, {
-          ...action.column,
-          pin: action.pin,
-        }),
-      });
+    ({ column, pin }: ColumnActionPin) => {
+      applyTableConfigChange(
+        {
+          ...tableConfig,
+          columns: updateColumn(tableConfig.columns, {
+            ...column,
+            pin,
+          }),
+        },
+        {
+          type: "column-pinned",
+          column,
+        },
+      );
     },
     [tableConfig, applyTableConfigChange],
   );

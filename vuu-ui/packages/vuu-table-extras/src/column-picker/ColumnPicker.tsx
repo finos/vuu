@@ -15,20 +15,16 @@ import { useWindow } from "@salt-ds/window";
 import {
   DragDropProvider,
   getColumnLabel,
-  reorderColumnItems,
   useSortable,
 } from "@vuu-ui/vuu-utils";
 
 import { Input, ListBox, Option, OptionProps } from "@salt-ds/core";
-import {
-  ColumPickerHookProps,
-  SelectedColumnChangeType,
-  useColumnPicker,
-} from "./useColumnPicker";
+import { ColumPickerHookProps, useColumnPicker } from "./useColumnPicker";
 import { IconButton } from "@vuu-ui/vuu-ui-controls";
 import { useHighlighting } from "@vuu-ui/vuu-table";
 
 import columnPickerCss from "./ColumnPicker.css";
+import { ColumnChangeSource } from "./ColumnModel";
 
 const classBase = "vuuColumnPicker";
 export const classBaseListItem = "vuuColumnPickerListItem";
@@ -136,14 +132,7 @@ const AvailableColumnListItem = ({
 };
 
 export const ColumnPicker = forwardRef(function ColumnPicker(
-  {
-    availableColumns: availableColumnsProp,
-    className,
-    defaultSelectedColumns,
-    onChangeSelectedColumns,
-    selectedColumns: selectedColumnsProp,
-    ...htmlAttributes
-  }: ColumnPickerProps,
+  { columnModel, className, ...htmlAttributes }: ColumnPickerProps,
   forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
   const targetWindow = useWindow();
@@ -164,13 +153,10 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
     onAddItemToSelectedList,
     onChangeSearchInput,
     onRemoveItemFromSelectedList,
-    searchState,
+    searchText,
     selectedColumns,
   } = useColumnPicker({
-    availableColumns: availableColumnsProp,
-    defaultSelectedColumns,
-    onChangeSelectedColumns,
-    selectedColumns: selectedColumnsProp,
+    columnModel: columnModel,
   });
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -190,13 +176,13 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
         listRef.current?.querySelectorAll<HTMLDivElement>(".saltOption");
       if (listItems) {
         const orderedColumnNames = Array.from(listItems).map(getOptionName);
-        onChangeSelectedColumns?.(
-          reorderColumnItems(selectedColumns, orderedColumnNames),
-          SelectedColumnChangeType.ColumnsReordered,
+        columnModel.reorderSelectedColumns(
+          orderedColumnNames,
+          ColumnChangeSource.ColumnPicker,
         );
       }
     }, 300);
-  }, [onChangeSelectedColumns, selectedColumns]);
+  }, [columnModel]);
 
   return (
     <div
@@ -209,7 +195,7 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
           startAdornment={searchIcon}
           placeholder="Find column"
           ref={searchCallbackRef}
-          value={searchState.searchText}
+          value={searchText}
           onChange={onChangeSearchInput}
         />
       </form>
@@ -228,9 +214,7 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
                 index={index}
                 key={column.name}
                 onRemove={onRemoveItemFromSelectedList}
-                searchPattern={
-                  searchState.searchText.toLowerCase() as Lowercase<string>
-                }
+                searchPattern={searchText.toLowerCase() as Lowercase<string>}
                 value={column}
               />
             ))}
@@ -255,9 +239,7 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
               index={index}
               key={column.name}
               onAdd={onAddItemToSelectedList}
-              searchPattern={
-                searchState.searchText.toLowerCase() as Lowercase<string>
-              }
+              searchPattern={searchText.toLowerCase() as Lowercase<string>}
               value={column}
             />
           ))}

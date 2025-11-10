@@ -15,6 +15,7 @@ import {
   applyRuntimeColumnWidthsToConfig,
   applySortToColumns,
   applyWidthToColumns,
+  assertAllColumnsAreIncludedInSubscription,
   checkConfirmationPending,
   existingSort,
   flattenColumnGroup,
@@ -33,7 +34,6 @@ import {
   replaceColumn,
   sortPinnedColumns,
   stripFilterFromColumns,
-  subscribedOnly,
 } from "@vuu-ui/vuu-utils";
 
 import {
@@ -81,6 +81,11 @@ const checkboxColumnDescriptor: ColumnDescriptor = {
       name: "checkbox-row-selector-cell",
     },
   },
+};
+
+const pinnedCheckboxColumnDescriptor: ColumnDescriptor = {
+  ...checkboxColumnDescriptor,
+  pin: "left",
 };
 
 /**
@@ -294,9 +299,8 @@ function init(
 
   const runtimeColumns: RuntimeColumnDescriptor[] = [];
   let colIndex = 1;
-  for (const column of columns.filter(
-    subscribedOnly(dataSourceConfig?.columns),
-  )) {
+  assertAllColumnsAreIncludedInSubscription(columns, dataSourceConfig.columns);
+  for (const column of columns) {
     runtimeColumns.push(
       toRuntimeColumnDescriptor(column, column.hidden ? -1 : colIndex),
     );
@@ -306,10 +310,16 @@ function init(
   }
 
   if (selectionModel === "checkbox") {
+    const somePinnedLeft = runtimeColumns.some((col) => col.pin === "left");
     runtimeColumns.splice(
       0,
       0,
-      toRuntimeColumnDescriptor(checkboxColumnDescriptor, -1),
+      toRuntimeColumnDescriptor(
+        somePinnedLeft
+          ? pinnedCheckboxColumnDescriptor
+          : checkboxColumnDescriptor,
+        -1,
+      ),
     );
   }
 
