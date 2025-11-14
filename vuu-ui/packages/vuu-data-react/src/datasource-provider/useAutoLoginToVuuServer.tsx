@@ -36,7 +36,6 @@ export const useAutoLoginToVuuServer = ({
         ConnectionManager.connect({
           url,
           token,
-          username: "steve",
         });
       } catch (e: unknown) {
         if (e instanceof Error) {

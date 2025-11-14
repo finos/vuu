@@ -90,10 +90,12 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
    * @param serverUrl
    * @param token
    */
-  async connect(options: ConnectOptions) {
+  async connect(options: ConnectOptions, throwOnRejected = false) {
     const result = await this.#worker.connect(options);
     if (result === "connected") {
       this.#deferredServerAPI.resolve(this.connectedServerAPI);
+    } else if (result === "rejected" && throwOnRejected) {
+      throw Error("[ConectionManager] connection rejected");
     }
     return result;
   }

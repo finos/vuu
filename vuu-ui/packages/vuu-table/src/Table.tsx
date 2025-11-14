@@ -338,8 +338,6 @@ const TableCore = ({
   rowHeight: number;
   size: MeasuredSize;
 }) => {
-  console.log({ config });
-
   const id = useId(idProp);
   const {
     allRowsSelected,

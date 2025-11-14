@@ -56,7 +56,6 @@ async function connectToServer(
   url: string,
   protocols: WebSocketProtocol,
   token: string,
-  username: string | undefined,
   retryLimitDisconnect?: number,
   retryLimitStartup?: number,
 ) {
@@ -86,7 +85,7 @@ async function connectToServer(
   server = new ServerProxy(websocketConnection, sendMessageToClient);
   if (websocketConnection.requiresLogin) {
     // no handling for failed login
-    await server.login(token, username);
+    await server.login(token);
   }
 }
 
@@ -104,7 +103,6 @@ const handleMessageFromClient = async ({
           message.url,
           message.protocol,
           message.token,
-          message.username,
           message.retryLimitDisconnect,
           message.retryLimitStartup,
         );
