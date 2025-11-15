@@ -1,10 +1,10 @@
 package org.finos.vuu.core.module.vui
 
-import org.finos.vuu.net.rest.RestService
-import org.finos.vuu.state.{VuiHeader, VuiJsonState, VuiState, VuiStateStore}
 import io.vertx.ext.web.RoutingContext
 import org.finos.toolbox.json.JsonUtil
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.net.rest.RestService
+import org.finos.vuu.state.{VuiHeader, VuiJsonState, VuiState, VuiStateStore}
 
 class VuiStateRestService(val store: VuiStateStore)(implicit clock: Clock) extends RestService {
 
@@ -38,7 +38,7 @@ class VuiStateRestService(val store: VuiStateStore)(implicit clock: Clock) exten
   override def onPost(ctx: RoutingContext): Unit = {
     val user = ctx.request().getParam("user")
     val id = "latest"
-    val json = ctx.getBodyAsString()
+    val json = ctx.body().asString()
 
     if (user == null || id == null || json == null) {
       reply404(ctx)
@@ -71,7 +71,7 @@ class VuiStateRestService(val store: VuiStateStore)(implicit clock: Clock) exten
   override def onPut(ctx: RoutingContext): Unit = {
     val user = ctx.request().getParam("user")
     val id = ctx.request().getParam("id")
-    val json = ctx.getBodyAsString()
+    val json = ctx.body().asString()
     if (user == null || id == null || json == null) {
       reply404(ctx)
     } else {
