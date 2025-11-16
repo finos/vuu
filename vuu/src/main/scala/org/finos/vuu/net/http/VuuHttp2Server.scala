@@ -2,7 +2,7 @@ package org.finos.vuu.net.http
 
 import com.typesafe.scalalogging.StrictLogging
 import io.vertx.core.http.{HttpMethod, HttpServerOptions}
-import io.vertx.core.net.{PemKeyCertOptions, PfxOptions}
+import io.vertx.core.net.{KeyCertOptions, PemKeyCertOptions, PfxOptions}
 import io.vertx.core.{AbstractVerticle, Vertx, VertxOptions}
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.{BodyHandler, StaticHandler}
@@ -130,15 +130,17 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
 
   private def httpServerOptions(options: VuuSSLOptions): HttpServerOptions = {
     options match {
-      case VuuSSLDisabled() => new HttpServerOptions().setSsl(false)
+      case VuuSSLDisabled() => HttpServerOptions().setSsl(false)
       case VuuSSLByCertAndKey(certPath, keyPath, _, cipherSuite) =>
-        applySharedOptions(new HttpServerOptions().setKeyCertOptions(pemKeyCertOptions(certPath, keyPath)), cipherSuite)
+        applySharedOptions(pemKeyCertOptions(certPath, keyPath), cipherSuite)
       case VuuSSLByPKCS(pkcsPath, pkcsPassword, cipherSuite) =>
-        applySharedOptions(new HttpServerOptions().setKeyCertOptions(pfxKeyCertOptions(pkcsPath, pkcsPassword)), cipherSuite)
+        applySharedOptions(pfxKeyCertOptions(pkcsPath, pkcsPassword), cipherSuite)
     }
   }
 
-  private def applySharedOptions(httpServerOptions: HttpServerOptions, cipherSuite: VuuSSLCipherSuiteOptions) : HttpServerOptions = {
+  private def applySharedOptions(keyCertOptions: KeyCertOptions, cipherSuite: VuuSSLCipherSuiteOptions) : HttpServerOptions = {
+    val httpServerOptions = HttpServerOptions()
+    httpServerOptions.setKeyCertOptions(keyCertOptions)
     httpServerOptions.setSsl(true)
     httpServerOptions.setUseAlpn(true)
     for (cipher <- cipherSuite.ciphers) {
