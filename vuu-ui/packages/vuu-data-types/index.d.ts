@@ -817,7 +817,6 @@ export interface VuuUIMessageOutConnect {
   type: "connect";
   token: string;
   url: string;
-  username?: string;
   retryLimitDisconnect?: number;
   retryLimitStartup?: number;
 }
@@ -952,7 +951,6 @@ export declare type VuuUIMessageOut =
 export type ConnectOptions = {
   url: string;
   token: string;
-  username: string;
   protocol?: WebSocketProtocol;
   /** Max number of reconnect attempts in the event of unsuccessful websocket connection at startup */
   retryLimitStartup?: number;

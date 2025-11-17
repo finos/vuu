@@ -132,7 +132,6 @@ export class ServerProxy {
   private viewports: Map<string, Viewport>;
   private mapClientToServerViewport: Map<string, string>;
   private authToken = "";
-  private user = "user";
   private pendingLogin?: PendingLogin;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private pendingRequests = new Map<string, PendingRequest<any>>();
@@ -213,13 +212,9 @@ export class ServerProxy {
     }, 2000);
   };
 
-  public async login(
-    authToken?: string,
-    user = "user",
-  ): Promise<string | void> {
+  public async login(authToken?: string): Promise<string | void> {
     if (authToken) {
       this.authToken = authToken;
-      this.user = user;
       return new Promise((resolve, reject) => {
         this.sendMessageToServer({ type: "LOGIN", token: this.authToken }, "");
         this.pendingLogin = { resolve, reject };

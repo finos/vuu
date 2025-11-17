@@ -21,14 +21,15 @@ export const selectItem = (
   preserveExistingSelection = false,
   activeRowKey?: string,
 ): Omit<SelectRequest, "vpId"> | undefined => {
-  const singleSelect = selectionModel === "single";
+  const singleSelect =
+    selectionModel === "single" || selectionModel === "single-no-deselect";
   const actsLikeSingleSelect = singleSelect || activeRowKey === undefined;
 
   if (selectionModel === "none") {
     return;
   } else if (actsLikeSingleSelect) {
     return {
-      preserveExistingSelection,
+      preserveExistingSelection: false,
       rowKey,
       type: "SELECT_ROW",
     } as Omit<SelectRequest, "vpId">;

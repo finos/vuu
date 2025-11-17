@@ -39,6 +39,7 @@ export declare type GroupToggleTarget = "toggle-icon" | "group-column";
 export declare type TableSelectionModel =
   | "none"
   | "single"
+  | "single-no-deselect"
   | "checkbox"
   | "extended";
 

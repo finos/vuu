@@ -6,9 +6,10 @@ import {
   ColumnLayout,
   SelectionChangeHandler,
   TableConfig,
+  TableRowSelectHandler,
 } from "@vuu-ui/vuu-table-types";
 import { toColumnName, useData } from "@vuu-ui/vuu-utils";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 import "./Misc.examples.css";
 
@@ -123,6 +124,26 @@ export const CellBlockSelectionOnly = () => {
 export const CellBlockCheckboxSelection = () => {
   return (
     <DataTableTemplate allowCellBlockSelection selectionModel="checkbox" />
+  );
+};
+
+/** tags=data-consumer */
+export const SingleSelection = () => {
+  return <DataTableTemplate allowCellBlockSelection selectionModel="single" />;
+};
+
+/** tags=data-consumer */
+export const SingleSelectionNoDeselect = () => {
+  const handleSelect = useCallback<TableRowSelectHandler>((row) => {
+    console.log(`onSelect ${JSON.stringify(row)}`);
+  }, []);
+  return (
+    <DataTableTemplate
+      allowCellBlockSelection
+      onSelect={handleSelect}
+      schema={getSchema("parentOrders")}
+      selectionModel="single-no-deselect"
+    />
   );
 };
 

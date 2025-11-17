@@ -151,21 +151,14 @@ export abstract class BaseDataSource
   }
 
   get columns() {
-    console.log(
-      `[BaseDataSource] get columns ${this._config.columns.join(", ")}`,
-    );
     return this._config.columns;
   }
 
   set columns(columns: string[]) {
-    console.log(`[BaseDataSource] set columns ${columns.join(", ")}`);
     this.config = {
       ...this._config,
       columns,
     };
-    console.log(
-      `[BaseDataSource] get columns ${this._config.columns.join(", ")}`,
-    );
   }
 
   get filter() {

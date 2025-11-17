@@ -285,6 +285,24 @@ export const useTable = ({
     return buildColumnMap(dataSource.columns);
   }, [dataSource.columns]);
 
+  const handleSelectionChange: SelectionChangeHandler =
+    useCallback<SelectionChangeHandler>(
+      (selectRequest) => {
+        dataSource.select?.(selectRequest);
+        onSelectionChange?.(selectRequest);
+      },
+      [dataSource, onSelectionChange],
+    );
+
+  const handleSelect = useCallback<TableRowSelectHandlerInternal>(
+    (row) => {
+      if (onSelect) {
+        onSelect(row === null ? null : rowToObject(row, columnMap));
+      }
+    },
+    [columnMap, onSelect, rowToObject],
+  );
+
   const onSubscribed = useCallback(
     ({ tableSchema }: DataSourceSubscribedMessage) => {
       if (tableSchema) {
@@ -328,8 +346,10 @@ export const useTable = ({
     dataSource,
     renderBufferSize,
     revealSelected,
+    onSelect: handleSelect,
     onSizeChange: onDataRowcountChange,
     onSubscribed,
+    selectionModel,
   });
 
   const { requestScroll, ...scrollProps } = useTableScroll({
@@ -743,24 +763,6 @@ export const useTable = ({
       }
     },
     [dataSource],
-  );
-
-  const handleSelectionChange: SelectionChangeHandler =
-    useCallback<SelectionChangeHandler>(
-      (selectRequest) => {
-        dataSource.select?.(selectRequest);
-        onSelectionChange?.(selectRequest);
-      },
-      [dataSource, onSelectionChange],
-    );
-
-  const handleSelect = useCallback<TableRowSelectHandlerInternal>(
-    (row) => {
-      if (onSelect) {
-        onSelect(row === null ? null : rowToObject(row, columnMap));
-      }
-    },
-    [columnMap, onSelect, rowToObject],
   );
 
   const {

@@ -44,7 +44,6 @@ export const useRemoteConnection = ({
       const connectionResult = await ConnectionManager.connect({
         token: user.token,
         url: serverUrl,
-        username: user.username,
       });
       if (connectionResult === "rejected") {
         showNotification({
@@ -55,11 +54,5 @@ export const useRemoteConnection = ({
         });
       }
     }
-  }, [
-    handleConnectionStatusChange,
-    showNotification,
-    serverUrl,
-    user.token,
-    user.username,
-  ]);
+  }, [handleConnectionStatusChange, showNotification, serverUrl, user.token]);
 };
