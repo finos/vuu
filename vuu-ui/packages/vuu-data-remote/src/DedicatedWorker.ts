@@ -36,7 +36,6 @@ export class DedicatedWorker {
     }, 1000);
     worker.onmessage = (msg: MessageEvent<VuuUIMessageIn>) => {
       const { data: message } = msg;
-      console.log(`[DedicatedWorker] onMesage ${message.type}`);
       if (message.type === "ready") {
         window.clearTimeout(timer);
         deferredWorker.resolve(worker);

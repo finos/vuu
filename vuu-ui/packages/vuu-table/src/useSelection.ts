@@ -66,7 +66,6 @@ export const useSelection = ({
   onSelect,
   onSelectionChange,
 }: SelectionHookProps) => {
-  selectionModel === "extended" || selectionModel === "checkbox";
   const lastActiveRef = useRef<RowIdentifier | undefined>(undefined);
   const [allRowsSelected, setAllRowsSelected] = useState(false);
 
@@ -80,6 +79,10 @@ export const useSelection = ({
       const { [IDX]: rowIdx, [KEY]: rowKey } = row;
       const { current: activeRowKey } = lastActiveRef;
       const newRowIdentifier = { rowIdx, rowKey } as RowIdentifier;
+
+      if (row[SELECTED] && selectionModel === "single-no-deselect") {
+        return;
+      }
 
       const selectOperation = row[SELECTED] ? deselectItem : selectItem;
 

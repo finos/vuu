@@ -245,6 +245,7 @@ export interface TableProps
    * Selection behaviour for Table:
    * `none` selection disabled
    * `single` no more than one row may be selected
+   * `single-no-deselect` no more than one row may be selected, one row is always selected, defaults to first visible
    * `extended` (default) multiple rows can be selected
    * `checkbox` same behaviour as extended, with checkbox column for selection
    */

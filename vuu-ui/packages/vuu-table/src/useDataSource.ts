@@ -1,4 +1,5 @@
 import type {
+  DataSourceConfigChangeHandler,
   DataSourceRow,
   DataSourceSubscribeCallback,
   DataSourceSubscribedMessage,
@@ -9,6 +10,7 @@ import { MovingWindow, NULL_RANGE, Range } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TableProps } from "./Table";
 import { metadataKeys } from "@vuu-ui/vuu-utils";
+import { TableRowSelectHandlerInternal } from "@vuu-ui/vuu-table-types";
 
 const { KEY } = metadataKeys;
 
@@ -20,8 +22,10 @@ export interface DataSourceHookProps
     | "dataSource"
     | "renderBufferSize"
     | "revealSelected"
+    | "selectionModel"
   > {
   suspenseProps?: DataSourceSuspenseProps;
+  onSelect: TableRowSelectHandlerInternal;
   onSizeChange: (size: number) => void;
   onSubscribed: (subscription: DataSourceSubscribedMessage) => void;
 }
@@ -34,6 +38,8 @@ export const useDataSource = ({
   onSubscribed,
   renderBufferSize = 0,
   revealSelected,
+  onSelect,
+  selectionModel,
   suspenseProps,
 }: DataSourceHookProps) => {
   const [, forceUpdate] = useState<unknown>(null);
@@ -44,7 +50,29 @@ export const useDataSource = ({
   const totalRowCountRef = useRef(0);
   const rowAutoSelected = useRef(false);
 
-  const autoSelect = autoSelectRowKey ?? autoSelectFirstRow;
+  const autoSelect =
+    autoSelectRowKey ??
+    (autoSelectFirstRow || selectionModel === "single-no-deselect");
+
+  const handleConfigChange = useCallback<DataSourceConfigChangeHandler>(
+    (_config, _range, _confirmed, configChanges) => {
+      if (configChanges?.filterChanged) {
+        rowAutoSelected.current = false;
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (autoSelect) {
+      dataSource.on("config", handleConfigChange);
+    }
+    return () => {
+      if (autoSelect) {
+        dataSource.removeListener("config", handleConfigChange);
+      }
+    };
+  }, [autoSelect, dataSource, handleConfigChange]);
 
   const dataWindow = useMemo(
     () => new MovingWindow(NULL_RANGE),
@@ -81,14 +109,16 @@ export const useDataSource = ({
   );
 
   const selectRow = useCallback(
-    (rowKey: string) => {
+    (row: DataSourceRow) => {
+      const rowKey = row[KEY];
       dataSource.select?.({
         preserveExistingSelection: false,
         rowKey,
         type: "SELECT_ROW",
       } as SelectRowRequest);
+      onSelect?.(row);
     },
-    [dataSource],
+    [dataSource, onSelect],
   );
 
   const datasourceMessageHandler: DataSourceSubscribeCallback = useCallback(
@@ -113,11 +143,19 @@ export const useDataSource = ({
         if (message.rows) {
           setData(message.rows);
           if (autoSelect && rowAutoSelected.current === false) {
+            // OR if no selected row in message.rows, e.g after a filter
             rowAutoSelected.current = true;
             if (typeof autoSelect === "string") {
-              selectRow(autoSelect);
+              const row = message.rows.find((row) => row[KEY] === autoSelect);
+              if (row) {
+                selectRow(row);
+              } else {
+                console.warn(
+                  `[useDataSource] autoSelect row key ${autoSelect} not in viewport`,
+                );
+              }
             } else {
-              selectRow(message.rows[0][KEY]);
+              selectRow(message.rows[0]);
             }
           }
         } else if (message.size === 0) {

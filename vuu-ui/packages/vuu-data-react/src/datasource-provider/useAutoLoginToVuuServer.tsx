@@ -23,11 +23,8 @@ export const useAutoLoginToVuuServer = ({
       try {
         let token = "no-token";
         if (authenticate) {
-          token = (await vuuAuthenticate(
-            "steve",
-            "xyz",
-            "/api/authn",
-          )) as string;
+          const response = await vuuAuthenticate("steve", "xyz", "/api/authn");
+          token = response.token;
         }
 
         const url =
