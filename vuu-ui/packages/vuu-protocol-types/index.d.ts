@@ -1,4 +1,14 @@
 /**
+ * VuuUser is not used in any websocket messages. It represents the user structure returned
+ * encoded within the auth token used to LOGIN. The auti token is returned by the authn REST
+ * service call.
+ */
+export interface VuuUser {
+  authorizations: string[];
+  name: string;
+}
+
+/**
  * Vuu Protocol Message Envelope.
  *
  * All messages, in both directions (client to server and server to client) carry

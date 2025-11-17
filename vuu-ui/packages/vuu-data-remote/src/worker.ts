@@ -59,6 +59,7 @@ async function connectToServer(
   retryLimitDisconnect?: number,
   retryLimitStartup?: number,
 ) {
+  console.log(`[worker.ts] connectToServer ${url} token ${token}`);
   const websocketConnection = (ws = new WebSocketConnection({
     callback: (msg) => {
       if (isConnectionQualityMetrics(msg)) {
@@ -79,12 +80,14 @@ async function connectToServer(
 
   // This will not resolve until the websocket has been successfully opened,
   // i.e. we get an open event...
+  console.log(`[worker.ts] await websocketConnection.connect`);
   await websocketConnection.connect();
   // ... at which point we will attempt to LOGIN, this will send the
   // first message over the WebSocket connection.
   server = new ServerProxy(websocketConnection, sendMessageToClient);
   if (websocketConnection.requiresLogin) {
     // no handling for failed login
+    console.log(`[worker.ts] await server.login `);
     await server.login(token);
   }
 }

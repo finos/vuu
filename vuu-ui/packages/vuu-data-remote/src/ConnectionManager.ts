@@ -95,7 +95,7 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
     if (result === "connected") {
       this.#deferredServerAPI.resolve(this.connectedServerAPI);
     } else if (result === "rejected" && throwOnRejected) {
-      throw Error("[ConectionManager] connection rejected");
+      throw Error("[ConnectionManager] connection rejected");
     }
     return result;
   }

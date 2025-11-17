@@ -10,12 +10,12 @@ import "./login.css";
 async function login(username: string, password = "password") {
   try {
     const { authUrl } = await vuuConfig;
-    const authToken = await authenticate(username, password, authUrl);
+    const { token } = await authenticate(username, password, authUrl);
     const date = new Date();
     const days = 1;
     date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
     document.cookie = `vuu-username=${username};expires=${date.toUTCString()};path=/`;
-    document.cookie = `vuu-auth-token=${authToken};expires=${date.toUTCString()};path=/`;
+    document.cookie = `vuu-auth-token=${token};expires=${date.toUTCString()};path=/`;
     document.cookie = `vuu-auth-mode=login`;
     window.location.href = "index.html";
   } catch (err) {

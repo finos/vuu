@@ -1,4 +1,4 @@
-export * from "./authenticate";
+export { authenticate, parseVuuUserFromToken } from "./authenticate";
 export * from "./ConnectionManager";
 export { default as ConnectionManager } from "./ConnectionManager";
 export * from "./constants";
