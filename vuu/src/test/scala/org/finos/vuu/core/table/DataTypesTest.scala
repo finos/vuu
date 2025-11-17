@@ -10,11 +10,11 @@ class DataTypesTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
     Scenario("data types") {
 
-      val inputs = List("string", "boolean", "long", "int", "double")
+      val inputs = List("string", "boolean", "long", "int", "double", "char", "epochtimestamp")
 
-      val classes = inputs.map( DataType.fromString(_))
+      val classes = inputs.map(DataType.fromString)
 
-      val output = classes.map( DataType.asString(_))
+      val output = classes.map(DataType.asString)
 
       inputs should equal(output)
     }

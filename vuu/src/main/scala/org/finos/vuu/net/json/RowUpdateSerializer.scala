@@ -3,6 +3,7 @@ package org.finos.vuu.net.json
 import com.fasterxml.jackson.core.{JsonGenerator, JsonParser}
 import com.fasterxml.jackson.databind.*
 import com.typesafe.scalalogging.StrictLogging
+import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.net.RowUpdate
 
 import scala.jdk.CollectionConverters.IteratorHasAsScala
@@ -54,6 +55,7 @@ class RowUpdateSerializer extends JsonSerializer[RowUpdate] with StrictLogging  
       case (l: Long, _) => gen.writeNumber(l)
       case (b: Boolean, _) => gen.writeBoolean(b)
       case (c: Char, _) => gen.writeString(c.toString)
+      case (epoch: EpochTimestamp, _) => gen.writeNumber(epoch.nanos)
       case (unknown: Any, index) =>
         logger.warn(s"Unexpected type ${unknown.getClass} at index $index")
         gen.writeString("")

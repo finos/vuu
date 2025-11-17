@@ -6,6 +6,7 @@ import org.finos.vuu.core.auths.RowPermissionChecker
 import org.finos.vuu.core.filter.{Filter, FilterClause}
 import org.finos.vuu.core.index.*
 import org.finos.vuu.core.table.column.{Error, Success}
+import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.core.table.{Column, DataType, DefaultColumnNames, EmptyTablePrimaryKeys, TablePrimaryKeys, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns, ViewPortVisualLink}
@@ -34,6 +35,9 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Fi
         case Some(index: BooleanIndexedField) if childColumn.dataType == DataType.BooleanDataType =>
           val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn).asInstanceOf[Boolean]).toList
           filterIndexByValues(index, parentSelField)
+        case Some(index: EpochTimestampIndexedField) if childColumn.dataType == DataType.EpochTimestampType =>
+          val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn).asInstanceOf[EpochTimestamp]).toList
+          filterIndexByValues(index, parentSelField)
         case _ =>
           val parentDataValues = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn) -> 0).toList
           doFilterByBruteForce(parentDataValues, childColumn, source, primaryKeys)
@@ -41,10 +45,9 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Fi
     }
   }
 
-  def filterIndexByValues[TYPE](index: IndexedField[TYPE], parentSelected: List[TYPE]): TablePrimaryKeys = {
+  private def filterIndexByValues[TYPE](index: IndexedField[TYPE], parentSelected: List[TYPE]): TablePrimaryKeys = {
     InMemTablePrimaryKeys(index.find(parentSelected))
   }
-
 
   private def doFilterByBruteForce(parentDataValues: List[Any], childColumn: Column, source: RowSource, primaryKeys: TablePrimaryKeys): TablePrimaryKeys = {
     val pks = primaryKeys.toArray

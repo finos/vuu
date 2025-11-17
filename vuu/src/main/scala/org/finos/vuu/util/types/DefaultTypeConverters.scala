@@ -1,6 +1,8 @@
 package org.finos.vuu.util.types
 
-import java.lang._
+import org.finos.vuu.core.table.datatype.EpochTimestamp
+
+import java.lang.*
 
 object DefaultTypeConverters {
   val stringToDoubleConverter: TypeConverter[String, Double] = TypeConverter(classOf[String], classOf[Double], withNullSafety[String, Double](_, _.toDouble))
@@ -8,6 +10,7 @@ object DefaultTypeConverters {
   val stringToIntConverter: TypeConverter[String, Integer] = TypeConverter(classOf[String], classOf[Integer], withNullSafety[String, Integer](_, _.toInt))
   val stringToCharConverter: TypeConverter[String, Character] = TypeConverter(classOf[String], classOf[Character], withNullSafety[String, Character](_, _.toCharArray.apply(0)))
   val stringToBooleanConverter: TypeConverter[String, Boolean] = TypeConverter(classOf[String], classOf[Boolean], withNullSafety[String, Boolean](_, _.toBoolean))
+  val stringToEpochTimestampConverter: TypeConverter[String, EpochTimestamp] = TypeConverter(classOf[String], classOf[EpochTimestamp], withNullSafety[String, EpochTimestamp](_, f => EpochTimestamp(f.toLong)))
 
   val intToStringConverter: TypeConverter[Integer, String] = TypeConverter(classOf[Integer], classOf[String], withNullSafety[Integer, String](_, _.toString))
   val intToLongConverter: TypeConverter[Integer, Long] = TypeConverter(classOf[Integer], classOf[Long], withNullSafety[Integer, Long](_, _.toLong))
@@ -25,6 +28,8 @@ object DefaultTypeConverters {
 
   val charToStringConverter: TypeConverter[Character, String] = TypeConverter(classOf[Character], classOf[String], withNullSafety[Character, String](_, _.toString))
 
+  val epochTimestampToStringConverter : TypeConverter[EpochTimestamp, String] = TypeConverter(classOf[EpochTimestamp], classOf[String], withNullSafety[EpochTimestamp, String](_, _.toString))
+
   private def withNullSafety[T1, T2 >: Null](v: T1, fn: T1 => T2): T2 = Option(v).map(fn).orNull
 
   def getAll: List[TypeConverter[_, _]] = List(
@@ -33,6 +38,7 @@ object DefaultTypeConverters {
     stringToIntConverter,
     stringToCharConverter,
     stringToBooleanConverter,
+    stringToEpochTimestampConverter,
     intToStringConverter,
     intToLongConverter,
     intToDoubleConverter,
@@ -44,5 +50,6 @@ object DefaultTypeConverters {
     doubleToLongConverter,
     booleanToStringConverter,
     charToStringConverter,
+    epochTimestampToStringConverter
   )
 }

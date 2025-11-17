@@ -3,6 +3,7 @@ package org.finos.vuu.net.json
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.typesafe.scalalogging.StrictLogging
+import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.net.RowUpdate
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -24,7 +25,8 @@ class RowUpdateSerializerTest extends AnyFeatureSpec with Matchers with StrictLo
         "foo",
         "bar",
         1,
-        BigInt(123) //Unsupported by Vuu
+        BigInt(123), //Unsupported by Vuu
+        EpochTimestamp(456)
       )
     )
 
@@ -38,7 +40,7 @@ class RowUpdateSerializerTest extends AnyFeatureSpec with Matchers with StrictLo
 
     serialized shouldEqual "{\"viewPortId\":\"Vp1\",\"vpSize\":1,\"rowIndex\":0,\"rowKey\":\":KEY1\"," +
       "\"updateType\":\"U\",\"ts\":100,\"sel\":0,\"vpVersion\":\"Request1\"," +
-      "\"data\":[\"foo\",\"bar\",1,\"\"]}"
+      "\"data\":[\"foo\",\"bar\",1,\"\",456]}"
 
     val deserialized = mapper.readValue(serialized, classOf[RowUpdate])
 
@@ -51,11 +53,12 @@ class RowUpdateSerializerTest extends AnyFeatureSpec with Matchers with StrictLo
     deserialized.ts shouldEqual rowUpdate.ts
     deserialized.selected shouldEqual rowUpdate.selected
     
-    deserialized.data.length shouldEqual 4
+    deserialized.data.length shouldEqual 5
     deserialized.data(0) shouldEqual "foo"
     deserialized.data(1) shouldEqual "bar"
     deserialized.data(2) shouldEqual "1"
     deserialized.data(3) shouldEqual ""
+    deserialized.data(4) shouldEqual "456"
   }
 
 }
