@@ -42,7 +42,7 @@
         <caffeine.version>3.2.1</caffeine.version>
         <metrics.version>4.2.36</metrics.version>
         <scalatest.version>3.2.19</scalatest.version>
-        <scalamock.version>7.5.0</scalamock.version>
+        <scalamock.version>7.5.2</scalamock.version>
         <scala.logging>3.9.6</scala.logging>
         <jackson.version>2.19.2</jackson.version>
         <antlr.version>4.13.2</antlr.version>
