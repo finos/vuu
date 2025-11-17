@@ -72,7 +72,7 @@ class AuthNRestService(val loginTokenService: LoginTokenService, val users: Opti
   }
 
   override def onPost(ctx: RoutingContext): Unit = {
-    val (username, password) = Try(ctx.getBodyAsJson()) match {
+    val (username, password) = Try(ctx.body().asJsonObject()) match {
       case Success(json) =>
         val jsonUser = json.getString("username")
         val jsonPassword = json.getString("password")
@@ -81,8 +81,8 @@ class AuthNRestService(val loginTokenService: LoginTokenService, val users: Opti
         (jsonUser, jsonPassword)
 
       case Failure(exception) =>
-        val fmrUser     = ctx.getBodyAsString.split("&").find(_.contains("user")).get.replace("user=", "")
-        val fmrPassword = ctx.getBodyAsString.split("&").find(_.contains("password")).get.replace("password=", "")
+        val fmrUser     = ctx.body().asString().split("&").find(_.contains("user")).get.replace("user=", "")
+        val fmrPassword = ctx.body().asString().split("&").find(_.contains("password")).get.replace("password=", "")
         logger.info(s"Got credentials for ${fmrUser} from html form")
         logger.debug(s"Got username ${fmrUser} and password ${fmrPassword} from html form")
         (fmrUser, fmrPassword)

@@ -2,7 +2,7 @@ package org.finos.vuu.net.http
 
 import com.typesafe.scalalogging.StrictLogging
 import io.vertx.core.http.{HttpMethod, HttpServerOptions}
-import io.vertx.core.net.{PemKeyCertOptions, PfxOptions}
+import io.vertx.core.net.{KeyCertOptions, PemKeyCertOptions, PfxOptions}
 import io.vertx.core.{AbstractVerticle, Vertx, VertxOptions}
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.{BodyHandler, StaticHandler}
@@ -82,7 +82,12 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
       allowedMethods.add(HttpMethod.PATCH)
       allowedMethods.add(HttpMethod.PUT)
 
-      router.route.handler(CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods))
+      router.route.handler(
+        CorsHandler.create()
+          .addOriginWithRegex(".*")
+          .allowedHeaders(allowedHeaders)
+          .allowedMethods(allowedMethods)
+      )
 
       services.foreach(service => addRestService(router, service))
 
@@ -101,18 +106,16 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
           webRoot = new File(path).getAbsoluteFile.toString
           PathChecker.throwOnDirectoryNotExists(path, "webroot path does not exist:")
 
-          router.route("/public/*")
-            .handler(StaticHandler.create()
-              .setWebRoot(path)
+          router.route("/public/*").handler(
+            StaticHandler.create(path)
               .setDirectoryListing(directoryListings)
-            )
+          )
 
           // Serve the static pages
-          router.route("/*")
-            .handler(StaticHandler.create()
-              .setWebRoot(path)
+          router.route("/*").handler(
+            StaticHandler.create(path)
               .setDirectoryListing(directoryListings)
-            )
+          )
         }
       }
 
@@ -127,15 +130,17 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
 
   private def httpServerOptions(options: VuuSSLOptions): HttpServerOptions = {
     options match {
-      case VuuSSLDisabled() => new HttpServerOptions().setSsl(false)
+      case VuuSSLDisabled() => HttpServerOptions().setSsl(false)
       case VuuSSLByCertAndKey(certPath, keyPath, _, cipherSuite) =>
-        applySharedOptions(new HttpServerOptions().setPemKeyCertOptions(pemKeyCertOptions(certPath, keyPath)), cipherSuite)
+        applySharedOptions(pemKeyCertOptions(certPath, keyPath), cipherSuite)
       case VuuSSLByPKCS(pkcsPath, pkcsPassword, cipherSuite) =>
-        applySharedOptions(new HttpServerOptions().setPfxKeyCertOptions(pfxKeyCertOptions(pkcsPath, pkcsPassword)), cipherSuite)
+        applySharedOptions(pfxKeyCertOptions(pkcsPath, pkcsPassword), cipherSuite)
     }
   }
 
-  private def applySharedOptions(httpServerOptions: HttpServerOptions, cipherSuite: VuuSSLCipherSuiteOptions) : HttpServerOptions = {
+  private def applySharedOptions(keyCertOptions: KeyCertOptions, cipherSuite: VuuSSLCipherSuiteOptions) : HttpServerOptions = {
+    val httpServerOptions = HttpServerOptions()
+    httpServerOptions.setKeyCertOptions(keyCertOptions)
     httpServerOptions.setSsl(true)
     httpServerOptions.setUseAlpn(true)
     for (cipher <- cipherSuite.ciphers) {
