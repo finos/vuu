@@ -8,9 +8,9 @@ object RpcNames {
 
   val DeleteRowRpc: Rpc.FunctionName = "deleteRow"
   val DeleteCellRpc: Rpc.FunctionName = "deleteCell"
-  val addRowRpc: Rpc.FunctionName = "addRow"
-  val editCellRpc: Rpc.FunctionName = "editCell"
-  val editRowRpc: Rpc.FunctionName = "editRow"
-  val onFormSubmitRpc: Rpc.FunctionName = "onFormSubmit"
-  val onFormCloseRpc: Rpc.FunctionName = "onFormClose"
+  val AddRowRpc: Rpc.FunctionName = "addRow"
+  val EditCellRpc: Rpc.FunctionName = "editCell"
+  val EditRowRpc: Rpc.FunctionName = "editRow"
+  val OnFormSubmitRpc: Rpc.FunctionName = "onFormSubmit"
+  val OnFormCloseRpc: Rpc.FunctionName = "onFormClose"
 }
