@@ -1,4 +1,4 @@
-package org.finos.vuu.net
+package org.finos.vuu.net.rpc
 
 import org.finos.vuu.net.rpc.Rpc
 
