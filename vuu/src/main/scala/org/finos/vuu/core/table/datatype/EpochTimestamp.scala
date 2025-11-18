@@ -7,6 +7,10 @@ import java.util.concurrent.TimeUnit.MILLISECONDS
 
 object EpochTimestamp {
 
+  def apply(): EpochTimestamp = {
+    EpochTimestamp(Instant.now())
+  }
+  
   def apply(clock: Clock): EpochTimestamp = {
     EpochTimestamp(MILLISECONDS.toNanos(clock.now()))
   }

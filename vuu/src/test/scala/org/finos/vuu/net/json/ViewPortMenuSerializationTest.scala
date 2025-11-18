@@ -1,4 +1,4 @@
-package org.finos.vuu.json
+package org.finos.vuu.net.json
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.json.JsonUtil
