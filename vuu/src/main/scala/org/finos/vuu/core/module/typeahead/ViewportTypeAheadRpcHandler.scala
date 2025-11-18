@@ -2,8 +2,8 @@ package org.finos.vuu.core.module.typeahead
 
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.feature.ViewPortKeys
-import org.finos.vuu.net.RequestContext
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcNames, RpcParams}
+import org.finos.vuu.net.{RequestContext, RpcNames}
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.viewport.ViewPortColumns
 
 class ViewportTypeAheadRpcHandler(tableContainer: TableContainer) {
