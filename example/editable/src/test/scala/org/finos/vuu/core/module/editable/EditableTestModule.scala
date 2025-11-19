@@ -68,14 +68,14 @@ class TestEditableService(val table: DataTable, val tableContainer: TableContain
   override def onFormClose(): ViewPortFormCloseAction = ViewPortFormCloseAction("", formClose)
 }
 
-class EditTableTestService(val table: DataTable)(using tableContainer: TableContainer) extends EditTableRpcHandler with StrictLogging {
+class EditTableTestService()(using tableContainer: TableContainer) extends EditTableRpcHandler with StrictLogging {
 
   override def deleteRow(params: RpcParams): RpcFunctionResult = {
     val key: String = params.namedParams("key").asInstanceOf[String]
     val vp: ViewPort = params.viewPort
     val session: ClientSessionId = params.ctx.session
 
-    table.processDelete(key)
+    vp.table.asTable.processDelete(key)
     RpcFunctionSuccess(None)
   }
 
@@ -85,7 +85,7 @@ class EditTableTestService(val table: DataTable)(using tableContainer: TableCont
     val vp: ViewPort = params.viewPort
     val session: ClientSessionId = params.ctx.session
 
-    table.processUpdate(key, RowWithData(key, Map("rowId" -> key, column -> null)))
+    vp.table.asTable.processUpdate(key, RowWithData(key, Map("rowId" -> key, column -> null)))
     RpcFunctionSuccess(None)
   }
 
@@ -95,7 +95,7 @@ class EditTableTestService(val table: DataTable)(using tableContainer: TableCont
     val vp: ViewPort = params.viewPort
     val session: ClientSessionId = params.ctx.session
 
-    table.processUpdate(key, RowWithData(key, data))
+    vp.table.asTable.processUpdate(key, RowWithData(key, data))
     RpcFunctionSuccess(None)
   }
 
@@ -105,7 +105,7 @@ class EditTableTestService(val table: DataTable)(using tableContainer: TableCont
     val vp: ViewPort = params.viewPort
     val session: ClientSessionId = params.ctx.session
 
-    table.processUpdate(key, RowWithData(key, data))
+    vp.table.asTable.processUpdate(key, RowWithData(key, data))
     RpcFunctionSuccess(None)
   }
 
@@ -116,7 +116,7 @@ class EditTableTestService(val table: DataTable)(using tableContainer: TableCont
     val vp: ViewPort = params.viewPort
     val session: ClientSessionId = params.ctx.session
 
-    table.processUpdate(key, RowWithData(key, Map("rowId" -> key, column -> data)))
+    vp.table.asTable.processUpdate(key, RowWithData(key, Map("rowId" -> key, column -> data)))
     RpcFunctionSuccess(None)
   }
 
@@ -180,7 +180,7 @@ object EditTableTestModule {
         (table, _) => new NullProvider(),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.columns,
-          service = new EditTableTestService(table)(using tableContainer)
+          service = new EditTableTestService()(using tableContainer)
         )
       ).asModule()
 
