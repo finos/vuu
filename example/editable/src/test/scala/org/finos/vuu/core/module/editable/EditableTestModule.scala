@@ -72,8 +72,8 @@ class EditableTestService(val table: DataTable)(implicit val tableContainer: Tab
 
   override def deleteRow(params: RpcParams): RpcFunctionResult = {
     val key: String = params.namedParams("key").asInstanceOf[String]
-    val vp: ViewPort = params.namedParams("vp").asInstanceOf[ViewPort]
-    val session: ClientSessionId = params.namedParams("session").asInstanceOf[ClientSessionId]
+    val vp: ViewPort = params.viewPort
+    val session: ClientSessionId = params.ctx.session
 
     table.processDelete(key)
     RpcFunctionSuccess(None)
@@ -82,8 +82,8 @@ class EditableTestService(val table: DataTable)(implicit val tableContainer: Tab
   override def deleteCell(params: RpcParams): RpcFunctionResult = {
     val key: String = params.namedParams("key").asInstanceOf[String]
     val column: String = params.namedParams("column").asInstanceOf[String]
-    val vp: ViewPort = params.namedParams("vp").asInstanceOf[ViewPort]
-    val session: ClientSessionId = params.namedParams("session").asInstanceOf[ClientSessionId]
+    val vp: ViewPort = params.viewPort
+    val session: ClientSessionId = params.ctx.session
 
     table.processUpdate(key, RowWithData(key, Map("rowId" -> key, column -> null)))
     RpcFunctionSuccess(None)
@@ -92,8 +92,8 @@ class EditableTestService(val table: DataTable)(implicit val tableContainer: Tab
   override def addRow(params: RpcParams): RpcFunctionResult = {
     val key: String = params.namedParams("key").asInstanceOf[String]
     val data: Map[String, Any] = params.namedParams("data").asInstanceOf[Map[String, Any]]
-    val vp: ViewPort = params.namedParams("vp").asInstanceOf[ViewPort]
-    val session: ClientSessionId = params.namedParams("session").asInstanceOf[ClientSessionId]
+    val vp: ViewPort = params.viewPort
+    val session: ClientSessionId = params.ctx.session
 
     table.processUpdate(key, RowWithData(key, data))
     RpcFunctionSuccess(None)
@@ -102,8 +102,8 @@ class EditableTestService(val table: DataTable)(implicit val tableContainer: Tab
   override def editRow(params: RpcParams): RpcFunctionResult = {
     val key: String = params.namedParams("key").asInstanceOf[String]
     val data: Map[String, Any] = params.namedParams("data").asInstanceOf[Map[String, Any]]
-    val vp: ViewPort = params.namedParams("vp").asInstanceOf[ViewPort]
-    val session: ClientSessionId = params.namedParams("session").asInstanceOf[ClientSessionId]
+    val vp: ViewPort = params.viewPort
+    val session: ClientSessionId = params.ctx.session
 
     table.processUpdate(key, RowWithData(key, data))
     RpcFunctionSuccess(None)
@@ -113,25 +113,23 @@ class EditableTestService(val table: DataTable)(implicit val tableContainer: Tab
     val key: String = params.namedParams("key").asInstanceOf[String]
     val column: String = params.namedParams("column").asInstanceOf[String]
     val data: Any = params.namedParams("data")
-    val vp: ViewPort = params.namedParams("vp").asInstanceOf[ViewPort]
-    val session: ClientSessionId = params.namedParams("session").asInstanceOf[ClientSessionId]
+    val vp: ViewPort = params.viewPort
+    val session: ClientSessionId = params.ctx.session
 
     table.processUpdate(key, RowWithData(key, Map("rowId" -> key, column -> data)))
     RpcFunctionSuccess(None)
   }
 
   override def submitForm(params: RpcParams): RpcFunctionResult = {
-    val vp: ViewPort = params.namedParams("vp").asInstanceOf[ViewPort]
-    val session: ClientSessionId = params.namedParams("session").asInstanceOf[ClientSessionId]
-
-    //table.processUpdate(key, RowWithData(key, Map("rowId" -> key, column -> null)), clock.now())
+    val comment: String = params.namedParams("comment").asInstanceOf[String]
+    val vp: ViewPort = params.viewPort
+    val session: ClientSessionId = params.ctx.session
     RpcFunctionSuccess(None)
   }
 
   override def closeForm(params: RpcParams): RpcFunctionResult = {
-    val vp: ViewPort = params.namedParams("vp").asInstanceOf[ViewPort]
-    val session: ClientSessionId = params.namedParams("session").asInstanceOf[ClientSessionId]
-    //table.processUpdate(key, RowWithData(key, Map("rowId" -> key, column -> null)), clock.now())
+    val vp: ViewPort = params.viewPort
+    val session: ClientSessionId = params.ctx.session
     RpcFunctionSuccess(None)
   }
 }
