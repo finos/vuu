@@ -68,7 +68,7 @@ class TestEditableService(val table: DataTable, val tableContainer: TableContain
   override def onFormClose(): ViewPortFormCloseAction = ViewPortFormCloseAction("", formClose)
 }
 
-class EditableTestService(val table: DataTable)(using tableContainer: TableContainer) extends EditTableRpcHandler with StrictLogging {
+class EditTableTestService(val table: DataTable)(using tableContainer: TableContainer) extends EditTableRpcHandler with StrictLogging {
 
   override def deleteRow(params: RpcParams): RpcFunctionResult = {
     val key: String = params.namedParams("key").asInstanceOf[String]
@@ -180,7 +180,7 @@ object EditTableTestModule {
         (table, _) => new NullProvider(),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.columns,
-          service = new EditableTestService(table)(using tableContainer)
+          service = new EditTableTestService(table)(using tableContainer)
         )
       ).asModule()
 
