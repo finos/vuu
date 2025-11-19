@@ -2,8 +2,9 @@ package org.finos.vuu.core.filter
 
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.core.filter.FilterClause.joinResults
-import org.finos.vuu.core.index._
+import org.finos.vuu.core.index.*
 import org.finos.vuu.core.table.column.{Error, Result}
+import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.core.table.{RowData, TablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
@@ -92,12 +93,13 @@ case class InClause(columnName: String, values: List[String]) extends RowFilterC
   override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, viewPortColumns: ViewPortColumns): TablePrimaryKeys = {
     val column = rows.asTable.columnForName(columnName)
     rows.asTable.indexForColumn(column) match {
-      case Some(ix: StringIndexedField)  => InMemTablePrimaryKeys( ix.find(values) )
-      case Some(ix: IntIndexedField)     => InMemTablePrimaryKeys( ix.find(values.map(s => s.toInt)))
-      case Some(ix: LongIndexedField)    => InMemTablePrimaryKeys( ix.find(values.map(s => s.toLong)))
-      case Some(ix: DoubleIndexedField)  => InMemTablePrimaryKeys( ix.find(values.map(s => s.toDouble)))
-      case Some(ix: BooleanIndexedField) => InMemTablePrimaryKeys( ix.find(values.map(s => s.toBoolean)))
-      case None                          => super.filterAll(rows, rowKeys, viewPortColumns)
+      case Some(ix: StringIndexedField)         => InMemTablePrimaryKeys( ix.find(values) )
+      case Some(ix: IntIndexedField)            => InMemTablePrimaryKeys( ix.find(values.map(s => s.toInt)))
+      case Some(ix: LongIndexedField)           => InMemTablePrimaryKeys( ix.find(values.map(s => s.toLong)))
+      case Some(ix: DoubleIndexedField)         => InMemTablePrimaryKeys( ix.find(values.map(s => s.toDouble)))
+      case Some(ix: BooleanIndexedField)        => InMemTablePrimaryKeys( ix.find(values.map(s => s.toBoolean)))
+      case Some(ix: EpochTimestampIndexedField) => InMemTablePrimaryKeys( ix.find(values.map(s => EpochTimestamp(s.toLong))))
+      case _                                    => super.filterAll(rows, rowKeys, viewPortColumns)
     }
   }
 }
@@ -113,10 +115,11 @@ case class GreaterThanClause(columnName: String, value: Double) extends RowFilte
   override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, viewPortColumns: ViewPortColumns): TablePrimaryKeys = {
     val column = rows.asTable.columnForName(columnName)
     rows.asTable.indexForColumn(column) match {
-      case Some(ix: DoubleIndexedField) => InMemTablePrimaryKeys(ix.greaterThan(value))
-      case Some(ix: IntIndexedField) => InMemTablePrimaryKeys(ix.greaterThan(value.toInt))
-      case Some(ix: LongIndexedField) => InMemTablePrimaryKeys(ix.greaterThan(value.toLong))
-      case None => super.filterAll(rows, rowKeys, viewPortColumns)
+      case Some(ix: DoubleIndexedField)         => InMemTablePrimaryKeys(ix.greaterThan(value))
+      case Some(ix: IntIndexedField)            => InMemTablePrimaryKeys(ix.greaterThan(value.toInt))
+      case Some(ix: LongIndexedField)           => InMemTablePrimaryKeys(ix.greaterThan(value.toLong))
+      case Some(ix: EpochTimestampIndexedField) => InMemTablePrimaryKeys(ix.greaterThan(EpochTimestamp(value.toLong)))
+      case _                                    => super.filterAll(rows, rowKeys, viewPortColumns)
     }
   }
 }
@@ -132,10 +135,11 @@ case class LessThanClause(columnName: String, value: Double) extends RowFilterCl
   override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, viewPortColumns: ViewPortColumns): TablePrimaryKeys = {
     val column = rows.asTable.columnForName(columnName)
     rows.asTable.indexForColumn(column) match {
-      case Some(ix: DoubleIndexedField) => InMemTablePrimaryKeys(ix.lessThan(value))
-      case Some(ix: IntIndexedField)    => InMemTablePrimaryKeys(ix.lessThan(value.toInt))
-      case Some(ix: LongIndexedField)   => InMemTablePrimaryKeys(ix.lessThan(value.toInt))
-      case None                         => super.filterAll(rows, rowKeys, viewPortColumns)
+      case Some(ix: DoubleIndexedField)           => InMemTablePrimaryKeys(ix.lessThan(value))
+      case Some(ix: IntIndexedField)              => InMemTablePrimaryKeys(ix.lessThan(value.toInt))
+      case Some(ix: LongIndexedField)             => InMemTablePrimaryKeys(ix.lessThan(value.toLong))
+      case Some(ix: EpochTimestampIndexedField)   => InMemTablePrimaryKeys(ix.lessThan(EpochTimestamp(value.toLong)))
+      case _                                      => super.filterAll(rows, rowKeys, viewPortColumns)
     }
   }
 }
@@ -150,18 +154,20 @@ case class EqualsClause(columnName: String, value: String) extends RowFilterClau
       case f: Float => f == value.toFloat
       case d: Double => d == value.toDouble
       case b: Boolean => b == value.equalsIgnoreCase("true")
+      case e: EpochTimestamp => e.millis == value.toLong
     }
   }
 
   override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, viewPortColumns: ViewPortColumns): TablePrimaryKeys = {
     val column = rows.asTable.columnForName(columnName)
     rows.asTable.indexForColumn(column) match {
-      case Some(ix: StringIndexedField)   => InMemTablePrimaryKeys(ix.find(value))
-      case Some(ix: IntIndexedField)      => InMemTablePrimaryKeys(ix.find(value.toInt))
-      case Some(ix: LongIndexedField)     => InMemTablePrimaryKeys(ix.find(value.toLong))
-      case Some(ix: DoubleIndexedField)   => InMemTablePrimaryKeys(ix.find(value.toDouble))
-      case Some(ix: BooleanIndexedField)  => InMemTablePrimaryKeys(ix.find(value.toBoolean))
-      case None                           => super.filterAll(rows, rowKeys, viewPortColumns)
+      case Some(ix: StringIndexedField)           => InMemTablePrimaryKeys(ix.find(value))
+      case Some(ix: IntIndexedField)              => InMemTablePrimaryKeys(ix.find(value.toInt))
+      case Some(ix: LongIndexedField)             => InMemTablePrimaryKeys(ix.find(value.toLong))
+      case Some(ix: DoubleIndexedField)           => InMemTablePrimaryKeys(ix.find(value.toDouble))
+      case Some(ix: BooleanIndexedField)          => InMemTablePrimaryKeys(ix.find(value.toBoolean))
+      case Some(ix: EpochTimestampIndexedField)   => InMemTablePrimaryKeys(ix.find(EpochTimestamp(value.toLong)))
+      case _                                      => super.filterAll(rows, rowKeys, viewPortColumns)
     }
   }
 }

@@ -28,8 +28,8 @@ class ModuleSyntaxTest extends AnyFeatureSpec with Matchers with GivenWhenThen {
           "currency:String",
           "exchange:String",
           "lotSize:Double",
-          CreatedTimeColumnName + ":Long",
-          LastUpdatedTimeColumnName + ":Long"
+          CreatedTimeColumnName + ":EpochTimestamp",
+          LastUpdatedTimeColumnName + ":EpochTimestamp"
         )
       )
       instruments.joinFields should equal(Seq("ric"))

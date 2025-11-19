@@ -8,6 +8,7 @@ import org.finos.vuu.api.{JoinTableDef, TableDef}
 import org.finos.vuu.core.index.IndexedField
 import org.finos.vuu.core.row.{NoRowBuilder, RowBuilder}
 import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName}
+import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
@@ -47,8 +48,8 @@ case class JoinDataTableData(
                               tableDef: JoinTableDef,
                               var keysByJoinIndex: Array[ImmutableArray[String]] = ImmutableArrays.empty[String](2),
                               keyToIndexMap: ConcurrentHashMap[String, Integer] = new ConcurrentHashMap[String, Integer](),
-                              indexToCreatedTime: ConcurrentHashMap[Integer, Long] = new ConcurrentHashMap[Integer, Long](),
-                              indexToLastUpdatedTime: ConcurrentHashMap[Integer, Long] = new ConcurrentHashMap[Integer, Long]()
+                              indexToCreatedTime: ConcurrentHashMap[Integer, EpochTimestamp] = new ConcurrentHashMap[Integer, EpochTimestamp](),
+                              indexToLastUpdatedTime: ConcurrentHashMap[Integer, EpochTimestamp] = new ConcurrentHashMap[Integer, EpochTimestamp]()
                             )(implicit timeProvider: Clock) extends StrictLogging {
 
   val rightTables: Array[String] = tableDef.rightTables
@@ -216,7 +217,7 @@ case class JoinDataTableData(
 
         //add reference from key to row index
         keyToIndexMap.put(rowKey, index)
-        val now = timeProvider.now()
+        val now = EpochTimestamp(timeProvider)
         indexToCreatedTime.put(index, now)
         indexToLastUpdatedTime.put(index, now)
 
@@ -273,7 +274,7 @@ case class JoinDataTableData(
 
       //else if that index does exist then
       case index =>
-        indexToLastUpdatedTime.put(index, timeProvider.now())
+        indexToLastUpdatedTime.put(index, EpochTimestamp(timeProvider))
 
         var joinFieldIndex = 0
 

@@ -7,15 +7,19 @@ import org.finos.toolbox.time.{DefaultClock, TestFriendlyClock}
 import org.finos.vuu.api.{Index, Indices, TableDef}
 import org.finos.vuu.core.filter.FilterClause
 import org.finos.vuu.core.table.DefaultColumnNames.CreatedTimeColumnName
+import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.core.table.{Columns, InMemDataTable, RowWithData, ViewPortColumnCreator}
 import org.finos.vuu.test.TestFriendlyJoinTableProvider
 
-object FilterAndSortFixture {
-  private val timeProvider = new TestFriendlyClock(10001L)
-  val now: Long = timeProvider.now();
-  val previousHour: Long = now - 3600000;
-  val nextHour: Long = now + 3600000;
+import java.time.temporal.ChronoUnit
+import java.time.{Instant, LocalDateTime, ZoneId}
 
+object FilterAndSortFixture {
+
+  val dateTime: Instant = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant
+  val now: EpochTimestamp = EpochTimestamp(dateTime)
+  val previousHour: EpochTimestamp = EpochTimestamp(dateTime.minus(1, ChronoUnit.HOURS))
+  val nextHour: EpochTimestamp = EpochTimestamp(dateTime.plus(1, ChronoUnit.HOURS));
 
   def getFilteredRows(table: InMemDataTable, clause: FilterClause): Iterable[RowWithData] = {
     val vpColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)
