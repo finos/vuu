@@ -3,8 +3,11 @@ package org.finos.vuu.core.module.editable
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.table.TableTestHelper.combineQs
+import org.finos.vuu.net.{ClientSessionId, RequestContext}
+import org.finos.vuu.net.rpc.{RpcFunctionSuccess, RpcNames, RpcParams}
 import org.finos.vuu.test.VuuServerTestCase
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.scalatest.prop.Tables.Table
@@ -13,6 +16,7 @@ class EditableTest extends VuuServerTestCase {
 
   Feature("Editable Test Case") {
 
+    // TODO #1790 to be deleted
     Scenario("Check the editable functionality") {
 
       implicit val clock: Clock = new TestFriendlyClock(10001L)
@@ -71,6 +75,31 @@ class EditableTest extends VuuServerTestCase {
               ("rowId", "A", "B", "C", "D")
             )
           }
+
+      }
+    }
+
+    Scenario("Check the editable functionality with EditTableRpcHandler") {
+
+      given clock: Clock = new TestFriendlyClock(10001L)
+
+      given lifecycle: LifecycleContainer = new LifecycleContainer()
+
+      given tableDefContainer: TableDefContainer = new TableDefContainer(Map())
+
+      given metricsProvider: MetricsProvider = new MetricsProviderImpl
+
+      withVuuServer(EditTableTestModule()) {
+        vuuServer =>
+          vuuServer.login("testUser")
+
+          val viewport = vuuServer.createViewPort(EditTableTestModule.NAME, "editTestTable")
+          val ctx = RequestContext("", VuuUser(""), ClientSessionId("", ""), null)
+          val rpcResult = viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.OnFormSubmitRpc, new RpcParams(Map("comment" -> "Some comment"), viewport, ctx))
+          rpcResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
+          rpcResult.asInstanceOf[RpcFunctionSuccess].optionalResult.get shouldBe "Some comment"
+
+        // TODO 1790 add tests for other rpc calls in EditableTestService
 
       }
     }

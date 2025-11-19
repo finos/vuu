@@ -5,6 +5,7 @@ import org.finos.vuu.core.module.TableDefContainer;
 import org.finos.vuu.core.module.ViewServerModule;
 import org.finos.vuu.module.JavaExampleModule;
 import org.finos.vuu.net.*;
+import org.finos.vuu.net.rpc.RpcNames;
 import org.finos.vuu.viewport.ViewPortRange;
 import org.finos.vuu.viewport.ViewPortTable;
 import org.junit.jupiter.api.*;
