@@ -124,7 +124,7 @@ class EditableTestService(val table: DataTable)(using tableContainer: TableConta
     val comment: String = params.namedParams("comment").asInstanceOf[String]
     val vp: ViewPort = params.viewPort
     val session: ClientSessionId = params.ctx.session
-    RpcFunctionSuccess(None)
+    RpcFunctionSuccess(Some(comment))
   }
 
   override def closeForm(params: RpcParams): RpcFunctionResult = {
