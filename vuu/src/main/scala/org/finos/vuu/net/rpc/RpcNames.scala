@@ -11,6 +11,6 @@ object RpcNames {
   val AddRowRpc: Rpc.FunctionName = "addRow"
   val EditRowRpc: Rpc.FunctionName = "editRow"
   val EditCellRpc: Rpc.FunctionName = "editCell"
-  val OnFormSubmitRpc: Rpc.FunctionName = "onFormSubmit"
-  val OnFormCloseRpc: Rpc.FunctionName = "onFormClose"
+  val SubmitFormRpc: Rpc.FunctionName = "submitForm"
+  val CloseFormRpc: Rpc.FunctionName = "closeForm"
 }
