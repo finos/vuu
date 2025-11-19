@@ -127,8 +127,6 @@ class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(implicit cl
     row.get(columnName)
   }
 
-  override def deleteRowAction(): ViewPortDeleteRowAction = ???
-
   override def deleteCellAction(): ViewPortDeleteCellAction = ???
 
   override def addRowAction(): ViewPortAddRowAction = ???

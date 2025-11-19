@@ -1,15 +1,13 @@
 package org.finos.vuu.core.module.basket
 
 import org.finos.vuu.net.rpc.{EditRpcHandler, RpcHandler}
-import org.finos.vuu.viewport.{ViewPortAction, ViewPortAddRowAction, ViewPortDeleteCellAction, ViewPortDeleteRowAction, ViewPortEditCellAction, ViewPortEditRowAction, ViewPortEditSuccess, ViewPortFormCloseAction, ViewPortFormSubmitAction}
+import org.finos.vuu.viewport.{ViewPortAction, ViewPortAddRowAction, ViewPortDeleteCellAction, ViewPortEditCellAction, ViewPortEditRowAction, ViewPortEditSuccess, ViewPortFormCloseAction, ViewPortFormSubmitAction}
 
 class TestService extends RpcHandler with EditRpcHandler {
   def sendBasketToMarket(): ViewPortAction = {
     println("test")
     ViewPortEditSuccess()
   }
-
-  override def deleteRowAction(): ViewPortDeleteRowAction = ???
 
   override def deleteCellAction(): ViewPortDeleteCellAction = ???
 
