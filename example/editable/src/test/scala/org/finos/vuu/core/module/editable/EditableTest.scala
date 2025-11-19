@@ -81,10 +81,13 @@ class EditableTest extends VuuServerTestCase {
 
     Scenario("Check the editable functionality with EditTableRpcHandler") {
 
-      implicit val clock: Clock = new TestFriendlyClock(10001L)
-      implicit val lifecycle: LifecycleContainer = new LifecycleContainer()
-      implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
-      implicit val metricsProvider: MetricsProvider = new MetricsProviderImpl
+      given clock: Clock = new TestFriendlyClock(10001L)
+
+      given lifecycle: LifecycleContainer = new LifecycleContainer()
+
+      given tableDefContainer: TableDefContainer = new TableDefContainer(Map())
+
+      given metricsProvider: MetricsProvider = new MetricsProviderImpl
 
       withVuuServer(EditTableTestModule()) {
         vuuServer =>
