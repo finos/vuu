@@ -6,8 +6,8 @@ abstract class EditTableRpcHandler(implicit val tableContainer: TableContainer) 
   registerRpc(RpcNames.DeleteRowRpc, this.deleteRow)
   registerRpc(RpcNames.DeleteCellRpc, this.deleteCell)
   registerRpc(RpcNames.AddRowRpc, this.addRow)
-  registerRpc(RpcNames.EditCellRpc, this.editCell)
   registerRpc(RpcNames.EditRowRpc, this.editRow)
+  registerRpc(RpcNames.EditCellRpc, this.editCell)
   registerRpc(RpcNames.OnFormSubmitRpc, this.submitForm)
   registerRpc(RpcNames.OnFormCloseRpc, this.closeForm)
 
@@ -17,9 +17,9 @@ abstract class EditTableRpcHandler(implicit val tableContainer: TableContainer) 
 
   def addRow(params: RpcParams): RpcFunctionResult
 
-  def editCell(params: RpcParams): RpcFunctionResult
-
   def editRow(params: RpcParams): RpcFunctionResult
+
+  def editCell(params: RpcParams): RpcFunctionResult
 
   def submitForm(params: RpcParams): RpcFunctionResult
 
