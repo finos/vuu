@@ -2,10 +2,11 @@ package org.finos.vuu.core.table
 
 import org.finos.vuu.api.{ColumnBuilder, TableDef}
 import org.finos.vuu.core.table.column.NullCalculatedColumnClause
+import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.util.types.TypeUtils
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.prop.TableDrivenPropertyChecks._
+import org.scalatest.prop.TableDrivenPropertyChecks.*
 
 class ColumnTest extends AnyFeatureSpec with Matchers {
 
@@ -18,6 +19,7 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
       (DataType.IntegerDataType, "27", 27),
       (DataType.LongDataType, "33", 33L),
       (DataType.DoubleDataType, "33.55", 33.55),
+      (DataType.EpochTimestampType, "100000000", EpochTimestamp.apply(100_000_000L)),
     ))((dataType, stringInput, expectedOutput) => {
       Scenario(s"can parse string '$stringInput' to `$dataType` type") {
         val parsedValue = DataType.parseToDataType(stringInput, dataType)
@@ -33,6 +35,7 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
       (DataType.IntegerDataType, "27.5"),
       (DataType.LongDataType, "33.5"),
       (DataType.DoubleDataType, "12x1"),
+      (DataType.EpochTimestampType, "44.5"),
     ))((dataType, stringInput) => {
       Scenario(s"should return empty when string '$stringInput' cannot be parsed to `$dataType` type") {
         val parsedValue = DataType.parseToDataType(stringInput, dataType)

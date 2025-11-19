@@ -1,4 +1,4 @@
-package org.finos.vuu.json
+package org.finos.vuu.net.json
 
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type
 import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
@@ -9,7 +9,6 @@ import org.finos.vuu.net.rpc.{JsonSubTypeRegistry, VsJsonTypeResolver}
 import org.finos.vuu.viewport.ViewPortTable
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
-
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonTypeIdResolver(classOf[VsJsonTypeResolver])

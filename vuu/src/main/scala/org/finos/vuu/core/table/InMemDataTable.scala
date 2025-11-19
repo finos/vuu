@@ -6,8 +6,9 @@ import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.text.AsciiUtil
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.index.{IndexedField, SkipListIndexedBooleanField, SkipListIndexedDoubleField, SkipListIndexedIntField, SkipListIndexedLongField, SkipListIndexedStringField}
+import org.finos.vuu.core.index.{IndexedField, SkipListIndexedBooleanField, SkipListIndexedDoubleField, SkipListIndexedEpochTimestampField, SkipListIndexedIntField, SkipListIndexedLongField, SkipListIndexedStringField}
 import org.finos.vuu.core.row.{InMemMapRowBuilder, RowBuilder}
+import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.provider.{JoinTableProvider, Provider}
 import org.finos.vuu.viewport.{RowProcessor, RowSource, ViewPortColumns}
@@ -245,6 +246,8 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
         new SkipListIndexedDoubleField(c)
       case DataType.BooleanDataType =>
         new SkipListIndexedBooleanField(c)
+      case DataType.EpochTimestampType =>
+        new SkipListIndexedEpochTimestampField(c)
     }
   }
 
@@ -369,6 +372,8 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
               index.asInstanceOf[IndexedField[Double]].insert(x.asInstanceOf[Double], rowkey)
             case DataType.BooleanDataType =>
               index.asInstanceOf[IndexedField[Boolean]].insert(x.asInstanceOf[Boolean], rowkey)
+            case DataType.EpochTimestampType =>
+              index.asInstanceOf[IndexedField[EpochTimestamp]].insert(x.asInstanceOf[EpochTimestamp], rowkey)
           }
       }
     })
@@ -387,6 +392,14 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
               index.asInstanceOf[IndexedField[String]].remove(x.asInstanceOf[String], rowkey)
             case DataType.IntegerDataType =>
               index.asInstanceOf[IndexedField[Int]].remove(x.asInstanceOf[Int], rowkey)
+            case DataType.LongDataType =>
+              index.asInstanceOf[IndexedField[Long]].remove(x.asInstanceOf[Long], rowkey)
+            case DataType.DoubleDataType =>
+              index.asInstanceOf[IndexedField[Double]].remove(x.asInstanceOf[Double], rowkey)
+            case DataType.BooleanDataType =>
+              index.asInstanceOf[IndexedField[Boolean]].remove(x.asInstanceOf[Boolean], rowkey)
+            case DataType.EpochTimestampType =>
+              index.asInstanceOf[IndexedField[EpochTimestamp]].remove(x.asInstanceOf[EpochTimestamp], rowkey)
           }
       }
     })
