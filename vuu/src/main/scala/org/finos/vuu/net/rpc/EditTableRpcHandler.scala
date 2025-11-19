@@ -8,8 +8,8 @@ abstract class EditTableRpcHandler(using val tableContainer: TableContainer) ext
   registerRpc(RpcNames.AddRowRpc, this.addRow)
   registerRpc(RpcNames.EditRowRpc, this.editRow)
   registerRpc(RpcNames.EditCellRpc, this.editCell)
-  registerRpc(RpcNames.OnFormSubmitRpc, this.submitForm)
-  registerRpc(RpcNames.OnFormCloseRpc, this.closeForm)
+  registerRpc(RpcNames.SubmitFormRpc, this.submitForm)
+  registerRpc(RpcNames.CloseFormRpc, this.closeForm)
 
   def deleteRow(params: RpcParams): RpcFunctionResult
 

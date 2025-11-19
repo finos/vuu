@@ -95,7 +95,7 @@ class EditableTest extends VuuServerTestCase {
 
           val viewport = vuuServer.createViewPort(EditTableTestModule.NAME, "editTestTable")
           val ctx = RequestContext("", VuuUser(""), ClientSessionId("", ""), null)
-          val rpcResult = viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.OnFormSubmitRpc, new RpcParams(Map("comment" -> "Some comment"), viewport, ctx))
+          val rpcResult = viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.SubmitFormRpc, new RpcParams(Map("comment" -> "Some comment"), viewport, ctx))
           rpcResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
           rpcResult.asInstanceOf[RpcFunctionSuccess].optionalResult.get shouldBe "Some comment"
 
