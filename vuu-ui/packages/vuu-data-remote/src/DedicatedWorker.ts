@@ -15,6 +15,7 @@ import {
   VuuRpcMenuRequest,
   VuuRpcServiceRequest,
 } from "@vuu-ui/vuu-protocol-types";
+import { WebSocketCloseMessage } from "./WebSocketConnection";
 
 const workerBlob = new Blob([getLoggingConfigForWorker() + workerSourceCode], {
   type: "text/javascript",
@@ -27,14 +28,18 @@ export class DedicatedWorker {
   >;
   #worker: Promise<Worker>;
 
-  constructor(onMessage: (msg: VuuUIMessageIn) => void) {
+  constructor(
+    onMessage: (msg: VuuUIMessageIn | WebSocketCloseMessage) => void,
+  ) {
     const deferredWorker = new DeferredPromise<Worker>();
     this.#worker = deferredWorker.promise;
     const worker = new Worker(workerBlobUrl);
     const timer: number | null = window.setTimeout(() => {
       console.warn("timed out waiting for worker to load");
     }, 1000);
-    worker.onmessage = (msg: MessageEvent<VuuUIMessageIn>) => {
+    worker.onmessage = (
+      msg: MessageEvent<VuuUIMessageIn | WebSocketCloseMessage>,
+    ) => {
       const { data: message } = msg;
       if (message.type === "ready") {
         window.clearTimeout(timer);
@@ -45,6 +50,11 @@ export class DedicatedWorker {
       } else if (message.type === "connection-failed") {
         this.#deferredConnection?.resolve("rejected");
         // this.#deferredConnection?.reject(message.reason);
+      } else if (message.type === "websocket-closed") {
+        if (message.reason === "token-expired") {
+          console.log(`websocket closed ${message.reason}`);
+          onMessage(message);
+        }
       } else {
         onMessage(message);
       }

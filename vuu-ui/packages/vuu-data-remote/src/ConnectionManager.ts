@@ -29,6 +29,7 @@ import {
   uuid,
 } from "@vuu-ui/vuu-utils";
 import {
+  WebSocketCloseMessage,
   WebSocketConnectionEvents,
   WebSocketConnectionState,
   isWebSocketConnectionMessage,
@@ -44,7 +45,9 @@ export type PostMessageToClientCallback = (
 
 export type ConnectionEvents = WebSocketConnectionEvents & {
   "connection-metrics": (message: ConnectionQualityMetrics) => void;
-  "session-status": (loginResponse: VuuLoginResponse) => void;
+  "session-status": (
+    loginResponse: VuuLoginResponse | WebSocketCloseMessage,
+  ) => void;
 };
 
 type RegisteredViewport = {
@@ -101,7 +104,7 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
   }
 
   private handleMessageFromWorker = (
-    message: VuuUIMessageIn | DataSourceCallbackMessage,
+    message: VuuUIMessageIn | DataSourceCallbackMessage | WebSocketCloseMessage,
   ) => {
     if (shouldMessageBeRoutedToDataSource(message)) {
       const viewport = this.#viewports.get(message.clientViewportId);
@@ -112,6 +115,8 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
           `[ConnectionManager] ${message.type} message received, viewport not found`,
         );
       }
+    } else if (message.type === "websocket-closed") {
+      this.emit("session-status", message);
     } else if (isLoginResponse(message)) {
       this.emit("session-status", message);
     } else if (isWebSocketConnectionMessage(message)) {
