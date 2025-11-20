@@ -76,6 +76,7 @@ async function connectToServer(
   }));
 
   websocketConnection.on("connection-status", postMessage);
+  websocketConnection.on("closed", postMessage);
 
   // This will not resolve until the websocket has been successfully opened,
   // i.e. we get an open event...

@@ -94,9 +94,18 @@ const parseWebSocketMessage = (message: string): VuuServerMessage => {
   }
 };
 
-export type WebSocketConnectionCloseReason = "failure" | "shutdown";
+export type WebSocketCloseMessage = {
+  type: "websocket-closed";
+  reason: WebSocketConnectionCloseReason;
+};
+
+export type WebSocketConnectionCloseReason =
+  | "failure"
+  | "shutdown"
+  | "invalid-token"
+  | "token-expired";
 export type WebSocketConnectionEvents = {
-  closed: (reason: WebSocketConnectionCloseReason) => void;
+  closed: (message: WebSocketCloseMessage) => void;
   connected: () => void;
   "connection-status": (message: WebSocketConnectionState) => void;
   reconnected: () => void;
@@ -318,8 +327,10 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
   }
 
   private receive = (evt: MessageEvent) => {
-    if (evt.data === "Invalid token") {
-      throw Error("[WebSocketConnection] Invalid token");
+    if (evt.data === "Invalid token" || evt.data === "Token has expired") {
+      const closeReason: WebSocketConnectionCloseReason =
+        evt.data === "Invalid token" ? "invalid-token" : "token-expired";
+      this.close(closeReason);
     } else {
       const vuuMessageFromServer = parseWebSocketMessage(evt.data);
       if (vuuMessageFromServer.body.type === "CHANGE_VP_RANGE_SUCCESS") {
@@ -356,7 +367,7 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
     } else {
       this.#ws?.close();
     }
-    this.emit("closed", reason);
+    this.emit("closed", { type: "websocket-closed", reason });
     this.#ws = undefined;
   }
 }
