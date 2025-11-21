@@ -4,9 +4,9 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.net.json.JsonVsSerializer
-import org.finos.vuu.net.{ClientSessionId, JsonViewServerMessage, ViewPortAddRowRpcCall, ViewPortDeleteCellRpcCall, ViewPortDeleteRowRpcCall, ViewPortEditCellRpcCall, ViewPortEditRowRpcCall, ViewPortEditSubmitFormRpcCall, ViewServerHandler}
+import org.finos.vuu.net.{ClientSessionId, JsonViewServerMessage, ViewPortAddRowRpcCall, ViewPortDeleteCellRpcCall, ViewPortEditCellRpcCall, ViewPortEditRowRpcCall, ViewPortEditSubmitFormRpcCall, ViewServerHandler}
 import org.finos.vuu.test.impl.TestChannel
-import org.finos.vuu.viewport.{ViewPort, ViewPortAddRowAction, ViewPortDeleteCellAction, ViewPortDeleteRowAction, ViewPortEditCellAction, ViewPortEditRowAction, ViewPortFormSubmitAction}
+import org.finos.vuu.viewport.{ViewPort, ViewPortAddRowAction, ViewPortDeleteCellAction, ViewPortEditCellAction, ViewPortEditRowAction, ViewPortFormSubmitAction}
 
 import java.lang.reflect.{InvocationHandler, Method}
 
@@ -92,32 +92,6 @@ class RpcDynamicProxy(viewport: ViewPort,
     })
   }
 
-
-  private def processDeleteRowAction(proxy: Any, method: Method): ViewPortDeleteRowAction = {
-    ViewPortDeleteRowAction("", (key, vp, session) => {
-
-      val requestId = RequestId.oneNew()
-      val rpcMessage = ViewPortDeleteRowRpcCall(viewport.id, key)
-      val vpMsg = JsonViewServerMessage(requestId, session.sessionId, rpcMessage)
-
-      val packet = serializer.serialize(vpMsg)
-
-      logger.trace("Calling RPC with packet:" + packet)
-
-      handler.handle(packet, channel)
-
-      channel.popMsg match {
-        case Some(packet) =>
-          logger.trace("Got RPC response packet:" + packet)
-          val responseMsg = serializer.deserialize(packet)
-          //responseMsg.body.asInstanceOf[ViewPort]
-          null
-        case None =>
-          null
-      }
-    })
-  }
-
   private def processFormSubmitAction(proxy: Any, method: Method): ViewPortFormSubmitAction = {
     ViewPortFormSubmitAction("", (vp, session) => {
 
@@ -174,7 +148,6 @@ class RpcDynamicProxy(viewport: ViewPort,
       case "editCellAction" => processEditCellAction(proxy, method)
       case "editRowAction" => processEditRowAction(proxy, method)
       case "addRowAction" => processAddRowAction(proxy, method)
-      case "deleteRowAction" => processDeleteRowAction(proxy, method)
       case "deleteCellAction" => processDeleteCellAction(proxy, method)
       case "onFormSubmit" => processFormSubmitAction(proxy, method)
       case _ => throw new IllegalArgumentException(s"Unsupported rpc call $method. If this is a RpcRequest, you can retrieve it from viewport.viewPortDef.service")

@@ -129,18 +129,6 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
-  def callRpcEditDeleteRow(vpId: String, key: String, session: ClientSessionId): ViewPortAction = {
-    val viewPort = this.getViewPortById(vpId)
-    val viewPortDef = viewPort.getStructure.viewPortDef
-    val service = viewPortDef.service
-
-    service match {
-      case serv: EditRpcHandler => serv.deleteRowAction().func(key, viewPort, session)
-      case _ =>
-        throw new Exception(s"Service is not editable rpc")
-    }
-  }
-
   def callRpcAddRow(vpId: String, key: String,  data: Map[String, Any], session: ClientSessionId): ViewPortAction = {
     val viewPort = this.getViewPortById(vpId)
     val viewPortDef = viewPort.getStructure.viewPortDef

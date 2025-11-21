@@ -89,7 +89,6 @@ import org.finos.vuu.net.*
   new Type(value = classOf[ViewPortEditSubmitFormRpcCall], name = "VP_EDIT_SUBMIT_FORM_RPC"),
   new Type(value = classOf[ViewPortEditCloseFormRpcCall], name = "VP_EDIT_CLOSE_FORM_RPC"),
   new Type(value = classOf[ViewPortDeleteCellRpcCall], name = "VP_EDIT_DELETE_CELL_RPC"),
-  new Type(value = classOf[ViewPortDeleteRowRpcCall], name = "VP_EDIT_DELETE_ROW_RPC"),
   new Type(value = classOf[ViewPortAddRowRpcCall], name = "VP_EDIT_ADD_ROW_RPC"),
   new Type(value = classOf[ViewPortEditRpcReject], name = "VP_EDIT_RPC_REJECT"),
   new Type(value = classOf[ViewPortEditRpcResponse], name = "VP_EDIT_RPC_RESPONSE"),

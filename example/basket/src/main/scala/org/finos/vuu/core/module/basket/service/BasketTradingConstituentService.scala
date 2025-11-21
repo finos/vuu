@@ -10,10 +10,6 @@ import org.finos.vuu.viewport._
 
 class BasketTradingConstituentService(val table: DataTable)(implicit clock: Clock, val tableContainer: TableContainer) extends DefaultRpcHandler with EditRpcHandler with StrictLogging {
 
-  def onDeleteRow(key: String, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
-    ViewPortEditSuccess()
-  }
-
   def onDeleteCell(key: String, column: String, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
     ViewPortEditSuccess()
   }
@@ -35,27 +31,24 @@ class BasketTradingConstituentService(val table: DataTable)(implicit clock: Cloc
   }
 
   private def onFormSubmit(vp: ViewPort, session: ClientSessionId): ViewPortAction = {
-//    val table = vp.table.asTable
-//    val primaryKeys = table.primaryKeys
-//    val headKey = primaryKeys.head
-//    val sequencerNumber = table.pullRow(headKey).get("sequenceNumber").asInstanceOf[Int].toLong
-//
-//    if (sequencerNumber > 0) {
-//      logger.info("I would now send this fix seq to a fix engine to reset, we're all good:" + sequencerNumber)
-//      CloseDialogViewPortAction(vp.id)
-//    } else {
-//      logger.error("Seq number not set, returning error")
-//      ViewPortEditFailure("Sequencer number has not been set.")
-//    }
+    //    val table = vp.table.asTable
+    //    val primaryKeys = table.primaryKeys
+    //    val headKey = primaryKeys.head
+    //    val sequencerNumber = table.pullRow(headKey).get("sequenceNumber").asInstanceOf[Int].toLong
+    //
+    //    if (sequencerNumber > 0) {
+    //      logger.info("I would now send this fix seq to a fix engine to reset, we're all good:" + sequencerNumber)
+    //      CloseDialogViewPortAction(vp.id)
+    //    } else {
+    //      logger.error("Seq number not set, returning error")
+    //      ViewPortEditFailure("Sequencer number has not been set.")
+    //    }
     CloseDialogViewPortAction(vp.id)
   }
 
   private def onFormClose(vp: ViewPort, session: ClientSessionId): ViewPortAction = {
     CloseDialogViewPortAction(vp.id)
   }
-
-
-  override def deleteRowAction(): ViewPortDeleteRowAction = ViewPortDeleteRowAction("", this.onDeleteRow)
 
   override def deleteCellAction(): ViewPortDeleteCellAction = ViewPortDeleteCellAction("", this.onDeleteCell)
 
