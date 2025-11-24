@@ -465,7 +465,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
       super.config = config;
 
       const { columns, ...dataSourceConfig } = combineFilters(this.config);
-      const serverConfig = {
+      const serverConfig: WithFullConfig = {
         ...dataSourceConfig,
         columns: ensureAutosubscribeColumnsIncluded(
           columns,
@@ -493,7 +493,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
   }
 
   get groupBy() {
-    return this._config.groupBy;
+    return this._configWithVisualLink.groupBy;
   }
 
   set groupBy(groupBy: VuuGroupBy) {
@@ -501,7 +501,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
       const wasGrouped = this.groupBy.length > 0;
 
       this.impendingConfig = {
-        ...this._config,
+        ...this._configWithVisualLink,
         groupBy,
       };
 
@@ -536,12 +536,12 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
   }
 
   get visualLink() {
-    return this._config.visualLink;
+    return this._configWithVisualLink.visualLink;
   }
 
   set visualLink(visualLink: LinkDescriptorWithLabel | undefined) {
-    this._config = {
-      ...this._config,
+    this._configWithVisualLink = {
+      ...this._configWithVisualLink,
       visualLink,
     };
 
@@ -577,7 +577,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
       }
     }
 
-    this.emit("config", this._config, this.range);
+    this.emit("config", this._configWithVisualLink, this.range);
   }
 
   async remoteProcedureCall<T extends VuuRpcResponse = VuuRpcResponse>() {

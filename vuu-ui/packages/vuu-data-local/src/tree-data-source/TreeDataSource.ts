@@ -90,8 +90,8 @@ export class TreeDataSource extends BaseDataSource implements DataSource {
 
     if (this.columnDescriptors) {
       const columns = this.columnDescriptors.map((c) => c.name);
-      this._config = {
-        ...this._config,
+      this._configWithVisualLink = {
+        ...this._configWithVisualLink,
         columns,
         groupBy: columns.slice(1),
       };
@@ -115,8 +115,8 @@ export class TreeDataSource extends BaseDataSource implements DataSource {
       this.#aggregations = aggregations;
     }
     if (columns) {
-      this._config = {
-        ...this._config,
+      this._configWithVisualLink = {
+        ...this._configWithVisualLink,
         columns,
       };
     }
@@ -146,7 +146,7 @@ export class TreeDataSource extends BaseDataSource implements DataSource {
       clientViewportId: this.viewport,
       columns: this.columns,
       filterSpec: this.filter,
-      groupBy: this._config.groupBy,
+      groupBy: this._configWithVisualLink.groupBy,
       range: this.range,
       sort: this.sort,
       tableSchema: NULL_SCHEMA,
@@ -198,13 +198,13 @@ export class TreeDataSource extends BaseDataSource implements DataSource {
   }
 
   get filter() {
-    return this._config.filterSpec;
+    return this._configWithVisualLink.filterSpec;
   }
 
   set filter(filter: DataSourceFilter) {
     // Note not using the setter
-    this._config = {
-      ...this._config,
+    this._configWithVisualLink = {
+      ...this._configWithVisualLink,
       filterSpec: filter,
     };
 

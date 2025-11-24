@@ -463,7 +463,7 @@ export declare type RowSelectionEventHandler = (
 ) => void;
 
 export type DataSourceConfigChangeHandler = (
-  config: WithBaseFilter<WithFullConfig>,
+  config: ConfigWithVisualLink,
   range: Range,
   confirmed?: boolean,
   configChanges?: DataSourceConfigChanges,

@@ -26,6 +26,7 @@ import {
   VuuSort,
 } from "@vuu-ui/vuu-protocol-types";
 import { ColumnMap } from "../column-utils";
+import { ConfigWithVisualLink } from "./BaseDataSource";
 
 export const NoFilter: VuuFilter = { filter: "" };
 export const NoSort: VuuSort = { sortDefs: [] };
@@ -36,6 +37,13 @@ export const vanillaConfig: WithFullConfig = {
   filterSpec: NoFilter,
   groupBy: [],
   sort: NoSort,
+};
+
+export const stripVisualLink = ({
+  visualLink,
+  ...config
+}: ConfigWithVisualLink): WithBaseFilter<WithFullConfig> => {
+  return config;
 };
 
 export type DataSourceConfigChanges = {

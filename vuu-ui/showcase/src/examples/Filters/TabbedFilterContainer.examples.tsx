@@ -213,7 +213,7 @@ const TableWithTabbedFilterContainerTemplate = ({
 
   const { currentFilter } = useSavedFilters();
 
-  const schema = useMemo(() => getSchema(table), []);
+  const schema = useMemo(() => getSchema(table), [table]);
 
   const dataSource = useMemo(() => {
     return new VuuDataSource({
@@ -238,7 +238,7 @@ const TableWithTabbedFilterContainerTemplate = ({
     () => ({
       columns: schema.columns,
     }),
-    [],
+    [schema],
   );
 
   const showFilters = useCallback(() => {
