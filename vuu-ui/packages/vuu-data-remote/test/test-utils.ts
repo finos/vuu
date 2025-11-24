@@ -5,6 +5,7 @@ import {
   VuuRow,
   VuuServerMessage,
   VuuTableMetaResponse,
+  VuuDataRow,
 } from "@vuu-ui/vuu-protocol-types";
 import {
   ServerProxy,
@@ -13,6 +14,7 @@ import {
 
 import { PostMessageToClientCallback } from "../src";
 import {
+  DataSourceConstructorProps,
   ServerProxySubscribeMessage,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
@@ -48,6 +50,14 @@ export const sizeRow = (viewPortId = "server-vp-1", vpSize = 100) =>
     rowKey: "SIZE",
     updateType: "SIZE",
   }) as VuuRow;
+
+export const TABLE_ROW = (rows: VuuRow<VuuDataRow>[]): VuuServerMessage => ({
+  ...COMMON_ATTRS,
+  body: {
+    ...COMMON_TABLE_ROW_ATTRS,
+    rows,
+  },
+});
 
 /**
  *
@@ -187,11 +197,27 @@ export const testSchema: TableSchema = {
   table: { module: "TEST", table: "test-table" },
 };
 
+interface CreateSubscriptionProps
+  extends Pick<
+    DataSourceConstructorProps,
+    | "aggregations"
+    | "bufferSize"
+    | "columns"
+    | "filterSpec"
+    | "groupBy"
+    | "sort"
+    | "viewport"
+  > {
+  from?: number;
+  key?: string;
+  to?: number;
+}
+
 // prettier-ignore
 export const createSubscription = ({
   aggregations = [],
-  columns = ["col-1"],
   bufferSize = 0,
+  columns = ["col-1"],
   filterSpec = { filter: ''},
   from = 0,
   groupBy = [],
@@ -199,7 +225,7 @@ export const createSubscription = ({
   to = 10,
   sort = {sortDefs: []},
   viewport = `client-vp-${key}`
-} = {}): [
+}: CreateSubscriptionProps = {}): [
   ServerProxySubscribeMessage, 
   VuuServerMessage<VuuViewportCreateSuccessResponse>,
   VuuServerMessage<VuuTableMetaResponse>

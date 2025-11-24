@@ -159,12 +159,14 @@ export const useDataSource = ({
             }
           }
         } else if (message.size === 0) {
+          console.log({ message });
           setData([]);
         } else if (typeof message.size === "number") {
           data.current = dataWindow.data;
           hasUpdated.current = true;
         }
       } else if (message.type === "viewport-clear") {
+        console.log("viewport clear");
         onSizeChange?.(0);
         dataWindow.setRowCount(0);
         setData([]);
