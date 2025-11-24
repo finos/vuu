@@ -1,13 +1,13 @@
 import { test, expect } from "@playwright/experimental-ct-react";
 import { TestTimeInput } from "../../../../../../showcase/src/examples/UiControls/TimeInput.examples";
 
-declare global {
-  namespace PlaywrightTest {
-    interface Matchers<R> {
-      toHaveSelection(start: number, end: number): R;
-    }
-  }
-}
+// declare global {
+//   namespace PlaywrightTest {
+//     interface Matchers<R> {
+//       toHaveSelection(start: number, end: number): R;
+//     }
+//   }
+// }
 // TODO figure out where we put this to make it shareable
 expect.extend({
   async toHaveSelection(locator, start, end) {

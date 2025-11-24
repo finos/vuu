@@ -28,8 +28,9 @@ export const selectItem = (
   if (selectionModel === "none") {
     return;
   } else if (actsLikeSingleSelect) {
+    const preserveSelection = singleSelect ? false : preserveExistingSelection;
     return {
-      preserveExistingSelection: false,
+      preserveExistingSelection: preserveSelection,
       rowKey,
       type: "SELECT_ROW",
     } as Omit<SelectRequest, "vpId">;

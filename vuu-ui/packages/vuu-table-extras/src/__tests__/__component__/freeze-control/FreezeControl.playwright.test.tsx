@@ -5,7 +5,6 @@ import {
 } from "@playwright/experimental-ct-react";
 import type { Locator } from "@playwright/experimental-ct-core";
 import { FreezeControl } from "../../../freeze-control/FreezeControl";
-import React from "react";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 
