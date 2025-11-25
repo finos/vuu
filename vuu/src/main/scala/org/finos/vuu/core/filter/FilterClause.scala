@@ -99,7 +99,7 @@ case class InClause(columnName: String, values: List[String]) extends RowFilterC
       case Some(ix: LongIndexedField)    => rowKeys.intersect(ix.find(values.map(s => s.toLong)))
       case Some(ix: DoubleIndexedField)  => rowKeys.intersect(ix.find(values.map(s => s.toDouble)))
       case Some(ix: BooleanIndexedField) => rowKeys.intersect(ix.find(values.map(s => s.toBoolean)))
-      case None                          => super.filterAll(rows, rowKeys, viewPortColumns)
+      case _                          => super.filterAll(rows, rowKeys, viewPortColumns)
     }
   }
 }
@@ -118,7 +118,7 @@ case class GreaterThanClause(columnName: String, value: Double) extends RowFilte
       case Some(ix: DoubleIndexedField) => rowKeys.intersect(ix.greaterThan(value))
       case Some(ix: IntIndexedField) => rowKeys.intersect(ix.greaterThan(value.toInt))
       case Some(ix: LongIndexedField) => rowKeys.intersect(ix.greaterThan(value.toLong))
-      case None => super.filterAll(rows, rowKeys, viewPortColumns)
+      case _ => super.filterAll(rows, rowKeys, viewPortColumns)
     }
   }
 }
@@ -137,7 +137,7 @@ case class LessThanClause(columnName: String, value: Double) extends RowFilterCl
       case Some(ix: DoubleIndexedField) => rowKeys.intersect(ix.lessThan(value))
       case Some(ix: IntIndexedField)    => rowKeys.intersect(ix.lessThan(value.toInt))
       case Some(ix: LongIndexedField)   => rowKeys.intersect(ix.lessThan(value.toInt))
-      case None                         => super.filterAll(rows, rowKeys, viewPortColumns)
+      case _                         => super.filterAll(rows, rowKeys, viewPortColumns)
     }
   }
 }
@@ -163,7 +163,7 @@ case class EqualsClause(columnName: String, value: String) extends RowFilterClau
       case Some(ix: LongIndexedField)     => rowKeys.intersect(ix.find(value.toLong))
       case Some(ix: DoubleIndexedField)   => rowKeys.intersect(ix.find(value.toDouble))
       case Some(ix: BooleanIndexedField)  => rowKeys.intersect(ix.find(value.toBoolean))
-      case None                           => super.filterAll(rows, rowKeys, viewPortColumns)
+      case _                           => super.filterAll(rows, rowKeys, viewPortColumns)
     }
   }
 }
