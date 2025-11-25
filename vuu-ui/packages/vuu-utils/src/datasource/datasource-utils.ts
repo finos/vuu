@@ -39,11 +39,15 @@ export const vanillaConfig: WithFullConfig = {
   sort: NoSort,
 };
 
-export const stripVisualLink = ({
-  visualLink,
-  ...config
-}: ConfigWithVisualLink): WithBaseFilter<WithFullConfig> => {
-  return config;
+export const stripVisualLink = (
+  configWithVisualLink: ConfigWithVisualLink,
+): WithBaseFilter<WithFullConfig> => {
+  if (configWithVisualLink.visualLink) {
+    const { visualLink, ...config } = configWithVisualLink;
+    return config;
+  } else {
+    return configWithVisualLink;
+  }
 };
 
 export type DataSourceConfigChanges = {

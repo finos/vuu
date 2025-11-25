@@ -35,6 +35,7 @@ import {
   BaseDataSource,
   combineFilters,
   debounce,
+  isConfigChanged,
   isSelectSuccessWithRowCount,
   isViewportMenusAction,
   isVisualLinksAction,
@@ -461,7 +462,8 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
   }
 
   set config(config: WithBaseFilter<WithFullConfig>) {
-    if (config !== this.config) {
+    const { noChanges } = isConfigChanged(this.config, config);
+    if (!noChanges) {
       super.config = config;
 
       const { columns, ...dataSourceConfig } = combineFilters(this.config);
