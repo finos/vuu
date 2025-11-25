@@ -500,7 +500,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       pluginRegistry.registerPlugin(new VuuInMemPlugin)
       val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer, pluginRegistry)
 
-      pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220.0, "ask" -> -1.23))
+      pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220.0, "ask" -> 222.0))
       pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500.0, "ask" -> 501.0))
 
       val queue = new OutboundRowPublishQueue()
