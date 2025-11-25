@@ -1,9 +1,5 @@
 import { TableSchema, WithRequestId } from "@vuu-ui/vuu-data-types";
-import {
-  VuuTableMetaResponse,
-  VuuRow,
-  VuuRange,
-} from "@vuu-ui/vuu-protocol-types";
+import { VuuTableMetaResponse, VuuRow } from "@vuu-ui/vuu-protocol-types";
 
 export const hasRequestId = <T extends object>(
   message: T,
@@ -91,47 +87,47 @@ export const createSchemaFromTableMetadata = ({
  * to satisfy client range request, so they were not sent
  * to client. Now we can send them all.
  */
-export const gapBetweenLastRowSentToClient = (
-  lastRowsReturnedToClient: [number, number],
-  pendingUpdates: VuuRow[],
-  clientRange: VuuRange,
-  rowCount: number,
-): VuuRange | undefined => {
-  const firstPendingUpdate = pendingUpdates.at(0);
-  const lastPendingUpdate = pendingUpdates.at(-1);
+// export const gapBetweenLastRowSentToClient = (
+//   lastRowsReturnedToClient: [number, number],
+//   pendingUpdates: VuuRow[],
+//   clientRange: VuuRange,
+//   rowCount: number,
+// ): VuuRange | undefined => {
+//   const firstPendingUpdate = pendingUpdates.at(0);
+//   const lastPendingUpdate = pendingUpdates.at(-1);
 
-  if (firstPendingUpdate && lastPendingUpdate) {
-    const maxTo = Math.min(rowCount, clientRange.to);
+//   if (firstPendingUpdate && lastPendingUpdate) {
+//     const maxTo = Math.min(rowCount, clientRange.to);
 
-    const [firstRowIndex, lastRowIndex] = lastRowsReturnedToClient;
-    if (
-      lastRowIndex < firstPendingUpdate.rowIndex - 1 &&
-      clientRange.from < firstPendingUpdate.rowIndex
-    ) {
-      return {
-        from: Math.max(lastRowIndex + 1, clientRange.from),
-        to: firstPendingUpdate.rowIndex,
-      };
-    } else if (
-      firstRowIndex > lastPendingUpdate.rowIndex + 1 &&
-      maxTo > lastPendingUpdate.rowIndex
-    ) {
-      return {
-        from: lastPendingUpdate.rowIndex + 1,
-        to: Math.min(maxTo, firstRowIndex),
-      };
-    } else if (firstRowIndex === -1 && lastRowIndex === -1) {
-      if (clientRange.from < firstPendingUpdate.rowIndex) {
-        return {
-          from: clientRange.from,
-          to: firstPendingUpdate.rowIndex,
-        };
-      } else if (maxTo > lastPendingUpdate.rowIndex + 1) {
-        return {
-          from: lastPendingUpdate.rowIndex + 1,
-          to: maxTo,
-        };
-      }
-    }
-  }
-};
+//     const [firstRowIndex, lastRowIndex] = lastRowsReturnedToClient;
+//     if (
+//       lastRowIndex < firstPendingUpdate.rowIndex - 1 &&
+//       clientRange.from < firstPendingUpdate.rowIndex
+//     ) {
+//       return {
+//         from: Math.max(lastRowIndex + 1, clientRange.from),
+//         to: firstPendingUpdate.rowIndex,
+//       };
+//     } else if (
+//       firstRowIndex > lastPendingUpdate.rowIndex + 1 &&
+//       maxTo > lastPendingUpdate.rowIndex
+//     ) {
+//       return {
+//         from: lastPendingUpdate.rowIndex + 1,
+//         to: Math.min(maxTo, firstRowIndex),
+//       };
+//     } else if (firstRowIndex === -1 && lastRowIndex === -1) {
+//       if (clientRange.from < firstPendingUpdate.rowIndex) {
+//         return {
+//           from: clientRange.from,
+//           to: firstPendingUpdate.rowIndex,
+//         };
+//       } else if (maxTo > lastPendingUpdate.rowIndex + 1) {
+//         return {
+//           from: lastPendingUpdate.rowIndex + 1,
+//           to: maxTo,
+//         };
+//       }
+//     }
+//   }
+// };

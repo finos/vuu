@@ -24,12 +24,13 @@ import { uuid } from "../nanoid";
 import {
   DataSourceConfigChanges,
   isConfigChanged,
+  stripVisualLink,
   vanillaConfig,
   withConfigDefaults,
 } from "./datasource-utils";
 import { Range } from "../range-utils";
 
-export type RuntimeConfig = WithBaseFilter<WithFullConfig> & {
+export type ConfigWithVisualLink = WithBaseFilter<WithFullConfig> & {
   visualLink?: LinkDescriptorWithLabel;
 };
 
@@ -45,8 +46,9 @@ export abstract class BaseDataSource
   public viewport: string;
 
   protected _clientCallback: DataSourceSubscribeCallback | undefined;
-  protected _config: RuntimeConfig = vanillaConfig;
-  protected _impendingConfig: RuntimeConfig | undefined = undefined;
+  protected _configWithVisualLink: ConfigWithVisualLink = vanillaConfig;
+  protected _impendingConfigWithVisualLink: ConfigWithVisualLink | undefined =
+    undefined;
   protected _range = Range(0, 0);
   protected _size = 0;
   protected _title: string | undefined;
@@ -69,14 +71,15 @@ export abstract class BaseDataSource
     viewport,
   }: Omit<DataSourceConstructorProps, "table">) {
     super();
-    this._config = {
-      ...this._config,
-      aggregations: aggregations || this._config.aggregations,
-      baseFilterSpec: baseFilterSpec || this._config.baseFilterSpec,
-      columns: columns || this._config.columns,
-      filterSpec: filterSpec || this._config.filterSpec,
-      groupBy: groupBy || this._config.groupBy,
-      sort: sort || this._config.sort,
+    this._configWithVisualLink = {
+      ...this._configWithVisualLink,
+      aggregations: aggregations || this._configWithVisualLink.aggregations,
+      baseFilterSpec:
+        baseFilterSpec || this._configWithVisualLink.baseFilterSpec,
+      columns: columns || this._configWithVisualLink.columns,
+      filterSpec: filterSpec || this._configWithVisualLink.filterSpec,
+      groupBy: groupBy || this._configWithVisualLink.groupBy,
+      sort: sort || this._configWithVisualLink.sort,
     };
     this._defaultSuspenseProps = suspenseProps;
     this._title = title;
@@ -107,14 +110,15 @@ export abstract class BaseDataSource
       groupBy ||
       sort
     ) {
-      this._config = {
-        ...this._config,
-        aggregations: aggregations || this._config.aggregations,
-        baseFilterSpec: baseFilterSpec || this._config.baseFilterSpec,
-        columns: columns || this._config.columns,
-        filterSpec: filterSpec || this._config.filterSpec,
-        groupBy: groupBy || this._config.groupBy,
-        sort: sort || this._config.sort,
+      this._configWithVisualLink = {
+        ...this._configWithVisualLink,
+        aggregations: aggregations || this._configWithVisualLink.aggregations,
+        baseFilterSpec:
+          baseFilterSpec || this._configWithVisualLink.baseFilterSpec,
+        columns: columns || this._configWithVisualLink.columns,
+        filterSpec: filterSpec || this._configWithVisualLink.filterSpec,
+        groupBy: groupBy || this._configWithVisualLink.groupBy,
+        sort: sort || this._configWithVisualLink.sort,
       };
     }
 
@@ -128,63 +132,63 @@ export abstract class BaseDataSource
   }
 
   get aggregations() {
-    return this._config.aggregations;
+    return this._configWithVisualLink.aggregations;
   }
 
   set aggregations(aggregations: VuuAggregation[]) {
     this.config = {
-      ...this._config,
+      ...this._configWithVisualLink,
       aggregations,
     };
-    this.emit("config", this._config, this.range);
+    this.emit("config", this._configWithVisualLink, this.range);
   }
 
   get baseFilter() {
-    return this._config.baseFilterSpec;
+    return this._configWithVisualLink.baseFilterSpec;
   }
 
   set baseFilter(baseFilter: DataSourceFilter | undefined) {
     this.config = {
-      ...this._config,
+      ...this._configWithVisualLink,
       baseFilterSpec: baseFilter,
     };
   }
 
   get columns() {
-    return this._config.columns;
+    return this._configWithVisualLink.columns;
   }
 
   set columns(columns: string[]) {
     this.config = {
-      ...this._config,
+      ...this._configWithVisualLink,
       columns,
     };
   }
 
   get filter() {
-    return this._config.filterSpec;
+    return this._configWithVisualLink.filterSpec;
   }
 
   set filter(filter: DataSourceFilter) {
     this.config = {
-      ...this._config,
+      ...this._configWithVisualLink,
       filterSpec: filter,
     };
   }
 
   get isAwaitingConfirmationOfConfigChange() {
-    return this._impendingConfig !== undefined;
+    return this._impendingConfigWithVisualLink !== undefined;
   }
 
   protected confirmConfigChange() {
-    if (this._impendingConfig) {
-      this._config = this._impendingConfig;
+    if (this._impendingConfigWithVisualLink) {
+      this._configWithVisualLink = this._impendingConfigWithVisualLink;
       console.log(
         "%cclear impending config and emit config change",
         "color:red",
       );
-      this._impendingConfig = undefined;
-      this.emit("config", this._config, this.range, true);
+      this._impendingConfigWithVisualLink = undefined;
+      this.emit("config", this._configWithVisualLink, this.range, true);
     } else {
       throw Error(
         `[BaseDataSource], unexpected call to confirmConfigChange, no changes pending`,
@@ -193,7 +197,9 @@ export abstract class BaseDataSource
   }
 
   get config() {
-    return this._impendingConfig ?? this._config;
+    return stripVisualLink(
+      this._impendingConfigWithVisualLink ?? this._configWithVisualLink,
+    );
   }
 
   set config(config: WithBaseFilter<WithFullConfig>) {
@@ -205,13 +211,19 @@ export abstract class BaseDataSource
     const configChanges = this.applyConfig(config);
     if (configChanges) {
       requestAnimationFrame(() => {
-        this.emit("config", this.config, this.range, confirmed, configChanges);
+        this.emit(
+          "config",
+          this._configWithVisualLink,
+          this.range,
+          confirmed,
+          configChanges,
+        );
       });
     }
   }
 
   get impendingConfig() {
-    return this._impendingConfig;
+    return this._impendingConfigWithVisualLink;
   }
   /**
    * This can be set by subclass in cases where we want to await ACK of async request
@@ -274,15 +286,15 @@ export abstract class BaseDataSource
   }
 
   get sort() {
-    return this._config.sort;
+    return this._configWithVisualLink.sort;
   }
 
   set sort(sort: VuuSort) {
     this.config = {
-      ...this._config,
+      ...this._configWithVisualLink,
       sort,
     };
-    this.emit("config", this._config, this.range);
+    this.emit("config", this._configWithVisualLink, this.range);
   }
 
   get title() {
@@ -299,7 +311,7 @@ export abstract class BaseDataSource
     preserveExistingConfigAttributes = false,
   ): DataSourceConfigChanges | undefined {
     const { noChanges, ...otherChanges } = isConfigChanged(
-      this._config,
+      this._configWithVisualLink,
       config,
     );
     if (noChanges !== true) {
@@ -317,23 +329,23 @@ export abstract class BaseDataSource
             : config;
         if (preserveExistingConfigAttributes) {
           if (this.awaitingConfirmationOfConfigChanges) {
-            this._impendingConfig = {
-              ...this._config,
+            this._impendingConfigWithVisualLink = {
+              ...this._configWithVisualLink,
               ...config,
             };
           } else {
-            this._impendingConfig = undefined;
-            this._config = {
-              ...this._config,
+            this._impendingConfigWithVisualLink = undefined;
+            this._configWithVisualLink = {
+              ...this._configWithVisualLink,
               ...config,
             };
           }
         } else {
           if (this.awaitingConfirmationOfConfigChanges) {
-            this._impendingConfig = withConfigDefaults(newConfig);
+            this._impendingConfigWithVisualLink = withConfigDefaults(newConfig);
           } else {
-            this._impendingConfig = undefined;
-            this._config = withConfigDefaults(newConfig);
+            this._impendingConfigWithVisualLink = undefined;
+            this._configWithVisualLink = withConfigDefaults(newConfig);
           }
         }
         return otherChanges;

@@ -94,7 +94,7 @@ class MockDataSourceImpl extends BaseDataSource implements DataSource {
       this.#server?.send({
         viewport: this.viewport,
         type: "config",
-        config: combineFilters(this._config),
+        config: combineFilters(this._configWithVisualLink),
       });
     }
   }

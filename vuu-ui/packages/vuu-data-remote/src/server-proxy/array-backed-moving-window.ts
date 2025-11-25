@@ -57,11 +57,9 @@ export class ArrayBackedMovingWindow {
     return this.#range;
   }
 
-  // TODO we should probably have a hasAllClientRowsWithinRange
   get hasAllRowsWithinRange(): boolean {
     return (
       this.rowsWithinRange === this.clientRange.to - this.clientRange.from ||
-      // this.rowsWithinRange === this.range.to - this.range.from ||
       (this.rowCount > 0 &&
         this.clientRange.from + this.rowsWithinRange === this.rowCount)
     );
@@ -130,7 +128,7 @@ export class ArrayBackedMovingWindow {
     return this.clientRange.isWithin(index);
   }
 
-  // Returns [false] or [serverDataRequired, clientRows, holdingRows]
+  // Returns [false] or [serverDataRequired, clientRows]
   setClientRange(from: number, to: number): RangeTuple {
     log.debug?.(`setClientRange ${from} - ${to}`);
 
@@ -138,7 +136,7 @@ export class ArrayBackedMovingWindow {
     const currentTo = Math.min(this.clientRange.to, this.rowCount);
 
     if (from === currentFrom && to === currentTo) {
-      return [false, EMPTY_ARRAY /*, EMPTY_ARRAY*/] as RangeTuple;
+      return [false, EMPTY_ARRAY] as RangeTuple;
     }
 
     const originalRange = this.clientRange.copy();
@@ -152,20 +150,30 @@ export class ArrayBackedMovingWindow {
       }
     }
 
-    let clientRows: readonly VuuRow[] = EMPTY_ARRAY;
+    const clientRows: VuuRow[] = [];
     const offset = this.#range.from;
 
-    if (this.hasAllRowsWithinRange) {
-      if (to > originalRange.to) {
-        const start = Math.max(from, originalRange.to);
-        clientRows = this.internalData.slice(start - offset, to - offset);
-      } else {
-        const end = Math.min(originalRange.from, to);
-        clientRows = this.internalData.slice(from - offset, end - offset);
+    // if (this.hasAllRowsWithinRange) {
+    if (to > originalRange.to) {
+      const start = Math.max(from, originalRange.to);
+      for (let i = start - offset; i < to - offset; i++) {
+        const row = this.internalData[i];
+        if (row) {
+          clientRows.push(row);
+        }
       }
-    } else if (this.rowsWithinRange > 0) {
-      // console.log(`[ArrayBackedMovingWindow] has some client rows but not all`);
+    } else {
+      const end = Math.min(originalRange.from, to);
+      for (let i = from - offset; i < end - offset; i++) {
+        const row = this.internalData[i];
+        if (row) {
+          clientRows.push(row);
+        }
+      }
     }
+    // } else if (this.rowsWithinRange > 0) {
+    //   // console.log(`[ArrayBackedMovingWindow] has some client rows but not all`);
+    // }
 
     const serverDataRequired = this.bufferBreakout(from, to);
     return [serverDataRequired, clientRows] as RangeTuple;
