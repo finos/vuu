@@ -7,6 +7,7 @@ import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.auths.{RowPermissionChecker, VuuUser}
 import org.finos.vuu.core.sort.ModelType.SortSpecInternal
 import org.finos.vuu.core.sort.*
+import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.core.table.{Column, DefaultColumnNames, KeyObserver, RowKeyUpdate}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.feature.{EmptyViewPortKeys, ViewPortKeys}
@@ -78,7 +79,7 @@ trait ViewPort {
 
   def isFrozen: Boolean
 
-  def viewPortFrozenTime: Option[Long]
+  def viewPortFrozenTime: Option[EpochTimestamp]
 
   def hasGroupBy: Boolean = getGroupBy != NoGroupBy
 
@@ -199,7 +200,7 @@ class ViewPortImpl(val id: String,
   private val viewPortLock = new Object
 
   @volatile private var enabled = true
-  @volatile private var viewPortFrozenTimestamp: Option[Long] = None
+  @volatile private var viewPortFrozenTimestamp: Option[EpochTimestamp] = None
 
   @volatile private var requestId: String = ""
 
@@ -227,10 +228,10 @@ class ViewPortImpl(val id: String,
 
   override def isFrozen: Boolean = this.viewPortFrozenTimestamp.isDefined
 
-  override def viewPortFrozenTime: Option[Long] = this.viewPortFrozenTimestamp
+  override def viewPortFrozenTime: Option[EpochTimestamp] = this.viewPortFrozenTimestamp
 
   override def freeze(): Unit = {
-    viewPortFrozenTimestamp = Some(timeProvider.now())
+    viewPortFrozenTimestamp = Some(EpochTimestamp(timeProvider))
   }
 
   override def unfreeze(): Unit = {

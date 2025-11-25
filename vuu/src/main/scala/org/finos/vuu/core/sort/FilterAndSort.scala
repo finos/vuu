@@ -94,11 +94,11 @@ case class RowPermissionFilter(checker: RowPermissionChecker) extends Filter wit
   }
 }
 
-case class FrozenTimeFilter(frozenTime: Long) extends Filter with StrictLogging {
+case class FrozenTimeFilter(frozenTime: EpochTimestamp) extends Filter with StrictLogging {
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     val filtered = primaryKeys.filter(key => {
       try {
-        val vuuCreatedTimestamp = source.pullRow(key).get(DefaultColumnNames.CreatedTimeColumnName).asInstanceOf[Long]
+        val vuuCreatedTimestamp = source.pullRow(key).get(DefaultColumnNames.CreatedTimeColumnName).asInstanceOf[EpochTimestamp]
         vuuCreatedTimestamp < frozenTime
       } catch {
         case e: Exception =>
@@ -111,12 +111,12 @@ case class FrozenTimeFilter(frozenTime: Long) extends Filter with StrictLogging 
   }
 }
 
-case class RowPermissionAndFrozenTimeFilter(checker: RowPermissionChecker, frozenTime: Long) extends Filter with StrictLogging {
+case class RowPermissionAndFrozenTimeFilter(checker: RowPermissionChecker, frozenTime: EpochTimestamp) extends Filter with StrictLogging {
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     val filtered = primaryKeys.filter(key => {
       try {
         val rowData = source.pullRow(key)
-        rowData.get(DefaultColumnNames.CreatedTimeColumnName).asInstanceOf[Long] < frozenTime && checker.canSeeRow(rowData)
+        rowData.get(DefaultColumnNames.CreatedTimeColumnName).asInstanceOf[EpochTimestamp] < frozenTime && checker.canSeeRow(rowData)
       } catch {
         case e: Exception =>
           logger.error(s"Error while checking row permission and view port frozen time for keys $primaryKeys with checker $checker and frozen time $frozenTime", e)
@@ -156,7 +156,8 @@ case class AntlrBasedFilter(clause: FilterClause) extends Filter with StrictLogg
 
 
 trait FilterAndSort {
-  def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, permission: Option[RowPermissionChecker], viewPortFrozenTime: Option[Long]): TablePrimaryKeys
+  def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, 
+                    permission: Option[RowPermissionChecker], viewPortFrozenTime: Option[EpochTimestamp]): TablePrimaryKeys
 
   def filter: Filter
 
@@ -165,7 +166,9 @@ trait FilterAndSort {
 
 case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAndSort with StrictLogging {
 
-  override def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, checkerOption: Option[RowPermissionChecker], viewPortFrozenTime: Option[Long]): TablePrimaryKeys = {
+  override def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, 
+                             checkerOption: Option[RowPermissionChecker], 
+                             viewPortFrozenTime: Option[EpochTimestamp]): TablePrimaryKeys = {
     if (primaryKeys == null || primaryKeys.length == 0) {
       // nothing to filter or sort
       return primaryKeys
@@ -190,7 +193,7 @@ case class UserDefinedFilterAndSort(filter: Filter, sort: Sort) extends FilterAn
     }
   }
 
-  private def createDefaultFilter(checkerOption: Option[RowPermissionChecker], viewPortFrozenTime: Option[Long]): Option[Filter] = {
+  private def createDefaultFilter(checkerOption: Option[RowPermissionChecker], viewPortFrozenTime: Option[EpochTimestamp]): Option[Filter] = {
     checkerOption match {
       case Some(checker) =>
         viewPortFrozenTime match {

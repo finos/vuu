@@ -6,31 +6,56 @@ import org.scalatest.matchers.should.Matchers
 
 import java.lang.System.currentTimeMillis
 import java.time.Instant
-import java.util.concurrent.TimeUnit
 
 class EpochTimestampTest extends AnyFeatureSpec with Matchers {
 
   Feature("Check creation") {
 
+    Scenario("Check default creation") {
+
+      val millis = currentTimeMillis
+
+      val epochTimestamp = EpochTimestamp()
+
+      epochTimestamp.millis should be (millis +- 100)
+
+    }
+
     Scenario("Check creation via Instant") {
 
-      val instant = Instant.ofEpochMilli(currentTimeMillis)
+      val millis = currentTimeMillis
+      val instant = Instant.ofEpochMilli(millis)
 
       val epochTimestamp = EpochTimestamp(instant)
 
-      epochTimestamp.nanos shouldEqual TimeUnit.MILLISECONDS.toNanos(instant.toEpochMilli)
+      epochTimestamp.millis shouldEqual millis
 
     }
 
     Scenario("Check creation via Clock") {
 
-      val clock = new TestFriendlyClock(currentTimeMillis)
+      val millis = currentTimeMillis
+      val clock = new TestFriendlyClock(millis)
 
       val epochTimestamp = EpochTimestamp(clock)
 
-      epochTimestamp.nanos shouldEqual TimeUnit.MILLISECONDS.toNanos(clock.now())
+      epochTimestamp.millis shouldEqual millis
 
     }
 
   }
+
+  Feature("Other") {
+
+    Scenario("To String matches Long") {
+
+      val millis = currentTimeMillis
+      val epochTimestamp = EpochTimestamp(millis)
+
+      epochTimestamp.toString.toLong shouldEqual millis
+    }
+
+
+  }
+
 }

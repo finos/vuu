@@ -182,7 +182,7 @@ case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private 
   def update(key: String, update: RowData): TableData = {
 
     val table = data.synchronized {
-      val now = timeProvider.now()
+      val now = EpochTimestamp(timeProvider)
       data.getOrDefault(key, EmptyRowData) match {
         case row: RowWithData =>
           val mergedData = merge(update, row)

@@ -7,8 +7,9 @@ import org.finos.vuu.api.*
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.VuuJoinProviderOptionsImpl
 import org.finos.vuu.core.auths.VuuUser
-import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName}
 import org.finos.vuu.core.table.*
+import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName}
+import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.plugin.DefaultPluginRegistry
@@ -348,13 +349,13 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       joinProvider.runOnce()
 
       val row1 = orderPrices.pullRow("NYC-0001")
-      val row1CreatedTime = row1.get(CreatedTimeColumnName).asInstanceOf[Long]
-      val row1LastUpdatedTime = row1.get(LastUpdatedTimeColumnName).asInstanceOf[Long]
+      val row1CreatedTime = row1.get(CreatedTimeColumnName).asInstanceOf[EpochTimestamp]
+      val row1LastUpdatedTime = row1.get(LastUpdatedTimeColumnName).asInstanceOf[EpochTimestamp]
       row1CreatedTime shouldEqual row1LastUpdatedTime
 
       val row2 = orderPrices.pullRow("NYC-0002")
-      val row2CreatedTime = row2.get(CreatedTimeColumnName).asInstanceOf[Long]
-      val row2LastUpdatedTime = row2.get(LastUpdatedTimeColumnName).asInstanceOf[Long]
+      val row2CreatedTime = row2.get(CreatedTimeColumnName).asInstanceOf[EpochTimestamp]
+      val row2LastUpdatedTime = row2.get(LastUpdatedTimeColumnName).asInstanceOf[EpochTimestamp]
       row2CreatedTime shouldEqual row2LastUpdatedTime
 
       testFriendlyClock.advanceBy(1000)
@@ -363,8 +364,8 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       joinProvider.runOnce()
 
       val updatedRow = orderPrices.pullRow("NYC-0002")
-      val updatedRowCreatedTime = updatedRow.get(CreatedTimeColumnName).asInstanceOf[Long]
-      val updatedRowLastUpdatedTime = updatedRow.get(LastUpdatedTimeColumnName).asInstanceOf[Long]
+      val updatedRowCreatedTime = updatedRow.get(CreatedTimeColumnName).asInstanceOf[EpochTimestamp]
+      val updatedRowLastUpdatedTime = updatedRow.get(LastUpdatedTimeColumnName).asInstanceOf[EpochTimestamp]
       updatedRowCreatedTime shouldEqual row2CreatedTime
       updatedRowLastUpdatedTime should be > row2LastUpdatedTime
     }
@@ -387,13 +388,13 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       joinProvider.runOnce()
 
       val row1 = orderPrices.pullRow("NYC-0001")
-      val row1CreatedTime = row1.get(CreatedTimeColumnName).asInstanceOf[Long]
-      val row1LastUpdatedTime = row1.get(LastUpdatedTimeColumnName).asInstanceOf[Long]
+      val row1CreatedTime = row1.get(CreatedTimeColumnName).asInstanceOf[EpochTimestamp]
+      val row1LastUpdatedTime = row1.get(LastUpdatedTimeColumnName).asInstanceOf[EpochTimestamp]
       row1CreatedTime shouldEqual row1LastUpdatedTime
 
       val row2 = orderPrices.pullRow("NYC-0002")
-      val row2CreatedTime = row2.get(CreatedTimeColumnName).asInstanceOf[Long]
-      val row2LastUpdatedTime = row2.get(LastUpdatedTimeColumnName).asInstanceOf[Long]
+      val row2CreatedTime = row2.get(CreatedTimeColumnName).asInstanceOf[EpochTimestamp]
+      val row2LastUpdatedTime = row2.get(LastUpdatedTimeColumnName).asInstanceOf[EpochTimestamp]
       row2CreatedTime shouldEqual row2LastUpdatedTime
 
       testFriendlyClock.advanceBy(1000)
@@ -402,8 +403,8 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       joinProvider.runOnce()
 
       val updatedRow = orderPrices.pullRow("NYC-0002")
-      val updatedRowCreatedTime = updatedRow.get(CreatedTimeColumnName).asInstanceOf[Long]
-      val updatedRowLastUpdatedTime = updatedRow.get(LastUpdatedTimeColumnName).asInstanceOf[Long]
+      val updatedRowCreatedTime = updatedRow.get(CreatedTimeColumnName).asInstanceOf[EpochTimestamp]
+      val updatedRowLastUpdatedTime = updatedRow.get(LastUpdatedTimeColumnName).asInstanceOf[EpochTimestamp]
       updatedRowCreatedTime shouldEqual row2CreatedTime
       updatedRowLastUpdatedTime should be > row2LastUpdatedTime
     }
