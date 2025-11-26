@@ -42,6 +42,7 @@ import {
   Range,
   buildColumnMap,
   combineFilters,
+  filterAsQuery,
   getAddedItems,
   hasBaseFilter,
   hasFilter,
@@ -66,6 +67,7 @@ import {
   sortComparator,
   sortRows,
 } from "./sort-utils";
+import { Filter } from "@vuu-ui/vuu-filter-types";
 
 const { debug, info } = logger("ArrayDataSource");
 
@@ -993,6 +995,18 @@ export class ArrayDataSource
       ...this._config,
       filterSpec: filter,
     };
+  }
+
+  setFilter(filter: Filter) {
+    const dataSourceFilter: DataSourceFilter = {
+      filter: filterAsQuery(filter),
+      filterStruct: filter,
+    };
+    this.filter = dataSourceFilter;
+  }
+
+  clearFilter() {
+    this.filter = { filter: "" };
   }
 
   get groupBy() {

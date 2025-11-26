@@ -29,6 +29,8 @@ import {
   withConfigDefaults,
 } from "./datasource-utils";
 import { Range } from "../range-utils";
+import { filterAsQuery } from "../filters";
+import { Filter } from "@vuu-ui/vuu-filter-types";
 
 export type ConfigWithVisualLink = WithBaseFilter<WithFullConfig> & {
   visualLink?: LinkDescriptorWithLabel;
@@ -174,6 +176,18 @@ export abstract class BaseDataSource
       ...this._configWithVisualLink,
       filterSpec: filter,
     };
+  }
+
+  setFilter(filter: Filter) {
+    const dataSourceFilter: DataSourceFilter = {
+      filter: filterAsQuery(filter),
+      filterStruct: filter,
+    };
+    this.filter = dataSourceFilter;
+  }
+
+  clearFilter() {
+    this.filter = { filter: "" };
   }
 
   get isAwaitingConfirmationOfConfigChange() {

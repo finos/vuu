@@ -74,6 +74,11 @@ export interface MultiClauseFilter<
 export declare type Filter = FilterClause | MultiClauseFilter;
 
 /**
+ * General type for callback props invoked with a filter
+ */
+export declare type FilterHandler = (filter: Filter) => void;
+
+/**
  This interface is only valid for a Filter that is being edioted
  */
 export interface FilterWithPartialClause extends MultiClauseFilter {
@@ -89,9 +94,17 @@ export declare type FilterState = {
 
 export declare type FilterChangeHandler = (filter: Filter | undefined) => void;
 
-export declare type ColumnFilterValue = string | number | [string, string];
+// export declare type ColumnFilterValue = string | number | [string, string];
+export declare type ColumnFilterValue<
+  T extends string | number | [string, string] =
+    | string
+    | number
+    | [string, string],
+> = T;
 
-export declare type ColumnFilterOp = FilterClauseOp | "between";
+export declare type FilterClauseOpBetween = "between" | "between-inclusive";
+
+export declare type ColumnFilterOp = FilterClauseOp | FilterClauseOpBetween;
 
 export declare type ColumnFilterDescriptor = {
   column: ColumnDescriptor;
@@ -107,7 +120,7 @@ export declare type ColumnFilterChangeHandler = (
 
 export declare type ColumnFilterCommitHandler = (
   column: ColumnDescriptor,
-  op: FilterClauseOp | "between",
+  op: FilterClauseOp | "between" | "between-inclusive",
   value: ColumnFilterValue,
 ) => void;
 

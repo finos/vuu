@@ -6,8 +6,12 @@ import {
 } from "@vuu-ui/vuu-filter-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { InputProps, useControlled } from "@salt-ds/core";
-import { ChangeEventHandler, useCallback, useMemo } from "react";
-import { CommitHandler } from "@vuu-ui/vuu-utils";
+import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
+import {
+  CommitHandler,
+  isBetweenOperator,
+  isValidRange,
+} from "@vuu-ui/vuu-utils";
 import { DataItemEditControlProps } from "@vuu-ui/vuu-data-react";
 
 const injectInputProps = (
@@ -69,6 +73,7 @@ export const useColumnFilter = ({
   operator = "=",
   value: valueProp,
 }: ColumnFilterHookProps) => {
+  const [isInvalid, setIsInvalid] = useState(false);
   const [value, setValue] = useControlled({
     controlled: valueProp,
     default: defaultValue,
@@ -79,8 +84,14 @@ export const useColumnFilter = ({
   const handleCommit = useCallback<CommitHandler<HTMLElement>>(
     (_e, newValue = "") => {
       if (Array.isArray(value)) {
-        setValue([`${newValue}`, value[1]]);
-        onCommit?.(column, operator, [`${newValue}`, value[1]]);
+        if (isBetweenOperator(operator)) {
+          setValue([`${newValue}`, value[1]]);
+          onCommit?.(column, operator, [`${newValue}`, value[1]]);
+        } else {
+          throw Error(
+            `[useColumnFilterNext] value has been initialised incorrectly for non-range filter`,
+          );
+        }
       } else {
         setValue(newValue as ColumnFilterValue);
         onCommit?.(column, operator, `${newValue}`);
@@ -93,8 +104,13 @@ export const useColumnFilter = ({
     (_e, newValue = "") => {
       if (Array.isArray(value)) {
         const [firstValue] = value as [string, string];
-        setValue([value[0], `${newValue}`]);
-        onCommit?.(column, operator, [firstValue, `${newValue}`]);
+        const newRange: [string, string] = [value[0], `${newValue}`];
+        setValue(newRange);
+        const validRange = isValidRange(newRange);
+        setIsInvalid(!validRange);
+        if (validRange) {
+          onCommit?.(column, operator, [firstValue, `${newValue}`]);
+        }
       } else if (value !== "") {
         // If we have already committed the first value, filter has been
         // saved as a single value  '='.
@@ -155,6 +171,7 @@ export const useColumnFilter = ({
   return {
     InputProps,
     InputPropsRange,
+    isInvalid,
     onCommit: handleCommit,
     onCommitRange: handleRangeCommit,
   };

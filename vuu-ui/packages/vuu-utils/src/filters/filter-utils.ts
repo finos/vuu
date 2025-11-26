@@ -4,6 +4,7 @@ import {
   ColumnFilterValue,
   Filter,
   FilterClauseOp,
+  FilterClauseOpBetween,
   FilterContainerFilter,
   FilterWithPartialClause,
   MultiClauseFilter,
@@ -15,8 +16,8 @@ import {
   ColumnDescriptor,
   RuntimeColumnDescriptor,
 } from "@vuu-ui/vuu-table-types";
-import { getTypedValue } from "../form-utils";
 import { isTypeDescriptor } from "../column-utils";
+import { getTypedRange, getTypedValue } from "../form-utils";
 
 const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "=",
@@ -29,6 +30,11 @@ const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "starts",
   "ends",
 ]);
+
+export const isBetweenOperator = (
+  op: ColumnFilterOp,
+): op is FilterClauseOpBetween =>
+  op === "between" || op === "between-inclusive";
 
 export const isValidFilterClauseOp = (op?: string): op is FilterClauseOp =>
   op === "in" || singleValueFilterOps.has(op as SingleValueFilterClauseOp);
@@ -160,7 +166,7 @@ export const getColumnValueFromFilter = (
 ): ColumnFilterValue => {
   if (isSingleValueFilter(filter)) {
     if (filter.column === column.name) {
-      if (operator === "between") {
+      if (operator.startsWith("between")) {
         if (filter.op === "=") {
           return [`${filter.value}`, ""];
         } else if (filter.op === "<") {
@@ -185,12 +191,15 @@ export const getColumnValueFromFilter = (
     );
     if (isSingleValueFilter(filterForColumn)) {
       return stringifyBoolean(filterForColumn.value);
-    } else if (operator === "between" && isBetweenFilter(filterForColumn)) {
+    } else if (
+      operator.startsWith("between") &&
+      isBetweenFilter(filterForColumn)
+    ) {
       const [{ value: v1 }, { value: v2 }] = filterForColumn.filters;
       return [`${v1}`, `${v2}`];
     }
   }
-  if (operator === "between") {
+  if (operator.startsWith("between")) {
     if (column.type === "time") {
       return ["00:00:00", "23:59:59"];
     } else {
@@ -234,9 +243,7 @@ export class FilterAggregator {
       ? type.name
       : (type ?? serverDataType);
     if (Array.isArray(value)) {
-      const value1 = getTypedValue(value[0].toString(), dataType);
-      const value2 = getTypedValue(value[1].toString(), dataType);
-
+      const [value1, value2] = getTypedRange(value, dataType);
       if (value1 !== undefined && value2 !== undefined) {
         this.#filters.set(column.name, {
           op: "and",

@@ -145,6 +145,7 @@ class TimeImpl implements Time {
     this.#minutes = parseInt(minutes);
     this.#seconds = parseInt(seconds);
   }
+
   get hours() {
     return this.#hours;
   }
@@ -162,6 +163,7 @@ class TimeImpl implements Time {
         : typeof date === "string"
           ? new Date(date)
           : date;
+
     dt.setHours(this.#hours);
     dt.setMinutes(this.#minutes);
     dt.setSeconds(this.seconds);
@@ -170,7 +172,7 @@ class TimeImpl implements Time {
   }
 
   toString() {
-    return `${padZero(this.#hours)}:${padZero(this.#minutes)}:${padZero(this.#seconds)}`;
+    return Time.toString(this.#hours, this.#minutes, this.#seconds);
   }
 }
 
@@ -179,3 +181,7 @@ export const Time = (timeString: TimeString): Time =>
 
 Time.millisToTimeString = (timestamp: number) =>
   new Date(timestamp).toTimeString().slice(0, 8) as TimeString;
+
+Time.toString = (hours: number, minutes: number, seconds: number) => {
+  return `${padZero(hours)}:${padZero(minutes)}:${padZero(seconds)}` as TimeString;
+};

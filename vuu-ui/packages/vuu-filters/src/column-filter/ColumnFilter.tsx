@@ -9,6 +9,10 @@ import {
 import cx from "clsx";
 import { ForwardedRef, forwardRef } from "react";
 import { ColumnFilterHookProps, useColumnFilter } from "./useColumnFilter";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+
+import columnFilterCss from "./ColumnFilter.css";
 
 const classBase = "vuuColumnFilter";
 
@@ -39,7 +43,14 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
   }: ColumnFilterProps,
   forwardRef: ForwardedRef<HTMLDivElement>,
 ) {
-  const { InputProps, InputPropsRange, onCommit, onCommitRange } =
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-filter-editor",
+    css: columnFilterCss,
+    window: targetWindow,
+  });
+
+  const { InputProps, InputPropsRange, isInvalid, onCommit, onCommitRange } =
     useColumnFilter({
       InputProps: InputPropsProp,
       column,
@@ -51,10 +62,14 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
       value: valueProp,
     });
 
+  console.log(`render , isInvalid ${isInvalid}`);
+
   return (
     <SegmentedButtonGroup
       {...buttonGroupProps}
-      className={cx(classBase, className)}
+      className={cx(classBase, className, {
+        [`${classBase}-invalid`]: isInvalid,
+      })}
       ref={forwardRef}
     >
       {getDataItemEditControl({
@@ -67,7 +82,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
         values,
         variant,
       })}
-      {operator === "between"
+      {operator.startsWith("between")
         ? getDataItemEditControl({
             InputProps: InputPropsRange,
             className: `${classBase}-rangeHigh`,
