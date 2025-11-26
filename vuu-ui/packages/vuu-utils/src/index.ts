@@ -51,7 +51,6 @@ export * from "./list-utils";
 export * from "./local-storage-utils";
 export * from "./logging-utils";
 export * from "./module-utils";
-export * from "./moving-window";
 export * from "./nanoid";
 export * from "./react-utils";
 export * from "./round-decimal";
