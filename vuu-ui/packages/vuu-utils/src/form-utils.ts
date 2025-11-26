@@ -1,12 +1,12 @@
+import { DataValueTypeSimple } from "@vuu-ui/vuu-data-types";
 import {
   VuuColumnDataType,
   VuuRowDataItemType,
 } from "@vuu-ui/vuu-protocol-types";
 import { KeyboardEvent, SyntheticEvent } from "react";
-import { queryClosest } from "./html-utils";
 import { stringIsValidDecimal, stringIsValidInt } from "./data-utils";
 import { isValidTimeString, Time } from "./date";
-import { DataValueTypeSimple } from "@vuu-ui/vuu-data-types";
+import { queryClosest } from "./html-utils";
 
 /**
  * Use with the following convention:
@@ -38,6 +38,26 @@ export type CommitHandler<
   value: T,
   source?: InputSource,
 ) => void;
+
+export const isValidRange = <T>([val1, val2]: [T, T]) => {
+  if (isValidTimeString(val1) && isValidTimeString(val2)) {
+    return val2 > val1;
+  }
+  return true;
+};
+
+/**
+ * Convert a pair of string values to the type appropriate for the
+ * associated column or form field. Can be used when processing a string value
+ * from an input used for user editing.
+ *
+ */
+export function getTypedRange(
+  [value1, value2]: [string, string],
+  dataType: VuuColumnDataType | DataValueTypeSimple,
+) {
+  return [getTypedValue(value1, dataType), getTypedValue(value2, dataType)];
+}
 
 /**
  * Convert a string value to the type appropriate for the associated

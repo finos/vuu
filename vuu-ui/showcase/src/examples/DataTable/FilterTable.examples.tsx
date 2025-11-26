@@ -1,9 +1,8 @@
 import { ContentStatus } from "@salt-ds/lab";
 import { getSchema } from "@vuu-ui/vuu-data-test";
-import type { DataSourceFilter } from "@vuu-ui/vuu-data-types";
 import { TableSchema } from "@vuu-ui/vuu-data-types";
 import { FilterTable } from "@vuu-ui/vuu-datatable";
-import type { FilterState } from "@vuu-ui/vuu-filter-types";
+import type { FilterHandler, FilterState } from "@vuu-ui/vuu-filter-types";
 import type { FilterBarProps } from "@vuu-ui/vuu-filters";
 import { View } from "@vuu-ui/vuu-layout";
 import { TableProps } from "@vuu-ui/vuu-table";
@@ -46,12 +45,15 @@ const FilterTableTemplate = ({
     activeIndices: [],
   });
 
-  const handleApplyFilter = useCallback(
-    (filter: DataSourceFilter) => {
-      dataSource.filter = filter;
+  const handleApplyFilter = useCallback<FilterHandler>(
+    (filter) => {
+      dataSource.setFilter?.(filter);
     },
     [dataSource],
   );
+  const handleClearFilter = useCallback(() => {
+    dataSource.clearFilter?.();
+  }, [dataSource]);
 
   const handleFilterStateChange = useCallback((fs: FilterState) => {
     setFilterState(fs);
@@ -61,6 +63,7 @@ const FilterTableTemplate = ({
     columnDescriptors: config.columns,
     filterState,
     onApplyFilter: handleApplyFilter,
+    onClearFilter: handleClearFilter,
     onFilterStateChanged: handleFilterStateChange,
     QuickFilterProps,
     vuuTable: tableSchema.table,

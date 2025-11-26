@@ -21,6 +21,10 @@
         color: transparent;
     }
 
+    &:focus {
+        outline: var(--vuuTimeInput-outline, var(--salt-focused-outline));
+    }
+
 }
 
 .invalid {

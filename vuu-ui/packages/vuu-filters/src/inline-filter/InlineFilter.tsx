@@ -8,13 +8,14 @@ import { BaseRowProps } from "@vuu-ui/vuu-table-types";
 import cx from "clsx";
 import { HTMLAttributes } from "react";
 import {
-  FilterContainer,
   FilterContainerColumnFilter as ColumnFilter,
+  FilterContainer,
 } from "../filter-container/FilterContainer";
 import { useInlineFilter } from "./useInlineFilter";
 
-import inlineFilteCss from "./InlineFilter.css";
 import { ColumnFilterProps } from "../column-filter/ColumnFilter";
+import { FilterAppliedHandler } from "../filter-container/useFilterContainer";
+import inlineFilteCss from "./InlineFilter.css";
 
 const classBase = "vuuInlineFilter";
 
@@ -22,7 +23,8 @@ export type FilterValueChangeHandler = (filter: VuuFilter) => void;
 export interface InlineFilterProps
   extends Partial<BaseRowProps>,
     Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
-  onChange: FilterValueChangeHandler;
+  onFilterApplied?: FilterAppliedHandler;
+  onFilterCleared?: () => void;
   table: TableSchemaTable;
 }
 
@@ -40,7 +42,8 @@ const TypeaheadProps: ColumnFilterProps["TypeaheadProps"] = {
 
 export const InlineFilter = ({
   ariaRole,
-  onChange,
+  onFilterApplied,
+  onFilterCleared,
   table,
   ...htmlAttributes
 }: InlineFilterProps) => {
@@ -51,15 +54,7 @@ export const InlineFilter = ({
     window: targetWindow,
   });
 
-  const {
-    columns,
-    onFilterApplied,
-    onFilterCleared,
-    onKeyDown,
-    virtualColSpan,
-  } = useInlineFilter({
-    onChange,
-  });
+  const { columns, onKeyDown, virtualColSpan } = useInlineFilter();
 
   return (
     <FilterContainer

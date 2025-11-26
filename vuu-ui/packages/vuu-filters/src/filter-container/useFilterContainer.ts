@@ -55,7 +55,7 @@ export function useFilterContext(
     };
   } else if (throwIfNoContainer) {
     throw Error(
-      `[useColumnFilterContainer:useFilterContext] no FilterContainer installed`,
+      `[useFilterContainer:useFilterContext] no FilterContainer installed`,
     );
   } else {
     return { filterContainerInstalled: false };
@@ -108,7 +108,7 @@ export const useFilterContainer = ({
         return fallbackValue;
       } else {
         throw Error(
-          `[useColumnFilterContainer] column ${column.name} has not been registered`,
+          `[useFilterContainer] column ${column.name} has not been registered`,
         );
       }
     },
@@ -118,9 +118,9 @@ export const useFilterContainer = ({
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
     (column, op, value = "") => {
       if (Array.isArray(value)) {
-        if (op !== "between") {
+        if (!op.startsWith("between")) {
           throw Error(
-            `[useInlineFilter] array value is not valid for operator ${op}`,
+            `[useFilterContainer] array value is not valid for operator ${op}`,
           );
         }
         if (value[0] === "" && value[1] === "") {
@@ -132,7 +132,7 @@ export const useFilterContainer = ({
             filterAggregator.add(column, value);
           } else {
             throw Error(
-              `[useInlineFilter] handleCommit value  [${typeof value[0]},${typeof value[1]}] for operator ${op} supports [string,string] only`,
+              `[useFilterContainer] handleCommit value  [${typeof value[0]},${typeof value[1]}] for operator ${op} supports [string,string] only`,
             );
           }
         }
@@ -145,7 +145,7 @@ export const useFilterContainer = ({
           filterAggregator.add(column, value);
         } else {
           throw Error(
-            `[useInlineFilter] handleCommit value ${typeof value} supports string, number only`,
+            `[useFilterContainer] handleCommit value ${typeof value} supports string, number only`,
           );
         }
       }

@@ -6,11 +6,7 @@ import {
   EditAPI,
   NullEditAPI,
 } from "@vuu-ui/vuu-ui-controls";
-import {
-  filterAsQuery,
-  getElementDataIndex,
-  queryClosest,
-} from "@vuu-ui/vuu-utils";
+import { getElementDataIndex, queryClosest } from "@vuu-ui/vuu-utils";
 import {
   KeyboardEventHandler,
   MouseEventHandler,
@@ -52,6 +48,7 @@ export interface CustomFilterHookProps
     | "defaultFilterState"
     | "filterState"
     | "onApplyFilter"
+    | "onClearFilter"
     | "onFilterDeleted"
     | "onFilterRenamed"
     | "onFilterStateChanged"
@@ -65,6 +62,7 @@ export const useCustomFilters = ({
   defaultFilterState,
   filterState,
   onApplyFilter,
+  onClearFilter,
   onFilterDeleted,
   onFilterRenamed,
   onFilterStateChanged,
@@ -100,8 +98,11 @@ export const useCustomFilters = ({
   useEffect(() => {
     const activeFilters = activeFilterIndex.map((i) => filters[i]);
     const applyFilter = (filter?: Filter) => {
-      const query = filter ? filterAsQuery(filter, { columnsByName }) : "";
-      onApplyFilter({ filter: query, filterStruct: filter });
+      if (filter) {
+        onApplyFilter(filter);
+      } else {
+        onClearFilter();
+      }
     };
     if (activeFilters.length === 0) {
       applyFilter();
@@ -111,7 +112,7 @@ export const useCustomFilters = ({
     } else {
       applyFilter({ op: "and", filters: activeFilters });
     }
-  }, [activeFilterIndex, columnsByName, filters, onApplyFilter]);
+  }, [activeFilterIndex, columnsByName, filters, onApplyFilter, onClearFilter]);
 
   const editPillLabel = useCallback((index: number, filter: Filter) => {
     setTimeout(() => {

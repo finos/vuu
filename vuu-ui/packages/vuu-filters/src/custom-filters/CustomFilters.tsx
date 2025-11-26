@@ -17,6 +17,7 @@ export interface CustomFilterProps
       | "defaultFilterState"
       | "filterState"
       | "onApplyFilter"
+      | "onClearFilter"
       | "onFilterDeleted"
       | "onFilterRenamed"
       | "onFilterStateChanged"
@@ -30,6 +31,7 @@ export const CustomFilters = ({
   defaultFilterState,
   filterState,
   onApplyFilter,
+  onClearFilter,
   onFilterDeleted,
   onFilterRenamed,
   onFilterStateChanged,
@@ -53,6 +55,7 @@ export const CustomFilters = ({
     defaultFilterState,
     filterState,
     onApplyFilter,
+    onClearFilter,
     onFilterStateChanged,
     onFilterDeleted,
     onFilterRenamed,

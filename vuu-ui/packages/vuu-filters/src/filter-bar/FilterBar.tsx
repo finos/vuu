@@ -1,5 +1,4 @@
-import { DataSourceFilter } from "@vuu-ui/vuu-data-types";
-import { Filter, FilterState } from "@vuu-ui/vuu-filter-types";
+import { Filter, FilterHandler, FilterState } from "@vuu-ui/vuu-filter-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
 import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
@@ -35,9 +34,10 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
   defaultFilterState?: FilterState;
   filterMode?: FilterMode;
   filterState?: FilterState;
-  onApplyFilter: (filter: DataSourceFilter) => void;
+  onApplyFilter: FilterHandler;
   onChangeFilterMode?: (filterMode: FilterMode) => void;
-  onFilterDeleted?: (filter: Filter) => void;
+  onClearFilter: () => void;
+  onFilterDeleted?: FilterHandler;
   onFilterRenamed?: (filter: Filter, name: string) => void;
   onFilterStateChanged?: (state: FilterState) => void;
   /**
@@ -59,6 +59,7 @@ export const FilterBar = ({
   filterState,
   onApplyFilter,
   onChangeFilterMode: onChangeFilterModeProp,
+  onClearFilter,
   onFilterDeleted,
   onFilterRenamed,
   onFilterStateChanged,
@@ -137,6 +138,7 @@ export const FilterBar = ({
           defaultFilterState={defaultFilterState}
           filterState={filterState}
           onApplyFilter={onApplyFilter}
+          onClearFilter={onClearFilter}
           onFilterDeleted={onFilterDeleted}
           onFilterRenamed={onFilterRenamed}
           onFilterStateChanged={onFilterStateChanged}
@@ -147,6 +149,7 @@ export const FilterBar = ({
           {...QuickFilterProps}
           availableColumns={columnDescriptors}
           onApplyFilter={onApplyFilter}
+          onClearFilter={onClearFilter}
           vuuTable={vuuTable}
         />
       )}

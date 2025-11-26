@@ -1,5 +1,9 @@
 import { FilterBar, FilterBarProps } from "@vuu-ui/vuu-filters";
-import type { Filter, FilterState } from "@vuu-ui/vuu-filter-types";
+import type {
+  Filter,
+  FilterHandler,
+  FilterState,
+} from "@vuu-ui/vuu-filter-types";
 import {
   CSSProperties,
   ReactElement,
@@ -10,7 +14,6 @@ import {
   useRef,
   useState,
 } from "react";
-import type { DataSourceFilter } from "@vuu-ui/vuu-data-types";
 import { Input, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
@@ -73,6 +76,7 @@ const DefaultFilterBarCore = ({
   columnDescriptors,
   filterState,
   onApplyFilter,
+  onClearFilter,
   onFilterDeleted,
   onFilterRenamed,
   onFilterStateChanged,
@@ -85,13 +89,17 @@ const DefaultFilterBarCore = ({
     [columnDescriptors, tableSchema.columns],
   );
 
-  const handleApplyFilter = useCallback(
-    (filter: DataSourceFilter) => {
+  const handleApplyFilter = useCallback<FilterHandler>(
+    (filter) => {
       onApplyFilter?.(filter);
-      setFilterStruct(filter.filterStruct ?? null);
+      setFilterStruct(filter);
     },
     [onApplyFilter],
   );
+  const handleClearFilter = useCallback(() => {
+    onClearFilter?.();
+    setFilterStruct(null);
+  }, [onClearFilter]);
 
   const handleFilterStateChange = useCallback(
     (filterState: FilterState) => {
@@ -122,6 +130,7 @@ const DefaultFilterBarCore = ({
         data-testid="filterbar"
         filterState={filterState}
         onApplyFilter={handleApplyFilter}
+        onClearFilter={handleClearFilter}
         onFilterDeleted={handleFilterDeleted}
         onFilterRenamed={handleFilterRenamed}
         onFilterStateChanged={handleFilterStateChange}

@@ -8,7 +8,7 @@ export interface ClockProps {
   milliseconds?: number;
 }
 
-export type TimeUnit = "minutes" | "seconds" | "ms";
+export type ClockTimeUnit = "minutes" | "seconds" | "ms";
 export class Clock {
   #millisSinceEpoch = 0;
   #showCurrentTime = false;
@@ -49,13 +49,13 @@ export class Clock {
     }
   }
 
-  goBack(value: number, units: TimeUnit = "ms") {
+  goBack(value: number, units: ClockTimeUnit = "ms") {
     const multiplier = units === "ms" ? 1 : units === "seconds" ? 1000 : 60_000;
     this.#millisSinceEpoch -= value * multiplier;
     return this;
   }
 
-  advance(value: number, units: TimeUnit = "ms") {
+  advance(value: number, units: ClockTimeUnit = "ms") {
     const multiplier = units === "ms" ? 1 : units === "seconds" ? 1000 : 60_000;
     this.#millisSinceEpoch += value * multiplier;
     return this;

@@ -1,5 +1,4 @@
 import { getSchema, simulModule } from "@vuu-ui/vuu-data-test";
-import type { DataSourceFilter } from "@vuu-ui/vuu-data-types";
 import { FilterBar, FilterBarProps } from "@vuu-ui/vuu-filters";
 import {
   FlexboxLayout,
@@ -14,6 +13,7 @@ import { VuuShellLocation } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 
 import "./SimpleApp.css";
+import { FilterHandler } from "@vuu-ui/vuu-filter-types";
 
 const classBase = "vuuSimpleApp";
 
@@ -34,15 +34,20 @@ export const SimpleApp = () => {
     [schema],
   );
 
-  const handleApplyFilter = useCallback((filter: DataSourceFilter) => {
+  const handleApplyFilter = useCallback<FilterHandler>((filter) => {
     console.log(`applyFilter`, {
       filter,
     });
   }, []);
 
+  const handleClearFilter = useCallback(() => {
+    console.log(`clearFilter`);
+  }, []);
+
   const filterBarProps: FilterBarProps = {
     columnDescriptors: schema.columns,
     onApplyFilter: handleApplyFilter,
+    onClearFilter: handleClearFilter,
     vuuTable: schema.table,
   };
   const tableProps2 = useMemo<Pick<TableProps, "config" | "dataSource">>(

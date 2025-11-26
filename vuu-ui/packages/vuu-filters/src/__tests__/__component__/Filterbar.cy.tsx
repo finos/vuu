@@ -564,10 +564,10 @@ describe.only("WHEN a user applies a date filter", () => {
       cy.realPress("Enter");
 
       // Check called handlers
-      cy.get("@applyFilterHandler").should("be.calledWithExactly", {
-        filter: expectedQuery,
-        filterStruct: expectedFilter,
-      });
+      cy.get("@applyFilterHandler").should(
+        "be.calledWithExactly",
+        expectedFilter,
+      );
       cy.get("@filterStateChangeHandler").should("be.calledWithExactly", {
         filters: [expectedFilter],
         activeIndices: [0],

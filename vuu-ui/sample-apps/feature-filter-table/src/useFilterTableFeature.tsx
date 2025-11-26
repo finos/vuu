@@ -160,7 +160,10 @@ export const useFilterTableFeature = ({
     [getDefaultColumnConfig, tableConfigFromState, tableSchema],
   );
 
-  const filterBarProps: Omit<FilterBarProps, "onApplyFilter"> = {
+  const filterBarProps: Omit<
+    FilterBarProps,
+    "onApplyFilter" | "onClearFilter"
+  > = {
     QuickFilterProps: {
       onChangeQuickFilterColumns: handleChangeQuickFilterColumns,
       quickFilterColumns,

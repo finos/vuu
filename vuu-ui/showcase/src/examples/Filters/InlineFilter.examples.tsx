@@ -1,9 +1,10 @@
 import { useMemo } from "react";
-import { FilterValueChangeHandler, InlineFilter } from "@vuu-ui/vuu-filters";
+import { InlineFilter } from "@vuu-ui/vuu-filters";
 import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
 import { DataSourceProvider, useData } from "@vuu-ui/vuu-utils";
 import { TableConfig } from "@vuu-ui/vuu-table-types";
 import { Table } from "@vuu-ui/vuu-table";
+import { FilterHandler } from "@vuu-ui/vuu-filter-types";
 
 const table = { module: "SIMUL", table: "instrumentsExtended" } as const;
 const schema = getSchema("instrumentsExtended");
@@ -15,10 +16,19 @@ const TableTemplate = () => {
   }, [VuuDataSource]);
 
   const inlineFilter = useMemo(() => {
-    const onChange: FilterValueChangeHandler = (filter) => {
-      dataSource.filter = filter;
+    const handleApplyFilter: FilterHandler = (filter) => {
+      dataSource.setFilter?.(filter);
     };
-    return <InlineFilter onChange={onChange} table={table} />;
+    const handleClearFilter = () => {
+      dataSource.clearFilter?.();
+    };
+    return (
+      <InlineFilter
+        onFilterApplied={handleApplyFilter}
+        onFilterCleared={handleClearFilter}
+        table={table}
+      />
+    );
   }, [dataSource]);
 
   const tableConfig = useMemo<TableConfig>(() => {
