@@ -1136,7 +1136,7 @@ export class ServerProxy {
         break;
 
       case "VIEW_PORT_MENUS_RESP":
-        if (body.menu.name) {
+        if (body.menu?.name) {
           const viewport = this.viewports.get(body.vpId);
           if (viewport) {
             const clientMessage = viewport.setMenu(body.menu);

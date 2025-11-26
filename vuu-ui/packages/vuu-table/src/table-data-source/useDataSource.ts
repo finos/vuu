@@ -6,11 +6,12 @@ import type {
   DataSourceSuspenseProps,
 } from "@vuu-ui/vuu-data-types";
 import { SelectRowRequest, VuuRange } from "@vuu-ui/vuu-protocol-types";
-import { MovingWindow, NULL_RANGE, Range } from "@vuu-ui/vuu-utils";
+import { NULL_RANGE, Range } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { TableProps } from "./Table";
+import { TableProps } from "../Table";
 import { metadataKeys } from "@vuu-ui/vuu-utils";
 import { TableRowSelectHandlerInternal } from "@vuu-ui/vuu-table-types";
+import { MovingWindow } from "./moving-window";
 
 const { KEY } = metadataKeys;
 
@@ -74,11 +75,7 @@ export const useDataSource = ({
     };
   }, [autoSelect, dataSource, handleConfigChange]);
 
-  const dataWindow = useMemo(
-    () => new MovingWindow(NULL_RANGE),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
+  const dataWindow = useMemo(() => new MovingWindow(NULL_RANGE), []);
 
   useMemo(() => {
     dataSource.on("resumed", () => {
@@ -159,7 +156,6 @@ export const useDataSource = ({
             }
           }
         } else if (message.size === 0) {
-          console.log({ message });
           setData([]);
         } else if (typeof message.size === "number") {
           data.current = dataWindow.data;

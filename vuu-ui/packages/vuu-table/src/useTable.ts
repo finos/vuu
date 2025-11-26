@@ -66,7 +66,7 @@ import { updateTableConfig } from "./table-config";
 import { getAriaRowIndex, getHeaderCell } from "./table-dom-utils";
 import { useCellEditing } from "./useCellEditing";
 import { FocusCell, useCellFocus } from "./useCellFocus";
-import { useDataSource } from "./useDataSource";
+import { useDataSource } from "./table-data-source/useDataSource";
 import {
   GroupToggleHandler,
   useKeyboardNavigation,

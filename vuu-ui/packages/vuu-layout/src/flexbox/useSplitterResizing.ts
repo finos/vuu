@@ -73,7 +73,6 @@ export const useSplitterResizing = ({
 
           if (rootRef.current) {
             rootRef.current.classList.add("vuuSplitterResizing");
-            console.log({ root: rootRef.current });
             flexElementsRef.current = Array.from(
               rootRef.current.querySelectorAll<HTMLDivElement>(":scope > div"),
             );

@@ -29,15 +29,12 @@ class RangeImpl implements Range {
   #rowCount = -1;
   #baseTo: number;
 
-  // We have to keep these as simple public properties (not getters) so they survive structuredClone
-  public from = 0;
-  public to = 0;
-
+  // We have to keep from and to as simple public properties (not getters) so they survive structuredClone
   constructor(
     /** Index position of first visible row in viewport */
-    from: number,
+    public from: number,
     /** Index position of last visible row in viewport + 1 */
-    to: number,
+    public to: number,
     rangeOptions: RangeOptions = defaultRangeOptions,
   ) {
     this.#baseFrom = from;
@@ -152,15 +149,6 @@ export function getFullRange(
 
 export const withinRange = (value: number, { from, to }: VuuRange) =>
   value >= from && value < to;
-
-// export const rangeOverlap = (
-//   { from: from1, to: to1 }: VuuRange,
-//   { from: from2, to: to2 }: VuuRange
-// ): VuuRange => {
-//   return from2 >= to1 || to2 < from1
-//     ? { from: 0, to: 0 }
-//     : { from: Math.max(from2, from1), to: Math.min(to2, to1) };
-// };
 
 export const rangeNewItems = (
   { from: from1, to: to1 }: VuuRange,
