@@ -36,4 +36,7 @@ case class VirtualizedTableKeys(window: MovingWindow[String], dataSize: Int) ext
   }
 
   override def iterator: Iterator[String] = window.iterator
+
+  override def intersect(keys: Iterable[String]): TablePrimaryKeys = ???
+  
 }

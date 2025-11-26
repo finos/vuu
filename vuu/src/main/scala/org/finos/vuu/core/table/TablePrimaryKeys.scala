@@ -7,24 +7,26 @@ object EmptyTablePrimaryKeys extends TablePrimaryKeys{
   override def length: Int = 0
   override def add(key: String): TablePrimaryKeys = this.+(key)
   override def +(key: String): TablePrimaryKeys = InMemTablePrimaryKeys(ImmutableArray.from(Array(key)))
-  override def remove(key: String): TablePrimaryKeys = EmptyTablePrimaryKeys
+  override def remove(key: String): TablePrimaryKeys = EmptyTablePrimaryKeys  
   override def -(key: String): TablePrimaryKeys = EmptyTablePrimaryKeys
   override def sliceTableKeys(from: Int, until: Int): TablePrimaryKeys = EmptyTablePrimaryKeys
   override def iterator: Iterator[String] = Array[String]().iterator
 
   override def get(index: Int): String = null
   override def set(index: Int, key: String): TablePrimaryKeys = this
+  override def intersect(keys: Iterable[String]): TablePrimaryKeys = EmptyTablePrimaryKeys
 }
 
 trait TablePrimaryKeys extends Iterable[String] {
   def length: Int
   def add(key: String): TablePrimaryKeys
   def +(key: String): TablePrimaryKeys
-  def remove(key: String): TablePrimaryKeys
+  def remove(key: String): TablePrimaryKeys  
   def -(key: String): TablePrimaryKeys
   def sliceTableKeys(from: Int, until: Int): TablePrimaryKeys
   def get(index: Int): String
   def set(index: Int, key: String): TablePrimaryKeys
+  def intersect(keys: Iterable[String]): TablePrimaryKeys
 }
 
 

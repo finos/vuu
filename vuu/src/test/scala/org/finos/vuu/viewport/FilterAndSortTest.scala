@@ -3,19 +3,23 @@ package org.finos.vuu.viewport
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.api.{Index, Indices, TableDef}
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.filter.{EqualsClause, LessThanClause, NoFilter}
 import org.finos.vuu.core.sort.{AlphaSort, AntlrBasedFilter, SortDirection, UserDefinedFilterAndSort}
-import org.finos.vuu.core.table.ViewPortColumnCreator
-import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.provider.MockProvider
+import org.finos.vuu.core.table.{Columns, RowData, TableContainer, ViewPortColumnCreator}
+import org.finos.vuu.feature.inmem.VuuInMemPlugin
+import org.finos.vuu.net.{ClientSessionId, FilterSpec}
+import org.finos.vuu.plugin.DefaultPluginRegistry
+import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.util.table.TableAsserts
+import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
-import org.finos.vuu.core.auths.VuuUser
 
 import java.time.{LocalDateTime, ZoneId}
 
@@ -242,9 +246,8 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       val updates3 = combineQs(viewport).filter( vp => vp.vpUpdate == RowUpdateType)
 
       updates3.size should be (1)
-      updates3(0).vp.size should equal(1)
-      //make sure we clean up the mappings
-      updates3(0).vp.getRowKeyMappingSize_ForTest should equal(1)
+      updates3.head.vp.size should equal(1)
+      updates3.head.vp.getRowKeyMappingSize_ForTest should equal(1)
 
       assertVpEq(updates3){
         Table(
@@ -474,6 +477,52 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
     }
 
+    Scenario("test index hit does not override row permission filter") {
+
+      given lifecycle: LifecycleContainer = new LifecycleContainer
+
+      val pricesDef = TableDef(name = "prices",
+        keyField = "ric",
+        columns = Columns.fromNames("ric:String", "bid:Double", "ask:Double"),
+        indices = Indices.apply(Index.apply("ric")),
+        joinFields = "ric")
+        .withPermissions((vp, tc) => (row: RowData) => {
+          val ric = row.get("ric").asInstanceOf[String]
+          ric != "VOD.L"
+        })
+
+      val joinProvider = JoinTableProviderImpl()
+      val tableContainer = new TableContainer(joinProvider)
+      val prices = tableContainer.createTable(pricesDef)
+      val pricesProvider = new MockProvider(prices)
+      val providerContainer = new ProviderContainer(joinProvider)
+      val pluginRegistry = new DefaultPluginRegistry()
+      pluginRegistry.registerPlugin(new VuuInMemPlugin)
+      val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer, pluginRegistry)
+
+      pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220.0, "ask" -> 222.0))
+      pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500.0, "ask" -> 501.0))
+
+      val queue = new OutboundRowPublishQueue()
+
+      val columns = ViewPortColumnCreator.create(prices, prices.getTableDef.columns.map(_.name).toList)
+
+      val viewport = viewPortContainer.create(RequestId.oneNew(), VuuUser("B"),
+        ClientSessionId("A", "C"), queue, prices, ViewPortRange(0, 20), columns,
+        filterSpec = FilterSpec("ric = \"VOD.L\" or ric = \"BT.L\""))
+
+      viewPortContainer.runOnce()
+
+      val updates = combineQs(viewport)
+
+      assertVpEq(updates) {
+        Table(
+          ("ric", "bid", "ask"),
+          ("BT.L", 500.0, 501.0)
+        )
+      }
+
+    }
 
   }
 
