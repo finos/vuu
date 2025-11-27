@@ -120,10 +120,10 @@ export const FilterContainerColumnFilter = ({
   }, [column, currentFilter.id]);
 
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
-    (column, op, value) => {
+    (column, op, value, extendedFilterOptions) => {
       valueRef.current = value;
       setValue(value);
-      onFilterContextCommit(column, op, value);
+      onFilterContextCommit(column, op, value, extendedFilterOptions);
     },
     [onFilterContextCommit],
   );

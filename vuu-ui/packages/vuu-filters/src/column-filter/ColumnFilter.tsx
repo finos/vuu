@@ -13,6 +13,7 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 
 import columnFilterCss from "./ColumnFilter.css";
+import { isBetweenOperator } from "@vuu-ui/vuu-utils";
 
 const classBase = "vuuColumnFilter";
 
@@ -31,6 +32,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
     className,
     column,
     defaultValue,
+    extendedFilterOptions,
     onColumnFilterChange,
     onColumnRangeFilterChange,
     onCommit: onCommitProp,
@@ -55,14 +57,13 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
       InputProps: InputPropsProp,
       column,
       defaultValue,
+      extendedFilterOptions,
       onColumnFilterChange,
       onColumnRangeFilterChange,
       onCommit: onCommitProp,
       operator,
       value: valueProp,
     });
-
-  console.log(`render , isInvalid ${isInvalid}`);
 
   return (
     <SegmentedButtonGroup
@@ -82,7 +83,7 @@ export const ColumnFilter = forwardRef(function ColumnFilter(
         values,
         variant,
       })}
-      {operator.startsWith("between")
+      {isBetweenOperator(operator)
         ? getDataItemEditControl({
             InputProps: InputPropsRange,
             className: `${classBase}-rangeHigh`,

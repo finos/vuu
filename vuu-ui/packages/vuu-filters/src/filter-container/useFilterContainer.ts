@@ -9,10 +9,11 @@ import {
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { createContext, useCallback, useContext, useMemo, useRef } from "react";
 import {
-  FilterAggregator,
   getColumnValueFromFilter,
+  isBetweenOperator,
   isSingleValueFilter,
 } from "@vuu-ui/vuu-utils";
+import { FilterAggregator } from "../FilterAggregator";
 
 export interface ColumnFilterContextProps {
   filterContainerInstalled: boolean;
@@ -116,9 +117,9 @@ export const useFilterContainer = ({
   );
 
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
-    (column, op, value = "") => {
+    (column, op, value = "", extendedFilterOptions) => {
       if (Array.isArray(value)) {
-        if (!op.startsWith("between")) {
+        if (!isBetweenOperator(op)) {
           throw Error(
             `[useFilterContainer] array value is not valid for operator ${op}`,
           );
@@ -129,7 +130,9 @@ export const useFilterContainer = ({
           }
         } else {
           if (typeof value[0] === "string" && typeof value[1] === "string") {
-            filterAggregator.add(column, value);
+            // TODO we need to include operator, so we can distinguish between
+            // between and between-inclusive
+            filterAggregator.add(column, value, op, extendedFilterOptions);
           } else {
             throw Error(
               `[useFilterContainer] handleCommit value  [${typeof value[0]},${typeof value[1]}] for operator ${op} supports [string,string] only`,
@@ -142,7 +145,7 @@ export const useFilterContainer = ({
         }
       } else {
         if (typeof value === "string" || typeof value === "number") {
-          filterAggregator.add(column, value);
+          filterAggregator.add(column, value, op, extendedFilterOptions);
         } else {
           throw Error(
             `[useFilterContainer] handleCommit value ${typeof value} supports string, number only`,

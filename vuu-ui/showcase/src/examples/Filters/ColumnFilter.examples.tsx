@@ -16,7 +16,7 @@ import {
   FilterContainerColumnFilter,
 } from "@vuu-ui/vuu-filters";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { DataSourceProvider, useData } from "@vuu-ui/vuu-utils";
+import { DataSourceProvider, filterAsQuery, useData } from "@vuu-ui/vuu-utils";
 import { ReactNode, useCallback, useMemo, useState } from "react";
 
 const instrumentsSchema = getSchema("instruments");
@@ -597,29 +597,24 @@ export const ContainerManagedBetweenColumnFilterWithFilter = () => (
 );
 
 export const ContainerManagedBetweenColumnTimeFilter = ({
+  filter: filterProp,
   op = "between",
 }: {
+  filter?: FilterContainerFilter;
   op?: "between" | "between-inclusive";
 }) => {
   const { VuuDataSource } = useData();
   const [filter, setFilter] = useState<FilterContainerFilter | undefined>(
-    undefined,
+    filterProp,
   );
   const clearFilter = () => setFilter(undefined);
 
-  console.log(
-    JSON.stringify(
-      filter,
-      (key, value) => {
-        if (key === "value") {
-          return new Date(value).toISOString();
-        } else {
-          return value;
-        }
-      },
-      2,
-    ),
-  );
+  console.log({ filter });
+  if (filter) {
+    console.log(filterAsQuery(filter));
+  }
+
+  console.log(JSON.stringify(filter, null, 2));
 
   const dataSource = useMemo(() => {
     return new VuuDataSource({ table: instrumentsSchema.table });
@@ -636,6 +631,7 @@ export const ContainerManagedBetweenColumnTimeFilter = ({
     <DataSourceProvider dataSource={dataSource}>
       <ContainerTemplate flexDirection="row" width={700}>
         <FilterContainer
+          filter={filter}
           onFilterCleared={clearFilter}
           onFilterApplied={setFilter}
         >
@@ -647,6 +643,7 @@ export const ContainerManagedBetweenColumnTimeFilter = ({
                 serverDataType: "long",
                 type: "time",
               }}
+              extendedFilterOptions={{ date: "today", type: "TimeString" }}
               onColumnFilterChange={handleColumnFilterChange}
               operator={op}
               table={{ module: "SIMUL", table: "instruments" }}
@@ -658,6 +655,28 @@ export const ContainerManagedBetweenColumnTimeFilter = ({
     </DataSourceProvider>
   );
 };
+
+export const ContainerManagedBetweenColumnTimeFilterWithFilter = () => (
+  <ContainerManagedBetweenColumnTimeFilter
+    filter={{
+      op: "and",
+      filters: [
+        {
+          column: "vuuCreatedTime",
+          op: ">=",
+          value: "12:00:00",
+          extendedOptions: { date: "today", type: "TimeString" },
+        },
+        {
+          column: "vuuCreatedTime",
+          op: "<=",
+          value: "13:00:00",
+          extendedOptions: { date: "today", type: "TimeString" },
+        },
+      ],
+    }}
+  />
+);
 
 export const ContainerManagedBetweenInclusiveColumnTimeFilter = () => (
   <ContainerManagedBetweenColumnTimeFilter op="between-inclusive" />

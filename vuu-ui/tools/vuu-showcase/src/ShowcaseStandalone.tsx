@@ -103,43 +103,49 @@ export const ShowcaseStandalone = ({
 
   useMemo(async () => {
     const url = new URL(document.location.href);
-    const { nodeData } = getTargetTreeNode<unknown>(url, treeSource);
-    try {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const targetModule: Module = await import(
-        /* @vite-ignore */ `/${nodeData.path}`
-      );
+    if (url.pathname === "/") {
+      return;
+    }
+    const targetTreeNode = getTargetTreeNode<unknown>(url, treeSource);
+    if (targetTreeNode) {
+      const { nodeData } = targetTreeNode;
+      try {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        const targetModule: Module = await import(
+          /* @vite-ignore */ `/${nodeData.path}`
+        );
 
-      if (targetModule) {
-        if (isComponentDescriptor(nodeData)) {
-          const Component = targetModule[nodeData.componentName];
-          if (Component) {
+        if (targetModule) {
+          if (isComponentDescriptor(nodeData)) {
+            const Component = targetModule[nodeData.componentName];
+            if (Component) {
+              setContentState({
+                component: <Component />,
+                isMDX: nodeData.path.endsWith("mdx"),
+              });
+            } else {
+              console.warn(`Example Componentnot found`);
+            }
+          } else {
+            const Component = targetModule.default;
             setContentState({
               component: <Component />,
               isMDX: nodeData.path.endsWith("mdx"),
             });
-          } else {
-            console.warn(`Example Componentnot found`);
           }
         } else {
-          const Component = targetModule.default;
-          setContentState({
-            component: <Component />,
-            isMDX: nodeData.path.endsWith("mdx"),
-          });
+          // root app has been loaded with no example selection, therefore nothing to load into iframe
         }
-      } else {
-        // root app has been loaded with no example selection, therefore nothing to load into iframe
-      }
-    } catch (err) {
-      const match = err.message.match(/[a-zA-Z]*.css/);
-      if (match) {
-        console.log(
-          `A component is trying to load ${match[0]} using salt css injection. The css plugin has not converted this file. See showcase-vite-api.ts`,
-        );
-      } else {
-        throw err;
+      } catch (err) {
+        const match = err.message.match(/[a-zA-Z]*.css/);
+        if (match) {
+          console.log(
+            `A component is trying to load ${match[0]} using salt css injection. The css plugin has not converted this file. See showcase-vite-api.ts`,
+          );
+        } else {
+          throw err;
+        }
       }
     }
   }, [treeSource]);

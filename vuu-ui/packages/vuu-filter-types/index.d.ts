@@ -31,9 +31,15 @@ export interface NamedFilter {
 
 export interface SingleValueFilterClause<T = string | number | boolean>
   extends NamedFilter {
+  extendedOptions?: ExtendedFilterOptions;
   op: SingleValueFilterClauseOp;
   column: string;
   value: T;
+}
+
+export interface SerializableSingleValueFilterClause
+  extends SingleValueFilterClause {
+  asQuery: () => string;
 }
 
 export interface MultiValueFilterClause<T = string[] | number[] | boolean[]>
@@ -54,6 +60,10 @@ export interface MultiClauseFilter<
   column?: never;
   op: T;
   filters: F[];
+}
+
+export interface ExtendedFilter extends SingleValueFilterClause {
+  extendedOptions: ExtendedFilterOptions;
 }
 
 /**
@@ -77,6 +87,19 @@ export declare type Filter = FilterClause | MultiClauseFilter;
  * General type for callback props invoked with a filter
  */
 export declare type FilterHandler = (filter: Filter) => void;
+
+export declare type TimeTodayFilterOptions = {
+  date: "today";
+  type: "TimeString";
+};
+export declare type TimeDateFilterOptions = {
+  date: Date;
+  type: "TimeString";
+};
+
+export declare type ExtendedFilterOptions =
+  | TimeTodayFilterOptions
+  | TimeDateFilterOptions;
 
 /**
  This interface is only valid for a Filter that is being edioted
@@ -122,6 +145,7 @@ export declare type ColumnFilterCommitHandler = (
   column: ColumnDescriptor,
   op: FilterClauseOp | "between" | "between-inclusive",
   value: ColumnFilterValue,
+  extendedFilterOptions?: ExtendedFilterOptions,
 ) => void;
 
 export declare type ColumnFilterVariant = "pick" | "search" | "range";

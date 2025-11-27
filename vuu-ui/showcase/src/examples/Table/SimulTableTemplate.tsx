@@ -15,6 +15,7 @@ import {
 } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { DemoTableContainer } from "./DemoTableContainer";
+import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
 
 export type SimulTableProps = Partial<TableProps> & {
   columnLayout?: ColumnLayout;
@@ -31,7 +32,7 @@ export const SimulTable = ({
   columns: columnsProp,
   dataSource: dataSourceProp,
   getDefaultColumnConfig,
-  height = 625,
+  height,
   renderBufferSize = 10,
   rowClassNameGenerators,
   tableContextMenuHook,
@@ -43,6 +44,9 @@ export const SimulTable = ({
   const useContextMenu = tableContextMenuHook ?? useVuuMenuActions;
 
   const tableSchema = getSchema(tableName);
+
+  const tableContainerStyle = { flex: "1 1 auto" };
+  const footerContainerStyle = { flex: "0 0 32px" };
 
   const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(
     () => ({
@@ -88,14 +92,22 @@ export const SimulTable = ({
         menuBuilder={menuBuilder}
       >
         <DemoTableContainer>
-          <Table
-            {...tableProps}
-            EmptyDisplay={EmptyDisplay}
-            height={height}
-            onConfigChange={handleConfigChange}
-            renderBufferSize={renderBufferSize}
-            {...props}
-          />
+          <div className="DemoTableContainer-table" style={tableContainerStyle}>
+            <Table
+              {...tableProps}
+              EmptyDisplay={EmptyDisplay}
+              height={height}
+              onConfigChange={handleConfigChange}
+              renderBufferSize={renderBufferSize}
+              {...props}
+            />
+          </div>
+          <div
+            className="DemoTableContainer-footer"
+            style={footerContainerStyle}
+          >
+            <DataSourceStats dataSource={tableProps.dataSource} />
+          </div>
         </DemoTableContainer>
       </ContextMenuProvider>
     </>

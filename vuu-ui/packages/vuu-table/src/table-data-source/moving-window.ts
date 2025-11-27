@@ -46,8 +46,8 @@ export class MovingWindow {
 
     this.rowCount = rowCount;
 
-    this.#sourceRange.rowCount = rowCount;
-    this.setRange(this.#sourceRange);
+    // this.#sourceRange.rowCount = rowCount;
+    // this.setRange(this.#sourceRange);
   };
 
   add(data: DataSourceRow) {

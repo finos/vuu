@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Time, updateTimeString } from "../../src/date/date-utils";
+import { updateTimeString } from "../../src/date/date-utils";
 
 describe("date-utils", () => {
   describe("udateTimeSting", () => {

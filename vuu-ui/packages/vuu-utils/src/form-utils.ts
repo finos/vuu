@@ -7,6 +7,7 @@ import { KeyboardEvent, SyntheticEvent } from "react";
 import { stringIsValidDecimal, stringIsValidInt } from "./data-utils";
 import { isValidTimeString, Time } from "./date";
 import { queryClosest } from "./html-utils";
+import { ExtendedFilterOptions } from "@vuu-ui/vuu-filter-types";
 
 /**
  * Use with the following convention:
@@ -55,8 +56,12 @@ export const isValidRange = <T>([val1, val2]: [T, T]) => {
 export function getTypedRange(
   [value1, value2]: [string, string],
   dataType: VuuColumnDataType | DataValueTypeSimple,
+  options?: ExtendedFilterOptions,
 ) {
-  return [getTypedValue(value1, dataType), getTypedValue(value2, dataType)];
+  return [
+    getTypedValue(value1, dataType, false, options),
+    getTypedValue(value2, dataType, false, options),
+  ];
 }
 
 /**
@@ -72,16 +77,19 @@ export function getTypedValue(
   value: string,
   type: VuuColumnDataType | DataValueTypeSimple,
   throwIfInvalid?: false,
+  options?: ExtendedFilterOptions,
 ): VuuRowDataItemType | undefined;
 export function getTypedValue(
   value: string,
   type: VuuColumnDataType | DataValueTypeSimple,
   throwIfInvalid: true,
+  options?: ExtendedFilterOptions,
 ): VuuRowDataItemType;
 export function getTypedValue(
   value: string,
   type: VuuColumnDataType | DataValueTypeSimple,
   throwIfInvalid = false,
+  options?: ExtendedFilterOptions,
 ): VuuRowDataItemType | undefined {
   switch (type) {
     case "int":
@@ -114,7 +122,13 @@ export function getTypedValue(
 
     case "time":
       if (isValidTimeString(value)) {
-        return +Time(value).asDate();
+        // We don't manipulate the values of 'extended' filters, the
+        // ExtendedFilter impementation will do that.
+        if (options?.type === "TimeString") {
+          return value;
+        } else {
+          return +Time(value).asDate();
+        }
       } else if (throwIfInvalid) {
         throw Error(`value ${value} is not a valid ${type}`);
       } else {
