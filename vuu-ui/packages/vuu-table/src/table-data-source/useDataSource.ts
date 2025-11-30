@@ -206,10 +206,7 @@ export const useDataSource = ({
   const setRange = useCallback(
     (viewportRange: VuuRange) => {
       if (!rangeRef.current.equals(viewportRange)) {
-        const range = Range(viewportRange.from, viewportRange.to, {
-          renderBufferSize,
-          rowCount: totalRowCountRef.current,
-        });
+        const range = Range(viewportRange.from, viewportRange.to);
 
         dataWindow.setRange(range);
 
@@ -234,7 +231,6 @@ export const useDataSource = ({
       dataSource,
       dataWindow,
       datasourceMessageHandler,
-      renderBufferSize,
       revealSelected,
     ],
   );
