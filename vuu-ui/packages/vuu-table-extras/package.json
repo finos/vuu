@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/vuu-table-extras",
-  "version": "0.13.78",
+  "version": "0.13.79-beta.1",
   "author": "heswell",
   "main": "src/index.ts",
   "license": "Apache-2.0",
@@ -11,18 +11,18 @@
     "lezer-generate:column": "lezer-generator --output ./src/column-expression-input/column-language-parser/generated/column-parser.js ./src/column-expression-input/column-language-parser/grammar/column.grammar"
   },
   "devDependencies": {
-    "@vuu-ui/vuu-filter-types": "0.13.78",
-    "@vuu-ui/vuu-protocol-types": "0.13.78"
+    "@vuu-ui/vuu-filter-types": "0.13.79-beta.1",
+    "@vuu-ui/vuu-protocol-types": "0.13.79-beta.1"
   },
   "dependencies": {
-    "@vuu-ui/vuu-codemirror": "0.13.78",
-    "@vuu-ui/vuu-data-react": "0.13.78",
-    "@vuu-ui/vuu-data-types": "0.13.78",
-    "@vuu-ui/vuu-table-types": "0.13.78",
-    "@vuu-ui/vuu-popups": "0.13.78",
-    "@vuu-ui/vuu-table": "0.13.78",
-    "@vuu-ui/vuu-utils": "0.13.78",
-    "@vuu-ui/vuu-ui-controls": "0.13.78",
+    "@vuu-ui/vuu-codemirror": "0.13.79-beta.1",
+    "@vuu-ui/vuu-data-react": "0.13.79-beta.1",
+    "@vuu-ui/vuu-data-types": "0.13.79-beta.1",
+    "@vuu-ui/vuu-table-types": "0.13.79-beta.1",
+    "@vuu-ui/vuu-popups": "0.13.79-beta.1",
+    "@vuu-ui/vuu-table": "0.13.79-beta.1",
+    "@vuu-ui/vuu-utils": "0.13.79-beta.1",
+    "@vuu-ui/vuu-ui-controls": "0.13.79-beta.1",
     "@lezer/lr": "1.4.2",
     "@salt-ds/core": "1.48.0",
     "@salt-ds/styles": "0.2.1",

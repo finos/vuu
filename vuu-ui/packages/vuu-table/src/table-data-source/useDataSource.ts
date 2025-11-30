@@ -37,7 +37,7 @@ export const useDataSource = ({
   dataSource,
   onSizeChange,
   onSubscribed,
-  renderBufferSize = 0,
+  // renderBufferSize = 0,
   revealSelected,
   onSelect,
   selectionModel,
