@@ -280,7 +280,7 @@ export abstract class BaseDataSource
     if (range.from !== this._range.from || range.to !== this._range.to) {
       this._range = range;
       this.pageCount = Math.ceil(this._size / (range.to - range.from));
-      this.rangeRequest(range);
+      this.rangeRequest(range.withBuffer);
       requestAnimationFrame(() => {
         this.emit("range", range);
       });

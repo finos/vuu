@@ -8,6 +8,7 @@ interface FromToRange {
 export interface Range extends VuuRange {
   equals: (vuuRange: VuuRange) => boolean;
   reset: Range;
+  withBuffer: VuuRange;
 }
 
 export interface RangeOptions {
@@ -26,13 +27,19 @@ class RangeImpl implements Range {
     public from: number,
     /** Index position of last visible row in viewport + 1 */
     public to: number,
+    renderBufferSize = 0,
   ) {
     this.#baseFrom = from;
     this.#baseTo = to;
+    this.#renderBufferSize = renderBufferSize;
   }
 
   get reset() {
     return new RangeImpl(0, this.#baseTo - this.#baseFrom);
+  }
+
+  get withBuffer() {
+    return getFullRange(this, this.#renderBufferSize);
   }
 
   equals(range: VuuRange) {
@@ -50,8 +57,11 @@ class RangeImpl implements Range {
   }
 }
 
-export const Range = (from: number, to: number): Range =>
-  new RangeImpl(from, to);
+export const Range = (
+  from: number,
+  to: number,
+  renderBufferSize?: number,
+): Range => new RangeImpl(from, to, renderBufferSize);
 
 export const NULL_RANGE = Range(0, 0);
 

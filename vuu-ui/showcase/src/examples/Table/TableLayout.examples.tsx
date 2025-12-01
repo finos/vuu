@@ -68,7 +68,7 @@ const DataTableTemplate = ({
 export const ViewportRowLimitDefaultRowHeight = () => {
   return (
     <LocalDataSourceProvider>
-      <DataTableTemplate viewportRowLimit={10} />
+      <DataTableTemplate viewportRowLimit={10} width={1200} />
     </LocalDataSourceProvider>
   );
 };

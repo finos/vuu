@@ -37,7 +37,7 @@ export const useDataSource = ({
   dataSource,
   onSizeChange,
   onSubscribed,
-  // renderBufferSize = 0,
+  renderBufferSize = 0,
   revealSelected,
   onSelect,
   selectionModel,
@@ -206,9 +206,13 @@ export const useDataSource = ({
   const setRange = useCallback(
     (viewportRange: VuuRange) => {
       if (!rangeRef.current.equals(viewportRange)) {
-        const range = Range(viewportRange.from, viewportRange.to);
+        const range = Range(
+          viewportRange.from,
+          viewportRange.to,
+          renderBufferSize,
+        );
 
-        dataWindow.setRange(range);
+        dataWindow.setRange(range.withBuffer);
 
         if (dataSource.status !== "subscribed") {
           dataSource?.subscribe(
@@ -231,6 +235,7 @@ export const useDataSource = ({
       dataSource,
       dataWindow,
       datasourceMessageHandler,
+      renderBufferSize,
       revealSelected,
     ],
   );
