@@ -1,7 +1,7 @@
 package org.finos.vuu.feature.inmem
 
 import org.finos.toolbox.collection.array.ImmutableArray
-import org.finos.vuu.core.table.TablePrimaryKeys
+import org.finos.vuu.core.table.{EmptyTablePrimaryKeys, TablePrimaryKeys}
 
 case class InMemTablePrimaryKeys(keys: ImmutableArray[String]) extends TablePrimaryKeys{
   override def iterator: Iterator[String] = keys.iterator
@@ -20,7 +20,11 @@ case class InMemTablePrimaryKeys(keys: ImmutableArray[String]) extends TablePrim
   override def set(index: Int, key: String): TablePrimaryKeys = InMemTablePrimaryKeys(keys.set(index, key))
 
   override def intersect(otherKeys: Iterable[String]): TablePrimaryKeys = {
-    val intersection = keys.filter(otherKeys.toSet.contains).toArray
-    InMemTablePrimaryKeys(ImmutableArray.from(intersection))
+    if (otherKeys.isEmpty) {
+      EmptyTablePrimaryKeys
+    } else {
+      val intersection = keys.filter(otherKeys.toSet.contains).toArray
+      InMemTablePrimaryKeys(ImmutableArray.from(intersection))
+    }    
   }
 }

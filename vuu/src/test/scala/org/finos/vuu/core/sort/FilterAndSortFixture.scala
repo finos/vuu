@@ -6,6 +6,7 @@ import org.finos.toolbox.text.{AsciiUtil, CodeGenUtil}
 import org.finos.toolbox.time.{DefaultClock, TestFriendlyClock}
 import org.finos.vuu.api.{Index, Indices, TableDef}
 import org.finos.vuu.core.filter.FilterClause
+import org.finos.vuu.core.filter.`type`.AntlrBasedFilter
 import org.finos.vuu.core.table.DefaultColumnNames.CreatedTimeColumnName
 import org.finos.vuu.core.table.{Columns, InMemDataTable, RowWithData, ViewPortColumnCreator}
 import org.finos.vuu.test.TestFriendlyJoinTableProvider
@@ -20,7 +21,7 @@ object FilterAndSortFixture {
   def getFilteredRows(table: InMemDataTable, clause: FilterClause): Iterable[RowWithData] = {
     val vpColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)
     val filter = AntlrBasedFilter(clause)
-    val resultKeys = filter.doFilter(table, table.primaryKeys, vpColumns)
+    val resultKeys = filter.doFilter(table, table.primaryKeys, vpColumns, true)
     val resultRows = resultKeys.map(key => table.pullRow(key, vpColumns).asInstanceOf[RowWithData])
     resultRows
   }

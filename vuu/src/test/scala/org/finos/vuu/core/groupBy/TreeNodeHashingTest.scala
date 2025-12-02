@@ -4,6 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.core.filter.`type`.AllowAllPermissionFilter
 import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.net.{ClientSessionId, FilterSpec}
@@ -68,6 +69,7 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         None,
         None,
         buildAction = BuildEntireTree(sessionTable, None),
+        AllowAllPermissionFilter,
         None
       ).buildEntireTree()
 
@@ -80,6 +82,7 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         None,
         None,
         buildAction = BuildEntireTree(sessionTable, None),
+        AllowAllPermissionFilter,
         None
       ).buildEntireTree()
 
@@ -100,6 +103,7 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         None,
         None,
         buildAction = BuildEntireTree(sessionTable, None),
+        AllowAllPermissionFilter,
         None
       ).buildEntireTree()
 
@@ -143,6 +147,7 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         None,
         None,
         buildAction = BuildEntireTree(sessionTable, None),
+        AllowAllPermissionFilter,
         None
       ).buildEntireTree()
 
@@ -156,6 +161,7 @@ class TreeNodeHashingTest extends AnyFeatureSpec with Matchers with StrictLoggin
         None,
         None,
         buildAction = BuildEntireTree(sessionTable, None),
+        AllowAllPermissionFilter,
         None
       ).buildEntireTree()
 

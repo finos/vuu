@@ -4,14 +4,12 @@ import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.core.filter.FilterClause.joinResults
 import org.finos.vuu.core.index.*
 import org.finos.vuu.core.table.column.{Error, Result}
-import org.finos.vuu.core.table.{RowData, TablePrimaryKeys}
+import org.finos.vuu.core.table.{EmptyTablePrimaryKeys, RowData, TablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 
 sealed trait FilterClause {
-  
-  def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys): Result[TablePrimaryKeys]
-      
+
   def filterAllSafe(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): Result[TablePrimaryKeys] =
     this.validate(vpColumns).fold(errMsg => Error(errMsg), _ => Result(this.filterAll(rows, rowKeys, vpColumns)))
 
@@ -39,6 +37,14 @@ sealed trait RowFilterClause extends FilterClause {
   private def columnExistsInVpColumns(vpColumns: ViewPortColumns): Result[true] =
     if (vpColumns.columnExists(this.columnName)) Result(true)
     else Error(s"Column `$columnName` not found.")
+
+  private def applyIndexLookup[T](rowKeys: TablePrimaryKeys, value: T, indexLookup: T => Iterable[String]): TablePrimaryKeys = {
+    if (rowKeys.length == 0) {
+      rowKeys
+    } else {
+      rowKeys.intersect(indexLookup.apply(value))
+    }
+  }
 
 }
 
@@ -102,7 +108,7 @@ case class InClause(columnName: String, values: List[String]) extends RowFilterC
       case Some(ix: LongIndexedField)    => rowKeys.intersect(ix.find(values.map(s => s.toLong)))
       case Some(ix: DoubleIndexedField)  => rowKeys.intersect(ix.find(values.map(s => s.toDouble)))
       case Some(ix: BooleanIndexedField) => rowKeys.intersect(ix.find(values.map(s => s.toBoolean)))
-      case _                          => super.filterAll(rows, rowKeys, viewPortColumns)
+      case _                             => super.filterAll(rows, rowKeys, viewPortColumns)
     }
   }
 }
@@ -119,9 +125,9 @@ case class GreaterThanClause(columnName: String, value: Double) extends RowFilte
     val column = rows.asTable.columnForName(columnName)
     rows.asTable.indexForColumn(column) match {
       case Some(ix: DoubleIndexedField) => rowKeys.intersect(ix.greaterThan(value))
-      case Some(ix: IntIndexedField) => rowKeys.intersect(ix.greaterThan(value.toInt))
-      case Some(ix: LongIndexedField) => rowKeys.intersect(ix.greaterThan(value.toLong))
-      case _ => super.filterAll(rows, rowKeys, viewPortColumns)
+      case Some(ix: IntIndexedField)    => rowKeys.intersect(ix.greaterThan(value.toInt))
+      case Some(ix: LongIndexedField)   => rowKeys.intersect(ix.greaterThan(value.toLong))
+      case _                            => super.filterAll(rows, rowKeys, viewPortColumns)
     }
   }
 }
@@ -140,7 +146,7 @@ case class LessThanClause(columnName: String, value: Double) extends RowFilterCl
       case Some(ix: DoubleIndexedField) => rowKeys.intersect(ix.lessThan(value))
       case Some(ix: IntIndexedField)    => rowKeys.intersect(ix.lessThan(value.toInt))
       case Some(ix: LongIndexedField)   => rowKeys.intersect(ix.lessThan(value.toInt))
-      case _                         => super.filterAll(rows, rowKeys, viewPortColumns)
+      case _                            => super.filterAll(rows, rowKeys, viewPortColumns)
     }
   }
 }
@@ -166,7 +172,7 @@ case class EqualsClause(columnName: String, value: String) extends RowFilterClau
       case Some(ix: LongIndexedField)     => rowKeys.intersect(ix.find(value.toLong))
       case Some(ix: DoubleIndexedField)   => rowKeys.intersect(ix.find(value.toDouble))
       case Some(ix: BooleanIndexedField)  => rowKeys.intersect(ix.find(value.toBoolean))
-      case _                           => super.filterAll(rows, rowKeys, viewPortColumns)
+      case _                              => super.filterAll(rows, rowKeys, viewPortColumns)
     }
   }
 }
