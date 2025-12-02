@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/vuu-filter-types",
-  "version": "0.13.79-beta.1",
+  "version": "0.13.79",
   "main": "",
   "scripts": {
     "build": "node ../../scripts/run-build-typelib.mjs"
