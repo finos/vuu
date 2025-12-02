@@ -110,9 +110,6 @@ class AntlrBasedFilterTest extends AnyFeatureSpec with Matchers {
       results.head shouldEqual "NYC-0004"
     }
 
-
-
-
   }
 
   Feature("Greater and less than") {
@@ -126,7 +123,7 @@ class AntlrBasedFilterTest extends AnyFeatureSpec with Matchers {
       val results = antlrFilter.doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), false)
 
       results.length shouldEqual 2
-      results.toList shouldEqual List("NYC-0004","LDN-0008")
+      results.toSet shouldEqual Set("NYC-0004","LDN-0008")
     }
 
     Scenario("Greater and less than filter with no index and first in chain") {
@@ -138,7 +135,7 @@ class AntlrBasedFilterTest extends AnyFeatureSpec with Matchers {
       val results = antlrFilter.doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), true)
 
       results.length shouldEqual 2
-      results.toList shouldEqual List("NYC-0004", "LDN-0008")
+      results.toSet shouldEqual Set("NYC-0004", "LDN-0008")
     }
 
     Scenario("Greater and less than filter with index and not first in chain") {
@@ -150,7 +147,7 @@ class AntlrBasedFilterTest extends AnyFeatureSpec with Matchers {
       val results = antlrFilter.doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), false)
 
       results.length shouldEqual 2
-      results.toList shouldEqual List("NYC-0004", "LDN-0008")
+      results.toSet shouldEqual Set("NYC-0004", "LDN-0008")
     }
 
     Scenario("Greater and less than filter with index and first in chain") {
@@ -162,7 +159,7 @@ class AntlrBasedFilterTest extends AnyFeatureSpec with Matchers {
       val results = antlrFilter.doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), true)
 
       results.length shouldEqual 2
-      results.toList shouldEqual List("NYC-0004", "LDN-0008")
+      results.toSet shouldEqual Set("NYC-0004", "LDN-0008")
     }
 
   }

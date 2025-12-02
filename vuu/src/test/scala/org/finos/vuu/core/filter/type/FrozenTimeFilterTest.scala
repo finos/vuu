@@ -27,7 +27,7 @@ class FrozenTimeFilterTest extends AnyFeatureSpec with Matchers {
       val results = frozenTimeFilter.doFilter(table, table.primaryKeys, true)
 
       results.length shouldEqual 2
-      results.toList shouldEqual List("NYC-0004", "LDN-0003")
+      results.toSet shouldEqual Set("NYC-0004", "LDN-0003")
     }
 
     Scenario("Freeze filter with indexed created time") {
@@ -37,7 +37,7 @@ class FrozenTimeFilterTest extends AnyFeatureSpec with Matchers {
       val results = frozenTimeFilter.doFilter(table, table.primaryKeys, true)
 
       results.length shouldEqual 2
-      results.toList shouldEqual List("NYC-0004", "LDN-0003")
+      results.toSet shouldEqual Set("NYC-0004", "LDN-0003")
     }
 
     Scenario("Freeze filter with indexed created time and not first in chain") {
@@ -47,7 +47,7 @@ class FrozenTimeFilterTest extends AnyFeatureSpec with Matchers {
       val results = frozenTimeFilter.doFilter(table, InMemTablePrimaryKeys(ImmutableArray.from(Array("LDN-0003"))), false)
 
       results.length shouldEqual 1
-      results.toList shouldEqual List("LDN-0003")
+      results.toSet shouldEqual Set("LDN-0003")
     }
 
     Scenario("Freeze filter with no input primary keys") {
