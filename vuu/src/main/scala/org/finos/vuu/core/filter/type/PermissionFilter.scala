@@ -1,6 +1,6 @@
 package org.finos.vuu.core.filter.`type`
 
-import com.typesafe.scalalogging.StrictLogging
+import com.typesafe.scalalogging.LazyLogging
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.core.index.{BooleanIndexedField, DoubleIndexedField, EpochTimestampIndexedField, IndexedField, IntIndexedField, LongIndexedField, StringIndexedField}
 import org.finos.vuu.core.table.datatype.EpochTimestamp
@@ -36,7 +36,7 @@ object DenyAllPermissionFilter extends PermissionFilter {
 
 }
 
-private case class PermissionFilterChain(filters: Iterable[PermissionFilter]) extends PermissionFilter with StrictLogging {
+private case class PermissionFilterChain(filters: Iterable[PermissionFilter]) extends PermissionFilter with LazyLogging {
 
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean): TablePrimaryKeys = {
     logger.trace(s"Starting filter with ${primaryKeys.length} rows")
@@ -55,7 +55,7 @@ private case class PermissionFilterChain(filters: Iterable[PermissionFilter]) ex
 
 }
 
-private case class RowPermissionFilter(rowPredicate: RowData => Boolean) extends PermissionFilter with StrictLogging {
+private case class RowPermissionFilter(rowPredicate: RowData => Boolean) extends PermissionFilter with LazyLogging {
 
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean): TablePrimaryKeys = {
     logger.trace(s"Starting filter with ${primaryKeys.length} rows")
@@ -70,7 +70,7 @@ private case class RowPermissionFilter(rowPredicate: RowData => Boolean) extends
 
 }
 
-private case class ContainsPermissionFilter(columnName: String, allowedValues: Set[String]) extends PermissionFilter with StrictLogging {
+private case class ContainsPermissionFilter(columnName: String, allowedValues: Set[String]) extends PermissionFilter with LazyLogging {
 
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean): TablePrimaryKeys = {
     logger.trace(s"Starting filter with ${primaryKeys.length} rows")

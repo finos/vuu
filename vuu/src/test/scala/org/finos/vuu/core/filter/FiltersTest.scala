@@ -7,7 +7,7 @@ import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
-class FiltersTest extends AnyFeatureSpec with Matchers{
+class FiltersTest extends AnyFeatureSpec with Matchers {
 
   Feature("Test built in filters") {
 
