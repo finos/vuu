@@ -31,8 +31,8 @@ object VuuUser {
 }
 
 case class VuuUserImpl(name: String,
-                               expiry: Instant,
-                               authorizations: Set[String]) extends VuuUser {
+                       expiry: Instant,
+                       authorizations: Set[String]) extends VuuUser {
 
   override def withAuthorizations(authorizations: Set[String]): VuuUser = this.copy(authorizations = authorizations)
 

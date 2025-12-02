@@ -1,31 +1,35 @@
 package org.finos.vuu.core.filter
 
-import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.table.{EmptyTablePrimaryKeys, TablePrimaryKeys}
-import org.finos.vuu.net.FilterSpec
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 
 trait Filter {
-  def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns:ViewPortColumns): TablePrimaryKeys
+  def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean): TablePrimaryKeys
 }
 
-object NoFilter extends Filter {
-  override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns:ViewPortColumns): TablePrimaryKeys = primaryKeys
+trait ViewPortFilter {
+  def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns:ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys
 }
 
-object FilterOutEverythingFilter extends Filter {
-  override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = EmptyTablePrimaryKeys
+object NoFilter extends ViewPortFilter {
+  override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, 
+                        vpColumns:ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = primaryKeys
 }
 
-case class CompoundFilter(filters: Filter*) extends Filter {
+object FilterOutEverythingFilter extends ViewPortFilter {
+  override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys,
+                        vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = EmptyTablePrimaryKeys
+}
 
-  override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
+case class CompoundFilter(filters: ViewPortFilter*) extends ViewPortFilter {
+
+  override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, 
+                        vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
     filters.foldLeft(primaryKeys) {
-      (remainingKeys, filter) => filter.doFilter(source, remainingKeys, vpColumns)
+      (remainingKeys, filter) => {
+        val stillFirstInChain = firstInChain && remainingKeys.length == primaryKeys.length
+        filter.doFilter(source, remainingKeys, vpColumns, stillFirstInChain)
+      }
     }
   }
 }
-
-
-
-

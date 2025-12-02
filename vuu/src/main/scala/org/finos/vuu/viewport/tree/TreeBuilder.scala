@@ -3,15 +3,15 @@ package org.finos.vuu.viewport.tree
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.logging.LogAtFrequency
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.core.auths.RowPermissionChecker
-import org.finos.vuu.core.filter.{FilterOutEverythingFilter, FilterSpecParser, NoFilter}
-import org.finos.vuu.core.sort.{AntlrBasedFilter, RowPermissionFilter, Sort, TwoStepCompoundFilter}
+import org.finos.vuu.core.filter.`type`.{AntlrBasedFilter, BaseFilter, PermissionFilter}
+import org.finos.vuu.core.filter.{CompoundFilter, FilterOutEverythingFilter, FilterSpecParser, NoFilter}
+import org.finos.vuu.core.sort.Sort
 import org.finos.vuu.core.table.{Column, EmptyRowData, RowData, RowWithData, TablePrimaryKeys}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.net.FilterSpec
 import org.finos.vuu.viewport.{GroupBy, ViewPortColumns}
 
-import java.util.{LinkedList => JList}
+import java.util.LinkedList as JList
 import scala.util.{Failure, Success, Try}
 
 trait TreeBuilder {
@@ -25,14 +25,21 @@ object BuildTypeFast extends BuildType
 object BuildTypeFull extends BuildType
 
 object TreeBuilder {
-  def create(table: TreeSessionTableImpl, groupBy: GroupBy, filter: FilterSpec, vpColumns: ViewPortColumns, latestTreeNodeState: TreeNodeStateStore, previousTree: Option[Tree], sort: Option[Sort], buildAction: TreeBuildAction, permissionsChecker: Option[RowPermissionChecker])(implicit timeProvider: Clock): TreeBuilder = {
-    new TreeBuilderImpl(table, groupBy, filter, vpColumns, latestTreeNodeState, previousTree, sort, buildAction, permissionsChecker)
+  def create(table: TreeSessionTableImpl, groupBy: GroupBy, filter: FilterSpec, vpColumns: ViewPortColumns, 
+             latestTreeNodeState: TreeNodeStateStore, previousTree: Option[Tree], sort: Option[Sort], 
+             buildAction: TreeBuildAction, permissionFilter: PermissionFilter, frozenTime: Option[Long])(using timeProvider: Clock): TreeBuilder = {
+    new TreeBuilderImpl(table, groupBy, filter, vpColumns, latestTreeNodeState, previousTree, sort, buildAction, 
+      permissionFilter, frozenTime)
   }
 }
 
-class TreeBuilderImpl(val table: TreeSessionTableImpl, val groupBy: GroupBy, val filter: FilterSpec, val vpColumns: ViewPortColumns, val latestTreeNodeState: TreeNodeStateStore, val previousTree: Option[Tree], val sort: Option[Sort], val buildAction: TreeBuildAction, checkerOption: Option[RowPermissionChecker])(implicit timeProvider: Clock) extends TreeBuilder with StrictLogging {
+class TreeBuilderImpl(val table: TreeSessionTableImpl, val groupBy: GroupBy, val filter: FilterSpec, 
+                      val vpColumns: ViewPortColumns, val latestTreeNodeState: TreeNodeStateStore, 
+                      val previousTree: Option[Tree], val sort: Option[Sort], 
+                      val buildAction: TreeBuildAction, val permissionFilter: PermissionFilter, 
+                      val frozenTime: Option[Long])(using timeProvider: Clock) extends TreeBuilder with StrictLogging {
 
-  final val EMPTY_TREE_NODE_STATE = TreeNodeStateStore(Map())
+  private final val EMPTY_TREE_NODE_STATE = TreeNodeStateStore(Map())
 
   private val logEvery = new LogAtFrequency(3000)
   private val logEveryTreeBuild = new LogAtFrequency(20_000)
@@ -41,34 +48,24 @@ class TreeBuilderImpl(val table: TreeSessionTableImpl, val groupBy: GroupBy, val
   import org.finos.vuu.core.DataConstants._
 
   private def applyFilter(): TablePrimaryKeys = {
-
-    if ((filter != null && !isEmptyString(filter.filter)) || checkerOption.isDefined) {
-
-      logger.debug("has filter, parsing")
-
-      val theFilter = if(filter != null && !isEmptyString(filter.filter)){
-        Try(FilterSpecParser.parse(filter.filter)) match {
-          case Success(clause) =>
-            AntlrBasedFilter(clause)
-          case Failure(err) =>
-            logger.error(s"could not parse filter ${filter.filter}", err)
-            FilterOutEverythingFilter
-        }
-      }else{
-        NoFilter
+    
+    val theFilter = if (filter != null && !isEmptyString(filter.filter)) {
+      logger.debug("Parsing filter")
+      Try(FilterSpecParser.parse(filter.filter)) match {
+        case Success(clause) =>
+          AntlrBasedFilter(clause)
+        case Failure(err) =>
+          logger.error(s"Could not parse filter ${filter.filter}", err)
+          FilterOutEverythingFilter
       }
+    } else {
+      NoFilter
+    }
 
-      logger.debug("has filter, applying")
-
-      val realizedFilter = checkerOption match {
-        case Some(checker) => TwoStepCompoundFilter(RowPermissionFilter(checker), theFilter)
-        case None => theFilter
-      }
-
-      realizedFilter.doFilter(table.sourceTable, table.sourceTable.primaryKeys, vpColumns)
-
-    } else
-      table.sourceTable.primaryKeys
+    logger.debug("Applying filter")
+    val baseFilter = BaseFilter(permissionFilter, frozenTime)
+    val realizedFilter = CompoundFilter(baseFilter, theFilter)
+    realizedFilter.doFilter(table.sourceTable, table.sourceTable.primaryKeys, vpColumns, firstInChain = true)
   }
 
   private def applySort(filteredKeys: TablePrimaryKeys): TablePrimaryKeys = {
