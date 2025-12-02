@@ -1,7 +1,7 @@
-import { DataSourceFilter } from "@vuu-ui/vuu-data-types";
 import { FilterBarProps } from "@vuu-ui/vuu-filters";
 import { useCallback } from "react";
 import { FilterTableProps } from "./FilterTable";
+import { FilterHandler } from "@vuu-ui/vuu-filter-types";
 
 export const useFilterTable = ({
   FilterBarProps,
@@ -10,17 +10,22 @@ export const useFilterTable = ({
     dataSource,
   },
 }: FilterTableProps) => {
-  const handleApplyFilter = useCallback(
-    (filter: DataSourceFilter) => {
-      dataSource.filter = filter;
+  const handleApplyFilter = useCallback<FilterHandler>(
+    (filter) => {
+      dataSource.setFilter?.(filter);
     },
     [dataSource],
   );
+
+  const handleClearFilter = useCallback(() => {
+    dataSource.clearFilter?.();
+  }, [dataSource]);
 
   const filterBarProps: FilterBarProps = {
     ...FilterBarProps,
     columnDescriptors: FilterBarProps?.columnDescriptors ?? columns,
     onApplyFilter: handleApplyFilter,
+    onClearFilter: handleClearFilter,
   };
 
   return {

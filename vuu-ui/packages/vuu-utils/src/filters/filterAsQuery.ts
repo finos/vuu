@@ -3,9 +3,12 @@ import {
   Filter,
   SingleValueFilterClause,
 } from "@vuu-ui/vuu-filter-types";
-import type { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { isDateTimeDataValue } from "../column-utils";
-import { isMultiClauseFilter, isMultiValueFilter } from "./filter-utils";
+import {
+  isMultiClauseFilter,
+  isMultiValueFilter,
+  isSerializableFilter,
+} from "./filter-utils";
 
 const filterValue = (value: string | number | boolean) =>
   typeof value === "string" ? `"${value}"` : value;
@@ -42,15 +45,19 @@ function singleValueFilterAsQuery(
   f: SingleValueFilterClause,
   opts?: { columnsByName?: ColumnDescriptorsByName },
 ): string {
-  const column = opts?.columnsByName?.[f.column];
-  if (column && isDateTimeDataValue(column)) {
-    return dateFilterAsQuery(f as SingleValueFilterClause<number>);
+  if (isSerializableFilter(f)) {
+    return f.asQuery();
   } else {
-    return defaultSingleValueFilterAsQuery(f);
+    const column = opts?.columnsByName?.[f.column];
+    if (column && isDateTimeDataValue(column)) {
+      return dateFilterAsQuery(f as SingleValueFilterClause<number>);
+    } else {
+      return defaultSingleValueFilterAsQuery(f);
+    }
   }
 }
 
-const ONE_DAY_IN_MILIS = 1000 * 60 * 60 * 24;
+export const ONE_DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
 export function dateFilterAsQuery(f: SingleValueFilterClause<number>): string {
   switch (f.op) {
     case "=": {
@@ -59,7 +66,7 @@ export function dateFilterAsQuery(f: SingleValueFilterClause<number>): string {
         {
           op: "<",
           column: f.column,
-          value: f.value + ONE_DAY_IN_MILIS,
+          value: f.value + ONE_DAY_IN_MILLIS,
         },
       ];
       return filterAsQueryCore({ op: "and", filters });
@@ -70,7 +77,7 @@ export function dateFilterAsQuery(f: SingleValueFilterClause<number>): string {
         {
           op: ">=",
           column: f.column,
-          value: f.value + ONE_DAY_IN_MILIS,
+          value: f.value + ONE_DAY_IN_MILLIS,
         },
       ];
       return filterAsQueryCore({ op: "or", filters });
@@ -82,19 +89,3 @@ export function dateFilterAsQuery(f: SingleValueFilterClause<number>): string {
 
 const defaultSingleValueFilterAsQuery = (f: SingleValueFilterClause) =>
   `${f.column} ${f.op} ${filterValue(f.value)}`;
-
-export const removeColumnFromFilter = (
-  column: RuntimeColumnDescriptor,
-  filter: Filter,
-): [Filter | undefined, string] => {
-  if (isMultiClauseFilter(filter)) {
-    const [clause1, clause2] = filter.filters;
-    if (clause1.column === column.name) {
-      return [clause2, filterAsQuery(clause2)];
-    }
-    if (clause2.column === column.name) {
-      return [clause1, filterAsQuery(clause1)];
-    }
-  }
-  return [undefined, ""];
-};

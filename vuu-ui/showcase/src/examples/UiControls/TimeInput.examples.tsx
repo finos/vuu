@@ -40,6 +40,7 @@ export const NativeHtmlTimeInput = () => {
 const TimeInputTemplate = ({
   defaultValue,
   onChange,
+  onCommit,
   value: valueProp,
 }: Partial<TimeInputProps>) => {
   const [value, setValue] = useState(valueProp);
@@ -60,8 +61,9 @@ const TimeInputTemplate = ({
   const handleCommit = useCallback<CommitHandler<HTMLInputElement, TimeString>>(
     (e, value) => {
       console.log(`commit value ${value}`);
+      onCommit?.(e, value);
     },
-    [],
+    [onCommit],
   );
 
   const setTime = useCallback((time: TimeString) => {
@@ -87,7 +89,6 @@ const TimeInputTemplate = ({
 
       <Input data-testid="pre-timeinput" />
       <TimeInput
-        data-testid="timeinput"
         defaultValue={defaultValue}
         onChange={handleChange}
         onCommit={handleCommit}
@@ -100,8 +101,18 @@ const TimeInputTemplate = ({
 
 export const TestTimeInput = ({
   defaultValue,
-}: Pick<TimeInputProps, "defaultValue">) => (
-  <TimeInputTemplate defaultValue={defaultValue} />
+  onChange,
+  onCommit,
+}: Partial<Pick<TimeInputProps, "defaultValue" | "onChange" | "onCommit">>) => (
+  <TimeInputTemplate
+    defaultValue={defaultValue}
+    onChange={onChange}
+    onCommit={onCommit}
+  />
+);
+
+export const WithDefaultValue = () => (
+  <TimeInputTemplate defaultValue="00:00:00" />
 );
 
 export const VuuTimeInput = () => <TimeInputTemplate defaultValue="00:00:00" />;

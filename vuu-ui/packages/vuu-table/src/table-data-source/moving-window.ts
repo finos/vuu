@@ -1,53 +1,27 @@
 import { DataSourceRow } from "@vuu-ui/vuu-data-types";
-import { Range, WindowRange, metadataKeys } from "@vuu-ui/vuu-utils";
+import { VuuRange } from "@vuu-ui/vuu-protocol-types";
+import { metadataKeys, WindowRange } from "@vuu-ui/vuu-utils";
 
 const { SELECTED } = metadataKeys;
 
 export class MovingWindow {
   public data: DataSourceRow[];
   public rowCount = 0;
-  #sourceRange: Range;
   #range: WindowRange;
 
-  constructor(range: Range) {
-    this.#sourceRange = range;
-    const { from, to } = range;
+  constructor({ from, to }: VuuRange) {
     this.#range = new WindowRange(from, to);
     //internal data is always 0 based, we add range.from to determine an offset
     this.data = new Array(Math.max(0, to - from));
     this.rowCount = 0;
   }
 
-  setRange(range: Range) {
-    this.#sourceRange = range;
-    const { from, to } = range;
-
-    if (from !== this.#range.from || to !== this.#range.to) {
-      const [overlapFrom, overlapTo] = this.#range.overlap(from, to);
-      const newData = new Array(Math.max(0, to - from));
-      for (let i = overlapFrom; i < overlapTo; i++) {
-        const data = this.getAtIndex(i);
-        if (data) {
-          const index = i - from;
-          newData[index] = data;
-        }
-      }
-      this.data = newData;
-      this.#range.from = from;
-      this.#range.to = to;
-    }
-  }
-
   setRowCount = (rowCount: number) => {
-    // TODO, do we still need this, given the call to setRange below
     if (rowCount < this.data.length) {
       this.data.length = rowCount;
     }
 
     this.rowCount = rowCount;
-
-    this.#sourceRange.rowCount = rowCount;
-    this.setRange(this.#sourceRange);
   };
 
   add(data: DataSourceRow) {
@@ -67,6 +41,23 @@ export class MovingWindow {
 
   isWithinRange(index: number) {
     return this.#range.isWithin(index);
+  }
+
+  setRange({ from, to }: VuuRange) {
+    if (from !== this.#range.from || to !== this.#range.to) {
+      const [overlapFrom, overlapTo] = this.#range.overlap(from, to);
+      const newData = new Array(Math.max(0, to - from));
+      for (let i = overlapFrom; i < overlapTo; i++) {
+        const data = this.getAtIndex(i);
+        if (data) {
+          const index = i - from;
+          newData[index] = data;
+        }
+      }
+      this.data = newData;
+      this.#range.from = from;
+      this.#range.to = to;
+    }
   }
 
   getSelectedRows() {

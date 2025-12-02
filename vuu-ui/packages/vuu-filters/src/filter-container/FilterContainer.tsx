@@ -24,7 +24,7 @@ import {
   isNullFilter,
   useSavedFilters,
 } from "../filter-provider/FilterContext";
-import { getColumnValueFromFilter } from "@vuu-ui/vuu-utils";
+import { getColumnValueFromFilter, isBetweenOperator } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 
@@ -95,7 +95,7 @@ export const FilterContainerColumnFilter = ({
           currentFilter.filter,
         );
         if (
-          operator === "between" &&
+          isBetweenOperator(operator) &&
           !Array.isArray(v) &&
           Array.isArray(valueRef.current)
         ) {
@@ -120,10 +120,10 @@ export const FilterContainerColumnFilter = ({
   }, [column, currentFilter.id]);
 
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
-    (column, op, value) => {
+    (column, op, value, extendedFilterOptions) => {
       valueRef.current = value;
       setValue(value);
-      onFilterContextCommit(column, op, value);
+      onFilterContextCommit(column, op, value, extendedFilterOptions);
     },
     [onFilterContextCommit],
   );

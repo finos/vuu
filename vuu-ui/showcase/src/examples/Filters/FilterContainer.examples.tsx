@@ -1,6 +1,6 @@
 import { FormField, FormFieldLabel } from "@salt-ds/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
-import { DataSourceFilter, TableSchemaTable } from "@vuu-ui/vuu-data-types";
+import { TableSchemaTable } from "@vuu-ui/vuu-data-types";
 import {
   ColumnFilterProps,
   FilterAppliedHandler,
@@ -17,14 +17,10 @@ import {
   IconButton,
   useContextPanel,
 } from "@vuu-ui/vuu-ui-controls";
-import {
-  DataSourceProvider,
-  filterAsQuery,
-  toColumnName,
-  useData,
-} from "@vuu-ui/vuu-utils";
+import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
 import { DemoTableContainer } from "../Table/DemoTableContainer";
+import { FilterContainerFilter } from "@vuu-ui/vuu-filter-types";
 
 const schema = getSchema("instruments");
 
@@ -77,19 +73,15 @@ const SimpleFilterContainerTemplate = ({
   );
 
   const onFilterApplied = useCallback<FilterAppliedHandler>(
-    (filterStruct) => {
-      const vuuFilter: DataSourceFilter = {
-        filter: filterAsQuery(filterStruct),
-        filterStruct,
-      };
-      dataSource.filter = vuuFilter;
-      setFilter(filterStruct as FilterContainerProps["filter"]);
+    (filter) => {
+      dataSource.setFilter?.(filter);
+      setFilter(filter as FilterContainerProps["filter"]);
     },
     [dataSource],
   );
 
   const onFilterCleared = useCallback(() => {
-    dataSource.filter = { filter: "" };
+    dataSource.clearFilter?.();
     setFilter(undefined);
   }, [dataSource]);
 
@@ -208,20 +200,18 @@ const TableWithFiltersTemplate = () => {
     [],
   );
 
-  const onFilterApplied = useCallback<FilterAppliedHandler>(
-    (filterStruct) => {
-      const vuuFilter: DataSourceFilter = {
-        filter: filterAsQuery(filterStruct),
-        filterStruct,
-      };
-      dataSource.filter = vuuFilter;
-      setFilter(filterStruct as FilterContainerProps["filter"]);
+  const onFilterApplied = useCallback<
+    FilterAppliedHandler<FilterContainerFilter>
+  >(
+    (filter) => {
+      dataSource.setFilter?.(filter);
+      setFilter(filter);
     },
     [dataSource],
   );
 
   const onFilterCleared = useCallback(() => {
-    dataSource.filter = { filter: "" };
+    dataSource.clearFilter?.();
     setFilter(undefined);
   }, [dataSource]);
 

@@ -7,11 +7,8 @@ interface FromToRange {
 
 export interface Range extends VuuRange {
   equals: (vuuRange: VuuRange) => boolean;
-  firstRowInViewport: number;
-  lastRowInViewport: number;
-  renderBufferSize?: number;
   reset: Range;
-  rowCount?: number;
+  withBuffer: VuuRange;
 }
 
 export interface RangeOptions {
@@ -19,14 +16,9 @@ export interface RangeOptions {
   rowCount?: number;
 }
 
-const defaultRangeOptions = {
-  renderBufferSize: 0,
-  rowCount: -1,
-};
 class RangeImpl implements Range {
   #baseFrom: number;
   #renderBufferSize = 0;
-  #rowCount = -1;
   #baseTo: number;
 
   // We have to keep from and to as simple public properties (not getters) so they survive structuredClone
@@ -35,59 +27,19 @@ class RangeImpl implements Range {
     public from: number,
     /** Index position of last visible row in viewport + 1 */
     public to: number,
-    rangeOptions: RangeOptions = defaultRangeOptions,
+    renderBufferSize = 0,
   ) {
     this.#baseFrom = from;
     this.#baseTo = to;
-    this.renderBufferSize =
-      rangeOptions.renderBufferSize ?? defaultRangeOptions.renderBufferSize;
-    this.rowCount = rangeOptions.rowCount ?? defaultRangeOptions.rowCount;
-  }
-
-  get firstRowInViewport() {
-    return this.#baseFrom + 1;
-  }
-
-  get lastRowInViewport() {
-    if (this.#rowCount > 0) {
-      return Math.min(this.#baseTo, this.#rowCount);
-    } else {
-      return this.#baseTo;
-    }
-  }
-
-  get renderBufferSize() {
-    return this.#renderBufferSize;
-  }
-
-  set renderBufferSize(value: number) {
-    this.#renderBufferSize = value;
-    this.from = Math.max(0, this.#baseFrom - value);
-    if (this.#rowCount > 0) {
-      this.to = Math.max(this.#baseTo + this.#renderBufferSize, this.#rowCount);
-    } else {
-      this.to = this.#baseTo + this.#renderBufferSize;
-    }
-  }
-
-  get rowCount() {
-    return this.#rowCount;
-  }
-
-  set rowCount(value: number) {
-    this.#rowCount = value;
-    if (value > 0) {
-      this.to = Math.min(this.#baseTo + this.#renderBufferSize, value);
-    } else {
-      this.to = this.#baseTo + this.#renderBufferSize;
-    }
+    this.#renderBufferSize = renderBufferSize;
   }
 
   get reset() {
-    return new RangeImpl(0, this.#baseTo - this.#baseFrom, {
-      rowCount: this.#rowCount,
-      renderBufferSize: this.#renderBufferSize,
-    });
+    return new RangeImpl(0, this.#baseTo - this.#baseFrom);
+  }
+
+  get withBuffer() {
+    return getFullRange(this, this.#renderBufferSize);
   }
 
   equals(range: VuuRange) {
@@ -101,7 +53,6 @@ class RangeImpl implements Range {
       baseFrom: this.#baseFrom,
       baseTo: this.#baseTo,
       renderBufferSize: this.#renderBufferSize,
-      rowCount: this.#rowCount,
     };
   }
 }
@@ -109,8 +60,8 @@ class RangeImpl implements Range {
 export const Range = (
   from: number,
   to: number,
-  rangeOptions?: RangeOptions,
-): Range => new RangeImpl(from, to, rangeOptions);
+  renderBufferSize?: number,
+): Range => new RangeImpl(from, to, renderBufferSize);
 
 export const NULL_RANGE = Range(0, 0);
 

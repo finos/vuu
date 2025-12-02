@@ -29,6 +29,8 @@ import {
   withConfigDefaults,
 } from "./datasource-utils";
 import { Range } from "../range-utils";
+import { filterAsQuery } from "../filters";
+import { Filter } from "@vuu-ui/vuu-filter-types";
 
 export type ConfigWithVisualLink = WithBaseFilter<WithFullConfig> & {
   visualLink?: LinkDescriptorWithLabel;
@@ -176,6 +178,18 @@ export abstract class BaseDataSource
     };
   }
 
+  setFilter(filter: Filter) {
+    const dataSourceFilter: DataSourceFilter = {
+      filter: filterAsQuery(filter),
+      filterStruct: filter,
+    };
+    this.filter = dataSourceFilter;
+  }
+
+  clearFilter() {
+    this.filter = { filter: "" };
+  }
+
   get isAwaitingConfirmationOfConfigChange() {
     return this._impendingConfigWithVisualLink !== undefined;
   }
@@ -266,7 +280,7 @@ export abstract class BaseDataSource
     if (range.from !== this._range.from || range.to !== this._range.to) {
       this._range = range;
       this.pageCount = Math.ceil(this._size / (range.to - range.from));
-      this.rangeRequest(range);
+      this.rangeRequest(range.withBuffer);
       requestAnimationFrame(() => {
         this.emit("range", range);
       });

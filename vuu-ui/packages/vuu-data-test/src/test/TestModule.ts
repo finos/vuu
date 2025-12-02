@@ -38,7 +38,7 @@ class TestModule extends VuuModule<TestTableName> {
       buildDataColumnMap(schemas, "LinkParent"),
     ),
     LinkChild: tableContainer.createTable(
-      schemas.LinkParent,
+      schemas.LinkChild,
       [
         ["200001", "1000000001", "child 1 (linked to 001)"],
         ["200002", "1000000001", "child 2 (linked to 001)"],

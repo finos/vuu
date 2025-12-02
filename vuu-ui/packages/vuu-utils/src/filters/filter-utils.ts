@@ -2,8 +2,10 @@ import type { DataSourceFilter } from "@vuu-ui/vuu-data-types";
 import {
   ColumnFilterOp,
   ColumnFilterValue,
+  ExtendedFilter,
   Filter,
   FilterClauseOp,
+  FilterClauseOpBetween,
   FilterContainerFilter,
   FilterWithPartialClause,
   MultiClauseFilter,
@@ -11,12 +13,11 @@ import {
   SingleValueFilterClause,
   SingleValueFilterClauseOp,
 } from "@vuu-ui/vuu-filter-types";
+import { SerializableFilter } from "@vuu-ui/vuu-filters/src/filter-container/ExtendedSingleValueFilterClause";
 import {
   ColumnDescriptor,
   RuntimeColumnDescriptor,
 } from "@vuu-ui/vuu-table-types";
-import { getTypedValue } from "../form-utils";
-import { isTypeDescriptor } from "../column-utils";
 
 const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "=",
@@ -30,6 +31,11 @@ const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "ends",
 ]);
 
+export const isBetweenOperator = (
+  op: ColumnFilterOp,
+): op is FilterClauseOpBetween =>
+  op === "between" || op === "between-inclusive";
+
 export const isValidFilterClauseOp = (op?: string): op is FilterClauseOp =>
   op === "in" || singleValueFilterOps.has(op as SingleValueFilterClauseOp);
 
@@ -42,6 +48,11 @@ export const isSingleValueFilter = (
 ): f is SingleValueFilterClause =>
   f !== undefined &&
   singleValueFilterOps.has(f.op as SingleValueFilterClauseOp);
+
+export const isSerializableFilter = (f: object): f is SerializableFilter =>
+  isSingleValueFilter(f) &&
+  "asQuery" in f &&
+  typeof f["asQuery"] === "function";
 
 export const isFilterClause = (
   f?: Partial<Filter>,
@@ -64,8 +75,8 @@ export const isBetweenFilter = (
   isAndFilter(f) &&
   f.filters.length === 2 &&
   f.filters[0].column === f.filters[1].column &&
-  f.filters[0].op === ">" &&
-  f.filters[1].op === "<";
+  ((f.filters[0].op === ">" && f.filters[1].op === "<") ||
+    (f.filters[0].op === ">=" && f.filters[1].op === "<="));
 
 export const isOrFilter = (f?: Partial<Filter>): f is MultiClauseFilter<"or"> =>
   f?.op === "or";
@@ -81,6 +92,9 @@ export function isMultiClauseFilter(
 ): f is MultiClauseFilter {
   return f !== undefined && (f.op === "and" || f.op === "or");
 }
+
+export const isExtendedFilter = (f: Filter): f is ExtendedFilter =>
+  typeof (f as ExtendedFilter).extendedOptions === "object";
 
 export const applyFilterToColumns = (
   columns: RuntimeColumnDescriptor[],
@@ -160,7 +174,7 @@ export const getColumnValueFromFilter = (
 ): ColumnFilterValue => {
   if (isSingleValueFilter(filter)) {
     if (filter.column === column.name) {
-      if (operator === "between") {
+      if (operator.startsWith("between")) {
         if (filter.op === "=") {
           return [`${filter.value}`, ""];
         } else if (filter.op === "<") {
@@ -185,12 +199,15 @@ export const getColumnValueFromFilter = (
     );
     if (isSingleValueFilter(filterForColumn)) {
       return stringifyBoolean(filterForColumn.value);
-    } else if (operator === "between" && isBetweenFilter(filterForColumn)) {
+    } else if (
+      operator.startsWith("between") &&
+      isBetweenFilter(filterForColumn)
+    ) {
       const [{ value: v1 }, { value: v2 }] = filterForColumn.filters;
       return [`${v1}`, `${v2}`];
     }
   }
-  if (operator === "between") {
+  if (operator.startsWith("between")) {
     if (column.type === "time") {
       return ["00:00:00", "23:59:59"];
     } else {
@@ -200,110 +217,6 @@ export const getColumnValueFromFilter = (
     return "";
   }
 };
-
-/**
- * Manages a filter that can be updated one clause at a time.
- * Works with FilterContainer to aggregate multiple filter
- * clauses edited via individual controls. It is just a wrapper
- * around a Map, does not support switching filters - create a
- * new FilterAggregator for a new filter.
- *
- */
-export class FilterAggregator {
-  #filters = new Map<string, FilterContainerFilter>();
-
-  constructor(filter?: FilterContainerFilter) {
-    if (isSingleValueFilter(filter)) {
-      this.#filters.set(filter.column, filter);
-    } else if (isBetweenFilter(filter)) {
-      this.#filters.set(filter.filters[0].column, filter);
-    } else if (isAndFilter(filter)) {
-      filter.filters.forEach((f) => {
-        if (isBetweenFilter(f)) {
-          this.#filters.set(f.filters[0].column, f);
-        } else {
-          this.#filters.set(f.column, f);
-        }
-      });
-    }
-  }
-
-  add(column: ColumnDescriptor, value: ColumnFilterValue) {
-    const { serverDataType = "string", type } = column;
-    const dataType = isTypeDescriptor(type)
-      ? type.name
-      : (type ?? serverDataType);
-    if (Array.isArray(value)) {
-      const value1 = getTypedValue(value[0].toString(), dataType);
-      const value2 = getTypedValue(value[1].toString(), dataType);
-
-      if (value1 !== undefined && value2 !== undefined) {
-        this.#filters.set(column.name, {
-          op: "and",
-          filters: [
-            { column: column.name, op: ">", value: value1 },
-            { column: column.name, op: "<", value: value2 },
-          ],
-        });
-      } else if (value1 !== undefined) {
-        this.#filters.set(column.name, {
-          column: column.name,
-          op: "=",
-          value: value1,
-        });
-      } else if (value2 !== undefined) {
-        this.#filters.set(column.name, {
-          column: column.name,
-          op: "<",
-          value: value2,
-        });
-      }
-    } else {
-      const typedValue = getTypedValue(value.toString(), dataType, true);
-
-      this.#filters.set(column.name, {
-        column: column.name,
-        op: "=",
-        value: typedValue,
-      });
-    }
-  }
-
-  has({ name }: ColumnDescriptor) {
-    return this.#filters.has(name);
-  }
-
-  get({ name }: ColumnDescriptor) {
-    return this.#filters.get(name);
-  }
-
-  /**
-   * Remove filter for this column. Return false if no filter found, otw true
-   */
-  remove(column: ColumnDescriptor) {
-    if (this.#filters.has(column.name)) {
-      this.#filters.delete(column.name);
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  get filter(): FilterContainerFilter | undefined {
-    const { size } = this.#filters;
-    if (size === 0) {
-      return undefined;
-    } else if (size === 1) {
-      const [filter] = this.#filters.values();
-      return filter;
-    } else {
-      return {
-        op: "and",
-        filters: Array.from(this.#filters.values()),
-      } as FilterContainerFilter;
-    }
-  }
-}
 
 type BetweenFilter = MultiClauseFilter<"and", SingleValueFilterClause>;
 type ChildFilterClause = SingleValueFilterClause | BetweenFilter;
