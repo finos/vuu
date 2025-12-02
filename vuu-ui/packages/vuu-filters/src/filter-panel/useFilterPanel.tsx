@@ -24,6 +24,10 @@ export const useFilterPanel = ({
     null,
   );
 
+  console.log(
+    `[useFilterPanel] current filter ${JSON.stringify(currentFilter)}`,
+  );
+
   const clearFilter = useCallback(() => {
     setCurrentFilter(NULL_FILTER);
   }, [setCurrentFilter]);
