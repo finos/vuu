@@ -11,17 +11,17 @@ class FiltersTest extends AnyFeatureSpec with Matchers{
 
   Feature("Test built in filters") {
 
-    val primaryKeys = InMemTablePrimaryKeys(ImmutableArray.from(Array[String]("A", "B", "C")))
+    val originalPrimaryKeys = InMemTablePrimaryKeys(ImmutableArray.from(Array[String]("A", "B", "C")))
 
     Scenario("NoFilter returns everything") {
 
-      val result = NoFilter.doFilter(null, primaryKeys, null, true)
+      val result = NoFilter.doFilter(null, originalPrimaryKeys, null, true)
 
-      result shouldEqual primaryKeys
+      result shouldEqual originalPrimaryKeys
     }
 
     Scenario("FilterOutEverythingFilter returns nothing") {
-      val result = FilterOutEverythingFilter.doFilter(null, primaryKeys, null, true)
+      val result = FilterOutEverythingFilter.doFilter(null, originalPrimaryKeys, null, true)
 
       result shouldEqual EmptyTablePrimaryKeys
     }
@@ -30,22 +30,36 @@ class FiltersTest extends AnyFeatureSpec with Matchers{
 
       class Filter1 extends ViewPortFilter {
         override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
-          InMemTablePrimaryKeys(ImmutableArray.from(primaryKeys.filter(s => s != "A").toArray))
+          if (firstInChain) {
+            InMemTablePrimaryKeys(ImmutableArray.from(originalPrimaryKeys.filter(s => s != "A").toArray))
+          } else {
+            InMemTablePrimaryKeys(ImmutableArray.from(primaryKeys.filter(s => s != "A").toArray))
+          }
         }
       }
 
       class Filter2 extends ViewPortFilter {
         override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
-          InMemTablePrimaryKeys(ImmutableArray.from(primaryKeys.filter(s => s != "C").toArray))
+          if (firstInChain) {
+            InMemTablePrimaryKeys(ImmutableArray.from(originalPrimaryKeys.filter(s => s != "C").toArray))
+          } else {
+            InMemTablePrimaryKeys(ImmutableArray.from(primaryKeys.filter(s => s != "C").toArray))
+          }
         }
       }
 
-      val filter = CompoundFilter(Filter1(), Filter2())
-
-      val result = filter.doFilter(null, primaryKeys, null, true)
+      val result = CompoundFilter(Filter1(), Filter2()).doFilter(null, originalPrimaryKeys, null, true)
 
       result.size shouldEqual 1
       result.head shouldEqual "B"
+
+      //Should get same result when applying in reverse
+
+      val result2 = CompoundFilter(Filter2(), Filter1()).doFilter(null, originalPrimaryKeys, null, true)
+
+      result2.size shouldEqual 1
+      result2.head shouldEqual "B"
+
     }
 
   }
