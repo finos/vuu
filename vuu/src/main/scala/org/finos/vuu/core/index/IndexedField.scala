@@ -62,6 +62,7 @@ class SkipListIndexedStringField(val column: Column) extends StringIndexedField 
   }
 
   override def find(indexKey: String): ImmutableArray[String] = {
+    logger.debug("Hit Index: " + this.column.name)
     val indexKeyHash = indexKey.hashCode
     skipList.get(indexKeyHash)
   }
@@ -130,8 +131,8 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
   }
 
   override def find(indexedValues: List[TYPE]): ImmutableArray[String] = super.find(indexedValues)
-}
 
+}
 
 class SkipListIndexedDoubleField(column: Column) extends SkipListIndexedField[Double](column) with DoubleIndexedField {}
 

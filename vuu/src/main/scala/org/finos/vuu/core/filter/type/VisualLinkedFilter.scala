@@ -1,15 +1,15 @@
 package org.finos.vuu.core.filter.`type`
 
-import com.typesafe.scalalogging.StrictLogging
+import com.typesafe.scalalogging.LazyLogging
 import org.finos.toolbox.collection.array.ImmutableArray
-import org.finos.vuu.core.filter.{Filter, ViewPortFilter}
+import org.finos.vuu.core.filter.ViewPortFilter
 import org.finos.vuu.core.index.{BooleanIndexedField, DoubleIndexedField, EpochTimestampIndexedField, IndexedField, IntIndexedField, LongIndexedField, StringIndexedField}
-import org.finos.vuu.core.table.{Column, DataType, EmptyTablePrimaryKeys, TablePrimaryKeys, ViewPortColumnCreator}
 import org.finos.vuu.core.table.datatype.EpochTimestamp
+import org.finos.vuu.core.table.{Column, DataType, EmptyTablePrimaryKeys, TablePrimaryKeys, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns, ViewPortVisualLink}
 
-case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends ViewPortFilter with StrictLogging {
+case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends ViewPortFilter with LazyLogging {
   
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
 
