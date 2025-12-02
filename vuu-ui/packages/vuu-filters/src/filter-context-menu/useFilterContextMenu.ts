@@ -43,9 +43,6 @@ export const useFilterContextMenu = ({
   const menuBuilder: MenuBuilder<TableMenuLocation, TableContextMenuOptions> =
     useCallback(
       (_location, options) => {
-        console.log(`menuBuilder _location ${_location} options `, {
-          options,
-        });
         const { column, columnMap, row } = options;
         const { current: fag } = filterAggregatorRef;
         const { name, label = name } = column;
