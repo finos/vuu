@@ -44,7 +44,7 @@ sealed trait RowFilterClause extends FilterClause {
     if (vpColumns.columnExists(this.columnName)) Result(true)
     else Error(s"Column `$columnName` not found.")
 
-  protected def hitIndex[T](rowKeys: TablePrimaryKeys, value: T,
+  protected def hitIndex[T](primaryKeys: TablePrimaryKeys, value: T,
                             indexLookup: T => ImmutableArray[String], firstInChain: Boolean): TablePrimaryKeys = {
       val results  = indexLookup.apply(value)
       if (results.isEmpty) {
@@ -52,7 +52,7 @@ sealed trait RowFilterClause extends FilterClause {
       } else if (firstInChain) {
         InMemTablePrimaryKeys(results)
       } else {
-        rowKeys.intersect(results)
+        primaryKeys.intersect(results)
       }
   }
 
@@ -133,7 +133,7 @@ case class InClause(columnName: String, values: List[String]) extends RowFilterC
                           index: IndexedField[T], firstInChain: Boolean): TablePrimaryKeys = {
     hitIndex(rowKeys, values, f => index.find(f), firstInChain)
   }
-  
+
 }
 
 case class GreaterThanClause(columnName: String, value: Double) extends RowFilterClause {
@@ -204,7 +204,7 @@ case class EqualsClause(columnName: String, value: String) extends RowFilterClau
     }
   }
 
-  override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, 
+  override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys,
                          viewPortColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
     val column = rows.asTable.columnForName(columnName)
     rows.asTable.indexForColumn(column) match {
@@ -222,7 +222,7 @@ case class EqualsClause(columnName: String, value: String) extends RowFilterClau
                           index: IndexedField[T], firstInChain: Boolean): TablePrimaryKeys = {
     hitIndex(rowKeys, value, f => index.find(f), firstInChain)
   }
-  
+
 }
 
 
