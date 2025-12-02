@@ -98,7 +98,11 @@ object FilterAndSortFixture {
   }
 
   def setupTableWithCreationTime(): InMemDataTable = {
-    setupTable(List.empty,
+    setupTableWithCreationTime(List())
+  }
+
+  def setupTableWithCreationTime(indices: List[String]): InMemDataTable = {
+    setupTable(indices,
       row("tradeTime" -> 5L, "quantity" -> 500.0d, "ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD", CreatedTimeColumnName -> previousHour),
       row("tradeTime" -> 2L, "quantity" -> 100.0d, "ric" -> "VOD.L", "orderId" -> "LDN-0001", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", CreatedTimeColumnName -> now),
       row("tradeTime" -> 1L, "quantity" -> 100.0d, "ric" -> "BT.L", "orderId" -> "LDN-0002", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", CreatedTimeColumnName -> nextHour),
