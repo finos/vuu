@@ -10,7 +10,7 @@ case class AntlrBasedFilter(clause: FilterClause) extends ViewPortFilter with St
 
   override def doFilter(source: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
     logger.trace(s"Starting filter with ${rowKeys.length}")
-    clause.filterAllSafe(source, rowKeys, vpColumns) match {
+    clause.filterAllSafe(source, rowKeys, vpColumns, firstInChain) match {
       case Success(filteredKeys) =>
         logger.trace(s"Complete filter with ${filteredKeys.length}")
         filteredKeys
