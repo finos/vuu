@@ -8,6 +8,7 @@ import org.finos.toolbox.time.DefaultClock;
 import org.finos.vuu.api.Index;
 import org.finos.vuu.api.Indices;
 import org.finos.vuu.api.TableDef;
+import org.finos.vuu.core.filter.type.AllowAllPermissionFilter$;
 import org.finos.vuu.core.table.Column;
 import org.finos.vuu.core.table.Columns;
 import org.finos.vuu.core.table.InMemDataTable;
@@ -85,6 +86,7 @@ public class BenchmarkHelper {
                 Option.empty(),
                 Option.empty(),
                 BuildEntireTree.apply(groupByTable, Option.empty()),
+                AllowAllPermissionFilter$.MODULE$,
                 Option.empty(),
                 clock);
     }
