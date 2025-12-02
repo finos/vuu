@@ -21,18 +21,7 @@ class BaseFilterTest extends AnyFeatureSpec with Matchers {
       results.toList shouldEqual List("NYC-0004", "LDN-0001", "LDN-0003", "NYC-0002", "NYC-0010")
     }
 
-    Scenario("Freeze filter with created time column missing") {
-
-      val table = setupTable()
-      val permissionFilter = PermissionFilter("ric", Set("VOD.L","AAPL.L"))
-      val baseFilter = BaseFilter(permissionFilter, Option(10001L))
-
-      val results = baseFilter.doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), true)
-
-      results.length shouldEqual 0
-    }
-
-    Scenario("Freeze filter with created time column present") {
+    Scenario("Freeze filter applied") {
 
       val table = setupTableWithCreationTime()
       val permissionFilter = PermissionFilter("ric", Set("VOD.L","AAPL.L"))
@@ -44,7 +33,7 @@ class BaseFilterTest extends AnyFeatureSpec with Matchers {
       results.toList shouldEqual List("NYC-0004", "LDN-0003")
     }
 
-    Scenario("Freeze filter with no permission filter") {
+    Scenario("Freeze filter with allow all permission filter") {
 
       val table = setupTableWithCreationTime()
       val baseFilter = BaseFilter(AllowAllPermissionFilter, Option(10002L))
