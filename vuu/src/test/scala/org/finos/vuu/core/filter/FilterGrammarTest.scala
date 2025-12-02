@@ -277,10 +277,10 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
       )
     }
 
-    Scenario("filter on a non-existent column skips filtering and returns result unchanged") {
+    Scenario("filter on a non-existent column skips filtering and returns empty") {
       val table = setupTable2()
       val clause = filterClause("ccyCross = \"$GBPUSD\" and nonExistent = 10")
-      getFilteredRows(table, clause).map(_.key).toSet shouldEqual table.primaryKeys.toSet
+      getFilteredRows(table, clause).map(_.key).toSet shouldBe empty
     }
   }
 }
