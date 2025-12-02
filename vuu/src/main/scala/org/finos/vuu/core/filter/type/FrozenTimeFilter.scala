@@ -3,10 +3,10 @@ package org.finos.vuu.core.filter.`type`
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.core.filter.Filter
-import org.finos.vuu.core.index.{IndexedField, LongIndexedField}
-import org.finos.vuu.core.table.{DataType, DefaultColumnNames, EmptyTablePrimaryKeys, TablePrimaryKeys}
+import org.finos.vuu.core.index.LongIndexedField
+import org.finos.vuu.core.table.{DefaultColumnNames, EmptyTablePrimaryKeys, TablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
-import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
+import org.finos.vuu.viewport.RowSource
 
 case class FrozenTimeFilter(frozenTime: Long) extends Filter with StrictLogging {
 
@@ -27,11 +27,13 @@ case class FrozenTimeFilter(frozenTime: Long) extends Filter with StrictLogging 
   }
 
   private def hitIndex(primaryKeys: TablePrimaryKeys, indexedField: LongIndexedField, firstInChain: Boolean): TablePrimaryKeys = {
-    val indexKeys = indexedField.lessThan(frozenTime)
-    if (firstInChain) {
-      InMemTablePrimaryKeys(indexKeys)
+    val results = indexedField.lessThan(frozenTime)
+    if (results.isEmpty) {
+      EmptyTablePrimaryKeys
+    } else if (firstInChain) {
+      InMemTablePrimaryKeys(results)
     } else {
-      primaryKeys.intersect(indexKeys)
+      primaryKeys.intersect(results)
     }
   }
 
