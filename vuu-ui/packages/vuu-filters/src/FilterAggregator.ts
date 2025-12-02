@@ -67,6 +67,7 @@ export class FilterAggregator {
   #filters = new Map<string, FilterContainerFilter>();
 
   constructor(filter?: FilterContainerFilter) {
+    console.log(`[FilterAggregator] ${JSON.stringify(filter)}`);
     const runtimeFilter = installExtendedFilters(filter);
     if (isSingleValueFilter(runtimeFilter)) {
       this.#filters.set(runtimeFilter.column, runtimeFilter);
@@ -160,6 +161,10 @@ export class FilterAggregator {
     return this.#filters.get(name);
   }
 
+  clear() {
+    this.#filters.clear();
+  }
+
   /**
    * Remove filter for this column. Return false if no filter found, otw true
    */
@@ -170,6 +175,17 @@ export class FilterAggregator {
     } else {
       return false;
     }
+  }
+
+  get isEmpty() {
+    return this.#filters.size === 0;
+  }
+
+  /**
+   * Count of the number of columns for which filters are stored
+   */
+  get count() {
+    return this.#filters.size;
   }
 
   get filter(): FilterContainerFilter | undefined {

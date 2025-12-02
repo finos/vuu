@@ -250,10 +250,14 @@ const findEqualFilter =
   };
 
 export const filtersAreEqual = (
-  f1: FilterContainerFilter,
-  f2: FilterContainerFilter,
+  f1: FilterContainerFilter | null | undefined,
+  f2: FilterContainerFilter | null | undefined,
 ): boolean => {
-  if (isSingleValueFilter(f1) && isSingleValueFilter(f2)) {
+  if (f1 == null && f2 == null) {
+    return true;
+  } else if (f1 == null || f2 == null) {
+    return false;
+  } else if (isSingleValueFilter(f1) && isSingleValueFilter(f2)) {
     return singleValueFilterClausesAreEqual(f1, f2);
   } else if (isBetweenFilter(f1) && isBetweenFilter(f2)) {
     return betweenFiltersAreEqual(f1, f2);

@@ -8,6 +8,7 @@ import {
   FilterContainerColumnFilter,
   FilterContainerProps,
   FilterDisplay,
+  FilterProvider,
 } from "@vuu-ui/vuu-filters";
 import { Table } from "@vuu-ui/vuu-table";
 import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
