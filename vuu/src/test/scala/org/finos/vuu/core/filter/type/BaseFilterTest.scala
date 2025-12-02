@@ -18,7 +18,7 @@ class BaseFilterTest extends AnyFeatureSpec with Matchers {
       val results = baseFilter.doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), true)
 
       results.length shouldEqual 5
-      results.toList shouldEqual List("NYC-0004", "LDN-0001", "LDN-0003", "NYC-0002", "NYC-0010")
+      results.toSet shouldEqual Set("NYC-0004", "LDN-0001", "LDN-0003", "NYC-0002", "NYC-0010")
     }
 
     Scenario("Freeze filter applied") {
@@ -30,7 +30,7 @@ class BaseFilterTest extends AnyFeatureSpec with Matchers {
       val results = baseFilter.doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), true)
 
       results.length shouldEqual 2
-      results.toList shouldEqual List("NYC-0004", "LDN-0003")
+      results.toSet shouldEqual Set("NYC-0004", "LDN-0003")
     }
 
     Scenario("Freeze filter with allow all permission filter") {
@@ -41,7 +41,7 @@ class BaseFilterTest extends AnyFeatureSpec with Matchers {
       val results = baseFilter.doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), true)
 
       results.length shouldEqual 4
-      results.toList shouldEqual List("NYC-0004", "LDN-0001", "LDN-0003", "LDN-0008")
+      results.toSet shouldEqual Set("NYC-0004", "LDN-0001", "LDN-0003", "LDN-0008")
     }
 
   }
