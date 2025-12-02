@@ -20,6 +20,8 @@ object PermissionFilter {
 
   def apply(columnName: String, allowedValues: Set[String]): PermissionFilter = ContainsPermissionFilter(columnName, allowedValues)
 
+  def apply(filters: Iterable[PermissionFilter]): PermissionFilter = PermissionFilterChain(filters)
+
 }
 
 object AllowAllPermissionFilter extends PermissionFilter {
@@ -34,11 +36,11 @@ object DenyAllPermissionFilter extends PermissionFilter {
 
 }
 
-case class PermissionFilterChain(filters: Iterable[PermissionFilter]) extends PermissionFilter with StrictLogging {
+private case class PermissionFilterChain(filters: Iterable[PermissionFilter]) extends PermissionFilter with StrictLogging {
 
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean): TablePrimaryKeys = {
     logger.trace(s"Starting filter with ${primaryKeys.length} rows")
-    
+
     if (primaryKeys.isEmpty) {
       EmptyTablePrimaryKeys
     } else {
@@ -57,7 +59,7 @@ private case class RowPermissionFilter(rowPredicate: RowData => Boolean) extends
 
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean): TablePrimaryKeys = {
     logger.trace(s"Starting filter with ${primaryKeys.length} rows")
-    
+
     if (primaryKeys.isEmpty) {
       EmptyTablePrimaryKeys
     } else {
@@ -72,24 +74,24 @@ private case class ContainsPermissionFilter(columnName: String, allowedValues: S
 
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean): TablePrimaryKeys = {
     logger.trace(s"Starting filter with ${primaryKeys.length} rows")
-    
+
     val column = source.asTable.columnForName(columnName)
     if (column == null || primaryKeys.isEmpty || allowedValues.isEmpty) {
       EmptyTablePrimaryKeys
     } else {
       source.asTable.indexForColumn(column) match {
         case Some(index: StringIndexedField) =>
-          hitIndex(primaryKeys, index, allowedValues.toList, firstInChain)          
+          hitIndex(primaryKeys, index, allowedValues, firstInChain)
         case Some(index: LongIndexedField) =>
-          hitIndex(primaryKeys, index, allowedValues.map(f => f.toLong).toList, firstInChain)          
+          hitIndex(primaryKeys, index, allowedValues.map(f => f.toLong), firstInChain)
         case Some(index: IntIndexedField) =>
-          hitIndex(primaryKeys, index, allowedValues.map(f => f.toInt).toList, firstInChain)          
+          hitIndex(primaryKeys, index, allowedValues.map(f => f.toInt), firstInChain)
         case Some(index: DoubleIndexedField) =>
-          hitIndex(primaryKeys, index, allowedValues.map(f => f.toDouble).toList, firstInChain)          
+          hitIndex(primaryKeys, index, allowedValues.map(f => f.toDouble), firstInChain)
         case Some(index: BooleanIndexedField) =>
-          hitIndex(primaryKeys, index, allowedValues.map(f => f.toBoolean).toList, firstInChain)          
+          hitIndex(primaryKeys, index, allowedValues.map(f => f.toBoolean), firstInChain)
         case Some(index: EpochTimestampIndexedField) =>
-          hitIndex(primaryKeys, index, allowedValues.map(f => EpochTimestamp(f.toLong)).toList, firstInChain)          
+          hitIndex(primaryKeys, index, allowedValues.map(f => EpochTimestamp(f.toLong)), firstInChain)
         case _ =>
           logger.trace(s"Falling back to row filtering for $column as no Index found")
           filterByRow(source, primaryKeys, firstInChain, column)
@@ -97,9 +99,9 @@ private case class ContainsPermissionFilter(columnName: String, allowedValues: S
     }
   }
 
-  private def hitIndex[T](primaryKeys: TablePrimaryKeys, indexedField: IndexedField[T], values: List[T], 
+  private def hitIndex[T](primaryKeys: TablePrimaryKeys, indexedField: IndexedField[T], values: Set[T],
                           firstInChain: Boolean): TablePrimaryKeys = {
-    val indexKeys = indexedField.find(values)
+    val indexKeys = indexedField.find(values.toList)
     if (firstInChain) {
       InMemTablePrimaryKeys(indexKeys)
     } else {
