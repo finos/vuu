@@ -1,6 +1,6 @@
 package org.finos.vuu.core.sort
 
-import org.finos.toolbox.collection.{MapDiffResult, MapDiffUtils}
+import org.finos.toolbox.collection.MapDiffResult
 import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.text.{AsciiUtil, CodeGenUtil}
 import org.finos.toolbox.time.{DefaultClock, TestFriendlyClock}
@@ -80,7 +80,7 @@ object FilterAndSortFixture {
   }
 
   def setupTable2(): InMemDataTable = {
-    setupTable(indices = List("orderId", "ric", "tradeTime", "onMkt", "price", "side"), rows =
+    setupTable(indices = List("orderId", "ric", "tradeTime", "onMkt", "price", "side", "quantity"), rows =
       row("tradeTime" -> 5L, "quantity" -> null, "price" -> 283.10, "side" -> 'B', "ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD"),
       row("tradeTime" -> 2L, "quantity" -> 100, "price" -> 94.12, "side" -> 'S', "ric" -> "VOD.L", "orderId" -> "LDN-0001", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD"),
       row("tradeTime" -> 1L, "quantity" -> 100, "price" -> 180.50, "side" -> 'B', "ric" -> "BT.L", "orderId" -> "LDN-0002", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD"),

@@ -125,6 +125,7 @@ case class InClause(columnName: String, values: List[String]) extends RowFilterC
       case Some(ix: LongIndexedField)            => hitIndex(rowKeys, values.map(s => s.toLong), ix, firstInChain)
       case Some(ix: BooleanIndexedField)         => hitIndex(rowKeys, values.map(s => s.toBoolean), ix, firstInChain)
       case Some(ix: EpochTimestampIndexedField)  => hitIndex(rowKeys, values.map(s => EpochTimestamp(s.toLong)), ix, firstInChain)
+      case Some(ix: CharIndexedField)            => hitIndex(rowKeys, values.map(s => s.charAt(0)), ix, firstInChain)
       case _                                     => super.filterAll(rows, rowKeys, viewPortColumns, firstInChain)
     }
   }
@@ -201,6 +202,7 @@ case class EqualsClause(columnName: String, value: String) extends RowFilterClau
       case d: Double => d == value.toDouble
       case b: Boolean => b == value.equalsIgnoreCase("true")
       case e: EpochTimestamp => e.nanos == value.toLong
+      case c: Char => c == value.charAt(0)
     }
   }
 
@@ -214,6 +216,7 @@ case class EqualsClause(columnName: String, value: String) extends RowFilterClau
       case Some(ix: LongIndexedField)            => hitIndex(rowKeys, value.toLong, ix, firstInChain)
       case Some(ix: BooleanIndexedField)         => hitIndex(rowKeys, value.toBoolean, ix, firstInChain)
       case Some(ix: EpochTimestampIndexedField)  => hitIndex(rowKeys, EpochTimestamp(value.toLong), ix, firstInChain)
+      case Some(ix: CharIndexedField)            => hitIndex(rowKeys, value.charAt(0), ix, firstInChain)
       case _                                     => super.filterAll(rows, rowKeys, viewPortColumns, firstInChain)
     }
   }
