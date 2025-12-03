@@ -6,18 +6,16 @@ import scala.util.control.Breaks
 
 object ChunkedImmutableArray{
 
-  def fromArray[T <: Object:ClassTag](arr: Array[T], chunkSize: Int): ImmutableArray[T] = {
-    new ChunkedImmutableArray[T](Array(), chunkSize = chunkSize).fromArray(arr)
-  }
-
-
-
   def empty[T <: Object:ClassTag](chunkSize: Int = 1000): ImmutableArray[T] = {
-    new ChunkedImmutableArray[T](Array(), chunkSize = chunkSize)
+    new ChunkedImmutableArray[T](Array.empty, chunkSize = chunkSize)
   }
 
   def from[T <: Object:ClassTag](chunkSize: Int = 1000): ImmutableArray[T] = {
-    new ChunkedImmutableArray[T](Array(), chunkSize = chunkSize)
+    empty[T](chunkSize)
+  }
+
+  def fromArray[T <: Object:ClassTag](arr: Array[T], chunkSize: Int): ImmutableArray[T] = {
+    empty[T](chunkSize).fromArray(arr)
   }
 
 }

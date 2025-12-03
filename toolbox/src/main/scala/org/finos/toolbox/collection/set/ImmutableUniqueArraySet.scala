@@ -7,13 +7,15 @@ import scala.reflect.ClassTag
 import scala.util.control.Breaks
 
 object ImmutableUniqueArraySet{
+
   def empty[T <: Object :ClassTag](chunkSize: Int = 1000): ImmutableArray[T] = {
-    new ChunkedUniqueImmutableArraySet[T](Set(), Array(), chunkSize = chunkSize)
+    new ChunkedUniqueImmutableArraySet[T](Set.empty, Array.empty, chunkSize = chunkSize)
   }
+
   def from[T <: Object](array: Array[T], chunkSize: Int = 1000)(using c: ClassTag[T]): ImmutableArray[T] = {
     val newChunks = new Array[Array[T]](1)
     newChunks(0) = new Array[T](chunkSize)
-    val immutable = new ChunkedUniqueImmutableArraySet(Set[T](), newChunks, chunkSize = chunkSize)
+    val immutable = new ChunkedUniqueImmutableArraySet(Set.empty, newChunks, chunkSize = chunkSize)
     immutable.fromArray(array)
   }
 
