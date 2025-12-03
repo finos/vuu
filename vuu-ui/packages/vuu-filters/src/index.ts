@@ -4,6 +4,7 @@ export {
 } from "./column-filter/ColumnFilter";
 export * from "./filter-bar";
 export * from "./filter-clause";
+export { ExtendedSingleValueFilterClause } from "./filter-container/ExtendedSingleValueFilterClause";
 export {
   FilterContainer,
   FilterContainerColumnFilter,
@@ -11,15 +12,17 @@ export {
   type FilterContainerProps,
 } from "./filter-container/FilterContainer";
 export type { FilterAppliedHandler } from "./filter-container/useFilterContainer";
+export { useFilterContextMenu } from "./filter-context-menu/useFilterContextMenu";
 export { FilterDisplay } from "./filter-display/FilterDisplay";
 export * from "./filter-editor";
+export { FilterPanel } from "./filter-panel/FilterPanel";
 export * from "./filter-pill";
 export { type FilterPermissions } from "./filter-pill/FilterMenu";
 export {
   FilterPillNext,
   type FilterPillNextProps,
 } from "./filter-pill/FilterPillNext";
-export { useSavedFilters } from "./filter-provider/FilterContext";
+export { NULL_FILTER, useSavedFilters } from "./filter-provider/FilterContext";
 export { FilterProvider } from "./filter-provider/FilterProvider";
 export * from "./filter-utils";
 export * from "./FilterModel";
@@ -42,4 +45,3 @@ export {
   ToggleFilter,
   type ToggleFilterProps,
 } from "./toggle-filter/ToggleFilter";
-export { FilterPanel } from "./filter-panel/FilterPanel";

@@ -31,9 +31,15 @@ export interface NamedFilter {
 
 export interface SingleValueFilterClause<T = string | number | boolean>
   extends NamedFilter {
+  extendedOptions?: ExtendedFilterOptions;
   op: SingleValueFilterClauseOp;
   column: string;
   value: T;
+}
+
+export interface SerializableSingleValueFilterClause
+  extends SingleValueFilterClause {
+  asQuery: () => string;
 }
 
 export interface MultiValueFilterClause<T = string[] | number[] | boolean[]>
@@ -56,6 +62,10 @@ export interface MultiClauseFilter<
   filters: F[];
 }
 
+export interface ExtendedFilter extends SingleValueFilterClause {
+  extendedOptions: ExtendedFilterOptions;
+}
+
 /**
  * A Filter structure that can represent any of the filters supported by the Vuu server.
  * Note that a filter in this form is never passed directly to the Vuu server. For that,
@@ -74,6 +84,24 @@ export interface MultiClauseFilter<
 export declare type Filter = FilterClause | MultiClauseFilter;
 
 /**
+ * General type for callback props invoked with a filter
+ */
+export declare type FilterHandler = (filter: Filter) => void;
+
+export declare type TimeTodayFilterOptions = {
+  date: "today";
+  type: "TimeString";
+};
+export declare type TimeDateFilterOptions = {
+  date: Date;
+  type: "TimeString";
+};
+
+export declare type ExtendedFilterOptions =
+  | TimeTodayFilterOptions
+  | TimeDateFilterOptions;
+
+/**
  This interface is only valid for a Filter that is being edioted
  */
 export interface FilterWithPartialClause extends MultiClauseFilter {
@@ -89,9 +117,17 @@ export declare type FilterState = {
 
 export declare type FilterChangeHandler = (filter: Filter | undefined) => void;
 
-export declare type ColumnFilterValue = string | number | [string, string];
+// export declare type ColumnFilterValue = string | number | [string, string];
+export declare type ColumnFilterValue<
+  T extends string | number | [string, string] =
+    | string
+    | number
+    | [string, string],
+> = T;
 
-export declare type ColumnFilterOp = FilterClauseOp | "between";
+export declare type FilterClauseOpBetween = "between" | "between-inclusive";
+
+export declare type ColumnFilterOp = FilterClauseOp | FilterClauseOpBetween;
 
 export declare type ColumnFilterDescriptor = {
   column: ColumnDescriptor;
@@ -107,8 +143,9 @@ export declare type ColumnFilterChangeHandler = (
 
 export declare type ColumnFilterCommitHandler = (
   column: ColumnDescriptor,
-  op: FilterClauseOp | "between",
+  op: FilterClauseOp | "between" | "between-inclusive",
   value: ColumnFilterValue,
+  extendedFilterOptions?: ExtendedFilterOptions,
 ) => void;
 
 export declare type ColumnFilterVariant = "pick" | "search" | "range";

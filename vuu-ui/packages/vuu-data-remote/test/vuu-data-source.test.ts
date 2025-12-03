@@ -14,6 +14,7 @@ import {
 } from "@vuu-ui/vuu-protocol-types";
 import { VuuDataSource } from "../src/VuuDataSource";
 import ConnectionManager from "../src/ConnectionManager";
+import { Range } from "@vuu-ui/vuu-utils";
 
 type ConfigType = WithBaseFilter<WithFullConfig>;
 
@@ -293,7 +294,7 @@ describe("VuuDataSource", () => {
       const dataSource = new VuuDataSource({ table, viewport: "vp1" });
       await dataSource.subscribe({}, callback);
 
-      const range = { from: 0, to: 20 };
+      const range = Range(0, 20);
       dataSource.range = range;
 
       expect(serverAPI.send).toHaveBeenCalledWith({

@@ -1,29 +1,35 @@
 import { getSchema, VuuTableName } from "@vuu-ui/vuu-data-test";
-import { DataSourceFilter, TableSchemaTable } from "@vuu-ui/vuu-data-types";
+import { TableSchemaTable } from "@vuu-ui/vuu-data-types";
 import {
   ColumnFilterProps,
   FilterContainerColumnFilter,
   FilterProvider,
   TabbedFilterContainer,
   TabbedFilterContainerProps,
+  useFilterContextMenu,
   useSavedFilters,
 } from "@vuu-ui/vuu-filters";
 import { Table } from "@vuu-ui/vuu-table";
-import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import {
+  ColumnDescriptor,
+  TableContextMenuDef,
+  TableContextMenuOptions,
+  TableMenuLocation,
+} from "@vuu-ui/vuu-table-types";
 import {
   ContextPanelProvider,
   IconButton,
   useContextPanel,
 } from "@vuu-ui/vuu-ui-controls";
-import {
-  DataSourceProvider,
-  filterAsQuery,
-  toColumnName,
-  useData,
-} from "@vuu-ui/vuu-utils";
+import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 import { DemoTableContainer } from "../Table/DemoTableContainer";
 import { FormField, FormFieldLabel } from "@salt-ds/core";
+import {
+  ContextMenuProvider,
+  MenuActionHandler,
+  MenuBuilder,
+} from "@vuu-ui/vuu-context-menu";
 
 const schema = getSchema("instruments");
 
@@ -201,6 +207,38 @@ export const MultipleTabbedFilterContainers = () => {
   );
 };
 
+const useLocalContextMenu = (): TableContextMenuDef => {
+  const menuBuilder: MenuBuilder<TableMenuLocation, TableContextMenuOptions> =
+    useCallback((_location, options) => {
+      return [{ id: "cell-copy", label: "Copy text", options }];
+    }, []);
+
+  const menuActionHandler = useCallback<
+    MenuActionHandler<string, TableContextMenuOptions>
+  >((menuItemId, options) => {
+    if (options) {
+      const { column, columnMap, row } = options;
+      switch (menuItemId) {
+        case "cell-copy": {
+          const colIdx = columnMap[column.name];
+          const value = row[colIdx];
+          navigator.clipboard.writeText(`${value}`);
+          return true;
+        }
+        default:
+          return false;
+      }
+    } else {
+      return false;
+    }
+  }, []);
+
+  return {
+    menuBuilder,
+    menuActionHandler,
+  };
+};
+
 const TableWithTabbedFilterContainerTemplate = ({
   SavedFilterPanelProps,
   children,
@@ -224,13 +262,9 @@ const TableWithTabbedFilterContainerTemplate = ({
 
   useMemo(() => {
     if (currentFilter && currentFilter.filter !== null) {
-      const vuuFilter: DataSourceFilter = {
-        filter: filterAsQuery(currentFilter?.filter),
-        filterStruct: currentFilter?.filter,
-      };
-      dataSource.filter = vuuFilter;
+      dataSource.setFilter?.(currentFilter.filter);
     } else {
-      dataSource.filter = { filter: "" };
+      dataSource.clearFilter?.();
     }
   }, [currentFilter, dataSource]);
 
@@ -240,6 +274,11 @@ const TableWithTabbedFilterContainerTemplate = ({
     }),
     [schema],
   );
+
+  const copyContextMenuProps = useLocalContextMenu();
+  const filterContextMenuProps = useFilterContextMenu({
+    filterColumns: ["bbg", "currency", "exchange", "lotSize"],
+  });
 
   const showFilters = useCallback(() => {
     const columnFilterContainer = (
@@ -264,7 +303,11 @@ const TableWithTabbedFilterContainerTemplate = ({
           sentiment="neutral"
         />
       </div>
-      <Table config={config} dataSource={dataSource} />
+      <ContextMenuProvider {...copyContextMenuProps}>
+        <ContextMenuProvider {...filterContextMenuProps}>
+          <Table config={config} dataSource={dataSource} />
+        </ContextMenuProvider>
+      </ContextMenuProvider>
     </>
   );
 };

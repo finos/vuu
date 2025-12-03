@@ -14,7 +14,7 @@ const classBase = "vuuQuickFilters";
 
 export interface QuickFilterProps
   extends HTMLAttributes<HTMLDivElement>,
-    Pick<FilterBarProps, "onApplyFilter" | "vuuTable"> {
+    Pick<FilterBarProps, "onApplyFilter" | "onClearFilter" | "vuuTable"> {
   allowAddColumn?: boolean;
   allowFind?: boolean;
   availableColumns: ColumnDescriptor[];
@@ -33,6 +33,7 @@ export const QuickFilters = ({
   allowFind = true,
   availableColumns,
   onApplyFilter,
+  onClearFilter,
   onChangeQuickFilterColumns,
   quickFilterColumns,
   vuuTable,
@@ -55,6 +56,7 @@ export const QuickFilters = ({
   } = useQuickFilters({
     availableColumns,
     onApplyFilter,
+    onClearFilter,
     onChangeQuickFilterColumns,
     quickFilterColumns,
   });

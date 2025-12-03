@@ -48,6 +48,7 @@ export interface FilterContextProps {
   saveFilter: (key: string, name: string) => void;
   filterDescriptors: Map<string, FilterContainerFilterDescriptor[]>;
   onFilterMenuAction?: FilterContextFilterMenuActionHandler;
+  clearCurrentFilter: (key: string) => void;
   setCurrentFilter: (
     key: string,
     filter: string | FilterContainerFilter,
@@ -81,10 +82,13 @@ export const FilterContext = createContext<FilterContextProps>({
     console.warn(
       "[FilterContext] deleteFilter, no FilterProvider has been configured",
     ),
-
   saveFilter: () =>
     console.warn(
       "[FilterContext] saveFilter, no FilterProvider has been configured",
+    ),
+  clearCurrentFilter: () =>
+    console.warn(
+      "[FilterContext] clearFilter, no FilterProvider has been configured",
     ),
   setCurrentFilter: () =>
     console.warn(
@@ -137,11 +141,19 @@ export function useSavedFilters(key = "GLOBAL", props?: SavedFilterHookProps) {
     [key, setCurrentFilter],
   );
 
+  const handleClearCurrentFilter = useCallback(
+    (localKey = key) => {
+      setCurrentFilter(localKey, NULL_FILTER);
+    },
+    [key, setCurrentFilter],
+  );
+
   return {
     currentFilter: getCurrentFilter(key, filterDescriptors),
     onFilterMenuAction: handleFilterMenuAction,
     savedFilters: filterDescriptors?.get(key)?.filter(isSavedFilter),
     saveFilter: handleSaveFilter,
+    clearCurrentFilter: handleClearCurrentFilter,
     setCurrentFilter: handleSetCurrentFilter,
   };
 }

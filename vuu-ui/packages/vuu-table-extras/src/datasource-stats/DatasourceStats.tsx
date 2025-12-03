@@ -73,8 +73,8 @@ export const DataSourceStats = ({
     showSelectionStats,
   });
 
-  const from = numberFormatter.format(range.firstRowInViewport);
-  const to = numberFormatter.format(Math.min(range.lastRowInViewport, size));
+  const from = numberFormatter.format(range.from + 1);
+  const to = numberFormatter.format(Math.min(range.to, size));
   const value = numberFormatter.format(size);
   const showSelection = showSelectionStats && selectedCount > 0;
 

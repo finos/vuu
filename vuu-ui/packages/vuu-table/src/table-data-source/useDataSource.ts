@@ -206,12 +206,13 @@ export const useDataSource = ({
   const setRange = useCallback(
     (viewportRange: VuuRange) => {
       if (!rangeRef.current.equals(viewportRange)) {
-        const range = Range(viewportRange.from, viewportRange.to, {
+        const range = Range(
+          viewportRange.from,
+          viewportRange.to,
           renderBufferSize,
-          rowCount: totalRowCountRef.current,
-        });
+        );
 
-        dataWindow.setRange(range);
+        dataWindow.setRange(range.withBuffer);
 
         if (dataSource.status !== "subscribed") {
           dataSource?.subscribe(
