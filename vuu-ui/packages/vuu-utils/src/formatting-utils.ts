@@ -82,10 +82,13 @@ export const getValueFormatter = (
   const { type } = column;
   if (isTypeDescriptor(type) && isMappedValueTypeRenderer(type?.renderer)) {
     return mapFormatter(type.renderer.map);
+  } else if (
+    serverDataType === "double" ||
+    (isTypeDescriptor(type) && type.name === "number")
+  ) {
+    return numericFormatter(column);
   } else if (serverDataType === "string" || serverDataType === "char") {
     return (value: unknown) => value as string;
-  } else if (serverDataType === "double") {
-    return numericFormatter(column);
   }
   return defaultValueFormatter;
 };
