@@ -34,7 +34,7 @@ case class UserDefinedFilterAndSort(filter: ViewPortFilter, sort: Sort) extends 
       logger.trace("Sorted")
       sortedKeys
     } catch {
-      case e: Throwable =>
+      case e: Exception =>
         logger.error("Error during filtering and sorting", e)
         EmptyTablePrimaryKeys
     }
