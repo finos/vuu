@@ -6,7 +6,7 @@ import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.text.AsciiUtil
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.index.{IndexedField, SkipListIndexedBooleanField, SkipListIndexedDoubleField, SkipListIndexedEpochTimestampField, SkipListIndexedIntField, SkipListIndexedLongField, SkipListIndexedStringField}
+import org.finos.vuu.core.index.{HashMapIndexedStringField, IndexedField, SkipListIndexedBooleanField, SkipListIndexedCharField, SkipListIndexedDoubleField, SkipListIndexedEpochTimestampField, SkipListIndexedIntField, SkipListIndexedLongField}
 import org.finos.vuu.core.row.{InMemMapRowBuilder, RowBuilder}
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
@@ -237,7 +237,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
   private def buildIndexForColumn(c: Column): IndexedField[_] = {
     c.dataType match {
       case DataType.StringDataType =>
-        new SkipListIndexedStringField(c)
+        new HashMapIndexedStringField(c)
       case DataType.IntegerDataType =>
         new SkipListIndexedIntField(c)
       case DataType.LongDataType =>
@@ -248,6 +248,10 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
         new SkipListIndexedBooleanField(c)
       case DataType.EpochTimestampType =>
         new SkipListIndexedEpochTimestampField(c)
+      case DataType.CharDataType =>
+        new SkipListIndexedCharField(c)
+      case _ =>
+        throw new RuntimeException(s"Unsupported type ${c.dataType} in column ${c.name}")
     }
   }
 
@@ -374,6 +378,8 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
               index.asInstanceOf[IndexedField[Boolean]].insert(x.asInstanceOf[Boolean], rowkey)
             case DataType.EpochTimestampType =>
               index.asInstanceOf[IndexedField[EpochTimestamp]].insert(x.asInstanceOf[EpochTimestamp], rowkey)
+            case DataType.CharDataType =>
+              index.asInstanceOf[IndexedField[Char]].insert(x.asInstanceOf[Char], rowkey)
           }
       }
     })
@@ -400,6 +406,8 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
               index.asInstanceOf[IndexedField[Boolean]].remove(x.asInstanceOf[Boolean], rowkey)
             case DataType.EpochTimestampType =>
               index.asInstanceOf[IndexedField[EpochTimestamp]].remove(x.asInstanceOf[EpochTimestamp], rowkey)
+            case DataType.CharDataType =>
+              index.asInstanceOf[IndexedField[Char]].remove(x.asInstanceOf[Char], rowkey)
           }
       }
     })
