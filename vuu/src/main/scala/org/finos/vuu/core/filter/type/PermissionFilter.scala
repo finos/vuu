@@ -2,7 +2,7 @@ package org.finos.vuu.core.filter.`type`
 
 import com.typesafe.scalalogging.LazyLogging
 import org.finos.toolbox.collection.array.ImmutableArray
-import org.finos.vuu.core.index.{BooleanIndexedField, DoubleIndexedField, EpochTimestampIndexedField, IndexedField, IntIndexedField, LongIndexedField, StringIndexedField}
+import org.finos.vuu.core.index.{BooleanIndexedField, CharIndexedField, DoubleIndexedField, EpochTimestampIndexedField, IndexedField, IntIndexedField, LongIndexedField, StringIndexedField}
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.core.table.{Column, DataType, EmptyTablePrimaryKeys, RowData, TablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
@@ -92,6 +92,8 @@ private case class ContainsPermissionFilter(columnName: String, allowedValues: S
           hitIndex(primaryKeys, index, allowedValues.map(f => f.toBoolean), firstInChain)
         case Some(index: EpochTimestampIndexedField) =>
           hitIndex(primaryKeys, index, allowedValues.map(f => EpochTimestamp(f.toLong)), firstInChain)
+        case Some(index: CharIndexedField) =>
+          hitIndex(primaryKeys, index, allowedValues.map(f => f.charAt(0)), firstInChain)
         case _ =>
           logger.trace(s"Falling back to row filtering for $column as no Index found")
           filterByRow(source, primaryKeys, firstInChain, column)
