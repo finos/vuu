@@ -8,9 +8,9 @@ import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
 class GenericSortTest extends AnyFeatureSpec with Matchers {
-  implicit val clock: Clock = new TestFriendlyClock(1000)
-  private val table = setupTable()
-  private val table2 = setupTable2()
+  implicit val clock: Clock = new TestFriendlyClock(1000L)
+  private val table = setupTable()(using clock)
+  private val table2 = setupTable2()(using clock)
 
   Feature("GenericSort") {
     Scenario("sort `quantity` in ascending order and `orderId` in descending order") {

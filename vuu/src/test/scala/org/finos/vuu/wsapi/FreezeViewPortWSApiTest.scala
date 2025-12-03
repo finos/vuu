@@ -241,11 +241,10 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
   }
 
   protected def defineModuleWithTestTables(): ViewServerModule = {
-    val lastHour: Long = timeProvider.now() - 3600000
     val dataSource = new FakeDataSource(ListMap(
-      "row1" -> Map("Id" -> "row1", "Name" -> "Becky Thatcher", "Account" -> 123, CreatedTimeColumnName -> lastHour),
-      "row2" -> Map("Id" -> "row2", "Name" -> "Tom Sawyer", "Account" -> 456, CreatedTimeColumnName -> lastHour),
-      "row3" -> Map("Id" -> "row3", "Name" -> "Huckleberry Finn", "Account" -> 789, CreatedTimeColumnName -> lastHour),
+      "row1" -> Map("Id" -> "row1", "Name" -> "Becky Thatcher", "Account" -> 123),
+      "row2" -> Map("Id" -> "row2", "Name" -> "Tom Sawyer", "Account" -> 456),
+      "row3" -> Map("Id" -> "row3", "Name" -> "Huckleberry Finn", "Account" -> 789),
     ))
     val providerFactory = (table: DataTable, _: AbstractVuuServer) => testProviderFactory.create(table, dataSource)
 
@@ -327,19 +326,16 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
   }
 
   private def updateTable(tableName: String): Unit = {
-    val lastHour: Long = timeProvider.now() - 3600000
-    val nextHour: Long = timeProvider.now() + 3600000
     val newDataSource = new FakeDataSource(ListMap(
-      "row3" -> Map("Id" -> "row3", "Name" -> "New Name", "Account" -> 789, CreatedTimeColumnName -> lastHour), // update an existing row
-      "row4" -> Map("Id" -> "row4", "Name" -> "Tom Thatcher", "Account" -> 134, CreatedTimeColumnName -> nextHour), // add a new row
+      "row3" -> Map("Id" -> "row3", "Name" -> "New Name", "Account" -> 789), // update an existing row
+      "row4" -> Map("Id" -> "row4", "Name" -> "Tom Thatcher", "Account" -> 134), // add a new row
     ))
     testProviderFactory.getProvider(tableName).update(newDataSource)
   }
 
   private def addNewRow(tableName: String): Unit = {
-    val nextHour: Long = timeProvider.now() + 3600000
     val newDataSource = new FakeDataSource(ListMap(
-      "row4" -> Map("Id" -> "row4", "Name" -> "Tom Thatcher", CreatedTimeColumnName -> nextHour), // add a new row
+      "row4" -> Map("Id" -> "row4", "Name" -> "Tom Thatcher"), // add a new row
     ))
     testProviderFactory.getProvider(tableName).update(newDataSource)
   }

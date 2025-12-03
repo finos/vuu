@@ -1,6 +1,7 @@
 package org.finos.vuu.core.filter
 
 import org.antlr.v4.runtime.misc.ParseCancellationException
+import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.core.filter.FilterSpecParser.parse as filterClause
 import org.finos.vuu.core.sort.FilterAndSortFixture.*
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -8,12 +9,14 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks.*
 
 class FilterGrammarTest extends AnyFeatureSpec with Matchers {
+  val clock: Clock = new TestFriendlyClock(1000L)
+
   def assertParsable(filter: String): Unit = filterClause(filter) shouldBe a[FilterClause]
   def assertNotParsable(filter: String): Unit = an [ParseCancellationException] should be thrownBy filterClause(filter)
   def assertFilteredRows(filter: String, expectedKeys: Set[String]): Unit = {
     info(s"FILTER: $filter")
 
-    val table = setupTable2()
+    val table = setupTable2()(using clock)
     val clause = filterClause(filter)
     val resultRows = getFilteredRows(table, clause)
 
