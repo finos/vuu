@@ -17,6 +17,7 @@ const EmptyAggregator = new FilterAggregator();
 
 export interface FilterContextMenuHookProps {
   filterColumns: string[] | "*";
+  filterProviderKey?: string;
 }
 
 const defaultProps: FilterContextMenuHookProps = {
@@ -25,9 +26,10 @@ const defaultProps: FilterContextMenuHookProps = {
 
 export const useFilterContextMenu = ({
   filterColumns = "*",
+  filterProviderKey,
 }: FilterContextMenuHookProps = defaultProps): TableContextMenuDef => {
   const { currentFilter, clearCurrentFilter, setCurrentFilter } =
-    useSavedFilters();
+    useSavedFilters(filterProviderKey);
   const filterAggregatorRef = useRef(EmptyAggregator);
 
   useMemo(() => {
