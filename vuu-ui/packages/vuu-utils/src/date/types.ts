@@ -1,6 +1,12 @@
 import { ColumnTypeFormatting } from "@vuu-ui/vuu-table-types";
 
+/**
+ * In the code below we distinguish between an ISO date pattern (yyyy-mm-dd) and
+ * other supported date patterns because the ISO format is not supported by the
+ * Intl dateFormatting function
+ */
 const supportedDatePatterns = [
+  "yyyy-mm-dd",
   "dd.mm.yyyy",
   "dd/mm/yyyy",
   "dd MMM yyyy",
