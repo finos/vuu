@@ -9,8 +9,6 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks.*
 
 class FilterGrammarTest extends AnyFeatureSpec with Matchers {
-  val clock: Clock = new TestFriendlyClock(1000L)
-
   def assertParsable(filter: String): Unit = filterClause(filter) shouldBe a[FilterClause]
   def assertNotParsable(filter: String): Unit = an [ParseCancellationException] should be thrownBy filterClause(filter)
   def assertFilteredRows(filter: String, expectedKeys: Set[String]): Unit = {
