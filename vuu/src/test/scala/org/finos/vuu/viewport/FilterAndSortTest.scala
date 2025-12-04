@@ -6,8 +6,9 @@ import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api.{Index, Indices, TableDef}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.auths.VuuUser
+import org.finos.vuu.core.filter.`type`.{AntlrBasedFilter, PermissionFilter}
 import org.finos.vuu.core.filter.{EqualsClause, LessThanClause, NoFilter}
-import org.finos.vuu.core.sort.{AlphaSort, AntlrBasedFilter, SortDirection, UserDefinedFilterAndSort}
+import org.finos.vuu.core.sort.{AlphaSort, SortDirection, UserDefinedFilterAndSort}
 import org.finos.vuu.core.table.{Columns, RowData, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.{ClientSessionId, FilterSpec}
@@ -486,10 +487,14 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
         columns = Columns.fromNames("ric:String", "bid:Double", "ask:Double"),
         indices = Indices.apply(Index.apply("ric")),
         joinFields = "ric")
-        .withPermissions((vp, tc) => (row: RowData) => {
-          val ric = row.get("ric").asInstanceOf[String]
-          ric != "VOD.L"
-        })
+        .withPermissions((vp, tc) =>
+          PermissionFilter(
+            (row: RowData) => {
+              val ric = row.get("ric").asInstanceOf[String]
+              ric != "VOD.L"
+            }
+          )
+        )
 
       val joinProvider = JoinTableProviderImpl()
       val tableContainer = new TableContainer(joinProvider)

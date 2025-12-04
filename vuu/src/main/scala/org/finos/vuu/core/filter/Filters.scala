@@ -4,17 +4,32 @@ import org.finos.vuu.core.table.{EmptyTablePrimaryKeys, TablePrimaryKeys}
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 
 trait Filter {
-  def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns:ViewPortColumns): TablePrimaryKeys
+  def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean): TablePrimaryKeys
 }
 
-object NoFilter extends Filter {
-  override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns:ViewPortColumns): TablePrimaryKeys = primaryKeys
+trait ViewPortFilter {
+  def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns:ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys
 }
 
-object FilterOutEverythingFilter extends Filter {
-  override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = EmptyTablePrimaryKeys
+object NoFilter extends ViewPortFilter {
+  override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, 
+                        vpColumns:ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = primaryKeys
 }
 
+object FilterOutEverythingFilter extends ViewPortFilter {
+  override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys,
+                        vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = EmptyTablePrimaryKeys
+}
 
+case class CompoundFilter(filters: ViewPortFilter*) extends ViewPortFilter {
 
-
+  override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, 
+                        vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
+    filters.foldLeft(primaryKeys) {
+      (remainingKeys, filter) => {
+        val stillFirstInChain = firstInChain && remainingKeys.length == primaryKeys.length
+        filter.doFilter(source, remainingKeys, vpColumns, stillFirstInChain)
+      }
+    }
+  }
+}

@@ -4,15 +4,17 @@ import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.core.filter.FilterClause.joinResults
 import org.finos.vuu.core.index.*
 import org.finos.vuu.core.table.column.{Error, Result}
-import org.finos.vuu.core.table.{RowData, TablePrimaryKeys}
+import org.finos.vuu.core.table.datatype.EpochTimestamp
+import org.finos.vuu.core.table.{EmptyTablePrimaryKeys, RowData, TablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 
 sealed trait FilterClause {
-  def filterAllSafe(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): Result[TablePrimaryKeys] =
-    this.validate(vpColumns).fold(errMsg => Error(errMsg), _ => Result(this.filterAll(rows, rowKeys, vpColumns)))
 
-  def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys
+  def filterAllSafe(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, firstInChain: Boolean): Result[TablePrimaryKeys] =
+    this.validate(vpColumns).fold(errMsg => Error(errMsg), _ => Result(this.filterAll(rows, rowKeys, vpColumns, firstInChain)))
+
+  def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys
   def validate(vpColumns: ViewPortColumns): Result[true]
 }
 
@@ -26,10 +28,15 @@ sealed trait RowFilterClause extends FilterClause {
   protected def applyFilter(value: Any): Boolean
   def filter(row: RowData): Boolean = this.applyFilter(row.get(columnName))
 
-  override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys =
-    InMemTablePrimaryKeys(ImmutableArray.from(
-      rowKeys.filter(key => filter(rows.pullRow(key, vpColumns))).toArray
-    ))
+  override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
+    if (rowKeys.isEmpty) {
+      EmptyTablePrimaryKeys
+    } else {
+      InMemTablePrimaryKeys(ImmutableArray.from(
+        rowKeys.filter(key => filter(rows.pullRow(key, vpColumns))).toArray
+      ))
+    }
+  }
 
   override def validate(vpColumns: ViewPortColumns): Result[true] = columnExistsInVpColumns(vpColumns)
 
@@ -37,11 +44,23 @@ sealed trait RowFilterClause extends FilterClause {
     if (vpColumns.columnExists(this.columnName)) Result(true)
     else Error(s"Column `$columnName` not found.")
 
+  protected def hitIndex[T](primaryKeys: TablePrimaryKeys, value: T,
+                            indexLookup: T => ImmutableArray[String], firstInChain: Boolean): TablePrimaryKeys = {
+      val results  = indexLookup.apply(value)
+      if (results.isEmpty) {
+        EmptyTablePrimaryKeys
+      } else if (firstInChain) {
+        InMemTablePrimaryKeys(results)
+      } else {
+        primaryKeys.intersect(results)
+      }
+  }
+
 }
 
 case class NotClause(decorated: FilterClause) extends FilterClause {
-  override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
-    val matching = decorated.filterAll(rows, rowKeys, vpColumns).toSet
+  override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
+    val matching = decorated.filterAll(rows, rowKeys, vpColumns, firstInChain).toSet
     val notMatching = rowKeys.filter(!matching.contains(_))
     InMemTablePrimaryKeys(ImmutableArray.from(notMatching.toArray))
   }
@@ -50,17 +69,22 @@ case class NotClause(decorated: FilterClause) extends FilterClause {
 }
 
 case class OrClause(subclauses: List[FilterClause]) extends FilterClause {
-  override def filterAll(rows: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = InMemTablePrimaryKeys( ImmutableArray.from(
-    subclauses.flatMap(_.filterAll(rows, primaryKeys, vpColumns)).distinct.toArray
+  override def filterAll(rows: RowSource, primaryKeys: TablePrimaryKeys,
+                         vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = InMemTablePrimaryKeys( ImmutableArray.from(
+    subclauses.flatMap(_.filterAll(rows, primaryKeys, vpColumns, firstInChain)).distinct.toArray
   ))
 
   override def validate(vpColumns: ViewPortColumns): Result[true] = joinResults(subclauses.map(_.validate(vpColumns)))
 }
 
 case class AndClause(subclauses: List[FilterClause]) extends FilterClause {
-  override def filterAll(source: RowSource, primaryKeys: TablePrimaryKeys, viewPortColumns: ViewPortColumns): TablePrimaryKeys =
+  override def filterAll(source: RowSource, primaryKeys: TablePrimaryKeys,
+                         viewPortColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys =
     subclauses.foldLeft(primaryKeys) {
-      (remainingKeys, subclause) => subclause.filterAll(source, remainingKeys, viewPortColumns)
+      (remainingKeys, subclause) => {
+        val isStillFirstInChain = firstInChain && remainingKeys.length == primaryKeys.length
+        subclause.filterAll(source, remainingKeys, viewPortColumns, isStillFirstInChain)
+      }
     }
 
   override def validate(vpColumns: ViewPortColumns): Result[true] = joinResults(subclauses.map(_.validate(vpColumns)))
@@ -91,17 +115,26 @@ case class InClause(columnName: String, values: List[String]) extends RowFilterC
     data != null && values.contains(data.toString)
   }
 
-  override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, viewPortColumns: ViewPortColumns): TablePrimaryKeys = {
+  override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys,
+                         viewPortColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
     val column = rows.asTable.columnForName(columnName)
     rows.asTable.indexForColumn(column) match {
-      case Some(ix: StringIndexedField)  => rowKeys.intersect(ix.find(values))
-      case Some(ix: IntIndexedField)     => rowKeys.intersect(ix.find(values.map(s => s.toInt)))
-      case Some(ix: LongIndexedField)    => rowKeys.intersect(ix.find(values.map(s => s.toLong)))
-      case Some(ix: DoubleIndexedField)  => rowKeys.intersect(ix.find(values.map(s => s.toDouble)))
-      case Some(ix: BooleanIndexedField) => rowKeys.intersect(ix.find(values.map(s => s.toBoolean)))
-      case _                          => super.filterAll(rows, rowKeys, viewPortColumns)
+      case Some(ix: StringIndexedField)          => hitIndex(rowKeys, values, ix, firstInChain)
+      case Some(ix: DoubleIndexedField)          => hitIndex(rowKeys, values.map(s => s.toDouble), ix, firstInChain)
+      case Some(ix: IntIndexedField)             => hitIndex(rowKeys, values.map(s => s.toInt), ix, firstInChain)
+      case Some(ix: LongIndexedField)            => hitIndex(rowKeys, values.map(s => s.toLong), ix, firstInChain)
+      case Some(ix: BooleanIndexedField)         => hitIndex(rowKeys, values.map(s => s.toBoolean), ix, firstInChain)
+      case Some(ix: EpochTimestampIndexedField)  => hitIndex(rowKeys, values.map(s => EpochTimestamp(s.toLong)), ix, firstInChain)
+      case Some(ix: CharIndexedField)            => hitIndex(rowKeys, values.map(s => s.charAt(0)), ix, firstInChain)
+      case _                                     => super.filterAll(rows, rowKeys, viewPortColumns, firstInChain)
     }
   }
+
+  private def hitIndex[T](rowKeys: TablePrimaryKeys, values: List[T],
+                          index: IndexedField[T], firstInChain: Boolean): TablePrimaryKeys = {
+    hitIndex(rowKeys, values, f => index.find(f), firstInChain)
+  }
+
 }
 
 case class GreaterThanClause(columnName: String, value: Double) extends RowFilterClause {
@@ -112,15 +145,23 @@ case class GreaterThanClause(columnName: String, value: Double) extends RowFilte
     try { value < datum.toString.toDouble } catch { case _: NumberFormatException  => true}
   }
 
-  override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, viewPortColumns: ViewPortColumns): TablePrimaryKeys = {
+  override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys,
+                         viewPortColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
     val column = rows.asTable.columnForName(columnName)
     rows.asTable.indexForColumn(column) match {
-      case Some(ix: DoubleIndexedField) => rowKeys.intersect(ix.greaterThan(value))
-      case Some(ix: IntIndexedField) => rowKeys.intersect(ix.greaterThan(value.toInt))
-      case Some(ix: LongIndexedField) => rowKeys.intersect(ix.greaterThan(value.toLong))
-      case _ => super.filterAll(rows, rowKeys, viewPortColumns)
+      case Some(ix: DoubleIndexedField)           => hitIndex(rowKeys, value, ix, firstInChain)
+      case Some(ix: IntIndexedField)              => hitIndex(rowKeys, value.toInt, ix, firstInChain)
+      case Some(ix: LongIndexedField)             => hitIndex(rowKeys, value.toLong, ix, firstInChain)
+      case Some(ix: EpochTimestampIndexedField)   => hitIndex(rowKeys, EpochTimestamp(value.toLong), ix, firstInChain)
+      case _                                      => super.filterAll(rows, rowKeys, viewPortColumns, firstInChain)
     }
   }
+
+  private def hitIndex[T](rowKeys: TablePrimaryKeys, value: T,
+                          index: IndexedField[T], firstInChain: Boolean): TablePrimaryKeys = {
+    hitIndex(rowKeys, value, f => index.greaterThan(f), firstInChain)
+  }
+
 }
 
 case class LessThanClause(columnName: String, value: Double) extends RowFilterClause {
@@ -131,15 +172,23 @@ case class LessThanClause(columnName: String, value: Double) extends RowFilterCl
     try { value > datum.toString.toDouble } catch { case _: NumberFormatException  => false}
   }
 
-  override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, viewPortColumns: ViewPortColumns): TablePrimaryKeys = {
+  override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys,
+                         viewPortColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
     val column = rows.asTable.columnForName(columnName)
     rows.asTable.indexForColumn(column) match {
-      case Some(ix: DoubleIndexedField) => rowKeys.intersect(ix.lessThan(value))
-      case Some(ix: IntIndexedField)    => rowKeys.intersect(ix.lessThan(value.toInt))
-      case Some(ix: LongIndexedField)   => rowKeys.intersect(ix.lessThan(value.toInt))
-      case _                         => super.filterAll(rows, rowKeys, viewPortColumns)
+      case Some(ix: DoubleIndexedField)           => hitIndex(rowKeys, value, ix, firstInChain)
+      case Some(ix: IntIndexedField)              => hitIndex(rowKeys, value.toInt, ix, firstInChain)
+      case Some(ix: LongIndexedField)             => hitIndex(rowKeys, value.toLong, ix, firstInChain)
+      case Some(ix: EpochTimestampIndexedField)   => hitIndex(rowKeys, EpochTimestamp(value.toLong), ix, firstInChain)
+      case _                                      => super.filterAll(rows, rowKeys, viewPortColumns, firstInChain)
     }
   }
+
+  private def hitIndex[T](rowKeys: TablePrimaryKeys, value: T,
+                          index: IndexedField[T], firstInChain: Boolean): TablePrimaryKeys = {
+    hitIndex(rowKeys, value, f => index.lessThan(f), firstInChain)
+  }
+
 }
 
 case class EqualsClause(columnName: String, value: String) extends RowFilterClause {
@@ -152,20 +201,31 @@ case class EqualsClause(columnName: String, value: String) extends RowFilterClau
       case f: Float => f == value.toFloat
       case d: Double => d == value.toDouble
       case b: Boolean => b == value.equalsIgnoreCase("true")
+      case e: EpochTimestamp => e.nanos == value.toLong
+      case c: Char => c == value.charAt(0)
     }
   }
 
-  override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, viewPortColumns: ViewPortColumns): TablePrimaryKeys = {
+  override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys,
+                         viewPortColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
     val column = rows.asTable.columnForName(columnName)
     rows.asTable.indexForColumn(column) match {
-      case Some(ix: StringIndexedField)   => rowKeys.intersect(ix.find(value))
-      case Some(ix: IntIndexedField)      => rowKeys.intersect(ix.find(value.toInt))
-      case Some(ix: LongIndexedField)     => rowKeys.intersect(ix.find(value.toLong))
-      case Some(ix: DoubleIndexedField)   => rowKeys.intersect(ix.find(value.toDouble))
-      case Some(ix: BooleanIndexedField)  => rowKeys.intersect(ix.find(value.toBoolean))
-      case _                           => super.filterAll(rows, rowKeys, viewPortColumns)
+      case Some(ix: StringIndexedField)          => hitIndex(rowKeys, value, ix, firstInChain)
+      case Some(ix: DoubleIndexedField)          => hitIndex(rowKeys, value.toDouble, ix, firstInChain)
+      case Some(ix: IntIndexedField)             => hitIndex(rowKeys, value.toInt, ix, firstInChain)
+      case Some(ix: LongIndexedField)            => hitIndex(rowKeys, value.toLong, ix, firstInChain)
+      case Some(ix: BooleanIndexedField)         => hitIndex(rowKeys, value.toBoolean, ix, firstInChain)
+      case Some(ix: EpochTimestampIndexedField)  => hitIndex(rowKeys, EpochTimestamp(value.toLong), ix, firstInChain)
+      case Some(ix: CharIndexedField)            => hitIndex(rowKeys, value.charAt(0), ix, firstInChain)
+      case _                                     => super.filterAll(rows, rowKeys, viewPortColumns, firstInChain)
     }
   }
+
+  private def hitIndex[T](rowKeys: TablePrimaryKeys, value: T,
+                          index: IndexedField[T], firstInChain: Boolean): TablePrimaryKeys = {
+    hitIndex(rowKeys, value, f => index.find(f), firstInChain)
+  }
+
 }
 
 

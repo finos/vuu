@@ -4,9 +4,11 @@ import com.typesafe.scalalogging.LazyLogging
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.ViewPortDef
-import org.finos.vuu.core.auths.{RowPermissionChecker, VuuUser}
-import org.finos.vuu.core.sort.ModelType.SortSpecInternal
+import org.finos.vuu.core.auths.VuuUser
+import org.finos.vuu.core.filter.CompoundFilter
+import org.finos.vuu.core.filter.`type`.{PermissionFilter, VisualLinkedFilter}
 import org.finos.vuu.core.sort.*
+import org.finos.vuu.core.sort.ModelType.SortSpecInternal
 import org.finos.vuu.core.table.{Column, DefaultColumnNames, KeyObserver, RowKeyUpdate}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.feature.{EmptyViewPortKeys, ViewPortKeys}
@@ -170,9 +172,10 @@ trait ViewPort {
 
   def getLastUpdateCount(): Long
 
-  def setPermissionChecker(checker: Option[RowPermissionChecker]): Unit
+  def setPermissionFilter(filter: PermissionFilter): Unit
 
-  def permissionChecker(): Option[RowPermissionChecker]
+  def getPermissionFilter: PermissionFilter
+
 }
 
 //when we make a structural change to the viewport, it is via one of these fields
@@ -184,7 +187,8 @@ case class ViewPortStructuralFields(table: RowSource,
                                     sortSpec: SortSpecInternal,
                                     groupBy: GroupBy,
                                     theTreeNodeState: TreeNodeState,
-                                    permissionChecker: Option[RowPermissionChecker])
+                                    permissionFilter: PermissionFilter,
+                                    frozenTime: Option[Long])
 
 class ViewPortImpl(val id: String,
                    val user: VuuUser,
@@ -207,13 +211,13 @@ class ViewPortImpl(val id: String,
     keys.filter(rowKeyToIndex.containsKey(_)).foreach(key => outboundQ.pushHighPriority(ViewPortUpdate(this.requestId, this, this.table, RowKeyUpdate(key, this.table), rowKeyToIndex.get(key), RowUpdateType, this.keys.length, timeProvider.now())))
   }
 
-  override def setPermissionChecker(checker: Option[RowPermissionChecker]): Unit = {
+  override def setPermissionFilter(permissionFilter: PermissionFilter): Unit = {
     val fields = structuralFields.get()
-    val updated = fields.copy(permissionChecker = checker)
+    val updated = fields.copy(permissionFilter = permissionFilter)
     structuralFields.set(updated)
   }
 
-  override def permissionChecker(): Option[RowPermissionChecker] = structuralFields.get().permissionChecker
+  override def getPermissionFilter: PermissionFilter = structuralFields.get().permissionFilter
 
   override def setRequestId(requestId: String): Unit = this.requestId = requestId
 
@@ -412,7 +416,7 @@ class ViewPortImpl(val id: String,
 
 
   override def getStructuralHashCode(): Int = {
-    37 * filterAndSort.hashCode() ^ getGroupBy.hashCode() ^ getColumns.hashCode() ^ permissionChecker().hashCode() ^ viewPortFrozenTimestamp.hashCode()
+    37 * filterAndSort.hashCode() ^ getGroupBy.hashCode() ^ getColumns.hashCode() ^ getPermissionFilter.hashCode() ^ viewPortFrozenTime.hashCode()
   }
 
   private def getTreeNodeStateHash(): Int = {
@@ -663,7 +667,7 @@ class ViewPortImpl(val id: String,
       val fields = this.structuralFields.get()
       val newFilterSort = fields.filtAndSort match {
         case udfs: UserDefinedFilterAndSort =>
-          UserDefinedFilterAndSort(TwoStepCompoundFilter(VisualLinkedFilter(link), udfs.filter), udfs.sort)
+          UserDefinedFilterAndSort(CompoundFilter(VisualLinkedFilter(link), udfs.filter), udfs.sort)
         case x =>
           x
       }
@@ -681,7 +685,7 @@ class ViewPortImpl(val id: String,
         case udfs: UserDefinedFilterAndSort =>
           udfs.filter match {
             //remove the visual linked filter from the filterandsort
-            case TwoStepCompoundFilter(first, second) =>
+            case CompoundFilter(first, second) =>
               UserDefinedFilterAndSort(second, udfs.sort)
           }
       }
