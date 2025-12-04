@@ -1,7 +1,6 @@
 package org.finos.vuu.core.filter
 
 import org.antlr.v4.runtime.misc.ParseCancellationException
-import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.core.filter.FilterSpecParser.parse as filterClause
 import org.finos.vuu.core.sort.FilterAndSortFixture.*
 import org.scalatest.featurespec.AnyFeatureSpec
