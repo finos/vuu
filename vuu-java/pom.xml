@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>vuu-parent</artifactId>
-        <version>0.9.102-SNAPSHOT</version>
+        <version>0.9.103-SNAPSHOT</version>
     </parent>
 
     <artifactId>vuu-java</artifactId>
@@ -15,7 +15,7 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.102-SNAPSHOT</version>
+            <version>0.9.103-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -28,7 +28,7 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.102-SNAPSHOT</version>
+            <version>0.9.103-SNAPSHOT</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
