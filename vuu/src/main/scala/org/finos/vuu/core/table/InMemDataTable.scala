@@ -187,7 +187,7 @@ case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private 
   protected def merge(update: RowData, data: RowData): RowData =
     MergeFunctions.mergeLeftToRight(update, data)
 
-  def update(key: String, update: RowData): TableData = {
+  def update(key: String, update: RowData): (TableData, RowData) = {
 
     val table = data.synchronized {
       val now = timeProvider.now()
@@ -196,12 +196,12 @@ case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private 
           val mergedData = merge(update, row)
           val newRowData = mergedData.set(DefaultColumnNames.LastUpdatedTimeColumnName, now)
           data.put(key, newRowData)
-          InMemDataTableData(data, primaryKeyValues)
+          (InMemDataTableData(data, primaryKeyValues), newRowData)
         case EmptyRowData =>
           var newRowData = update.set(DefaultColumnNames.CreatedTimeColumnName, now)
           newRowData = newRowData.set(DefaultColumnNames.LastUpdatedTimeColumnName, now)
           data.put(key, newRowData)
-          InMemDataTableData(data, primaryKeyValues + key)
+          (InMemDataTableData(data, primaryKeyValues + key), newRowData)
       }
 
     }
@@ -425,8 +425,9 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
   }
 
   def update(rowkey: String, rowUpdate: RowData): Unit = {
-    data = data.update(rowkey, rowUpdate)
-    updateIndices(rowkey, rowUpdate)
+    val updatedData = data.update(rowkey, rowUpdate)
+    data = updatedData._1
+    updateIndices(rowkey, updatedData._2)
   }
 
   def delete(rowKey: String): RowData = {
