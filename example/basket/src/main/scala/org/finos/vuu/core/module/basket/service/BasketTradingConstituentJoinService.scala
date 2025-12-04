@@ -33,8 +33,6 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
     new SelectionViewPortMenuItem("Set Buy", "", this.setBuy, "SET_SELECTION_Buy"),
   )
 
-  override def deleteRowAction(): ViewPortDeleteRowAction = ViewPortDeleteRowAction("", this.onDeleteRow)
-
   override def deleteCellAction(): ViewPortDeleteCellAction = ViewPortDeleteCellAction("", this.onDeleteCell)
 
   override def addRowAction(): ViewPortAddRowAction = ViewPortAddRowAction("", this.onAddRow)
@@ -138,10 +136,6 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
   private def onEditRow(key: String, row: Map[String, Any], vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
     val table = vp.table.asTable
     table.processUpdate(key, RowWithData(key, row))
-    ViewPortEditSuccess()
-  }
-
-  private def onDeleteRow(key: String, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
     ViewPortEditSuccess()
   }
 

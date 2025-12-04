@@ -103,17 +103,6 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
     }
   }
 
-  override def process(msg: ViewPortDeleteRowRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.callRpcEditDeleteRow(msg.vpId, msg.rowKey, ctx.session)) match {
-      case Success(action) =>
-        logger.debug("Processed VP Edit Delete Row RPC call" + msg)
-        vsMsg(ViewPortEditRpcResponse(msg.vpId, "VP_EDIT_DELETE_ROW_RPC", action))(ctx)
-      case Failure(e) =>
-        logger.warn("Failed to process VP Edit Delete Row RPC call", e)
-        vsMsg(ViewPortEditRpcReject(msg.vpId, "VP_EDIT_DELETE_ROW_RPC", e.getMessage))(ctx)
-    }
-  }
-
   override def process(msg: ViewPortAddRowRpcCall)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(viewPortContainer.callRpcAddRow(msg.vpId, msg.rowKey, msg.data, ctx.session)) match {
       case Success(action) =>

@@ -6,11 +6,7 @@ import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler}
 import org.finos.vuu.viewport._
 
-class FixSequenceRpcService(implicit clock: Clock, tableContainer: TableContainer) extends DefaultRpcHandler with EditRpcHandler{
-
-  def onDeleteRow(key: String, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
-    ViewPortEditSuccess()
-  }
+class FixSequenceRpcService(implicit clock: Clock, tableContainer: TableContainer) extends DefaultRpcHandler with EditRpcHandler {
 
   def onDeleteCell(key: String, column: String, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
     ViewPortEditSuccess()
@@ -51,11 +47,15 @@ class FixSequenceRpcService(implicit clock: Clock, tableContainer: TableContaine
     CloseDialogViewPortAction(vp.id)
   }
 
-  override def deleteRowAction(): ViewPortDeleteRowAction = ViewPortDeleteRowAction("", this.onDeleteRow)
   override def deleteCellAction(): ViewPortDeleteCellAction = ViewPortDeleteCellAction("", this.onDeleteCell)
+
   override def addRowAction(): ViewPortAddRowAction = ViewPortAddRowAction("", this.onAddRow)
+
   override def editCellAction(): ViewPortEditCellAction = ViewPortEditCellAction("", this.onEditCell)
+
   override def editRowAction(): ViewPortEditRowAction = ViewPortEditRowAction("", this.onEditRow)
+
   override def onFormSubmit(): ViewPortFormSubmitAction = ViewPortFormSubmitAction("", this.onFormSubmit)
+
   override def onFormClose(): ViewPortFormCloseAction = ViewPortFormCloseAction("", this.onFormClose)
 }

@@ -140,9 +140,6 @@ case class ViewPortAddRowRpcCall(vpId: String, rowKey: String, data: Map[String,
 
 case class ViewPortDeleteCellRpcCall(vpId: String, rowKey: String, field: String) extends MessageBody {}
 
-case class ViewPortDeleteRowRpcCall(vpId: String, rowKey: String) extends MessageBody
-
-
 case class ViewPortEditRpcResponse(vpId: String, rpcName: String, action: ViewPortAction) extends MessageBody
 
 case class ViewPortEditRpcReject(vpId: String, rpcName: String, error: String) extends MessageBody

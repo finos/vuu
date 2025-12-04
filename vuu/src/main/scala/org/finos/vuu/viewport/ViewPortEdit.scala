@@ -14,10 +14,6 @@ case class ViewPortDeleteCellAction(filter: String, func: (String, String, ViewP
   final val rpcName = "VP_DELETE_CELL"
 }
 
-case class ViewPortDeleteRowAction(filter: String, func: (String, ViewPort, ClientSessionId) => ViewPortEditAction){
-  final val rpcName = "VP_DELETE_ROW"
-}
-
 case class ViewPortAddRowAction(filter: String, func: (String, Map[String, Any], ViewPort, ClientSessionId) => ViewPortEditAction){
   final val rpcName = "VP_ADD_ROW"
 }
