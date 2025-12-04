@@ -64,7 +64,7 @@ object FilterAndSortFixture {
     asTable
   }
 
-  def setupTable()(using clock: Clock): InMemDataTable = {
+  def setupTable(): InMemDataTable = {
     setupTable(List.empty,
       row("tradeTime" -> 5L, "quantity" -> 500, "price" -> 283.10, "side" -> 'B', "ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD"),
       row("tradeTime" -> 2L, "quantity" -> 100, "price" -> 94.12, "side" -> 'S', "ric" -> "VOD.L", "orderId" -> "LDN-0001", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD"),
@@ -73,7 +73,7 @@ object FilterAndSortFixture {
       row("tradeTime" -> 5L, "quantity" -> 100, "price" -> 180.50, "side" -> 'B', "ric" -> "BT.L", "orderId" -> "LDN-0008", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD"),
       row("tradeTime" -> 6L, "quantity" -> 100, "price" -> 94.12, "side" -> 'S', "ric" -> "VOD.L", "orderId" -> "NYC-0002", "onMkt" -> false, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
       row("tradeTime" -> 6L, "quantity" -> 100, "price" -> 94.12, "side" -> 'B', "ric" -> "VOD.L", "orderId" -> "NYC-0010", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD")
-    )
+    )(using timeProvider)
   }
 
   def setupTable2(): InMemDataTable = {
@@ -89,14 +89,15 @@ object FilterAndSortFixture {
       row("tradeTime" -> 6L, "quantity" -> null, "price" -> 94.12, "side" -> 'B', "ric" -> "VOD\\L", "orderId" -> "NYC-0012", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
       //unicode in trade name and special char in ccycross
       row("tradeTime" -> 6L, "quantity" -> null, "price" -> 94.12, "side" -> 'S', "ric" -> "VOD\\L", "orderId" -> "NYC-0013", "onMkt" -> true, "trader" -> "rahúl", "ccyCross" -> "$GBPUSD")
-    )
+    )(using timeProvider)
   }
 
-  def setupTableWithCreationTime()(using clock: TestFriendlyClock): InMemDataTable = {
-    setupTableWithCreationTime(List())
+  def setupTableWithCreationTime(): InMemDataTable = {
+    val clock = new TestFriendlyClock(1000L)
+    setupTableWithCreationTime(List())(using clock)
   }
 
-  def setupTableWithCreationTime(indices: List[String]): InMemDataTable = {
+  def setupTableWithCreationTime(indices: List[String])(using clock: TestFriendlyClock): InMemDataTable = {
     val now: Long = clock.now();
     val table: InMemDataTable = setupTable(indices,
       row("tradeTime" -> 5L, "quantity" -> 500, "price" -> 283.10, "side" -> 'B', "ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD"),

@@ -16,7 +16,7 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
   def assertFilteredRows(filter: String, expectedKeys: Set[String]): Unit = {
     info(s"FILTER: $filter")
 
-    val table = setupTable2()(using clock)
+    val table = setupTable2()
     val clause = filterClause(filter)
     val resultRows = getFilteredRows(table, clause)
 

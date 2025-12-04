@@ -1,5 +1,6 @@
 package org.finos.vuu.core.filter.`type`
 
+import org.finos.toolbox.time.TestFriendlyClock
 import org.finos.vuu.core.sort.FilterAndSortFixture.{setupTable, setupTableWithCreationTime}
 import org.finos.vuu.viewport.ViewPortColumns
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -22,10 +23,11 @@ class BaseFilterTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("Freeze filter applied") {
-
-      val table = setupTableWithCreationTime()
+      val clock = new TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List())(using clock)
+      val now = clock.now()
       val permissionFilter = PermissionFilter("ric", Set("VOD.L","AAPL.L"))
-      val baseFilter = BaseFilter(permissionFilter, Option(10001L))
+      val baseFilter = BaseFilter(permissionFilter, Option(now))
 
       val results = baseFilter.doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), true)
 
