@@ -3,9 +3,10 @@ package org.finos.vuu.core.sort
 import org.finos.toolbox.collection.MapDiffResult
 import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.text.{AsciiUtil, CodeGenUtil}
-import org.finos.toolbox.time.{DefaultClock, TestFriendlyClock}
+import org.finos.toolbox.time.{Clock, DefaultClock, TestFriendlyClock}
 import org.finos.vuu.api.{Index, Indices, TableDef}
 import org.finos.vuu.core.filter.FilterClause
+import org.finos.vuu.core.sort.FilterAndSortFixture.timeProvider
 import org.finos.vuu.core.filter.`type`.AntlrBasedFilter
 import org.finos.vuu.core.table.DefaultColumnNames.CreatedTimeColumnName
 import org.finos.vuu.core.table.{Columns, InMemDataTable, RowWithData, ViewPortColumnCreator}
@@ -14,10 +15,6 @@ import org.scalatest.Assertions.fail
 
 object FilterAndSortFixture {
   private val timeProvider = new TestFriendlyClock(10001L)
-  val now: Long = timeProvider.now();
-  val previousHour: Long = now - 3600000;
-  val nextHour: Long = now + 3600000;
-
 
   def getFilteredRows(table: InMemDataTable, clause: FilterClause): Iterable[RowWithData] = {
     val vpColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)
@@ -76,7 +73,7 @@ object FilterAndSortFixture {
       row("tradeTime" -> 5L, "quantity" -> 100, "price" -> 180.50, "side" -> 'B', "ric" -> "BT.L", "orderId" -> "LDN-0008", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD"),
       row("tradeTime" -> 6L, "quantity" -> 100, "price" -> 94.12, "side" -> 'S', "ric" -> "VOD.L", "orderId" -> "NYC-0002", "onMkt" -> false, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
       row("tradeTime" -> 6L, "quantity" -> 100, "price" -> 94.12, "side" -> 'B', "ric" -> "VOD.L", "orderId" -> "NYC-0010", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD")
-    )
+    )(using timeProvider)
   }
 
   def setupTable2(): InMemDataTable = {
@@ -92,25 +89,27 @@ object FilterAndSortFixture {
       row("tradeTime" -> 6L, "quantity" -> null, "price" -> 94.12, "side" -> 'B', "ric" -> "VOD\\L", "orderId" -> "NYC-0012", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
       //unicode in trade name and special char in ccycross
       row("tradeTime" -> 6L, "quantity" -> null, "price" -> 94.12, "side" -> 'S', "ric" -> "VOD\\L", "orderId" -> "NYC-0013", "onMkt" -> true, "trader" -> "rahúl", "ccyCross" -> "$GBPUSD")
-    )
+    )(using timeProvider)
   }
 
   def setupTableWithCreationTime(): InMemDataTable = {
-    setupTableWithCreationTime(List())
+    val clock = new TestFriendlyClock(1000L)
+    setupTableWithCreationTime(List())(using clock)
   }
 
-  def setupTableWithCreationTime(indices: List[String]): InMemDataTable = {
-    setupTable(indices,
-      row("tradeTime" -> 5L, "quantity" -> 500, "price" -> 283.10, "side" -> 'B', "ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD", CreatedTimeColumnName -> previousHour),
-      row("tradeTime" -> 2L, "quantity" -> 100, "price" -> 94.12, "side" -> 'S', "ric" -> "VOD.L", "orderId" -> "LDN-0001", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", CreatedTimeColumnName -> now),
-      row("tradeTime" -> 1L, "quantity" -> 100, "price" -> 180.50, "side" -> 'B', "ric" -> "BT.L", "orderId" -> "LDN-0002", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", CreatedTimeColumnName -> nextHour),
-      row("tradeTime" -> 3L, "quantity" -> 100, "price" -> 94.12, "side" -> 'S', "ric" -> "VOD.L", "orderId" -> "LDN-0003", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", CreatedTimeColumnName -> previousHour),
-      row("tradeTime" -> 5L, "quantity" -> 100, "price" -> 180.50, "side" -> 'B', "ric" -> "BT.L", "orderId" -> "LDN-0008", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", CreatedTimeColumnName -> now),
-      row("tradeTime" -> 6L, "quantity" -> 100, "price" -> 94.12, "side" -> 'S', "ric" -> "VOD.L", "orderId" -> "NYC-0002", "onMkt" -> false, "trader" -> "steve", "ccyCross" -> "GBPUSD", CreatedTimeColumnName -> nextHour)
-    )
+  def setupTableWithCreationTime(indices: List[String])(using clock: TestFriendlyClock): InMemDataTable = {
+    val now: Long = clock.now();
+    val table: InMemDataTable = setupTable(indices,
+      row("tradeTime" -> 5L, "quantity" -> 500, "price" -> 283.10, "side" -> 'B', "ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD"),
+      row("tradeTime" -> 3L, "quantity" -> 100, "price" -> 94.12, "side" -> 'S', "ric" -> "VOD.L", "orderId" -> "LDN-0003", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
+    )(using clock)
+    clock.advanceBy(1000L)
+    table.processUpdate("LDN-0001", row("tradeTime" -> 2L, "quantity" -> 100, "price" -> 94.12, "side" -> 'S', "ric" -> "VOD.L", "orderId" -> "LDN-0001", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD"))
+    table.processUpdate("LDN-0008", row("tradeTime" -> 5L, "quantity" -> 100, "price" -> 180.50, "side" -> 'B', "ric" -> "BT.L", "orderId" -> "LDN-0008", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD"))
+    table
   }
 
-  def setupTable(indices: List[String], rows: RowWithData*): InMemDataTable = {
+  def setupTable(indices: List[String], rows: RowWithData*)(using clock: Clock): InMemDataTable = {
     val columns = Columns.fromNames(
       "orderId:String",
       "trader:String",
@@ -129,7 +128,7 @@ object FilterAndSortFixture {
       indices = Indices(indices.map(f => Index(f)) *),
       joinFields = "ric", "orderId", "ccyCross"
     )
-    val table: InMemDataTable = new InMemDataTable(tableDef, new TestFriendlyJoinTableProvider)(new MetricsProviderImpl, new DefaultClock)
+    val table: InMemDataTable = new InMemDataTable(tableDef, new TestFriendlyJoinTableProvider)(new MetricsProviderImpl, clock)
     rows.foreach(row => table.processUpdate(row.key, row))
     table
   }

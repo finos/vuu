@@ -36,3 +36,22 @@ describe("formatDate", () => {
     },
   );
 });
+describe("formatDateWithISO", () => {
+  it.each<{ pattern: DateTimePattern; expected: string }>([
+    { pattern: { date: "yyyy-mm-dd" }, expected: "2010-06-12" },
+    {
+      pattern: { date: "yyyy-mm-dd", time: "hh:mm:ss a" },
+      expected: "2010-06-12 03:50:37 pm",
+    },
+    {
+      pattern: { date: "yyyy-mm-dd", time: "hh:mm:ss.ms" },
+      expected: "2010-06-12 15:50:37.159",
+    },
+  ])(
+    "can correctly format date with the given pattern $pattern",
+    ({ pattern, expected }) => {
+      const actual = formatDate(pattern)(testDate);
+      expect(actual).toEqual(expected);
+    },
+  );
+});

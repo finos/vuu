@@ -8,7 +8,7 @@ import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
 class GenericSortTest extends AnyFeatureSpec with Matchers {
-  implicit val clock: Clock = new TestFriendlyClock(1000)
+  implicit val clock: Clock = new TestFriendlyClock(1000L)
   private val table = setupTable()
   private val table2 = setupTable2()
 

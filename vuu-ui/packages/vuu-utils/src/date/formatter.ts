@@ -1,5 +1,4 @@
 import { DateFormatter } from "@internationalized/date";
-import { isNotNullOrUndefined } from "../ts-utils";
 import { DatePattern, DateTimePattern, TimePattern } from "./types";
 
 type DateTimeFormatConfig = {
@@ -38,7 +37,10 @@ const baseDateFormatOptions: Intl.DateTimeFormatOptions = {
   month: "2-digit",
   year: "numeric",
 };
-const formatConfigByDatePatterns: Record<DatePattern, DateTimeFormatConfig> = {
+const formatConfigByDatePatterns: Record<
+  Exclude<DatePattern, "yyyy-mm-dd">,
+  DateTimeFormatConfig
+> = {
   "dd.mm.yyyy": {
     locale: "de-De",
     options: { ...baseDateFormatOptions },
@@ -63,24 +65,31 @@ const formatConfigByDatePatterns: Record<DatePattern, DateTimeFormatConfig> = {
   },
 };
 
-function getFormatConfigs(pattern: DateTimePattern) {
-  return [
-    pattern.date ? formatConfigByDatePatterns[pattern.date] : null,
-    pattern.time ? formatConfigByTimePatterns[pattern.time] : null,
-  ];
+const dateFormatterISO = {
+  format: (date: Date) =>
+    new Date(+date - date.getTimezoneOffset() * 60_000)
+      .toISOString()
+      .replace(/T.*/, ""),
+};
+
+export function getDateFormatter({ locale, options }: DateTimeFormatConfig) {
+  return new DateFormatter(locale, options);
+}
+
+function getDateAndTimeFormatters({ date, time }: DateTimePattern) {
+  const out = [];
+  if (date === "yyyy-mm-dd") {
+    out.push(dateFormatterISO);
+  } else if (date) {
+    out.push(getDateFormatter(formatConfigByDatePatterns[date]));
+  }
+  if (time) {
+    out.push(getDateFormatter(formatConfigByTimePatterns[time]));
+  }
+  return out;
 }
 
 export function formatDate(pattern: DateTimePattern): (d: Date) => string {
-  const formatters = getFormatConfigs(pattern)
-    .filter(isNotNullOrUndefined)
-    .map((c) => getDateFormatter(c.locale, c.options));
-
+  const formatters = getDateAndTimeFormatters(pattern);
   return (d) => formatters.map((f) => f.format(d)).join(" ");
-}
-
-export function getDateFormatter(
-  locale: string,
-  options?: Intl.DateTimeFormatOptions,
-) {
-  return new DateFormatter(locale, options);
 }

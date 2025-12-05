@@ -1,6 +1,7 @@
 package org.finos.vuu.core.filter.`type`
 
 import org.finos.toolbox.collection.array.ImmutableArray
+import org.finos.toolbox.time.TestFriendlyClock
 import org.finos.vuu.core.sort.FilterAndSortFixture.{setupTable, setupTable2, setupTableWithCreationTime}
 import org.finos.vuu.core.table.{DefaultColumnNames, EmptyTablePrimaryKeys, RowData}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
@@ -446,10 +447,10 @@ class PermissionFilterTest extends AnyFeatureSpec with Matchers {
   Feature("Contains filter - Epoch Timestamp") {
 
     Scenario("Contains filter with no index") {
-
-      val table = setupTableWithCreationTime()
-
-      val filter = PermissionFilter(DefaultColumnNames.CreatedTimeColumnName, Set("10001"))
+      val clock = TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List())(using clock)
+      val now = clock.now()
+      val filter = PermissionFilter(DefaultColumnNames.CreatedTimeColumnName, Set(now.toString))
 
       val result = filter.doFilter(table, table.primaryKeys, true)
 
@@ -458,10 +459,10 @@ class PermissionFilterTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("Contains filter with no index, not first in chain") {
-
-      val table = setupTableWithCreationTime()
-
-      val filter = PermissionFilter(DefaultColumnNames.CreatedTimeColumnName, Set("10001"))
+      val clock = TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List())(using clock)
+      val now = clock.now()
+      val filter = PermissionFilter(DefaultColumnNames.CreatedTimeColumnName, Set(now.toString))
 
       val result = filter.doFilter(table, InMemTablePrimaryKeys(ImmutableArray.from(Array("LDN-0001", "LDN-0003", "NYC-0002", "NYC-0004"))), false)
 
@@ -470,10 +471,10 @@ class PermissionFilterTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("Contains filter with index") {
-
-      val table = setupTableWithCreationTime(List(DefaultColumnNames.CreatedTimeColumnName))
-
-      val filter = PermissionFilter(DefaultColumnNames.CreatedTimeColumnName, Set("10001"))
+      val clock = new TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List(DefaultColumnNames.CreatedTimeColumnName))(using clock)
+      val now = clock.now()
+      val filter = PermissionFilter(DefaultColumnNames.CreatedTimeColumnName, Set(now.toString))
 
       val result = filter.doFilter(table, table.primaryKeys, true)
 
@@ -482,10 +483,10 @@ class PermissionFilterTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("Contains filter with index, not first in chain") {
-
-      val table = setupTableWithCreationTime(List(DefaultColumnNames.CreatedTimeColumnName))
-
-      val filter = PermissionFilter(DefaultColumnNames.CreatedTimeColumnName, Set("10001"))
+      val clock = new TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List(DefaultColumnNames.CreatedTimeColumnName))(using clock)
+      val now = clock.now()
+      val filter = PermissionFilter(DefaultColumnNames.CreatedTimeColumnName, Set(now.toString))
 
       val result = filter.doFilter(table, InMemTablePrimaryKeys(ImmutableArray.from(Array("LDN-0001", "LDN-0003", "NYC-0002", "NYC-0004"))), false)
 
