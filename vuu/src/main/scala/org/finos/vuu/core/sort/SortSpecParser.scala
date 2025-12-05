@@ -15,7 +15,7 @@ object SortSpecParser extends StrictLogging {
   }
 
   private def createValidSpec(inputSpec: SortSpec, vpColumns: ViewPortColumns): SortSpec = {
-    val validSpec = SortSpec(inputSpec.sortDefs.filter(f => vpColumns.columnExists(f.column)))
+    val validSpec = SortSpec(inputSpec.sortDefs.filter(f => vpColumns.columnExists(f.column) && SortDirection.isValid(f.sortType)))
     if (validSpec.sortDefs.length != inputSpec.sortDefs.length) {
       val discarded = inputSpec.sortDefs.filterNot(validSpec.sortDefs.contains)
       logger.warn(s"Discarding invalid sort definitions: $discarded")

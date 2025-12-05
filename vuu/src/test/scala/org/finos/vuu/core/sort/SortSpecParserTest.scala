@@ -35,12 +35,22 @@ class SortSpecParserTest extends AnyFeatureSpec with Matchers {
       sort.isInstanceOf[NoSort.type] shouldBe true
     }
 
+    Scenario("Spec with only invalid direction") {
+      val validColumn = table.columns().head
+      val spec = SortSpec(List(SortDef(validColumn.name, 'Z')))
+
+      val sort = SortSpecParser.parse(spec, viewPortColumns)
+
+      sort.isInstanceOf[NoSort.type] shouldBe true
+    }
+
     Scenario("Spec with a mix of columns") {
       val validColumn = table.columns().head
 
       val spec = SortSpec(
         List(
           SortDef("cookies!", SortDirection.Descending.external),
+          SortDef(validColumn.name, 'Z'),
           SortDef(validColumn.name, SortDirection.Ascending.external),
         )
       )

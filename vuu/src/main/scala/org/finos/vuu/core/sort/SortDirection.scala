@@ -16,4 +16,11 @@ object SortDirection {
       case _ => throw new IllegalArgumentException(s"Invalid sort direction: $external")
     }
 
+  def isValid(external: Char): Boolean =
+    external match {
+      case Descending.external => true
+      case Ascending.external => true
+      case _ => false
+    }
+  
 }
