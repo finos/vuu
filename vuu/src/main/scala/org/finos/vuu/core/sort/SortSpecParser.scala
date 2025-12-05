@@ -7,10 +7,20 @@ import org.finos.vuu.viewport.ViewPortColumns
 object SortSpecParser extends StrictLogging {
 
   def parse(sortSpec: SortSpec, vpColumns: ViewPortColumns): Sort = {
-    if (sortSpec != null && sortSpec.sortDefs != null && sortSpec.sortDefs.nonEmpty)
-      Sort(sortSpec, sortSpec.sortDefs.map(sd => vpColumns.getColumnForName(sd.column).get))
-    else
+    if (sortSpec != null && sortSpec.sortDefs != null && sortSpec.sortDefs.nonEmpty) {
+      val newSpec = SortSpec(sortSpec.sortDefs.filter(f => vpColumns.columnExists(f.column)))
+      createSort(newSpec, vpColumns)
+    } else
       NoSort
+  }
+
+  private def createSort(validSpec: SortSpec, vpColumns: ViewPortColumns): Sort = {
+    if (validSpec.sortDefs.isEmpty) {
+      NoSort
+    } else {
+      val columns = validSpec.sortDefs.map(f => vpColumns.getColumnForName(f.column).get)
+      Sort(validSpec, columns)
+    }
   }
 
 }

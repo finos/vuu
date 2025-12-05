@@ -13,6 +13,7 @@ object SortDirection {
     external match {
       case Descending.external => Descending
       case Ascending.external => Ascending
+      case _ => throw new IllegalArgumentException(s"Invalid sort direction: $external")
     }
 
 }

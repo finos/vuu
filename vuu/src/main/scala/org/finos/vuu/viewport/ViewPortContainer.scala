@@ -439,7 +439,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
   private def parseSort(sortSpec: SortSpec, vpColumns: ViewPortColumns): Sort = {
     Try(SortSpecParser.parse(sortSpec, vpColumns)) match {
-      case Success(sort) =>  sort
+      case Success(sort) => sort
       case Failure(err) =>
         logger.error(s"could not parse sort $sortSpec", err)
         NoSort
