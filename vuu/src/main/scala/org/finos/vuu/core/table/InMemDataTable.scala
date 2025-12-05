@@ -26,7 +26,9 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
   def updateCounter: Long
 
   def newRow(key: String): RowBuilder
+
   def rowBuilder: RowBuilder
+
   def incrementUpdateCounter(): Unit
 
   def indexForColumn(column: Column): Option[IndexedField[_]]
@@ -101,11 +103,17 @@ case class RowKeyUpdate(key: String, source: RowSource, isDelete: Boolean = fals
 
 trait RowData {
   def key: String
+
   def get(field: String): Any
+
   def get(column: Column): Any
+
   def getFullyQualified(column: Column): Any
+
   def set(field: String, value: Any): RowData
+
   def toArray(columns: List[Column]): Array[Any]
+
   def size: Int
 }
 
@@ -179,21 +187,21 @@ case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private 
   protected def merge(update: RowData, data: RowData): RowData =
     MergeFunctions.mergeLeftToRight(update, data)
 
-  def update(key: String, update: RowData): TableData = {
+  def update(key: String, update: RowData): (TableData, RowData) = {
 
     val table = data.synchronized {
       val now = timeProvider.now()
       data.getOrDefault(key, EmptyRowData) match {
         case row: RowWithData =>
           val mergedData = merge(update, row)
-          mergedData.set(DefaultColumnNames.LastUpdatedTimeColumnName, now)
-          data.put(key, mergedData)
-          InMemDataTableData(data, primaryKeyValues)
+          val newRowData = mergedData.set(DefaultColumnNames.LastUpdatedTimeColumnName, now)
+          data.put(key, newRowData)
+          (InMemDataTableData(data, primaryKeyValues), newRowData)
         case EmptyRowData =>
-          update.set(DefaultColumnNames.CreatedTimeColumnName, now)
-          update.set(DefaultColumnNames.LastUpdatedTimeColumnName, now)
-          data.put(key, update)
-          InMemDataTableData(data, primaryKeyValues + key)
+          var newRowData = update.set(DefaultColumnNames.CreatedTimeColumnName, now)
+          newRowData = newRowData.set(DefaultColumnNames.LastUpdatedTimeColumnName, now)
+          data.put(key, newRowData)
+          (InMemDataTableData(data, primaryKeyValues + key), newRowData)
       }
 
     }
@@ -232,6 +240,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
   override def newRow(key: String): RowBuilder = {
     new InMemMapRowBuilder().setKey(key)
   }
+
   override def rowBuilder: RowBuilder = new InMemMapRowBuilder
 
   private def buildIndexForColumn(c: Column): IndexedField[_] = {
@@ -286,6 +295,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
   @volatile protected var data: TableData = createDataTableData()
 
   @volatile private var updateCounterInternal: Long = 0
+
   override def updateCounter: Long = updateCounterInternal
 
   override def incrementUpdateCounter(): Unit = updateCounterInternal += 1
@@ -355,6 +365,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
   }
 
   def columns(): Array[Column] = tableDef.columns
+
   lazy val viewPortColumns: ViewPortColumns = ViewPortColumnCreator.create(this, tableDef.columns.map(_.name).toList)
 
   private def updateIndices(rowkey: String, rowUpdate: RowData): Unit = {
@@ -414,8 +425,9 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
   }
 
   def update(rowkey: String, rowUpdate: RowData): Unit = {
-    data = data.update(rowkey, rowUpdate)
-    updateIndices(rowkey, rowUpdate)
+    val updatedData = data.update(rowkey, rowUpdate)
+    data = updatedData._1
+    updateIndices(rowkey, updatedData._2)
   }
 
   def delete(rowKey: String): RowData = {
