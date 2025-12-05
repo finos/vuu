@@ -3,8 +3,7 @@ package org.finos.vuu.wsapi
 import org.finos.vuu.api.{ColumnBuilder, TableDef, ViewPortDef}
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
-import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName}
-import org.finos.vuu.core.table.{DataTable, TableContainer}
+import org.finos.vuu.core.table.{DataTable, DefaultColumn, TableContainer}
 import org.finos.vuu.net.rpc.DefaultRpcHandler
 import org.finos.vuu.net.{ErrorResponse, GetTableMetaRequest, GetTableMetaResponse}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
@@ -40,7 +39,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
 
       val responseBody = assertBodyIsInstanceOf[GetTableMetaResponse](response)
       responseBody.columns.length shouldEqual 3
-      responseBody.columns should contain theSameElementsAs Array("Id", CreatedTimeColumnName, LastUpdatedTimeColumnName)
+      responseBody.columns should contain theSameElementsAs (Array("Id") ++ DefaultColumn.values.map(_.name))
     }
 
     Scenario("For a non existent table") {

@@ -57,7 +57,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       val queue = new OutboundRowPublishQueue()
 
-      val columns = ViewPortColumnCreator.create(orders, orders.getTableDef.columns.map(_.name).toList)
+      val columns = ViewPortColumnCreator.create(orders, orders.getTableDef.getColumns.map(_.name).toList)
 
       val viewport = viewPortContainer.create(RequestId.oneNew(), VuuUser("B"), ClientSessionId("A", "C"), queue, orders, ViewPortRange(0, 5), columns)
 
@@ -183,9 +183,9 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       val queue = new OutboundRowPublishQueue()
 
-      val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
+      val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.getColumns.map(_.name).toList)
 
-      //val columns = orderPrices.getTableDef.columns
+      //val columns = orderPrices.getTableDef.getColumns
 
       val viewport = viewPortContainer.create(RequestId.oneNew(), VuuUser("B"), ClientSessionId("A", "C"), queue, orderPrices, ViewPortRange(0, 20), columns)
 
@@ -344,9 +344,9 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       val queue = new OutboundRowPublishQueue()
 
-      val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList ++ List("orderIdTrader:String:=concatenate(orderId, trader)"))
+      val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.getColumns.map(_.name).toList ++ List("orderIdTrader:String:=concatenate(orderId, trader)"))
 
-      //val columns = orderPrices.getTableDef.columns
+      //val columns = orderPrices.getTableDef.getColumns
 
       val viewport = viewPortContainer.create(RequestId.oneNew(), VuuUser("B"), ClientSessionId("A", "C"), queue, orderPrices, ViewPortRange(0, 20), columns)
 
@@ -486,16 +486,15 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
         keyField = "ric",
         columns = Columns.fromNames("ric:String", "bid:Double", "ask:Double"),
         indices = Indices.apply(Index.apply("ric")),
-        joinFields = "ric")
-        .withPermissions((vp, tc) =>
+        joinFields = "ric",
+        permissionFunction = (vp, tc) =>
           PermissionFilter(
             (row: RowData) => {
               val ric = row.get("ric").asInstanceOf[String]
               ric != "VOD.L"
             }
-          )
-        )
-
+          )      
+      )
       val joinProvider = JoinTableProviderImpl()
       val tableContainer = new TableContainer(joinProvider)
       val prices = tableContainer.createTable(pricesDef)
@@ -510,7 +509,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       val queue = new OutboundRowPublishQueue()
 
-      val columns = ViewPortColumnCreator.create(prices, prices.getTableDef.columns.map(_.name).toList)
+      val columns = ViewPortColumnCreator.create(prices, prices.getTableDef.getColumns.map(_.name).toList)
 
       val viewport = viewPortContainer.create(RequestId.oneNew(), VuuUser("B"),
         ClientSessionId("A", "C"), queue, prices, ViewPortRange(0, 20), columns,

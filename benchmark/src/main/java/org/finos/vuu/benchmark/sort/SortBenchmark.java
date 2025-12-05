@@ -7,7 +7,6 @@ import org.finos.vuu.core.table.ViewPortColumnCreator;
 import org.finos.vuu.net.SortDef;
 import org.finos.vuu.net.SortSpec;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.finos.vuu.util.ScalaCollectionConverter.toScala;
@@ -23,9 +22,7 @@ public class SortBenchmark {
     void sortLargeTable() {
         var sort = new GenericSort2(
                 SortSpec.apply(toScala(List.of(SortDef.apply("exchange", 'A')))),
-                toScala(Arrays.stream(inMemDataTable.getTableDef().columns())
-                        .filter(f -> f.name().equals("exchange"))
-                        .toList()));
+                toScala(List.of(inMemDataTable.getTableDef().columnForName("exchange"))));
         var viewPortColumns = ViewPortColumnCreator.create(inMemDataTable, toScala(List.of("exchange")));
         sort.doSort(inMemDataTable, inMemDataTable.primaryKeys(), viewPortColumns);
     }

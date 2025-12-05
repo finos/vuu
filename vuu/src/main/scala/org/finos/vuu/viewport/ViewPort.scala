@@ -8,7 +8,7 @@ import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.filter.CompoundFilter
 import org.finos.vuu.core.filter.`type`.{PermissionFilter, VisualLinkedFilter}
 import org.finos.vuu.core.sort.*
-import org.finos.vuu.core.table.{Column, DefaultColumnNames, KeyObserver, RowKeyUpdate}
+import org.finos.vuu.core.table.{Column, DefaultColumn, KeyObserver, RowKeyUpdate}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.feature.{EmptyViewPortKeys, ViewPortKeys}
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
@@ -197,7 +197,7 @@ class ViewPortImpl(val id: String,
                    val range: AtomicReference[ViewPortRange]
                   )(implicit timeProvider: Clock) extends ViewPort with KeyObserver[RowKeyUpdate] with LazyLogging {
 
-  private lazy val lazyHasDefaultColumns: Boolean = DefaultColumnNames.allDefaultColumns.exists(p => getColumns.columnExists(p))
+  private lazy val lazyHasDefaultColumns: Boolean = getColumns.getColumns.exists(f => DefaultColumn.isDefaultColumn(f))
 
   private val viewPortLock = new Object
 

@@ -23,7 +23,7 @@ object InstrumentModule {
         ,
         (table, vs) => new MockProvider(table),
         (table, provider, _, _) => ViewPortDef(
-          columns = table.getTableDef.columns,
+          columns = table.getTableDef.getColumns,
           service = new MyCustomRpcHandler
         )
       )

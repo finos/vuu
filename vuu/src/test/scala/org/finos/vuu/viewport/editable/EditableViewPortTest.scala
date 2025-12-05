@@ -4,6 +4,7 @@ import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.*
+import org.finos.vuu.api.TableVisibility.Public
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.ModuleFactory.stringToString
@@ -165,7 +166,7 @@ abstract class EditableViewPortTest extends AbstractViewPortTestCase with Matche
   }
 
   def createViewPortDefFunc(tableContainer: TableContainer, rpcHandler: RpcHandler, clock: Clock): (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef = {
-    val func = (t: DataTable, provider: Provider, pc: ProviderContainer, table: TableContainer) => ViewPortDef(t.getTableDef.columns, rpcHandler)
+    val func = (t: DataTable, provider: Provider, pc: ProviderContainer, table: TableContainer) => ViewPortDef(t.getTableDef.getColumns, rpcHandler)
     func
   }
 

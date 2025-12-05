@@ -36,7 +36,7 @@ class TreeSortTest extends AnyFeatureSpec with Matchers with GivenWhenThen with 
 
     val queue = new OutboundRowPublishQueue()
 
-    val columns = orderPrices.getTableDef.columns
+    val columns = orderPrices.getTableDef.getColumns
 
     val vpColumns = ViewPortColumnCreator.create(orderPrices, columns.map(_.name).toList)
 

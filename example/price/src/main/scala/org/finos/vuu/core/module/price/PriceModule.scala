@@ -57,7 +57,7 @@ object PriceModule {
         ),
         (table, vs) => new SimulatedPricesProvider(table, maxSleep = 800),
         (table, provider, _, tableContainer) => ViewPortDef(
-          columns = table.getTableDef.columns,
+          columns = table.getTableDef.getColumns,
           service = new PricesService(table, provider)(tableContainer)
         )
       ).asModule()

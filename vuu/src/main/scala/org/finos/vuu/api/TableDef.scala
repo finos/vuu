@@ -1,10 +1,11 @@
 package org.finos.vuu.api
 
+import org.finos.vuu.api.TableVisibility.Public
 import org.finos.vuu.core.filter.`type`.{AllowAllPermissionFilter, PermissionFilter}
 import org.finos.vuu.core.module.ViewServerModule
-import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName}
 import org.finos.vuu.core.table.*
 import org.finos.vuu.feature.inmem.VuuInMemPluginLocator
+import org.finos.vuu.net.SortSpec
 import org.finos.vuu.viewport.ViewPort
 
 object Fields {
@@ -25,13 +26,10 @@ object Link {
 }
 
 // Used in table definition to indicate the visibility level of a table
-trait Visibility
-
-// All users can create view port to see the table
-object Public extends Visibility
-
-// No users can create view port to see the table. Only for vuu internal use, e.g. base tables for a join table.
-object Private extends Visibility
+enum TableVisibility {
+  case Public
+  case Private
+}
 
 object SessionTableDef {
   def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
@@ -51,19 +49,40 @@ object TableDef {
     new TableDef(name, keyField, columns, joinFields, links = links, indices = Indices())
   }
 
+  def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks,
+            permissionFunction: (ViewPort, TableContainer) => PermissionFilter, joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields, links = links, indices = Indices(), permissionFunction = permissionFunction)
+  }
+
   def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks, indices: Indices, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, links = links, indices = indices)
   }
 
-  def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks, indices: Indices, visibility: Visibility, joinFields: String*): TableDef = {
+  def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks, indices: Indices,
+            permissionFunction: (ViewPort, TableContainer) => PermissionFilter, joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields, links = links, indices = indices, permissionFunction = permissionFunction)
+  }
+
+  def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks, indices: Indices, visibility: TableVisibility, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, links = links, indices = indices, visibility = visibility)
+  }
+
+  def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks, indices: Indices,
+            permissionFunction: (ViewPort, TableContainer) => PermissionFilter, visibility: TableVisibility, joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields, links = links, indices = indices, visibility = visibility,
+      permissionFunction = permissionFunction)
   }
 
   def apply(name: String, keyField: String, columns: Array[Column], indices: Indices, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, indices = indices)
   }
 
-  def apply(name: String, keyField: String, columns: Array[Column], indices: Indices, visibility: Visibility, joinFields: String*): TableDef = {
+  def apply(name: String, keyField: String, columns: Array[Column], indices: Indices,
+            permissionFunction: (ViewPort, TableContainer) => PermissionFilter, joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields, indices = indices, permissionFunction = permissionFunction)
+  }
+
+  def apply(name: String, keyField: String, columns: Array[Column], indices: Indices, visibility: TableVisibility, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, indices = indices, visibility = visibility)
   }
 
@@ -71,7 +90,7 @@ object TableDef {
     new TableDef(name, keyField, columns, joinFields, indices = Indices())
   }
 
-  def apply(name: String, keyField: String, columns: Array[Column], visibility: Visibility, joinFields: String*): TableDef = {
+  def apply(name: String, keyField: String, columns: Array[Column], visibility: TableVisibility, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, indices = Indices(), visibility = visibility)
   }
 
@@ -104,7 +123,7 @@ object GroupByColumns {
     )
 }
 
-class GroupByTableDef(name: String, sourceTableDef: TableDef) extends TableDef(name, sourceTableDef.keyField, sourceTableDef.columns, Seq(), indices = Indices()) {
+class GroupByTableDef(name: String, sourceTableDef: TableDef) extends TableDef(name, sourceTableDef.keyField, sourceTableDef.getColumns, Seq(), indices = Indices()) {
 }
 
 case class Link(fromColumn: String, toTable: String, toColumn: String)
@@ -127,15 +146,15 @@ case class AvailableViewPortVisualLink(parentVpId: String, link: Link) {
   override def toString: String = "(" + parentVpId.split("-").last + ")" + link.fromColumn + " to " + link.toTable + "." + link.toColumn
 }
 
-class JoinSessionTableDef(name: String, visibility: Visibility, baseTable: TableDef, joinColumns: Array[Column], joinFields: Seq[String], joins: JoinTo*) extends JoinTableDef(name, visibility, baseTable, joinColumns, links = VisualLinks(), joinFields) with VuuInMemPluginLocator
+class JoinSessionTableDef(name: String, visibility: TableVisibility, baseTable: TableDef, joinColumns: Array[Column], joinFields: Seq[String], joins: JoinTo*) extends JoinTableDef(name, visibility, baseTable, joinColumns, links = VisualLinks(), joinFields) with VuuInMemPluginLocator
 
 class SessionTableDef(name: String,
                       keyField: String,
-                      columns: Array[Column],
+                      customColumns: Array[Column],
                       joinFields: Seq[String],
                       autosubscribe: Boolean = false,
                       links: VisualLinks = VisualLinks(),
-                      indices: Indices) extends TableDef(name, keyField, columns, joinFields, autosubscribe, links, indices) with VuuInMemPluginLocator
+                      indices: Indices) extends TableDef(name, keyField, customColumns, joinFields, autosubscribe, links, indices) with VuuInMemPluginLocator
 
 
 class TableDef(val name: String,
@@ -145,33 +164,30 @@ class TableDef(val name: String,
                val autosubscribe: Boolean = false,
                val links: VisualLinks = VisualLinks(),
                val indices: Indices,
-               val visibility: Visibility = Public) extends VuuInMemPluginLocator {
+               val visibility: TableVisibility = Public,
+               val includeDefaultColumns: Boolean = true,
+               val permissionFunction: (ViewPort, TableContainer) => PermissionFilter = (_, _) => AllowAllPermissionFilter,
+               val defaultSort: Option[SortSpec] = None) extends VuuInMemPluginLocator {
 
-  private val createdTimeColumn: SimpleColumn = SimpleColumn(CreatedTimeColumnName, customColumns.length, DataType.fromString("long"))
-  private val updatedTimeColumn: SimpleColumn = SimpleColumn(LastUpdatedTimeColumnName, customColumns.length + 1, DataType.fromString("long"))
-  val columns: Array[Column] = customColumns ++ Array(createdTimeColumn, updatedTimeColumn)
+  private val columns: Array[Column] = if (includeDefaultColumns) DefaultColumn.addDefaultColumns(customColumns) else customColumns
+  private lazy val columnsByName: Map[String, Column] = columns.map(c => c.name -> c).toMap
 
   private var module: ViewServerModule = null
-  
-  private var permissionFunc: (ViewPort, TableContainer) => PermissionFilter = (_, _) => AllowAllPermissionFilter
-  
-  def withPermissions(func: (ViewPort, TableContainer) => PermissionFilter): TableDef = {
-    permissionFunc = func
-    this
-  }
 
   def permissionFilter(viewPort: ViewPort, tableContainer: TableContainer): PermissionFilter = {
-    permissionFunc.apply(viewPort, tableContainer)    
+    permissionFunction.apply(viewPort, tableContainer)
   }
 
   def deleteColumnName() = s"$name._isDeleted"
 
+  def getColumns: Array[Column] = columns
+
   def columnForName(name: String): Column = {
-    columns.find(c => c.name == name).orNull
+    columnsByName.get(name).orNull
   }
 
   def columnExists(name: String): Boolean = {
-    columns.exists(_.name == name)
+    columnsByName.contains(name)
   }
 
   def fullyQuallifiedColumnName(column: String): String = s"$name.$column"
@@ -181,6 +197,7 @@ class TableDef(val name: String,
   }
 
   def getModule(): ViewServerModule = this.module
+
 }
 
 trait JoinType
@@ -198,7 +215,7 @@ case class JoinTo(table: TableDef, joinSpec: JoinSpec)
 
 case class JoinTableDef(
                          override val name: String,
-                         override val visibility: Visibility,
+                         override val visibility: TableVisibility,
                          baseTable: TableDef,
                          joinColumns: Array[Column],
                          override val links: VisualLinks,
@@ -212,13 +229,7 @@ case class JoinTableDef(
   lazy val joinFieldNames = getJoinDefinitionColumns().map(_.name)
   lazy val joinTableNames = (1 to baseTable.joinFields.size).map(i => baseTable.name) ++ rightTables
 
-
   override def toString: String = s"JoinTableDef(name=$name)"
-
-  override def withPermissions(func: (ViewPort, TableContainer) => PermissionFilter): JoinTableDef = {
-    super.withPermissions(func)
-    this
-  }
 
   def getJoinDefinitionColumns(): Array[Column] = joinTableColumns
 

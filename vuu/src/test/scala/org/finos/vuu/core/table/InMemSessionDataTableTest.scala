@@ -18,7 +18,7 @@ class InMemSessionDataTableTest extends AnyFeatureSpec with Matchers {
   private val sessionTableDef: SessionTableDef = new SessionTableDef(
     name = "test-table",
     keyField = "id",
-    columns = Columns.fromNames("id".long(), "field".string()),
+    customColumns = Columns.fromNames("id".long(), "field".string()),
     indices = Indices(),
     joinFields = Seq.empty
   )

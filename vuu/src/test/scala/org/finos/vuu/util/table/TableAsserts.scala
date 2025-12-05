@@ -2,10 +2,9 @@ package org.finos.vuu.util.table
 
 import org.finos.toolbox.collection.MapDiffUtils
 import org.finos.toolbox.text.AsciiUtil
-import org.finos.vuu.core.table.DefaultColumnNames.allDefaultColumns
-import org.finos.vuu.core.table.{EmptyRowData, RowWithData}
+import org.finos.vuu.core.table.{DefaultColumn, EmptyRowData, RowWithData}
 import org.finos.vuu.viewport.{RowUpdateType, ViewPortColumns, ViewPortUpdate}
-import org.scalatest.prop._
+import org.scalatest.prop.*
 
 object TableAsserts {
 
@@ -449,7 +448,7 @@ object TableAsserts {
 
   private def getColumns(columns: ViewPortColumns, removeDefaultColumns: Boolean = true): ViewPortColumns = {
     if (removeDefaultColumns) {
-      ViewPortColumns(columns.getColumns.filter(c => !allDefaultColumns.contains(c.name)))
+      ViewPortColumns(columns.getColumns.filter(c => !DefaultColumn.isDefaultColumn(c)))
     } else {
       columns
     }

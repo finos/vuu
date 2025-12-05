@@ -23,7 +23,7 @@ object EditableModule extends DefaultModule {
         ),
         (table, vs) => new ProcessProvider(table),
         (table, _, _, tableContainer) => ViewPortDef(
-          columns = table.getTableDef.columns,
+          columns = table.getTableDef.getColumns,
           service = new ProcessRpcService()(tableContainer)
         )
       ).addSessionTable(
@@ -33,7 +33,7 @@ object EditableModule extends DefaultModule {
         columns = Columns.fromNames("process-id:String", "sequenceNumber:Int")
       ),
       (table, _, _, tableContainer) => ViewPortDef(
-        columns = table.getTableDef.columns,
+        columns = table.getTableDef.getColumns,
         service = new FixSequenceRpcService()(clock, tableContainer)
       )
     ).asModule()
