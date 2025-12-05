@@ -8,10 +8,10 @@ import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.filter.`type`.{AntlrBasedFilter, PermissionFilter}
 import org.finos.vuu.core.filter.{EqualsClause, LessThanClause, NoFilter}
-import org.finos.vuu.core.sort.{AlphaSort, SortDirection, UserDefinedFilterAndSort}
+import org.finos.vuu.core.sort.{GenericSort2, Sort, SortDirection, UserDefinedFilterAndSort}
 import org.finos.vuu.core.table.{Columns, RowData, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
-import org.finos.vuu.net.{ClientSessionId, FilterSpec}
+import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortDef, SortSpec}
 import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
@@ -91,7 +91,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
         viewport.getStructure.copy(filtAndSort =
           UserDefinedFilterAndSort(
             NoFilter,
-            AlphaSort(SortDirection.Descending, ricColumn)
+            Sort(SortSpec(List(SortDef(ricColumn.name, SortDirection.Descending.external))), List(ricColumn))
           )
         )
       )
@@ -122,7 +122,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
         viewport.getStructure.copy(filtAndSort =
           UserDefinedFilterAndSort(
             NoFilter,
-            AlphaSort(SortDirection.Ascending, ricColumn)
+            Sort(SortSpec(List(SortDef(ricColumn.name, SortDirection.Ascending.external))), List(ricColumn))
           )
         )
       )
@@ -232,7 +232,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
         viewport.getStructure.copy(filtAndSort =
           UserDefinedFilterAndSort(
             AntlrBasedFilter(EqualsClause("orderId", "NYC-0001")),
-            AlphaSort(SortDirection.Ascending, orderIdColumn)
+            Sort(SortSpec(List(SortDef(orderIdColumn.name, SortDirection.Ascending.external))), List(orderIdColumn))
           )
         )
       )
@@ -261,7 +261,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
         viewport.getStructure.copy(filtAndSort =
           UserDefinedFilterAndSort(
             AntlrBasedFilter(LessThanClause("quantity", 800)),
-            AlphaSort(SortDirection.Ascending, orderIdColumn)
+            Sort(SortSpec(List(SortDef(orderIdColumn.name, SortDirection.Ascending.external))), List(orderIdColumn))
           )
         )
       )
@@ -287,7 +287,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
         viewport.getStructure.copy(filtAndSort =
           UserDefinedFilterAndSort(
             AntlrBasedFilter(LessThanClause("quantity", 800)),
-            AlphaSort(SortDirection.Descending, orderIdColumn)
+            Sort(SortSpec(List(SortDef(orderIdColumn.name, SortDirection.Descending.external))), List(orderIdColumn))
           )
         )
       )
@@ -393,7 +393,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
         viewport.getStructure.copy(filtAndSort =
           UserDefinedFilterAndSort(
             AntlrBasedFilter(EqualsClause("orderIdTrader", "NYC-0001chris")),
-            AlphaSort(SortDirection.Ascending, orderIdColumn)
+            Sort(SortSpec(List(SortDef(orderIdColumn.name, SortDirection.Ascending.external))), List(orderIdColumn))
           )
         )
       )
@@ -426,7 +426,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
         viewport.getStructure.copy(filtAndSort =
           UserDefinedFilterAndSort(
             AntlrBasedFilter(LessThanClause("quantity", 800)),
-            AlphaSort(SortDirection.Descending, orderIdTraderColumn)
+            Sort(SortSpec(List(SortDef(orderIdTraderColumn.name, SortDirection.Descending.external))), List(orderIdTraderColumn))
           )
         )
       )
@@ -453,7 +453,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
         viewport.getStructure.copy(filtAndSort =
           UserDefinedFilterAndSort(
             AntlrBasedFilter(LessThanClause("quantity", 800)),
-            AlphaSort(SortDirection.Ascending, orderIdTraderColumn)
+            Sort(SortSpec(List(SortDef(orderIdTraderColumn.name, SortDirection.Ascending.external))), List(orderIdTraderColumn))
           )
         )
       )

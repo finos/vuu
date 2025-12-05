@@ -14,11 +14,9 @@ import static org.finos.vuu.util.ScalaCollectionConverter.toScala;
 
 public class SortBenchmark {
 
-    private final BenchmarkHelper benchmarkHelper;
     private final InMemDataTable inMemDataTable;
 
     public SortBenchmark(BenchmarkHelper benchmarkHelper, int size) {
-        this.benchmarkHelper = benchmarkHelper;
         this.inMemDataTable = benchmarkHelper.buildBigTable(size);
     }
 
@@ -27,8 +25,7 @@ public class SortBenchmark {
                 SortSpec.apply(toScala(List.of(SortDef.apply("exchange", 'A')))),
                 toScala(Arrays.stream(inMemDataTable.getTableDef().columns())
                         .filter(f -> f.name().equals("exchange"))
-                        .toList()),
-                benchmarkHelper.getClock());
+                        .toList()));
         var viewPortColumns = ViewPortColumnCreator.create(inMemDataTable, toScala(List.of("exchange")));
         sort.doSort(inMemDataTable, inMemDataTable.primaryKeys(), viewPortColumns);
     }

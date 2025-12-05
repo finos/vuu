@@ -1,8 +1,8 @@
 package org.finos.vuu.feature.ignite.sort
 
-import org.finos.vuu.core.sort.ModelType.SortSpecInternal
 import org.finos.vuu.core.sort.SortDirection
 import org.finos.vuu.feature.ignite.IgniteSqlQuery
+import org.finos.vuu.net.SortSpec
 import org.finos.vuu.util.schema.SchemaMapper
 
 
@@ -12,8 +12,9 @@ import org.finos.vuu.util.schema.SchemaMapper
 class IgniteSqlSortBuilder {
   private val AscendingSql = "ASC"
   private val DescendingSql = "DESC"
-  def toSql(sortColumnsToDirections: SortSpecInternal, schemaMapper: SchemaMapper): IgniteSqlQuery = {
-    val sql = sortColumnsToDirections
+  def toSql(sortColumnsToDirections: SortSpec, schemaMapper: SchemaMapper): IgniteSqlQuery = {
+    val sql = sortColumnsToDirections.sortDefs
+      .map(f => (f.column, SortDirection.fromExternal(f.sortType)))
       .flatMap{case (columnName, direction) => toSortString(columnName, direction, schemaMapper)}
       .mkString(", ")
 
@@ -21,16 +22,18 @@ class IgniteSqlSortBuilder {
   }
 
   private def toSortString(columnName: String,
-                           sortDirection: SortDirection.TYPE,
+                           sortDirection: SortDirection,
                            schemaMapper: SchemaMapper): Option[String] = {
     schemaMapper.externalSchemaField(columnName) match {
       case Some(f) => Some(s"${f.name} ${toSQL(sortDirection)}")
       case None => None
     }
   }
-  private def toSQL(direction: SortDirection.TYPE) =
+
+  private def toSQL(direction: SortDirection) =
     direction match {
       case SortDirection.Ascending  => AscendingSql
       case SortDirection.Descending => DescendingSql
     }
+
 }

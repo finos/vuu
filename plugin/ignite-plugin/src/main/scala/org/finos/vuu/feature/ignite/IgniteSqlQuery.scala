@@ -10,10 +10,10 @@ object IgniteSqlQuery {
 
   sealed abstract class QuerySeparator(val value: String)
   object QuerySeparator {
-    final case object AND extends QuerySeparator(value = " AND ")
-    final case object OR extends QuerySeparator(value = " OR ")
-    final case object SPACE extends QuerySeparator(value = " ")
-    final case object EMPTY extends QuerySeparator(value = "")
+    case object AND extends QuerySeparator(value = " AND ")
+    case object OR extends QuerySeparator(value = " OR ")
+    case object SPACE extends QuerySeparator(value = " ")
+    case object EMPTY extends QuerySeparator(value = "")
   }
 }
 

@@ -8,11 +8,10 @@ import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.filter.CompoundFilter
 import org.finos.vuu.core.filter.`type`.{PermissionFilter, VisualLinkedFilter}
 import org.finos.vuu.core.sort.*
-import org.finos.vuu.core.sort.ModelType.SortSpecInternal
 import org.finos.vuu.core.table.{Column, DefaultColumnNames, KeyObserver, RowKeyUpdate}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.feature.{EmptyViewPortKeys, ViewPortKeys}
-import org.finos.vuu.net.{ClientSessionId, FilterSpec}
+import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
 import org.finos.vuu.util.PublishQueue
 import org.finos.vuu.viewport.tree.TreeNodeState
 
@@ -142,7 +141,7 @@ trait ViewPort {
 
   def filterSpec: FilterSpec
 
-  def sortSpecInternal: SortSpecInternal
+  def sortSpec: SortSpec
 
   def changeStructure(newStructuralFields: ViewPortStructuralFields): Unit
 
@@ -184,7 +183,7 @@ case class ViewPortStructuralFields(table: RowSource,
                                     viewPortDef: ViewPortDef,
                                     filtAndSort: FilterAndSort,
                                     filterSpec: FilterSpec,
-                                    sortSpec: SortSpecInternal,
+                                    sortSpec: SortSpec,
                                     groupBy: GroupBy,
                                     theTreeNodeState: TreeNodeState,
                                     permissionFilter: PermissionFilter,
@@ -374,7 +373,7 @@ class ViewPortImpl(val id: String,
   //def setColumns(columns: List[Column])
   override def filterSpec: FilterSpec = structuralFields.get().filterSpec
 
-  override def sortSpecInternal: SortSpecInternal = structuralFields.get().sortSpec
+  override def sortSpec: SortSpec = structuralFields.get().sortSpec
 
   def sendUpdatesOnChange(currentRange: ViewPortRange): Unit = {
 

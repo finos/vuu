@@ -2,6 +2,7 @@ package org.finos.vuu.core.sort
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.sort.SortCompares.compareEpochTimestamp
+import org.finos.vuu.core.sort.SortDirection.Ascending
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.core.table.{Column, DataType, RowData}
 
@@ -11,10 +12,10 @@ import scala.annotation.tailrec
 object SortCompares extends StrictLogging {
 
   @tailrec
-  def compare(o1: RowData, o2: RowData, columns: List[Column], sortDirections: List[Char], columnIndex: Int): Int = {
+  def compare(o1: RowData, o2: RowData, columns: List[Column], sortDirections: List[SortDirection], columnIndex: Int): Int = {
 
     val activeColumn = columns(columnIndex)
-    val isAscending = sortDirections(columnIndex) == 'A'
+    val isAscending = sortDirections(columnIndex) == Ascending
 
     val compareValue = activeColumn.dataType match {
       case DataType.StringDataType => compareString(o1, o2, activeColumn, isAscending)

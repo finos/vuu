@@ -45,7 +45,7 @@ class IgniteOrderDataProvider(final val igniteStore: IgniteOrderStore)
     val index = new AtomicInteger(startIndex) // todo: get rid of working assumption here that the dataset is fairly immutable.
     def updateTableRowAtIndex = tableUpdater(internalTable)
     dataQuery
-      .fetch(viewPort.filterSpec, viewPort.sortSpecInternal, startIndex = startIndex, rowCount = rowCount)
+      .fetch(viewPort.filterSpec, viewPort.sortSpec, startIndex = startIndex, rowCount = rowCount)
       .map(schemaMapper.toInternalRowMap)
       .foreach(updateTableRowAtIndex(index.getAndIncrement(), _))
 

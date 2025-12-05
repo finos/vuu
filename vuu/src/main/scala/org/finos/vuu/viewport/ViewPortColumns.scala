@@ -29,15 +29,17 @@ object ViewPortColumns {
 
 private case class ViewPortColumnsImpl(sourceColumns: List[Column]) extends ViewPortColumns {
 
+  private lazy val columnsByName: Map[String, Column] = sourceColumns.map(c => c.name -> c).toMap
+
   override def columnExists(name: String): Boolean = {
-    sourceColumns.exists(_.name == name)
+    columnsByName.contains(name)
   }
 
   override def getColumns: List[Column] = sourceColumns
 
   override def getColumnForName(name: String): Option[Column] = {
     val evaluatedName = getEvaluatedName(name)
-    sourceColumns.find(_.name == evaluatedName)
+    columnsByName.get(evaluatedName)
   }
 
   private def getEvaluatedName(name: String): String = {

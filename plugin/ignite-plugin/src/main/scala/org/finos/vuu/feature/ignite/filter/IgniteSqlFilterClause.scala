@@ -2,9 +2,9 @@ package org.finos.vuu.feature.ignite.filter
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.feature.ignite.IgniteSqlQuery
+import org.finos.vuu.feature.ignite.IgniteSqlQuery.QuerySeparator
 import org.finos.vuu.feature.ignite.filter.EqIgniteSqlFilterClause.eqSqlQuery
 import org.finos.vuu.feature.ignite.filter.FilterColumnValueParser.{ParsedResult, STRING_DATA_TYPE}
-import org.finos.vuu.feature.ignite.IgniteSqlQuery.QuerySeparator
 import org.finos.vuu.util.schema.{SchemaField, SchemaMapper}
 
 trait IgniteSqlFilterClause {
@@ -64,10 +64,10 @@ case class RangeIgniteSqlFilterClause(op: RangeOp)(columnName: String, value: St
 
 sealed abstract class RangeOp(val value: String)
 object RangeOp {
-  final case object GT extends RangeOp(value = ">")
-  final case object GTE extends RangeOp(value = ">=")
-  final case object LT extends RangeOp(value = "<")
-  final case object LTE extends RangeOp(value = "<=")
+  case object GT extends RangeOp(value = ">")
+  case object GTE extends RangeOp(value = ">=")
+  case object LT extends RangeOp(value = "<")
+  case object LTE extends RangeOp(value = "<=")
 }
 
 case class RegexIgniteSqlFilterClause(op: RegexOp)(columnName: String, value: String) extends IgniteSqlFilterClause with StrictLogging {
@@ -100,9 +100,9 @@ case class RegexIgniteSqlFilterClause(op: RegexOp)(columnName: String, value: St
 
 sealed abstract class RegexOp(val apply: String => String)
 object RegexOp {
-  final case object Starts extends RegexOp(s => s"$s%")
-  final case object Ends extends RegexOp(s => s"%$s")
-  final case object Contains extends RegexOp(s => s"%$s%")
+  case object Starts extends RegexOp(s => s"$s%")
+  case object Ends extends RegexOp(s => s"%$s")
+  case object Contains extends RegexOp(s => s"%$s%")
 }
 
 case class InIgniteSqlFilterClause(columnName: String, values: List[String]) extends IgniteSqlFilterClause with StrictLogging {

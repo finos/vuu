@@ -14,7 +14,7 @@ class GenericSortTest extends AnyFeatureSpec with Matchers {
 
   Feature("GenericSort") {
     Scenario("sort `quantity` in ascending order and `orderId` in descending order") {
-      expectRows(doSort(table, SortImpl(SortSpec(List(SortDef("quantity", 'A'), SortDef("orderId", 'D'))), table.columnsForNames("quantity", "orderId")))) {
+      expectRows(doSort(table, Sort(SortSpec(List(SortDef("quantity", 'A'), SortDef("orderId", 'D'))), table.columnsForNames("quantity", "orderId")))) {
         List(
           "NYC-0010",
           "NYC-0002",
@@ -28,7 +28,7 @@ class GenericSortTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("sort `trader` in ascending order and `tradeTime` in descending order") {
-      expectRows(doSort(table, SortImpl(SortSpec(List(SortDef("trader", 'A'), SortDef("tradeTime", 'D'))), table.columnsForNames("trader", "tradeTime")))) {
+      expectRows(doSort(table, Sort(SortSpec(List(SortDef("trader", 'A'), SortDef("tradeTime", 'D'))), table.columnsForNames("trader", "tradeTime")))) {
         List(
           "NYC-0004",
           "LDN-0008",
@@ -42,7 +42,7 @@ class GenericSortTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("sort `trader` in descending order and `tradeTime` in ascending order") {
-      expectRows(doSort(table, SortImpl(SortSpec(List(SortDef("trader", 'D'), SortDef("tradeTime", 'A'))), table.columnsForNames("trader", "tradeTime")))) {
+      expectRows(doSort(table, Sort(SortSpec(List(SortDef("trader", 'D'), SortDef("tradeTime", 'A'))), table.columnsForNames("trader", "tradeTime")))) {
         List(
           "LDN-0002",
           "NYC-0002",
@@ -56,7 +56,7 @@ class GenericSortTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("sort `tradeTime` in descending order") {
-      expectRows(doSort(table, SortImpl(SortSpec(List(SortDef("tradeTime", 'D'))), table.columnsForNames("tradeTime")))) {
+      expectRows(doSort(table, Sort(SortSpec(List(SortDef("tradeTime", 'D'))), table.columnsForNames("tradeTime")))) {
         List(
           "NYC-0002",
           "NYC-0010",
@@ -70,7 +70,7 @@ class GenericSortTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("sort `quantity` in descending order") {
-      expectRows(doSort(table2, SortImpl(SortSpec(List(SortDef("quantity", 'D'))), table2.columnsForNames("quantity")))) {
+      expectRows(doSort(table2, Sort(SortSpec(List(SortDef("quantity", 'D'))), table2.columnsForNames("quantity")))) {
         List(
           "NYC-0004",
           "LDN-0003",
