@@ -32,7 +32,8 @@ private case class ViewPortColumnsImpl(sourceColumns: List[Column]) extends View
   private lazy val columnsByName: Map[String, Column] = sourceColumns.map(c => c.name -> c).toMap
 
   override def columnExists(name: String): Boolean = {
-    columnsByName.contains(name)
+    val evaluatedName = getEvaluatedName(name)
+    columnsByName.contains(evaluatedName)
   }
 
   override def getColumns: List[Column] = sourceColumns
