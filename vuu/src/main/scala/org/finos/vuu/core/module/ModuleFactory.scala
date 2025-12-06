@@ -51,7 +51,7 @@ case class ModuleFactoryNode (tableDefs: TableDefs,
                                       ) {
 
   def addTable(tableDef: TableDef, func: (DataTable, AbstractVuuServer) => Provider): ModuleFactoryNode = {
-    val createDefaultViewPortDefFunc = (table: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) => ViewPortDef.default(table.getTableDef.columns, tableContainer)
+    val createDefaultViewPortDefFunc = (table: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) => ViewPortDef.default(table.getTableDef.getColumns, tableContainer)
     ModuleFactoryNode(tableDefs.add(tableDef, func), vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> createDefaultViewPortDefFunc), tableDefContainer, unrealizedViewPortDefs)
   }
 
@@ -68,12 +68,12 @@ case class ModuleFactoryNode (tableDefs: TableDefs,
   }
 
   def addSessionTable(tableDef: TableDef): ModuleFactoryNode = {
-    val createDefaultViewPortDefFunc = (table: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) => ViewPortDef.default(table.getTableDef.columns, tableContainer)
+    val createDefaultViewPortDefFunc = (table: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) => ViewPortDef.default(table.getTableDef.getColumns, tableContainer)
     ModuleFactoryNode(tableDefs.add(tableDef, (dt, vs) => NullProvider), vsName, staticServedResources, rest, viewPortDefs ++ Map(tableDef.name -> createDefaultViewPortDefFunc), tableDefContainer, unrealizedViewPortDefs)
   }
 
   def addJoinTable(func: TableDefContainer => JoinTableDef): ModuleFactoryNode = {
-    val createDefaultViewPortDefFunc = (table: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) => ViewPortDef.default(table.getTableDef.columns, tableContainer)
+    val createDefaultViewPortDefFunc = (table: DataTable, _: Provider, _: ProviderContainer, tableContainer: TableContainer) => ViewPortDef.default(table.getTableDef.getColumns, tableContainer)
     ModuleFactoryNode(tableDefs.addJoin(func), vsName, staticServedResources, rest, viewPortDefs, tableDefContainer, unrealizedViewPortDefs ++ Map(func -> createDefaultViewPortDefFunc))
   }
 

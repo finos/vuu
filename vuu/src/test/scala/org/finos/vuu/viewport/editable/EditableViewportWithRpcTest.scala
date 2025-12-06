@@ -5,12 +5,12 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.JoinTableDef
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.table.*
 import org.finos.vuu.core.table.TableTestHelper.combineQs
-import org.finos.vuu.core.table._
 import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
-import org.finos.vuu.viewport._
+import org.finos.vuu.viewport.*
 import org.scalatest.prop.Tables.Table
 
 class ConstituentInstrumentPricesRpcService()(implicit clock: Clock, val tableContainer: TableContainer) extends DefaultRpcHandler() with EditRpcHandler {
@@ -101,7 +101,7 @@ class EditableViewportWithRpcTest extends EditableViewPortTest {
       joinTableManager.runOnce()
 
       Given("We create a viewport on the consInstPrice table (view only)")
-      val vpColumns = ViewPortColumnCreator.create(consInstPrice, consInstPrice.getTableDef.columns.map(_.name).toList)
+      val vpColumns = ViewPortColumnCreator.create(consInstPrice)
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, consInstPrice, DefaultRange, vpColumns)
 
       joinTableManager.runOnce()

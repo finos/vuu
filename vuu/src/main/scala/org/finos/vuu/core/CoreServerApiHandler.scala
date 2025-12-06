@@ -2,12 +2,13 @@ package org.finos.vuu.core
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.{AvailableViewPortVisualLink, Public}
+import org.finos.vuu.api.TableVisibility.Public
+import org.finos.vuu.api.AvailableViewPortVisualLink
 import org.finos.vuu.core.table.{DataType, TableContainer, ViewPortColumnCreator}
-import org.finos.vuu.net._
+import org.finos.vuu.net.*
 import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionSuccess}
 import org.finos.vuu.provider.{ProviderContainer, RpcProvider}
-import org.finos.vuu.viewport._
+import org.finos.vuu.viewport.*
 
 import scala.util.{Failure, Success, Try}
 
@@ -259,7 +260,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
 
         val columns = if (msg.columns.length == 1 && msg.columns(0) == "*") {
           logger.trace("[ChangeViewPortRequest] Wildcard specified for columns, going to return all")
-          table.getTableDef.columns.toList
+          table.getTableDef.getColumns.toList
         }
         else {
           validateColumns(table, msg.columns)
@@ -304,7 +305,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   def validateColumns(table: RowSource, columns: Array[String]): Unit = {
     val invalidColumns = columns
       .filter(!_.contains(":")) // remove calculated columns
-      .filter(name => !table.asTable.getTableDef.columns.map(_.name).contains(name))
+      .filter(name => !table.asTable.getTableDef.columnExists(name))
     if (invalidColumns.nonEmpty) {
       logger.error("Invalid columns specified in viewport request:" + invalidColumns.mkString(","))
       throw new Exception("Invalid columns specified in viewport request")
@@ -321,7 +322,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
 
       val columns = if (msg.columns.length == 1 && msg.columns(0) == "*") {
         logger.trace("[CreateViewPortRequest] Wildcard specified for columns, going to return all")
-        table.getTableDef.columns.toList
+        table.getTableDef.getColumns.toList
       }
       else {
 

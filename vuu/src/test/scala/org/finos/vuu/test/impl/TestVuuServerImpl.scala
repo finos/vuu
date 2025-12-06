@@ -152,7 +152,7 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
 
   override def createViewPort(module: String, tableName: String, viewPortRange: ViewPortRange): ViewPort = {
     val table = tableContainer.getTable(tableName)
-    val columns = ViewPortColumnCreator.create(table, table.getTableDef.columns.map(_.name).toList)
+    val columns = ViewPortColumnCreator.create(table, table.getTableDef.getColumns.map(_.name).toList)
     val viewport = viewPortContainer.create(RequestId.oneNew(), user, session, queue, table, viewPortRange, columns)
     viewport
   }

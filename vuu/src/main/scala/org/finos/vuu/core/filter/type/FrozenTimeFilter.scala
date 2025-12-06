@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.LazyLogging
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.core.filter.Filter
 import org.finos.vuu.core.index.LongIndexedField
-import org.finos.vuu.core.table.{DefaultColumnNames, EmptyTablePrimaryKeys, TablePrimaryKeys}
+import org.finos.vuu.core.table.{DefaultColumn, EmptyTablePrimaryKeys, TablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.viewport.RowSource
 
@@ -13,7 +13,7 @@ case class FrozenTimeFilter(frozenTime: Long) extends Filter with LazyLogging {
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean): TablePrimaryKeys = {
     logger.trace(s"Starting filter with ${primaryKeys.length}")
 
-    val column = source.asTable.columnForName(DefaultColumnNames.CreatedTimeColumnName)
+    val column = source.asTable.columnForName(DefaultColumn.CreatedTime.name)
     if (column == null || primaryKeys.isEmpty) {
       EmptyTablePrimaryKeys
     } else {
@@ -39,7 +39,7 @@ case class FrozenTimeFilter(frozenTime: Long) extends Filter with LazyLogging {
 
   private def filterAll(source: RowSource, rowKeys: TablePrimaryKeys): TablePrimaryKeys = {
     val filtered = rowKeys.filter(key => {
-      val vuuCreatedTimestamp = source.pullRow(key).get(DefaultColumnNames.CreatedTimeColumnName)
+      val vuuCreatedTimestamp = source.pullRow(key).get(DefaultColumn.CreatedTime.name)
       vuuCreatedTimestamp != null && vuuCreatedTimestamp.asInstanceOf[Long] < frozenTime
     })
     

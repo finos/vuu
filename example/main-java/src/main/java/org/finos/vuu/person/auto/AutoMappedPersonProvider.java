@@ -31,7 +31,7 @@ public class AutoMappedPersonProvider implements Provider {
     }
 
     private static SchemaMapper CreateSchemaMapper(DataTable table) {
-        return SchemaMapperBuilder.apply(EntitySchema.person, table.getTableDef().columns())
+        return SchemaMapperBuilder.apply(EntitySchema.person, table.getTableDef().getColumns())
                 .build();
     }
 

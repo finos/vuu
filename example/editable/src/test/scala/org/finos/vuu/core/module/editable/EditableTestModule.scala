@@ -152,7 +152,7 @@ object EditableTestModule {
         ),
         (table, _) => new NullProvider(),
         (table, _, _, tableContainer) => ViewPortDef(
-          columns = table.getTableDef.columns,
+          columns = table.getTableDef.getColumns,
           service = new TestEditableService(table, tableContainer)
         )
       ).asModule()
@@ -179,7 +179,7 @@ object EditTableTestModule {
         ),
         (table, _) => new NullProvider(),
         (table, _, _, tableContainer) => ViewPortDef(
-          columns = table.getTableDef.columns,
+          columns = table.getTableDef.getColumns,
           service = new EditTableTestService()(using tableContainer)
         )
       ).asModule()

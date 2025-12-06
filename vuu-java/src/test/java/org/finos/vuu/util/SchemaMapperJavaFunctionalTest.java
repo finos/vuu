@@ -49,7 +49,7 @@ public class SchemaMapperJavaFunctionalTest {
                     Columns.fromExternalSchema(externalEntitySchema),
                     toScalaSeq(List.of())
             );
-            var schemaMapper = SchemaMapperBuilder.apply(externalEntitySchema, tableDef.columns())
+            var schemaMapper = SchemaMapperBuilder.apply(externalEntitySchema, tableDef.getColumns())
                     .build();
             var table = new FakeInMemoryTable("SchemaMapJavaTest", tableDef);
             dataSource.setUpResultAsListOfValues(
@@ -84,7 +84,7 @@ public class SchemaMapperJavaFunctionalTest {
                             .build(),
                     toScalaSeq(List.of())
             );
-            var schemaMapper = SchemaMapperBuilder.apply(externalEntitySchema, tableDef.columns())
+            var schemaMapper = SchemaMapperBuilder.apply(externalEntitySchema, tableDef.getColumns())
                     .withFieldsMap(
                             toScala(Map.of("Id", "Id",
                                             "ClientId", "ClientId",
@@ -130,7 +130,7 @@ public class SchemaMapperJavaFunctionalTest {
                     .withConverter(TypeConverter.apply(BigDecimal.class, Double.class, BigDecimal::doubleValue))
                     .withConverter(TypeConverter.apply(Double.class, BigDecimal.class, v -> new BigDecimal(v.toString())))
                     .build();
-            var schemaMapper = SchemaMapperBuilder.apply(externalEntitySchema, tableDef.columns())
+            var schemaMapper = SchemaMapperBuilder.apply(externalEntitySchema, tableDef.getColumns())
                     .withFieldsMap(
                             toScala(Map.of("Id", "Id",
                                     "decimalValue","doubleValue"

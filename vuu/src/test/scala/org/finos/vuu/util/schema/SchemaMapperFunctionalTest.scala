@@ -16,7 +16,7 @@ class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
         keyField = "id",
         columns = Columns.fromExternalSchema(externalEntitySchema)
       )
-      val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.columns)
+      val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.getColumns)
         .build()
       val table = new FakeInMemoryTable("SchemaMapTest", tableDef)
       givenQueryReturns(queryName, List(List("testId1", 5, 10.5)))
@@ -41,7 +41,7 @@ class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
           .build()
       )
       val externalEntitySchema: ExternalEntitySchema = createExternalEntitySchema
-      val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.columns)
+      val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.getColumns)
         .withFieldsMap(
           Map(
             "id" -> "id",
@@ -72,7 +72,7 @@ class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
           .build()
       )
       val externalEntitySchema: ExternalEntitySchema = createExternalEntitySchema
-      val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.columns)
+      val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.getColumns)
         .build()
       val table = new FakeInMemoryTable("SchemaMapTest", tableDef)
       givenQueryReturns(queryName, List(List("testId1", 5, 10.5)))
@@ -98,7 +98,7 @@ class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
           .build()
       )
       val externalEntitySchema: ExternalEntitySchema = createExternalEntitySchema
-      val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.columns)
+      val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.getColumns)
         .withFieldsMap(
           Map(
             "notionalValue" -> "notionalValue",
@@ -139,7 +139,7 @@ class SchemaMapperFunctionalTest extends SchemaMapperFunctionalTestBase {
         .withConverter(TypeConverter[BigDecimal, Double](classOf[BigDecimal], classOf[Double], _.doubleValue))
         .withConverter(TypeConverter[Double, BigDecimal](classOf[Double], classOf[BigDecimal], v => BigDecimal(v.toString)))
         .build()
-      val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.columns)
+      val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.getColumns)
         .withFieldsMap(
           Map(
             "id" -> "id",

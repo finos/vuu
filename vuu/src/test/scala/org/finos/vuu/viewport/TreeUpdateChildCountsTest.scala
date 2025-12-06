@@ -37,7 +37,7 @@ class TreeUpdateChildCountsTest extends AnyFeatureSpec with Matchers with GivenW
 
     val queue = new OutboundRowPublishQueue()
 
-    val columns = orderPrices.getTableDef.columns
+    val columns = orderPrices.getTableDef.getColumns
 
     val vpColumns = ViewPortColumnCreator.create(orderPrices, columns.map(_.name).toList)
 
@@ -94,7 +94,7 @@ class TreeUpdateChildCountsTest extends AnyFeatureSpec with Matchers with GivenW
 
     val queue = new OutboundRowPublishQueue()
 
-    val columns = orderPrices.getTableDef.columns
+    val columns = orderPrices.getTableDef.getColumns
 
     val vpColumns = ViewPortColumnCreator.create(orderPrices, columns.map(_.name).toList)
 

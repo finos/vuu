@@ -17,7 +17,7 @@ class SimulatedPricesProviderTest extends AnyFeatureSpec with Matchers {
   final val TEST_TIME = 1450770869442L
 
   private def printTable(provider: SimulatedPricesProvider): Unit = {
-    val columns = provider.table.getTableDef.columns
+    val columns = provider.table.getTableDef.getColumns
     val headers = columns.map(_.name)
     val keys = provider.table.primaryKeys
 

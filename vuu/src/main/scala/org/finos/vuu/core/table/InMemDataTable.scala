@@ -71,7 +71,7 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
   }
 
   def toAscii(count: Int): String = {
-    val columns = getTableDef.columns
+    val columns = getTableDef.getColumns
     val keys = primaryKeys
 
     val selectedKeys = keys.toArray.take(count)
@@ -84,7 +84,7 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
   }
 
   def toAscii(start: Int, end: Int): String = {
-    val columns = getTableDef.columns
+    val columns = getTableDef.getColumns
     val keys = primaryKeys
 
     val selectedKeys = keys.toArray.slice(start, end) //.sliceToArray(start, end)//drop(start).take(end - start)
@@ -194,12 +194,12 @@ case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private 
       data.getOrDefault(key, EmptyRowData) match {
         case row: RowWithData =>
           val mergedData = merge(update, row)
-          val newRowData = mergedData.set(DefaultColumnNames.LastUpdatedTimeColumnName, now)
+          val newRowData = mergedData.set(DefaultColumn.LastUpdatedTime.name, now)
           data.put(key, newRowData)
           (InMemDataTableData(data, primaryKeyValues), newRowData)
         case EmptyRowData =>
-          var newRowData = update.set(DefaultColumnNames.CreatedTimeColumnName, now)
-          newRowData = newRowData.set(DefaultColumnNames.LastUpdatedTimeColumnName, now)
+          var newRowData = update.set(DefaultColumn.CreatedTime.name, now)
+          newRowData = newRowData.set(DefaultColumn.LastUpdatedTime.name, now)
           data.put(key, newRowData)
           (InMemDataTableData(data, primaryKeyValues + key), newRowData)
       }
@@ -364,9 +364,9 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
     rowProcessor.processColumn(column, value)
   }
 
-  def columns(): Array[Column] = tableDef.columns
+  def columns(): Array[Column] = tableDef.getColumns
 
-  lazy val viewPortColumns: ViewPortColumns = ViewPortColumnCreator.create(this, tableDef.columns.map(_.name).toList)
+  lazy val viewPortColumns: ViewPortColumns = ViewPortColumnCreator.create(this, tableDef.getColumns.map(_.name).toList)
 
   private def updateIndices(rowkey: String, rowUpdate: RowData): Unit = {
     this.indices.foreach(colTup => {

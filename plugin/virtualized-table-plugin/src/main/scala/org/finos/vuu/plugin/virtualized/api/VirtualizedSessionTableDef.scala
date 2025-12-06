@@ -6,7 +6,7 @@ import org.finos.vuu.plugin.PluginType
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePluginType
 
 case class VirtualizedSessionTableDef (override val name: String, override val keyField: String,
-                                       override val columns: Array[Column]) extends SessionTableDef(name, keyField, columns, Seq(), false, VisualLinks(), Indices()){
+                                       override val customColumns: Array[Column]) extends SessionTableDef(name, keyField, customColumns, Seq(), false, VisualLinks(), Indices()){
 
   override def pluginType: PluginType = VirtualizedTablePluginType
 }

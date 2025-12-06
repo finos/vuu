@@ -30,7 +30,7 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
 
           vuuServer.login("testUser")
 
-          vuuServer.overrideViewPortDef("prices", (table, _, _, _) => ViewPortDef(table.getTableDef.columns, null))
+          vuuServer.overrideViewPortDef("prices", (table, _, _, _) => ViewPortDef(table.getTableDef.getColumns, null))
 
           val pricesProvider = vuuServer.getProvider(PriceModule.NAME, "prices")
           val basketProvider = vuuServer.getProvider(BasketModule.NAME, BasketTable)

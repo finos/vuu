@@ -2,7 +2,6 @@ package org.finos.vuu.core.table
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.table.DefaultColumnNames.allDefaultColumns
 import org.finos.vuu.core.table.column.CalculatedColumnClause
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.util.schema.ExternalEntitySchema
@@ -76,11 +75,11 @@ object Columns {
   }).toArray
 
   def from(table: TableDef, names: Seq[String]): Array[Column] = {
-    table.columns.filter(c => names.contains(c.name)).map(c => JoinColumn(c.name, c.index, c.dataType, table, c, isAlias = false))
+    table.customColumns.filter(c => names.contains(c.name)).map(c => JoinColumn(c.name, c.index, c.dataType, table, c, isAlias = false))
   }
 
   /**
-   * Note: this method returns all columns of a given table, including the default columns of vuuCreatedTimestamp and vuuUpdatedTimestamp
+   * Note: this method returns all columns of a given table, excluding the default columns
    * @return JoinColumn based on all columns of a given table except the default columns
    */
   def allFrom(table: TableDef): Array[Column] = {
@@ -89,18 +88,16 @@ object Columns {
 
   def aliased(table: TableDef, aliases: (String, String)*): Array[Column] = {
     val aliased = aliases.map(tuple => tuple._1 -> tuple._2).toMap
-    table.columns.filter(c => aliased.contains(c.name)) map (c => JoinColumn(aliased(c.name), c.index, c.dataType, table, c, isAlias = true).asInstanceOf[Column])
+    table.customColumns.filter(c => aliased.contains(c.name)) map (c => JoinColumn(aliased(c.name), c.index, c.dataType, table, c, isAlias = true).asInstanceOf[Column])
   }
 
   /**
-   * Note: this method excludes the default columns of vuuCreatedTimestamp and vuuUpdatedTimestamp
+   * Note: this method excludes the default columns 
    */
   def allFromExcept(table: TableDef, excludeColumns: String*): Array[Column] = {
-    val columnsToExclude = excludeColumns ++ allDefaultColumns
+    val excluded = excludeColumns.map(s => s -> 1).toMap
 
-    val excluded = columnsToExclude.map(s => s -> 1).toMap
-
-    table.columns.filterNot(c => excluded.contains(c.name)).map(c => JoinColumn(c.name, c.index, c.dataType, table, c, isAlias = false))
+    table.customColumns.filterNot(c => excluded.contains(c.name)).map(c => JoinColumn(c.name, c.index, c.dataType, table, c, isAlias = false))
   }
 
   /**

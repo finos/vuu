@@ -6,9 +6,8 @@ import org.finos.toolbox.text.{AsciiUtil, CodeGenUtil}
 import org.finos.toolbox.time.{Clock, DefaultClock, TestFriendlyClock}
 import org.finos.vuu.api.{Index, Indices, TableDef}
 import org.finos.vuu.core.filter.FilterClause
-import org.finos.vuu.core.sort.FilterAndSortFixture.timeProvider
 import org.finos.vuu.core.filter.`type`.AntlrBasedFilter
-import org.finos.vuu.core.table.DefaultColumnNames.CreatedTimeColumnName
+import org.finos.vuu.core.sort.FilterAndSortFixture.timeProvider
 import org.finos.vuu.core.table.{Columns, InMemDataTable, RowWithData, ViewPortColumnCreator}
 import org.finos.vuu.test.TestFriendlyJoinTableProvider
 import org.scalatest.Assertions.fail

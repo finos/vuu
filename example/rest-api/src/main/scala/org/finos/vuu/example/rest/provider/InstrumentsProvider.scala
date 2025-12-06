@@ -15,7 +15,7 @@ class InstrumentsProvider(table: DataTable, client: InstrumentServiceClient)
                          (implicit clock: Clock) extends DefaultProvider with StrictLogging {
 
 
-  private val schemaMapper = SchemaMapperBuilder(externalSchema, table.getTableDef.columns)
+  private val schemaMapper = SchemaMapperBuilder(externalSchema, table.getTableDef.getColumns)
     .withFieldsMap(columnNameByExternalField)
     .build()
   private val keyField = table.getTableDef.keyField

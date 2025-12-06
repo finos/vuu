@@ -1,14 +1,15 @@
 package org.finos.vuu.core.table.join
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.api._
-import org.finos.vuu.core.table.join.JoinAsserts._
+import org.finos.vuu.api.*
+import org.finos.vuu.core.table.join.JoinAsserts.*
 import org.finos.vuu.core.table.{Columns, KeyObserver, RowKeyUpdate, TableContainer}
 import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, VuuJoinTableProvider}
 import org.finos.vuu.viewport.ViewPortSetup
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.api.TableVisibility.Public
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
