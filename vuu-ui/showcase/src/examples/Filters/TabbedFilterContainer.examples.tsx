@@ -9,7 +9,7 @@ import {
   useFilterContextMenu,
   useSavedFilters,
 } from "@vuu-ui/vuu-filters";
-import { Table } from "@vuu-ui/vuu-table";
+import { Table, TableProps } from "@vuu-ui/vuu-table";
 import {
   ColumnDescriptor,
   TableContextMenuDef,
@@ -242,10 +242,12 @@ const useLocalContextMenu = (): TableContextMenuDef => {
 const TableWithTabbedFilterContainerTemplate = ({
   SavedFilterPanelProps,
   children,
+  selectionModel,
   table = "instruments",
-}: Pick<TabbedFilterContainerProps, "children" | "SavedFilterPanelProps"> & {
-  table?: VuuTableName;
-}) => {
+}: Pick<TabbedFilterContainerProps, "children" | "SavedFilterPanelProps"> &
+  Pick<TableProps, "selectionModel"> & {
+    table?: VuuTableName;
+  }) => {
   const showContextPanel = useContextPanel();
   const { VuuDataSource } = useData();
 
@@ -305,14 +307,20 @@ const TableWithTabbedFilterContainerTemplate = ({
       </div>
       <ContextMenuProvider {...copyContextMenuProps}>
         <ContextMenuProvider {...filterContextMenuProps}>
-          <Table config={config} dataSource={dataSource} />
+          <Table
+            config={config}
+            dataSource={dataSource}
+            selectionModel={selectionModel}
+          />
         </ContextMenuProvider>
       </ContextMenuProvider>
     </>
   );
 };
 
-export const InstrumentsWithTabbedFilterContainerAndFilterProvider = () => {
+export const InstrumentsWithTabbedFilterContainerAndFilterProvider = ({
+  selectionModel,
+}: Pick<TableProps, "selectionModel">) => {
   const table = useMemo<TableSchemaTable>(
     () => ({ module: "SIMUL", table: "instruments" }),
     [],
@@ -354,6 +362,7 @@ export const InstrumentsWithTabbedFilterContainerAndFilterProvider = () => {
           <ContextPanelProvider>
             <TableWithTabbedFilterContainerTemplate
               SavedFilterPanelProps={SavedFilterPanelProps}
+              selectionModel={selectionModel}
             >
               <FormField>
                 <FormFieldLabel>Vuu Created</FormFieldLabel>
@@ -402,6 +411,10 @@ export const InstrumentsWithTabbedFilterContainerAndFilterProvider = () => {
     </>
   );
 };
+
+export const WithCheckbox = () => (
+  <InstrumentsWithTabbedFilterContainerAndFilterProvider selectionModel="checkbox" />
+);
 
 export const OrdersWithTabbedFilterContainerAndFilterProvider = () => {
   const table = useMemo<TableSchemaTable>(

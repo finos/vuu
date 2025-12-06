@@ -5,6 +5,7 @@ import {
   ReactNode,
   SetStateAction,
   useEffect,
+  useMemo,
   useRef,
 } from "react";
 
@@ -74,4 +75,16 @@ export const createSyntheticEvent = <T extends Element, E extends Event>(
     timeStamp: event.timeStamp,
     type: event.type,
   };
+};
+
+/**
+ * Store a value in a RefObject and update that ref whenever the value changes.
+ * Use to maintain a stable reference to a changing value that we need to use
+ * within a hook, but when that hook does not need to be triggered just because
+ * this value changes.
+ */
+export const useStableReference = <T>(value: T) => {
+  const referenceToProp = useRef<T>(value);
+  useMemo(() => (referenceToProp.current = value), [value]);
+  return referenceToProp;
 };
