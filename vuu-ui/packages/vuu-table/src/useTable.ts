@@ -736,6 +736,7 @@ export const useTable = ({
   );
 
   const onContextMenu = useTableContextMenu({
+    columnMap,
     columns,
     data,
     dataSource,
