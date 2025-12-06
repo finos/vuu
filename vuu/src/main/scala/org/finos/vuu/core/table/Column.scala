@@ -83,20 +83,19 @@ object Columns {
    * @return JoinColumn based on all columns of a given table except the default columns
    */
   def allFrom(table: TableDef): Array[Column] = {
-    allFromExcept(table)
+    table.customColumns.map(c => JoinColumn(c.name, c.index, c.dataType, table, c, isAlias = false))
   }
 
   def aliased(table: TableDef, aliases: (String, String)*): Array[Column] = {
     val aliased = aliases.map(tuple => tuple._1 -> tuple._2).toMap
-    table.customColumns.filter(c => aliased.contains(c.name)) map (c => JoinColumn(aliased(c.name), c.index, c.dataType, table, c, isAlias = true).asInstanceOf[Column])
+    table.customColumns.filter(c => aliased.contains(c.name)).map(c => JoinColumn(aliased(c.name), c.index, c.dataType, table, c, isAlias = true).asInstanceOf[Column])
   }
 
   /**
    * Note: this method excludes the default columns 
    */
   def allFromExcept(table: TableDef, excludeColumns: String*): Array[Column] = {
-    val excluded = excludeColumns.map(s => s -> 1).toMap
-
+    val excluded = excludeColumns.toSet
     table.customColumns.filterNot(c => excluded.contains(c.name)).map(c => JoinColumn(c.name, c.index, c.dataType, table, c, isAlias = false))
   }
 
