@@ -88,7 +88,7 @@ object Columns {
 
   def aliased(table: TableDef, aliases: (String, String)*): Array[Column] = {
     val aliased = aliases.map(tuple => tuple._1 -> tuple._2).toMap
-    table.customColumns.filter(c => aliased.contains(c.name)).map(c => JoinColumn(aliased(c.name), c.index, c.dataType, table, c, isAlias = true).asInstanceOf[Column])
+    table.customColumns.filter(c => aliased.contains(c.name)).map(c => JoinColumn(aliased(c.name), c.index, c.dataType, table, c, isAlias = true))
   }
 
   /**
