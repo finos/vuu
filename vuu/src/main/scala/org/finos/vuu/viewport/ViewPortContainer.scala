@@ -11,8 +11,8 @@ import org.finos.toolbox.time.{Clock, TimeIt}
 import org.finos.vuu.api.{Link, ViewPortDef}
 import org.finos.vuu.client.messages.ViewPortId
 import org.finos.vuu.core.auths.VuuUser
-import org.finos.vuu.core.filter.`type`.{AllowAllPermissionFilter, AntlrBasedFilter, BaseFilter, DenyAllPermissionFilter, VisualLinkedFilter}
-import org.finos.vuu.core.filter.{CompoundFilter, Filter, FilterOutEverythingFilter, FilterSpecParser, NoFilter, ViewPortFilter}
+import org.finos.vuu.core.filter.`type`.{AllowAllPermissionFilter, AntlrBasedFilter, BaseFilter, VisualLinkedFilter}
+import org.finos.vuu.core.filter.{CompoundFilter, FilterOutEverythingFilter, FilterSpecParser, NoFilter, ViewPortFilter}
 import org.finos.vuu.core.sort.*
 import org.finos.vuu.core.table.{DataTable, SessionTable, TableContainer}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
@@ -437,12 +437,28 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       None
   }
 
-  private def parseSort(sortSpec: SortSpec, vpColumns: ViewPortColumns): Sort = {
-    Try(SortSpecParser.parse(sortSpec, vpColumns)) match {
-      case Success(sort) => sort
-      case Failure(err) =>
-        logger.error(s"could not parse sort $sortSpec", err)
-        NoSort
+  private def parseSort(sortSpec: SortSpec, vpColumns: ViewPortColumns, defaultSort: Option[SortSpec]): Sort = {
+    if (sortSpec != null && sortSpec.sortDefs != null && sortSpec.sortDefs.nonEmpty) {
+      Try(SortSpecParser.parse(sortSpec, vpColumns)) match {
+        case Success(sort) =>
+          logger.debug(s"Applying custom sort $sortSpec")
+          sort
+        case Failure(err) =>
+          logger.error(s"Could not parse sort $sortSpec", err)
+          NoSort
+      }
+    } else if (defaultSort.nonEmpty) {
+      val defaultSortSpec = defaultSort.get
+      Try(SortSpecParser.parse(defaultSortSpec, vpColumns)) match {
+        case Success(sort) =>
+          logger.debug(s"Applying default sort $defaultSortSpec")
+          sort
+        case Failure(err) =>
+          logger.error(s"Could not parse default sort $defaultSortSpec", err)
+          NoSort
+      }
+    } else {
+      NoSort
     }
   }
 
@@ -470,7 +486,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       throw new Exception(s"view port not found $id")
     }
 
-    val aSort = parseSort(sort, columns)
+    val aSort = parseSort(sort, columns, viewPort.table.asTable.getTableDef.defaultSort)
 
     val aFilter = parseFilter(filterSpec)
 
@@ -598,7 +614,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     val id = createId(user.name)
 
-    val aSort = parseSort(sort, columns)
+    val aSort = parseSort(sort, columns, table.asTable.getTableDef.defaultSort)
 
     val aFilter = parseFilter(filterSpec)
 
