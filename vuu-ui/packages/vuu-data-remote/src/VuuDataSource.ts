@@ -160,7 +160,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
           columns,
           this.#autosubscribeColumns,
         ),
-        range: this._range,
+        range: this._range.withBuffer,
         table: this.table,
         title: this._title,
         viewport,
