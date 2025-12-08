@@ -45,6 +45,7 @@ export const numericFormatter = ({
     const {
       alignOnDecimals = false,
       decimals,
+      useLocaleString,
       zeroPad = false,
     } = type.formatting ?? DEFAULT_NUMERIC_FORMAT;
     return (value: unknown) => {
@@ -60,7 +61,14 @@ export const numericFormatter = ({
           : typeof value === "string"
             ? parseFloat(value)
             : undefined;
-      return roundDecimal(number, align, decimals, zeroPad, alignOnDecimals);
+      return roundDecimal(
+        number,
+        align,
+        decimals,
+        zeroPad,
+        alignOnDecimals,
+        useLocaleString,
+      );
     };
   }
 };

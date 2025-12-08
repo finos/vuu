@@ -163,6 +163,7 @@ export declare type ColumnTypeFormatting = {
   alignOnDecimals?: boolean;
   decimals?: number;
   pattern?: DateTimePattern;
+  useLocaleString?: boolean;
   zeroPad?: boolean;
 };
 

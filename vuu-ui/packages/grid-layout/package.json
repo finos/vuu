@@ -1,6 +1,6 @@
 {
   "name": "@heswell/grid-layout",
-  "version": "0.13.87",
+  "version": "0.13.88",
   "description": "VUU Layout Components",
   "main": "src/index.ts",
   "author": "heswell",
@@ -12,7 +12,7 @@
   },
   "types": "src/index.ts",
   "dependencies": {
-    "@vuu-ui/vuu-utils": "0.13.87",
+    "@vuu-ui/vuu-utils": "0.13.88",
     "@salt-ds/core": "1.48.0",
     "@salt-ds/lab": "1.0.0-alpha.76",
     "@salt-ds/styles": "0.2.1",
