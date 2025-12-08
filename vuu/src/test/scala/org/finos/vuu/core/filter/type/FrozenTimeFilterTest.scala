@@ -3,7 +3,7 @@ package org.finos.vuu.core.filter.`type`
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.time.TestFriendlyClock
 import org.finos.vuu.core.sort.FilterAndSortFixture.{setupTable, setupTableWithCreationTime}
-import org.finos.vuu.core.table.{DefaultColumnNames, EmptyTablePrimaryKeys}
+import org.finos.vuu.core.table.{DefaultColumn, EmptyTablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -35,7 +35,7 @@ class FrozenTimeFilterTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Freeze filter with indexed created time") {
       val clock = new TestFriendlyClock(1000L)
-      val table = setupTableWithCreationTime(List(DefaultColumnNames.CreatedTimeColumnName))(using clock)
+      val table = setupTableWithCreationTime(List(DefaultColumn.CreatedTime.name))(using clock)
       val now = clock.now()
       val frozenTimeFilter = FrozenTimeFilter(now)
 
@@ -47,7 +47,7 @@ class FrozenTimeFilterTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Freeze filter with indexed created time and not first in chain") {
       val clock = new TestFriendlyClock(1000L)
-      val table = setupTableWithCreationTime(List(DefaultColumnNames.CreatedTimeColumnName))(using clock)
+      val table = setupTableWithCreationTime(List(DefaultColumn.CreatedTime.name))(using clock)
       val now = clock.now()
       val frozenTimeFilter = FrozenTimeFilter(now)
 
@@ -59,7 +59,7 @@ class FrozenTimeFilterTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Freeze filter with no input primary keys") {
       val clock = new TestFriendlyClock(1000L)
-      val table = setupTableWithCreationTime(List(DefaultColumnNames.CreatedTimeColumnName))(using clock)
+      val table = setupTableWithCreationTime(List(DefaultColumn.CreatedTime.name))(using clock)
       val now = clock.now()
       val frozenTimeFilter = FrozenTimeFilter(now)
 

@@ -21,6 +21,10 @@ object ViewPortColumnCreator {
     (name, dataType, definition)
   }
 
+  def create(table: DataTable): ViewPortColumns = {
+    create(table.getTableDef, table.getTableDef.getColumns.map(_.name).toList)
+  }
+
   def create(table: DataTable, columns: List[String]): ViewPortColumns = {
     create(table.getTableDef, columns)
   }

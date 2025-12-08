@@ -31,13 +31,13 @@ private case class GenericSort2(spec: SortSpec, columns: List[Column]) extends S
 
   override def doSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
 
-    logger.debug("Starting map")
+    logger.trace("Starting map")
 
     val (millisToArray, snapshot) = timeIt {
       primaryKeys.toArray.map(key => source.pullRow(key, vpColumns))
     }
 
-    logger.debug("Starting sort")
+    logger.trace("Starting sort")
 
     val (millisSort, _ ) = timeIt {
 
@@ -46,7 +46,7 @@ private case class GenericSort2(spec: SortSpec, columns: List[Column]) extends S
       })
     }
 
-    logger.debug("Starting build imm arr")
+    logger.trace("Starting build imm arr")
 
     val (millisImmArray, immutableArray) = timeIt {
 

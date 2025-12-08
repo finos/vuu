@@ -5,10 +5,10 @@ import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.table.TableTestHelper.{combineQs, emptyQueues}
 import org.finos.vuu.core.table.{RowWithData, TableContainer, ViewPortColumnCreator}
-import org.finos.vuu.net.rpc._
+import org.finos.vuu.net.rpc.*
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
-import org.finos.vuu.viewport._
+import org.finos.vuu.viewport.*
 import org.scalatest.GivenWhenThen
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
@@ -153,7 +153,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       val (viewPortContainer, process, processProvider, user, session, outQueue, fixSequence, tableContainer, _) = setupEditableSessionTableInfra()
 
       Given("We create a viewport on the process table (view only)")
-      val vpcolumns = ViewPortColumnCreator.create(process, process.getTableDef.columns.map(_.name).toList)
+      val vpcolumns = ViewPortColumnCreator.create(process)
 
       Given("We define a viewport callback on process with an rpc service attached...")
       viewPortContainer.addViewPortDefinition(process.getTableDef.name, createViewPortDefFunc(tableContainer, new ProcessRpcService(tableContainer, clock), clock))
@@ -183,7 +183,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
 
       Then("At this point the UI will create a viewport on the new table")
       val sessionTable = tableContainer.getTable(action.table.table)
-      val sessionColumns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.columns.map(_.name).toList)
+      val sessionColumns = ViewPortColumnCreator.create(sessionTable)
 
       val sessionViewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, sessionTable, DefaultRange, sessionColumns)
 
@@ -219,7 +219,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       val (viewPortContainer, process, processProvider, user, session, outQueue, _, tableContainer, stopProcess) = setupEditableSessionTableInfra()
 
       Given("We create a viewport on the process table (view only)")
-      val vpcolumns = ViewPortColumnCreator.create(process, process.getTableDef.columns.map(_.name).toList)
+      val vpcolumns = ViewPortColumnCreator.create(process)
 
       Given("We define a viewport callback on process with an rpc service attached...")
       viewPortContainer.addViewPortDefinition(process.getTableDef.name, createViewPortDefFunc(tableContainer,
@@ -253,7 +253,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
 
       Then("At this point the UI will create a viewport on the new table")
       val sessionTable = tableContainer.getTable(action.table.table)
-      val sessionColumns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.columns.map(_.name).toList)
+      val sessionColumns = ViewPortColumnCreator.create(sessionTable)
 
       val sessionViewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, sessionTable, DefaultRange, sessionColumns)
 

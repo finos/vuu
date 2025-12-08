@@ -56,10 +56,10 @@ class ViewPortColumnsTests extends AnyFeatureSpec {
       assert(vpColumnsByTable("prices").size == 1)
       val orderJoinVpColumns = vpColumns.getJoinViewPortColumns("orders")
       assert(orderJoinVpColumns.getColumns.size == 3)
-      assert(orderJoinVpColumns.getColumns == ordersDef.columns.filter(c => List("orderId", "trader", "ric").contains(c.name)).toList)
+      assert(orderJoinVpColumns.getColumns == ordersDef.getColumns.filter(c => List("orderId", "trader", "ric").contains(c.name)).toList)
       val priceJoinVpColumns = vpColumns.getJoinViewPortColumns("prices")
       assert(priceJoinVpColumns.getColumns.size == 1)
-      assert(priceJoinVpColumns.getColumns == pricesDef.columns.filter(_.name == "bid").toList)
+      assert(priceJoinVpColumns.getColumns == pricesDef.getColumns.filter(_.name == "bid").toList)
     }
 
     Scenario("Viewport with calculations") {

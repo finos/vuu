@@ -19,9 +19,9 @@ class SchemaMapperFunctionalTest  extends SchemaMapperFunctionalTestBase {
       val tableDef = VirtualizedSessionTableDef(
         name = "MyExampleVirtualTable",
         keyField = "id",
-        columns = Columns.fromExternalSchema(externalEntitySchema)
+        customColumns = Columns.fromExternalSchema(externalEntitySchema)
       )
-      val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.columns)
+      val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.getColumns)
         .build()
       val table = new FakeInMemoryTable("SchemaMapTest", tableDef)
 

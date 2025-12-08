@@ -10,8 +10,9 @@ object SortSpecParser extends StrictLogging {
     if (inputSpec != null && inputSpec.sortDefs != null) {
       val validSpec = createValidSpec(inputSpec, vpColumns)
       createSort(validSpec, vpColumns)
-    } else
+    } else {
       NoSort
+    }
   }
 
   private def createValidSpec(inputSpec: SortSpec, vpColumns: ViewPortColumns): SortSpec = {

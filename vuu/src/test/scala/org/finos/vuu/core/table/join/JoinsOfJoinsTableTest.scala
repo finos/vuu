@@ -4,11 +4,13 @@ import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api.*
+import org.finos.vuu.api.TableVisibility.Public
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.auths.VuuUser
+import org.finos.vuu.core.filter.`type`.AllowAllPermissionFilter
 import org.finos.vuu.core.table.{Columns, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
-import org.finos.vuu.net.ClientSessionId
+import org.finos.vuu.net.{ClientSessionId, SortSpec}
 import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
@@ -74,6 +76,8 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
       baseTable = ordersDef,
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") ++ Columns.allFrom(fxDef),
       links = VisualLinks(),
+      permissionFunction = (_,_) => AllowAllPermissionFilter,
+      defaultSort = SortSpec(List.empty),
       joinFields = Seq("ccyCross", "orderId"),
         JoinTo(
           table = pricesDef,
@@ -171,6 +175,8 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
       baseTable = ordersDef,
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") ++ Columns.allFrom(fxDef),
       links = VisualLinks(),
+      permissionFunction = (_,_) => AllowAllPermissionFilter,
+      defaultSort = SortSpec(List.empty),
       joinFields = Seq("ccyCross", "orderId"),
       JoinTo(
         table = pricesDef,

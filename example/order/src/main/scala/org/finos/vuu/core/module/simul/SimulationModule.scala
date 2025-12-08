@@ -143,7 +143,7 @@ object SimulationModule extends DefaultModule {
         ),
         (table, vs) => new SimulatedBigInstrumentsProvider(table),
         (table, _, providerContainer, tableContainer) => ViewPortDef(
-          columns = table.getTableDef.columns,
+          columns = table.getTableDef.getColumns,
           service = new InstrumentsService(table, providerContainer)(tableContainer)
         )
       )
@@ -179,7 +179,7 @@ object SimulationModule extends DefaultModule {
         ),
         (table, vs) => new ParentOrdersProvider(table, ordersModel),
         (table, provider, _, tableContainer) => ViewPortDef(
-          columns = table.getTableDef.columns,
+          columns = table.getTableDef.getColumns,
           service = new ParentOrdersService(table, provider)(tableContainer)
         )
       )
@@ -187,17 +187,18 @@ object SimulationModule extends DefaultModule {
         TableDef(
           name = "permissionedOrders",
           keyField = "id",
-          Columns.fromNames("id".string(), "idAsInt".int(), "ric".string(), "childCount".int(), "price".double(),
+          columns = Columns.fromNames("id".string(), "idAsInt".int(), "ric".string(), "childCount".int(), "price".double(),
             "quantity".int(), "side".string(), "account".string(), "exchange".string(),
             "ccy".string(), "algo".string(), "volLimit".double(), "filledQty".int(), "openQty".int(),
             "averagePrice".double(), "status".string(), "lastUpdate".long(), "owner".string(), "mask".int()),
-          VisualLinks(),
+          links = VisualLinks(),
           indices = Indices(
             Index("ric"),
             Index("mask")
           ),
-          joinFields = "id", "ric", "owner"
-        ).withPermissions((vp, tableContainer) => new OrderPermissionChecker(vp, tableContainer)),
+          permissionFunction = (vp, tableContainer) => new OrderPermissionChecker(vp, tableContainer),
+          joinFields = "id", "ric", "owner",          
+        ),
         (table, _) => new PermissionedOrdersProvider(table, ordersModel)
       )
       .addTable(

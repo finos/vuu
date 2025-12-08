@@ -87,7 +87,7 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
 
   override def toAscii(count: Int): String = {
 
-    val columns = getTableDef.columns
+    val columns = getTableDef.getColumns
     val keys = primaryKeys
 
     val selectedKeys = keys.toArray.take(count)
