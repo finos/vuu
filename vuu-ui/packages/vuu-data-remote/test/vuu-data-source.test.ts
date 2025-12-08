@@ -260,13 +260,13 @@ describe("VuuDataSource", () => {
       const dataSource = new VuuDataSource({ table });
 
       const pendingSubscribe = dataSource.subscribe(
-        { range: { from: 0, to: 20 }, groupBy: ["test1"] },
+        { range: Range(0, 20), groupBy: ["test1"] },
         callback,
       );
 
       // dataSource is blocked inside subscribe function, awaiting server ...
       dataSource.groupBy = ["test2"];
-      dataSource.range = { from: 0, to: 50 };
+      dataSource.range = Range(0, 50);
 
       await pendingSubscribe;
 
