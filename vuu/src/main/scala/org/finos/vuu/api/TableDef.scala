@@ -45,6 +45,8 @@ object JoinSessionTableDef {
 
 object TableDef {
 
+  //links
+
   def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, links = links, indices = Indices())
   }
@@ -54,6 +56,19 @@ object TableDef {
     new TableDef(name, keyField, columns, joinFields, links = links, indices = Indices(), permissionFunction = permissionFunction)
   }
 
+  def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks, defaultSort: SortSpec, joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields, links = links, indices = Indices(), defaultSort = defaultSort)
+  }
+
+  def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks,
+            permissionFunction: (ViewPort, TableContainer) => PermissionFilter, defaultSort: SortSpec,
+            joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields, links = links, indices = Indices(),
+      permissionFunction = permissionFunction, defaultSort = defaultSort)
+  }
+
+  //links + indices
+
   def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks, indices: Indices, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, links = links, indices = indices)
   }
@@ -62,6 +77,20 @@ object TableDef {
             permissionFunction: (ViewPort, TableContainer) => PermissionFilter, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, links = links, indices = indices, permissionFunction = permissionFunction)
   }
+
+  def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks, indices: Indices,
+            defaultSort: SortSpec, joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields, links = links, indices = indices, defaultSort = defaultSort)
+  }
+
+  def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks, indices: Indices,
+            permissionFunction: (ViewPort, TableContainer) => PermissionFilter, defaultSort: SortSpec,
+            joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields, links = links, indices = indices,
+      permissionFunction = permissionFunction, defaultSort = defaultSort)
+  }
+
+  //links + indices + visibility
 
   def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks, indices: Indices, visibility: TableVisibility, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, links = links, indices = indices, visibility = visibility)
@@ -73,6 +102,13 @@ object TableDef {
       permissionFunction = permissionFunction)
   }
 
+  def apply(name: String, keyField: String, columns: Array[Column], links: VisualLinks, indices: Indices,
+            defaultSort: SortSpec, visibility: TableVisibility, joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields, links = links, indices = indices, visibility = visibility,
+      defaultSort = defaultSort)
+  }
+
+  //indices
   def apply(name: String, keyField: String, columns: Array[Column], indices: Indices, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, indices = indices)
   }
@@ -82,14 +118,29 @@ object TableDef {
     new TableDef(name, keyField, columns, joinFields, indices = indices, permissionFunction = permissionFunction)
   }
 
+  def apply(name: String, keyField: String, columns: Array[Column], indices: Indices,
+            defaultSort: SortSpec, joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields, indices = indices, defaultSort = defaultSort)
+  }
+
+  def apply(name: String, keyField: String, columns: Array[Column], indices: Indices,
+            permissionFunction: (ViewPort, TableContainer) => PermissionFilter, defaultSort: SortSpec, joinFields: String*): TableDef = {
+    new TableDef(name, keyField, columns, joinFields, indices = indices, permissionFunction = permissionFunction,
+      defaultSort = defaultSort)
+  }
+
+  //indices + visibility
+
   def apply(name: String, keyField: String, columns: Array[Column], indices: Indices, visibility: TableVisibility, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, indices = indices, visibility = visibility)
   }
 
+  //no extras
   def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, indices = Indices())
   }
 
+  // just visibility
   def apply(name: String, keyField: String, columns: Array[Column], visibility: TableVisibility, joinFields: String*): TableDef = {
     new TableDef(name, keyField, columns, joinFields, indices = Indices(), visibility = visibility)
   }
@@ -146,7 +197,10 @@ case class AvailableViewPortVisualLink(parentVpId: String, link: Link) {
   override def toString: String = "(" + parentVpId.split("-").last + ")" + link.fromColumn + " to " + link.toTable + "." + link.toColumn
 }
 
-class JoinSessionTableDef(name: String, visibility: TableVisibility, baseTable: TableDef, joinColumns: Array[Column], joinFields: Seq[String], joins: JoinTo*) extends JoinTableDef(name, visibility, baseTable, joinColumns, links = VisualLinks(), joinFields) with VuuInMemPluginLocator
+class JoinSessionTableDef(name: String, visibility: TableVisibility, baseTable: TableDef, joinColumns: Array[Column], 
+                          joinFields: Seq[String], permissionFunction: (ViewPort, TableContainer) => PermissionFilter,
+                          defaultSort: SortSpec, joins: JoinTo*) extends JoinTableDef(name, visibility, baseTable, 
+  joinColumns, links = VisualLinks(), joinFields, permissionFunction, defaultSort) with VuuInMemPluginLocator
 
 class SessionTableDef(name: String,
                       keyField: String,
@@ -167,7 +221,7 @@ class TableDef(val name: String,
                val visibility: TableVisibility = Public,
                val includeDefaultColumns: Boolean = true,
                val permissionFunction: (ViewPort, TableContainer) => PermissionFilter = (_, _) => AllowAllPermissionFilter,
-               val defaultSort: Option[SortSpec] = None) extends VuuInMemPluginLocator {
+               val defaultSort: SortSpec = SortSpec(List.empty)) extends VuuInMemPluginLocator {
 
   private val columns: Array[Column] = if (includeDefaultColumns) DefaultColumn.addDefaultColumns(customColumns) else customColumns
   private lazy val columnsByName: Map[String, Column] = columns.map(c => c.name -> c).toMap
@@ -220,8 +274,11 @@ case class JoinTableDef(
                          joinColumns: Array[Column],
                          override val links: VisualLinks,
                          override val joinFields: Seq[String],
+                         override val permissionFunction: (ViewPort, TableContainer) => PermissionFilter,
+                         override val defaultSort: SortSpec,
                          joins: JoinTo*)
-  extends TableDef(name, baseTable.keyField, joinColumns, joinFields, indices = Indices(), autosubscribe = false, visibility = visibility)
+  extends TableDef(name, baseTable.keyField, joinColumns, joinFields, indices = Indices(), autosubscribe = false, 
+    visibility = visibility, permissionFunction = permissionFunction, defaultSort = defaultSort)
     with VuuInMemPluginLocator {
 
   lazy val joinTableColumns = getJoinDefinitionColumnsInternal()
@@ -274,12 +331,43 @@ case class JoinTableDef(
 }
 
 object JoinTableDef {
-  def apply(name: String, baseTable: TableDef, joinColumns: Array[Column], links: VisualLinks, joinFields: Seq[String], joins: JoinTo): JoinTableDef = {
-    new JoinTableDef(name, Public, baseTable, joinColumns, links, joinFields, joins)
+
+  def apply(name: String, baseTable: TableDef, joinColumns: Array[Column], links: VisualLinks, 
+            joinFields: Seq[String], joins: JoinTo): JoinTableDef = {
+    new JoinTableDef(name, Public, baseTable, joinColumns, links, joinFields, (_,_) => AllowAllPermissionFilter,
+      SortSpec(List.empty), joins)
   }
+
+  def apply(name: String, baseTable: TableDef, joinColumns: Array[Column], links: VisualLinks, 
+            visibility: TableVisibility, joinFields: Seq[String], joins: JoinTo): JoinTableDef = {
+    new JoinTableDef(name, visibility, baseTable, joinColumns, links, joinFields, (_,_) => AllowAllPermissionFilter,
+      SortSpec(List.empty), joins)
+  }
+
+  def apply(name: String, baseTable: TableDef, joinColumns: Array[Column], links: VisualLinks,
+            visibility: TableVisibility, permissionFunction: (ViewPort, TableContainer) => PermissionFilter, 
+            joinFields: Seq[String], joins: JoinTo): JoinTableDef = {
+    new JoinTableDef(name, visibility, baseTable, joinColumns, links, joinFields, permissionFunction,
+      SortSpec(List.empty), joins)
+  }
+
+  def apply(name: String, baseTable: TableDef, joinColumns: Array[Column], links: VisualLinks,
+            visibility: TableVisibility, permissionFunction: (ViewPort, TableContainer) => PermissionFilter,
+            joinFields: Seq[String], defaultSort: SortSpec, joins: JoinTo): JoinTableDef = {
+    new JoinTableDef(name, visibility, baseTable, joinColumns, links, joinFields, permissionFunction,
+      defaultSort, joins)
+  }
+  
+  def apply(name: String, baseTable: TableDef, joinColumns: Array[Column], links: VisualLinks, 
+            defaultSort: SortSpec, joinFields: Seq[String], joins: JoinTo): JoinTableDef = {
+    new JoinTableDef(name, Public, baseTable, joinColumns, links, joinFields, (_,_) => AllowAllPermissionFilter,
+      defaultSort, joins)
+  }
+
+  def apply(name: String, baseTable: TableDef, joinColumns: Array[Column], links: VisualLinks,
+            permissionFunction: (ViewPort, TableContainer) => PermissionFilter, joinFields: Seq[String], joins: JoinTo): JoinTableDef = {
+    new JoinTableDef(name, Public, baseTable, joinColumns, links, joinFields, permissionFunction,
+      SortSpec(List.empty), joins)
+  }
+  
 }
-//case class JoinTableDef(override val name: String, left: TableDef, right: TableDef, joinDef: JoinDefinition, joinColumns: Array[Column]) extends TableDef(name, joinDef.leftKeyField, joinColumns){
-//  def getJoinDefinitionColumns():Array[Column] = {
-//     Array(columnForName(left.keyField), columnForName(joinDef.rightKeyField))
-//  }
-//}

@@ -437,7 +437,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       None
   }
 
-  private def parseSort(sortSpec: SortSpec, vpColumns: ViewPortColumns, defaultSort: Option[SortSpec]): Sort = {
+  private def parseSort(sortSpec: SortSpec, vpColumns: ViewPortColumns, defaultSort: SortSpec): Sort = {
     if (sortSpec != null && sortSpec.sortDefs != null && sortSpec.sortDefs.nonEmpty) {
       Try(SortSpecParser.parse(sortSpec, vpColumns)) match {
         case Success(sort) =>
@@ -447,14 +447,13 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
           logger.error(s"Could not parse sort $sortSpec", err)
           NoSort
       }
-    } else if (defaultSort.nonEmpty) {
-      val defaultSortSpec = defaultSort.get
-      Try(SortSpecParser.parse(defaultSortSpec, vpColumns)) match {
+    } else if (defaultSort != null && defaultSort.sortDefs != null && defaultSort.sortDefs.nonEmpty) {
+      Try(SortSpecParser.parse(defaultSort, vpColumns)) match {
         case Success(sort) =>
-          logger.debug(s"Applying default sort $defaultSortSpec")
+          logger.debug(s"Applying default sort $defaultSort")
           sort
         case Failure(err) =>
-          logger.error(s"Could not parse default sort $defaultSortSpec", err)
+          logger.error(s"Could not parse default sort $defaultSort", err)
           NoSort
       }
     } else {
