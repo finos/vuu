@@ -366,45 +366,6 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       updatedRowCreatedTime shouldEqual row2CreatedTime
       updatedRowLastUpdatedTime should be > row2LastUpdatedTime
     }
-
-    Scenario("check created timestamp and last updated timestamp are populated correctly for InnerJoin") {
-      val testFriendlyClock: TestFriendlyClock = new TestFriendlyClock(1000L)
-      implicit val lifecycle: LifecycleContainer = new LifecycleContainer()(testFriendlyClock)
-      val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
-      val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, _) = setupForJoinType(InnerJoin)(lifecycle, testFriendlyClock, metrics)
-
-      joinProvider.start()
-
-      ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
-      pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220.0, "ask" -> 222.0))
-
-      testFriendlyClock.advanceBy(1000)
-      pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500.0, "ask" -> 501.0))
-      ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "BT.L"))
-
-      joinProvider.runOnce()
-
-      val row1 = orderPrices.pullRow("NYC-0001")
-      val row1CreatedTime = row1.get(DefaultColumn.CreatedTime.name).asInstanceOf[Long]
-      val row1LastUpdatedTime = row1.get(DefaultColumn.LastUpdatedTime.name).asInstanceOf[Long]
-      row1CreatedTime shouldEqual row1LastUpdatedTime
-
-      val row2 = orderPrices.pullRow("NYC-0002")
-      val row2CreatedTime = row2.get(DefaultColumn.CreatedTime.name).asInstanceOf[Long]
-      val row2LastUpdatedTime = row2.get(DefaultColumn.LastUpdatedTime.name).asInstanceOf[Long]
-      row2CreatedTime shouldEqual row2LastUpdatedTime
-
-      testFriendlyClock.advanceBy(1000)
-      ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 200, "ric" -> "BT.L"))
-
-      joinProvider.runOnce()
-
-      val updatedRow = orderPrices.pullRow("NYC-0002")
-      val updatedRowCreatedTime = updatedRow.get(DefaultColumn.CreatedTime.name).asInstanceOf[Long]
-      val updatedRowLastUpdatedTime = updatedRow.get(DefaultColumn.LastUpdatedTime.name).asInstanceOf[Long]
-      updatedRowCreatedTime shouldEqual row2CreatedTime
-      updatedRowLastUpdatedTime should be > row2LastUpdatedTime
-    }
   }
 
 }

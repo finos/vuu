@@ -254,10 +254,7 @@ object LeftOuterJoin extends JoinType {
   override def toString: String = "LeftOuterJoin"
 }
 
-object InnerJoin extends JoinType
-
-
-case class JoinSpec(left: String, right: String, joinType: JoinType = InnerJoin)
+case class JoinSpec(left: String, right: String, joinType: JoinType = LeftOuterJoin)
 
 case class JoinTo(table: TableDef, joinSpec: JoinSpec)
 
