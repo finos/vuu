@@ -101,7 +101,7 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
   }
 
   set searchPattern(pattern: string) {
-    const searchPattern = pattern?.trim();
+    const searchPattern = pattern;
     if (searchPattern !== this.#searchPattern) {
       this.#searchPattern = searchPattern;
       this.emit("render", {});
