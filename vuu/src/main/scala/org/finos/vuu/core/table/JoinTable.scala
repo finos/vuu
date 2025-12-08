@@ -100,7 +100,7 @@ case class JoinDataTableData(
       val isPrimaryKey = primaryKeyMask(keyIndex)
 
       if (isPrimaryKey) {
-        logger.debug(s"found foreign key $key in table $tableName for primary key $origPrimaryKey ")
+        logger.trace(s"found foreign key $key in table $tableName for primary key $origPrimaryKey ")
         map.put(tableName, key)
       }
 
