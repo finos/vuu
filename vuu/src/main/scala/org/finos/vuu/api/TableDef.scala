@@ -197,10 +197,10 @@ case class AvailableViewPortVisualLink(parentVpId: String, link: Link) {
   override def toString: String = "(" + parentVpId.split("-").last + ")" + link.fromColumn + " to " + link.toTable + "." + link.toColumn
 }
 
-class JoinSessionTableDef(name: String, visibility: TableVisibility, baseTable: TableDef, joinColumns: Array[Column], 
-                          joinFields: Seq[String], permissionFunction: (ViewPort, TableContainer) => PermissionFilter,
-                          defaultSort: SortSpec, joins: JoinTo*) extends JoinTableDef(name, visibility, baseTable, 
-  joinColumns, links = VisualLinks(), joinFields, permissionFunction, defaultSort) with VuuInMemPluginLocator
+class JoinSessionTableDef(name: String, baseTable: TableDef, joinColumns: Array[Column],
+                          joinFields: Seq[String], joins: JoinTo*) extends JoinTableDef(name, visibility = Public, baseTable,
+  joinColumns, links = VisualLinks(), joinFields, permissionFunction = (_,_) => AllowAllPermissionFilter,
+  defaultSort = SortSpec(List.empty)) with VuuInMemPluginLocator
 
 class SessionTableDef(name: String,
                       keyField: String,
@@ -277,7 +277,7 @@ case class JoinTableDef(
                          override val permissionFunction: (ViewPort, TableContainer) => PermissionFilter,
                          override val defaultSort: SortSpec,
                          joins: JoinTo*)
-  extends TableDef(name, baseTable.keyField, joinColumns, joinFields, indices = Indices(), autosubscribe = false, 
+  extends TableDef(name, baseTable.keyField, joinColumns, joinFields, indices = Indices(), autosubscribe = false,
     visibility = visibility, permissionFunction = permissionFunction, defaultSort = defaultSort)
     with VuuInMemPluginLocator {
 
@@ -332,20 +332,20 @@ case class JoinTableDef(
 
 object JoinTableDef {
 
-  def apply(name: String, baseTable: TableDef, joinColumns: Array[Column], links: VisualLinks, 
+  def apply(name: String, baseTable: TableDef, joinColumns: Array[Column], links: VisualLinks,
             joinFields: Seq[String], joins: JoinTo): JoinTableDef = {
     new JoinTableDef(name, Public, baseTable, joinColumns, links, joinFields, (_,_) => AllowAllPermissionFilter,
       SortSpec(List.empty), joins)
   }
 
-  def apply(name: String, baseTable: TableDef, joinColumns: Array[Column], links: VisualLinks, 
+  def apply(name: String, baseTable: TableDef, joinColumns: Array[Column], links: VisualLinks,
             visibility: TableVisibility, joinFields: Seq[String], joins: JoinTo): JoinTableDef = {
     new JoinTableDef(name, visibility, baseTable, joinColumns, links, joinFields, (_,_) => AllowAllPermissionFilter,
       SortSpec(List.empty), joins)
   }
 
   def apply(name: String, baseTable: TableDef, joinColumns: Array[Column], links: VisualLinks,
-            visibility: TableVisibility, permissionFunction: (ViewPort, TableContainer) => PermissionFilter, 
+            visibility: TableVisibility, permissionFunction: (ViewPort, TableContainer) => PermissionFilter,
             joinFields: Seq[String], joins: JoinTo): JoinTableDef = {
     new JoinTableDef(name, visibility, baseTable, joinColumns, links, joinFields, permissionFunction,
       SortSpec(List.empty), joins)
@@ -357,8 +357,8 @@ object JoinTableDef {
     new JoinTableDef(name, visibility, baseTable, joinColumns, links, joinFields, permissionFunction,
       defaultSort, joins)
   }
-  
-  def apply(name: String, baseTable: TableDef, joinColumns: Array[Column], links: VisualLinks, 
+
+  def apply(name: String, baseTable: TableDef, joinColumns: Array[Column], links: VisualLinks,
             defaultSort: SortSpec, joinFields: Seq[String], joins: JoinTo): JoinTableDef = {
     new JoinTableDef(name, Public, baseTable, joinColumns, links, joinFields, (_,_) => AllowAllPermissionFilter,
       defaultSort, joins)
@@ -369,5 +369,5 @@ object JoinTableDef {
     new JoinTableDef(name, Public, baseTable, joinColumns, links, joinFields, permissionFunction,
       SortSpec(List.empty), joins)
   }
-  
+
 }
