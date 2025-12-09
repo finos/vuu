@@ -114,7 +114,7 @@ class DefaultMessageHandler(val channel: Channel,
           return None
         }
 
-        val dataToSend = update.table.pullRowAsArray(update.key.key, update.vp.getColumns, update.vp.hasDefaultColumns)
+        val dataToSend = update.table.pullRowAsArray(update.key.key, update.vp.getColumns)
 
         val isSelected = if (update.vp.getSelection.contains(update.key.key)) 1 else 0
 

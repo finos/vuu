@@ -407,7 +407,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
    * @return
    */
   override def pullRow(key: String): RowData = {
-    pullRow(key, viewPortColumns, includeDefaultColumns = true)
+    pullRow(key, viewPortColumns)
   }
 
   override def pullRowFiltered(key: String, columns: ViewPortColumns): RowData = {
@@ -435,11 +435,6 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
   }
 
   override def pullRow(key: String, columns: ViewPortColumns): RowData = {
-    pullRow(key, columns, includeDefaultColumns = false)
-  }
-
-  private def pullRow(key: String, viewPortColumns: ViewPortColumns, includeDefaultColumns: Boolean): RowData = {
-
     val keysByTable = joinData.getKeyValuesByTable(key)
 
     if (keysByTable == null || !keyExistsInLeftMostSourceTable(key))
@@ -482,11 +477,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
   }
 
   override def pullRowAsArray(key: String, columns: ViewPortColumns): Array[Any] = {
-    pullRowAsArray(key, columns, false)
-  }
-
-  override def pullRowAsArray(key: String, columns: ViewPortColumns, includeDefaultColumns: Boolean): Array[Any] = {
-    val asRowData = pullRow(key, columns, includeDefaultColumns)
+    val asRowData = pullRow(key, columns)
 
     val asArray = asRowData.toArray(columns.getColumns)
 
