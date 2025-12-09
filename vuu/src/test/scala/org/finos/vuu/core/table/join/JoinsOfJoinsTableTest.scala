@@ -2,32 +2,32 @@ package org.finos.vuu.core.table.join
 
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.toolbox.time.{Clock, DefaultClock, TestFriendlyClock}
 import org.finos.vuu.api.*
 import org.finos.vuu.api.TableVisibility.Public
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.filter.`type`.AllowAllPermissionFilter
-import org.finos.vuu.core.table.{Columns, TableContainer, ViewPortColumnCreator}
+import org.finos.vuu.core.table.{Columns, DefaultColumn, RowWithData, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.{ClientSessionId, SortSpec}
 import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
-import org.finos.vuu.util.table.TableAsserts.assertVpEq
-import org.finos.vuu.viewport.{DefaultRange, ViewPortContainer, ViewPortSetup}
+import org.finos.vuu.util.table.TableAsserts.{assertVpEq}
+import org.finos.vuu.viewport.{DefaultRange, RowUpdateType, ViewPortContainer, ViewPortSetup}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
 
 /**
-  * This fixture deals with the scenario where we want to create a table
-  * that is the join of Instruments and Prices (InstrumentPrices)
-  * and then we want to create a subsequent join which is InstrumentPrices to FxRates.
-  * This involves being able to base join tables onto of existing Join tables.
-  *
-  */
-class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup{
+ * This fixture deals with the scenario where we want to create a table
+ * that is the join of Instruments and Prices (InstrumentPrices)
+ * and then we want to create a subsequent join which is InstrumentPrices to FxRates.
+ * This involves being able to base join tables onto of existing Join tables.
+ *
+ */
+class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
 
   implicit val timeProvider: Clock = new DefaultClock
   implicit val lifecycle: LifecycleContainer = new LifecycleContainer
@@ -43,7 +43,7 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
     viewPortContainer
   }
 
-  Scenario("check a tick all the way through from source to join table"){
+  Scenario("check a tick all the way through from source to join table") {
 
     val dateTime = 1437728400000L
 
@@ -51,119 +51,20 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
       name = "orders",
       keyField = "orderId",
       columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "ccyCross:String"),
-      joinFields =  "ric", "orderId", "ccyCross")
+      joinFields = "ric", "orderId", "ccyCross")
 
     val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
 
     val fxDef = TableDef("fx", "cross", Columns.fromNames("cross:String", "fxbid:Double", "fxask:Double"), "cross")
 
     val joinDef = JoinTableDef(
-      name          = "orderPrices",
-      baseTable     = ordersDef,
-      joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
-      joins  =
-        JoinTo(
-          table = pricesDef,
-          joinSpec = JoinSpec( left = "ric", right = "ric", LeftOuterJoin)
-      ),
-      links = VisualLinks(),
-      joinFields = Seq("ccyCross", "orderId")
-    )
-
-    val joinDefFx = JoinTableDef(
-      name = "orderPricesFx",
-      visibility = Public,
+      name = "orderPrices",
       baseTable = ordersDef,
-      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") ++ Columns.allFrom(fxDef),
-      links = VisualLinks(),
-      permissionFunction = (_,_) => AllowAllPermissionFilter,
-      defaultSort = SortSpec(List.empty),
-      joinFields = Seq("ccyCross", "orderId"),
+      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
+      joins =
         JoinTo(
           table = pricesDef,
-          joinSpec = JoinSpec( left = "ric", right = "ric", LeftOuterJoin)
-        ),
-        JoinTo(
-          table = fxDef,
-          joinSpec = JoinSpec( left = "ccyCross", right = "cross", LeftOuterJoin)
-      )
-    )
-
-    val joinProvider   = JoinTableProviderImpl()
-
-    val tableContainer = new TableContainer(joinProvider)
-
-    val orders = tableContainer.createTable(ordersDef)
-    val prices = tableContainer.createTable(pricesDef)
-    val fx = tableContainer.createTable(fxDef)
-
-    val orderPrices = tableContainer.createJoinTable(joinDef)
-    val orderPricesFx = tableContainer.createJoinTable(joinDefFx)
-
-    val ordersProvider = new MockProvider(orders)
-    val pricesProvider = new MockProvider(prices)
-    val fxProvider = new MockProvider(fx)
-
-    val providerContainer = new ProviderContainer(joinProvider)
-
-    val viewPortContainer = setupViewPort(tableContainer, providerContainer)
-
-    joinProvider.start()
-
-    fxProvider.tick("USDGBP", Map("cross" -> "USDGBP", "fxbid" -> 0.703, "fxask" -> 0.703))
-    fxProvider.tick("USDEUR", Map("cross" -> "USDEUR", "fxbid" -> 1.213, "fxask" -> 1.223))
-
-    ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L", "ccyCross" -> "USDGBP"))
-    pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220.0, "ask" -> 222.0))
-
-    pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500.0, "ask" -> 501.0))
-    ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "BT.L", "ccyCross" -> "USDEUR"))
-
-    joinProvider.runOnce()
-
-    val user = VuuUser("chris")
-    
-    val session = ClientSessionId("sess-01", "channel")
-
-    val outQueue = new OutboundRowPublishQueue()
-
-    val vpcolumns = ViewPortColumnCreator.create(orderPricesFx, List("orderId", "trader", "tradeTime", "quantity", "ric", "fxbid", "fxask"))
-
-    val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orderPricesFx, DefaultRange, vpcolumns)
-
-    viewPortContainer.runOnce()
-
-    assertVpEq(filterByVpId(combineQs(viewPort), viewPort)){
-      Table(
-        ("orderId" ,"trader"  ,"tradeTime","quantity","ric"     ,"fxbid"   ,"fxask"   ),
-        ("NYC-0001","chris"   ,1437728400000L,100       ,"VOD.L"   ,0.703     ,0.703     ),
-        ("NYC-0002","chris"   ,1437728400000L,100       ,"BT.L"    ,1.213     ,1.223     )
-      )
-    }
-  }
-
-  Scenario("Check join of joins with data arriving out of order"){
-
-    val dateTime = 1437728400000L
-
-    val ordersDef = TableDef(
-      name = "orders",
-      keyField = "orderId",
-      columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "ccyCross:String"),
-      joinFields =  "ric", "orderId", "ccyCross")
-
-    val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
-
-    val fxDef = TableDef("fx", "cross", Columns.fromNames("cross:String", "fxbid:Double", "fxask:Double"), "cross")
-
-    val joinDef = JoinTableDef(
-      name          = "orderPrices",
-      baseTable     = ordersDef,
-      joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
-      joins  =
-        JoinTo(
-          table = pricesDef,
-          joinSpec = JoinSpec( left = "ric", right = "ric", LeftOuterJoin)
+          joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
         ),
       links = VisualLinks(),
       joinFields = Seq("ccyCross", "orderId")
@@ -175,20 +76,119 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
       baseTable = ordersDef,
       joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") ++ Columns.allFrom(fxDef),
       links = VisualLinks(),
-      permissionFunction = (_,_) => AllowAllPermissionFilter,
+      permissionFunction = (_, _) => AllowAllPermissionFilter,
       defaultSort = SortSpec(List.empty),
       joinFields = Seq("ccyCross", "orderId"),
       JoinTo(
         table = pricesDef,
-        joinSpec = JoinSpec( left = "ric", right = "ric", LeftOuterJoin)
+        joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
       ),
       JoinTo(
         table = fxDef,
-        joinSpec = JoinSpec( left = "ccyCross", right = "cross", LeftOuterJoin)
+        joinSpec = JoinSpec(left = "ccyCross", right = "cross", LeftOuterJoin)
       )
     )
 
-    val joinProvider   = JoinTableProviderImpl()
+    val joinProvider = JoinTableProviderImpl()
+
+    val tableContainer = new TableContainer(joinProvider)
+
+    val orders = tableContainer.createTable(ordersDef)
+    val prices = tableContainer.createTable(pricesDef)
+    val fx = tableContainer.createTable(fxDef)
+
+    val orderPrices = tableContainer.createJoinTable(joinDef)
+    val orderPricesFx = tableContainer.createJoinTable(joinDefFx)
+
+    val ordersProvider = new MockProvider(orders)
+    val pricesProvider = new MockProvider(prices)
+    val fxProvider = new MockProvider(fx)
+
+    val providerContainer = new ProviderContainer(joinProvider)
+
+    val viewPortContainer = setupViewPort(tableContainer, providerContainer)
+
+    joinProvider.start()
+
+    fxProvider.tick("USDGBP", Map("cross" -> "USDGBP", "fxbid" -> 0.703, "fxask" -> 0.703))
+    fxProvider.tick("USDEUR", Map("cross" -> "USDEUR", "fxbid" -> 1.213, "fxask" -> 1.223))
+
+    ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L", "ccyCross" -> "USDGBP"))
+    pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220.0, "ask" -> 222.0))
+
+    pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500.0, "ask" -> 501.0))
+    ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "BT.L", "ccyCross" -> "USDEUR"))
+
+    joinProvider.runOnce()
+
+    val user = VuuUser("chris")
+
+    val session = ClientSessionId("sess-01", "channel")
+
+    val outQueue = new OutboundRowPublishQueue()
+
+    val vpcolumns = ViewPortColumnCreator.create(orderPricesFx, List("orderId", "trader", "tradeTime", "quantity", "ric", "fxbid", "fxask"))
+
+    val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orderPricesFx, DefaultRange, vpcolumns)
+
+    viewPortContainer.runOnce()
+
+    assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
+      Table(
+        ("orderId", "trader", "tradeTime", "quantity", "ric", "fxbid", "fxask"),
+        ("NYC-0001", "chris", 1437728400000L, 100, "VOD.L", 0.703, 0.703),
+        ("NYC-0002", "chris", 1437728400000L, 100, "BT.L", 1.213, 1.223)
+      )
+    }
+  }
+
+  Scenario("Check join of joins with data arriving out of order") {
+
+    val dateTime = 1437728400000L
+
+    val ordersDef = TableDef(
+      name = "orders",
+      keyField = "orderId",
+      columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double", "ccyCross:String"),
+      joinFields = "ric", "orderId", "ccyCross")
+
+    val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
+
+    val fxDef = TableDef("fx", "cross", Columns.fromNames("cross:String", "fxbid:Double", "fxask:Double"), "cross")
+
+    val joinDef = JoinTableDef(
+      name = "orderPrices",
+      baseTable = ordersDef,
+      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
+      joins =
+        JoinTo(
+          table = pricesDef,
+          joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
+        ),
+      links = VisualLinks(),
+      joinFields = Seq("ccyCross", "orderId")
+    )
+
+    val joinDefFx = JoinTableDef(
+      name = "orderPricesFx",
+      visibility = Public,
+      baseTable = ordersDef,
+      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") ++ Columns.allFrom(fxDef),
+      links = VisualLinks(),
+      permissionFunction = (_, _) => AllowAllPermissionFilter,
+      defaultSort = SortSpec(List.empty),
+      joinFields = Seq("ccyCross", "orderId"),
+      JoinTo(
+        table = pricesDef,
+        joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
+      ),
+      JoinTo(
+        table = fxDef,
+        joinSpec = JoinSpec(left = "ccyCross", right = "cross", LeftOuterJoin)
+      )
+    )
+
+    val joinProvider = JoinTableProviderImpl()
 
     val tableContainer = new TableContainer(joinProvider)
 
@@ -221,7 +221,7 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
     joinProvider.runOnce()
 
     val user = VuuUser("chris")
-    
+
     val session = ClientSessionId("sess-01", "channel")
 
     val outQueue = new OutboundRowPublishQueue()
@@ -232,11 +232,11 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
 
     viewPortContainer.runOnce()
 
-    assertVpEq(filterByVpId(combineQs(viewPort), viewPort)){
+    assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
       Table(
-        ("orderId" ,"trader"  ,"tradeTime","quantity","ric"     ,"fxbid"   ,"fxask"   ),
-        ("NYC-0001","chris"   ,1437728400000L,100       ,"VOD.L"   ,0.703     ,0.703     ),
-        ("NYC-0002","chris"   ,1437728400000L,100       ,"BT.L"    ,1.213     ,1.223     )
+        ("orderId", "trader", "tradeTime", "quantity", "ric", "fxbid", "fxask"),
+        ("NYC-0001", "chris", 1437728400000L, 100, "VOD.L", 0.703, 0.703),
+        ("NYC-0002", "chris", 1437728400000L, 100, "BT.L", 1.213, 1.223)
       )
     }
 
@@ -251,13 +251,13 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
       name = "orders",
       keyField = "orderId",
       columns = Columns.fromNames("orderId:String", "ric:String", "tradeTime:Long", "quantity:Double"),
-      joinFields =  "orderId","ric")
+      joinFields = "orderId", "ric")
 
     val instrumentDef = TableDef(
       name = "instruments",
       keyField = "ric",
       columns = Columns.fromNames("ric:String", "currency:String"),
-      joinFields = "ric","currency")
+      joinFields = "ric", "currency")
 
     val currencyDef = TableDef(
       "currencies",
@@ -266,32 +266,32 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
       "currency")
 
     val join1Def = JoinTableDef(
-      name          = "instrumentToCurrency",
-      baseTable     = instrumentDef,
-      joinColumns   = Columns.allFrom(instrumentDef) ++ Columns.allFromExcept(currencyDef, "currency"),
-      joins  =
+      name = "instrumentToCurrency",
+      baseTable = instrumentDef,
+      joinColumns = Columns.allFrom(instrumentDef) ++ Columns.allFromExcept(currencyDef, "currency"),
+      joins =
         JoinTo(
           table = currencyDef,
-          joinSpec = JoinSpec( left = "currency", right = "currency", LeftOuterJoin)
+          joinSpec = JoinSpec(left = "currency", right = "currency", LeftOuterJoin)
         ),
       links = VisualLinks(),
       joinFields = Seq("ric")
     )
 
     val join2Def = JoinTableDef(
-      name          = "orderToInstrument",
-      baseTable     = ordersDef,
-      joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(join1Def, "ric"),
-      joins  =
+      name = "orderToInstrument",
+      baseTable = ordersDef,
+      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(join1Def, "ric"),
+      joins =
         JoinTo(
           table = join1Def,
-          joinSpec = JoinSpec( left = "ric", right = "ric", LeftOuterJoin)
+          joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
         ),
       links = VisualLinks(),
       joinFields = Seq("orderId")
     )
 
-    val joinProvider   = JoinTableProviderImpl()
+    val joinProvider = JoinTableProviderImpl()
 
     val tableContainer = new TableContainer(joinProvider)
 
@@ -315,7 +315,7 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
     joinProvider.runOnce()
 
     val user = VuuUser("chris")
-    
+
     val session = ClientSessionId("sess-01", "channel")
 
     val outQueue = new OutboundRowPublishQueue()
@@ -326,9 +326,9 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
 
     viewPortContainer.runOnce()
 
-    assertVpEq(filterByVpId(combineQs(viewPort), viewPort)){
+    assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
       Table(
-        ("orderId" ,"ric"     ,"currency"   ,"country"   ),
+        ("orderId", "ric", "currency", "country"),
       )
     }
 
@@ -349,24 +349,154 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
 
     joinProvider.runOnce()
     viewPortContainer.runOnce()
-/*
 
-    ordersProvider.delete("NYC-0001")
-    ordersProvider.delete("NYC-0002")
-    ordersProvider.tick("NYC-0003", Map("orderId" -> "NYC-0003", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "AIR.PA"))
+    assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
+      Table(
+        ("orderId", "ric", "currency", "country"),
+        ("NYC-0001", "VOD.L", "GBP", "UK"),
+        ("NYC-0002", "AIR.PA", "EUR", "FR")
+      )
+    }
+
+  }
+
+  Scenario("check created timestamp and last updated timestamp are populated correctly for Join of Join of Joins") {
+
+    implicit val timeProvider: TestFriendlyClock = new TestFriendlyClock(1000L)
+    implicit val lifecycle: LifecycleContainer = new LifecycleContainer
+    val joinProvider = JoinTableProviderImpl()
+    val providerContainer = new ProviderContainer(joinProvider)
+    val tableContainer = new TableContainer(joinProvider)
+    val pluginRegistry = new DefaultPluginRegistry
+    pluginRegistry.registerPlugin(new VuuInMemPlugin)
+    val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer, pluginRegistry)
+
+    val dateTime = 1437728400000L
+
+    val ordersDef = TableDef(
+      name = "orders",
+      keyField = "orderId",
+      columns = Columns.fromNames("orderId:String", "ric:String", "tradeTime:Long", "quantity:Double"),
+      joinFields = "orderId", "ric")
+
+    val instrumentDef = TableDef(
+      name = "instruments",
+      keyField = "ric",
+      columns = Columns.fromNames("ric:String", "currency:String"),
+      joinFields = "ric", "currency")
+
+    val currencyDef = TableDef(
+      "currencies",
+      "currency",
+      Columns.fromNames("currency:String", "country:String"),
+      "currency")
+
+    val join1Def = JoinTableDef(
+      name = "instrumentToCurrency",
+      baseTable = instrumentDef,
+      joinColumns = Columns.allFrom(instrumentDef) ++ Columns.allFromExcept(currencyDef, "currency"),
+      joins =
+        JoinTo(
+          table = currencyDef,
+          joinSpec = JoinSpec(left = "currency", right = "currency", LeftOuterJoin)
+        ),
+      links = VisualLinks(),
+      joinFields = Seq("ric")
+    )
+
+    val join2Def = JoinTableDef(
+      name = "orderToInstrument",
+      baseTable = ordersDef,
+      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(join1Def, "ric"),
+      joins =
+        JoinTo(
+          table = join1Def,
+          joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
+        ),
+      links = VisualLinks(),
+      joinFields = Seq("orderId")
+    )
+
+    val orders = tableContainer.createTable(ordersDef)
+    val instruments = tableContainer.createTable(instrumentDef)
+    val currencies = tableContainer.createTable(currencyDef)
+
+    val instrumentToCurrency = tableContainer.createJoinTable(join1Def)
+    val orderToInstrument = tableContainer.createJoinTable(join2Def)
+
+    val ordersProvider = new MockProvider(orders)
+    val instrumentsProvider = new MockProvider(instruments)
+    val currenciesProvider = new MockProvider(currencies)
+
+    joinProvider.start()
+    joinProvider.runOnce()
+
+    val user = VuuUser("chris")
+    val session = ClientSessionId("sess-01", "channel")
+    val outQueue = new OutboundRowPublishQueue()
+    val vpcolumns = ViewPortColumnCreator.create(orderToInstrument, List("orderId", "ric", "currency", "country", DefaultColumn.CreatedTime.name, DefaultColumn.LastUpdatedTime.name))
+    val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orderToInstrument, DefaultRange, vpcolumns)
+
+    viewPortContainer.runOnce()
+
+    assertVpEq(filterByVpId(combineQs(viewPort), viewPort)) {
+      Table(
+        ("orderId", "ric", "currency", "country"),
+      )
+    }
+
+    ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
+    ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "AIR.PA"))
 
     joinProvider.runOnce()
     viewPortContainer.runOnce()
-*/
 
+    instrumentsProvider.tick("VOD.L", Map("ric" -> "VOD.L", "currency" -> "GBP"))
+    instrumentsProvider.tick("AIR.PA", Map("ric" -> "AIR.PA", "currency" -> "EUR"))
 
-    assertVpEq(filterByVpId(combineQs(viewPort), viewPort)){
-      Table(
-        ("orderId" ,"ric"     ,"currency"   ,"country"   ),
-         ("NYC-0001","VOD.L"   ,"GBP"     ,"UK"     ),
-        ("NYC-0002","AIR.PA"  ,"EUR"     ,"FR"     )
-      )
-    }
+    joinProvider.runOnce()
+    viewPortContainer.runOnce()
+
+    currenciesProvider.tick("GBP", Map("currency" -> "GBP", "country" -> "UK"))
+    currenciesProvider.tick("EUR", Map("currency" -> "EUR", "country" -> "FR"))
+
+    joinProvider.runOnce()
+    viewPortContainer.runOnce()
+
+    val updates = filterByVpId(combineQs(viewPort), viewPort)
+      .filter(vpu => vpu.vpUpdate == RowUpdateType)
+      .map(vpu => vpu.table.pullRow(vpu.key.key))
+      .filter(_.isInstanceOf[RowWithData])
+      .map(_.asInstanceOf[RowWithData].data)
+      .toArray
+
+    updates.length shouldEqual 2
+    updates(0)("orderId") shouldEqual "NYC-0001"
+    updates(0)(DefaultColumn.CreatedTime.name) shouldEqual 1000L
+    updates(0)(DefaultColumn.LastUpdatedTime.name) shouldEqual 1000L
+    updates(1)("orderId") shouldEqual "NYC-0002"
+    updates(1)(DefaultColumn.CreatedTime.name) shouldEqual 1000L
+    updates(1)(DefaultColumn.LastUpdatedTime.name) shouldEqual 1000L
+
+    timeProvider.advanceBy(1000L)
+    ordersProvider.delete("NYC-0001")
+    ordersProvider.delete("NYC-0002")
+    ordersProvider.tick("NYC-0003", Map("orderId" -> "NYC-0003", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L", "ccyCross" -> "USDGBP"))
+
+    joinProvider.runOnce()
+    viewPortContainer.runOnce()
+
+    val updates2 = filterByVpId(combineQs(viewPort), viewPort)
+      .filter(vpu => vpu.vpUpdate == RowUpdateType)
+      .map(vpu => vpu.table.pullRow(vpu.key.key))
+      .filter(_.isInstanceOf[RowWithData])
+      .map(_.asInstanceOf[RowWithData].data)
+      .toArray
+
+    updates2.length shouldEqual 1
+    updates2(0)("orderId") shouldEqual "NYC-0003"
+    updates2(0)(DefaultColumn.CreatedTime.name) shouldEqual 2000L
+    updates2(0)(DefaultColumn.LastUpdatedTime.name) shouldEqual 2000L
 
   }
 
