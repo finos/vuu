@@ -349,6 +349,16 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
 
     joinProvider.runOnce()
     viewPortContainer.runOnce()
+/*
+
+    ordersProvider.delete("NYC-0001")
+    ordersProvider.delete("NYC-0002")
+    ordersProvider.tick("NYC-0003", Map("orderId" -> "NYC-0003", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "AIR.PA"))
+
+    joinProvider.runOnce()
+    viewPortContainer.runOnce()
+*/
+
 
     assertVpEq(filterByVpId(combineQs(viewPort), viewPort)){
       Table(

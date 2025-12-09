@@ -78,6 +78,10 @@ object Columns {
     table.customColumns.filter(c => names.contains(c.name)).map(c => JoinColumn(c.name, c.index, c.dataType, table, c, isAlias = false))
   }
 
+  def fromDefaultColumns(table: TableDef): Array[JoinColumn] = {
+    table.defaultColumns.map(c => JoinColumn(c.name, c.index, c.dataType, table, c, isAlias = false))
+  }
+
   /**
    * Note: this method returns all columns of a given table, excluding the default columns
    * @return JoinColumn based on all columns of a given table except the default columns
