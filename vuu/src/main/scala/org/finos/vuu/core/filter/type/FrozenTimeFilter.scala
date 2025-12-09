@@ -3,12 +3,13 @@ package org.finos.vuu.core.filter.`type`
 import com.typesafe.scalalogging.LazyLogging
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.core.filter.Filter
-import org.finos.vuu.core.index.LongIndexedField
+import org.finos.vuu.core.index.{EpochTimestampIndexedField, LongIndexedField}
+import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.core.table.{DefaultColumn, EmptyTablePrimaryKeys, TablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.viewport.RowSource
 
-case class FrozenTimeFilter(frozenTime: Long) extends Filter with LazyLogging {
+case class FrozenTimeFilter(frozenTime: EpochTimestamp) extends Filter with LazyLogging {
 
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean): TablePrimaryKeys = {
     logger.trace(s"Starting filter with ${primaryKeys.length}")
@@ -18,7 +19,7 @@ case class FrozenTimeFilter(frozenTime: Long) extends Filter with LazyLogging {
       EmptyTablePrimaryKeys
     } else {
       source.asTable.indexForColumn(column) match {
-        case Some(index: LongIndexedField) =>
+        case Some(index: EpochTimestampIndexedField) =>
           hitIndex(primaryKeys, index, firstInChain)
         case _ =>
           filterAll(source, primaryKeys)
@@ -26,7 +27,7 @@ case class FrozenTimeFilter(frozenTime: Long) extends Filter with LazyLogging {
     }
   }
 
-  private def hitIndex(primaryKeys: TablePrimaryKeys, indexedField: LongIndexedField, firstInChain: Boolean): TablePrimaryKeys = {
+  private def hitIndex(primaryKeys: TablePrimaryKeys, indexedField: EpochTimestampIndexedField, firstInChain: Boolean): TablePrimaryKeys = {
     val results = indexedField.lessThan(frozenTime)
     if (results.isEmpty) {
       EmptyTablePrimaryKeys
@@ -40,7 +41,7 @@ case class FrozenTimeFilter(frozenTime: Long) extends Filter with LazyLogging {
   private def filterAll(source: RowSource, rowKeys: TablePrimaryKeys): TablePrimaryKeys = {
     val filtered = rowKeys.filter(key => {
       val vuuCreatedTimestamp = source.pullRow(key).get(DefaultColumn.CreatedTime.name)
-      vuuCreatedTimestamp != null && vuuCreatedTimestamp.asInstanceOf[Long] < frozenTime
+      vuuCreatedTimestamp != null && vuuCreatedTimestamp.asInstanceOf[EpochTimestamp] < frozenTime
     })
     
     InMemTablePrimaryKeys(ImmutableArray.from[String](filtered.toArray))

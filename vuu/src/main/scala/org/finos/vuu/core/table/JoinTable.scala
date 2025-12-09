@@ -7,7 +7,6 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{JoinTableDef, TableDef}
 import org.finos.vuu.core.index.IndexedField
 import org.finos.vuu.core.row.{NoRowBuilder, RowBuilder}
-import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName}
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.provider.JoinTableProvider

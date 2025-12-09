@@ -7,8 +7,7 @@ import org.finos.vuu.api.*
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.VuuJoinProviderOptionsImpl
 import org.finos.vuu.core.auths.VuuUser
-import org.finos.vuu.core.table.*
-import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName}
+import org.finos.vuu.core.table.{Column, Columns, DefaultColumn, JoinTable, KeyObserver, RowKeyUpdate, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.ClientSessionId

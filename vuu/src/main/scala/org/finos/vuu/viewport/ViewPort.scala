@@ -188,7 +188,7 @@ case class ViewPortStructuralFields(table: RowSource,
                                     groupBy: GroupBy,
                                     theTreeNodeState: TreeNodeState,
                                     permissionFilter: PermissionFilter,
-                                    frozenTime: Option[Long])
+                                    frozenTime: Option[EpochTimestamp])
 
 class ViewPortImpl(val id: String,
                    val user: VuuUser,

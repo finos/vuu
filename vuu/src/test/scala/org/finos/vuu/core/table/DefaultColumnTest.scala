@@ -18,7 +18,7 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers{
       val createdTime = DefaultColumn.CreatedTime
 
       createdTime.name shouldEqual "vuuCreatedTimestamp"
-      createdTime.dataType.isInstanceOf[DataType.LongDataType.type] shouldBe true
+      createdTime.dataType.isInstanceOf[DataType.EpochTimestampType.type] shouldBe true
     }
 
     Scenario("Check last updated time column") {
@@ -26,7 +26,7 @@ class DefaultColumnTest extends AnyFeatureSpec with Matchers{
       val lastUpdatedTime = DefaultColumn.LastUpdatedTime
 
       lastUpdatedTime.name shouldEqual "vuuUpdatedTimestamp"
-      lastUpdatedTime.dataType.isInstanceOf[DataType.LongDataType.type] shouldBe true
+      lastUpdatedTime.dataType.isInstanceOf[DataType.EpochTimestampType.type] shouldBe true
     }
 
     Scenario("Default columns are added as expected") {

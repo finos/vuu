@@ -2,6 +2,7 @@ package org.finos.vuu.core.filter.`type`
 
 import org.finos.toolbox.time.TestFriendlyClock
 import org.finos.vuu.core.sort.FilterAndSortFixture.{setupTable, setupTableWithCreationTime}
+import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.viewport.ViewPortColumns
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -27,7 +28,7 @@ class BaseFilterTest extends AnyFeatureSpec with Matchers {
       val table = setupTableWithCreationTime(List())(using clock)
       val now = clock.now()
       val permissionFilter = PermissionFilter("ric", Set("VOD.L","AAPL.L"))
-      val baseFilter = BaseFilter(permissionFilter, Option(now))
+      val baseFilter = BaseFilter(permissionFilter, Option(EpochTimestamp(now)))
 
       val results = baseFilter.doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), true)
 
@@ -38,7 +39,7 @@ class BaseFilterTest extends AnyFeatureSpec with Matchers {
     Scenario("Freeze filter with allow all permission filter") {
 
       val table = setupTableWithCreationTime()
-      val baseFilter = BaseFilter(AllowAllPermissionFilter, Option(10002L))
+      val baseFilter = BaseFilter(AllowAllPermissionFilter, Option(EpochTimestamp(10002L)))
 
       val results = baseFilter.doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), true)
 
