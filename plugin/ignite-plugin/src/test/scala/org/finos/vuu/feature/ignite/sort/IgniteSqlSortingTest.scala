@@ -3,6 +3,7 @@ package org.finos.vuu.feature.ignite.sort
 import org.finos.vuu.core.sort.SortDirection
 import org.finos.vuu.feature.ignite.TestInput.createTestOrderEntity
 import org.finos.vuu.feature.ignite.{IgniteTestsBase, TestOrderEntity}
+import org.finos.vuu.net.{SortDef, SortSpec}
 import org.finos.vuu.util.schema.{SchemaField, SchemaMapper}
 import org.scalamock.scalatest.MockFactory
 
@@ -113,12 +114,13 @@ class IgniteSqlSortingTest extends IgniteTestsBase with MockFactory {
     }
   }
 
-  private def applySort(columnName: String, sortDirection: SortDirection.TYPE): Iterable[TestOrderEntity] = {
+  private def applySort(columnName: String, sortDirection: SortDirection): Iterable[TestOrderEntity] = {
     applySort(Map((columnName, sortDirection)))
   }
 
-  private def applySort(columnNameToDirection: Map[String, SortDirection.TYPE]): Iterable[TestOrderEntity] = {
-    val sortQuery = sortBuilder.toSql(columnNameToDirection, mockSchemaMapper(columnNameToDirection.keys))
+  private def applySort(columnNameToDirection: Map[String, SortDirection]): Iterable[TestOrderEntity] = {
+    val sortSpec = SortSpec(columnNameToDirection.map(f => SortDef(f._1, f._2.external)).toList)    
+    val sortQuery = sortBuilder.toSql(sortSpec, mockSchemaMapper(columnNameToDirection.keys))
     igniteTestStore.getSortBy(sortQuery)
   }
 

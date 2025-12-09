@@ -1,7 +1,6 @@
 import { DataSourceRow } from "@vuu-ui/vuu-data-types";
 import { VuuRange } from "@vuu-ui/vuu-protocol-types";
-import { metadataKeys } from "./column-utils";
-import { WindowRange } from "./range-utils";
+import { metadataKeys, WindowRange } from "@vuu-ui/vuu-utils";
 
 const { SELECTED } = metadataKeys;
 
@@ -89,7 +88,9 @@ export class MovingWindow {
   spliceDataAtIndex(index: number) {
     if (index >= 10) {
       for (let i = 0; i < this.data.length; i++) {
-        this.data[i] = this.data[i].toSpliced(index, 1) as DataSourceRow;
+        if (this.data[i]) {
+          this.data[i] = this.data[i].toSpliced(index, 1) as DataSourceRow;
+        }
       }
     } else {
       throw Error(`[MovingWindow] canno splir metadata value from Row`);

@@ -45,9 +45,9 @@ class RpcTableTest extends AnyFeatureSpec with Matchers with OneInstancePerTest 
 
       val orderEntryDef = TableDef("orderEntry", "clOrderId", Columns.fromNames("clOrderId:String", "ric:String", "quantity: Double", "orderType:String", "price: Double", "priceLevel: String"), "ric")
 
-      val canons = orderEntryDef.columns.map( c => c.dataType.getCanonicalName )
+      val canons = orderEntryDef.getColumns.map( c => c.dataType.getCanonicalName )
 
-      val typeNames = orderEntryDef.columns.map( c => c.dataType.getTypeName )
+      val typeNames = orderEntryDef.getColumns.map( c => c.dataType.getTypeName )
 
       val orderEntry = new InMemDataTable(orderEntryDef, joinProvider)
 

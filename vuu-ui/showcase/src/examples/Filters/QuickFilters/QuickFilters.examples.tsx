@@ -1,10 +1,10 @@
 import { QuickFilterProps, QuickFilters } from "@vuu-ui/vuu-filters";
-import type { DataSourceFilter } from "@vuu-ui/vuu-data-types";
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { useCallback, useMemo, useState } from "react";
 import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
 import { useViewContext, View } from "@vuu-ui/vuu-layout";
 import { setPersistentState } from "@vuu-ui/vuu-layout";
+import { FilterHandler } from "@vuu-ui/vuu-filter-types";
 
 const instrumentsSchema = getSchema("instruments");
 
@@ -12,6 +12,7 @@ const QuickFiltersTemplate = ({
   allowAddColumn,
   allowFind,
   onApplyFilter,
+  onClearFilter,
   quickFilterColumns: quickFilterColumnsProp = [],
   vuuTable = instrumentsSchema.table,
   availableColumns = instrumentsSchema?.columns,
@@ -22,15 +23,15 @@ const QuickFiltersTemplate = ({
 
   const [quickFilterColumns, setQuickFilterColumns] = useState(initialColumns);
 
-  const handleApplyFilter = useCallback(
-    (filter: DataSourceFilter) => {
+  const handleApplyFilter = useCallback<FilterHandler>(
+    (filter) => {
       onApplyFilter?.(filter);
-      console.log(`apply filter `, {
-        filter,
-      });
     },
     [onApplyFilter],
   );
+  const handleClearFilter = useCallback(() => {
+    onClearFilter?.();
+  }, [onClearFilter]);
 
   const handleChangeQuickFilterColumns = useCallback((columns: string[]) => {
     console.log("change columns", { columns });
@@ -43,6 +44,7 @@ const QuickFiltersTemplate = ({
       allowFind={allowFind}
       availableColumns={availableColumns}
       onApplyFilter={handleApplyFilter}
+      onClearFilter={handleClearFilter}
       onChangeQuickFilterColumns={handleChangeQuickFilterColumns}
       quickFilterColumns={quickFilterColumns}
       vuuTable={vuuTable}
@@ -160,7 +162,7 @@ const PersistentFilter = () => {
     [load],
   );
 
-  const applyFilter = useCallback((filter: DataSourceFilter) => {
+  const applyFilter = useCallback<FilterHandler>((filter) => {
     console.log(JSON.stringify(filter, null, 2));
   }, []);
 

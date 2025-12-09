@@ -3,7 +3,6 @@ package org.finos.vuu.core.filter
 import org.antlr.v4.runtime.misc.ParseCancellationException
 import org.finos.vuu.core.filter.FilterSpecParser.parse as filterClause
 import org.finos.vuu.core.sort.FilterAndSortFixture.*
-import org.finos.vuu.core.table.RowWithData
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks.*
@@ -11,7 +10,7 @@ import org.scalatest.prop.TableDrivenPropertyChecks.*
 class FilterGrammarTest extends AnyFeatureSpec with Matchers {
   def assertParsable(filter: String): Unit = filterClause(filter) shouldBe a[FilterClause]
   def assertNotParsable(filter: String): Unit = an [ParseCancellationException] should be thrownBy filterClause(filter)
-  def assertFilteredRows(filter: String, expectedRows: RowWithData*): Unit = {
+  def assertFilteredRows(filter: String, expectedKeys: Set[String]): Unit = {
     info(s"FILTER: $filter")
 
     val table = setupTable2()
@@ -19,7 +18,7 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
     val resultRows = getFilteredRows(table, clause)
 
     withClue(s"PARSED: $clause\n") {
-      assertRows(resultRows.toSet, expectedRows.toSet)
+      assertRows(resultRows.toSet, expectedKeys)
     }
   }
 
@@ -150,137 +149,96 @@ class FilterGrammarTest extends AnyFeatureSpec with Matchers {
   Feature("Applying the parsed filters yields expected results") {
     Scenario("Equality comparison to STRING") {
       assertFilteredRows("ric = \"AAPL.L\"",
-        row("tradeTime" -> 5L, "quantity" -> null, "ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD")
+        Set("NYC-0004")
       )
     }
 
     Scenario("Difference comparison to STRING") {
       assertFilteredRows("ric != \"AAPL.L\"",
-        row("ric" -> "VOD.L", "orderId" -> "LDN-0001", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", "tradeTime" -> 2L, "quantity" -> 100.0d),
-        row("ric" -> "BT.L", "orderId" -> "LDN-0002", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 1L, "quantity" -> 100.0d),
-        row("ric" -> "VOD.L", "orderId" -> "LDN-0003", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", "tradeTime" -> 3L, "quantity" -> null),
-        row("ric" -> "BT.L", "orderId" -> "LDN-0008", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", "tradeTime" -> 5L, "quantity" -> 100.0d),
-        row("ric" -> "VOD.L", "orderId" -> "NYC-0002", "onMkt" -> false, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> 100.0d),
-        row("ric" -> "VOD.L", "orderId" -> "NYC-0010", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
-        row("ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> 105.0d),
-        row("ric" -> "VOD\\L", "orderId" -> "NYC-0012", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
-        row("ric" -> "VOD\\L", "orderId" -> "NYC-0013", "onMkt" -> true, "trader" -> "rahúl", "ccyCross" -> "$GBPUSD", "tradeTime" -> 6L, "quantity" -> null)
+        Set("LDN-0001","LDN-0002","LDN-0003", "LDN-0008", "NYC-0002", "NYC-0010", "NYC-0011", "NYC-0012", "NYC-0013")
       )
     }
 
     Scenario("Belonging to set (indexed)") {
       assertFilteredRows("ric in [\"AAPL.L\",\"BT.L\"]",
-        row("tradeTime" -> 5L, "quantity" -> null, "ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD"),
-        row("tradeTime" -> 1L, "quantity" -> 100.0d, "ric" -> "BT.L", "orderId" -> "LDN-0002", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
-        row("tradeTime" -> 5L, "quantity" -> 100.0d, "ric" -> "BT.L", "orderId" -> "LDN-0008", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD")
+        Set("NYC-0004", "LDN-0002", "LDN-0008")
       )
     }
 
     Scenario("Belonging to set (unindexed)") {
       assertFilteredRows("trader in [\"steve\", \"rahúl\"]",
-        row("tradeTime" -> 1L, "quantity" -> 100.0d, "ric" -> "BT.L", "orderId" -> "LDN-0002", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
-        row("tradeTime" -> 6L, "quantity" -> 100.0d, "ric" -> "VOD.L", "orderId" -> "NYC-0002", "onMkt" -> false, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
-        row("tradeTime" -> 6L, "quantity" -> null, "ric" -> "VOD.L", "orderId" -> "NYC-0010", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
-        row("tradeTime" -> 6L, "quantity" -> 105.0d, "ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
-        row("tradeTime" -> 6L, "quantity" -> null, "ric" -> "VOD\\L", "orderId" -> "NYC-0012", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
-        row("tradeTime" -> 6L, "quantity" -> null, "ric" -> "VOD\\L", "orderId" -> "NYC-0013", "onMkt" -> true, "trader" -> "rahúl", "ccyCross" -> "$GBPUSD")
+        Set("LDN-0002", "NYC-0002", "NYC-0010", "NYC-0011", "NYC-0012", "NYC-0013")
       )
     }
 
     Scenario("Greater than") {
       assertFilteredRows("tradeTime > 4",
-        row("ric" -> "VOD.L", "orderId" -> "NYC-0002", "onMkt" -> false, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> 100.0d),
-        row("ric" -> "VOD.L", "orderId" -> "NYC-0010", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
-        row("ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> 105.0d),
-        row("ric" -> "VOD\\L", "orderId" -> "NYC-0012", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
-        row("ric" -> "VOD\\L", "orderId" -> "NYC-0013", "onMkt" -> true, "trader" -> "rahúl", "ccyCross" -> "$GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
-        row("ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD", "tradeTime" -> 5L, "quantity" -> null),
-        row("ric" -> "BT.L", "orderId" -> "LDN-0008", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", "tradeTime" -> 5L, "quantity" -> 100.0d)
+        Set("NYC-0002", "NYC-0010", "NYC-0011", "NYC-0012", "NYC-0013", "NYC-0004", "LDN-0008")
       )
     }
 
     Scenario("Greater than equal") {
       assertFilteredRows("tradeTime >= 5",
-        row("ric" -> "VOD.L", "orderId" -> "NYC-0002", "onMkt" -> false, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> 100.0d),
-        row("ric" -> "VOD.L", "orderId" -> "NYC-0010", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
-        row("ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> 105.0d),
-        row("ric" -> "VOD\\L", "orderId" -> "NYC-0012", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
-        row("ric" -> "VOD\\L", "orderId" -> "NYC-0013", "onMkt" -> true, "trader" -> "rahúl", "ccyCross" -> "$GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
-        row("ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD", "tradeTime" -> 5L, "quantity" -> null),
-        row("ric" -> "BT.L", "orderId" -> "LDN-0008", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", "tradeTime" -> 5L, "quantity" -> 100.0d)
+        Set("NYC-0002", "NYC-0010", "NYC-0011", "NYC-0012", "NYC-0013", "NYC-0004", "LDN-0008")
       )
     }
 
     Scenario("OR clause") {
       assertFilteredRows("tradeTime > 4 or orderId = \"LDN-0002\"",
-        row("ric" -> "VOD.L", "orderId" -> "NYC-0002", "onMkt" -> false, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> 100.0d),
-        row("ric" -> "VOD.L", "orderId" -> "NYC-0010", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
-        row("ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> 105.0d),
-        row("ric" -> "VOD\\L", "orderId" -> "NYC-0012", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
-        row("ric" -> "VOD\\L", "orderId" -> "NYC-0013", "onMkt" -> true, "trader" -> "rahúl", "ccyCross" -> "$GBPUSD", "tradeTime" -> 6L, "quantity" -> null),
-        row("ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD", "tradeTime" -> 5L, "quantity" -> null),
-        row("ric" -> "BT.L", "orderId" -> "LDN-0008", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", "tradeTime" -> 5L, "quantity" -> 100.0d),
-        row("ric" -> "BT.L", "orderId" -> "LDN-0002", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 1L, "quantity" -> 100.0d)
+        Set("NYC-0002", "NYC-0010", "NYC-0011", "NYC-0012", "NYC-0013", "NYC-0004", "LDN-0008", "LDN-0002")
       )
     }
 
     Scenario("Starts-with STRING") {
       assertFilteredRows("orderId starts \"LDN\"",
-        row("tradeTime" -> 2L, "quantity" -> 100.0d, "ric" -> "VOD.L", "orderId" -> "LDN-0001", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD"),
-        row("tradeTime" -> 1L, "quantity" -> 100.0d, "ric" -> "BT.L", "orderId" -> "LDN-0002", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
-        row("tradeTime" -> 3L, "quantity" -> null, "ric" -> "VOD.L", "orderId" -> "LDN-0003", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD"),
-        row("tradeTime" -> 5L, "quantity" -> 100.0d, "ric" -> "BT.L", "orderId" -> "LDN-0008", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD")
+        Set("LDN-0001", "LDN-0002", "LDN-0003", "LDN-0008")
       )
     }
 
     Scenario("Ends-with STRING") {
       assertFilteredRows("orderId ends \"08\"",
-        row("tradeTime" -> 5L, "quantity" -> 100.0d, "ric" -> "BT.L", "orderId" -> "LDN-0008", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD")
+        Set("LDN-0008")
       )
     }
 
     Scenario("Contains STRING") {
       assertFilteredRows("ric contains \"OD/\"",
-        row("tradeTime" -> 6L, "quantity" -> 105.0d, "ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
+        Set("NYC-0011")
       )
     }
 
     Scenario("Lesser than") {
-      assertFilteredRows("quantity < 100")
+      assertFilteredRows("quantity < 100", Set())
     }
 
     Scenario("Lesser than equal") {
       assertFilteredRows("quantity <= 105",
-        row("ric" -> "VOD.L", "orderId" -> "LDN-0001", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", "tradeTime" -> 2L, "quantity" -> 100.0d),
-        row("tradeTime" -> 6L, "quantity" -> 105.0d, "ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD"),
-        row("ric" -> "BT.L", "orderId" -> "LDN-0002", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 1, "quantity" -> 100.0d),
-        row("ric" -> "BT.L", "orderId" -> "LDN-0008", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD", "tradeTime" -> 5L, "quantity" -> 100.0d),
-        row("ric" -> "VOD.L", "orderId" -> "NYC-0002", "onMkt" -> false, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> 100.0d)
+        Set("LDN-0001", "NYC-0011", "LDN-0002", "LDN-0008", "NYC-0002")
       )
     }
 
     Scenario("Equality to STRING containing reserved chars in the grammar") {
       assertFilteredRows("ric = \"VOD/L\"",
-        row("ric" -> "VOD/L", "orderId" -> "NYC-0011", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD", "tradeTime" -> 6L, "quantity" -> 105.0d)
+        Set("NYC-0011")
       )
     }
 
     Scenario("Equality to STRING containing Unicode characters") {
       assertFilteredRows("trader = \"rahúl\"",
-        row("ric" -> "VOD\\L", "orderId" -> "NYC-0013", "onMkt" -> true, "trader" -> "rahúl", "ccyCross" -> "$GBPUSD", "tradeTime" -> 6L, "quantity" -> null)
+        Set("NYC-0013")
       )
     }
 
     Scenario("Equality to STRING containing $ character") {
       assertFilteredRows("ccyCross = \"$GBPUSD\"",
-        row("ric" -> "VOD\\L", "orderId" -> "NYC-0013", "onMkt" -> true, "trader" -> "rahúl", "ccyCross" -> "$GBPUSD", "tradeTime" -> 6L, "quantity" -> null)
+        Set("NYC-0013")
       )
     }
 
-    Scenario("filter on a non-existent column skips filtering and returns result unchanged") {
-      val table = setupTable2()
-      val clause = filterClause("ccyCross = \"$GBPUSD\" and nonExistent = 10")
-      getFilteredRows(table, clause).map(_.key).toSet shouldEqual table.primaryKeys.toSet
+    Scenario("filter on a non-existent column skips filtering and returns empty") {
+      assertFilteredRows("ccyCross = \"$GBPUSD\" and nonExistent = 10",
+        Set()
+      )
     }
   }
 }

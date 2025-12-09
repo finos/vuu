@@ -174,7 +174,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
       
       val session = ClientSessionId("sess-01", "channel")
 
-      val vpcolumns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
+      val vpcolumns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.getColumns.map(_.name).toList)
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orderPrices, DefaultRange, vpcolumns)
 
@@ -254,7 +254,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
       
       val session = ClientSessionId("sess-01", "channel")
 
-      val vpcolumns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
+      val vpcolumns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.getColumns.map(_.name).toList)
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orderPrices, DefaultRange, vpcolumns,
         groupBy = GroupBy(orderPrices, vpcolumns.getColumnForName("trader").get)

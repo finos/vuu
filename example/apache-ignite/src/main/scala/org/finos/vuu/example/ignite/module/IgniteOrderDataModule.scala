@@ -25,7 +25,7 @@ object IgniteOrderDataModule extends DefaultModule {
         ),
         (_, _) => new IgniteOrderDataProvider(igniteOrderStore),
         (table, _, _, _) => ViewPortDef(
-          columns = table.getTableDef.columns,
+          columns = table.getTableDef.getColumns,
           service = new NoOpIgniteService()
         )
       ).asModule()

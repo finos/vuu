@@ -6,6 +6,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.TimeIt.timeIt
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api.TableDef
+import org.finos.vuu.core.filter.`type`.AllowAllPermissionFilter
 import org.finos.vuu.core.table.*
 import org.finos.vuu.core.tree.TreeSessionTable
 import org.finos.vuu.net.{ClientSessionId, FilterSpec}
@@ -53,7 +54,8 @@ object PerfTestBigRoupByMain extends App with StrictLogging {
 
   val columns = ViewPortColumnCreator.create(groupByTable, table.columns().map(_.name).toList)
 
-  val builder = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), columns, TreeNodeStateStore(Map()), None, None, buildAction = BuildEntireTree(groupByTable, None), None)
+  val builder = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), columns,
+    TreeNodeStateStore(Map()), None, None, buildAction = BuildEntireTree(groupByTable, None), AllowAllPermissionFilter, None)
 
   for(a <- 0 until 5000){
     logger.debug("Starting tree build")

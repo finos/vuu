@@ -4,7 +4,10 @@ import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api.*
+import org.finos.vuu.api.TableVisibility.Public
+import org.finos.vuu.core.filter.`type`.AllowAllPermissionFilter
 import org.finos.vuu.core.table.{Columns, RowWithData, TableContainer, ViewPortColumnCreator}
+import org.finos.vuu.net.SortSpec
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider}
 import org.scalatest.OneInstancePerTest
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -45,6 +48,8 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
                         Columns.aliased(fxRatesDef, ("bid","fxBid"), ("ask","fxAsk"), ("ccyPair","ccyPair")),
                         //Columns.calculated("chris1", "bid * fxBid"),
         links = VisualLinks(),
+        permissionFunction = (_,_) => AllowAllPermissionFilter,
+        defaultSort = SortSpec(List.empty),
         joinFields = Seq(),
         joins  =
             JoinTo(
@@ -76,7 +81,7 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
       val pricesProvider = new MockProvider(prices)
       val instrumentsProvider = new MockProvider(instruments)
       val fxRatesProvider = new MockProvider(fxRates)
-      val vpColumns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
+      val vpColumns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.getColumns.map(_.name).toList)
 
       //val viewPortContainer = setupViewPort()
 
@@ -131,6 +136,8 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
           Columns.aliased(fxRatesDef, ("bid","fxBid"), ("ask","fxAsk"), ("ccyPair","ccyPair")),
         //Columns.calculated("chris1", "bid * fxBid"),
         links = VisualLinks(),
+        permissionFunction = (_,_) => AllowAllPermissionFilter,
+        defaultSort = SortSpec(List.empty),
         joinFields = Seq(),
         joins  =
           JoinTo(
@@ -163,7 +170,7 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
       val instrumentsProvider = new MockProvider(instruments)
       val fxRatesProvider = new MockProvider(fxRates)
 
-      val vpColumns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.columns.map(_.name).toList)
+      val vpColumns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.getColumns.map(_.name).toList)
 
       //val viewPortContainer = setupViewPort()
 

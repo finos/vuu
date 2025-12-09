@@ -24,7 +24,11 @@ import {
   isNullFilter,
   useSavedFilters,
 } from "../filter-provider/FilterContext";
-import { getColumnValueFromFilter } from "@vuu-ui/vuu-utils";
+import {
+  filtersAreEqual,
+  getColumnValueFromFilter,
+  isBetweenOperator,
+} from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 
@@ -71,11 +75,14 @@ export const FilterContainerColumnFilter = ({
 
   // This is primarily to guard against client passing non-stable 'column' reference
   // which would trigger the commit check below.
-  const currentFilterRef = useRef(currentFilter.id);
+  const currentFilterRef = useRef(currentFilter);
 
   useMemo(() => {
-    if (currentFilterRef.current !== currentFilter.id) {
-      currentFilterRef.current = currentFilter.id;
+    if (
+      currentFilterRef.current.id !== currentFilter.id ||
+      !filtersAreEqual(currentFilterRef.current.filter, currentFilter.filter)
+    ) {
+      currentFilterRef.current = currentFilter;
 
       if (isNullFilter(currentFilter) && notEmpty(valueRef.current)) {
         if (Array.isArray(valueRef.current)) {
@@ -95,7 +102,7 @@ export const FilterContainerColumnFilter = ({
           currentFilter.filter,
         );
         if (
-          operator === "between" &&
+          isBetweenOperator(operator) &&
           !Array.isArray(v) &&
           Array.isArray(valueRef.current)
         ) {
@@ -117,13 +124,13 @@ export const FilterContainerColumnFilter = ({
     // We only want this to run when the filter id changes, not when
     // filter instance changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [column, currentFilter.id]);
+  }, [column, currentFilter]);
 
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
-    (column, op, value) => {
+    (column, op, value, extendedFilterOptions) => {
       valueRef.current = value;
       setValue(value);
-      onFilterContextCommit(column, op, value);
+      onFilterContextCommit(column, op, value, extendedFilterOptions);
     },
     [onFilterContextCommit],
   );
@@ -187,6 +194,8 @@ export const FilterContainer = ({
     css: filterContainerCss,
     window: targetWindow,
   });
+
+  console.log(`[FilterContainer] current filter ${JSON.stringify(filter)}`);
 
   const filterContextProps = useFilterContainer({
     filter,

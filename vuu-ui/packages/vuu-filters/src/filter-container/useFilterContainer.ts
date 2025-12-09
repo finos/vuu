@@ -9,10 +9,11 @@ import {
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { createContext, useCallback, useContext, useMemo, useRef } from "react";
 import {
-  FilterAggregator,
   getColumnValueFromFilter,
+  isBetweenOperator,
   isSingleValueFilter,
 } from "@vuu-ui/vuu-utils";
+import { FilterAggregator } from "../FilterAggregator";
 
 export interface ColumnFilterContextProps {
   filterContainerInstalled: boolean;
@@ -55,7 +56,7 @@ export function useFilterContext(
     };
   } else if (throwIfNoContainer) {
     throw Error(
-      `[useColumnFilterContainer:useFilterContext] no FilterContainer installed`,
+      `[useFilterContainer:useFilterContext] no FilterContainer installed`,
     );
   } else {
     return { filterContainerInstalled: false };
@@ -108,7 +109,7 @@ export const useFilterContainer = ({
         return fallbackValue;
       } else {
         throw Error(
-          `[useColumnFilterContainer] column ${column.name} has not been registered`,
+          `[useFilterContainer] column ${column.name} has not been registered`,
         );
       }
     },
@@ -116,11 +117,11 @@ export const useFilterContainer = ({
   );
 
   const handleCommit = useCallback<ColumnFilterCommitHandler>(
-    (column, op, value = "") => {
+    (column, op, value = "", extendedFilterOptions) => {
       if (Array.isArray(value)) {
-        if (op !== "between") {
+        if (!isBetweenOperator(op)) {
           throw Error(
-            `[useInlineFilter] array value is not valid for operator ${op}`,
+            `[useFilterContainer] array value is not valid for operator ${op}`,
           );
         }
         if (value[0] === "" && value[1] === "") {
@@ -129,10 +130,12 @@ export const useFilterContainer = ({
           }
         } else {
           if (typeof value[0] === "string" && typeof value[1] === "string") {
-            filterAggregator.add(column, value);
+            // TODO we need to include operator, so we can distinguish between
+            // between and between-inclusive
+            filterAggregator.add(column, value, op, extendedFilterOptions);
           } else {
             throw Error(
-              `[useInlineFilter] handleCommit value  [${typeof value[0]},${typeof value[1]}] for operator ${op} supports [string,string] only`,
+              `[useFilterContainer] handleCommit value  [${typeof value[0]},${typeof value[1]}] for operator ${op} supports [string,string] only`,
             );
           }
         }
@@ -142,10 +145,10 @@ export const useFilterContainer = ({
         }
       } else {
         if (typeof value === "string" || typeof value === "number") {
-          filterAggregator.add(column, value);
+          filterAggregator.add(column, value, op, extendedFilterOptions);
         } else {
           throw Error(
-            `[useInlineFilter] handleCommit value ${typeof value} supports string, number only`,
+            `[useFilterContainer] handleCommit value ${typeof value} supports string, number only`,
           );
         }
       }

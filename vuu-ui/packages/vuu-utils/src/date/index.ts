@@ -25,7 +25,6 @@ export * from "./formatter";
 export {
   dateTimeLabelByType,
   isDatePattern,
-  isDateTimePattern,
   isTimePattern,
   supportedDateTimePatterns,
   type DatePattern,

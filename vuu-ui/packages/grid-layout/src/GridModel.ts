@@ -830,13 +830,15 @@ export class GridTracks extends EventEmitter<GridTrackEvents> {
     const tracks = this.getTracks(trackType);
     const reducedTrack =
       position === "before" ? tracks[index - 1] : tracks[index];
-    if (reducedTrack.isFraction) {
-      this.measure(trackType);
-    }
-    tracks.splice(index, 0, new GridTrack(`${Math.abs(trackSize)}px`));
-    reducedTrack.increment(-trackSize);
+    if (reducedTrack) {
+      if (reducedTrack.isFraction) {
+        this.measure(trackType);
+      }
+      tracks.splice(index, 0, new GridTrack(`${Math.abs(trackSize)}px`));
+      reducedTrack.increment(-trackSize);
 
-    this.emit("grid-track-resize", trackType, tracks);
+      this.emit("grid-track-resize", trackType, tracks);
+    }
   }
 
   removeTrack(

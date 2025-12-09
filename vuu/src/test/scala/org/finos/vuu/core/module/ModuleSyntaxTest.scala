@@ -1,7 +1,6 @@
 package org.finos.vuu.core.module
 
-import org.finos.vuu.core.table.Columns
-import org.finos.vuu.core.table.DefaultColumnNames.{CreatedTimeColumnName, LastUpdatedTimeColumnName}
+import org.finos.vuu.core.table.{Columns, DefaultColumn}
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -21,27 +20,27 @@ class ModuleSyntaxTest extends AnyFeatureSpec with Matchers with GivenWhenThen {
       val instruments = module.tableDefs.head
 
       instruments.name should equal("instruments")
-      instruments.columns should equal(
+      instruments.getColumns should equal(
         Columns.fromNames(
           "ric:String",
           "description:String",
           "currency:String",
           "exchange:String",
           "lotSize:Double",
-          CreatedTimeColumnName + ":EpochTimestamp",
-          LastUpdatedTimeColumnName + ":EpochTimestamp"
+          DefaultColumn.CreatedTime.name + ":EpochTimestamp",
+          DefaultColumn.LastUpdatedTime.name + ":EpochTimestamp"
         )
       )
       instruments.joinFields should equal(Seq("ric"))
 
       val prices = module.tableDefs.tail.head
       prices.name should equal("prices")
-      prices.columns.size should equal(9)
+      prices.getColumns.length should equal(9)
       prices.joinFields should equal(Seq("ric"))
 
       val instrumentPrices = module.tableDefs.tail.tail.head
       instrumentPrices.name should equal("instrumentPrices")
-      instrumentPrices.columns.size should equal((prices.columns.size - 2) + (instruments.columns.size - 2) - 1 + 2)
+      instrumentPrices.getColumns.length should equal(prices.customColumns.length + instruments.customColumns.length + DefaultColumn.values.length - 1)
       // exclude default columns in left and right table and exclude join column, and add default columns to the join table itself
 
       instrumentPrices.joinFields should equal(Seq())

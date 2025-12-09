@@ -46,7 +46,8 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
 
   }
 
-  Feature("Columns.allFromExceptDefaultColumns") {
+  Feature("Creating Join columns") {
+
     Scenario("Create join columns for all columns in table def except default columns") {
       val tableDef = TableDef(
         name = "TestTable",
@@ -63,9 +64,7 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
       joinColumns.length shouldEqual 3
       joinColumns.map(_.name) should contain theSameElementsAs Array("Id", "Name", "Account")
     }
-  }
 
-  Feature("Columns.allFromExcept") {
     Scenario("Create join columns for all columns in table def except given columns and default columns") {
       val tableDef = TableDef(
         name = "TestTable",
@@ -82,9 +81,27 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
       joinColumns.length shouldEqual 2
       joinColumns.map(_.name) should contain theSameElementsAs Array("Id", "Account")
     }
+
+    Scenario("Create join columns with aliases") {
+      val tableDef = TableDef(
+        name = "TestTable",
+        keyField = "Id",
+        columns =
+          new ColumnBuilder()
+            .addString("Id")
+            .addString("Name")
+            .addInt("Account")
+            .build()
+      )
+
+      val joinColumns = Columns.aliased(tableDef, ("Name","TestName"), ("Account","TestAccount"))
+      joinColumns.length shouldEqual 2
+      joinColumns.map(_.name) should contain theSameElementsAs Array("TestName", "TestAccount")
+    }
+
   }
 
-  Feature("Equals and Hashcode") {
+  Feature("Equals and hashcode") {
 
     Scenario("Simple column equals and hashcode") {
 
@@ -94,7 +111,7 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
       column1 shouldNot equal(column2)
 
       val column3 = SimpleColumn("cakes", 0, DataType.IntegerDataType)
-      column1 shouldNot equal (column3)
+      column1 shouldNot equal(column3)
 
       val column4 = SimpleColumn("cakes", 0, DataType.StringDataType)
       column1 shouldEqual column4
@@ -111,7 +128,7 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
       column1 shouldNot equal(column2)
 
       val column3 = SimpleJoinColumn("cakes", 0, DataType.IntegerDataType, tableDef, joinedColumn)
-      column1 shouldNot equal (column3)
+      column1 shouldNot equal(column3)
 
       val column4 = SimpleJoinColumn("cakes", 0, DataType.StringDataType, tableDef, joinedColumn)
       column1 shouldEqual column4
@@ -120,11 +137,11 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
       val joinedColumn2 = SimpleColumn("lol", 0, DataType.StringDataType)
       val tableDef2 = TableDef.apply("treats", "type", Array(joinedColumn2))
       val column5 = SimpleJoinColumn("cakes", 0, DataType.StringDataType, tableDef2, joinedColumn2)
-      column1 shouldNot equal (column5)
+      column1 shouldNot equal(column5)
 
       val tableDef3 = TableDef.apply("snacks", "type", Array(joinedColumn))
       val column6 = SimpleJoinColumn("cakes", 0, DataType.StringDataType, tableDef3, joinedColumn)
-      column1 shouldNot equal (column6)
+      column1 shouldNot equal(column6)
     }
 
     Scenario("Simple join alias column equals and hashcode") {
@@ -137,7 +154,7 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
       column1 shouldNot equal(column2)
 
       val column3 = AliasedJoinColumn("cakes", 0, DataType.IntegerDataType, tableDef, joinedColumn)
-      column1 shouldNot equal (column3)
+      column1 shouldNot equal(column3)
 
       val column4 = AliasedJoinColumn("cakes", 0, DataType.StringDataType, tableDef, joinedColumn)
       column1 shouldEqual column4
@@ -146,12 +163,13 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
       val joinedColumn2 = SimpleColumn("lol", 0, DataType.StringDataType)
       val tableDef2 = TableDef.apply("treats", "type", Array(joinedColumn2))
       val column5 = AliasedJoinColumn("cakes", 0, DataType.StringDataType, tableDef2, joinedColumn2)
-      column1 shouldNot equal (column5)
+      column1 shouldNot equal(column5)
 
       val tableDef3 = TableDef.apply("snacks", "type", Array(joinedColumn))
       val column6 = AliasedJoinColumn("cakes", 0, DataType.StringDataType, tableDef3, joinedColumn)
-      column1 shouldNot equal (column6)
+      column1 shouldNot equal(column6)
     }
+
 
     Scenario("Calculated column equals and hashcode") {
 

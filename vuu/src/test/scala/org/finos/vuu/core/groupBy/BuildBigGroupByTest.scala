@@ -6,7 +6,8 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.TimeIt.timeIt
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.api.{Index, Indices, TableDef}
-import org.finos.vuu.core.table._
+import org.finos.vuu.core.filter.`type`.AllowAllPermissionFilter
+import org.finos.vuu.core.table.*
 import org.finos.vuu.core.tree.TreeSessionTable
 import org.finos.vuu.net.{ClientSessionId, FilterSpec}
 import org.finos.vuu.provider.JoinTableProviderImpl
@@ -75,7 +76,8 @@ class BuildBigGroupByTestScenario() extends StrictLogging {
 
     val columns = ViewPortColumnCreator.create(groupByTable, groupByTable.columns().map(_.name).toList)
 
-    val builder = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), columns, TreeNodeStateStore(Map()), None, None, buildAction = BuildEntireTree(groupByTable, None), None)
+    val builder = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), columns,
+      TreeNodeStateStore(Map()), None, None, buildAction = BuildEntireTree(groupByTable, None), AllowAllPermissionFilter, None)
 
     logger.trace("[PERF] Starting tree build")
 
@@ -85,7 +87,8 @@ class BuildBigGroupByTestScenario() extends StrictLogging {
 
     logger.trace(s"[PERF] Complete tree build in $millis ms")
 
-    val builder3 = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), columns, TreeNodeStateStore(Map()), Some(tree), None, buildAction = BuildEntireTree(groupByTable, None), None)
+    val builder3 = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec(""), columns,
+      TreeNodeStateStore(Map()), Some(tree), None, buildAction = BuildEntireTree(groupByTable, None), AllowAllPermissionFilter, None)
 
     logger.trace("[PERF] Starting tree build 3")
 
@@ -95,7 +98,8 @@ class BuildBigGroupByTestScenario() extends StrictLogging {
 
     logger.trace(s"[PERF] Complete tree build in $millis3 ms")
 
-    val builder2 = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec("exchange = \"A\""), columns, TreeNodeStateStore(Map()), Some(tree3), None, buildAction = BuildEntireTree(groupByTable, None), None)
+    val builder2 = TreeBuilder.create(groupByTable, new GroupBy(List(exchange), List()), FilterSpec("exchange = \"A\""), columns,
+      TreeNodeStateStore(Map()), Some(tree3), None, buildAction = BuildEntireTree(groupByTable, None), AllowAllPermissionFilter, None)
 
     val (sizeMillis, _) = timeIt {
       groupByTable.size()

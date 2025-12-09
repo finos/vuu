@@ -1,8 +1,7 @@
 import { Flexbox, LayoutProvider, View } from "@vuu-ui/vuu-layout";
 import { ContextPanel } from "@vuu-ui/vuu-shell";
-import { Table } from "@vuu-ui/vuu-table";
 import { registerComponent, VuuShellLocation } from "@vuu-ui/vuu-utils";
-import { ReactElement } from "react";
+import { ReactNode } from "react";
 
 import {
   ColumnSettingsPanel,
@@ -22,14 +21,14 @@ export const DemoTableContainer = ({
   children,
   height = "100vh",
 }: {
-  children: ReactElement<typeof Table>;
+  children: ReactNode;
   height?: string | number;
 }) => {
   return (
     <LayoutProvider>
       <Flexbox style={{ height, width: "100vw" }}>
         <View style={{ flex: 1 }}>{children}</View>
-        <ContextPanel id={VuuShellLocation.ContextPanel} />
+        <ContextPanel id={VuuShellLocation.ContextPanel} overlay />
       </Flexbox>
     </LayoutProvider>
   );

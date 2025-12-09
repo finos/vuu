@@ -32,7 +32,7 @@
 //  )
 //  val table = new InMemDataTable(tableDef, joinProvider)
 //  val provider = new BasketProvider(table)
-//  val columns: Array[Column] = provider.table.getTableDef.columns
+//  val columns: Array[Column] = provider.table.getTableDef.getColumns
 //  val headers: Array[String] = columns.map(_.name)
 //
 //  before {

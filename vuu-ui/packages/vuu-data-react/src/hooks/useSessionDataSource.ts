@@ -19,7 +19,10 @@ export const useSessionDataSource = (props?: SessionStateHookProps) => {
   const dataSourceConfigRef = useRef<DataSourceConfig | undefined>(undefined);
 
   const getDataSource = useCallback(
-    (sessionKey: string, config?: DataSourceConstructorProps) => {
+    (
+      sessionKey: string,
+      dataSourceConstructorProps?: DataSourceConstructorProps,
+    ) => {
       let ds = sessionState.get(sessionKey);
       if (ds) {
         if (ds.range.from > 0) {
@@ -29,9 +32,9 @@ export const useSessionDataSource = (props?: SessionStateHookProps) => {
         return ds;
       }
 
-      if (config?.columns) {
+      if (dataSourceConstructorProps?.columns) {
         ds = new VuuDataSource({
-          ...config,
+          ...dataSourceConstructorProps,
           viewport: sessionKey,
           ...dataSourceConfigRef.current,
         });

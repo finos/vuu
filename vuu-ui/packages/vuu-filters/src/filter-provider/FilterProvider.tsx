@@ -266,6 +266,13 @@ export const FilterProvider = ({
     [deleteFilter, savedFilters],
   );
 
+  const clearCurrentFilter = useCallback(
+    (key: string) => {
+      setCurrentFilter(key, NULL_FILTER);
+    },
+    [setCurrentFilter],
+  );
+
   return (
     <FilterContext.Provider
       value={{
@@ -273,6 +280,7 @@ export const FilterProvider = ({
         deleteFilter,
         saveFilter: handleSaveFilter,
         filterDescriptors: savedFilters,
+        clearCurrentFilter,
         setCurrentFilter,
       }}
     >

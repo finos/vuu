@@ -1,15 +1,14 @@
 package org.finos.vuu.feature.ignite
 
 import org.finos.vuu.core.filter.FilterSpecParser
-import org.finos.vuu.core.sort.ModelType.SortSpecInternal
 import org.finos.vuu.feature.ignite.filter.{IgniteSqlFilterClause, IgniteSqlFilterTreeVisitor}
 import org.finos.vuu.feature.ignite.sort.IgniteSqlSortBuilder
-import org.finos.vuu.net.FilterSpec
+import org.finos.vuu.net.{FilterSpec, SortSpec}
 import org.finos.vuu.util.schema.SchemaMapper
 
 trait FilterAndSortSpecToSql {
   def filterToSql(filterSpec: FilterSpec): IgniteSqlQuery
-  def sortToSql(sortSpec: SortSpecInternal): IgniteSqlQuery
+  def sortToSql(sortSpec: SortSpec): IgniteSqlQuery
 }
 
 object FilterAndSortSpecToSql {
@@ -30,7 +29,11 @@ private class FilterAndSortSpecToSqlImpl(private val schemaMapper: SchemaMapper)
     }
   }
 
-  override def sortToSql(sortSpec: SortSpecInternal): IgniteSqlQuery = {
-    if (sortSpec == null) IgniteSqlQuery.empty else igniteSqlSortBuilder.toSql(sortSpec, schemaMapper)
+  override def sortToSql(sortSpec: SortSpec): IgniteSqlQuery = {
+    if (sortSpec == null || sortSpec.sortDefs == null || sortSpec.sortDefs.isEmpty) {
+      IgniteSqlQuery.empty
+    } else {
+      igniteSqlSortBuilder.toSql(sortSpec, schemaMapper)
+    } 
   }
 }

@@ -2,15 +2,21 @@ import { useContextMenu } from "@vuu-ui/vuu-context-menu";
 import { DataSource, DataSourceRow } from "@vuu-ui/vuu-data-types";
 import {
   ColumnDescriptor,
+  RuntimeColumnDescriptor,
   TableContextMenuOptions,
   TableMenuLocation,
 } from "@vuu-ui/vuu-table-types";
-import { buildColumnMap } from "@vuu-ui/vuu-utils";
+import {
+  columnByAriaIndex,
+  ColumnMap,
+  useStableReference,
+} from "@vuu-ui/vuu-utils";
 import { MouseEvent, useCallback } from "react";
 import { getAriaColIndex, getAriaRowIndex } from "./table-dom-utils";
 
 export interface TableContextMenuHookProps {
   allowContextMenu?: boolean;
+  columnMap: ColumnMap;
   columns: ColumnDescriptor[];
   data: DataSourceRow[];
   dataSource: DataSource;
@@ -39,6 +45,7 @@ const getDataSourceRow = (rows: DataSourceRow[], rowIndex: number) => {
 
 export const useTableContextMenu = ({
   allowContextMenu = true,
+  columnMap: columnMapProp,
   columns,
   data,
   dataSource,
@@ -46,6 +53,7 @@ export const useTableContextMenu = ({
   headerCount = 1,
 }: TableContextMenuHookProps) => {
   const showContextMenu = useContextMenu();
+  const { current: columnMap } = useStableReference(columnMapProp);
 
   const onContextMenu = useCallback(
     (evt: MouseEvent<HTMLElement>) => {
@@ -53,12 +61,19 @@ export const useTableContextMenu = ({
       const cellEl = target?.closest<HTMLElement>("div[role='cell']");
       const rowEl = target?.closest<HTMLElement>("div[role='row']");
       if (cellEl && rowEl) {
+        // const [firstColumn] = columns;
+        // const hasCheckBox =
+        //   firstColumn?.isSystemColumn &&
+        //   isTypeDescriptor(firstColumn?.type) &&
+        //   firstColumn.type.name === "checkbox";
         const { selectedRowsCount } = dataSource;
-        const columnMap = buildColumnMap(columns);
         const rowIndex = getAriaRowIndex(rowEl) - headerCount - 1;
-        const cellIndex = getAriaColIndex(cellEl) - 1;
+        const ariaColIndex = getAriaColIndex(cellEl);
         const row = getDataSourceRow(data, rowIndex);
-        const column = columns[cellIndex];
+        const column = columnByAriaIndex(
+          columns as RuntimeColumnDescriptor[],
+          ariaColIndex,
+        );
 
         // TODO does it really make sense to collect selected rows ?
         // We only have access to rows in local cache
@@ -82,7 +97,15 @@ export const useTableContextMenu = ({
         }
       }
     },
-    [columns, data, dataSource, getSelectedRows, headerCount, showContextMenu],
+    [
+      columnMap,
+      columns,
+      data,
+      dataSource,
+      getSelectedRows,
+      headerCount,
+      showContextMenu,
+    ],
   );
 
   return allowContextMenu ? onContextMenu : undefined;

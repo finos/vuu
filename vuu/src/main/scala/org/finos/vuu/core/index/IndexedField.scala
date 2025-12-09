@@ -6,7 +6,7 @@ import org.finos.toolbox.collection.set.ImmutableUniqueArraySet
 import org.finos.vuu.core.table.Column
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 
-import java.util.concurrent.ConcurrentSkipListMap
+import java.util.concurrent.{ConcurrentHashMap, ConcurrentSkipListMap}
 import scala.jdk.CollectionConverters.IteratorHasAsScala
 
 trait IndexedField[TYPE] {
@@ -39,38 +39,49 @@ trait StringIndexedField extends IndexedField[String]
 
 trait EpochTimestampIndexedField extends IndexedField[EpochTimestamp]
 
-class SkipListIndexedStringField(val column: Column) extends StringIndexedField with StrictLogging {
-  private final val skipList = new ConcurrentSkipListMap[Int, ImmutableArray[String]]()
+trait CharIndexedField extends IndexedField[Char]
+
+class HashMapIndexedStringField(val column: Column) extends StringIndexedField with StrictLogging {
+  private final val indexMap = new ConcurrentHashMap[String, ImmutableArray[String]]()
 
   override def remove(indexKey: String, rowKey: String): Unit = {
-    val indexKeyHash = indexKey.hashCode
-    skipList.get(indexKeyHash) match {
-      case null =>
-      case arr: ImmutableArray[String] =>
-        skipList.put(indexKeyHash, arr.-(rowKey))
-    }
+    logger.debug("Remove Index: " + this.column.name)
+    indexMap.computeIfPresent(indexKey, (_, value) => {
+      if (value.length > 1) {
+        value.-(rowKey)
+      } else {
+        null
+      }
+    })
   }
 
   override def insert(indexKey: String, rowKey: String): Unit = {
-    val indexKeyHash = indexKey.hashCode
-    skipList.get(indexKeyHash) match {
-      case null =>
-        skipList.put(indexKeyHash, ImmutableUniqueArraySet.from(Array(rowKey)))
-      case arr: ImmutableArray[String] =>
-        skipList.put(indexKeyHash, arr.+(rowKey).distinct)
-    }
+    logger.debug("Update Index: " + this.column.name)
+    indexMap.compute(indexKey, (_, value) =>  {
+      value match {
+        case null => ImmutableUniqueArraySet.from(Array(rowKey))
+        case array: ImmutableArray[String] => array.+(rowKey).distinct
+      }
+    })
   }
 
   override def find(indexKey: String): ImmutableArray[String] = {
-    val indexKeyHash = indexKey.hashCode
-    skipList.get(indexKeyHash)
+    logger.debug("Hit Index: " + this.column.name)
+    indexMap.getOrDefault(indexKey, ImmutableUniqueArraySet.empty())
   }
 
   override def find(indexedValues: List[String]): ImmutableArray[String] = super.find(indexedValues)
 
-  override def lessThan(bound: String): ImmutableArray[String] = ???
+  override def lessThan(bound: String): ImmutableArray[String] = {
+    logger.warn("Less than is not supported for Strings")
+    ImmutableUniqueArraySet.empty()
+  }
 
-  override def greaterThan(bound: String): ImmutableArray[String] = ???
+  override def greaterThan(bound: String): ImmutableArray[String] = {
+    logger.warn("Greater than is not supported for Strings")
+    ImmutableUniqueArraySet.empty()
+  }
+
 }
 
 class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] with StrictLogging {
@@ -78,31 +89,28 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
 
   override def remove(indexKey: TYPE, rowKey: String): Unit = {
     logger.debug("Remove Index: " + this.column.name)
-    skipList.get(indexKey) match {
-      case null =>
-      case arr: ImmutableArray[String] =>
-        skipList.put(indexKey, arr.-(rowKey))
-    }
+    skipList.computeIfPresent(indexKey, (_, value) => {
+      if (value.length > 1) {
+        value.-(rowKey)
+      } else {
+        null
+      }
+    })
   }
 
   override def insert(indexKey: TYPE, rowKey: String): Unit = {
     logger.debug("Update Index: " + this.column.name)
-    skipList.get(indexKey) match {
-      case null =>
-        skipList.put(indexKey, ImmutableUniqueArraySet.from(Array(rowKey)))
-      case arr: ImmutableArray[String] =>
-        skipList.put(indexKey, arr.+(rowKey).distinct)
-    }
+    skipList.compute(indexKey, (_, value) =>  {
+      value match {
+        case null => ImmutableUniqueArraySet.from(Array(rowKey))
+        case array: ImmutableArray[String] => array.+(rowKey).distinct
+      }
+    })
   }
 
   override def find(indexKey: TYPE): ImmutableArray[String] = {
     logger.debug("Hit Index: " + this.column.name)
-    skipList.get(indexKey) match {
-      case null =>
-        ImmutableUniqueArraySet.empty[String](chunkSize = 5000)
-      case arr: ImmutableArray[String] =>
-        arr
-    }
+    skipList.getOrDefault(indexKey, ImmutableUniqueArraySet.empty())
   }
 
   def lessThan(bound: TYPE): ImmutableArray[String] = {
@@ -130,8 +138,8 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
   }
 
   override def find(indexedValues: List[TYPE]): ImmutableArray[String] = super.find(indexedValues)
-}
 
+}
 
 class SkipListIndexedDoubleField(column: Column) extends SkipListIndexedField[Double](column) with DoubleIndexedField {}
 
@@ -142,3 +150,5 @@ class SkipListIndexedLongField(column: Column) extends SkipListIndexedField[Long
 class SkipListIndexedBooleanField(column: Column) extends SkipListIndexedField[Boolean](column) with BooleanIndexedField {}
 
 class SkipListIndexedEpochTimestampField(column: Column) extends SkipListIndexedField[EpochTimestamp](column) with EpochTimestampIndexedField {}
+
+class SkipListIndexedCharField(column: Column) extends SkipListIndexedField[Char](column) with CharIndexedField {}

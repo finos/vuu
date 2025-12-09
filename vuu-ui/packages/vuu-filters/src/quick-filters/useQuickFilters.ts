@@ -1,11 +1,8 @@
-import type { DataSourceFilter } from "@vuu-ui/vuu-data-types";
 import type { Filter } from "@vuu-ui/vuu-filter-types";
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import { MultiSelectionHandler } from "@vuu-ui/vuu-ui-controls";
 import {
   CommitHandler,
-  NoFilter,
-  filterAsQuery,
   isNumericColumn,
   queryClosest,
 } from "@vuu-ui/vuu-utils";
@@ -96,7 +93,7 @@ const createFilterClause = (
   }
 };
 
-const buildFilterStruct = (
+const buildFilter = (
   quickFilters: QuickFilterValues,
   availableColumns: ColumnDescriptor[],
 ): Filter | undefined => {
@@ -114,25 +111,11 @@ const buildFilterStruct = (
   }
 };
 
-const buildFilter = (
-  quickFilters: QuickFilterValues,
-  availableColumns: ColumnDescriptor[],
-): DataSourceFilter => {
-  const filterStruct = buildFilterStruct(quickFilters, availableColumns);
-  if (filterStruct) {
-    return {
-      filter: filterAsQuery(filterStruct),
-      filterStruct,
-    };
-  } else {
-    return NoFilter;
-  }
-};
-
 export type QuickFilterHookProps = Pick<
   QuickFilterProps,
   | "availableColumns"
   | "onApplyFilter"
+  | "onClearFilter"
   | "onChangeQuickFilterColumns"
   | "quickFilterColumns"
 >;
@@ -140,6 +123,7 @@ export type QuickFilterHookProps = Pick<
 export const useQuickFilters = ({
   availableColumns,
   onApplyFilter,
+  onClearFilter,
   onChangeQuickFilterColumns,
 }: QuickFilterProps) => {
   const filters = useRef<QuickFilterValues>({});
@@ -173,10 +157,16 @@ export const useQuickFilters = ({
         } else if (typeof value === "string" && value.trim() !== "") {
           filters.current[column] = value;
         }
-        onApplyFilter?.(buildFilter(filters.current, availableColumns));
+
+        const filter = buildFilter(filters.current, availableColumns);
+        if (filter) {
+          onApplyFilter?.(filter);
+        } else {
+          onClearFilter();
+        }
       }
     },
-    [availableColumns, onApplyFilter],
+    [availableColumns, onApplyFilter, onClearFilter],
   );
 
   const handleColumnsSelectionChange = useCallback<MultiSelectionHandler>(

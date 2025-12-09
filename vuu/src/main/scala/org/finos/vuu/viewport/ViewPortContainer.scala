@@ -11,7 +11,8 @@ import org.finos.toolbox.time.{Clock, TimeIt}
 import org.finos.vuu.api.{Link, ViewPortDef}
 import org.finos.vuu.client.messages.ViewPortId
 import org.finos.vuu.core.auths.VuuUser
-import org.finos.vuu.core.filter.{Filter, FilterOutEverythingFilter, FilterSpecParser, NoFilter}
+import org.finos.vuu.core.filter.`type`.{AllowAllPermissionFilter, AntlrBasedFilter, BaseFilter, VisualLinkedFilter}
+import org.finos.vuu.core.filter.{CompoundFilter, FilterOutEverythingFilter, FilterSpecParser, NoFilter, ViewPortFilter}
 import org.finos.vuu.core.sort.*
 import org.finos.vuu.core.table.{DataTable, SessionTable, TableContainer}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
@@ -51,7 +52,7 @@ trait ViewPortContainerMBean {
 
 class ViewPortContainer(val tableContainer: TableContainer, val providerContainer: ProviderContainer, val pluginRegistry: PluginRegistry)(implicit timeProvider: Clock, metrics: MetricsProvider) extends RunInThread with StrictLogging with JmxAble with ViewPortContainerMBean {
 
-  import org.finos.vuu.core.VuuServerMetrics._
+  import org.finos.vuu.core.VuuServerMetrics.*
 
   private val viewPorthistogram = metrics.histogram(toJmxName("thread.viewport.cycleTime"))
 
@@ -258,7 +259,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   def getViewPortDefinition(table: DataTable): ViewPortDef = {
     val viewPortDefFunc = getViewPortDefinitionCreator(table)
     if (viewPortDefFunc == null)
-      ViewPortDef.default(table.getTableDef.columns, tableContainer)
+      ViewPortDef.default(table.getTableDef.getColumns, tableContainer)
     else
       viewPortDefFunc(table.asTable, table.asTable.getProvider, providerContainer, tableContainer)
   }
@@ -436,14 +437,31 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       None
   }
 
-  private def parseSort(sort: SortSpec, vpColumns: ViewPortColumns): Sort = {
-    if (sort.sortDefs.nonEmpty)
-      SortImpl(sort, sort.sortDefs.map(sd => vpColumns.getColumnForName(sd.column).get))
-    else
+  private def parseSort(sortSpec: SortSpec, vpColumns: ViewPortColumns, defaultSort: SortSpec): Sort = {
+    if (sortSpec != null && sortSpec.sortDefs != null && sortSpec.sortDefs.nonEmpty) {
+      Try(SortSpecParser.parse(sortSpec, vpColumns)) match {
+        case Success(sort) =>
+          logger.debug(s"Applying custom sort $sortSpec")
+          sort
+        case Failure(err) =>
+          logger.error(s"Could not parse sort $sortSpec", err)
+          NoSort
+      }
+    } else if (defaultSort != null && defaultSort.sortDefs != null && defaultSort.sortDefs.nonEmpty) {
+      Try(SortSpecParser.parse(defaultSort, vpColumns)) match {
+        case Success(sort) =>
+          logger.debug(s"Applying default sort $defaultSort")
+          sort
+        case Failure(err) =>
+          logger.error(s"Could not parse default sort $defaultSort", err)
+          NoSort
+      }
+    } else {
       NoSort
+    }
   }
 
-  private def parseFilter(filterSpec: FilterSpec): Filter = {
+  private def parseFilter(filterSpec: FilterSpec): ViewPortFilter = {
     if (filterSpec == null || filterSpec.filter == "")
       NoFilter
     else {
@@ -460,21 +478,20 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   def change(requestId: String, clientSession: ClientSessionId, id: String, range: ViewPortRange, columns: ViewPortColumns, sort: SortSpec = SortSpec(List()), filterSpec: FilterSpec = FilterSpec(""), groupBy: GroupBy = NoGroupBy): ViewPort = {
 
     val viewPort = viewPorts.get(id)
-    val permissionChecker = viewPort.permissionChecker()
+    val permissionFilter = viewPort.getPermissionFilter
+    val frozenTime = viewPort.viewPortFrozenTime
 
     if (viewPort == null) {
       throw new Exception(s"view port not found $id")
     }
 
-    val sortSpecInternal = SortSpecInternalFactory.create(sort)
-
-    val aSort = parseSort(sort, columns)
+    val aSort = parseSort(sort, columns, viewPort.table.asTable.getTableDef.defaultSort)
 
     val aFilter = parseFilter(filterSpec)
 
     val filtAndSort = viewPort.getVisualLink match {
       case Some(visualLink) =>
-        UserDefinedFilterAndSort(TwoStepCompoundFilter(VisualLinkedFilter(visualLink), aFilter), aSort)
+        UserDefinedFilterAndSort(CompoundFilter(VisualLinkedFilter(visualLink), aFilter), aSort)
       case None =>
         UserDefinedFilterAndSort(aFilter, aSort)
     }
@@ -500,10 +517,11 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         viewPort.getStructure.viewPortDef,
         filtAndSort = filtAndSort,
         filterSpec = filterSpec,
-        sortSpec = sortSpecInternal,
+        sortSpec = sort,
         groupBy = groupBy,
         viewPort.getTreeNodeStateStore,
-        permissionChecker
+        permissionFilter,
+        frozenTime
       )
 
       viewPort.changeStructure(structure)
@@ -521,10 +539,11 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         viewPort.getStructure.viewPortDef,
         filtAndSort = filtAndSort,
         filterSpec = filterSpec,
-        sortSpec = sortSpecInternal,
+        sortSpec = sort,
         groupBy = groupBy,
         viewPort.getTreeNodeStateStore,
-        permissionChecker
+        permissionFilter,
+        frozenTime
       )
 
       viewPort.changeStructure(structure)
@@ -554,10 +573,11 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         viewPort.getStructure.viewPortDef,
         filtAndSort = filtAndSort,
         filterSpec = filterSpec,
-        sortSpec = sortSpecInternal,
+        sortSpec = sort,
         groupBy = groupBy,
         viewPort.getTreeNodeStateStore,
-        permissionChecker
+        permissionFilter,
+        frozenTime
       )
 
       //its important that the sequence of these operations is preserved, i.e. we should only remove the table after
@@ -574,10 +594,11 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         viewPortDef = viewPort.getStructure.viewPortDef,
         filtAndSort = filtAndSort,
         filterSpec = filterSpec,
-        sortSpec = sortSpecInternal,
+        sortSpec = sort,
         groupBy = groupBy,
         viewPort.getTreeNodeStateStore,
-        permissionChecker
+        permissionFilter,
+        frozenTime
       )
       //viewPort.setRequestId(requestId)
       viewPort.changeStructure(structure)
@@ -592,9 +613,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     val id = createId(user.name)
 
-    val sortSpecInternal = SortSpecInternalFactory.create(sort)
-
-    val aSort = parseSort(sort, columns)
+    val aSort = parseSort(sort, columns, table.asTable.getTableDef.defaultSort)
 
     val aFilter = parseFilter(filterSpec)
 
@@ -606,13 +625,14 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     val viewPortDef = getViewPortDefinition(table.asTable)
 
-    val structural = viewport.ViewPortStructuralFields(aTable, columns, viewPortDef, filtAndSort, filterSpec, sortSpecInternal, groupBy, ClosedTreeNodeState, None)
+    val structural = viewport.ViewPortStructuralFields(aTable, columns, viewPortDef, filtAndSort, filterSpec,
+      sort, groupBy, ClosedTreeNodeState, AllowAllPermissionFilter, None)
 
     val viewPort = new ViewPortImpl(id, user, clientSession, outboundQ, new AtomicReference[ViewPortStructuralFields](structural), new AtomicReference[ViewPortRange](range))
 
-    val permission = table.asTable.getTableDef.permissionChecker(viewPort, tableContainer)
+    val permissionFilter = table.asTable.getTableDef.permissionFilter(viewPort, tableContainer)
 
-    viewPort.setPermissionChecker(permission)
+    viewPort.setPermissionFilter(permissionFilter)
     viewPort.setRequestId(requestId)
     viewPorts.put(id, viewPort)
 
@@ -812,7 +832,9 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         val oldTree = action.table.getTree
         val tree = timeItThen[Tree](
           {
-            TreeBuilder.create(action.table, viewPort.getGroupBy, viewPort.filterSpec, viewPort.getColumns, latestNodeState, action.oldTreeOption, Option(viewPort.getStructure.filtAndSort.sort), action, viewPort.permissionChecker()).buildEntireTree()},
+            TreeBuilder.create(action.table, viewPort.getGroupBy, viewPort.filterSpec, viewPort.getColumns, 
+              latestNodeState, action.oldTreeOption, Option(viewPort.getStructure.filtAndSort.sort), 
+              action, viewPort.getPermissionFilter, viewPort.viewPortFrozenTime).buildEntireTree()},
           (millis, tree) => { updateHistogram(viewPort, treeBuildHistograms, "tree.build.", millis)}
         )
         val keys = timeItThen[ImmutableArray[String]](
@@ -845,7 +867,9 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       case action: FastBuildBranchesOfTree =>
         val oldTree = action.table.getTree
         val tree = timeItThen[Tree](
-          {TreeBuilder.create(action.table, viewPort.getGroupBy, viewPort.filterSpec, viewPort.getColumns, latestNodeState, action.oldTreeOption, Option(viewPort.getStructure.filtAndSort.sort), action, viewPort.permissionChecker()).buildOnlyBranches()},
+          {TreeBuilder.create(action.table, viewPort.getGroupBy, viewPort.filterSpec, viewPort.getColumns,
+            latestNodeState, action.oldTreeOption, Option(viewPort.getStructure.filtAndSort.sort), action,
+            viewPort.getPermissionFilter, viewPort.viewPortFrozenTime).buildOnlyBranches()},
           (millis, _) => { updateHistogram(viewPort, treeBuildHistograms, "tree.build.", millis)}
         )
         val keys = timeItThen[ImmutableArray[String]](
@@ -929,7 +953,8 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         val filterAndSort = viewPort.filterAndSort
 
         val (millis, _) = TimeIt.timeIt {
-          val sorted = filterAndSort.filterAndSort(viewPort.table, keys, viewPort.getColumns, viewPort.permissionChecker(), viewPort.viewPortFrozenTime)
+          val baseFilter = BaseFilter(viewPort.getPermissionFilter, viewPort.viewPortFrozenTime)
+          val sorted = filterAndSort.filterAndSort(viewPort.table, keys, viewPort.getColumns, baseFilter)
           viewPort.setKeys(viewPort.getKeys.create(sorted))
         }
 

@@ -3,7 +3,7 @@ package org.finos.vuu.feature.ignite
 import org.finos.vuu.core.sort.SortDirection
 import org.finos.vuu.core.table.{ColumnValueProvider, Columns}
 import org.finos.vuu.feature.ViewPortKeys
-import org.finos.vuu.net.FilterSpec
+import org.finos.vuu.net.{FilterSpec, SortDef, SortSpec}
 import org.finos.vuu.plugin.virtualized.api.VirtualizedSessionTableDef
 import org.finos.vuu.provider.VirtualizedProvider
 import org.finos.vuu.test.{FakeDataSource, FakeInMemoryTable}
@@ -19,9 +19,9 @@ class SchemaMapperFunctionalTest  extends SchemaMapperFunctionalTestBase {
       val tableDef = VirtualizedSessionTableDef(
         name = "MyExampleVirtualTable",
         keyField = "id",
-        columns = Columns.fromExternalSchema(externalEntitySchema)
+        customColumns = Columns.fromExternalSchema(externalEntitySchema)
       )
-      val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.columns)
+      val schemaMapper = SchemaMapperBuilder(externalEntitySchema, tableDef.getColumns)
         .build()
       val table = new FakeInMemoryTable("SchemaMapTest", tableDef)
 
@@ -36,7 +36,7 @@ class SchemaMapperFunctionalTest  extends SchemaMapperFunctionalTestBase {
 
       //simulate using user entered filter and sort to the data query
       val filterSpec = FilterSpec("orderId > 1 and ric starts \"ABC\"")
-      val sortSpec = Map("price" -> SortDirection.Ascending)
+      val sortSpec = SortSpec(List(SortDef("price", SortDirection.Ascending.external)))
 
       val filterAndSortSpecToSql = FilterAndSortSpecToSql(schemaMapper)
       filterAndSortSpecToSql.sortToSql(sortSpec)

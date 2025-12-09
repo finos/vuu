@@ -81,7 +81,8 @@ export function roundDecimal(
   align = Align.Right,
   decimals = 4,
   zeroPad?: boolean,
-  alignOnDecimals?: boolean
+  alignOnDecimals?: boolean,
+  useLocaleString = true,
 ) {
   if (value === undefined || typeof value !== "number" || isNaN(value)) {
     return "";
@@ -91,7 +92,9 @@ export function roundDecimal(
   const [part1, part2 = ""] = value.toString().split(".");
   const actualDecimals = part2.length;
 
-  integral = parseFloat(part1).toLocaleString();
+  integral = useLocaleString
+    ? parseFloat(part1).toLocaleString()
+    : parseFloat(part1).toString();
 
   if (align === Align.Left && alignOnDecimals) {
     integral = padLeft(integral);
@@ -109,8 +112,8 @@ export function roundDecimal(
       (Pad = zeroPad
         ? Zero
         : alignOnDecimals && align !== Align.Left
-        ? Space
-        : null)
+          ? Space
+          : null)
     ) {
       if (actualDecimals === 0) {
         fraction = Pad.FULL_PADDING[decimals];

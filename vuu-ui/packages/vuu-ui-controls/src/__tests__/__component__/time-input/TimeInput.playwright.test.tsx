@@ -64,12 +64,7 @@ test.describe("TimeInput", () => {
         mount,
       }) => {
         const component = await mount(<TestTimeInput />);
-
-        // Wait for component to stabilize (matching Cypress wait)
-        await component.waitFor({ timeout: 100 });
-
-        const timeinput = component.getByTestId("timeinput");
-        await expect(timeinput).toHaveClass(/vuuTimeInput/);
+        const timeinput = component.locator(".vuuTimeInput");
         await expect(timeinput).toHaveValue("");
       });
     });
@@ -81,12 +76,7 @@ test.describe("TimeInput", () => {
         const component = await mount(
           <TestTimeInput defaultValue="00:00:00" />,
         );
-
-        // Wait for component to stabilize (matching Cypress wait)
-        await component.waitFor({ timeout: 100 });
-
-        const timeinput = component.getByTestId("timeinput");
-        await expect(timeinput).toHaveClass(/vuuTimeInput/);
+        const timeinput = component.locator(".vuuTimeInput");
         await expect(timeinput).toHaveValue("00:00:00");
       });
     });
@@ -106,7 +96,7 @@ test.describe("TimeInput", () => {
         await preInput.focus();
         await preInput.press("Tab");
 
-        const timeinput = component.getByTestId("timeinput");
+        const timeinput = component.locator(".vuuTimeInput");
         await expect(timeinput).toBeFocused();
         await expect(timeinput).toHaveSelection(0, 2);
       });
@@ -125,7 +115,7 @@ test.describe("TimeInput", () => {
           await preInput.focus();
           await preInput.press("Tab");
 
-          const timeinput = component.getByTestId("timeinput");
+          const timeinput = component.locator(".vuuTimeInput");
           await expect(timeinput).toBeFocused();
           await expect(timeinput).toHaveSelection(0, 2);
 
@@ -153,7 +143,7 @@ test.describe("TimeInput", () => {
           await preInput.focus();
           await preInput.press("Tab");
 
-          const timeinput = component.getByTestId("timeinput");
+          const timeinput = component.locator(".vuuTimeInput");
           await expect(timeinput).toBeFocused();
           await expect(timeinput).toHaveSelection(0, 2);
 
@@ -176,6 +166,60 @@ test.describe("TimeInput", () => {
           await expect(timeinput).toHaveSelection(0, 2);
         });
       });
+    });
+  });
+
+  test.describe("keyboard input", () => {
+    test("when hours entered, selection moved to minutes", async ({
+      mount,
+      page,
+    }) => {
+      const callbacks: unknown[][] = [];
+      const handler = (...args: unknown[]) => callbacks.push(args);
+
+      const component = await mount(
+        <TestTimeInput
+          defaultValue="00:00:00"
+          onChange={handler}
+          onCommit={handler}
+        />,
+      );
+
+      const preTimeinput = component.getByTestId("pre-timeinput");
+      const preInput = preTimeinput.locator("input");
+      await preInput.focus();
+      await preInput.press("Tab");
+
+      const timeinput = component.locator(".vuuTimeInput");
+      await expect(timeinput).toBeFocused();
+      await expect(timeinput).toHaveSelection(0, 2);
+
+      await page.keyboard.down("1");
+      await expect(timeinput).toHaveValue("10:00:00");
+      await expect(timeinput).toHaveSelection(1, 2);
+
+      await page.keyboard.down("2");
+      await expect(timeinput).toHaveValue("12:00:00");
+
+      await expect(timeinput).toHaveSelection(3, 5);
+
+      await page.keyboard.down("3");
+      await expect(timeinput).toHaveValue("12:30:00");
+      await expect(timeinput).toHaveSelection(4, 5);
+
+      await page.keyboard.down("5");
+      await expect(timeinput).toHaveValue("12:35:00");
+      await expect(timeinput).toHaveSelection(6, 8);
+
+      expect(callbacks).toHaveLength(4);
+
+      callbacks.length = 0;
+
+      await timeinput.press("Enter");
+
+      // commit callback
+      expect(callbacks).toHaveLength(1);
+      expect(callbacks[0][1]).toEqual("12:35:00");
     });
   });
 });

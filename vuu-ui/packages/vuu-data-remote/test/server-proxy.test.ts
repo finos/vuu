@@ -19,6 +19,7 @@ import {
   createSubscription,
   createConnection,
   serverAPI,
+  TABLE_ROW,
 } from "./test-utils";
 import { VuuRow } from "@vuu-ui/vuu-protocol-types";
 import {
@@ -159,37 +160,38 @@ describe("ServerProxy", () => {
       );
     });
 
-    it("sends data to client once all data for client range is available", async () => {
+    it("sends data to client even before  all data for client range is available", async () => {
       const [serverProxy, postMessageToClient] = await createFixtures();
 
       postMessageToClient.mockClear();
 
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [sizeRow(), ...createTableRows("server-vp-1", 0, 5)],
-        },
-      });
-
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([sizeRow(), ...createTableRows("server-vp-1", 0, 5)]),
+      );
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
-      expect(postMessageToClient).toHaveBeenCalledWith({
-        mode: "size-only",
-        type: "viewport-update",
-        clientViewportId: "client-vp-1",
-        size: 100,
-        rows: undefined,
-      });
+
+      // prettier-ignore
+      expect(postMessageToClient).toHaveBeenCalledWith(
+        {
+          clientViewportId: 'client-vp-1',
+          mode: "update",
+          rows: [
+            [0,0,true,false,0,0,"key-00", 0,1, false,"key-00", 'name 00',1000,true],
+            [1,1,true,false,0,0,"key-01",0,1,false,"key-01","name 01",1001,true],
+            [2,2,true,false,0,0,"key-02",0,1,false,"key-02","name 02",1002,true],
+            [3,3,true,false,0,0,"key-03",0,1,false,"key-03","name 03",1003,true],
+            [4,4,true,false,0,0,"key-04",0,1,false,"key-04","name 04",1004,true],
+          ],
+          size: 100,
+          type: 'viewport-update',
+        }
+      );
 
       postMessageToClient.mockClear();
 
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: createTableRows("server-vp-1", 5, 10, 100, 2 /* ts */),
-        },
-      });
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW(createTableRows("server-vp-1", 5, 10, 100, 2)),
+      );
 
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
 
@@ -198,11 +200,6 @@ describe("ServerProxy", () => {
         {
           mode: "update",
           rows: [
-            [0,0,true,false,0,0,'key-00', 0,1, false, 'key-00', 'name 00',1000,true],
-            [1,1,true,false,0,0,"key-01",0,1,false,"key-01","name 01",1001,true],
-            [2,2,true,false,0,0,"key-02",0,1,false,"key-02","name 02",1002,true],
-            [3,3,true,false,0,0,"key-03",0,1,false,"key-03","name 03",1003,true],
-            [4,4,true,false,0,0,"key-04",0,1,false,"key-04","name 04",1004,true],
             [5,5,true,false,0,0,"key-05",0,2,false,"key-05","name 05",1005,true],
             [6,6,true,false,0,0,"key-06",0,2,false,"key-06","name 06",1006,true],
             [7,7,true,false,0,0,"key-07",0,2,false,"key-07","name 07",1007,true],
@@ -380,55 +377,27 @@ describe("ServerProxy", () => {
     it(`
       1) sends data to client when initial full dataset is received
       2) sets rowcount to 0
-      3) sends fresh data to client in 2 batches, SIZE record at end of first batch, which is NOT enough to fill client range`, async () => {
+      3) sends fresh data to client in 2 batches, 
+        SIZE record at end of first batch, first batch is NOT enough to fill client range`, async () => {
       const [serverProxy, postMessageToClient] = await createFixtures({
         bufferSize: 10,
       });
 
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [sizeRow(), ...createTableRows("server-vp-1", 0, 10)],
-        },
-      });
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([sizeRow(), ...createTableRows("server-vp-1", 0, 10)]),
+      );
 
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [sizeRow("server-vp-1", 0)],
-        },
-      });
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([sizeRow("server-vp-1", 0)]),
+      );
 
       postMessageToClient.mockClear();
 
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [...createTableRows("server-vp-1", 0, 7), sizeRow()],
-        },
-      });
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([...createTableRows("server-vp-1", 0, 7), sizeRow()]),
+      );
 
-      // Size update only
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
-      expect(postMessageToClient).toHaveBeenCalledWith({
-        mode: "size-only",
-        size: 100,
-        type: "viewport-update",
-        clientViewportId: "client-vp-1",
-      });
-
-      postMessageToClient.mockClear();
-
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [...createTableRows("server-vp-1", 7, 20)],
-        },
-      });
 
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith(
@@ -442,13 +411,33 @@ describe("ServerProxy", () => {
             [4,4,true,false,0,0,"key-04",0,1,false,"key-04","name 04",1004,true],
             [5,5,true,false,0,0,"key-05",0,1,false,"key-05","name 05",1005,true],
             [6,6,true,false,0,0,"key-06",0,1,false,"key-06","name 06",1006,true],
+          ],
+          size: 100,
+          type: 'viewport-update',
+          clientViewportId: 'client-vp-1'
+        },
+      );
+
+      postMessageToClient.mockClear();
+
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([...createTableRows("server-vp-1", 7, 20)]),
+      );
+
+      expect(postMessageToClient).toBeCalledTimes(1);
+
+      // prettier-ignore
+      expect(postMessageToClient).toHaveBeenCalledWith(
+        {
+          mode: "update",
+          rows: [
             [7,7,true,false,0,0,"key-07",0,1,false,"key-07","name 07",1007,true],
             [8,8,true,false,0,0,"key-08",0,1,false,"key-08","name 08",1008,true],
             [9,9,true,false,0,0,"key-09",0,1,false,"key-09","name 09",1009,true]
           ],
           type: 'viewport-update',
           clientViewportId: 'client-vp-1'
-        }
+        },
       );
     });
   });
@@ -735,13 +724,9 @@ describe("ServerProxy", () => {
 
       postMessageToClient.mockClear();
 
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [sizeRow(), ...createTableRows("server-vp-1", 0, 10)],
-        },
-      });
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([sizeRow(), ...createTableRows("server-vp-1", 0, 10)]),
+      );
 
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
       // prettier-ignore
@@ -777,45 +762,22 @@ describe("ServerProxy", () => {
       expect(postMessageToClient).toHaveBeenCalledTimes(0);
     });
 
-    it("buffers 10 rows, server sends partial buffer set, not enough to fulfill client request, followed by rest", async () => {
+    it("buffers 10 rows, server sends partial buffer set, NOT enough to fulfill client request, followed by rest", async () => {
       const [serverProxy, postMessageToClient] = await createFixtures({
         bufferSize: 10,
       });
 
       postMessageToClient.mockClear();
 
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [sizeRow(), ...createTableRows("server-vp-1", 0, 9)],
-        },
-      });
-
-      // First call will be size only
-      expect(postMessageToClient).toHaveBeenCalledTimes(1);
-      expect(postMessageToClient).toHaveBeenCalledWith({
-        mode: "size-only",
-        type: "viewport-update",
-        clientViewportId: "client-vp-1",
-        size: 100,
-      });
-
-      postMessageToClient.mockClear();
-
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [...createTableRows("server-vp-1", 9, 15, 100, 2)],
-        },
-      });
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([sizeRow(), ...createTableRows("server-vp-1", 0, 9)]),
+      );
 
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
-
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "update",
+        size: 100,
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
@@ -828,6 +790,23 @@ describe("ServerProxy", () => {
           [6,6,true,false,0,0,"key-06",0,1,false,"key-06","name 06",1006,true],
           [7,7,true,false,0,0,"key-07",0,1,false,"key-07","name 07",1007,true],
           [8,8,true,false,0,0,"key-08",0,1,false,"key-08","name 08",1008,true],
+        ],
+    });
+
+      postMessageToClient.mockClear();
+
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([...createTableRows("server-vp-1", 9, 15, 100, 2)]),
+      );
+
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
+
+      // prettier-ignore
+      expect(postMessageToClient).toHaveBeenCalledWith({
+        mode: "update",
+        type: "viewport-update",
+        clientViewportId: "client-vp-1",
+        rows: [
           [9,9,true,false,0,0,"key-09",0,2,false,"key-09","name 09",1009,true],
         ],
     });
@@ -1054,7 +1033,10 @@ describe("ServerProxy", () => {
       });
     });
 
-    it("returns client range requests from buffer, if available. Final request is only partially available in cache. Resolved when next server data received", async () => {
+    it(`
+      returns client range requests from buffer, if available. 
+      Final request is only partially available in cache. 
+      Resolved when next server data received`, async () => {
       const [serverProxy, postMessageToClient, connection] =
         await createFixtures({
           bufferSize: 10,
@@ -1064,14 +1046,10 @@ describe("ServerProxy", () => {
 
       postMessageToClient.mockClear();
 
-      // Server responds to fullRange (0:20) with full set of initial rows
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [sizeRow(), ...createTableRows("server-vp-1", 0, 20)],
-        },
-      });
+      // Server sends full snapshot, corresponding to initial subscription range
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([sizeRow(), ...createTableRows("server-vp-1", 0, 20)]),
+      );
 
       postMessageToClient.mockClear();
       connection.send.mockClear();
@@ -1084,7 +1062,9 @@ describe("ServerProxy", () => {
         range: { from: 2, to: 12 },
       });
 
+      // no call to server
       expect(connection.send).toHaveBeenCalledTimes(0);
+      // but data from cache has been sent to client
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
 
       // prettier-ignore
@@ -1177,26 +1157,29 @@ describe("ServerProxy", () => {
         range: { from: 12, to: 22 },
       });
 
-      expect(postMessageToClient).not.toHaveBeenCalled();
-
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [sizeRow(), ...createTableRows("server-vp-1", 20, 28)],
-        },
-      });
-
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
         mode: "update",
-        // range: { from: 12, to: 22 },
-        size: 100,
+        range: { from: 12, to: 22 },
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
           [18,8,true,false,0,0,"key-18",0,1,false,"key-18","name 18",1018,true],
           [19,9,true,false,0,0,"key-19",0,1,false,"key-19","name 19",1019,true],
+        ],
+      });
+
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW(createTableRows("server-vp-1", 20, 28)),
+      );
+
+      // prettier-ignore
+      expect(postMessageToClient).toHaveBeenCalledWith({
+        mode: "update",
+        // range: { from: 12, to: 22 },
+        type: "viewport-update",
+        clientViewportId: "client-vp-1",
+        rows: [
           [20,0,true,false,0,0,"key-20",0,1,false,"key-20","name 20",1020,true],
           [21,1,true,false,0,0,"key-21",0,1,false,"key-21","name 21",1021,true],
         ],
@@ -1211,21 +1194,25 @@ describe("ServerProxy", () => {
       postMessageToClient.mockClear();
 
       // 2) server with responds with just rows [0 ... 4]
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [sizeRow(), ...createTableRows("server-vp-1", 0, 5)],
-        },
-      });
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([sizeRow(), ...createTableRows("server-vp-1", 0, 5)]),
+      );
 
-      // 3) Do not have entire set requested by user, so only size is initially returned
+      // 3) those 4 rows are all in client range, so sent to client
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
+      // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
-        mode: "size-only",
+        mode: "update",
+        size: 100,
         type: "viewport-update",
         clientViewportId: "client-vp-1",
-        size: 100,
+        rows: [
+          [0,0,true,false,0,0,"key-00",0,1,false,"key-00","name 00",1000,true],
+          [1,1,true,false,0,0,"key-01",0,1,false,"key-01","name 01",1001,true],
+          [2,2,true,false,0,0,"key-02",0,1,false,"key-02","name 02",1002,true],
+          [3,3,true,false,0,0,"key-03",0,1,false,"key-03","name 03",1003,true],
+          [4,4,true,false,0,0,"key-04",0,1,false,"key-04","name 04",1004,true],
+        ],
       });
 
       postMessageToClient.mockClear();
@@ -1239,25 +1226,31 @@ describe("ServerProxy", () => {
 
       expect(postMessageToClient).toHaveBeenCalledTimes(0);
 
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [...createTableRows("server-vp-1", 5, 10, 100, 2)],
-        },
-      });
+      // 5) Rows 5 - 10 arrive, all in client range, so all sent to client
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([...createTableRows("server-vp-1", 5, 10, 100, 2)]),
+      );
 
-      expect(postMessageToClient).toHaveBeenCalledTimes(0);
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
+      // prettier-ignore
+      expect(postMessageToClient).toHaveBeenCalledWith({
+        mode: "update",
+        type: "viewport-update",
+        clientViewportId: "client-vp-1",
+        rows: [
+          [5,5,true,false,0,0,"key-05",0,2,false,"key-05","name 05",1005,true],
+          [6,6,true,false,0,0,"key-06",0,2,false,"key-06","name 06",1006,true],
+          [7,7,true,false,0,0,"key-07",0,2,false,"key-07","name 07",1007,true],
+          [8,8,true,false,0,0,"key-08",0,2,false,"key-08","name 08",1008,true],
+          [9,9,true,false,0,0,"key-09",0,2,false,"key-09","name 09",1009,true],
+        ],
+      });
 
       postMessageToClient.mockClear();
 
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [...createTableRows("server-vp-1", 10, 15, 100, 3)],
-        },
-      });
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([...createTableRows("server-vp-1", 10, 15, 100, 3)]),
+      );
 
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
 
@@ -1267,14 +1260,6 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [2,2,true,false,0,0,"key-02",0,1,false,"key-02","name 02",1002,true],
-          [3,3,true,false,0,0,"key-03",0,1,false,"key-03","name 03",1003,true],
-          [4,4,true,false,0,0,"key-04",0,1,false,"key-04","name 04",1004,true],
-          [5,5,true,false,0,0,"key-05",0,2,false,"key-05","name 05",1005,true],
-          [6,6,true,false,0,0,"key-06",0,2,false,"key-06","name 06",1006,true],
-          [7,7,true,false,0,0,"key-07",0,2,false,"key-07","name 07",1007,true],
-          [8,8,true,false,0,0,"key-08",0,2,false,"key-08","name 08",1008,true],
-          [9,9,true,false,0,0,"key-09",0,2,false,"key-09","name 09",1009,true],
           [10,0,true,false,0,0,"key-10",0,3,false,"key-10","name 10",1010,true],
           [11,1,true,false,0,0,"key-11",0,3,false,"key-11","name 11",1011,true],
         ],
@@ -1433,13 +1418,9 @@ describe("ServerProxy", () => {
 
       // This translates into server call for rows 0..20 these are all stored in Viewport cache
       // and rows 0..10 returned to client
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [sizeRow(), ...createTableRows("server-vp-1", 0, 20)],
-        },
-      });
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([sizeRow(), ...createTableRows("server-vp-1", 0, 20)]),
+      );
 
       postMessageToClient.mockClear();
 
@@ -1455,13 +1436,9 @@ describe("ServerProxy", () => {
 
       server.ackRangeRequest(10, 40);
 
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [...createTableRows("server-vp-1", 20, 40, 100, 2)],
-        },
-      });
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([...createTableRows("server-vp-1", 20, 40, 100, 2)]),
+      );
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenCalledWith({
@@ -1487,42 +1464,58 @@ describe("ServerProxy", () => {
 
       // Client now requests 5..15 (scrolled backwards) which expands to 0..25 Viewport cache
       // contains 10..40 so we discard 25..40 and keep 10..25. We can expect 0..10 from server.
-      // We do not have have all rows needed to return to client.
+      // We do not have have all rows needed to return to client, but we return those we have.
       TEST_setRequestId(1);
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
         type: "setViewRange",
         range: { from: 5, to: 15 },
       });
-      expect(postMessageToClient).toHaveBeenCalledTimes(0);
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
+      // prettier-ignore
+      expect(postMessageToClient).toHaveBeenCalledWith({
+        mode: "update",
+        type: "viewport-update",
+        clientViewportId: "client-vp-1",
+        range: { from: 5, to: 15 },
+        rows: [
+          [10,5,true,false,0,0,"key-10",0,1,false,"key-10","name 10",1010,true],
+          [11,6,true,false,0,0,"key-11",0,1,false,"key-11","name 11",1011,true],
+          [12,7,true,false,0,0,"key-12",0,1,false,"key-12","name 12",1012,true],
+          [13,8,true,false,0,0,"key-13",0,1,false,"key-13","name 13",1013,true],
+          [14,9,true,false,0,0,"key-14",0,1,false,"key-14","name 14",1014,true],
+        ],
+      });
 
       postMessageToClient.mockClear();
 
       server.ackRangeRequest(0, 25);
 
       // In this batch, the server only sends 2 of the 10 rows we're awaiting (0..10). These are both in
-      // the client range but we still don't have the full client range, so nothing returned to client
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [...createTableRows("server-vp-1", 8, 10, 100, 3)],
-        },
+      // the client range. We still don't have the full client range, so just return the new rows
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([...createTableRows("server-vp-1", 8, 10, 100, 3)]),
+      );
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
+      // prettier-ignore
+      expect(postMessageToClient).toHaveBeenCalledWith({
+        mode: "update",
+        type: "viewport-update",
+        clientViewportId: "client-vp-1",
+        rows: [
+          [8,3,true,false,0,0,"key-08",0,3,false,"key-08","name 08",1008,true],
+          [9,4,true,false,0,0,"key-09",0,3,false,"key-09","name 09",1009,true],
+        ],
       });
-      expect(postMessageToClient).toHaveBeenCalledTimes(0);
 
       postMessageToClient.mockClear();
 
       // We get the remaining rows we requested. Viewport cache now contains full 7..27
       // and we have all the rows from the client range, so we can take this together with
       // the rows in holding pen and dispatch the full requested set (12..22) to client
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [...createTableRows("server-vp-1", 0, 8, 100, 4)],
-        },
-      });
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([...createTableRows("server-vp-1", 0, 8, 100, 4)]),
+      );
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
 
       // prettier-ignore
@@ -1535,13 +1528,6 @@ describe("ServerProxy", () => {
           [5,0,true,false,0,0,"key-05",0,4,false,"key-05","name 05",1005,true],
           [6,1,true,false,0,0,"key-06",0,4,false,"key-06","name 06",1006,true],
           [7,2,true,false,0,0,"key-07",0,4,false,"key-07","name 07",1007,true],
-          [8,3,true,false,0,0,"key-08",0,3,false,"key-08","name 08",1008,true],
-          [9,4,true,false,0,0,"key-09",0,3,false,"key-09","name 09",1009,true],
-          [10,5,true,false,0,0,"key-10",0,1,false,"key-10","name 10",1010,true],
-          [11,6,true,false,0,0,"key-11",0,1,false,"key-11","name 11",1011,true],
-          [12,7,true,false,0,0,"key-12",0,1,false,"key-12","name 12",1012,true],
-          [13,8,true,false,0,0,"key-13",0,1,false,"key-13","name 13",1013,true],
-          [14,9,true,false,0,0,"key-14",0,1,false,"key-14","name 14",1014,true],
         ],
       });
     });
@@ -1727,13 +1713,9 @@ describe("ServerProxy", () => {
         });
 
       // 1) server sends initial set of rows
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [sizeRow(), ...createTableRows("server-vp-1", 0, 30)],
-        },
-      });
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([sizeRow(), ...createTableRows("server-vp-1", 0, 30)]),
+      );
 
       postMessageToClient.mockClear();
       connection.send.mockClear();
@@ -1796,7 +1778,8 @@ describe("ServerProxy", () => {
       TEST_setRequestId(1);
 
       // 5) We're still waiting for previously requested rows and client scrolls forward again, this time
-      // beyond our current cache.
+      // beyond our current cache. We have some of the rows requested in cache but not all, we send those
+      // we do have to client.
       serverProxy.handleMessageFromClient({
         viewport: "client-vp-1",
         type: "setViewRange",
@@ -1804,19 +1787,20 @@ describe("ServerProxy", () => {
       });
 
       expect(connection.send).toHaveBeenCalledTimes(0);
-      expect(postMessageToClient).toHaveBeenCalledTimes(0);
+      expect(postMessageToClient).toHaveBeenCalledTimes(1);
+      // prettier-ignore
+      expect(postMessageToClient).toHaveBeenCalledWith({
+        mode: "update",
+        type: "viewport-update",
+        clientViewportId: "client-vp-1",
+        range: { from: 24, to: 34 },
+        rows: [
+          [27,1,true,false,0,0,"key-27",0,1,false,"key-27","name 27",1027,true],
+          [28,2,true,false,0,0,"key-28",0,1,false,"key-28","name 28",1028,true],
+          [29,3,true,false,0,0,"key-29",0,1,false,"key-29","name 29",1029,true],
+        ],
 
-      // expect(connection.send).toHaveBeenCalledWith({
-      //   body: {
-      //     viewPortId: "server-vp-1",
-      //     type: "CHANGE_VP_RANGE",
-      //     from: 14,
-      //     to: 44,
-      //   },
-      //   module: "CORE",
-      //   requestId: "1",
-      //   sessionId: "dsdsd",
-      // });
+      });
     });
   });
 
@@ -2467,13 +2451,9 @@ describe("ServerProxy", () => {
           bufferSize: 10,
         });
 
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [sizeRow(), ...createTableRows("server-vp-1", 0, 20)],
-        },
-      });
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([sizeRow(), ...createTableRows("server-vp-1", 0, 20)]),
+      );
 
       TEST_setRequestId(1);
       postMessageToClient.mockClear();
@@ -2507,16 +2487,12 @@ describe("ServerProxy", () => {
 
       postMessageToClient.mockClear();
 
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [
-            sizeRow("server-vp-1", 1),
-            updateTableRow("server-vp-1", 0, 1234, { key: "abc", vpSize: 1 }),
-          ],
-        },
-      });
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([
+          sizeRow("server-vp-1", 1),
+          updateTableRow("server-vp-1", 0, 1234, { key: "abc", vpSize: 1 }),
+        ]),
+      );
 
       expect(postMessageToClient).toHaveBeenCalledTimes(1);
 
@@ -2548,32 +2524,16 @@ describe("ServerProxy", () => {
 
       postMessageToClient.mockClear();
 
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [sizeRow(), ...createTableRows("server-vp-1", 0, 5, 100, 3)],
-        },
-      });
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [sizeRow(), ...createTableRows("server-vp-1", 5, 20, 100, 3)],
-        },
-      });
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([sizeRow(), ...createTableRows("server-vp-1", 0, 5, 100, 3)]),
+      );
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([...createTableRows("server-vp-1", 5, 20, 100, 3)]),
+      );
 
       expect(postMessageToClient).toHaveBeenCalledTimes(2);
-      expect(postMessageToClient).toHaveBeenNthCalledWith<
-        [DataSourceDataMessage]
-      >(1, {
-        type: "viewport-update",
-        mode: "size-only",
-        clientViewportId: "client-vp-1",
-        size: 100,
-      });
       // prettier-ignore
-      expect(postMessageToClient).toHaveBeenNthCalledWith<[DataSourceDataMessage]>(2, {
+      expect(postMessageToClient).toHaveBeenNthCalledWith<[DataSourceDataMessage]>(1, {
             type: "viewport-update",
             mode: "update",
             clientViewportId: "client-vp-1",
@@ -2583,13 +2543,21 @@ describe("ServerProxy", () => {
               [2,2,true,false,0,0,"key-02",0,3,false,"key-02","name 02",1002, true],
               [3,3,true,false,0,0,"key-03",0,3,false,"key-03","name 03",1003, true],
               [4,4,true,false,0,0,"key-04",0,3,false,"key-04","name 04",1004, true],
+            ],
+            size: 100
+          });
+      // prettier-ignore
+      expect(postMessageToClient).toHaveBeenNthCalledWith<[DataSourceDataMessage]>(2, {
+            type: "viewport-update",
+            mode: "update",
+            clientViewportId: "client-vp-1",
+            rows: [
               [5,5,true,false,0,0,"key-05",0,3,false,"key-05","name 05",1005, true],
               [6,6,true,false,0,0,"key-06",0,3,false,"key-06","name 06",1006, true],
               [7,7,true,false,0,0,"key-07",0,3,false,"key-07","name 07",1007, true],
               [8,8,true,false,0,0,"key-08",0,3,false,"key-08","name 08",1008, true],
               [9,9,true,false,0,0,"key-09",0,3,false,"key-09","name 09",1009, true],
             ],
-            size: 100
           });
     });
   });
@@ -2836,13 +2804,9 @@ describe("ServerProxy", () => {
 
       postMessageToClient.mockClear();
 
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [sizeRow(), ...createTableRows("server-vp-1", 0, 110)],
-        },
-      });
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([sizeRow(), ...createTableRows("server-vp-1", 0, 110)]),
+      );
 
       TEST_setRequestId(1);
       postMessageToClient.mockClear();
@@ -2929,11 +2893,15 @@ describe("ServerProxy", () => {
       // prettier-ignore
 
       expect(postMessageToClient).toHaveBeenNthCalledWith(1, {
-        mode: "size-only",
+        mode: "update",
+        size: 4,
         type: "viewport-update",
         clientViewportId: "client-vp-1",
-        size: 4,
-      })
+        rows: [
+          [0,0,false,false,1,43714,"$root|USD",0,1,false,"","USD","","","","",""],
+          [1,1,false,false,1,43941,"$root|EUR",0,1,false,"","EUR","","","","",""],
+        ],
+      });
 
       // prettier-ignore
       expect(postMessageToClient).toHaveBeenNthCalledWith(2, {
@@ -2941,8 +2909,6 @@ describe("ServerProxy", () => {
         type: "viewport-update",
         clientViewportId: "client-vp-1",
         rows: [
-          [0,0,false,false,1,43714,"$root|USD",0,1,false,"","USD","","","","",""],
-          [1,1,false,false,1,43941,"$root|EUR",0,1,false,"","EUR","","","","",""],
           [2,2,false,false,1,43997,"$root|GBX",0,1,false,"","GBX","","","","",""],
           [3,3,false,false,1,44108,"$root|CAD",0,1,false,"","CAD","","","","",""],
         ],
@@ -2955,13 +2921,9 @@ describe("ServerProxy", () => {
 
       postMessageToClient.mockClear();
 
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [sizeRow(), ...createTableRows("server-vp-1", 0, 10)],
-        },
-      });
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([sizeRow(), ...createTableRows("server-vp-1", 0, 10)]),
+      );
 
       TEST_setRequestId(1);
       postMessageToClient.mockClear();
@@ -2995,13 +2957,9 @@ describe("ServerProxy", () => {
 
       postMessageToClient.mockClear();
 
-      serverProxy.handleMessageFromServer({
-        ...COMMON_ATTRS,
-        body: {
-          ...COMMON_TABLE_ROW_ATTRS,
-          rows: [...createTableRows("server-vp-1", 0, 10)],
-        },
-      });
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([...createTableRows("server-vp-1", 0, 10)]),
+      );
 
       expect(postMessageToClient).toHaveBeenCalledTimes(0);
     });

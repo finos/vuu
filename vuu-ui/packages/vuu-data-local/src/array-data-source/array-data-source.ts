@@ -42,6 +42,7 @@ import {
   Range,
   buildColumnMap,
   combineFilters,
+  filterAsQuery,
   getAddedItems,
   hasBaseFilter,
   hasFilter,
@@ -66,6 +67,7 @@ import {
   sortComparator,
   sortRows,
 } from "./sort-utils";
+import { Filter } from "@vuu-ui/vuu-filter-types";
 
 const { debug, info } = logger("ArrayDataSource");
 
@@ -841,7 +843,7 @@ export class ArrayDataSource
       const { from, to } = this.#range;
       const deletedIndex = doomedIndex ?? dataIndex;
       if (deletedIndex >= from && deletedIndex < to) {
-        this.#keys.reset(this.range);
+        this.#keys.reset(this.range.withBuffer);
         this.sendRowsToClient(true);
       }
 
@@ -861,7 +863,7 @@ export class ArrayDataSource
       const newPageCount = Math.ceil(this.size / (range.to - range.from));
 
       this.#range = range;
-      const keysResequenced = this.#keys.reset(range);
+      const keysResequenced = this.#keys.reset(range.withBuffer);
       this.sendRowsToClient(forceFullRefresh || keysResequenced);
 
       requestAnimationFrame(() => {
@@ -898,8 +900,8 @@ export class ArrayDataSource
     } else {
       const rowRange =
         this.rangeChangeRowset === "delta" && !forceFullRefresh
-          ? rangeNewItems(this.lastRangeServed, this.#range)
-          : this.#range;
+          ? rangeNewItems(this.lastRangeServed, this.#range.withBuffer)
+          : this.#range.withBuffer;
       const data = this.processedData ?? this.#data;
 
       const rowsWithinViewport = data
@@ -993,6 +995,18 @@ export class ArrayDataSource
       ...this._config,
       filterSpec: filter,
     };
+  }
+
+  setFilter(filter: Filter) {
+    const dataSourceFilter: DataSourceFilter = {
+      filter: filterAsQuery(filter),
+      filterStruct: filter,
+    };
+    this.filter = dataSourceFilter;
+  }
+
+  clearFilter() {
+    this.filter = { filter: "" };
   }
 
   get groupBy() {

@@ -1357,3 +1357,18 @@ export const reorderColumnItems = <
   }
   return columns;
 };
+
+export const columnByAriaIndex = (
+  columns: RuntimeColumnDescriptor[],
+  ariaColIndex: number,
+) => {
+  const column = columns[ariaColIndex - 1];
+  if (column && column.ariaColIndex === ariaColIndex) {
+    return column;
+  } else if (column && column.ariaColIndex < ariaColIndex) {
+    if (columns[ariaColIndex]?.ariaColIndex === ariaColIndex) {
+      return columns[ariaColIndex];
+    }
+  }
+  throw Error(`no column with aria-colIndex ${ariaColIndex}`);
+};

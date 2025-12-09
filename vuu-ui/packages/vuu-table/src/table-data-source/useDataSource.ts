@@ -6,11 +6,12 @@ import type {
   DataSourceSuspenseProps,
 } from "@vuu-ui/vuu-data-types";
 import { SelectRowRequest, VuuRange } from "@vuu-ui/vuu-protocol-types";
-import { MovingWindow, NULL_RANGE, Range } from "@vuu-ui/vuu-utils";
+import { NULL_RANGE, Range } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { TableProps } from "./Table";
+import { TableProps } from "../Table";
 import { metadataKeys } from "@vuu-ui/vuu-utils";
 import { TableRowSelectHandlerInternal } from "@vuu-ui/vuu-table-types";
+import { MovingWindow } from "./moving-window";
 
 const { KEY } = metadataKeys;
 
@@ -74,11 +75,7 @@ export const useDataSource = ({
     };
   }, [autoSelect, dataSource, handleConfigChange]);
 
-  const dataWindow = useMemo(
-    () => new MovingWindow(NULL_RANGE),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
+  const dataWindow = useMemo(() => new MovingWindow(NULL_RANGE), []);
 
   useMemo(() => {
     dataSource.on("resumed", () => {
@@ -165,6 +162,7 @@ export const useDataSource = ({
           hasUpdated.current = true;
         }
       } else if (message.type === "viewport-clear") {
+        console.log("viewport clear");
         onSizeChange?.(0);
         dataWindow.setRowCount(0);
         setData([]);
@@ -208,12 +206,13 @@ export const useDataSource = ({
   const setRange = useCallback(
     (viewportRange: VuuRange) => {
       if (!rangeRef.current.equals(viewportRange)) {
-        const range = Range(viewportRange.from, viewportRange.to, {
+        const range = Range(
+          viewportRange.from,
+          viewportRange.to,
           renderBufferSize,
-          rowCount: totalRowCountRef.current,
-        });
+        );
 
-        dataWindow.setRange(range);
+        dataWindow.setRange(range.withBuffer);
 
         if (dataSource.status !== "subscribed") {
           dataSource?.subscribe(

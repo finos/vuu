@@ -102,7 +102,7 @@ case class JoinDataTableData(
       val isPrimaryKey = primaryKeyMask(keyIndex)
 
       if (isPrimaryKey) {
-        logger.debug(s"found foreign key $key in table $tableName for primary key $origPrimaryKey ")
+        logger.trace(s"found foreign key $key in table $tableName for primary key $origPrimaryKey ")
         map.put(tableName, key)
       }
 
@@ -423,7 +423,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     pullRow(key, columns)
   }
 
-  lazy val viewPortColumns: ViewPortColumns = ViewPortColumnCreator.create(this, this.tableDef.columns.map(_.name).toList)
+  lazy val viewPortColumns: ViewPortColumns = ViewPortColumnCreator.create(this, this.tableDef.getColumns.map(_.name).toList)
 
   private def keyExistsInLeftMostSourceTable(key: String): Boolean = {
     val keysByTable = joinData.getKeyValuesByTable(key)
@@ -489,8 +489,8 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
   private def getDefaultColumnMap(key: String): Map[String, Any] = {
     val index = joinData.keyToIndexMap.get(key)
     Map(
-      CreatedTimeColumnName -> joinData.indexToCreatedTime.get(index),
-      LastUpdatedTimeColumnName -> joinData.indexToLastUpdatedTime.get(index)
+      DefaultColumn.CreatedTime.name -> joinData.indexToCreatedTime.get(index),
+      DefaultColumn.LastUpdatedTime.name -> joinData.indexToLastUpdatedTime.get(index)
     )
   }
 

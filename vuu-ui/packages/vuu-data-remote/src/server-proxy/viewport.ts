@@ -45,10 +45,7 @@ import {
   UnfreezeViewportRequest,
 } from "@vuu-ui/vuu-protocol-types";
 import { getFullRange, KeySet, logger, RangeMonitor } from "@vuu-ui/vuu-utils";
-import {
-  gapBetweenLastRowSentToClient,
-  getFirstAndLastRows,
-} from "../message-utils";
+import { getFirstAndLastRows } from "../message-utils";
 import { ArrayBackedMovingWindow } from "./array-backed-moving-window";
 import * as Message from "./messages";
 
@@ -167,7 +164,6 @@ export class Viewport {
   private rowCountChanged = false;
   private lastUpdateStatus: LastUpdateStatus = NO_UPDATE_STATUS;
   private updateThrottleTimer: number | undefined = undefined;
-  private lastRowsReturnedToClient: [number, number] = [-1, -1];
 
   private rangeMonitor = new RangeMonitor("ViewPort");
 
@@ -233,10 +229,6 @@ export class Viewport {
   // Records SIZE only updates
   private setLastSizeOnlyUpdateSize = (size: number) => {
     this.lastUpdateStatus.size = size;
-    if (size === 0) {
-      this.lastRowsReturnedToClient[0] = -1;
-      this.lastRowsReturnedToClient[1] = -1;
-    }
   };
   private setLastUpdate = (mode: DataUpdateMode) => {
     const { ts: lastTS, mode: lastMode } = this.lastUpdateStatus;
@@ -551,9 +543,6 @@ export class Viewport {
 
       const toClient = this.isTree ? toClientRowTree : toClientRow;
       if (clientRows.length) {
-        this.lastRowsReturnedToClient[0] = clientRows[0].rowIndex;
-        this.lastRowsReturnedToClient[1] = clientRows.at(-1)?.rowIndex ?? -1;
-
         return [
           serverRequest,
           clientRows.map((row) => {
@@ -711,8 +700,6 @@ export class Viewport {
 
     if (!this.isTree && config.groupBy.length > 0) {
       this.dataWindow?.clear();
-      this.lastRowsReturnedToClient[0] = -1;
-      this.lastRowsReturnedToClient[1] = -1;
     }
 
     return this.createRequest(
@@ -802,11 +789,11 @@ export class Viewport {
           `ignore a SIZE=0 message on disabled viewport (${rows.length} rows)`,
         );
         return;
-      } else if (firstRow.updateType === "SIZE") {
+      } /* else if (firstRow.updateType === "SIZE") {
         // record all size only updates, we may throttle them and always need
         // to know the value of last update received.
         this.setLastSizeOnlyUpdateSize(firstRow.vpSize);
-      }
+      }*/
     }
 
     for (const row of rows) {
@@ -866,54 +853,14 @@ export class Viewport {
         this.updateThrottleTimer = undefined;
       }
 
-      if (
-        this.pendingUpdates.length > 0 &&
-        this.dataWindow.hasAllRowsWithinRange
-      ) {
+      if (this.pendingUpdates.length > 0) {
         out = [];
         mode = "update";
 
-        const missingRows = gapBetweenLastRowSentToClient(
-          this.lastRowsReturnedToClient,
-          this.pendingUpdates,
-          this.dataWindow.clientRange,
-          this.dataWindow.rowCount,
-        );
-        if (missingRows) {
-          for (let i = missingRows.from; i < missingRows.to; i++) {
-            const row = this.dataWindow.getAtIndex(i);
-            if (row) {
-              out.push(toClient(row, keys));
-            } else {
-              console.warn("[Viewport] missing row not in data cache");
-            }
-          }
-          for (const row of this.pendingUpdates) {
-            out.push(toClient(row, keys));
-          }
-
-          // for (const row of this.dataWindow.getData()) {
-          //   out.push(toClient(row, keys, selectedRows));
-          // }
-          out.sort(
-            ([idx1]: DataSourceRow, [idx2]: DataSourceRow) => idx1 - idx2,
-          );
-        } else {
-          for (const row of this.pendingUpdates) {
-            out.push(toClient(row, keys));
-          }
+        for (const row of this.pendingUpdates) {
+          out.push(toClient(row, keys));
         }
-
-        this.lastRowsReturnedToClient[0] = out.at(0)?.[0] ?? -1;
-        this.lastRowsReturnedToClient[1] = out.at(-1)?.[0] ?? -1;
-      } else if (this.pendingUpdates.length > 0) {
-        // We have updates, but local cache does not have all rows to fill client range.
-        // That means we must be processing a full range refresh, but don't yet have all
-        // the data to send to client. When remaining rows are received, we will forward
-        // rows to client.
-        // Reset the lastRowsReturnedToClient. otherwise we would skip these pending updates
-        this.lastRowsReturnedToClient[0] = -1;
-        this.lastRowsReturnedToClient[1] = -1;
+        // }
       }
       this.pendingUpdates.length = 0;
       this.hasUpdates = false;
@@ -952,13 +899,14 @@ export class Viewport {
 
   private throttleMessage = (mode: DataUpdateMode) => {
     if (this.shouldThrottleMessage(mode)) {
-      info?.("throttling updates setTimeout to 2000");
+      info?.("[Viewport] throttling updates setTimeout to 300");
+      this.setLastSizeOnlyUpdateSize(this.dataWindow.rowCount);
       if (this.updateThrottleTimer === undefined) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         this.updateThrottleTimer = setTimeout(
           this.sendThrottledSizeMessage,
-          2000,
+          100,
         );
       }
       return true;

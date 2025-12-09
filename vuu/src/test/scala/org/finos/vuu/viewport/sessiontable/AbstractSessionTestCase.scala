@@ -91,7 +91,7 @@ trait AbstractSessionTestCase {
   }
 
   def createViewPortDefFunc(tableContainer: TableContainer, rpcHandler: RpcHandler,  clock: Clock): (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef = {
-    val func = (t: DataTable, provider: Provider, pc: ProviderContainer, table: TableContainer) => ViewPortDef(t.getTableDef.columns, rpcHandler)
+    val func = (t: DataTable, provider: Provider, pc: ProviderContainer, table: TableContainer) => ViewPortDef(t.getTableDef.getColumns, rpcHandler)
     func
   }
 

@@ -6,7 +6,7 @@ import org.finos.vuu.core.sort.SortDirection
 import org.finos.vuu.example.ignite.module.IgniteOrderDataModule
 import org.finos.vuu.example.ignite.schema.ChildOrderSchema
 import org.finos.vuu.example.ignite.{IgniteOrderStore, TestUtils}
-import org.finos.vuu.net.FilterSpec
+import org.finos.vuu.net.{FilterSpec, SortDef, SortSpec}
 import org.finos.vuu.util.schema.SchemaMapperBuilder
 import org.scalatest.funsuite.AnyFunSuiteLike
 import org.scalatest.matchers.should.Matchers
@@ -39,7 +39,7 @@ class IgniteOrderDataQueryFunctionalTest extends AnyFunSuiteLike with BeforeAndA
     givenChildOrdersExist(testOrder1, testOrder2, testOrder3)
 
     val filterSpec = FilterSpec("orderId > 1 and ric starts \"ABC\"")
-    val sortSpec = Map("price" -> SortDirection.Ascending)
+    val sortSpec = SortSpec(List(SortDef("price", SortDirection.Ascending.external)))
 
     val res = dataQuery.fetch(filterSpec, sortSpec, startIndex = 0, rowCount = 3)
 

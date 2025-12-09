@@ -35,7 +35,7 @@ class BasketCreateTest extends VuuServerTestCase {
           vuuServer.login("testUser")
           val basketId = ".FTSE"
 
-          vuuServer.overrideViewPortDef("prices", (table, _, _, _) => ViewPortDef(table.getTableDef.columns, null))
+          vuuServer.overrideViewPortDef("prices", (table, _, _, _) => ViewPortDef(table.getTableDef.getColumns, null))
 
           val pricesProvider = vuuServer.getProvider(PriceModule.NAME, PriceModule.PriceTable)
           val basketProvider = vuuServer.getProvider(BasketModule.NAME, BasketModule.BasketTable)

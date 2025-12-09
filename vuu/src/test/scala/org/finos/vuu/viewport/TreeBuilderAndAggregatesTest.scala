@@ -3,6 +3,7 @@ package org.finos.vuu.viewport
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.DefaultClock
+import org.finos.vuu.core.filter.`type`.AllowAllPermissionFilter
 import org.finos.vuu.core.table.ViewPortColumnCreator
 import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.net.{ClientSessionId, FilterSpec}
@@ -51,7 +52,7 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
 
       val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "C"), joinProvider)
 
-      val columns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.columns.map(_.name).toList)
+      val columns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.getColumns.map(_.name).toList)
 
       val nodeState = TreeNodeStateStore(Map())
 
@@ -65,6 +66,7 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
         None,
         None,
         BuildEntireTree(sessionTable, None),
+        AllowAllPermissionFilter,
         None
       ).buildEntireTree()
 
@@ -88,7 +90,7 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
 
       val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "C"), joinProvider)
 
-      val columns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.columns.map(_.name).toList)
+      val columns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.getColumns.map(_.name).toList)
 
       val nodeState = TreeNodeStateStore(Map())
 
@@ -102,6 +104,7 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
         None,
         None,
         BuildEntireTree(sessionTable, None),
+        AllowAllPermissionFilter,
         None
       ).buildEntireTree()
 
@@ -125,7 +128,7 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
 
       val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "C"), joinProvider)
 
-      val columns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.columns.map(_.name).toList)
+      val columns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.getColumns.map(_.name).toList)
 
       val nodeState = TreeNodeStateStore(Map())
 
@@ -139,6 +142,7 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
         None,
         None,
         BuildEntireTree(sessionTable, None),
+        AllowAllPermissionFilter,
         None
       ).buildEntireTree()
 
@@ -163,7 +167,7 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
 
       val sessionTable = new TreeSessionTableImpl(orderPrices, ClientSessionId("A", "C"), joinProvider)
 
-      val columns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.columns.map(_.name).toList)
+      val columns = ViewPortColumnCreator.create(sessionTable, sessionTable.getTableDef.getColumns.map(_.name).toList)
 
       val nodeState = TreeNodeStateStore(Map())
 
@@ -178,6 +182,7 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
         None,
         None,
         BuildEntireTree(sessionTable, None),
+        AllowAllPermissionFilter,
         None
       ).buildEntireTree()
 
@@ -213,6 +218,7 @@ class TreeBuilderAndAggregatesTest extends AnyFeatureSpec with Matchers with Vie
         Some(tree),
         None,
         BuildEntireTree(sessionTable, None),
+        AllowAllPermissionFilter,
         None
       ).buildEntireTree()
 

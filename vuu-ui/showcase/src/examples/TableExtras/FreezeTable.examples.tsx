@@ -97,3 +97,51 @@ export const TableFreezing = () => {
     </div>
   );
 };
+
+/** tags=data-consumer */
+export const FreezingInstruments = () => {
+  const { VuuDataSource } = useData();
+
+  const [config, dataSource] = useMemo<[TableConfig, DataSource]>(() => {
+    const tableName: SimulTableName = "instruments";
+    const schema = getSchema(tableName);
+    return [
+      {
+        columns: schema.columns,
+        rowSeparators: true,
+        zebraStripes: true,
+      },
+      new VuuDataSource({
+        columns: schema.columns.map(toColumnName),
+        table: schema.table,
+        sort: { sortDefs: [{ column: "bbg", sortType: "D" }] },
+      }),
+    ];
+  }, [VuuDataSource]);
+
+  return (
+    <div style={{ height: 700 }}>
+      <div
+        style={{
+          alignItems: "center",
+          display: "flex",
+          height: 50,
+          gap: "10px",
+          justifyContent: "space-between",
+        }}
+      >
+        <div style={{ display: "flex", gap: "10px" }}></div>
+        <FreezeControl dataSource={dataSource} />
+      </div>
+      <FrozenBanner dataSource={dataSource} />
+      <Table
+        config={config}
+        dataSource={dataSource}
+        height={600}
+        navigationStyle="row"
+        renderBufferSize={5}
+      />
+      <DataSourceStats dataSource={dataSource} />
+    </div>
+  );
+};

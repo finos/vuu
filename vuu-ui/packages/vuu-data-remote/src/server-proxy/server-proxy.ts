@@ -58,7 +58,6 @@ import * as Message from "./messages";
 import { NO_DATA_UPDATE, Viewport } from "./viewport";
 import {
   WebSocketConnection,
-  WebSocketConnectionCloseReason,
   WebSocketConnectionState,
 } from "../WebSocketConnection";
 
@@ -152,13 +151,8 @@ export class ServerProxy {
     this.mapClientToServerViewport = new Map();
 
     connection.on("reconnected", this.reconnect);
-    connection.on("closed", this.connectionClosed);
     connection.on("connection-status", this.connectionStatusChanged);
   }
-
-  private connectionClosed = (reason: WebSocketConnectionCloseReason) => {
-    console.log(`[ServerProxy] connectionClosed reason ${reason}`);
-  };
 
   private connectionStatusChanged = (message: WebSocketConnectionState) => {
     if (message.connectionStatus === "disconnected") {
@@ -1142,7 +1136,7 @@ export class ServerProxy {
         break;
 
       case "VIEW_PORT_MENUS_RESP":
-        if (body.menu.name) {
+        if (body.menu?.name) {
           const viewport = this.viewports.get(body.vpId);
           if (viewport) {
             const clientMessage = viewport.setMenu(body.menu);

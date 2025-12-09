@@ -2,7 +2,7 @@ package org.finos.vuu.core.table
 
 import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.toolbox.time.{Clock, DefaultClock, TestFriendlyClock}
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.auths.VuuUser
@@ -18,19 +18,19 @@ import org.scalatest.matchers.should.Matchers
 
 class DataTableTest extends AnyFeatureSpec with Matchers {
 
-  private implicit val timeProvider: Clock = new DefaultClock
+  private implicit val timeProvider: Clock = new TestFriendlyClock(1000L)
   private implicit val lifecycle: LifecycleContainer = new LifecycleContainer
   private implicit val metrics: MetricsProviderImpl = new MetricsProviderImpl
 
   private val joinProvider = JoinTableProviderImpl()
   private val pricesDef = TableDef("prices", "ric", Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"), "ric")
 
-  Feature("Test data table functionality"){
+  Feature("Test data table functionality") {
 
-    Scenario("When we tick a value through our mock provider, check it arrives in our listener"){
+    Scenario("When we tick a value through our mock provider, check it arrives in our listener") {
 
       val tableContainer = new TableContainer(joinProvider)
-      val outQueue          = new OutboundRowPublishQueue()
+      val outQueue = new OutboundRowPublishQueue()
       val providerContainer = new ProviderContainer(joinProvider)
       val pluginRegistry = new DefaultPluginRegistry
       pluginRegistry.registerPlugin(new VuuInMemPlugin)
@@ -42,7 +42,7 @@ class DataTableTest extends AnyFeatureSpec with Matchers {
       val provider = new MockProvider(table)
 
       val user: VuuUser = VuuUser("chris")
-      
+
       val session = ClientSessionId("sess-01", "channel")
 
       val vpcolumns = List("ric", "bid", "ask")
@@ -51,13 +51,13 @@ class DataTableTest extends AnyFeatureSpec with Matchers {
 
       provider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220, "ask" -> 223))
 
-      table.primaryKeys.length should equal (1)
+      table.primaryKeys.length should equal(1)
 
       viewPortContainer.runOnce()
 
       val viewPortUpdate = combineQs(viewPort)
 
-      viewPortUpdate(1).key.key should equal( "VOD.L")
+      viewPortUpdate(1).key.key should equal("VOD.L")
     }
   }
 
@@ -67,19 +67,20 @@ class DataTableTest extends AnyFeatureSpec with Matchers {
     val row = RowWithData(key, Map("ric" -> "VOD.L", "bid" -> 210))
     val table = new InMemDataTable(pricesDef, joinProvider)
     table.processUpdate(key, row)
+    val rowWithTimestamp: RowWithData = table.pullRow(key).asInstanceOf[RowWithData]
 
     Scenario("WHEN row has changed at a given key THEN should return true") {
-      val newRowAtSameKey = row.copy(data = row.data ++ Map("bid" -> 300))
+      val newRowAtSameKey = rowWithTimestamp.copy(data = row.data ++ Map("bid" -> 300))
       table.hasRowChanged(newRowAtSameKey) should equal(true)
     }
 
     Scenario("WHEN row stays the same but key changes THEN should return true") {
-      val sameRowAtDifferentKey = row.copy(key = key + "DIFF")
+      val sameRowAtDifferentKey = rowWithTimestamp.copy(key = key + "DIFF")
       table.hasRowChanged(sameRowAtDifferentKey) should equal(true)
     }
 
     Scenario("WHEN row hasn't changed at a given key THEN should return true") {
-      table.hasRowChanged(row.copy()) should equal(false)
+      table.hasRowChanged(rowWithTimestamp.copy()) should equal(false)
     }
   }
 

@@ -463,7 +463,7 @@ export declare type RowSelectionEventHandler = (
 ) => void;
 
 export type DataSourceConfigChangeHandler = (
-  config: WithBaseFilter<WithFullConfig>,
+  config: ConfigWithVisualLink,
   range: Range,
   confirmed?: boolean,
   configChanges?: DataSourceConfigChanges,
@@ -625,7 +625,20 @@ export interface DataSource
    */
   disable?: () => void;
   baseFilter?: DataSourceFilter;
+
+  /**
+   * @deprecated use setFilter instead
+   */
   filter: DataSourceFilter;
+
+  /**
+   * An alternative way to set the dataSource filter, passing in a Filter
+   * (or ExtendedFilter) object. The real advantage to using this is the additional set
+   * of capabilities the ExtendedFilter offers.
+   * Eventually, this will replace the existing filter setter
+   */
+  clearFilter?: () => void;
+  setFilter?: (filter: Filter) => void;
 
   /**
    * Only implemented on JSON DataSource

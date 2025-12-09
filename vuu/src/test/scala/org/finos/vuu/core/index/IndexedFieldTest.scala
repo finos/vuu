@@ -39,25 +39,39 @@ class IndexedFieldTest extends AnyFeatureSpec with Matchers with StrictLogging {
       rowKeys2.indexOf("1302") shouldEqual(-1)
     }
 
-    Scenario("Create a string based index using SkipList") {
+    Scenario("Create a string based index using HashMap") {
 
-      val index = new SkipListIndexedStringField(new SimpleColumn("ric", 0, DataType.StringDataType))
+      val index = new HashMapIndexedStringField(new SimpleColumn("text", 0, DataType.StringDataType))
 
-      val rics = List("AAPL", "MSFT", "VOD.L", "BT.L", "BP.L", "FLOW.AS")
-
-      rics.foreach(ric => {
-        (0 to 5).foreach(i => index.insert(ric, ric + i.toString))
+      val key1 = "AaBB"
+      val key2 = "BBAa"
+      
+      key1.hashCode shouldEqual key2.hashCode //We want to make sure hashcode clashes are handled
+      
+      val values = List(key1, key2) 
+      
+      values.foreach(value => {
+        (0 to 5).foreach(i => index.insert(value, value + i.toString))
       })
 
-      val values = index.find("BT.L")
+      val results = index.find(key1)
 
-      values.toList shouldEqual (List("BT.L0", "BT.L1", "BT.L2", "BT.L3", "BT.L4", "BT.L5"))
+      results.toList shouldEqual List("AaBB0", "AaBB1", "AaBB2", "AaBB3", "AaBB4", "AaBB5")
 
-      index.remove("BT.L", "BT.L5")
+      index.remove(key1, "AaBB5")
 
-      val values2 = index.find("BT.L")
+      val results2 = index.find(key1)
 
-      values2.toList shouldEqual (List("BT.L0", "BT.L1", "BT.L2", "BT.L3", "BT.L4"))
+      results2.toList shouldEqual List("AaBB0", "AaBB1", "AaBB2", "AaBB3", "AaBB4")
+
+      val results3 = index.find("lolcats")
+
+      results3.length shouldEqual 0
+
+      val results4 = index.find(List(key1, key2, "lolcats"))
+
+      results4.toList shouldEqual List("AaBB0", "AaBB1", "AaBB2", "AaBB3", "AaBB4", "BBAa0", "BBAa1", "BBAa2", "BBAa3", "BBAa4", "BBAa5")
+
     }
 
     Scenario("Check less than on an int index"){

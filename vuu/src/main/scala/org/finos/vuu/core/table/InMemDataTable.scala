@@ -6,7 +6,7 @@ import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.text.AsciiUtil
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.index.{IndexedField, SkipListIndexedBooleanField, SkipListIndexedDoubleField, SkipListIndexedEpochTimestampField, SkipListIndexedIntField, SkipListIndexedLongField, SkipListIndexedStringField}
+import org.finos.vuu.core.index.{HashMapIndexedStringField, IndexedField, SkipListIndexedBooleanField, SkipListIndexedCharField, SkipListIndexedDoubleField, SkipListIndexedEpochTimestampField, SkipListIndexedIntField, SkipListIndexedLongField}
 import org.finos.vuu.core.row.{InMemMapRowBuilder, RowBuilder}
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
@@ -26,7 +26,9 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
   def updateCounter: Long
 
   def newRow(key: String): RowBuilder
+
   def rowBuilder: RowBuilder
+
   def incrementUpdateCounter(): Unit
 
   def indexForColumn(column: Column): Option[IndexedField[_]]
@@ -69,7 +71,7 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
   }
 
   def toAscii(count: Int): String = {
-    val columns = getTableDef.columns
+    val columns = getTableDef.getColumns
     val keys = primaryKeys
 
     val selectedKeys = keys.toArray.take(count)
@@ -82,7 +84,7 @@ trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
   }
 
   def toAscii(start: Int, end: Int): String = {
-    val columns = getTableDef.columns
+    val columns = getTableDef.getColumns
     val keys = primaryKeys
 
     val selectedKeys = keys.toArray.slice(start, end) //.sliceToArray(start, end)//drop(start).take(end - start)
@@ -101,11 +103,17 @@ case class RowKeyUpdate(key: String, source: RowSource, isDelete: Boolean = fals
 
 trait RowData {
   def key: String
+
   def get(field: String): Any
+
   def get(column: Column): Any
+
   def getFullyQualified(column: Column): Any
+
   def set(field: String, value: Any): RowData
+
   def toArray(columns: List[Column]): Array[Any]
+
   def size: Int
 }
 
@@ -179,21 +187,21 @@ case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private 
   protected def merge(update: RowData, data: RowData): RowData =
     MergeFunctions.mergeLeftToRight(update, data)
 
-  def update(key: String, update: RowData): TableData = {
+  def update(key: String, update: RowData): (TableData, RowData) = {
 
     val table = data.synchronized {
       val now = EpochTimestamp(timeProvider)
       data.getOrDefault(key, EmptyRowData) match {
         case row: RowWithData =>
           val mergedData = merge(update, row)
-          mergedData.set(DefaultColumnNames.LastUpdatedTimeColumnName, now)
-          data.put(key, mergedData)
-          InMemDataTableData(data, primaryKeyValues)
+          val newRowData = mergedData.set(DefaultColumn.LastUpdatedTime.name, now)
+          data.put(key, newRowData)
+          (InMemDataTableData(data, primaryKeyValues), newRowData)
         case EmptyRowData =>
-          update.set(DefaultColumnNames.CreatedTimeColumnName, now)
-          update.set(DefaultColumnNames.LastUpdatedTimeColumnName, now)
-          data.put(key, update)
-          InMemDataTableData(data, primaryKeyValues + key)
+          var newRowData = update.set(DefaultColumn.CreatedTime.name, now)
+          newRowData = newRowData.set(DefaultColumn.LastUpdatedTime.name, now)
+          data.put(key, newRowData)
+          (InMemDataTableData(data, primaryKeyValues + key), newRowData)
       }
 
     }
@@ -232,12 +240,13 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
   override def newRow(key: String): RowBuilder = {
     new InMemMapRowBuilder().setKey(key)
   }
+
   override def rowBuilder: RowBuilder = new InMemMapRowBuilder
 
   private def buildIndexForColumn(c: Column): IndexedField[_] = {
     c.dataType match {
       case DataType.StringDataType =>
-        new SkipListIndexedStringField(c)
+        new HashMapIndexedStringField(c)
       case DataType.IntegerDataType =>
         new SkipListIndexedIntField(c)
       case DataType.LongDataType =>
@@ -248,6 +257,10 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
         new SkipListIndexedBooleanField(c)
       case DataType.EpochTimestampType =>
         new SkipListIndexedEpochTimestampField(c)
+      case DataType.CharDataType =>
+        new SkipListIndexedCharField(c)
+      case _ =>
+        throw new RuntimeException(s"Unsupported type ${c.dataType} in column ${c.name}")
     }
   }
 
@@ -282,6 +295,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
   @volatile protected var data: TableData = createDataTableData()
 
   @volatile private var updateCounterInternal: Long = 0
+
   override def updateCounter: Long = updateCounterInternal
 
   override def incrementUpdateCounter(): Unit = updateCounterInternal += 1
@@ -350,8 +364,9 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
     rowProcessor.processColumn(column, value)
   }
 
-  def columns(): Array[Column] = tableDef.columns
-  lazy val viewPortColumns: ViewPortColumns = ViewPortColumnCreator.create(this, tableDef.columns.map(_.name).toList)
+  def columns(): Array[Column] = tableDef.getColumns
+
+  lazy val viewPortColumns: ViewPortColumns = ViewPortColumnCreator.create(this, tableDef.getColumns.map(_.name).toList)
 
   private def updateIndices(rowkey: String, rowUpdate: RowData): Unit = {
     this.indices.foreach(colTup => {
@@ -374,6 +389,8 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
               index.asInstanceOf[IndexedField[Boolean]].insert(x.asInstanceOf[Boolean], rowkey)
             case DataType.EpochTimestampType =>
               index.asInstanceOf[IndexedField[EpochTimestamp]].insert(x.asInstanceOf[EpochTimestamp], rowkey)
+            case DataType.CharDataType =>
+              index.asInstanceOf[IndexedField[Char]].insert(x.asInstanceOf[Char], rowkey)
           }
       }
     })
@@ -400,14 +417,17 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
               index.asInstanceOf[IndexedField[Boolean]].remove(x.asInstanceOf[Boolean], rowkey)
             case DataType.EpochTimestampType =>
               index.asInstanceOf[IndexedField[EpochTimestamp]].remove(x.asInstanceOf[EpochTimestamp], rowkey)
+            case DataType.CharDataType =>
+              index.asInstanceOf[IndexedField[Char]].remove(x.asInstanceOf[Char], rowkey)
           }
       }
     })
   }
 
   def update(rowkey: String, rowUpdate: RowData): Unit = {
-    data = data.update(rowkey, rowUpdate)
-    updateIndices(rowkey, rowUpdate)
+    val updatedData = data.update(rowkey, rowUpdate)
+    data = updatedData._1
+    updateIndices(rowkey, updatedData._2)
   }
 
   def delete(rowKey: String): RowData = {
