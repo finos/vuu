@@ -434,7 +434,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     }
   }
 
-  override def pullRow(key: String, columns: ViewPortColumns): RowData = {
+  override def pullRow(key: String, viewPortColumns: ViewPortColumns): RowData = {
     val keysByTable = joinData.getKeyValuesByTable(key)
 
     if (keysByTable == null || !keyExistsInLeftMostSourceTable(key))
