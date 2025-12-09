@@ -79,7 +79,7 @@ object Columns {
   }
 
   def fromDefaultColumns(table: TableDef): Array[JoinColumn] = {
-    table.defaultColumns.map(c => JoinColumn(c.name, c.index, c.dataType, table, c, isAlias = false))
+    table.getDefaultColumns.map(c => JoinColumn(c.name, c.index, c.dataType, table, c, isAlias = false))
   }
 
   /**

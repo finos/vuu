@@ -217,7 +217,7 @@ class TableDef(val name: String,
                val permissionFunction: (ViewPort, TableContainer) => PermissionFilter = (_, _) => AllowAllPermissionFilter,
                val defaultSort: SortSpec = SortSpec(List.empty)) extends VuuInMemPluginLocator {
 
-  val defaultColumns: Array[Column] = if (includeDefaultColumns) DefaultColumn.getDefaultColumns(customColumns) else Array.empty
+  private val defaultColumns: Array[Column] = if (includeDefaultColumns) DefaultColumn.getDefaultColumns(customColumns) else Array.empty
   private val columns: Array[Column] = if (includeDefaultColumns) customColumns ++ defaultColumns else customColumns
   private lazy val columnsByName: Map[String, Column] = columns.map(c => c.name -> c).toMap
 
@@ -229,6 +229,8 @@ class TableDef(val name: String,
 
   def deleteColumnName() = s"$name._isDeleted"
 
+  def getDefaultColumns: Array[Column] = defaultColumns
+  
   def getColumns: Array[Column] = columns
 
   def columnForName(name: String): Column = {
