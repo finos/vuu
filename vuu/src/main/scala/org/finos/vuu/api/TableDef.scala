@@ -25,12 +25,6 @@ object Link {
   }
 }
 
-// Used in table definition to indicate the visibility level of a table
-enum TableVisibility {
-  case Public
-  case Private
-}
-
 object SessionTableDef {
   def apply(name: String, keyField: String, columns: Array[Column], joinFields: String*): TableDef = {
     new SessionTableDef(name, keyField, columns, joinFields, indices = Indices())
