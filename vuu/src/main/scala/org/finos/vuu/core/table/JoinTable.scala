@@ -445,10 +445,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     if (keysByTable == null || !keyExistsInLeftMostSourceTable(key))
       EmptyRowData
     else {
-      var columnsByTable: Map[String, List[JoinColumn]] = viewPortColumns.getJoinColumnsByTable
-      if (includeDefaultColumns) {
-        columnsByTable = columnsByTable + (this.tableDef.baseTable.name -> (columnsByTable.getOrElse(this.tableDef.baseTable.name, List.empty) ++ Columns.fromDefaultColumns(this.tableDef.baseTable)))
-      }
+      val columnsByTable: Map[String, List[JoinColumn]] = viewPortColumns.getJoinColumnsByTable
 
       val foldedMap = columnsByTable.foldLeft(Map[String, Any]())({
         case (previous, (sourceTableName, columnList)) =>

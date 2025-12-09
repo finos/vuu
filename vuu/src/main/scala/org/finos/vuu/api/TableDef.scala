@@ -219,7 +219,7 @@ class TableDef(val name: String,
 
   private val defaultColumns: Array[Column] = if (includeDefaultColumns) DefaultColumn.getDefaultColumns(customColumns) else Array.empty
   private val columns: Array[Column] = if (includeDefaultColumns) customColumns ++ defaultColumns else customColumns
-  private lazy val columnsByName: Map[String, Column] = columns.map(c => c.name -> c).toMap
+  private lazy val columnsByName: Map[String, Column] = getColumns.map(c => c.name -> c).toMap
 
   private var module: ViewServerModule = null
 
@@ -229,8 +229,6 @@ class TableDef(val name: String,
 
   def deleteColumnName() = s"$name._isDeleted"
 
-  def getDefaultColumns: Array[Column] = defaultColumns
-  
   def getColumns: Array[Column] = columns
 
   def columnForName(name: String): Column = {
@@ -275,12 +273,17 @@ case class JoinTableDef(
     visibility = visibility, permissionFunction = permissionFunction, defaultSort = defaultSort)
     with VuuInMemPluginLocator {
 
+  private val defaultColumnsAsJoinColumns: Array[Column] = if (includeDefaultColumns) Columns.fromColumns(this.baseTable, DefaultColumn.getDefaultColumns(customColumns)) else Array.empty
+  private val columns: Array[Column] = if (includeDefaultColumns) customColumns ++ defaultColumnsAsJoinColumns else customColumns
+
   lazy val joinTableColumns = getJoinDefinitionColumnsInternal()
   lazy val rightTables = joins.map(join => join.table.name).toArray
   lazy val joinFieldNames = getJoinDefinitionColumns().map(_.name)
   lazy val joinTableNames = (1 to baseTable.joinFields.size).map(i => baseTable.name) ++ rightTables
 
   override def toString: String = s"JoinTableDef(name=$name)"
+
+  override def getColumns: Array[Column] = columns
 
   def getJoinDefinitionColumns(): Array[Column] = joinTableColumns
 
