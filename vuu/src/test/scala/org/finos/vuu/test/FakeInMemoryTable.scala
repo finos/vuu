@@ -52,8 +52,6 @@ class FakeInMemoryTable(val instanceName: String, val tableDef: TableDef) extend
 
   override def pullRowAsArray(key: String, columns: ViewPortColumns): Array[Any] = ???
 
-  override def pullRowAsArray(key: String, columns: ViewPortColumns, includeDefaultColumns: Boolean): Array[Any] = ???
-
   override def getObserversByKey(): Map[String, Array[KeyObserver[RowKeyUpdate]]] = ???
 
   override def addKeyObserver(key: String, observer: KeyObserver[RowKeyUpdate]): Boolean = ???
