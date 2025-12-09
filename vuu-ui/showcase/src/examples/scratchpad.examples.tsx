@@ -1,3 +1,4 @@
+import { PageVisibilityObserver } from "@vuu-ui/vuu-utils";
 import { useMemo } from "react";
 
 type TableDef = {
@@ -13,6 +14,10 @@ function TableDef(name: string): TableDef {
 }
 
 export const Experiment = () => {
+  useMemo(() => {
+    new PageVisibilityObserver({ inactiveTimeout: 10000 });
+  }, []);
+
   const tableDef = useMemo(
     () => TableDef("instrument"),
 
