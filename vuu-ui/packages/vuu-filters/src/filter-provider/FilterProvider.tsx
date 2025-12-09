@@ -33,7 +33,10 @@ const findFilterByName = (
 ) => filterDescriptors.find((f) => f.filter?.name === name);
 
 type SavedFilterMap = Map<string, FilterContainerFilterDescriptor[]>;
-type SavedFilterRecord = Record<string, FilterContainerFilterDescriptor[]>;
+export type SavedFilterRecord = Record<
+  string,
+  FilterContainerFilterDescriptor[]
+>;
 
 const mapToRecord = (savedFilters: SavedFilterMap) => {
   const record: SavedFilterRecord = {};
