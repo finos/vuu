@@ -7,6 +7,9 @@ enum DefaultColumn(val name: String, val dataType: Class[_]) {
 
 object DefaultColumn {
 
+  val CREATED_TIME: DefaultColumn = DefaultColumn.CreatedTime
+  val LAST_UPDATED_TIME: DefaultColumn = DefaultColumn.LastUpdatedTime
+
   private val allDefaults = DefaultColumn.values
 
   def addDefaultColumns(customColumns: Array[Column]): Array[Column] =
@@ -14,5 +17,7 @@ object DefaultColumn {
 
   def isDefaultColumn(column: Column): Boolean =
     allDefaults.exists(f => f.name == column.name && f.dataType == column.dataType)
+
+
 
 }
