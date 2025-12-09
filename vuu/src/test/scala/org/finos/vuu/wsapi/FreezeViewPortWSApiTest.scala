@@ -144,9 +144,30 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       responseBody.errorMessage shouldEqual s"Could not unfreeze viewport $viewPortId because it's not frozen"
     }
 
-    Scenario("Freeze a view port for a join table") {
+    Scenario("Freeze a view port with default column for a join table") {
       Given("a view port exist")
-      val viewPortId: String = createViewPortForJoinTable(joinTableName1)
+      val viewPortId: String = createViewPortForJoinTableWithDefaultColumn(joinTableName1)
+
+      When("request freezing view port")
+      val freezeVPRequest = FreezeViewPortRequest(viewPortId)
+      val requestId = vuuClient.send(sessionId, freezeVPRequest)
+
+      Then("view port is frozen")
+      val freezeVPResponse = vuuClient.awaitForResponse(requestId)
+      val responseBody = assertBodyIsInstanceOf[FreezeViewPortSuccess](freezeVPResponse)
+      responseBody.viewPortId shouldEqual viewPortId
+
+      When("An existing row is updated and a new row is added to table")
+      updateJoinTable(leftTableName1)
+
+      Then("Return only updates of rows created before frozen time")
+      val tableRowUpdatesResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
+      tableRowUpdatesResponse.get.rows(0).vpSize shouldEqual 4
+    }
+
+    Scenario("Freeze a view port without default column for a join table") {
+      Given("a view port exist")
+      val viewPortId: String = createViewPortForJoinTableWithoutDefaultColumn(joinTableName1)
 
       When("request freezing view port")
       val freezeVPRequest = FreezeViewPortRequest(viewPortId)
@@ -167,7 +188,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
     Scenario("Unfreeze a view port for a join table") {
       Given("a view port exist")
-      val viewPortId: String = createViewPortForJoinTable(joinTableName2)
+      val viewPortId: String = createViewPortForJoinTableWithDefaultColumn(joinTableName2)
 
       When("request freezing view port")
       val freezeVPRequest = FreezeViewPortRequest(viewPortId)
@@ -307,7 +328,11 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       .asModule()
   }
 
-  private def createViewPortForJoinTable(tableName: String) = {
+  private def createViewPortForJoinTableWithoutDefaultColumn(tableName: String) = {
+    createViewPortBase(tableName, Array("Id", "Name", "Description"), 4)
+  }
+
+  private def createViewPortForJoinTableWithDefaultColumn(tableName: String) = {
     createViewPortBase(tableName, Array("Id", "Name", "Description", DefaultColumn.CreatedTime.name), 4)
   }
 
