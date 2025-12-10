@@ -81,12 +81,14 @@ class DefaultMessageHandler(val channel: Channel,
     }
   }
 
-  def disconnect(): ChannelFuture = {
+  private def disconnect(): ChannelFuture = {
+    logger.info(s"Disconnecting session ${session.sessionId}")
     serverApi.disconnect(session)
     sessionContainer.remove(session)
-    channel.disconnect()
+    channel.disconnect()    
+    val closeResult = channel.close()
     logger.info(s"Disconnected session ${session.sessionId}")
-    channel.close()
+    closeResult
   }
 
   protected def formatDataOutbound(outbound: Seq[ViewPortUpdate]): TableRowUpdates = {
