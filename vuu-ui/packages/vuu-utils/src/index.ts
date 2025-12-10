@@ -84,3 +84,4 @@ export {
   useDataSource,
 } from "./context-definitions/DataSourceProvider";
 export * from "./context-definitions/WorkspaceContext";
+export { PageVisibilityObserver } from "./PageVisibilityObserver";
