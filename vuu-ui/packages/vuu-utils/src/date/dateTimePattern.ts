@@ -9,6 +9,7 @@ export const defaultPatternsByType = {
 
 export const fallbackDateTimePattern: DateTimePattern = {
   date: defaultPatternsByType["date"],
+  time: defaultPatternsByType["time"],
 };
 
 export function dateTimePattern(

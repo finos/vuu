@@ -1,3 +1,11 @@
+import { buildValidationChecker } from "@vuu-ui/vuu-data-react";
+import {
+  DataSource,
+  TableSchema,
+  WithBaseFilter,
+  WithFullConfig,
+} from "@vuu-ui/vuu-data-types";
+import { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
 import {
   ColumnDescriptor,
   ColumnLayout,
@@ -35,16 +43,7 @@ import {
   sortPinnedColumns,
   stripFilterFromColumns,
 } from "@vuu-ui/vuu-utils";
-
-import {
-  DataSource,
-  TableSchema,
-  WithBaseFilter,
-  WithFullConfig,
-} from "@vuu-ui/vuu-data-types";
-import { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
 import { Reducer, useReducer } from "react";
-import { buildValidationChecker } from "@vuu-ui/vuu-data-react";
 
 const { info } = logger("useTableModel");
 
