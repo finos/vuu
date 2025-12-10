@@ -111,13 +111,11 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
       map ++ Map(rightTable + "." + rightColumn -> rightValueToSend, rightTable + "._isDeleted" -> isDeleted)
     }) ++ leftKeys
 
-    logger.debug("join table data:" + toPublishData)
-
     val rowWithData = RowWithData(leftKey, toPublishData)
 
     val jtu = JoinTableUpdate(JoinTable, rowWithData)
 
-    logger.debug("[JoinTableProvider] Submitting joint table event:" + jtu)
+    logger.debug("[JoinTableProvider] Submitting join table event:" + jtu)
 
     //get the processing off the join thread
     outboundQueue.put(jtu)
@@ -175,8 +173,8 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
 
     joinSink.getEventDataSink(tableName).putEventState(eventToKey(tableName, ev), ev)
 
-    //pseudo code
-    //for each join in join defs, does tableName participate?
+    logger.trace("Starting Event Cycle...")
+
     joinDefs.foreach(defAndTable => {
 
       val joinTableDef = defAndTable.joinDef
@@ -185,8 +183,7 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
       //if join contains table...
       if (joinTableDef.containsTable(tableName)) {
 
-        logger.debug("Starting Event Cycle...")
-        logger.debug("processing event:" + ev + " for table:" + tableName + " in join:" + joinTableDef.name)
+        logger.debug(s"Processing event $ev for table $tableName in join: ${joinTableDef.name}")
 
         //does it participate as a left table? i.e. the base table of the join
         if (joinTableDef.isLeftTable(tableName)) {
@@ -196,7 +193,9 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
           addRightKeysForLeftKey(joinTableDef, tableName, ev)
 
           //if so, publish a left table event for the right inbound event
-          publishUpdateForLeftTableAndKey(joinTableDef, joinTable.asInstanceOf[JoinTable], tableName, eventToLeftKey(joinTableDef, ev), ev)
+          val leftKey = eventToLeftKey(joinTableDef, ev)
+          logger.debug(s"Publishing update for left key: $leftKey to table $tableName")
+          publishUpdateForLeftTableAndKey(joinTableDef, joinTable.asInstanceOf[JoinTable], tableName, leftKey, ev)
 
           //otherwise must be a right table, i.e. any one of the joinTo tables
         } else {
@@ -210,15 +209,16 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
 
           //for each key in left table, send left update, including additional keys
           leftKeys.foreach(key => {
-            logger.debug(s"Publishing update for left key: $key")
+            logger.debug(s"Publishing update for left key: $key to table ${joinTableDef.baseTable.name}")
             publishUpdateForLeftTableAndKey(joinTableDef, joinTable.asInstanceOf[JoinTable], joinTableDef.baseTable.name, key, joinSink.getEventDataSink(joinTableDef.baseTable.name).getEventState(key))
           })
         }
-        logger.debug("Ended Event Cycle...\n")
-      } else {
-        //do nothing... we're not part of this join
       }
+
     })
+
+    logger.trace(s"Ended Event Cycle...${System.lineSeparator()}")
+
   }
 
   override def addJoinTable(join: DataTable): Unit = {

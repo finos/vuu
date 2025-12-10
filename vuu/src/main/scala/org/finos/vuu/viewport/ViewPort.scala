@@ -645,13 +645,13 @@ class ViewPortImpl(val id: String,
   }
 
   private def addObserver(key: String) = {
-    logger.debug("Adding observer for key:" + key)
+    logger.trace("Adding observer for key:" + key)
     table.addKeyObserver(key, this)
   }
 
   private def removeObserver(oldKey: String) = {
     if (table.isKeyObservedBy(oldKey, this)) {
-      logger.debug("Removing observer for key:" + oldKey)
+      logger.trace("Removing observer for key:" + oldKey)
       table.removeKeyObserver(oldKey, this)
     }
   }
