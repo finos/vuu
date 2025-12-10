@@ -350,16 +350,12 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       joinProvider.runOnce()
 
       val row1 = orderPrices.pullRow("NYC-0001")
-      val row1CreatedTime = row1.get(DefaultColumn.CreatedTime.name).asInstanceOf[EpochTimestamp]
-      val row1LastUpdatedTime = row1.get(DefaultColumn.LastUpdatedTime.name).asInstanceOf[EpochTimestamp]
-      row1CreatedTime shouldEqual time1
-      row1LastUpdatedTime shouldEqual time1
+      val row1CreatedTime = row1.get(DefaultColumn.CreatedTime.name) shouldEqual EpochTimestamp(time1)
+      val row1LastUpdatedTime = row1.get(DefaultColumn.LastUpdatedTime.name) shouldEqual EpochTimestamp(time1)
 
       val row2 = orderPrices.pullRow("NYC-0002")
-      val row2CreatedTime = row2.get(DefaultColumn.CreatedTime.name).asInstanceOf[EpochTimestamp]
-      val row2LastUpdatedTime = row2.get(DefaultColumn.LastUpdatedTime.name).asInstanceOf[EpochTimestamp]
-      row2CreatedTime shouldEqual time1
-      row2LastUpdatedTime shouldEqual time1
+      val row2CreatedTime = row2.get(DefaultColumn.CreatedTime.name) shouldEqual EpochTimestamp(time1)
+      val row2LastUpdatedTime = row2.get(DefaultColumn.LastUpdatedTime.name) shouldEqual EpochTimestamp(time1)
 
       testFriendlyClock.advanceBy(1000)
       val time2 = testFriendlyClock.now()
@@ -368,10 +364,8 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       joinProvider.runOnce()
 
       val updatedRow = orderPrices.pullRow("NYC-0002")
-      val updatedRowCreatedTime = updatedRow.get(DefaultColumn.CreatedTime.name).asInstanceOf[EpochTimestamp]
-      val updatedRowLastUpdatedTime = updatedRow.get(DefaultColumn.LastUpdatedTime.name).asInstanceOf[EpochTimestamp]
-      updatedRowCreatedTime shouldEqual time1
-      updatedRowLastUpdatedTime shouldEqual time2
+      val updatedRowCreatedTime = updatedRow.get(DefaultColumn.CreatedTime.name) shouldEqual EpochTimestamp(time1)
+      val updatedRowLastUpdatedTime = updatedRow.get(DefaultColumn.LastUpdatedTime.name) shouldEqual EpochTimestamp(time2)
 
       testFriendlyClock.advanceBy(1000)
       val time4 = testFriendlyClock.now()
@@ -381,16 +375,12 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       joinProvider.runOnce()
 
       val row3 = orderPrices.pullRow("NYC-0003")
-      val row3CreatedTime = row3.get(DefaultColumn.CreatedTime.name).asInstanceOf[EpochTimestamp]
-      val row3LastUpdatedTime = row3.get(DefaultColumn.LastUpdatedTime.name).asInstanceOf[EpochTimestamp]
-      row3CreatedTime shouldEqual time4
-      row3CreatedTime shouldEqual row3LastUpdatedTime
+      val row3CreatedTime = row3.get(DefaultColumn.CreatedTime.name) shouldEqual EpochTimestamp(time4)
+      val row3LastUpdatedTime = row3.get(DefaultColumn.LastUpdatedTime.name) shouldEqual EpochTimestamp(time4)
+
       val existingRow = orderPrices.pullRow("NYC-0002")
-      val existingRowCreatedTime = existingRow.get(DefaultColumn.CreatedTime.name).asInstanceOf[EpochTimestamp]
-      val existingRowLastUpdatedTime = existingRow.get(DefaultColumn.LastUpdatedTime.name).asInstanceOf[EpochTimestamp]
-      existingRowCreatedTime shouldEqual time1
-      existingRowLastUpdatedTime shouldEqual time2
+      val existingRowCreatedTime = existingRow.get(DefaultColumn.CreatedTime.name) shouldEqual EpochTimestamp(time1)
+      val existingRowLastUpdatedTime = existingRow.get(DefaultColumn.LastUpdatedTime.name) shouldEqual EpochTimestamp(time2)
     }
   }
-
 }
