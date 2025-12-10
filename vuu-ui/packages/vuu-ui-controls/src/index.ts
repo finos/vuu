@@ -2,10 +2,10 @@ export * from "./calendar";
 export * from "./column-picker";
 export * from "./common-hooks";
 export {
-  type ShowContextPanel,
   ContextPanelProvider,
   useContextPanel,
   useHideContextPanel,
+  type ShowContextPanel,
 } from "./context-panel-provider/ContextPanelProvider";
 export * from "./cycle-state-button";
 export * from "./date-input";
@@ -14,6 +14,7 @@ export * from "./drag-drop";
 export * from "./editable";
 export * from "./editable-label";
 export * from "./expando-input";
+export { HoverOverlay } from "./hover-overlay/HoverOverlay";
 export * from "./icon-button";
 export * from "./instrument-picker";
 export * from "./measured-container";

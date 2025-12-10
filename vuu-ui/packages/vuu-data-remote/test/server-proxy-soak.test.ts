@@ -1,5 +1,5 @@
 import "./global-mocks";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TEST_setRequestId } from "../src/server-proxy/server-proxy";
 import {
   COMMON_ATTRS,
@@ -199,12 +199,17 @@ describe("Soak testing - drip feed records to the UI, each size ", () => {
 
     postMessageToClient.mockClear();
 
+    // Time will stand still for the duration of this next piece, so we won't trigger the size update throttling
+    vi.useFakeTimers();
+
     [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].forEach((i) => {
       serverProxy.handleMessageFromServer(
         TABLE_ROW([sizeRow("server-vp-1", i)]),
       );
     });
     expect(postMessageToClient).toHaveBeenCalledTimes(12);
+
+    vi.clearAllTimers();
 
     postMessageToClient.mockClear();
     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].forEach((i) => {
@@ -303,5 +308,36 @@ describe("Soak testing - drip feed records to the UI, each size ", () => {
           [9,9,true,false,0,0,"key-09",0,1,false,"key-09","name 09",1009,true],
         ],
     });
+  });
+  it("throttles size only updates, after three messages, 100ms delay kicks in", async () => {
+    const [serverProxy, postMessageToClient] = await createFixtures({
+      bufferSize: 10,
+    });
+
+    postMessageToClient.mockClear();
+
+    vi.useFakeTimers();
+    vi.setSystemTime("2025-01-01T09:00:00.000Z");
+    [
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    ].forEach((i) => {
+      vi.advanceTimersByTime(1);
+      serverProxy.handleMessageFromServer(
+        TABLE_ROW([sizeRow("server-vp-1", i)]),
+      );
+    });
+    expect(postMessageToClient).toHaveBeenCalledTimes(3);
+
+    postMessageToClient.mockClear();
+    vi.advanceTimersByTime(100);
+    expect(postMessageToClient).toHaveBeenCalledTimes(1);
+    expect(postMessageToClient).toHaveBeenCalledWith({
+      clientViewportId: "client-vp-1",
+      mode: "size-only",
+      size: 20,
+      type: "viewport-update",
+    });
+
+    vi.clearAllTimers();
   });
 });

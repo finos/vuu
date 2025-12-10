@@ -1,3 +1,10 @@
+import { ButtonProps } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+import {
+  ContextMenuItemDescriptor,
+  MenuActionHandler,
+} from "@vuu-ui/vuu-context-menu";
 import { ColumnDescriptorsByName, Filter } from "@vuu-ui/vuu-filter-types";
 import {
   MenuCloseHandler,
@@ -13,11 +20,8 @@ import {
   SplitStateButtonProps,
 } from "@vuu-ui/vuu-ui-controls";
 import { useId } from "@vuu-ui/vuu-utils";
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { FocusEventHandler, useCallback, useMemo, useRef } from "react";
-import { filterAsReactNode } from "./filterAsReactNode";
 import {
   closeCommand,
   deleteCommand,
@@ -25,15 +29,11 @@ import {
   MenuOptions,
   renameCommand,
 } from "../filter-pill-menu/FilterPillMenuOptions";
+import { filterAsReactNode } from "./filterAsReactNode";
 import { getFilterLabel } from "./getFilterLabel";
 import { getFilterAsFormattedText } from "./getFilterTooltipText";
 
 import filterPillCss from "./FilterPill.css";
-import { ButtonProps } from "@salt-ds/core";
-import {
-  ContextMenuItemDescriptor,
-  MenuActionHandler,
-} from "@vuu-ui/vuu-context-menu";
 
 const classBase = "vuuFilterPill";
 
