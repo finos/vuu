@@ -12,6 +12,30 @@ import { DataSource } from "@vuu-ui/vuu-data-types";
 import { VuuRpcServiceRequest } from "@vuu-ui/vuu-protocol-types";
 import { toColumnName, useData } from "@vuu-ui/vuu-utils";
 
+export const DefaultFreezeControl = ({
+  frozen = false,
+}: {
+  frozen?: boolean;
+}) => {
+  const mockDataSource = useMemo<Partial<DataSource>>(
+    () => ({
+      isFrozen: frozen,
+      table: { module: "TEST", table: "test" },
+      freeze: () => void 0,
+      unfreeze: () => void 0,
+      subscribe: async () => void 0,
+      unsubscribe: () => void 0,
+    }),
+    [frozen],
+  );
+
+  return <FreezeControl dataSource={mockDataSource as DataSource} />;
+};
+
+export const FrozenFreezeControl = () => {
+  return <DefaultFreezeControl frozen />;
+};
+
 /** tags=data-consumer */
 export const TableFreezing = () => {
   const { VuuDataSource } = useData();

@@ -79,7 +79,7 @@ export const FreezeControl = ({
         >
           <div
             className={cx(`${classBase}-buttonWrapper`, {
-              [`FreezeControl-buttonWrapper-active`]: isFrozen,
+              [`${classBase}-buttonWrapper-active`]: isFrozen,
             })}
           >
             <ToggleButton value="frozen">
@@ -87,25 +87,25 @@ export const FreezeControl = ({
             </ToggleButton>
           </div>
           <div
-            className={cx(`${classBase}--buttonWrapper`, {
-              [`FreezeControl-buttonWrapper-active`]: !isFrozen,
+            className={cx(`${classBase}-buttonWrapper`, {
+              [`${classBase}-buttonWrapper-active`]: !isFrozen,
             })}
           >
             <ToggleButton value="live">Active</ToggleButton>
           </div>
         </ToggleButtonGroup>
         {isFrozen && (
-          <div className={`${classBase}--newOrders`}>
+          <div className={`${classBase}-newOrders`}>
             New Orders
             <div
-              className={cx(`${classBase}--customBadge`, {
-                [`${classBase}--customBadge-flashing`]: isFlashing,
-                [`${classBase}--customBadge-overflow`]: isOverflow,
+              className={cx(`${classBase}-customBadge`, {
+                [`${classBase}-customBadge-flashing`]: isFlashing,
+                [`${classBase}-customBadge-overflow`]: isOverflow,
               })}
               data-overflow={isOverflow ? "true" : undefined}
             >
               {badgeValue}
-              {isOverflow && <span className={`${classBase}--plus`}>+</span>}
+              {isOverflow && <span className={`${classBase}-plus`}>+</span>}
             </div>
           </div>
         )}
