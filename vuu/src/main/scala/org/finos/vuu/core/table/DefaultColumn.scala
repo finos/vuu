@@ -1,8 +1,8 @@
 package org.finos.vuu.core.table
 
 enum DefaultColumn(val name: String, val dataType: Class[_]) {
-  case CreatedTime extends DefaultColumn("vuuCreatedTimestamp", DataType.LongDataType)
-  case LastUpdatedTime extends DefaultColumn("vuuUpdatedTimestamp", DataType.LongDataType)
+  case CreatedTime extends DefaultColumn("vuuCreatedTimestamp", DataType.EpochTimestampType)
+  case LastUpdatedTime extends DefaultColumn("vuuUpdatedTimestamp", DataType.EpochTimestampType)
 }
 
 object DefaultColumn {

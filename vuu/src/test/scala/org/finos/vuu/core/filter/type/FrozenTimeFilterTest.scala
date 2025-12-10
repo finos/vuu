@@ -3,6 +3,7 @@ package org.finos.vuu.core.filter.`type`
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.time.TestFriendlyClock
 import org.finos.vuu.core.sort.FilterAndSortFixture.{setupTable, setupTableWithCreationTime}
+import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.core.table.{DefaultColumn, EmptyTablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -14,7 +15,7 @@ class FrozenTimeFilterTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Freeze filter with created time column missing") {
       val table = setupTable()
-      val frozenTimeFilter = FrozenTimeFilter(10001L)
+      val frozenTimeFilter = FrozenTimeFilter(EpochTimestamp(10001L))
 
       val results = frozenTimeFilter.doFilter(table, table.primaryKeys, true)
 
@@ -25,7 +26,7 @@ class FrozenTimeFilterTest extends AnyFeatureSpec with Matchers {
       val clock = TestFriendlyClock(1000L)
       val table = setupTableWithCreationTime(List())(using clock)
       val now = clock.now()
-      val frozenTimeFilter = FrozenTimeFilter(now)
+      val frozenTimeFilter = FrozenTimeFilter(EpochTimestamp(now))
 
       val results = frozenTimeFilter.doFilter(table, table.primaryKeys, true)
 
@@ -37,7 +38,7 @@ class FrozenTimeFilterTest extends AnyFeatureSpec with Matchers {
       val clock = new TestFriendlyClock(1000L)
       val table = setupTableWithCreationTime(List(DefaultColumn.CreatedTime.name))(using clock)
       val now = clock.now()
-      val frozenTimeFilter = FrozenTimeFilter(now)
+      val frozenTimeFilter = FrozenTimeFilter(EpochTimestamp(now))
 
       val results = frozenTimeFilter.doFilter(table, table.primaryKeys, true)
 
@@ -49,7 +50,7 @@ class FrozenTimeFilterTest extends AnyFeatureSpec with Matchers {
       val clock = new TestFriendlyClock(1000L)
       val table = setupTableWithCreationTime(List(DefaultColumn.CreatedTime.name))(using clock)
       val now = clock.now()
-      val frozenTimeFilter = FrozenTimeFilter(now)
+      val frozenTimeFilter = FrozenTimeFilter(EpochTimestamp(now))
 
       val results = frozenTimeFilter.doFilter(table, InMemTablePrimaryKeys(ImmutableArray.from(Array("LDN-0003"))), false)
 
@@ -61,7 +62,7 @@ class FrozenTimeFilterTest extends AnyFeatureSpec with Matchers {
       val clock = new TestFriendlyClock(1000L)
       val table = setupTableWithCreationTime(List(DefaultColumn.CreatedTime.name))(using clock)
       val now = clock.now()
-      val frozenTimeFilter = FrozenTimeFilter(now)
+      val frozenTimeFilter = FrozenTimeFilter(EpochTimestamp(now))
 
       val results = frozenTimeFilter.doFilter(table, EmptyTablePrimaryKeys, true)
 

@@ -8,13 +8,14 @@ import org.finos.vuu.api.TableVisibility.Public
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.filter.`type`.AllowAllPermissionFilter
+import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.core.table.{Columns, DefaultColumn, RowWithData, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.{ClientSessionId, SortSpec}
 import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
-import org.finos.vuu.util.table.TableAsserts.{assertVpEq}
+import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.finos.vuu.viewport.{DefaultRange, RowUpdateType, ViewPortContainer, ViewPortSetup}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -472,11 +473,11 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
 
     updates.length shouldEqual 2
     updates(0)("orderId") shouldEqual "NYC-0001"
-    updates(0)(DefaultColumn.CreatedTime.name) shouldEqual 1000L
-    updates(0)(DefaultColumn.LastUpdatedTime.name) shouldEqual 1000L
+    updates(0)(DefaultColumn.CreatedTime.name) shouldEqual EpochTimestamp(1000L)
+    updates(0)(DefaultColumn.LastUpdatedTime.name) shouldEqual EpochTimestamp(1000L)
     updates(1)("orderId") shouldEqual "NYC-0002"
-    updates(1)(DefaultColumn.CreatedTime.name) shouldEqual 1000L
-    updates(1)(DefaultColumn.LastUpdatedTime.name) shouldEqual 1000L
+    updates(1)(DefaultColumn.CreatedTime.name) shouldEqual EpochTimestamp(1000L)
+    updates(1)(DefaultColumn.LastUpdatedTime.name) shouldEqual EpochTimestamp(1000L)
 
     timeProvider.advanceBy(1000L)
     ordersProvider.delete("NYC-0001")
@@ -495,8 +496,8 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
 
     updates2.length shouldEqual 1
     updates2(0)("orderId") shouldEqual "NYC-0003"
-    updates2(0)(DefaultColumn.CreatedTime.name) shouldEqual 2000L
-    updates2(0)(DefaultColumn.LastUpdatedTime.name) shouldEqual 2000L
+    updates2(0)(DefaultColumn.CreatedTime.name) shouldEqual EpochTimestamp(2000L)
+    updates2(0)(DefaultColumn.LastUpdatedTime.name) shouldEqual EpochTimestamp(2000L)
 
   }
 

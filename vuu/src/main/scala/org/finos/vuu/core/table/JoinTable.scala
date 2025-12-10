@@ -7,6 +7,7 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{JoinTableDef, TableDef}
 import org.finos.vuu.core.index.IndexedField
 import org.finos.vuu.core.row.{NoRowBuilder, RowBuilder}
+import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
@@ -23,7 +24,7 @@ import scala.collection.mutable
  */
 case class WrappedKeyObserver[T](wrapped: KeyObserver[T]) extends KeyObserver[T] with StrictLogging {
   override def onUpdate(update: T): Unit = {
-    logger.debug(s"suppressing tick for $update as am wrapped")
+    logger.trace(s"suppressing tick for $update as am wrapped")
   }
 
   override def hashCode(): Int = wrapped.hashCode()
@@ -211,7 +212,6 @@ case class JoinDataTableData(
 
         //add reference from key to row index
         keyToIndexMap.put(rowKey, index)
-        val now = timeProvider.now()
 
         //create a new immutable array to store the foreign keys in
         val newKeysByJoinIndex = new Array[ImmutableArray[String]](joinFields.length)

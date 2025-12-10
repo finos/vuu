@@ -3,7 +3,7 @@ package org.finos.vuu.api
 import org.finos.vuu.api.TableVisibility.Public
 import org.finos.vuu.core.filter.`type`.{AllowAllPermissionFilter, PermissionFilter}
 import org.finos.vuu.core.module.ViewServerModule
-import org.finos.vuu.core.table.*
+import org.finos.vuu.core.table.{Column, Columns, DataType, DefaultColumn, JoinColumn, SimpleColumn, TableContainer}
 import org.finos.vuu.feature.inmem.VuuInMemPluginLocator
 import org.finos.vuu.net.SortSpec
 import org.finos.vuu.viewport.ViewPort
@@ -11,7 +11,6 @@ import org.finos.vuu.viewport.ViewPort
 object Fields {
   val All: List[String] = List("*")
 }
-
 
 object VisualLinks {
   def apply(link: Link*): VisualLinks = {

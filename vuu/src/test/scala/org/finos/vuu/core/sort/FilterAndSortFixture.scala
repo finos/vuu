@@ -3,11 +3,10 @@ package org.finos.vuu.core.sort
 import org.finos.toolbox.collection.MapDiffResult
 import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.text.{AsciiUtil, CodeGenUtil}
-import org.finos.toolbox.time.{Clock, DefaultClock, TestFriendlyClock}
+import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.{Index, Indices, TableDef}
 import org.finos.vuu.core.filter.FilterClause
 import org.finos.vuu.core.filter.`type`.AntlrBasedFilter
-import org.finos.vuu.core.sort.FilterAndSortFixture.timeProvider
 import org.finos.vuu.core.table.{Columns, InMemDataTable, RowWithData, ViewPortColumnCreator}
 import org.finos.vuu.test.TestFriendlyJoinTableProvider
 import org.scalatest.Assertions.fail
@@ -16,7 +15,7 @@ object FilterAndSortFixture {
   private val timeProvider = new TestFriendlyClock(10001L)
 
   def getFilteredRows(table: InMemDataTable, clause: FilterClause): Iterable[RowWithData] = {
-    val vpColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)
+    val vpColumns = ViewPortColumnCreator.create(table)
     val filter = AntlrBasedFilter(clause)
     val resultKeys = filter.doFilter(table, table.primaryKeys, vpColumns, true)
     val resultRows = resultKeys.map(key => table.pullRow(key, vpColumns).asInstanceOf[RowWithData])
@@ -58,8 +57,7 @@ object FilterAndSortFixture {
   def doSort(table: InMemDataTable, sort: Sort): List[(String, RowWithData)] = {
     val viewPortColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)
     val result = sort.doSort(table, table.primaryKeys, viewPortColumns)
-    val vpColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)
-    val asTable = result.toArray.map(key => (key, table.pullRow(key, vpColumns).asInstanceOf[RowWithData])).toList
+    val asTable = result.toArray.map(key => (key, table.pullRow(key, viewPortColumns).asInstanceOf[RowWithData])).toList
     asTable
   }
 
@@ -125,7 +123,7 @@ object FilterAndSortFixture {
       keyField = "orderId",
       columns = columns,
       indices = Indices(indices.map(f => Index(f)) *),
-      joinFields = "ric", "orderId", "ccyCross"
+      joinFields = "ric", "orderId", "ccyCross",
     )
     val table: InMemDataTable = new InMemDataTable(tableDef, new TestFriendlyJoinTableProvider)(new MetricsProviderImpl, clock)
     rows.foreach(row => table.processUpdate(row.key, row))

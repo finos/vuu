@@ -6,6 +6,7 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.filter.`type`.{AntlrBasedFilter, BaseFilter, PermissionFilter}
 import org.finos.vuu.core.filter.{CompoundFilter, FilterOutEverythingFilter, FilterSpecParser, NoFilter}
 import org.finos.vuu.core.sort.Sort
+import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.core.table.{Column, EmptyRowData, RowData, RowWithData, TablePrimaryKeys}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.net.FilterSpec
@@ -27,7 +28,7 @@ object BuildTypeFull extends BuildType
 object TreeBuilder {
   def create(table: TreeSessionTableImpl, groupBy: GroupBy, filter: FilterSpec, vpColumns: ViewPortColumns, 
              latestTreeNodeState: TreeNodeStateStore, previousTree: Option[Tree], sort: Option[Sort], 
-             buildAction: TreeBuildAction, permissionFilter: PermissionFilter, frozenTime: Option[Long])(using timeProvider: Clock): TreeBuilder = {
+             buildAction: TreeBuildAction, permissionFilter: PermissionFilter, frozenTime: Option[EpochTimestamp])(using timeProvider: Clock): TreeBuilder = {
     new TreeBuilderImpl(table, groupBy, filter, vpColumns, latestTreeNodeState, previousTree, sort, buildAction, 
       permissionFilter, frozenTime)
   }
@@ -37,7 +38,7 @@ class TreeBuilderImpl(val table: TreeSessionTableImpl, val groupBy: GroupBy, val
                       val vpColumns: ViewPortColumns, val latestTreeNodeState: TreeNodeStateStore, 
                       val previousTree: Option[Tree], val sort: Option[Sort], 
                       val buildAction: TreeBuildAction, val permissionFilter: PermissionFilter, 
-                      val frozenTime: Option[Long])(using timeProvider: Clock) extends TreeBuilder with StrictLogging {
+                      val frozenTime: Option[EpochTimestamp])(using timeProvider: Clock) extends TreeBuilder with StrictLogging {
 
   private final val EMPTY_TREE_NODE_STATE = TreeNodeStateStore(Map())
 
@@ -45,7 +46,7 @@ class TreeBuilderImpl(val table: TreeSessionTableImpl, val groupBy: GroupBy, val
   private val logEveryTreeBuild = new LogAtFrequency(20_000)
   private final val separator = "|"
 
-  import org.finos.vuu.core.DataConstants._
+  import org.finos.vuu.core.DataConstants.*
 
   private def applyFilter(): TablePrimaryKeys = {
     

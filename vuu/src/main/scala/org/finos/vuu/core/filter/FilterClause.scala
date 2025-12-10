@@ -6,6 +6,8 @@ import org.finos.vuu.core.index.*
 import org.finos.vuu.core.table.column.{Error, Result}
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.core.table.{EmptyTablePrimaryKeys, RowData, TablePrimaryKeys}
+import org.finos.vuu.core.table.datatype.EpochTimestamp
+import org.finos.vuu.core.table.{RowData, TablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 
@@ -201,7 +203,7 @@ case class EqualsClause(columnName: String, value: String) extends RowFilterClau
       case f: Float => f == value.toFloat
       case d: Double => d == value.toDouble
       case b: Boolean => b == value.equalsIgnoreCase("true")
-      case e: EpochTimestamp => e.nanos == value.toLong
+      case e: EpochTimestamp => e.millis == value.toLong
       case c: Char => c == value.charAt(0)
     }
   }
