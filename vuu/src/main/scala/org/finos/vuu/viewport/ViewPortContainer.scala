@@ -637,7 +637,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     viewPort.setRequestId(requestId)
     viewPorts.put(id, viewPort)
 
-    logger.info(s"Created viewport $id on table ${table.name} in session ${clientSession.sessionId}")
+    logger.info(s"Created viewport with id $id on table ${table.name} in session ${clientSession.sessionId}")
     viewPort
   }
 
