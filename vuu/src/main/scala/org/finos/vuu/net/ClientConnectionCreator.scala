@@ -85,6 +85,7 @@ class DefaultMessageHandler(val channel: Channel,
     serverApi.disconnect(session)
     sessionContainer.remove(session)
     channel.disconnect()
+    logger.info(s"Disconnected session ${session.sessionId}")
     channel.close()
   }
 
@@ -199,11 +200,12 @@ class ClientSessionContainerImpl extends ClientSessionContainer with StrictLoggi
   override def getSessions(): List[ClientSessionId] = CollectionHasAsScala(sessions.keySet()).asScala.toList
 
   override def remove(sessionId: ClientSessionId): Unit = {
-    logger.debug(s"Removing client session $sessionId")
+    logger.debug(s"Removing client session ${sessionId.sessionId}")
     sessions.remove(sessionId)
   }
 
   override def register(sessionId: ClientSessionId, messageHandler: MessageHandler): Unit = {
+    logger.debug(s"Registering client session ${sessionId.sessionId}")
     sessions.put(sessionId, messageHandler)
   }
 
