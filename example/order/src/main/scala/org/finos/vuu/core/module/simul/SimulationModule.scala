@@ -3,11 +3,11 @@ package org.finos.vuu.core.module.simul
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.lifecycle.{DefaultLifecycleEnabled, LifecycleContainer}
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api._
+import org.finos.vuu.api.*
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.module.auths.OrderPermissionChecker
 import org.finos.vuu.core.module.price.PriceModule
-import org.finos.vuu.core.module.simul.provider._
+import org.finos.vuu.core.module.simul.provider.*
 import org.finos.vuu.core.module.simul.service.ParentOrdersService
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
@@ -15,7 +15,7 @@ import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcHandler}
 import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.provider.simulation.SimulatedBigInstrumentsProvider
 import org.finos.vuu.provider.{ProviderContainer, RpcProvider}
-import org.finos.vuu.viewport._
+import org.finos.vuu.viewport.*
 
 
 class InstrumentsService(val table: DataTable, val providerContainer: ProviderContainer)(implicit tableContainer: TableContainer) extends DefaultRpcHandler with StrictLogging {
@@ -197,7 +197,7 @@ object SimulationModule extends DefaultModule {
             Index("mask")
           ),
           permissionFunction = (vp, tableContainer) => new OrderPermissionChecker(vp, tableContainer),
-          joinFields = "id", "ric", "owner",          
+          joinFields = "id", "ric", "owner",
         ),
         (table, _) => new PermissionedOrdersProvider(table, ordersModel)
       )
@@ -238,7 +238,7 @@ object SimulationModule extends DefaultModule {
         JoinTableDef(
           name = "orderEntryPrices",
           baseTable = tableDefs.get(NAME, "orderEntry"),
-          joinColumns = Columns.allFrom(tableDefs.get(NAME, "orderEntry")) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
+          joinColumns = Columns.allFrom(tableDefs.get(NAME, "orderEntry")) ++ Columns.allFromExceptDefaultAnd(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
           joins =
             JoinTo(
               table = tableDefs.get(PriceModule.NAME, "prices"),
@@ -251,7 +251,7 @@ object SimulationModule extends DefaultModule {
         JoinTableDef(
           name = "instrumentPrices",
           baseTable = tableDefs.get(NAME, "instruments"),
-          joinColumns = Columns.allFrom(tableDefs.get(NAME, "instruments")) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
+          joinColumns = Columns.allFrom(tableDefs.get(NAME, "instruments")) ++ Columns.allFromExceptDefaultAnd(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
           joins =
             JoinTo(
               table = tableDefs.get(PriceModule.NAME, "prices"),
@@ -264,7 +264,7 @@ object SimulationModule extends DefaultModule {
         JoinTableDef(
           name = "ordersPrices",
           baseTable = tableDefs.get(NAME, "orders"),
-          joinColumns = Columns.allFrom(tableDefs.get(NAME, "orders")) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
+          joinColumns = Columns.allFrom(tableDefs.get(NAME, "orders")) ++ Columns.allFromExceptDefaultAnd(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
           joins =
             JoinTo(
               table = tableDefs.get(PriceModule.NAME, "prices"),

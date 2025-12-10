@@ -35,7 +35,7 @@ class ViewPortColumnsTests extends AnyFeatureSpec {
       val joinDef = JoinTableDef(
         name          = "orderPrices",
         baseTable     = ordersDef,
-        joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
+        joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
         joins  =
           JoinTo(
             table = pricesDef,

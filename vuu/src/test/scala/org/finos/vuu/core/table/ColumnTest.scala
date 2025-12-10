@@ -61,8 +61,8 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
       )
 
       val joinColumns = Columns.allFrom(tableDef)
-      joinColumns.length shouldEqual 3
-      joinColumns.map(_.name) should contain theSameElementsAs Array("Id", "Name", "Account")
+      joinColumns.length shouldEqual 5
+      joinColumns.map(_.name) should contain theSameElementsAs Array("Id", "Name", "Account", DefaultColumn.CreatedTime.name, DefaultColumn.LastUpdatedTime.name)
     }
 
     Scenario("Create join columns for all columns in table def except given columns and default columns") {
@@ -77,7 +77,7 @@ class ColumnTest extends AnyFeatureSpec with Matchers {
             .build()
       )
 
-      val joinColumns = Columns.allFromExcept(tableDef, "Name")
+      val joinColumns = Columns.allFromExceptDefaultAnd(tableDef, "Name")
       joinColumns.length shouldEqual 2
       joinColumns.map(_.name) should contain theSameElementsAs Array("Id", "Account")
     }

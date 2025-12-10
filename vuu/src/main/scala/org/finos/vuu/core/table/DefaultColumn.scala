@@ -18,6 +18,7 @@ object DefaultColumn {
   def isDefaultColumn(column: Column): Boolean =
     allDefaults.exists(f => f.name == column.name && f.dataType == column.dataType)
 
-
+  def getDefaultColumnNames: Array[String] =
+    allDefaults.map(f => f.name)
 
 }

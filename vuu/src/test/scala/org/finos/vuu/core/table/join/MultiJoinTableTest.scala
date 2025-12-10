@@ -43,8 +43,8 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
         visibility = Public,
         baseTable     = ordersDef,
         joinColumns   = Columns.allFrom(ordersDef) ++
-                        Columns.allFromExcept(pricesDef, "ric") ++
-                        Columns.allFromExcept(instrumentDef, "ric") ++
+                        Columns.allFromExceptDefaultAnd(pricesDef, "ric") ++
+                        Columns.allFromExceptDefaultAnd(instrumentDef, "ric") ++
                         Columns.aliased(fxRatesDef, ("bid","fxBid"), ("ask","fxAsk"), ("ccyPair","ccyPair")),
                         //Columns.calculated("chris1", "bid * fxBid"),
         links = VisualLinks(),
@@ -131,8 +131,8 @@ class MultiJoinTableTest extends AnyFeatureSpec with Matchers with OneInstancePe
         visibility = Public,
         baseTable     = ordersDef,
         joinColumns   = Columns.allFrom(ordersDef) ++
-          Columns.allFromExcept(pricesDef, "ric") ++
-          Columns.allFromExcept(instrumentDef, "ric") ++
+          Columns.allFromExceptDefaultAnd(pricesDef, "ric") ++
+          Columns.allFromExceptDefaultAnd(instrumentDef, "ric") ++
           Columns.aliased(fxRatesDef, ("bid","fxBid"), ("ask","fxAsk"), ("ccyPair","ccyPair")),
         //Columns.calculated("chris1", "bid * fxBid"),
         links = VisualLinks(),

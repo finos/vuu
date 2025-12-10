@@ -270,11 +270,8 @@ case class JoinTableDef(
                          override val defaultSort: SortSpec,
                          joins: JoinTo*)
   extends TableDef(name, baseTable.keyField, joinColumns, joinFields, indices = Indices(), autosubscribe = false,
-    visibility = visibility, permissionFunction = permissionFunction, defaultSort = defaultSort)
+    visibility = visibility, includeDefaultColumns = false, permissionFunction = permissionFunction, defaultSort = defaultSort)
     with VuuInMemPluginLocator {
-
-  private val defaultColumnsAsJoinColumns: Array[Column] = if (includeDefaultColumns) Columns.fromColumns(this.baseTable, DefaultColumn.getDefaultColumns(customColumns)) else Array.empty
-  private val columns: Array[Column] = if (includeDefaultColumns) customColumns ++ defaultColumnsAsJoinColumns else customColumns
 
   lazy val joinTableColumns = getJoinDefinitionColumnsInternal()
   lazy val rightTables = joins.map(join => join.table.name).toArray
@@ -282,8 +279,6 @@ case class JoinTableDef(
   lazy val joinTableNames = (1 to baseTable.joinFields.size).map(i => baseTable.name) ++ rightTables
 
   override def toString: String = s"JoinTableDef(name=$name)"
-
-  override def getColumns: Array[Column] = columns
 
   def getJoinDefinitionColumns(): Array[Column] = joinTableColumns
 

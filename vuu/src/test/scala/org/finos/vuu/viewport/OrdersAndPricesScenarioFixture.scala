@@ -1,6 +1,6 @@
 package org.finos.vuu.viewport
 
-import org.finos.vuu.api._
+import org.finos.vuu.api.*
 import org.finos.vuu.core.table.{Columns, TableContainer}
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.toolbox.jmx.MetricsProvider
@@ -28,7 +28,7 @@ object OrdersAndPricesScenarioFixture {
     val joinDef = JoinTableDef(
       name          = "orderPrices",
       baseTable     = ordersDef,
-      joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
+      joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
       joins  =
         JoinTo(
           table = pricesDef,

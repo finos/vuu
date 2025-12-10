@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.api.*
 import org.finos.vuu.core.table.join.JoinAsserts.*
 import org.finos.vuu.core.table.{Columns, KeyObserver, RowKeyUpdate, TableContainer}
-import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, VuuJoinTableProvider}
+import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl}
 import org.finos.vuu.viewport.ViewPortSetup
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
@@ -134,7 +134,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
     JoinTableDef(
       name = "orderPrices",
       baseTable = ordersDef,
-      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
+      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
       joins =
         JoinTo(
           table = pricesDef,
@@ -150,7 +150,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
       name = "orderPricesFx",
       visibility = Public,
       baseTable = ordersDef,
-      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric") ++ Columns.allFromExcept(fxDef, "ric"),
+      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric") ++ Columns.allFromExceptDefaultAnd(fxDef, "ric"),
       links = VisualLinks(),
       permissionFunction = (_,_) => AllowAllPermissionFilter,
       defaultSort = SortSpec(List.empty),
@@ -170,7 +170,7 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
     JoinTableDef(
       name = "childOrderPrices",
       baseTable = childOrders,
-      joinColumns = Columns.allFrom(orderPrices) ++ Columns.allFromExcept(childOrders, "orderId"),
+      joinColumns = Columns.allFrom(orderPrices) ++ Columns.allFromExceptDefaultAnd(childOrders, "orderId"),
       joins =
         JoinTo(
           table = orderPrices,
@@ -187,8 +187,8 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
       visibility = Public,
       baseTable = orders2Def,
       joinColumns = Columns.allFrom(orders2Def)
-        ++ Columns.allFromExcept(pricesDef, "ric")
-        ++ Columns.allFromExcept(fxRates, "currencyPair"),
+        ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric")
+        ++ Columns.allFromExceptDefaultAnd(fxRates, "currencyPair"),
       links = VisualLinks(),
       permissionFunction = (_,_) => AllowAllPermissionFilter,
       defaultSort = SortSpec(List.empty),
