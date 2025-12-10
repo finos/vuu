@@ -731,7 +731,7 @@ export declare type VuuRpcMenuAction =
   | VuuRpcEditAction;
 
 // prettier-ignore
-export declare type VuuColumnDataType = "int" | "long" | "double" | "string" | "char" | "boolean";
+export declare type VuuColumnDataType = "int" | "long" | "double" | "string" | "char" | "boolean" | "epochtimestamp";
 export declare type VuuMenuContext = "cell" | "row" | "grid" | "selected-rows";
 export declare type VuuTable = {
   table: string;

@@ -1,4 +1,4 @@
-import { DateTimeDataValueDescriptor } from "@vuu-ui/vuu-data-types";
+import { DataValueDescriptor } from "@vuu-ui/vuu-data-types";
 import {
   ColumnDescriptor,
   ColumnTypeFormatting,
@@ -22,7 +22,7 @@ const DEFAULT_NUMERIC_FORMAT: ColumnTypeFormatting = {};
 export const defaultValueFormatter = (value: unknown) =>
   value == null ? "" : typeof value === "string" ? value : value.toString();
 
-const dateFormatter = (column: DateTimeDataValueDescriptor) => {
+const dateFormatter = (column: DataValueDescriptor) => {
   const pattern = dateTimePattern(column.type);
   const formatter = formatDate(pattern);
 
