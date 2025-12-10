@@ -201,12 +201,12 @@ class ClientSessionContainerImpl extends ClientSessionContainer with StrictLoggi
   override def getSessions(): List[ClientSessionId] = CollectionHasAsScala(sessions.keySet()).asScala.toList
 
   override def remove(sessionId: ClientSessionId): Unit = {
-    logger.debug(s"Removing client session ${sessionId.sessionId}")
+    logger.debug(s"Removing session ${sessionId.sessionId}")
     sessions.remove(sessionId)
   }
 
   override def register(sessionId: ClientSessionId, messageHandler: MessageHandler): Unit = {
-    logger.debug(s"Registering client session ${sessionId.sessionId}")
+    logger.debug(s"Registering session ${sessionId.sessionId}")
     sessions.put(sessionId, messageHandler)
   }
 

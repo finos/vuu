@@ -53,7 +53,7 @@ class RequestProcessor(loginTokenService: LoginTokenService,
 
     val handler = createMessageHandler(channel, id, user)
     clientSessionContainer.register(id, handler)
-    logger.info(s"Created session for user ${user.name} with ${id.sessionId}")
+    logger.info(s"Created session for user ${user.name} with id ${id.sessionId}")
 
     Some(JsonViewServerMessage(requestId, session, LoginSuccess(vuuServerId)))
   }
