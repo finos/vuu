@@ -166,6 +166,9 @@ export const fromServerDataType = (
   }
 };
 
+export const isTimestampColumn = ({ serverDataType }: ColumnDescriptor) =>
+  serverDataType === "epochtimestamp";
+
 export const isNumericColumn = ({ serverDataType, type }: ColumnDescriptor) => {
   if (
     serverDataType === "int" ||
@@ -191,7 +194,7 @@ export const isDateTimeDataType = (
   "date/time";
 
 export const isDateTimeDataValue = (column: ColumnDescriptor) =>
-  column.serverDataType === "epochtimestamp" || isDateTimeDataType(column);
+  isTimestampColumn(column) || isDateTimeDataType(column);
 
 export const isTimeDataValue = (
   column?: ColumnDescriptor,
