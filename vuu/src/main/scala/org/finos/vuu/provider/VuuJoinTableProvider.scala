@@ -115,7 +115,7 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
 
     val jtu = JoinTableUpdate(JoinTable, rowWithData)
 
-    logger.debug("[JoinTableProvider] Submitting join table event:" + jtu)
+    logger.debug(s"[JoinTableProvider] Submitting join table event: $jtu")
 
     //get the processing off the join thread
     outboundQueue.put(jtu)

@@ -58,7 +58,7 @@ trait KeyedObservableHelper[T] extends KeyedObservable[T] {
   override def addKeyObserver(key: String, observer: KeyObserver[T]): Boolean = {
     var first = false
 
-    logger.debug("Adding observer:" + key + "->" + observer)
+    logger.trace("Adding observer:" + key + "->" + observer)
 
     //if(this.getClass.getSimpleName != "JoinTable")
     //logger.error("here2", new Throwable)

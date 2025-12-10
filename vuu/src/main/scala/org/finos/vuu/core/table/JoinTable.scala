@@ -24,7 +24,7 @@ import scala.collection.mutable
  */
 case class WrappedKeyObserver[T](wrapped: KeyObserver[T]) extends KeyObserver[T] with StrictLogging {
   override def onUpdate(update: T): Unit = {
-    logger.debug(s"suppressing tick for $update as am wrapped")
+    logger.trace(s"suppressing tick for $update as am wrapped")
   }
 
   override def hashCode(): Int = wrapped.hashCode()
