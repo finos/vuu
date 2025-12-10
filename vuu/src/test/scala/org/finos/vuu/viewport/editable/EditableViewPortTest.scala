@@ -113,7 +113,7 @@ abstract class EditableViewPortTest extends AbstractViewPortTestCase with Matche
       name = "consInstrumentPrice",
       visibility = Public,
       baseTable = constituentDef,
-      joinColumns = Columns.allFrom(constituentDef) ++ Columns.allFromExcept(instrumentDef, "ric") ++ Columns.allFromExcept(pricesDef, "ric"),
+      joinColumns = Columns.allFrom(constituentDef) ++ Columns.allFromExceptDefaultAnd(instrumentDef, "ric") ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
       links = VisualLinks(),
       permissionFunction = (_,_) => AllowAllPermissionFilter,
       defaultSort = SortSpec(List.empty),

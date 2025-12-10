@@ -2,8 +2,8 @@ package org.finos.vuu.core.module.basket
 
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api._
-import org.finos.vuu.core.module.basket.provider._
+import org.finos.vuu.api.*
+import org.finos.vuu.core.module.basket.provider.*
 import org.finos.vuu.core.module.basket.service.{BasketService, BasketTradingConstituentJoinService, BasketTradingConstituentService, BasketTradingService}
 import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
@@ -131,7 +131,7 @@ object BasketModule extends DefaultModule {
         JoinTableDef(
           name = BasketTradingConstituentJoin,
           baseTable = tableDefs.get(NAME, BasketTradingConstituentTable),
-          joinColumns = Columns.allFrom(tableDefs.get(NAME, BasketTradingConstituentTable)) ++ Columns.allFromExcept(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
+          joinColumns = Columns.allFrom(tableDefs.get(NAME, BasketTradingConstituentTable)) ++ Columns.allFromExceptDefaultAnd(tableDefs.get(PriceModule.NAME, "prices"), "ric"),
           VisualLinks(
             Link(BTC.BasketId, BasketTradingTable, BT.BasketId)
           ),

@@ -217,8 +217,9 @@ class TableDef(val name: String,
                val permissionFunction: (ViewPort, TableContainer) => PermissionFilter = (_, _) => AllowAllPermissionFilter,
                val defaultSort: SortSpec = SortSpec(List.empty)) extends VuuInMemPluginLocator {
 
-  private val columns: Array[Column] = if (includeDefaultColumns) DefaultColumn.addDefaultColumns(customColumns) else customColumns
-  private lazy val columnsByName: Map[String, Column] = columns.map(c => c.name -> c).toMap
+  private val defaultColumns: Array[Column] = if (includeDefaultColumns) DefaultColumn.getDefaultColumns(customColumns) else Array.empty
+  private val columns: Array[Column] = if (includeDefaultColumns) customColumns ++ defaultColumns else customColumns
+  private lazy val columnsByName: Map[String, Column] = getColumns.map(c => c.name -> c).toMap
 
   private var module: ViewServerModule = null
 
@@ -254,10 +255,7 @@ object LeftOuterJoin extends JoinType {
   override def toString: String = "LeftOuterJoin"
 }
 
-object InnerJoin extends JoinType
-
-
-case class JoinSpec(left: String, right: String, joinType: JoinType = InnerJoin)
+case class JoinSpec(left: String, right: String, joinType: JoinType = LeftOuterJoin)
 
 case class JoinTo(table: TableDef, joinSpec: JoinSpec)
 
@@ -272,7 +270,7 @@ case class JoinTableDef(
                          override val defaultSort: SortSpec,
                          joins: JoinTo*)
   extends TableDef(name, baseTable.keyField, joinColumns, joinFields, indices = Indices(), autosubscribe = false,
-    visibility = visibility, permissionFunction = permissionFunction, defaultSort = defaultSort)
+    visibility = visibility, includeDefaultColumns = false, permissionFunction = permissionFunction, defaultSort = defaultSort)
     with VuuInMemPluginLocator {
 
   lazy val joinTableColumns = getJoinDefinitionColumnsInternal()

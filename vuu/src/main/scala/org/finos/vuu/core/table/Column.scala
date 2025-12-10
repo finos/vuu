@@ -75,28 +75,25 @@ object Columns {
   }).toArray
 
   def from(table: TableDef, names: Seq[String]): Array[Column] = {
-    table.customColumns.filter(c => names.contains(c.name)).map(c => JoinColumn(c.name, c.index, c.dataType, table, c, isAlias = false))
+    table.getColumns.filter(c => names.contains(c.name)).map(c => JoinColumn(c.name, c.index, c.dataType, table, c, isAlias = false))
   }
 
   /**
-   * Note: this method returns all columns of a given table, excluding the default columns
+   * Note: this method returns all columns of a given table, including the default columns
    * @return JoinColumn based on all columns of a given table except the default columns
    */
   def allFrom(table: TableDef): Array[Column] = {
-    table.customColumns.map(c => JoinColumn(c.name, c.index, c.dataType, table, c, isAlias = false))
+    table.getColumns.map(c => JoinColumn(c.name, c.index, c.dataType, table, c, isAlias = false))
   }
 
   def aliased(table: TableDef, aliases: (String, String)*): Array[Column] = {
     val aliased = aliases.map(tuple => tuple._1 -> tuple._2).toMap
-    table.customColumns.filter(c => aliased.contains(c.name)).map(c => JoinColumn(aliased(c.name), c.index, c.dataType, table, c, isAlias = true))
+    table.getColumns.filter(c => aliased.contains(c.name)).map(c => JoinColumn(aliased(c.name), c.index, c.dataType, table, c, isAlias = true))
   }
 
-  /**
-   * Note: this method excludes the default columns 
-   */
-  def allFromExcept(table: TableDef, excludeColumns: String*): Array[Column] = {
-    val excluded = excludeColumns.toSet
-    table.customColumns.filterNot(c => excluded.contains(c.name)).map(c => JoinColumn(c.name, c.index, c.dataType, table, c, isAlias = false))
+  def allFromExceptDefaultAnd(table: TableDef, excludeColumns: String*): Array[Column] = {
+    val excluded = (excludeColumns ++ DefaultColumn.getDefaultColumnNames).toSet
+    table.getColumns.filterNot(c => excluded.contains(c.name)).map(c => JoinColumn(c.name, c.index, c.dataType, table, c, isAlias = false))
   }
 
   /**

@@ -49,7 +49,7 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
     val joinDef = JoinTableDef(
       name = "orderPrices",
       baseTable = ordersDef,
-      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
+      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
       joins =
         JoinTo(
           table = pricesDef,
@@ -109,7 +109,7 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
       name = "orderPrices",
       visibility = Private,
       baseTable = ordersDef,
-      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
+      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
       joins =
         JoinTo(
           table = pricesDef,
@@ -168,7 +168,7 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
     val joinDef = JoinTableDef(
       name = "orderPrices",
       baseTable = ordersDef,
-      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
+      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
       joins =
         JoinTo(
           table = pricesDef,
