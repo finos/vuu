@@ -66,12 +66,11 @@ class DefaultMessageHandler(val channel: Channel,
 
     flowController.shouldSend() match {
       case op: SendHeartbeat =>
-        logger.debug("Sending heartbeat")
+        logger.debug(s"Sending heartbeat to session ${session.sessionId}")
         val json = serializer.serialize(JsonViewServerMessage("", session.sessionId, HeartBeat(timeProvider.now())))
         channel.writeAndFlush(new TextWebSocketFrame(json))
       case op: Disconnect =>
-
-        logger.warn("Disconnecting due to flow controller")
+        logger.warn(s"Disconnecting session ${session.sessionId} because of missed heartbeats")
         disconnect()
 
       case BatchSize(size) =>
@@ -81,11 +80,14 @@ class DefaultMessageHandler(val channel: Channel,
     }
   }
 
-  def disconnect(): ChannelFuture = {
+  private def disconnect(): ChannelFuture = {
+    logger.debug(s"Disconnecting session ${session.sessionId}")
     serverApi.disconnect(session)
     sessionContainer.remove(session)
     channel.disconnect()
-    channel.close()
+    val closeResult = channel.close()
+    logger.info(s"Disconnected session ${session.sessionId}")
+    closeResult
   }
 
   protected def formatDataOutbound(outbound: Seq[ViewPortUpdate]): TableRowUpdates = {
@@ -112,7 +114,7 @@ class DefaultMessageHandler(val channel: Channel,
           return None
         }
 
-        val dataToSend = update.table.pullRowAsArray(update.key.key, update.vp.getColumns, update.vp.hasDefaultColumns)
+        val dataToSend = update.table.pullRowAsArray(update.key.key, update.vp.getColumns)
 
         val isSelected = if (update.vp.getSelection.contains(update.key.key)) 1 else 0
 
@@ -199,11 +201,12 @@ class ClientSessionContainerImpl extends ClientSessionContainer with StrictLoggi
   override def getSessions(): List[ClientSessionId] = CollectionHasAsScala(sessions.keySet()).asScala.toList
 
   override def remove(sessionId: ClientSessionId): Unit = {
-    logger.debug(s"Removing client session $sessionId")
+    logger.debug(s"Removing session ${sessionId.sessionId}")
     sessions.remove(sessionId)
   }
 
   override def register(sessionId: ClientSessionId, messageHandler: MessageHandler): Unit = {
+    logger.debug(s"Registering session ${sessionId.sessionId}")
     sessions.put(sessionId, messageHandler)
   }
 

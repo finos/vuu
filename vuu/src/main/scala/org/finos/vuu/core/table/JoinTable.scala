@@ -47,8 +47,6 @@ case class JoinDataTableData(
                               tableDef: JoinTableDef,
                               var keysByJoinIndex: Array[ImmutableArray[String]] = ImmutableArrays.empty[String](2),
                               keyToIndexMap: ConcurrentHashMap[String, Integer] = new ConcurrentHashMap[String, Integer](),
-                              indexToCreatedTime: ConcurrentHashMap[Integer, EpochTimestamp] = new ConcurrentHashMap[Integer, EpochTimestamp](),
-                              indexToLastUpdatedTime: ConcurrentHashMap[Integer, EpochTimestamp] = new ConcurrentHashMap[Integer, EpochTimestamp]()
                             )(implicit timeProvider: Clock) extends StrictLogging {
 
   val rightTables: Array[String] = tableDef.rightTables
@@ -188,14 +186,12 @@ case class JoinDataTableData(
         logger.debug(s"Removing rowKey $rowKey from keyToIndexMap")
 
         keyToIndexMap.remove(rowKey)
-        indexToCreatedTime.remove(index)
-        indexToLastUpdatedTime.remove(index)
 
         val newIndices = newKeysByJoinIndex(0).toArray
 
         for (i <- newIndices.indices) keyToIndexMap.put(newIndices(i), i)
 
-        JoinDataTableData(tableDef, newKeysByJoinIndex, keyToIndexMap, indexToCreatedTime, indexToLastUpdatedTime)
+        JoinDataTableData(tableDef, newKeysByJoinIndex, keyToIndexMap)
     }
   }
 
@@ -216,9 +212,7 @@ case class JoinDataTableData(
 
         //add reference from key to row index
         keyToIndexMap.put(rowKey, index)
-        val now = EpochTimestamp(timeProvider)
-        indexToCreatedTime.put(index, now)
-        indexToLastUpdatedTime.put(index, now)
+        val now = timeProvider.now()
 
         //create a new immutable array to store the foreign keys in
         val newKeysByJoinIndex = new Array[ImmutableArray[String]](joinFields.length)
@@ -269,11 +263,10 @@ case class JoinDataTableData(
           joinFieldIndex += 1
         }
 
-        JoinDataTableData(tableDef, newKeysByJoinIndex, keyToIndexMap, indexToCreatedTime, indexToLastUpdatedTime)
+        JoinDataTableData(tableDef, newKeysByJoinIndex, keyToIndexMap)
 
       //else if that index does exist then
       case index =>
-        indexToLastUpdatedTime.put(index, EpochTimestamp(timeProvider))
 
         var joinFieldIndex = 0
 
@@ -325,7 +318,7 @@ case class JoinDataTableData(
         }
 
 
-        JoinDataTableData(tableDef, keysByJoinIndex, keyToIndexMap, indexToCreatedTime, indexToLastUpdatedTime)
+        JoinDataTableData(tableDef, keysByJoinIndex, keyToIndexMap)
     }
 
   }
@@ -415,7 +408,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
    * @return
    */
   override def pullRow(key: String): RowData = {
-    pullRow(key, viewPortColumns, includeDefaultColumns = true)
+    pullRow(key, viewPortColumns)
   }
 
   override def pullRowFiltered(key: String, columns: ViewPortColumns): RowData = {
@@ -442,18 +435,13 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     }
   }
 
-  override def pullRow(key: String, columns: ViewPortColumns): RowData = {
-    pullRow(key, columns, includeDefaultColumns = false)
-  }
-
-  private def pullRow(key: String, viewPortColumns: ViewPortColumns, includeDefaultColumns: Boolean): RowData = {
-
+  override def pullRow(key: String, viewPortColumns: ViewPortColumns): RowData = {
     val keysByTable = joinData.getKeyValuesByTable(key)
 
     if (keysByTable == null || !keyExistsInLeftMostSourceTable(key))
       EmptyRowData
     else {
-      val columnsByTable = viewPortColumns.getJoinColumnsByTable
+      val columnsByTable: Map[String, List[JoinColumn]] = viewPortColumns.getJoinColumnsByTable
 
       val foldedMap = columnsByTable.foldLeft(Map[String, Any]())({
         case (previous, (sourceTableName, columnList)) =>
@@ -476,21 +464,12 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
       })
 
       //Build the final row data
-      (includeDefaultColumns, viewPortColumns.hasCalculatedColumns) match {
-        case (false, false) => RowWithData(key, foldedMap)
-        case (true, false) => RowWithData(key, foldedMap ++ getDefaultColumnMap(key))
-        case (false, true) => RowWithData(key, foldedMap ++ getCalculatedData(viewPortColumns, key, foldedMap))
-        case (true, true) => RowWithData(key, foldedMap ++ getDefaultColumnMap(key) ++ getCalculatedData(viewPortColumns, key, foldedMap))
+      if (viewPortColumns.hasCalculatedColumns) {
+        RowWithData(key, foldedMap ++ getCalculatedData(viewPortColumns, key, foldedMap))
+      } else {
+        RowWithData(key, foldedMap)
       }
     }
-  }
-
-  private def getDefaultColumnMap(key: String): Map[String, Any] = {
-    val index = joinData.keyToIndexMap.get(key)
-    Map(
-      DefaultColumn.CreatedTime.name -> joinData.indexToCreatedTime.get(index),
-      DefaultColumn.LastUpdatedTime.name -> joinData.indexToLastUpdatedTime.get(index)
-    )
   }
 
   private def getCalculatedData(joinColumns: ViewPortColumns, key: String, joinData: Map[String, Any]): Map[String, Any] = {
@@ -499,11 +478,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
   }
 
   override def pullRowAsArray(key: String, columns: ViewPortColumns): Array[Any] = {
-    pullRowAsArray(key, columns, false)
-  }
-
-  override def pullRowAsArray(key: String, columns: ViewPortColumns, includeDefaultColumns: Boolean): Array[Any] = {
-    val asRowData = pullRow(key, columns, includeDefaultColumns)
+    val asRowData = pullRow(key, columns)
 
     val asArray = asRowData.toArray(columns.getColumns)
 

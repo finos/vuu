@@ -11,6 +11,8 @@ import freezeControlCss from "./FreezeControl.css";
 // Duration to keep flashing after last new record (in milliseconds)
 const FLASH_DURATION_MS = 3000;
 
+const classBase = "vuuFreezeControl";
+
 export interface FreezeControlProps
   extends HTMLAttributes<HTMLDivElement>,
     FreezeProps {
@@ -61,7 +63,7 @@ export const FreezeControl = ({
   return (
     <div
       {...htmlAttributes}
-      className={cx("FreezeControl", className)}
+      className={cx(classBase, className)}
       style={
         {
           ...htmlAttributes.style,
@@ -69,15 +71,15 @@ export const FreezeControl = ({
         } as React.CSSProperties
       }
     >
-      <div className={`FreezeControl-buttonRow`}>
+      <div className={`${classBase}-buttonRow`}>
         <ToggleButtonGroup
           className="vuuStateButtonGroup"
           onChange={onToggleChange}
           value={isFrozen ? "frozen" : "live"}
         >
           <div
-            className={cx(`FreezeControl-buttonWrapper`, {
-              [`FreezeControl-buttonWrapper-active`]: isFrozen,
+            className={cx(`${classBase}-buttonWrapper`, {
+              [`${classBase}-buttonWrapper-active`]: isFrozen,
             })}
           >
             <ToggleButton value="frozen">
@@ -85,25 +87,25 @@ export const FreezeControl = ({
             </ToggleButton>
           </div>
           <div
-            className={cx(`FreezeControl-buttonWrapper`, {
-              [`FreezeControl-buttonWrapper-active`]: !isFrozen,
+            className={cx(`${classBase}-buttonWrapper`, {
+              [`${classBase}-buttonWrapper-active`]: !isFrozen,
             })}
           >
             <ToggleButton value="live">Active</ToggleButton>
           </div>
         </ToggleButtonGroup>
         {isFrozen && (
-          <div className={`FreezeControl-newOrders`}>
+          <div className={`${classBase}-newOrders`}>
             New Orders
             <div
-              className={cx(`FreezeControl-customBadge`, {
-                [`FreezeControl-customBadge-flashing`]: isFlashing,
-                [`FreezeControl-customBadge-overflow`]: isOverflow,
+              className={cx(`${classBase}-customBadge`, {
+                [`${classBase}-customBadge-flashing`]: isFlashing,
+                [`${classBase}-customBadge-overflow`]: isOverflow,
               })}
               data-overflow={isOverflow ? "true" : undefined}
             >
               {badgeValue}
-              {isOverflow && <span className="FreezeControl-plus">+</span>}
+              {isOverflow && <span className={`${classBase}-plus`}>+</span>}
             </div>
           </div>
         )}

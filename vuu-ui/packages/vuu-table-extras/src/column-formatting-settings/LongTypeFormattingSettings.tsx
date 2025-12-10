@@ -1,4 +1,3 @@
-import React, { useCallback } from "react";
 import {
   FormField,
   FormFieldLabel,
@@ -7,12 +6,12 @@ import {
 } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-import { isDateTimeDataValue, isTypeDescriptor } from "@vuu-ui/vuu-utils";
-import { DateTimeFormattingSettings } from "./DateTimeFormattingSettings";
-import { BaseNumericFormattingSettings } from "./BaseNumericFormattingSettings";
 import { FormattingSettingsProps } from "@vuu-ui/vuu-table-types";
+import React, { useCallback } from "react";
+import { BaseNumericFormattingSettings } from "./BaseNumericFormattingSettings";
 
 import longTypeFormattingSettingsCss from "./LongTypeFormattingSettings.css";
+import { isTypeDescriptor } from "@vuu-ui/vuu-utils";
 
 const classBase = "vuuLongColumnFormattingSettings";
 
@@ -51,12 +50,7 @@ export const LongTypeFormattingSettings = (props: FormattingSettingsProps) => {
           ))}
         </ToggleButtonGroup>
       </FormField>
-
-      {isDateTimeDataValue(column) ? (
-        <DateTimeFormattingSettings {...props} column={column} />
-      ) : (
-        <BaseNumericFormattingSettings {...props} />
-      )}
+      <BaseNumericFormattingSettings {...props} />
     </div>
   );
 };

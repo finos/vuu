@@ -4,18 +4,10 @@ import {
   type MountResult,
 } from "@playwright/experimental-ct-react";
 import type { Locator } from "@playwright/experimental-ct-core";
-import { FreezeControl } from "../../../freeze-control/FreezeControl";
-import type { DataSource } from "@vuu-ui/vuu-data-types";
-import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-
-const createMockDataSource = (isFrozen = false): Partial<DataSource> => ({
-  isFrozen,
-  table: { module: "TEST", table: "test" },
-  freeze: () => void 0,
-  unfreeze: () => void 0,
-  subscribe: async () => void 0,
-  unsubscribe: () => void 0,
-});
+import {
+  DefaultFreezeControl,
+  FrozenFreezeControl,
+} from "../../../../../../showcase/src/examples/TableExtras/FreezeControl.examples";
 
 // Section below just to improve test readability
 type ComponentFixture = MountResult;
@@ -27,23 +19,18 @@ const verifyBadgeEquals = async (badge: LocatorType, expectedValue: number) => {
 
 const verifyNoOverflow = async (badge: LocatorType) => {
   await expect(badge).not.toHaveAttribute("data-overflow", "true");
-  await expect(badge).not.toHaveClass(/FreezeControl-customBadge-overflow/);
+  await expect(badge).not.toHaveClass("vuuFreezeControl-customBadge-overflow");
 };
 
 const verifyPlusSignNotVisible = async (component: ComponentFixture) => {
-  await expect(component.locator(".FreezeControl-plus")).not.toBeVisible();
+  await expect(component.locator(".vuuFreezeControl-plus")).not.toBeVisible();
 };
 
 test.describe("Given a FreezeControl", () => {
   test("THEN it loads with Freeze and Active buttons, with Active selected", async ({
     mount,
   }) => {
-    const dataSource = createMockDataSource(false);
-    const component = await mount(
-      <LocalDataSourceProvider>
-        <FreezeControl dataSource={dataSource as DataSource} />
-      </LocalDataSourceProvider>,
-    );
+    const component = await mount(<DefaultFreezeControl />);
 
     const activeButton = component.locator('button[value="live"]');
     const freezeButton = component.locator('button[value="frozen"]');
@@ -55,7 +42,7 @@ test.describe("Given a FreezeControl", () => {
     await expect(buttonGroup).toBeVisible();
 
     const activeWrapper = component
-      .locator(".FreezeControl-buttonWrapper-active")
+      .locator(".vuuFreezeControl-buttonWrapper-active")
       .first();
     await expect(activeWrapper).toBeVisible();
   });
@@ -63,18 +50,13 @@ test.describe("Given a FreezeControl", () => {
   test("WHEN frozen THEN New Orders section appears with counter at 0", async ({
     mount,
   }) => {
-    const dataSource = createMockDataSource(true);
-    const component = await mount(
-      <LocalDataSourceProvider>
-        <FreezeControl dataSource={dataSource as DataSource} />
-      </LocalDataSourceProvider>,
-    );
+    const component = await mount(<FrozenFreezeControl />);
 
-    const newOrdersSection = component.locator(".FreezeControl-newOrders");
+    const newOrdersSection = component.locator(".vuuFreezeControl-newOrders");
     await expect(newOrdersSection).toBeVisible();
     await expect(newOrdersSection).toContainText("New Orders");
 
-    const badge = component.locator(".FreezeControl-customBadge");
+    const badge = component.locator(".vuuFreezeControl-customBadge");
     await expect(badge).toBeVisible();
     await expect(badge).toHaveText("0");
   });
@@ -82,14 +64,9 @@ test.describe("Given a FreezeControl", () => {
   test("WHEN badge value is 99 or less THEN it displays the exact number", async ({
     mount,
   }) => {
-    const dataSource = createMockDataSource(true);
-    const component = await mount(
-      <LocalDataSourceProvider>
-        <FreezeControl dataSource={dataSource as DataSource} />
-      </LocalDataSourceProvider>,
-    );
+    const component = await mount(<FrozenFreezeControl />);
 
-    const badge = component.locator(".FreezeControl-customBadge");
+    const badge = component.locator(".vuuFreezeControl-customBadge");
     await expect(badge).toBeVisible();
 
     await verifyBadgeEquals(badge, 0);

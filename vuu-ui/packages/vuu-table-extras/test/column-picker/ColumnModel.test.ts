@@ -54,8 +54,8 @@ describe("ColumnModel", () => {
       { name: "side", serverDataType: "string" },
       { name: "status", serverDataType: "string" },
       { name: "volLimit", serverDataType: "int" },
-      { name: "vuuCreatedTimestamp", serverDataType: "long" },
-      { name: "vuuUpdatedTimestamp", serverDataType: "long" },
+      { name: "vuuCreatedTimestamp", serverDataType: "epochtimestamp" },
+      { name: "vuuUpdatedTimestamp", serverDataType: "epochtimestamp" },
     ]);
   });
 
@@ -87,8 +87,8 @@ describe("ColumnModel", () => {
       { name: "side", serverDataType: "string" },
       { name: "status", serverDataType: "string" },
       { name: "volLimit", serverDataType: "int" },
-      { name: "vuuCreatedTimestamp", serverDataType: "long" },
-      { name: "vuuUpdatedTimestamp", serverDataType: "long" },
+      { name: "vuuCreatedTimestamp", serverDataType: "epochtimestamp" },
+      { name: "vuuUpdatedTimestamp", serverDataType: "epochtimestamp" },
     ]);
   });
 
@@ -127,8 +127,8 @@ describe("ColumnModel", () => {
       { name: "side", serverDataType: "string" },
       { name: "status", serverDataType: "string" },
       { name: "volLimit", serverDataType: "int" },
-      { name: "vuuCreatedTimestamp", serverDataType: "long" },
-      { name: "vuuUpdatedTimestamp", serverDataType: "long" },
+      { name: "vuuCreatedTimestamp", serverDataType: "epochtimestamp" },
+      { name: "vuuUpdatedTimestamp", serverDataType: "epochtimestamp" },
     ]);
 
     expect(columnsChangeHandler).toHaveBeenCalledOnce();
@@ -182,8 +182,8 @@ describe("ColumnModel", () => {
       { name: "side", serverDataType: "string" },
       { name: "status", serverDataType: "string" },
       { name: "volLimit", serverDataType: "int" },
-      { name: "vuuCreatedTimestamp", serverDataType: "long" },
-      { name: "vuuUpdatedTimestamp", serverDataType: "long" },
+      { name: "vuuCreatedTimestamp", serverDataType: "epochtimestamp" },
+      { name: "vuuUpdatedTimestamp", serverDataType: "epochtimestamp" },
     ]);
 
     expect(columnsChangeHandler).toHaveBeenCalledOnce();
@@ -241,8 +241,8 @@ describe("ColumnModel", () => {
       { name: "side", serverDataType: "string" },
       { name: "status", serverDataType: "string" },
       { name: "volLimit", serverDataType: "int" },
-      { name: "vuuCreatedTimestamp", serverDataType: "long" },
-      { name: "vuuUpdatedTimestamp", serverDataType: "long" },
+      { name: "vuuCreatedTimestamp", serverDataType: "epochtimestamp" },
+      { name: "vuuUpdatedTimestamp", serverDataType: "epochtimestamp" },
     ]);
 
     expect(columnsChangeHandler).toHaveBeenCalledOnce();
@@ -277,8 +277,8 @@ describe("ColumnModel", () => {
       { name: "idAsInt", serverDataType: "int" },
       { name: "quantity", serverDataType: "double" },
       { name: "status", serverDataType: "string" },
-      { name: "vuuCreatedTimestamp", serverDataType: "long" },
-      { name: "vuuUpdatedTimestamp", serverDataType: "long" },
+      { name: "vuuCreatedTimestamp", serverDataType: "epochtimestamp" },
+      { name: "vuuUpdatedTimestamp", serverDataType: "epochtimestamp" },
     ]);
   });
 

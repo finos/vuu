@@ -2,17 +2,27 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { FilterContainerFilter } from "@vuu-ui/vuu-filter-types";
 import cx from "clsx";
-import { ForwardedRef, forwardRef, HTMLAttributes, ReactElement } from "react";
+import {
+  ForwardedRef,
+  forwardRef,
+  HTMLAttributes,
+  MouseEventHandler,
+  useCallback,
+} from "react";
 import { getFilterClausesForDisplay } from "../filter-utils";
 
 import filterDisplayCss from "./FilterDisplay.css";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { IconButton } from "@vuu-ui/vuu-ui-controls";
+import { queryClosest } from "@vuu-ui/vuu-utils";
 
 const classBase = "vuuFilterDisplay";
 
 export interface FilterDisplayProps extends HTMLAttributes<HTMLDivElement> {
+  allowDelete?: boolean;
   columns?: ColumnDescriptor[];
   filter: FilterContainerFilter | undefined;
+  onDeleteFilterClause?: (columnName: string) => void;
 }
 
 const getColumnLabel = (columnName: string, columns?: ColumnDescriptor[]) => {
@@ -26,7 +36,14 @@ const getColumnLabel = (columnName: string, columns?: ColumnDescriptor[]) => {
 };
 
 export const FilterDisplay = forwardRef(function FilterDisplay(
-  { className, columns, filter, ...htmlAttributes }: FilterDisplayProps,
+  {
+    allowDelete = false,
+    className,
+    columns,
+    filter,
+    onDeleteFilterClause,
+    ...htmlAttributes
+  }: FilterDisplayProps,
   forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
   const targetWindow = useWindow();
@@ -36,6 +53,18 @@ export const FilterDisplay = forwardRef(function FilterDisplay(
     window: targetWindow,
   });
 
+  const handleDelete = useCallback<MouseEventHandler<HTMLButtonElement>>(
+    (e) => {
+      const {
+        dataset: { columnName },
+      } = queryClosest<HTMLDivElement>(e.target, "[data-column-name]", true);
+      if (columnName) {
+        onDeleteFilterClause?.(columnName);
+      }
+    },
+    [onDeleteFilterClause],
+  );
+
   const filterClauseList = getFilterClausesForDisplay(filter, columns);
   return (
     <div
@@ -43,18 +72,28 @@ export const FilterDisplay = forwardRef(function FilterDisplay(
       className={cx(classBase, className)}
       ref={forwardedRef}
     >
-      {filterClauseList.reduce<Array<ReactElement>>(
-        (list, [columnName, value]) => {
-          list.push(
-            <span className={`${classBase}-column`} key={list.length}>
+      {filterClauseList.map(
+        ([columnName, value]) => (
+          <div
+            className={`${classBase}-filter-clause`}
+            key={columnName}
+            data-column-name={columnName}
+          >
+            <span className={`${classBase}-column`}>
               {getColumnLabel(columnName)}
-            </span>,
-            <span className={`${classBase}-value`} key={list.length + 1}>
-              {value}
-            </span>,
-          );
-          return list;
-        },
+            </span>
+            <span className={`${classBase}-value`}>{value}</span>
+            {allowDelete ? (
+              <IconButton
+                data-embedded
+                icon="close"
+                appearance="transparent"
+                sentiment="neutral"
+                onClick={handleDelete}
+              />
+            ) : null}
+          </div>
+        ),
         [],
       )}
     </div>

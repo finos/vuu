@@ -17,6 +17,7 @@ import cx from "clsx";
 import { HTMLAttributes, SyntheticEvent, useCallback, useMemo } from "react";
 import { BaseNumericFormattingSettings } from "./BaseNumericFormattingSettings";
 import { LongTypeFormattingSettings } from "./LongTypeFormattingSettings";
+import { DateTimeFormattingSettings } from "./DateTimeFormattingSettings";
 
 const classBase = "vuuColumnFormattingPanel";
 
@@ -46,8 +47,6 @@ export const ColumnFormattingPanel = ({
       }),
     [column, onChangeColumnType, onChangeFormatting],
   );
-
-  console.log({ formattingSettingsComponent });
 
   const ConfigEditor = useMemo<
     React.FC<ConfigurationEditorProps> | undefined
@@ -133,6 +132,8 @@ function getFormattingSettingsComponent(props: FormattingSettingsProps) {
       return <BaseNumericFormattingSettings {...props} />;
     case "long":
       return <LongTypeFormattingSettings {...props} />;
+    case "epochtimestamp":
+      return <DateTimeFormattingSettings {...props} />;
     default:
       return null;
   }

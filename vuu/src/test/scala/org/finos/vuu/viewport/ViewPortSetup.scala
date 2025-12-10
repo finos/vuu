@@ -3,7 +3,7 @@ package org.finos.vuu.viewport
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api._
+import org.finos.vuu.api.*
 import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.plugin.DefaultPluginRegistry
@@ -74,7 +74,7 @@ trait ViewPortSetup {
     val joinDef = JoinTableDef(
       name          = "orderPrices",
       baseTable     = ordersDef,
-      joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExcept(pricesDef, "ric"),
+      joinColumns   = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
       joins  =
         JoinTo(
           table = pricesDef,

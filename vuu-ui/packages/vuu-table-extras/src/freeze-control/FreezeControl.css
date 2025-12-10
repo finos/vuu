@@ -1,29 +1,30 @@
-.FreezeControl {
+.vuuFreezeControl {
   display: inline-flex;
   --freeze-control-flash-duration: 0.25s;
   --freeze-control-active-button-color: var(--salt-palette-error-background);
   --freeze-control-badge-color: var(--salt-palette-success-background);
 
-  .FreezeControl-buttonRow {
+  .vuuFreezeControl-buttonRow {
     background-color: var(--salt-container-secondary-background);
     border: 1px solid var(--salt-container-secondary-borderColor);
     border-radius: 50px;
     display: flex;
     height: var(--salt-size-base);
     overflow: hidden;
+    white-space: nowrap;
   }
 
-  .FreezeControl-buttonWrapper {
+  .vuuFreezeControl-buttonWrapper {
     border-radius: 50px;
     padding: 0 var(--salt-spacing-150);
     background-color: var(--salt-container-secondary-background);
   }
 
-  .FreezeControl-buttonWrapper-active {
+  .vuuFreezeControl-buttonWrapper-active {
     background-color: var(--freeze-control-active-button-color);
   }
 
-  .FreezeControl-buttonWrapper-active .saltToggleButton {
+  .vuuFreezeControl-buttonWrapper-active .saltToggleButton {
     background-color: var(--freeze-control-active-button-color);
     color: var(--salt-actionable-secondary-foreground-active);
   }
@@ -36,7 +37,7 @@
     background-color: transparent;
   }
 
-  .FreezeControl-customBadge {
+  .vuuFreezeControl-customBadge {
     background-color: transparent;
     border-radius: 50%;
     color: var(--salt-text-primary-foreground);
@@ -54,7 +55,7 @@
     overflow: visible;
   }
 
-  .FreezeControl-newOrders {
+  .vuuFreezeControl-newOrders {
     align-items: center;
     background-color: var(--salt-container-secondary-background);
     display: flex;
@@ -63,16 +64,16 @@
   }
 }
 
-.FreezeControl-customBadge-flashing {
+.vuuFreezeControl-customBadge-flashing {
   animation: flashGreenRed var(--freeze-control-flash-duration, 0.25s)
     steps(1, end) infinite;
 }
 
-.FreezeControl-customBadge[data-overflow="true"] {
+.vuuFreezeControl-customBadge[data-overflow="true"] {
   padding-right: 0.2em;
 }
 
-.FreezeControl-plus {
+.vuuFreezeControl-plus {
   font-size: 0.8em;
   line-height: 1;
   position: absolute;

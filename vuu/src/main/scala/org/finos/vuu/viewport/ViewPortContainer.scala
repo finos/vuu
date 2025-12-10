@@ -288,6 +288,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         viewPortHistograms.remove(vpId)
         vp.delete()
         this.viewPorts.remove(vp.id)
+        logger.info(s"Removed viewport $vpId")
     }
   }
 
@@ -636,6 +637,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     viewPort.setRequestId(requestId)
     viewPorts.put(id, viewPort)
 
+    logger.info(s"Created viewport with id $id on table ${table.name} in session ${clientSession.sessionId}")
     viewPort
   }
 

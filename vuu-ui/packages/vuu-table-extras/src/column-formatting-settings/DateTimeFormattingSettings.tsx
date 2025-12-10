@@ -1,4 +1,3 @@
-import { DateTimeDataValueDescriptor } from "@vuu-ui/vuu-data-types";
 import { FormattingSettingsProps } from "@vuu-ui/vuu-table-types";
 import {
   DatePattern,
@@ -43,9 +42,10 @@ const getSelectedPattern = (
   }
 };
 
-export const DateTimeFormattingSettings: React.FC<
-  FormattingSettingsProps<DateTimeDataValueDescriptor>
-> = ({ column, onChangeFormatting: onChange }) => {
+export const DateTimeFormattingSettings: React.FC<FormattingSettingsProps> = ({
+  column,
+  onChangeFormatting: onChange,
+}) => {
   const formatting = getTypeFormattingFromColumn(column);
   const { pattern = fallbackDateTimePattern } = formatting;
   const toggleValue = useMemo(() => getToggleValue(pattern), [pattern]);

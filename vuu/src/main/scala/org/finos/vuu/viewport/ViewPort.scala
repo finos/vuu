@@ -128,8 +128,6 @@ trait ViewPort {
 
   def getColumns: ViewPortColumns
 
-  def hasDefaultColumns: Boolean
-
   def getSelection: Set[String]
 
   def getRowKeyMappingSize_ForTest: Int
@@ -197,8 +195,6 @@ class ViewPortImpl(val id: String,
                    val structuralFields: AtomicReference[ViewPortStructuralFields],
                    val range: AtomicReference[ViewPortRange]
                   )(implicit timeProvider: Clock) extends ViewPort with KeyObserver[RowKeyUpdate] with LazyLogging {
-
-  private lazy val lazyHasDefaultColumns: Boolean = getColumns.getColumns.exists(f => DefaultColumn.isDefaultColumn(f))
 
   private val viewPortLock = new Object
 
@@ -391,8 +387,6 @@ class ViewPortImpl(val id: String,
   }
 
   override def getColumns: ViewPortColumns = structuralFields.get().columns
-
-  override def hasDefaultColumns: Boolean = lazyHasDefaultColumns
 
   override def getRange: ViewPortRange = range.get()
 

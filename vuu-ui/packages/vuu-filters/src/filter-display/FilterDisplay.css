@@ -1,15 +1,25 @@
 .vuuFilterDisplay {
-    display: grid;
-    column-gap: 12px;
-    grid-template-columns: auto auto;
-    grid-template-rows: repeat(30px);
-    padding: var(--salt-spacing-100);
+    display: flex;
+    flex-direction: column;
+    gap: var(--salt-spacing-50);
+    padding: var(--vuuFilterDisplay-padding, var(--salt-spacing-200));
     width: fit-content;
 
+    .vuuFilterDisplay-filter-clause {
+        align-items: center;
+        display: flex;
+        gap: var(--salt-spacing-200);
+        justify-content: space-between;
+        white-space: no
+    }
+
     .vuuFilterDisplay-column {
+        flex: 1 1 auto;
         white-space: no
     }
     .vuuFilterDisplay-value {
+        flex: 0 0 120px;
+        text-align: right;
         white-space: nowrap;
     }
 }
