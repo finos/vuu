@@ -212,7 +212,6 @@ case class JoinDataTableData(
 
         //add reference from key to row index
         keyToIndexMap.put(rowKey, index)
-        val now = timeProvider.now()
 
         //create a new immutable array to store the foreign keys in
         val newKeysByJoinIndex = new Array[ImmutableArray[String]](joinFields.length)
