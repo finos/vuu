@@ -26,7 +26,10 @@ class WebSocketClient(url: String, port: Int)(implicit lifecycle: LifecycleConta
 
   var ch: Channel = null
 
-  var handler: WebSocketClientHandler = _
+  val handler: WebSocketClientHandler = new WebSocketClientHandler(
+    WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null, true, new DefaultHttpHeaders,
+      WebSocketConstants.MAX_CONTENT_LENGTH)
+  )
 
   val group: EventLoopGroup = new NioEventLoopGroup
 
@@ -41,10 +44,6 @@ class WebSocketClient(url: String, port: Int)(implicit lifecycle: LifecycleConta
   @Override
   override def doStart(): Unit = {
 
-    handler = new WebSocketClientHandler(
-      WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null, true, new DefaultHttpHeaders,
-        WebSocketConstants.MAX_CONTENT_LENGTH)
-    )
     val b: Bootstrap = new Bootstrap
     b.group(group).channel(classOf[NioSocketChannel]).handler(new ChannelInitializer[SocketChannel] {
 
@@ -70,7 +69,11 @@ class WebSocketClient(url: String, port: Int)(implicit lifecycle: LifecycleConta
     ch = b.connect(uri.getHost, port).sync.channel
   }
 
-  override def doStop(): Unit = {}
+  override def doStop(): Unit = {
+    if (ch != null && ch.isOpen) {
+      ch.close()
+    }
+  }
 
   override def doInitialize(): Unit = {}
 
