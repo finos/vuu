@@ -277,7 +277,6 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       }
 
       Then("Remove a row from the dialogue")
-      //viewPortContainer.callRpcEditDeleteRow(sessionViewPort.id, "proc-2", session)
       val ctx = RequestContext("", VuuUser(""), ClientSessionId("", ""), null)
       val deleteRowResult = sessionViewPort.getStructure.viewPortDef.service.processRpcRequest(RpcNames.DeleteRowRpc, new RpcParams(Map("key" -> "proc-2"), sessionViewPort, ctx))
       deleteRowResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
@@ -285,8 +284,6 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       viewPortContainer.runOnce()
 
       Then("Submit the form")
-      //val actionClose = viewPortContainer.callRpcFormSubmit(sessionViewPort.id, session)
-      //actionClose.getClass should equal(classOf[CloseDialogViewPortAction])
       val submitFormResult = sessionViewPort.getStructure.viewPortDef.service.processRpcRequest(RpcNames.SubmitFormRpc, new RpcParams(Map.empty, sessionViewPort, ctx))
       submitFormResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
 
