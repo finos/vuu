@@ -60,6 +60,11 @@ export class Table extends EventEmitter<TableEvents> {
     if (index !== -1) {
       this.#index.delete(key);
       this.#data.splice(index, 1);
+
+      for (let i = index; i < this.#data.length; i++) {
+        this.#index.set(this.#data[i][this.#indexOfKey] as string, i);
+      }
+
       if (emitEvent) {
         this.emit("delete", key);
       }
