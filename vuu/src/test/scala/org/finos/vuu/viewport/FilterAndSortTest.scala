@@ -8,7 +8,7 @@ import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.filter.`type`.{AntlrBasedFilter, PermissionFilter}
 import org.finos.vuu.core.filter.{EqualsClause, LessThanClause, NoFilter}
-import org.finos.vuu.core.sort.{GenericSort2, Sort, SortDirection, UserDefinedFilterAndSort}
+import org.finos.vuu.core.sort.{Sort, SortDirection, UserDefinedFilterAndSort}
 import org.finos.vuu.core.table.{Columns, RowData, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortDef, SortSpec}
@@ -513,7 +513,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       val viewport = viewPortContainer.create(RequestId.oneNew(), VuuUser("B"),
         ClientSessionId("A", "C"), queue, prices, ViewPortRange(0, 20), columns,
-        filterSpec = FilterSpec("ric = \"VOD.L\" or ric = \"BT.L\""))
+        filterSpec = FilterSpec("ric = \"VOD.L\" or ric = \"BT.L\" and vuuCreatedTimestamp > 0"))
 
       viewPortContainer.runOnce()
 
