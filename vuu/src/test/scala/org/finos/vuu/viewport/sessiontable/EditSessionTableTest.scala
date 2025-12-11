@@ -3,6 +3,7 @@ package org.finos.vuu.viewport.sessiontable
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.TableTestHelper.{combineQs, emptyQueues}
 import org.finos.vuu.core.table.{RowWithData, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.rpc.*
@@ -69,10 +70,10 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       val headKey = primaryKeys.head
       val sequencerNumber = table.pullRow(headKey).get("sequenceNumber").asInstanceOf[Long]
 
-      if(sequencerNumber > 0){
+      if (sequencerNumber > 0) {
         logger.debug("I would now send this fix seq to a fix engine to reset, we're all good:" + sequencerNumber)
         CloseDialogViewPortAction(vp.id)
-      }else{
+      } else {
         logger.error("Seq number not set, returning error")
         ViewPortEditFailure("Sequencer number has not been set.")
       }
@@ -83,11 +84,17 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
     }
 
     override def editCellAction(): ViewPortEditCellAction = ViewPortEditCellAction("", this.onEditCell)
+
     override def editRowAction(): ViewPortEditRowAction = ViewPortEditRowAction("", this.onEditRow)
+
     override def onFormSubmit(): ViewPortFormSubmitAction = ViewPortFormSubmitAction("", this.onFormSubmit)
-    override def deleteRowAction(): ViewPortDeleteRowAction = ViewPortDeleteRowAction("", (x,y,z) => ViewPortEditSuccess())
-    override def deleteCellAction(): ViewPortDeleteCellAction = ViewPortDeleteCellAction("", (a,b,c,d) => ViewPortEditSuccess())
-    override def addRowAction(): ViewPortAddRowAction = ViewPortAddRowAction("", (a,b,c,d) => ViewPortEditSuccess())
+
+    override def deleteRowAction(): ViewPortDeleteRowAction = ViewPortDeleteRowAction("", (x, y, z) => ViewPortEditSuccess())
+
+    override def deleteCellAction(): ViewPortDeleteCellAction = ViewPortDeleteCellAction("", (a, b, c, d) => ViewPortEditSuccess())
+
+    override def addRowAction(): ViewPortAddRowAction = ViewPortAddRowAction("", (a, b, c, d) => ViewPortEditSuccess())
+
     override def onFormClose(): ViewPortFormCloseAction = ViewPortFormCloseAction("", this.onFormClose)
   }
 
@@ -99,12 +106,12 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
 
     registerRpc("OPEN_STOP_PROCESS", params => openStopProcessDialogue(tableContainer, params))
 
-    private def openStopProcessDialogue(tableContainer: TableContainer, params: RpcParams): RpcFunctionResult =  {
+    private def openStopProcessDialogue(tableContainer: TableContainer, params: RpcParams): RpcFunctionResult = {
       val baseTable = tableContainer.getTable("stopProcess")
 
       val sessionTable = tableContainer.createSimpleSessionTable(baseTable, params.ctx.session)
 
-      params.viewPort.getSelection.foreach(f =>  {
+      params.viewPort.getSelection.foreach(f => {
         val rowWithData = params.viewPort.table.pullRow(f)
         sessionTable.processUpdate(f, RowWithData(f, Map("process-id" -> f, "status" -> rowWithData.get("status"))))
       })
@@ -114,36 +121,36 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
 
   }
 
-  private class StopProcessService extends RpcHandler with EditRpcHandler {
+  private class StopProcessService()(using tableContainer: TableContainer) extends EditTableRpcHandler {
 
     val count = new AtomicInteger(0)
 
-    override def deleteRowAction(): ViewPortDeleteRowAction = {
-      ViewPortDeleteRowAction("", (x,y,z) => onDeleteRow(x, y, z))
+    override def deleteRow(params: RpcParams): RpcFunctionResult = {
+      val key: String = params.namedParams("key").asInstanceOf[String]
+      val vp: ViewPort = params.viewPort
+
+      vp.table.asTable.processDelete(key)
+      RpcFunctionSuccess(None)
     }
 
-    private def onDeleteRow(x: String, y: ViewPort, z: ClientSessionId): ViewPortEditAction = {
-      val table = y.table.asTable
-      table.processDelete(x)
-      ViewPortEditSuccess()
-    }
-
-    override def onFormSubmit(): ViewPortFormSubmitAction = ViewPortFormSubmitAction("", (x,y) => stopProcesses(x,y))
-
-    private def stopProcesses(x: ViewPort, y: ClientSessionId):  ViewPortAction =  {
-      x.getKeys.foreach(f =>  {
+    override def submitForm(params: RpcParams): RpcFunctionResult = {
+      val vp: ViewPort = params.viewPort
+      vp.getKeys.foreach(f => {
         logger.info("Stopping {}", f)
         count.incrementAndGet()
       })
-      CloseDialogViewPortAction(x.id)
+      RpcFunctionSuccess(None)
     }
 
-    override def onFormClose(): ViewPortFormCloseAction = ViewPortFormCloseAction("", (x,_) => CloseDialogViewPortAction(x.id))
+    override def deleteCell(params: RpcParams): RpcFunctionResult = ???
 
-    override def deleteCellAction(): ViewPortDeleteCellAction = ???
-    override def addRowAction(): ViewPortAddRowAction = ???
-    override def editCellAction(): ViewPortEditCellAction = ???
-    override def editRowAction(): ViewPortEditRowAction = ???
+    override def addRow(params: RpcParams): RpcFunctionResult = ???
+
+    override def editRow(params: RpcParams): RpcFunctionResult = ???
+
+    override def editCell(params: RpcParams): RpcFunctionResult = ???
+
+    override def closeForm(params: RpcParams): RpcFunctionResult = ???
   }
 
   Feature("Test full flow through editable session table") {
@@ -210,7 +217,6 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       }
 
       val actionClose = viewPortContainer.callRpcFormSubmit(sessionViewPort.id, session)
-
       actionClose.getClass should equal(classOf[CloseDialogViewPortAction])
     }
 
@@ -223,8 +229,8 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
 
       Given("We define a viewport callback on process with an rpc service attached...")
       viewPortContainer.addViewPortDefinition(process.getTableDef.name, createViewPortDefFunc(tableContainer,
-          new StopProcessDialogueService()(tableContainer), clock))
-      val stopProcessService = new StopProcessService()
+        new StopProcessDialogueService()(tableContainer), clock))
+      val stopProcessService = new StopProcessService()(using tableContainer)
       viewPortContainer.addViewPortDefinition(stopProcess.getTableDef.name, createViewPortDefFunc(tableContainer,
         stopProcessService, clock))
 
@@ -270,13 +276,15 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       }
 
       Then("Remove a row from the dialogue")
-      viewPortContainer.callRpcEditDeleteRow(sessionViewPort.id, "proc-2", session)
+      val ctx = RequestContext("", VuuUser(""), ClientSessionId("", ""), null)
+      val deleteRowResult = sessionViewPort.getStructure.viewPortDef.service.processRpcRequest(RpcNames.DeleteRowRpc, new RpcParams(Map("key" -> "proc-2"), sessionViewPort, ctx))
+      deleteRowResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
 
       viewPortContainer.runOnce()
 
       Then("Submit the form")
-      val actionClose = viewPortContainer.callRpcFormSubmit(sessionViewPort.id, session)
-      actionClose.getClass should equal(classOf[CloseDialogViewPortAction])
+      val submitFormResult = sessionViewPort.getStructure.viewPortDef.service.processRpcRequest(RpcNames.SubmitFormRpc, new RpcParams(Map.empty, sessionViewPort, ctx))
+      submitFormResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
 
       Then("check we called stop twice")
       assert(stopProcessService.count.get() == 2)

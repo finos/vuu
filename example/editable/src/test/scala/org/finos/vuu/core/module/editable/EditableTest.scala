@@ -16,69 +16,6 @@ class EditableTest extends VuuServerTestCase {
 
   Feature("Editable Test Case") {
 
-    // TODO #1790 to be deleted
-    Scenario("Check the editable functionality") {
-
-      implicit val clock: Clock = new TestFriendlyClock(10001L)
-      implicit val lifecycle: LifecycleContainer = new LifecycleContainer()
-      implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
-      implicit val metricsProvider: MetricsProvider = new MetricsProviderImpl
-
-      withVuuServer(EditableTestModule()) {
-        vuuServer =>
-
-          vuuServer.login("testUser")
-
-          val viewport = vuuServer.createViewPort(EditableTestModule.NAME, "editTestTable")
-
-          val service = vuuServer.getViewPortRpcServiceProxy[TestEditableServiceIF](viewport)
-
-          service.addRowAction().func("key1", Map("rowId" -> "key1", "A" -> "TEST", "B" -> 1001D, "C" -> 500, "D" -> true), viewport, vuuServer.session)
-
-          vuuServer.runOnce()
-
-          assertVpEq(combineQsForVp(viewport)) {
-            Table(
-              ("rowId", "A", "B", "C", "D"),
-              ("key1", "TEST", 1001.0, 500, true)
-            )
-          }
-
-          service.editCellAction().func("key1", "B", 200D.asInstanceOf[Object], viewport, vuuServer.session)
-
-          vuuServer.runOnce()
-
-          assertVpEq(combineQsForVp(viewport)) {
-            Table(
-              ("rowId", "A", "B", "C", "D"),
-              ("key1", "TEST", 200.0, 500, true)
-            )
-          }
-
-          service.addRowAction().func("key1", Map("rowId" -> "key2", "A" -> "TEST2", "B" -> 1001D, "C" -> 500, "D" -> true), viewport, vuuServer.session)
-
-          vuuServer.runOnce()
-
-          assertVpEq(combineQsForVp(viewport)) {
-            Table(
-              ("rowId", "A", "B", "C", "D"),
-              ("key2", "TEST2", 1001.0, 500, true)
-            )
-          }
-
-          service.deleteRowAction().func("key1", viewport, vuuServer.session)
-
-          vuuServer.runOnce()
-
-          assertVpEq(combineQsForVp(viewport)) {
-            Table(
-              ("rowId", "A", "B", "C", "D")
-            )
-          }
-
-      }
-    }
-
     Scenario("Check the editable functionality with EditTableRpcHandler") {
 
       given clock: Clock = new TestFriendlyClock(10001L)
@@ -95,12 +32,72 @@ class EditableTest extends VuuServerTestCase {
 
           val viewport = vuuServer.createViewPort(EditTableTestModule.NAME, "editTestTable")
           val ctx = RequestContext("", VuuUser(""), ClientSessionId("", ""), null)
-          val rpcResult = viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.SubmitFormRpc, new RpcParams(Map("comment" -> "Some comment"), viewport, ctx))
-          rpcResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
-          rpcResult.asInstanceOf[RpcFunctionSuccess].optionalResult.get shouldBe "Some comment"
 
-        // TODO 1790 add tests for other rpc calls in EditableTestService
+          val addRowResult = viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.AddRowRpc, new RpcParams(Map("key" -> "key1", "data" -> Map("rowId" -> "key1", "A" -> "TEST", "B" -> 1001D, "C" -> 500, "D" -> true)), viewport, ctx))
+          addRowResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
 
+          vuuServer.runOnce()
+
+          assertVpEq(combineQsForVp(viewport)) {
+            Table(
+              ("rowId", "A", "B", "C", "D"),
+              ("key1", "TEST", 1001.0, 500, true)
+            )
+          }
+
+          val editRowResult = viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.EditRowRpc, new RpcParams(Map("key" -> "key1", "data" -> Map("rowId" -> "key1", "A" -> "TEST2", "B" -> 2002D, "C" -> 600, "D" -> false)), viewport, ctx))
+          editRowResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
+
+          vuuServer.runOnce()
+
+          assertVpEq(combineQsForVp(viewport)) {
+            Table(
+              ("rowId", "A", "B", "C", "D"),
+              ("key1", "TEST2", 2002.0, 600, false)
+            )
+          }
+
+          val editCellResult = viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.EditCellRpc, new RpcParams(Map("key" -> "key1", "column" -> "A", "data" -> "TEST3"), viewport, ctx))
+          editCellResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
+
+          vuuServer.runOnce()
+
+          assertVpEq(combineQsForVp(viewport)) {
+            Table(
+              ("rowId", "A", "B", "C", "D"),
+              ("key1", "TEST3", 2002.0, 600, false)
+            )
+          }
+
+          val deleteCellResult = viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.DeleteCellRpc, new RpcParams(Map("key" -> "key1", "column" -> "A"), viewport, ctx))
+          deleteCellResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
+
+          vuuServer.runOnce()
+
+          assertVpEq(combineQsForVp(viewport)) {
+            Table(
+              ("rowId", "A", "B", "C", "D"),
+              ("key1", null, 2002.0, 600, false)
+            )
+          }
+
+          val deleteRowResult = viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.DeleteRowRpc, new RpcParams(Map("key" -> "key1"), viewport, ctx))
+          deleteRowResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
+
+          vuuServer.runOnce()
+
+          assertVpEq(combineQsForVp(viewport)) {
+            Table(
+              ("rowId", "A", "B", "C", "D"),
+            )
+          }
+
+          val submitFormResult = viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.SubmitFormRpc, new RpcParams(Map("comment" -> "Some comment"), viewport, ctx))
+          submitFormResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
+          submitFormResult.asInstanceOf[RpcFunctionSuccess].optionalResult.get shouldBe "Some comment"
+
+          val closeFormResult = viewport.getStructure.viewPortDef.service.processRpcRequest(RpcNames.CloseFormRpc, new RpcParams(Map.empty, viewport, ctx))
+          closeFormResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
       }
     }
   }
