@@ -106,6 +106,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
+  @deprecated("#1790")
   def callRpcEditFormClose(vpId: String, rpcName: String, session: ClientSessionId): ViewPortAction = {
     val viewPort = this.getViewPortById(vpId)
     val viewPortDef = viewPort.getStructure.viewPortDef
@@ -118,6 +119,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
+  @deprecated("#1790")
   def callRpcEditDeleteCell(vpId: String, key: String, column: String, session: ClientSessionId): ViewPortAction = {
     val viewPort = this.getViewPortById(vpId)
     val viewPortDef = viewPort.getStructure.viewPortDef
@@ -130,6 +132,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
+  @deprecated("#1790")
   def callRpcEditDeleteRow(vpId: String, key: String, session: ClientSessionId): ViewPortAction = {
     val viewPort = this.getViewPortById(vpId)
     val viewPortDef = viewPort.getStructure.viewPortDef
@@ -141,7 +144,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         throw new Exception(s"Service is not editable rpc")
     }
   }
-
+  @deprecated("#1790")
   def callRpcAddRow(vpId: String, key: String,  data: Map[String, Any], session: ClientSessionId): ViewPortAction = {
     val viewPort = this.getViewPortById(vpId)
     val viewPortDef = viewPort.getStructure.viewPortDef
@@ -153,7 +156,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         throw new Exception(s"Service is not editable rpc")
     }
   }
-
+  @deprecated("#1790")
   def callRpcEditFormSubmit(vpId: String, session: ClientSessionId): ViewPortAction = {
     val viewPort = this.getViewPortById(vpId)
     val viewPortDef = viewPort.getStructure.viewPortDef
@@ -165,7 +168,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         throw new Exception(s"Service is not editable rpc")
     }
   }
-
+  @deprecated("#1790")
   def callRpcEditRow(vpId: String, key: String, data: Map[String, Any], session: ClientSessionId): ViewPortEditAction = {
     val viewPort = this.getViewPortById(vpId)
     val viewPortDef = viewPort.getStructure.viewPortDef
@@ -177,7 +180,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         throw new Exception(s"Service is not editable rpc")
     }
   }
-
+  @deprecated("#1790")
   def callRpcEditCell(vpId: String, key: String, column: String, data: AnyRef, session: ClientSessionId): ViewPortEditAction = {
     val viewPort = this.getViewPortById(vpId)
     val viewPortDef = viewPort.getStructure.viewPortDef

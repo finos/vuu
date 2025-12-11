@@ -128,23 +128,31 @@ case class ViewPortMenuRpcResponse(vpId: String, rpcName: String, action: ViewPo
 
 case class ViewPortMenuRpcReject(vpId: String, rpcName: String, error: String) extends MessageBody
 
+@deprecated("#1790")
 case class ViewPortEditRowRpcCall(vpId: String, rowKey: String, data: Map[String, Object]) extends MessageBody
 
+@deprecated("#1790")
 case class ViewPortEditCellRpcCall(vpId: String, rowKey: String, field: String, value: Object) extends MessageBody
 
+@deprecated("#1790")
 case class ViewPortEditSubmitFormRpcCall(vpId: String) extends MessageBody
 
+@deprecated("#1790")
 case class ViewPortEditCloseFormRpcCall(vpId: String, field: String, value: Object) extends MessageBody
 
+@deprecated("#1790")
 case class ViewPortAddRowRpcCall(vpId: String, rowKey: String, data: Map[String, Any]) extends MessageBody
 
+@deprecated("#1790")
 case class ViewPortDeleteCellRpcCall(vpId: String, rowKey: String, field: String) extends MessageBody {}
 
+@deprecated("#1790")
 case class ViewPortDeleteRowRpcCall(vpId: String, rowKey: String) extends MessageBody
 
-
+@deprecated("#1790")
 case class ViewPortEditRpcResponse(vpId: String, rpcName: String, action: ViewPortAction) extends MessageBody
 
+@deprecated("#1790")
 case class ViewPortEditRpcReject(vpId: String, rpcName: String, error: String) extends MessageBody
 
 
