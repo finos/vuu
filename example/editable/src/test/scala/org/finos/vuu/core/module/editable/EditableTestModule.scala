@@ -4,12 +4,12 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{TableDef, ViewPortDef, VisualLinks}
-import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.module.ModuleFactory.stringToString
-import org.finos.vuu.core.table.{Columns, DataTable, RowWithData, TableContainer}
+import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
+import org.finos.vuu.core.table.{Columns, RowWithData, TableContainer}
 import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.net.rpc.{EditRpcHandler, EditTableRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcHandler, RpcParams}
-import org.finos.vuu.viewport.{ViewPort, ViewPortAddRowAction, ViewPortDeleteCellAction, ViewPortDeleteRowAction, ViewPortEditAction, ViewPortEditCellAction, ViewPortEditRowAction, ViewPortEditSuccess, ViewPortFormCloseAction, ViewPortFormSubmitAction}
+import org.finos.vuu.net.rpc.{EditTableRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
+import org.finos.vuu.viewport.ViewPort
 
 class EditTableTestService()(using tableContainer: TableContainer) extends EditTableRpcHandler with StrictLogging {
 

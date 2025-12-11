@@ -192,7 +192,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         throw new Exception(s"Service is not editable rpc")
     }
   }
-
+  @deprecated("#1790")
   def callRpcFormSubmit(vpId: String, session: ClientSessionId): ViewPortAction = {
     val viewPort = this.getViewPortById(vpId)
     val viewPortDef = viewPort.getStructure.viewPortDef

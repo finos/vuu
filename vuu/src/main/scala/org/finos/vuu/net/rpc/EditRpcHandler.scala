@@ -5,12 +5,26 @@ import org.finos.vuu.viewport.{ViewPortAction, ViewPortAddRowAction, ViewPortDel
 
 import scala.collection.immutable.Map
 
+@deprecated("#1790")
 trait EditRpcHandler {
+  @deprecated("#1790")
   def deleteRowAction(): ViewPortDeleteRowAction
+
+  @deprecated("#1790")
   def deleteCellAction(): ViewPortDeleteCellAction
+
+  @deprecated("#1790")
   def addRowAction(): ViewPortAddRowAction
+
+  @deprecated("#1790")
   def editCellAction(): ViewPortEditCellAction
+
+  @deprecated("#1790")
   def editRowAction(): ViewPortEditRowAction
+
+  @deprecated("#1790")
   def onFormSubmit(): ViewPortFormSubmitAction
+
+  @deprecated("#1790")
   def onFormClose(): ViewPortFormCloseAction
 }
