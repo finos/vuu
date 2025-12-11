@@ -83,7 +83,6 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       CloseDialogViewPortAction(vp.id)
     }
 
-    //
     override def editCellAction(): ViewPortEditCellAction = ViewPortEditCellAction("", this.onEditCell)
 
     override def editRowAction(): ViewPortEditRowAction = ViewPortEditRowAction("", this.onEditRow)
