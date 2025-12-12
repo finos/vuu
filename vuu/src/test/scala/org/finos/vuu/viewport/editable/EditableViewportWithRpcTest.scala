@@ -118,8 +118,8 @@ class EditableViewportWithRpcTest extends EditableViewPortTest {
       }
 
       Then("we call and edit rpc call")
-      viewPortContainer.handleRpcRequest(viewPort.id, RpcNames.EditCellRpc, Map("key" -> "bskt1.vod.l", "column" -> "quantity", "data" -> Long.box(2000L)))(context)
-      viewPortContainer.handleRpcRequest(viewPort.id, RpcNames.EditCellRpc, Map("key" -> "bskt1.bt.l", "column" -> "quantity", "data" -> Long.box(600L)))(context)
+      viewPortContainer.handleRpcRequest(viewPort.id, RpcNames.EditCellRpc, Map("key" -> "bskt1.vod.l", "column" -> "quantity", "data" -> Long.box(2000L)))(RequestContext(RequestId.oneNew(), user, session, outQueue))
+      viewPortContainer.handleRpcRequest(viewPort.id, RpcNames.EditCellRpc, Map("key" -> "bskt1.bt.l", "column" -> "quantity", "data" -> Long.box(600L)))(RequestContext(RequestId.oneNew(), user, session, outQueue))
 
       joinTableManager.runOnce()
       viewPortContainer.runOnce()
