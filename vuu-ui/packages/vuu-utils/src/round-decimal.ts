@@ -92,9 +92,12 @@ export function roundDecimal(
   const [part1, part2 = ""] = value.toString().split(".");
   const actualDecimals = part2.length;
 
-  integral = useLocaleString
-    ? parseFloat(part1).toLocaleString()
-    : parseFloat(part1).toString();
+  integral =
+    part1 === "-0"
+      ? "-0"
+      : useLocaleString
+        ? parseFloat(part1).toLocaleString()
+        : parseFloat(part1).toString();
 
   if (align === Align.Left && alignOnDecimals) {
     integral = padLeft(integral);
