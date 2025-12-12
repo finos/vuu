@@ -52,7 +52,7 @@ class ConstituentInstrumentPricesRpcService()(using tableContainer: TableContain
 
     if (sequencerNumber > 0) {
       logger.debug("I would now send this fix seq to a fix engine to reset, we're all good:" + sequencerNumber)
-      RpcFunctionSuccess(Some(params.viewPort.id))
+      RpcFunctionSuccess(None)
     } else {
       logger.error("Seq number not set, returning error")
       RpcFunctionFailure(0, "Sequencer number has not been set.", null)
