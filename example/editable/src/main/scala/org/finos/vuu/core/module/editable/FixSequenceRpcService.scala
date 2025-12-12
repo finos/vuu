@@ -1,10 +1,7 @@
 package org.finos.vuu.core.module.editable
 
-import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.table.{RowWithData, TableContainer}
-import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.net.rpc.{EditTableRpcHandler, RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
-import org.finos.vuu.viewport.*
+import org.finos.vuu.net.rpc.*
 
 class FixSequenceRpcService()(using tableContainer: TableContainer) extends EditTableRpcHandler{
 
