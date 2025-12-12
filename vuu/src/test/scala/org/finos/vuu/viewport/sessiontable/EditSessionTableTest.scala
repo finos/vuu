@@ -50,52 +50,47 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
   /**
    * This class represents the editing of the fixSequenceReset
    */
-  class FixSequenceNumberResetService(implicit clock: Clock) extends RpcHandler with EditRpcHandler {
+  class FixSequenceNumberResetService()(using tableContainer: TableContainer) extends EditTableRpcHandler {
 
-    private def onEditCell(key: String, columnName: String, data: Any, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
-      val table = vp.table.asTable
-      table.processUpdate(key, RowWithData(key, Map(columnName -> data)))
-      ViewPortEditSuccess()
+    override def editCell(params: RpcParams): RpcFunctionResult = {
+      val key: String = params.namedParams("key").asInstanceOf[String]
+      val column: String = params.namedParams("column").asInstanceOf[String]
+      val data: Any = params.namedParams("data")
+      val table = params.viewPort.table.asTable
+      table.processUpdate(key, RowWithData(key, Map(column -> data)))
+      RpcFunctionSuccess(None)
     }
 
-    private def onEditRow(key: String, row: Map[String, Any], vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
-      val table = vp.table.asTable
-      table.processUpdate(key, RowWithData(key, row))
-      ViewPortEditSuccess()
+    override def editRow(params: RpcParams): RpcFunctionResult = {
+      val key: String = params.namedParams("key").asInstanceOf[String]
+      val data: Map[String, Any] = params.namedParams("data").asInstanceOf[Map[String, Any]]
+      val table = params.viewPort.table.asTable
+      table.processUpdate(key, RowWithData(key, data))
+      RpcFunctionSuccess(None)
     }
 
-    private def onFormSubmit(vp: ViewPort, session: ClientSessionId): ViewPortAction = {
-      val table = vp.table.asTable
+    override def submitForm(params: RpcParams): RpcFunctionResult = {
+      val table = params.viewPort.table.asTable
       val primaryKeys = table.primaryKeys
       val headKey = primaryKeys.head
       val sequencerNumber = table.pullRow(headKey).get("sequenceNumber").asInstanceOf[Long]
 
       if (sequencerNumber > 0) {
         logger.debug("I would now send this fix seq to a fix engine to reset, we're all good:" + sequencerNumber)
-        CloseDialogViewPortAction(vp.id)
+        RpcFunctionSuccess(None)
       } else {
         logger.error("Seq number not set, returning error")
-        ViewPortEditFailure("Sequencer number has not been set.")
+        RpcFunctionFailure(0, "Sequencer number has not been set.", null)
       }
     }
 
-    private def onFormClose(vp: ViewPort, session: ClientSessionId): ViewPortAction = {
-      CloseDialogViewPortAction(vp.id)
-    }
+    override def deleteRow(params: RpcParams): RpcFunctionResult = ???
 
-    override def editCellAction(): ViewPortEditCellAction = ViewPortEditCellAction("", this.onEditCell)
+    override def deleteCell(params: RpcParams): RpcFunctionResult = ???
 
-    override def editRowAction(): ViewPortEditRowAction = ViewPortEditRowAction("", this.onEditRow)
+    override def addRow(params: RpcParams): RpcFunctionResult = ???
 
-    override def onFormSubmit(): ViewPortFormSubmitAction = ViewPortFormSubmitAction("", this.onFormSubmit)
-
-    override def deleteRowAction(): ViewPortDeleteRowAction = ViewPortDeleteRowAction("", (x, y, z) => ViewPortEditSuccess())
-
-    override def deleteCellAction(): ViewPortDeleteCellAction = ViewPortDeleteCellAction("", (a, b, c, d) => ViewPortEditSuccess())
-
-    override def addRowAction(): ViewPortAddRowAction = ViewPortAddRowAction("", (a, b, c, d) => ViewPortEditSuccess())
-
-    override def onFormClose(): ViewPortFormCloseAction = ViewPortFormCloseAction("", this.onFormClose)
+    override def closeForm(params: RpcParams): RpcFunctionResult = ???
   }
 
   /**
@@ -165,7 +160,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
       Given("We define a viewport callback on process with an rpc service attached...")
       viewPortContainer.addViewPortDefinition(process.getTableDef.name, createViewPortDefFunc(tableContainer, new ProcessRpcService(tableContainer, clock), clock))
 
-      viewPortContainer.addViewPortDefinition(fixSequence.getTableDef.name, createViewPortDefFunc(tableContainer, new FixSequenceNumberResetService(), clock))
+      viewPortContainer.addViewPortDefinition(fixSequence.getTableDef.name, createViewPortDefFunc(tableContainer, new FixSequenceNumberResetService()(using tableContainer), clock))
 
       And("we've ticked in some data")
       processProvider.tick("proc-1", Map("id" -> "proc-1", "name" -> "My Process 1", "uptime" -> 5000L, "status" -> "running"))
@@ -204,7 +199,7 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
         )
       }
 
-      viewPortContainer.callRpcEditCell(sessionViewPort.id, "proc-1", "sequenceNumber", Long.box(100001L), session)
+      viewPortContainer.handleRpcRequest(sessionViewPort.id, RpcNames.EditCellRpc, Map("key" -> "proc-1", "column" -> "sequenceNumber", "data" -> Long.box(100001L)))(RequestContext(RequestId.oneNew(), user, session, outQueue))
 
       viewPortContainer.runOnce()
 
@@ -216,8 +211,8 @@ class EditSessionTableTest extends AbstractViewPortTestCase with Matchers with G
         )
       }
 
-      val actionClose = viewPortContainer.callRpcFormSubmit(sessionViewPort.id, session)
-      actionClose.getClass should equal(classOf[CloseDialogViewPortAction])
+      val submitFormResult = viewPortContainer.handleRpcRequest(sessionViewPort.id, RpcNames.SubmitFormRpc, Map.empty)(RequestContext(RequestId.oneNew(), user, session, outQueue))
+      submitFormResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
     }
 
     Scenario("Create a session table based on a generic rpc call and populate it with callbacks") {
