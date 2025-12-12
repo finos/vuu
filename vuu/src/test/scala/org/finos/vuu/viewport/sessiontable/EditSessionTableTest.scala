@@ -3,7 +3,6 @@ package org.finos.vuu.viewport.sessiontable
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.client.messages.RequestId
-import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.table.TableTestHelper.{combineQs, emptyQueues}
 import org.finos.vuu.core.table.{RowWithData, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.rpc.*

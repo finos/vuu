@@ -5,9 +5,8 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.TableDefContainer
-import org.finos.vuu.core.table.TableTestHelper.combineQs
-import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.net.rpc.{RpcFunctionSuccess, RpcNames, RpcParams}
+import org.finos.vuu.net.{ClientSessionId, RequestContext}
 import org.finos.vuu.test.VuuServerTestCase
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
 import org.scalatest.prop.Tables.Table
