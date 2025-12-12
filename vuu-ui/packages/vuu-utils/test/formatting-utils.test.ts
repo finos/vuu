@@ -97,4 +97,18 @@ describe("formatting-utils", () => {
       expect(format2(-0.6)).toEqual("-0.60");
     });
   });
+
+  it("supports truncation rather than rounding of decimals", () => {
+    const format = numericFormatter({
+      type: {
+        name: "number",
+        formatting: {
+          decimals: 2,
+          roundingRule: "truncate",
+        },
+      },
+    });
+
+    expect(format(-12345.6789)).toEqual("-12,345.67");
+  });
 });
