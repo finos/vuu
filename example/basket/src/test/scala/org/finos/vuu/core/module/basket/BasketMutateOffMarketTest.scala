@@ -8,7 +8,7 @@ import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames as B, BasketConstituentColumnNames as BC}
 import org.finos.vuu.core.module.basket.service.BasketTradingServiceIF
 import org.finos.vuu.core.module.price.PriceModule
-import org.finos.vuu.net.rpc.{RpcFunctionSuccess, RpcParams}
+import org.finos.vuu.net.rpc.{RpcFunctionSuccess, RpcNames, RpcParams}
 import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.test.{TestVuuServer, VuuServerTestCase}
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
@@ -102,7 +102,8 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
           val basketTradingService = vuuServer.getViewPortRpcServiceProxy[BasketTradingServiceIF](vpBasketTrading)
 
           When("we edit the side of the parent basket")
-          basketTradingService.editCellAction().func(basketTradeInstanceId, "side", "SELL", vpBasketTrading, vuuServer.session)
+          val editCellResult = vpBasketTrading.getStructure.viewPortDef.service.processRpcRequest(RpcNames.EditCellRpc, new RpcParams(Map("key" -> basketTradeInstanceId, "column" -> "side", "data" -> "SELL"), vpBasketTrading, vuuServer.requestContext))
+          editCellResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
 
           Then("get all the updates that have occurred for all view ports from the outbound queue")
           val updates = combineQs(vpBasketTrading)
@@ -127,7 +128,8 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
           }
 
           When("we edit the units of the parent basket")
-          basketTradingService.editCellAction().func(basketTradeInstanceId, "units", 1000L.asInstanceOf[Object], vpBasketTrading, vuuServer.session)
+          val editCellResult2 = vpBasketTrading.getStructure.viewPortDef.service.processRpcRequest(RpcNames.EditCellRpc, new RpcParams(Map("key" -> basketTradeInstanceId, "column" -> "units", "data" -> 1000), vpBasketTrading, vuuServer.requestContext))
+          editCellResult2.isInstanceOf[RpcFunctionSuccess] shouldBe true
 
           And("assert the basket trading constituent table has increased the units")
           assertVpEq(filterByVp(vpBasketTradingCons, combineQs(vpBasketTrading))) {
@@ -161,7 +163,8 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
           val basketTradingService = vuuServer.getViewPortRpcServiceProxy[BasketTradingServiceIF](vpBasketTrading)
 
           When("we edit the side of the parent basket to same side as current value")
-          basketTradingService.editCellAction().func(basketTradeInstanceId, "side", "BUY", vpBasketTrading, vuuServer.session)
+          val editCellResult3 = vpBasketTrading.getStructure.viewPortDef.service.processRpcRequest(RpcNames.EditCellRpc, new RpcParams(Map("key" -> basketTradeInstanceId, "column" -> "side", "data" -> "BUY"), vpBasketTrading, vuuServer.requestContext))
+          editCellResult3.isInstanceOf[RpcFunctionSuccess] shouldBe true
           vuuServer.runOnce()
 
           Then("get all the updates that have occurred for all view ports from the outbound queue")
