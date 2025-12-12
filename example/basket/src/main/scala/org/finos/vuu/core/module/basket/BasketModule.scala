@@ -71,7 +71,7 @@ object BasketModule extends DefaultModule {
         (table, vs) => new BasketTradingProvider(table, vs.tableContainer),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.getColumns,
-          service = new BasketTradingService(table, omsApi)(clock, tableContainer)
+          service = new BasketTradingService(table, omsApi)(using tableContainer)
         )
       )
       .addTable(

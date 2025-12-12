@@ -1,25 +1,23 @@
 package org.finos.vuu.core.module.basket.service
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.basket.BasketConstants.Side
 import org.finos.vuu.core.module.basket.BasketModule
 import org.finos.vuu.core.module.basket.BasketModule.BasketTradingConstituentTable
-import org.finos.vuu.core.table._
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
-import org.finos.vuu.net.ClientSessionId
+import org.finos.vuu.core.table.*
+import org.finos.vuu.net.rpc.{EditTableRpcHandler, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.order.oms.{CancelOrder, NewOrder, OmsApi}
-import org.finos.vuu.viewport._
+import org.finos.vuu.viewport.*
 
-trait BasketTradingServiceIF extends EditRpcHandler {
+trait BasketTradingServiceIF extends EditTableRpcHandler {
   def sendToMarket(params: RpcParams): RpcFunctionResult
 
   def takeOffMarket(params: RpcParams): RpcFunctionResult
 }
 
-class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(implicit clock: Clock, val tableContainer: TableContainer) extends DefaultRpcHandler with BasketTradingServiceIF with StrictLogging {
+class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(using tableContainer: TableContainer) extends BasketTradingServiceIF with StrictLogging {
 
-  import org.finos.vuu.core.module.basket.BasketModule.{BasketTradingColumnNames => BT, BasketTradingConstituentColumnNames => BTC}
+  import org.finos.vuu.core.module.basket.BasketModule.{BasketTradingColumnNames as BT, BasketTradingConstituentColumnNames as BTC}
 
   registerRpc("sendToMarket", params => sendToMarket(params))
   registerRpc("takeOffMarket", params => takeOffMarket(params))
@@ -85,7 +83,11 @@ class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(implicit cl
     table.processUpdate(basketInstanceId, RowWithData(basketInstanceId, Map(BT.InstanceId -> basketInstanceId, BT.Status -> state)))
   }
 
-  private def onEditCell(key: String, columnName: String, data: Any, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
+  override def editCell(params: RpcParams): RpcFunctionResult = {
+    val key: String = params.namedParams("key").asInstanceOf[String]
+    val columnName: String = params.namedParams("column").asInstanceOf[String]
+    val data: Any = params.namedParams("data")
+    val vp: ViewPort = params.viewPort
     logger.debug("Change requested for cell value for key:" + key + "(" + columnName + ":" + data + ")")
 
     val currentData = getRowData(key, columnName)
@@ -119,7 +121,7 @@ class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(implicit cl
         case _ =>
       }
     }
-    ViewPortEditSuccess()
+    RpcFunctionSuccess(None)
   }
 
   private def getRowData(rowKey: String, columnName: String): Any = {
@@ -127,17 +129,15 @@ class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(implicit cl
     row.get(columnName)
   }
 
-  override def deleteRowAction(): ViewPortDeleteRowAction = ???
+  override def deleteRow(params: RpcParams): RpcFunctionResult = ???
 
-  override def deleteCellAction(): ViewPortDeleteCellAction = ???
+  override def deleteCell(params: RpcParams): RpcFunctionResult = ???
 
-  override def addRowAction(): ViewPortAddRowAction = ???
+  override def addRow(params: RpcParams): RpcFunctionResult = ???
 
-  override def editCellAction(): ViewPortEditCellAction = ViewPortEditCellAction("", onEditCell)
+  override def editRow(params: RpcParams): RpcFunctionResult = ???
 
-  override def editRowAction(): ViewPortEditRowAction = ???
+  override def submitForm(params: RpcParams): RpcFunctionResult = ???
 
-  override def onFormSubmit(): ViewPortFormSubmitAction = ???
-
-  override def onFormClose(): ViewPortFormCloseAction = ???
+  override def closeForm(params: RpcParams): RpcFunctionResult = ???
 }

@@ -5,10 +5,10 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.module.TableDefContainer
-import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames => B, BasketConstituentColumnNames => BC}
+import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames as B, BasketConstituentColumnNames as BC}
 import org.finos.vuu.core.module.basket.service.BasketTradingServiceIF
 import org.finos.vuu.core.module.price.PriceModule
-import org.finos.vuu.net.rpc.{RpcFunctionSuccess, RpcParams}
+import org.finos.vuu.net.rpc.{RpcFunctionSuccess, RpcNames, RpcParams}
 import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.test.VuuServerTestCase
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
@@ -81,7 +81,8 @@ class BasketCreateTest extends VuuServerTestCase {
           val basketTradingService = vuuServer.getViewPortRpcServiceProxy[BasketTradingServiceIF](viewportBasketTrading)
 
           //CJS: I don't like this forced cast, need to look at that a bit
-          basketTradingService.editCellAction().func(basketTradeInstanceId, BT.Units, 100.asInstanceOf[Object], viewportBasketTrading, vuuServer.session)
+          val editCellResult = viewportBasketTrading.getStructure.viewPortDef.service.processRpcRequest(RpcNames.EditCellRpc, new RpcParams(Map("key" -> basketTradeInstanceId, "column" -> BT.Units, "data" -> 100), viewportBasketTrading, vuuServer.requestContext))
+          editCellResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
 
           vuuServer.runOnce()
           Then("get all the updates that have occurred for all view ports from the outbound queue")
