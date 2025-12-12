@@ -45,6 +45,7 @@ export const numericFormatter = ({
     const {
       alignOnDecimals = false,
       decimals,
+      roundingRule,
       useLocaleString,
       zeroPad = false,
     } = type.formatting ?? DEFAULT_NUMERIC_FORMAT;
@@ -68,6 +69,7 @@ export const numericFormatter = ({
         zeroPad,
         alignOnDecimals,
         useLocaleString,
+        roundingRule,
       );
     };
   }

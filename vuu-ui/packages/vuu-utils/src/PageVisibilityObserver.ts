@@ -21,7 +21,7 @@ export type PageVisibilityEvents = {
 
 export interface PageVisibilityObserverConstructorProps {
   /**
-   * timeout period in seconds.
+   * timeout period in seconds. Defaults to zero which will never timeout
    */
   inactiveTimeout?: number;
   onHidden?: () => void;
@@ -32,7 +32,7 @@ export interface PageVisibilityObserverConstructorProps {
 const defaultProps: PageVisibilityObserverConstructorProps = {};
 
 export class PageVisibilityObserver extends EventEmitter<PageVisibilityEvents> {
-  #inactiveTimeout?: number;
+  #inactiveTimeoutMs?: number;
   #inactivityTimer?: ReturnType<typeof setTimeout>;
   #hidden: boolean;
 
@@ -41,7 +41,7 @@ export class PageVisibilityObserver extends EventEmitter<PageVisibilityEvents> {
   };
 
   constructor({
-    inactiveTimeout,
+    inactiveTimeout = 0,
     onHidden,
     onVisibilityChange,
     onVisible,
@@ -49,7 +49,7 @@ export class PageVisibilityObserver extends EventEmitter<PageVisibilityEvents> {
     super();
 
     this.#hidden = document.hidden;
-    this.#inactiveTimeout = inactiveTimeout;
+    this.#inactiveTimeoutMs = inactiveTimeout * 1000;
 
     if (onHidden) {
       this.on("hidden", onHidden);
@@ -76,10 +76,10 @@ export class PageVisibilityObserver extends EventEmitter<PageVisibilityEvents> {
       this.#hidden = hidden;
       if (document.hidden) {
         this.emit("hidden");
-        if (this.#inactiveTimeout) {
+        if (this.#inactiveTimeoutMs) {
           this.#inactivityTimer = setTimeout(() => {
             this.emit("inactive-timeout");
-          }, this.#inactiveTimeout);
+          }, this.#inactiveTimeoutMs);
         }
       } else {
         this.emit("visible");

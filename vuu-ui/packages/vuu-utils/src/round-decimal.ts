@@ -1,3 +1,5 @@
+import { RoundingRule } from "@vuu-ui/vuu-table-types";
+
 const PUNCTUATION_STR = String.fromCharCode(8200);
 const DIGIT_STR = String.fromCharCode(8199);
 const DECIMALS_AUTO = -1;
@@ -83,6 +85,7 @@ export function roundDecimal(
   zeroPad?: boolean,
   alignOnDecimals?: boolean,
   useLocaleString = true,
+  roundingRule: RoundingRule = "round",
 ) {
   if (value === undefined || typeof value !== "number" || isNaN(value)) {
     return "";
@@ -92,9 +95,12 @@ export function roundDecimal(
   const [part1, part2 = ""] = value.toString().split(".");
   const actualDecimals = part2.length;
 
-  integral = useLocaleString
-    ? parseFloat(part1).toLocaleString()
-    : parseFloat(part1).toString();
+  integral =
+    part1 === "-0"
+      ? "-0"
+      : useLocaleString
+        ? parseFloat(part1).toLocaleString()
+        : parseFloat(part1).toString();
 
   if (align === Align.Left && alignOnDecimals) {
     integral = padLeft(integral);
@@ -103,9 +109,13 @@ export function roundDecimal(
   if (decimals === DECIMALS_AUTO || actualDecimals === decimals) {
     fraction = part2;
   } else if (actualDecimals > decimals) {
-    fraction = parseFloat("0." + part2)
-      .toFixed(decimals)
-      .slice(2);
+    if (roundingRule === "round") {
+      fraction = parseFloat("0." + part2)
+        .toFixed(decimals)
+        .slice(2);
+    } else {
+      fraction = part2.slice(0, decimals);
+    }
   } else {
     /* eslint-disable no-cond-assign */
     if (
