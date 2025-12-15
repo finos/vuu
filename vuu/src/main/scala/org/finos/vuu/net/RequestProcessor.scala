@@ -82,8 +82,7 @@ class RequestProcessor(loginTokenService: LoginTokenService,
   }
 
   private def handleMessageWithNoSession(msg: ViewServerMessage, channel: Channel): Unit = {
-    channel.writeAndFlush(new TextWebSocketFrame("error, you have no session"))
-    channel.close()
+    handleMessageWithNoSession("Invalid session", channel)
   }
 
   private def handleMessageWithNoSession(msg: String, channel: Channel): Unit = {

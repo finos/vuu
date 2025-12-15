@@ -2,8 +2,8 @@ package org.finos.vuu.core
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.api.TableVisibility.Public
 import org.finos.vuu.api.AvailableViewPortVisualLink
+import org.finos.vuu.api.TableVisibility.Public
 import org.finos.vuu.core.table.{DataType, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.*
 import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionSuccess}
@@ -127,7 +127,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: RemoveViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.removeViewPort(msg.viewPortId)) match {
+    Try(viewPortContainer.removeViewPort(msg.viewPortId, ctx.session)) match {
       case Success(_) =>
         logger.debug("View port removed")
         vsMsg(RemoveViewPortSuccess(msg.viewPortId))(ctx)
@@ -138,7 +138,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: EnableViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.enableViewPort(msg.viewPortId)) match {
+    Try(viewPortContainer.enableViewPort(msg.viewPortId, ctx.session)) match {
       case Success(_) =>
         logger.debug("View port enabled")
         vsMsg(EnableViewPortSuccess(msg.viewPortId))(ctx)
@@ -149,7 +149,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: DisableViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.disableViewPort(msg.viewPortId)) match {
+    Try(viewPortContainer.disableViewPort(msg.viewPortId, ctx.session)) match {
       case Success(_) =>
         logger.debug("View port disabled")
         vsMsg(DisableViewPortSuccess(msg.viewPortId))(ctx)
@@ -160,7 +160,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: FreezeViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.freezeViewPort(msg.viewPortId)) match {
+    Try(viewPortContainer.freezeViewPort(msg.viewPortId, ctx.session)) match {
       case Success(_) =>
         logger.debug("View port froze")
         vsMsg(FreezeViewPortSuccess(msg.viewPortId))(ctx)
@@ -171,7 +171,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: UnfreezeViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.unfreezeViewPort(msg.viewPortId)) match {
+    Try(viewPortContainer.unfreezeViewPort(msg.viewPortId, ctx.session)) match {
       case Success(_) =>
         logger.debug("View port unfroze")
         vsMsg(UnfreezeViewPortSuccess(msg.viewPortId))(ctx)
@@ -222,12 +222,8 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
     if (msg.vpId == null || msg.vpId == "") {
       errorMsg(s"VpId is empty")(ctx)
     } else {
-      viewPortContainer.get(ctx.session, msg.vpId) match {
-        case Some(vp: ViewPort) =>
-          vsMsg(GetViewPortMenusResponse(msg.vpId, vp.getStructure.viewPortDef.service.menuItems()))(ctx)
-        case None =>
-          errorMsg(s"Viewport not found")(ctx)
-      }
+      val viewPortMenu = viewPortContainer.getViewPortMenu(msg.vpId, ctx.session)
+      vsMsg(GetViewPortMenusResponse(msg.vpId, viewPortMenu))(ctx)
     }
   }
 
@@ -253,56 +249,47 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
 
   override def process(msg: ChangeViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
 
-    viewPortContainer.get(ctx.session, msg.viewPortId) match {
-      case Some(viewport) =>
+    val viewPort = viewPortContainer.getViewportInSession(msg.viewPortId, ctx.session)
+    val table = viewPort.table.asTable
 
-        val table = viewport.table.asTable
-
-        val columns = if (msg.columns.length == 1 && msg.columns(0) == "*") {
-          logger.trace("[ChangeViewPortRequest] Wildcard specified for columns, going to return all")
-          table.getTableDef.getColumns.toList
-        }
-        else {
-          validateColumns(table, msg.columns)
-
-          msg.columns.map(table.getTableDef.columnForName(_)).toList
-        }
-
-        val vpColumns = ViewPortColumnCreator.create(table, msg.columns.toList)
-
-        val sort = msg.sort
-        val filter = msg.filterSpec
-        val groupBy = msg.groupBy
-
-        val newViewPort = if (!groupBy.isEmpty) {
-
-          val groupByColumns = msg.groupBy
-            .filter(vpColumns.columnExists)
-            .map(vpColumns.getColumnForName(_).get).toList
-
-          val aggregations = msg.aggregations
-            .filter(agg => vpColumns.columnExists(agg.column))
-            .map(agg => Aggregation(vpColumns.getColumnForName(agg.column).get, agg.aggType.toShort)).toList
-
-          val groupBy = new GroupBy(groupByColumns, aggregations)
-
-          viewPortContainer.change(ctx.requestId, ctx.session, msg.viewPortId, viewport.getRange, vpColumns, sort, filter, groupBy = groupBy)
-        }
-        else
-          viewPortContainer.change(ctx.requestId, ctx.session, msg.viewPortId, viewport.getRange, vpColumns, sort, filter)
-
-        //logger.info(s"Setting columns to ${columns.map(_.name).mkString(",")} ")
-
-        Some(VsMsg(ctx.requestId, ctx.session.sessionId,
-          ChangeViewPortSuccess(newViewPort.id, viewport.getColumns.getColumns.map(_.name).toArray, sort, msg.groupBy, msg.filterSpec, msg.aggregations)))
-
-      case None =>
-        Some(VsMsg(ctx.requestId, ctx.session.sessionId, ChangeViewPortReject(msg.viewPortId, s"Could not find vp ${msg.viewPortId} in session ${ctx.session}")))
+    val columns = if (msg.columns.length == 1 && msg.columns(0) == "*") {
+      logger.trace("[ChangeViewPortRequest] Wildcard specified for columns, going to return all")
+      table.getTableDef.getColumns.toList
+    } else {
+      validateColumns(table, msg.columns)
+      msg.columns.map(table.getTableDef.columnForName(_)).toList
     }
+
+    val vpColumns = ViewPortColumnCreator.create(table, msg.columns.toList)
+
+    val sort = msg.sort
+    val filter = msg.filterSpec
+    val groupBy = msg.groupBy
+
+    val newViewPort = if (!groupBy.isEmpty) {
+
+      val groupByColumns = msg.groupBy
+        .filter(vpColumns.columnExists)
+        .map(vpColumns.getColumnForName(_).get).toList
+
+      val aggregations = msg.aggregations
+        .filter(agg => vpColumns.columnExists(agg.column))
+        .map(agg => Aggregation(vpColumns.getColumnForName(agg.column).get, agg.aggType.toShort)).toList
+
+      val groupBy = new GroupBy(groupByColumns, aggregations)
+
+      viewPortContainer.change(ctx.requestId, ctx.session, msg.viewPortId, viewPort.getRange, vpColumns, sort, filter, groupBy = groupBy)
+    } else {
+      viewPortContainer.change(ctx.requestId, ctx.session, msg.viewPortId, viewPort.getRange, vpColumns, sort, filter)
+    }
+
+    Some(VsMsg(ctx.requestId, ctx.session.sessionId,
+      ChangeViewPortSuccess(newViewPort.id, viewPort.getColumns.getColumns.map(_.name).toArray, sort, 
+        msg.groupBy, msg.filterSpec, msg.aggregations)))
 
   }
 
-  def validateColumns(table: RowSource, columns: Array[String]): Unit = {
+  private def validateColumns(table: RowSource, columns: Array[String]): Unit = {
     val invalidColumns = columns
       .filter(!_.contains(":")) // remove calculated columns
       .filter(name => !table.asTable.getTableDef.columnExists(name))
@@ -360,7 +347,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
 
   override def process(msg: ChangeViewPortRange)(ctx: RequestContext): Option[ViewServerMessage] = {
 
-    Try(viewPortContainer.changeRange(ctx.session, ctx.queue, msg.viewPortId, ViewPortRange(msg.from, msg.to))) match {
+    Try(viewPortContainer.changeRange(ctx.session, msg.viewPortId, ViewPortRange(msg.from, msg.to))) match {
       case Success(vp) =>
         vsMsg(ChangeViewPortRangeSuccess(vp.id, msg.from, msg.to))(ctx)
       case Failure(e) =>
@@ -370,7 +357,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: SelectRowRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.selectRow(msg.vpId, msg.rowKey, msg.preserveExistingSelection)) match {
+    Try(viewPortContainer.selectRow(ctx.session, msg.vpId, msg.rowKey, msg.preserveExistingSelection)) match {
       case Success(vp) =>
         vsMsg(SelectRowSuccess(vp.id, vp.getSelection.size))(ctx)
       case Failure(e) =>
@@ -380,7 +367,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: DeselectRowRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.deselectRow(msg.vpId, msg.rowKey, msg.preserveExistingSelection)) match {
+    Try(viewPortContainer.deselectRow(ctx.session, msg.vpId, msg.rowKey, msg.preserveExistingSelection)) match {
       case Success(vp) =>
         vsMsg(DeselectRowSuccess(vp.id, vp.getSelection.size))(ctx)
       case Failure(e) =>
@@ -390,7 +377,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: SelectRowRangeRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.selectRowRange(msg.vpId, msg.fromRowKey, msg.toRowKey, msg.preserveExistingSelection)) match {
+    Try(viewPortContainer.selectRowRange(ctx.session, msg.vpId, msg.fromRowKey, msg.toRowKey, msg.preserveExistingSelection)) match {
       case Success(vp) =>
         vsMsg(SelectRowRangeSuccess(vp.id, vp.getSelection.size))(ctx)
       case Failure(e) =>
@@ -400,7 +387,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: SelectAllRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.selectAll(msg.vpId)) match {
+    Try(viewPortContainer.selectAll(ctx.session, msg.vpId)) match {
       case Success(vp) =>
         vsMsg(SelectAllSuccess(vp.id, vp.getSelection.size))(ctx)
       case Failure(e) =>
@@ -410,7 +397,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: DeselectAllRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    Try(viewPortContainer.deselectAll(msg.vpId)) match {
+    Try(viewPortContainer.deselectAll(ctx.session, msg.vpId)) match {
       case Success(vp) =>
         vsMsg(DeselectAllSuccess(vp.id))(ctx)
       case Failure(e) =>
@@ -450,12 +437,12 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: OpenTreeNodeRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    viewPortContainer.openNode(msg.vpId, msg.treeKey)
+    viewPortContainer.openNode(ctx.session, msg.vpId, msg.treeKey)
     vsMsg(OpenTreeNodeSuccess(msg.vpId, msg.treeKey))(ctx)
   }
 
   override def process(msg: CloseTreeNodeRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    viewPortContainer.closeNode(msg.vpId, msg.treeKey)
+    viewPortContainer.closeNode(ctx.session, msg.vpId, msg.treeKey)
     vsMsg(CloseTreeNodeSuccess(msg.vpId, msg.treeKey))(ctx)
   }
 
