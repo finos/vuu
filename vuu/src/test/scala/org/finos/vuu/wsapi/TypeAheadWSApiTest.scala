@@ -130,13 +130,13 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       responseBody.rpcName shouldEqual "getUniqueFieldValues"
 
       val result = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
-      result.errorMessage shouldEqual "java.lang.Exception: No viewport viewPortThatDoesNotExist found for RPC Call for getUniqueFieldValues"
+      result.errorMessage.contains("No viewport with id viewPortThatDoesNotExist found in session") shouldBe true
 
       And("Show error notification action")
       val action = assertAndCastAsInstanceOf[ShowNotificationAction](responseBody.action)
       action.notificationType shouldEqual "Error"
       action.title shouldEqual "Failed to process getUniqueFieldValues request"
-      action.message shouldEqual "java.lang.Exception: No viewport viewPortThatDoesNotExist found for RPC Call for getUniqueFieldValues"
+      action.message.contains("No viewport with id viewPortThatDoesNotExist found in session") shouldBe true
     }
 
     Scenario("For an empty table") {

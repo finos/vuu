@@ -40,9 +40,11 @@ class TreeSortTest extends AnyFeatureSpec with Matchers with GivenWhenThen with 
 
     val vpColumns = ViewPortColumnCreator.create(orderPrices, columns.map(_.name).toList)
 
+    val session = ClientSessionId("A", "C")
+
     val viewport = viewPortContainer.create(RequestId.oneNew(),
       VuuUser("B"),
-      ClientSessionId("A", "C"),
+      session,
       queue, orderPrices, ViewPortRange(0, 20), vpColumns,
       SortSpec(List(
         SortDef("trader", 'D'),
@@ -65,10 +67,10 @@ class TreeSortTest extends AnyFeatureSpec with Matchers with GivenWhenThen with 
       )
     }
 
-    viewPortContainer.openNode(viewport.id, "$root|chris")
-    viewPortContainer.openNode(viewport.id, "$root|chris|VOD.L")
-    viewPortContainer.openNode(viewport.id, "$root|steve")
-    viewPortContainer.closeNode(viewport.id, "$root|steve|BT.L")
+    viewPortContainer.openNode(session, viewport.id, "$root|chris")
+    viewPortContainer.openNode(session, viewport.id, "$root|chris|VOD.L")
+    viewPortContainer.openNode(session, viewport.id, "$root|steve")
+    viewPortContainer.closeNode(session, viewport.id, "$root|steve|BT.L")
 
     runContainersOnce(viewPortContainer, joinProvider)
 
@@ -116,7 +118,7 @@ class TreeSortTest extends AnyFeatureSpec with Matchers with GivenWhenThen with 
     ordersProvider.tick("NYC-0003", Map("orderId" -> "NYC-0003", "trader" -> "steve"))
     ordersProvider.tick("NYC-0004", Map("orderId" -> "NYC-0004", "trader" -> "steve"))
 
-    viewPortContainer.openNode(viewport.id, "$root|steve|VOD.L")
+    viewPortContainer.openNode(session, viewport.id, "$root|steve|VOD.L")
 
     emptyQueues(viewport)
 

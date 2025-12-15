@@ -91,7 +91,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       viewPortOrders.getKeys.length shouldEqual 12
 
       When("we select some rows in the grid")
-      viewPortContainer.selectRow(viewPortPrices.id, "BT.L", preserveExistingSelection = false)
+      viewPortContainer.selectRow(session, viewPortPrices.id, "BT.L", preserveExistingSelection = false)
 
       Then("Check the selected rows is updated in the vp")
       assertVpEqWithMeta(combineQs(viewPortPrices)) {
@@ -119,7 +119,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       }
 
       And("if we expend the selection to include BP.L in the prices table")
-      viewPortContainer.selectRowRange(viewPortPrices.id, "BT.L", "BP.L", preserveExistingSelection = false)
+      viewPortContainer.selectRowRange(session, viewPortPrices.id, "BT.L", "BP.L", preserveExistingSelection = false)
 
       viewPortContainer.runOnce()
 
@@ -138,7 +138,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       }
 
       And("if we set selection to none")
-      viewPortContainer.deselectAll(viewPortPrices.id)
+      viewPortContainer.deselectAll(session, viewPortPrices.id)
       viewPortContainer.runOnce()
 
       Then("we should show all by default in the viewport")
@@ -162,7 +162,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
 
       Then("Change the viewport to sort by quantity")
       viewPortContainer.change(RequestId.oneNew(), session, viewPortOrders.id, ViewPortRange(0, 10), vpcolumnsOrders, SortSpec(List(SortDef("quantity", 'D'))))
-      viewPortContainer.selectRow(viewPortPrices.id, "BT.L", preserveExistingSelection = false)
+      viewPortContainer.selectRow(session, viewPortPrices.id, "BT.L", preserveExistingSelection = false)
 
       viewPortContainer.runOnce()
 
@@ -310,7 +310,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       viewPortOrders1.getKeys.length shouldEqual 12
 
       When("we select second row in the grid")
-      viewPortContainer.selectRow(viewPortOrders2.id, "NYC-0001", preserveExistingSelection = false)
+      viewPortContainer.selectRow(session, viewPortOrders2.id, "NYC-0001", preserveExistingSelection = false)
 
       Then("Check the selected rows is updated in the vp")
       assertVpEqWithMeta(combineQs(viewPortOrders2)) {

@@ -115,7 +115,7 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
 
     val jtu = JoinTableUpdate(JoinTable, rowWithData)
 
-    logger.debug(s"[JoinTableProvider] Submitting join table event: $jtu")
+    logger.trace(s"[JoinTableProvider] Submitting join table event: $jtu")
 
     //get the processing off the join thread
     outboundQueue.put(jtu)
@@ -183,7 +183,7 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
       //if join contains table...
       if (joinTableDef.containsTable(tableName)) {
 
-        logger.debug(s"Processing event $ev for table $tableName in join: ${joinTableDef.name}")
+        logger.trace(s"Processing event $ev for table $tableName in join: ${joinTableDef.name}")
 
         //does it participate as a left table? i.e. the base table of the join
         if (joinTableDef.isLeftTable(tableName)) {
@@ -194,7 +194,7 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
 
           //if so, publish a left table event for the right inbound event
           val leftKey = eventToLeftKey(joinTableDef, ev)
-          logger.debug(s"Publishing update for left key: $leftKey to table $tableName")
+          logger.trace(s"Publishing update for left key: $leftKey to table $tableName")
           publishUpdateForLeftTableAndKey(joinTableDef, joinTable.asInstanceOf[JoinTable], tableName, leftKey, ev)
 
           //otherwise must be a right table, i.e. any one of the joinTo tables
@@ -209,7 +209,7 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
 
           //for each key in left table, send left update, including additional keys
           leftKeys.foreach(key => {
-            logger.debug(s"Publishing update for left key: $key to table ${joinTableDef.baseTable.name}")
+            logger.trace(s"Publishing update for left key: $key to table ${joinTableDef.baseTable.name}")
             publishUpdateForLeftTableAndKey(joinTableDef, joinTable.asInstanceOf[JoinTable], joinTableDef.baseTable.name, key, joinSink.getEventDataSink(joinTableDef.baseTable.name).getEventState(key))
           })
         }

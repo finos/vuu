@@ -17,6 +17,8 @@ import org.finos.vuu.provider.simulation.SimulatedBigInstrumentsProvider
 import org.finos.vuu.provider.{ProviderContainer, RpcProvider}
 import org.finos.vuu.viewport.*
 
+import java.util.UUID
+
 
 class InstrumentsService(val table: DataTable, val providerContainer: ProviderContainer)(implicit tableContainer: TableContainer) extends DefaultRpcHandler with StrictLogging {
 
@@ -100,23 +102,18 @@ trait OrderEntryRpcHandler {
 
 class OrderEntryRpcHandlerImpl(val vpContainer: ViewPortContainer, val tableContainer: TableContainer, val providerContainer: ProviderContainer) extends DefaultLifecycleEnabled with OrderEntryRpcHandler with RpcHandler with StrictLogging {
   override def addRowsFromInstruments(sourceVpId: String)(ctx: RequestContext): List[String] = {
-    vpContainer.get(ctx.session, sourceVpId) match {
-      case Some(vp) =>
-        val rics = vp.getSelection.toList
-        providerContainer.getProviderForTable("orderEntry") match {
-          case Some(provider) =>
-            rics.foreach(ric => {
-              val uuid = RequestId.oneNew()
-              provider.asInstanceOf[RpcProvider].tick(uuid, Map("clOrderId" -> uuid, "ric" -> ric, "quantity" -> 10_000, "orderType" -> "Limit"))
-            })
-            rics
-          case None =>
-            logger.error("Could not find provider for table: orderEntry")
-            throw new Exception("could not find provider for table")
-        }
+    val viewPort = vpContainer.getViewportInSession(sourceVpId, ctx.session)
+    val rics = viewPort.getSelection.toList
+    providerContainer.getProviderForTable("orderEntry") match {
+      case Some(provider) =>
+        rics.foreach(ric => {
+          val uuid = UUID.randomUUID().toString
+          provider.asInstanceOf[RpcProvider].tick(uuid, Map("clOrderId" -> uuid, "ric" -> ric, "quantity" -> 10_000, "orderType" -> "Limit"))
+        })
+        rics
       case None =>
-        logger.error("could not find vp to get selection")
-        throw new Exception("could not find vp to get selection")
+        logger.error("Could not find provider for table: orderEntry")
+        throw new Exception("could not find provider for table")
     }
   }
 }

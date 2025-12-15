@@ -40,7 +40,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
 
       And("Select a row")
       val rowToSelect1 = "NYC-0001"
-      var vp = viewPortContainer.selectRow(viewPort.id, rowToSelect1, preserveExistingSelection = true)
+      var vp = viewPortContainer.selectRow(session, viewPort.id, rowToSelect1, preserveExistingSelection = true)
 
       Then("Check selection is updated")
       assertVpEqWithMeta(combineQs(viewPort)) {
@@ -61,7 +61,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
 
       Given("Select another row")
       val rowToSelect2 = "NYC-0002"
-      vp = viewPortContainer.selectRow(viewPort.id, rowToSelect2, preserveExistingSelection = true)
+      vp = viewPortContainer.selectRow(session, viewPort.id, rowToSelect2, preserveExistingSelection = true)
 
       Then("Check selection is updated")
       assertVpEqWithMeta(combineQs(viewPort)) {
@@ -95,7 +95,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
 
       And("Select a row")
       val rowToSelect1 = "NYC-0001"
-      var vp = viewPortContainer.selectRow(viewPort.id, rowToSelect1, preserveExistingSelection = true)
+      var vp = viewPortContainer.selectRow(session, viewPort.id, rowToSelect1, preserveExistingSelection = true)
 
       Then("Check selection is updated")
       assertVpEqWithMeta(combineQs(viewPort)) {
@@ -116,7 +116,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
 
       Given("Select another row")
       val rowToSelect2 = "NYC-0002"
-      vp = viewPortContainer.selectRow(viewPort.id, rowToSelect2, preserveExistingSelection = true)
+      vp = viewPortContainer.selectRow(session, viewPort.id, rowToSelect2, preserveExistingSelection = true)
 
       Then("Check selection is updated")
       assertVpEqWithMeta(combineQs(viewPort)) {
@@ -138,7 +138,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
 
       Given("Select a row without preserving existing selection")
       val rowToSelect3 = "NYC-0003"
-      vp = viewPortContainer.selectRow(viewPort.id, rowToSelect3, preserveExistingSelection = false)
+      vp = viewPortContainer.selectRow(session, viewPort.id, rowToSelect3, preserveExistingSelection = false)
 
       Then("Check selection is updated")
       assertVpEqWithMeta(combineQs(viewPort)) {
@@ -170,7 +170,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       assertVpEqWithMeta(combineQs(viewPort))(defaultViewPortUpdate)
 
       And("Select a range of rows")
-      var vp = viewPortContainer.selectRowRange(viewPort.id, "NYC-0001", "NYC-0003", preserveExistingSelection = true)
+      var vp = viewPortContainer.selectRowRange(session, viewPort.id, "NYC-0001", "NYC-0003", preserveExistingSelection = true)
 
       Then("Check selection is updated")
       assertVpEqWithMeta(combineQs(viewPort)) {
@@ -190,7 +190,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
 
       Given("Deselect a row and preserve existing selection")
       val rowToDeselect = "NYC-0002"
-      vp = viewPortContainer.deselectRow(viewPort.id, rowToDeselect, preserveExistingSelection = true)
+      vp = viewPortContainer.deselectRow(session, viewPort.id, rowToDeselect, preserveExistingSelection = true)
 
       Then("Check selection is updated")
       assertVpEqWithMeta(combineQs(viewPort)) {
@@ -223,7 +223,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       assertVpEqWithMeta(combineQs(viewPort))(defaultViewPortUpdate)
 
       And("Select a range of rows")
-      var vp = viewPortContainer.selectRowRange(viewPort.id, "NYC-0001", "NYC-0003", preserveExistingSelection = true)
+      var vp = viewPortContainer.selectRowRange(session, viewPort.id, "NYC-0001", "NYC-0003", preserveExistingSelection = true)
 
       Then("Check selection is updated")
       assertVpEqWithMeta(combineQs(viewPort)) {
@@ -243,7 +243,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
 
       Given("Deselect a row without preserving existing selection")
       val rowToDeselect = "NYC-0002"
-      vp = viewPortContainer.deselectRow(viewPort.id, rowToDeselect, preserveExistingSelection = false)
+      vp = viewPortContainer.deselectRow(session, viewPort.id, rowToDeselect, preserveExistingSelection = false)
 
       Then("Check selection is updated")
       assertVpEqWithMeta(combineQs(viewPort)) {
@@ -267,7 +267,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
 
       And("Select a row")
       val rowToSelect1 = "NYC-0001"
-      val vp = viewPortContainer.selectRow(viewPort.id, rowToSelect1, preserveExistingSelection = true)
+      val vp = viewPortContainer.selectRow(session, viewPort.id, rowToSelect1, preserveExistingSelection = true)
 
       Then("Check selection is updated")
       assertVpEqWithMeta(combineQs(viewPort)) {
@@ -318,7 +318,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       And("Select a row")
       val rowToSelect = "RANDOM"
       assertThrows[Exception] {
-        viewPortContainer.selectRow(viewPort.id, rowToSelect, preserveExistingSelection = true)
+        viewPortContainer.selectRow(session, viewPort.id, rowToSelect, preserveExistingSelection = true)
       }
     }
 
@@ -335,7 +335,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
 
       And("Select a row")
       val rowToSelect1 = "NYC-0005"
-      var vp = viewPortContainer.selectRow(viewPort.id, rowToSelect1, preserveExistingSelection = true)
+      var vp = viewPortContainer.selectRow(session, viewPort.id, rowToSelect1, preserveExistingSelection = true)
 
       Then("Check selection is updated")
       assertVpEqWithMeta(combineQs(viewPort)) {
@@ -357,7 +357,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       And("Select a range of rows")
       val fromRow = "NYC-0001"
       val toRow = "NYC-0003"
-      vp = viewPortContainer.selectRowRange(viewPort.id, fromRow, toRow, preserveExistingSelection = true)
+      vp = viewPortContainer.selectRowRange(session, viewPort.id, fromRow, toRow, preserveExistingSelection = true)
 
       Then("Check selection is updated")
       assertVpEqWithMeta(combineQs(viewPort)) {
@@ -393,7 +393,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
 
       And("Select a row")
       val rowToSelect1 = "NYC-0005"
-      var vp = viewPortContainer.selectRow(viewPort.id, rowToSelect1, preserveExistingSelection = true)
+      var vp = viewPortContainer.selectRow(session, viewPort.id, rowToSelect1, preserveExistingSelection = true)
 
       Then("Check selection is updated")
       assertVpEqWithMeta(combineQs(viewPort)) {
@@ -415,7 +415,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       And("Select a range of rows")
       val fromRow = "NYC-0001"
       val toRow = "NYC-0003"
-      vp = viewPortContainer.selectRowRange(viewPort.id, fromRow, toRow, preserveExistingSelection = false)
+      vp = viewPortContainer.selectRowRange(session, viewPort.id, fromRow, toRow, preserveExistingSelection = false)
 
       Then("Check selection is updated")
       assertVpEqWithMeta(combineQs(viewPort)) {
@@ -451,7 +451,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       And("Select a range of rows from bottom to top")
       val fromKey = "NYC-0005"
       val toKey = "NYC-0003"
-      val vp = viewPortContainer.selectRowRange(viewPort.id, fromKey, toKey, preserveExistingSelection = true)
+      val vp = viewPortContainer.selectRowRange(session, viewPort.id, fromKey, toKey, preserveExistingSelection = true)
 
       Then("Check selection is updated")
       assertVpEqWithMeta(combineQs(viewPort)) {
@@ -487,7 +487,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       And("Select a range of rows")
       val fromRow = "NYC-0001"
       val toRow = "NYC-0003"
-      val vp = viewPortContainer.selectRowRange(viewPort.id, fromRow, toRow, preserveExistingSelection = true)
+      val vp = viewPortContainer.selectRowRange(session, viewPort.id, fromRow, toRow, preserveExistingSelection = true)
 
       Then("Check selection is updated")
       assertVpEqWithMeta(combineQs(viewPort)) {
@@ -543,11 +543,11 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       val rowExists = "NYC-0001"
       val rowDoesnNotExist = "RANDOM"
       assertThrows[Exception] {
-        viewPortContainer.selectRowRange(viewPort.id, rowDoesnNotExist, rowExists, preserveExistingSelection = true)
+        viewPortContainer.selectRowRange(session, viewPort.id, rowDoesnNotExist, rowExists, preserveExistingSelection = true)
       }
 
       assertThrows[Exception] {
-        viewPortContainer.selectRowRange(viewPort.id, rowExists, rowDoesnNotExist, preserveExistingSelection = true)
+        viewPortContainer.selectRowRange(session, viewPort.id, rowExists, rowDoesnNotExist, preserveExistingSelection = true)
       }
     }
 
@@ -570,7 +570,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       }
 
       And("Select all rows")
-      val vp = viewPortContainer.selectAll(viewPort.id)
+      val vp = viewPortContainer.selectAll(session, viewPort.id)
 
       Then("Check selection is updated for view port range")
       assertVpEqWithMeta(combineQs(viewPort)) {
@@ -604,7 +604,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       assertVpEqWithMeta(combineQs(viewPort))(defaultViewPortUpdate)
 
       And("Select all rows")
-      var vp = viewPortContainer.selectAll(viewPort.id)
+      var vp = viewPortContainer.selectAll(session, viewPort.id)
 
       Then("Check selection is updated for view port range")
       assertVpEqWithMeta(combineQs(viewPort)) {
@@ -622,7 +622,7 @@ class UpdateSelectionViewPortTest extends AbstractViewPortTestCase with Matchers
       vp.getSelection.size shouldBe 6
 
       And("Deselect all rows")
-      vp = viewPortContainer.deselectAll(viewPort.id)
+      vp = viewPortContainer.deselectAll(session, viewPort.id)
 
       Then("Check selection is updated for view port range")
       assertVpEqWithMeta(combineQs(viewPort))(defaultViewPortUpdate)

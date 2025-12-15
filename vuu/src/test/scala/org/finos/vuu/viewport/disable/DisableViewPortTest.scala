@@ -51,7 +51,7 @@ class DisableViewPortTest extends AbstractViewPortTestCase with Matchers with Gi
         )
       }
 
-      viewPortContainer.disableViewPort(viewPort.id)
+      viewPortContainer.disableViewPort(viewPort.id, session)
 
       viewPortContainer.runOnce()
 

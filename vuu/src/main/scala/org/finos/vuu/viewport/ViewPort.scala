@@ -9,7 +9,7 @@ import org.finos.vuu.core.filter.CompoundFilter
 import org.finos.vuu.core.filter.`type`.{PermissionFilter, VisualLinkedFilter}
 import org.finos.vuu.core.sort.*
 import org.finos.vuu.core.table.datatype.EpochTimestamp
-import org.finos.vuu.core.table.{Column, DefaultColumn, KeyObserver, RowKeyUpdate}
+import org.finos.vuu.core.table.{Column, KeyObserver, RowKeyUpdate}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.feature.{EmptyViewPortKeys, ViewPortKeys}
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
@@ -200,7 +200,6 @@ class ViewPortImpl(val id: String,
 
   @volatile private var enabled = true
   @volatile private var viewPortFrozenTimestamp: Option[EpochTimestamp] = None
-
   @volatile private var requestId: String = ""
 
   override def updateSpecificKeys(keys: ImmutableArray[String]): Unit = {
@@ -639,7 +638,7 @@ class ViewPortImpl(val id: String,
 
   private def publishHighPriorityUpdate(key: String, index: Int): Unit = {
     if (this.enabled) {
-      logger.debug(s"publishing update @[$index] = $key ")
+      logger.trace(s"publishing update @[$index] = $key ")
       outboundQ.pushHighPriority(ViewPortUpdate(this.requestId, this, table, RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now()))
     }
   }

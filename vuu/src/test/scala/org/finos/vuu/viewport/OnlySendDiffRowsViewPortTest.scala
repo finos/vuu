@@ -47,7 +47,7 @@ class OnlySendDiffRowsViewPortTest extends AbstractViewPortTestCase with Matcher
         )
       }
 
-      val viewPortv2 = viewPortContainer.changeRange(session, outQueue, viewPort.id, ViewPortRange(2, 6))
+      val viewPortv2 = viewPortContainer.changeRange(session, viewPort.id, ViewPortRange(2, 6))
 
       viewPortContainer.runOnce()
 

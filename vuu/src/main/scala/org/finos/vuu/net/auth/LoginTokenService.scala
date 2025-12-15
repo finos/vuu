@@ -57,7 +57,7 @@ case class AlwaysHappyLoginTokenService(vuuUser: VuuUser) extends LoginTokenServ
 case class LoginTokenServiceImpl(secret: Array[Byte]) extends LoginTokenService with StrictLogging {
 
   override def getToken(user: VuuUser): String = {
-    logger.info(s"[LOGIN] Obtaining token for ${user.name}")
+    logger.info(s"[TOKEN] Obtaining token for ${user.name}")
     val payload = JsonUtil.toRawJson(user)
     HMACUtils.sign(payload, secret)
   }

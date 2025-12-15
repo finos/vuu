@@ -221,7 +221,7 @@ class SessionTableViewportTest extends AbstractViewPortTestCase with Matchers wi
       }
 
       Then("update selection to VOD.L row....")
-      viewPortContainer.selectRow(viewPort.id, "VOD.L", preserveExistingSelection = false)
+      viewPortContainer.selectRow(session, viewPort.id, "VOD.L", preserveExistingSelection = false)
 
       emptyQueues(viewPort)
 

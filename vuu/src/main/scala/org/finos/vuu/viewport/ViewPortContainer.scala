@@ -38,15 +38,15 @@ trait ViewPortContainerMBean {
 
   def listActiveViewPortsForSession(clientSession: ClientSessionId): List[ViewPort]
 
-  def toAscii(vpId: String): String
+  def toAscii(clientSession: ClientSessionId, vpId: String): String
 
-  def subscribedKeys(vpId: String): String
+  def subscribedKeys(clientSession: ClientSessionId, vpId: String): String
 
-  def setRange(vpId: String, start: Int, end: Int): String
+  def setRange(clientSession: ClientSessionId, vpId: String, start: Int, end: Int): String
 
-  def openGroupByKey(vpId: String, treeKey: String): String
+  def openGroupByKey(clientSession: ClientSessionId, vpId: String, treeKey: String): String
 
-  def closeGroupByKey(vpId: String, treeKey: String): String
+  def closeGroupByKey(clientSession: ClientSessionId, vpId: String, treeKey: String): String
 
 }
 
@@ -54,20 +54,18 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
   import org.finos.vuu.core.VuuServerMetrics.*
 
-  private val viewPorthistogram = metrics.histogram(toJmxName("thread.viewport.cycleTime"))
+  private val viewPortHistogram = metrics.histogram(toJmxName("thread.viewport.cycleTime"))
 
   val viewPortHistograms = new ConcurrentHashMap[String, Histogram]()
-
   val treeToKeysHistograms = new ConcurrentHashMap[String, Histogram]()
   val treeSetKeysHistograms = new ConcurrentHashMap[String, Histogram]()
   val treeSetTreeHistograms = new ConcurrentHashMap[String, Histogram]()
   val treeDiffBranchesHistograms = new ConcurrentHashMap[String, Histogram]()
   val treeBuildHistograms = new ConcurrentHashMap[String, Histogram]()
-
   val filterSortHistograms = new ConcurrentHashMap[String, Histogram]()
 
   private val viewPortDefinitions = new ConcurrentHashMap[String, (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef]()
-
+  private val viewPorts = new ConcurrentHashMap[SessionViewPortId, ViewPort]()
   private val treeNodeStatesByVp = new ConcurrentHashMap[String, TreeNodeStateStore]()
 
   val totalTreeWorkHistogram: Meter = metrics.meter(toJmxName("viewport.work.tree"))
@@ -75,40 +73,54 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
   def getViewPorts: List[ViewPort] = CollectionHasAsScala(viewPorts.values()).asScala.toList
 
+  def getViewportInSession(viewPortId: String, clientSession: ClientSessionId): ViewPort = {
+    getViewportInSession(SessionViewPortId(viewPortId, clientSession))
+  }
+
+  private def getViewportInSession(sessionViewPortId: SessionViewPortId): ViewPort = {
+    val viewport = viewPorts.get(sessionViewPortId)
+    if (viewport != null)
+      viewport
+    else {
+      throw new RuntimeException(s"No viewport with id ${sessionViewPortId.viewPortId} found in session ${sessionViewPortId.clientSessionId.sessionId}")
+    }
+  }
+  
   def getTreeNodeStateByVp(vpId: String): TreeNodeStateStore = {
     treeNodeStatesByVp.get(vpId)
   }
 
-  def handleRpcRequest(viewPortId: String, rpcName: String, params: Map[String, Any]) (ctx: RequestContext): RpcFunctionResult = {
-    val viewPort = this.getViewPortById(viewPortId)
-
-    if(viewPort == null)
-      throw new Exception(s"No viewport $viewPortId found for RPC Call for $rpcName")
-
+  def handleRpcRequest(viewPortId: String, rpcName: String, params: Map[String, Any])(ctx: RequestContext): RpcFunctionResult = {
+    logger.trace(s"[VP] Calling RPC $rpcName in viewport $viewPortId in session ${ctx.session.sessionId} with params $params")
+    val viewPort = getViewportInSession(viewPortId, ctx.session)
     val viewPortDef = viewPort.getStructure.viewPortDef
-
-    viewPortDef.service.processRpcRequest(rpcName, new RpcParams(params, viewPort, ctx))
+    val result = viewPortDef.service.processRpcRequest(rpcName, RpcParams(params, viewPort, ctx))
+    logger.debug(s"[VP] Called RPC $rpcName in viewport $viewPortId in session ${ctx.session.sessionId}")
+    result
   }
 
   def callRpcCell(vpId: String, rpcName: String, session: ClientSessionId, rowKey: String, field: String, singleValue: Object): ViewPortAction = {
-
-    val viewPort = this.getViewPortById(vpId)
+    logger.trace(s"[VP] Calling cell RPC $rpcName on row $rowKey and field $field in viewport $vpId in session ${session.sessionId} with value $singleValue")
+    val viewPort = getViewportInSession(vpId, session)
     val viewPortDef = viewPort.getStructure.viewPortDef
-    val asMap = viewPortDef.service.menuMap
-
-    asMap.get(rpcName) match {
+    viewPortDef.service.menuMap.get(rpcName) match {
       case Some(menuItem) =>
         menuItem match {
-          case cell: CellViewPortMenuItem => cell.func(rowKey, field, singleValue, session)
+          case cell: CellViewPortMenuItem =>
+            val result = cell.func(rowKey, field, singleValue, session)
+            logger.debug(s"[VP] Called cell RPC $rpcName on row $rowKey and field $field in viewport $vpId in session ${session.sessionId}")
+            result
+          case _ =>
+            throw new RuntimeException(s"No cell RPC $rpcName found in viewport $vpId in session ${session.sessionId}")
         }
       case None =>
-        throw new Exception(s"No RPC Call for $rpcName found in viewPort $vpId")
+        throw new RuntimeException(s"No RPC $rpcName found in viewport $vpId in session ${session.sessionId}")
     }
   }
 
   @deprecated("#1790")
   def callRpcEditFormClose(vpId: String, rpcName: String, session: ClientSessionId): ViewPortAction = {
-    val viewPort = this.getViewPortById(vpId)
+    val viewPort = getViewportInSession(vpId, session)
     val viewPortDef = viewPort.getStructure.viewPortDef
     val service = viewPortDef.service
 
@@ -121,7 +133,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
   @deprecated("#1790")
   def callRpcEditDeleteCell(vpId: String, key: String, column: String, session: ClientSessionId): ViewPortAction = {
-    val viewPort = this.getViewPortById(vpId)
+    val viewPort = getViewportInSession(vpId, session)
     val viewPortDef = viewPort.getStructure.viewPortDef
     val service = viewPortDef.service
 
@@ -134,7 +146,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
   @deprecated("#1790")
   def callRpcEditDeleteRow(vpId: String, key: String, session: ClientSessionId): ViewPortAction = {
-    val viewPort = this.getViewPortById(vpId)
+    val viewPort = getViewportInSession(vpId, session)
     val viewPortDef = viewPort.getStructure.viewPortDef
     val service = viewPortDef.service
 
@@ -144,9 +156,10 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         throw new Exception(s"Service is not editable rpc")
     }
   }
+
   @deprecated("#1790")
   def callRpcAddRow(vpId: String, key: String,  data: Map[String, Any], session: ClientSessionId): ViewPortAction = {
-    val viewPort = this.getViewPortById(vpId)
+    val viewPort = getViewportInSession(vpId, session)
     val viewPortDef = viewPort.getStructure.viewPortDef
     val service = viewPortDef.service
 
@@ -156,9 +169,10 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         throw new Exception(s"Service is not editable rpc")
     }
   }
+
   @deprecated("#1790")
   def callRpcEditFormSubmit(vpId: String, session: ClientSessionId): ViewPortAction = {
-    val viewPort = this.getViewPortById(vpId)
+    val viewPort = getViewportInSession(vpId, session)
     val viewPortDef = viewPort.getStructure.viewPortDef
     val service = viewPortDef.service
 
@@ -168,9 +182,10 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         throw new Exception(s"Service is not editable rpc")
     }
   }
+
   @deprecated("#1790")
   def callRpcEditRow(vpId: String, key: String, data: Map[String, Any], session: ClientSessionId): ViewPortEditAction = {
-    val viewPort = this.getViewPortById(vpId)
+    val viewPort = getViewportInSession(vpId, session)
     val viewPortDef = viewPort.getStructure.viewPortDef
     val service = viewPortDef.service
 
@@ -180,9 +195,10 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         throw new Exception(s"Service is not editable rpc")
     }
   }
+
   @deprecated("#1790")
   def callRpcEditCell(vpId: String, key: String, column: String, data: AnyRef, session: ClientSessionId): ViewPortEditAction = {
-    val viewPort = this.getViewPortById(vpId)
+    val viewPort = getViewportInSession(vpId, session)
     val viewPortDef = viewPort.getStructure.viewPortDef
     val service = viewPortDef.service
 
@@ -192,9 +208,10 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         throw new Exception(s"Service is not editable rpc")
     }
   }
+
   @deprecated("#1790")
   def callRpcFormSubmit(vpId: String, session: ClientSessionId): ViewPortAction = {
-    val viewPort = this.getViewPortById(vpId)
+    val viewPort = getViewportInSession(vpId, session)
     val viewPortDef = viewPort.getStructure.viewPortDef
     val service = viewPortDef.service
 
@@ -205,53 +222,65 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
-
   def callRpcSelection(vpId: String, rpcName: String, session: ClientSessionId): ViewPortAction = {
-
-    val viewPort = this.getViewPortById(vpId)
+    logger.trace(s"[VP] Calling selection RPC $rpcName in viewport $vpId in session ${session.sessionId}")
+    val viewPort = getViewportInSession(vpId, session)
     val viewPortDef = viewPort.getStructure.viewPortDef
-    val asMap = viewPortDef.service.menuMap
 
-    asMap.get(rpcName) match {
+    viewPortDef.service.menuMap.get(rpcName) match {
       case Some(rpcType) =>
         rpcType match {
-          case selection: SelectionViewPortMenuItem => selection.func(ViewPortSelection(viewPort.getSelection, viewPort), session)
+          case selection: SelectionViewPortMenuItem =>
+            val result = selection.func(ViewPortSelection(viewPort.getSelection, viewPort), session)
+            logger.debug(s"[VP] Called RPC selection in viewport $vpId in session ${session.sessionId}")
+            result
+          case _ =>
+            throw new RuntimeException(s"No selection RPC $rpcName found in viewport $vpId in session ${session.sessionId}")
         }
       case None =>
-        throw new Exception(s"No RPC Call for $rpcName found in viewPort $vpId")
+        throw new RuntimeException(s"No RPC $rpcName found in viewport $vpId in session ${session.sessionId}")
     }
   }
 
-
   def callRpcTable(vpId: String, rpcName: String, session: ClientSessionId): ViewPortAction = {
-
-    val viewPort = this.getViewPortById(vpId)
+    logger.trace(s"[VP] Calling table RPC $rpcName in viewport $vpId in session ${session.sessionId}")
+    val viewPort = getViewportInSession(vpId, session)
     val viewPortDef = viewPort.getStructure.viewPortDef
     val asMap = viewPortDef.service.menuMap
 
     asMap.get(rpcName) match {
       case Some(menuItem) =>
         menuItem match {
-          case table: TableViewPortMenuItem => table.func(session)
+          case table: TableViewPortMenuItem =>
+            val result = table.func(session)
+            logger.debug(s"[VP] Called table RPC in viewport $vpId in session ${session.sessionId}")
+            result
+          case _ =>
+            throw new RuntimeException(s"No table RPC $rpcName found in viewport $vpId in session ${session.sessionId}")
         }
       case None =>
-        throw new Exception(s"No RPC Call for $rpcName found in viewPort $vpId")
+        throw new RuntimeException(s"No RPC $rpcName found in viewport $vpId in session ${session.sessionId}")
     }
   }
 
   def callRpcRow(vpId: String, rpcName: String, session: ClientSessionId, rowKey: String, rowRecord: Map[String, Object] = Map()): ViewPortAction = {
-
-    val viewPort = this.getViewPortById(vpId)
+    logger.trace(s"[VP] Calling row RPC $rpcName on row $rowKey in viewport $vpId in session ${session.sessionId} with record $rowRecord")
+    val viewPort = getViewportInSession(vpId, session)
     val viewPortDef = viewPort.getStructure.viewPortDef
     val asMap = viewPortDef.service.menuMap
 
     asMap.get(rpcName) match {
       case Some(menuItem) =>
         menuItem match {
-          case row: RowViewPortMenuItem => row.func(rowKey, rowRecord, session)
+          case row: RowViewPortMenuItem =>
+            val result = row.func(rowKey, rowRecord, session)
+            logger.debug(s"[VP] Called row RPC $rpcName on row $rowKey in viewport $vpId in session ${session.sessionId}")
+            result
+          case _ =>
+            throw new RuntimeException(s"No row RPC $rpcName found in viewport $vpId in session ${session.sessionId}")
         }
       case None =>
-        throw new Exception(s"No RPC Call for $rpcName found in viewPort $vpId")
+        throw new RuntimeException(s"No RPC $rpcName found in viewport $vpId in session ${session.sessionId}")
     }
   }
 
@@ -276,188 +305,194 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
-  def getViewPortById(vpId: String): ViewPort = {
-    this.viewPorts.get(vpId)
+  def getViewPortMenu(viewPortId: String, clientSession: ClientSessionId): ViewPortMenu = {
+    logger.trace(s"[VP] Getting menu for viewport $viewPortId in session ${clientSession.sessionId}")
+    val viewPort = getViewportInSession(viewPortId, clientSession)
+    val result = viewPort.getStructure.viewPortDef.service.menuItems()
+    logger.debug(s"[VP] Got menu for viewport $viewPortId in session ${clientSession.sessionId}")
+    result
   }
 
-  def removeViewPort(vpId: String): Any = {
-    //stop updates to viewport
-    disableViewPort(vpId)
-    this.viewPorts.get(vpId) match {
-      case null =>
-        logger.error(s"Could not find viewport to remove $vpId")
-      case vp: ViewPort =>
-        logger.debug(s"Removing $vpId from container")
-        viewPortHistograms.remove(vpId)
-        vp.delete()
-        this.viewPorts.remove(vp.id)
-        logger.info(s"Removed viewport $vpId")
+  def removeViewPort(viewPortId: String, clientSession: ClientSessionId): Any = {
+    removeViewPort(SessionViewPortId(viewPortId, clientSession))
+  }
+
+  def removeViewPort(sessionViewPortId: SessionViewPortId): Any = {
+    logger.trace(s"[VP] Removing viewport ${sessionViewPortId.viewPortId} in session ${sessionViewPortId.clientSessionId.sessionId}")
+    val viewPort = getViewportInSession(sessionViewPortId)
+    viewPortHistograms.remove(sessionViewPortId)
+    viewPort.setEnabled(false)
+    viewPort.delete()
+    this.viewPorts.remove(sessionViewPortId)
+    logger.debug(s"[VP] Removed viewport ${sessionViewPortId.viewPortId} in session ${sessionViewPortId.clientSessionId.sessionId}")
+  }
+
+  def disableViewPort(viewPortId: String, clientSession: ClientSessionId): Unit = {
+    logger.trace(s"[VP] Disabling $viewPortId in session ${clientSession.sessionId}")
+    val viewPort = getViewportInSession(viewPortId, clientSession)
+    if (viewPort.isEnabled) {
+      viewPort.setEnabled(false)
+      logger.debug(s"[VP] Disabled $viewPortId in session ${clientSession.sessionId}")
+    } else {
+      logger.debug(s"[VP] Not disabling viewport $viewPortId in session ${clientSession.sessionId} as it's not enabled")
     }
   }
 
-  def disableViewPort(vpId: String): Unit = {
-    this.viewPorts.get(vpId) match {
-      case null =>
-        logger.error(s"Could not find viewport to disable $vpId")
-      case vp: ViewPort =>
-        vp.setEnabled(false)
-        logger.debug(s"Disabled $vpId in container")
+  def enableViewPort(viewPortId: String, clientSession: ClientSessionId): Unit = {
+    logger.trace(s"[VP] Enabling $viewPortId in session ${clientSession.sessionId}")
+    val viewPort = getViewportInSession(viewPortId, clientSession)
+    if (!viewPort.isEnabled) {
+      viewPort.setEnabled(true)
+      logger.debug(s"[VP] Enabled $viewPortId in session ${clientSession.sessionId}")
+    } else {
+      logger.debug(s"[VP] Not enabling viewport $viewPortId in session ${clientSession.sessionId} as it's already enabled")
     }
   }
 
-  def enableViewPort(vpId: String): Unit = {
-    this.viewPorts.get(vpId) match {
-      case null =>
-        logger.error(s"Could not find viewport to enable $vpId")
-      case vp: ViewPort =>
-        vp.setEnabled(true)
-        logger.debug(s"Enabled $vpId in container")
+  def freezeViewPort(viewPortId: String, clientSession: ClientSessionId): Unit = {
+    logger.trace(s"[VP] Freezing $viewPortId in session ${clientSession.sessionId}")
+    val viewPort = getViewportInSession(viewPortId, clientSession)
+    if (!viewPort.isFrozen) {
+      viewPort.freeze()
+      logger.debug(s"[VP] Froze $viewPortId in session ${clientSession.sessionId}")
+    } else {
+      logger.debug(s"[VP] Not freezing viewport $viewPortId in session ${clientSession.sessionId} as it's already frozen")
     }
   }
 
-  def freezeViewPort(vpId: String): Unit = {
-    this.viewPorts.get(vpId) match {
-      case null =>
-        throw new Exception(s"Could not find viewport to freeze $vpId")
-      case vp: ViewPort =>
-        if (vp.isFrozen) {
-          throw new Exception(s"Could not freeze viewport $vpId because it's already frozen")
-        } else {
-          vp.freeze()
-          logger.debug(s"Froze viewport $vpId in container")
-        }
+  def unfreezeViewPort(viewPortId: String, clientSession: ClientSessionId): Unit = {
+    logger.trace(s"[VP] Unfreezing $viewPortId in session ${clientSession.sessionId}")
+    val viewPort = getViewportInSession(viewPortId, clientSession)
+    if (viewPort.isFrozen) {
+      viewPort.unfreeze()
+      logger.debug(s"[VP] Unfroze $viewPortId in session ${clientSession.sessionId}")
+    } else {
+      logger.debug(s"[VP] Not unfreezing viewport $viewPortId in session ${clientSession.sessionId} as it's not frozen")
     }
   }
 
-  def unfreezeViewPort(vpId: String): Unit = {
-    this.viewPorts.get(vpId) match {
-      case null =>
-        throw new Exception(s"Could not find viewport to unfreeze $vpId")
-      case vp: ViewPort =>
-        if (vp.isFrozen) {
-          vp.unfreeze()
-          logger.debug(s"Unfroze viewport $vpId in container")
-        } else {
-          throw new Exception(s"Could not unfreeze viewport $vpId because it's not frozen")
-        }
-    }
-  }
-
-  override def openGroupByKey(vpId: String, treeKey: String): String = {
-    Try(this.openNode(vpId, treeKey)) match {
+  override def openGroupByKey(clientSession: ClientSessionId, vpId: String, treeKey: String): String = {    
+    Try(this.openNode(clientSession, vpId, treeKey)) match {
       case Success(_) => "Done"
       case Failure(e) =>
-        logger.error("Could not invoke jmx", e)
-        "error occured: " + e.toString
+        val message = s"Failed to open group by key $treeKey in $vpId in session ${clientSession.sessionId}"
+        logger.error(s"[VP] $message", e)
+        message
     }
   }
 
-  override def closeGroupByKey(vpId: String, treeKey: String): String = {
-    Try(this.closeNode(vpId, treeKey)) match {
+  def openNode(clientSession: ClientSessionId, viewPortId: String, treeKey: String): Unit = {
+    logger.trace(s"[VP] Opening node with key $treeKey in $viewPortId in session ${clientSession.sessionId}")
+    val viewPort = getViewportInSession(viewPortId, clientSession)
+    val treeNodeStateStore = treeNodeStatesByVp.getOrDefault(viewPortId, TreeNodeStateStore(Map()))
+    val newStateStore = treeNodeStateStore.open(treeKey)
+    treeNodeStatesByVp.put(viewPortId, newStateStore)
+    logger.debug(s"[VP] Opened node with key $treeKey in $viewPortId in session ${clientSession.sessionId}")
+  }
+
+  override def closeGroupByKey(clientSession: ClientSessionId, vpId: String, treeKey: String): String = {
+    Try(this.closeNode(clientSession, vpId, treeKey)) match {
       case Success(_) => "Done"
       case Failure(e) =>
-        logger.error("Could not invoke jmx", e)
-        "error occured: " + e.toString
+        val message = s"Failed to close group by key $treeKey in $vpId in session ${clientSession.sessionId}"
+        logger.error(s"[VP] $message", e)
+        message
     }
   }
 
-  override def setRange(vpId: String, start: Int, end: Int): String = {
-    viewPorts.get(vpId) match {
-      case null =>
-        s"No viewport found for id $vpId"
-      case vp: ViewPort =>
-        vp.setRange(ViewPortRange(start, end))
-        "Done"
-    }
+  def closeNode(clientSession: ClientSessionId, viewPortId: String, treeKey: String): Unit = {
+    logger.trace(s"[VP] Closing node with key $treeKey in $viewPortId in session ${clientSession.sessionId}")
+    val viewPort = getViewportInSession(viewPortId, clientSession)
+    val treeNodeStateStore = treeNodeStatesByVp.getOrDefault(viewPortId, TreeNodeStateStore(Map()))
+    val newStateStore = treeNodeStateStore.close(treeKey)
+    treeNodeStatesByVp.put(viewPortId, newStateStore)
+    logger.debug(s"[VP] Closed node with key $treeKey in $viewPortId in session ${clientSession.sessionId}")
   }
 
+  override def setRange(clientSession: ClientSessionId, vpId: String, start: Int, end: Int): String = {    
+    Try(this.changeRange(clientSession, vpId, ViewPortRange(start, end))) match {
+      case Success(_) => "Done"
+      case Failure(e) =>
+        val message = s"Failed to set range in viewport $vpId in session ${clientSession.sessionId} to start $start and end $end"
+        logger.error(s"[VP] $message", e)
+        message
+    } 
+  }
 
-  override def subscribedKeys(vpId: String): String = {
-    //    viewPorts.get(vpId) match {
-    //      case null =>
-    //       s"no viewport found for id ${vpId}"
-    //      case vp: ViewPort =>
-    //        vp.getKeysInRange()
-    //    }
-    ""
+  def changeRange(clientSession: ClientSessionId, vpId: String, range: ViewPortRange): ViewPort = {
+    logger.trace(s"[VP] Changing range in viewport $vpId to ${range.to} -> ${range.from}")
+    val viewPort = getViewportInSession(vpId, clientSession)
+    val (millis, _) = timeIt {
+      viewPort.setRange(range)
+    }
+    logger.debug(s"[VP] Changed range in viewport $vpId to ${range.to} -> ${range.from} in ${millis}ms")
+    viewPort
+  }
+  
+  override def subscribedKeys(clientSession: ClientSessionId, vpId: String): String = {
+    "" //TODO What is this for?
   }
 
   override def listViewPortsForSession(clientSession: ClientSessionId): List[ViewPort] = {
     IteratorHasAsScala(viewPorts.values().iterator())
       .asScala
-      .filter(vp => vp.session.equals(clientSession)).toList
+      .filter(vp => vp.session.equals(clientSession))
+      .toList
   }
-
 
   override def listActiveViewPortsForSession(clientSession: ClientSessionId): List[ViewPort] = {
     IteratorHasAsScala(viewPorts.values().iterator())
       .asScala
-      .filter(vp => vp.session.equals(clientSession) && vp.isEnabled).toList
+      .filter(vp => vp.session.equals(clientSession) && vp.isEnabled)
+      .toList
   }
 
   override def listViewPorts: String = {
 
-    val headers = Array("id", "table", "rangeFrom", "rangeTo")
+    val headers = Array("id", "session", "table", "rangeFrom", "rangeTo")
 
     val data = SetHasAsScala(viewPorts.entrySet())
       .asScala
-      .map(vp => Array[Any](vp.getKey, vp.getValue.table.name, vp.getValue.getRange.from, vp.getValue.getRange.to)).toArray[Array[Any]]
+      .map(vp => Array[Any](vp.getKey.viewPortId, vp.getValue.session.sessionId,
+        vp.getValue.table.name, vp.getValue.getRange.from, vp.getValue.getRange.to))
+      .toArray[Array[Any]]
 
     AsciiUtil.asAsciiTable(headers, data)
   }
 
-  override def toAscii(vpId: String): String = {
-    viewPorts.get(vpId) match {
-      case null => s"No viewport found for id $vpId"
-      case vp: ViewPort =>
-        val columns = vp.getColumns
-        val keys = vp.getKeysInRange
+  override def toAscii(clientSessionId: ClientSessionId, vpId: String): String = {
+    val viewPort = getViewportInSession(vpId, clientSessionId)
+    val columns = viewPort.getColumns
+    val keys = viewPort.getKeysInRange
 
-        val rows = keys.map(key => vp.table.pullRowAsArray(key, columns)).toArray
+    val rows = keys.map(key => viewPort.table.pullRowAsArray(key, columns)).toArray
 
-        val headers = if (vp.hasGroupBy)
-          Array[String]("depth", "isOpen", "key", "isLeaf") ++ columns.getColumns.map(_.name).toArray[String]
-        else
-          columns.getColumns.map(_.name).toArray
-
-        AsciiUtil.asAsciiTable(headers, rows)
-    }
-  }
-
-  private val viewPorts: ConcurrentHashMap[String, ViewPort] = new ConcurrentHashMap[String, ViewPort]()
-
-  private def createId(user: String): String = {
-    val id = user + "-" + ViewPortId.oneNew()
-    id
-  }
-
-  def get(clientSession: ClientSessionId, id: String): Option[ViewPort] = {
-
-    val viewport = viewPorts.get(id)
-
-    if (viewport != null && viewport.session.equals(clientSession))
-      Option(viewport)
+    val headers = if (viewPort.hasGroupBy)
+      Array[String]("depth", "isOpen", "key", "isLeaf") ++ columns.getColumns.map(_.name).toArray[String]
     else
-      None
+      columns.getColumns.map(_.name).toArray
+
+    AsciiUtil.asAsciiTable(headers, rows)
   }
 
   private def parseSort(sortSpec: SortSpec, vpColumns: ViewPortColumns, defaultSort: SortSpec): Sort = {
+    logger.trace(s"[VP] Parsing custom sort $sortSpec with columns $vpColumns and default $defaultSort")
     if (sortSpec != null && sortSpec.sortDefs != null && sortSpec.sortDefs.nonEmpty) {
       Try(SortSpecParser.parse(sortSpec, vpColumns)) match {
         case Success(sort) =>
-          logger.debug(s"Applying custom sort $sortSpec")
+          logger.debug(s"[VP] Applying custom sort $sortSpec")
           sort
         case Failure(err) =>
-          logger.error(s"Could not parse sort $sortSpec", err)
+          logger.error(s"[VP] Could not parse sort $sortSpec", err)
           NoSort
       }
     } else if (defaultSort != null && defaultSort.sortDefs != null && defaultSort.sortDefs.nonEmpty) {
       Try(SortSpecParser.parse(defaultSort, vpColumns)) match {
         case Success(sort) =>
-          logger.debug(s"Applying default sort $defaultSort")
+          logger.debug(s"[VP] Applying default sort $defaultSort")
           sort
         case Failure(err) =>
-          logger.error(s"Could not parse default sort $defaultSort", err)
+          logger.error(s"[VP] Could not parse default sort $defaultSort", err)
           NoSort
       }
     } else {
@@ -466,28 +501,27 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   }
 
   private def parseFilter(filterSpec: FilterSpec): ViewPortFilter = {
+    logger.trace(s"[VP] Parsing filter $filterSpec")
     if (filterSpec == null || filterSpec.filter == "")
       NoFilter
     else {
       Try(FilterSpecParser.parse(filterSpec.filter)) match {
         case Success(clause) =>
+          logger.debug(s"[VP] Applying filter ${filterSpec.filter}")
           AntlrBasedFilter(clause)
         case Failure(err) =>
-          logger.error(s"could not parse filter ${filterSpec.filter}", err)
+          logger.error(s"[VP] Could not parse filter ${filterSpec.filter}", err)
           FilterOutEverythingFilter
       }
     }
   }
 
   def change(requestId: String, clientSession: ClientSessionId, id: String, range: ViewPortRange, columns: ViewPortColumns, sort: SortSpec = SortSpec(List()), filterSpec: FilterSpec = FilterSpec(""), groupBy: GroupBy = NoGroupBy): ViewPort = {
+    logger.trace(s"[VP] Changing viewport $id in session ${clientSession.sessionId}. Filter: $filterSpec. Sort: $sort. GroupBy: $groupBy")
+    val viewPort = getViewportInSession(id, clientSession)
 
-    val viewPort = viewPorts.get(id)
     val permissionFilter = viewPort.getPermissionFilter
     val frozenTime = viewPort.viewPortFrozenTime
-
-    if (viewPort == null) {
-      throw new Exception(s"view port not found $id")
-    }
 
     val aSort = parseSort(sort, columns, viewPort.table.asTable.getTableDef.defaultSort)
 
@@ -506,7 +540,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     //we are not grouped by, but we want to change to a group by
     if (viewPort.getGroupBy == NoGroupBy && groupBy != NoGroupBy) {
 
-      logger.trace("[VP] was flat (or diff), now tree'd, building...")
+      logger.trace(s"[VP] Changing viewport $id in session ${clientSession.sessionId} from ungrouped to grouped")
 
       val sourceTable = viewPort.table
 
@@ -530,10 +564,12 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
       viewPort.changeStructure(structure)
 
+      logger.debug(s"[VP] Changed viewport $id in session ${clientSession.sessionId} from ungrouped to grouped")
+
       //we are groupBy but we want to revert to no groupBy
     } else if (viewPort.getGroupBy != NoGroupBy && groupBy == NoGroupBy) {
 
-      logger.trace("[VP] was tree'd, now not tree'd, removing tree info")
+      logger.trace(s"[VP] Changing viewport $id in session ${clientSession.sessionId} from grouped to ungrouped")
 
       val groupByTable = viewPort.table.asTable.asInstanceOf[TreeSessionTableImpl]
       val sourceTable = viewPort.table.asTable.asInstanceOf[TreeSessionTableImpl].sourceTable
@@ -554,9 +590,11 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       tableContainer.removeGroupBySessionTable(groupByTable)
       groupByTable.delete()
 
+      logger.debug(s"[VP] Changed viewport $id in session ${clientSession.sessionId} from grouped to ungrouped")
+
     } else if (viewPort.getGroupBy != NoGroupBy && groupBy != NoGroupBy && viewPort.getGroupBy.columns != groupBy.columns) {
 
-      logger.trace("[VP] was tree'd, now tree'd also but differently, building...")
+      logger.trace(s"[VP] Changing group by criteria of viewport $id in session ${clientSession.sessionId}")
 
       val groupByTable = viewPort.table.asTable.asInstanceOf[TreeSessionTableImpl]
       val sourceTable = viewPort.table.asTable.asInstanceOf[TreeSessionTableImpl].sourceTable
@@ -569,8 +607,6 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
       viewPort.setKeys(EmptyViewPortKeys)
       sessionTable.setTree(EmptyTree, InMemTablePrimaryKeys(keys))
-
-      logger.debug("[VP] complete setKeys() " + keys.length + "new group by table:" + sessionTable.name)
 
       val structure = viewport.ViewPortStructuralFields(table = sessionTable,
         columns = columns,
@@ -591,8 +627,10 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       tableContainer.removeGroupBySessionTable(groupByTable)
       groupByTable.delete()
 
+      logger.debug(s"[VP] Changed group by criteria of viewport $id in session ${clientSession.sessionId}")
+
     } else {
-      logger.trace("[VP] default else condition in change() call")
+
       val structure = viewport.ViewPortStructuralFields(table = viewPort.table,
         columns = columns,
         viewPortDef = viewPort.getStructure.viewPortDef,
@@ -604,18 +642,19 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         permissionFilter,
         frozenTime
       )
-      //viewPort.setRequestId(requestId)
+
       viewPort.changeStructure(structure)
-      //viewPort.setKeys(viewPort.getKeys)
     }
 
+    logger.debug(s"[VP] Changed viewport $id in session ${clientSession.sessionId}. Filter: $filterSpec. Sort: $sort. GroupBy: $groupBy")
     viewPort
   }
 
   def create(requestId: String, user: VuuUser, clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], table: RowSource,
              range: ViewPortRange, columns: ViewPortColumns, sort: SortSpec = SortSpec(List()), filterSpec: FilterSpec = FilterSpec(""), groupBy: GroupBy = NoGroupBy): ViewPort = {
 
-    val id = createId(user.name)
+    logger.trace(s"[VP] Creating viewport on table ${table.name} in session ${clientSession.sessionId}. Filter: $filterSpec. Sort: $sort. GroupBy: $groupBy")
+    val id = ViewPortId.oneNew()
 
     val aSort = parseSort(sort, columns, table.asTable.getTableDef.defaultSort)
 
@@ -638,102 +677,69 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     viewPort.setPermissionFilter(permissionFilter)
     viewPort.setRequestId(requestId)
-    viewPorts.put(id, viewPort)
+    viewPorts.put(SessionViewPortId(id, clientSession), viewPort)
 
-    logger.info(s"Created viewport with id $id on table ${table.name} in session ${clientSession.sessionId}")
+    logger.debug(s"[VP] Created viewport $id on table ${table.name} in session ${clientSession.sessionId}. Filter: $filterSpec. Sort: $sort. GroupBy: $groupBy")
     viewPort
   }
 
-  def changeRange(clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], vpId: String, range: ViewPortRange): ViewPort = {
-
-    val vp = viewPorts.get(vpId)
-    val old = vp.getRange
-
-    val (millis, _) = timeIt {
-      vp.setRange(range)
-    }
-
-    logger.trace("VP Change Range [{}] {}->{}, was {}->{}, took: {} millis", vpId, range.from, range.to, old.from, old.to, millis)
-
-    vp
-  }
-
-  def openNode(viewPortId: String, treeKey: String): Unit = {
-
-    logger.debug(s"Had request to change vp $viewPortId node state $treeKey")
-
-    val viewPort = viewPorts.get(viewPortId)
-    val treeNodeStateStore = treeNodeStatesByVp.getOrDefault(viewPortId, TreeNodeStateStore(Map()))
-
-    val newStateStore = treeNodeStateStore.open(treeKey)
-
-    treeNodeStatesByVp.put(viewPortId, newStateStore)
-  }
-
-  def closeNode(viewPortId: String, treeKey: String): Unit = {
-    logger.debug(s"Had request to change vp $viewPortId node state $treeKey")
-
-    val viewPort = viewPorts.get(viewPortId)
-    val treeNodeStateStore = treeNodeStatesByVp.getOrDefault(viewPortId, TreeNodeStateStore(Map()))
-
-    val newStateStore = treeNodeStateStore.close(treeKey)
-
-    treeNodeStatesByVp.put(viewPortId, newStateStore)
-  }
-
-  def selectRow(vpId: String, rowKey: String, preserveExistingSelection: Boolean): ViewPort = {
-    val viewPort = viewPorts.get(vpId)
+  def selectRow(clientSession: ClientSessionId, vpId: String, rowKey: String, preserveExistingSelection: Boolean): ViewPort = {
+    logger.trace(s"[VP] Selecting row with key $rowKey in viewport $vpId in session ${clientSession.sessionId}")
+    val viewPort = getViewportInSession(vpId, clientSession)
     viewPort.selectRow(rowKey, preserveExistingSelection)
+    logger.debug(s"[VP] Selected row with key $rowKey in viewport $vpId in session ${clientSession.sessionId}")
     viewPort
   }
 
-  def deselectRow(vpId: String, rowKey: String, preserveExistingSelection: Boolean): ViewPort = {
-    val viewPort = viewPorts.get(vpId)
+  def deselectRow(clientSession: ClientSessionId, vpId: String, rowKey: String, preserveExistingSelection: Boolean): ViewPort = {
+    logger.trace(s"[VP] Deselecting row with key $rowKey in viewport $vpId in session ${clientSession.sessionId}")
+    val viewPort = getViewportInSession(vpId, clientSession)
     viewPort.deselectRow(rowKey, preserveExistingSelection)
+    logger.debug(s"[VP] Deselected row with key $rowKey in viewport $vpId in session ${clientSession.sessionId}")
     viewPort
   }
 
-  def selectRowRange(vpId: String, fromRowKey: String, toRowKey: String, preserveExistingSelection: Boolean): ViewPort = {
-    val viewPort = viewPorts.get(vpId)
+  def selectRowRange(clientSession: ClientSessionId, vpId: String, fromRowKey: String, toRowKey: String, preserveExistingSelection: Boolean): ViewPort = {
+    logger.trace(s"[VP] Selecting row range from key $fromRowKey to key $toRowKey in viewport $vpId in session ${clientSession.sessionId}")
+    val viewPort = getViewportInSession(vpId, clientSession)
     viewPort.selectRowRange(fromRowKey, toRowKey, preserveExistingSelection)
+    logger.debug(s"[VP] Selected row range from key $fromRowKey to key $toRowKey in viewport $vpId in session ${clientSession.sessionId}")
     viewPort
   }
 
-  def selectAll(vpId: String): ViewPort = {
-    val viewPort = viewPorts.get(vpId)
+  def selectAll(clientSession: ClientSessionId, vpId: String): ViewPort = {
+    logger.trace(s"[VP] Selecting all rows in viewport $vpId in session ${clientSession.sessionId}")
+    val viewPort = getViewportInSession(vpId, clientSession)
     viewPort.selectAll()
+    logger.debug(s"[VP] Selected all rows in viewport $vpId in session ${clientSession.sessionId}")
     viewPort
   }
 
-  def deselectAll(vpId: String): ViewPort = {
-    val viewPort = viewPorts.get(vpId)
+  def deselectAll(clientSession: ClientSessionId, vpId: String): ViewPort = {
+    logger.trace(s"[VP] Deselecting all rows in viewport $vpId in session ${clientSession.sessionId}")
+    val viewPort = getViewportInSession(vpId, clientSession)
     viewPort.deselectAll()
+    logger.debug(s"[VP] Deselected all rows in viewport $vpId in session ${clientSession.sessionId}")
     viewPort
   }
 
   def linkViewPorts(clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], childVpId: String, parentVpId: String, childColumnName: String, parentColumnName: String): Unit = {
-    get(clientSession, childVpId) match {
-      case Some(child) =>
-        get(clientSession, parentVpId) match {
-          case Some(parent) =>
-            val parentColumn = parent.table.asTable.columnForName(parentColumnName)
-            val childColumn = child.table.asTable.columnForName(childColumnName)
-            child.setVisualLink(ViewPortVisualLink(child, parent, childColumn, parentColumn))
-          case None =>
-            throw new Exception("Could not find parent viewport" + parentVpId)
-        }
-      case None =>
-        throw new Exception("Could not find child viewport" + childVpId)
-    }
+    logger.trace(s"[VP] Linking child viewport $childVpId to parent viewport $parentVpId in session ${clientSession.sessionId}")
+    val childViewPort = getViewportInSession(childVpId, clientSession)
+    val childColumn = childViewPort.table.asTable.columnForName(childColumnName)
+
+    val parentViewPort = getViewportInSession(parentVpId, clientSession)
+    val parentColumn = parentViewPort.table.asTable.columnForName(parentColumnName)
+
+    childViewPort.setVisualLink(ViewPortVisualLink(childViewPort, parentViewPort, childColumn, parentColumn))
+    logger.debug(s"[VP] Linked child viewport $childVpId to parent viewport $parentVpId in session ${clientSession.sessionId}")
   }
 
   def unlinkViewPorts(clientSession: ClientSessionId, outboundQ: PublishQueue[ViewPortUpdate], childVpId: String): Unit = {
-    get(clientSession, childVpId) match {
-      case Some(child) =>
-        child.removeVisualLink()
-      case None =>
-        throw new Exception("Could not find child viewport" + childVpId)
-    }
+    logger.trace(s"[VP] Unlinking child viewport $childVpId in session ${clientSession.sessionId}")
+    val childViewPort = getViewportInSession(childVpId, clientSession)
+    childViewPort.removeVisualLink()
+    logger.debug(s"[VP] Unlinked child viewport $childVpId in session ${clientSession.sessionId}")
   }
 
   /**
@@ -747,7 +753,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       })
     }
 
-    viewPorthistogram.update(millis)
+    viewPortHistogram.update(millis)
   }
 
   /**
@@ -974,26 +980,34 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   }
 
   def removeForSession(clientSession: ClientSessionId): Unit = {
+    logger.trace(s"[VP] Removing all viewports in session ${clientSession.sessionId}")
     val viewports = SetHasAsScala(viewPorts.entrySet())
       .asScala
       .filter(entry => entry.getValue.session == clientSession).toArray
-
-    logger.debug(s"Removing ${viewports.length} on disconnect of $clientSession")
-
+    
     viewports.foreach(entry => {
       this.removeViewPort(entry.getKey)
     })
+
+    logger.debug(s"[VP] Removed ${viewports.length} viewports in session $clientSession")
   }
 
   def getViewPortVisualLinks(clientSession: ClientSessionId, vpId: String): List[(Link, ViewPort)] = {
-    Option(viewPorts.get(vpId)) match {
-      case Some(vp) =>
-        val viewPorts = listActiveViewPortsForSession(clientSession)
-        val vpLinks = for (link <- vp.table.asTable.getTableDef.links.links; vp <- viewPorts; if link.toTable == vp.table.linkableName) yield (link, vp)
-        vpLinks
-      case None =>
-        List()
-    }
+    logger.trace(s"[VP] Finding visual links for viewport $vpId in session ${clientSession.sessionId}")
+    val viewPort = getViewportInSession(vpId, clientSession)
+    val viewPorts = listActiveViewPortsForSession(clientSession)
+    val vpLinks = for (link <- viewPort.table.asTable.getTableDef.links.links; viewPort <- viewPorts; if link.toTable == viewPort.table.linkableName) yield (link, viewPort)
+    logger.debug(s"[VP] Found ${vpLinks.length} visual links for viewport $vpId in session ${clientSession.sessionId}")
+    vpLinks
+  }
+
+}
+
+case class SessionViewPortId(viewPortId: String, clientSessionId: ClientSessionId) extends Ordered[SessionViewPortId] {
+
+  override def compare(that: SessionViewPortId): Int =  {
+    val comp = clientSessionId.compareTo(that.clientSessionId)
+    if (comp != 0) comp else viewPortId.compareTo(that.viewPortId)
   }
 
 }

@@ -278,7 +278,7 @@ class RowDeleteTest extends AnyFeatureSpec with Matchers with OneInstancePerTest
 
       joinProvider.runOnce()
 
-      viewPortContainer.openNode(viewPort.id, "$root|chris")
+      viewPortContainer.openNode(session, viewPort.id, "$root|chris")
       viewPortContainer.runOnce()
       viewPortContainer.runGroupByOnce()
 

@@ -72,7 +72,7 @@ class MetricsGroupByProvider(table: DataTable, viewPortContainer: ViewPortContai
         val setTree = buildColumnsForHistogram("settree", treeSetTreeHistograms.get(key))
         val diffBranchesMap = buildColumnsForHistogram("diff_branches", treeDiffBranchesHistograms.get(key))
 
-        val vp = viewPortContainer.getViewPortById(key)
+        val vp = viewPortContainer.getViewPorts.find(f => f.id == key).orNull
         if (vp != null) {
           val keyhash = key
           val upMap = Map("id" -> key, "table" -> vp.table.name, "realTable" -> vp.table.linkableName) ++ buildMap ++ toKeysMap ++ setKeysMap ++ setTree ++ diffBranchesMap
@@ -82,7 +82,7 @@ class MetricsGroupByProvider(table: DataTable, viewPortContainer: ViewPortContai
 
     } catch {
       case e: Exception =>
-        logger.error("Error occured in metrics", e)
+        logger.error("Error occurred whilst generating group by metrics", e)
     }
   }
 
