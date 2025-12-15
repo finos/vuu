@@ -12,7 +12,13 @@ export const NotificationType = {
 
 export type NotificationType = ValueOf<typeof NotificationType>;
 
+export type NotificationAnimationType =
+  | "slide-in"
+  | "slide-out"
+  | "slide-in,slide-out";
+
 interface NotificationDescriptorBase<T extends NotificationType> {
+  animationType?: NotificationAnimationType;
   renderPostRefresh?: boolean;
   status: ValidationStatus;
   type: T;

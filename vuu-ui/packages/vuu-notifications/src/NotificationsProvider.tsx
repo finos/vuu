@@ -1,10 +1,16 @@
-import React, { ReactElement, useContext } from "react";
+import React, { ReactElement, useContext, useMemo } from "react";
 import { NotificationsCenter } from "./NotificationsCenter";
 import {
   DispatchHideNotification,
   DispatchShowNotification,
   NotificationsContext,
+  ToastNotificationDescriptor,
 } from "./NotificationsContext";
+import { getLocalEntity } from "@vuu-ui/vuu-utils";
+
+interface ToastWithExpiry extends ToastNotificationDescriptor {
+  expires: number;
+}
 
 /*
   The Context is not exposed outside this module, only the notify
@@ -40,10 +46,23 @@ const NotificationsContext = React.createContext<NotificationsContext>(
 export const NotificationsProvider = (props: {
   children: ReactElement | ReactElement[];
 }) => {
+  console.log(`%c[NotificationsProvider]`, "color:green;font-weight: bold;");
   const context = useContext(NotificationsContext);
+  const startupToastNotification = useMemo<
+    ToastNotificationDescriptor | undefined
+  >(() => {
+    const toast = getLocalEntity<ToastWithExpiry>("startup-notification", true);
+    if (toast && toast.expires >= +Date.now()) {
+      const { expires, ...toastDescriptor } = toast;
+      return toastDescriptor;
+    }
+  }, []);
   return (
     <NotificationsContext.Provider value={context}>
-      <NotificationsCenter notificationsContext={context} />
+      <NotificationsCenter
+        startupToastNotification={startupToastNotification}
+        notificationsContext={context}
+      />
       {props.children}
     </NotificationsContext.Provider>
   );

@@ -1,5 +1,9 @@
 .salt-theme.vuu-theme {
 
+    .vuuToastNotification {
+        z-index: var(--salt-zIndex-notification);
+    }
+
     .saltToast {
         --saltToast-borderRadius: 6px;
         --saltToast-padding: var(--salt-spacing-200);
