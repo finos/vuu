@@ -3,19 +3,19 @@ import {
   NotificationsProvider,
   useNotifications,
   ToastNotification,
-  NotificationLevel,
-} from "@vuu-ui/vuu-popups";
+} from "@vuu-ui/vuu-notifications";
 import {
   Dropdown,
   FormField,
   FormFieldLabel,
   Input,
   Option,
+  ValidationStatus,
 } from "@salt-ds/core";
 
 // this example allows to fire notifications dynamically when wrapped in NotificationsProvider
 const Notifications = () => {
-  const [type, setType] = useState<NotificationLevel>("info");
+  const [type, setType] = useState<ValidationStatus>("info");
   const [header, setHeader] = useState<string>("Header");
   const [body, setBody] = useState<string>("Body");
 
@@ -23,7 +23,7 @@ const Notifications = () => {
 
   const handleNotification = () => {
     showNotification({
-      level: type,
+      status: type,
       header,
       content: body,
       type: "toast",
@@ -36,7 +36,7 @@ const Notifications = () => {
     <div style={{ maxWidth: 300, margin: 20 }}>
       <FormField>
         <FormFieldLabel>Notification Type</FormFieldLabel>
-        <Dropdown<NotificationLevel>
+        <Dropdown<ValidationStatus>
           selected={[type]}
           onSelectionChange={(_, [selectedItem]) => {
             if (selectedItem) {
@@ -86,7 +86,7 @@ export const SuccessNotificationToast = () => (
     notification={{
       content: "[Layout Name] Saved Successfully",
       header: "Layout Saved Successfully",
-      level: "success",
+      status: "success",
       type: "toast",
     }}
   />
@@ -99,7 +99,7 @@ export const ErrorNotificationToast = () => (
     notification={{
       content: "This didn't work",
       header: "This Didn't Work",
-      level: "error",
+      status: "error",
       type: "toast",
     }}
   />
@@ -112,7 +112,7 @@ export const WarningNotificationToast = () => (
     notification={{
       content: "This probably won't work",
       header: "This probably won't work",
-      level: "warning",
+      status: "warning",
       type: "toast",
     }}
   />
@@ -125,7 +125,7 @@ export const InfoNotificationToast = () => (
     notification={{
       content: "This is Info Body",
       header: "This is Info Title",
-      level: "info",
+      status: "info",
       type: "toast",
     }}
   />

@@ -13,7 +13,6 @@
   "devDependencies": {
     "@vuu-ui/vuu-data-types": "0.13.90",
     "@vuu-ui/vuu-filter-types": "0.13.90",
-    "@vuu-ui/vuu-popups": "0.13.90",
     "@vuu-ui/vuu-protocol-types": "0.13.90",
     "@vuu-ui/vuu-table-types": "0.13.90"
   },
@@ -23,7 +22,7 @@
     "@vuu-ui/vuu-filter-parser": "0.13.90",
     "@vuu-ui/vuu-filters": "0.13.90",
     "@vuu-ui/vuu-layout": "0.13.90",
-    "@vuu-ui/vuu-popups": "0.13.90",
+    "@vuu-ui/vuu-notifications": "0.13.90",
     "@vuu-ui/vuu-ui-controls": "0.13.90",
     "@vuu-ui/vuu-utils": "0.13.90",
     "@vuu-ui/vuu-table": "0.13.90",

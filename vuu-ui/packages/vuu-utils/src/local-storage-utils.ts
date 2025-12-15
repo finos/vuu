@@ -1,6 +1,16 @@
-export const getLocalEntity = <T>(url: string): T | undefined => {
-  const data = localStorage.getItem(url);
+export const getLocalEntity = <T>(key: string): T | undefined => {
+  const data = localStorage.getItem(key);
   return data ? JSON.parse(data) : undefined;
+};
+
+export const clearLocalEntity = (key: string) => {
+  const doomedItem = localStorage.getItem(key);
+  if (doomedItem) {
+    localStorage.removeItem(key);
+    return true;
+  } else {
+    return false;
+  }
 };
 
 export const getAllLocalEntity = <T>(url: string): T[] =>

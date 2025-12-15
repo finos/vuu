@@ -21,11 +21,15 @@ export const buildAll = async () => {
     "vuu-filter-parser",
     "vuu-icons",
     "vuu-utils",
-    "vuu-ui-controls",
     "vuu-codemirror",
     "vuu-theme",
   ];
-  const wave2 = ["vuu-data-remote", "vuu-data-local"];
+  const wave2 = [
+    "vuu-data-remote",
+    "vuu-data-local",
+    "vuu-notifications",
+    "vuu-ui-controls",
+  ];
   const wave3 = ["vuu-filters", "vuu-popups"];
   const wave4 = [
     "vuu-context-menu",

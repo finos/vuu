@@ -26,7 +26,7 @@
     "@vuu-ui/vuu-data-react": "0.13.90",
     "@vuu-ui/vuu-filters": "0.13.90",
     "@vuu-ui/vuu-layout": "0.13.90",
-    "@vuu-ui/vuu-popups": "0.13.90",
+    "@vuu-ui/vuu-notifications": "0.13.90",
     "@vuu-ui/vuu-shell": "0.13.90",
     "@vuu-ui/vuu-table": "0.13.90",
     "@vuu-ui/vuu-table-extras": "0.13.90",

@@ -1,11 +1,11 @@
-import { HTMLAttributes, ReactNode, useMemo } from "react";
+import { useFloatingComponent } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { VuuShellLocation } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
+import { HTMLAttributes, ReactNode, useMemo } from "react";
 
 import workspaceNotificationCss from "./WorkspaceNotification.css";
-import { VuuShellLocation } from "@vuu-ui/vuu-utils";
-import { useFloatingComponent } from "@salt-ds/core";
 
 const classBase = "vuuWorkspaceNotification";
 

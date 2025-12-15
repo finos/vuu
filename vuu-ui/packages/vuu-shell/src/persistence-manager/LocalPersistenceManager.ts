@@ -10,6 +10,7 @@ import {
   LayoutMetadata,
   LayoutMetadataDto,
   WithId,
+  clearLocalEntity,
 } from "@vuu-ui/vuu-utils";
 import { getAuthDetailsFromCookies } from "../login";
 import { IPersistenceManager } from "./PersistenceManager";
@@ -27,6 +28,11 @@ export class LocalPersistenceManager implements IPersistenceManager {
     if (urlKey) {
       this.#urlKey = urlKey;
     }
+  }
+
+  clearUserSettings() {
+    clearLocalEntity(this.#urlKey);
+    this.#applicationJSON = undefined;
   }
 
   createLayout(

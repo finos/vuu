@@ -1,4 +1,4 @@
-import { NotificationsProvider } from "@vuu-ui/vuu-popups";
+import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import "../row-classname-generators/BuySellRowClassNameGenerator";
 import "../row-classname-generators/FilledRowClassNameGenerator";

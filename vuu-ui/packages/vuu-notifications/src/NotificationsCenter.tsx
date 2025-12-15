@@ -7,7 +7,7 @@ import {
   NotificationsContext,
   ToastNotificationDescriptor as ToastNotificationType,
 } from "./NotificationsContext";
-import { ToastNotification } from "./ToastNotification";
+import { TOAST_HEIGHT, ToastNotification } from "./ToastNotification";
 import { WorkspaceNotification } from "./WorkspaceNotification";
 
 export interface NotificationsCenterProps {
@@ -23,8 +23,6 @@ const toastOffsetTop = 60;
 const toastDisplayDuration = 6000;
 const horizontalTransitionDuration = 1000;
 
-// toast size in pixels
-const toastHeight = 56;
 const toastContainerContentGap = 10;
 // rightPadding is used together with the toastWidth to compute the toast position
 // at the beginning and at the end of the animation
@@ -73,7 +71,7 @@ export const NotificationsCenter = ({
       {workspaceNotification}
       {notifications.map((notification, i) => (
         <ToastNotification
-          top={toastOffsetTop + (toastHeight + toastContainerContentGap) * i}
+          top={toastOffsetTop + (TOAST_HEIGHT + toastContainerContentGap) * i}
           notification={notification}
           key={notification.id}
         />

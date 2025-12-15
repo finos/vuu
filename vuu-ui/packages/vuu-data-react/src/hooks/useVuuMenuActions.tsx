@@ -15,7 +15,7 @@ import {
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
 import { getFilterPredicate } from "@vuu-ui/vuu-filter-parser";
-import { useNotifications } from "@vuu-ui/vuu-popups";
+import { NotificationType, useNotifications } from "@vuu-ui/vuu-notifications";
 import type {
   ClientToServerMenuCellRPC,
   ClientToServerMenuRowRPC,
@@ -507,10 +507,10 @@ export const useVuuMenuActions = ({
                     action: { message, title = "Success" },
                   } = rpcResponse;
                   showNotification({
-                    level: "success",
+                    status: "success",
                     content: message,
                     header: title,
-                    type: "toast",
+                    type: NotificationType.Toast,
                   });
                 } else if (isOpenBulkEditResponse(rpcResponse)) {
                   showBulkEditDialog(

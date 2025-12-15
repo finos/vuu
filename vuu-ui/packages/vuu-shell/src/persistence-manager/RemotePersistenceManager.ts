@@ -52,6 +52,10 @@ export class RemotePersistenceManager implements IPersistenceManager {
     );
   }
 
+  clearUserSettings() {
+    // todo
+  }
+
   updateLayout(
     id: string,
     metadata: LayoutMetadataDto,

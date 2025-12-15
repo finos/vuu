@@ -1,5 +1,5 @@
 import { isLayoutJSON, resolveJSONPath } from "@vuu-ui/vuu-layout";
-import { useNotifications } from "@vuu-ui/vuu-popups";
+import { useNotifications } from "@vuu-ui/vuu-notifications";
 import {
   LayoutMetadata,
   LayoutMetadataDto,
@@ -153,7 +153,7 @@ export const WorkspaceProvider = ({
         showNotification({
           content: "Could not load list of available layouts",
           header: "Failed to Load Layouts",
-          level: "error",
+          status: "error",
           type: "toast",
         });
         console.error("Error occurred while retrieving metadata", error);
@@ -187,7 +187,7 @@ export const WorkspaceProvider = ({
         showNotification({
           content: "Could not load your latest view",
           header: "Failed to Load Layout",
-          level: "error",
+          status: "error",
           type: "toast",
         });
         console.error(
@@ -242,7 +242,7 @@ export const WorkspaceProvider = ({
             showNotification({
               content: `${metadata.name} saved successfully`,
               header: "Layout Saved Successfully",
-              level: "success",
+              status: "success",
               type: "toast",
             });
             setLayoutMetadata((prev) => [...prev, metadata]);
@@ -251,7 +251,7 @@ export const WorkspaceProvider = ({
             showNotification({
               content: `Failed to save layout ${metadata.name}`,
               header: "Failed to Save Layout",
-              level: "error",
+              status: "error",
               type: "toast",
             });
             console.error("Error occurred while saving layout", error);
@@ -261,7 +261,7 @@ export const WorkspaceProvider = ({
         showNotification({
           content: "Cannot save invalid layout",
           header: "Failed to Save Layout",
-          level: "error",
+          status: "error",
           type: "toast",
         });
       }
@@ -319,7 +319,7 @@ export const WorkspaceProvider = ({
           showNotification({
             content: "Failed to load the requested layout",
             header: "Failed to Load Layout",
-            level: "error",
+            status: "error",
             type: "toast",
           });
           console.error("Error occurred while loading layout", error);

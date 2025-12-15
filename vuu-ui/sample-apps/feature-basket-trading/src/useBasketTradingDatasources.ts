@@ -5,7 +5,7 @@ import {
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
 import { useCallback, useMemo, useState } from "react";
-import { useNotifications } from "@vuu-ui/vuu-popups";
+import { useNotifications } from "@vuu-ui/vuu-notifications";
 import { buildColumnMap, ColumnMap, useData } from "@vuu-ui/vuu-utils";
 import { VuuRpcServiceRequest } from "@vuu-ui/vuu-protocol-types";
 import { useSessionDataSource } from "@vuu-ui/vuu-data-react";
@@ -143,7 +143,7 @@ export const useBasketTradingDataSources = ({
             showNotification({
               content: "Please contact your support team",
               header: "Failed to Send to market",
-              level: "error",
+              status: "error",
               type: "toast",
             });
             console.error(response.errorMessage);
@@ -166,7 +166,7 @@ export const useBasketTradingDataSources = ({
             showNotification({
               content: "Please contact your support team",
               header: "Failed to take off market",
-              level: "error",
+              status: "error",
               type: "toast",
             });
             console.error(response.errorMessage);
