@@ -77,7 +77,6 @@ class BasketCreateTest extends VuuServerTestCase {
           val viewportBasketTrading = vuuServer.createViewPort(BasketModule.NAME, BasketTradingTable)
           val viewportBasketTradingCons = vuuServer.createViewPort(BasketModule.NAME, BasketTradingConstituentTable)
 
-          //CJS: I don't like this forced cast, need to look at that a bit
           val editCellResult = viewportBasketTrading.getStructure.viewPortDef.service.processRpcRequest(RpcNames.EditCellRpc, new RpcParams(Map("key" -> basketTradeInstanceId, "column" -> BT.Units, "data" -> 100), viewportBasketTrading, vuuServer.requestContext))
           editCellResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
 

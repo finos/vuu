@@ -87,7 +87,6 @@ class BasketTradingService(val table: DataTable, val omsApi: OmsApi)(using table
     val key: String = params.namedParams("key").asInstanceOf[String]
     val columnName: String = params.namedParams("column").asInstanceOf[String]
     val data: Any = params.namedParams("data")
-    val vp: ViewPort = params.viewPort
     logger.debug("Change requested for cell value for key:" + key + "(" + columnName + ":" + data + ")")
 
     val currentData = getRowData(key, columnName)

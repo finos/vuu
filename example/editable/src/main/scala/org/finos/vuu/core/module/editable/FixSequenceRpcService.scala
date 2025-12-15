@@ -9,25 +9,22 @@ class FixSequenceRpcService()(using tableContainer: TableContainer) extends Edit
     val key: String = params.namedParams("key").asInstanceOf[String]
     val columnName: String = params.namedParams("column").asInstanceOf[String]
     val data: Any = params.namedParams("data")
-    val table = params.viewPort.table.asTable
-    table.processUpdate(key, RowWithData(key, Map(columnName -> data)))
+    params.viewPort.table.asTable.processUpdate(key, RowWithData(key, Map(columnName -> data)))
     RpcFunctionSuccess(None)
   }
 
   override def editRow(params: RpcParams): RpcFunctionResult = {
     val key: String = params.namedParams("key").asInstanceOf[String]
     val data: Map[String, Any] = params.namedParams("data").asInstanceOf[Map[String, Any]]
-    val table = params.viewPort.table.asTable
-    table.processUpdate(key, RowWithData(key, data))
+    params.viewPort.table.asTable.processUpdate(key, RowWithData(key, data))
     RpcFunctionSuccess(None)
   }
 
   override def submitForm(params: RpcParams): RpcFunctionResult = {
     val comment: String = params.namedParams("comment").asInstanceOf[String]
-    val table = params.viewPort.table.asTable
-    val primaryKeys = table.primaryKeys
+    val primaryKeys = params.viewPort.table.asTable.primaryKeys
     val headKey = primaryKeys.head
-    val sequencerNumber = table.pullRow(headKey).get("sequenceNumber").asInstanceOf[Int].toLong
+    val sequencerNumber = params.viewPort.table.asTable.pullRow(headKey).get("sequenceNumber").asInstanceOf[Int].toLong
 
     if (sequencerNumber > 0) {
       logger.trace("I would now send this fix seq to a fix engine to reset, we're all good:" + sequencerNumber)

@@ -12,16 +12,14 @@ class BasketTradingConstituentService(val table: DataTable)(using tableContainer
     val key: String = params.namedParams("key").asInstanceOf[String]
     val columnName: String = params.namedParams("column").asInstanceOf[String]
     val data: Any = params.namedParams("data")
-    val table = params.viewPort.table.asTable
-    table.processUpdate(key, RowWithData(key, Map(InstanceIdRic -> key, columnName -> data)))
+    params.viewPort.table.asTable.processUpdate(key, RowWithData(key, Map(InstanceIdRic -> key, columnName -> data)))
     RpcFunctionSuccess(None)
   }
 
   override def editRow(params: RpcParams): RpcFunctionResult = {
     val key: String = params.namedParams("key").asInstanceOf[String]
     val data: Map[String, Any] = params.namedParams("data").asInstanceOf[Map[String, Any]]
-    val table = params.viewPort.table.asTable
-    table.processUpdate(key, RowWithData(key, data))
+    params.viewPort.table.asTable.processUpdate(key, RowWithData(key, data))
     RpcFunctionSuccess(None)
   }
 
