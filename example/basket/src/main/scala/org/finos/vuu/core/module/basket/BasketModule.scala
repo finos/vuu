@@ -102,7 +102,7 @@ object BasketModule extends DefaultModule {
         (table, vs) => new BasketTradingConstituentProvider(table, omsApi),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.getColumns,
-          service = new BasketTradingConstituentService(table)(clock, tableContainer)
+          service = new BasketTradingConstituentService(table)(using tableContainer)
         )
       )
       .addTable(
@@ -144,7 +144,7 @@ object BasketModule extends DefaultModule {
         ),
         (table, _, _, tableContainer) => ViewPortDef(
           columns = table.getTableDef.getColumns,
-          service = new BasketTradingConstituentJoinService(table)(clock, tableContainer)
+          service = new BasketTradingConstituentJoinService(table)(using tableContainer)
         )
       )
       .asModule()
