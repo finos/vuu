@@ -45,14 +45,15 @@ export const AppHeader = ({
 
   const handleReset = useCallback(() => {
     persistenceManager?.clearUserSettings();
-    location.reload();
     showNotification({
+      animationType: "slide-out",
       renderPostRefresh: true,
       type: NotificationType.Toast,
       header: "Success",
       content: "Settings cleared",
       status: "success",
     });
+    location.reload();
   }, [persistenceManager, showNotification]);
 
   const handleShowSettings = useCallback(() => {

@@ -1,20 +1,21 @@
-import { getUniqueId } from "@vuu-ui/vuu-utils";
+import { getUniqueId, saveLocalEntity } from "@vuu-ui/vuu-utils";
 import { ReactNode, useCallback, useMemo, useState } from "react";
 import {
   isToastNotification,
   isWorkspaceNotification,
   Notification,
   NotificationsContext,
-  ToastNotificationDescriptor as ToastNotificationType,
+  ToastNotificationDescriptor,
 } from "./NotificationsContext";
 import { TOAST_HEIGHT, ToastNotification } from "./ToastNotification";
 import { WorkspaceNotification } from "./WorkspaceNotification";
 
 export interface NotificationsCenterProps {
   notificationsContext: NotificationsContext;
+  startupToastNotification?: ToastNotificationDescriptor;
 }
 
-interface ToastNotificationWithId extends ToastNotificationType {
+interface ToastNotificationWithId extends ToastNotificationDescriptor {
   id: string;
 }
 
@@ -29,26 +30,49 @@ const toastContainerContentGap = 10;
 
 export const NotificationsCenter = ({
   notificationsContext,
+  startupToastNotification,
 }: NotificationsCenterProps) => {
+  const toastNotifications = useMemo<ToastNotificationWithId[]>(
+    () =>
+      startupToastNotification
+        ? [
+            {
+              ...startupToastNotification,
+              id: getUniqueId(),
+            },
+          ]
+        : [],
+    [startupToastNotification],
+  );
+
   const [workspaceNotification, setWorkspaceNotification] =
     useState<ReactNode>(null);
-  const [notifications, setNotifications] = useState<ToastNotificationWithId[]>(
-    [],
-  );
+
+  const [notifications, setNotifications] =
+    useState<ToastNotificationWithId[]>(toastNotifications);
 
   const showNotification = useCallback((notification: Notification) => {
     if (isToastNotification(notification)) {
-      const newNotification: ToastNotificationWithId = {
-        ...notification,
-        id: getUniqueId(),
-      };
-      setNotifications((prev) => prev.concat(newNotification));
-      setTimeout(
-        () => {
-          setNotifications((prev) => prev.filter((n) => n !== newNotification));
-        },
-        toastDisplayDuration + horizontalTransitionDuration * 2,
-      );
+      if (notification.renderPostRefresh) {
+        saveLocalEntity("startup-notification", {
+          ...notification,
+          expires: +new Date() + 10000,
+        });
+      } else {
+        const newNotification: ToastNotificationWithId = {
+          ...notification,
+          id: getUniqueId(),
+        };
+        setNotifications((prev) => prev.concat(newNotification));
+        setTimeout(
+          () => {
+            setNotifications((prev) =>
+              prev.filter((n) => n !== newNotification),
+            );
+          },
+          toastDisplayDuration + horizontalTransitionDuration * 2,
+        );
+      }
     } else if (isWorkspaceNotification(notification)) {
       setWorkspaceNotification(
         <WorkspaceNotification>{notification.content}</WorkspaceNotification>,

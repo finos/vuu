@@ -3,9 +3,9 @@ import { Toast, ToastContent, useFloatingComponent } from "@salt-ds/core";
 import { useEffect, useState } from "react";
 import type { ToastNotificationDescriptor } from "./NotificationsContext";
 
-const toastContainerRightPadding = 50;
-const toastDisplayDuration = 6000;
-const horizontalTransitionDuration = 1000;
+const toastContainerRightPadding = 20;
+const toastDisplayDuration = 1200;
+const horizontalTransitionDuration = 400;
 export const TOAST_HEIGHT = 80;
 export const TOAST_WIDTH = 300;
 const verticalTransitionDuration = 300;
@@ -23,18 +23,31 @@ export const ToastNotification = (props: ToastNotificationProps) => {
 
   const { Component: FloatingComponent } = useFloatingComponent();
 
-  const [right, setRight] = useState(-TOAST_WIDTH - toastContainerRightPadding);
+  const { animationType = "slide-in,slide-out" } = notification;
+
+  const slideIn = animationType.includes("slide-in");
+
+  const [right, setRight] = useState(
+    slideIn
+      ? -TOAST_WIDTH - toastContainerRightPadding
+      : toastContainerRightPadding,
+  );
 
   useEffect(() => {
-    setTimeout(() => setRight(toastContainerRightPadding));
+    if (slideIn) {
+      setTimeout(() => setRight(toastContainerRightPadding));
+    }
 
     if (animated) {
+      console.log(
+        `animated ${toastDisplayDuration + horizontalTransitionDuration}`,
+      );
       setTimeout(
         () => setRight(-TOAST_WIDTH - toastContainerRightPadding),
         toastDisplayDuration + horizontalTransitionDuration,
       );
     }
-  }, [animated]);
+  }, [animated, slideIn]);
 
   return (
     <FloatingComponent
