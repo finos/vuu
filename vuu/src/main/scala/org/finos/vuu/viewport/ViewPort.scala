@@ -638,7 +638,7 @@ class ViewPortImpl(val id: String,
 
   private def publishHighPriorityUpdate(key: String, index: Int): Unit = {
     if (this.enabled) {
-      logger.debug(s"publishing update @[$index] = $key ")
+      logger.trace(s"publishing update @[$index] = $key ")
       outboundQ.pushHighPriority(ViewPortUpdate(this.requestId, this, table, RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now()))
     }
   }

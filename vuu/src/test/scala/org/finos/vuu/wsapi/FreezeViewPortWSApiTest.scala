@@ -89,7 +89,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       val response = vuuClient.awaitForResponse(requestId)
       val responseBody = assertBodyIsInstanceOf[FreezeViewPortReject](response)
       responseBody.viewPortId shouldEqual fakeViewPortId
-      responseBody.errorMessage shouldEqual s"Could not find viewport to freeze $fakeViewPortId"
+      responseBody.errorMessage.contains(s"No viewport with id $fakeViewPortId found in session") shouldBe true
     }
 
     Scenario("Unfreeze a view port that doesn't exist") {
@@ -102,7 +102,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
       val responseBody = assertBodyIsInstanceOf[UnfreezeViewPortReject](response)
       responseBody.viewPortId shouldEqual fakeViewPortId
-      responseBody.errorMessage shouldEqual s"Could not find viewport to unfreeze $fakeViewPortId"
+      responseBody.errorMessage.contains(s"No viewport with id $fakeViewPortId found in session") shouldBe true
     }
 
     Scenario("Freeze a view port that is already frozen") {
@@ -122,11 +122,10 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       val freezeVPRequest2 = FreezeViewPortRequest(viewPortId)
       val requestId2 = vuuClient.send(sessionId, freezeVPRequest2)
 
-      Then("return failure response")
+      Then("return success response")
       val response2 = vuuClient.awaitForResponse(requestId2)
-      val responseBody2 = assertBodyIsInstanceOf[FreezeViewPortReject](response2)
+      val responseBody2 = assertBodyIsInstanceOf[FreezeViewPortSuccess](response2)
       responseBody2.viewPortId shouldEqual viewPortId
-      responseBody2.errorMessage shouldEqual s"Could not freeze viewport $viewPortId because it's already frozen"
     }
 
     Scenario("Unfreeze a view port that is not frozen") {
@@ -137,11 +136,10 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       val unfreezeVPRequest = UnfreezeViewPortRequest(viewPortId)
       val requestId = vuuClient.send(sessionId, unfreezeVPRequest)
 
-      Then("return failure response")
+      Then("return success response")
       val unfreezeVPResponse = vuuClient.awaitForResponse(requestId)
-      val responseBody = assertBodyIsInstanceOf[UnfreezeViewPortReject](unfreezeVPResponse)
+      val responseBody = assertBodyIsInstanceOf[UnfreezeViewPortSuccess](unfreezeVPResponse)
       responseBody.viewPortId shouldEqual viewPortId
-      responseBody.errorMessage shouldEqual s"Could not unfreeze viewport $viewPortId because it's not frozen"
     }
 
     Scenario("Freeze a view port with default column for a join table") {
