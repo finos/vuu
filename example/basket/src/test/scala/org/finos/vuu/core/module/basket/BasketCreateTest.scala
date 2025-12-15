@@ -6,7 +6,6 @@ import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames as B, BasketConstituentColumnNames as BC}
-import org.finos.vuu.core.module.basket.service.BasketTradingServiceIF
 import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.net.rpc.{RpcFunctionSuccess, RpcNames, RpcParams}
 import org.finos.vuu.order.oms.OmsApi
@@ -77,8 +76,6 @@ class BasketCreateTest extends VuuServerTestCase {
 
           val viewportBasketTrading = vuuServer.createViewPort(BasketModule.NAME, BasketTradingTable)
           val viewportBasketTradingCons = vuuServer.createViewPort(BasketModule.NAME, BasketTradingConstituentTable)
-
-          val basketTradingService = vuuServer.getViewPortRpcServiceProxy[BasketTradingServiceIF](viewportBasketTrading)
 
           //CJS: I don't like this forced cast, need to look at that a bit
           val editCellResult = viewportBasketTrading.getStructure.viewPortDef.service.processRpcRequest(RpcNames.EditCellRpc, new RpcParams(Map("key" -> basketTradeInstanceId, "column" -> BT.Units, "data" -> 100), viewportBasketTrading, vuuServer.requestContext))

@@ -6,7 +6,6 @@ import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.basket.BasketModule.{BasketColumnNames as B, BasketConstituentColumnNames as BC}
-import org.finos.vuu.core.module.basket.service.BasketTradingServiceIF
 import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.net.rpc.{RpcFunctionSuccess, RpcNames, RpcParams}
 import org.finos.vuu.order.oms.OmsApi
@@ -99,8 +98,6 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
             )
           }
 
-          val basketTradingService = vuuServer.getViewPortRpcServiceProxy[BasketTradingServiceIF](vpBasketTrading)
-
           When("we edit the side of the parent basket")
           val editCellResult = vpBasketTrading.getStructure.viewPortDef.service.processRpcRequest(RpcNames.EditCellRpc, new RpcParams(Map("key" -> basketTradeInstanceId, "column" -> "side", "data" -> "SELL"), vpBasketTrading, vuuServer.requestContext))
           editCellResult.isInstanceOf[RpcFunctionSuccess] shouldBe true
@@ -160,7 +157,6 @@ class BasketMutateOffMarketTest extends VuuServerTestCase {
 
           val vpBasketTrading = vuuServer.createViewPort(BasketModule.NAME, BasketTradingTable)
           val vpBasketTradingCons = vuuServer.createViewPort(BasketModule.NAME, BasketTradingConstituentTable)
-          val basketTradingService = vuuServer.getViewPortRpcServiceProxy[BasketTradingServiceIF](vpBasketTrading)
 
           When("we edit the side of the parent basket to same side as current value")
           val editCellResult3 = vpBasketTrading.getStructure.viewPortDef.service.processRpcRequest(RpcNames.EditCellRpc, new RpcParams(Map("key" -> basketTradeInstanceId, "column" -> "side", "data" -> "BUY"), vpBasketTrading, vuuServer.requestContext))

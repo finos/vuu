@@ -30,8 +30,6 @@ trait TestVuuServer extends AbstractVuuServer {
 
   def overrideViewPortDef(table: String, vpDefFunc: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef): Unit
 
-  def getViewPortRpcServiceProxy[TYPE: _root_.scala.reflect.ClassTag](viewport: ViewPort): TYPE
-
   def requestContext: RequestContext
 
   def tableContainer: TableContainer
