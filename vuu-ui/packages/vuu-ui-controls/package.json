@@ -32,8 +32,8 @@
     "@internationalized/date": "^3.0.0",
     "@floating-ui/react": "^0.26.28",
     "clsx": "^2.0.0",
-    "react": "^19.2.1",
-    "react-dom": "^19.2.1"
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
   },
   "sideEffects": false,
   "type": "module"
