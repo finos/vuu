@@ -20,7 +20,7 @@ class VsJsonTypeResolver extends TypeIdResolver with StrictLogging {
   }
 
   def typeFromId(id: String): JavaType = {
-    logger.debug(s"typeFromId ${id}")
+    logger.trace(s"typeFromId ${id}")
 
     val clazz = JsonSubTypeRegistry.getClassForType(mBaseType.getRawClass, id)
 
@@ -28,7 +28,7 @@ class VsJsonTypeResolver extends TypeIdResolver with StrictLogging {
   }
 
   override def typeFromId(context: DatabindContext, id: String): JavaType = {
-    logger.debug(s"typeFromId ${context} ${id}")
+    logger.trace(s"typeFromId ${context} ${id}")
     typeFromId(id)
   }
 
@@ -37,14 +37,14 @@ class VsJsonTypeResolver extends TypeIdResolver with StrictLogging {
   }
 
   override def idFromValue(value: scala.Any): String = {
-    logger.debug(s"idFromValue $value")
+    logger.trace(s"idFromValue $value")
     idFromValueAndType(value, value.getClass)
   }
 
   override def getMechanism: Id = Id.NAME
 
   override def idFromBaseType(): String = {
-    logger.debug("idFromBaseType")
+    logger.trace("idFromBaseType")
     idFromValueAndType(null, mBaseType.getRawClass())
   }
 
