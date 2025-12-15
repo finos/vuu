@@ -21,8 +21,6 @@ case class ViewPortCreateSuccess(key:String) extends ViewPortAction
   new Type(value = classOf[OpenDialogViewPortAction], name = "OPEN_DIALOG_ACTION"),
   new Type(value = classOf[CloseDialogViewPortAction], name = "CLOSE_DIALOG_ACTION"),
   new Type(value = classOf[NoAction], name = "NO_ACTION"),
-  new Type(value = classOf[ViewPortEditSuccess], name = "VP_EDIT_SUCCESS"),
-  new Type(value = classOf[ViewPortEditFailure], name = "VP_EDIT_FAILURE"),
   new Type(value = classOf[ViewPortRpcSuccess], name = "VP_RPC_SUCCESS"),
   new Type(value = classOf[ViewPortRpcFailure], name = "VP_RPC_FAILURE"),
   new Type(value = classOf[ViewPortCreateSuccess], name = "VP_CREATE_SUCCESS"),

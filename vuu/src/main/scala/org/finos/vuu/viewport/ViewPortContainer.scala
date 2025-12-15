@@ -18,7 +18,7 @@ import org.finos.vuu.core.table.{DataTable, SessionTable, TableContainer}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.feature.EmptyViewPortKeys
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
-import org.finos.vuu.net.rpc.{EditRpcHandler, RpcFunctionResult, RpcParams}
+import org.finos.vuu.net.rpc.{RpcFunctionResult, RpcParams}
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, RequestContext, SortSpec}
 import org.finos.vuu.plugin.PluginRegistry
 import org.finos.vuu.provider.{Provider, ProviderContainer}
@@ -85,7 +85,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       throw new RuntimeException(s"No viewport with id ${sessionViewPortId.viewPortId} found in session ${sessionViewPortId.clientSessionId.sessionId}")
     }
   }
-  
+
   def getTreeNodeStateByVp(vpId: String): TreeNodeStateStore = {
     treeNodeStatesByVp.get(vpId)
   }
@@ -115,110 +115,6 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         }
       case None =>
         throw new RuntimeException(s"No RPC $rpcName found in viewport $vpId in session ${session.sessionId}")
-    }
-  }
-
-  @deprecated("#1790")
-  def callRpcEditFormClose(vpId: String, rpcName: String, session: ClientSessionId): ViewPortAction = {
-    val viewPort = getViewportInSession(vpId, session)
-    val viewPortDef = viewPort.getStructure.viewPortDef
-    val service = viewPortDef.service
-
-    service match {
-      case serv: EditRpcHandler => serv.onFormClose().func(viewPort, session)
-      case _ =>
-        throw new Exception(s"Service is not editable rpc")
-    }
-  }
-
-  @deprecated("#1790")
-  def callRpcEditDeleteCell(vpId: String, key: String, column: String, session: ClientSessionId): ViewPortAction = {
-    val viewPort = getViewportInSession(vpId, session)
-    val viewPortDef = viewPort.getStructure.viewPortDef
-    val service = viewPortDef.service
-
-    service match {
-      case serv: EditRpcHandler => serv.deleteCellAction().func(key, column, viewPort, session)
-      case _ =>
-        throw new Exception(s"Service is not editable rpc")
-    }
-  }
-
-  @deprecated("#1790")
-  def callRpcEditDeleteRow(vpId: String, key: String, session: ClientSessionId): ViewPortAction = {
-    val viewPort = getViewportInSession(vpId, session)
-    val viewPortDef = viewPort.getStructure.viewPortDef
-    val service = viewPortDef.service
-
-    service match {
-      case serv: EditRpcHandler => serv.deleteRowAction().func(key, viewPort, session)
-      case _ =>
-        throw new Exception(s"Service is not editable rpc")
-    }
-  }
-
-  @deprecated("#1790")
-  def callRpcAddRow(vpId: String, key: String,  data: Map[String, Any], session: ClientSessionId): ViewPortAction = {
-    val viewPort = getViewportInSession(vpId, session)
-    val viewPortDef = viewPort.getStructure.viewPortDef
-    val service = viewPortDef.service
-
-    service match {
-      case serv: EditRpcHandler => serv.addRowAction().func(key, data, viewPort, session)
-      case _ =>
-        throw new Exception(s"Service is not editable rpc")
-    }
-  }
-
-  @deprecated("#1790")
-  def callRpcEditFormSubmit(vpId: String, session: ClientSessionId): ViewPortAction = {
-    val viewPort = getViewportInSession(vpId, session)
-    val viewPortDef = viewPort.getStructure.viewPortDef
-    val service = viewPortDef.service
-
-    service match {
-      case serv: EditRpcHandler => serv.onFormSubmit().func(viewPort, session)
-      case _ =>
-        throw new Exception(s"Service is not editable rpc")
-    }
-  }
-
-  @deprecated("#1790")
-  def callRpcEditRow(vpId: String, key: String, data: Map[String, Any], session: ClientSessionId): ViewPortEditAction = {
-    val viewPort = getViewportInSession(vpId, session)
-    val viewPortDef = viewPort.getStructure.viewPortDef
-    val service = viewPortDef.service
-
-    service match {
-      case serv: EditRpcHandler => serv.editRowAction().func(key, data, viewPort, session)
-      case _ =>
-        throw new Exception(s"Service is not editable rpc")
-    }
-  }
-
-  @deprecated("#1790")
-  def callRpcEditCell(vpId: String, key: String, column: String, data: AnyRef, session: ClientSessionId): ViewPortEditAction = {
-    val viewPort = getViewportInSession(vpId, session)
-    val viewPortDef = viewPort.getStructure.viewPortDef
-    val service = viewPortDef.service
-
-    service match {
-      case serv: EditRpcHandler => serv.editCellAction().func(key, column, data, viewPort, session)
-      case _ =>
-        throw new Exception(s"Service is not editable rpc")
-    }
-  }
-
-  @deprecated("#1790")
-  def callRpcFormSubmit(vpId: String, session: ClientSessionId): ViewPortAction = {
-    val viewPort = getViewportInSession(vpId, session)
-    val viewPortDef = viewPort.getStructure.viewPortDef
-    val service = viewPortDef.service
-
-    service match {
-      case serv: EditRpcHandler => serv.onFormSubmit().func(viewPort, session)
-      case _ =>
-        throw new Exception(s"Service is not editable rpc")
     }
   }
 
@@ -371,7 +267,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
-  override def openGroupByKey(clientSession: ClientSessionId, vpId: String, treeKey: String): String = {    
+  override def openGroupByKey(clientSession: ClientSessionId, vpId: String, treeKey: String): String = {
     Try(this.openNode(clientSession, vpId, treeKey)) match {
       case Success(_) => "Done"
       case Failure(e) =>
@@ -409,14 +305,14 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     logger.debug(s"[VP] Closed node with key $treeKey in $viewPortId in session ${clientSession.sessionId}")
   }
 
-  override def setRange(clientSession: ClientSessionId, vpId: String, start: Int, end: Int): String = {    
+  override def setRange(clientSession: ClientSessionId, vpId: String, start: Int, end: Int): String = {
     Try(this.changeRange(clientSession, vpId, ViewPortRange(start, end))) match {
       case Success(_) => "Done"
       case Failure(e) =>
         val message = s"Failed to set range in viewport $vpId in session ${clientSession.sessionId} to start $start and end $end"
         logger.error(s"[VP] $message", e)
         message
-    } 
+    }
   }
 
   def changeRange(clientSession: ClientSessionId, vpId: String, range: ViewPortRange): ViewPort = {
@@ -428,7 +324,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     logger.debug(s"[VP] Changed range in viewport $vpId to ${range.to} -> ${range.from} in ${millis}ms")
     viewPort
   }
-  
+
   override def subscribedKeys(clientSession: ClientSessionId, vpId: String): String = {
     "" //TODO What is this for?
   }
@@ -984,7 +880,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     val viewports = SetHasAsScala(viewPorts.entrySet())
       .asScala
       .filter(entry => entry.getValue.session == clientSession).toArray
-    
+
     viewports.foreach(entry => {
       this.removeViewPort(entry.getKey)
     })
