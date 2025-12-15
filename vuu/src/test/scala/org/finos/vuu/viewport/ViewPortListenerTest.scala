@@ -49,7 +49,7 @@ class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with G
         )
       }
 
-      val viewPortv2 = viewPortContainer.changeRange(session, outQueue, viewPort.id, ViewPortRange(15, 25))
+      val viewPortv2 = viewPortContainer.changeRange(session, viewPort.id, ViewPortRange(15, 25))
 
       viewPortContainer.runOnce()
 
@@ -71,7 +71,7 @@ class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with G
         )
       }
 
-      val viewPortv3 = viewPortContainer.changeRange(session, outQueue, viewPort.id, ViewPortRange(5, 15))
+      val viewPortv3 = viewPortContainer.changeRange(session, viewPort.id, ViewPortRange(5, 15))
 
       viewPortContainer.runOnce()
 

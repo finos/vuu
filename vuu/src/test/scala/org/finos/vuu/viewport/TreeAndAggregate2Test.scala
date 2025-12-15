@@ -41,9 +41,11 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
 
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.getColumns.map(_.name).toList)
 
+      val session = ClientSessionId("A", "C")
+
       val viewport = viewPortContainer.create(RequestId.oneNew(),
         VuuUser("B"),
-        ClientSessionId("A", "C"),
+        session,
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
         FilterSpec(""),
@@ -64,10 +66,10 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
         )
       }
 
-      viewPortContainer.openNode(viewport.id, "$root|chris")
-      viewPortContainer.openNode(viewport.id, "$root|chris|VOD.L")
-      viewPortContainer.openNode(viewport.id, "$root|steve")
-      viewPortContainer.closeNode(viewport.id, "$root|steve|BT.L")
+      viewPortContainer.openNode(session, viewport.id, "$root|chris")
+      viewPortContainer.openNode(session, viewport.id, "$root|chris|VOD.L")
+      viewPortContainer.openNode(session, viewport.id, "$root|steve")
+      viewPortContainer.closeNode(session, viewport.id, "$root|steve|BT.L")
 
       /*
       val currentStructureHash = viewPort.getStructuralHashCode()
@@ -131,7 +133,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
       ordersProvider.tick("NYC-0003", Map("orderId" -> "NYC-0003", "trader" -> "steve"))
       ordersProvider.tick("NYC-0004", Map("orderId" -> "NYC-0004", "trader" -> "steve"))
 
-      viewPortContainer.openNode(viewport.id, "$root|steve|VOD.L")
+      viewPortContainer.openNode(session, viewport.id, "$root|steve|VOD.L")
 
       emptyQueues(viewport)
 
@@ -179,9 +181,11 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
 
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.getColumns.map(_.name).toList)
 
+      val session = ClientSessionId("A", "C")
+
       val viewport = viewPortContainer.create(RequestId.oneNew(),
         VuuUser("B"),
-        ClientSessionId("A", "C"),
+        session,
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
         FilterSpec(""),
@@ -195,8 +199,8 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
 
       viewport.combinedQueueLength should be(3)
 
-      viewPortContainer.openNode(viewport.id, "$root|chris")
-      viewPortContainer.openNode(viewport.id, "$root|chris|VOD.L")
+      viewPortContainer.openNode(session, viewport.id, "$root|chris")
+      viewPortContainer.openNode(session, viewport.id, "$root|chris|VOD.L")
 
       runContainersOnce(viewPortContainer, joinProvider)
 
@@ -246,9 +250,11 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
 
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.getColumns.map(_.name).toList ++ List("traderRic:String:=concatenate(trader, ric)"))
 
+      val session = ClientSessionId("A", "C")
+
       val viewport = viewPortContainer.create(RequestId.oneNew(),
         VuuUser("B"),
-        ClientSessionId("A", "C"),
+        session,
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
         FilterSpec(""),
@@ -262,9 +268,9 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
 
       viewport.combinedQueueLength should be(3)
 
-      viewPortContainer.openNode(viewport.id, "$root|chris")
-      viewPortContainer.openNode(viewport.id, "$root|chris|VOD.L")
-      viewPortContainer.openNode(viewport.id, "$root|chris|BT.L")
+      viewPortContainer.openNode(session, viewport.id, "$root|chris")
+      viewPortContainer.openNode(session, viewport.id, "$root|chris|VOD.L")
+      viewPortContainer.openNode(session, viewport.id, "$root|chris|BT.L")
 
       runContainersOnce(viewPortContainer, joinProvider)
 
@@ -309,9 +315,11 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
 
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.getColumns.map(_.name).toList ++ List("traderRic:String:=concatenate(trader, ric)"))
 
+      val session = ClientSessionId("A", "C")
+
       val viewport = viewPortContainer.create(RequestId.oneNew(),
         VuuUser("B"),
-        ClientSessionId("A", "C"),
+        session,
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
         FilterSpec(""),
@@ -323,8 +331,8 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
 
       runContainersOnce(viewPortContainer, joinProvider)
 
-      viewPortContainer.openNode(viewport.id, "$root|chrisVOD.L")
-      viewPortContainer.openNode(viewport.id, "$root|steveBT.L")
+      viewPortContainer.openNode(session, viewport.id, "$root|chrisVOD.L")
+      viewPortContainer.openNode(session, viewport.id, "$root|steveBT.L")
 
       runContainersOnce(viewPortContainer, joinProvider)
 
@@ -369,9 +377,11 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
 
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.getColumns.map(_.name).toList ++ List("traderRic:String:=concatenate(trader, ric)"))
 
+      val session = ClientSessionId("A", "C")
+
       val viewport = viewPortContainer.create(RequestId.oneNew(),
         VuuUser("B"),
-        ClientSessionId("A", "C"),
+        session,
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
         FilterSpec(""),
@@ -382,8 +392,8 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
 
       runContainersOnce(viewPortContainer, joinProvider)
 
-      viewPortContainer.openNode(viewport.id, "$root|chrisVOD.L")
-      viewPortContainer.openNode(viewport.id, "$root|steveBT.L")
+      viewPortContainer.openNode(session, viewport.id, "$root|chrisVOD.L")
+      viewPortContainer.openNode(session, viewport.id, "$root|steveBT.L")
 
       runContainersOnce(viewPortContainer, joinProvider)
 
@@ -428,9 +438,11 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
 
       val columns = ViewPortColumnCreator.create(orderPrices, orderPrices.getTableDef.getColumns.map(_.name).toList ++ List("traderRic:String:=concatenate(trader, ric)"))
 
+      val session = ClientSessionId("A", "C")
+
       val viewport = viewPortContainer.create(RequestId.oneNew(),
         VuuUser("B"),
-        ClientSessionId("A", "C"),
+        session,
         queue, orderPrices, ViewPortRange(0, 20), columns,
         SortSpec(List()),
         FilterSpec(""),
@@ -441,8 +453,8 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
 
       runContainersOnce(viewPortContainer, joinProvider)
 
-      viewPortContainer.openNode(viewport.id, "$root|chrisVOD.L")
-      viewPortContainer.openNode(viewport.id, "$root|steveBT.L")
+      viewPortContainer.openNode(session, viewport.id, "$root|chrisVOD.L")
+      viewPortContainer.openNode(session, viewport.id, "$root|steveBT.L")
 
       runContainersOnce(viewPortContainer, joinProvider)
 

@@ -73,9 +73,9 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       results.size shouldEqual 1
       results.head._2.table.linkableName shouldEqual "prices"
 
-      viewPortContainer.openNode(viewPortPricesGroupBy.id, "$root|XLON")
-      viewPortContainer.openNode(viewPortPricesGroupBy.id, "$root|NYSE")
-      viewPortContainer.openNode(viewPortPricesGroupBy.id, "$root|XAMS")
+      viewPortContainer.openNode(session, viewPortPricesGroupBy.id, "$root|XLON")
+      viewPortContainer.openNode(session, viewPortPricesGroupBy.id, "$root|NYSE")
+      viewPortContainer.openNode(session, viewPortPricesGroupBy.id, "$root|XAMS")
 
       Then("we link the viewports, with nothing selected in the parent grid yet")
       viewPortContainer.linkViewPorts(session, outQueue, childVpId = viewPortOrders.id, parentVpId = viewPortPricesGroupBy.id, "ric", "ric")
@@ -87,7 +87,7 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       viewPortOrders.getKeys.length shouldEqual 12
 
       When("we select some rows in the grid")
-      viewPortContainer.selectRow(viewPortPricesGroupBy.id, "$root|XLON", preserveExistingSelection = false)
+      viewPortContainer.selectRow(session, viewPortPricesGroupBy.id, "$root|XLON", preserveExistingSelection = false)
       viewPortContainer.runGroupByOnce()
       viewPortContainer.runOnce()
 
@@ -107,7 +107,7 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       }
 
       And("if we expend the selection to include BP.L in the prices table")
-      viewPortContainer.selectRowRange(viewPortPricesGroupBy.id, "$root|NYSE|BT.L", "$root|XAMS|BP.L", preserveExistingSelection = false)
+      viewPortContainer.selectRowRange(session, viewPortPricesGroupBy.id, "$root|NYSE|BT.L", "$root|XAMS|BP.L", preserveExistingSelection = false)
 
       viewPortContainer.runOnce()
       viewPortContainer.runGroupByOnce()
@@ -147,7 +147,7 @@ class VisualLinkedTreeViewPortTest extends AbstractViewPortTestCase with Matcher
       viewPortOrders.getKeys.length shouldEqual 9
 
       And("if we set selection to none")
-      viewPortContainer.deselectAll(viewPortPricesGroupBy.id)
+      viewPortContainer.deselectAll(session, viewPortPricesGroupBy.id)
       viewPortContainer.runOnce()
 
       Then("we should show all by default in the viewport")

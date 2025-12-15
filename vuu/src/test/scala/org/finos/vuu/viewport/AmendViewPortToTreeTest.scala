@@ -267,11 +267,11 @@ class AmendViewPortToTreeTest extends AnyFeatureSpec with ViewPortSetup {
       )
     }
 
-    viewPortContainer.openNode(viewPort3.id, "$root|BT.L")
+    viewPortContainer.openNode(session, viewPort3.id, "$root|BT.L")
     viewPortContainer.runGroupByOnce()
     viewPortContainer.runOnce()
 
-    viewPortContainer.openNode(viewPort3.id, "$root|BT.L|chris")
+    viewPortContainer.openNode(session, viewPort3.id, "$root|BT.L|chris")
     viewPortContainer.runGroupByOnce()
     viewPortContainer.runOnce()
 

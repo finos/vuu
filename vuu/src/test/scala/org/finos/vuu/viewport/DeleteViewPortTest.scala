@@ -43,7 +43,7 @@ class DeleteViewPortTest extends AbstractViewPortTestCase with Matchers with Giv
         )
       }
 
-      viewPortContainer.removeViewPort(viewPort.id)
+      viewPortContainer.removeViewPort(viewPort.id, session)
 
       (0 to 3).foreach( i => {
         val orderId = "NYC-000" + i
