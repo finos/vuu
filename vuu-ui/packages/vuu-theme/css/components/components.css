@@ -11,7 +11,6 @@
 @import url(input.css);
 @import url(left-nav.css);
 @import url(menu.css);
-@import url(notification.css);
 @import url(options-list.css);
 @import url(palette.css);
 @import url(save-layout-panel.css);
@@ -23,5 +22,6 @@
 @import url(switch.css);
 @import url(table.css);
 @import url(tabstrip.css);
+@import url(toast.css);
 @import url(toggle-button.css);
 @import url(tooltip.css);

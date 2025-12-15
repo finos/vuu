@@ -5,7 +5,7 @@ import {
   DataSourceSubscribeCallback,
 } from "@vuu-ui/vuu-data-types";
 import { useViewContext } from "@vuu-ui/vuu-layout";
-import { useNotifications } from "@vuu-ui/vuu-popups";
+import { NotificationType, useNotifications } from "@vuu-ui/vuu-notifications";
 import { VuuDataRow } from "@vuu-ui/vuu-protocol-types";
 import { TableConfig, TableConfigChangeHandler } from "@vuu-ui/vuu-table-types";
 import { type ColumnMap, metadataKeys, Range } from "@vuu-ui/vuu-utils";
@@ -254,16 +254,16 @@ export const useBasketTrading = () => {
               showNotification?.({
                 content: `${ric} added to basket`,
                 header: "Add Constituent to Basket",
-                level: "success",
-                type: "toast",
+                status: "success",
+                type: NotificationType.Toast,
               });
             } else if (response?.type === "ERROR_RESULT") {
               showNotification?.({
                 content:
                   response?.errorMessage ?? `Failed to add ${ric} to basket`,
                 header: "Add Constituent to Basket",
-                level: "error",
-                type: "toast",
+                status: "error",
+                type: NotificationType.Toast,
               });
             }
           });

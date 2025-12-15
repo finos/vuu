@@ -8,6 +8,11 @@ import type {
 
 export interface IPersistenceManager {
   /**
+   *  Clear saved user settings/preferences. Right now, this clears ALL saved
+   * settimgs for user. We will introduce a more fine grained scheme here.
+   */
+  clearUserSettings: () => void;
+  /**
    * Saves a new layout and its corresponding metadata
    *
    * @param metadata - Metadata about the layout to be saved
