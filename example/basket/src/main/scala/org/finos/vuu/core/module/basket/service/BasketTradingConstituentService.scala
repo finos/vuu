@@ -42,11 +42,11 @@ class BasketTradingConstituentService(val table: DataTable)(using tableContainer
   }
 
   def setSell(selection: ViewPortSelection, session: ClientSessionId): ViewPortAction = {
-    ViewPortEditSuccess()
+    NoAction()
   }
 
   def setBuy(selection: ViewPortSelection, session: ClientSessionId): ViewPortAction = {
-    ViewPortEditSuccess()
+    NoAction()
   }
 
   override def menuItems(): ViewPortMenu = ViewPortMenu("Direction",
