@@ -45,7 +45,7 @@ class HashMapIndexedStringField(val column: Column) extends StringIndexedField w
   private final val indexMap = new ConcurrentHashMap[String, ImmutableArray[String]]()
 
   override def remove(indexKey: String, rowKey: String): Unit = {
-    logger.debug("Remove Index: " + this.column.name)
+    logger.trace(s"Remove Index: ${column.name}")
     indexMap.computeIfPresent(indexKey, (_, value) => {
       if (value.length > 1) {
         value.-(rowKey)
@@ -56,7 +56,7 @@ class HashMapIndexedStringField(val column: Column) extends StringIndexedField w
   }
 
   override def insert(indexKey: String, rowKey: String): Unit = {
-    logger.debug("Update Index: " + this.column.name)
+    logger.trace(s"Update Index: ${column.name}")
     indexMap.compute(indexKey, (_, value) =>  {
       value match {
         case null => ImmutableUniqueArraySet.from(Array(rowKey))
@@ -66,7 +66,7 @@ class HashMapIndexedStringField(val column: Column) extends StringIndexedField w
   }
 
   override def find(indexKey: String): ImmutableArray[String] = {
-    logger.debug("Hit Index: " + this.column.name)
+    logger.debug(s"Hit Index : ${column.name}")
     indexMap.getOrDefault(indexKey, ImmutableUniqueArraySet.empty())
   }
 
@@ -88,7 +88,7 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
   private final val skipList = new ConcurrentSkipListMap[TYPE, ImmutableArray[String]]()
 
   override def remove(indexKey: TYPE, rowKey: String): Unit = {
-    logger.debug("Remove Index: " + this.column.name)
+    logger.trace(s"Remove Index: ${column.name}")
     skipList.computeIfPresent(indexKey, (_, value) => {
       if (value.length > 1) {
         value.-(rowKey)
@@ -99,7 +99,7 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
   }
 
   override def insert(indexKey: TYPE, rowKey: String): Unit = {
-    logger.debug("Update Index: " + this.column.name)
+    logger.trace(s"Update Index: ${column.name}")
     skipList.compute(indexKey, (_, value) =>  {
       value match {
         case null => ImmutableUniqueArraySet.from(Array(rowKey))
@@ -109,30 +109,30 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
   }
 
   override def find(indexKey: TYPE): ImmutableArray[String] = {
-    logger.debug("Hit Index: " + this.column.name)
+    logger.debug(s"Hit Index : ${column.name}")
     skipList.getOrDefault(indexKey, ImmutableUniqueArraySet.empty())
   }
 
   def lessThan(bound: TYPE): ImmutableArray[String] = {
-    logger.debug("Hit Index (LT): " + this.column.name)
+    logger.debug(s"Hit Index (LT): ${column.name}")
     val result = (skipList.headMap(bound, false))
     IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableUniqueArraySet.empty[String](chunkSize = 5000))((arr, prev) => prev.addAll(arr)).distinct
   }
 
   def lessThanOrEqual(bound: TYPE): ImmutableArray[String] = {
-    logger.debug("Hit Index (LTE): " + this.column.name)
+    logger.debug(s"Hit Index (LTE): ${column.name}")
     val result = (skipList.headMap(bound, true))
     IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableUniqueArraySet.empty[String](chunkSize = 5000))((arr, prev) => prev.++(arr)).distinct
   }
 
   def greaterThan(bound: TYPE): ImmutableArray[String] = {
-    logger.debug("Hit Index (GT): " + this.column.name)
+    logger.debug(s"Hit Index (GT): ${column.name}")
     val result = (skipList.tailMap(bound, false))
     IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableUniqueArraySet.empty[String](chunkSize = 5000))((arr, prev) => prev.++(arr)).distinct
   }
 
   def greaterThanOrEqual(bound: TYPE): ImmutableArray[String] = {
-    logger.debug("Hit Index (GTE): " + this.column.name)
+    logger.debug(s"Hit Index (GTE): ${column.name}")
     val result = (skipList.tailMap(bound, true))
     IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableUniqueArraySet.empty[String](chunkSize = 5000))((arr, prev) => prev.++(arr)).distinct
   }

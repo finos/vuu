@@ -13,6 +13,8 @@ import org.finos.vuu.net.json.JsonVsSerializer
 import org.finos.vuu.util.{OutboundRowPublishQueue, PublishQueue}
 import org.finos.vuu.viewport.ViewPortUpdate
 
+import scala.util.{Failure, Success, Try}
+
 case class RequestContext(requestId: String,
                           user: VuuUser,
                           session: ClientSessionId,
@@ -34,10 +36,15 @@ class RequestProcessor(loginTokenService: LoginTokenService,
           case Right(vuuUser) =>
             createSession(msg.requestId, vuuUser, clientSessionContainer, channel, vuuServerId)
           case Left(errorMessage) =>
-            handleMessageWithNoSession(errorMessage, channel)
+            sendMessageAndCloseChannel(errorMessage, channel)
             None
         }
-      case body => handleViewServerMessage(msg, channel)
+      case body => Try(handleViewServerMessage(msg, channel)) match {
+        case Success(viewServerMessage) => viewServerMessage
+        case Failure(exception) =>
+          closeChannel(exception, channel)
+          None
+      }
     }
   }
 
@@ -72,7 +79,7 @@ class RequestProcessor(loginTokenService: LoginTokenService,
       case Some(handler) =>
         handler.handle(msg)
       case None =>
-        handleMessageWithNoSession(msg, channel)
+        handleMessageWithNoSession(channel)
         None
     }
   }
@@ -81,11 +88,17 @@ class RequestProcessor(loginTokenService: LoginTokenService,
     ClientSessionId(msg.sessionId, channel.id.asLongText())
   }
 
-  private def handleMessageWithNoSession(msg: ViewServerMessage, channel: Channel): Unit = {
-    handleMessageWithNoSession("Invalid session", channel)
+  private def handleMessageWithNoSession(channel: Channel): Unit = {
+    logger.error(s"Received message outside of a valid session. Closing channel $channel.")
+    sendMessageAndCloseChannel("Invalid session", channel)
   }
 
-  private def handleMessageWithNoSession(msg: String, channel: Channel): Unit = {
+  private def closeChannel(e: Throwable, channel: Channel): Unit = {
+    logger.error(s"Exception. Closing channel $channel.", e)
+    sendMessageAndCloseChannel("Internal server error", channel)
+  }
+
+  private def sendMessageAndCloseChannel(msg: String, channel: Channel): Unit = {
     channel.writeAndFlush(new TextWebSocketFrame(msg))
     channel.close()
   }

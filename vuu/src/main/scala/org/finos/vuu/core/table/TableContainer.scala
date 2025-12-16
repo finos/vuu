@@ -1,17 +1,18 @@
 package org.finos.vuu.core.table
 
 import com.typesafe.scalalogging.StrictLogging
+import org.finos.toolbox.jmx.{JmxAble, MetricsProvider}
+import org.finos.toolbox.time.Clock
+import org.finos.vuu.api.TableVisibility.Private
 import org.finos.vuu.api.{JoinSessionTableDef, JoinTableDef, SessionTableDef, TableDef}
+import org.finos.vuu.core.table.TableContainer.{isSessionTable, isSessionTableBlueprint, moduleName}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport.{RowSource, ViewPortTable}
-import org.finos.toolbox.jmx.{JmxAble, MetricsProvider}
-import org.finos.toolbox.time.Clock
-import org.finos.vuu.core.table.TableContainer.{isSessionTable, isSessionTableBlueprint, moduleName}
 
 import java.util.concurrent.ConcurrentHashMap
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 trait TableContainerMBean {
   def tableList: String
@@ -77,11 +78,11 @@ class TableContainer(val joinTableProvider: JoinTableProvider)(implicit val metr
   }
 
   /**
-   * Gets tables with unique definitions - excludes session tables but includes its blueprint.
+   * Gets tables with unique definitions - excludes private tables, session tables but includes session table blueprints.
    */
   def getDefinedTables: Array[ViewPortTable] = {
     tables.asScala.values
-      .filter(!isSessionTable(_))
+      .filter(f => !isSessionTable(f) && f.getTableDef.visibility != Private)
       .map(table => ViewPortTable(table.getTableDef.name, moduleName(table)))
       .toArray[ViewPortTable]
       .sortBy(_.table)

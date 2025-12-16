@@ -50,7 +50,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
       val response = vuuClient.awaitForResponse(requestId)
 
       val responseBody = assertBodyIsInstanceOf[ErrorResponse](response)
-      responseBody.msg shouldEqual "No such table found with name DoesNotExist in module " + moduleName
+      responseBody.msg shouldEqual s"Failed to process request $requestId"
     }
 
     Scenario("For null table name") {
@@ -61,7 +61,7 @@ class TableWSApiTest extends WebSocketApiTestBase {
       val response = vuuClient.awaitForResponse(requestId)
 
       val responseBody = assertBodyIsInstanceOf[ErrorResponse](response)
-      responseBody.msg shouldEqual "No such table found with name null in module " + moduleName + ". Table name and module should not be null"
+      responseBody.msg shouldEqual s"Failed to process request $requestId"
     }
   }
 

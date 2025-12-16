@@ -7,7 +7,6 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.{JoinTableDef, TableDef}
 import org.finos.vuu.core.index.IndexedField
 import org.finos.vuu.core.row.{NoRowBuilder, RowBuilder}
-import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
@@ -163,12 +162,12 @@ case class JoinDataTableData(
     keyToIndexMap.get(rowKey) match {
       case null =>
         //do nothing means key doesn't exist
-        logger.debug(s"got a process delete message for key $rowKey but doesn't exist")
+        logger.trace(s"got a process delete message for key $rowKey but doesn't exist")
         this
 
       case index: Integer =>
 
-        logger.debug(s"processing rowKey delete, key = $rowKey, index = $index")
+        logger.trace(s"processing rowKey delete, key = $rowKey, index = $index")
 
         var joinFieldIndex = 0
 
@@ -176,14 +175,14 @@ case class JoinDataTableData(
 
         while (joinFieldIndex < joinFields.length) {
 
-          logger.debug(s"Removing rowKey $rowKey from keys by row index, ix = $joinFieldIndex value = ${keysByJoinIndex(joinFieldIndex)}")
+          logger.trace(s"Removing rowKey $rowKey from keys by row index, ix = $joinFieldIndex value = ${keysByJoinIndex(joinFieldIndex)}")
 
           newKeysByJoinIndex(joinFieldIndex) = keysByJoinIndex(joinFieldIndex).remove(index)
 
           joinFieldIndex += 1
         }
 
-        logger.debug(s"Removing rowKey $rowKey from keyToIndexMap")
+        logger.trace(s"Removing rowKey $rowKey from keyToIndexMap")
 
         keyToIndexMap.remove(rowKey)
 
@@ -297,7 +296,7 @@ case class JoinDataTableData(
               //remove all the observers that were added as part of this table
               //and repoint them to the new key
               observers.foreach(ob => {
-                logger.debug(s"[join] changing observer $ob to point from $oldKey to $newKey based on join provider update")
+                logger.trace(s"[join] changing observer $ob to point from $oldKey to $newKey based on join provider update")
                 val wrapped = WrappedKeyObserver(ob)
                 if (oldKey != null) {
                   logger.trace(s"[join] removing observer $ob on $oldKey")
@@ -363,7 +362,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
     onUpdateMeter.mark()
 
-    logger.debug(s"$name processing row update:" + rowKey + " " + rowUpdate)
+    logger.trace(s"$name processing row update: $rowKey $rowUpdate")
 
     joinData = joinData.processUpdate(rowKey, rowUpdate, this, sourceTables)
 
@@ -449,7 +448,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
         val fk = keysByTable(sourceTableName)
 
         if (fk == null) {
-          logger.debug(s"No foreign key for table ${sourceTableName} found in join ${tableDef.name} for primary key $key")
+          logger.trace(s"No foreign key for table ${sourceTableName} found in join ${tableDef.name} for primary key $key")
           previous
         } else {
           val sourceColumns = viewPortColumns.getJoinViewPortColumns(sourceTableName)
@@ -540,7 +539,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
       val sourceColumns = ViewPortColumnCreator.create(table, columnList.map(jc => jc.sourceColumn).map(_.name))
 
       if (fk == null) {
-        logger.debug(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key $key")
+        logger.trace(s"No foreign key for table $tableName found in join ${tableDef.name} for primary key $key")
       }
       else {
         table.pullRow(fk, sourceColumns) match {
@@ -596,7 +595,7 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
     val keysByTable = getFKForPK(key)
 
     if (keysByTable == null) {
-      logger.debug(s"tried to remove key $key in join table ${getTableDef.name} but couldn't as not in keys")
+      logger.trace(s"tried to remove key $key in join table ${getTableDef.name} but couldn't as not in keys")
       true
     }
     else {

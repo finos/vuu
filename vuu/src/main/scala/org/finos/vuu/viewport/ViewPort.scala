@@ -490,7 +490,7 @@ class ViewPortImpl(val id: String,
 
     val index = rowKeyToIndex.get(update.key)
 
-    logger.debug(s"VP got update for ${update.key} update, index = $index isDeleted = ${update.isDelete}, $update, pushing to queue")
+    logger.trace(s"VP got update for ${update.key} update, index = $index isDeleted = ${update.isDelete}, $update, pushing to queue")
 
     if (isInRange(index) && this.enabled) {
       outboundQ.push(ViewPortUpdate(this.requestId, this, update.source, RowKeyUpdate(update.key, update.source, update.isDelete), index, RowUpdateType, this.keys.length, timeProvider.now()))
@@ -562,45 +562,9 @@ class ViewPortImpl(val id: String,
       }
     }
     })
-    //      val item = existingSubs.next()
-    //      val key = item.getKey
-
-    //}
-
-    //    while (index < newKeys.length) {
-    //
-    //
-    //      //with virtualized tables, we can have null keys as they are pending to be loaded.
-    //      //we should just ignore them until they are loaded.
-    //      if(key != null){
-    //
-    //        val oldIndex = rowKeyToIndex.put(key, index)
-    //
-    //        if (isInRange(index)) {
-    //
-    //          if (!isObservedAlready(key)) {
-    //
-    //            subscribeForKey(key, index)
-    //
-    //            newlyAddedObs += 1
-    //
-    //            publishHighPriorityUpdate(key, index)
-    //
-    //          } else if (hasChangedIndex(oldIndex, index)) {
-    //            publishHighPriorityUpdate(key, index)
-    //          }
-    //
-    //        } else {
-    //          unsubscribeForKey(key)
-    //          removedObs += 1
-    //        }
-    //      }
-    //
-    //      index += 1
-    //    }
 
     if (newlyAddedObs > 0)
-      logger.debug(s"[VP] ${this.id} Added $newlyAddedObs Removed $removedObs Obs ${this.table}, Range ${this.range}")
+      logger.trace(s"[VP] ${this.id} Added $newlyAddedObs Removed $removedObs Obs ${this.table}, Range ${this.range}")
   }
 
 
