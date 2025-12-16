@@ -159,9 +159,12 @@ export declare type DataValueTypeDescriptor = {
     | ValueListRenderer;
 };
 
+export type RoundingRule = "truncate" | "round";
+
 export declare type ColumnTypeFormatting = {
   alignOnDecimals?: boolean;
   decimals?: number;
+  roundingRule?: RoundingRule;
   pattern?: DateTimePattern;
   useLocaleString?: boolean;
   zeroPad?: boolean;

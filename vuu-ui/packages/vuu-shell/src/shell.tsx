@@ -1,9 +1,12 @@
-import type { LayoutChangeHandler } from "@vuu-ui/vuu-layout";
-import { LayoutProvider, StackLayout } from "@vuu-ui/vuu-layout";
-import { NotificationsProvider } from "@vuu-ui/vuu-popups";
-import { VuuUser, logger, registerComponent } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
+import { useRemoteConnection } from "@vuu-ui/vuu-data-react";
+import type { LayoutChangeHandler } from "@vuu-ui/vuu-layout";
+import { LayoutProvider, StackLayout } from "@vuu-ui/vuu-layout";
+import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
+import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
+import { VuuUser, logger, registerComponent } from "@vuu-ui/vuu-utils";
 import {
   type HTMLAttributes,
   type ReactNode,
@@ -26,12 +29,9 @@ import {
   useWorkspace,
   useWorkspaceContextMenuItems,
 } from "./workspace-management";
+import { loadingJSON } from "./workspace-management/defaultWorkspaceJSON";
 
 import shellCss from "./shell.css";
-import { loadingJSON } from "./workspace-management/defaultWorkspaceJSON";
-import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
-import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
-import { useRemoteConnection } from "@vuu-ui/vuu-data-react";
 
 registerComponent("ApplicationSettings", UserSettingsPanel, "view");
 

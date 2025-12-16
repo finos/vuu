@@ -3,6 +3,7 @@
 }
 .vuuColumnMenu {
   --menu-button-size: calc(var(--salt-size-base) - var(--salt-spacing-100));
+  --saltButton-borderRadius: 3px;
   --saltButton-padding: var(--salt-spacing-50);
   --saltButton-minWidth: var(--menu-button-size);
   --saltButton-height: var(--menu-button-size);
@@ -14,7 +15,6 @@
   --vuu-icon-width: var(--menu-button-size);
 
   border: none;
-  border-radius: 4px;
   flex: 0 0 var(--menu-button-size);
   margin: var(--vuuTable-columnMenu-margin, 0);
   padding: 0;

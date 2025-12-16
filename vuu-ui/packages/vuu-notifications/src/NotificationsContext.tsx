@@ -1,17 +1,9 @@
+import { type ValidationStatus } from "@salt-ds/core";
 import { ValueOf } from "@vuu-ui/vuu-utils";
 import { ReactNode } from "react";
 
 export type DispatchShowNotification = (notification: Notification) => void;
 export type DispatchHideNotification = () => void;
-
-export const NotificationLevel = {
-  Error: "error",
-  Info: "info",
-  Success: "success",
-  Warning: "warning",
-} as const;
-
-export type NotificationLevel = ValueOf<typeof NotificationLevel>;
 
 export const NotificationType = {
   Toast: "toast",
@@ -20,8 +12,15 @@ export const NotificationType = {
 
 export type NotificationType = ValueOf<typeof NotificationType>;
 
+export type NotificationAnimationType =
+  | "slide-in"
+  | "slide-out"
+  | "slide-in,slide-out";
+
 interface NotificationDescriptorBase<T extends NotificationType> {
-  level: NotificationLevel;
+  animationType?: NotificationAnimationType;
+  renderPostRefresh?: boolean;
+  status: ValidationStatus;
   type: T;
 }
 

@@ -121,30 +121,28 @@ const SampleApp = () => {
   );
 
   return (
-    <LocalDataSourceProvider>
-      <FeatureAndLayoutProvider
-        dynamicFeatures={dynamicFeatures}
-        systemLayouts={sysLayouts}
-      >
-        <DragDropProvider dragSources={dragSource}>
-          <Shell
-            shellLayoutProps={{
-              SidePanelProps,
-              layoutTemplateId: "full-height",
-            }}
-            loginUrl={window.location.toString()}
-            user={user}
-            style={
-              {
-                "--vuuShell-height": "100vh",
-                "--vuuShell-width": "100vw",
-              } as CSSProperties
-            }
-            userSettingsSchema={userSettingsSchema}
-          ></Shell>
-        </DragDropProvider>
-      </FeatureAndLayoutProvider>
-    </LocalDataSourceProvider>
+    <FeatureAndLayoutProvider
+      dynamicFeatures={dynamicFeatures}
+      systemLayouts={sysLayouts}
+    >
+      <DragDropProvider dragSources={dragSource}>
+        <Shell
+          shellLayoutProps={{
+            SidePanelProps,
+            layoutTemplateId: "full-height",
+          }}
+          loginUrl={window.location.toString()}
+          user={user}
+          style={
+            {
+              "--vuuShell-height": "100vh",
+              "--vuuShell-width": "100vw",
+            } as CSSProperties
+          }
+          userSettingsSchema={userSettingsSchema}
+        ></Shell>
+      </DragDropProvider>
+    </FeatureAndLayoutProvider>
   );
 };
 

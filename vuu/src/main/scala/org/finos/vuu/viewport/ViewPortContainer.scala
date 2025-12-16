@@ -85,7 +85,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
       throw new RuntimeException(s"No viewport with id ${sessionViewPortId.viewPortId} found in session ${sessionViewPortId.clientSessionId.sessionId}")
     }
   }
-  
+
   def getTreeNodeStateByVp(vpId: String): TreeNodeStateStore = {
     treeNodeStatesByVp.get(vpId)
   }
@@ -371,7 +371,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
-  override def openGroupByKey(clientSession: ClientSessionId, vpId: String, treeKey: String): String = {    
+  override def openGroupByKey(clientSession: ClientSessionId, vpId: String, treeKey: String): String = {
     Try(this.openNode(clientSession, vpId, treeKey)) match {
       case Success(_) => "Done"
       case Failure(e) =>
@@ -428,7 +428,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     logger.debug(s"[VP] Changed range in viewport $vpId in session ${clientSession.sessionId} to [${range.from} -> ${range.to}] in ${millis}ms")
     viewPort
   }
-  
+
   override def subscribedKeys(clientSession: ClientSessionId, vpId: String): String = {
     "" //TODO What is this for?
   }
@@ -693,6 +693,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
   def deselectRow(clientSession: ClientSessionId, vpId: String, rowKey: String, preserveExistingSelection: Boolean): ViewPort = {
     logger.trace(s"[VP] Deselecting row with key $rowKey in viewport $vpId in session ${clientSession.sessionId}. Preserve: $preserveExistingSelection")
+    logger.trace(s"[VP] Deselecting row with key $rowKey in viewport $vpId in session ${clientSession.sessionId}")
     val viewPort = getViewportInSession(vpId, clientSession)
     viewPort.deselectRow(rowKey, preserveExistingSelection)
     logger.debug(s"[VP] Deselected row with key $rowKey in viewport $vpId in session ${clientSession.sessionId}. Preserve: $preserveExistingSelection")
@@ -700,6 +701,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   }
 
   def selectRowRange(clientSession: ClientSessionId, vpId: String, fromRowKey: String, toRowKey: String, preserveExistingSelection: Boolean): ViewPort = {
+    logger.trace(s"[VP] Selecting row range from key $fromRowKey to key $toRowKey in viewport $vpId in session ${clientSession.sessionId}")
     logger.trace(s"[VP] Selecting row range from key $fromRowKey to key $toRowKey in viewport $vpId in session ${clientSession.sessionId}. Preserve: $preserveExistingSelection")
     val viewPort = getViewportInSession(vpId, clientSession)
     viewPort.selectRowRange(fromRowKey, toRowKey, preserveExistingSelection)
@@ -984,7 +986,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     val viewports = SetHasAsScala(viewPorts.entrySet())
       .asScala
       .filter(entry => entry.getValue.session == clientSession).toArray
-    
+
     viewports.foreach(entry => {
       this.removeViewPort(entry.getKey)
     })

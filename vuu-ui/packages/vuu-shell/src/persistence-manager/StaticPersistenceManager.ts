@@ -12,6 +12,9 @@ function unsupported<T = void>() {
   });
 }
 
+/**
+ * Use in Showcase examples only
+ */
 export class StaticPersistenceManager implements IPersistenceManager {
   #applicationLoadDelay: number;
   #applicationJSON?: ApplicationJSON;
@@ -31,6 +34,10 @@ export class StaticPersistenceManager implements IPersistenceManager {
   }
   createLayout() {
     return unsupported<LayoutMetadata>();
+  }
+
+  clearUserSettings() {
+    // TODO
   }
   updateLayout() {
     return unsupported();

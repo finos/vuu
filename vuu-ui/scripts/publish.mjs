@@ -18,6 +18,7 @@ const packages = [
   "vuu-layout",
   "vuu-popups",
   "vuu-protocol-types",
+  "vuu-notifications",
   "vuu-shell",
   "vuu-table",
   "vuu-table-extras",

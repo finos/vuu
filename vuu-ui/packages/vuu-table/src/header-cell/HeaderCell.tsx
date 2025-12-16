@@ -107,17 +107,9 @@ export const HeaderCell = ({
           <ColumnMenu column={column} menuPermissions={menuPermissions} />
         );
 
-        if (column.align === "right") {
-          return [sortIndicator, columnLabel, columnContent, columnMenu];
-        } else {
-          return [columnMenu, columnLabel, sortIndicator, columnContent];
-        }
+        return [columnLabel, columnContent, sortIndicator, columnMenu];
       } else {
-        if (column.align === "right") {
-          return [sortIndicator, columnLabel, columnContent];
-        } else {
-          return [columnLabel, sortIndicator, columnContent];
-        }
+        return [columnLabel, sortIndicator, columnContent];
       }
     }
   }, [

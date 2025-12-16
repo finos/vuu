@@ -1,7 +1,7 @@
 {
-  "name": "@vuu-ui/vuu-layout",
+  "name": "@vuu-ui/vuu-notifications",
   "version": "0.13.92",
-  "description": "VUU Layout Components",
+  "description": "VUU notifications - Toast, WorkspaceNotification etc",
   "main": "src/index.ts",
   "author": "heswell",
   "license": "Apache-2.0",
@@ -10,21 +10,10 @@
     "build": "node ../../scripts/run-build-rollup.mjs",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
-  "types": "src/index.ts",
-  "devDependencies": {
-    "@vuu-ui/vuu-data-types": "0.13.92",
-    "@vuu-ui/vuu-filter-types": "0.13.92"
-  },
   "dependencies": {
     "@salt-ds/core": "1.48.0",
     "@salt-ds/styles": "0.2.1",
     "@salt-ds/window": "0.1.1",
-    "@vuu-ui/vuu-data-react": "0.13.92",
-    "@vuu-ui/vuu-datatable": "0.13.92",
-    "@vuu-ui/vuu-filters": "0.13.92",
-    "@vuu-ui/vuu-popups": "0.13.92",
-    "@vuu-ui/vuu-table": "0.13.92",
-    "@vuu-ui/vuu-ui-controls": "0.13.92",
     "@vuu-ui/vuu-utils": "0.13.92"
   },
   "peerDependencies": {

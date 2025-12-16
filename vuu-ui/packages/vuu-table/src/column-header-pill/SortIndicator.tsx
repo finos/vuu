@@ -31,7 +31,7 @@ export const SortIndicator = ({ column }: SortIndicatorProps) => {
         : "arrow-down";
 
   return (
-    <ColumnHeaderPill column={column}>
+    <ColumnHeaderPill className="vuuSortIndicator" column={column}>
       <span data-icon={icon} />
       {typeof column.sorted === "number" ? (
         <span className={"vuuSortPosition"}>{Math.abs(column.sorted)}</span>

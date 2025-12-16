@@ -5,7 +5,7 @@ import {
 } from "@vuu-ui/vuu-data-remote";
 import type { VuuUser } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useRef } from "react";
-import { useNotifications } from "@vuu-ui/vuu-popups";
+import { NotificationType, useNotifications } from "@vuu-ui/vuu-notifications";
 import { LostConnectionIndicator } from "../lost-connection-indicator/LostConnectionIndicator";
 
 export interface RemoteConnectionHookProps {
@@ -28,8 +28,8 @@ export const useRemoteConnection = ({
       if (wasConnected && message.connectionStatus === "disconnected") {
         showNotification({
           content: <LostConnectionIndicator />,
-          level: "error",
-          type: "workspace",
+          status: "error",
+          type: NotificationType.Workspace,
         });
       } else if (!wasConnected && isConnectedRef.current) {
         hideNotification();
@@ -47,10 +47,10 @@ export const useRemoteConnection = ({
       });
       if (connectionResult === "rejected") {
         showNotification({
-          level: "error",
+          status: "error",
           content: "Unable to connect to VUU Server",
           header: "Error",
-          type: "toast",
+          type: NotificationType.Toast,
         });
       }
     }

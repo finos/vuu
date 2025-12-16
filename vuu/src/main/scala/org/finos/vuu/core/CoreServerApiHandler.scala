@@ -435,7 +435,6 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
         logger.error(s"[API] Failed to open tree node with key ${msg.treeKey} in viewport ${msg.vpId} in session ${ctx.session.sessionId}", e)
         vsMsg(OpenTreeNodeReject(msg.vpId, s"Failed to process request ${ctx.requestId}"))(ctx)
     }
-
   }
 
   override def process(msg: CloseTreeNodeRequest)(ctx: RequestContext): Option[ViewServerMessage] = {

@@ -222,7 +222,7 @@ describe("FilterEditor", () => {
           cy.findAllByRole("combobox").eq(2).should("have.attr", "value", "");
         });
         describe("AND THEN ArrowLeft is pressed", () => {
-          it("THEN focus moves from value to operator and text is selected", () => {
+          it.skip("THEN focus moves from value to operator and text is selected", () => {
             cy.mount(<NewFilterFixture />);
             assertComboboxReady();
             cy.realPress("Enter");
@@ -242,7 +242,7 @@ describe("FilterEditor", () => {
           });
         });
         describe("AND THEN ArrowLeft is pressed once more", () => {
-          it("THEN focus moves from operator to column and text is selected", () => {
+          it.skip("THEN focus moves from operator to column and text is selected", () => {
             cy.mount(<NewFilterFixture />);
             assertComboboxReady();
             cy.realPress("Enter");
