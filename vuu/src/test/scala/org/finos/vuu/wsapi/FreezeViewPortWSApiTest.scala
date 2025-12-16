@@ -89,7 +89,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
       val response = vuuClient.awaitForResponse(requestId)
       val responseBody = assertBodyIsInstanceOf[FreezeViewPortReject](response)
       responseBody.viewPortId shouldEqual fakeViewPortId
-      responseBody.errorMessage.contains(s"No viewport with id $fakeViewPortId found in session") shouldBe true
+      responseBody.errorMessage shouldEqual s"Failed to process request $requestId"
     }
 
     Scenario("Unfreeze a view port that doesn't exist") {
@@ -102,7 +102,7 @@ class FreezeViewPortWSApiTest extends WebSocketApiTestBase {
 
       val responseBody = assertBodyIsInstanceOf[UnfreezeViewPortReject](response)
       responseBody.viewPortId shouldEqual fakeViewPortId
-      responseBody.errorMessage.contains(s"No viewport with id $fakeViewPortId found in session") shouldBe true
+      responseBody.errorMessage shouldEqual s"Failed to process request $requestId"
     }
 
     Scenario("Freeze a view port that is already frozen") {

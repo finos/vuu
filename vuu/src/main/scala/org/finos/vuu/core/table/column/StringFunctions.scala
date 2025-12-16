@@ -23,7 +23,10 @@ abstract class StringMatchFunction(clauses: List[CalculatedColumnClause], op: St
   private val baseFn = BaseFunction(clauses.take(2).map(TextFunction(_)), errorTemplate(_))
   override def dataType: ClauseDataType = ClauseDataType.BOOLEAN
   override def calculate(data: RowData): OptionResult[Boolean] =
-    baseFn.calculate[Boolean](data, { case str :: subStr :: _ => op.apply(str.toString, subStr.toString) })
+    baseFn.calculate[Boolean](data, {
+      case str :: subStr :: _ => op.apply(str.toString, subStr.toString)
+      case _ => false
+    })
 }
 
 private sealed abstract class StringMatchOp(val apply: (String, String) => Boolean)

@@ -13,6 +13,8 @@ import org.finos.vuu.net.json.JsonVsSerializer
 import org.finos.vuu.util.{OutboundRowPublishQueue, PublishQueue}
 import org.finos.vuu.viewport.ViewPortUpdate
 
+import scala.util.{Failure, Success, Try}
+
 case class RequestContext(requestId: String,
                           user: VuuUser,
                           session: ClientSessionId,
@@ -37,7 +39,12 @@ class RequestProcessor(loginTokenService: LoginTokenService,
             handleMessageWithNoSession(errorMessage, channel)
             None
         }
-      case body => handleViewServerMessage(msg, channel)
+      case body => Try(handleViewServerMessage(msg, channel)) match {
+        case Success(viewServerMessage) => viewServerMessage
+        case Failure(exception) =>
+          handleUnhandledException(exception, channel)
+          None
+      }
     }
   }
 
@@ -86,7 +93,14 @@ class RequestProcessor(loginTokenService: LoginTokenService,
   }
 
   private def handleMessageWithNoSession(msg: String, channel: Channel): Unit = {
+    logger.error(s"$msg. Closing channel $channel.")
     channel.writeAndFlush(new TextWebSocketFrame(msg))
+    channel.close()
+  }
+
+  private def handleUnhandledException(e: Throwable,channel: Channel): Unit = {
+    logger.error(s"Unhandled exception. Closing channel $channel.", e)
+    channel.writeAndFlush(new TextWebSocketFrame("Internal server error"))
     channel.close()
   }
 
