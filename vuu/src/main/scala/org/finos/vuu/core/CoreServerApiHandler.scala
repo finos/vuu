@@ -277,8 +277,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
       .filter(!_.contains(":")) // remove calculated columns
       .filter(name => !table.asTable.getTableDef.columnExists(name))
     if (invalidColumns.nonEmpty) {
-      logger.error("Invalid columns specified in viewport request:" + invalidColumns.mkString(","))
-      throw new RuntimeException("Invalid columns specified in viewport request")
+      throw new RuntimeException(s"Invalid columns specified in viewport request: [${invalidColumns.mkString(",")}]")
     }
   }
 

@@ -45,7 +45,7 @@ class HashMapIndexedStringField(val column: Column) extends StringIndexedField w
   private final val indexMap = new ConcurrentHashMap[String, ImmutableArray[String]]()
 
   override def remove(indexKey: String, rowKey: String): Unit = {
-    logger.debug("Remove Index: " + this.column.name)
+    logger.trace("Remove Index: " + this.column.name)
     indexMap.computeIfPresent(indexKey, (_, value) => {
       if (value.length > 1) {
         value.-(rowKey)
@@ -56,7 +56,7 @@ class HashMapIndexedStringField(val column: Column) extends StringIndexedField w
   }
 
   override def insert(indexKey: String, rowKey: String): Unit = {
-    logger.debug("Update Index: " + this.column.name)
+    logger.trace("Update Index: " + this.column.name)
     indexMap.compute(indexKey, (_, value) =>  {
       value match {
         case null => ImmutableUniqueArraySet.from(Array(rowKey))
@@ -88,7 +88,7 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
   private final val skipList = new ConcurrentSkipListMap[TYPE, ImmutableArray[String]]()
 
   override def remove(indexKey: TYPE, rowKey: String): Unit = {
-    logger.debug("Remove Index: " + this.column.name)
+    logger.trace("Remove Index: " + this.column.name)
     skipList.computeIfPresent(indexKey, (_, value) => {
       if (value.length > 1) {
         value.-(rowKey)
@@ -99,7 +99,7 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
   }
 
   override def insert(indexKey: TYPE, rowKey: String): Unit = {
-    logger.debug("Update Index: " + this.column.name)
+    logger.trace("Update Index: " + this.column.name)
     skipList.compute(indexKey, (_, value) =>  {
       value match {
         case null => ImmutableUniqueArraySet.from(Array(rowKey))

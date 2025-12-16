@@ -130,13 +130,13 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       responseBody.rpcName shouldEqual "getUniqueFieldValues"
 
       val result = assertAndCastAsInstanceOf[RpcErrorResult](responseBody.result)
-      result.errorMessage.contains("No viewport with id viewPortThatDoesNotExist found in session") shouldBe true
+      result.errorMessage shouldEqual s"Failed to process request $requestId"
 
       And("Show error notification action")
       val action = assertAndCastAsInstanceOf[ShowNotificationAction](responseBody.action)
       action.notificationType shouldEqual "Error"
       action.title shouldEqual "Failed to process getUniqueFieldValues request"
-      action.message.contains("No viewport with id viewPortThatDoesNotExist found in session") shouldBe true
+      action.message shouldEqual s"Failed to process request $requestId"
     }
 
     Scenario("For an empty table") {

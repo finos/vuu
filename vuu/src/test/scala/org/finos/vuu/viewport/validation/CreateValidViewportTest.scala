@@ -3,7 +3,7 @@ package org.finos.vuu.viewport.validation
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.core.CoreServerApiHandler
-import org.finos.vuu.net.{ClientSessionId, CreateViewPortReject, CreateViewPortRequest, CreateViewPortSuccess, RequestContext, ViewServerMessage}
+import org.finos.vuu.net.{CreateViewPortReject, CreateViewPortRequest, CreateViewPortSuccess, RequestContext, ViewServerMessage}
 import org.finos.vuu.viewport.{AbstractViewPortTestCase, ViewPortRange, ViewPortTable}
 import org.scalatest.GivenWhenThen
 import org.scalatest.matchers.should.Matchers
@@ -26,10 +26,10 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
 
       val ctx = RequestContext("req-101", user, clientSession, outQueue)
 
-      val exception = intercept[Exception] {
-        api.process(CreateViewPortRequest(ViewPortTable("orders", "TEST"), ViewPortRange(0, 100), vpcolumnsOrders.toArray))(ctx)
-      }
-      exception.getMessage should startWith("Invalid columns specified in viewport request")
+      val result: Option[ViewServerMessage] = api.process(CreateViewPortRequest(ViewPortTable("orders", "TEST"), ViewPortRange(0, 100), vpcolumnsOrders.toArray))(ctx)
+      result.isDefined shouldBe true
+      result.get.body.isInstanceOf[CreateViewPortReject] shouldBe true
+      result.get.body.asInstanceOf[CreateViewPortReject].msg shouldBe s"Failed to process request ${ctx.requestId}"
     }
 
     Scenario("create viewport for public table, return success message") {
@@ -61,7 +61,7 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       val result: Option[ViewServerMessage] = api.process(CreateViewPortRequest(ViewPortTable("orders", "TEST"), ViewPortRange(0, 100), Array("orderId")))(ctx)
       result.isDefined shouldBe true
       result.get.body.isInstanceOf[CreateViewPortReject] shouldBe true
-      result.get.body.asInstanceOf[CreateViewPortReject].msg shouldBe "no table found for TEST:orders"
+      result.get.body.asInstanceOf[CreateViewPortReject].msg shouldBe s"Failed to process request ${ctx.requestId}"
     }
 
     Scenario("create viewport for a table that doesn't exist, return reject message") {
@@ -77,7 +77,7 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       val result: Option[ViewServerMessage] = api.process(CreateViewPortRequest(ViewPortTable("random_table", "TEST"), ViewPortRange(0, 100), Array("orderId")))(ctx)
       result.isDefined shouldBe true
       result.get.body.isInstanceOf[CreateViewPortReject] shouldBe true
-      result.get.body.asInstanceOf[CreateViewPortReject].msg shouldBe "no table found for TEST:random_table"
+      result.get.body.asInstanceOf[CreateViewPortReject].msg shouldBe s"Failed to process request ${ctx.requestId}"
     }
 
     Scenario("create viewport for public join table, return success message") {
@@ -109,7 +109,7 @@ class CreateValidViewportTest extends AbstractViewPortTestCase with Matchers wit
       val result: Option[ViewServerMessage] = api.process(CreateViewPortRequest(ViewPortTable("orderPrices", "TEST"), ViewPortRange(0, 100), Array("orderId")))(ctx)
       result.isDefined shouldBe true
       result.get.body.isInstanceOf[CreateViewPortReject] shouldBe true
-      result.get.body.asInstanceOf[CreateViewPortReject].msg shouldBe "no table found for TEST:orderPrices"
+      result.get.body.asInstanceOf[CreateViewPortReject].msg shouldBe s"Failed to process request ${ctx.requestId}"
     }
   }
 }
