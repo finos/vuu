@@ -7,10 +7,10 @@
   align-items: center;
   background: var(--salt-actionable-bold-background);
   color: var(--salt-actionable-bold-foreground);
-  border-radius: 4px;
+  border-radius: 3px;
   flex: var(--vuuColumnHeaderPill-flex, none);
   font-size: 11px;
-  gap: 4px;
+  gap: 2px;
   height: 16px;
   display: flex;
   margin: var(--vuuColumnHeaderPill-margin, 0);
