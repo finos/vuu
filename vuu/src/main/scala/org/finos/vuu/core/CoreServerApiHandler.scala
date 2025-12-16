@@ -204,22 +204,26 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   }
 
   override def process(msg: GetTableMetaRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
-    //TODO Comeback
-    if (msg.table.table == null || msg.table.module == null)
-      errorMsg(s"No such table found with name ${msg.table.table} in module ${msg.table.module}. Table name and module should not be null")(ctx)
-    else {
-      val table = tableContainer.getTable(msg.table.table) //todo need to check module? what if modules with same table name
+    Try(processGetTableMetaRequest(msg)(ctx)) match {
+      case Success(tableMetaResponse) =>
+        logger.info(s"[API] Got metadata for table ${msg.table.table} in session ${ctx.session.sessionId}")
+        vsMsg(tableMetaResponse)(ctx)
+      case Failure(e) =>
+        logger.error(s"[API] Failed to get metadata for table ${msg.table.table} in session ${ctx.session.sessionId}", e)
+        errorMsg(s"Failed to process request ${ctx.requestId}")(ctx)
+    }
+  }
 
-      if (table == null)
-        errorMsg(s"No such table found with name ${msg.table.table} in module ${msg.table.module}")(ctx)
-      else {
-
-        val viewPortDef = viewPortContainer.getViewPortDefinition(table)
-        val columns = viewPortDef.columns.sortBy(_.index)
-        val columnNames = columns.map(_.name)
-        val dataTypes = columns.map(col => DataType.asString(col.dataType))
-        vsMsg(GetTableMetaResponse(msg.table, columnNames, dataTypes, table.getTableDef.keyField))(ctx)
-      }
+  private def processGetTableMetaRequest(msg: GetTableMetaRequest)(ctx: RequestContext): GetTableMetaResponse = {
+    val table = tableContainer.getTable(msg.table.table)
+    if (table != null && table.getTableDef.visibility == Public) {
+      val viewPortDef = viewPortContainer.getViewPortDefinition(table)
+      val columns = viewPortDef.columns.sortBy(_.index)
+      val columnNames = columns.map(_.name)
+      val dataTypes = columns.map(col => DataType.asString(col.dataType))
+      GetTableMetaResponse(msg.table, columnNames, dataTypes, table.getTableDef.keyField)
+    } else {
+      throw new RuntimeException(s"Failed to find table ${msg.table.table} in module ${msg.table.module}")
     }
   }
 
