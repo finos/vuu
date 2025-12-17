@@ -40,8 +40,6 @@ trait ViewPortContainerMBean {
 
   def toAscii(clientSession: ClientSessionId, vpId: String): String
 
-  def subscribedKeys(clientSession: ClientSessionId, vpId: String): String
-
   def setRange(clientSession: ClientSessionId, vpId: String, start: Int, end: Int): String
 
   def openGroupByKey(clientSession: ClientSessionId, vpId: String, treeKey: String): String
@@ -427,10 +425,6 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
     logger.debug(s"[VP] Changed range in viewport $vpId in session ${clientSession.sessionId} to [${range.from} -> ${range.to}] in ${millis}ms")
     viewPort
-  }
-
-  override def subscribedKeys(clientSession: ClientSessionId, vpId: String): String = {
-    "" //TODO What is this for?
   }
 
   override def listViewPortsForSession(clientSession: ClientSessionId): List[ViewPort] = {

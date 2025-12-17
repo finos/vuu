@@ -31,7 +31,9 @@ class TestChannel() extends Channel with StrictLogging {
 
   override def localAddress(): SocketAddress = ???
 
-  override def remoteAddress(): SocketAddress = ???
+  override def remoteAddress(): SocketAddress = new SocketAddress {
+    override def toString: String = "TestChannelRemoteAddress"
+  }
 
   override def closeFuture(): ChannelFuture = {
     new DefaultChannelPromise(this)

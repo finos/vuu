@@ -54,13 +54,13 @@ class RequestProcessor(loginTokenService: LoginTokenService,
                             channel: Channel,
                             vuuServerId: String): Option[ViewServerMessage] = {
 
-    logger.debug(s"[Session] Creating session for ${user.name}. Remote address: ${channel.remoteAddress()}")
+    logger.debug(s"[SESSION] Creating session for ${user.name}. Remote address: ${channel.remoteAddress()}")
     val session = SessionId.oneNew()
     val id = ClientSessionId(session, channel.id().asLongText())
 
     val handler = createMessageHandler(channel, id, user)
     clientSessionContainer.register(id, handler)
-    logger.info(s"[Session] Created session for user ${user.name} with id ${id.sessionId}.Remote address: ${channel.remoteAddress()}")
+    logger.info(s"[SESSION] Created session for user ${user.name} with id ${id.sessionId}. Remote address: ${channel.remoteAddress()}")
 
     Some(JsonViewServerMessage(requestId, session, LoginSuccess(vuuServerId)))
   }
@@ -89,12 +89,12 @@ class RequestProcessor(loginTokenService: LoginTokenService,
   }
 
   private def handleMessageWithNoSession(channel: Channel): Unit = {
-    logger.error(s"[Session] Message received outside of a valid session. Remote address: ${channel.remoteAddress()}")
+    logger.error(s"[SESSION] Message received outside of a valid session. Remote address: ${channel.remoteAddress()}")
     sendMessageAndCloseChannel("Invalid session", channel)
   }
 
   private def closeChannel(e: Throwable, channel: Channel): Unit = {
-    logger.error(s"[Session] Internal server error. Remote address: ${channel.remoteAddress()}", e)
+    logger.error(s"[SESSION] Internal server error. Remote address: ${channel.remoteAddress()}", e)
     sendMessageAndCloseChannel("Internal server error", channel)
   }
 
