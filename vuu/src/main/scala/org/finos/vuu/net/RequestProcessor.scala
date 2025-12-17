@@ -54,13 +54,13 @@ class RequestProcessor(loginTokenService: LoginTokenService,
                             channel: Channel,
                             vuuServerId: String): Option[ViewServerMessage] = {
 
-    logger.debug(s"Creating session for ${user.name}")
+    logger.debug(s"[Session] Creating session for ${user.name}")
     val session = SessionId.oneNew()
     val id = ClientSessionId(session, channel.id().asLongText())
 
     val handler = createMessageHandler(channel, id, user)
     clientSessionContainer.register(id, handler)
-    logger.info(s"Created session for user ${user.name} with id ${id.sessionId}")
+    logger.info(s"[Session] Created session for user ${user.name} with id ${id.sessionId}")
 
     Some(JsonViewServerMessage(requestId, session, LoginSuccess(vuuServerId)))
   }
@@ -89,12 +89,12 @@ class RequestProcessor(loginTokenService: LoginTokenService,
   }
 
   private def handleMessageWithNoSession(channel: Channel): Unit = {
-    logger.error(s"Received message outside of a valid session. Closing channel $channel.")
+    logger.error(s"[Session] Received message outside of a valid session. Closing channel $channel.")
     sendMessageAndCloseChannel("Invalid session", channel)
   }
 
   private def closeChannel(e: Throwable, channel: Channel): Unit = {
-    logger.error(s"Exception. Closing channel $channel.", e)
+    logger.error(s"[Session] Internal server error. Closing channel $channel.", e)
     sendMessageAndCloseChannel("Internal server error", channel)
   }
 
