@@ -31,7 +31,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       val vpcolumnsOrders = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
       val vpcolumnsPrices = ViewPortColumnCreator.create(prices, List("ric", "bid", "ask", "last", "open"))
 
-//      val vpcolumnsOrders = List("orderId", "trader", "tradeTime", "quantity", "ric").map(orders.getTableDef.columnForName(_))
+      //      val vpcolumnsOrders = List("orderId", "trader", "tradeTime", "quantity", "ric").map(orders.getTableDef.columnForName(_))
       //      val vpcolumnsPrices = List("ric", "bid", "ask", "last", "open").map(prices.getTableDef.columnForName(_))
 
       createPricesRow(pricesProvider, "VOD.L", 100, 101, 100.5, 99.5)
@@ -54,17 +54,17 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
 
       assertVpEqWithMeta(orderUpdates) {
         Table(
-          ("sel"     ,"orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          (0         ,"NYC-0000","chris"   ,"VOD.L"   ,1311544800000L,100       ),
-          (0         ,"NYC-0001","chris"   ,"VOD.L"   ,1311544800010L,101       ),
-          (0         ,"NYC-0002","chris"   ,"VOD.L"   ,1311544800020L,102       ),
-          (0         ,"NYC-0003","chris"   ,"BT.L"    ,1311544800030L,100       ),
-          (0         ,"NYC-0004","chris"   ,"BT.L"    ,1311544800040L,101       ),
-          (0         ,"NYC-0005","chris"   ,"BT.L"    ,1311544800050L,102       ),
-          (0         ,"NYC-0006","chris"   ,"BT.L"    ,1311544800060L,103       ),
-          (0         ,"NYC-0007","chris"   ,"BP.L"    ,1311544800070L,100       ),
-          (0         ,"NYC-0008","chris"   ,"BP.L"    ,1311544800080L,101       ),
-          (0         ,"NYC-0009","chris"   ,"BP.L"    ,1311544800090L,102       )
+          ("sel", "orderId", "trader", "ric", "tradeTime", "quantity"),
+          (0, "NYC-0000", "chris", "VOD.L", 1311544800000L, 100),
+          (0, "NYC-0001", "chris", "VOD.L", 1311544800010L, 101),
+          (0, "NYC-0002", "chris", "VOD.L", 1311544800020L, 102),
+          (0, "NYC-0003", "chris", "BT.L", 1311544800030L, 100),
+          (0, "NYC-0004", "chris", "BT.L", 1311544800040L, 101),
+          (0, "NYC-0005", "chris", "BT.L", 1311544800050L, 102),
+          (0, "NYC-0006", "chris", "BT.L", 1311544800060L, 103),
+          (0, "NYC-0007", "chris", "BP.L", 1311544800070L, 100),
+          (0, "NYC-0008", "chris", "BP.L", 1311544800080L, 101),
+          (0, "NYC-0009", "chris", "BP.L", 1311544800090L, 102)
         )
       }
 
@@ -110,11 +110,11 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       viewPortOrders.getKeys.length shouldEqual 4
       assertVpEqWithMeta(combineQs(viewPortOrders)) {
         Table(
-          ("sel"     ,"orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          (0         ,"NYC-0003","chris"   ,"BT.L"    ,1311544800030L,100       ),
-          (0         ,"NYC-0004","chris"   ,"BT.L"    ,1311544800040L,101       ),
-          (0         ,"NYC-0005","chris"   ,"BT.L"    ,1311544800050L,102       ),
-          (0         ,"NYC-0006","chris"   ,"BT.L"    ,1311544800060L,103       )
+          ("sel", "orderId", "trader", "ric", "tradeTime", "quantity"),
+          (0, "NYC-0003", "chris", "BT.L", 1311544800030L, 100),
+          (0, "NYC-0004", "chris", "BT.L", 1311544800040L, 101),
+          (0, "NYC-0005", "chris", "BT.L", 1311544800050L, 102),
+          (0, "NYC-0006", "chris", "BT.L", 1311544800060L, 103)
         )
       }
 
@@ -128,12 +128,12 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       Then("Check we still maintain the selection")
       assertVpEqWithMeta(combineQs(viewPortOrders).filter(vpu => vpu.vp.id == viewPortOrders.id)) {
         Table(
-          ("sel"     ,"orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          (0         ,"NYC-0007","chris"   ,"BP.L"    ,1311544800070L,100       ),
-          (0         ,"NYC-0008","chris"   ,"BP.L"    ,1311544800080L,101       ),
-          (0         ,"NYC-0009","chris"   ,"BP.L"    ,1311544800090L,102       ),
-          (0         ,"NYC-0010","chris"   ,"BP.L"    ,1311544800100L,103       ),
-          (0         ,"NYC-0011","chris"   ,"BP.L"    ,1311544800110L,104       )
+          ("sel", "orderId", "trader", "ric", "tradeTime", "quantity"),
+          (0, "NYC-0007", "chris", "BP.L", 1311544800070L, 100),
+          (0, "NYC-0008", "chris", "BP.L", 1311544800080L, 101),
+          (0, "NYC-0009", "chris", "BP.L", 1311544800090L, 102),
+          (0, "NYC-0010", "chris", "BP.L", 1311544800100L, 103),
+          (0, "NYC-0011", "chris", "BP.L", 1311544800110L, 104)
         )
       }
 
@@ -182,17 +182,17 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
 
       assertVpEqWithMeta(orderUpdates2) {
         Table(
-          ("sel"     ,"orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          (0         ,"NYC-0000","chris"   ,"VOD.L"   ,1311544800000L,100       ),
-          (0         ,"NYC-0001","chris"   ,"VOD.L"   ,1311544800010L,101       ),
-          (0         ,"NYC-0002","chris"   ,"VOD.L"   ,1311544800020L,102       ),
-          (0         ,"NYC-0004","chris"   ,"BT.L"    ,1311544800040L,101       ),
-          (0         ,"NYC-0005","chris"   ,"BT.L"    ,1311544800050L,102       ),
-          (0         ,"NYC-0006","chris"   ,"BT.L"    ,1311544800060L,103       ),
-          (0         ,"NYC-0008","chris"   ,"BP.L"    ,1311544800080L,101       ),
-          (0         ,"NYC-0009","chris"   ,"BP.L"    ,1311544800090L,102       ),
-          (0         ,"NYC-0010","chris"   ,"BP.L"    ,1311544800100L,103       ),
-          (0         ,"NYC-0011","chris"   ,"BP.L"    ,1311544800110L,104       )
+          ("sel", "orderId", "trader", "ric", "tradeTime", "quantity"),
+          (0, "NYC-0000", "chris", "VOD.L", 1311544800000L, 100),
+          (0, "NYC-0001", "chris", "VOD.L", 1311544800010L, 101),
+          (0, "NYC-0002", "chris", "VOD.L", 1311544800020L, 102),
+          (0, "NYC-0004", "chris", "BT.L", 1311544800040L, 101),
+          (0, "NYC-0005", "chris", "BT.L", 1311544800050L, 102),
+          (0, "NYC-0006", "chris", "BT.L", 1311544800060L, 103),
+          (0, "NYC-0008", "chris", "BP.L", 1311544800080L, 101),
+          (0, "NYC-0009", "chris", "BP.L", 1311544800090L, 102),
+          (0, "NYC-0010", "chris", "BP.L", 1311544800100L, 103),
+          (0, "NYC-0011", "chris", "BP.L", 1311544800110L, 104)
         )
       }
     }
@@ -236,7 +236,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       joinProvider.runOnce()
 
       val user = VuuUser("chris")
-      
+
       val session = ClientSessionId("sess-01", "channel")
 
       val outQueue = new OutboundRowPublishQueue()
@@ -335,6 +335,7 @@ class VisualLinkedViewPortTest extends AbstractViewPortTestCase with Matchers wi
       assertVpEqWithMeta(combineQs(viewPortOrders1)) {
         Table(
           ("sel", "orderId", "trader", "ric", "tradeTime", "quantity"),
+          (0, "NYC-0001", "chris", "VOD.L", 1311544800010L, 101)
         )
       }
     }
