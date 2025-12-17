@@ -52,7 +52,7 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Vi
           val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn).asInstanceOf[EpochTimestamp]).toList
           filterIndexByValues(index, parentSelField)
         case _ =>
-          val parentDataValues = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn) -> 0).toList
+          val parentDataValues = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn)).toList
           doFilterByBruteForce(parentDataValues, childColumn, source, primaryKeys)
       }
     }
