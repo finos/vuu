@@ -10,7 +10,7 @@ import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns, ViewPortVisualLink}
 
 case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends ViewPortFilter with LazyLogging {
-  
+
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
 
     val parentSelectionKeys = viewPortVisualLink.parentVp.getSelection
@@ -73,6 +73,6 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Vi
 
     InMemTablePrimaryKeys(ImmutableArray.from(filtered))
   }
-  
+
 }
 
