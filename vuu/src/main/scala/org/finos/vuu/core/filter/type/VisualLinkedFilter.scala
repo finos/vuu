@@ -10,7 +10,7 @@ import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns, ViewPortVisualLink}
 
 case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends ViewPortFilter with LazyLogging {
-  
+
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
 
     val parentSelectionKeys = viewPortVisualLink.parentVp.getSelection
@@ -52,7 +52,7 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Vi
           val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn).asInstanceOf[EpochTimestamp]).toList
           filterIndexByValues(index, parentSelField)
         case _ =>
-          val parentDataValues = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn) -> 0).toList
+          val parentDataValues: Set[Any] = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn))
           doFilterByBruteForce(parentDataValues, childColumn, source, primaryKeys)
       }
     }
@@ -62,7 +62,7 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Vi
     InMemTablePrimaryKeys(index.find(parentSelected))
   }
 
-  private def doFilterByBruteForce(parentDataValues: List[Any], childColumn: Column, source: RowSource, primaryKeys: TablePrimaryKeys): TablePrimaryKeys = {
+  private def doFilterByBruteForce(parentDataValues: Set[Any], childColumn: Column, source: RowSource, primaryKeys: TablePrimaryKeys): TablePrimaryKeys = {
     val pks = primaryKeys.toArray
     val childColumns = ViewPortColumnCreator.create(source.asTable, List(childColumn.name))
 
@@ -73,6 +73,6 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Vi
 
     InMemTablePrimaryKeys(ImmutableArray.from(filtered))
   }
-  
+
 }
 
