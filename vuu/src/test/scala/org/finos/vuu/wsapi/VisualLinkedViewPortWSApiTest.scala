@@ -2,8 +2,8 @@ package org.finos.vuu.wsapi
 
 import org.finos.vuu.api.*
 import org.finos.vuu.core.AbstractVuuServer
-import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
-import org.finos.vuu.core.table.{Columns, DataTable}
+import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
+import org.finos.vuu.core.table.DataTable
 import org.finos.vuu.net.*
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
@@ -14,48 +14,45 @@ import scala.collection.immutable.ListMap
 class VisualLinkedViewPortWSApiTest extends WebSocketApiTestBase {
   private val tableName1 = "RequestTable"
   private val moduleName = "VLVPTEST"
-  private val parentViewPortId = "parentId"
   private val testProviderFactory = new TestProviderFactory
-// TODO test both indexed and unindexed columns. Update test description
-  Feature("[Web Socket API] Create visual link request") {
-    Scenario("Create a visual link of view ports") {
-      Given("2 view ports exist")
 
+  Feature("[Web Socket API] Visual linked view ports") {
+    Scenario("Create a visual link of view ports") {
+      Given("Parent and child view ports exist")
       val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName1, moduleName), ViewPortRange(0, 100), columns = Array("requestRefId", "parentRequestRefId", "orderId"))
       vuuClient.send(sessionId, createViewPortRequest)
       val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
-      val childVp = viewPortCreateResponse.get.viewPortId
+      val childVpId = viewPortCreateResponse.get.viewPortId
       waitForData(3)
 
       val createViewPortRequest2 = CreateViewPortRequest(ViewPortTable(tableName1, moduleName), ViewPortRange(0, 100), columns = Array("requestRefId", "parentRequestRefId", "orderId"))
       vuuClient.send(sessionId, createViewPortRequest2)
       val viewPortCreateResponse2 = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
-      val parentVp = viewPortCreateResponse2.get.viewPortId
+      val parentVpId = viewPortCreateResponse2.get.viewPortId
       waitForData(3)
 
-      When("Link the view ports")
-      val request = CreateVisualLinkRequest(childVp, parentVp, "parentRequestRefId", "parentRequestRefId")
+      When("Link the view ports on column parentRequestRefId")
+      val request = CreateVisualLinkRequest(childVpId, parentVpId, "parentRequestRefId", "parentRequestRefId")
       val requestId = vuuClient.send(sessionId, request)
 
       Then("view port is linked")
       val response = vuuClient.awaitForResponse(requestId)
       val responseBody = assertBodyIsInstanceOf[CreateVisualLinkSuccess](response)
 
-
-      Then("select a row")
-      val selectRequest = SelectRowRequest(parentVp, "req1", false)
+      Then("select a row on parent view port")
+      val selectRequest = SelectRowRequest(parentVpId, "req1", false)
       val requestId2 = vuuClient.send(sessionId, selectRequest)
       val response2 = vuuClient.awaitForResponse(requestId2)
       val responseBody2 = assertBodyIsInstanceOf[SelectRowSuccess](response2)
 
       val tableRowUpdatesResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
+      tableRowUpdatesResponse.get.rows(0).viewPortId shouldEqual parentVpId
       tableRowUpdatesResponse.get.rows(0).vpSize shouldEqual 3
 
+      Then("Child view port should show filtered rows")
       val tableRowUpdatesResponse2 = vuuClient.awaitForMsgWithBody[TableRowUpdates]
-      tableRowUpdatesResponse2.get.rows(0).vpSize shouldEqual 0
-
-      val tableRowUpdatesResponse3 = vuuClient.awaitForMsgWithBody[TableRowUpdates]
-      tableRowUpdatesResponse3.get.rows(0).vpSize shouldEqual 0
+      tableRowUpdatesResponse2.get.rows(0).viewPortId shouldEqual childVpId
+      tableRowUpdatesResponse2.get.rows(0).vpSize shouldEqual 2
     }
   }
 
@@ -81,7 +78,6 @@ class VisualLinkedViewPortWSApiTest extends WebSocketApiTestBase {
         links = VisualLinks(
           Link("requestRefId", tableName1, "requestRefId")
         ),
-        //indices = Indices(Index("parentRequestRefId"))
       ), providerFactory)
       .asModule()
   }
