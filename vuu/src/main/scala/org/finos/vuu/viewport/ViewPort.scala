@@ -547,7 +547,7 @@ class ViewPortImpl(val id: String,
           }
         }
       } else {
-        logger.warn(s"Key is null@Index=${index} in range from ${range.from} to ${range.to}. New keys length=${newKeys.length}")
+        logger.warn(s"Key is null@Index=${index} in range from ${range.from} to ${range.to}. New keys length=${newKeys.length} for table ${table.name}")
       }
 
     }
