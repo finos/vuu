@@ -23,10 +23,11 @@ class SecurityWSApiTest extends WebSocketApiTestBase {
   
   Feature("Assorted security tests") {
 
-    Scenario("Test sending messages with no session") {
+    Scenario("Test creating viewport in another session") {
 
-//      val client = new WebSocketClient(s"ws://localhost:$ws/websocket", ws) //todo review params - port specified twice
-//      val viewServerClient: ViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer())
+      
+      val client = new WebSocketClient(vuuClient.getUri) //todo review params - port specified twice
+      val viewServerClient: ViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer())
 //      
 //      val anonymousClient = new TestVuuClient(viewServerClient, null)
 //      val result = client.send(SessionId.oneNew(), )
@@ -34,7 +35,10 @@ class SecurityWSApiTest extends WebSocketApiTestBase {
 
     }
 
+    Scenario("Test calling RPC in another session") {
 
+    }
+    
   }
 
 

@@ -7,9 +7,13 @@ import org.finos.vuu.net.ws.WebSocketClient
 import org.finos.vuu.viewport.{ViewPortAction, ViewPortActionMixin}
 import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 
+import java.net.URI
 import scala.util.{Failure, Success, Try}
 
 trait ViewServerClient extends LifecycleEnabled {
+
+  def getUri: URI
+
   def send(msg: ViewServerMessage): Unit
 
   def awaitMsg: ViewServerMessage
@@ -39,6 +43,8 @@ class WebSocketViewServerClient(ws: WebSocketClient, serializer: JsonVsSerialize
   override def doDestroy(): Unit = {}
 
   override val lifecycleId: String = "wsViewServerClient"
+
+  override def getUri: URI = ws.uri
 
   override def send(msg: ViewServerMessage): Unit = {
     val json = serializer.serialize(msg)

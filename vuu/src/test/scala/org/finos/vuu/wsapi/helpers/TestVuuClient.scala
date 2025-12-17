@@ -10,6 +10,7 @@ import org.scalatest.concurrent.{Signaler, ThreadSignaler}
 import org.scalatest.time.Span
 import org.scalatest.time.SpanSugar.*
 
+import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
 import scala.annotation.tailrec
 import scala.language.postfixOps
@@ -22,6 +23,8 @@ class TestVuuClient(vsClient: ViewServerClient, loginTokenService: LoginTokenSer
 
   val timeout: Span = 30 seconds
 
+  def getUri: URI = vsClient.getUri
+  
   def send(sessionId: String, body: MessageBody): String = {
     val msg = createViewServerMessage(sessionId, body)
     vsClient.send(msg)
