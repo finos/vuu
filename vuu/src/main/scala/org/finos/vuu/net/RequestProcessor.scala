@@ -89,12 +89,12 @@ class RequestProcessor(loginTokenService: LoginTokenService,
   }
 
   private def handleMessageWithNoSession(channel: Channel): Unit = {
-    logger.error(s"[Session] Received message outside of a valid session. Closing channel $channel.")
+    logger.error(s"[Session] Message received outside of a valid session. Remote address: ${channel.remoteAddress()}")
     sendMessageAndCloseChannel("Invalid session", channel)
   }
 
   private def closeChannel(e: Throwable, channel: Channel): Unit = {
-    logger.error(s"[Session] Internal server error. Closing channel $channel.", e)
+    logger.error(s"[Session] Internal server error. Remote address: ${channel.remoteAddress()}", e)
     sendMessageAndCloseChannel("Internal server error", channel)
   }
 
