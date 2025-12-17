@@ -52,7 +52,7 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Vi
           val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn).asInstanceOf[EpochTimestamp]).toList
           filterIndexByValues(index, parentSelField)
         case _ =>
-          val parentDataValues = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn)).toList
+          val parentDataValues: Set[Any] = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn))
           doFilterByBruteForce(parentDataValues, childColumn, source, primaryKeys)
       }
     }
@@ -62,7 +62,7 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Vi
     InMemTablePrimaryKeys(index.find(parentSelected))
   }
 
-  private def doFilterByBruteForce(parentDataValues: List[Any], childColumn: Column, source: RowSource, primaryKeys: TablePrimaryKeys): TablePrimaryKeys = {
+  private def doFilterByBruteForce(parentDataValues: Set[Any], childColumn: Column, source: RowSource, primaryKeys: TablePrimaryKeys): TablePrimaryKeys = {
     val pks = primaryKeys.toArray
     val childColumns = ViewPortColumnCreator.create(source.asTable, List(childColumn.name))
 

@@ -31,16 +31,37 @@ class VisualLinkedFilterTest extends AnyFeatureSpec with Matchers {
         )(using clock)
       }
       val parentVp = new DummyViewPort("parentVpId", "parentVp", Set("LDN-0001"), table)
-      val filter = VisualLinkedFilter(ViewPortVisualLink(null, parentVp, SimpleColumn("orderId", 1, DataType.StringDataType), SimpleColumn("orderId", 1, DataType.StringDataType)))
+      val filter = VisualLinkedFilter(ViewPortVisualLink(null, parentVp, SimpleColumn("orderId", 0, DataType.StringDataType), SimpleColumn("orderId", 0, DataType.StringDataType)))
       val results = filter.doFilter(table, table.primaryKeys, null, true)
       results.length shouldEqual 1
       results.toSet shouldEqual Set("LDN-0001")
     }
 
     Scenario("Visual linked filter on non-indexed column") {
-      val table = setupTable()
+      val table = {
+        setupTable(List.empty,
+          row("tradeTime" -> 5L, "quantity" -> 500, "price" -> 283.10, "side" -> 'B', "ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD"),
+          row("tradeTime" -> 2L, "quantity" -> 100, "price" -> 94.12, "side" -> 'S', "ric" -> "VOD.L", "orderId" -> "LDN-0001", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD"),
+          row("tradeTime" -> 1L, "quantity" -> 100, "price" -> 180.50, "side" -> 'B', "ric" -> "BT.L", "orderId" -> "LDN-0002", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD")
+        )(using clock)
+      }
       val parentVp = new DummyViewPort("parentVpId", "parentVp", Set("LDN-0001"), table)
-      val filter = VisualLinkedFilter(ViewPortVisualLink(null, parentVp, SimpleColumn("orderId", 1, DataType.StringDataType), SimpleColumn("orderId", 1, DataType.StringDataType)))
+      val filter = VisualLinkedFilter(ViewPortVisualLink(null, parentVp, SimpleColumn("orderId", 0, DataType.StringDataType), SimpleColumn("orderId", 0, DataType.StringDataType)))
+      val results = filter.doFilter(table, table.primaryKeys, null, true)
+      results.length shouldEqual 1
+      results.toSet shouldEqual Set("LDN-0001")
+    }
+
+    Scenario("Visual linked filter on non-indexed column with null value") {
+      val table = {
+        setupTable(List.empty,
+          row("tradeTime" -> 5L, "quantity" -> 500, "price" -> 283.10, "side" -> 'B', "ric" -> "AAPL.L", "orderId" -> "NYC-0004", "onMkt" -> false, "trader" -> "chris", "ccyCross" -> "GBPUSD"),
+          row("tradeTime" -> 2L, "quantity" -> 100, "price" -> 94.12, "side" -> 'S', "ric" -> "VOD.L", "orderId" -> "LDN-0001", "onMkt" -> true, "trader" -> "chris", "ccyCross" -> "GBPUSD"),
+          row("tradeTime" -> 1L, "quantity" -> 100, "price" -> 180.50, "side" -> 'B', "ric" -> null, "orderId" -> "LDN-0002", "onMkt" -> true, "trader" -> "steve", "ccyCross" -> "GBPUSD")
+        )(using clock)
+      }
+      val parentVp = new DummyViewPort("parentVpId", "parentVp", Set("LDN-0001"), table)
+      val filter = VisualLinkedFilter(ViewPortVisualLink(null, parentVp, SimpleColumn("ric", 2, DataType.StringDataType), SimpleColumn("ric", 2, DataType.StringDataType)))
       val results = filter.doFilter(table, table.primaryKeys, null, true)
       results.length shouldEqual 1
       results.toSet shouldEqual Set("LDN-0001")
