@@ -54,13 +54,13 @@ class RequestProcessor(loginTokenService: LoginTokenService,
                             channel: Channel,
                             vuuServerId: String): Option[ViewServerMessage] = {
 
-    logger.debug(s"[Session] Creating session for ${user.name}")
+    logger.debug(s"[Session] Creating session for ${user.name}. Remote address: ${channel.remoteAddress()}")
     val session = SessionId.oneNew()
     val id = ClientSessionId(session, channel.id().asLongText())
 
     val handler = createMessageHandler(channel, id, user)
     clientSessionContainer.register(id, handler)
-    logger.info(s"[Session] Created session for user ${user.name} with id ${id.sessionId}")
+    logger.info(s"[Session] Created session for user ${user.name} with id ${id.sessionId}.Remote address: ${channel.remoteAddress()}")
 
     Some(JsonViewServerMessage(requestId, session, LoginSuccess(vuuServerId)))
   }
