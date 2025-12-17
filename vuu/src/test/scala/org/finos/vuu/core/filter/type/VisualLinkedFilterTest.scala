@@ -17,6 +17,10 @@ import org.scalatest.matchers.should.Matchers
 
 import java.util.concurrent.ConcurrentHashMap
 
+/**
+ * Create visual link for 2 view ports of the same table on a specific column.
+ * When a row is selected on parent view port, we expect the filter to return filtered rows for the child view port.
+ */
 class VisualLinkedFilterTest extends AnyFeatureSpec with Matchers {
 
   Feature("Applying visual linked filters") {
