@@ -438,9 +438,6 @@ export declare type ServerMessageBody =
   | VuuCreateVisualLinkResponse
   | VuuRemoveVisualLinkResponse
   | ServerToClientError
-  | VuuRpcEditSuccess
-  | VuuRpcEditSuccess
-  | VuuRpcEditError
   | FreezeViewportResponse
   | UnfreezeViewportResponse;
 export interface ClientToServerHeartBeat {
@@ -644,49 +641,6 @@ export interface VuuRpcMenuError {
   error: string;
   rpcName: string;
   type: "VIEW_PORT_MENU_REJ";
-  vpId: string;
-}
-
-/**
- * Note VuuRpcEditCellRequest gets success response of type  VuuRpcMenuSuccess, with
- * rpcName "VP_EDIT_CELL_RPC"
- * with action of type "VP_EDIT_SUCCESS"
- *
- * VuuRpcEditCommitRequest gets response of type VuuRpcEditSuccess or VuuRpcEditError
- */
-// Edit RPC
-export declare type VuuRpcEditRequest =
-  | VuuRpcEditCellRequest
-  | VuuRpcEditAddRowRequest
-  | VuuRpcEditDeleteRowRequest
-  | VuuRpcEditUpdateRowRequest
-  | VuuRpcEditCommitRequest;
-
-export declare type VuuRpcEditResponse = VuuRpcEditSuccess | VuuRpcEditError;
-export interface VuuRpcEditSuccess {
-  action: unknown;
-  type: "VP_EDIT_RPC_RESPONSE";
-  rpcName: "VP_EDIT_SUBMIT_FORM_RPC";
-  vpId: string;
-}
-export interface VuuRpcEditError {
-  error: string;
-  rpcName: string;
-  type: "VP_EDIT_RPC_REJECT";
-  vpId: string;
-}
-
-export interface VuuRpcEditCellRequest {
-  rowKey: string;
-  type: "VP_EDIT_CELL_RPC";
-  field: string;
-  value: VuuRowDataItemType;
-  vpId: string;
-}
-export interface VuuRpcEditUpdateRowRequest {
-  rowKey: string;
-  type: "VP_EDIT_ROW_RPC";
-  row: VuuDataRow;
   vpId: string;
 }
 
