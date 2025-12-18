@@ -1,25 +1,25 @@
 package org.finos.vuu.wsapi.helpers
 
+import org.awaitility.Awaitility.await
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.*
-import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.{TableDefContainer, ViewServerModule}
-import org.finos.vuu.net.auth.LoginTokenService
 import org.finos.vuu.net.http.{VuuHttp2ServerOptions, WebRootDisabled}
 import org.finos.vuu.net.json.JsonVsSerializer
 import org.finos.vuu.net.ws.WebSocketClient
 import org.finos.vuu.net.{ViewServerClient, WebSocketViewServerClient}
 
 import java.security.SecureRandom
+import java.time.Duration
 
 class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
                   using val timeProvider: Clock,
                   val lifecycle: LifecycleContainer,
                   val tableDefContainer: TableDefContainer){
 
-  def startServerAndClient(): TestVuuClient = {
+  def startServerAndClient(): (TestVuuClient, VuuServerConfig) = {
 
     implicit val metrics: MetricsProvider = new MetricsProviderImpl
 
@@ -61,12 +61,13 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
     //lifecycle registration is done in constructor of service classes, so sequence of create is important
     lifecycle.start()
 
-    WaitForWebSocketConnectionToBeEstablished()
+    await atMost {
+      Duration.ofSeconds(1)
+    } until {
+      () => vuuClient.isConnected
+    }
 
-    vuuClient
+    (vuuClient, config)
   }
 
-  private def WaitForWebSocketConnectionToBeEstablished(): Unit = {
-    Thread.sleep(200)
-  }
 }

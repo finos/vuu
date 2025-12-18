@@ -79,7 +79,7 @@ class RequestProcessor(loginTokenService: LoginTokenService,
       case Some(handler) =>
         handler.handle(msg)
       case None =>
-        handleMessageWithNoSession(channel)
+        handleMessageWithInvalidSession(sessionId, channel)
         None
     }
   }
@@ -88,8 +88,13 @@ class RequestProcessor(loginTokenService: LoginTokenService,
     ClientSessionId(msg.sessionId, channel.id.asLongText())
   }
 
-  private def handleMessageWithNoSession(channel: Channel): Unit = {
-    logger.error(s"[SESSION] Message received outside of a valid session. Remote address: ${channel.remoteAddress()}")
+  private def handleMessageWithInvalidSession(requestSession: ClientSessionId, channel: Channel): Unit = {
+    val channelHasSession = clientSessionContainer.getSessions().exists(p => p.channelId == requestSession.channelId)
+    if (channelHasSession) {
+      logger.error(s"[SESSION] Incorrect session on request. Remote address: ${channel.remoteAddress()}")
+    } else {
+      logger.error(s"[SESSION] Channel does not have a valid session. Remote address: ${channel.remoteAddress()}")
+    }
     sendMessageAndCloseChannel("Invalid session", channel)
   }
 

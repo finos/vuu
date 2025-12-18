@@ -1,21 +1,25 @@
 package org.finos.vuu.wsapi
 
+import org.awaitility.scala.AwaitilitySupport
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.core.VuuServerConfig
 import org.finos.vuu.core.module.{TableDefContainer, ViewServerModule}
 import org.finos.vuu.net.*
 import org.finos.vuu.wsapi.helpers.{TestStartUp, TestVuuClient}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.{BeforeAndAfterAll, GivenWhenThen}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, GivenWhenThen}
 
 import scala.annotation.tailrec
 
-abstract class WebSocketApiTestBase extends AnyFeatureSpec with BeforeAndAfterAll with GivenWhenThen with Matchers {
+abstract class WebSocketApiTestBase extends AnyFeatureSpec with BeforeAndAfterAll with BeforeAndAfterEach
+  with GivenWhenThen with AwaitilitySupport with Matchers {
 
   implicit var timeProvider: Clock = _
   implicit var lifecycle: LifecycleContainer = _
   implicit var tableDefContainer: TableDefContainer = _
+  var vuuServerConfig: VuuServerConfig = _
   var viewServerClient: ViewServerClient = _
   var vuuClient: TestVuuClient = _
   var sessionId: String = _
@@ -25,7 +29,9 @@ abstract class WebSocketApiTestBase extends AnyFeatureSpec with BeforeAndAfterAl
     lifecycle = new LifecycleContainer
     tableDefContainer = new TableDefContainer
 
-    vuuClient = testStartUp()
+    val startUp = testStartUp()
+    vuuClient = startUp._1
+    vuuServerConfig = startUp._2
     
     val sessionOption = vuuClient.login("testUser")
     assert(sessionOption.isDefined)
@@ -36,7 +42,7 @@ abstract class WebSocketApiTestBase extends AnyFeatureSpec with BeforeAndAfterAl
     lifecycle.stop()
   }
 
-  def testStartUp(): TestVuuClient = {
+  def testStartUp(): (TestVuuClient, VuuServerConfig) = {
     val startUp = new TestStartUp(() => defineModuleWithTestTables())
     startUp.startServerAndClient()
   }

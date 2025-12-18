@@ -2,6 +2,7 @@ package org.finos.vuu.wsapi.helpers
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.VuuServerConfig
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.net.*
 import org.finos.vuu.net.auth.LoginTokenService
@@ -10,7 +11,6 @@ import org.scalatest.concurrent.{Signaler, ThreadSignaler}
 import org.scalatest.time.Span
 import org.scalatest.time.SpanSugar.*
 
-import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
 import scala.annotation.tailrec
 import scala.language.postfixOps
@@ -23,8 +23,8 @@ class TestVuuClient(vsClient: ViewServerClient, loginTokenService: LoginTokenSer
 
   val timeout: Span = 30 seconds
 
-  def getUri: URI = vsClient.getUri
-  
+  def isConnected: Boolean = vsClient.isConnected
+
   def send(sessionId: String, body: MessageBody): String = {
     val msg = createViewServerMessage(sessionId, body)
     vsClient.send(msg)

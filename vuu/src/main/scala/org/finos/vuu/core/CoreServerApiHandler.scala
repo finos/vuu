@@ -178,7 +178,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
 
   override def process(msg: RpcUpdate)(ctx: RequestContext): Option[ViewServerMessage] = {
     //TODO This is way too dangerous to leave enabled for now.
-    vsMsg(RpcReject(msg.table, msg.key, "No longer supported"))(ctx)
+    vsMsg(RpcReject(msg.table, msg.key, "Feature disabled"))(ctx)
   }
 
   override def process(msg: HeartBeatResponse)(ctx: RequestContext): Option[ViewServerMessage] = {
@@ -288,11 +288,11 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
   override def process(msg: CreateViewPortRequest)(ctx: RequestContext): Option[ViewServerMessage] = {
     Try(processCreate(msg)(ctx)) match {
       case Success(viewport) =>
-        logger.info(s"[API] Created viewport ${viewport.id} on table ${msg.table} in session ${ctx.session.sessionId}. Filter: ${msg.filterSpec}. Sort: ${msg.sort}. GroupBy: ${msg.groupBy.mkString(",")}")
+        logger.info(s"[API] Created viewport ${viewport.id} on table ${msg.table.table} in session ${ctx.session.sessionId}. Filter: ${msg.filterSpec}. Sort: ${msg.sort}. GroupBy: ${msg.groupBy.mkString(",")}")
         vsMsg(CreateViewPortSuccess(viewport.id, msg.table.table, msg.range, msg.columns,
           msg.sort, msg.groupBy, msg.filterSpec, msg.aggregations))(ctx)
       case Failure(e) =>
-        logger.error(s"[API] Failed to create viewport on table ${msg.table} in session ${ctx.session.sessionId}. (${ctx.requestId})", e)
+        logger.error(s"[API] Failed to create viewport on table ${msg.table.table} in session ${ctx.session.sessionId}. (${ctx.requestId})", e)
         vsMsg(CreateViewPortReject(msg.table, s"Failed to process request ${ctx.requestId}"))(ctx)
     }
   }

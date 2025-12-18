@@ -1,46 +1,248 @@
 package org.finos.vuu.wsapi
 
+import org.awaitility.Awaitility.await
+import org.finos.toolbox.lifecycle.LifecycleContainer
+import org.finos.toolbox.time.DefaultClock
 import org.finos.vuu.api.{ColumnBuilder, TableDef, ViewPortDef}
-import org.finos.vuu.client.messages.SessionId
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.json.JsonVsSerializer
-import org.finos.vuu.net.{ViewServerClient, WebSocketViewServerClient}
 import org.finos.vuu.net.rpc.DefaultRpcHandler
 import org.finos.vuu.net.ws.WebSocketClient
+import org.finos.vuu.net.{ChangeViewPortRange, ChangeViewPortReject, ChangeViewPortRequest, CreateViewPortRequest, CreateViewPortSuccess, DeselectAllReject, DeselectAllRequest, DeselectRowReject, DeselectRowRequest, DisableViewPortReject, DisableViewPortRequest, DisableViewPortSuccess, EnableViewPortReject, EnableViewPortRequest, ErrorResponse, FreezeViewPortReject, FreezeViewPortRequest, FreezeViewPortSuccess, GetViewPortMenusRequest, RemoveViewPortReject, RemoveViewPortRequest, RpcReject, RpcUpdate, SelectAllReject, SelectAllRequest, SelectAllSuccess, SelectRowRangeReject, SelectRowRangeRequest, SelectRowReject, SelectRowRequest, SelectRowSuccess, UnfreezeViewPortReject, UnfreezeViewPortRequest, WebSocketViewServerClient}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
+import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
 import org.finos.vuu.wsapi.helpers.{FakeDataSource, TestProvider, TestVuuClient}
 
+import java.time.Duration
 import scala.collection.immutable.ListMap
 
 class SecurityWSApiTest extends WebSocketApiTestBase {
 
   private val tableName = "accounts"
   private val moduleName = "SecurityWSApiTest"
-  
-  Feature("Assorted security tests") {
+  private val attacker = VuuUser("31337 H4X0R")
+  var attackingLifeCycle: LifecycleContainer = _
+  var attackingClient: TestVuuClient = _
+  var attackingSessionId: String = _
 
-    Scenario("Test creating viewport in another session") {
-
-      
-      val client = new WebSocketClient(vuuClient.getUri) //todo review params - port specified twice
-      val viewServerClient: ViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer())
-//      
-//      val anonymousClient = new TestVuuClient(viewServerClient, null)
-//      val result = client.send(SessionId.oneNew(), )
-//      
-
-    }
-
-    Scenario("Test calling RPC in another session") {
-
-    }
-    
+  override def beforeEach(): Unit = {
+    attackingLifeCycle = LifecycleContainer()(new DefaultClock)
+    attackingClient = createAttackingClient()
+    val sessionOption = attackingClient.login(attacker)
+    assert(sessionOption.isDefined)
+    attackingSessionId = sessionOption.get
   }
 
+  override def afterEach(): Unit = {
+    attackingLifeCycle.stop()
+  }
+
+  Feature("Assorted security tests") {
+
+    Scenario("Sending messages targeting another users session should result in immediate disconnection") {
+      val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(0, 100), Array("*"))
+
+      val requestId = attackingClient.send(sessionId, createViewPortRequest)
+
+      await atMost {
+        Duration.ofSeconds(1)
+      } until {
+        () => !attackingClient.isConnected
+      }
+    }
+
+    Scenario("Removing another sessions viewport should be rejected") {
+      val viewport = createViewPort()
+
+      val invalidRequest = RemoveViewPortRequest(viewport)
+      val requestId = attackingClient.send(attackingSessionId, invalidRequest)
+
+      val response = attackingClient.awaitForMsgWithBody[RemoveViewPortReject]
+      response.isEmpty shouldBe false
+      response.get.viewPortId shouldEqual viewport
+    }
+
+    Scenario("Enabling another sessions viewport should be rejected") {
+      val viewport = createViewPort()
+      vuuClient.send(sessionId, DisableViewPortRequest(viewport))
+      val disableResponse = vuuClient.awaitForMsgWithBody[DisableViewPortSuccess]
+
+      val invalidRequest = EnableViewPortRequest(viewport)
+      val requestId = attackingClient.send(attackingSessionId, invalidRequest)
+
+      val response = attackingClient.awaitForMsgWithBody[EnableViewPortReject]
+      response.isEmpty shouldBe false
+      response.get.viewPortId shouldEqual viewport
+    }
+
+    Scenario("Disabling another sessions viewport should be rejected") {
+      val viewport = createViewPort()
+
+      val invalidRequest = DisableViewPortRequest(viewport)
+      val requestId = attackingClient.send(attackingSessionId, invalidRequest)
+
+      val response = attackingClient.awaitForMsgWithBody[DisableViewPortReject]
+      response.isEmpty shouldBe false
+      response.get.viewPortId shouldEqual viewport
+    }
+
+    Scenario("Freezing another sessions viewport should be rejected") {
+      val viewport = createViewPort()
+
+      val invalidRequest = FreezeViewPortRequest(viewport)
+      val requestId = attackingClient.send(attackingSessionId, invalidRequest)
+
+      val response = attackingClient.awaitForMsgWithBody[FreezeViewPortReject]
+      response.isEmpty shouldBe false
+      response.get.viewPortId shouldEqual viewport
+      response.get.errorMessage shouldEqual s"Failed to process request $requestId"
+    }
+
+    Scenario("Unfreezing another sessions viewport should be rejected") {
+      val viewport = createViewPort()
+      vuuClient.send(sessionId, FreezeViewPortRequest(viewport))
+      val freezeResponse = vuuClient.awaitForMsgWithBody[FreezeViewPortSuccess]
+
+      val invalidRequest = UnfreezeViewPortRequest(viewport)
+      val requestId = attackingClient.send(attackingSessionId, invalidRequest)
+
+      val response = attackingClient.awaitForMsgWithBody[UnfreezeViewPortReject]
+      response.isEmpty shouldBe false
+      response.get.viewPortId shouldEqual viewport
+      response.get.errorMessage shouldEqual s"Failed to process request $requestId"
+    }
+
+    Scenario("RPC Update is disabled") {
+      val viewport = createViewPort()
+
+      vuuClient.send(sessionId, RpcUpdate(ViewPortTable(tableName, moduleName), "row1", Map("Name" -> "Snoopy")))
+
+      val response = vuuClient.awaitForMsgWithBody[RpcReject]
+      response.isEmpty shouldBe false
+      response.get.reason shouldEqual "Feature disabled"
+    }
+
+    Scenario("Getting VP menus on another sessions viewport should be rejected") {
+      val viewport = createViewPort()
+
+      val invalidRequest = GetViewPortMenusRequest(viewport)
+      val requestId = attackingClient.send(attackingSessionId, invalidRequest)
+
+      val response = attackingClient.awaitForMsgWithBody[ErrorResponse]
+      response.isEmpty shouldBe false
+      response.get.msg shouldEqual s"Failed to process request $requestId"
+    }
+
+    Scenario("Changing another sessions viewport should be rejected") {
+      val viewport = createViewPort()
+
+      val invalidRequest = ChangeViewPortRequest(viewport, Array("*"))
+      val requestId = attackingClient.send(attackingSessionId, invalidRequest)
+
+      val response = attackingClient.awaitForMsgWithBody[ChangeViewPortReject]
+      response.isEmpty shouldBe false
+      response.get.msg shouldEqual s"Failed to process request $requestId"
+    }
+
+    Scenario("Changing another sessions viewport range should be rejected") {
+      val viewport = createViewPort()
+
+      val invalidRequest = ChangeViewPortRange(viewport, 100, 200)
+      val requestId = attackingClient.send(attackingSessionId, invalidRequest)
+
+      val response = attackingClient.awaitForMsgWithBody[ErrorResponse]
+      response.isEmpty shouldBe false
+      response.get.msg shouldEqual s"Failed to process request $requestId"
+    }
+
+    Scenario("Selecting in another sessions viewport range should be rejected") {
+      val viewport = createViewPort()
+
+      val invalidRequest = SelectRowRequest(viewport, "row1", false)
+      val requestId = attackingClient.send(attackingSessionId, invalidRequest)
+
+      val response = attackingClient.awaitForMsgWithBody[SelectRowReject]
+      response.isEmpty shouldBe false
+      response.get.errorMsg shouldEqual s"Failed to process request $requestId"
+    }
+
+    Scenario("Deselecting in another sessions viewport range should be rejected") {
+      val viewport = createViewPort()
+      vuuClient.send(sessionId, SelectRowRequest(viewport, "row1", false))
+      val selectResponse = vuuClient.awaitForMsgWithBody[SelectRowSuccess]
+
+      val invalidRequest = DeselectRowRequest(viewport, "row1", true)
+      val requestId = attackingClient.send(attackingSessionId, invalidRequest)
+
+      val response = attackingClient.awaitForMsgWithBody[DeselectRowReject]
+      response.isEmpty shouldBe false
+      response.get.errorMsg shouldEqual s"Failed to process request $requestId"
+    }
+
+    Scenario("Selecting a range in another sessions viewport range should be rejected") {
+      val viewport = createViewPort()
+
+      val invalidRequest = SelectRowRangeRequest(viewport, "row1", "row5", false)
+      val requestId = attackingClient.send(attackingSessionId, invalidRequest)
+
+      val response = attackingClient.awaitForMsgWithBody[SelectRowRangeReject]
+      response.isEmpty shouldBe false
+      response.get.errorMsg shouldEqual s"Failed to process request $requestId"
+    }
+
+    Scenario("Selecting all in another sessions viewport should be rejected") {
+      val viewport = createViewPort()
+
+      val invalidRequest = SelectAllRequest(viewport)
+      val requestId = attackingClient.send(attackingSessionId, invalidRequest)
+
+      val response = attackingClient.awaitForMsgWithBody[SelectAllReject]
+      response.isEmpty shouldBe false
+      response.get.errorMsg shouldEqual s"Failed to process request $requestId"
+    }
+
+    Scenario("Deselecting all in another sessions viewport should be rejected") {
+      val viewport = createViewPort()
+      vuuClient.send(sessionId, SelectAllRequest(viewport))
+      val selectResponse = vuuClient.awaitForMsgWithBody[SelectAllSuccess]
+
+      val invalidRequest = DeselectAllRequest(viewport)
+      val requestId = attackingClient.send(attackingSessionId, invalidRequest)
+
+      val response = attackingClient.awaitForMsgWithBody[DeselectAllReject]
+      response.isEmpty shouldBe false
+      response.get.errorMsg shouldEqual s"Failed to process request $requestId"
+    }
+
+  }
+
+  private def createViewPort(): String = {
+    val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(0, 100), Array("*"))
+    vuuClient.send(sessionId, createViewPortRequest)
+    val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
+    val viewPortId = viewPortCreateResponse.get.viewPortId
+    waitForData(15)
+    viewPortId
+  }
+
+  private def createAttackingClient(): TestVuuClient = {
+    val uri = s"ws://localhost:${vuuServerConfig.wsOptions.wsPort}/${vuuServerConfig.wsOptions.uri}"
+    val port = vuuServerConfig.wsOptions.wsPort
+    val attackingWebSocketClient = new WebSocketClient(uri, port)(attackingLifeCycle)
+    val attackingViewServerClient = new WebSocketViewServerClient(attackingWebSocketClient, JsonVsSerializer())(attackingLifeCycle)
+    val attackingVuuClient: TestVuuClient = new TestVuuClient(attackingViewServerClient, vuuServerConfig.security.loginTokenService)
+    attackingLifeCycle.start()
+    await atMost {
+      Duration.ofSeconds(1)
+    } until {
+      () => attackingVuuClient.isConnected
+    }
+    attackingVuuClient
+  }
 
   protected def defineModuleWithTestTables(): ViewServerModule = {
     val tableDef = TableDef(
