@@ -466,7 +466,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
             createErrorRpcResponse(msg, error)
         }
       case Failure(e) =>
-        logger.error(s"[API] Failed to handle RPC Request $msg in viewport $viewPortId in session ${ctx.session.sessionId}. (${ctx.requestId})", e)
+        logger.error(s"[API] Failed to handle RPC Request ${msg.rpcName} in viewport $viewPortId in session ${ctx.session.sessionId}. (${ctx.requestId})", e)
         createErrorRpcResponse(msg, s"Failed to process request ${ctx.requestId}")
     }
     vsMsg(response)(ctx)
