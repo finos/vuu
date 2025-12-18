@@ -11,7 +11,7 @@ import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.json.JsonVsSerializer
 import org.finos.vuu.net.rpc.DefaultRpcHandler
 import org.finos.vuu.net.ws.WebSocketClient
-import org.finos.vuu.net.{ChangeViewPortRange, ChangeViewPortReject, ChangeViewPortRequest, CreateViewPortRequest, CreateViewPortSuccess, CreateVisualLinkRequest, CreateVisualLinkSuccess, DeselectAllReject, DeselectAllRequest, DeselectRowReject, DeselectRowRequest, DisableViewPortReject, DisableViewPortRequest, DisableViewPortSuccess, EnableViewPortReject, EnableViewPortRequest, ErrorResponse, FreezeViewPortReject, FreezeViewPortRequest, FreezeViewPortSuccess, GetViewPortMenusRequest, GetViewPortVisualLinksRequest, RemoveViewPortReject, RemoveViewPortRequest, RemoveViewPortSuccess, RemoveVisualLinkRequest, RemoveVisualLinkSuccess, RpcReject, RpcUpdate, SelectAllReject, SelectAllRequest, SelectAllSuccess, SelectRowRangeReject, SelectRowRangeRequest, SelectRowReject, SelectRowRequest, SelectRowSuccess, UnfreezeViewPortReject, UnfreezeViewPortRequest, WebSocketViewServerClient}
+import org.finos.vuu.net.{ChangeViewPortRange, ChangeViewPortReject, ChangeViewPortRequest, ChangeViewPortSuccess, CloseTreeNodeReject, CloseTreeNodeRequest, CreateViewPortRequest, CreateViewPortSuccess, CreateVisualLinkRequest, CreateVisualLinkSuccess, DeselectAllReject, DeselectAllRequest, DeselectRowReject, DeselectRowRequest, DisableViewPortReject, DisableViewPortRequest, DisableViewPortSuccess, EnableViewPortReject, EnableViewPortRequest, ErrorResponse, FilterSpec, FreezeViewPortReject, FreezeViewPortRequest, FreezeViewPortSuccess, GetViewPortMenusRequest, GetViewPortVisualLinksRequest, OpenTreeNodeReject, OpenTreeNodeRequest, OpenTreeNodeSuccess, RemoveViewPortReject, RemoveViewPortRequest, RemoveViewPortSuccess, RemoveVisualLinkRequest, RemoveVisualLinkSuccess, RpcReject, RpcUpdate, SelectAllReject, SelectAllRequest, SelectAllSuccess, SelectRowRangeReject, SelectRowRangeRequest, SelectRowReject, SelectRowRequest, SelectRowSuccess, UnfreezeViewPortReject, UnfreezeViewPortRequest, WebSocketViewServerClient}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
@@ -247,6 +247,35 @@ class SecurityWSApiTest extends WebSocketApiTestBase {
       vuuClient.awaitForMsgWithBody[RemoveVisualLinkSuccess]
       vuuClient.send(sessionId, RemoveViewPortRequest(targetChildViewPortId))
       vuuClient.awaitForMsgWithBody[RemoveViewPortSuccess]
+    }
+
+    Scenario("Opening a node in another sessions viewport should be rejected") {
+      vuuClient.send(sessionId, ChangeViewPortRequest(viewPortId = targetViewPortId, columns = Array("*"),
+        filterSpec = FilterSpec(""), groupBy = Array("Name")))
+      vuuClient.awaitForMsgWithBody[ChangeViewPortSuccess]
+      waitForData(28)
+
+      val invalidRequest = OpenTreeNodeRequest(targetViewPortId, "$root|Polly Phelps")
+      val requestId = attackingClient.send(attackingSessionId, invalidRequest)
+
+      val response = attackingClient.awaitForMsgWithBody[OpenTreeNodeReject]
+      response.isEmpty shouldBe false
+    }
+
+    Scenario("Closing a node in another sessions viewport should be rejected") {
+      vuuClient.send(sessionId, ChangeViewPortRequest(viewPortId = targetViewPortId, columns = Array("*"),
+        filterSpec = FilterSpec(""), groupBy = Array("Name")))
+      vuuClient.awaitForMsgWithBody[ChangeViewPortSuccess]
+      waitForData(28)
+      vuuClient.send(sessionId, OpenTreeNodeRequest(targetViewPortId, "$root|Polly Phelps"))
+      vuuClient.awaitForMsgWithBody[OpenTreeNodeSuccess]
+      waitForData(5)
+
+      val invalidRequest = CloseTreeNodeRequest(targetViewPortId, "$root|Polly Phelps")
+      val requestId = attackingClient.send(attackingSessionId, invalidRequest)
+
+      val response = attackingClient.awaitForMsgWithBody[CloseTreeNodeReject]
+      response.isEmpty shouldBe false
     }
 
   }

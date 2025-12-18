@@ -510,7 +510,9 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
-  def change(requestId: String, clientSession: ClientSessionId, id: String, range: ViewPortRange, columns: ViewPortColumns, sort: SortSpec = SortSpec(List()), filterSpec: FilterSpec = FilterSpec(""), groupBy: GroupBy = NoGroupBy): ViewPort = {
+  def change(requestId: String, clientSession: ClientSessionId, id: String, range: ViewPortRange, 
+             columns: ViewPortColumns, sort: SortSpec = SortSpec(List()), filterSpec: FilterSpec = FilterSpec(""),
+             groupBy: GroupBy = NoGroupBy): ViewPort = {
     logger.trace(s"[VP] Changing viewport $id in session ${clientSession.sessionId}. Filter: $filterSpec. Sort: $sort. GroupBy: $groupBy")
     val viewPort = getViewportInSession(id, clientSession)
 

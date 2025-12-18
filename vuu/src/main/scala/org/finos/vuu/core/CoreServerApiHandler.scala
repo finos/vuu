@@ -243,15 +243,13 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
     val viewPort = viewPortContainer.getViewportInSession(msg.viewPortId, ctx.session)
     val table = viewPort.table.asTable
 
-    val columns = if (msg.columns.length == 1 && msg.columns(0) == "*") {
+    val vpColumns = if (msg.columns.length == 1 && msg.columns.head == "*") {
       logger.trace("[API] Wildcard specified for columns, going to return all")
-      table.getTableDef.getColumns.toList
+      ViewPortColumnCreator.create(table)
     } else {
       validateColumns(table, msg.columns)
-      msg.columns.map(table.getTableDef.columnForName(_)).toList
+      ViewPortColumnCreator.create(table, msg.columns.toList)
     }
-
-    val vpColumns = ViewPortColumnCreator.create(table, msg.columns.toList)
 
     val sort = msg.sort
     val filter = msg.filterSpec
@@ -303,16 +301,13 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
       throw new RuntimeException(s"No table found with name ${msg.table}")
     } else {
 
-      val columns = if (msg.columns.length == 1 && msg.columns(0) == "*") {
+      val vpColumns = if (msg.columns.length == 1 && msg.columns.head == "*") {
         logger.trace("[API] Wildcard specified for columns, going to return all")
-        table.getTableDef.getColumns.toList
-      }
-      else {
+        ViewPortColumnCreator.create(table)
+      } else {
         validateColumns(table, msg.columns)
-        msg.columns.map(table.getTableDef.columnForName(_)).toList
+        ViewPortColumnCreator.create(table, msg.columns.toList)
       }
-
-      val vpColumns = ViewPortColumnCreator.create(table, msg.columns.toList)
 
       val sort = msg.sort
       val filter = msg.filterSpec
