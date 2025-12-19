@@ -62,7 +62,7 @@ public abstract class WebSocketApiJavaTestBase {
                 clock,
                 lifecycle,
                 tableDefContainer);
-        return startUp.startServerAndClient();
+        return startUp.startServerAndClient()._1;
     }
 
     protected void waitForData(long expectedRowCount) {

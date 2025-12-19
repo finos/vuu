@@ -2,6 +2,7 @@ package org.finos.vuu.wsapi.helpers
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.client.messages.RequestId
+import org.finos.vuu.core.VuuServerConfig
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.net.*
 import org.finos.vuu.net.auth.LoginTokenService
@@ -21,6 +22,8 @@ class TestVuuClient(vsClient: ViewServerClient, loginTokenService: LoginTokenSer
   type Token = String
 
   val timeout: Span = 30 seconds
+
+  def isConnected: Boolean = vsClient.isConnected
 
   def send(sessionId: String, body: MessageBody): String = {
     val msg = createViewServerMessage(sessionId, body)

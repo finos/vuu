@@ -40,8 +40,6 @@ trait ViewPortContainerMBean {
 
   def toAscii(clientSession: ClientSessionId, vpId: String): String
 
-  def subscribedKeys(clientSession: ClientSessionId, vpId: String): String
-
   def setRange(clientSession: ClientSessionId, vpId: String, start: Int, end: Int): String
 
   def openGroupByKey(clientSession: ClientSessionId, vpId: String, treeKey: String): String
@@ -325,10 +323,6 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     viewPort
   }
 
-  override def subscribedKeys(clientSession: ClientSessionId, vpId: String): String = {
-    "" //TODO What is this for?
-  }
-
   override def listViewPortsForSession(clientSession: ClientSessionId): List[ViewPort] = {
     IteratorHasAsScala(viewPorts.values().iterator())
       .asScala
@@ -412,7 +406,9 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
     }
   }
 
-  def change(requestId: String, clientSession: ClientSessionId, id: String, range: ViewPortRange, columns: ViewPortColumns, sort: SortSpec = SortSpec(List()), filterSpec: FilterSpec = FilterSpec(""), groupBy: GroupBy = NoGroupBy): ViewPort = {
+  def change(requestId: String, clientSession: ClientSessionId, id: String, range: ViewPortRange, 
+             columns: ViewPortColumns, sort: SortSpec = SortSpec(List()), filterSpec: FilterSpec = FilterSpec(""),
+             groupBy: GroupBy = NoGroupBy): ViewPort = {
     logger.trace(s"[VP] Changing viewport $id in session ${clientSession.sessionId}. Filter: $filterSpec. Sort: $sort. GroupBy: $groupBy")
     val viewPort = getViewportInSession(id, clientSession)
 
