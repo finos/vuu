@@ -5,17 +5,17 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.JoinTableDef
 import org.finos.vuu.core.module.basket.BasketConstants.Side
 import org.finos.vuu.core.module.basket.BasketModule
-import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames => BCColumnName, BasketTradingColumnNames => BTColumnName, BasketTradingConstituentColumnNames => ColumnName}
+import org.finos.vuu.core.module.basket.BasketModule.{BasketConstituentColumnNames as BCColumnName, BasketTradingColumnNames as BTColumnName, BasketTradingConstituentColumnNames as ColumnName}
 import org.finos.vuu.core.module.basket.result.ErrorReason
-import org.finos.vuu.core.table._
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler, RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
+import org.finos.vuu.core.table.*
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditTableRpcHandler, RpcFunctionFailure, RpcFunctionResult, RpcFunctionSuccess, RpcParams}
 import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.viewport._
+import org.finos.vuu.viewport.*
 
 import scala.util.control.NonFatal
 
 
-trait BasketTradingConstituentJoinServiceIF extends EditRpcHandler {
+trait BasketTradingConstituentJoinServiceIF extends EditTableRpcHandler {
   def setSell(params: RpcParams): RpcFunctionResult
 
   def setBuy(params: RpcParams): RpcFunctionResult
@@ -23,7 +23,7 @@ trait BasketTradingConstituentJoinServiceIF extends EditRpcHandler {
   def addConstituent(params: RpcParams): RpcFunctionResult
 }
 
-class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: Clock, val tableContainer: TableContainer) extends DefaultRpcHandler with BasketTradingConstituentJoinServiceIF with StrictLogging {
+class BasketTradingConstituentJoinService(val table: DataTable)(using tableContainer: TableContainer) extends BasketTradingConstituentJoinServiceIF with StrictLogging {
   registerRpc("setSell", params => setSell(params))
   registerRpc("setBuy", params => setBuy(params))
   registerRpc("addConstituent", params => addConstituent(params))
@@ -32,20 +32,6 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
     new SelectionViewPortMenuItem("Set Sell", "", this.setSell, "SET_SELECTION_SELL"),
     new SelectionViewPortMenuItem("Set Buy", "", this.setBuy, "SET_SELECTION_Buy"),
   )
-
-  override def deleteRowAction(): ViewPortDeleteRowAction = ViewPortDeleteRowAction("", this.onDeleteRow)
-
-  override def deleteCellAction(): ViewPortDeleteCellAction = ViewPortDeleteCellAction("", this.onDeleteCell)
-
-  override def addRowAction(): ViewPortAddRowAction = ViewPortAddRowAction("", this.onAddRow)
-
-  override def editCellAction(): ViewPortEditCellAction = ViewPortEditCellAction("", this.onEditCell)
-
-  override def editRowAction(): ViewPortEditRowAction = ViewPortEditRowAction("", this.onEditRow)
-
-  override def onFormSubmit(): ViewPortFormSubmitAction = ViewPortFormSubmitAction("", this.onFormSubmit)
-
-  override def onFormClose(): ViewPortFormCloseAction = ViewPortFormCloseAction("", this.onFormClose)
 
   override def setSell(params: RpcParams): RpcFunctionResult = {
     val selection: ViewPortSelection = params.namedParams("selection").asInstanceOf[ViewPortSelection]
@@ -106,7 +92,11 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
     keys.map(key => table.pullRow(key)).filter(_.get(BCColumnName.Ric).toString == ric)
   }
 
-  private def onEditCell(key: String, columnName: String, data: Any, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
+  override def editCell(params: RpcParams): RpcFunctionResult = {
+    val key: String = params.namedParams("key").asInstanceOf[String]
+    val columnName: String = params.namedParams("column").asInstanceOf[String]
+    val data: Any = params.namedParams("data")
+    val vp: ViewPort = params.viewPort
     try {
       getBaseTable() match {
         case Some(baseTable: DataTable) =>
@@ -116,12 +106,12 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
               baseTable.processUpdate(key, RowWithData(key, Map(ColumnName.InstanceIdRic -> key, columnName -> doubleValue)))
             case _ => baseTable.processUpdate(key, RowWithData(key, Map(ColumnName.InstanceIdRic -> key, columnName -> data)))
           }
-          ViewPortEditSuccess()
+          RpcFunctionSuccess(None)
         case None =>
-          ViewPortEditFailure("Could not find base table for basket trading constituent join ")
+          RpcFunctionFailure(0, "Could not find base table for basket trading constituent join ", null)
       }
     } catch {
-      case NonFatal(t) => ViewPortEditFailure(s"Could not update $columnName. $t")
+      case NonFatal(t) => RpcFunctionFailure(0, s"Could not update $columnName. $t", null)
     }
   }
 
@@ -135,25 +125,14 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
     }
   }
 
-  private def onEditRow(key: String, row: Map[String, Any], vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
-    val table = vp.table.asTable
-    table.processUpdate(key, RowWithData(key, row))
-    ViewPortEditSuccess()
+  override def editRow(params: RpcParams): RpcFunctionResult = {
+    val key: String = params.namedParams("key").asInstanceOf[String]
+    val data: Map[String, Any] = params.namedParams("data").asInstanceOf[Map[String, Any]]
+    params.viewPort.table.asTable.processUpdate(key, RowWithData(key, data))
+    RpcFunctionSuccess(None)
   }
 
-  private def onDeleteRow(key: String, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
-    ViewPortEditSuccess()
-  }
-
-  private def onDeleteCell(key: String, column: String, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
-    ViewPortEditSuccess()
-  }
-
-  private def onAddRow(key: String, data: Map[String, Any], vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
-    ViewPortEditSuccess()
-  }
-
-  private def onFormSubmit(vp: ViewPort, session: ClientSessionId): ViewPortAction = {
+  override def submitForm(params: RpcParams): RpcFunctionResult = {
     //    val table = vp.table.asTable
     //    val primaryKeys = table.primaryKeys
     //    val headKey = primaryKeys.head
@@ -166,11 +145,7 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
     //      logger.error("Seq number not set, returning error")
     //      ViewPortEditFailure("Sequencer number has not been set.")
     //    }
-    CloseDialogViewPortAction(vp.id)
-  }
-
-  private def onFormClose(vp: ViewPort, session: ClientSessionId): ViewPortAction = {
-    CloseDialogViewPortAction(vp.id)
+    RpcFunctionSuccess(None)
   }
 
   private def getBaseTable(): Option[DataTable] = {
@@ -241,4 +216,11 @@ class BasketTradingConstituentJoinService(val table: DataTable)(implicit clock: 
       ))
   }
 
+  override def deleteRow(params: RpcParams): RpcFunctionResult = ???
+
+  override def deleteCell(params: RpcParams): RpcFunctionResult = ???
+
+  override def addRow(params: RpcParams): RpcFunctionResult = ???
+
+  override def closeForm(params: RpcParams): RpcFunctionResult = ???
 }

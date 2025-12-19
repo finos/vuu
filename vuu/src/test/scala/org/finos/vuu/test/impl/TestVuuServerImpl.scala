@@ -20,7 +20,6 @@ import org.finos.vuu.net.rpc.JsonSubTypeRegistry
 import org.finos.vuu.plugin.{DefaultPluginRegistry, Plugin}
 import org.finos.vuu.provider.*
 import org.finos.vuu.test.TestVuuServer
-import org.finos.vuu.test.rpc.RpcDynamicProxy
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.viewport.*
 
@@ -200,20 +199,6 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
 
   override def overrideViewPortDef(table: String, vpDefFunc: (DataTable, Provider, ProviderContainer, TableContainer) => ViewPortDef): Unit = {
     viewPortContainer.addViewPortDefinition(table, vpDefFunc)
-  }
-
-  override def getViewPortRpcServiceProxy[TYPE : _root_.scala.reflect.ClassTag](viewport: ViewPort):TYPE = {
-
-    val interceptor = RpcDynamicProxy(viewport, handler, serializer, user, session, channel)
-
-    val clazz: Class[_] = classTag[TYPE].runtimeClass
-
-    val proxyInstance = java.lang.reflect.Proxy.newProxyInstance(
-                                  getClass.getClassLoader,
-                                  Array[Class[_]](clazz),
-                                  interceptor).asInstanceOf[TYPE]
-
-    proxyInstance
   }
 
   override def requestContext: RequestContext = {

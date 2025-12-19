@@ -18,7 +18,7 @@ import org.finos.vuu.core.table.{DataTable, SessionTable, TableContainer}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
 import org.finos.vuu.feature.EmptyViewPortKeys
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
-import org.finos.vuu.net.rpc.{EditRpcHandler, RpcFunctionResult, RpcParams}
+import org.finos.vuu.net.rpc.{RpcFunctionResult, RpcParams}
 import org.finos.vuu.net.{ClientSessionId, FilterSpec, RequestContext, SortSpec}
 import org.finos.vuu.plugin.PluginRegistry
 import org.finos.vuu.provider.{Provider, ProviderContainer}
@@ -115,110 +115,6 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
         }
       case None =>
         throw new RuntimeException(s"No RPC $rpcName found in viewport $vpId in session ${session.sessionId}")
-    }
-  }
-
-  @deprecated("#1790")
-  def callRpcEditFormClose(vpId: String, rpcName: String, session: ClientSessionId): ViewPortAction = {
-    val viewPort = getViewportInSession(vpId, session)
-    val viewPortDef = viewPort.getStructure.viewPortDef
-    val service = viewPortDef.service
-
-    service match {
-      case serv: EditRpcHandler => serv.onFormClose().func(viewPort, session)
-      case _ =>
-        throw new Exception(s"Service is not editable rpc")
-    }
-  }
-
-  @deprecated("#1790")
-  def callRpcEditDeleteCell(vpId: String, key: String, column: String, session: ClientSessionId): ViewPortAction = {
-    val viewPort = getViewportInSession(vpId, session)
-    val viewPortDef = viewPort.getStructure.viewPortDef
-    val service = viewPortDef.service
-
-    service match {
-      case serv: EditRpcHandler => serv.deleteCellAction().func(key, column, viewPort, session)
-      case _ =>
-        throw new Exception(s"Service is not editable rpc")
-    }
-  }
-
-  @deprecated("#1790")
-  def callRpcEditDeleteRow(vpId: String, key: String, session: ClientSessionId): ViewPortAction = {
-    val viewPort = getViewportInSession(vpId, session)
-    val viewPortDef = viewPort.getStructure.viewPortDef
-    val service = viewPortDef.service
-
-    service match {
-      case serv: EditRpcHandler => serv.deleteRowAction().func(key, viewPort, session)
-      case _ =>
-        throw new Exception(s"Service is not editable rpc")
-    }
-  }
-
-  @deprecated("#1790")
-  def callRpcAddRow(vpId: String, key: String,  data: Map[String, Any], session: ClientSessionId): ViewPortAction = {
-    val viewPort = getViewportInSession(vpId, session)
-    val viewPortDef = viewPort.getStructure.viewPortDef
-    val service = viewPortDef.service
-
-    service match {
-      case serv: EditRpcHandler => serv.addRowAction().func(key, data, viewPort, session)
-      case _ =>
-        throw new Exception(s"Service is not editable rpc")
-    }
-  }
-
-  @deprecated("#1790")
-  def callRpcEditFormSubmit(vpId: String, session: ClientSessionId): ViewPortAction = {
-    val viewPort = getViewportInSession(vpId, session)
-    val viewPortDef = viewPort.getStructure.viewPortDef
-    val service = viewPortDef.service
-
-    service match {
-      case serv: EditRpcHandler => serv.onFormSubmit().func(viewPort, session)
-      case _ =>
-        throw new Exception(s"Service is not editable rpc")
-    }
-  }
-
-  @deprecated("#1790")
-  def callRpcEditRow(vpId: String, key: String, data: Map[String, Any], session: ClientSessionId): ViewPortEditAction = {
-    val viewPort = getViewportInSession(vpId, session)
-    val viewPortDef = viewPort.getStructure.viewPortDef
-    val service = viewPortDef.service
-
-    service match {
-      case serv: EditRpcHandler => serv.editRowAction().func(key, data, viewPort, session)
-      case _ =>
-        throw new Exception(s"Service is not editable rpc")
-    }
-  }
-
-  @deprecated("#1790")
-  def callRpcEditCell(vpId: String, key: String, column: String, data: AnyRef, session: ClientSessionId): ViewPortEditAction = {
-    val viewPort = getViewportInSession(vpId, session)
-    val viewPortDef = viewPort.getStructure.viewPortDef
-    val service = viewPortDef.service
-
-    service match {
-      case serv: EditRpcHandler => serv.editCellAction().func(key, column, data, viewPort, session)
-      case _ =>
-        throw new Exception(s"Service is not editable rpc")
-    }
-  }
-
-  @deprecated("#1790")
-  def callRpcFormSubmit(vpId: String, session: ClientSessionId): ViewPortAction = {
-    val viewPort = getViewportInSession(vpId, session)
-    val viewPortDef = viewPort.getStructure.viewPortDef
-    val service = viewPortDef.service
-
-    service match {
-      case serv: EditRpcHandler => serv.onFormSubmit().func(viewPort, session)
-      case _ =>
-        throw new Exception(s"Service is not editable rpc")
     }
   }
 

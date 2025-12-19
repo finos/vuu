@@ -34,7 +34,7 @@ object EditableModule extends DefaultModule {
       ),
       (table, _, _, tableContainer) => ViewPortDef(
         columns = table.getTableDef.getColumns,
-        service = new FixSequenceRpcService()(clock, tableContainer)
+        service = new FixSequenceRpcService()(using tableContainer)
       )
     ).asModule()
   }

@@ -55,18 +55,6 @@ trait ServerApi {
 
   def process(msg: ViewPortMenuSelectionRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
 
-  def process(msg: ViewPortEditCellRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
-
-  def process(msg: ViewPortEditRowRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
-
-  def process(msg: ViewPortEditSubmitFormRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
-
-  def process(msg: ViewPortDeleteCellRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
-
-  def process(msg: ViewPortDeleteRowRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
-
-  def process(msg: ViewPortAddRowRpcCall)(ctx: RequestContext): Option[ViewServerMessage]
-
   def process(msg: RpcRequest)(ctx: RequestContext): Option[ViewServerMessage]
 
   def disconnect(session: ClientSessionId): Unit

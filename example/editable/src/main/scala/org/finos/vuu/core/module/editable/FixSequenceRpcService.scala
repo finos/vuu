@@ -1,61 +1,45 @@
 package org.finos.vuu.core.module.editable
 
-import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.table.{RowWithData, TableContainer}
-import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, EditRpcHandler}
-import org.finos.vuu.viewport._
+import org.finos.vuu.net.rpc.*
 
-class FixSequenceRpcService(implicit clock: Clock, tableContainer: TableContainer) extends DefaultRpcHandler with EditRpcHandler{
+class FixSequenceRpcService()(using tableContainer: TableContainer) extends EditTableRpcHandler{
 
-  def onDeleteRow(key: String, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
-    ViewPortEditSuccess()
+  override def editCell(params: RpcParams): RpcFunctionResult = {
+    val key: String = params.namedParams("key").asInstanceOf[String]
+    val columnName: String = params.namedParams("column").asInstanceOf[String]
+    val data: Any = params.namedParams("data")
+    params.viewPort.table.asTable.processUpdate(key, RowWithData(key, Map(columnName -> data)))
+    RpcFunctionSuccess(None)
   }
 
-  def onDeleteCell(key: String, column: String, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
-    ViewPortEditSuccess()
+  override def editRow(params: RpcParams): RpcFunctionResult = {
+    val key: String = params.namedParams("key").asInstanceOf[String]
+    val data: Map[String, Any] = params.namedParams("data").asInstanceOf[Map[String, Any]]
+    params.viewPort.table.asTable.processUpdate(key, RowWithData(key, data))
+    RpcFunctionSuccess(None)
   }
 
-  def onAddRow(key: String, data: Map[String, Any], vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
-    ViewPortEditSuccess()
-  }
-
-  private def onEditCell(key: String, columnName: String, data: Any, vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
-    val table = vp.table.asTable
-    table.processUpdate(key, RowWithData(key, Map(columnName -> data)))
-    ViewPortEditSuccess()
-  }
-
-  private def onEditRow(key: String, row: Map[String, Any], vp: ViewPort, session: ClientSessionId): ViewPortEditAction = {
-    val table = vp.table.asTable
-    table.processUpdate(key, RowWithData(key, row))
-    ViewPortEditSuccess()
-  }
-
-  private def onFormSubmit(vp: ViewPort, session: ClientSessionId): ViewPortAction = {
-    val table = vp.table.asTable
-    val primaryKeys = table.primaryKeys
+  override def submitForm(params: RpcParams): RpcFunctionResult = {
+    val comment: String = params.namedParams("comment").asInstanceOf[String]
+    val primaryKeys = params.viewPort.table.asTable.primaryKeys
     val headKey = primaryKeys.head
-    val sequencerNumber = table.pullRow(headKey).get("sequenceNumber").asInstanceOf[Int].toLong
+    val sequencerNumber = params.viewPort.table.asTable.pullRow(headKey).get("sequenceNumber").asInstanceOf[Int].toLong
 
     if (sequencerNumber > 0) {
       logger.trace("I would now send this fix seq to a fix engine to reset, we're all good:" + sequencerNumber)
-      CloseDialogViewPortAction(vp.id)
+      RpcFunctionSuccess(None)
     } else {
       logger.error("Seq number not set, returning error")
-      ViewPortEditFailure("Sequencer number has not been set.")
+      RpcFunctionFailure(0, "Sequencer number has not been set.", null)
     }
   }
 
-  private def onFormClose(vp: ViewPort, session: ClientSessionId): ViewPortAction = {
-    CloseDialogViewPortAction(vp.id)
-  }
+  override def deleteRow(params: RpcParams): RpcFunctionResult = ???
 
-  override def deleteRowAction(): ViewPortDeleteRowAction = ViewPortDeleteRowAction("", this.onDeleteRow)
-  override def deleteCellAction(): ViewPortDeleteCellAction = ViewPortDeleteCellAction("", this.onDeleteCell)
-  override def addRowAction(): ViewPortAddRowAction = ViewPortAddRowAction("", this.onAddRow)
-  override def editCellAction(): ViewPortEditCellAction = ViewPortEditCellAction("", this.onEditCell)
-  override def editRowAction(): ViewPortEditRowAction = ViewPortEditRowAction("", this.onEditRow)
-  override def onFormSubmit(): ViewPortFormSubmitAction = ViewPortFormSubmitAction("", this.onFormSubmit)
-  override def onFormClose(): ViewPortFormCloseAction = ViewPortFormCloseAction("", this.onFormClose)
+  override def deleteCell(params: RpcParams): RpcFunctionResult = ???
+
+  override def addRow(params: RpcParams): RpcFunctionResult = ???
+
+  override def closeForm(params: RpcParams): RpcFunctionResult = ???
 }
