@@ -206,7 +206,7 @@ export class ServerProxy {
     }, 2000);
   };
 
-  public async login(authToken?: string): Promise<string | void> {
+  public async login(authToken?: string): Promise<string | undefined> {
     if (authToken) {
       this.authToken = authToken;
       return new Promise((resolve, reject) => {
@@ -882,7 +882,10 @@ export class ServerProxy {
           this.sessionId = sessionId;
           this.pendingLogin?.resolve(sessionId);
           this.pendingLogin = undefined;
-          this.postMessageToClient(body);
+          this.postMessageToClient({
+            ...body,
+            sessionId,
+          });
         } else {
           throw Error("LOGIN_SUCCESS did not provide sessionId");
         }

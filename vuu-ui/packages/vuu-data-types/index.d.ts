@@ -718,6 +718,7 @@ export interface ServerProxySubscribeMessage extends WithFullConfig {
 // };
 
 export declare type VuuUIMessageInConnected = {
+  sessionId: string;
   type: "connected";
 };
 
@@ -786,7 +787,7 @@ export declare type VuuUiMessageInRequestResponse =
   | VuuUIMessageInTableMeta;
 
 export declare type VuuUIMessageIn =
-  | VuuLoginSuccessResponse
+  | (VuuLoginSuccessResponse & { sessionId: string })
   | VuuLoginFailResponse
   | VuuUiMessageInRequestResponse
   | VuuUIMessageInConnected
