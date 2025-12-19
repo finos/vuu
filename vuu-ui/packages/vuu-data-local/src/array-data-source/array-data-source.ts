@@ -26,8 +26,6 @@ import type {
   VuuMenu,
   VuuRange,
   VuuRowDataItemType,
-  VuuRpcEditRequest,
-  VuuRpcEditResponse,
   VuuRpcRequest,
   VuuRpcResponse,
   VuuSort,
@@ -49,7 +47,6 @@ import {
   hasGroupBy,
   hasSort,
   isConfigChanged,
-  isEditCellRequest,
   isGroupByChanged,
   logger,
   metadataKeys,
@@ -1048,52 +1045,16 @@ export class ArrayDataSource
     console.log("remove link");
   }
 
-  applyEdit(
-    rowKey: string,
-    columnName: string,
-    value: VuuRowDataItemType,
-  ): Promise<true> {
-    console.log(`ArrayDataSource applyEdit ${rowKey} ${columnName} ${value}`);
-    return Promise.resolve(true);
-  }
   async remoteProcedureCall<T extends VuuRpcResponse = VuuRpcResponse>() {
     return Promise.reject<T>();
-  }
-
-  async editRpcCall(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    rpcRequest: Omit<VuuRpcEditRequest, "vpId">,
-  ): Promise<VuuRpcEditResponse> {
-    throw Error("ArrayDataSource does not implement editRpcCall");
   }
 
   async menuRpcCall(
     rpcRequest: Omit<VuuRpcRequest, "vpId">,
   ): Promise<VuuRpcResponse> {
-    return new Promise((resolve) => {
-      if (isEditCellRequest(rpcRequest)) {
-        const { rowKey, field, value } = rpcRequest;
-        try {
-          this.updateDataItem(rowKey, field, value);
-          resolve({
-            action: {
-              type: "VP_EDIT_SUCCESS",
-            },
-            rpcName: "VP_EDIT_CELL_RPC",
-            type: "VIEW_PORT_MENU_RESP",
-            vpId: this.viewport,
-          });
-        } catch (error) {
-          resolve({
-            error: String(error),
-            rpcName: "VP_EDIT_CELL_RPC",
-            type: "VIEW_PORT_MENU_REJ",
-            vpId: this.viewport,
-          });
-        }
-      } else {
-        throw Error("menuRpcCall invalid rpcRequest");
-      }
+    console.log({ rpcRequest });
+    return new Promise(() => {
+      // TODO
     });
   }
 

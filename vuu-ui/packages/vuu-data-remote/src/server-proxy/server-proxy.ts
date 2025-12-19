@@ -206,7 +206,7 @@ export class ServerProxy {
     }, 2000);
   };
 
-  public async login(authToken?: string): Promise<string | void> {
+  public async login(authToken?: string): Promise<string | undefined> {
     if (authToken) {
       this.authToken = authToken;
       return new Promise((resolve, reject) => {
@@ -882,7 +882,10 @@ export class ServerProxy {
           this.sessionId = sessionId;
           this.pendingLogin?.resolve(sessionId);
           this.pendingLogin = undefined;
-          this.postMessageToClient(body);
+          this.postMessageToClient({
+            ...body,
+            sessionId,
+          });
         } else {
           throw Error("LOGIN_SUCCESS did not provide sessionId");
         }
@@ -1141,29 +1144,6 @@ export class ServerProxy {
           if (viewport) {
             const clientMessage = viewport.setMenu(body.menu);
             this.postMessageToClient(clientMessage);
-          }
-        }
-        break;
-
-      case "VP_EDIT_RPC_RESPONSE":
-        {
-          this.postMessageToClient({
-            action: body.action,
-            requestId,
-            rpcName: body.rpcName,
-            type: "VP_EDIT_RPC_RESPONSE",
-          });
-        }
-        break;
-      case "VP_EDIT_RPC_REJECT":
-        {
-          const viewport = this.viewports.get(body.vpId);
-          if (viewport) {
-            this.postMessageToClient({
-              requestId,
-              type: "VP_EDIT_RPC_REJECT",
-              error: body.error,
-            });
           }
         }
         break;

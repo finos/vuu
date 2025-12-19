@@ -9,6 +9,8 @@ import type {
   LinkDescriptorWithLabel,
   NoAction,
   OpenDialogAction,
+  RpcResultError,
+  RpcResultSuccess,
   VuuAggregation,
   VuuColumnDataType,
   VuuColumns,
@@ -28,8 +30,6 @@ import type {
   VuuCreateVisualLink,
   VuuRemoveVisualLink,
   VuuTableList,
-  VuuRpcEditRequest,
-  VuuRpcEditResponse,
   VuuLoginSuccessResponse,
   VuuLoginFailResponse,
   SelectRequest,
@@ -488,16 +488,6 @@ export declare type DataSourceEvents = {
   "visual-link-removed": () => void;
 };
 
-/**
- * return Promise<true> indicates success
- * return Promise<errorMessage> indicates failure
- */
-export declare type DataSourceEditHandler = (
-  rowKey: string,
-  columnName: string,
-  value: VuuRowDataItemType,
-) => Promise<true | string>;
-
 export declare type DataSourceDeleteHandler = (
   key: string,
 ) => Promise<true | string>;
@@ -559,7 +549,6 @@ export interface DataSource
   extends IEventEmitter<DataSourceEvents>,
     Partial<TypeaheadSuggestionProvider> {
   aggregations: VuuAggregation[];
-  applyEdit: DataSourceEditHandler;
   closeTreeNode: (keyOrIndex: string | number, cascade?: boolean) => void;
   columns: string[];
   config: WithBaseFilter<WithFullConfig>;
@@ -660,9 +649,6 @@ export interface DataSource
   insertRow?: DataSourceInsertHandler;
   links?: LinkDescriptorWithLabel[];
   menu?: VuuMenu;
-  editRpcCall: (
-    rpcRequest: Omit<VuuRpcEditRequest, "vpId">,
-  ) => Promise<VuuRpcEditResponse>;
   menuRpcCall: (
     rpcRequest: Omit<VuuRpcMenuRequest, "vpId">,
   ) => Promise<VuuRpcMenuResponse>;
@@ -732,6 +718,7 @@ export interface ServerProxySubscribeMessage extends WithFullConfig {
 // };
 
 export declare type VuuUIMessageInConnected = {
+  sessionId: string;
   type: "connected";
 };
 
@@ -756,20 +743,6 @@ export interface VuuUIMessageInRPC {
   requestId: string;
   type: "RPC_RESPONSE";
 }
-
-export interface VuuUIMessageInRPCEditReject {
-  error: string;
-  requestId?: string;
-  type: "VP_EDIT_RPC_REJECT";
-}
-
-export interface VuuUIMessageInRPCEditResponse {
-  action: unknown;
-  requestId: string;
-  rpcName: string;
-  type: "VP_EDIT_RPC_RESPONSE";
-}
-
 export interface VuuUIMessageInTableList {
   requestId: string;
   type: "TABLE_LIST_RESP";
@@ -809,14 +782,12 @@ export declare type VuuUiMessageInRequestResponse =
   | MenuRpcResponse
   | MenuRpcReject
   | VuuUIMessageInRPC
-  | VuuUIMessageInRPCEditReject
-  | VuuUIMessageInRPCEditResponse
   | ViewportRpcResponse
   | VuuUIMessageInTableList
   | VuuUIMessageInTableMeta;
 
 export declare type VuuUIMessageIn =
-  | VuuLoginSuccessResponse
+  | (VuuLoginSuccessResponse & { sessionId: string })
   | VuuLoginFailResponse
   | VuuUiMessageInRequestResponse
   | VuuUIMessageInConnected

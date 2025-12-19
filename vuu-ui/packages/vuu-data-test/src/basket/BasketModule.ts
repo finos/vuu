@@ -181,10 +181,6 @@ export class BasketModule extends VuuModule<BasketsTableName> {
     };
   }
 
-  get editServices() {
-    return undefined;
-  }
-
   get menuServices():
     | Record<BasketsTableName, RpcMenuService[] | undefined>
     | undefined {
@@ -262,7 +258,10 @@ export class BasketModule extends VuuModule<BasketsTableName> {
   private createNewBasket: ServiceHandler = async (rpcRequest) => {
     if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
       const { sourceBasketId, tradeBasketName } = rpcRequest.params;
-      const key = this.createTradingBasket(sourceBasketId, tradeBasketName);
+      const key = this.createTradingBasket(
+        sourceBasketId as string,
+        tradeBasketName as string,
+      );
       return {
         type: "SUCCESS_RESULT",
         data: key,
@@ -275,7 +274,11 @@ export class BasketModule extends VuuModule<BasketsTableName> {
   private sendToMarket: ServiceHandler = async (rpcRequest) => {
     if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
       const { basketInstanceId } = rpcRequest.params;
-      this.tables.basketTrading.update(basketInstanceId, "status", "ON_MARKET");
+      this.tables.basketTrading.update(
+        basketInstanceId as string,
+        "status",
+        "ON_MARKET",
+      );
       return {
         type: "SUCCESS_RESULT",
         data: undefined,
@@ -288,7 +291,7 @@ export class BasketModule extends VuuModule<BasketsTableName> {
     if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
       const { basketInstanceId } = rpcRequest.params;
       this.tables.basketTrading.update(
-        basketInstanceId,
+        basketInstanceId as string,
         "status",
         "OFF-MARKET",
       );

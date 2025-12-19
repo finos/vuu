@@ -4,10 +4,8 @@ import type {
   VuuGroupBy,
   VuuAggregation,
   VuuSort,
-  VuuRowDataItemType,
   VuuRpcResponse,
   VuuRpcRequest,
-  VuuRpcEditResponse,
   SelectRequest,
   SelectRowRequest,
 } from "@vuu-ui/vuu-protocol-types";
@@ -22,8 +20,6 @@ import type {
   DataSourceSubscribeProps,
   WithFullConfig,
   MenuRpcResponse,
-  VuuUIMessageInRPCEditReject,
-  VuuUIMessageInRPCEditResponse,
 } from "@vuu-ui/vuu-data-types";
 import {
   EventEmitter,
@@ -439,29 +435,11 @@ export class JsonDataSource
 
   async menuRpcCall(
     rpcRequest: Omit<VuuRpcRequest, "vpId">,
-  ): Promise<
-    | MenuRpcResponse
-    | VuuUIMessageInRPCEditReject
-    | VuuUIMessageInRPCEditResponse
-    | undefined
-  > {
+  ): Promise<MenuRpcResponse | undefined> {
     console.log("rmenuRpcCall", {
       rpcRequest,
     });
     return undefined;
-  }
-
-  async editRpcCall(): Promise<VuuRpcEditResponse> {
-    throw Error("JSONDataSource does not implement editRpcCall");
-  }
-
-  applyEdit(
-    rowKey: string,
-    columnName: string,
-    value: VuuRowDataItemType,
-  ): Promise<true> {
-    console.log(`ArrayDataSource applyEdit ${rowKey} ${columnName} ${value}`);
-    return Promise.resolve(true);
   }
 
   getChildRows(rowKey: string) {

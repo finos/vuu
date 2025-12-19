@@ -58,7 +58,7 @@ async function connectToServer(
   token: string,
   retryLimitDisconnect?: number,
   retryLimitStartup?: number,
-) {
+): Promise<string | undefined> {
   const websocketConnection = (ws = new WebSocketConnection({
     callback: (msg) => {
       if (isConnectionQualityMetrics(msg)) {
@@ -86,7 +86,7 @@ async function connectToServer(
   server = new ServerProxy(websocketConnection, sendMessageToClient);
   if (websocketConnection.requiresLogin) {
     // no handling for failed login
-    await server.login(token);
+    return await server.login(token);
   }
 }
 
@@ -100,14 +100,14 @@ const handleMessageFromClient = async ({
   switch (message.type) {
     case "connect":
       try {
-        await connectToServer(
+        const sessionId = await connectToServer(
           message.url,
           message.protocol,
           message.token,
           message.retryLimitDisconnect,
           message.retryLimitStartup,
         );
-        postMessage({ type: "connected" });
+        postMessage({ type: "connected", sessionId });
       } catch (err: unknown) {
         postMessage({ type: "connection-failed", reason: String(err) });
       }

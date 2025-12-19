@@ -3,9 +3,8 @@ import {
   importCSS,
   registerComponent,
 } from "@vuu-ui/vuu-utils";
-import React, { Suspense, useEffect } from "react";
+import React, { useEffect } from "react";
 import { FeatureErrorBoundary } from "./FeatureErrorBoundary";
-import { Loader } from "./Loader";
 
 /**
  * Ensure we never lazy load the same component more than once
@@ -62,11 +61,10 @@ function RawFeature<Params extends object | undefined>({
   }
 
   const LazyFeature = useCachedFeature(url);
+  // Suspense has been removed here - caused components to render twice
   return (
     <FeatureErrorBoundary url={url}>
-      <Suspense fallback={<Loader />}>
-        <LazyFeature {...props} {...params} />
-      </Suspense>
+      <LazyFeature {...props} {...params} />
     </FeatureErrorBoundary>
   );
 }

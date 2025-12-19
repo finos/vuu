@@ -210,12 +210,25 @@ export const useBasketTrading = () => {
   );
 
   const handleCommitBasketChange = useCallback<BasketChangeHandler>(
-    (columnName, value) => {
+    async (column, data) => {
       if (basket && dataSourceBasketTradingControl) {
         const key = basket.dataSourceRow[KEY];
-        return dataSourceBasketTradingControl.applyEdit(key, columnName, value);
+        const response = await dataSourceBasketTradingControl.rpcRequest?.({
+          params: {
+            key,
+            column,
+            data,
+          },
+          rpcName: "editCell",
+          type: "RPC_REQUEST",
+        });
+        if (response?.type === "SUCCESS_RESULT") {
+          return true;
+        } else if (response?.type === "ERROR_RESULT") {
+          return response.errorMessage;
+        }
       }
-      return Promise.resolve(true);
+      return "basket or dataSourceBasketTradingControl undefined";
     },
     [basket, dataSourceBasketTradingControl],
   );

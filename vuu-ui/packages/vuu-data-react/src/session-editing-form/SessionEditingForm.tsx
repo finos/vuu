@@ -4,12 +4,10 @@ import {
   VuuColumnDataType,
   VuuDataRow,
   VuuRowDataItemType,
-  VuuRpcEditCellRequest,
 } from "@vuu-ui/vuu-protocol-types";
 import {
   buildColumnMap,
   getTypedValue,
-  isErrorResponse,
   queryClosest,
   Range,
   shallowEquals,
@@ -208,59 +206,62 @@ export const SessionEditingForm = ({
   );
 
   const handleBlur = useCallback<FocusEventHandler<HTMLInputElement>>(
-    (evt) => {
-      const [field, value] = getFieldNameAndValue(evt);
-      const rowKey = values?.[keyField];
+    async (evt) => {
+      const [column, value] = getFieldNameAndValue(evt);
+      const key = values?.[keyField];
       // TODO link this with client side validation if we're going to use it
-      const { type } = getField(fields, field);
-      const typedValue = getTypedValue(value, type, true);
-      if (typeof rowKey === "string") {
-        dataSource
-          .editRpcCall({
-            type: "VP_EDIT_CELL_RPC",
-            rowKey,
-            field,
-            value: typedValue,
-          } as VuuRpcEditCellRequest)
-          .then((response) => {
-            if (isErrorResponse(response)) {
-              console.log(`edit rejected ${response.error}`);
-              setFieldStatusValues((map) => ({
-                ...map,
-                [field]: response.error,
-              }));
-            } else {
-              setFieldStatusValues((map) => ({
-                ...map,
-                [field]: undefined,
-              }));
-            }
-          });
+      const { type } = getField(fields, column);
+      const data = getTypedValue(value, type, true);
+      if (typeof key === "string") {
+        const response = await dataSource.rpcRequest?.({
+          params: {
+            key,
+            column,
+            data,
+          },
+          rpcName: "editCell",
+          type: "RPC_REQUEST",
+        });
+        if (response?.type === "SUCCESS_RESULT") {
+          setFieldStatusValues((map) => ({
+            ...map,
+            [column]: undefined,
+          }));
+        } else if (response?.type === "ERROR_RESULT") {
+          console.log(`edit rejected ${response.errorMessage}`);
+          setFieldStatusValues((map) => ({
+            ...map,
+            [column]: response.errorMessage,
+          }));
+        }
       }
     },
     [dataSource, fields, keyField, values],
   );
 
-  const applyAction = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (action: any) => {
-      if (action?.type === "CLOSE_DIALOG_ACTION") {
-        onClose?.();
-      }
-    },
-    [onClose],
-  );
+  // const applyAction = useCallback(
+  //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  //   (action: any) => {
+  //     if (action?.type === "CLOSE_DIALOG_ACTION") {
+  //       onClose?.();
+  //     }
+  //   },
+  //   [onClose],
+  // );
 
   const handleSubmit = useCallback(async () => {
-    const rpcResponse = await dataSource.editRpcCall({
-      type: "VP_EDIT_SUBMIT_FORM_RPC",
+    const response = await dataSource.rpcRequest?.({
+      params: { comment: "" },
+      rpcName: "submitForm",
+      type: "RPC_REQUEST",
     });
-    if (isErrorResponse(rpcResponse)) {
-      setErrorMessage(rpcResponse.error);
-    } else {
-      applyAction(rpcResponse.action);
+    if (response?.type === "SUCCESS_RESULT") {
+      // applyAction(response.action);
+      onClose?.();
+    } else if (response?.type === "ERROR_RESULT") {
+      setErrorMessage(response.errorMessage);
     }
-  }, [applyAction, dataSource]);
+  }, [dataSource, onClose]);
 
   const handleKeyDown = useCallback<KeyboardEventHandler>(
     (evt) => {

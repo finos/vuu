@@ -9,11 +9,7 @@ import type {
 import {
   VuuRpcMenuRequest,
   OpenDialogAction,
-  VuuRpcEditCellRequest,
   VuuRpcRequest,
-  VuuRpcEditAddRowRequest,
-  VuuDataRowDto,
-  VuuRpcEditDeleteRowRequest,
   VuuRpcResponse,
   VuuRpcMenuSuccess,
   VuuTable,
@@ -22,7 +18,6 @@ import {
   ViewportRpcContext,
   OpenComponentInDialogAction,
   VuuLoginResponse,
-  VuuRowDataItemType,
   SelectRequest,
   SelectResponse,
   SelectSuccessWithRowCount,
@@ -36,12 +31,6 @@ const MENU_RPC_TYPES = [
   "VIEW_PORT_MENU_TABLE_RPC",
   "VIEW_PORT_MENU_ROW_RPC",
   "VIEW_PORT_MENU_CELL_RPC",
-  "VP_EDIT_CELL_RPC",
-  "VP_EDIT_ROW_RPC",
-  "VP_EDIT_ADD_ROW_RPC",
-  "VP_EDIT_DELETE_CELL_RPC",
-  "VP_EDIT_DELETE_ROW_RPC",
-  "VP_EDIT_SUBMIT_FORM_RPC",
 ];
 
 export const isSelectRequest = (message: object): message is SelectRequest =>
@@ -112,83 +101,6 @@ export const isCreateVpSuccess = (
   response: VuuViewportCreateResponse,
 ): response is VuuViewportCreateSuccessResponse =>
   response.type === "CREATE_VP_SUCCESS";
-
-export function isEditCellRequest(
-  request: VuuRpcRequest,
-): request is VuuRpcEditCellRequest;
-export function isEditCellRequest(
-  request: Omit<VuuRpcRequest, "vpId">,
-): request is Omit<VuuRpcEditCellRequest, "vpId">;
-export function isEditCellRequest(
-  request: VuuRpcRequest | Omit<VuuRpcRequest, "vpId">,
-): request is VuuRpcEditCellRequest | Omit<VuuRpcEditCellRequest, "vpId"> {
-  return request.type === "VP_EDIT_CELL_RPC";
-}
-
-export function vuuEditCellRequest(
-  rowKey: string,
-  field: string,
-  value: VuuRowDataItemType,
-  vpId: string,
-): VuuRpcEditCellRequest;
-export function vuuEditCellRequest(
-  rowKey: string,
-  field: string,
-  value: VuuRowDataItemType,
-): Omit<VuuRpcEditCellRequest, "vpId">;
-export function vuuEditCellRequest(
-  rowKey: string,
-  field: string,
-  value: VuuRowDataItemType,
-  vpId?: string,
-): VuuRpcEditCellRequest | Omit<VuuRpcEditCellRequest, "vpId"> {
-  return {
-    rowKey,
-    field,
-    value,
-    type: "VP_EDIT_CELL_RPC",
-    vpId,
-  };
-}
-export function vuuAddRowRequest(
-  rowKey: string,
-  data: VuuDataRowDto,
-  vpId: string,
-): VuuRpcEditAddRowRequest;
-export function vuuAddRowRequest(
-  rowKey: string,
-  data: VuuDataRowDto,
-): Omit<VuuRpcEditAddRowRequest, "vpId">;
-export function vuuAddRowRequest(
-  rowKey: string,
-  data: VuuDataRowDto,
-  vpId?: string,
-): VuuRpcEditAddRowRequest | Omit<VuuRpcEditAddRowRequest, "vpId"> {
-  return {
-    rowKey,
-    data,
-    type: "VP_EDIT_ADD_ROW_RPC",
-    vpId,
-  };
-}
-
-export function vuuDeleteRowRequest(
-  rowKey: string,
-  vpId: string,
-): VuuRpcEditDeleteRowRequest;
-export function vuuDeleteRowRequest(
-  rowKey: string,
-): Omit<VuuRpcEditDeleteRowRequest, "vpId">;
-export function vuuDeleteRowRequest(
-  rowKey: string,
-  vpId?: string,
-): VuuRpcEditDeleteRowRequest | Omit<VuuRpcEditDeleteRowRequest, "vpId"> {
-  return {
-    rowKey,
-    type: "VP_EDIT_DELETE_ROW_RPC",
-    vpId,
-  };
-}
 
 export const isSessionTable = (table?: unknown) => {
   if (

@@ -438,9 +438,6 @@ export declare type ServerMessageBody =
   | VuuCreateVisualLinkResponse
   | VuuRemoveVisualLinkResponse
   | ServerToClientError
-  | VuuRpcEditSuccess
-  | VuuRpcEditSuccess
-  | VuuRpcEditError
   | FreezeViewportResponse
   | UnfreezeViewportResponse;
 export interface ClientToServerHeartBeat {
@@ -476,9 +473,7 @@ export declare type ClientToServerMenuRPCType =
   | "VIEW_PORT_MENU_ROW_RPC"
   | "VIEW_PORT_MENU_CELL_RPC";
 
-export declare type VuuRpcMessagesOut =
-  | ClientToServerMenuSelectRPC
-  | VuuRpcEditCellRequest;
+export declare type VuuRpcMessagesOut = ClientToServerMenuSelectRPC;
 
 export declare type ClientMessageBody =
   | ClientToServerAuth
@@ -552,20 +547,14 @@ export declare type RpcContext =
   | ViewportRpcContext
   | ViewportRowRpcContext;
 
-export declare type VuuRpcRequest =
-  | VuuRpcServiceRequest
-  | VuuRpcMenuRequest
-  | VuuRpcEditRequest;
+export declare type VuuRpcRequest = VuuRpcServiceRequest | VuuRpcMenuRequest;
 
-export declare type VuuRpcResponse =
-  | VuuRpcServiceResponse
-  | VuuRpcMenuResponse
-  | VuuRpcEditResponse;
+export declare type VuuRpcResponse = VuuRpcServiceResponse | VuuRpcMenuResponse;
 
 export declare type VuuRpcServiceRequest<T extends RpcContext = RpcContext> = {
   context: T;
   type: "RPC_REQUEST";
-  params: Record<string, string>;
+  params: Record<string, VuuRowDataItemType>;
   rpcName: TypeAheadMethod | string;
 };
 
@@ -632,7 +621,7 @@ export interface ClientToServerMenuCellRPC {
 }
 
 export interface VuuRpcMenuSuccess<
-  T extends VuuRpcMenuAction | VuuRpcEditAction = VuuRpcMenuAction,
+  T extends VuuRpcMenuAction = VuuRpcMenuAction,
 > {
   action: T;
   rpcName: string;
@@ -647,75 +636,9 @@ export interface VuuRpcMenuError {
   vpId: string;
 }
 
-/**
- * Note VuuRpcEditCellRequest gets success response of type  VuuRpcMenuSuccess, with
- * rpcName "VP_EDIT_CELL_RPC"
- * with action of type "VP_EDIT_SUCCESS"
- *
- * VuuRpcEditCommitRequest gets response of type VuuRpcEditSuccess or VuuRpcEditError
- */
-// Edit RPC
-export declare type VuuRpcEditRequest =
-  | VuuRpcEditCellRequest
-  | VuuRpcEditAddRowRequest
-  | VuuRpcEditDeleteRowRequest
-  | VuuRpcEditUpdateRowRequest
-  | VuuRpcEditCommitRequest;
-
-export declare type VuuRpcEditResponse = VuuRpcEditSuccess | VuuRpcEditError;
-export interface VuuRpcEditSuccess {
-  action: unknown;
-  type: "VP_EDIT_RPC_RESPONSE";
-  rpcName: "VP_EDIT_SUBMIT_FORM_RPC";
-  vpId: string;
-}
-export interface VuuRpcEditError {
-  error: string;
-  rpcName: string;
-  type: "VP_EDIT_RPC_REJECT";
-  vpId: string;
-}
-
-export interface VuuRpcEditCellRequest {
-  rowKey: string;
-  type: "VP_EDIT_CELL_RPC";
-  field: string;
-  value: VuuRowDataItemType;
-  vpId: string;
-}
-export interface VuuRpcEditUpdateRowRequest {
-  rowKey: string;
-  type: "VP_EDIT_ROW_RPC";
-  row: VuuDataRow;
-  vpId: string;
-}
-
 export declare type VuuDataRowDto = { [key: string]: VuuRowDataItemType };
-export interface VuuRpcEditAddRowRequest {
-  rowKey: string;
-  type: "VP_EDIT_ADD_ROW_RPC";
-  data: VuuDataRowDto;
-  vpId: string;
-}
-export interface VuuRpcEditDeleteRowRequest {
-  rowKey: string;
-  type: "VP_EDIT_DELETE_ROW_RPC";
-  vpId: string;
-}
-export interface VuuRpcEditCommitRequest {
-  type: "VP_EDIT_SUBMIT_FORM_RPC";
-  vpId: string;
-}
 
-export declare type VuuRpcEditAction = {
-  error?: string;
-  type: "VP_EDIT_SUCCESS";
-};
-
-export declare type VuuRpcAction =
-  | VuuRpcViewportAction
-  | VuuRpcMenuAction
-  | VuuRpcEditAction;
+export declare type VuuRpcAction = VuuRpcViewportAction | VuuRpcMenuAction;
 
 export declare type VuuRpcViewportAction = {
   key?: string;
@@ -727,8 +650,7 @@ export declare type VuuRpcMenuAction =
   | OpenDialogAction
   | CloseDialogAction
   | NoAction
-  | ShowNotificationAction
-  | VuuRpcEditAction;
+  | ShowNotificationAction;
 
 // prettier-ignore
 export declare type VuuColumnDataType = "int" | "long" | "double" | "string" | "char" | "boolean" | "epochtimestamp";

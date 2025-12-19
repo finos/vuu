@@ -4,7 +4,6 @@ import {
   DataSourceConfig,
   DataSourceDataMessage,
   DataSourceRow,
-  RpcResponse,
   TypeaheadSuggestionProvider,
   VuuUIMessageIn,
   VuuUIMessageInRPC,
@@ -22,7 +21,6 @@ import {
   VuuFilter,
   VuuRemoveVisualLink,
   VuuRowDataItemType,
-  VuuRpcEditError,
   VuuSort,
 } from "@vuu-ui/vuu-protocol-types";
 import { ColumnMap } from "../column-utils";
@@ -294,10 +292,6 @@ export const isConnectionQualityMetrics = (
 
 export const messageHasResult = (msg: object): msg is VuuUIMessageInRPC =>
   typeof (msg as VuuUIMessageInRPC).result !== "undefined";
-
-export const isErrorResponse = (
-  response?: Partial<RpcResponse>,
-): response is VuuRpcEditError => response?.type === "VP_EDIT_RPC_REJECT";
 
 export const isVisualLinkMessage = (
   msg: unknown,

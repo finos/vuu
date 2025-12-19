@@ -21,10 +21,6 @@ import type {
   VuuGroupBy,
   VuuMenu,
   VuuRange,
-  VuuRowDataItemType,
-  VuuRpcEditError,
-  VuuRpcEditRequest,
-  VuuRpcEditResponse,
   VuuRpcMenuRequest,
   VuuRpcResponse,
   VuuRpcServiceRequest,
@@ -44,7 +40,6 @@ import {
   Range,
   throttle,
   uuid,
-  vuuEditCellRequest,
 } from "@vuu-ui/vuu-utils";
 import ConnectionManager from "./ConnectionManager";
 import { isDataSourceConfigMessage } from "./data-source";
@@ -604,32 +599,6 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
         vpId: this.viewport,
       } as VuuRpcMenuRequest);
     }
-  }
-
-  async editRpcCall(rpcRequest: Omit<VuuRpcEditRequest, "vpId">) {
-    if (this.viewport && this.server) {
-      return this.server.rpcCall<VuuRpcEditResponse>({
-        ...rpcRequest,
-        vpId: this.viewport,
-      });
-    } else {
-      return {
-        error: "Either viewport or server is undefined",
-        type: "VP_EDIT_RPC_REJECT",
-      } as VuuRpcEditError;
-    }
-  }
-
-  applyEdit(rowKey: string, columnName: string, value: VuuRowDataItemType) {
-    return this.editRpcCall(vuuEditCellRequest(rowKey, columnName, value)).then(
-      (response) => {
-        if (response.type === "VP_EDIT_RPC_REJECT") {
-          return response.error;
-        } else {
-          return true;
-        }
-      },
-    );
   }
 
   insertRow() {

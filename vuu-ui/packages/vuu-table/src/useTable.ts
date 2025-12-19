@@ -4,10 +4,7 @@ import type {
   DataSourceRow,
   DataSourceSubscribedMessage,
 } from "@vuu-ui/vuu-data-types";
-import type {
-  VuuRowDataItemType,
-  VuuSortType,
-} from "@vuu-ui/vuu-protocol-types";
+import type { VuuSortType } from "@vuu-ui/vuu-protocol-types";
 import {
   ColumnDisplayActionHandler,
   columnSettingsFromColumnMenuPermissions,
@@ -890,15 +887,21 @@ export const useTable = ({
         columnName,
         value,
       } = editState;
-      let result = undefined;
       if (editType === "commit" && isValid) {
-        result = await dataSource.applyEdit(
-          row[KEY],
-          columnName,
-          value as VuuRowDataItemType,
-        );
-        onDataEditedProp?.({ ...editState, isValid: result === true });
-        return result;
+        const response = await dataSource.rpcRequest?.({
+          params: {
+            column: columnName,
+            key: row[KEY],
+            data: value,
+          },
+          rpcName: "editCell",
+          type: "RPC_REQUEST",
+        });
+        onDataEditedProp?.({
+          ...editState,
+          isValid: response?.type === "SUCCESS_RESULT",
+        });
+        return response;
       } else {
         onDataEditedProp?.(editState);
       }
