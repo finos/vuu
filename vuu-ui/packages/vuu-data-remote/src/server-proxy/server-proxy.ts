@@ -1145,29 +1145,6 @@ export class ServerProxy {
         }
         break;
 
-      case "VP_EDIT_RPC_RESPONSE":
-        {
-          this.postMessageToClient({
-            action: body.action,
-            requestId,
-            rpcName: body.rpcName,
-            type: "VP_EDIT_RPC_RESPONSE",
-          });
-        }
-        break;
-      case "VP_EDIT_RPC_REJECT":
-        {
-          const viewport = this.viewports.get(body.vpId);
-          if (viewport) {
-            this.postMessageToClient({
-              requestId,
-              type: "VP_EDIT_RPC_REJECT",
-              error: body.error,
-            });
-          }
-        }
-        break;
-
       case "VIEW_PORT_MENU_REJ": {
         const { error, rpcName, vpId } = body;
         const viewport = this.viewports.get(vpId);

@@ -35,9 +35,9 @@ export const BulkEditDialog = ({
       rpcName: "VP_BULK_EDIT_SUBMIT_RPC",
       type: "RPC_REQUEST",
     });
-    if (response.type === "SUCCESS_RESULT") {
+    if (response?.type === "SUCCESS_RESULT") {
       closeDialog();
-    } else {
+    } else if (response?.type === "ERROR_RESULT") {
       // TODO
       console.error({ response });
     }

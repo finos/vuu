@@ -133,11 +133,6 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
 
         if (messageHasResult(message)) {
           resolve(message.result);
-        } else if (
-          message.type === "VP_EDIT_RPC_RESPONSE" ||
-          message.type === "VP_EDIT_RPC_REJECT"
-        ) {
-          resolve(message);
         } else if (isTableSchemaMessage(message)) {
           resolve(message.tableSchema);
         } else {

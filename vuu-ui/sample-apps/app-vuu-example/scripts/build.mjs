@@ -65,6 +65,8 @@ assertFileExists(configFile, true);
 
 const { name: projectName } = readPackageJson();
 
+console.log(`env = development ?  ${development}`);
+
 const esbuildConfig = {
   entryPoints: entryPoints.concat(featureEntryPoints),
   env: development ? "development" : "production",

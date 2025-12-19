@@ -15,16 +15,12 @@ import type {
   VuuMenu,
   VuuRemoveVisualLink,
   VuuRowDataItemType,
-  VuuRpcEditCellRequest,
-  VuuRpcEditRequest,
-  VuuRpcEditResponse,
   VuuRpcMenuRequest,
   VuuRpcMenuResponse,
   VuuRpcServiceRequest,
 } from "@vuu-ui/vuu-protocol-types";
 import { isTypeaheadRequest, Range } from "@vuu-ui/vuu-utils";
 import {
-  RpcEditService,
   RpcMenuService,
   RpcService,
   SessionTableMap,
@@ -41,7 +37,6 @@ export interface TickingArrayDataSourceConstructorProps
   data?: Array<VuuRowDataItemType[]>;
   getVisualLinks?: (tableName: string) => LinkDescriptorWithLabel[] | undefined;
   menu?: VuuMenu;
-  rpcEditServices?: RpcEditService[];
   rpcMenuServices?: RpcMenuService[];
   rpcServices?: RpcService[];
   sessionTables?: SessionTableMap;
@@ -58,7 +53,6 @@ type LinkSubscription = {
 export class TickingArrayDataSource extends ArrayDataSource {
   #menuRpcServices: RpcService[] | undefined;
   #pendingVisualLink?: LinkDescriptorWithLabel;
-  #rpcEditServices: RpcEditService[] | undefined;
   #rpcMenuServices: RpcMenuService[] | undefined;
   #rpcServices: RpcService[] | undefined;
   // A reference to session tables hosted within client side module
@@ -74,7 +68,6 @@ export class TickingArrayDataSource extends ArrayDataSource {
     data,
     getVisualLinks,
     rpcServices,
-    rpcEditServices,
     rpcMenuServices,
     sessionTables,
     table,
@@ -93,7 +86,6 @@ export class TickingArrayDataSource extends ArrayDataSource {
     });
     this._menu = menu;
 
-    this.#rpcEditServices = rpcEditServices;
     this.#rpcMenuServices = rpcMenuServices;
     this.#pendingVisualLink = visualLink;
     this.#rpcServices = rpcServices;
@@ -151,20 +143,6 @@ export class TickingArrayDataSource extends ArrayDataSource {
     return Array.from(this.selectedRows);
   }
 
-  async applyEdit(
-    rowKey: string,
-    columnName: string,
-    value: VuuRowDataItemType,
-  ): Promise<true> {
-    await this.editRpcCall({
-      rowKey,
-      type: "VP_EDIT_CELL_RPC",
-      field: columnName,
-      value,
-    } as VuuRpcEditCellRequest);
-    return true;
-  }
-
   async rpcRequest(
     rpcRequest: Omit<VuuRpcServiceRequest, "context">,
   ): Promise<RpcResultSuccess | RpcResultError> {
@@ -204,25 +182,6 @@ export class TickingArrayDataSource extends ArrayDataSource {
           `[TickingArrayDataSource] no service to handle RPC request ${rpcRequest.rpcName}`,
         );
       }
-    }
-  }
-
-  async editRpcCall(
-    rpcRequest: Omit<VuuRpcEditRequest, "vpId">,
-  ): Promise<VuuRpcEditResponse> {
-    const rpcService = this.#rpcEditServices?.find(
-      (service) => service.type === rpcRequest.type,
-    );
-
-    if (rpcService) {
-      return rpcService.service({
-        ...rpcRequest,
-        vpId: this.viewport,
-      } as VuuRpcEditRequest);
-    } else {
-      throw Error(
-        `[TickingArrayDataSource] editRpcCall no service for ${rpcRequest.type}`,
-      );
     }
   }
 

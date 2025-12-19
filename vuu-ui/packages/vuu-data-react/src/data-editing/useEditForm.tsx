@@ -244,7 +244,7 @@ export const useEditForm = ({
   }, []);
 
   const handleFieldCommit = useCallback<CommitHandler<HTMLElement>>(
-    (_, value) => {
+    async (_, value) => {
       const { current: fieldName } = focusedFieldRef;
       const dataDescriptor = find(formFieldDescriptors, fieldName);
 
@@ -257,11 +257,16 @@ export const useEditForm = ({
       if (newState.ok && dataSource?.tableSchema) {
         const { key } = dataSource.tableSchema;
         const keyValue = entity?.[key] as string;
-        dataSource
-          ?.applyEdit(keyValue, fieldName, value)
-          .then((rpcResponse) => {
-            console.log({ rpcResponse });
-          });
+        const response = await dataSource.rpcRequest?.({
+          params: {
+            column: fieldName,
+            data: value,
+            key: keyValue,
+          },
+          rpcName: "editCell",
+          type: "RPC_REQUEST",
+        });
+        console.log({ response });
       }
     },
     [dataSource, entity, formFieldDescriptors, setValidationState],

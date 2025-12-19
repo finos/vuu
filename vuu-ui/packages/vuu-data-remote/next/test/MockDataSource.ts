@@ -1,9 +1,10 @@
 import {
   LinkDescriptorWithLabel,
+  RpcResultError,
+  RpcResultSuccess,
   VuuGroupBy,
   VuuMenu,
   VuuRange,
-  VuuRpcEditError,
   VuuRpcRequest,
   VuuRpcResponse,
   VuuTable,
@@ -13,7 +14,6 @@ import {
   DataSource,
   DataSourceConstructorProps,
   DataSourceDeleteHandler,
-  DataSourceEditHandler,
   DataSourceInsertHandler,
   DataSourceRow,
   DataSourceStatus,
@@ -45,6 +45,9 @@ class MockDataSourceImpl extends BaseDataSource implements DataSource {
       this.#server = serverProxy;
       onReady(this);
     });
+  }
+  closeTreeNode(keyOrIndex: string | number, cascade?: boolean) {
+    console.log(`closeTreeNode ${keyOrIndex} ${cascade}`);
   }
   suspend?: (() => void) | undefined;
   resume?: ((callback?: DataSourceSubscribeCallback) => void) | undefined;
@@ -99,17 +102,6 @@ class MockDataSourceImpl extends BaseDataSource implements DataSource {
     }
   }
 
-  applyEdit: DataSourceEditHandler = async () => true;
-  closeTreeNode(keyOrIndex: string | number, cascade?: boolean) {
-    console.log(`[MockDataSource] closeTree ${keyOrIndex} ${cascade}`);
-  }
-  async editRpcCall(rpcRequest: Omit<VuuRpcRequest, "vpId">) {
-    console.log(`editRpcCall ${JSON.stringify(rpcRequest)}`);
-    return {
-      error: "Either viewport or server is undefined",
-      type: "VP_EDIT_RPC_REJECT",
-    } as VuuRpcEditError;
-  }
   async menuRpcCall(rpcRequest: Omit<VuuRpcRequest, "vpId">) {
     console.log(`menuRpcCall ${JSON.stringify(rpcRequest)}`);
   }
@@ -129,9 +121,9 @@ class MockDataSourceImpl extends BaseDataSource implements DataSource {
 
   selectedRowsCount = 0;
   rpcRequest?:
-    | (<T extends VuuRpcResponse = VuuRpcResponse>(
+    | ((
         rpcRequest: Omit<VuuRpcRequest, "vpId">,
-      ) => Promise<T>)
+      ) => Promise<RpcResultSuccess | RpcResultError>)
     | undefined;
   unsubscribe() {
     console.log("[MockDataSource] unsubscribe");

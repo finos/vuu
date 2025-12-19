@@ -3,7 +3,6 @@ import type {
   LinkDescriptorWithLabel,
   VuuAggregation,
   VuuRange,
-  VuuRowDataItemType,
   VuuRpcResponse,
   VuuRpcRequest,
   SelectRequest,
@@ -16,8 +15,6 @@ import type {
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
   MenuRpcResponse,
-  VuuUIMessageInRPCEditReject,
-  VuuUIMessageInRPCEditResponse,
   DataSourceFilter,
   DataSource,
 } from "@vuu-ui/vuu-data-types";
@@ -424,25 +421,11 @@ export class TreeDataSource extends BaseDataSource implements DataSource {
 
   async menuRpcCall(
     rpcRequest: Omit<VuuRpcRequest, "vpId">,
-  ): Promise<
-    | MenuRpcResponse
-    | VuuUIMessageInRPCEditReject
-    | VuuUIMessageInRPCEditResponse
-    | undefined
-  > {
+  ): Promise<MenuRpcResponse | undefined> {
     console.log("rmenuRpcCall", {
       rpcRequest,
     });
     return undefined;
-  }
-
-  applyEdit(
-    rowKey: string,
-    columnName: string,
-    value: VuuRowDataItemType,
-  ): Promise<true> {
-    console.log(`ArrayDataSource applyEdit ${rowKey} ${columnName} ${value}`);
-    return Promise.resolve(true);
   }
 
   getChildRows(rowKey: string) {

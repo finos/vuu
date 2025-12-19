@@ -473,9 +473,7 @@ export declare type ClientToServerMenuRPCType =
   | "VIEW_PORT_MENU_ROW_RPC"
   | "VIEW_PORT_MENU_CELL_RPC";
 
-export declare type VuuRpcMessagesOut =
-  | ClientToServerMenuSelectRPC
-  | VuuRpcEditCellRequest;
+export declare type VuuRpcMessagesOut = ClientToServerMenuSelectRPC;
 
 export declare type ClientMessageBody =
   | ClientToServerAuth
@@ -549,20 +547,14 @@ export declare type RpcContext =
   | ViewportRpcContext
   | ViewportRowRpcContext;
 
-export declare type VuuRpcRequest =
-  | VuuRpcServiceRequest
-  | VuuRpcMenuRequest
-  | VuuRpcEditRequest;
+export declare type VuuRpcRequest = VuuRpcServiceRequest | VuuRpcMenuRequest;
 
-export declare type VuuRpcResponse =
-  | VuuRpcServiceResponse
-  | VuuRpcMenuResponse
-  | VuuRpcEditResponse;
+export declare type VuuRpcResponse = VuuRpcServiceResponse | VuuRpcMenuResponse;
 
 export declare type VuuRpcServiceRequest<T extends RpcContext = RpcContext> = {
   context: T;
   type: "RPC_REQUEST";
-  params: Record<string, string>;
+  params: Record<string, VuuRowDataItemType>;
   rpcName: TypeAheadMethod | string;
 };
 
@@ -629,7 +621,7 @@ export interface ClientToServerMenuCellRPC {
 }
 
 export interface VuuRpcMenuSuccess<
-  T extends VuuRpcMenuAction | VuuRpcEditAction = VuuRpcMenuAction,
+  T extends VuuRpcMenuAction = VuuRpcMenuAction,
 > {
   action: T;
   rpcName: string;
@@ -645,31 +637,8 @@ export interface VuuRpcMenuError {
 }
 
 export declare type VuuDataRowDto = { [key: string]: VuuRowDataItemType };
-export interface VuuRpcEditAddRowRequest {
-  rowKey: string;
-  type: "VP_EDIT_ADD_ROW_RPC";
-  data: VuuDataRowDto;
-  vpId: string;
-}
-export interface VuuRpcEditDeleteRowRequest {
-  rowKey: string;
-  type: "VP_EDIT_DELETE_ROW_RPC";
-  vpId: string;
-}
-export interface VuuRpcEditCommitRequest {
-  type: "VP_EDIT_SUBMIT_FORM_RPC";
-  vpId: string;
-}
 
-export declare type VuuRpcEditAction = {
-  error?: string;
-  type: "VP_EDIT_SUCCESS";
-};
-
-export declare type VuuRpcAction =
-  | VuuRpcViewportAction
-  | VuuRpcMenuAction
-  | VuuRpcEditAction;
+export declare type VuuRpcAction = VuuRpcViewportAction | VuuRpcMenuAction;
 
 export declare type VuuRpcViewportAction = {
   key?: string;
@@ -681,8 +650,7 @@ export declare type VuuRpcMenuAction =
   | OpenDialogAction
   | CloseDialogAction
   | NoAction
-  | ShowNotificationAction
-  | VuuRpcEditAction;
+  | ShowNotificationAction;
 
 // prettier-ignore
 export declare type VuuColumnDataType = "int" | "long" | "double" | "string" | "char" | "boolean" | "epochtimestamp";
