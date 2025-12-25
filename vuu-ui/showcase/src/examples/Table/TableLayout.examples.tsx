@@ -93,7 +93,6 @@ export const MaxViewportRowLimitFewRows = ({
   width,
 }: Pick<TableProps, "width">) => {
   const schema = getSchema("basket");
-  console.log({ schema });
   return (
     <LocalDataSourceProvider>
       <DataTableTemplate
