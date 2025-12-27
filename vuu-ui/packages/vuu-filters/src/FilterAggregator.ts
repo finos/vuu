@@ -67,7 +67,6 @@ export class FilterAggregator {
   #filters = new Map<string, FilterContainerFilter>();
 
   constructor(filter?: FilterContainerFilter) {
-    console.log(`[FilterAggregator] ${JSON.stringify(filter)}`);
     const runtimeFilter = installExtendedFilters(filter);
     if (isSingleValueFilter(runtimeFilter)) {
       this.#filters.set(runtimeFilter.column, runtimeFilter);

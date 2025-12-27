@@ -10,10 +10,13 @@ import "./VuuFilterTableFeature.css";
 
 const classBase = "vuuFilterTableFeature";
 
+const footerStyle = {
+  flex: "0 0 18px",
+};
+
 const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
   const { menuBuilder, filterBarProps, menuActionHandler, tableProps } =
     useFilterTableFeature({ tableSchema });
-
   return (
     <ContextMenuProvider
       menuActionHandler={menuActionHandler}
@@ -28,7 +31,10 @@ const VuuFilterTableFeature = ({ tableSchema }: FilterTableFeatureProps) => {
           TableProps={tableProps}
           style={{ flex: "1 1 auto" }}
         />
-        <div className={cx("vuuToolbarProxy", `${classBase}-footer`)}>
+        <div
+          className={cx("vuuToolbarProxy", `${classBase}-footer`)}
+          style={footerStyle}
+        >
           <DataSourceStats dataSource={tableProps.dataSource} />
         </div>
       </FlexboxLayout>

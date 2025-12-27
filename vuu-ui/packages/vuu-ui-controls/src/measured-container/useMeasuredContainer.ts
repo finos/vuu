@@ -131,6 +131,7 @@ export const useMeasuredContainer = ({
       width: width ?? "auto",
     },
   });
+
   const fixedHeight = typeof height === "number";
   const fixedWidth = typeof width === "number";
 
@@ -175,7 +176,6 @@ export const useMeasuredContainer = ({
     (clientWidth: number | undefined, clientHeight: number | undefined) => {
       const { css, inner, outer } = size;
       let newState: MeasuredState = size;
-
       if (
         fixedHeight &&
         isNumber(clientWidth) &&
@@ -246,11 +246,14 @@ export const useMeasuredContainer = ({
   useEffect(() => {
     if (size.inner) {
       if (containerRef.current) {
+        if (typeof height !== "number" || height === 0) {
+          size.inner.height = containerRef.current.clientHeight;
+        }
         size.inner.width = containerRef.current.clientWidth;
         onResizeProp?.(size.inner);
       }
     }
-  }, [onResizeProp, size.inner]);
+  }, [height, onResizeProp, size.inner]);
 
   useResizeObserver(containerRef, dimensions, onResize, true);
 

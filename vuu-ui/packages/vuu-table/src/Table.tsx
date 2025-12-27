@@ -68,7 +68,7 @@ export interface TableProps
     "onDragStart" | "onDrop" | "onSelect" | "searchPattern"
   > {
   /**
-   * A react function componnet that will be rendered if there are no rows to display
+   * A react function component that will be rendered if there are no rows to display
    */
   EmptyDisplay?: ComponentType;
   Row?: FC<RowProps>;

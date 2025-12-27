@@ -2,13 +2,6 @@ import { test, expect } from "@playwright/experimental-ct-react";
 import { Instruments } from "../../../../../showcase/src/examples/Table/Modules/SIMUL.examples";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 
-declare module "@playwright/test" {
-  namespace PlaywrightTest {
-    interface Matchers<R, T = unknown> {
-      toBeSelected(this: T): Promise<R>;
-    }
-  }
-}
 test.describe("default (extended) selection", () => {
   test("default selection includes simple row selection", async ({
     browserName,
@@ -53,7 +46,7 @@ test.describe("default (extended) selection", () => {
   }) => {
     test.skip(browserName === "webkit" || browserName === "firefox");
 
-    const component = await mount(
+    await mount(
       <LocalDataSourceProvider>
         <Instruments />
       </LocalDataSourceProvider>,

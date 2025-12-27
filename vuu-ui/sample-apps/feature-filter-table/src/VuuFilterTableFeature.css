@@ -1,5 +1,4 @@
 .vuuFilterTableFeature {
-  --vuuMeasuredContainer-flex: 1 1 1px;
   --vuuDatasourceStats-gap: var(--salt-spacing-200);
   min-height: 100px;
 }
@@ -8,6 +7,4 @@
   --vuuToolbarProxy-height: auto;
   background: var(--salt-container-primary-background);
   border-top: var(--salt-container-primary-borderColor) solid 1px;
-
-  flex: 0 0 18px;
 }
