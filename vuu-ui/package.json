@@ -105,7 +105,7 @@
     "tinycolor2": "1.4.2",
     "tsx": "^4.19.1",
     "typescript": "5.8.3",
-    "vite": "6.3.6",
+    "vite": "6.4.1",
     "vite-tsconfig-paths": "5.1.4",
     "vitest": "3.1.1"
   },
