@@ -86,7 +86,7 @@ export const useDataSource = ({
       // this is a no-op.
       const { range } = dataSource;
       if (range.to !== 0) {
-        dataWindow.setRange(dataSource.range);
+        dataWindow.setRange(dataSource.range.withBuffer);
       }
     });
   }, [dataSource, dataWindow]);
@@ -162,7 +162,6 @@ export const useDataSource = ({
           hasUpdated.current = true;
         }
       } else if (message.type === "viewport-clear") {
-        console.log("viewport clear");
         onSizeChange?.(0);
         dataWindow.setRowCount(0);
         setData([]);
@@ -214,7 +213,10 @@ export const useDataSource = ({
 
         dataWindow.setRange(range.withBuffer);
 
-        if (dataSource.status !== "subscribed") {
+        if (
+          dataSource.status !== "subscribed" &&
+          dataSource.status !== "subscribing"
+        ) {
           dataSource?.subscribe(
             {
               range,

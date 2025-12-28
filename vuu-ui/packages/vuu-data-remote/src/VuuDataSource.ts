@@ -123,18 +123,17 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
       subscribeProps;
 
     if (this.#status === "disabled" || this.#status === "disabling") {
+      // We can subscribe to a disabled dataSource. No request will be
+      // sent to server to create a new VP, just to enable the existing one.
+      // The current subscribing client becomes the subscription owner
       this.enable(callback);
       return;
     }
 
-    if (
-      this.#status !== "initialising" &&
-      this.#status !== "unsubscribed"
-      // We can subscribe to a disabled dataSource. No request will be
-      // sent to server to create a new VP, just to enable the existing one.
-      // The current subscribing client becomes the subscription owner
-    ) {
-      return;
+    if (this.#status !== "initialising" && this.#status !== "unsubscribed") {
+      throw Error(
+        `[VuuDataSource] invalid status ${this.#status} for subscribe`,
+      );
     }
 
     this.#status = "subscribing";
