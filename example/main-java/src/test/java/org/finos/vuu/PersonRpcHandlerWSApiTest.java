@@ -4,11 +4,21 @@ import org.finos.toolbox.time.DefaultClock;
 import org.finos.vuu.core.module.TableDefContainer;
 import org.finos.vuu.core.module.ViewServerModule;
 import org.finos.vuu.module.JavaExampleModule;
-import org.finos.vuu.net.*;
+import org.finos.vuu.net.Aggregations;
+import org.finos.vuu.net.CreateViewPortRequest;
+import org.finos.vuu.net.CreateViewPortSuccess;
+import org.finos.vuu.net.NoneAction;
+import org.finos.vuu.net.RpcErrorResult;
+import org.finos.vuu.net.RpcRequest;
+import org.finos.vuu.net.RpcResponseNew;
+import org.finos.vuu.net.RpcSuccessResult;
+import org.finos.vuu.net.ShowNotificationAction;
+import org.finos.vuu.net.SortSpec;
+import org.finos.vuu.net.ViewPortContext;
 import org.finos.vuu.net.rpc.RpcNames;
 import org.finos.vuu.viewport.ViewPortRange;
 import org.finos.vuu.viewport.ViewPortTable;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
@@ -16,7 +26,7 @@ import java.util.Map;
 import static org.finos.vuu.util.ScalaCollectionConverter.toJava;
 import static org.finos.vuu.util.ScalaCollectionConverter.toScala;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
 
@@ -45,12 +55,12 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
         RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "Typeahead Request response");
         assertEquals("getUniqueFieldValues", responseBody.rpcName());
 
-        assertTrue(responseBody.result() instanceof RpcSuccessResult, "Response contains Successful result");
+        assertInstanceOf(RpcSuccessResult.class, responseBody.result(), "Response contains Successful result");
         var result = (RpcSuccessResult) responseBody.result();
-        var data = toJava((scala.collection.immutable.List<String>) result.data());
+        var data = toJava((scala.collection.immutable.List<?>)result.data());
         assertEquals(List.of("Adam", "Natalie"), data);
 
-        assertTrue(responseBody.action() instanceof NoneAction, "Response contains no action");
+        assertInstanceOf(NoneAction.class, responseBody.action(), "Response contains no action");
     }
 
     @Test
@@ -71,11 +81,11 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
         RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "GetAccountId Request response");
         assertEquals("GetAccountId", responseBody.rpcName());
 
-        assertTrue(responseBody.result() instanceof RpcSuccessResult, "Response contains Successful result");
+        assertInstanceOf(RpcSuccessResult.class, responseBody.result(), "Response contains Successful result");
         var result = (RpcSuccessResult) responseBody.result();
         assertEquals(56440, result.data());
 
-        assertTrue(responseBody.action() instanceof NoneAction, "Response contains no action");
+        assertInstanceOf(NoneAction.class, responseBody.action(), "Response contains no action");
     }
 
     @Test
@@ -97,8 +107,8 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
         RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "UpdateName Request response");
         assertEquals("UpdateName", responseBody.rpcName());
 
-        assertTrue(responseBody.result() instanceof RpcSuccessResult, "Response contains Successful result");
-        assertTrue(responseBody.action() instanceof NoneAction, "Response contains no action");
+        assertInstanceOf(RpcSuccessResult.class, responseBody.result(), "Response contains Successful result");
+        assertInstanceOf(NoneAction.class, responseBody.action(), "Response contains no action");
     }
 
 
@@ -118,11 +128,11 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
         RpcResponseNew responseBody = assertBodyIsInstanceOf(response, "DoesNotExist Request response");
         assertEquals("DoesNotExist", responseBody.rpcName());
 
-        assertTrue(responseBody.result() instanceof RpcErrorResult, "Response contains error result");
+        assertInstanceOf(RpcErrorResult.class, responseBody.result(), "Response contains error result");
         var result = (RpcErrorResult) responseBody.result();
         assertEquals("Could not find rpcMethodHandler DoesNotExist", result.errorMessage());
 
-        assertTrue(responseBody.action() instanceof ShowNotificationAction, "Response contains show notification action");
+        assertInstanceOf(ShowNotificationAction.class, responseBody.action(), "Response contains show notification action");
         var action = (ShowNotificationAction) responseBody.action();
         assertEquals("Error", action.notificationType());
         assertEquals("Failed to process DoesNotExist request", action.title());
