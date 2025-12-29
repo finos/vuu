@@ -14,33 +14,33 @@ import java.net.URI
 
 class WebSocketClient(url: String, port: Int, nativeTransport: Boolean = true)(implicit lifecycle: LifecycleContainer) extends LifecycleEnabled {
 
-  val uri: URI = new URI(url)
-  val handler: WebSocketClientHandler = new WebSocketClientHandler(
+  private val transport: Transport = Transport(nativeTransport)
+  private val eventLoopGroup: EventLoopGroup = transport.eventLoopGroup(1)
+  private val uri: URI = new URI(url)
+  private val handler: WebSocketClientHandler = new WebSocketClientHandler(
     WebSocketClientHandshakerFactory.newHandshaker(uri, WebSocketVersion.V13, null, true, new DefaultHttpHeaders,
       WebSocketConstants.MAX_CONTENT_LENGTH)
   )
-  var ch: Channel = _
+  var channel: Channel = _
 
   lifecycle(this)
 
-  def canWrite: Boolean = ch != null && ch.isOpen && ch.isWritable && handler.handshakeComplete
+  def canWrite: Boolean = channel != null && channel.isOpen && channel.isWritable && handler.handshakeComplete
 
   def write(text: String): ChannelFuture = {
     if (canWrite)
-      ch.writeAndFlush(new TextWebSocketFrame(text))
+      channel.writeAndFlush(new TextWebSocketFrame(text))
     else
-      throw new RuntimeException(s"Can't write $text to channel $ch")
+      throw new RuntimeException(s"Can't write $text to channel $channel")
   }
 
   def awaitMessage(): String = handler.awaitMessage()
 
   @Override
   override def doStart(): Unit = {
-
-    val transport = Transport(nativeTransport)
     val bootstrap: Bootstrap = new Bootstrap
-
-    bootstrap.group(transport.eventLoopGroup())
+    
+    bootstrap.group(eventLoopGroup)
       .channel(transport.channelClass)
       .handler(new ChannelInitializer[SocketChannel] {
 
@@ -63,13 +63,11 @@ class WebSocketClient(url: String, port: Int, nativeTransport: Boolean = true)(i
 
     })
 
-    ch = bootstrap.connect(uri.getHost, port).sync.channel
+    channel = bootstrap.connect(uri.getHost, port).sync.channel
   }
 
   override def doStop(): Unit = {
-    if (ch != null && ch.isOpen) {
-      ch.close()
-    }
+    eventLoopGroup.shutdownGracefully()
   }
 
   override def doInitialize(): Unit = {}
