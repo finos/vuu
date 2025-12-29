@@ -70,8 +70,8 @@
   },
   "devDependencies": {
     "@lezer/generator": "^1.2.2",
-    "@playwright/experimental-ct-react": "^1.55.0",
-    "@playwright/test": "^1.43.0",
+    "@playwright/experimental-ct-react": "^1.56.1",
+    "@playwright/test": "^1.56.1",
     "@rollup/plugin-commonjs": "^26.0.3",
     "@rollup/plugin-json": "6.1.0",
     "@rollup/plugin-node-resolve": "15.3.1",
