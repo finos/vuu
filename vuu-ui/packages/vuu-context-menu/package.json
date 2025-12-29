@@ -15,8 +15,8 @@
     "@vuu-ui/vuu-table-types": "0.13.107"
   },
   "dependencies": {
-    "@vuu-ui/vuu-utils": "0.13.107",
-    "@salt-ds/core": "1.48.0",
+    "@vuu-ui/vuu-utils": "0.13.105",
+    "@salt-ds/core": "1.54.1",
     "@salt-ds/styles": "0.2.1",
     "@salt-ds/window": "0.1.1"
   },

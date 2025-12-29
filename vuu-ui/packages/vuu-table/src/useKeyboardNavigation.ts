@@ -4,7 +4,6 @@ import { useControlled } from "@salt-ds/core";
 import {
   KeyboardEvent,
   MouseEvent,
-  MutableRefObject,
   RefObject,
   useCallback,
   useEffect,
@@ -59,13 +58,13 @@ export const isNavigationKey = (
   }
 };
 
-const editCellWithEditInProgress = (el: HTMLElement | null) => {
-  if (el) {
-    const input = el.querySelector("input");
-    return input && document.activeElement === input;
-  }
-  return false;
-};
+// const editCellWithEditInProgress = (el: HTMLElement | null) => {
+//   if (el) {
+//     const input = el.querySelector("input");
+//     return input && document.activeElement === input;
+//   }
+//   return false;
+// };
 
 const focusControlWithinCell = (e: KeyboardEvent, el: HTMLElement | null) => {
   if (e.shiftKey && e.key.match(/Arrow(Left|Right)/)) {
@@ -115,7 +114,7 @@ export type GroupToggleHandler = (
 ) => void;
 
 export interface NavigationHookProps {
-  cellFocusStateRef: MutableRefObject<CellFocusState>;
+  cellFocusStateRef: RefObject<CellFocusState>;
   containerRef: RefObject<HTMLElement | null>;
   columnCount?: number;
   headerCount: number;
@@ -178,12 +177,12 @@ export const useKeyboardNavigation = ({
   );
 
   const setActiveCell = useCallback(
-    (rowIdx: number, colIdx: number, fromKeyboard = false) => {
+    (rowIdx: number, colIdx: number) => {
       const pos: CellPos = [rowIdx, colIdx];
       if (navigationStyle === "row") {
         setHighlightedIdx(rowIdx);
       } else {
-        focusCell(pos, fromKeyboard);
+        focusCell(pos);
       }
     },
     [focusCell, navigationStyle, setHighlightedIdx],
@@ -196,12 +195,10 @@ export const useKeyboardNavigation = ({
     ): Promise<CellPos> =>
       new Promise((resolve) => {
         let newRowIdx = rowIdx;
-        const { current: focusState } = cellFocusStateRef;
         switch (key) {
           case "PageDown": {
             newRowIdx = Math.min(rowCount - 1, rowIdx + viewportRowCount);
             if (newRowIdx !== rowIdx) {
-              focusState.cellPos = [newRowIdx, colIdx];
               requestScroll?.({ type: "scroll-page", direction: "down" });
             }
             break;
@@ -209,7 +206,6 @@ export const useKeyboardNavigation = ({
           case "PageUp": {
             newRowIdx = Math.max(0, rowIdx - viewportRowCount);
             if (newRowIdx !== rowIdx) {
-              focusState.cellPos = [newRowIdx, colIdx];
               requestScroll?.({ type: "scroll-page", direction: "up" });
             }
             break;
@@ -217,7 +213,6 @@ export const useKeyboardNavigation = ({
           case "Home": {
             newRowIdx = headerCount + 1;
             if (newRowIdx !== rowIdx) {
-              focusState.cellPos = [newRowIdx, colIdx];
               requestScroll?.({ type: "scroll-end", direction: "home" });
             }
             break;
@@ -225,7 +220,6 @@ export const useKeyboardNavigation = ({
           case "End": {
             newRowIdx = rowCount + headerCount;
             if (newRowIdx !== rowIdx) {
-              focusState.cellPos = [newRowIdx, colIdx];
               requestScroll?.({ type: "scroll-end", direction: "end" });
             }
             break;
@@ -245,10 +239,11 @@ export const useKeyboardNavigation = ({
           resolve([newRowIdx, colIdx]);
         }, 35);
       }),
-    [cellFocusStateRef, headerCount, requestScroll, rowCount, viewportRowCount],
+    [headerCount, requestScroll, rowCount, viewportRowCount],
   );
 
   const handleFocus = useCallback(() => {
+    // console.log(`[useKeyboardNavigation] handleFocus `);
     if (disableHighlightOnFocus !== true) {
       if (containerRef.current?.contains(document.activeElement)) {
         // IF focus arrives via keyboard, a cell will have received focus,
@@ -314,7 +309,7 @@ export const useKeyboardNavigation = ({
       }
 
       if (nextRowIdx !== rowIdx || nextColIdx !== colIdx) {
-        setActiveCell(nextRowIdx, nextColIdx, true);
+        setActiveCell(nextRowIdx, nextColIdx);
         setHighlightedIndex(nextRowIdx);
       }
     },
@@ -370,6 +365,8 @@ export const useKeyboardNavigation = ({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      // console.log(`[useKeyboardNavigation] handleKeyDown`);
+
       const cell = queryClosest<HTMLDivElement>(
         e.target,
         `${CellLocator},${CellControlLocator}`,
@@ -378,19 +375,22 @@ export const useKeyboardNavigation = ({
         return;
       }
       if (rowCount > 0 && isNavigationKey(e.key, navigationStyle)) {
-        if (e.key === "ArrowDown" && editCellWithEditInProgress(cell)) {
-          //  do nothing editCellWithEditInProgress
-        } else {
-          e.preventDefault();
-          e.stopPropagation();
-          if (navigationStyle === "row") {
-            moveHighlightedRow(e.key);
-          } else if (navigationStyle !== "none") {
-            if (!focusControlWithinCell(e, cell)) {
-              navigateChildItems(navigationStyle, e.key, e.shiftKey);
-            }
+        // if (e.key === "ArrowDown" && editCellWithEditInProgress(cell)) {
+        //   //  do nothing editCellWithEditInProgress
+        // } else {
+        // console.log(
+        //   `[useKeyboardNavigation] handleKeyDown - consume the keydown event`,
+        // );
+        e.preventDefault();
+        e.stopPropagation();
+        if (navigationStyle === "row") {
+          moveHighlightedRow(e.key);
+        } else if (navigationStyle !== "none") {
+          if (!focusControlWithinCell(e, cell)) {
+            navigateChildItems(navigationStyle, e.key, e.shiftKey);
           }
         }
+        // }
       }
     },
     [rowCount, navigationStyle, moveHighlightedRow, navigateChildItems],
@@ -399,6 +399,7 @@ export const useKeyboardNavigation = ({
   const handleClick = useCallback(
     // Might not be a cell e.g the Settings button
     (evt: MouseEvent) => {
+      // console.log(`[useKeyboardNavigation] click`);
       const target = queryClosest<HTMLDivElement>(evt.target, CellLocator);
       const focusedCell = getFocusedCell(target);
       if (focusedCell) {

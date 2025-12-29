@@ -27,7 +27,7 @@ type FilterClauseValueEditorProps = Pick<
 } & {
   operator?: SingleValueFilterClauseOp | "in";
   value?: string | string[] | number | number[] | boolean | boolean[];
-  dropdownOnAutofocus?: boolean,
+  dropdownOnAutofocus?: boolean;
 };
 
 export const FilterClauseValueEditor = forwardRef(
@@ -79,6 +79,7 @@ export const FilterClauseValueEditor = forwardRef(
             inputProps={inputProps}
             className={cx(`${classBase}Field`, `${classBase}Value`)}
             column={selectedColumn}
+            dropdownOnAutofocus={dropdownOnAutofocus}
             onDeselect={onDeselectValue}
             onChangeValue={onChangeValue}
             onOpenChange={onOpenChange}
@@ -92,7 +93,6 @@ export const FilterClauseValueEditor = forwardRef(
                   ? value.map((val) => val.toString())
                   : (value.toString() as string | string[])
             }
-            dropdownOnAutofocus={dropdownOnAutofocus}
           />
         );
       case "int":

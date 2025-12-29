@@ -8,6 +8,7 @@ import type {
 } from "@vuu-ui/vuu-data-types";
 import type { Filter } from "@vuu-ui/vuu-filter-types";
 import type {
+  RpcResult,
   SelectRequest,
   VuuAggType,
   VuuRowDataItemType,
@@ -51,16 +52,17 @@ export declare type ValueFormatter<T extends string | ReactElement = string> = (
 ) => T;
 
 export interface EditEventState {
+  columnName?: string;
   editType?: EditType;
   isValid?: boolean;
-  // value: unknown;
   previousValue?: VuuRowDataItemType;
+  row?: DataSourceRow;
   value: VuuRowDataItemType;
 }
 
 export interface DataCellEditEvent extends EditEventState {
-  row: DataSourceRow;
-  columnName: string;
+  row?: DataSourceRow;
+  columnName?: string;
 }
 
 export declare type DataCellEditNotification = (
@@ -72,19 +74,17 @@ export interface TableCellProps {
   column: RuntimeColumnDescriptor;
   columnMap: ColumnMap;
   onClick?: (event: MouseEvent, column: RuntimeColumnDescriptor) => void;
-  onDataEdited?: DataCellEditHandler;
+  onDataEdited?: TableCellEditHandler;
   row: DataSourceRow;
   searchPattern?: Lowercase<string>;
 }
 
-export declare type CommitResponse = Promise<true | string>;
-
 export declare type EditType = "commit" | "change" | "cancel";
 
-declare type DataItemEditHandler<T extends EditType = EditType> = (
+export declare type TableCellEditHandler<T extends EditType = EditType> = (
   editState: EditEventState,
   editPhase: T,
-) => T extends "commit" ? Promise<string | true> : void;
+) => T extends "commit" ? Promise<RpcResult | undefined> : undefined;
 
 export declare type TableRowSelectHandler = (
   row: DataSourceRowObject | null,
@@ -110,7 +110,7 @@ export declare type TableRowClickHandlerInternal = (
 
 export interface TableCellRendererProps
   extends Omit<TableCellProps, "onDataEdited"> {
-  onEdit?: DataItemEditHandler;
+  onEdit?: TableCellEditHandler;
 }
 
 /**
@@ -467,7 +467,7 @@ export interface RowProps extends BaseRowProps {
   offset: number;
   onCellEdit?: CellEditHandler;
   onClick?: TableRowClickHandlerInternal;
-  onDataEdited?: DataCellEditHandler;
+  onDataEdited?: TableCellEditHandler;
   onToggleGroup?: (row: DataSourceRow, column: RuntimeColumnDescriptor) => void;
   row: DataSourceRow;
   searchPattern: Lowercase<string>;

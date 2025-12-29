@@ -7,6 +7,7 @@ import {
   useVuuTypeaheadInput,
   VuuTypeaheadInputHookProps,
 } from "./useVuuTypeaheadInput";
+
 import vuuTypeaheadInputCss from "./VuuTypeaheadInput.css";
 
 const classBase = "vuuTypeaheadInput";
@@ -59,14 +60,9 @@ export const VuuTypeaheadInput = ({
     table,
   });
 
-  // need latest version of salt combobox
-  // const defaultHighlightedIndex =
-  //   highlightFirstSuggestion === false ? -1 : undefined;
-
   return (
     <ComboBox
       className={cx(classBase, className)}
-      // defaultHighlightedIndex={defaultHighlightedIndex}
       inputProps={inputProps}
       onChange={onChange}
       onKeyDown={onKeyDown}

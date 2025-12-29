@@ -98,6 +98,14 @@ export const isLoginResponse = (
   "type" in message &&
   (message.type === "LOGIN_SUCCESS" || message.type === "LOGIN_FAIL");
 
+export const isRpcSuccess = (
+  rpcResult?: RpcResult,
+): rpcResult is RpcResultSuccess => rpcResult?.type === "SUCCESS_RESULT";
+
+export const isRpcError = (
+  rpcResult?: RpcResult,
+): rpcResult is RpcResultError => rpcResult?.type === "ERROR_RESULT";
+
 export const isRequestResponse = (
   message: object,
 ): message is VuuUiMessageInRequestResponse => "requestId" in message;

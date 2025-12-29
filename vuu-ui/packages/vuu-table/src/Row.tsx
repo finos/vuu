@@ -139,7 +139,9 @@ export const Row = memo(
         style={style}
       >
         {showBookends ? (
-          <span className={`${classBase}-selectionDecorator vuuStickyLeft`} />
+          <div className={`${classBase}-selectionDecorator vuuStickyLeft`}>
+            <div className="vuuTableRowBookend" />
+          </div>
         ) : null}
         <VirtualColSpan width={virtualColSpan} />
         {columns.filter(isNotHidden).map((column) => {
@@ -160,7 +162,9 @@ export const Row = memo(
           );
         })}
         {showBookends ? (
-          <span className={`${classBase}-selectionDecorator vuuStickyRight`} />
+          <div className={`${classBase}-selectionDecorator vuuStickyRight`}>
+            <div className="vuuTableRowBookend" />
+          </div>
         ) : null}
       </div>
     );
