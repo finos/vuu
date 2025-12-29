@@ -31,7 +31,7 @@ jobs:
         run: git switch -c release-${{ github.event.inputs.releaseVersion }}
 
       - name: Install Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
           node-version: "20.x"
 
