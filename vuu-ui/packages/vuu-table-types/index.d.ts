@@ -8,6 +8,7 @@ import type {
 } from "@vuu-ui/vuu-data-types";
 import type { Filter } from "@vuu-ui/vuu-filter-types";
 import type {
+  RpcResult,
   SelectRequest,
   VuuAggType,
   VuuRowDataItemType,
@@ -51,16 +52,17 @@ export declare type ValueFormatter<T extends string | ReactElement = string> = (
 ) => T;
 
 export interface EditEventState {
+  columnName?: string;
   editType?: EditType;
   isValid?: boolean;
-  // value: unknown;
   previousValue?: VuuRowDataItemType;
+  row?: DataSourceRow;
   value: VuuRowDataItemType;
 }
 
 export interface DataCellEditEvent extends EditEventState {
-  row: DataSourceRow;
-  columnName: string;
+  row?: DataSourceRow;
+  columnName?: string;
 }
 
 export declare type DataCellEditNotification = (
@@ -72,19 +74,17 @@ export interface TableCellProps {
   column: RuntimeColumnDescriptor;
   columnMap: ColumnMap;
   onClick?: (event: MouseEvent, column: RuntimeColumnDescriptor) => void;
-  onDataEdited?: DataCellEditHandler;
+  onDataEdited?: TableCellEditHandler;
   row: DataSourceRow;
   searchPattern?: Lowercase<string>;
 }
 
-export declare type CommitResponse = Promise<true | string>;
-
 export declare type EditType = "commit" | "change" | "cancel";
 
-declare type DataItemEditHandler<T extends EditType = EditType> = (
+export declare type TableCellEditHandler<T extends EditType = EditType> = (
   editState: EditEventState,
   editPhase: T,
-) => T extends "commit" ? Promise<string | true> : void;
+) => T extends "commit" ? Promise<RpcResult | undefined> : undefined;
 
 export declare type TableRowSelectHandler = (
   row: DataSourceRowObject | null,
@@ -110,7 +110,7 @@ export declare type TableRowClickHandlerInternal = (
 
 export interface TableCellRendererProps
   extends Omit<TableCellProps, "onDataEdited"> {
-  onEdit?: DataItemEditHandler;
+  onEdit?: TableCellEditHandler;
 }
 
 /**
@@ -123,12 +123,21 @@ export interface TableCellRendererProps
 export declare type ColumnLayout = "static" | "fit" | "manual";
 
 export interface TableAttributes {
+  /**
+   * In the case of checkbox selection, allows width of checkbox columns to be specified
+   */
+  checkboxColumnWidth?: number;
   columnDefaultWidth?: number;
   columnFormatHeader?: "capitalize" | "uppercase";
   columnLayout?: ColumnLayout;
   columnSeparators?: boolean;
   // showHighlightedRow?: boolean;
   rowSeparators?: boolean;
+  /**
+   * Selection Bookends style the left and right edge of a selection block.
+   * They are optional, value currently defaults to 4.
+   */
+  selectionBookendWidth?: number;
   zebraStripes?: boolean;
 }
 
@@ -141,10 +150,6 @@ export interface TableAttributes {
 export interface TableConfig extends TableAttributes {
   columns: ColumnDescriptor[];
   rowClassNameGenerators?: string[];
-}
-export interface GridConfig extends TableConfig {
-  headings: TableHeadings;
-  selectionBookendWidth?: number;
 }
 
 // TODO tidy up this definition, currently split beween here and data-types
@@ -237,7 +242,7 @@ export interface ColumnTypeWithValidationRules
 
 export declare type ColumnSort = VuuSortType | number;
 
-export declare type PinLocation = "left" | "right" | "floating";
+export declare type PinLocation = "left" | "right";
 
 export declare type ColumnAlignment = "left" | "right";
 
@@ -313,7 +318,10 @@ export interface RuntimeColumnDescriptor extends ColumnDescriptor {
   canStretch?: boolean;
   className?: string;
   clientSideEditValidationCheck?: DataValueValidationChecker;
-  endPin?: true | undefined;
+  /**
+   * Used to mark a column as non-draggable, e.g when pinned
+   */
+  draggable?: boolean;
   filter?: Filter;
   flex?: number;
   heading?: [...string[]];
@@ -325,7 +333,14 @@ export interface RuntimeColumnDescriptor extends ColumnDescriptor {
   moving?: boolean;
   /** used only when column is a child of GroupColumn  */
   originalIdx?: number;
+  /**
+   * The offset from left or right where we want to pin the column
+   */
   pinnedOffset?: number;
+  /**
+   * The total width of pinned columns, only required on the outermost pinned column
+   */
+  pinnedWidth?: number;
   resizeable?: boolean;
   resizing?: boolean;
   sortable?: boolean;
@@ -467,7 +482,7 @@ export interface RowProps extends BaseRowProps {
   offset: number;
   onCellEdit?: CellEditHandler;
   onClick?: TableRowClickHandlerInternal;
-  onDataEdited?: DataCellEditHandler;
+  onDataEdited?: TableCellEditHandler;
   onToggleGroup?: (row: DataSourceRow, column: RuntimeColumnDescriptor) => void;
   row: DataSourceRow;
   searchPattern: Lowercase<string>;
@@ -549,3 +564,23 @@ export declare type SelectionChange = Omit<SelectRequest, "vpId">;
 export declare type SelectionChangeHandler = (
   selectionChange: SelectionChange,
 ) => void;
+
+export interface ColumnPinAction {
+  type: "pinColumn";
+  column: ColumnDescriptor;
+  pin: PinLocation | false;
+}
+
+export interface ColumnHideAction {
+  type: "hideColumn";
+  column: ColumnDescriptor;
+}
+export interface ColumnRemoveAction {
+  type: "removeColumn";
+  column: ColumnDescriptor;
+}
+
+export type ColumnDisplayAction =
+  | ColumnPinAction
+  | ColumnHideAction
+  | ColumnRemoveAction;

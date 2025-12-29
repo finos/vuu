@@ -1,27 +1,34 @@
 .vuuTable {
-  --vuu-table-footer-height: 0px;
   --vuu-table-cell-outlineWidth: 1px;
+  --vuu-table-col-header-row-height: var(--salt-size-base, 32px);
+  --vuu-table-col-heading-height: 25px;
+  --vuu-table-footer-height: 0px;
+  --vuu-table-row-height: var(--salt-size-base, 32px);
+  --vuu-table-row-selection-borderRadius: var(--vuuTable-row-selection-borderRadius, 5px); 
+
+  --table-background: var(--vuuTable-background, var(--salt-container-primary-background));
   --table-height: var(--measured-px-height);
   --table-width: var(--measured-px-width);
-  --vuu-table-embedded-control-height: calc(var(--row-height) - 3px);
-  --vuu-table-col-header-height: var(--vuuTableHeaderCell-height, 25px);
-  --vuu-table-col-heading-height: 25px;
+
   --columnResizer-color: transparent;
   --row-height: var(
     --row-height-prop,
     var(--vuu-table-row-height, var(--salt-size-base))
   );
+  --col-header-row-height: var(
+    --col-header-row-height-prop,
+    var(--vuu-table-col-header-row-height, var(--salt-size-base))
+  );
 
   --cell-borderColor: transparent;
   --row-borderColor: var(--row-background);
-  --table-background: var(--salt-container-primary-background);
+  --vuu-table-embedded-control-height: calc(var(--row-height) - 3px);
 
   background: var(--table-background);
   font-family: var(
     --vuuTable-fontFamily,
     var(--salt-typography-fontFamily, sans-serif)
   );
-  font-size: var(--vuuTable-fontSize, var(--salt-text-fontSize, 12px));
   position: relative;
   user-select: none;
 
@@ -113,6 +120,7 @@
 }
 
 .vuuTable-contentContainer {
+  --table-content-container-width: calc(var(--table-width) - var(--vertical-scrollbar-width));
   background: var(--table-background);
   height: calc(
     100% - var(--horizontal-scrollbar-height) - var(--vuu-table-footer-height)
@@ -120,7 +128,7 @@
   position: relative;
   overflow: auto;
   overscroll-behavior: none;
-  width: calc(var(--table-width) - var(--vertical-scrollbar-width));
+  width: var(--table-content-container-width);
 }
 
 .vuuTable-contentContainer::-webkit-scrollbar {
@@ -158,46 +166,59 @@
   z-index: 1;
 }
 
-.vuuTable-col-headings {
-  background-color: var(
-    --vuuTableColHeadings-background,
-    var(--table-background)
-  );
-  padding: 0 var(--vuuTableRow-selectionDecorator-width, 0);
-  position: sticky;
-  top: 0;
-  /* ensure header row sits atop everything else when scrolling down */
-  z-index: 1;
+.vuuPinRight {
+  .vuuColumnResizer {
+    cursor: default;
+    pointer-events: none;
+  }
 }
 
-.vuuTable-col-headings:hover {
-  --columnResizer-height: var(--vuu-table-col-header-height);
+.vuuTableHeaderCell.vuuPinLeft,
+.vuuTableHeaderCell.vuuPinRight {
+  z-index: 2;
+}
+
+.vuuTableHeader {
+  --row-height: var(--vuu-table-col-header-row-height);
+  background-color: var(
+    --vuuTableHeader-background,
+    var(--table-background)
+  );
+  border-bottom: solid 1px
+    var(
+      --vuuTableHeader-borderColor,
+      var(--salt-separable-tertiary-borderColor)
+    );
+  color: var(--salt-content-secondary-foreground);
+  font-size: var(--VuuTableHeader-fontSize, vasr(--salt-text-label-fontSize));
+  position: sticky;
+  top: 0;
+  white-space: nowrap;
+
+  /* ensure header row sits atop everything else when scrolling down */
+  z-index: 1;
+
+  .vuuDraggable-spacer {
+    border-bottom: solid 1px #ccc;
+    display: var(--vuuDraggable-display, inline-block);
+    height: var(--vuu-table-col-header-row-height);
+  }
+
+  .vuuStickyLeft {
+    z-index: 1;
+  }
+  .vuuStickyRight {
+    z-index: 0;
+  }
+}
+
+.vuuTableHeader:hover {
+  --columnResizer-height: var(--vuu-table-col-header-row-height);
   --columnResizer-color: var(--salt-separable-tertiary-borderColor);
 }
 
 .vuuTable-heading {
   height: var(--vuu-table-col-heading-height);
-}
-
-.vuuTable-col-headers {
-  background-color: var(
-    --vuuTableColHeadings-background,
-    var(--vuuTableColHeadings-background)
-  );
-  border-bottom: solid 1px
-    var(
-      --vuuTableColHeaders-borderColor,
-      var(--salt-separable-secondary-borderColor)
-    );
-  color: var(--salt-content-secondary-foreground);
-  height: var(--vuu-table-col-header-height);
-  white-space: nowrap;
-
-  .vuuDraggable-spacer {
-    border-bottom: solid 1px #ccc;
-    display: var(--vuuDraggable-display, inline-block);
-    height: var(--vuu-table-col-header-height);
-  }
 }
 
 .sizer-cell {
@@ -207,7 +228,7 @@
 
 .vuuDraggable-vuuTable {
   --cell-borderColor: transparent;
-  --vuu-table-col-header-height: var(--vuuTableHeaderCell-height, 25px);
+  --vuu-table-col-header-row-height: var(--vuuTableHeaderCell-height, 25px);
   --vuuTableHeaderCell-background: var(--salt-container-secondary-background);
 }
 .vuuDraggable-vuuTable {
@@ -216,7 +237,7 @@
 
 .vuuTable-pagination {
   --vuu-table-footer-height: 32px;
-  .vuuTable-col-headings {
+  .vuuTableHeader {
     position: relative;
   }
 
@@ -273,4 +294,176 @@
 
 .vuuTable-emptyDisplay ~ .vuuTable-contentContainer {
   visibility: hidden;
+}
+
+.vuuRowProxy {
+  position: absolute !important;
+  visibility: hidden;
+}
+
+.vuuTableColHeaderRow {
+  height: var(--col-header-row-height);
+}
+
+.vuuTableRow {
+  --table-row-selected-background: var(--vuuTableRow-selected-background, var(--salt-selectable-background-selected));
+  
+  background: var(--row-background, var(--table-background));
+  border-bottom: 1px solid var(--row-borderColor, var(--table-background));
+  box-sizing: border-box;
+  color: var(--salt-content-secondary-foreground);
+  contain: layout;
+  font-size: var(--VuuTableRow-fontSize, vasr(--salt-text-fontSize));
+  height: var(--row-height);
+  line-height: var(--row-height);
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+  width: 100%;
+}
+
+
+.vuuTableRow-even {
+  --row-background: var(--row-background-even);
+}
+
+.vuuTableRow-highlighted {
+  background: var(--salt-selectable-background-hover);
+}
+
+
+.vuuTableRow[aria-selected="true"] {
+  background-color: var(--table-row-selected-background);
+}
+
+.vuuTableRow[aria-expanded="true"] {
+  --toggle-icon-transform: rotate(90deg);
+}
+
+.vuuDraggable .vuuTableRow {
+  --cell-borderColor: transparent;
+  --vuu-selection-decorator-bg: transparent;
+  transform: none !important;
+  z-index: 1;
+}
+
+
+.vuuSelectionDecorator {
+    background: var(--table-background);
+    display: inline-block;
+    height: var(--row-height);
+    position: relative;
+    width: var(--table-selection-bookend-width,4px);
+    z-index: 2;
+}
+
+.vuuTableRow:not([aria-selected="true"]){
+    .vuuTableRowBookend {
+      display: none;
+    }
+}
+
+.vuuSelectionDecorator.vuuStickyLeft {
+  left: 0;
+  position: sticky;
+}
+
+.vuuSelectionDecorator.vuuStickyRight {
+  right: 0;
+  position: sticky;
+}
+
+    .vuuTableRowBookend {
+      position: absolute;
+      top: -1px;
+      right:0;
+      bottom:0;
+      left:0;
+    }
+
+.vuuTable-rowSelection-bordered {
+
+    .vuuSelectionDecorator  {
+
+        .vuuTableRowBookend {
+            background-color: var(--table-row-selected-background);
+            border-color: var(--vuuTableRow-selectionBlock-borderColor);
+            border-width: 1px;
+            width: var(--table-selection-bookend-width,4px);
+
+            &:before {
+                content: none !important;
+            }
+        }
+
+        &.vuuStickyLeft {
+            .vuuTableRowBookend {
+                border-left-style: solid;
+            }
+        }
+        &.vuuStickyRight {
+            .vuuTableRowBookend {
+                border-right-style: solid;
+            }
+        }
+    }
+
+    .vuuTableRow[aria-selected="true"]{
+        .vuuSelectionDecorator {
+            background-color: var(--table-background);
+            border: none;
+        }
+
+    }
+
+    /* non-selected row immediately followed by a selected row */
+    .vuuTableRow:not([aria-selected="true"]):has( + .vuuTableRow[aria-selected="true"]) {
+        border-bottom-color: transparent;
+    }
+
+    /* first row in a selection block, including a selection block of one row */
+    .vuuTableRow:not([aria-selected="true"]) + .vuuTableRow[aria-selected="true"],
+    .vuuTableRow[aria-selected="true"][data-first-row="true"]
+    {
+        border-radius: none;
+
+            &:after {
+              background: var(--vuuTableRow-selectionBlock-borderColor);
+              content: "";
+              position: absolute;
+              top: 0px;
+              left: 4px;
+              height: 1px;
+              width: calc(var(--content-width) - 8px);
+              z-index: 1;
+            }
+
+            .vuuStickyLeft .vuuTableRowBookend {
+                border-top-left-radius: var(--vuu-table-row-selection-borderRadius);
+                border-top-style: solid;
+                margin-top: 1px;
+            }
+
+            .vuuStickyRight .vuuTableRowBookend {
+                border-top-right-radius: var(--vuu-table-row-selection-borderRadius);
+                border-top-style: solid;
+                margin-top: 1px;
+            }
+
+    }
+
+    /* Last row in a selection block, including a selection block of one row */
+    .vuuTableRow[aria-selected="true"]:has( + .vuuTableRow:not([aria-selected="true"])) {
+        border-bottom-color: var(--vuuTableRow-selectionBlock-borderColor);
+
+            .vuuStickyLeft .vuuTableRowBookend {
+                border-bottom-left-radius: var(--vuu-table-row-selection-borderRadius);
+                border-bottom-style: solid;
+            }
+            .vuuStickyRight .vuuTableRowBookend {
+                border-bottom-right-radius: var(--vuu-table-row-selection-borderRadius);
+                border-bottom-style: solid;
+            }
+    }
+
 }

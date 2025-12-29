@@ -1,11 +1,11 @@
 .salt-theme.vuu-theme .vuuSplitter {
   --splitter-background: var(--salt-separable-primary-borderColor);
   --splitter-size: 9px;
-  --splitter-borderColor: var(--vuuWorkspace-background);
+  --splitter-borderColor: var(--vuuWorkspace-background, white);
   --splitter-borderStyle: none solid none solid;
   --splitter-borderWidth: 4px;
 }
 
-.salt-theme.vuu-theme .vuuSplitter-column {
+.salt-theme.vuu-theme-deprecated .vuuSplitter-column {
   --splitter-borderStyle: solid none solid none;
 }

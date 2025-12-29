@@ -1,0 +1,15 @@
+.salt-theme.vuu-theme-deprecated {
+  .vuuPaletteItem {
+    --vuuListItem-padding: 0;
+    border-bottom: solid 1px var(--salt-separable-secondary-borderColor);
+
+    &:first-child {
+      border-top: solid 1px var(--salt-separable-secondary-borderColor);
+    }
+
+    .vuuFeatureList-itemName {
+      position: relative;
+      top: 1px;
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@vuu-ui/vuu-theme-deprecated",
+  "version": "0.13.94",
+  "license": "Apache-2.0",
+  "style": "./index.css",
+  "files": [
+    "fonts"
+  ],
+  "scripts": {
+    "build:dev": "node ../../scripts/run-build.mjs",
+    "build": "node ../../scripts/run-build.mjs"
+  },
+  "private": true
+}

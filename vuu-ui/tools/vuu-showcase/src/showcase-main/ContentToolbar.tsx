@@ -2,6 +2,7 @@ import React, { SyntheticEvent, useCallback } from "react";
 import { ThemeSwitch } from "@vuu-ui/vuu-shell";
 import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { DataLocation, Density, useShowcaseContext } from "./ShowcaseProvider";
+import { ThemePicker } from "./theme-picker/ThemePicker";
 
 export const ContentToolbar = () => {
   const {
@@ -22,14 +23,6 @@ export const ContentToolbar = () => {
       "_blank",
     );
   }, [dataLocation, density, theme, themeMode]);
-
-  const handleThemeChange = useCallback(
-    (evt: SyntheticEvent) => {
-      const { value } = evt.target as HTMLInputElement;
-      onChangeTheme(value);
-    },
-    [onChangeTheme],
-  );
 
   const handleDensityChange = useCallback(
     (evt: SyntheticEvent) => {
@@ -55,16 +48,7 @@ export const ContentToolbar = () => {
       }}
       data-mode="light"
     >
-      <ToggleButtonGroup
-        className="vuuToggleButtonGroup"
-        data-variant="primary"
-        onChange={handleThemeChange}
-        value={theme}
-      >
-        <ToggleButton value="no-theme">No Theme</ToggleButton>
-        <ToggleButton value="salt-theme">SALT</ToggleButton>
-        <ToggleButton value="vuu-theme">VUU</ToggleButton>
-      </ToggleButtonGroup>
+      <ThemePicker theme={theme} onChange={onChangeTheme} />
 
       <ThemeSwitch
         className="vuuToggleButtonGroup"

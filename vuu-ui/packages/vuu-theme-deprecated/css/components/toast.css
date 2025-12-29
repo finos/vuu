@@ -1,0 +1,37 @@
+.salt-theme.vuu-theme-deprecated {
+
+    .vuuToastNotification {
+        z-index: var(--salt-zIndex-notification);
+    }
+
+    .saltToast {
+        --saltToast-borderRadius: 6px;
+        --saltToast-padding: var(--salt-spacing-200);
+
+        .vuuToastNotification-toastHeader {
+            margin-top:0;
+        }
+
+        .saltToast-iconContainer {
+            margin-right: var(--salt-spacing-200);
+        }
+
+        .saltIcon {
+            display: inline-block;
+        }
+
+        &.saltToast-error {
+            --saltToast-background: var(--salt-status-error-background);
+            color: white;
+        }
+        &.saltToast-success {
+            --saltToast-background: var(--salt-status-success-background);
+            color: white;
+        }
+        &.saltToast-info {
+            --saltToast-background: var(--salt-status-info-background);
+            color: white;
+        }
+    }
+
+}

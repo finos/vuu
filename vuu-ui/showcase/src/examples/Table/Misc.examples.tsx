@@ -54,6 +54,7 @@ import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 import "./Misc.examples.css";
 
 export const TestTable = ({
+  colHeaderRowHeight = 24,
   columnLayout,
   config: configProp,
   height = 625,
@@ -89,6 +90,7 @@ export const TestTable = ({
 
   return (
     <Table
+      colHeaderRowHeight={colHeaderRowHeight}
       config={config}
       data-testid="test-table"
       dataSource={dataSource}
@@ -181,7 +183,7 @@ export const ControlledNavigation = () => {
   );
 };
 
-export const TabInAndOut = () => {
+export const TabInAndOutFixture = () => {
   return (
     <div style={{ width: 950 }}>
       <div
@@ -806,6 +808,8 @@ const SymbolHeader = (_: HeaderCellProps) => {
     console.log("click");
   }, []);
 
+  console.log("SymbolHeader");
+
   return (
     <span
       style={{
@@ -815,12 +819,22 @@ const SymbolHeader = (_: HeaderCellProps) => {
         justifyContent: "flex-end",
       }}
     >
-      <Button variant="primary" data-icon="add" onClick={handleClick} />
+      <Button
+        appearance="solid"
+        data-icon="add"
+        onClick={handleClick}
+        sentiment="neutral"
+      />
     </span>
   );
 };
 
-registerComponent("symbol-header", SymbolHeader, "cell-renderer", {});
+registerComponent(
+  "symbol-header",
+  SymbolHeader,
+  "column-header-content-renderer",
+  {},
+);
 
 export const CustomColumnRenderer = () => {
   const { VuuDataSource } = useData();
@@ -850,6 +864,8 @@ export const CustomColumnRenderer = () => {
       dataSource,
     };
   }, [dataSource]);
+
+  console.log({ tableProps });
 
   const onSelect = useCallback<TableRowSelectHandler>((row) => {
     console.log({ row });

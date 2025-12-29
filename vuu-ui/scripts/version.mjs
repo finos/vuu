@@ -4,7 +4,7 @@ import fs from "fs";
 const packages = [
   "packages/vuu-protocol-types",
   "packages/vuu-utils",
-  "packages/vuu-theme",
+  "packages/vuu-theme-deprecated",
   "packages/vuu-data-local",
   "packages/vuu-data-remote",
   "packages/vuu-layout",

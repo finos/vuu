@@ -1,4 +1,4 @@
-import { SaltProvider } from "@salt-ds/core";
+import { SaltProvider, SaltProviderNext } from "@salt-ds/core";
 import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import {
@@ -30,7 +30,14 @@ const asThemeMode = (input: string | undefined): ThemeMode => {
 };
 
 const themeIsInstalled = (theme = "no-theme"): theme is string => {
-  return ["salt-theme", "vuu-theme", "tar-theme"].includes(theme);
+  return [
+    "salt-theme",
+    "salt-theme-next",
+    "salt-theme",
+    "vuu-theme-deprecated",
+    "vuu-theme",
+    "vuu-theme-next",
+  ].includes(theme);
 };
 
 const asDensity = (input: string | undefined): Density => {
@@ -71,7 +78,10 @@ export const ShowcaseStandalone = ({
   const [themeReady, setThemeReady] = useState(true);
 
   // We only need this once as entire page will refresh if theme changes
-  const theme = useMemo(() => getUrlParameter("theme", "vuu-theme"), []);
+  const theme = useMemo(
+    () => getUrlParameter("theme", "vuu-theme-deprecated"),
+    [],
+  );
 
   useEffect(() => {
     const checkUrlParams = () => {
@@ -95,6 +105,7 @@ export const ShowcaseStandalone = ({
 
   useMemo(() => {
     if (themeIsInstalled(theme)) {
+      console.log(`"attempt to to load theme ${theme}`);
       loadTheme(theme).then(() => {
         setThemeReady(true);
       });
@@ -150,40 +161,61 @@ export const ShowcaseStandalone = ({
     }
   }, [treeSource]);
 
+  console.log(`theme = ${theme}`);
+
+  const wrapInSaltProvider = (children: ReactNode) => {
+    if (theme?.endsWith("next")) {
+      return (
+        <SaltProviderNext
+          corner="rounded"
+          theme={theme}
+          density={densityRef.current}
+          mode={themeModeRef.current}
+        >
+          {children}
+        </SaltProviderNext>
+      );
+    } else {
+      return (
+        <SaltProvider
+          theme={theme}
+          density={densityRef.current}
+          mode={themeModeRef.current}
+        >
+          {children}
+        </SaltProvider>
+      );
+    }
+  };
+
   if (themeReady || theme === "no-theme") {
-    return (
-      <SaltProvider
-        theme={theme}
-        density={densityRef.current}
-        mode={themeModeRef.current}
-      >
-        {dataLocationRef.current === "local" ? (
-          <LocalDataSourceProvider>
-            <div
-              className={cx("vuuShowcase-StandaloneRoot", {
-                "vuuShowcase-mdx": contentState?.isMDX,
-              })}
-            >
-              {contentState?.component}
-            </div>
-          </LocalDataSourceProvider>
-        ) : (
-          <VuuDataSourceProvider
-            authenticate={true}
-            autoConnect
-            autoLogin
-            websocketUrl="wss://localhost:8090/websocket"
+    return wrapInSaltProvider(
+      dataLocationRef.current === "local" ? (
+        <LocalDataSourceProvider>
+          <div
+            className={cx("vuuShowcase-StandaloneRoot", {
+              "vuuShowcase-mdx": contentState?.isMDX,
+            })}
           >
-            <div
-              className={cx("vuuShowcase-StandaloneRoot", {
-                "vuuShowcase-mdx": contentState?.isMDX,
-              })}
-            >
-              {contentState?.component}
-            </div>
-          </VuuDataSourceProvider>
-        )}
-      </SaltProvider>
+            {contentState?.component}
+          </div>
+        </LocalDataSourceProvider>
+      ) : (
+        <VuuDataSourceProvider
+          authenticate={true}
+          autoConnect
+          autoLogin
+          websocketUrl="wss://localhost:8090/websocket"
+        >
+          <div
+            className={cx("vuuShowcase-StandaloneRoot", {
+              "vuuShowcase-mdx": contentState?.isMDX,
+            })}
+          >
+            {contentState?.component}
+          </div>
+        </VuuDataSourceProvider>
+      ),
     );
   } else {
     return null;

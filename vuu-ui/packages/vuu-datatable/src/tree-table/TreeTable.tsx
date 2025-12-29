@@ -64,6 +64,7 @@ export const TreeTable = ({
       ...config,
       columns: dataSourceRef.current?.columnDescriptors ?? [],
       columnSeparators: false,
+      selectionBookendWidth: 0,
       rowSeparators: false,
     };
   }, [config]);
@@ -85,7 +86,6 @@ export const TreeTable = ({
       rowToObject={rowToTreeNodeObject}
       showColumnHeaderMenus={false}
       selectionModel="single"
-      selectionBookendWidth={0}
     />
   );
 };

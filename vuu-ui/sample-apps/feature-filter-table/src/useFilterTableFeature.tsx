@@ -176,7 +176,6 @@ export const useFilterTableFeature = ({
     onFilterRenamed,
     onFilterStateChanged,
     vuuTable: tableSchema.table,
-    variant: "full-filters",
   };
 
   const tableProps = {

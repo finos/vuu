@@ -9,10 +9,11 @@ import {
 import {
   columnByAriaIndex,
   ColumnMap,
+  getAriaColIndex,
+  getAriaRowIndex,
   useStableReference,
 } from "@vuu-ui/vuu-utils";
 import { MouseEvent, useCallback } from "react";
-import { getAriaColIndex, getAriaRowIndex } from "./table-dom-utils";
 
 export interface TableContextMenuHookProps {
   allowContextMenu?: boolean;

@@ -99,7 +99,11 @@ test.describe("FilterContainer - Time range", () => {
     await expect(firstTimeInput).toBeFocused();
 
     await page.keyboard.press("0");
+    await expect(firstTimeInput).toHaveValue("00:00:00");
+
     await page.keyboard.press("9");
+    await expect(firstTimeInput).toHaveValue("09:00:00");
+
     await page.keyboard.press("0");
     await page.keyboard.press("0");
     await page.keyboard.press("0");

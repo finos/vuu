@@ -46,7 +46,9 @@ export type PopupCloseReason =
 
 export type MenuCloseHandler = (reason?: PopupCloseReason) => void;
 
-export interface PopupMenuProps extends HTMLAttributes<HTMLButtonElement> {
+export interface PopupMenuProps
+  extends Pick<ButtonProps, "appearance" | "sentiment">,
+    HTMLAttributes<HTMLButtonElement> {
   anchorElement?: RefObject<HTMLElement | null>;
   disabled?: boolean;
   icon?: string;
@@ -59,11 +61,12 @@ export interface PopupMenuProps extends HTMLAttributes<HTMLButtonElement> {
   onMenuClose?: MenuCloseHandler;
   onMenuOpen?: () => void;
   popupPlacement?: PopupPlacement;
-  variant?: ButtonProps["variant"];
 }
 
 export const PopupMenu = ({
   anchorElement,
+  "aria-label": ariaLabel,
+  appearance = "transparent",
   className,
   disabled = false,
   label,
@@ -77,8 +80,8 @@ export const PopupMenu = ({
   onMenuClose,
   onMenuOpen,
   popupPlacement = "below-right",
+  sentiment = "neutral",
   tabIndex = 0,
-  variant = "secondary",
   ...htmlAttributes
 }: PopupMenuProps) => {
   const targetWindow = useWindow();
@@ -92,6 +95,7 @@ export const PopupMenu = ({
 
   const { ariaAttributes, buttonProps, menuOpen, rootRef } = usePopupMenu({
     anchorElement,
+    "aria-label": ariaLabel,
     id,
     menuActionHandler,
     menuBuilder,
@@ -110,12 +114,13 @@ export const PopupMenu = ({
         {...htmlAttributes}
         {...ariaAttributes}
         {...buttonProps}
+        appearance={appearance}
         className={cx(classBase, className, `${classBase}-withCaption`, {
           "saltButton-active": menuOpen,
         })}
         disabled={disabled}
         ref={rootRef}
-        variant="secondary"
+        sentiment={sentiment}
       >
         {icon ? <Icon name={icon} /> : null}
         {label}
@@ -127,13 +132,14 @@ export const PopupMenu = ({
         {...htmlAttributes}
         {...ariaAttributes}
         {...buttonProps}
+        appearance={appearance}
         className={cx(classBase, className, {
           "saltButton-active": menuOpen,
         })}
         disabled={disabled}
         icon={icon}
         ref={rootRef}
-        variant={variant}
+        sentiment={sentiment}
       />
     );
   } else {

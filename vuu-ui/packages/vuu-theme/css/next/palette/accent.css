@@ -1,0 +1,25 @@
+.salt-theme.salt-theme-next.vuu-theme-next[data-mode="light"] {
+  --salt-palette-accent: var(--vuu-color-purple);
+  --salt-palette-accent-disabled: var(--salt-color-blue-500-40a);
+  --salt-palette-accent-strong: var(--salt-color-blue-600);
+  --salt-palette-accent-stronger: var(--salt-color-blue-700);
+  --salt-palette-accent-strongest: var(--salt-color-blue-800);
+  --salt-palette-accent-weak: var(--salt-color-blue-400);
+  --salt-palette-accent-weaker: var(--salt-color-blue-200);
+  --salt-palette-accent-weaker-disabled: var(--salt-color-blue-200-40a);
+  --salt-palette-accent-weakest: var(--salt-color-blue-100);
+}
+
+
+.salt-theme.salt-theme-next.vuu-theme-next[data-mode="light"] {
+  --salt-palette-accent: var(--vuu-color-purple);
+  --salt-palette-accent-disabled: var(--salt-color-teal-500-40a);
+  --salt-palette-accent-strong: var(--salt-color-teal-600);
+  --salt-palette-accent-stronger: var(--salt-color-teal-700);
+  --salt-palette-accent-strongest: var(--salt-color-teal-800);
+  --salt-palette-accent-weak: var(--salt-color-teal-400);
+  --salt-palette-accent-weaker: var(--salt-color-teal-200);
+  --salt-palette-accent-weaker-disabled: var(--salt-color-teal-200-40a);
+  --salt-palette-accent-weakest: var(--salt-color-teal-100);
+}
+

@@ -131,10 +131,10 @@ export const PinItemButton = () => {
     <LocalDataSourceProvider>
       <ClientTableColumnProvider>
         <TableTemplate
-          selectionBookendWidth={0}
           config={{
             columnLayout: "fit",
             columns: [{ name: "description" }, PinColumn],
+            selectionBookendWidth: 0,
           }}
           height="auto"
           maxViewportRowLimit={15}
@@ -157,10 +157,10 @@ export const SearchWithPin = () => {
       <ClientTableColumnProvider>
         <TableSearchTemplate
           TableProps={{
-            selectionBookendWidth: 0,
             config: {
               columnLayout: "fit",
               columns: [{ name: "description" }, PinColumn],
+              selectionBookendWidth: 0,
             },
             rowHeight: 24,
             navigationStyle: "row",
@@ -198,6 +198,7 @@ const RecentlyUsedItemsTable = ({ schema }: { schema: TableSchema }) => {
       config={{
         columnLayout: "fit",
         columns: [{ name: "description" }],
+        selectionBookendWidth: 0,
       }}
       filter={{
         filter,
@@ -206,7 +207,6 @@ const RecentlyUsedItemsTable = ({ schema }: { schema: TableSchema }) => {
       maxViewportRowLimit={6}
       navigationStyle="row"
       schema={schema}
-      selectionBookendWidth={0}
       showColumnHeaders={false}
       style={{ border: "solid 1px lightgray" }}
       width="100%"
@@ -227,6 +227,7 @@ const PinnedItemsTable = ({ schema }: { schema: TableSchema }) => {
       config={{
         columnLayout: "fit",
         columns: [{ name: "description" }, PinColumn],
+        selectionBookendWidth: 0,
       }}
       filter={{
         filter,
@@ -235,7 +236,6 @@ const PinnedItemsTable = ({ schema }: { schema: TableSchema }) => {
       maxViewportRowLimit={10}
       navigationStyle="row"
       schema={schema}
-      selectionBookendWidth={0}
       showColumnHeaders={false}
       style={{ border: "solid 1px lightgray" }}
       width="100%"
@@ -258,10 +258,10 @@ const SearchItemsTable = ({ schema }: { schema: TableSchema }) => {
   return (
     <TableSearchTemplate
       TableProps={{
-        selectionBookendWidth: 0,
         config: {
           columnLayout: "fit",
           columns: [{ name: "description" }, PinColumn],
+          selectionBookendWidth: 0,
         },
         rowHeight: 24,
         navigationStyle: "row",

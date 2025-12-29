@@ -12,10 +12,9 @@ export const useCell = (
   // TODO measure perf without the memo, might not be worth the cost
   useMemo(() => {
     const className = cx(classBase, column.className, {
-      vuuPinFloating: column.pin === "floating",
       vuuPinLeft: column.pin === "left",
       vuuPinRight: column.pin === "right",
-      vuuEndPin: isHeader && column.endPin,
+      vuuEndPin: isHeader && column.pinnedWidth,
       [`${classBase}-editable`]: column.editable,
       [`${classBase}-right`]: column.align === "right",
       [`${classBase}-error`]: hasError,

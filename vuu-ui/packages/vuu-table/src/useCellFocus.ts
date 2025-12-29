@@ -26,6 +26,16 @@ const getCellPosition = (el: HTMLElement) => {
   return { top };
 };
 
+const isDifferentCellPosition = (
+  currentPos: CellPos | undefined,
+  newPos: CellPos,
+) => {
+  if (currentPos === undefined) {
+    return true;
+  }
+  return currentPos[0] !== newPos[0] || currentPos[1] !== newPos[1];
+};
+
 export type FocusCell = (cellPos: CellPos, fromKeyboard?: boolean) => void;
 
 export const useCellFocus = ({
@@ -42,13 +52,10 @@ export const useCellFocus = ({
   );
 
   const focusCell = useCallback<FocusCell>(
-    (cellPos, fromKeyboard = false) => {
+    (cellPos) => {
       if (containerRef.current) {
         const { current: state } = cellFocusStateRef;
-
-        if (fromKeyboard && state.outsideViewport) {
-          state.cellPos = cellPos;
-        } else {
+        if (isDifferentCellPosition(state.cellPos, cellPos)) {
           const activeCell = getTableCell(containerRef, cellPos);
           if (activeCell) {
             if (activeCell !== state.el) {

@@ -1,0 +1,11 @@
+.salt-theme.vuu-theme {
+    .vuuTable.custom-selection-styling {
+          --vuuTableRow-selectionBlock-borderColor: cyan;
+
+
+    .vuuTableRowBookend {
+      background: var(--table-row-selected-background) !important;
+    }
+
+    }
+}

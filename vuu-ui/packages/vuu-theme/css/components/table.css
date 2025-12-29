@@ -1,6 +1,7 @@
 .salt-theme.vuu-theme {
-  --vuuTableRow-selectionBlock-borderColor: var(--vuu-color-purple-10);
+  --vuuTableRow-selectionBlock-borderColor: var(--vuu-color-purple);
   --vuuTableCell-contextOpen-outlineColor: var(--vuu-color-orange-50);
+  --vuuTableRow-selected-background: rgb(51,52,54);
 
   &.salt-density-high {
     --vuu-table-row-height: 20px;
@@ -18,91 +19,31 @@
   .vuuTable {
       --vuuTableRow-selectionDecorator-width: 4px;
 
-
-    .vuuTableRow-selectedEnd {
-      z-index: 1;
+    .vuuTableRow-highlighted {
+      background: var(--vuu-color-gray-15);
     }
 
+
+    /* .vuuTableRow-selectedEnd {
+      z-index: 1;
+    } */
 
     .vuuTableRow[aria-selected="true"] {
-      .vuuTableRow-selectionDecorator:before {
-        background: var(--vuuTableRow-selectionBlock-borderColor);
-        content: "";
-        inset: -1px 0 0 0;
-        position: absolute;
-      }
+
+    .vuuTableRowBookend {
+      background: var(--vuuTableRow-selectionBlock-borderColor);
     }
 
-    /* first row in a selection block, including a selection block of one row */
-    .vuuTableRow:not([aria-selected="true"]) + .vuuTableRow[aria-selected="true"] {
-      --selection-decorator-marginTop: 1px;
-      --vuu-selection-decorator-left-radius: 5px 0 0 0;
-      --vuu-selection-decorator-right-radius: 0 5px 0 0;
-      border-radius: 5px 5px 0 0;
-
-      &:after {
-        content: "";
-        position: absolute;
-        top: 0px;
-        left: 4px;
-        height: 1px;
-        background: var(--vuuTableRow-selectionBlock-borderColor);
-        width: calc(var(--content-width) - 8px);
-        z-index: 1;
-      }
-
-      .vuuTableRow-selectionDecorator {
-        height: calc(var(--row-height) - 1px);
-      }
-    }
-
-    /* Last row in a selection block, including a selection block of one row */
-    .vuuTableRow[aria-selected="true"]:has( + .vuuTableRow:not([aria-selected="true"])) {
-      --vuu-selection-decorator-left-radius: 0 0 0 5px;
-      --vuu-selection-decorator-right-radius: 0 0 5px 0;
-      border-radius: 0 0 5px 5px;
-      border-bottom-color: var(
-        --vuuTableRow-selectionBlock-borderColor,
-        var(--row-borderColor)
-      );
-    }
-
-    /* standalone selected row */
-    .vuuTableRow:not([aria-selected="true"]) + .vuuTableRow[aria-selected="true"]:has( + .vuuTableRow:not([aria-selected="true"])) {
-      --vuu-selection-decorator-left-radius: 5px 0 0 5px;
-      --vuu-selection-decorator-right-radius: 0 5px 5px 0;
-      border-radius: 5px 5px 5px 5px;
-    }
-
-    .vuuTableRow-selectionDecorator {
-      background: var(--table-background);
-      display: inline-block;
-      position: relative;
-      height: var(--row-height);
-      margin-top: var(--selection-decorator-marginTop, 0px);
-      width: 4px;
-      z-index: 2;
-    }
-
-    .vuuTableRow-selectionDecorator.vuuStickyLeft {
-      left: 0;
-      position: sticky;
-    }
-
-    .vuuTableRow-selectionDecorator.vuuStickyRight {
-      right: 0;
-      position: sticky;
-    }
-
-    .vuuTableRow-selectionDecorator.vuuStickyLeft:before {
-      border-radius: var(--vuu-selection-decorator-left-radius, 0);
-    }
-
-    .vuuTableRow-selectionDecorator.vuuStickyRight:before {
-      border-radius: var(--vuu-selection-decorator-right-radius, 0);
+    .vuuTableCell:focus {
+      outline: solid var(--salt-focused-outlineColor) 2px;
+      
+      /** This is to achieve a white background to outline dashes */
+      box-shadow: inset 0 0 0 var(--cell-outline-width) white;
+      border-bottom: none;
     }
 
 
   }
 
+}
 }

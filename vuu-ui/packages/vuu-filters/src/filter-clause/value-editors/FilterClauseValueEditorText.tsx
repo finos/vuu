@@ -1,8 +1,13 @@
 import { useTypeaheadSuggestions } from "@vuu-ui/vuu-data-react";
 import type { TypeaheadParams } from "@vuu-ui/vuu-protocol-types";
 import { ExpandoInput, MultiSelectionHandler } from "@vuu-ui/vuu-ui-controls";
-import { CommitHandler, getVuuTable, NO_DATA_MATCH } from "@vuu-ui/vuu-utils";
-import { Option } from "@salt-ds/core";
+import {
+  CommitHandler,
+  dispatchKeyboardEvent,
+  getVuuTable,
+  NO_DATA_MATCH,
+} from "@vuu-ui/vuu-utils";
+import { Option, useForkRef } from "@salt-ds/core";
 import {
   FormEvent,
   ForwardedRef,
@@ -13,6 +18,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { ExpandoCombobox } from "../ExpandoCombobox";
@@ -22,7 +28,6 @@ export interface FilterClauseTextValueEditorProps
   extends FilterClauseValueEditor,
     HTMLAttributes<HTMLDivElement> {
   "data-field"?: string;
-  // ref: RefObject<HTMLDivElement>;
   operator: string;
   value: string | string[];
   dropdownOnAutofocus?: boolean;
@@ -44,6 +49,9 @@ export const FilterClauseValueEditorText = forwardRef(
     forwardedRef: ForwardedRef<HTMLDivElement>,
   ) {
     const isMultiValue = operator === "in";
+
+    const expandoRef = useRef<HTMLDivElement>(null);
+    const combinedRef = useForkRef(forwardedRef, expandoRef);
 
     // If we have a multiselect text value which we are editing, this will render
     // a comma delimited list of the selected values. That is not what we display
@@ -69,6 +77,28 @@ export const FilterClauseValueEditorText = forwardRef(
       // TODO when will this ever be final ?
       (_, values) => onChangeValue(values, false),
       [onChangeValue],
+    );
+
+    const highlightFirstOption = useCallback(() => {
+      if (expandoRef.current) {
+        const input = expandoRef.current?.querySelector<HTMLInputElement>(
+          'input[role="combobox"]',
+        );
+        if (input) {
+          requestAnimationFrame(() => {
+            dispatchKeyboardEvent(input, "keydown", "ArrowDown");
+          });
+        }
+      }
+    }, []);
+
+    const handleOpenChange = useCallback(
+      (open: boolean, reason?: "focus" | "input" | "manual") => {
+        if (open && reason === "focus" && expandoRef.current) {
+          highlightFirstOption();
+        }
+      },
+      [highlightFirstOption],
     );
 
     useEffect(() => {
@@ -196,11 +226,11 @@ export const FilterClauseValueEditorText = forwardRef(
               inputProps={inputProps}
               className={className}
               data-field="value"
+              dropdownOnAutofocus={dropdownOnAutofocus}
               onChange={handleInputChange}
               onSelectionChange={handleSingleValueSelectionChange}
               ref={forwardedRef}
               value={value}
-              dropdownOnAutofocus={dropdownOnAutofocus}
             >
               {typeaheadValues.map((state) => (
                 <Option value={state} key={state} disabled />
@@ -224,15 +254,16 @@ export const FilterClauseValueEditorText = forwardRef(
         default: {
           return typeaheadValues.length > 0 ? (
             <ExpandoCombobox
-              inputProps={inputProps}
               className={className}
               data-field="value"
-              title="value"
-              onChange={handleInputChange}
-              onSelectionChange={handleSingleValueSelectionChange}
-              ref={forwardedRef}
-              value={value}
               dropdownOnAutofocus={dropdownOnAutofocus}
+              inputProps={inputProps}
+              onChange={handleInputChange}
+              onOpenChange={handleOpenChange}
+              onSelectionChange={handleSingleValueSelectionChange}
+              ref={combinedRef}
+              title="value"
+              value={value}
             >
               {typeaheadValues.map((state) => (
                 <Option value={state} key={state} />
@@ -250,11 +281,13 @@ export const FilterClauseValueEditorText = forwardRef(
       forwardedRef,
       handleInputChange,
       handleInputCommit,
+      onOpenChange,
       handleMultiValueSelectionChange,
       value,
-      handleSingleValueSelectionChange,
-      onOpenChange,
       dropdownOnAutofocus,
+      handleSingleValueSelectionChange,
+      handleOpenChange,
+      combinedRef,
     ]);
 
     return getValueInputField();

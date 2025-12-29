@@ -1,25 +1,11 @@
 .salt-theme.vuu-theme {
-  .saltInput-activationIndicator {
-    display: none;
-  }
 
-  .saltInput:hover {
-    background: inherit;
-  }
+  .saltInput {
+    --saltInput-outline: none;
 
-  .saltInput-primary {
-    border: solid 1px var(--input-borderColor, var(--salt-editable-borderColor));
-    border-radius: 6px;
-  }
-
-  .saltInput-focused:hover,
-  .saltInput-focused {
-    --input-borderColor: var(--vuu-color-purple-10);
-  }
-
-  .saltInput-error {
-    --saltInput-background: var(--salt-editable-primary-background);
-    border-color: var(--salt-editable-borderColor);
+    .saltInput-activationIndicator {
+      display: none;
+    }
   }
 
   .saltStatusAdornment {

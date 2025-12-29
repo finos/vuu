@@ -46,7 +46,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Row as DefaultRow, RowProxy } from "./Row";
+import { Row as DefaultRow } from "./Row";
 import { TableCellBlock } from "./cell-block/cellblock-utils";
 import { PaginationControl } from "./pagination";
 import { TableHeader } from "./table-header";
@@ -61,6 +61,24 @@ const classBase = "vuuTable";
 const { IDX, RENDER_IDX } = metadataKeys;
 
 export type TableNavigationStyle = "none" | "cell" | "row" | "tree";
+
+// A dummy Table Row rendered once and not visible. We measure this to
+// determine height of Row(s) and monitor it for size changes (in
+// case of runtime density switch). This allows ListItem height to
+// be controlled purely through CSS.
+const RowProxy = forwardRef<
+  HTMLDivElement,
+  { className?: string; height?: number }
+>(function RowProxy({ className = "vuuTableRow", height }, forwardedRef) {
+  return (
+    <div
+      aria-hidden
+      className={cx(className, `vuuRowProxy`)}
+      ref={forwardedRef}
+      style={{ height }}
+    />
+  );
+});
 
 export interface TableProps
   extends Omit<
@@ -107,6 +125,13 @@ export interface TableProps
    * required if a fully featured column picker is to be available
    */
   availableColumns?: SchemaColumn[];
+
+  /**
+   * Pixel height of header cells. If specified here, this will take precedence over CSS
+   * values and Table will not respond to density changes.
+   */
+  colHeaderRowHeight?: number;
+
   /**
    * Provide configuration settings for Table. At minimun, column
    * descriptors must be provided.
@@ -131,6 +156,7 @@ export interface TableProps
    * - group-column (default) - user can click anywhere within the group column, i.e on the icon or the column text
    */
   groupToggleTarget?: GroupToggleTarget;
+
   /**
    * Defined how focus navigation within data cells will be handled by table.
    * Default is cell.
@@ -199,6 +225,11 @@ export interface TableProps
    * provide a 'Delete' or 'Cancel' button. Implement this functionality in a rowActionHandler.
    */
   rowActionHandlers?: Record<string, RowActionHandler>;
+
+  /**
+   * Allows opt-in to a predefined style pattern that renders a border around a row selection block.
+   */
+  rowSelectionBorder?: boolean;
   /**
    * When a row is selected and onSelect provided, onSelect will be invoked with a
    * DataSourceRowObject, derived from the internal representation of a data row,
@@ -235,12 +266,6 @@ export interface TableProps
    * Will be used to highlight matching text.
    */
   searchPattern?: string;
-  /**
-   * Selection Bookends style the left and right edge of a selection block.
-   * They are optional, value currently defaults to 4.
-   * TODO this should just live in CSS
-   */
-  selectionBookendWidth?: number;
   /**
    * Selection behaviour for Table:
    * `none` selection disabled
@@ -291,6 +316,7 @@ const TableCore = ({
   autoSelectFirstRow,
   autoSelectRowKey,
   availableColumns,
+  // colHeaderRowHeight,
   config,
   containerRef,
   customHeader,
@@ -317,7 +343,6 @@ const TableCore = ({
   rowHeight,
   rowToObject,
   scrollingApiRef,
-  selectionBookendWidth = 0,
   selectionModel = "extended",
   showColumnHeaders = true,
   showColumnHeaderMenus = true,
@@ -325,9 +350,11 @@ const TableCore = ({
   size,
 }: Omit<
   TableProps,
+  | "colHeaderRowHeight"
   | "maxViewportRowLimit"
   | "resizeStrategy"
   | "rowHeight"
+  | "rowSelectionStyle"
   | "searchPattern"
   | "viewportRowLimit"
 > & {
@@ -400,13 +427,14 @@ const TableCore = ({
     rowHeight,
     rowToObject,
     scrollingApiRef,
-    selectionBookendWidth,
     selectionModel,
     showColumnHeaders,
     showColumnHeaderMenus,
     showPaginationControls,
     size,
   });
+
+  const { selectionBookendWidth = 4 } = config;
 
   const contentContainerClassName = cx(`${classBase}-contentContainer`, {
     [`${classBase}-colLines`]: tableAttributes.columnSeparators,
@@ -427,6 +455,7 @@ const TableCore = ({
     "--pinned-width-right": `${viewportMeasurements.pinnedWidthRight}px`,
     "--total-header-height": `${headerHeight}px`,
     "--viewport-body-height": `${viewportMeasurements.viewportBodyHeight}px`,
+    "--table-selection-bookend-width": `${selectionBookendWidth}px`,
   } as CSSProperties;
 
   const headersReady = showColumnHeaders === false || headerHeight > 0;
@@ -482,6 +511,7 @@ const TableCore = ({
               onRemoveGroupColumn={onRemoveGroupColumn}
               onResizeColumn={onResizeColumn}
               onSortColumn={onSortColumn}
+              showBookends={selectionBookendWidth > 0}
               showColumnHeaderMenus={showColumnHeaderMenus}
               tableConfig={tableConfig}
               tableId={id}
@@ -498,6 +528,8 @@ const TableCore = ({
                     classNameGenerator={rowClassNameGenerator}
                     columnMap={columnMap}
                     columns={scrollProps.columnsWithinViewport}
+                    // This is used for styling selection only.
+                    data-first-row={data[IDX] === 0 ? "true" : undefined}
                     groupToggleTarget={groupToggleTarget}
                     highlighted={highlightedIndex === ariaRowIndex}
                     key={data[RENDER_IDX]}
@@ -570,6 +602,7 @@ export const Table = forwardRef(function Table(
     dataSource,
     disableFocus,
     groupToggleTarget,
+    colHeaderRowHeight: colHeaderRowHeightProp,
     height,
     highlightedIndex,
     id,
@@ -590,10 +623,10 @@ export const Table = forwardRef(function Table(
     resizeStrategy,
     rowActionHandlers,
     rowHeight: rowHeightProp,
+    rowSelectionBorder,
     rowToObject,
     scrollingApiRef,
     searchPattern = "",
-    selectionBookendWidth = 4,
     selectionModel,
     showColumnHeaders,
     showColumnHeaderMenus,
@@ -615,10 +648,11 @@ export const Table = forwardRef(function Table(
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [size, _setSize] = useState<MeasuredSize>();
-  // TODO this will rerender entire table, move footer into seperate component
+
   const { measuredHeight: rowHeight, measuredRef: rowRef } = useMeasuredHeight({
     height: rowHeightProp,
   });
+
   const { measuredHeight: footerHeight, measuredRef: footerRef } =
     useMeasuredHeight({});
 
@@ -683,6 +717,7 @@ export const Table = forwardRef(function Table(
         {...htmlAttributes}
         className={cx(classBase, classNameProp, {
           [`${classBase}-pagination`]: showPaginationControls,
+          [`${classBase}-rowSelection-bordered`]: rowSelectionBorder,
           [`${classBase}-maxViewportRowLimit`]: maxViewportRowLimit,
           [`${classBase}-viewportRowLimit`]: viewportRowLimit,
         })}
@@ -694,7 +729,14 @@ export const Table = forwardRef(function Table(
         style={
           {
             ...styleProp,
-            "--row-height-prop": rowHeight > 0 ? `${rowHeight}px` : undefined,
+            "--col-header-row-height-prop":
+              typeof colHeaderRowHeightProp === "number"
+                ? `${colHeaderRowHeightProp}px`
+                : undefined,
+            "--row-height-prop":
+              typeof rowHeightProp === "number"
+                ? `${rowHeightProp}px`
+                : undefined,
           } as CSSProperties
         }
         width={width}
@@ -742,7 +784,6 @@ export const Table = forwardRef(function Table(
             rowToObject={rowToObject}
             scrollingApiRef={scrollingApiRef}
             lowerCaseSearchPattern={lowerCase(searchPattern)}
-            selectionBookendWidth={selectionBookendWidth}
             selectionModel={selectionModel}
             showColumnHeaders={showColumnHeaders}
             showColumnHeaderMenus={showColumnHeaderMenus}

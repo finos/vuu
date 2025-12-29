@@ -51,9 +51,9 @@ export const ButtonVariations = () => {
       }}
     >
       <span />
-      <span>Accented/Solid</span>
-      <span>Neutral/Solid</span>
-      <span>Neutral/transparent</span>
+      <span>Accented/Solid (CTA)</span>
+      <span>Neutral/Solid (Primary)</span>
+      <span>Neutral/transparent (Secondary)</span>
       <span>Embedded</span>
 
       <span />

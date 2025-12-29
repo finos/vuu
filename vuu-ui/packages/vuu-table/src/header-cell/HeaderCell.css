@@ -40,7 +40,7 @@
 }
 
 .vuuTableHeaderCell.vuuDragging {
-  height: var(--vuu-table-col-header-height);
+  height: var(--vuu-table-col-header-row-height);
 }
 
 .vuuTableHeaderCell-right {

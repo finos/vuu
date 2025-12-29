@@ -70,6 +70,7 @@ export const NewBasketDialog = ({
         <FormField>
           <FormFieldLabel>Basket Name</FormFieldLabel>
           <VuuInput
+            bordered
             onCommit={onChangeBasketName}
             ref={inputCallbackRef}
             type="string"

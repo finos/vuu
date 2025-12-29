@@ -1,0 +1,11 @@
+.salt-theme.vuu-theme-deprecated {
+  --salt-typography-fontFamily-nunito: "Nunito Sans";
+  --salt-typography-fontFamily-code: 'Sometype Mono';
+
+  --salt-typography-fontWeight-light: 300;
+  --salt-typography-fontWeight-regular: 400;
+  --salt-typography-fontWeight-medium: 500;
+  --salt-typography-fontWeight-semiBold: 600;
+  --salt-typography-fontWeight-bold: 700;
+  --salt-typography-fontWeight-extraBold: 800;
+}
