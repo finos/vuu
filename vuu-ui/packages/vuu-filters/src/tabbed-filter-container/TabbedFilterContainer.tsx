@@ -30,6 +30,8 @@ export interface TabbedFilterContainerProps
     "availableColumns" | "filterPillPermissions"
   >;
   children: ReactNode;
+  filterTabLabel?: string;
+  savedFilterLabel?: string;
 }
 
 export const TabbedFilterContainer = ({
@@ -38,8 +40,10 @@ export const TabbedFilterContainer = ({
   className,
   filter,
   filterProviderKey,
+  filterTabLabel = "Ad hoc",
   onFilterApplied,
   onFilterCleared,
+  savedFilterLabel = "Saved",
   ...htmlAttributes
 }: TabbedFilterContainerProps) => {
   const targetWindow = useWindow();
@@ -54,10 +58,10 @@ export const TabbedFilterContainer = ({
       <TabsNext defaultValue="ad-hoc-filter">
         <TabListNext appearance="transparent">
           <TabNext value="ad-hoc-filter" key="ad-hoc-filter">
-            <TabNextTrigger>AD HOC</TabNextTrigger>
+            <TabNextTrigger>{filterTabLabel}</TabNextTrigger>
           </TabNext>
           <TabNext value="saved-filters" key="saved-filters">
-            <TabNextTrigger>SAVED</TabNextTrigger>
+            <TabNextTrigger>{savedFilterLabel}</TabNextTrigger>
           </TabNext>
         </TabListNext>
         <TabNextPanel value="ad-hoc-filter" key="ad-hoc-filter">

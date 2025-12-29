@@ -30,8 +30,6 @@ const Notifications = () => {
     });
   };
 
-  console.log("Render Notifications");
-
   return (
     <div style={{ maxWidth: 300, margin: 20 }}>
       <FormField>

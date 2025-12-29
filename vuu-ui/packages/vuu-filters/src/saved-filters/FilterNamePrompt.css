@@ -2,4 +2,11 @@
     .saltText-warning {
         padding: var(--salt-spacing-400) 0;
     }
+    .saltDialogContent {
+        background: none;
+        padding:0;
+        .saltDialogContent-inner {
+            padding: var(--vuuFilterNamePrompt-content-padding, 1px);
+        }
+    }
 }

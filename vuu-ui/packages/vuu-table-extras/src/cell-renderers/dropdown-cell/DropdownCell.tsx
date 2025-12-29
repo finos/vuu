@@ -5,6 +5,7 @@ import {
   dataColumnAndKeyUnchanged,
   dispatchCustomEvent,
   getSelectedOption,
+  isRpcSuccess,
   registerComponent,
 } from "@vuu-ui/vuu-utils";
 import { Dropdown, Option } from "@salt-ds/core";
@@ -70,7 +71,7 @@ export const DropdownCell = memo(function DropdownCell({
           },
           "commit",
         );
-        if (response === true) {
+        if (isRpcSuccess(response)) {
           dispatchCustomEvent(evt.target as HTMLElement, "vuu-commit");
         }
       }

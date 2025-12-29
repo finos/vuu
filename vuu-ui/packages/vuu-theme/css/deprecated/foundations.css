@@ -16,6 +16,13 @@
   --salt-opacity-2: 0.25;
   --salt-opacity-3: 0.4;
   --salt-opacity-4: 0.7;
+  --salt-opacity-8: 0.08;
+  --salt-opacity-0: 0;
+  --salt-opacity-15: 0.15;
+  --salt-opacity-25: 0.25;
+  --salt-opacity-40: 0.4;
+  --salt-opacity-45: 0.45;
+  --salt-opacity-70: 0.7;
 
   /* Shadow */
   --salt-shadow-0: none;
@@ -24,6 +31,27 @@
   --salt-shadow-3: 0 4px 8px 0 var(--salt-shadow-3-color); /* Use --salt-shadow-300 */
   --salt-shadow-4: 0 6px 10px 0 var(--salt-shadow-4-color); /* Use --salt-shadow-400 */
   --salt-shadow-5: 0 12px 40px 0 var(--salt-shadow-5-color); /* Use --salt-shadow-500 */
+  --salt-shadow-100: 0 1px 3px 0 var(--salt-shadow-100-color);
+  --salt-shadow-200: 0 2px 4px 0 var(--salt-shadow-200-color);
+  --salt-shadow-300: 0 4px 8px 0 var(--salt-shadow-300-color);
+  --salt-shadow-400: 0 6px 10px 0 var(--salt-shadow-400-color);
+  --salt-shadow-500: 0 12px 40px 0 var(--salt-shadow-500-color);
+
+  /* Typography */
+  --salt-typography-fontFamily: var(--salt-typography-fontFamily-nunito);
+  --salt-typography-fontFamily-code: var(--salt-typography-fontFamily-ptMono);
+
+  /* Alpha */
+  --salt-color-black-15a: rgba(var(--salt-color-black-rgb), 0.15);
+  --salt-color-black-45a: rgba(var(--salt-color-black-rgb), 0.45);
+  --salt-color-black-60a: rgba(var(--salt-color-black-rgb), 0.6);
+  --salt-color-black-70a: rgba(var(--salt-color-black-rgb), 0.7);
+  --salt-color-black-90a: rgba(var(--salt-color-black-rgb), 0.9);
+  --salt-color-white-15a: rgba(var(--salt-color-white-rgb), 0.15);
+  --salt-color-white-45a: rgba(var(--salt-color-white-rgb), 0.45);
+  --salt-color-white-60a: rgba(var(--salt-color-white-rgb), 0.6);
+  --salt-color-white-70a: rgba(var(--salt-color-white-rgb), 0.7);
+  --salt-color-white-90a: rgba(var(--salt-color-white-rgb), 0.9);
 }
 
 .salt-theme.vuu-theme[data-mode="light"] {
@@ -32,6 +60,11 @@
   --salt-shadow-3-color: rgba(0, 0, 0, 0.15); /* Use --salt-shadow-300-color */
   --salt-shadow-4-color: rgba(0, 0, 0, 0.2); /* Use --salt-shadow-400-color */
   --salt-shadow-5-color: rgba(0, 0, 0, 0.3); /* Use --salt-shadow-500-color */
+  --salt-shadow-100-color: rgba(0, 0, 0, 0.1);
+  --salt-shadow-200-color: rgba(0, 0, 0, 0.1);
+  --salt-shadow-300-color: rgba(0, 0, 0, 0.15);
+  --salt-shadow-400-color: rgba(0, 0, 0, 0.2);
+  --salt-shadow-500-color: rgba(0, 0, 0, 0.3);
 }
 
 .salt-theme.vuu-theme[data-mode="dark"] {
@@ -40,6 +73,11 @@
   --salt-shadow-3-color: rgba(0, 0, 0, 0.55); /* Use --salt-shadow-300-color */
   --salt-shadow-4-color: rgba(0, 0, 0, 0.55); /* Use --salt-shadow-400-color */
   --salt-shadow-5-color: rgba(0, 0, 0, 0.65); /* Use --salt-shadow-500-color */
+  --salt-shadow-100-color: rgba(0, 0, 0, 0.5);
+  --salt-shadow-200-color: rgba(0, 0, 0, 0.5);
+  --salt-shadow-300-color: rgba(0, 0, 0, 0.55);
+  --salt-shadow-400-color: rgba(0, 0, 0, 0.55);
+  --salt-shadow-500-color: rgba(0, 0, 0, 0.65);
 }
 
 .salt-density-touch,
@@ -66,38 +104,42 @@
   --salt-size-sharktooth-width: 10px;
   --salt-size-stackable: calc(var(--salt-size-base) + var(--salt-size-unit));
 
+  --salt-size-border: 1px;
+  --salt-size-bar-small: 2px;
+  --salt-size-border-strong: 2px;
+
   /* Z Index */
   --salt-zIndex-docked: 1050;
 }
 
 .salt-density-high {
-  --salt-size-unit: calc(var(--salt-size-basis-unit) * 1);
+  --salt-size-unit: calc(var(--salt-size-basis-unit) * 1); /* Use --salt-spacing-100 */
   --salt-size-compact: calc(var(--salt-size-basis-unit) * 1.5);
-  --salt-size-accent: calc(var(--salt-size-basis-unit) * 0.5);
+  --salt-size-accent: calc(var(--salt-size-basis-unit) * 0.5); /* Use --salt-size-bar */
   --salt-icon-size-base: 10px; /* Use --salt-size-icon */
   --salt-icon-size-status-adornment: 6px; /* Use --salt-size-adornment */
 }
 
 .salt-density-medium {
-  --salt-size-unit: calc(var(--salt-size-basis-unit) * 2);
+  --salt-size-unit: calc(var(--salt-size-basis-unit) * 2); /* Use --salt-spacing-100 */
   --salt-size-compact: calc(var(--salt-size-basis-unit) * 2);
-  --salt-size-accent: calc(var(--salt-size-basis-unit) * 1);
+  --salt-size-accent: calc(var(--salt-size-basis-unit) * 1); /* Use --salt-size-bar */
   --salt-icon-size-base: 12px; /* Use --salt-size-icon */
   --salt-icon-size-status-adornment: 8px; /* Use --salt-size-adornment */
 }
 
 .salt-density-low {
-  --salt-size-unit: calc(var(--salt-size-basis-unit) * 3);
+  --salt-size-unit: calc(var(--salt-size-basis-unit) * 3); /* Use --salt-spacing-100 */
   --salt-size-compact: calc(var(--salt-size-basis-unit) * 2.5);
-  --salt-size-accent: calc(var(--salt-size-basis-unit) * 1.5);
+  --salt-size-accent: calc(var(--salt-size-basis-unit) * 1.5); /* Use --salt-size-bar */
   --salt-icon-size-base: 14px; /* Use --salt-size-icon */
   --salt-icon-size-status-adornment: 10px; /* Use --salt-size-adornment */
 }
 
 .salt-density-touch {
-  --salt-size-unit: calc(var(--salt-size-basis-unit) * 4);
+  --salt-size-unit: calc(var(--salt-size-basis-unit) * 4); /* Use --salt-spacing-100 */
   --salt-size-compact: calc(var(--salt-size-basis-unit) * 3);
-  --salt-size-accent: calc(var(--salt-size-basis-unit) * 2);
+  --salt-size-accent: calc(var(--salt-size-basis-unit) * 2); /* Use --salt-size-bar */
   --salt-icon-size-base: 16px; /* Use --salt-size-icon */
   --salt-icon-size-status-adornment: 12px; /* Use --salt-size-adornment */
 }

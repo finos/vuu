@@ -4,6 +4,7 @@ import { Checkbox } from "@salt-ds/core";
 import {
   dataColumnAndKeyUnchanged,
   dispatchCustomEvent,
+  isRpcSuccess,
   registerComponent,
 } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
@@ -31,7 +32,7 @@ export const CheckboxCell = memo(
           { previousValue: isChecked, value },
           "commit",
         );
-        if (res === true) {
+        if (isRpcSuccess(res)) {
           dispatchCustomEvent(evt.target as HTMLElement, "vuu-commit");
         }
         return res;
@@ -46,7 +47,7 @@ export const CheckboxCell = memo(
             { previousValue: isChecked, value: !isChecked },
             "commit",
           );
-          if (res === true) {
+          if (isRpcSuccess(res)) {
             dispatchCustomEvent(evt.target as HTMLElement, "vuu-commit");
           }
         }

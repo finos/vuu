@@ -1,6 +1,6 @@
 .vuuColumnResizer {
   cursor: col-resize;
-  height: var(--vuu-table-col-header-height);
+  height: var(--vuu-table-col-header-row-height);
   margin-left: var(--columnResizer-left, auto);
   position: absolute;
   right: -5px;

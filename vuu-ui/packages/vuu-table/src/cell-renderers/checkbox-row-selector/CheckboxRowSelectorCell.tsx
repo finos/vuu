@@ -8,6 +8,10 @@ const { SELECTED } = metadataKeys;
 
 import checkboxRowSelectorCss from "./CheckboxRowSelectorCell.css";
 
+const inputProps = {
+  "aria-label": "Press space to select row",
+};
+
 export const CheckboxRowSelectorCell: React.FC<TableCellRendererProps> = ({
   row,
 }) => {
@@ -20,7 +24,13 @@ export const CheckboxRowSelectorCell: React.FC<TableCellRendererProps> = ({
 
   const isChecked = row[SELECTED] !== 0;
 
-  return <Checkbox checked={isChecked} className="vuuCheckboxRowSelector" />;
+  return (
+    <Checkbox
+      checked={isChecked}
+      className="vuuCheckboxRowSelector"
+      inputProps={inputProps}
+    />
+  );
 };
 CheckboxRowSelectorCell.displayName = "CheckboxCell";
 

@@ -184,16 +184,19 @@ export const Prompt = ({
         {customAction}
         {showCancelButton ? (
           <Button
+            appearance="solid"
             className="vuuPromptCancelButton"
             disabled={cancelButtonProps?.disabled}
             onClick={handleCancel}
             ref={cancelButtonProps?.ref}
+            sentiment="neutral"
           >
             {cancelButtonProps?.label ?? cancelButtonLabel}
           </Button>
         ) : null}
         {showConfirmButton ? (
           <Button
+            appearance="solid"
             className="vuuPromptConfirmButton"
             disabled={confirmButtonProps?.disabled}
             sentiment="accented"

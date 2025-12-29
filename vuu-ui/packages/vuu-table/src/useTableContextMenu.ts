@@ -9,10 +9,11 @@ import {
 import {
   columnByAriaIndex,
   ColumnMap,
+  getAriaColIndex,
+  getAriaRowIndex,
   useStableReference,
 } from "@vuu-ui/vuu-utils";
 import { MouseEvent, useCallback } from "react";
-import { getAriaColIndex, getAriaRowIndex } from "./table-dom-utils";
 
 export interface TableContextMenuHookProps {
   allowContextMenu?: boolean;
@@ -61,11 +62,6 @@ export const useTableContextMenu = ({
       const cellEl = target?.closest<HTMLElement>("div[role='cell']");
       const rowEl = target?.closest<HTMLElement>("div[role='row']");
       if (cellEl && rowEl) {
-        // const [firstColumn] = columns;
-        // const hasCheckBox =
-        //   firstColumn?.isSystemColumn &&
-        //   isTypeDescriptor(firstColumn?.type) &&
-        //   firstColumn.type.name === "checkbox";
         const { selectedRowsCount } = dataSource;
         const rowIndex = getAriaRowIndex(rowEl) - headerCount - 1;
         const ariaColIndex = getAriaColIndex(cellEl);
@@ -75,25 +71,27 @@ export const useTableContextMenu = ({
           ariaColIndex,
         );
 
-        // TODO does it really make sense to collect selected rows ?
-        // We only have access to rows in local cache
-        const menuOptions: TableContextMenuOptions = {
-          columnMap,
-          column,
-          columns,
-          row,
-          selectedRows: selectedRowsCount === 0 ? NO_ROWS : getSelectedRows(),
-          viewport: dataSource.viewport,
-        };
+        if (!column.isSystemColumn) {
+          // TODO does it really make sense to collect selected rows ?
+          // We only have access to rows in local cache
+          const menuOptions: TableContextMenuOptions = {
+            columnMap,
+            column,
+            columns,
+            row,
+            selectedRows: selectedRowsCount === 0 ? NO_ROWS : getSelectedRows(),
+            viewport: dataSource.viewport,
+          };
 
-        const menuShowing = showContextMenu(evt, "grid", menuOptions, {
-          onOpenChange: (isOpen: boolean) => {
-            console.log(`[useTableContextMenu] onOpenChange ${isOpen}`);
-            cellEl.classList.remove("ContextOpen");
-          },
-        });
-        if (menuShowing) {
-          cellEl.classList.add("ContextOpen");
+          const menuShowing = showContextMenu(evt, "grid", menuOptions, {
+            onOpenChange: (isOpen: boolean) => {
+              console.log(`[useTableContextMenu] onOpenChange ${isOpen}`);
+              cellEl.classList.remove("ContextOpen");
+            },
+          });
+          if (menuShowing) {
+            cellEl.classList.add("ContextOpen");
+          }
         }
       }
     },

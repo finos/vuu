@@ -5,10 +5,7 @@ import {
   useEditableText,
 } from "@vuu-ui/vuu-ui-controls";
 import { Button, FormField, FormFieldLabel } from "@salt-ds/core";
-import type {
-  CommitResponse,
-  DataItemEditHandler,
-} from "@vuu-ui/vuu-table-types";
+import type { TableCellEditHandler } from "@vuu-ui/vuu-table-types";
 import type { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { HTMLAttributes, useCallback } from "react";
 import { BasketSelector, BasketSelectorProps } from "../basket-selector";
@@ -34,7 +31,7 @@ const formatNotional = (notional?: number) => {
 export type BasketChangeHandler = (
   columnName: string,
   value: VuuRowDataItemType,
-) => CommitResponse;
+) => unknown;
 export interface BasketToolbarProps extends HTMLAttributes<HTMLDivElement> {
   basket?: Basket;
   basketStatus: BasketStatus;
@@ -56,10 +53,11 @@ export const BasketToolbar = ({
     return true;
   };
 
-  const handleUnitsEdited = useCallback<DataItemEditHandler>(
-    ({ value }) => {
+  const handleUnitsEdited = useCallback<TableCellEditHandler>(
+    async ({ value }) => {
       if (onCommit) {
-        return onCommit?.("units", value as VuuRowDataItemType);
+        onCommit?.("units", value as VuuRowDataItemType);
+        return undefined;
       } else {
         throw Error(
           "BasketToolbar onCommit prop not supplied for editable Basket",

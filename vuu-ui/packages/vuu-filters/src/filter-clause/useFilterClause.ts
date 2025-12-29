@@ -18,12 +18,14 @@ import {
   navigateToNextItemIfAtBoundary,
   tabToPreviousFilterCombinator,
 } from "./filterClauseFocusManagement";
-import { ComboBoxOpenChangeHandler } from "./ExpandoCombobox";
 
 export type FilterClauseEditorHookProps = Pick<
   FilterClauseProps,
   "columnsByName" | "filterClauseModel" | "onCancel" | "onFocusSave"
-> & { onOpenChange?: ComboBoxOpenChangeHandler; dropdownOnAutofocus?: boolean };
+> & {
+  onOpenChange?: (open: boolean, reason?: "focus" | "input" | "manual") => void;
+  dropdownOnAutofocus?: boolean;
+};
 
 export type FilterClauseValueChangeHandler = (
   value: string | string[] | number | number[],
@@ -108,17 +110,22 @@ export const useFilterClause = ({
           }
         }
       }
+      filterClauseModel.column = selectedColumn;
+
+      setTimeout(() => {
+        focusNextElement();
+      }, 100);
+    } else {
+      filterClauseModel.column = undefined;
     }
-    filterClauseModel.column = selectedColumn;
-    setTimeout(() => {
-      focusNextElement();
-    }, 100);
   };
 
   const onSelectOperator = useCallback(
     (_: SyntheticEvent, selectedOp: FilterClauseOp) => {
       filterClauseModel.setOp(selectedOp);
-      focusNextElement();
+      if (selectedOp) {
+        focusNextElement();
+      }
     },
     [filterClauseModel],
   );
@@ -165,8 +172,8 @@ export const useFilterClause = ({
     ],
   );
 
-  const handleOpenChange = useCallback<ComboBoxOpenChangeHandler>(
-    (open, closeReason) => {
+  const handleOpenChange = useCallback(
+    (open: boolean, closeReason?: "focus" | "input" | "manual") => {
       const isMultiSelect = filterClauseModel.op === "in";
       const filterHasNoValue =
         !filterClauseModel.isValid &&
@@ -189,7 +196,7 @@ export const useFilterClause = ({
     () => ({
       onKeyDownCapture: handleKeyDownCaptureNavigation,
       tabIndex: -1,
-      onFocus: () => filterTouched.current = true,
+      onFocus: () => (filterTouched.current = true),
     }),
     [handleKeyDownCaptureNavigation],
   );

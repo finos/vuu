@@ -4,7 +4,7 @@ import type {
   DataSourceRow,
   DataSourceSubscribedMessage,
 } from "@vuu-ui/vuu-data-types";
-import type { VuuSortType } from "@vuu-ui/vuu-protocol-types";
+import type { RpcResult, VuuSortType } from "@vuu-ui/vuu-protocol-types";
 import {
   ColumnDisplayActionHandler,
   columnSettingsFromColumnMenuPermissions,
@@ -14,6 +14,7 @@ import {
   useTableAndColumnSettings,
 } from "@vuu-ui/vuu-table-extras";
 import type {
+  ColumnPinAction,
   ColumnDescriptor,
   ColumnMoveHandler,
   DataCellEditEvent,
@@ -35,11 +36,15 @@ import {
 import {
   asDataSourceRowObject,
   buildColumnMap,
+  getAllCellsInColumn,
+  getAriaRowIndex,
+  getPinStateFromElement,
   isGroupColumn,
   isJsonGroup,
   isValidNumber,
   logUnhandledMessage,
   metadataKeys,
+  PinState,
   toggleOrApplySort,
   updateColumn,
   useLayoutEffectSkipFirst,
@@ -61,7 +66,7 @@ import { useCellBlockSelection } from "./cell-block/useCellBlockSelection";
 import { CellFocusState } from "./CellFocusState";
 import { TableProps } from "./Table";
 import { updateTableConfig } from "./table-config";
-import { getAriaRowIndex, getHeaderCell } from "./table-dom-utils";
+import { getHeaderCell } from "./table-dom-utils";
 import { useCellEditing } from "./useCellEditing";
 import { FocusCell, useCellFocus } from "./useCellFocus";
 import { useDataSource } from "./table-data-source/useDataSource";
@@ -74,7 +79,6 @@ import { useSelection } from "./useSelection";
 import { useTableContextMenu } from "./useTableContextMenu";
 import {
   ColumnActionHide,
-  ColumnActionPin,
   ColumnActionRemove,
   useTableModel,
 } from "./useTableModel";
@@ -84,6 +88,12 @@ import { useTableViewport } from "./useTableViewport";
 type HeaderState = {
   height: number;
   count: number;
+};
+
+type CellResizeState = {
+  cells: HTMLDivElement[];
+  startWidth: number;
+  pinState?: PinState;
 };
 
 const nullHeaderState = {
@@ -129,11 +139,11 @@ export interface TableHookProps
       | "revealSelected"
       | "rowToObject"
       | "scrollingApiRef"
-      | "selectionBookendWidth"
       | "showColumnHeaderMenus"
       | "showColumnHeaders"
       | "showPaginationControls"
     > {
+  // colHeaderRowHeight: number;
   containerRef: RefObject<HTMLDivElement | null>;
   rowHeight: number;
   selectionModel: TableSelectionModel;
@@ -163,6 +173,7 @@ export const useTable = ({
   autoSelectFirstRow,
   autoSelectRowKey,
   availableColumns,
+  // colHeaderRowHeight,
   config,
   containerRef,
   dataSource,
@@ -182,10 +193,9 @@ export const useTable = ({
   onSelectionChange,
   renderBufferSize = 0,
   revealSelected,
-  rowHeight = 20,
+  rowHeight,
   rowToObject = asDataSourceRowObject,
   scrollingApiRef,
-  selectionBookendWidth = 4,
   selectionModel,
   showColumnHeaderMenus = true,
   showColumnHeaders,
@@ -211,6 +221,7 @@ export const useTable = ({
   const [headerState, setHeaderState] = useState<HeaderState>(
     showColumnHeaders ? nullHeaderState : zeroHeaderState,
   );
+
   const [rowCount, setRowCount] = useState<number>(dataSource.size);
   if (dataSource === undefined) {
     throw Error("no data source provided to Vuu Table");
@@ -220,6 +231,7 @@ export const useTable = ({
     setRowCount(size);
   }, []);
 
+  const { selectionBookendWidth = 4 } = config;
   const virtualContentHeight = rowHeight * rowCount;
   const viewportBodyHeight =
     size.height - (headerState.height === -1 ? 0 : headerState.height);
@@ -242,7 +254,7 @@ export const useTable = ({
 
   const columnsRef = useStableReference(columns);
 
-  // this is realy here to capture changes to available Width - typically when we get
+  // this is really here to capture changes to available Width - typically when we get
   // rowcount so add allowance for vertical scrollbar, reducing available width
   // including dataSource is causing us to do unnecessary work in useTableModel
   // split this into multiple effects
@@ -479,7 +491,7 @@ export const useTable = ({
   );
 
   const pinColumn = useCallback(
-    ({ column, pin }: ColumnActionPin) => {
+    ({ column, pin }: ColumnPinAction) => {
       applyTableConfigChange(
         {
           ...tableConfig,
@@ -575,56 +587,84 @@ export const useTable = ({
     [dataSource],
   );
 
-  const resizeCells = useRef<HTMLElement[] | undefined>(undefined);
+  const cellResizeState = useRef<CellResizeState | undefined>(undefined);
 
   const onResizeColumn: TableColumnResizeHandler = useCallback(
-    (phase, columnName, width) => {
-      const column = columnsRef.current.find(
-        (column) => column.name === columnName,
-      );
-      if (column) {
-        if (phase === "resize") {
-          resizeCells.current?.forEach((cell) => {
-            cell.style.width = `${width}px`;
-          });
-        } else if (phase === "end") {
-          resizeCells.current = undefined;
-          if (isValidNumber(width)) {
+    (phase, columnName, width = 0) => {
+      if (phase === "resize") {
+        console.log(`resize column ${columnName}`);
+        cellResizeState.current?.cells.forEach((cell) => {
+          cell.style.width = `${width}px`;
+        });
+        if (cellResizeState.current?.pinState) {
+          const { pinState, startWidth } = cellResizeState.current;
+          const { cell: pinnedCell, pinnedWidth } = pinState;
+          const diff = width - startWidth;
+
+          if (pinState.pinnedCells) {
+            pinState.pinnedCells.forEach((cell) => {
+              cell.style.left = `${parseInt(cell.style.left) + diff}px`;
+            });
+          }
+
+          pinnedCell.style.setProperty(
+            "--pin-width",
+            `${pinnedWidth + diff}px`,
+          );
+        }
+      } else {
+        const column = columnsRef.current.find(
+          (column) => column.name === columnName,
+        );
+
+        if (column) {
+          if (phase === "end") {
+            cellResizeState.current = undefined;
+            if (isValidNumber(width)) {
+              dispatchTableModelAction({
+                type: "resizeColumn",
+                phase,
+                column,
+                width,
+              });
+              onConfigChange?.(
+                stripInternalProperties(
+                  updateTableConfig(tableConfig, {
+                    type: "col-size",
+                    column,
+                    columns,
+                    width,
+                  }),
+                ),
+              );
+            }
+          } else if (phase === "begin") {
+            // Store a list of the cells that will be affected by resize operation, so we do not
+            // incur this cost on every resize.
+            cellResizeState.current = {
+              cells: getAllCellsInColumn(
+                containerRef.current,
+                column.ariaColIndex,
+              ),
+              startWidth: column.width,
+            };
+
+            const [headerCell] = cellResizeState.current.cells;
+            cellResizeState.current.pinState =
+              getPinStateFromElement(headerCell);
+
             dispatchTableModelAction({
               type: "resizeColumn",
               phase,
               column,
               width,
             });
-            onConfigChange?.(
-              stripInternalProperties(
-                updateTableConfig(tableConfig, {
-                  type: "col-size",
-                  column,
-                  columns,
-                  width,
-                }),
-              ),
-            );
           }
         } else {
-          const byColIndex = `[aria-colindex='${column.ariaColIndex}']`;
-          resizeCells.current = Array.from(
-            containerRef.current?.querySelectorAll(
-              `.vuuTableCell${byColIndex},.vuuTableHeaderCell${byColIndex},.vuuTableGroupHeaderCell${byColIndex}`,
-            ) ?? [],
+          throw Error(
+            `useDataTable.handleColumnResize, column ${columnName} not found`,
           );
-          dispatchTableModelAction({
-            type: "resizeColumn",
-            phase,
-            column,
-            width,
-          });
         }
-      } else {
-        throw Error(
-          `useDataTable.handleColumnResize, column ${columnName} not found`,
-        );
       }
     },
     [
@@ -733,12 +773,15 @@ export const useTable = ({
     onKeyDown: editingKeyDown,
     onFocus: editingFocus,
   } = useCellEditing({
+    focusCell,
     navigate,
   });
 
   const handleFocus = useCallback(
     (e: FocusEvent<HTMLElement>) => {
+      // console.log(`[useTable] handleFocus`);
       navigationFocus();
+      // navigationFocus does not call preventDefault
       if (!e.defaultPrevented) {
         editingFocus(e);
       }
@@ -824,6 +867,8 @@ export const useTable = ({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLElement>) => {
+      // console.log(`[useTable] handleKeyDown, delegates to ...`);
+
       cellBlockSelectionKeyDown?.(e);
       if (!e.defaultPrevented) {
         navigationKeyDown(e);
@@ -894,7 +939,7 @@ export const useTable = ({
   );
 
   const handleDataEdited = useCallback(
-    async (editState: DataCellEditEvent) => {
+    async (editState: DataCellEditEvent): Promise<RpcResult | undefined> => {
       const {
         editType = "commit",
         isValid = true,
@@ -903,20 +948,28 @@ export const useTable = ({
         value,
       } = editState;
       if (editType === "commit" && isValid) {
-        const response = await dataSource.rpcRequest?.({
-          params: {
-            column: columnName,
-            key: row[KEY],
-            data: value,
-          },
-          rpcName: "editCell",
-          type: "RPC_REQUEST",
-        });
-        onDataEditedProp?.({
-          ...editState,
-          isValid: response?.type === "SUCCESS_RESULT",
-        });
-        return response;
+        if (dataSource.rpcRequest) {
+          if (columnName && row) {
+            const response = await dataSource.rpcRequest({
+              params: {
+                column: columnName,
+                key: row[KEY],
+                data: value,
+              },
+              rpcName: "editCell",
+              type: "RPC_REQUEST",
+            });
+            onDataEditedProp?.({
+              ...editState,
+              isValid: response?.type === "SUCCESS_RESULT",
+            });
+            return response;
+          }
+        } else {
+          throw Error(
+            `[useTable] handleDataEdited, datasource does not support RPC`,
+          );
+        }
       } else {
         onDataEditedProp?.(editState);
       }

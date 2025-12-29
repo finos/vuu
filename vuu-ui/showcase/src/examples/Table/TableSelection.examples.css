@@ -1,0 +1,5 @@
+.salt-theme.vuu-theme {
+    .vuuTable.custom-selection-styling {
+          --vuuTableRow-borderColor-selected: cyan;
+    }
+}

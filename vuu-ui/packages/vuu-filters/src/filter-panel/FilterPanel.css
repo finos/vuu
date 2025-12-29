@@ -1,4 +1,6 @@
 .vuuFilterPanel {
+    --vuuPrompt-minHeight: fit-content;
+
     display: flex;
     flex-direction: column;
     gap: var(--vuuFilterPanel-gap, var(--salt-spacing-100));
@@ -15,3 +17,4 @@
         justify-content: space-between;
     }
 }
+

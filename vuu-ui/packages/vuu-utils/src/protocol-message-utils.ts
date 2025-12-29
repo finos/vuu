@@ -26,6 +26,9 @@ import {
   InvalidTokenReason,
   InvalidSessionReason,
   LoginErrorMessage,
+  RpcResult,
+  RpcResultSuccess,
+  RpcResultError,
 } from "@vuu-ui/vuu-protocol-types";
 import { isView as componentInRegistry } from "./component-registry";
 
@@ -97,6 +100,14 @@ export const isLoginResponse = (
   typeof message === "object" &&
   "type" in message &&
   (message.type === "LOGIN_SUCCESS" || message.type === "LOGIN_FAIL");
+
+export const isRpcSuccess = (
+  rpcResult?: RpcResult,
+): rpcResult is RpcResultSuccess => rpcResult?.type === "SUCCESS_RESULT";
+
+export const isRpcError = (
+  rpcResult?: RpcResult,
+): rpcResult is RpcResultError => rpcResult?.type === "ERROR_RESULT";
 
 export const isRequestResponse = (
   message: object,

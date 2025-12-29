@@ -6,7 +6,7 @@ import {
   FilterColumnAndOperatorWithDropdownOpenOnFocusDisabled,
   FilterColumnWithDropdownOpenOnFocusDisabled,
   NewFilterClauseWithDropdownOpenOnFocusDisabled,
-} from "../../../../../showcase/src/examples/Filters/FilterClause/FilterClause.examples";
+} from "../../../../../showcase/src/examples/Filters/FilterClause.examples";
 
 describe("FilterClause", () => {
   describe("WHEN new filter clause is rendered", () => {

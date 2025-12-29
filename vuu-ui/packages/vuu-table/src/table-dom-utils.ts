@@ -1,6 +1,11 @@
 import { RefObject } from "react";
 import { ScrollDirection } from "./useTableScroll";
-import type { ArrowKey, PageKey } from "@vuu-ui/vuu-utils";
+import {
+  getAriaColIndex,
+  getAriaRowIndex,
+  type ArrowKey,
+  type PageKey,
+} from "@vuu-ui/vuu-utils";
 import type { CellPos } from "@vuu-ui/vuu-table-types";
 
 export type NavigationKey = PageKey | ArrowKey;
@@ -94,28 +99,6 @@ const rowIsExpanded = (cell: HTMLElement) => {
 
 export const cellIsTextInput = (cell: HTMLElement) =>
   cell.querySelector(".vuuTableInputCell") !== null;
-
-export const getAriaRowIndex = (rowElement: HTMLElement | null) => {
-  const rowIndex = rowElement?.ariaRowIndex;
-  if (rowIndex != null) {
-    const index = parseInt(rowIndex);
-    if (!isNaN(index)) {
-      return index;
-    }
-  }
-  return -1;
-};
-
-export const getAriaColIndex = (cellElement: HTMLElement | null) => {
-  const colIndex = cellElement?.ariaColIndex;
-  if (colIndex != null) {
-    const index = parseInt(colIndex);
-    if (!isNaN(index)) {
-      return index;
-    }
-  }
-  return -1;
-};
 
 export const getRowElementByAriaIndex = (
   container: HTMLDivElement | EventTarget,
