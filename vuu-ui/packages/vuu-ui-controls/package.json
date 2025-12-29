@@ -22,8 +22,8 @@
     "@vuu-ui/vuu-popups": "0.13.94",
     "@vuu-ui/vuu-table": "0.13.94",
     "@vuu-ui/vuu-utils": "0.13.94",
-    "@salt-ds/core": "1.48.0",
-    "@salt-ds/icons": "1.14.0",
+    "@salt-ds/core": "1.54.1",
+    "@salt-ds/icons": "1.16.0",
     "@salt-ds/styles": "0.2.1",
     "@salt-ds/window": "0.1.1",
     "tabbable": "^6.0.0"
