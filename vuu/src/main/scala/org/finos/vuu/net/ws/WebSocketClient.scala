@@ -67,6 +67,9 @@ class WebSocketClient(url: String, port: Int, nativeTransport: Boolean = true)(i
   }
 
   override def doStop(): Unit = {
+    if (channel != null && channel.isOpen) {
+      channel.close()
+    }
     eventLoopGroup.shutdownGracefully()
   }
 
