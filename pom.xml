@@ -47,7 +47,6 @@
         <jackson.version>2.19.2</jackson.version>
         <antlr.version>4.13.2</antlr.version>
         <netty.version>4.1.128.Final</netty.version>
-        <scala.maven.plugin>4.9.8</scala.maven.plugin>
         <vertx.version>4.5.23</vertx.version>
         <typesafe.conf.version>1.4.5</typesafe.conf.version>
         <logback.version>1.5.22</logback.version>
@@ -60,7 +59,6 @@
         <junit.jupiter.version>6.0.1</junit.jupiter.version>
         <assertj.version>3.26.3</assertj.version>
         <awaitility.version>4.3.0</awaitility.version>
-        <maven.gpg.plugin.version>3.1.0</maven.gpg.plugin.version>
         <gpg.executable>gpg</gpg.executable>
         <publish.server.id>ossrh</publish.server.id>
         <release.goals>install org.sonatype.central:central-publishing-maven-plugin:0.8.0:publish</release.goals>
@@ -92,7 +90,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.0.1</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -121,7 +118,7 @@
         <plugins>
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.3.1</version>
+                    <version>3.4.0</version>
                 </plugin>
 
                 <plugin>
@@ -131,7 +128,7 @@
 
                 <plugin>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version>3.3.1</version>
+                    <version>3.4.0</version>
                 </plugin>
 
                 <plugin>
@@ -160,9 +157,14 @@
                 </plugin>
 
                 <plugin>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>3.2.8</version>
+                </plugin>
+
+                <plugin>
                     <groupId>net.alchim31.maven</groupId>
                     <artifactId>scala-maven-plugin</artifactId>
-                    <version>${scala.maven.plugin}</version>
+                    <version>4.9.8</version>
                 </plugin>
 
                 <plugin>
@@ -178,12 +180,12 @@
 
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.4.2</version>
+                    <version>3.5.0</version>
                 </plugin>
 
                 <plugin>
                     <artifactId>maven-release-plugin</artifactId>
-                    <version>3.1.1</version>
+                    <version>3.3.1</version>
                     <configuration>
                         <autoVersionSubmodules>true</autoVersionSubmodules>
                         <releaseProfiles>release</releaseProfiles>
@@ -205,7 +207,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>3.2.0</version>
+                    <version>3.6.1</version>
                 </plugin>
 
                 <plugin>
