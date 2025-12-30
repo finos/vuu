@@ -37,60 +37,29 @@ mvn exec:exec
 this should be the same as Linux & macos just with windows adjusted paths
 ```
 
-### Layout Server
-
-Layout management requires persisting layouts. Layouts can either be persisted locally or remotely. The remote implementation requires spinning up a Springboot server instance, but is more robust and reflective of a real-world application.
-
-#### Choosing local or remote
-
-Changing whether local/remote is used is configured with the following flag:
-
-1. Open `finos-vuu\vuu-ui\showcase\vite.config.js` (for Showcase), or `finos-vuu\vuu-ui\sample-apps\app-vuu-example\esbuild.mjs` (for sample app)
-2. Set `"process.env.LOCAL"` flag to `true` for local, or `false` for remote
-
-The local implementation is default. It uses browser local storage. If you have chosen the remote implementation, ensure you are running the remote server.
-
-#### Running the remote server
-
-You can run the remote server from IntelliJ or via CLI. Once running, use `http://localhost:8081/api/swagger` to review endpoints and contracts. It uses an in-memory H2 database, and can be accessed at `http://localhost:8081/api/h2-console`.
-
-##### CLI
-
-```sh
-#from top-level vuu repo (not vuu child directory in repo)
-cd layout-server
-mvn spring-boot:run
-```
-
-##### From IntelliJ
-
-1. Follow steps 3-5 outlined in 'Configuring IntelliJ' below
-2. Select 'LayoutServer' config and click run
-
-## Configuring IntelliJ
+#### Configuring IntelliJ
 
 You may prefer to run the backend using the IntelliJ IDE, if so, you will need to follow the Client Installation above to ensure that the project has built correctly.
 
 1. Install the Scala plugin: file -> settings -> plugins
-2. Install Scala 2.13.10
-3. Set project SDK version to 17: file -> project structure -> select an SDK -> require version 17
-4. Enable 'Use plugin registry': file -> settings -> build, execution, deployment -> Maven
-5. Open Maven tab on the right and click install on vuu-parent -> lifecycle -> install
-6. In the terminal, navigate to
+2. Set project SDK version to 17: file -> project structure -> select an SDK -> require version 17
+3. Enable 'Use plugin registry': file -> settings -> build, execution, deployment -> Maven
+4. Open Maven tab on the right and click install on vuu-parent -> lifecycle -> install
+5. In the terminal, navigate to
 
 ```sh
 vuu-ui/sample-apps/app-vuu-example
 ```
 
-7. Run
+6. Run
 
 ```sh
 npm install
 npm run build
 ```
 
-8. In IntelliJ, select 'SimulMain' config and click run
-9. If you get a 'certificate-unknown' error, set 'Allow invalid certificates for resources loaded from localhost' to 'Enabled' in your chrome settings
+7. In IntelliJ, select 'SimulMain' config and click run
+8. If you get a 'certificate-unknown' error, set 'Allow invalid certificates for resources loaded from localhost' to 'Enabled' in your chrome settings
 
 ## Installation - Client
 
