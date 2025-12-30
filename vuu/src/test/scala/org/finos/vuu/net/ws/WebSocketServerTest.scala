@@ -82,6 +82,36 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
       stopLifeCycle()
     }
 
+    Scenario("Start WebSocketServer with no native transport") {
+
+      implicit val metrics: MetricsProvider = new MetricsProviderImpl
+      implicit val timeProvider: Clock = new DefaultClock
+      implicit val lifeCycle: LifecycleContainer = new LifecycleContainer
+
+      val wsPort = portCounter.getAndIncrement()
+
+      val config = VuuServerConfig(
+        VuuHttp2ServerOptions()
+          .withSsl(VuuSSLDisabled())
+          .withPort(0),
+        VuuWebSocketOptions()
+          .withUri("websocket")
+          .withSsl(VuuSSLDisabled())
+          .withWsPort(wsPort)
+          .withNativeTransport(false),
+        VuuSecurityOptions()
+      )
+
+      implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
+
+      val token = config.security.loginTokenService.getToken(VuuUser("Mikey"))
+      val sessionId = ClientHelperFns.login(token)
+      sessionId should not equal null
+
+      stopLifeCycle()
+    }
+
+
     Scenario("Start WebSocketServer with SSL using Cert and Key") {
 
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
