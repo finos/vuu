@@ -111,7 +111,6 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
       stopLifeCycle()
     }
 
-
     Scenario("Start WebSocketServer with SSL using Cert and Key") {
 
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
