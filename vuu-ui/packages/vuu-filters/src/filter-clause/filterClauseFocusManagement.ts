@@ -84,7 +84,6 @@ export const focusFilterClauseField = (
 };
 
 export const focusLastClauseValue = (filterEditor: HTMLElement) => {
-  console.log("focusLastClauseValue");
   const field = Array.from(
     filterEditor?.querySelectorAll(".vuuFilterClauseField"),
   ).at(-1) as HTMLElement;
