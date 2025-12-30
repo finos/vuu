@@ -38,28 +38,36 @@ class WebSocketServer(options: VuuWebSocketOptions, factory: ViewServerHandlerFa
   private val bootstrap = new ServerBootstrap()
   var channel: Channel = _
 
-  def isOpen: Boolean = channel.isOpen
+  def isOpen: Boolean = channel != null && channel.isOpen
 
   override def doStart(): Unit = {
     logger.debug("Starting websocket server")
     channel = bootstrap.bind(options.bindAddress, options.wsPort).sync().channel();
     while (!isOpen) {}
-    logger.info("Websocket server open and ready")
+    logger.info("Started websocket server")
   }
 
   override def doStop(): Unit = {
-    bossGroup.shutdownGracefully()
-    workerGroup.shutdownGracefully()
+    logger.debug("Stopping websocket server")
+    if (channel != null && channel.isOpen) {
+      channel.close()
+    }
+    logger.info("Stopped websocket server")
   }
 
-  override def doInitialize(): Unit = {    
+  override def doInitialize(): Unit = {
+    logger.debug(s"Initialising with channel class ${transport.serverChannelClass.getName}")
+
     bootstrap.group(bossGroup, workerGroup)
       .channel(transport.serverChannelClass)
       .handler(new LoggingHandler(LogLevel.INFO))
       .childHandler(new WebSocketServerInitializer(options, factory))
   }
 
-  override def doDestroy(): Unit = {}
+  override def doDestroy(): Unit = {
+    bossGroup.shutdownGracefully()
+    workerGroup.shutdownGracefully()
+  }
 
   override val lifecycleId: String = "websocketServer"
 }
