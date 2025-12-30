@@ -2,12 +2,16 @@ import { Input } from "@salt-ds/core";
 import { LocalDataSourceProvider, getSchema } from "@vuu-ui/vuu-data-test";
 import { SchemaColumn, TableSchema } from "@vuu-ui/vuu-data-types";
 import { ColumnDescriptorsByName } from "@vuu-ui/vuu-filter-types";
-import { FilterClause, FilterClauseModel } from "@vuu-ui/vuu-filters";
-import { ColumnPicker } from "@vuu-ui/vuu-filters/src/filter-clause/ColumnPicker";
+import {
+  ColumnPicker,
+  FilterClause,
+  FilterClauseModel,
+} from "@vuu-ui/vuu-filters";
 import { DataSourceProvider, toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { ReactNode, useMemo } from "react";
 
 import "./FilterClause.examples.css";
+import { OperatorPicker } from "@vuu-ui/vuu-filters";
 
 const FilterClauseTemplate = ({
   filterClauseModel = new FilterClauseModel({}),
@@ -67,6 +71,17 @@ export const DefaultColumnPicker = () => {
     <ExpandoContainer>
       <ColumnPicker
         columns={columns}
+        onSelect={(e, val) => console.log(`select ${val}`)}
+      />
+    </ExpandoContainer>
+  );
+};
+
+export const DefaultStringOperatorPicker = () => {
+  return (
+    <ExpandoContainer>
+      <OperatorPicker
+        column={{ name: "test", serverDataType: "string" }}
         onSelect={(e, val) => console.log(`select ${val}`)}
       />
     </ExpandoContainer>

@@ -1,8 +1,8 @@
 import type { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { ExpandoCombobox } from "./ExpandoCombobox";
-import { ComboBoxProps, Option } from "@salt-ds/core";
+import { ExpandoCombobox } from "../ExpandoCombobox";
+import { ComboBoxProps, Option, useForkRef } from "@salt-ds/core";
 import { ForwardedRef, SyntheticEvent, forwardRef } from "react";
-import { useExpandoComboBox } from "./useExpandoCombobox";
+import { useColumnPicker } from "./useColumnPicker";
 
 export type ColumnPickerProps = Pick<
   ComboBoxProps,
@@ -17,14 +17,14 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
   {
     className,
     columns,
+    dropdownOnAutofocus = true,
     inputProps,
     onSelect,
     value: valueProp,
-    dropdownOnAutofocus = true,
   }: ColumnPickerProps,
   forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
-  const comboProps = useExpandoComboBox({
+  const { ref, ...comboProps } = useColumnPicker({
     onSelect,
     value: valueProp?.toString() ?? "",
   });
@@ -32,12 +32,12 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
   return (
     <ExpandoCombobox
       {...comboProps}
-      inputProps={inputProps}
       className={className}
       data-field="column"
-      ref={forwardedRef}
-      title="column"
       dropdownOnAutofocus={dropdownOnAutofocus}
+      inputProps={inputProps}
+      ref={useForkRef(forwardedRef, ref)}
+      title="column"
     >
       {columns
         .filter(({ name }) =>

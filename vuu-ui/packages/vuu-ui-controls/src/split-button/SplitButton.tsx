@@ -70,7 +70,7 @@ export const SplitButton = forwardRef<HTMLDivElement, SplitButtonProps>(
             className={`${classBase}-main`}
             disabled={disabled}
             ref={buttonRef}
-            variant={variant}
+            sentiment="neutral"
           >
             {children}
           </Button>
@@ -80,7 +80,7 @@ export const SplitButton = forwardRef<HTMLDivElement, SplitButtonProps>(
             disabled={disabled}
             icon={PopupMenuProps?.icon ?? "chevron-down"}
             tabIndex={segmented ? 0 : -1}
-            variant={variant}
+            sentiment="neutral"
           />
         </div>
       </ContextMenuProvider>
