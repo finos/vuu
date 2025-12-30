@@ -250,7 +250,7 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
       case VuuSSLDisabled() => "ws"
       case _ => "wss"
     }
-    val client = new WebSocketClient(s"$protocol://localhost:${config.wsOptions.wsPort}/websocket", config.wsOptions.wsPort)
+    val client = new WebSocketClient(s"$protocol://localhost:${config.wsOptions.wsPort}/websocket", config.wsOptions.wsPort, config.wsOptions.nativeTransportEnabled)
     lifecycle(client).dependsOn(viewServer)
     val viewServerClient: WebSocketViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer())
     lifecycle.start()
