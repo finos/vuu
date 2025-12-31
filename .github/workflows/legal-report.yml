@@ -34,14 +34,11 @@ jobs:
     - name: Make mvnw executable
       run: chmod +x mvnw
 
-    - name: Maven build
-      run: ./mvnw -B -ntp clean install -pl ${{ matrix.package-folder }} -am -DskipTests
-
     - name: License XML report
-      run: ./mvnw -B -ntp org.codehaus.mojo:license-maven-plugin:download-licenses
-      working-directory: ${{ matrix.package-folder }}
+      run: ./mvnw -B -ntp clean install org.codehaus.mojo:license-maven-plugin:download-licenses -pl ${{ matrix.package-folder }} -am -DskipTests -DlicensesOutputDirectory=${{ matrix.package-folder }}
 
     - name: Validate XML report
+      working-directory: ${{ matrix.package-folder }}
       run: |
         #!/bin/bash
         
@@ -97,8 +94,6 @@ jobs:
           done
           exit 1
         fi
-
-      working-directory: ${{ matrix.package-folder }}
 
     - name: Upload license XML reports
       uses: actions/upload-artifact@v5
