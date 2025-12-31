@@ -31,11 +31,14 @@ jobs:
         sudo apt-get update
         sudo apt-get install xq
 
+    - name: Make mvnw executable
+      run: chmod +x mvnw
+
     - name: Maven build
-      run: mvn clean install -pl ${{ matrix.package-folder }} -am -DskipTests
+      run: ./mvnw -B -ntp clean install -pl ${{ matrix.package-folder }} -am -DskipTests
 
     - name: License XML report
-      run: mvn org.codehaus.mojo:license-maven-plugin:2.0.0:download-licenses
+      run: ./mvnw -B -ntp org.codehaus.mojo:license-maven-plugin:download-licenses
       working-directory: ${{ matrix.package-folder }}
 
     - name: Validate XML report
