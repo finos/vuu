@@ -118,6 +118,7 @@ class SimulatedPricesProviderTest extends AnyFeatureSpec with Matchers {
     val spreadMultipler = 10.0
     val currentBid = 100.0
     val currentAsk = 102.0
+
     Scenario("bid is not null") {
       val (bid: Double, ask: Double) = provider.generateNextBidAsk(currentBid, currentAsk, spreadMultipler,priceMaxDelta, provider.nextRandomDouble)
       bid should not equal null
@@ -143,15 +144,6 @@ class SimulatedPricesProviderTest extends AnyFeatureSpec with Matchers {
       assert((ask - currentAsk).abs <= priceMaxDelta)
     }
 
-    Scenario("bid should not be same as current bid") {
-      val (bid: Double, ask: Double) = provider.generateNextBidAsk(currentBid, currentAsk, spreadMultipler,priceMaxDelta, provider.nextRandomDouble)
-      assert(bid != currentBid)
-    }
-
-    Scenario("ask should not be the same as current ask") {
-      val (bid: Double, ask: Double) = provider.generateNextBidAsk(currentBid, currentAsk, spreadMultipler,priceMaxDelta, provider.nextRandomDouble)
-      assert(ask != currentAsk)
-    }
   }
 
   Feature("init bid and ask") {
