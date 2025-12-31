@@ -65,6 +65,7 @@ export interface PopupMenuProps
 
 export const PopupMenu = ({
   anchorElement,
+  "aria-label": ariaLabel,
   appearance = "transparent",
   className,
   disabled = false,
@@ -94,6 +95,7 @@ export const PopupMenu = ({
 
   const { ariaAttributes, buttonProps, menuOpen, rootRef } = usePopupMenu({
     anchorElement,
+    "aria-label": ariaLabel,
     id,
     menuActionHandler,
     menuBuilder,
