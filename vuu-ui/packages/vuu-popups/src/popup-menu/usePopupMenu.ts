@@ -14,6 +14,7 @@ export interface PopupMenuHookProps
   extends Pick<
     PopupMenuProps,
     | "anchorElement"
+    | "aria-label"
     | "menuActionHandler"
     | "menuBuilder"
     | "menuClassName"
@@ -29,6 +30,7 @@ export interface PopupMenuHookProps
 
 export const usePopupMenu = ({
   anchorElement,
+  "aria-label": ariaLabel = "Popup menu",
   id,
   menuActionHandler,
   menuBuilder,
@@ -54,6 +56,8 @@ export const usePopupMenu = ({
           ) as HTMLElement;
           firstOption?.focus();
         }, 40);
+      } else {
+        suppressShowMenuRef.current = false;
       }
     },
     [onMenuOpen],
@@ -76,6 +80,7 @@ export const usePopupMenu = ({
       if (suppressShowMenuRef.current) {
         suppressShowMenuRef.current = false;
       } else {
+        suppressShowMenuRef.current = true;
         const anchorEl = anchorElement?.current ?? rootRef.current;
         if (anchorEl) {
           const {
@@ -109,6 +114,7 @@ export const usePopupMenu = ({
 
   const ariaAttributes: AriaAttributes = {
     "aria-controls": menuOpen ? `${id}-menu` : undefined,
+    "aria-label": ariaLabel,
     "aria-expanded": menuOpen,
     "aria-haspopup": "menu",
   };
