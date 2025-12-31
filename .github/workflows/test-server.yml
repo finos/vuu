@@ -21,5 +21,16 @@ jobs:
           distribution: temurin
           cache: 'maven'
 
+      - name: Make mvnw executable
+        run: chmod +x mvnw
+
       - name: Build with Maven
-        run: mvn -B test --file pom.xml
+        run: ./mvnw -B -ntp verify
+
+      - name: Publish test results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: |
+            **/target/surefire-reports/*.xml
+            **/target/failsafe-reports/*.xml

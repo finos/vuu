@@ -1,4 +1,3 @@
-.github/workflows/release-mvn-central.yml
 vuu/src/main/resources/certs/key.pem
 example/main/src/main/resources/certs/key.pem
 example/main/src/main/resources/certs/cert.pem
