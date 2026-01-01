@@ -10,6 +10,10 @@ on:
     paths-ignore:
       - "vuu-ui/**"
 
+permissions:
+  contents: read
+  pull-requests: write  # required for PR annotations
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -34,3 +38,11 @@ jobs:
 
       - name: Build with Maven
         run: ./mvnw -B -ntp verify
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: |
+            **/target/surefire-reports/*.xml
+            **/target/failsafe-reports/*.xml
