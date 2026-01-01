@@ -41,5 +41,5 @@ jobs:
         run: chmod +x mvnw
 
       - name: Build and Publish with Maven
-        run: ./mvnw -B -ntp clean install -Dskiptests -P sign-it -Dsign=true org.sonatype.central:central-publishing-maven-plugin:publish
+        run: ./mvnw -B -ntp clean install -DskipTests -P sign-it -Dsign=true org.sonatype.central:central-publishing-maven-plugin:publish
 
