@@ -1,7 +1,12 @@
 name: Legal report with Node
 
 on:
+  workflow_dispatch:
   push:
+    branches:
+      - "main"
+      - "release-*"
+  pull_request:
     paths:
       - "**/package.json"
       - ".github/workflows/legal-report-node.yml"

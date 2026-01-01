@@ -1,7 +1,15 @@
 name: "Test UI"
+
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - "main"
+      - "release-*"
   pull_request:
+    paths:
+      - "*"
+      - "vuu-ui/**"
 
 jobs:
   lint-and-typecheck:

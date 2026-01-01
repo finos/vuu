@@ -1,6 +1,12 @@
 name: Static code analysis
 
-on: [push, pull_request]
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "main"
+      - "release-*"
+  pull_request:
 
 jobs:
   semgrep:
