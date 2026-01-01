@@ -2,6 +2,10 @@ name: Static code analysis
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - "main"
+      - "release-*"
   pull_request:
 
 jobs:

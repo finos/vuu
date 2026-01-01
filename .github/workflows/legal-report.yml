@@ -2,6 +2,10 @@ name: Legal report with Maven
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - "main"
+      - "release-*"
   pull_request:
     paths:
       - '**/pom.xml'
