@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>example</artifactId>
-        <version>0.9.111-SNAPSHOT</version>
+        <version>0.9.111</version>
     </parent>
 
     <artifactId>rest-api</artifactId>
@@ -15,7 +15,7 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.111-SNAPSHOT</version>
+            <version>0.9.111</version>
         </dependency>
 
         <dependency>
