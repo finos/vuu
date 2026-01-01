@@ -333,7 +333,16 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
   private val onUpdateMeter = metrics.meter(name + ".processUpdates.Meter")
 
-  override def indexForColumn(column: Column): Option[IndexedField[_]] = None
+  override def indexForColumn(column: Column): Option[IndexedField[_]] = {    
+    val joinColumn = column.asInstanceOf[JoinColumn]
+    if (joinColumn.sourceTable == tableDef.baseTable) {
+      val sourceTable = sourceTables.get(joinColumn.sourceTable.name)
+      if (sourceTable.isDefined) {
+        sourceTable.get.indexForColumn(joinColumn.sourceColumn)
+      } 
+    }
+    None
+  }
 
   val joinColumns: Int = tableDef.joins.size + tableDef.baseTable.joinFields.size
 
