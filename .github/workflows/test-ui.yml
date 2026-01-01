@@ -3,6 +3,9 @@ name: "Test UI"
 on:
   workflow_dispatch:
   pull_request:
+    paths:
+      - "*"
+      - "vuu-ui/**"
 
 jobs:
   lint-and-typecheck:

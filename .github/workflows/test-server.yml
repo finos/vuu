@@ -3,6 +3,8 @@ name: Server CI Build
 on:
   workflow_dispatch:
   pull_request:
+    paths-ignore:
+      - "vuu-ui/**"
 
 jobs:
   build:
