@@ -49,9 +49,14 @@ jobs:
           git config author.email "${GITHUB_ACTOR}@users.noreply.github.com"
           git config author.name "${GITHUB_ACTOR}"
 
+      - name: Setup SSH Access for Commit
+        uses: kielabokkie/ssh-key-and-known-hosts-action@v1.5.0
+        with:
+          ssh-private-key: ${{ secrets.COMMIT_SSH_PRIVATE_KEY }}
+          ssh-host: github.com
+
       - name: Make mvnw executable
         run: chmod +x mvnw
 
-      - name: Prepare and perform maven release
-        run: ./mvnw -B -ntp release:prepare release:perform -DreleaseVersion=${{ env.RELEASE_VERSION }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }}
-
+      - name: Maven create release branch and tag
+        run: ./mvnw -B -ntp release:prepare -DreleaseVersion=${{ env.RELEASE_VERSION }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }}
