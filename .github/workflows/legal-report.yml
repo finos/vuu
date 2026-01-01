@@ -1,7 +1,8 @@
 name: Legal report with Maven
 
 on:
-  push:
+  workflow_dispatch:
+  pull_request:
     paths:
       - '**/pom.xml'
       - '.github/workflows/legal-report.yml'
@@ -99,4 +100,4 @@ jobs:
       uses: actions/upload-artifact@v5
       with:
         name: ${{ matrix.package-folder }}-license-xml-report
-        path: '**/target/generated-resources/licenses.xml'
+        path: '**/${{ matrix.package-folder }}/target/generated-resources/licenses.xml'
