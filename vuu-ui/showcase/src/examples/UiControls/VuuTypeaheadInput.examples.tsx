@@ -1,3 +1,4 @@
+import { Input } from "@salt-ds/core";
 import { getSchema, type VuuTableName } from "@vuu-ui/vuu-data-test";
 import { DataSource } from "@vuu-ui/vuu-data-types";
 import {
@@ -11,7 +12,25 @@ import {
   toColumnName,
   useData,
 } from "@vuu-ui/vuu-utils";
-import { CSSProperties, useMemo } from "react";
+import { CSSProperties, ReactNode, useMemo } from "react";
+
+const SurroundedByInputs = ({ children }: { children: ReactNode }) => (
+  <div
+    style={{
+      alignItems: "center",
+      border: "solid 1px black",
+      display: "flex",
+      flexDirection: "column",
+      gap: 12,
+      padding: 12,
+      width: 300,
+    }}
+  >
+    <Input />
+    {children}
+    <Input />
+  </div>
+);
 
 const TypeaheadInputTemplate = ({
   allowFreeInput,
@@ -105,6 +124,18 @@ export const ShowsSuggestionsNoTextRequired = ({
       minCharacterCountToTriggerSuggestions={0}
       onCommit={onCommit}
     />
+  );
+};
+
+/** tags=data-consumer */
+export const WithOpenOnFocus = ({ onCommit }: { onCommit?: CommitHandler }) => {
+  return (
+    <SurroundedByInputs>
+      <TypeaheadInputTemplate
+        minCharacterCountToTriggerSuggestions={0}
+        onCommit={onCommit}
+      />
+    </SurroundedByInputs>
   );
 };
 

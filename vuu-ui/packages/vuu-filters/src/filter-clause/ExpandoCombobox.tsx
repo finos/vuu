@@ -19,15 +19,11 @@ import expandoComboboxCss from "./ExpandoCombobox.css";
 const classBase = "vuuExpandoCombobox";
 
 export interface ExpandoComboboxProps<Item = string>
-  extends ComboBoxProps<Item> {
+  extends Omit<ComboBoxProps<Item>, "onOpenChange"> {
   itemToString?: (item: Item) => string;
   dropdownOnAutofocus?: boolean;
+  onOpenChange?: (open: boolean, reason?: "manual" | "input" | "focus") => void;
 }
-
-export type ComboBoxOpenChangeHandler = Exclude<
-  ComboBoxProps["onOpenChange"],
-  undefined
->;
 
 const defaultItemToString = (item: unknown) => {
   if (typeof item === "string") {
@@ -62,6 +58,7 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
   });
 
   const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState<Item[]>([]);
   const [value, setValue] = useState(
     valueProp === undefined ? "" : valueProp.toString(),
   );
@@ -71,6 +68,7 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
       const value = evt.target.value;
       onChange?.(evt);
       setValue(value);
+      setSelected([]);
     },
     [onChange],
   );
@@ -80,6 +78,7 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
       if (multiselect) {
         onSelectionChange?.(evt, newSelected);
       } else {
+        setSelected(newSelected);
         const [selectedValue] = newSelected;
         setTimeout(() => {
           onSelectionChange?.(evt, newSelected);
@@ -90,8 +89,8 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
     [onSelectionChange, itemToString, multiselect],
   );
 
-  const handleOpenChange = useCallback<ComboBoxOpenChangeHandler>(
-    (open, reason) => {
+  const handleOpenChange = useCallback(
+    (open: boolean, reason?: "manual" | "input") => {
       onOpenChange?.(open, reason);
       setOpen(open);
     },
@@ -108,10 +107,11 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
 
         setTimeout(() => {
           setOpen(true);
+          onOpenChange?.(true, "focus");
         }, 100);
       },
     };
-  }, [inputPropsProp, dropdownOnAutofocus]);
+  }, [inputPropsProp, dropdownOnAutofocus, onOpenChange]);
 
   return (
     <div
@@ -127,6 +127,7 @@ export const ExpandoCombobox = forwardRef(function ExpandoCombobox<
         onOpenChange={handleOpenChange}
         onSelectionChange={handleSelectionChange}
         open={open}
+        selected={selected}
         value={value}
       >
         {children}

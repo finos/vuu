@@ -3,7 +3,7 @@ import { NotificationsCenter } from "./NotificationsCenter";
 import {
   DispatchHideNotification,
   DispatchShowNotification,
-  NotificationsContext,
+  type NotificationsContext,
   ToastNotificationDescriptor,
 } from "./NotificationsContext";
 import { getLocalEntity } from "@vuu-ui/vuu-utils";

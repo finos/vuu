@@ -1,5 +1,7 @@
-import { test, expect } from "@playwright/experimental-ct-react";
+import { test } from "@playwright/experimental-ct-react";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import { expect } from "../../../../../playwright/customAssertions";
+
 import {
   ContainerManagedNumericColumnFilter,
   ContainerManagedTextColumnFilter,
@@ -17,62 +19,6 @@ import {
 } from "@vuu-ui/vuu-filter-types";
 import { ColumnFilterProps } from "../../column-filter/ColumnFilter";
 import { FilterAppliedHandler } from "../../filter-container/useFilterContainer";
-
-declare global {
-  namespace PlaywrightTest {
-    interface Matchers<R> {
-      toHaveSelection(start: number, end: number): R;
-    }
-  }
-}
-// TODO figure out where we put this to make it shareable
-expect.extend({
-  async toHaveSelection(locator, start, end) {
-    let pass: boolean;
-    let selection: [number, number] | undefined = undefined;
-    let errorName: string | undefined;
-
-    try {
-      await expect
-        .poll(
-          async () => {
-            return await locator.evaluate((el: object) => {
-              const { selectionStart, selectionEnd } = el as HTMLInputElement;
-              return [selectionStart, selectionEnd];
-            });
-          },
-          { timeout: 1000 },
-        )
-        .toEqual([start, end]);
-      pass = true;
-    } catch (error) {
-      errorName = (error as Error).message.replace(
-        "toEqual",
-        "toHaveSelection",
-      );
-      pass = false;
-    }
-    const message = () =>
-      pass
-        ? (errorName ? `\x1b[31m${errorName} for \x1b[0m` : "") +
-          this.utils.matcherHint("toHaveSelection", undefined, undefined, {
-            isNot: this.isNot,
-          }) +
-          "\n\n" +
-          `Locator: ${locator}\n` +
-          `Expected: ${this.isNot ? "not" : ""} ${this.utils.printExpected([start, end])}\n` +
-          (selection ? `Received: ${this.utils.printReceived(selection)}` : "")
-        : "Failed!\n" + errorName!;
-
-    return {
-      message,
-      pass,
-      name: "toHaveSelection",
-      expected: [start, end],
-      actual: selection,
-    };
-  },
-});
 
 const BBG = { name: "bbg", serverDataType: "string" };
 const PRICE = { name: "price", serverDataType: "double" };
