@@ -749,6 +749,11 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
     val ricIndexOption: Option[IndexedField[?]] = orderToInstrumentToCpty.indexForColumn(ricColumn)
     ricIndexOption.isDefined shouldBe false
 
+    //Should not be able to hit an index in the right table
+    val nameColumn = orderToInstrumentToCpty.columnForName("name")
+    val nameIndexOption: Option[IndexedField[?]] = orderToInstrumentToCpty.indexForColumn(nameColumn)
+    nameIndexOption.isDefined shouldBe false
+
   }
 
 
