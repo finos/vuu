@@ -3,16 +3,10 @@ package org.finos.vuu.net.ws
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.Channel
-import io.netty.channel.nio.NioEventLoopGroup
-import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.handler.logging.{LogLevel, LoggingHandler}
-import io.netty.handler.ssl.{SslContext, SslContextBuilder}
-import org.finos.vuu.net.ViewServerHandlerFactory
 import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import org.finos.vuu.core.VuuWebSocketOptions
-import org.finos.vuu.util.PathChecker
-
-import java.io.File
+import org.finos.vuu.net.ViewServerHandlerFactory
 
 /**
  * A HTTP server which serves Web Socket requests at:
@@ -38,20 +32,19 @@ class WebSocketServer(options: VuuWebSocketOptions, factory: ViewServerHandlerFa
 
   lifecycle(this)
 
-  val bossGroup = new NioEventLoopGroup(1);
-  val workerGroup = new NioEventLoopGroup();
-  var channel: Channel = null
-  val b = new ServerBootstrap();
-  var ch: Channel = null
+  private val transport = Transport(options.nativeTransportEnabled)
+  private val bossGroup = transport.eventLoopGroup(1);
+  private val workerGroup = transport.eventLoopGroup()
+  private val bootstrap = new ServerBootstrap()
+  var channel: Channel = _
 
-  def isOpen() = ch.isOpen
+  def isOpen: Boolean = channel.isOpen
 
   override def doStart(): Unit = {
     logger.debug("Starting websocket server")
-    ch = b.bind(options.bindAddress, options.wsPort).sync().channel();
-    while (!isOpen()) {}
+    channel = bootstrap.bind(options.bindAddress, options.wsPort).sync().channel();
+    while (!isOpen) {}
     logger.info("Websocket server open and ready")
-
   }
 
   override def doStop(): Unit = {
@@ -60,8 +53,8 @@ class WebSocketServer(options: VuuWebSocketOptions, factory: ViewServerHandlerFa
   }
 
   override def doInitialize(): Unit = {    
-    b.group(bossGroup, workerGroup)
-      .channel(classOf[NioServerSocketChannel])
+    bootstrap.group(bossGroup, workerGroup)
+      .channel(transport.serverChannelClass)
       .handler(new LoggingHandler(LogLevel.INFO))
       .childHandler(new WebSocketServerInitializer(options, factory))
   }

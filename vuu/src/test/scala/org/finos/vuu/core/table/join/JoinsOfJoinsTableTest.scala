@@ -8,10 +8,11 @@ import org.finos.vuu.api.TableVisibility.Public
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.filter.`type`.AllowAllPermissionFilter
+import org.finos.vuu.core.index.IndexedField
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.core.table.{Columns, DefaultColumn, RowWithData, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
-import org.finos.vuu.net.{ClientSessionId, SortSpec}
+import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
 import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
@@ -500,5 +501,260 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
     updates2(0)(DefaultColumn.LastUpdatedTime.name) shouldEqual EpochTimestamp(2000L)
 
   }
+
+  Scenario("Test hitting indices in join of joins when the right table is a join table") {
+
+    val dateTime = 1437728400000L
+
+    val ordersDef = TableDef(
+      name = "orders",
+      keyField = "orderId",
+      indices = Indices(Index("orderId"), Index("quantity")),
+      columns = Columns.fromNames("orderId:String", "ric:String", "tradeTime:Long", "quantity:Int"),
+      joinFields = "orderId", "ric")
+
+    val instrumentDef = TableDef(
+      name = "instruments",
+      keyField = "ric",
+      indices = Indices(Index("ric")),
+      columns = Columns.fromNames("ric:String", "currency:String"),
+      joinFields = "ric", "currency")
+
+    val currencyDef = TableDef(
+      name = "currencies",
+      keyField = "currency",
+      indices = Indices(Index("currency")),
+      columns = Columns.fromNames("currency:String", "country:String"),
+      joinFields = "currency")
+
+    val join1Def = JoinTableDef(
+      name = "instrumentToCurrency",
+      baseTable = instrumentDef,
+      joinColumns = Columns.allFrom(instrumentDef) ++ Columns.allFromExceptDefaultAnd(currencyDef, "currency"),
+      joins =
+        JoinTo(
+          table = currencyDef,
+          joinSpec = JoinSpec(left = "currency", right = "currency", LeftOuterJoin)
+        ),
+      links = VisualLinks(),
+      joinFields = Seq("ric")
+    )
+
+    val join2Def = JoinTableDef(
+      name = "orderToInstrument",
+      baseTable = ordersDef,
+      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(join1Def, "ric"),
+      joins =
+        JoinTo(
+          table = join1Def,
+          joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
+        ),
+      links = VisualLinks(),
+      joinFields = Seq("orderId"),
+    )
+
+    val joinProvider = JoinTableProviderImpl()
+
+    val tableContainer = new TableContainer(joinProvider)
+
+    val orders = tableContainer.createTable(ordersDef)
+    val instruments = tableContainer.createTable(instrumentDef)
+    val currencies = tableContainer.createTable(currencyDef)
+
+    val instrumentToCurrency = tableContainer.createJoinTable(join1Def)
+    val orderToInstrument = tableContainer.createJoinTable(join2Def)
+
+    val ordersProvider = new MockProvider(orders)
+    val instrumentsProvider = new MockProvider(instruments)
+    val currenciesProvider = new MockProvider(currencies)
+
+    val providerContainer = new ProviderContainer(joinProvider)
+
+    val viewPortContainer = setupViewPort(tableContainer, providerContainer)
+
+    joinProvider.start()
+
+    joinProvider.runOnce()
+
+    val user = VuuUser("chris")
+
+    val session = ClientSessionId("sess-01", "channel")
+
+    val outQueue = new OutboundRowPublishQueue()
+
+    val vpcolumns = ViewPortColumnCreator.create(orderToInstrument, List("orderId", "ric", "currency", "country"))
+
+    val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orderToInstrument,
+      DefaultRange, vpcolumns)
+
+    ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
+    ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "AIR.PA"))
+
+    instrumentsProvider.tick("VOD.L", Map("ric" -> "VOD.L", "currency" -> "GBP"))
+    instrumentsProvider.tick("AIR.PA", Map("ric" -> "AIR.PA", "currency" -> "EUR"))
+
+    currenciesProvider.tick("GBP", Map("currency" -> "GBP", "country" -> "UK"))
+    currenciesProvider.tick("EUR", Map("currency" -> "EUR", "country" -> "FR"))
+
+    joinProvider.runOnce()
+    viewPortContainer.runOnce()
+
+    //Test index on primary key in base table
+    val orderIdIndexOption: Option[IndexedField[?]] = orderToInstrument.indexForColumn(orderToInstrument.columnForName("orderId"))
+    orderIdIndexOption.isDefined shouldBe true
+    val orderIdIndex = orderIdIndexOption.get.asInstanceOf[IndexedField[String]]
+    val orderIndexHit = orderIdIndex.find("NYC-0001")
+    orderIndexHit.length shouldEqual 1
+    orderIndexHit.head shouldEqual "NYC-0001"
+
+    //Test index on field in base table
+    val quantityIndexOption: Option[IndexedField[?]] = orderToInstrument.indexForColumn(orderToInstrument.columnForName("quantity"))
+    quantityIndexOption.isDefined shouldBe true
+    val quantityIndex = quantityIndexOption.get.asInstanceOf[IndexedField[Int]]
+    val quantityIndexHit = quantityIndex.find(100)
+    quantityIndexHit.length shouldEqual 2
+    quantityIndexHit.indexOf("NYC-0001") > -1 shouldBe true
+    quantityIndexHit.indexOf("NYC-0002") > -1 shouldBe true
+
+    //Should not be able to hit an index in the right table
+    val ricIndexOption: Option[IndexedField[?]] = orderToInstrument.indexForColumn(orderToInstrument.columnForName("ric"))
+    ricIndexOption.isDefined shouldBe false
+
+  }
+
+  Scenario("Test hitting indices in join of joins when the left table is a join table") {
+
+    val dateTime = 1437728400000L
+
+    val ordersDef = TableDef(
+      name = "orders",
+      keyField = "orderId",
+      indices = Indices(Index("orderId"), Index("quantity")),
+      columns = Columns.fromNames("orderId:String", "ric:String", "tradeTime:Long", "quantity:Int", "counterpartyId:String"),
+      joinFields = "orderId", "ric", "counterpartyId")
+
+    val instrumentDef = TableDef(
+      name = "instruments",
+      keyField = "ric",
+      indices = Indices(Index("ric")),
+      columns = Columns.fromNames("ric:String", "currency:String"),
+      joinFields = "ric", "currency")
+
+    val orderCounterpartyDef = TableDef(
+      name = "counterparties",
+      keyField = "counterpartyId",
+      indices = Indices(Index("counterpartyId"), Index("name")),
+      columns = Columns.fromNames("counterpartyId:String", "name:String"),
+      joinFields = "counterpartyId")
+
+    val join1Def = JoinTableDef(
+      name = "orderToInstrument",
+      baseTable = ordersDef,
+      joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(instrumentDef, "ric"),
+      joins =
+        JoinTo(
+          table = instrumentDef,
+          joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
+        ),
+      links = VisualLinks(),
+      joinFields = Seq("orderId","ric","counterpartyId"),
+    )
+
+    val join2Def = JoinTableDef(
+      name = "orderToInstrumentAndCounterparty",
+      baseTable = join1Def,
+      joinColumns = Columns.allFrom(join1Def) ++ Columns.allFromExceptDefaultAnd(orderCounterpartyDef, "counterpartyId"),
+      joins =
+        JoinTo(
+          table = orderCounterpartyDef,
+          joinSpec = JoinSpec(left = "counterpartyId", right = "counterpartyId", LeftOuterJoin)
+        ),
+      links = VisualLinks(),
+      joinFields = Seq("orderId","ric","counterpartyId")
+    )
+
+    val joinProvider = JoinTableProviderImpl()
+
+    val tableContainer = new TableContainer(joinProvider)
+
+    val orders = tableContainer.createTable(ordersDef)
+    val instruments = tableContainer.createTable(instrumentDef)
+    val counterparties = tableContainer.createTable(orderCounterpartyDef)
+
+    val orderToInstrument = tableContainer.createJoinTable(join1Def)
+    val orderToInstrumentToCpty = tableContainer.createJoinTable(join2Def)
+
+    val ordersProvider = new MockProvider(orders)
+    val instrumentsProvider = new MockProvider(instruments)
+    val cptyProvider = new MockProvider(counterparties)
+
+    val providerContainer = new ProviderContainer(joinProvider)
+
+    val viewPortContainer = setupViewPort(tableContainer, providerContainer)
+
+    joinProvider.start()
+
+    joinProvider.runOnce()
+
+    val user = VuuUser("chris")
+
+    val session = ClientSessionId("sess-01", "channel")
+
+    val outQueue = new OutboundRowPublishQueue()
+
+    val vpcolumns = ViewPortColumnCreator.create(orderToInstrument, List("orderId", "ric", "currency", "country"))
+
+    val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orderToInstrument,
+      DefaultRange, vpcolumns)
+
+    ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L", "counterpartyId" -> "666"))
+    ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "AIR.PA", "counterpartyId" -> "777"))
+
+    joinProvider.runOnce()
+    viewPortContainer.runOnce()
+
+    instrumentsProvider.tick("VOD.L", Map("ric" -> "VOD.L", "currency" -> "GBP"))
+    instrumentsProvider.tick("AIR.PA", Map("ric" -> "AIR.PA", "currency" -> "EUR"))
+
+    joinProvider.runOnce()
+    viewPortContainer.runOnce()
+
+    cptyProvider.tick("666", Map("counterpartyId" -> "666", "name" -> "Bob"))
+    cptyProvider.tick("777", Map("counterpartyId" -> "777", "name" -> "Alice"))
+
+    joinProvider.runOnce()
+    viewPortContainer.runOnce()
+
+    //Test index on primary key in base table
+    val orderIdColumn = orderToInstrumentToCpty.columnForName("orderId")
+    val orderIdIndexOption: Option[IndexedField[?]] = orderToInstrumentToCpty.indexForColumn(orderIdColumn)
+    orderIdIndexOption.isDefined shouldBe true
+    val orderIdIndex = orderIdIndexOption.get.asInstanceOf[IndexedField[String]]
+    val orderIndexHit = orderIdIndex.find("NYC-0001")
+    orderIndexHit.length shouldEqual 1
+    orderIndexHit.head shouldEqual "NYC-0001"
+
+    //Test index on field in base table
+    val quantityColumn = orderToInstrumentToCpty.columnForName("quantity")
+    val quantityIndexOption: Option[IndexedField[?]] = orderToInstrumentToCpty.indexForColumn(quantityColumn)
+    quantityIndexOption.isDefined shouldBe true
+    val quantityIndex = quantityIndexOption.get.asInstanceOf[IndexedField[Int]]
+    val quantityIndexHit = quantityIndex.find(100)
+    quantityIndexHit.length shouldEqual 2
+    quantityIndexHit.indexOf("NYC-0001") > -1 shouldBe true
+    quantityIndexHit.indexOf("NYC-0002") > -1 shouldBe true
+
+    //Should not be able to hit an index in the right table of the base left join table
+    val ricColumn = orderToInstrumentToCpty.columnForName("ric")
+    val ricIndexOption: Option[IndexedField[?]] = orderToInstrumentToCpty.indexForColumn(ricColumn)
+    ricIndexOption.isDefined shouldBe false
+
+    //Should not be able to hit an index in the right table
+    val nameColumn = orderToInstrumentToCpty.columnForName("name")
+    val nameIndexOption: Option[IndexedField[?]] = orderToInstrumentToCpty.indexForColumn(nameColumn)
+    nameIndexOption.isDefined shouldBe false
+
+  }
+
 
 }
