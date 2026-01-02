@@ -30,11 +30,11 @@ class WebSocketViewServerClient(ws: WebSocketClient, serializer: JsonVsSerialize
 
     }
 
-    logger.debug(s"[WSClient] Websocket on ${ws.uri} should be up.")
+    logger.debug(s"[WSClient] Websocket is up.")
   }
 
   override def doStop(): Unit = {
-    logger.debug(s"[WSClient] Websocket on ${ws.uri} stopping.")
+    logger.debug(s"[WSClient] Websocket is stopping.")
   }
 
   override def doInitialize(): Unit = {}
