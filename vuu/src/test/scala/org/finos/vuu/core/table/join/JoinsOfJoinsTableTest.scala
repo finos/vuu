@@ -502,7 +502,7 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
 
   }
 
-  Scenario("Test hitting indices in join of joins when left table is not itself a join table") {
+  Scenario("Test hitting indices in join of joins when the right table is a join table") {
 
     val dateTime = 1437728400000L
 
@@ -622,7 +622,7 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
 
   }
 
-  Scenario("Test hitting indices in join of joins when left table is also itself a join table") {
+  Scenario("Test hitting indices in join of joins when the left table is a join table") {
 
     val dateTime = 1437728400000L
 
