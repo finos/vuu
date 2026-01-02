@@ -10,9 +10,11 @@ jobs:
     runs-on: ubuntu-latest-16-cores
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v3
+
+      - uses: actions/setup-node@v6
         with:
           node-version: "20.x"
+
       - name: Set up JDK 1.17
         uses: actions/setup-java@v5
         with:
@@ -20,7 +22,12 @@ jobs:
           java-package: jdk
           distribution: temurin
           cache: 'maven'
+
+      - name: Make mvnw executable
+        run: chmod +x mvnw
+
       - name: Install Modules
-        run: mvn -B install --file pom.xml
+        run: ./mvnw -B -ntp install --file pom.xml
+
       - name: Run Microbenchmarks
-        run: mvn exec:exec -pl benchmark
+        run: ./mvnw exec:exec -pl benchmark

@@ -1,6 +1,5 @@
 package org.finos.vuu.net.ws
 
-import com.typesafe.scalalogging.StrictLogging
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.*
 import io.netty.channel.socket.SocketChannel
@@ -13,8 +12,7 @@ import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 
 import java.net.URI
 
-class WebSocketClient(url: String, port: Int, nativeTransport: Boolean = true)(implicit lifecycle: LifecycleContainer)
-  extends LifecycleEnabled with StrictLogging {
+class WebSocketClient(url: String, port: Int, nativeTransport: Boolean = true)(using lifecycle: LifecycleContainer) extends LifecycleEnabled {
 
   private val transport: Transport = Transport(nativeTransport)
   private val eventLoopGroup: EventLoopGroup = transport.eventLoopGroup(1)
@@ -50,8 +48,6 @@ class WebSocketClient(url: String, port: Int, nativeTransport: Boolean = true)(i
   }
 
   override def doInitialize(): Unit = {
-    logger.debug(s"Initialising with channel class ${transport.channelClass.getName}")
-
     bootstrap.group(eventLoopGroup)
       .channel(transport.channelClass)
       .handler(new ChannelInitializer[SocketChannel] {

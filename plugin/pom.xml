@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>vuu-parent</artifactId>
-        <version>0.9.110-SNAPSHOT</version>
+        <version>0.9.111-SNAPSHOT</version>
     </parent>
 
     <artifactId>plugin</artifactId>
@@ -15,41 +15,5 @@
         <module>ignite-plugin</module>
         <module>virtualized-table-plugin</module>
     </modules>
-
-    <profiles>
-        <profile>
-            <id>sign-it</id>
-            <activation>
-                <property>
-                    <name>sign</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>${maven.gpg.plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                                <configuration>
-                                    <gpgArguments>
-                                        <arg>--pinentry-mode</arg>
-                                        <arg>loopback</arg>
-                                    </gpgArguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
 </project>

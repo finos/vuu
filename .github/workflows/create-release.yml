@@ -1,0 +1,62 @@
+name: Create release branch and tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      releaseVersion:
+        description: "Default version to use when preparing a release."
+        required: true
+        default: "X.Y"
+      developmentVersion:
+        description: "Default version to use for new local working copy."
+        required: true
+        default: "X.Y-SNAPSHOT"
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
+  DEVELOPMENT_VERSION: ${{ github.event.inputs.developmentVersion }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v6
+
+      - name: Switch git branch
+        run: git switch -c release-${{ env.RELEASE_VERSION }}
+
+      - name: Install Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20.x"
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: 17
+          java-package: jdk
+          distribution: temurin
+          cache: 'maven'
+
+      - name: Configure git
+        run: |
+          git config committer.email "infra@finos.org"
+          git config committer.name "FINOS Admin"
+          git config author.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git config author.name "${GITHUB_ACTOR}"
+
+      - name: Setup SSH Access for Commit
+        uses: kielabokkie/ssh-key-and-known-hosts-action@v1.5.0
+        with:
+          ssh-private-key: ${{ secrets.COMMIT_SSH_PRIVATE_KEY }}
+          ssh-host: github.com
+
+      - name: Make mvnw executable
+        run: chmod +x mvnw
+
+      - name: Maven create release branch and tag
+        run: ./mvnw -B -ntp release:prepare -DreleaseVersion=${{ env.RELEASE_VERSION }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }}

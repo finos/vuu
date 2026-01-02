@@ -17,16 +17,19 @@ trait Transport {
 
 }
 
-object Transport {
+object Transport extends StrictLogging {
 
   def apply(nativeTransport: Boolean): Transport = {
     if (nativeTransport) {
       if (Epoll.isAvailable) {
+        logger.debug("Using EpollNativeTransport")
         return EpollNativeTransport
       } else if (KQueue.isAvailable) {
+        logger.debug("Using KQueueNativeTransport")
         return KQueueNativeTransport
       }
     }
+    logger.debug("Using NioTransport")
     NioTransport
   }
 

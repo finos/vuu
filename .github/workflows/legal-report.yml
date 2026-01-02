@@ -1,7 +1,12 @@
 name: Legal report with Maven
 
 on:
+  workflow_dispatch:
   push:
+    branches:
+      - "main"
+      - "release-*"
+  pull_request:
     paths:
       - '**/pom.xml'
       - '.github/workflows/legal-report.yml'
@@ -31,14 +36,14 @@ jobs:
         sudo apt-get update
         sudo apt-get install xq
 
-    - name: Maven build
-      run: mvn clean install -pl ${{ matrix.package-folder }} -am -DskipTests
+    - name: Make mvnw executable
+      run: chmod +x mvnw
 
     - name: License XML report
-      run: mvn org.codehaus.mojo:license-maven-plugin:2.0.0:download-licenses
-      working-directory: ${{ matrix.package-folder }}
+      run: ./mvnw -B -ntp clean install org.codehaus.mojo:license-maven-plugin:download-licenses -pl ${{ matrix.package-folder }} -am -DskipTests -DlicensesOutputDirectory=${{ matrix.package-folder }}
 
     - name: Validate XML report
+      working-directory: ${{ matrix.package-folder }}
       run: |
         #!/bin/bash
         
@@ -95,10 +100,8 @@ jobs:
           exit 1
         fi
 
-      working-directory: ${{ matrix.package-folder }}
-
     - name: Upload license XML reports
       uses: actions/upload-artifact@v5
       with:
         name: ${{ matrix.package-folder }}-license-xml-report
-        path: '**/target/generated-resources/licenses.xml'
+        path: '**/${{ matrix.package-folder }}/target/generated-resources/licenses.xml'

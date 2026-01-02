@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>plugin</artifactId>
-        <version>0.9.110-SNAPSHOT</version>
+        <version>0.9.111-SNAPSHOT</version>
     </parent>
 
     <groupId>org.finos.vuu.plugin</groupId>
@@ -15,7 +15,7 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.110-SNAPSHOT</version>
+            <version>0.9.111-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -33,7 +33,7 @@
         <dependency>
             <groupId>org.finos.vuu.plugin</groupId>
             <artifactId>virtualized-table-plugin</artifactId>
-            <version>0.9.110-SNAPSHOT</version>
+            <version>0.9.111-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -59,7 +59,7 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>vuu</artifactId>
-            <version>0.9.110-SNAPSHOT</version>
+            <version>0.9.111-SNAPSHOT</version>
             <classifier>tests</classifier>
             <type>test-jar</type>
             <scope>test</scope>
@@ -92,44 +92,6 @@
         </dependency>
 
     </dependencies>
-
-    <profiles>
-
-        <profile>
-            <id>sign-it</id>
-            <activation>
-                <property>
-                    <name>sign</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>${maven.gpg.plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                                <configuration>
-                                    <gpgArguments>
-                                        <arg>--pinentry-mode</arg>
-                                        <arg>loopback</arg>
-                                    </gpgArguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-    </profiles>
 
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
