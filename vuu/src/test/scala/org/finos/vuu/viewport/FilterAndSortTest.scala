@@ -3,7 +3,7 @@ package org.finos.vuu.viewport
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.api.{Index, Indices, TableDef}
+import org.finos.vuu.api.{Index, Indices, JoinSpec, JoinTableDef, JoinTo, LeftOuterJoin, TableDef, VisualLinks}
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.filter.`type`.{AntlrBasedFilter, PermissionFilter}
@@ -527,6 +527,91 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       }
 
     }
+
+    Scenario("test index hit does not override row permission filter on join table") {
+
+      given lifecycle: LifecycleContainer = new LifecycleContainer
+
+      val ordersDef = TableDef(
+        name = "orders",
+        keyField = "orderId",
+        indices = Indices(Index("orderId"), Index("trader")),
+        columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
+        joinFields = "ric", "orderId")
+
+      val pricesDef = TableDef(name = "prices",
+        keyField = "ric",
+        columns = Columns.fromNames("ric:String", "bid:Double", "ask:Double"),
+        indices = Indices(Index("ric")),
+        joinFields = "ric",
+      )
+
+      val joinDef = JoinTableDef(
+        name = "orderPrices",
+        baseTable = ordersDef,
+        joinColumns = Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric"),
+        joins =
+          JoinTo(
+            table = pricesDef,
+            joinSpec = JoinSpec(left = "ric", right = "ric", LeftOuterJoin)
+          ),
+        links = VisualLinks(),
+        joinFields = Seq(),
+        permissionFunction = (vp, tc) =>
+          PermissionFilter(
+            (row: RowData) => {
+              val ric = row.get("ric").asInstanceOf[String]
+              ric != "VOD.L"
+            }
+          )
+      )
+
+
+      val joinProvider = JoinTableProviderImpl()
+      val tableContainer = new TableContainer(joinProvider)
+
+      val prices = tableContainer.createTable(pricesDef)
+      val pricesProvider = new MockProvider(prices)
+
+      val orders = tableContainer.createTable(ordersDef)
+      val ordersProvider = new MockProvider(orders)
+
+      val orderPrices = tableContainer.createJoinTable(joinDef)
+
+      val providerContainer = new ProviderContainer(joinProvider)
+      val pluginRegistry = new DefaultPluginRegistry()
+      pluginRegistry.registerPlugin(new VuuInMemPlugin)
+      val viewPortContainer = new ViewPortContainer(tableContainer, providerContainer, pluginRegistry)
+
+      ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "quantity" -> 100, "ric" -> "VOD.L"))
+      ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "quantity" -> 100, "ric" -> "BT.L"))
+
+      pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220.0, "ask" -> 222.0))
+      pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500.0, "ask" -> 501.0))
+
+      joinProvider.runOnce()
+
+      val queue = new OutboundRowPublishQueue()
+
+      val columns = ViewPortColumnCreator.create(orderPrices, List("orderId", "ric", "trader"))
+
+      val viewport = viewPortContainer.create(RequestId.oneNew(), VuuUser("B"),
+        ClientSessionId("A", "C"), queue, orderPrices, ViewPortRange(0, 20), columns,
+        filterSpec = FilterSpec("trader = \"chris\""))
+
+      viewPortContainer.runOnce()
+
+      val updates = combineQs(viewport)
+
+      assertVpEq(updates) {
+        Table(
+          ("orderId", "ric","trader"),
+          ("NYC-0002","BT.L","chris")
+        )
+      }
+
+    }
+
 
   }
 
