@@ -12,7 +12,7 @@ import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 
 import java.net.URI
 
-class WebSocketClient(url: String, port: Int, nativeTransport: Boolean = true)(using lifecycle: LifecycleContainer) extends LifecycleEnabled {
+class WebSocketClient(url: String, port: Int, nativeTransport: Boolean = true)(implicit lifecycle: LifecycleContainer) extends LifecycleEnabled {
 
   private val transport: Transport = Transport(nativeTransport)
   private val eventLoopGroup: EventLoopGroup = transport.eventLoopGroup(1)
