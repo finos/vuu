@@ -327,8 +327,6 @@ class JoinTable(val tableDef: JoinTableDef,
                 val sourceTables: Map[String, DataTable],
                 joinProvider: JoinTableProvider)(implicit val metrics: MetricsProvider, timeProvider: Clock) extends DataTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
 
-
-
   override protected def createDataTableData(): TableData = ???
 
   override def name: String = tableDef.name

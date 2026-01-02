@@ -26,7 +26,7 @@ object JoinTableIndices extends StrictLogging {
       .map(jc => jc -> baseSourceTable.indexForColumn(jc.sourceColumn).get)
       .toMap()
 
-    logger.debug(s"Creating join table indices for ${indices.keys.map(f => f.name)}")
+    logger.debug(s"Adding indices for columns ${indices.keys.map(f => f.name)} in join table ${joinTableDef.name}")
     JoinTableIndicesImpl(indices)
   }
 

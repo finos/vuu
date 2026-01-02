@@ -66,14 +66,14 @@ trait ViewPortSetup {
     val ordersDef = TableDef(
       name = "orders",
       keyField = "orderId",
-      indices= Indices(Index("orderId"), Index("trader")),
+      indices = Indices(Index("orderId"), Index("trader")),
       columns = Columns.fromNames("orderId:String", "trader:String", "ric:String", "tradeTime:Long", "quantity:Double"),
       joinFields =  "ric", "orderId")
 
     val pricesDef = TableDef(
       name = "prices",
       keyField = "ric",
-      indices= Indices(Index("ric"), Index("open")),
+      indices = Indices(Index("ric"), Index("open")),
       columns = Columns.fromNames("ric:String", "bid:Double", "ask:Double", "last:Double", "open:Double", "close:Double"),
       joinFields = "ric")
 
