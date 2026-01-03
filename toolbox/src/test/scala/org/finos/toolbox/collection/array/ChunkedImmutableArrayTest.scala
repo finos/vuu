@@ -63,6 +63,7 @@ class ChunkedImmutableArrayTest extends AnyFeatureSpec with Matchers {
       unioned.map( x => x).toList should equal(List("Chris", "Was", "Here", "Foo", "Bar", "Bekki", "Was", "AlsoHere", "Bar", "Foo"))
 
       unioned.indexOf("Here") should equal(2)
+      unioned.contains("Here") shouldBe true
     }
 
     Scenario("Create a chunked array and then remove an item"){

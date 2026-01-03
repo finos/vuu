@@ -37,6 +37,7 @@ class IndexedFieldTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
       rowKeys2.length shouldEqual (9)
       rowKeys2.indexOf("1302") shouldEqual(-1)
+      rowKeys2.contains("1302") shouldBe false
     }
 
     Scenario("Create a string based index using HashMap") {

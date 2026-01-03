@@ -12,7 +12,7 @@ import org.finos.vuu.core.index.IndexedField
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.core.table.{Columns, DefaultColumn, RowWithData, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
-import org.finos.vuu.net.{ClientSessionId, FilterSpec, SortSpec}
+import org.finos.vuu.net.{ClientSessionId, SortSpec}
 import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
@@ -613,8 +613,8 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
     val quantityIndex = quantityIndexOption.get.asInstanceOf[IndexedField[Int]]
     val quantityIndexHit = quantityIndex.find(100)
     quantityIndexHit.length shouldEqual 2
-    quantityIndexHit.indexOf("NYC-0001") > -1 shouldBe true
-    quantityIndexHit.indexOf("NYC-0002") > -1 shouldBe true
+    quantityIndexHit.contains("NYC-0001") shouldBe true
+    quantityIndexHit.contains("NYC-0002") shouldBe true
 
     //Should not be able to hit an index in the right table
     val ricIndexOption: Option[IndexedField[?]] = orderToInstrument.indexForColumn(orderToInstrument.columnForName("ric"))
@@ -741,8 +741,8 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
     val quantityIndex = quantityIndexOption.get.asInstanceOf[IndexedField[Int]]
     val quantityIndexHit = quantityIndex.find(100)
     quantityIndexHit.length shouldEqual 2
-    quantityIndexHit.indexOf("NYC-0001") > -1 shouldBe true
-    quantityIndexHit.indexOf("NYC-0002") > -1 shouldBe true
+    quantityIndexHit.contains("NYC-0001") shouldBe true
+    quantityIndexHit.contains("NYC-0002") shouldBe true
 
     //Should not be able to hit an index in the right table of the base left join table
     val ricColumn = orderToInstrumentToCpty.columnForName("ric")
