@@ -1,6 +1,7 @@
 package org.finos.toolbox.collection.array
 
 import org.finos.toolbox.collection.set.ChunkedUniqueImmutableArraySet
+
 import scala.reflect.ClassTag
 
 object ImmutableArray{
@@ -46,6 +47,8 @@ trait ImmutableArray[T] extends Iterable[T] {
   def getIndex(index: Int): T
 
   def indexOf(element: T): Int
+
+  def contains(element: T): Boolean
 
   def length: Int
 

@@ -251,6 +251,8 @@ class ChunkedUniqueImmutableArraySet[T <: Object :ClassTag](private val uniqueCh
     index
   }
 
+  override def contains(element: T): Boolean = indexOf(element) > -1
+
   override def length: Int = lastUsedIndex
 
   override def apply(i: Int): T = getIndex(i)

@@ -7,6 +7,7 @@ import org.finos.vuu.api.*
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.VuuJoinProviderOptionsImpl
 import org.finos.vuu.core.auths.VuuUser
+import org.finos.vuu.core.index.IndexedField
 import org.finos.vuu.core.table.{Column, Columns, DefaultColumn, JoinTable, KeyObserver, RowKeyUpdate, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
@@ -76,8 +77,6 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
         joinFields = Seq()
       )
 
-      //val joinDef =  JoinTableDef("ordersPrices", ordersDef, pricesDef, JoinSpec("ric", "ric"), Columns.allFrom(ordersDef) ++ Columns.allFromExceptDefaultAnd(pricesDef, "ric") )
-
       val joinProvider = JoinTableProviderImpl()
 
       val tableContainer = new TableContainer(joinProvider)
@@ -129,7 +128,8 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
         override def missingRowData(rowKey: String, column: Column): Unit = {}
       }
 
-      updates.filter(vp => vp.vpUpdate == RowUpdateType).foreach(update => update.table.readRow(update.key.key, List("orderId", "trader", "tradeTime", "ric", "bid", "ask"), printToConsoleProcessor))
+      updates.filter(vp => vp.vpUpdate == RowUpdateType)
+        .foreach(update => update.table.readRow(update.key.key, List("orderId", "trader", "tradeTime", "ric", "bid", "ask"), printToConsoleProcessor))
     }
 
     Scenario("check large number of ticks all the way through from source to join table") {
@@ -382,5 +382,46 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       val existingRowCreatedTime = existingRow.get(DefaultColumn.CreatedTime.name) shouldEqual EpochTimestamp(time1)
       val existingRowLastUpdatedTime = existingRow.get(DefaultColumn.LastUpdatedTime.name) shouldEqual EpochTimestamp(time2)
     }
+
+    Scenario("Test hitting indices in LeftOuterJoin") {
+      val testFriendlyClock: TestFriendlyClock = new TestFriendlyClock(1000L)
+      implicit val lifecycle: LifecycleContainer = new LifecycleContainer()(testFriendlyClock)
+      val dateTime: Long = LocalDateTime.of(2015, 7, 24, 11, 0).atZone(ZoneId.of("Europe/London")).toInstant.toEpochMilli
+      val (joinProvider, orders, prices, orderPrices, ordersProvider, pricesProvider, _) = setupForJoinType(LeftOuterJoin)(lifecycle, testFriendlyClock, metrics)
+
+      joinProvider.start()
+
+      val time1 = testFriendlyClock.now()
+      ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "VOD.L"))
+      pricesProvider.tick("VOD.L", Map("ric" -> "VOD.L", "bid" -> 220.0, "ask" -> 222.0))
+
+      pricesProvider.tick("BT.L", Map("ric" -> "BT.L", "bid" -> 500.0, "ask" -> 501.0))
+      ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "BT.L"))
+
+      joinProvider.runOnce()
+
+      //Test index on primary key in base table
+      val orderIdIndexOption: Option[IndexedField[?]] = orderPrices.indexForColumn(orderPrices.columnForName("orderId"))
+      orderIdIndexOption.isDefined shouldBe true
+      val orderIdIndex = orderIdIndexOption.get.asInstanceOf[IndexedField[String]]
+      val orderIndexHit = orderIdIndex.find("NYC-0001")
+      orderIndexHit.length shouldEqual 1
+      orderIndexHit.head shouldEqual "NYC-0001"
+
+      //Test index on field in base table
+      val traderIndexOption: Option[IndexedField[?]] = orderPrices.indexForColumn(orderPrices.columnForName("trader"))
+      traderIndexOption.isDefined shouldBe true
+      val traderIdIndex = traderIndexOption.get.asInstanceOf[IndexedField[String]]
+      val traderIndexHit = traderIdIndex.find("chris")
+      traderIndexHit.length shouldEqual 2
+      traderIndexHit.contains("NYC-0001") shouldBe true
+      traderIndexHit.contains("NYC-0002") shouldBe true
+
+      //Should not be able to hit an index in the right table
+      val ricIndexOption: Option[IndexedField[?]] = orderPrices.indexForColumn(orderPrices.columnForName("ric"))
+      ricIndexOption.isDefined shouldBe false
+      }
+
+
   }
 }

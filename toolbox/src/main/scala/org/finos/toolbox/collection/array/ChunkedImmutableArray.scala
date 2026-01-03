@@ -10,8 +10,6 @@ object ChunkedImmutableArray{
     new ChunkedImmutableArray[T](Array(), chunkSize = chunkSize).fromArray(arr)
   }
 
-
-
   def empty[T <: Object:ClassTag](chunkSize: Int = 1000): ImmutableArray[T] = {
     new ChunkedImmutableArray[T](Array(), chunkSize = chunkSize)
   }
@@ -211,6 +209,8 @@ class ChunkedImmutableArray[T <: Object :ClassTag](private val chunks:Array[Arra
     index
   }
 
+  override def contains(element: T): Boolean = indexOf(element) > -1
+
   override def length: Int = lastUsedIndex
 
   override def apply(i: Int): T = getIndex(i)
@@ -256,4 +256,5 @@ class ChunkedImmutableArray[T <: Object :ClassTag](private val chunks:Array[Arra
   }
 
   override def distinct: ImmutableArray[T] = ???
+
 }
