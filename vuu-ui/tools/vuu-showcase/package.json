@@ -30,6 +30,7 @@
     "@vuu-ui/vuu-icons": "0.13.94",
     "@vuu-ui/vuu-layout": "0.13.94",
     "@vuu-ui/vuu-theme": "0.13.94",
+    "@vuu-ui/vuu-theme-next": "0.13.94",
     "@vuu-ui/vuu-ui-controls": "0.13.94",
     "@vuu-ui/vuu-utils": "0.13.94",
     "symlink-dir": "^6.0.5",

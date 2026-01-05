@@ -1,0 +1,48 @@
+/* Foundations (base values) */
+@import url(foundations/index.css);
+
+@import url(legacy/foundations/alpha.css);
+@import url(legacy/foundations/color.css);
+
+/* Intermediate palette (refined colors) */
+@import url(legacy/palette/accent.css);
+@import url(legacy/palette/alpha.css);
+@import url(legacy/palette/categorical.css);
+@import url(legacy/palette/corner.css);
+@import url(legacy/palette/error.css);
+@import url(legacy/palette/info.css);
+@import url(legacy/palette/interact.css);
+@import url(legacy/palette/navigate.css);
+@import url(legacy/palette/negative.css);
+@import url(legacy/palette/neutral.css);
+@import url(legacy/palette/positive.css);
+@import url(legacy/palette/shadow.css);
+@import url(legacy/palette/success.css);
+@import url(legacy/palette/text.css);
+@import url(legacy/palette/warning.css);
+
+/* Each characteristic file references values from above foundations */
+@import url(legacy/characteristics/accent.css);
+@import url(legacy/characteristics/actionable.css);
+@import url(legacy/characteristics/category.css);
+@import url(legacy/characteristics/container.css);
+@import url(legacy/characteristics/content.css);
+@import url(legacy/characteristics/editable.css);
+@import url(legacy/characteristics/focused.css);
+@import url(legacy/characteristics/navigable.css);
+@import url(legacy/characteristics/overlayable.css);
+@import url(legacy/characteristics/selectable.css);
+@import url(legacy/characteristics/sentiment.css);
+@import url(legacy/characteristics/separable.css);
+@import url(legacy/characteristics/status.css);
+@import url(legacy/characteristics/target.css);
+@import url(legacy/characteristics/text.css);
+
+/* Deprecated */
+@import url(deprecated/foundations.css);
+@import url(deprecated/characteristics.css);
+
+@import url(legacy/deprecated/characteristics.css);
+@import url(legacy/deprecated/fade.css);
+@import url(legacy/deprecated/palette.css);
+

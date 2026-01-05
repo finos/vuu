@@ -6,7 +6,6 @@
     height: var(--salt-size-base);
     padding: 0;
 
-
     &[data-accented] {
       --salt-actionable-secondary-background-active: var(
         --salt-actionable-accented-background-active

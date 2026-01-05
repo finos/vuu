@@ -69,11 +69,7 @@ export const getTargetTreeNode = <T = unknown>(
 
 export const loadTheme = (themeName: string): Promise<void> =>
   new Promise((resolve) => {
-    if (env === "development") {
-      import(`./themes/${themeName}.ts`).then(() => {
-        resolve();
-      });
-    } else {
+    const _importCSS = () => {
       importCSS(`/themes/${themeName}.css`).then((styleSheet) => {
         document.adoptedStyleSheets = [
           ...document.adoptedStyleSheets,
@@ -81,5 +77,18 @@ export const loadTheme = (themeName: string): Promise<void> =>
         ];
         resolve();
       });
+    };
+
+    if (env === "development") {
+      try {
+        // see if we have a theme in local themes folder
+        import(`./themes/${themeName}.ts`).then(() => {
+          resolve();
+        });
+      } catch (e) {
+        _importCSS();
+      }
+    } else {
+      _importCSS();
     }
   });
