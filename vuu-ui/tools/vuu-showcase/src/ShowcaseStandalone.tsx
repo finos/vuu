@@ -30,7 +30,7 @@ const asThemeMode = (input: string | undefined): ThemeMode => {
 };
 
 const themeIsInstalled = (theme = "no-theme"): theme is string => {
-  return ["salt-theme", "vuu-theme", "tar-theme"].includes(theme);
+  return ["salt-theme", "vuu-theme", "vuu2-theme"].includes(theme);
 };
 
 const asDensity = (input: string | undefined): Density => {
@@ -95,6 +95,7 @@ export const ShowcaseStandalone = ({
 
   useMemo(() => {
     if (themeIsInstalled(theme)) {
+      console.log(`"attempt to to load theme ${theme}`);
       loadTheme(theme).then(() => {
         setThemeReady(true);
       });

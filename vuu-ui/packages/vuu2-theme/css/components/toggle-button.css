@@ -1,0 +1,25 @@
+.salt-theme.vuu2-theme {
+  .saltToggleButtonGroup {
+        padding: 0;
+
+        &[data-borderless] {
+            border-color: transparent;
+        }
+
+
+  }
+
+  .saltToggleButtonGroup-horizontal {
+        .saltToggleButton {
+            border-width: 0;
+            color: var(--salt-actionalble-bold-foreground);
+            gap: var(--salt-spacing-150);
+            height: calc(var(--salt-size-base) + var(--salt-size-fixed-400) - var(--salt-spacing-100));
+            padding: 0 var(--salt-spacing-400);
+            &[aria-checked="true"]{
+                --vuu-icon-color: var(--vuu2-color-white);
+              color: var(--vuu2-color-white);
+            }
+        }
+  }
+}

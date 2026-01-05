@@ -12,7 +12,8 @@
     }
   }
 
-  .saltButton:active:not(:disabled) {
+
+  /* .saltButton:active:not(:disabled) {
     --vuu-icon-color: var(--button-text-color-active);
   }
 
@@ -44,7 +45,7 @@
       --vuuButton-borderColor,
       var(--salt-actionable-bold-background-hover)
     );
-  }
+  } */
 }
 
 .saltButton[data-embedded]{

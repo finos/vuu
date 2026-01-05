@@ -1,5 +1,5 @@
 .salt-theme.vuu-theme {
-  --salt-typography-fontFamily: "Nunito Sans";
+  --salt-typography-fontFamily-nunito: "Nunito Sans";
   --salt-typography-fontFamily-code: 'Sometype Mono';
 
   --salt-typography-fontWeight-light: 300;

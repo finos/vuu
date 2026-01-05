@@ -1,0 +1,34 @@
+.salt-theme.vuu2-theme {
+  /** TODO these will need density variants */
+  --saltButton-borderRadius: 6px;
+  --saltButton-padding: var(--salt-spacing-400);
+
+
+  .saltButton {
+    gap: var(--salt-spacing-200);
+    height: calc(var(--salt-size-base) + var(--salt-size-fixed-400));
+    white-space: nowrap;
+
+    .vuuIcon {
+      --vuu-icon-color: var(--vuuButtonIcon-color, var(--button-text-color));
+    }
+  }
+
+    .saltButton-accented.saltButton-solid:hover:not(.saltButton-active,:active):not(.saltButton-disabled) {
+        --button-text-color: var(--vuu2-color-gray-50);
+        --button-text-color-hover: var(--vuu2-color-gray-50)
+    }
+
+    .saltButton-solid.saltButton-neutral {
+        --button-borderColor: var(--vuu2-color-gray-50);
+    }
+    .saltButton-solid.saltButton-neutral:hover {
+        --button-borderColor-hover: var(--vuu2-color-coral);
+    }
+
+    .saltButton-active, .saltButton:active {
+        --vuuButtonIcon-color: var(--button-text-color-active);
+    }
+
+}
+
