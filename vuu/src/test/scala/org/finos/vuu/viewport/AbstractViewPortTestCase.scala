@@ -226,22 +226,25 @@ class AbstractViewPortTestCase extends AnyFeatureSpec {
 
   def createNOrderRows(ordersProvider: MockProvider, n: Int)(implicit clock: Clock): Unit = {
     (0 until n).foreach(i => {
-      val iAsString = i.toString
-      val orderId = "NYC-" + "0".padTo(4 - iAsString.length, "0").mkString + iAsString
-      val quantity = 100 + i
-      ordersProvider.tick(orderId, Map("orderId" -> orderId, "trader" -> "chris", "tradeTime" -> clock.now(), "quantity" -> quantity, "ric" -> "VOD.L"))
+      val order = createOrderRow(i)
+      ordersProvider.tick(order._1, order._2)
       clock.sleep(10)
     })
   }
 
   def createNOrderRowsNoSleep(ordersProvider: MockProvider, n: Int)(implicit clock: Clock): Unit = {
     (0 until n).foreach(i => {
-      val iAsString = i.toString
-      val orderId = "NYC-" + "0".padTo(4 - iAsString.length, "0").mkString + iAsString
-      val quantity = 100 + i
-      ordersProvider.tick(orderId, Map("orderId" -> orderId, "trader" -> "chris", "tradeTime" -> clock.now(), "quantity" -> quantity, "ric" -> "VOD.L"))
+      val order = createOrderRow(i)
+      ordersProvider.tick(order._1, order._2)
       //clock.sleep(10)
     })
+  }
+
+  def createOrderRow(i: Integer)(implicit clock: Clock): (String, Map[String,Any]) = {
+    val iAsString = i.toString
+    val orderId = "NYC-" + "0".padTo(4 - iAsString.length, "0").mkString + iAsString
+    val quantity = 100 + i
+    (orderId, Map("orderId" -> orderId, "trader" -> "chris", "tradeTime" -> clock.now(), "quantity" -> quantity, "ric" -> "VOD.L"))
   }
 
   def buildOrderRowUpdate(i: Int, quantity: Int): (String, Map[String, Any]) = {
