@@ -2,14 +2,6 @@ import fs from "fs";
 import path from "path";
 import { exec } from "child_process";
 
-export const readPackageJson = (path = "package.json") => readJson(path);
-
-export const readJson = (path) => {
-  const rawdata = fs.readFileSync(path);
-  const json = JSON.parse(rawdata);
-  return json;
-};
-
 function frontPad(text, length) {
   const spaces = Array(length).fill(" ").join("");
   return (spaces + text).slice(-length);
@@ -109,6 +101,14 @@ export const assertFolderExists = (folderName, exitIfFalse) => {
     }
   }
   return true;
+};
+
+export const readPackageJson = (path = "package.json") => readJson(path);
+
+export const readJson = (path) => {
+  const rawdata = fs.readFileSync(path);
+  const json = JSON.parse(rawdata);
+  return json;
 };
 
 export const writeFile = async (text, path) =>
