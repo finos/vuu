@@ -524,8 +524,6 @@ class ViewPortImpl(val id: String,
 
       val key = newKeys.get(index)
 
-      //logger.info(s"In subscribeToNewKeys: index = $index, key = $key")
-
       if (key != null) {
 
         val oldIndex = rowKeyToIndex.put(key, index)
