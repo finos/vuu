@@ -323,7 +323,9 @@ case class JoinDataTableData(
 
 }
 
-class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTable], joinProvider: JoinTableProvider)(implicit val metrics: MetricsProvider, timeProvider: Clock) extends DataTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
+class JoinTable(val tableDef: JoinTableDef,
+                val sourceTables: Map[String, DataTable],
+                joinProvider: JoinTableProvider)(implicit val metrics: MetricsProvider, timeProvider: Clock) extends DataTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
 
   override protected def createDataTableData(): TableData = ???
 
@@ -333,7 +335,11 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
 
   private val onUpdateMeter = metrics.meter(name + ".processUpdates.Meter")
 
-  override def indexForColumn(column: Column): Option[IndexedField[_]] = None
+  private val joinTableIndices = JoinTableIndices(tableDef, sourceTables)
+
+  override def indexForColumn(column: Column): Option[IndexedField[_]] = {
+    joinTableIndices.indexForColumn(column)
+  }
 
   val joinColumns: Int = tableDef.joins.size + tableDef.baseTable.joinFields.size
 
@@ -346,7 +352,6 @@ class JoinTable(val tableDef: JoinTableDef, val sourceTables: Map[String, DataTa
       obs.onUpdate(RowKeyUpdate(rowKey, this, isDelete))
     })
   }
-
 
   override def toString: String = {
     "JoinTable(base=" + this.tableDef.baseTable.name + ",joins=" + this.tableDef.joins.map(join => join.table.name + "[" + join.joinSpec.toString + "]").mkString(",") + ")"

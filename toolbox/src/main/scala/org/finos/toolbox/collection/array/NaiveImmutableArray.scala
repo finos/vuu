@@ -38,6 +38,8 @@ class NaiveImmutableArray[T <: Object :ClassTag](val array: Array[T] = Array.emp
 
   override def indexOf(element: T): Int = array.indexOf(element)
 
+  override def contains(element: T): Boolean = indexOf(element) > -1
+  
   override def getIndex(index: Int): T = array(index)
 
   override def -(element: T) : ImmutableArray[T] = {
