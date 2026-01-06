@@ -8,6 +8,12 @@ Welcome. We maintain a docusaurus site containing all the details of the project
 
 <https://vuu.finos.org/desktop/docs/introduction/intro>
 
+This repo contains the source code for the Vuu server as well as a suite of UI library packages. You can use some or all of these UI packages when building a UI application that consumes data from a Vuu server. Additionally, there is a sample application with both a Vuu server implementation and a UI. The instructions below provide guidance for building and starting both.
+
+Note: the Vuu server includes an http server, this hosts both a websocket endpoint and a https rest endpoint, both of which are required to establish a client Vuu session (e.g. from a UI).
+When the build for the UI sample application is run, the static files created by the build are written to the `deployed_apps` folder. As a convenience for runnng the sample application, the Vuu server can also serve these static files. This is handy for a demo or when experimenting with the code, but is not intended for production use. By default, the Vuu server sample implementation **is** configured to serve these files from the `deployed_apps` folder (the `webRoot` property is used for this). This means that out of the box, the sample application can be run buy following the instructions below.
+The UI build should be run before starting up the Vuu server, as the server is configured to use the `deployed_apps` folder as a webRoot, and that folder is only created when the UI build runs.
+
 ## Installation - Server
 
 ### Vuu Server
@@ -27,7 +33,7 @@ cd vuu
 mvn install
 #cd into vuu, child in repo
 cd example/main
-#The server should now be started on your machine
+#The server can now be started on your machine
 mvn exec:exec
 ```
 
@@ -73,22 +79,24 @@ npm run build
 npm run build:app
 ```
 
+The first build step (`npm run build`) builds the UI library packages, the packages are written to the `dist` folder.
+The second step (`npm run build:app`) builds the sample application. Application bundles are written to `deployed_apps`. The UI library packages are dependencies of the application.
+
 You can now open the demo app in your browser at <https://127.0.0.1:8443/index.html>
 
-Alternatively, you may choose to run the demo app in Electron. First install Electron in the tools/electron folder:
+## Alternative demo configuration - build,deploy and run the Vuu server and Sample UI application independently.
 
-```sh
-#from top-level vuu repo (not vuu child directory in repo)
-cd vuu-ui/tools/electron
-npm install
+While it is initially very convenient to be able to serve the Sample UI application directly from the Vuu server, in real-world scenarios the Vuu server is likely to be deployed independently of any UI. The demo can also be run in such a mode. The sample application has a modular architecture. The core functionality is driven by metadata provided by the connected Vuu server. This means it can be useful to run the sample application in a more realistic deployment setup or even when a real-world Vuu server implementation is under development. The sample application can be used to display and query the data tables from a running Vuu server instance. (This is only possible of course, with a vuu server instance that is not locked down for production with a full authentication solution).
+
+To run the sample application this way, first deploy and start a Vuu server, then run the client build as described above. The Vuu server can be on a different machine , it will not be used to serve the client UI code.
+
+Next use the following script to serve the sample UI application, it assumes the app is deployed at `./deployed_apps`. For the purposes or this illustration, we assume that the Vuu server is running on the local machine, on the default ports, though this is **not** required.
+
+```
+npm run launch:app -- --authurl https://localhost:8443/api --wsurl wss://localhost:8090/websocket
 ```
 
-Then, back in vuu-ui, run the launch script"
-
-```sh
-#from vuu/vuu-ui
-npm run launch:demo:electron
-```
+A Login screen will be displayed. The `authurl` will be used to _sign in_ to the Vuu server with the credentials entered and will yield an auth token. The auth token will then be used to open a websocket connection at `wsurl`. This works with the default example implementation of the Vuu server, because it performs no checks on the login credentials. The UI application is served by a local http server which proxies the auth request to the Vuu server to avoid CORS issues. Cross domain websocket requests are not subject to `same domain` restrictions.
 
 ## Usage example
 
@@ -128,4 +136,3 @@ Copyright 2022 venuu-io
 Distributed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
 SPDX-License-Identifier: [Apache-2.0](https://spdx.org/licenses/Apache-2.0)
-
