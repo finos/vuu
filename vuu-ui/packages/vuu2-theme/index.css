@@ -5,4 +5,5 @@
 /* theme-wide component overrides */
 @import url(css/components/button.css);
 @import url(css/components/checkbox.css);
+@import url(css/components/switch.css);
 @import url(css/components/toggle-button.css);
