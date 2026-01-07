@@ -1,9 +1,15 @@
 @import url(NunitoSans.css);
+@import url(reset.css);
 @import url(css/global.css);
 @import url(css/theme.css);
 
 /* theme-wide component overrides */
+@import url(css/components/app-header.css);
 @import url(css/components/button.css);
 @import url(css/components/checkbox.css);
+@import url(css/components/left-nav.css);
+@import url(css/components/shell.css);
+@import url(css/components/splitter.css);
 @import url(css/components/switch.css);
+@import url(css/components/tabstrip.css);
 @import url(css/components/toggle-button.css);
