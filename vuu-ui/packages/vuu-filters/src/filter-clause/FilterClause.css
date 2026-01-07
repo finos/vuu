@@ -9,14 +9,14 @@
 
   align-items: center;
   background: var(--salt-container-primary-background);
-  border-color: var(--vuu-color-gray-45);
+  border-color: var(--salt-editable-borderColor);
   border-radius: var(--saltButton-borderRadius);
   border-width: 1px;
   border-style: solid;
   display: flex;
   flex-direction: row;
   gap: var(--salt-spacing-50);
-  height: var(--salt-size-base);
+  height: calc(var(--salt-size-base) + var(--salt-size-spacing-100));
   min-width: calc(var(--salt-size-base) * 4);
   padding: 0 var(--salt-spacing-100);
   width: fit-content;
@@ -40,10 +40,10 @@
   }
 
   &:focus-within {
-    border-color: var(--vuu-color-purple-10);
+    border-color: var(--salt-editable-borderColor-active);
   }
 
-  .saltComboBox-focused {
+  .saltComboBox-focused,.saltComboBox-focused:hover {
     outline: none;
   }
 

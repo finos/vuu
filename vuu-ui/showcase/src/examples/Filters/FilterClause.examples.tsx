@@ -59,9 +59,9 @@ const ExpandoContainer = ({ children }: { children: ReactNode }) => (
       width: 300,
     }}
   >
-    <Input />
+    <Input bordered />
     {children}
-    <Input />
+    <Input bordered />
   </div>
 );
 
