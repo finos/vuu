@@ -1,5 +1,5 @@
 .salt-theme.vuu2-theme[data-mode="light"] {
-  --salt-palette-neutral-border: var(--vuu2-color-gray-30);
+  --salt-palette-neutral-border: var(--vuu2-color-gray-40);
   --salt-palette-neutral-border-disabled: var(--salt-color-gray-50-40a);
   --salt-palette-neutral-primary-background: var(--salt-color-white);
   --salt-palette-neutral-primary-background-disabled: var(--salt-color-white-40a);

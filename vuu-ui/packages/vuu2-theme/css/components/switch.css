@@ -1,7 +1,7 @@
 .salt-theme.vuu2-theme {
     .saltSwitch {
         .saltSwitch-track {
-            background-color: var(--vuu2-color-gray-40);
+            background-color: var(--vuu2-color-gray-30);
         }
         .saltSwitch-thumb {
             background-color: var(--vuu2-color-white);
@@ -9,8 +9,8 @@
     }
     .saltSwitch-disabled {
         .saltSwitch-track {
-            background-color: var(--vuu2-color-gray-25);
-            border-color: var(--vuu2-color-gray-25);
+            background-color: var(--vuu2-color-gray-20);
+            border-color: var(--vuu2-color-gray-20);
         }
         .saltSwitch-thumb {
             .saltIcon {
@@ -20,7 +20,7 @@
         }
         &.saltSwitch-checked {
             .saltSwitch-thumb {
-                background-color: var(--vuu2-color-gray-40);
+                background-color: var(--vuu2-color-gray-30);
             }            
         }
     }

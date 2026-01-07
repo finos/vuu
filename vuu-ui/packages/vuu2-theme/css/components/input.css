@@ -1,0 +1,14 @@
+.salt-theme.vuu2-theme {
+
+  .saltInput {
+    --saltInput-outline: none;
+
+    .saltInput-activationIndicator {
+      display: none;
+    }
+  }
+
+  .saltStatusAdornment {
+    display: none;
+  }
+}
