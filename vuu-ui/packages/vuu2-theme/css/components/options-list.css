@@ -1,0 +1,26 @@
+.salt-theme.vuu2-theme {
+  .saltOptionList {
+
+    .saltOption {
+        padding-left: var(--salt-spacing-200);   
+        padding-right: var(--salt-spacing-200);   
+
+        &:hover {
+            background: var(--vuu2-color-gray-15);
+        }
+        &.saltOption-focusVisible {
+            background: var(--vuu2-color-gray-15);
+        }
+        &[aria-selected="true"]{
+            background: inherit;
+            box-shadow:inset var(--salt-spacing-100) 0 0 0 var(--salt-selectable-borderColor-selected);
+        }
+    }
+
+  }
+  .saltOptionList:has(.saltOptionList-container:empty) {
+    display: none;
+  }
+}
+
+
