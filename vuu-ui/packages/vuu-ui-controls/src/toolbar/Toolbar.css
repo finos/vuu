@@ -24,11 +24,11 @@
     content: '';
     position: absolute;
     left: calc(-1 * var(--overflow-item-gap));
-    top: calc((var(--toolbar-height) - var(--toolbar-item-height)) /2);
+    /* top: calc((var(--toolbar-height) - var(--toolbar-item-height)) /2); */
+    top: 0px;
     width: 1px;
-    /* height: calc(var(--basket-selector-height) - 16px); */
     height: var(--toolbar-item-height);
-    background-color: var(--vuu-color-gray-05);
+    background-color: var(--salt-separable-primary-borderColor);
 }
 
 

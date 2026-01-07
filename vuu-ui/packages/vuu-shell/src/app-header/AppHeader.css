@@ -4,6 +4,7 @@
   --saltButton-padding: 12px;
   --vuuToolbarItem-height: 26px;
   --vuuOverflowContainer-gap: 8px;
+  --vuuOverflowContainer-height: var(--vuuAppHeader-height, 42px);
   --vuu-icon-color: var(--vuu-color-gray-45);
   --vuu-icon-size: 16px;
   --vuuToolbar-borderWidth: 1px;
@@ -15,8 +16,3 @@
   justify-content: flex-end;
 }
 
-.vuu-theme .vuuAppHeader {
-  border-radius: 8px;
-
-  margin-bottom: 8px;
-}
