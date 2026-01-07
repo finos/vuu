@@ -21,14 +21,14 @@ class NaiveImmutableArray[T <: Object :ClassTag](val array: Array[T] = Array.emp
     ImmutableArray.from(this.array.distinct)
   }
 
+  private lazy val hash = array.toSeq.hashCode()
+
+  override def hashCode(): Int = hash
+
   override def equals(obj: scala.Any): Boolean = {
     obj match {
-      case value: NaiveImmutableArray[_] =>
-        val toCheck = value.array
-        val isEq = toCheck == array
-        isEq
-      case _ =>
-        false
+      case value: NaiveImmutableArray[_] => value.array sameElements array
+      case _ => false
     }
   }
 

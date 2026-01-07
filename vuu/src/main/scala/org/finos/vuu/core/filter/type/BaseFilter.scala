@@ -30,9 +30,17 @@ private case class OnlyPermissionFilter(permissionFilter: PermissionFilter) exte
 private case class PermissionAndFrozenTimeFilter(permissionFilter: PermissionFilter, frozenTimeFilter: FrozenTimeFilter) extends BaseFilter {
 
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
-    val permissionFiltered = permissionFilter.doFilter(source, primaryKeys, firstInChain)
-    val stillFirstInChain = firstInChain && permissionFiltered.length == primaryKeys.length
-    frozenTimeFilter.doFilter(source, permissionFiltered, stillFirstInChain)
+    if (primaryKeys.isEmpty) {
+      primaryKeys
+    } else {
+      val remainingKeys = permissionFilter.doFilter(source, primaryKeys, firstInChain)
+      if (remainingKeys.isEmpty) {
+        remainingKeys
+      } else {
+        val stillFirstInChain = firstInChain && remainingKeys == primaryKeys
+        frozenTimeFilter.doFilter(source, remainingKeys, stillFirstInChain)
+      }
+    }
   }
 
 }

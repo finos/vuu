@@ -20,16 +20,14 @@ object ImmutableUniqueArraySet{
 }
 
 trait ImmutableUniqueArraySet[T] extends ImmutableArray[T] {
-  def contains(element: T): Boolean
+
 }
 
 class ChunkedUniqueImmutableArraySet[T <: Object :ClassTag](private val uniqueCheck: Set[T], val chunks:Array[Array[T]], private val lastUsedIndex: Int = 0, val chunkSize: Int = 1000) extends ImmutableArray[T] with Iterable[T] {
 
-
   override def remove(element: T): ImmutableArray[T] = this.-(element)
 
   override def addAll(arr: ImmutableArray[T]): ImmutableArray[T] = this.++(arr)
-
 
   override def fromArray(arr: Array[T]): ImmutableArray[T] = {
     //https://www.cs.nott.ac.uk/~psarb2/G51MPC/slides/NumberLogic.pdf
@@ -309,5 +307,17 @@ class ChunkedUniqueImmutableArraySet[T <: Object :ClassTag](private val uniqueCh
   }
 
   override def distinct: ImmutableArray[T] = this
+
+  private lazy val hash = iterator.foldLeft(0)((h, elem) => 31 * h + (if elem == null then 0 else elem.hashCode()))
+
+  override def hashCode(): Int = hash
+
+  override def equals(obj: Any): Boolean = {
+    obj match {
+      case value: ImmutableUniqueArraySet[_] => value.iterator.sameElements(iterator)
+      case _ => false
+    }
+  }
+
 }
 

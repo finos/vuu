@@ -23,7 +23,6 @@ object ChunkedImmutableArray{
 class ChunkedImmutableArray[T <: Object :ClassTag](private val chunks:Array[Array[T]], private val lastUsedIndex: Int = 0, val chunkSize: Int = 1000) extends ImmutableArray[T] with Iterable[T]{
 
 
-
   override def fromArray(arr: Array[T]): ImmutableArray[T] = {
     //https://www.cs.nott.ac.uk/~psarb2/G51MPC/slides/NumberLogic.pdf
     val chunkCount = (arr.length - 1) / chunkSize + 1
@@ -256,5 +255,16 @@ class ChunkedImmutableArray[T <: Object :ClassTag](private val chunks:Array[Arra
   }
 
   override def distinct: ImmutableArray[T] = ???
+
+  private lazy val hash = iterator.foldLeft(0)((h, elem) => 31 * h + (if elem == null then 0 else elem.hashCode()))
+
+  override def hashCode(): Int = hash
+
+  override def equals(obj: Any): Boolean = {
+    obj match {
+      case value: ChunkedImmutableArray[_] => value.iterator.sameElements(iterator)
+      case _ => false
+    }
+  }
 
 }

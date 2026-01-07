@@ -42,12 +42,16 @@ private case class PermissionFilterChain(filters: Iterable[PermissionFilter]) ex
     logger.trace(s"Starting filter with ${primaryKeys.length} rows")
 
     if (primaryKeys.isEmpty) {
-      EmptyTablePrimaryKeys
+      primaryKeys
     } else {
       filters.foldLeft(primaryKeys) {
         (remainingKeys, filter) => {
-          val stillFirstInChain = firstInChain && remainingKeys.length == primaryKeys.length
-          filter.doFilter(source, remainingKeys, stillFirstInChain)
+          if (remainingKeys.isEmpty) {
+            remainingKeys
+          } else {
+            val stillFirstInChain = firstInChain && remainingKeys == primaryKeys
+            filter.doFilter(source, remainingKeys, stillFirstInChain)
+          }
         }
       }
     }

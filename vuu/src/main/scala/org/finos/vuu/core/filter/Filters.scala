@@ -25,10 +25,18 @@ case class CompoundFilter(filters: ViewPortFilter*) extends ViewPortFilter {
 
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, 
                         vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
-    filters.foldLeft(primaryKeys) {
-      (remainingKeys, filter) => {
-        val stillFirstInChain = firstInChain && remainingKeys.length == primaryKeys.length
-        filter.doFilter(source, remainingKeys, vpColumns, stillFirstInChain)
+    if (primaryKeys.isEmpty) {
+      primaryKeys
+    } else {
+      filters.foldLeft(primaryKeys) {
+        (remainingKeys, filter) => {
+          if (remainingKeys.isEmpty) {
+            remainingKeys
+          } else {
+            val stillFirstInChain = firstInChain && remainingKeys == primaryKeys
+            filter.doFilter(source, remainingKeys, vpColumns, stillFirstInChain)
+          }
+        }
       }
     }
   }
