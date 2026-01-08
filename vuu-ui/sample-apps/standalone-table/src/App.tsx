@@ -5,7 +5,7 @@ import { ThemeProvider } from "@vuu-ui/vuu-utils";
 import { ContextPanel } from "@vuu-ui/vuu-shell";
 
 import "@vuu-ui/vuu-icons/index.css";
-import "@vuu-ui/vuu-theme/index.css";
+import "@vuu-ui/vuu-theme-deprecated/index.css";
 
 import "./App.css";
 // import { ThemeProvider } from "@vuu-ui/vuu-utils";

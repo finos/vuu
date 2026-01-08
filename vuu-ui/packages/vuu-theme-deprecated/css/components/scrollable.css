@@ -1,0 +1,22 @@
+.salt-theme.vuu-theme-deprecated {
+  .vuuScrollable {
+    --scrollable-size: var(--vuuScrollable-size, 10px); 
+
+
+    &::-webkit-scrollbar {
+      height: var(--scrollable-size);
+      width: var(--scrollable-size);
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--vuuScrollable-scrollThumb-background, #d9d9d9);
+      background-clip: content-box;
+      border: solid 2px transparent;
+      border-radius: calc(var(--scrollable-size) / 2);
+    }
+  }
+}

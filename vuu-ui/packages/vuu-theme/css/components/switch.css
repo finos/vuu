@@ -1,85 +1,44 @@
 .salt-theme.vuu-theme {
     .saltSwitch {
-        --switch-color: var(--vuu-color-gray-45); 
-        --vuu-icon-left: -1px;
-    }
-    
-    .saltSwitch-track {
-        background-color: var(--switch-color);
-        border: none;
-        border-radius: 4px;
-        height: 14px;
-        padding: 0 2px;
-        width: 26px;
-    }
-
-    .saltSwitch:not(.saltSwitch-disabled):hover .saltSwitch-track {
-        --switch-color: var(--vuu-color-pink-10);  
-    }
-    
-    .saltSwitch-thumb {
-        background-color: var(--vuu-color-white);
-        border: none;
-        border-radius: 3px;
-        height: 10px;
-        margin:0;
-        width: 10px;
-    }
- 
-    .saltSwitch-checked {
-        --switch-color: var(--vuu-color-purple-10);  
-    }
-    
-    .saltSwitch-disabled {
-        --switch-color: var(--vuu-color-gray-30); 
-    }
-    
-    .saltSwitch-checked .saltSwitch-thumb,
-    .saltSwitch-checked:hover .saltSwitch-thumb {
-        background-color: white;
-        transform: translateX(calc(100% + 2px));
-    }
-    
-    
-    .saltSwitch-checked .saltSwitch-thumb:after {
-        background-color: var(--switch-color);
-        content: "";
-        left: var(--vuu-icon-left, auto);
-        height: var(--vuu-icon-height, var(--vuu-icon-size, 12px));
-        mask: var(--vuu-svg-tick) center center/var(--vuu-icon-size) var(--vuu-icon-size);
-        -webkit-mask: var(--vuu-svg-tick) center center/var(--vuu-icon-size) var(--vuu-icon-size);
-        mask-repeat: no-repeat;
-        -webkit-mask-repeat: no-repeat;
-        position: absolute;
-        top: var(--vuu-icon-top, auto);
-        width: var(--vuu-icon-width, var(--vuu-icon-size, 12px));
-    
-    }
-
-    /* Large variant - currently just used in FreezeControl */
-    .saltSwitch.vuuLarge {
-
         .saltSwitch-track {
-            border-radius: 12px;
-            height: 24px;
-            padding: 0 4px;
-            width: 42px;
+            background-color: var(--vuu2-color-gray-30);
         }
-        
         .saltSwitch-thumb {
-            border-radius: 8px;
-            height: 16px;
-            width: 16px;
+            background-color: var(--vuu2-color-white);
         }
-
-        &.saltSwitch-checked {
-            .saltSwitch-thumb:after {
-                --vuu-icon-size: 15px;
-                
+    }
+    .saltSwitch-disabled {
+        .saltSwitch-track {
+            background-color: var(--vuu2-color-gray-20);
+            border-color: var(--vuu2-color-gray-20);
+        }
+        .saltSwitch-thumb {
+            .saltIcon {
+                --icon-color: var(--vuu2-color-white);
+                border-radius: var(--salt-palette-corner-weaker);
             }
         }
-
+        &.saltSwitch-checked {
+            .saltSwitch-thumb {
+                background-color: var(--vuu2-color-gray-30);
+            }            
+        }
     }
-
+    .saltSwitch:hover:not(.saltSwitch-checked,.saltSwitch-disabled) {
+        .saltSwitch-track {
+            background-color: var(--vuu2-color-coral);
+        }
+    }
+    .saltSwitch-checked:not(.saltSwitch-disabled) {
+        .saltSwitch-thumb {
+            background-color: transparent;
+            .saltIcon {
+                --icon-color: var(--vuu2-color-white);
+                border-radius: var(--salt-palette-corner-weaker);
+            }
+        }
+        .saltSwitch-track {
+            background-color: var(--vuu2-color-purple);
+        }
+    }
 }
-

@@ -30,7 +30,7 @@
     "@vuu-ui/vuu-shell": "0.13.94",
     "@vuu-ui/vuu-table": "0.13.94",
     "@vuu-ui/vuu-table-extras": "0.13.94",
-    "@vuu-ui/vuu-theme": "0.13.94",
+    "@vuu-ui/vuu-theme-deprecated": "0.13.94",
     "@vuu-ui/vuu-utils": "0.13.94",
     "@salt-ds/core": "1.54.1"
   },
