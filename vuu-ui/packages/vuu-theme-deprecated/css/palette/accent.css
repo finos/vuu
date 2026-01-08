@@ -1,0 +1,11 @@
+.salt-theme.vuu-theme-deprecated[data-mode="light"] {
+  --salt-palette-accent-background: var(--salt-color-blue-500);
+  --salt-palette-accent-border: var(--salt-color-blue-500);
+  --salt-palette-accent-foreground: var(--salt-color-white);
+}
+
+.salt-theme.vuu-theme-deprecated[data-mode="dark"] {
+  --salt-palette-accent-background: var(--salt-color-blue-500);
+  --salt-palette-accent-border: var(--salt-color-blue-500);
+  --salt-palette-accent-foreground: var(--salt-color-white);
+}

@@ -87,7 +87,7 @@ export const ApplicationProvider = ({
       }}
     >
       <SaltProvider
-        theme={theme ?? inheritedTheme ?? "vuu-theme"}
+        theme={theme ?? inheritedTheme ?? "vuu-theme-deprecated"}
         density={density}
         mode={getThemeMode(mode ?? inheritedMode, userSettings)}
       >

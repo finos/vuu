@@ -1,0 +1,16 @@
+.salt-theme.vuu-theme-deprecated {
+  .vuuLeftNav {
+    .vuuTab {
+      color: white;
+    }
+
+    .vuuTab-selected {
+      --vuu-icon-color: var(--vuu-color-pink-10);
+      border-left-color: var(--vuu-color-pink-10);
+    }
+
+    .vuuLeftNav-toggleButton {
+      background-color: var(--vuu-color-pink-10);
+    }
+  }
+}

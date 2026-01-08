@@ -25,9 +25,11 @@ export const ThemePicker = ({ onChange, theme }: ThemePickerProps) => {
       <ToggleButton value="no-theme">No Theme</ToggleButton>
       <ToggleButton value="salt-theme">SALT</ToggleButton>
       <ToggleButton value="salt-theme-next">SALT Next</ToggleButton>
+      <ToggleButton value="vuu-theme-deprecated">
+        VUU (old version)
+      </ToggleButton>
       <ToggleButton value="vuu-theme">VUU</ToggleButton>
-      <ToggleButton value="vuu2-theme">VUU2</ToggleButton>
-      <ToggleButton value="vuu2-theme-next">VUU2 Next</ToggleButton>
+      <ToggleButton value="vuu-theme-next">VUU Next</ToggleButton>
     </ToggleButtonGroup>
   );
 };

@@ -22,8 +22,8 @@ export const buildAll = async () => {
     "vuu-icons",
     "vuu-utils",
     "vuu-codemirror",
+    "vuu-theme-deprecated",
     "vuu-theme",
-    "vuu2-theme",
   ];
   const wave2 = [
     "vuu-data-remote",

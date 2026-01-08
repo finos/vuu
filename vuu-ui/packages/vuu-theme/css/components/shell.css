@@ -12,7 +12,7 @@
   .vuu-workspace-tabs {
     border: none;
     border-radius: 0 0 6px 6px;
-    padding: 35px 0 0 0;
+    padding: 31px 0 0 0;
 
     & > .vuuTabs-tabPanel {
       border: solid 1px var(--salt-separable-primary-borderColor);

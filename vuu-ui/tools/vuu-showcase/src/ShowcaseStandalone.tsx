@@ -30,7 +30,7 @@ const asThemeMode = (input: string | undefined): ThemeMode => {
 };
 
 const themeIsInstalled = (theme = "no-theme"): theme is string => {
-  return ["salt-theme", "vuu-theme", "vuu2-theme"].includes(theme);
+  return ["salt-theme", "vuu-theme-deprecated", "vuu-theme"].includes(theme);
 };
 
 const asDensity = (input: string | undefined): Density => {
@@ -71,7 +71,7 @@ export const ShowcaseStandalone = ({
   const [themeReady, setThemeReady] = useState(true);
 
   // We only need this once as entire page will refresh if theme changes
-  const theme = useMemo(() => getUrlParameter("theme", "vuu-theme"), []);
+  const theme = useMemo(() => getUrlParameter("theme", "vuu-theme-deprecated"), []);
 
   useEffect(() => {
     const checkUrlParams = () => {

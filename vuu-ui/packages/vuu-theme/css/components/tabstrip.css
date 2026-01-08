@@ -44,21 +44,16 @@
       z-index: 1;
     }
 
-    .vuuTab-selected:before {
-      height: 100%;
-      left: 0;
-      top: 0;
-      border-radius: 6px 0 0 0;
+    .vuuTab:before {
+      height: calc(100% + 1px);
+      left: -1px;
+      top: -1px;
+      border-radius: 5px 0 0 0;
       width: 6px;
     }
 
-    .vuuTab:hover:before {
-      background-color: #f37880;
-      height: 100%;
-      left: 0;
-      top: 0;
-      border-radius: 6px 0 0 0;
-      width: 6px;
+    .vuuTab:not(.vuuTab-selected):hover:before {
+      background-color: var(--salt-navigable-indicator-hover);
     }
 
     &.vuuTabstrip:before {

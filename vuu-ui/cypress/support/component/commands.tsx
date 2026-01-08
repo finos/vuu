@@ -99,7 +99,7 @@ Cypress.Commands.add(
 
 Cypress.Commands.add("mount", function (children, options) {
   return cypressMount(
-    <SaltProvider density="high" theme="vuu-theme">
+    <SaltProvider density="high" theme="vuu-theme-deprecated">
       {children},
     </SaltProvider>,
     options,

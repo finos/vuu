@@ -1,6 +1,7 @@
 .salt-theme.vuu-theme {
   --salt-typography-fontFamily-nunito: "Nunito Sans";
-  --salt-typography-fontFamily-code: 'Sometype Mono';
+  --salt-typography-fontFamily-amplitude: "Amplitude";
+  --salt-typography-fontFamily-ptMono: "PT Mono";
 
   --salt-typography-fontWeight-light: 300;
   --salt-typography-fontWeight-regular: 400;
@@ -8,4 +9,8 @@
   --salt-typography-fontWeight-semiBold: 600;
   --salt-typography-fontWeight-bold: 700;
   --salt-typography-fontWeight-extraBold: 800;
+
+  --salt-typography-textDecoration-none: none;
+  --salt-typography-textDecoration-underline: underline;
+  --salt-typography-textDecoration-italic: italic;
 }

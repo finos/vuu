@@ -1,4 +1,6 @@
 .salt-density-high {
+  --vuu2-curve-40: 4px;
+  --vuu2-curve-60: 6px;
   --salt-curve-0: 0;
   --salt-curve-50: 1px;
   --salt-curve-100: 2px;

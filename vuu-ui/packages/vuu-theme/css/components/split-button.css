@@ -1,6 +1,6 @@
 .salt-theme.vuu-theme {
     .vuuSplitButton {
-        --vuuSplitButton-borderRadius: 6px;
+        --vuuSplitButton-borderRadius: var(--salt-palette-corner);
 
         .vuuSplitButton-main {  
             --saltButton-borderStyle: solid none solid solid;
