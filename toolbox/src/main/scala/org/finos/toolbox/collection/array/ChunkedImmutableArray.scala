@@ -274,7 +274,7 @@ class ChunkedImmutableArray[T <: Object :ClassTag](private val chunks:Array[Arra
   override def equals(obj: Any): Boolean = {
     obj match {
       case value: ChunkedImmutableArray[_] =>
-        (this eq value) || this.iterator.sameElements(value.iterator)
+        (this eq value) || (this.length == value.length && this.iterator.sameElements(value.iterator))
       case _ => false
     }
   }

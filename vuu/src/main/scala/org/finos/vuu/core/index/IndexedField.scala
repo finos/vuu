@@ -2,7 +2,7 @@ package org.finos.vuu.core.index
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.collection.array.ImmutableArray
-import org.finos.toolbox.collection.set.ImmutableUniqueArraySet
+import org.finos.toolbox.collection.set.ImmutableArraySet
 import org.finos.vuu.core.table.Column
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 
@@ -23,7 +23,7 @@ trait IndexedField[TYPE] {
   def find(indexedValue: TYPE): ImmutableArray[String]
 
   def find(indexedValues: List[TYPE]): ImmutableArray[String] = {
-    indexedValues.foldLeft(ImmutableUniqueArraySet.empty[String]())((array, indexedKey) => array.++(find(indexedKey)))
+    indexedValues.foldLeft(ImmutableArraySet.empty[String]())((array, indexedKey) => array.++(find(indexedKey)))
   }
 }
 
@@ -42,7 +42,7 @@ trait EpochTimestampIndexedField extends IndexedField[EpochTimestamp]
 trait CharIndexedField extends IndexedField[Char]
 
 class HashMapIndexedStringField(val column: Column) extends StringIndexedField with StrictLogging {
-  private final val indexMap = new ConcurrentHashMap[String, ImmutableArray[String]]()
+  private final val indexMap = new ConcurrentHashMap[String, ImmutableArraySet[String]]()
 
   override def remove(indexKey: String, rowKey: String): Unit = {
     logger.trace(s"Remove Index: ${column.name}")
@@ -59,7 +59,7 @@ class HashMapIndexedStringField(val column: Column) extends StringIndexedField w
     logger.trace(s"Update Index: ${column.name}")
     indexMap.compute(indexKey, (_, value) =>  {
       value match {
-        case null => ImmutableUniqueArraySet.from(Array(rowKey))
+        case null => ImmutableArraySet.from(Array(rowKey))
         case array: ImmutableArray[String] => array.+(rowKey).distinct
       }
     })
@@ -67,25 +67,25 @@ class HashMapIndexedStringField(val column: Column) extends StringIndexedField w
 
   override def find(indexKey: String): ImmutableArray[String] = {
     logger.debug(s"Hit Index : ${column.name}")
-    indexMap.getOrDefault(indexKey, ImmutableUniqueArraySet.empty())
+    indexMap.getOrDefault(indexKey, ImmutableArraySet.empty())
   }
 
   override def find(indexedValues: List[String]): ImmutableArray[String] = super.find(indexedValues)
 
   override def lessThan(bound: String): ImmutableArray[String] = {
     logger.warn("Less than is not supported for Strings")
-    ImmutableUniqueArraySet.empty()
+    ImmutableArraySet.empty()
   }
 
   override def greaterThan(bound: String): ImmutableArray[String] = {
     logger.warn("Greater than is not supported for Strings")
-    ImmutableUniqueArraySet.empty()
+    ImmutableArraySet.empty()
   }
 
 }
 
 class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] with StrictLogging {
-  private final val skipList = new ConcurrentSkipListMap[TYPE, ImmutableArray[String]]()
+  private final val skipList = new ConcurrentSkipListMap[TYPE, ImmutableArraySet[String]]()
 
   override def remove(indexKey: TYPE, rowKey: String): Unit = {
     logger.trace(s"Remove Index: ${column.name}")
@@ -102,7 +102,7 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
     logger.trace(s"Update Index: ${column.name}")
     skipList.compute(indexKey, (_, value) =>  {
       value match {
-        case null => ImmutableUniqueArraySet.from(Array(rowKey))
+        case null => ImmutableArraySet.from(Array(rowKey))
         case array: ImmutableArray[String] => array.+(rowKey).distinct
       }
     })
@@ -110,31 +110,31 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
 
   override def find(indexKey: TYPE): ImmutableArray[String] = {
     logger.debug(s"Hit Index : ${column.name}")
-    skipList.getOrDefault(indexKey, ImmutableUniqueArraySet.empty())
+    skipList.getOrDefault(indexKey, ImmutableArraySet.empty())
   }
 
   def lessThan(bound: TYPE): ImmutableArray[String] = {
     logger.debug(s"Hit Index (LT): ${column.name}")
     val result = (skipList.headMap(bound, false))
-    IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableUniqueArraySet.empty[String](chunkSize = 5000))((arr, prev) => prev.addAll(arr)).distinct
+    IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableArraySet.empty[String]())((arr, prev) => prev.addAll(arr)).distinct
   }
 
   def lessThanOrEqual(bound: TYPE): ImmutableArray[String] = {
     logger.debug(s"Hit Index (LTE): ${column.name}")
     val result = (skipList.headMap(bound, true))
-    IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableUniqueArraySet.empty[String](chunkSize = 5000))((arr, prev) => prev.++(arr)).distinct
+    IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableArraySet.empty[String]())((arr, prev) => prev.++(arr)).distinct
   }
 
   def greaterThan(bound: TYPE): ImmutableArray[String] = {
     logger.debug(s"Hit Index (GT): ${column.name}")
     val result = (skipList.tailMap(bound, false))
-    IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableUniqueArraySet.empty[String](chunkSize = 5000))((arr, prev) => prev.++(arr)).distinct
+    IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableArraySet.empty[String]())((arr, prev) => prev.++(arr)).distinct
   }
 
   def greaterThanOrEqual(bound: TYPE): ImmutableArray[String] = {
     logger.debug(s"Hit Index (GTE): ${column.name}")
     val result = (skipList.tailMap(bound, true))
-    IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableUniqueArraySet.empty[String](chunkSize = 5000))((arr, prev) => prev.++(arr)).distinct
+    IteratorHasAsScala(result.values().iterator()).asScala.foldLeft(ImmutableArraySet.empty[String]())((arr, prev) => prev.++(arr)).distinct
   }
 
   override def find(indexedValues: List[TYPE]): ImmutableArray[String] = super.find(indexedValues)

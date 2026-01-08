@@ -4,14 +4,14 @@ import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
-class ChunkedUniqueImmutableArraySetTest extends AnyFeatureSpec with Matchers {
+class ChunkedImmutableArraySetTest extends AnyFeatureSpec with Matchers {
 
   given time: Clock = DefaultClock()
 
   Feature("check immutable array impl") {
 
     Scenario("Check iterator on immutable array"){
-      var array = ImmutableUniqueArraySet.empty[String]()
+      var array = ChunkedImmutableArraySet.empty[String]()
       array = array +("Chris")
       array = array +("Was")
       array = array +("Here")
@@ -19,7 +19,7 @@ class ChunkedUniqueImmutableArraySetTest extends AnyFeatureSpec with Matchers {
     }
 
     Scenario("test appending two arrays with small chunks"){
-      var array = ImmutableUniqueArraySet.empty[String](3)
+      var array = ChunkedImmutableArraySet.empty[String](3)
 
       array = array.+("Chris")
       array = array.+("Was")
@@ -28,9 +28,9 @@ class ChunkedUniqueImmutableArraySetTest extends AnyFeatureSpec with Matchers {
       array = array.+("Bar")
 
       array.length should equal(5)
-      array.asInstanceOf[ChunkedUniqueImmutableArraySet[String]].countOfChunks should equal(2)
+      array.asInstanceOf[ChunkedImmutableArraySet[String]].countOfChunks should equal(2)
 
-      var array2 = ImmutableUniqueArraySet.empty[String](3)
+      var array2 = ChunkedImmutableArraySet.empty[String](3)
 
       array2 = array2.+("Bekki")
       array2 = array2.+("Was")
@@ -41,7 +41,7 @@ class ChunkedUniqueImmutableArraySetTest extends AnyFeatureSpec with Matchers {
 
       val unioned = array.++(array2)
 
-      unioned.asInstanceOf[ChunkedUniqueImmutableArraySet[String]].countOfChunks should equal(4)
+      unioned.asInstanceOf[ChunkedImmutableArraySet[String]].countOfChunks should equal(4)
       unioned.length should equal(7)
 
       unioned.map( x => x).toList should equal(List("Chris", "Was", "Here", "Foo", "Bar", "Bekki", "AlsoHere"))
@@ -52,9 +52,9 @@ class ChunkedUniqueImmutableArraySetTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Create a chunked array and then remove items"){
 
-      var array = ImmutableUniqueArraySet.empty[String](5)
+      var array = ChunkedImmutableArraySet.empty[String](5)
 
-      val chunks = array.asInstanceOf[ChunkedUniqueImmutableArraySet[String]].chunks
+      val chunks = array.asInstanceOf[ChunkedImmutableArraySet[String]].chunks
 
       array = array.+("Chris")
       array = array.+("Was")
@@ -93,13 +93,13 @@ class ChunkedUniqueImmutableArraySetTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Create a singleton set and then remove an item, with various chunk sizes"){
 
-      val array = ImmutableUniqueArraySet.from[String](Array("Mikey"), 1)
+      val array = ChunkedImmutableArraySet.from[String](Array("Mikey"), 1)
 
       val result = array.-("Mikey")
 
       result.isEmpty shouldEqual true
 
-      val array2 = ImmutableUniqueArraySet.from[String](Array("Mikey"))
+      val array2 = ChunkedImmutableArraySet.from[String](Array("Mikey"))
 
       val result2 = array.-("Mikey")
 
@@ -110,9 +110,9 @@ class ChunkedUniqueImmutableArraySetTest extends AnyFeatureSpec with Matchers {
 
       val numbers = (0 to 100000).map(_.toString).toArray
 
-      val array1 = ImmutableUniqueArraySet.from[String](numbers)
-      val array2 = ImmutableUniqueArraySet.from[String](numbers)
-      val array3 = ImmutableUniqueArraySet.from[String](numbers.slice(0, 100))
+      val array1 = ChunkedImmutableArraySet.from[String](numbers)
+      val array2 = ChunkedImmutableArraySet.from[String](numbers)
+      val array3 = ChunkedImmutableArraySet.from[String](numbers.slice(0, 100))
 
       array1 shouldEqual array1
 

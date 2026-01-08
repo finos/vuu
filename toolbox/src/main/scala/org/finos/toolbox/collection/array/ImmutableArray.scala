@@ -2,7 +2,7 @@ package org.finos.toolbox.collection.array
 
 import scala.reflect.ClassTag
 
-object ImmutableArray{
+object ImmutableArray {
 
   def empty[T <: Object](implicit c: ClassTag[T]): ImmutableArray[T] = {
     ChunkedImmutableArray.empty()
@@ -16,7 +16,7 @@ object ImmutableArray{
 
 object ImmutableArrays{
   def empty[T <: Object :ClassTag](i: Int): Array[ImmutableArray[T]] = {
-    (0 until i).map(i => ImmutableArray.empty).toArray
+    (0 until i).map(i=> new NaiveImmutableArray(Array[T]())).toArray
   }
 }
 
