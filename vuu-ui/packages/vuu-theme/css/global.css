@@ -1,15 +1,13 @@
+/**
+ * Have some global styles to simulate more realistic app. Currently only for Storybook.
+ */
 
 .salt-theme.vuu-theme {
   color: var(--salt-content-primary-foreground);
-  font-family: var(--salt-typography-fontFamily);
+  font-family: var(--salt-text-fontFamily);
   font-size: var(--salt-text-fontSize);
   letter-spacing: var(--salt-text-letterSpacing);
   line-height: var(--salt-text-lineHeight);
-}
-
-.salt-theme.vuu-theme ::selection {
-  background: var(--salt-content-foreground-highlight);
-  color: black;
 }
 
 .salt-theme.vuu-theme[data-mode="light"] {
@@ -20,12 +18,9 @@
   color-scheme: dark;
 }
 
-/* Setting every element's box-sizing to border-box ensures the declared width
-of the element is never exceeded due to padding or border. */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+/* This uses the :where selector so it doesn't add any specificity */
+:where(.salt-theme) :focus-visible {
+  outline: var(--salt-focused-outline);
 }
 
 .salt-visuallyHidden {
@@ -38,4 +33,16 @@ of the element is never exceeded due to padding or border. */
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+.saltFocusVisible:after,
+.focused:focus:after,
+.focused:focus-visible:after {
+  content: "";
+  inset: var(--salt-focused-outlineInset);
+  outline-color: var(--salt-focused-outlineColor);
+  outline-offset: var(--salt-focused-outlineOffset);
+  outline-style: var(--salt-focused-outlineStyle);
+  outline-width: var(--salt-focused-outlineWidth);
+  position: absolute;
 }

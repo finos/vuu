@@ -1,4 +1,6 @@
+
 .salt-theme.vuu-theme[data-mode="dark"] {
+
   .vuuAppHeader {
     --vuu-icon-color: var(--salt-content-secondary-foreground);
     --saltButton-text-color: var(--salt-content-secondary-foreground);
@@ -7,6 +9,7 @@
       var(--salt-color-gray-400)
     );
   }
+
 }
 
 .salt-theme.vuu-theme[data-mode="light"] {
@@ -18,4 +21,12 @@
       var(--vuu-color-gray-28)
     );
   }
+}
+
+.salt-theme.vuu-theme {
+  .vuuAppHeader {
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+
 }

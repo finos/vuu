@@ -58,7 +58,7 @@ const TabstripTemplate = ({
   return (
     <LayoutProvider>
       <FlexboxLayout
-        style={{ height: 200, width: width + SPLITTER_WIDTH }}
+        style={{ height: 50, width: width + SPLITTER_WIDTH }}
         path=""
       >
         <div data-resizeable style={{ flex: 1 }}>
@@ -168,7 +168,7 @@ export const TabstripVariations = () => {
         columnGap: 20,
         rowGap: 12,
         gridTemplateColumns: "auto 1fr",
-        gridTemplateRows: "40px 40px 40px 40px 40px 40px 40px 40px 40px",
+        gridTemplateRows: "40px 40px 40px 40px 40px 40px",
         justifyItems: "start",
       }}
     >

@@ -1,0 +1,13 @@
+.salt-theme.vuu-theme-deprecated[data-mode="light"] {
+  --salt-palette-success-background: var(--vuu-color-green-60);
+  --salt-palette-success-background-selected: var(--salt-color-green-20);
+  --salt-palette-success-border: var(--salt-color-green-500);
+  --salt-palette-success-foreground: var(--vuu-color-white);
+}
+
+.salt-theme.vuu-theme-deprecated[data-mode="dark"] {
+  --salt-palette-success-background: var(--vuu-color-green-60);
+  --salt-palette-success-background-selected: var(--salt-color-green-900);
+  --salt-palette-success-border: var(--salt-color-green-400);
+  --salt-palette-success-foreground: var(--vuu-color-white);
+}

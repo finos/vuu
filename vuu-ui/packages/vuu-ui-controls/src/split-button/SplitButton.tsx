@@ -1,13 +1,13 @@
-import { PopupMenu, PopupMenuProps } from "@vuu-ui/vuu-popups";
 import { Button, ButtonProps, useForkRef } from "@salt-ds/core";
-import { forwardRef, HTMLAttributes } from "react";
-import { useSplitButton } from "./useSplitButton";
-import cx from "clsx";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
+import { PopupMenu, PopupMenuProps } from "@vuu-ui/vuu-popups";
+import cx from "clsx";
+import { forwardRef, HTMLAttributes } from "react";
+import { useSplitButton } from "./useSplitButton";
 
 import splitButtonCss from "./SplitButton.css";
-import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 
 export interface SplitButtonProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onClick">,
@@ -67,20 +67,22 @@ export const SplitButton = forwardRef<HTMLDivElement, SplitButtonProps>(
         >
           <Button
             {...ButtonProps}
+            appearance="solid"
             className={`${classBase}-main`}
             disabled={disabled}
             ref={buttonRef}
-            variant={variant}
+            sentiment="neutral"
           >
             {children}
           </Button>
           <PopupMenu
             {...PopupMenuProps}
+            appearance="solid"
             className={`${classBase}-trigger`}
             disabled={disabled}
             icon={PopupMenuProps?.icon ?? "chevron-down"}
             tabIndex={segmented ? 0 : -1}
-            variant={variant}
+            sentiment="neutral"
           />
         </div>
       </ContextMenuProvider>
