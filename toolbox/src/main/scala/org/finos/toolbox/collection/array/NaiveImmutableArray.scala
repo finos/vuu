@@ -27,8 +27,10 @@ class NaiveImmutableArray[T <: Object :ClassTag](val array: Array[T] = Array.emp
 
   override def equals(obj: scala.Any): Boolean = {
     obj match {
-      case value: NaiveImmutableArray[_] => value.array sameElements array
-      case _ => false
+      case value: NaiveImmutableArray[_] =>
+        (this eq value) || (this.array sameElements value.array)
+      case _ =>
+        false
     }
   }
 

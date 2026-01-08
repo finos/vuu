@@ -314,7 +314,8 @@ class ChunkedUniqueImmutableArraySet[T <: Object :ClassTag](private val uniqueCh
 
   override def equals(obj: Any): Boolean = {
     obj match {
-      case value: ImmutableUniqueArraySet[_] => value.iterator.sameElements(iterator)
+      case value: ImmutableUniqueArraySet[_] =>
+        (this eq value) || this.iterator.sameElements(value.iterator)
       case _ => false
     }
   }
