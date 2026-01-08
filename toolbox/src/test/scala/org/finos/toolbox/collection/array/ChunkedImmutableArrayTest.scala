@@ -161,7 +161,7 @@ class ChunkedImmutableArrayTest extends AnyFeatureSpec with Matchers {
 
     Scenario("build very big immutable array and then remove an item") {
 
-      val numbers = (0 to 100000).map(_.toString).toArray
+      val numbers = (0 to 100_000).map(_.toString).toArray
 
       val immute = ChunkedImmutableArray.from[String](numbers)
 

@@ -1,6 +1,6 @@
 package org.finos.toolbox.collection.array
 
-import org.finos.toolbox.collection.ChunkSize
+import org.finos.toolbox.collection.{ChunkSize, array}
 
 import java.util
 import scala.reflect.ClassTag
@@ -265,7 +265,7 @@ class ChunkedImmutableArray[T <: Object :ClassTag](private val chunks:Array[Arra
     }
   }
 
-  override def distinct: ImmutableArray[T] = ???
+  override def distinct: ImmutableArray[T] = fromArray(iterator.distinct.toArray)
 
   private lazy val hash = iterator.foldLeft(0)((h, elem) => 31 * h + (if elem == null then 0 else elem.hashCode()))
 
