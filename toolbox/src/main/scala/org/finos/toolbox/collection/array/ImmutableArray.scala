@@ -16,7 +16,7 @@ object ImmutableArray {
 
 object ImmutableArrays{
   def empty[T <: Object :ClassTag](i: Int): Array[ImmutableArray[T]] = {
-    (0 until i).map(i=> new NaiveImmutableArray(Array[T]())).toArray
+    (0 until i).map(i => ImmutableArray.empty()).toArray
   }
 }
 
