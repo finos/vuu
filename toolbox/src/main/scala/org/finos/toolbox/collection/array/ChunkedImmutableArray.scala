@@ -1,27 +1,34 @@
 package org.finos.toolbox.collection.array
 
+import org.finos.toolbox.collection.ChunkSize
+
 import java.util
 import scala.reflect.ClassTag
 import scala.util.control.Breaks
 
-object ChunkedImmutableArray{
+object ChunkedImmutableArray {
 
-  def fromArray[T <: Object:ClassTag](arr: Array[T], chunkSize: Int): ImmutableArray[T] = {
-    new ChunkedImmutableArray[T](Array(), chunkSize = chunkSize).fromArray(arr)
+  def from[T <: Object : ClassTag](arr: Array[T]): ImmutableArray[T] = {
+    val chunkSize = ChunkSize.from(arr.length)
+    new ChunkedImmutableArray[T](chunks = Array(), chunkSize = chunkSize).fromArray(arr)
   }
 
-  def empty[T <: Object:ClassTag](chunkSize: Int = 1000): ImmutableArray[T] = {
-    new ChunkedImmutableArray[T](Array(), chunkSize = chunkSize)
+  def from[T <: Object:ClassTag](arr: Array[T], chunkSize: Int): ImmutableArray[T] = {
+    new ChunkedImmutableArray[T](chunks = Array(), chunkSize = chunkSize).fromArray(arr)
   }
 
-  def from[T <: Object:ClassTag](chunkSize: Int = 1000): ImmutableArray[T] = {
-    new ChunkedImmutableArray[T](Array(), chunkSize = chunkSize)
+  def empty[T <: Object:ClassTag](): ImmutableArray[T] = {
+    val chunkSize = ChunkSize.from(0)
+    new ChunkedImmutableArray[T](chunks = Array(), chunkSize = chunkSize)
+  }
+
+  def empty[T <: Object : ClassTag](chunkSize: Int): ImmutableArray[T] = {
+    new ChunkedImmutableArray[T](chunks = Array(), chunkSize = chunkSize)
   }
 
 }
 
 class ChunkedImmutableArray[T <: Object :ClassTag](private val chunks:Array[Array[T]], private val lastUsedIndex: Int = 0, val chunkSize: Int = 1000) extends ImmutableArray[T] with Iterable[T]{
-
 
   override def fromArray(arr: Array[T]): ImmutableArray[T] = {
     //https://www.cs.nott.ac.uk/~psarb2/G51MPC/slides/NumberLogic.pdf
@@ -30,9 +37,13 @@ class ChunkedImmutableArray[T <: Object :ClassTag](private val chunks:Array[Arra
 
     (0 until chunkCount).foreach( i => {
       val start = i * chunkSize;
-      val end   = Math.min(start + chunkSize, arr.length -1);
+      val end   = Math.min(start + chunkSize, arr.length);
       val chunk = util.Arrays.copyOfRange[T](arr, start, end)
-      newChunks(i) = chunk
+      if(chunk.length < chunkSize){
+        newChunks(i) = Array.concat(chunk, new Array[T](chunkSize - chunk.length))
+      }else{
+        newChunks(i) = chunk
+      }
     })
 
     val lastUsedIndex = arr.length
@@ -94,7 +105,7 @@ class ChunkedImmutableArray[T <: Object :ClassTag](private val chunks:Array[Arra
   private def indexMinusOne(): Int = lastUsedIndex - 1
 
   private def setFullChunks(oldChunks:Array[Array[T]], newChunks: Array[Array[T]]): Unit = {
-    for (a <- 0 until oldChunks.length){
+    for (a <- oldChunks.indices){
       if(oldChunks(a).length == chunkSize) {
         newChunks(a) = oldChunks(a)
       }
@@ -102,7 +113,7 @@ class ChunkedImmutableArray[T <: Object :ClassTag](private val chunks:Array[Arra
   }
 
   private def setChunks(oldChunks:Array[Array[T]], newChunks: Array[Array[T]]): Unit ={
-    for (a <- 0 until oldChunks.length){
+    for (a <- oldChunks.indices){
       newChunks(a) = oldChunks(a)
     }
   }
@@ -154,7 +165,7 @@ class ChunkedImmutableArray[T <: Object :ClassTag](private val chunks:Array[Arra
 
     //create any empty chunks required till we get to required chunks
     //create empty chunks
-    (currentChunks to requiredChunks - 1).foreach( i =>
+    (currentChunks until requiredChunks).foreach(i =>
       newChunks(i) = new Array[T](chunkSize)
     )
 
@@ -189,8 +200,8 @@ class ChunkedImmutableArray[T <: Object :ClassTag](private val chunks:Array[Arra
       activeChunk += 1
     }
 
-    //println(s"getIndex($index) -> ($activeChunk)($indexInChunk)")
-    chunks(activeChunk)(indexInChunk)
+    val chunk = chunks(activeChunk)
+    chunk(indexInChunk)
   }
 
   override def indexOf(element: T): Int = {
@@ -246,7 +257,7 @@ class ChunkedImmutableArray[T <: Object :ClassTag](private val chunks:Array[Arra
         setInPlace(a, getIndex(a), newChunks)
       }
 
-      for(a <- idxOf until this.length){
+      for(a <- idxOf until this.length - 1){
         setInPlace(a, getIndex(a+ 1), newChunks)
       }
 

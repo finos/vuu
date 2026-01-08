@@ -106,5 +106,21 @@ class ChunkedUniqueImmutableArraySetTest extends AnyFeatureSpec with Matchers {
       result2.isEmpty shouldEqual true
     }
 
+    Scenario("check equals and hashcode") {
+
+      val numbers = (0 to 100000).map(_.toString).toArray
+
+      val array1 = ImmutableUniqueArraySet.from[String](numbers)
+      val array2 = ImmutableUniqueArraySet.from[String](numbers)
+      val array3 = ImmutableUniqueArraySet.from[String](numbers.slice(0, 100))
+
+      array1 shouldEqual array1
+
+      array1 shouldEqual array2
+      array1.hashCode() shouldEqual array2.hashCode()
+
+      array1 should not equal array3
+    }
+
   }
 }

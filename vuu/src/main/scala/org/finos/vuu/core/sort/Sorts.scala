@@ -56,7 +56,7 @@ private case class GenericSort2(spec: SortSpec, columns: List[Column]) extends S
         snapshotKeys(i) = snapshot(i).key
       }
 
-      ImmutableArray.fromArray(snapshotKeys)
+      ImmutableArray.from(snapshotKeys)
     }
 
     logger.debug(s"[SORT]: Table Size: ${primaryKeys.length} DataToArray: ${millisToArray}ms, Sort: ${millisSort}ms, ImmutArr: ${millisImmArray}ms")

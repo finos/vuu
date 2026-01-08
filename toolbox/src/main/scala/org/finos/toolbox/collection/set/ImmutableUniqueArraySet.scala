@@ -1,5 +1,6 @@
 package org.finos.toolbox.collection.set
 
+import org.finos.toolbox.collection.ChunkSize
 import org.finos.toolbox.collection.array.ImmutableArray
 
 import java.util
@@ -7,14 +8,23 @@ import scala.reflect.ClassTag
 import scala.util.control.Breaks
 
 object ImmutableUniqueArraySet{
-  def empty[T <: Object :ClassTag](chunkSize: Int = 1000): ImmutableArray[T] = {
-    new ChunkedUniqueImmutableArraySet[T](Set(), Array(), chunkSize = chunkSize)
+
+  def empty[T <: Object : ClassTag](): ImmutableArray[T] = {
+    val chunkSize = ChunkSize.from(0)
+    new ChunkedUniqueImmutableArraySet[T](uniqueCheck = Set(), chunks = Array(), chunkSize = chunkSize)
   }
-  def from[T <: Object](array: Array[T], chunkSize: Int = 1000)(using c: ClassTag[T]): ImmutableArray[T] = {
-    val newChunks = new Array[Array[T]](1)
-    newChunks(0) = new Array[T](chunkSize)
-    val immutable = new ChunkedUniqueImmutableArraySet(Set[T](), newChunks, chunkSize = chunkSize)
-    immutable.fromArray(array)
+
+  def empty[T <: Object : ClassTag](chunkSize: Int): ImmutableArray[T] = {
+    new ChunkedUniqueImmutableArraySet[T](uniqueCheck = Set(), chunks = Array(), chunkSize = chunkSize)
+  }
+
+  def from[T <: Object](array: Array[T])(using c: ClassTag[T]): ImmutableArray[T] = {
+    val chunkSize = ChunkSize.from(array.length)
+    new ChunkedUniqueImmutableArraySet(uniqueCheck = Set(), chunks = Array(), chunkSize = chunkSize).fromArray(array)
+  }
+
+  def from[T <: Object](array: Array[T], chunkSize: Int)(using c: ClassTag[T]): ImmutableArray[T] = {
+    new ChunkedUniqueImmutableArraySet(uniqueCheck = Set(), chunks = Array(), chunkSize = chunkSize).fromArray(array)
   }
 
 }
@@ -24,10 +34,6 @@ trait ImmutableUniqueArraySet[T] extends ImmutableArray[T] {
 }
 
 class ChunkedUniqueImmutableArraySet[T <: Object :ClassTag](private val uniqueCheck: Set[T], val chunks:Array[Array[T]], private val lastUsedIndex: Int = 0, val chunkSize: Int = 1000) extends ImmutableArray[T] with Iterable[T] {
-
-  override def remove(element: T): ImmutableArray[T] = this.-(element)
-
-  override def addAll(arr: ImmutableArray[T]): ImmutableArray[T] = this.++(arr)
 
   override def fromArray(arr: Array[T]): ImmutableArray[T] = {
     //https://www.cs.nott.ac.uk/~psarb2/G51MPC/slides/NumberLogic.pdf
@@ -48,9 +54,12 @@ class ChunkedUniqueImmutableArraySet[T <: Object :ClassTag](private val uniqueCh
 
     val set = Set.from(arr)
     val lastUsedIndex = arr.length
-    //println("fromArray(" + arr.mkString(",") + ") lastUsedIndex:" + lastUsedIndex + "newChunks=" + newChunks.length + " newChunks(0).length" + newChunks(0).length)
     new ChunkedUniqueImmutableArraySet[T](set, newChunks, lastUsedIndex, chunkSize)
   }
+
+  override def remove(element: T): ImmutableArray[T] = this.-(element)
+
+  override def addAll(arr: ImmutableArray[T]): ImmutableArray[T] = this.++(arr)
 
   override def iterator: Iterator[T] = {
     new Iterator[T] {
@@ -314,7 +323,7 @@ class ChunkedUniqueImmutableArraySet[T <: Object :ClassTag](private val uniqueCh
 
   override def equals(obj: Any): Boolean = {
     obj match {
-      case value: ImmutableUniqueArraySet[_] =>
+      case value: ChunkedUniqueImmutableArraySet[_] =>
         (this eq value) || this.iterator.sameElements(value.iterator)
       case _ => false
     }

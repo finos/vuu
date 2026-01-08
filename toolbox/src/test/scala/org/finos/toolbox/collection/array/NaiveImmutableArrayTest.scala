@@ -36,6 +36,21 @@ class NaiveImmutableArrayTest extends AnyFeatureSpec with Matchers {
       array.map(f => f).toList should equal(List("Cruel"))
     }
 
+    Scenario("check equals and hashcode") {
+
+      val numbers = (0 to 100000).map(_.toString).toArray
+
+      val array1 = new NaiveImmutableArray(numbers)
+      val array2 = new NaiveImmutableArray(numbers)
+      val array3 = new NaiveImmutableArray(numbers.slice(0, 100))
+
+      array1 shouldEqual array1
+
+      array1 shouldEqual array2
+      array1.hashCode() shouldEqual array2.hashCode()
+
+      array1 should not equal array3
+    }
 
   }
 }
