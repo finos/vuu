@@ -46,6 +46,7 @@ export const InputCell = ({
   return (
     <Input
       {...editProps}
+      bordered
       className={cx(classBase, {
         [`${classBase}-error`]: warningMessage !== undefined,
       })}

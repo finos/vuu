@@ -15,15 +15,15 @@
   }
 
     .saltButton-accented.saltButton-solid:hover:not(.saltButton-active,:active):not(.saltButton-disabled) {
-        --button-text-color: var(--vuu2-color-gray-50);
-        --button-text-color-hover: var(--vuu2-color-gray-50)
+        --button-text-color: var(--vuu-color-gray-50);
+        --button-text-color-hover: var(--vuu-color-gray-50)
     }
 
     .saltButton-solid.saltButton-neutral {
-        --button-borderColor: var(--vuu2-color-gray-50);
+        --button-borderColor: var(--vuu-color-gray-50);
     }
     .saltButton-solid.saltButton-neutral:hover {
-        --button-borderColor-hover: var(--vuu2-color-coral);
+        --button-borderColor-hover: var(--vuu-color-coral);
     }
 
     .saltButton-active, .saltButton:active {

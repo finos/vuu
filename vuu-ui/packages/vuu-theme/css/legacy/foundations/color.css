@@ -3,17 +3,17 @@
 
 
 
-  --vuu2-color-coral: rgb(243, 120, 128);
-  --vuu2-color-coral-lightest: rgba(243, 120, 128, .2);
-  --vuu2-color-gray-15: rgb(228, 227, 231);
-  --vuu2-color-gray-20: rgb(214, 215, 218);
-  --vuu2-color-gray-25: rgb(155, 158, 168);
-  --vuu2-color-gray-30: rgb(119, 124, 148);
-  --vuu2-color-gray-40: rgb(96, 100, 119);
-  --vuu2-color-gray-50: rgb(21, 23, 27);
-  --vuu2-color-red-error: rgb(226,52,52);
-  --vuu2-color-purple: rgb(109, 24, 189);
-  --vuu2-color-white: rgb(255,255,255);
+  --vuu-color-coral: rgb(243, 120, 128);
+  --vuu-color-coral-lightest: rgba(243, 120, 128, .2);
+  --vuu-color-gray-15: rgb(228, 227, 231);
+  --vuu-color-gray-20: rgb(214, 215, 218);
+  --vuu-color-gray-25: rgb(155, 158, 168);
+  --vuu-color-gray-30: rgb(119, 124, 148);
+  --vuu-color-gray-40: rgb(96, 100, 119);
+  --vuu-color-gray-50: rgb(21, 23, 27);
+  --vuu-color-red-error: rgb(226,52,52);
+  --vuu-color-purple: rgb(109, 24, 189);
+  --vuu-color-white: rgb(255,255,255);
 
 
   --salt-color-red-10-rgb: 255, 227, 224;

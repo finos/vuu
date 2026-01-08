@@ -1,10 +1,10 @@
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import type {
   DataItemEditHandler,
   TableCellProps,
 } from "@vuu-ui/vuu-table-types";
 import { getTypedValue } from "@vuu-ui/vuu-utils";
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
 import { MouseEventHandler, useCallback, useState } from "react";
 import { useCell } from "../useCell";
 import { useHighlighting } from "../useHighlighting";

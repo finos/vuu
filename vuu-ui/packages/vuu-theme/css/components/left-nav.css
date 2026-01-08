@@ -1,16 +1,16 @@
 .salt-theme.vuu-theme {
   .vuuLeftNav {
     .vuuTab {
-      color: var(--vuu2-color-white);
+      color: var(--vuu-color-white);
     }
 
     .vuuTab-selected {
-      --vuu-icon-color: var(--vuu2-color-coral);
-      border-left-color: var(--vuu2-color-coral);
+      --vuu-icon-color: var(--vuu-color-coral);
+      border-left-color: var(--vuu-color-coral);
     }
 
     .vuuLeftNav-toggleButton {
-      background-color: var(--vuu2-color-coral);
+      background-color: var(--vuu-color-coral);
     }
   }
 }
