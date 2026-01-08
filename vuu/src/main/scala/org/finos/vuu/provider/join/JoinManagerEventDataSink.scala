@@ -3,7 +3,7 @@ package org.finos.vuu.provider.join
 import org.finos.vuu.api.JoinTableDef
 import org.finos.vuu.core.table.DataTable
 import org.finos.toolbox.collection.array.ImmutableArray
-import org.finos.toolbox.collection.set.ImmutableUniqueArraySet
+import org.finos.toolbox.collection.set.ImmutableArraySet
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap
@@ -25,7 +25,7 @@ class RightToLeftKeys {
     if (rightKey != null) {
       val rightKeyMap = rightTableMap.computeIfAbsent(rightKey, rightKey => new ConcurrentHashMap[String, ImmutableArray[String]]())
 
-      val keys = rightKeyMap.computeIfAbsent(leftTable, leftTable => ImmutableUniqueArraySet.from(Array(leftKey)))
+      val keys = rightKeyMap.computeIfAbsent(leftTable, leftTable => ImmutableArraySet.from(Array(leftKey)))
 
       rightKeyMap.put(leftTable, keys.+(leftKey))
     }
@@ -37,7 +37,7 @@ class RightToLeftKeys {
 
     val rightKeyMap = rightTableMap.computeIfAbsent(rightKey, rightKey => new ConcurrentHashMap[String, ImmutableArray[String]]())
 
-    val keys = rightKeyMap.computeIfAbsent(leftTable, leftTable => ImmutableUniqueArraySet.empty[String]())
+    val keys = rightKeyMap.computeIfAbsent(leftTable, leftTable => ImmutableArraySet.empty[String]())
 
     keys
   }
