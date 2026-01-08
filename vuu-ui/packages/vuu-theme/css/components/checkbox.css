@@ -3,11 +3,11 @@
 
   .saltCheckbox:hover {
     .saltCheckboxIcon:not(.saltCheckboxIcon-checked,.saltCheckboxIcon-disabled) {
-        background: var(--vuu2-color-coral-lightest);
+        background: var(--vuu-color-coral-lightest);
     }    
     .saltCheckboxIcon.saltCheckboxIcon-checked:not(.saltCheckboxIcon-disabled) {
-        color: var(--vuu2-color-purple);
-        border-color: var(--vuu2-color-purple);
+        color: var(--vuu-color-purple);
+        border-color: var(--vuu-color-purple);
     }    
   }
 

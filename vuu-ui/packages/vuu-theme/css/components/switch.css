@@ -1,44 +1,44 @@
 .salt-theme.vuu-theme {
     .saltSwitch {
         .saltSwitch-track {
-            background-color: var(--vuu2-color-gray-30);
+            background-color: var(--vuu-color-gray-30);
         }
         .saltSwitch-thumb {
-            background-color: var(--vuu2-color-white);
+            background-color: var(--vuu-color-white);
         }
     }
     .saltSwitch-disabled {
         .saltSwitch-track {
-            background-color: var(--vuu2-color-gray-20);
-            border-color: var(--vuu2-color-gray-20);
+            background-color: var(--vuu-color-gray-20);
+            border-color: var(--vuu-color-gray-20);
         }
         .saltSwitch-thumb {
             .saltIcon {
-                --icon-color: var(--vuu2-color-white);
+                --icon-color: var(--vuu-color-white);
                 border-radius: var(--salt-palette-corner-weaker);
             }
         }
         &.saltSwitch-checked {
             .saltSwitch-thumb {
-                background-color: var(--vuu2-color-gray-30);
+                background-color: var(--vuu-color-gray-30);
             }            
         }
     }
     .saltSwitch:hover:not(.saltSwitch-checked,.saltSwitch-disabled) {
         .saltSwitch-track {
-            background-color: var(--vuu2-color-coral);
+            background-color: var(--vuu-color-coral);
         }
     }
     .saltSwitch-checked:not(.saltSwitch-disabled) {
         .saltSwitch-thumb {
             background-color: transparent;
             .saltIcon {
-                --icon-color: var(--vuu2-color-white);
+                --icon-color: var(--vuu-color-white);
                 border-radius: var(--salt-palette-corner-weaker);
             }
         }
         .saltSwitch-track {
-            background-color: var(--vuu2-color-purple);
+            background-color: var(--vuu-color-purple);
         }
     }
 }

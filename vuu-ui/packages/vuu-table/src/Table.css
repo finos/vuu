@@ -113,6 +113,7 @@
 }
 
 .vuuTable-contentContainer {
+  --table-content-container-width: calc(var(--table-width) - var(--vertical-scrollbar-width));
   background: var(--table-background);
   height: calc(
     100% - var(--horizontal-scrollbar-height) - var(--vuu-table-footer-height)
@@ -120,7 +121,7 @@
   position: relative;
   overflow: auto;
   overscroll-behavior: none;
-  width: calc(var(--table-width) - var(--vertical-scrollbar-width));
+  width: var(--table-content-container-width);
 }
 
 .vuuTable-contentContainer::-webkit-scrollbar {

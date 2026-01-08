@@ -1,0 +1,144 @@
+.salt-theme.vuu-theme {
+  --vuuTableRow-selectionBlock-borderColor: var(--vuu-color-purple);
+  --vuuTableCell-contextOpen-outlineColor: var(--vuu-color-orange-50);
+
+  &.salt-density-high {
+    --vuu-table-row-height: 20px;
+  }
+  &.salt-density-medium {
+    --vuu-table-row-height: 28px;
+  }
+  &.salt-density-low {
+    --vuu-table-row-height: 36px;
+  }
+  &.salt-density-touch {
+    --vuu-table-row-height: 48px;
+  }
+
+  .vuuTable {
+      --vuuTableRow-selectionDecorator-width: 4px;
+
+    .vuuTableRow-highlighted {
+      background: var(--vuu-color-gray-15);
+    }
+
+    .vuuTableRow-selectedEnd {
+      z-index: 1;
+    }
+
+  .vuuTableRow[aria-selected="true"] {
+    /* color not used elsewhere, so define locally */
+    background-color: rgba(133,133,137,.16);
+  }
+
+    .vuuTableRow[aria-selected="true"] {
+      .vuuTableRowBookend:before {
+        background: var(--vuuTableRow-selectionBlock-borderColor);
+        content: "";
+        inset: 0;
+        position: absolute;
+      }
+    }
+
+    /* first row in a selection block, including a selection block of one row */
+    .vuuTableRow:not([aria-selected="true"]) + .vuuTableRow[aria-selected="true"] {
+      --selection-decorator-marginTop: 1px;
+      --vuu-selection-decorator-left-radius: 5px 0 0 0;
+      --vuu-selection-decorator-right-radius: 0 5px 0 0;
+      border-radius: 5px 5px 0 0;
+
+      &:after {
+        content: "";
+        position: absolute;
+        top: 0px;
+        left: 4px;
+        height: 1px;
+        background: var(--vuuTableRow-selectionBlock-borderColor);
+        width: calc(var(--content-width) - 8px);
+        z-index: 1;
+      }
+
+      .vuuTableRow-selectionDecorator {
+        height: calc(var(--row-height) - 1px);
+      }
+    }
+
+    /* Last row in a selection block, including a selection block of one row */
+    .vuuTableRow[aria-selected="true"]:has( + .vuuTableRow:not([aria-selected="true"])) {
+      --vuu-selection-decorator-left-radius: 0 0 0 5px;
+      --vuu-selection-decorator-right-radius: 0 0 5px 0;
+      border-radius: 0 0 5px 5px;
+      border-bottom-color: var(
+        --vuuTableRow-selectionBlock-borderColor,
+        var(--row-borderColor)
+      );
+    }
+
+    /* standalone selected row */
+    .vuuTableRow:not([aria-selected="true"]) + .vuuTableRow[aria-selected="true"]:has( + .vuuTableRow:not([aria-selected="true"])) {
+      --vuu-selection-decorator-left-radius: 5px 0 0 5px;
+      --vuu-selection-decorator-right-radius: 0 5px 5px 0;
+      border-radius: 5px 5px 5px 5px;
+    }
+
+    .vuuTableRow-selectionDecorator {
+      background: var(--table-background);
+      display: inline-block;
+      position: relative;
+      height: var(--row-height);
+      margin-top: var(--selection-decorator-marginTop, 0px);
+      width: 4px;
+      z-index: 2;
+    }
+
+    .vuuTableRow:not([aria-selected="true"]){
+      .vuuTableRowBookend {
+        display: none;
+      }
+    }
+
+    .vuuTableRow-selectionDecorator.vuuStickyLeft {
+      left: 0;
+      position: sticky;
+    }
+
+    .vuuTableRow-selectionDecorator.vuuStickyRight {
+      right: 0;
+      position: sticky;
+    }
+
+    .vuuTableRowBookend {
+      background-color: white;
+      position: absolute;
+      top: -1px;
+      right:0;
+      bottom:0;
+      left:0;
+    }
+
+    .vuuTableRow-selectionDecorator.vuuStickyLeft {
+      .vuuTableRowBookend:before {
+        border-radius: var(--vuu-selection-decorator-left-radius, 0);
+      }
+    }
+    
+    .vuuTableRow-selectionDecorator.vuuStickyRight {
+      .vuuTableRowBookend:before {
+        border-radius: var(--vuu-selection-decorator-right-radius, 0);
+      }
+    }
+
+
+
+    .vuuTableCell:focus {
+      outline: solid var(--salt-focused-outlineColor) 2px;
+      
+      /** This is to achieve a white background to outline dashes */
+      box-shadow: inset 0 0 0 var(--cell-outline-width) white;
+      border-bottom: none;
+    }
+
+
+  }
+
+}

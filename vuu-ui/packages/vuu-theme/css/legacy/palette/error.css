@@ -2,7 +2,7 @@
   --salt-palette-error-background: inherit;
   --salt-palette-error-bold-background: var(--salt-color-red-500);
   --salt-palette-error-background-selected: var(--salt-color-red-30);
-  --salt-palette-error-border: var(--vuu2-color-red-error);
+  --salt-palette-error-border: var(--vuu-color-red-error);
   --salt-palette-error-foreground-decorative: var(--salt-color-red-500);
   --salt-palette-error-foreground-informative: var(--salt-color-red-600);
 }

@@ -17,8 +17,8 @@
             height: calc(var(--salt-size-base) + var(--salt-size-fixed-400) - var(--salt-spacing-100));
             padding: 0 var(--salt-spacing-400);
             &[aria-checked="true"]{
-                --vuu-icon-color: var(--vuu2-color-white);
-              color: var(--vuu2-color-white);
+                --vuu-icon-color: var(--vuu-color-white);
+              color: var(--vuu-color-white);
             }
         }
   }

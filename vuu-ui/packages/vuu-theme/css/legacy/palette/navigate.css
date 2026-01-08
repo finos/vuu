@@ -1,7 +1,7 @@
 .salt-theme.vuu-theme[data-mode="light"] {
   --salt-palette-navigate-foreground-visited: var(--salt-color-purple-800);
-  --salt-palette-navigate-indicator-hover: var(--vuu2-color-coral);
-  --salt-palette-navigate-indicator-active: var(--vuu2-color-purple);
+  --salt-palette-navigate-indicator-hover: var(--vuu-color-coral);
+  --salt-palette-navigate-indicator-active: var(--vuu-color-purple);
 }
 
 .salt-theme.vuu-theme[data-mode="dark"] {

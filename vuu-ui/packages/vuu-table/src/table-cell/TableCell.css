@@ -20,7 +20,7 @@
 .vuuTableCell-editable {
   align-items: center;
   display: inline-flex;
-  text-overflow: unset;
+  padding: 0px 1px;
 }
 
 .vuuTableCell:focus {
