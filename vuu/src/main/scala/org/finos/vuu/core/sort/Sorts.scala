@@ -38,20 +38,20 @@ private case class GenericSort2(spec: SortSpec, columns: List[Column]) extends S
 
     logger.trace("Starting map")
 
-    val (millisToArray, snapshotAndCount) = timeIt {
+    val (millisToArray, snapshot) = timeIt {
       createSnapshot(source, primaryKeys, vpColumns)
     }
 
     logger.trace("Starting sort")
 
     val (millisSort, _ ) = timeIt {
-      util.Arrays.sort(snapshotAndCount._1, 0, snapshotAndCount._2, comparator)
+      util.Arrays.sort(snapshot, comparator)
     }
 
     logger.trace("Starting build imm arr")
 
     val (millisImmArray, immutableArray) = timeIt {
-      createKeyArray(snapshotAndCount._1, snapshotAndCount._2)
+      createKeyArray(snapshot)
     }
 
     logger.debug(s"[SORT]: Table Size: ${primaryKeys.length} DataToArray: ${millisToArray}ms, Sort: ${millisSort}ms, ImmutArr: ${millisImmArray}ms")
@@ -59,7 +59,7 @@ private case class GenericSort2(spec: SortSpec, columns: List[Column]) extends S
     InMemTablePrimaryKeys(immutableArray)
   }
 
-  private def createSnapshot(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): (Array[RowWithData], Int) = {
+  private def createSnapshot(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): Array[RowWithData] = {
     val length = primaryKeys.length
     val rowDataArray = new Array[RowWithData](length)
     var index = 0
@@ -75,13 +75,14 @@ private case class GenericSort2(spec: SortSpec, columns: List[Column]) extends S
       }
       index += 1
     }
-    (rowDataArray, count)
+
+    if (count == length) rowDataArray else java.util.Arrays.copyOf(rowDataArray, count)
   }
 
-  private def createKeyArray(snapshot: Array[RowWithData], length: Int): ImmutableArray[String] = {
-    val keys = new Array[String](length)
+  private def createKeyArray(snapshot: Array[RowWithData]): ImmutableArray[String] = {
+    val keys = new Array[String](snapshot.length)
     var i = 0
-    while (i < length) {
+    while (i < snapshot.length) {
       keys(i) = snapshot(i).key
       i += 1
     }
