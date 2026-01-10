@@ -7,7 +7,7 @@ import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.{Index, Indices, TableDef}
 import org.finos.vuu.core.filter.FilterClause
 import org.finos.vuu.core.filter.`type`.AntlrBasedFilter
-import org.finos.vuu.core.table.{Columns, InMemDataTable, RowWithData, ViewPortColumnCreator}
+import org.finos.vuu.core.table.{Columns, InMemDataTable, RowWithData, TablePrimaryKeys, ViewPortColumnCreator}
 import org.finos.vuu.test.TestFriendlyJoinTableProvider
 import org.scalatest.Assertions.fail
 
@@ -55,8 +55,12 @@ object FilterAndSortFixture {
   }
 
   def doSort(table: InMemDataTable, sort: Sort): List[(String, RowWithData)] = {
+    doSort(table, sort, table.primaryKeys)
+  }
+
+  def doSort(table: InMemDataTable, sort: Sort, tablePrimaryKeys: TablePrimaryKeys): List[(String, RowWithData)] = {
     val viewPortColumns = ViewPortColumnCreator.create(table, table.columns().map(_.name).toList)
-    val result = sort.doSort(table, table.primaryKeys, viewPortColumns)
+    val result = sort.doSort(table, tablePrimaryKeys, viewPortColumns)
     val asTable = result.toArray.map(key => (key, table.pullRow(key, viewPortColumns).asInstanceOf[RowWithData])).toList
     asTable
   }
