@@ -81,13 +81,22 @@ case class OrClause(subclauses: List[FilterClause]) extends FilterClause {
 
 case class AndClause(subclauses: List[FilterClause]) extends FilterClause {
   override def filterAll(source: RowSource, primaryKeys: TablePrimaryKeys,
-                         viewPortColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys =
-    subclauses.foldLeft(primaryKeys) {
-      (remainingKeys, subclause) => {
-        val stillFirstInChain = firstInChain && remainingKeys == primaryKeys
-        subclause.filterAll(source, remainingKeys, viewPortColumns, stillFirstInChain)
+                         viewPortColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
+    if (primaryKeys.isEmpty) {
+      primaryKeys
+    } else {
+      subclauses.foldLeft(primaryKeys) {
+        (remainingKeys, subclause) => {
+          if (remainingKeys.isEmpty) {
+            remainingKeys
+          } else {
+            val stillFirstInChain = firstInChain && remainingKeys == primaryKeys
+            subclause.filterAll(source, remainingKeys, viewPortColumns, stillFirstInChain)
+          }
+        }
       }
     }
+  }
 
   override def validate(vpColumns: ViewPortColumns): Result[true] = joinResults(subclauses.map(_.validate(vpColumns)))
 }
