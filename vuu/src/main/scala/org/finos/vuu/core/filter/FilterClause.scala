@@ -32,7 +32,7 @@ sealed trait RowFilterClause extends FilterClause {
 
   override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
     if (rowKeys.isEmpty) {
-      EmptyTablePrimaryKeys
+      rowKeys
     } else {
       InMemTablePrimaryKeys(ImmutableArray.from(
         rowKeys.filter(key => filter(rows.pullRow(key, vpColumns))).toArray
@@ -84,8 +84,8 @@ case class AndClause(subclauses: List[FilterClause]) extends FilterClause {
                          viewPortColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys =
     subclauses.foldLeft(primaryKeys) {
       (remainingKeys, subclause) => {
-        val isStillFirstInChain = firstInChain && remainingKeys.length == primaryKeys.length
-        subclause.filterAll(source, remainingKeys, viewPortColumns, isStillFirstInChain)
+        val stillFirstInChain = firstInChain && remainingKeys == primaryKeys
+        subclause.filterAll(source, remainingKeys, viewPortColumns, stillFirstInChain)
       }
     }
 

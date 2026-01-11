@@ -65,7 +65,7 @@ private case class RowPermissionFilter(rowPredicate: RowData => Boolean) extends
     logger.trace(s"Starting filter with ${primaryKeys.length} rows")
 
     if (primaryKeys.isEmpty) {
-      EmptyTablePrimaryKeys
+      primaryKeys
     } else {
       val filtered = primaryKeys.filter(key => rowPredicate.apply(source.pullRow(key)))
       InMemTablePrimaryKeys(ImmutableArray.from[String](filtered.toArray))
