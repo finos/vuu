@@ -151,6 +151,7 @@ export const useVuuTypeaheadInput = ({
               if (pendingListFocusRef.current && inputRef.current) {
                 requestAnimationFrame(() => {
                   if (inputRef.current) {
+                    // highlight the first option. Doesn't work as expected on Safari
                     dispatchKeyboardEvent(
                       inputRef.current,
                       "keydown",
