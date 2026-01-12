@@ -98,11 +98,12 @@ export const TablePicker = ({
     () => (
       <IconButton
         {...getReferenceProps()}
+        appearance="transparent"
         data-embedded
         ref={reference}
         icon="chevron-down"
         onKeyDown={onKeyDown}
-        variant="secondary"
+        sentiment="neutral"
       />
     ),
     [getReferenceProps, onKeyDown, reference],
@@ -110,7 +111,12 @@ export const TablePicker = ({
 
   return (
     <div {...htmlAttributes} className={classBase} ref={containerRef}>
-      <Input {...inputProps} endAdornment={endAdornment} value={value} />
+      <Input
+        {...inputProps}
+        bordered
+        endAdornment={endAdornment}
+        value={value}
+      />
       <FloatingTable
         {...getFloatingProps()}
         collapsed={!open}

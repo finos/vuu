@@ -1,11 +1,9 @@
 .salt-theme.vuu-theme[data-mode="light"] {
-  --vuuShell-background: var(--vuu-color-gray-25);
   --vuuWorkspace-background: var(--salt-container-primary-background);
 }
 
 .salt-theme.vuu-theme[data-mode="dark"] {
-  --vuuShell-background: var(--salt-container-primary-background);
-  --vuuWorkspace-background: var(--salt-color-gray-400);
+  --vuuWorkspace-background: var(--salt-container-primary-background);
 }
 
 .salt-theme.vuu-theme {

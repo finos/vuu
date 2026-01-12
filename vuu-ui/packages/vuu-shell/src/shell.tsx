@@ -170,7 +170,7 @@ export const Shell = ({
     <ApplicationProvider
       density="high"
       loginUrl={loginUrl}
-      theme="vuu-theme-deprecated"
+      theme="vuu-theme"
       user={user}
       userSettingsSchema={userSettingsSchema}
     >

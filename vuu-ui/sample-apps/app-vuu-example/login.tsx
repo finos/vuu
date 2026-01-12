@@ -4,7 +4,7 @@ import { LoginPanel } from "@vuu-ui/vuu-shell";
 import { createRoot } from "react-dom/client";
 
 import "@vuu-ui/vuu-icons/index.css";
-import "@vuu-ui/vuu-theme-deprecated/index.css";
+import "@vuu-ui/vuu-theme/index.css";
 import "./login.css";
 
 async function login(username: string, password = "password") {
@@ -27,7 +27,7 @@ const container = document.getElementById("root");
 if (container) {
   const root = createRoot(container);
   root.render(
-    <SaltProvider theme="vuu-theme-deprecated" density="high">
+    <SaltProvider theme="vuu-theme" density="high">
       <LoginPanel onSubmit={login} />
     </SaltProvider>,
   );

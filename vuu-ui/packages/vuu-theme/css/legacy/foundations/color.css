@@ -1,10 +1,8 @@
 .salt-theme.vuu-theme {
 
-
-
-
   --vuu-color-coral: rgb(243, 120, 128);
   --vuu-color-coral-lightest: rgba(243, 120, 128, .2);
+  --vuu-color-gray-10: rgb(241, 242, 244);
   --vuu-color-gray-15: rgb(228, 227, 231);
   --vuu-color-gray-20: rgb(214, 215, 218);
   --vuu-color-gray-25: rgb(155, 158, 168);
@@ -13,6 +11,7 @@
   --vuu-color-gray-50: rgb(21, 23, 27);
   --vuu-color-red-error: rgb(226,52,52);
   --vuu-color-purple: rgb(109, 24, 189);
+  --vuu-color-deep-purple: rgb(42, 1, 95);
   --vuu-color-white: rgb(255,255,255);
 
 

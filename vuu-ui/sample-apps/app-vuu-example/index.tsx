@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { App } from "./src/App";
 
 import "@vuu-ui/vuu-icons/index.css";
-import "@vuu-ui/vuu-theme-deprecated/index.css";
+import "@vuu-ui/vuu-theme/index.css";
 
 const [username, token] = getAuthDetailsFromCookies();
 if (!username || !token) {

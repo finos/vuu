@@ -1,6 +1,9 @@
 .salt-theme.vuu-theme[data-mode="light"] {
   .vuuTabstrip-primary {
-    --vuu-tab-background: var(--vuu-color-gray-28);
+    --vuu-tab-background: var(--vuu-color-gray-10);
+    .vuuTab-selected {
+      --vuu-tab-background: var(--vuu-color-white);
+    }
   }
 }
 
