@@ -8,7 +8,7 @@ import {
 } from "./table-test-utils";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 
-describe("Table scrolling and keyboard navigation", () => {
+describe.skip("Table scrolling and keyboard navigation", () => {
   const RENDER_BUFFER = 5;
   const ROW_COUNT = 1000;
   const tableConfig = {

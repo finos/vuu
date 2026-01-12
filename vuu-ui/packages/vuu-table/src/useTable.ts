@@ -4,7 +4,7 @@ import type {
   DataSourceRow,
   DataSourceSubscribedMessage,
 } from "@vuu-ui/vuu-data-types";
-import type { VuuSortType } from "@vuu-ui/vuu-protocol-types";
+import type { RpcResult, VuuSortType } from "@vuu-ui/vuu-protocol-types";
 import {
   ColumnDisplayActionHandler,
   columnSettingsFromColumnMenuPermissions,
@@ -719,12 +719,15 @@ export const useTable = ({
     onKeyDown: editingKeyDown,
     onFocus: editingFocus,
   } = useCellEditing({
+    focusCell,
     navigate,
   });
 
   const handleFocus = useCallback(
     (e: FocusEvent<HTMLElement>) => {
+      // console.log(`[useTable] handleFocus`);
       navigationFocus();
+      // navigationFocus does not call preventDefault
       if (!e.defaultPrevented) {
         editingFocus(e);
       }
@@ -809,6 +812,8 @@ export const useTable = ({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLElement>) => {
+      // console.log(`[useTable] handleKeyDown, delegates to ...`);
+
       cellBlockSelectionKeyDown?.(e);
       if (!e.defaultPrevented) {
         navigationKeyDown(e);
@@ -879,7 +884,7 @@ export const useTable = ({
   );
 
   const handleDataEdited = useCallback(
-    async (editState: DataCellEditEvent) => {
+    async (editState: DataCellEditEvent): Promise<RpcResult | undefined> => {
       const {
         editType = "commit",
         isValid = true,
@@ -888,20 +893,28 @@ export const useTable = ({
         value,
       } = editState;
       if (editType === "commit" && isValid) {
-        const response = await dataSource.rpcRequest?.({
-          params: {
-            column: columnName,
-            key: row[KEY],
-            data: value,
-          },
-          rpcName: "editCell",
-          type: "RPC_REQUEST",
-        });
-        onDataEditedProp?.({
-          ...editState,
-          isValid: response?.type === "SUCCESS_RESULT",
-        });
-        return response;
+        if (dataSource.rpcRequest) {
+          if (columnName && row) {
+            const response = await dataSource.rpcRequest({
+              params: {
+                column: columnName,
+                key: row[KEY],
+                data: value,
+              },
+              rpcName: "editCell",
+              type: "RPC_REQUEST",
+            });
+            onDataEditedProp?.({
+              ...editState,
+              isValid: response?.type === "SUCCESS_RESULT",
+            });
+            return response;
+          }
+        } else {
+          throw Error(
+            `[useTable] handleDataEdited, datasource does not support RPC`,
+          );
+        }
       } else {
         onDataEditedProp?.(editState);
       }

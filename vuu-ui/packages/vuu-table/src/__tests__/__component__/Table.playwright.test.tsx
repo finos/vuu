@@ -30,7 +30,7 @@ test.describe("WHEN it initially renders", () => {
     const vuuTable = page.getByTestId("table");
     await expect(vuuTable).toContainClass("vuuTable");
   });
-  test("THEN expected mimber of rows are present, with buffered rows, all with correct aria index", async ({
+  test("THEN expected number of rows are present, with buffered rows, all with correct aria index", async ({
     mount,
     page,
   }) => {

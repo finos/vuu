@@ -181,7 +181,7 @@ export const ControlledNavigation = () => {
   );
 };
 
-export const TabInAndOut = () => {
+export const TabInAndOutFixture = () => {
   return (
     <div style={{ width: 950 }}>
       <div
