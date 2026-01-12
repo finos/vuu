@@ -13,6 +13,24 @@ class GenericSortTest extends AnyFeatureSpec with Matchers {
   private val table2 = setupTable2()
 
   Feature("GenericSort") {
+
+    Scenario("Keys without row data are not returned in the sort result") {
+      expectRows(doSort(
+        table = table,
+        sort = Sort(SortSpec(List(SortDef("quantity", 'A'), SortDef("orderId", 'D'))), table.columnsForNames("quantity", "orderId")),
+        tablePrimaryKeys = table.primaryKeys.add("I Don't Exist"))) {
+        List(
+          "NYC-0010",
+          "NYC-0002",
+          "LDN-0008",
+          "LDN-0003",
+          "LDN-0002",
+          "LDN-0001",
+          "NYC-0004",
+        )
+      }
+    }
+
     Scenario("sort `quantity` in ascending order and `orderId` in descending order") {
       expectRows(doSort(table, Sort(SortSpec(List(SortDef("quantity", 'A'), SortDef("orderId", 'D'))), table.columnsForNames("quantity", "orderId")))) {
         List(

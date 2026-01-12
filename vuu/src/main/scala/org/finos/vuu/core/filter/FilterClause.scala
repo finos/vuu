@@ -32,7 +32,7 @@ sealed trait RowFilterClause extends FilterClause {
 
   override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
     if (rowKeys.isEmpty) {
-      EmptyTablePrimaryKeys
+      rowKeys
     } else {
       InMemTablePrimaryKeys(ImmutableArray.from(
         rowKeys.filter(key => filter(rows.pullRow(key, vpColumns))).toArray
@@ -81,13 +81,22 @@ case class OrClause(subclauses: List[FilterClause]) extends FilterClause {
 
 case class AndClause(subclauses: List[FilterClause]) extends FilterClause {
   override def filterAll(source: RowSource, primaryKeys: TablePrimaryKeys,
-                         viewPortColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys =
-    subclauses.foldLeft(primaryKeys) {
-      (remainingKeys, subclause) => {
-        val isStillFirstInChain = firstInChain && remainingKeys.length == primaryKeys.length
-        subclause.filterAll(source, remainingKeys, viewPortColumns, isStillFirstInChain)
+                         viewPortColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
+    if (primaryKeys.isEmpty) {
+      primaryKeys
+    } else {
+      subclauses.foldLeft(primaryKeys) {
+        (remainingKeys, subclause) => {
+          if (remainingKeys.isEmpty) {
+            remainingKeys
+          } else {
+            val stillFirstInChain = firstInChain && remainingKeys == primaryKeys
+            subclause.filterAll(source, remainingKeys, viewPortColumns, stillFirstInChain)
+          }
+        }
       }
     }
+  }
 
   override def validate(vpColumns: ViewPortColumns): Result[true] = joinResults(subclauses.map(_.validate(vpColumns)))
 }
