@@ -433,7 +433,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
         data = data.delete(rowKey)
         x
       case _ =>
-        logger.debug(s"Got a delete for key $rowKey, but it has no row data")
+        logger.trace(s"Got a delete for key $rowKey, but it has no row data")
         EmptyRowData
     }
   }

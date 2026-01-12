@@ -188,7 +188,37 @@ class ChunkedImmutableArrayTest extends AnyFeatureSpec with Matchers {
       array1 should not equal array3
     }
 
+    Scenario("set by index on chunk boundaries") {
 
+      val numbers = (0 until 10).map(_.toString).toArray
+      val original = ChunkedImmutableArray.from[String](numbers, 2)
+      val tobeMutated = ChunkedImmutableArray.from[String](numbers, 2)
+
+      for (num <- numbers) {
+        val expected = num.toInt + 10
+
+        val updated = tobeMutated.set(num.toInt, s"$expected")
+
+        updated(num.toInt) shouldEqual s"$expected"
+        tobeMutated shouldEqual original
+      }
+    }
+
+    Scenario("removal on chunk boundaries") {
+
+      val numbers = (0 until 10).map(_.toString).toArray
+      val original = ChunkedImmutableArray.from[String](numbers, 2)
+      val tobeMutated = ChunkedImmutableArray.from[String](numbers, 2)
+
+      for (num <- numbers) {
+        val updated = tobeMutated.remove(num.toInt)
+
+        updated.contains(num) shouldBe false
+        updated.length shouldEqual 9
+
+        tobeMutated shouldEqual original
+      }
+    }
 
   }
 }
