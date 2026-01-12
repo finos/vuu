@@ -24,7 +24,7 @@ export const ThemeSwitch = ({
 }: ThemeSwitchProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
-    testId: "vuu-theme-deprecated-switch",
+    testId: "vuu-theme-switch",
     css: themeSwitchCss,
     window: targetWindow,
   });

@@ -9,5 +9,6 @@
   "scripts": {
     "build:dev": "node ../../scripts/run-build.mjs",
     "build": "node ../../scripts/run-build.mjs"
-  }
+  },
+  "private": true
 }

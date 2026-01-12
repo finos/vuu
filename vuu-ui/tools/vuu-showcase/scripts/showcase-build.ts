@@ -18,7 +18,7 @@ const mdxFiles = buildFileList(pathToSrc, /.mdx$/);
 const features = buildFileList("./src/features", /feature.tsx$/);
 
 // TODO use a separate build call for each theme, without bundling
-const themes = ["./src/themes/salt-theme.ts", "./src/themes/vuu-theme-deprecated.ts"];
+const themes = ["./src/themes/salt-theme.ts", "./src/themes/vuu-theme.ts"];
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const currentDir = path.dirname(__filename); // get the name of the directory
@@ -59,8 +59,7 @@ const esbuildConfig = {
   env: "production",
   external: [
     "./themes/salt-theme.ts",
-    "./themes/vuu-theme-deprecated.ts",
-    "./themes/tar-theme.ts",
+    "./themes/vuu-theme.ts",
   ],
   name: "showcase",
   plugins: [cssInlinePlugin, mdx()],
@@ -128,8 +127,8 @@ async function main() {
       public: outdir,
       rewrites: [
         {
-          source: "/themes/vuu-theme-deprecated.css",
-          destination: "/showcase/src/themes/vuu-theme-deprecated.css",
+          source: "/themes/vuu-theme.css",
+          destination: "/showcase/src/themes/vuu-theme.css",
         },
         {
           source: routingPattern,

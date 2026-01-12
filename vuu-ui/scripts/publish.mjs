@@ -23,7 +23,7 @@ const packages = [
   "vuu-table",
   "vuu-table-extras",
   "vuu-table-types",
-  "vuu-theme-deprecated",
+  "vuu-theme",
   "vuu-ui-controls",
   "vuu-utils",
 ];
