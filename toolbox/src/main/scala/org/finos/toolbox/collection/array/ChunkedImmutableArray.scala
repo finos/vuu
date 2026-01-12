@@ -226,13 +226,23 @@ class ChunkedImmutableArray[T <: Object :ClassTag](private val chunks:Array[Arra
   override def apply(i: Int): T = getIndex(i)
 
   override def set(index: Int, element: T): ImmutableArray[T] = {
-    val chunkOf           = indexToChunk(index)
-    val newChunks         = new Array[Array[T]](chunks.length)
-    setChunksUpTo(chunks, newChunks, chunks.length)
-    val newChunkOfElem    = emptyChunk()
-    System.arraycopy(chunks(chunkOf), 0, newChunkOfElem, 0, chunks(chunkOf).length)
-    newChunkOfElem(index) = element
-    newChunks(chunkOf) = newChunkOfElem
+    if (index > lastUsedIndex) {
+      throw new IllegalArgumentException(s"Index $index out of bounds for length $lastUsedIndex")
+    }
+
+    var activeChunk = (index / chunkSize)
+    var indexInChunk = index % chunkSize
+    if (indexInChunk == chunkSize) {
+      indexInChunk = 0
+      activeChunk += 1
+    }
+
+    val newChunkOfElem = chunks(activeChunk).clone()
+    newChunkOfElem(indexInChunk) = element
+
+    val newChunks = chunks.clone()
+    newChunks(activeChunk) = newChunkOfElem
+
     new ChunkedImmutableArray[T](newChunks, lastUsedIndex, chunkSize = this.chunkSize)
   }
 
