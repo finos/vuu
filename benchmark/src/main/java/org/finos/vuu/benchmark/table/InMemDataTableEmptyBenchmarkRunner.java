@@ -1,4 +1,4 @@
-package org.finos.vuu.benchmark.tree;
+package org.finos.vuu.benchmark.table;
 
 import org.finos.vuu.benchmark.BenchmarkHelper;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -18,17 +18,17 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 @State(Scope.Benchmark)
-public class TreeBenchmarkRunner {
+public class InMemDataTableEmptyBenchmarkRunner {
 
     private final BenchmarkHelper benchmarkHelper = new BenchmarkHelper();
-    private TreeBenchmark benchmark;
+    private InMemDataTableBenchmark benchmark;
 
-    @Param({ "10000", "100000", "500000", "1000000" })
-    public int tableSize;
+    @Param({ "50000", "250000", "500000" })
+    public int insertSize;
 
-    @Setup(Level.Trial)
+    @Setup(Level.Invocation)
     public void setup() {
-        benchmark = new TreeBenchmark(benchmarkHelper, tableSize);
+        benchmark = new InMemDataTableBenchmark(benchmarkHelper);
     }
 
     @Benchmark
@@ -37,10 +37,8 @@ public class TreeBenchmarkRunner {
     @Measurement(iterations = 5)
     @Fork(1)
     @BenchmarkMode(Mode.SampleTime)
-    public void treeLargeTable() throws IOException {
-        benchmark.treeLargeTable();
+    public void addRows() throws IOException {
+        benchmark.addRows(insertSize);
     }
 
 }
-
-
