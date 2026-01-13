@@ -177,12 +177,12 @@ export const useKeyboardNavigation = ({
   );
 
   const setActiveCell = useCallback(
-    (rowIdx: number, colIdx: number, fromKeyboard = false) => {
+    (rowIdx: number, colIdx: number) => {
       const pos: CellPos = [rowIdx, colIdx];
       if (navigationStyle === "row") {
         setHighlightedIdx(rowIdx);
       } else {
-        focusCell(pos, fromKeyboard);
+        focusCell(pos);
       }
     },
     [focusCell, navigationStyle, setHighlightedIdx],
@@ -195,12 +195,10 @@ export const useKeyboardNavigation = ({
     ): Promise<CellPos> =>
       new Promise((resolve) => {
         let newRowIdx = rowIdx;
-        const { current: focusState } = cellFocusStateRef;
         switch (key) {
           case "PageDown": {
             newRowIdx = Math.min(rowCount - 1, rowIdx + viewportRowCount);
             if (newRowIdx !== rowIdx) {
-              focusState.cellPos = [newRowIdx, colIdx];
               requestScroll?.({ type: "scroll-page", direction: "down" });
             }
             break;
@@ -208,7 +206,6 @@ export const useKeyboardNavigation = ({
           case "PageUp": {
             newRowIdx = Math.max(0, rowIdx - viewportRowCount);
             if (newRowIdx !== rowIdx) {
-              focusState.cellPos = [newRowIdx, colIdx];
               requestScroll?.({ type: "scroll-page", direction: "up" });
             }
             break;
@@ -216,7 +213,6 @@ export const useKeyboardNavigation = ({
           case "Home": {
             newRowIdx = headerCount + 1;
             if (newRowIdx !== rowIdx) {
-              focusState.cellPos = [newRowIdx, colIdx];
               requestScroll?.({ type: "scroll-end", direction: "home" });
             }
             break;
@@ -224,7 +220,6 @@ export const useKeyboardNavigation = ({
           case "End": {
             newRowIdx = rowCount + headerCount;
             if (newRowIdx !== rowIdx) {
-              focusState.cellPos = [newRowIdx, colIdx];
               requestScroll?.({ type: "scroll-end", direction: "end" });
             }
             break;
@@ -244,7 +239,7 @@ export const useKeyboardNavigation = ({
           resolve([newRowIdx, colIdx]);
         }, 35);
       }),
-    [cellFocusStateRef, headerCount, requestScroll, rowCount, viewportRowCount],
+    [headerCount, requestScroll, rowCount, viewportRowCount],
   );
 
   const handleFocus = useCallback(() => {
@@ -314,7 +309,7 @@ export const useKeyboardNavigation = ({
       }
 
       if (nextRowIdx !== rowIdx || nextColIdx !== colIdx) {
-        setActiveCell(nextRowIdx, nextColIdx, true);
+        setActiveCell(nextRowIdx, nextColIdx);
         setHighlightedIndex(nextRowIdx);
       }
     },

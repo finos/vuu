@@ -13,6 +13,21 @@ export class TableOM {
     this.#locator = locator;
   }
 
+  get contentContainer() {
+    return this.#locator.locator(".vuuTable-contentContainer");
+  }
+
+  get scrollbarContainer() {
+    return this.#locator.locator(".vuuTable-scrollbarContainer");
+  }
+
+  /**
+   * row Locator by aria-index
+   */
+  row(row: number) {
+    return this.#locator.locator(`[aria-rowindex="${row}"]`);
+  }
+
   locateCell(row: number, column: number) {
     return this.#locator.locator(
       `[aria-rowindex="${row}"] > [aria-colindex="${column}"]`,
@@ -155,6 +170,30 @@ export class TableOM {
           .getByRole("row")
           .locator(byAriaRowIndex(lastRenderedRow + 1)),
       ).not.toBeAttached();
+    }
+  }
+
+  async assertRenderedColumns({
+    rendered,
+    visible,
+  }: {
+    rendered: VuuRange;
+    visible: VuuRange;
+  }) {
+    const { from: firstRendered, to: lastRendered } = rendered;
+    const renderedColumnCount = lastRendered - firstRendered + 1;
+
+    await expect(this.row(2).getByRole("cell")).toHaveCount(
+      renderedColumnCount,
+    );
+
+    const { from: firstVisible, to: lastVisible } = visible;
+
+    await expect(this.locateCell(2, firstVisible)).toBeInViewport();
+    await expect(this.locateCell(2, lastVisible)).toBeInViewport();
+
+    if (lastRendered > lastVisible) {
+      await expect(this.locateCell(2, lastVisible + 1)).not.toBeInViewport();
     }
   }
 }

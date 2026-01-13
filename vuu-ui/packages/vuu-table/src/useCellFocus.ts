@@ -52,35 +52,31 @@ export const useCellFocus = ({
   );
 
   const focusCell = useCallback<FocusCell>(
-    (cellPos, fromKeyboard = false) => {
+    (cellPos) => {
       if (containerRef.current) {
         const { current: state } = cellFocusStateRef;
         if (isDifferentCellPosition(state.cellPos, cellPos)) {
-          if (fromKeyboard && state.outsideViewport) {
-            state.cellPos = cellPos;
-          } else {
-            const activeCell = getTableCell(containerRef, cellPos);
-            if (activeCell) {
-              if (activeCell !== state.el) {
-                state.el?.removeAttribute("tabindex");
-                activeCell.setAttribute("tabindex", "0");
+          const activeCell = getTableCell(containerRef, cellPos);
+          if (activeCell) {
+            if (activeCell !== state.el) {
+              state.el?.removeAttribute("tabindex");
+              activeCell.setAttribute("tabindex", "0");
 
-                // TODO no need to measure if we're navigating horizontally
-                // state.cellPos = cellPos;
-                state.el = activeCell;
-                state.pos = getCellPosition(activeCell);
-                state.outsideViewport = false;
+              // TODO no need to measure if we're navigating horizontally
+              // state.cellPos = cellPos;
+              state.el = activeCell;
+              state.pos = getCellPosition(activeCell);
+              state.outsideViewport = false;
 
-                if (state.placeholderEl) {
-                  state.placeholderEl.style.top = `${state.pos.top}px`;
-                }
+              if (state.placeholderEl) {
+                state.placeholderEl.style.top = `${state.pos.top}px`;
               }
-              state.cellPos = cellPos;
-
-              // TODO needs to be scroll cell to accommodate horizontal virtualization
-              requestScroll?.({ type: "scroll-row", rowIndex: cellPos[0] });
-              activeCell.focus({ preventScroll: true });
             }
+            state.cellPos = cellPos;
+
+            // TODO needs to be scroll cell to accommodate horizontal virtualization
+            requestScroll?.({ type: "scroll-row", rowIndex: cellPos[0] });
+            activeCell.focus({ preventScroll: true });
           }
         }
       }

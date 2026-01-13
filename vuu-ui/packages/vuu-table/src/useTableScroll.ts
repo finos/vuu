@@ -6,7 +6,7 @@ import {
 import type { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import {
   ForwardedRef,
-  MutableRefObject,
+  RefObject,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -166,7 +166,7 @@ type ScrollPos = {
 };
 
 export interface TableScrollHookProps {
-  cellFocusStateRef: MutableRefObject<ICellFocusState>;
+  cellFocusStateRef: RefObject<ICellFocusState>;
   columns: RuntimeColumnDescriptor[];
   focusCell?: FocusCell;
   getRowAtPosition: RowAtPositionFunc;
