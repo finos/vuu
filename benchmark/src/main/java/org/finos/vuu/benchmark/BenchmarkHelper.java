@@ -11,6 +11,7 @@ import org.finos.vuu.api.TableDef;
 import org.finos.vuu.core.filter.type.AllowAllPermissionFilter$;
 import org.finos.vuu.core.table.Column;
 import org.finos.vuu.core.table.Columns;
+import org.finos.vuu.core.table.DataTable;
 import org.finos.vuu.core.table.InMemDataTable;
 import org.finos.vuu.core.table.RowWithData;
 import org.finos.vuu.core.table.ViewPortColumnCreator;
@@ -43,7 +44,11 @@ public class BenchmarkHelper {
         return clock;
     }
 
-    public InMemDataTable buildBigTable(int size) {
+    public DataTable buildTable() {
+        return buildTable(0);
+    }
+
+    public DataTable buildTable(int size) {
         var pricesDef = TableDef.apply(
                 "prices",
                 "ric",
@@ -51,32 +56,38 @@ public class BenchmarkHelper {
                 Indices.apply(toScala(List.of(Index.apply("exchange")))),
                 toScalaSeq(List.of("ric"))
         );
-        var table = new InMemDataTable(pricesDef, joinProvider, metricsProvider, clock);
+        var dataTable = new InMemDataTable(pricesDef, joinProvider, metricsProvider, clock);
+        addTableData(dataTable, size);
+        return dataTable;
+    }
 
-        for (int i = 0; i <= size; i++) {
+    public void addTableData(DataTable dataTable, int size) {
+        addTableData(dataTable, 0, size);
+    }
+
+    public void addTableData(DataTable dataTable, int offset, int size) {
+        for (int i = offset; i < offset + size; i++) {
             var ric = "TST-" + i;
             var exchange = "exchange-" + i;
-            var row = new RowWithData(ric, Map.of(
+            dataTable.processUpdate(ric, new RowWithData(ric, Map.of(
                     "ric", ric,
                     "bid", 101,
                     "ask", 100,
                     "last", 105,
                     "close", 106,
                     "exchange", exchange
-            ));
-            table.processUpdate(ric, row);
+            )));
         }
-        return table;
     }
 
-    public TreeBuilder createTreeBuilder(InMemDataTable table) {
+    public TreeBuilder createTreeBuilder(DataTable table) {
         var client = new ClientSessionId("A", "C");
 
         var groupByTable = TreeSessionTable.apply(table, client, joinProvider, metricsProvider, clock);
         var exchange = table.getTableDef().columnForName("exchange");
 
         var columns = ViewPortColumnCreator.create(groupByTable,
-                toScala(Arrays.stream(table.columns()).map(Column::name).toList()));
+                toScala(Arrays.stream(table.getTableDef().getColumns()).map(Column::name).toList()));
 
         return TreeBuilder.create(groupByTable,
                 new GroupBy(toScala(List.of(exchange)), toScala(List.of())),

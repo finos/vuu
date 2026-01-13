@@ -156,10 +156,11 @@
                 <configuration>
                     <executable>java</executable>
                     <arguments>
-                        <argument>-Xmx10G</argument>
+                        <argument>-Xmx12G</argument>
+                        <argument>-XX:+UseG1GC</argument>
+                        <argument>-XX:+UseStringDeduplication</argument>
                         <argument>-jar</argument>
                         <argument>target/benchmarks.jar</argument>
-                        <!--argument>org.openjdk.jmh.Main</argument-->
                     </arguments>
                 </configuration>
             </plugin>
