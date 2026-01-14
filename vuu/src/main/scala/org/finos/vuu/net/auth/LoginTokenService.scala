@@ -74,7 +74,7 @@ case class LoginTokenServiceImpl(secret: Array[Byte]) extends LoginTokenService 
           Left("Token has expired")
         }
       case Left(value) =>
-        logger.warn(s"[LOGIN] Invalid token: $value")
+        logger.error(s"[LOGIN] Invalid token: $value")
         Left("Invalid token")
     }
   }
