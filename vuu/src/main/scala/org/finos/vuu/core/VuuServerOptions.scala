@@ -60,6 +60,7 @@ trait VuuWebSocketOptions {
   def sslOptions: VuuSSLOptions
   def compressionEnabled: Boolean
   def nativeTransportEnabled: Boolean
+  def maxSessionsPerUser: Int
   def withWsPort(port: Int): VuuWebSocketOptions
   def withUri(uri: String): VuuWebSocketOptions
   def withBindAddress(address: String): VuuWebSocketOptions
@@ -67,6 +68,7 @@ trait VuuWebSocketOptions {
   def withSsl(vuuSSLOptions: VuuSSLOptions): VuuWebSocketOptions
   def withCompression(withCompression: Boolean): VuuWebSocketOptions
   def withNativeTransport(withNativeTransport: Boolean): VuuWebSocketOptions
+  def withMaxSessionsPerUser(maxSessionsPerUser: Int): VuuWebSocketOptions
 }
 
 trait VuuThreadingOptions{
@@ -99,7 +101,8 @@ private case class VuuWebSocketOptionsImpl(wsPort: Int,
                                    bindAddress: String,
                                    sslOptions: VuuSSLOptions = VuuSSLDisabled(),
                                    compressionEnabled: Boolean = true,
-                                   nativeTransportEnabled: Boolean = true
+                                   nativeTransportEnabled: Boolean = true,
+                                   maxSessionsPerUser: Int = Int.MaxValue       
                                    ) extends VuuWebSocketOptions {
   override def withWsPort(port: Int): VuuWebSocketOptions = this.copy(wsPort = port)
   override def withUri(uri: String): VuuWebSocketOptions = this.copy(uri = uri)
@@ -111,6 +114,8 @@ private case class VuuWebSocketOptionsImpl(wsPort: Int,
     this.copy(compressionEnabled = compressionEnabled)
   override def withNativeTransport(nativeTransportEnabled: Boolean): VuuWebSocketOptions =
       this.copy(nativeTransportEnabled = nativeTransportEnabled)
+  override def withMaxSessionsPerUser(maxSessionsPerUser: Int): VuuWebSocketOptions =
+    this.copy(maxSessionsPerUser = maxSessionsPerUser)  
 }
 
 case class VuuThreadingOptionsImpl(viewPortThreads: Int = 1, treeViewPortThreads: Int = 1) extends VuuThreadingOptions {

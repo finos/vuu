@@ -35,7 +35,7 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
   JsonSubTypeRegistry.register(classOf[MessageBody], classOf[CoreJsonSerializationMixin])
   JsonSubTypeRegistry.register(classOf[ViewPortAction], classOf[ViewPortActionMixin])
 
-  val sessionContainer: ClientSessionContainer = new ClientSessionContainerImpl()
+  val sessionContainer: ClientSessionContainer = new ClientSessionContainerImpl(1)
 
   final val loginTokenService: LoginTokenService = LoginTokenService()
 
