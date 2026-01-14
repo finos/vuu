@@ -93,7 +93,7 @@ class RequestProcessor(loginTokenService: LoginTokenService,
   }
 
   private def handleMessageWithInvalidSession(requestSession: ClientSessionId, channel: Channel): Unit = {
-    val channelHasSession = clientSessionContainer.getSessions().exists(p => p.channelId == requestSession.channelId)
+    val channelHasSession = clientSessionContainer.getSessions.exists(p => p.channelId == requestSession.channelId)
     if (channelHasSession) {
       logger.error(s"[SESSION] Incorrect session on request. Remote address: ${channel.remoteAddress()}")
     } else {

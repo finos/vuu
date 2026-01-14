@@ -43,7 +43,7 @@ class VuuServer(config: VuuServerConfig)
 
   final val flowControllerFactory: FlowControllerFactory =  FlowControllerFactory(config.clientConnection.hasHeartbeat)
 
-  final val sessionContainer: ClientSessionContainer = new ClientSessionContainerImpl(config.wsOptions.maxSessionsPerUser)
+  final val sessionContainer: ClientSessionContainer = ClientSessionContainer(config.wsOptions.maxSessionsPerUser)
 
   final val joinProvider: JoinTableProvider = JoinTableProviderImpl(config.joinProvider)
 
