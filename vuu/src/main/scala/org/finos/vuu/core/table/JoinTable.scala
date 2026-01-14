@@ -574,7 +574,7 @@ class JoinTable(val tableDef: JoinTableDef,
     val keysByTable = getFKForPK(key)
 
     if (keysByTable == null) {
-      logger.warn(s"tried to subscribe to key $key in join table ${getTableDef.name} but couldn't as not in keys")
+      logger.debug(s"tried to subscribe to key $key in join table ${getTableDef.name} but couldn't as not in keys")
       true
     }
     else {
@@ -600,7 +600,7 @@ class JoinTable(val tableDef: JoinTableDef,
     val keysByTable = getFKForPK(key)
 
     if (keysByTable == null) {
-      logger.trace(s"tried to remove key $key in join table ${getTableDef.name} but couldn't as not in keys")
+      logger.debug(s"tried to remove key $key in join table ${getTableDef.name} but couldn't as not in keys")
       true
     }
     else {
