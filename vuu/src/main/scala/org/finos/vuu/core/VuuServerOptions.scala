@@ -102,7 +102,7 @@ private case class VuuWebSocketOptionsImpl(wsPort: Int,
                                    sslOptions: VuuSSLOptions = VuuSSLDisabled(),
                                    compressionEnabled: Boolean = true,
                                    nativeTransportEnabled: Boolean = true,
-                                   maxSessionsPerUser: Int = Int.MaxValue       
+                                   maxSessionsPerUser: Int = 1
                                    ) extends VuuWebSocketOptions {
   override def withWsPort(port: Int): VuuWebSocketOptions = this.copy(wsPort = port)
   override def withUri(uri: String): VuuWebSocketOptions = this.copy(uri = uri)
@@ -115,7 +115,7 @@ private case class VuuWebSocketOptionsImpl(wsPort: Int,
   override def withNativeTransport(nativeTransportEnabled: Boolean): VuuWebSocketOptions =
       this.copy(nativeTransportEnabled = nativeTransportEnabled)
   override def withMaxSessionsPerUser(maxSessionsPerUser: Int): VuuWebSocketOptions =
-    this.copy(maxSessionsPerUser = maxSessionsPerUser)  
+    this.copy(maxSessionsPerUser = maxSessionsPerUser)
 }
 
 case class VuuThreadingOptionsImpl(viewPortThreads: Int = 1, treeViewPortThreads: Int = 1) extends VuuThreadingOptions {
