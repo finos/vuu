@@ -13,7 +13,10 @@ object VuuSecurityOptions{
 
 object VuuWebSocketOptions {
   def apply(): VuuWebSocketOptions = {
-    VuuWebSocketOptionsImpl(8090, "/websocket", "0.0.0.0")
+    VuuWebSocketOptionsImpl(wsPort = 8090, uri = "/websocket", bindAddress = "0.0.0.0",
+      sslOptions = VuuSSLDisabled(), compressionEnabled = true, nativeTransportEnabled = true,
+      maxSessionsPerUser = 1
+    )
   }
 }
 
@@ -99,10 +102,10 @@ case class VuuSecurityOptionsImpl(loginTokenService: LoginTokenService) extends 
 private case class VuuWebSocketOptionsImpl(wsPort: Int,
                                    uri: String,
                                    bindAddress: String,
-                                   sslOptions: VuuSSLOptions = VuuSSLDisabled(),
-                                   compressionEnabled: Boolean = true,
-                                   nativeTransportEnabled: Boolean = true,
-                                   maxSessionsPerUser: Int = 1
+                                   sslOptions: VuuSSLOptions,
+                                   compressionEnabled: Boolean,
+                                   nativeTransportEnabled: Boolean,
+                                   maxSessionsPerUser: Int
                                    ) extends VuuWebSocketOptions {
   override def withWsPort(port: Int): VuuWebSocketOptions = this.copy(wsPort = port)
   override def withUri(uri: String): VuuWebSocketOptions = this.copy(uri = uri)
