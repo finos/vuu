@@ -241,6 +241,43 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
       stopLifeCycle()
     }
 
+    Scenario("Start WebSocketServer with max sessions per user") {
+
+      implicit val metrics: MetricsProvider = new MetricsProviderImpl
+      implicit val timeProvider: Clock = new DefaultClock
+      implicit val lifeCycle: LifecycleContainer = new LifecycleContainer
+
+      val wsPort = portCounter.getAndIncrement()
+
+      val config = VuuServerConfig(
+        VuuHttp2ServerOptions()
+          .withSsl(VuuSSLDisabled())
+          .withPort(0),
+        VuuWebSocketOptions()
+          .withUri("websocket")
+          .withSsl(
+            VuuSSLByCertAndKey(
+              certPath,
+              keyPath,
+              cipherSuite = VuuSSLCipherSuiteOptions()
+                .withCiphers(List("TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"))
+                .withProtocols(List("TLSv1.2"))
+            )
+          )
+          .withWsPort(wsPort)
+        .withMaxSessionsPerUser(2),
+        VuuSecurityOptions()
+      )
+
+      implicit val viewServerClient: WebSocketViewServerClient = createClient(config)
+
+      val token = config.security.loginTokenService.getToken(VuuUser("Mikey"))
+      val sessionId = ClientHelperFns.login(token)
+      sessionId should not equal null
+
+      stopLifeCycle()
+    }
+
   }
 
   private def createClient(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider): WebSocketViewServerClient = {

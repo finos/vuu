@@ -28,6 +28,8 @@ object ClientSessionContainer {
 
 private class ClientSessionContainerImpl(maxSessionsPerUser: Int) extends ClientSessionContainer with StrictLogging {
 
+  if (maxSessionsPerUser < 1) throw new IllegalArgumentException(s"Max sessions per user must be greater than 0 ($maxSessionsPerUser)")
+
   private val sessionsPerUser = new ConcurrentHashMap[String, Integer]()
   private val sessions = new ConcurrentHashMap[ClientSessionId, MessageHandler]()
 
