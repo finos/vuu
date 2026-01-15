@@ -39,7 +39,7 @@ private class ClientSessionContainerImpl(maxSessionsPerUser: Int) extends Client
     logger.trace(s"[SESSION] Removing session ${sessionId.sessionId} for user ${vuuUser.name}")
 
     sessions.computeIfPresent(sessionId, (_, _) => {
-      sessionsPerUser.compute(vuuUser.name, (_, counter) => {
+      sessionsPerUser.computeIfPresent(vuuUser.name, (_, counter) => {
         if (counter <= 1) {
           logger.trace(s"[SESSION] User ${vuuUser.name} has no more sessions")
           null
