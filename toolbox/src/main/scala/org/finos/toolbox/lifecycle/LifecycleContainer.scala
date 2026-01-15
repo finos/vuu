@@ -243,7 +243,7 @@ class LifecycleContainer(implicit clock: Clock) extends StrictLogging {
     if(!dependencyGraph.containsNode(comp))
       dependencyGraph.addNode(comp)
     else
-      logger.warn(s"lifecycle already contains component $comp")
+      logger.debug(s"lifecycle already contains component $comp")
 
     LifeCycleComponentContext(comp, this, dependencyGraph)
   }

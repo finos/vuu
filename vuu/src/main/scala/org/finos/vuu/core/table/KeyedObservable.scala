@@ -58,23 +58,20 @@ trait KeyedObservableHelper[T] extends KeyedObservable[T] {
   override def addKeyObserver(key: String, observer: KeyObserver[T]): Boolean = {
     var first = false
 
-    logger.trace("Adding observer:" + key + "->" + observer)
-
-    //if(this.getClass.getSimpleName != "JoinTable")
-    //logger.error("here2", new Throwable)
-
     observersLock.synchronized {
 
       val observers = if (observersByKey.containsKey(key)) observersByKey.get(key) else null
 
       if (observers == null) {
         observersByKey.put(key, Array(observer))
+        logger.trace(s"Added key $key to observer $observer")
         first = true
       } else {
         val newObservers = new Array[KeyObserver[T]](observers.length + 1)
         System.arraycopy(observers, 0, newObservers, 0, observers.length)
         newObservers(observers.length) = observer
         observersByKey.put(key, newObservers)
+        logger.trace(s"Added key $key to observer $observer")
         first = false
       }
     }
@@ -90,25 +87,26 @@ trait KeyedObservableHelper[T] extends KeyedObservable[T] {
       val observers = if (key == null || !observersByKey.containsKey(key)) null else observersByKey.get(key)
 
       if (observers == null) {
-        logger.debug(s"Trying to remove observer ${observer} on key which has no observers registered")
+        logger.debug(s"Tried to remove key $key from observer $observer, which has no observers registered")
         last = true
       } else if (observers.length == 1) {
         if (observers(0) == observer) {
           observersByKey.remove(key)
+          logger.trace(s"Removed key $key from observer $observer")
           last = true
         } else {
-          logger.warn("There was only one observer left, but it wasn't us, this looks bad")
+          logger.debug(s"Couldn't remove key $key from observer $observer as it is not currently observing it")
         }
-
       }
       else {
         observers.find(o => o == observer) match {
           case Some(x: KeyObserver[T]) => {
-            observersByKey.put(key, observers.filterNot(o => o == x));
+            observersByKey.put(key, observers.filterNot(o => o == x))
+            logger.trace(s"Removed key $key from observer $observer")
             last = false
           }
           case None =>
-            logger.warn(s"Couldn't find observer to remove in list of observers ${observer}")
+            logger.debug(s"Couldn't remove key $key from observer $observer as it is not currently observing it")
         }
       }
     }
