@@ -9,7 +9,7 @@ import scala.jdk.CollectionConverters.{CollectionHasAsScala, SetHasAsScala}
 
 trait ClientSessionContainer {
 
-  def register(vuuUser: VuuUser, sessionId: ClientSessionId, messageHandler: MessageHandler): Unit
+  def register(vuuUser: VuuUser, sessionId: ClientSessionId, messageHandler: MessageHandler): Either[String, Unit]
 
   def getHandler(sessionId: ClientSessionId): Option[MessageHandler]
 
@@ -51,21 +51,31 @@ private class ClientSessionContainerImpl(maxSessionsPerUser: Int) extends Client
     logger.debug(s"[SESSION] Removed session ${sessionId.sessionId} for user ${vuuUser.name}")
   }
 
-  override def register(vuuUser: VuuUser, sessionId: ClientSessionId, messageHandler: MessageHandler): Unit = {
+  override def register(vuuUser: VuuUser, sessionId: ClientSessionId, messageHandler: MessageHandler): Either[String, Unit] = {
     logger.trace(s"[SESSION] Registering session ${sessionId.sessionId} for user ${vuuUser.name}")
 
+    var sessionCreated = false
+
     val counter = sessionsPerUser.computeIfAbsent(vuuUser.name, _ => AtomicInteger(0))
+
     val updated = counter.updateAndGet { current =>
-      if (current < maxSessionsPerUser) current + 1 else current
+      if (current < maxSessionsPerUser) {
+        sessions.put(sessionId, messageHandler)
+        sessionCreated = true
+        current + 1
+      } else {
+        current
+      }
     }
+
     logger.trace(s"[SESSION] User ${vuuUser.name} has a total of $updated session(s)")
 
-    if (updated <= maxSessionsPerUser) {
-      sessions.put(sessionId, messageHandler)
+    if (sessionCreated) {
       logger.debug(s"[SESSION] Registered session ${sessionId.sessionId} for user ${vuuUser.name}")
+      Right(())
     } else {
       logger.warn(s"[SESSION] User ${vuuUser.name} has hit the session limit of $maxSessionsPerUser")
-      throw new RuntimeException("Session limit exceeded")
+      Left("User session limit exceeded")
     }
   }
 

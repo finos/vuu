@@ -58,13 +58,12 @@ class RequestProcessor(loginTokenService: LoginTokenService,
     val session = SessionId.oneNew()
     val id = ClientSessionId(session, channel.id().asLongText())
     val handler = createMessageHandler(channel, id, user)
-    Try(clientSessionContainer.register(user, id, handler)) match {
-      case Success(value) =>
+    clientSessionContainer.register(user, id, handler) match {
+      case Right(value) =>
         logger.info(s"[SESSION] Created session for user ${user.name} with id ${id.sessionId}. Remote address: ${channel.remoteAddress()}")
         Some(JsonViewServerMessage(requestId, session, LoginSuccess(vuuServerId)))
-      case Failure(exception) =>
-        logger.warn(s"[SESSION] Failed to create session for user ${user.name}", exception)
-        closeChannel(exception, channel)
+      case Left(value) =>
+        sendMessageAndCloseChannel(value, channel)
         None
     }
   }
