@@ -38,7 +38,7 @@ private class ClientSessionContainerImpl(maxSessionsPerUser: Int) extends Client
   override def remove(vuuUser: VuuUser, sessionId: ClientSessionId): Unit = {
     logger.trace(s"[SESSION] Removing session ${sessionId.sessionId} for user ${vuuUser.name}")
 
-    sessions.computeIfPresent(sessionId, (_, handler) => {
+    sessions.computeIfPresent(sessionId, (_, _) => {
       sessionsPerUser.compute(vuuUser.name, (_, counter) => {
         if (counter <= 1) {
           logger.trace(s"[SESSION] User ${vuuUser.name} has no more sessions")
