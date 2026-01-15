@@ -24,7 +24,7 @@ class RightToLeftKeys {
       
       val rightKeyMap = getRightKeyMap(rightTable, rightKey)
 
-      rightKeyMap.compute(leftTable, (_, existingValue) -> {
+      rightKeyMap.compute(leftTable, (_, existingValue) => {
         if (existingValue == null) {
           ImmutableArraySet.of(leftKey)
         } else {

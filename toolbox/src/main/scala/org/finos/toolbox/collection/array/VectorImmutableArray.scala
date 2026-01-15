@@ -12,7 +12,7 @@ object VectorImmutableArray {
     new VectorImmutableArray[T](Vector.empty)
   }
 
-  def of[T <: Object](element: T): ImmutableArray[T] = {
+  def of[T <: Object : ClassTag](element: T): ImmutableArray[T] = {
     new VectorImmutableArray[T](Vector(element))
   }
 
