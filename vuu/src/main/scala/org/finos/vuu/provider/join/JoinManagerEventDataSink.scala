@@ -17,30 +17,37 @@ case class JoinDefToJoinTable(joinDef: JoinTableDef, table: DataTable)
 class RightToLeftKeys {
 
   private val keysToRightKeys = new ConcurrentHashMap[String, ConcurrentHashMap[String, ConcurrentHashMap[String, ImmutableArraySet[String]]]]()
+  private val emptyKeyMap: ImmutableArraySet[String] = ImmutableArraySet.empty
 
-  def addRightKey(rightTable: String, rightKey: String, leftTable: String, leftKey: String): Unit = {
-
-    val rightTableMap = keysToRightKeys.computeIfAbsent(rightTable, rightTable => new ConcurrentHashMap[String, ConcurrentHashMap[String, ImmutableArraySet[String]]]())
-
+  def addRightKey(rightTable: String, rightKey: String, leftTable: String, leftKey: String): Unit = {    
     if (rightKey != null) {
-      val rightKeyMap = rightTableMap.computeIfAbsent(rightKey, rightKey => new ConcurrentHashMap[String, ImmutableArraySet[String]]())
+      
+      val rightKeyMap = getRightKeyMap(rightTable, rightKey)
 
-      val keys = rightKeyMap.computeIfAbsent(leftTable, leftTable => ImmutableArraySet.of(leftKey))
-
-      rightKeyMap.put(leftTable, keys.+(leftKey))
+      rightKeyMap.compute(leftTable, (_, existingValue) -> {
+        if (existingValue == null) {
+          ImmutableArraySet.of(leftKey)
+        } else {
+          existingValue + leftKey
+        }
+      })
     }
+    
   }
 
-  def getLeftTableKeysForRightKey(rightTable: String, rightKey: String, leftTable: String): ImmutableArraySet[String] = {
-
-    val rightTableMap = keysToRightKeys.computeIfAbsent(rightTable, rightTable => new ConcurrentHashMap[String, ConcurrentHashMap[String, ImmutableArraySet[String]]]())
-
-    val rightKeyMap = rightTableMap.computeIfAbsent(rightKey, rightKey => new ConcurrentHashMap[String, ImmutableArraySet[String]]())
-
-    val keys = rightKeyMap.computeIfAbsent(leftTable, leftTable => ImmutableArraySet.empty[String]())
-
-    keys
+  def getLeftTableKeysForRightKey(rightTable: String, rightKey: String, leftTable: String): ImmutableArraySet[String] = {    
+    getRightKeyMap(rightTable, rightKey).getOrDefault(leftTable, emptyKeyMap)
   }
+  
+  private def getRightKeyMap(rightTable: String, rightKey: String): ConcurrentHashMap[String, ImmutableArraySet[String]] = {
+
+    val rightTableMap = keysToRightKeys.computeIfAbsent(rightTable, 
+      rightTable => new ConcurrentHashMap[String, ConcurrentHashMap[String, ImmutableArraySet[String]]]())
+
+    rightTableMap.computeIfAbsent(rightKey, rightKey => new ConcurrentHashMap[String, ImmutableArraySet[String]]())
+
+  }
+  
 }
 
 class TableDataSink(val name: String) {
