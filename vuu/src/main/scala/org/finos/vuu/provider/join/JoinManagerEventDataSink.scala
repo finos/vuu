@@ -25,7 +25,7 @@ class RightToLeftKeys {
     if (rightKey != null) {
       val rightKeyMap = rightTableMap.computeIfAbsent(rightKey, rightKey => new ConcurrentHashMap[String, ImmutableArraySet[String]]())
 
-      val keys = rightKeyMap.computeIfAbsent(leftTable, leftTable => ImmutableArraySet.from(Array(leftKey)))
+      val keys = rightKeyMap.computeIfAbsent(leftTable, leftTable => ImmutableArraySet.of(leftKey))
 
       rightKeyMap.put(leftTable, keys.+(leftKey))
     }
