@@ -12,22 +12,28 @@ object VectorImmutableArraySet {
   }
 
   def from[T <: Object : ClassTag](iterable: IterableOnce[T]): ImmutableArraySet[T] = {
-    val seen = mutable.HashSet.empty[T]
-    val builder = Vector.newBuilder[T]
+    if (iterable.knownSize == 0) {
+      empty()
+    } else if (iterable.knownSize == 1) {
+      of(iterable.iterator.next())
+    } else {
+      val seen = mutable.HashSet.empty[T]
+      val builder = Vector.newBuilder[T]
 
-    val iterator = iterable.iterator
-    if (iterator.knownSize > 0) {
-      builder.sizeHint(iterator.knownSize)
-    }
-
-    while (iterator.hasNext) {
-      val elem = iterator.next()
-      if (seen.add(elem)) {
-        builder += elem
+      val iterator = iterable.iterator
+      if (iterator.knownSize > 0) {
+        builder.sizeHint(iterator.knownSize)
       }
-    }
 
-    VectorImmutableArraySet(builder.result(), seen.toSet)
+      while (iterator.hasNext) {
+        val elem = iterator.next()
+        if (seen.add(elem)) {
+          builder += elem
+        }
+      }
+
+      VectorImmutableArraySet(builder.result(), seen.toSet)
+    }
   }
 
   def empty[T <: Object : ClassTag](): ImmutableArraySet[T] = {
@@ -55,22 +61,28 @@ private class VectorImmutableArraySet[T <: Object :ClassTag](private val vector:
   }
 
   override def addAll(iterable: IterableOnce[T]): ImmutableArraySet[T] = {
-    val seen = mutable.HashSet.from(set)
-    val builder = Vector.newBuilder[T]
+    if (iterable.knownSize == 0) {
+      this
+    } else if (iterable.knownSize == 1) {
+      add(iterable.iterator.next())
+    } else {
+      val seen = mutable.HashSet.from(set)
+      val builder = Vector.newBuilder[T]
 
-    val iterator = iterable.iterator
-    if (iterator.knownSize > 0) {
-      builder.sizeHint(vector.size + iterator.knownSize)
-    }
-
-    builder ++= vector
-    iterator.foreach { elem =>
-      if (seen.add(elem)) {
-        builder += elem
+      val iterator = iterable.iterator
+      if (iterator.knownSize > 0) {
+        builder.sizeHint(vector.size + iterator.knownSize)
       }
-    }
 
-    VectorImmutableArraySet(builder.result(), seen.toSet)
+      builder ++= vector
+      iterator.foreach { elem =>
+        if (seen.add(elem)) {
+          builder += elem
+        }
+      }
+
+      VectorImmutableArraySet(builder.result(), seen.toSet)
+    }
   }
 
   override def contains(element: T): Boolean = set.contains(element)
