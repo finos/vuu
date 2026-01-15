@@ -44,7 +44,7 @@ private class ClientSessionContainerImpl(maxSessionsPerUser: Int) extends Client
           logger.trace(s"[SESSION] User ${vuuUser.name} has no more sessions")
           null
         } else {
-          logger.trace(s"[SESSION] User ${vuuUser.name} has $counter session(s) remaining")
+          logger.trace(s"[SESSION] User ${vuuUser.name} has ${counter - 1} session(s) remaining")
           counter - 1
         }
       })
