@@ -12,10 +12,6 @@ import org.finos.vuu.net.json.JsonVsSerializer
 import org.finos.vuu.util.PublishQueue
 import org.finos.vuu.viewport.{RowUpdateType, SizeUpdateType, ViewPortUpdate}
 
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicInteger
-import scala.jdk.CollectionConverters.{CollectionHasAsScala, SetHasAsScala}
-
 trait InboundMessageHandler {
   def handle(msg: ViewServerMessage): Option[ViewServerMessage]
 }
