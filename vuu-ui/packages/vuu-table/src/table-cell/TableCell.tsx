@@ -1,10 +1,10 @@
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import type {
-  DataItemEditHandler,
+  TableCellEditHandler,
   TableCellProps,
 } from "@vuu-ui/vuu-table-types";
 import { getTypedValue } from "@vuu-ui/vuu-utils";
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
 import { MouseEventHandler, useCallback, useState } from "react";
 import { useCell } from "../useCell";
 import { useHighlighting } from "../useHighlighting";
@@ -34,34 +34,34 @@ export const TableCell = ({
   const { ariaColIndex, CellRenderer, valueFormatter } = column;
   const dataIdx = columnMap[column.name];
 
-  const handleDataItemEdited = useCallback<DataItemEditHandler>(
+  const handleDataItemEdited = useCallback<TableCellEditHandler>(
     (editState, editPhase) => {
       if (editPhase === "commit") {
         const { serverDataType = "string" } = column;
-        if (onDataEdited) {
-          const typedValue = getTypedValue(
-            String(editState.value),
-            serverDataType,
-            true,
-          );
-          return onDataEdited({
+        const typedValue = getTypedValue(
+          String(editState.value),
+          serverDataType,
+          true,
+        );
+        return onDataEdited?.(
+          {
             ...editState,
             row,
             columnName: column.name,
             value: typedValue,
-          });
-        } else {
-          throw Error(
-            "TableCell onDataEdited prop not supplied for an editable cell",
-          );
-        }
+          },
+          editPhase,
+        );
       } else {
         setHasError(editState.isValid === false);
-        onDataEdited({
-          ...editState,
-          row,
-          columnName: column.name,
-        });
+        onDataEdited?.(
+          {
+            ...editState,
+            row,
+            columnName: column.name,
+          },
+          editPhase,
+        );
         return undefined;
       }
     },

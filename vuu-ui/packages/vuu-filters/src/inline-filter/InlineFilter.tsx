@@ -1,4 +1,4 @@
-import { InputProps } from "@salt-ds/core";
+import { type InputProps } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { TableSchemaTable } from "@vuu-ui/vuu-data-types";

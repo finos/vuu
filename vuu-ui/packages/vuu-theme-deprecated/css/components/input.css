@@ -1,0 +1,28 @@
+.salt-theme.vuu-theme-deprecated {
+  .saltInput-activationIndicator {
+    display: none;
+  }
+
+  .saltInput:hover {
+    background: inherit;
+  }
+
+  .saltInput-primary {
+    border: solid 1px var(--input-borderColor, var(--salt-editable-borderColor));
+    border-radius: 6px;
+  }
+
+  .saltInput-focused:hover,
+  .saltInput-focused {
+    --input-borderColor: var(--vuu-color-purple-10);
+  }
+
+  .saltInput-error {
+    --saltInput-background: var(--salt-editable-primary-background);
+    border-color: var(--salt-editable-borderColor);
+  }
+
+  .saltStatusAdornment {
+    display: none;
+  }
+}

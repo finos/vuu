@@ -34,7 +34,7 @@
 }
 
 .vuu-workspace-tabs > .vuuTabstrip > .vuuOverflowContainer-wrapContainer {
-  background: var(--vuuShell-background, var(--vuu-color-gray-25));
+  background: var(--vuuShell-background, var(--salt-container-primary-background));
 }
 
 .vuu-workspace-tabs {
