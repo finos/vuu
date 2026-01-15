@@ -37,17 +37,24 @@ private class ClientSessionContainerImpl(maxSessionsPerUser: Int) extends Client
 
   override def remove(vuuUser: VuuUser, sessionId: ClientSessionId): Unit = {
     logger.trace(s"[SESSION] Removing session ${sessionId.sessionId} for user ${vuuUser.name}")
-    if (sessions.remove(sessionId) != null) {
-      sessionsPerUser.compute(vuuUser.name, (_, counter) => {
-        if (counter <= 1) {
-          logger.trace(s"[SESSION] User ${vuuUser.name} has no more sessions")
+
+    sessions.computeIfPresent(sessionId, (_, handler) => {
+      handler match {
+        case m: MessageHandler =>
+          //As session is present, decrement or remove the counter
+          sessionsPerUser.compute(vuuUser.name, (_, counter) => {
+            if (counter <= 1) {
+              logger.trace(s"[SESSION] User ${vuuUser.name} has no more sessions")
+              null
+            } else {
+              logger.trace(s"[SESSION] User ${vuuUser.name} has $counter session(s) remaining")
+              counter - 1
+            }
+          })
           null
-        } else {
-          logger.trace(s"[SESSION] User ${vuuUser.name} has $counter session(s) remaining")
-          counter - 1
-        }
-      })
-    }
+      }
+    })
+
     logger.debug(s"[SESSION] Removed session ${sessionId.sessionId} for user ${vuuUser.name}")
   }
 
@@ -56,6 +63,7 @@ private class ClientSessionContainerImpl(maxSessionsPerUser: Int) extends Client
 
     var userCanRegisterSession = false
 
+    //Determine if we can create a new session and increment the counter if yes
     val sessionCount = sessionsPerUser.compute(vuuUser.name, (_, counter) => {
       counter match {
         case null =>
