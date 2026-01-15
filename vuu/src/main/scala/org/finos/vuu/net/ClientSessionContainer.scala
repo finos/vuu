@@ -4,7 +4,6 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.auths.VuuUser
 
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicInteger
 import scala.jdk.CollectionConverters.{CollectionHasAsScala, SetHasAsScala}
 
 trait ClientSessionContainer {
@@ -29,7 +28,7 @@ object ClientSessionContainer {
 
 private class ClientSessionContainerImpl(maxSessionsPerUser: Int) extends ClientSessionContainer with StrictLogging {
 
-  private val sessionsPerUser = new ConcurrentHashMap[String, AtomicInteger]()
+  private val sessionsPerUser = new ConcurrentHashMap[String, Integer]()
   private val sessions = new ConcurrentHashMap[ClientSessionId, MessageHandler]()
 
   override def getSessions: List[ClientSessionId] = CollectionHasAsScala(sessions.keySet()).asScala.toList
@@ -37,14 +36,13 @@ private class ClientSessionContainerImpl(maxSessionsPerUser: Int) extends Client
   override def remove(vuuUser: VuuUser, sessionId: ClientSessionId): Unit = {
     logger.trace(s"[SESSION] Removing session ${sessionId.sessionId} for user ${vuuUser.name}")
     if (sessions.remove(sessionId) != null) {
-      sessionsPerUser.compute(vuuUser.name, (_, value) => {
-        if (value.get() <= 1) {
+      sessionsPerUser.compute(vuuUser.name, (_, counter) => {
+        if (counter <= 1) {
           logger.trace(s"[SESSION] User ${vuuUser.name} has no more sessions")
           null
         } else {
-          value.decrementAndGet()
-          logger.trace(s"[SESSION] User ${vuuUser.name} has $value session(s) remaining")
-          value
+          logger.trace(s"[SESSION] User ${vuuUser.name} has $counter session(s) remaining")
+          counter - 1
         }
       })
     }
@@ -54,29 +52,33 @@ private class ClientSessionContainerImpl(maxSessionsPerUser: Int) extends Client
   override def register(vuuUser: VuuUser, sessionId: ClientSessionId, messageHandler: MessageHandler): Either[String, Unit] = {
     logger.trace(s"[SESSION] Registering session ${sessionId.sessionId} for user ${vuuUser.name}")
 
-    var sessionCreated = false
+    var userCanRegisterSession = false
 
-    val counter = sessionsPerUser.computeIfAbsent(vuuUser.name, _ => AtomicInteger(0))
-
-    val updated = counter.updateAndGet { current =>
-      if (current < maxSessionsPerUser) {
-        sessions.put(sessionId, messageHandler)
-        sessionCreated = true
-        current + 1
-      } else {
-        current
+    val sessionCount = sessionsPerUser.compute(vuuUser.name, (_, counter) => {
+      counter match {
+        case null =>
+          userCanRegisterSession = true
+          1
+        case counter: Int =>
+          if (counter < maxSessionsPerUser) {
+            userCanRegisterSession = true
+            counter + 1
+          } else {
+            counter
+          }
       }
-    }
+    })
 
-    logger.trace(s"[SESSION] User ${vuuUser.name} has a total of $updated session(s)")
-
-    if (sessionCreated) {
+    if (userCanRegisterSession) {
+      sessions.put(sessionId, messageHandler)
+      logger.trace(s"[SESSION] User ${vuuUser.name} has a total of $sessionCount session(s)")
       logger.debug(s"[SESSION] Registered session ${sessionId.sessionId} for user ${vuuUser.name}")
       Right(())
     } else {
       logger.warn(s"[SESSION] User ${vuuUser.name} has hit the session limit of $maxSessionsPerUser")
       Left("User session limit exceeded")
     }
+
   }
 
   override def getHandler(sessionId: ClientSessionId): Option[MessageHandler] = {
@@ -85,7 +87,7 @@ private class ClientSessionContainerImpl(maxSessionsPerUser: Int) extends Client
   }
 
   override def runOnce(): Unit = {
-    if(!sessions.isEmpty) {
+    if (!sessions.isEmpty) {
       SetHasAsScala(sessions.entrySet()).asScala.foreach(entry => entry.getValue.sendUpdates())
     }
   }
