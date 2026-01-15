@@ -1,9 +1,8 @@
 package org.finos.vuu.provider.join
 
+import org.finos.toolbox.collection.set.ImmutableArraySet
 import org.finos.vuu.api.JoinTableDef
 import org.finos.vuu.core.table.DataTable
-import org.finos.toolbox.collection.array.ImmutableArray
-import org.finos.toolbox.collection.set.ImmutableArraySet
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap
@@ -19,35 +18,34 @@ class RightToLeftKeys {
   private val keysToRightKeys = new ConcurrentHashMap[String, ConcurrentHashMap[String, ConcurrentHashMap[String, ImmutableArraySet[String]]]]()
   private val emptyKeyMap: ImmutableArraySet[String] = ImmutableArraySet.empty
 
-  def addRightKey(rightTable: String, rightKey: String, leftTable: String, leftKey: String): Unit = {    
+  def addRightKey(rightTable: String, rightKey: String, leftTable: String, leftKey: String): Unit = {
     if (rightKey != null) {
-      
+
       val rightKeyMap = getRightKeyMap(rightTable, rightKey)
 
-      rightKeyMap.compute(leftTable, (_, existingValue) => {
-        if (existingValue == null) {
-          ImmutableArraySet.of(leftKey)
-        } else {
-          existingValue + leftKey
+      rightKeyMap.compute(leftTable, (_, existingSet) => {
+        existingSet match {
+          case null => ImmutableArraySet.of(leftKey)
+          case _ => existingSet + leftKey
         }
       })
     }
-    
+
   }
 
-  def getLeftTableKeysForRightKey(rightTable: String, rightKey: String, leftTable: String): ImmutableArraySet[String] = {    
+  def getLeftTableKeysForRightKey(rightTable: String, rightKey: String, leftTable: String): ImmutableArraySet[String] = {
     getRightKeyMap(rightTable, rightKey).getOrDefault(leftTable, emptyKeyMap)
   }
-  
+
   private def getRightKeyMap(rightTable: String, rightKey: String): ConcurrentHashMap[String, ImmutableArraySet[String]] = {
 
-    val rightTableMap = keysToRightKeys.computeIfAbsent(rightTable, 
+    val rightTableMap = keysToRightKeys.computeIfAbsent(rightTable,
       rightTable => new ConcurrentHashMap[String, ConcurrentHashMap[String, ImmutableArraySet[String]]]())
 
     rightTableMap.computeIfAbsent(rightKey, rightKey => new ConcurrentHashMap[String, ImmutableArraySet[String]]())
 
   }
-  
+
 }
 
 class TableDataSink(val name: String) {
