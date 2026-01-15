@@ -12,6 +12,10 @@ object VectorImmutableArray {
     new VectorImmutableArray[T](Vector.empty)
   }
 
+  def of[T <: Object](element: T)(implicit c: ClassTag[T]): ImmutableArray[T] = {
+    new VectorImmutableArray[T](Vector(element))
+  }
+
 }
 
 private class VectorImmutableArray[T <: Object :ClassTag](private val vector: Vector[T]) extends ImmutableArray[T] {

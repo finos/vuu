@@ -1,15 +1,28 @@
 package org.finos.toolbox.collection.array
 
+import org.finos.toolbox.collection.set.{ImmutableArraySet, VectorImmutableArraySet}
+import org.finos.toolbox.collection.set.ImmutableArraySet.{empty, of}
+
 import scala.reflect.ClassTag
 
 object ImmutableArray {
 
+  def from[T <: Object](iterable: IterableOnce[T])(implicit c: ClassTag[T]): ImmutableArray[T] = {
+    if (iterable.knownSize == 0) {
+      empty()
+    } else if (iterable.knownSize == 1) {
+      of(iterable.iterator.next())
+    } else {
+      VectorImmutableArray.from(iterable)
+    }
+  }
+  
   def empty[T <: Object](implicit c: ClassTag[T]): ImmutableArray[T] = {
     VectorImmutableArray.empty()
   }
 
-  def from[T <: Object](iterable: IterableOnce[T])(implicit c: ClassTag[T]): ImmutableArray[T] = {
-    VectorImmutableArray.from(iterable)
+  def of[T <: Object](element: T)(implicit c: ClassTag[T]): ImmutableArray[T] = {
+    VectorImmutableArray.of(element)
   }
 
 }

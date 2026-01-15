@@ -12,28 +12,22 @@ object VectorImmutableArraySet {
   }
 
   def from[T <: Object : ClassTag](iterable: IterableOnce[T]): ImmutableArraySet[T] = {
-    if (iterable.knownSize == 0) {
-      empty()
-    } else if (iterable.knownSize == 1) {
-      of(iterable.iterator.next())
-    } else {
-      val seen = mutable.HashSet.empty[T]
-      val builder = Vector.newBuilder[T]
+    val seen = mutable.HashSet.empty[T]
+    val builder = Vector.newBuilder[T]
 
-      val iterator = iterable.iterator
-      if (iterator.knownSize > 0) {
-        builder.sizeHint(iterator.knownSize)
-      }
-
-      while (iterator.hasNext) {
-        val elem = iterator.next()
-        if (seen.add(elem)) {
-          builder += elem
-        }
-      }
-
-      VectorImmutableArraySet(builder.result(), seen.toSet)
+    val iterator = iterable.iterator
+    if (iterator.knownSize > 0) {
+      builder.sizeHint(iterator.knownSize)
     }
+
+    while (iterator.hasNext) {
+      val elem = iterator.next()
+      if (seen.add(elem)) {
+        builder += elem
+      }
+    }
+
+    VectorImmutableArraySet(builder.result(), seen.toSet)
   }
 
   def empty[T <: Object : ClassTag](): ImmutableArraySet[T] = {
