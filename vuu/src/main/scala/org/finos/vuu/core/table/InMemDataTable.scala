@@ -9,6 +9,7 @@ import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.index.{HashMapIndexedStringField, IndexedField, SkipListIndexedBooleanField, SkipListIndexedCharField, SkipListIndexedDoubleField, SkipListIndexedEpochTimestampField, SkipListIndexedIntField, SkipListIndexedLongField}
 import org.finos.vuu.core.row.{InMemMapRowBuilder, RowBuilder}
 import org.finos.vuu.core.table.datatype.EpochTimestamp
+import org.finos.vuu.core.table.{RowData, RowWithData, EmptyRowData}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.provider.{JoinTableProvider, Provider}
 import org.finos.vuu.viewport.{RowProcessor, RowSource, ViewPortColumns}
@@ -16,161 +17,6 @@ import org.finos.vuu.viewport.{RowProcessor, RowSource, ViewPortColumns}
 import java.util
 import java.util.concurrent.ConcurrentHashMap
 import scala.jdk.CollectionConverters.MapHasAsScala
-
-trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
-
-  @volatile private var provider: Provider = null
-
-  protected def createDataTableData(): TableData
-
-  def updateCounter: Long
-
-  def newRow(key: String): RowBuilder
-
-  def rowBuilder: RowBuilder
-
-  def incrementUpdateCounter(): Unit
-
-  def indexForColumn(column: Column): Option[IndexedField[_]]
-
-  def setProvider(aProvider: Provider): Unit = provider = aProvider
-
-  def getProvider: Provider = provider
-
-  def getColumnValueProvider: ColumnValueProvider
-
-  def asTable: DataTable = this
-
-  def columnForName(name: String): Column = getTableDef.columnForName(name)
-
-  def columnsForNames(names: String*): List[Column] = names.map(getTableDef.columnForName(_)).toList
-
-  def columnsForNames(names: List[String]): List[Column] = names.map(getTableDef.columnForName(_))
-
-  def getTableDef: TableDef
-
-  def processUpdate(rowUpdate: RowData): Unit = {
-    processUpdate(rowUpdate.key, rowUpdate)
-  }
-
-  def processUpdate(rowKey: String, rowUpdate: RowData): Unit
-
-  def hasRowChanged(row: RowWithData): Boolean = {
-    val existingRow = this.pullRow(row.key)
-    !existingRow.equals(row)
-  }
-
-  def processDelete(rowKey: String): Unit
-
-  def isSelectedVal(key: String, selected: Map[String, Any]): Int = {
-    if (selected.contains(key)) 1 else 0
-  }
-
-  def size(): Long = {
-    primaryKeys.length
-  }
-
-  def toAscii(count: Int): String = {
-    val columns = getTableDef.getColumns
-    val keys = primaryKeys
-
-    val selectedKeys = keys.toArray.take(count)
-
-    val rows = selectedKeys.map(key => pullRowAsArray(key, ViewPortColumnCreator.create(this, columns.map(_.name).toList)))
-
-    val columnNames = columns.map(_.name)
-
-    AsciiUtil.asAsciiTable(columnNames, rows)
-  }
-
-  def toAscii(start: Int, end: Int): String = {
-    val columns = getTableDef.getColumns
-    val keys = primaryKeys
-
-    val selectedKeys = keys.toArray.slice(start, end) //.sliceToArray(start, end)//drop(start).take(end - start)
-
-    val rows = selectedKeys.map(key => pullRowAsArray(key, ViewPortColumnCreator.create(this, columns.map(_.name).toList)))
-
-    val columnNames = columns.map(_.name)
-
-    AsciiUtil.asAsciiTable(columnNames, rows)
-  }
-}
-
-case class RowKeyUpdate(key: String, source: RowSource, isDelete: Boolean = false) {
-  override def toString: String = s"RowKeyUpdate($key, ${source.name})"
-}
-
-trait RowData {
-  def key: String
-
-  def get(field: String): Any
-
-  def get(column: Column): Any
-
-  def getFullyQualified(column: Column): Any
-
-  def set(field: String, value: Any): RowData
-
-  def toArray(columns: List[Column]): Array[Any]
-
-  def size: Int
-}
-
-case class JoinTableUpdate(joinTable: DataTable, rowUpdate: RowWithData) {
-  override def toString: String = "JoinTableUpdate(" + joinTable.toString + ",updates=" + rowUpdate.data.size + ")"
-}
-
-case class RowWithData(key: String, data: Map[String, Any]) extends RowData {
-
-  def this(key: String, data: java.util.Map[String, Any]) = this(key, data.asScala.toMap)
-
-  override def size: Int = data.size
-
-  override def getFullyQualified(column: Column): Any = column.getDataFullyQualified(this)
-
-  override def toArray(columns: List[Column]): Array[Any] = {
-    columns.map(c => this.get(c)).toArray
-  }
-
-  override def get(column: Column): Any = {
-    if (column != null) {
-      column.getData(this)
-    } else {
-      null
-    }
-  }
-
-  def get(column: String): Any = {
-    if (data == null) {
-      null
-    } else {
-      data.get(column).orNull
-    }
-  }
-
-  def set(field: String, value: Any): RowWithData = {
-    RowWithData(key, data ++ Map[String, Any](field -> value))
-  }
-}
-
-object EmptyRowData extends RowData {
-
-  override def key: String = null
-
-  override def size: Int = 0
-
-  override def toArray(columns: List[Column]): Array[Any] = Array()
-
-  override def get(field: String): Any = null
-
-  override def get(column: Column): Any = null
-
-  override def getFullyQualified(column: Column): Any = null
-
-  override def set(field: String, value: Any): RowData = EmptyRowData
-}
-
 
 case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private val primaryKeyValuesInternal: TablePrimaryKeys)(implicit timeProvider: Clock) extends TableData {
 
@@ -227,7 +73,6 @@ case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private 
   }
 
 }
-
 
 class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider)(implicit val metrics: MetricsProvider, timeProvider: Clock) extends DataTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
 
