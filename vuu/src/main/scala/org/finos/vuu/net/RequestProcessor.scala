@@ -57,12 +57,15 @@ class RequestProcessor(loginTokenService: LoginTokenService,
     logger.debug(s"[SESSION] Creating session for ${user.name}. Remote address: ${channel.remoteAddress()}")
     val session = SessionId.oneNew()
     val id = ClientSessionId(session, channel.id().asLongText())
-
     val handler = createMessageHandler(channel, id, user)
-    clientSessionContainer.register(id, handler)
-    logger.info(s"[SESSION] Created session for user ${user.name} with id ${id.sessionId}. Remote address: ${channel.remoteAddress()}")
-
-    Some(JsonViewServerMessage(requestId, session, LoginSuccess(vuuServerId)))
+    clientSessionContainer.register(user, id, handler) match {
+      case Right(value) =>
+        logger.info(s"[SESSION] Created session for user ${user.name} with id ${id.sessionId}. Remote address: ${channel.remoteAddress()}")
+        Some(JsonViewServerMessage(requestId, session, LoginSuccess(vuuServerId)))
+      case Left(value) =>
+        sendMessageAndCloseChannel(value, channel)
+        None
+    }
   }
 
   private def createMessageHandler(channel: Channel, sessionId: ClientSessionId, user: VuuUser): MessageHandler = {
@@ -89,7 +92,7 @@ class RequestProcessor(loginTokenService: LoginTokenService,
   }
 
   private def handleMessageWithInvalidSession(requestSession: ClientSessionId, channel: Channel): Unit = {
-    val channelHasSession = clientSessionContainer.getSessions().exists(p => p.channelId == requestSession.channelId)
+    val channelHasSession = clientSessionContainer.getSessions.exists(p => p.channelId == requestSession.channelId)
     if (channelHasSession) {
       logger.error(s"[SESSION] Incorrect session on request. Remote address: ${channel.remoteAddress()}")
     } else {

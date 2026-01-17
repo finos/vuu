@@ -12,9 +12,6 @@ import org.finos.vuu.net.json.JsonVsSerializer
 import org.finos.vuu.util.PublishQueue
 import org.finos.vuu.viewport.{RowUpdateType, SizeUpdateType, ViewPortUpdate}
 
-import java.util.concurrent.ConcurrentHashMap
-import scala.jdk.CollectionConverters.{CollectionHasAsScala, SetHasAsScala}
-
 trait InboundMessageHandler {
   def handle(msg: ViewServerMessage): Option[ViewServerMessage]
 }
@@ -83,7 +80,7 @@ class DefaultMessageHandler(val channel: Channel,
   private def disconnect(): ChannelFuture = {
     logger.debug(s"Disconnecting session ${session.sessionId}")
     serverApi.disconnect(session)
-    sessionContainer.remove(session)
+    sessionContainer.remove(user, session)
     channel.disconnect()
     val closeResult = channel.close()
     logger.info(s"Disconnected session ${session.sessionId}")
@@ -174,44 +171,4 @@ case class ClientSessionId(sessionId: String, channelId: String) extends Ordered
 
 }
 
-trait ClientSessionContainer {
 
-  def register(sessionId: ClientSessionId, messageHandler: MessageHandler): Unit
-
-  def getHandler(sessionId: ClientSessionId): Option[MessageHandler]
-
-  def remove(sessionId: ClientSessionId): Unit
-
-  def getSessions(): List[ClientSessionId]
-
-  def runOnce(): Unit
-
-}
-
-class ClientSessionContainerImpl extends ClientSessionContainer with StrictLogging {
-
-  private val sessions = new ConcurrentHashMap[ClientSessionId, MessageHandler]()
-
-  override def getSessions(): List[ClientSessionId] = CollectionHasAsScala(sessions.keySet()).asScala.toList
-
-  override def remove(sessionId: ClientSessionId): Unit = {
-    logger.debug(s"Removing session ${sessionId.sessionId}")
-    sessions.remove(sessionId)
-  }
-
-  override def register(sessionId: ClientSessionId, messageHandler: MessageHandler): Unit = {
-    logger.debug(s"Registering session ${sessionId.sessionId}")
-    sessions.put(sessionId, messageHandler)
-  }
-
-  override def getHandler(sessionId: ClientSessionId): Option[MessageHandler] = {
-    val handler = sessions.get(sessionId)
-    Option(handler)
-  }
-
-  override def runOnce(): Unit = {
-    if(!sessions.isEmpty) {
-      SetHasAsScala(sessions.entrySet()).asScala.foreach(entry => entry.getValue.sendUpdates())
-    }
-  }
-}
