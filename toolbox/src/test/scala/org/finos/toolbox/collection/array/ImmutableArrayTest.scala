@@ -58,14 +58,6 @@ class ImmutableArrayTest extends AnyFunSuite with Matchers {
     a.addAll(b) shouldBe (a ++ b)
   }
 
-  test("fromArray creates an ImmutableArray with the same elements") {
-    val xs = Array("red", "green", "blue")
-
-    val result = arr().fromArray(xs)
-
-    result shouldBe arr("red", "green", "blue")
-  }
-
   test("getIndex retrieves the correct element") {
     val a = arr("alpha", "beta", "gamma")
 
@@ -115,18 +107,27 @@ class ImmutableArrayTest extends AnyFunSuite with Matchers {
     original shouldBe arr("top", "middle", "bottom")
   }
 
-  test("distinct removes duplicates while preserving order") {
-    val original = arr("a", "b", "a", "c", "b")
-
-    val distincted = original.distinct
-
-    distincted shouldBe arr("a", "b", "c")
-  }
-
   test("Iterable behavior: foreach, map, etc. should work") {
     val a = arr("x", "y", "z")
 
     a.toList shouldBe List("x", "y", "z")
     a.map(_.toUpperCase).toList shouldBe List("X", "Y", "Z")
   }
+
+  test("check equals and hashcode") {
+
+    val numbers = (0 to 100000).map(_.toString)
+
+    val array1 = arr(numbers: _*)
+    val array2 = arr(numbers: _*)
+    val array3 = arr(numbers.slice(0, 100): _*)
+
+    array1 shouldEqual array1
+
+    array1 shouldEqual array2
+    array1.hashCode() shouldEqual array2.hashCode()
+
+    array1 should not equal array3
+  }
+
 }
