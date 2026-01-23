@@ -11,8 +11,8 @@
   },
   "devDependencies": {
     "@types/serve-handler": "6.1.4",
-    "@mdx-js/esbuild": "3.1.0",
-    "@mdx-js/rollup": "3.1.0",
+    "@mdx-js/esbuild": "3.1.1",
+    "@mdx-js/rollup": "3.1.1",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@vuu-ui/vuu-data-types": "0.13.94",
