@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.finos.vuu</groupId>
     <artifactId>vuu-parent</artifactId>
-    <version>0.15.0-SNAPSHOT</version>
+    <version>0.17.0-SNAPSHOT</version>
     <name>vuu-parent</name>
     <description>Vuu - A View Server in Scala and React</description>
     <url>https://github.com/finos/vuu</url>
@@ -42,14 +42,14 @@
         <caffeine.version>3.2.3</caffeine.version>
         <metrics.version>4.2.36</metrics.version>
         <scalatest.version>3.2.19</scalatest.version>
-        <scalamock.version>7.5.2</scalamock.version>
+        <scalamock.version>7.5.3</scalamock.version>
         <scala.logging>3.9.6</scala.logging>
         <jackson.version>2.19.2</jackson.version>
         <antlr.version>4.13.2</antlr.version>
         <netty.version>4.1.130.Final</netty.version>
-        <vertx.version>4.5.23</vertx.version>
+        <vertx.version>4.5.24</vertx.version>
         <typesafe.conf.version>1.4.5</typesafe.conf.version>
-        <logback.version>1.5.22</logback.version>
+        <logback.version>1.5.25</logback.version>
         <slf4j.version>2.0.17</slf4j.version>
         <jmh.version>1.37</jmh.version>
         <ignite.version>2.17.0</ignite.version>

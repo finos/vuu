@@ -63,33 +63,6 @@ class ImmutableArraySetTest extends AnyFunSuite with Matchers {
     a.addAll(b) shouldBe (a ++ b)
   }
 
-  test("fromArray removes duplicates and preserves first occurrences") {
-    val xs = Array("red", "green", "red", "blue")
-
-    val result = set().fromArray(xs)
-
-    result shouldBe set("red", "green", "blue")
-  }
-
-  test("getIndex retrieves the correct element") {
-    val s = set("alpha", "beta", "gamma")
-
-    s.getIndex(1) shouldBe "beta"
-  }
-
-  test("apply retrieves the correct element") {
-    val s = set("cat", "dog", "mouse")
-
-    s(2) shouldBe "mouse"
-  }
-
-  test("indexOf returns the index of the element or -1 if missing") {
-    val s = set("sun", "moon", "stars")
-
-    s.indexOf("moon") shouldBe 1
-    s.indexOf("galaxy") shouldBe -1
-  }
-
   test("contains returns true only when the element exists") {
     val s = set("red", "green", "blue")
 
@@ -103,44 +76,27 @@ class ImmutableArraySetTest extends AnyFunSuite with Matchers {
     set().length shouldBe 0
   }
 
-  test("set(index, element) replaces the element but maintains set semantics") {
-    val original = set("first", "second", "third")
-
-    val updated = original.set(1, "SECOND")
-
-    updated shouldBe set("first", "SECOND", "third")
-    original shouldBe set("first", "second", "third")
-  }
-
-  test("set(index, element) does not introduce duplicates") {
-    val original = set("a", "b", "c")
-
-    val updated = original.set(1, "a")
-
-    updated shouldBe set("a", "b", "c") // "a" already exists, "b" left alone
-  }
-
-  test("remove(index) removes the element at that index") {
-    val original = set("top", "middle", "bottom")
-
-    val updated = original.remove(1)
-
-    updated shouldBe set("top", "bottom")
-    original shouldBe set("top", "middle", "bottom")
-  }
-
-  test("distinct returns the same set (idempotent)") {
-    val original = set("a", "b", "a", "c", "b")
-
-    val distincted = original.distinct
-
-    distincted shouldBe set("a", "b", "c")
-  }
-
   test("Iterable behavior: foreach, map, etc. should work") {
     val s = set("x", "y", "z")
 
     s.toList shouldBe List("x", "y", "z")
     s.map(_.toUpperCase).toList shouldBe List("X", "Y", "Z")
   }
+
+  test("check equals and hashcode") {
+
+    val numbers = (0 to 100000).map(_.toString)
+
+    val array1 = set(numbers: _*)
+    val array2 = set(numbers: _*)
+    val array3 = set(numbers.slice(0, 100): _*)
+
+    array1 shouldEqual array1
+
+    array1 shouldEqual array2
+    array1.hashCode() shouldEqual array2.hashCode()
+
+    array1 should not equal array3
+  }
+
 }

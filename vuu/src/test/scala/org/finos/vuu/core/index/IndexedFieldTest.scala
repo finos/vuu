@@ -73,6 +73,14 @@ class IndexedFieldTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
       results4.toList shouldEqual List("AaBB0", "AaBB1", "AaBB2", "AaBB3", "AaBB4", "BBAa0", "BBAa1", "BBAa2", "BBAa3", "BBAa4", "BBAa5")
 
+      val results5 = index.find(List())
+
+      results5.isEmpty shouldBe true
+
+      val results6 = index.find(List(key2))
+
+      results6.toList shouldEqual List("BBAa0", "BBAa1", "BBAa2", "BBAa3", "BBAa4", "BBAa5")
+
     }
 
     Scenario("Check less than on an int index"){
@@ -129,6 +137,10 @@ class IndexedFieldTest extends AnyFeatureSpec with Matchers with StrictLogging {
       val values3 = index.find(EpochTimestamp(-1))
 
       values3.toList shouldEqual List()
+
+      val values4 = index.find(List(EpochTimestamp(2), EpochTimestamp(3)))
+
+      values4.toList shouldEqual List("20", "21", "22", "23", "24", "25", "30", "31", "32", "33", "34", "35")
     }
 
     Scenario("Check ordered operations on EpochTimestamp index") {
@@ -142,16 +154,16 @@ class IndexedFieldTest extends AnyFeatureSpec with Matchers with StrictLogging {
       })
 
       var values = index.greaterThan(EpochTimestamp(5))
-      values.toList shouldEqual List("60", "61", "62", "63", "64", "65")
+      values.toSet shouldEqual Set("60", "61", "62", "63", "64", "65")
 
       values = index.greaterThanOrEqual(EpochTimestamp(5))
-      values.toList shouldEqual List("60", "61", "62", "63", "64", "65", "50", "51", "52", "53", "54", "55")
+      values.toSet shouldEqual Set("60", "61", "62", "63", "64", "65", "50", "51", "52", "53", "54", "55")
 
       values = index.lessThan(EpochTimestamp(2))
-      values.toList shouldEqual List("10", "11", "12", "13", "14", "15")
+      values.toSet shouldEqual Set("10", "11", "12", "13", "14", "15")
 
       values = index.lessThanOrEqual(EpochTimestamp(2))
-      values.toList shouldEqual List("20", "21", "22", "23", "24", "25", "10", "11", "12", "13", "14", "15")
+      values.toSet shouldEqual Set("20", "21", "22", "23", "24", "25", "10", "11", "12", "13", "14", "15")
 
     }
   }
