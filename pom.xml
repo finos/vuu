@@ -73,7 +73,6 @@
         <module>example</module>
         <module>plugin</module>
         <module>vuu-java</module>
-        <module>coverage-report</module>
     </modules>
 
     <profiles>
