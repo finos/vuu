@@ -6,60 +6,82 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.index.IndexedField
 import org.finos.vuu.core.row.RowBuilder
-import org.finos.vuu.core.table.{Column, ColumnValueProvider, DataTable, KeyedObservableHelper, RowData, RowKeyUpdate, TableData, TablePrimaryKeys}
+import org.finos.vuu.core.table.{Column, ColumnValueProvider, DataTable, EmptyRowData, KeyedObservableHelper, RowData, RowKeyUpdate, RowWithData, TableData, TablePrimaryKeys}
 import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
 
-class OffHeapDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider)(using metrics: MetricsProvider, timeProvider: Clock) extends DataTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
+import java.util.concurrent.atomic.AtomicLong
 
-  override protected def createDataTableData(): TableData = ???
+class OffHeapDataTable(private val tableDef: TableDef, private val joinProvider: JoinTableProvider)(using metrics: MetricsProvider, timeProvider: Clock) extends DataTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
 
-  override def updateCounter: Long = ???
+  private final val indices: Map[Column, IndexedField[?]] = Map.empty
+  private final val internalUpdateCounter: AtomicLong = AtomicLong(0)
+  private final val data = createDataTableData();
+
+  override protected def createDataTableData(): TableData = {
+    OffHeapTableData(tableDef)
+  }
+
+  override def updateCounter: Long = internalUpdateCounter.get()
 
   override def newRow(key: String): RowBuilder = ???
 
   override def rowBuilder: RowBuilder = ???
 
-  override def incrementUpdateCounter(): Unit = ???
+  override def incrementUpdateCounter(): Unit = internalUpdateCounter.incrementAndGet()
 
-  override def indexForColumn(column: Column): Option[IndexedField[_]] = ???
+  override def indexForColumn(column: Column): Option[IndexedField[_]] = indices.get(column)
 
   override def getColumnValueProvider: ColumnValueProvider = ???
 
-  override def getTableDef: TableDef = ???
+  override def getTableDef: TableDef = tableDef
 
   override def processUpdate(rowKey: String, rowUpdate: RowData): Unit = ???
 
   override def processDelete(rowKey: String): Unit = ???
 
-  override def name: String = ???
+  override def name: String = tableDef.name
 
-  /**
-   * notify listeners explicit when a rowKey changes
-   */
-  override def notifyListeners(rowKey: String, isDelete: Boolean): Unit = ???
+  override def linkableName: String = name
 
-  /**
-   * Link table name is the name of the underlying table that we can link to.
-   * In a session table this would be the underlying table.
-   *
-   * @return
-   */
-  override def linkableName: String = ???
+  override def notifyListeners(rowKey: String, isDelete: Boolean): Unit = {
+    getObserversByKey(rowKey).foreach(obs => {
+      obs.onUpdate(RowKeyUpdate(rowKey, this, isDelete))
+    })
+  }
 
   override def readRow(key: String, columns: List[String], processor: RowProcessor): Unit = ???
 
-  override def primaryKeys: TablePrimaryKeys = ???
+  override def primaryKeys: TablePrimaryKeys = data.primaryKeyValues
 
-  override def pullRow(key: String, columns: ViewPortColumns): RowData = ???
+  override def pullRow(key: String): RowData = {
+    data.dataByKey(key) match {
+      case rowWithData: RowWithData => rowWithData
+      case _ => EmptyRowData
+    }
+  }
 
-  /**
-   * Note the below call should only be used for testing. It filters the contents of maps by the expected viewPortColumns.
-   * In practice we never need to do this at runtime.
-   */
-  override def pullRowFiltered(key: String, columns: ViewPortColumns): RowData = ???
+  override def pullRow(key: String, columns: ViewPortColumns): RowData = {
+    data.dataByKey(key) match {
+      case rowWithData: RowWithData => columns.pullRow(key, rowWithData)
+      case _ => EmptyRowData
+    }
+  }
 
-  override def pullRow(key: String): RowData = ???
+  override def pullRowFiltered(key: String, columns: ViewPortColumns): RowData = {
+    data.dataByKey(key) match {
+      case rowWithData: RowWithData => columns.pullRowAlwaysFilter(key, rowWithData)
+      case _ => EmptyRowData
+    }
+  }
 
-  override def pullRowAsArray(key: String, columns: ViewPortColumns): Array[Any] = ???
+  override def pullRowAsArray(key: String, columns: ViewPortColumns): Array[Any] = {
+    data.dataByKey(key) match {
+      case rowWithData: RowWithData => rowWithData.toArray(columns.getColumns)
+      case _ => Array.empty
+    }
+  }
+
+  override def toString: String = s"OffHeapDataTable($name, rows=${this.primaryKeys.length})"
+
 }

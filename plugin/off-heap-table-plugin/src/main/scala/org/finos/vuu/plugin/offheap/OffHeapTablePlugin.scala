@@ -3,7 +3,7 @@ package org.finos.vuu.plugin.offheap
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.table.{InMemDataTable, TableContainer}
+import org.finos.vuu.core.table.TableContainer
 import org.finos.vuu.feature.{FilterFactory, JoinTableFactory, SessionTableFactory, SortFactory, TableFactory, TableFeature, ViewPortCallableFactory, ViewPortFactory, ViewPortKeysCreator, ViewPortTableCreator, ViewPortTreeCallableFactory}
 import org.finos.vuu.plugin.offheap.table.OffHeapDataTable
 import org.finos.vuu.plugin.{DefaultPlugin, PluginType}
