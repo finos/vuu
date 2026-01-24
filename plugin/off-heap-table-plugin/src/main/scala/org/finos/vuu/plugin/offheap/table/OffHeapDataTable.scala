@@ -1,11 +1,16 @@
-package org.finos.vuu.core.table
+package org.finos.vuu.plugin.offheap.table
 
+import com.typesafe.scalalogging.StrictLogging
+import org.finos.toolbox.jmx.MetricsProvider
+import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.index.IndexedField
 import org.finos.vuu.core.row.RowBuilder
+import org.finos.vuu.core.table.{Column, ColumnValueProvider, DataTable, KeyedObservableHelper, RowData, RowKeyUpdate, TableData, TablePrimaryKeys}
+import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
 
-class OffHeapDataTable extends DataTable {
+class OffHeapDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider)(using metrics: MetricsProvider, timeProvider: Clock) extends DataTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
 
   override protected def createDataTableData(): TableData = ???
 
@@ -57,18 +62,4 @@ class OffHeapDataTable extends DataTable {
   override def pullRow(key: String): RowData = ???
 
   override def pullRowAsArray(key: String, columns: ViewPortColumns): Array[Any] = ???
-
-  override def getObserversByKey(): Map[String, Array[KeyObserver[RowKeyUpdate]]] = ???
-
-  override def addKeyObserver(key: String, observer: KeyObserver[RowKeyUpdate]): Boolean = ???
-
-  override def removeKeyObserver(key: String, observer: KeyObserver[RowKeyUpdate]): Boolean = ???
-
-  override def getObserversByKey(key: String): List[KeyObserver[RowKeyUpdate]] = ???
-
-  override def isKeyObserved(key: String): Boolean = ???
-
-  override def isKeyObservedBy(key: String, observer: KeyObserver[RowKeyUpdate]): Boolean = ???
-
-  override def removeAllObservers(): Unit = ???
 }

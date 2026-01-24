@@ -14,6 +14,7 @@
     <modules>
         <module>ignite-plugin</module>
         <module>virtualized-table-plugin</module>
+        <module>off-heap-table-plugin</module>
     </modules>
 
 </project>
