@@ -123,8 +123,6 @@ case class JoinTableUpdate(joinTable: DataTable, rowUpdate: RowWithData) {
 
 case class RowWithData(key: String, data: Map[String, Any]) extends RowData {
 
-  def this(key: String, data: java.util.Map[String, Any]) = this(key, data.asScala.toMap)
-
   override def size: Int = data.size
 
   override def getFullyQualified(column: Column): Any = column.getDataFullyQualified(this)

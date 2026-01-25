@@ -1,12 +1,9 @@
 package org.finos.vuu.person.manual;
 
 import org.finos.vuu.core.table.DataTable;
-import org.finos.vuu.core.table.RowWithData;
 import org.finos.vuu.person.Person;
 import org.finos.vuu.person.datasource.PersonStore;
 import org.finos.vuu.provider.Provider;
-
-import java.util.Map;
 
 public class PersonProvider implements Provider {
 
@@ -20,10 +17,16 @@ public class PersonProvider implements Provider {
 
     @Override
     public void doStart() {
-
-        for (Person person : personStore.GetAll()) {
-            var row = new RowWithData(person.Id, Map.of( "Id", person.Id, "Name", person.Name, "Account", person.AccountNumber));
-            table.processUpdate(person.Id, row);
+        var rowBuilder = table.rowBuilder();
+        var idColumn = table.columnForName("id");
+        var nameColumn = table.columnForName("name");
+        var accountColumn = table.columnForName("account");
+        for (Person person : personStore.getAll()) {
+            rowBuilder.setKey(person.id());
+            rowBuilder.setString(idColumn, person.id());
+            rowBuilder.setString(nameColumn, person.name());
+            rowBuilder.setInt(accountColumn, person.accountNumber());
+            table.processUpdate(rowBuilder.build());
         }
     }
 

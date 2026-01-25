@@ -13,7 +13,6 @@ import org.finos.vuu.core.table.Column;
 import org.finos.vuu.core.table.Columns;
 import org.finos.vuu.core.table.DataTable;
 import org.finos.vuu.core.table.InMemDataTable;
-import org.finos.vuu.core.table.RowWithData;
 import org.finos.vuu.core.table.ViewPortColumnCreator;
 import org.finos.vuu.core.tree.TreeSessionTable;
 import org.finos.vuu.net.ClientSessionId;
@@ -66,17 +65,23 @@ public class BenchmarkHelper {
     }
 
     public void addTableData(DataTable dataTable, int offset, int size) {
+        var rowBuilder = dataTable.rowBuilder();
+        var ricColumn = dataTable.columnForName("ric");
+        var exchangeColumn = dataTable.columnForName("exchange");
+        var bidColumn = dataTable.columnForName("bid");
+        var askColumn = dataTable.columnForName("ask");
+        var lastColumn = dataTable.columnForName("last");
+        var closeColumn = dataTable.columnForName("close");
         for (int i = offset; i < offset + size; i++) {
             var ric = "TST-" + i;
-            var exchange = "exchange-" + i;
-            dataTable.processUpdate(ric, new RowWithData(ric, Map.of(
-                    "ric", ric,
-                    "bid", 101,
-                    "ask", 100,
-                    "last", 105,
-                    "close", 106,
-                    "exchange", exchange
-            )));
+            rowBuilder.setKey(ric);
+            rowBuilder.setString(ricColumn, ric);
+            rowBuilder.setString(exchangeColumn, "exchange-" + i);
+            rowBuilder.setDouble(bidColumn, 101);
+            rowBuilder.setDouble(askColumn, 100);
+            rowBuilder.setDouble(lastColumn, 105);
+            rowBuilder.setDouble(closeColumn, 106);
+            dataTable.processUpdate(rowBuilder.build());
         }
     }
 

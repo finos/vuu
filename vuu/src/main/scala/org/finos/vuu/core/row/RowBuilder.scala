@@ -1,6 +1,7 @@
 package org.finos.vuu.core.row
 
-import org.finos.vuu.core.table.{Column, RowData}
+import org.finos.vuu.core.table.datatype.EpochTimestamp
+import org.finos.vuu.core.table.{Column, EmptyRowData, RowData}
 
 trait RowBuilder {
   def setKey(key: String): RowBuilder
@@ -9,24 +10,19 @@ trait RowBuilder {
   def setInt(column: Column, v: Int): RowBuilder
   def setString(column: Column, v: String): RowBuilder
   def setBoolean(column: Column, v: Boolean): RowBuilder
-  /**
-   * this metyhod effectively resets the builder, emptying its existing contents to begin again.
-   * @return row with data set
-   */
-  def asRow: RowData
+  def setEpochTimestamp(column: Column, v: EpochTimestamp): RowBuilder
+  def setChar(column: Column, v: Char): RowBuilder
+  def build: RowData
 }
 
-object NoRowBuilder extends RowBuilder{
-  override def setKey(key: String): RowBuilder = ???
-  override def setLong(column: Column, v: Long): RowBuilder = ???
-  override def setDouble(column: Column, v: Double): RowBuilder = ???
-  override def setInt(column: Column, v: Int): RowBuilder = ???
-  override def setString(column: Column, v: String): RowBuilder = ???
-  override def setBoolean(column: Column, v: Boolean): RowBuilder = ???
-  /**
-   * this metyhod effectively resets the builder, emptying its existing contents to begin again.
-   *
-   * @return row with data set
-   */
-  override def asRow: RowData = ???
+object NoRowBuilder extends RowBuilder {
+  override def setKey(key: String): RowBuilder = this
+  override def setLong(column: Column, v: Long): RowBuilder = this
+  override def setDouble(column: Column, v: Double): RowBuilder = this
+  override def setInt(column: Column, v: Int): RowBuilder = this
+  override def setString(column: Column, v: String): RowBuilder = this
+  override def setBoolean(column: Column, v: Boolean): RowBuilder = this
+  override def setEpochTimestamp(column: Column, v: EpochTimestamp): RowBuilder = this
+  override def setChar(column: Column, v: Char): RowBuilder = this
+  override def build: RowData = EmptyRowData
 }

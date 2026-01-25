@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
 
     private final String tableName = "PersonManualMapped";
-    private final String[] columnNames = new String[]{"Id", "Name", "Account"};
+    private final String[] columnNames = new String[]{"id", "name", "account"};
     private final String moduleName = JavaExampleModule.NAME;
 
     @Test
@@ -45,7 +45,7 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
                 toScala(Map.of(
                         "table", tableName,
                         "module", moduleName,
-                        "column", "Name"
+                        "column", "name"
                 ))
         );
 
@@ -96,8 +96,8 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
                 new ViewPortContext(viewPortId),
                 "UpdateName",
                 toScala(Map.of(
-                        "Id", "uniqueId1",
-                        "Name", "Chris"
+                        "id", "uniqueId1",
+                        "name", "Chris"
                 ))
         );
 

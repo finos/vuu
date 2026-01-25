@@ -47,7 +47,7 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
         .setString(currColumn, "GBP")
         .setString(exchangeColumn, "LSE")
         .setDouble(lotSizeColumn, 1000.123)
-        .asRow
+        .build
 
       row.key should equal("FOO.L")
       row.get(ricColumn) should equal("FOO.L")
@@ -83,7 +83,7 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
         .setString(currColumn, "GBP")
         .setString(exchangeColumn, "LSE")
         .setDouble(lotSizeColumn, 1000.123)
-        .asRow
+        .build
 
       row.key should equal("FOO.L")
       row.get(ricColumn) should equal("FOO.L")
@@ -93,7 +93,7 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
       row.get(lotSizeColumn) should equal(1000.123)
 
       intercept[RuntimeException]{
-        builder.asRow
+        builder.build
       }
 
       val row2 = builder.setKey("BAR.L")
@@ -102,7 +102,7 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
         .setString(currColumn, "USD")
         .setString(exchangeColumn, "NYSE")
         .setDouble(lotSizeColumn, 1010.123)
-        .asRow
+        .build
 
       row2.key should equal("BAR.L")
       row2.get(ricColumn) should equal("BAR.L")

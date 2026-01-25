@@ -2,7 +2,10 @@ package org.finos.vuu.person;
 
 import org.finos.vuu.core.table.DataTable;
 import org.finos.vuu.core.table.TableContainer;
-import org.finos.vuu.net.rpc.*;
+import org.finos.vuu.net.rpc.DefaultRpcHandler;
+import org.finos.vuu.net.rpc.RpcFunctionResult;
+import org.finos.vuu.net.rpc.RpcFunctionSuccess;
+import org.finos.vuu.net.rpc.RpcParams;
 
 public class PersonRpcHandler extends DefaultRpcHandler {
     private final DataTable table;
@@ -17,7 +20,7 @@ public class PersonRpcHandler extends DefaultRpcHandler {
 
     public RpcFunctionResult processUpdateNameRpcRequest(RpcParams params) {
         var paramData = params.namedParams();
-        updateName(paramData.get("Id").get().toString(), paramData.get("Name").get().toString());
+        updateName(paramData.get("id").get().toString(), paramData.get("name").get().toString());
         return new RpcFunctionSuccess();
     }
 
@@ -36,7 +39,7 @@ public class PersonRpcHandler extends DefaultRpcHandler {
 
     public int getAccountId(String rowKey) {
         var rowData = this.table.pullRow(rowKey);
-        var accountNumber = (int) rowData.get("Account");
+        var accountNumber = (int) rowData.get("account");
         return accountNumber;
     }
 }

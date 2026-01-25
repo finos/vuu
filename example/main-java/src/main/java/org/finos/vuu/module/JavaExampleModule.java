@@ -38,11 +38,11 @@ public class JavaExampleModule extends DefaultModule {
         return ModuleFactory.withNamespace(NAME, tableDefContainer)
                 .addTable(new TableDef(
                                 "PersonManualMapped",
-                                "Id",
+                                "id",
                                 new ColumnBuilder()
-                                        .addString("Id")
-                                        .addString("Name")
-                                        .addInt("Account")
+                                        .addString("id")
+                                        .addString("name")
+                                        .addInt("account")
                                         .build(),
                                 toScalaSeq(List.of()),
                                 false,
@@ -61,11 +61,11 @@ public class JavaExampleModule extends DefaultModule {
                 )
                 .addTable(TableDef.apply(
                                 "PersonAutoMapped",
-                                "Id",
+                                "id",
                                 Columns.fromExternalSchema(EntitySchema.person),
                                 toScalaSeq(List.of())
                         ),
-                        (table, vs) -> new AutoMappedPersonProvider(table, new PersonStore(), clock)
+                        (table, vs) -> new AutoMappedPersonProvider(table, new PersonStore())
                 )
                 .asModule();
     }
