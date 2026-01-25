@@ -5,7 +5,7 @@ import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.index.IndexedField
-import org.finos.vuu.core.row.RowBuilder
+import org.finos.vuu.core.row.{InMemMapRowBuilder, RowBuilder}
 import org.finos.vuu.core.table.{Column, ColumnValueProvider, DataTable, EmptyRowData, KeyedObservableHelper, RowData, RowKeyUpdate, RowWithData, TableData, TablePrimaryKeys}
 import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
@@ -24,9 +24,9 @@ class OffHeapDataTable(private val tableDef: TableDef, private val joinProvider:
 
   override def updateCounter: Long = internalUpdateCounter.get()
 
-  override def newRow(key: String): RowBuilder = ???
+  override def newRow(key: String): RowBuilder = new InMemMapRowBuilder().setKey(key)
 
-  override def rowBuilder: RowBuilder = ???
+  override def rowBuilder: RowBuilder = new InMemMapRowBuilder()
 
   override def incrementUpdateCounter(): Unit = internalUpdateCounter.incrementAndGet()
 

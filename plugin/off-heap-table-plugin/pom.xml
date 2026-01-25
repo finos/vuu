@@ -15,17 +15,39 @@
     <name>${project.artifactId}</name>
 
     <dependencies>
-    <dependency>
-        <groupId>org.finos.vuu</groupId>
-        <artifactId>vuu</artifactId>
-        <version>0.17.0-SNAPSHOT</version>
-    </dependency>
+        <dependency>
+            <groupId>org.finos.vuu</groupId>
+            <artifactId>vuu</artifactId>
+            <version>0.17.0-SNAPSHOT</version>
+        </dependency>
 
-    <dependency>
-        <groupId>org.scala-lang</groupId>
-        <artifactId>scala3-library_3</artifactId>
-        <version>${scala.version}</version>
-    </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala3-library_3</artifactId>
+            <version>${scala.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.vuu</groupId>
+            <artifactId>vuu</artifactId>
+            <version>0.17.0-SNAPSHOT</version>
+            <classifier>tests</classifier>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_3</artifactId>
+            <version>${scalatest.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala3-library_3</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
     </dependencies>
 
