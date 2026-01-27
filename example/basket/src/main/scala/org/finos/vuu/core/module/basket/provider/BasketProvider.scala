@@ -28,7 +28,7 @@ class BasketProvider(val table: DataTable)(implicit lifecycle: LifecycleContaine
         .setString(idColumn, id)
         .setString(nameColumn, id)
         //as row clears out the data from the builder
-        .asRow)
+        .build)
     })
   }
   override val lifecycleId: String = "org.finos.vuu.core.module.basket.provider.BasketProvider"
