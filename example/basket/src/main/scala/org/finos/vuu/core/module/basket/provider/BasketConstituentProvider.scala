@@ -60,7 +60,7 @@ class BasketConstituentProvider(val table: DataTable)(implicit lifecycle: Lifecy
           .setString(volumeCol, Option(volume).getOrElse("").toString)
           .setString(descCol, name.toString)
           .setString(sideCol, side)
-          .asRow
+          .build
 
         table.processUpdate(rowData)
       }

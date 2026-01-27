@@ -4,8 +4,9 @@ import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.TableDef
+import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.core.table.{Columns, InMemDataTable}
-import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, VuuJoinTableProvider}
+import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl}
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -16,7 +17,15 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
       TableDef(
         name = "instruments",
         keyField = "ric",
-        columns = Columns.fromNames("ric:String", "description:String", "currency: String", "exchange:String", "lotSize:Double"),
+        columns = Columns.fromNames(
+          "ric:String",
+          "description:String",
+          "currency: String",
+          "exchange:String",
+          "lotSize:Double",
+          "lastUpdated:EpochTimeStamp",
+          "shortSellRestriction:Char"
+        ),
         joinFields = "ric"
       )
   }
@@ -32,10 +41,15 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
       val tableDef = getTableDef
       val joinTableProvider: JoinTableProvider = JoinTableProviderImpl()
 
-      val (ricColumn, descColumn, currColumn, exchangeColumn, lotSizeColumn) =
+      val (ricColumn, descColumn, currColumn, exchangeColumn, lotSizeColumn, lastUpdatedColumn, shortSellRestrictionColumn) =
         (
-          tableDef.columnForName("ric"), tableDef.columnForName("description"),
-          tableDef.columnForName("currency"),tableDef.columnForName("exchange"), tableDef.columnForName("lotSize")
+          tableDef.columnForName("ric"),
+          tableDef.columnForName("description"),
+          tableDef.columnForName("currency"),
+          tableDef.columnForName("exchange"),
+          tableDef.columnForName("lotSize"),
+          tableDef.columnForName("lastUpdated"),
+          tableDef.columnForName("shortSellRestriction")
         )
 
       val table = new InMemDataTable(tableDef, joinTableProvider)
@@ -47,7 +61,9 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
         .setString(currColumn, "GBP")
         .setString(exchangeColumn, "LSE")
         .setDouble(lotSizeColumn, 1000.123)
-        .asRow
+        .setEpochTimestamp(lastUpdatedColumn, EpochTimestamp(1))
+        .setChar(shortSellRestrictionColumn, 'N')
+        .build
 
       row.key should equal("FOO.L")
       row.get(ricColumn) should equal("FOO.L")
@@ -55,7 +71,8 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
       row.get(currColumn) should equal("GBP")
       row.get(exchangeColumn) should equal("LSE")
       row.get(lotSizeColumn) should equal(1000.123)
-
+      row.get(lastUpdatedColumn) should equal(EpochTimestamp(1))
+      row.get(shortSellRestrictionColumn) should equal('N')
     }
 
     Scenario("Test Reuse of Row Builder"){
@@ -67,10 +84,15 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
       val tableDef = getTableDef
       val joinTableProvider: JoinTableProvider = JoinTableProviderImpl()
 
-      val (ricColumn, descColumn, currColumn, exchangeColumn, lotSizeColumn) =
+      val (ricColumn, descColumn, currColumn, exchangeColumn, lotSizeColumn, lastUpdatedColumn, shortSellRestrictionColumn) =
         (
-          tableDef.columnForName("ric"), tableDef.columnForName("description"),
-          tableDef.columnForName("currency"),tableDef.columnForName("exchange"), tableDef.columnForName("lotSize")
+          tableDef.columnForName("ric"),
+          tableDef.columnForName("description"),
+          tableDef.columnForName("currency"),
+          tableDef.columnForName("exchange"),
+          tableDef.columnForName("lotSize"),
+          tableDef.columnForName("lastUpdated"),
+          tableDef.columnForName("shortSellRestriction")
         )
 
       val table = new InMemDataTable(tableDef, joinTableProvider)
@@ -83,7 +105,9 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
         .setString(currColumn, "GBP")
         .setString(exchangeColumn, "LSE")
         .setDouble(lotSizeColumn, 1000.123)
-        .asRow
+        .setEpochTimestamp(lastUpdatedColumn, EpochTimestamp(1))
+        .setChar(shortSellRestrictionColumn, 'N')
+        .build
 
       row.key should equal("FOO.L")
       row.get(ricColumn) should equal("FOO.L")
@@ -91,9 +115,11 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
       row.get(currColumn) should equal("GBP")
       row.get(exchangeColumn) should equal("LSE")
       row.get(lotSizeColumn) should equal(1000.123)
+      row.get(lastUpdatedColumn) should equal(EpochTimestamp(1))
+      row.get(shortSellRestrictionColumn) should equal('N')
 
       intercept[RuntimeException]{
-        builder.asRow
+        builder.build
       }
 
       val row2 = builder.setKey("BAR.L")
@@ -102,7 +128,9 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
         .setString(currColumn, "USD")
         .setString(exchangeColumn, "NYSE")
         .setDouble(lotSizeColumn, 1010.123)
-        .asRow
+        .setEpochTimestamp(lastUpdatedColumn, EpochTimestamp(2))
+        .setChar(shortSellRestrictionColumn, 'Y')
+        .build
 
       row2.key should equal("BAR.L")
       row2.get(ricColumn) should equal("BAR.L")
@@ -110,6 +138,8 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
       row2.get(currColumn) should equal("USD")
       row2.get(exchangeColumn) should equal("NYSE")
       row2.get(lotSizeColumn) should equal(1010.123)
+      row2.get(lastUpdatedColumn) should equal(EpochTimestamp(2))
+      row2.get(shortSellRestrictionColumn) should equal('Y')
 
     }
 

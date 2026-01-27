@@ -12,6 +12,6 @@ public class EntitySchema {
 
     public static ExternalEntitySchema person = ExternalEntitySchemaBuilder.apply()
             .withEntity(Person.class)
-            .withIndex("ID_INDEX", toScala(List.of("Id")))
+            .withIndex("ID_INDEX", toScala(List.of("id")))
             .build();
 }

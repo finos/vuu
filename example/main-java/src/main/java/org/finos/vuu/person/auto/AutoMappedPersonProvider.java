@@ -1,6 +1,5 @@
 package org.finos.vuu.person.auto;
 
-import org.finos.toolbox.time.Clock;
 import org.finos.vuu.core.table.DataTable;
 import org.finos.vuu.core.table.RowWithData;
 import org.finos.vuu.person.Person;
@@ -19,27 +18,20 @@ public class AutoMappedPersonProvider implements Provider {
 
     private final DataTable table;
     private final PersonStore personStore;
-    private final Clock clock;
     private final SchemaMapper schemaMapper;
 
-    public AutoMappedPersonProvider(final DataTable table, PersonStore personStore, Clock clock) {
+    public AutoMappedPersonProvider(DataTable table, PersonStore personStore) {
         this.table = table;
         this.personStore = personStore;
-        this.clock = clock;
-
-        schemaMapper = CreateSchemaMapper(table);
-    }
-
-    private static SchemaMapper CreateSchemaMapper(DataTable table) {
-        return SchemaMapperBuilder.apply(EntitySchema.person, table.getTableDef().getColumns())
+        this.schemaMapper = SchemaMapperBuilder.apply(EntitySchema.person, table.getTableDef().getColumns())
                 .build();
     }
 
     @Override
     public void doStart() {
-        for (Person person : personStore.GetAll()) {
+        for (Person person : personStore.getAll()) {
             var rowMap = schemaMapper.toInternalRowMap(
-                    toScala(List.of(person.Id, person.Name, person.AccountNumber))
+                    toScala(List.of(person.id(), person.name(), person.accountNumber()))
             );
             var row = new RowWithData(getKeyValue(rowMap), rowMap);
             table.processUpdate(row.key(), row);

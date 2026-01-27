@@ -1,4 +1,6 @@
 package org.finos.vuu.core.row
+
+import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.core.table.{Column, RowData, RowWithData}
 
 import scala.collection.mutable
@@ -6,7 +8,8 @@ import scala.collection.mutable
 class InMemMapRowBuilder extends RowBuilder {
 
   private val mutableMap = new mutable.HashMap[String, Any]()
-  private var key: String = null
+  private var key: String = _
+
   override def setLong(column: Column, v: Long): RowBuilder = {
     mutableMap.put(column.name, v)
     this
@@ -31,11 +34,23 @@ class InMemMapRowBuilder extends RowBuilder {
     mutableMap.put(column.name, v)
     this
   }
+
+  override def setEpochTimestamp(column: Column, v: EpochTimestamp): RowBuilder = {
+    mutableMap.put(column.name, v)
+    this
+  }
+
+  override def setChar(column: Column, v: Char): RowBuilder = {
+    mutableMap.put(column.name, v)
+    this
+  }
+  
   override def setKey(key: String): RowBuilder = {
     this.key = key
     this
   }
-  override def asRow: RowData = {
+
+  override def build: RowData = {
     if(key == null){
       throw new RuntimeException("Key has not been set, this is likely a coding error.")
     }

@@ -26,8 +26,8 @@ import org.finos.vuu.person.manual.PersonProvider;
 import java.util.List;
 
 import static org.finos.vuu.util.ScalaCollectionConverter.emptyList;
+import static org.finos.vuu.util.ScalaCollectionConverter.emptySeq;
 import static org.finos.vuu.util.ScalaCollectionConverter.toScala;
-import static org.finos.vuu.util.ScalaCollectionConverter.toScalaSeq;
 
 public class JavaExampleModule extends DefaultModule {
 
@@ -38,13 +38,13 @@ public class JavaExampleModule extends DefaultModule {
         return ModuleFactory.withNamespace(NAME, tableDefContainer)
                 .addTable(new TableDef(
                                 "PersonManualMapped",
-                                "Id",
+                                "id",
                                 new ColumnBuilder()
-                                        .addString("Id")
-                                        .addString("Name")
-                                        .addInt("Account")
+                                        .addString("id")
+                                        .addString("name")
+                                        .addInt("account")
                                         .build(),
-                                toScalaSeq(List.of()),
+                                emptySeq(),
                                 false,
                                 VisualLinks.apply(emptyList()),
                                 Indices.apply(emptyList()),
@@ -61,11 +61,11 @@ public class JavaExampleModule extends DefaultModule {
                 )
                 .addTable(TableDef.apply(
                                 "PersonAutoMapped",
-                                "Id",
+                                "id",
                                 Columns.fromExternalSchema(EntitySchema.person),
-                                toScalaSeq(List.of())
+                                emptySeq()
                         ),
-                        (table, vs) -> new AutoMappedPersonProvider(table, new PersonStore(), clock)
+                        (table, vs) -> new AutoMappedPersonProvider(table, new PersonStore())
                 )
                 .asModule();
     }
