@@ -1,15 +1,28 @@
 package org.finos.toolbox.collection.array
 
+import org.finos.toolbox.collection.set.{ImmutableArraySet, VectorImmutableArraySet}
+import org.finos.toolbox.collection.set.ImmutableArraySet.{empty, of}
+
 import scala.reflect.ClassTag
 
 object ImmutableArray {
 
+  def from[T <: Object](iterable: IterableOnce[T])(implicit c: ClassTag[T]): ImmutableArray[T] = {
+    if (iterable.knownSize == 0) {
+      empty()
+    } else if (iterable.knownSize == 1) {
+      of(iterable.iterator.next())
+    } else {
+      VectorImmutableArray.from(iterable)
+    }
+  }
+  
   def empty[T <: Object](implicit c: ClassTag[T]): ImmutableArray[T] = {
-    ChunkedImmutableArray.empty()
+    VectorImmutableArray.empty()
   }
 
-  def from[T <: Object](array: Array[T])(implicit c: ClassTag[T]): ImmutableArray[T] = {
-    ChunkedImmutableArray.from(array)
+  def of[T <: Object](element: T)(implicit c: ClassTag[T]): ImmutableArray[T] = {
+    VectorImmutableArray.of(element)
   }
 
 }
@@ -23,13 +36,13 @@ object ImmutableArrays{
 trait ImmutableArray[T] extends Iterable[T] {
 
   def +(element: T) : ImmutableArray[T]
+  def add(element: T) : ImmutableArray[T]
 
   def -(element: T): ImmutableArray[T]
   def remove(element: T): ImmutableArray[T]
 
-  def ++(arr: ImmutableArray[T]) : ImmutableArray[T]
-  def addAll(arr: ImmutableArray[T]) : ImmutableArray[T]
-  def fromArray(arr: Array[T]): ImmutableArray[T]
+  def ++(iterable: IterableOnce[T]) : ImmutableArray[T]
+  def addAll(iterable: IterableOnce[T]) : ImmutableArray[T]
 
   def getIndex(index: Int): T
 
@@ -44,7 +57,5 @@ trait ImmutableArray[T] extends Iterable[T] {
   def set(index: Int, element: T): ImmutableArray[T]
 
   def remove(index: Int): ImmutableArray[T]
-
-  def distinct: ImmutableArray[T]
 
 }

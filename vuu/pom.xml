@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.finos.vuu</groupId>
         <artifactId>vuu-parent</artifactId>
-        <version>0.15.0-SNAPSHOT</version>
+        <version>0.18.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>vuu</artifactId>
@@ -17,7 +17,7 @@
         <dependency>
             <groupId>org.finos.vuu</groupId>
             <artifactId>toolbox</artifactId>
-            <version>0.15.0-SNAPSHOT</version>
+            <version>0.18.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -243,6 +243,7 @@
                         <configuration>
                             <sources>
                                 <source>target/generated-sources/antlr4</source>
+                                <source>src/main/scala</source>
                             </sources>
                         </configuration>
                     </execution>
@@ -319,6 +320,39 @@
                         <argument>org.finos.vuu.SimulMain</argument>
                     </arguments>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>check-coverage</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.75</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
         </plugins>
