@@ -10,7 +10,7 @@ public class PersonProvider implements Provider {
     private final DataTable table;
     private final PersonStore personStore;
 
-    public PersonProvider(final DataTable table, PersonStore personStore){
+    public PersonProvider(DataTable table, PersonStore personStore){
         this.table = table;
         this.personStore = personStore;
     }

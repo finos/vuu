@@ -20,14 +20,10 @@ public class AutoMappedPersonProvider implements Provider {
     private final PersonStore personStore;
     private final SchemaMapper schemaMapper;
 
-    public AutoMappedPersonProvider(final DataTable table, PersonStore personStore) {
+    public AutoMappedPersonProvider(DataTable table, PersonStore personStore) {
         this.table = table;
         this.personStore = personStore;
-        this.schemaMapper = createSchemaMapper(table);
-    }
-
-    private static SchemaMapper createSchemaMapper(DataTable table) {
-        return SchemaMapperBuilder.apply(EntitySchema.person, table.getTableDef().getColumns())
+        this.schemaMapper = SchemaMapperBuilder.apply(EntitySchema.person, table.getTableDef().getColumns())
                 .build();
     }
 
