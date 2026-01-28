@@ -81,16 +81,6 @@ class JoinTableWSApiTest extends WebSocketApiTestBase {
     viewPortId
   }
 
-  private def updateViewPort(tableName: String, columns: Array[String], expectedNumberOfRows: Int) = {
-    val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName, moduleName), ViewPortRange(0, 100),
-      columns = columns, sort = SortSpec(List(SortDef("vuuUpdatedTimestamp", SortDirection.DESCENDING.external))))
-    vuuClient.send(sessionId, createViewPortRequest)
-    val viewPortCreateResponse = vuuClient.awaitForMsgWithBody[CreateViewPortSuccess]
-    val viewPortId = viewPortCreateResponse.get.viewPortId
-    waitForData(expectedNumberOfRows)
-    viewPortId
-  }
-
   override protected def defineModuleWithTestTables(): ViewServerModule = {
 
     val instrumentDef = TableDef(
