@@ -13,4 +13,7 @@ class FakeDataSource(rows: ListMap[String, Map[String, Any]]) {
   def get(): ListMap[RowKey, Map[ColumnName, Any]] = {
     rows
   }
+  
+  def size(): Int = rows.size
+  
 }

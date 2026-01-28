@@ -34,7 +34,7 @@ object VuuClientConnectionOptions {
 
 object VuuJoinTableProviderOptions {
   def apply() : VuuJoinTableProviderOptions = {
-    VuuJoinProviderOptionsImpl.apply(batchSize = 100, maxQueueSize = 20_000)
+    VuuJoinProviderOptionsImpl.apply(batchSize = 16_384, maxQueueSize = 32_768)
   }
 }
 

@@ -34,7 +34,7 @@ class TestProvider(table: DataTable, fakeDataSource: FakeDataSource) extends Pro
   }
 
   override def doInitialize(): Unit = {
-    logger.debug(s"Test Provider for ${table.name}- Initialising")
+    logger.debug(s"Test Provider for ${table.name}- Initialising with ${fakeDataSource.size()} rows")
     fakeDataSource.get()
       .foreach(row => {
         table.processUpdate(row._1, RowWithData(row._1, row._2))
@@ -42,7 +42,7 @@ class TestProvider(table: DataTable, fakeDataSource: FakeDataSource) extends Pro
   }
 
   def update(dataSource: FakeDataSource): Unit = {
-    logger.debug(s"Test Provider for ${table.name}- Updating")
+    logger.debug(s"Test Provider for ${table.name}- Updating ${dataSource.size()} rows")
     dataSource.get()
       .foreach(row => {
         table.processUpdate(row._1, RowWithData(row._1, row._2))

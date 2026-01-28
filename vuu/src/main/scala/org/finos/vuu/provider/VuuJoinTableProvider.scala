@@ -51,7 +51,7 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
   lifecycle(this)
 
   private val outboundQueue = BinaryPriorityBlockingQueue[JoinTableUpdate](options.maxQueueSize)
-  private val queuePollDuration = Duration.create(50, TimeUnit.MILLISECONDS)
+  private val queuePollDuration = Duration.create(150, TimeUnit.MILLISECONDS)
   private val joinRelations = new JoinRelations()
   private val joinSink = new JoinManagerEventDataSink()
   private val rightToLeftKeys = new RightToLeftKeys()
@@ -256,6 +256,7 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
   override def runOnce(): Unit = {
     val firstItem = outboundQueue.poll(queuePollDuration)
     if (firstItem.isEmpty) {
+      logger.trace("Zero join table updates to process")
       return
     }
 
@@ -276,6 +277,7 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
       }
       i += 1
     }
+    logger.trace(s"Processed $size join table updates")
   }
 
   private def isPrimaryKeyDeleted(dataTable: DataTable, rowUpdate: RowWithData): Boolean = {
