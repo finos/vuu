@@ -8,8 +8,8 @@ import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.VuuJoinProviderOptionsImpl
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.index.IndexedField
-import org.finos.vuu.core.table.{Column, Columns, DefaultColumn, JoinTable, KeyObserver, RowKeyUpdate, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.core.table.datatype.EpochTimestamp
+import org.finos.vuu.core.table.{Column, Columns, DefaultColumn, JoinTable, KeyObserver, RowKeyUpdate, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.ClientSessionId
 import org.finos.vuu.plugin.DefaultPluginRegistry
@@ -132,6 +132,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
         .foreach(update => update.table.readRow(update.key.key, List("orderId", "trader", "tradeTime", "ric", "bid", "ask"), printToConsoleProcessor))
     }
 
+
     Scenario("check large number of ticks all the way through from source to join table") {
 
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
@@ -185,7 +186,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       for (quantity <- 1 to maxQueueSize + 1) {
         ordersProvider.tick("NYC-0001", Map("orderId" -> "NYC-0001", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> quantity, "ric" -> "VOD.L"))
         ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "chris", "tradeTime" -> dateTime, "quantity" -> quantity, "ric" -> "BT.L"))
-        if (quantity % batchSize == 0) {
+        if ((quantity * 2) % batchSize == 0) {
           joinProvider.runOnce()
         }
       }

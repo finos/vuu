@@ -1,6 +1,7 @@
 package org.finos.vuu.provider
 
 import com.typesafe.scalalogging.StrictLogging
+import org.finos.toolbox.collection.queue.BinaryPriorityBlockingQueue
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.vuu.api.{JoinTableDef, TableDef}
 import org.finos.vuu.core.VuuJoinTableProviderOptions
@@ -8,7 +9,8 @@ import org.finos.vuu.core.table.{DataTable, JoinTable, JoinTableUpdate, RowWithD
 import org.finos.vuu.provider.join.{JoinDefToJoinTable, JoinManagerEventDataSink, JoinRelations, RightToLeftKeys}
 
 import java.util
-import java.util.concurrent.{ArrayBlockingQueue, ConcurrentHashMap}
+import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
+import scala.concurrent.duration.Duration
 
 /**
  * A native join table provider, this maintains a data structure of:
@@ -48,11 +50,11 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
 
   lifecycle(this)
 
-  private val outboundQueue = new ArrayBlockingQueue[JoinTableUpdate](options.maxQueueSize)
+  private val outboundQueue = BinaryPriorityBlockingQueue[JoinTableUpdate](options.maxQueueSize)
+  private val queuePollDuration = Duration.create(50, TimeUnit.MILLISECONDS)
   private val joinRelations = new JoinRelations()
   private val joinSink = new JoinManagerEventDataSink()
   private val rightToLeftKeys = new RightToLeftKeys()
-
   @volatile private var joinDefs = List[JoinDefToJoinTable]()
 
   private val sourceTableDefsByName = new ConcurrentHashMap[String, TableDef]()
@@ -64,10 +66,10 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
     }
   }
 
-  private def publishUpdateForLeftTableAndKey(joinTableDef: JoinTableDef, JoinTable: JoinTable, leftTableName: String, leftKey: String, ev: util.HashMap[String, Any]): Unit = {
-    //get cached data (actually do we need to do this..)
-    //val cachedEventData = joinSink.getEventDataSink(leftTableName).getEventState(leftKey)
-
+  private def publishUpdateForLeftTableAndKey(joinTableDef: JoinTableDef, JoinTable: JoinTable,
+                                              leftTableName: String, leftKey: String, ev: util.HashMap[String, Any],
+                                              isJoinEvent: Boolean
+                                             ): Unit = {
     //get right keys and tables
     val rowJoin = joinRelations.getJoinsForEvent(leftTableName, leftKey)
 
@@ -116,9 +118,12 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
     val jtu = JoinTableUpdate(JoinTable, rowWithData)
 
     logger.trace(s"[JoinTableProvider] Submitting join table event: $jtu")
-
-    //get the processing off the join thread
-    outboundQueue.put(jtu)
+    
+    if (isJoinEvent) {
+      outboundQueue.putHighPriority(jtu)
+    } else {
+      outboundQueue.put(jtu)
+    }
   }
 
   def eventToRightKey(joinTableDef: JoinTableDef, tableName: String, ev: util.HashMap[String, Any], rightColumn: String): String = {
@@ -170,6 +175,14 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
   }
 
   override def sendEvent(tableName: String, ev: util.HashMap[String, Any]): Unit = {
+    processEvent(tableName, ev, false)
+  }
+
+  override def sendJoinEvent(tableName: String, ev: util.HashMap[String, Any]): Unit = {
+    processEvent(tableName, ev, true)
+  }
+
+  private def processEvent(tableName: String, ev: util.HashMap[String, Any], isJoinEvent: Boolean): Unit = {
 
     joinSink.getEventDataSink(tableName).putEventState(eventToKey(tableName, ev), ev)
 
@@ -195,7 +208,7 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
           //if so, publish a left table event for the right inbound event
           val leftKey = eventToLeftKey(joinTableDef, ev)
           logger.trace(s"Publishing update for left key: $leftKey to table $tableName")
-          publishUpdateForLeftTableAndKey(joinTableDef, joinTable.asInstanceOf[JoinTable], tableName, leftKey, ev)
+          publishUpdateForLeftTableAndKey(joinTableDef, joinTable.asInstanceOf[JoinTable], tableName, leftKey, ev, isJoinEvent)
 
           //otherwise must be a right table, i.e. any one of the joinTo tables
         } else {
@@ -210,7 +223,8 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
           //for each key in left table, send left update, including additional keys
           leftKeys.foreach(key => {
             logger.trace(s"Publishing update for left key: $key to table ${joinTableDef.baseTable.name}")
-            publishUpdateForLeftTableAndKey(joinTableDef, joinTable.asInstanceOf[JoinTable], joinTableDef.baseTable.name, key, joinSink.getEventDataSink(joinTableDef.baseTable.name).getEventState(key))
+            publishUpdateForLeftTableAndKey(joinTableDef, joinTable.asInstanceOf[JoinTable], joinTableDef.baseTable.name,
+              key, joinSink.getEventDataSink(joinTableDef.baseTable.name).getEventState(key), isJoinEvent)
           })
         }
       }
@@ -239,31 +253,39 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
 
   override def start(): Unit = {}
 
-  private def isPrimaryKeyDeleted(jtu: JoinTableUpdate): Boolean = {
-    val tableDef = jtu.joinTable.asInstanceOf[JoinTable].tableDef
+  override def runOnce(): Unit = {
+    val firstItem = outboundQueue.poll(queuePollDuration)
+    if (firstItem.isEmpty) {
+      return
+    }
+
+    val updates = new java.util.ArrayList[JoinTableUpdate](options.batchSize)
+    updates.add(firstItem.get)
+    outboundQueue.drainTo(updates, options.batchSize - 1)
+
+    //Iterate as fast as possible
+    val size = updates.size()
+    var i = 0
+    while (i < size) {
+      val jtu = updates.get(i)
+      val rowUpdate = jtu.rowUpdate
+      if (isPrimaryKeyDeleted(jtu.joinTable, rowUpdate)) {
+        jtu.joinTable.processDelete(rowUpdate.key)
+      } else {
+        jtu.joinTable.processUpdate(rowUpdate.key, rowUpdate)
+      }
+      i += 1
+    }
+  }
+
+  private def isPrimaryKeyDeleted(dataTable: DataTable, rowUpdate: RowWithData): Boolean = {
+    val tableDef = dataTable.asInstanceOf[JoinTable].tableDef
     val columnName = tableDef.baseTable.deleteColumnName()
-    val deleteColumn = jtu.rowUpdate.data.get(columnName)
+    val deleteColumn = rowUpdate.data.get(columnName)
 
     deleteColumn match {
       case Some(bool: Boolean) => bool
       case _ => false
-    }
-  }
-
-  override def runOnce(): Unit = {
-    val updates = new java.util.ArrayList[JoinTableUpdate](options.batchSize)
-
-    outboundQueue.drainTo(updates) match {
-
-      case 0 => //is fine, means no work today
-      case count: Int =>
-        (0 until count).foreach(i => {
-          val jtu = updates.get(i)
-
-          if (isPrimaryKeyDeleted(jtu)) jtu.joinTable.processDelete(jtu.rowUpdate.key)
-          else
-            jtu.joinTable.processUpdate(jtu.rowUpdate.key, jtu.rowUpdate)
-        })
     }
   }
 
@@ -273,7 +295,9 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
 
   override def doInitialize(): Unit = {}
 
-  override def doDestroy(): Unit = {}
+  override def doDestroy(): Unit = {
+    outboundQueue.shutdown()
+  }
 
   override def drainQueue_ForTesting(): (Int, util.ArrayList[JoinTableUpdate]) = {
     val updates = new java.util.ArrayList[JoinTableUpdate](100)

@@ -398,10 +398,9 @@ class JoinTable(val tableDef: JoinTableDef,
   def sendToJoinSink(rowData: RowData): Unit = {
     if (joinProvider.hasJoins(this.tableDef.name)) {
       val event = toEvent(rowData)
-      joinProvider.sendEvent(this.tableDef.name, event)
+      joinProvider.sendJoinEvent(this.tableDef.name, event)
     }
   }
-
 
   /**
    * Pull row ith only a key returns the immutable RowData object as it's stored within the table.
@@ -509,7 +508,7 @@ class JoinTable(val tableDef: JoinTableDef,
   def sendDeleteToJoinSink(rowKey: String, rowData: RowData): Unit = {
     if (joinProvider.hasJoins(this.tableDef.name)) {
       val event = toDeleteEvent(rowKey, rowData)
-      joinProvider.sendEvent(this.tableDef.name, event)
+      joinProvider.sendJoinEvent(this.tableDef.name, event)
     }
   }
 

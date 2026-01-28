@@ -9,6 +9,8 @@ trait JoinTableProvider extends RunInThread with LifecycleEnabled {
 
   def sendEvent(tableName: String, ev: java.util.HashMap[String, Any]): Unit
 
+  def sendJoinEvent(tableName: String, ev: java.util.HashMap[String, Any]): Unit
+  
   def addJoinTable(join: DataTable): Unit
 
   def start(): Unit

@@ -1,19 +1,22 @@
 package org.finos.toolbox.collection.queue
 
 import org.scalatest.concurrent.Eventually.eventually
+import org.scalatest.concurrent.Futures.timeout
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.time.{Seconds, Span}
 
 import java.util
 import java.util.ArrayList
-import java.util.concurrent.CompletableFuture
+import java.util.concurrent.{CompletableFuture, TimeUnit}
+import scala.concurrent.duration.Duration
 
 class BinaryPriorityBlockingQueueTest extends AnyFunSuite with Matchers {
 
-  test("take should block - cleared by regular queue") {
+  test("poll should block - cleared by regular queue") {
     val bq = BinaryPriorityBlockingQueue[String](10)
 
-    val future = CompletableFuture.supplyAsync(() => bq.take())
+    val future = CompletableFuture.supplyAsync(() => bq.poll(Duration.create(500, TimeUnit.MILLISECONDS)))
     bq.put("Normal 1")
 
     eventually {
@@ -22,10 +25,10 @@ class BinaryPriorityBlockingQueueTest extends AnyFunSuite with Matchers {
     }
   }
 
-  test("take should block - cleared by priority queue") {
+  test("poll should block - cleared by priority queue") {
     val bq = BinaryPriorityBlockingQueue[String](10)
 
-    val future = CompletableFuture.supplyAsync(() => bq.take())
+    val future = CompletableFuture.supplyAsync(() => bq.poll(Duration.create(500, TimeUnit.MILLISECONDS)))
     bq.putHighPriority("High 1")
 
     eventually {
@@ -34,13 +37,25 @@ class BinaryPriorityBlockingQueueTest extends AnyFunSuite with Matchers {
     }
   }
 
-  test("take should block - cleared by shutdown") {
+  test("poll should block - cleared by shutdown") {
     val bq = BinaryPriorityBlockingQueue[String](10)
 
-    val future = CompletableFuture.supplyAsync(() => bq.take())
+    val future = CompletableFuture.supplyAsync(() => bq.poll(Duration.create(500, TimeUnit.MILLISECONDS)))
     bq.shutdown()
 
     eventually {
+      future.isDone shouldBe true
+      future.get() shouldEqual None
+    }
+  }
+
+  test("poll should block - cleared by timeout") {
+    val bq = BinaryPriorityBlockingQueue[String](10)
+
+    val future = CompletableFuture.supplyAsync(() => bq.poll(Duration.create(200, TimeUnit.MILLISECONDS)))
+    future.isDone shouldBe false
+
+    eventually(timeout(Span(1, Seconds))) {
       future.isDone shouldBe true
       future.get() shouldEqual None
     }
@@ -54,8 +69,9 @@ class BinaryPriorityBlockingQueueTest extends AnyFunSuite with Matchers {
     bq.putHighPriority("High 2")
 
     val result = new util.ArrayList[String]()
-    bq.drainTo(result)
+    val count = bq.drainTo(result)
 
+    count shouldEqual 4
     val expected = java.util.List.of("High 1", "High 2", "Normal 1", "Normal 2")
     result shouldBe expected
   }
@@ -81,14 +97,15 @@ class BinaryPriorityBlockingQueueTest extends AnyFunSuite with Matchers {
     val future = CompletableFuture.runAsync(() => bq.put("3"))
     Thread.sleep(200)
     future.isDone shouldBe false
-    bq.drainTo(new util.ArrayList[String]())
+    val count = bq.drainTo(new util.ArrayList[String]())
+    count shouldEqual 2
 
     eventually {
       future.isDone shouldBe true
     }
   }
 
-  test("put should block when regular queue capacity is reached - cleared by take") {
+  test("put should block when regular queue capacity is reached - cleared by poll") {
     val capacity = 2
     val bq = BinaryPriorityBlockingQueue[String](capacity)
     bq.put("1")
@@ -97,7 +114,8 @@ class BinaryPriorityBlockingQueueTest extends AnyFunSuite with Matchers {
     val future = CompletableFuture.runAsync(() => bq.put("3"))
     Thread.sleep(200)
     future.isDone shouldBe false
-    bq.take()
+    val result = bq.poll()
+    result shouldEqual Some("1")
 
     eventually {
       future.isDone shouldBe true

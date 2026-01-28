@@ -1,14 +1,16 @@
 package org.finos.toolbox.collection.queue
 
 import java.util
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.{ArrayBlockingQueue, BlockingQueue, LinkedBlockingQueue}
+import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
 
 trait BinaryPriorityBlockingQueue[T] {
   def put(e: T): Unit
   def putHighPriority(e: T): Unit
-  def take(): Option[T]
+  def poll(timeout: Duration = Duration.Zero): Option[T]
   def drainTo(c: util.Collection[_ >: T]): Int
   def drainTo(c: util.Collection[_ >: T], maxElements: Int): Int
   def shutdown(): Unit
@@ -16,37 +18,44 @@ trait BinaryPriorityBlockingQueue[T] {
 
 object BinaryPriorityBlockingQueue {
 
-  def apply[T <: Object :ClassTag](capacity: Int): BinaryPriorityBlockingQueue[T] = new BinaryPriorityBlockingQueueImpl[T](capacity)
+  def apply[T <: Object :ClassTag](capacity: Int): BinaryPriorityBlockingQueue[T] = BinaryPriorityBlockingQueueImpl[T](capacity)
 
 }
 
-class BinaryPriorityBlockingQueueImpl[T](capacity: Int) extends BinaryPriorityBlockingQueue[T] {
+private class BinaryPriorityBlockingQueueImpl[T](capacity: Int) extends BinaryPriorityBlockingQueue[T] {
 
-  private final val priorityQueue: BlockingQueue[T] = new LinkedBlockingQueue[T]()
-  private final val queue: BlockingQueue[T] = new ArrayBlockingQueue[T](capacity)
-  private final val lock = new ReentrantLock()
+  private final val priorityQueue: BlockingQueue[T] = LinkedBlockingQueue[T]()
+  private final val queue: BlockingQueue[T] = ArrayBlockingQueue[T](capacity)
+  private final val running = AtomicBoolean(true)
+  private final val lock = ReentrantLock()
   private final val notEmpty = lock.newCondition()
-  @volatile private var running = true
 
   override def put(e: T): Unit = {
-    if (!running) throw new IllegalStateException("Queue is shut down")
+    if (!running.get()) throw IllegalStateException("Queue is shut down")
     queue.put(e)
     signal()
   }
 
   override def putHighPriority(e: T): Unit = {
-    if (!running) throw new IllegalStateException("Queue is shut down")
+    if (!running.get()) throw IllegalStateException("Queue is shut down")
     priorityQueue.put(e)
     signal()
   }
 
-  override def take(): Option[T] = {
+  override def poll(timeout: Duration): Option[T] = {
+    var nanos = timeout.toNanos
     lock.lockInterruptibly()
     try {
-      while (running && priorityQueue.isEmpty && queue.isEmpty) {
-        notEmpty.await()
+      while (running.get() && priorityQueue.isEmpty && queue.isEmpty) {
+        if (nanos <= 0L) return None
+        nanos = notEmpty.awaitNanos(nanos)
       }
-      Option(extract())
+      val item = priorityQueue.poll()
+      if (item != null) {
+        Option(item)
+      } else {
+        Option(queue.poll())
+      }
     } finally {
       lock.unlock()
     }
@@ -66,7 +75,7 @@ class BinaryPriorityBlockingQueueImpl[T](capacity: Int) extends BinaryPriorityBl
   override def shutdown(): Unit = {
     lock.lock()
     try {
-      running = false
+      running.set(false)
       notEmpty.signalAll()
     } finally {
       lock.unlock()
@@ -80,11 +89,6 @@ class BinaryPriorityBlockingQueueImpl[T](capacity: Int) extends BinaryPriorityBl
     } finally {
       lock.unlock()
     }
-  }
-
-  private def extract(): T = {
-    val item = priorityQueue.poll()
-    if (item != null) item else queue.poll()
   }
 
 }

@@ -6,6 +6,7 @@ import org.finos.toolbox.text.AsciiUtil
 import org.finos.toolbox.time.TestFriendlyClock
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.{Columns, InMemDataTable, ViewPortColumnCreator}
+import org.finos.vuu.test.TestFriendlyJoinTableProvider
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
