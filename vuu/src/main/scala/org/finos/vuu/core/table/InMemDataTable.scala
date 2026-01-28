@@ -15,7 +15,6 @@ import org.finos.vuu.viewport.{RowProcessor, RowSource, ViewPortColumns}
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap
-import scala.jdk.CollectionConverters.MapHasAsScala
 
 trait DataTable extends KeyedObservable[RowKeyUpdate] with RowSource {
 
