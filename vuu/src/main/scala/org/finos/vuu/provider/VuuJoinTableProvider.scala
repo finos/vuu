@@ -66,7 +66,7 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
     }
   }
 
-  private def publishUpdateForLeftTableAndKey(joinTableDef: JoinTableDef, JoinTable: JoinTable,
+  private def publishUpdateForLeftTableAndKey(joinTableDef: JoinTableDef, joinTable: JoinTable,
                                               leftTableName: String, leftKey: String, ev: util.HashMap[String, Any],
                                               isJoinEvent: Boolean
                                              ): Unit = {
@@ -115,7 +115,7 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
 
     val rowWithData = RowWithData(leftKey, toPublishData)
 
-    val jtu = JoinTableUpdate(JoinTable, rowWithData)
+    val jtu = JoinTableUpdate(joinTable, rowWithData)
 
     logger.trace(s"[JoinTableProvider] Submitting join table event: $jtu")
     
