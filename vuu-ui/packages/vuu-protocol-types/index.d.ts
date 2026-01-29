@@ -8,6 +8,15 @@ export interface VuuUser {
   name: string;
 }
 
+export type InvalidSessionReason =
+  | "Invalid session"
+  | "User session limit exceeded";
+export type InvalidTokenReason = "Invalid token" | "Token has expired";
+
+export declare type LoginErrorMessage =
+  | InvalidSessionReason
+  | InvalidTokenReason;
+
 /**
  * Vuu Protocol Message Envelope.
  *
@@ -43,16 +52,10 @@ export interface VuuLoginRequest {
   type: "LOGIN";
 }
 
-export declare type VuuLoginResponse =
-  | VuuLoginSuccessResponse
-  | VuuLoginFailResponse;
+// There is no LOGIN_FAIL
 export interface VuuLoginSuccessResponse {
   type: "LOGIN_SUCCESS";
   vuuServerId: string;
-}
-export interface VuuLoginFailResponse {
-  errorMsg: string;
-  type: "LOGIN_FAIL";
 }
 
 /**
@@ -417,7 +420,7 @@ export interface ServerToClientTableRows {
 }
 export declare type ServerMessageBody =
   | ServerToClientHeartBeat
-  | VuuLoginResponse
+  | VuuLoginSuccessResponse
   | VuuViewportCreateResponse
   | VuuViewportChangeResponse
   | VuuViewportRangeResponse

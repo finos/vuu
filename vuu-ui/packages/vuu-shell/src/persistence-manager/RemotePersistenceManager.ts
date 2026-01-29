@@ -5,7 +5,6 @@ import {
   LayoutMetadataDto,
   Settings,
 } from "@vuu-ui/vuu-utils";
-import { getAuthDetailsFromCookies } from "../login";
 import { IPersistenceManager } from "./PersistenceManager";
 
 const baseURL = "/api";
@@ -18,7 +17,7 @@ export type GetLayoutResponseDto = { definition: LayoutJSON };
 export type GetApplicationResponseDto = { definition: ApplicationJSON };
 
 export class RemotePersistenceManager implements IPersistenceManager {
-  username: string = getAuthDetailsFromCookies()[0];
+  constructor(private userName: string) {}
 
   createLayout(
     metadata: LayoutMetadataDto,
@@ -148,7 +147,7 @@ export class RemotePersistenceManager implements IPersistenceManager {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          username: this.username,
+          username: this.userName,
         },
         body: JSON.stringify(applicationJSON),
       })
@@ -169,7 +168,7 @@ export class RemotePersistenceManager implements IPersistenceManager {
       fetch(`${baseURL}/${applicationLayoutsSaveLocation}`, {
         method: "GET",
         headers: {
-          username: this.username,
+          username: this.userName,
         },
       })
         .then((response) => {

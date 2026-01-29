@@ -5,7 +5,6 @@ import { SettingsSchema } from "../user-settings";
 
 const Guest: VuuUser = {
   username: "unknown",
-  token: "",
 };
 
 export interface ApplicationContextProps {
@@ -13,7 +12,7 @@ export interface ApplicationContextProps {
     propertyName: string,
     value: VuuRowDataItemType,
   ) => void;
-  loginUrl?: string;
+  logout?: () => void;
   userSettings?: Settings;
   userSettingsSchema?: SettingsSchema;
   user: VuuUser;

@@ -12,22 +12,20 @@ import {
   WithId,
   clearLocalEntity,
 } from "@vuu-ui/vuu-utils";
-import { getAuthDetailsFromCookies } from "../login";
 import { IPersistenceManager } from "./PersistenceManager";
 const baseMetadataSaveLocation = "layouts/metadata";
 const baseLayoutsSaveLocation = "layouts/layouts";
 
 export class LocalPersistenceManager implements IPersistenceManager {
-  #username: string = getAuthDetailsFromCookies()[0];
-  metadataSaveLocation = `${baseMetadataSaveLocation}/${this.#username}`;
-  layoutsSaveLocation = `${baseLayoutsSaveLocation}/${this.#username}`;
-  #urlKey = `api/vui/${this.#username}`;
   #applicationJSON: ApplicationJSON | undefined;
+  #metadataSaveLocation: string;
+  #layoutsSaveLocation: string;
+  #urlKey: string;
 
-  constructor(urlKey?: string) {
-    if (urlKey) {
-      this.#urlKey = urlKey;
-    }
+  constructor(userName: string, urlKey?: string) {
+    this.#metadataSaveLocation = `${baseMetadataSaveLocation}/${userName}`;
+    this.#layoutsSaveLocation = `${baseLayoutsSaveLocation}/${userName}`;
+    this.#urlKey = urlKey ?? `api/vui/${userName}`;
   }
 
   clearUserSettings() {
@@ -118,7 +116,7 @@ export class LocalPersistenceManager implements IPersistenceManager {
   loadMetadata(): Promise<LayoutMetadata[]> {
     return new Promise((resolve) => {
       const metadata = getLocalEntity<LayoutMetadata[]>(
-        this.metadataSaveLocation,
+        this.#metadataSaveLocation,
       );
       resolve(metadata || []);
     });
@@ -154,7 +152,7 @@ export class LocalPersistenceManager implements IPersistenceManager {
 
   loadLayouts = (): Promise<Layout[]> => {
     return new Promise((resolve) => {
-      const layouts = getLocalEntity<Layout[]>(this.layoutsSaveLocation);
+      const layouts = getLocalEntity<Layout[]>(this.#layoutsSaveLocation);
       resolve(layouts || []);
     });
   };
@@ -163,8 +161,8 @@ export class LocalPersistenceManager implements IPersistenceManager {
     layouts: Layout[],
     metadata: LayoutMetadata[],
   ): void => {
-    saveLocalEntity<Layout[]>(this.layoutsSaveLocation, layouts);
-    saveLocalEntity<LayoutMetadata[]>(this.metadataSaveLocation, metadata);
+    saveLocalEntity<Layout[]>(this.#layoutsSaveLocation, layouts);
+    saveLocalEntity<LayoutMetadata[]>(this.#metadataSaveLocation, metadata);
   };
 
   // Ensures that there is exactly one Layout entry and exactly one Metadata

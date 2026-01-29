@@ -1,21 +1,27 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
-    <link rel="stylesheet" href="app-vuu-example/login.css"/>
+    <link rel="stylesheet" href="app-vuu-example/login.css" />
     <script type="module">
-      window.vuuConfig = fetch('config.json').then(res => {if (res.ok) {return res.json()} else { throw Error('Failed to load application config')}})
+      window.vuuConfig = fetch("config.json").then((res) => {
+        if (res.ok) {
+          return res.json();
+        } else {
+          throw Error("Failed to load application config");
+        }
+      });
     </script>
 
-    <title>VUU App</title>
+    <title>Login to VUU</title>
   </head>
   <body>
     <div id="root"></div>
     <script src="app-vuu-example/login.js" type="module"></script>
-</body>
+  </body>
 </html>

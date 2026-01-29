@@ -6,12 +6,11 @@ import { Toolbar } from "@vuu-ui/vuu-ui-controls";
 import type { ThemeMode } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { HTMLAttributes, useCallback, useRef } from "react";
-import { useLoginUrl } from "../application-provider";
-import { logout } from "../login";
 
 import appHeaderCss from "./AppHeader.css";
 import { usePersistenceManager } from "../persistence-manager";
 import { NotificationType, useNotifications } from "@vuu-ui/vuu-notifications";
+import { useLogout } from "../application-provider";
 
 const classBase = "vuuAppHeader";
 export interface AppHeaderProps extends HTMLAttributes<HTMLDivElement> {
@@ -34,14 +33,10 @@ export const AppHeader = ({
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
 
   const className = cx(classBase, classNameProp);
-  const loginUrl = useLoginUrl();
+  const logout = useLogout();
 
   const { showComponentInContextPanel } = useLayoutOperation();
   const { showNotification } = useNotifications();
-
-  const handleLogout = useCallback(() => {
-    logout(loginUrl);
-  }, [loginUrl]);
 
   const handleReset = useCallback(() => {
     persistenceManager?.clearUserSettings();
@@ -101,7 +96,7 @@ export const AppHeader = ({
       <Button
         appearance="bordered"
         className={`${classBase}-menuItem`}
-        onClick={handleLogout}
+        onClick={logout}
         sentiment="neutral"
       >
         Log out

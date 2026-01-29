@@ -1,90 +1,86 @@
 import { WebSocketProtocol } from "@vuu-ui/vuu-data-types";
-import { VuuClientMessage, VuuServerMessage } from "@vuu-ui/vuu-protocol-types";
-import { DeferredPromise, EventEmitter, logger } from "@vuu-ui/vuu-utils";
+import {
+  InvalidSessionReason,
+  InvalidTokenReason,
+  LoginErrorMessage,
+  VuuClientMessage,
+  VuuServerMessage,
+} from "@vuu-ui/vuu-protocol-types";
+import {
+  DeferredPromise,
+  EventEmitter,
+  isLoginErrorMessage,
+  logger,
+} from "@vuu-ui/vuu-utils";
 
+export type ConnectionPhase =
+  | "initial-connection"
+  | "post-disconnect-reconnection";
 export type ConnectingStatus = "connecting" | "reconnecting";
 export type ConnectedStatus = "connected" | "reconnected";
 export type ConnectionStatus =
+  | ConnectingStatus
   | ConnectedStatus
   | "closed"
-  | "connection-open-awaiting-session"
+  | "websocket-open"
   | "disconnected"
   | "failed"
   | "inactive";
 
-type InternalConnectionStatus = ConnectionStatus | ConnectingStatus;
+export const isInvalidTokenReason = (
+  text: string,
+): text is InvalidTokenReason =>
+  text === "Invalid token" || text === "Token has expired";
 
-type ReconnectAttempts = {
-  retryAttemptsTotal: number;
-  retryAttemptsRemaining: number;
-  secondsToNextRetry: number;
-};
-
-export interface WebSocketConnectionState<
-  T extends InternalConnectionStatus = ConnectionStatus,
-> extends ReconnectAttempts {
-  connectionPhase: ConnectingStatus;
-  connectionStatus: T;
-}
+export const isInvalidSessionReason = (
+  text: string,
+): text is InvalidSessionReason =>
+  text === "Invalid session" || text === "User session limit exceeded";
 
 const { debug, debugEnabled, info } = logger("WebSocketConnection");
 
-const isNotConnecting = (
-  connectionState: WebSocketConnectionState<InternalConnectionStatus>,
-): connectionState is WebSocketConnectionState<ConnectionStatus> =>
-  connectionState.connectionStatus !== "connecting" &&
-  connectionState.connectionStatus !== "reconnecting";
-
-export const isWebSocketConnectionMessage = (
-  msg: object | WebSocketConnectionState,
-): msg is WebSocketConnectionState => {
-  if ("connectionStatus" in msg) {
-    return [
-      "connecting",
-      "connected",
-      "connection-open-awaiting-session",
-      "reconnecting",
-      "reconnected",
-      "disconnected",
-      "closed",
-      "failed",
-    ].includes(msg.connectionStatus);
-  } else {
-    return false;
-  }
-};
+export const isWebSocketConnectionStatus = (
+  msg: unknown,
+): msg is ConnectionStatus =>
+  typeof msg === "string" &&
+  [
+    "connecting",
+    "websocket-open",
+    "connected",
+    "reconnecting",
+    "reconnected",
+    "disconnected",
+    "closed",
+    "failed",
+  ].includes(msg);
 
 export const isConnected = (
   status: ConnectionStatus,
 ): status is ConnectedStatus =>
   status === "connected" || status === "reconnected";
 
-export type VuuServerMessageCallback = (msg: VuuServerMessage) => void;
-
-export type RetryLimits = {
-  connect: number;
-  reconnect: number;
+export type LoginRejectedMessage = {
+  type: "LOGIN_REJECTED";
+  reason: LoginErrorMessage;
 };
+
+export const isLoginRejectedMessage = (
+  message: object,
+): message is LoginRejectedMessage =>
+  message !== null && "type" in message && message.type === "LOGIN_REJECTED";
+
+export type VuuServerMessageCallback = (
+  msg: VuuServerMessage | LoginRejectedMessage,
+) => void;
 
 export type WebSocketConnectionConfig = {
   url: string;
   protocols: WebSocketProtocol;
   callback: VuuServerMessageCallback;
   connectionTimeout?: number;
-  retryLimits?: RetryLimits;
-};
-
-const DEFAULT_RETRY_LIMITS: RetryLimits = {
-  connect: 5,
-  reconnect: 8,
 };
 
 const DEFAULT_CONNECTION_TIMEOUT = 10000;
-
-const ConnectingEndState: Record<ConnectingStatus, ConnectedStatus> = {
-  connecting: "connected",
-  reconnecting: "reconnected",
-} as const;
 
 const parseWebSocketMessage = (message: string): VuuServerMessage => {
   try {
@@ -94,21 +90,13 @@ const parseWebSocketMessage = (message: string): VuuServerMessage => {
   }
 };
 
-export type WebSocketCloseMessage = {
-  type: "websocket-closed";
-  reason: WebSocketConnectionCloseReason;
-};
-
 export type WebSocketConnectionCloseReason =
+  | LoginErrorMessage
   | "failure"
-  | "shutdown"
-  | "invalid-token"
-  | "token-expired";
+  | "shutdown";
+
 export type WebSocketConnectionEvents = {
-  closed: (message: WebSocketCloseMessage) => void;
-  connected: () => void;
-  "connection-status": (message: WebSocketConnectionState) => void;
-  reconnected: () => void;
+  "connection-status": (status: ConnectionStatus) => void;
 };
 
 export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents> {
@@ -121,12 +109,12 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
    a proxy.
   */
   #confirmedOpen = false;
-  #connectionState: WebSocketConnectionState<InternalConnectionStatus>;
+  #connectionPhase: ConnectionPhase = "initial-connection";
+  #connectionStatus: ConnectionStatus = "closed";
+
   #connectionTimeout;
-  #deferredConnection?: DeferredPromise;
+  #deferredOpen?: DeferredPromise;
   #protocols;
-  #reconnectAttempts: ReconnectAttempts;
-  #requiresLogin = true;
   #url;
   #ws?: WebSocket;
 
@@ -134,7 +122,6 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
     callback,
     connectionTimeout = DEFAULT_CONNECTION_TIMEOUT,
     protocols,
-    retryLimits = DEFAULT_RETRY_LIMITS,
     url,
   }: WebSocketConnectionConfig) {
     super();
@@ -143,25 +130,6 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
     this.#connectionTimeout = connectionTimeout;
     this.#url = url;
     this.#protocols = protocols;
-
-    this.#reconnectAttempts = {
-      retryAttemptsTotal: retryLimits.reconnect,
-      retryAttemptsRemaining: retryLimits.reconnect,
-      secondsToNextRetry: 1,
-    };
-
-    /**
-     * Initial retryAttempts are for the 'connecting' phase. These will
-     * be replaced with 'reconnecting' phase retry attempts only once
-     * initial connection succeeds.
-     */
-    this.#connectionState = {
-      connectionPhase: "connecting",
-      connectionStatus: "closed",
-      retryAttemptsTotal: retryLimits.connect,
-      retryAttemptsRemaining: retryLimits.connect,
-      secondsToNextRetry: 1,
-    };
   }
 
   get connectionTimeout() {
@@ -172,46 +140,32 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
     return this.#protocols;
   }
 
-  get requiresLogin() {
-    return this.#requiresLogin;
-  }
-
   get isClosed() {
-    return this.status === "closed";
+    return this.#connectionStatus === "closed";
   }
   get isDisconnected() {
-    return this.status === "disconnected";
+    return this.#connectionStatus === "disconnected";
   }
 
-  get isConnecting() {
-    return this.#connectionState.connectionPhase === "connecting";
+  get connectionPhase() {
+    return this.#connectionPhase;
   }
 
-  get status() {
-    return this.#connectionState.connectionStatus;
+  get connectionStatus() {
+    return this.#connectionStatus;
   }
 
-  private set status(connectionStatus: InternalConnectionStatus) {
-    this.#connectionState = {
-      ...this.#connectionState,
-      connectionStatus,
-    };
-    // we don't publish the connecting states. They have little meaning for clients
-    // and are will generally be very short-lived.
-    if (isNotConnecting(this.#connectionState)) {
-      this.emit("connection-status", this.#connectionState);
+  private set connectionStatus(connectionStatus: ConnectionStatus) {
+    if (
+      connectionStatus !== "connecting" &&
+      connectionStatus !== "reconnecting"
+    ) {
+      this.#connectionStatus = connectionStatus;
+      this.emit("connection-status", this.#connectionStatus);
     }
   }
 
-  get connectionState() {
-    return this.#connectionState;
-  }
-
-  private get hasConnectionAttemptsRemaining() {
-    return this.#connectionState.retryAttemptsRemaining > 0;
-  }
-
-  private get confirmedOpen() {
+  get confirmedOpen() {
     return this.#confirmedOpen;
   }
 
@@ -226,21 +180,8 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
    */
   private set confirmedOpen(confirmedOpen: boolean) {
     this.#confirmedOpen = confirmedOpen;
-
-    if (confirmedOpen && this.isConnecting) {
-      this.#connectionState = {
-        ...this.#connectionState,
-        connectionPhase: "reconnecting",
-        ...this.#reconnectAttempts,
-      };
-    } else if (confirmedOpen) {
-      // we have successfully reconnected after a failure.
-      // Reset the retry attempts, ready for next failure
-      // Note: this retry is shared with 'disconnected' status
-      this.#connectionState = {
-        ...this.#connectionState,
-        ...this.#reconnectAttempts,
-      };
+    if (confirmedOpen && this.#connectionPhase === "initial-connection") {
+      this.#connectionPhase = "post-disconnect-reconnection";
     }
   }
 
@@ -248,19 +189,14 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
     return this.#url;
   }
 
-  async connect(clientCall = true) {
-    const state = this.#connectionState;
-    if (this.isConnecting && this.#deferredConnection === undefined) {
-      // We block on the first connecting call, this will be the
-      // initial connect call from app. Any other calls will be
-      // reconnect attempts. The initial connecting call returns a promise.
-      // This promise is resolved either on that initial call or on a
-      // subsequent successful retry attempt within nthat same initial
-      // connecting phase.
-      this.#deferredConnection = new DeferredPromise();
+  async openWebSocket() {
+    const initialConnect = this.#connectionPhase === "initial-connection";
+    if (this.#deferredOpen === undefined) {
+      this.#deferredOpen = new DeferredPromise();
     }
     const { connectionTimeout, protocols, url } = this;
-    this.status = state.connectionPhase;
+    this.#connectionStatus = initialConnect ? "connecting" : "reconnecting";
+
     const timer = setTimeout(() => {
       throw Error(
         `Failed to open WebSocket connection to ${url}, timed out after ${connectionTimeout}ms`,
@@ -270,19 +206,17 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
     const ws = (this.#ws = new WebSocket(url, protocols));
 
     ws.onopen = () => {
-      const connectedStatus = ConnectingEndState[state.connectionPhase];
-      this.status = connectedStatus;
+      this.connectionStatus = "websocket-open";
+
       clearTimeout(timer);
-      if (this.#deferredConnection) {
-        this.#deferredConnection.resolve(undefined);
-        this.#deferredConnection = undefined;
-      }
-      if (this.isConnecting) {
-        this.emit("connected");
-      } else {
-        this.emit("reconnected");
+
+      // Do we do this here or after login
+      if (this.#deferredOpen) {
+        this.#deferredOpen.resolve(undefined);
+        this.#deferredOpen = undefined;
       }
     };
+
     ws.onerror = () => {
       clearTimeout(timer);
     };
@@ -290,52 +224,36 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
     ws.onclose = () => {
       if (!this.isClosed) {
         this.confirmedOpen = false;
-        this.status = "disconnected";
-        if (this.hasConnectionAttemptsRemaining) {
-          this.reconnect();
-        } else {
-          this.close("failure");
-        }
+        // Do we emit disconnected even if not confirmed open ?
+        // this will emit disconnected
+        this.connectionStatus = "disconnected";
+        // this will emit closed
+        this.close("failure");
       }
     };
 
     ws.onmessage = (evt) => {
-      if (!this.confirmedOpen) {
-        // Now that we are confirmedOpen any subsequent close events
-        // will be treated as part of a reconnection phase.
-        this.confirmedOpen = true;
-      }
       this.receive(evt);
     };
 
-    if (clientCall) {
-      return this.#deferredConnection?.promise;
-    }
-  }
-
-  private reconnect() {
-    const { retryAttemptsRemaining, secondsToNextRetry } =
-      this.#connectionState;
-    setTimeout(() => {
-      this.#connectionState = {
-        ...this.#connectionState,
-        retryAttemptsRemaining: retryAttemptsRemaining - 1,
-        secondsToNextRetry: secondsToNextRetry * 2,
-      };
-      this.connect(false);
-    }, secondsToNextRetry * 1000);
+    return this.#deferredOpen?.promise;
   }
 
   private receive = (evt: MessageEvent) => {
-    if (evt.data === "Invalid token" || evt.data === "Token has expired") {
-      const closeReason: WebSocketConnectionCloseReason =
-        evt.data === "Invalid token" ? "invalid-token" : "token-expired";
-      this.close(closeReason);
+    if (isLoginErrorMessage(evt.data)) {
+      console.log(`[WebSocketConnection] closed because of login issue`);
+      if (this.#deferredOpen) {
+        console.log(`... and qwe have a deferred connection`);
+      }
+
+      this.#callback({
+        type: "LOGIN_REJECTED",
+        reason: evt.data,
+      });
+      this.close(evt.data);
     } else {
       const vuuMessageFromServer = parseWebSocketMessage(evt.data);
-      if (vuuMessageFromServer.body.type === "CHANGE_VP_RANGE_SUCCESS") {
-        info?.(`CHANGE_VP_RANGE_SUCCESS<#${vuuMessageFromServer.requestId}>`);
-      }
+
       if (debugEnabled) {
         if (vuuMessageFromServer.body.type !== "HB") {
           debug(`${vuuMessageFromServer.body.type}`);
@@ -345,6 +263,18 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
         }
       }
       this.#callback(vuuMessageFromServer);
+
+      if (!this.confirmedOpen) {
+        if (vuuMessageFromServer.body.type === "LOGIN_SUCCESS") {
+          // Now that we are confirmedOpen any subsequent close events
+          // will be treated as part of a reconnection phase.
+          this.connectionStatus =
+            this.#connectionPhase === "initial-connection"
+              ? "connected"
+              : "reconnected";
+          this.confirmedOpen = true;
+        }
+      }
     }
   };
 
@@ -358,16 +288,15 @@ export class WebSocketConnection extends EventEmitter<WebSocketConnectionEvents>
   };
 
   close(reason: WebSocketConnectionCloseReason = "shutdown") {
-    this.status = "closed";
+    this.connectionStatus = "closed";
     if (reason === "failure") {
-      if (this.#deferredConnection) {
-        this.#deferredConnection.reject(Error("connection failed"));
-        this.#deferredConnection = undefined;
+      if (this.#deferredOpen) {
+        this.#deferredOpen.reject(Error("connection failed"));
+        this.#deferredOpen = undefined;
       }
     } else {
       this.#ws?.close();
     }
-    this.emit("closed", { type: "websocket-closed", reason });
     this.#ws = undefined;
   }
 }

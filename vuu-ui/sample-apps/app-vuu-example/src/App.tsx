@@ -50,8 +50,6 @@ const userSettingsSchema: SettingsSchema = {
   ],
 };
 
-const localPersistenceManager = new LocalPersistenceManager();
-
 const defaultWebsocketUrl = (ssl: boolean) =>
   `${ssl ? "wss" : "ws"}://${location.hostname}:8090/websocket`;
 
@@ -63,12 +61,23 @@ const {
 
 const dynamicFeatures = Object.values(features);
 
-export const App = ({ user }: { user: VuuUser }) => {
+export const App = ({
+  logout,
+  user,
+}: {
+  logout: () => void;
+  user: VuuUser;
+}) => {
   const dragSource = useMemo(
     () => ({
       "basket-instruments": { dropTargets: "basket-constituents" },
     }),
     [],
+  );
+
+  const localPersistenceManager = useMemo(
+    () => new LocalPersistenceManager(user.username),
+    [user.username],
   );
 
   const ShellLayoutProps = useMemo<ShellLayoutProps>(
@@ -91,6 +100,7 @@ export const App = ({ user }: { user: VuuUser }) => {
               <Shell
                 shellLayoutProps={ShellLayoutProps}
                 className="App"
+                logout={logout}
                 serverUrl={serverUrl}
                 user={user}
                 userSettingsSchema={userSettingsSchema}

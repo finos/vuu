@@ -131,7 +131,6 @@ const SampleApp = () => {
             SidePanelProps,
             layoutTemplateId: "full-height",
           }}
-          loginUrl={window.location.toString()}
           user={user}
           style={
             {

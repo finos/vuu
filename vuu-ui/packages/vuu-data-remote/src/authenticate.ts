@@ -30,6 +30,24 @@ export type AuthenticationResponse = {
   user: VuuUser;
 };
 
+export const getVuuAuthToken = async (
+  authUrl: string,
+  token: string,
+): Promise<{ authorizations: string[]; token: string }> => {
+  const response = await fetch(authUrl, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) {
+    throw Error("Authentication error: Auth token failure");
+  }
+  const json = await response.json();
+  const vuuUser = parseVuuUserFromToken(json.token);
+  return {
+    authorizations: vuuUser.authorizations,
+    token: json.token,
+  };
+};
+
 export const authenticate = async (
   username: string,
   password: string,

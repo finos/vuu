@@ -42,7 +42,7 @@ const getThemeMode = (
 export const ApplicationProvider = ({
   children,
   density: densityProp,
-  loginUrl,
+  logout,
   mode,
   theme,
   userSettingsSchema: userSettingsSchema,
@@ -79,7 +79,7 @@ export const ApplicationProvider = ({
     <ApplicationContext.Provider
       value={{
         ...context,
-        loginUrl,
+        logout,
         onUserSettingChanged,
         userSettings,
         userSettingsSchema,
@@ -102,11 +102,6 @@ export const useApplicationUser = () => {
   return user;
 };
 
-export const useLoginUrl = () => {
-  const { loginUrl } = useContext(ApplicationContext);
-  return loginUrl;
-};
-
 //Setter method (only used within the shell)
 export const useApplicationSettings = () => {
   const { onUserSettingChanged, userSettings, userSettingsSchema } =
@@ -122,4 +117,9 @@ export const useApplicationSettings = () => {
 export const useUserSetting = () => {
   const { userSettings } = useContext(ApplicationContext);
   return userSettings;
+};
+
+export const useLogout = () => {
+  const { logout } = useContext(ApplicationContext);
+  return logout;
 };
