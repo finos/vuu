@@ -95,7 +95,7 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
 
       val sinkData = joinSink.getEventDataSink(rightTable).getEventState(rightKeyValue)
 
-      val rightValueToSend = joinSink.getEventDataSink(rightTable).getEventState(rightKeyValue) match {
+      val rightValueToSend = sinkData match {
         case null => null
         case map: java.util.HashMap[String, Any] => rightKeyValue
       }
@@ -281,14 +281,8 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
   }
 
   private def isPrimaryKeyDeleted(dataTable: DataTable, rowUpdate: RowWithData): Boolean = {
-    val tableDef = dataTable.asInstanceOf[JoinTable].tableDef
-    val columnName = tableDef.baseTable.deleteColumnName()
-    val deleteColumn = rowUpdate.data.get(columnName)
-
-    deleteColumn match {
-      case Some(bool: Boolean) => bool
-      case _ => false
-    }
+    val columnName = dataTable.getTableDef.deleteColumnName()
+    rowUpdate.data.getOrElse(columnName, false).asInstanceOf[Boolean]
   }
 
   override def doStart(): Unit = {}

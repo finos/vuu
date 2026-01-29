@@ -9,14 +9,14 @@ import org.finos.vuu.api.{JoinTableDef, TableDef, ViewPortDef}
 import org.finos.vuu.core.module.{ModuleContainer, RealizedViewServerModule, StaticServedResource, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.feature.inmem.VuuInMemPlugin
-import org.finos.vuu.net.auth.{Authenticator, LoginTokenService}
+import org.finos.vuu.net.auth.LoginTokenService
 import org.finos.vuu.net.flowcontrol.FlowControllerFactory
 import org.finos.vuu.net.http.Http2Server
-import org.finos.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer}
+import org.finos.vuu.net.json.CoreJsonSerializationMixin
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.net.rpc.JsonSubTypeRegistry
 import org.finos.vuu.net.ws.WebSocketServer
-import org.finos.vuu.net.{ClientSessionContainer, ClientSessionContainerImpl, MessageBody, ViewServerHandlerFactoryImpl}
+import org.finos.vuu.net.{ClientSessionContainer, MessageBody, ViewServerHandlerFactoryImpl}
 import org.finos.vuu.plugin.PluginRegistry
 import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, Provider, ProviderContainer}
 import org.finos.vuu.viewport.{InMemViewPortTreeCallable, InMemViewPortTreeWorkItem, ViewPort, ViewPortAction, ViewPortActionMixin, ViewPortContainer}
@@ -71,10 +71,10 @@ class VuuServer(config: VuuServerConfig)
 
   private final val httpServer: Http2Server = Http2Server(config.httpOptions, restServices)
 
-  private final val joinProviderRunner = new LifeCycleRunner("joinProviderRunner", () => joinProvider.runOnce())
+  private final val joinProviderRunner = new LifeCycleRunner("joinProviderRunner", () => joinProvider.runOnce(), minCycleTime = 1)
   lifecycle(joinProviderRunner).dependsOn(joinProvider)
 
-  private final  val handlerRunner = new LifeCycleRunner("sessionRunner", () => sessionContainer.runOnce(), minCycleTime = 1)
+  private final val handlerRunner = new LifeCycleRunner("sessionRunner", () => sessionContainer.runOnce(), minCycleTime = 1)
   lifecycle(handlerRunner).dependsOn(joinProviderRunner)
 
   private val viewPortRunner = if(config.threading.viewportThreads == 1){

@@ -218,15 +218,15 @@ class TableDef(val name: String,
 
   private val defaultColumns: Array[Column] = if (includeDefaultColumns) DefaultColumn.getDefaultColumns(customColumns) else Array.empty
   private val columns: Array[Column] = if (includeDefaultColumns) customColumns ++ defaultColumns else customColumns
-  private lazy val columnsByName: Map[String, Column] = getColumns.map(c => c.name -> c).toMap
-
+  private val columnsByName: Map[String, Column] = getColumns.map(c => c.name -> c).toMap
+  private val deletedColumnName: String = s"$name._isDeleted"
   private var module: ViewServerModule = null
 
   def permissionFilter(viewPort: ViewPort, tableContainer: TableContainer): PermissionFilter = {
     permissionFunction.apply(viewPort, tableContainer)
   }
 
-  def deleteColumnName() = s"$name._isDeleted"
+  def deleteColumnName(): String = deletedColumnName
 
   def getColumns: Array[Column] = columns
 
