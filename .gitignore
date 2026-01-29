@@ -47,3 +47,7 @@ vuu-ui/packages/vuu-data-remote/src/inlined-worker.js
 **/ignite/README.txt
 
 **/dependency-reduced-pom.xml
+
+#JFR
+profile.jfr
+.profileconfig.json

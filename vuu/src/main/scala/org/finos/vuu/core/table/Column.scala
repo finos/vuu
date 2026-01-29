@@ -182,11 +182,13 @@ case class SimpleColumn(name: String, index: Int, dataType: Class[_]) extends Co
 
 private case class SimpleJoinColumn(name: String, index: Int, dataType: Class[_], sourceTable: TableDef, sourceColumn: Column) extends JoinColumn {
 
+  private val fullyQualifiedName = sourceTable.fullyQuallifiedColumnName(name)
+
   override def toString: String = s"${sourceTable.name}.$sourceColumn@$name"
 
   override def getData(data: RowData): Any = data.get(name)
 
-  override def getDataFullyQualified(data: RowData): Any = data.get(sourceTable.fullyQuallifiedColumnName(name))
+  override def getDataFullyQualified(data: RowData): Any = data.get(fullyQualifiedName)
 
   private lazy val hash: Int = name.hashCode * dataType.hashCode() * sourceTable.name.hashCode * sourceColumn.name.hashCode
 
@@ -206,11 +208,13 @@ private case class SimpleJoinColumn(name: String, index: Int, dataType: Class[_]
 
 private case class AliasedJoinColumn(name: String, index: Int, dataType: Class[_], sourceTable: TableDef, sourceColumn: Column) extends JoinColumn {
 
+  private val fullyQualifiedName = sourceTable.fullyQuallifiedColumnName(sourceColumn.name)
+
   override def toString: String = s"${sourceTable.name}.$sourceColumn@alias($name)"
 
   override def getData(data: RowData): Any = data.get(sourceColumn.name)
 
-  override def getDataFullyQualified(data: RowData): Any = data.get(sourceTable.fullyQuallifiedColumnName(sourceColumn.name))
+  override def getDataFullyQualified(data: RowData): Any = data.get(fullyQualifiedName)
 
   private lazy val hash: Int = name.hashCode * dataType.hashCode() * sourceTable.name.hashCode * sourceColumn.name.hashCode
 
