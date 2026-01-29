@@ -85,6 +85,34 @@ private class VectorImmutableArraySet[T <: Object :ClassTag](private val vector:
 
   override def iterator: Iterator[T] = vector.iterator
 
+  override def foreach[U](f: T => U): Unit = vector.foreach(f)
+
+  override def size: Int = vector.size
+
+  override def knownSize: Int = vector.knownSize
+
+  override def isEmpty: Boolean = vector.isEmpty
+
+  override def head: T = vector.head
+
+  override def last: T = vector.last
+
+  override def headOption: Option[T] = vector.headOption
+
+  override def lastOption: Option[T] = vector.lastOption
+
+  override def slice(from: Int, until: Int): Iterable[T] = {
+    vector.slice(from, until)
+  }
+
+  override def take(n: Int): Iterable[T] = vector.take(n)
+
+  override def drop(n: Int): Iterable[T] = vector.drop(n)
+
+  override def copyToArray[B >: T](xs: Array[B], start: Int, len: Int): Int = {
+    vector.copyToArray(xs, start, len)
+  }
+
   override def toImmutableArray: ImmutableArray[T] = VectorImmutableArray.from(vector)
 
   private lazy val hash = vector.hashCode()
