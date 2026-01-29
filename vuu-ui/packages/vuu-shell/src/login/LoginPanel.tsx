@@ -20,14 +20,12 @@ const classBase = "vuuLoginPanel";
 export interface LoginPanelProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onSubmit"> {
   appName?: string;
-  onSubmit: (username: string, password?: string) => void;
-  requirePassword?: boolean;
+  onSubmit: (username: string, password: string) => void;
 }
 
 export const LoginPanel = ({
   appName = "Demo App",
   className,
-  requirePassword = true,
   onSubmit,
   ...htmlAttributes
 }: LoginPanelProps) => {
@@ -55,10 +53,10 @@ export const LoginPanel = ({
   };
 
   const handleCommitName = useCallback(() => {
-    if (!requirePassword) {
-      onSubmit(username);
+    if (password) {
+      onSubmit(username, password);
     }
-  }, [onSubmit, requirePassword, username]);
+  }, [onSubmit, password, username]);
 
   const handleCommitPassword = useCallback(() => {
     if (username) {
@@ -66,9 +64,7 @@ export const LoginPanel = ({
     }
   }, [onSubmit, password, username]);
 
-  const dataIsValid =
-    username.trim() !== "" &&
-    (requirePassword === false || password.trim() !== "");
+  const dataIsValid = username.trim() !== "" && password.trim() !== "";
 
   useEffect(() => {
     console.log(`inputRef`, {
@@ -96,30 +92,29 @@ export const LoginPanel = ({
           />
         </FormField>
 
-        {requirePassword ? (
-          <FormField>
-            <FormFieldLabel>Password</FormFieldLabel>
-            <VuuInput
-              className={`${classBase}-password`}
-              inputProps={{
-                type: "password",
-              }}
-              value={password}
-              id="text-password"
-              onChange={handlePassword}
-              onCommit={handleCommitPassword}
-              endAdornment={
-                <span data-icon="eye" style={{ cursor: "pointer" }} />
-              }
-            />
-          </FormField>
-        ) : null}
+        <FormField>
+          <FormFieldLabel>Password</FormFieldLabel>
+          <VuuInput
+            className={`${classBase}-password`}
+            inputProps={{
+              type: "password",
+            }}
+            value={password}
+            id="text-password"
+            onChange={handlePassword}
+            onCommit={handleCommitPassword}
+            endAdornment={
+              <span data-icon="eye" style={{ cursor: "pointer" }} />
+            }
+          />
+        </FormField>
 
         <Button
+          appearance="solid"
           className={`${classBase}-login`}
           disabled={!dataIsValid}
           onClick={login}
-          variant="cta"
+          sentiment="accented"
         >
           Login
         </Button>

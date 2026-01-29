@@ -10,7 +10,6 @@ import {
   SelectRequest,
   SelectResponse,
   VuuCreateVisualLink,
-  VuuLoginResponse,
   VuuRemoveVisualLink,
   VuuRpcMenuRequest,
   VuuRpcServiceRequest,
@@ -22,17 +21,15 @@ import {
   DeferredPromise,
   EventEmitter,
   isConnectionQualityMetrics,
-  isLoginResponse,
   isRequestResponse,
   isTableSchemaMessage,
   messageHasResult,
   uuid,
 } from "@vuu-ui/vuu-utils";
 import {
-  WebSocketCloseMessage,
+  ConnectionStatus,
   WebSocketConnectionEvents,
-  WebSocketConnectionState,
-  isWebSocketConnectionMessage,
+  isWebSocketConnectionStatus,
 } from "./WebSocketConnection";
 import { DedicatedWorker } from "./DedicatedWorker";
 import { shouldMessageBeRoutedToDataSource } from "./data-source";
@@ -45,9 +42,6 @@ export type PostMessageToClientCallback = (
 
 export type ConnectionEvents = WebSocketConnectionEvents & {
   "connection-metrics": (message: ConnectionQualityMetrics) => void;
-  "session-status": (
-    loginResponse: VuuLoginResponse | WebSocketCloseMessage,
-  ) => void;
 };
 
 type RegisteredViewport = {
@@ -57,14 +51,8 @@ type RegisteredViewport = {
 };
 
 class ConnectionManager extends EventEmitter<ConnectionEvents> {
-  #connectionState: WebSocketConnectionState = {
-    connectionPhase: "connecting",
-    connectionStatus: "closed",
-    retryAttemptsTotal: -1,
-    retryAttemptsRemaining: -1,
-    secondsToNextRetry: -1,
-  };
   static #instance: ConnectionManager;
+  #connectionStatus: ConnectionStatus = "closed";
   #deferredServerAPI = new DeferredPromise<ServerAPI>();
   #pendingRequests = new Map();
   #viewports = new Map<string, RegisteredViewport>();
@@ -83,6 +71,17 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
     return ConnectionManager.#instance;
   }
 
+  get connectionStatus() {
+    return this.#connectionStatus;
+  }
+
+  get connected() {
+    return (
+      this.#connectionStatus === "connected" ||
+      this.#connectionStatus === "reconnected"
+    );
+  }
+
   /**
    * Open a connection to the VuuServer. This method opens the websocket connection
    * and logs in. It can be called from whichever client code has access to the auth
@@ -94,17 +93,23 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
    * @param token
    */
   async connect(options: ConnectOptions, throwOnRejected = false) {
-    const result = await this.#worker.connect(options);
-    if (result === "connected") {
-      this.#deferredServerAPI.resolve(this.connectedServerAPI);
-    } else if (result === "rejected" && throwOnRejected) {
-      throw Error("[ConnectionManager] connection rejected");
+    try {
+      const result = await this.#worker.connect(options);
+      if (result === "connected") {
+        this.#deferredServerAPI.resolve(this.connectedServerAPI);
+      }
+      return result;
+    } catch (err: unknown) {
+      if (throwOnRejected) {
+        throw err;
+      } else {
+        return "connection-failed";
+      }
     }
-    return result;
   }
 
   private handleMessageFromWorker = (
-    message: VuuUIMessageIn | DataSourceCallbackMessage | WebSocketCloseMessage,
+    message: VuuUIMessageIn | DataSourceCallbackMessage | ConnectionStatus,
   ) => {
     if (shouldMessageBeRoutedToDataSource(message)) {
       const viewport = this.#viewports.get(message.clientViewportId);
@@ -115,12 +120,8 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
           `[ConnectionManager] ${message.type} message received, viewport not found`,
         );
       }
-    } else if (message.type === "websocket-closed") {
-      this.emit("session-status", message);
-    } else if (isLoginResponse(message)) {
-      this.emit("session-status", message);
-    } else if (isWebSocketConnectionMessage(message)) {
-      this.#connectionState = message;
+    } else if (isWebSocketConnectionStatus(message)) {
+      this.#connectionStatus = message;
       this.emit("connection-status", message);
     } else if (isConnectionQualityMetrics(message)) {
       this.emit("connection-metrics", message);
@@ -146,10 +147,6 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
       }
     }
   };
-
-  get connectionStatus() {
-    return this.#connectionState.connectionStatus;
-  }
 
   get serverAPI() {
     return this.#deferredServerAPI.promise;

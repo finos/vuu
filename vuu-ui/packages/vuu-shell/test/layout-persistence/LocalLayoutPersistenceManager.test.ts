@@ -29,7 +29,7 @@ vi.mock("../../src/login/login-utils", async () => {
   };
 });
 
-const persistenceManager = new LocalPersistenceManager();
+const persistenceManager = new LocalPersistenceManager(username);
 
 const existingId = "existing_id";
 

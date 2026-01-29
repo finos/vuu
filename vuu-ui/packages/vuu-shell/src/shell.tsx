@@ -1,7 +1,6 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
-import { useRemoteConnection } from "@vuu-ui/vuu-data-react";
 import type { LayoutChangeHandler } from "@vuu-ui/vuu-layout";
 import { LayoutProvider, StackLayout } from "@vuu-ui/vuu-layout";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
@@ -30,6 +29,7 @@ import {
   useWorkspaceContextMenuItems,
 } from "./workspace-management";
 import { loadingJSON } from "./workspace-management/defaultWorkspaceJSON";
+import { useLostConnection } from "@vuu-ui/vuu-data-react";
 
 import shellCss from "./shell.css";
 
@@ -55,7 +55,7 @@ export interface ShellProps extends HTMLAttributes<HTMLDivElement> {
   userSettingsSchema?: SettingsSchema;
   workspaceProps?: WorkspaceProps;
   children?: ReactNode;
-  loginUrl?: string;
+  logout?: () => void;
   saveUrl?: string;
   serverUrl?: string;
   user: VuuUser;
@@ -84,9 +84,6 @@ const getHTMLAttributes = (props?: ShellLayoutProps) => {
 const VuuApplication = ({
   shellLayoutProps: ShellLayoutProps,
   children,
-  // loginUrl, // need to make this available to app header
-  serverUrl,
-  user,
 }: Omit<
   ShellProps,
   "ContentLayoutProps" | "loginUrl" | "userSettingsSchema" | "workspaceProps"
@@ -113,8 +110,6 @@ const VuuApplication = ({
     [saveApplicationLayout],
   );
 
-  useRemoteConnection({ serverUrl, user });
-
   const isLayoutLoading = workspaceJSON === loadingJSON;
 
   const initialLayout = useShellLayout({
@@ -122,6 +117,8 @@ const VuuApplication = ({
     appHeader: getAppHeader(ShellLayoutProps),
     htmlAttributes: getHTMLAttributes(ShellLayoutProps),
   });
+
+  useLostConnection();
 
   return isLayoutLoading ? null : (
     <ContextMenuProvider
@@ -140,7 +137,7 @@ const VuuApplication = ({
 };
 
 export const Shell = ({
-  loginUrl,
+  logout,
   user,
   userSettingsSchema,
   workspaceProps,
@@ -169,7 +166,7 @@ export const Shell = ({
   const shellProviders = (
     <ApplicationProvider
       density="high"
-      loginUrl={loginUrl}
+      logout={logout}
       theme="vuu-theme"
       user={user}
       userSettingsSchema={userSettingsSchema}

@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { vi } from "vitest";
-import { VuuServerMessageCallback } from "../src/WebSocketConnection";
 import { EventEmitter } from "@vuu-ui/vuu-utils";
 
 const websocketMessageEmitter = new EventEmitter();
@@ -21,31 +20,32 @@ class BaseWebSocket {
   protected errorHandler: any;
   protected closeHandler: any;
 
-  callback: VuuServerMessageCallback;
-
   constructor() {
     websocketMessageEmitter.on("test", this.receiveMessage);
   }
 
   private receiveMessage = (message: unknown) => {
-    console.log(`BaseWebSocket receives message`);
     this.messageHandler({ data: JSON.stringify(message) });
   };
 
-  set onopen(callback) {
+  set onopen(callback: () => void) {
     this.openHandler = callback;
   }
-  set onclose(callback) {
+  set onclose(callback: () => void) {
     this.closeHandler = callback;
   }
-  set onerror(callback) {
+  set onerror(callback: () => void) {
     this.errorHandler = callback;
   }
-  set onmessage(callback) {
+  set onmessage(callback: (msg: { data: string }) => void) {
     this.messageHandler = callback;
   }
-  send(msg: string) {
-    console.log(`===> ${msg}`);
+  send(_: string) {
+    // console.log(`===> ${msg}`);
+  }
+
+  close() {
+    this.closeHandler();
   }
 }
 
@@ -56,47 +56,6 @@ export class MockWebSocketOpenFirstTime extends BaseWebSocket {
     setTimeout(() => {
       // console.log(`call openHandler`);
       this?.openHandler();
-    }, 0);
-    vi.advanceTimersByTimeAsync(1);
-  }
-}
-
-export class MockWebSocketConnectsOnSecondAttempt extends BaseWebSocket {
-  private static connectionCount = 0;
-  constructor() {
-    super();
-    MockWebSocketConnectsOnSecondAttempt.connectionCount += 1;
-    setTimeout(() => {
-      if (MockWebSocketConnectsOnSecondAttempt.connectionCount === 2) {
-        MockWebSocketConnectsOnSecondAttempt.connectionCount = 0;
-        this?.openHandler();
-      } else {
-        this?.errorHandler({ message: "test error" });
-        this?.closeHandler();
-        vi.advanceTimersByTimeAsync(1000);
-      }
-    }, 0);
-    vi.advanceTimersByTimeAsync(1);
-  }
-}
-
-export class MockWebSocketConnectsOnThirdAttempt extends BaseWebSocket {
-  private static connectionCount = 0;
-  private static secondsToNextRetry = 1;
-  constructor() {
-    super();
-    MockWebSocketConnectsOnThirdAttempt.connectionCount += 1;
-    setTimeout(() => {
-      if (MockWebSocketConnectsOnThirdAttempt.connectionCount === 3) {
-        MockWebSocketConnectsOnThirdAttempt.connectionCount = 0;
-        this?.openHandler();
-      } else {
-        const { secondsToNextRetry } = MockWebSocketConnectsOnThirdAttempt;
-        MockWebSocketConnectsOnThirdAttempt.secondsToNextRetry *= 2;
-        this?.errorHandler({ message: "test error" });
-        this?.closeHandler();
-        vi.advanceTimersByTimeAsync(secondsToNextRetry * 1000);
-      }
     }, 0);
     vi.advanceTimersByTimeAsync(1);
   }
@@ -140,16 +99,70 @@ export class MockWebSocketAlwaysFailsLikeProxy extends BaseWebSocket {
 export class MockWebSocketOpenFirstTimeLosesConnectionLater extends BaseWebSocket {
   constructor() {
     super();
-    console.log(`MockWebSocketOpenFirstTimeLosesConnectionLater`);
     setTimeout(() => {
-      console.log(`call openHandler`);
       this?.openHandler();
     }, 0);
     vi.advanceTimersByTimeAsync(1);
     setTimeout(() => {
-      console.log(`KILL connection`);
       this.errorHandler();
       this.closeHandler();
     }, 100);
+  }
+}
+
+export class MockWebSocketLoginSucceeds extends MockWebSocketOpenFirstTime {
+  send(msg: string) {
+    super.send(msg);
+    if (msg.includes('"LOGIN"')) {
+      setTimeout(() => {
+        this.messageHandler({
+          data: JSON.stringify({
+            requestId: "req-1",
+            sessionId: "sess-1",
+            module: "CORE",
+            body: {
+              type: "LOGIN_SUCCESS",
+            },
+          }),
+        });
+      }, 0);
+      vi.advanceTimersByTime(1);
+    }
+  }
+}
+export class MockWebSocketLoginSucceedsThenConnectionLost extends MockWebSocketOpenFirstTime {
+  send(msg: string) {
+    super.send(msg);
+    if (msg.includes('"LOGIN"')) {
+      setTimeout(() => {
+        this.messageHandler({
+          data: JSON.stringify({
+            requestId: "req-1",
+            sessionId: "sess-1",
+            module: "CORE",
+            body: {
+              type: "LOGIN_SUCCESS",
+            },
+          }),
+        });
+      }, 0);
+      vi.advanceTimersByTime(1);
+
+      setTimeout(() => {
+        this.errorHandler();
+        this.closeHandler();
+      }, 100);
+    }
+  }
+}
+export class MockWebSocketInvalidToken extends MockWebSocketOpenFirstTime {
+  send(msg: string) {
+    super.send(msg);
+    if (msg.includes('"LOGIN"')) {
+      setTimeout(() => {
+        this.messageHandler({ data: "Invalid token" });
+      }, 0);
+      vi.advanceTimersByTime(1);
+    }
   }
 }
