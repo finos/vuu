@@ -151,7 +151,7 @@ export const useDataSource = ({
                   `[useDataSource] autoSelect row key ${autoSelect} not in viewport`,
                 );
               }
-            } else {
+            } else if (message.rows.length > 0) {
               selectRow(message.rows[0]);
             }
           }

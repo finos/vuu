@@ -32,7 +32,7 @@ const validatePort = (port) => {
 };
 
 const authUrl = validateAuthUrl(
-  getCommandLineArg("--authurl", true, "https://localhost:8443"),
+  getCommandLineArg("--authurl", true, "https://localhost:8443/api"),
 );
 const wsUrl = validateWebsocketUrl(
   getCommandLineArg("--wsurl", true, "wss://localhost:8090/websocket"),
@@ -68,6 +68,10 @@ await lws.create({
       // from: "/api/(.*)",
       from: "/api/authn",
       to: `${authUrl}/authn`,
+    },
+    {
+      from: "/api/login",
+      to: `${authUrl}/login`,
     },
   ],
   logFormat: "dev",

@@ -35,7 +35,6 @@ export const DefaultShell = () => {
       shellLayoutProps={{
         htmlAttributes: htmlAttributes,
       }}
-      loginUrl={window.location.toString()}
       user={user}
       style={
         {
@@ -64,7 +63,6 @@ export const SimpleShellCustomHeader = () => {
           </header>
         ),
       }}
-      loginUrl={window.location.toString()}
       user={user}
       style={
         {
@@ -85,7 +83,6 @@ export const SimpleShellNoWorkspaceTabs = () => {
       shellLayoutProps={{
         htmlAttributes: htmlAttributes,
       }}
-      loginUrl={window.location.toString()}
       user={user}
       style={
         {
@@ -107,7 +104,6 @@ export const FullHeightLeftPanel = () => {
         },
         layoutTemplateId: "full-height",
       }}
-      loginUrl={window.location.toString()}
       user={user}
       style={
         {
@@ -131,7 +127,6 @@ export const FullHeightLeftPanelLeftPanelClosed = () => {
         },
         layoutTemplateId: "full-height",
       }}
-      loginUrl={window.location.toString()}
       user={user}
       style={
         {
@@ -155,7 +150,6 @@ export const InlayLeftPanel = () => {
           },
           layoutTemplateId: "inlay",
         }}
-        loginUrl={window.location.toString()}
         user={user}
         style={
           {
@@ -251,7 +245,6 @@ export const LeftMainTabs = () => {
             defaultWorkspaceJSON,
           ],
         }}
-        loginUrl={window.location.toString()}
         user={user}
         style={
           {

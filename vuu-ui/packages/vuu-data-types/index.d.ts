@@ -31,7 +31,6 @@ import type {
   VuuRemoveVisualLink,
   VuuTableList,
   VuuLoginSuccessResponse,
-  VuuLoginFailResponse,
   SelectRequest,
   SelectResponse,
   SelectSuccessWithRowCount,
@@ -790,7 +789,6 @@ export declare type VuuUiMessageInRequestResponse =
 
 export declare type VuuUIMessageIn =
   | (VuuLoginSuccessResponse & { sessionId: string })
-  | VuuLoginFailResponse
   | VuuUiMessageInRequestResponse
   | VuuUIMessageInConnected
   | VuuUIMessageInConnectionFailed
