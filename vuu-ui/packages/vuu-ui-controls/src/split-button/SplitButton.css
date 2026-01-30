@@ -10,7 +10,7 @@
   --background-hover: var(--vuuSplitButton-background-hover);
   --foreground-hover: var(--vuuSplitButton-foreground-hover);
 
-  --border-radius: var(--vuuSplitButton-borderRadius, 0px);
+  --border-radius: var(--vuuSplitButton-borderRadius, var(--salt-palette-corner-weaker));
   --main-border-radius: var(--border-radius) 0 0 var(--border-radius);
   --trigger-border-radius: 0 var(--border-radius) var(--border-radius) 0;
   --trigger-border-style: solid solid solid none;

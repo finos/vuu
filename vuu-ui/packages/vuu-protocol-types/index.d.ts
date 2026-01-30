@@ -566,12 +566,14 @@ export declare type RpcResultError = {
   type: "ERROR_RESULT";
   errorMessage: string;
 };
+
+export declare type RpcResult = RpcResultSuccess | RpcResultError;
 export interface VuuRpcServiceResponse {
   action: unknown;
   error: null | unknown;
   rpcName: TypeAheadMethod;
   type: "RPC_RESPONSE";
-  result: RpcResultSuccess | RpcResultError;
+  result: RpcResult;
 }
 
 export interface VuuViewportRpcTypeaheadRequest extends VuuRpcServiceRequest {

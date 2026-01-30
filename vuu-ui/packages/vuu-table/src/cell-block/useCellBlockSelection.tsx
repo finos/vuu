@@ -297,6 +297,9 @@ export const useCellBlockSelection = ({
   ));
   const handleKeyDown = useCallback<KeyboardEventHandler>(
     (evt) => {
+      console.log(
+        `[useCellBlockSelection] handleKeyDown (only interested in Shift key)`,
+      );
       if (evt.key === "Shift") {
         initializeStateRef();
         const cell = queryClosest<HTMLDivElement>(evt.target, ".vuuTableCell");

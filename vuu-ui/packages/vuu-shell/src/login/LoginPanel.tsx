@@ -88,6 +88,7 @@ export const LoginPanel = ({
         <FormField>
           <FormFieldLabel>Username</FormFieldLabel>
           <VuuInput
+            bordered
             value={username}
             id="text-username"
             inputRef={inputRef}
@@ -100,6 +101,7 @@ export const LoginPanel = ({
           <FormField>
             <FormFieldLabel>Password</FormFieldLabel>
             <VuuInput
+              bordered
               className={`${classBase}-password`}
               inputProps={{
                 type: "password",

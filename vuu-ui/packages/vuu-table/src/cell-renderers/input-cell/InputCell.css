@@ -8,19 +8,6 @@
   }
 }
 
-.vuuTableCell:focus .vuuTableInputCell.saltInput-primary,
-.vuuTableInputCell.saltInput-primary.saltInput-focused {
-  border: solid 2px var(--salt-focused-outlineColor);
-  padding: 0 3px;
-}
-
-.vuuTableCell-editable:focus-within
-  .vuuTableInputCell.saltInput-primary:focus-within,
-.vuuTableInputCell.saltInput-primary.saltInput-focused {
-  border: dotted 2px var(--salt-focused-outlineColor);
-  padding: 0 3px;
-}
-
 .vuuTableInputCell-icon {
   --vuu-icon-height: 13px;
   --vuu-icon-left: 0;

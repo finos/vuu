@@ -60,7 +60,6 @@ const esbuildConfig = {
   external: [
     "./themes/salt-theme.ts",
     "./themes/vuu-theme.ts",
-    "./themes/tar-theme.ts",
   ],
   name: "showcase",
   plugins: [cssInlinePlugin, mdx()],
