@@ -270,18 +270,19 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
     while (i < size) {
       val jtu = updates.get(i)
       val rowUpdate = jtu.rowUpdate
-      if (isPrimaryKeyDeleted(jtu.joinTable, rowUpdate)) {
-        jtu.joinTable.processDelete(rowUpdate.key)
+      val joinTable = jtu.joinTable
+      if (isPrimaryKeyDeleted(joinTable, rowUpdate)) {
+        joinTable.processDelete(rowUpdate.key)
       } else {
-        jtu.joinTable.processUpdate(rowUpdate.key, rowUpdate)
+        joinTable.processUpdate(rowUpdate.key, rowUpdate)
       }
       i += 1
     }
     logger.trace(s"Processed $size join table updates")
   }
 
-  private def isPrimaryKeyDeleted(dataTable: DataTable, rowUpdate: RowWithData): Boolean = {
-    val columnName = dataTable.getTableDef.deleteColumnName()
+  private def isPrimaryKeyDeleted(dataTable: JoinTable, rowUpdate: RowWithData): Boolean = {
+    val columnName = dataTable.getTableDef.baseTable.deleteColumnName()
     rowUpdate.data.getOrElse(columnName, false).asInstanceOf[Boolean]
   }
 

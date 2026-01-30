@@ -116,7 +116,7 @@ trait RowData {
   def size: Int
 }
 
-case class JoinTableUpdate(joinTable: DataTable, rowUpdate: RowWithData) {
+case class JoinTableUpdate(joinTable: JoinTable, rowUpdate: RowWithData) {
   override def toString: String = "JoinTableUpdate(" + joinTable.toString + ",updates=" + rowUpdate.data.size + ")"
 }
 
