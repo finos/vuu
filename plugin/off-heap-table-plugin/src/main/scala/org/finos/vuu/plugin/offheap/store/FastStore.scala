@@ -12,14 +12,14 @@ object FastStore {
   private val T_CHAR: Byte   = 3
   private val T_STRING: Byte = 4
 
-  // Header entry is 7 bytes: [Key: 2] + [Offset: 4] + [Tag: 1]
-  private val ENTRY_SIZE = 7
+  // Header entry is 6 bytes: [Key: 1] + [Offset: 4] + [Tag: 1]
+  private val ENTRY_SIZE = 6
 
   /**
    * Packs data into a read-only ByteBuffer.
    * Entries are sorted by key to enable O(log N) lookup.
    */
-  def pack(data: SortedMap[Short, Any], target: ByteBuffer): Unit = {    
+  def pack(data: SortedMap[Byte, Any], target: ByteBuffer): Unit = {    
     val entryCount = data.size
     val headerSize = 2 + (entryCount * ENTRY_SIZE)
 
@@ -62,7 +62,7 @@ object FastStore {
    * Performs a Binary Search on the buffer header to find a key.
    * Zero-allocation for primitive returns (except Strings).
    */
-  def lookup(buf: ByteBuffer, targetKey: Short): Any = {
+  def lookup(buf: ByteBuffer, targetKey: Byte): Any = {
     val count = buf.getShort(0)
     var low = 0
     var high = count - 1
@@ -70,11 +70,11 @@ object FastStore {
     while (low <= high) {
       val mid = (low + high) / 2
       val pos = 2 + (mid * ENTRY_SIZE)
-      val key = buf.getShort(pos)
+      val key = buf.get(pos)
 
       if (key == targetKey) {
-        val offset = buf.getInt(pos + 2)
-        val tag = buf.get(pos + 6)
+        val offset = buf.getInt(pos + 1)
+        val tag = buf.get(pos + 5)
         return readValue(buf, offset, tag)
       } else if (key < targetKey) {
         low = mid + 1
