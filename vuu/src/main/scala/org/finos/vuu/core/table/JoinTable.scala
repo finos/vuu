@@ -345,7 +345,7 @@ class JoinTable(val tableDef: JoinTableDef,
 
   var joinData: JoinDataTableData = JoinDataTableData(tableDef, ImmutableArrays.empty[String](joinColumns))(timeProvider)
 
-  override def getTableDef: TableDef = tableDef
+  override def getTableDef: JoinTableDef = tableDef
 
   def notifyListeners(rowKey: String, isDelete: Boolean = false): Unit = {
     getObserversByKey(rowKey).foreach(obs => {
