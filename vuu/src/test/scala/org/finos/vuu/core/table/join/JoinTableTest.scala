@@ -421,6 +421,15 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       //Should not be able to hit an index in the right table
       val ricIndexOption: Option[IndexedField[?]] = orderPrices.indexForColumn(orderPrices.columnForName("ric"))
       ricIndexOption.isDefined shouldBe false
+      
+      //update a field
+      ordersProvider.tick("NYC-0002", Map("orderId" -> "NYC-0002", "trader" -> "mikey", "tradeTime" -> dateTime, "quantity" -> 100, "ric" -> "BT.L"))
+      joinProvider.runOnce()
+
+      val traderIndexHit2 = traderIdIndex.find("mikey")
+      traderIndexHit2.length shouldEqual 1
+      traderIndexHit2.contains("NYC-0002") shouldBe true
+      
       }
 
 

@@ -116,10 +116,6 @@ trait RowData {
   def size: Int
 }
 
-case class JoinTableUpdate(joinTable: DataTable, rowUpdate: RowWithData) {
-  override def toString: String = "JoinTableUpdate(" + joinTable.toString + ",updates=" + rowUpdate.data.size + ")"
-}
-
 case class RowWithData(key: String, data: Map[String, Any]) extends RowData {
 
   override def size: Int = data.size

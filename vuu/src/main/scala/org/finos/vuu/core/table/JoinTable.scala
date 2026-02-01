@@ -109,22 +109,15 @@ case class JoinDataTableData(
     map.toMap
   }
 
-  def rowUpdateToArray(update: RowData): Array[Any] = {
-    //val data    = columns.map(update.get(_))
-
+  private def rowUpdateToArray(update: RowData): Array[Any] = {
+    val cols = columns
+    val length = cols.length
+    val result = Array.ofDim[Any](length)
     var index = 0
-    val result = Array.ofDim[Any](columns.length)
-
-    while (index < columns.length) {
-      val column = columns(index)
-
-      val data = update.getFullyQualified(column)
-
-      result(index) = data
-
+    while (index < length) {
+      result(index) = update.getFullyQualified(cols(index))
       index += 1
     }
-
     result
   }
 
@@ -345,7 +338,7 @@ class JoinTable(val tableDef: JoinTableDef,
 
   var joinData: JoinDataTableData = JoinDataTableData(tableDef, ImmutableArrays.empty[String](joinColumns))(timeProvider)
 
-  override def getTableDef: TableDef = tableDef
+  override def getTableDef: JoinTableDef = tableDef
 
   def notifyListeners(rowKey: String, isDelete: Boolean = false): Unit = {
     getObserversByKey(rowKey).foreach(obs => {
