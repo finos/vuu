@@ -52,6 +52,7 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
 
   private val outboundQueue = BinaryPriorityBlockingQueue[JoinTableUpdate](options.maxQueueSize)
   private val queuePollDuration = Duration.create(150, TimeUnit.MILLISECONDS)
+  private val inboundQueueSink = ThreadLocal.withInitial(() => new util.ArrayList[JoinTableUpdate](options.batchSize))
   private val joinRelations = new JoinRelations()
   private val joinSink = new JoinManagerEventDataSink()
   private val rightToLeftKeys = new RightToLeftKeys()
@@ -267,20 +268,25 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
       return
     }
 
-    val updates = new java.util.ArrayList[JoinTableUpdate](options.batchSize)
+    val updates: util.ArrayList[JoinTableUpdate] = inboundQueueSink.get()
     updates.add(firstItem.get)
     outboundQueue.drainTo(updates, options.batchSize - 1)
-
-    //Iterate as fast as possible
     val size = updates.size()
-    var i = 0
-    while (i < size) {
-      updates.get(i) match {
-        case JoinTableDeleteRow(joinTable, key) => joinTable.processDelete(key)
-        case JoinTableUpdateRow(joinTable, rowWithData) => joinTable.processUpdate(rowWithData)
+
+    try {
+      var i = 0
+      while (i < size) {
+        updates.get(i) match {
+          case JoinTableDeleteRow(joinTable, key) => joinTable.processDelete(key)
+          case JoinTableUpdateRow(joinTable, rowWithData) => joinTable.processUpdate(rowWithData)
+        }
+        i += 1
       }
-      i += 1
+
+    } finally {
+      updates.clear()
     }
+
     logger.trace(s"Processed $size join table updates")
   }
 
