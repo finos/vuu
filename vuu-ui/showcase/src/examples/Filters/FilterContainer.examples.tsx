@@ -300,3 +300,21 @@ export const TableWithFilters = () => {
     </>
   );
 };
+
+export const TimeRangeFilter = () => (
+  <>
+    <div data-testid="pre-timeinput">
+      <input />
+    </div>
+    <FilterContainer style={{ display: "flex", flexDirection: "column" }}>
+      <div>
+        <span>Created Time</span>
+        <FilterContainerColumnFilter
+          column={{ name: "vuuCreatedTime", serverDataType: "epochtimestamp", type: "time" }}
+          operator="between"
+        />
+      </div>
+    </FilterContainer>
+  </>
+);
+
