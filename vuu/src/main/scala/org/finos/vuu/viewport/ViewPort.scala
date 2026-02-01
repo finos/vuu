@@ -266,7 +266,6 @@ class ViewPortImpl(val id: String,
 
   override def selectRow(rowKey: String, preserveExistingSelection: Boolean): Unit = {
     viewPortLock.synchronized {
-      // NOTE we assume rowKey is within the range of view port hence should be in rowKeyToIndex map
       if (!rowKeyToIndex.containsKey(rowKey)) {
         throw new Exception(s"Rowkey $rowKey not found in view port $id")
       }
@@ -348,8 +347,8 @@ class ViewPortImpl(val id: String,
     }
   }
 
-  def removeSubscriptionsForRange(range: ViewPortRange): Unit = {
-    (range.from until (range.to - 1)).foreach(i => {
+  private def removeSubscriptionsForRange(range: ViewPortRange): Unit = {
+    (range.from until range.to).foreach(i => {
       val key = if (keys.length > i) keys.get(i) else null
       if (key != null) {
         unsubscribeForKey(key)
@@ -357,8 +356,8 @@ class ViewPortImpl(val id: String,
     })
   }
 
-  def addSubscriptionsForRange(range: ViewPortRange): Unit = {
-    (range.from until (range.to - 1)).foreach(i => {
+  private def addSubscriptionsForRange(range: ViewPortRange): Unit = {
+    (range.from until range.to).foreach(i => {
       val key = if (keys.length > i) keys.get(i) else null
       if (key != null) {
         subscribeForKey(key, i)

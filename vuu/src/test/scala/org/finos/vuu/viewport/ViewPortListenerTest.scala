@@ -23,8 +23,6 @@ class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with G
 
       val vpcolumns = ViewPortColumnCreator.create(orders, List("orderId", "trader", "tradeTime", "quantity", "ric"))
 
-      //val vpcolumns = List("orderId", "trader", "tradeTime", "quantity", "ric").map(orders.getTableDef.columnForName(_)).toList
-
       createNOrderRows(ordersProvider, 30)(clock)
 
       val viewPort = viewPortContainer.create(RequestId.oneNew(), user, session, outQueue, orders, ViewPortRange(0, 10), vpcolumns)
@@ -105,7 +103,6 @@ class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with G
       assertVpEq(combinedUpdates4){
         Table(
           ("orderId" ,"trader"  ,"ric"     ,"tradeTime","quantity"),
-          ("NYC-0014","chris"   ,"VOD.L"   ,1311544800140L,1014      ),
           ("NYC-0005","chris"   ,"VOD.L"   ,1311544800050L,1005      ),
           ("NYC-0006","chris"   ,"VOD.L"   ,1311544800060L,1006      ),
           ("NYC-0007","chris"   ,"VOD.L"   ,1311544800070L,1007      ),
@@ -114,7 +111,8 @@ class ViewPortListenerTest extends AbstractViewPortTestCase with Matchers with G
           ("NYC-0010","chris"   ,"VOD.L"   ,1311544800100L,1010      ),
           ("NYC-0011","chris"   ,"VOD.L"   ,1311544800110L,1011      ),
           ("NYC-0012","chris"   ,"VOD.L"   ,1311544800120L,1012      ),
-          ("NYC-0013","chris"   ,"VOD.L"   ,1311544800130L,1013      )
+          ("NYC-0013","chris"   ,"VOD.L"   ,1311544800130L,1013      ),
+          ("NYC-0014","chris"   ,"VOD.L"   ,1311544800140L,1014      ),
         )
       }
 
