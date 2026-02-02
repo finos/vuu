@@ -2,7 +2,7 @@ import React from "react";
 import { test, expect } from "@playwright/experimental-ct-react";
 import { TimeRangeFilter } from "../../../../../showcase/src/examples/Filters/FilterContainer.examples";
 
-test.describe.only("FilterContainer - Time range", () => {
+test.describe("FilterContainer - Time range", () => {
   test("renders time inputs with values", async ({ mount }) => {
     const component = await mount(<TimeRangeFilter />);
 
