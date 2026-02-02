@@ -310,11 +310,14 @@ export const TimeRangeFilter = () => (
       <div>
         <span>Created Time</span>
         <FilterContainerColumnFilter
-          column={{ name: "vuuCreatedTime", serverDataType: "epochtimestamp", type: "time" }}
+          column={{
+            name: "vuuCreatedTime",
+            serverDataType: "epochtimestamp",
+            type: "time",
+          }}
           operator="between"
         />
       </div>
     </FilterContainer>
   </>
 );
-

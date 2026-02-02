@@ -220,10 +220,14 @@ describe("FilterAggregator", () => {
       describe("WHEN a value tuple is added for a time column", () => {
         it("THEN a between filter is created with numeric time values", () => {
           const aggregator = new FilterAggregator();
-          aggregator.add({ name: "tradeTime", serverDataType: "epochtimestamp", type: "time"}, [
-            "10:00:00",
-            "12:30:00",
-          ]);
+          aggregator.add(
+            {
+              name: "tradeTime",
+              serverDataType: "epochtimestamp",
+              type: "time",
+            },
+            ["10:00:00", "12:30:00"],
+          );
           expect(aggregator.filter).toEqual({
             op: "and",
             filters: [
@@ -243,10 +247,14 @@ describe("FilterAggregator", () => {
 
         it("THEN an '=' filter is created when only first time present", () => {
           const aggregator = new FilterAggregator();
-          aggregator.add({ name: "tradeTime", serverDataType: "epochtimestamp", type: "time" }, [
-            "09:15:00",
-            "",
-          ]);
+          aggregator.add(
+            {
+              name: "tradeTime",
+              serverDataType: "epochtimestamp",
+              type: "time",
+            },
+            ["09:15:00", ""],
+          );
           expect(aggregator.filter).toEqual({
             column: "tradeTime",
             op: "=",
@@ -256,10 +264,14 @@ describe("FilterAggregator", () => {
 
         it("THEN a '<' filter is created when only second time present", () => {
           const aggregator = new FilterAggregator();
-          aggregator.add({ name: "tradeTime", serverDataType: "epochtimestamp", type: "time" }, [
-            "",
-            "18:00:00",
-          ]);
+          aggregator.add(
+            {
+              name: "tradeTime",
+              serverDataType: "epochtimestamp",
+              type: "time",
+            },
+            ["", "18:00:00"],
+          );
           expect(aggregator.filter).toEqual({
             column: "tradeTime",
             op: "<",
@@ -269,10 +281,14 @@ describe("FilterAggregator", () => {
 
         it("THEN a between filter is created when the first time is numeric (previously set) and second time present", () => {
           const aggregator = new FilterAggregator();
-          aggregator.add({ name: "tradeTime", serverDataType: "epochtimestamp", type: "time" }, [
-            +Time("13:00:00").asDate(),
-            "18:00:00",
-          ]);
+          aggregator.add(
+            {
+              name: "tradeTime",
+              serverDataType: "epochtimestamp",
+              type: "time",
+            },
+            [+Time("13:00:00").asDate(), "18:00:00"],
+          );
           expect(aggregator.filter).toEqual({
             op: "and",
             filters: [
@@ -292,10 +308,14 @@ describe("FilterAggregator", () => {
 
         it("THEN a between filter is created when the first time is present and second time is numeric (previously set)", () => {
           const aggregator = new FilterAggregator();
-          aggregator.add({ name: "tradeTime", serverDataType: "epochtimestamp", type: "time" }, [
-            "13:00:00",
-            +Time("18:00:00").asDate(),
-          ]);
+          aggregator.add(
+            {
+              name: "tradeTime",
+              serverDataType: "epochtimestamp",
+              type: "time",
+            },
+            ["13:00:00", +Time("18:00:00").asDate()],
+          );
           expect(aggregator.filter).toEqual({
             op: "and",
             filters: [
@@ -311,12 +331,16 @@ describe("FilterAggregator", () => {
               },
             ],
           });
-        });        
+        });
 
         it("THEN between-inclusive uses > and < when no extended options provided", () => {
           const aggregator = new FilterAggregator();
-          aggregator.add(            
-            { name: "tradeTime", serverDataType: "epochtimestamp", type: "time" },
+          aggregator.add(
+            {
+              name: "tradeTime",
+              serverDataType: "epochtimestamp",
+              type: "time",
+            },
             ["08:00:00", "09:00:00"],
             "between-inclusive",
           );

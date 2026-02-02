@@ -15,7 +15,9 @@ test.describe("FilterContainer - Time range", () => {
     await expect(inputs.nth(1)).toHaveValue("23:59:59");
   });
 
-  test("updates values programmatically and dispatches input/change", async ({ mount }) => {
+  test("updates values programmatically and dispatches input/change", async ({
+    mount,
+  }) => {
     const component = await mount(<TimeRangeFilter />);
 
     const columnFilter = component.locator(".vuuColumnFilter").first();
@@ -37,7 +39,9 @@ test.describe("FilterContainer - Time range", () => {
     await expect(inputs.nth(1)).toHaveValue("17:00:00");
   });
 
-  test("editing one range input preserves the other value", async ({ mount }) => {
+  test("editing one range input preserves the other value", async ({
+    mount,
+  }) => {
     const component = await mount(<TimeRangeFilter />);
 
     const columnFilter = component.locator(".vuuColumnFilter").first();
@@ -80,7 +84,10 @@ test.describe("FilterContainer - Time range", () => {
     await expect(inputs.nth(0)).toHaveValue("10:00:00");
   });
 
-  test("keyboard edits update first input via Tab and typing", async ({ mount, page }) => {
+  test("keyboard edits update first input via Tab and typing", async ({
+    mount,
+    page,
+  }) => {
     const component = await mount(<TimeRangeFilter />);
 
     const preTimeinput = component.getByTestId("pre-timeinput");
