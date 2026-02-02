@@ -72,14 +72,14 @@ class JoinTableWSApiTest extends WebSocketApiTestBase {
       testProviderFactory.getProvider("instruments").update(dataSource)
       testProviderFactory.getProvider("instruments").delete(dataSource)
 
+      val viewPortId = createViewPortBase(tableName = "instrumentToCurrency", filter = "ric = \"199\"", expectedNumberOfRows = 0)
+
       instrumentMap = (100 until 200).map { f =>
         val key = f.toString
         key -> Map("ric" -> key, "currency" -> "GBX")
       }.toMap
       dataSource = new FakeDataSource(ListMap.from(instrumentMap))
       testProviderFactory.getProvider("instruments").update(dataSource)
-
-      val viewPortId = createViewPortBase(tableName = "instrumentToCurrency", filter = "ric = \"199\"", expectedNumberOfRows = 0)
 
       waitForData(1)
     }
