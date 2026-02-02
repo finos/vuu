@@ -195,13 +195,6 @@ export const TableHeader = memo(
             role="row"
             aria-rowindex={headings.length + 1}
           >
-            {/* {virtualColSpan > 0 ? (
-                <div
-                  role="cell"
-                  className="vuuTableCell"
-                  style={{ width: virtualColSpan }}
-                />
-              ) : null} */}
             {visibleColumns.map((col, i) =>
               isGroupColumn(col) ? (
                 <GroupHeaderCell

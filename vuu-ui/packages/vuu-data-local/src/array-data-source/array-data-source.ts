@@ -303,6 +303,13 @@ export class ArrayDataSource
       this.#status = "subscribed";
     }
     this.emit("resumed", this.viewport);
+    if (this.selectedRows.size > 0) {
+      if (this.selectedRows.has("*")) {
+        this.emit("row-selection", this.size);
+      } else {
+        this.emit("row-selection", this.selectedRows.size);
+      }
+    }
 
     this.sendRowsToClient(true);
   }

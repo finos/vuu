@@ -1,6 +1,7 @@
 import { Button } from "@salt-ds/core";
 import { ArrayDataSource } from "@vuu-ui/vuu-data-local";
 import { DataSource } from "@vuu-ui/vuu-data-types";
+import { Stack } from "@vuu-ui/vuu-layout";
 import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { Table } from "@vuu-ui/vuu-table";
 import {
@@ -10,7 +11,7 @@ import {
 import { ColumnDescriptor, TableConfig } from "@vuu-ui/vuu-table-types";
 import { VuuInput } from "@vuu-ui/vuu-ui-controls";
 import { Range } from "@vuu-ui/vuu-utils";
-import { FormEvent, ReactNode, useMemo } from "react";
+import { FormEvent, ReactNode, useMemo, useState } from "react";
 
 // prettier-ignore
 class TestDataSource extends ArrayDataSource {
@@ -253,6 +254,36 @@ export const ScrollingTableWithActionAndStyle = () => {
         config={config}
         dataSource={dataSource}
       ></TableWithStatsTemplate>
+    </WithStyle>
+  );
+};
+
+export const ScrollingTableWithActionAndStyleStacked = () => {
+  const [config, dataSource] = useMemo<[TableConfig, DataSource]>(() => {
+    return [
+      {
+        columns: testColumns,
+      },
+      new ArrayDataSource({
+        columnDescriptors: testColumns,
+        data: testData.slice(0),
+      }),
+    ];
+  }, []);
+
+  const actions = useMemo<ReactNode>(() => <Button>Cancel</Button>, []);
+  const [active, setActive] = useState(0);
+
+  return (
+    <WithStyle>
+      <Stack active={active} onTabSelectionChanged={setActive}>
+        <TableWithStatsTemplate
+          actions={actions}
+          config={config}
+          dataSource={dataSource}
+        ></TableWithStatsTemplate>
+        <div style={{ background: "yellow", height: 415 }} />
+      </Stack>
     </WithStyle>
   );
 };

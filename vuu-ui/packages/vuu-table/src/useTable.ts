@@ -771,6 +771,7 @@ export const useTable = ({
   } = useSelection({
     allowSelectCheckboxRow,
     containerRef,
+    dataSource,
     highlightedIndexRef,
     onSelect: handleSelect,
     onSelectionChange: handleSelectionChange,

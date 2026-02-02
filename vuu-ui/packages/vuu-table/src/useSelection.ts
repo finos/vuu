@@ -16,11 +16,13 @@ import {
   KeyboardEventHandler,
   RefObject,
   useCallback,
+  useEffect,
   useRef,
   useState,
 } from "react";
 import { getRowElementByAriaIndex } from "./table-dom-utils";
 import { TableProps } from "./Table";
+import { DataSource, RowSelectionEventHandler } from "@vuu-ui/vuu-data-types";
 
 const { IDX, KEY, SELECTED } = metadataKeys;
 
@@ -50,6 +52,7 @@ type RowIdentifier = {
 export interface SelectionHookProps
   extends Pick<TableProps, "allowSelectCheckboxRow" | "onSelectionChange"> {
   containerRef: RefObject<HTMLElement | null>;
+  dataSource: DataSource;
   highlightedIndexRef: RefObject<number | undefined>;
   selectionKeys?: string[];
   selectionModel: TableSelectionModel;
@@ -60,6 +63,7 @@ export interface SelectionHookProps
 export const useSelection = ({
   allowSelectCheckboxRow,
   containerRef,
+  dataSource,
   highlightedIndexRef,
   selectionKeys = defaultSelectionKeys,
   selectionModel,
@@ -68,6 +72,16 @@ export const useSelection = ({
 }: SelectionHookProps) => {
   const lastActiveRef = useRef<RowIdentifier | undefined>(undefined);
   const [allRowsSelected, setAllRowsSelected] = useState(false);
+
+  const handleRowSelection = useCallback<RowSelectionEventHandler>((evt) => {
+    console.log("[useSelection] handleRowSelection", {
+      evt,
+    });
+  }, []);
+
+  useEffect(() => {
+    dataSource.on("row-selection", handleRowSelection);
+  }, [dataSource, handleRowSelection]);
 
   const isSelectionEvent = useCallback(
     (evt: KeyboardEvent<HTMLElement>) => selectionKeys.includes(evt.key),

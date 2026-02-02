@@ -275,6 +275,10 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
         });
         this.#status = "subscribed";
         this.emit("resumed", this.viewport);
+
+        if (this.#selectedRowsCount > 0) {
+          this.emit("row-selection", this.#selectedRowsCount);
+        }
       }
     }
   }
