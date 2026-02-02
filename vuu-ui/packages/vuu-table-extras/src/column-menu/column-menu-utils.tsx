@@ -389,7 +389,7 @@ export const buildPinMenuItems = (
     </MenuItem>
   );
 
-  if (pin === undefined) {
+  if (!pin) {
     menuItems.push(
       <Menu key="pin-menu">
         <MenuTrigger>
@@ -411,13 +411,13 @@ export const buildPinMenuItems = (
         Unpin
       </MenuItem>,
     );
-    if (pin === "left") {
+    if (pin === "left" || pin === "right") {
       menuItems.push(
         <Menu key="pin-menu">
           <MenuTrigger>
             <MenuItem>Pin Column</MenuItem>
           </MenuTrigger>
-          <MenuPanel>{pinRight}</MenuPanel>
+          <MenuPanel>{pin === "right" ? pinLeft : pinRight}</MenuPanel>
         </Menu>,
       );
     } else if (pin === "floating") {

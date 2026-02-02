@@ -257,6 +257,12 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
         this.#halfUnitSelected === "minutes"
       ) {
         this.select("seconds");
+      } else if (
+        this.#unitSelected === "seconds" ||
+        this.#halfUnitSelected === "seconds"
+      ) {
+        // Already at the rightmost field, stay at seconds
+        this.select("seconds");
       }
     } else {
       if (
@@ -268,6 +274,12 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
         this.#unitSelected === "minutes" ||
         this.#halfUnitSelected === "minutes"
       ) {
+        this.select("hours");
+      } else if (
+        this.#unitSelected === "hours" ||
+        this.#halfUnitSelected === "hours"
+      ) {
+        // Already at the leftmost field, stay at hours
         this.select("hours");
       } else {
         const selection = this.getSelection();
@@ -448,11 +460,6 @@ export class MaskedInput extends EventEmitter<MaskedInputEvents> {
 
       requestAnimationFrame(() => {
         this.select("hours");
-        setTimeout(() => {
-          if (this.#input?.selectionStart !== 0) {
-            this.select("hours");
-          }
-        }, 200);
       });
     }
   };

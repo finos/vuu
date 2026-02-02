@@ -406,13 +406,12 @@ test.describe("ColumnFilter", () => {
     });
   });
   test.describe("Time range filter", () => {
-    test.skip("should trigger handleColumnFilterChange with correct parameters when time range input changes", async ({
-      browserName,
+    test("should trigger handleColumnFilterChange with correct parameters when time range input changes", async ({
       mount,
       page,
     }) => {
       // the TimeInout selection seems flaky in FF and Safari
-      test.skip(browserName === "webkit" || browserName === "firefox");
+      //test.skip(browserName === "webkit" || browserName === "firefox");
 
       const callbacks: unknown[] = [];
       const handler = (...args: unknown[]) => callbacks.push(args);
