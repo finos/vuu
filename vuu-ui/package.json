@@ -89,7 +89,7 @@
     "cypress-real-events": "1.14.0",
     "esbuild": "0.27.2",
     "esbuild-visualizer": "0.7.0",
-    "eslint": "8.36.0",
+    "eslint": "9.26.0",
     "eslint-config-prettier": "8.7.0",
     "eslint-plugin-cypress": "^2.13.3",
     "eslint-plugin-prettier": "4.2.1",
