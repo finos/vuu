@@ -1,17 +1,17 @@
 package org.finos.vuu.core.table.join
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.api.*
-import org.finos.vuu.core.table.join.JoinAsserts.*
-import org.finos.vuu.core.table.{Columns, KeyObserver, RowKeyUpdate, TableContainer}
-import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl}
-import org.finos.vuu.viewport.ViewPortSetup
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.api.*
 import org.finos.vuu.api.TableVisibility.Public
 import org.finos.vuu.core.filter.`type`.AllowAllPermissionFilter
+import org.finos.vuu.core.table.join.JoinAsserts.*
+import org.finos.vuu.core.table.{Columns, KeyObserver, RowKeyUpdate, TableContainer}
 import org.finos.vuu.net.SortSpec
+import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl}
+import org.finos.vuu.viewport.ViewPortSetup
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
@@ -404,21 +404,11 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
 
       sendEvent("orders", makeOrderEvent("3", "VOD.L", isDeleted = true))
 
-      assertJoins("orderPrices", joinTableProvider)(
-        Table(
-          ("orders.orderId", "orders.ric", "orders._isDeleted", "prices.ric", "prices._isDeleted"),
-          ("3", "VOD.L", true, "VOD.L", false)
-        )
-      )
+      assertJoinRowDeletion("orderPrices", joinTableProvider, "3")
 
       sendEvent("orders", makeOrderEvent("2", "VOD.L", isDeleted = true))
 
-      assertJoins("orderPrices", joinTableProvider)(
-        Table(
-          ("orders.orderId", "orders.ric", "orders._isDeleted", "prices.ric", "prices._isDeleted"),
-          ("2", "VOD.L", true, "VOD.L", false)
-        )
-      )
+      assertJoinRowDeletion("orderPrices", joinTableProvider, "2")
     }
 
     Scenario("Left Outer Join, Delete Right Record") {

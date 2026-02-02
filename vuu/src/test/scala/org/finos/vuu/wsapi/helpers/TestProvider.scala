@@ -49,6 +49,14 @@ class TestProvider(table: DataTable, fakeDataSource: FakeDataSource) extends Pro
       })
   }
 
+  def delete(dataSource: FakeDataSource): Unit = {
+    logger.debug(s"Test Provider for ${table.name}- Deleting ${dataSource.size()} rows")
+    dataSource.get()
+      .foreach(row => {
+        table.processDelete(row._1)
+      })
+  }
+
   override def doDestroy(): Unit = {}
 
   override val lifecycleId: String = s"TestProvider ${table.name}"

@@ -62,7 +62,30 @@ class JoinTableWSApiTest extends WebSocketApiTestBase {
       waitForData(1)
     }
 
+    Scenario("Test adding and removing left keys") {
+
+      var instrumentMap = (0 until 100).map { f =>
+        val key = f.toString
+        key -> Map("ric" -> key, "currency" -> "GBX")
+      }.toMap
+      var dataSource = new FakeDataSource(ListMap.from(instrumentMap))
+      testProviderFactory.getProvider("instruments").update(dataSource)
+      testProviderFactory.getProvider("instruments").delete(dataSource)
+
+      instrumentMap = (100 until 200).map { f =>
+        val key = f.toString
+        key -> Map("ric" -> key, "currency" -> "GBX")
+      }.toMap
+      dataSource = new FakeDataSource(ListMap.from(instrumentMap))
+      testProviderFactory.getProvider("instruments").update(dataSource)
+
+      val viewPortId = createViewPortBase(tableName = "instrumentToCurrency", filter = "ric = \"199\"", expectedNumberOfRows = 0)
+
+      waitForData(1)
+    }
+
   }
+
 
   private def createViewPortBase(tableName: String,
                                  columns: Array[String] = Array("*"),

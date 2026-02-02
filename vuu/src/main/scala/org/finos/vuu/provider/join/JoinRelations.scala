@@ -3,29 +3,10 @@ package org.finos.vuu.provider.join
 import org.finos.vuu.api.JoinTableDef
 
 import java.util.concurrent.ConcurrentHashMap
-import scala.jdk.CollectionConverters.MapHasAsScala
 
 /**
  * Join class represents a left to right join table
  */
-
-case class RightKeyTable(key: String, table: String)
-
-class RowJoin(val tableName: String, val leftKey: String, val leftKeyField: String) {
-
-  private val foreignKeyMap = new ConcurrentHashMap[String, String]()
-
-  def toMap(): Map[String, Any] = {
-    val asScala = MapHasAsScala(foreignKeyMap).asScala.toMap
-    asScala.foldLeft(Map[String, Any]())((map, tuple) => {
-      map ++ Map(tableName + "." + tuple._1 -> tuple._2)
-    }) ++ Map(tableName + "." + leftKeyField -> leftKey)
-  }
-
-  def putJoinKey(leftColumn: String, foreignKey: String) = {
-    foreignKeyMap.put(leftColumn, foreignKey)
-  }
-}
 
 class JoinRelations {
 
@@ -37,15 +18,11 @@ class JoinRelations {
 
     val leftKey = ev.get(leftKeyField).asInstanceOf[String]
 
-    rowJoins.computeIfAbsent(joinDef.baseTable.name, baseTable => {
-      val rowKeysMap = new ConcurrentHashMap[String, RowJoin]()
-      rowKeysMap.put(leftKey, new RowJoin(baseTable, leftKey, leftKeyField))
-      rowKeysMap
-    })
+    val rowJoinForTable = rowJoins.computeIfAbsent(joinDef.baseTable.name,
+      baseTable => new ConcurrentHashMap[String, RowJoin]())
 
-    val rowJoinForTable = rowJoins.get(joinDef.baseTable.name)
-
-    val rowJoin = rowJoinForTable.computeIfAbsent(leftKey, key => new RowJoin(joinDef.baseTable.name, key, leftKeyField))
+    val rowJoin = rowJoinForTable.computeIfAbsent(leftKey,
+      leftKey => new RowJoin(joinDef.baseTable.name, leftKey, leftKeyField))
 
     joinDef.joins.foreach(joinTo => {
 
@@ -59,5 +36,5 @@ class JoinRelations {
   }
 
   //returns the joins relevant for this left key...
-  def getJoinsForEvent(eventType: String, leftKey: String): RowJoin = rowJoins.get(eventType).get(leftKey)
+  def getJoinsForEvent(leftTableName: String, leftKey: String): RowJoin = rowJoins.get(leftTableName).get(leftKey)
 }

@@ -5,8 +5,8 @@ import org.finos.toolbox.collection.queue.BinaryPriorityBlockingQueue
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.vuu.api.{JoinTableDef, TableDef}
 import org.finos.vuu.core.VuuJoinTableProviderOptions
-import org.finos.vuu.core.table.{DataTable, JoinTable, JoinTableUpdate, RowWithData}
-import org.finos.vuu.provider.join.{JoinDefToJoinTable, JoinManagerEventDataSink, JoinRelations, RightToLeftKeys}
+import org.finos.vuu.core.table.{JoinTable, RowWithData}
+import org.finos.vuu.provider.join.{JoinDefToJoinTable, JoinManagerEventDataSink, JoinRelations, JoinTableDeleteRow, JoinTableUpdate, JoinTableUpdateRow, RightToLeftKeys}
 
 import java.util
 import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
@@ -52,30 +52,32 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
 
   private val outboundQueue = BinaryPriorityBlockingQueue[JoinTableUpdate](options.maxQueueSize)
   private val queuePollDuration = Duration.create(150, TimeUnit.MILLISECONDS)
+  private val inboundQueueSink = ThreadLocal.withInitial(() => new util.ArrayList[JoinTableUpdate](options.batchSize))
   private val joinRelations = new JoinRelations()
   private val joinSink = new JoinManagerEventDataSink()
   private val rightToLeftKeys = new RightToLeftKeys()
-  @volatile private var joinDefs = List[JoinDefToJoinTable]()
-
+  private val tableToJoinDefinitions = new ConcurrentHashMap[String, Array[JoinDefToJoinTable]]()
   private val sourceTableDefsByName = new ConcurrentHashMap[String, TableDef]()
 
   override def hasJoins(tableName: String): Boolean = {
-    joinDefs.find(defAndTable => defAndTable.joinDef.containsTable(tableName)) match {
-      case Some(_) => true
-      case None => false
-    }
+    tableToJoinDefinitions.containsKey(tableName)
   }
 
   private def publishUpdateForLeftTableAndKey(joinTableDef: JoinTableDef, joinTable: JoinTable,
                                               leftTableName: String, leftKey: String, ev: util.HashMap[String, Any],
                                               isJoinEvent: Boolean
                                              ): Unit = {
+
+    if (ev.get("_isDeleted").asInstanceOf[Boolean]) {
+      val deleteRowUpdate = JoinTableDeleteRow(joinTable, leftKey)
+      queueJoinTableUpdate(deleteRowUpdate, isJoinEvent)
+      return
+    }
+
     //get right keys and tables
     val rowJoin = joinRelations.getJoinsForEvent(leftTableName, leftKey)
 
-    val isDeleted = ev.get("_isDeleted").asInstanceOf[Boolean]
-
-    val leftKeys = rowJoin.toMap() ++ Map(leftTableName + "._isDeleted" -> isDeleted)
+    val leftKeys: Map[String, Any] = rowJoin.toMap
 
     val toPublishData = joinTableDef.joins.foldLeft(Map[String, Any]())((map, joinTo) => {
 
@@ -114,19 +116,20 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
     }) ++ leftKeys
 
     val rowWithData = RowWithData(leftKey, toPublishData)
+    val jtu = JoinTableUpdateRow(joinTable, rowWithData)
+    queueJoinTableUpdate(jtu, isJoinEvent)
+  }
 
-    val jtu = JoinTableUpdate(joinTable, rowWithData)
-
-    logger.trace(s"[JoinTableProvider] Submitting join table event: $jtu")
-    
+  private def queueJoinTableUpdate(joinTableUpdate: JoinTableUpdate, isJoinEvent: Boolean): Unit = {
+    logger.trace(s"[JoinTableProvider] Submitting join table event: $joinTableUpdate")
     if (isJoinEvent) {
-      outboundQueue.putHighPriority(jtu)
+      outboundQueue.putHighPriority(joinTableUpdate)
     } else {
-      outboundQueue.put(jtu)
+      outboundQueue.put(joinTableUpdate)
     }
   }
 
-  def eventToRightKey(joinTableDef: JoinTableDef, tableName: String, ev: util.HashMap[String, Any], rightColumn: String): String = {
+  private def eventToRightKey(joinTableDef: JoinTableDef, tableName: String, ev: util.HashMap[String, Any], rightColumn: String): String = {
     //val keyName = joinTableDef.keyFieldForTable(tableName)
 
     ev.get(rightColumn) match {
@@ -136,7 +139,7 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
     }
   }
 
-  def leftColumnAsRightKey(joinTableDef: JoinTableDef, tableName: String, ev: util.HashMap[String, Any], leftColumn: String): String = {
+  private def leftColumnAsRightKey(joinTableDef: JoinTableDef, tableName: String, ev: util.HashMap[String, Any], leftColumn: String): String = {
     ev.get(leftColumn) match {
       case null => null
       case s: String => s
@@ -144,16 +147,16 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
     }
   }
 
-  def eventToLeftKey(joinTableDef: JoinTableDef, ev: util.HashMap[String, Any]): String = {
+  private def eventToLeftKey(joinTableDef: JoinTableDef, ev: util.HashMap[String, Any]): String = {
     ev.get(joinTableDef.baseTable.keyField).toString
   }
 
-  def eventToKey(tableName: String, ev: util.HashMap[String, Any]): String = {
+  private def eventToKey(tableName: String, ev: util.HashMap[String, Any]): String = {
     val keyField = sourceTableDefsByName.get(tableName).keyField
     ev.get(keyField).toString
   }
 
-  def addRightKeysForLeftKey(joinTableDef: JoinTableDef, tableName: String, ev: util.HashMap[String, Any]): Unit = {
+  private def addRightKeysForLeftKey(joinTableDef: JoinTableDef, tableName: String, ev: util.HashMap[String, Any]): Unit = {
 
     val leftKeyName = joinTableDef.baseTable.keyField
     val leftTable = tableName
@@ -188,67 +191,72 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
 
     logger.trace("Starting Event Cycle...")
 
-    joinDefs.foreach(defAndTable => {
+    tableToJoinDefinitions.get(tableName).foreach(defAndTable => {
 
       val joinTableDef = defAndTable.joinDef
-      val joinTable = defAndTable.table
+      
+      //does it participate as a left table? i.e. the base table of the join
+      if (joinTableDef.isLeftTable(tableName)) {
 
-      //if join contains table...
-      if (joinTableDef.containsTable(tableName)) {
+        joinRelations.addRowJoins(joinTableDef, ev)
 
-        logger.trace(s"Processing event $ev for table $tableName in join: ${joinTableDef.name}")
+        addRightKeysForLeftKey(joinTableDef, tableName, ev)
 
-        //does it participate as a left table? i.e. the base table of the join
-        if (joinTableDef.isLeftTable(tableName)) {
+        //if so, publish a left table event for the right inbound event
+        val leftKey = eventToLeftKey(joinTableDef, ev)
+        logger.trace(s"Publishing update for left key: $leftKey to table $tableName")
+        publishUpdateForLeftTableAndKey(joinTableDef, defAndTable.table.asInstanceOf[JoinTable], tableName, leftKey, ev, isJoinEvent)
 
-          joinRelations.addRowJoins(joinTableDef, ev)
+      //otherwise must be a right table, i.e. any one of the joinTo tables
+      } else {
 
-          addRightKeysForLeftKey(joinTableDef, tableName, ev)
+        val keyName = joinTableDef.keyFieldForTable(tableName)
 
-          //if so, publish a left table event for the right inbound event
-          val leftKey = eventToLeftKey(joinTableDef, ev)
-          logger.trace(s"Publishing update for left key: $leftKey to table $tableName")
-          publishUpdateForLeftTableAndKey(joinTableDef, joinTable.asInstanceOf[JoinTable], tableName, leftKey, ev, isJoinEvent)
+        val rightKey = eventToRightKey(joinTableDef, tableName, ev, keyName)
 
-          //otherwise must be a right table, i.e. any one of the joinTo tables
-        } else {
+        //get left table keys for right table event
+        val leftKeys = rightToLeftKeys.getLeftTableKeysForRightKey(tableName, rightKey, joinTableDef.baseTable.name)
 
-          val keyName = joinTableDef.keyFieldForTable(tableName)
-
-          val rightKey = eventToRightKey(joinTableDef, tableName, ev, keyName)
-
-          //get left table keys for right table event
-          val leftKeys = rightToLeftKeys.getLeftTableKeysForRightKey(tableName, rightKey, joinTableDef.baseTable.name)
-
-          //for each key in left table, send left update, including additional keys
-          leftKeys.foreach(key => {
-            logger.trace(s"Publishing update for left key: $key to table ${joinTableDef.baseTable.name}")
-            publishUpdateForLeftTableAndKey(joinTableDef, joinTable.asInstanceOf[JoinTable], joinTableDef.baseTable.name,
-              key, joinSink.getEventDataSink(joinTableDef.baseTable.name).getEventState(key), isJoinEvent)
-          })
-        }
+        //for each key in left table, send left update, including additional keys
+        leftKeys.foreach(key => {
+          logger.trace(s"Publishing update for left key: $key to table ${joinTableDef.baseTable.name}")
+          publishUpdateForLeftTableAndKey(joinTableDef, defAndTable.table.asInstanceOf[JoinTable], joinTableDef.baseTable.name,
+            key, joinSink.getEventDataSink(joinTableDef.baseTable.name).getEventState(key), isJoinEvent)
+        })
       }
-
     })
 
     logger.trace(s"Ended Event Cycle...${System.lineSeparator()}")
-
   }
 
-  override def addJoinTable(join: DataTable): Unit = {
+  override def addJoinTable(join: JoinTable): Unit = {
 
     logger.debug("Adding joinDef for " + join.getTableDef.name)
 
-    val tableDef = join.getTableDef.asInstanceOf[JoinTableDef]
-    joinDefs = joinDefs ++ List(JoinDefToJoinTable(tableDef, join))
-    joinSink.addSinkForTable(tableDef.name)
+    val tableDef = join.getTableDef
+    val joinDef = JoinDefToJoinTable(tableDef, join)
+
     sourceTableDefsByName.put(tableDef.baseTable.name, tableDef.baseTable)
+
+    joinSink.addSinkForTable(tableDef.name)
+    addToJoinDefinitions(tableDef.baseTable.name, joinDef)
 
     tableDef.rightTables.foreach(rightTable => {
       joinSink.addSinkForTable(rightTable)
+      addToJoinDefinitions(rightTable, joinDef)
     })
 
     tableDef.joins.foreach(joinTo => sourceTableDefsByName.put(joinTo.table.name, joinTo.table))
+  }
+
+  private def addToJoinDefinitions(table: String, joinDef: JoinDefToJoinTable): Unit = {
+    tableToJoinDefinitions.compute(table, (_, existingArray) => {
+      if (existingArray == null) {
+        Array(joinDef)
+      } else {
+        existingArray :+ joinDef
+      }
+    })
   }
 
   override def start(): Unit = {}
@@ -260,30 +268,26 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
       return
     }
 
-    val updates = new java.util.ArrayList[JoinTableUpdate](options.batchSize)
+    val updates: util.ArrayList[JoinTableUpdate] = inboundQueueSink.get()
     updates.add(firstItem.get)
     outboundQueue.drainTo(updates, options.batchSize - 1)
-
-    //Iterate as fast as possible
     val size = updates.size()
-    var i = 0
-    while (i < size) {
-      val jtu = updates.get(i)
-      val rowUpdate = jtu.rowUpdate
-      val joinTable = jtu.joinTable
-      if (isPrimaryKeyDeleted(joinTable, rowUpdate)) {
-        joinTable.processDelete(rowUpdate.key)
-      } else {
-        joinTable.processUpdate(rowUpdate.key, rowUpdate)
-      }
-      i += 1
-    }
-    logger.trace(s"Processed $size join table updates")
-  }
 
-  private def isPrimaryKeyDeleted(dataTable: JoinTable, rowUpdate: RowWithData): Boolean = {
-    val columnName = dataTable.getTableDef.baseTable.deleteColumnName()
-    rowUpdate.data.getOrElse(columnName, false).asInstanceOf[Boolean]
+    try {
+      var i = 0
+      while (i < size) {
+        updates.get(i) match {
+          case JoinTableDeleteRow(joinTable, key) => joinTable.processDelete(key)
+          case JoinTableUpdateRow(joinTable, rowWithData) => joinTable.processUpdate(rowWithData)
+        }
+        i += 1
+      }
+
+    } finally {
+      updates.clear()
+    }
+
+    logger.trace(s"Processed $size join table updates")
   }
 
   override def doStart(): Unit = {}
