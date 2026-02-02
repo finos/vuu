@@ -73,14 +73,20 @@ export const useSelection = ({
   const lastActiveRef = useRef<RowIdentifier | undefined>(undefined);
   const [allRowsSelected, setAllRowsSelected] = useState(false);
 
-  const handleRowSelection = useCallback<RowSelectionEventHandler>((evt) => {
-    console.log("[useSelection] handleRowSelection", {
-      evt,
-    });
-  }, []);
+  const handleRowSelection = useCallback<RowSelectionEventHandler>(
+    (selectedRowsCount) => {
+      setAllRowsSelected((allSelected) =>
+        allSelected && selectedRowsCount < dataSource.size
+          ? false
+          : allSelected,
+      );
+    },
+    [dataSource.size],
+  );
 
   useEffect(() => {
     dataSource.on("row-selection", handleRowSelection);
+    return () => dataSource.removeListener("row-selection", handleRowSelection);
   }, [dataSource, handleRowSelection]);
 
   const isSelectionEvent = useCallback(
