@@ -138,7 +138,7 @@ case class RowWithData(key: String, data: Map[String, Any]) extends RowData {
     if (data == null) {
       null
     } else {
-      data.get(column).orNull
+      data.getOrElse(column, null)
     }
   }
 
