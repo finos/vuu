@@ -12,6 +12,7 @@ import { toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo } from "react";
 
 import "./Misc.examples.css";
+import { Button } from "@salt-ds/core";
 
 type DataTableProps = Partial<
   Omit<TableProps, "config"> & { config?: Partial<TableConfig> }
@@ -55,8 +56,17 @@ const DataTableTemplate = ({
     );
   }, [VuuDataSource, dataSourceProp, schema]);
 
+  const deselectAll = useCallback(() => {
+    dataSource.select?.({
+      type: "DESELECT_ALL",
+    });
+  }, [dataSource]);
+
   return (
     <>
+      <div>
+        <Button onClick={deselectAll}>Deselect All</Button>
+      </div>
       <Table
         {...props}
         allowCellBlockSelection={allowCellBlockSelection}
