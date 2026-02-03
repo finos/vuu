@@ -4,6 +4,8 @@ import com.typesafe.scalalogging.Logger
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.api.JoinTableDef
 
+import scala.collection.immutable.VectorMap
+
 trait JoinDataTableData {
 
   def processDelete(primaryKey: String): JoinDataTableData
@@ -42,7 +44,7 @@ object JoinDataTableData {
 
     val numberOfJoins = tableDef.joins.size + tableDef.baseTable.joinFields.size
 
-    JoinDataTableDataImpl(joinTableNames, joinFields, columns, primaryKeyIndices, Map[String, Array[String]](), logger)
+    JoinDataTableDataImpl(joinTableNames, joinFields, columns, primaryKeyIndices, VectorMap[String, Array[String]](), logger)
   }
 
 }
