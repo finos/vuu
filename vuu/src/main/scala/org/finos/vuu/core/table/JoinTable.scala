@@ -81,7 +81,7 @@ class JoinTable(val tableDef: JoinTableDef,
 
     logger.trace(s"$name processing row update: $rowKey $rowUpdate")
 
-    joinData = joinData.processUpdate(rowKey, rowUpdate, this, sourceTables)
+    joinData = joinData.processUpdate(rowKey, rowUpdate, this)
 
     sendToJoinSink(rowUpdate)
 

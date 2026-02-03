@@ -130,7 +130,7 @@ class TableContainer(val joinTableProvider: JoinTableProvider)(implicit val metr
     assert(tables.remove(source.name) != null)
   }
 
-  def createJoinTable(table: JoinTableDef): DataTable = {
+  def createJoinTable(table: JoinTableDef): JoinTable = {
 
     val baseTable = tables.get(table.baseTable.name)
     val joinTableMap = table.joins.map(join => join.table.name -> tables.get(join.table.name)).toMap //tables.get(table.right.name)
