@@ -1,14 +1,14 @@
 package org.finos.vuu.core.table
 
 import com.typesafe.scalalogging.Logger
-import org.finos.toolbox.collection.array.{ImmutableArray, ImmutableArrays}
+import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.api.JoinTableDef
 
 trait JoinDataTableData {
 
-  def processDelete(rowKey: String): JoinDataTableData
+  def processDelete(primaryKey: String): JoinDataTableData
 
-  def processUpdate(rowKey: String, rowUpdate: RowData, joinTable: JoinTable): JoinDataTableData
+  def processUpdate(primaryKey: String, rowUpdate: RowData, joinTable: JoinTable): JoinDataTableData
 
   def getPrimaryKeys: ImmutableArray[String]
 
@@ -42,8 +42,7 @@ object JoinDataTableData {
 
     val numberOfJoins = tableDef.joins.size + tableDef.baseTable.joinFields.size
 
-    JoinDataTableDataImpl(joinTableNames, joinFields, columns, primaryKeyIndices,
-      ImmutableArrays.empty(numberOfJoins), Map[String, Integer](), logger)
+    JoinDataTableDataImpl(joinTableNames, joinFields, columns, primaryKeyIndices, Map[String, Array[String]](), logger)
   }
 
 }
@@ -52,21 +51,19 @@ private case class JoinDataTableDataImpl(joinTableNames: Array[String],
                                          joinFields: Array[String],
                                          columns: Array[Column],
                                          primaryKeyIndices: Array[Int],
-                                         keysByJoinIndex: Array[ImmutableArray[String]],
-                                         keyToIndexMap: Map[String, Integer],
+                                         primaryKeyToJoinKeys: Map[String, Array[String]],
                                          logger: Logger) extends JoinDataTableData {
 
-  override def getPrimaryKeys: ImmutableArray[String] = keysByJoinIndex.apply(0)
+  private lazy val primaryKeys = ImmutableArray.from(primaryKeyToJoinKeys.keys)
+
+  override def getPrimaryKeys: ImmutableArray[String] = primaryKeys
 
   override def getKeyValuesByTable(primaryKey: String): Map[String, String] = {
-    if (primaryKey == null)
-      return null;
+    if (primaryKey == null) return null
 
-    val primaryKeyIndex = keyToIndexMap.getOrElse(primaryKey, null)
-    if (primaryKeyIndex == null)
-      return null
+    val joinKeys = primaryKeyToJoinKeys.getOrElse(primaryKey, null)
+    if (joinKeys == null) return null
 
-    val pkIndex = primaryKeyIndex.toInt
     val primaryKeysLength = primaryKeyIndices.length
     val builder = Map.newBuilder[String, String]
     builder.sizeHint(primaryKeysLength)
@@ -74,9 +71,7 @@ private case class JoinDataTableDataImpl(joinTableNames: Array[String],
     var keyIndex = 0
     while (keyIndex < primaryKeysLength) {
       val joinIdx = primaryKeyIndices(keyIndex)
-      val keys = keysByJoinIndex(joinIdx)
-
-      val key = if (pkIndex < keys.length) keys(pkIndex) else null
+      val key = joinKeys(joinIdx)
       logger.trace(s"found foreign key $key in table ${joinTableNames(joinIdx)} for primary key $primaryKey")
       builder += (joinTableNames(joinIdx) -> key)
       keyIndex += 1
@@ -85,64 +80,33 @@ private case class JoinDataTableDataImpl(joinTableNames: Array[String],
     builder.result()
   }
 
-  override def processDelete(rowKey: String): JoinDataTableData = {
-
-    keyToIndexMap.getOrElse(rowKey, null) match {
-      case null =>
-        logger.trace(s"Got a process delete message for key $rowKey that doesn't exist")
+  override def processDelete(primaryKey: String): JoinDataTableData = {
+    primaryKeyToJoinKeys.getOrElse(primaryKey, null) match {
+      case null => {
+        logger.trace(s"Got a process delete message for key $primaryKey that doesn't exist")
         this
-
-      case index: Integer =>
-
-        logger.trace(s"processing rowKey delete, key = $rowKey, index = $index")
-
-        val newKeysByJoinIndex = new Array[ImmutableArray[String]](joinFields.length)
-
-        var joinFieldIndex = 0
-        while (joinFieldIndex < joinFields.length) {
-          logger.trace(s"Removing rowKey $rowKey from keys by row index, ix = $joinFieldIndex value = ${keysByJoinIndex(joinFieldIndex)}")
-          newKeysByJoinIndex(joinFieldIndex) = keysByJoinIndex(joinFieldIndex).remove(index)
-          joinFieldIndex += 1
-        }
-
-        logger.trace(s"Removing rowKey $rowKey from keyToIndexMap")
-
-        val newKeyToIndexMapBuilder = Map.newBuilder[String, Integer]
-        newKeyToIndexMapBuilder.sizeHint(keyToIndexMap.size - 1)
-
-        val newKeysByJoinIndices = newKeysByJoinIndex(0)
-        val newKeysByJoinIndicesLength = newKeysByJoinIndices.length
-        var keyIndex = 0
-        while (keyIndex < newKeysByJoinIndicesLength) {
-          newKeyToIndexMapBuilder += (newKeysByJoinIndices(keyIndex) -> keyIndex)
-          keyIndex += 1
-        }
-
-        val newKeyToIndexMap = newKeyToIndexMapBuilder.result()
-
-        JoinDataTableDataImpl(joinTableNames, joinFields, columns, primaryKeyIndices, newKeysByJoinIndex, newKeyToIndexMap, logger)
+      }
+      case joinKeys: Array[String] => {
+        logger.trace(s"processing rowKey delete, key = $primaryKey")
+        val newPrimaryKeyToJoinKeys = primaryKeyToJoinKeys.removed(primaryKey)
+        JoinDataTableDataImpl(joinTableNames, joinFields, columns, primaryKeyIndices, newPrimaryKeyToJoinKeys, logger)
+      } 
     }
   }
 
-  override def processUpdate(rowKey: String, rowUpdate: RowData, joinTable: JoinTable): JoinDataTableData = {
+  override def processUpdate(primaryKey: String, rowUpdate: RowData, joinTable: JoinTable): JoinDataTableData = {
 
     val updateByKeyIndex = rowUpdateToArray(rowUpdate)
-    assert(keysByJoinIndex.length == updateByKeyIndex.length)
+    assert(joinFields.length == updateByKeyIndex.length)
 
-    keyToIndexMap.getOrElse(rowKey, null) match {
+    primaryKeyToJoinKeys.getOrElse(primaryKey, null) match {
 
       //if this key (the primary key for the left table) didn't exist before in the table, that means we can't have listeners
       //so the listeners will be updated out of band
       case null =>
 
-        //find the largest index available slot
-        val index = keysByJoinIndex(0).length
-
-        //add reference from key to row index
-        val newKeyToIndexMap: Map[String, Integer] = keyToIndexMap + (rowKey -> index)
-
         //create a new immutable array to store the foreign keys in
-        val newKeysByJoinIndex = new Array[ImmutableArray[String]](joinFields.length)
+        val joinKeys = new Array[String](joinFields.length)
 
         var joinFieldIndex = 0
         val joinFieldsLength = joinFields.length
@@ -155,10 +119,7 @@ private case class JoinDataTableDataImpl(joinTableNames: Array[String],
           if (key != null) {
 
             //then add a new immutable array entry
-            val newKeysByJoinIndexData = keysByJoinIndex(joinFieldIndex).+(key.asInstanceOf[String])
-
-            //set the index value to be the immutable array of foreign keys
-            newKeysByJoinIndex(joinFieldIndex) = newKeysByJoinIndexData
+            joinKeys(joinFieldIndex) = key.asInstanceOf[String]
 
             //if the key value for the join index was null in the incoming message
             //that means potentially the provider for one of the "right" tables
@@ -166,9 +127,7 @@ private case class JoinDataTableDataImpl(joinTableNames: Array[String],
             //join to this one and ask the table if it wants to have a go.
           } else {
 
-            val newKeysByJoinIndexData = keysByJoinIndex(joinFieldIndex).+(null)
-
-            newKeysByJoinIndex(joinFieldIndex) = newKeysByJoinIndexData
+            joinKeys(joinFieldIndex) = null
 
             val sourceTableName = this.columns(joinFieldIndex).asInstanceOf[JoinColumn].sourceTable.name
 
@@ -182,7 +141,7 @@ private case class JoinDataTableDataImpl(joinTableNames: Array[String],
 
               val (_, joinIndex) = findJoinColumn(column, joinTable.tableDef, columns)
 
-              val rightValue = newKeysByJoinIndex(joinIndex)(index)
+              val rightValue = joinKeys(joinIndex)
 
               checkAndAutosubscribe(rightValue, sourceTable)
             }
@@ -191,24 +150,21 @@ private case class JoinDataTableDataImpl(joinTableNames: Array[String],
           joinFieldIndex += 1
         }
 
-        JoinDataTableDataImpl(joinTableNames, joinFields, columns, primaryKeyIndices, newKeysByJoinIndex, newKeyToIndexMap, logger)
+        val newPrimaryKeyToJoinKeys = primaryKeyToJoinKeys + (primaryKey -> joinKeys)
+
+        JoinDataTableDataImpl(joinTableNames, joinFields, columns, primaryKeyIndices, newPrimaryKeyToJoinKeys, logger)
 
       //else if that index does exist then
-      case index =>
+      case joinKeys: Array[String] =>
 
         var joinFieldIndex = 0
 
         //create a copy of the array, to store the foreign keys in
-        val keysByJoinIndexCopy = Array.copyOf(keysByJoinIndex, keysByJoinIndex.length)
+        val newJoinKeys = joinKeys.clone()
 
         while (joinFieldIndex < joinFields.length) {
 
-          val oldKeysByJoinIndex = keysByJoinIndexCopy(joinFieldIndex)
-
-          if (index >= oldKeysByJoinIndex.length)
-            logger.trace(s"no foreign key found for primary key ix=$index")
-
-          val oldKey = if (index >= oldKeysByJoinIndex.length) null else oldKeysByJoinIndex(index)
+          val oldKey = joinKeys(joinFieldIndex)
 
           val newKey = updateByKeyIndex(joinFieldIndex)
 
@@ -216,15 +172,13 @@ private case class JoinDataTableDataImpl(joinTableNames: Array[String],
 
             if (newKey != null) {
 
-              val newKeysByJoinIndexData = oldKeysByJoinIndex.set(index, newKey.asInstanceOf[String])
-
-              keysByJoinIndexCopy(joinFieldIndex) = newKeysByJoinIndexData
+              newJoinKeys(joinFieldIndex) = newKey.asInstanceOf[String]
 
               val foreignTableName = joinTableNames(joinFieldIndex)
 
               val foreignTable = joinTable.sourceTables(foreignTableName)
 
-              val observers = joinTable.getObserversByKey(rowKey)
+              val observers = joinTable.getObserversByKey(primaryKey)
 
               //remove all the observers that were added as part of this table
               //and repoint them to the new key
@@ -241,13 +195,11 @@ private case class JoinDataTableDataImpl(joinTableNames: Array[String],
 
             } else {
 
-              val newKeysByJoinIndexData = oldKeysByJoinIndex.set(index, null)
-
-              keysByJoinIndexCopy(joinFieldIndex) = newKeysByJoinIndexData
+              newJoinKeys(joinFieldIndex) = null
 
               val foreignTableName = joinTableNames(joinFieldIndex)
               val foreignTable = joinTable.sourceTables(foreignTableName)
-              val observers = joinTable.getObserversByKey(rowKey)
+              val observers = joinTable.getObserversByKey(primaryKey)
 
               observers.foreach(ob => {
                 val wrapped = WrappedKeyObserver(ob)
@@ -260,8 +212,9 @@ private case class JoinDataTableDataImpl(joinTableNames: Array[String],
           joinFieldIndex += 1
         }
 
+        val newPrimaryKeyToJoinKeys = primaryKeyToJoinKeys + (primaryKey -> newJoinKeys)
 
-        JoinDataTableDataImpl(joinTableNames, joinFields, columns, primaryKeyIndices, keysByJoinIndexCopy, keyToIndexMap, logger)
+        JoinDataTableDataImpl(joinTableNames, joinFields, columns, primaryKeyIndices, newPrimaryKeyToJoinKeys, logger)
     }
 
   }
