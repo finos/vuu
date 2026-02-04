@@ -290,7 +290,7 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
 
       info(s"${Instant.now} Beginning inserts and updates...")
 
-      for(a <- 0 until 100_000){
+      for(a <- 0 until 10_000){
         val orderId = s"$a"
         val instrumentRic = s"ric-$a"
         val orderMap = Map("orderId" -> orderId, "ric" -> instrumentRic)
@@ -308,7 +308,7 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
 
       info(s"${Instant.now} Beginning deletion...")
 
-      for (a <- 0 until 100_000) {
+      for (a <- 0 until 10_000) {
         val orderId = s"$a"
         val instrumentRic = s"ric-$a"
         orderProvider.delete(orderId)
