@@ -281,13 +281,14 @@ describe("FilterAggregator", () => {
 
         it("THEN a between filter is created when the first time is numeric (previously set) and second time present", () => {
           const aggregator = new FilterAggregator();
+          const firstTime = +Time("13:00:00").asDate();
           aggregator.add(
             {
               name: "tradeTime",
               serverDataType: "epochtimestamp",
               type: "time",
             },
-            [+Time("13:00:00").asDate(), "18:00:00"],
+            [firstTime.toString(), "18:00:00"],
           );
           expect(aggregator.filter).toEqual({
             op: "and",
@@ -295,7 +296,7 @@ describe("FilterAggregator", () => {
               {
                 column: "tradeTime",
                 op: ">",
-                value: +Time("13:00:00").asDate(),
+                value: firstTime,
               },
               {
                 column: "tradeTime",
@@ -308,13 +309,14 @@ describe("FilterAggregator", () => {
 
         it("THEN a between filter is created when the first time is present and second time is numeric (previously set)", () => {
           const aggregator = new FilterAggregator();
+          const secondTime = +Time("18:00:00").asDate();
           aggregator.add(
             {
               name: "tradeTime",
               serverDataType: "epochtimestamp",
               type: "time",
             },
-            ["13:00:00", +Time("18:00:00").asDate()],
+            ["13:00:00", secondTime.toString()],
           );
           expect(aggregator.filter).toEqual({
             op: "and",
@@ -327,7 +329,7 @@ describe("FilterAggregator", () => {
               {
                 column: "tradeTime",
                 op: "<",
-                value: +Time("18:00:00").asDate(),
+                value: secondTime,
               },
             ],
           });
