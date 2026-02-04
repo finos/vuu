@@ -17,6 +17,7 @@ class VisualLinkedViewPortWSApiTest extends WebSocketApiTestBase {
   private val testProviderFactory = new TestProviderFactory
 
   Feature("[Web Socket API] Visual linked view ports") {
+
     Scenario("Create a visual link of view ports") {
       Given("Parent and child view ports exist")
       val createViewPortRequest = CreateViewPortRequest(ViewPortTable(tableName1, moduleName), ViewPortRange(0, 100), columns = Array("requestRefId", "parentRequestRefId", "orderId"))
@@ -45,14 +46,19 @@ class VisualLinkedViewPortWSApiTest extends WebSocketApiTestBase {
       val response2 = vuuClient.awaitForResponse(requestId2)
       val responseBody2 = assertBodyIsInstanceOf[SelectRowSuccess](response2)
 
-      val tableRowUpdatesResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
-      tableRowUpdatesResponse.get.rows(0).viewPortId shouldEqual parentVpId
-      tableRowUpdatesResponse.get.rows(0).vpSize shouldEqual 3
+      val vpToSize: Map[String, Int] = Map(parentVpId -> 3, childVpId -> 2)
 
-      Then("Child view port should show filtered rows")
+      Then("First view port should show filtered rows")
+      val tableRowUpdatesResponse = vuuClient.awaitForMsgWithBody[TableRowUpdates]
+      val viewPortId = tableRowUpdatesResponse.get.rows(0).viewPortId
+      tableRowUpdatesResponse.get.rows(0).vpSize shouldEqual vpToSize(viewPortId)
+
+      val remaining = vpToSize.removed(viewPortId)
+
+      Then("Second view port should show filtered rows")
       val tableRowUpdatesResponse2 = vuuClient.awaitForMsgWithBody[TableRowUpdates]
-      tableRowUpdatesResponse2.get.rows(0).viewPortId shouldEqual childVpId
-      tableRowUpdatesResponse2.get.rows(0).vpSize shouldEqual 2
+      val viewPortId2 = tableRowUpdatesResponse2.get.rows(0).viewPortId
+      tableRowUpdatesResponse2.get.rows(0).vpSize shouldEqual remaining(viewPortId2)
     }
   }
 
