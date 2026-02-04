@@ -31,6 +31,7 @@ export const FilterNamePrompt = ({
   onConfirm: onConfirmProp,
   open = true,
   title,
+  inputProps,
   ...htmlAttributes
 }: FilterNamePromptProps) => {
   const targetWindow = useWindow();
@@ -83,6 +84,7 @@ export const FilterNamePrompt = ({
           onCommit={onCommit}
           defaultValue={value}
           placeholder="Please enter"
+          inputProps={inputProps}
         />
         {formFieldHelperText ? (
           <FormFieldHelperText>{formFieldHelperText}</FormFieldHelperText>

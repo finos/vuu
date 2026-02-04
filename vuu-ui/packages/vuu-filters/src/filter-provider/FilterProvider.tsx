@@ -17,6 +17,7 @@ import {
   EmptyFilterDescriptor,
   FilterContext,
   FilterContextFilterMenuActionHandler,
+  PromptInputProps,
   NULL_FILTER,
   NullFilterDescriptor,
   UNSAVED_FILTER,
@@ -50,12 +51,14 @@ export interface FilterProviderProps {
   children: ReactNode;
   onFiltersSaved?: (savedFilters: SavedFilterRecord) => void;
   savedFilters?: SavedFilterRecord;
+  promptInputProps?: PromptInputProps;
 }
 
 export const FilterProvider = ({
   children,
   onFiltersSaved,
   savedFilters: savedFiltersProp,
+  promptInputProps,
 }: FilterProviderProps) => {
   const [, forceRefresh] = useState({});
   const savedFilters = useMemo<SavedFilterMap>(
@@ -116,10 +119,11 @@ export const FilterProvider = ({
               applyNewName(key, id, name);
             }
           }}
+          inputProps={promptInputProps?.filterNamePrompt}
         />,
       );
     },
-    [applyNewName],
+    [applyNewName, promptInputProps?.filterNamePrompt],
   );
 
   const promptForConfirmationOfDelete = useCallback(
@@ -285,6 +289,7 @@ export const FilterProvider = ({
         filterDescriptors: savedFilters,
         clearCurrentFilter,
         setCurrentFilter,
+        promptInputProps,
       }}
     >
       {children}

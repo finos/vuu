@@ -93,7 +93,7 @@ export const MultipleTabbedFilterContainers = () => {
   );
 
   return (
-    <FilterProvider>
+    <FilterProvider promptInputProps={{ filterNamePrompt: { maxLength: 25 } }}>
       <DataSourceProvider dataSource={dataSource}>
         <style>{`
         .vuuTabbedFilterContainer {

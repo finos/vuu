@@ -6,6 +6,7 @@ import {
 import { FilterAction } from "../filter-pill/FilterMenu";
 import { createContext, useCallback, useContext } from "react";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { InputProps } from "@salt-ds/core";
 
 export const filterDescriptorHasFilter = (
   f: FilterContainerFilterDescriptor,
@@ -43,6 +44,10 @@ export type FilterContextFilterMenuActionHandler = <
   columns?: ColumnDescriptor[],
 ) => void;
 
+export type PromptInputProps = {
+  filterNamePrompt: InputProps["inputProps"];
+};
+
 export interface FilterContextProps {
   deleteFilter: (key: string, filterId: string) => void;
   saveFilter: (key: string, name: string) => void;
@@ -53,6 +58,7 @@ export interface FilterContextProps {
     key: string,
     filter: string | FilterContainerFilter,
   ) => void;
+  promptInputProps?: PromptInputProps;
 }
 
 export const UNSAVED_FILTER = "unsaved-filter";
@@ -106,6 +112,7 @@ export function useSavedFilters(key = "GLOBAL", props?: SavedFilterHookProps) {
     filterDescriptors,
     saveFilter,
     setCurrentFilter,
+    promptInputProps,
   } = useContext(FilterContext);
 
   const handleFilterMenuAction = useCallback(
@@ -155,5 +162,6 @@ export function useSavedFilters(key = "GLOBAL", props?: SavedFilterHookProps) {
     saveFilter: handleSaveFilter,
     clearCurrentFilter: handleClearCurrentFilter,
     setCurrentFilter: handleSetCurrentFilter,
+    promptInputProps,
   };
 }

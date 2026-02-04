@@ -8,10 +8,12 @@ import {
 import { useSavedFilters } from "../filter-provider/FilterContext";
 import { CommitHandler, ValueOf } from "@vuu-ui/vuu-utils";
 import { findMatchingFilter } from "../filter-utils";
+import { InputProps } from "@salt-ds/core";
 
 export interface FilterNamePromptHookProps {
   filterName?: string;
   onConfirm: (filterName: string) => void;
+  inputProps?: InputProps["inputProps"];
 }
 
 const isValidName = (name: unknown): name is string =>
