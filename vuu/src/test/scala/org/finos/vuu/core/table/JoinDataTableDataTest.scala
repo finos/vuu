@@ -11,6 +11,8 @@ import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, MockPro
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
+import java.time.Instant
+
 class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
 
   given timeProvider: Clock = new DefaultClock
@@ -277,6 +279,47 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       result.getKeyValuesByTable(orderId2) shouldEqual null
       result.getKeyValuesByTable(orderId3) shouldEqual Map("orders" -> orderId3, "prices" -> instrumentRic3)
     }
+
+  }
+
+  Feature("Test a big number of operations") {
+
+    Scenario("Inserts, updates and deletes") {
+
+      val (joinProvider, orders, orderProvider, prices, pricesProvider, orderPrices) = setupJoins
+
+      info(s"${Instant.now} Beginning inserts and updates...")
+
+      for(a <- 0 until 10_000){
+        val orderId = s"$a"
+        val instrumentRic = s"ric-$a"
+        val orderMap = Map("orderId" -> orderId, "ric" -> instrumentRic)
+        val instrumentMap = Map("ric" -> instrumentRic)
+        orderProvider.tick(orderId, orderMap)
+        pricesProvider.tick(instrumentRic, instrumentMap)
+
+        //updates
+        for(a <- 0 until 4){
+          orderProvider.tick(orderId, orderMap)
+          pricesProvider.tick(instrumentRic, instrumentMap)
+        }
+        joinProvider.runOnce()
+      }
+
+      info(s"${Instant.now} Beginning deletion...")
+
+      for (a <- 0 until 10_000) {
+        val orderId = s"$a"
+        val instrumentRic = s"ric-$a"
+        orderProvider.delete(orderId)
+        pricesProvider.delete(instrumentRic)
+        joinProvider.runOnce()
+      }
+
+      info(s"${Instant.now} Deletion complete")
+    }
+
+
 
   }
 
