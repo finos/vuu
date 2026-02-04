@@ -29,7 +29,7 @@ class CalculatedColumnVisitor(val columns: Iterable[Column]) extends CalculatedC
   }
 
   override def visitFunction(ctx: CalculatedColumnParser.FunctionContext): CalculatedColumnClause = {
-    logger.debug("VISIT FUNCTION:" + ctx)
+    logger.trace("VISIT FUNCTION:" + ctx)
     val children = CollectionHasAsScala(ctx.children).asScala.toList
     val funcName = children.head.getText
     val clause = children(2) match {
@@ -93,7 +93,7 @@ class CalculatedColumnVisitor(val columns: Iterable[Column]) extends CalculatedC
   }
 
   override def visitAtom(ctx: CalculatedColumnParser.AtomContext): CalculatedColumnClause = {
-    logger.debug("VISIT: ATOM" + ctx)
+    logger.trace("VISIT: ATOM" + ctx)
     super.visitAtom(ctx)
     val clause = ctx.children.get(0) match {
       case term: TerminalNode =>
@@ -105,17 +105,17 @@ class CalculatedColumnVisitor(val columns: Iterable[Column]) extends CalculatedC
           case CalculatedColumnLexer.ID =>
             processIDSymbol(term)
           case CalculatedColumnLexer.INT =>
-            logger.debug("VISIT: ATOM - Processing Literal int: " + term.getText)
+            logger.trace("VISIT: ATOM - Processing Literal int: " + term.getText)
             LiteralIntColumnClause(term.getText.toInt)
           case CalculatedColumnLexer.FLOAT =>
-            logger.debug("VISIT: ATOM - Processing Literal float: " + term.getText)
+            logger.trace("VISIT: ATOM - Processing Literal float: " + term.getText)
             LiteralDoubleColumnClause(term.getText.toDouble)
           case CalculatedColumnLexer.STRING =>
-            logger.debug("VISIT: ATOM - Processing Literal string: " + term.getText)
+            logger.trace("VISIT: ATOM - Processing Literal string: " + term.getText)
             LiteralStringColumnClause(term.getText.drop(1).dropRight(1))
         }
       case term: FunctionContext =>
-        logger.debug("VISIT ATOM: FunctionContext: " + term.getText)
+        logger.trace("VISIT ATOM: FunctionContext: " + term.getText)
         visitFunction(term)
       case _ => null
     }
@@ -123,7 +123,7 @@ class CalculatedColumnVisitor(val columns: Iterable[Column]) extends CalculatedC
   }
 
   override def visitTerminal(node: TerminalNode): CalculatedColumnClause = {
-    logger.debug("VISIT: TERMINAL: " + node.getText)
+    logger.trace("VISIT: TERMINAL: " + node.getText)
       super.visitTerminal(node)
   }
 
@@ -157,7 +157,7 @@ class CalculatedColumnVisitor(val columns: Iterable[Column]) extends CalculatedC
     val op = children(1)
     val rightChild = children(2)
 
-    logger.debug(" left:" + leftChild.getText + " op:" + op.getText + " right:" + rightChild.getText)
+    logger.trace(" left:" + leftChild.getText + " op:" + op.getText + " right:" + rightChild.getText)
 
     val leftClause = processOperatorSideTerm(leftChild)
 
@@ -201,7 +201,7 @@ class CalculatedColumnVisitor(val columns: Iterable[Column]) extends CalculatedC
       val op = children(1)
       val rightChild = children(2)
 
-      logger.debug(" left:" + leftChild.getText + " op:" + op.getText + " right:" + rightChild.getText)
+      logger.trace(" left:" + leftChild.getText + " op:" + op.getText + " right:" + rightChild.getText)
 
       val leftClause = processOperatorSideTerm(leftChild)
 
@@ -227,7 +227,7 @@ class CalculatedColumnVisitor(val columns: Iterable[Column]) extends CalculatedC
     val operator2 = children(5)
     val secondRightChild = children(6)
 
-    logger.debug(" left:" + leftChild.getText + " op:" + op.getText + " right:" + rightChild.getText)
+    logger.trace(" left:" + leftChild.getText + " op:" + op.getText + " right:" + rightChild.getText)
 
     val leftClause = processOperatorSideTerm(leftChild)
 
@@ -258,7 +258,7 @@ class CalculatedColumnVisitor(val columns: Iterable[Column]) extends CalculatedC
   private def processIDSymbol(term: TerminalNode): CalculatedColumnClause = {
     getColumn(term.getText) match {
       case Some(column) =>
-        logger.debug("VISIT ATOM: TerminalNode: " + term.getText + " " + column)
+        logger.trace("VISIT ATOM: TerminalNode: " + term.getText + " " + column)
         column.dataType match {
           case DataType.IntegerDataType => IntColumnClause(column)
           case DataType.LongDataType => LongColumnClause(column)

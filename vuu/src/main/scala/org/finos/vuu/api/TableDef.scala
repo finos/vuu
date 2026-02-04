@@ -231,7 +231,7 @@ class TableDef(val name: String,
   def getColumns: Array[Column] = columns
 
   def columnForName(name: String): Column = {
-    columnsByName.get(name).orNull
+    columnsByName.getOrElse(name, null)
   }
 
   def columnExists(name: String): Boolean = {
