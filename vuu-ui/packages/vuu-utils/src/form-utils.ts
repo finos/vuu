@@ -129,9 +129,9 @@ export function getTypedValue(
         } else {
           return +Time(value).asDate();
         }
-      } else if (typeof value === "number" && Time.millisToTimeString(value)) {
+      } else if (value.length > 0 && Time.isDateInMillis(value)) {
         //if value previously converted
-        return value;
+        return Number(value);
       } else if (throwIfInvalid) {
         throw Error(`value ${value} is not a valid ${type}`);
       } else {

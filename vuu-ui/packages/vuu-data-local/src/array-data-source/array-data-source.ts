@@ -342,6 +342,13 @@ export class ArrayDataSource
         >;
         if (!preserveExistingSelection) {
           this.selectedRows.clear();
+        } else if (this.selectedRows.has("*")) {
+          this.selectedRows.clear();
+          for (const key of this.index.keys()) {
+            if (key !== rowKey) {
+              this.selectedRows.add(key);
+            }
+          }
         } else {
           this.selectedRows.delete(rowKey);
         }
