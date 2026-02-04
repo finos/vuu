@@ -214,9 +214,13 @@ private case class JoinDataTableDataImpl(joinTableNames: Array[String],
           joinFieldIndex += 1
         }
 
-        val newPrimaryKeyToJoinKeys = primaryKeyToJoinKeys + (primaryKey -> newJoinKeys)
-
-        JoinDataTableDataImpl(joinTableNames, joinFields, columns, primaryKeyIndices, newPrimaryKeyToJoinKeys, logger)
+        if (joinKeys sameElements newJoinKeys) {
+          // Nothing has changed, so we can return as is.
+          this
+        } else {
+          val newPrimaryKeyToJoinKeys = primaryKeyToJoinKeys + (primaryKey -> newJoinKeys)
+          JoinDataTableDataImpl(joinTableNames, joinFields, columns, primaryKeyIndices, newPrimaryKeyToJoinKeys, logger)
+        }
     }
 
   }

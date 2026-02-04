@@ -143,7 +143,7 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       joinProvider.runOnce()
       val result = orderPrices.joinData
 
-      (result eq original) shouldBe false
+      (result eq original) shouldBe true
       result.getPrimaryKeys shouldBe ImmutableArray.of(orderId)
       result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> null)
     }
@@ -190,10 +190,10 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       joinProvider.runOnce()
       val result = orderPrices.joinData
 
-      (result eq original) shouldBe false
-      result.getPrimaryKeys shouldBe ImmutableArray.of(orderId)
       //TODO https://github.com/finos/vuu/issues/2019
-      //prices should map to null here.
+      //Below behaviour is wrong
+      (result eq original) shouldBe true
+      result.getPrimaryKeys shouldBe ImmutableArray.of(orderId)
       result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> instrumentRic)
     }
 
@@ -290,7 +290,7 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
 
       info(s"${Instant.now} Beginning inserts and updates...")
 
-      for(a <- 0 until 10_000){
+      for(a <- 0 until 100_000){
         val orderId = s"$a"
         val instrumentRic = s"ric-$a"
         val orderMap = Map("orderId" -> orderId, "ric" -> instrumentRic)
@@ -308,7 +308,7 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
 
       info(s"${Instant.now} Beginning deletion...")
 
-      for (a <- 0 until 10_000) {
+      for (a <- 0 until 100_000) {
         val orderId = s"$a"
         val instrumentRic = s"ric-$a"
         orderProvider.delete(orderId)
