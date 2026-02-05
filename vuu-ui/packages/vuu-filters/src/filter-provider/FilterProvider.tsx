@@ -17,7 +17,6 @@ import {
   EmptyFilterDescriptor,
   FilterContext,
   FilterContextFilterMenuActionHandler,
-  PromptInputProps,
   NULL_FILTER,
   NullFilterDescriptor,
   UNSAVED_FILTER,
@@ -51,14 +50,14 @@ export interface FilterProviderProps {
   children: ReactNode;
   onFiltersSaved?: (savedFilters: SavedFilterRecord) => void;
   savedFilters?: SavedFilterRecord;
-  promptInputProps?: PromptInputProps;
+  filterNameMaxLength?: number;
 }
 
 export const FilterProvider = ({
   children,
   onFiltersSaved,
   savedFilters: savedFiltersProp,
-  promptInputProps,
+  filterNameMaxLength,
 }: FilterProviderProps) => {
   const [, forceRefresh] = useState({});
   const savedFilters = useMemo<SavedFilterMap>(
@@ -119,11 +118,11 @@ export const FilterProvider = ({
               applyNewName(key, id, name);
             }
           }}
-          filterNameMaxLength={promptInputProps?.filterNameMaxLength}
+          filterNameMaxLength={filterNameMaxLength}
         />,
       );
     },
-    [applyNewName, promptInputProps?.filterNameMaxLength],
+    [applyNewName, filterNameMaxLength],
   );
 
   const promptForConfirmationOfDelete = useCallback(
@@ -289,7 +288,7 @@ export const FilterProvider = ({
         filterDescriptors: savedFilters,
         clearCurrentFilter,
         setCurrentFilter,
-        promptInputProps,
+        filterNameMaxLength,
       }}
     >
       {children}

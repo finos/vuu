@@ -43,10 +43,6 @@ export type FilterContextFilterMenuActionHandler = <
   columns?: ColumnDescriptor[],
 ) => void;
 
-export type PromptInputProps = {
-  filterNameMaxLength: number;
-};
-
 export interface FilterContextProps {
   deleteFilter: (key: string, filterId: string) => void;
   saveFilter: (key: string, name: string) => void;
@@ -57,7 +53,7 @@ export interface FilterContextProps {
     key: string,
     filter: string | FilterContainerFilter,
   ) => void;
-  promptInputProps?: PromptInputProps;
+  filterNameMaxLength?: number;
 }
 
 export const UNSAVED_FILTER = "unsaved-filter";
@@ -111,7 +107,7 @@ export function useSavedFilters(key = "GLOBAL", props?: SavedFilterHookProps) {
     filterDescriptors,
     saveFilter,
     setCurrentFilter,
-    promptInputProps,
+    filterNameMaxLength,
   } = useContext(FilterContext);
 
   const handleFilterMenuAction = useCallback(
@@ -161,6 +157,6 @@ export function useSavedFilters(key = "GLOBAL", props?: SavedFilterHookProps) {
     saveFilter: handleSaveFilter,
     clearCurrentFilter: handleClearCurrentFilter,
     setCurrentFilter: handleSetCurrentFilter,
-    promptInputProps,
+    filterNameMaxLength,
   };
 }

@@ -93,7 +93,7 @@ export const MultipleTabbedFilterContainers = () => {
   );
 
   return (
-    <FilterProvider promptInputProps={{ filterNameMaxLength: 20 }}>
+    <FilterProvider filterNameMaxLength={20}>
       <DataSourceProvider dataSource={dataSource}>
         <style>{`
         .vuuTabbedFilterContainer {
@@ -546,10 +546,7 @@ export const OrdersWithTabbedFilterContainerAndFilterProvider = () => {
 export const SingleTabbedFilterContainers = () => {
   const { VuuDataSource } = useData();
 
-  const [
-    SavedFilterPanelProps,
-    [currency],
-  ] = useMemo<
+  const [SavedFilterPanelProps, [currency]] = useMemo<
     [
       TabbedFilterContainerProps["SavedFilterPanelProps"],
       Array<ColumnDescriptor>,
