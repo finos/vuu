@@ -48,7 +48,7 @@ export const useFreezeControl = ({ dataSource }: FreezeProps) => {
     };
 
     const start = (ts: number) => {
-      ds = new VuuDataSource({ table });
+      ds = new VuuDataSource({ columns: ["vuuCreatedTimestamp"], table });
       ds.subscribe(
         {
           filterSpec: {
