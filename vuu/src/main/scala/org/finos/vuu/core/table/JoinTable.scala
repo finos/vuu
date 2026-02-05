@@ -55,7 +55,7 @@ class JoinTable(val tableDef: JoinTableDef,
     joinTableIndices.indexForColumn(column)
   }
 
-  var joinData: JoinDataTableData = JoinDataTableData(tableDef)
+  @volatile private var joinData: JoinDataTableData = JoinDataTableData(tableDef)
 
   override def getTableDef: JoinTableDef = tableDef
 
