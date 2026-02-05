@@ -38,11 +38,11 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Add a new row with no joins") {
       val (joinProvider, orders, orderProvider, prices, pricesProvider, orderPrices) = setupJoins
-      val original = orderPrices.joinData
+      val original = orderPrices.getJoinData
 
       orderProvider.tick(orderId, orderWithNoInstrument)
       joinProvider.runOnce()
-      val result = orderPrices.joinData
+      val result = orderPrices.getJoinData
 
       (result eq original) shouldBe false
       result.getPrimaryKeys shouldEqual ImmutableArray.of(orderId)
@@ -51,11 +51,11 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Add a new row with only left hand of join") {
       val (joinProvider, orders, orderProvider, prices, pricesProvider, orderPrices) = setupJoins
-      val original = orderPrices.joinData
+      val original = orderPrices.getJoinData
 
       orderProvider.tick(orderId, orderWithInstrument)
       joinProvider.runOnce()
-      val result = orderPrices.joinData
+      val result = orderPrices.getJoinData
 
       (result eq original) shouldBe false
       result.getPrimaryKeys shouldEqual ImmutableArray.of(orderId)
@@ -66,11 +66,11 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       val (joinProvider, orders, orderProvider, prices, pricesProvider, orderPrices) = setupJoins
       pricesProvider.tick(instrumentRic, instrument)
       joinProvider.runOnce()
-      val original = orderPrices.joinData
+      val original = orderPrices.getJoinData
 
       orderProvider.tick(orderId, orderWithInstrument)
       joinProvider.runOnce()
-      val result = orderPrices.joinData
+      val result = orderPrices.getJoinData
 
       (result eq original) shouldBe false
       result.getPrimaryKeys shouldEqual ImmutableArray.of(orderId)
@@ -83,13 +83,13 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       pricesProvider.tick(instrumentRic2, instrument2)
       pricesProvider.tick(instrumentRic3, instrument3)
       joinProvider.runOnce()
-      val original = orderPrices.joinData
+      val original = orderPrices.getJoinData
 
       orderProvider.tick(orderId, orderWithInstrument)
       orderProvider.tick(orderId2, orderWithInstrument2)
       orderProvider.tick(orderId3, orderWithInstrument3)
       joinProvider.runOnce()
-      val result = orderPrices.joinData
+      val result = orderPrices.getJoinData
 
       (result eq original) shouldBe false
       result.getPrimaryKeys shouldEqual ImmutableArray.from(List(orderId, orderId2, orderId3))
@@ -106,11 +106,11 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       val (joinProvider, orders, orderProvider, prices, pricesProvider, orderPrices) = setupJoins
       orderProvider.tick(orderId, orderWithNoInstrument)
       joinProvider.runOnce()
-      val original = orderPrices.joinData
+      val original = orderPrices.getJoinData
 
       orderProvider.tick(orderId, orderWithInstrument)
       joinProvider.runOnce()
-      val result = orderPrices.joinData
+      val result = orderPrices.getJoinData
 
       (result eq original) shouldBe false
       result.getPrimaryKeys shouldBe ImmutableArray.of(orderId)
@@ -122,11 +122,11 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       pricesProvider.tick(instrumentRic, instrument)
       orderProvider.tick(orderId, orderWithNoInstrument)
       joinProvider.runOnce()
-      val original = orderPrices.joinData
+      val original = orderPrices.getJoinData
 
       orderProvider.tick(orderId, orderWithInstrument)
       joinProvider.runOnce()
-      val result = orderPrices.joinData
+      val result = orderPrices.getJoinData
 
       (result eq original) shouldBe false
       result.getPrimaryKeys shouldBe ImmutableArray.of(orderId)
@@ -137,11 +137,11 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       val (joinProvider, orders, orderProvider, prices, pricesProvider, orderPrices) = setupJoins
       orderProvider.tick(orderId, orderWithInstrument)
       joinProvider.runOnce()
-      val original = orderPrices.joinData
+      val original = orderPrices.getJoinData
 
       orderProvider.tick(orderId, orderWithNoInstrument)
       joinProvider.runOnce()
-      val result = orderPrices.joinData
+      val result = orderPrices.getJoinData
 
       (result eq original) shouldBe true
       result.getPrimaryKeys shouldBe ImmutableArray.of(orderId)
@@ -152,11 +152,11 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       val (joinProvider, orders, orderProvider, prices, pricesProvider, orderPrices) = setupJoins
       orderProvider.tick(orderId, orderWithInstrument)
       joinProvider.runOnce()
-      val original = orderPrices.joinData
+      val original = orderPrices.getJoinData
 
       pricesProvider.tick(instrumentRic, instrument)
       joinProvider.runOnce()
-      val result = orderPrices.joinData
+      val result = orderPrices.getJoinData
 
       (result eq original) shouldBe false
       result.getPrimaryKeys shouldBe ImmutableArray.of(orderId)
@@ -168,11 +168,11 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       pricesProvider.tick(instrumentRic, instrument)
       orderProvider.tick(orderId, orderWithInstrument)
       joinProvider.runOnce()
-      val original = orderPrices.joinData
+      val original = orderPrices.getJoinData
 
       orderProvider.tick(orderId, order1WithInstrument2)
       joinProvider.runOnce()
-      val result = orderPrices.joinData
+      val result = orderPrices.getJoinData
 
       (result eq original) shouldBe false
       result.getPrimaryKeys shouldBe ImmutableArray.of(orderId)
@@ -184,11 +184,11 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       pricesProvider.tick(instrumentRic, instrument)
       orderProvider.tick(orderId, orderWithInstrument)
       joinProvider.runOnce()
-      val original = orderPrices.joinData
+      val original = orderPrices.getJoinData
 
       orderProvider.tick(orderId, orderWithNoInstrument)
       joinProvider.runOnce()
-      val result = orderPrices.joinData
+      val result = orderPrices.getJoinData
 
       //TODO https://github.com/finos/vuu/issues/2019
       //Below behaviour is wrong
@@ -203,11 +203,11 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
 
     Scenario("Delete when row doesn't exist returns original") {
       val (joinProvider, orders, orderProvider, prices, pricesProvider, orderPrices) = setupJoins
-      val original = orderPrices.joinData
+      val original = orderPrices.getJoinData
 
       orderProvider.delete(orderId)
       joinProvider.runOnce()
-      val result = orderPrices.joinData
+      val result = orderPrices.getJoinData
 
       (result eq original) shouldBe true
     }
@@ -216,11 +216,11 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       val (joinProvider, orders, orderProvider, prices, pricesProvider, orderPrices) = setupJoins
       orderProvider.tick(orderId, orderWithNoInstrument)
       joinProvider.runOnce()
-      val original = orderPrices.joinData
+      val original = orderPrices.getJoinData
 
       orderProvider.delete(orderId)
       joinProvider.runOnce()
-      val result = orderPrices.joinData
+      val result = orderPrices.getJoinData
 
       (result eq original) shouldBe false
       result.getPrimaryKeys shouldBe empty
@@ -231,11 +231,11 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       val (joinProvider, orders, orderProvider, prices, pricesProvider, orderPrices) = setupJoins
       orderProvider.tick(orderId, orderWithInstrument)
       joinProvider.runOnce()
-      val original = orderPrices.joinData
+      val original = orderPrices.getJoinData
 
       orderProvider.delete(orderId)
       joinProvider.runOnce()
-      val result = orderPrices.joinData
+      val result = orderPrices.getJoinData
 
       (result eq original) shouldBe false
       result.getPrimaryKeys shouldBe empty
@@ -247,11 +247,11 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       orderProvider.tick(orderId, orderWithInstrument)
       pricesProvider.tick(instrumentRic, instrument)
       joinProvider.runOnce()
-      val original = orderPrices.joinData
+      val original = orderPrices.getJoinData
 
       orderProvider.delete(orderId)
       joinProvider.runOnce()
-      val result = orderPrices.joinData
+      val result = orderPrices.getJoinData
 
       (result eq original) shouldBe false
       result.getPrimaryKeys shouldBe empty
@@ -267,11 +267,11 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       pricesProvider.tick(instrumentRic2, instrument2)
       pricesProvider.tick(instrumentRic3, instrument3)
       joinProvider.runOnce()
-      val original = orderPrices.joinData
+      val original = orderPrices.getJoinData
 
       orderProvider.delete(orderId2)
       joinProvider.runOnce()
-      val result = orderPrices.joinData
+      val result = orderPrices.getJoinData
 
       (result eq original) shouldBe false
       result.getPrimaryKeys shouldEqual ImmutableArray.from(List(orderId, orderId3))

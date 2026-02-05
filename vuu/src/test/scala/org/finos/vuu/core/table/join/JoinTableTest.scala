@@ -304,7 +304,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       joinProvider.runOnce()
 
       println("Ticking VOD.L after delete.")
-      val joinDataKeys = orderPrices.asInstanceOf[JoinTable].joinData.getKeyValuesByTable("NYC-0001")
+      val joinDataKeys = orderPrices.asInstanceOf[JoinTable].getJoinData.getKeyValuesByTable("NYC-0001")
 
       joinDataKeys shouldBe null
       orderPricesViewport.getKeys.toArray().iterator.contains("NYC-0001") should equal(true)
