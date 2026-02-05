@@ -12,6 +12,7 @@ import { findMatchingFilter } from "../filter-utils";
 export interface FilterNamePromptHookProps {
   filterName?: string;
   onConfirm: (filterName: string) => void;
+  filterNameMaxLength?: number;
 }
 
 const isValidName = (name: unknown): name is string =>

@@ -18,6 +18,7 @@ import { useWindow } from "@salt-ds/window";
 import filterNamePromptCss from "./FilterNamePrompt.css";
 
 const DUPLICATE_NAME_MESSAGE = "A filter with this name already exists";
+const DEFAULT_FILTER_NAME_MAX_LENGTH = 25;
 
 export interface FilterNamePromptProps
   extends FilterNamePromptHookProps,
@@ -31,6 +32,7 @@ export const FilterNamePrompt = ({
   onConfirm: onConfirmProp,
   open = true,
   title,
+  filterNameMaxLength = DEFAULT_FILTER_NAME_MAX_LENGTH,
   ...htmlAttributes
 }: FilterNamePromptProps) => {
   const targetWindow = useWindow();
@@ -83,6 +85,7 @@ export const FilterNamePrompt = ({
           onCommit={onCommit}
           defaultValue={value}
           placeholder="Please enter"
+          inputProps={{ maxLength: filterNameMaxLength }}
         />
         {formFieldHelperText ? (
           <FormFieldHelperText>{formFieldHelperText}</FormFieldHelperText>

@@ -40,7 +40,10 @@ export const SavedFilterPanelOneFilter = () => {
     [],
   );
   return (
-    <FilterProvider savedFilters={filterDescriptors}>
+    <FilterProvider
+      savedFilters={filterDescriptors}
+      promptInputProps={{ filterNameMaxLength: 20 }}
+    >
       <SavedFilterPanelTemplate />
     </FilterProvider>
   );
