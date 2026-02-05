@@ -18,7 +18,7 @@ export const useFilterPanel = ({
   FilterContainerProps,
   "filter" | "filterProviderKey" | "onFilterApplied" | "onFilterCleared"
 >) => {
-  const { saveFilter, currentFilter, setCurrentFilter, promptInputProps } =
+  const { saveFilter, currentFilter, setCurrentFilter, filterNameMaxLength } =
     useSavedFilters(filterProviderKey);
   const [saveFilterPrompt, setSaveFilterPrompt] = useState<ReactElement | null>(
     null,
@@ -50,10 +50,10 @@ export const useFilterPanel = ({
         onClose={handleClose}
         onConfirm={handleConfirm}
         title="Save Filter"
-        filterNameMaxLength={promptInputProps?.filterNameMaxLength}
+        filterNameMaxLength={filterNameMaxLength}
       />,
     );
-  }, [handleConfirm, promptInputProps?.filterNameMaxLength]);
+  }, [handleConfirm, filterNameMaxLength]);
 
   const handleFilterApplied = useCallback<
     FilterAppliedHandler<FilterContainerFilter>
