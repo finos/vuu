@@ -93,7 +93,7 @@ export const MultipleTabbedFilterContainers = () => {
   );
 
   return (
-    <FilterProvider promptInputProps={{ filterNamePrompt: { maxLength: 25 } }}>
+    <FilterProvider promptInputProps={{ filterNameMaxLength: 20 }}>
       <DataSourceProvider dataSource={dataSource}>
         <style>{`
         .vuuTabbedFilterContainer {
@@ -540,5 +540,83 @@ export const OrdersWithTabbedFilterContainerAndFilterProvider = () => {
         </DemoTableContainer>
       </FilterProvider>
     </>
+  );
+};
+
+export const SingleTabbedFilterContainers = () => {
+  const { VuuDataSource } = useData();
+
+  const [
+    SavedFilterPanelProps,
+    [currency],
+  ] = useMemo<
+    [
+      TabbedFilterContainerProps["SavedFilterPanelProps"],
+      Array<ColumnDescriptor>,
+    ]
+  >(() => {
+    const columns: ColumnDescriptor[] = [
+      { name: "currency", serverDataType: "string" },
+    ];
+    return [
+      {
+        availableColumns: columns,
+        filterPillPermissions: {
+          allowClose: false,
+          allowEdit: false,
+        },
+      },
+      columns,
+    ];
+  }, []);
+
+  const table = useMemo<TableSchemaTable>(
+    () => ({ module: "SIMUL", table: "instruments" }),
+    [],
+  );
+
+  const dataSource = useMemo(
+    () =>
+      new VuuDataSource({
+        columns: schema.columns.map(toColumnName),
+        table: schema.table,
+      }),
+    [VuuDataSource],
+  );
+
+  return (
+    <FilterProvider>
+      <DataSourceProvider dataSource={dataSource}>
+        <style>{`
+        .vuuTabbedFilterContainer {
+        width: 300px;
+        }
+        `}</style>
+        <div
+          style={{
+            display: "flex",
+            height: "100vh",
+            padding: 20,
+            width: "100vw",
+          }}
+        >
+          <TabbedFilterContainer
+            data-testid="tc-1"
+            filterProviderKey="test1"
+            SavedFilterPanelProps={SavedFilterPanelProps}
+          >
+            <FormField>
+              <FormFieldLabel>Currency</FormFieldLabel>
+              <FilterContainerColumnFilter
+                data-testid="ccy-1"
+                TypeaheadProps={typeaheadPropsZero}
+                column={currency}
+                table={table}
+              />
+            </FormField>
+          </TabbedFilterContainer>
+        </div>
+      </DataSourceProvider>
+    </FilterProvider>
   );
 };

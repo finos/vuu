@@ -42,7 +42,7 @@ export const SavedFilterPanelOneFilter = () => {
   return (
     <FilterProvider
       savedFilters={filterDescriptors}
-      promptInputProps={{ filterNamePrompt: { maxLength: 25 } }}
+      promptInputProps={{ filterNameMaxLength: 20 }}
     >
       <SavedFilterPanelTemplate />
     </FilterProvider>

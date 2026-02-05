@@ -6,7 +6,6 @@ import {
 import { FilterAction } from "../filter-pill/FilterMenu";
 import { createContext, useCallback, useContext } from "react";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { InputProps } from "@salt-ds/core";
 
 export const filterDescriptorHasFilter = (
   f: FilterContainerFilterDescriptor,
@@ -45,7 +44,7 @@ export type FilterContextFilterMenuActionHandler = <
 ) => void;
 
 export type PromptInputProps = {
-  filterNamePrompt: InputProps["inputProps"];
+  filterNameMaxLength: number;
 };
 
 export interface FilterContextProps {

@@ -50,10 +50,10 @@ export const useFilterPanel = ({
         onClose={handleClose}
         onConfirm={handleConfirm}
         title="Save Filter"
-        inputProps={promptInputProps?.filterNamePrompt}
+        filterNameMaxLength={promptInputProps?.filterNameMaxLength}
       />,
     );
-  }, [handleConfirm, promptInputProps?.filterNamePrompt]);
+  }, [handleConfirm, promptInputProps?.filterNameMaxLength]);
 
   const handleFilterApplied = useCallback<
     FilterAppliedHandler<FilterContainerFilter>

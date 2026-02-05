@@ -119,11 +119,11 @@ export const FilterProvider = ({
               applyNewName(key, id, name);
             }
           }}
-          inputProps={promptInputProps?.filterNamePrompt}
+          filterNameMaxLength={promptInputProps?.filterNameMaxLength}
         />,
       );
     },
-    [applyNewName, promptInputProps?.filterNamePrompt],
+    [applyNewName, promptInputProps?.filterNameMaxLength],
   );
 
   const promptForConfirmationOfDelete = useCallback(
