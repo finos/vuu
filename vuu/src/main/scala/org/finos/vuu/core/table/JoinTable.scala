@@ -58,7 +58,7 @@ class JoinTable(val tableDef: JoinTableDef,
   @volatile private var joinData: JoinDataTableData = JoinDataTableData(tableDef)
 
   def getJoinData: JoinDataTableData = joinData
-  
+
   override def getTableDef: JoinTableDef = tableDef
 
   def notifyListeners(rowKey: String, isDelete: Boolean = false): Unit = {
@@ -83,7 +83,13 @@ class JoinTable(val tableDef: JoinTableDef,
 
     logger.trace(s"$name processing row update: $rowKey $rowUpdate")
 
-    joinData = joinData.processUpdate(rowKey, rowUpdate, this)
+    val currentData = joinData
+    val newData = currentData.processUpdate(rowKey, rowUpdate, this)
+
+    //We can skip the volatile write for no-op updates
+    if (newData ne currentData) {
+      joinData = newData
+    }
 
     sendToJoinSink(rowUpdate)
 
