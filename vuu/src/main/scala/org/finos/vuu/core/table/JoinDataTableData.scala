@@ -83,20 +83,13 @@ private case class JoinDataTableDataImpl(joinTableNames: Array[String],
   }
 
   override def processDelete(primaryKey: String): JoinDataTableData = {
-    primaryKeyToJoinKeys.getOrElse(primaryKey, null) match {
-      case null => {
-        logger.trace(s"Got a process delete message for key $primaryKey that doesn't exist")
-        this
-      }
-      case joinKeys: Array[String] => {
-        logger.trace(s"processing rowKey delete, key = $primaryKey")
-        val newPrimaryKeyToJoinKeys = primaryKeyToJoinKeys.removed(primaryKey)
-        JoinDataTableDataImpl(joinTableNames, joinFields, columns, primaryKeyIndices, newPrimaryKeyToJoinKeys, logger)
-      } 
-    }
+    logger.trace(s"Processing delete for key $primaryKey")
+    val newPrimaryKeyToJoinKeys = primaryKeyToJoinKeys - primaryKey
+    JoinDataTableDataImpl(joinTableNames, joinFields, columns, primaryKeyIndices, newPrimaryKeyToJoinKeys, logger)
   }
 
   override def processUpdate(primaryKey: String, rowUpdate: RowData, joinTable: JoinTable): JoinDataTableData = {
+    logger.trace(s"Processing update with data $rowUpdate")
 
     val updateByKeyIndex = rowUpdateToArray(rowUpdate)
     assert(joinFields.length == updateByKeyIndex.length)

@@ -209,7 +209,7 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       joinProvider.runOnce()
       val result = orderPrices.getJoinData
 
-      (result eq original) shouldBe true
+      result shouldEqual original
     }
 
     Scenario("Delete row with no joins") {
@@ -222,7 +222,7 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       joinProvider.runOnce()
       val result = orderPrices.getJoinData
 
-      (result eq original) shouldBe false
+      result should not equal original
       result.getPrimaryKeys shouldBe empty
       result.getKeyValuesByTable(orderId) shouldEqual null
     }
@@ -237,7 +237,7 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       joinProvider.runOnce()
       val result = orderPrices.getJoinData
 
-      (result eq original) shouldBe false
+      result should not equal original
       result.getPrimaryKeys shouldBe empty
       result.getKeyValuesByTable(orderId) shouldEqual null
     }
@@ -253,7 +253,7 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       joinProvider.runOnce()
       val result = orderPrices.getJoinData
 
-      (result eq original) shouldBe false
+      result should not equal original
       result.getPrimaryKeys shouldBe empty
       result.getKeyValuesByTable(orderId) shouldEqual null
     }
@@ -273,7 +273,7 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       joinProvider.runOnce()
       val result = orderPrices.getJoinData
 
-      (result eq original) shouldBe false
+      result should not equal original
       result.getPrimaryKeys shouldEqual ImmutableArray.from(List(orderId, orderId3))
       result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> instrumentRic)
       result.getKeyValuesByTable(orderId2) shouldEqual null
