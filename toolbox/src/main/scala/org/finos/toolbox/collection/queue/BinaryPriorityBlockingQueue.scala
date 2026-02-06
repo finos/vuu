@@ -26,25 +26,24 @@ object BinaryPriorityBlockingQueue {
 
 private class BinaryPriorityBlockingQueueImpl[T](capacity: Int) extends BinaryPriorityBlockingQueue[T] with StrictLogging {
 
-  private final val overflowQueue: BlockingQueue[T] = LinkedBlockingQueue[T]()
-  private final val mainQueue: BlockingQueue[T] = ArrayBlockingQueue[T](capacity)
+  private final val overflowQueue = new util.ArrayDeque[T]()
+  private final val mainQueue = new util.ArrayDeque[T](capacity)
   private final val running = AtomicBoolean(true)
   private final val lock = ReentrantLock()
   private final val notEmpty = lock.newCondition()
   private final val notFull = lock.newCondition()
 
   override def put(e: T): Unit = {
-    if (!running.get()) throw IllegalStateException("Queue is shut down")
     lock.lockInterruptibly()
     try {
-      while (running.get() && mainQueue.remainingCapacity() == 0) {
+      if (!running.get()) throw new IllegalStateException("Queue is shut down")
+      while (running.get() && mainQueue.size() >= capacity) {
         logger.debug(s"Waiting for space to insert item $e")
         notFull.await()
       }
-      if (mainQueue.offer(e)) {
+      if (running.get()) {
+        mainQueue.addLast(e)
         notEmpty.signal()
-      } else if (running.get()) {
-        logger.error(s"Failed to put item $e")
       }
     } finally {
       lock.unlock()
@@ -52,21 +51,16 @@ private class BinaryPriorityBlockingQueueImpl[T](capacity: Int) extends BinaryPr
   }
 
   override def putHighPriority(e: T): Unit = {
-    if (!running.get()) throw IllegalStateException("Queue is shut down")
     lock.lock()
     try {
-      if (mainQueue.remainingCapacity() == 0) {
-        val displaced = mainQueue.poll()
-        if (displaced != null) {
-          logger.trace(s"Main queue is full, moving item $displaced to overflow")
-          overflowQueue.put(displaced)
-        }
+      if (!running.get()) throw IllegalStateException("Queue is shut down")
+      if (mainQueue.size() >= capacity) {
+        val displaced = mainQueue.removeFirst()
+        overflowQueue.addLast(displaced)
+        logger.trace(s"Main full, moved $displaced to overflow")
       }
-      if (mainQueue.offer(e)) {
-        notEmpty.signal()
-      } else {
-        logger.error(s"Failed to put high priority item $e")
-      }
+      mainQueue.addLast(e)
+      notEmpty.signal()
     } finally {
       lock.unlock()
     }
@@ -83,13 +77,18 @@ private class BinaryPriorityBlockingQueueImpl[T](capacity: Int) extends BinaryPr
         }
         nanos = notEmpty.awaitNanos(nanos)
       }
-      val overflowItem = overflowQueue.poll()
-      if (overflowItem != null) {
-        Option(overflowItem)
+      if (running.get()) {
+        if (!overflowQueue.isEmpty) {
+          Option(overflowQueue.removeFirst())
+        } else if (!mainQueue.isEmpty) {
+          val item = mainQueue.removeFirst()
+          notFull.signal()
+          Option(item)
+        } else {
+          None
+        }
       } else {
-        val mainItem = mainQueue.poll()
-        notFull.signal()
-        Option(mainItem)
+        None
       }
     } finally {
       lock.unlock()
@@ -99,8 +98,23 @@ private class BinaryPriorityBlockingQueueImpl[T](capacity: Int) extends BinaryPr
   override def drainTo(c: util.Collection[_ >: T]): Int = {
     lock.lock()
     try {
-      val count = overflowQueue.drainTo(c) + mainQueue.drainTo(c)
-      notFull.signal()
+      var count = 0
+
+      while (!overflowQueue.isEmpty) {
+        c.add(overflowQueue.removeFirst())
+        count += 1
+      }
+
+      val originalMainSize = mainQueue.size()
+      while (!mainQueue.isEmpty) {
+        c.add(mainQueue.removeFirst())
+        count += 1
+      }
+
+      if (mainQueue.size() < originalMainSize) {
+        notFull.signalAll()
+      }
+
       logger.trace(s"Drained $count items")
       count
     } finally {
@@ -111,14 +125,25 @@ private class BinaryPriorityBlockingQueueImpl[T](capacity: Int) extends BinaryPr
   override def drainTo(c: util.Collection[_ >: T], maxElements: Int): Int = {
     lock.lock()
     try {
-      val overflowCount = overflowQueue.drainTo(c, maxElements)
-      val remaining = maxElements - overflowCount
-      val normalCount = if (remaining > 0) mainQueue.drainTo(c, remaining) else 0
-      if (normalCount > 0) {
-        notFull.signal()
+      var count = 0
+
+      while (!overflowQueue.isEmpty && count < maxElements) {
+        c.add(overflowQueue.removeFirst())
+        count += 1
       }
-      logger.trace(s"Drained $overflowCount overflow items and $normalCount normal items")
-      overflowCount + normalCount
+
+      val originalMainSize = mainQueue.size()
+      while (!mainQueue.isEmpty && count < maxElements) {
+        c.add(mainQueue.removeFirst())
+        count += 1
+      }
+
+      if (mainQueue.size() < originalMainSize) {
+        notFull.signalAll()
+      }
+
+      logger.trace(s"Drained $count items")
+      count
     } finally {
       lock.unlock()
     }
