@@ -43,6 +43,7 @@ import {
   toggleOrApplySort,
   updateColumn,
   useLayoutEffectSkipFirst,
+  useStableReference,
 } from "@vuu-ui/vuu-utils";
 import {
   FocusEvent,
@@ -236,6 +237,8 @@ export const useTable = ({
     tableAttributes,
     tableConfig,
   } = useTableModel({ config, dataSource, selectionModel, availableWidth });
+
+  const columnsRef = useStableReference(columns);
 
   // this is realy here to capture changes to available Width - typically when we get
   // rowcount so add allowance for vertical scrollbar, reducing available width
@@ -568,7 +571,9 @@ export const useTable = ({
 
   const onResizeColumn: TableColumnResizeHandler = useCallback(
     (phase, columnName, width) => {
-      const column = columns.find((column) => column.name === columnName);
+      const column = columnsRef.current.find(
+        (column) => column.name === columnName,
+      );
       if (column) {
         if (phase === "resize") {
           resizeCells.current?.forEach((cell) => {
@@ -615,10 +620,11 @@ export const useTable = ({
       }
     },
     [
-      columns,
+      columnsRef,
       dispatchTableModelAction,
       onConfigChange,
       tableConfig,
+      columns,
       containerRef,
     ],
   );
