@@ -43,7 +43,7 @@ private class BinaryPriorityBlockingQueueImpl[T](capacity: Int) extends BinaryPr
       }
       if (mainQueue.offer(e)) {
         notEmpty.signal()
-      } else {
+      } else if (running.get()) {
         logger.error(s"Failed to put item $e")
       }
     } finally {
