@@ -1,5 +1,7 @@
 package org.finos.toolbox.collection.queue
 
+import com.typesafe.scalalogging.StrictLogging
+
 import java.util
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.ReentrantLock
@@ -22,7 +24,7 @@ object BinaryPriorityBlockingQueue {
 
 }
 
-private class BinaryPriorityBlockingQueueImpl[T](capacity: Int) extends BinaryPriorityBlockingQueue[T] {
+private class BinaryPriorityBlockingQueueImpl[T](capacity: Int) extends BinaryPriorityBlockingQueue[T] with StrictLogging {
 
   private final val overflowQueue: BlockingQueue[T] = LinkedBlockingQueue[T]()
   private final val mainQueue: BlockingQueue[T] = ArrayBlockingQueue[T](capacity)
@@ -33,13 +35,17 @@ private class BinaryPriorityBlockingQueueImpl[T](capacity: Int) extends BinaryPr
 
   override def put(e: T): Unit = {
     if (!running.get()) throw IllegalStateException("Queue is shut down")
-    lock.lock()
+    lock.lockInterruptibly()
     try {
-      while (mainQueue.remainingCapacity() == 0) {
+      while (running.get() && mainQueue.remainingCapacity() == 0) {
+        logger.debug(s"Waiting for space to insert item $e")
         notFull.await()
       }
-      mainQueue.offer(e)
-      notEmpty.signal()
+      if (mainQueue.offer(e)) {
+        notEmpty.signal()
+      } else {
+        logger.error(s"Failed to put item $e")
+      }
     } finally {
       lock.unlock()
     }
@@ -52,11 +58,15 @@ private class BinaryPriorityBlockingQueueImpl[T](capacity: Int) extends BinaryPr
       if (mainQueue.remainingCapacity() == 0) {
         val displaced = mainQueue.poll()
         if (displaced != null) {
+          logger.trace(s"Main queue is full, moving item $displaced to overflow")
           overflowQueue.put(displaced)
         }
       }
-      mainQueue.offer(e)
-      notEmpty.signal()
+      if (mainQueue.offer(e)) {
+        notEmpty.signal()
+      } else {
+        logger.error(s"Failed to put high priority item $e")
+      }
     } finally {
       lock.unlock()
     }
@@ -67,7 +77,10 @@ private class BinaryPriorityBlockingQueueImpl[T](capacity: Int) extends BinaryPr
     lock.lockInterruptibly()
     try {
       while (running.get() && overflowQueue.isEmpty && mainQueue.isEmpty) {
-        if (nanos <= 0L) return None
+        if (nanos <= 0L) {
+          logger.trace(s"No items available after ${timeout.toMillis}ms")
+          return None
+        }
         nanos = notEmpty.awaitNanos(nanos)
       }
       val overflowItem = overflowQueue.poll()
@@ -88,6 +101,7 @@ private class BinaryPriorityBlockingQueueImpl[T](capacity: Int) extends BinaryPr
     try {
       val count = overflowQueue.drainTo(c) + mainQueue.drainTo(c)
       notFull.signal()
+      logger.trace(s"Drained $count items")
       count
     } finally {
       lock.unlock()
@@ -97,13 +111,14 @@ private class BinaryPriorityBlockingQueueImpl[T](capacity: Int) extends BinaryPr
   override def drainTo(c: util.Collection[_ >: T], maxElements: Int): Int = {
     lock.lock()
     try {
-      val priorityCount = overflowQueue.drainTo(c, maxElements)
-      val remaining = maxElements - priorityCount
+      val overflowCount = overflowQueue.drainTo(c, maxElements)
+      val remaining = maxElements - overflowCount
       val normalCount = if (remaining > 0) mainQueue.drainTo(c, remaining) else 0
       if (normalCount > 0) {
         notFull.signal()
       }
-      priorityCount + normalCount
+      logger.trace(s"Drained $overflowCount overflow items and $normalCount normal items")
+      overflowCount + normalCount
     } finally {
       lock.unlock()
     }
@@ -112,17 +127,11 @@ private class BinaryPriorityBlockingQueueImpl[T](capacity: Int) extends BinaryPr
   override def shutdown(): Unit = {
     lock.lock()
     try {
+      logger.trace("Shutting down")
       running.set(false)
       notEmpty.signalAll()
-    } finally {
-      lock.unlock()
-    }
-  }
-
-  private def signal(): Unit = {
-    lock.lock()
-    try {
-      notEmpty.signal()
+      notFull.signalAll()
+      logger.debug("Shut down")
     } finally {
       lock.unlock()
     }
