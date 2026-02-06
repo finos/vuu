@@ -44,9 +44,9 @@ export const ColumnResizer = ({
 
       const { current: position } = positionRef;
 
-      const x = Math.round(e.clientX);
-      const moveBy = x - position.now;
-      const distanceMoved = position.now - position.start;
+      const x = e.clientX;
+      const moveBy = Math.round(x - position.now);
+      const distanceMoved = Math.round(x - position.start);
 
       positionRef.current.now = x;
 
@@ -64,6 +64,7 @@ export const ColumnResizer = ({
 
       const { current: position } = positionRef;
       const distanceMoved = position.now - position.start;
+
       onDragEnd(e, distanceMoved);
     },
     [onDragEnd, onPointerMove],
@@ -73,7 +74,7 @@ export const ColumnResizer = ({
     (e: MouseEvent) => {
       const { current: position } = positionRef;
       onDragStart(e);
-      position.now = position.start = Math.round(e.clientX);
+      position.now = position.start = e.clientX;
       window.addEventListener("pointerup", onPointerUp);
       window.addEventListener("pointermove", onPointerMove);
 
@@ -98,5 +99,5 @@ export const ColumnResizer = ({
     [handlePointerDown],
   );
 
-  return <div className={baseClass} ref={setRef} />;
+  return <div className={baseClass} ref={setRef} role="separator" />;
 };

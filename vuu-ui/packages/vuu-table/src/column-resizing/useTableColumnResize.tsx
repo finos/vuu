@@ -35,9 +35,6 @@ export const useTableColumnResize = ({
       const { width: measuredWidth } = rootRef.current.getBoundingClientRect();
       width.start = width.now = Math.round(measuredWidth);
       setResizing(true);
-      // console.log(
-      //   `[useTableColumnResize] handleResizeStart width ${measuredWidth}`,
-      // );
       onResize?.("begin", name);
     }
   }, [name, onResize, rootRef]);
@@ -49,9 +46,6 @@ export const useTableColumnResize = ({
           const { current: width } = widthRef;
           const newWidth = width.start + totalDistanceMoved;
           if (newWidth !== width.now && newWidth > 0) {
-            // console.log(
-            //   `[useTableColumnResize] handleResize width ${newWidth}`,
-            // );
             onResize("resize", name, newWidth);
             width.now = newWidth;
           }
@@ -64,9 +58,6 @@ export const useTableColumnResize = ({
   const handleResizeEnd = useCallback(() => {
     if (onResize) {
       const { current: width } = widthRef;
-      // console.log(
-      //   `[handleResizeEnd] handleResizeStart final width ${JSON.stringify(width)}`,
-      // );
       onResize("end", name, width.now);
       setTimeout(() => {
         // clickHandler in HeaderCell checks isResizing before firing. Because onMouseUp

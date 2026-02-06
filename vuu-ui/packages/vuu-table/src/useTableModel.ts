@@ -426,6 +426,7 @@ function moveColumn(
 }
 
 function hideColumns(state: InternalTableModel, { columns }: ColumnActionHide) {
+  console.log(`[useTableModel] hideColumns ${JSON.stringify(columns)}`);
   if (columns.some((col) => col.hidden !== true)) {
     return columns.reduce<InternalTableModel>((s, c) => {
       if (c.hidden !== true) {
