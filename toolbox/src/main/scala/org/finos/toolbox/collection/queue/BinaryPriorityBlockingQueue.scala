@@ -26,7 +26,7 @@ object BinaryPriorityBlockingQueue {
 
 private class BinaryPriorityBlockingQueueImpl[T](capacity: Int) extends BinaryPriorityBlockingQueue[T] with StrictLogging {
 
-  private final val overflowQueue = new util.ArrayDeque[T]()
+  private final val overflowQueue = new util.LinkedList[T]()
   private final val mainQueue = new util.ArrayDeque[T](capacity)
   private final val running = AtomicBoolean(true)
   private final val lock = ReentrantLock()
