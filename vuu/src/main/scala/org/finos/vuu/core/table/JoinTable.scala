@@ -55,7 +55,9 @@ class JoinTable(val tableDef: JoinTableDef,
     joinTableIndices.indexForColumn(column)
   }
 
-  var joinData: JoinDataTableData = JoinDataTableData(tableDef)
+  @volatile private var joinData: JoinDataTableData = JoinDataTableData(tableDef)
+
+  def getJoinData: JoinDataTableData = joinData
 
   override def getTableDef: JoinTableDef = tableDef
 
@@ -81,7 +83,13 @@ class JoinTable(val tableDef: JoinTableDef,
 
     logger.trace(s"$name processing row update: $rowKey $rowUpdate")
 
-    joinData = joinData.processUpdate(rowKey, rowUpdate, this)
+    val currentData = joinData
+    val newData = currentData.processUpdate(rowKey, rowUpdate, this)
+
+    //We can skip the volatile write for no-op updates
+    if (newData ne currentData) {
+      joinData = newData
+    }
 
     sendToJoinSink(rowUpdate)
 
@@ -131,28 +139,10 @@ class JoinTable(val tableDef: JoinTableDef,
 
   lazy val viewPortColumns: ViewPortColumns = ViewPortColumnCreator.create(this, this.tableDef.getColumns.map(_.name).toList)
 
-  private def keyExistsInLeftMostSourceTable(key: String): Boolean = {
-    val keysByTable = joinData.getKeyValuesByTable(key)
-    if (keysByTable == null) {
-      false
-    } else {
-      val leftTable = this.tableDef.baseTable.name
-      keysByTable.getOrElse(leftTable, null) match {
-        case null =>
-          false
-        case key: String =>
-          sourceTables(leftTable).pullRow(key) match {
-            case EmptyRowData => false
-            case x: RowWithData => true
-          }
-      }
-    }
-  }
-
   override def pullRow(key: String, viewPortColumns: ViewPortColumns): RowData = {
     val keysByTable = joinData.getKeyValuesByTable(key)
 
-    if (keysByTable == null || !keyExistsInLeftMostSourceTable(key))
+    if (keysByTable == null || !keyExistsInLeftMostSourceTable(key, keysByTable))
       EmptyRowData
     else {
       val columnsByTable: Map[String, List[JoinColumn]] = viewPortColumns.getJoinColumnsByTable
@@ -183,6 +173,19 @@ class JoinTable(val tableDef: JoinTableDef,
       } else {
         RowWithData(key, foldedMap)
       }
+    }
+  }
+
+  private def keyExistsInLeftMostSourceTable(key: String, keysByTable: Map[String, String]): Boolean = {
+    val leftTable = this.tableDef.baseTable.name
+    keysByTable.getOrElse(leftTable, null) match {
+      case null =>
+        false
+      case key: String =>
+        sourceTables(leftTable).pullRow(key) match {
+          case EmptyRowData => false
+          case x: RowWithData => true
+        }
     }
   }
 
@@ -275,7 +278,7 @@ class JoinTable(val tableDef: JoinTableDef,
 
   override def primaryKeys: TablePrimaryKeys = InMemTablePrimaryKeys(joinData.getPrimaryKeys)
 
-  def getFKForPK(pk: String): Map[String, String] = {
+  private def getFKForPK(pk: String): Map[String, String] = {
     joinData.getKeyValuesByTable(pk)
   }
 
