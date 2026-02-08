@@ -79,7 +79,19 @@ class HashMapIndexedStringField(val column: Column) extends StringIndexedField w
 
   override def replace(oldIndexKey: String, newIndexKey: String, rowKey: String): Unit = {
     logger.trace(s"Moving value $rowKey in ${column.name} index")
-    //TODO
+    indexMap.computeIfPresent(oldIndexKey, (_, value) => {
+      if (value.length > 1) {
+        value.-(rowKey)
+      } else {
+        null
+      }
+    })
+    indexMap.compute(newIndexKey, (_, value) =>  {
+      value match {
+        case null => ImmutableArraySet.of(rowKey)
+        case array: ImmutableArraySet[String] => array.+(rowKey)
+      }
+    })
   }
   
   override def find(indexKey: String): ImmutableArray[String] = {
@@ -118,7 +130,19 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
 
   override def replace(oldIndexKey: TYPE, newIndexKey: TYPE, rowKey: String): Unit = {
     logger.trace(s"Moving value $rowKey in ${column.name} index")
-    //TODO
+    skipList.computeIfPresent(oldIndexKey, (_, value) => {
+      if (value.length > 1) {
+        value.-(rowKey)
+      } else {
+        null
+      }
+    })
+    skipList.compute(newIndexKey, (_, value) =>  {
+      value match {
+        case null => ImmutableArraySet.of(rowKey)
+        case array: ImmutableArraySet[String] => array.+(rowKey)
+      }
+    })
   }
   
   override def insert(indexKey: TYPE, rowKey: String): Unit = {
