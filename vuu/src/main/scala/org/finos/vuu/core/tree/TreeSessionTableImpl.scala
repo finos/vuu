@@ -121,6 +121,8 @@ class TreeSessionTableImpl(val source: RowSource, val session: ClientSessionId, 
     })
   }
 
+  lazy val viewPortColumns: ViewPortColumns = ViewPortColumnCreator.create(this)
+  
   override def pullRow(key: String): RowData = {
     pullRow(key, this.viewPortColumns)
   }

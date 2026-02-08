@@ -38,6 +38,14 @@ object ImmutableArraySet {
     }
   }
 
+  def from[T <: Object](set: Set[T])(implicit c: ClassTag[T]): ImmutableArraySet[T] = {
+    if (set.isEmpty) {
+      empty()
+    } else {
+      VectorImmutableArraySet.from(set)
+    }
+  }
+  
   def empty[T <: Object](implicit c: ClassTag[T]): ImmutableArraySet[T] = {
     VectorImmutableArraySet.empty()
   }

@@ -1,21 +1,22 @@
 package org.finos.vuu.core.index
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.toolbox.collection.array.ImmutableArray
+import org.finos.toolbox.collection.array.{ImmutableArray, VectorImmutableArray}
 import org.finos.toolbox.collection.set.ImmutableArraySet
 import org.finos.vuu.core.table.Column
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 
 import java.util.concurrent.{ConcurrentHashMap, ConcurrentNavigableMap, ConcurrentSkipListMap}
-import scala.collection.mutable
 
 trait IndexedField[TYPE] {
 
   protected val empty: ImmutableArray[String] = ImmutableArray.empty
 
-  def insert(indexedValue: TYPE, rowKeys: String): Unit
+  def insert(indexedValue: TYPE, rowKey: String): Unit
 
-  def remove(indexedValue: TYPE, rowKeys: String): Unit
+  def replace(oldIndexedValue: TYPE, newIndexedValue: TYPE, rowKey: String): Unit
+  
+  def remove(indexedValue: TYPE, rowKey: String): Unit
 
   def column: Column
 
@@ -56,7 +57,7 @@ class HashMapIndexedStringField(val column: Column) extends StringIndexedField w
   private final val indexMap = new ConcurrentHashMap[String, ImmutableArraySet[String]]()
 
   override def remove(indexKey: String, rowKey: String): Unit = {
-    logger.trace(s"Remove Index: ${column.name}")
+    logger.trace(s"Removing value $rowKey from ${column.name} index")
     indexMap.computeIfPresent(indexKey, (_, value) => {
       if (value.length > 1) {
         value.-(rowKey)
@@ -67,7 +68,7 @@ class HashMapIndexedStringField(val column: Column) extends StringIndexedField w
   }
 
   override def insert(indexKey: String, rowKey: String): Unit = {
-    logger.trace(s"Update Index: ${column.name}")
+    logger.trace(s"Inserting value $rowKey into ${column.name} index")
     indexMap.compute(indexKey, (_, value) =>  {
       value match {
         case null => ImmutableArraySet.of(rowKey)
@@ -76,6 +77,11 @@ class HashMapIndexedStringField(val column: Column) extends StringIndexedField w
     })
   }
 
+  override def replace(oldIndexKey: String, newIndexKey: String, rowKey: String): Unit = {
+    logger.trace(s"Moving value $rowKey in ${column.name} index")
+    //TODO
+  }
+  
   override def find(indexKey: String): ImmutableArray[String] = {
     logger.debug(s"Hit Index: ${column.name} for key $indexKey")
     val result = indexMap.get(indexKey)
@@ -100,7 +106,7 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
   private final val skipList = new ConcurrentSkipListMap[TYPE, ImmutableArraySet[String]]()
 
   override def remove(indexKey: TYPE, rowKey: String): Unit = {
-    logger.trace(s"Remove Index: ${column.name}")
+    logger.trace(s"Removing value $rowKey from ${column.name} index")
     skipList.computeIfPresent(indexKey, (_, value) => {
       if (value.length > 1) {
         value.-(rowKey)
@@ -110,8 +116,13 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
     })
   }
 
+  override def replace(oldIndexKey: TYPE, newIndexKey: TYPE, rowKey: String): Unit = {
+    logger.trace(s"Moving value $rowKey in ${column.name} index")
+    //TODO
+  }
+  
   override def insert(indexKey: TYPE, rowKey: String): Unit = {
-    logger.trace(s"Update Index: ${column.name}")
+    logger.trace(s"Inserting value $rowKey into ${column.name} index")
     skipList.compute(indexKey, (_, value) =>  {
       value match {
         case null => ImmutableArraySet.of(rowKey)
@@ -153,14 +164,13 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
       empty
     } else if (results.size() == 1) {
       results.firstEntry().getValue.toImmutableArray
-    } else {
-      val uniqueValues = mutable.HashSet.empty[String]
+    } else {       
+      val vectorBuilder = Vector.newBuilder[String]
       val iterator = results.values().iterator()
       while (iterator.hasNext) {
-        val set = iterator.next()
-        uniqueValues.addAll(set.iterator)
+        vectorBuilder.addAll(iterator.next())
       }
-      ImmutableArray.from(uniqueValues)
+      VectorImmutableArray.from(vectorBuilder.result())
     }
   }
   
