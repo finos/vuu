@@ -51,13 +51,13 @@ type RangeRequest = (range: VuuRange) => void;
 const { info, infoEnabled } = logger("VuuDataSource");
 
 /**
- * Autosubscribe columns ar always included in a subscription.
+ * Autosubscribe columns are always included in a subscription.
  * The same columns may or may not be included in subscription
  * requested by client and client may change column list over
  * lifetime of dataSource. Always make sure we include the
  * autosubscription columns, but never repeat them
  */
-const ensureAutosubscribeColumnsIncluded = (
+const combineColumnsWithAutosubscribeColumns = (
   columns: string[],
   autosubscribeColumns: string[] = [],
 ) => {
@@ -82,6 +82,10 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
   private server: ServerAPI | null = null;
   rangeRequest: RangeRequest;
 
+  /**
+   * this is the combined set of regular columns and autosubscribe columns
+   */
+  #allColumns: undefined | string[];
   #autosubscribeColumns: string[] = [];
   #pendingVisualLink?: LinkDescriptorWithLabel;
   #links: LinkDescriptorWithLabel[] | undefined;
@@ -111,6 +115,10 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
 
     if (props.autosubscribeColumns) {
       this.#autosubscribeColumns = props.autosubscribeColumns;
+      this.#allColumns = combineColumnsWithAutosubscribeColumns(
+        super.columns,
+        props.autosubscribeColumns,
+      );
     }
   }
 
@@ -150,10 +158,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
       {
         ...dataSourceConfig,
         bufferSize,
-        columns: ensureAutosubscribeColumnsIncluded(
-          columns,
-          this.#autosubscribeColumns,
-        ),
+        columns: this.columns,
         range: this._range.withBuffer,
         table: this.table,
         title: this._title,
@@ -374,6 +379,23 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     }
   }
 
+  //TODO is this going to be confusing - the lack of symmetry between set and get columns
+  // when there are autoSubscribe columns ?
+  // alternative would be an allColumns prop, but every datasource would then have to add it.
+  get columns() {
+    return this.#allColumns ?? super.columns;
+  }
+
+  set columns(columns: string[]) {
+    super.columns = columns;
+    if (this.#autosubscribeColumns) {
+      this.#allColumns = combineColumnsWithAutosubscribeColumns(
+        columns,
+        this.#autosubscribeColumns,
+      );
+    }
+  }
+
   get tableSchema() {
     return this.#tableSchema;
   }
@@ -467,7 +489,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
       const { columns, ...dataSourceConfig } = combineFilters(this.config);
       const serverConfig: WithFullConfig = {
         ...dataSourceConfig,
-        columns: ensureAutosubscribeColumnsIncluded(
+        columns: combineColumnsWithAutosubscribeColumns(
           columns,
           this.#autosubscribeColumns,
         ),

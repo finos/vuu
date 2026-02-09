@@ -601,4 +601,76 @@ describe("VuuDataSource", () => {
       expect(send).toHaveBeenCalledTimes(0);
     });
   });
+
+  describe("autoSubscribe Columns", () => {
+    it("includes autosubscribe columns in subscription", async () => {
+      const callback = () => undefined;
+      const dataSource = new VuuDataSource({
+        autosubscribeColumns: ["col4"],
+        columns: ["col1", "col2", "col3"],
+        table,
+      });
+      await dataSource.subscribe({}, callback);
+
+      const serverAPI = await ConnectionManager.serverAPI;
+      expect(serverAPI.subscribe).toHaveBeenCalledWith(
+        {
+          ...defaultSubscribeOptions,
+          columns: ["col1", "col2", "col3", "col4"],
+          table: {
+            module: "SIMUL",
+            table: "instruments",
+          },
+          viewport: expect.stringMatching(/^\S{21}$/),
+        },
+        expect.any(Function),
+      );
+    });
+
+    it("handles dupe autosubscribe columns", async () => {
+      const callback = () => undefined;
+      const dataSource = new VuuDataSource({
+        autosubscribeColumns: ["col1", "col4", "col3"],
+        columns: ["col1", "col2", "col3"],
+        table,
+      });
+      await dataSource.subscribe({}, callback);
+
+      const serverAPI = await ConnectionManager.serverAPI;
+      expect(serverAPI.subscribe).toHaveBeenCalledWith(
+        {
+          ...defaultSubscribeOptions,
+          columns: ["col1", "col2", "col3", "col4"],
+          table: {
+            module: "SIMUL",
+            table: "instruments",
+          },
+          viewport: expect.stringMatching(/^\S{21}$/),
+        },
+        expect.any(Function),
+      );
+    });
+
+    it("includes autosubscribe columns in columns prop", async () => {
+      const dataSource = new VuuDataSource({
+        autosubscribeColumns: ["col1", "col4", "col3"],
+        columns: ["col1", "col2", "col3"],
+        table,
+      });
+      expect(dataSource.columns).toEqual(["col1", "col2", "col3", "col4"]);
+    });
+
+    it("allows update to columns, correctly allowing for autoSubscribe colmns", async () => {
+      const dataSource = new VuuDataSource({
+        autosubscribeColumns: ["col1", "col4"],
+        columns: ["col1", "col2", "col3"],
+        table,
+      });
+      expect(dataSource.columns).toEqual(["col1", "col2", "col3", "col4"]);
+
+      dataSource.columns = ["col1", "col2"];
+
+      expect(dataSource.columns).toEqual(["col1", "col2", "col4"]);
+    });
+  });
 });
