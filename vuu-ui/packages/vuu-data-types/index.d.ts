@@ -126,6 +126,7 @@ export declare type DataValueTypeSimple =
   | "json"
   | DateTimeDataValueTypeSimple
   | TimeDataValueTypeSimple
+  | DecimalValueTypeSimple
   | "checkbox";
 
 export declare type DataValueType =
@@ -134,6 +135,7 @@ export declare type DataValueType =
 
 export declare type TimeDataValueTypeSimple = "time";
 export declare type DateTimeDataValueTypeSimple = "date/time";
+export declare type DecimalValueTypeSimple = "decimal";
 
 export declare type DateTimeDataValueType =
   | DateTimeColumnTypeSimple
