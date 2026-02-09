@@ -61,7 +61,7 @@ class BinaryPriorityBlockingQueueTest extends AnyFunSuite with Matchers {
     }
   }
 
-  test("drainTo should preserve priority order (High Priority first)") {
+  test("drainTo should preserve insertion order") {
     val bq = BinaryPriorityBlockingQueue[String](10)
     bq.put("Normal 1")
     bq.put("Normal 2")
@@ -72,11 +72,11 @@ class BinaryPriorityBlockingQueueTest extends AnyFunSuite with Matchers {
     val count = bq.drainTo(result)
 
     count shouldEqual 4
-    val expected = java.util.List.of("High 1", "High 2", "Normal 1", "Normal 2")
+    val expected = java.util.List.of("Normal 1", "Normal 2", "High 1", "High 2")
     result shouldBe expected
   }
 
-  test("drainTo with maxElements should respect the limit and priority") {
+  test("drainTo with maxElements should respect the limit and insertion order") {
     val bq = BinaryPriorityBlockingQueue[String](10)
     (1 to 5).foreach(f => bq.put(f.toString))
     (10 to 12).foreach(f => bq.putHighPriority(f.toString))
@@ -85,7 +85,7 @@ class BinaryPriorityBlockingQueueTest extends AnyFunSuite with Matchers {
     val count = bq.drainTo(result, 4)
 
     count shouldBe 4
-    result shouldBe java.util.List.of("10", "11", "12", "1")
+    result shouldBe java.util.List.of("1", "2", "3", "4")
   }
 
   test("put should block when regular queue capacity is reached - cleared by drain") {
@@ -130,7 +130,34 @@ class BinaryPriorityBlockingQueueTest extends AnyFunSuite with Matchers {
 
     val result = new util.ArrayList[String]()
     bq.drainTo(result)
-    result shouldBe java.util.List.of("99", "1")
+    result shouldBe java.util.List.of("1", "99")
+  }
+
+  test("test high and low puts whilst blocked") {
+    val bq = BinaryPriorityBlockingQueue[String](1)
+    bq.put("1")
+
+    val future = CompletableFuture.supplyAsync(() => bq.putHighPriority("98"))
+    eventually {
+      future.isDone shouldBe true
+    }
+    val future2 = CompletableFuture.supplyAsync(() => bq.put("99"))
+    val future3 = CompletableFuture.supplyAsync(() => bq.putHighPriority("100"))
+    eventually {
+      future3.isDone shouldBe true
+    }
+    future2.isDone shouldBe false
+
+    val result = new util.ArrayList[String]()
+    bq.drainTo(result)
+    result shouldBe java.util.List.of("1", "98", "100")
+    eventually {
+      future2.isDone shouldBe true
+    }
+
+    result.clear()
+    bq.drainTo(result)
+    result shouldBe java.util.List.of("99")
   }
 
 }
