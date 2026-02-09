@@ -43,7 +43,10 @@ const outdir = "../../deployed_apps/app-vuu-example";
 let configFile = "./config/localhost.config.json";
 
 const insecure = !!getCommandLineArg("--insecure");
-const websocketUrl = toWebsocketUrl(getCommandLineArg("--url", true), insecure);
+const websocketUrl = toWebsocketUrl(
+  getCommandLineArg("--url", true, "wss://localhost:8090/websocket"),
+  insecure,
+);
 
 const watch = getCommandLineArg("--watch");
 const development = watch || getCommandLineArg("--dev");
