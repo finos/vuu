@@ -763,6 +763,10 @@ export const ContainerManagedMultipleColumnFilters = () => {
     [],
   );
 
+  if (filter) {
+    console.log(filterAsQuery(filter));
+  }
+
   return (
     <DataSourceProvider dataSource={dataSource}>
       <ContainerTemplate flexDirection="row" width={700}>
@@ -792,7 +796,30 @@ export const ContainerManagedMultipleColumnFilters = () => {
             />
           </FormField>
           <FormField>
-            <FormFieldLabel>Price</FormFieldLabel>
+            <FormFieldLabel>Price (filter set as numeric)</FormFieldLabel>
+            <FilterContainerColumnFilter
+              column={{ name: "price", serverDataType: "double" }}
+              operator="="
+            />
+          </FormField>
+          <FormField>
+            <FormFieldLabel>Price (filter set as string, with typeahead)</FormFieldLabel>
+            <FilterContainerColumnFilter
+              column={{ name: "price", serverDataType: "string" }}
+              table={table}
+              operator="="
+            />
+          </FormField>
+          <FormField>
+            <FormFieldLabel>Price (filter set as string, without typeahead)</FormFieldLabel>
+            <FilterContainerColumnFilter
+              column={{ name: "price", serverDataType: "string", type: "decimal" }}
+              table={table}
+              operator="="
+            />
+          </FormField>
+          <FormField>
+            <FormFieldLabel>Price Range</FormFieldLabel>
             <FilterContainerColumnFilter
               column={{ name: "price", serverDataType: "double" }}
               operator="between"

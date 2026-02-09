@@ -109,6 +109,18 @@ export const getDataItemEditControl = ({
         data-edit-control
       />
     );
+  } else if (dataDescriptor.serverDataType === "string" && dataDescriptor.type === "decimal" && table) {
+    return (
+      <VuuInput
+        {...InputProps}
+        className={className}
+        commitOnBlur={commitOnBlur}
+        commitWhenCleared={commitWhenCleared}
+        onCommit={onCommit}
+        errorMessage={errorMessage}
+        data-edit-control
+      />
+    );
   } else if (dataDescriptor.serverDataType === "string" && table) {
     if (variant === "toggle" && values?.length) {
       return (
