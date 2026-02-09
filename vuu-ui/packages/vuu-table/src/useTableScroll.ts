@@ -6,7 +6,7 @@ import {
 import type { VuuRange } from "@vuu-ui/vuu-protocol-types";
 import {
   ForwardedRef,
-  MutableRefObject,
+  RefObject,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -166,7 +166,7 @@ type ScrollPos = {
 };
 
 export interface TableScrollHookProps {
-  cellFocusStateRef: MutableRefObject<ICellFocusState>;
+  cellFocusStateRef: RefObject<ICellFocusState>;
   columns: RuntimeColumnDescriptor[];
   focusCell?: FocusCell;
   getRowAtPosition: RowAtPositionFunc;
@@ -314,6 +314,44 @@ export const useTableScroll = ({
     ],
   );
 
+  // Because of the amount of work done when we rerender a virtualised section
+  // we may drop scroll events. Make sure we get the final resting position right
+  // by remeasuring after a short delay.
+  const scrollTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const checkScrollbarScrollPosition = useCallback(() => {
+    const { current: scrollPos } = scrollbarContainerPosRef;
+    const { current: contentContainer } = contentContainerRef;
+
+    const { current: scrollbarContainer } = scrollbarContainerRef;
+
+    if (scrollbarContainer && contentContainer) {
+      const [scrollLeft, pctScrollLeft, , scrollTop, pctScrollTop] =
+        getPctScroll(scrollbarContainer, scrollPos);
+
+      if (
+        scrollLeft !== scrollPos.scrollLeft ||
+        scrollTop !== scrollPos.scrollTop
+      ) {
+        scrollbarContainerScrolledRef.current = true;
+
+        scrollPos.scrollLeft = scrollLeft;
+        scrollPos.scrollTop = scrollTop;
+
+        const [maxScrollLeft, maxScrollTop] = getMaxScroll(scrollbarContainer);
+        const contentScrollLeft = Math.round(pctScrollLeft * maxScrollLeft);
+        const contentScrollTop = pctScrollTop * maxScrollTop;
+
+        contentContainer.scrollTo({
+          left: contentScrollLeft,
+          top: contentScrollTop,
+          behavior: "auto",
+        });
+      }
+
+      scrollTimerRef.current = null;
+    }
+  }, []);
+
   const handleScrollbarContainerScroll = useCallback(() => {
     const { current: contentContainer } = contentContainerRef;
     const { current: scrollbarContainer } = scrollbarContainerRef;
@@ -340,8 +378,14 @@ export const useTableScroll = ({
         behavior: "auto",
       });
     }
+
+    if (scrollTimerRef.current) {
+      clearTimeout(scrollTimerRef.current);
+    }
+    scrollTimerRef.current = setTimeout(checkScrollbarScrollPosition, 60);
+
     onVerticalScrollInSitu?.(0);
-  }, [onVerticalScrollInSitu]);
+  }, [checkScrollbarScrollPosition, onVerticalScrollInSitu]);
 
   const handleContentContainerScroll = useCallback(() => {
     const { current: scrollbarContainerScrolled } =
@@ -349,6 +393,7 @@ export const useTableScroll = ({
     const { current: contentContainer } = contentContainerRef;
     const { current: scrollbarContainer } = scrollbarContainerRef;
     const { current: scrollPos } = contentContainerPosRef;
+
     if (contentContainer && scrollbarContainer) {
       const [
         scrollLeft,
