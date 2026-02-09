@@ -6,7 +6,7 @@ import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.text.AsciiUtil
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.index.{HashMapIndexedStringField, InMemColumnIndices, IndexedField, SkipListIndexedBooleanField, SkipListIndexedCharField, SkipListIndexedDoubleField, SkipListIndexedEpochTimestampField, SkipListIndexedIntField, SkipListIndexedLongField}
+import org.finos.vuu.core.index.{InMemColumnIndices, IndexedField}
 import org.finos.vuu.core.row.{InMemMapRowBuilder, RowBuilder}
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
@@ -180,35 +180,35 @@ case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private 
   protected def merge(update: RowData, data: RowData): RowData =
     MergeFunctions.mergeLeftToRight(update, data)
 
-  def update(key: String, update: RowData): (TableData, RowData) = {
-
-    val table = data.synchronized {
-      val now = EpochTimestamp(timeProvider)
+  def update(key: String, update: RowData): TableDataUpdate = {
+    val now = EpochTimestamp(timeProvider)
+    val tableDataUpdate = data.synchronized {
       data.getOrDefault(key, EmptyRowData) match {
-        case row: RowWithData =>
-          val mergedData = merge(update, row)
+        case currentRowData: RowWithData =>
+          val mergedData = merge(update, currentRowData)
           val newRowData = mergedData.set(DefaultColumn.LastUpdatedTime.name, now)
           data.put(key, newRowData)
-          (InMemDataTableData(data, primaryKeyValues), newRowData)
+          TableDataUpdated(InMemDataTableData(data, primaryKeyValues), currentRowData, newRowData)
         case EmptyRowData =>
           var newRowData = update.set(DefaultColumn.CreatedTime.name, now)
           newRowData = newRowData.set(DefaultColumn.LastUpdatedTime.name, now)
           data.put(key, newRowData)
-          (InMemDataTableData(data, primaryKeyValues + key), newRowData)
+          TableDataInserted(InMemDataTableData(data, primaryKeyValues + key), newRowData)
       }
-
     }
 
-    table
+    tableDataUpdate
   }
 
-  def delete(key: String): TableData = {
+  def delete(key: String): TableDataDelete = {
 
     data.synchronized {
-
-      data.remove(key)
-
-      InMemDataTableData(data, primaryKeyValues.-(key))
+      val removed = data.remove(key)
+      if (removed != null) {
+        TableDataDeleted(InMemDataTableData(data, primaryKeyValues.-(key)), removed)
+      } else {
+        TableDataNothingDeleted
+      }
     }
   }
 
@@ -331,26 +331,25 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
 
   def columns(): Array[Column] = tableDef.getColumns
   
-  def update(rowkey: String, rowUpdate: RowData): Unit = {
-    val originalData = data
-    val originalRowData = originalData.dataByKey(rowkey)
-    val updatedRowData = originalData.update(rowkey, rowUpdate)
-    data = updatedRowData._1
-    if (originalRowData == null) {
-      indices.insert(updatedRowData._2)
-    } else {
-      indices.update(originalRowData, updatedRowData._2)
-    }    
+  def update(rowKey: String, rowUpdate: RowData): Unit = {
+    val tableDataUpdate = data.update(rowKey, rowUpdate)
+    data = tableDataUpdate.tableData
+    tableDataUpdate match {
+      case TableDataInserted(tableData, rowDataAfter) =>
+        indices.insert(rowDataAfter)
+      case TableDataUpdated(tableData, rowDataBefore, rowDataAfter) =>
+        indices.update(rowDataBefore, rowDataAfter)
+    }
   }
 
   def delete(rowKey: String): RowData = {
-    val originalData = data
-    originalData.dataByKey(rowKey) match {
-      case x: RowWithData =>
-        indices.remove(x)
-        data = originalData.delete(rowKey)
-        x
-      case _ =>
+    val tableDataDelete = data.delete(rowKey)
+    tableDataDelete match {
+      case TableDataDeleted(tableData, rowDataBefore) =>
+        data = tableData
+        indices.remove(rowDataBefore)
+        rowDataBefore
+      case TableDataNothingDeleted =>
         logger.trace(s"Got a delete for key $rowKey, but it has no row data")
         EmptyRowData
     }
@@ -437,10 +436,9 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
     val rowData = delete(rowKey)
 
     rowData match {
-      case RowWithData(_, _) =>
+      case x: RowWithData =>
         sendDeleteToJoinSink(rowKey, rowData)
         notifyListeners(rowKey, isDelete = true)
-
       case EmptyRowData =>
     }
 
