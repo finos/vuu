@@ -7,6 +7,14 @@ class ImmutableArraySetTest extends AnyFunSuite with Matchers {
 
   def set(xs: String*): ImmutableArraySet[String] = ImmutableArraySet.from(xs.toArray)
 
+  test("creating from a set is the same as from an iterable") {
+    val original = set("a", "b", "c")
+
+    val result = ImmutableArraySet.from(Set("a", "b", "c"))
+
+    result shouldEqual original
+  }
+
   test("adding a new element returns a new set and preserves the original") {
     val original = set("a", "b", "c")
 
