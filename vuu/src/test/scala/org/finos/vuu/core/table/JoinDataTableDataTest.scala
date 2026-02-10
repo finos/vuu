@@ -177,6 +177,8 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       (result eq original) shouldBe false
       result.getPrimaryKeys shouldBe ImmutableArray.of(orderId)
       result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> null)
+      // TODO https://github.com/finos/vuu/issues/2019
+      // in this scenario, RightToLeftKeys still has the old pairing of orderId 123456789 and ric VOD.L, i.e. memory leak
     }
 
     Scenario("Update an existing row, from complete join to no join") {
