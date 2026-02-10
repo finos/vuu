@@ -5,9 +5,9 @@ import org.finos.vuu.core.table.RowData
 import org.finos.vuu.plugin.virtualized.table.cache.CaffeineWindowedRowDataCache
 
 trait WindowedCache[KEY, VALUE] {
-  def put(key: KEY, v: VALUE): Unit
+  def put(key: KEY, v: VALUE): Option[VALUE]
   def get(key: KEY): Option[VALUE]
-  def remove(key: KEY): Unit
+  def remove(key: KEY): Option[VALUE]
   def removeAll(): Unit
 }
 
