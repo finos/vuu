@@ -86,10 +86,10 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
 
       val rightKeyValue = leftKeys.get(joinTableDef.baseTable.name + "." + joinTo.joinSpec.left) match {
         case null =>
-          logger.warn("get right key, null")
+          logger.warn(s"get right key from ${joinTableDef.baseTable.name}.${joinTo.joinSpec.left}, null")
           null
         case None =>
-          logger.warn("get right key, None")
+          logger.warn(s"get right key from ${joinTableDef.baseTable.name}.${joinTo.joinSpec.left}, None")
           null
         case Some(x: String) => x
         case Some(x) => x.toString
@@ -194,7 +194,7 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
     tableToJoinDefinitions.get(tableName).foreach(defAndTable => {
 
       val joinTableDef = defAndTable.joinDef
-      
+
       //does it participate as a left table? i.e. the base table of the join
       if (joinTableDef.isLeftTable(tableName)) {
 
@@ -207,7 +207,7 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
         logger.trace(s"Publishing update for left key: $leftKey to table $tableName")
         publishUpdateForLeftTableAndKey(joinTableDef, defAndTable.table.asInstanceOf[JoinTable], tableName, leftKey, ev, isJoinEvent)
 
-      //otherwise must be a right table, i.e. any one of the joinTo tables
+        //otherwise must be a right table, i.e. any one of the joinTo tables
       } else {
 
         val keyName = joinTableDef.keyFieldForTable(tableName)
