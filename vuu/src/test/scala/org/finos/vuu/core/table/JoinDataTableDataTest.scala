@@ -26,7 +26,7 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
   val instrumentRic = "VOD.L"
   val instrumentRic2 = "BAES.L"
   val instrumentRic3 = "AIR.PA"
-  val orderWithNoInstrument: Map[String, Any] = Map("orderId" -> orderId)
+  val orderWithNoInstrument: Map[String, Any] = Map("orderId" -> orderId, "ric" -> null)
   val orderWithInstrument: Map[String, Any] = Map("orderId" -> orderId, "ric" -> instrumentRic)
   val order1WithInstrument2: Map[String, Any] = Map("orderId" -> orderId, "ric" -> instrumentRic2)
   val order2WithInstrument2: Map[String, Any] = Map("orderId" -> orderId2, "ric" -> instrumentRic2)
