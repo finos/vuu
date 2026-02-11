@@ -31,6 +31,8 @@ class JoinRelations {
 
       if (leftColumn != null && leftValue != null) {
         rowJoin.putJoinKey(leftColumn, leftValue.toString)
+      } else if (ev.containsKey(leftColumn) && leftValue == null) {
+        rowJoin.deleteJoinKey(leftColumn)
       }
     })
   }

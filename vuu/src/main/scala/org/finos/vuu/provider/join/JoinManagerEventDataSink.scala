@@ -29,6 +29,16 @@ class RightToLeftKeys {
           case _ => existingSet + leftKey
         }
       })
+    } else {
+      // rightKey is null, delete the existing mapping of rightTable.rightKey <-> leftTable.leftKey
+      keysToRightKeys.computeIfPresent(rightTable, (_, rightKeyToLeftTableMap) => {
+        rightKeyToLeftTableMap.forEach((_, leftTableToLeftKeyMap) => {
+          leftTableToLeftKeyMap.computeIfPresent(leftTable, (_, existingSet) => {
+            existingSet.remove(leftKey)
+          })
+        })
+        rightKeyToLeftTableMap
+      })
     }
 
   }

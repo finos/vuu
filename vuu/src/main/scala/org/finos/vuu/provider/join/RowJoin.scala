@@ -28,4 +28,7 @@ class RowJoin(val tableName: String, val leftKey: String, val leftKeyField: Stri
     foreignKeyMap.put(leftColumn, foreignKey)
   }
 
+  def deleteJoinKey(leftColumn: String): String = {
+    foreignKeyMap.remove(leftColumn)
+  }
 }

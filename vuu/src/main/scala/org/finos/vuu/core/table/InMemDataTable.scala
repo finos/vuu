@@ -413,10 +413,11 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
     })
   }
 
-  def update(rowkey: String, rowUpdate: RowData): Unit = {
+  def update(rowkey: String, rowUpdate: RowData): RowData = {
     val updatedData = data.update(rowkey, rowUpdate)
     data = updatedData._1
     updateIndices(rowkey, updatedData._2)
+    updatedData._2
   }
 
   def delete(rowKey: String): RowData = {
@@ -494,9 +495,9 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
 
     onUpdateCounter.inc()
 
-    update(rowKey, rowData)
+    val updatedRowData = update(rowKey, rowData)
 
-    sendToJoinSink(rowKey, rowData)
+    sendToJoinSink(rowKey, updatedRowData)
 
     notifyListeners(rowKey)
 
