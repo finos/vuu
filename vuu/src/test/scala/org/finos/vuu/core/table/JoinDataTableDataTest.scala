@@ -17,6 +17,7 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
 
   given timeProvider: Clock = new DefaultClock
   given lifecycle: LifecycleContainer = new LifecycleContainer
+
   given metrics: MetricsProvider = new MetricsProviderImpl
 
   val orderId = "123456789"
@@ -143,7 +144,7 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       joinProvider.runOnce()
       val result = orderPrices.getJoinData
 
-      (result eq original) shouldBe true
+      (result eq original) shouldBe false // primaryKeyToJoinKeys is updated
       result.getPrimaryKeys shouldBe ImmutableArray.of(orderId)
       result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> null)
     }
