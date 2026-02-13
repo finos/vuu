@@ -3,11 +3,11 @@ import { useTypeaheadSuggestions } from "@vuu-ui/vuu-data-react";
 import { TableSchemaTable } from "@vuu-ui/vuu-data-types";
 import type { TypeaheadParams } from "@vuu-ui/vuu-protocol-types";
 import {
-  dispatchKeyboardEvent,
   getVuuTable,
   useStateRef,
   NO_DATA_MATCH,
   type CommitHandler,
+  dispatchKeyboardEvent,
 } from "@vuu-ui/vuu-utils";
 import {
   ComponentPropsWithoutRef,
@@ -149,11 +149,16 @@ export const useVuuTypeaheadInput = ({
             } else {
               setTypeaheadValues(suggestions);
               if (pendingListFocusRef.current && inputRef.current) {
-                // This is a workaround for the fact that ComboBox does not automatically
-                // highlight first list item when items have been populated dynamically.
-                // This has been raised as a bug.
-                //TODO this is failing to work correctly in new version of cypress
-                dispatchKeyboardEvent(inputRef.current, "keydown", "ArrowUp");
+                requestAnimationFrame(() => {
+                  if (inputRef.current) {
+                    // highlight the first option. Doesn't work as expected on Safari
+                    dispatchKeyboardEvent(
+                      inputRef.current,
+                      "keydown",
+                      "ArrowDown",
+                    );
+                  }
+                });
               }
             }
             pendingListFocusRef.current = false;

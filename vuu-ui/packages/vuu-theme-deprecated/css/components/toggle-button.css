@@ -1,0 +1,62 @@
+.salt-theme.vuu-theme-deprecated {
+  .saltToggleButtonGroup {
+    --togglebutton-borderRadius: 4px 4px 4px 4px;
+    border-radius: 6px;
+    gap: 0;
+    height: var(--salt-size-base);
+    padding: 0;
+
+    &[data-accented] {
+      --salt-actionable-secondary-background-active: var(
+        --salt-actionable-accented-background-active
+      );
+      border-color: var(--salt-container-secondary-borderColor);
+    }
+  
+    &[data-variant="secondary"] {
+      --salt-actionable-secondary-background-active: var(
+        --salt-actionable-bold-background-active
+      );
+      --salt-container-primary-borderColor: transparent;
+    }
+  
+  }
+
+  .saltToggleButtonGroup-horizontal .saltToggleButton {
+    height: 100%;
+  }
+
+  .saltToggleButton {
+    border-radius: var(--togglebutton-borderRadius);
+    /** TODO vary by density */
+    gap: 8px;
+    white-space: nowrap;
+
+    --vuu-icon-color: var(--salt-actionable-secondary-foreground);
+
+    border-radius: var(--togglebutton-borderRadius);
+    gap: var(--salt-spacing-200);
+    white-space: nowrap;
+
+    &[aria-checked="true"] {
+      --vuu-icon-color: var(--salt-actionable-secondary-foreground-active);
+    }
+    &[aria-pressed="true"] {
+      --vuu-icon-color: var(--salt-actionable-secondary-foreground-active);
+    }
+  }
+
+
+  .vuuStateButtonGroup {
+    .saltToggleButton {
+      --togglebutton-borderRadius: 0;
+    }
+
+    .saltToggleButton:first-child {
+      --togglebutton-borderRadius: 4px 0 0 4px;
+    }
+    .saltToggleButton:last-child {
+      --togglebutton-borderRadius: 0 4px 4px 0;
+    }
+  }
+}

@@ -1,0 +1,5 @@
+.salt-theme.vuu-theme-deprecated {
+  .vuuHeader-title {
+    border-bottom: solid 2px var(--vuu-color-purple-10);
+  }
+}

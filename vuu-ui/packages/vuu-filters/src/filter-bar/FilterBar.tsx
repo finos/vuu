@@ -93,7 +93,7 @@ export const FilterBar = ({
 
   const startAdornment = useMemo(() => {
     if (!allowQuickFilters) {
-      return <Icon name="filter" size={16} style={{ top: 4 }} />;
+      return <Icon name="sliders" size={16} style={{ top: 2 }} />;
     } else {
       return (
         <ToggleButtonGroup

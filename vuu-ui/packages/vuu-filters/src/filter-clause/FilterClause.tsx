@@ -8,13 +8,13 @@ import {
 import cx from "clsx";
 import { HTMLAttributes, useMemo } from "react";
 import { FilterClauseModel } from "../FilterModel";
-import { ColumnPicker } from "./ColumnPicker";
+import { ColumnPicker } from "./column-picker/ColumnPicker";
 import { useFilterClause } from "./useFilterClause";
 import { FilterClauseValueEditor } from "./value-editors/FilterClauseValueEditor";
 
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import filterClauseCss from "./FilterClause.css";
-import { OperatorPicker } from "./OperatorPicker";
+import { OperatorPicker } from "./operator-picker/OperatorPicker";
 
 export type FilterClauseCancelType = "Backspace" | "Escape";
 export type FilterClauseCancelHandler = (
@@ -82,11 +82,11 @@ export const FilterClause = ({
         inputProps={inputProps}
         className={cx(`${classBase}Field`, `${classBase}Column`)}
         columns={columns}
+        dropdownOnAutofocus={showDropdownOnAutoFocus}
         key="column-field"
         onSelect={onSelectColumn}
         ref={columnRef}
         value={filterClauseModel.column ?? ""}
-        dropdownOnAutofocus={showDropdownOnAutoFocus}
       />
       {selectedColumn?.name ? (
         <OperatorPicker
@@ -95,15 +95,16 @@ export const FilterClause = ({
           className={cx(`${classBase}Field`, `${classBase}Operator`, {
             [`${classBase}Operator-hidden`]: selectedColumn === null,
           })}
+          dropdownOnAutofocus={showDropdownOnAutoFocus}
           key="operator-field"
           onSelect={onSelectOperator}
           ref={operatorRef}
           value={filterClauseModel.op ?? ""}
-          dropdownOnAutofocus={showDropdownOnAutoFocus}
         />
       ) : null}
       {filterClauseModel.op ? (
         <FilterClauseValueEditor
+          dropdownOnAutofocus={showDropdownOnAutoFocus}
           inputProps={inputProps}
           key="value-field"
           onChangeValue={onChangeValue}
@@ -117,7 +118,6 @@ export const FilterClause = ({
             (filterClause as MultiValueFilterClause)?.values ??
             (filterClause as SingleValueFilterClause)?.value
           }
-          dropdownOnAutofocus={showDropdownOnAutoFocus}
         />
       ) : null}
     </div>
