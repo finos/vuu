@@ -57,8 +57,10 @@ import {
 import * as Message from "./messages";
 import { NO_DATA_UPDATE, Viewport } from "./viewport";
 import {
+  ConnectionStatus,
+  isLoginRejectedMessage,
+  LoginRejectedMessage,
   WebSocketConnection,
-  WebSocketConnectionState,
 } from "../WebSocketConnection";
 
 export type PostMessageToClientCallback = (
@@ -116,7 +118,7 @@ type PendingRequest<T = unknown> = {
 
 interface PendingLogin {
   resolve: (sessionId: string) => void;
-  reject: () => void;
+  reject: (rejectReason: string) => void;
 }
 
 type QueuedRequest = {
@@ -150,19 +152,19 @@ export class ServerProxy {
     this.viewports = new Map<string, Viewport>();
     this.mapClientToServerViewport = new Map();
 
-    connection.on("reconnected", this.reconnect);
     connection.on("connection-status", this.connectionStatusChanged);
   }
 
-  private connectionStatusChanged = (message: WebSocketConnectionState) => {
-    if (message.connectionStatus === "disconnected") {
+  private connectionStatusChanged = (status: ConnectionStatus) => {
+    if (status === "disconnected") {
+      this.sessionId = undefined;
       this.clearAllViewports();
+    } else if (status === "reconnected") {
+      this.reconnect();
     }
   };
 
   private reconnect = async () => {
-    await this.login(this.authToken);
-
     // The "active" viewports are those the user has on their open layout
     // Reconnect these first.
     const [activeViewports, inactiveViewports] = partition(
@@ -195,8 +197,6 @@ export class ServerProxy {
           }
         });
       });
-
-      // this.sendMessageToServer(viewport.subscribe(), clientViewportId);
     };
 
     reconnectViewports(activeViewports);
@@ -857,7 +857,18 @@ export class ServerProxy {
     }
   }
 
-  public handleMessageFromServer(message: VuuServerMessage) {
+  public handleMessageFromServer(
+    message: VuuServerMessage | LoginRejectedMessage,
+  ) {
+    if (isLoginRejectedMessage(message)) {
+      if (this.pendingLogin) {
+        this.pendingLogin.reject(message.reason);
+        this.pendingLogin = undefined;
+        this.authToken = "";
+      }
+      return;
+    }
+
     const { body, requestId, sessionId } = message;
 
     const pendingRequest = this.pendingRequests.get(requestId);
@@ -889,9 +900,6 @@ export class ServerProxy {
         } else {
           throw Error("LOGIN_SUCCESS did not provide sessionId");
         }
-        break;
-      case "LOGIN_FAIL":
-        this.postMessageToClient(body);
         break;
       case "REMOVE_VP_SUCCESS":
         {

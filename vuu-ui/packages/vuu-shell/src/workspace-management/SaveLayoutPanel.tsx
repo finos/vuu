@@ -18,10 +18,10 @@ import {
   useMemo,
   useState,
 } from "react";
-import { getAuthDetailsFromCookies } from "../login";
 import { takeScreenshot } from "./screenshot-utils";
 
 import saveLayoutPanelCss from "./SaveLayoutPanel.css";
+import { useApplicationUser } from "../application-provider";
 
 const classBase = "vuuSaveLayoutPanel";
 
@@ -50,7 +50,7 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
   const [screenshotErrorMessage, setScreenshotErrorMessage] = useState<
     string | undefined
   >();
-  const [username] = getAuthDetailsFromCookies();
+  const { username } = useApplicationUser();
 
   useEffect(() => {
     if (componentId) {
@@ -153,10 +153,11 @@ export const SaveLayoutPanel = (props: SaveLayoutPanelProps) => {
           Cancel
         </Button>
         <Button
+          appearance="solid"
           className={`${classBase}-saveButton`}
           onClick={handleSubmit}
           disabled={layoutName === "" || group === ""}
-          variant="cta"
+          sentiment="accented"
         >
           Save
         </Button>

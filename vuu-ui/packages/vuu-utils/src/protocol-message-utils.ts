@@ -17,12 +17,15 @@ import {
   VuuRpcServiceRequest,
   ViewportRpcContext,
   OpenComponentInDialogAction,
-  VuuLoginResponse,
+  VuuLoginSuccessResponse,
   SelectRequest,
   SelectResponse,
   SelectSuccessWithRowCount,
   VuuViewportCreateSuccessResponse,
   VuuViewportCreateResponse,
+  InvalidTokenReason,
+  InvalidSessionReason,
+  LoginErrorMessage,
 } from "@vuu-ui/vuu-protocol-types";
 import { isView as componentInRegistry } from "./component-registry";
 
@@ -33,7 +36,27 @@ const MENU_RPC_TYPES = [
   "VIEW_PORT_MENU_CELL_RPC",
 ];
 
+export const INVALID_SESSION: InvalidSessionReason = "Invalid session";
+export const SESSION_LIMIT_EXCEEDED: InvalidSessionReason =
+  "User session limit exceeded";
+export const INVALID_TOKEN: InvalidTokenReason = "Invalid token";
+export const TOKEN_EXPIRED: InvalidTokenReason = "Token has expired";
+
+const InvalidLoginMessages: string[] = [
+  INVALID_SESSION,
+  SESSION_LIMIT_EXCEEDED,
+  INVALID_TOKEN,
+  TOKEN_EXPIRED,
+];
+
+export const isLoginErrorMessage = (
+  message: unknown,
+): message is LoginErrorMessage =>
+  typeof message === "string" && InvalidLoginMessages.includes(message);
+
 export const isSelectRequest = (message: object): message is SelectRequest =>
+  message &&
+  typeof message === "object" &&
   "type" in message &&
   (message.type === "SELECT_ROW" ||
     message.type === "DESELECT_ROW" ||
@@ -67,7 +90,11 @@ export const isVuuMenuRpcRequest = (
   message: VuuRpcRequest | Omit<VuuRpcRequest, "vpId">,
 ): message is VuuRpcMenuRequest => MENU_RPC_TYPES.includes(message["type"]);
 
-export const isLoginResponse = (message: object): message is VuuLoginResponse =>
+export const isLoginResponse = (
+  message: unknown,
+): message is VuuLoginSuccessResponse =>
+  message !== null &&
+  typeof message === "object" &&
   "type" in message &&
   (message.type === "LOGIN_SUCCESS" || message.type === "LOGIN_FAIL");
 

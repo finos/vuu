@@ -3,7 +3,7 @@ export * from "./app-header";
 export * from "./feature";
 export * from "./feature-and-layout-provider";
 export * from "./left-nav";
-export * from "./login";
+export { LoginPanel, type LoginPanelProps } from "./login/LoginPanel";
 export * from "./persistence-manager";
 export * from "./shell";
 export * from "./shell-layout-templates";

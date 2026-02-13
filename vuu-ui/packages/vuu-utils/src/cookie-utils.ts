@@ -1,4 +1,4 @@
-export const getCookieValue = (name: string): string | number | undefined => {
+export const getCookieValue = (name: string): string | undefined => {
   if (globalThis.document?.cookie !== undefined) {
     return globalThis.document.cookie
       .split("; ")
