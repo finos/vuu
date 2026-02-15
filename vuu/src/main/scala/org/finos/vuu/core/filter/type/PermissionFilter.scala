@@ -1,12 +1,14 @@
 package org.finos.vuu.core.filter.`type`
 
 import com.typesafe.scalalogging.LazyLogging
-import org.finos.toolbox.collection.array.ImmutableArray
+import org.finos.toolbox.collection.array.{ImmutableArray, VectorImmutableArray}
 import org.finos.vuu.core.index.{BooleanIndexedField, CharIndexedField, DoubleIndexedField, EpochTimestampIndexedField, IndexedField, IntIndexedField, LongIndexedField, StringIndexedField}
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.core.table.{Column, DataType, EmptyTablePrimaryKeys, RowData, TablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.viewport.RowSource
+
+import java.util.Objects
 
 trait PermissionFilter {
 
@@ -56,6 +58,10 @@ private case class PermissionFilterChain(filters: Iterable[PermissionFilter]) ex
       }
     }
   }
+
+  private lazy val hash = filters.hashCode()
+
+  override def hashCode(): Int = hash
 
 }
 
@@ -111,9 +117,22 @@ private case class ContainsPermissionFilter(columnName: String, allowedValues: S
     if (results.isEmpty) {
       EmptyTablePrimaryKeys
     } else if (firstInChain) {
-      InMemTablePrimaryKeys(results)
+      InMemTablePrimaryKeys(results.toImmutableArray)
     } else {
-      primaryKeys.intersect(results)
+      val keyLength = primaryKeys.length
+      val builder = Vector.newBuilder[String]
+      builder.sizeHint(results.length)
+
+      var i = 0
+      while (i < keyLength) {
+        val key = primaryKeys.get(i)
+        if (results.contains(key)) {
+          builder += key
+        }
+        i += 1
+      }
+
+      InMemTablePrimaryKeys(VectorImmutableArray.from(builder.result()))
     }
   }
 
@@ -148,5 +167,9 @@ private case class ContainsPermissionFilter(columnName: String, allowedValues: S
     }
     RowPermissionFilter(predicate)
   }
-  
+
+  private lazy val hash = Objects.hash(columnName, allowedValues)
+
+  override def hashCode(): Int = hash
+
 }
