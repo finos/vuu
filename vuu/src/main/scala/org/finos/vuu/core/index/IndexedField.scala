@@ -7,6 +7,7 @@ import org.finos.vuu.core.table.Column
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 
 import java.util.concurrent.{ConcurrentHashMap, ConcurrentNavigableMap, ConcurrentSkipListMap}
+import scala.collection.mutable
 
 trait IndexedField[TYPE] {
 
@@ -188,13 +189,14 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
       empty
     } else if (results.size() == 1) {
       results.firstEntry().getValue.toImmutableArray
-    } else {       
-      val vectorBuilder = Vector.newBuilder[String]
+    } else {
+      val uniqueValues = mutable.HashSet.empty[String]
       val iterator = results.values().iterator()
       while (iterator.hasNext) {
-        vectorBuilder.addAll(iterator.next())
+        val set = iterator.next()
+        uniqueValues.addAll(set.iterator)
       }
-      VectorImmutableArray.from(vectorBuilder.result())
+      ImmutableArray.from(uniqueValues)
     }
   }
   
