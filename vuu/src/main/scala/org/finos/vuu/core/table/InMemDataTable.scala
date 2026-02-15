@@ -6,7 +6,7 @@ import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.text.AsciiUtil
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.index.{HashMapIndexedStringField, IndexedField, SkipListIndexedBooleanField, SkipListIndexedCharField, SkipListIndexedDoubleField, SkipListIndexedEpochTimestampField, SkipListIndexedIntField, SkipListIndexedLongField}
+import org.finos.vuu.core.index.{InMemColumnIndices, IndexedField}
 import org.finos.vuu.core.row.{InMemMapRowBuilder, RowBuilder}
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
@@ -180,35 +180,35 @@ case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private 
   protected def merge(update: RowData, data: RowData): RowData =
     MergeFunctions.mergeLeftToRight(update, data)
 
-  def update(key: String, update: RowData): (TableData, RowData) = {
-
-    val table = data.synchronized {
-      val now = EpochTimestamp(timeProvider)
+  def update(key: String, update: RowData): TableDataUpdate = {
+    val now = EpochTimestamp(timeProvider)
+    val tableDataUpdate = data.synchronized {
       data.getOrDefault(key, EmptyRowData) match {
-        case row: RowWithData =>
-          val mergedData = merge(update, row)
+        case currentRowData: RowWithData =>
+          val mergedData = merge(update, currentRowData)
           val newRowData = mergedData.set(DefaultColumn.LastUpdatedTime.name, now)
           data.put(key, newRowData)
-          (InMemDataTableData(data, primaryKeyValues), newRowData)
+          TableDataUpdated(InMemDataTableData(data, primaryKeyValues), currentRowData, newRowData)
         case EmptyRowData =>
           var newRowData = update.set(DefaultColumn.CreatedTime.name, now)
           newRowData = newRowData.set(DefaultColumn.LastUpdatedTime.name, now)
           data.put(key, newRowData)
-          (InMemDataTableData(data, primaryKeyValues + key), newRowData)
+          TableDataInserted(InMemDataTableData(data, primaryKeyValues + key), newRowData)
       }
-
     }
 
-    table
+    tableDataUpdate
   }
 
-  def delete(key: String): TableData = {
+  def delete(key: String): TableDataDelete = {
 
     data.synchronized {
-
-      data.remove(key)
-
-      InMemDataTableData(data, primaryKeyValues.-(key))
+      val removed = data.remove(key)
+      if (removed != null) {
+        TableDataDeleted(InMemDataTableData(data, primaryKeyValues.-(key)), removed)
+      } else {
+        TableDataNothingDeleted
+      }
     }
   }
 
@@ -224,10 +224,7 @@ case class InMemDataTableData(data: ConcurrentHashMap[String, RowData], private 
 
 class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider)(implicit val metrics: MetricsProvider, timeProvider: Clock) extends DataTable with KeyedObservableHelper[RowKeyUpdate] with StrictLogging {
 
-  private final val indices = tableDef.indices.indices
-    .map(index => tableDef.columnForName(index.column))
-    .map(c => c -> buildIndexForColumn(c)).toMap[Column, IndexedField[_]]
-
+  private final val indices = InMemColumnIndices(tableDef)
   private final val columnValueProvider = InMemColumnValueProvider(this)
 
   override def newRow(key: String): RowBuilder = {
@@ -235,27 +232,6 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
   }
 
   override def rowBuilder: RowBuilder = new InMemMapRowBuilder
-
-  private def buildIndexForColumn(c: Column): IndexedField[_] = {
-    c.dataType match {
-      case DataType.StringDataType =>
-        new HashMapIndexedStringField(c)
-      case DataType.IntegerDataType =>
-        new SkipListIndexedIntField(c)
-      case DataType.LongDataType =>
-        new SkipListIndexedLongField(c)
-      case DataType.DoubleDataType =>
-        new SkipListIndexedDoubleField(c)
-      case DataType.BooleanDataType =>
-        new SkipListIndexedBooleanField(c)
-      case DataType.EpochTimestampType =>
-        new SkipListIndexedEpochTimestampField(c)
-      case DataType.CharDataType =>
-        new SkipListIndexedCharField(c)
-      case _ =>
-        throw new RuntimeException(s"Unsupported type ${c.dataType} in column ${c.name}")
-    }
-  }
 
   def plusName(s: String): String = name + "." + s
 
@@ -280,7 +256,7 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
   override def getTableDef: TableDef = tableDef
 
   override def indexForColumn(column: Column): Option[IndexedField[_]] = {
-    indices.get(column)
+    indices.indexForColumn(column)
   }
 
   override def primaryKeys: TablePrimaryKeys = data.primaryKeyValues
@@ -354,78 +330,26 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
   }
 
   def columns(): Array[Column] = tableDef.getColumns
-
-  lazy val viewPortColumns: ViewPortColumns = ViewPortColumnCreator.create(this, tableDef.getColumns.map(_.name).toList)
-
-  private def updateIndices(rowkey: String, rowUpdate: RowData): Unit = {
-    this.indices.foreach(colTup => {
-      val column = colTup._1
-      val index = colTup._2
-
-      rowUpdate.get(column) match {
-        case null =>
-        case x: Any =>
-          column.dataType match {
-            case DataType.StringDataType =>
-              index.asInstanceOf[IndexedField[String]].insert(x.asInstanceOf[String], rowkey)
-            case DataType.IntegerDataType =>
-              index.asInstanceOf[IndexedField[Int]].insert(x.asInstanceOf[Int], rowkey)
-            case DataType.LongDataType =>
-              index.asInstanceOf[IndexedField[Long]].insert(x.asInstanceOf[Long], rowkey)
-            case DataType.DoubleDataType =>
-              index.asInstanceOf[IndexedField[Double]].insert(x.asInstanceOf[Double], rowkey)
-            case DataType.BooleanDataType =>
-              index.asInstanceOf[IndexedField[Boolean]].insert(x.asInstanceOf[Boolean], rowkey)
-            case DataType.EpochTimestampType =>
-              index.asInstanceOf[IndexedField[EpochTimestamp]].insert(x.asInstanceOf[EpochTimestamp], rowkey)
-            case DataType.CharDataType =>
-              index.asInstanceOf[IndexedField[Char]].insert(x.asInstanceOf[Char], rowkey)
-          }
-      }
-    })
-  }
-
-  private def removeFromIndices(rowkey: String, rowDeleted: RowWithData): Unit = {
-    this.indices.foreach(colTup => {
-      val column = colTup._1
-      val index = colTup._2
-
-      rowDeleted.get(column) match {
-        case null =>
-        case x: Any =>
-          column.dataType match {
-            case DataType.StringDataType =>
-              index.asInstanceOf[IndexedField[String]].remove(x.asInstanceOf[String], rowkey)
-            case DataType.IntegerDataType =>
-              index.asInstanceOf[IndexedField[Int]].remove(x.asInstanceOf[Int], rowkey)
-            case DataType.LongDataType =>
-              index.asInstanceOf[IndexedField[Long]].remove(x.asInstanceOf[Long], rowkey)
-            case DataType.DoubleDataType =>
-              index.asInstanceOf[IndexedField[Double]].remove(x.asInstanceOf[Double], rowkey)
-            case DataType.BooleanDataType =>
-              index.asInstanceOf[IndexedField[Boolean]].remove(x.asInstanceOf[Boolean], rowkey)
-            case DataType.EpochTimestampType =>
-              index.asInstanceOf[IndexedField[EpochTimestamp]].remove(x.asInstanceOf[EpochTimestamp], rowkey)
-            case DataType.CharDataType =>
-              index.asInstanceOf[IndexedField[Char]].remove(x.asInstanceOf[Char], rowkey)
-          }
-      }
-    })
-  }
-
-  def update(rowkey: String, rowUpdate: RowData): Unit = {
-    val updatedData = data.update(rowkey, rowUpdate)
-    data = updatedData._1
-    updateIndices(rowkey, updatedData._2)
+  
+  def update(rowKey: String, rowUpdate: RowData): Unit = {
+    val tableDataUpdate = data.update(rowKey, rowUpdate)
+    data = tableDataUpdate.tableData
+    tableDataUpdate match {
+      case TableDataInserted(tableData, rowDataAfter) =>
+        indices.insert(rowDataAfter)
+      case TableDataUpdated(tableData, rowDataBefore, rowDataAfter) =>
+        indices.update(rowDataBefore, rowDataAfter)
+    }
   }
 
   def delete(rowKey: String): RowData = {
-    data.dataByKey(rowKey) match {
-      case x: RowWithData =>
-        removeFromIndices(rowKey, x)
-        data = data.delete(rowKey)
-        x
-      case _ =>
+    val tableDataDelete = data.delete(rowKey)
+    tableDataDelete match {
+      case TableDataDeleted(tableData, rowDataBefore) =>
+        data = tableData
+        indices.remove(rowDataBefore)
+        rowDataBefore
+      case TableDataNothingDeleted =>
         logger.trace(s"Got a delete for key $rowKey, but it has no row data")
         EmptyRowData
     }
@@ -512,10 +436,9 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
     val rowData = delete(rowKey)
 
     rowData match {
-      case RowWithData(_, _) =>
+      case x: RowWithData =>
         sendDeleteToJoinSink(rowKey, rowData)
         notifyListeners(rowKey, isDelete = true)
-
       case EmptyRowData =>
     }
 

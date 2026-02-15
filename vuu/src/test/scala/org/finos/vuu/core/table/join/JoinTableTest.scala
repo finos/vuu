@@ -429,7 +429,10 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
       val traderIndexHit2 = traderIdIndex.find("mikey")
       traderIndexHit2.length shouldEqual 1
       traderIndexHit2.contains("NYC-0002") shouldBe true
-      
+
+      val traderIndexHit3 = traderIdIndex.find("chris")
+      traderIndexHit3.length shouldEqual 1
+      traderIndexHit3.contains("NYC-0001") shouldBe true
       }
 
 
