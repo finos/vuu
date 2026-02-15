@@ -59,7 +59,7 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Vi
   }
 
   private def filterIndexByValues[TYPE](index: IndexedField[TYPE], parentSelected: List[TYPE]): TablePrimaryKeys = {
-    InMemTablePrimaryKeys(index.find(parentSelected))
+    InMemTablePrimaryKeys(index.find(parentSelected).toImmutableArray)
   }
 
   private def doFilterByBruteForce(parentDataValues: Set[Any], childColumn: Column, source: RowSource, primaryKeys: TablePrimaryKeys): TablePrimaryKeys = {

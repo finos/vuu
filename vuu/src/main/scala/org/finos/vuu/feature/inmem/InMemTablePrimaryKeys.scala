@@ -19,12 +19,4 @@ case class InMemTablePrimaryKeys(keys: ImmutableArray[String]) extends TablePrim
   override def get(index: Int): String = keys.getIndex(index)
   override def set(index: Int, key: String): TablePrimaryKeys = InMemTablePrimaryKeys(keys.set(index, key))
 
-  override def intersect(otherKeys: Iterable[String]): TablePrimaryKeys = {
-    if (otherKeys.isEmpty) {
-      EmptyTablePrimaryKeys
-    } else {
-      val intersection = keys.filter(otherKeys.toSet.contains).toArray
-      InMemTablePrimaryKeys(ImmutableArray.from(intersection))
-    }    
-  }
 }

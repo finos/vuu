@@ -14,7 +14,7 @@ object EmptyTablePrimaryKeys extends TablePrimaryKeys{
 
   override def get(index: Int): String = null
   override def set(index: Int, key: String): TablePrimaryKeys = this
-  override def intersect(keys: Iterable[String]): TablePrimaryKeys = EmptyTablePrimaryKeys
+  
 }
 
 trait TablePrimaryKeys extends Iterable[String] {
@@ -26,7 +26,6 @@ trait TablePrimaryKeys extends Iterable[String] {
   def sliceTableKeys(from: Int, until: Int): TablePrimaryKeys
   def get(index: Int): String
   def set(index: Int, key: String): TablePrimaryKeys
-  def intersect(keys: Iterable[String]): TablePrimaryKeys
 }
 
 
