@@ -2,7 +2,7 @@ package org.finos.vuu.plugin.virtualized.table
 
 import org.finos.toolbox.collection.window.MovingWindow
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.core.table._
+import org.finos.vuu.core.table.*
 
 class VirtualizedSessionTableData(cacheSize: Int)(implicit clock: Clock) extends TableData {
 
@@ -18,14 +18,18 @@ class VirtualizedSessionTableData(cacheSize: Int)(implicit clock: Clock) extends
     }
   }
 
-  override def update(key: String, update: RowData): (TableData, RowData) = {
-    rowCache.put(key, update)
-    (this, update)
+  override def update(key: String, update: RowData): TableDataUpdate = {
+    rowCache.put(key, update) match {
+      case Some(value) => TableDataUpdated(this, value, update)
+      case None => TableDataInserted(this, update)
+    }
   }
 
-  override def delete(key: String): TableData = {
-    rowCache.remove(key)
-    this
+  override def delete(key: String): TableDataDelete = {
+    rowCache.remove(key) match {
+      case Some(value) => TableDataDeleted(this, value)
+      case None => TableDataNothingDeleted
+    }
   }
 
   override def deleteAll(): TableData = {

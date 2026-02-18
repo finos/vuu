@@ -25,8 +25,14 @@ class CaffeineWindowedRowDataCache(val cacheSize: Int)(implicit clock: Clock) ex
     })
     .build()
 
-  override def put(key: String, v: RowData): Unit = {
-    cache.put(key, v)
+  override def put(key: String, v: RowData): Option[RowData] = {
+    if (key != null) {
+      val currentValue = Option(cache.getIfPresent(key))
+      cache.put(key, v)
+      currentValue
+    } else {
+      None
+    }    
   }
 
   override def get(key: String): Option[RowData] = {
@@ -38,5 +44,13 @@ class CaffeineWindowedRowDataCache(val cacheSize: Int)(implicit clock: Clock) ex
   }
   override def removeAll(): Unit = cache.invalidateAll()
 
-  override def remove(key: String): Unit = cache.invalidate(key)
+  override def remove(key: String): Option[RowData] = {
+    if (key != null) {
+      val currentValue = Option(cache.getIfPresent(key))
+      cache.invalidate(key)
+      currentValue
+    } else {
+      None
+    }    
+  }
 }

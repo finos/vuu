@@ -30,8 +30,12 @@ object VectorImmutableArraySet {
     VectorImmutableArraySet(builder.result(), seen.toSet)
   }
 
+  def from[T <: Object : ClassTag](set: Set[T]): ImmutableArraySet[T] = {
+    VectorImmutableArraySet(set.toVector, set)
+  }
+
   def empty[T <: Object : ClassTag](): ImmutableArraySet[T] = {
-    new VectorImmutableArraySet[T](Vector.empty, Set.empty)
+    VectorImmutableArraySet[T](Vector.empty, Set.empty)
   }
 
 }
