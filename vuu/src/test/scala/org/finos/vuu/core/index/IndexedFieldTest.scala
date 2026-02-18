@@ -23,8 +23,8 @@ class IndexedFieldTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
       })
 
-      val rowKeys = index.find(3)
-
+      val rowKeys = index.find(3).toList
+      
       rowKeys(0) shouldEqual ("1300")
       rowKeys(1) shouldEqual ("1301")
       rowKeys(2) shouldEqual ("1302")
@@ -33,7 +33,7 @@ class IndexedFieldTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
       index.remove(3, "1302")
 
-      val rowKeys2 = index.find(3)
+      val rowKeys2 = index.find(3).toList
 
       rowKeys2.length shouldEqual (9)
       rowKeys2.indexOf("1302") shouldEqual(-1)
