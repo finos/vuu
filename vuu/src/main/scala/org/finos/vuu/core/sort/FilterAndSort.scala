@@ -2,7 +2,7 @@ package org.finos.vuu.core.sort
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.filter.`type`.BaseFilter
-import org.finos.vuu.core.filter.{CompoundFilter, ViewPortFilter}
+import org.finos.vuu.core.filter.{CompoundFilter, CompoundViewPortFilter, ViewPortFilter}
 import org.finos.vuu.core.table.{EmptyTablePrimaryKeys, TablePrimaryKeys}
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 
@@ -28,7 +28,7 @@ case class UserDefinedFilterAndSort(filter: ViewPortFilter, sort: Sort) extends 
 
     try {
       
-      val realizedFilter = CompoundFilter(baseFilter, filter)
+      val realizedFilter = CompoundViewPortFilter(baseFilter, filter)
       logger.trace("Filtering...")
       val filteredKeys = realizedFilter.doFilter(source, primaryKeys, vpColumns, firstInChain = true)
       logger.trace("Filtered. Sorting...")

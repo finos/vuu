@@ -1,7 +1,6 @@
 package org.finos.vuu.core.index
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.toolbox.collection.array.{ImmutableArray, VectorImmutableArray}
 import org.finos.toolbox.collection.set.ImmutableArraySet
 import org.finos.vuu.core.table.Column
 import org.finos.vuu.core.table.datatype.EpochTimestamp
@@ -27,14 +26,20 @@ trait IndexedField[TYPE] {
 
   def find(indexedValue: TYPE): ImmutableArraySet[String]
 
-  def find(indexedValues: List[TYPE]): ImmutableArraySet[String] = {
-    if (indexedValues.isEmpty) {
-      empty
-    } else if (indexedValues.length == 1) {
-      find(indexedValues.head)
-    } else {
-      ImmutableArraySet.from(indexedValues.iterator.flatMap(f => find(f)))
+  def find(indexedValues: Iterable[TYPE]): ImmutableArraySet[String] = {
+    val iterator = indexedValues.iterator
+    if (!iterator.hasNext) return empty
+
+    val first = iterator.next()
+    if (!iterator.hasNext) return find(first)
+
+    val uniqueValues = mutable.HashSet.empty[String]
+    uniqueValues.addAll(find(first))
+    while (iterator.hasNext) {
+      uniqueValues.addAll(find(iterator.next()))
     }
+
+    ImmutableArraySet.from(uniqueValues.toSet)
   }
 
 }
@@ -101,7 +106,7 @@ class HashMapIndexedStringField(val column: Column) extends StringIndexedField w
     if (result != null) result else empty
   }
 
-  override def find(indexedValues: List[String]): ImmutableArraySet[String] = super.find(indexedValues)
+  override def find(indexedValues: Iterable[String]): ImmutableArraySet[String] = super.find(indexedValues)
 
   override def lessThan(bound: String): ImmutableArraySet[String] = {
     logger.warn("Less than is not supported for Strings")
@@ -182,7 +187,7 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
     collect(skipList.tailMap(bound, true))    
   }
 
-  override def find(indexedValues: List[TYPE]): ImmutableArraySet[String] = super.find(indexedValues)
+  override def find(indexedValues: Iterable[TYPE]): ImmutableArraySet[String] = super.find(indexedValues)
 
   private def collect(results: ConcurrentNavigableMap[TYPE, ImmutableArraySet[String]]): ImmutableArraySet[String] = {
     if (results.isEmpty) {
@@ -190,13 +195,13 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
     } else if (results.size() == 1) {
       results.firstEntry().getValue
     } else {
-      val uniqueValues = mutable.HashSet.empty[String]
+      val uniqueValues = HashSet.newBuilder
       val iterator = results.values().iterator()
       while (iterator.hasNext) {
         val set = iterator.next()
         uniqueValues.addAll(set.iterator)
       }
-      ImmutableArraySet.from(uniqueValues)
+      ImmutableArraySet.from(uniqueValues.)
     }
   }
   

@@ -1,12 +1,12 @@
 package org.finos.vuu.core.filter.`type`
 
-import com.typesafe.scalalogging.LazyLogging
+import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.filter.{FilterClause, ViewPortFilter}
 import org.finos.vuu.core.table.column.{Error, Success}
 import org.finos.vuu.core.table.{EmptyTablePrimaryKeys, TablePrimaryKeys}
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 
-case class AntlrBasedFilter(clause: FilterClause) extends ViewPortFilter with LazyLogging {
+case class AntlrBasedFilter(clause: FilterClause) extends ViewPortFilter with StrictLogging {
 
   override def doFilter(source: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
     logger.trace(s"Starting filter with ${rowKeys.length}")

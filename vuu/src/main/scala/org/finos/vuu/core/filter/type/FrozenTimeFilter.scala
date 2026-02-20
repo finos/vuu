@@ -3,7 +3,7 @@ package org.finos.vuu.core.filter.`type`
 import com.typesafe.scalalogging.LazyLogging
 import org.finos.toolbox.collection.array.{ImmutableArray, VectorImmutableArray}
 import org.finos.vuu.core.filter.Filter
-import org.finos.vuu.core.index.{EpochTimestampIndexedField, LongIndexedField}
+import org.finos.vuu.core.index.EpochTimestampIndexedField
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.core.table.{DefaultColumn, EmptyTablePrimaryKeys, TablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
@@ -13,9 +13,10 @@ case class FrozenTimeFilter(frozenTime: EpochTimestamp) extends Filter with Lazy
 
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean): TablePrimaryKeys = {
     logger.trace(s"Starting filter with ${primaryKeys.length}")
+    if (primaryKeys.isEmpty) return primaryKeys
 
     val column = source.asTable.columnForName(DefaultColumn.CreatedTime.name)
-    if (column == null || primaryKeys.isEmpty) {
+    if (column == null) {
       EmptyTablePrimaryKeys
     } else {
       source.asTable.indexForColumn(column) match {
@@ -36,7 +37,7 @@ case class FrozenTimeFilter(frozenTime: EpochTimestamp) extends Filter with Lazy
     } else {
       val keyLength = primaryKeys.length
       val builder = Vector.newBuilder[String]
-      builder.sizeHint(results.length)
+      builder.sizeHint(Math.min(keyLength, results.length))
 
       var i = 0
       while (i < keyLength) {
@@ -57,6 +58,6 @@ case class FrozenTimeFilter(frozenTime: EpochTimestamp) extends Filter with Lazy
       vuuCreatedTimestamp != null && vuuCreatedTimestamp.asInstanceOf[EpochTimestamp] < frozenTime
     })
     
-    InMemTablePrimaryKeys(ImmutableArray.from[String](filtered.toArray))
+    InMemTablePrimaryKeys(ImmutableArray.from[String](filtered))
   }
 }

@@ -1,7 +1,8 @@
 package org.finos.vuu.core.filter.`type`
 
-import com.typesafe.scalalogging.LazyLogging
+import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.collection.array.{ImmutableArray, VectorImmutableArray}
+import org.finos.vuu.core.filter.Filter
 import org.finos.vuu.core.index.{BooleanIndexedField, CharIndexedField, DoubleIndexedField, EpochTimestampIndexedField, IndexedField, IntIndexedField, LongIndexedField, StringIndexedField}
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.core.table.{Column, DataType, EmptyTablePrimaryKeys, RowData, TablePrimaryKeys}
@@ -10,9 +11,7 @@ import org.finos.vuu.viewport.RowSource
 
 import java.util.Objects
 
-trait PermissionFilter {
-
-  def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean): TablePrimaryKeys
+trait PermissionFilter extends Filter {
 
 }
 
@@ -38,25 +37,22 @@ object DenyAllPermissionFilter extends PermissionFilter {
 
 }
 
-private case class PermissionFilterChain(filters: Iterable[PermissionFilter]) extends PermissionFilter with LazyLogging {
+private case class PermissionFilterChain(filters: Iterable[PermissionFilter]) extends PermissionFilter with StrictLogging {
 
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean): TablePrimaryKeys = {
     logger.trace(s"Starting filter with ${primaryKeys.length} rows")
+    if (primaryKeys.isEmpty || filters.isEmpty) return primaryKeys
 
-    if (primaryKeys.isEmpty) {
-      primaryKeys
-    } else {
-      filters.foldLeft(primaryKeys) {
-        (remainingKeys, filter) => {
-          if (remainingKeys.isEmpty) {
-            remainingKeys
-          } else {
-            val stillFirstInChain = firstInChain && remainingKeys == primaryKeys
-            filter.doFilter(source, remainingKeys, stillFirstInChain)
-          }
-        }
-      }
+    var remainingKeys = primaryKeys
+    val filterIterator = filters.iterator
+
+    while (filterIterator.hasNext && remainingKeys.nonEmpty) {
+      val filter = filterIterator.next()
+      val stillFirst = firstInChain && (remainingKeys eq primaryKeys)
+      remainingKeys = filter.doFilter(source, remainingKeys, stillFirst)
     }
+
+    remainingKeys
   }
 
   private lazy val hash = filters.hashCode()
@@ -65,45 +61,50 @@ private case class PermissionFilterChain(filters: Iterable[PermissionFilter]) ex
 
 }
 
-private case class RowPermissionFilter(rowPredicate: RowData => Boolean) extends PermissionFilter with LazyLogging {
+private case class RowPermissionFilter(rowPredicate: RowData => Boolean) extends PermissionFilter with StrictLogging {
 
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean): TablePrimaryKeys = {
     logger.trace(s"Starting filter with ${primaryKeys.length} rows")
+    if (primaryKeys.isEmpty) return primaryKeys
 
-    if (primaryKeys.isEmpty) {
-      primaryKeys
-    } else {
-      val filtered = primaryKeys.filter(key => rowPredicate.apply(source.pullRow(key)))
-      InMemTablePrimaryKeys(ImmutableArray.from[String](filtered.toArray))
-    }
+    val filtered = primaryKeys.filter(key => rowPredicate.apply(source.pullRow(key)))
+    InMemTablePrimaryKeys(ImmutableArray.from[String](filtered))
   }
 
 }
 
-private case class ContainsPermissionFilter(columnName: String, allowedValues: Set[String]) extends PermissionFilter with LazyLogging {
+private case class ContainsPermissionFilter(columnName: String, allowedValues: Set[String]) extends PermissionFilter with StrictLogging {
+
+  private lazy val longValues = allowedValues.map(f => f.toLong)
+  private lazy val intValues = allowedValues.map(f => f.toInt)
+  private lazy val doubleValues = allowedValues.map(f => f.toDouble)
+  private lazy val booleanValues = allowedValues.map(f => f.toBoolean)
+  private lazy val epochTimestampValues = allowedValues.map(f => EpochTimestamp(f.toLong))
+  private lazy val charValues = allowedValues.map(f => f.charAt(0))
 
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean): TablePrimaryKeys = {
     logger.trace(s"Starting filter with ${primaryKeys.length} rows")
+    if (primaryKeys.isEmpty) return primaryKeys
 
     val column = source.asTable.columnForName(columnName)
-    if (column == null || primaryKeys.isEmpty || allowedValues.isEmpty) {
+    if (column == null || allowedValues.isEmpty) {
       EmptyTablePrimaryKeys
     } else {
       source.asTable.indexForColumn(column) match {
         case Some(index: StringIndexedField) =>
           hitIndex(primaryKeys, index, allowedValues, firstInChain)
         case Some(index: LongIndexedField) =>
-          hitIndex(primaryKeys, index, allowedValues.map(f => f.toLong), firstInChain)
+          hitIndex(primaryKeys, index, longValues, firstInChain)
         case Some(index: IntIndexedField) =>
-          hitIndex(primaryKeys, index, allowedValues.map(f => f.toInt), firstInChain)
+          hitIndex(primaryKeys, index, intValues, firstInChain)
         case Some(index: DoubleIndexedField) =>
-          hitIndex(primaryKeys, index, allowedValues.map(f => f.toDouble), firstInChain)
+          hitIndex(primaryKeys, index, doubleValues, firstInChain)
         case Some(index: BooleanIndexedField) =>
-          hitIndex(primaryKeys, index, allowedValues.map(f => f.toBoolean), firstInChain)
+          hitIndex(primaryKeys, index, booleanValues, firstInChain)
         case Some(index: EpochTimestampIndexedField) =>
-          hitIndex(primaryKeys, index, allowedValues.map(f => EpochTimestamp(f.toLong)), firstInChain)
+          hitIndex(primaryKeys, index, epochTimestampValues, firstInChain)
         case Some(index: CharIndexedField) =>
-          hitIndex(primaryKeys, index, allowedValues.map(f => f.charAt(0)), firstInChain)
+          hitIndex(primaryKeys, index, charValues, firstInChain)
         case _ =>
           logger.trace(s"Falling back to row filtering for $column as no Index found")
           filterByRow(source, primaryKeys, firstInChain, column)
@@ -113,7 +114,7 @@ private case class ContainsPermissionFilter(columnName: String, allowedValues: S
 
   private def hitIndex[T](primaryKeys: TablePrimaryKeys, indexedField: IndexedField[T], values: Set[T],
                           firstInChain: Boolean): TablePrimaryKeys = {
-    val results = indexedField.find(values.toList)
+    val results = indexedField.find(values)
     if (results.isEmpty) {
       EmptyTablePrimaryKeys
     } else if (firstInChain) {
@@ -121,7 +122,7 @@ private case class ContainsPermissionFilter(columnName: String, allowedValues: S
     } else {
       val keyLength = primaryKeys.length
       val builder = Vector.newBuilder[String]
-      builder.sizeHint(results.length)
+      builder.sizeHint(Math.min(keyLength, results.length))
 
       var i = 0
       while (i < keyLength) {
@@ -141,17 +142,17 @@ private case class ContainsPermissionFilter(columnName: String, allowedValues: S
       case DataType.StringDataType =>
         buildFilter(column, allowedValues)
       case DataType.LongDataType =>
-        buildFilter(column, allowedValues.map(f => f.toLong))
+        buildFilter(column, longValues)
       case DataType.IntegerDataType =>
-        buildFilter(column, allowedValues.map(f => f.toInt))
+        buildFilter(column, intValues)
       case DataType.DoubleDataType =>
-        buildFilter(column, allowedValues.map(f => f.toDouble))
+        buildFilter(column, doubleValues)
       case DataType.BooleanDataType =>
-        buildFilter(column, allowedValues.map(f => f.toBoolean))
+        buildFilter(column, booleanValues)
       case DataType.EpochTimestampType =>
-        buildFilter(column, allowedValues.map(f => EpochTimestamp(f.toLong)))
+        buildFilter(column, epochTimestampValues)
       case DataType.CharDataType =>
-        buildFilter(column, allowedValues.map(f => f.charAt(0)))
+        buildFilter(column, charValues)
       case _ =>
         logger.warn(s"Unable to permission filter $column")
         DenyAllPermissionFilter

@@ -28,7 +28,7 @@ class FiltersTest extends AnyFeatureSpec with Matchers {
       result shouldEqual EmptyTablePrimaryKeys
     }
 
-    Scenario("Compound filter applies filters in succession") {
+    Scenario("Compound viewport filter applies filters in succession") {
 
       val table = setupTable()
 
@@ -52,14 +52,14 @@ class FiltersTest extends AnyFeatureSpec with Matchers {
         }
       }
 
-      val result = CompoundFilter(Filter1(), Filter2()).doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), true)
+      val result = CompoundViewPortFilter(Filter1(), Filter2()).doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), true)
 
       result.size shouldEqual 5
       result.toSet shouldEqual Set("LDN-0001", "LDN-0002", "LDN-0008", "NYC-0002", "NYC-0010")
 
       //Should get same result when applying in reverse
 
-      val result2 = CompoundFilter(Filter2(), Filter1()).doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), true)
+      val result2 = CompoundViewPortFilter(Filter2(), Filter1()).doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), true)
 
       result2.size shouldEqual result.size
       result2.toSet shouldEqual result.toSet
