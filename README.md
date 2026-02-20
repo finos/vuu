@@ -82,7 +82,7 @@ npm run build:app
 The first build step (`npm run build`) builds the UI library packages, the packages are written to the `dist` folder.
 The second step (`npm run build:app`) builds the sample application. Application bundles are written to `deployed_apps`. The UI library packages are dependencies of the application.
 
-You can now open the demo app in your browser at <https://127.0.0.1:8443/index.html>
+You can now open the demo app in your browser at <https://localhost:8443/index.html>
 
 ## Alternative demo configuration - build,deploy and run the Vuu server and Sample UI application independently.
 
