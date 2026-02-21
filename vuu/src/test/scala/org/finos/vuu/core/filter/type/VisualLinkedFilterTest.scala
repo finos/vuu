@@ -15,6 +15,7 @@ import org.finos.vuu.viewport.tree.TreeNodeState
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
+import java.util
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -173,7 +174,7 @@ class VisualLinkedFilterTest extends AnyFeatureSpec with Matchers {
 
     override def getTableUpdateCount(): Long = ???
 
-    override def ForTest_getSubcribedKeys: ConcurrentHashMap[String, String] = ???
+    override def ForTest_getSubcribedKeys: util.Set[String] = ???
 
     override def ForTest_getRowKeyToRowIndex: ConcurrentHashMap[String, Int] = ???
 

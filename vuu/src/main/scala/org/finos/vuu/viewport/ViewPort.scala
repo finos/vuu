@@ -19,6 +19,9 @@ import org.finos.vuu.viewport.tree.TreeNodeState
 import java.util
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
+import scala.collection.JavaConverters.asScalaSetConverter
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 class ViewPortUpdateType
 
@@ -152,7 +155,7 @@ trait ViewPort {
 
   def getTableUpdateCount(): Long
 
-  def ForTest_getSubcribedKeys: ConcurrentHashMap[String, String]
+  def ForTest_getSubcribedKeys: util.Set[String]
 
   def ForTest_getRowKeyToRowIndex: ConcurrentHashMap[String, Int]
 
@@ -403,9 +406,8 @@ class ViewPortImpl(val id: String,
   @volatile
   private var selection: Set[String] = Set.empty
 
-  private val subscribedKeys = new ConcurrentHashMap[String, String]()
+  private val subscribedKeys = ConcurrentHashMap.newKeySet[String]()
   private val rowKeyToIndex = new ConcurrentHashMap[String, Int]()
-
 
   override def getStructuralHashCode(): Int = {
     37 * filterAndSort.hashCode() ^ getGroupBy.hashCode() ^ getColumns.hashCode() ^ getPermissionFilter.hashCode() ^ viewPortFrozenTime.hashCode()
@@ -424,7 +426,7 @@ class ViewPortImpl(val id: String,
     this.table.asTable.updateCounter
   }
 
-  override def ForTest_getSubcribedKeys: ConcurrentHashMap[String, String] = subscribedKeys
+  override def ForTest_getSubcribedKeys: util.Set[String] = subscribedKeys
 
   override def ForTest_getRowKeyToRowIndex: ConcurrentHashMap[String, Int] = rowKeyToIndex
 
@@ -499,7 +501,7 @@ class ViewPortImpl(val id: String,
 
   protected def isInRange(i: Int): Boolean = range.get().contains(i)
 
-  protected def isObservedAlready(key: String): Boolean = subscribedKeys.get(key) != null
+  protected def isObservedAlready(key: String): Boolean = subscribedKeys.contains(key)
 
   protected def hasChangedIndex(oldIndex: Int, newIndex: Int): Boolean = oldIndex != newIndex
 
@@ -514,8 +516,6 @@ class ViewPortImpl(val id: String,
     var removedObs = 0
 
     val range = this.range.get()
-
-    val existingSubs = MapHasAsScala(subscribedKeys).asScala.toMap
 
     val keyAdded = scala.collection.mutable.Set[String]()
 
@@ -549,15 +549,12 @@ class ViewPortImpl(val id: String,
 
     }
 
-
-    existingSubs.foreach({ case (key, value) => {
+    subscribedKeys.forEach(key => {
       val index = rowKeyToIndex.getOrDefault(key, -1)
-
-      if (key != null && index != -1 && !keyAdded.contains(key)) {
+      if (index != -1 && !keyAdded.contains(key)) {
         unsubscribeForKey(key)
         removedObs += 1
       }
-    }
     })
 
     if (newlyAddedObs > 0)
@@ -565,33 +562,36 @@ class ViewPortImpl(val id: String,
   }
 
 
-  protected def removeNoLongerSubscribedKeys(newKeys: ViewPortKeys): Unit = {
-    val newKeySet = new util.HashSet[String]()
+  private def removeNoLongerSubscribedKeys(newKeys: ViewPortKeys): Unit = {
+    val initialCapacity = (subscribedKeys.size() / 0.75f).toInt + 1
+    val retainKeys = new java.util.HashSet[String](initialCapacity)
 
-    newKeys.foreach(key => {
-      newKeySet.add(key)
-    })
+    val newKeysIterator = newKeys.iterator
+    while (newKeysIterator.hasNext) {
+      val key = newKeysIterator.next()      
+      if (subscribedKeys.contains(key)) {
+        retainKeys.add(key)
+      }
+    }
 
-    val iterator = subscribedKeys.entrySet().iterator()
-
-    while (iterator.hasNext) {
-      val oldEntry = iterator.next()
-      val oldKey = oldEntry.getKey
-      if (!newKeySet.contains(oldKey)) {
-        unsubscribeForKey(oldKey)
+    val subscribedKeysIterator = subscribedKeys.iterator()
+    while (subscribedKeysIterator.hasNext) {
+      val subscribedKey = subscribedKeysIterator.next()      
+      if (!retainKeys.contains(subscribedKey)) {
+        unsubscribeForKey(subscribedKey)
       }
     }
   }
 
-  def unsubscribeForKey(key: String): Unit = {
+  private def unsubscribeForKey(key: String): Unit = {
     subscribedKeys.remove(key)
     logger.trace(s"Unsubscribed to key [${key}]")
     rowKeyToIndex.remove(key)
     removeObserver(key)
   }
 
-  def subscribeForKey(key: String, index: Int): Unit = {
-    subscribedKeys.put(key, "-")
+  private def subscribeForKey(key: String, index: Int): Unit = {
+    subscribedKeys.add(key)
     logger.trace(s"Subscribed to key [${key}]")
     rowKeyToIndex.put(key, index)
     addObserver(key)

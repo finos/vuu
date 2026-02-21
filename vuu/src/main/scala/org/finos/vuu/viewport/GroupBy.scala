@@ -7,11 +7,8 @@ import org.finos.vuu.viewport.tree.NodeAggregation
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap
-import java.util.{LinkedList => JList}
-import scala.jdk.CollectionConverters._
-
-
-
+import java.util.{Objects, LinkedList as JList}
+import scala.jdk.CollectionConverters.*
 
 object GroupBy {
   def apply(table: DataTable, columns: Column*): GroupByClause = {
@@ -30,7 +27,13 @@ object AggregationType {
 
 case class Aggregation(column: Column, aggType: Short)
 
-case class GroupBy(columns: List[Column], aggregations: List[Aggregation])
+case class GroupBy(columns: List[Column], aggregations: List[Aggregation]) {
+  
+  private lazy val lazyHash = Objects.hash(columns, aggregations)
+
+  override def hashCode(): Int = lazyHash
+  
+}
 
 object NoGroupBy extends GroupBy(List(), List())
 
