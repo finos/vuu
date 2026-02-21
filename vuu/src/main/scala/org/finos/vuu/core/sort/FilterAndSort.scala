@@ -6,6 +6,8 @@ import org.finos.vuu.core.filter.{CompoundFilter, ViewPortFilter}
 import org.finos.vuu.core.table.{EmptyTablePrimaryKeys, TablePrimaryKeys}
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 
+import java.util.Objects
+
 trait FilterAndSort {
   def filterAndSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns,
                     baseFilter: BaseFilter): TablePrimaryKeys
@@ -40,6 +42,10 @@ case class UserDefinedFilterAndSort(filter: ViewPortFilter, sort: Sort) extends 
     }
   }
 
+  private lazy val lazyHash = Objects.hash(filter, sort)
+
+  override def hashCode(): Int = lazyHash
+  
 }
 
 
