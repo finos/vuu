@@ -19,9 +19,6 @@ import org.finos.vuu.viewport.tree.TreeNodeState
 import java.util
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
-import scala.collection.JavaConverters.asScalaSetConverter
-import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 
 class ViewPortUpdateType
 
@@ -455,16 +452,15 @@ class ViewPortImpl(val id: String,
     //ImmutableArray.from(inrangeKeys)
   }
 
-  def setKeysPre(newKeys: ViewPortKeys): Unit = {
-    //send ViewPort
+  private def setKeysPre(newKeys: ViewPortKeys): Unit = {
     removeNoLongerSubscribedKeys(newKeys)
   }
 
-  def setKeysInternal(newKeys: ViewPortKeys): Unit = {
+  private def setKeysInternal(newKeys: ViewPortKeys): Unit = {
     keys = newKeys
   }
 
-  def setKeysPost(sendSizeUpdate: Boolean, newKeys: ViewPortKeys): Unit = {
+  private def setKeysPost(sendSizeUpdate: Boolean, newKeys: ViewPortKeys): Unit = {
     if (sendSizeUpdate) {
       outboundQ.pushHighPriority(ViewPortUpdate(this.requestId, this, null, RowKeyUpdate("SIZE", null), -1, SizeUpdateType, newKeys.length, timeProvider.now()))
     }
@@ -504,8 +500,6 @@ class ViewPortImpl(val id: String,
   protected def isObservedAlready(key: String): Boolean = subscribedKeys.contains(key)
 
   protected def hasChangedIndex(oldIndex: Int, newIndex: Int): Boolean = oldIndex != newIndex
-
-  import scala.jdk.CollectionConverters.MapHasAsScala
 
   protected def subscribeToNewKeys(newKeys: ViewPortKeys): Unit = {
 
@@ -561,9 +555,13 @@ class ViewPortImpl(val id: String,
       logger.trace(s"[VP] ${this.id} Added $newlyAddedObs Removed $removedObs Obs ${this.table}, Range ${this.range}")
   }
 
-
   private def removeNoLongerSubscribedKeys(newKeys: ViewPortKeys): Unit = {
-    val initialCapacity = (subscribedKeys.size() / 0.75f).toInt + 1
+    val subscribedKeyCount = subscribedKeys.size()
+    if (subscribedKeyCount == 0) return
+
+    logger.trace(s"[VP] ${this.id} Checking $subscribedKeyCount keys")
+    
+    val initialCapacity = (subscribedKeyCount / 0.75f).toInt + 1
     val retainKeys = new java.util.HashSet[String](initialCapacity)
 
     val newKeysIterator = newKeys.iterator
@@ -574,6 +572,8 @@ class ViewPortImpl(val id: String,
       }
     }
 
+    logger.trace(s"[VP] ${this.id} Removing ${subscribedKeyCount - retainKeys.size()} keys")
+    
     val subscribedKeysIterator = subscribedKeys.iterator()
     while (subscribedKeysIterator.hasNext) {
       val subscribedKey = subscribedKeysIterator.next()      
