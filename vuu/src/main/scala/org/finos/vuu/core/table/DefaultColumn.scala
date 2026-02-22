@@ -7,6 +7,7 @@ enum DefaultColumn(val name: String, val dataType: Class[_]) {
 
 object DefaultColumn {
 
+  val COUNT: Int = DefaultColumn.values.length
   val CREATED_TIME: DefaultColumn = DefaultColumn.CreatedTime
   val LAST_UPDATED_TIME: DefaultColumn = DefaultColumn.LastUpdatedTime
 
