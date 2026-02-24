@@ -10,9 +10,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.{Objects, LinkedList as JList}
 import scala.jdk.CollectionConverters.*
 
-
-
-
 object GroupBy {
   def apply(table: DataTable, columns: Column*): GroupByClause = {
     GroupByClause(table, columns.toList)
@@ -31,11 +28,11 @@ object AggregationType {
 case class Aggregation(column: Column, aggType: Short)
 
 case class GroupBy(columns: List[Column], aggregations: List[Aggregation]) {
+  
+  private lazy val lazyHash = Objects.hash(columns, aggregations)
 
-  private lazy val hash = Objects.hash(columns, aggregations)
-
-  override def hashCode(): Int = hash
-
+  override def hashCode(): Int = lazyHash
+  
 }
 
 object NoGroupBy extends GroupBy(List(), List())
