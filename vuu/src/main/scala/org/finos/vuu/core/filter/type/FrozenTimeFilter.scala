@@ -52,12 +52,22 @@ case class FrozenTimeFilter(frozenTime: EpochTimestamp) extends Filter with Lazy
     }
   }
 
-  private def filterAll(source: RowSource, rowKeys: TablePrimaryKeys): TablePrimaryKeys = {
-    val filtered = rowKeys.filter(key => {
-      val vuuCreatedTimestamp = source.pullRow(key).get(DefaultColumn.CreatedTime.name)
-      vuuCreatedTimestamp != null && vuuCreatedTimestamp.asInstanceOf[EpochTimestamp] < frozenTime
-    })
-    
-    InMemTablePrimaryKeys(ImmutableArray.from[String](filtered))
+  private def filterAll(source: RowSource, primaryKeys: TablePrimaryKeys): TablePrimaryKeys = {
+    val length = primaryKeys.length
+    val builder = Vector.newBuilder[String]
+    builder.sizeHint(length)
+
+    var i = 0
+    while (i < length) {
+      val key = primaryKeys.get(i)
+      val row = source.pullRow(key)
+      val value = row.get(DefaultColumn.CreatedTime.name)
+      if (value != null && value.asInstanceOf[EpochTimestamp] < frozenTime) {
+        builder += key
+      }
+      i += 1
+    }
+
+    InMemTablePrimaryKeys(ImmutableArray.from[String](builder.result()))
   }
 }
