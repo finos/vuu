@@ -195,16 +195,16 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
     } else if (results.size() == 1) {
       results.firstEntry().getValue
     } else {
-      val uniqueValues = HashSet.newBuilder
+      val uniqueValues = mutable.HashSet.empty[String]
       val iterator = results.values().iterator()
       while (iterator.hasNext) {
         val set = iterator.next()
         uniqueValues.addAll(set.iterator)
       }
-      ImmutableArraySet.from(uniqueValues.)
+      ImmutableArraySet.from(uniqueValues.toSet)
     }
   }
-  
+
 }
 
 class SkipListIndexedDoubleField(column: Column) extends SkipListIndexedField[Double](column) with DoubleIndexedField {}
