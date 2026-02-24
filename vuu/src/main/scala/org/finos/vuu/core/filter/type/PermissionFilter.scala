@@ -61,8 +61,20 @@ private case class RowPermissionFilter(rowPredicate: RowData => Boolean) extends
     logger.trace(s"Starting filter with ${primaryKeys.length} rows")
     if (primaryKeys.isEmpty) return primaryKeys
 
-    val filtered = primaryKeys.filter(key => rowPredicate.apply(source.pullRow(key)))
-    InMemTablePrimaryKeys(ImmutableArray.from[String](filtered))
+    val length = primaryKeys.length
+    val builder = Vector.newBuilder[String]
+    builder.sizeHint(length)
+
+    var i = 0
+    while (i < length) {
+      val key = primaryKeys.get(i)
+      if (rowPredicate.apply(source.pullRow(key))) {
+        builder += key
+      }
+      i += 1
+    }
+
+    InMemTablePrimaryKeys(ImmutableArray.from[String](builder.result()))
   }
 
 }
@@ -132,35 +144,45 @@ private case class ContainsPermissionFilter(columnName: String, allowedValues: S
   }
 
   private def filterByRow(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean, column: Column): TablePrimaryKeys = {
-    val rowPermissionFilter = column.dataType match {
+    column.dataType match {
       case DataType.StringDataType =>
-        buildFilter(column, allowedValues)
+        applyFilter(source, primaryKeys, column, allowedValues)
       case DataType.LongDataType =>
-        buildFilter(column, longValues)
+        applyFilter(source, primaryKeys, column, longValues)
       case DataType.IntegerDataType =>
-        buildFilter(column, intValues)
+        applyFilter(source, primaryKeys, column, intValues)
       case DataType.DoubleDataType =>
-        buildFilter(column, doubleValues)
+        applyFilter(source, primaryKeys, column, doubleValues)
       case DataType.BooleanDataType =>
-        buildFilter(column, booleanValues)
+        applyFilter(source, primaryKeys, column, booleanValues)
       case DataType.EpochTimestampType =>
-        buildFilter(column, epochTimestampValues)
+        applyFilter(source, primaryKeys, column, epochTimestampValues)
       case DataType.CharDataType =>
-        buildFilter(column, charValues)
+        applyFilter(source, primaryKeys, column, charValues)
       case _ =>
         logger.warn(s"Unable to permission filter $column")
-        DenyAllPermissionFilter
+        EmptyTablePrimaryKeys
     }
 
-    rowPermissionFilter.doFilter(source, primaryKeys, firstInChain)
   }
 
-  private def buildFilter[T](column: Column, items: Set[T]): RowPermissionFilter = {
-    val predicate: RowData => Boolean = r => {
-      val value = r.get(column)
-      value != null && items.contains(value.asInstanceOf[T])
+  private def applyFilter[T](source: RowSource, primaryKeys: TablePrimaryKeys, column: Column, items: Set[T]): TablePrimaryKeys = {
+    val length = primaryKeys.length
+    val builder = Vector.newBuilder[String]
+    builder.sizeHint(length)
+
+    var i = 0
+    while (i < length) {
+      val key = primaryKeys.get(i)
+      val row = source.pullRow(key)
+      val value = row.get(column)
+      if (value != null && items.contains(value.asInstanceOf[T])) {
+        builder += key
+      }
+      i += 1
     }
-    RowPermissionFilter(predicate)
+
+    InMemTablePrimaryKeys(ImmutableArray.from[String](builder.result()))
   }
 
 }
