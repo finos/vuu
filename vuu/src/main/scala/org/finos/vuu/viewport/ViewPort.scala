@@ -370,7 +370,7 @@ class ViewPortImpl(val id: String,
 
   override def sortSpec: SortSpec = structuralFields.get().sortSpec
 
-  def sendUpdatesOnChange(currentRange: ViewPortRange): Unit = {
+  private def sendUpdatesOnChange(currentRange: ViewPortRange): Unit = {
 
     //val currentKeys = keys.toArray
 

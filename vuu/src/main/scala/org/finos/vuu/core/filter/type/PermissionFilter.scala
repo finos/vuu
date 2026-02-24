@@ -9,8 +9,6 @@ import org.finos.vuu.core.table.{Column, DataType, EmptyTablePrimaryKeys, RowDat
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.viewport.RowSource
 
-import java.util.Objects
-
 trait PermissionFilter extends Filter {
 
 }
@@ -54,10 +52,6 @@ private case class PermissionFilterChain(filters: Iterable[PermissionFilter]) ex
 
     remainingKeys
   }
-
-  private lazy val hash = filters.hashCode()
-
-  override def hashCode(): Int = hash
 
 }
 
@@ -168,9 +162,5 @@ private case class ContainsPermissionFilter(columnName: String, allowedValues: S
     }
     RowPermissionFilter(predicate)
   }
-
-  private lazy val hash = Objects.hash(columnName, allowedValues)
-
-  override def hashCode(): Int = hash
 
 }

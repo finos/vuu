@@ -6,7 +6,7 @@ import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 object EmptyTablePrimaryKeys extends TablePrimaryKeys{
   override def length: Int = 0
   override def add(key: String): TablePrimaryKeys = this.+(key)
-  override def +(key: String): TablePrimaryKeys = InMemTablePrimaryKeys(ImmutableArray.from(Array(key)))
+  override def +(key: String): TablePrimaryKeys = InMemTablePrimaryKeys(ImmutableArray.of(key))
   override def remove(key: String): TablePrimaryKeys = EmptyTablePrimaryKeys  
   override def -(key: String): TablePrimaryKeys = EmptyTablePrimaryKeys
   override def sliceTableKeys(from: Int, until: Int): TablePrimaryKeys = EmptyTablePrimaryKeys

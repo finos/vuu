@@ -6,7 +6,7 @@ import org.finos.vuu.core.table.Column
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 
 import java.util.concurrent.{ConcurrentHashMap, ConcurrentNavigableMap, ConcurrentSkipListMap}
-import scala.collection.mutable
+import scala.jdk.CollectionConverters.IteratorHasAsScala
 
 trait IndexedField[TYPE] {
 
@@ -27,19 +27,9 @@ trait IndexedField[TYPE] {
   def find(indexedValue: TYPE): ImmutableArraySet[String]
 
   def find(indexedValues: Iterable[TYPE]): ImmutableArraySet[String] = {
-    val iterator = indexedValues.iterator
-    if (!iterator.hasNext) return empty
-
-    val first = iterator.next()
-    if (!iterator.hasNext) return find(first)
-
-    val uniqueValues = mutable.HashSet.empty[String]
-    uniqueValues.addAll(find(first))
-    while (iterator.hasNext) {
-      uniqueValues.addAll(find(iterator.next()))
-    }
-
-    ImmutableArraySet.from(uniqueValues.toSet)
+    val it = indexedValues.iterator
+    if (!it.hasNext) empty
+    else ImmutableArraySet.from(it.flatMap(find))
   }
 
 }
@@ -190,19 +180,10 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
   override def find(indexedValues: Iterable[TYPE]): ImmutableArraySet[String] = super.find(indexedValues)
 
   private def collect(results: ConcurrentNavigableMap[TYPE, ImmutableArraySet[String]]): ImmutableArraySet[String] = {
-    if (results.isEmpty) {
-      empty
-    } else if (results.size() == 1) {
-      results.firstEntry().getValue
-    } else {
-      val uniqueValues = mutable.HashSet.empty[String]
-      val iterator = results.values().iterator()
-      while (iterator.hasNext) {
-        val set = iterator.next()
-        uniqueValues.addAll(set.iterator)
-      }
-      ImmutableArraySet.from(uniqueValues.toSet)
-    }
+    if (results.isEmpty) return empty
+
+    if (results.size() == 1) results.firstEntry().getValue
+    else ImmutableArraySet.from(results.values().iterator().asScala.flatMap(_.iterator))
   }
 
 }

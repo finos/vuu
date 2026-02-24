@@ -38,7 +38,7 @@ object ImmutableArraySet {
     }
   }
 
-  def from[T <: Object](set: Set[T])(implicit c: ClassTag[T]): ImmutableArraySet[T] = {
+  def from[T <: Object](set: scala.collection.Set[T])(implicit c: ClassTag[T]): ImmutableArraySet[T] = {
     if (set.isEmpty) {
       empty()
     } else {
