@@ -9,9 +9,7 @@ import org.finos.vuu.core.table.{Column, DataType, EmptyTablePrimaryKeys, RowDat
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.viewport.RowSource
 
-trait PermissionFilter extends Filter {
-
-}
+trait PermissionFilter extends Filter { }
 
 object PermissionFilter {
 
