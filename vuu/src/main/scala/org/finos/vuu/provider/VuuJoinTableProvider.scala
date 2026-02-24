@@ -156,7 +156,7 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
     ev.get(keyField).toString
   }
 
-  private def addRightKeysForLeftKey(joinTableDef: JoinTableDef, tableName: String, ev: util.HashMap[String, Any]): Unit = {
+  private def addRightKeysForLeftKey(joinTableDef: JoinTableDef, tableName: String, ev: util.HashMap[String, Any], existingKeyValuesByTable: Map[String, String]): Unit = {
 
     val leftKeyName = joinTableDef.baseTable.keyField
     val leftTable = tableName
@@ -170,7 +170,8 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
       ev.get(joinTableDef.baseTable.keyField) match {
         case leftKey: String =>
           val rightKey = leftColumnAsRightKey(joinTableDef, rightTable, ev, leftColumn)
-          rightToLeftKeys.addRightKey(rightTable, rightKey, leftTable, leftKey)
+          val existingRightKey = if (existingKeyValuesByTable == null) null else existingKeyValuesByTable.getOrElse(rightTable, null)
+          rightToLeftKeys.addRightKey(rightTable, rightKey, leftTable, leftKey, existingRightKey)
         case null =>
       }
     })
@@ -200,10 +201,11 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
 
         joinRelations.addRowJoins(joinTableDef, ev)
 
-        addRightKeysForLeftKey(joinTableDef, tableName, ev)
+        val leftKey = eventToLeftKey(joinTableDef, ev)
+        val existingKeyValuesByTable = defAndTable.table.asInstanceOf[JoinTable].getJoinData.getKeyValuesByTable(leftKey)
+        addRightKeysForLeftKey(joinTableDef, tableName, ev, existingKeyValuesByTable)
 
         //if so, publish a left table event for the right inbound event
-        val leftKey = eventToLeftKey(joinTableDef, ev)
         logger.trace(s"Publishing update for left key: $leftKey to table $tableName")
         publishUpdateForLeftTableAndKey(joinTableDef, defAndTable.table.asInstanceOf[JoinTable], tableName, leftKey, ev, isJoinEvent)
 

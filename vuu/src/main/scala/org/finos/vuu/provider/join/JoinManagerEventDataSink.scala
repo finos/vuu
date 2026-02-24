@@ -15,10 +15,11 @@ case class JoinDefToJoinTable(joinDef: JoinTableDef, table: DataTable)
  */
 class RightToLeftKeys {
 
+  // right table name -> right key -> left table name -> left keys
   private val keysToRightKeys = new ConcurrentHashMap[String, ConcurrentHashMap[String, ConcurrentHashMap[String, ImmutableArraySet[String]]]]()
   private val emptyKeyMap: ImmutableArraySet[String] = ImmutableArraySet.empty
 
-  def addRightKey(rightTable: String, rightKey: String, leftTable: String, leftKey: String): Unit = {
+  def addRightKey(rightTable: String, rightKey: String, leftTable: String, leftKey: String, existingRightKey: String): Unit = {
     if (rightKey != null) {
 
       val rightKeyMap = getRightKeyMap(rightTable, rightKey)
@@ -29,16 +30,30 @@ class RightToLeftKeys {
           case _ => existingSet + leftKey
         }
       })
-    } else {
-      // rightKey is null, delete the existing mapping of rightTable.rightKey <-> leftTable.leftKey
-      keysToRightKeys.computeIfPresent(rightTable, (_, rightKeyToLeftTableMap) => {
-        rightKeyToLeftTableMap.forEach((_, leftTableToLeftKeyMap) => {
-          leftTableToLeftKeyMap.computeIfPresent(leftTable, (_, existingSet) => {
-            existingSet.remove(leftKey)
-          })
-        })
-        rightKeyToLeftTableMap
-      })
+    }
+    // Delete the existing mapping of rightTable.rightKey <-> leftTable.leftKey and do cleanup if no mapping left
+    if (existingRightKey != null) {
+      val rightKeyMaps = keysToRightKeys.get(rightTable)
+      if (rightKeyMaps != null) {
+        val leftTableMaps = rightKeyMaps.get(existingRightKey)
+        if (leftTableMaps != null) {
+          val leftKeys = leftTableMaps.get(leftTable)
+          if (leftKeys != null) {
+            val newLeftKeys = leftKeys - leftKey
+            if (newLeftKeys.isEmpty) {
+              leftTableMaps.remove(leftTable)
+            } else {
+              leftTableMaps.put(leftTable, newLeftKeys)
+            }
+          }
+          if (leftTableMaps.isEmpty) {
+            rightKeyMaps.remove(existingRightKey)
+          }
+        }
+        if (rightKeyMaps.isEmpty) {
+          keysToRightKeys.remove(rightTable)
+        }
+      }
     }
 
   }
