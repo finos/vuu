@@ -46,8 +46,8 @@ class JoinTableWSApiTest extends WebSocketApiTestBase {
 
       //Update the linked currency, this will trigger 100k right to left updates
       val currencyDataSource = new FakeDataSource(ListMap(
-        "GBX" -> Map("currency" -> "GBX", "country" -> "UK"),
-        "USD" -> Map("currency" -> "USD", "country" -> "US")
+        "GBX" -> Map("currency" -> "GBX", "country" -> "GB", "unit" -> "Pound Sterling"),
+        "USD" -> Map("currency" -> "USD", "country" -> "US", "unit" -> "Dollar")
       ))
       testProviderFactory.getProvider("currencies").update(currencyDataSource)
 
@@ -118,11 +118,11 @@ class JoinTableWSApiTest extends WebSocketApiTestBase {
     val currencyDef = TableDef(
       "currencies",
       "currency",
-      Columns.fromNames("currency:String", "country:String"),
+      Columns.fromNames("currency:String", "country:String", "unit:String"),
       "currency", "country")
 
     val currencyDataSource = new FakeDataSource(ListMap(
-      "GBX" -> Map("currency" -> "GBX", "country" -> "GB")
+      "GBX" -> Map("currency" -> "GBX", "country" -> "GB", "unit" -> "Pound")
     ))
     val currencyProvider = (table: DataTable, _: AbstractVuuServer) => testProviderFactory.create(table, currencyDataSource)
 
