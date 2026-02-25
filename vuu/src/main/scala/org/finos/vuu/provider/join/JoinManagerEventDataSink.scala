@@ -25,25 +25,14 @@ class RightToLeftKeys {
     }
 
     if (existingRightKey != null) {
-      // Delete the existing mapping of rightTable.rightKey <-> leftTable.leftKey and do cleanup if no mapping left
-      val rightKeyMaps = keysToRightKeys.get(rightTable)
-      if (rightKeyMaps != null) {
-        val leftTableMaps = rightKeyMaps.get(existingRightKey)
-        if (leftTableMaps != null) {
-          val leftKeys = leftTableMaps.get(leftTable)
-          if (leftKeys != null) {
-            val newLeftKeys = leftKeys - leftKey
-            if (newLeftKeys.isEmpty) {
-              leftTableMaps.remove(leftTable)
-            } else {
-              leftTableMaps.put(leftTable, newLeftKeys)
-            }
-          }
-          if (leftTableMaps.isEmpty) {
-            rightKeyMaps.remove(existingRightKey)
-          }
+      // Delete the existing mapping of rightTable.rightKey <-> leftTable.leftKey
+      val existingRightKeyMap = getRightKeyMap(rightTable, existingRightKey)
+      existingRightKeyMap.compute(leftTable, (_, existingSet) => {
+        existingSet match {
+          case null => null
+          case _ => existingSet - leftKey
         }
-      }
+      })
     }
 
     if (rightKey != null) {
