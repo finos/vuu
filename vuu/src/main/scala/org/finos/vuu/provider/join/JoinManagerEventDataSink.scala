@@ -2,12 +2,12 @@ package org.finos.vuu.provider.join
 
 import org.finos.toolbox.collection.set.ImmutableArraySet
 import org.finos.vuu.api.JoinTableDef
-import org.finos.vuu.core.table.DataTable
+import org.finos.vuu.core.table.JoinTable
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap
 
-case class JoinDefToJoinTable(joinDef: JoinTableDef, table: DataTable)
+case class JoinDefToJoinTable(joinDef: JoinTableDef, table: JoinTable)
 
 /**
  * The purpose of this object is to allow us to go from a right key, say prices, ric = VOD.L and look
