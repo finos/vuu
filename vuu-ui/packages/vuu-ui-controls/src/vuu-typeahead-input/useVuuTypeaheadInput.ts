@@ -149,16 +149,15 @@ export const useVuuTypeaheadInput = ({
             } else {
               setTypeaheadValues(suggestions);
               if (pendingListFocusRef.current && inputRef.current) {
-                requestAnimationFrame(() => {
+                setTimeout(() => {
                   if (inputRef.current) {
-                    // highlight the first option. Doesn't work as expected on Safari
-                    dispatchKeyboardEvent(
-                      inputRef.current,
-                      "keydown",
-                      "ArrowDown",
-                    );
-                  }
-                });
+                      dispatchKeyboardEvent(
+                        inputRef.current,
+                        "keydown",
+                        "ArrowDown",
+                      );
+                    }
+                },60);
               }
             }
             pendingListFocusRef.current = false;

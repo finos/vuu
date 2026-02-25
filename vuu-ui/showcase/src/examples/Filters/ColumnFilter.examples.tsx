@@ -498,6 +498,59 @@ export const ContainerManagedTextColumnFilter = ({
   );
 };
 
+/** tags=data-consumer */
+export const ContainerManagedTextColumnFilterLoadOnFocus = ({
+  onFilterApplied,
+  onFilterCleared,
+}: FilterContainerPassthroughProps) => {
+  const { VuuDataSource } = useData();
+  const dataSource = useMemo(() => {
+    const ds = new VuuDataSource({ table: ordersSchema.table });
+    ds.subscribe({ columns: ["side"] }, (msg) => {
+      console.log(JSON.stringify(msg));
+    });
+    return ds;
+  }, [VuuDataSource]);
+
+  const handleFilterApplied = useCallback<
+    FilterAppliedHandler<FilterContainerFilter>
+  >(
+    (filter) => {
+      console.log(
+        `[ColumnFilter.examples] filterApplied ${JSON.stringify(filter)}`,
+      );
+      onFilterApplied?.(filter);
+    },
+    [onFilterApplied],
+  );
+
+  const handleFilterCleared = useCallback(() => {
+    console.log("[ColumnFilter.examples] filterCleared");
+    onFilterCleared?.();
+  }, [onFilterCleared]);
+
+  return (
+    <DataSourceProvider dataSource={dataSource}>
+      <ContainerTemplate>
+        <FilterContainer
+          onFilterApplied={handleFilterApplied}
+          onFilterCleared={handleFilterCleared}
+        >
+          <FormField>
+            <FormFieldLabel>Side</FormFieldLabel>
+            <FilterContainerColumnFilter
+              TypeaheadProps={{ minCharacterCountToTriggerSuggestions: 0 }}
+              column={{ name: "side", serverDataType: "string" }}
+              table={{ module: "SIMUL", table: "parentOrders" }}
+              defaultValue=""
+            />
+          </FormField>
+        </FilterContainer>
+      </ContainerTemplate>
+    </DataSourceProvider>
+  );
+};
+
 export const ContainerManagedNumericColumnFilter = ({
   filter: filterProp,
   onFilterApplied,
@@ -803,7 +856,9 @@ export const ContainerManagedMultipleColumnFilters = () => {
             />
           </FormField>
           <FormField>
-            <FormFieldLabel>Price (filter set as string, with typeahead)</FormFieldLabel>
+            <FormFieldLabel>
+              Price (filter set as string, with typeahead)
+            </FormFieldLabel>
             <FilterContainerColumnFilter
               column={{ name: "price", serverDataType: "string" }}
               table={table}
@@ -811,9 +866,15 @@ export const ContainerManagedMultipleColumnFilters = () => {
             />
           </FormField>
           <FormField>
-            <FormFieldLabel>Price (filter set as string, without typeahead)</FormFieldLabel>
+            <FormFieldLabel>
+              Price (filter set as string, without typeahead)
+            </FormFieldLabel>
             <FilterContainerColumnFilter
-              column={{ name: "price", serverDataType: "string", type: "decimal" }}
+              column={{
+                name: "price",
+                serverDataType: "string",
+                type: "decimal",
+              }}
               table={table}
               operator="="
             />
