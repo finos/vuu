@@ -28,7 +28,7 @@ class JoinTableWSApiTest extends WebSocketApiTestBase {
 
       val responseBody = assertBodyIsInstanceOf[GetTableMetaResponse](response)
       responseBody.columns.length shouldEqual 7
-      responseBody.columns shouldEqual Array("ric", "currency", "country", "unit", "capital", "vuuCreatedTimestamp", "vuuUpdatedTimestamp")
+      responseBody.columns shouldEqual Array("ric", "currency", "country", "capital", "vuuCreatedTimestamp", "unit", "vuuUpdatedTimestamp")
     }
 
     Scenario("Test a huge number of cascading join table updates with filter and sort") {
@@ -110,7 +110,7 @@ class JoinTableWSApiTest extends WebSocketApiTestBase {
       name = "instruments",
       keyField = "ric",
       columns = Columns.fromNames("ric:String", "currency:String"),
-      joinFields = "ric","currency")
+      joinFields = "ric", "currency")
 
     val instrumentDataSource = new FakeDataSource(ListMap.empty)
     val instrumentProvider = (table: DataTable, _: AbstractVuuServer) => testProviderFactory.create(table, instrumentDataSource)
@@ -161,7 +161,7 @@ class JoinTableWSApiTest extends WebSocketApiTestBase {
           joinSpec = JoinSpec(left = "currency", right = "currency", LeftOuterJoin)
         ),
       links = VisualLinks(),
-      joinFields = Seq("ric","currency")
+      joinFields = Seq("ric", "currency")
     )
 
     ModuleFactory.withNamespace(moduleName)
