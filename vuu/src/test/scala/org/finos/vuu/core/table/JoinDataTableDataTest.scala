@@ -16,7 +16,9 @@ import java.time.Instant
 class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
 
   given timeProvider: Clock = new DefaultClock
+
   given lifecycle: LifecycleContainer = new LifecycleContainer
+
   given metrics: MetricsProvider = new MetricsProviderImpl
 
   val orderId = "123456789"
@@ -177,6 +179,23 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       (result eq original) shouldBe false
       result.getPrimaryKeys shouldBe ImmutableArray.of(orderId)
       result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> null)
+    }
+
+    Scenario("Update an existing row, from complete join to new complete join") {
+      val (joinProvider, orders, orderProvider, prices, pricesProvider, orderPrices) = setupJoins
+      pricesProvider.tick(instrumentRic, instrument)
+      pricesProvider.tick(instrumentRic, instrument2)
+      orderProvider.tick(orderId, orderWithInstrument)
+      joinProvider.runOnce()
+      val original = orderPrices.getJoinData
+
+      orderProvider.tick(orderId, order1WithInstrument2)
+      joinProvider.runOnce()
+      val result = orderPrices.getJoinData
+
+      (result eq original) shouldBe false
+      result.getPrimaryKeys shouldBe ImmutableArray.of(orderId)
+      result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> instrumentRic2)
     }
 
     Scenario("Update an existing row, from complete join to no join") {
