@@ -193,6 +193,8 @@ export const useTable = ({
   size,
 }: TableHookProps) => {
   const tableConfigRef = useRef<TableConfig>(config);
+  // We need scrollTop from the scrolling hook, just to detect when we need to scroll after a config change
+  const scrollTopRef = useRef(0);
   // avoids a hook dependency on requestScroll, important to avoid re-registering config handler
   const requestScrollRef = useRef<ScrollRequestHandler | undefined>(undefined);
   useMemo(() => {
@@ -352,7 +354,7 @@ export const useTable = ({
     selectionModel,
   });
 
-  const { requestScroll, ...scrollProps } = useTableScroll({
+  const { requestScroll, scrollTop, ...scrollProps } = useTableScroll({
     cellFocusStateRef,
     columns,
     focusCell: focusCellRef.current,
@@ -365,6 +367,8 @@ export const useTable = ({
     onVerticalScrollInSitu: viewportHookSetInSituRowOffset,
     viewportMeasurements,
   });
+  // to avoid invalidating the dependencies of consumers of scrollTp every time we scroll
+  scrollTopRef.current = scrollTop;
   // avoids a hook dependency on requestScroll, important to avoid re-registering config handler
   requestScrollRef.current = requestScroll;
 
@@ -401,13 +405,17 @@ export const useTable = ({
   );
 
   const handleConfigChange = useCallback<DataSourceConfigChangeHandler>(
-    (config, range, confirmed, changes) => {
+    (config, _range, confirmed, changes) => {
       const scrollSensitiveChanges =
         changes?.filterChanged || changes?.groupByChanged;
-      if (scrollSensitiveChanges && range.from > 0) {
+      if (scrollSensitiveChanges && scrollTopRef.current > 0) {
+        // don't wait for the scroll event to fire and trigger a range change,
+        //we might miss data in the meantime
+        setRange(range.reset);
         requestScrollRef.current?.({
-          type: "scroll-end",
-          direction: "home",
+          type: "scroll-top",
+          scrollPos: 0,
+          instant: true,
         });
       }
       dispatchTableModelAction({
@@ -416,7 +424,7 @@ export const useTable = ({
         confirmed,
       });
     },
-    [dispatchTableModelAction],
+    [dispatchTableModelAction, range, setRange],
   );
 
   useEffect(() => {

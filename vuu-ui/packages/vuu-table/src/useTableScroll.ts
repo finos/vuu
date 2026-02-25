@@ -33,6 +33,7 @@ export type ScrollDirection =
  * scroll into view the row at given pixel offset.
  */
 export interface ScrollRequestPosition {
+  instant?: boolean;
   scrollPos: number;
   type: "scroll-top" | "scroll-bottom";
 }
@@ -473,6 +474,8 @@ export const useTableScroll = ({
   const requestScroll: ScrollRequestHandler = useCallback(
     (scrollRequest) => {
       const { current: contentContainer } = contentContainerRef;
+      const { current: scrollbarContainer } = scrollbarContainerRef;
+
       if (contentContainer) {
         const [maxScrollLeft, maxScrollTop] = getMaxScroll(contentContainer);
         const { scrollLeft, scrollTop } = contentContainer;
@@ -480,11 +483,21 @@ export const useTableScroll = ({
         switch (scrollRequest.type) {
           case "scroll-top":
             {
-              contentContainer.scrollTo({
-                top: scrollRequest.scrollPos,
-                left: scrollLeft,
-                behavior: "instant",
-              });
+              // special case for setting scroll position immediately back to top
+              if (
+                scrollRequest.instant &&
+                scrollRequest.scrollPos === 0 &&
+                scrollbarContainer
+              ) {
+                contentContainer.scrollTop = 0;
+                scrollbarContainer.scrollTop = 0;
+              } else {
+                contentContainer.scrollTo({
+                  top: scrollRequest.scrollPos,
+                  left: scrollLeft,
+                  behavior: "instant",
+                });
+              }
             }
             break;
           case "scroll-bottom":
@@ -646,6 +659,7 @@ export const useTableScroll = ({
     contentContainerRef: contentContainerCallbackRef,
     /** Scroll the table  */
     requestScroll,
+    scrollTop: contentContainerPosRef.current.scrollTop,
     /** number of leading columns not rendered because of virtualization  */
     virtualColSpan: preSpanRef.current,
   };
