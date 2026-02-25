@@ -20,7 +20,11 @@ class RightToLeftKeys {
   private val emptyKeyMap: ImmutableArraySet[String] = ImmutableArraySet.empty
 
   def addRightKey(rightTable: String, rightKey: String, leftTable: String, leftKey: String, existingRightKey: String): Unit = {
-    if (existingRightKey != null && rightKey != existingRightKey) {
+    if (rightKey == existingRightKey) {
+      return
+    }
+
+    if (existingRightKey != null) {
       // Delete the existing mapping of rightTable.rightKey <-> leftTable.leftKey and do cleanup if no mapping left
       val rightKeyMaps = keysToRightKeys.get(rightTable)
       if (rightKeyMaps != null) {
@@ -38,9 +42,6 @@ class RightToLeftKeys {
           if (leftTableMaps.isEmpty) {
             rightKeyMaps.remove(existingRightKey)
           }
-        }
-        if (rightKeyMaps.isEmpty) {
-          keysToRightKeys.remove(rightTable)
         }
       }
     }
