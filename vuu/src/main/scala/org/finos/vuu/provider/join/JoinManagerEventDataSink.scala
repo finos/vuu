@@ -32,29 +32,27 @@ class RightToLeftKeys {
       })
     }
 
-    if (rightKey != existingRightKey) {
+    if (existingRightKey != null && rightKey != existingRightKey) {
       // Delete the existing mapping of rightTable.rightKey <-> leftTable.leftKey and do cleanup if no mapping left
-      if (existingRightKey != null) {
-        val rightKeyMaps = keysToRightKeys.get(rightTable)
-        if (rightKeyMaps != null) {
-          val leftTableMaps = rightKeyMaps.get(existingRightKey)
-          if (leftTableMaps != null) {
-            val leftKeys = leftTableMaps.get(leftTable)
-            if (leftKeys != null) {
-              val newLeftKeys = leftKeys - leftKey
-              if (newLeftKeys.isEmpty) {
-                leftTableMaps.remove(leftTable)
-              } else {
-                leftTableMaps.put(leftTable, newLeftKeys)
-              }
-            }
-            if (leftTableMaps.isEmpty) {
-              rightKeyMaps.remove(existingRightKey)
+      val rightKeyMaps = keysToRightKeys.get(rightTable)
+      if (rightKeyMaps != null) {
+        val leftTableMaps = rightKeyMaps.get(existingRightKey)
+        if (leftTableMaps != null) {
+          val leftKeys = leftTableMaps.get(leftTable)
+          if (leftKeys != null) {
+            val newLeftKeys = leftKeys - leftKey
+            if (newLeftKeys.isEmpty) {
+              leftTableMaps.remove(leftTable)
+            } else {
+              leftTableMaps.put(leftTable, newLeftKeys)
             }
           }
-          if (rightKeyMaps.isEmpty) {
-            keysToRightKeys.remove(rightTable)
+          if (leftTableMaps.isEmpty) {
+            rightKeyMaps.remove(existingRightKey)
           }
+        }
+        if (rightKeyMaps.isEmpty) {
+          keysToRightKeys.remove(rightTable)
         }
       }
     }
