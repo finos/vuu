@@ -17,7 +17,6 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
 
   given timeProvider: Clock = new DefaultClock
   given lifecycle: LifecycleContainer = new LifecycleContainer
-
   given metrics: MetricsProvider = new MetricsProviderImpl
 
   val orderId = "123456789"
