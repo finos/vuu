@@ -20,18 +20,6 @@ class RightToLeftKeys {
   private val emptyKeyMap: ImmutableArraySet[String] = ImmutableArraySet.empty
 
   def addRightKey(rightTable: String, rightKey: String, leftTable: String, leftKey: String, existingRightKey: String): Unit = {
-    if (rightKey != null) {
-
-      val rightKeyMap = getRightKeyMap(rightTable, rightKey)
-
-      rightKeyMap.compute(leftTable, (_, existingSet) => {
-        existingSet match {
-          case null => ImmutableArraySet.of(leftKey)
-          case _ => existingSet + leftKey
-        }
-      })
-    }
-
     if (existingRightKey != null && rightKey != existingRightKey) {
       // Delete the existing mapping of rightTable.rightKey <-> leftTable.leftKey and do cleanup if no mapping left
       val rightKeyMaps = keysToRightKeys.get(rightTable)
@@ -57,6 +45,17 @@ class RightToLeftKeys {
       }
     }
 
+    if (rightKey != null) {
+
+      val rightKeyMap = getRightKeyMap(rightTable, rightKey)
+
+      rightKeyMap.compute(leftTable, (_, existingSet) => {
+        existingSet match {
+          case null => ImmutableArraySet.of(leftKey)
+          case _ => existingSet + leftKey
+        }
+      })
+    }
   }
 
   def getLeftTableKeysForRightKey(rightTable: String, rightKey: String, leftTable: String): ImmutableArraySet[String] = {
