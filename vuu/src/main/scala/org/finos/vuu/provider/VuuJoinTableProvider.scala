@@ -222,7 +222,7 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
         //for each key in left table, send left update, including additional keys
         leftKeys.foreach(key => {
           logger.trace(s"Publishing update for left key: $key to table ${joinTableDef.baseTable.name}")
-          publishUpdateForLeftTableAndKey(joinTableDef, defAndTable.table.asInstanceOf[JoinTable], joinTableDef.baseTable.name,
+          publishUpdateForLeftTableAndKey(joinTableDef, defAndTable.table, joinTableDef.baseTable.name,
             key, joinSink.getEventDataSink(joinTableDef.baseTable.name).getEventState(key), isJoinEvent)
         })
       }
