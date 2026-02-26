@@ -13,23 +13,9 @@ object VectorImmutableArray {
   private val logger: Logger = Logger.apply(classOf[VectorImmutableArray[_]])
 
   def from[T <: Object : ClassTag](iterable: IterableOnce[T]): ImmutableArray[T] = {
-    val dataBuilder = Vector.newBuilder[T]
-    val bitSetBuilder = BitSet.newBuilder
-    if (iterable.knownSize > 0) {
-      dataBuilder.sizeHint(iterable.knownSize)
-      bitSetBuilder.sizeHint(iterable.knownSize)
-    }
-
-    val it = iterable.iterator
-    var addedCount = 0
-    while (it.hasNext) {
-      val item = it.next()
-      dataBuilder += item
-      bitSetBuilder += addedCount
-      addedCount += 1
-    }
-
-    VectorImmutableArrayImpl(dataBuilder.result(), bitSetBuilder.result(), addedCount, logger)
+    val data = Vector.from(iterable)
+    val bitSet = BitSet.fromSpecific(data.indices)
+    VectorImmutableArrayImpl(data, bitSet, data.length, logger)
   }
 
   def empty[T <: Object : ClassTag](): ImmutableArray[T] = {
@@ -69,8 +55,9 @@ private class VectorImmutableArrayImpl[T <: Object :ClassTag](private val data: 
     val dataBuilder = Vector.newBuilder[T]
     val bitSetBuilder = BitSet.newBuilder
     if (iterable.knownSize > 0) {
-      dataBuilder.sizeHint(data.length + iterable.knownSize)
-      bitSetBuilder.sizeHint(data.length + iterable.knownSize)
+      val newSize = data.length + iterable.knownSize
+      dataBuilder.sizeHint(newSize)
+      bitSetBuilder.sizeHint(newSize)
     }
     dataBuilder ++= data
     bitSetBuilder ++= activeIndices
