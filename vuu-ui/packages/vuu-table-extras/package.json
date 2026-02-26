@@ -23,7 +23,7 @@
     "@vuu-ui/vuu-table": "0.13.110",
     "@vuu-ui/vuu-utils": "0.13.110",
     "@vuu-ui/vuu-ui-controls": "0.13.110",
-    "@lezer/lr": "1.4.2",
+    "@lezer/lr": "1.4.8",
     "@salt-ds/core": "1.48.0",
     "@salt-ds/styles": "0.2.1",
     "@salt-ds/window": "0.1.1"
