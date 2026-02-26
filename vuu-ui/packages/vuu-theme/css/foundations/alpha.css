@@ -1,4 +1,5 @@
-.salt-theme.vuu-theme {
+.salt-theme.vuu-theme,
+.salt-theme.vuu-theme-next {
   --salt-color-white-5a: rgba(var(--salt-color-white-rgb), 0.05);
   --salt-color-white-10a: rgba(var(--salt-color-white-rgb), 0.1);
   --salt-color-white-15a: rgba(var(--salt-color-white-rgb), 0.15);

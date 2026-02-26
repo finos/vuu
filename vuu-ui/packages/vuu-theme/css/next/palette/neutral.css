@@ -1,5 +1,5 @@
 .salt-theme.salt-theme-next.vuu-theme-next[data-mode="light"] {
-  --salt-palette-neutral: var(--salt-color-gray-500);
+  --salt-palette-neutral: var(--salt-color-white);
   --salt-palette-neutral-disabled: var(--salt-color-gray-500-40a);
   --salt-palette-neutral-readonly: var(--salt-color-gray-500-10a);
   --salt-palette-neutral-strong: var(--salt-color-gray-600);
@@ -11,7 +11,7 @@
   --salt-palette-neutral-weakest: var(--salt-color-gray-100);
 }
 .salt-theme.salt-theme-next.vuu-theme-next[data-mode="dark"] {
-  --salt-palette-neutral: var(--salt-color-gray-500);
+  --salt-palette-neutral: var(--salt-color-white);
   --salt-palette-neutral-disabled: var(--salt-color-gray-500-40a);
   --salt-palette-neutral-readonly: var(--salt-color-gray-500-10a);
   --salt-palette-neutral-strong: var(--salt-color-gray-400);

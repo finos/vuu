@@ -5,3 +5,11 @@
   --salt-color-black: rgb(var(--salt-color-black-rgb));
   --salt-color-white: rgb(var(--salt-color-white-rgb));
 }
+
+.salt-theme.vuu-theme-next {
+  --salt-color-black-rgb: 0, 0, 0;
+  --salt-color-white-rgb: 255, 255, 255;
+
+  --salt-color-black: rgb(var(--salt-color-black-rgb));
+  --salt-color-white: rgb(var(--salt-color-white-rgb));
+}

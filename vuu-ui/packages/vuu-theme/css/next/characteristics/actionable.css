@@ -1,14 +1,14 @@
 .salt-theme.salt-theme-next.vuu-theme-next {
   /* accented solid- previous CTA */
-  --salt-actionable-accented-bold-background-active: var(--salt-palette-accent-weaker);
-  --salt-actionable-accented-bold-background-hover: linear-gradient(var(--salt-palette-alpha-dark-low), var(--salt-palette-alpha-dark-low)) var(--salt-palette-accent);
+  --salt-actionable-accented-bold-background-active: var(--salt-palette-accent);
+  --salt-actionable-accented-bold-background-hover: var(--vuu-color-coral);
   --salt-actionable-accented-bold-background: var(--salt-palette-accent);
   --salt-actionable-accented-bold-borderColor-active: var(--salt-palette-accent);
-  --salt-actionable-accented-bold-borderColor-hover: var(--salt-palette-alpha-contrast-medium);
+  --salt-actionable-accented-bold-borderColor-hover: var(--vuu-color-coral);
   --salt-actionable-accented-bold-borderColor: var(--salt-palette-accent);
-  --salt-actionable-accented-bold-foreground-active: var(--salt-palette-foreground-primary);
+  --salt-actionable-accented-bold-foreground-active: var(--salt-color-white);
   --salt-actionable-accented-bold-foreground-hover: var(--salt-palette-foreground-primary-alt);
-  --salt-actionable-accented-bold-foreground: var(--salt-palette-foreground-primary-alt);
+  --salt-actionable-accented-bold-foreground: var(--salt-color-white);
 
   /* accented bordered */
   --salt-actionable-accented-background-active: var(--salt-palette-accent-weaker);
@@ -37,15 +37,15 @@
   --salt-actionable-accented-subtle-foreground: var(--salt-palette-accent-strong);
 
   /* neutral solid previous Primary */
-  --salt-actionable-bold-background-active: var(--salt-palette-neutral-weaker);
-  --salt-actionable-bold-background-hover: linear-gradient(var(--salt-palette-alpha-dark-low), var(--salt-palette-alpha-dark-low)) var(--salt-palette-neutral);
+  --salt-actionable-bold-background-active: var(--salt-color-gray-900);
+  --salt-actionable-bold-background-hover: var(--vuu-color-coral);
   --salt-actionable-bold-background: var(--salt-palette-neutral);
-  --salt-actionable-bold-borderColor-active: var(--salt-palette-neutral);
-  --salt-actionable-bold-borderColor-hover: var(--salt-palette-alpha-contrast-medium);
+  --salt-actionable-bold-borderColor-active: var(--vuu-color-gray-50);
+  --salt-actionable-bold-borderColor-hover: var(var(--vuu-color-coral));
   --salt-actionable-bold-borderColor: var(--salt-palette-neutral);
-  --salt-actionable-bold-foreground-active: var(--salt-palette-foreground-primary);
-  --salt-actionable-bold-foreground-hover: var(--salt-palette-foreground-primary-alt);
-  --salt-actionable-bold-foreground: var(--salt-palette-foreground-primary-alt);
+  --salt-actionable-bold-foreground-active: var(--salt-color-white);
+  --salt-actionable-bold-foreground-hover: var(--salt-palette-foreground-primary);
+  --salt-actionable-bold-foreground: var(--salt-palette-foreground-primary);
 
   /* neutral bordered */
   --salt-actionable-background-active: var(--salt-palette-neutral-weaker);
@@ -64,10 +64,10 @@
 
   /* neutral transparent - previous Secondary */
   --salt-actionable-subtle-background-active: var(--salt-palette-alpha-contrast-low);
-  --salt-actionable-subtle-background-hover: var(--salt-palette-alpha-contrast-lower);
+  --salt-actionable-subtle-background-hover: var(--vuu-color-coral);
   --salt-actionable-subtle-background: var(--salt-palette-alpha-none);
   --salt-actionable-subtle-borderColor-active: var(--salt-palette-alpha-none);
-  --salt-actionable-subtle-borderColor-hover: var(--salt-palette-alpha-none);
+  --salt-actionable-subtle-borderColor-hover: var(--vuu-color-coral);
   --salt-actionable-subtle-borderColor: var(--salt-palette-alpha-none);
   --salt-actionable-subtle-foreground-active: var(--salt-palette-foreground-primary);
   --salt-actionable-subtle-foreground-hover: var(--salt-palette-foreground-primary);

@@ -25,13 +25,13 @@
 
 .vuuTableCell-editable:focus-within,
 .vuuTableCell:focus {
+  /** This is to achieve a white background to outline dashes */
+  /* box-shadow: inset 0 0 0 var(--cell-outline-width) white; */
+  border-bottom: none;
   outline: var(
     --vuuTableCell-outline,
     solid var(--salt-focused-outlineColor) 2px
   );
-  /** This is to achieve a white background to outline dashes */
-  box-shadow: inset 0 0 0 var(--cell-outline-width) white;
-  border-bottom: none;
 }
 
 .vuuTableCell-editable.vuuEditing {
@@ -52,9 +52,9 @@
     outline: none;
   }
 }
-.vuuTableCell-editable:focus {
+/* .vuuTableCell-editable:focus {
   outline: none;
-}
+} */
 
 .vuuTableCell.ContextOpen {
   outline: var(

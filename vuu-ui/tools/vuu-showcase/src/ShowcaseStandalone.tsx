@@ -1,4 +1,10 @@
-import { SaltProvider, SaltProviderNext } from "@salt-ds/core";
+import {
+  Accent,
+  ActionFont,
+  HeadingFont,
+  SaltProvider,
+  SaltProviderNext,
+} from "@salt-ds/core";
 import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import {
@@ -20,6 +26,10 @@ import { simulModule } from "@vuu-ui/vuu-data-test";
 import "./Showcase.css";
 
 console.log(typeof simulModule);
+
+const actionFont = "Nunito sans" as ActionFont;
+const headingFont = "Nunito sans" as HeadingFont;
+const accentPurple = "purple" as Accent;
 
 const asThemeMode = (input: string | undefined): ThemeMode => {
   if (input === "light" || input === "dark") {
@@ -167,10 +177,13 @@ export const ShowcaseStandalone = ({
     if (theme?.endsWith("next")) {
       return (
         <SaltProviderNext
+          accent={accentPurple}
           corner="rounded"
           theme={theme}
           density={densityRef.current}
           mode={themeModeRef.current}
+          actionFont={actionFont}
+          headingFont={headingFont}
         >
           {children}
         </SaltProviderNext>
