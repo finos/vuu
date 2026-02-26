@@ -24,7 +24,6 @@ object VectorImmutableArray {
     var addedCount = 0
     while (it.hasNext) {
       val item = it.next()
-      require(item != null, "This collection does not support null elements.")
       dataBuilder += item
       bitSetBuilder += addedCount
       addedCount += 1
