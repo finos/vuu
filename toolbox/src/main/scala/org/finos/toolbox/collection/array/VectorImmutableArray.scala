@@ -55,7 +55,6 @@ private class VectorImmutableArrayImpl[T <: Object :ClassTag](private val data: 
   override def ++(iterable: IterableOnce[T]): ImmutableArray[T] = addAll(iterable)
 
   override def add(element: T): ImmutableArray[T] = {
-    require(element != null, "This collection does not support null elements.")
     val newData = data.appended(element)
     val newActive = activeIndices + (newData.length - 1)
     VectorImmutableArrayImpl(newData, newActive, length + 1, logger)
@@ -82,7 +81,6 @@ private class VectorImmutableArrayImpl[T <: Object :ClassTag](private val data: 
     var addedCount = 0
     while (it.hasNext) {
       val item = it.next()
-      require(item != null, "This collection does not support null elements.")
       dataBuilder += item
       bitSetBuilder += currentPhysicalIndex
       currentPhysicalIndex += 1
@@ -114,7 +112,6 @@ private class VectorImmutableArrayImpl[T <: Object :ClassTag](private val data: 
   }
 
   override def set(index: Int, element: T): ImmutableArray[T] = {
-    require(element != null, "This collection does not support null elements.")
     val physIdx = findPhysicalIndex(index)
     VectorImmutableArrayImpl(data.updated(physIdx, element), activeIndices, length, logger)
   }
@@ -148,7 +145,7 @@ private class VectorImmutableArrayImpl[T <: Object :ClassTag](private val data: 
   private def doRemove(physIdx: Int): VectorImmutableArray[T] = {
     val updated = VectorImmutableArrayImpl(data, activeIndices - physIdx, length - 1, logger)
     if (shouldCompact) {
-      logger.debug(s"Compacting ${data.length - length} records")
+      logger.trace(s"Compacting ${data.length - length} records")
       updated.compact()
     } else {
       updated
@@ -156,8 +153,7 @@ private class VectorImmutableArrayImpl[T <: Object :ClassTag](private val data: 
   }
 
   private def shouldCompact: Boolean = {
-    if (data.length == length) false
-    else (data.length - length) > Math.max(100, data.length * 0.10)
+    data.length - length > Math.max(100, data.length * 0.10)
   }
 
   private def compact(): VectorImmutableArray[T] = {

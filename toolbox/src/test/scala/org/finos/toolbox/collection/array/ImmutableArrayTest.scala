@@ -124,15 +124,32 @@ class ImmutableArrayTest extends AnyFunSuite with Matchers {
     b.map(_.toUpperCase).toList shouldBe List("X", "Z")
   }
 
-  test("check removal of all rows") {
-    var count = 100_000
-    val numbers = (0 to count).map(_.toString)
+  test("check removal of all rows and that compaction doesn't break things") {
+    val count = 1000
+    val numbers = (0 until count).map(_.toString)
     var array = arr(numbers: _*)
 
-    while (count > 0) {
-      array = array.remove(count)
-      array.length shouldEqual count
-      count -= 1
+    var index = 0
+    while (index < count) {
+      array.length shouldEqual (count - index)
+      array.iterator.count(f => true) shouldEqual array.length
+      array.contains(index.toString) shouldBe true
+      array(0) shouldEqual index.toString
+      array.head shouldEqual index.toString
+      array.last shouldEqual (count - 1).toString
+
+      array = array.remove(0)
+
+      array.length shouldEqual (count - index - 1)
+      array.iterator.count(f => true) shouldEqual array.length
+      array.contains(index.toString) shouldBe false
+      if (array.nonEmpty) {
+        array(0) shouldEqual (index + 1).toString
+        array.head shouldEqual (index + 1).toString
+        array.last shouldEqual (count - 1).toString
+      }
+
+      index += 1
     }
   }
 
