@@ -24,16 +24,8 @@ class RightToLeftKeys {
       return
     }
 
-    if (existingRightKey != null) {
-      // Delete the existing mapping of rightTable.rightKey <-> leftTable.leftKey
-      val existingRightKeyMap = getRightKeyMap(rightTable, existingRightKey)
-      existingRightKeyMap.compute(leftTable, (_, existingSet) => {
-        existingSet match {
-          case null => null
-          case _ => existingSet - leftKey
-        }
-      })
-    }
+    // Delete the existing mapping of rightTable.existingRightKey <-> leftTable.leftKey
+    deleteLeftKeyFromMapping(rightTable, existingRightKey, leftTable, leftKey)
 
     if (rightKey != null) {
 
@@ -48,11 +40,11 @@ class RightToLeftKeys {
     }
   }
 
-  def deleteRightKey(rightTable: String, rightKey: String, leftTable: String, leftKey: String): Unit = {
+  def deleteLeftKeyFromMapping(rightTable: String, rightKey: String, leftTable: String, leftKey: String): Unit = {
     if (rightKey == null) {
       return
     }
-    // Delete mapping of rightTable.rightKey <-> leftTable.leftKey
+
     val rightKeyMap = getRightKeyMap(rightTable, rightKey)
     rightKeyMap.compute(leftTable, (_, leftKeySet) => {
       leftKeySet match {

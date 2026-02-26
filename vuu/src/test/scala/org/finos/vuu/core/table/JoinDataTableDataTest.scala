@@ -289,11 +289,10 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       joinProvider.runOnce()
       val result = orderPrices.getJoinData
 
-      //result should not equal original
+      result shouldEqual original
       result.getPrimaryKeys shouldBe ImmutableArray.from(List(orderId, orderId4))
-      //result.getKeyValuesByTable(orderId) shouldEqual null
-      //result.getKeyValuesByTable(orderId4) shouldEqual null
-      // TODO 2019 when right row is deleted, for any existing mappings of left keys - right key, we should clean up RightToLeftKeys and JoinRelations.RowJoin.foreignKeyMap
+      result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> instrumentRic)
+      result.getKeyValuesByTable(orderId4) shouldEqual Map("orders" -> orderId4, "prices" -> instrumentRic)
     }
 
     Scenario("Delete row from middle of table") {
