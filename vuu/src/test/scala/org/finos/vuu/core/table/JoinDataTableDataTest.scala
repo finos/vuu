@@ -275,7 +275,6 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       result should not equal original
       result.getPrimaryKeys shouldBe empty
       result.getKeyValuesByTable(orderId) shouldEqual null
-      // TODO 2019 when left row is deleted, for any existing mapping of left key - right key, we should clean up RightToLeftKeys and JoinRelations.RowJoin.foreignKeyMap
     }
 
     Scenario("Delete row in right table with complete join") {

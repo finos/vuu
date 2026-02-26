@@ -48,6 +48,17 @@ class RightToLeftKeys {
     }
   }
 
+  def deleteRightKey(rightTable: String, rightKey: String, leftTable: String, leftKey: String): Unit = {
+    // Delete mapping of rightTable.rightKey <-> leftTable.leftKey
+    val rightKeyMap = getRightKeyMap(rightTable, rightKey)
+    rightKeyMap.compute(leftTable, (_, leftKeySet) => {
+      leftKeySet match {
+        case null => null
+        case _ => leftKeySet - leftKey
+      }
+    })
+  }
+
   def getLeftTableKeysForRightKey(rightTable: String, rightKey: String, leftTable: String): ImmutableArraySet[String] = {
     getRightKeyMap(rightTable, rightKey).getOrDefault(leftTable, emptyKeyMap)
   }

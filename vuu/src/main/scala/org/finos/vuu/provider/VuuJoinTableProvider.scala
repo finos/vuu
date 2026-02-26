@@ -170,8 +170,12 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
       ev.get(joinTableDef.baseTable.keyField) match {
         case leftKey: String =>
           val rightKey = leftColumnAsRightKey(joinTableDef, rightTable, ev, leftColumn)
-          val existingRightKey = if (existingKeyValuesByTable == null) null else existingKeyValuesByTable.getOrElse(rightTable, null)
-          rightToLeftKeys.addRightKey(rightTable, rightKey, leftTable, leftKey, existingRightKey)
+          if (ev.get("_isDeleted").asInstanceOf[Boolean]) {
+            rightToLeftKeys.deleteRightKey(rightTable, rightKey, leftTable, leftKey)
+          } else {
+            val existingRightKey = if (existingKeyValuesByTable == null) null else existingKeyValuesByTable.getOrElse(rightTable, null)
+            rightToLeftKeys.addRightKey(rightTable, rightKey, leftTable, leftKey, existingRightKey)
+          }
         case null =>
       }
     })
@@ -199,7 +203,11 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
       //does it participate as a left table? i.e. the base table of the join
       if (joinTableDef.isLeftTable(tableName)) {
 
-        joinRelations.addRowJoins(joinTableDef, ev)
+        if (ev.get("_isDeleted").asInstanceOf[Boolean]) {
+          joinRelations.deleteRowJoins(joinTableDef, ev)
+        } else {
+          joinRelations.addRowJoins(joinTableDef, ev)
+        }
 
         val leftKey = eventToLeftKey(joinTableDef, ev)
         val existingKeyValuesByTable = defAndTable.table.getJoinData.getKeyValuesByTable(leftKey)
