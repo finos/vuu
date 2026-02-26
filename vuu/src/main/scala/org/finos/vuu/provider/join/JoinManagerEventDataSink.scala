@@ -49,6 +49,9 @@ class RightToLeftKeys {
   }
 
   def deleteRightKey(rightTable: String, rightKey: String, leftTable: String, leftKey: String): Unit = {
+    if (rightKey == null) {
+      return
+    }
     // Delete mapping of rightTable.rightKey <-> leftTable.leftKey
     val rightKeyMap = getRightKeyMap(rightTable, rightKey)
     rightKeyMap.compute(leftTable, (_, leftKeySet) => {
