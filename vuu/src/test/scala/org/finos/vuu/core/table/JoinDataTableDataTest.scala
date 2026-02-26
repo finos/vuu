@@ -285,7 +285,7 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       joinProvider.runOnce()
       val original = orderPrices.getJoinData
 
-      orderProvider.delete(instrumentRic)
+      pricesProvider.delete(instrumentRic)
       joinProvider.runOnce()
       val result = orderPrices.getJoinData
 
