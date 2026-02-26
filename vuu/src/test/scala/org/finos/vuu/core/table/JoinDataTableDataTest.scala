@@ -16,20 +16,24 @@ import java.time.Instant
 class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
 
   given timeProvider: Clock = new DefaultClock
+
   given lifecycle: LifecycleContainer = new LifecycleContainer
+
   given metrics: MetricsProvider = new MetricsProviderImpl
 
   val orderId = "123456789"
   val orderId2 = "123456788"
   val orderId3 = "123456787"
+  val orderId4 = "123456786"
   val instrumentRic = "VOD.L"
   val instrumentRic2 = "BAES.L"
   val instrumentRic3 = "AIR.PA"
-  val orderWithNoInstrument: Map[String, Any] = Map("orderId" -> orderId)
+  val orderWithNoInstrument: Map[String, Any] = Map("orderId" -> orderId, "ric" -> null)
   val orderWithInstrument: Map[String, Any] = Map("orderId" -> orderId, "ric" -> instrumentRic)
   val order1WithInstrument2: Map[String, Any] = Map("orderId" -> orderId, "ric" -> instrumentRic2)
-  val orderWithInstrument2: Map[String, Any] = Map("orderId" -> orderId2, "ric" -> instrumentRic2)
-  val orderWithInstrument3: Map[String, Any] = Map("orderId" -> orderId3, "ric" -> instrumentRic3)
+  val order2WithInstrument2: Map[String, Any] = Map("orderId" -> orderId2, "ric" -> instrumentRic2)
+  val order3WithInstrument3: Map[String, Any] = Map("orderId" -> orderId3, "ric" -> instrumentRic3)
+  val order4WithInstrument: Map[String, Any] = Map("orderId" -> orderId4, "ric" -> instrumentRic)
   val instrument: Map[String, Any] = Map("ric" -> instrumentRic)
   val instrument2: Map[String, Any] = Map("ric" -> instrumentRic2)
   val instrument3: Map[String, Any] = Map("ric" -> instrumentRic3)
@@ -86,8 +90,8 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       val original = orderPrices.getJoinData
 
       orderProvider.tick(orderId, orderWithInstrument)
-      orderProvider.tick(orderId2, orderWithInstrument2)
-      orderProvider.tick(orderId3, orderWithInstrument3)
+      orderProvider.tick(orderId2, order2WithInstrument2)
+      orderProvider.tick(orderId3, order3WithInstrument3)
       joinProvider.runOnce()
       val result = orderPrices.getJoinData
 
@@ -143,7 +147,7 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       joinProvider.runOnce()
       val result = orderPrices.getJoinData
 
-      (result eq original) shouldBe true
+      (result eq original) shouldBe false // primaryKeyToJoinKeys is updated
       result.getPrimaryKeys shouldBe ImmutableArray.of(orderId)
       result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> null)
     }
@@ -179,6 +183,23 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> null)
     }
 
+    Scenario("Update an existing row, from complete join to new complete join") {
+      val (joinProvider, orders, orderProvider, prices, pricesProvider, orderPrices) = setupJoins
+      pricesProvider.tick(instrumentRic, instrument)
+      pricesProvider.tick(instrumentRic, instrument2)
+      orderProvider.tick(orderId, orderWithInstrument)
+      joinProvider.runOnce()
+      val original = orderPrices.getJoinData
+
+      orderProvider.tick(orderId, order1WithInstrument2)
+      joinProvider.runOnce()
+      val result = orderPrices.getJoinData
+
+      (result eq original) shouldBe false
+      result.getPrimaryKeys shouldBe ImmutableArray.of(orderId)
+      result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> instrumentRic2)
+    }
+
     Scenario("Update an existing row, from complete join to no join") {
       val (joinProvider, orders, orderProvider, prices, pricesProvider, orderPrices) = setupJoins
       pricesProvider.tick(instrumentRic, instrument)
@@ -190,11 +211,9 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       joinProvider.runOnce()
       val result = orderPrices.getJoinData
 
-      //TODO https://github.com/finos/vuu/issues/2019
-      //Below behaviour is wrong
-      (result eq original) shouldBe true
+      (result eq original) shouldBe false
       result.getPrimaryKeys shouldBe ImmutableArray.of(orderId)
-      result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> instrumentRic)
+      result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> null)
     }
 
   }
@@ -242,7 +261,7 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       result.getKeyValuesByTable(orderId) shouldEqual null
     }
 
-    Scenario("Delete row with complete join") {
+    Scenario("Delete row in left table with complete join") {
       val (joinProvider, orders, orderProvider, prices, pricesProvider, orderPrices) = setupJoins
       orderProvider.tick(orderId, orderWithInstrument)
       pricesProvider.tick(instrumentRic, instrument)
@@ -256,13 +275,33 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       result should not equal original
       result.getPrimaryKeys shouldBe empty
       result.getKeyValuesByTable(orderId) shouldEqual null
+      // TODO 2019 when left row is deleted, for any existing mapping of left key - right key, we should clean up RightToLeftKeys and JoinRelations.RowJoin.foreignKeyMap
+    }
+
+    Scenario("Delete row in right table with complete join") {
+      val (joinProvider, orders, orderProvider, prices, pricesProvider, orderPrices) = setupJoins
+      orderProvider.tick(orderId, orderWithInstrument)
+      orderProvider.tick(orderId4, order4WithInstrument)
+      pricesProvider.tick(instrumentRic, instrument)
+      joinProvider.runOnce()
+      val original = orderPrices.getJoinData
+
+      orderProvider.delete(instrumentRic)
+      joinProvider.runOnce()
+      val result = orderPrices.getJoinData
+
+      //result should not equal original
+      result.getPrimaryKeys shouldBe ImmutableArray.from(List(orderId, orderId4))
+      //result.getKeyValuesByTable(orderId) shouldEqual null
+      //result.getKeyValuesByTable(orderId4) shouldEqual null
+      // TODO 2019 when right row is deleted, for any existing mappings of left keys - right key, we should clean up RightToLeftKeys and JoinRelations.RowJoin.foreignKeyMap
     }
 
     Scenario("Delete row from middle of table") {
       val (joinProvider, orders, orderProvider, prices, pricesProvider, orderPrices) = setupJoins
       orderProvider.tick(orderId, orderWithInstrument)
-      orderProvider.tick(orderId2, orderWithInstrument2)
-      orderProvider.tick(orderId3, orderWithInstrument3)
+      orderProvider.tick(orderId2, order2WithInstrument2)
+      orderProvider.tick(orderId3, order3WithInstrument3)
       pricesProvider.tick(instrumentRic, instrument)
       pricesProvider.tick(instrumentRic2, instrument2)
       pricesProvider.tick(instrumentRic3, instrument3)
@@ -290,7 +329,7 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
 
       info(s"${Instant.now} Beginning inserts and updates...")
 
-      for(a <- 0 until 10_000){
+      for (a <- 0 until 10_000) {
         val orderId = s"$a"
         val instrumentRic = s"ric-$a"
         val orderMap = Map("orderId" -> orderId, "ric" -> instrumentRic)
@@ -299,7 +338,7 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
         pricesProvider.tick(instrumentRic, instrumentMap)
 
         //updates
-        for(a <- 0 until 4){
+        for (a <- 0 until 4) {
           orderProvider.tick(orderId, orderMap)
           pricesProvider.tick(instrumentRic, instrumentMap)
         }
@@ -318,7 +357,6 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
 
       info(s"${Instant.now} Deletion complete")
     }
-
 
 
   }

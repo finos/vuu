@@ -21,7 +21,7 @@ class ConstituentInstrumentPricesRpcService()(using tableContainer: TableContain
     val column: String = params.namedParams("column").asInstanceOf[String]
     val data: Any = params.namedParams("data")
     val joinTable = params.viewPort.table.asTable.asInstanceOf[JoinTable]
-    val baseTableDef = joinTable.getTableDef.asInstanceOf[JoinTableDef].baseTable
+    val baseTableDef = joinTable.getTableDef.baseTable
     joinTable.sourceTables.get(baseTableDef.name) match {
       case Some(table: DataTable) =>
         table.processUpdate(key, RowWithData(key, Map("id" -> key, column -> data)))
@@ -125,7 +125,8 @@ class EditableViewportWithRpcTest extends EditableViewPortTest {
       viewPortContainer.runOnce()
 
       And("we can see the result of the rpc on the join table")
-      assertVpEq(combineQs(viewPort)) {
+      val updates = combineQs(viewPort)
+      assertVpEq(updates) {
         Table(
           ("id", "ric", "quantity", "description", "bid", "ask"),
           ("bskt1.bt.l", "BT.L", 600L, "British Telecom", 223L, 224L),

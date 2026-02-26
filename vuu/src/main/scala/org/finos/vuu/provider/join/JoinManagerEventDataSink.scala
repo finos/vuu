@@ -2,12 +2,12 @@ package org.finos.vuu.provider.join
 
 import org.finos.toolbox.collection.set.ImmutableArraySet
 import org.finos.vuu.api.JoinTableDef
-import org.finos.vuu.core.table.DataTable
+import org.finos.vuu.core.table.JoinTable
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap
 
-case class JoinDefToJoinTable(joinDef: JoinTableDef, table: DataTable)
+case class JoinDefToJoinTable(joinDef: JoinTableDef, table: JoinTable)
 
 /**
  * The purpose of this object is to allow us to go from a right key, say prices, ric = VOD.L and look
@@ -15,10 +15,26 @@ case class JoinDefToJoinTable(joinDef: JoinTableDef, table: DataTable)
  */
 class RightToLeftKeys {
 
+  // right table name -> right key -> left table name -> left keys
   private val keysToRightKeys = new ConcurrentHashMap[String, ConcurrentHashMap[String, ConcurrentHashMap[String, ImmutableArraySet[String]]]]()
   private val emptyKeyMap: ImmutableArraySet[String] = ImmutableArraySet.empty
 
-  def addRightKey(rightTable: String, rightKey: String, leftTable: String, leftKey: String): Unit = {
+  def addRightKey(rightTable: String, rightKey: String, leftTable: String, leftKey: String, existingRightKey: String): Unit = {
+    if (rightKey == existingRightKey) {
+      return
+    }
+
+    if (existingRightKey != null) {
+      // Delete the existing mapping of rightTable.rightKey <-> leftTable.leftKey
+      val existingRightKeyMap = getRightKeyMap(rightTable, existingRightKey)
+      existingRightKeyMap.compute(leftTable, (_, existingSet) => {
+        existingSet match {
+          case null => null
+          case _ => existingSet - leftKey
+        }
+      })
+    }
+
     if (rightKey != null) {
 
       val rightKeyMap = getRightKeyMap(rightTable, rightKey)
@@ -30,7 +46,6 @@ class RightToLeftKeys {
         }
       })
     }
-
   }
 
   def getLeftTableKeysForRightKey(rightTable: String, rightKey: String, leftTable: String): ImmutableArraySet[String] = {

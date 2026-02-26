@@ -318,14 +318,16 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
 
   def columns(): Array[Column] = tableDef.getColumns
   
-  def update(rowKey: String, rowUpdate: RowData): Unit = {
+  def update(rowKey: String, rowUpdate: RowData): RowData = {
     val tableDataUpdate = data.update(rowKey, rowUpdate)
     data = tableDataUpdate.tableData
     tableDataUpdate match {
       case TableDataInserted(tableData, rowDataAfter) =>
         indices.insert(rowDataAfter)
+        rowDataAfter
       case TableDataUpdated(tableData, rowDataBefore, rowDataAfter) =>
         indices.update(rowDataBefore, rowDataAfter)
+        rowDataAfter
     }
   }
 
@@ -405,9 +407,9 @@ class InMemDataTable(val tableDef: TableDef, val joinProvider: JoinTableProvider
 
     onUpdateCounter.inc()
 
-    update(rowKey, rowData)
+    val updatedRowData = update(rowKey, rowData)
 
-    sendToJoinSink(rowKey, rowData)
+    sendToJoinSink(rowKey, updatedRowData)
 
     notifyListeners(rowKey)
 
