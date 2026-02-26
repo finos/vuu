@@ -12,7 +12,7 @@ import org.finos.vuu.api.{Link, ViewPortDef}
 import org.finos.vuu.client.messages.ViewPortId
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.filter.`type`.{AllowAllPermissionFilter, AntlrBasedFilter, BaseFilter, VisualLinkedFilter}
-import org.finos.vuu.core.filter.{CompoundFilter, FilterOutEverythingFilter, FilterSpecParser, NoFilter, ViewPortFilter}
+import org.finos.vuu.core.filter.{CompoundViewPortFilter, FilterOutEverythingFilter, FilterSpecParser, NoFilter, ViewPortFilter}
 import org.finos.vuu.core.sort.*
 import org.finos.vuu.core.table.{DataTable, SessionTable, TableContainer}
 import org.finos.vuu.core.tree.TreeSessionTableImpl
@@ -421,7 +421,7 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
     val filtAndSort = viewPort.getVisualLink match {
       case Some(visualLink) =>
-        UserDefinedFilterAndSort(CompoundFilter(VisualLinkedFilter(visualLink), aFilter), aSort)
+        UserDefinedFilterAndSort(CompoundViewPortFilter(VisualLinkedFilter(visualLink), aFilter), aSort)
       case None =>
         UserDefinedFilterAndSort(aFilter, aSort)
     }
@@ -585,7 +585,6 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
 
   def deselectRow(clientSession: ClientSessionId, vpId: String, rowKey: String, preserveExistingSelection: Boolean): ViewPort = {
     logger.trace(s"[VP] Deselecting row with key $rowKey in viewport $vpId in session ${clientSession.sessionId}. Preserve: $preserveExistingSelection")
-    logger.trace(s"[VP] Deselecting row with key $rowKey in viewport $vpId in session ${clientSession.sessionId}")
     val viewPort = getViewportInSession(vpId, clientSession)
     viewPort.deselectRow(rowKey, preserveExistingSelection)
     logger.debug(s"[VP] Deselected row with key $rowKey in viewport $vpId in session ${clientSession.sessionId}. Preserve: $preserveExistingSelection")
@@ -593,7 +592,6 @@ class ViewPortContainer(val tableContainer: TableContainer, val providerContaine
   }
 
   def selectRowRange(clientSession: ClientSessionId, vpId: String, fromRowKey: String, toRowKey: String, preserveExistingSelection: Boolean): ViewPort = {
-    logger.trace(s"[VP] Selecting row range from key $fromRowKey to key $toRowKey in viewport $vpId in session ${clientSession.sessionId}")
     logger.trace(s"[VP] Selecting row range from key $fromRowKey to key $toRowKey in viewport $vpId in session ${clientSession.sessionId}. Preserve: $preserveExistingSelection")
     val viewPort = getViewportInSession(vpId, clientSession)
     viewPort.selectRowRange(fromRowKey, toRowKey, preserveExistingSelection)

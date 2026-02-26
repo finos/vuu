@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.logging.LogAtFrequency
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.filter.`type`.{AntlrBasedFilter, BaseFilter, PermissionFilter}
-import org.finos.vuu.core.filter.{CompoundFilter, FilterOutEverythingFilter, FilterSpecParser, NoFilter}
+import org.finos.vuu.core.filter.{CompoundFilter, CompoundViewPortFilter, FilterOutEverythingFilter, FilterSpecParser, NoFilter}
 import org.finos.vuu.core.sort.Sort
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.core.table.{Column, EmptyRowData, RowData, RowWithData, TablePrimaryKeys}
@@ -65,7 +65,7 @@ class TreeBuilderImpl(val table: TreeSessionTableImpl, val groupBy: GroupBy, val
 
     logger.debug("Applying filter")
     val baseFilter = BaseFilter(permissionFilter, frozenTime)
-    val realizedFilter = CompoundFilter(baseFilter, theFilter)
+    val realizedFilter = CompoundViewPortFilter(baseFilter, theFilter)
     realizedFilter.doFilter(table.sourceTable, table.sourceTable.primaryKeys, vpColumns, firstInChain = true)
   }
 

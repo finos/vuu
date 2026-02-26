@@ -1,6 +1,6 @@
 package org.finos.vuu.core.filter.`type`
 
-import org.finos.vuu.core.filter.ViewPortFilter
+import org.finos.vuu.core.filter.{CompoundFilter, ViewPortFilter}
 import org.finos.vuu.core.table.TablePrimaryKeys
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
@@ -11,7 +11,7 @@ object BaseFilter {
   
   def apply(permissionFilter: PermissionFilter, frozenTime: Option[EpochTimestamp]): BaseFilter = {
     frozenTime match {
-      case Some(value) => PermissionAndFrozenTimeFilter(permissionFilter, FrozenTimeFilter(value))
+      case Some(value) => PermissionAndFrozenTimeFilter(permissionFilter, value)
       case None => OnlyPermissionFilter(permissionFilter)
     }
   }
@@ -27,20 +27,13 @@ private case class OnlyPermissionFilter(permissionFilter: PermissionFilter) exte
 
 }
 
-private case class PermissionAndFrozenTimeFilter(permissionFilter: PermissionFilter, frozenTimeFilter: FrozenTimeFilter) extends BaseFilter {
+private case class PermissionAndFrozenTimeFilter(permissionFilter: PermissionFilter, frozenTime: EpochTimestamp) extends BaseFilter {
 
-  override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
-    if (primaryKeys.isEmpty) {
-      primaryKeys
-    } else {
-      val remainingKeys = permissionFilter.doFilter(source, primaryKeys, firstInChain)
-      if (remainingKeys.isEmpty) {
-        remainingKeys
-      } else {
-        val stillFirstInChain = firstInChain && remainingKeys == primaryKeys
-        frozenTimeFilter.doFilter(source, remainingKeys, stillFirstInChain)
-      }
-    }
+  private val internalFilter = CompoundFilter(permissionFilter, FrozenTimeFilter(frozenTime))
+
+  override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys,
+                        vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
+    internalFilter.doFilter(source, primaryKeys, firstInChain)
   }
 
 }

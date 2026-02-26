@@ -1,6 +1,7 @@
 package org.finos.vuu.core.filter
 
-import org.finos.toolbox.collection.array.ImmutableArray
+import org.finos.toolbox.collection.array.{ImmutableArray, VectorImmutableArray}
+import org.finos.toolbox.collection.set.ImmutableArraySet
 import org.finos.vuu.core.filter.FilterClause.joinResults
 import org.finos.vuu.core.index.*
 import org.finos.vuu.core.table.column.{Error, Result}
@@ -47,14 +48,28 @@ sealed trait RowFilterClause extends FilterClause {
     else Error(s"Column `$columnName` not found.")
 
   protected def hitIndex[T](primaryKeys: TablePrimaryKeys, value: T,
-                            indexLookup: T => ImmutableArray[String], firstInChain: Boolean): TablePrimaryKeys = {
+                            indexLookup: T => ImmutableArraySet[String], firstInChain: Boolean): TablePrimaryKeys = {
       val results  = indexLookup.apply(value)
       if (results.isEmpty) {
         EmptyTablePrimaryKeys
       } else if (firstInChain) {
-        InMemTablePrimaryKeys(results)
+        InMemTablePrimaryKeys(results.toImmutableArray)
       } else {
-        primaryKeys.intersect(results)
+        
+        val keyLength = primaryKeys.length
+        val builder = Vector.newBuilder[String]
+        builder.sizeHint(results.length)
+
+        var i = 0
+        while (i < keyLength) {
+          val key = primaryKeys.get(i)
+          if (results.contains(key)) {
+            builder += key
+          }
+          i += 1
+        }
+        
+        InMemTablePrimaryKeys(VectorImmutableArray.from(builder.result()))
       }
   }
 

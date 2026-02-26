@@ -6,7 +6,7 @@ import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 object EmptyTablePrimaryKeys extends TablePrimaryKeys{
   override def length: Int = 0
   override def add(key: String): TablePrimaryKeys = this.+(key)
-  override def +(key: String): TablePrimaryKeys = InMemTablePrimaryKeys(ImmutableArray.from(Array(key)))
+  override def +(key: String): TablePrimaryKeys = InMemTablePrimaryKeys(ImmutableArray.of(key))
   override def remove(key: String): TablePrimaryKeys = EmptyTablePrimaryKeys  
   override def -(key: String): TablePrimaryKeys = EmptyTablePrimaryKeys
   override def sliceTableKeys(from: Int, until: Int): TablePrimaryKeys = EmptyTablePrimaryKeys
@@ -14,7 +14,7 @@ object EmptyTablePrimaryKeys extends TablePrimaryKeys{
 
   override def get(index: Int): String = null
   override def set(index: Int, key: String): TablePrimaryKeys = this
-  override def intersect(keys: Iterable[String]): TablePrimaryKeys = EmptyTablePrimaryKeys
+  
 }
 
 trait TablePrimaryKeys extends Iterable[String] {
@@ -26,7 +26,6 @@ trait TablePrimaryKeys extends Iterable[String] {
   def sliceTableKeys(from: Int, until: Int): TablePrimaryKeys
   def get(index: Int): String
   def set(index: Int, key: String): TablePrimaryKeys
-  def intersect(keys: Iterable[String]): TablePrimaryKeys
 }
 
 

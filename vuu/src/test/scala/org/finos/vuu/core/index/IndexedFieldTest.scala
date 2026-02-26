@@ -23,8 +23,8 @@ class IndexedFieldTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
       })
 
-      val rowKeys = index.find(3)
-
+      val rowKeys = index.find(3).toList
+      
       rowKeys(0) shouldEqual ("1300")
       rowKeys(1) shouldEqual ("1301")
       rowKeys(2) shouldEqual ("1302")
@@ -33,7 +33,7 @@ class IndexedFieldTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
       index.remove(3, "1302")
 
-      val rowKeys2 = index.find(3)
+      val rowKeys2 = index.find(3).toList
 
       rowKeys2.length shouldEqual (9)
       rowKeys2.indexOf("1302") shouldEqual(-1)
@@ -56,30 +56,28 @@ class IndexedFieldTest extends AnyFeatureSpec with Matchers with StrictLogging {
       })
 
       val results = index.find(key1)
-
-      results.toList shouldEqual List("AaBB0", "AaBB1", "AaBB2", "AaBB3", "AaBB4", "AaBB5")
+      results.length shouldEqual 6
+      results.toSet shouldEqual Set("AaBB0", "AaBB1", "AaBB2", "AaBB3", "AaBB4", "AaBB5")
 
       index.remove(key1, "AaBB5")
 
       val results2 = index.find(key1)
-
-      results2.toList shouldEqual List("AaBB0", "AaBB1", "AaBB2", "AaBB3", "AaBB4")
+      results2.length shouldEqual 5
+      results2.toSet shouldEqual Set("AaBB0", "AaBB1", "AaBB2", "AaBB3", "AaBB4")
 
       val results3 = index.find("lolcats")
-
       results3.length shouldEqual 0
 
       val results4 = index.find(List(key1, key2, "lolcats"))
-
-      results4.toList shouldEqual List("AaBB0", "AaBB1", "AaBB2", "AaBB3", "AaBB4", "BBAa0", "BBAa1", "BBAa2", "BBAa3", "BBAa4", "BBAa5")
+      results4.length shouldEqual 11
+      results4.toSet shouldEqual Set("AaBB0", "AaBB1", "AaBB2", "AaBB3", "AaBB4", "BBAa0", "BBAa1", "BBAa2", "BBAa3", "BBAa4", "BBAa5")
 
       val results5 = index.find(List())
-
       results5.isEmpty shouldBe true
 
       val results6 = index.find(List(key2))
-
-      results6.toList shouldEqual List("BBAa0", "BBAa1", "BBAa2", "BBAa3", "BBAa4", "BBAa5")
+      results6.length shouldEqual 6
+      results6.toSet shouldEqual Set("BBAa0", "BBAa1", "BBAa2", "BBAa3", "BBAa4", "BBAa5")
 
     }
 
@@ -126,21 +124,22 @@ class IndexedFieldTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
       val values = index.find(EpochTimestamp(1))
 
-      values.toList shouldEqual List("10", "11", "12", "13", "14", "15")
+      values.length shouldEqual 6
+      values.toSet shouldEqual Set("10", "11", "12", "13", "14", "15")
 
       index.remove(EpochTimestamp(1), "15")
 
       val values2 = index.find(EpochTimestamp(1))
 
-      values2.toList shouldEqual List("10", "11", "12", "13", "14")
+      values2.length shouldEqual 5
+      values2.toSet shouldEqual Set("10", "11", "12", "13", "14")
 
       val values3 = index.find(EpochTimestamp(-1))
-
-      values3.toList shouldEqual List()
+      values3.length shouldEqual 0
 
       val values4 = index.find(List(EpochTimestamp(2), EpochTimestamp(3)))
-
-      values4.toList shouldEqual List("20", "21", "22", "23", "24", "25", "30", "31", "32", "33", "34", "35")
+      values4.length shouldEqual 12
+      values4.toSet shouldEqual Set("20", "21", "22", "23", "24", "25", "30", "31", "32", "33", "34", "35")
     }
 
     Scenario("Check ordered operations on EpochTimestamp index") {

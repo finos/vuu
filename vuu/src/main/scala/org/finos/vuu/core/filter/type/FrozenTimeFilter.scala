@@ -1,9 +1,9 @@
 package org.finos.vuu.core.filter.`type`
 
 import com.typesafe.scalalogging.LazyLogging
-import org.finos.toolbox.collection.array.ImmutableArray
+import org.finos.toolbox.collection.array.{ImmutableArray, VectorImmutableArray}
 import org.finos.vuu.core.filter.Filter
-import org.finos.vuu.core.index.{EpochTimestampIndexedField, LongIndexedField}
+import org.finos.vuu.core.index.EpochTimestampIndexedField
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.core.table.{DefaultColumn, EmptyTablePrimaryKeys, TablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
@@ -13,9 +13,10 @@ case class FrozenTimeFilter(frozenTime: EpochTimestamp) extends Filter with Lazy
 
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean): TablePrimaryKeys = {
     logger.trace(s"Starting filter with ${primaryKeys.length}")
+    if (primaryKeys.isEmpty) return primaryKeys
 
     val column = source.asTable.columnForName(DefaultColumn.CreatedTime.name)
-    if (column == null || primaryKeys.isEmpty) {
+    if (column == null) {
       EmptyTablePrimaryKeys
     } else {
       source.asTable.indexForColumn(column) match {
@@ -32,18 +33,41 @@ case class FrozenTimeFilter(frozenTime: EpochTimestamp) extends Filter with Lazy
     if (results.isEmpty) {
       EmptyTablePrimaryKeys
     } else if (firstInChain) {
-      InMemTablePrimaryKeys(results)
+      InMemTablePrimaryKeys(results.toImmutableArray)
     } else {
-      primaryKeys.intersect(results)
+      val keyLength = primaryKeys.length
+      val builder = Vector.newBuilder[String]
+      builder.sizeHint(Math.min(keyLength, results.length))
+
+      var i = 0
+      while (i < keyLength) {
+        val key = primaryKeys.get(i)
+        if (results.contains(key)) {
+          builder += key
+        }
+        i += 1
+      }
+
+      InMemTablePrimaryKeys(VectorImmutableArray.from(builder.result()))
     }
   }
 
-  private def filterAll(source: RowSource, rowKeys: TablePrimaryKeys): TablePrimaryKeys = {
-    val filtered = rowKeys.filter(key => {
-      val vuuCreatedTimestamp = source.pullRow(key).get(DefaultColumn.CreatedTime.name)
-      vuuCreatedTimestamp != null && vuuCreatedTimestamp.asInstanceOf[EpochTimestamp] < frozenTime
-    })
-    
-    InMemTablePrimaryKeys(ImmutableArray.from[String](filtered.toArray))
+  private def filterAll(source: RowSource, primaryKeys: TablePrimaryKeys): TablePrimaryKeys = {
+    val length = primaryKeys.length
+    val builder = Vector.newBuilder[String]
+    builder.sizeHint(length)
+
+    var i = 0
+    while (i < length) {
+      val key = primaryKeys.get(i)
+      val row = source.pullRow(key)
+      val value = row.get(DefaultColumn.CreatedTime.name)
+      if (value != null && value.asInstanceOf[EpochTimestamp] < frozenTime) {
+        builder += key
+      }
+      i += 1
+    }
+
+    InMemTablePrimaryKeys(ImmutableArray.from[String](builder.result()))
   }
 }
