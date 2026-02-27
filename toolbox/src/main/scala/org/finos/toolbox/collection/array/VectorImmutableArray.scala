@@ -56,25 +56,9 @@ private class VectorImmutableArrayImpl[T <: Object : ClassTag](private val data:
   }
 
   override def addAll(iterable: IterableOnce[T]): ImmutableArray[T] = {
-    val dataBuilder = Vector.newBuilder[T]
-    if (iterable.knownSize > 0) {
-      val newSize = data.length + iterable.knownSize
-      dataBuilder.sizeHint(newSize)
-    }
-    dataBuilder ++= data
-
-    val it = iterable.iterator
-    while (it.hasNext) {
-      val item = it.next()
-      dataBuilder += item
-    }
-
-    val newData = dataBuilder.result()
-
-    val currentPhysicalIndex = data.length
+    val newData = data ++ iterable
     val newActive = activeIndices.clone()
-    newActive.add(currentPhysicalIndex.toLong, newData.length.toLong)
-
+    newActive.add(data.length.toLong, newData.length.toLong)
     VectorImmutableArrayImpl(newData, newActive, logger)
   }
 
@@ -119,11 +103,10 @@ private class VectorImmutableArrayImpl[T <: Object : ClassTag](private val data:
   }
 
   override def foreach[U](f: T => U): Unit = {
-    activeIndices.forEach(new org.roaringbitmap.IntConsumer {
-      override def accept(value: Int): Unit = {
-        f(data(value))
-      }
-    })
+    val it = activeIndices.getIntIterator
+    while (it.hasNext) {
+      f(data(it.next()))
+    }
   }
 
   private def findPhysicalIndex(userIndex: Int): Int = {
@@ -137,12 +120,20 @@ private class VectorImmutableArrayImpl[T <: Object : ClassTag](private val data:
   private def doRemove(physIdx: Int): VectorImmutableArray[T] = {
     val newActive = activeIndices.clone()
     newActive.remove(physIdx)
-    val updated = VectorImmutableArrayImpl(data, newActive, logger)
     if (shouldCompact) {
       logger.trace(s"Compacting ${data.length - length} records")
-      updated.compact()
+      val dataBuilder = Vector.newBuilder[T]
+      dataBuilder.sizeHint(newActive.getCardinality)
+      val it = newActive.getIntIterator
+      while (it.hasNext) {
+        dataBuilder += data(it.next())
+      }
+      val newData = dataBuilder.result()
+      val finalActive = new CopyOnWriteRoaringBitmap
+      finalActive.add(0L, newData.length.toLong)
+      VectorImmutableArrayImpl(newData, finalActive, logger)
     } else {
-      updated
+      VectorImmutableArrayImpl(data, newActive, logger)
     }
   }
 
