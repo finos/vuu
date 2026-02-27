@@ -59,6 +59,7 @@
         <junit.jupiter.version>6.0.1</junit.jupiter.version>
         <assertj.version>3.26.3</assertj.version>
         <awaitility.version>4.3.0</awaitility.version>
+        <roaring.bitmap.version>1.6.9</roaring.bitmap.version>
         <gpg.executable>gpg</gpg.executable>
         <publish.server.id>ossrh</publish.server.id>
         <github.global.server>github</github.global.server>

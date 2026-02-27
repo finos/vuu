@@ -1,24 +1,40 @@
 package org.finos.toolbox.collection.array
 
+import com.typesafe.scalalogging.Logger
+import org.roaringbitmap.buffer.CopyOnWriteRoaringBitmap
+
 import scala.reflect.ClassTag
+import scala.util.hashing.MurmurHash3
+
+trait VectorImmutableArray[T] extends ImmutableArray[T] {}
 
 object VectorImmutableArray {
 
-  def from[T <: Object : ClassTag](arr: IterableOnce[T]): ImmutableArray[T] = {
-    new VectorImmutableArray[T](Vector.from(arr))
+  private val logger: Logger = Logger.apply(classOf[VectorImmutableArray[_]])
+
+  def from[T <: Object : ClassTag](iterable: IterableOnce[T]): ImmutableArray[T] = {
+    val data = Vector.from(iterable)
+    val bitMap = new CopyOnWriteRoaringBitmap
+    bitMap.add(0L, data.length.toLong)
+    VectorImmutableArrayImpl(data, bitMap, logger)
   }
 
   def empty[T <: Object : ClassTag](): ImmutableArray[T] = {
-    new VectorImmutableArray[T](Vector.empty)
+    VectorImmutableArrayImpl(Vector.empty, new CopyOnWriteRoaringBitmap, logger)
   }
 
   def of[T <: Object : ClassTag](element: T): ImmutableArray[T] = {
-    new VectorImmutableArray[T](Vector(element))
+    val data = Vector(element)
+    val bitMap = new CopyOnWriteRoaringBitmap
+    bitMap.add(0)
+    VectorImmutableArrayImpl(data, bitMap, logger)
   }
 
 }
 
-private class VectorImmutableArray[T <: Object :ClassTag](private val vector: Vector[T]) extends ImmutableArray[T] {
+private class VectorImmutableArrayImpl[T <: Object : ClassTag](private val data: Vector[T],
+                                                               private val activeIndices: CopyOnWriteRoaringBitmap,
+                                                               logger: Logger) extends VectorImmutableArray[T] {
 
   override def +(element: T): ImmutableArray[T] = add(element)
 
@@ -26,73 +42,123 @@ private class VectorImmutableArray[T <: Object :ClassTag](private val vector: Ve
 
   override def ++(iterable: IterableOnce[T]): ImmutableArray[T] = addAll(iterable)
 
-  override def add(element: T): ImmutableArray[T] = VectorImmutableArray(vector.appended(element))
+  override def add(element: T): ImmutableArray[T] = {
+    val newData = data.appended(element)
+    val newActive = activeIndices.clone()
+    newActive.add(data.length)
+    VectorImmutableArrayImpl(newData, newActive, logger)
+  }
 
   override def remove(element: T): ImmutableArray[T] = {
-    val index = vector.indexOf(element)
-    if (index >= 0) remove(index) else this
+    val physIdx = indexOf(element)
+    if (physIdx == -1) this
+    else doRemove(physIdx)
   }
 
   override def addAll(iterable: IterableOnce[T]): ImmutableArray[T] = {
-    VectorImmutableArray(vector.appendedAll(iterable))
-  }
-
-  override def getIndex(index: Int): T = {
-    vector(index)
+    val newData = data ++ iterable
+    val newActive = activeIndices.clone()
+    newActive.add(data.length.toLong, newData.length.toLong)
+    VectorImmutableArrayImpl(newData, newActive, logger)
   }
 
   override def indexOf(element: T): Int = {
-    vector.indexOf(element)
+    var index = 0
+    val it = activeIndices.getIntIterator
+    while (it.hasNext) {
+      if (data(it.next()) == element) return index
+      index += 1
+    }
+    -1
   }
 
-  override def contains(element: T): Boolean = vector.contains(element)
+  override def contains(element: T): Boolean = indexOf(element) != -1
 
-  override def length: Int = vector.length
-
-  override def apply(i: Int): T = vector(i)
-
-  override def set(index: Int, element: T): ImmutableArray[T] = VectorImmutableArray(vector.updated(index, element))
-
-  override def remove(index: Int): ImmutableArray[T] = VectorImmutableArray(vector.patch(index, Nil, 1))
-
-  override def iterator: Iterator[T] = vector.iterator
-
-  override def foreach[U](f: T => U): Unit = vector.foreach(f)
-
-  override def size: Int = vector.size
-
-  override def knownSize: Int = vector.knownSize
-
-  override def isEmpty: Boolean = vector.isEmpty
-
-  override def head: T = vector.head
-
-  override def last: T = vector.last
-
-  override def headOption: Option[T] = vector.headOption
-
-  override def lastOption: Option[T] = vector.lastOption
-
-  override def slice(from: Int, until: Int): Iterable[T] = vector.slice(from, until)
-
-  override def take(n: Int): Iterable[T] = vector.take(n)
-
-  override def drop(n: Int): Iterable[T] = vector.drop(n)
-
-  override def copyToArray[B >: T](xs: Array[B], start: Int, len: Int): Int = {
-    vector.copyToArray(xs, start, len)
+  override def apply(index: Int): T = {
+    if (index < 0 || index >= length) throw new IndexOutOfBoundsException(s"Index $index")
+    val physIdx = activeIndices.select(index)
+    data(physIdx)
   }
 
-  private lazy val hash = vector.hashCode()
+  override def set(index: Int, element: T): ImmutableArray[T] = {
+    if (index < 0 || index >= length) throw new IndexOutOfBoundsException(s"Index $index")
+    val physIdx = activeIndices.select(index)
+    VectorImmutableArrayImpl(data.updated(physIdx, element), activeIndices, logger)
+  }
+
+  override def remove(index: Int): ImmutableArray[T] = {
+    if (index < 0 || index >= length) throw new IndexOutOfBoundsException(s"Index $index")
+    val physIdx = activeIndices.select(index)
+    doRemove(physIdx)
+  }
+
+  private lazy val activeLength = activeIndices.getCardinality
+
+  override def length: Int = activeLength
+
+  override def iterator: Iterator[T] = {
+    val iterator = new Iterator[Int] {
+      private val it = activeIndices.getIntIterator
+      def hasNext: Boolean = it.hasNext
+      def next(): Int = it.next()
+    }
+    iterator.map(data(_))
+  }
+
+  override def foreach[U](f: T => U): Unit = {
+    val it = activeIndices.getIntIterator
+    while (it.hasNext) {
+      f(data(it.next()))
+    }
+  }
+
+  private def doRemove(physIdx: Int): VectorImmutableArray[T] = {
+    val newActive = activeIndices.clone()
+    newActive.remove(physIdx)
+    if (shouldCompact) {
+      compact(newActive)
+    } else {
+      VectorImmutableArrayImpl(data, newActive, logger)
+    }
+  }
+
+  private def shouldCompact: Boolean = {
+    data.length - length > Math.max(100, data.length * 0.10)
+  }
+
+  private def compact(newActive: CopyOnWriteRoaringBitmap) = {
+    logger.trace(s"Compacting ${data.length - length} records")
+    val dataBuilder = Vector.newBuilder[T]
+    dataBuilder.sizeHint(newActive.getCardinality)
+    val it = newActive.getIntIterator
+    while (it.hasNext) {
+      dataBuilder += data(it.next())
+    }
+    val newData = dataBuilder.result()
+    val finalActive = new CopyOnWriteRoaringBitmap
+    finalActive.add(0L, newData.length.toLong)
+    VectorImmutableArrayImpl(newData, finalActive, logger)
+  }
+
+  private lazy val hash = MurmurHash3.orderedHash(this.iterator)
 
   override def hashCode(): Int = hash
 
-  override def equals(obj: Any): Boolean = {
-    obj match {
-      case that: VectorImmutableArray[_] =>
-        (this eq that) || (this.vector == that.vector)
-      case _ => false
-    }
+  override def equals(other: Any): Boolean = other match {
+    case that: VectorImmutableArray[_] =>
+      if (this eq that) true
+      else if (this.length != that.length) false
+      else if (this.hashCode() != that.hashCode()) false
+      else {
+        val it1 = this.iterator
+        val it2 = that.iterator
+        var same = true
+        while (it1.hasNext && it2.hasNext && same) {
+          if (it1.next() != it2.next()) same = false
+        }
+        same
+      }
+    case _ => false
   }
 
 }

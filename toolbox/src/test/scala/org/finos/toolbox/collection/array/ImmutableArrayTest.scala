@@ -58,16 +58,12 @@ class ImmutableArrayTest extends AnyFunSuite with Matchers {
     a.addAll(b) shouldBe (a ++ b)
   }
 
-  test("getIndex retrieves the correct element") {
-    val a = arr("alpha", "beta", "gamma")
-
-    a.getIndex(1) shouldBe "beta"
-  }
-
   test("apply retrieves the correct element") {
     val a = arr("cat", "dog", "mouse")
+    a(1) shouldBe "dog"
 
-    a(2) shouldBe "mouse"
+    val b = a.remove("dog")
+    b(1) shouldBe "mouse"
   }
 
   test("indexOf returns the correct index or -1 if missing") {
@@ -110,8 +106,58 @@ class ImmutableArrayTest extends AnyFunSuite with Matchers {
   test("Iterable behavior: foreach, map, etc. should work") {
     val a = arr("x", "y", "z")
 
+
     a.toList shouldBe List("x", "y", "z")
     a.map(_.toUpperCase).toList shouldBe List("X", "Y", "Z")
+
+    val b = a.remove("y")
+
+    b.toList shouldBe List("x", "z")
+    b.map(_.toUpperCase).toList shouldBe List("X", "Z")
+  }
+
+  test("check removal of all rows by index and that compaction doesn't break things") {
+    val count = 20_000
+    val numbers = (0 until count).map(_.toString)
+    var array = arr(numbers: _*)
+
+    var index = 0
+    while (index < count) {
+      array.length shouldEqual (count - index)
+      array(0) shouldEqual index.toString
+      array(array.length - 1) shouldEqual (count -1).toString
+
+      array = array.remove(0)
+
+      array.length shouldEqual (count - index - 1)
+      if (array.nonEmpty) {
+        array(0) shouldEqual (index + 1).toString
+        array(array.length - 1) shouldEqual (count -1).toString
+      }
+
+      index += 1
+    }
+  }
+
+  test("check removal of all rows by last element and that compaction doesn't break things") {
+    val count = 20_000
+    val numbers = (0 until count).map(_.toString)
+    var array = arr(numbers: _*)
+
+    var index = 0
+    while (index < count) {
+      array.length shouldEqual (count - index)
+      array(array.length - 1) shouldEqual (array.length - 1).toString
+
+      array = array.remove(array(array.length - 1))
+
+      array.length shouldEqual (count - index - 1)
+      if (array.nonEmpty) {
+        array(array.length - 1) shouldEqual (array.length - 1).toString
+      }
+
+      index += 1
+    }
   }
 
   test("check equals and hashcode") {
