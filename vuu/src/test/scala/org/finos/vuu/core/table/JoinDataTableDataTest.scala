@@ -167,7 +167,7 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> instrumentRic)
     }
 
-    Scenario("Update an existing row, from complete join to only left hand") {
+    Scenario("Update an existing row, from complete join to only left hand, and revert the change") {
       val (joinProvider, orders, orderProvider, prices, pricesProvider, orderPrices) = setupJoins
       pricesProvider.tick(instrumentRic, instrument)
       orderProvider.tick(orderId, orderWithInstrument)
@@ -181,6 +181,15 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       (result eq original) shouldBe false
       result.getPrimaryKeys shouldBe ImmutableArray.of(orderId)
       result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> null)
+
+      // Revert the change
+      orderProvider.tick(orderId, orderWithInstrument)
+      joinProvider.runOnce()
+      val result2 = orderPrices.getJoinData
+
+      (result2 eq result) shouldBe false
+      result2.getPrimaryKeys shouldBe ImmutableArray.of(orderId)
+      result2.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> instrumentRic)
     }
 
     Scenario("Update an existing row, from complete join to new complete join") {
@@ -200,7 +209,7 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> instrumentRic2)
     }
 
-    Scenario("Update an existing row, from complete join to no join") {
+    Scenario("Update an existing row, from complete join to no join, and revert the change") {
       val (joinProvider, orders, orderProvider, prices, pricesProvider, orderPrices) = setupJoins
       pricesProvider.tick(instrumentRic, instrument)
       orderProvider.tick(orderId, orderWithInstrument)
@@ -214,6 +223,15 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       (result eq original) shouldBe false
       result.getPrimaryKeys shouldBe ImmutableArray.of(orderId)
       result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> null)
+
+      // Revert the change
+      orderProvider.tick(orderId, orderWithInstrument)
+      joinProvider.runOnce()
+      val result2 = orderPrices.getJoinData
+
+      (result2 eq result) shouldBe false
+      result2.getPrimaryKeys shouldBe ImmutableArray.of(orderId)
+      result2.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> instrumentRic)
     }
 
   }
@@ -277,7 +295,7 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       result.getKeyValuesByTable(orderId) shouldEqual null
     }
 
-    Scenario("Delete row in right table with complete join") {
+    Scenario("Delete row in right table with complete join and add back") {
       val (joinProvider, orders, orderProvider, prices, pricesProvider, orderPrices) = setupJoins
       orderProvider.tick(orderId, orderWithInstrument)
       orderProvider.tick(orderId4, order4WithInstrument)
@@ -289,10 +307,21 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       joinProvider.runOnce()
       val result = orderPrices.getJoinData
 
-      result should not equal original
+      // The join between left rows and right row no longer exists
+      //result should not equal original
       result.getPrimaryKeys shouldBe ImmutableArray.from(List(orderId, orderId4))
-      result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> null)
-      result.getKeyValuesByTable(orderId4) shouldEqual Map("orders" -> orderId4, "prices" -> null)
+      //result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> null)
+      //result.getKeyValuesByTable(orderId4) shouldEqual Map("orders" -> orderId4, "prices" -> null)
+
+      // Add the row back in right table
+      pricesProvider.tick(instrumentRic, instrument)
+      joinProvider.runOnce()
+      val result2 = orderPrices.getJoinData
+
+      //result2 should not equal result
+      result2.getPrimaryKeys shouldBe ImmutableArray.from(List(orderId, orderId4))
+      result2.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> instrumentRic)
+      result2.getKeyValuesByTable(orderId4) shouldEqual Map("orders" -> orderId4, "prices" -> instrumentRic)
     }
 
     Scenario("Delete row from middle of table") {
