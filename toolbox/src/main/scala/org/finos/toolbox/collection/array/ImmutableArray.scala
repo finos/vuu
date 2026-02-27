@@ -44,8 +44,6 @@ trait ImmutableArray[T] extends Iterable[T] {
   def ++(iterable: IterableOnce[T]) : ImmutableArray[T]
   def addAll(iterable: IterableOnce[T]) : ImmutableArray[T]
 
-  def getIndex(index: Int): T
-
   def indexOf(element: T): Int
 
   def contains(element: T): Boolean
