@@ -76,22 +76,25 @@ private class VectorImmutableArrayImpl[T <: Object : ClassTag](private val data:
 
   override def apply(index: Int): T = {
     if (index < 0 || index >= length) throw new IndexOutOfBoundsException(s"Index $index")
-    data(findPhysicalIndex(index))
+    val physIdx = activeIndices.select(index)
+    data(physIdx)
   }
 
   override def set(index: Int, element: T): ImmutableArray[T] = {
     if (index < 0 || index >= length) throw new IndexOutOfBoundsException(s"Index $index")
-    val physIdx = findPhysicalIndex(index)
+    val physIdx = activeIndices.select(index)
     VectorImmutableArrayImpl(data.updated(physIdx, element), activeIndices, logger)
   }
 
   override def remove(index: Int): ImmutableArray[T] = {
     if (index < 0 || index >= length) throw new IndexOutOfBoundsException(s"Index $index")
-    val physIdx = findPhysicalIndex(index)
+    val physIdx = activeIndices.select(index)
     doRemove(physIdx)
   }
 
-  override def length: Int = activeIndices.getCardinality
+  private lazy val activeLength = activeIndices.getCardinality
+
+  override def length: Int = activeLength
 
   override def iterator: Iterator[T] = {
     val iterator = new Iterator[Int] {
@@ -109,29 +112,11 @@ private class VectorImmutableArrayImpl[T <: Object : ClassTag](private val data:
     }
   }
 
-  private def findPhysicalIndex(userIndex: Int): Int = {
-    if (userIndex >= 0 && userIndex < activeIndices.getCardinality) {
-      activeIndices.select(userIndex)
-    } else {
-      throw new IndexOutOfBoundsException(s"Index $userIndex")
-    }
-  }
-
   private def doRemove(physIdx: Int): VectorImmutableArray[T] = {
     val newActive = activeIndices.clone()
     newActive.remove(physIdx)
     if (shouldCompact) {
-      logger.trace(s"Compacting ${data.length - length} records")
-      val dataBuilder = Vector.newBuilder[T]
-      dataBuilder.sizeHint(newActive.getCardinality)
-      val it = newActive.getIntIterator
-      while (it.hasNext) {
-        dataBuilder += data(it.next())
-      }
-      val newData = dataBuilder.result()
-      val finalActive = new CopyOnWriteRoaringBitmap
-      finalActive.add(0L, newData.length.toLong)
-      VectorImmutableArrayImpl(newData, finalActive, logger)
+      compact(newActive)
     } else {
       VectorImmutableArrayImpl(data, newActive, logger)
     }
@@ -141,14 +126,18 @@ private class VectorImmutableArrayImpl[T <: Object : ClassTag](private val data:
     data.length - length > Math.max(100, data.length * 0.10)
   }
 
-  private def compact(): VectorImmutableArray[T] = {
+  private def compact(newActive: CopyOnWriteRoaringBitmap) = {
+    logger.trace(s"Compacting ${data.length - length} records")
     val dataBuilder = Vector.newBuilder[T]
-    dataBuilder.sizeHint(this.length)
-    this.iterator.foreach(dataBuilder += _)
+    dataBuilder.sizeHint(newActive.getCardinality)
+    val it = newActive.getIntIterator
+    while (it.hasNext) {
+      dataBuilder += data(it.next())
+    }
     val newData = dataBuilder.result()
-    val newActive = new CopyOnWriteRoaringBitmap
-    newActive.add(0L, newData.length.toLong)
-    VectorImmutableArrayImpl(newData, newActive, logger)
+    val finalActive = new CopyOnWriteRoaringBitmap
+    finalActive.add(0L, newData.length.toLong)
+    VectorImmutableArrayImpl(newData, finalActive, logger)
   }
 
   private lazy val hash = MurmurHash3.orderedHash(this.iterator)
