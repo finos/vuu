@@ -162,7 +162,6 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
       val leftColumn = joinTo.joinSpec.left
 
       leftKey match {
-        // check if null or not string is issue
         case null =>
         case leftKey: String =>
           val rightKey = leftColumnAsRightKey(joinTableDef, rightTable, ev, leftColumn)

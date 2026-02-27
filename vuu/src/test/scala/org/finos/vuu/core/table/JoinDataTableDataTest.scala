@@ -293,7 +293,6 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       result.getPrimaryKeys shouldBe ImmutableArray.from(List(orderId, orderId4))
       result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> null)
       result.getKeyValuesByTable(orderId4) shouldEqual Map("orders" -> orderId4, "prices" -> null)
-      // what is showing on screen now?
     }
 
     Scenario("Delete row from middle of table") {
