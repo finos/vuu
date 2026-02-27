@@ -147,16 +147,12 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
     }
   }
 
-  private def eventToLeftKey(joinTableDef: JoinTableDef, ev: util.HashMap[String, Any]): String = {
-    ev.get(joinTableDef.baseTable.keyField).toString
-  }
-
   private def eventToKey(tableName: String, ev: util.HashMap[String, Any]): String = {
     val keyField = sourceTableDefsByName.get(tableName).keyField
     ev.get(keyField).toString
   }
 
-  private def addRightKeysForLeftKey(joinTableDef: JoinTableDef, tableName: String, ev: util.HashMap[String, Any], existingKeyValuesByTable: Map[String, String]): Unit = {
+  private def addRightKeysForLeftKey(joinTableDef: JoinTableDef, tableName: String, ev: util.HashMap[String, Any], leftKey: String, existingKeyValuesByTable: Map[String, String]): Unit = {
     val leftTable = tableName
 
     joinTableDef.joins.foreach(joinTo => {
@@ -165,18 +161,22 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
       val rightTable = joinTo.table.name
       val leftColumn = joinTo.joinSpec.left
 
-      ev.get(joinTableDef.baseTable.keyField) match {
+      leftKey match {
+        // check if null or not string is issue
+        case null =>
         case leftKey: String =>
           val rightKey = leftColumnAsRightKey(joinTableDef, rightTable, ev, leftColumn)
-          val existingRightKey = if (existingKeyValuesByTable == null) null else existingKeyValuesByTable.getOrElse(rightTable, null)
+          val existingRightKey = existingKeyValuesByTable match {
+            case null => null
+            case _ => existingKeyValuesByTable.getOrElse(rightTable, null)
+          }
           rightToLeftKeys.addRightKey(rightTable, rightKey, leftTable, leftKey, existingRightKey)
-        case null =>
       }
     })
 
   }
 
-  private def deleteLeftKeyFromMapping(joinTableDef: JoinTableDef, tableName: String, ev: util.HashMap[String, Any]): Unit = {
+  private def deleteLeftKeyFromMapping(joinTableDef: JoinTableDef, tableName: String, ev: util.HashMap[String, Any], leftKey: String): Unit = {
     val leftTable = tableName
 
     joinTableDef.joins.foreach(joinTo => {
@@ -184,11 +184,11 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
       val rightTable = joinTo.table.name
       val leftColumn = joinTo.joinSpec.left
 
-      ev.get(joinTableDef.baseTable.keyField) match {
+      leftKey match {
+        case null =>
         case leftKey: String =>
           val rightKey = leftColumnAsRightKey(joinTableDef, rightTable, ev, leftColumn)
           rightToLeftKeys.deleteLeftKeyFromMapping(rightTable, rightKey, leftTable, leftKey)
-        case null =>
       }
     })
   }
@@ -213,22 +213,19 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
 
       //does it participate as a left table? i.e. the base table of the join
       if (joinTableDef.isLeftTable(tableName)) {
-
-        if (ev.get("_isDeleted").asInstanceOf[Boolean]) {
-          joinRelations.deleteRowJoins(joinTableDef, ev)
-        } else {
-          joinRelations.addRowJoins(joinTableDef, ev)
+        val leftKey = ev.get(joinTableDef.baseTable.keyField) match {
+          case null => null
+          case key => key.toString
         }
 
-        val leftKey = eventToLeftKey(joinTableDef, ev)
-        val existingKeyValuesByTable = defAndTable.table.getJoinData.getKeyValuesByTable(leftKey)
         if (ev.get("_isDeleted").asInstanceOf[Boolean]) {
-          deleteLeftKeyFromMapping(joinTableDef, tableName, ev)
+          joinRelations.deleteRowJoins(joinTableDef, ev, leftKey)
+          deleteLeftKeyFromMapping(joinTableDef, tableName, ev, leftKey)
         } else {
-          addRightKeysForLeftKey(joinTableDef, tableName, ev, existingKeyValuesByTable)
+          joinRelations.addRowJoins(joinTableDef, ev, leftKey)
+          val existingKeyValuesByTable = defAndTable.table.getJoinData.getKeyValuesByTable(leftKey)
+          addRightKeysForLeftKey(joinTableDef, tableName, ev, leftKey, existingKeyValuesByTable)
         }
-
-
         //if so, publish a left table event for the right inbound event
         logger.trace(s"Publishing update for left key: $leftKey to table $tableName")
         publishUpdateForLeftTableAndKey(joinTableDef, defAndTable.table, tableName, leftKey, ev, isJoinEvent)
@@ -243,16 +240,17 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
         //get left table keys for right table event
         val leftKeys = rightToLeftKeys.getLeftTableKeysForRightKey(tableName, rightKey, joinTableDef.baseTable.name)
 
-        //TODO #2019 should we do this??
-        if (ev.get("_isDeleted").asInstanceOf[Boolean]) {
-          deleteLeftKeyFromMapping(joinTableDef, tableName, ev)
-        }
-
         //for each key in left table, send left update, including additional keys
-        leftKeys.foreach(key => {
-          logger.trace(s"Publishing update for left key: $key to table ${joinTableDef.baseTable.name}")
+        leftKeys.foreach(leftKey => {
+
+          if (ev.get("_isDeleted").asInstanceOf[Boolean]) {
+            joinRelations.deleteRowJoins(joinTableDef, ev, leftKey)
+            deleteLeftKeyFromMapping(joinTableDef, tableName, ev, leftKey)
+          }
+
+          logger.trace(s"Publishing update for left key: $leftKey to table ${joinTableDef.baseTable.name}")
           publishUpdateForLeftTableAndKey(joinTableDef, defAndTable.table, joinTableDef.baseTable.name,
-            key, joinSink.getEventDataSink(joinTableDef.baseTable.name).getEventState(key), isJoinEvent)
+            leftKey, joinSink.getEventDataSink(joinTableDef.baseTable.name).getEventState(leftKey), isJoinEvent)
         })
       }
     })

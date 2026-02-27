@@ -289,10 +289,11 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       joinProvider.runOnce()
       val result = orderPrices.getJoinData
 
-      result shouldEqual original
+      result should not equal original
       result.getPrimaryKeys shouldBe ImmutableArray.from(List(orderId, orderId4))
-      result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> instrumentRic)
-      result.getKeyValuesByTable(orderId4) shouldEqual Map("orders" -> orderId4, "prices" -> instrumentRic)
+      result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> null)
+      result.getKeyValuesByTable(orderId4) shouldEqual Map("orders" -> orderId4, "prices" -> null)
+      // what is showing on screen now?
     }
 
     Scenario("Delete row from middle of table") {
