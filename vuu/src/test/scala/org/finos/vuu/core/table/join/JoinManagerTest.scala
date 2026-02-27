@@ -453,9 +453,9 @@ class JoinManagerTest extends AnyFeatureSpec with Matchers with StrictLogging wi
       assertJoins("orderPrices", joinTableProvider)(
         Table(
           ("orders.orderId", "orders.ric", "orders._isDeleted", "prices.ric", "prices._isDeleted"),
-          ("1", "VOD.L", false, "VOD.L", true),
-          ("2", "VOD.L", false, "VOD.L", true),
-          ("3", "VOD.L", false, "VOD.L", true)
+          ("1", "VOD.L", false, null, true),
+          ("2", "VOD.L", false, null, true),
+          ("3", "VOD.L", false, null, true)
         )
       )
 
