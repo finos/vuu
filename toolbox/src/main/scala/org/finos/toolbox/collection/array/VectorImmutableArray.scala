@@ -75,7 +75,7 @@ private class VectorImmutableArrayImpl[T <: Object : ClassTag](private val data:
     val newActive = activeIndices.clone()
     newActive.add(currentPhysicalIndex.toLong, newData.length.toLong)
 
-    VectorImmutableArrayImpl(dataBuilder.result(), newActive, logger)
+    VectorImmutableArrayImpl(newData, newActive, logger)
   }
 
   override def indexOf(element: T): Int = {
