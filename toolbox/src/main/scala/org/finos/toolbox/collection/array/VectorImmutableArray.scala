@@ -11,7 +11,7 @@ trait VectorImmutableArray[T] extends ImmutableArray[T] {}
 object VectorImmutableArray {
 
   val logger: Logger = Logger.apply(classOf[VectorImmutableArray[_]])
-  val minimumCompactionSize: Int = 1_026
+  val minimumCompactionSize: Int = 1_024
 
   def from[T <: Object : ClassTag](iterable: IterableOnce[T]): ImmutableArray[T] = {
     val data = Vector.from(iterable)
