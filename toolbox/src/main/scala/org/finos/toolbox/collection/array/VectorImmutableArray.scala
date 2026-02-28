@@ -135,7 +135,7 @@ private class VectorImmutableArrayImpl[T <: Object : ClassTag](private val data:
   }
 
   private def compact(newActive: CopyOnWriteRoaringBitmap) = {
-    val newLength = length - 1
+    val newLength = newActive.getCardinality
     VectorImmutableArray.logger.trace(s"Compacting ${data.length - newLength} records")
     val dataBuilder = Vector.newBuilder[T]
     dataBuilder.sizeHint(newLength)
