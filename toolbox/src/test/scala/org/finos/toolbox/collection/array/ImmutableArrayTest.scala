@@ -47,8 +47,17 @@ class ImmutableArrayTest extends AnyFunSuite with Matchers {
     val combined = a ++ b
 
     combined shouldBe arr("hello", "world", "foo", "bar")
-    a shouldBe arr("hello", "world")
-    b shouldBe arr("foo", "bar")
+  }
+
+  test("concatenation with pending removals ++ returns a new array combining both") {
+    val a = arr("hello", "world", "it's", "mikey")
+    val b = a.remove("it's")
+    val c = b.remove("mikey")
+    val d = arr("foo", "bar")
+
+    val combined = c ++ d
+
+    combined shouldBe arr("hello", "world", "foo", "bar")
   }
 
   test("addAll behaves the same as ++") {
