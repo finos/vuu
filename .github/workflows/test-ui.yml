@@ -66,14 +66,14 @@ jobs:
       - name: Build Worker
         run: cd ./vuu-ui && npm run build:worker
       - name: Run component tests in Chrome
-        uses: cypress-io/github-action@bd9dda317ed2d4fbffc808ba6cdcd27823b2a13b
+        uses: cypress-io/github-action@d0564b10b4b1b93309bc180754cc3cccb40844c7
         with:
           component: true
           install: false
           working-directory: ./vuu-ui
           browser: chrome
       - name: Run component tests in Edge
-        uses: cypress-io/github-action@bd9dda317ed2d4fbffc808ba6cdcd27823b2a13b
+        uses: cypress-io/github-action@d0564b10b4b1b93309bc180754cc3cccb40844c7
         with:
           component: true
           install: false
