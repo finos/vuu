@@ -258,6 +258,40 @@ export const ScrollingTableWithActionAndStyle = () => {
   );
 };
 
+export const ScrollingTableWithActionsAndStyle = () => {
+  const [config, dataSource] = useMemo<[TableConfig, DataSource]>(() => {
+    return [
+      {
+        columns: testColumns,
+      },
+      new ArrayDataSource({
+        columnDescriptors: testColumns,
+        data: testData.slice(0),
+      }),
+    ];
+  }, []);
+
+  const actions = useMemo<ReactNode>(
+    () => (
+      <>
+        <Button>Cancel</Button>
+        <Button>Deselect All</Button>
+      </>
+    ),
+    [],
+  );
+
+  return (
+    <WithStyle>
+      <TableWithStatsTemplate
+        actions={actions}
+        config={config}
+        dataSource={dataSource}
+      ></TableWithStatsTemplate>
+    </WithStyle>
+  );
+};
+
 export const ScrollingTableWithActionAndStyleStacked = () => {
   const [config, dataSource] = useMemo<[TableConfig, DataSource]>(() => {
     return [

@@ -3,6 +3,9 @@
   --vuu-table-col-header-row-height: var(--salt-size-base, 32px);
   --vuu-table-col-heading-height: 25px;
   --vuu-table-footer-height: 0px;
+  --vuu-table-row-background-selected: var(--vuuTableRow-background-selected, var(--salt-selectable-background-selected));
+  --vuu-table-row-borderColor-selected: var(--vuuTableRow-borderColor-selected, var(--salt-selectable-background-selected));
+  --vuu-table-row-bookend-background-selected: var(--vuuTableRow-bookend-background-selected, var(--salt-selectable-background-selected));
   --vuu-table-row-height: var(--salt-size-base, 32px);
   --vuu-table-row-selection-borderRadius: var(--vuuTable-row-selection-borderRadius, 5px); 
 
@@ -73,7 +76,7 @@
 }
 
 .vuuTable-zebra {
-  --row-background-even: var(--salt-palette-neutral-secondary-background);
+  --table-zebraColor: var(--vuuTable-zebraColor, var(--salt-container-secondary-background));
 }
 
 .vuuTable-colLines {
@@ -306,7 +309,6 @@
 }
 
 .vuuTableRow {
-  --table-row-selected-background: var(--vuuTableRow-selected-background, var(--salt-selectable-background-selected));
   
   background: var(--row-background, var(--table-background));
   border-bottom: 1px solid var(--row-borderColor, var(--table-background));
@@ -324,7 +326,7 @@
 
 
 .vuuTableRow-even {
-  --row-background: var(--row-background-even);
+  --row-background: var(--table-zebraColor);
 }
 
 .vuuTableRow-highlighted {
@@ -333,7 +335,7 @@
 
 
 .vuuTableRow[aria-selected="true"] {
-  background-color: var(--table-row-selected-background);
+  background-color: var(--vuu-table-row-background-selected);
 }
 
 .vuuTableRow[aria-expanded="true"] {
@@ -386,8 +388,8 @@
     .vuuSelectionDecorator  {
 
         .vuuTableRowBookend {
-            background-color: var(--table-row-selected-background);
-            border-color: var(--vuuTableRow-selectionBlock-borderColor);
+            background-color: var(--vuu-table-row-bookend-background-selected);
+            border-color: var(--vuu-table-row-borderColor-selected);
             border-width: 1px;
             width: var(--table-selection-bookend-width,4px);
 
@@ -428,7 +430,7 @@
         border-radius: none;
 
             &:after {
-              background: var(--vuuTableRow-selectionBlock-borderColor);
+              background: var(--vuu-table-row-borderColor-selected);
               content: "";
               position: absolute;
               top: 0px;
@@ -454,7 +456,7 @@
 
     /* Last row in a selection block, including a selection block of one row */
     .vuuTableRow[aria-selected="true"]:has( + .vuuTableRow:not([aria-selected="true"])) {
-        border-bottom-color: var(--vuuTableRow-selectionBlock-borderColor);
+        border-bottom-color: var(--vuu-table-row-borderColor-selected);
 
             .vuuStickyLeft .vuuTableRowBookend {
                 border-bottom-left-radius: var(--vuu-table-row-selection-borderRadius);

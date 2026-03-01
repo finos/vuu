@@ -1,3 +1,7 @@
+.salt-theme-next.vuu-theme-next {
+  --salt-palette-text-fontFamily: var(--salt-typography-fontFamily-nunito);
+}
+
 .salt-theme-next.salt-theme[data-heading-font="Nunito sans"] {
   --salt-palette-text-fontFamily-heading: var(--salt-typography-fontFamily-nunito);
 

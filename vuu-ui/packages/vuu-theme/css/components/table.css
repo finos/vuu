@@ -1,5 +1,4 @@
 .salt-theme.vuu-theme {
-  --vuuTableRow-selectionBlock-borderColor: var(--vuu-color-purple);
   --vuuTableCell-contextOpen-outlineColor: var(--vuu-color-orange-50);
   --vuuTableRow-selected-background: rgb(51,52,54);
 
@@ -24,15 +23,7 @@
     }
 
 
-    /* .vuuTableRow-selectedEnd {
-      z-index: 1;
-    } */
-
     .vuuTableRow[aria-selected="true"] {
-
-    .vuuTableRowBookend {
-      background: var(--vuuTableRow-selectionBlock-borderColor);
-    }
 
     .vuuTableCell:focus {
       outline: solid var(--salt-focused-outlineColor) 2px;

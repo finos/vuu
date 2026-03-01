@@ -20,6 +20,7 @@ import {
 } from "@vuu-ui/vuu-filters";
 import { useViewContext } from "@vuu-ui/vuu-layout";
 import { VuuRange } from "@vuu-ui/vuu-protocol-types";
+import { TableProps } from "@vuu-ui/vuu-table";
 import { TableConfig, TableConfigChangeHandler } from "@vuu-ui/vuu-table-types";
 import {
   FilterTableFeatureProps,
@@ -178,7 +179,7 @@ export const useFilterTableFeature = ({
     vuuTable: tableSchema.table,
   };
 
-  const tableProps = {
+  const tableProps: Partial<TableProps> = {
     availableColumns: availableColumnsFromState ?? tableSchema.columns,
     config: { ...tableConfig },
     dataSource,
@@ -186,6 +187,7 @@ export const useFilterTableFeature = ({
     onAvailableColumnsChange: handleAvailableColumnsChange,
     onConfigChange: handleTableConfigChange,
     renderBufferSize: 20,
+    rowSelectionBorder: true,
   };
 
   // It is important that these values are not assigned in advance. They
