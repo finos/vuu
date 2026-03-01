@@ -1,0 +1,8 @@
+.salt-theme.vuu-theme-deprecated {
+  .saltOptionList {
+    border-radius: 4px;
+  }
+  .saltOptionList:has(.saltOptionList-container:empty) {
+    display: none;
+  }
+}

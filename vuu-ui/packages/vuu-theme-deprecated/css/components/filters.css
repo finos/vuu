@@ -1,0 +1,8 @@
+.salt-theme.vuu-theme-deprecated {
+  .vuuFilterBar {
+    border-top: solid 1px var(--salt-separable-primary-borderColor);
+  }
+  .vuuFilterPill {
+    --vuuSplitButton-borderRadius: var(--salt-size-base);
+  }
+}

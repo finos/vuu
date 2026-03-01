@@ -1,0 +1,2 @@
+import "@vuu-ui/vuu-theme-deprecated/index.css";
+import "@vuu-ui/vuu-icons/index.css";

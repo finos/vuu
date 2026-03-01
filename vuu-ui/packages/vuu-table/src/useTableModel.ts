@@ -9,7 +9,6 @@ import { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
 import {
   ColumnDescriptor,
   ColumnLayout,
-  PinLocation,
   ResizePhase,
   RuntimeColumnDescriptor,
   TableAttributes,
@@ -66,11 +65,11 @@ const getDataType = (
   }
 };
 
-const checkboxColumnDescriptor: ColumnDescriptor = {
+const CheckboxColumnDescriptor = (width = 25): ColumnDescriptor => ({
   allowColumnHeaderMenu: false,
   label: "",
   name: "",
-  width: 25,
+  width,
   resizeable: false,
   sortable: false,
   isSystemColumn: true,
@@ -80,12 +79,12 @@ const checkboxColumnDescriptor: ColumnDescriptor = {
       name: "checkbox-row-selector-cell",
     },
   },
-};
+});
 
-const pinnedCheckboxColumnDescriptor: ColumnDescriptor = {
-  ...checkboxColumnDescriptor,
+const PinnedCheckboxColumnDescriptor = (width?: number): ColumnDescriptor => ({
+  ...CheckboxColumnDescriptor(width),
   pin: "left",
-};
+});
 
 /**
  * TableModel represents state used internally to manage Table. It is
@@ -142,12 +141,6 @@ export interface ColumnActionMove {
   moveBy?: 1 | -1;
 }
 
-export interface ColumnActionPin {
-  type: "pinColumn";
-  column: ColumnDescriptor;
-  pin: PinLocation | false;
-}
-
 export interface ColumnActionResize {
   type: "resizeColumn";
   column: RuntimeColumnDescriptor;
@@ -185,7 +178,6 @@ export type TableModelAction =
   | ColumnActionHide
   | ColumnActionInit
   | ColumnActionMove
-  | ColumnActionPin
   | ColumnActionResize
   | ColumnActionSetTableSchema
   | ColumnActionShow
@@ -230,8 +222,6 @@ const tableModelReducer: TableModelReducer = (state, action) => {
       return hideColumns(state, action);
     case "showColumns":
       return showColumns(state, action);
-    case "pinColumn":
-      return pinColumn(state, action);
     case "updateColumnProp":
       return updateColumnProp(state, action);
     case "tableConfig":
@@ -289,7 +279,7 @@ function init(
   { availableWidth, dataSource, selectionModel, tableConfig }: InitialConfig,
   previousConfig?: InternalTableModel,
 ): InternalTableModel {
-  const { columns, ...tableAttributes } = tableConfig;
+  const { checkboxColumnWidth = 25, columns, ...tableAttributes } = tableConfig;
   const { config: dataSourceConfig, tableSchema } = dataSource;
   const toRuntimeColumnDescriptor = columnDescriptorToRuntimeColumDescriptor(
     tableAttributes,
@@ -315,21 +305,21 @@ function init(
       0,
       toRuntimeColumnDescriptor(
         somePinnedLeft
-          ? pinnedCheckboxColumnDescriptor
-          : checkboxColumnDescriptor,
+          ? PinnedCheckboxColumnDescriptor(checkboxColumnWidth)
+          : CheckboxColumnDescriptor(checkboxColumnWidth),
         -1,
       ),
     );
   }
 
-  const { columnLayout = "static" } = tableConfig;
+  const { columnLayout = "static", selectionBookendWidth = 4 } = tableConfig;
   const runtimeColumnsWithLayout = applyWidthToColumns(runtimeColumns, {
     availableWidth,
     columnLayout,
   });
 
   const columnsInRenderOrder = runtimeColumnsWithLayout.some(isPinned)
-    ? sortPinnedColumns(runtimeColumnsWithLayout)
+    ? sortPinnedColumns(runtimeColumnsWithLayout, selectionBookendWidth)
     : runtimeColumnsWithLayout;
 
   let state: InternalTableModel = {
@@ -473,7 +463,7 @@ function resizeColumn(
     case "end": {
       const { tableConfig } = state;
       const isFit = tableConfig.columnLayout === "fit";
-      const newState: InternalTableModel = isFit
+      let newState: InternalTableModel = isFit
         ? {
             ...state,
             tableConfig: applyRuntimeColumnWidthsToConfig(
@@ -482,6 +472,12 @@ function resizeColumn(
             ),
           }
         : state;
+
+      if (column.pin && !column.pinnedWidth && width) {
+        // No pinned width means this is not the last column that is pinned left.
+        // All left pinned columns following this one must have pinOffset adjusted
+        newState = adjustPinOffsets(newState, column, width);
+      }
       return updateColumnProp(newState, { type, column, resizing, width });
     }
     case "resize":
@@ -515,21 +511,54 @@ function setTableSchema(
   }
 }
 
-function pinColumn(state: InternalTableModel, action: ColumnActionPin) {
-  let { columns } = state;
-  const { column, pin } = action;
-  const targetColumn = columns.find((col) => col.name === column.name);
-  if (targetColumn) {
-    columns = replaceColumn(columns, { ...targetColumn, pin });
-    columns = sortPinnedColumns(columns);
-    return {
-      ...state,
-      columns,
-    };
+function adjustPinOffsets(
+  state: InternalTableModel,
+  column: RuntimeColumnDescriptor,
+  width: number,
+) {
+  const newColumns = state.columns.slice();
+  if (column.pin === "left") {
+    const diff = width - column.width;
+    const colIndex = newColumns.findIndex((col) => col.name === column.name);
+    for (let i = colIndex + 1; i < newColumns.length; i++) {
+      const pinnedColumn = newColumns.at(i);
+      if (
+        pinnedColumn?.pin === "left" &&
+        typeof pinnedColumn?.pinnedOffset === "number"
+      ) {
+        newColumns[i] = {
+          ...newColumns[i],
+          pinnedOffset: pinnedColumn.pinnedOffset + diff,
+        };
+        if (pinnedColumn.pinnedWidth) {
+          // this is the endPin, we're done
+          newColumns[i] = {
+            ...newColumns[i],
+            pinnedWidth: pinnedColumn.pinnedWidth + diff,
+          };
+
+          break;
+        }
+      } else {
+        throw Error(
+          `[useTableModel] adjustPinOffsets, invalid column pin, no endPin following pinned column`,
+        );
+      }
+    }
+  } else if (column.pin === "right") {
+    throw "whoaaargh";
   } else {
-    return state;
+    throw Error(
+      `[useTableModel] adjustPinOffsets, invalid param, column is not pinned `,
+    );
   }
+
+  return {
+    ...state,
+    columns: newColumns,
+  };
 }
+
 function updateColumnProp(
   state: InternalTableModel,
   action: ColumnActionUpdateProp,

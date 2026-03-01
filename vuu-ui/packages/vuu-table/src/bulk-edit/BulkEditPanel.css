@@ -7,9 +7,6 @@
     --table-background: var(--salt-container-secondary-background);
   }
 
-  .vuuTableCell-editable {
-    --vuuTableCell-padding: 0;
-  }
 }
 
 .vuuBulkEditPanel-toolbar {

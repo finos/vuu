@@ -73,7 +73,7 @@ const TableTemplate = ({
       previousValue = value,
     }) => {
       console.log(
-        `data edited [${row[0]}], ${columnName} ${previousValue} => ${value} (${editType}) isValid ${isValid}`,
+        `data edited [${row?.[0]}], ${columnName} ${previousValue} => ${value} (${editType}) isValid ${isValid}`,
       );
     },
     [],

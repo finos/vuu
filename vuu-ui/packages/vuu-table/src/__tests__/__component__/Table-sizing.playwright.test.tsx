@@ -117,9 +117,6 @@ test.describe("explicit sizing", () => {
       </LocalDataSourceProvider>,
     );
 
-    const vuuTable = page.getByTestId("table");
-    await expect(await getDimensions(vuuTable)).toEqual([1000, 625]);
-
     const scrollbarContainer = page.locator(".vuuTable-scrollbarContainer");
     expect(await getDimensions(scrollbarContainer)).toEqual([1000, 600]);
 
@@ -128,15 +125,15 @@ test.describe("explicit sizing", () => {
 
     const table = page.getByRole("table");
     expect(await getDimensions(table)).toEqual([987, 200025]);
+
+    const vuuTable = page.getByTestId("table");
+    await expect(await getDimensions(vuuTable)).toEqual([1000, 625]);
   });
   test("vertical and horizontal scrollbars required, columns default (static) sizing, width greater than combined column width", async ({
     mount,
     page,
   }) => {
     await mount(<TestTable height={625} rowCount={100} width={800} />);
-
-    const vuuTable = page.getByTestId("test-table");
-    await expect(await getDimensions(vuuTable)).toEqual([800, 625]);
 
     const scrollbarContainer = page.locator(".vuuTable-scrollbarContainer");
     expect(await getDimensions(scrollbarContainer)).toEqual([800, 600]);
@@ -146,6 +143,9 @@ test.describe("explicit sizing", () => {
 
     const table = page.getByRole("table");
     expect(await getDimensions(table)).toEqual([908, 2025]);
+
+    const vuuTable = page.getByTestId("test-table");
+    await expect(await getDimensions(vuuTable)).toEqual([800, 625]);
   });
 });
 
@@ -157,30 +157,30 @@ test.describe("viewportRowLimit", () => {
     }) => {
       await mount(<ViewportRowLimitDefaultRowHeight />);
 
-      const vuuTable = page.getByTestId("table");
-      await expect(await getDimensions(vuuTable)).toEqual([600, 235]);
-      await expect(vuuTable).toContainClass("vuuTable-viewportRowLimit");
-
       const scrollbarContainer = page.locator(".vuuTable-scrollbarContainer");
       expect(await getDimensions(scrollbarContainer)).toEqual([600, 210]);
 
       const contentContainer = page.locator(".vuuTable-contentContainer");
       expect(await getDimensions(contentContainer)).toEqual([590, 225]);
+
+      const vuuTable = page.getByTestId("table");
+      await expect(await getDimensions(vuuTable)).toEqual([600, 235]);
+      await expect(vuuTable).toContainClass("vuuTable-viewportRowLimit");
     });
   });
   test.describe("WHEN rendered with explicit rowHeight", () => {
     test("THEN expected classname is present", async ({ mount, page }) => {
       await mount(<ViewportRowLimitExplicitRowHeight />);
 
-      const vuuTable = page.getByTestId("table");
-      await expect(await getDimensions(vuuTable)).toEqual([600, 335]);
-      await expect(vuuTable).toContainClass("vuuTable-viewportRowLimit");
-
       const scrollbarContainer = page.locator(".vuuTable-scrollbarContainer");
       expect(await getDimensions(scrollbarContainer)).toEqual([600, 310]);
 
       const contentContainer = page.locator(".vuuTable-contentContainer");
       expect(await getDimensions(contentContainer)).toEqual([590, 325]);
+
+      const vuuTable = page.getByTestId("table");
+      await expect(await getDimensions(vuuTable)).toEqual([600, 335]);
+      await expect(vuuTable).toContainClass("vuuTable-viewportRowLimit");
     });
   });
 });
@@ -193,9 +193,6 @@ test.describe("maxViewportRowLimit", () => {
     }) => {
       await mount(<MaxViewportRowLimitRowsExceedLimit />);
 
-      const vuuTable = page.getByTestId("table");
-      await expect(await getDimensions(vuuTable)).toEqual([600, 235]);
-
       const scrollbarContainer = page.locator(".vuuTable-scrollbarContainer");
       expect(await getDimensions(scrollbarContainer)).toEqual([600, 210]);
 
@@ -204,6 +201,9 @@ test.describe("maxViewportRowLimit", () => {
 
       const table = page.getByRole("table");
       expect(await getDimensions(table)).toEqual([1008, 200025]);
+
+      const vuuTable = page.getByTestId("table");
+      await expect(await getDimensions(vuuTable)).toEqual([600, 235]);
     });
   });
 
@@ -213,8 +213,6 @@ test.describe("maxViewportRowLimit", () => {
       page,
     }) => {
       await mount(<MaxViewportRowLimitFewRows />);
-      const vuuTable = page.getByTestId("table");
-      await expect(await getDimensions(vuuTable)).toEqual([600, 105]);
 
       const scrollbarContainer = page.locator(".vuuTable-scrollbarContainer");
       expect(await getDimensions(scrollbarContainer)).toEqual([600, 80]);
@@ -225,6 +223,9 @@ test.describe("maxViewportRowLimit", () => {
       const table = page.getByRole("table");
       // 4 columns x 100px + bookends
       expect(await getDimensions(table)).toEqual([408, 105]);
+
+      const vuuTable = page.getByTestId("table");
+      await expect(await getDimensions(vuuTable)).toEqual([600, 105]);
     });
   });
   test.describe("WHEN rendered with not enough rows to fill viewport, with horizontal scrollbar", () => {
@@ -234,7 +235,6 @@ test.describe("maxViewportRowLimit", () => {
     }) => {
       await mount(<MaxViewportRowLimitFewRows width={300} />);
       const vuuTable = page.getByTestId("table");
-      await expect(await getDimensions(vuuTable)).toEqual([300, 115]);
 
       const scrollbarContainer = page.locator(".vuuTable-scrollbarContainer");
       expect(await getDimensions(scrollbarContainer)).toEqual([300, 90]);
@@ -244,6 +244,8 @@ test.describe("maxViewportRowLimit", () => {
 
       const table = page.getByRole("table");
       expect(await getDimensions(table)).toEqual([408, 105]);
+
+      await expect(await getDimensions(vuuTable)).toEqual([300, 115]);
     });
   });
 });

@@ -39,6 +39,8 @@ export type ColumnSortHandler = (
 const isHeaderElement = (h: CustomHeader): h is CustomHeaderElement =>
   isValidElement(h);
 
+const classBase = "vuuTableHeader";
+
 export interface TableHeaderProps
   extends Pick<
     HeaderCellProps,
@@ -48,7 +50,6 @@ export interface TableHeaderProps
     | "onCheckBoxColumnHeaderClick"
     | "showColumnHeaderMenus"
   > {
-  classBase?: string;
   columns: RuntimeColumnDescriptor[];
   customHeader?: CustomHeader | CustomHeader[];
   headings: TableHeadings;
@@ -58,6 +59,7 @@ export interface TableHeaderProps
   onMoveGroupColumn: (columns: ColumnDescriptor[]) => void;
   onRemoveGroupColumn: (column: RuntimeColumnDescriptor) => void;
   onSortColumn: ColumnSortHandler;
+  showBookends?: boolean;
   tableConfig: TableConfig;
   tableId: string;
   virtualColSpan?: number;
@@ -68,7 +70,6 @@ export const TableHeader = memo(
     allowDragColumnHeader,
     allowSelectAll,
     allRowsSelected,
-    classBase = "vuuTable",
     columns,
     customHeader,
     headings,
@@ -79,6 +80,7 @@ export const TableHeader = memo(
     onRemoveGroupColumn,
     onResizeColumn,
     onSortColumn,
+    showBookends,
     showColumnHeaderMenus,
     tableConfig,
     tableId,
@@ -150,11 +152,7 @@ export const TableHeader = memo(
     const visibleColumns = columns.filter(isNotHidden);
 
     return (
-      <div
-        className={`${classBase}-col-headings`}
-        ref={setContainerRef}
-        role="rowgroup"
-      >
+      <div className={classBase} ref={setContainerRef} role="rowgroup">
         {headings.map((colHeaders, i) => (
           <div
             className="vuuTable-heading"
@@ -191,12 +189,18 @@ export const TableHeader = memo(
           ]}
         >
           <div
-            className={`${classBase}-col-headers`}
+            className="vuuTableColHeaderRow"
             role="row"
             aria-rowindex={headings.length + 1}
           >
-            {visibleColumns.map((col, i) =>
-              isGroupColumn(col) ? (
+            {showBookends ? (
+              <div className="vuuSelectionDecorator vuuStickyLeft" />
+            ) : null}
+
+            {visibleColumns.map((col, i) => {
+              const allowDragDrop =
+                allowDragColumnHeader && !col.pin ? true : false;
+              return isGroupColumn(col) ? (
                 <GroupHeaderCell
                   column={col}
                   id={`${tableId}-${col.name}`}
@@ -207,21 +211,25 @@ export const TableHeader = memo(
                 />
               ) : (
                 <HeaderCell
-                  allowDragColumnHeader={allowDragColumnHeader}
+                  allowDragColumnHeader={allowDragDrop}
                   allowSelectAll={allowSelectAll}
                   allRowsSelected={allRowsSelected}
                   column={col}
                   index={i}
                   id={`${tableId}-${col.name}`}
-                  key={col.name}
+                  key={`${col.name}-${allowDragDrop}`}
                   onCheckBoxColumnHeaderClick={onCheckBoxColumnHeaderClick}
                   onClick={onClick}
                   onResize={onResizeColumn}
                   showColumnHeaderMenus={showColumnHeaderMenus}
                 />
-              ),
-            )}
+              );
+            })}
+            {showBookends ? (
+              <div className="vuuSelectionDecorator vuuStickyRight" />
+            ) : null}
           </div>
+
           <DragOverlay>
             {dragColumn ? (
               <div id={dragColumn.id} className="DragColumn">

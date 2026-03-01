@@ -39,6 +39,7 @@ import type {
 import { type CSSProperties } from "react";
 import { moveItem } from "./array-utils";
 import { TableModel } from "@vuu-ui/vuu-table";
+import { queryClosest } from "./html-utils";
 
 /**
  * ColumnMap provides a lookup of the index position of a data item within a row
@@ -471,19 +472,19 @@ export const isJsonColumn = (column: RuntimeColumnDescriptor) =>
 
 export const sortPinnedColumns = (
   columns: RuntimeColumnDescriptor[],
+  selectionBookendWidth = 0,
 ): RuntimeColumnDescriptor[] => {
   const leftPinnedColumns: RuntimeColumnDescriptor[] = [];
   const rightPinnedColumns: RuntimeColumnDescriptor[] = [];
   const restColumns: RuntimeColumnDescriptor[] = [];
-  // 4 is the selectionEndSize, need to consider how we make this available
-  let pinnedWidthLeft = 4;
+  let pinnedWidthLeft = selectionBookendWidth;
   for (const column of columns) {
     // prettier-ignore
     switch(column.pin){
       case "left": {
         leftPinnedColumns.push({
           ...column,
-          endPin: undefined,
+          pinnedWidth: 0,
           pinnedOffset: pinnedWidthLeft
         });
         pinnedWidthLeft += column.width;
@@ -498,17 +499,17 @@ export const sortPinnedColumns = (
   if (leftPinnedColumns.length) {
     leftPinnedColumns.push({
       ...(leftPinnedColumns.pop() as RuntimeColumnDescriptor),
-      endPin: true,
+      pinnedWidth: pinnedWidthLeft,
     });
   }
 
-  const allColumns = leftPinnedColumns.length
+  let allColumns = leftPinnedColumns.length
     ? leftPinnedColumns.concat(restColumns)
     : restColumns;
 
   if (rightPinnedColumns.length) {
     const measuredRightPinnedColumns: RuntimeColumnDescriptor[] = [];
-    let pinnedWidthRight = 0;
+    let pinnedWidthRight = selectionBookendWidth;
     for (const column of rightPinnedColumns) {
       measuredRightPinnedColumns.unshift({
         ...column,
@@ -516,11 +517,24 @@ export const sortPinnedColumns = (
       });
       pinnedWidthRight += column.width;
     }
-    measuredRightPinnedColumns[0].endPin = true;
-    return allColumns.concat(measuredRightPinnedColumns);
-  } else {
-    return allColumns;
+    measuredRightPinnedColumns[rightPinnedColumns.length - 1].pinnedWidth =
+      pinnedWidthRight;
+    allColumns = allColumns.concat(measuredRightPinnedColumns);
   }
+
+  // reassign ariaColIndex
+  if (leftPinnedColumns.length || rightPinnedColumns.length) {
+    for (let i = 0; i < allColumns.length; i++) {
+      if (allColumns[i].ariaColIndex !== i + 1) {
+        allColumns[i] = {
+          ...allColumns[i],
+          ariaColIndex: i + 1,
+        };
+      }
+    }
+  }
+
+  return allColumns;
 };
 
 export const measurePinnedColumns = (
@@ -581,24 +595,151 @@ export const getTableHeadings = (
 
 export const getColumnStyle = ({
   pin,
-  // the 4 is `selectionEndSize`, unfortunate if we need to be passed it from cell
-  // need to think about how to make this available
-  pinnedOffset = pin === "left" ? 0 : 4,
+  pinnedOffset = 0,
+  pinnedWidth = 0,
   width,
-}: RuntimeColumnDescriptor) =>
-  pin === "left"
-    ? ({
-        left: pinnedOffset,
-        width,
-        "--pin-width": `${pinnedOffset + width - 3}px`,
-      } as CSSProperties)
-    : pin === "right"
-      ? ({
-          right: pinnedOffset,
-          width,
-          "--pin-width": `${pinnedOffset + width}px`,
-        } as CSSProperties)
-      : { width };
+}: RuntimeColumnDescriptor) => {
+  if (pinnedWidth && pin === "left") {
+    return {
+      left: pinnedOffset,
+      width,
+      "--pin-width": `${pinnedWidth - 3}px`,
+    } as CSSProperties;
+  } else if (pin === "left") {
+    return {
+      left: pinnedOffset,
+      width,
+    } as CSSProperties;
+  } else if (pinnedWidth && pin === "right") {
+    return {
+      right: pinnedOffset,
+      width,
+      "--pin-width": `${pinnedWidth - 5}px`,
+    } as CSSProperties;
+  } else if (pin === "right") {
+    return {
+      right: pinnedOffset,
+      width,
+    } as CSSProperties;
+  } else {
+    return { width };
+  }
+};
+
+const getPinnedWidthFromElement = (cell: HTMLElement) => {
+  const cellStyle = getComputedStyle(cell);
+  return parseInt(cellStyle.getPropertyValue("--pin-width"));
+};
+
+export const getAllCellsInColumn = (
+  container: HTMLElement | null,
+  colIndex: number,
+): HTMLDivElement[] => {
+  const byColIndex = `[aria-colindex='${colIndex}']`;
+  return Array.from(
+    container?.querySelectorAll(
+      `.vuuTableCell${byColIndex},.vuuTableHeaderCell${byColIndex},.vuuTableGroupHeaderCell${byColIndex}`,
+    ) ?? [],
+  );
+};
+
+export type PinState = {
+  /**
+   * The pinned 'endPin' cell
+   */
+  cell: HTMLElement;
+  /**
+   * With multiple columns pinned, left pinned columns that follow
+   * // the resized column. These will need pinOffset adjustments.
+   */
+  pinnedCells?: HTMLElement[];
+  pinnedWidth: number;
+};
+
+export const getAriaRowIndex = (rowElement: HTMLElement | null) => {
+  const rowIndex = rowElement?.ariaRowIndex;
+  if (rowIndex != null) {
+    const index = parseInt(rowIndex);
+    if (!isNaN(index)) {
+      return index;
+    }
+  }
+  return -1;
+};
+
+export const getAriaColIndex = (cellElement: HTMLElement | null) => {
+  const colIndex = cellElement?.ariaColIndex;
+  if (colIndex != null) {
+    const index = parseInt(colIndex);
+    if (!isNaN(index)) {
+      return index;
+    }
+  }
+  return -1;
+};
+
+const getPinDetails = (
+  cell: HTMLElement,
+  className: "vuuPinLeft" | "vuuPinRight",
+): PinState => {
+  if (cell.classList.contains("vuuEndPin")) {
+    return {
+      cell,
+      pinnedWidth: getPinnedWidthFromElement(cell),
+    };
+  } else {
+    // column is pinned, but it is not the only pinned column and it is not
+    // the column that renders the pin outline - the endPin.
+    const endPin = cell.parentElement?.querySelector(
+      `.${className}.vuuEndPin`,
+    ) as HTMLElement;
+    if (endPin) {
+      let pinnedCells: HTMLElement[] | undefined = undefined;
+
+      if (className === "vuuPinLeft") {
+        // collect all the pinned cells in columns following the resized column
+
+        //TODO we need to store each set of columns cells separately, together with original 'left' value
+        const container = queryClosest<HTMLElement>(
+          cell,
+          ".vuuTable-table",
+          true,
+        );
+        const startIndex = getAriaColIndex(cell);
+        const endIndex = getAriaColIndex(endPin);
+        pinnedCells = [];
+
+        for (let colIndex = startIndex + 1; colIndex <= endIndex; colIndex++) {
+          pinnedCells = pinnedCells?.concat(
+            getAllCellsInColumn(container, colIndex),
+          );
+        }
+      }
+
+      console.log({ pinnedCells });
+
+      return {
+        cell: endPin,
+        pinnedCells,
+        pinnedWidth: getPinnedWidthFromElement(endPin),
+      };
+    } else {
+      throw Error(
+        "[column-utils] getPinDetailsFromElement, no endPin on multi column pin",
+      );
+    }
+  }
+};
+
+export const getPinStateFromElement = (
+  cell: HTMLElement,
+): PinState | undefined => {
+  if (cell.classList.contains("vuuPinLeft")) {
+    return getPinDetails(cell, "vuuPinLeft");
+  } else if (cell.classList.contains("vuuPinRight")) {
+    return getPinDetails(cell, "vuuPinRight");
+  }
+};
 
 export const setAggregations = (
   aggregations: VuuAggregation[],
@@ -768,10 +909,10 @@ export const getColumnsInViewport = (
     // might be able to save rendering some columns ?
     if (column.hidden) {
       continue;
+    } else if (column.pin === "right") {
+      visibleColumns.push(column);
     } else if (rightPinnedOnly) {
-      if (column.pin === "right") {
-        visibleColumns.push(column);
-      }
+      continue;
     } else if (columnOffset + column.width < vpStart) {
       if (column.pin === "left") {
         visibleColumns.push(column);

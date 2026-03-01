@@ -1,9 +1,9 @@
-import { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
-import { registerComponent } from "@vuu-ui/vuu-utils";
 import { Input } from "@salt-ds/core";
-import { useEditableText } from "@vuu-ui/vuu-ui-controls";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
+import { useEditableText } from "@vuu-ui/vuu-ui-controls";
+import { registerComponent } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 
 import inputCellCss from "./InputCell.css";
@@ -46,6 +46,7 @@ export const InputCell = ({
   return (
     <Input
       {...editProps}
+      bordered
       className={cx(classBase, {
         [`${classBase}-error`]: warningMessage !== undefined,
       })}

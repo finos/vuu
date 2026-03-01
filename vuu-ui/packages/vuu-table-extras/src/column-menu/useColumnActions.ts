@@ -4,6 +4,7 @@ import { Filter } from "@vuu-ui/vuu-filter-types";
 import { VuuFilter } from "@vuu-ui/vuu-protocol-types";
 import {
   ColumnDescriptor,
+  ColumnDisplayAction,
   RuntimeColumnDescriptor,
 } from "@vuu-ui/vuu-table-types";
 import {
@@ -16,10 +17,7 @@ import {
   setSortColumn,
 } from "@vuu-ui/vuu-utils";
 import { ColumnMenuActionType } from "./column-menu-utils";
-import {
-  ColumnDisplayAction,
-  DisplaySettingsAction,
-} from "./column-action-types";
+import { DisplaySettingsAction } from "./column-action-types";
 import { DataSource } from "@vuu-ui/vuu-data-types";
 
 export interface ContextMenuOptions {

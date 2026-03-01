@@ -5,6 +5,7 @@
 
   .saltButton {
     gap: var(--salt-spacing-200);
+    height: calc(var(--salt-size-base) + var(--salt-spacing-100));
     white-space: nowrap;
 
     .vuuIcon {
@@ -12,41 +13,51 @@
     }
   }
 
-  .saltButton:active:not(:disabled) {
-    --vuu-icon-color: var(--button-text-color-active);
-  }
+    .saltButton-accented.saltButton-solid:hover:not(.saltButton-active,:active):not(.saltButton-disabled) {
+        --button-text-color: var(--vuu-color-gray-50);
+        --button-text-color-hover: var(--vuu-color-gray-50)
+    }
 
-  .saltButton:hover:not(.saltButton-disabled, .saltButton-active, :active) {
-    --vuu-icon-color: var(--button-text-color-hover);
-  }
+    .saltButton-solid.saltButton-neutral {
+        --button-borderColor: var(--vuu-color-gray-50);
+    }
+    .saltButton-solid.saltButton-neutral:hover {
+        --button-borderColor-hover: var(--vuu-color-coral);
+    }
 
-  .saltButton-active {
-    --vuu-icon-color: var(--button-text-color-active);
-  }
-
-  .saltButton-disabled {
-    --vuu-icon-color: var(--button-text-color-disabled);
-  }
-
-  .saltButton-neutral {
-    --saltButton-borderColor: var(
-      --vuuButton-borderColor,
-      var(--salt-actionable-bold-foreground)
-    );
-    --saltButton-borderWidth: 1px;
-    --saltButton-borderStyle: solid;
-  }
-
-  .saltButton-neutral:not(:disabled):not(:active):not(
-      .saltButton-active
-    ):hover {
-    --saltButton-borderColor: var(
-      --vuuButton-borderColor,
-      var(--salt-actionable-bold-background-hover)
-    );
-  }
+    .saltButton-active, .saltButton:active {
+        --vuuButtonIcon-color: var(--button-text-color-active);
+    }
 }
 
-.saltButton[data-embedded]{
-  border: none;
+.salt-theme.vuu-theme-next {
+  /** TODO these will need density variants */
+  --saltButton-borderRadius: 6px;
+  --saltButton-padding: var(--salt-spacing-400);
+
+  .saltButton {
+    gap: var(--salt-spacing-200);
+    height: calc(var(--salt-size-base) + var(--salt-spacing-100));
+    white-space: nowrap;
+
+    .vuuIcon {
+      --vuu-icon-color: var(--vuuButtonIcon-color, var(--button-text-color));
+    }
+  }
+
+    .saltButton-accented.saltButton-solid:hover:not(.saltButton-active,:active):not(.saltButton-disabled) {
+        --button-text-color: var(--vuu-color-gray-50);
+        --button-text-color-hover: var(--vuu-color-gray-50)
+    }
+
+    .saltButton-solid.saltButton-neutral {
+        --button-borderColor: var(--vuu-color-gray-50);
+    }
+    .saltButton-solid.saltButton-neutral:hover {
+        --button-borderColor-hover: var(--vuu-color-coral);
+    }
+
+    .saltButton-active, .saltButton:active {
+        --vuuButtonIcon-color: var(--button-text-color-active);
+    }
 }

@@ -1,10 +1,10 @@
 import { VuuRange } from "@vuu-ui/vuu-protocol-types";
-import { queryClosest } from "@vuu-ui/vuu-utils";
 import {
-  getAriaCellPos,
+  queryClosest,
   getAriaColIndex,
   getAriaRowIndex,
-} from "../table-dom-utils";
+} from "@vuu-ui/vuu-utils";
+import { getAriaCellPos } from "../table-dom-utils";
 
 export type TableCellBlock = {
   columnRange: VuuRange;

@@ -1,0 +1,21 @@
+.salt-theme.vuu-theme-deprecated[data-mode="dark"] {
+  .vuuAppHeader {
+    --vuu-icon-color: var(--salt-content-secondary-foreground);
+    --saltButton-text-color: var(--salt-content-secondary-foreground);
+    --vuuToolbar-background: var(
+      --vuuAppHeader-background,
+      var(--salt-color-gray-400)
+    );
+  }
+}
+
+.salt-theme.vuu-theme-deprecated[data-mode="light"] {
+  .vuuAppHeader {
+    --vuu-icon-color: var(--salt-content-secondary-foreground);
+    --saltButton-text-color: var(--salt-content-secondary-foreground);
+    --vuuToolbar-background: var(
+      --vuuAppHeader-background,
+      var(--vuu-color-gray-28)
+    );
+  }
+}

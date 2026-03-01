@@ -17,7 +17,7 @@ import { SelectRowRangeRequest } from "@vuu-ui/vuu-protocol-types";
 
 const schema = getSchema("instruments");
 
-export const DefaultBulkEditPanel = () => {
+export const DefaultBulkEditPanel = ({ width }: { width?: number }) => {
   const { VuuDataSource } = useData();
   const [bulkEditPanel, setBulkEditPanel] = useState<ReactElement | null>(null);
   const parentDs = useMemo<DataSource>(
@@ -57,15 +57,20 @@ export const DefaultBulkEditPanel = () => {
         onValidationStatusChange={handleValidationStatusChange}
         parentDs={parentDs}
         sessionDs={sessionDs}
+        width={width}
       />,
     );
-  }, [VuuDataSource, parentDs]);
+  }, [VuuDataSource, parentDs, width]);
 
   return (
     <DataSourceProvider dataSource={parentDs}>
       {bulkEditPanel}
     </DataSourceProvider>
   );
+};
+
+export const BulkEditPanelFixture = () => {
+  return <DefaultBulkEditPanel width={900} />;
 };
 
 const BulkEditTableTemplate = () => {

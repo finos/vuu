@@ -1,6 +1,7 @@
 .vuuDatasourceStats {
+  --datasourceStats-background: var(--vuuDatasourceStats-background);
   align-items: center;
-  background: var(--vuuDatasourceStats-background, var(--salt-container-secondary-background));
+  background: var(--datasourceStats-background, var(--salt-container-secondary-background));
   display: grid;
   font-size: var(--vuuDatasourceStats-fontSize, 10px);
   gap: var(--vuuDatasourceStats-gap, var(--salt-spacing-100));
@@ -10,28 +11,37 @@
   height: var(--vuuDatasourceStats-height, 100%);
   padding: 0 var(--salt-spacing-200);
 
-    .vuuDatasourceStats-statsPanel {
-      align-items: center;
-      display: flex;
-      gap: var(--salt-spacing-100);
-      width: fit-content;
-    }
+  &.vuuDatasourceStats-withSelection {
+    --datasourceStats-background: var(--vuuDatasourceStats-withSelection-background, var(--vuuDatasourceStats-background));
+  }
 
-    .vuuDatasourceStats-rowStats {
-      justify-self: flex-start;
-      grid-area: panel-start;
-    }
-    .vuuDatasourceStats-freezeStatus {
-      justify-self: flex-start;
-      grid-area: panel-start;
-    }
-    .vuuDatasourceStats-selectionStats {
-      justify-self: center;
-      grid-area: panel-center;
-    }
+  .vuuDatasourceStats-statsPanel {
+    align-items: center;
+    display: flex;
+    gap: var(--salt-spacing-100);
+    width: fit-content;
+  }
+
+  .vuuDatasourceStats-rowStats {
+    justify-self: flex-start;
+    grid-area: panel-start;
+  }
+  .vuuDatasourceStats-selected {
+    margin-left: var(--salt-spacing-100);
+  }
+
+  .vuuDatasourceStats-range {
+    white-space: nowrap;
+  }
 
   .vuuDatasourceStats-label {
     color: var(--salt-content-secondary-foreground);
+    white-space: nowrap;
+  }
+
+  .vuuDatasourceStats-selectionActions {
+    grid-area: panel-center;
+    justify-self: center;
   }
 
   .vuuDatasourceStats-value {

@@ -1,10 +1,16 @@
-import { ButtonProps, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
+import {
+  ButtonProps,
+  ToggleButton,
+  ToggleButtonGroup,
+  ToggleButtonGroupProps,
+} from "@salt-ds/core";
 import { Icon } from "@vuu-ui/vuu-ui-controls";
 import { SyntheticEvent, useState } from "react";
 
 import "./ToggleButton.examples.css";
 
-interface ToggleButtonExampleProps {
+interface ToggleButtonExampleProps
+  extends Pick<ToggleButtonGroupProps, "sentiment"> {
   "data-variant"?: ButtonProps["variant"];
   "data-accented"?: boolean;
 }
@@ -97,19 +103,19 @@ export const ButtonGroupWithTextAndIcon = (props: ToggleButtonExampleProps) => {
       value={selectedIndex}
     >
       <ToggleButton value={0} aria-label="alert">
-        Notifications
+        <span>Notifications</span>
         <Icon name="notifications" />
       </ToggleButton>
       <ToggleButton value={1} aria-label="home">
-        Home
+        <span>Home</span>
         <Icon name="home" />
       </ToggleButton>
       <ToggleButton value={2} aria-label="search">
-        Search
+        <span>Search</span>
         <Icon name="search" />
       </ToggleButton>
       <ToggleButton value={3} aria-label="print">
-        Print
+        <span>Print</span>
         <Icon name="print" />
       </ToggleButton>
     </ToggleButtonGroup>
@@ -131,32 +137,32 @@ export const ToggleButtonGroupVariations = () => {
         justifyItems: "start",
       }}
     >
-      <span>Primary</span>
-      <ButtonGroupWithTextOnly data-variant="primary" />
+      <span>CTA (Accented)</span>
+      <ButtonGroupWithTextOnly sentiment="accented" />
 
       <span />
-      <ButtonGroupWithIconOnly data-variant="primary" />
+      <ButtonGroupWithIconOnly sentiment="accented" />
 
       <span />
-      <ButtonGroupWithTextAndIcon data-variant="primary" />
+      <ButtonGroupWithTextAndIcon sentiment="accented" />
 
-      <span>Secondary</span>
-      <ButtonGroupWithTextOnly data-variant="secondary" />
-
-      <span />
-      <ButtonGroupWithIconOnly data-variant="secondary" />
+      <span>Primary (Neutral)</span>
+      <ButtonGroupWithTextOnly />
 
       <span />
-      <ButtonGroupWithTextAndIcon data-variant="secondary" />
-
-      <span>Accented</span>
-      <ButtonGroupWithTextOnly data-accented />
+      <ButtonGroupWithIconOnly />
 
       <span />
-      <ButtonGroupWithIconOnly data-accented />
+      <ButtonGroupWithTextAndIcon />
+
+      <span>Borderless (Neutral)</span>
+      <ButtonGroupWithTextOnly data-borderless />
 
       <span />
-      <ButtonGroupWithTextAndIcon data-accented />
+      <ButtonGroupWithIconOnly data-borderless />
+
+      <span />
+      <ButtonGroupWithTextAndIcon data-borderless />
     </div>
   );
 };

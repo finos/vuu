@@ -25,10 +25,11 @@ type DataTableProps = Partial<
 };
 
 const DataTableTemplate = ({
+  colHeaderRowHeight = 24,
   dataSource: dataSourceProp,
   maxViewportRowLimit,
   navigationStyle = "cell",
-  rowHeight,
+  rowHeight = 20,
   schema = getSchema("instruments"),
   viewportRowLimit,
   width = 600,
@@ -51,6 +52,7 @@ const DataTableTemplate = ({
   return (
     <Table
       {...props}
+      colHeaderRowHeight={colHeaderRowHeight}
       config={tableConfig}
       data-testid="table"
       dataSource={dataSource}
@@ -274,7 +276,10 @@ const CustomColumnHeader = ({
   ariaRole,
   ariaRowIndex,
 }: Partial<BaseRowProps>) => {
-  const { columns, virtualColSpan } = useHeaderProps();
+  const { columns /*, virtualColSpan*/ } = useHeaderProps();
+  console.log(`[CustomColumnHeader]`, {
+    columns,
+  });
   return (
     <div
       aria-rowindex={ariaRowIndex}
@@ -282,7 +287,7 @@ const CustomColumnHeader = ({
       role={ariaRole}
       style={{ height: 25, backgroundColor: "black", color: "white" }}
     >
-      <div style={{ display: "inline-block", width: virtualColSpan }} />
+      {/* <div style={{ display: "inline-block", width: virtualColSpan }} /> */}
       {columns.map((col, i) => (
         <div
           key={i}

@@ -6,11 +6,11 @@ import { Toolbar } from "@vuu-ui/vuu-ui-controls";
 import type { ThemeMode } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { HTMLAttributes, useCallback, useRef } from "react";
-
-import appHeaderCss from "./AppHeader.css";
 import { usePersistenceManager } from "../persistence-manager";
 import { NotificationType, useNotifications } from "@vuu-ui/vuu-notifications";
 import { useLogout } from "../application-provider";
+
+import appHeaderCss from "./AppHeader.css";
 
 const classBase = "vuuAppHeader";
 export interface AppHeaderProps extends HTMLAttributes<HTMLDivElement> {
@@ -71,13 +71,13 @@ export const AppHeader = ({
     >
       <Button
         className={`${classBase}-menuItem`}
-        appearance="bordered"
+        appearance="transparent"
         sentiment="neutral"
       >
         Help
       </Button>
       <Button
-        appearance="bordered"
+        appearance="transparent"
         className={`${classBase}-menuItem`}
         onClick={handleReset}
         sentiment="neutral"
@@ -85,7 +85,7 @@ export const AppHeader = ({
         Reset <span data-icon="history" />
       </Button>
       <Button
-        appearance="bordered"
+        appearance="transparent"
         className={`${classBase}-menuItem`}
         onClick={handleShowSettings}
         ref={settingsButtonRef}
@@ -94,7 +94,7 @@ export const AppHeader = ({
         Settings <span data-icon="settings" />
       </Button>
       <Button
-        appearance="bordered"
+        appearance="transparent"
         className={`${classBase}-menuItem`}
         onClick={logout}
         sentiment="neutral"

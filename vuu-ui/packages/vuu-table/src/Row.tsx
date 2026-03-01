@@ -7,41 +7,14 @@ import {
   metadataKeys,
   queryClosest,
 } from "@vuu-ui/vuu-utils";
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { MouseEvent, forwardRef, memo, useCallback } from "react";
+import { MouseEvent, memo, useCallback } from "react";
 import { TableCell, TableGroupCell } from "./table-cell";
 
-import rowCss from "./Row.css";
 import { VirtualColSpan } from "./VirtualColSpan";
 
 const { COUNT, DEPTH, IDX, IS_EXPANDED, IS_LEAF, SELECTED } = metadataKeys;
 const classBase = "vuuTableRow";
-
-// A dummy Table Row rendered once and not visible. We measure this to
-// determine height of Row(s) and monitor it for size changes (in
-// case of runtime density switch). This allows ListItem height to
-// be controlled purely through CSS.
-export const RowProxy = forwardRef<HTMLDivElement, { height?: number }>(
-  function RowProxy({ height }, forwardedRef) {
-    const targetWindow = useWindow();
-    useComponentCssInjection({
-      testId: "vuu-table-row",
-      css: rowCss,
-      window: targetWindow,
-    });
-
-    return (
-      <div
-        aria-hidden
-        className={cx(classBase, `${classBase}-proxy`)}
-        ref={forwardedRef}
-        style={{ height }}
-      />
-    );
-  },
-);
 
 // export const Row = memo(
 export const Row = memo(
@@ -64,13 +37,6 @@ export const Row = memo(
     zebraStripes = false,
     ...htmlAttributes
   }: RowProps) => {
-    const targetWindow = useWindow();
-    useComponentCssInjection({
-      testId: "vuu-table-row",
-      css: rowCss,
-      window: targetWindow,
-    });
-
     const {
       [COUNT]: childRowCount,
       [DEPTH]: depth,
@@ -139,7 +105,9 @@ export const Row = memo(
         style={style}
       >
         {showBookends ? (
-          <span className={`${classBase}-selectionDecorator vuuStickyLeft`} />
+          <div className="vuuSelectionDecorator vuuStickyLeft">
+            <div className="vuuTableRowBookend" />
+          </div>
         ) : null}
         <VirtualColSpan width={virtualColSpan} />
         {columns.filter(isNotHidden).map((column) => {
@@ -160,7 +128,9 @@ export const Row = memo(
           );
         })}
         {showBookends ? (
-          <span className={`${classBase}-selectionDecorator vuuStickyRight`} />
+          <div className="vuuSelectionDecorator vuuStickyRight">
+            <div className="vuuTableRowBookend" />
+          </div>
         ) : null}
       </div>
     );
