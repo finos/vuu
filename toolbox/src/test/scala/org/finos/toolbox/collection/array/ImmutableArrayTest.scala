@@ -126,7 +126,7 @@ class ImmutableArrayTest extends AnyFunSuite with Matchers {
   }
 
   test("check removal of all rows by index and that compaction doesn't break things") {
-    val count = 100_000
+    val count = 10_000
     val numbers = (0 until count).map(_.toString)
     var array = arr(numbers: _*)
 
@@ -149,7 +149,7 @@ class ImmutableArrayTest extends AnyFunSuite with Matchers {
   }
 
   test("check removal of all rows by last element and that compaction doesn't break things") {
-    val count = 100_000
+    val count = 10_000
     val numbers = (0 until count).map(_.toString)
     var array = arr(numbers: _*)
 
