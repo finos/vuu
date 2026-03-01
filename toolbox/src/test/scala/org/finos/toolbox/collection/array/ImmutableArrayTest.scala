@@ -126,7 +126,7 @@ class ImmutableArrayTest extends AnyFunSuite with Matchers {
   }
 
   test("check removal of all rows by index and that compaction doesn't break things") {
-    val count = 10_000
+    val count = 20_000
     val numbers = (0 until count).map(_.toString)
     var array = arr(numbers: _*)
 
@@ -149,7 +149,7 @@ class ImmutableArrayTest extends AnyFunSuite with Matchers {
   }
 
   test("check removal of all rows by last element and that compaction doesn't break things") {
-    val count = 10_000
+    val count = 20_000
     val numbers = (0 until count).map(_.toString)
     var array = arr(numbers: _*)
 
@@ -185,26 +185,4 @@ class ImmutableArrayTest extends AnyFunSuite with Matchers {
     array1 should not equal array3
   }
 
-}
-
-object BuildBigGroupByTestMain {
-
-  def main(args: Array[String]): Unit = {
-    val count = 100_000
-    val numbers = (0 until count).map(_.toString).toArray
-    var array = ImmutableArray.from(numbers)
-
-    def doRemoval(): Unit = {
-      var index = 0
-      while (index < count) {
-        
-
-        array = array.remove(array(array.length - 1))
-
-        index += 1
-      }
-    }
-
-    doRemoval()
-  }
 }
