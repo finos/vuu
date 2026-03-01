@@ -89,7 +89,7 @@ const DataTableTemplate = ({
         width={width}
       />
       <div style={{ height: 40 }}>
-        <DataSourceStats dataSource={dataSource} itemLabel="instrument" />
+        <DataSourceStats dataSource={dataSource} />
       </div>
     </>
   );
