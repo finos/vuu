@@ -1,8 +1,5 @@
 package org.finos.toolbox.collection.array
 
-import org.finos.toolbox.collection.set.{ImmutableArraySet, VectorImmutableArraySet}
-import org.finos.toolbox.collection.set.ImmutableArraySet.{empty, of}
-
 import scala.reflect.ClassTag
 
 object ImmutableArray {
