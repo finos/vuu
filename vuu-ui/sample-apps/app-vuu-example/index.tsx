@@ -13,6 +13,9 @@ import { App } from "./src/App";
 import "@vuu-ui/vuu-icons/index.css";
 import "@vuu-ui/vuu-theme/index.css";
 
+const CONNECTION_FAILED = 'connection-failed';
+const isConnectionFailedMessage = (err) => typeof err === "string" && err.includes(CONNECTION_FAILED);
+
 const { websocketUrl } = await vuuConfig;
 
 const vuuAuth = new VuuAuthenticator({
@@ -26,7 +29,11 @@ const lostConnectionHandler = new LostConnectionHandler(vuuAuth);
 const onConnectionStatusChange = (connectionStatus: ConnectionStatus) => {
   if (connectionStatus === "disconnected") {
     // do we care about the reason ?
-    lostConnectionHandler.reconnect();
+    lostConnectionHandler.reconnect().then(status => {
+      if (status === CONNECTION_FAILED) {
+        throw new Error(status);
+      }
+    });
   }
 };
 
@@ -40,7 +47,7 @@ try {
   const root = createRoot(container);
   root.render(<App logout={vuuAuth.logout} user={{ username: userName }} />);
 } catch (err: unknown) {
-  if (isLoginErrorMessage(err)) {
+  if (isLoginErrorMessage(err) || isConnectionFailedMessage(err)) {
     const root = createRoot(container);
     root.render(<div>{`${err}`}</div>);
   } else {
