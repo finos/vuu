@@ -243,8 +243,6 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
         leftKeys.foreach(leftKey => {
 
           if (ev.get("_isDeleted").asInstanceOf[Boolean]) {
-            // TODO #2019 should we clean up join relations or not in this scenario?
-            //joinRelations.deleteRowJoins(joinTableDef, ev, leftKey)
             deleteLeftKeyFromMapping(joinTableDef, tableName, ev, leftKey)
           }
 
