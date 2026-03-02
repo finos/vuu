@@ -84,12 +84,14 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
       val rightTable = joinTo.table.name
       val rightColumn = joinTo.table.keyField
 
-      val rightKeyValue = leftKeys.get(joinTableDef.baseTable.name + "." + joinTo.joinSpec.left) match {
+      val rightKeyName = joinTableDef.baseTable.name + "." + joinTo.joinSpec.left
+
+      val rightKeyValue = leftKeys.get(rightKeyName) match {
         case null =>
-          logger.warn(s"get right key from ${joinTableDef.baseTable.name}.${joinTo.joinSpec.left}, null")
+          logger.warn(s"Got null right key from $rightKeyName")
           null
         case None =>
-          logger.warn(s"get right key from ${joinTableDef.baseTable.name}.${joinTo.joinSpec.left}, None")
+          logger.warn(s"Get None right key from $rightKeyName")
           null
         case Some(x: String) => x
         case Some(x) => x.toString

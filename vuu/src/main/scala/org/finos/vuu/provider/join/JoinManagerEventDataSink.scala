@@ -48,8 +48,9 @@ class RightToLeftKeys {
     val rightKeyMap = getRightKeyMap(rightTable, rightKey)
     rightKeyMap.compute(leftTable, (_, leftKeySet) => {
       leftKeySet match {
+        case set: ImmutableArraySet[String] =>          
+          if (set.length == 1 && set.contains(leftKey)) null else set - leftKey
         case null => null
-        case _ => leftKeySet - leftKey
       }
     })
   }
@@ -81,7 +82,7 @@ class TableDataSink(val name: String) {
     }
   }
 
-  def putEventState(key: String, ev: util.HashMap[String, Any]) = {
+  def putEventState(key: String, ev: util.HashMap[String, Any]): util.HashMap[String, Any] = {
     eventMap.put(key, ev)
   }
 }
@@ -90,7 +91,7 @@ class JoinManagerEventDataSink {
 
   private val tableMap = new ConcurrentHashMap[String, TableDataSink]()
 
-  def addSinkForTable(tableName: String) = {
+  def addSinkForTable(tableName: String): TableDataSink = {
     tableMap.computeIfAbsent(tableName, tableName => new TableDataSink(tableName))
   }
 

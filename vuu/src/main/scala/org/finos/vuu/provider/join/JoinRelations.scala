@@ -36,11 +36,11 @@ class JoinRelations {
   }
 
   def deleteRowJoins(joinDef: JoinTableDef, ev: java.util.HashMap[String, Any], leftKey: String): Unit = {
-    val leftKeyField = joinDef.baseTable.keyField
-    val rowJoinForTable = rowJoins.computeIfAbsent(joinDef.baseTable.name,
-      baseTable => new ConcurrentHashMap[String, RowJoin]())
-    val rowJoin = rowJoinForTable.computeIfAbsent(leftKey,
-      leftKey => new RowJoin(joinDef.baseTable.name, leftKey, leftKeyField))
+    val rowJoinForTable = rowJoins.get(joinDef.baseTable.name)
+    if (rowJoinForTable == null) return
+    
+    val rowJoin = rowJoinForTable.get(leftKey)
+    if (rowJoin == null) return
 
     joinDef.joins.foreach(joinTo => {
       val leftColumn = joinTo.joinSpec.left
@@ -52,5 +52,7 @@ class JoinRelations {
   }
 
   //returns the joins relevant for this left key...
-  def getJoinsForEvent(leftTableName: String, leftKey: String): RowJoin = rowJoins.get(leftTableName).get(leftKey)
+  def getJoinsForEvent(leftTableName: String, leftKey: String): RowJoin = {
+    rowJoins.get(leftTableName).get(leftKey)
+  }
 }
