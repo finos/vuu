@@ -12,11 +12,9 @@ class JoinRelations {
 
   private val rowJoins = new ConcurrentHashMap[String, ConcurrentHashMap[String, RowJoin]]()
 
-  def addRowJoins(joinDef: JoinTableDef, ev: java.util.HashMap[String, Any]): Unit = {
+  def addRowJoins(joinDef: JoinTableDef, ev: java.util.HashMap[String, Any], leftKey: String): Unit = {
 
     val leftKeyField = joinDef.baseTable.keyField
-
-    val leftKey = ev.get(leftKeyField).asInstanceOf[String]
 
     val rowJoinForTable = rowJoins.computeIfAbsent(joinDef.baseTable.name,
       baseTable => new ConcurrentHashMap[String, RowJoin]())
@@ -32,6 +30,22 @@ class JoinRelations {
       if (leftColumn != null && leftValue != null) {
         rowJoin.putJoinKey(leftColumn, leftValue.toString)
       } else if (ev.containsKey(leftColumn) && leftValue == null) {
+        rowJoin.deleteJoinKey(leftColumn) // clean up old mapping
+      }
+    })
+  }
+
+  def deleteRowJoins(joinDef: JoinTableDef, ev: java.util.HashMap[String, Any], leftKey: String): Unit = {
+    val leftKeyField = joinDef.baseTable.keyField
+    val rowJoinForTable = rowJoins.computeIfAbsent(joinDef.baseTable.name,
+      baseTable => new ConcurrentHashMap[String, RowJoin]())
+    val rowJoin = rowJoinForTable.computeIfAbsent(leftKey,
+      leftKey => new RowJoin(joinDef.baseTable.name, leftKey, leftKeyField))
+
+    joinDef.joins.foreach(joinTo => {
+      val leftColumn = joinTo.joinSpec.left
+      val leftValue = ev.get(leftColumn)
+      if (ev.containsKey(leftColumn)) {
         rowJoin.deleteJoinKey(leftColumn)
       }
     })
