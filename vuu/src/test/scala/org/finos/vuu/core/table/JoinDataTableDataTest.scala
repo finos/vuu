@@ -307,7 +307,7 @@ class JoinDataTableDataTest extends AnyFeatureSpec with Matchers {
       joinProvider.runOnce()
       val result = orderPrices.getJoinData
 
-      // The join between left rows and right row no longer exists
+      // Right row is deleted but left row still expect the join if the right row comes back
       result shouldEqual original
       result.getPrimaryKeys shouldBe ImmutableArray.from(List(orderId, orderId4))
       result.getKeyValuesByTable(orderId) shouldEqual Map("orders" -> orderId, "prices" -> instrumentRic)
