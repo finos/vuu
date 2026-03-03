@@ -63,7 +63,7 @@ class RightToLeftKeys {
       })
 
       //remove the right key if no more attached left keys
-      if (existingRightKeyMap == null) null else existingRightKeyMap
+      if (existingRightKeyMap.isEmpty) null else existingRightKeyMap
     })
   }
 
