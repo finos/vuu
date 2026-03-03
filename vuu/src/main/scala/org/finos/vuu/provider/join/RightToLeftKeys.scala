@@ -11,9 +11,9 @@ import java.util.concurrent.ConcurrentHashMap
 class RightToLeftKeys {
 
   // right table name -> right key -> left table name -> left keys
-  private val keysToRightKeys = new ConcurrentHashMap[String, ConcurrentHashMap[String, ConcurrentHashMap[String, ImmutableArraySet[String]]]]()
-  private val emptyTableMap = new ConcurrentHashMap[String, ConcurrentHashMap[String, ImmutableArraySet[String]]]()
-  private val emptyKeyMap = new ConcurrentHashMap[String, ImmutableArraySet[String]]()
+  private val keysToRightKeys = new ConcurrentHashMap[String, java.util.Map[String, java.util.Map[String, ImmutableArraySet[String]]]]()
+  private val emptyTableMap: java.util.Map[String, java.util.Map[String, ImmutableArraySet[String]]] = java.util.Map.of()
+  private val emptyKeyMap: java.util.Map[String, ImmutableArraySet[String]] = java.util.Map.of()
   private val emptyKeys: ImmutableArraySet[String] = ImmutableArraySet.empty
 
   def addRightKey(rightTable: String, rightKey: String, leftTable: String, leftKey: String, existingRightKey: String): Unit = {
@@ -29,7 +29,7 @@ class RightToLeftKeys {
     if (rightKey == null) return
 
     val rightTableMap = keysToRightKeys.computeIfAbsent(rightTable,
-      rightTable => new ConcurrentHashMap[String, ConcurrentHashMap[String, ImmutableArraySet[String]]]())
+      rightTable => new ConcurrentHashMap[String, java.util.Map[String, ImmutableArraySet[String]]]())
 
     rightTableMap.compute(rightKey, (_, existingRightKeyMap) => {
       val rightKeyMap = existingRightKeyMap match {
