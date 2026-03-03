@@ -41,7 +41,7 @@ type ColumnOptions = {
 };
 
 const getValidColumns = (
-  columns: ColumnDescriptor[],
+  columns: readonly ColumnDescriptor[],
   { functionName, operator }: ColumnOptions,
 ) => {
   if (operator) {
@@ -62,7 +62,10 @@ const getValidColumns = (
   return columns;
 };
 
-const getColumns = (columns: ColumnDescriptor[], options: ColumnOptions) => {
+const getColumns = (
+  columns: readonly ColumnDescriptor[],
+  options: ColumnOptions,
+) => {
   const validColumns = getValidColumns(columns, options);
   return validColumns.map((column) => {
     const label = column.label ?? column.name;
@@ -155,7 +158,7 @@ const getFunctions = ({ functionName }: ColumnOptions) => {
 };
 
 export interface SuggestionProviderHookProps {
-  columns: ColumnDescriptor[];
+  columns: readonly ColumnDescriptor[];
   table: VuuTable;
 }
 

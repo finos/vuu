@@ -1,4 +1,4 @@
-import type { DataSourceRowObject, TableSchema } from "@vuu-ui/vuu-data-types";
+import type { TableSchema } from "@vuu-ui/vuu-data-types";
 import { Table, type TableProps } from "@vuu-ui/vuu-table";
 import {
   Input,
@@ -13,6 +13,7 @@ import { forwardRef, useMemo, type HTMLAttributes } from "react";
 import { IconButton } from "../icon-button";
 import tablePickerCss from "./TablePicker.css";
 import { useTablePicker } from "./useTablePicker";
+import { DataRow } from "@vuu-ui/vuu-table-types";
 
 const classBase = "vuuTablePicker";
 
@@ -24,7 +25,7 @@ export interface TablePickerProps
   extends Omit<HTMLAttributes<HTMLElement>, "onSelect">,
     Pick<TableProps, "onSelect"> {
   TableProps?: Pick<TableProps, "config">;
-  rowToString?: (row: DataSourceRowObject) => string;
+  rowToString?: (dataRow: DataRow) => string;
   schema: TableSchema;
   searchColumns?: string[];
 }

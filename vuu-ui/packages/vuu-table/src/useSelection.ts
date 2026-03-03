@@ -7,7 +7,6 @@ import {
 import {
   deselectItem,
   dispatchMouseEvent,
-  metadataKeys,
   queryClosest,
   selectItem,
 } from "@vuu-ui/vuu-utils";
@@ -23,8 +22,6 @@ import {
 import { getRowElementByAriaIndex } from "./table-dom-utils";
 import { TableProps } from "./Table";
 import { DataSource, RowSelectionEventHandler } from "@vuu-ui/vuu-data-types";
-
-const { IDX, KEY, SELECTED } = metadataKeys;
 
 const orderedRowKeys = (
   activeRowIdentifier: RowIdentifier | undefined,
@@ -95,16 +92,16 @@ export const useSelection = ({
   );
 
   const handleRowClick = useCallback<TableRowClickHandlerInternal>(
-    (e, row, rangeSelect, keepExistingSelection) => {
-      const { [IDX]: rowIdx, [KEY]: rowKey } = row;
+    (e, dataRow, rangeSelect, keepExistingSelection) => {
+      const { index: rowIdx, key: rowKey } = dataRow;
       const { current: activeRowKey } = lastActiveRef;
       const newRowIdentifier = { rowIdx, rowKey } as RowIdentifier;
 
-      if (row[SELECTED] && selectionModel === "single-no-deselect") {
+      if (dataRow.isSelected && selectionModel === "single-no-deselect") {
         return;
       }
 
-      const selectOperation = row[SELECTED] ? deselectItem : selectItem;
+      const selectOperation = dataRow.isSelected ? deselectItem : selectItem;
 
       if (selectionModel === "checkbox" && allowSelectCheckboxRow !== true) {
         const cell = queryClosest(e.target, ".vuuTableCell");
@@ -130,7 +127,7 @@ export const useSelection = ({
       lastActiveRef.current = newRowIdentifier;
 
       if (selectRequest) {
-        onSelect?.(selectOperation === selectItem ? row : null);
+        onSelect?.(selectOperation === selectItem ? dataRow : null);
         onSelectionChange?.(selectRequest);
       }
 

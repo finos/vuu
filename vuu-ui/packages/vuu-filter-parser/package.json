@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/vuu-filter-parser",
-  "version": "0.13.114",
+  "version": "0.13.115",
   "main": "src/index.ts",
   "author": "heswell",
   "license": "Apache-2.0",
@@ -11,11 +11,14 @@
     "lezer-generate:filter": "lezer-generator --output ./src/generated/filter-parser.js ./src/grammar/filter.grammar",
     "type-defs": "node ../../scripts/build-type-defs.mjs"
   },
+  "devDependencies": {
+    "@vuu-ui/vuu-data-types": "0.13.115",
+    "@vuu-ui/vuu-filter-types": "0.13.115",
+    "@vuu-ui/vuu-table-types": "0.13.115"
+  },
   "dependencies": {
     "@lezer/common": "^1.0.2",
     "@lezer/lr": "1.4.2",
-    "@vuu-ui/vuu-data-types": "0.13.114",
-    "@vuu-ui/vuu-filter-types": "0.13.114",
-    "@vuu-ui/vuu-utils": "0.13.114"
+    "@vuu-ui/vuu-utils": "0.13.115"
   }
 }

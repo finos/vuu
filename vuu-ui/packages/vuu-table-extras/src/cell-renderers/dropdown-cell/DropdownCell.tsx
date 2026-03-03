@@ -28,9 +28,8 @@ const classBase = "vuuTableDropdownCell";
 
 export const DropdownCell = memo(function DropdownCell({
   column,
-  columnMap,
+  dataRow,
   onEdit,
-  row,
 }: TableCellRendererProps) {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -40,8 +39,7 @@ export const DropdownCell = memo(function DropdownCell({
   });
 
   const [open, setOpen] = useState(false);
-  const dataIdx = columnMap[column.name];
-  const dataValue = row[dataIdx] as string | number;
+  const dataValue = dataRow[column.name] as string | number;
   const { values } = useLookupValues(column, dataValue);
   const valueRef = useRef<ListOption>(undefined);
 

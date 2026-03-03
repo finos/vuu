@@ -17,6 +17,7 @@ import type {
   MenuRpcResponse,
   DataSourceFilter,
   DataSource,
+  TableSchema,
 } from "@vuu-ui/vuu-data-types";
 import {
   BaseDataSource,
@@ -35,7 +36,18 @@ import { IconProvider } from "./IconProvider";
 import { parseFilter } from "@vuu-ui/vuu-filter-parser";
 import { FilterClause } from "@vuu-ui/vuu-filter-types";
 
-const NULL_SCHEMA = { columns: [], key: "", table: { module: "", table: "" } };
+const TREE_SCHEMA: TableSchema = {
+  columns: [
+    { name: "nodeData", serverDataType: "string" },
+    { name: "Level 1", serverDataType: "string" },
+    { name: "Level 2", serverDataType: "string" },
+    { name: "Level 3", serverDataType: "string" },
+    { name: "Level 4", serverDataType: "string" },
+    { name: "Level 5", serverDataType: "string" },
+  ],
+  key: "",
+  table: { module: "", table: "" },
+};
 
 type VisibleRowIndex = Record<number, number>;
 
@@ -146,7 +158,7 @@ export class TreeDataSource extends BaseDataSource implements DataSource {
       groupBy: this._configWithVisualLink.groupBy,
       range: this.range,
       sort: this.sort,
-      tableSchema: NULL_SCHEMA,
+      tableSchema: TREE_SCHEMA,
     });
 
     this.clientCallback({

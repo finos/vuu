@@ -108,10 +108,11 @@ export const SimpleApp = () => {
                         data-align="right"
                       >
                         <IconButton
+                          appearance="transparent"
                           data-embedded
                           icon="settings"
+                          sentiment="neutral"
                           size={20}
-                          variant="secondary"
                         />
                       </div>
                     </div>

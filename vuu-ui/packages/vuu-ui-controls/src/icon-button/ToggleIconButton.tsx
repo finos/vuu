@@ -15,7 +15,6 @@ export const ToggleIconButton = ({
   className,
   isExpanded,
   size = 7,
-  variant = "secondary",
   ...props
 }: ToggleIconButtonProps) => {
   const targetWindow = useWindow();
@@ -29,10 +28,12 @@ export const ToggleIconButton = ({
   return (
     <IconButton
       {...props}
+      appearance="transparent"
       className={cx(classBase, className)}
+      data-embedded
       icon={icon}
+      sentiment="neutral"
       size={size}
-      variant={variant}
     />
   );
 };

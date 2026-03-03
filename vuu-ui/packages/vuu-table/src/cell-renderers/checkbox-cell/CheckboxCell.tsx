@@ -15,7 +15,7 @@ import checkboxCellCss from "./CheckboxCell.css";
 const classBase = "vuuCheckboxCell";
 
 export const CheckboxCell = memo(
-  ({ column, columnMap, onEdit, row }: TableCellRendererProps) => {
+  ({ column, dataRow, onEdit }: TableCellRendererProps) => {
     const targetWindow = useWindow();
     useComponentCssInjection({
       testId: "vuu-checkbox-cell",
@@ -23,8 +23,7 @@ export const CheckboxCell = memo(
       window: targetWindow,
     });
 
-    const dataIdx = columnMap[column.name];
-    const isChecked = !!row[dataIdx];
+    const isChecked = !!dataRow[column.name];
 
     const handleCommit = useCallback(
       (value: boolean) => async (evt: MouseEvent) => {

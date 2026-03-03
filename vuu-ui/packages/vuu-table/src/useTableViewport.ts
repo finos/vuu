@@ -123,8 +123,8 @@ export const useTableViewport = ({
       if (virtualisedExtent) {
         const [_getRowOffset, getRowAtPosition, _isVirtual] =
           virtualRowPositioning(rowHeight, virtualisedExtent, pctScrollTopRef);
-        const getOffset: RowOffsetFunc = (row) => {
-          return _getRowOffset(row, inSituRowOffsetRef.current);
+        const getOffset: RowOffsetFunc = (dataRow) => {
+          return _getRowOffset(dataRow, inSituRowOffsetRef.current);
         };
         return [getOffset, getRowAtPosition, _isVirtual];
       } else {

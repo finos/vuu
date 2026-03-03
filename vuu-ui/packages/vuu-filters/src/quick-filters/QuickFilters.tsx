@@ -17,7 +17,7 @@ export interface QuickFilterProps
     Pick<FilterBarProps, "onApplyFilter" | "onClearFilter" | "vuuTable"> {
   allowAddColumn?: boolean;
   allowFind?: boolean;
-  availableColumns: ColumnDescriptor[];
+  availableColumns: readonly ColumnDescriptor[];
   onChangeQuickFilterColumns?: (columns: string[]) => void;
   quickFilterColumns?: string[];
   /**

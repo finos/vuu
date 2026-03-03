@@ -27,12 +27,7 @@ import {
   dragStrategy,
   reduceSizeHeight,
 } from "@vuu-ui/vuu-ui-controls";
-import {
-  RowToObjectMapper,
-  lowerCase,
-  metadataKeys,
-  useId,
-} from "@vuu-ui/vuu-utils";
+import { lowerCase, useId } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import {
   CSSProperties,
@@ -57,8 +52,6 @@ import { ScrollingAPI } from "./useTableScroll";
 import tableCss from "./Table.css";
 
 const classBase = "vuuTable";
-
-const { IDX, RENDER_IDX } = metadataKeys;
 
 export type TableNavigationStyle = "none" | "cell" | "row" | "tree";
 
@@ -124,7 +117,7 @@ export interface TableProps
   /**
    * required if a fully featured column picker is to be available
    */
-  availableColumns?: SchemaColumn[];
+  availableColumns?: readonly SchemaColumn[];
 
   /**
    * Pixel height of header cells. If specified here, this will take precedence over CSS
@@ -230,16 +223,6 @@ export interface TableProps
    * Allows opt-in to a predefined style pattern that renders a border around a row selection block.
    */
   rowSelectionBorder?: boolean;
-  /**
-   * When a row is selected and onSelect provided, onSelect will be invoked with a
-   * DataSourceRowObject, derived from the internal representation of a data row,
-   * DataSourceRow. The data attribute of DataSourceRowObject is a simple map of
-   * column.name : value.
-   * This prop allows a custom function to be provided to make the conversion from
-   * DataSourceRow to DataSourceRowObject. It will very rarely be needed. It is
-   * used by the Treetable.
-   */
-  rowToObject?: RowToObjectMapper;
 
   /**
    * Only applicable to grouped data. If there are selected rows which are not top-level
@@ -341,7 +324,6 @@ const TableCore = ({
   revealSelected,
   rowActionHandlers,
   rowHeight,
-  rowToObject,
   scrollingApiRef,
   selectionModel = "extended",
   showColumnHeaders = true,
@@ -370,9 +352,8 @@ const TableCore = ({
   const {
     allRowsSelected,
     cellBlock,
-    columnMap,
     columns,
-    data,
+    dataRows,
     draggableRow,
     focusCellPlaceholderKeyDown,
     focusCellPlaceholderRef,
@@ -425,7 +406,6 @@ const TableCore = ({
     renderBufferSize,
     revealSelected,
     rowHeight,
-    rowToObject,
     scrollingApiRef,
     selectionModel,
     showColumnHeaders,
@@ -459,7 +439,7 @@ const TableCore = ({
   } as CSSProperties;
 
   const headersReady = showColumnHeaders === false || headerHeight > 0;
-  const readyToRenderTableBody = headersReady && data.length > 0;
+  const readyToRenderTableBody = headersReady && dataRows.length > 0;
 
   return (
     <TableProvider
@@ -520,23 +500,22 @@ const TableCore = ({
           ) : null}
           {readyToRenderTableBody ? (
             <div className={`${classBase}-body`} ref={tableBodyRef}>
-              {data.map((data) => {
-                const ariaRowIndex = data[IDX] + headerCount + 1;
+              {dataRows.map((dataRow) => {
+                const ariaRowIndex = dataRow.index + headerCount + 1;
                 return (
                   <Row
                     aria-rowindex={ariaRowIndex}
                     classNameGenerator={rowClassNameGenerator}
-                    columnMap={columnMap}
                     columns={scrollProps.columnsWithinViewport}
                     // This is used for styling selection only.
-                    data-first-row={data[IDX] === 0 ? "true" : undefined}
+                    data-first-row={dataRow.index === 0 ? "true" : undefined}
+                    dataRow={dataRow}
                     groupToggleTarget={groupToggleTarget}
                     highlighted={highlightedIndex === ariaRowIndex}
-                    key={data[RENDER_IDX]}
+                    key={dataRow.renderIndex}
                     onClick={onRowClick}
                     onDataEdited={onDataEdited}
-                    row={data}
-                    offset={showPaginationControls ? 0 : getRowOffset(data)}
+                    offset={showPaginationControls ? 0 : getRowOffset(dataRow)}
                     onToggleGroup={onToggleGroup}
                     showBookends={selectionBookendWidth > 0}
                     searchPattern={lowerCaseSearchPattern}
@@ -624,7 +603,6 @@ export const Table = forwardRef(function Table(
     rowActionHandlers,
     rowHeight: rowHeightProp,
     rowSelectionBorder,
-    rowToObject,
     scrollingApiRef,
     searchPattern = "",
     selectionModel,
@@ -781,7 +759,6 @@ export const Table = forwardRef(function Table(
             revealSelected={revealSelected}
             rowActionHandlers={rowActionHandlers}
             rowHeight={rowHeight}
-            rowToObject={rowToObject}
             scrollingApiRef={scrollingApiRef}
             lowerCaseSearchPattern={lowerCase(searchPattern)}
             selectionModel={selectionModel}

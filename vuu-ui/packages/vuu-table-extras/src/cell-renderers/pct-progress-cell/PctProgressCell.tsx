@@ -21,7 +21,7 @@ const getPercentageValue = (value: number) => {
   }
 };
 
-export const PctProgressCell = ({ column, columnMap, row }: TableCellProps) => {
+export const PctProgressCell = ({ column, dataRow }: TableCellProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-pct-progress-cell",
@@ -29,7 +29,7 @@ export const PctProgressCell = ({ column, columnMap, row }: TableCellProps) => {
     window: targetWindow,
   });
 
-  const value = row[columnMap[column.name]] as number;
+  const value = dataRow[column.name] as number;
   const percentageValue = getPercentageValue(value);
   const className = cx(classBase, {});
 

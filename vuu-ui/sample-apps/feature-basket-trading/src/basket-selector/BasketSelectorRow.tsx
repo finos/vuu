@@ -1,5 +1,4 @@
 import type { RowProps } from "@vuu-ui/vuu-table-types";
-import { metadataKeys } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 import { MouseEvent, useCallback } from "react";
 
@@ -7,38 +6,30 @@ import "./BasketSelectorRow.css";
 
 const classBase = "vuuBasketSelectorRow";
 
-const { SELECTED } = metadataKeys;
-
 export const BasketSelectorRow = ({
   classNameGenerator: _ignore1,
   virtualColSpan: _ignore2,
   zebraStripes: _ignore3,
   className: classNameProp,
-  columnMap,
   columns,
+  dataRow,
   highlighted,
-  row,
   offset,
   onClick,
   onDataEdited,
   onToggleGroup,
   ...htmlAttributes
 }: RowProps) => {
-  const {
-    [columnMap.basketId]: basketId,
-    [columnMap.basketName]: basketName,
-    [columnMap.status]: status,
-    [SELECTED]: selectionStatus,
-  } = row;
+  const { basketId, basketName, status, isSelected } = dataRow;
   const style = { transform: `translate3d(0px, ${offset}px, 0px)` };
 
   const handleRowClick = useCallback(
     (evt: MouseEvent<HTMLDivElement>) => {
       const rangeSelect = evt.shiftKey;
       const keepExistingSelection = evt.ctrlKey || evt.metaKey; /* mac only */
-      onClick?.(evt, row, rangeSelect, keepExistingSelection);
+      onClick?.(evt, dataRow, rangeSelect, keepExistingSelection);
     },
-    [onClick, row],
+    [onClick, dataRow],
   );
 
   return (
@@ -46,7 +37,7 @@ export const BasketSelectorRow = ({
       {...htmlAttributes}
       className={cx(classBase, "vuuTableRow", {
         [`${classBase}-highlighted`]: highlighted,
-        [`${classBase}-selected`]: selectionStatus !== 0,
+        [`${classBase}-selected`]: isSelected,
       })}
       onClick={handleRowClick}
       role="row"
