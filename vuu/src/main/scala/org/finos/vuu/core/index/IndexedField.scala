@@ -15,7 +15,10 @@ trait IndexedField[TYPE] {
 
   def insert(indexedValue: TYPE, rowKey: String): Unit
 
-  def replace(oldIndexedValue: TYPE, newIndexedValue: TYPE, rowKey: String): Unit
+  def replace(oldIndexedValue: TYPE, newIndexedValue: TYPE, rowKey: String): Unit = {
+    remove(oldIndexedValue, rowKey)
+    insert(newIndexedValue, rowKey)
+  }
   
   def remove(indexedValue: TYPE, rowKey: String): Unit
 
@@ -75,12 +78,6 @@ class HashMapIndexedStringField(val column: Column) extends StringIndexedField w
     })
   }
 
-  override def replace(oldIndexKey: String, newIndexKey: String, rowKey: String): Unit = {
-    logger.trace(s"Moving value $rowKey in ${column.name} index")
-    remove(oldIndexKey, rowKey)
-    insert(newIndexKey, rowKey)
-  }
-  
   override def find(indexKey: String): ImmutableArray[String] = {
     logger.debug(s"Hit Index: ${column.name} for key $indexKey")
     val result = indexMap.get(indexKey)
@@ -112,12 +109,6 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
     })
   }
 
-  override def replace(oldIndexKey: TYPE, newIndexKey: TYPE, rowKey: String): Unit = {
-    logger.trace(s"Moving value $rowKey in ${column.name} index")
-    remove(oldIndexKey, rowKey)
-    insert(newIndexKey, rowKey)
-  }
-  
   override def insert(indexKey: TYPE, rowKey: String): Unit = {
     logger.trace(s"Inserting value $rowKey into ${column.name} index")
     skipList.compute(indexKey, (_, rowKeys) =>  {
