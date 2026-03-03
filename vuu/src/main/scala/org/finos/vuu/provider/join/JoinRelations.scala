@@ -35,19 +35,10 @@ class JoinRelations {
     })
   }
 
-  def deleteRowJoins(joinDef: JoinTableDef, ev: java.util.HashMap[String, Any], leftKey: String): Unit = {
-    val rowJoinForTable = rowJoins.get(joinDef.baseTable.name)
-    if (rowJoinForTable == null) return
-    
-    val rowJoin = rowJoinForTable.get(leftKey)
-    if (rowJoin == null) return
-
-    joinDef.joins.foreach(joinTo => {
-      val leftColumn = joinTo.joinSpec.left
-      val leftValue = ev.get(leftColumn)
-      if (ev.containsKey(leftColumn)) {
-        rowJoin.deleteJoinKey(leftColumn)
-      }
+  def deleteRowJoins(joinDef: JoinTableDef, leftKey: String): Unit = {
+    rowJoins.computeIfPresent(joinDef.baseTable.name, (_, leftKeys) => {
+      leftKeys.remove(leftKey)
+      leftKeys
     })
   }
 

@@ -76,6 +76,10 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
 
     //get right keys and tables
     val rowJoin = joinRelations.getJoinsForEvent(leftTableName, leftKey)
+    if (rowJoin == null) {
+      logger.warn(s"No row join found for table $leftTableName and key $leftKey")
+      return
+    }
 
     val leftKeys: Map[String, Any] = rowJoin.toMap
 
@@ -220,7 +224,7 @@ class VuuJoinTableProvider(options: VuuJoinTableProviderOptions)(implicit lifecy
         }
 
         if (ev.get("_isDeleted").asInstanceOf[Boolean]) {
-          joinRelations.deleteRowJoins(joinTableDef, ev, leftKey)
+          joinRelations.deleteRowJoins(joinTableDef, leftKey)
           deleteLeftKeyFromMapping(joinTableDef, tableName, ev, leftKey)
         } else {
           joinRelations.addRowJoins(joinTableDef, ev, leftKey)
