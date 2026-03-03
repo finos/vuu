@@ -57,13 +57,13 @@ class RightToLeftKeys {
     rightTableMap.computeIfPresent(rightKey, (_, existingRightKeyMap) => {
 
       //Remove the left key and also the left table if no more keys left
-      val updatedRightKeyMap = existingRightKeyMap.computeIfPresent(leftTable, (_, leftKeySet) => {
+      existingRightKeyMap.computeIfPresent(leftTable, (_, leftKeySet) => {
         val updatedSet = leftKeySet.remove(leftKey)
         if (updatedSet.isEmpty) null else updatedSet
       })
 
       //remove the right key if no more attached left keys
-      if (updatedRightKeyMap == null) null else existingRightKeyMap
+      if (existingRightKeyMap == null) null else existingRightKeyMap
     })
   }
 
