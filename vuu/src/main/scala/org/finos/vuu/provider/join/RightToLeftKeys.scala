@@ -12,7 +12,9 @@ class RightToLeftKeys {
 
   // right table name -> right key -> left table name -> left keys
   private val keysToRightKeys = new ConcurrentHashMap[String, ConcurrentHashMap[String, ConcurrentHashMap[String, ImmutableArraySet[String]]]]()
-  private val emptyKeyMap: ImmutableArraySet[String] = ImmutableArraySet.empty
+  private val emptyTableMap = new ConcurrentHashMap[String, ConcurrentHashMap[String, ImmutableArraySet[String]]]()
+  private val emptyKeyMap = new ConcurrentHashMap[String, ImmutableArraySet[String]]()
+  private val emptyKeys: ImmutableArraySet[String] = ImmutableArraySet.empty
 
   def addRightKey(rightTable: String, rightKey: String, leftTable: String, leftKey: String, existingRightKey: String): Unit = {
     if (rightKey == existingRightKey) {
@@ -66,13 +68,9 @@ class RightToLeftKeys {
   }
 
   def getLeftTableKeysForRightKey(rightTable: String, rightKey: String, leftTable: String): ImmutableArraySet[String] = {
-    val rightTableMap = keysToRightKeys.get(rightTable)
-    if (rightTableMap == null) return emptyKeyMap
-
-    val rightKeyMap = rightTableMap.get(rightKey)
-    if (rightKeyMap == null) return emptyKeyMap
-
-    rightKeyMap.getOrDefault(leftTable, emptyKeyMap)
+    keysToRightKeys.getOrDefault(rightTable, emptyTableMap)
+      .getOrDefault(rightKey, emptyKeyMap)
+      .getOrDefault(leftTable, emptyKeys)
   }
 
 }
