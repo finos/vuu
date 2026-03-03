@@ -53,7 +53,7 @@ export class RetryGenerator {
     let connected = false;
     do {
       await new Promise((resolve) =>
-        setTimeout(resolve, this.options.interval)
+        setTimeout(resolve, this.options.interval),
       );
       try {
         await this.vuuAuth.login();
@@ -81,10 +81,12 @@ export class LostConnectionHandler {
   async reconnect(): Promise<"connected" | "connection-failed"> {
     for await (const result of new RetryGenerator(
       this.vuuAuth,
-      RetryOptions(this.retryIntervals)
+      RetryOptions(this.retryIntervals),
     )) {
       console.log(`  ... async iterator result = ${result}`);
-      return result;
+      if (result === "connected") {
+        return result;
+      }
     }
 
     return "connection-failed";
