@@ -44,6 +44,7 @@ private case class DefaultFlowController(sessionId: ClientSessionId)(implicit ti
     if (shouldSendHeartbeat(timeSinceLastMessage, timeSinceLastHeartbeat))
       sendHeartbeat()
     else if (shouldDisconnect(timeSinceLastMessage))
+      logger.warn(s"[SESSION] Disconnecting session ${sessionId.sessionId} because it has not responded for ${timeSinceLastMessage}ms")
       Disconnect()
     else
       BatchSize(300)
