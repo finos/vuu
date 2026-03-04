@@ -1,7 +1,8 @@
 package org.finos.vuu.net.flowcontrol
 
+import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.net.ViewServerMessage
+import org.finos.vuu.net.{ClientSessionId, ViewServerMessage}
 
 trait FlowControlOp
 
@@ -17,16 +18,16 @@ trait FlowController {
   def shouldSend(): FlowControlOp
 }
 
-case class FlowControllerFactory(hasHeartbeat: Boolean)(implicit timeProvider: Clock){
-  def create(): FlowController = {
+case class FlowControllerFactory(hasHeartbeat: Boolean)(implicit timeProvider: Clock) {
+  def create(sessionId: ClientSessionId): FlowController = {
     if (hasHeartbeat)
-      new DefaultFlowController()
+      DefaultFlowController(sessionId)
     else
-      new NoHeartbeatFlowController
-
+      NoHeartbeatFlowController
   }
 }
-class DefaultFlowController(implicit timeProvider: Clock) extends FlowController {
+
+private case class DefaultFlowController(sessionId: ClientSessionId)(implicit timeProvider: Clock) extends FlowController with StrictLogging {
 
   @volatile private var lastMsgTime: Long = -1
   @volatile private var lastHeartBeatSentTime: Long = -1
@@ -36,38 +37,40 @@ class DefaultFlowController(implicit timeProvider: Clock) extends FlowController
   }
 
   override def shouldSend(): FlowControlOp = {
+    val currentTime = timeProvider.now()
+    val timeSinceLastMessage = if (lastMsgTime == -1) -1 else currentTime - lastMsgTime
+    val timeSinceLastHeartbeat = currentTime - lastHeartBeatSentTime
 
-    if (lastMsgTime == -1 || (noMsgIn5Seconds() && lastHeartbeatMoreThanSecondAgo()))
-      sendHearbeat()
-    else if (noMsgIn10Seconds())
+    if (shouldSendHeartbeat(timeSinceLastMessage, timeSinceLastHeartbeat))
+      sendHeartbeat()
+    else if (shouldDisconnect(timeSinceLastMessage))
       Disconnect()
     else
       BatchSize(300)
   }
 
-  private def sendHearbeat() = {
+  private def shouldSendHeartbeat(timeSinceLastMessage: Long, timeSinceLastHeartbeat: Long): Boolean = {
+    if (timeSinceLastMessage == -1) true
+    else if (timeSinceLastHeartbeat < 1_000) false
+    else {
+      if (timeSinceLastMessage > 10_000 && timeSinceLastMessage <= 15_000) {
+        logger.warn(s"[SESSION] Session ${sessionId.sessionId} has not responded for ${timeSinceLastMessage}ms")
+      }
+      timeSinceLastMessage > 5_000 && timeSinceLastMessage <= 15_000
+    }
+  }
+
+  private def sendHeartbeat(): SendHeartbeat = {
     lastHeartBeatSentTime = timeProvider.now()
     SendHeartbeat()
   }
 
-  private def lastHeartbeatMoreThanSecondAgo(): Boolean = {
-    (timeProvider.now() - lastHeartBeatSentTime) > 1000
+  private def shouldDisconnect(timeSinceLastMessage: Long): Boolean = {
+    timeSinceLastMessage > 15_000
   }
-
-
-  private def noMsgIn10Seconds(): Boolean = {
-    val diff = (timeProvider.now() - lastMsgTime)
-    diff > 10000
-  }
-
-  private def noMsgIn5Seconds(): Boolean = {
-    val diff = (timeProvider.now() - lastMsgTime)
-    diff > 5000 && diff < 10000
-  }
-
 }
 
-class NoHeartbeatFlowController() extends FlowController {
+object NoHeartbeatFlowController extends FlowController {
   override def process(msg: ViewServerMessage): Unit = {
     //nothing to do here
   }
