@@ -63,27 +63,25 @@ class DefaultMessageHandler(val channel: Channel,
 
     flowController.shouldSend() match {
       case op: SendHeartbeat =>
-        logger.debug(s"Sending heartbeat to session ${session.sessionId}")
+        logger.debug(s"[SESSION] Sending heartbeat to session ${session.sessionId}")
         val json = serializer.serialize(JsonViewServerMessage("", session.sessionId, HeartBeat(timeProvider.now())))
         channel.writeAndFlush(new TextWebSocketFrame(json))
       case op: Disconnect =>
-        logger.warn(s"Disconnecting session ${session.sessionId} because of missed heartbeats")
+        logger.debug(s"[SESSION] Disconnecting session ${session.sessionId} because of missed heartbeats")
         disconnect()
-
       case BatchSize(size) =>
         val updates = outboundQueue.popUpTo(size)
         sendUpdatesInternal(updates)
-
     }
   }
 
   private def disconnect(): ChannelFuture = {
-    logger.debug(s"Disconnecting session ${session.sessionId}")
+    logger.debug(s"[SESSION] Disconnecting session ${session.sessionId}")
     serverApi.disconnect(session)
     sessionContainer.remove(user, session)
     channel.disconnect()
     val closeResult = channel.close()
-    logger.info(s"Disconnected session ${session.sessionId}")
+    logger.info(s"[SESSION] Disconnected session ${session.sessionId}")
     closeResult
   }
 

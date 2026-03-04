@@ -70,7 +70,7 @@ class RequestProcessor(loginTokenService: LoginTokenService,
 
   private def createMessageHandler(channel: Channel, sessionId: ClientSessionId, user: VuuUser): MessageHandler = {
     val queue = OutboundRowPublishQueue()
-    val flowController = flowControllerFactory.create()
+    val flowController = flowControllerFactory.create(sessionId)
     DefaultMessageHandler(channel, queue, user, sessionId, serverApi, serializer, flowController, clientSessionContainer, moduleContainer)
   }
 

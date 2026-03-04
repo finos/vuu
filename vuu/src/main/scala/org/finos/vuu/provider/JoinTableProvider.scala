@@ -1,6 +1,6 @@
 package org.finos.vuu.provider
 
-import org.finos.vuu.core.table.{DataTable, JoinTable}
+import org.finos.vuu.core.table.JoinTable
 import org.finos.toolbox.lifecycle.LifecycleEnabled
 import org.finos.toolbox.thread.RunInThread
 import org.finos.vuu.provider.join.JoinTableUpdate
