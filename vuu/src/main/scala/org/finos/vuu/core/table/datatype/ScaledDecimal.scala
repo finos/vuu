@@ -1,66 +1,21 @@
 package org.finos.vuu.core.table.datatype
 
-import java.math.{BigDecimal => JBigDecimal}
+import org.finos.toolbox.number.BigDecimalToScaledLongConverter
 
-sealed trait ScaledDecimal extends Ordered[ScaledDecimal] {
+import java.math.BigDecimal as JBigDecimal
+
+sealed trait ScaledDecimal {
   val scaledValue: Long
-
   def getScale: Int
-
-  override def toString: String = {
-    val s = scaledValue.toString
-    val isNegative = s.startsWith("-")
-    val absoluteS = if (isNegative) s.substring(1) else s
-
-    val padded = absoluteS.reverse.padTo(getScale + 1, '0').reverse
-    val splitAt = padded.length - getScale
-    val result = padded.substring(0, splitAt) + "." + padded.substring(splitAt)
-
-    if (isNegative) "-" + result else result
-  }
-
-  override def compare(that: ScaledDecimal): Int = {
-    val thisScale = this.getScale
-    val thatScale = that.getScale
-
-    if (thisScale == thatScale) {
-      this.scaledValue.compare(that.scaledValue)
-    } else {
-      val diff = Math.abs(thisScale - thatScale)
-      val multiplier = BigInt(10).pow(diff)
-
-      if (thisScale < thatScale) {
-        (BigInt(this.scaledValue) * multiplier).compare(BigInt(that.scaledValue))
-      } else {
-        BigInt(this.scaledValue).compare(BigInt(that.scaledValue) * multiplier)
-      }
-    }
-  }
-
+  override def toString: String = scaledValue.toString
 }
 
 object ScaledDecimal {
-  private case class ScaleMetadata(minValue: JBigDecimal, maxValue: JBigDecimal)
-  private val supportedScales = Seq(2, 4, 6, 8)
-  private val scaleConfiguration: Map[Int, ScaleMetadata] = supportedScales.map { scale =>
-    val multiplier = JBigDecimal.valueOf(10).pow(scale)
-    scale -> ScaleMetadata(
-      minValue = JBigDecimal.valueOf(Long.MinValue).divide(multiplier),
-      maxValue = JBigDecimal.valueOf(Long.MaxValue).divide(multiplier)
-    )
-  }.toMap
 
   def apply(value: BigDecimal, scale: Int): ScaledDecimal = apply(value.bigDecimal, scale)
 
   def apply(value: JBigDecimal, scale: Int): ScaledDecimal = {
-    val config = scaleConfiguration.getOrElse(scale,
-      throw new IllegalArgumentException(s"Scale $scale is not supported. Use one of $supportedScales."))
-
-    if (value.compareTo(config.maxValue) > 0 || value.compareTo(config.minValue) < 0) {
-      throw new IllegalArgumentException(s"Value $value does not fit in ScaledDecimal$scale")
-    }
-
-    val internalValue = value.movePointRight(scale).longValue()
+    val internalValue = BigDecimalToScaledLongConverter.toScaledLong(value, scale)
 
     scale match {
       case 2 => ScaledDecimal2(internalValue)
@@ -72,7 +27,30 @@ object ScaledDecimal {
   }
 }
 
-case class ScaledDecimal2(scaledValue: Long) extends ScaledDecimal { override def getScale: Int = 2 }
-case class ScaledDecimal4(scaledValue: Long) extends ScaledDecimal { override def getScale: Int = 4 }
-case class ScaledDecimal6(scaledValue: Long) extends ScaledDecimal { override def getScale: Int = 6 }
-case class ScaledDecimal8(scaledValue: Long) extends ScaledDecimal { override def getScale: Int = 8 }
+case class ScaledDecimal2(scaledValue: Long) extends ScaledDecimal with Ordered[ScaledDecimal2] {
+  override def getScale: Int = 2
+  override def compare(that: ScaledDecimal2): Int = {
+    if (this.scaledValue == that.scaledValue) 0 else if (this.scaledValue > that.scaledValue) 1 else -1
+  }
+}
+
+case class ScaledDecimal4(scaledValue: Long) extends ScaledDecimal with Ordered[ScaledDecimal4] {
+  override def getScale: Int = 4
+  override def compare(that: ScaledDecimal4): Int = {
+    if (this.scaledValue == that.scaledValue) 0 else if (this.scaledValue > that.scaledValue) 1 else -1
+  }
+}
+
+case class ScaledDecimal6(scaledValue: Long) extends ScaledDecimal with Ordered[ScaledDecimal6] {
+  override def getScale: Int = 6
+  override def compare(that: ScaledDecimal6): Int = {
+    if (this.scaledValue == that.scaledValue) 0 else if (this.scaledValue > that.scaledValue) 1 else -1
+  }
+}
+
+case class ScaledDecimal8(scaledValue: Long) extends ScaledDecimal with Ordered[ScaledDecimal8] {
+  override def getScale: Int = 8
+  override def compare(that: ScaledDecimal8): Int = {
+    if (this.scaledValue == that.scaledValue) 0 else if (this.scaledValue > that.scaledValue) 1 else -1
+  }
+}
