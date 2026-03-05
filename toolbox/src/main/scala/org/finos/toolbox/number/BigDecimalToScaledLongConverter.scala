@@ -7,11 +7,11 @@ object BigDecimalToScaledLongConverter {
 
   private val powersOfTen = Array.tabulate(19)(i => BigInt(10).pow(i).toLong)
 
-  def toScaledLong(bd: BigDecimal, shiftLeft: Int): Long = {
-    toScaledLong(bd.underlying(), shiftLeft)
+  def toScaledLong(bd: BigDecimal, scale: Int): Long = {
+    toScaledLong(bd.underlying(), scale)
   }
 
-  def toScaledLong(bd: JBigDecimal, shiftLeft: Int): Long = {
+  def toScaledLong(bd: JBigDecimal, scale: Int): Long = {
     if (bd.signum() == 0) return 0L
 
     val unscaledBI: BigInteger = bd.unscaledValue()
@@ -20,7 +20,7 @@ object BigDecimalToScaledLongConverter {
     }
 
     val unscaledLong = unscaledBI.longValue()
-    val netShift = shiftLeft - bd.scale()
+    val netShift = scale - bd.scale()
 
     if (netShift == 0) {
       //No scaling required
