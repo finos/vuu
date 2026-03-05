@@ -1,55 +1,59 @@
 package org.finos.vuu.core.table.datatype
 
-import org.finos.toolbox.number.BigDecimalToScaledLongConverter
-
 import java.math.BigDecimal as JBigDecimal
+
+enum Scale(val precision: Int) {
+  case Two extends Scale(2)
+  case Four extends Scale(4)
+  case Six extends Scale(6)
+  case Eight extends Scale(8)
+
+  def create(value: JBigDecimal): ScaledDecimal = this match
+    case Two => ScaledDecimal2(value.movePointRight(precision).longValue())
+    case Four => ScaledDecimal4(value.movePointRight(precision).longValue())
+    case Six => ScaledDecimal6(value.movePointRight(precision).longValue())
+    case Eight => ScaledDecimal8(value.movePointRight(precision).longValue())
+}
+
+object Scale { //For Java
+  val TWO: Scale = Scale.Two
+  val FOUR: Scale = Scale.Four
+  val SIX: Scale = Scale.Six
+  val EIGHT: Scale = Scale.Eight
+}
 
 sealed trait ScaledDecimal {
   val scaledValue: Long
-  def getScale: Int
   override def toString: String = scaledValue.toString
 }
 
 object ScaledDecimal {
 
-  def apply(value: BigDecimal, scale: Int): ScaledDecimal = apply(value.bigDecimal, scale)
+  def apply(value: BigDecimal, scale: Scale): ScaledDecimal = apply(value.bigDecimal, scale)
 
-  def apply(value: JBigDecimal, scale: Int): ScaledDecimal = {
-    val internalValue = BigDecimalToScaledLongConverter.toScaledLong(value, scale)
+  def apply(value: JBigDecimal, scale: Scale): ScaledDecimal = scale.create(value)
 
-    scale match {
-      case 2 => ScaledDecimal2(internalValue)
-      case 4 => ScaledDecimal4(internalValue)
-      case 6 => ScaledDecimal6(internalValue)
-      case 8 => ScaledDecimal8(internalValue)
-      case _ => throw new IllegalArgumentException(s"Scale $scale not implemented")
-    }
-  }
 }
 
 case class ScaledDecimal2(scaledValue: Long) extends ScaledDecimal with Ordered[ScaledDecimal2] {
-  override def getScale: Int = 2
   override def compare(that: ScaledDecimal2): Int = {
     if (this.scaledValue == that.scaledValue) 0 else if (this.scaledValue > that.scaledValue) 1 else -1
   }
 }
 
 case class ScaledDecimal4(scaledValue: Long) extends ScaledDecimal with Ordered[ScaledDecimal4] {
-  override def getScale: Int = 4
   override def compare(that: ScaledDecimal4): Int = {
     if (this.scaledValue == that.scaledValue) 0 else if (this.scaledValue > that.scaledValue) 1 else -1
   }
 }
 
 case class ScaledDecimal6(scaledValue: Long) extends ScaledDecimal with Ordered[ScaledDecimal6] {
-  override def getScale: Int = 6
   override def compare(that: ScaledDecimal6): Int = {
     if (this.scaledValue == that.scaledValue) 0 else if (this.scaledValue > that.scaledValue) 1 else -1
   }
 }
 
 case class ScaledDecimal8(scaledValue: Long) extends ScaledDecimal with Ordered[ScaledDecimal8] {
-  override def getScale: Int = 8
   override def compare(that: ScaledDecimal8): Int = {
     if (this.scaledValue == that.scaledValue) 0 else if (this.scaledValue > that.scaledValue) 1 else -1
   }
