@@ -3,65 +3,76 @@ package org.finos.vuu.core.table.datatype
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.prop.TableDrivenPropertyChecks
 
 import java.math.BigDecimal as JBigDecimal
 
-class ScaledDecimalTest extends AnyFeatureSpec with Matchers with GivenWhenThen {
+class ScaledDecimalTest extends AnyFeatureSpec with Matchers with GivenWhenThen with TableDrivenPropertyChecks {
 
   Feature("ScaledDecimal Factory") {
 
     Scenario("Creating ScaledDecimals with various scales") {
 
-      Given("a set of input BigDecimals and target Scales")
-      val val2 = BigDecimal("123.45")
-      val val4 = BigDecimal("1.2345")
-      val val6 = BigDecimal("0.123456")
-      val val8 = BigDecimal("0.01234567")
+      // Define the test data table
+      val testCases = Table(
+        ("input",            "scale",       "expectedScaledValue", "expectedClass"),
+        (BigDecimal("123.45"),    Scale.Two,    12345L,               classOf[ScaledDecimal2]),
+        (BigDecimal("1.2345"),    Scale.Four,   12345L,               classOf[ScaledDecimal4]),
+        (BigDecimal("0.123456"),  Scale.Six,    123456L,              classOf[ScaledDecimal6]),
+        (BigDecimal("0.01234567"), Scale.Eight,  1234567L,             classOf[ScaledDecimal8])
+      )
 
-      When("ScaledDecimal objects are created via the factory")
-      val sd2 = ScaledDecimal(val2, Scale.Two)
-      val sd4 = ScaledDecimal(val4, Scale.Four)
-      val sd6 = ScaledDecimal(val6, Scale.Six)
-      val sd8 = ScaledDecimal(val8, Scale.Eight)
+      forAll(testCases) { (input, scale, expectedScaledValue, expectedClass) =>
+        Given(s"a BigDecimal $input and target $scale")
 
-      Then("the underlying scaledValue should be shifted correctly")
-      sd2.scaledValue shouldBe 12345L
-      sd4.scaledValue shouldBe 12345L
-      sd6.scaledValue shouldBe 123456L
-      sd8.scaledValue shouldBe 1234567L
+        When("a ScaledDecimal is created")
+        val result = ScaledDecimal(input, scale)
 
-      And("the type should match the specific case class")
-      sd2 shouldBe a [ScaledDecimal2]
-      sd8 shouldBe a [ScaledDecimal8]
+        Then(s"the scaledValue should be $expectedScaledValue")
+        result.scaledValue shouldBe expectedScaledValue
+
+        And(s"the type should be ${expectedClass.getSimpleName}")
+        result.getClass shouldBe expectedClass
+
+        And("the toString should match the scaledValue")
+        result.toString shouldBe expectedScaledValue.toString
+      }
     }
 
     Scenario("Handling Java BigDecimal inputs") {
+      val javaTestCases = Table(
+        ("input",            "scale",    "expectedValue"),
+        (new JBigDecimal("10.50"), Scale.Two, 1050L),
+        (new JBigDecimal("1.1234"), Scale.Four, 11234L),
+        (new JBigDecimal("0.123456"), Scale.Six, 123456L),
+        (new JBigDecimal("0.01234567"), Scale.Eight, 1234567L),
+      )
 
-      Given("a Java BigDecimal")
-      val jVal = new JBigDecimal("10.50")
-
-      When("ScaledDecimal is created using the Java-compatible apply method")
-      val result = ScaledDecimal(jVal, Scale.Two)
-
-      Then("it should correctly calculate the scaled value")
-      result.scaledValue shouldBe 1050L
+      forAll(javaTestCases) { (jVal, scale, expected) =>
+        val result = ScaledDecimal(jVal, scale)
+        result.scaledValue shouldBe expected
+      }
     }
   }
 
   Feature("Comparison and Ordering") {
 
-    Scenario("Comparing two ScaledDecimal2 instances") {
+    Scenario("Comparing ScaledDecimal instances") {
+      val comparisonTable = Table(
+        ("val1", "val2", "isGreater", "isEqual"),
+        (1000L, 2000L, false, false),
+        (2000L, 1000L, true,  false),
+        (1000L, 1000L, false, true)
+      )
 
-      Given("two ScaledDecimal2 instances with different values")
-      val smaller = ScaledDecimal2(1000L)
-      val larger = ScaledDecimal2(2000L)
-      val equalToSmaller = ScaledDecimal2(1000L)
+      forAll(comparisonTable) { (v1, v2, isGreater, isEqual) =>
+        val sd1 = ScaledDecimal2(v1)
+        val sd2 = ScaledDecimal2(v2)
 
-      Then("the comparison operators should work correctly")
-      (larger > smaller) shouldBe true
-      (smaller < larger) shouldBe true
-      (smaller <= equalToSmaller) shouldBe true
-      (smaller == equalToSmaller) shouldBe true
+        (sd1 > sd2) shouldBe isGreater
+        (sd1 == sd2) shouldBe isEqual
+        if (!isEqual) (sd1 < sd2) shouldBe !isGreater
+      }
     }
   }
 }
