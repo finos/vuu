@@ -1,9 +1,8 @@
 package org.finos.vuu.core.sort
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.sort.SortCompares.compareEpochTimestamp
 import org.finos.vuu.core.sort.SortDirection.Ascending
-import org.finos.vuu.core.table.datatype.EpochTimestamp
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.core.table.{Column, DataType, RowData}
 
 import java.util.function.ToIntBiFunction
@@ -25,6 +24,10 @@ object SortCompares extends StrictLogging {
       case DataType.BooleanDataType => compareBoolean(o1, o2, activeColumn, isAscending)
       case DataType.CharDataType => compareChar(o1, o2, activeColumn, isAscending)
       case DataType.EpochTimestampType => compareEpochTimestamp(o1, o2, activeColumn, isAscending)
+      case DataType.ScaledDecimal2Type => compareScaledDecimal2(o1, o2, activeColumn, isAscending)
+      case DataType.ScaledDecimal4Type => compareScaledDecimal4(o1, o2, activeColumn, isAscending)
+      case DataType.ScaledDecimal6Type => compareScaledDecimal6(o1, o2, activeColumn, isAscending)
+      case DataType.ScaledDecimal8Type => compareScaledDecimal8(o1, o2, activeColumn, isAscending)
       case _ =>
         logger.warn(s"Unable to sort datatype ${activeColumn.dataType}")
         0
@@ -64,7 +67,23 @@ object SortCompares extends StrictLogging {
   def compareEpochTimestamp(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
     compareComparable[EpochTimestamp](o1, o2, column, isAscending)
   }
-  
+
+  def compareScaledDecimal2(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
+    compareComparable[ScaledDecimal2](o1, o2, column, isAscending)
+  }
+
+  def compareScaledDecimal4(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
+    compareComparable[ScaledDecimal4](o1, o2, column, isAscending)
+  }
+
+  def compareScaledDecimal6(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
+    compareComparable[ScaledDecimal6](o1, o2, column, isAscending)
+  }
+
+  def compareScaledDecimal8(o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
+    compareComparable[ScaledDecimal8](o1, o2, column, isAscending)
+  }
+
   private def compareComparable[T <: AnyRef with Comparable[T]](o1: RowData, o2: RowData, column: Column, isAscending: Boolean): Int = {
     compareReferenceType(o1, o2, column, isAscending, (c1: T, c2: T) => c1.compareTo(c2))
   }

@@ -1,6 +1,6 @@
 package org.finos.vuu.core.sort
 
-import org.finos.vuu.core.table.datatype.EpochTimestamp
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.core.table.{Column, RowData, RowWithData, SimpleColumn}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -229,6 +229,134 @@ class SortComparesTest extends AnyFeatureSpec with Matchers with BeforeAndAfterE
 
     Scenario("can sort null value and they go last in ascending order") {
       TestComparator.register((o1, o2) => SortCompares.compareEpochTimestamp(o1, o2, col, isAscending = true))
+      val data = List(rowData5, rowData3, rowData6)
+      val sortedData = List(rowData3, rowData5, rowData6)
+      data.sorted(TestComparator.compare) shouldEqual sortedData
+    }
+  }
+
+  Feature("compareScaledDecimal2") {
+    val rowData1 = RowWithData("id-2", Map("scaledDecimalField" -> ScaledDecimal2(-10L)))
+    val rowData2 = RowWithData("id-3", Map("scaledDecimalField" -> ScaledDecimal2(0L)))
+    val rowData3 = RowWithData("id-1", Map("scaledDecimalField" -> ScaledDecimal2(7L)))
+    val rowData4 = RowWithData("id-4", Map("scaledDecimalField" -> ScaledDecimal2(10L)))
+    val rowData5 = RowWithData("id-5", Map())
+    val rowData6 = RowWithData("id-6", Map())
+
+    val ascending = List(rowData1, rowData2, rowData3, rowData4)
+    val unordered = List(rowData3, rowData1, rowData4, rowData2)
+    val col = column("scaledDecimalField")
+
+    Scenario("can support `A` sort direction") {
+      TestComparator.register((o1, o2) => SortCompares.compareScaledDecimal2(o1, o2, col, isAscending = true))
+
+      unordered.sorted(TestComparator.compare) shouldEqual ascending
+    }
+
+    Scenario("can support `D` sort direction") {
+      TestComparator.register((o1, o2) => SortCompares.compareScaledDecimal2(o1, o2, col, isAscending = false))
+
+      unordered.sorted(TestComparator.compare) shouldEqual ascending.reverse
+    }
+
+    Scenario("can sort null value and they go last in ascending order") {
+      TestComparator.register((o1, o2) => SortCompares.compareScaledDecimal2(o1, o2, col, isAscending = true))
+      val data = List(rowData5, rowData3, rowData6)
+      val sortedData = List(rowData3, rowData5, rowData6)
+      data.sorted(TestComparator.compare) shouldEqual sortedData
+    }
+  }
+
+  Feature("compareScaledDecimal4") {
+    val rowData1 = RowWithData("id-2", Map("scaledDecimalField" -> ScaledDecimal4(-10L)))
+    val rowData2 = RowWithData("id-3", Map("scaledDecimalField" -> ScaledDecimal4(0L)))
+    val rowData3 = RowWithData("id-1", Map("scaledDecimalField" -> ScaledDecimal4(7L)))
+    val rowData4 = RowWithData("id-4", Map("scaledDecimalField" -> ScaledDecimal4(10L)))
+    val rowData5 = RowWithData("id-5", Map())
+    val rowData6 = RowWithData("id-6", Map())
+
+    val ascending = List(rowData1, rowData2, rowData3, rowData4)
+    val unordered = List(rowData3, rowData1, rowData4, rowData2)
+    val col = column("scaledDecimalField")
+
+    Scenario("can support `A` sort direction") {
+      TestComparator.register((o1, o2) => SortCompares.compareScaledDecimal4(o1, o2, col, isAscending = true))
+
+      unordered.sorted(TestComparator.compare) shouldEqual ascending
+    }
+
+    Scenario("can support `D` sort direction") {
+      TestComparator.register((o1, o2) => SortCompares.compareScaledDecimal4(o1, o2, col, isAscending = false))
+
+      unordered.sorted(TestComparator.compare) shouldEqual ascending.reverse
+    }
+
+    Scenario("can sort null value and they go last in ascending order") {
+      TestComparator.register((o1, o2) => SortCompares.compareScaledDecimal4(o1, o2, col, isAscending = true))
+      val data = List(rowData5, rowData3, rowData6)
+      val sortedData = List(rowData3, rowData5, rowData6)
+      data.sorted(TestComparator.compare) shouldEqual sortedData
+    }
+  }
+
+  Feature("compareScaledDecimal6") {
+    val rowData1 = RowWithData("id-2", Map("scaledDecimalField" -> ScaledDecimal6(-10L)))
+    val rowData2 = RowWithData("id-3", Map("scaledDecimalField" -> ScaledDecimal6(0L)))
+    val rowData3 = RowWithData("id-1", Map("scaledDecimalField" -> ScaledDecimal6(7L)))
+    val rowData4 = RowWithData("id-4", Map("scaledDecimalField" -> ScaledDecimal6(10L)))
+    val rowData5 = RowWithData("id-5", Map())
+    val rowData6 = RowWithData("id-6", Map())
+
+    val ascending = List(rowData1, rowData2, rowData3, rowData4)
+    val unordered = List(rowData3, rowData1, rowData4, rowData2)
+    val col = column("scaledDecimalField")
+
+    Scenario("can support `A` sort direction") {
+      TestComparator.register((o1, o2) => SortCompares.compareScaledDecimal6(o1, o2, col, isAscending = true))
+
+      unordered.sorted(TestComparator.compare) shouldEqual ascending
+    }
+
+    Scenario("can support `D` sort direction") {
+      TestComparator.register((o1, o2) => SortCompares.compareScaledDecimal6(o1, o2, col, isAscending = false))
+
+      unordered.sorted(TestComparator.compare) shouldEqual ascending.reverse
+    }
+
+    Scenario("can sort null value and they go last in ascending order") {
+      TestComparator.register((o1, o2) => SortCompares.compareScaledDecimal6(o1, o2, col, isAscending = true))
+      val data = List(rowData5, rowData3, rowData6)
+      val sortedData = List(rowData3, rowData5, rowData6)
+      data.sorted(TestComparator.compare) shouldEqual sortedData
+    }
+  }
+
+  Feature("compareScaledDecimal8") {
+    val rowData1 = RowWithData("id-2", Map("scaledDecimalField" -> ScaledDecimal8(-10L)))
+    val rowData2 = RowWithData("id-3", Map("scaledDecimalField" -> ScaledDecimal8(0L)))
+    val rowData3 = RowWithData("id-1", Map("scaledDecimalField" -> ScaledDecimal8(7L)))
+    val rowData4 = RowWithData("id-4", Map("scaledDecimalField" -> ScaledDecimal8(10L)))
+    val rowData5 = RowWithData("id-5", Map())
+    val rowData6 = RowWithData("id-6", Map())
+
+    val ascending = List(rowData1, rowData2, rowData3, rowData4)
+    val unordered = List(rowData3, rowData1, rowData4, rowData2)
+    val col = column("scaledDecimalField")
+
+    Scenario("can support `A` sort direction") {
+      TestComparator.register((o1, o2) => SortCompares.compareScaledDecimal8(o1, o2, col, isAscending = true))
+
+      unordered.sorted(TestComparator.compare) shouldEqual ascending
+    }
+
+    Scenario("can support `D` sort direction") {
+      TestComparator.register((o1, o2) => SortCompares.compareScaledDecimal8(o1, o2, col, isAscending = false))
+
+      unordered.sorted(TestComparator.compare) shouldEqual ascending.reverse
+    }
+
+    Scenario("can sort null value and they go last in ascending order") {
+      TestComparator.register((o1, o2) => SortCompares.compareScaledDecimal8(o1, o2, col, isAscending = true))
       val data = List(rowData5, rowData3, rowData6)
       val sortedData = List(rowData3, rowData5, rowData6)
       data.sorted(TestComparator.compare) shouldEqual sortedData
