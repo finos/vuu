@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.collection.set.ImmutableArraySet
 import org.finos.vuu.core.table.Column
-import org.finos.vuu.core.table.datatype.EpochTimestamp
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal}
 
 import java.util.concurrent.{ConcurrentHashMap, ConcurrentNavigableMap, ConcurrentSkipListMap}
 import scala.collection.mutable
@@ -55,6 +55,8 @@ trait StringIndexedField extends IndexedField[String]
 trait EpochTimestampIndexedField extends IndexedField[EpochTimestamp]
 
 trait CharIndexedField extends IndexedField[Char]
+
+trait ScaledDecimalIndexedField extends IndexedField[ScaledDecimal]
 
 class HashMapIndexedStringField(val column: Column) extends StringIndexedField with StrictLogging {
 
@@ -176,3 +178,5 @@ class SkipListIndexedBooleanField(column: Column) extends SkipListIndexedField[B
 class SkipListIndexedEpochTimestampField(column: Column) extends SkipListIndexedField[EpochTimestamp](column) with EpochTimestampIndexedField {}
 
 class SkipListIndexedCharField(column: Column) extends SkipListIndexedField[Char](column) with CharIndexedField {}
+
+class SkipListIndexedScaledDecimalField(column: Column) extends SkipListIndexedField[ScaledDecimal](column) with ScaledDecimalIndexedField {}

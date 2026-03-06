@@ -43,6 +43,26 @@ class ColumnBuilder {
     this
   }
 
+  def addScaledDecimal2(columnName: String): ColumnBuilder = {
+    columns += (columnName + ":ScaledDecimal2")
+    this
+  }
+
+  def addScaledDecimal4(columnName: String): ColumnBuilder = {
+    columns += (columnName + ":ScaledDecimal4")
+    this
+  }
+
+  def addScaledDecimal6(columnName: String): ColumnBuilder = {
+    columns += (columnName + ":ScaledDecimal6")
+    this
+  }
+
+  def addScaledDecimal8(columnName: String): ColumnBuilder = {
+    columns += (columnName + ":ScaledDecimal8")
+    this
+  }
+  
   def build(): Array[Column] = Columns.fromNames(columns.result())
 }
 
