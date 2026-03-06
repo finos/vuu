@@ -33,7 +33,7 @@ sealed trait RowFilterClause extends FilterClause {
       rowKeys
     } else {
       InMemTablePrimaryKeys(ImmutableArray.from(
-        rowKeys.filter(key => filter(rows.pullRow(key, vpColumns))).toArray
+        rowKeys.filter(key => filter(rows.pullRow(key, vpColumns)))
       ))
     }
   }
@@ -62,7 +62,7 @@ case class NotClause(decorated: FilterClause) extends FilterClause {
   override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
     val matching = decorated.filterAll(rows, rowKeys, vpColumns, firstInChain).toSet
     val notMatching = rowKeys.filter(!matching.contains(_))
-    InMemTablePrimaryKeys(ImmutableArray.from(notMatching.toArray))
+    InMemTablePrimaryKeys(ImmutableArray.from(notMatching))
   }
 
   override def validate(vpColumns: ViewPortColumns): Result[true] = decorated.validate(vpColumns)
@@ -71,7 +71,7 @@ case class NotClause(decorated: FilterClause) extends FilterClause {
 case class OrClause(subclauses: List[FilterClause]) extends FilterClause {
   override def filterAll(rows: RowSource, primaryKeys: TablePrimaryKeys,
                          vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = InMemTablePrimaryKeys( ImmutableArray.from(
-    subclauses.flatMap(_.filterAll(rows, primaryKeys, vpColumns, firstInChain)).distinct.toArray
+    subclauses.flatMap(_.filterAll(rows, primaryKeys, vpColumns, firstInChain)).distinct
   ))
 
   override def validate(vpColumns: ViewPortColumns): Result[true] = joinResults(subclauses.map(_.validate(vpColumns)))

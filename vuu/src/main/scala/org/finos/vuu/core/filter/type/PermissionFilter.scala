@@ -68,7 +68,7 @@ private case class RowPermissionFilter(rowPredicate: RowData => Boolean) extends
       primaryKeys
     } else {
       val filtered = primaryKeys.filter(key => rowPredicate.apply(source.pullRow(key)))
-      InMemTablePrimaryKeys(ImmutableArray.from[String](filtered.toArray))
+      InMemTablePrimaryKeys(ImmutableArray.from[String](filtered))
     }
   }
 
