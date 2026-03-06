@@ -66,7 +66,7 @@ class AntlrBasedFilterTest extends AnyFeatureSpec with Matchers {
 
       val table = setupTable()
 
-      val antlrFilter = AntlrBasedFilter(AndClause(List(InClause("ric", List("AAPL.L")), InClause("onMkt", List("false")))))
+      val antlrFilter = AntlrBasedFilter(AndClause(List(InClause("ric", Set("AAPL.L")), InClause("onMkt", Set("false")))))
 
       val results = antlrFilter.doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), false)
 
@@ -78,7 +78,7 @@ class AntlrBasedFilterTest extends AnyFeatureSpec with Matchers {
 
       val table = setupTable()
 
-      val antlrFilter = AntlrBasedFilter(AndClause(List(InClause("ric", List("AAPL.L")), InClause("onMkt", List("false")))))
+      val antlrFilter = AntlrBasedFilter(AndClause(List(InClause("ric", Set("AAPL.L")), InClause("onMkt", Set("false")))))
 
       val results = antlrFilter.doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), true)
 
@@ -90,7 +90,7 @@ class AntlrBasedFilterTest extends AnyFeatureSpec with Matchers {
 
       val table = setupTable2()
 
-      val antlrFilter = AntlrBasedFilter(AndClause(List(InClause("ric", List("AAPL.L")), InClause("onMkt", List("false")))))
+      val antlrFilter = AntlrBasedFilter(AndClause(List(InClause("ric", Set("AAPL.L")), InClause("onMkt", Set("false")))))
 
       val results = antlrFilter.doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), false)
 
@@ -102,7 +102,7 @@ class AntlrBasedFilterTest extends AnyFeatureSpec with Matchers {
 
       val table = setupTable2()
 
-      val antlrFilter = AntlrBasedFilter(AndClause(List(InClause("ric", List("AAPL.L")), InClause("onMkt", List("false")))))
+      val antlrFilter = AntlrBasedFilter(AndClause(List(InClause("ric", Set("AAPL.L")), InClause("onMkt", Set("false")))))
 
       val results = antlrFilter.doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), true)
 

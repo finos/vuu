@@ -107,7 +107,7 @@ private case class ContainsPermissionFilter(columnName: String, allowedValues: S
 
   private def hitIndex[T](primaryKeys: TablePrimaryKeys, indexedField: IndexedField[T], values: Set[T],
                           firstInChain: Boolean): TablePrimaryKeys = {
-    val results = indexedField.find(values.toList)
+    val results = indexedField.find(values)
     if (results.isEmpty) {
       EmptyTablePrimaryKeys
     } else if (firstInChain) {

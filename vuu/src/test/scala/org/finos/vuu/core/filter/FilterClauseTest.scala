@@ -118,7 +118,7 @@ class FilterClauseTest extends AnyFeatureSpec with Matchers {
     Scenario("should return true when row at a given column matches the only value in the list") {
       val row = givenARow(assetClass = "Fixed-income")
 
-      val result = InClause("assetClass", List("Fixed-income")).filter(row)
+      val result = InClause("assetClass", Set("Fixed-income")).filter(row)
 
       result shouldBe true
     }
@@ -126,7 +126,7 @@ class FilterClauseTest extends AnyFeatureSpec with Matchers {
     Scenario("should return true when row at a given column matches one of the values in the list") {
       val row = givenARow(assetClass = "Fixed-income")
 
-      val result = InClause("assetClass", List("Equity", "Options", "Fixed-income", "ETFs")).filter(row)
+      val result = InClause("assetClass", Set("Equity", "Options", "Fixed-income", "ETFs")).filter(row)
 
       result shouldBe true
     }
@@ -134,7 +134,7 @@ class FilterClauseTest extends AnyFeatureSpec with Matchers {
     Scenario("should return false when row at a given column doesn't match any of the values in the list") {
       val row = givenARow(assetClass = "Equity")
 
-      val result = InClause("assetClass", List("Fixed-income", "Equity-2")).filter(row)
+      val result = InClause("assetClass", Set("Fixed-income", "Equity-2")).filter(row)
 
       result shouldBe false
     }
@@ -142,7 +142,7 @@ class FilterClauseTest extends AnyFeatureSpec with Matchers {
     Scenario("should return false when row value at a given column is null") {
       val row = givenARow(assetClass = null)
 
-      val result = InClause("assetClass", List("Fixed-income", "null")).filter(row)
+      val result = InClause("assetClass", Set("Fixed-income", "null")).filter(row)
 
       result shouldBe false
     }
@@ -187,7 +187,7 @@ class FilterClauseTest extends AnyFeatureSpec with Matchers {
   }
 
   Feature("(And|Or)Clause.validate") {
-    val subclauses = List(EqualsClause("col-1", "abc"), InClause("col-3", List.empty))
+    val subclauses = List(EqualsClause("col-1", "abc"), InClause("col-3", Set.empty))
     val andClause = AndClause(subclauses)
     val orClause = OrClause(subclauses)
 

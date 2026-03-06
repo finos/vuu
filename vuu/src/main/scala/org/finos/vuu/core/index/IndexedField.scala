@@ -34,10 +34,10 @@ trait IndexedField[TYPE] {
 
   def find(indexedValue: TYPE): ImmutableArray[String]
 
-  def find(indexedValues: List[TYPE]): ImmutableArray[String] = {
+  def find(indexedValues: Set[TYPE]): ImmutableArray[String] = {
     if (indexedValues.isEmpty) {
       empty
-    } else if (indexedValues.length == 1) {
+    } else if (indexedValues.size == 1) {
       find(indexedValues.head)
     } else {
       ImmutableArray.from(indexedValues.iterator.flatMap(f => find(f)))
@@ -96,7 +96,7 @@ class HashMapIndexedStringField(val column: Column) extends StringIndexedField w
     if (result != null) result.toImmutableArray else empty
   }
 
-  override def find(indexedValues: List[String]): ImmutableArray[String] = super.find(indexedValues)
+  override def find(indexedValues: Set[String]): ImmutableArray[String] = super.find(indexedValues)
 
   override def lessThan(bound: String): ImmutableArray[String] = {
     logger.warn("Less than is not supported for Strings")
@@ -166,7 +166,7 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
     collect(skipList.tailMap(bound, true))    
   }
 
-  override def find(indexedValues: List[TYPE]): ImmutableArray[String] = super.find(indexedValues)
+  override def find(indexedValues: Set[TYPE]): ImmutableArray[String] = super.find(indexedValues)
 
   private def collect(results: ConcurrentNavigableMap[TYPE, ImmutableArraySet[String]]): ImmutableArray[String] = {
     if (results.isEmpty) {

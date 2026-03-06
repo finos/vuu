@@ -52,12 +52,12 @@ class FilterTreeVisitor extends FilterBaseVisitor[FilterClause] {
 }
 
 object FilterTreeVisitor {
-  def operationInValues(ctx: OperationInContext): List[String] = {
+  def operationInValues(ctx: OperationInContext): Set[String] = {
     val setElements = Option(ctx.set().NUMBER()) #:: Option(ctx.set().STRING()) #:: LazyList.empty
     setElements
       .flatten
       .flatMap(_.asScala)
       .map(_.getText)
-      .toList
+      .toSet
   }
 }

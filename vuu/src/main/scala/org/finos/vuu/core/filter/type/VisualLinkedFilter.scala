@@ -34,22 +34,22 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Vi
     } else {
       source.asTable.indexForColumn(childColumn) match {
         case Some(index: StringIndexedField) if childColumn.dataType == DataType.StringDataType =>
-          val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn).asInstanceOf[String]).toList
+          val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn).asInstanceOf[String])
           filterIndexByValues[String](index, parentSelField)
         case Some(index: IntIndexedField) if childColumn.dataType == DataType.IntegerDataType =>
-          val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn).asInstanceOf[Int]).toList
+          val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn).asInstanceOf[Int])
           filterIndexByValues(index, parentSelField)
         case Some(index: LongIndexedField) if childColumn.dataType == DataType.LongDataType =>
-          val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn).asInstanceOf[Long]).toList
+          val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn).asInstanceOf[Long])
           filterIndexByValues(index, parentSelField)
         case Some(index: DoubleIndexedField) if childColumn.dataType == DataType.DoubleDataType =>
-          val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn).asInstanceOf[Double]).toList
+          val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn).asInstanceOf[Double])
           filterIndexByValues(index, parentSelField)
         case Some(index: BooleanIndexedField) if childColumn.dataType == DataType.BooleanDataType =>
-          val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn).asInstanceOf[Boolean]).toList
+          val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn).asInstanceOf[Boolean])
           filterIndexByValues(index, parentSelField)
         case Some(index: EpochTimestampIndexedField) if childColumn.dataType == DataType.EpochTimestampType =>
-          val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn).asInstanceOf[EpochTimestamp]).toList
+          val parentSelField = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn).asInstanceOf[EpochTimestamp])
           filterIndexByValues(index, parentSelField)
         case _ =>
           val parentDataValues: Set[Any] = parentSelectionKeys.map(key => viewPortVisualLink.parentVp.table.pullRow(key).get(parentColumn))
@@ -58,7 +58,7 @@ case class VisualLinkedFilter(viewPortVisualLink: ViewPortVisualLink) extends Vi
     }
   }
 
-  private def filterIndexByValues[TYPE](index: IndexedField[TYPE], parentSelected: List[TYPE]): TablePrimaryKeys = {
+  private def filterIndexByValues[TYPE](index: IndexedField[TYPE], parentSelected: Set[TYPE]): TablePrimaryKeys = {
     InMemTablePrimaryKeys(index.find(parentSelected))
   }
 

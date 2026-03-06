@@ -119,9 +119,34 @@ case class ContainsClause(columnName: String, substring: String) extends RowFilt
   }
 }
 
-case class InClause(columnName: String, values: List[String]) extends RowFilterClause {
+case class InClause(columnName: String, values: Set[String]) extends RowFilterClause {
+
+  private lazy val intValues = values.map(s => s.toInt)
+  private lazy val longValues = values.map(s => s.toLong)
+  private lazy val doubleValues = values.map(s => s.toDouble)
+  private lazy val booleanValues = values.map(s => s.equalsIgnoreCase("true"))
+  private lazy val charValues = values.map(s => s.charAt(0))
+  private lazy val epochTimestampValues = values.map(s => EpochTimestamp(s.toLong))
+  private lazy val scaledDecimal2Values = values.map(s => ScaledDecimal2(s.toLong))
+  private lazy val scaledDecimal4Values = values.map(s => ScaledDecimal4(s.toLong))
+  private lazy val scaledDecimal6Values = values.map(s => ScaledDecimal6(s.toLong))
+  private lazy val scaledDecimal8Values = values.map(s => ScaledDecimal8(s.toLong))
+
   override def applyFilter(data: Any): Boolean = {
-    data != null && values.contains(data.toString)
+    data match {
+      case null => false
+      case s: String => values.contains(s)
+      case i: Int => intValues.contains(i)
+      case l: Long => longValues.contains(l)
+      case d: Double => doubleValues.contains(d)
+      case b: Boolean => booleanValues.contains(b)
+      case e: EpochTimestamp => epochTimestampValues.contains(e)
+      case sd2: ScaledDecimal2 => scaledDecimal2Values.contains(sd2)
+      case sd4: ScaledDecimal4 => scaledDecimal4Values.contains(sd4)
+      case sd6: ScaledDecimal6 => scaledDecimal6Values.contains(sd6)
+      case sd8: ScaledDecimal8 => scaledDecimal8Values.contains(sd8)
+      case c: Char => charValues.contains(c)
+    }
   }
 
   override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys,
@@ -129,21 +154,21 @@ case class InClause(columnName: String, values: List[String]) extends RowFilterC
     val column = rows.asTable.columnForName(columnName)
     rows.asTable.indexForColumn(column) match {
       case Some(ix: StringIndexedField)          => hitIndex(rowKeys, values, ix, firstInChain)
-      case Some(ix: DoubleIndexedField)          => hitIndex(rowKeys, values.map(s => s.toDouble), ix, firstInChain)
-      case Some(ix: IntIndexedField)             => hitIndex(rowKeys, values.map(s => s.toInt), ix, firstInChain)
-      case Some(ix: LongIndexedField)            => hitIndex(rowKeys, values.map(s => s.toLong), ix, firstInChain)
-      case Some(ix: BooleanIndexedField)         => hitIndex(rowKeys, values.map(s => s.toBoolean), ix, firstInChain)
-      case Some(ix: EpochTimestampIndexedField)  => hitIndex(rowKeys, values.map(s => EpochTimestamp(s.toLong)), ix, firstInChain)
-      case Some(ix: CharIndexedField)            => hitIndex(rowKeys, values.map(s => s.charAt(0)), ix, firstInChain)
-      case Some(ix: ScaledDecimal2IndexedField)  => hitIndex(rowKeys, values.map(s => ScaledDecimal2(s.toLong)), ix, firstInChain)
-      case Some(ix: ScaledDecimal4IndexedField)  => hitIndex(rowKeys, values.map(s => ScaledDecimal4(s.toLong)), ix, firstInChain)
-      case Some(ix: ScaledDecimal6IndexedField)  => hitIndex(rowKeys, values.map(s => ScaledDecimal6(s.toLong)), ix, firstInChain)
-      case Some(ix: ScaledDecimal8IndexedField)  => hitIndex(rowKeys, values.map(s => ScaledDecimal8(s.toLong)), ix, firstInChain)
+      case Some(ix: DoubleIndexedField)          => hitIndex(rowKeys, doubleValues, ix, firstInChain)
+      case Some(ix: IntIndexedField)             => hitIndex(rowKeys, intValues, ix, firstInChain)
+      case Some(ix: LongIndexedField)            => hitIndex(rowKeys, longValues, ix, firstInChain)
+      case Some(ix: BooleanIndexedField)         => hitIndex(rowKeys, booleanValues, ix, firstInChain)
+      case Some(ix: EpochTimestampIndexedField)  => hitIndex(rowKeys, epochTimestampValues, ix, firstInChain)
+      case Some(ix: CharIndexedField)            => hitIndex(rowKeys, charValues, ix, firstInChain)
+      case Some(ix: ScaledDecimal2IndexedField)  => hitIndex(rowKeys, scaledDecimal2Values, ix, firstInChain)
+      case Some(ix: ScaledDecimal4IndexedField)  => hitIndex(rowKeys, scaledDecimal4Values, ix, firstInChain)
+      case Some(ix: ScaledDecimal6IndexedField)  => hitIndex(rowKeys, scaledDecimal6Values, ix, firstInChain)
+      case Some(ix: ScaledDecimal8IndexedField)  => hitIndex(rowKeys, scaledDecimal8Values, ix, firstInChain)
       case _                                     => super.filterAll(rows, rowKeys, viewPortColumns, firstInChain)
     }
   }
 
-  private def hitIndex[T](rowKeys: TablePrimaryKeys, values: List[T],
+  private def hitIndex[T](rowKeys: TablePrimaryKeys, values: Set[T],
                           index: IndexedField[T], firstInChain: Boolean): TablePrimaryKeys = {
     hitIndex(rowKeys, values, f => index.find(f), firstInChain)
   }
@@ -157,13 +182,18 @@ case class EqualsClause(columnName: String, value: String) extends RowFilterClau
   private lazy val doubleValue = value.toDouble
   private lazy val booleanValue = value.equalsIgnoreCase("true")
   private lazy val charValue = value.charAt(0)
+  private lazy val epochTimestampValue = EpochTimestamp(value.toLong)
+  private lazy val scaledDecimal2Value = ScaledDecimal2(value.toLong)
+  private lazy val scaledDecimal4Value = ScaledDecimal4(value.toLong)
+  private lazy val scaledDecimal6Value = ScaledDecimal6(value.toLong)
+  private lazy val scaledDecimal8Value = ScaledDecimal8(value.toLong)
 
   override def applyFilter(data: Any): Boolean = {
     data match {
       case null => false
       case s: String => s == value
       case i: Int => i == intValue
-      case i: Long => i == longValue
+      case l: Long => l == longValue
       case d: Double => d == doubleValue
       case b: Boolean => b == booleanValue
       case e: EpochTimestamp => e.millis == longValue
@@ -181,12 +211,12 @@ case class EqualsClause(columnName: String, value: String) extends RowFilterClau
       case Some(ix: IntIndexedField)             => hitIndex(rowKeys, intValue, ix, firstInChain)
       case Some(ix: LongIndexedField)            => hitIndex(rowKeys, longValue, ix, firstInChain)
       case Some(ix: BooleanIndexedField)         => hitIndex(rowKeys, booleanValue, ix, firstInChain)
-      case Some(ix: EpochTimestampIndexedField)  => hitIndex(rowKeys, EpochTimestamp(longValue), ix, firstInChain)
+      case Some(ix: EpochTimestampIndexedField)  => hitIndex(rowKeys, epochTimestampValue, ix, firstInChain)
       case Some(ix: CharIndexedField)            => hitIndex(rowKeys, charValue, ix, firstInChain)
-      case Some(ix: ScaledDecimal2IndexedField)  => hitIndex(rowKeys, ScaledDecimal2(longValue), ix, firstInChain)
-      case Some(ix: ScaledDecimal4IndexedField)  => hitIndex(rowKeys, ScaledDecimal4(longValue), ix, firstInChain)
-      case Some(ix: ScaledDecimal6IndexedField)  => hitIndex(rowKeys, ScaledDecimal6(longValue), ix, firstInChain)
-      case Some(ix: ScaledDecimal8IndexedField)  => hitIndex(rowKeys, ScaledDecimal8(longValue), ix, firstInChain)
+      case Some(ix: ScaledDecimal2IndexedField)  => hitIndex(rowKeys, scaledDecimal2Value, ix, firstInChain)
+      case Some(ix: ScaledDecimal4IndexedField)  => hitIndex(rowKeys, scaledDecimal4Value, ix, firstInChain)
+      case Some(ix: ScaledDecimal6IndexedField)  => hitIndex(rowKeys, scaledDecimal6Value, ix, firstInChain)
+      case Some(ix: ScaledDecimal8IndexedField)  => hitIndex(rowKeys, scaledDecimal8Value, ix, firstInChain)
       case _                                     => super.filterAll(rows, rowKeys, viewPortColumns, firstInChain)
     }
   }
@@ -235,11 +265,11 @@ private abstract class NumericComparisonClause(val columnName: String, val value
   private lazy val intValue: Int = value.toInt
   private lazy val longValue: Long = value.toLong
   private lazy val doubleValue: Double = value.toDouble
-  private lazy val epochTimestampValue = EpochTimestamp(longValue)
-  private lazy val scaledDecimal2Value = ScaledDecimal2(longValue)
-  private lazy val scaledDecimal4Value = ScaledDecimal4(longValue)
-  private lazy val scaledDecimal6Value = ScaledDecimal6(longValue)
-  private lazy val scaledDecimal8Value = ScaledDecimal8(longValue)
+  private lazy val epochTimestampValue = EpochTimestamp(value.toLong)
+  private lazy val scaledDecimal2Value = ScaledDecimal2(value.toLong)
+  private lazy val scaledDecimal4Value = ScaledDecimal4(value.toLong)
+  private lazy val scaledDecimal6Value = ScaledDecimal6(value.toLong)
+  private lazy val scaledDecimal8Value = ScaledDecimal8(value.toLong)
 
   protected def compareDouble(filterVal: Double, datum: Double): Boolean
   protected def compareLong(filterVal: Long, datum: Long): Boolean
