@@ -37,24 +37,25 @@ object ScaledDecimal {
 
 case class ScaledDecimal2(scaledValue: Long) extends ScaledDecimal with Ordered[ScaledDecimal2] {
   override def compare(that: ScaledDecimal2): Int = {
-    if (this.scaledValue == that.scaledValue) 0 else if (this.scaledValue > that.scaledValue) 1 else -1
+    java.lang.Long.compare(scaledValue, that.scaledValue)
   }
 }
 
 case class ScaledDecimal4(scaledValue: Long) extends ScaledDecimal with Ordered[ScaledDecimal4] {
   override def compare(that: ScaledDecimal4): Int = {
-    if (this.scaledValue == that.scaledValue) 0 else if (this.scaledValue > that.scaledValue) 1 else -1
+    java.lang.Long.compare(scaledValue, that.scaledValue)
   }
 }
 
 case class ScaledDecimal6(scaledValue: Long) extends ScaledDecimal with Ordered[ScaledDecimal6] {
   override def compare(that: ScaledDecimal6): Int = {
-    if (this.scaledValue == that.scaledValue) 0 else if (this.scaledValue > that.scaledValue) 1 else -1
+    java.lang.Long.compare(scaledValue, that.scaledValue)
   }
 }
 
 case class ScaledDecimal8(scaledValue: Long) extends ScaledDecimal with Ordered[ScaledDecimal8] {
   override def compare(that: ScaledDecimal8): Int = {
-    if (this.scaledValue == that.scaledValue) 0 else if (this.scaledValue > that.scaledValue) 1 else -1
+    java.lang.Long.compare(scaledValue, that.scaledValue)
   }
 }
+
