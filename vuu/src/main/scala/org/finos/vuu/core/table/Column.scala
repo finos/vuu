@@ -3,7 +3,7 @@ package org.finos.vuu.core.table
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.table.column.CalculatedColumnClause
-import org.finos.vuu.core.table.datatype.EpochTimestamp
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.util.schema.ExternalEntitySchema
 import org.finos.vuu.util.types.{DefaultTypeConverters, TypeConverterContainerBuilder}
 
@@ -19,6 +19,10 @@ object DataType {
   final val LongDataType: Class[Long] = classOf[Long]
   final val DoubleDataType: Class[Double] = classOf[Double]
   final val EpochTimestampType: Class[EpochTimestamp] = classOf[EpochTimestamp]
+  final val ScaledDecimal2Type: Class[ScaledDecimal2] = classOf[ScaledDecimal2]
+  final val ScaledDecimal4Type: Class[ScaledDecimal4] = classOf[ScaledDecimal4]
+  final val ScaledDecimal6Type: Class[ScaledDecimal6] = classOf[ScaledDecimal6]
+  final val ScaledDecimal8Type: Class[ScaledDecimal8] = classOf[ScaledDecimal8]
   final val NoDataType: Class[AnyRef] = classOf[AnyRef]
 
   def fromString(s: String): Class[_] = {
@@ -30,6 +34,10 @@ object DataType {
       case "int" => IntegerDataType
       case "long" => LongDataType
       case "epochtimestamp" => EpochTimestampType
+      case "scaleddecimal2" => ScaledDecimal2Type
+      case "scaleddecimal4" => ScaledDecimal4Type
+      case "scaleddecimal6" => ScaledDecimal6Type
+      case "scaleddecimal8" => ScaledDecimal8Type
     }
   }
 
@@ -37,6 +45,10 @@ object DataType {
     c.getTypeName match {
       case "java.lang.String" => "string"
       case "org.finos.vuu.core.table.datatype.EpochTimestamp" => "epochtimestamp"
+      case "org.finos.vuu.core.table.datatype.ScaledDecimal2" => "scaleddecimal2"
+      case "org.finos.vuu.core.table.datatype.ScaledDecimal4" => "scaleddecimal4"
+      case "org.finos.vuu.core.table.datatype.ScaledDecimal6" => "scaleddecimal6"
+      case "org.finos.vuu.core.table.datatype.ScaledDecimal8" => "scaleddecimal8"
       case x => x.toLowerCase
     }
   }
@@ -53,6 +65,10 @@ object DataType {
     .withConverter(DefaultTypeConverters.stringToLongConverter)
     .withConverter(DefaultTypeConverters.stringToDoubleConverter)
     .withConverter(DefaultTypeConverters.stringToEpochTimestampConverter)
+    .withConverter(DefaultTypeConverters.stringToScaledDecimal2Converter)
+    .withConverter(DefaultTypeConverters.stringToScaledDecimal4Converter)
+    .withConverter(DefaultTypeConverters.stringToScaledDecimal6Converter)
+    .withConverter(DefaultTypeConverters.stringToScaledDecimal8Converter)
     .build()
 }
 

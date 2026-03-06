@@ -1,6 +1,6 @@
 package org.finos.vuu.util.types
 
-import org.finos.vuu.core.table.datatype.EpochTimestamp
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.util.types.DefaultTypeConverters.*
 import org.finos.vuu.util.types.TypeConverter
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -19,6 +19,10 @@ class DefaultTypeConvertersTest extends AnyFeatureSpec with Matchers {
       ("String to Boolean", stringToBooleanConverter, "false", false),
       ("String to Char", stringToCharConverter, "A", 'A'),
       ("String to EpochTimestamp", stringToEpochTimestampConverter, "20000", EpochTimestamp(20_000)),
+      ("String to ScaledDecimal2", stringToScaledDecimal2Converter, "30000", ScaledDecimal2(30_000)),
+      ("String to ScaledDecimal4", stringToScaledDecimal4Converter, "40000", ScaledDecimal4(40_000)),
+      ("String to ScaledDecimal6", stringToScaledDecimal6Converter, "50000", ScaledDecimal6(50_000)),
+      ("String to ScaledDecimal8", stringToScaledDecimal8Converter, "60000", ScaledDecimal8(60_000)),
       ("Int to String", intToStringConverter, 10, "10"),
       ("Int to Long", intToLongConverter, 10, 10L),
       ("Int to Double", intToDoubleConverter, 10, 10.0),
@@ -31,6 +35,7 @@ class DefaultTypeConvertersTest extends AnyFeatureSpec with Matchers {
       ("Boolean to String", booleanToStringConverter, true, "true"),
       ("Char to String", charToStringConverter, 'Z', "Z"),
       ("EpochTimestamp to String", epochTimestampToStringConverter, EpochTimestamp(20_000), "20000"),
+      ("ScaledDecimal to String", scaledDecimalToStringConverter, ScaledDecimal2(30_000L), "30000"),
     ))((title, converter, input, expectedOutput) => {
       Scenario(title) {
         val result = converter.asInstanceOf[TypeConverter[Any, Any]].convert(input)
@@ -49,6 +54,11 @@ class DefaultTypeConvertersTest extends AnyFeatureSpec with Matchers {
       ("String to Int", stringToIntConverter),
       ("String to Boolean", stringToBooleanConverter),
       ("String to Char", stringToCharConverter),
+      ("String to EpochTimestamp", stringToEpochTimestampConverter),
+      ("String to ScaledDecimal2", stringToScaledDecimal2Converter),
+      ("String to ScaledDecimal4", stringToScaledDecimal4Converter),
+      ("String to ScaledDecimal6", stringToScaledDecimal6Converter),
+      ("String to ScaledDecimal8", stringToScaledDecimal8Converter),
       ("Int to String", intToStringConverter),
       ("Int to Long", intToLongConverter),
       ("Int to Double", intToDoubleConverter),
@@ -60,6 +70,8 @@ class DefaultTypeConvertersTest extends AnyFeatureSpec with Matchers {
       ("Double to Long", doubleToLongConverter),
       ("Boolean to String", booleanToStringConverter),
       ("Char to String", charToStringConverter),
+      ("EpochTimestamp to String", epochTimestampToStringConverter),
+      ("ScaledDecimal to String", scaledDecimalToStringConverter),
     ))((title, converter) => {
       Scenario(title) {
         converter.convert(null) shouldEqual null

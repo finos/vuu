@@ -260,7 +260,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       viewport.changeStructure(
         viewport.getStructure.copy(filtAndSort =
           UserDefinedFilterAndSort(
-            AntlrBasedFilter(LessThanClause("quantity", 800)),
+            AntlrBasedFilter(LessThanClause("quantity", "800")),
             Sort(SortSpec(List(SortDef(orderIdColumn.name, SortDirection.Ascending.external))), List(orderIdColumn))
           )
         )
@@ -286,7 +286,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       viewport.changeStructure(
         viewport.getStructure.copy(filtAndSort =
           UserDefinedFilterAndSort(
-            AntlrBasedFilter(LessThanClause("quantity", 800)),
+            AntlrBasedFilter(LessThanClause("quantity", "800")),
             Sort(SortSpec(List(SortDef(orderIdColumn.name, SortDirection.Descending.external))), List(orderIdColumn))
           )
         )
@@ -425,7 +425,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       viewport.changeStructure(
         viewport.getStructure.copy(filtAndSort =
           UserDefinedFilterAndSort(
-            AntlrBasedFilter(LessThanClause("quantity", 800)),
+            AntlrBasedFilter(LessThanClause("quantity", "800")),
             Sort(SortSpec(List(SortDef(orderIdTraderColumn.name, SortDirection.Descending.external))), List(orderIdTraderColumn))
           )
         )
@@ -452,7 +452,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
       viewport.changeStructure(
         viewport.getStructure.copy(filtAndSort =
           UserDefinedFilterAndSort(
-            AntlrBasedFilter(LessThanClause("quantity", 800)),
+            AntlrBasedFilter(LessThanClause("quantity", "800")),
             Sort(SortSpec(List(SortDef(orderIdTraderColumn.name, SortDirection.Ascending.external))), List(orderIdTraderColumn))
           )
         )

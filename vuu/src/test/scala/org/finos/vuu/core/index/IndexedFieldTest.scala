@@ -69,15 +69,15 @@ class IndexedFieldTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
       results3.length shouldEqual 0
 
-      val results4 = index.find(List(key1, key2, "lolcats"))
+      val results4 = index.find(Set(key1, key2, "lolcats"))
 
       results4.toList shouldEqual List("AaBB0", "AaBB1", "AaBB2", "AaBB3", "AaBB4", "BBAa0", "BBAa1", "BBAa2", "BBAa3", "BBAa4", "BBAa5")
 
-      val results5 = index.find(List())
+      val results5 = index.find(Set())
 
       results5.isEmpty shouldBe true
 
-      val results6 = index.find(List(key2))
+      val results6 = index.find(Set(key2))
 
       results6.toList shouldEqual List("BBAa0", "BBAa1", "BBAa2", "BBAa3", "BBAa4", "BBAa5")
 
@@ -138,7 +138,7 @@ class IndexedFieldTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
       values3.toList shouldEqual List()
 
-      val values4 = index.find(List(EpochTimestamp(2), EpochTimestamp(3)))
+      val values4 = index.find(Set(EpochTimestamp(2), EpochTimestamp(3)))
 
       values4.toList shouldEqual List("20", "21", "22", "23", "24", "25", "30", "31", "32", "33", "34", "35")
     }

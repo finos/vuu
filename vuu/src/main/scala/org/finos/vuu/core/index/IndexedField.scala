@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.collection.set.ImmutableArraySet
 import org.finos.vuu.core.table.Column
-import org.finos.vuu.core.table.datatype.EpochTimestamp
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 
 import java.util.concurrent.{ConcurrentHashMap, ConcurrentNavigableMap, ConcurrentSkipListMap}
 import scala.collection.mutable
@@ -26,14 +26,18 @@ trait IndexedField[TYPE] {
 
   def lessThan(bound: TYPE): ImmutableArray[String]
 
+  def lessThanOrEqual(bound: TYPE): ImmutableArray[String]
+
   def greaterThan(bound: TYPE): ImmutableArray[String]
+
+  def greaterThanOrEqual(bound: TYPE): ImmutableArray[String]
 
   def find(indexedValue: TYPE): ImmutableArray[String]
 
-  def find(indexedValues: List[TYPE]): ImmutableArray[String] = {
+  def find(indexedValues: Set[TYPE]): ImmutableArray[String] = {
     if (indexedValues.isEmpty) {
       empty
-    } else if (indexedValues.length == 1) {
+    } else if (indexedValues.size == 1) {
       find(indexedValues.head)
     } else {
       ImmutableArray.from(indexedValues.iterator.flatMap(f => find(f)))
@@ -55,6 +59,14 @@ trait StringIndexedField extends IndexedField[String]
 trait EpochTimestampIndexedField extends IndexedField[EpochTimestamp]
 
 trait CharIndexedField extends IndexedField[Char]
+
+trait ScaledDecimal2IndexedField extends IndexedField[ScaledDecimal2]
+
+trait ScaledDecimal4IndexedField extends IndexedField[ScaledDecimal4]
+
+trait ScaledDecimal6IndexedField extends IndexedField[ScaledDecimal6]
+
+trait ScaledDecimal8IndexedField extends IndexedField[ScaledDecimal8]
 
 class HashMapIndexedStringField(val column: Column) extends StringIndexedField with StrictLogging {
 
@@ -84,7 +96,7 @@ class HashMapIndexedStringField(val column: Column) extends StringIndexedField w
     if (result != null) result.toImmutableArray else empty
   }
 
-  override def find(indexedValues: List[String]): ImmutableArray[String] = super.find(indexedValues)
+  override def find(indexedValues: Set[String]): ImmutableArray[String] = super.find(indexedValues)
 
   override def lessThan(bound: String): ImmutableArray[String] = {
     logger.warn("Less than is not supported for Strings")
@@ -96,6 +108,15 @@ class HashMapIndexedStringField(val column: Column) extends StringIndexedField w
     empty
   }
 
+  override def lessThanOrEqual(bound: String): ImmutableArray[String] = {
+    logger.warn("Less than or equal is not supported for Strings")
+    empty
+  }
+
+  override def greaterThanOrEqual(bound: String): ImmutableArray[String] = {
+    logger.warn("Greater than or equal is not supported for Strings")
+    empty
+  }
 }
 
 class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] with StrictLogging {
@@ -145,7 +166,7 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
     collect(skipList.tailMap(bound, true))    
   }
 
-  override def find(indexedValues: List[TYPE]): ImmutableArray[String] = super.find(indexedValues)
+  override def find(indexedValues: Set[TYPE]): ImmutableArray[String] = super.find(indexedValues)
 
   private def collect(results: ConcurrentNavigableMap[TYPE, ImmutableArraySet[String]]): ImmutableArray[String] = {
     if (results.isEmpty) {
@@ -176,3 +197,11 @@ class SkipListIndexedBooleanField(column: Column) extends SkipListIndexedField[B
 class SkipListIndexedEpochTimestampField(column: Column) extends SkipListIndexedField[EpochTimestamp](column) with EpochTimestampIndexedField {}
 
 class SkipListIndexedCharField(column: Column) extends SkipListIndexedField[Char](column) with CharIndexedField {}
+
+class SkipListIndexedScaledDecimal2Field(column: Column) extends SkipListIndexedField[ScaledDecimal2](column) with ScaledDecimal2IndexedField {}
+
+class SkipListIndexedScaledDecimal4Field(column: Column) extends SkipListIndexedField[ScaledDecimal4](column) with ScaledDecimal4IndexedField {}
+
+class SkipListIndexedScaledDecimal6Field(column: Column) extends SkipListIndexedField[ScaledDecimal6](column) with ScaledDecimal6IndexedField {}
+
+class SkipListIndexedScaledDecimal8Field(column: Column) extends SkipListIndexedField[ScaledDecimal8](column) with ScaledDecimal8IndexedField {}
