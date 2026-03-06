@@ -118,7 +118,7 @@ class AntlrBasedFilterTest extends AnyFeatureSpec with Matchers {
 
       val table = setupTable()
 
-      val antlrFilter = AntlrBasedFilter(AndClause(List(GreaterThanClause("tradeTime", 3d), LessThanClause("tradeTime", 6d))))
+      val antlrFilter = AntlrBasedFilter(AndClause(List(GreaterThanClause("tradeTime", "3"), LessThanClause("tradeTime", "6"))))
 
       val results = antlrFilter.doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), false)
 
@@ -130,7 +130,7 @@ class AntlrBasedFilterTest extends AnyFeatureSpec with Matchers {
 
       val table = setupTable()
 
-      val antlrFilter = AntlrBasedFilter(AndClause(List(GreaterThanClause("tradeTime", 3d), LessThanClause("tradeTime", 6d))))
+      val antlrFilter = AntlrBasedFilter(AndClause(List(GreaterThanClause("tradeTime", "3"), LessThanClause("tradeTime", "6"))))
 
       val results = antlrFilter.doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), true)
 
@@ -142,7 +142,7 @@ class AntlrBasedFilterTest extends AnyFeatureSpec with Matchers {
 
       val table = setupTable2()
 
-      val antlrFilter = AntlrBasedFilter(AndClause(List(GreaterThanClause("tradeTime", 3d), LessThanClause("tradeTime", 6d))))
+      val antlrFilter = AntlrBasedFilter(AndClause(List(GreaterThanClause("tradeTime", "3"), LessThanClause("tradeTime", "6"))))
 
       val results = antlrFilter.doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), false)
 
@@ -154,7 +154,7 @@ class AntlrBasedFilterTest extends AnyFeatureSpec with Matchers {
 
       val table = setupTable2()
 
-      val antlrFilter = AntlrBasedFilter(AndClause(List(GreaterThanClause("tradeTime", 3d), LessThanClause("tradeTime", 6d))))
+      val antlrFilter = AntlrBasedFilter(AndClause(List(GreaterThanClause("tradeTime", "3"), LessThanClause("tradeTime", "6"))))
 
       val results = antlrFilter.doFilter(table, table.primaryKeys, ViewPortColumns(table.columns().toList), true)
 

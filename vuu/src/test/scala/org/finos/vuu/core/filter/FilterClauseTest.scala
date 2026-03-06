@@ -1,6 +1,6 @@
 package org.finos.vuu.core.filter
 
-import org.finos.vuu.core.table.datatype.EpochTimestamp
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.core.table.{RowWithData, SimpleColumn}
 import org.finos.vuu.viewport.ViewPortColumns
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -17,12 +17,15 @@ class FilterClauseTest extends AnyFeatureSpec with Matchers {
       "ric" -> "TEST.L",
       "size" -> 4,
       "timestamp" -> 5L,
-      "priceInFloat" -> 100f,
       "priceInDouble" -> 100.0d,
       "true-col" -> true,
       "false-col" -> false,
       "empty-string-col" -> "",
       "epoch-column" -> EpochTimestamp(1L),
+      "scaled2-column" -> ScaledDecimal2(2L),
+      "scaled4-column" -> ScaledDecimal4(4L),
+      "scaled6-column" -> ScaledDecimal6(6L),
+      "scaled8-column" -> ScaledDecimal8(8L),
     )
     val testRow = RowWithData("Key", rowData)
 
@@ -36,14 +39,20 @@ class FilterClauseTest extends AnyFeatureSpec with Matchers {
         ("Int", "size", "7", false),
         ("Long", "timestamp", "5", true),
         ("Long", "timestamp", "0", false),
-        ("Float", "priceInFloat", "100.0", true),
-        ("Float", "priceInFloat", "100.1", false),
         ("Double", "priceInDouble", "100.0", true),
         ("Double", "priceInDouble", "100.1", false),
         ("Boolean", "true-col", "true", true),
         ("Boolean", "true-col", "false", false),
         ("EpochTimestamp", "epoch-column", "1", true),
-        ("EpochTimestamp", "epoch-column", "2", false)
+        ("EpochTimestamp", "epoch-column", "2", false),
+        ("ScaledDecimal2", "scaled2-column", "2", true),
+        ("ScaledDecimal2", "scaled2-column", "3", false),
+        ("ScaledDecimal4", "scaled4-column", "4", true),
+        ("ScaledDecimal4", "scaled4-column", "5", false),
+        ("ScaledDecimal6", "scaled6-column", "6", true),
+        ("ScaledDecimal6", "scaled6-column", "7", false),
+        ("ScaledDecimal8", "scaled8-column", "8", true),
+        ("ScaledDecimal8", "scaled8-column", "9", false),
       ))((columnType, columnName, value, expected) => {
         EqualsClause(columnName, value).filter(testRow) should equal(expected)
       })
