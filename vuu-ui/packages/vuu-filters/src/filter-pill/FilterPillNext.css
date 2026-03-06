@@ -1,7 +1,7 @@
 .vuuFilterPillNext {
-    --saltButton-background: black;
+    --saltButton-background: var(--vuuFilterPillNext-background, black);
 }
 
 .vuuFilterPillNext-active {
-    --saltButton-background: red;
+    --saltButton-background: var(--vuuFilterPillNext-background-active, var(--salt-actionable-accented-bold-background-active));
 }

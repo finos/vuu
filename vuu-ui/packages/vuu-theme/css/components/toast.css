@@ -1,7 +1,7 @@
 .salt-theme.vuu-theme {
 
     .vuuToastNotification {
-        z-index: var(--salt-zIndex-notification);
+        /* z-index: var(--salt-zIndex-notification); */
     }
 
     .saltToast {
@@ -29,7 +29,8 @@
             color: white;
         }
         &.saltToast-info {
-            --saltToast-background: var(--salt-status-info-background);
+            --saltToast-background: var(--salt-status-info-borderColor);
+            --toast-iconColor: white;
             color: white;
         }
     }

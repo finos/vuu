@@ -176,7 +176,6 @@ export const useFilterTableFeature = ({
     onFilterRenamed,
     onFilterStateChanged,
     vuuTable: tableSchema.table,
-    variant: "full-filters",
   };
 
   const tableProps = {
@@ -187,6 +186,7 @@ export const useFilterTableFeature = ({
     onAvailableColumnsChange: handleAvailableColumnsChange,
     onConfigChange: handleTableConfigChange,
     renderBufferSize: 20,
+    rowSelectionBorder: true,
   };
 
   // It is important that these values are not assigned in advance. They

@@ -212,7 +212,12 @@ export const dispatchKeyboardEvent = (
   el.dispatchEvent(evt);
 };
 
-export type VuuDomEventType = "vuu-commit" | "vuu-dropped";
+export type VuuDomEventType =
+  | "vuu-commit"
+  | "vuu-dropped"
+  | "vuu-begin-edit"
+  | "vuu-enter-edit-mode"
+  | "vuu-exit-edit-mode";
 
 export const dispatchCustomEvent = (el: HTMLElement, type: VuuDomEventType) => {
   const evt = new Event(type, {

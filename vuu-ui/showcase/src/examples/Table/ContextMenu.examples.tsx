@@ -48,3 +48,13 @@ export const LocalContextMenu = () => {
     />
   );
 };
+
+export const LocalContextMenuCheckboxes = () => {
+  return (
+    <SimulTable
+      selectionModel="checkbox"
+      tableName="instruments"
+      tableContextMenuHook={useLocalContextMenu}
+    />
+  );
+};

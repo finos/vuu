@@ -1,25 +1,5 @@
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { ColumnDescriptor, PinLocation } from "@vuu-ui/vuu-table-types";
-
-export interface ColumnPinAction {
-  type: "pinColumn";
-  column: ColumnDescriptor;
-  pin: PinLocation | false;
-}
-
-export interface ColumnHideAction {
-  type: "hideColumn";
-  column: ColumnDescriptor;
-}
-export interface ColumnRemoveAction {
-  type: "removeColumn";
-  column: ColumnDescriptor;
-}
-
-export type ColumnDisplayAction =
-  | ColumnPinAction
-  | ColumnHideAction
-  | ColumnRemoveAction;
+import { ColumnDescriptor, ColumnDisplayAction } from "@vuu-ui/vuu-table-types";
 
 export type ColumnDisplayActionHandler = (action: ColumnDisplayAction) => void;
 

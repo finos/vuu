@@ -71,6 +71,7 @@ export const FilterNamePrompt = ({
       {...htmlAttributes}
       className={cx("vuuFilterNamePrompt", className)}
       confirmButtonProps={confirmButtonProps}
+      disableAccent
       onClose={onClose}
       onConfirm={onConfirm}
       open={open}

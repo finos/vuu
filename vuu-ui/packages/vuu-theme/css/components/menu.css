@@ -19,6 +19,14 @@
                 transform: rotate(315deg);
                 top: var(--salt-spacing-200);
                 width: var(--vuu-icon-width, var(--vuu-icon-size, 12px));
+
+                &:hover {
+                    background: var(--vuu-color-gray-15);
+                }
+                &.saltOption-focusVisible {
+                    background: var(--vuu-color-gray-15);
+                }
+
             }
         }
     }

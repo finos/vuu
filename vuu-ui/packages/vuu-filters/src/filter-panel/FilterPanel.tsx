@@ -77,11 +77,21 @@ export const FilterPanel = forwardRef(function FilterDisplay(
         {children}
       </FilterContainer>
       <div className={`${classBase}-toolbar`}>
-        <Button disabled={disableClear} onClick={clearFilter}>
+        <Button
+          appearance="transparent"
+          disabled={disableClear}
+          onClick={clearFilter}
+          sentiment="neutral"
+        >
           Clear
         </Button>
         {permissions?.allowSaveFilter !== false ? (
-          <Button disabled={disableSave} onClick={saveFilter}>
+          <Button
+            appearance="transparent"
+            disabled={disableSave}
+            onClick={saveFilter}
+            sentiment="neutral"
+          >
             Save
           </Button>
         ) : null}

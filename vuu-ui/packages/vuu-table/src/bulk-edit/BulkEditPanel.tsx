@@ -17,7 +17,7 @@ export interface BulkEditPanelProps extends HTMLAttributes<HTMLDivElement> {
   /**
    * The session dataSource. This is where the edits will be processed until final
    * confirmation, at which point edits will be applied to parent dataSource and
-   * the session table torm down.
+   * the session table torn down.
    */
   sessionDs: DataSource;
   response?: RpcResponse;
@@ -27,6 +27,7 @@ export interface BulkEditPanelProps extends HTMLAttributes<HTMLDivElement> {
    */
   parentDs: DataSource;
   onValidationStatusChange: (isValid: boolean) => void;
+  width?: number;
 }
 
 export const BulkEditPanel = ({
@@ -36,6 +37,7 @@ export const BulkEditPanel = ({
   parentDs,
   onValidationStatusChange,
   style,
+  width = 600,
   ...htmlAttributes
 }: BulkEditPanelProps): ReactElement => {
   const targetWindow = useWindow();
@@ -76,7 +78,7 @@ export const BulkEditPanel = ({
           customHeader={bulkEditRow}
           dataSource={sessionDs}
           height={380}
-          width={600}
+          width={width}
           showColumnHeaderMenus={false}
           selectionModel="none"
           onDataEdited={onDataEdited}
