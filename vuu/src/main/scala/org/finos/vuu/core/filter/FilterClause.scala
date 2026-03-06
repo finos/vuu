@@ -100,22 +100,29 @@ case class AndClause(subclauses: List[FilterClause]) extends FilterClause {
 }
 
 case class StartsClause(columnName: String, prefix: String) extends RowFilterClause {
-  override def applyFilter(datum: Any): Boolean = {
-    if (datum == null) return false
-    datum.toString.startsWith(prefix)
+  override def applyFilter(data: Any): Boolean = {
+    data match {
+      case s: String => s.startsWith(prefix)
+      case _ => false
+    }
   }
 }
 
 case class EndsClause(columnName: String, suffix: String) extends RowFilterClause {
-  override def applyFilter(datum: Any): Boolean = {
-    if (datum == null) return false
-    datum.toString.endsWith(suffix)
+  override def applyFilter(data: Any): Boolean = {
+    data match {
+      case s: String => s.endsWith(suffix)
+      case _ => false
+    }
   }
 }
 
 case class ContainsClause(columnName: String, substring: String) extends RowFilterClause {
   override def applyFilter(data: Any): Boolean = {
-    data != null && data.toString.contains(substring)
+    data match {
+      case s: String => s.contains(substring)
+      case _ => false
+    }
   }
 }
 
