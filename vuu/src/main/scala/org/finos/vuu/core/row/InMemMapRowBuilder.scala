@@ -1,6 +1,6 @@
 package org.finos.vuu.core.row
 
-import org.finos.vuu.core.table.datatype.EpochTimestamp
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.core.table.{Column, RowData, RowWithData}
 
 import scala.collection.mutable
@@ -44,7 +44,12 @@ class InMemMapRowBuilder extends RowBuilder {
     mutableMap.put(column.name, v)
     this
   }
-  
+
+  override def setScaledDecimal(column: Column, v: ScaledDecimal): RowBuilder = {
+    mutableMap.put(column.name, v)
+    this
+  }
+
   override def setKey(key: String): RowBuilder = {
     this.key = key
     this
@@ -60,4 +65,5 @@ class InMemMapRowBuilder extends RowBuilder {
     key = null
     rowData
   }
+
 }
