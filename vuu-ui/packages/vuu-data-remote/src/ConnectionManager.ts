@@ -108,6 +108,16 @@ class ConnectionManager extends EventEmitter<ConnectionEvents> {
     }
   }
 
+  disableActiveSubscriptions() {
+    console.log(`[ConnectionManager] disableActiveSubscriptions`);
+    this.#worker.send({ type: "disable-all-active" });
+  }
+
+  enableActiveSubscriptions() {
+    console.log(`[ConnectionManager] enableActiveSubscriptions`);
+    this.#worker.send({ type: "enable-all-active" });
+  }
+
   private handleMessageFromWorker = (
     message: VuuUIMessageIn | DataSourceCallbackMessage | ConnectionStatus,
   ) => {

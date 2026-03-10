@@ -130,7 +130,11 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     const { viewport = this.viewport || (this.viewport = uuid()) } =
       subscribeProps;
 
-    if (this.#status === "disabled" || this.#status === "disabling") {
+    if (
+      this.#status === "disabled" ||
+      this.#status === "disabling" ||
+      this.#status === "enabling"
+    ) {
       // We can subscribe to a disabled dataSource. No request will be
       // sent to server to create a new VP, just to enable the existing one.
       // The current subscribing client becomes the subscription owner
@@ -181,7 +185,8 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     } else if (message.type === "disabled") {
       this.#status = "disabled";
     } else if (message.type === "enabled") {
-      this.#status = "enabled";
+      this.#status = "subscribed";
+      this.emit("enabled", this.viewport);
     } else if (isDataSourceConfigMessage(message)) {
       // This is an ACK for a CHANGE_VP message. Nothing to do here. We need
       // to wait for data to be returned before we can consider the change
@@ -248,6 +253,9 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     escalateToDisable = this._defaultSuspenseProps.escalateToDisable,
     escalateDelay = this._defaultSuspenseProps.escalateDelay,
   ) {
+    console.log(
+      `[VuuDataSuurce] suspend, current status ${this.#status}, escalateToDisable ? ${escalateToDisable}`,
+    );
     if (this.#status !== "unsubscribed") {
       info?.(`suspend #${this.viewport}, current status ${this.#status}`);
       if (this.viewport) {
@@ -264,6 +272,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
   }
 
   resume(callback?: DataSourceSubscribeCallback) {
+    console.log(`[VuuDataSuurce] resume, current status ${this.#status}`);
     const isDisabled = this.#status.startsWith("disabl");
     const isSuspended = this.#status === "suspended";
     info?.(`resume #${this.viewport}, current status ${this.#status}`);
@@ -334,6 +343,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
         viewport: this.viewport,
         type: "enable",
       });
+      // TODO is this a bit premature ?
       this.emit("enabled", this.viewport);
     }
   }

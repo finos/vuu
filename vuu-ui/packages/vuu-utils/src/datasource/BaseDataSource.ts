@@ -195,10 +195,6 @@ export abstract class BaseDataSource
   protected confirmConfigChange() {
     if (this._impendingConfigWithVisualLink) {
       this._configWithVisualLink = this._impendingConfigWithVisualLink;
-      console.log(
-        "%cclear impending config and emit config change",
-        "color:red",
-      );
       this._impendingConfigWithVisualLink = undefined;
       this.emit("config", this._configWithVisualLink, this.range, true);
     } else {

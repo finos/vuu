@@ -25,10 +25,6 @@ export const useSessionDataSource = (props?: SessionStateHookProps) => {
     ) => {
       let ds = sessionState.get(sessionKey);
       if (ds) {
-        if (ds.range.from > 0) {
-          // UI does not currently restore scroll position, so always reset to top of dataset
-          ds.range = ds.range.reset;
-        }
         return ds;
       }
 

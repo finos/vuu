@@ -60,6 +60,7 @@ const { debug, debugEnabled, error, info, infoEnabled, warn } =
 
 interface Disable {
   type: "disable";
+  disableActive: boolean;
 }
 interface Enable {
   type: "enable";
@@ -169,6 +170,11 @@ export class Viewport {
 
   public clientViewportId: string;
   public disabled = false;
+  /**
+   * disabledActive is a state assigned when all active viewports are disabled, used
+   * when browser window is hidden or minimised.
+   */
+  public disabledActive = false;
   public frozen = false;
   public isTree = false;
   public links?: LinkDescriptorWithLabel[];
@@ -406,12 +412,14 @@ export class Viewport {
     } else if (type === "disable") {
       this.suspended = false;
       this.disabled = true; // assuming its _SUCCESS, of course
+      this.disabledActive = pendingOperation.disableActive;
       return {
         type: "disabled",
         clientViewportId,
       } as DataSourceDisabledMessage;
     } else if (type === "enable") {
       this.disabled = false;
+      this.disabledActive = false;
       return {
         type: "enabled",
         clientViewportId,
@@ -661,8 +669,8 @@ export class Viewport {
     } as VuuViewportEnableRequest;
   }
 
-  disable(requestId: string) {
-    this.awaitOperation(requestId, { type: "disable" });
+  disable(requestId: string, disableActive = false) {
+    this.awaitOperation(requestId, { type: "disable", disableActive });
     info?.(`disable: ${this.serverViewportId}`);
     return {
       type: Message.DISABLE_VP,

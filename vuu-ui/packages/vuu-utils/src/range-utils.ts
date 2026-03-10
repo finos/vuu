@@ -35,7 +35,11 @@ class RangeImpl implements Range {
   }
 
   get reset() {
-    return new RangeImpl(0, this.#baseTo - this.#baseFrom);
+    return new RangeImpl(
+      0,
+      this.#baseTo - this.#baseFrom,
+      this.#renderBufferSize,
+    );
   }
 
   get withBuffer() {

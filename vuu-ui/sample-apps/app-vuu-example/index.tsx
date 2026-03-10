@@ -6,15 +6,16 @@ import {
   VuuAuthProvider,
   VuuAuthTokenIssuePolicy,
 } from "@vuu-ui/vuu-data-remote";
-import { isLoginErrorMessage } from "@vuu-ui/vuu-utils";
+import { isLoginErrorMessage, PageVisibilityObserver } from "@vuu-ui/vuu-utils";
 import { createRoot } from "react-dom/client";
 import { App } from "./src/App";
 
 import "@vuu-ui/vuu-icons/index.css";
 import "@vuu-ui/vuu-theme/index.css";
 
-const CONNECTION_FAILED = 'connection-failed';
-const isConnectionFailedMessage = (err) => typeof err === "string" && err.includes(CONNECTION_FAILED);
+const CONNECTION_FAILED = "connection-failed";
+const isConnectionFailedMessage = (err) =>
+  typeof err === "string" && err.includes(CONNECTION_FAILED);
 
 const { websocketUrl } = await vuuConfig;
 
@@ -29,13 +30,22 @@ const lostConnectionHandler = new LostConnectionHandler(vuuAuth);
 const onConnectionStatusChange = (connectionStatus: ConnectionStatus) => {
   if (connectionStatus === "disconnected") {
     // do we care about the reason ?
-    lostConnectionHandler.reconnect().then(status => {
+    lostConnectionHandler.reconnect().then((status) => {
       if (status === CONNECTION_FAILED) {
         throw new Error(status);
       }
     });
   }
 };
+
+new PageVisibilityObserver({
+  onHidden: () => {
+    ConnectionManager.disableActiveSubscriptions();
+  },
+  onVisible: () => {
+    ConnectionManager.enableActiveSubscriptions();
+  },
+});
 
 const container = document.getElementById("root");
 if (!container) {

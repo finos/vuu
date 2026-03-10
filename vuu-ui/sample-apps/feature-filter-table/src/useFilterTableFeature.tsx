@@ -47,8 +47,8 @@ type FilterTableConfig = {
   "table-config"?: TableConfig;
 };
 
-const NoSuspense: DataSourceSuspenseProps = {
-  escalateToDisable: false,
+const DisableOnSuspend: DataSourceSuspenseProps = {
+  escalateToDisable: true,
 };
 
 export const useFilterTableFeature = ({
@@ -109,7 +109,7 @@ export const useFilterTableFeature = ({
     columns:
       datasourceConfigFromState?.columns ??
       tableSchema.columns.map(toColumnName),
-    suspenseProps: NoSuspense,
+    suspenseProps: DisableOnSuspend,
     table: tableSchema.table,
   });
 

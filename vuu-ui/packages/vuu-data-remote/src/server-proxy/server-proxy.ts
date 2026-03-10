@@ -505,9 +505,26 @@ export class ServerProxy {
     this.sendMessageToServer(request, requestId);
   }
 
-  private disableViewport(viewport: Viewport) {
+  private disableAllActiveViewports() {
+    console.log(`[ServerProxy] disableAllActiveViewports`);
+    this.viewports.forEach((vp) => {
+      if (isActiveViewport(vp)) {
+        this.disableViewport(vp, true);
+      }
+    });
+  }
+
+  private enableAllActiveViewports() {
+    this.viewports.forEach((vp) => {
+      if (vp.disabledActive) {
+        this.enableViewport(vp);
+      }
+    });
+  }
+
+  private disableViewport(viewport: Viewport, disableActive = false) {
     const requestId = nextRequestId();
-    const request = viewport.disable(requestId);
+    const request = viewport.disable(requestId, disableActive);
     this.sendIfReady(request, requestId, viewport.status === "subscribed");
   }
 
@@ -759,6 +776,10 @@ export class ServerProxy {
       return this.menuRpcCall(message as WithRequestId<VuuRpcMenuRequest>);
     } else if (message.type === "disconnect") {
       return this.disconnect();
+    } else if (message.type === "disable-all-active") {
+      return this.disableAllActiveViewports();
+    } else if (message.type === "enable-all-active") {
+      return this.enableAllActiveViewports();
     } else {
       const { type, requestId } = message;
       switch (type) {
