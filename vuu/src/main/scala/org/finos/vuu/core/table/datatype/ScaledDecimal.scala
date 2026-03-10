@@ -8,11 +8,12 @@ import java.math.BigDecimal as JBigDecimal
  * that are preserved when converting to a long-based representation.
  * * @param precision The number of decimal places (e.g., 2 for Scale.Two).
  */
-enum Scale(val precision: Int) {
-  case Two extends Scale(2)
-  case Four extends Scale(4)
-  case Six extends Scale(6)
-  case Eight extends Scale(8)
+enum Scale[T <: ScaledDecimal](val precision: Int, val createFunction: Long => T) {
+
+  case Two   extends Scale[ScaledDecimal2](2, ScaledDecimal2.apply)
+  case Four  extends Scale[ScaledDecimal4](4, ScaledDecimal4.apply)
+  case Six   extends Scale[ScaledDecimal6](6, ScaledDecimal6.apply)
+  case Eight extends Scale[ScaledDecimal8](8, ScaledDecimal8.apply)
 
   /**
    * Creates a [[ScaledDecimal]] instance by shifting the decimal point of the
@@ -20,21 +21,20 @@ enum Scale(val precision: Int) {
    * * @param value The Java BigDecimal to convert.
    * @return A specialized ScaledDecimal implementation (e.g., [[ScaledDecimal2]]).
    */
-  def create(value: JBigDecimal): ScaledDecimal = this match
-    case Two => ScaledDecimal2(value.movePointRight(precision).longValue())
-    case Four => ScaledDecimal4(value.movePointRight(precision).longValue())
-    case Six => ScaledDecimal6(value.movePointRight(precision).longValue())
-    case Eight => ScaledDecimal8(value.movePointRight(precision).longValue())
+  def create(value: JBigDecimal): T = {
+    createFunction(value.movePointRight(precision).longValue())
+  }
+
 }
 
 /**
  * Static constants for [[Scale]] to provide idiomatic access for Java callers.
  */
 object Scale {
-  val TWO: Scale = Scale.Two
-  val FOUR: Scale = Scale.Four
-  val SIX: Scale = Scale.Six
-  val EIGHT: Scale = Scale.Eight
+  val TWO: Scale[ScaledDecimal2] = Scale.Two
+  val FOUR: Scale[ScaledDecimal4] = Scale.Four
+  val SIX: Scale[ScaledDecimal6] = Scale.Six
+  val EIGHT: Scale[ScaledDecimal8] = Scale.Eight
 }
 
 /**
@@ -53,18 +53,29 @@ sealed trait ScaledDecimal {
 object ScaledDecimal {
 
   /**
+   * Creates a ScaledDecimal from a Double.
+   * @param value The value to scale.
+   * @param scale The target precision.
+   */
+  def apply[T <: ScaledDecimal](value: Double, scale: Scale[T]): T =
+    scale.create(JBigDecimal.valueOf(value))
+
+  /**
    * Creates a ScaledDecimal from a Scala BigDecimal.
    * @param value The value to scale.
    * @param scale The target precision.
    */
-  def apply(value: BigDecimal, scale: Scale): ScaledDecimal = scale.create(value.underlying())
+  def apply[T <: ScaledDecimal](value: BigDecimal, scale: Scale[T]): T =
+    scale.create(value.underlying())
 
   /**
    * Creates a ScaledDecimal from a Java BigDecimal.
    * @param value The value to scale.
    * @param scale The target precision.
    */
-  def apply(value: JBigDecimal, scale: Scale): ScaledDecimal = scale.create(value)
+  def apply[T <: ScaledDecimal](value: JBigDecimal, scale: Scale[T]): T =
+    scale.create(value)
+
 }
 
 /**

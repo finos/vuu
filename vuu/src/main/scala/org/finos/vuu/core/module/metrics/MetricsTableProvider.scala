@@ -1,12 +1,14 @@
 package org.finos.vuu.core.module.metrics
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.table.{DataTable, RowWithData, TableContainer}
-import org.finos.vuu.provider.Provider
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.thread.LifeCycleRunner
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.table.datatype.Scale.Six
+import org.finos.vuu.core.table.datatype.ScaledDecimal
+import org.finos.vuu.core.table.{DataTable, RowWithData, TableContainer}
+import org.finos.vuu.provider.Provider
 import org.finos.vuu.viewport.ViewPortTable
 
 class MetricsTableProvider(table: DataTable, tableContainer: TableContainer)(implicit clock: Clock, lifecycleContainer: LifecycleContainer,
@@ -34,7 +36,7 @@ class MetricsTableProvider(table: DataTable, tableContainer: TableContainer)(imp
         table.processUpdate(vpTable.table, RowWithData(vpTable.table, getMetricsData(vpTable)))
       )
     } catch {
-      case e: Exception => logger.error("Error occured in metrics", e)
+      case e: Exception => logger.error("Error occurred in metrics", e)
     }
   }
 
@@ -47,7 +49,7 @@ class MetricsTableProvider(table: DataTable, tableContainer: TableContainer)(imp
       "table" -> (vpTable.module + "-" + vpTable.table),
       "updateCount" -> counter.getCount,
       "size" -> size,
-      "updatesPerSecond" -> meter.getOneMinuteRate
+      "updatesPerSecond" -> ScaledDecimal(meter.getOneMinuteRate, Six)
     )
   }
 }

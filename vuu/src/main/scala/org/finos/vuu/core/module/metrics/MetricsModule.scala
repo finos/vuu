@@ -1,12 +1,12 @@
 package org.finos.vuu.core.module.metrics
 
-import org.finos.vuu.api.{Indices, TableDef}
-import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
-import org.finos.vuu.core.table.Columns
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.api.{Indices, TableDef}
 import org.finos.vuu.core.module.metrics.MetricsSchema.MetricsTree.all_columns
+import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
+import org.finos.vuu.core.table.Columns
 
 object MetricsSchema{
 
@@ -82,7 +82,7 @@ object MetricsModule extends DefaultModule {
         TableDef(
           name = "metricsTables",
           keyField = "table",
-          columns = Columns.fromNames("table".string(), "size".long(), "updateCount".long(), "updatesPerSecond".double()),
+          columns = Columns.fromNames("table".string(), "size".long(), "updateCount".long(), "updatesPerSecond".scaledDecimal6()),
           indices = Indices(),
           joinFields = "table"
         ),
