@@ -82,7 +82,7 @@ object MetricsModule extends DefaultModule {
         TableDef(
           name = "metricsTables",
           keyField = "table",
-          columns = Columns.fromNames("table".string(), "size".long(), "updateCount".long(), "updatesPerSecond".scaledDecimal6()),
+          columns = Columns.fromNames("table".string(), "size".long(), "updateCount".long(), "updatesPerSecond".double()),
           indices = Indices(),
           joinFields = "table"
         ),
@@ -92,7 +92,7 @@ object MetricsModule extends DefaultModule {
         TableDef(
           name = "metricsViewports",
           keyField = "id",
-          columns = Columns.fromNames("id".string(), "table".string(), "structureHash".int(), "updateCount".long(), 
+          columns = Columns.fromNames("id".string(), "table".string(), "structureHash".int(), "updateCount".long(),
             "keyBuildCount".long(), "mean".scaledDecimal2(), "max".long(), "75Perc".scaledDecimal4(), "99Perc".scaledDecimal6(), "99_9Perc".scaledDecimal8()),
           indices = Indices(),
           joinFields = "id"
