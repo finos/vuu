@@ -1,6 +1,6 @@
 import cx from "clsx";
 import { Toast, ToastContent, useFloatingComponent } from "@salt-ds/core";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ToastNotificationDescriptor } from "./NotificationsContext";
 
 const toastContainerRightPadding = 20;
@@ -27,38 +27,46 @@ export const ToastNotification = (props: ToastNotificationProps) => {
 
   const slideIn = animationType.includes("slide-in");
 
-  const [right, setRight] = useState(
+  const pageWidth = useMemo(() => document.body.clientWidth, []);
+
+  const [left, setLeft] = useState(
     slideIn
-      ? -TOAST_WIDTH - toastContainerRightPadding
-      : toastContainerRightPadding,
+      ? pageWidth + TOAST_WIDTH - toastContainerRightPadding
+      : pageWidth - TOAST_WIDTH - toastContainerRightPadding,
   );
 
   useEffect(() => {
     if (slideIn) {
-      setTimeout(() => setRight(toastContainerRightPadding));
+      setTimeout(() =>
+        setLeft(pageWidth - TOAST_WIDTH - toastContainerRightPadding),
+      );
     }
 
     if (animated) {
-      console.log(
-        `animated ${toastDisplayDuration + horizontalTransitionDuration}`,
-      );
       setTimeout(
-        () => setRight(-TOAST_WIDTH - toastContainerRightPadding),
+        () =>
+          setLeft(
+            document.body.clientWidth +
+              TOAST_WIDTH -
+              toastContainerRightPadding,
+          ),
         toastDisplayDuration + horizontalTransitionDuration,
       );
     }
-  }, [animated, slideIn]);
+  }, [animated, pageWidth, slideIn]);
+
+  console.log(`left ${left}`);
 
   return (
     <FloatingComponent
       className={cx(classBase, `${classBase}-${notification.type}`)}
+      position="absolute"
+      left={left}
+      top={top}
       open
       style={{
-        position: "absolute",
-        right,
-        top,
         transition: animated
-          ? `right ${horizontalTransitionDuration}ms, top ${verticalTransitionDuration}ms `
+          ? `left ${horizontalTransitionDuration}ms, top ${verticalTransitionDuration}ms `
           : "none",
       }}
     >

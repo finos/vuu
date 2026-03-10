@@ -16,7 +16,7 @@ const classBase = "vuuIconButtonCell";
 export const IconButtonCell = ({ column, row }: TableCellRendererProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
-    testId: "vuu-dropdown-cell",
+    testId: "vuu-iconbutton-cell",
     css: iconButtonCellCss,
     window: targetWindow,
   });

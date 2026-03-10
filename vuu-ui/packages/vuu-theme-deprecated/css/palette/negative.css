@@ -1,0 +1,7 @@
+.salt-theme.vuu-theme-deprecated[data-mode="light"] {
+  --salt-palette-negative-foreground: var(--salt-color-red-700);
+}
+
+.salt-theme.vuu-theme-deprecated[data-mode="dark"] {
+  --salt-palette-negative-foreground: var(--salt-color-red-300);
+}

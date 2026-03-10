@@ -14,6 +14,7 @@ export interface PopupMenuHookProps
   extends Pick<
     PopupMenuProps,
     | "anchorElement"
+    | "aria-label"
     | "menuActionHandler"
     | "menuBuilder"
     | "menuClassName"
@@ -29,6 +30,7 @@ export interface PopupMenuHookProps
 
 export const usePopupMenu = ({
   anchorElement,
+  "aria-label": ariaLabel = "Popup menu",
   id,
   menuActionHandler,
   menuBuilder,
@@ -48,6 +50,14 @@ export const usePopupMenu = ({
       _setMenuOpen(isOpen);
       if (isOpen) {
         onMenuOpen?.();
+        setTimeout(() => {
+          const firstOption = document.activeElement?.querySelector(
+            ".saltMenuItem",
+          ) as HTMLElement;
+          firstOption?.focus();
+        }, 40);
+      } else {
+        suppressShowMenuRef.current = false;
       }
     },
     [onMenuOpen],
@@ -57,27 +67,10 @@ export const usePopupMenu = ({
 
   const handleMenuOpenChange = useCallback(
     (isOpen: boolean) => {
-      if (isOpen === false) {
+      if (!isOpen) {
         setMenuOpen(false);
         onMenuClose?.();
       }
-      // // If user has clicked the MenuButton whilst menu is open, we want to close it.
-      // // The PopupService will close it for us as a 'click-away' event. We don't want
-      // // that click on the button to re-open it.
-      // if (reasonIsClickAway(reason)) {
-      //   const target = reason.mouseEvt.target as HTMLElement;
-      //   if (target === rootRef.current) {
-      //     suppressShowMenuRef.current = true;
-      //   }
-      //   onMenuClose?.(reason);
-      // } else {
-      //   requestAnimationFrame(() => {
-      //     onMenuClose?.(reason);
-      //     if (tabIndex !== -1 && reason?.type !== "tab-away") {
-      //       rootRef.current?.focus();
-      //     }
-      //   });
-      // }
     },
     [onMenuClose, setMenuOpen],
   );
@@ -87,6 +80,7 @@ export const usePopupMenu = ({
       if (suppressShowMenuRef.current) {
         suppressShowMenuRef.current = false;
       } else {
+        suppressShowMenuRef.current = true;
         const anchorEl = anchorElement?.current ?? rootRef.current;
         if (anchorEl) {
           const {
@@ -120,6 +114,7 @@ export const usePopupMenu = ({
 
   const ariaAttributes: AriaAttributes = {
     "aria-controls": menuOpen ? `${id}-menu` : undefined,
+    "aria-label": ariaLabel,
     "aria-expanded": menuOpen,
     "aria-haspopup": "menu",
   };

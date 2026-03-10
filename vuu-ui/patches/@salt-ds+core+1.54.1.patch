@@ -1,0 +1,26 @@
+diff --git a/node_modules/@salt-ds/core/dist-cjs/salt-provider/SaltProvider.js b/node_modules/@salt-ds/core/dist-cjs/salt-provider/SaltProvider.js
+index 65070f9..561c7fb 100644
+--- a/node_modules/@salt-ds/core/dist-cjs/salt-provider/SaltProvider.js
++++ b/node_modules/@salt-ds/core/dist-cjs/salt-provider/SaltProvider.js
+@@ -112,7 +112,7 @@ function InternalSaltProvider({
+       theme: clsx.clsx(
+         DEFAULT_THEME_NAME,
+         { [DEFAULT_THEME_NAME_NEXT]: themeNext },
+-        themeProp
++        themeName
+       ),
+       mode,
+       accent: themeNext ? accent : void 0,
+diff --git a/node_modules/@salt-ds/core/dist-es/salt-provider/SaltProvider.js b/node_modules/@salt-ds/core/dist-es/salt-provider/SaltProvider.js
+index b3177d8..d5b4b91 100644
+--- a/node_modules/@salt-ds/core/dist-es/salt-provider/SaltProvider.js
++++ b/node_modules/@salt-ds/core/dist-es/salt-provider/SaltProvider.js
+@@ -110,7 +110,7 @@ function InternalSaltProvider({
+       theme: clsx(
+         DEFAULT_THEME_NAME,
+         { [DEFAULT_THEME_NAME_NEXT]: themeNext },
+-        themeProp
++        themeName
+       ),
+       mode,
+       accent: themeNext ? accent : void 0,

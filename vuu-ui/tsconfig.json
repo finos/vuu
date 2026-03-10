@@ -21,6 +21,7 @@
     "cypress",
     "experiments",
     "packages",
+    "playwright/customAssertions.ts",
     "sample-apps/*/src",
     "showcase/src",
     "sample-apps/*/index.ts",

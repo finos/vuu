@@ -13,12 +13,6 @@
         align-items: center;
     }
 
-    .vuuPromptConfirmButton:focus {
-        outline-style: var(--salt-focused-outlineStyle);
-        outline-width: var(--salt-focused-outlineWidth);
-        outline-color: var(--salt-focused-outlineColor);
-        outline-offset: var(--salt-focused-outlineOffset);
-    }
 }
 
 .vuuPrompt.saltDialog-warning {

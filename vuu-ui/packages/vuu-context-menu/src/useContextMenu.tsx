@@ -64,10 +64,6 @@ export const useContextMenu = (
       evt.stopPropagation?.();
       evt.preventDefault?.();
 
-      console.log(
-        `showContextMenu at ${evt.clientX} ${evt.clientY} location ${location}`,
-      );
-
       const menuBuilders: MenuBuilder[] = [];
       if (menuBuilder) {
         menuBuilders.push(menuBuilder);

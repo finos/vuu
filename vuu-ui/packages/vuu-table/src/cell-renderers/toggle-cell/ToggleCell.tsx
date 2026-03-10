@@ -6,6 +6,7 @@ import {
   CommitHandler,
   dataColumnAndKeyUnchanged,
   dispatchCustomEvent,
+  isRpcSuccess,
   isTypeDescriptor,
   isValueListRenderer,
   registerComponent,
@@ -54,7 +55,7 @@ export const ToggleCell = memo(function ToggleCell({
         { previousValue: value, value: newValue },
         "commit",
       );
-      if (res === true) {
+      if (isRpcSuccess(res)) {
         dispatchCustomEvent(evt.target as HTMLElement, "vuu-commit");
       }
       return res;

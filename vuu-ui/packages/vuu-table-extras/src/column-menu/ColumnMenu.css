@@ -6,8 +6,8 @@
   --saltButton-borderRadius: 3px;
   --saltButton-padding: var(--salt-spacing-50);
   --saltButton-minWidth: var(--menu-button-size);
-  --saltButton-height: var(--menu-button-size);
-  --saltButton-width: var(--menu-button-size);
+  --saltButton-height: var(--vuuColumnMenu-height,var(--menu-button-size));
+  --saltButton-width: var(--vuuColumnMenu-width, var(--menu-button-size));
 
   --vuu-icon-height: var(--menu-button-size);
   --vuu-icon-left: 0px;

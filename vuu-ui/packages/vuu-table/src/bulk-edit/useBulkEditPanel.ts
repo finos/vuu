@@ -71,6 +71,7 @@ export const useBulkEditPanel = ({
               clientSideEditValidationCheck: hasValidationRules(col.type)
                 ? buildValidationChecker(col.type.rules)
                 : undefined,
+              width: 120,
             };
           })
         : dataSource.columns.map((name) => ({
@@ -86,20 +87,25 @@ export const useBulkEditPanel = ({
 
   const handleDataEdited = useCallback<DataCellEditNotification>(
     ({ isValid = true, row, columnName }) => {
-      if (!isValid && !isRecorded([row[IDX], columnName], errorsRef.current)) {
-        errorsRef.current.push([row[IDX], columnName]);
-      } else if (
-        isValid &&
-        isRecorded([row[IDX], columnName], errorsRef.current)
-      ) {
-        errorsRef.current = errorsRef.current.filter(
-          (error) => !isSameArray(error, [row[IDX], columnName]),
-        );
-      }
-      if (rowState === true && errorsRef.current.length === 0) {
-        onValidationStatusChange(true);
-      } else {
-        onValidationStatusChange(false);
+      if (columnName && row) {
+        if (
+          !isValid &&
+          !isRecorded([row[IDX], columnName], errorsRef.current)
+        ) {
+          errorsRef.current.push([row[IDX], columnName]);
+        } else if (
+          isValid &&
+          isRecorded([row[IDX], columnName], errorsRef.current)
+        ) {
+          errorsRef.current = errorsRef.current.filter(
+            (error) => !isSameArray(error, [row[IDX], columnName]),
+          );
+        }
+        if (rowState === true && errorsRef.current.length === 0) {
+          onValidationStatusChange(true);
+        } else {
+          onValidationStatusChange(false);
+        }
       }
     },
     [onValidationStatusChange, rowState],
