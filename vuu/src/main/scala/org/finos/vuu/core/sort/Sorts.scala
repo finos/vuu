@@ -3,7 +3,7 @@ package org.finos.vuu.core.sort
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.time.TimeIt.timeIt
-import org.finos.vuu.core.table.{Column, RowData, RowWithData, TablePrimaryKeys}
+import org.finos.vuu.core.table.{Column, RowWithData, TablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.net.SortSpec
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
@@ -15,7 +15,11 @@ trait Sort {
 }
 
 object Sort {
-  def apply(spec: SortSpec, columns: List[Column]): Sort = GenericSort2(spec, columns)
+  def apply(spec: SortSpec, columns: List[Column]): Sort = {
+    val sortDirections = spec.sortDefs.map(sd => SortDirection.fromExternal(sd.sortType))
+    val comparator = RowDataComparator.apply(columns, sortDirections)
+    GenericSort2(comparator)
+  }
 }
 
 object NoSort extends Sort {
@@ -24,13 +28,7 @@ object NoSort extends Sort {
   }
 }
 
-private case class GenericSort2(spec: SortSpec, columns: List[Column]) extends Sort with StrictLogging {
-
-  private val sortDirections = spec.sortDefs.map(sd => SortDirection.fromExternal(sd.sortType))
-  private val comparator = new java.util.Comparator[RowData] {
-    override def compare(o1: RowData, o2: RowData): Int =
-      SortCompares.compare(o1, o2, columns, sortDirections, 0)
-  }
+private case class GenericSort2(rowDataComparator: RowDataComparator) extends Sort with StrictLogging {
 
   override def doSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
 
@@ -45,7 +43,7 @@ private case class GenericSort2(spec: SortSpec, columns: List[Column]) extends S
     logger.trace("Starting sort")
 
     val (millisSort, _ ) = timeIt {
-      util.Arrays.sort(snapshotAndCount._1, 0, snapshotAndCount._2, comparator)
+      util.Arrays.sort(snapshotAndCount._1, 0, snapshotAndCount._2, rowDataComparator)
     }
 
     logger.trace("Starting build imm arr")
