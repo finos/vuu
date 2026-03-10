@@ -1,12 +1,13 @@
 package org.finos.vuu.core.index
 
 import org.finos.vuu.api.{Index, Indices, TableDef}
-import org.finos.vuu.core.table.datatype.EpochTimestamp
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.core.table.{Column, DataType, RowData, RowWithData, SimpleColumn}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.prop.TableDrivenPropertyChecks
 
-class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers {
+class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDrivenPropertyChecks {
 
   def createIndices(columnName: String, dataType: Class[_]): (Column, InMemColumnIndices) = {
     val column: Column = SimpleColumn(columnName, 0, dataType)
@@ -333,6 +334,55 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers {
       indices.remove(createRow(rowKey, column, EpochTimestamp(3L)))
       val result6 = indexField.find(EpochTimestamp(3L))
       result6.length shouldEqual 0
+    }
+
+    Scenario("Correctly route data through IndexUpdaters for ScaledDecimal") {
+      val scaledDecimalVariants = Table(
+        ("typeName", "dataType", "factory"),
+        ("ScaledDecimal2", DataType.ScaledDecimal2Type, (v: Long) => ScaledDecimal2(v)),
+        ("ScaledDecimal4", DataType.ScaledDecimal4Type, (v: Long) => ScaledDecimal4(v)),
+        ("ScaledDecimal6", DataType.ScaledDecimal6Type, (v: Long) => ScaledDecimal6(v)),
+        ("ScaledDecimal8", DataType.ScaledDecimal8Type, (v: Long) => ScaledDecimal8(v))
+      )
+
+      forAll(scaledDecimalVariants) { (typeName, dataType, factory) =>
+
+        info(s"Testing index routing for $typeName")
+
+        val (column, indices) = createIndices("testCol", dataType)
+        val rowKey = "row-1"
+
+        // Use the common trait ScaledDecimal for the cast to keep the logic generic
+        val indexField = indices.indexForColumn(column).get.asInstanceOf[IndexedField[ScaledDecimal]]
+
+        // 1. Insert
+        indices.insert(createRow(rowKey, column, factory(1L)))
+        val result = indexField.find(factory(1L))
+        result.length shouldEqual 1
+        result.headOption should contain(rowKey)
+
+        // 2. Update to new value
+        indices.update(createRow(rowKey, column, factory(1L)), createRow(rowKey, column, factory(2L)))
+        indexField.find(factory(1L)).length shouldEqual 0
+
+        val result3 = indexField.find(factory(2L))
+        result3.length shouldEqual 1
+        result3.headOption should contain(rowKey)
+
+        // 3. Update to null
+        indices.update(createRow(rowKey, column, factory(2L)), createRow(rowKey, column, null))
+        indexField.find(factory(2L)).length shouldEqual 0
+
+        // 4. Update from null to value
+        indices.update(createRow(rowKey, column, null), createRow(rowKey, column, factory(3L)))
+        val result5 = indexField.find(factory(3L))
+        result5.length shouldEqual 1
+        result5.headOption should contain(rowKey)
+
+        // 5. Remove
+        indices.remove(createRow(rowKey, column, factory(3L)))
+        indexField.find(factory(3L)).length shouldEqual 0
+      }
     }
 
   }

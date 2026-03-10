@@ -3,7 +3,7 @@ package org.finos.vuu.core.filter.`type`
 import com.typesafe.scalalogging.LazyLogging
 import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.vuu.core.filter.Filter
-import org.finos.vuu.core.index.{EpochTimestampIndexedField, LongIndexedField}
+import org.finos.vuu.core.index.EpochTimestampIndexedField
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.core.table.{DefaultColumn, EmptyTablePrimaryKeys, TablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
@@ -44,6 +44,6 @@ case class FrozenTimeFilter(frozenTime: EpochTimestamp) extends Filter with Lazy
       vuuCreatedTimestamp != null && vuuCreatedTimestamp.asInstanceOf[EpochTimestamp] < frozenTime
     })
     
-    InMemTablePrimaryKeys(ImmutableArray.from[String](filtered.toArray))
+    InMemTablePrimaryKeys(ImmutableArray.from[String](filtered))
   }
 }

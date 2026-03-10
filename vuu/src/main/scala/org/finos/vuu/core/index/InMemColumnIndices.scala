@@ -1,7 +1,7 @@
 package org.finos.vuu.core.index
 
 import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.table.datatype.EpochTimestamp
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.core.table.{Column, DataType, RowData}
 
 trait InMemColumnIndices {
@@ -43,6 +43,14 @@ object InMemColumnIndices {
         new SkipListIndexedEpochTimestampField(c)
       case DataType.CharDataType =>
         new SkipListIndexedCharField(c)
+      case DataType.ScaledDecimal2Type =>
+        new SkipListIndexedScaledDecimal2Field(c)
+      case DataType.ScaledDecimal4Type =>
+        new SkipListIndexedScaledDecimal4Field(c)
+      case DataType.ScaledDecimal6Type =>
+        new SkipListIndexedScaledDecimal6Field(c)
+      case DataType.ScaledDecimal8Type =>
+        new SkipListIndexedScaledDecimal8Field(c)
       case _ =>
         throw new UnsupportedOperationException(s"Unsupported type ${c.dataType} in column ${c.name}")
     }
@@ -68,6 +76,10 @@ object InMemColumnIndices {
           case DataType.BooleanDataType => create(index.asInstanceOf[IndexedField[Boolean]])
           case DataType.EpochTimestampType => create(index.asInstanceOf[IndexedField[EpochTimestamp]])
           case DataType.CharDataType => create(index.asInstanceOf[IndexedField[Char]])
+          case DataType.ScaledDecimal2Type => create(index.asInstanceOf[IndexedField[ScaledDecimal2]])
+          case DataType.ScaledDecimal4Type => create(index.asInstanceOf[IndexedField[ScaledDecimal4]])
+          case DataType.ScaledDecimal6Type => create(index.asInstanceOf[IndexedField[ScaledDecimal6]])
+          case DataType.ScaledDecimal8Type => create(index.asInstanceOf[IndexedField[ScaledDecimal8]])
           case _ => throw new UnsupportedOperationException(s"Unsupported type ${column.dataType} in column ${column.name}")
         }
     }.toArray

@@ -496,4 +496,197 @@ class PermissionFilterTest extends AnyFeatureSpec with Matchers {
 
   }
 
+  Feature("Contains filter - ScaledDecimal2") {
+
+    Scenario("Contains filter with no index") {
+      val clock = TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List())(using clock)
+      val filter = PermissionFilter("delta", Set("101"))
+
+      val result = filter.doFilter(table, table.primaryKeys, true)
+
+      result.size shouldEqual 2
+      result.toSet shouldEqual Set("NYC-0004", "LDN-0001")
+    }
+
+    Scenario("Contains filter with no index, not first in chain") {
+      val clock = TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List())(using clock)
+      val filter = PermissionFilter("delta", Set("101"))
+
+      val result = filter.doFilter(table, InMemTablePrimaryKeys(ImmutableArray.from(Array("LDN-0001", "LDN-0003", "NYC-0002"))), false)
+
+      result.size shouldEqual 1
+      result.toSet shouldEqual Set("LDN-0001")
+    }
+
+    Scenario("Contains filter with index") {
+      val clock = new TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List("delta"))(using clock)
+      val filter = PermissionFilter("delta", Set("101"))
+
+      val result = filter.doFilter(table, table.primaryKeys, true)
+
+      result.size shouldEqual 2
+      result.toSet shouldEqual Set("NYC-0004", "LDN-0001")
+    }
+
+    Scenario("Contains filter with index, not first in chain") {
+      val clock = new TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List("delta"))(using clock)
+      val filter = PermissionFilter("delta", Set("101"))
+
+      val result = filter.doFilter(table, InMemTablePrimaryKeys(ImmutableArray.from(Array("LDN-0001", "LDN-0003", "NYC-0002"))), false)
+
+      result.size shouldEqual 1
+      result.toSet shouldEqual Set("LDN-0001")
+    }
+
+  }
+
+  Feature("Contains filter - ScaledDecimal4") {
+
+    Scenario("Contains filter with no index") {
+      val clock = TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List())(using clock)
+      val filter = PermissionFilter("tau", Set("10001"))
+
+      val result = filter.doFilter(table, table.primaryKeys, true)
+
+      result.size shouldEqual 2
+      result.toSet shouldEqual Set("NYC-0004", "LDN-0001")
+    }
+
+    Scenario("Contains filter with no index, not first in chain") {
+      val clock = TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List())(using clock)
+      val filter = PermissionFilter("tau", Set("10001"))
+
+      val result = filter.doFilter(table, InMemTablePrimaryKeys(ImmutableArray.from(Array("LDN-0001", "LDN-0003", "NYC-0002"))), false)
+
+      result.size shouldEqual 1
+      result.toSet shouldEqual Set("LDN-0001")
+    }
+
+    Scenario("Contains filter with index") {
+      val clock = new TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List("tau"))(using clock)
+      val filter = PermissionFilter("tau", Set("10001"))
+
+      val result = filter.doFilter(table, table.primaryKeys, true)
+
+      result.size shouldEqual 2
+      result.toSet shouldEqual Set("NYC-0004", "LDN-0001")
+    }
+
+    Scenario("Contains filter with index, not first in chain") {
+      val clock = new TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List("tau"))(using clock)
+      val filter = PermissionFilter("tau", Set("10001"))
+
+      val result = filter.doFilter(table, InMemTablePrimaryKeys(ImmutableArray.from(Array("LDN-0001", "LDN-0003", "NYC-0002"))), false)
+
+      result.size shouldEqual 1
+      result.toSet shouldEqual Set("LDN-0001")
+    }
+
+  }
+
+  Feature("Contains filter - ScaledDecimal6") {
+
+    Scenario("Contains filter with no index") {
+      val clock = TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List())(using clock)
+      val filter = PermissionFilter("gamma", Set("1000001"))
+
+      val result = filter.doFilter(table, table.primaryKeys, true)
+
+      result.size shouldEqual 2
+      result.toSet shouldEqual Set("NYC-0004", "LDN-0001")
+    }
+
+    Scenario("Contains filter with no index, not first in chain") {
+      val clock = TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List())(using clock)
+      val filter = PermissionFilter("gamma", Set("1000001"))
+
+      val result = filter.doFilter(table, InMemTablePrimaryKeys(ImmutableArray.from(Array("LDN-0001", "LDN-0003", "NYC-0002"))), false)
+
+      result.size shouldEqual 1
+      result.toSet shouldEqual Set("LDN-0001")
+    }
+
+    Scenario("Contains filter with index") {
+      val clock = new TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List("gamma"))(using clock)
+      val filter = PermissionFilter("gamma", Set("1000001"))
+
+      val result = filter.doFilter(table, table.primaryKeys, true)
+
+      result.size shouldEqual 2
+      result.toSet shouldEqual Set("NYC-0004", "LDN-0001")
+    }
+
+    Scenario("Contains filter with index, not first in chain") {
+      val clock = new TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List("gamma"))(using clock)
+      val filter = PermissionFilter("gamma", Set("1000001"))
+
+      val result = filter.doFilter(table, InMemTablePrimaryKeys(ImmutableArray.from(Array("LDN-0001", "LDN-0003", "NYC-0002"))), false)
+
+      result.size shouldEqual 1
+      result.toSet shouldEqual Set("LDN-0001")
+    }
+
+  }
+
+  Feature("Contains filter - ScaledDecimal8") {
+
+    Scenario("Contains filter with no index") {
+      val clock = TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List())(using clock)
+      val filter = PermissionFilter("theta", Set("100000001"))
+
+      val result = filter.doFilter(table, table.primaryKeys, true)
+
+      result.size shouldEqual 2
+      result.toSet shouldEqual Set("NYC-0004", "LDN-0001")
+    }
+
+    Scenario("Contains filter with no index, not first in chain") {
+      val clock = TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List())(using clock)
+      val filter = PermissionFilter("theta", Set("100000001"))
+
+      val result = filter.doFilter(table, InMemTablePrimaryKeys(ImmutableArray.from(Array("LDN-0001", "LDN-0003", "NYC-0002"))), false)
+
+      result.size shouldEqual 1
+      result.toSet shouldEqual Set("LDN-0001")
+    }
+
+    Scenario("Contains filter with index") {
+      val clock = new TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List("theta"))(using clock)
+      val filter = PermissionFilter("theta", Set("100000001"))
+
+      val result = filter.doFilter(table, table.primaryKeys, true)
+
+      result.size shouldEqual 2
+      result.toSet shouldEqual Set("NYC-0004", "LDN-0001")
+    }
+
+    Scenario("Contains filter with index, not first in chain") {
+      val clock = new TestFriendlyClock(1000L)
+      val table = setupTableWithCreationTime(List("theta"))(using clock)
+      val filter = PermissionFilter("theta", Set("100000001"))
+
+      val result = filter.doFilter(table, InMemTablePrimaryKeys(ImmutableArray.from(Array("LDN-0001", "LDN-0003", "NYC-0002"))), false)
+
+      result.size shouldEqual 1
+      result.toSet shouldEqual Set("LDN-0001")
+    }
+
+  }
+
+
 }

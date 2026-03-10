@@ -4,7 +4,8 @@ import org.finos.toolbox.jmx.MetricsProviderImpl
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.TableDef
-import org.finos.vuu.core.table.datatype.EpochTimestamp
+import org.finos.vuu.core.table.datatype.Scale.{EIGHT, Eight, FOUR, Four, Six, Two}
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal, ScaledDecimal2}
 import org.finos.vuu.core.table.{Columns, InMemDataTable}
 import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl}
 import org.scalatest.GivenWhenThen
@@ -24,7 +25,11 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
           "exchange:String",
           "lotSize:Double",
           "lastUpdated:EpochTimeStamp",
-          "shortSellRestriction:Char"
+          "shortSellRestriction:Char",
+          "delta:ScaledDecimal2",
+          "tau:ScaledDecimal4",
+          "gamma:ScaledDecimal6",
+          "theta:ScaledDecimal8",
         ),
         joinFields = "ric"
       )
@@ -41,7 +46,8 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
       val tableDef = getTableDef
       val joinTableProvider: JoinTableProvider = JoinTableProviderImpl()
 
-      val (ricColumn, descColumn, currColumn, exchangeColumn, lotSizeColumn, lastUpdatedColumn, shortSellRestrictionColumn) =
+      val (ricColumn, descColumn, currColumn, exchangeColumn, lotSizeColumn, lastUpdatedColumn, shortSellRestrictionColumn,
+        deltaColumn, tauColumn, gammaColumn, thetaColumn) =
         (
           tableDef.columnForName("ric"),
           tableDef.columnForName("description"),
@@ -49,7 +55,11 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
           tableDef.columnForName("exchange"),
           tableDef.columnForName("lotSize"),
           tableDef.columnForName("lastUpdated"),
-          tableDef.columnForName("shortSellRestriction")
+          tableDef.columnForName("shortSellRestriction"),
+          tableDef.columnForName("delta"),
+          tableDef.columnForName("tau"),
+          tableDef.columnForName("gamma"),
+          tableDef.columnForName("theta"),
         )
 
       val table = new InMemDataTable(tableDef, joinTableProvider)
@@ -63,6 +73,10 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
         .setDouble(lotSizeColumn, 1000.123)
         .setEpochTimestamp(lastUpdatedColumn, EpochTimestamp(1))
         .setChar(shortSellRestrictionColumn, 'N')
+        .setScaledDecimal(deltaColumn, ScaledDecimal(1.01, Two))
+        .setScaledDecimal(tauColumn, ScaledDecimal(1.02, Four))
+        .setScaledDecimal(gammaColumn, ScaledDecimal(1.03, Six))
+        .setScaledDecimal(thetaColumn, ScaledDecimal(1.04, Eight))
         .build
 
       row.key should equal("FOO.L")
@@ -73,6 +87,10 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
       row.get(lotSizeColumn) should equal(1000.123)
       row.get(lastUpdatedColumn) should equal(EpochTimestamp(1))
       row.get(shortSellRestrictionColumn) should equal('N')
+      row.get(deltaColumn) should equal(ScaledDecimal(1.01, Two))
+      row.get(tauColumn) should equal(ScaledDecimal(1.02, Four))
+      row.get(gammaColumn) should equal(ScaledDecimal(1.03, Six))
+      row.get(thetaColumn) should equal(ScaledDecimal(1.04, Eight))
     }
 
     Scenario("Test Reuse of Row Builder"){
@@ -84,7 +102,8 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
       val tableDef = getTableDef
       val joinTableProvider: JoinTableProvider = JoinTableProviderImpl()
 
-      val (ricColumn, descColumn, currColumn, exchangeColumn, lotSizeColumn, lastUpdatedColumn, shortSellRestrictionColumn) =
+      val (ricColumn, descColumn, currColumn, exchangeColumn, lotSizeColumn, lastUpdatedColumn, shortSellRestrictionColumn,
+      deltaColumn, tauColumn, gammaColumn, thetaColumn) =
         (
           tableDef.columnForName("ric"),
           tableDef.columnForName("description"),
@@ -92,7 +111,11 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
           tableDef.columnForName("exchange"),
           tableDef.columnForName("lotSize"),
           tableDef.columnForName("lastUpdated"),
-          tableDef.columnForName("shortSellRestriction")
+          tableDef.columnForName("shortSellRestriction"),
+          tableDef.columnForName("delta"),
+          tableDef.columnForName("tau"),
+          tableDef.columnForName("gamma"),
+          tableDef.columnForName("theta"),
         )
 
       val table = new InMemDataTable(tableDef, joinTableProvider)
@@ -107,6 +130,10 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
         .setDouble(lotSizeColumn, 1000.123)
         .setEpochTimestamp(lastUpdatedColumn, EpochTimestamp(1))
         .setChar(shortSellRestrictionColumn, 'N')
+        .setScaledDecimal(deltaColumn, ScaledDecimal(1.01, Two))
+        .setScaledDecimal(tauColumn, ScaledDecimal(1.02, Four))
+        .setScaledDecimal(gammaColumn, ScaledDecimal(1.03, Six))
+        .setScaledDecimal(thetaColumn, ScaledDecimal(1.04, Eight))
         .build
 
       row.key should equal("FOO.L")
@@ -117,6 +144,10 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
       row.get(lotSizeColumn) should equal(1000.123)
       row.get(lastUpdatedColumn) should equal(EpochTimestamp(1))
       row.get(shortSellRestrictionColumn) should equal('N')
+      row.get(deltaColumn) should equal(ScaledDecimal(1.01, Two))
+      row.get(tauColumn) should equal(ScaledDecimal(1.02, Four))
+      row.get(gammaColumn) should equal(ScaledDecimal(1.03, Six))
+      row.get(thetaColumn) should equal(ScaledDecimal(1.04, Eight))
 
       intercept[RuntimeException]{
         builder.build
@@ -130,6 +161,10 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
         .setDouble(lotSizeColumn, 1010.123)
         .setEpochTimestamp(lastUpdatedColumn, EpochTimestamp(2))
         .setChar(shortSellRestrictionColumn, 'Y')
+        .setScaledDecimal(deltaColumn, ScaledDecimal(2.01, Two))
+        .setScaledDecimal(tauColumn, ScaledDecimal(2.02, Four))
+        .setScaledDecimal(gammaColumn, ScaledDecimal(2.03, Six))
+        .setScaledDecimal(thetaColumn, ScaledDecimal(2.04, Eight))
         .build
 
       row2.key should equal("BAR.L")
@@ -140,6 +175,10 @@ class RowBuilderTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
       row2.get(lotSizeColumn) should equal(1010.123)
       row2.get(lastUpdatedColumn) should equal(EpochTimestamp(2))
       row2.get(shortSellRestrictionColumn) should equal('Y')
+      row2.get(deltaColumn) should equal(ScaledDecimal(2.01, Two))
+      row2.get(tauColumn) should equal(ScaledDecimal(2.02, Four))
+      row2.get(gammaColumn) should equal(ScaledDecimal(2.03, Six))
+      row2.get(thetaColumn) should equal(ScaledDecimal(2.04, Eight))
 
     }
 

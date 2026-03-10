@@ -11,7 +11,7 @@ class FilterParserTest extends AnyFeatureSpec with Matchers {
 
       val parsedFilter = parseFilter(filter)
 
-      getInnerClause(parsedFilter) shouldEqual InClause("ric", List("RIC.HK", "RIC.LDN"))
+      getInnerClause(parsedFilter) shouldEqual InClause("ric", Set("RIC.HK", "RIC.LDN"))
     }
 
     Scenario("can parse multiple numeric values") {
@@ -19,7 +19,7 @@ class FilterParserTest extends AnyFeatureSpec with Matchers {
 
       val parsedFilter = parseFilter(filter)
 
-      getInnerClause(parsedFilter) shouldEqual InClause("price", List("-10", "10.5", "15"))
+      getInnerClause(parsedFilter) shouldEqual InClause("price", Set("-10", "10.5", "15"))
     }
   }
 
