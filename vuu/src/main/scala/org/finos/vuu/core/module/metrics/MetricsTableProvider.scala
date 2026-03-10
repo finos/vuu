@@ -5,8 +5,6 @@ import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.thread.LifeCycleRunner
 import org.finos.toolbox.time.Clock
-import org.finos.vuu.core.table.datatype.Scale.Six
-import org.finos.vuu.core.table.datatype.ScaledDecimal
 import org.finos.vuu.core.table.{DataTable, RowWithData, TableContainer}
 import org.finos.vuu.provider.Provider
 import org.finos.vuu.viewport.ViewPortTable
@@ -49,7 +47,7 @@ class MetricsTableProvider(table: DataTable, tableContainer: TableContainer)(imp
       "table" -> (vpTable.module + "-" + vpTable.table),
       "updateCount" -> counter.getCount,
       "size" -> size,
-      "updatesPerSecond" -> ScaledDecimal(meter.getOneMinuteRate, Six)
+      "updatesPerSecond" -> meter.getOneMinuteRate
     )
   }
 }
