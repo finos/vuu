@@ -26,8 +26,9 @@ class RowUpdateSerializerTest extends AnyFeatureSpec with Matchers with StrictLo
         "bar",
         1,
         BigInt(123), //Unsupported by Vuu
-        EpochTimestamp(456),
-        ScaledDecimal2(567)
+        EpochTimestamp(456L),
+        ScaledDecimal2(567L),
+        678L,
       )
     )
 
@@ -41,7 +42,7 @@ class RowUpdateSerializerTest extends AnyFeatureSpec with Matchers with StrictLo
 
     serialized shouldEqual "{\"viewPortId\":\"Vp1\",\"vpSize\":1,\"rowIndex\":0,\"rowKey\":\":KEY1\"," +
       "\"updateType\":\"U\",\"ts\":100,\"sel\":0,\"vpVersion\":\"Request1\"," +
-      "\"data\":[\"foo\",\"bar\",1,\"\",456,\"567\"]}"
+      "\"data\":[\"foo\",\"bar\",1,\"\",456,\"567\",\"678\"]}"
 
     val deserialized = mapper.readValue(serialized, classOf[RowUpdate])
 
@@ -61,6 +62,7 @@ class RowUpdateSerializerTest extends AnyFeatureSpec with Matchers with StrictLo
     deserialized.data(3) shouldEqual ""
     deserialized.data(4) shouldEqual "456"
     deserialized.data(5) shouldEqual "567"
+    deserialized.data(6) shouldEqual "678"
   }
 
 }

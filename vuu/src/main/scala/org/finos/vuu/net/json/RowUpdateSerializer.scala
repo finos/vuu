@@ -52,7 +52,7 @@ class RowUpdateSerializer extends JsonSerializer[RowUpdate] with StrictLogging  
       case (s: String, _) => gen.writeString(s)
       case (i: Int, _) => gen.writeNumber(i)
       case (d: Double, _) => gen.writeNumber(d)
-      case (l: Long, _) => gen.writeNumber(l)
+      case (l: Long, _) => gen.writeString(l.toString)
       case (b: Boolean, _) => gen.writeBoolean(b)
       case (c: Char, _) => gen.writeString(c.toString)
       case (epoch: EpochTimestamp, _) => gen.writeNumber(epoch.millis)
