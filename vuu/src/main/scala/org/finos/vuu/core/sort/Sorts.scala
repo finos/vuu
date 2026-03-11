@@ -34,32 +34,37 @@ private case class GenericSort2(rowDataComparator: RowDataComparator) extends So
 
     //This has been repeatedly benchmarked using JMH. If you touch this, do a before and after run of SortBenchmark
 
+    val buffer = SortBuffer.borrow(primaryKeys.length)
+    
     logger.trace("Starting map")
 
-    val (millisToArray, snapshotAndCount) = timeIt {
-      createSnapshot(source, primaryKeys, vpColumns)
+    val (millisToArray, count) = timeIt {
+      createSnapshot(source, primaryKeys, vpColumns, buffer)
     }
 
     logger.trace("Starting sort")
 
     val (millisSort, _ ) = timeIt {
-      util.Arrays.sort(snapshotAndCount._1, 0, snapshotAndCount._2, rowDataComparator)
+      util.Arrays.sort(buffer, 0, count, rowDataComparator)
     }
 
     logger.trace("Starting build imm arr")
 
     val (millisImmArray, immutableArray) = timeIt {
-      createKeyArray(snapshotAndCount._1, snapshotAndCount._2)
+      createKeyArray(buffer, count)
     }
 
     logger.debug(s"[SORT]: Table Size: ${primaryKeys.length} DataToArray: ${millisToArray}ms, Sort: ${millisSort}ms, ImmutArr: ${millisImmArray}ms")
-
+    
+    SortBuffer.release(buffer, primaryKeys.length)
+    
     InMemTablePrimaryKeys(immutableArray)
   }
 
-  private def createSnapshot(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): (Array[RowWithData], Int) = {
+  private def createSnapshot(source: RowSource, primaryKeys: TablePrimaryKeys, 
+                             vpColumns: ViewPortColumns,
+                             sortBuffer: Array[RowWithData]): Int = {
     val length = primaryKeys.length
-    val rowDataArray = new Array[RowWithData](length)
     var index = 0
     var count = 0
 
@@ -67,13 +72,13 @@ private case class GenericSort2(rowDataComparator: RowDataComparator) extends So
       val key = primaryKeys.get(index)
       source.pullRow(key, vpColumns) match {
         case r: RowWithData =>
-          rowDataArray(count) = r
+          sortBuffer(count) = r
           count += 1
         case _ =>
       }
       index += 1
     }
-    (rowDataArray, count)
+    count
   }
 
   private def createKeyArray(snapshot: Array[RowWithData], length: Int): ImmutableArray[String] = {
