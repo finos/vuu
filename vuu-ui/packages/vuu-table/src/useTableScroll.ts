@@ -20,7 +20,6 @@ import {
   howFarIsRowOutsideViewport,
 } from "./table-dom-utils";
 import type { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { FocusCell } from "./useCellFocus";
 import { ICellFocusState } from "./CellFocusState";
 
 export type ScrollDirectionVertical = "up" | "down";
@@ -149,7 +148,6 @@ type ScrollPos = {
 export interface TableScrollHookProps {
   cellFocusStateRef: RefObject<ICellFocusState>;
   columns: RuntimeColumnDescriptor[];
-  focusCell?: FocusCell;
   getRowAtPosition: RowAtPositionFunc;
   onHorizontalScroll?: (scrollLeft: number) => void;
   onVerticalScroll?: (scrollTop: number, pctScrollTop: number) => void;
@@ -169,7 +167,6 @@ export interface TableScrollHookProps {
 export const useTableScroll = ({
   cellFocusStateRef,
   columns,
-  focusCell,
   getRowAtPosition,
   onHorizontalScroll,
   onVerticalScroll,

@@ -369,7 +369,6 @@ export const useTable = ({
   const { requestScroll, scrollTop, ...scrollProps } = useTableScroll({
     cellFocusStateRef,
     columns,
-    focusCell: focusCellRef.current,
     getRowAtPosition,
     rowHeight,
     scrollingApiRef,
