@@ -55,7 +55,7 @@ class RowUpdateSerializerTest extends AnyFeatureSpec with Matchers with StrictLo
     deserialized.ts shouldEqual rowUpdate.ts
     deserialized.selected shouldEqual rowUpdate.selected
     
-    deserialized.data.length shouldEqual 6
+    deserialized.data.length shouldEqual 7
     deserialized.data(0) shouldEqual "foo"
     deserialized.data(1) shouldEqual "bar"
     deserialized.data(2) shouldEqual "1"
