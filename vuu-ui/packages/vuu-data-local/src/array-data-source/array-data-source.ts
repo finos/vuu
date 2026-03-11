@@ -263,6 +263,11 @@ export class ArrayDataSource
       this.config = config;
     } else {
       this.sendSizeUpdateToClient();
+      this.emit(
+        "resize",
+        this.processedData ? this.processedData.length : this.#data.length,
+      );
+
       if (range && !this.#range.equals(range)) {
         this.range = range;
       } else if (this.#range !== NULL_RANGE) {
