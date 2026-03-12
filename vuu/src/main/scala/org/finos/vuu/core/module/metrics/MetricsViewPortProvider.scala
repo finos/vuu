@@ -5,6 +5,7 @@ import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.thread.LifeCycleRunner
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.core.table.datatype.{Scale, ScaledDecimal}
 import org.finos.vuu.core.table.{DataTable, RowWithData}
 import org.finos.vuu.provider.Provider
 import org.finos.vuu.viewport.ViewPortContainer
@@ -46,8 +47,17 @@ class MetricsViewPortProvider(table: DataTable, viewPortContainer: ViewPortConta
         val snapshot = histogram.getSnapshot
         val vp = viewPortContainer.getViewPorts.find(f => f.id == key).orNull
         if (vp != null) {
-          val upMap = Map("id" -> key, "table" -> vp.table.name, "mean" -> snapshot.getMean, "max" -> snapshot.getMax, "structureHash" -> vp.getStructuralHashCode(), "updateCount" -> vp.getTableUpdateCount(),
-            "keyBuildCount" -> vp.keyBuildCount, "75Perc" -> snapshot.get75thPercentile(), "99Perc" -> snapshot.get99thPercentile(), "99_9Perc" -> snapshot.get999thPercentile()
+          val upMap = Map(
+            "id" -> key,
+            "table" -> vp.table.name,
+            "mean" -> ScaledDecimal(snapshot.getMean, Scale.Two),
+            "max" -> snapshot.getMax,
+            "structureHash" -> vp.getStructuralHashCode(),
+            "updateCount" -> vp.getTableUpdateCount(),
+            "keyBuildCount" -> vp.keyBuildCount,
+            "75Perc" -> ScaledDecimal(snapshot.get75thPercentile(), Scale.Four),
+            "99Perc" -> ScaledDecimal(snapshot.get99thPercentile(), Scale.Six),
+            "99_9Perc" -> ScaledDecimal(snapshot.get999thPercentile(), Scale.Eight)
           )
           table.processUpdate(key, RowWithData(key, upMap))
         } else {

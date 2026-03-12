@@ -15,6 +15,7 @@ class MetricsJVMProvider(table: DataTable, viewPortContainer: ViewPortContainer)
                                                                                  metrics: MetricsProvider) extends Provider with StrictLogging {
 
   private val runner = new LifeCycleRunner("MetricsJVMProviderThread", () => runOnce(), minCycleTime = 2_000)
+  private val bytesToMiB = 1.0 / (1024 * 1024)
 
   lifecycleContainer(this).dependsOn(runner)
 
@@ -30,16 +31,16 @@ class MetricsJVMProvider(table: DataTable, viewPortContainer: ViewPortContainer)
 
   override val lifecycleId: String = "MetricsJVMProvider"
 
-  def toMb(bytes: Long): Double = {
-    (bytes.toDouble / 1024) / 1024
+  private def toMb(bytes: Long): Double = {
+    bytes * bytesToMiB
   }
 
-  def buildMachineCores(): Map[String, Any] = {
+  private def buildMachineCores(): Map[String, Any] = {
     val processors = Runtime.getRuntime.availableProcessors
     Map("cpu-cores" -> processors)
   }
 
-  def buildHeapData(heap: MemoryUsage): Map[String, Any] = {
+  private def buildHeapData(heap: MemoryUsage): Map[String, Any] = {
     Map(
       "mem-type" -> "heap",
       "max_MB" -> toMb(heap.getMax),
@@ -49,7 +50,7 @@ class MetricsJVMProvider(table: DataTable, viewPortContainer: ViewPortContainer)
     )
   }
 
-  def buildNonHeapData(nonheap: MemoryUsage): Map[String, Any] = {
+  private def buildNonHeapData(nonheap: MemoryUsage): Map[String, Any] = {
     Map(
       "mem-type" -> "nonheap",
       "max_MB" -> toMb(nonheap.getMax),

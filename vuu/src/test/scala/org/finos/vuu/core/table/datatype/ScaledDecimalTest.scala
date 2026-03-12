@@ -53,6 +53,22 @@ class ScaledDecimalTest extends AnyFeatureSpec with Matchers with GivenWhenThen 
         result.scaledValue shouldBe expected
       }
     }
+
+    Scenario("Handling Double inputs") {
+      val javaTestCases = Table(
+        ("input", "scale", "expectedValue"),
+        (10.50d, Scale.Two, 1050L),
+        (1.1234d, Scale.Four, 11234L),
+        (0.123456d, Scale.Six, 123456L),
+        (0.01234567d, Scale.Eight, 1234567L),
+      )
+
+      forAll(javaTestCases) { (jVal, scale, expected) =>
+        val result = ScaledDecimal(jVal, scale)
+        result.scaledValue shouldBe expected
+      }
+    }
+
   }
 
   Feature("Comparison and Ordering") {

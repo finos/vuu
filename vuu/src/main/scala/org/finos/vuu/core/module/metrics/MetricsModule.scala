@@ -1,12 +1,12 @@
 package org.finos.vuu.core.module.metrics
 
-import org.finos.vuu.api.{Indices, TableDef}
-import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
-import org.finos.vuu.core.table.Columns
 import org.finos.toolbox.jmx.MetricsProvider
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.api.{Indices, TableDef}
 import org.finos.vuu.core.module.metrics.MetricsSchema.MetricsTree.all_columns
+import org.finos.vuu.core.module.{DefaultModule, ModuleFactory, TableDefContainer, ViewServerModule}
+import org.finos.vuu.core.table.Columns
 
 object MetricsSchema{
 
@@ -92,7 +92,8 @@ object MetricsModule extends DefaultModule {
         TableDef(
           name = "metricsViewports",
           keyField = "id",
-          columns = Columns.fromNames("id".string(), "table".string(), "structureHash".int(), "updateCount".long(), "keyBuildCount".long(), "mean".double(), "max".double(), "75Perc".double(), "99Perc".double(), "99_9Perc".double()),
+          columns = Columns.fromNames("id".string(), "table".string(), "structureHash".int(), "updateCount".long(),
+            "keyBuildCount".long(), "mean".scaledDecimal2(), "max".long(), "75Perc".scaledDecimal4(), "99Perc".scaledDecimal6(), "99_9Perc".scaledDecimal8()),
           indices = Indices(),
           joinFields = "id"
         ),
