@@ -2,13 +2,13 @@ package org.finos.vuu.core.sort
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.collection.array.ImmutableArray
-import org.finos.toolbox.time.TimeIt.timeIt
 import org.finos.vuu.core.table.{Column, RowWithData, TablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.net.SortSpec
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 
 import java.util
+import java.util.Comparator
 
 trait Sort {
   def doSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys
@@ -17,8 +17,7 @@ trait Sort {
 object Sort {
   def apply(spec: SortSpec, columns: List[Column]): Sort = {
     val sortDirections = spec.sortDefs.map(sd => SortDirection.fromExternal(sd.sortType))
-    val comparator = RowDataComparator.apply(columns, sortDirections)
-    GenericSort2(comparator)
+    GenericSort2(columns.toArray, sortDirections.toArray)
   }
 }
 
@@ -28,38 +27,34 @@ object NoSort extends Sort {
   }
 }
 
-private case class GenericSort2(rowDataComparator: RowDataComparator) extends Sort with StrictLogging {
+private case class GenericSort2(columns: Array[Column], sortDirections: Array[SortDirection]) extends Sort with StrictLogging {
+
+  private val comparator = SortProjectionComparator(columns, sortDirections)
+  private val columnNames = columns.map(_.name)
+  private val columnsLength = columns.length
+  private val projectionLength = columnsLength + 1
 
   override def doSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
 
     //This has been repeatedly benchmarked using JMH. If you touch this, do a before and after run of SortBenchmark
 
-    logger.trace("Starting map")
+    logger.trace("Creating projections")
+    val sortProjections = new Array[Array[AnyRef]](primaryKeys.length)
+    val rowCount = addProjections(sortProjections, source, primaryKeys, vpColumns)
 
-    val (millisToArray, snapshotAndCount) = timeIt {
-      createSnapshot(source, primaryKeys, vpColumns)
-    }
+    logger.trace("Performing sort")
+    util.Arrays.sort(sortProjections, 0, rowCount, comparator)
 
-    logger.trace("Starting sort")
+    logger.trace("Creating primary keys")
+    val sortedKeys = createKeyArray(sortProjections, rowCount)
 
-    val (millisSort, _ ) = timeIt {
-      util.Arrays.sort(snapshotAndCount._1, 0, snapshotAndCount._2, rowDataComparator)
-    }
-
-    logger.trace("Starting build imm arr")
-
-    val (millisImmArray, immutableArray) = timeIt {
-      createKeyArray(snapshotAndCount._1, snapshotAndCount._2)
-    }
-
-    logger.debug(s"[SORT]: Table Size: ${primaryKeys.length} DataToArray: ${millisToArray}ms, Sort: ${millisSort}ms, ImmutArr: ${millisImmArray}ms")
-
-    InMemTablePrimaryKeys(immutableArray)
+    logger.trace("Finished")
+    InMemTablePrimaryKeys(sortedKeys)
   }
 
-  private def createSnapshot(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): (Array[RowWithData], Int) = {
+  private def addProjections(sortProjections: Array[Array[AnyRef]], source: RowSource,
+                             primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): Int = {
     val length = primaryKeys.length
-    val rowDataArray = new Array[RowWithData](length)
     var index = 0
     var count = 0
 
@@ -67,23 +62,35 @@ private case class GenericSort2(rowDataComparator: RowDataComparator) extends So
       val key = primaryKeys.get(index)
       source.pullRow(key, vpColumns) match {
         case r: RowWithData =>
-          rowDataArray(count) = r
+          val projection = new Array[AnyRef](projectionLength)
+          projection(0) = r.key
+          var columnIndex = 0
+          while (columnIndex < columnsLength) {
+            val columnValue = r.data.getOrElse(columnNames(columnIndex), null).asInstanceOf[AnyRef]
+            projection(columnIndex + 1) = columnValue
+            columnIndex += 1
+          }
+          sortProjections(count) = projection
           count += 1
         case _ =>
       }
       index += 1
     }
-    (rowDataArray, count)
+    count
   }
 
-  private def createKeyArray(snapshot: Array[RowWithData], length: Int): ImmutableArray[String] = {
-    val keys = new Array[String](length)
-    var i = 0
-    while (i < length) {
-      keys(i) = snapshot(i).key
-      i += 1
+  private def createKeyArray(snapshot: Array[Array[AnyRef]], rowCount: Int): ImmutableArray[String] = {
+    val iterator = new Iterator[String] {
+      private var i = 0
+      override def hasNext: Boolean = i < rowCount
+      override def next(): String = {
+        val key = snapshot(i)(0).asInstanceOf[String]
+        i += 1
+        key
+      }
+      override def knownSize: Int = rowCount
     }
-    ImmutableArray.from(keys)
+    ImmutableArray.from(iterator)
   }
 
 }

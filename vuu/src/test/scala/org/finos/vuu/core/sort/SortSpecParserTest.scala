@@ -59,9 +59,11 @@ class SortSpecParserTest extends AnyFeatureSpec with Matchers {
       sort.isInstanceOf[GenericSort2] shouldBe true
 
       val sortImpl = sort.asInstanceOf[GenericSort2]
-      val comparator = sortImpl.rowDataComparator
+      sortImpl.columns.length shouldEqual 1
+      sortImpl.columns.head shouldEqual validColumn
 
-      comparator.isInstanceOf[SingleColumnRowDataComparatorImpl] shouldBe true
+      sortImpl.sortDirections.length shouldEqual 1
+      sortImpl.sortDirections.head shouldEqual SortDirection.Ascending
     }
 
   }
