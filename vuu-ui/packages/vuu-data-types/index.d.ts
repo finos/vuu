@@ -817,6 +817,14 @@ export interface VuuUIMessageOutUnsubscribe {
   type: "unsubscribe";
   viewport: string;
 }
+
+export interface VuuUIMessageOutDisableAllActive {
+  type: "disable-all-active";
+}
+export interface VuuUIMessageOutEnableAllActive {
+  type: "enable-all-active";
+}
+
 export interface VuuUIMessageOutSuspend {
   /**
    * suspend is purely a client-side mechanism to avoid sending
@@ -831,10 +839,6 @@ export interface VuuUIMessageOutSuspend {
    */
   escalateDelay?: number;
   type: "suspend";
-  viewport: string;
-}
-export interface VuuUIMessageOutResume {
-  type: "resume";
   viewport: string;
 }
 
@@ -898,10 +902,6 @@ export interface VuuUIMessageOutSelectNone extends ViewportMessageOut {
   type: "selectNone";
 }
 
-export interface VuuUIMessageOutSuspend extends ViewportMessageOut {
-  type: "suspend";
-}
-
 export interface VuuUIMessageOutConfig extends ViewportMessageOut {
   config: WithFullConfig;
   type: "config";
@@ -926,6 +926,8 @@ export declare type WithRequestId<T> = T & { requestId: string };
 export declare type VuuUIMessageOut =
   | VuuUIMessageOutConnect
   | VuuUIMessageOutDisconnect
+  | VuuUIMessageOutDisableAllActive
+  | VuuUIMessageOutEnableAllActive
   | VuuUIMessageOutSubscribe
   | VuuUIMessageOutUnsubscribe
   | VuuUIMessageOutViewport

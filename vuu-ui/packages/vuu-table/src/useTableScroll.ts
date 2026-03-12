@@ -20,7 +20,6 @@ import {
   howFarIsRowOutsideViewport,
 } from "./table-dom-utils";
 import type { RuntimeColumnDescriptor } from "@vuu-ui/vuu-table-types";
-import { FocusCell } from "./useCellFocus";
 import { ICellFocusState } from "./CellFocusState";
 
 export type ScrollDirectionVertical = "up" | "down";
@@ -84,19 +83,7 @@ const getMaxScroll = (container: HTMLElement) => {
   return [scrollWidth - clientWidth, scrollHeight - clientHeight];
 };
 
-const getScrollDirection = (
-  prevScrollPositions: ScrollPos | undefined,
-  scrollPos: number,
-) => {
-  if (prevScrollPositions === undefined) {
-    return undefined;
-  } else {
-    const { scrollTop: prevTop } = prevScrollPositions;
-    return scrollPos > prevTop ? "fwd" : "bwd";
-  }
-};
-
-const getPctScroll = (container: HTMLElement, currentScrollPos?: ScrollPos) => {
+const getPctScroll = (container: HTMLElement) => {
   const {
     clientHeight,
     clientWidth,
@@ -109,15 +96,7 @@ const getPctScroll = (container: HTMLElement, currentScrollPos?: ScrollPos) => {
   const maxScrollLeft = scrollWidth - clientWidth;
   const pctScrollLeft = scrollLeft / (scrollWidth - clientWidth);
   const maxScrollTop = scrollHeight - clientHeight;
-  let pctScrollTop = scrollTop / (scrollHeight - clientHeight);
-
-  const scrollDirection = getScrollDirection(currentScrollPos, scrollTop);
-
-  if (scrollDirection === "fwd" && pctScrollTop > 0.99) {
-    pctScrollTop = 1;
-  } else if (scrollDirection === "bwd" && pctScrollTop < 0.02) {
-    pctScrollTop = 0;
-  }
+  const pctScrollTop = scrollTop / (scrollHeight - clientHeight);
 
   return [
     scrollLeft,
@@ -169,7 +148,6 @@ type ScrollPos = {
 export interface TableScrollHookProps {
   cellFocusStateRef: RefObject<ICellFocusState>;
   columns: RuntimeColumnDescriptor[];
-  focusCell?: FocusCell;
   getRowAtPosition: RowAtPositionFunc;
   onHorizontalScroll?: (scrollLeft: number) => void;
   onVerticalScroll?: (scrollTop: number, pctScrollTop: number) => void;
@@ -189,7 +167,6 @@ export interface TableScrollHookProps {
 export const useTableScroll = ({
   cellFocusStateRef,
   columns,
-  focusCell,
   getRowAtPosition,
   onHorizontalScroll,
   onVerticalScroll,
@@ -298,7 +275,7 @@ export const useTableScroll = ({
             focusState.outsideViewport = row < firstRow ? "above" : "below";
           } else if (isInViewport && !wasInViewport) {
             focusState.outsideViewport = false;
-            focusCell?.(focusState.cellPos);
+            // focusCell?.(focusState.cellPos);
           }
         }
       }
@@ -306,7 +283,7 @@ export const useTableScroll = ({
     },
     [
       cellFocusStateRef,
-      focusCell,
+      // focusCell,
       getRowAtPosition,
       onVerticalScroll,
       onVerticalScrollInSitu,
@@ -327,7 +304,7 @@ export const useTableScroll = ({
 
     if (scrollbarContainer && contentContainer) {
       const [scrollLeft, pctScrollLeft, , scrollTop, pctScrollTop] =
-        getPctScroll(scrollbarContainer, scrollPos);
+        getPctScroll(scrollbarContainer);
 
       if (
         scrollLeft !== scrollPos.scrollLeft ||
@@ -364,7 +341,7 @@ export const useTableScroll = ({
     } else if (contentContainer && scrollbarContainer) {
       scrollbarContainerScrolledRef.current = true;
       const [scrollLeft, pctScrollLeft, , scrollTop, pctScrollTop] =
-        getPctScroll(scrollbarContainer, scrollPos);
+        getPctScroll(scrollbarContainer);
 
       scrollPos.scrollLeft = scrollLeft;
       scrollPos.scrollTop = scrollTop;

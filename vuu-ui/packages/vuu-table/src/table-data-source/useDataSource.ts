@@ -6,7 +6,7 @@ import type {
   DataSourceSuspenseProps,
 } from "@vuu-ui/vuu-data-types";
 import { SelectRowRequest, VuuRange } from "@vuu-ui/vuu-protocol-types";
-import { NULL_RANGE, Range } from "@vuu-ui/vuu-utils";
+import { Range } from "@vuu-ui/vuu-utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TableProps } from "../Table";
 import { metadataKeys } from "@vuu-ui/vuu-utils";
@@ -47,7 +47,7 @@ export const useDataSource = ({
   const data = useRef<DataSourceRow[]>([]);
   const isMounted = useRef(true);
   const hasUpdated = useRef(false);
-  const rangeRef = useRef<Range>(NULL_RANGE);
+  const rangeRef = useRef<Range>(dataSource.range);
   const totalRowCountRef = useRef(0);
   const rowAutoSelected = useRef(false);
 
@@ -75,21 +75,10 @@ export const useDataSource = ({
     };
   }, [autoSelect, dataSource, handleConfigChange]);
 
-  const dataWindow = useMemo(() => new MovingWindow(NULL_RANGE), []);
-
-  useMemo(() => {
-    dataSource.on("resumed", () => {
-      // When we resume a dataSource (after switching tabs etc)
-      // client will receive rows. We may not have received any
-      // setRange calls at this point so dataWindow range will
-      //not yet be set. If the dataWindow range is already set,
-      // this is a no-op.
-      const { range } = dataSource;
-      if (range.to !== 0) {
-        dataWindow.setRange(dataSource.range.withBuffer);
-      }
-    });
-  }, [dataSource, dataWindow]);
+  const dataWindow = useMemo(
+    () => new MovingWindow(rangeRef.current.withBuffer),
+    [],
+  );
 
   const setData = useCallback(
     (updates: DataSourceRow[]) => {
@@ -183,20 +172,6 @@ export const useDataSource = ({
   }, [dataWindow]);
 
   useEffect(() => {
-    isMounted.current = true;
-    if (dataSource.status !== "initialising") {
-      dataSource.resume?.(datasourceMessageHandler);
-    }
-    return () => {
-      isMounted.current = false;
-      dataSource.suspend?.(
-        suspenseProps?.escalateToDisable,
-        suspenseProps?.escalateDelay,
-      );
-    };
-  }, [dataSource, datasourceMessageHandler, suspenseProps]);
-
-  useEffect(() => {
     if (dataSource.status === "disabled") {
       dataSource.enable?.(datasourceMessageHandler);
     }
@@ -215,7 +190,8 @@ export const useDataSource = ({
 
         if (
           dataSource.status !== "subscribed" &&
-          dataSource.status !== "subscribing"
+          dataSource.status !== "subscribing" &&
+          dataSource.status !== "enabling"
         ) {
           dataSource?.subscribe(
             {
@@ -241,6 +217,26 @@ export const useDataSource = ({
       revealSelected,
     ],
   );
+
+  useEffect(() => {
+    isMounted.current = true;
+    if (dataSource.status !== "initialising") {
+      dataSource.resume?.(datasourceMessageHandler);
+
+      if (dataSource.range.from > 0) {
+        // UI does not currently restore scroll position, so always reset to top of dataset
+        const { from, to } = rangeRef.current.reset;
+        setRange({ from, to });
+      }
+    }
+    return () => {
+      isMounted.current = false;
+      dataSource.suspend?.(
+        suspenseProps?.escalateToDisable,
+        suspenseProps?.escalateDelay,
+      );
+    };
+  }, [dataSource, datasourceMessageHandler, setRange, suspenseProps]);
 
   const removeColumnDataFromCache = useCallback(
     (indexOfRemovedColumn: number) => {

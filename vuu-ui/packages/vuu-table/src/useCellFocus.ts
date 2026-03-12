@@ -75,6 +75,8 @@ export const useCellFocus = ({
             state.cellPos = cellPos;
 
             // TODO needs to be scroll cell to accommodate horizontal virtualization
+            console.log(`[useCellFocus] requestScroll ${cellPos[0]}`);
+
             requestScroll?.({ type: "scroll-row", rowIndex: cellPos[0] });
             activeCell.focus({ preventScroll: true });
           }
