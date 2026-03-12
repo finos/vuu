@@ -44,7 +44,7 @@ class SortSpecParserTest extends AnyFeatureSpec with Matchers {
       sort.isInstanceOf[NoSort.type] shouldBe true
     }
 
-    Scenario("Spec with a mix of columns") {
+    Scenario("Spec with a mix of valid and invalid columns and directions") {
       val validColumn = table.columns().head
 
       val spec = SortSpec(
@@ -61,8 +61,7 @@ class SortSpecParserTest extends AnyFeatureSpec with Matchers {
       val sortImpl = sort.asInstanceOf[GenericSort2]
       val comparator = sortImpl.rowDataComparator
 
-      val comparatorImpl = comparator.asInstanceOf[RowDataComparatorImpl]
-      comparatorImpl.comparators.length shouldEqual 1
+      comparator.isInstanceOf[SingleColumnRowDataComparatorImpl] shouldBe true
     }
 
   }
