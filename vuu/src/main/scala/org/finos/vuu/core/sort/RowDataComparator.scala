@@ -13,62 +13,84 @@ object RowDataComparator extends StrictLogging {
       .lazyZip(sortDirections)
       .map((col, dir) => buildColumnComparator(col, dir == Ascending))
       .toArray
-    RowDataComparatorImpl(comparators)
+
+    comparators.length match {
+      case 1 => SingleColumnRowDataComparatorImpl(comparators.head)
+      case _ => RowDataComparatorImpl(comparators)
+    }
   }
 
-  private def buildColumnComparator(column: Column, isAscending: Boolean): (RowData, RowData) => Int = {
+  private def buildColumnComparator(column: Column, isAscending: Boolean): ColumnSort = {
     column.dataType match {
       case DataType.StringDataType =>
-        (o1: RowData, o2: RowData) => compareString(o1.get(column), o2.get(column), isAscending)
+        StringColumnSort(column, isAscending)
       case DataType.LongDataType | DataType.IntegerDataType | DataType.DoubleDataType |
            DataType.BooleanDataType | DataType.CharDataType | DataType.EpochTimestampType |
            DataType.ScaledDecimal2Type | DataType.ScaledDecimal4Type |
            DataType.ScaledDecimal6Type | DataType.ScaledDecimal8Type =>
-        (o1: RowData, o2: RowData) => compareComparable(o1.get(column), o2.get(column), isAscending)
+        ComparableColumnSort(column, isAscending)
       case _ =>
         logger.warn(s"Unable to sort datatype ${column.dataType}")
-        (_, _) => 0
-    }
-  }
-
-  private def compareComparable(v1: Any, v2: Any, isAscending: Boolean): Int = {
-    val c1 = v1.asInstanceOf[Comparable[AnyRef]]
-    val c2 = v2.asInstanceOf[AnyRef]
-
-    if (c1 eq c2) 0
-    else if (c1 == null) if (isAscending) 1 else -1
-    else if (c2 == null) if (isAscending) -1 else 1
-    else {
-      val res = c1.compareTo(c2)
-      if (isAscending) res else -res
-    }
-  }
-
-  private def compareString(v1: Any, v2: Any, isAscending: Boolean): Int = {
-    val c1 = v1.asInstanceOf[String]
-    val c2 = v2.asInstanceOf[String]
-
-    if (c1 eq c2) 0
-    else if (c1 == null) if (isAscending) 1 else -1
-    else if (c2 == null) if (isAscending) -1 else 1
-    else {
-      val res = c1.compareToIgnoreCase(c2)
-      if (isAscending) res else -res
+        NoColumnSort
     }
   }
 
 }
 
-case class RowDataComparatorImpl(comparators: Array[(RowData, RowData) => Int]) extends RowDataComparator {
+case class SingleColumnRowDataComparatorImpl(columnSort: ColumnSort) extends RowDataComparator {
+
+  override def compare(o1: RowData, o2: RowData): Int = {
+    columnSort.compare(o1, o2)
+  }
+
+}
+
+case class RowDataComparatorImpl(comparators: Array[ColumnSort]) extends RowDataComparator {
 
   override def compare(o1: RowData, o2: RowData): Int = {
     var i = 0
-    var result = 0
-    while (i < comparators.length && result == 0) {
-      result = comparators(i)(o1, o2)
+    val len = comparators.length
+    while (i < len) {
+      val res = comparators(i).compare(o1, o2)
+      if (res != 0) return res
       i += 1
     }
-    result
+    0
   }
+}
 
+sealed trait ColumnSort {
+  def compare(o1: RowData, o2: RowData): Int
+}
+
+object NoColumnSort extends ColumnSort {
+  override def compare(o1: RowData, o2: RowData): Int = 0
+}
+
+case class StringColumnSort(column: Column, ascending: Boolean) extends ColumnSort {
+  private val multiplier = if (ascending) 1 else -1
+  override def compare(o1: RowData, o2: RowData): Int = {
+    val v1 = o1.get(column).asInstanceOf[String]
+    val v2 = o2.get(column).asInstanceOf[String]
+
+    if (v1 eq v2) return 0
+    if (v1 == null) return multiplier
+    if (v2 == null) return -multiplier
+
+    v1.compareToIgnoreCase(v2) * multiplier
+  }
+}
+
+case class ComparableColumnSort(column: Column, ascending: Boolean) extends ColumnSort {
+  private val multiplier = if (ascending) 1 else -1
+  override def compare(o1: RowData, o2: RowData): Int = {
+    val v1 = o1.get(column).asInstanceOf[Comparable[AnyRef]]
+    val v2 = o2.get(column).asInstanceOf[AnyRef]
+
+    if (v1 eq v2) return 0
+    if (v1 == null) return multiplier
+    if (v2 == null) return -multiplier
+
+    v1.compareTo(v2) * multiplier
+  }
 }
