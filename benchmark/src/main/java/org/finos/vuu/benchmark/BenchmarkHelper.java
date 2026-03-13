@@ -77,10 +77,10 @@ public class BenchmarkHelper {
             rowBuilder.setKey(ric);
             rowBuilder.setString(ricColumn, ric);
             rowBuilder.setString(exchangeColumn, "exchange-" + i);
-            rowBuilder.setDouble(bidColumn, 101);
-            rowBuilder.setDouble(askColumn, 100);
-            rowBuilder.setDouble(lastColumn, 105);
-            rowBuilder.setDouble(closeColumn, 106);
+            rowBuilder.setDouble(bidColumn, i + 1.0);
+            rowBuilder.setDouble(askColumn, i + 2.0);
+            rowBuilder.setDouble(lastColumn, i + 3.0);
+            rowBuilder.setDouble(closeColumn, i + 4.0);
             dataTable.processUpdate(rowBuilder.build());
         }
     }

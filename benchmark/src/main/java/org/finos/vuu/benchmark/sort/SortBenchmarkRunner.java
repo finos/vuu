@@ -14,7 +14,6 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 @State(Scope.Benchmark)
@@ -23,7 +22,7 @@ public class SortBenchmarkRunner {
     private final BenchmarkHelper benchmarkHelper = new BenchmarkHelper();
     private SortBenchmark benchmark;
 
-    @Param({ "10000", "100000", "500000", "1000000" })
+    @Param({ "10000", "100000", "1000000" })
     public int tableSize;
 
     @Setup(Level.Trial)
@@ -37,8 +36,18 @@ public class SortBenchmarkRunner {
     @Measurement(iterations = 5)
     @Fork(1)
     @BenchmarkMode(Mode.SampleTime)
-    public void sortLargeTable() throws IOException {
-        benchmark.sortLargeTable();
+    public void sortLargeTableSingle() {
+        benchmark.sortLargeTableSingleColumn();
+    }
+
+    @Benchmark
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 5)
+    @Measurement(iterations = 5)
+    @Fork(1)
+    @BenchmarkMode(Mode.SampleTime)
+    public void sortLargeTableMulti() {
+        benchmark.sortLargeTableMultiColumn();
     }
 
 }
