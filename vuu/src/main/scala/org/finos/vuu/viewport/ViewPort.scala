@@ -5,7 +5,7 @@ import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.auths.VuuUser
-import org.finos.vuu.core.filter.{CompoundFilter, CompoundViewPortFilter}
+import org.finos.vuu.core.filter.CompoundViewPortFilter
 import org.finos.vuu.core.filter.`type`.{PermissionFilter, VisualLinkedFilter}
 import org.finos.vuu.core.sort.*
 import org.finos.vuu.core.table.datatype.EpochTimestamp

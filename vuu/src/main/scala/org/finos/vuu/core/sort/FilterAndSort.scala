@@ -2,7 +2,7 @@ package org.finos.vuu.core.sort
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.filter.`type`.BaseFilter
-import org.finos.vuu.core.filter.{CompoundFilter, CompoundViewPortFilter, ViewPortFilter}
+import org.finos.vuu.core.filter.{CompoundViewPortFilter, ViewPortFilter}
 import org.finos.vuu.core.table.{EmptyTablePrimaryKeys, TablePrimaryKeys}
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 

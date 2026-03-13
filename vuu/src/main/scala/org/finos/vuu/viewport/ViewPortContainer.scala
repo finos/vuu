@@ -12,7 +12,7 @@ import org.finos.vuu.api.{Link, ViewPortDef}
 import org.finos.vuu.client.messages.ViewPortId
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.filter.`type`.{AllowAllPermissionFilter, AntlrBasedFilter, BaseFilter, VisualLinkedFilter}
-import org.finos.vuu.core.filter.{CompoundFilter, CompoundViewPortFilter, FilterOutEverythingFilter, FilterSpecParser, NoFilter, ViewPortFilter}
+import org.finos.vuu.core.filter.{CompoundViewPortFilter, FilterOutEverythingFilter, FilterSpecParser, NoFilter, ViewPortFilter}
 import org.finos.vuu.core.sort.*
 import org.finos.vuu.core.table.{DataTable, SessionTable, TableContainer}
 import org.finos.vuu.core.tree.TreeSessionTableImpl

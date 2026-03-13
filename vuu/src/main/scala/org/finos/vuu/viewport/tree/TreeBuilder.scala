@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.logging.LogAtFrequency
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.filter.`type`.{AntlrBasedFilter, BaseFilter, PermissionFilter}
-import org.finos.vuu.core.filter.{CompoundFilter, CompoundViewPortFilter, FilterOutEverythingFilter, FilterSpecParser, NoFilter}
+import org.finos.vuu.core.filter.{CompoundViewPortFilter, FilterOutEverythingFilter, FilterSpecParser, NoFilter}
 import org.finos.vuu.core.sort.Sort
 import org.finos.vuu.core.table.datatype.EpochTimestamp
 import org.finos.vuu.core.table.{Column, EmptyRowData, RowData, RowWithData, TablePrimaryKeys}
