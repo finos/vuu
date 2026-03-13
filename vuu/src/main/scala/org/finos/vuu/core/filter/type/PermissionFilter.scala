@@ -1,18 +1,15 @@
 package org.finos.vuu.core.filter.`type`
 
-import com.typesafe.scalalogging.LazyLogging
+import com.typesafe.scalalogging.{LazyLogging, StrictLogging}
 import org.finos.toolbox.collection.array.ImmutableArray
+import org.finos.vuu.core.filter.{CompoundFilter, Filter}
 import org.finos.vuu.core.index.{BooleanIndexedField, CharIndexedField, DoubleIndexedField, EpochTimestampIndexedField, IndexedField, IntIndexedField, LongIndexedField, ScaledDecimal2IndexedField, ScaledDecimal4IndexedField, ScaledDecimal6IndexedField, ScaledDecimal8IndexedField, StringIndexedField}
 import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.core.table.{Column, DataType, EmptyTablePrimaryKeys, RowData, TablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
-import org.finos.vuu.viewport.RowSource
+import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 
-trait PermissionFilter {
-
-  def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean): TablePrimaryKeys
-
-}
+trait PermissionFilter extends Filter { }
 
 object PermissionFilter {
 
@@ -36,45 +33,29 @@ object DenyAllPermissionFilter extends PermissionFilter {
 
 }
 
-private case class PermissionFilterChain(filters: Iterable[PermissionFilter]) extends PermissionFilter with LazyLogging {
+private case class PermissionFilterChain(filters: Iterable[PermissionFilter]) extends PermissionFilter with StrictLogging {
+
+  private val internalFilter = CompoundFilter(filters.toSeq: _*)
 
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean): TablePrimaryKeys = {
-    logger.trace(s"Starting filter with ${primaryKeys.length} rows")
-
-    if (primaryKeys.isEmpty) {
-      primaryKeys
-    } else {
-      filters.foldLeft(primaryKeys) {
-        (remainingKeys, filter) => {
-          if (remainingKeys.isEmpty) {
-            remainingKeys
-          } else {
-            val stillFirstInChain = firstInChain && remainingKeys == primaryKeys
-            filter.doFilter(source, remainingKeys, stillFirstInChain)
-          }
-        }
-      }
-    }
+    internalFilter.doFilter(source, primaryKeys, firstInChain)
   }
 
 }
 
-private case class RowPermissionFilter(rowPredicate: RowData => Boolean) extends PermissionFilter with LazyLogging {
+private case class RowPermissionFilter(rowPredicate: RowData => Boolean) extends PermissionFilter with StrictLogging {
 
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean): TablePrimaryKeys = {
     logger.trace(s"Starting filter with ${primaryKeys.length} rows")
+    if (primaryKeys.isEmpty) return primaryKeys
 
-    if (primaryKeys.isEmpty) {
-      primaryKeys
-    } else {
-      val filtered = primaryKeys.filter(key => rowPredicate.apply(source.pullRow(key)))
-      InMemTablePrimaryKeys(ImmutableArray.from[String](filtered))
-    }
+    val filtered = primaryKeys.view.filter(key => rowPredicate.apply(source.pullRow(key)))
+    InMemTablePrimaryKeys(ImmutableArray.from[String](filtered))
   }
 
 }
 
-private case class ContainsPermissionFilter(columnName: String, allowedValues: Set[String]) extends PermissionFilter with LazyLogging {
+private case class ContainsPermissionFilter(columnName: String, allowedValues: Set[String]) extends PermissionFilter with StrictLogging {
 
   private lazy val longValues = allowedValues.map(f => f.toLong)
   private lazy val intValues = allowedValues.map(f => f.toInt)
@@ -89,9 +70,10 @@ private case class ContainsPermissionFilter(columnName: String, allowedValues: S
 
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean): TablePrimaryKeys = {
     logger.trace(s"Starting filter with ${primaryKeys.length} rows")
+    if (primaryKeys.isEmpty) return primaryKeys
 
     val column = source.asTable.columnForName(columnName)
-    if (column == null || primaryKeys.isEmpty || allowedValues.isEmpty) {
+    if (column == null || allowedValues.isEmpty) {
       EmptyTablePrimaryKeys
     } else {
       source.asTable.indexForColumn(column) match {
@@ -127,53 +109,51 @@ private case class ContainsPermissionFilter(columnName: String, allowedValues: S
   private def hitIndex[T](primaryKeys: TablePrimaryKeys, indexedField: IndexedField[T], values: Set[T],
                           firstInChain: Boolean): TablePrimaryKeys = {
     val results = indexedField.find(values)
-    if (results.isEmpty) {
-      EmptyTablePrimaryKeys
-    } else if (firstInChain) {
-      InMemTablePrimaryKeys(results)
+    if (results.isEmpty || firstInChain) {
+      InMemTablePrimaryKeys(results.toImmutableArray)
     } else {
-      primaryKeys.intersect(results)
+      val filtered = primaryKeys.view.filter(results.contains)
+      InMemTablePrimaryKeys(ImmutableArray.from(filtered))
     }
   }
 
   private def filterByRow(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean, column: Column): TablePrimaryKeys = {
-    val rowPermissionFilter = column.dataType match {
+    column.dataType match {
       case DataType.StringDataType =>
-        buildFilter(column, allowedValues)
+        applyFilter(source, primaryKeys, column, allowedValues)
       case DataType.LongDataType =>
-        buildFilter(column, longValues)
+        applyFilter(source, primaryKeys, column, longValues)
       case DataType.IntegerDataType =>
-        buildFilter(column, intValues)
+        applyFilter(source, primaryKeys, column, intValues)
       case DataType.DoubleDataType =>
-        buildFilter(column, doubleValues)
+        applyFilter(source, primaryKeys, column, doubleValues)
       case DataType.BooleanDataType =>
-        buildFilter(column, booleanValues)
+        applyFilter(source, primaryKeys, column, booleanValues)
       case DataType.EpochTimestampType =>
-        buildFilter(column, epochTimestampValues)
+        applyFilter(source, primaryKeys, column, epochTimestampValues)
       case DataType.CharDataType =>
-        buildFilter(column, charValues)
+        applyFilter(source, primaryKeys,column, charValues)
       case DataType.ScaledDecimal2Type =>
-        buildFilter(column, scaledDecimal2Values)
+        applyFilter(source, primaryKeys, column, scaledDecimal2Values)
       case DataType.ScaledDecimal4Type =>
-        buildFilter(column, scaledDecimal4Values)
+        applyFilter(source, primaryKeys, column, scaledDecimal4Values)
       case DataType.ScaledDecimal6Type =>
-        buildFilter(column, scaledDecimal6Values)
+        applyFilter(source, primaryKeys, column, scaledDecimal6Values)
       case DataType.ScaledDecimal8Type =>
-        buildFilter(column, scaledDecimal8Values)
+        applyFilter(source, primaryKeys, column, scaledDecimal8Values)
       case _ =>
         logger.warn(s"Unable to permission filter $column")
-        DenyAllPermissionFilter
+        EmptyTablePrimaryKeys
     }
-
-    rowPermissionFilter.doFilter(source, primaryKeys, firstInChain)
   }
 
-  private def buildFilter[T](column: Column, items: Set[T]): RowPermissionFilter = {
+  private def applyFilter[T](source: RowSource, primaryKeys: TablePrimaryKeys, column: Column, items: Set[T]): TablePrimaryKeys = {
     val predicate: RowData => Boolean = r => {
       val value = r.get(column)
       value != null && items.contains(value.asInstanceOf[T])
     }
-    RowPermissionFilter(predicate)
+    val filtered = primaryKeys.view.filter(key => predicate.apply(source.pullRow(key)))
+    InMemTablePrimaryKeys(ImmutableArray.from[String](filtered))
   }
   
 }

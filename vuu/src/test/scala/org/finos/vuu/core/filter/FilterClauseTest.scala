@@ -187,7 +187,7 @@ class FilterClauseTest extends AnyFeatureSpec with Matchers {
   }
 
   Feature("(And|Or)Clause.validate") {
-    val subclauses = List(EqualsClause("col-1", "abc"), InClause("col-3", Set.empty))
+    val subclauses: Array[FilterClause] = Array(EqualsClause("col-1", "abc"), InClause("col-3", Set.empty))
     val andClause = AndClause(subclauses)
     val orClause = OrClause(subclauses)
 
@@ -217,7 +217,7 @@ class FilterClauseTest extends AnyFeatureSpec with Matchers {
         val res = clause.validate(vpColumns)
 
         res.isError should be (true)
-        res.getError should include regex s"`col-1` not found(.|\n)*`col-3` not found"
+        res.getError should include regex s"`col-1` not found(.|${System.lineSeparator()})*`col-3` not found"
       })
     }
   }

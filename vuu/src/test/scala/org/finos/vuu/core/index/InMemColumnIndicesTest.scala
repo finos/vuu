@@ -93,7 +93,7 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       indices.insert(createRow(rowKey, column, "A"))
       val result = indexField.find("A")
       result.length shouldEqual 1
-      result.apply(0) shouldEqual rowKey
+      result.head shouldEqual rowKey
 
       // 2. Update to new value
       indices.update(createRow(rowKey, column, "A"), createRow(rowKey, column, "B"))
@@ -101,7 +101,7 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       result2.length shouldEqual 0
       val result3 = indexField.find("B")
       result3.length shouldEqual 1
-      result3.apply(0) shouldEqual rowKey
+      result3.head shouldEqual rowKey
 
       // 3. Update to null
       indices.update(createRow(rowKey, column, "B"), createRow(rowKey, column, null))
@@ -112,7 +112,7 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       indices.update(createRow(rowKey, column, null), createRow(rowKey, column, "C"))
       val result5 = indexField.find("C")
       result5.length shouldEqual 1
-      result5.apply(0) shouldEqual rowKey
+      result5.head shouldEqual rowKey
 
       // 5. Remove
       indices.remove(createRow(rowKey, column, "C"))
@@ -129,7 +129,7 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       indices.insert(createRow(rowKey, column, 1))
       val result = indexField.find(1)
       result.length shouldEqual 1
-      result.apply(0) shouldEqual rowKey
+      result.head shouldEqual rowKey
 
       // 2. Update to new value
       indices.update(createRow(rowKey, column, 1), createRow(rowKey, column, 2))
@@ -137,7 +137,7 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       result2.length shouldEqual 0
       val result3 = indexField.find(2)
       result3.length shouldEqual 1
-      result3.apply(0) shouldEqual rowKey
+      result3.head shouldEqual rowKey
 
       // 3. Update to null
       indices.update(createRow(rowKey, column, 2), createRow(rowKey, column, null))
@@ -148,7 +148,7 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       indices.update(createRow(rowKey, column, null), createRow(rowKey, column, 3))
       val result5 = indexField.find(3)
       result5.length shouldEqual 1
-      result5.apply(0) shouldEqual rowKey
+      result5.head shouldEqual rowKey
 
       // 5. Remove
       indices.remove(createRow(rowKey, column, 3))
@@ -165,7 +165,7 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       indices.insert(createRow(rowKey, column, 1L))
       val result = indexField.find(1L)
       result.length shouldEqual 1
-      result.apply(0) shouldEqual rowKey
+      result.head shouldEqual rowKey
 
       // 2. Update to new value
       indices.update(createRow(rowKey, column, 1L), createRow(rowKey, column, 2L))
@@ -173,7 +173,7 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       result2.length shouldEqual 0
       val result3 = indexField.find(2L)
       result3.length shouldEqual 1
-      result3.apply(0) shouldEqual rowKey
+      result3.head shouldEqual rowKey
 
       // 3. Update to null
       indices.update(createRow(rowKey, column, 2L), createRow(rowKey, column, null))
@@ -184,7 +184,7 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       indices.update(createRow(rowKey, column, null), createRow(rowKey, column, 3L))
       val result5 = indexField.find(3L)
       result5.length shouldEqual 1
-      result5.apply(0) shouldEqual rowKey
+      result5.head shouldEqual rowKey
 
       // 5. Remove
       indices.remove(createRow(rowKey, column, 3L))
@@ -201,7 +201,7 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       indices.insert(createRow(rowKey, column, 1.0))
       val result = indexField.find(1.0)
       result.length shouldEqual 1
-      result.apply(0) shouldEqual rowKey
+      result.head shouldEqual rowKey
 
       // 2. Update to new value
       indices.update(createRow(rowKey, column, 1.0), createRow(rowKey, column, 2.0))
@@ -209,7 +209,7 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       result2.length shouldEqual 0
       val result3 = indexField.find(2.0)
       result3.length shouldEqual 1
-      result3.apply(0) shouldEqual rowKey
+      result3.head shouldEqual rowKey
 
       // 3. Update to null
       indices.update(createRow(rowKey, column, 2.0), createRow(rowKey, column, null))
@@ -220,7 +220,7 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       indices.update(createRow(rowKey, column, null), createRow(rowKey, column, 3.0))
       val result5 = indexField.find(3.0)
       result5.length shouldEqual 1
-      result5.apply(0) shouldEqual rowKey
+      result5.head shouldEqual rowKey
 
       // 5. Remove
       indices.remove(createRow(rowKey, column, 3.0))
@@ -237,7 +237,7 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       indices.insert(createRow(rowKey, column, true))
       val result = indexField.find(true)
       result.length shouldEqual 1
-      result.apply(0) shouldEqual rowKey
+      result.head shouldEqual rowKey
 
       // 2. Update to new value
       indices.update(createRow(rowKey, column, true), createRow(rowKey, column, false))
@@ -245,7 +245,7 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       result2.length shouldEqual 0
       val result3 = indexField.find(false)
       result3.length shouldEqual 1
-      result3.apply(0) shouldEqual rowKey
+      result3.head shouldEqual rowKey
 
       // 3. Update to null
       indices.update(createRow(rowKey, column, false), createRow(rowKey, column, null))
@@ -256,7 +256,7 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       indices.update(createRow(rowKey, column, null), createRow(rowKey, column, true))
       val result5 = indexField.find(true)
       result5.length shouldEqual 1
-      result5.apply(0) shouldEqual rowKey
+      result5.head shouldEqual rowKey
 
       // 5. Remove
       indices.remove(createRow(rowKey, column, true))
@@ -273,7 +273,7 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       indices.insert(createRow(rowKey, column, 'A'))
       val result = indexField.find('A')
       result.length shouldEqual 1
-      result.apply(0) shouldEqual rowKey
+      result.head shouldEqual rowKey
 
       // 2. Update to new value
       indices.update(createRow(rowKey, column, 'A'), createRow(rowKey, column, 'B'))
@@ -281,7 +281,7 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       result2.length shouldEqual 0
       val result3 = indexField.find('B')
       result3.length shouldEqual 1
-      result3.apply(0) shouldEqual rowKey
+      result3.head shouldEqual rowKey
 
       // 3. Update to null
       indices.update(createRow(rowKey, column, 'B'), createRow(rowKey, column, null))
@@ -292,7 +292,7 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       indices.update(createRow(rowKey, column, null), createRow(rowKey, column, 'C'))
       val result5 = indexField.find('C')
       result5.length shouldEqual 1
-      result5.apply(0) shouldEqual rowKey
+      result5.head shouldEqual rowKey
 
       // 5. Remove
       indices.remove(createRow(rowKey, column, 'C'))
@@ -309,7 +309,7 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       indices.insert(createRow(rowKey, column, EpochTimestamp(1L)))
       val result = indexField.find(EpochTimestamp(1L))
       result.length shouldEqual 1
-      result.apply(0) shouldEqual rowKey
+      result.head shouldEqual rowKey
 
       // 2. Update to new value
       indices.update(createRow(rowKey, column, EpochTimestamp(1L)), createRow(rowKey, column, EpochTimestamp(2L)))
@@ -317,7 +317,7 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       result2.length shouldEqual 0
       val result3 = indexField.find(EpochTimestamp(2L))
       result3.length shouldEqual 1
-      result3.apply(0) shouldEqual rowKey
+      result3.head shouldEqual rowKey
 
       // 3. Update to null
       indices.update(createRow(rowKey, column, EpochTimestamp(2L)), createRow(rowKey, column, null))
@@ -328,7 +328,7 @@ class InMemColumnIndicesTest extends AnyFeatureSpec with Matchers with TableDriv
       indices.update(createRow(rowKey, column, null), createRow(rowKey, column, EpochTimestamp(3L)))
       val result5 = indexField.find(EpochTimestamp(3L))
       result5.length shouldEqual 1
-      result5.apply(0) shouldEqual rowKey
+      result5.head shouldEqual rowKey
 
       // 5. Remove
       indices.remove(createRow(rowKey, column, EpochTimestamp(3L)))

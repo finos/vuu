@@ -5,7 +5,7 @@ import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.api.ViewPortDef
 import org.finos.vuu.core.auths.VuuUser
-import org.finos.vuu.core.filter.CompoundFilter
+import org.finos.vuu.core.filter.{CompoundFilter, CompoundViewPortFilter}
 import org.finos.vuu.core.filter.`type`.{PermissionFilter, VisualLinkedFilter}
 import org.finos.vuu.core.sort.*
 import org.finos.vuu.core.table.datatype.EpochTimestamp
@@ -621,7 +621,7 @@ class ViewPortImpl(val id: String,
       val fields = this.structuralFields.get()
       val newFilterSort = fields.filtAndSort match {
         case udfs: UserDefinedFilterAndSort =>
-          UserDefinedFilterAndSort(CompoundFilter(VisualLinkedFilter(link), udfs.filter), udfs.sort)
+          UserDefinedFilterAndSort(CompoundViewPortFilter(VisualLinkedFilter(link), udfs.filter), udfs.sort)
         case x =>
           x
       }
@@ -639,7 +639,7 @@ class ViewPortImpl(val id: String,
         case udfs: UserDefinedFilterAndSort =>
           udfs.filter match {
             //remove the visual linked filter from the filterandsort
-            case CompoundFilter(first, second) =>
+            case CompoundViewPortFilter(first, second) =>
               UserDefinedFilterAndSort(second, udfs.sort)
           }
       }
