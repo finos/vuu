@@ -29,7 +29,9 @@ case class FrozenTimeFilter(frozenTime: EpochTimestamp) extends Filter with Lazy
   private def hitIndex(primaryKeys: TablePrimaryKeys, indexedField: EpochTimestampIndexedField,
                        firstInChain: Boolean): TablePrimaryKeys = {
     val results = indexedField.lessThan(frozenTime)
-    if (results.isEmpty || firstInChain) {
+    if (results.isEmpty) {
+      EmptyTablePrimaryKeys
+    } else if (firstInChain) {
       InMemTablePrimaryKeys(results.toImmutableArray)
     } else {
       InMemTablePrimaryKeys(ImmutableArray.from(primaryKeys.view.filter(results.contains)))
