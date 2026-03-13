@@ -31,7 +31,7 @@ public class FilterBenchmarkRunner {
         benchmark = new FilterBenchmark(benchmarkHelper, tableSize);
     }
 
-    //@Benchmark
+    @Benchmark
     @OutputTimeUnit(TimeUnit.MICROSECONDS)
     @Warmup(iterations = 5)
     @Measurement(iterations = 5)
@@ -49,6 +49,16 @@ public class FilterBenchmarkRunner {
     @BenchmarkMode(Mode.SampleTime)
     public void startsWithFilter(Blackhole bh) {
         benchmark.startsWithFilter(bh);
+    }
+
+    @Benchmark
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Warmup(iterations = 5)
+    @Measurement(iterations = 5)
+    @Fork(1)
+    @BenchmarkMode(Mode.SampleTime)
+    public void lessThanFilter(Blackhole bh) {
+        benchmark.lessThanFilter(bh);
     }
 
 }
