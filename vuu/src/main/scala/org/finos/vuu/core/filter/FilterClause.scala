@@ -65,17 +65,15 @@ sealed trait RowFilterClause extends FilterClause {
 
 case class NotClause(decorated: FilterClause) extends FilterClause {
 
-  override def filterAll(rows: RowSource, rowKeys: Iterable[String], 
+  override def filterAll(rows: RowSource, rowKeys: Iterable[String],
                          vpColumns: ViewPortColumns, firstInChain: Boolean): Iterable[String] = {
     decorated.filterAll(rows, rowKeys, vpColumns, firstInChain) match {
-      case ias: ImmutableArraySet[String] => 
+      case ias: ImmutableArraySet[String] =>
         rowKeys.view.filterNot(f => ias.contains(f))
-      case set: scala.collection.Set[String] =>
-        rowKeys.view.filterNot(f => set.contains(f))  
-      case other => 
+      case other =>
         val set = scala.collection.mutable.HashSet.from(other)
         rowKeys.view.filterNot(f => set.contains(f))
-    }    
+    }
   }
 
   override def validate(vpColumns: ViewPortColumns): Result[true] = decorated.validate(vpColumns)
@@ -97,13 +95,13 @@ case class OrClause(subclauses: Array[FilterClause]) extends FilterClause {
     if (primaryKeys.knownSize > 0) {
       builder.sizeHint(primaryKeys.knownSize)
     }
-    
+
     var i = 0
     while (i < subclauses.length) {
       builder.addAll(subclauses(i).filterAll(source, primaryKeys, viewPortColumns, firstInChain))
       i += 1
     }
-    
+
     ImmutableArraySet.from(builder.result())
   }
 
