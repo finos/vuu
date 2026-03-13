@@ -13,37 +13,36 @@ case class FrozenTimeFilter(frozenTime: EpochTimestamp) extends Filter with Lazy
 
   override def doFilter(source: RowSource, primaryKeys: TablePrimaryKeys, firstInChain: Boolean): TablePrimaryKeys = {
     logger.trace(s"Starting filter with ${primaryKeys.length}")
+    if (primaryKeys.isEmpty) return primaryKeys
 
     val column = source.asTable.columnForName(DefaultColumn.CreatedTime.name)
-    if (column == null || primaryKeys.isEmpty) {
-      EmptyTablePrimaryKeys
-    } else {
-      source.asTable.indexForColumn(column) match {
-        case Some(index: EpochTimestampIndexedField) =>
-          hitIndex(primaryKeys, index, firstInChain)
-        case _ =>
-          filterAll(source, primaryKeys)
-      }
+    if (column == null) return EmptyTablePrimaryKeys
+
+    source.asTable.indexForColumn(column) match {
+      case Some(index: EpochTimestampIndexedField) =>
+        hitIndex(primaryKeys, index, firstInChain)
+      case _ =>
+        filterAll(source, primaryKeys)
     }
   }
 
-  private def hitIndex(primaryKeys: TablePrimaryKeys, indexedField: EpochTimestampIndexedField, firstInChain: Boolean): TablePrimaryKeys = {
+  private def hitIndex(primaryKeys: TablePrimaryKeys, indexedField: EpochTimestampIndexedField,
+                       firstInChain: Boolean): TablePrimaryKeys = {
     val results = indexedField.lessThan(frozenTime)
     if (results.isEmpty) {
       EmptyTablePrimaryKeys
     } else if (firstInChain) {
-      InMemTablePrimaryKeys(results)
+      InMemTablePrimaryKeys(results.toImmutableArray)
     } else {
-      primaryKeys.intersect(results)
+      InMemTablePrimaryKeys(ImmutableArray.from(primaryKeys.view.filter(results.contains)))
     }
   }
 
   private def filterAll(source: RowSource, rowKeys: TablePrimaryKeys): TablePrimaryKeys = {
-    val filtered = rowKeys.filter(key => {
+    val filtered = rowKeys.view.filter(key => {
       val vuuCreatedTimestamp = source.pullRow(key).get(DefaultColumn.CreatedTime.name)
       vuuCreatedTimestamp != null && vuuCreatedTimestamp.asInstanceOf[EpochTimestamp] < frozenTime
     })
-    
-    InMemTablePrimaryKeys(ImmutableArray.from[String](filtered))
+    InMemTablePrimaryKeys(ImmutableArray.from(filtered))
   }
 }

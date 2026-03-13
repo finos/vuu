@@ -13,8 +13,8 @@ sealed trait Result[+T] {
   def flatMap[B](fn: T => Result[B]): Result[B] = toResult(toEither.flatMap(fn(_).toEither))
   def fold[B](error: String => B, success: T => B): B = toEither.fold(error, success)
   def join[B, R](r: Result[B])(apply: (T, B) => R): Result[R] = this.flatMap(v1 => r.map(apply(v1, _)))
-  def joinWithErrors[B, R](r: Result[B])(apply: (T, B) => R, errorSep: String): Result[R] =
-    if (this.isError && r.isError) Error(this.getError + errorSep + r.getError) else this.join(r)(apply)
+  def joinWithErrors[B, R](r: Result[B])(apply: (T, B) => R): Result[R] =
+    if (this.isError && r.isError) Error(s"${this.getError}${System.lineSeparator()}${r.getError}") else this.join(r)(apply)
 
   def toEither: Either[String, T] = this match { case Success(value) => Right(value); case Error(msg) => Left(msg) }
   def toOption: Option[T] = toEither.toOption
