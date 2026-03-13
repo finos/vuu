@@ -95,13 +95,10 @@ private class VectorImmutableArrayImpl[T <: Object : ClassTag](private val data:
     doRemove(logicalIndex)
   }
 
-  override def iterator: Iterator[T] = {
-    val iterator = new Iterator[Int] {
-      private val it = activeIndices.getIntIterator
-      def hasNext: Boolean = it.hasNext
-      def next(): Int = it.next()
-    }
-    iterator.map(data(_))
+  override def iterator: Iterator[T] = new Iterator[T] {
+    private val it = activeIndices.getIntIterator
+    override def hasNext: Boolean = it.hasNext
+    override def next(): T = data(it.next())
   }
 
   override def foreach[U](f: T => U): Unit = {
