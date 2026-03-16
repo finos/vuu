@@ -83,9 +83,9 @@ case class OrClause(subclauses: Array[FilterClause]) extends FilterClause {
 
   override def filterAll(source: RowSource, primaryKeys: Iterable[String],
                          viewPortColumns: ViewPortColumns, firstInChain: Boolean): Iterable[String] = {
-    if (subclauses.isEmpty || primaryKeys.isEmpty) {
-      return ImmutableArraySet.empty
-    }
+    if (primaryKeys.isEmpty) return primaryKeys
+
+    if (subclauses.isEmpty) return ImmutableArraySet.empty
 
     if (subclauses.length == 1) {
       return subclauses.head.filterAll(source, primaryKeys, viewPortColumns, firstInChain)
@@ -95,13 +95,11 @@ case class OrClause(subclauses: Array[FilterClause]) extends FilterClause {
     if (primaryKeys.knownSize > 0) {
       builder.sizeHint(primaryKeys.knownSize)
     }
-
     var i = 0
     while (i < subclauses.length) {
       builder.addAll(subclauses(i).filterAll(source, primaryKeys, viewPortColumns, firstInChain))
       i += 1
     }
-
     ImmutableArraySet.from(builder.result())
   }
 
