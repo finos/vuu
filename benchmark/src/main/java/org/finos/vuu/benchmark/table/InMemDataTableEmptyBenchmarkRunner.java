@@ -17,7 +17,7 @@ import org.openjdk.jmh.annotations.Warmup;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-@State(Scope.Benchmark)
+@State(Scope.Thread)
 public class InMemDataTableEmptyBenchmarkRunner {
 
     private final BenchmarkHelper benchmarkHelper = new BenchmarkHelper();

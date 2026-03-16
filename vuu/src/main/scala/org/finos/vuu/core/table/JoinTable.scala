@@ -11,7 +11,6 @@ import org.finos.vuu.provider.JoinTableProvider
 import org.finos.vuu.viewport.{RowProcessor, ViewPortColumns}
 
 import java.util
-import scala.collection.mutable
 
 /**
  * When we are a ViewPort listening on a join table, we want to register our interest,
@@ -147,7 +146,7 @@ class JoinTable(val tableDef: JoinTableDef,
       return EmptyRowData
     }
 
-    val rowSink = mutable.HashMap.empty[String, Any]
+    val rowSink = Map.newBuilder[String, Any]
     rowSink.sizeHint(viewPortColumns.getColumns.length)
 
     val columnsByTable = viewPortColumns.getJoinColumnsByTable
@@ -162,19 +161,21 @@ class JoinTable(val tableDef: JoinTableDef,
             val colIter = columnList.iterator
             while (colIter.hasNext) {
               val col = colIter.next()
-              rowSink.update(col.name, col.sourceColumn.getData(data))
+              rowSink.addOne(col.name, col.sourceColumn.getData(data))
             }
-          case _ =>
+          case _ => logger.trace(s"No row found for key $key and foreign key $fk in $sourceTableName")
         }
+      } else {
+        logger.trace(s"No foreign key found for key $key in $sourceTableName")
       }
     }
 
     if (viewPortColumns.hasCalculatedColumns) {
-      val tempData = RowWithData(key, rowSink.toMap)
+      val tempData = RowWithData(key, rowSink.result())
       rowSink.addAll(viewPortColumns.getCalculatedColumns.map(c => c.name -> c.getData(tempData)).toMap)
     }
 
-    RowWithData(key, rowSink.toMap)
+    RowWithData(key, rowSink.result())
   }
 
   private def keyExistsInLeftMostSourceTable(key: String, keysByTable: Map[String, String]): Boolean = {

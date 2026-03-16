@@ -18,7 +18,7 @@ import org.openjdk.jmh.infra.Blackhole;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-@State(Scope.Benchmark)
+@State(Scope.Thread)
 public class InMemDataTableBenchmarkRunner {
 
     private final BenchmarkHelper benchmarkHelper = new BenchmarkHelper();
