@@ -42,11 +42,11 @@ class ResultTest extends AnyFeatureSpec with Matchers {
 
   Feature("flatMap") {
     Scenario("can perform flat map on a successful result") {
-      successfulResult.flatMap(d => Success(d + " + String")) shouldEqual Success("57.5 + String")
+      successfulResult.flatMap(d => Success(s"$d String")) shouldEqual Success("57.5 String")
     }
 
     Scenario("skips flat map applied on an unsuccessful result") {
-      erroredResult.flatMap(d => Success(d + " + String")) shouldEqual Error("Some error msg")
+      erroredResult.flatMap(d => Success(s"$d String")) shouldEqual Error("Some error msg")
     }
   }
 
@@ -81,20 +81,20 @@ class ResultTest extends AnyFeatureSpec with Matchers {
 
   Feature("joinWithErrors") {
     Scenario("can join two success results") {
-      successfulResult.joinWithErrors(Result(2.0))((v1, v2) => v1 * v2, errorSep = "\n") shouldEqual Success(115D)
+      successfulResult.joinWithErrors(Result(2.0))((v1, v2) => v1 * v2) shouldEqual Success(115D)
     }
 
     Scenario("returns passed result unchanged if it is an error but self is a success") {
-      successfulResult.joinWithErrors(erroredResult)((v1, v2) => v1 * v2, "\n") shouldEqual erroredResult
+      successfulResult.joinWithErrors(erroredResult)((v1, v2) => v1 * v2) shouldEqual erroredResult
     }
 
     Scenario("returns self unchanged if self is an error but passed result is a success") {
-      erroredResult.joinWithErrors(successfulResult)((v1, v2) => v1 * v2, "\n") shouldEqual erroredResult
+      erroredResult.joinWithErrors(successfulResult)((v1, v2) => v1 * v2) shouldEqual erroredResult
     }
 
     Scenario("returns concatenated error if both passed and self results are errors") {
       val newError: Result[Double] = Error("new error")
-      erroredResult.joinWithErrors(newError)((v1, v2) => v1 * v2, "\n") shouldEqual Error("Some error msg\nnew error")
+      erroredResult.joinWithErrors(newError)((v1, v2) => v1 * v2) shouldEqual Error(s"Some error msg${System.lineSeparator()}new error")
     }
   }
 

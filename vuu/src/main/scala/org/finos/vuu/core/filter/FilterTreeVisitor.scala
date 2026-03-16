@@ -1,18 +1,19 @@
 package org.finos.vuu.core.filter
 
 import org.finos.vuu.grammar.FilterBaseVisitor
-import org.finos.vuu.grammar.FilterParser._
-import scala.jdk.CollectionConverters._
+import org.finos.vuu.grammar.FilterParser.*
+
+import scala.jdk.CollectionConverters.*
 
 class FilterTreeVisitor extends FilterBaseVisitor[FilterClause] {
   override def visitStart(ctx: StartContext): FilterClause =
     visitOrExpression(ctx.orExpression())
 
   override def visitOrExpression(ctx: OrExpressionContext): FilterClause =
-    OrClause(ctx.andExpression().asScala.map(visit).toList)
+    OrClause(ctx.andExpression().asScala.map(visit).toArray)
 
   override def visitAndExpression(ctx: AndExpressionContext): FilterClause =
-    AndClause(ctx.term().asScala.map(visit).toList)
+    AndClause(ctx.term().asScala.map(visit).toArray)
 
   override def visitSubexpression(ctx: SubexpressionContext): FilterClause =
     visitOrExpression(ctx.orExpression())
