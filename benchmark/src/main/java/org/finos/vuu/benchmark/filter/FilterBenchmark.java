@@ -31,10 +31,9 @@ public class FilterBenchmark {
                 toScala(stream(inMemDataTable.getTableDef().getColumns()).map(Column::name).toList()));
         var lastRow = inMemDataTable.pullRow(inMemDataTable.primaryKeys().last());
         var exchangeColumn = inMemDataTable.getTableDef().columnForName(ColumnNames.EXCHANGE);
-        var closeColumn = inMemDataTable.getTableDef().columnForName(ColumnNames.CLOSE);
-        equalsFilter = new EqualsClause(exchangeColumn.name(), lastRow.get(exchangeColumn).toString());
-        startsWithFilter = new StartsClause(exchangeColumn.name(), "exchange-1");
-        lessThanFilter = new LessThanClause(closeColumn.name(), String.valueOf(size / 2));
+        equalsFilter = new EqualsClause(ColumnNames.EXCHANGE, lastRow.get(exchangeColumn).toString());
+        startsWithFilter = new StartsClause(ColumnNames.EXCHANGE, "exchange-1");
+        lessThanFilter = new LessThanClause(ColumnNames.CLOSE, String.valueOf(size / 2));
     }
 
     void equalsFilter(Blackhole bh) {
