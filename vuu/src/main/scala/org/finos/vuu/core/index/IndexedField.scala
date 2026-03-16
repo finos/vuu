@@ -7,11 +7,12 @@ import org.finos.vuu.core.table.Column
 import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 
 import java.util.concurrent.{ConcurrentHashMap, ConcurrentNavigableMap, ConcurrentSkipListMap}
-import scala.collection.mutable
+import scala.collection.immutable.HashSet
+import scala.collection.{immutable, mutable}
 
 trait IndexedField[TYPE] {
 
-  protected val empty: ImmutableArray[String] = ImmutableArray.empty
+  protected val empty: ImmutableArraySet[String] = ImmutableArraySet.empty
 
   def insert(indexedValue: TYPE, rowKey: String): Unit
 
@@ -24,23 +25,23 @@ trait IndexedField[TYPE] {
 
   def column: Column
 
-  def lessThan(bound: TYPE): ImmutableArray[String]
+  def lessThan(bound: TYPE): ImmutableArraySet[String]
 
-  def lessThanOrEqual(bound: TYPE): ImmutableArray[String]
+  def lessThanOrEqual(bound: TYPE): ImmutableArraySet[String]
 
-  def greaterThan(bound: TYPE): ImmutableArray[String]
+  def greaterThan(bound: TYPE): ImmutableArraySet[String]
 
-  def greaterThanOrEqual(bound: TYPE): ImmutableArray[String]
+  def greaterThanOrEqual(bound: TYPE): ImmutableArraySet[String]
 
-  def find(indexedValue: TYPE): ImmutableArray[String]
+  def find(indexedValue: TYPE): ImmutableArraySet[String]
 
-  def find(indexedValues: Set[TYPE]): ImmutableArray[String] = {
+  def find(indexedValues: Set[TYPE]): ImmutableArraySet[String] = {
     if (indexedValues.isEmpty) {
       empty
     } else if (indexedValues.size == 1) {
       find(indexedValues.head)
     } else {
-      ImmutableArray.from(indexedValues.iterator.flatMap(f => find(f)))
+      ImmutableArraySet.from(indexedValues.iterator.flatMap(f => find(f)))
     }
   }
 
@@ -90,30 +91,30 @@ class HashMapIndexedStringField(val column: Column) extends StringIndexedField w
     })
   }
 
-  override def find(indexKey: String): ImmutableArray[String] = {
+  override def find(indexKey: String): ImmutableArraySet[String] = {
     logger.debug(s"Hit Index: ${column.name} for key $indexKey")
     val result = indexMap.get(indexKey)
-    if (result != null) result.toImmutableArray else empty
+    if (result != null) result else empty
   }
 
-  override def find(indexedValues: Set[String]): ImmutableArray[String] = super.find(indexedValues)
+  override def find(indexedValues: Set[String]): ImmutableArraySet[String] = super.find(indexedValues)
 
-  override def lessThan(bound: String): ImmutableArray[String] = {
+  override def lessThan(bound: String): ImmutableArraySet[String] = {
     logger.warn("Less than is not supported for Strings")
     empty
   }
 
-  override def greaterThan(bound: String): ImmutableArray[String] = {
+  override def greaterThan(bound: String): ImmutableArraySet[String] = {
     logger.warn("Greater than is not supported for Strings")
     empty
   }
 
-  override def lessThanOrEqual(bound: String): ImmutableArray[String] = {
+  override def lessThanOrEqual(bound: String): ImmutableArraySet[String] = {
     logger.warn("Less than or equal is not supported for Strings")
     empty
   }
 
-  override def greaterThanOrEqual(bound: String): ImmutableArray[String] = {
+  override def greaterThanOrEqual(bound: String): ImmutableArraySet[String] = {
     logger.warn("Greater than or equal is not supported for Strings")
     empty
   }
@@ -140,47 +141,48 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
     })
   }
 
-  override def find(indexKey: TYPE): ImmutableArray[String] = {
+  override def find(indexKey: TYPE): ImmutableArraySet[String] = {
     logger.debug(s"Hit Index: ${column.name} for key $indexKey")
     val result = skipList.get(indexKey)
-    if (result != null) result.toImmutableArray else empty
+    if (result != null) result else empty
   }
 
-  def lessThan(bound: TYPE): ImmutableArray[String] = {
+  def lessThan(bound: TYPE): ImmutableArraySet[String] = {
     logger.debug(s"Hit Index (LT): ${column.name}")
     collect(skipList.headMap(bound, false))
   }
 
-  def lessThanOrEqual(bound: TYPE): ImmutableArray[String] = {
+  def lessThanOrEqual(bound: TYPE): ImmutableArraySet[String] = {
     logger.debug(s"Hit Index (LTE): ${column.name}")
     collect(skipList.headMap(bound, true))
   }
 
-  def greaterThan(bound: TYPE): ImmutableArray[String] = {
+  def greaterThan(bound: TYPE): ImmutableArraySet[String] = {
     logger.debug(s"Hit Index (GT): ${column.name}")
     collect(skipList.tailMap(bound, false))
   }
 
-  def greaterThanOrEqual(bound: TYPE): ImmutableArray[String] = {
+  def greaterThanOrEqual(bound: TYPE): ImmutableArraySet[String] = {
     logger.debug(s"Hit Index (GTE): ${column.name}")
     collect(skipList.tailMap(bound, true))    
   }
 
-  override def find(indexedValues: Set[TYPE]): ImmutableArray[String] = super.find(indexedValues)
+  override def find(indexedValues: Set[TYPE]): ImmutableArraySet[String] = super.find(indexedValues)
 
-  private def collect(results: ConcurrentNavigableMap[TYPE, ImmutableArraySet[String]]): ImmutableArray[String] = {
+  private def collect(results: ConcurrentNavigableMap[TYPE, ImmutableArraySet[String]]): ImmutableArraySet[String] = {
     if (results.isEmpty) {
       empty
     } else if (results.size() == 1) {
-      results.firstEntry().getValue.toImmutableArray
+      results.firstEntry().getValue
     } else {
-      val uniqueValues = mutable.HashSet.empty[String]
+      val builder = HashSet.newBuilder[String]
+      builder.sizeHint(results.size() * 10)
       val iterator = results.values().iterator()
       while (iterator.hasNext) {
         val set = iterator.next()
-        uniqueValues.addAll(set.iterator)
+        builder.addAll(set.iterator)
       }
-      ImmutableArray.from(uniqueValues)
+      ImmutableArraySet.from(builder.result())
     }
   }
   

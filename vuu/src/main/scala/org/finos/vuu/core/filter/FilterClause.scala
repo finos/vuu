@@ -1,40 +1,47 @@
 package org.finos.vuu.core.filter
 
 import org.finos.toolbox.collection.array.ImmutableArray
+import org.finos.toolbox.collection.set.ImmutableArraySet
 import org.finos.vuu.core.filter.FilterClause.joinResults
 import org.finos.vuu.core.index.*
 import org.finos.vuu.core.table.column.{Error, Result}
 import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
-import org.finos.vuu.core.table.{EmptyTablePrimaryKeys, RowData, TablePrimaryKeys}
+import org.finos.vuu.core.table.{RowData, TablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 
+import scala.collection.immutable.HashSet
+
 sealed trait FilterClause {
 
-  def filterAllSafe(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, firstInChain: Boolean): Result[TablePrimaryKeys] =
-    this.validate(vpColumns).fold(errMsg => Error(errMsg), _ => Result(this.filterAll(rows, rowKeys, vpColumns, firstInChain)))
+  def filterAllSafe(rows: RowSource, rowKeys: Iterable[String], vpColumns: ViewPortColumns, firstInChain: Boolean): Result[TablePrimaryKeys] =
+    this.validate(vpColumns).fold(
+      errMsg => Error(errMsg),
+      _ => Result(InMemTablePrimaryKeys(ImmutableArray.from(this.filterAll(rows, rowKeys, vpColumns, firstInChain))))
+    )
 
-  def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys
+  def filterAll(rows: RowSource, rowKeys: Iterable[String], vpColumns: ViewPortColumns, firstInChain: Boolean): Iterable[String]
+
   def validate(vpColumns: ViewPortColumns): Result[true]
 }
 
 private object FilterClause {
-  def joinResults(results: List[Result[true]]): Result[true] =
-    results.foldLeft[Result[true]](Result(true))(_.joinWithErrors(_)((a, _) => a, errorSep = "\n"))
+  def joinResults(results: Array[Result[true]]): Result[true] =
+    results.foldLeft[Result[true]](Result(true))(_.joinWithErrors(_)((a, _) => a))
 }
 
 sealed trait RowFilterClause extends FilterClause {
   protected def columnName: String
   protected def applyFilter(value: Any): Boolean
+
   def filter(row: RowData): Boolean = this.applyFilter(row.get(columnName))
 
-  override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
+  override def filterAll(rows: RowSource, rowKeys: Iterable[String],
+                         vpColumns: ViewPortColumns, firstInChain: Boolean): Iterable[String] = {
     if (rowKeys.isEmpty) {
       rowKeys
     } else {
-      InMemTablePrimaryKeys(ImmutableArray.from(
-        rowKeys.filter(key => filter(rows.pullRow(key, vpColumns)))
-      ))
+      rowKeys.view.filter(key => filter(rows.pullRow(key, vpColumns)))
     }
   }
 
@@ -44,56 +51,83 @@ sealed trait RowFilterClause extends FilterClause {
     if (vpColumns.columnExists(this.columnName)) Result(true)
     else Error(s"Column `$columnName` not found.")
 
-  protected def hitIndex[T](primaryKeys: TablePrimaryKeys, value: T,
-                            indexLookup: T => ImmutableArray[String], firstInChain: Boolean): TablePrimaryKeys = {
+  protected def hitIndex[T](primaryKeys: Iterable[String], value: T,
+                            indexLookup: T => ImmutableArraySet[String], firstInChain: Boolean): Iterable[String] = {
       val results  = indexLookup.apply(value)
-      if (results.isEmpty) {
-        EmptyTablePrimaryKeys
-      } else if (firstInChain) {
-        InMemTablePrimaryKeys(results)
+      if (results.isEmpty || firstInChain) {
+        results
       } else {
-        primaryKeys.intersect(results)
+        primaryKeys.view.filter(results.contains)
       }
   }
 
 }
 
 case class NotClause(decorated: FilterClause) extends FilterClause {
-  override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys, vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
-    val matching = decorated.filterAll(rows, rowKeys, vpColumns, firstInChain).toSet
-    val notMatching = rowKeys.filter(!matching.contains(_))
-    InMemTablePrimaryKeys(ImmutableArray.from(notMatching))
+
+  override def filterAll(rows: RowSource, rowKeys: Iterable[String],
+                         vpColumns: ViewPortColumns, firstInChain: Boolean): Iterable[String] = {
+    decorated.filterAll(rows, rowKeys, vpColumns, firstInChain) match {
+      case ias: ImmutableArraySet[String] =>
+        rowKeys.view.filterNot(f => ias.contains(f))
+      case other =>
+        val set = scala.collection.mutable.HashSet.from(other)
+        rowKeys.view.filterNot(f => set.contains(f))
+    }
   }
 
   override def validate(vpColumns: ViewPortColumns): Result[true] = decorated.validate(vpColumns)
 }
 
-case class OrClause(subclauses: List[FilterClause]) extends FilterClause {
-  override def filterAll(rows: RowSource, primaryKeys: TablePrimaryKeys,
-                         vpColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = InMemTablePrimaryKeys( ImmutableArray.from(
-    subclauses.flatMap(_.filterAll(rows, primaryKeys, vpColumns, firstInChain)).distinct
-  ))
+case class OrClause(subclauses: Array[FilterClause]) extends FilterClause {
+
+  override def filterAll(source: RowSource, primaryKeys: Iterable[String],
+                         viewPortColumns: ViewPortColumns, firstInChain: Boolean): Iterable[String] = {
+    if (subclauses.isEmpty || primaryKeys.isEmpty) {
+      return ImmutableArraySet.empty
+    }
+
+    if (subclauses.length == 1) {
+      return subclauses.head.filterAll(source, primaryKeys, viewPortColumns, firstInChain)
+    }
+
+    val builder = HashSet.newBuilder[String]
+    if (primaryKeys.knownSize > 0) {
+      builder.sizeHint(primaryKeys.knownSize)
+    }
+
+    var i = 0
+    while (i < subclauses.length) {
+      builder.addAll(subclauses(i).filterAll(source, primaryKeys, viewPortColumns, firstInChain))
+      i += 1
+    }
+
+    ImmutableArraySet.from(builder.result())
+  }
 
   override def validate(vpColumns: ViewPortColumns): Result[true] = joinResults(subclauses.map(_.validate(vpColumns)))
 }
 
-case class AndClause(subclauses: List[FilterClause]) extends FilterClause {
-  override def filterAll(source: RowSource, primaryKeys: TablePrimaryKeys,
-                         viewPortColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
-    if (primaryKeys.isEmpty) {
-      primaryKeys
-    } else {
-      subclauses.foldLeft(primaryKeys) {
-        (remainingKeys, subclause) => {
-          if (remainingKeys.isEmpty) {
-            remainingKeys
-          } else {
-            val stillFirstInChain = firstInChain && remainingKeys == primaryKeys
-            subclause.filterAll(source, remainingKeys, viewPortColumns, stillFirstInChain)
-          }
-        }
-      }
+case class AndClause(subclauses: Array[FilterClause]) extends FilterClause {
+  override def filterAll(source: RowSource, primaryKeys: Iterable[String],
+                         viewPortColumns: ViewPortColumns, firstInChain: Boolean): Iterable[String] = {
+    if (subclauses.isEmpty || primaryKeys.isEmpty) {
+      return primaryKeys
     }
+
+    if (subclauses.length == 1) {
+      return subclauses.head.filterAll(source, primaryKeys, viewPortColumns, firstInChain)
+    }
+
+    var currentKeys = primaryKeys
+    var i = 0
+    var isFirst = firstInChain
+    while (i < subclauses.length) {
+      currentKeys = subclauses(i).filterAll(source, currentKeys, viewPortColumns, isFirst)
+      isFirst = false
+      i += 1
+    }
+    currentKeys
   }
 
   override def validate(vpColumns: ViewPortColumns): Result[true] = joinResults(subclauses.map(_.validate(vpColumns)))
@@ -156,8 +190,8 @@ case class InClause(columnName: String, values: Set[String]) extends RowFilterCl
     }
   }
 
-  override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys,
-                         viewPortColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
+  override def filterAll(rows: RowSource, rowKeys: Iterable[String],
+                         viewPortColumns: ViewPortColumns, firstInChain: Boolean): Iterable[String] = {
     val column = rows.asTable.columnForName(columnName)
     rows.asTable.indexForColumn(column) match {
       case Some(ix: StringIndexedField)          => hitIndex(rowKeys, values, ix, firstInChain)
@@ -175,8 +209,8 @@ case class InClause(columnName: String, values: Set[String]) extends RowFilterCl
     }
   }
 
-  private def hitIndex[T](rowKeys: TablePrimaryKeys, values: Set[T],
-                          index: IndexedField[T], firstInChain: Boolean): TablePrimaryKeys = {
+  private def hitIndex[T](rowKeys: Iterable[String], values: Set[T],
+                          index: IndexedField[T], firstInChain: Boolean): Iterable[String] = {
     hitIndex(rowKeys, values, f => index.find(f), firstInChain)
   }
 
@@ -209,8 +243,8 @@ case class EqualsClause(columnName: String, value: String) extends RowFilterClau
     }
   }
 
-  override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys,
-                         viewPortColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
+  override def filterAll(rows: RowSource, rowKeys: Iterable[String],
+                         viewPortColumns: ViewPortColumns, firstInChain: Boolean): Iterable[String] = {
     val column = rows.asTable.columnForName(columnName)
     rows.asTable.indexForColumn(column) match {
       case Some(ix: StringIndexedField)          => hitIndex(rowKeys, value, ix, firstInChain)
@@ -228,8 +262,8 @@ case class EqualsClause(columnName: String, value: String) extends RowFilterClau
     }
   }
 
-  private def hitIndex[T](rowKeys: TablePrimaryKeys, value: T,
-                          index: IndexedField[T], firstInChain: Boolean): TablePrimaryKeys = {
+  private def hitIndex[T](rowKeys: Iterable[String], value: T,
+                          index: IndexedField[T], firstInChain: Boolean): Iterable[String] = {
     hitIndex(rowKeys, value, f => index.find(f), firstInChain)
   }
 
@@ -240,7 +274,7 @@ case class GreaterThanClause(override val columnName: String,
   override protected def compareDouble(filterVal: Double, datum: Double): Boolean = filterVal < datum
   override protected def compareLong(filterVal: Long, datum: Long): Boolean      = filterVal < datum
   override protected def compareInt(filterVal: Int, datum: Int): Boolean         = filterVal < datum
-  override protected def indexOp[T](idx: IndexedField[T], v: T): ImmutableArray[String] = idx.greaterThan(v)
+  override protected def indexOp[T](idx: IndexedField[T], v: T): ImmutableArraySet[String] = idx.greaterThan(v)
 }
 
 case class GreaterThanOrEqualsClause(override val columnName: String,
@@ -248,7 +282,7 @@ case class GreaterThanOrEqualsClause(override val columnName: String,
   override protected def compareDouble(filterVal: Double, datum: Double): Boolean = filterVal <= datum
   override protected def compareLong(filterVal: Long, datum: Long): Boolean      = filterVal <= datum
   override protected def compareInt(filterVal: Int, datum: Int): Boolean         = filterVal <= datum
-  override protected def indexOp[T](idx: IndexedField[T], v: T): ImmutableArray[String] = idx.greaterThanOrEqual(v)
+  override protected def indexOp[T](idx: IndexedField[T], v: T): ImmutableArraySet[String] = idx.greaterThanOrEqual(v)
 }
 
 case class LessThanClause(override val columnName: String,
@@ -256,7 +290,7 @@ case class LessThanClause(override val columnName: String,
   override protected def compareDouble(filterVal: Double, datum: Double): Boolean = filterVal > datum
   override protected def compareLong(filterVal: Long, datum: Long): Boolean      = filterVal > datum
   override protected def compareInt(filterVal: Int, datum: Int): Boolean         = filterVal > datum
-  override protected def indexOp[T](idx: IndexedField[T], v: T): ImmutableArray[String] = idx.lessThan(v)
+  override protected def indexOp[T](idx: IndexedField[T], v: T): ImmutableArraySet[String] = idx.lessThan(v)
 }
 
 case class LessThanOrEqualsClause(override val columnName: String,
@@ -264,7 +298,7 @@ case class LessThanOrEqualsClause(override val columnName: String,
   override protected def compareDouble(filterVal: Double, datum: Double): Boolean = filterVal >= datum
   override protected def compareLong(filterVal: Long, datum: Long): Boolean      = filterVal >= datum
   override protected def compareInt(filterVal: Int, datum: Int): Boolean         = filterVal >= datum
-  override protected def indexOp[T](idx: IndexedField[T], v: T): ImmutableArray[String] = idx.lessThanOrEqual(v)
+  override protected def indexOp[T](idx: IndexedField[T], v: T): ImmutableArraySet[String] = idx.lessThanOrEqual(v)
 }
 
 private abstract class NumericComparisonClause(val columnName: String, val value: String) extends RowFilterClause {
@@ -281,7 +315,7 @@ private abstract class NumericComparisonClause(val columnName: String, val value
   protected def compareDouble(filterVal: Double, datum: Double): Boolean
   protected def compareLong(filterVal: Long, datum: Long): Boolean
   protected def compareInt(filterVal: Int, datum: Int): Boolean
-  protected def indexOp[T](index: IndexedField[T], value: T): ImmutableArray[String]
+  protected def indexOp[T](index: IndexedField[T], value: T): ImmutableArraySet[String]
 
   override def applyFilter(datum: Any): Boolean = datum match {
     case null => false
@@ -293,8 +327,8 @@ private abstract class NumericComparisonClause(val columnName: String, val value
     case _                 => false
   }
 
-  override def filterAll(rows: RowSource, rowKeys: TablePrimaryKeys,
-                         viewPortColumns: ViewPortColumns, firstInChain: Boolean): TablePrimaryKeys = {
+  override def filterAll(rows: RowSource, rowKeys: Iterable[String],
+                         viewPortColumns: ViewPortColumns, firstInChain: Boolean): Iterable[String] = {
     val column = rows.asTable.columnForName(columnName)
     rows.asTable.indexForColumn(column) match {
       case Some(ix: DoubleIndexedField)         => hitIndex(rowKeys, doubleValue, ix, firstInChain)
@@ -309,8 +343,8 @@ private abstract class NumericComparisonClause(val columnName: String, val value
     }
   }
 
-  private def hitIndex[T](rowKeys: TablePrimaryKeys, v: T,
-                          index: IndexedField[T], firstInChain: Boolean): TablePrimaryKeys = {
+  private def hitIndex[T](rowKeys: Iterable[String], v: T,
+                          index: IndexedField[T], firstInChain: Boolean): Iterable[String] = {
     hitIndex(rowKeys, v, _ => indexOp(index, v), firstInChain)
   }
 }
