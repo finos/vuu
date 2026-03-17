@@ -8,9 +8,8 @@ public class TreeBenchmark {
     private final TreeBuilder treeBuilder;
 
     public TreeBenchmark(BenchmarkHelper benchmarkHelper, int size) {
-        var inMemDataTable = benchmarkHelper.buildTable();
-        benchmarkHelper.addTableData(inMemDataTable, size);
-        this.treeBuilder = benchmarkHelper.createTreeBuilder(inMemDataTable);
+        benchmarkHelper.addPriceTableData(size);
+        this.treeBuilder = benchmarkHelper.createTreeBuilder();
     }
 
     public void treeLargeTable() {

@@ -161,6 +161,8 @@
                         <argument>-XX:+UseStringDeduplication</argument>
                         <argument>-jar</argument>
                         <argument>target/benchmarks.jar</argument>
+                        <argument>-prof</argument>
+                        <argument>gc</argument>
                     </arguments>
                 </configuration>
             </plugin>

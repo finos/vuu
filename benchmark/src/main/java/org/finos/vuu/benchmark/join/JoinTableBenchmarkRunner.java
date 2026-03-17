@@ -1,4 +1,4 @@
-package org.finos.vuu.benchmark.sort;
+package org.finos.vuu.benchmark.join;
 
 import org.finos.vuu.benchmark.BenchmarkHelper;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -13,21 +13,23 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.concurrent.TimeUnit;
 
 @State(Scope.Thread)
-public class SortBenchmarkRunner {
+public class JoinTableBenchmarkRunner {
 
     private final BenchmarkHelper benchmarkHelper = new BenchmarkHelper();
-    private SortBenchmark benchmark;
+    private JoinTableBenchmark benchmark;
 
     @Param({ "10000", "100000", "1000000" })
-    public int tableSize;
+    public int insertSize;
 
     @Setup(Level.Trial)
     public void setup() {
-        benchmark = new SortBenchmark(benchmarkHelper, tableSize);
+        benchmark = new JoinTableBenchmark(benchmarkHelper);
+        benchmark.addRows(insertSize);
     }
 
     @Benchmark
@@ -36,20 +38,8 @@ public class SortBenchmarkRunner {
     @Measurement(iterations = 5)
     @Fork(1)
     @BenchmarkMode(Mode.SampleTime)
-    public void sortLargeTableSingle() {
-        benchmark.sortLargeTableSingleColumn();
-    }
-
-    @Benchmark
-    @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    @Warmup(iterations = 5)
-    @Measurement(iterations = 5)
-    @Fork(1)
-    @BenchmarkMode(Mode.SampleTime)
-    public void sortLargeTableMulti() {
-        benchmark.sortLargeTableMultiColumn();
+    public void iterateRows(Blackhole bh) {
+        benchmark.iterateRows(bh);
     }
 
 }
-
-

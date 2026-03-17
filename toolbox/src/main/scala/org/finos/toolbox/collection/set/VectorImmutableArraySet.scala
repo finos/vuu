@@ -18,6 +18,7 @@ object VectorImmutableArraySet {
     val iterator = iterable.iterator
     if (iterator.knownSize > 0) {
       builder.sizeHint(iterator.knownSize)
+      seen.sizeHint(iterator.knownSize)
     }
 
     while (iterator.hasNext) {

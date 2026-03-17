@@ -1,14 +1,12 @@
 package org.finos.vuu.core.index
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.toolbox.collection.array.ImmutableArray
 import org.finos.toolbox.collection.set.ImmutableArraySet
 import org.finos.vuu.core.table.Column
 import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 
 import java.util.concurrent.{ConcurrentHashMap, ConcurrentNavigableMap, ConcurrentSkipListMap}
-import scala.collection.immutable.HashSet
-import scala.collection.{immutable, mutable}
+import scala.jdk.CollectionConverters.*
 
 trait IndexedField[TYPE] {
 
@@ -175,14 +173,7 @@ class SkipListIndexedField[TYPE](val column: Column) extends IndexedField[TYPE] 
     } else if (results.size() == 1) {
       results.firstEntry().getValue
     } else {
-      val builder = HashSet.newBuilder[String]
-      builder.sizeHint(results.size() * 10)
-      val iterator = results.values().iterator()
-      while (iterator.hasNext) {
-        val set = iterator.next()
-        builder.addAll(set.iterator)
-      }
-      ImmutableArraySet.from(builder.result())
+      ImmutableArraySet.from(results.values().asScala.view.flatten)
     }
   }
   

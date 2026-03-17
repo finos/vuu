@@ -1,6 +1,7 @@
 package org.finos.vuu.benchmark.table;
 
 import org.finos.vuu.benchmark.BenchmarkHelper;
+import org.finos.vuu.benchmark.TableDefs;
 import org.finos.vuu.core.table.DataTable;
 import org.openjdk.jmh.infra.Blackhole;
 
@@ -11,16 +12,16 @@ public class InMemDataTableBenchmark {
 
     public InMemDataTableBenchmark(BenchmarkHelper benchmarkHelper) {
         this.benchmarkHelper = benchmarkHelper;
-        this.dataTable = benchmarkHelper.buildTable();
+        this.dataTable = benchmarkHelper.getDataTable(TableDefs.PRICES_NAME);
     }
 
     public void addRows(int size) {
-        benchmarkHelper.addTableData(dataTable, size);
+        benchmarkHelper.addPriceTableData(size);
     }
 
     public void iterateRows(Blackhole bh) {
         dataTable.primaryKeys().foreach(v1 -> {
-            bh.consume(v1);
+            bh.consume(dataTable.pullRow(v1));
             return null;
         });
     }
