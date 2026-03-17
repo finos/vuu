@@ -17,12 +17,22 @@ sealed trait FilterClause {
   def filterAllSafe(rows: RowSource, rowKeys: Iterable[String], vpColumns: ViewPortColumns, firstInChain: Boolean): Result[TablePrimaryKeys] =
     this.validate(vpColumns).fold(
       errMsg => Error(errMsg),
-      _ => Result(InMemTablePrimaryKeys(ImmutableArray.from(this.filterAll(rows, rowKeys, vpColumns, firstInChain))))
+      _ => Result(buildKeys(this.filterAll(rows, rowKeys, vpColumns, firstInChain)))
     )
 
   def filterAll(rows: RowSource, rowKeys: Iterable[String], vpColumns: ViewPortColumns, firstInChain: Boolean): Iterable[String]
 
   def validate(vpColumns: ViewPortColumns): Result[true]
+
+  private def buildKeys(keys: Iterable[String]): InMemTablePrimaryKeys = {
+    keys match {
+      case tableKeys: InMemTablePrimaryKeys => tableKeys
+      case ia: ImmutableArray[String] => InMemTablePrimaryKeys(ia)
+      case ias: ImmutableArraySet[String] => InMemTablePrimaryKeys(ias.toImmutableArray)
+      case iter => InMemTablePrimaryKeys(ImmutableArray.from(iter))
+    }
+  }
+
 }
 
 private object FilterClause {
@@ -38,7 +48,7 @@ sealed trait RowFilterClause extends FilterClause {
 
   override def filterAll(rows: RowSource, rowKeys: Iterable[String],
                          vpColumns: ViewPortColumns, firstInChain: Boolean): Iterable[String] = {
-    if (rowKeys.isEmpty) {
+    if (rowKeys.knownSize == 0) {
       rowKeys
     } else {
       rowKeys.view.filter(key => filter(rows.pullRow(key, vpColumns)))
@@ -53,7 +63,7 @@ sealed trait RowFilterClause extends FilterClause {
 
   protected def hitIndex[T](primaryKeys: Iterable[String], value: T,
                             indexLookup: T => ImmutableArraySet[String], firstInChain: Boolean): Iterable[String] = {
-      val results  = indexLookup.apply(value)
+      val results = indexLookup.apply(value)
       if (results.isEmpty || firstInChain) {
         results
       } else {
@@ -83,7 +93,7 @@ case class OrClause(subclauses: Array[FilterClause]) extends FilterClause {
 
   override def filterAll(source: RowSource, primaryKeys: Iterable[String],
                          viewPortColumns: ViewPortColumns, firstInChain: Boolean): Iterable[String] = {
-    if (primaryKeys.isEmpty) return primaryKeys
+    if (primaryKeys.knownSize == 0) return primaryKeys
 
     if (subclauses.isEmpty) return ImmutableArraySet.empty
 
@@ -109,7 +119,7 @@ case class OrClause(subclauses: Array[FilterClause]) extends FilterClause {
 case class AndClause(subclauses: Array[FilterClause]) extends FilterClause {
   override def filterAll(source: RowSource, primaryKeys: Iterable[String],
                          viewPortColumns: ViewPortColumns, firstInChain: Boolean): Iterable[String] = {
-    if (subclauses.isEmpty || primaryKeys.isEmpty) {
+    if (subclauses.isEmpty || primaryKeys.knownSize == 0) {
       return primaryKeys
     }
 
