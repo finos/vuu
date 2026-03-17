@@ -5,7 +5,7 @@ import org.finos.toolbox.collection.set.ImmutableArraySet
 import org.finos.vuu.core.filter.FilterClause.joinResults
 import org.finos.vuu.core.index.*
 import org.finos.vuu.core.table.column.{Error, Result}
-import org.finos.vuu.core.table.datatype.Scale.{Eight, FOUR, Four, Six, Two}
+import org.finos.vuu.core.table.datatype.Scale.{Eight, Four, Six, Two}
 import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.core.table.{RowData, TablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
