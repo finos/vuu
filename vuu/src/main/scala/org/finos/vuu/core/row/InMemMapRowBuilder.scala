@@ -1,6 +1,6 @@
 package org.finos.vuu.core.row
 
-import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
+import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal}
 import org.finos.vuu.core.table.{Column, RowData, RowWithData}
 
 import scala.collection.mutable
@@ -11,42 +11,42 @@ class InMemMapRowBuilder extends RowBuilder {
   private var key: String = _
 
   override def setLong(column: Column, v: Long): RowBuilder = {
-    mutableMap.put(column.name, v)
+    mutableMap.update(column.name, v)
     this
   }
 
   override def setDouble(column: Column, v: Double): RowBuilder = {
-    mutableMap.put(column.name, v)
+    mutableMap.update(column.name, v)
     this
   }
 
   override def setInt(column: Column, v: Int): RowBuilder = {
-    mutableMap.put(column.name, v)
+    mutableMap.update(column.name, v)
     this
   }
 
   override def setString(column: Column, v: String): RowBuilder = {
-    mutableMap.put(column.name, v)
+    mutableMap.update(column.name, v)
     this
   }
 
   override def setBoolean(column: Column, v: Boolean): RowBuilder = {
-    mutableMap.put(column.name, v)
+    mutableMap.update(column.name, v)
     this
   }
 
   override def setEpochTimestamp(column: Column, v: EpochTimestamp): RowBuilder = {
-    mutableMap.put(column.name, v)
+    mutableMap.update(column.name, v)
     this
   }
 
   override def setChar(column: Column, v: Char): RowBuilder = {
-    mutableMap.put(column.name, v)
+    mutableMap.update(column.name, v)
     this
   }
 
   override def setScaledDecimal(column: Column, v: ScaledDecimal): RowBuilder = {
-    mutableMap.put(column.name, v)
+    mutableMap.update(column.name, v)
     this
   }
 

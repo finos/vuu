@@ -1,6 +1,7 @@
 package org.finos.vuu.benchmark.sort;
 
 import org.finos.vuu.benchmark.BenchmarkHelper;
+import org.finos.vuu.benchmark.TableDefs;
 import org.finos.vuu.core.sort.Sort;
 import org.finos.vuu.core.sort.SortDirection;
 import org.finos.vuu.core.table.Column;
@@ -13,6 +14,8 @@ import org.finos.vuu.viewport.ViewPortColumns;
 import java.util.List;
 
 import static java.util.Arrays.stream;
+import static org.finos.vuu.benchmark.ColumnNames.CLOSE;
+import static org.finos.vuu.benchmark.ColumnNames.EXCHANGE;
 import static org.finos.vuu.util.ScalaCollectionConverter.toScala;
 
 public class SortBenchmark {
@@ -23,11 +26,11 @@ public class SortBenchmark {
     private final Sort multiSort;
 
     public SortBenchmark(BenchmarkHelper benchmarkHelper, int size) {
-        inMemDataTable = benchmarkHelper.buildTable();
+        inMemDataTable = benchmarkHelper.getDataTable(TableDefs.PRICES_NAME);
         viewPortColumns = ViewPortColumnCreator.create(inMemDataTable,
                 toScala(stream(inMemDataTable.getTableDef().getColumns()).map(Column::name).toList()));
-        var closeColumn = inMemDataTable.getTableDef().columnForName("close");
-        var exchangeColumn = inMemDataTable.getTableDef().columnForName("exchange");
+        var closeColumn = inMemDataTable.getTableDef().columnForName(CLOSE);
+        var exchangeColumn = inMemDataTable.getTableDef().columnForName(EXCHANGE);
         singleSort = Sort.apply(
                 SortSpec.apply(toScala(List.of(
                         SortDef.apply(exchangeColumn.name(), SortDirection.ASCENDING().external())
@@ -39,7 +42,7 @@ public class SortBenchmark {
                         SortDef.apply(closeColumn.name(), SortDirection.ASCENDING().external())
                 ))),
                 toScala(List.of(exchangeColumn, closeColumn)));
-        benchmarkHelper.addTableData(inMemDataTable, size);
+        benchmarkHelper.addPriceTableData(size);
     }
 
     void sortLargeTableSingleColumn() {

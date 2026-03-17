@@ -122,6 +122,8 @@ class JoinTable(val tableDef: JoinTableDef,
     }
   }
 
+  private val allColumns: ViewPortColumns = ViewPortColumnCreator.create(this)
+
   /**
    * Pull row ith only a key returns the immutable RowData object as it's stored within the table.
    * When doing bulk operations on data such as index hits or filters.
@@ -130,50 +132,50 @@ class JoinTable(val tableDef: JoinTableDef,
    * @return
    */
   override def pullRow(key: String): RowData = {
-    pullRow(key, viewPortColumns)
+    pullRow(key, allColumns)
   }
 
   override def pullRowFiltered(key: String, columns: ViewPortColumns): RowData = {
     pullRow(key, columns)
   }
 
-  lazy val viewPortColumns: ViewPortColumns = ViewPortColumnCreator.create(this, this.tableDef.getColumns.map(_.name).toList)
-
   override def pullRow(key: String, viewPortColumns: ViewPortColumns): RowData = {
     val keysByTable = joinData.getKeyValuesByTable(key)
 
-    if (keysByTable == null || !keyExistsInLeftMostSourceTable(key, keysByTable))
-      EmptyRowData
-    else {
-      val columnsByTable: Map[String, List[JoinColumn]] = viewPortColumns.getJoinColumnsByTable
+    if (keysByTable == null || !keyExistsInLeftMostSourceTable(key, keysByTable)) {
+      return EmptyRowData
+    }
 
-      val foldedMap = columnsByTable.foldLeft(Map[String, Any]())({
-        case (previous, (sourceTableName, columnList)) =>
+    val rowSink = Map.newBuilder[String, Any]
+    rowSink.sizeHint(viewPortColumns.getColumns.length)
 
+    val columnsByTable = viewPortColumns.getJoinColumnsByTable
+
+    columnsByTable.foreachEntry { case (sourceTableName, columnList) =>
+      val fk = keysByTable(sourceTableName)
+      if (fk != null) {
         val table = sourceTables(sourceTableName)
-        val fk = keysByTable(sourceTableName)
-
-        if (fk == null) {
-          logger.trace(s"No foreign key for table ${sourceTableName} found in join ${tableDef.name} for primary key $key")
-          previous
-        } else {
-          val sourceColumns = viewPortColumns.getJoinViewPortColumns(sourceTableName)
-          table.pullRow(fk, sourceColumns) match {
-              case EmptyRowData =>
-                previous
-              case data: RowWithData =>
-                previous ++ columnList.map(column => column.name -> column.sourceColumn.getData(data)).toMap
+        val sourceColumns = viewPortColumns.getJoinViewPortColumns(sourceTableName)
+        table.pullRow(fk, sourceColumns) match {
+          case data: RowWithData =>
+            val colIter = columnList.iterator
+            while (colIter.hasNext) {
+              val col = colIter.next()
+              rowSink.addOne(col.name, col.sourceColumn.getData(data))
             }
+          case _ => logger.trace(s"No row found for key $key and foreign key $fk in $sourceTableName")
         }
-      })
-
-      //Build the final row data
-      if (viewPortColumns.hasCalculatedColumns) {
-        RowWithData(key, foldedMap ++ getCalculatedData(viewPortColumns, key, foldedMap))
       } else {
-        RowWithData(key, foldedMap)
+        logger.trace(s"No foreign key found for key $key in $sourceTableName")
       }
     }
+
+    if (viewPortColumns.hasCalculatedColumns) {
+      val tempData = RowWithData(key, rowSink.result())
+      rowSink.addAll(viewPortColumns.getCalculatedColumns.map(c => c.name -> c.getData(tempData)).toMap)
+    }
+
+    RowWithData(key, rowSink.result())
   }
 
   private def keyExistsInLeftMostSourceTable(key: String, keysByTable: Map[String, String]): Boolean = {
@@ -187,11 +189,6 @@ class JoinTable(val tableDef: JoinTableDef,
           case x: RowWithData => true
         }
     }
-  }
-
-  private def getCalculatedData(joinColumns: ViewPortColumns, key: String, joinData: Map[String, Any]): Map[String, Any] = {
-    val rowData = RowWithData(key, joinData)
-    joinColumns.getCalculatedColumns.map(c => c.name -> c.getData(rowData)).toMap
   }
 
   override def pullRowAsArray(key: String, columns: ViewPortColumns): Array[Any] = {
