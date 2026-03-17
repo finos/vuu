@@ -53,6 +53,15 @@ sealed trait ScaledDecimal {
 object ScaledDecimal {
 
   /**
+   * Creates a ScaledDecimal from a String.
+   *
+   * @param value The value to scale.
+   * @param scale The target precision.
+   */
+  def apply[T <: ScaledDecimal](value: String, scale: Scale[T]): T =
+    scale.create(JBigDecimal(value))
+
+  /**
    * Creates a ScaledDecimal from a Double.
    * @param value The value to scale.
    * @param scale The target precision.
