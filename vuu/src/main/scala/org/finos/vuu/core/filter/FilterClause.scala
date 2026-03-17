@@ -5,6 +5,7 @@ import org.finos.toolbox.collection.set.ImmutableArraySet
 import org.finos.vuu.core.filter.FilterClause.joinResults
 import org.finos.vuu.core.index.*
 import org.finos.vuu.core.table.column.{Error, Result}
+import org.finos.vuu.core.table.datatype.Scale.{Eight, FOUR, Four, Six, Two}
 import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal, ScaledDecimal2, ScaledDecimal4, ScaledDecimal6, ScaledDecimal8}
 import org.finos.vuu.core.table.{RowData, TablePrimaryKeys}
 import org.finos.vuu.feature.inmem.InMemTablePrimaryKeys
@@ -176,14 +177,13 @@ case class InClause(columnName: String, values: Set[String]) extends RowFilterCl
   private lazy val booleanValues = values.map(s => s.equalsIgnoreCase("true"))
   private lazy val charValues = values.map(s => s.charAt(0))
   private lazy val epochTimestampValues = values.map(s => EpochTimestamp(s.toLong))
-  private lazy val scaledDecimal2Values = values.map(s => ScaledDecimal2(s.toLong))
-  private lazy val scaledDecimal4Values = values.map(s => ScaledDecimal4(s.toLong))
-  private lazy val scaledDecimal6Values = values.map(s => ScaledDecimal6(s.toLong))
-  private lazy val scaledDecimal8Values = values.map(s => ScaledDecimal8(s.toLong))
+  private lazy val scaledDecimal2Values = values.map(s => ScaledDecimal(s, Two))
+  private lazy val scaledDecimal4Values = values.map(s => ScaledDecimal(s, Four))
+  private lazy val scaledDecimal6Values = values.map(s => ScaledDecimal(s, Six))
+  private lazy val scaledDecimal8Values = values.map(s => ScaledDecimal(s, Eight))
 
   override def applyFilter(data: Any): Boolean = {
     data match {
-      case null => false
       case s: String => values.contains(s)
       case i: Int => intValues.contains(i)
       case l: Long => longValues.contains(l)
@@ -195,6 +195,7 @@ case class InClause(columnName: String, values: Set[String]) extends RowFilterCl
       case sd6: ScaledDecimal6 => scaledDecimal6Values.contains(sd6)
       case sd8: ScaledDecimal8 => scaledDecimal8Values.contains(sd8)
       case c: Char => charValues.contains(c)
+      case _ => false
     }
   }
 
@@ -232,22 +233,25 @@ case class EqualsClause(columnName: String, value: String) extends RowFilterClau
   private lazy val booleanValue = value.equalsIgnoreCase("true")
   private lazy val charValue = value.charAt(0)
   private lazy val epochTimestampValue = EpochTimestamp(value.toLong)
-  private lazy val scaledDecimal2Value = ScaledDecimal2(value.toLong)
-  private lazy val scaledDecimal4Value = ScaledDecimal4(value.toLong)
-  private lazy val scaledDecimal6Value = ScaledDecimal6(value.toLong)
-  private lazy val scaledDecimal8Value = ScaledDecimal8(value.toLong)
+  private lazy val scaledDecimal2Value = ScaledDecimal(value, Two)
+  private lazy val scaledDecimal4Value = ScaledDecimal(value, Four)
+  private lazy val scaledDecimal6Value = ScaledDecimal(value, Six)
+  private lazy val scaledDecimal8Value = ScaledDecimal(value, Eight)
 
   override def applyFilter(data: Any): Boolean = {
     data match {
-      case null => false
       case s: String => s == value
       case i: Int => i == intValue
       case l: Long => l == longValue
       case d: Double => d == doubleValue
       case b: Boolean => b == booleanValue
-      case e: EpochTimestamp => e.millis == longValue
-      case sd: ScaledDecimal => sd.scaledValue == longValue
+      case e: EpochTimestamp => e.millis == epochTimestampValue.millis
+      case sd2: ScaledDecimal2 => sd2.scaledValue == scaledDecimal2Value.scaledValue
+      case sd4: ScaledDecimal4 => sd4.scaledValue == scaledDecimal4Value.scaledValue
+      case sd6: ScaledDecimal6 => sd6.scaledValue == scaledDecimal6Value.scaledValue
+      case sd8: ScaledDecimal8 => sd8.scaledValue == scaledDecimal8Value.scaledValue
       case c: Char => c == charValue
+      case _ => false
     }
   }
 
@@ -315,10 +319,10 @@ private abstract class NumericComparisonClause(val columnName: String, val value
   private lazy val longValue: Long = value.toLong
   private lazy val doubleValue: Double = value.toDouble
   private lazy val epochTimestampValue = EpochTimestamp(value.toLong)
-  private lazy val scaledDecimal2Value = ScaledDecimal2(value.toLong)
-  private lazy val scaledDecimal4Value = ScaledDecimal4(value.toLong)
-  private lazy val scaledDecimal6Value = ScaledDecimal6(value.toLong)
-  private lazy val scaledDecimal8Value = ScaledDecimal8(value.toLong)
+  private lazy val scaledDecimal2Value = ScaledDecimal(value, Two)
+  private lazy val scaledDecimal4Value = ScaledDecimal(value, Four)
+  private lazy val scaledDecimal6Value = ScaledDecimal(value, Six)
+  private lazy val scaledDecimal8Value = ScaledDecimal(value, Eight)
 
   protected def compareDouble(filterVal: Double, datum: Double): Boolean
   protected def compareLong(filterVal: Long, datum: Long): Boolean
@@ -326,12 +330,14 @@ private abstract class NumericComparisonClause(val columnName: String, val value
   protected def indexOp[T](index: IndexedField[T], value: T): ImmutableArraySet[String]
 
   override def applyFilter(datum: Any): Boolean = datum match {
-    case null => false
     case d: Double         => compareDouble(doubleValue, d)
     case i: Int            => compareInt(intValue, i)
     case l: Long           => compareLong(longValue, l)
-    case e: EpochTimestamp => compareLong(longValue, e.millis)
-    case sd: ScaledDecimal => compareLong(longValue, sd.scaledValue)
+    case e: EpochTimestamp => compareLong(epochTimestampValue.millis, e.millis)
+    case sd2: ScaledDecimal2 => compareLong(scaledDecimal2Value.scaledValue, sd2.scaledValue)
+    case sd4: ScaledDecimal4 => compareLong(scaledDecimal4Value.scaledValue, sd4.scaledValue)
+    case sd6: ScaledDecimal6 => compareLong(scaledDecimal6Value.scaledValue, sd6.scaledValue)
+    case sd8: ScaledDecimal8 => compareLong(scaledDecimal8Value.scaledValue, sd8.scaledValue)
     case _                 => false
   }
 
