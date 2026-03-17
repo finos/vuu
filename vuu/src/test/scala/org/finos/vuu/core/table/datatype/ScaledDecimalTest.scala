@@ -13,7 +13,6 @@ class ScaledDecimalTest extends AnyFeatureSpec with Matchers with GivenWhenThen 
 
     Scenario("Creating ScaledDecimals with various scales") {
 
-      // Define the test data table
       val testCases = Table(
         ("input",            "scale",       "expectedScaledValue", "expectedClass"),
         (BigDecimal("123.45"),    Scale.Two,    12345L,               classOf[ScaledDecimal2]),
@@ -55,7 +54,7 @@ class ScaledDecimalTest extends AnyFeatureSpec with Matchers with GivenWhenThen 
     }
 
     Scenario("Handling Double inputs") {
-      val javaTestCases = Table(
+      val doubleTestCases = Table(
         ("input", "scale", "expectedValue"),
         (10.50d, Scale.Two, 1050L),
         (1.1234d, Scale.Four, 11234L),
@@ -63,8 +62,23 @@ class ScaledDecimalTest extends AnyFeatureSpec with Matchers with GivenWhenThen 
         (0.01234567d, Scale.Eight, 1234567L),
       )
 
-      forAll(javaTestCases) { (jVal, scale, expected) =>
-        val result = ScaledDecimal(jVal, scale)
+      forAll(doubleTestCases) { (doubleValue, scale, expected) =>
+        val result = ScaledDecimal(doubleValue, scale)
+        result.scaledValue shouldBe expected
+      }
+    }
+
+    Scenario("Handling String inputs") {
+      val stringTestCases = Table(
+        ("input", "scale", "expectedValue"),
+        ("10.50", Scale.Two, 1050L),
+        ("1.1234", Scale.Four, 11234L),
+        ("0.123456", Scale.Six, 123456L),
+        ("0.01234567", Scale.Eight, 1234567L),
+      )
+
+      forAll(stringTestCases) { (stringValue, scale, expected) =>
+        val result = ScaledDecimal(stringValue, scale)
         result.scaledValue shouldBe expected
       }
     }

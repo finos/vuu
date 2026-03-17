@@ -29,6 +29,6 @@ case class EpochTimestamp(millis: Long) extends Ordered[EpochTimestamp] {
   override def toString: String = millis.toString
 
   override def compare(that: EpochTimestamp): Int =  {
-    if (this.millis == that.millis) 0 else if (this.millis > that.millis) 1 else -1
+    java.lang.Long.compare(millis, that.millis)
   }
 }
