@@ -172,27 +172,29 @@ export const getColumnValueFromFilter = (
   operator: ColumnFilterOp,
   filter?: FilterContainerFilter,
 ): ColumnFilterValue => {
-  if (isSingleValueFilter(filter)) {
-    if (filter.column === column.name) {
+  const colFilter = extractFilterForColumn(filter as any, column.name);
+
+  if (isSingleValueFilter(colFilter)) {
+    if (colFilter.column === column.name) {
       if (operator.startsWith("between")) {
-        if (filter.op === "=") {
-          return [`${filter.value}`, ""];
-        } else if (filter.op === "<") {
-          return ["", `${filter.value}`];
+        if (colFilter.op === "=") {
+          return [`${colFilter.value}`, ""];
+        } else if (colFilter.op === "<") {
+          return ["", `${colFilter.value}`];
         }
       } else {
-        return stringifyBoolean(filter.value);
+        return stringifyBoolean(colFilter.value);
       }
     }
-  } else if (isBetweenFilter(filter)) {
-    if (filter.filters[0].column === column.name) {
-      const [{ value: v1 }, { value: v2 }] = filter.filters;
+  } else if (isBetweenFilter(colFilter)) {
+    if (colFilter.filters[0].column === column.name) {
+      const [{ value: v1 }, { value: v2 }] = colFilter.filters;
       return [`${v1}`, `${v2}`];
     } else {
       return ["", ""];
     }
-  } else if (isAndFilter(filter)) {
-    const filterForColumn = filter.filters.find((f) =>
+  } else if (isAndFilter(colFilter)) {
+    const filterForColumn = colFilter.filters.find((f) =>
       isBetweenFilter(f)
         ? f.filters[0].column === column.name
         : f.column === column.name,
