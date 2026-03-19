@@ -29,7 +29,7 @@ export interface FilterBarProps extends HTMLAttributes<HTMLDivElement> {
    * sure its a stable reference, in React terminology), otherwise might end up with infinite
    * state updates.
    */
-  columnDescriptors: ColumnDescriptor[];
+  columnDescriptors: readonly ColumnDescriptor[];
   defaultFilterMode?: FilterMode;
   defaultFilterState?: FilterState;
   filterMode?: FilterMode;

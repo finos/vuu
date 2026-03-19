@@ -197,9 +197,8 @@ export const SimpleCrossTableFiltering = () => {
   }, []);
 
   const handleParentRowClick = useCallback<TableRowClickHandler>(
-    (_evt, row) => {
-      console.log({ rowClick: row });
-      const parentId = row.data.id;
+    (_evt, dataRow) => {
+      const parentId = dataRow.id;
       dataSource4.filter = { filter: `parentId = "${parentId}"` };
     },
     [dataSource4],
@@ -217,8 +216,8 @@ export const SimpleCrossTableFiltering = () => {
   );
 
   const handleChildRowClick = useCallback<TableRowClickHandler>(
-    (_evt, row) => {
-      const parentId = row.data.id;
+    (_evt, dataRow) => {
+      const parentId = dataRow.id;
       dataSource5.filter = { filter: `parentId = "${parentId}"` };
     },
     [dataSource5],

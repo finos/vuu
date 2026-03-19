@@ -1,0 +1,17 @@
+{
+  "name": "@vuu-ui/vuu-data-schema-types",
+  "version": "0.13.111",
+  "main": "",
+  "scripts": {
+    "build": "node ../../scripts/run-build-typelib.mjs"
+  },
+  "types": "index.d.ts",
+  "author": "heswell",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@vuu-ui/vuu-filter-types": "0.13.111",
+    "@vuu-ui/vuu-protocol-types": "0.13.111"
+  },
+  "dependencies": {},
+  "peerDependencies": {}
+}

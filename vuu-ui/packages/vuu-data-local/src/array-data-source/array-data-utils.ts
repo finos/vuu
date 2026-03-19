@@ -1,7 +1,18 @@
 import type { DataSourceRow } from "@vuu-ui/vuu-data-types";
+import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { ColumnMap, KeySet, metadataKeys } from "@vuu-ui/vuu-utils";
 
 const { KEY, RENDER_IDX, SELECTED } = metadataKeys;
+
+const replaceBigInt = (
+  value: VuuRowDataItemType | bigint,
+): VuuRowDataItemType => {
+  if (typeof value === "bigint") {
+    return value.toString();
+  } else {
+    return value;
+  }
+};
 
 export const toClientRow = (
   row: DataSourceRow,
@@ -18,9 +29,11 @@ export const toClientRow = (
     const { count } = metadataKeys;
     clientRow = row
       .slice(0, count)
-      .concat(dataIndices.map((idx) => row[idx])) as DataSourceRow;
+      .concat(
+        dataIndices.map((idx) => replaceBigInt(row[idx])),
+      ) as DataSourceRow;
   } else {
-    clientRow = row.slice() as DataSourceRow;
+    clientRow = row.map(replaceBigInt) as DataSourceRow;
   }
   clientRow[RENDER_IDX] = keys.keyFor(rowIndex);
   clientRow[SELECTED] = selectedAll || selectedRows.has(row[KEY]) ? 1 : 0;

@@ -12,9 +12,8 @@ const classBase = "vuuTableInputCell";
 
 export const InputCell = ({
   column,
-  columnMap,
+  dataRow,
   onEdit,
-  row,
 }: TableCellRendererProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -23,8 +22,7 @@ export const InputCell = ({
     window: targetWindow,
   });
 
-  const dataIdx = columnMap[column.name];
-  const dataValue = row[dataIdx] as number | string;
+  const dataValue = dataRow[column.name] as number | string;
   const { align = "left", clientSideEditValidationCheck } = column;
 
   const { warningMessage, ...editProps } = useEditableText({

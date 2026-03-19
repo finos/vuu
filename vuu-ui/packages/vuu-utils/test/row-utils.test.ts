@@ -1,17 +1,9 @@
-import { DataSourceRow } from "@vuu-ui/vuu-data-types";
+// import { DataRow, dataRowFactory } from "@vuu-ui/vuu-table";
 import { describe, expect, it } from "vitest";
 import { actualRowPositioning, virtualRowPositioning } from "../src/row-utils";
+import { type DataRow } from "@vuu-ui/vuu-table-types";
 
-const dataRow = (rowIdx: number): DataSourceRow => [
-  rowIdx,
-  0,
-  true,
-  false,
-  0,
-  0,
-  "",
-  0,
-];
+const dataRow = (rowIdx: number) => ({ index: rowIdx }) as DataRow;
 
 describe("actualRowPositioning", () => {
   describe("calculate row offset", () => {

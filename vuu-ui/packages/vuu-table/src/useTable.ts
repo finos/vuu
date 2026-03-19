@@ -1,7 +1,6 @@
 import type {
   DataSourceConfig,
   DataSourceConfigChangeHandler,
-  DataSourceRow,
   DataSourceSubscribedMessage,
 } from "@vuu-ui/vuu-data-types";
 import type { RpcResult, VuuSortType } from "@vuu-ui/vuu-protocol-types";
@@ -26,6 +25,7 @@ import type {
   TableRowClickHandlerInternal,
   TableRowSelectHandlerInternal,
   TableSelectionModel,
+  DataRow,
 } from "@vuu-ui/vuu-table-types";
 import {
   DragStartHandler,
@@ -34,8 +34,6 @@ import {
   useDragDrop,
 } from "@vuu-ui/vuu-ui-controls";
 import {
-  asDataSourceRowObject,
-  buildColumnMap,
   getAllCellsInColumn,
   getAriaRowIndex,
   getPinStateFromElement,
@@ -137,7 +135,6 @@ export interface TableHookProps
       | "onRowClick"
       | "renderBufferSize"
       | "revealSelected"
-      | "rowToObject"
       | "scrollingApiRef"
       | "showColumnHeaderMenus"
       | "showColumnHeaders"
@@ -150,7 +147,7 @@ export interface TableHookProps
   size: MeasuredSize;
 }
 
-const { KEY, IS_EXPANDED, IS_LEAF } = metadataKeys;
+const { IS_EXPANDED, IS_LEAF } = metadataKeys;
 
 const NULL_DRAG_DROP = {
   draggable: undefined,
@@ -194,7 +191,6 @@ export const useTable = ({
   renderBufferSize = 0,
   revealSelected,
   rowHeight,
-  rowToObject = asDataSourceRowObject,
   scrollingApiRef,
   selectionModel,
   showColumnHeaderMenus = true,
@@ -295,10 +291,6 @@ export const useTable = ({
     ],
   );
 
-  const columnMap = useMemo(() => {
-    return buildColumnMap(dataSource.columns);
-  }, [dataSource.columns]);
-
   const handleSelectionChange: SelectionChangeHandler =
     useCallback<SelectionChangeHandler>(
       (selectRequest) => {
@@ -309,12 +301,12 @@ export const useTable = ({
     );
 
   const handleSelect = useCallback<TableRowSelectHandlerInternal>(
-    (row) => {
+    (dataRow) => {
       if (onSelect) {
-        onSelect(row === null ? null : rowToObject(row, columnMap));
+        onSelect(dataRow);
       }
     },
-    [columnMap, onSelect, rowToObject],
+    [onSelect],
   );
 
   const onSubscribed = useCallback(
@@ -348,11 +340,11 @@ export const useTable = ({
   });
 
   const {
-    data,
-    dataRef,
+    dataRows,
+    dataRowsRef,
     getSelectedRows,
     range,
-    removeColumnDataFromCache,
+    // removeColumnDataFromCache,
     setRange,
   } = useDataSource({
     autoSelectFirstRow,
@@ -462,8 +454,7 @@ export const useTable = ({
         columns: tableConfig.columns.filter((col) => col.name !== column.name),
       };
       // this will not trigger a render, simply splice the removed column from cached row arrays
-      const indexOfRemovedColumn = columnMap[column.name];
-      removeColumnDataFromCache(indexOfRemovedColumn);
+      // removeColumnDataFromCache(column.name);
       // this will trigger a render and will render with the correct data, even before
       // we receive refresh from server
       applyTableConfigChange(newTableConfig, {
@@ -471,7 +462,7 @@ export const useTable = ({
         column,
       });
     },
-    [applyTableConfigChange, columnMap, removeColumnDataFromCache, tableConfig],
+    [applyTableConfigChange, tableConfig],
   );
 
   const hideColumns = useCallback(
@@ -591,7 +582,6 @@ export const useTable = ({
   const onResizeColumn: TableColumnResizeHandler = useCallback(
     (phase, columnName, width = 0) => {
       if (phase === "resize") {
-        console.log(`resize column ${columnName}`);
         cellResizeState.current?.cells.forEach((cell) => {
           cell.style.width = `${width}px`;
         });
@@ -677,11 +667,11 @@ export const useTable = ({
   );
 
   const onToggleGroup = useCallback(
-    (row: DataSourceRow, column: RuntimeColumnDescriptor) => {
-      const isJson = isJsonGroup(column, row, columnMap);
-      const key = row[KEY];
+    (dataRow: DataRow, column: RuntimeColumnDescriptor) => {
+      const isJson = isJsonGroup(column, dataRow);
+      const { key } = dataRow;
 
-      if (row[IS_EXPANDED]) {
+      if (dataRow.isExpanded) {
         dataSource.closeTreeNode(key, true);
         if (isJson) {
           // TODO could this be instigated by an event emitted by the JsonDataSOurce ? "hide-columns" ?
@@ -712,7 +702,7 @@ export const useTable = ({
         }
       }
     },
-    [columnMap, columns, dataSource, dispatchTableModelAction],
+    [columns, dataSource, dispatchTableModelAction],
   );
 
   // TODO combine with aboue
@@ -789,9 +779,8 @@ export const useTable = ({
   );
 
   const onContextMenu = useTableContextMenu({
-    columnMap,
     columns,
-    data,
+    dataRows,
     dataSource,
     getSelectedRows,
     headerCount: headerState.count,
@@ -857,11 +846,11 @@ export const useTable = ({
   });
 
   const handleRowClick = useCallback<TableRowClickHandlerInternal>(
-    (evt, row, rangeSelect, keepExistingSelection) => {
-      selectionHookOnRowClick(evt, row, rangeSelect, keepExistingSelection);
-      onRowClickProp?.(evt, rowToObject(row, columnMap));
+    (evt, dataRow, rangeSelect, keepExistingSelection) => {
+      selectionHookOnRowClick(evt, dataRow, rangeSelect, keepExistingSelection);
+      onRowClickProp?.(evt, dataRow);
     },
-    [columnMap, onRowClickProp, rowToObject, selectionHookOnRowClick],
+    [onRowClickProp, selectionHookOnRowClick],
   );
 
   const handleKeyDown = useCallback(
@@ -942,17 +931,17 @@ export const useTable = ({
       const {
         editType = "commit",
         isValid = true,
-        row,
+        dataRow,
         columnName,
         value,
       } = editState;
       if (editType === "commit" && isValid) {
         if (dataSource.rpcRequest) {
-          if (columnName && row) {
+          if (columnName && dataRow) {
             const response = await dataSource.rpcRequest({
               params: {
                 column: columnName,
-                key: row[KEY],
+                key: dataRow.key,
                 data: value,
               },
               rpcName: "editCell",
@@ -981,7 +970,7 @@ export const useTable = ({
       const { initialDragElement } = dragDropState;
       const rowIndex =
         getAriaRowIndex(initialDragElement) - headerState.count - 1;
-      const row = dataRef.current.find((row) => row[0] === rowIndex);
+      const row = dataRowsRef.current.find((row) => row.index === rowIndex);
       if (row) {
         dragDropState.setPayload(row);
       } else {
@@ -989,7 +978,7 @@ export const useTable = ({
       }
       onDragStart?.(dragDropState);
     },
-    [dataRef, headerState.count, onDragStart],
+    [dataRowsRef, headerState.count, onDragStart],
   );
 
   const onHeaderHeightMeasured = useCallback(
@@ -1027,9 +1016,8 @@ export const useTable = ({
     allRowsSelected,
     "aria-rowcount": dataSource.size,
     cellBlock,
-    columnMap,
     columns,
-    data,
+    dataRows,
     draggableRow,
     focusCellPlaceholderKeyDown,
     focusCellPlaceholderRef,

@@ -242,7 +242,7 @@ export const useFilterEditor = ({
 
 // Duplicated in useFilterBar
 function columnDescriptorsByName(
-  columns: ColumnDescriptor[],
+  columns: readonly ColumnDescriptor[],
 ): ColumnDescriptorsByName {
   return columns.reduce((m, col) => ({ ...m, [col.name]: col }), {});
 }

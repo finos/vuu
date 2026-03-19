@@ -72,7 +72,7 @@ const { KEY } = metadataKeys;
 
 export interface ArrayDataSourceConstructorProps
   extends Omit<DataSourceConstructorProps, "bufferSize" | "table"> {
-  columnDescriptors: ColumnDescriptor[];
+  columnDescriptors: readonly ColumnDescriptor[];
   data: Array<VuuRowDataItemType[]>;
   dataMap?: ColumnMap;
   keyColumn?: string;
@@ -103,7 +103,7 @@ const toDataSourceRow =
 //   typeof err === "object" && err !== null && err.hasOwnProperty("message");
 
 const buildTableSchema = (
-  columns: ColumnDescriptor[],
+  columns: readonly ColumnDescriptor[],
   keyColumn?: string,
 ): TableSchema => {
   const schema: TableSchema = {
@@ -123,7 +123,7 @@ export class ArrayDataSource
   implements DataSource
 {
   private clientCallback: DataSourceSubscribeCallback | undefined;
-  private columnDescriptors: ColumnDescriptor[];
+  private columnDescriptors: readonly ColumnDescriptor[];
   /** sorted offsets of data within raw data, reflecting sort order
    * of columns specified by client.
    */

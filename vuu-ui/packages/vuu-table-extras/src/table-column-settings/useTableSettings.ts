@@ -29,8 +29,8 @@ export type ColumnLike = {
 };
 
 const buildColumnItems = (
-  availableColumns: Array<SchemaColumn & { label?: string }>,
-  configuredColumns: ColumnDescriptor[],
+  availableColumns: ReadonlyArray<SchemaColumn & { label?: string }>,
+  configuredColumns: readonly ColumnDescriptor[],
 ): ColumnItem[] => {
   return availableColumns.map<ColumnItem>(
     ({ name, label = name, serverDataType }) => {
@@ -50,7 +50,7 @@ const buildColumnItems = (
 };
 
 type ColumnState = {
-  availableColumns: SchemaColumn[];
+  availableColumns: readonly SchemaColumn[];
   tableConfig: TableConfig;
 };
 

@@ -46,10 +46,10 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
 
   // // TODO cache source in localStorage
   const { pathname } = useLocation();
-  const handleSelect: TableRowSelectHandler = (row) => {
-    if (row) {
-      const path = pathFromKey(row.key);
-      setDataConsumer(row.data.nodeData?.tags?.includes("data-consumer"));
+  const handleSelect: TableRowSelectHandler = (dataRow) => {
+    if (dataRow) {
+      const path = pathFromKey(dataRow.key);
+      setDataConsumer(dataRow.nodeData?.tags?.includes("data-consumer"));
       navigate(path);
     }
   };

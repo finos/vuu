@@ -217,11 +217,10 @@ const useLocalContextMenu = (): TableContextMenuDef => {
     MenuActionHandler<string, TableContextMenuOptions>
   >((menuItemId, options) => {
     if (options) {
-      const { column, columnMap, row } = options;
+      const { column, dataRow } = options;
       switch (menuItemId) {
         case "cell-copy": {
-          const colIdx = columnMap[column.name];
-          const value = row[colIdx];
+          const value = dataRow[column.name];
           navigator.clipboard.writeText(`${value}`);
           return true;
         }

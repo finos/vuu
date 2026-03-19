@@ -3,13 +3,7 @@ import { Table } from "@vuu-ui/vuu-table";
 import { TreeDataSource } from "@vuu-ui/vuu-data-local";
 import { useMemo, useRef } from "react";
 import { TableConfig } from "@vuu-ui/vuu-table-types";
-import {
-  metadataKeys,
-  type RowToObjectMapper,
-  type TreeSourceNode,
-} from "@vuu-ui/vuu-utils";
-
-const { DEPTH, IS_LEAF, KEY, IDX, SELECTED } = metadataKeys;
+import { type TreeSourceNode } from "@vuu-ui/vuu-utils";
 
 interface Props extends Omit<TableProps, "config" | "dataSource"> {
   config?: Pick<
@@ -22,23 +16,6 @@ interface Props extends Omit<TableProps, "config" | "dataSource"> {
 
 export type TreeTableProps = Props &
   ({ dataSource: TreeDataSource } | { source: TreeSourceNode[] });
-
-const rowToTreeNodeObject: RowToObjectMapper = (row, columnMap) => {
-  const { [IS_LEAF]: isLeaf, [KEY]: key, [IDX]: index, [DEPTH]: depth } = row;
-  const firstColIdx = columnMap.nodeData;
-  const labelColIdx = firstColIdx + depth;
-
-  return {
-    key,
-    index,
-    isGroupRow: !isLeaf,
-    isSelected: row[SELECTED] !== 0,
-    data: {
-      label: row[labelColIdx],
-      nodeData: row[firstColIdx],
-    },
-  };
-};
 
 export const TreeTable = ({
   config,
@@ -83,7 +60,6 @@ export const TreeTable = ({
       dataSource={dataSourceRef.current}
       groupToggleTarget="toggle-icon"
       navigationStyle="tree"
-      rowToObject={rowToTreeNodeObject}
       showColumnHeaderMenus={false}
       selectionModel="single"
     />

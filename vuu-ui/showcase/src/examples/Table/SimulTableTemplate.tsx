@@ -18,8 +18,9 @@ import { DemoTableContainer } from "./DemoTableContainer";
 import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
 
 export type SimulTableProps = Partial<TableProps> & {
+  autosubscribeColumns?: string[];
   columnLayout?: ColumnLayout;
-  columns?: ColumnDescriptor[];
+  columns?: readonly ColumnDescriptor[];
   getDefaultColumnConfig?: DefaultColumnConfiguration;
   rowClassNameGenerators?: string[];
   tableContextMenuHook?: () => TableContextMenuDef;
@@ -28,6 +29,7 @@ export type SimulTableProps = Partial<TableProps> & {
 
 export const SimulTable = ({
   EmptyDisplay,
+  autosubscribeColumns,
   columnLayout,
   columns: columnsProp,
   dataSource: dataSourceProp,
@@ -62,6 +64,7 @@ export const SimulTable = ({
       dataSource:
         dataSourceProp ??
         new VuuDataSource({
+          autosubscribeColumns,
           columns: tableSchema.columns.map(toColumnName),
           table: tableSchema.table,
         }),
@@ -74,6 +77,7 @@ export const SimulTable = ({
       rowClassNameGenerators,
       dataSourceProp,
       VuuDataSource,
+      autosubscribeColumns,
     ],
   );
 

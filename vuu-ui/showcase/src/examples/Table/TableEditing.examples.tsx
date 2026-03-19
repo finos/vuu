@@ -67,13 +67,13 @@ const TableTemplate = ({
     ({
       editType = "commit",
       isValid = true,
-      row,
+      dataRow,
       columnName,
       value,
       previousValue = value,
     }) => {
       console.log(
-        `data edited [${row?.[0]}], ${columnName} ${previousValue} => ${value} (${editType}) isValid ${isValid}`,
+        `data edited [${dataRow?.index}], ${columnName} ${previousValue} => ${value} (${editType}) isValid ${isValid}`,
       );
     },
     [],

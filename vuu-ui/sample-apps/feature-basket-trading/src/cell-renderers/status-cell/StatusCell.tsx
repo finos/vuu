@@ -14,13 +14,8 @@ const statusValues: { [key: string]: string } = {
   PENDING: "pending",
 };
 
-export const StatusCell = ({
-  column,
-  columnMap,
-  row,
-}: TableCellRendererProps) => {
-  const dataIdx = columnMap[column.name];
-  const status = row[dataIdx] as string;
+export const StatusCell = ({ column, dataRow }: TableCellRendererProps) => {
+  const status = dataRow[column.name] as string;
   const statusClass = statusValues[status] ?? "unknown";
 
   return (

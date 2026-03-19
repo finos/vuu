@@ -1,11 +1,9 @@
-import { DataSourceRow } from "@vuu-ui/vuu-data-types";
 import { VuuRange } from "@vuu-ui/vuu-protocol-types";
-import { metadataKeys, WindowRange } from "@vuu-ui/vuu-utils";
+import { DataRow } from "@vuu-ui/vuu-table-types";
+import { WindowRange } from "@vuu-ui/vuu-utils";
 
-const { SELECTED } = metadataKeys;
-
-export class MovingWindow {
-  public data: DataSourceRow[];
+export class MovingDataRowWindow {
+  public data: DataRow[];
   public rowCount = 0;
   #range: WindowRange;
 
@@ -24,8 +22,8 @@ export class MovingWindow {
     this.rowCount = rowCount;
   };
 
-  add(data: DataSourceRow) {
-    const [index] = data;
+  add(data: DataRow) {
+    const { index } = data;
     if (this.isWithinRange(index)) {
       const internalIndex = index - this.#range.from;
       this.data[internalIndex] = data;
@@ -37,6 +35,10 @@ export class MovingWindow {
       this.data[index - this.#range.from] != null
       ? this.data[index - this.#range.from]
       : undefined;
+  }
+
+  getByKey(key: string) {
+    return this.data.find((row) => row.key === key);
   }
 
   isWithinRange(index: number) {
@@ -61,40 +63,28 @@ export class MovingWindow {
   }
 
   getSelectedRows() {
-    return this.data.filter((row) => row[SELECTED] !== 0);
+    return this.data.filter((dataRow) => dataRow.isSelected);
+  }
+
+  get hasData() {
+    return this.data.some((d) => d !== undefined);
+  }
+
+  /**
+   * This will throw if there is no data. Check `hasData` first
+   * to guard against this, if not certain.
+   */
+  get firstRow() {
+    for (let i = 0; i < this.data.length; i++) {
+      if (this.data[i]) {
+        return this.data[i];
+      }
+    }
+    throw Error(`[DataRowMovingWinddow] firstRow, no data`);
   }
 
   get range() {
     return this.#range;
-  }
-
-  slice(): DataSourceRow[] {
-    const data: DataSourceRow[] = [];
-    const { from } = this.range;
-    for (let i = 0; i < this.data.length; i++) {
-      if (this.data[i]) {
-        data.push(this.data[i]);
-      } else {
-        data.push([from + i, from + i, true, false, 1, 0, "", 0, 0, false]);
-      }
-    }
-    return data;
-  }
-
-  /**
-   * Update all rows by splicing the supplied index. Used when a column
-   * is removed.
-   */
-  spliceDataAtIndex(index: number) {
-    if (index >= 10) {
-      for (let i = 0; i < this.data.length; i++) {
-        if (this.data[i]) {
-          this.data[i] = this.data[i].toSpliced(index, 1) as DataSourceRow;
-        }
-      }
-    } else {
-      throw Error(`[MovingWindow] canno splir metadata value from Row`);
-    }
   }
 
   // TODO make this more performant, see implementation in

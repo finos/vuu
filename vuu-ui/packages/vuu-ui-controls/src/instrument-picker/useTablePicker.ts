@@ -16,8 +16,8 @@ import {
   useState,
 } from "react";
 
-import type { DataSourceRowObject } from "@vuu-ui/vuu-data-types";
 import type {
+  DataRow,
   TableConfig,
   TableRowSelectHandler,
 } from "@vuu-ui/vuu-table-types";
@@ -38,8 +38,8 @@ export interface TablePickerHookProps
   isOpen?: boolean;
 }
 
-const defaultRowToString = (row: DataSourceRowObject) =>
-  Object.values(row.data).join(" ");
+const defaultRowToString = (dataRow: DataRow) =>
+  Object.values(dataRow).join(" ");
 
 export const useTablePicker = ({
   TableProps,
@@ -130,10 +130,10 @@ export const useTablePicker = ({
   );
 
   const handleSelectRow = useCallback<TableRowSelectHandler>(
-    (row) => {
-      const value = row === null ? "" : rowToString(row);
+    (dataRow) => {
+      const value = dataRow === null ? "" : rowToString(dataRow);
       setValue(value);
-      onSelect?.(row);
+      onSelect?.(dataRow);
       // TODO do we need to include a reason ?
       requestAnimationFrame(() => {
         setOpen(false);

@@ -12,16 +12,16 @@ import "./ProgressCell.css";
 
 const classBase = "vuuBasketProgressCell";
 
-export const ProgressCell = ({ column, columnMap, row }: TableCellProps) => {
+export const ProgressCell = ({ column, dataRow }: TableCellProps) => {
   const { type } = column;
-  const value = row[columnMap[column.name]];
+  const value = dataRow[column.name];
   let showProgress = false;
   let percentage = 0;
 
   if (isTypeDescriptor(type) && isColumnTypeRenderer(type.renderer)) {
     const { associatedField } = type.renderer;
     if (associatedField) {
-      const associatedValue = row[columnMap[associatedField]];
+      const associatedValue = dataRow[associatedField];
       if (isValidNumber(value) && isValidNumber(associatedValue)) {
         percentage = Math.min((value / associatedValue) * 100, 100);
         if (isNaN(percentage)) {

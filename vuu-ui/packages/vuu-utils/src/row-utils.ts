@@ -7,13 +7,11 @@ import { ColumnMap, metadataKeys } from "./column-utils";
 import { IKeySet } from "./keyset";
 import { VuuRow } from "@vuu-ui/vuu-protocol-types";
 import { RefObject } from "react";
+import { DataRow } from "@vuu-ui/vuu-table-types";
 
 const { IS_LEAF, KEY, IDX, SELECTED } = metadataKeys;
 
-export type RowOffsetFunc = (
-  row: DataSourceRow,
-  pctScrollTop?: number,
-) => number;
+export type RowOffsetFunc = (dataRow: DataRow, pctScrollTop?: number) => number;
 export type RowAtPositionFunc = (position: number) => number;
 
 /**
@@ -22,7 +20,7 @@ export type RowAtPositionFunc = (position: number) => number;
 export type RowPositioning = [RowOffsetFunc, RowAtPositionFunc, boolean];
 
 export const actualRowPositioning = (rowHeight: number): RowPositioning => [
-  (row) => row[IDX] * rowHeight,
+  (dataRow) => dataRow.index * rowHeight,
   (position) => Math.floor(position / rowHeight),
   false,
 ];
@@ -43,9 +41,9 @@ export const virtualRowPositioning = (
   virtualisedExtent: number,
   pctScrollTop: RefObject<number>,
 ): RowPositioning => [
-  (row, offset = 0) => {
+  (dataRow, offset = 0) => {
     const rowOffset = pctScrollTop.current * virtualisedExtent;
-    return (row[IDX] - offset) * rowHeight - rowOffset;
+    return (dataRow.index - offset) * rowHeight - rowOffset;
   },
   /*
     Return index position of closest row 
@@ -57,11 +55,13 @@ export const virtualRowPositioning = (
   true,
 ];
 
+// deprecated
 export type RowToObjectMapper = (
   row: DataSourceRow,
   columnMap: ColumnMap,
 ) => DataSourceRowObject;
 
+// deprecated
 export const asDataSourceRowObject: RowToObjectMapper = (
   row,
   columnMap,
@@ -83,6 +83,7 @@ export const asDataSourceRowObject: RowToObjectMapper = (
   return rowObject;
 };
 
+// deprecated
 export const vuuRowToDataSourceRow = (
   { rowIndex, rowKey, sel: isSelected = 0, ts, data }: VuuRow,
   keys: IKeySet,

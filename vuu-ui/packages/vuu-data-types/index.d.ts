@@ -134,7 +134,7 @@ export declare type DataValueType =
 
 export declare type TimeDataValueTypeSimple = "time";
 export declare type DateTimeDataValueTypeSimple = "date/time";
-export declare type DecimalValueTypeSimple = "decimal";
+export declare type DecimalValueTypeSimple = "decimal" | "scaleddecimal";
 
 export declare type DateTimeDataValueType =
   | DateTimeColumnTypeSimple
@@ -396,9 +396,9 @@ export declare type TableSchemaTable = VuuTable & {
 };
 
 export declare type TableSchema = {
-  columns: SchemaColumn[];
-  key: string;
-  table: TableSchemaTable;
+  columns: readonly SchemaColumn[];
+  key: readonly string;
+  table: readonly TableSchemaTable;
 };
 
 /**

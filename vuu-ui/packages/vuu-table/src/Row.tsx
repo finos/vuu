@@ -4,7 +4,6 @@ import {
   isJsonColumn,
   isJsonGroup,
   isNotHidden,
-  metadataKeys,
   queryClosest,
 } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
@@ -13,18 +12,16 @@ import { TableCell, TableGroupCell } from "./table-cell";
 
 import { VirtualColSpan } from "./VirtualColSpan";
 
-const { COUNT, DEPTH, IDX, IS_EXPANDED, IS_LEAF, SELECTED } = metadataKeys;
 const classBase = "vuuTableRow";
 
 export const Row = memo(
   ({
     className: classNameProp,
     classNameGenerator,
-    columnMap,
     columns,
+    dataRow,
     groupToggleTarget = "group-column",
     highlighted,
-    row,
     offset,
     onCellEdit,
     onClick,
@@ -37,34 +34,34 @@ export const Row = memo(
     ...htmlAttributes
   }: RowProps) => {
     const {
-      [COUNT]: childRowCount,
-      [DEPTH]: depth,
-      [IDX]: rowIndex,
-      [IS_EXPANDED]: isExpanded,
-      [IS_LEAF]: isLeaf,
-      [SELECTED]: isSelected,
-    } = row;
+      childCount,
+      depth,
+      index: rowIndex,
+      isExpanded,
+      isLeaf,
+      isSelected,
+    } = dataRow;
 
     const handleRowClick = useCallback(
       (evt: MouseEvent<HTMLDivElement>) => {
         const rangeSelect = evt.shiftKey;
         const keepExistingSelection = evt.ctrlKey || evt.metaKey; /* mac only */
-        onClick?.(evt, row, rangeSelect, keepExistingSelection);
+        onClick?.(evt, dataRow, rangeSelect, keepExistingSelection);
       },
-      [onClick, row],
+      [dataRow, onClick],
     );
 
     const className = cx(
       classBase,
       classNameProp,
-      classNameGenerator?.(row, columnMap),
+      classNameGenerator?.(dataRow),
       {
         [`${classBase}-even`]: zebraStripes && rowIndex % 2 === 0,
         [`${classBase}-highlighted`]: highlighted,
       },
     );
 
-    const canExpand = isLeaf === false && childRowCount > 0;
+    const canExpand = isLeaf === false && childCount > 0;
     const ariaExpanded = isExpanded ? true : canExpand ? false : undefined;
     const ariaLevel = isLeaf && depth === 1 ? undefined : depth;
 
@@ -73,7 +70,7 @@ export const Row = memo(
 
     const handleGroupCellClick = useCallback(
       (evt: MouseEvent, column: RuntimeColumnDescriptor) => {
-        if (isGroupColumn(column) || isJsonGroup(column, row, columnMap)) {
+        if (isGroupColumn(column) || isJsonGroup(column, dataRow)) {
           const toggleIconClicked =
             queryClosest(evt.target, ".vuuToggleIconButton") !== null;
           if (groupToggleTarget === "toggle-icon") {
@@ -86,10 +83,10 @@ export const Row = memo(
             // Clicking the toggle icon directly never triggers row selection
             evt.stopPropagation();
           }
-          onToggleGroup?.(row, column);
+          onToggleGroup?.(dataRow, column);
         }
       },
-      [columnMap, groupToggleTarget, onToggleGroup, row],
+      [dataRow, groupToggleTarget, onToggleGroup],
     );
 
     return (
@@ -117,11 +114,10 @@ export const Row = memo(
           return (
             <Cell
               column={column}
-              columnMap={columnMap}
+              dataRow={dataRow}
               key={column.name}
               onClick={isGroup || isJsonCell ? handleGroupCellClick : undefined}
               onDataEdited={onDataEdited}
-              row={row}
               searchPattern={searchPattern}
             />
           );
