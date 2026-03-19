@@ -84,6 +84,7 @@ export const useFilterContainer = ({
   onFilterCleared,
 }: ColumnFilterContainerHookProps): ColumnFilterContextProps => {
   const valueRef = useRef<ColumnFilterValueMap>({});
+  const filterRef = useRef<FilterContainerFilter>(filter);
 
   const filterAggregator = useMemo(
     () => new FilterAggregator(filter),
@@ -95,9 +96,9 @@ export const useFilterContainer = ({
       (valueRef.current[column.name] = getColumnValueFromFilter(
         column,
         op,
-        filter,
+        filterRef.current,
       )),
-    [filter],
+    [],
   );
 
   const getValue = useCallback(
