@@ -17,3 +17,4 @@ export * from "./useTableContextMenu";
 export * from "./useTableScroll";
 export * from "./useTableViewport";
 export * from "./VirtualColSpan";
+export { dataRowFactory, type DataRowFunc } from "./data-row/DataRow";

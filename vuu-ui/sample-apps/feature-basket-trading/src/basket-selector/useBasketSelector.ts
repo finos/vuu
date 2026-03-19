@@ -51,8 +51,8 @@ export const useBasketSelector = ({
   ]);
 
   const handleRowClick = useCallback<TableRowClickHandler>(
-    (_evt, row) => {
-      const instanceId = row.data.instanceId as string;
+    (_evt, dataRow) => {
+      const instanceId = dataRow.instanceId as string;
       setOpen(false);
       onSelectBasket?.(instanceId);
     },

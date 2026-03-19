@@ -1,6 +1,6 @@
 import { GroupColumnDescriptor, TableCellProps } from "@vuu-ui/vuu-table-types";
 import { Icon, ToggleIconButton } from "@vuu-ui/vuu-ui-controls";
-import { getGroupIcon, getGroupValue, metadataKeys } from "@vuu-ui/vuu-utils";
+import { getGroupIcon, getGroupValue } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
@@ -11,15 +11,12 @@ import tableCellCss from "./TableCell.css";
 import tableGroupCellCss from "./TableGroupCell.css";
 import { useHighlighting } from "../useHighlighting";
 
-const { COUNT, IS_EXPANDED, IS_LEAF } = metadataKeys;
-
 const classBase = "vuuTableGroupCell";
 
 export const TableGroupCell = ({
   column,
-  columnMap,
+  dataRow,
   onClick,
-  row,
   searchPattern = "",
 }: TableCellProps) => {
   const targetWindow = useWindow();
@@ -35,10 +32,10 @@ export const TableGroupCell = ({
   });
 
   const { columns } = column as GroupColumnDescriptor;
-  const value = getGroupValue(columns, row, columnMap);
+  const value = getGroupValue(columns, dataRow);
   const valueWithHighlighting = useHighlighting(value || "", searchPattern);
 
-  const icon = getGroupIcon(columns, row);
+  const icon = getGroupIcon(columns, dataRow);
   const { className, style } = useCell(column, classBase);
 
   const handleClick = useCallback(
@@ -48,7 +45,11 @@ export const TableGroupCell = ({
     [column, onClick],
   );
 
-  const { [COUNT]: count, [IS_EXPANDED]: isExpanded, [IS_LEAF]: isLeaf } = row;
+  const { childCount, isExpanded, isLeaf } = dataRow;
+
+  // In a TreeTable, no nodes are tagged as leaf nodes, but those with childCount = 0
+  // behave as leaf nodes
+  const isLeafNode = isLeaf || childCount == 0;
 
   return (
     <div
@@ -56,12 +57,10 @@ export const TableGroupCell = ({
       className={cx(className, "vuuTableCell")}
       role="cell"
       style={style}
-      onClick={isLeaf ? undefined : handleClick}
+      onClick={isLeafNode ? undefined : handleClick}
     >
       <span className={`${classBase}-spacer`} />
-      {isLeaf || count == 0 ? null : (
-        <ToggleIconButton isExpanded={isExpanded} />
-      )}
+      {isLeafNode ? null : <ToggleIconButton isExpanded={isExpanded} />}
       {icon ? <Icon name={icon} /> : null}
       <span className={`${classBase}-label`}>{valueWithHighlighting}</span>
     </div>

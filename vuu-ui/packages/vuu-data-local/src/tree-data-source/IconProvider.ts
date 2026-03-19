@@ -1,12 +1,9 @@
-import { DataSourceRow } from "@vuu-ui/vuu-data-types";
-import { metadataKeys } from "@vuu-ui/vuu-utils";
-
-const { KEY } = metadataKeys;
+import { DataRow } from "@vuu-ui/vuu-table-types";
 
 export class IconProvider {
   #iconMap: Record<string, string> = {};
-  getIcon = (row: DataSourceRow) => {
-    const key = row[KEY];
+  getIcon = (dataRow: DataRow) => {
+    const key = dataRow.key;
     return this.#iconMap[key];
   };
   setIcon(key: string, icon: string) {

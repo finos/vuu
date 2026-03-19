@@ -17,7 +17,7 @@ import { QuickFilterProps } from "./QuickFilters";
 
 type QuickFilterValues = Record<string, string>;
 
-const findColumn = (columns: ColumnDescriptor[], name: string) => {
+const findColumn = (columns: readonly ColumnDescriptor[], name: string) => {
   const column = columns?.find((col) => col.name === name);
   if (column) {
     return column;
@@ -54,7 +54,7 @@ const asNumeric = (value: string, column: ColumnDescriptor): number => {
 
 const createFilterClause = (
   [identifier, value]: [string, string],
-  availableColumns: ColumnDescriptor[],
+  availableColumns: readonly ColumnDescriptor[],
 ): Filter => {
   if (identifier === "find") {
     if (availableColumns) {
@@ -95,7 +95,7 @@ const createFilterClause = (
 
 const buildFilter = (
   quickFilters: QuickFilterValues,
-  availableColumns: ColumnDescriptor[],
+  availableColumns: readonly ColumnDescriptor[],
 ): Filter | undefined => {
   const entries = Object.entries(quickFilters);
   if (entries.length === 1) {

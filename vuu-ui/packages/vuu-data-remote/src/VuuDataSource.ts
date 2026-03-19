@@ -272,7 +272,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
   }
 
   resume(callback?: DataSourceSubscribeCallback) {
-    console.log(`[VuuDataSuurce] resume, current status ${this.#status}`);
+    console.log(`[VuuDataSource] resume, current status ${this.#status}`);
     const isDisabled = this.#status.startsWith("disabl");
     const isSuspended = this.#status === "suspended";
     info?.(`resume #${this.viewport}, current status ${this.#status}`);
@@ -398,7 +398,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
 
   set columns(columns: string[]) {
     super.columns = columns;
-    if (this.#autosubscribeColumns) {
+    if (this.#autosubscribeColumns.length) {
       this.#allColumns = combineColumnsWithAutosubscribeColumns(
         columns,
         this.#autosubscribeColumns,
@@ -492,7 +492,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
   }
 
   set config(config: WithBaseFilter<WithFullConfig>) {
-    const { noChanges } = isConfigChanged(this.config, config);
+    const { noChanges, columnsChanged } = isConfigChanged(this.config, config);
     if (!noChanges) {
       super.config = config;
 
@@ -504,6 +504,13 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
           this.#autosubscribeColumns,
         ),
       };
+
+      if (columnsChanged && this.#autosubscribeColumns.length) {
+        this.#allColumns = combineColumnsWithAutosubscribeColumns(
+          columns,
+          this.#autosubscribeColumns,
+        );
+      }
 
       this.server?.send({
         viewport: this.viewport,

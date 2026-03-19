@@ -1,13 +1,13 @@
-import { DataSourceRow } from "@vuu-ui/vuu-data-types";
-import { ColumnMap, RowClassGenerator } from "@vuu-ui/vuu-utils";
+import { RowClassGenerator } from "@vuu-ui/vuu-utils";
 import { registerComponent } from "@vuu-ui/vuu-utils";
 
 import "./buy-sell.css";
+import { DataRow } from "@vuu-ui/vuu-table-types";
 
 export const buySellFormatter: RowClassGenerator = {
   id: "buy-sell-rows",
-  fn: (row: DataSourceRow, columnMap: ColumnMap) => {
-    const val = row[columnMap.side];
+  fn: (dataRow: DataRow) => {
+    const val = dataRow.side;
     if (typeof val === "string") {
       const uppercaseVal = val.toUpperCase();
       if (uppercaseVal === "BUY") {

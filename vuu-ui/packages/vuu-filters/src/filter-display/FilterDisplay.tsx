@@ -20,7 +20,7 @@ const classBase = "vuuFilterDisplay";
 
 export interface FilterDisplayProps extends HTMLAttributes<HTMLDivElement> {
   allowDelete?: boolean;
-  columns?: ColumnDescriptor[];
+  columns?: readonly ColumnDescriptor[];
   filter: FilterContainerFilter | undefined;
   onDeleteFilterClause?: (columnName: string) => void;
 }

@@ -5,11 +5,7 @@ import {
   DataValueTypeDescriptor,
   TableConfig,
 } from "@vuu-ui/vuu-table-types";
-import {
-  hasValidationRules,
-  isTypeDescriptor,
-  metadataKeys,
-} from "@vuu-ui/vuu-utils";
+import { hasValidationRules, isTypeDescriptor } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useRef, useState } from "react";
 import type { BulkEditPanelProps } from "./BulkEditPanel";
 import { EditValueChangeHandler } from "./useBulkEditRow";
@@ -25,8 +21,6 @@ const addRenderer = (
     renderer: { name: rendererName },
   };
 };
-
-const { IDX } = metadataKeys;
 
 type ErrorTuple = [number, string];
 
@@ -86,19 +80,19 @@ export const useBulkEditPanel = ({
   }, [columns, dataSource.columns]);
 
   const handleDataEdited = useCallback<DataCellEditNotification>(
-    ({ isValid = true, row, columnName }) => {
-      if (columnName && row) {
+    ({ isValid = true, dataRow, columnName }) => {
+      if (columnName && dataRow) {
         if (
           !isValid &&
-          !isRecorded([row[IDX], columnName], errorsRef.current)
+          !isRecorded([dataRow.index, columnName], errorsRef.current)
         ) {
-          errorsRef.current.push([row[IDX], columnName]);
+          errorsRef.current.push([dataRow.index, columnName]);
         } else if (
           isValid &&
-          isRecorded([row[IDX], columnName], errorsRef.current)
+          isRecorded([dataRow.index, columnName], errorsRef.current)
         ) {
           errorsRef.current = errorsRef.current.filter(
-            (error) => !isSameArray(error, [row[IDX], columnName]),
+            (error) => !isSameArray(error, [dataRow.index, columnName]),
           );
         }
         if (rowState === true && errorsRef.current.length === 0) {

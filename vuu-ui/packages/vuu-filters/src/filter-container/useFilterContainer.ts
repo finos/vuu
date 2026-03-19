@@ -84,7 +84,8 @@ export const useFilterContainer = ({
   onFilterCleared,
 }: ColumnFilterContainerHookProps): ColumnFilterContextProps => {
   const valueRef = useRef<ColumnFilterValueMap>({});
-  const filterRef = useRef<FilterContainerFilter>(filter);
+  const filterRef = useRef<FilterContainerFilter | undefined>(undefined);
+  filterRef.current = filter;
 
   const filterAggregator = useMemo(
     () => new FilterAggregator(filter),

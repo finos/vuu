@@ -23,7 +23,7 @@ export interface CustomFilterProps
       | "onFilterStateChanged"
       | "vuuTable"
     > {
-  columnDescriptors: ColumnDescriptor[];
+  columnDescriptors: readonly ColumnDescriptor[];
 }
 
 export const CustomFilters = ({

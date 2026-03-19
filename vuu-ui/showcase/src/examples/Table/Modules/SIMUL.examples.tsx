@@ -110,6 +110,7 @@ export const InstrumentPrices = () => (
 /** tags=data-consumer */
 export const ParentOrders = () => (
   <SimulTable
+    autosubscribeColumns={["ccy"]}
     tableName="parentOrders"
     getDefaultColumnConfig={getDefaultColumnConfig}
     rowClassNameGenerators={rowClassGenerators}

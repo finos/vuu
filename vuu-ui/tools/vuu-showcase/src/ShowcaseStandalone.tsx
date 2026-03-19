@@ -171,8 +171,6 @@ export const ShowcaseStandalone = ({
     }
   }, [treeSource]);
 
-  console.log(`theme = ${theme}`);
-
   const wrapInSaltProvider = (children: ReactNode) => {
     if (theme?.endsWith("next")) {
       return (

@@ -1,19 +1,18 @@
 import { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
-import { metadataKeys, registerComponent } from "@vuu-ui/vuu-utils";
+import { registerComponent } from "@vuu-ui/vuu-utils";
 import { Checkbox } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 
-const { SELECTED } = metadataKeys;
-
 import checkboxRowSelectorCss from "./CheckboxRowSelectorCell.css";
+import { MouseEventHandler, useCallback } from "react";
 
 const inputProps = {
   "aria-label": "Press space to select row",
 };
 
 export const CheckboxRowSelectorCell: React.FC<TableCellRendererProps> = ({
-  row,
+  dataRow,
 }) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -22,13 +21,22 @@ export const CheckboxRowSelectorCell: React.FC<TableCellRendererProps> = ({
     window: targetWindow,
   });
 
-  const isChecked = row[SELECTED] !== 0;
+  const isChecked = !!dataRow.isSelected;
+
+  const handleClick = useCallback<MouseEventHandler>((e) => {
+    const target = e.target as HTMLElement;
+    // Because of the label, click will fire twice.
+    if (target.tagName !== "INPUT") {
+      e.stopPropagation();
+    }
+  }, []);
 
   return (
     <Checkbox
       checked={isChecked}
       className="vuuCheckboxRowSelector"
       inputProps={inputProps}
+      onClick={handleClick}
     />
   );
 };

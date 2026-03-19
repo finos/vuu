@@ -5,7 +5,7 @@
 
   .saltButton {
     gap: var(--salt-spacing-200);
-    height: calc(var(--salt-size-base) + var(--salt-spacing-100));
+    height: var(--saltButton-height, calc(var(--salt-size-base) + var(--salt-spacing-100)));
     white-space: nowrap;
 
     .vuuIcon {

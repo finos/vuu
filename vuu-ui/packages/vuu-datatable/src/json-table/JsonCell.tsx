@@ -1,5 +1,4 @@
 import { TableCellProps } from "@vuu-ui/vuu-table-types";
-import { metadataKeys } from "@vuu-ui/vuu-utils";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { ToggleIconButton } from "@vuu-ui/vuu-ui-controls";
@@ -7,9 +6,7 @@ import { ToggleIconButton } from "@vuu-ui/vuu-ui-controls";
 // Note the className is actually applied to containing cell
 import arrayCellCss from "./JsonCell.css";
 
-const { IS_EXPANDED, IS_LEAF } = metadataKeys;
-
-export const JsonCell = ({ column, columnMap, row }: TableCellProps) => {
+export const JsonCell = ({ column, dataRow }: TableCellProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-array-cell",
@@ -18,8 +15,7 @@ export const JsonCell = ({ column, columnMap, row }: TableCellProps) => {
   });
 
   const { name } = column;
-  const dataIdx = columnMap[name];
-  let { [IS_EXPANDED]: isExpanded, [IS_LEAF]: isLeaf, [dataIdx]: value } = row;
+  let { isExpanded, isLeaf, [name]: value } = dataRow;
 
   const getDisplayValue = () => {
     if (isLeaf) {

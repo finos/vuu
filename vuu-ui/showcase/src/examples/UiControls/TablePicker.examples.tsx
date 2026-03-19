@@ -25,8 +25,8 @@ const TablePickerTemplate = ({
   );
 };
 
-const instrumentToString: TablePickerProps["rowToString"] = (row) =>
-  `[${row.key}] ${row.data.description}`;
+const instrumentToString: TablePickerProps["rowToString"] = (dataRow) =>
+  `[${dataRow.key}] ${dataRow.description}`;
 
 /** tags=data-consumer */
 export const DefaultInstrumentPicker = () => (

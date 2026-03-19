@@ -479,7 +479,7 @@ type FilterClauseList = Array<[string, string]>;
  */
 export const getFilterClausesForDisplay = (
   filter?: FilterContainerFilter,
-  columns: ColumnDescriptor[] = [],
+  columns: readonly ColumnDescriptor[] = [],
   clauses: FilterClauseList = [],
 ): FilterClauseList => {
   if (filter === undefined) {

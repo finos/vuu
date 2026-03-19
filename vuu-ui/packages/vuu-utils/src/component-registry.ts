@@ -1,15 +1,15 @@
-import { DataSourceRow, EditRuleValidator } from "@vuu-ui/vuu-data-types";
+import { EditRuleValidator } from "@vuu-ui/vuu-data-types";
 import { VuuColumnDataType } from "@vuu-ui/vuu-protocol-types";
 import {
   ColumnDescriptor,
   ColumnDescriptorCustomRenderer,
   ColumnTypeRendering,
+  DataRow,
   HeaderCellProps,
   TableCellRendererProps,
 } from "@vuu-ui/vuu-table-types";
 import { FunctionComponent as FC, HTMLAttributes } from "react";
 import {
-  ColumnMap,
   hasCustomRenderer,
   isColumnTypeRenderer,
   isTypeDescriptor,
@@ -33,10 +33,7 @@ export interface ConfigurationEditorProps {
   onChangeRendering: ColumnRenderPropsChangeHandler;
 }
 
-export type RowClassNameGenerator = (
-  row: DataSourceRow,
-  columnMap: ColumnMap,
-) => string | undefined;
+export type RowClassNameGenerator = (dataRow: DataRow) => string | undefined;
 
 export type RowClassGenerator = {
   id: string;
@@ -88,18 +85,17 @@ export interface CellRendererDescriptor extends CellRendererOptions {
 }
 
 const isTypeCompatible = (
-  rendererType:
-    | VuuColumnDataType
-    | (VuuColumnDataType | "json")[]
-    | "json"
-    | "private"
-    | undefined,
-  serverDataType: VuuColumnDataType | "json",
+  rendererType: CellRendererOptions["serverDataType"] | undefined,
+  serverDataType: CellRendererDataType | "json",
 ) => {
   if (rendererType === undefined || rendererType === "private") {
     return true;
   } else if (Array.isArray(rendererType)) {
-    return rendererType.includes(serverDataType);
+    if (serverDataType === "json") {
+      return false;
+    } else {
+      return rendererType.includes(serverDataType);
+    }
   } else {
     return rendererType === serverDataType;
   }
@@ -231,11 +227,13 @@ export const registerConfigurationEditor = (
   configEditorsMap.set(componentName, configurationEditor);
 };
 
+type CellRendererDataType = VuuColumnDataType | "json";
+
 // This is invoked by settings panel to allow users to assign
 // non-default, cell renderers. Ignore renderers registered
 // with the attribute userCanAssign = false
 export const getRegisteredCellRenderers = (
-  serverDataType?: VuuColumnDataType | "json",
+  cellRendererDataType?: CellRendererDataType,
 ): CellRendererDescriptor[] => {
   const rendererNames = Array.from(cellRenderersMap.keys());
   const allRenderers = rendererNames
@@ -244,9 +242,9 @@ export const getRegisteredCellRenderers = (
       ...(optionsMap.get(name) as CellRendererOptions),
     }))
     .filter(({ userCanAssign }) => userCanAssign !== false);
-  if (serverDataType) {
+  if (cellRendererDataType) {
     return allRenderers.filter((renderer) =>
-      isTypeCompatible(renderer.serverDataType, serverDataType),
+      isTypeCompatible(renderer.serverDataType, cellRendererDataType),
     );
   } else {
     return allRenderers;

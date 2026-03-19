@@ -8,11 +8,7 @@ import searchCellCss from "./SearchCell.css";
 const classBase = "vuuSearchCell";
 
 // export to avoid tree shaking, component is not consumed directly
-export const SearchCell = ({
-  column,
-  columnMap,
-  row,
-}: TableCellRendererProps) => {
+export const SearchCell = ({ column, dataRow }: TableCellRendererProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-search-cell",
@@ -21,9 +17,7 @@ export const SearchCell = ({
   });
 
   //TODO what about click handling
-
-  const key = columnMap[column.name];
-  const value = row[key];
+  const value = dataRow[column.name];
 
   return (
     <div className={classBase} tabIndex={-1}>

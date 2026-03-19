@@ -14,7 +14,7 @@ import progressCellCss from "./ProgressCell.css";
 
 const classBase = "vuuProgressCell";
 
-const ProgressCell = ({ column, columnMap, row }: TableCellProps) => {
+const ProgressCell = ({ column, dataRow }: TableCellProps) => {
   //TODO what about click handling
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -24,14 +24,14 @@ const ProgressCell = ({ column, columnMap, row }: TableCellProps) => {
   });
 
   const { name, type } = column;
-  const value = row[columnMap[name]];
+  const value = dataRow[name];
   let showProgress = false;
   let percentage = 0;
 
   if (isTypeDescriptor(type) && isColumnTypeRenderer(type.renderer)) {
     const { associatedField } = type.renderer;
     if (associatedField) {
-      const associatedValue = row[columnMap[associatedField]];
+      const associatedValue = dataRow[associatedField];
       if (isValidNumber(value) && isValidNumber(associatedValue)) {
         percentage = Math.min(Math.round((value / associatedValue) * 100), 100);
         percentage = Math.min(Math.round((value / associatedValue) * 100), 100);

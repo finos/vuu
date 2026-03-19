@@ -34,9 +34,8 @@ const getValueList = ({ name, type }: ColumnDescriptor) => {
 
 export const ToggleCell = memo(function ToggleCell({
   column,
-  columnMap,
+  dataRow,
   onEdit,
-  row,
 }: TableCellRendererProps) {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -46,8 +45,7 @@ export const ToggleCell = memo(function ToggleCell({
   });
 
   const values = getValueList(column);
-  const dataIdx = columnMap[column.name];
-  const value = row[dataIdx] as string;
+  const value = dataRow[column.name] as string;
 
   const handleCommit = useCallback<CommitHandler<HTMLButtonElement>>(
     async (evt, newValue) => {
@@ -65,11 +63,12 @@ export const ToggleCell = memo(function ToggleCell({
 
   return (
     <CycleStateButton
+      appearance="solid"
       className={cx(classBase, `${classBase}-${column.name}`)}
       onCommit={handleCommit}
+      sentiment="accented"
       value={value}
       values={values}
-      variant="cta"
     >
       {value}
     </CycleStateButton>

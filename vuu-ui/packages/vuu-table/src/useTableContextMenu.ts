@@ -1,40 +1,38 @@
 import { useContextMenu } from "@vuu-ui/vuu-context-menu";
-import { DataSource, DataSourceRow } from "@vuu-ui/vuu-data-types";
+import { DataSource } from "@vuu-ui/vuu-data-types";
 import {
   ColumnDescriptor,
+  DataRow,
   RuntimeColumnDescriptor,
   TableContextMenuOptions,
   TableMenuLocation,
 } from "@vuu-ui/vuu-table-types";
 import {
   columnByAriaIndex,
-  ColumnMap,
   getAriaColIndex,
   getAriaRowIndex,
-  useStableReference,
 } from "@vuu-ui/vuu-utils";
 import { MouseEvent, useCallback } from "react";
 
 export interface TableContextMenuHookProps {
   allowContextMenu?: boolean;
-  columnMap: ColumnMap;
   columns: ColumnDescriptor[];
-  data: DataSourceRow[];
+  dataRows: DataRow[];
   dataSource: DataSource;
-  getSelectedRows: () => DataSourceRow[];
+  getSelectedRows: () => DataRow[];
   // TODO can we eliminate this it is only needed to convert aria row index to actual row index
   headerCount?: number;
 }
 
-const NO_ROWS: DataSourceRow[] = [] as const;
+const NO_ROWS: DataRow[] = [] as const;
 
 export const isTableLocation = (
   location: string,
 ): location is TableMenuLocation =>
   ["grid", "header", "filter"].includes(location);
 
-const getDataSourceRow = (rows: DataSourceRow[], rowIndex: number) => {
-  const row = rows.find(([idx]) => idx === rowIndex);
+const getDataSourceRow = (dataRows: DataRow[], rowIndex: number) => {
+  const row = dataRows.find((dataRow) => dataRow.index === rowIndex);
   if (row) {
     return row;
   } else {
@@ -46,15 +44,13 @@ const getDataSourceRow = (rows: DataSourceRow[], rowIndex: number) => {
 
 export const useTableContextMenu = ({
   allowContextMenu = true,
-  columnMap: columnMapProp,
   columns,
-  data,
+  dataRows,
   dataSource,
   getSelectedRows,
   headerCount = 1,
 }: TableContextMenuHookProps) => {
   const showContextMenu = useContextMenu();
-  const { current: columnMap } = useStableReference(columnMapProp);
 
   const onContextMenu = useCallback(
     (evt: MouseEvent<HTMLElement>) => {
@@ -65,7 +61,7 @@ export const useTableContextMenu = ({
         const { selectedRowsCount } = dataSource;
         const rowIndex = getAriaRowIndex(rowEl) - headerCount - 1;
         const ariaColIndex = getAriaColIndex(cellEl);
-        const row = getDataSourceRow(data, rowIndex);
+        const dataRow = getDataSourceRow(dataRows, rowIndex);
         const column = columnByAriaIndex(
           columns as RuntimeColumnDescriptor[],
           ariaColIndex,
@@ -75,10 +71,9 @@ export const useTableContextMenu = ({
           // TODO does it really make sense to collect selected rows ?
           // We only have access to rows in local cache
           const menuOptions: TableContextMenuOptions = {
-            columnMap,
             column,
             columns,
-            row,
+            dataRow,
             selectedRows: selectedRowsCount === 0 ? NO_ROWS : getSelectedRows(),
             viewport: dataSource.viewport,
           };
@@ -96,9 +91,8 @@ export const useTableContextMenu = ({
       }
     },
     [
-      columnMap,
       columns,
-      data,
+      dataRows,
       dataSource,
       getSelectedRows,
       headerCount,

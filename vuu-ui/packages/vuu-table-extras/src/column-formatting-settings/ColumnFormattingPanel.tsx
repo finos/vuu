@@ -128,6 +128,10 @@ function getFormattingSettingsComponent(props: FormattingSettingsProps) {
 
   switch (column.serverDataType) {
     case "double":
+    case "scaleddecimal2":
+    case "scaleddecimal4":
+    case "scaleddecimal6":
+    case "scaleddecimal8":
     case "int":
       return <BaseNumericFormattingSettings {...props} />;
     case "long":

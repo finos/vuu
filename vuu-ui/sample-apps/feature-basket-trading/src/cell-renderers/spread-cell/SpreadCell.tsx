@@ -6,12 +6,12 @@ import "./SpreadCell.css";
 
 const classBase = "vuuBasketSpreadCell";
 
-export const SpreadCell = ({ columnMap, row }: TableCellProps) => {
+export const SpreadCell = ({ dataRow }: TableCellProps) => {
   //TODO what about click handling
 
-  const askValue = row[columnMap.ask] as number;
-  const bidValue = row[columnMap.bid] as number;
-  const limitPriceValue = row[columnMap.limitPrice] as number;
+  const askValue = dataRow.ask as number;
+  const bidValue = dataRow.bid as number;
+  const limitPriceValue = dataRow.limitPrice as number;
 
   const calculateSpreadOffset = () => {
     const spread = askValue - bidValue;

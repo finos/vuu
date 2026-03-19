@@ -13,7 +13,7 @@ const classBase = "vuuIconButtonCell";
  * To assign an icon to the cell, give the columndescriptor
  * a className. In css, assign an icon variable to --vuu-svg-icon.
  */
-export const IconButtonCell = ({ column, row }: TableCellRendererProps) => {
+export const IconButtonCell = ({ column, dataRow }: TableCellRendererProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-iconbutton-cell",
@@ -25,9 +25,9 @@ export const IconButtonCell = ({ column, row }: TableCellRendererProps) => {
   const handleClick = useCallback<MouseEventHandler<HTMLButtonElement>>(
     (evt) => {
       evt.stopPropagation();
-      actionHandler(column.name, row);
+      actionHandler(column.name, dataRow);
     },
-    [actionHandler, column, row],
+    [actionHandler, column, dataRow],
   );
 
   return (

@@ -1,4 +1,3 @@
-import { DataSourceRow } from "@vuu-ui/vuu-data-types";
 import { TableCell } from "@vuu-ui/vuu-table";
 import { BackgroundCell } from "@vuu-ui/vuu-table-extras";
 import {
@@ -10,29 +9,34 @@ import {
 import { VuuInput } from "@vuu-ui/vuu-ui-controls";
 import { CommitHandler, getValueFormatter } from "@vuu-ui/vuu-utils";
 import { FormEventHandler, useCallback, useMemo, useState } from "react";
-
-const columnMap = {
-  price: 8,
-};
+import { dataRowFactory } from "@vuu-ui/vuu-table/src/data-row/DataRow";
 
 const timestamp = 0;
 const isNew = false;
 
 const defaultFormatting = { decimals: 2 };
 const defaultRenderer = {
+  // provided just for type completion - we have assigned the BackgroundCell to CellRenderer directly
   name: "vuu.price-move-background",
 };
 
-export const DefaultBackgroundCell = ({
+const TableCellTemplate = ({
+  CellRenderer = BackgroundCell,
   formatting = defaultFormatting,
   renderer = defaultRenderer,
-}: {
+}: Pick<RuntimeColumnDescriptor, "CellRenderer"> & {
   formatting?: ColumnTypeFormatting;
   renderer?: ColumnTypeRendering;
 }) => {
+  const [DataRow] = useMemo(
+    () =>
+      dataRowFactory(["price"], [{ name: "price", serverDataType: "double" }]),
+    [],
+  );
+
   const priceColumn = useMemo<Partial<RuntimeColumnDescriptor>>(() => {
     const column: Partial<RuntimeColumnDescriptor> = {
-      CellRenderer: BackgroundCell,
+      CellRenderer,
       name: "price",
       serverDataType: "double",
       type: {
@@ -44,25 +48,28 @@ export const DefaultBackgroundCell = ({
     };
     column.valueFormatter = getValueFormatter(column as ColumnDescriptor);
     return column;
-  }, [formatting, renderer]);
+  }, [CellRenderer, formatting, renderer]);
 
   const [value, setValue] = useState<string>("100.00");
   // prettier-ignore
-  const [row, setRow] = useState<DataSourceRow>([0, 0, true, false, 1, 0, "key", 0,  timestamp, isNew, 100.00]);
+  const [dataRow, setDataRow] = useState(DataRow([0, 0, true, false, 1, 0, "key", 0,  timestamp, isNew, 100.00]));
 
   const handleChange = useCallback<FormEventHandler<HTMLInputElement>>(
     (evt) => setValue((evt.target as HTMLInputElement).value),
     [],
   );
-  const handlePriceChange = useCallback<CommitHandler>((evt, value) => {
-    if (typeof value === "string") {
-      const numericValue = parseFloat(value);
-      if (!isNaN(numericValue)) {
-        // prettier-ignore
-        setRow([0, 0, true, false, 1, 0, "key", 0,  timestamp, isNew, numericValue]);
+  const handlePriceChange = useCallback<CommitHandler>(
+    (evt, value) => {
+      if (typeof value === "string") {
+        const numericValue = parseFloat(value);
+        if (!isNaN(numericValue)) {
+          // prettier-ignore
+          setDataRow(DataRow([0, 0, true, false, 1, 0, "key", 0,  timestamp, isNew, numericValue]));
+        }
       }
-    }
-  }, []);
+    },
+    [DataRow],
+  );
 
   return (
     <div
@@ -83,8 +90,7 @@ export const DefaultBackgroundCell = ({
       />
       <TableCell
         column={priceColumn as RuntimeColumnDescriptor}
-        columnMap={columnMap}
-        row={row}
+        dataRow={dataRow}
       />
     </div>
   );
@@ -95,18 +101,18 @@ const formatting4Decimals = { decimals: 4 };
 const backgroundArrow = { ...defaultRenderer, flashStyle: "arrow-bg" as const };
 const arrowOnly = { ...defaultRenderer, flashStyle: "arrow" as const };
 
+export const DefaultBackgroundCell = () => <TableCellTemplate />;
+
 export const BackgroundCell4Decimals = () => (
-  <DefaultBackgroundCell formatting={formatting4Decimals} />
+  <TableCellTemplate formatting={formatting4Decimals} />
 );
 
 export const BackgroundCellNoDecimals = () => (
-  <DefaultBackgroundCell formatting={formatting0Decimals} />
+  <TableCellTemplate formatting={formatting0Decimals} />
 );
 
 export const BackgroundArrowCell = () => (
-  <DefaultBackgroundCell renderer={backgroundArrow} />
+  <TableCellTemplate renderer={backgroundArrow} />
 );
 
-export const ArrowOnlyCell = () => (
-  <DefaultBackgroundCell renderer={arrowOnly} />
-);
+export const ArrowOnlyCell = () => <TableCellTemplate renderer={arrowOnly} />;

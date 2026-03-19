@@ -20,7 +20,6 @@ export * from "./broadcast-channel";
 export * from "./column-utils";
 export * from "./cookie-utils";
 export * from "./component-registry";
-export * from "./DataWindow";
 export { Clock } from "./Clock";
 export * from "./common-types";
 export * from "./css-utils";

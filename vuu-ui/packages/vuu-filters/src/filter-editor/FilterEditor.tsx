@@ -19,7 +19,7 @@ export type FilterEditSaveHandler = (filter: Filter) => void;
 export type FilterEditCancelHandler = (filter?: Filter) => void;
 
 export interface FilterEditorProps extends HTMLAttributes<HTMLDivElement> {
-  columnDescriptors: ColumnDescriptor[];
+  columnDescriptors: readonly ColumnDescriptor[];
   filter?: Filter;
   onCancel: FilterEditCancelHandler;
   onSave: FilterEditSaveHandler;

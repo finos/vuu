@@ -1,6 +1,4 @@
 import type {
-  DataSourceRow,
-  DataSourceRowObject,
   DataValueDescriptor,
   DataValueTypeSimple,
   DataValueValidationChecker,
@@ -16,11 +14,7 @@ import type {
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
 import { CellPos } from "@vuu-ui/vuu-table/src/table-dom-utils";
-import type {
-  ColumnMap,
-  DateTimePattern,
-  RowClassNameGenerator,
-} from "@vuu-ui/vuu-utils";
+import type { DateTimePattern, RowClassNameGenerator } from "@vuu-ui/vuu-utils";
 import type {
   ComponentType,
   CSSProperties,
@@ -36,6 +30,30 @@ export declare type ColumnMoveHandler = (
 ) => void;
 
 export declare type GroupToggleTarget = "toggle-icon" | "group-column";
+
+export interface DataRowIntrinsicAttributes {
+  readonly childCount: number;
+  readonly depth: number;
+  readonly index: number;
+  readonly isExpanded: boolean;
+  readonly isSelected: boolean;
+  readonly isLeaf: boolean;
+  readonly key: string;
+  readonly renderIndex: number;
+}
+
+export interface DataRowOperations {
+  hasColumn: (columnName: string) => boolean;
+}
+
+export declare type DataRowOperation = keyof DataRowOperations;
+
+export declare type DataRowIntrinsicAttribute =
+  keyof DataRowIntrinsicAttributes;
+
+export declare type DataRow = DataRowIntrinsicAttributes &
+  DataRowOperations &
+  Record<string, VuuRowDataItemType>;
 
 export declare type TableSelectionModel =
   | "none"
@@ -53,16 +71,16 @@ export declare type ValueFormatter<T extends string | ReactElement = string> = (
 
 export interface EditEventState {
   columnName?: string;
+  dataRow?: DataRow;
   editType?: EditType;
   isValid?: boolean;
   previousValue?: VuuRowDataItemType;
-  row?: DataSourceRow;
   value: VuuRowDataItemType;
 }
 
 export interface DataCellEditEvent extends EditEventState {
-  row?: DataSourceRow;
   columnName?: string;
+  dataRow?: DataRow;
 }
 
 export declare type DataCellEditNotification = (
@@ -72,10 +90,9 @@ export declare type DataCellEditNotification = (
 export interface TableCellProps {
   className?: string;
   column: RuntimeColumnDescriptor;
-  columnMap: ColumnMap;
+  dataRow: DataRow;
   onClick?: (event: MouseEvent, column: RuntimeColumnDescriptor) => void;
   onDataEdited?: TableCellEditHandler;
-  row: DataSourceRow;
   searchPattern?: Lowercase<string>;
 }
 
@@ -86,11 +103,9 @@ export declare type TableCellEditHandler<T extends EditType = EditType> = (
   editPhase: T,
 ) => T extends "commit" ? Promise<RpcResult | undefined> : undefined;
 
-export declare type TableRowSelectHandler = (
-  row: DataSourceRowObject | null,
-) => void;
+export declare type TableRowSelectHandler = (dataRow: DataRow | null) => void;
 export declare type TableRowSelectHandlerInternal = (
-  row: DataSourceRow | null,
+  dataRow: DataRow | null,
 ) => void;
 
 /**
@@ -98,12 +113,12 @@ export declare type TableRowSelectHandlerInternal = (
  */
 export declare type TableRowClickHandler = (
   evt: MouseEvent<HTMLDivElement>,
-  row: DataSourceRowObject,
+  row: DataRow,
 ) => void;
 
 export declare type TableRowClickHandlerInternal = (
   evt: MouseEvent<HTMLDivElement>,
-  row: DataSourceRow,
+  dataRow: DataRow,
   rangeSelect: boolean,
   keepExistingSelection: boolean,
 ) => void;
@@ -148,7 +163,7 @@ export interface TableAttributes {
  * across sessions.
  */
 export interface TableConfig extends TableAttributes {
-  columns: ColumnDescriptor[];
+  columns: readonly ColumnDescriptor[];
   rowClassNameGenerators?: string[];
 }
 
@@ -269,7 +284,7 @@ export interface ColumnDescriptor extends DataValueDescriptor {
    * Only used when the column is included in a grouby clause.
    * The icon will be displayed alongside the group label
    */
-  getIcon?: (row: DataSourceRow) => string | undefined;
+  getIcon?: (row: DataRow) => string | undefined;
   /**
    * Can this column be included in a groupBy operation ? Default is true.
    */
@@ -308,6 +323,9 @@ export interface ColumnDescriptorCustomRenderer
 export interface RuntimeColumnDescriptor extends ColumnDescriptor {
   align?: "left" | "right";
   ariaColIndex: number;
+  /**
+   * A custom Cell Renderer component, configured via the `type.renderer`
+   */
   CellRenderer?: FunctionComponent<TableCellRendererProps>;
   HeaderCellLabelRenderer?: FunctionComponent<
     Omit<HeaderCellProps, "id" | "index">
@@ -419,7 +437,7 @@ export interface TableSettingsProps {
   allowColumnLabelCase?: boolean;
   allowColumnDefaultWidth?: boolean;
   allowGridRowStyling?: boolean;
-  availableColumns: SchemaColumn[];
+  availableColumns: readonly SchemaColumn[];
   onAddCalculatedColumn: () => void;
   onConfigChange: (config: TableConfig) => void;
   onDataSourceConfigChange: (dataSourceConfig: DataSourceConfig) => void;
@@ -476,7 +494,7 @@ export interface BaseRowProps {
 
 export interface RowProps extends BaseRowProps {
   classNameGenerator?: RowClassNameGenerator;
-  columnMap: ColumnMap;
+  dataRow: DataRow;
   groupToggleTarget?: GroupToggleTarget;
   highlighted?: boolean;
   offset: number;
@@ -484,7 +502,6 @@ export interface RowProps extends BaseRowProps {
   onClick?: TableRowClickHandlerInternal;
   onDataEdited?: TableCellEditHandler;
   onToggleGroup?: (row: DataSourceRow, column: RuntimeColumnDescriptor) => void;
-  row: DataSourceRow;
   searchPattern: Lowercase<string>;
   showBookends?: boolean;
   zebraStripes?: boolean;
@@ -541,17 +558,16 @@ export declare type CellPos = [number, number];
  */
 export declare type RowActionHandler<T extends string = string> = (
   rowActionId: T,
-  row: DataSourceRow,
+  dataRow: DataRow,
 ) => void;
 
 export declare type TableMenuLocation = "grid" | "header" | "filter";
 
 export interface TableContextMenuOptions {
-  columnMap: ColumnMap;
   column: ColumnDescriptor;
   columns?: ColumnDescriptor[];
-  row: DataSourceRow;
-  selectedRows: DataSourceRow[];
+  dataRow: DataRow;
+  selectedRows: DataRow[];
   viewport?: string;
 }
 

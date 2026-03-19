@@ -37,7 +37,7 @@ export const countFilterClauses = ({
 const EmptyAggregator = new FilterAggregator();
 
 export interface FilterToggleButtonProps {
-  columns: ColumnDescriptor[];
+  columns: readonly ColumnDescriptor[];
   filterProviderKey?: string;
   onToggle: () => void;
 }

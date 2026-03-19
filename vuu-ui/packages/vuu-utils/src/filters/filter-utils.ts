@@ -54,6 +54,11 @@ export const isSerializableFilter = (f: object): f is SerializableFilter =>
   "asQuery" in f &&
   typeof f["asQuery"] === "function";
 
+export const isFilter = (f: unknown): f is Filter =>
+  typeof f === "object" &&
+  f !== null &&
+  (isFilterClause(f) || isMultiClauseFilter(f));
+
 export const isFilterClause = (
   f?: Partial<Filter>,
 ): f is SingleValueFilterClause | MultiValueFilterClause =>

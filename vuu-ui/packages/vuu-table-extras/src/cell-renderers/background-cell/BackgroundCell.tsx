@@ -1,16 +1,15 @@
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
 import {
   dataAndColumnUnchanged,
   DOWN1,
   DOWN2,
   isTypeDescriptor,
-  metadataKeys,
   registerComponent,
   UP1,
   UP2,
 } from "@vuu-ui/vuu-utils";
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
 import { memo } from "react";
 import { useDirection } from "./useDirection";
@@ -21,8 +20,6 @@ import backgroundKeyFramesCss from "./BackgroundKeyframes.css";
 
 const CHAR_ARROW_UP = String.fromCharCode(11014);
 const CHAR_ARROW_DOWN = String.fromCharCode(11015);
-
-const { KEY } = metadataKeys;
 
 const classBase = "vuuBackgroundCell";
 
@@ -44,8 +41,7 @@ const getFlashStyle = (colType?: DataValueType) => {
 
 export const BackgroundCell = memo(function BackgroundCell({
   column,
-  columnMap,
-  row,
+  dataRow,
 }: TableCellRendererProps) {
   //TODO what about click handling
 
@@ -62,10 +58,9 @@ export const BackgroundCell = memo(function BackgroundCell({
   });
 
   const { name, type, valueFormatter } = column;
-  const dataIdx = columnMap[name];
-  const value = row[dataIdx];
+  const value = dataRow[name];
   const flashStyle = getFlashStyle(type);
-  const direction = useDirection(row[KEY], value, column);
+  const direction = useDirection(dataRow.key, value, column);
   const arrow =
     flashStyle === FlashStyle.ArrowOnly ||
     flashStyle === FlashStyle.ArrowBackground
@@ -87,7 +82,9 @@ export const BackgroundCell = memo(function BackgroundCell({
   return (
     <div className={className} tabIndex={-1}>
       <div className={`${classBase}-arrow`}>{arrow}</div>
-      {valueFormatter(row[dataIdx])}
+      <span className={`${classBase}-value`}>
+        {valueFormatter(dataRow[name])}
+      </span>
     </div>
   );
 }, dataAndColumnUnchanged);
@@ -100,6 +97,14 @@ registerComponent(
     description: "Change background color of cell when value changes",
     configEditor: "BackgroundCellConfigurationEditor",
     label: "Background Flash",
-    serverDataType: ["long", "int", "double"],
+    serverDataType: [
+      "long",
+      "int",
+      "double",
+      "scaleddecimal2",
+      "scaleddecimal4",
+      "scaleddecimal6",
+      "scaleddecimal8",
+    ],
   },
 );
