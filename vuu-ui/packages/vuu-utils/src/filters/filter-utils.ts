@@ -193,8 +193,6 @@ export const getColumnValueFromFilter = (
     if (filter.filters[0].column === column.name) {
       const [{ value: v1 }, { value: v2 }] = filter.filters;
       return [`${v1}`, `${v2}`];
-    } else {
-      return ["", ""];
     }
   } else if (isAndFilter(filter)) {
     const filterForColumn = filter.filters.find((f) =>
