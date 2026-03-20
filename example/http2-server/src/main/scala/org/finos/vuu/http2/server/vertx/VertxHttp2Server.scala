@@ -1,61 +1,26 @@
-package org.finos.vuu.net.http
+package org.finos.vuu.http2.server.vertx
 
 import com.typesafe.scalalogging.StrictLogging
 import io.vertx.core.http.{HttpMethod, HttpServerOptions}
 import io.vertx.core.net.{KeyCertOptions, PemKeyCertOptions, PfxOptions}
-import io.vertx.core.{AbstractVerticle, Vertx, VertxOptions}
+import io.vertx.core.{AbstractVerticle, Promise}
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.{BodyHandler, StaticHandler}
-import org.finos.toolbox.lifecycle.LifecycleEnabled
 import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSSLByPKCS, VuuSSLCipherSuiteOptions, VuuSSLDisabled, VuuSSLOptions}
+import org.finos.vuu.http2.server.config.{AbsolutePathWebRoot, ClassPathWebRoot, VuuHttp2ServerOptions, WebRootDisabled}
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.util.PathChecker
 
 import java.io.File
 import java.util
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger}
 
-object Http2Server {
+class VertxHttp2Server(val options: VuuHttp2ServerOptions, val services: List[RestService]) extends AbstractVerticle with StrictLogging {
 
-  def apply(options: VuuHttp2ServerOptions): Http2Server = {
-    apply(options, List.empty)
-  }
+  private val running = new AtomicBoolean(false)
+  private val port = new AtomicInteger(-1)
 
-  def apply(options: VuuHttp2ServerOptions, services: List[RestService]): Http2Server = {
-    if (options.isEnabled) {
-      VuuHttp2Server(options, services)
-    } else {
-      DisabledHttp2Server()
-    }
-  }
-}
-
-trait Http2Server extends LifecycleEnabled {
-  def join(): Unit
-}
-
-class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[RestService]) extends AbstractVerticle with StrictLogging {
-
-  def addRestService(router: Router, service: RestService): Unit = {
-
-    logger.debug(s"Adding REST service /api/${service.getServiceName}")
-    logger.debug(s"    POST URI:" + service.getUriPost)
-    logger.debug(s"    PUT URI:" + service.getUriPut)
-    logger.debug(s"    GET URI:" + service.getUriGet)
-    logger.debug(s"    GET ALL URI:" + service.getUriGetAll)
-    logger.debug(s"    DELETE URI:" + service.getUriDelete)
-
-    logger.debug(s"Routing requests from:" + s"/api/${service.getServiceName}*")
-
-    router.route(s"/api/${service.getServiceName}*").handler(BodyHandler.create())
-
-    router.get(service.getUriGet).handler(req => service.onGet(req))
-    router.get(service.getUriGetAll).handler(req => service.onGetAll(req))
-    router.delete(service.getUriDelete).handler(req => service.onDelete(req))
-    router.post(service.getUriPost).handler(req => service.onPost(req))
-    router.put(service.getUriPut).handler(req => service.onPut(req))
-  }
-
-  override def start(): Unit = {
+  override def start(startPromise: Promise[Void]): Unit = {
     try {
       val router = Router.router(vertx);
 
@@ -93,9 +58,9 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
 
       var webRoot: String = null
       options.webRoot match {
-        case WebRootDisabled() =>
+        case WebRootDisabled =>
           webRoot = "disabled"
-        case ClassPathWebRoot() => {
+        case ClassPathWebRoot => {
           webRoot = "classpath://webroot"
           router.route("/public/*")
             .handler(StaticHandler.create())
@@ -119,18 +84,55 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
         }
       }
 
-      vertx.createHttpServer(httpOpts).requestHandler(router).listen(options.port)
-      logger.info(s"[HTTP2] Server Started @ ${options.port} on / with webroot $webRoot ")
-
+      val server = vertx.createHttpServer(httpOpts).requestHandler(router).listen(options.port)
+        .onSuccess { server =>
+          port.set(server.actualPort())
+          logger.info(s"[HTTP2] Server Started @ ${server.actualPort()} on / with webroot $webRoot ")
+          running.set(true)
+          startPromise.complete()
+        }
+        .onFailure { err =>
+          logger.error("[HTTP2] Failed to start server", err)
+          startPromise.fail(err)
+        }
     } catch {
       case e: Exception =>
         logger.error("[HTTP2] Error occurred starting server", e)
     }
   }
 
+  override def stop(stopPromise: Promise[Void]): Unit = {
+    running.set(false)
+    super.stop()
+  }
+
+  def isRunning: Boolean = running.get()
+
+  def getPort: Int = port.get()
+
+  private def addRestService(router: Router, service: RestService): Unit = {
+
+    logger.debug(s"Adding REST service /api/${service.getServiceName}")
+    logger.debug(s"    POST URI:" + service.getUriPost)
+    logger.debug(s"    PUT URI:" + service.getUriPut)
+    logger.debug(s"    GET URI:" + service.getUriGet)
+    logger.debug(s"    GET ALL URI:" + service.getUriGetAll)
+    logger.debug(s"    DELETE URI:" + service.getUriDelete)
+
+    logger.debug(s"Routing requests from:" + s"/api/${service.getServiceName}*")
+
+    router.route(s"/api/${service.getServiceName}*").handler(BodyHandler.create())
+
+    router.get(service.getUriGet).handler(req => service.onGet(VertxRestContext(req)))
+    router.get(service.getUriGetAll).handler(req => service.onGetAll(VertxRestContext(req)))
+    router.delete(service.getUriDelete).handler(req => service.onDelete(VertxRestContext(req)))
+    router.post(service.getUriPost).handler(req => service.onPost(VertxRestContext(req)))
+    router.put(service.getUriPut).handler(req => service.onPut(VertxRestContext(req)))
+  }
+  
   private def httpServerOptions(options: VuuSSLOptions): HttpServerOptions = {
     options match {
-      case VuuSSLDisabled() => HttpServerOptions().setSsl(false)
+      case VuuSSLDisabled => HttpServerOptions().setSsl(false)
       case VuuSSLByCertAndKey(certPath, keyPath, _, cipherSuite) =>
         applySharedOptions(pemKeyCertOptions(certPath, keyPath), cipherSuite)
       case VuuSSLByPKCS(pkcsPath, pkcsPassword, cipherSuite) =>
@@ -173,62 +175,4 @@ class VertxHttp2Verticle(val options: VuuHttp2ServerOptions, val services: List[
   }
 }
 
-case class DisabledHttp2Server() extends Http2Server {
 
-  override def join(): Unit = {
-    //Nothing to do
-  }
-
-  override def doStart(): Unit = {
-    //Nothing to do
-  }
-
-  override def doStop(): Unit = {
-    //Nothing to do
-  }
-
-  override def doInitialize(): Unit = {
-    //Nothing to do
-  }
-
-  override def doDestroy(): Unit = {
-    //Nothing to do
-  }
-
-  override val lifecycleId: String = "DisabledHttp2Server"
-
-}
-
-case class VuuHttp2Server(options: VuuHttp2ServerOptions, services: List[RestService]) extends Http2Server {
-
-  private final val verticle = new VertxHttp2Verticle(options, services)
-  private final val vertx = Vertx.vertx(new VertxOptions())
-
-  @volatile
-  private var running = false
-
-  override def doStart(): Unit = {
-    vertx.deployVerticle(verticle)
-    running = true
-  }
-
-  override def doStop(): Unit = {
-    vertx.close()
-    running = false
-  }
-
-  override def join(): Unit = {
-  }
-
-  override def doInitialize(): Unit = {
-
-  }
-
-  override def doDestroy(): Unit = {
-  }
-
-  override val lifecycleId: String = "VertxHttp2Server"
-
-  def isRunning: Boolean = running
-
-}

@@ -8,7 +8,6 @@ import org.finos.vuu.client.ClientHelperFns
 import org.finos.vuu.core.*
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.net.WebSocketViewServerClient
-import org.finos.vuu.net.http.VuuHttp2ServerOptions
 import org.finos.vuu.net.json.JsonVsSerializer
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -34,12 +33,9 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
       val wsPort = portCounter.getAndIncrement()
 
       val config = VuuServerConfig(
-        VuuHttp2ServerOptions()
-          .withSsl(VuuSSLDisabled())
-          .withPort(0),
         VuuWebSocketOptions()
           .withUri("websocket")
-          .withSsl(VuuSSLDisabled())
+          .withSsl(VuuSSLDisabled)
           .withWsPort(wsPort),
         VuuSecurityOptions()
       )
@@ -62,12 +58,9 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
       val wsPort = portCounter.getAndIncrement()
 
       val config = VuuServerConfig(
-        VuuHttp2ServerOptions()
-          .withSsl(VuuSSLDisabled())
-          .withPort(0),
         VuuWebSocketOptions()
           .withUri("websocket")
-          .withSsl(VuuSSLDisabled())
+          .withSsl(VuuSSLDisabled)
           .withWsPort(wsPort)
           .withCompression(false),
         VuuSecurityOptions()
@@ -91,12 +84,9 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
       val wsPort = portCounter.getAndIncrement()
 
       val config = VuuServerConfig(
-        VuuHttp2ServerOptions()
-          .withSsl(VuuSSLDisabled())
-          .withPort(0),
         VuuWebSocketOptions()
           .withUri("websocket")
-          .withSsl(VuuSSLDisabled())
+          .withSsl(VuuSSLDisabled)
           .withWsPort(wsPort)
           .withNativeTransport(false),
         VuuSecurityOptions()
@@ -120,9 +110,6 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
       val wsPort = portCounter.getAndIncrement()
 
       val config = VuuServerConfig(
-        VuuHttp2ServerOptions()
-          .withSsl(VuuSSLDisabled())
-          .withPort(0),
         VuuWebSocketOptions()
           .withUri("websocket")
           .withSsl(
@@ -149,9 +136,6 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
       val wsPort = portCounter.getAndIncrement()
 
       val config = VuuServerConfig(
-        VuuHttp2ServerOptions()
-          .withSsl(VuuSSLDisabled())
-          .withPort(0),
         VuuWebSocketOptions()
           .withUri("websocket")
           .withSsl(
@@ -178,9 +162,6 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
       val wsPort = portCounter.getAndIncrement()
 
       val config = VuuServerConfig(
-        VuuHttp2ServerOptions()
-          .withSsl(VuuSSLDisabled())
-          .withPort(0),
         VuuWebSocketOptions()
           .withUri("websocket")
           .withSsl(
@@ -214,9 +195,6 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
       val wsPort = portCounter.getAndIncrement()
 
       val config = VuuServerConfig(
-        VuuHttp2ServerOptions()
-          .withSsl(VuuSSLDisabled())
-          .withPort(0),
         VuuWebSocketOptions()
           .withUri("websocket")
           .withSsl(
@@ -250,9 +228,6 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
       val wsPort = portCounter.getAndIncrement()
 
       val config = VuuServerConfig(
-        VuuHttp2ServerOptions()
-          .withSsl(VuuSSLDisabled())
-          .withPort(0),
         VuuWebSocketOptions()
           .withUri("websocket")
           .withSsl(
@@ -283,7 +258,7 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
   private def createClient(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider): WebSocketViewServerClient = {
     val viewServer = new VuuServer(config)
     val protocol = config.wsOptions.sslOptions match {
-      case VuuSSLDisabled() => "ws"
+      case VuuSSLDisabled => "ws"
       case _ => "wss"
     }
     val client = new WebSocketClient(s"$protocol://localhost:${config.wsOptions.wsPort}/websocket", config.wsOptions.wsPort, config.wsOptions.nativeTransportEnabled)

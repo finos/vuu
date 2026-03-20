@@ -1,11 +1,12 @@
 package org.finos.vuu.plugin
 
-import io.vertx.core.impl.ConcurrentHashSet
 import org.finos.vuu.feature.Feature
+
+import java.util.concurrent.ConcurrentHashMap
 
 trait DefaultPlugin extends Plugin {
 
-  private val features: ConcurrentHashSet[Feature] = new ConcurrentHashSet[Feature]()
+  private val features: java.util.Set[Feature] = ConcurrentHashMap.newKeySet()
 
   override def hasFeature(feature: Feature): Boolean = {
     features.contains(feature)

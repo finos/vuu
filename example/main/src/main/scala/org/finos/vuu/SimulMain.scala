@@ -17,9 +17,9 @@ import org.finos.vuu.core.module.simul.SimulationModule
 import org.finos.vuu.core.module.vui.VuiStateModule
 import org.finos.vuu.example.rest.client.{HttpClient, StubbedBackend}
 import org.finos.vuu.example.rest.module.RestModule
+import org.finos.vuu.example.rest.server.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
 import org.finos.vuu.example.virtualtable.module.VirtualTableModule
 import org.finos.vuu.net.auth.LoginTokenService
-import org.finos.vuu.net.http.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
 import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
 import org.finos.vuu.state.MemoryBackedVuiStateStore

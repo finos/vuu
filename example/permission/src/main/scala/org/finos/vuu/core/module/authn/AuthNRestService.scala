@@ -18,7 +18,7 @@ object VuuLoginPage{
   final val Path = "/public/index.html"
 }
 
-class LogoutRestService(val authenticator: Authenticator[_])(using clock: Clock) extends RestService with StrictLogging {
+class LogoutRestService(val authenticator: Authenticator[_])(using clock: Clock) extends RestService[RoutingContext] with StrictLogging {
   private final val service = "logout"
 
   override def getServiceName: String = service

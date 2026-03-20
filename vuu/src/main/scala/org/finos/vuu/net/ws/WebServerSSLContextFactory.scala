@@ -14,7 +14,7 @@ class WebServerSSLContextFactory {
 
   def buildContext(vuuSSLOptions: VuuSSLOptions) : Option[SslContext] = {
     vuuSSLOptions match {
-      case VuuSSLDisabled() => Option.empty
+      case VuuSSLDisabled => Option.empty
       case VuuSSLByCertAndKey(certPath, keyPath, passPhrase, cipherSuite) => Option(createCertAndKeyContext(certPath, keyPath, passPhrase, cipherSuite))
       case VuuSSLByPKCS(pkcsPath, pkcsPassword, cipherSuite) => Option(createPKCSContext(pkcsPath, pkcsPassword, cipherSuite))
     }

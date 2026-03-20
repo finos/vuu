@@ -6,7 +6,6 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.*
 import org.finos.vuu.core.module.{TableDefContainer, ViewServerModule}
-import org.finos.vuu.net.http.{VuuHttp2ServerOptions, WebRootDisabled}
 import org.finos.vuu.net.json.JsonVsSerializer
 import org.finos.vuu.net.ws.WebSocketClient
 import org.finos.vuu.net.{ViewServerClient, WebSocketViewServerClient}
@@ -33,10 +32,6 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
     val module: ViewServerModule = moduleFactoryFunc()
         
     val config = VuuServerConfig(
-      VuuHttp2ServerOptions()
-        .withWebRoot(WebRootDisabled())
-        .withSslDisabled()
-        .withPort(http),
       VuuWebSocketOptions()
         .withBindAddress("0.0.0.0")
         .withUri("websocket")

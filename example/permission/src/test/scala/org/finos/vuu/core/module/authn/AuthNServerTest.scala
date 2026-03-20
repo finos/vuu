@@ -13,7 +13,6 @@ import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.vui.VuiStateModule
 import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
 import org.finos.vuu.net.auth.{Authenticator, LoginTokenService}
-import org.finos.vuu.net.http.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
 import org.finos.vuu.state.MemoryBackedVuiStateStore
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers

@@ -12,7 +12,6 @@ import org.finos.vuu.core.module.metrics.MetricsModule
 import org.finos.vuu.example.ignite.loader.IgniteOrderGenerator
 import org.finos.vuu.example.ignite.module.IgniteOrderDataModule
 import org.finos.vuu.net.auth.{Authenticator, LoginTokenService}
-import org.finos.vuu.net.http.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
 import org.finos.vuu.state.MemoryBackedVuiStateStore
 
@@ -33,10 +32,6 @@ object IgniteVuuMain extends App with StrictLogging {
   logger.info("[VUU] Starting...")
   val runAsIgniteServer = false
 
-  val store = new MemoryBackedVuiStateStore()
-
-  //store.add(VuiState(VuiHeader("chris", "latest", "chris.latest", clock.now()), VuiJsonState("{ uiState : ['chris','foo'] }")))
-
   lifecycle.autoShutdownHook()
 
   val loginTokenService = LoginTokenService.apply(VuuUser("test"))
@@ -54,11 +49,6 @@ object IgniteVuuMain extends App with StrictLogging {
     SaveOrdersInIgnite()
 
   val config = VuuServerConfig(
-    VuuHttp2ServerOptions()
-      .withWebRoot(AbsolutePathWebRoot(webRoot, directoryListings = true))
-      .withSsl(VuuSSLByCertAndKey(certPath, keyPath))
-      .withBindAddress("0.0.0.0")
-      .withPort(8443),
     VuuWebSocketOptions()
       .withUri("websocket")
       .withWsPort(8090)

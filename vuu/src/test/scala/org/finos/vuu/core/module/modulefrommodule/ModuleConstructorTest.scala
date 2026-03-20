@@ -4,7 +4,6 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSecurityOptions, VuuServerConfig, VuuThreadingOptions, VuuWebSocketOptions}
-import org.finos.vuu.net.http.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
 import org.finos.vuu.net.auth.Authenticator
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -22,14 +21,6 @@ class ModuleConstructorTest extends AnyFeatureSpec with Matchers with GivenWhenT
 
       When("we create a config with modules that reference each other")
       val config = VuuServerConfig(
-        VuuHttp2ServerOptions()
-          //only specify webroot if we want to load the source locally, we'll load it from the jar
-          //otherwise
-          .withWebRoot(AbsolutePathWebRoot("webRoot", directoryListings = true))
-          .withSsl(VuuSSLByCertAndKey("certPath", "keyPath"))
-          //don't leave me on in prod pls....
-          .withBindAddress("0.0.0.0")
-          .withPort(8443),
         VuuWebSocketOptions()
           .withUri("websocket")
           .withWsPort(8090)
