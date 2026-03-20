@@ -22,7 +22,7 @@ trait VuuHttp2ServerOptions {
 
 object VuuHttp2ServerOptions {
   def apply(): VuuHttp2ServerOptions = {
-    VuuHttp2ServerOptionsImpl(port = 0)
+    VuuHttp2ServerOptionsImpl(port = 8080)
   }
 }
 

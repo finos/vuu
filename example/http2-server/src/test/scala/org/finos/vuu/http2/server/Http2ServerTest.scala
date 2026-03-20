@@ -28,6 +28,7 @@ class Http2ServerTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
       val config = VuuHttp2ServerOptions()
         .withSsl(VuuSSLDisabled)
+        .withPort(0)
 
       val webServer = createAndStartWebServer(config)
       val webClient = createWebClient()
@@ -41,6 +42,7 @@ class Http2ServerTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
       val config = VuuHttp2ServerOptions()
         .withSsl(VuuSSLByCertAndKey(certPath, keyPath))
+        .withPort(0)
 
       val webServer = createAndStartWebServer(config)
       val webClient = createWebClient()
@@ -54,6 +56,7 @@ class Http2ServerTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
       val config = VuuHttp2ServerOptions()
         .withSsl(VuuSSLByPKCS(pkcsPath, pkcsPassword))
+        .withPort(0)
 
       val webServer = createAndStartWebServer(config)
       val webClient = createWebClient()
@@ -72,6 +75,7 @@ class Http2ServerTest extends AnyFeatureSpec with Matchers with StrictLogging {
           cipherSuite = VuuSSLCipherSuiteOptions()
             .withCiphers(List("TLS_AES_256_GCM_SHA384"))
             .withProtocols(List("TLSv1.3"))))
+        .withPort(0)
 
       val webServer = createAndStartWebServer(config)
       val webClient = createWebClient()
@@ -90,6 +94,7 @@ class Http2ServerTest extends AnyFeatureSpec with Matchers with StrictLogging {
           cipherSuite = VuuSSLCipherSuiteOptions()
             .withCiphers(List("TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"))
             .withProtocols(List("TLSv1.2"))))
+        .withPort(0)
 
       val webServer = createAndStartWebServer(config)
       val webClient = createWebClient(protocol = "TLSv1.2", cipher = "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384")
