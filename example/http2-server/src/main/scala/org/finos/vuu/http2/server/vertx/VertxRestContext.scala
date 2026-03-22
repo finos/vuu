@@ -1,27 +1,96 @@
 package org.finos.vuu.http2.server.vertx
 
 import io.vertx.ext.web.RoutingContext
-import org.finos.vuu.net.rest.RestContext
+import org.finos.vuu.net.rest.{AttributeKey, AttributeMap, Cookie, EntityDecoder, EntityEncoder, RestContext}
 
+import java.io.ByteArrayInputStream
 import scala.jdk.CollectionConverters.*
 
-class VertxRestContext(val rc: RoutingContext) extends RestContext {
+class VertxRestContext(val underlying: RoutingContext) extends RestContext {
 
-  override def pathParams: Map[String, String] =
-    rc.pathParams().asScala.toMap
+  override def method: String = underlying.request().method().name()
+  override def uri: String = underlying.request().uri()
+  override def remoteAddress: String = underlying.request().remoteAddress().host()
 
-  override def queryParams: Map[String, String] =
-    rc.queryParams().asScala
-      .map(entry => entry.getKey -> entry.getValue)
-      .toMap
+  override lazy val requestHeaders: Map[String, String] =
+    underlying.request().headers().asScala.map(e => e.getKey -> e.getValue).toMap
 
-  override def body: Option[String] =
-    Option(rc.body().asString())
+  override lazy val pathParams: Map[String, String] =
+    underlying.pathParams().asScala.toMap
 
-  override def respond(status: Int, body: String, headers: Map[String, String] = Map.empty): Unit = {
-    val response = rc.response().setStatusCode(status)
-    headers.foreach(f => response.putHeader(f._1, f._2))
-    response.end(body)
+  override lazy val queryParams: Map[String, Seq[String]] =
+    underlying.queryParams().entries().asScala.groupBy(_.getKey).map {
+      case (k, v) => k -> v.map(_.getValue).toSeq
+    }
+
+  override lazy val formParams: Map[String, Seq[String]] =
+    underlying.request().formAttributes().asScala.groupBy(_.getKey).map {
+      case (k, v) => k -> v.map(_.getValue).toSeq
+    }
+
+  override lazy val cookies: Map[String, String] =
+    underlying.request().cookies().asScala.map(c => c.getName -> c.getValue).toMap
+
+  private lazy val bodyBytes: Array[Byte] = {
+    val buffer = underlying.body().buffer()
+    if (buffer != null) buffer.getBytes else Array.emptyByteArray
   }
-  
+
+  override def bodyInputStream: java.io.InputStream = new ByteArrayInputStream(bodyBytes)
+
+  override def bodyAs[T](implicit decoder: EntityDecoder[T]): Option[T] = {
+    try {
+      Some(decoder.decode(bodyInputStream))
+    } catch {
+      case _: Exception => None
+    }
+  }
+
+  override val attributes: VertxAttributeMap = new VertxAttributeMap(underlying)
+
+  override def respond[T](
+                           status: Int,
+                           body: T = null,
+                           headers: Map[String, String] = Map.empty,
+                           cookies: Seq[Cookie] = Seq.empty
+                         )(implicit encoder: EntityEncoder[T]): Unit = {
+
+    val response = underlying.response().setStatusCode(status)
+
+    headers.foreach { case (k, v) => response.putHeader(k, v) }
+    response.putHeader("Content-Type", encoder.contentType)
+
+    cookies.foreach { c =>
+      val vCookie = io.vertx.core.http.Cookie.cookie(c.name, c.value)
+      vCookie.setPath(c.path)
+      c.maxAge.foreach(m => vCookie.setMaxAge(m.toLong))
+      vCookie.setSecure(c.secure)
+      vCookie.setHttpOnly(c.httpOnly)
+      underlying.response().addCookie(vCookie)
+    }
+
+    if (body != null) {
+      val bytes = encoder.encode(body)
+      response.end(io.vertx.core.buffer.Buffer.buffer(bytes))
+    } else {
+      response.end()
+    }
+  }
+
+  override def redirect(location: String, status: Int = 302): Unit = {
+    underlying.response()
+      .setStatusCode(status)
+      .putHeader("Location", location)
+      .end()
+  }
+}
+
+class VertxAttributeMap(ctx: io.vertx.ext.web.RoutingContext) extends AttributeMap {
+  def put[T](key: AttributeKey[T], value: T): Unit = {
+    ctx.put(key.name, value)
+  }
+
+  def get[T](key: AttributeKey[T]): Option[T] = {
+    Option(ctx.get[T](key.name))
+  }
 }

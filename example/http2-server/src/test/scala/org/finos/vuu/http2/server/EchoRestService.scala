@@ -1,6 +1,6 @@
 package org.finos.vuu.http2.server
 
-import org.finos.vuu.net.rest.{RestContext, RestService}
+import org.finos.vuu.net.rest.{EmptyEncoder, RestContext, RestService}
 
 object EchoRestService extends RestService {
 
@@ -33,7 +33,7 @@ object EchoRestService extends RestService {
   private def echoBack(ctx: RestContext): Unit = {
     val message = ctx.pathParams.getOrElse(echoParam, null)
     if (message == null) {
-      ctx.respond(404, null)
+      ctx.respond(404)(EmptyEncoder)
     } else {
       ctx.respond(200, message, Map("content-type" -> "text/plain"))
     }

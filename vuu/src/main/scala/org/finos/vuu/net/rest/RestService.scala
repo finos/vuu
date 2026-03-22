@@ -14,14 +14,24 @@ trait RestService {
 
   def getUriPut: String
 
-  def onGetAll(context: RestContext): Unit
+  def onGetAll(context: RestContext): Unit = {
+    context.respond(404)
+  }
 
-  def onPost(context: RestContext): Unit
+  def onPost(context: RestContext): Unit = {
+    context.respond(404)
+  }
 
-  def onGet(context: RestContext): Unit
+  def onGet(context: RestContext): Unit = {
+    context.respond(404)
+  }
 
-  def onPut(context: RestContext): Unit
+  def onPut(context: RestContext): Unit = {
+    context.respond(404)
+  }
 
-  def onDelete(context: RestContext): Unit
+  def onDelete(context: RestContext): Unit = {
+    context.respond(404)
+  }
 
 }
