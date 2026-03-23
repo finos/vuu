@@ -194,8 +194,18 @@ export const isDateTimeDataType = (
   (isTypeDescriptor(column.type) ? column.type.name : column.type) ===
   "date/time";
 
-export const isDateTimeDataValue = (column: ColumnDescriptor) =>
-  isTimestampColumn(column) || isDateTimeDataType(column);
+export const isTimeDataType = (
+  column: ColumnDescriptor,
+): column is TimeDataValueDescriptor =>
+  (isTypeDescriptor(column.type) ? column.type.name : column.type) === "time";
+
+export const isDateTimeDataValue = (
+  column: ColumnDescriptor,
+  serverDataType?: VuuColumnDataType,
+) =>
+  serverDataType === "epochtimestamp" ||
+  isTimestampColumn(column) ||
+  isDateTimeDataType(column);
 
 export const isTimeDataValue = (
   column?: ColumnDescriptor,
