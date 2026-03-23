@@ -25,6 +25,7 @@ export interface PageVisibilityObserverConstructorProps {
    */
   inactiveTimeout?: number;
   onHidden?: () => void;
+  onInactiveTimeout?: () => void;
   onVisible?: () => void;
   onVisibilityChange?: () => void;
 }
@@ -43,6 +44,7 @@ export class PageVisibilityObserver extends EventEmitter<PageVisibilityEvents> {
   constructor({
     inactiveTimeout = 0,
     onHidden,
+    onInactiveTimeout,
     onVisibilityChange,
     onVisible,
   } = defaultProps) {
@@ -50,6 +52,10 @@ export class PageVisibilityObserver extends EventEmitter<PageVisibilityEvents> {
 
     this.#hidden = document.hidden;
     this.#inactiveTimeoutMs = inactiveTimeout * 1000;
+
+    if (onInactiveTimeout) {
+      this.on("inactive-timeout", onInactiveTimeout);
+    }
 
     if (onHidden) {
       this.on("hidden", onHidden);

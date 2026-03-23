@@ -657,6 +657,8 @@ export declare type VuuRpcMenuAction =
   | NoAction
   | ShowNotificationAction;
 
+export declare type RawNumericType = "int" | "double";
+
 export declare type StringNumericType =
   | "long"
   | "scaleddecimal2"
@@ -664,14 +666,14 @@ export declare type StringNumericType =
   | "scaleddecimal6"
   | "scaleddecimal8";
 
+export declare type VuuNumericType = RawNumericType | StringNumericType;
+
 export declare type VuuColumnDataType =
-  | "int"
-  | "double"
+  | VuuNumericType
   | "string"
   | "char"
   | "boolean"
-  | "epochtimestamp"
-  | StringNumericType;
+  | "epochtimestamp";
 
 export declare type VuuMenuContext = "cell" | "row" | "grid" | "selected-rows";
 export declare type VuuTable = {

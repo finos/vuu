@@ -156,6 +156,7 @@ export const useFilterContainer = ({
       }
       const { filter } = filterAggregator;
       if (filter) {
+        console.log(`filter applied ${JSON.stringify(filter)}`);
         onFilterApplied?.(filter);
       } else {
         onFilterCleared?.();

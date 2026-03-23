@@ -29,6 +29,8 @@ import {
   RpcResult,
   RpcResultSuccess,
   RpcResultError,
+  VuuColumnDataType,
+  VuuNumericType,
 } from "@vuu-ui/vuu-protocol-types";
 import { isView as componentInRegistry } from "./component-registry";
 
@@ -210,4 +212,20 @@ export function isCustomComponentActionMessage(
     typeof rpcResponse.action.renderComponent === "string" &&
     componentInRegistry(rpcResponse.action.renderComponent)
   );
+}
+
+const numericTypes: VuuNumericType[] = [
+  "int",
+  "long",
+  "double",
+  "scaleddecimal2",
+  "scaleddecimal4",
+  "scaleddecimal6",
+  "scaleddecimal8",
+];
+
+export function isNumericType(
+  dataType?: VuuColumnDataType,
+): dataType is VuuNumericType {
+  return numericTypes.includes(dataType as VuuNumericType);
 }

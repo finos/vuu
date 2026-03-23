@@ -552,10 +552,16 @@ export const ContainerManagedTextColumnFilterLoadOnFocus = ({
 };
 
 export const ContainerManagedNumericColumnFilter = ({
+  column = { name: "lotSize", serverDataType: "int" },
   filter: filterProp,
+  label = "Lot size",
   onFilterApplied,
   onFilterCleared,
-}: FilterContainerPassthroughProps & Pick<FilterContainerProps, "filter">) => {
+}: FilterContainerPassthroughProps &
+  Pick<FilterContainerProps, "filter"> & {
+    column?: ColumnDescriptor;
+    label?: string;
+  }) => {
   const { VuuDataSource } = useData();
   const [filter, setFilter] = useState<FilterContainerFilter | undefined>(
     filterProp,
@@ -592,9 +598,9 @@ export const ContainerManagedNumericColumnFilter = ({
           onFilterApplied={handleFilterApplied}
         >
           <FormField>
-            <FormFieldLabel>Lot Size</FormFieldLabel>
+            <FormFieldLabel>{label}</FormFieldLabel>
             <FilterContainerColumnFilter
-              column={{ name: "lotSize", serverDataType: "int" }}
+              column={column}
               table={{ module: "SIMUL", table: "instruments" }}
             />
           </FormField>
@@ -604,6 +610,13 @@ export const ContainerManagedNumericColumnFilter = ({
     </DataSourceProvider>
   );
 };
+
+export const ContainerManagedScaledDecimalColumnFilter = () => (
+  <ContainerManagedNumericColumnFilter
+    column={{ name: "price", serverDataType: "scaleddecimal6" }}
+    label="Price"
+  />
+);
 
 export const ContainerManagedNumericColumnFilterWithFilter = () => (
   <ContainerManagedNumericColumnFilter

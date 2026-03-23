@@ -12,6 +12,7 @@ import {
 } from "./column-utils";
 import { dateTimePattern, formatDate } from "./date";
 import { roundDecimal, roundScaledDecimal } from "./round-decimal";
+import { isNumericType } from "./protocol-message-utils";
 
 export type ValueFormatters = {
   [key: string]: ValueFormatter;
@@ -113,7 +114,7 @@ export const getValueFormatter = (
   if (isTypeDescriptor(type) && isMappedValueTypeRenderer(type?.renderer)) {
     return mapFormatter(type.renderer.map);
   } else if (
-    serverDataType === "double" ||
+    isNumericType(serverDataType) ||
     (isTypeDescriptor(type) && NumericTypes.includes(type.name))
   ) {
     return numericFormatter(column);

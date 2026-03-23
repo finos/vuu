@@ -27,7 +27,7 @@ export const schemas: Readonly<Record<SimulTableName, Readonly<TableSchema>>> =
         { name: "exchange", serverDataType: "string" },
         { name: "isin", serverDataType: "string" },
         { name: "lotSize", serverDataType: "int" },
-        { name: "price", serverDataType: "double" },
+        { name: "price", serverDataType: "scaleddecimal6" },
         { name: "ric", serverDataType: "string" },
         ...VUU_TIMESTAMP_COLUMNS,
       ],

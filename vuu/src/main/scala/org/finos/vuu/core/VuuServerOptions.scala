@@ -15,7 +15,7 @@ object VuuWebSocketOptions {
   def apply(): VuuWebSocketOptions = {
     VuuWebSocketOptionsImpl(wsPort = 8090, uri = "/websocket", bindAddress = "0.0.0.0",
       sslOptions = VuuSSLDisabled(), compressionEnabled = true, nativeTransportEnabled = true,
-      maxSessionsPerUser = 1
+      maxSessionsPerUser = 10
     )
   }
 }

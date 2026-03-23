@@ -18,6 +18,7 @@ import {
   ColumnDescriptor,
   RuntimeColumnDescriptor,
 } from "@vuu-ui/vuu-table-types";
+import { ScaledDecimal } from "../ScaledDecimal";
 
 const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "=",
@@ -48,6 +49,11 @@ export const isSingleValueFilter = (
 ): f is SingleValueFilterClause =>
   f !== undefined &&
   singleValueFilterOps.has(f.op as SingleValueFilterClauseOp);
+
+export const isScaledDecimalFilterClause = (
+  f: SingleValueFilterClause,
+): f is SingleValueFilterClause<ScaledDecimal> =>
+  f.value instanceof ScaledDecimal;
 
 export const isSerializableFilter = (f: object): f is SerializableFilter =>
   isSingleValueFilter(f) &&

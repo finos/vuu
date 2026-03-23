@@ -8,6 +8,13 @@ import { stringIsValidDecimal, stringIsValidInt } from "./data-utils";
 import { isValidTimeString, Time } from "./date";
 import { queryClosest } from "./html-utils";
 import { ExtendedFilterOptions } from "@vuu-ui/vuu-filter-types";
+import {
+  type ScaledDecimal,
+  ScaledDecimal2,
+  ScaledDecimal4,
+  ScaledDecimal6,
+  ScaledDecimal8,
+} from "./ScaledDecimal";
 
 /**
  * Use with the following convention:
@@ -90,7 +97,7 @@ export function getTypedValue(
   type: VuuColumnDataType | DataValueTypeSimple,
   throwIfInvalid = false,
   options?: ExtendedFilterOptions,
-): VuuRowDataItemType | undefined {
+): VuuRowDataItemType | ScaledDecimal | undefined {
   switch (type) {
     case "int":
     case "long": {
@@ -106,6 +113,14 @@ export function getTypedValue(
       }
     }
 
+    case "scaleddecimal2":
+      return ScaledDecimal2(value);
+    case "scaleddecimal4":
+      return ScaledDecimal4(value);
+    case "scaleddecimal6":
+      return ScaledDecimal6(value);
+    case "scaleddecimal8":
+      return ScaledDecimal8(value);
     case "double":
     case "number": {
       if (stringIsValidDecimal(value)) {
