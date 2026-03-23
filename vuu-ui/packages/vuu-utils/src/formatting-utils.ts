@@ -8,6 +8,7 @@ import {
 import {
   isDateTimeDataValue,
   isMappedValueTypeRenderer,
+  isTimeDataValue,
   isTypeDescriptor,
 } from "./column-utils";
 import { dateTimePattern, formatDate } from "./date";
@@ -106,7 +107,7 @@ export const getValueFormatter = (
   column: ColumnDescriptor,
   serverDataType = column.serverDataType,
 ): ValueFormatter => {
-  if (isDateTimeDataValue(column)) {
+  if (isDateTimeDataValue(column, serverDataType) || isTimeDataValue(column)) {
     return dateFormatter(column);
   }
 
