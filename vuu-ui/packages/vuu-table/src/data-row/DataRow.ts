@@ -17,6 +17,8 @@ type ColumnMapEntry = {
   type: VuuColumnDataType;
 };
 
+const dataRowSymbol = Symbol("DataRow");
+
 /**
  * We allow undefined to allow us to null out rather than delete entries, for
  * performance reasons.
@@ -116,6 +118,10 @@ const formatStringNumeric = (value: string, type: StringNumericType) => {
 function DataRowImpl(data: VuuDataRow, columnMap: DataRowColumnMap): DataRow {
   const target: Record<string, VuuRowDataItemType> = {};
 
+  const getPropertyNames = () => {
+    return Object.keys(columnMap);
+  };
+
   const jsonSerializer = () => {
     return Object.entries(columnMap).reduce<Record<string, VuuRowDataItemType>>(
       (json, [name, mapEntry]) => {
@@ -135,6 +141,7 @@ function DataRowImpl(data: VuuDataRow, columnMap: DataRowColumnMap): DataRow {
   return new Proxy(target, {
     get(_obj, prop: string | symbol) {
       if (typeof prop === "symbol") {
+        if (prop === dataRowSymbol) return true;
         // TODO what does React use this for
         return undefined;
       } else if (prop === "toJSON") {
@@ -146,6 +153,8 @@ function DataRowImpl(data: VuuDataRow, columnMap: DataRowColumnMap): DataRow {
         return undefined;
       } else if (isDataRowOperation(prop)) {
         return DataRowOperations[prop];
+      } else if (prop === "getPropertyNames") {
+        return getPropertyNames;
       }
       const columnMapEntry = columnMap[prop];
 
@@ -248,3 +257,83 @@ export const dataRowFactory = (
 
   return [DataRow, setColumns];
 };
+
+if (process.env.NODE_ENV !== "production") {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //@ts-ignore
+  window.devtoolsFormatters = [
+    {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      header: function (obj: any) {
+        if (obj[dataRowSymbol]) {
+          return [
+            "div",
+            {
+              style: "display: flex; gap: 4px; justify-content: space-between",
+            },
+            ["span", {}, "Vuu DataRow"],
+            ["span", { style: "font-weight: bold;" }, `[${obj.index}]`],
+            [
+              "span",
+              { style: "font-weight: bold; color: blue;" },
+              `#${obj.key}`,
+            ],
+          ];
+        }
+        return null;
+      },
+      hasBody: function () {
+        return true;
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      body: function (obj: any) {
+        return [
+          "div",
+          {},
+          [
+            "div",
+            {
+              style: "display: flex; gap: 4px;",
+            },
+            ["span", {}, "index"],
+            ["span", {}, obj.index],
+          ],
+          [
+            "div",
+            {
+              style: "display: flex; gap: 4px;",
+            },
+            ["span", {}, "key"],
+            ["span", {}, obj.key],
+          ],
+          [
+            "div",
+            {
+              style: "display: flex; gap: 4px;",
+            },
+            ["span", {}, "renderIndex"],
+            ["span", {}, obj.renderIndex],
+          ],
+          [
+            "div",
+            {
+              style: "display: flex; gap: 4px;",
+            },
+            ["span", {}, "isSelected"],
+            ["span", {}, obj.isSelected],
+          ],
+          ...obj.getPropertyNames().map((name: string) => {
+            return [
+              "div",
+              {
+                style: "display: flex; gap: 4px;",
+              },
+              ["span", {}, name],
+              ["span", {}, obj[name]],
+            ];
+          }),
+        ];
+      },
+    },
+  ];
+}
