@@ -18,7 +18,7 @@ import {
   ColumnDescriptor,
   RuntimeColumnDescriptor,
 } from "@vuu-ui/vuu-table-types";
-import { ScaledDecimal } from "@vuu-ui/vuu-utils";
+import { ScaledDecimal } from "../ScaledDecimal";
 
 const singleValueFilterOps = new Set<SingleValueFilterClauseOp>([
   "=",

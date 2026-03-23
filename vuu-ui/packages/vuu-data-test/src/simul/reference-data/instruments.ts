@@ -27,7 +27,7 @@ export type ric = string;
 export type description = string;
 export type exchange = string;
 // seed for price generation
-export type price = number;
+export type price = string;
 export type date = number;
 
 export type InstrumentsDataRow = [

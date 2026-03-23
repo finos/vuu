@@ -9,7 +9,7 @@ import {
   isMultiValueFilter,
   isSerializableFilter,
 } from "./filter-utils";
-import { ScaledDecimal } from "@vuu-ui/vuu-utils";
+import { ScaledDecimal } from "../ScaledDecimal";
 
 const filterValue = (value: string | number | boolean | ScaledDecimal) =>
   typeof value === "string"

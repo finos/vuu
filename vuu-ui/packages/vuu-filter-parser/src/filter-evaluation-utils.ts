@@ -9,7 +9,6 @@ import {
   ColumnMap,
   isFilter,
   isScaledDecimalFilterClause,
-  ScaledDecimal,
 } from "@vuu-ui/vuu-utils";
 import { parseFilter } from "./FilterParser";
 import { VuuDataRow } from "@vuu-ui/vuu-protocol-types";
