@@ -35,6 +35,7 @@ import {
   hasValidationRules,
   isFilteredColumn,
   isGroupColumn,
+  isNumericType,
   isPinned,
   logger,
   removeSort,
@@ -106,11 +107,10 @@ interface InternalTableModel extends TableModel {
   tableConfig: Readonly<TableConfig>;
 }
 
-const numericTypes = ["int", "long", "double"];
 const getDefaultAlignment = (serverDataType?: VuuColumnDataType) =>
   serverDataType === undefined
     ? undefined
-    : numericTypes.includes(serverDataType)
+    : isNumericType(serverDataType)
       ? "right"
       : "left";
 

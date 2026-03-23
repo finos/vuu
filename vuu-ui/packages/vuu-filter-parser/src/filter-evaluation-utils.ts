@@ -5,7 +5,12 @@ import {
   MultiValueFilterClause,
   SingleValueFilterClause,
 } from "@vuu-ui/vuu-filter-types";
-import { ColumnMap, isFilter } from "@vuu-ui/vuu-utils";
+import {
+  ColumnMap,
+  isFilter,
+  isScaledDecimalFilterClause,
+  ScaledDecimal,
+} from "@vuu-ui/vuu-utils";
 import { parseFilter } from "./FilterParser";
 import { VuuDataRow } from "@vuu-ui/vuu-protocol-types";
 import { DataRow } from "@vuu-ui/vuu-table-types";
@@ -160,7 +165,11 @@ const testEQ = (
   columnMap: ColumnMap,
   filter: SingleValueFilterClause,
 ): FilterPredicate => {
-  return (row) => row[columnMap[filter.column]] === filter.value;
+  if (isScaledDecimalFilterClause(filter)) {
+    return (row) => row[columnMap[filter.column]] === filter.value.asLong;
+  } else {
+    return (row) => row[columnMap[filter.column]] === filter.value;
+  }
 };
 
 const testDataRowEQ = (

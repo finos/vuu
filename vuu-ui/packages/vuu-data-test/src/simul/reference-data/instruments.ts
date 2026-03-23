@@ -63,10 +63,26 @@ const chars2 = Array.from("ABCEFGHKMN");
 const chars3 = Array.from("OPQRTUVWYZ");
 const chars4 = Array.from("OPQRTUVWYZ");
 
+const scaledDecimals = (fraction: string, decimals: number) => {
+  if (fraction.length > decimals) {
+    return fraction.slice(0, decimals);
+  } else if (fraction.length === decimals) {
+    return fraction;
+  } else {
+    return fraction.padEnd(decimals, "0");
+  }
+};
+
+const ScaledDecimal = (value: number, decimals = 6) => {
+  const stringValue = value.toString();
+  const [integral, fraction = "0"] = stringValue.split(".");
+  return `${integral}${scaledDecimals(fraction, decimals)}`;
+};
+
 const randomPrice = () => {
   const price = random(0, 10000);
   const multiplier = random(1, 10);
-  return price / multiplier;
+  return ScaledDecimal(price / multiplier);
 };
 
 // const start = performance.now();

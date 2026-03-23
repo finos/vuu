@@ -1,5 +1,6 @@
-import { DataValueDescriptor } from "@vuu-ui/vuu-data-types";
+import { DataValueDescriptor, ScaledDecimal } from "@vuu-ui/vuu-data-types";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import type { ScaledDecimal } from "@vuu-ui/vuu-utils";
 
 export declare type NumericFilterClauseOp =
   | "="
@@ -29,8 +30,9 @@ export interface NamedFilter {
   name?: string;
 }
 
-export interface SingleValueFilterClause<T = string | number | boolean>
-  extends NamedFilter {
+export interface SingleValueFilterClause<
+  T = string | number | boolean | ScaledDecimal,
+> extends NamedFilter {
   extendedOptions?: ExtendedFilterOptions;
   op: SingleValueFilterClauseOp;
   column: string;

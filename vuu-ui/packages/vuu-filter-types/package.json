@@ -8,6 +8,12 @@
   "types": "index.d.ts",
   "author": "heswell",
   "license": "Apache-2.0",
+  "devDependencies": {
+    "@vuu-ui/vuu-data-types": "0.13.116",
+    "@vuu-ui/vuu-protocol-types": "0.13.116",
+    "@vuu-ui/vuu-table-types": "0.13.116",
+    "@vuu-ui/vuu-utils": "0.13.116"
+  },
   "dependencies": {},
   "peerDependencies": {}
 }

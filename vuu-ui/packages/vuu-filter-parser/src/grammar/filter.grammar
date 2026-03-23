@@ -40,6 +40,8 @@ Values { value (Comma value)* }
 value { Number | String | True | False }
 
 
+
+
 @skip { space  }
 
 @tokens {
@@ -60,7 +62,7 @@ value { Number | String | True | False }
   LBrack { "[" }
   RBrack { "]" }
   identifier { $[a-zA-Z_]$[a-zA-Z0-9_.-]* }
-  Number { @digit+ ("." @digit+)? | "." @digit+}
+  Number {@digit+ ("." @digit+)? | "." @digit+ | "-" @digit+ ("." @digit+)? | "-" "." @digit+}
   String { "\"" ![\t\r\\\n"]* "\"" }
   space { $[ \t\n\r]+ }
 }
