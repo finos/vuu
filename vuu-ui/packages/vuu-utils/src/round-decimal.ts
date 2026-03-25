@@ -159,6 +159,11 @@ export function roundScaledDecimal(
   let fraction: string;
   let Pad: PadMap | null;
 
+  // nulls are returned from server as empty string
+  if (value === "") {
+    return "";
+  }
+
   const [part1, part2 = ""] = value.split(".");
   const actualDecimals = part2.length;
 

@@ -64,7 +64,7 @@ const isStringNumericType = (
 const MAX_DECIMALS = "0000000";
 
 const injectDecimalPoint = (value: string, decimal: 2 | 4 | 6 | 8) => {
-  if (value === "0" || value === "-0") {
+  if (value === "0" || value === "-0" || value === "") {
     return value;
   } else {
     if (value[0] === "-") {

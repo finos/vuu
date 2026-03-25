@@ -17,8 +17,12 @@ export class ScaledDecimal {
   }
 
   get asLong() {
-    const [integral, fraction = "0"] = this.value.split(".");
-    return `${integral}${scaledDecimals(fraction, this.decimals)}`;
+    if (this.value === "") {
+      return "";
+    } else {
+      const [integral, fraction = "0"] = this.value.split(".");
+      return `${integral}${scaledDecimals(fraction, this.decimals)}`;
+    }
   }
 
   toJSON() {
