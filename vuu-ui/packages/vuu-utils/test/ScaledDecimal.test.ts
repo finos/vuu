@@ -27,4 +27,9 @@ describe("ScaledDdecimal", () => {
     expect(`${scaledDecimal}`).toEqual("20.4");
     expect(scaledDecimal.asLong).toEqual("2040000000");
   });
+  it("handles a 'null' value", () => {
+    const scaledDecimal = ScaledDecimal2("");
+    expect(`${scaledDecimal}`).toEqual("");
+    expect(scaledDecimal.asLong).toEqual("");
+  });
 });
