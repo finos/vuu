@@ -1,7 +1,5 @@
 package org.finos.vuu.net.rest
 
-import java.nio.charset.StandardCharsets
-
 trait RestContext {
   def method: String
 
@@ -21,7 +19,7 @@ trait RestContext {
 
   def bodyAs[T](entityEncoder: EntityEncoder[T]): Option[T]
 
-  def formParams: Map[String, Seq[String]] // For URL-encoded forms
+  def formParams: Map[String, Seq[String]]
 
   def attributes: AttributeMap
 
