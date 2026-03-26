@@ -5,12 +5,12 @@ import io.vertx.core.http.Cookie
 import io.vertx.ext.web.RoutingContext
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.net.auth.{Authenticator, LoginTokenService}
-import org.finos.vuu.net.rest.{RestContext, RestService}
+import org.finos.vuu.net.rest.{JsonEntityEncoder, RestContext, RestService, StringEncoder}
 
 import java.util.concurrent.TimeUnit
 import scala.util.{Failure, Success, Try}
 
-object VuuAuthCookie{
+object VuuAuthHeader{
   final val Name = "vuu-auth-token"
 }
 
@@ -22,56 +22,39 @@ class AuthNRestService(val loginTokenService: LoginTokenService, val users: Opti
                       (using clock: Clock) extends RestService with StrictLogging {
 
   private final val service = "authn"
-  private final val authenticator: Authenticator[(String,String)] = AuthenticatorWithUserList(loginTokenService, users)
-
+  private final val uri = s"/api/$service"
+  private final val authenticator: Authenticator[LoginRequest] = AuthenticatorWithUserList(loginTokenService, users)
+  private val loginRequestEncoder = JsonEntityEncoder.forClass(classOf[LoginRequest])
+  private val loginResponseEncoder = JsonEntityEncoder.forClass(classOf[LoginResponse])
+  
   override def getServiceName: String = service
 
-  override def getUriGetAll: String = s"/api/$service"
+  override def getUriGetAll: String = uri
 
-  override def getUriGet: String = s"/api/$service"
+  override def getUriGet: String = uri
 
-  override def getUriPost: String = s"/api/$service"
+  override def getUriPost: String = uri
 
-  override def getUriDelete: String = s"/api/$service"
+  override def getUriDelete: String = uri
 
-  override def getUriPut: String = s"/api/$service"
-
-  override def onGetAll(ctx: RestContext): Unit = {
-    reply404(ctx)
-  }
+  override def getUriPut: String = uri
 
   override def onPost(ctx: RestContext): Unit = {
-    val body = ctx.body
-    
-    val (username, password) = Try(body.asJsonObject()) match {
-      case Success(json) =>
-        val jsonUser = json.getString("username")
-        val jsonPassword = json.getString("password")
-        logger.info(s"Got credentials for ${jsonUser} from JSON")
-        logger.debug(s"Got username ${jsonUser} and password ${jsonPassword} from JSON")
-        (jsonUser, jsonPassword)
-    }
+    val loginRequest = ctx.bodyAs(loginRequestEncoder)
+    if (loginRequest.isEmpty) ctx.respond(401)
 
-    if (username != null && password != null ) {
-      authenticator.authenticate((username, password)) match {
-        case Right(value) => ctx.respond(201, headers = Map(VuuAuthCookie.Name -> value))
-        case Left(value) => ctx.respond(401)
-      }
-    } else {
-      ctx.respond(401)
-    } 
-  }
-
-  override def onGet(ctx: RestContext): Unit = {
-    reply404(ctx)
-  }
-
-  override def onPut(ctx: RestContext): Unit = {
-    reply404(ctx)
-  }
-
-  override def onDelete(ctx: RestContext): Unit = {
-    reply404(ctx)
+    authenticator.authenticate(loginRequest.get) match {
+      case Right(token) =>
+        val response = LoginResponse(loginRequest.get.username, token)
+        ctx.respond(200, response, loginResponseEncoder, Map(VuuAuthHeader.Name -> token))
+      case Left(value) => 
+        ctx.respond(401, value, StringEncoder)
+    }    
   }
 
 }
+
+case class LoginRequest(username: String, password: String) { }
+
+case class LoginResponse(username: String, token: String) { }
+

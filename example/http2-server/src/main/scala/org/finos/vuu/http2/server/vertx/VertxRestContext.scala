@@ -1,12 +1,13 @@
 package org.finos.vuu.http2.server.vertx
 
+import com.typesafe.scalalogging.StrictLogging
 import io.vertx.ext.web.RoutingContext
-import org.finos.vuu.net.rest.{AttributeKey, AttributeMap, Cookie, EntityDecoder, EntityEncoder, RestContext}
+import org.finos.vuu.net.rest.{AttributeKey, AttributeMap, Cookie, EntityEncoder, RestContext}
 
 import java.io.ByteArrayInputStream
 import scala.jdk.CollectionConverters.*
 
-class VertxRestContext(val underlying: RoutingContext) extends RestContext {
+class VertxRestContext(val underlying: RoutingContext) extends RestContext with StrictLogging {
 
   override def method: String = underlying.request().method().name()
   override def uri: String = underlying.request().uri()
@@ -38,11 +39,13 @@ class VertxRestContext(val underlying: RoutingContext) extends RestContext {
 
   override def bodyInputStream: java.io.InputStream = new ByteArrayInputStream(bodyBytes)
 
-  override def bodyAs[T](implicit decoder: EntityDecoder[T]): Option[T] = {
+  override def bodyAs[T](entityEncoder: EntityEncoder[T]): Option[T] = {
     try {
-      Some(decoder.decode(bodyInputStream))
+      Some(entityEncoder.decode(bodyInputStream))
     } catch {
-      case _: Exception => None
+      case e: Exception => 
+        logger.error("Failed to get body from input stream", e)
+        None
     }
   }
 
@@ -51,14 +54,14 @@ class VertxRestContext(val underlying: RoutingContext) extends RestContext {
   override def respond[T](
                            status: Int,
                            body: T = null,
+                           entityEncoder: EntityEncoder[T],
                            headers: Map[String, String] = Map.empty,
                            cookies: Seq[Cookie] = Seq.empty
-                         )(implicit encoder: EntityEncoder[T]): Unit = {
-
+                         ): Unit = {
     val response = underlying.response().setStatusCode(status)
 
     headers.foreach { case (k, v) => response.putHeader(k, v) }
-    response.putHeader("Content-Type", encoder.contentType)
+    response.putHeader("Content-Type", entityEncoder.contentType)
 
     cookies.foreach { c =>
       val vCookie = io.vertx.core.http.Cookie.cookie(c.name, c.value)
@@ -70,7 +73,7 @@ class VertxRestContext(val underlying: RoutingContext) extends RestContext {
     }
 
     if (body != null) {
-      val bytes = encoder.encode(body)
+      val bytes = entityEncoder.encode(body)
       response.end(io.vertx.core.buffer.Buffer.buffer(bytes))
     } else {
       response.end()
