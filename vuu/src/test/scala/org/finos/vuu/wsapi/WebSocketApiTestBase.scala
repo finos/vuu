@@ -1,7 +1,6 @@
 package org.finos.vuu.wsapi
 
 import com.typesafe.scalalogging.LazyLogging
-import org.awaitility.scala.AwaitilitySupport
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.VuuServerConfig
@@ -15,7 +14,7 @@ import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, GivenWhenThen}
 import scala.annotation.tailrec
 
 abstract class WebSocketApiTestBase extends AnyFeatureSpec with BeforeAndAfterAll with BeforeAndAfterEach
-  with GivenWhenThen with AwaitilitySupport with Matchers with LazyLogging {
+  with GivenWhenThen with Matchers with LazyLogging {
 
   implicit var timeProvider: Clock = _
   implicit var lifecycle: LifecycleContainer = _

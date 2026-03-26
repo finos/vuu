@@ -1,14 +1,15 @@
 package org.finos.vuu.net.ws;
 
 import com.typesafe.scalalogging.StrictLogging
-import org.awaitility.Awaitility.await
-import org.awaitility.scala.AwaitilitySupport
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.*
+import org.scalatest.concurrent.Eventually.eventually
+import org.scalatest.concurrent.Futures.timeout
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.time.{Seconds, Span}
 
 import java.net.URI
 import java.net.http.HttpRequest.BodyPublishers
@@ -16,11 +17,10 @@ import java.net.http.HttpResponse.BodyHandlers
 import java.net.http.{HttpClient, HttpRequest}
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
-import java.time.Duration
 import java.util.concurrent.atomic.AtomicInteger
 import javax.net.ssl.{SSLContext, SSLParameters, TrustManager, X509TrustManager}
 
-class WebSocketSecurityTest extends AnyFeatureSpec with Matchers with AwaitilitySupport with StrictLogging {
+class WebSocketSecurityTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
   private val pkcsPath: String = getClass.getClassLoader.getResource("certs/certificate.p12").getPath
   private val portCounter = AtomicInteger(31820)
@@ -95,20 +95,15 @@ class WebSocketSecurityTest extends AnyFeatureSpec with Matchers with Awaitility
       val webSocketClient = createClient(config, viewServer)
       lifeCycle.start()
 
-      await atMost {
-        Duration.ofSeconds(5)
-      } until {
-        webSocketClient.canWrite
+      eventually(timeout(Span(5, Seconds))) {
+        webSocketClient.canWrite shouldBe true
       }
 
       webSocketClient.write("{\n  \"roles\": [\"user\", {\"$type\":\"system\"}]\n}")
 
-      await atMost {
-        Duration.ofSeconds(5)
-      } until {
-        !webSocketClient.canWrite
+      eventually(timeout(Span(5, Seconds))) {
+        webSocketClient.canWrite shouldBe false
       }
-
     }
     
   }
