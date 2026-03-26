@@ -161,6 +161,7 @@ case class VuuServerConfig(wsOptions: VuuWebSocketOptions = VuuWebSocketOptions(
   def withModule(module: ViewServerModule): VuuServerConfig = {
     this.copy(modules = modules ++ List(module))
   }
+  
   def withPlugin(plugin: Plugin): VuuServerConfig = {
     this.copy(plugins = plugins ++ List(plugin))
   }

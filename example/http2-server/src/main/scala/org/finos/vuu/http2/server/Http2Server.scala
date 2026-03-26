@@ -17,18 +17,20 @@ trait Http2Server extends HttpServer {
 object Http2Server {
 
   def apply(options: VuuHttp2ServerOptions): Http2Server = {
-    Http2ServerImpl(options, List.empty)
+    Http2ServerImpl(options)
   }
 
   def apply(options: VuuHttp2ServerOptions, services: List[RestService]): Http2Server = {
     Http2ServerImpl(options, services)
   }
+
 }
 
-private case class Http2ServerImpl(options: VuuHttp2ServerOptions, services: List[RestService]) extends Http2Server {
+private case class Http2ServerImpl(options: VuuHttp2ServerOptions = VuuHttp2ServerOptions(),
+                                   services: List[RestService] = List.empty) extends Http2Server {
 
   private final val vertxHttp2Server = new VertxHttp2Server(options, services)
-  private final val vertx = Vertx.vertx(new VertxOptions())
+  private val vertx = Vertx.vertx(new VertxOptions())
 
   override def doStart(): Unit = {
     vertx.deployVerticle(vertxHttp2Server)

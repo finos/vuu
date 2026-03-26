@@ -11,9 +11,8 @@ import org.finos.vuu.core.module.TableDefContainer
 import org.finos.vuu.core.module.metrics.MetricsModule
 import org.finos.vuu.example.ignite.loader.IgniteOrderGenerator
 import org.finos.vuu.example.ignite.module.IgniteOrderDataModule
-import org.finos.vuu.net.auth.{Authenticator, LoginTokenService}
+import org.finos.vuu.net.auth.LoginTokenService
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
-import org.finos.vuu.state.MemoryBackedVuiStateStore
 
 /*
 //to allow self signed certs
