@@ -1,11 +1,10 @@
 package org.finos.vuu.net.rest
 
 import com.fasterxml.jackson.core.`type`.TypeReference
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.module.scala.ClassTagExtensions
 import org.finos.toolbox.json.JsonUtil
 
 import java.io.InputStream
+import java.lang.reflect.Type
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.ConcurrentHashMap
 import scala.io.Source
@@ -50,7 +49,7 @@ object EmptyEncoder extends EntityEncoder[Null] {
 object JsonEntityEncoder {
 
   private val classRegistry = new ConcurrentHashMap[Class[_], EntityEncoder[_]]()
-  private val typeRegistry = new ConcurrentHashMap[TypeReference[_], EntityEncoder[_]]()
+  private val typeRegistry = new ConcurrentHashMap[Type, EntityEncoder[_]]()
   private val mapper = JsonUtil.createMapper()
   
   def forClass[T](clazz: Class[T]): EntityEncoder[T] = {
@@ -61,7 +60,7 @@ object JsonEntityEncoder {
   }
 
   def forType[T](reference: TypeReference[T]): EntityEncoder[T] = {
-    val encoder = typeRegistry.computeIfAbsent(reference, (c: TypeReference[_]) => {
+    val encoder = typeRegistry.computeIfAbsent(reference.getType, (c: Type) => {
       new JsonEntityEncoder[T](is => mapper.readValue(is, reference))
     })
     encoder.asInstanceOf[EntityEncoder[T]]
