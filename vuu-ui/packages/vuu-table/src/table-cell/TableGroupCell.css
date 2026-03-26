@@ -19,13 +19,9 @@
     min-width: 20px;
   }
 
-  .vuuTableGroupCell-toggle {
-    --vuu-icon-height: 16px;
-    --vuu-icon-size: 7px;
-    --vuu-icon-width: 8px;
-    margin-right: 4px;
-    transition: transform 0.25s;
-    transform: var(--toggle-icon-transform);
+  .vuuToggleIconButton.saltButton {
+      --saltButton-height: 20px;
+      --saltButton-width: 20px;
   }
 
   .vuuTableGroupCell-label {
@@ -36,12 +32,21 @@
 
 [aria-level="2"] {
   --indent: 1;
+  &:not([aria-expanded]){
+    --indent: 2;
+  }
 }
 [aria-level="3"] {
   --indent: 2;
+  &:not([aria-expanded]){
+    --indent: 3;
+  }
 }
 [aria-level="4"] {
   --indent: 3;
+  &:not([aria-expanded]){
+    --indent: 4;
+  }
 }
 [aria-level="5"] {
   --indent: 4;

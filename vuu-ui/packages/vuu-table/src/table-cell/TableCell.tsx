@@ -15,10 +15,9 @@ const classBase = "vuuTableCell";
 
 export const TableCell = ({
   column,
-  columnMap,
+  dataRow,
   onClick,
   onDataEdited,
-  row,
   searchPattern = "",
 }: TableCellProps) => {
   const targetWindow = useWindow();
@@ -32,7 +31,7 @@ export const TableCell = ({
 
   const { className, style } = useCell(column, classBase, false, hasError);
   const { ariaColIndex, CellRenderer, valueFormatter } = column;
-  const dataIdx = columnMap[column.name];
+  // const dataIdx = columnMap[column.name];
 
   const handleDataItemEdited = useCallback<TableCellEditHandler>(
     (editState, editPhase) => {
@@ -46,7 +45,7 @@ export const TableCell = ({
         return onDataEdited?.(
           {
             ...editState,
-            row,
+            dataRow,
             columnName: column.name,
             value: typedValue,
           },
@@ -57,7 +56,7 @@ export const TableCell = ({
         onDataEdited?.(
           {
             ...editState,
-            row,
+            dataRow,
             columnName: column.name,
           },
           editPhase,
@@ -65,7 +64,7 @@ export const TableCell = ({
         return undefined;
       }
     },
-    [column, onDataEdited, row],
+    [column, dataRow, onDataEdited],
   );
 
   const handleClick = useCallback<MouseEventHandler>(
@@ -75,7 +74,7 @@ export const TableCell = ({
     [column, onClick],
   );
 
-  const value = valueFormatter(row[dataIdx]);
+  const value = valueFormatter(dataRow[column.name]);
   const valueWithHighlighting = useHighlighting(value, searchPattern);
 
   return (
@@ -89,9 +88,8 @@ export const TableCell = ({
       {CellRenderer ? (
         <CellRenderer
           column={column}
-          columnMap={columnMap}
+          dataRow={dataRow}
           onEdit={handleDataItemEdited}
-          row={row}
           searchPattern={searchPattern}
         />
       ) : (

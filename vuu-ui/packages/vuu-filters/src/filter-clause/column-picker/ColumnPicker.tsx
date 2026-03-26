@@ -8,7 +8,7 @@ export type ColumnPickerProps = Pick<
   ComboBoxProps,
   "className" | "inputProps" | "value"
 > & {
-  columns: ColumnDescriptor[];
+  columns: readonly ColumnDescriptor[];
   onSelect: (evt: SyntheticEvent, columnName: string) => void;
   dropdownOnAutofocus?: boolean;
 };

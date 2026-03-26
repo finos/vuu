@@ -1,5 +1,5 @@
 import { getSchema, VuuTableName } from "@vuu-ui/vuu-data-test";
-import { TableSchemaTable } from "@vuu-ui/vuu-data-types";
+import { DataSource, TableSchemaTable } from "@vuu-ui/vuu-data-types";
 import {
   ColumnFilterProps,
   FilterContainerColumnFilter,
@@ -30,6 +30,8 @@ import {
   MenuActionHandler,
   MenuBuilder,
 } from "@vuu-ui/vuu-context-menu";
+import { VuuDataSource } from "@vuu-ui/vuu-data-remote";
+import { useAutoLoginToVuuServer } from "../utils";
 
 const schema = getSchema("instruments");
 
@@ -217,11 +219,10 @@ const useLocalContextMenu = (): TableContextMenuDef => {
     MenuActionHandler<string, TableContextMenuOptions>
   >((menuItemId, options) => {
     if (options) {
-      const { column, columnMap, row } = options;
+      const { column, dataRow } = options;
       switch (menuItemId) {
         case "cell-copy": {
-          const colIdx = columnMap[column.name];
-          const value = row[colIdx];
+          const value = dataRow[column.name];
           navigator.clipboard.writeText(`${value}`);
           return true;
         }
@@ -242,10 +243,14 @@ const useLocalContextMenu = (): TableContextMenuDef => {
 const TableWithTabbedFilterContainerTemplate = ({
   SavedFilterPanelProps,
   children,
+  columns: columnsProp,
+  dataSource: dataSourceProp,
   selectionModel,
   table = "instruments",
 }: Pick<TabbedFilterContainerProps, "children" | "SavedFilterPanelProps"> &
   Pick<TableProps, "selectionModel"> & {
+    columns?: ColumnDescriptor[];
+    dataSource?: DataSource;
     table?: VuuTableName;
   }) => {
   const showContextPanel = useContextPanel();
@@ -256,11 +261,14 @@ const TableWithTabbedFilterContainerTemplate = ({
   const schema = useMemo(() => getSchema(table), [table]);
 
   const dataSource = useMemo(() => {
-    return new VuuDataSource({
-      columns: schema.columns.map(toColumnName),
-      table: schema.table,
-    });
-  }, [VuuDataSource, schema]);
+    return (
+      dataSourceProp ??
+      new VuuDataSource({
+        columns: schema.columns.map(toColumnName),
+        table: schema.table,
+      })
+    );
+  }, [VuuDataSource, dataSourceProp, schema.columns, schema.table]);
 
   useMemo(() => {
     if (currentFilter && currentFilter.filter !== null) {
@@ -272,9 +280,9 @@ const TableWithTabbedFilterContainerTemplate = ({
 
   const config = useMemo(
     () => ({
-      columns: schema.columns,
+      columns: columnsProp ?? schema.columns,
     }),
-    [schema],
+    [columnsProp, schema.columns],
   );
 
   const copyContextMenuProps = useLocalContextMenu();
@@ -328,7 +336,7 @@ export const InstrumentsWithTabbedFilterContainerAndFilterProvider = ({
 
   const [
     SavedFilterPanelProps,
-    [vuuCreatedTimestamp, bbg, currency, exchange, lotSize],
+    [vuuCreatedTimestamp, bbg, currency, exchange, lotSize, price],
   ] = useMemo<
     [
       TabbedFilterContainerProps["SavedFilterPanelProps"],
@@ -346,6 +354,7 @@ export const InstrumentsWithTabbedFilterContainerAndFilterProvider = ({
       { name: "currency", serverDataType: "string" },
       { name: "exchange", serverDataType: "string" },
       { name: "lotSize", serverDataType: "int" },
+      { name: "price", serverDataType: "scaleddecimal6" },
     ];
     return [{ availableColumns: columns }, columns];
   }, []);
@@ -404,6 +413,10 @@ export const InstrumentsWithTabbedFilterContainerAndFilterProvider = ({
                   operator="between"
                 />
               </FormField>
+              <FormField>
+                <FormFieldLabel>Price</FormFieldLabel>
+                <FilterContainerColumnFilter column={price} />
+              </FormField>
             </TableWithTabbedFilterContainerTemplate>
           </ContextPanelProvider>
         </DemoTableContainer>
@@ -415,6 +428,144 @@ export const InstrumentsWithTabbedFilterContainerAndFilterProvider = ({
 export const WithCheckbox = () => (
   <InstrumentsWithTabbedFilterContainerAndFilterProvider selectionModel="checkbox" />
 );
+
+/**
+ * This table is defined in the vuu server only not innthe local data source
+ */
+export const MetricsViewportsWithTabbedFilterContainerAndFilterProvider = ({
+  selectionModel,
+}: Pick<TableProps, "selectionModel">) => {
+  const table = useMemo<TableSchemaTable>(
+    () => ({ module: "METRICS", table: "metricsViewports" }),
+    [],
+  );
+
+  useAutoLoginToVuuServer();
+
+  const [SavedFilterPanelProps, columns] = useMemo<
+    [
+      TabbedFilterContainerProps["SavedFilterPanelProps"],
+      Array<ColumnDescriptor>,
+    ]
+  >(() => {
+    const columns: ColumnDescriptor[] = [
+      {
+        label: "ID",
+        name: "id",
+        serverDataType: "string",
+      },
+      { name: "table", serverDataType: "string" },
+      { name: "structureHash", serverDataType: "int" },
+      { name: "updateCount", serverDataType: "long" },
+      { name: "keyBuildCount", serverDataType: "long" },
+      { name: "mean", serverDataType: "scaleddecimal2" },
+      { name: "max", serverDataType: "long" },
+      { name: "75Perc", serverDataType: "scaleddecimal4" },
+      { name: "99Perc", serverDataType: "scaleddecimal6" },
+      { name: "99_9Perc", serverDataType: "scaleddecimal8" },
+      { name: "vuuCreatedTimestamp", serverDataType: "epochtimestamp" },
+      { name: "vuuUpdatedTimestamp", serverDataType: "epochtimestamp" },
+    ];
+    return [{ availableColumns: columns }, columns];
+  }, []);
+
+  const dataSource = useMemo(
+    () =>
+      new VuuDataSource({
+        columns: columns.map(toColumnName),
+        table,
+      }),
+    [columns, table],
+  );
+
+  const [
+    id,
+    tableName,
+    structureHash,
+    updateCount,
+    keyBuildCount,
+    mean,
+    max,
+    perc75,
+    perc99,
+    perc99_9,
+  ] = columns;
+
+  return (
+    <>
+      <style>{`
+        .vuuFilterContainer {
+            height: 100%;
+        }
+    `}</style>
+      <FilterProvider>
+        <DemoTableContainer>
+          <ContextPanelProvider>
+            <TableWithTabbedFilterContainerTemplate
+              columns={columns}
+              dataSource={dataSource}
+              SavedFilterPanelProps={SavedFilterPanelProps}
+              selectionModel={selectionModel}
+            >
+              <FormField>
+                <FormFieldLabel>ID</FormFieldLabel>
+                <FilterContainerColumnFilter
+                  TypeaheadProps={typeaheadPropsOne}
+                  column={id}
+                  table={table}
+                />
+              </FormField>
+              <FormField>
+                <FormFieldLabel>Table</FormFieldLabel>
+                <FilterContainerColumnFilter
+                  TypeaheadProps={typeaheadPropsZero}
+                  column={tableName}
+                  table={table}
+                />
+              </FormField>
+              <FormField>
+                <FormFieldLabel>Structure Hash</FormFieldLabel>
+                <FilterContainerColumnFilter
+                  TypeaheadProps={typeaheadPropsOne}
+                  column={structureHash}
+                  table={table}
+                />
+              </FormField>
+              <FormField>
+                <FormFieldLabel>Update Count (long)</FormFieldLabel>
+                <FilterContainerColumnFilter column={updateCount} />
+              </FormField>
+              <FormField>
+                <FormFieldLabel>Key Build Count</FormFieldLabel>
+                <FilterContainerColumnFilter column={keyBuildCount} />
+              </FormField>
+              <FormField>
+                <FormFieldLabel>Mean (scaleddecimal2)</FormFieldLabel>
+                <FilterContainerColumnFilter column={mean} />
+              </FormField>
+              <FormField>
+                <FormFieldLabel>Max (long)</FormFieldLabel>
+                <FilterContainerColumnFilter column={max} />
+              </FormField>
+              <FormField>
+                <FormFieldLabel>75% (scaleddecimal4)</FormFieldLabel>
+                <FilterContainerColumnFilter column={perc75} />
+              </FormField>
+              <FormField>
+                <FormFieldLabel>99% (scaleddecimal6)</FormFieldLabel>
+                <FilterContainerColumnFilter column={perc99} />
+              </FormField>
+              <FormField>
+                <FormFieldLabel>99.9% (scaleddecimal8)</FormFieldLabel>
+                <FilterContainerColumnFilter column={perc99_9} />
+              </FormField>
+            </TableWithTabbedFilterContainerTemplate>
+          </ContextPanelProvider>
+        </DemoTableContainer>
+      </FilterProvider>
+    </>
+  );
+};
 
 export const OrdersWithTabbedFilterContainerAndFilterProvider = () => {
   const table = useMemo<TableSchemaTable>(

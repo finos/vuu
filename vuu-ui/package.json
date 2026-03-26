@@ -42,6 +42,7 @@
     "test:cypress": "npm run build:worker && cypress run --component --browser chrome --headless",
     "test:cypress:local": "cypress open --component --browser chrome",
     "test:playwright:ct": "playwright test --config=playwright-ct.config.ts",
+    "test:playwright:ct:lastfailed": "playwright test --config=playwright-ct.config.ts --last-failed",
     "test:playwright:ct:headed": "playwright test --config=playwright-ct.config.ts --headed",
     "test:playwright:ct:ui": "playwright test --config=playwright-ct.config.ts --ui",
     "test:playwright:ct:report": "playwright test --config=playwright-ct.config.ts --reporter=html",

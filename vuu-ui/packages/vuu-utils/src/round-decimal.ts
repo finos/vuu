@@ -3,6 +3,12 @@ import { RoundingRule } from "@vuu-ui/vuu-table-types";
 const PUNCTUATION_STR = String.fromCharCode(8200);
 const DIGIT_STR = String.fromCharCode(8199);
 const DECIMALS_AUTO = -1;
+const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER.toString();
+const MAX_INTEGER_DIGITS = MAX_SAFE_INTEGER.length;
+
+export const exceedsMaxSafeInteger = (value: string) =>
+  value.length > MAX_INTEGER_DIGITS ||
+  (value.length === MAX_INTEGER_DIGITS && value > MAX_SAFE_INTEGER);
 
 type PadMap = {
   DIGIT: string;
@@ -90,7 +96,9 @@ export function roundDecimal(
   if (value === undefined || typeof value !== "number" || isNaN(value)) {
     return "";
   }
-  let integral, fraction, Pad;
+  let integral: string;
+  let fraction: string;
+  let Pad: PadMap | null;
 
   const [part1, part2 = ""] = value.toString().split(".");
   const actualDecimals = part2.length;
@@ -126,7 +134,75 @@ export function roundDecimal(
           : null)
     ) {
       if (actualDecimals === 0) {
-        fraction = Pad.FULL_PADDING[decimals];
+        fraction = Pad.FULL_PADDING[decimals] ?? "";
+      } else {
+        fraction = pad(part2, decimals, Pad);
+      }
+    } else {
+      fraction = part2;
+    }
+  }
+
+  return integral + (fraction ? "." + fraction : "");
+}
+
+export function roundScaledDecimal(
+  value: string,
+  align = Align.Right,
+  decimals = 4,
+  zeroPad?: boolean,
+  alignOnDecimals?: boolean,
+  useLocaleString = true,
+  roundingRule: RoundingRule = "round",
+) {
+  let integral: string;
+  let fraction: string;
+  let Pad: PadMap | null;
+
+  // nulls are returned from server as empty string
+  if (value === "") {
+    return "";
+  }
+
+  const [part1, part2 = ""] = value.split(".");
+  const actualDecimals = part2.length;
+
+  integral =
+    part1 === ""
+      ? "0"
+      : part1 === "-0"
+        ? "-0"
+        : useLocaleString
+          ? exceedsMaxSafeInteger(value)
+            ? BigInt(part1).toLocaleString()
+            : parseFloat(part1).toLocaleString()
+          : part1;
+
+  if (align === Align.Left && alignOnDecimals) {
+    integral = padLeft(integral);
+  }
+
+  if (decimals === DECIMALS_AUTO || actualDecimals === decimals) {
+    fraction = part2;
+  } else if (actualDecimals > decimals) {
+    if (roundingRule === "round") {
+      fraction = parseFloat("0." + part2)
+        .toFixed(decimals)
+        .slice(2);
+    } else {
+      fraction = part2.slice(0, decimals);
+    }
+  } else {
+    /* eslint-disable no-cond-assign */
+    if (
+      (Pad = zeroPad
+        ? Zero
+        : alignOnDecimals && align !== Align.Left
+          ? Space
+          : null)
+    ) {
+      if (actualDecimals === 0) {
+        fraction = Pad.FULL_PADDING[decimals] ?? "";
       } else {
         fraction = pad(part2, decimals, Pad);
       }

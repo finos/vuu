@@ -42,6 +42,7 @@ export class MovingWindow {
   }
 
   isWithinRange(index: number) {
+    // what if rowCount has been set to value lower than range to ?
     return this.range.isWithin(index);
   }
 

@@ -338,7 +338,7 @@ export const useCustomFilters = ({
 };
 
 function columnDescriptorsByName(
-  columns: ColumnDescriptor[],
+  columns: readonly ColumnDescriptor[],
 ): ColumnDescriptorsByName {
   return columns.reduce((m, col) => ({ ...m, [col.name]: col }), {});
 }

@@ -9,9 +9,14 @@ import {
   isMultiValueFilter,
   isSerializableFilter,
 } from "./filter-utils";
+import { ScaledDecimal } from "../ScaledDecimal";
 
-const filterValue = (value: string | number | boolean) =>
-  typeof value === "string" ? `"${value}"` : value;
+const filterValue = (value: string | number | boolean | ScaledDecimal) =>
+  typeof value === "string"
+    ? `"${value}"`
+    : value instanceof ScaledDecimal
+      ? value.toString()
+      : value;
 
 const quotedStrings = (value: string | number | boolean) =>
   typeof value === "string" ? `"${value}"` : value;

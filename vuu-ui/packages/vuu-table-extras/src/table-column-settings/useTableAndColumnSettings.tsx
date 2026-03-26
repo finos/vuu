@@ -16,7 +16,7 @@ import {
 } from "./TableSettingsPanel";
 
 export interface TableAndColumnSettingsHookProps {
-  availableColumns: SchemaColumn[];
+  availableColumns: readonly SchemaColumn[];
   onAvailableColumnsChange?: (columns: SchemaColumn[]) => void;
   onConfigChange: (config: TableConfig) => void;
   onCreateCalculatedColumn: (column: ColumnDescriptor) => void;
@@ -53,9 +53,9 @@ export const useTableAndColumnSettings = ({
 }: TableAndColumnSettingsHookProps) => {
   const showTableSettingsRef = useRef<() => void>(undefined);
 
-  const [availableColumns, setAvailableColumns] = useState<SchemaColumn[]>(
-    availableColumnsProps,
-  );
+  const [availableColumns, setAvailableColumns] = useState<
+    readonly SchemaColumn[]
+  >(availableColumnsProps);
 
   const showContextPanel = useContextPanel();
 

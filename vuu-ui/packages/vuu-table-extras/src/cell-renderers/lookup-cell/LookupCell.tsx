@@ -5,11 +5,9 @@ import { memo } from "react";
 
 export const LookupCell = memo(function LookupCell({
   column,
-  columnMap,
-  row,
+  dataRow,
 }: TableCellRendererProps) {
-  const dataIdx = columnMap[column.name];
-  const dataValue = row[dataIdx] as string | number;
+  const dataValue = dataRow[column.name] as string | number;
   const { initialValue: value } = useLookupValues(column, dataValue);
   return <span>{value?.label}</span>;
 }, dataAndColumnUnchanged);

@@ -657,8 +657,24 @@ export declare type VuuRpcMenuAction =
   | NoAction
   | ShowNotificationAction;
 
-// prettier-ignore
-export declare type VuuColumnDataType = "int" | "long" | "double" | "string" | "char" | "boolean" | "epochtimestamp";
+export declare type RawNumericType = "int" | "double";
+
+export declare type StringNumericType =
+  | "long"
+  | "scaleddecimal2"
+  | "scaleddecimal4"
+  | "scaleddecimal6"
+  | "scaleddecimal8";
+
+export declare type VuuNumericType = RawNumericType | StringNumericType;
+
+export declare type VuuColumnDataType =
+  | VuuNumericType
+  | "string"
+  | "char"
+  | "boolean"
+  | "epochtimestamp";
+
 export declare type VuuMenuContext = "cell" | "row" | "grid" | "selected-rows";
 export declare type VuuTable = {
   table: string;

@@ -9,7 +9,6 @@ import {
 } from "@vuu-ui/vuu-context-menu";
 import {
   DataSource,
-  DataSourceRow,
   DataSourceVisualLinkCreatedMessage,
   RpcResponseHandler,
   TableSchema,
@@ -37,18 +36,16 @@ import {
 } from "@vuu-ui/vuu-table";
 import type {
   ColumnDescriptor,
+  DataRow,
   TableContextMenuDef,
   TableContextMenuOptions,
   TableMenuLocation,
 } from "@vuu-ui/vuu-table-types";
 import {
-  ColumnMap,
-  dataSourceRowToDataRowDto,
   getLayoutComponent,
   isActionMessage,
   isCustomComponentActionMessage,
   isSessionTableActionMessage,
-  metadataKeys,
   toColumnName,
   useData,
 } from "@vuu-ui/vuu-utils";
@@ -125,8 +122,6 @@ const isGroupMenuItem = (menu: VuuMenuItem | VuuMenu): menu is VuuMenu =>
 const hasFilter = ({ filter }: VuuMenuItem) =>
   typeof filter === "string" && filter.length > 0;
 
-const { KEY } = metadataKeys;
-
 const getMenuItemOptions = (
   menu: VuuMenuItem,
   options: TableContextMenuOptions,
@@ -136,15 +131,15 @@ const getMenuItemOptions = (
       return {
         ...menu,
         field: options.column.name,
-        rowKey: options.row[KEY],
-        value: options.row[options.columnMap[options.column.name]],
+        rowKey: options.dataRow.key,
+        value: options.dataRow[options.column.name],
       };
     case "row":
       return {
         ...menu,
         columns: options.columns,
-        row: dataSourceRowToDataRowDto(options.row, options.columnMap),
-        rowKey: options.row[KEY],
+        row: options.dataRow,
+        rowKey: options.dataRow.key,
       };
     case "selected-rows":
       return {
@@ -177,19 +172,18 @@ const vuuContextCompatibleWithTableLocation = (
 
 const gridRowMeetsFilterCriteria = (
   context: VuuMenuContext,
-  row: DataSourceRow,
-  selectedRows: DataSourceRow[],
+  dataRow: DataRow,
+  selectedRows: DataRow[],
   filter: string,
-  columnMap: ColumnMap,
 ): boolean => {
   if (context === "cell" || context === "row") {
-    const filterPredicate = getFilterPredicate(columnMap, filter);
-    return filterPredicate(row);
+    const filterPredicate = getFilterPredicate(filter);
+    return filterPredicate(dataRow);
   } else if (context === "selected-rows") {
     if (selectedRows.length === 0) {
       return false;
     } else {
-      const filterPredicate = getFilterPredicate(columnMap, filter);
+      const filterPredicate = getFilterPredicate(filter);
       return selectedRows.every(filterPredicate);
     }
   }
@@ -219,10 +213,9 @@ const menuShouldBeRenderedInThisContext = (
   if (tableLocation === "grid" && hasFilter(menuItem)) {
     return gridRowMeetsFilterCriteria(
       menuItem.context,
-      options.row,
+      options.dataRow,
       options.selectedRows,
       menuItem.filter,
-      options.columnMap,
     );
   }
 

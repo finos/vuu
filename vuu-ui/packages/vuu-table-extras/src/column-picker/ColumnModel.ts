@@ -47,7 +47,7 @@ export const isColumnsReordered = (
   change?.type === SelectedColumnChangeType.ColumnsReordered;
 
 export type ColumnsChangeHandler = (
-  columns: ColumnDescriptor[],
+  columns: readonly ColumnDescriptor[],
   changeSource: ColumnChangeSource,
   changeDescriptor?: SelectedColumnChangeDescriptor,
 ) => void;
@@ -61,7 +61,10 @@ const byColumnName = (
   { name: n2, label: l2 = n2 }: ColumnDescriptor,
 ) => (l1 > l2 ? 1 : l2 > l1 ? -1 : 0);
 
-const filterColumns = (columns: ColumnDescriptor[], pattern: string) => {
+const filterColumns = (
+  columns: readonly ColumnDescriptor[],
+  pattern: string,
+) => {
   if (pattern) {
     const lowerCasePattern = pattern.toLowerCase();
     return columns.filter(
@@ -75,12 +78,12 @@ const filterColumns = (columns: ColumnDescriptor[], pattern: string) => {
 
 export class ColumnModel extends EventEmitter<ColumnEvents> {
   #searchPattern = "";
-  #selectedColumns: ColumnDescriptor[];
+  #selectedColumns: readonly ColumnDescriptor[];
   constructor(
     /**
      * All available columns, including selected columns.
      */
-    public readonly allColumns: ColumnDescriptor[],
+    public readonly allColumns: readonly ColumnDescriptor[],
     /**
      * Columns already selected and rendered in Table.
      */

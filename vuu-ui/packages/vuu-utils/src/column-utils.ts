@@ -11,7 +11,6 @@ import type {
   VuuAggType,
   VuuAggregation,
   VuuColumnDataType,
-  VuuDataRow,
   VuuDataRowDto,
   VuuGroupBy,
   VuuSort,
@@ -35,6 +34,7 @@ import type {
   TableHeading,
   TableHeadings,
   ValueListRenderer,
+  DataRow,
 } from "@vuu-ui/vuu-table-types";
 import { type CSSProperties } from "react";
 import { moveItem } from "./array-utils";
@@ -194,8 +194,18 @@ export const isDateTimeDataType = (
   (isTypeDescriptor(column.type) ? column.type.name : column.type) ===
   "date/time";
 
-export const isDateTimeDataValue = (column: ColumnDescriptor) =>
-  isTimestampColumn(column) || isDateTimeDataType(column);
+export const isTimeDataType = (
+  column: ColumnDescriptor,
+): column is TimeDataValueDescriptor =>
+  (isTypeDescriptor(column.type) ? column.type.name : column.type) === "time";
+
+export const isDateTimeDataValue = (
+  column: ColumnDescriptor,
+  serverDataType?: VuuColumnDataType,
+) =>
+  serverDataType === "epochtimestamp" ||
+  isTimestampColumn(column) ||
+  isDateTimeDataType(column);
 
 export const isTimeDataValue = (
   column?: ColumnDescriptor,
@@ -267,7 +277,7 @@ export const isMappedValueTypeRenderer = (
   typeof (renderer as MappedValueTypeRenderer)?.map !== "undefined";
 
 export function buildColumnMap(
-  columns?: (ColumnDescriptor | SchemaColumn | string)[],
+  columns?: readonly (ColumnDescriptor | SchemaColumn | string)[],
 ): ColumnMap {
   const start = metadataKeys.count;
   if (columns) {
@@ -461,11 +471,10 @@ export const isJsonAttribute = (value: unknown) =>
 
 export const isJsonGroup = (
   column: RuntimeColumnDescriptor,
-  row: VuuDataRow,
-  columnMap: ColumnMap,
+  dataRow: DataRow,
 ) =>
   (column.type as DataValueTypeDescriptor)?.name === "json" &&
-  isJsonAttribute(row[columnMap[column.name]]);
+  isJsonAttribute(dataRow[column.name]);
 
 export const isJsonColumn = (column: RuntimeColumnDescriptor) =>
   (column.type as DataValueTypeDescriptor)?.name === "json";
@@ -846,16 +855,16 @@ export const findColumn = (
 };
 
 export function updateColumn<T extends ColumnDescriptor>(
-  columns: T[],
+  columns: readonly T[],
   column: T,
 ): T[];
 export function updateColumn(
-  columns: RuntimeColumnDescriptor[],
+  columns: readonly RuntimeColumnDescriptor[],
   column: string,
   options: Partial<ColumnDescriptor>,
 ): RuntimeColumnDescriptor[];
 export function updateColumn(
-  columns: RuntimeColumnDescriptor[],
+  columns: readonly RuntimeColumnDescriptor[],
   column: string | RuntimeColumnDescriptor,
   options?: Partial<ColumnDescriptor>,
 ) {
@@ -949,13 +958,11 @@ export const visibleColumnAtIndex = (
   }
 };
 
-const { DEPTH, IS_LEAF } = metadataKeys;
-
 export const getGroupIcon = (
   columns: RuntimeColumnDescriptor[],
-  row: DataSourceRow,
+  dataRow: DataRow,
 ): string | undefined => {
-  const { [DEPTH]: depth, [IS_LEAF]: isLeaf } = row;
+  const { depth, isLeaf } = dataRow;
   // Depth can be greater tha group columns when we have just removed a column from groupby
   // but new data has not yet been received.
   if (isLeaf || depth > columns.length) {
@@ -964,16 +971,15 @@ export const getGroupIcon = (
     return undefined;
   } else {
     const { getIcon } = columns[depth - 1];
-    return getIcon?.(row);
+    return getIcon?.(dataRow);
   }
 };
 
 export const getGroupValue = (
   columns: RuntimeColumnDescriptor[],
-  row: DataSourceRow,
-  columnMap: ColumnMap,
+  dataRow: DataRow,
 ): string | null => {
-  const { [DEPTH]: depth, [IS_LEAF]: isLeaf } = row;
+  const { depth, isLeaf } = dataRow;
   // Depth can be greater tha group columns when we have just removed a column from groupby
   // but new data has not yet been received.
   if (isLeaf || depth > columns.length) {
@@ -984,7 +990,7 @@ export const getGroupValue = (
     // offset allows for $root
     const { name, valueFormatter } = columns[depth - 1];
 
-    const value = valueFormatter(row[columnMap[name]]);
+    const value = valueFormatter(dataRow[name]);
     return value;
   }
 };
@@ -997,6 +1003,11 @@ export const getDefaultColumnType = (
     case "long":
     case "double":
       return "number";
+    case "scaleddecimal2":
+    case "scaleddecimal4":
+    case "scaleddecimal6":
+    case "scaleddecimal8":
+      return "scaleddecimal";
     case "boolean":
       return "boolean";
     case "epochtimestamp":
@@ -1070,7 +1081,7 @@ export const getTypeFormattingFromColumn = (
  * atr 'client side' columns).
  */
 export const assertAllColumnsAreIncludedInSubscription = (
-  columns: ColumnDescriptor[],
+  columns: readonly ColumnDescriptor[],
   columnNames: string[],
 ) => {
   const unsubscribedColumns: string[] = [];
@@ -1103,8 +1114,8 @@ export const subscribedOnly =
  * @returns
  */
 export const addColumnToSubscribedColumns = (
-  subscribedColumns: ColumnDescriptor[],
-  availableColumns: SchemaColumn[],
+  subscribedColumns: readonly ColumnDescriptor[],
+  availableColumns: readonly SchemaColumn[],
   columnName: string,
 ) => {
   const byColName =
@@ -1202,7 +1213,7 @@ export const moveColumnTo = (
 
 export function replaceColumn<
   C extends ColumnDescriptor = RuntimeColumnDescriptor,
->(columns: C[], column: C) {
+>(columns: readonly C[], column: C) {
   return columns.map((col) => (col.name === column.name ? column : col));
 }
 
@@ -1458,8 +1469,8 @@ export const dataAndColumnUnchanged = (
   p1: TableCellRendererProps,
 ) =>
   p.column === p1.column &&
-  p.column.valueFormatter(p.row[p.columnMap[p.column.name]]) ===
-    p1.column.valueFormatter(p1.row[p1.columnMap[p1.column.name]]);
+  p.column.valueFormatter(p.dataRow[p.column.name]) ===
+    p1.column.valueFormatter(p1.dataRow[p1.column.name]);
 
 /**
  * A memo compare function for cell renderers. Can be used to suppress
@@ -1474,9 +1485,9 @@ export const dataColumnAndKeyUnchanged = (
   p1: TableCellRendererProps,
 ) =>
   p.column === p1.column &&
-  p.row[KEY] === p1.row[KEY] &&
-  p.column.valueFormatter(p.row[p.columnMap[p.column.name]]) ===
-    p1.column.valueFormatter(p1.row[p1.columnMap[p1.column.name]]);
+  p.dataRow.key === p1.dataRow.key &&
+  p.column.valueFormatter(p.dataRow[p.column.name]) ===
+    p1.column.valueFormatter(p1.dataRow[p1.column.name]);
 
 export const toColumnName = (column: ColumnDescriptor) => column.name;
 export const isStringColumn = (column: ColumnDescriptor) =>
@@ -1488,7 +1499,7 @@ export const isStringColumn = (column: ColumnDescriptor) =>
 export const reorderColumnItems = <
   T extends { name: string } = { name: string },
 >(
-  columnItems: Array<T>,
+  columnItems: readonly T[],
   orderedNames: string[],
 ): T[] => {
   const columns: T[] = [];

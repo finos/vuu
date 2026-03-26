@@ -106,6 +106,39 @@ test.describe("Given two TabbedFilterContainers with different values for filter
     await expect(page.getByRole("dialog")).not.toBeInViewport();
   });
 
+  test(`When default time value filter is amended and committed 
+      Then filter container allows to select another filter and select a value`, async ({
+    mount,
+    page,
+  }) => {
+    const component = await mount(
+      <LocalDataSourceProvider>
+        <MultipleTabbedFilterContainers />
+      </LocalDataSourceProvider>,
+    );
+
+    const firstTabContainer = component.getByTestId("tc-1");
+
+    const columnFilter = firstTabContainer.locator(".vuuColumnFilter");
+    const inputs = columnFilter.locator("input.vuuTimeInput");
+    await expect(inputs).toHaveCount(2);
+
+    await inputs.nth(0).focus();
+    await inputs.nth(0).press("Home");
+    await page.keyboard.type("10:00:00");
+    await expect(inputs.nth(0)).toHaveValue("10:00:00");
+    await inputs.nth(0).press("Enter");
+
+    const combobox = firstTabContainer
+      .getByTestId("ccy-1")
+      .getByRole("combobox")
+      .first();
+    await combobox.click();
+    const option = page.getByRole("option").first();
+    await option.click();
+    expect(combobox).toHaveValue("CAD");
+  });
+
   test.describe("Filter name validation default behaviour", () => {
     test(`When a filter is saved
       Then the filter name is allowed a max length of 25 characters

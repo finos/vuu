@@ -9,8 +9,7 @@ const classBase = "vuuSearchCell";
 
 export const SearchCell = ({
   column,
-  columnMap,
-  row,
+  dataRow,
   searchPattern = "",
 }: TableCellRendererProps) => {
   const targetWindow = useWindow();
@@ -22,9 +21,8 @@ export const SearchCell = ({
 
   //TODO what about click handling
 
-  const key = columnMap[column.name];
   const valueWithHighlighting = useHighlighting(
-    column.valueFormatter(row[key]),
+    column.valueFormatter(dataRow[column.name]),
     searchPattern,
   );
 

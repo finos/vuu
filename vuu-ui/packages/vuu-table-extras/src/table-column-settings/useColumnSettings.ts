@@ -43,6 +43,14 @@ const doubleCellRenderers: CellRendererDescriptor[] = [
     name: "default-double",
   },
 ];
+const decimalCellRenderers: CellRendererDescriptor[] = [
+  {
+    description:
+      "Default formatter for columns with data type decimal (2,4,6 or 8)",
+    label: "Default Renderer (decimal)",
+    name: "default-decimal",
+  },
+];
 
 const stringCellRenderers: CellRendererDescriptor[] = [
   {
@@ -65,7 +73,16 @@ const getAvailableCellRenderers = (
     case "long":
       return integerCellRenderers.concat(getRegisteredCellRenderers("int"));
     case "double":
-      return doubleCellRenderers.concat(getRegisteredCellRenderers("double"));
+      return doubleCellRenderers.concat(
+        getRegisteredCellRenderers(column.serverDataType),
+      );
+    case "scaleddecimal2":
+    case "scaleddecimal4":
+    case "scaleddecimal6":
+    case "scaleddecimal8":
+      return decimalCellRenderers.concat(
+        getRegisteredCellRenderers(column.serverDataType),
+      );
     case "boolean":
       return booleanCellRenderers.concat(getRegisteredCellRenderers("boolean"));
     default:
@@ -73,7 +90,10 @@ const getAvailableCellRenderers = (
   }
 };
 
-const getColumn = (columns: ColumnDescriptor[], column: ColumnDescriptor) => {
+const getColumn = (
+  columns: readonly ColumnDescriptor[],
+  column: ColumnDescriptor,
+) => {
   if (column.name === "::") {
     // this is a new calculated column
     return column;

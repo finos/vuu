@@ -15,10 +15,10 @@ const createClassNameGenerator = (
       functions.push(fn.fn);
     }
   });
-  return (row, columnMap) => {
+  return (dataRow) => {
     const classNames: string[] = [];
     functions?.forEach((fn) => {
-      const className = fn(row, columnMap);
+      const className = fn(dataRow);
       if (className) {
         classNames.push(className);
       }

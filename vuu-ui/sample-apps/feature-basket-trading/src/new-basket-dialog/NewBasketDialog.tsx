@@ -1,4 +1,3 @@
-import { DataSourceRowObject } from "@vuu-ui/vuu-data-types";
 import {
   Prompt,
   TablePicker,
@@ -14,6 +13,7 @@ import {
 } from "./useNewBasketDialog";
 
 import "./NewBasketDialog.css";
+import { DataRow } from "@vuu-ui/vuu-table-types";
 
 const classBase = "vuuBasketNewBasketDialog";
 
@@ -46,7 +46,7 @@ export const NewBasketDialog = ({
     [],
   );
 
-  const itemToString = (row: DataSourceRowObject) => row.data.name as string;
+  const itemToString = (dataRow: DataRow) => dataRow.name as string;
 
   const inputCallbackRef = useCallback<RefCallback<HTMLElement>>((el) => {
     setTimeout(() => {

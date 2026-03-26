@@ -8,10 +8,12 @@ import {
 import {
   isDateTimeDataValue,
   isMappedValueTypeRenderer,
+  isTimeDataValue,
   isTypeDescriptor,
 } from "./column-utils";
 import { dateTimePattern, formatDate } from "./date";
-import { roundDecimal } from "./round-decimal";
+import { roundDecimal, roundScaledDecimal } from "./round-decimal";
+import { isNumericType } from "./protocol-message-utils";
 
 export type ValueFormatters = {
   [key: string]: ValueFormatter;
@@ -37,6 +39,7 @@ const dateFormatter = (column: DataValueDescriptor) => {
 
 export const numericFormatter = ({
   align = "right",
+  serverDataType,
   type,
 }: Partial<ColumnDescriptor>) => {
   if (type === undefined || typeof type === "string") {
@@ -50,6 +53,23 @@ export const numericFormatter = ({
       zeroPad = false,
     } = type.formatting ?? DEFAULT_NUMERIC_FORMAT;
     return (value: unknown) => {
+      if (serverDataType?.startsWith("scaleddecimal")) {
+        if (typeof value === "string") {
+          return roundScaledDecimal(
+            value,
+            align,
+            decimals,
+            zeroPad,
+            alignOnDecimals,
+            useLocaleString,
+            roundingRule,
+          );
+        } else {
+          throw Error(
+            `[formatting-utils] numericFormatter, invalid data for ${serverDataType}: '${value}'`,
+          );
+        }
+      }
       if (
         typeof value === "string" &&
         (value.startsWith("Σ") || value.startsWith("["))
@@ -81,11 +101,13 @@ const mapFormatter = (map: ColumnTypeValueMap) => {
   };
 };
 
+const NumericTypes = ["decimal", "number"];
+
 export const getValueFormatter = (
   column: ColumnDescriptor,
   serverDataType = column.serverDataType,
 ): ValueFormatter => {
-  if (isDateTimeDataValue(column)) {
+  if (isDateTimeDataValue(column, serverDataType) || isTimeDataValue(column)) {
     return dateFormatter(column);
   }
 
@@ -93,8 +115,8 @@ export const getValueFormatter = (
   if (isTypeDescriptor(type) && isMappedValueTypeRenderer(type?.renderer)) {
     return mapFormatter(type.renderer.map);
   } else if (
-    serverDataType === "double" ||
-    (isTypeDescriptor(type) && type.name === "number")
+    isNumericType(serverDataType) ||
+    (isTypeDescriptor(type) && NumericTypes.includes(type.name))
   ) {
     return numericFormatter(column);
   } else if (serverDataType === "string" || serverDataType === "char") {

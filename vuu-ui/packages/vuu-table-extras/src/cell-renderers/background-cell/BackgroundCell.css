@@ -1,15 +1,19 @@
 
 .vuuBackgroundCell {
   --background-animation-duration: 10s;
-  color: var(--vuuBackgroundCell-color, var(--vuu-color-gray-80));
+  color: var(--vuuBackgroundCell-color, var(--salt-content-primary-foreground));
   padding-right: var(--salt-size-unit);
   position: relative;
-  z-index: -1;
 }
 
 .vuuBackgroundCell-arrowBackground,
 .vuuBackgroundCell-arrowOnly {
   padding-left: 14px;
+}
+
+.vuuBackgroundCell-value {
+  position: relative;
+  z-index: 1;
 }
 
 .vuuBackgroundCell-arrow {
@@ -19,7 +23,6 @@
   right: 0;
   top: 0;
   bottom: 0;
-  z-index: -1;
 }
 
 .vuuBackgroundCell-arrow {

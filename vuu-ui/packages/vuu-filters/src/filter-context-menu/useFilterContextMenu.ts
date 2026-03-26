@@ -45,11 +45,10 @@ export const useFilterContextMenu = ({
   const menuBuilder: MenuBuilder<TableMenuLocation, TableContextMenuOptions> =
     useCallback(
       (_location, options) => {
-        const { column, columnMap, row } = options;
+        const { column, dataRow } = options;
         const { current: fag } = filterAggregatorRef;
         const { name, label = name } = column;
-        const colIdx = columnMap[column.name];
-        const value = row[colIdx] as string | number;
+        const value = dataRow[column.name] as string | number;
 
         const ClearFilter: ContextMenuItemDescriptor = {
           id: "filter-clear",
@@ -106,7 +105,7 @@ export const useFilterContextMenu = ({
     (menuItemId, options) => {
       if (options) {
         const { current: fag } = filterAggregatorRef;
-        const { column, columnMap, row } = options;
+        const { column, dataRow } = options;
         switch (menuItemId) {
           case "filter-clear":
             {
@@ -116,8 +115,7 @@ export const useFilterContextMenu = ({
 
           case "filter-add":
             {
-              const colIdx = columnMap[column.name];
-              const value = row[colIdx] as string | number;
+              const value = dataRow[column.name] as string | number;
               fag.add(column, value, "=");
               if (fag.filter) {
                 setCurrentFilter(fag.filter);
@@ -134,8 +132,7 @@ export const useFilterContextMenu = ({
             break;
           case "filter-set":
             {
-              const colIdx = columnMap[column.name];
-              const value = row[colIdx] as string | number;
+              const value = dataRow[column.name] as string | number;
               fag.clear();
               fag.add(column, value, "=");
               if (fag.filter) {

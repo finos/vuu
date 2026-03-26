@@ -9,7 +9,7 @@ import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import { useData } from "@vuu-ui/vuu-utils";
 
 const extendColumnConfig = (
-  columns: SchemaColumn[],
+  columns: readonly SchemaColumn[],
   config: Partial<ColumnDescriptor>,
 ) => columns.map<ColumnDescriptor>((col) => ({ ...col, ...config }));
 
