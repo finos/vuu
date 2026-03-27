@@ -48,7 +48,13 @@ class WebSocketSecurityTest extends AnyFeatureSpec with Matchers with StrictLogg
       )
 
       val viewServer = VuuServer(config)
+      val webSocketClient = createClient(config, viewServer)
       lifeCycle.start()
+
+      //Check the WS is accepting connections
+      eventually(timeout(Span(5, Seconds))) {
+        webSocketClient.canWrite shouldBe true
+      }
 
       val webClient = createWebClient()
       val methods = Array("GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS")
