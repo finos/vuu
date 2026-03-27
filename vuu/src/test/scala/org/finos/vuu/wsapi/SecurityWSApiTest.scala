@@ -1,6 +1,5 @@
 package org.finos.vuu.wsapi
 
-import org.awaitility.Awaitility.await
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.DefaultClock
 import org.finos.vuu.api.{ColumnBuilder, Link, TableDef, ViewPortDef, VisualLinks}
@@ -16,8 +15,10 @@ import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
 import org.finos.vuu.wsapi.helpers.{FakeDataSource, TestProvider, TestVuuClient}
+import org.scalatest.concurrent.Eventually.eventually
+import org.scalatest.concurrent.Futures.timeout
+import org.scalatest.time.{Seconds, Span}
 
-import java.time.Duration
 import scala.collection.immutable.ListMap
 
 class SecurityWSApiTest extends WebSocketApiTestBase {
@@ -52,11 +53,10 @@ class SecurityWSApiTest extends WebSocketApiTestBase {
 
       val requestId = attackingClient.send(sessionId, createViewPortRequest)
 
-      await atMost {
-        Duration.ofSeconds(1)
-      } until {
-        () => !attackingClient.isConnected
+      eventually(timeout(Span(1, Seconds))) {
+        attackingClient.isConnected shouldBe false
       }
+
     }
 
     Scenario("Removing another sessions viewport should be rejected") {
@@ -313,10 +313,8 @@ class SecurityWSApiTest extends WebSocketApiTestBase {
     val attackingViewServerClient = new WebSocketViewServerClient(attackingWebSocketClient, JsonVsSerializer())(attackingLifeCycle)
     val attackingVuuClient: TestVuuClient = new TestVuuClient(attackingViewServerClient, vuuServerConfig.security.loginTokenService)
     attackingLifeCycle.start()
-    await atMost {
-      Duration.ofSeconds(1)
-    } until {
-      () => attackingVuuClient.isConnected
+    eventually(timeout(Span(2, Seconds))) {
+      attackingVuuClient.isConnected shouldBe true
     }
     attackingVuuClient
   }

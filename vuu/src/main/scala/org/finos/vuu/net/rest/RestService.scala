@@ -1,8 +1,7 @@
 package org.finos.vuu.net.rest
 
-import io.vertx.ext.web.RoutingContext
-
 trait RestService {
+
   def getServiceName: String
 
   def getUriGetAll: String
@@ -15,18 +14,24 @@ trait RestService {
 
   def getUriPut: String
 
-  def onGetAll(ctx: RoutingContext): Unit
+  def onGetAll(context: RestContext): Unit = {
+    context.respond(404)
+  }
 
-  def onPost(ctx: RoutingContext): Unit
+  def onPost(context: RestContext): Unit = {
+    context.respond(404)
+  }
 
-  def onGet(ctx: RoutingContext): Unit
+  def onGet(context: RestContext): Unit = {
+    context.respond(404)
+  }
 
-  def onPut(ctx: RoutingContext): Unit
+  def onPut(context: RestContext): Unit = {
+    context.respond(404)
+  }
 
-  def onDelete(ctx: RoutingContext): Unit
-
-  def reply404(ctx: RoutingContext): Unit = {
-    ctx.response().setStatusCode(404).end()
+  def onDelete(context: RestContext): Unit = {
+    context.respond(404)
   }
 
 }

@@ -14,18 +14,15 @@ import org.finos.vuu.core.module.editable.EditableModule
 import org.finos.vuu.core.module.metrics.MetricsModule
 import org.finos.vuu.core.module.price.PriceModule
 import org.finos.vuu.core.module.simul.SimulationModule
-import org.finos.vuu.core.module.vui.VuiStateModule
 import org.finos.vuu.example.rest.client.{HttpClient, StubbedBackend}
 import org.finos.vuu.example.rest.module.RestModule
 import org.finos.vuu.example.virtualtable.module.VirtualTableModule
+import org.finos.vuu.http2.server.VuuHttp2ServerFactory
+import org.finos.vuu.http2.server.config.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
 import org.finos.vuu.net.auth.LoginTokenService
-import org.finos.vuu.net.http.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
+import org.finos.vuu.net.http.HttpServerFactory
 import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
-import org.finos.vuu.state.MemoryBackedVuiStateStore
-
-import java.util.concurrent.ConcurrentHashMap
-import scala.jdk.CollectionConverters.*
 
 /*
 //to allow self signed certs
@@ -45,8 +42,6 @@ object SimulMain extends App with StrictLogging {
 
   logger.info("[VUU] Starting...")
 
-  val store = new MemoryBackedVuiStateStore()
-
   lifecycle.autoShutdownHook()
 
   private val loginTokenService = LoginTokenService()
@@ -54,19 +49,18 @@ object SimulMain extends App with StrictLogging {
   private val defaultConfig = ConfigFactory.load()
 
   val config = VuuServerConfig(
-    httpServerOptions(defaultConfig),
-    webSocketOptions(defaultConfig),
+    createWebSocketOptions(defaultConfig),
     VuuSecurityOptions()
       .withLoginTokenService(loginTokenService),
     VuuThreadingOptions()
       .withViewPortThreads(4)
       .withTreeThreads(4),
     VuuClientConnectionOptions()
-      .withHeartbeatEnabled()
+      .withHeartbeatEnabled(),
+    httpServerFactory = createHttpServerFactory(defaultConfig)
   ).withModule(PriceModule())
     .withModule(SimulationModule())
     .withModule(MetricsModule())
-    .withModule(VuiStateModule(store))
     .withModule(AuthNModule(loginTokenService))
     .withModule(EditableModule())
     .withModule(PermissionModule())
@@ -94,35 +88,29 @@ object ConfigKeys {
   final val restModuleConfig = "vuu.restModule"
 }
 
-object httpServerOptions {
-  def apply(c: Config): VuuHttp2ServerOptions = {
-    val options = VuuHttp2ServerOptions()
-      //only specify webroot if we want to load the source locally, we'll load it from the jar
-      //otherwise
-      .withWebRoot(AbsolutePathWebRoot(c.getString(ConfigKeys.webroot), directoryListings = true))
-      //don't leave me on in prod pls....
-      .withBindAddress("0.0.0.0")
-      .withPort(8443)
+private def createHttpServerFactory(c: Config): HttpServerFactory = {
+  val options = VuuHttp2ServerOptions()
+    .withWebRoot(AbsolutePathWebRoot(c.getString(ConfigKeys.webroot), directoryListings = true))
+    .withPort(8443)
 
-    if (c.getBoolean(ConfigKeys.sslEnabled)) {
-      options.withSsl(VuuSSLByCertAndKey(c.getString(ConfigKeys.certPath), c.getString(ConfigKeys.keyPath)))
-    } else {
-      options.withSslDisabled()
-    }
+  if (c.getBoolean(ConfigKeys.sslEnabled)) {
+    VuuHttp2ServerFactory(options.withSsl(
+      VuuSSLByCertAndKey(c.getString(ConfigKeys.certPath), c.getString(ConfigKeys.keyPath))
+    ))
+  } else {
+    VuuHttp2ServerFactory(options.withSslDisabled())
   }
 }
 
-object webSocketOptions {
-  def apply(c: Config): VuuWebSocketOptions = {
-    val options = VuuWebSocketOptions()
-      .withUri("websocket")
-      .withWsPort(8090)
-      .withBindAddress("0.0.0.0")
+private def createWebSocketOptions(c: Config): VuuWebSocketOptions = {
+  val options = VuuWebSocketOptions()
+    .withUri("websocket")
+    .withWsPort(8090)
+    .withBindAddress("0.0.0.0")
 
-    if (c.getBoolean(ConfigKeys.sslEnabled)) {
-      options.withSsl(VuuSSLByCertAndKey(c.getString(ConfigKeys.certPath), c.getString(ConfigKeys.keyPath)))
-    } else {
-      options.withSslDisabled()
-    }
+  if (c.getBoolean(ConfigKeys.sslEnabled)) {
+    options.withSsl(VuuSSLByCertAndKey(c.getString(ConfigKeys.certPath), c.getString(ConfigKeys.keyPath)))
+  } else {
+    options.withSslDisabled()
   }
 }

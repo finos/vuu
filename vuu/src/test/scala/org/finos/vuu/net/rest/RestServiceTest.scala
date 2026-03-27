@@ -1,104 +1,70 @@
 package org.finos.vuu.net.rest
 
-import com.typesafe.scalalogging.StrictLogging
-import org.finos.vuu.core.module.vui.VuiStateModule
-import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
-import org.finos.vuu.net.http.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
-import org.finos.vuu.state.MemoryBackedVuiStateStore
-import io.vertx.core.json.JsonObject
-import io.vertx.core.{Vertx, VertxOptions}
-import io.vertx.ext.web.client.WebClientOptions
-import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
-import org.finos.toolbox.lifecycle.LifecycleContainer
-import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.core.module.TableDefContainer
+import org.finos.vuu.net.rest.*
+import org.scalamock.scalatest.MockFactory
+import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
-import scala.concurrent.ExecutionContext
+class RestServiceTest extends AnyFeatureSpec with Matchers with GivenWhenThen with MockFactory {
 
-class RestServiceTest extends AnyFeatureSpec with Matchers with StrictLogging {
+  Feature("RestService default behavior") {
 
-  Feature("check we can add rest services and call them") {
+    Scenario("The service should return correct URI paths") {
+      Given("a concrete TestRestService")
+      val service = new TestRestService()
 
-    ignore("add the ui state rest service") {
+      Then("all URI getter methods should return the expected strings")
+      service.getServiceName shouldBe "TestService"
+      service.getUriGetAll shouldBe "/api/test"
+    }
 
-      implicit val ctx = ExecutionContext.global
+    Scenario("Default 'onX' methods should respond with 404") {
+      Given("a TestRestService and a mocked RestContext")
+      val service = new TestRestService()
+      val mockContext = mock[RestContext]
 
-      //JmxInfra.enableJmx()
+      And("we expect the context to receive a 404 response call")
+      mockContext.respond.expects(404).repeated(5)
 
-      implicit val metrics: MetricsProvider = new MetricsProviderImpl
-      implicit val clock: Clock = new DefaultClock
-      implicit val lifecycle: LifecycleContainer = new LifecycleContainer
-      implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
+      When("calling all default handler methods")
+      service.onGetAll(mockContext)
+      service.onGet(mockContext)
+      service.onPost(mockContext)
+      service.onPut(mockContext)
+      service.onDelete(mockContext)
 
-      val store = new MemoryBackedVuiStateStore()
-
-      lifecycle.autoShutdownHook()
-
-      val http = 10001
-      val https = 10002
-      val ws = 10003
-
-      val config = VuuServerConfig(
-        VuuHttp2ServerOptions()
-          .withWebRoot(AbsolutePathWebRoot("vuu/src/main/resources/www", directoryListings = true))
-          .withSsl(VuuSSLByCertAndKey("vuu/src/main/resources/certs/cert.pem", "vuu/src/main/resources/certs/key.pem"))
-          .withPort(https),
-        VuuWebSocketOptions()
-          .withUri("websocket")
-          .withWsPort(ws),
-        VuuSecurityOptions()
-      ).withModule(VuiStateModule(store))
-
-      val viewServer = new VuuServer(config)
-
-      lifecycle.start()
-
-      val vxoptions = new VertxOptions()
-
-      val vertx = Vertx.vertx(vxoptions)
-
-      import io.vertx.ext.web.client.WebClient
-
-      Thread.sleep(2000)
-
-      val  wcoptions = new WebClientOptions()
-
-      wcoptions.setVerifyHost(false)
-      wcoptions.setTrustAll(true)
-
-      val client = WebClient.create(vertx, wcoptions)
-
-      Thread.sleep(100)
-
-      client.put(https, "localhost", "/api/vui/chris/latest")
-        .ssl(true)
-        .sendJsonObject(
-          new JsonObject()
-            .put("firstName", "Yo")
-            .put("lastName", "Stevo"))
-        .onSuccess( res => {
-          println("SUCCESS:" + res.statusCode() + " " + res.statusMessage())
-        }).onFailure( res =>{
-          logger.error("FAIL:" + res.toString, res)
-        })
-
-      client.post(https, "localhost", "/api/vui/chris")
-        .ssl(true)
-        .sendJsonObject(
-          new JsonObject()
-            .put("firstName", "Yo")
-            .put("lastName", "Stevo"))
-        .onSuccess( res => {
-
-
-          println("SUCCESS:" + res.statusCode() + " " + res.statusMessage())
-        }).onFailure( res =>{
-        println("FAIL:" + res)
-      })
-
-      lifecycle.stop()
+      Then("the mock verifies that respond(404) was called for each")
     }
   }
+
+  Feature("Overriding default behavior") {
+    Scenario("An overridden method should provide custom logic") {
+
+      Given("a RestService that overrides onGet")
+      val customService = new TestRestService {
+        override def onGet(context: RestContext): Unit = {
+          context.respond(200, "Found It", StringEncoder)
+        }
+      }
+      val mockContext = mock[RestContext]
+
+      And("we expect a 200 OK response instead of 404")
+      (mockContext.respond[String] _).expects(200, "Found It", StringEncoder, *, *).once()
+
+      When("onGet is called")
+      customService.onGet(mockContext)
+
+      Then("the custom response logic is executed")
+    }
+  }
+}
+
+private class TestRestService extends RestService {
+  override def getServiceName: String = "TestService"
+  override def getUriGetAll: String   = "/api/test"
+  override def getUriGet: String      = "/api/test/:id"
+  override def getUriPost: String     = "/api/test"
+  override def getUriDelete: String   = "/api/test/:id"
+  override def getUriPut: String      = "/api/test/:id"
 }

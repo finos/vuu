@@ -10,52 +10,50 @@ import org.finos.toolbox.thread.Async
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.TableDefContainer
-import org.finos.vuu.core.module.vui.VuiStateModule
-import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSecurityOptions, VuuServer, VuuServerConfig, VuuWebSocketOptions}
-import org.finos.vuu.net.auth.{Authenticator, LoginTokenService}
-import org.finos.vuu.net.http.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
-import org.finos.vuu.state.MemoryBackedVuiStateStore
+import org.finos.vuu.core.{VuuClientConnectionOptions, VuuJoinTableProviderOptions, VuuSSLByCertAndKey, VuuSecurityOptions, VuuServer, VuuServerConfig, VuuThreadingOptions, VuuWebSocketOptions}
+import org.finos.vuu.http2.server.VuuHttp2ServerFactory
+import org.finos.vuu.http2.server.config.{AbsolutePathWebRoot, VuuHttp2ServerOptions, WebRootDisabled}
+import org.finos.vuu.net.auth.LoginTokenService
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
 import java.util.concurrent.atomic.AtomicBoolean
-import scala.concurrent.ExecutionContext
 
 class AuthNServerTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
   Feature("check we can add rest services and call them") {
 
-    ignore("validate the authn service") {
-
-      implicit val ctx = ExecutionContext.global
-
-      //JmxInfra.enableJmx()
+    Scenario("validate the authn service") {
 
       implicit val metrics: MetricsProvider = new MetricsProviderImpl
       implicit val clock: Clock = new DefaultClock
       implicit val lifecycle: LifecycleContainer = new LifecycleContainer
       implicit val tableDefContainer: TableDefContainer = new TableDefContainer(Map())
 
-      val store = new MemoryBackedVuiStateStore()
-      val loginTokenService: LoginTokenService = LoginTokenService()
+      val username = "Pikachu"
+      val password = "IChooseYou!"
+      val testUser = VuuUser(username)
+      val loginTokenService: LoginTokenService = LoginTokenService(testUser)
 
       lifecycle.autoShutdownHook()
 
-      val https = 10020
+      val http = 10020
       val ws = 10030
 
       val config = VuuServerConfig(
-        VuuHttp2ServerOptions()
-          .withWebRoot(AbsolutePathWebRoot("vuu/src/main/resources/www", directoryListings = true))
-          .withSsl(VuuSSLByCertAndKey("vuu/src/main/resources/certs/cert.pem", "vuu/src/main/resources/certs/key.pem"))
-          .withPort(https),
         VuuWebSocketOptions()
           .withUri("websocket")
           .withWsPort(ws),
         VuuSecurityOptions()
-          .withLoginTokenService(loginTokenService)
-      ).withModule(VuiStateModule(store))
-       .withModule(AuthNModule(loginTokenService))
+          .withLoginTokenService(loginTokenService),
+        VuuThreadingOptions(),
+        VuuClientConnectionOptions(),
+        VuuJoinTableProviderOptions(),
+        List(AuthNModule(loginTokenService, Option(Map(username -> password)))),
+        List.empty,
+        VuuHttp2ServerFactory(VuuHttp2ServerOptions()
+          .withPort(http))
+      )
 
       val viewServer = new VuuServer(config)
 
@@ -69,7 +67,7 @@ class AuthNServerTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
       Thread.sleep(5000)
 
-      val  wcoptions = new WebClientOptions()
+      val wcoptions = new WebClientOptions()
 
       wcoptions.setVerifyHost(false)
       wcoptions.setTrustAll(true)
@@ -80,18 +78,18 @@ class AuthNServerTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
       val isSuccess = new AtomicBoolean(false)
 
-      client.post(https, "127.0.0.1", "/api/authn")
-        .ssl(true)
+      client.post(http, "127.0.0.1", "/api/authn")
+        .ssl(false)
         .sendJsonObject(
           new JsonObject()
-            .put("user", "chris")
-            .put("password", "chris"))
-        .onSuccess( res => {
+            .put("username", username)
+            .put("password", password))
+        .onSuccess(res => {
           isSuccess.set(true)
           println("SUCCESS:" + res.statusCode() + " " + res.statusMessage() + " " + res.getHeader("vuu-auth-token"))
-        }).onFailure( res =>{
-        println("FAIL:" + res)
-      })
+        }).onFailure(res => {
+          println("FAIL:" + res)
+        })
 
       Async.waitTill(() => isSuccess.get())
     }

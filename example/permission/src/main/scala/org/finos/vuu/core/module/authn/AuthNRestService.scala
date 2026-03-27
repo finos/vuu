@@ -5,119 +5,59 @@ import io.vertx.core.http.Cookie
 import io.vertx.ext.web.RoutingContext
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.net.auth.{Authenticator, LoginTokenService}
-import org.finos.vuu.net.rest.RestService
+import org.finos.vuu.net.rest.{JsonEntityEncoder, RestContext, RestService, StringEncoder}
 
 import java.util.concurrent.TimeUnit
 import scala.util.{Failure, Success, Try}
 
-object VuuAuthCookie{
+object VuuAuthHeader{
   final val Name = "vuu-auth-token"
 }
 
-object VuuLoginPage{
+object VuuLoginPage {
   final val Path = "/public/index.html"
-}
-
-class LogoutRestService(val authenticator: Authenticator[_])(using clock: Clock) extends RestService with StrictLogging {
-  private final val service = "logout"
-
-  override def getServiceName: String = service
-  override def getUriGetAll: String = s"/api/$service"
-  override def getUriGet: String = s"/api/$service"
-  override def getUriPost: String = s"/api/$service"
-  override def getUriDelete: String = s"/api/$service"
-  override def getUriPut: String = s"/api/$service"
-
-  override def onGetAll(ctx: RoutingContext): Unit = reply404(ctx)
-
-  override def onPost(ctx: RoutingContext): Unit = {
-    val cookie = ctx.request().getCookie(VuuAuthCookie.Name)
-
-    if(cookie == null){
-      logger.warn("Asked to logout, but no cookie for auth token found")
-      ctx.redirect("")
-    }
-
-    ctx.response().removeCookie(VuuAuthCookie.Name)
-
-  }
-
-  override def onGet(ctx: RoutingContext): Unit = ???
-
-  override def onPut(ctx: RoutingContext): Unit = reply404(ctx)
-
-  override def onDelete(ctx: RoutingContext): Unit = reply404(ctx)
 }
 
 class AuthNRestService(val loginTokenService: LoginTokenService, val users: Option[Map[String, String]])
                       (using clock: Clock) extends RestService with StrictLogging {
 
   private final val service = "authn"
-  private final val authenticator: Authenticator[(String,String)] = AuthenticatorWithUserList(loginTokenService, users)
-
+  private final val uri = s"/api/$service"
+  private final val authenticator: Authenticator[LoginRequest] = AuthenticatorWithUserList(loginTokenService, users)
+  private val loginRequestEncoder = JsonEntityEncoder.forClass(classOf[LoginRequest])
+  private val loginResponseEncoder = JsonEntityEncoder.forClass(classOf[LoginResponse])
+  
   override def getServiceName: String = service
 
-  override def getUriGetAll: String = s"/api/$service"
+  override def getUriGetAll: String = uri
 
-  override def getUriGet: String = s"/api/$service"
+  override def getUriGet: String = uri
 
-  override def getUriPost: String = s"/api/$service"
+  override def getUriPost: String = uri
 
-  override def getUriDelete: String = s"/api/$service"
+  override def getUriDelete: String = uri
 
-  override def getUriPut: String = s"/api/$service"
+  override def getUriPut: String = uri
 
-  override def onGetAll(ctx: RoutingContext): Unit = {
-    reply404(ctx)
-  }
-
-  override def onPost(ctx: RoutingContext): Unit = {
-    val (username, password) = Try(ctx.body().asJsonObject()) match {
-      case Success(json) =>
-        val jsonUser = json.getString("username")
-        val jsonPassword = json.getString("password")
-        logger.info(s"Got credentials for ${jsonUser} from JSON")
-        logger.debug(s"Got username ${jsonUser} and password ${jsonPassword} from JSON")
-        (jsonUser, jsonPassword)
-
+  override def onPost(ctx: RestContext): Unit = {
+    val loginRequest = ctx.bodyAs(loginRequestEncoder)
+    loginRequest match {
+      case Success(value) =>
+        authenticator.authenticate(value) match {
+          case Right(token) =>
+            val response = LoginResponse(value.username, token)
+            ctx.respond(200, response, loginResponseEncoder, Map(VuuAuthHeader.Name -> token))
+          case Left(value) =>
+            ctx.respond(401, value, StringEncoder)
+        }
       case Failure(exception) =>
-        val fmrUser     = ctx.body().asString().split("&").find(_.contains("user")).get.replace("user=", "")
-        val fmrPassword = ctx.body().asString().split("&").find(_.contains("password")).get.replace("password=", "")
-        logger.info(s"Got credentials for ${fmrUser} from html form")
-        logger.debug(s"Got username ${fmrUser} and password ${fmrPassword} from html form")
-        (fmrUser, fmrPassword)
-    }
-
-    if (username == null || password == null ) {
-      reply404(ctx)
-    } else {
-      authenticator.authenticate((username,password)) match {
-        case Right(value) =>
-          ctx.response()
-            .addCookie(Cookie.cookie(VuuAuthCookie.Name, value).setMaxAge(TimeUnit.MINUTES.toSeconds(240)))
-            .putHeader(VuuAuthCookie.Name, value)
-            .setStatusCode(201)
-            .end()
-        case Left(value) =>
-          ctx.response()
-            .setStatusCode(403)
-            .end()
-      }
+        logger.error("Failed to convert body into login request", exception)
+        ctx.respond(401)
     }
   }
-
-  override def onGet(ctx: RoutingContext): Unit = {
-    ctx.response().write("<html><body><form action=\"/api/authn\" method=\"POST\">" +
-                         "<input type=\"text\" name=\"user\"/><input type=\"password\" name=\"password\"/><input type=\"submit\"/></form></body></html>")
-    ctx.response().end()
-  }
-
-  override def onPut(ctx: RoutingContext): Unit = {
-    reply404(ctx)
-  }
-
-  override def onDelete(ctx: RoutingContext): Unit = {
-    reply404(ctx)
-  }
-
 }
+
+case class LoginRequest(username: String, password: String) { }
+
+case class LoginResponse(username: String, token: String) { }
+

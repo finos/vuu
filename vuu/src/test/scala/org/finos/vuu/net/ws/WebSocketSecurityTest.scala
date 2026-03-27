@@ -1,25 +1,26 @@
 package org.finos.vuu.net.ws;
 
 import com.typesafe.scalalogging.StrictLogging
-import io.vertx.core.Vertx
-import io.vertx.core.http.HttpMethod
-import io.vertx.ext.web.client.{WebClient, WebClientOptions}
-import org.awaitility.Awaitility.await
-import org.awaitility.scala.AwaitilitySupport
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.*
-import org.finos.vuu.net.http.VuuHttp2ServerOptions
+import org.scalatest.concurrent.Eventually.eventually
+import org.scalatest.concurrent.Futures.timeout
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.time.{Seconds, Span}
 
-import java.time.Duration
-import java.util.concurrent.CountDownLatch
+import java.net.URI
+import java.net.http.HttpRequest.BodyPublishers
+import java.net.http.HttpResponse.BodyHandlers
+import java.net.http.{HttpClient, HttpRequest}
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
 import java.util.concurrent.atomic.AtomicInteger
-import scala.jdk.CollectionConverters.{IterableHasAsScala, SetHasAsJava}
+import javax.net.ssl.{SSLContext, SSLParameters, TrustManager, X509TrustManager}
 
-class WebSocketSecurityTest extends AnyFeatureSpec with Matchers with AwaitilitySupport with StrictLogging {
+class WebSocketSecurityTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
   private val pkcsPath: String = getClass.getClassLoader.getResource("certs/certificate.p12").getPath
   private val portCounter = AtomicInteger(31820)
@@ -38,9 +39,6 @@ class WebSocketSecurityTest extends AnyFeatureSpec with Matchers with Awaitility
       val wsPort = portCounter.getAndIncrement()
 
       val config = VuuServerConfig(
-        VuuHttp2ServerOptions()
-          .withSsl(VuuSSLDisabled())
-          .withPort(0),
         VuuWebSocketOptions()
           .withUri("websocket")
           .withSsl(
@@ -53,24 +51,22 @@ class WebSocketSecurityTest extends AnyFeatureSpec with Matchers with Awaitility
       lifeCycle.start()
 
       val webClient = createWebClient()
+      val methods = Array("GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS")
 
-      for (method <- IterableHasAsScala(HttpMethod.values()).asScala) {
+      for (method <- methods) {
 
-        val countDownLatch = CountDownLatch(1)
-        val status: AtomicInteger = AtomicInteger(400)
+        val bodyPublisher = method match {
+          case "POST" | "PUT" | "PATCH" => BodyPublishers.ofString("{}")
+          case _ => BodyPublishers.noBody()
+        }
 
-        val response = webClient.request(method, config.wsOptions.wsPort, "localhost", "/websocket").ssl(true)
-          .send()
-          .onSuccess(res => {
-            status.set(res.statusCode())
-            countDownLatch.countDown()
-          })
-          .onFailure(throwable => {
-            countDownLatch.countDown()
-          })
+        val request = HttpRequest.newBuilder()
+          .uri(URI.create(s"https://localhost:$wsPort/websocket"))
+          .method(method, bodyPublisher)
+          .build()
 
-        countDownLatch.await()
-        status.get() should equal(400)
+        val response = webClient.send(request, BodyHandlers.ofString())
+        response.statusCode() shouldEqual 400
       }
 
       stopLifeCycle()
@@ -87,9 +83,6 @@ class WebSocketSecurityTest extends AnyFeatureSpec with Matchers with Awaitility
       val wsPort = portCounter.getAndIncrement()
 
       val config = VuuServerConfig(
-        VuuHttp2ServerOptions()
-          .withSsl(VuuSSLDisabled())
-          .withPort(0),
         VuuWebSocketOptions()
           .withUri("websocket")
           .withSsl(
@@ -102,37 +95,40 @@ class WebSocketSecurityTest extends AnyFeatureSpec with Matchers with Awaitility
       val webSocketClient = createClient(config, viewServer)
       lifeCycle.start()
 
-      await atMost {
-        Duration.ofSeconds(5)
-      } until {
-        webSocketClient.canWrite
+      eventually(timeout(Span(5, Seconds))) {
+        webSocketClient.canWrite shouldBe true
       }
 
       webSocketClient.write("{\n  \"roles\": [\"user\", {\"$type\":\"system\"}]\n}")
 
-      await atMost {
-        Duration.ofSeconds(5)
-      } until {
-        !webSocketClient.canWrite
+      eventually(timeout(Span(5, Seconds))) {
+        webSocketClient.canWrite shouldBe false
       }
-
     }
     
   }
 
-  private def createWebClient(protocol: String = "TLSv1.3", cipher: String = "TLS_AES_256_GCM_SHA384"): WebClient = {
-    val webClientOptions = WebClientOptions()
-      .setVerifyHost(false)
-      .setTrustAll(true)
-      .setEnabledSecureTransportProtocols(Set(protocol).asJava)
-      .addEnabledCipherSuite(cipher)
-    WebClient.create(Vertx.vertx(), webClientOptions)
+  private def createWebClient(protocol: String = "TLSv1.3", cipher: String = "TLS_AES_256_GCM_SHA384"): HttpClient = {
+    val trustAllCerts = Array[TrustManager](new X509TrustManager() {
+      def getAcceptedIssuers: Array[X509Certificate] = null
+      def checkClientTrusted(certs: Array[X509Certificate], authType: String): Unit = { }
+      def checkServerTrusted(certs: Array[X509Certificate], authType: String): Unit = { }
+    })
+    
+    val sslContext = SSLContext.getInstance(protocol)
+    sslContext.init(null, trustAllCerts, new SecureRandom)
+
+    val sslParams = new SSLParameters
+    sslParams.setProtocols(Array[String](protocol))
+    sslParams.setCipherSuites(Array[String](cipher))
+    sslParams.setEndpointIdentificationAlgorithm("")
+    HttpClient.newBuilder.sslContext(sslContext).sslParameters(sslParams).build
   }
 
   private def createClient(config: VuuServerConfig, viewServer: VuuServer)
                           (implicit lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider): WebSocketClient = {
     val protocol = config.wsOptions.sslOptions match {
-      case VuuSSLDisabled() => "ws"
+      case VuuSSLDisabled => "ws"
       case _ => "wss"
     }
     val client = new WebSocketClient(s"$protocol://localhost:${config.wsOptions.wsPort}/websocket", config.wsOptions.wsPort)

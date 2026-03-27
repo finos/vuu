@@ -1,23 +1,23 @@
 package org.finos.vuu.wsapi.helpers
 
-import org.awaitility.Awaitility.await
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.*
 import org.finos.vuu.core.module.{TableDefContainer, ViewServerModule}
-import org.finos.vuu.net.http.{VuuHttp2ServerOptions, WebRootDisabled}
 import org.finos.vuu.net.json.JsonVsSerializer
 import org.finos.vuu.net.ws.WebSocketClient
 import org.finos.vuu.net.{ViewServerClient, WebSocketViewServerClient}
+import org.scalatest.concurrent.Eventually
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.time.{Seconds, Span}
 
 import java.security.SecureRandom
-import java.time.Duration
 
 class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
                   using val timeProvider: Clock,
                   val lifecycle: LifecycleContainer,
-                  val tableDefContainer: TableDefContainer){
+                  val tableDefContainer: TableDefContainer) extends Eventually with Matchers {
 
   def startServerAndClient(): (TestVuuClient, VuuServerConfig) = {
 
@@ -33,10 +33,6 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
     val module: ViewServerModule = moduleFactoryFunc()
         
     val config = VuuServerConfig(
-      VuuHttp2ServerOptions()
-        .withWebRoot(WebRootDisabled())
-        .withSslDisabled()
-        .withPort(http),
       VuuWebSocketOptions()
         .withBindAddress("0.0.0.0")
         .withUri("websocket")
@@ -61,10 +57,8 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
     //lifecycle registration is done in constructor of service classes, so sequence of create is important
     lifecycle.start()
 
-    await atMost {
-      Duration.ofSeconds(1)
-    } until {
-      () => vuuClient.isConnected
+    eventually(timeout(Span(1, Seconds))) {
+      vuuClient.isConnected shouldBe true
     }
 
     (vuuClient, config)

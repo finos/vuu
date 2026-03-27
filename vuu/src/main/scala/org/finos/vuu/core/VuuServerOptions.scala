@@ -2,8 +2,13 @@ package org.finos.vuu.core
 
 import org.finos.vuu.core.module.ViewServerModule
 import org.finos.vuu.net.auth.LoginTokenService
-import org.finos.vuu.net.http.{VuuHttp2ServerOptions, VuuSecurityOptions}
+import org.finos.vuu.net.http.{HttpServerFactory, NoHttpServerFactory}
 import org.finos.vuu.plugin.Plugin
+
+trait VuuSecurityOptions {
+  def loginTokenService: LoginTokenService
+  def withLoginTokenService(tokenValidator: LoginTokenService): VuuSecurityOptions
+}
 
 object VuuSecurityOptions{
   def apply(): VuuSecurityOptions = {
@@ -14,8 +19,8 @@ object VuuSecurityOptions{
 object VuuWebSocketOptions {
   def apply(): VuuWebSocketOptions = {
     VuuWebSocketOptionsImpl(wsPort = 8090, uri = "/websocket", bindAddress = "0.0.0.0",
-      sslOptions = VuuSSLDisabled(), compressionEnabled = true, nativeTransportEnabled = true,
-      maxSessionsPerUser = 10
+      sslOptions = VuuSSLDisabled, compressionEnabled = true, nativeTransportEnabled = true,
+      maxSessionsPerUser = 1
     )
   }
 }
@@ -52,7 +57,7 @@ object VuuSSLCipherSuiteOptions {
 }
 
 sealed trait VuuSSLOptions
-case class VuuSSLDisabled() extends VuuSSLOptions
+object VuuSSLDisabled extends VuuSSLOptions
 case class VuuSSLByCertAndKey(certPath: String, keyPath: String, passPhrase: Option[String] = None, cipherSuite: VuuSSLCipherSuiteOptions = VuuSSLCipherSuiteOptions()) extends VuuSSLOptions
 case class VuuSSLByPKCS(pkcsPath: String, pkcsPassword: String, cipherSuite: VuuSSLCipherSuiteOptions = VuuSSLCipherSuiteOptions()) extends VuuSSLOptions
 
@@ -95,10 +100,6 @@ trait VuuJoinTableProviderOptions {
   def withMaxQueueDepth(maxQueueDepth: Int): VuuJoinTableProviderOptions
 }
 
-case class VuuSecurityOptionsImpl(loginTokenService: LoginTokenService) extends VuuSecurityOptions{
-  override def withLoginTokenService(loginTokenService: LoginTokenService): VuuSecurityOptions = this.copy(loginTokenService = loginTokenService)
-}
-
 private case class VuuWebSocketOptionsImpl(wsPort: Int,
                                    uri: String,
                                    bindAddress: String,
@@ -110,7 +111,7 @@ private case class VuuWebSocketOptionsImpl(wsPort: Int,
   override def withWsPort(port: Int): VuuWebSocketOptions = this.copy(wsPort = port)
   override def withUri(uri: String): VuuWebSocketOptions = this.copy(uri = uri)
   override def withBindAddress(address: String): VuuWebSocketOptions = this.copy(bindAddress = bindAddress)
-  override def withSslDisabled(): VuuWebSocketOptions = this.withSsl(VuuSSLDisabled())
+  override def withSslDisabled(): VuuWebSocketOptions = this.withSsl(VuuSSLDisabled)
   override def withSsl(sslOptions: VuuSSLOptions): VuuWebSocketOptions =
     this.copy(sslOptions = sslOptions)
   override def withCompression(compressionEnabled: Boolean): VuuWebSocketOptions = 
@@ -144,18 +145,25 @@ case class VuuJoinProviderOptionsImpl(batchSize: Int, maxQueueSize: Int) extends
   override def withMaxQueueDepth(maxQueueSize: Int): VuuJoinTableProviderOptions = this.copy(maxQueueSize = maxQueueSize)
 }
 
-case class VuuServerConfig(httpOptions: VuuHttp2ServerOptions = VuuHttp2ServerOptions(),
-                           wsOptions: VuuWebSocketOptions = VuuWebSocketOptions(),
+case class VuuSecurityOptionsImpl(loginTokenService: LoginTokenService) extends VuuSecurityOptions{
+  override def withLoginTokenService(loginTokenService: LoginTokenService): VuuSecurityOptions =
+    this.copy(loginTokenService = loginTokenService)
+}
+
+case class VuuServerConfig(wsOptions: VuuWebSocketOptions = VuuWebSocketOptions(),
                            security: VuuSecurityOptions = VuuSecurityOptions(),
                            threading: VuuThreadingOptions = VuuThreadingOptions(),
                            clientConnection: VuuClientConnectionOptions = VuuClientConnectionOptions(),
                            joinProvider: VuuJoinTableProviderOptions = VuuJoinTableProviderOptions(),
                            modules: List[ViewServerModule] = List(),
-                           plugins: List[Plugin] = List()) {
+                           plugins: List[Plugin] = List(),
+                           httpServerFactory: HttpServerFactory = NoHttpServerFactory) {
   def withModule(module: ViewServerModule): VuuServerConfig = {
     this.copy(modules = modules ++ List(module))
   }
+
   def withPlugin(plugin: Plugin): VuuServerConfig = {
     this.copy(plugins = plugins ++ List(plugin))
   }
+
 }

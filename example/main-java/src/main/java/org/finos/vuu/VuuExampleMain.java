@@ -20,14 +20,12 @@ import org.finos.vuu.core.module.authn.AuthNModule;
 import org.finos.vuu.core.module.metrics.MetricsModule;
 import org.finos.vuu.core.module.price.PriceModule;
 import org.finos.vuu.core.module.simul.SimulationModule;
-import org.finos.vuu.core.module.vui.VuiStateModule;
+import org.finos.vuu.http2.server.VuuHttp2ServerFactory;
+import org.finos.vuu.http2.server.config.AbsolutePathWebRoot;
+import org.finos.vuu.http2.server.config.VuuHttp2ServerOptions;
 import org.finos.vuu.module.JavaExampleModule;
 import org.finos.vuu.net.auth.LoginTokenService;
-import org.finos.vuu.net.http.AbsolutePathWebRoot;
-import org.finos.vuu.net.http.VuuHttp2ServerOptions;
 import org.finos.vuu.plugin.Plugin;
-import org.finos.vuu.state.MemoryBackedVuiStateStore;
-import org.finos.vuu.state.VuiStateStore;
 import scala.Option;
 
 /**
@@ -45,8 +43,6 @@ public class VuuExampleMain {
         final LifecycleContainer lifecycle = new LifecycleContainer(clock);
         final TableDefContainer tableDefContainer = new TableDefContainer();
 
-        final VuiStateStore store = new MemoryBackedVuiStateStore(100);
-
         lifecycle.autoShutdownHook();
 
         final LoginTokenService loginTokenService = LoginTokenService.apply();
@@ -56,10 +52,6 @@ public class VuuExampleMain {
         final String keyPath = "example/main/src/main/resources/certs/key.pem";
 
         final VuuServerConfig config = new VuuServerConfig(
-                VuuHttp2ServerOptions.apply()
-                        .withWebRoot(new AbsolutePathWebRoot(webRoot, true))
-                        .withSsl(new VuuSSLByCertAndKey(certPath, keyPath, Option.empty(), VuuSSLCipherSuiteOptions.apply()))
-                        .withPort(8443),
                 VuuWebSocketOptions.apply()
                         .withUri("websocket")
                         .withWsPort(8090)
@@ -74,11 +66,14 @@ public class VuuExampleMain {
                         .withHeartbeatEnabled(),
                 VuuJoinTableProviderOptions.apply(),
                 new scala.collection.mutable.ListBuffer<ViewServerModule>().toList(),
-                new scala.collection.mutable.ListBuffer<Plugin>().toList()
-        ).withModule(PriceModule.apply(clock, lifecycle, tableDefContainer))
+                new scala.collection.mutable.ListBuffer<Plugin>().toList(),
+                VuuHttp2ServerFactory.apply(VuuHttp2ServerOptions.apply()
+                        .withWebRoot(new AbsolutePathWebRoot(webRoot, true))
+                        .withSsl(new VuuSSLByCertAndKey(certPath, keyPath, Option.empty(), VuuSSLCipherSuiteOptions.apply()))
+                        .withPort(8443))
+                ).withModule(PriceModule.apply(clock, lifecycle, tableDefContainer))
          .withModule(SimulationModule.apply(clock, lifecycle, tableDefContainer))
          .withModule(MetricsModule.apply(clock, lifecycle, metrics, tableDefContainer))
-         .withModule(VuiStateModule.apply(store, clock, lifecycle, tableDefContainer))
          .withModule(AuthNModule.apply(loginTokenService, Option.empty(), clock, lifecycle, tableDefContainer))
          //the modules above are scala, the modules below are java...
          .withModule(new JavaExampleModule().create(tableDefContainer, clock))       ;
