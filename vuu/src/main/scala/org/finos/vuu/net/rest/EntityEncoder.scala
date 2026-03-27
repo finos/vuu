@@ -1,6 +1,7 @@
 package org.finos.vuu.net.rest
 
 import com.fasterxml.jackson.core.`type`.TypeReference
+import com.fasterxml.jackson.databind.json.JsonMapper
 import org.finos.toolbox.json.JsonUtil
 
 import java.io.InputStream
@@ -54,23 +55,21 @@ object JsonEntityEncoder {
   
   def forClass[T](clazz: Class[T]): EntityEncoder[T] = {
     val encoder = classRegistry.computeIfAbsent(clazz, (c: Class[_]) => {
-      new JsonEntityEncoder[T](is => mapper.readValue(is, clazz))
+      new JsonEntityEncoder[T](mapper, (mapper, is) => mapper.readValue(is, clazz))
     })
     encoder.asInstanceOf[EntityEncoder[T]]
   }
 
   def forType[T](reference: TypeReference[T]): EntityEncoder[T] = {
     val encoder = typeRegistry.computeIfAbsent(reference.getType, (c: Type) => {
-      new JsonEntityEncoder[T](is => mapper.readValue(is, reference))
+      new JsonEntityEncoder[T](mapper, (mapper, is) => mapper.readValue(is, reference))
     })
     encoder.asInstanceOf[EntityEncoder[T]]
   }
 
 }
 
-private case class JsonEntityEncoder[T](decodeFunc: InputStream => T) extends EntityEncoder[T] {
-
-  private val mapper = JsonUtil.createMapper()
+private case class JsonEntityEncoder[T](mapper: JsonMapper, decodeFunc: (JsonMapper, InputStream) => T) extends EntityEncoder[T] {
 
   override def encode(value: T): Array[Byte] = {
     if (value == null) {
@@ -82,7 +81,7 @@ private case class JsonEntityEncoder[T](decodeFunc: InputStream => T) extends En
 
   override def decode(is: InputStream): T = {
     try {
-      decodeFunc.apply(is)
+      decodeFunc.apply(mapper, is)
     } finally {
       if (is != null) is.close()
     }
