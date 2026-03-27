@@ -1,5 +1,7 @@
 package org.finos.vuu.net.rest
 
+import scala.util.Try
+
 trait RestContext {
   def method: String
 
@@ -17,7 +19,7 @@ trait RestContext {
 
   def bodyInputStream: java.io.InputStream
 
-  def bodyAs[T](entityEncoder: EntityEncoder[T]): Option[T]
+  def bodyAs[T](entityEncoder: EntityEncoder[T]): Try[T]
 
   def formParams: Map[String, Seq[String]]
 

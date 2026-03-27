@@ -6,6 +6,7 @@ import org.finos.vuu.net.rest.{AttributeKey, AttributeMap, Cookie, EntityEncoder
 
 import java.io.ByteArrayInputStream
 import scala.jdk.CollectionConverters.*
+import scala.util.Try
 
 class VertxRestContext(val underlying: RoutingContext) extends RestContext with StrictLogging {
 
@@ -39,13 +40,9 @@ class VertxRestContext(val underlying: RoutingContext) extends RestContext with 
 
   override def bodyInputStream: java.io.InputStream = new ByteArrayInputStream(bodyBytes)
 
-  override def bodyAs[T](entityEncoder: EntityEncoder[T]): Option[T] = {
-    try {
-      Some(entityEncoder.decode(bodyInputStream))
-    } catch {
-      case e: Exception => 
-        logger.error("Failed to get body from input stream", e)
-        None
+  override def bodyAs[T](entityEncoder: EntityEncoder[T]): Try[T] = {
+    Try {
+      entityEncoder.decode(bodyInputStream)
     }
   }
 

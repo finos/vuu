@@ -41,17 +41,20 @@ class AuthNRestService(val loginTokenService: LoginTokenService, val users: Opti
 
   override def onPost(ctx: RestContext): Unit = {
     val loginRequest = ctx.bodyAs(loginRequestEncoder)
-    if (loginRequest.isEmpty) ctx.respond(401)
-
-    authenticator.authenticate(loginRequest.get) match {
-      case Right(token) =>
-        val response = LoginResponse(loginRequest.get.username, token)
-        ctx.respond(200, response, loginResponseEncoder, Map(VuuAuthHeader.Name -> token))
-      case Left(value) => 
-        ctx.respond(401, value, StringEncoder)
-    }    
+    loginRequest match {
+      case Success(value) =>
+        authenticator.authenticate(value) match {
+          case Right(token) =>
+            val response = LoginResponse(value.username, token)
+            ctx.respond(200, response, loginResponseEncoder, Map(VuuAuthHeader.Name -> token))
+          case Left(value) =>
+            ctx.respond(401, value, StringEncoder)
+        }
+      case Failure(exception) =>
+        logger.error("Failed to convert body into login request", exception)
+        ctx.respond(401)
+    }
   }
-
 }
 
 case class LoginRequest(username: String, password: String) { }
