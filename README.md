@@ -44,12 +44,10 @@ The second step (`npm run build:app`) builds the sample application. Application
 ## Installation - Server
 
 #### Prerequisites
-See the [Development Docs](https://vuu.finos.org/desktop/docs/getting_started/developing) for required Java versions and dependencies.
-
-The example client code has already been installed and is ready in `deployed_apps`
+* **Java 17+**
+* The example client code has already been installed and is ready in `deployed_apps`
 
 #### Linux & macOS
-The steps below build the core and run the sample application, which provides the necessary HTTP endpoints to complement the Vuu WebSocket server.
 
 ```sh
 # From the root folder, build both the core project and the examples
@@ -64,7 +62,16 @@ cd example/main
 
 #### Windows
 
-This should be the same as Linux & macOS just with windows adjusted paths
+```sh
+# From the root folder, build both the core project and the examples
+mvnw.cmd install -DskipTests
+
+# Navigate to the reference implementation in the examples folder
+cd example\main 
+
+# Start the example server (with HTTP REST endpoints and Vuu WebSocket)
+..\..\mvnw.cmd exec:exec
+```
 
 #### IntelliJ
 
@@ -82,7 +89,7 @@ Once launched using one of the methods above, the demo app can be accessed at <h
 
 ---
 
-## Running the Vuu Sample UI Independently 
+## Advanced Installation
 
 While serving the Sample UI application directly from the Vuu server is convenient for initial testing, real-world deployments typically decouple the UI from the server.
 
