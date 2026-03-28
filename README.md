@@ -26,7 +26,9 @@ To establish a complete client session (e.g., from a UI), you need an external H
 The UI scripts all run from the vuu/vuu-ui directory.
 
 ```sh
-#from top-level vuu repo (not vuu child directory in repo)
+# Clone the repository
+git clone [https://github.com/finos/vuu.git](https://github.com/finos/vuu.git)
+
 cd vuu-ui
 npm install
 npm run build
@@ -50,10 +52,7 @@ The example client code has already been installed and is ready in `deployed_app
 The steps below build the core and run the sample application, which provides the necessary HTTP endpoints to complement the Vuu WebSocket server.
 
 ```sh
-# Clone the repository
-git clone [https://github.com/finos/vuu.git](https://github.com/finos/vuu.git)
-
-# Build both the core project and the examples
+# From the root folder, build both the core project and the examples
 ./mvnw install -DskipTests
 
 # Navigate to the reference implementation in the examples folder
