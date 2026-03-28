@@ -82,21 +82,46 @@ Once launched using one of the methods above, the demo app can be accessed at <h
 
 ---
 
-## Installation - Alternative
+## Running the Vuu Sample UI Independently 
 
-While it is initially very convenient to be able to serve the Sample UI application directly from the Vuu server, in real-world scenarios the Vuu server is likely to be deployed independently of any UI. 
+While serving the Sample UI application directly from the Vuu server is convenient for initial testing, real-world deployments typically decouple the UI from the server.
 
-The demo can also be run in such a mode. The sample application has a modular architecture. The core functionality is driven by metadata provided by the connected Vuu server. This means it can be useful to run the sample application in a more realistic deployment setup or even when a real-world Vuu server implementation is under development. The sample application can be used to display and query the data tables from a running Vuu server instance. (This is only possible of course, with a vuu server instance that is not locked down for production with a full authentication solution).
+The Sample UI is designed with a **modular, metadata-driven architecture**. This allows the client to connect to any active Vuu server instance, making it an ideal setup for testing new server implementations or mimicking production environments.
 
-To run the sample application this way, first deploy and start a Vuu server, then run the client build as described above. The Vuu server can be on a different machine , it will not be used to serve the client UI code.
+### Prerequisites
 
-Next use the following script to serve the sample UI application, it assumes the app is deployed at `./deployed_apps`. For the purposes or this illustration, we assume that the Vuu server is running on the local machine, on the default ports, though this is **not** required.
+Before running the UI in decoupled mode, ensure you have the following:
 
-```
+* **Active Vuu Server:** A running Vuu server instance (ensure it is not locked behind a production-grade authentication solution for this demo).
+* **Built Client:** The UI must be built and located at `./deployed_apps`.
+* **Network Access:** The Vuu server can be on a separate machine; it is not required to serve the client UI code.
+
+### How to Launch
+
+Execute the following command to serve the application locally and target your Vuu server.
+
+> **Note:** This example assumes the Vuu server is running on `localhost` using default ports. Adjust the URLs accordingly for remote deployments.
+
+```bash
 npm run launch:app -- --authurl https://localhost:8443/api --wsurl wss://localhost:8090/websocket
 ```
 
-A Login screen will be displayed. The `authurl` will be used to _sign in_ to the Vuu server with the credentials entered and will yield an auth token. The auth token will then be used to open a websocket connection at `wsurl`. This works with the default example implementation of the Vuu server, because it performs no checks on the login credentials. The UI application is served by a local http server which proxies the auth request to the Vuu server to avoid CORS issues. Cross domain websocket requests are not subject to `same domain` restrictions.
+### Authentication & Connection Flow
+The application follows a standard handshake process to establish data streams:
+
+1) Sign-In: A login screen will be displayed upon launch.
+2) Auth Request: The credentials entered are sent to the --authurl.
+3) Token Exchange: The Vuu server (using the default example implementation) validates the request and yields an Auth Token.
+4) WebSocket Handshake: This token is then used to authorize and open a persistent websocket connection at the --wsurl.
+
+### Technical Considerations
+#### CORS and Proxying
+To avoid "Same-Origin Policy" (CORS) issues during the authentication phase, the local HTTP server serving the UI proxies the auth request to the Vuu server.
+
+#### WebSocket Connectivity
+Cross-domain WebSocket requests are not subject to the same same-origin restrictions as standard HTTP requests. Therefore, the UI can establish a direct connection to the Vuu server's websocket port without additional proxy configuration.
+
+---
 
 ## Usage example
 
