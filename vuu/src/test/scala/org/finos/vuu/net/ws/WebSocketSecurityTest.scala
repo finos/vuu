@@ -71,8 +71,13 @@ class WebSocketSecurityTest extends AnyFeatureSpec with Matchers with StrictLogg
           .method(method, bodyPublisher)
           .build()
 
-        val response = webClient.send(request, BodyHandlers.ofString())
-        response.statusCode() shouldEqual 400
+        try {
+          val response = webClient.send(request, BodyHandlers.ofString())
+          response.statusCode() should (equal(400) or equal(403) or equal(405))
+        } catch {
+          case e: java.io.IOException =>
+            e.getMessage should include("received no bytes")
+        }
       }
 
       stopLifeCycle()

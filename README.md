@@ -1,78 +1,34 @@
 [![FINOS - Incubating](https://cdn.jsdelivr.net/gh/finos/contrib-toolbox@master/images/badge-incubating.svg)](https://community.finos.org/docs/governance/Software-Projects/stages/incubating)
 
-# Vuu
+# Vuu: The Realtime View Server
 
-## The Realtime View Server
+Welcome to Vuu. For full documentation, architecture diagrams, and deep dives, visit our documentation site:
+👉 **[vuu.finos.org](https://vuu.finos.org/desktop/docs/introduction/intro)**
 
-Welcome. We maintain a docusaurus site containing all the details of the project. Why not get started there:
+---
 
-<https://vuu.finos.org/desktop/docs/introduction/intro>
+## Overview
 
-This repo contains the source code for the Vuu server as well as a suite of UI library packages. You can use some or all of these UI packages when building a UI application that consumes data from a Vuu server. Additionally, there is a sample application with both a Vuu server implementation and a UI. The instructions below provide guidance for building and starting both.
+This repository contains the source code for the **Vuu server** and a suite of **UI library packages**.
 
-Note: the Vuu server includes an http server, this hosts both a websocket endpoint and a https rest endpoint, both of which are required to establish a client Vuu session (e.g. from a UI).
-When the build for the UI sample application is run, the static files created by the build are written to the `deployed_apps` folder. As a convenience for runnng the sample application, the Vuu server can also serve these static files. This is handy for a demo or when experimenting with the code, but is not intended for production use. By default, the Vuu server sample implementation **is** configured to serve these files from the `deployed_apps` folder (the `webRoot` property is used for this). This means that out of the box, the sample application can be run buy following the instructions below.
-The UI build should be run before starting up the Vuu server, as the server is configured to use the `deployed_apps` folder as a webRoot, and that folder is only created when the UI build runs.
+### ⚠️ Architectural Update: Networking & Hosting
+We have recently decoupled the web hosting layer from the core Vuu engine to provide greater deployment flexibility:
 
-## Installation - Server
+* **WebSocket Layer:** This remains **built-in** to the Vuu server to handle high-performance, real-time data streaming.
+* **HTTP Server:** Vuu **no longer** includes a built-in HTTP server for REST endpoints or static file hosting.
 
-### Vuu Server
+To establish a complete client session (e.g., from a UI), you need an external HTTP layer to supplement the Vuu WebSocket service. For a quick-start experience, we provide a **reference implementation using Vert.x** in the `examples/http2-server` folder.
 
-#### Prerequisites
-
-See the [Docs](https://vuu.finos.org/desktop/docs/getting_started/developing) for Java versions and dependencies you need.
-
-#### OS X & Linux
-
-```sh
-#In your favourite code directory...
-git clone https://github.com/finos/vuu.git
-#cd into the repository
-cd vuu
-#run the maven compile step
-mvn install
-#cd into vuu, child in repo
-cd example/main
-#The server can now be started on your machine
-mvn exec:exec
-```
-
-#### Windows
-
-```sh
-this should be the same as Linux & macos just with windows adjusted paths
-```
-
-#### Configuring IntelliJ
-
-You may prefer to run the backend using the IntelliJ IDE, if so, you will need to follow the Client Installation above to ensure that the project has built correctly.
-
-1. Install the Scala plugin: file -> settings -> plugins
-2. Set project SDK version to 17: file -> project structure -> select an SDK -> require version 17
-3. Enable 'Use plugin registry': file -> settings -> build, execution, deployment -> Maven
-4. Open Maven tab on the right and click install on vuu-parent -> lifecycle -> install
-5. In the terminal, navigate to
-
-```sh
-vuu-ui/sample-apps/app-vuu-example
-```
-
-6. Run
-
-```sh
-npm install
-npm run build
-```
-
-7. In IntelliJ, select 'SimulMain' config and click run
-8. If you get a 'certificate-unknown' error, set 'Allow invalid certificates for resources loaded from localhost' to 'Enabled' in your chrome settings
+---
 
 ## Installation - Client
 
 The UI scripts all run from the vuu/vuu-ui directory.
 
 ```sh
-#from top-level vuu repo (not vuu child directory in repo)
+# Clone the repository
+git clone [https://github.com/finos/vuu.git](https://github.com/finos/vuu.git)
+
 cd vuu-ui
 npm install
 npm run build
@@ -80,23 +36,99 @@ npm run build:app
 ```
 
 The first build step (`npm run build`) builds the UI library packages, the packages are written to the `dist` folder.
+
 The second step (`npm run build:app`) builds the sample application. Application bundles are written to `deployed_apps`. The UI library packages are dependencies of the application.
 
-You can now open the demo app in your browser at <https://localhost:8443/index.html>
+---
 
-## Alternative demo configuration - build,deploy and run the Vuu server and Sample UI application independently.
+## Installation - Server
 
-While it is initially very convenient to be able to serve the Sample UI application directly from the Vuu server, in real-world scenarios the Vuu server is likely to be deployed independently of any UI. The demo can also be run in such a mode. The sample application has a modular architecture. The core functionality is driven by metadata provided by the connected Vuu server. This means it can be useful to run the sample application in a more realistic deployment setup or even when a real-world Vuu server implementation is under development. The sample application can be used to display and query the data tables from a running Vuu server instance. (This is only possible of course, with a vuu server instance that is not locked down for production with a full authentication solution).
+#### Prerequisites
+* **Java 17+**
+* The example client code has already been installed and is ready in `deployed_apps`
 
-To run the sample application this way, first deploy and start a Vuu server, then run the client build as described above. The Vuu server can be on a different machine , it will not be used to serve the client UI code.
+#### Linux & macOS
 
-Next use the following script to serve the sample UI application, it assumes the app is deployed at `./deployed_apps`. For the purposes or this illustration, we assume that the Vuu server is running on the local machine, on the default ports, though this is **not** required.
+```sh
+# From the root folder, build both the core project and the examples
+./mvnw install -DskipTests
 
+# Navigate to the reference implementation in the examples folder
+cd example/main 
+
+# Start the example server (with HTTP REST endpoints and Vuu WebSocket)
+../../mvnw exec:exec
 ```
+
+#### Windows
+
+```sh
+# From the root folder, build both the core project and the examples
+mvnw.cmd install -DskipTests
+
+# Navigate to the reference implementation in the examples folder
+cd example\main 
+
+# Start the example server (with HTTP REST endpoints and Vuu WebSocket)
+..\..\mvnw.cmd exec:exec
+```
+
+#### IntelliJ
+
+You may prefer to run the backend using the IntelliJ IDE instead of from the command line.
+
+1. Install the Scala plugin: file -> settings -> plugins
+2. Set project SDK version to 17: file -> project structure -> select an SDK -> require version 17
+3. Enable 'Use plugin registry': file -> settings -> build, execution, deployment -> Maven
+4. Open Maven tab on the right and click install on vuu-parent -> lifecycle -> install
+5. In IntelliJ, select the 'SimulMain' run configuration config and click run.
+
+### Accessing the UI
+
+Once launched using one of the methods above, the demo app can be accessed at <https://localhost:8443/index.html>
+
+---
+
+## Advanced Installation
+
+While serving the Sample UI application directly from the Vuu server is convenient for initial testing, real-world deployments typically decouple the UI from the server.
+
+The Sample UI is designed with a **modular, metadata-driven architecture**. This allows the client to connect to any active Vuu server instance, making it an ideal setup for testing new server implementations or mimicking production environments.
+
+### Prerequisites
+
+Before running the UI in decoupled mode, ensure you have the following:
+
+* **Active Vuu Server:** A running Vuu server instance (ensure it is not locked behind a production-grade authentication solution for this demo).
+* **Built Client:** The UI must be built and located at `./deployed_apps`.
+* **Network Access:** The Vuu server can be on a separate machine; it is not required to serve the client UI code.
+
+### How to Launch
+
+Execute the following command to serve the application locally and target your Vuu server.
+
+> **Note:** This example assumes the Vuu server is running on `localhost` using default ports. Adjust the URLs accordingly for remote deployments.
+
+```bash
 npm run launch:app -- --authurl https://localhost:8443/api --wsurl wss://localhost:8090/websocket
 ```
 
-A Login screen will be displayed. The `authurl` will be used to _sign in_ to the Vuu server with the credentials entered and will yield an auth token. The auth token will then be used to open a websocket connection at `wsurl`. This works with the default example implementation of the Vuu server, because it performs no checks on the login credentials. The UI application is served by a local http server which proxies the auth request to the Vuu server to avoid CORS issues. Cross domain websocket requests are not subject to `same domain` restrictions.
+### Authentication & Connection Flow
+The application follows a standard handshake process to establish data streams:
+
+1) Sign-In: A login screen will be displayed upon launch.
+2) Auth Request: The credentials entered are sent to the --authurl.
+3) Token Exchange: The Vuu server (using the default example implementation) validates the request and yields an Auth Token.
+4) WebSocket Handshake: This token is then used to authorize and open a persistent websocket connection at the --wsurl.
+
+### Technical Considerations
+#### CORS and Proxying
+To avoid "Same-Origin Policy" (CORS) issues during the authentication phase, the local HTTP server serving the UI proxies the auth request to the Vuu server.
+
+#### WebSocket Connectivity
+Cross-domain WebSocket requests are not subject to the same same-origin restrictions as standard HTTP requests. Therefore, the UI can establish a direct connection to the Vuu server's websocket port without additional proxy configuration.
+
+---
 
 ## Usage example
 
