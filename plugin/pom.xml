@@ -12,7 +12,6 @@
     <name>${project.artifactId}</name>
 
     <modules>
-        <module>ignite-plugin</module>
         <module>virtualized-table-plugin</module>
     </modules>
 
