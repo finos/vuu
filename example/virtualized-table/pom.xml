@@ -24,12 +24,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.finos.vuu.plugin</groupId>
-            <artifactId>ignite-plugin</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala3-library_3</artifactId>
             <version>${scala.version}</version>

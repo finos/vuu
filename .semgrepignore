@@ -41,6 +41,4 @@ vuu-ui/tools/vuu-showcase/scripts/treeSourceFromFileSystem.ts
 vuu-ui/tools/vuu-showcase/src/showcase-utils.ts
 example/order/src/main/scala/org/finos/vuu/order/oms/impl/InMemOmsApi.scala
 example/virtualized-table/src/main/scala/org/finos/vuu/example/virtualtable/bigdatacache/FakeBigDataCache.scala
-example/apache-ignite/src/main/resources/certs/key.pem
-example/apache-ignite/src/main/resources/certs/cert.pem
 example/http2-server/src/test/resources/certs/key.pem
