@@ -110,11 +110,6 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
     }
   }
 
-  override def process(msg: RpcUpdate)(ctx: RequestContext): Option[ViewServerMessage] = {
-    //TODO This is way too dangerous to leave enabled for now.
-    vsMsg(RpcReject(msg.table, msg.key, "Feature disabled"))(ctx)
-  }
-
   override def process(msg: HeartBeatResponse)(ctx: RequestContext): Option[ViewServerMessage] = {
     logger.trace("[API] HB [" + (timeProvider.now() - msg.ts) + "]")
     None

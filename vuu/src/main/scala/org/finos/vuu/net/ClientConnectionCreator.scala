@@ -143,7 +143,6 @@ class DefaultMessageHandler(val channel: Channel,
       case req: GetTableList => serverApi.process(req)(ctx)
       case req: GetTableMetaRequest => serverApi.process(req)(ctx)
       case req: HeartBeatResponse => serverApi.process(req)(ctx)
-      case req: RpcUpdate => serverApi.process(req)(ctx)
       case req: GetViewPortVisualLinksRequest => serverApi.process(req)(ctx)
       case req: CreateVisualLinkRequest => serverApi.process(req)(ctx)
       case req: RemoveViewPortRequest => serverApi.process(req)(ctx)
