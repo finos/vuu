@@ -43,7 +43,6 @@ class TableDefBuilderTest {
         assertFalse(tableDef.includeDefaultColumns());
         assertNotNull(tableDef.permissionFunction());
         assertEquals(1, tableDef.defaultSort().sortDefs().length());
-
     }
 
     @Test
@@ -55,7 +54,7 @@ class TableDefBuilderTest {
                 .joinFields(List.of("myJoinField"))
                 .indexFields(List.of("myIndex"))
                 .build();
-        
+
         assertFalse(tableDef.autosubscribe());
         assertTrue(tableDef.links().links().isEmpty());
         assertEquals(TableVisibility.PUBLIC(), tableDef.visibility());
