@@ -37,5 +37,7 @@ class WebSocketServerInitializer(val options: VuuWebSocketOptions,
     //each tcp session will have a local view server handler,
     //this allows us to call (handler.close() when disconnected
     pipeline.addLast("handler", new WebSocketServerHandler(factory.create()))
+
+    pipeline.addLast("error-handler", new WebSocketChannelExceptionHandler())
   }
 }

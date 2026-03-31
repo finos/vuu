@@ -12,6 +12,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, GivenWhenThen}
 
 import scala.annotation.tailrec
+import scala.reflect.ClassTag
 
 abstract class WebSocketApiTestBase extends AnyFeatureSpec with BeforeAndAfterAll with BeforeAndAfterEach
   with GivenWhenThen with Matchers with LazyLogging {
@@ -49,13 +50,14 @@ abstract class WebSocketApiTestBase extends AnyFeatureSpec with BeforeAndAfterAl
 
   protected def defineModuleWithTestTables(): ViewServerModule
 
-  protected def assertBodyIsInstanceOf[BodyType](response: Option[ViewServerMessage]): BodyType = {
+  protected def assertBodyIsInstanceOf[BodyType: ClassTag](response: Option[ViewServerMessage]): BodyType = {
     response.isDefined shouldBe true
-    assertAndCastAsInstanceOf(response.get.body)
+    assertAndCastAsInstanceOf[BodyType](response.get.body)
   }
 
-  def assertAndCastAsInstanceOf[T](data: Any): T = {
-    assert(data.isInstanceOf[T])
+  def assertAndCastAsInstanceOf[T: ClassTag](data: Any): T = {
+    val tag = implicitly[ClassTag[T]]
+    assert(tag.runtimeClass.isInstance(data))
     data.asInstanceOf[T]
   }
 

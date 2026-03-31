@@ -394,7 +394,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
         functionResult match {
           case RpcFunctionSuccess(data) =>
             logger.info(s"[API] Called RPC ${msg.rpcName} in viewport $viewPortId in session ${ctx.session.sessionId} with params ${msg.params}")
-            RpcResponseNew(rpcName = msg.rpcName, result = RpcSuccessResult(data), NoneAction())
+            RpcResponseNew(rpcName = msg.rpcName, result = RpcSuccessResult(data), NoneAction)
           case RpcFunctionFailure(errorCode, error, exception) =>
             logger.error(s"[API] Failed to call RPC ${msg.rpcName} in viewport $viewPortId in session ${ctx.session.sessionId} with params ${msg.params}. (${ctx.requestId})", Exception(error, exception))
             createErrorRpcResponse(msg, error)

@@ -1,10 +1,11 @@
 package org.finos.vuu.net.auth
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.toolbox.json.JsonUtil
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.net.LoginRequest
+import org.finos.vuu.net.json.JsonMapperFactory
 import org.finos.vuu.util.HMACUtils
+import tools.jackson.databind.json.JsonMapper
 
 import java.security.SecureRandom
 import java.time.Instant
@@ -53,19 +54,20 @@ case class AlwaysHappyLoginTokenService(vuuUser: VuuUser) extends LoginTokenServ
 
 }
 
-
 case class LoginTokenServiceImpl(secret: Array[Byte]) extends LoginTokenService with StrictLogging {
 
+  private val jsonMapper = JsonMapperFactory.get()
+  
   override def getToken(user: VuuUser): String = {
     logger.info(s"[TOKEN] Obtaining token for ${user.name}")
-    val payload = JsonUtil.toRawJson(user)
+    val payload = jsonMapper.writeValueAsString(user)
     HMACUtils.sign(payload, secret)
   }
 
   override def login(msg: LoginRequest): Either[String, VuuUser] = {
     HMACUtils.verifyAndRemoveSignature(msg.token, secret) match {
       case Right(value) =>
-        val vuuUser: VuuUser = JsonUtil.fromJson(value)
+        val vuuUser: VuuUser = jsonMapper.readValue(value)
         if (Instant.now().isBefore(vuuUser.expiry)) {
           logger.info(s"[LOGIN] Successful login for ${vuuUser.name}")
           Right(vuuUser)

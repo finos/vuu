@@ -8,6 +8,7 @@
     </parent>
 
     <properties>
+        <jmh.version>1.37</jmh.version>
         <uberjar.name>benchmarks</uberjar.name>
     </properties>
 

@@ -1,16 +1,37 @@
-package org.finos.vuu.net.json
+package org.finos.vuu.net.json.mixin
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.toolbox.json.JsonUtil
 import org.finos.vuu.net.ClientSessionId
-import org.finos.vuu.net.json.JsonVsSerializer
+import org.finos.vuu.net.json.mixin.ViewPortMenuMixin
 import org.finos.vuu.net.rpc.RpcHandler
 import org.finos.vuu.viewport.*
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+import tools.jackson.databind.json.JsonMapper
 
-class TestRpcServer extends RpcHandler with StrictLogging {
+class ViewPortMenuMixinTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
+
+  Feature("Check we can serialize a menu to JSON"){
+
+    val mapper = JsonMapper.builder().addMixIn(classOf[ViewPortMenu], classOf[ViewPortMenuMixin]).build()
+
+    Scenario("Serialize menu to JSON"){
+
+      val rpcServer = new TestRpcServer
+
+      val menu = rpcServer.menuItems()
+
+      val json = mapper.writeValueAsString(menu)
+
+      val menuBack = mapper.readValue(json, classOf[ViewPortMenu]).asInstanceOf[ViewPortMenuFolder]
+
+      menuBack.menus.size shouldEqual(4)
+    }
+  }
+}
+
+private class TestRpcServer extends RpcHandler with StrictLogging {
 
   def duplicate(selection: ViewPortSelection,sessionId: ClientSessionId) : ViewPortAction = {
     NoAction()
@@ -51,27 +72,5 @@ class TestRpcServer extends RpcHandler with StrictLogging {
       ),
       new SelectionViewPortMenuItem("Show Details", filter = "", this.showDetails, "SHOW_DETAILS")
     )
-  }
-}
-
-
-class ViewPortMenuTest extends AnyFeatureSpec with Matchers with GivenWhenThen{
-
-  Feature("Check we can serialize a menu to JSON"){
-
-    Scenario("Serialize menu to JSON"){
-
-      val rpcServer = new TestRpcServer
-
-      val mapper = JsonUtil.createMapper()
-
-      val menu = rpcServer.menuItems()
-
-      val json = mapper.writeValueAsString(menu)
-
-      val menuBack = mapper.readValue(json, classOf[ViewPortMenu]).asInstanceOf[ViewPortMenuFolder]
-
-      menuBack.menus.size shouldEqual(4)
-    }
   }
 }

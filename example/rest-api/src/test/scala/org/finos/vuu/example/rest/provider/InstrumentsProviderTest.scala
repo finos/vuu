@@ -1,6 +1,6 @@
 package org.finos.vuu.example.rest.provider
 
-import org.finos.toolbox.json.JsonUtil.toRawJson
+import org.finos.vuu.json.JsonUtil.toRawJson
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.module.ModuleFactory.stringToString

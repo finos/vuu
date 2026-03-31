@@ -11,6 +11,10 @@
     <packaging>pom</packaging>
     <name>${project.artifactId}</name>
 
+    <properties>
+        <caffeine.version>3.2.3</caffeine.version>
+    </properties>
+
     <modules>
         <module>virtualized-table-plugin</module>
     </modules>

@@ -1,9 +1,9 @@
 package org.finos.vuu.net.rest
 
-import com.fasterxml.jackson.core.`type`.TypeReference
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
+import tools.jackson.core.`type`.TypeReference
 
 import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets

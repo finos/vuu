@@ -1,8 +1,8 @@
 package org.finos.vuu.example.rest.client
 
-import org.finos.toolbox.json.JsonUtil
 import org.finos.vuu.example.rest.TestUtils.jsonArrayRegex
 import org.finos.vuu.example.rest.model.Instrument
+import org.finos.vuu.json.JsonUtil
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.Eventually
 import org.scalatest.featurespec.AnyFeatureSpec

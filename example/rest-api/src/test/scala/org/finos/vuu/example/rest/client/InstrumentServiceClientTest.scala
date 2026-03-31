@@ -1,9 +1,9 @@
 package org.finos.vuu.example.rest.client
 
-import org.finos.toolbox.json.JsonUtil
-import org.finos.toolbox.json.JsonUtil.toRawJson
+import org.finos.vuu.json.JsonUtil.toRawJson
 import org.scalatest.prop.TableDrivenPropertyChecks._
 import org.finos.vuu.example.rest.model.RandomInstrument
+import org.finos.vuu.json.JsonUtil
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers

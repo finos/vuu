@@ -1,8 +1,8 @@
 package org.finos.vuu.net.rest
 
-import com.fasterxml.jackson.core.`type`.TypeReference
-import com.fasterxml.jackson.databind.json.JsonMapper
-import org.finos.toolbox.json.JsonUtil
+import tools.jackson.core.`type`.TypeReference
+import tools.jackson.databind.json.JsonMapper
+import org.finos.vuu.net.json.JsonMapperFactory
 
 import java.io.InputStream
 import java.lang.reflect.Type
@@ -51,16 +51,16 @@ object JsonEntityEncoder {
 
   private val classRegistry = new ConcurrentHashMap[Class[_], EntityEncoder[_]]()
   private val typeRegistry = new ConcurrentHashMap[Type, EntityEncoder[_]]()
-  private val mapper = JsonUtil.createMapper()
+  private val defaultMapper = JsonMapperFactory.get()
   
-  def forClass[T](clazz: Class[T]): EntityEncoder[T] = {
+  def forClass[T](clazz: Class[T], mapper: JsonMapper = defaultMapper): EntityEncoder[T] = {
     val encoder = classRegistry.computeIfAbsent(clazz, (c: Class[_]) => {
       new JsonEntityEncoder[T](mapper, (mapper, is) => mapper.readValue(is, clazz))
     })
     encoder.asInstanceOf[EntityEncoder[T]]
   }
-
-  def forType[T](reference: TypeReference[T]): EntityEncoder[T] = {
+  
+  def forType[T](reference: TypeReference[T], mapper: JsonMapper = defaultMapper): EntityEncoder[T] = {
     val encoder = typeRegistry.computeIfAbsent(reference.getType, (c: Type) => {
       new JsonEntityEncoder[T](mapper, (mapper, is) => mapper.readValue(is, reference))
     })

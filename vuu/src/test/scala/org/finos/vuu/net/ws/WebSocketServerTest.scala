@@ -8,7 +8,7 @@ import org.finos.vuu.client.ClientHelperFns
 import org.finos.vuu.core.*
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.net.WebSocketViewServerClient
-import org.finos.vuu.net.json.JsonVsSerializer
+import org.finos.vuu.net.json.VsJsonSerializer
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -263,7 +263,7 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
     }
     val client = new WebSocketClient(s"$protocol://localhost:${config.wsOptions.wsPort}/websocket", config.wsOptions.wsPort, config.wsOptions.nativeTransportEnabled)
     lifecycle(client).dependsOn(viewServer)
-    val viewServerClient: WebSocketViewServerClient = new WebSocketViewServerClient(client, JsonVsSerializer())
+    val viewServerClient: WebSocketViewServerClient = new WebSocketViewServerClient(client, VsJsonSerializer())
     lifecycle.start()
     viewServerClient
   }

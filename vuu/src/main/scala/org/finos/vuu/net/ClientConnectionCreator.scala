@@ -8,7 +8,7 @@ import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.ModuleContainer
 import org.finos.vuu.net.flowcontrol.{BatchSize, Disconnect, FlowController, SendHeartbeat}
-import org.finos.vuu.net.json.JsonVsSerializer
+import org.finos.vuu.net.json.VsJsonSerializer
 import org.finos.vuu.util.PublishQueue
 import org.finos.vuu.viewport.{RowUpdateType, SizeUpdateType, ViewPortUpdate}
 
@@ -32,7 +32,7 @@ class DefaultMessageHandler(val channel: Channel,
                             val user: VuuUser,
                             val session: ClientSessionId,
                             serverApi: ServerApi,
-                            serializer: JsonVsSerializer,
+                            serializer: VsJsonSerializer,
                             flowController: FlowController,
                             sessionContainer: ClientSessionContainer,
                             moduleContainer: ModuleContainer)(implicit timeProvider: Clock) extends MessageHandler with StrictLogging {
@@ -53,7 +53,7 @@ class DefaultMessageHandler(val channel: Channel,
 
       val json = serializer.serialize(JsonViewServerMessage("", session.sessionId, formatted))
 
-      logger.debug("ASYNC-SVR-OUT:" + json)
+      logger.debug(s"ASYNC-SVR-OUT: $json")
 
       channel.writeAndFlush(new TextWebSocketFrame(json))
     }

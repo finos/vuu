@@ -42,7 +42,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       result.data shouldEqual List("23564", "33657", "42262", "45321", "45897", "54874", "54875", "54876", "65879", "78458")
 
       And("return No Action")
-      responseBody.action shouldBe a[NoneAction]
+      responseBody.action shouldEqual NoneAction
     }
 
     Scenario("Start with a specified string for a column") {
@@ -201,7 +201,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       result.data shouldEqual List("23564", "33657", "42262", "45321", "45897", "54874", "54875", "54876", "65879", "78458")
 
       And("return No Action")
-      responseBody.action shouldBe a[NoneAction]
+      responseBody.action shouldEqual NoneAction
     }
 
     Scenario("Start with a specified string for a column in a join table") {

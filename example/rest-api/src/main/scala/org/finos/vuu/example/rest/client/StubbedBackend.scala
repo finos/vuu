@@ -1,7 +1,7 @@
 package org.finos.vuu.example.rest.client
 
-import org.finos.toolbox.json.JsonUtil
 import org.finos.vuu.example.rest.model.RandomInstrument
+import org.finos.vuu.json.JsonUtil
 import sttp.client4.SyncBackend
 import sttp.client4.testing.{ResponseStub, SyncBackendStub}
 import sttp.model.Method

@@ -1,7 +1,7 @@
 package org.finos.vuu.example.rest.client
 
-import org.finos.toolbox.json.JsonUtil
 import org.finos.vuu.example.rest.model.Instrument
+import org.finos.vuu.json.JsonUtil
 import sttp.client4.{UriContext, basicRequest}
 
 import scala.util.{Failure, Try}
