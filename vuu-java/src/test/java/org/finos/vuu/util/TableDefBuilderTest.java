@@ -27,7 +27,7 @@ class TableDefBuilderTest {
                 .indexFields(List.of("myIndex"))
                 .withPrivateVisibility()
                 .includeDefaultColumns(false)
-                .permissionFunction(null)
+                .permissionFunction((a, b) -> null)
                 .defaultSort(new SortSpec(toScala(List.of(new SortDef("myColumn", 'D')))))
                 .build();
 

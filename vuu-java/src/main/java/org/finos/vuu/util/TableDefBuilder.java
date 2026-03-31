@@ -6,9 +6,9 @@ import org.finos.vuu.core.table.Column;
 import org.finos.vuu.core.table.TableContainer;
 import org.finos.vuu.net.SortSpec;
 import org.finos.vuu.viewport.ViewPort;
-import scala.Function2;
 
 import java.util.List;
+import java.util.function.BiFunction;
 
 import static org.finos.vuu.util.ScalaCollectionConverter.toScala;
 import static org.finos.vuu.util.ScalaCollectionConverter.toScalaSeq;
@@ -23,7 +23,7 @@ public class TableDefBuilder {
     private List<String> indexFields;
     private TableVisibility visibility;
     private Boolean includeDefaultColumns;
-    private Function2<ViewPort, TableContainer, PermissionFilter> permissionFunction;
+    private BiFunction<ViewPort, TableContainer, PermissionFilter> permissionFunction;
     private SortSpec defaultSort;
 
     public TableDefBuilder name(String name) {
@@ -64,7 +64,6 @@ public class TableDefBuilder {
     public TableDefBuilder visibility(TableVisibility visibility) {
         this.visibility = visibility;
         return this;
-
     }
 
     public TableDefBuilder withPrivateVisibility() {
@@ -80,10 +79,9 @@ public class TableDefBuilder {
     public TableDefBuilder includeDefaultColumns(Boolean includeDefaultColumns) {
         this.includeDefaultColumns = includeDefaultColumns;
         return this;
-
     }
 
-    public TableDefBuilder permissionFunction(Function2<ViewPort, TableContainer, PermissionFilter> permissionFunction) {
+    public TableDefBuilder permissionFunction(BiFunction<ViewPort, TableContainer, PermissionFilter> permissionFunction) {
         this.permissionFunction = permissionFunction;
         return this;
     }
@@ -91,7 +89,6 @@ public class TableDefBuilder {
     public TableDefBuilder defaultSort(SortSpec defaultSort) {
         this.defaultSort = defaultSort;
         return this;
-
     }
 
     public TableDef build() {
@@ -105,7 +102,7 @@ public class TableDefBuilder {
                 Indices.apply(toScalaSeq(indexFields.stream().map(Index::apply).toList())),
                 visibility,
                 includeDefaultColumns,
-                permissionFunction,
+                ScalaFunctionConverter.toScala(permissionFunction),
                 defaultSort);
     }
 }
