@@ -1,6 +1,7 @@
 package org.finos.vuu.util;
 
 import org.finos.vuu.api.*;
+import org.finos.vuu.core.filter.type.AllowAllPermissionFilter$;
 import org.finos.vuu.core.filter.type.PermissionFilter;
 import org.finos.vuu.core.table.Column;
 import org.finos.vuu.core.table.TableContainer;
@@ -10,21 +11,20 @@ import org.finos.vuu.viewport.ViewPort;
 import java.util.List;
 import java.util.function.BiFunction;
 
-import static org.finos.vuu.util.ScalaCollectionConverter.toScala;
-import static org.finos.vuu.util.ScalaCollectionConverter.toScalaSeq;
+import static org.finos.vuu.util.ScalaCollectionConverter.*;
 
 public class TableDefBuilder {
     private String name;
     private String keyField;
     private Column[] customColumns;
-    private List<String> joinFields;
-    private Boolean autoSubscribe;
-    private List<Link> links;
+    private List<String> joinFields=List.of();
+    private boolean autoSubscribe = false;
+    private List<Link> links= List.of();
     private List<String> indexFields;
-    private TableVisibility visibility;
-    private Boolean includeDefaultColumns;
-    private BiFunction<ViewPort, TableContainer, PermissionFilter> permissionFunction;
-    private SortSpec defaultSort;
+    private TableVisibility visibility = TableVisibility.PUBLIC();
+    private boolean includeDefaultColumns = true;
+    private BiFunction<ViewPort, TableContainer, PermissionFilter> permissionFunction = (vp, tc) -> AllowAllPermissionFilter$.MODULE$;
+    private SortSpec defaultSort = SortSpec.apply(emptyList());
 
     public TableDefBuilder name(String name) {
         this.name = name;
@@ -98,7 +98,7 @@ public class TableDefBuilder {
                 customColumns,
                 toScalaSeq(joinFields),
                 autoSubscribe,
-                new VisualLinks(toScala(links)),
+                VisualLinks.apply(toScala(links)),
                 Indices.apply(toScalaSeq(indexFields.stream().map(Index::apply).toList())),
                 visibility,
                 includeDefaultColumns,
