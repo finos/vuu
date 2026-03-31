@@ -10,7 +10,7 @@ import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.json.JsonVsSerializer
 import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcNames}
 import org.finos.vuu.net.ws.WebSocketClient
-import org.finos.vuu.net.{ChangeViewPortRange, ChangeViewPortReject, ChangeViewPortRequest, ChangeViewPortSuccess, CloseTreeNodeReject, CloseTreeNodeRequest, CreateViewPortRequest, CreateViewPortSuccess, CreateVisualLinkRequest, CreateVisualLinkSuccess, DeselectAllReject, DeselectAllRequest, DeselectRowReject, DeselectRowRequest, DisableViewPortReject, DisableViewPortRequest, DisableViewPortSuccess, EnableViewPortReject, EnableViewPortRequest, ErrorResponse, FilterSpec, FreezeViewPortReject, FreezeViewPortRequest, FreezeViewPortSuccess, GetViewPortMenusRequest, GetViewPortVisualLinksRequest, OpenTreeNodeReject, OpenTreeNodeRequest, OpenTreeNodeSuccess, RemoveViewPortReject, RemoveViewPortRequest, RemoveViewPortSuccess, RemoveVisualLinkRequest, RemoveVisualLinkSuccess, RpcErrorResult, RpcReject, RpcRequest, RpcResponseNew, RpcUpdate, SelectAllReject, SelectAllRequest, SelectAllSuccess, SelectRowRangeReject, SelectRowRangeRequest, SelectRowReject, SelectRowRequest, SelectRowSuccess, UnfreezeViewPortReject, UnfreezeViewPortRequest, ViewPortContext, WebSocketViewServerClient}
+import org.finos.vuu.net.{ChangeViewPortRange, ChangeViewPortReject, ChangeViewPortRequest, ChangeViewPortSuccess, CloseTreeNodeReject, CloseTreeNodeRequest, CreateViewPortRequest, CreateViewPortSuccess, CreateVisualLinkRequest, CreateVisualLinkSuccess, DeselectAllReject, DeselectAllRequest, DeselectRowReject, DeselectRowRequest, DisableViewPortReject, DisableViewPortRequest, DisableViewPortSuccess, EnableViewPortReject, EnableViewPortRequest, ErrorResponse, FilterSpec, FreezeViewPortReject, FreezeViewPortRequest, FreezeViewPortSuccess, GetViewPortMenusRequest, GetViewPortVisualLinksRequest, OpenTreeNodeReject, OpenTreeNodeRequest, OpenTreeNodeSuccess, RemoveViewPortReject, RemoveViewPortRequest, RemoveViewPortSuccess, RemoveVisualLinkRequest, RemoveVisualLinkSuccess, RpcErrorResult, RpcReject, RpcRequest, RpcResponseNew, SelectAllReject, SelectAllRequest, SelectAllSuccess, SelectRowRangeReject, SelectRowRangeRequest, SelectRowReject, SelectRowRequest, SelectRowSuccess, UnfreezeViewPortReject, UnfreezeViewPortRequest, ViewPortContext, WebSocketViewServerClient}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
@@ -110,14 +110,6 @@ class SecurityWSApiTest extends WebSocketApiTestBase {
       response.isEmpty shouldBe false
       response.get.viewPortId shouldEqual targetViewPortId
       response.get.errorMessage shouldEqual s"Failed to process request $requestId"
-    }
-
-    Scenario("RPC Update is disabled") {
-      vuuClient.send(sessionId, RpcUpdate(ViewPortTable(tableName, moduleName), "row1", Map("Name" -> "Snoopy")))
-
-      val response = vuuClient.awaitForMsgWithBody[RpcReject]
-      response.isEmpty shouldBe false
-      response.get.reason shouldEqual "Feature disabled"
     }
 
     Scenario("Getting VP menus on another sessions viewport should be rejected") {

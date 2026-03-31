@@ -89,7 +89,6 @@ class JsonVsSerializerTest extends AnyFeatureSpec with Matchers{
       roundTrip(LoginSuccess("vuuServerId"))
       roundTrip(HeartBeat(123L))
       roundTrip(HeartBeatResponse(123L))
-      roundTrip(RpcUpdate(ViewPortTable("orderEntry", "CORE"), "Foo", Map("Foo" -> 123, "Bar" -> true, "Whizzle" -> "TANG", "HooHa" -> 344567L)))
       roundTrip(RpcSuccess(ViewPortTable("orderEntry", "CORE"), "Foo"))
       roundTrip(RpcReject(ViewPortTable("orderEntry", "CORE"), "Foo", "cause you aint pretty"))
       roundTrip(OpenTreeNodeSuccess("orderEntry", "..."))

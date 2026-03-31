@@ -78,10 +78,6 @@ object ClientHelperFns {
     vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, GetTableList()))
   }
 
-  def rpcTableUpdate(sessionId: String, token: String, user: String, table: ViewPortTable, key: String, data: Map[String, Any])(implicit vsClient: ViewServerClient): Unit = {
-    vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, RpcUpdate(table, key, data)))
-  }
-
   def getViewPortMenusAsync(sessionId: String, token: String, user: String, vpId: String)(implicit vsClient: ViewServerClient): Unit = {
     vsClient.send(JsonViewServerMessage(RequestId.oneNew(), sessionId, GetViewPortMenusRequest(vpId)))
   }
