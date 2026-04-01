@@ -1,7 +1,6 @@
 package org.finos.vuu.core.table
 
 import com.typesafe.scalalogging.StrictLogging
-import org.slf4j.LoggerFactory
 
 import java.util.concurrent.ConcurrentHashMap
 import scala.jdk.CollectionConverters.MapHasAsScala
