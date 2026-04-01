@@ -3,19 +3,30 @@ import { EventEmitter, reorderColumnItems, ValueOf } from "@vuu-ui/vuu-utils";
 
 export const ColumnChangeSource = {
   ColumnPicker: "column-picker",
+  ColumnSettings: "column-settings",
   Table: "table",
 } as const;
 export type ColumnChangeSource = ValueOf<typeof ColumnChangeSource>;
 
 export const SelectedColumnChangeType = {
+  CalculatedColumnAdded: "calculated-column-added",
   ColumnAdded: "column-added",
   ColumnRemoved: "column-removed",
+  ColumnUpdated: "column-updated",
   ColumnsReordered: "columns-reordered",
 } as const;
 export type SelectedColumnChangeType = ValueOf<typeof SelectedColumnChangeType>;
 
 export interface SelectedColumnChangeColumnAdded {
   type: Extract<SelectedColumnChangeType, "column-added">;
+  column: ColumnDescriptor;
+}
+export interface SelectedColumnChangeCalculatedColumnAdded {
+  type: Extract<SelectedColumnChangeType, "calculated-column-added">;
+  column: ColumnDescriptor;
+}
+export interface SelectedColumnChangeColumnUpdated {
+  type: Extract<SelectedColumnChangeType, "column-updated">;
   column: ColumnDescriptor;
 }
 
@@ -29,8 +40,10 @@ export interface SelectedColumnChangeColumnsReordered {
 }
 
 export type SelectedColumnChangeDescriptor =
+  | SelectedColumnChangeCalculatedColumnAdded
   | SelectedColumnChangeColumnAdded
   | SelectedColumnChangeColumnRemoved
+  | SelectedColumnChangeColumnUpdated
   | SelectedColumnChangeColumnsReordered;
 
 export const isColumnAdded = (
@@ -41,6 +54,10 @@ export const isColumnRemoved = (
   change?: SelectedColumnChangeDescriptor,
 ): change is SelectedColumnChangeColumnRemoved =>
   change?.type === SelectedColumnChangeType.ColumnRemoved;
+export const isColumnUpdated = (
+  change?: SelectedColumnChangeDescriptor,
+): change is SelectedColumnChangeColumnUpdated =>
+  change?.type === SelectedColumnChangeType.ColumnUpdated;
 export const isColumnsReordered = (
   change?: SelectedColumnChangeDescriptor,
 ): change is SelectedColumnChangeColumnsReordered =>
@@ -83,12 +100,11 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
     /**
      * All available columns, including selected columns.
      */
-    public readonly allColumns: readonly ColumnDescriptor[],
+    public allColumns: readonly ColumnDescriptor[],
     /**
      * Columns already selected and rendered in Table.
      */
-
-    selectedColumns: ColumnDescriptor[],
+    selectedColumns: readonly ColumnDescriptor[],
   ) {
     super();
     this.#selectedColumns = selectedColumns;
@@ -125,6 +141,14 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
   ) {
     this.#selectedColumns = selectedColumns;
     this.notifyListeners(selectedColumns, source, changeDescriptor);
+  }
+
+  getColumn(name: string) {
+    const col = this.#selectedColumns.find((col) => col.name === name);
+    if (col) {
+      return col;
+    }
+    throw Error(`[ColumnModel] columns does not contain column ${name}`);
   }
 
   addItemToSelectedColumns(name: string, source: ColumnChangeSource) {
@@ -166,6 +190,61 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
       source,
       { type: SelectedColumnChangeType.ColumnsReordered },
     );
+  }
+
+  updateColumn(column: ColumnDescriptor) {
+    const allIndex = this.allColumns.findIndex(
+      (col) => col.name === column.name,
+    );
+    const selectedIndex = this.#selectedColumns.findIndex(
+      (col) => col.name === column.name,
+    );
+
+    if (selectedIndex !== -1) {
+      if (allIndex === -1) {
+        throw Error(
+          `[ColumnModel] updateColumn, selected column not in allColumns collection`,
+        );
+      }
+
+      this.#selectedColumns = this.#selectedColumns.toSpliced(
+        selectedIndex,
+        1,
+        column,
+      );
+      this.allColumns = this.allColumns.toSpliced(allIndex, 1, column);
+
+      this.notifyListeners(this.#selectedColumns, "column-settings", {
+        type: SelectedColumnChangeType.ColumnUpdated,
+        column,
+      });
+    } else {
+      throw Error(
+        `[ColumnModel] updateColumn, column ${column.name} not found`,
+      );
+    }
+  }
+
+  /**
+   * Used when adding a calculated column
+   *
+   * @param column
+   *
+   * @param addToSelectedColumns
+   */
+  addColumn(column: ColumnDescriptor, addToSelectedColumns = false) {
+    console.log(`[ColumnModel] add column ${JSON.stringify(column)}`);
+    if (addToSelectedColumns) {
+      console.log(`add it to selected coliumns`);
+    }
+
+    this.allColumns = this.allColumns.concat(column);
+    this.#selectedColumns = this.#selectedColumns.concat(column);
+
+    this.notifyListeners(this.#selectedColumns, "column-picker", {
+      type: SelectedColumnChangeType.CalculatedColumnAdded,
+      column,
+    });
   }
 
   private notifyListeners: ColumnsChangeHandler = (

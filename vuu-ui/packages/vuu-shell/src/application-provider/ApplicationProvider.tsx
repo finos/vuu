@@ -2,7 +2,7 @@ import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import {
   Density,
   Mode,
-  SaltProvider,
+  SaltProviderNext,
   ThemeContextProps,
   useDensity,
   useTheme,
@@ -86,13 +86,15 @@ export const ApplicationProvider = ({
         user: user ?? context.user,
       }}
     >
-      <SaltProvider
+      <SaltProviderNext
+        accent="purple"
+        corner="rounded"
         theme={theme ?? inheritedTheme ?? "vuu-theme"}
         density={density}
         mode={getThemeMode(mode ?? inheritedMode, userSettings)}
       >
         {children}
-      </SaltProvider>
+      </SaltProviderNext>
     </ApplicationContext.Provider>
   ) : null;
 };

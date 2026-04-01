@@ -2,7 +2,6 @@ import {
   Accent,
   ActionFont,
   HeadingFont,
-  SaltProvider,
   SaltProviderNext,
 } from "@salt-ds/core";
 import { VuuDataSourceProvider } from "@vuu-ui/vuu-data-react";
@@ -40,14 +39,7 @@ const asThemeMode = (input: string | undefined): ThemeMode => {
 };
 
 const themeIsInstalled = (theme = "no-theme"): theme is string => {
-  return [
-    "salt-theme",
-    "salt-theme-next",
-    "salt-theme",
-    "vuu-theme-deprecated",
-    "vuu-theme",
-    "vuu-theme-next",
-  ].includes(theme);
+  return ["salt-theme-next", "vuu-theme"].includes(theme);
 };
 
 const asDensity = (input: string | undefined): Density => {
@@ -88,10 +80,7 @@ export const ShowcaseStandalone = ({
   const [themeReady, setThemeReady] = useState(true);
 
   // We only need this once as entire page will refresh if theme changes
-  const theme = useMemo(
-    () => getUrlParameter("theme", "vuu-theme-deprecated"),
-    [],
-  );
+  const theme = useMemo(() => getUrlParameter("theme", "vuu-theme"), []);
 
   useEffect(() => {
     const checkUrlParams = () => {
@@ -172,31 +161,19 @@ export const ShowcaseStandalone = ({
   }, [treeSource]);
 
   const wrapInSaltProvider = (children: ReactNode) => {
-    if (theme?.endsWith("next")) {
-      return (
-        <SaltProviderNext
-          accent={accentPurple}
-          corner="rounded"
-          theme={theme}
-          density={densityRef.current}
-          mode={themeModeRef.current}
-          actionFont={actionFont}
-          headingFont={headingFont}
-        >
-          {children}
-        </SaltProviderNext>
-      );
-    } else {
-      return (
-        <SaltProvider
-          theme={theme}
-          density={densityRef.current}
-          mode={themeModeRef.current}
-        >
-          {children}
-        </SaltProvider>
-      );
-    }
+    return (
+      <SaltProviderNext
+        accent={accentPurple}
+        corner="rounded"
+        theme={theme}
+        density={densityRef.current}
+        mode={themeModeRef.current}
+        actionFont={actionFont}
+        headingFont={headingFont}
+      >
+        {children}
+      </SaltProviderNext>
+    );
   };
 
   if (themeReady || theme === "no-theme") {

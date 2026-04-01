@@ -38,10 +38,8 @@
     color: var(--salt-content-secondary-foreground);
     white-space: nowrap;
   }
-
-  .vuuDatasourceStats-selectionActions {
-    grid-area: panel-center;
-    justify-self: center;
+  .vuuDatasourceStats-range {
+    white-space: nowrap;
   }
 
   .vuuDatasourceStats-value {

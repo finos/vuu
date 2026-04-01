@@ -9,7 +9,7 @@ import {
 import { IconButton } from "@vuu-ui/vuu-ui-controls";
 import cx from "clsx";
 import { HTMLAttributes, MouseEventHandler, useCallback } from "react";
-import { defaultTableSettingsPermissions } from "../table-column-settings/TableSettingsPanel";
+import { defaultTableSettingsPermissions } from "../table-settings-panel/TableSettingsPanel";
 import { useTableContext } from "../table-provider/TableProvider";
 import {
   buildAggregationMenuItems,
@@ -107,7 +107,6 @@ export const ColumnMenu = ({
     column,
     menuActionClickHandler,
     allowColumnSettings,
-    allowTableSettings,
   );
 
   const handleClick = useCallback<MouseEventHandler<HTMLButtonElement>>(

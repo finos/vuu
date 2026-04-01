@@ -1,9 +1,14 @@
 .salt-theme.vuu-theme {
-  .saltToggleButtonGroup {
+    .saltToggleButtonGroup {
       padding: 0;
-  }
 
-  .saltToggleButtonGroup-horizontal {
+        &[data-borderless="true"]{
+            border: none;
+        }
+
+    }
+
+    .saltToggleButtonGroup-horizontal {
         .saltToggleButton {
             gap: var(--salt-spacing-150);
             height: calc(var(--salt-size-base) + var(--salt-size-fixed-400) - var(--salt-spacing-100));
@@ -12,29 +17,29 @@
                 --vuu-icon-color: var(--toggleButton-text-color-selected);
             }
         }
-  }
+    }
 }
 
-.salt-theme.vuu-theme-next {
-  .saltToggleButtonGroup {
-      padding: 0;
-      .saltToggleButton {
-        border-radius: var(--salt-palette-corner-weak);
-      }
-
-  }
-
-  .saltToggleButtonGroup-horizontal {
+.salt-theme.vuu-theme {
+    .saltToggleButtonGroup {
+        padding: 0;
+        .saltToggleButton {
+            border-radius: var(--salt-palette-corner-weak);
+        }
         &[data-borderless="true"]{
             border: none;
         }
+    }
+
+    .saltToggleButtonGroup-horizontal  {
 
         .saltToggleButton {
             --vuu-icon-color: var(--toggleButton-text-color);
             gap: var(--salt-spacing-150);
             height: calc(var(--salt-size-base) + var(--salt-size-fixed-400) - var(--salt-spacing-100));
             padding: 0 var(--salt-spacing-400);
-            &[aria-checked="true"]{
+            &[aria-checked="true"],
+            &[aria-pressed="true"]{
                 --vuu-icon-color: var(--toggleButton-text-color-selected);
             }
 
@@ -43,5 +48,21 @@
             }
 
         }
-  }
+    }
+
+    .vuuStateButtonGroup {
+        column-gap: 1px;
+        .saltToggleButton {
+            border: none;
+            border-radius: 0;
+        }
+
+        .saltToggleButton:first-child {
+            border-radius: 4px 0 0 4px;
+        }
+        .saltToggleButton:last-child {
+            border-radius: 0 4px 4px 0;
+        }
+    }
+
 }

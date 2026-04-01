@@ -137,7 +137,7 @@ export interface TableCellRendererProps
  */
 export declare type ColumnLayout = "static" | "fit" | "manual";
 
-export interface TableAttributes {
+export interface TableDisplayAttributes {
   /**
    * In the case of checkbox selection, allows width of checkbox columns to be specified
    */
@@ -146,7 +146,6 @@ export interface TableAttributes {
   columnFormatHeader?: "capitalize" | "uppercase";
   columnLayout?: ColumnLayout;
   columnSeparators?: boolean;
-  // showHighlightedRow?: boolean;
   rowSeparators?: boolean;
   /**
    * Selection Bookends style the left and right edge of a selection block.
@@ -162,9 +161,13 @@ export interface TableAttributes {
  * edited using Settings Editors (Table and Column) and can be persisted
  * across sessions.
  */
-export interface TableConfig extends TableAttributes {
+export declare type TableConfig = TableDisplayAttributes & {
   columns: readonly ColumnDescriptor[];
   rowClassNameGenerators?: string[];
+};
+export interface GridConfig extends TableConfig {
+  headings: TableHeadings;
+  selectionBookendWidth?: number;
 }
 
 // TODO tidy up this definition, currently split beween here and data-types
@@ -401,20 +404,8 @@ export declare type GridAction =
   | GridActionResizeCol
   | GridActionSelection;
 
-/**
- * Describes the props for a Column Configuration Editor, for which
- * an implementation is provided in vuu-table-extras
- */
-export interface ColumnSettingsProps {
-  column: ColumnDescriptor;
-  onConfigChange: (config: TableConfig) => void;
-  onCancelCreateColumn: () => void;
-  onCreateCalculatedColumn: (column: ColumnDescriptor) => void;
-  tableConfig: TableConfig;
-  vuuTable: VuuTable;
-}
-
 export interface ColumnListPermissions {
+  allowCalculatedColumns?: boolean;
   allowColumnSearch?: boolean;
   allowHideColumns?: boolean;
   allowRemoveColumns?: boolean;
@@ -422,11 +413,10 @@ export interface ColumnListPermissions {
   allowSelectAll?: boolean;
 }
 
-export interface TableSettingsPermissions extends ColumnListPermissions {
+export interface TableSettingsPermissions {
   allowColumnLabelCase?: boolean;
   allowColumnDefaultWidth?: boolean;
   allowGridSeparators?: boolean;
-  allowCalculatedColumns?: boolean;
 }
 
 /**
@@ -522,23 +512,54 @@ export interface HeaderCellProps
   showColumnHeaderMenus?: ShowColumnHeaderNMenus;
 }
 
-export interface TableConfigChangeColumnRemoved {
+export interface TableConfigCalculatedColumnAdded {
+  type: "calculated-column-added";
+  column: ColumnDescriptor;
+}
+export interface TableConfigColumnAdded {
+  type: "column-added";
+  column: ColumnDescriptor;
+}
+export interface TableConfigColumnMoved {
+  type: "column-moved";
+  columnName: string;
+  columns: ColumnDescriptor[];
+}
+export interface TableConfigColumnRemoved {
   type: "column-removed";
   column: ColumnDescriptor;
 }
+export interface TableConfigColumnResized {
+  type: "column-resized";
+  column: ColumnDescriptor;
+  width: number;
+}
+export interface TableConfigColumnsHidden {
+  type: "columns-hidden";
+  columns: ColumnDescriptor[];
+}
 
-export interface TableConfigChangeColumnPinned {
+export interface TableConfigColumnPinned {
   type: "column-pinned";
   column: ColumnDescriptor;
 }
+export interface TableConfigSettingsPanel {
+  type: "settings-panel";
+}
 
 export declare type TableConfigChangeType =
-  | TableConfigChangeColumnRemoved
-  | TableConfigChangeColumnPinned;
+  | TableConfigCalculatedColumnAdded
+  | TableConfigColumnAdded
+  | TableConfigColumnMoved
+  | TableConfigColumnRemoved
+  | TableConfigColumnResized
+  | TableConfigColumnPinned
+  | TableConfigColumnsHidden
+  | TableConfigSettingsPanel;
 
 export declare type TableConfigChangeHandler = (
   config: TableConfig,
-  configChangeType?: TableConfigChangeType,
+  configChangeType: TableConfigChangeType,
 ) => void;
 
 export declare type CustomHeaderComponent = ComponentType<BaseRowProps>;

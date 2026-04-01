@@ -1,4 +1,4 @@
-import { SaltProvider } from "@salt-ds/core";
+import { SaltProviderNext } from "@salt-ds/core";
 import { LoginPanel } from "@vuu-ui/vuu-shell";
 import { createRoot } from "react-dom/client";
 import { VuuAuthProvider } from "@vuu-ui/vuu-data-remote";
@@ -13,8 +13,8 @@ const container = document.getElementById("root");
 if (container) {
   const root = createRoot(container);
   root.render(
-    <SaltProvider theme="vuu-theme" density="high">
+    <SaltProviderNext theme="vuu-theme" density="high">
       <LoginPanel onSubmit={authProvider.login} />
-    </SaltProvider>,
+    </SaltProviderNext>,
   );
 }

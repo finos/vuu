@@ -19,7 +19,6 @@ import {
 } from "@vuu-ui/vuu-table-types";
 import type { DragDropState } from "@vuu-ui/vuu-ui-controls";
 import {
-  ContextPanelProvider,
   DragStartHandler,
   MeasuredContainer,
   MeasuredContainerProps,
@@ -114,10 +113,6 @@ export interface TableProps
    * if provided, row with matching key will be selected. If not present, will silently fail.
    */
   autoSelectRowKey?: string;
-  /**
-   * required if a fully featured column picker is to be available
-   */
-  availableColumns?: readonly SchemaColumn[];
 
   /**
    * Pixel height of header cells. If specified here, this will take precedence over CSS
@@ -298,7 +293,6 @@ const TableCore = ({
   allowSelectCheckboxRow,
   autoSelectFirstRow,
   autoSelectRowKey,
-  availableColumns,
   // colHeaderRowHeight,
   config,
   containerRef,
@@ -385,7 +379,6 @@ const TableCore = ({
     allowSelectCheckboxRow,
     autoSelectFirstRow,
     autoSelectRowKey,
-    availableColumns,
     config,
     containerRef,
     dataSource,
@@ -393,7 +386,6 @@ const TableCore = ({
     highlightedIndex: highlightedIndexProp,
     id,
     navigationStyle,
-    onAvailableColumnsChange,
     onConfigChange,
     onDataEdited: onDataEditedProp,
     onDragStart,
@@ -409,7 +401,6 @@ const TableCore = ({
     scrollingApiRef,
     selectionModel,
     showColumnHeaders,
-    showColumnHeaderMenus,
     showPaginationControls,
     size,
   });
@@ -570,7 +561,6 @@ export const Table = forwardRef(function Table(
     allowCellBlockSelection,
     allowDragColumnHeader,
     allowDragDrop,
-    availableColumns,
     allowSelectAll,
     allowSelectCheckboxRow,
     autoSelectFirstRow,
@@ -690,90 +680,87 @@ export const Table = forwardRef(function Table(
   // TODO render TableHeader here and measure before row construction begins
   // TODO we could have MeasuredContainer render a Provider and make size available via a context hook ?
   return (
-    <ContextPanelProvider>
-      <MeasuredContainer
-        {...htmlAttributes}
-        className={cx(classBase, classNameProp, {
-          [`${classBase}-pagination`]: showPaginationControls,
-          [`${classBase}-rowSelection-bordered`]: rowSelectionBorder,
-          [`${classBase}-maxViewportRowLimit`]: maxViewportRowLimit,
-          [`${classBase}-viewportRowLimit`]: viewportRowLimit,
-        })}
-        height={height}
-        id={id}
-        onResize={setSize}
-        ref={useForkRef(containerRef, forwardedRef)}
-        resizeStrategy={resizeStrategy}
-        style={
-          {
-            ...styleProp,
-            "--col-header-row-height-prop":
-              typeof colHeaderRowHeightProp === "number"
-                ? `${colHeaderRowHeightProp}px`
-                : undefined,
-            "--row-height-prop":
-              typeof rowHeightProp === "number"
-                ? `${rowHeightProp}px`
-                : undefined,
-          } as CSSProperties
-        }
-        width={width}
-      >
-        <RowProxy ref={rowRef} height={rowHeightProp} />
-        {size &&
-        rowHeight &&
-        (footerHeight || showPaginationControls !== true) ? (
-          <TableCore
-            EmptyDisplay={EmptyDisplay}
-            Row={Row}
-            allowCellBlockSelection={allowCellBlockSelection}
-            allowDragColumnHeader={allowDragColumnHeader}
-            allowDragDrop={allowDragDrop}
-            allowSelectAll={allowSelectAll}
-            allowSelectCheckboxRow={allowSelectCheckboxRow}
-            autoSelectFirstRow={autoSelectFirstRow}
-            autoSelectRowKey={autoSelectRowKey}
-            availableColumns={availableColumns}
-            config={config}
-            containerRef={containerRef}
-            customHeader={customHeader}
-            dataSource={dataSource}
-            disableFocus={disableFocus}
-            groupToggleTarget={groupToggleTarget}
-            highlightedIndex={highlightedIndex}
-            id={id}
-            navigationStyle={navigationStyle}
-            onAvailableColumnsChange={onAvailableColumnsChange}
-            onConfigChange={onConfigChange}
-            onDataEdited={onDataEdited}
-            onDragStart={onDragStart}
-            onDrop={onDrop}
-            onHighlight={onHighlight}
-            onRowClick={onRowClick}
-            onSelect={onSelect}
-            onSelectCellBlock={onSelectCellBlock}
-            onSelectionChange={onSelectionChange}
-            renderBufferSize={
-              showPaginationControls ? 0 : Math.max(5, renderBufferSize ?? 0)
-            }
-            revealSelected={revealSelected}
-            rowActionHandlers={rowActionHandlers}
-            rowHeight={rowHeight}
-            scrollingApiRef={scrollingApiRef}
-            lowerCaseSearchPattern={lowerCase(searchPattern)}
-            selectionModel={selectionModel}
-            showColumnHeaders={showColumnHeaders}
-            showColumnHeaderMenus={showColumnHeaderMenus}
-            showPaginationControls={showPaginationControls}
-            size={reduceSizeHeight(size, footerHeight)}
-          />
-        ) : null}
-        {showPaginationControls ? (
-          <div className={`${classBase}-footer`} ref={footerRef}>
-            <PaginationControl dataSource={dataSource} />
-          </div>
-        ) : null}
-      </MeasuredContainer>
-    </ContextPanelProvider>
+    <MeasuredContainer
+      {...htmlAttributes}
+      className={cx(classBase, classNameProp, {
+        [`${classBase}-pagination`]: showPaginationControls,
+        [`${classBase}-rowSelection-bordered`]: rowSelectionBorder,
+        [`${classBase}-maxViewportRowLimit`]: maxViewportRowLimit,
+        [`${classBase}-viewportRowLimit`]: viewportRowLimit,
+      })}
+      height={height}
+      id={id}
+      onResize={setSize}
+      ref={useForkRef(containerRef, forwardedRef)}
+      resizeStrategy={resizeStrategy}
+      style={
+        {
+          ...styleProp,
+          "--col-header-row-height-prop":
+            typeof colHeaderRowHeightProp === "number"
+              ? `${colHeaderRowHeightProp}px`
+              : undefined,
+          "--row-height-prop":
+            typeof rowHeightProp === "number"
+              ? `${rowHeightProp}px`
+              : undefined,
+        } as CSSProperties
+      }
+      width={width}
+    >
+      <RowProxy ref={rowRef} height={rowHeightProp} />
+      {size &&
+      rowHeight &&
+      (footerHeight || showPaginationControls !== true) ? (
+        <TableCore
+          EmptyDisplay={EmptyDisplay}
+          Row={Row}
+          allowCellBlockSelection={allowCellBlockSelection}
+          allowDragColumnHeader={allowDragColumnHeader}
+          allowDragDrop={allowDragDrop}
+          allowSelectAll={allowSelectAll}
+          allowSelectCheckboxRow={allowSelectCheckboxRow}
+          autoSelectFirstRow={autoSelectFirstRow}
+          autoSelectRowKey={autoSelectRowKey}
+          config={config}
+          containerRef={containerRef}
+          customHeader={customHeader}
+          dataSource={dataSource}
+          disableFocus={disableFocus}
+          groupToggleTarget={groupToggleTarget}
+          highlightedIndex={highlightedIndex}
+          id={id}
+          navigationStyle={navigationStyle}
+          onAvailableColumnsChange={onAvailableColumnsChange}
+          onConfigChange={onConfigChange}
+          onDataEdited={onDataEdited}
+          onDragStart={onDragStart}
+          onDrop={onDrop}
+          onHighlight={onHighlight}
+          onRowClick={onRowClick}
+          onSelect={onSelect}
+          onSelectCellBlock={onSelectCellBlock}
+          onSelectionChange={onSelectionChange}
+          renderBufferSize={
+            showPaginationControls ? 0 : Math.max(5, renderBufferSize ?? 0)
+          }
+          revealSelected={revealSelected}
+          rowActionHandlers={rowActionHandlers}
+          rowHeight={rowHeight}
+          scrollingApiRef={scrollingApiRef}
+          lowerCaseSearchPattern={lowerCase(searchPattern)}
+          selectionModel={selectionModel}
+          showColumnHeaders={showColumnHeaders}
+          showColumnHeaderMenus={showColumnHeaderMenus}
+          showPaginationControls={showPaginationControls}
+          size={reduceSizeHeight(size, footerHeight)}
+        />
+      ) : null}
+      {showPaginationControls ? (
+        <div className={`${classBase}-footer`} ref={footerRef}>
+          <PaginationControl dataSource={dataSource} />
+        </div>
+      ) : null}
+    </MeasuredContainer>
   );
 });

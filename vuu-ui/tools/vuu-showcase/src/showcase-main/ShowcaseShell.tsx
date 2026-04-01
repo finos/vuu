@@ -6,7 +6,7 @@ import {
   GridLayoutItem,
   GridLayoutProvider,
 } from "@heswell/grid-layout";
-import { SaltProvider, Text } from "@salt-ds/core";
+import { SaltProviderNext, Text } from "@salt-ds/core";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -62,7 +62,13 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
   );
 
   return themeReady ? (
-    <SaltProvider density="high" theme="vuu-theme" mode="light">
+    <SaltProviderNext
+      accent="purple"
+      density="high"
+      corner="rounded"
+      theme="vuu-theme"
+      mode="light"
+    >
       <ShowcaseProvider isDataConsumer={dataConsumer}>
         <GridLayoutProvider>
           <GridLayout
@@ -135,6 +141,6 @@ export const ShowcaseShell = ({ treeSource }: AppProps) => {
           </GridLayout>
         </GridLayoutProvider>
       </ShowcaseProvider>
-    </SaltProvider>
+    </SaltProviderNext>
   ) : null;
 };

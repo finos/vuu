@@ -1,0 +1,20 @@
+.vuuTableFooter {
+    background-color: var(--salt-container-secondary-background);
+    display: grid;
+    --table-footer-height: var(--vuuTableFooter-height, 32px);
+    flex: 0 0 var(--table-footer-height);
+    grid-template-areas: "panel-start panel-center panel-end";
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto;
+
+    height: var(--table-footer-height);
+
+    .vuuTableFooterTray {
+        align-items: center;
+        display: flex;
+        justify-self: end;;
+        margin: 0 var(--salt-spacing-200);
+        grid-area: panel-end;
+  }
+
+}

@@ -6,7 +6,7 @@
     display: flex;  
     flex-direction: column;
     gap: var(--salt-spacing-300);
-    height: var(--vuuColumnPicker-height, auto);
+    height: var(--vuuColumnPicker-height, 100%);
     overflow: hidden;
     padding: var(--salt-spacing-300) 0;
 

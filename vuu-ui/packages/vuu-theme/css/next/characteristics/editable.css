@@ -1,5 +1,5 @@
-.salt-theme.salt-theme-next.vuu-theme-next {
-  --salt-editable-borderColor: var(--salt-palette-neutral);
+.salt-theme.salt-theme-next.vuu-theme {
+  --salt-editable-borderColor: var(--salt-palette-neutral-strong);
   --salt-editable-borderColor-active: var(--salt-palette-accent-stronger);
   --salt-editable-borderColor-disabled: var(--salt-palette-neutral-disabled);
   --salt-editable-borderColor-hover: var(--salt-palette-accent);

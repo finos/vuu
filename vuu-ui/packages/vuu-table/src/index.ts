@@ -8,6 +8,7 @@ export { Row } from "./Row";
 export * from "./Table";
 export * from "./table-cell";
 export * from "./table-config";
+export { useTableConfig } from "./table-config/useTableConfig";
 export * from "./table-header";
 export * from "./useControlledTableNavigation";
 export * from "./useEditableCell";

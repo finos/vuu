@@ -116,7 +116,7 @@ const ColumnListItem = ({
           size={16}
         />
       ) : null}
-      {item?.isCalculated ? <Icon name="function" /> : null}
+      {item?.ƒ ? <Icon name="function" /> : null}
       {hideAndRemove || hideOnly || removeOnly ? (
         <Checkbox
           className={`${classBase}-checkBox`}

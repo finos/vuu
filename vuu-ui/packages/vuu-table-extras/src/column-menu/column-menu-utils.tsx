@@ -7,10 +7,7 @@ import {
   MenuTrigger,
 } from "@salt-ds/core";
 import { DataSource } from "@vuu-ui/vuu-data-types";
-import {
-  ColumnDescriptor,
-  TableSettingsPermissions,
-} from "@vuu-ui/vuu-table-types";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
   getGroupStatus,
   getSortStatus,
@@ -49,12 +46,12 @@ export type ColumnDisplayColumnMenuActionType =
   | "unpin-column"
   | "hide-column";
 
-export type TableSettingsActionType = "column-settings" | "table-settings";
+export type ColumnSettingsActionType = "column-settings";
 
 export type ColumnMenuActionType =
   | DataSourceColumnMenuActionType
   | ColumnDisplayColumnMenuActionType
-  | TableSettingsActionType;
+  | ColumnSettingsActionType;
 
 export const isColumnMenuActionType = (
   value?: string,
@@ -82,7 +79,6 @@ export const isColumnMenuActionType = (
     "hide-column",
     "remove-column",
     "column-settings",
-    "table-settings",
   ].includes(value);
 
 export const getColumnMenuActionType = (target: EventTarget | HTMLElement) => {
@@ -451,9 +447,8 @@ export const buildSettingsMenuItems = (
   _: ColumnDescriptor,
   menuActionClickHandler: MenuItemClickHandler,
   allowColumnSettings = true,
-  allowTableSettings: boolean | TableSettingsPermissions = true,
 ): MenuElements | null => {
-  if (!allowColumnSettings && !allowTableSettings) {
+  if (!allowColumnSettings) {
     return null;
   }
 
@@ -468,19 +463,6 @@ export const buildSettingsMenuItems = (
         onClick={menuActionClickHandler}
       >
         Column settings ...
-      </MenuItem>,
-    );
-  }
-
-  if (allowTableSettings) {
-    menuItems.push(
-      <MenuItem
-        data-icon="settings"
-        data-menu-action-id="table-settings"
-        key="table-settings"
-        onClick={menuActionClickHandler}
-      >
-        Table settings ...
       </MenuItem>,
     );
   }

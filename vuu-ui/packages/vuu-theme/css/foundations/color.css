@@ -6,7 +6,7 @@
   --salt-color-white: rgb(var(--salt-color-white-rgb));
 }
 
-.salt-theme.vuu-theme-next {
+.salt-theme.vuu-theme {
   --salt-color-black-rgb: 0, 0, 0;
   --salt-color-white-rgb: 255, 255, 255;
 

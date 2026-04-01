@@ -1,4 +1,4 @@
-import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { ColumnDescriptor, TableSelectionModel } from "@vuu-ui/vuu-table-types";
 import { queryClosest } from "@vuu-ui/vuu-utils";
 import {
   FormEventHandler,
@@ -13,7 +13,10 @@ import {
   SelectedColumnChangeType,
 } from "./ColumnModel";
 
-export type ColumnPickerAction = (column: ColumnDescriptor) => void;
+export type ColumnSelectionModel = Extract<
+  TableSelectionModel,
+  "none" | "single"
+>;
 
 const SOURCE = ColumnChangeSource.ColumnPicker;
 
@@ -33,13 +36,15 @@ export type SelectedColumnsChangeHandler = (
   changeType: SelectedColumnChangeType,
 ) => void;
 
-export interface ColumPickerHookProps {
+export interface ColumnPickerHookProps {
   columnModel: ColumnModel;
+  selectionModel?: ColumnSelectionModel;
 }
 
 export const useColumnPicker = ({
   columnModel: model,
-}: ColumPickerHookProps) => {
+  selectionModel = "none",
+}: ColumnPickerHookProps) => {
   const [, forceRender] = useState({});
   useEffect(() => {
     model.on("render", forceRender);

@@ -1,7 +1,13 @@
 import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import { useVuuMenuActions } from "@vuu-ui/vuu-data-react";
 import { getSchema, SimulTableName } from "@vuu-ui/vuu-data-test";
-import { Table, TableProps } from "@vuu-ui/vuu-table";
+import { Table, TableProps, useTableConfig } from "@vuu-ui/vuu-table";
+import {
+  DataSourceStats,
+  TableFooter,
+  TabbedTableSettingsAction,
+  TableFooterTray,
+} from "@vuu-ui/vuu-table-extras";
 import {
   ColumnDescriptor,
   ColumnLayout,
@@ -13,9 +19,9 @@ import {
   toColumnName,
   useData,
 } from "@vuu-ui/vuu-utils";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { DemoTableContainer } from "./DemoTableContainer";
-import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
+import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
 
 export type SimulTableProps = Partial<TableProps> & {
   autosubscribeColumns?: string[];
@@ -27,7 +33,7 @@ export type SimulTableProps = Partial<TableProps> & {
   tableName?: SimulTableName;
 };
 
-export const SimulTable = ({
+const SimulTableBase = ({
   EmptyDisplay,
   autosubscribeColumns,
   columnLayout,
@@ -48,72 +54,89 @@ export const SimulTable = ({
   const tableSchema = getSchema(tableName);
 
   const tableContainerStyle = { flex: "1 1 auto" };
-  const footerContainerStyle = { flex: "0 0 32px" };
 
-  const tableProps = useMemo<Pick<TableProps, "config" | "dataSource">>(
+  const initialTableConfig = useMemo(
     () => ({
-      config: {
-        columnLayout,
-        columns:
-          columnsProp ??
-          applyDefaultColumnConfig(tableSchema, getDefaultColumnConfig),
-        rowClassNameGenerators,
-        rowSeparators: true,
-        zebraStripes: true,
-      },
-      dataSource:
-        dataSourceProp ??
-        new VuuDataSource({
-          autosubscribeColumns,
-          columns: tableSchema.columns.map(toColumnName),
-          table: tableSchema.table,
-        }),
+      columnLayout,
+      columns:
+        columnsProp ??
+        applyDefaultColumnConfig(tableSchema, getDefaultColumnConfig),
+      rowClassNameGenerators,
+      rowSeparators: true,
+      zebraStripes: true,
     }),
     [
       columnLayout,
       columnsProp,
-      tableSchema,
       getDefaultColumnConfig,
       rowClassNameGenerators,
-      dataSourceProp,
-      VuuDataSource,
-      autosubscribeColumns,
+      tableSchema,
     ],
   );
 
-  const handleConfigChange = useCallback(() => {
-    // console.log(JSON.stringify(config, null, 2));
-  }, []);
+  const dataSource = useMemo(
+    () =>
+      dataSourceProp ??
+      new VuuDataSource({
+        columns: tableSchema.columns.map(toColumnName),
+        table: tableSchema.table,
+      }),
+    [VuuDataSource, dataSourceProp, tableSchema.columns, tableSchema.table],
+  );
 
-  const { menuBuilder, menuActionHandler } = useContextMenu({
-    dataSource: tableProps.dataSource,
+  const {
+    tableConfig,
+    columnModel,
+    onTableDisplayAttributeChange,
+    onTableConfigChange,
+  } = useTableConfig({
+    availableColumns: tableSchema.columns,
+    config: initialTableConfig,
+    dataSource,
   });
 
+  const { menuBuilder, menuActionHandler } = useContextMenu({ dataSource });
+
   return (
-    <>
+    <ModalProvider>
       <ContextMenuProvider
         menuActionHandler={menuActionHandler}
         menuBuilder={menuBuilder}
       >
-        <DemoTableContainer>
-          <div className="DemoTableContainer-table" style={tableContainerStyle}>
-            <Table
-              {...tableProps}
-              EmptyDisplay={EmptyDisplay}
-              height={height}
-              onConfigChange={handleConfigChange}
-              renderBufferSize={renderBufferSize}
-              {...props}
+        <div className="DemoTableContainer-table" style={tableContainerStyle}>
+          <Table
+            EmptyDisplay={EmptyDisplay}
+            config={tableConfig}
+            dataSource={dataSource}
+            height={height}
+            onConfigChange={onTableConfigChange}
+            renderBufferSize={renderBufferSize}
+            {...props}
+          />
+        </div>
+        <TableFooter>
+          <DataSourceStats dataSource={dataSource} />
+          <TableFooterTray>
+            <TabbedTableSettingsAction
+              allowCreateCalculatedColumn
+              columnModel={columnModel}
+              config={tableConfig}
+              data-embedded
+              onDisplayAttributeChange={onTableDisplayAttributeChange}
+              vuuTable={tableSchema.table}
             />
-          </div>
-          <div
-            className="DemoTableContainer-footer"
-            style={footerContainerStyle}
-          >
-            <DataSourceStats dataSource={tableProps.dataSource} />
-          </div>
-        </DemoTableContainer>
+          </TableFooterTray>
+        </TableFooter>
       </ContextMenuProvider>
+    </ModalProvider>
+  );
+};
+export const SimulTable = (props: SimulTableProps) => {
+  return (
+    <>
+      <DemoTableContainer>
+        <SimulTableBase {...props} />
+      </DemoTableContainer>
     </>
   );
 };

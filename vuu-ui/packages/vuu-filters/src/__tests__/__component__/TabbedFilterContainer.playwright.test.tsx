@@ -8,7 +8,7 @@ import {
   SavedFilterPanelFiveFiltersCustomStyles,
 } from "../../../../../showcase/src/examples/Filters/SavedFilters/SavedFilterPanel.examples";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { SaltProvider } from "@salt-ds/core";
+import { SaltProviderNext } from "@salt-ds/core";
 
 test.describe("Given two TabbedFilterContainers with different values for filterProvider", () => {
   test(`When a filter value is entered 
@@ -54,11 +54,11 @@ test.describe("Given two TabbedFilterContainers with different values for filter
       And Saved Filters Tab selected 
       Then no Filter pills are present`, async ({ mount, page }) => {
     await mount(
-      <SaltProvider>
+      <SaltProviderNext>
         <LocalDataSourceProvider>
           <MultipleTabbedFilterContainers />
         </LocalDataSourceProvider>
-      </SaltProvider>,
+      </SaltProviderNext>,
     );
 
     const combobox = page.getByTestId("ccy-1").getByRole("combobox");

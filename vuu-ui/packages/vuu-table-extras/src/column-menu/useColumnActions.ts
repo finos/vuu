@@ -74,7 +74,6 @@ export const useColumnActions = ({
         case "unpin-column": return onColumnDisplayAction?.({type: "pinColumn", column, pin: false}), true
         // 3) Table Admin options ...
         case "column-settings": return onDisplaySettingsAction?.({type: "column-settings", column}), true
-        case "table-settings": return onDisplaySettingsAction?.({type: "table-settings"}), true
         default:
           logUnhandledMessage(columnMenuActionType, `[vuu-table-extras] useColumnActions handleContextMenuAction, unhandled columnMenuActionType`)
       }

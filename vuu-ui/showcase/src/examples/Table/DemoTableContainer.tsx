@@ -7,6 +7,7 @@ import {
   ColumnSettingsPanel,
   TableSettingsPanel,
 } from "@vuu-ui/vuu-table-extras";
+import { ContextPanelProvider } from "@vuu-ui/vuu-ui-controls";
 
 if (
   typeof ColumnSettingsPanel !== "function" ||
@@ -27,7 +28,9 @@ export const DemoTableContainer = ({
   return (
     <LayoutProvider>
       <Flexbox style={{ height, width: "100vw" }}>
-        <View style={{ flex: 1 }}>{children}</View>
+        <View style={{ flex: 1 }}>
+          <ContextPanelProvider>{children}</ContextPanelProvider>
+        </View>
         <ContextPanel id={VuuShellLocation.ContextPanel} overlay />
       </Flexbox>
     </LayoutProvider>
