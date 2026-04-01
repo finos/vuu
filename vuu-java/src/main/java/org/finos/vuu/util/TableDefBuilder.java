@@ -16,11 +16,11 @@ import static org.finos.vuu.util.ScalaCollectionConverter.*;
 public class TableDefBuilder {
     private String name;
     private String keyField;
-    private Column[] customColumns;
-    private List<String> joinFields=List.of();
+    private Column[] customColumns = new Column[0];
+    private List<String> joinFields = List.of();
     private boolean autoSubscribe = false;
-    private List<Link> links= List.of();
-    private List<String> indexFields;
+    private List<Link> links = List.of();
+    private List<String> indexFields = List.of();
     private TableVisibility visibility = TableVisibility.PUBLIC();
     private boolean includeDefaultColumns = true;
     private BiFunction<ViewPort, TableContainer, PermissionFilter> permissionFunction = (vp, tc) -> AllowAllPermissionFilter$.MODULE$;

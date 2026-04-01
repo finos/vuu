@@ -51,12 +51,12 @@ class TableDefBuilderTest {
                 .name("myTable")
                 .keyField("myKey")
                 .customColumns(new Column[]{new SimpleColumn("myColumn", 0, String.class)})
-                .joinFields(List.of("myJoinField"))
-                .indexFields(List.of("myIndex"))
                 .build();
 
+        assertTrue(tableDef.joinFields().isEmpty());
         assertFalse(tableDef.autosubscribe());
         assertTrue(tableDef.links().links().isEmpty());
+        assertTrue(tableDef.indices().indices().isEmpty());
         assertEquals(TableVisibility.PUBLIC(), tableDef.visibility());
         assertTrue(tableDef.includeDefaultColumns());
         assertNotNull(tableDef.permissionFunction());
