@@ -50,9 +50,9 @@ class TableDefBuilderTest {
         TableDef tableDef = new TableDefBuilder()
                 .name("myTable")
                 .keyField("myKey")
-                .customColumns(new Column[]{new SimpleColumn("myColumn", 0, String.class)})
                 .build();
 
+        assertEquals(0, tableDef.customColumns().length);
         assertTrue(tableDef.joinFields().isEmpty());
         assertFalse(tableDef.autosubscribe());
         assertTrue(tableDef.links().links().isEmpty());
