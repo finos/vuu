@@ -25,9 +25,4 @@ class WebSocketServerHandler(val handler: ViewServerHandler) extends SimpleChann
     }
   }
 
-  override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
-    logger.warn("Exception: Closing context", cause)
-    ctx.close();
-  }
-
 }

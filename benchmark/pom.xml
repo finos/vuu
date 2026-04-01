@@ -9,6 +9,7 @@
 
     <properties>
         <uberjar.name>benchmarks</uberjar.name>
+        <jmh.version>1.37</jmh.version>
     </properties>
 
     <artifactId>benchmark</artifactId>

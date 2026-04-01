@@ -60,6 +60,7 @@ class WebSocketClient(url: String, port: Int, nativeTransport: Boolean = true)(i
           pipeline.addLast("aggregator", new HttpObjectAggregator(WebSocketConstants.MAX_CONTENT_LENGTH))
           pipeline.addLast("compression", new WebSocketClientCompressionHandler(WebSocketConstants.MAX_CONTENT_LENGTH))
           pipeline.addLast("handler", handler)
+          pipeline.addLast("error-handler", new WebSocketChannelExceptionHandler())
         }
 
         private def applySSL(socketChannel: SocketChannel, channelPipeline: ChannelPipeline): Unit = {
