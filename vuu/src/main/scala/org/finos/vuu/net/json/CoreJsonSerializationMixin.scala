@@ -44,7 +44,6 @@ import org.finos.vuu.net.*
   new Type(value = classOf[GetTableList], name = "GET_TABLE_LIST"),
   new Type(value = classOf[GetTableListResponse], name = "TABLE_LIST_RESP"),
   new Type(value = classOf[HeartBeat], name = "HB"),
-  new Type(value = classOf[RpcUpdate], name = "RPC_UP"),
   new Type(value = classOf[RpcSuccess], name = "RPC_SUCCESS"),
   new Type(value = classOf[RpcReject], name = "RPC_REJECT"),
   new Type(value = classOf[HeartBeatResponse], name = "HB_RESP"),

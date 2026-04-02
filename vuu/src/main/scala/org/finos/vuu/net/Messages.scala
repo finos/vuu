@@ -137,8 +137,6 @@ case class MenuRpcCall(module: String, method: String, params: Array[Any], named
 
 case class MenuRpcResponse(module: String, method: String, result: ViewPortAction) extends MessageBody
 
-case class RpcUpdate(table: ViewPortTable, key: String, data: Map[String, Any]) extends MessageBody
-
 case class RpcSuccess(table: ViewPortTable, key: String) extends MessageBody
 
 case class RpcReject(table: ViewPortTable, key: String, reason: String) extends MessageBody

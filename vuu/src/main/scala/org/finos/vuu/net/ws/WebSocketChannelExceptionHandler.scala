@@ -4,8 +4,10 @@ import com.typesafe.scalalogging.StrictLogging
 import io.netty.channel.{ChannelHandlerContext, ChannelInboundHandlerAdapter}
 
 class WebSocketChannelExceptionHandler extends ChannelInboundHandlerAdapter with StrictLogging {
+
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
-    logger.error("Pipeline error caught:", cause)
+    logger.error("Exception caught. Closing.", cause)
     ctx.close()
   }
+
 }
