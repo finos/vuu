@@ -1,10 +1,10 @@
 package org.finos.vuu.net.ws
 
 import com.typesafe.scalalogging.StrictLogging
+import io.netty.channel.epoll.{Epoll, EpollIoHandler, EpollServerSocketChannel, EpollSocketChannel}
 import io.netty.channel.kqueue.{KQueue, KQueueIoHandler, KQueueServerSocketChannel, KQueueSocketChannel}
 import io.netty.channel.nio.NioIoHandler
 import io.netty.channel.socket.nio.{NioServerSocketChannel, NioSocketChannel}
-import io.netty.channel.uring.{IoUringIoHandler, IoUring, IoUringServerSocketChannel, IoUringSocketChannel}
 import io.netty.channel.{Channel, EventLoopGroup, IoHandlerFactory, MultiThreadIoEventLoopGroup, ServerChannel}
 
 trait Transport {
@@ -24,9 +24,9 @@ object Transport extends StrictLogging {
 
   def apply(nativeTransport: Boolean): Transport = {
     if (nativeTransport) {
-      if (IoUring.isAvailable) {
-        logger.debug("Using IOUringNativeTransport")
-        return IOUringNativeTransport
+      if (Epoll.isAvailable) {
+        logger.debug("Using EpollNativeTransport")
+        return EpollNativeTransport
       } else if (KQueue.isAvailable) {
         logger.debug("Using KQueueNativeTransport")
         return KQueueNativeTransport
@@ -37,10 +37,10 @@ object Transport extends StrictLogging {
   }
 }
 
-object IOUringNativeTransport extends Transport {
-  override def ioHandlerFactory: IoHandlerFactory = IoUringIoHandler.newFactory()
-  override def channelClass: Class[_ <: Channel] = classOf[IoUringSocketChannel]
-  override def serverChannelClass: Class[_ <: ServerChannel] = classOf[IoUringServerSocketChannel]
+object EpollNativeTransport extends Transport {
+  override def ioHandlerFactory: IoHandlerFactory = EpollIoHandler.newFactory()
+  override def channelClass: Class[_ <: Channel] = classOf[EpollSocketChannel]
+  override def serverChannelClass: Class[_ <: ServerChannel] = classOf[EpollServerSocketChannel]
 }
 
 object KQueueNativeTransport extends Transport {
