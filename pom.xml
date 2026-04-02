@@ -56,20 +56,6 @@
         <scala.logging.version>3.9.6</scala.logging.version>
         <scalamock.version>7.5.5</scalamock.version>
         <scalatest.version>3.2.19</scalatest.version>
-
-        <!-- Dependencies -->
-        <antlr.version>4.13.2</antlr.version>
-        <assertj.version>3.27.7</assertj.version>
-        <jackson.version>3.1.0</jackson.version>
-        <junit.jupiter.version>6.0.3</junit.jupiter.version>
-        <logback.version>1.5.32</logback.version>
-        <metrics.version>4.2.38</metrics.version>
-        <netty.version>4.2.12.Final</netty.version>
-        <roaring.bitmap.version>1.6.9</roaring.bitmap.version>
-        <scala.version>3.3.7</scala.version>
-        <scala.logging.version>3.9.6</scala.logging.version>
-        <scalamock.version>7.5.5</scalamock.version>
-        <scalatest.version>3.2.19</scalatest.version>
     </properties>
 
     <modules>
