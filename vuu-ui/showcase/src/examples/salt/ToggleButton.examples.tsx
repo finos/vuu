@@ -10,7 +10,7 @@ import { SyntheticEvent, useState } from "react";
 import "./ToggleButton.examples.css";
 
 interface ToggleButtonExampleProps
-  extends Pick<ToggleButtonGroupProps, "sentiment"> {
+  extends Pick<ToggleButtonGroupProps, "appearance" | "sentiment"> {
   "data-variant"?: ButtonProps["variant"];
   "data-accented"?: boolean;
 }
@@ -138,7 +138,7 @@ export const ToggleButtonGroupVariations = () => {
       }}
     >
       <span>CTA (Accented)</span>
-      <ButtonGroupWithTextOnly sentiment="accented" />
+      <ButtonGroupWithTextOnly appearance="solid" sentiment="accented" />
 
       <span />
       <ButtonGroupWithIconOnly sentiment="accented" />

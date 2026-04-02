@@ -11,7 +11,7 @@ import { createRoot } from "react-dom/client";
 import { App } from "./src/App";
 
 import "@vuu-ui/vuu-icons/index.css";
-import "@vuu-ui/vuu-theme/index.css";
+import "@vuu-ui/vuu-theme/index-next.css";
 
 const CONNECTION_FAILED = "connection-failed";
 const isConnectionFailedMessage = (err) =>
