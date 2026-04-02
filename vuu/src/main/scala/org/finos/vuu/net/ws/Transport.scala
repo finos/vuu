@@ -1,20 +1,23 @@
 package org.finos.vuu.net.ws
 
 import com.typesafe.scalalogging.StrictLogging
-import io.netty.channel.epoll.{Epoll, EpollEventLoopGroup, EpollServerSocketChannel, EpollSocketChannel}
-import io.netty.channel.kqueue.{KQueue, KQueueEventLoopGroup, KQueueServerSocketChannel, KQueueSocketChannel}
-import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.epoll.{Epoll, EpollIoHandler, EpollServerSocketChannel, EpollSocketChannel}
+import io.netty.channel.kqueue.{KQueue, KQueueIoHandler, KQueueServerSocketChannel, KQueueSocketChannel}
+import io.netty.channel.nio.NioIoHandler
 import io.netty.channel.socket.nio.{NioServerSocketChannel, NioSocketChannel}
-import io.netty.channel.{Channel, EventLoopGroup, ServerChannel}
+import io.netty.channel.{Channel, EventLoopGroup, IoHandlerFactory, MultiThreadIoEventLoopGroup, ServerChannel}
 
 trait Transport {
 
-  def eventLoopGroup(threads: Int = 0): EventLoopGroup
+  def ioHandlerFactory: IoHandlerFactory
+
+  def eventLoopGroup(threads: Int = 0): EventLoopGroup = {
+    new MultiThreadIoEventLoopGroup(threads, ioHandlerFactory)
+  }
 
   def channelClass: Class[_ <: Channel]
 
   def serverChannelClass: Class[_ <: ServerChannel]
-
 }
 
 object Transport extends StrictLogging {
@@ -32,35 +35,22 @@ object Transport extends StrictLogging {
     logger.debug("Using NioTransport")
     NioTransport
   }
-
 }
 
 object EpollNativeTransport extends Transport {
-
-  override def eventLoopGroup(threads: Int = 0): EventLoopGroup = new EpollEventLoopGroup(threads)
-
+  override def ioHandlerFactory: IoHandlerFactory = EpollIoHandler.newFactory()
   override def channelClass: Class[_ <: Channel] = classOf[EpollSocketChannel]
-
   override def serverChannelClass: Class[_ <: ServerChannel] = classOf[EpollServerSocketChannel]
-
 }
 
 object KQueueNativeTransport extends Transport {
-
-  override def eventLoopGroup(threads: Int = 0): EventLoopGroup = new KQueueEventLoopGroup(threads)
-
+  override def ioHandlerFactory: IoHandlerFactory = KQueueIoHandler.newFactory()
   override def channelClass: Class[_ <: Channel] = classOf[KQueueSocketChannel]
-
   override def serverChannelClass: Class[_ <: ServerChannel] = classOf[KQueueServerSocketChannel]
-
 }
 
 object NioTransport extends Transport {
-
-  override def eventLoopGroup(threads: Int = 0): EventLoopGroup = new NioEventLoopGroup(threads)
-
+  override def ioHandlerFactory: IoHandlerFactory = NioIoHandler.newFactory()
   override def channelClass: Class[_ <: Channel] = classOf[NioSocketChannel]
-
   override def serverChannelClass: Class[_ <: ServerChannel] = classOf[NioServerSocketChannel]
-
 }

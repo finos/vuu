@@ -29,7 +29,7 @@
         <dependency>
             <groupId>com.typesafe.scala-logging</groupId>
             <artifactId>scala-logging_3</artifactId>
-            <version>${scala.logging}</version>
+            <version>${scala.logging.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.scala-lang</groupId>
@@ -81,16 +81,10 @@
             <groupId>io.netty</groupId>
             <artifactId>netty-transport-native-kqueue</artifactId>
             <version>${netty.version}</version>
-            <classifier>osx-aarch_64</classifier> <!-- Apple M series -->
+            <classifier>osx-aarch_64</classifier> <!-- macOS -->
         </dependency>
 
         <!--        End Netty       -->
-
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
 
         <dependency>
             <groupId>org.antlr</groupId>

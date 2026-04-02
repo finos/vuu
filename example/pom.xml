@@ -12,6 +12,12 @@
     <artifactId>example</artifactId>
     <name>${project.artifactId}</name>
 
+    <properties>
+        <sttp.client4.version>4.0.12</sttp.client4.version>
+        <typesafe.conf.version>1.4.5</typesafe.conf.version>
+        <vertx.version>5.0.10</vertx.version>
+    </properties>
+
     <modules>
         <module>editable</module>
         <module>main</module>

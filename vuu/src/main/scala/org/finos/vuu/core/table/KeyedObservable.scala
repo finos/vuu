@@ -1,6 +1,6 @@
 package org.finos.vuu.core.table
 
-import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.StrictLogging
 
 import java.util.concurrent.ConcurrentHashMap
 import scala.jdk.CollectionConverters.MapHasAsScala
@@ -29,13 +29,11 @@ trait KeyObserver[T] {
   def onUpdate(update: T): Unit
 }
 
-trait KeyedObservableHelper[T] extends KeyedObservable[T] {
+trait KeyedObservableHelper[T] extends KeyedObservable[T] with StrictLogging {
 
   override def getObserversByKey(): Map[String, Array[KeyObserver[T]]] = {
     MapHasAsScala(observersByKey).asScala.toMap
   }
-
-  private val logger = LoggerFactory.getLogger(getClass)
 
   private val observersByKey = new ConcurrentHashMap[String, Array[KeyObserver[T]]]()
   private val observersLock = new Object
