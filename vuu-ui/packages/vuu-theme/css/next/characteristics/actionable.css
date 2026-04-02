@@ -34,7 +34,7 @@
   --salt-actionable-accented-subtle-borderColor: var(--salt-palette-alpha-none);
   --salt-actionable-accented-subtle-foreground-active: var(--salt-palette-foreground-primary);
   --salt-actionable-accented-subtle-foreground-hover: var(--salt-palette-accent-stronger);
-  --salt-actionable-accented-subtle-foreground: var(--salt-palette-accent-strong);
+  --salt-actionable-accented-subtle-foreground: var(--salt-palette-foreground-primary);
 
   /* neutral solid previous Primary */
   --salt-actionable-bold-background-active: var(--salt-color-gray-900);
