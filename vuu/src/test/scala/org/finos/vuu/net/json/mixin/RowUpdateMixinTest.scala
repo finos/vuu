@@ -6,14 +6,18 @@ import org.finos.vuu.net.RowUpdate
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.scala.DefaultScalaModule
 
 class RowUpdateMixinTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
-  Feature("Test mixin") {
+  Feature("Check we can serialize and deserialize row updates") {
 
-    val mapper = JsonMapper.builder().addMixIn(classOf[RowUpdate], classOf[RowUpdateMixin]).build()
+    val mapper = JsonMapper.builder()
+      .addModule(DefaultScalaModule())
+      .addMixIn(classOf[RowUpdate], classOf[RowUpdateMixin])
+      .build()
 
-    Scenario("Test round trip") {
+    Scenario("Test multiple data types") {
 
       val rowUpdate = RowUpdate(
         vpVersion = "Request1",

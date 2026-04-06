@@ -6,6 +6,4 @@ import org.finos.vuu.net.json.VsJsonTypeResolver
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonTypeIdResolver(classOf[VsJsonTypeResolver])
-trait MessageBodyMixin {
-
-}
+trait MessageBodyMixin { }

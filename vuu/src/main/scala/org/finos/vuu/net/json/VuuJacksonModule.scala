@@ -9,7 +9,6 @@ class VuuJacksonModule extends SimpleModule {
 
   ViewPortActionMixin.registerTypes()
 
-
   setMixInAnnotation(classOf[ViewPortMenu], classOf[ViewPortMenuMixin])
   setMixInAnnotation(classOf[ViewPortAction], classOf[ViewPortActionMixin])
   setMixInAnnotation(classOf[RowUpdate], classOf[RowUpdateMixin])

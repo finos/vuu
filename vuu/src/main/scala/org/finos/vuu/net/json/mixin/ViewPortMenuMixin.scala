@@ -2,11 +2,11 @@ package org.finos.vuu.net.json.mixin
 
 import org.finos.vuu.viewport.{CellViewPortMenuItem, EmptyViewPortMenu, NoAction, RowViewPortMenuItem, SelectionViewPortMenuItem, TableViewPortMenuItem, ViewPortMenu, ViewPortMenuFolder}
 import tools.jackson.core.{JsonGenerator, JsonParser}
-import tools.jackson.databind.{DeserializationContext, JsonNode, SerializationContext}
 import tools.jackson.databind.annotation.{JsonDeserialize, JsonSerialize}
 import tools.jackson.databind.deser.std.StdDeserializer
 import tools.jackson.databind.node.ArrayNode
 import tools.jackson.databind.ser.std.StdSerializer
+import tools.jackson.databind.{DeserializationContext, JsonNode, SerializationContext}
 
 import scala.jdk.CollectionConverters.*
 
@@ -21,7 +21,7 @@ class ViewPortMenuSerializer extends StdSerializer[ViewPortMenu](classOf[ViewPor
     value match {
       case EmptyViewPortMenu =>
         gen.writeStartObject()
-        gen.writeStringProperty("name", "")
+        gen.writeStringProperty("name", EmptyViewPortMenu.name)
         gen.writeEndObject()
 
       case folder: ViewPortMenuFolder =>
@@ -83,7 +83,7 @@ class ViewPortMenuDeserializer extends StdDeserializer[ViewPortMenu](classOf[Vie
     } else if (node.has("menus") && node.get("menus").isArray) {
       val menuArray = node.get("menus").asInstanceOf[ArrayNode]
       val children = menuArray.asScala.view.map(processJsonNode).toSeq
-      new ViewPortMenuFolder(name, children)
+      ViewPortMenuFolder(name, children)
     } else {
       val context = node.path("context").asString()
       val filter = node.path("filter").asString()
@@ -91,17 +91,17 @@ class ViewPortMenuDeserializer extends StdDeserializer[ViewPortMenu](classOf[Vie
 
       val item: ViewPortMenu = context match {
         case "selected-rows" =>
-          new SelectionViewPortMenuItem(name, filter, (_, _) => NoAction(), rpcName)
+          SelectionViewPortMenuItem(name, filter, (_, _) => NoAction, rpcName)
 
         case "row" =>
-          new RowViewPortMenuItem(name, filter, (_, _, _) => NoAction(), rpcName)
+          RowViewPortMenuItem(name, filter, (_, _, _) => NoAction, rpcName)
 
         case "grid" =>
-          new TableViewPortMenuItem(name, filter, _ => NoAction(), rpcName)
+          TableViewPortMenuItem(name, filter, _ => NoAction, rpcName)
 
         case "cell" =>
           val field = node.path("field").asString()
-          new CellViewPortMenuItem(name, filter, (_, _, _, _) => NoAction(), rpcName, field)
+          CellViewPortMenuItem(name, filter, (_, _, _, _) => NoAction, rpcName, field)
 
         case _ => EmptyViewPortMenu
       }

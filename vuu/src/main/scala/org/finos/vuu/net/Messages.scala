@@ -203,7 +203,7 @@ case class RowUpdate(vpVersion: String, viewPortId: String, vpSize: Int, rowInde
 
 case class RpcRequest(context: RpcContext, rpcName: String, params: Map[String, Any]) extends MessageBody
 
-trait RpcContext
+sealed trait RpcContext
 
 object GlobalContext extends RpcContext
 
@@ -213,13 +213,13 @@ case class ViewPortRowContext(viewPortId: String, rowKey: String) extends RpcCon
 
 case class RpcResponseNew(rpcName: String, result: RpcResult, action: UIAction) extends MessageBody
 
-trait RpcResult
+sealed trait RpcResult
 
 case class RpcSuccessResult(data: Any) extends RpcResult
 
 case class RpcErrorResult(errorMessage: String) extends RpcResult
 
-trait UIAction
+sealed trait UIAction
 
 object NoneAction extends UIAction
 

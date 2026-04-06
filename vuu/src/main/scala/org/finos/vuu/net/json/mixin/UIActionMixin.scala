@@ -1,14 +1,16 @@
 package org.finos.vuu.net.json.mixin
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo
-import org.finos.vuu.net.json.VsJsonTypeResolver
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type
+import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
 import org.finos.vuu.net.{NoneAction, ShowNotificationAction}
-import tools.jackson.databind.annotation.JsonTypeIdResolver
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-@JsonTypeIdResolver(classOf[VsJsonTypeResolver])
-trait UIActionMixin {
-
-  
-  
-}
+@JsonTypeInfo(
+  use = JsonTypeInfo.Id.NAME,
+  include = JsonTypeInfo.As.PROPERTY,
+  property = "type"
+)
+@JsonSubTypes(Array(
+  new Type(value = classOf[NoneAction.type], name = "NO_ACTION"),
+  new Type(value = classOf[ShowNotificationAction], name = "SHOW_NOTIFICATION_ACTION")
+))
+trait UIActionMixin { }

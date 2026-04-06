@@ -2,7 +2,7 @@ package org.finos.vuu.net.rest
 
 import tools.jackson.core.`type`.TypeReference
 import tools.jackson.databind.json.JsonMapper
-import org.finos.vuu.net.json.JsonMapperFactory
+import tools.jackson.module.scala.DefaultScalaModule
 
 import java.io.InputStream
 import java.lang.reflect.Type
@@ -49,9 +49,9 @@ object EmptyEncoder extends EntityEncoder[Null] {
 
 object JsonEntityEncoder {
 
+  private val defaultMapper = JsonMapper.builder().addModule(DefaultScalaModule()).build()
   private val classRegistry = new ConcurrentHashMap[Class[_], EntityEncoder[_]]()
   private val typeRegistry = new ConcurrentHashMap[Type, EntityEncoder[_]]()
-  private val defaultMapper = JsonMapperFactory.get()
   
   def forClass[T](clazz: Class[T], mapper: JsonMapper = defaultMapper): EntityEncoder[T] = {
     val encoder = classRegistry.computeIfAbsent(clazz, (c: Class[_]) => {

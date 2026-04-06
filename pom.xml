@@ -52,7 +52,7 @@
         <metrics.version>4.2.38</metrics.version>
         <netty.version>4.2.12.Final</netty.version>
         <roaring.bitmap.version>1.6.9</roaring.bitmap.version>
-        <scala.version>3.3.7</scala.version>
+        <scala.version>3.3.7</scala.version> <!-- Scala LTS -->
         <scala.logging.version>3.9.6</scala.logging.version>
         <scalamock.version>7.5.5</scalamock.version>
         <scalatest.version>3.2.19</scalatest.version>

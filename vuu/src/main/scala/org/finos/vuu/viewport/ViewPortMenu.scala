@@ -2,48 +2,57 @@ package org.finos.vuu.viewport
 
 import org.finos.vuu.net.ClientSessionId
 
-trait ViewPortMenu
+sealed trait ViewPortMenu {
+  def name: String
+}
 
 object ViewPortMenu {
   def apply(menus: ViewPortMenu*): ViewPortMenu = {
-    new ViewPortMenuFolder("ROOT", menus)
+    ViewPortMenuFolder("ROOT", menus)
   }
 
   def apply(name: String, menus: ViewPortMenu*): ViewPortMenu = {
-    new ViewPortMenuFolder(name, menus)
+    ViewPortMenuFolder(name, menus)
   }
 }
 
-class ViewPortMenuFolder(val name: String, val menus: Seq[ViewPortMenu]) extends ViewPortMenu {}
+case class ViewPortMenuFolder(name: String, menus: Seq[ViewPortMenu]) extends ViewPortMenu { }
 
-object EmptyViewPortMenu extends ViewPortMenu {}
+object EmptyViewPortMenu extends ViewPortMenu {
+  override def name: String = ""
+}
 
-trait Scope {}
+sealed trait ViewPortMenuItem extends ViewPortMenu {
+  def filter: String
+  def rpcName: String
+  def context: String
+}
 
-object Row extends Scope
-
-object Selection extends Scope
-
-object Field extends Scope
-
-class SelectionViewPortMenuItem(override val name: String, override val filter: String, val func: (ViewPortSelection, ClientSessionId) => ViewPortAction, override val rpcName: String) extends ViewPortMenuItem(name, filter, rpcName) {
+case class SelectionViewPortMenuItem(name: String,
+                                     filter: String,
+                                     func: (ViewPortSelection, ClientSessionId) => ViewPortAction,
+                                     rpcName: String) extends ViewPortMenuItem {
   val context: String = "selected-rows"
 }
 
-class CellViewPortMenuItem(override val name: String, override val filter: String, val func: (String, String, Object, ClientSessionId) => ViewPortAction, override val rpcName: String, val field: String = "*") extends ViewPortMenuItem(name, filter, rpcName) {
+case class CellViewPortMenuItem(name: String,
+                                filter: String,
+                                func: (String, String, AnyRef, ClientSessionId) => ViewPortAction,
+                                rpcName: String,
+                                field: String = "*") extends ViewPortMenuItem {
   val context: String = "cell"
 }
 
-class TableViewPortMenuItem(override val name: String, override val filter: String, val func: ClientSessionId => ViewPortAction, override val rpcName: String) extends ViewPortMenuItem(name, filter, rpcName) {
+case class TableViewPortMenuItem(name: String,
+                                 filter: String,
+                                 func: ClientSessionId => ViewPortAction,
+                                 rpcName: String) extends ViewPortMenuItem {
   val context: String = "grid"
 }
 
-class RowViewPortMenuItem(override val name: String, override val filter: String, val func: (String, Map[String, AnyRef], ClientSessionId) => ViewPortAction, override val rpcName: String) extends ViewPortMenuItem(name, filter, rpcName) {
+case class RowViewPortMenuItem(name: String,
+                               filter: String,
+                               func: (String, Map[String, AnyRef], ClientSessionId) => ViewPortAction,
+                               rpcName: String) extends ViewPortMenuItem {
   val context: String = "row"
-}
-
-class ViewPortMenuItem(val name: String, val filter: String, val rpcName: String) extends ViewPortMenu {
-
-  def this(name: String) = this(name, "", "")
-
 }
