@@ -1,6 +1,6 @@
 package org.finos.vuu.net.json.mixin
 
-import org.finos.vuu.net.{NoneAction, NotificationType, ShowNotificationAction, UIAction}
+import org.finos.vuu.net.ui.{NoneAction, NotificationType, ShowNotificationAction, UIAction}
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers

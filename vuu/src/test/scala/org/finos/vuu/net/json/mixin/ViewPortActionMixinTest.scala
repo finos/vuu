@@ -11,7 +11,6 @@ class ViewPortActionMixinTest extends AnyFeatureSpec with Matchers with GivenWhe
 
   Feature("Check we can serialize and deserialize viewport actions") {
 
-    ViewPortActionMixin.registerTypes()
     val mapper = JsonMapper.builder()
       .addModule(DefaultScalaModule())
       .addMixIn(classOf[ViewPortAction], classOf[ViewPortActionMixin])

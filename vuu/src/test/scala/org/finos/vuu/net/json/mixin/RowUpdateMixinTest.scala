@@ -2,7 +2,8 @@ package org.finos.vuu.net.json.mixin
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal2}
-import org.finos.vuu.net.RowUpdate
+import org.finos.vuu.net.row.RowUpdate
+import org.finos.vuu.net.row.RowUpdateType.Update
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import tools.jackson.databind.json.JsonMapper
@@ -25,7 +26,7 @@ class RowUpdateMixinTest extends AnyFeatureSpec with Matchers with StrictLogging
         vpSize = 1,
         rowIndex = 0,
         rowKey = ":KEY1",
-        updateType = "U",
+        updateType = Update,
         ts = 100L,
         selected = 0,
         data = Array(
