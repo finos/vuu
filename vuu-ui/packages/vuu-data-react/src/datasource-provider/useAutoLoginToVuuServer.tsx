@@ -9,21 +9,36 @@ export const useAutoLoginToVuuServer = ({
   autoConnect = true,
   // autoLogin = true,
   secure = true,
+  token: tokenProp = "no-token",
+  user = "steve",
   websocketUrl,
 }: {
+  /**
+   * if true, auth url on vuuserver will be used to get token
+   * auth url is "/api/authn"
+   */
   authenticate?: boolean;
+  /**
+   * true by default, will go ahead and open websocket connection
+   */
   autoConnect?: boolean;
   autoLogin?: boolean;
   secure?: boolean;
+  /**
+   * use with no authenticate step, to provide auth token.
+   * Used when vuu server is performing no token check
+   */
+  token?: string;
+  user?: string;
   websocketUrl?: string;
 } = {}) => {
   const [errorMessage, setErrorMessage] = useState("");
   useEffect(() => {
     const connect = async () => {
       try {
-        let token = "no-token";
+        let token = tokenProp;
         if (authenticate) {
-          const response = await vuuAuthenticate("steve", "xyz", "/api/authn");
+          const response = await vuuAuthenticate(user, "xyz", "/api/authn");
           token = response.token;
         }
 
@@ -50,7 +65,7 @@ export const useAutoLoginToVuuServer = ({
         ConnectionManager.disconnect();
       }
     };
-  }, [authenticate, autoConnect, secure, websocketUrl]);
+  }, [authenticate, autoConnect, secure, tokenProp, user, websocketUrl]);
 
   if (errorMessage) {
     return (
