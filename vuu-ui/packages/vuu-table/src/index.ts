@@ -1,9 +1,10 @@
 export * from "./bulk-edit";
 export * from "./cell-renderers";
 export * from "./header-cell";
-export * from "./header-cell";
 // TODO move to table extras ?
+export { dataRowFactory, type DataRowFunc } from "./data-row/DataRow";
 export * from "./pagination";
+export { Row } from "./Row";
 export * from "./Table";
 export * from "./table-cell";
 export * from "./table-config";
@@ -12,9 +13,8 @@ export * from "./useControlledTableNavigation";
 export * from "./useEditableCell";
 export * from "./useHighlighting";
 export * from "./useKeyboardNavigation";
-export * from "./useTableModel";
 export * from "./useTableContextMenu";
+export * from "./useTableModel";
 export * from "./useTableScroll";
 export * from "./useTableViewport";
 export * from "./VirtualColSpan";
-export { dataRowFactory, type DataRowFunc } from "./data-row/DataRow";

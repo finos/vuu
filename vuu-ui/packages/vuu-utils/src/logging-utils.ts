@@ -1,6 +1,8 @@
 import { getCookieValue } from "./cookie-utils";
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   const loggingSettings: loggingSettings;
 }
 

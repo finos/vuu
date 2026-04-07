@@ -38,6 +38,8 @@ export interface DynamicFeatureProps<P extends object | undefined = object> {
 }
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   const vuuConfig: Promise<VuuConfig>;
 }
 
