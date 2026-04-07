@@ -22,7 +22,7 @@ class UIActionMixinTest extends AnyFeatureSpec with Matchers with GivenWhenThen 
 
       val jsonString = mapper.writeValueAsString(action)
 
-      jsonString shouldEqual "{\"type\":\"NO_ACTION\"}"
+      jsonString shouldEqual "{\"type\":\"NONE_ACTION\"}"
 
       val roundTripAction = mapper.readValue(jsonString, classOf[UIAction])
 

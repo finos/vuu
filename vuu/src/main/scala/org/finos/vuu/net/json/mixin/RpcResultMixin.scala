@@ -3,7 +3,6 @@ package org.finos.vuu.net.json.mixin
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type
 import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
 import org.finos.vuu.net.rpc.{RpcErrorResult, RpcSuccessResult}
-import tools.jackson.databind.annotation.JsonTypeIdResolver
 
 @JsonTypeInfo(
   use = JsonTypeInfo.Id.NAME,
