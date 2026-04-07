@@ -39,8 +39,8 @@
       "error",
       {
         "ignoreRestSiblings": true,
-        "argsIgnorePattern": "^_$",
-        "varsIgnorePattern": "^_$"
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
       }
     ]
   },

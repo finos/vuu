@@ -13,6 +13,12 @@ export const useMeasuredHeight = ({
   const [measuredHeight, setMeasuredHeight] = useState(heightProp);
   const lastMeasuredHeight = useRef(-1);
 
+  useMemo(() => {
+    if (heightProp !== 0) {
+      setMeasuredHeight(heightProp);
+    }
+  }, [heightProp]);
+
   const resizeObserver = useMemo(() => {
     return new ResizeObserver((entries: ResizeObserverEntry[]) => {
       for (const entry of entries) {
