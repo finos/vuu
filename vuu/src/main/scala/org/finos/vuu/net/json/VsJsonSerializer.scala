@@ -1,6 +1,7 @@
 package org.finos.vuu.net.json
 
 import org.finos.vuu.net.{JsonViewServerMessage, ViewServerMessage}
+import tools.jackson.databind.json.JsonMapper
 
 trait VsJsonSerializer {
   def serialize(message: ViewServerMessage): String
@@ -10,13 +11,13 @@ trait VsJsonSerializer {
 
 object VsJsonSerializer  {
 
-  def apply(): VsJsonSerializer = VsJsonSerializerImpl
+  private val jsonMapper = JsonMapperFactory.get()
+  
+  def apply(): VsJsonSerializer = VsJsonSerializerImpl(jsonMapper)
   
 }
 
-object VsJsonSerializerImpl extends VsJsonSerializer {
-
-  private val jsonMapper = JsonMapperFactory.get()
+case class VsJsonSerializerImpl(jsonMapper: JsonMapper) extends VsJsonSerializer {
   
   override def serialize(message: ViewServerMessage): String = jsonMapper.writeValueAsString(message)
 

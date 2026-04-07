@@ -1,9 +1,89 @@
 package org.finos.vuu.net.json.mixin
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo
-import tools.jackson.databind.annotation.JsonTypeIdResolver
-import org.finos.vuu.net.json.VsJsonTypeResolver
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type
+import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
+import org.finos.vuu.net.{ChangeViewPortRange, ChangeViewPortRangeSuccess, ChangeViewPortReject, ChangeViewPortRequest, ChangeViewPortSuccess, CloseTreeNodeReject, CloseTreeNodeRequest, CloseTreeNodeSuccess, CreateViewPortReject, CreateViewPortRequest, CreateViewPortSuccess, CreateVisualLinkRequest, CreateVisualLinkSuccess, DeselectAllReject, DeselectAllRequest, DeselectAllSuccess, DeselectRowReject, DeselectRowRequest, DeselectRowSuccess, DisableViewPortReject, DisableViewPortRequest, DisableViewPortSuccess, EnableViewPortReject, EnableViewPortRequest, EnableViewPortSuccess, ErrorResponse, FreezeViewPortReject, FreezeViewPortRequest, FreezeViewPortSuccess, GetTableList, GetTableListResponse, GetTableMetaRequest, GetTableMetaResponse, GetViewPortMenusRequest, GetViewPortMenusResponse, GetViewPortVisualLinksRequest, GetViewPortVisualLinksResponse, HeartBeat, HeartBeatResponse, LoginFailure, LoginRequest, LoginSuccess, MenuRpcCall, MenuRpcResponse, OpenTreeNodeReject, OpenTreeNodeRequest, OpenTreeNodeSuccess, RemoveViewPortReject, RemoveViewPortRequest, RemoveViewPortSuccess, RemoveVisualLinkRequest, RemoveVisualLinkSuccess, RpcReject, RpcRequest, RpcResponseNew, RpcSuccess, SelectAllReject, SelectAllRequest, SelectAllSuccess, SelectRowRangeReject, SelectRowRangeRequest, SelectRowRangeSuccess, SelectRowReject, SelectRowRequest, SelectRowSuccess, TableRowUpdates, UnfreezeViewPortReject, UnfreezeViewPortRequest, UnfreezeViewPortSuccess, ViewPortMenuCellRpcCall, ViewPortMenuRowRpcCall, ViewPortMenuRpcReject, ViewPortMenuRpcResponse, ViewPortMenuSelectionRpcCall, ViewPortMenuTableRpcCall}
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-@JsonTypeIdResolver(classOf[VsJsonTypeResolver])
+@JsonTypeInfo(
+  use = JsonTypeInfo.Id.NAME,
+  include = JsonTypeInfo.As.PROPERTY,
+  property = "type"
+)
+@JsonSubTypes(Array(
+  new Type(value = classOf[CreateViewPortRequest], name = "CREATE_VP"),
+  new Type(value = classOf[CreateViewPortSuccess], name = "CREATE_VP_SUCCESS"),
+  new Type(value = classOf[CreateViewPortReject], name = "CREATE_VP_REJECT"),
+  new Type(value = classOf[DisableViewPortRequest], name = "DISABLE_VP"),
+  new Type(value = classOf[DisableViewPortSuccess], name = "DISABLE_VP_SUCCESS"),
+  new Type(value = classOf[DisableViewPortReject], name = "DISABLE_VP_REJECT"),
+  new Type(value = classOf[EnableViewPortRequest], name = "ENABLE_VP"),
+  new Type(value = classOf[EnableViewPortSuccess], name = "ENABLE_VP_SUCCESS"),
+  new Type(value = classOf[EnableViewPortReject], name = "ENABLE_VP_REJECT"),
+  new Type(value = classOf[FreezeViewPortRequest], name = "FREEZE_VP"),
+  new Type(value = classOf[FreezeViewPortSuccess], name = "FREEZE_VP_SUCCESS"),
+  new Type(value = classOf[FreezeViewPortReject], name = "FREEZE_VP_REJECT"),
+  new Type(value = classOf[UnfreezeViewPortRequest], name = "UNFREEZE_VP"),
+  new Type(value = classOf[UnfreezeViewPortSuccess], name = "UNFREEZE_VP_SUCCESS"),
+  new Type(value = classOf[UnfreezeViewPortReject], name = "UNFREEZE_VP_REJECT"),
+  new Type(value = classOf[RemoveViewPortRequest], name = "REMOVE_VP"),
+  new Type(value = classOf[RemoveViewPortSuccess], name = "REMOVE_VP_SUCCESS"),
+  new Type(value = classOf[RemoveViewPortReject], name = "REMOVE_VP_REJECT"),
+  new Type(value = classOf[ChangeViewPortRange], name = "CHANGE_VP_RANGE"),
+  new Type(value = classOf[ChangeViewPortRangeSuccess], name = "CHANGE_VP_RANGE_SUCCESS"),
+  new Type(value = classOf[ChangeViewPortRequest], name = "CHANGE_VP"),
+  new Type(value = classOf[ChangeViewPortSuccess], name = "CHANGE_VP_SUCCESS"),
+  new Type(value = classOf[ChangeViewPortReject], name = "CHANGE_VP_REJECT"),
+  new Type(value = classOf[LoginRequest], name = "LOGIN"),
+  new Type(value = classOf[LoginSuccess], name = "LOGIN_SUCCESS"),
+  new Type(value = classOf[LoginFailure], name = "LOGIN_FAIL"),
+  new Type(value = classOf[TableRowUpdates], name = "TABLE_ROW"),
+  new Type(value = classOf[OpenTreeNodeRequest], name = "OPEN_TREE_NODE"),
+  new Type(value = classOf[CloseTreeNodeRequest], name = "CLOSE_TREE_NODE"),
+  new Type(value = classOf[GetTableMetaRequest], name = "GET_TABLE_META"),
+  new Type(value = classOf[GetTableMetaResponse], name = "TABLE_META_RESP"),
+  new Type(value = classOf[GetTableList], name = "GET_TABLE_LIST"),
+  new Type(value = classOf[GetTableListResponse], name = "TABLE_LIST_RESP"),
+  new Type(value = classOf[HeartBeat], name = "HB"),
+  new Type(value = classOf[RpcSuccess], name = "RPC_SUCCESS"),
+  new Type(value = classOf[RpcReject], name = "RPC_REJECT"),
+  new Type(value = classOf[HeartBeatResponse], name = "HB_RESP"),
+  new Type(value = classOf[MenuRpcCall], name = "MENU_RPC_CALL"),
+  new Type(value = classOf[MenuRpcResponse], name = "MENU_RPC_RESP"),
+  new Type(value = classOf[OpenTreeNodeSuccess], name = "OPEN_TREE_SUCCESS"),
+  new Type(value = classOf[OpenTreeNodeReject], name = "OPEN_TREE_REJECT"),
+  new Type(value = classOf[CloseTreeNodeSuccess], name = "CLOSE_TREE_SUCCESS"),
+  new Type(value = classOf[CloseTreeNodeReject], name = "CLOSE_TREE_REJECT"),
+  new Type(value = classOf[SelectRowRequest], name = "SELECT_ROW"),
+  new Type(value = classOf[SelectRowSuccess], name = "SELECT_ROW_SUCCESS"),
+  new Type(value = classOf[SelectRowReject], name = "SELECT_ROW_REJECT"),
+  new Type(value = classOf[DeselectRowRequest], name = "DESELECT_ROW"),
+  new Type(value = classOf[DeselectRowSuccess], name = "DESELECT_ROW_SUCCESS"),
+  new Type(value = classOf[DeselectRowReject], name = "DESELECT_ROW_REJECT"),
+  new Type(value = classOf[SelectRowRangeRequest], name = "SELECT_ROW_RANGE"),
+  new Type(value = classOf[SelectRowRangeSuccess], name = "SELECT_ROW_RANGE_SUCCESS"),
+  new Type(value = classOf[SelectRowRangeReject], name = "SELECT_ROW_RANGE_REJECT"),
+  new Type(value = classOf[SelectAllRequest], name = "SELECT_ALL"),
+  new Type(value = classOf[SelectAllSuccess], name = "SELECT_ALL_SUCCESS"),
+  new Type(value = classOf[SelectAllReject], name = "SELECT_ALL_REJECT"),
+  new Type(value = classOf[DeselectAllRequest], name = "DESELECT_ALL"),
+  new Type(value = classOf[DeselectAllSuccess], name = "DESELECT_ALL_SUCCESS"),
+  new Type(value = classOf[DeselectAllReject], name = "DESELECT_ALL_REJECT"),
+  new Type(value = classOf[ErrorResponse], name = "ERROR"),
+  new Type(value = classOf[GetViewPortVisualLinksRequest], name = "GET_VP_VISUAL_LINKS"),
+  new Type(value = classOf[GetViewPortVisualLinksResponse], name = "VP_VISUAL_LINKS_RESP"),
+  new Type(value = classOf[CreateVisualLinkRequest], name = "CREATE_VISUAL_LINK"),
+  new Type(value = classOf[CreateVisualLinkSuccess], name = "CREATE_VISUAL_LINK_SUCCESS"),
+  new Type(value = classOf[GetViewPortMenusRequest], name = "GET_VIEW_PORT_MENUS"),
+  new Type(value = classOf[GetViewPortMenusResponse], name = "VIEW_PORT_MENUS_RESP"),
+  new Type(value = classOf[ViewPortMenuSelectionRpcCall], name = "VIEW_PORT_MENUS_SELECT_RPC"),
+  new Type(value = classOf[ViewPortMenuTableRpcCall], name = "VIEW_PORT_MENU_TABLE_RPC"),
+  new Type(value = classOf[ViewPortMenuRowRpcCall], name = "VIEW_PORT_MENU_ROW_RPC"),
+  new Type(value = classOf[ViewPortMenuCellRpcCall], name = "VIEW_PORT_MENU_CELL_RPC"),
+  new Type(value = classOf[ViewPortMenuRpcResponse], name = "VIEW_PORT_MENU_RESP"),
+  new Type(value = classOf[ViewPortMenuRpcReject], name = "VIEW_PORT_MENU_REJ"),
+  new Type(value = classOf[RemoveVisualLinkRequest], name = "REMOVE_VISUAL_LINK"),
+  new Type(value = classOf[RemoveVisualLinkSuccess], name = "REMOVE_VISUAL_LINK_SUCCESS"),
+  new Type(value = classOf[RpcRequest], name = "RPC_REQUEST"),
+  new Type(value = classOf[RpcResponseNew], name = "RPC_RESPONSE")
+))
 trait MessageBodyMixin { }

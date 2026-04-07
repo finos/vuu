@@ -1,45 +1,42 @@
 package org.finos.vuu.net.json
 
-import org.finos.vuu.net.*
+import org.finos.vuu.net.{JsonViewServerMessage, LoginRequest}
 import org.finos.vuu.net.json.VsJsonSerializer
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
 class JsonVsSerializerTest extends AnyFeatureSpec with Matchers {
 
-  Feature("test serialization of view server messages "){
+  Feature("Check we can serialize and deserialize view server messages"){
 
-    Scenario("test login request"){
+    val serializer = VsJsonSerializer()
 
-      roundTrip(LoginRequest("AAA11122233"))
+    Scenario("Default module"){
 
+      val message = JsonViewServerMessage("REQ:123", "SESS:456", LoginRequest("AAA11122233"))
+
+      val json = serializer.serialize(message)
+
+      json shouldEqual "{\"requestId\":\"REQ:123\",\"sessionId\":\"SESS:456\",\"body\":{\"type\":\"LOGIN\",\"token\":\"AAA11122233\"},\"module\":\"CORE\"}"
+
+      val roundTrip = serializer.deserialize(json)
+
+      roundTrip should equal(message)
+    }
+
+    Scenario("Specific module") {
+
+      val message = JsonViewServerMessage("REQ:123", "SESS:456", LoginRequest("AAA11122233"), "MIKEY")
+
+      val json = serializer.serialize(message)
+
+      json shouldEqual "{\"requestId\":\"REQ:123\",\"sessionId\":\"SESS:456\",\"body\":{\"type\":\"LOGIN\",\"token\":\"AAA11122233\"},\"module\":\"MIKEY\"}"
+
+      val roundTrip = serializer.deserialize(json)
+
+      roundTrip should equal(message)
     }
 
   }
 
-  def roundTrip(body: MessageBody): Unit = {
-
-    val message = JsonViewServerMessage("REQ:123", "SESS:456", body)
-
-    val serializer = VsJsonSerializer()
-
-    val json = serializer.serialize(message)
-
-    println("To Json = " + json)
-
-    val o = serializer.deserialize(json)
-
-    o should equal(message)
-
-    println("from Json = " + o)
-  }
-
 }
-
-//roundTrip(LoginSuccess("vuuServerId"))
-//      roundTrip(HeartBeat(123L))
-//      roundTrip(HeartBeatResponse(123L))
-//      roundTrip(RpcUpdate(ViewPortTable("orderEntry", "CORE"), "Foo", Map("Foo" -> 123, "Bar" -> true, "Whizzle" -> "TANG", "HooHa" -> 344567L)))
-//      roundTrip(RpcSuccess(ViewPortTable("orderEntry", "CORE"), "Foo"))
-//      roundTrip(RpcReject(ViewPortTable("orderEntry", "CORE"), "Foo", "cause you aint pretty"))
-//      roundTrip(OpenTreeNodeSuccess("orderEntry", "..."))
