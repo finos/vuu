@@ -696,8 +696,8 @@ export class ArrayDataSource
     } else if (isSorted) {
       this.insertIntoSortedData(dataSourceRow);
     } else if (isFiltered) {
-      const fn = this.getFilterPredicate();
-      if (fn(dataSourceRow)) {
+      const meetsFilterCriteria = this.getFilterPredicate();
+      if (meetsFilterCriteria(dataSourceRow)) {
         this.processedData?.push(dataSourceRow);
         this.sendSizeUpdateToClient();
         if (rowIdx >= from && rowIdx < to) {
@@ -824,7 +824,33 @@ export class ArrayDataSource
       const dataSourceRow = toDataSourceRow(this.key)(row, dataIndex);
       // maybe update this in place
       this.#data[dataIndex] = dataSourceRow;
+
       const { from, to } = this.#range;
+
+      const isFiltered = hasFilter(this.config) || hasBaseFilter(this.config);
+      if (isFiltered) {
+        const meetsFilterCriteria = this.getFilterPredicate();
+        if (meetsFilterCriteria(dataSourceRow) && this.processedData) {
+          const dataIndex = this.processedData.findIndex(
+            (row) => row[KEY] === keyValue,
+          );
+          if (dataIndex !== -1) {
+            const existingRow = this.processedData[dataIndex];
+            // preserve the metadata, copy the domain data
+            const newFilteredRow = existingRow
+              .slice(0, 10)
+              .concat(dataSourceRow.slice(10)) as DataSourceRow;
+            this.processedData[dataIndex] = newFilteredRow;
+
+            if (dataIndex >= from && dataIndex < to) {
+              this.sendRowsToClient(false, newFilteredRow);
+            }
+
+            return;
+          }
+        }
+      }
+
       if (dataIndex >= from && dataIndex < to) {
         this.sendRowsToClient(false, dataSourceRow);
       }

@@ -1223,11 +1223,16 @@ const notVuuTimestamps = (column: { name: string }) =>
   !vuuTimestampColumns.includes(column.name);
 
 export const applyDefaultColumnConfig = (
-  { columns, table }: TableSchema,
+  { columns: columnsProp, table }: TableSchema,
   getDefaultColumnConfig?: DefaultColumnConfiguration,
+  includeVuuTimestampColumns = false,
 ) => {
   if (typeof getDefaultColumnConfig === "function") {
-    return columns.filter(notVuuTimestamps).map((column) => {
+    const columns = includeVuuTimestampColumns
+      ? columnsProp
+      : columnsProp.filter(notVuuTimestamps);
+
+    return columns.map((column) => {
       const config = getDefaultColumnConfig(table.table, column.name);
       if (config) {
         return {
@@ -1239,7 +1244,7 @@ export const applyDefaultColumnConfig = (
       }
     });
   } else {
-    return columns;
+    return columnsProp;
   }
 };
 
