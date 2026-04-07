@@ -5,7 +5,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.core.module.{TableDefContainer, TestModule}
 import org.finos.vuu.test.VuuServerTestCase
-import org.finos.vuu.viewport.SizeUpdateType
+import org.finos.vuu.viewport.ViewPortSizeUpdateType
 
 class EmptyViewPortTest extends VuuServerTestCase {
 
@@ -30,7 +30,7 @@ class EmptyViewPortTest extends VuuServerTestCase {
           val updates = viewport.outboundQ.popUpTo(10)
 
           updates.length should equal(1)
-          updates.head.vpUpdate should equal(SizeUpdateType)
+          updates.head.vpUpdate should equal(ViewPortSizeUpdateType)
           updates.head.size should equal(0)
 
           vuuServer.runOnce()

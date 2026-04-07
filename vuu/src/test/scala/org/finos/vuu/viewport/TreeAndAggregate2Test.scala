@@ -212,7 +212,7 @@ class TreeAndAggregate2Test extends AnyFeatureSpec with Matchers with GivenWhenT
 
       val updates = combineQs(viewport)
 
-      //val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == RowUpdateType).map(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data).toArray
+      //val arraysOfMaps = updates.filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType).map(vpu => vpu.table.pullRow(vpu.key.key, vpu.vp.getColumns).asInstanceOf[RowWithData].data).toArray
 
       assertVpEq(updates) {
         Table(

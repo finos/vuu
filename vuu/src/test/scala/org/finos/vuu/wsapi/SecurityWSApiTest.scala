@@ -8,9 +8,9 @@ import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
 import org.finos.vuu.net.json.VsJsonSerializer
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcNames}
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcNames, RpcSuccessResult, RpcErrorResult, ViewPortContext}
 import org.finos.vuu.net.ws.WebSocketClient
-import org.finos.vuu.net.{ChangeViewPortRange, ChangeViewPortReject, ChangeViewPortRequest, ChangeViewPortSuccess, CloseTreeNodeReject, CloseTreeNodeRequest, CreateViewPortRequest, CreateViewPortSuccess, CreateVisualLinkRequest, CreateVisualLinkSuccess, DeselectAllReject, DeselectAllRequest, DeselectRowReject, DeselectRowRequest, DisableViewPortReject, DisableViewPortRequest, DisableViewPortSuccess, EnableViewPortReject, EnableViewPortRequest, ErrorResponse, FilterSpec, FreezeViewPortReject, FreezeViewPortRequest, FreezeViewPortSuccess, GetViewPortMenusRequest, GetViewPortVisualLinksRequest, OpenTreeNodeReject, OpenTreeNodeRequest, OpenTreeNodeSuccess, RemoveViewPortReject, RemoveViewPortRequest, RemoveViewPortSuccess, RemoveVisualLinkRequest, RemoveVisualLinkSuccess, RpcErrorResult, RpcReject, RpcRequest, RpcResponseNew, SelectAllReject, SelectAllRequest, SelectAllSuccess, SelectRowRangeReject, SelectRowRangeRequest, SelectRowReject, SelectRowRequest, SelectRowSuccess, UnfreezeViewPortReject, UnfreezeViewPortRequest, ViewPortContext, WebSocketViewServerClient}
+import org.finos.vuu.net.*
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension

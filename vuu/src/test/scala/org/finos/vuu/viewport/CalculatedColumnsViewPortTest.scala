@@ -277,7 +277,7 @@ class CalculatedColumnsViewPortTest extends AbstractViewPortTestCase with Matche
 
       When("we pull rows with a calc column as array we don't get a failure")
       val rows = combinedUpdates
-        .filter(vpu => vpu.vpUpdate == RowUpdateType)
+        .filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType)
         .map(vpu => orderPrices.pullRowAsArray(vpu.key.key, vpcolumns).toList )
         .toList
 

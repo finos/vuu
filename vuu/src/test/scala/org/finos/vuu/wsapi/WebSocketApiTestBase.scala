@@ -6,6 +6,7 @@ import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.VuuServerConfig
 import org.finos.vuu.core.module.{TableDefContainer, ViewServerModule}
 import org.finos.vuu.net.*
+import org.finos.vuu.net.row.RowUpdateType.Update
 import org.finos.vuu.wsapi.helpers.{TestStartUp, TestVuuClient}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -67,7 +68,7 @@ abstract class WebSocketApiTestBase extends AnyFeatureSpec with BeforeAndAfterAl
     tableSizeResponse match {
       case None => fail("No table row updates")
       case Some(value) =>
-        val dataCount = value.rows.count(p => p.updateType == "U")
+        val dataCount = value.rows.count(p => p.updateType == Update)
         if (dataCount < expectedRowCount) {
           val missing = expectedRowCount - dataCount
           logger.debug(s"Still waiting for $missing rows")

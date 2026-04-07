@@ -128,7 +128,7 @@ class JoinTableTest extends AnyFeatureSpec with Matchers with ViewPortSetup {
         override def missingRowData(rowKey: String, column: Column): Unit = {}
       }
 
-      updates.filter(vp => vp.vpUpdate == RowUpdateType)
+      updates.filter(vp => vp.vpUpdate == ViewPortRowUpdateType)
         .foreach(update => update.table.readRow(update.key.key, List("orderId", "trader", "tradeTime", "ric", "bid", "ask"), printToConsoleProcessor))
     }
 
