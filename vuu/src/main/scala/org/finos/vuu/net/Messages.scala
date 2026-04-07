@@ -1,6 +1,9 @@
 package org.finos.vuu.net
 
 import org.finos.vuu.api.AvailableViewPortVisualLink
+import org.finos.vuu.net.rpc.{RpcContext, RpcResult}
+import org.finos.vuu.net.row.RowUpdate
+import org.finos.vuu.net.ui.UIAction
 import org.finos.vuu.viewport.{ViewPortAction, ViewPortMenu, ViewPortRange, ViewPortTable}
 
 trait FailureMessage {
@@ -189,44 +192,6 @@ case class RemoveVisualLinkRequest(childVpId: String) extends MessageBody
 
 case class RemoveVisualLinkSuccess(childVpId: String) extends MessageBody
 
-object UpdateType {
-  final val SizeOnly = "SIZE"
-  final val Update = "U"
-}
-
-case class RowUpdate(vpVersion: String, viewPortId: String, vpSize: Int, rowIndex: Int, rowKey: String,
-                     updateType: String, ts: Long, selected: Int, data: Array[Any])
-
-/***
- * New api for websocket messages - work in progress
- */
-
 case class RpcRequest(context: RpcContext, rpcName: String, params: Map[String, Any]) extends MessageBody
 
-sealed trait RpcContext
-
-object GlobalContext extends RpcContext
-
-case class ViewPortContext(viewPortId: String) extends RpcContext
-
-case class ViewPortRowContext(viewPortId: String, rowKey: String) extends RpcContext
-
 case class RpcResponseNew(rpcName: String, result: RpcResult, action: UIAction) extends MessageBody
-
-sealed trait RpcResult
-
-case class RpcSuccessResult(data: Any) extends RpcResult
-
-case class RpcErrorResult(errorMessage: String) extends RpcResult
-
-sealed trait UIAction
-
-object NoneAction extends UIAction
-
-case class ShowNotificationAction(notificationType: String, title: String, message: String) extends UIAction
-
-object NotificationType {
-  final val Error = "Error"
-  final val Warning = "Warning"
-  final val Info = "Info"
-}

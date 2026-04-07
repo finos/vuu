@@ -7,10 +7,11 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.ModuleContainer
+import org.finos.vuu.net.row.{RowUpdate, RowUpdateType}
 import org.finos.vuu.net.flowcontrol.{BatchSize, Disconnect, FlowController, SendHeartbeat}
 import org.finos.vuu.net.json.VsJsonSerializer
 import org.finos.vuu.util.PublishQueue
-import org.finos.vuu.viewport.{RowUpdateType, SizeUpdateType, ViewPortUpdate}
+import org.finos.vuu.viewport.{ViewPortUpdate, ViewPortSizeUpdateType, ViewPortRowUpdateType}
 
 trait InboundMessageHandler {
   def handle(msg: ViewServerMessage): Option[ViewServerMessage]
@@ -98,11 +99,11 @@ class DefaultMessageHandler(val channel: Channel,
   protected def formatOneRowUpdate(update: ViewPortUpdate): Option[RowUpdate] = {
 
     update.vpUpdate match {
-      case SizeUpdateType =>
+      case ViewPortSizeUpdateType =>
         //logger.debug(s"SVR[VP] Size: vpid=${update.vp.id} size=${update.vp.size}")
-        Some(RowUpdate(update.vpRequestId, update.vp.id, update.size, update.index, update.key.key, UpdateType.SizeOnly, timeProvider.now(), 0, Array.empty))
+        Some(RowUpdate(update.vpRequestId, update.vp.id, update.size, update.index, update.key.key, RowUpdateType.SizeOnly, timeProvider.now(), 0, Array.empty))
 
-      case RowUpdateType =>
+      case ViewPortRowUpdateType =>
 
         //if viewport has changed while we're processing the queue
         if (!update.vp.getRange.contains(update.index)) {
@@ -116,7 +117,7 @@ class DefaultMessageHandler(val channel: Channel,
         if (dataToSend.length == 0) {
           None
         } else {
-          Some(RowUpdate(update.vpRequestId, update.vp.id, update.size, update.index, update.key.key, UpdateType.Update, timeProvider.now(), isSelected, dataToSend))
+          Some(RowUpdate(update.vpRequestId, update.vp.id, update.size, update.index, update.key.key, RowUpdateType.Update, timeProvider.now(), isSelected, dataToSend))
         }
     }
 

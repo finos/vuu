@@ -2,7 +2,7 @@ package org.finos.vuu.net.json.mixin
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.table.datatype.{EpochTimestamp, ScaledDecimal}
-import org.finos.vuu.net.RowUpdate
+import org.finos.vuu.net.row.{RowUpdate, RowUpdateType}
 import org.finos.vuu.viewport.ViewPortMenu
 import tools.jackson.core.{JsonGenerator, JsonParser}
 import tools.jackson.databind.annotation.{JsonDeserialize, JsonSerialize}
@@ -25,7 +25,7 @@ class RowUpdateSerializer extends StdSerializer[RowUpdate](classOf[ViewPortMenu]
     gen.writeNumberProperty("vpSize", value.vpSize)
     gen.writeNumberProperty("rowIndex", value.rowIndex)
     gen.writeStringProperty("rowKey", value.rowKey)
-    gen.writeStringProperty("updateType", value.updateType)
+    gen.writeStringProperty("updateType", value.updateType.external)
     gen.writeNumberProperty("ts", value.ts)
     gen.writeNumberProperty("sel", value.selected)
     gen.writeStringProperty("vpVersion", value.vpVersion)
@@ -64,7 +64,7 @@ class RowUpdateDeserializer extends StdDeserializer[RowUpdate](classOf[RowUpdate
     val rowIndex = node.get("rowIndex").asInt()
     val ts = node.get("ts").asLong()
     val rowKey = node.get("rowKey").asString()
-    val updateType = node.get("updateType").asString()
+    val updateType = RowUpdateType.fromExternal(node.get("updateType").asString())
     val selected = node.get("sel").asInt()
     val vpRequestId = node.get("vpVersion").asString()
 

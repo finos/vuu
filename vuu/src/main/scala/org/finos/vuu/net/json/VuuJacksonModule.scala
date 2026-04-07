@@ -1,13 +1,14 @@
 package org.finos.vuu.net.json
 
 import org.finos.vuu.net.json.mixin.{MessageBodyMixin, RowUpdateMixin, RpcContextMixin, RpcResultMixin, UIActionMixin, ViewPortActionMixin, ViewPortMenuMixin}
-import org.finos.vuu.net.{MessageBody, RowUpdate, RpcContext, RpcResult, UIAction}
+import org.finos.vuu.net.rpc.{RpcResult, RpcContext}
+import org.finos.vuu.net.MessageBody
+import org.finos.vuu.net.ui.UIAction
+import org.finos.vuu.net.row.RowUpdate
 import org.finos.vuu.viewport.{ViewPortAction, ViewPortMenu}
 import tools.jackson.databind.module.SimpleModule
 
 class VuuJacksonModule extends SimpleModule {
-
-  ViewPortActionMixin.registerTypes()
 
   setMixInAnnotation(classOf[ViewPortMenu], classOf[ViewPortMenuMixin])
   setMixInAnnotation(classOf[ViewPortAction], classOf[ViewPortActionMixin])

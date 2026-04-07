@@ -22,9 +22,9 @@ import java.util.concurrent.atomic.AtomicReference
 
 class ViewPortUpdateType
 
-case object RowUpdateType extends ViewPortUpdateType
+case object ViewPortRowUpdateType extends ViewPortUpdateType
 
-case object SizeUpdateType extends ViewPortUpdateType
+case object ViewPortSizeUpdateType extends ViewPortUpdateType
 
 object DefaultRange extends ViewPortRange(0, 123)
 
@@ -203,7 +203,7 @@ class ViewPortImpl(val id: String,
   @volatile private var requestId: String = ""
 
   override def updateSpecificKeys(keys: ImmutableArray[String]): Unit = {
-    keys.filter(rowKeyToIndex.containsKey(_)).foreach(key => outboundQ.pushHighPriority(ViewPortUpdate(this.requestId, this, this.table, RowKeyUpdate(key, this.table), rowKeyToIndex.get(key), RowUpdateType, this.keys.length, timeProvider.now())))
+    keys.filter(rowKeyToIndex.containsKey(_)).foreach(key => outboundQ.pushHighPriority(ViewPortUpdate(this.requestId, this, this.table, RowKeyUpdate(key, this.table), rowKeyToIndex.get(key), ViewPortRowUpdateType, this.keys.length, timeProvider.now())))
   }
 
   override def setPermissionFilter(permissionFilter: PermissionFilter): Unit = {
@@ -462,7 +462,7 @@ class ViewPortImpl(val id: String,
 
   private def setKeysPost(sendSizeUpdate: Boolean, newKeys: ViewPortKeys): Unit = {
     if (sendSizeUpdate) {
-      outboundQ.pushHighPriority(ViewPortUpdate(this.requestId, this, null, RowKeyUpdate("SIZE", null), -1, SizeUpdateType, newKeys.length, timeProvider.now()))
+      outboundQ.pushHighPriority(ViewPortUpdate(this.requestId, this, null, RowKeyUpdate("SIZE", null), -1, ViewPortSizeUpdateType, newKeys.length, timeProvider.now()))
     }
     subscribeToNewKeys(newKeys)
   }
@@ -490,7 +490,7 @@ class ViewPortImpl(val id: String,
     logger.trace(s"VP got update for ${update.key} update, index = $index isDeleted = ${update.isDelete}, $update, pushing to queue")
 
     if (isInRange(index) && this.enabled) {
-      outboundQ.push(ViewPortUpdate(this.requestId, this, update.source, RowKeyUpdate(update.key, update.source, update.isDelete), index, RowUpdateType, this.keys.length, timeProvider.now()))
+      outboundQ.push(ViewPortUpdate(this.requestId, this, update.source, RowKeyUpdate(update.key, update.source, update.isDelete), index, ViewPortRowUpdateType, this.keys.length, timeProvider.now()))
     }
 
   }
@@ -600,7 +600,7 @@ class ViewPortImpl(val id: String,
   private def publishHighPriorityUpdate(key: String, index: Int): Unit = {
     if (this.enabled) {
       logger.trace(s"publishing update @[$index] = $key ")
-      outboundQ.pushHighPriority(ViewPortUpdate(this.requestId, this, table, RowKeyUpdate(key, table), index, RowUpdateType, this.keys.length, timeProvider.now()))
+      outboundQ.pushHighPriority(ViewPortUpdate(this.requestId, this, table, RowKeyUpdate(key, table), index, ViewPortRowUpdateType, this.keys.length, timeProvider.now()))
     }
   }
 
