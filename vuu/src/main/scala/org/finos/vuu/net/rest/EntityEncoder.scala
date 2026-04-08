@@ -1,7 +1,7 @@
 package org.finos.vuu.net.rest
 
-import tools.jackson.databind.json.JsonMapper
-import tools.jackson.module.scala.{DefaultScalaModule, JavaTypeable}
+import org.finos.vuu.net.json.JsonSerializer
+import tools.jackson.module.scala.JavaTypeable
 
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
@@ -46,28 +46,24 @@ object EmptyEncoder extends EntityEncoder[Null] {
 
 object JsonEntityEncoder {
 
-  private val jsonMapper = JsonMapper.builder()
-    .addModule(DefaultScalaModule())
-    .build()
-
-  def apply[T: JavaTypeable](): EntityEncoder[T] =
-    new JsonEntityEncoderImpl[T](jsonMapper)
+  def apply[T : JavaTypeable](): EntityEncoder[T] = {
+    new JacksonEntityEncoderImpl[T](JsonSerializer())
+  }
 }
 
-private case class JsonEntityEncoderImpl[T](mapper: JsonMapper)
-                                           (implicit typeable: JavaTypeable[T]) extends EntityEncoder[T] {
+private case class JacksonEntityEncoderImpl[T](jsonSerializer: JsonSerializer[T]) extends EntityEncoder[T] {
 
   override def encode(value: T): Array[Byte] = {
     if (value == null) {
       Array.emptyByteArray
     } else {
-      mapper.writeValueAsBytes(value)
+      jsonSerializer.serializeAsBytes(value)
     }
   }
 
   override def decode(is: InputStream): T = {
     try {
-      mapper.readValue(is, typeable.asJavaType(mapper.getTypeFactory))
+      jsonSerializer.deserialize(is)
     } finally {
       if (is != null) is.close()
     }

@@ -24,8 +24,8 @@ class AuthNRestService(val loginTokenService: LoginTokenService, val users: Opti
   private final val service = "authn"
   private final val uri = s"/api/$service"
   private final val authenticator: Authenticator[LoginRequest] = AuthenticatorWithUserList(loginTokenService, users)
-  private val loginRequestEncoder = JsonEntityEncoder.forClass(classOf[LoginRequest])
-  private val loginResponseEncoder = JsonEntityEncoder.forClass(classOf[LoginResponse])
+  private val loginRequestEncoder = JsonEntityEncoder[LoginRequest]()
+  private val loginResponseEncoder = JsonEntityEncoder[LoginResponse]()
   
   override def getServiceName: String = service
 

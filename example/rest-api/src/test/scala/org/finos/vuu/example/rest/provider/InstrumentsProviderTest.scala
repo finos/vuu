@@ -1,12 +1,12 @@
 package org.finos.vuu.example.rest.provider
 
-import org.finos.vuu.json.JsonUtil.toRawJson
 import org.finos.toolbox.time.{Clock, TestFriendlyClock}
 import org.finos.vuu.api.TableDef
 import org.finos.vuu.core.module.ModuleFactory.stringToString
 import org.finos.vuu.core.table.{Columns, DataTable, RowData, RowWithData}
 import org.finos.vuu.example.rest.client.{HttpClient, InstrumentServiceClient}
 import org.finos.vuu.example.rest.model.{Instrument, RandomInstrument}
+import org.finos.vuu.net.json.JsonSerializer
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -18,6 +18,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
   private final val BASE_URL = "base-url.com"
   private final val KEY_FIELD = "id"
   private val mockTable: DataTable = stub[DataTable]
+  val serializer = JsonSerializer[List[Instrument]]()
 
   Feature("doStart") {
     Scenario("can correctly make an external call, parse response and update the table WHEN server responds with 1 instrument") {
@@ -25,7 +26,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
       val expectedRow = instruments.map(rowFromInstrument).head
       val mockBackend = SyncBackendStub
         .whenRequestMatches(req => req.uri.path.endsWith(List("instruments")) && req.uri.params.get("limit").nonEmpty)
-        .thenRespond(ResponseStub.adjust(toRawJson(instruments)))
+        .thenRespond(ResponseStub.adjust(serializer.serialize(instruments)))
 
       getInstrumentsProvider(mockBackend).doStart()
 
@@ -37,7 +38,7 @@ class InstrumentsProviderTest extends AnyFeatureSpec with Matchers with MockFact
       val expectedRows = instruments.map(rowFromInstrument)
       val mockBackend = SyncBackendStub
         .whenRequestMatches(req => req.uri.path.endsWith(List("instruments")) && req.uri.params.get("limit").nonEmpty)
-        .thenRespond(ResponseStub.adjust(toRawJson(instruments)))
+        .thenRespond(ResponseStub.adjust(serializer.serialize(instruments)))
 
       getInstrumentsProvider(mockBackend).doStart()
 

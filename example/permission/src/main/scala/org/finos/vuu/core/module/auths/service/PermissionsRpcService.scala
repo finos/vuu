@@ -22,7 +22,7 @@ class PermissionsRpcService(val table: DataTable)(implicit tableContainer: Table
           table.processUpdate(user, RowWithData(user, Map(User -> user, Bitmask -> newPermissions)))
       }
     })
-    NoAction()
+    NoAction
   }
 
   private def removePermission(mask: Int, selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
@@ -36,20 +36,20 @@ class PermissionsRpcService(val table: DataTable)(implicit tableContainer: Table
           table.processUpdate(user, RowWithData(user, Map(User -> user, Bitmask -> newPermissions)))
       }
     })
-    NoAction()
+    NoAction
   }
 
 
   override def menuItems(): ViewPortMenu = ViewPortMenu("AuthS",
     ViewPortMenu("Add Permission",
-      new SelectionViewPortMenuItem("Sales", "", (sel, sess) => this.addPermission(SalesTradingPermission, sel, sess), "ADD_SALES_PERM"),
-      new SelectionViewPortMenuItem("Algo", "", (sel, sess) => this.addPermission(AlgoCoveragePermission, sel, sess), "ADD_ALGO_PERM"),
-      new SelectionViewPortMenuItem("High Touch", "", (sel, sess) => this.addPermission(HighTouchPermission, sel, sess), "ADD_HT_PERM")
+      SelectionViewPortMenuItem("Sales", "", (sel, sess) => this.addPermission(SalesTradingPermission, sel, sess), "ADD_SALES_PERM"),
+      SelectionViewPortMenuItem("Algo", "", (sel, sess) => this.addPermission(AlgoCoveragePermission, sel, sess), "ADD_ALGO_PERM"),
+      SelectionViewPortMenuItem("High Touch", "", (sel, sess) => this.addPermission(HighTouchPermission, sel, sess), "ADD_HT_PERM")
     ),
     ViewPortMenu("Remove Permission",
-      new SelectionViewPortMenuItem("Sales", "", (sel, sess) => this.removePermission(SalesTradingPermission, sel, sess), "REM_SALES_PERM"),
-      new SelectionViewPortMenuItem("Algo", "", (sel, sess) => this.removePermission(AlgoCoveragePermission, sel, sess), "REM_ALGO_PERM"),
-      new SelectionViewPortMenuItem("High Touch", "", (sel, sess) => this.removePermission(HighTouchPermission, sel, sess), "REM_HT_PERM")
+      SelectionViewPortMenuItem("Sales", "", (sel, sess) => this.removePermission(SalesTradingPermission, sel, sess), "REM_SALES_PERM"),
+      SelectionViewPortMenuItem("Algo", "", (sel, sess) => this.removePermission(AlgoCoveragePermission, sel, sess), "REM_ALGO_PERM"),
+      SelectionViewPortMenuItem("High Touch", "", (sel, sess) => this.removePermission(HighTouchPermission, sel, sess), "REM_HT_PERM")
     )
   )
 }
