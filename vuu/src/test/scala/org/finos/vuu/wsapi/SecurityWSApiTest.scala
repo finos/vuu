@@ -7,7 +7,6 @@ import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
-import org.finos.vuu.net.json.VsJsonSerializer
 import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcNames, RpcSuccessResult, RpcErrorResult, ViewPortContext}
 import org.finos.vuu.net.ws.WebSocketClient
 import org.finos.vuu.net.*
@@ -302,7 +301,7 @@ class SecurityWSApiTest extends WebSocketApiTestBase {
     val uri = s"ws://localhost:${vuuServerConfig.wsOptions.wsPort}/${vuuServerConfig.wsOptions.uri}"
     val port = vuuServerConfig.wsOptions.wsPort
     val attackingWebSocketClient = new WebSocketClient(uri, port)(attackingLifeCycle)
-    val attackingViewServerClient = new WebSocketViewServerClient(attackingWebSocketClient, VsJsonSerializer())(attackingLifeCycle)
+    val attackingViewServerClient = new WebSocketViewServerClient(attackingWebSocketClient)(attackingLifeCycle)
     val attackingVuuClient: TestVuuClient = new TestVuuClient(attackingViewServerClient, vuuServerConfig.security.loginTokenService)
     attackingLifeCycle.start()
     eventually(timeout(Span(2, Seconds))) {

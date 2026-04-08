@@ -5,7 +5,6 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.*
 import org.finos.vuu.core.module.{TableDefContainer, ViewServerModule}
-import org.finos.vuu.net.json.VsJsonSerializer
 import org.finos.vuu.net.ws.WebSocketClient
 import org.finos.vuu.net.{ViewServerClient, WebSocketViewServerClient}
 import org.scalatest.concurrent.Eventually
@@ -48,7 +47,7 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
     val viewServer = new VuuServer(config)
 
     val client = new WebSocketClient(s"ws://localhost:$ws/websocket", ws) //todo review params - port specified twice
-    val viewServerClient: ViewServerClient = new WebSocketViewServerClient(client, VsJsonSerializer())
+    val viewServerClient: ViewServerClient = new WebSocketViewServerClient(client)
     val vuuClient = new TestVuuClient(viewServerClient, config.security.loginTokenService)
 
     //set up a dependency on ws server from ws client.

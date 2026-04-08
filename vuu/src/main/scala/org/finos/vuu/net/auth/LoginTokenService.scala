@@ -3,9 +3,9 @@ package org.finos.vuu.net.auth
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.net.LoginRequest
-import org.finos.vuu.net.json.JsonMapperFactory
 import org.finos.vuu.util.HMACUtils
 import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.scala.DefaultScalaModule
 
 import java.security.SecureRandom
 import java.time.Instant
@@ -18,6 +18,10 @@ trait LoginTokenService {
 }
 
 object LoginTokenService {
+
+  private val jsonMapper = JsonMapper.builder()
+    .addModule(DefaultScalaModule())
+    .build()
 
   /**
    * Builds a service that accepts any token and authenticates as the given user.
@@ -40,7 +44,7 @@ object LoginTokenService {
    * Builds a service that issues and validates tokens using a shared key.
    * This shared key should be used by all Vuu instances that the UI can connect to.
    */
-  def apply(sharedSecret: Array[Byte]): LoginTokenService = LoginTokenServiceImpl(sharedSecret)
+  def apply(sharedSecret: Array[Byte]): LoginTokenService = LoginTokenServiceImpl(sharedSecret, jsonMapper)
 
 }
 
@@ -54,10 +58,8 @@ case class AlwaysHappyLoginTokenService(vuuUser: VuuUser) extends LoginTokenServ
 
 }
 
-case class LoginTokenServiceImpl(secret: Array[Byte]) extends LoginTokenService with StrictLogging {
+case class LoginTokenServiceImpl(secret: Array[Byte], jsonMapper: JsonMapper) extends LoginTokenService with StrictLogging {
 
-  private val jsonMapper = JsonMapperFactory.get()
-  
   override def getToken(user: VuuUser): String = {
     logger.info(s"[TOKEN] Obtaining token for ${user.name}")
     val payload = jsonMapper.writeValueAsString(user)
@@ -67,7 +69,7 @@ case class LoginTokenServiceImpl(secret: Array[Byte]) extends LoginTokenService 
   override def login(msg: LoginRequest): Either[String, VuuUser] = {
     HMACUtils.verifyAndRemoveSignature(msg.token, secret) match {
       case Right(value) =>
-        val vuuUser: VuuUser = jsonMapper.readValue(value)
+        val vuuUser = jsonMapper.readValue(value, classOf[VuuUser])
         if (Instant.now().isBefore(vuuUser.expiry)) {
           logger.info(s"[LOGIN] Successful login for ${vuuUser.name}")
           Right(vuuUser)

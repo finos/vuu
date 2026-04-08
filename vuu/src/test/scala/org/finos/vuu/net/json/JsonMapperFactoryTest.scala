@@ -6,7 +6,7 @@ import org.scalatest.prop.TableDrivenPropertyChecks
 
 class JsonMapperFactoryTest extends AnyFeatureSpec with Matchers with TableDrivenPropertyChecks {
 
-  private val jsonMapper = JsonMapperFactory.get()
+  private val jsonMapper = JsonMapperFactory.build
 
   Feature("toRawJson") {
     Scenario("can convert an instance of a case class to json string") {

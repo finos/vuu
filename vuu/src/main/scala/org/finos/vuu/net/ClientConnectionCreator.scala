@@ -9,9 +9,9 @@ import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.ModuleContainer
 import org.finos.vuu.net.row.{RowUpdate, RowUpdateType}
 import org.finos.vuu.net.flowcontrol.{BatchSize, Disconnect, FlowController, SendHeartbeat}
-import org.finos.vuu.net.json.VsJsonSerializer
+import org.finos.vuu.net.json.JsonSerializer
 import org.finos.vuu.util.PublishQueue
-import org.finos.vuu.viewport.{ViewPortUpdate, ViewPortSizeUpdateType, ViewPortRowUpdateType}
+import org.finos.vuu.viewport.{ViewPortRowUpdateType, ViewPortSizeUpdateType, ViewPortUpdate}
 
 trait InboundMessageHandler {
   def handle(msg: ViewServerMessage): Option[ViewServerMessage]
@@ -33,11 +33,11 @@ class DefaultMessageHandler(val channel: Channel,
                             val user: VuuUser,
                             val session: ClientSessionId,
                             serverApi: ServerApi,
-                            serializer: VsJsonSerializer,
                             flowController: FlowController,
                             sessionContainer: ClientSessionContainer,
                             moduleContainer: ModuleContainer)(implicit timeProvider: Clock) extends MessageHandler with StrictLogging {
 
+  private val serializer = ViewServerMessageSerializer
   private val closeFuture: ChannelFuture = channel.closeFuture()
 
   closeFuture.addListener((f: ChannelFuture) => {

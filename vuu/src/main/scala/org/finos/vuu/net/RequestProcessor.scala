@@ -9,7 +9,6 @@ import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.ModuleContainer
 import org.finos.vuu.net.auth.LoginTokenService
 import org.finos.vuu.net.flowcontrol.FlowControllerFactory
-import org.finos.vuu.net.json.VsJsonSerializer
 import org.finos.vuu.util.{OutboundRowPublishQueue, PublishQueue}
 import org.finos.vuu.viewport.ViewPortUpdate
 
@@ -23,7 +22,6 @@ case class RequestContext(requestId: String,
 class RequestProcessor(loginTokenService: LoginTokenService,
                        clientSessionContainer: ClientSessionContainer,
                        serverApi: ServerApi,
-                       serializer: VsJsonSerializer,
                        moduleContainer: ModuleContainer,
                        flowControllerFactory: FlowControllerFactory,
                        vuuServerId: String
@@ -71,7 +69,7 @@ class RequestProcessor(loginTokenService: LoginTokenService,
   private def createMessageHandler(channel: Channel, sessionId: ClientSessionId, user: VuuUser): MessageHandler = {
     val queue = OutboundRowPublishQueue()
     val flowController = flowControllerFactory.create(sessionId)
-    DefaultMessageHandler(channel, queue, user, sessionId, serverApi, serializer, flowController, clientSessionContainer, moduleContainer)
+    DefaultMessageHandler(channel, queue, user, sessionId, serverApi, flowController, clientSessionContainer, moduleContainer)
   }
 
   private def handleViewServerMessage(msg: ViewServerMessage, channel: Channel): Option[ViewServerMessage] = {

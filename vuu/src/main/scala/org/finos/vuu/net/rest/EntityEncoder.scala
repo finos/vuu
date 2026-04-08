@@ -1,13 +1,10 @@
 package org.finos.vuu.net.rest
 
-import tools.jackson.core.`type`.TypeReference
 import tools.jackson.databind.json.JsonMapper
-import tools.jackson.module.scala.DefaultScalaModule
+import tools.jackson.module.scala.{DefaultScalaModule, JavaTypeable}
 
 import java.io.InputStream
-import java.lang.reflect.Type
 import java.nio.charset.StandardCharsets
-import java.util.concurrent.ConcurrentHashMap
 import scala.io.Source
 
 trait EntityEncoder[T] {
@@ -49,27 +46,16 @@ object EmptyEncoder extends EntityEncoder[Null] {
 
 object JsonEntityEncoder {
 
-  private val defaultMapper = JsonMapper.builder().addModule(DefaultScalaModule()).build()
-  private val classRegistry = new ConcurrentHashMap[Class[_], EntityEncoder[_]]()
-  private val typeRegistry = new ConcurrentHashMap[Type, EntityEncoder[_]]()
-  
-  def forClass[T](clazz: Class[T], mapper: JsonMapper = defaultMapper): EntityEncoder[T] = {
-    val encoder = classRegistry.computeIfAbsent(clazz, (c: Class[_]) => {
-      new JsonEntityEncoder[T](mapper, (mapper, is) => mapper.readValue(is, clazz))
-    })
-    encoder.asInstanceOf[EntityEncoder[T]]
-  }
-  
-  def forType[T](reference: TypeReference[T], mapper: JsonMapper = defaultMapper): EntityEncoder[T] = {
-    val encoder = typeRegistry.computeIfAbsent(reference.getType, (c: Type) => {
-      new JsonEntityEncoder[T](mapper, (mapper, is) => mapper.readValue(is, reference))
-    })
-    encoder.asInstanceOf[EntityEncoder[T]]
-  }
+  private val jsonMapper = JsonMapper.builder()
+    .addModule(DefaultScalaModule())
+    .build()
 
+  def apply[T: JavaTypeable](): EntityEncoder[T] =
+    new JsonEntityEncoderImpl[T](jsonMapper)
 }
 
-private case class JsonEntityEncoder[T](mapper: JsonMapper, decodeFunc: (JsonMapper, InputStream) => T) extends EntityEncoder[T] {
+private case class JsonEntityEncoderImpl[T](mapper: JsonMapper)
+                                           (implicit typeable: JavaTypeable[T]) extends EntityEncoder[T] {
 
   override def encode(value: T): Array[Byte] = {
     if (value == null) {
@@ -81,7 +67,7 @@ private case class JsonEntityEncoder[T](mapper: JsonMapper, decodeFunc: (JsonMap
 
   override def decode(is: InputStream): T = {
     try {
-      decodeFunc.apply(mapper, is)
+      mapper.readValue(is, typeable.asJavaType(mapper.getTypeFactory))
     } finally {
       if (is != null) is.close()
     }

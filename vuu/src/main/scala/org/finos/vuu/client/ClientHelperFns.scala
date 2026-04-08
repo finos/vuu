@@ -111,7 +111,9 @@ object ClientHelperFns {
 
   def login(token: String)(implicit vsClient: ViewServerClient): String = {
     vsClient.send(JsonViewServerMessage(RequestId.oneNew(), "", LoginRequest(token)))
-    vsClient.awaitMsg.sessionId
+    val response = vsClient.awaitMsg
+    assert(response != null)
+    response.sessionId
   }
   
   @tailrec

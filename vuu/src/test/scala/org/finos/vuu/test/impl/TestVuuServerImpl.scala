@@ -14,7 +14,7 @@ import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.*
 import org.finos.vuu.net.auth.LoginTokenService
 import org.finos.vuu.net.flowcontrol.FlowControllerFactory
-import org.finos.vuu.net.json.VsJsonSerializer
+import org.finos.vuu.net.json.JsonSerializer
 import org.finos.vuu.net.rest.RestService
 import org.finos.vuu.plugin.{DefaultPluginRegistry, Plugin}
 import org.finos.vuu.provider.*
@@ -28,7 +28,7 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
 
   private final val vuuServerId: String = UUID.randomUUID().toString
 
-  private val serializer: VsJsonSerializer = VsJsonSerializer()
+  private val serializer: JsonSerializer[JsonViewServerMessage] = JsonSerializer()
 
   val sessionContainer: ClientSessionContainer = ClientSessionContainer(1)
 

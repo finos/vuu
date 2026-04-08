@@ -58,9 +58,10 @@ class EntityEncoderTest extends AnyFeatureSpec with Matchers with GivenWhenThen 
 
   Feature("JsonEntityEncoder") {
 
-    Scenario("Encoding and decoding a case class using forClass") {
+    val encoder: EntityEncoder[UserData] = JsonEntityEncoder()
+
+    Scenario("Encoding and decoding a case class") {
       Given("a JsonEntityEncoder for UserData")
-      val encoder = JsonEntityEncoder.forClass(classOf[UserData])
       val user = UserData(1, "John Doe")
 
       When("the object is encoded")
@@ -75,47 +76,6 @@ class EntityEncoderTest extends AnyFeatureSpec with Matchers with GivenWhenThen 
       Then("it should equal the original object")
       decoded shouldBe user
       encoder.contentType shouldBe "application/json"
-    }
-
-    Scenario("Encoder Registry (Memoization) using forClass") {
-      Given("the JsonEntityEncoder factory")
-
-      When("requesting an encoder for the same class twice")
-      val encoder1 = JsonEntityEncoder.forClass(classOf[UserData])
-      val encoder2 = JsonEntityEncoder.forClass(classOf[UserData])
-
-      Then("both references should point to the exact same instance")
-      encoder1 should be theSameInstanceAs encoder2
-    }
-
-    Scenario("Encoding and decoding a case class using forType") {
-      Given("a JsonEntityEncoder for UserData")
-      val encoder = JsonEntityEncoder.forType(new TypeReference[List[UserData]] {})
-      val userList = List(UserData(1, "John Doe"))
-
-      When("the object is encoded")
-      val bytes = encoder.encode(userList)
-
-      Then("it should look like valid JSON")
-      new String(bytes, StandardCharsets.UTF_8) shouldEqual "[{\"id\":1,\"name\":\"John Doe\"}]"
-
-      And("when decoded back")
-      val decoded = encoder.decode(new ByteArrayInputStream(bytes))
-
-      Then("it should equal the original object")
-      decoded shouldBe userList
-      encoder.contentType shouldBe "application/json"
-    }
-
-    Scenario("Encoder Registry (Memoization) using forType") {
-      Given("the JsonEntityEncoder factory")
-
-      When("requesting an encoder for the same type reference twice")
-      val encoder1 = JsonEntityEncoder.forType(new TypeReference[List[UserData]] {})
-      val encoder2 = JsonEntityEncoder.forType(new TypeReference[List[UserData]] {})
-
-      Then("both references should point to the exact same instance")
-      encoder1 should be theSameInstanceAs encoder2
     }
 
   }

@@ -7,7 +7,7 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.core.module.ModuleContainer
 import org.finos.vuu.net.auth.LoginTokenService
 import org.finos.vuu.net.flowcontrol.FlowControllerFactory
-import org.finos.vuu.net.json.VsJsonSerializer
+import org.finos.vuu.net.json.JsonSerializer
 
 trait ViewServerHandlerFactory {
   def create(): ViewServerHandler
@@ -21,15 +21,16 @@ class ViewServerHandlerFactoryImpl(loginTokenService: LoginTokenService,
                                    vuuServerId: String,
                                   )(implicit val timeProvider: Clock) extends ViewServerHandlerFactory {
   override def create(): ViewServerHandler = {
-    val serializer = VsJsonSerializer()
-    val requestProcessor = new RequestProcessor(loginTokenService, sessionContainer, serverApi, serializer,
+    val requestProcessor = new RequestProcessor(loginTokenService, sessionContainer, serverApi, 
       moduleContainer, flowControllerFactory, vuuServerId)
-    new ViewServerHandler(serializer, requestProcessor)
+    new ViewServerHandler(requestProcessor)
   }
 }
 
-class ViewServerHandler(serializer: VsJsonSerializer, processor: RequestProcessor) extends StrictLogging {
+class ViewServerHandler(processor: RequestProcessor) extends StrictLogging {
 
+  private val serializer = ViewServerMessageSerializer
+  
   def close(): Unit = {
     logger.debug("closing session on disconnect")
   }
