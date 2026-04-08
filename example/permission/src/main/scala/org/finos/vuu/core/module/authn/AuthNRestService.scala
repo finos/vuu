@@ -1,14 +1,11 @@
 package org.finos.vuu.core.module.authn
 
 import com.typesafe.scalalogging.StrictLogging
-import io.vertx.core.http.Cookie
-import io.vertx.ext.web.RoutingContext
 import org.finos.toolbox.time.Clock
 import org.finos.vuu.net.auth.{Authenticator, LoginTokenService}
 import org.finos.vuu.net.rest.{JsonEntityEncoder, RestContext, RestService, StringEncoder}
 
-import java.util.concurrent.TimeUnit
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
 object VuuAuthHeader{
   final val Name = "vuu-auth-token"

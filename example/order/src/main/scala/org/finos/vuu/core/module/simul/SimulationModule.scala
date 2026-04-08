@@ -19,7 +19,6 @@ import org.finos.vuu.viewport.*
 
 import java.util.UUID
 
-
 class InstrumentsService(val table: DataTable, val providerContainer: ProviderContainer)(implicit tableContainer: TableContainer) extends DefaultRpcHandler with StrictLogging {
 
   def addRowsFromInstruments(selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
@@ -43,42 +42,42 @@ class InstrumentsService(val table: DataTable, val providerContainer: ProviderCo
 
   def testCell(rowKey: String, field: String, value: Object, sessionId: ClientSessionId): ViewPortAction = {
     println("In testCell")
-    NoAction()
+    NoAction
   }
 
   def testTable(sessionId: ClientSessionId): ViewPortAction = {
     println("In testTable")
-    NoAction()
+    NoAction
   }
 
   def testRow(rowKey: String, row: Map[String, Any], sessionId: ClientSessionId): ViewPortAction = {
     println("In testRow")
-    NoAction()
+    NoAction
   }
 
   override def menuItems(): ViewPortMenu = ViewPortMenu(
     ViewPortMenu("Block Actions (selected rows)",
-      new SelectionViewPortMenuItem("Test Selection", "", this.testSelect, "TEST_SELECT"),
-      new SelectionViewPortMenuItem("Test Selection CAD", "currency=\"CAD\"", this.testSelect, "TEST_SELECT_CAD"),
-      new SelectionViewPortMenuItem("Test Selection EUR", "currency=\"EUR\"", this.testSelect, "TEST_SELECT_EUR"),
-      new SelectionViewPortMenuItem("Test Selection USD", "currency=\"USD\"", this.testSelect, "TEST_SELECT_USD")
+      SelectionViewPortMenuItem("Test Selection", "", this.testSelect, "TEST_SELECT"),
+      SelectionViewPortMenuItem("Test Selection CAD", "currency=\"CAD\"", this.testSelect, "TEST_SELECT_CAD"),
+      SelectionViewPortMenuItem("Test Selection EUR", "currency=\"EUR\"", this.testSelect, "TEST_SELECT_EUR"),
+      SelectionViewPortMenuItem("Test Selection USD", "currency=\"USD\"", this.testSelect, "TEST_SELECT_USD")
     ),
     ViewPortMenu("Cell Actions",
-      new CellViewPortMenuItem("Test Cell", "", this.testCell, "TEST_CELL"),
-      new CellViewPortMenuItem("Test BBG Cell", "", this.testCell, "TEST_BBG_CELL", "bbg"),
-      new CellViewPortMenuItem("Test CCY Cell", "", this.testCell, "TEST_CURRENCY_CELL", "currency")
+      CellViewPortMenuItem("Test Cell", "", this.testCell, "TEST_CELL"),
+      CellViewPortMenuItem("Test BBG Cell", "", this.testCell, "TEST_BBG_CELL", "bbg"),
+      CellViewPortMenuItem("Test CCY Cell", "", this.testCell, "TEST_CURRENCY_CELL", "currency")
     ),
     ViewPortMenu("Row Actions",
-      new RowViewPortMenuItem("Test Row", "", this.testRow, "TEST_ROW"),
-      new RowViewPortMenuItem("Test Row EUR", "currency=\"EUR\"", this.testRow, "TEST_ROW_EUR"),
-      new RowViewPortMenuItem("Test Row USD", "currency=\"USD\"", this.testRow, "TEST_ROW_USD"),
-      new RowViewPortMenuItem("Test Row CAD", "currency=\"CAD\"", this.testRow, "TEST_ROW_CAD"),
-      new RowViewPortMenuItem("Test Row CAD/USD", "currency in [\"CAD\",\"USD\"]", this.testRow, "TEST_ROW_CAD_USD"),
-      new RowViewPortMenuItem("Test Row XLON-LSE", "exchange = \"XLON/LSE-SETS\"", this.testRow, "TEST_ROW_XLON"),
-      new RowViewPortMenuItem("Test Row London Rics", "ric ends \".L\"", this.testRow, "TEST_ROW_LON_RICS")
+      RowViewPortMenuItem("Test Row", "", this.testRow, "TEST_ROW"),
+      RowViewPortMenuItem("Test Row EUR", "currency=\"EUR\"", this.testRow, "TEST_ROW_EUR"),
+      RowViewPortMenuItem("Test Row USD", "currency=\"USD\"", this.testRow, "TEST_ROW_USD"),
+      RowViewPortMenuItem("Test Row CAD", "currency=\"CAD\"", this.testRow, "TEST_ROW_CAD"),
+      RowViewPortMenuItem("Test Row CAD/USD", "currency in [\"CAD\",\"USD\"]", this.testRow, "TEST_ROW_CAD_USD"),
+      RowViewPortMenuItem("Test Row XLON-LSE", "exchange = \"XLON/LSE-SETS\"", this.testRow, "TEST_ROW_XLON"),
+      RowViewPortMenuItem("Test Row London Rics", "ric ends \".L\"", this.testRow, "TEST_ROW_LON_RICS")
     ),
-    new SelectionViewPortMenuItem("Add Rows To Orders", "", this.addRowsFromInstruments, "ADD_ROWS_TO_ORDERS"),
-    new TableViewPortMenuItem("Test Table", "", this.testTable, "TEST_TABLE")
+    SelectionViewPortMenuItem("Add Rows To Orders", "", this.addRowsFromInstruments, "ADD_ROWS_TO_ORDERS"),
+    TableViewPortMenuItem("Test Table", "", this.testTable, "TEST_TABLE")
   )
 
 }
