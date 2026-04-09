@@ -29,7 +29,7 @@ class ViewServerHandlerFactoryImpl(loginTokenService: LoginTokenService,
 
 class ViewServerHandler(processor: RequestProcessor) extends StrictLogging {
 
-  private val serializer = ViewServerMessageSerializer
+  private val serializer = JsonSerializer[ViewServerMessage]()
   
   def close(): Unit = {
     logger.debug("closing session on disconnect")

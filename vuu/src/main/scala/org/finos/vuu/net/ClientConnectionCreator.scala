@@ -37,7 +37,7 @@ class DefaultMessageHandler(val channel: Channel,
                             sessionContainer: ClientSessionContainer,
                             moduleContainer: ModuleContainer)(implicit timeProvider: Clock) extends MessageHandler with StrictLogging {
 
-  private val serializer = ViewServerMessageSerializer
+  private val serializer = JsonSerializer[ViewServerMessage]()
   private val closeFuture: ChannelFuture = channel.closeFuture()
 
   closeFuture.addListener((f: ChannelFuture) => {

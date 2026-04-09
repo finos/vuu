@@ -2,6 +2,7 @@ package org.finos.vuu.net
 
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
+import org.finos.vuu.net.json.JsonSerializer
 import org.finos.vuu.net.ws.WebSocketClient
 
 import scala.util.{Failure, Success, Try}
@@ -17,7 +18,7 @@ trait ViewServerClient extends LifecycleEnabled {
 
 class WebSocketViewServerClient(ws: WebSocketClient)(implicit lifecycle: LifecycleContainer) extends ViewServerClient with StrictLogging {
 
-  private val serializer = ViewServerMessageSerializer
+  private val serializer = JsonSerializer[ViewServerMessage]()
 
   lifecycle(this).dependsOn(ws)
 

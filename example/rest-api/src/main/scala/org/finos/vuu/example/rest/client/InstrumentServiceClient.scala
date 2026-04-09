@@ -1,11 +1,8 @@
 package org.finos.vuu.example.rest.client
 
 import org.finos.vuu.example.rest.model.Instrument
-import org.finos.vuu.net.json.{JsonMapperFactory, JsonSerializer}
+import org.finos.vuu.net.json.JsonSerializer
 import sttp.client4.{UriContext, basicRequest}
-import tools.jackson.core.`type`.TypeReference
-import tools.jackson.databind.json.JsonMapper
-import tools.jackson.module.scala.DefaultScalaModule
 
 import scala.util.{Failure, Try}
 
@@ -14,13 +11,15 @@ trait InstrumentServiceClient {
 }
 
 object InstrumentServiceClient {
+
   def apply(httpClient: HttpClient, baseUrl: String): InstrumentServiceClient = {
-    new InstrumentServiceClientImpl(httpClient, baseUrl)
+    InstrumentServiceClientImpl(httpClient, baseUrl, JsonSerializer())
   }
 }
 
-private class InstrumentServiceClientImpl(httpClient: HttpClient, baseUrl: String) extends InstrumentServiceClient {
-  val serializer = JsonSerializer[List[Instrument]]()
+private case class InstrumentServiceClientImpl(httpClient: HttpClient,
+                                               baseUrl: String,
+                                               serializer: JsonSerializer[List[Instrument]]) extends InstrumentServiceClient {
 
   def getInstruments(limit: Int): Try[List[Instrument]] = {
     val request = basicRequest.get(uri"$baseUrl/instruments?limit=$limit")
