@@ -3,7 +3,6 @@ package org.finos.vuu.net.rest
 import org.scalatest.GivenWhenThen
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
-import tools.jackson.core.`type`.TypeReference
 
 import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
@@ -58,7 +57,7 @@ class EntityEncoderTest extends AnyFeatureSpec with Matchers with GivenWhenThen 
 
   Feature("JsonEntityEncoder") {
 
-    val encoder: EntityEncoder[UserData] = JsonEntityEncoder()
+    val encoder = JsonEntityEncoder[UserData]()
 
     Scenario("Encoding and decoding a case class") {
       Given("a JsonEntityEncoder for UserData")

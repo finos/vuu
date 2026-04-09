@@ -28,7 +28,7 @@ class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clo
 
   private final val vuuServerId: String = UUID.randomUUID().toString
 
-  private val serializer: JsonSerializer[JsonViewServerMessage] = JsonSerializer()
+  private val serializer = JsonSerializer[JsonViewServerMessage]()
 
   val sessionContainer: ClientSessionContainer = ClientSessionContainer(1)
 

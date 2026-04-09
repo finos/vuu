@@ -1,6 +1,6 @@
 package org.finos.vuu.net.json
 
-import org.finos.vuu.net.{JsonViewServerMessage, LoginRequest, ViewServerMessage}
+import org.finos.vuu.net.{JsonViewServerMessage, LoginRequest}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -8,7 +8,7 @@ class JsonSerializerTest extends AnyFeatureSpec with Matchers {
 
   Feature("Check we can serialize and deserialize messages"){
 
-    val serializer: JsonSerializer[JsonViewServerMessage] = JsonSerializer()
+    val serializer = JsonSerializer[JsonViewServerMessage]()
 
     Scenario("Default module"){
 

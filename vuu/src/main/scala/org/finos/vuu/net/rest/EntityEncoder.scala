@@ -47,7 +47,7 @@ object EmptyEncoder extends EntityEncoder[Null] {
 object JsonEntityEncoder {
 
   def apply[T : JavaTypeable](): EntityEncoder[T] = {
-    new JacksonEntityEncoderImpl[T](JsonSerializer())
+    new JacksonEntityEncoderImpl[T](JsonSerializer[T]())
   }
 }
 

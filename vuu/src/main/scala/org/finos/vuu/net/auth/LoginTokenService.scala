@@ -40,7 +40,7 @@ object LoginTokenService {
    * This shared key should be used by all Vuu instances that the UI can connect to.
    */
   def apply(sharedSecret: Array[Byte]): LoginTokenService = {
-    LoginTokenServiceImpl(sharedSecret, JsonSerializer())
+    LoginTokenServiceImpl(sharedSecret, JsonSerializer[VuuUser]())
   }
 
 }

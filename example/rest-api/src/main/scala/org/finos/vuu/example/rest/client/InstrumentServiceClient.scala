@@ -13,7 +13,7 @@ trait InstrumentServiceClient {
 object InstrumentServiceClient {
 
   def apply(httpClient: HttpClient, baseUrl: String): InstrumentServiceClient = {
-    InstrumentServiceClientImpl(httpClient, baseUrl, JsonSerializer())
+    InstrumentServiceClientImpl(httpClient, baseUrl, JsonSerializer[List[Instrument]]())
   }
 }
 
