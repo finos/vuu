@@ -7,15 +7,16 @@ import org.finos.vuu.module.JavaExampleModule;
 import org.finos.vuu.net.Aggregations;
 import org.finos.vuu.net.CreateViewPortRequest;
 import org.finos.vuu.net.CreateViewPortSuccess;
-import org.finos.vuu.net.NoneAction;
-import org.finos.vuu.net.RpcErrorResult;
 import org.finos.vuu.net.RpcRequest;
 import org.finos.vuu.net.RpcResponseNew;
-import org.finos.vuu.net.RpcSuccessResult;
-import org.finos.vuu.net.ShowNotificationAction;
 import org.finos.vuu.net.SortSpec;
-import org.finos.vuu.net.ViewPortContext;
+import org.finos.vuu.net.rpc.RpcErrorResult;
 import org.finos.vuu.net.rpc.RpcNames;
+import org.finos.vuu.net.rpc.RpcSuccessResult;
+import org.finos.vuu.net.rpc.ViewPortContext;
+import org.finos.vuu.net.ui.NoneAction$;
+import org.finos.vuu.net.ui.NotificationType;
+import org.finos.vuu.net.ui.ShowNotificationAction;
 import org.finos.vuu.viewport.ViewPortRange;
 import org.finos.vuu.viewport.ViewPortTable;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Map;
 
+import static org.finos.vuu.util.ScalaCollectionConverter.emptyList;
 import static org.finos.vuu.util.ScalaCollectionConverter.toJava;
 import static org.finos.vuu.util.ScalaCollectionConverter.toScala;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -60,7 +62,7 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
         var data = toJava((scala.collection.immutable.List<?>)result.data());
         assertEquals(List.of("Adam", "Natalie"), data);
 
-        assertInstanceOf(NoneAction.class, responseBody.action(), "Response contains no action");
+        assertEquals(NoneAction$.MODULE$, responseBody.action(), "Response contains no action");
     }
 
     @Test
@@ -85,7 +87,7 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
         var result = (RpcSuccessResult) responseBody.result();
         assertEquals(56440, result.data());
 
-        assertInstanceOf(NoneAction.class, responseBody.action(), "Response contains no action");
+        assertEquals(NoneAction$.MODULE$, responseBody.action(), "Response contains no action");
     }
 
     @Test
@@ -108,9 +110,8 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
         assertEquals("UpdateName", responseBody.rpcName());
 
         assertInstanceOf(RpcSuccessResult.class, responseBody.result(), "Response contains Successful result");
-        assertInstanceOf(NoneAction.class, responseBody.action(), "Response contains no action");
+        assertEquals(NoneAction$.MODULE$, responseBody.action(), "Response contains no action");
     }
-
 
     @Test
     public void custom_rpc_request_that_does_not_exist() {
@@ -134,7 +135,7 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
 
         assertInstanceOf(ShowNotificationAction.class, responseBody.action(), "Response contains show notification action");
         var action = (ShowNotificationAction) responseBody.action();
-        assertEquals("Error", action.notificationType());
+        assertEquals(NotificationType.ERROR(), action.notificationType());
         assertEquals("Failed to process DoesNotExist request", action.title());
         assertEquals("Could not find rpcMethodHandler DoesNotExist", action.message());
 
@@ -145,7 +146,7 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
                 new ViewPortTable(tableName, moduleName),
                 new ViewPortRange(1, 100),
                 columnNames,
-                new SortSpec(toScala(List.of())),
+                new SortSpec(emptyList()),
                 new String[0],
                 null,
                 new Aggregations[0]
@@ -156,6 +157,7 @@ public class PersonRpcHandlerWSApiTest extends WebSocketApiJavaTestBase {
 
         CreateViewPortSuccess responseBody = assertBodyIsInstanceOf(viewPortCreateResponse, "View port create response");
         var viewportId =  responseBody.viewPortId();
+
         waitForData(1);
         return viewportId;
     }

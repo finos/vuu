@@ -1,14 +1,16 @@
 package org.finos.vuu.net.row
 
-import org.finos.vuu.core.sort.SortDirection.{Ascending, Descending}
-
 enum RowUpdateType(val external: String) {
   case SizeOnly extends RowUpdateType("SIZE")
   case Update extends RowUpdateType("U")
 }
 
 object RowUpdateType {
-  
+
+  //Java consumers
+  val SIZE_ONLY: RowUpdateType = RowUpdateType.SizeOnly
+  val UPDATE: RowUpdateType = RowUpdateType.Update
+
   def fromExternal(external: String): RowUpdateType = {
     external match {
       case SizeOnly.external => SizeOnly
