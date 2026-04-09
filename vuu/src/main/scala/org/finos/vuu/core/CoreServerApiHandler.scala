@@ -6,9 +6,10 @@ import org.finos.vuu.api.AvailableViewPortVisualLink
 import org.finos.vuu.api.TableVisibility.Public
 import org.finos.vuu.core.table.{DataType, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.*
-import org.finos.vuu.net.rpc.{RpcFunctionFailure, RpcFunctionSuccess}
+import org.finos.vuu.net.rpc.{RpcErrorResult, RpcFunctionFailure, RpcFunctionSuccess, RpcSuccessResult, ViewPortContext}
+import org.finos.vuu.net.ui.{NoneAction, NotificationType, ShowNotificationAction}
 import org.finos.vuu.provider.ProviderContainer
-import org.finos.vuu.viewport.*
+import org.finos.vuu.viewport.{Aggregation, GroupBy, NoGroupBy, RowSource, ViewPort, ViewPortAction, ViewPortContainer, ViewPortRange}
 
 import scala.util.{Failure, Success, Try}
 
@@ -389,7 +390,7 @@ class CoreServerApiHandler(val viewPortContainer: ViewPortContainer,
         functionResult match {
           case RpcFunctionSuccess(data) =>
             logger.info(s"[API] Called RPC ${msg.rpcName} in viewport $viewPortId in session ${ctx.session.sessionId} with params ${msg.params}")
-            RpcResponseNew(rpcName = msg.rpcName, result = RpcSuccessResult(data), NoneAction())
+            RpcResponseNew(rpcName = msg.rpcName, result = RpcSuccessResult(data), NoneAction)
           case RpcFunctionFailure(errorCode, error, exception) =>
             logger.error(s"[API] Failed to call RPC ${msg.rpcName} in viewport $viewPortId in session ${ctx.session.sessionId} with params ${msg.params}. (${ctx.requestId})", Exception(error, exception))
             createErrorRpcResponse(msg, error)

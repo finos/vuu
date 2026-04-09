@@ -1,9 +1,8 @@
 package org.finos.vuu.example.rest.client
 
-import org.finos.toolbox.json.JsonUtil
-import org.finos.toolbox.json.JsonUtil.toRawJson
-import org.scalatest.prop.TableDrivenPropertyChecks._
-import org.finos.vuu.example.rest.model.RandomInstrument
+import org.scalatest.prop.TableDrivenPropertyChecks.*
+import org.finos.vuu.example.rest.model.{Instrument, RandomInstrument}
+import org.finos.vuu.net.json.JsonSerializer
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
@@ -13,6 +12,7 @@ import sttp.model.StatusCode
 
 class InstrumentServiceClientTest extends AnyFeatureSpec with Matchers with MockFactory {
   private final val BASE_URL = "base-url.com"
+  val serializer = JsonSerializer[List[Instrument]]()
 
   Feature("getInstruments") {
     Scenario("can make an external call and parse response WHEN service responds as expected") {
@@ -21,7 +21,7 @@ class InstrumentServiceClientTest extends AnyFeatureSpec with Matchers with Mock
 
       val stubbedBackend = SyncBackendStub
         .whenRequestMatches(req => req.uri.path.endsWith(List("instruments")) && req.uri.params.get("limit").get == "2")
-        .thenRespond(ResponseStub.adjust(toRawJson(instruments)))
+        .thenRespond(ResponseStub.adjust(serializer.serialize(instruments)))
 
       val instrumentsClient = InstrumentServiceClient(HttpClient(stubbedBackend), BASE_URL)
       val res = instrumentsClient.getInstruments(limit = responseSize)

@@ -1,11 +1,9 @@
 package org.finos.vuu.net
 
-import com.fasterxml.jackson.annotation.JsonSubTypes.Type
-import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
-import com.fasterxml.jackson.databind.annotation.{JsonDeserialize, JsonSerialize, JsonTypeIdResolver}
 import org.finos.vuu.api.AvailableViewPortVisualLink
-import org.finos.vuu.net.json.{RowUpdateDeserializer, RowUpdateSerializer}
-import org.finos.vuu.net.rpc.VsJsonTypeResolver
+import org.finos.vuu.net.rpc.{RpcContext, RpcResult}
+import org.finos.vuu.net.row.RowUpdate
+import org.finos.vuu.net.ui.UIAction
 import org.finos.vuu.viewport.{ViewPortAction, ViewPortMenu, ViewPortRange, ViewPortTable}
 
 trait FailureMessage {
@@ -32,8 +30,6 @@ object VsMsg {
 
 case class JsonViewServerMessage(requestId: String, sessionId: String, body: MessageBody, module: String = "CORE") extends ViewServerMessage
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-@JsonTypeIdResolver(classOf[VsJsonTypeResolver])
 trait MessageBody
 
 case class LoginRequest(token: String) extends MessageBody
@@ -196,63 +192,6 @@ case class RemoveVisualLinkRequest(childVpId: String) extends MessageBody
 
 case class RemoveVisualLinkSuccess(childVpId: String) extends MessageBody
 
-
-object UpdateType {
-  final val SizeOnly = "SIZE"
-  final val Update = "U"
-}
-
-
-@JsonSerialize(`using` = classOf[RowUpdateSerializer])
-@JsonDeserialize(`using` = classOf[RowUpdateDeserializer])
-case class RowUpdate(vpVersion: String, viewPortId: String, vpSize: Int, rowIndex: Int, rowKey: String, updateType: String, ts: Long, selected: Int, data: Array[Any])
-
-/***
- * New api for websocket messages - work in progress
- */
-
 case class RpcRequest(context: RpcContext, rpcName: String, params: Map[String, Any]) extends MessageBody
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-@JsonSubTypes(Array(
-  new Type(value = classOf[GlobalContext], name = "GLOBAL_CONTEXT"),
-  new Type(value = classOf[ViewPortContext], name = "VIEWPORT_CONTEXT"),
-  new Type(value = classOf[ViewPortRowContext], name = "VIEWPORT_ROW_CONTEXT"),
-))
-trait RpcContext
-
-case class GlobalContext() extends RpcContext
-
-case class ViewPortContext(viewPortId: String) extends RpcContext
-
-case class ViewPortRowContext(viewPortId: String, rowKey: String) extends RpcContext
-
 case class RpcResponseNew(rpcName: String, result: RpcResult, action: UIAction) extends MessageBody
-
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-@JsonSubTypes(Array(
-  new Type(value = classOf[RpcSuccessResult], name = "SUCCESS_RESULT"),
-  new Type(value = classOf[RpcErrorResult], name = "ERROR_RESULT"),
-))
-trait RpcResult
-
-case class RpcSuccessResult(data: Any) extends RpcResult
-
-case class RpcErrorResult(errorMessage: String) extends RpcResult
-
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-@JsonSubTypes(Array(
-  new Type(value = classOf[NoneAction], name = "NO_ACTION"),
-  new Type(value = classOf[ShowNotificationAction], name = "SHOW_NOTIFICATION_ACTION"),
-))
-trait UIAction
-
-case class NoneAction() extends UIAction
-
-case class ShowNotificationAction(notificationType: String, title: String, message: String) extends UIAction
-
-object NotificationType {
-  final val Error = "Error"
-  final val Warning = "Warning"
-  final val Info = "Info"
-}

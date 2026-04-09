@@ -1,9 +1,9 @@
 package org.finos.vuu.net.auth
 
 import com.typesafe.scalalogging.StrictLogging
-import org.finos.toolbox.json.JsonUtil
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.net.LoginRequest
+import org.finos.vuu.net.json.JsonSerializer
 import org.finos.vuu.util.HMACUtils
 
 import java.security.SecureRandom
@@ -39,7 +39,9 @@ object LoginTokenService {
    * Builds a service that issues and validates tokens using a shared key.
    * This shared key should be used by all Vuu instances that the UI can connect to.
    */
-  def apply(sharedSecret: Array[Byte]): LoginTokenService = LoginTokenServiceImpl(sharedSecret)
+  def apply(sharedSecret: Array[Byte]): LoginTokenService = {
+    LoginTokenServiceImpl(sharedSecret, JsonSerializer[VuuUser]())
+  }
 
 }
 
@@ -53,19 +55,19 @@ case class AlwaysHappyLoginTokenService(vuuUser: VuuUser) extends LoginTokenServ
 
 }
 
-
-case class LoginTokenServiceImpl(secret: Array[Byte]) extends LoginTokenService with StrictLogging {
+case class LoginTokenServiceImpl(secret: Array[Byte], 
+                                 jsonSerializer: JsonSerializer[VuuUser]) extends LoginTokenService with StrictLogging {
 
   override def getToken(user: VuuUser): String = {
     logger.info(s"[TOKEN] Obtaining token for ${user.name}")
-    val payload = JsonUtil.toRawJson(user)
+    val payload = jsonSerializer.serialize(user)
     HMACUtils.sign(payload, secret)
   }
 
   override def login(msg: LoginRequest): Either[String, VuuUser] = {
     HMACUtils.verifyAndRemoveSignature(msg.token, secret) match {
       case Right(value) =>
-        val vuuUser: VuuUser = JsonUtil.fromJson(value)
+        val vuuUser = jsonSerializer.deserialize(value)
         if (Instant.now().isBefore(vuuUser.expiry)) {
           logger.info(s"[LOGIN] Successful login for ${vuuUser.name}")
           Right(vuuUser)

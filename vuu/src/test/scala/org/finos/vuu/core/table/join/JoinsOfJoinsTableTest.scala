@@ -17,7 +17,7 @@ import org.finos.vuu.plugin.DefaultPluginRegistry
 import org.finos.vuu.provider.{JoinTableProviderImpl, MockProvider, ProviderContainer}
 import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.util.table.TableAsserts.assertVpEq
-import org.finos.vuu.viewport.{DefaultRange, RowUpdateType, ViewPortContainer, ViewPortSetup}
+import org.finos.vuu.viewport.{DefaultRange, ViewPortRowUpdateType, ViewPortContainer, ViewPortSetup}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.Tables.Table
@@ -466,7 +466,7 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
     viewPortContainer.runOnce()
 
     val updates = filterByVpId(combineQs(viewPort), viewPort)
-      .filter(vpu => vpu.vpUpdate == RowUpdateType)
+      .filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType)
       .map(vpu => vpu.table.pullRow(vpu.key.key))
       .filter(_.isInstanceOf[RowWithData])
       .map(_.asInstanceOf[RowWithData].data)
@@ -489,7 +489,7 @@ class JoinsOfJoinsTableTest extends AnyFeatureSpec with Matchers with ViewPortSe
     viewPortContainer.runOnce()
 
     val updates2 = filterByVpId(combineQs(viewPort), viewPort)
-      .filter(vpu => vpu.vpUpdate == RowUpdateType)
+      .filter(vpu => vpu.vpUpdate == ViewPortRowUpdateType)
       .map(vpu => vpu.table.pullRow(vpu.key.key))
       .filter(_.isInstanceOf[RowWithData])
       .map(_.asInstanceOf[RowWithData].data)

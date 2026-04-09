@@ -65,6 +65,7 @@ class WebSocketClientHandler extends SimpleChannelInboundHandler[AnyRef] with St
     }
   }
 
+  @SuppressWarnings(Array("deprecation"))
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
     if (handshakeFuture != null && !handshakeFuture.isDone) {
       handshakeFuture.setFailure(cause)

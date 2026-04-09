@@ -1,14 +1,14 @@
-package org.finos.vuu.net.json
+package org.finos.vuu.net.json.mixin
 
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type
 import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
-import org.finos.vuu.core.auths.VuuUserImpl
-import org.finos.vuu.net.*
+import org.finos.vuu.net.{ChangeViewPortRange, ChangeViewPortRangeSuccess, ChangeViewPortReject, ChangeViewPortRequest, ChangeViewPortSuccess, CloseTreeNodeReject, CloseTreeNodeRequest, CloseTreeNodeSuccess, CreateViewPortReject, CreateViewPortRequest, CreateViewPortSuccess, CreateVisualLinkRequest, CreateVisualLinkSuccess, DeselectAllReject, DeselectAllRequest, DeselectAllSuccess, DeselectRowReject, DeselectRowRequest, DeselectRowSuccess, DisableViewPortReject, DisableViewPortRequest, DisableViewPortSuccess, EnableViewPortReject, EnableViewPortRequest, EnableViewPortSuccess, ErrorResponse, FreezeViewPortReject, FreezeViewPortRequest, FreezeViewPortSuccess, GetTableList, GetTableListResponse, GetTableMetaRequest, GetTableMetaResponse, GetViewPortMenusRequest, GetViewPortMenusResponse, GetViewPortVisualLinksRequest, GetViewPortVisualLinksResponse, HeartBeat, HeartBeatResponse, LoginFailure, LoginRequest, LoginSuccess, MenuRpcCall, MenuRpcResponse, OpenTreeNodeReject, OpenTreeNodeRequest, OpenTreeNodeSuccess, RemoveViewPortReject, RemoveViewPortRequest, RemoveViewPortSuccess, RemoveVisualLinkRequest, RemoveVisualLinkSuccess, RpcReject, RpcRequest, RpcResponseNew, RpcSuccess, SelectAllReject, SelectAllRequest, SelectAllSuccess, SelectRowRangeReject, SelectRowRangeRequest, SelectRowRangeSuccess, SelectRowReject, SelectRowRequest, SelectRowSuccess, TableRowUpdates, UnfreezeViewPortReject, UnfreezeViewPortRequest, UnfreezeViewPortSuccess, ViewPortMenuCellRpcCall, ViewPortMenuRowRpcCall, ViewPortMenuRpcReject, ViewPortMenuRpcResponse, ViewPortMenuSelectionRpcCall, ViewPortMenuTableRpcCall}
 
-/**
- * Mixing represents the mapping for all core functionality in VS.
- */
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonTypeInfo(
+  use = JsonTypeInfo.Id.NAME,
+  include = JsonTypeInfo.As.PROPERTY,
+  property = "type"
+)
 @JsonSubTypes(Array(
   new Type(value = classOf[CreateViewPortRequest], name = "CREATE_VP"),
   new Type(value = classOf[CreateViewPortSuccess], name = "CREATE_VP_SUCCESS"),
@@ -84,7 +84,6 @@ import org.finos.vuu.net.*
   new Type(value = classOf[RemoveVisualLinkRequest], name = "REMOVE_VISUAL_LINK"),
   new Type(value = classOf[RemoveVisualLinkSuccess], name = "REMOVE_VISUAL_LINK_SUCCESS"),
   new Type(value = classOf[RpcRequest], name = "RPC_REQUEST"),
-  new Type(value = classOf[RpcResponseNew], name = "RPC_RESPONSE"),
-  new Type(value = classOf[VuuUserImpl], name = "USER"),
+  new Type(value = classOf[RpcResponseNew], name = "RPC_RESPONSE")
 ))
-trait CoreJsonSerializationMixin {}
+trait MessageBodyMixin { }

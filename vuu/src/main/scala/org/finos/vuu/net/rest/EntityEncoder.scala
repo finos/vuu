@@ -1,13 +1,10 @@
 package org.finos.vuu.net.rest
 
-import com.fasterxml.jackson.core.`type`.TypeReference
-import com.fasterxml.jackson.databind.json.JsonMapper
-import org.finos.toolbox.json.JsonUtil
+import org.finos.vuu.net.json.JsonSerializer
+import tools.jackson.module.scala.JavaTypeable
 
 import java.io.InputStream
-import java.lang.reflect.Type
 import java.nio.charset.StandardCharsets
-import java.util.concurrent.ConcurrentHashMap
 import scala.io.Source
 
 trait EntityEncoder[T] {
@@ -49,39 +46,24 @@ object EmptyEncoder extends EntityEncoder[Null] {
 
 object JsonEntityEncoder {
 
-  private val classRegistry = new ConcurrentHashMap[Class[_], EntityEncoder[_]]()
-  private val typeRegistry = new ConcurrentHashMap[Type, EntityEncoder[_]]()
-  private val mapper = JsonUtil.createMapper()
-  
-  def forClass[T](clazz: Class[T]): EntityEncoder[T] = {
-    val encoder = classRegistry.computeIfAbsent(clazz, (c: Class[_]) => {
-      new JsonEntityEncoder[T](mapper, (mapper, is) => mapper.readValue(is, clazz))
-    })
-    encoder.asInstanceOf[EntityEncoder[T]]
+  def apply[T : JavaTypeable](): EntityEncoder[T] = {
+    new JacksonEntityEncoderImpl[T](JsonSerializer[T]())
   }
-
-  def forType[T](reference: TypeReference[T]): EntityEncoder[T] = {
-    val encoder = typeRegistry.computeIfAbsent(reference.getType, (c: Type) => {
-      new JsonEntityEncoder[T](mapper, (mapper, is) => mapper.readValue(is, reference))
-    })
-    encoder.asInstanceOf[EntityEncoder[T]]
-  }
-
 }
 
-private case class JsonEntityEncoder[T](mapper: JsonMapper, decodeFunc: (JsonMapper, InputStream) => T) extends EntityEncoder[T] {
+private case class JacksonEntityEncoderImpl[T](jsonSerializer: JsonSerializer[T]) extends EntityEncoder[T] {
 
   override def encode(value: T): Array[Byte] = {
     if (value == null) {
       Array.emptyByteArray
     } else {
-      mapper.writeValueAsBytes(value)
+      jsonSerializer.serializeAsBytes(value)
     }
   }
 
   override def decode(is: InputStream): T = {
     try {
-      decodeFunc.apply(mapper, is)
+      jsonSerializer.deserialize(is)
     } finally {
       if (is != null) is.close()
     }

@@ -1,14 +1,8 @@
 package org.finos.vuu.core.auths
 
-import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
-
 import java.time.Instant
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-@JsonSubTypes(Array(
-  new JsonSubTypes.Type(value = classOf[VuuUserImpl], name = "VUU_USER")
-))
-trait VuuUser {
+sealed trait VuuUser {
 
   def name: String
   def expiry: Instant

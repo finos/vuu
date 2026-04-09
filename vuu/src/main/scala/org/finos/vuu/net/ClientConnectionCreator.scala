@@ -7,10 +7,11 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.client.messages.RequestId
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.ModuleContainer
+import org.finos.vuu.net.row.{RowUpdate, RowUpdateType}
 import org.finos.vuu.net.flowcontrol.{BatchSize, Disconnect, FlowController, SendHeartbeat}
-import org.finos.vuu.net.json.JsonVsSerializer
+import org.finos.vuu.net.json.JsonSerializer
 import org.finos.vuu.util.PublishQueue
-import org.finos.vuu.viewport.{RowUpdateType, SizeUpdateType, ViewPortUpdate}
+import org.finos.vuu.viewport.{ViewPortRowUpdateType, ViewPortSizeUpdateType, ViewPortUpdate}
 
 trait InboundMessageHandler {
   def handle(msg: ViewServerMessage): Option[ViewServerMessage]
@@ -32,11 +33,11 @@ class DefaultMessageHandler(val channel: Channel,
                             val user: VuuUser,
                             val session: ClientSessionId,
                             serverApi: ServerApi,
-                            serializer: JsonVsSerializer,
                             flowController: FlowController,
                             sessionContainer: ClientSessionContainer,
                             moduleContainer: ModuleContainer)(implicit timeProvider: Clock) extends MessageHandler with StrictLogging {
 
+  private val serializer = JsonSerializer[ViewServerMessage]()
   private val closeFuture: ChannelFuture = channel.closeFuture()
 
   closeFuture.addListener((f: ChannelFuture) => {
@@ -53,7 +54,7 @@ class DefaultMessageHandler(val channel: Channel,
 
       val json = serializer.serialize(JsonViewServerMessage("", session.sessionId, formatted))
 
-      logger.debug("ASYNC-SVR-OUT:" + json)
+      logger.debug(s"ASYNC-SVR-OUT: $json")
 
       channel.writeAndFlush(new TextWebSocketFrame(json))
     }
@@ -98,11 +99,11 @@ class DefaultMessageHandler(val channel: Channel,
   protected def formatOneRowUpdate(update: ViewPortUpdate): Option[RowUpdate] = {
 
     update.vpUpdate match {
-      case SizeUpdateType =>
+      case ViewPortSizeUpdateType =>
         //logger.debug(s"SVR[VP] Size: vpid=${update.vp.id} size=${update.vp.size}")
-        Some(RowUpdate(update.vpRequestId, update.vp.id, update.size, update.index, update.key.key, UpdateType.SizeOnly, timeProvider.now(), 0, Array.empty))
+        Some(RowUpdate(update.vpRequestId, update.vp.id, update.size, update.index, update.key.key, RowUpdateType.SizeOnly, timeProvider.now(), 0, Array.empty))
 
-      case RowUpdateType =>
+      case ViewPortRowUpdateType =>
 
         //if viewport has changed while we're processing the queue
         if (!update.vp.getRange.contains(update.index)) {
@@ -116,7 +117,7 @@ class DefaultMessageHandler(val channel: Channel,
         if (dataToSend.length == 0) {
           None
         } else {
-          Some(RowUpdate(update.vpRequestId, update.vp.id, update.size, update.index, update.key.key, UpdateType.Update, timeProvider.now(), isSelected, dataToSend))
+          Some(RowUpdate(update.vpRequestId, update.vp.id, update.size, update.index, update.key.key, RowUpdateType.Update, timeProvider.now(), isSelected, dataToSend))
         }
     }
 

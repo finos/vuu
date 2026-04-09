@@ -244,7 +244,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       joinProvider.runOnce()
 
-      val updates3 = combineQs(viewport).filter( vp => vp.vpUpdate == RowUpdateType)
+      val updates3 = combineQs(viewport).filter( vp => vp.vpUpdate == ViewPortRowUpdateType)
 
       updates3.size should be (1)
       updates3.head.vp.size should equal(1)
@@ -405,7 +405,7 @@ class FilterAndSortTest extends AnyFeatureSpec with Matchers with ViewPortSetup 
 
       joinProvider.runOnce()
 
-      val updates3 = combineQs(viewport).filter(vp => vp.vpUpdate == RowUpdateType)
+      val updates3 = combineQs(viewport).filter(vp => vp.vpUpdate == ViewPortRowUpdateType)
 
       updates3.size should be(1)
       updates3(0).vp.size should equal(1)

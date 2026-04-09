@@ -14,9 +14,8 @@ import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.*
 import org.finos.vuu.net.auth.LoginTokenService
 import org.finos.vuu.net.flowcontrol.FlowControllerFactory
-import org.finos.vuu.net.json.{CoreJsonSerializationMixin, JsonVsSerializer}
+import org.finos.vuu.net.json.JsonSerializer
 import org.finos.vuu.net.rest.RestService
-import org.finos.vuu.net.rpc.JsonSubTypeRegistry
 import org.finos.vuu.plugin.{DefaultPluginRegistry, Plugin}
 import org.finos.vuu.provider.*
 import org.finos.vuu.test.TestVuuServer
@@ -24,16 +23,12 @@ import org.finos.vuu.util.OutboundRowPublishQueue
 import org.finos.vuu.viewport.*
 
 import java.util.UUID
-import scala.reflect.classTag
 
 class TestVuuServerImpl(val modules: List[ViewServerModule])(implicit clock: Clock, lifecycle: LifecycleContainer, metrics: MetricsProvider) extends TestVuuServer with LifecycleEnabled with StrictLogging {
 
   private final val vuuServerId: String = UUID.randomUUID().toString
 
-  private val serializer: JsonVsSerializer = JsonVsSerializer()
-
-  JsonSubTypeRegistry.register(classOf[MessageBody], classOf[CoreJsonSerializationMixin])
-  JsonSubTypeRegistry.register(classOf[ViewPortAction], classOf[ViewPortActionMixin])
+  private val serializer = JsonSerializer[JsonViewServerMessage]()
 
   val sessionContainer: ClientSessionContainer = ClientSessionContainer(1)
 

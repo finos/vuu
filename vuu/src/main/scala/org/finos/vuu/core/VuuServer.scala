@@ -12,14 +12,12 @@ import org.finos.vuu.feature.inmem.VuuInMemPlugin
 import org.finos.vuu.net.auth.LoginTokenService
 import org.finos.vuu.net.flowcontrol.FlowControllerFactory
 import org.finos.vuu.net.http.HttpServer
-import org.finos.vuu.net.json.CoreJsonSerializationMixin
 import org.finos.vuu.net.rest.{RestContext, RestService}
-import org.finos.vuu.net.rpc.JsonSubTypeRegistry
 import org.finos.vuu.net.ws.WebSocketServer
 import org.finos.vuu.net.{ClientSessionContainer, MessageBody, ViewServerHandlerFactoryImpl}
 import org.finos.vuu.plugin.PluginRegistry
 import org.finos.vuu.provider.{JoinTableProvider, JoinTableProviderImpl, Provider, ProviderContainer}
-import org.finos.vuu.viewport.{InMemViewPortTreeCallable, InMemViewPortTreeWorkItem, ViewPort, ViewPortAction, ViewPortActionMixin, ViewPortContainer}
+import org.finos.vuu.viewport.{InMemViewPortTreeCallable, InMemViewPortTreeWorkItem, ViewPort, ViewPortAction, ViewPortContainer}
 
 import java.util.UUID
 import java.util.concurrent.{Callable, FutureTask}
@@ -35,9 +33,6 @@ class VuuServer(config: VuuServerConfig)
 
   final val pluginRegistry: PluginRegistry = PluginRegistry()
   pluginRegistry.registerPlugin(new VuuInMemPlugin())
-
-  JsonSubTypeRegistry.register(classOf[MessageBody], classOf[CoreJsonSerializationMixin])
-  JsonSubTypeRegistry.register(classOf[ViewPortAction], classOf[ViewPortActionMixin])
 
   final val loginTokenService: LoginTokenService = config.security.loginTokenService
 

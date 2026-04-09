@@ -29,8 +29,8 @@ class BasketTradingConstituentJoinService(val table: DataTable)(using tableConta
   registerRpc("addConstituent", params => addConstituent(params))
 
   override def menuItems(): ViewPortMenu = ViewPortMenu("Direction",
-    new SelectionViewPortMenuItem("Set Sell", "", this.setSell, "SET_SELECTION_SELL"),
-    new SelectionViewPortMenuItem("Set Buy", "", this.setBuy, "SET_SELECTION_Buy"),
+    SelectionViewPortMenuItem("Set Sell", "", this.setSell, "SET_SELECTION_SELL"),
+    SelectionViewPortMenuItem("Set Buy", "", this.setBuy, "SET_SELECTION_Buy"),
   )
 
   override def setSell(params: RpcParams): RpcFunctionResult = {
@@ -190,10 +190,10 @@ class BasketTradingConstituentJoinService(val table: DataTable)(using tableConta
     })
 
     updateJoinTable(updateRows.toArray) match {
-      case Right(_) => NoAction()
+      case Right(_) => NoAction
       case Left(errorReason) =>
         logger.debug(s"Could not update selection values${errorReason.reason}")
-        NoAction()
+        NoAction
     }
   }
 

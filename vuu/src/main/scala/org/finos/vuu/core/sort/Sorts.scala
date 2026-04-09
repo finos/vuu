@@ -8,7 +8,6 @@ import org.finos.vuu.net.SortSpec
 import org.finos.vuu.viewport.{RowSource, ViewPortColumns}
 
 import java.util
-import java.util.Comparator
 
 trait Sort {
   def doSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys
@@ -25,6 +24,8 @@ object NoSort extends Sort {
   override def doSort(source: RowSource, primaryKeys: TablePrimaryKeys, vpColumns: ViewPortColumns): TablePrimaryKeys = {
     primaryKeys
   }
+
+  override def toString: String = "NoSort"
 }
 
 private case class GenericSort2(columns: Array[Column], sortDirections: Array[SortDirection]) extends Sort with StrictLogging {

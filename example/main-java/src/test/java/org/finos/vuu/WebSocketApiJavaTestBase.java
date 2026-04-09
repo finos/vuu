@@ -7,6 +7,7 @@ import org.finos.vuu.core.module.TableDefContainer;
 import org.finos.vuu.core.module.ViewServerModule;
 import org.finos.vuu.net.TableRowUpdates;
 import org.finos.vuu.net.ViewServerMessage;
+import org.finos.vuu.net.row.RowUpdateType;
 import org.finos.vuu.wsapi.helpers.TestStartUp;
 import org.finos.vuu.wsapi.helpers.TestVuuClient;
 import org.junit.jupiter.api.AfterAll;
@@ -72,7 +73,7 @@ public abstract class WebSocketApiJavaTestBase {
         } else {
             TableRowUpdates tru = (TableRowUpdates)tableSizeResponse.get();
             var dataCount = Arrays.stream(tru.rows())
-                    .filter(p -> p.updateType().equals("U"))
+                    .filter(p -> p.updateType().equals(RowUpdateType.UPDATE()))
                     .count();
             if (dataCount < expectedRowCount) {
                 waitForData(expectedRowCount - dataCount);

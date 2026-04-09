@@ -6,12 +6,14 @@ import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.VuuServerConfig
 import org.finos.vuu.core.module.{TableDefContainer, ViewServerModule}
 import org.finos.vuu.net.*
+import org.finos.vuu.net.row.RowUpdateType.Update
 import org.finos.vuu.wsapi.helpers.{TestStartUp, TestVuuClient}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, GivenWhenThen}
 
 import scala.annotation.tailrec
+import scala.reflect.ClassTag
 
 abstract class WebSocketApiTestBase extends AnyFeatureSpec with BeforeAndAfterAll with BeforeAndAfterEach
   with GivenWhenThen with Matchers with LazyLogging {
@@ -49,13 +51,14 @@ abstract class WebSocketApiTestBase extends AnyFeatureSpec with BeforeAndAfterAl
 
   protected def defineModuleWithTestTables(): ViewServerModule
 
-  protected def assertBodyIsInstanceOf[BodyType](response: Option[ViewServerMessage]): BodyType = {
+  protected def assertBodyIsInstanceOf[BodyType: ClassTag](response: Option[ViewServerMessage]): BodyType = {
     response.isDefined shouldBe true
-    assertAndCastAsInstanceOf(response.get.body)
+    assertAndCastAsInstanceOf[BodyType](response.get.body)
   }
 
-  def assertAndCastAsInstanceOf[T](data: Any): T = {
-    assert(data.isInstanceOf[T])
+  def assertAndCastAsInstanceOf[T: ClassTag](data: Any): T = {
+    val tag = implicitly[ClassTag[T]]
+    assert(tag.runtimeClass.isInstance(data))
     data.asInstanceOf[T]
   }
 
@@ -65,7 +68,7 @@ abstract class WebSocketApiTestBase extends AnyFeatureSpec with BeforeAndAfterAl
     tableSizeResponse match {
       case None => fail("No table row updates")
       case Some(value) =>
-        val dataCount = value.rows.count(p => p.updateType == "U")
+        val dataCount = value.rows.count(p => p.updateType == Update)
         if (dataCount < expectedRowCount) {
           val missing = expectedRowCount - dataCount
           logger.debug(s"Still waiting for $missing rows")

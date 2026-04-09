@@ -20,17 +20,17 @@ class PricesService(val table: DataTable, val provider: Provider)(implicit table
 
   def setSpeedSlow(selection: ViewPortSelection, sessionId: ClientSessionId):ViewPortAction = {
     pricesProvider.setSpeed(8000)
-    NoAction()
+    NoAction
   }
 
   def setSpeedMedium(selection: ViewPortSelection, sessionId: ClientSessionId):ViewPortAction = {
     pricesProvider.setSpeed(2000)
-    NoAction()
+    NoAction
   }
 
   def setSpeedFast(selection: ViewPortSelection, sessionId: ClientSessionId):ViewPortAction = {
     pricesProvider.setSpeed(400)
-    NoAction()
+    NoAction
   }
 
   override def menuItems(): ViewPortMenu = ViewPortMenu("Root",

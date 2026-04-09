@@ -41,22 +41,22 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
     new RpcHandler {
       def testSelect(selection: ViewPortSelection, sessionId: ClientSessionId): ViewPortAction = {
         println("In testSelect" + selection.selectionKeys.mkString(","))
-        NoAction()
+        NoAction
       }
 
       def testCell(rowKey: String, field: String, value: Object, sessionId: ClientSessionId): ViewPortAction = {
         println("In testCell")
-        NoAction()
+        NoAction
       }
 
       def testTable(sessionId: ClientSessionId): ViewPortAction = {
         println("In testTable")
-        NoAction()
+        NoAction
       }
 
       def testRow(rowKey: String, row: Map[String, Any], sessionId: ClientSessionId): ViewPortAction = {
         println("In testRow")
-        NoAction()
+        NoAction
       }
 
       override def menuItems(): ViewPortMenu = ViewPortMenu("Test Menu",
@@ -138,7 +138,7 @@ class CallMenuRpcFromViewPortTest extends AnyFeatureSpec with Matchers with View
 
       val result = vpContainer.callRpcSelection(viewPort.id, "TEST_SELECT", session)
 
-      result.getClass shouldEqual classOf[NoAction]
+      result shouldEqual NoAction
 
       Try(vpContainer.callRpcSelection(viewPort.id, "FOO_BAR", session)) match {
         case Success(_) =>

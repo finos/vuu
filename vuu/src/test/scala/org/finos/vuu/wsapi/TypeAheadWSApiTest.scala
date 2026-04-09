@@ -5,7 +5,8 @@ import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.module.{ModuleFactory, TableDefContainer, ViewServerModule}
 import org.finos.vuu.core.table.{Columns, DataTable, TableContainer}
 import org.finos.vuu.net.*
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcNames}
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcErrorResult, RpcNames, RpcSuccessResult, ViewPortContext}
+import org.finos.vuu.net.ui.{NoneAction, NotificationType, ShowNotificationAction}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
@@ -42,7 +43,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       result.data shouldEqual List("23564", "33657", "42262", "45321", "45897", "54874", "54875", "54876", "65879", "78458")
 
       And("return No Action")
-      responseBody.action shouldBe a[NoneAction]
+      responseBody.action shouldEqual NoneAction
     }
 
     Scenario("Start with a specified string for a column") {
@@ -134,7 +135,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
 
       And("Show error notification action")
       val action = assertAndCastAsInstanceOf[ShowNotificationAction](responseBody.action)
-      action.notificationType shouldEqual "Error"
+      action.notificationType shouldBe NotificationType.Error
       action.title shouldEqual "Failed to process getUniqueFieldValues request"
       action.message shouldEqual s"Failed to process request $requestId"
     }
@@ -201,7 +202,7 @@ class TypeAheadWSApiTest extends WebSocketApiTestBase {
       result.data shouldEqual List("23564", "33657", "42262", "45321", "45897", "54874", "54875", "54876", "65879", "78458")
 
       And("return No Action")
-      responseBody.action shouldBe a[NoneAction]
+      responseBody.action shouldEqual NoneAction
     }
 
     Scenario("Start with a specified string for a column in a join table") {
