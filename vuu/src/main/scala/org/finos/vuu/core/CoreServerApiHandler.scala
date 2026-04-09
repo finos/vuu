@@ -6,11 +6,10 @@ import org.finos.vuu.api.AvailableViewPortVisualLink
 import org.finos.vuu.api.TableVisibility.Public
 import org.finos.vuu.core.table.{DataType, TableContainer, ViewPortColumnCreator}
 import org.finos.vuu.net.*
-import org.finos.vuu.net.row.*
-import org.finos.vuu.net.ui.*
 import org.finos.vuu.net.rpc.{RpcErrorResult, RpcFunctionFailure, RpcFunctionSuccess, RpcSuccessResult, ViewPortContext}
+import org.finos.vuu.net.ui.{NoneAction, NotificationType, ShowNotificationAction}
 import org.finos.vuu.provider.ProviderContainer
-import org.finos.vuu.viewport.*
+import org.finos.vuu.viewport.{Aggregation, GroupBy, NoGroupBy, RowSource, ViewPort, ViewPortAction, ViewPortContainer, ViewPortRange}
 
 import scala.util.{Failure, Success, Try}
 
