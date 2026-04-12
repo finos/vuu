@@ -166,7 +166,6 @@ export const NewCalculatedColumnSettingsPanel = () => {
         onCancelCreateColumn={handleCancelCreateColumn}
         onConfigChange={onConfigChange}
         onCreateCalculatedColumn={handleCreateCalculatedColumn}
-        tableConfig={tableConfig}
         vuuTable={schema.table}
       />
     </div>
@@ -223,7 +222,6 @@ export const CalculatedColumnSettingsPanel = () => {
         onCancelCreateColumn={handleCancelCreateColumn}
         onConfigChange={onConfigChange}
         onCreateCalculatedColumn={onCreateCalculatedColumn}
-        tableConfig={tableConfig}
         vuuTable={schema.table}
       />
     </div>

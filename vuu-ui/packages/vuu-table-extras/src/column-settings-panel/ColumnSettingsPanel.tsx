@@ -15,7 +15,6 @@ import {
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import cx from "clsx";
-import { ColumnExpressionPanel } from "../column-expression-panel";
 import { ColumnFormattingPanel } from "../column-formatting-settings";
 import { ColumnNameLabel } from "./ColumnNameLabel";
 import { useColumnSettings, ColumnSettingsProps } from "./useColumnSettings";
@@ -39,7 +38,6 @@ export const ColumnSettingsPanel = ({
   onCancelCreateColumn,
   onConfigChange,
   onCreateCalculatedColumn,
-  vuuTable,
 }: ColumnSettingsProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
@@ -57,10 +55,8 @@ export const ColumnSettingsPanel = ({
     navigatePrevColumn,
     onCancel,
     onChange,
-    onChangeCalculatedColumnName,
     onChangeFormatting,
     onChangeRendering,
-    onChangeServerDataType,
     onChangeToggleButton,
     onChangeType,
     onEditCalculatedColumn,
@@ -90,16 +86,6 @@ export const ColumnSettingsPanel = ({
       <div className={`${classBase}-header`}>
         <ColumnNameLabel column={column} onClick={onEditCalculatedColumn} />
       </div>
-
-      {editCalculatedColumn ? (
-        <ColumnExpressionPanel
-          column={column}
-          onChangeName={onChangeCalculatedColumnName}
-          onChangeServerDataType={onChangeServerDataType}
-          tableConfig={tableConfig}
-          vuuTable={vuuTable}
-        />
-      ) : null}
 
       <FormField data-field="column-label">
         <FormFieldLabel>Column Label</FormFieldLabel>
