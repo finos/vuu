@@ -16,7 +16,7 @@ trait ViewServerClient extends LifecycleEnabled {
   def awaitMsg: ViewServerMessage
 }
 
-class WebSocketViewServerClient(ws: WebSocketClient)(implicit lifecycle: LifecycleContainer) extends ViewServerClient with StrictLogging {
+class WebSocketViewServerClient(val ws: WebSocketClient)(implicit lifecycle: LifecycleContainer) extends ViewServerClient with StrictLogging {
 
   private val serializer = JsonSerializer[ViewServerMessage]()
 
@@ -40,29 +40,39 @@ class WebSocketViewServerClient(ws: WebSocketClient)(implicit lifecycle: Lifecyc
 
   override val lifecycleId: String = "wsViewServerClient"
 
-  override def isConnected: Boolean = ws.canWrite
+  override def isConnected: Boolean = ws.getClientSession.exists(_.isConnected)
 
   override def send(msg: ViewServerMessage): Unit = {
-    val json = serializer.serialize(msg)
-    ws.write(json)
-    logger.trace(s"[WSClient] Sent: $json")
+    ws.getClientSession match {
+      case Some(session) =>
+        Try(serializer.serialize(msg)) match {
+          case Failure(exception) =>
+            logger.error(s"[WSClient] Failed to serialize $msg", exception)
+          case Success(json) =>
+            if (session.sendMessage(json)) {
+              logger.trace(s"[WSClient] Sent: $json")
+            } else {
+              logger.error(s"[WSClient] Failed to send: $json")
+            }
+        }
+      case None =>
+        logger.error(s"[WSClient] No session. Failed to send: $msg")
+    }
   }
 
   override def awaitMsg: ViewServerMessage = {
-    val msg = ws.awaitMessage()
-    if (msg == null) {
-      logger.trace("[WSClient] No messages received")
-      null
-    }
-    else {
-      logger.trace(s"[WSClient] Received: $msg")
-      Try(serializer.deserialize(msg)) match {
-        case Success(vsMsg) =>
-          vsMsg
-        case Failure(e) =>
-          logger.error(s"Could not deserialize \"$msg\", going to return null", e)
-          null
-      }
+    ws.getClientSession.flatMap(_.awaitMessage()) match {
+      case None =>
+        logger.trace("[WSClient] No messages received")
+        null
+      case Some(msg) =>
+        logger.trace(s"[WSClient] Received: $msg")
+        Try(serializer.deserialize(msg)) match {
+          case Success(vsMsg) => vsMsg
+          case Failure(e) =>
+            logger.error(s"""Could not deserialize "$msg", going to return null""", e)
+            null
+        }
     }
   }
 

@@ -8,8 +8,6 @@ import io.netty.handler.codec.http.{HttpObjectAggregator, HttpServerCodec}
 import org.finos.vuu.core.VuuWebSocketOptions
 import org.finos.vuu.net.ViewServerHandlerFactory;
 
-/**
- */
 class WebSocketServerInitializer(val options: VuuWebSocketOptions,
                                  val factory: ViewServerHandlerFactory) extends ChannelInitializer[SocketChannel] {
 
@@ -26,7 +24,7 @@ class WebSocketServerInitializer(val options: VuuWebSocketOptions,
     pipeline.addLast("http-codec", new HttpServerCodec())
     
     pipeline.addLast("aggregator", new HttpObjectAggregator(WebSocketConstants.MAX_CONTENT_LENGTH))
-    
+
     if (options.compressionEnabled) {
       pipeline.addLast("compression", new WebSocketServerCompressionHandler(WebSocketConstants.MAX_CONTENT_LENGTH))
     }

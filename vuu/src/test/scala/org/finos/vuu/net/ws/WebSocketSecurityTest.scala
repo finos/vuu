@@ -4,6 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
+import org.finos.vuu.client.{VuuClientOptions, VuuClientSSLByTrustStore, VuuClientSSLDisabled}
 import org.finos.vuu.core.*
 import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.concurrent.Futures.timeout
@@ -23,8 +24,10 @@ import javax.net.ssl.{SSLContext, SSLParameters, TrustManager, X509TrustManager}
 class WebSocketSecurityTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
   private val pkcsPath: String = getClass.getClassLoader.getResource("certs/certificate.p12").getPath
+  private val trustStorePath: String = getClass.getClassLoader.getResource("certs/truststore.jks").getPath
   private val portCounter = AtomicInteger(31820)
   private val pkcsPassword = "changeit"
+  private val trustStorePassword = "changeit"
 
   Feature("Assorted security tests") {
 
@@ -52,8 +55,8 @@ class WebSocketSecurityTest extends AnyFeatureSpec with Matchers with StrictLogg
       lifeCycle.start()
 
       //Check the WS is accepting connections
-      eventually(timeout(Span(5, Seconds))) {
-        webSocketClient.canWrite shouldBe true
+      eventually(timeout(Span(15, Seconds))) {
+        webSocketClient.getClientSession.exists(_.isConnected) shouldBe true
       }
 
       val webClient = createWebClient()
@@ -107,13 +110,13 @@ class WebSocketSecurityTest extends AnyFeatureSpec with Matchers with StrictLogg
       lifeCycle.start()
 
       eventually(timeout(Span(5, Seconds))) {
-        webSocketClient.canWrite shouldBe true
+        webSocketClient.getClientSession.exists(_.isConnected) shouldBe true
       }
 
-      webSocketClient.write("{\n  \"roles\": [\"user\", {\"$type\":\"system\"}]\n}")
+      webSocketClient.getClientSession.foreach(_.sendMessage("{\n  \"roles\": [\"user\", {\"$type\":\"system\"}]\n}"))
 
       eventually(timeout(Span(5, Seconds))) {
-        webSocketClient.canWrite shouldBe false
+        webSocketClient.getClientSession.exists(_.isConnected) shouldBe false
       }
     }
     
@@ -138,11 +141,16 @@ class WebSocketSecurityTest extends AnyFeatureSpec with Matchers with StrictLogg
 
   private def createClient(config: VuuServerConfig, viewServer: VuuServer)
                           (implicit lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider): WebSocketClient = {
-    val protocol = config.wsOptions.sslOptions match {
-      case VuuSSLDisabled => "ws"
-      case _ => "wss"
-    }
-    val client = new WebSocketClient(s"$protocol://localhost:${config.wsOptions.wsPort}/websocket", config.wsOptions.wsPort)
+    val options = VuuClientOptions()
+      .withPath(config.wsOptions.uri)
+      .withPort(config.wsOptions.wsPort)
+      .withSsl(config.wsOptions.sslOptions match {
+        case VuuSSLDisabled => VuuClientSSLDisabled
+        case _ => VuuClientSSLByTrustStore(trustStorePath, trustStorePassword)
+      })
+      .withCompression(config.wsOptions.compressionEnabled)
+      .withNativeTransport(config.wsOptions.nativeTransportEnabled)
+    val client = new WebSocketClient(options)
     lifecycle(client).dependsOn(viewServer)
     client
   }

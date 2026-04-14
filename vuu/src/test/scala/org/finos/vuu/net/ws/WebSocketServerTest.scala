@@ -4,7 +4,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.client.ClientHelperFns
+import org.finos.vuu.client.{ClientHelperFns, VuuClientOptions, VuuClientSSLByTrustStore, VuuClientSSLDisabled}
 import org.finos.vuu.core.*
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.net.WebSocketViewServerClient
@@ -18,8 +18,10 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
   private val certPath: String = getClass.getClassLoader.getResource("certs/cert.pem").getPath
   private val keyPath: String = getClass.getClassLoader.getResource("certs/key.pem").getPath
   private val pkcsPath: String = getClass.getClassLoader.getResource("certs/certificate.p12").getPath
+  private val trustStorePath: String = getClass.getClassLoader.getResource("certs/truststore.jks").getPath
   private val portCounter = new AtomicInteger(31820)
   private val pkcsPassword = "changeit"
+  private val trustStorePassword = "changeit"
 
   Feature("Check we can start the WebSocketServer with various configurations") {
 
@@ -256,11 +258,16 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
 
   private def createClient(config: VuuServerConfig)(implicit lifecycle: LifecycleContainer, timeProvider: Clock, metricsProvider: MetricsProvider): WebSocketViewServerClient = {
     val viewServer = new VuuServer(config)
-    val protocol = config.wsOptions.sslOptions match {
-      case VuuSSLDisabled => "ws"
-      case _ => "wss"
-    }
-    val client = new WebSocketClient(s"$protocol://localhost:${config.wsOptions.wsPort}/websocket", config.wsOptions.wsPort, config.wsOptions.nativeTransportEnabled)
+    val options = VuuClientOptions()
+      .withPath(config.wsOptions.uri)
+      .withPort(config.wsOptions.wsPort)
+      .withSsl(config.wsOptions.sslOptions match {
+        case VuuSSLDisabled => VuuClientSSLDisabled
+        case _ => VuuClientSSLByTrustStore(trustStorePath, trustStorePassword)
+      })
+      .withCompression(config.wsOptions.compressionEnabled)
+      .withNativeTransport(config.wsOptions.nativeTransportEnabled)
+    val client = new WebSocketClient(options)
     lifecycle(client).dependsOn(viewServer)
     val viewServerClient: WebSocketViewServerClient = new WebSocketViewServerClient(client)
     lifecycle.start()

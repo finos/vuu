@@ -3,6 +3,7 @@ package org.finos.vuu.wsapi.helpers
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.client.{VuuClientOptions, VuuClientSSLDisabled}
 import org.finos.vuu.core.*
 import org.finos.vuu.core.module.{TableDefContainer, ViewServerModule}
 import org.finos.vuu.net.ws.WebSocketClient
@@ -46,7 +47,16 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
 
     val viewServer = new VuuServer(config)
 
-    val client = new WebSocketClient(s"ws://localhost:$ws/websocket", ws) //todo review params - port specified twice
+    val options = VuuClientOptions()
+      .withPath(config.wsOptions.uri)
+      .withPort(config.wsOptions.wsPort)
+      .withSsl(config.wsOptions.sslOptions match {
+        case VuuSSLDisabled => VuuClientSSLDisabled
+        case _ => VuuClientSSLDisabled
+      })
+      .withCompression(config.wsOptions.compressionEnabled)
+      .withNativeTransport(config.wsOptions.nativeTransportEnabled)
+    val client = new WebSocketClient(options)
     val viewServerClient: ViewServerClient = new WebSocketViewServerClient(client)
     val vuuClient = new TestVuuClient(viewServerClient, config.security.loginTokenService)
 

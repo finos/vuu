@@ -6,4 +6,6 @@ object VuuClientSSLDisabled extends VuuClientSSLOptions
 
 object VuuClientSSLByDefaultTruststore extends VuuClientSSLOptions
 
-case class VuuClientSSLByTrustStore(trustStorePath: String, trustStorePassword: String) extends VuuClientSSLOptions
+case class VuuClientSSLByTrustStore(trustStorePath: String,
+                                    trustStorePassword: String,
+                                    trustStoreType: String) extends VuuClientSSLOptions

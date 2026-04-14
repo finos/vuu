@@ -43,18 +43,7 @@ object VuuJoinTableProviderOptions {
   }
 }
 
-trait VuuSSLCipherSuiteOptions {
-  def ciphers: List[String]
-  def protocols: List[String]
-  def withCiphers(ciphers: List[String]) : VuuSSLCipherSuiteOptions
-  def withProtocols(protocols: List[String]) : VuuSSLCipherSuiteOptions
-}
 
-object VuuSSLCipherSuiteOptions {
-  def apply(): VuuSSLCipherSuiteOptions = {
-    VuuSSLCipherSuiteOptionsImpl(List(), List())
-  }
-}
 
 sealed trait VuuSSLOptions
 object VuuSSLDisabled extends VuuSSLOptions
@@ -135,10 +124,6 @@ case class VuuClientConnectionOptionsImpl(hasHeartbeat: Boolean) extends VuuClie
   override def withHeartbeatDisabled(): VuuClientConnectionOptions = this.copy(false)
 }
 
-case class VuuSSLCipherSuiteOptionsImpl(ciphers: List[String], protocols: List[String]) extends VuuSSLCipherSuiteOptions {
-  override def withCiphers(ciphers: List[String]): VuuSSLCipherSuiteOptions = this.copy(ciphers = ciphers)
-  override def withProtocols(protocols: List[String]): VuuSSLCipherSuiteOptions = this.copy(protocols = protocols)
-}
 
 case class VuuJoinProviderOptionsImpl(batchSize: Int, maxQueueSize: Int) extends VuuJoinTableProviderOptions {
   override def withBatchSize(batchSize: Int): VuuJoinTableProviderOptions = this.copy(batchSize = batchSize)
