@@ -303,10 +303,7 @@ class SecurityWSApiTest extends WebSocketApiTestBase {
     val options = VuuClientOptions()
       .withPath(vuuServerConfig.wsOptions.uri)
       .withPort(vuuServerConfig.wsOptions.wsPort)
-      .withSsl(vuuServerConfig.wsOptions.sslOptions match {
-        case VuuSSLDisabled => VuuClientSSLDisabled
-        case _ => VuuClientSSLDisabled
-      })
+      .withSslDisabled()
       .withCompression(vuuServerConfig.wsOptions.compressionEnabled)
       .withNativeTransport(vuuServerConfig.wsOptions.nativeTransportEnabled)
     val attackingWebSocketClient = new WebSocketClient(options)(attackingLifeCycle)

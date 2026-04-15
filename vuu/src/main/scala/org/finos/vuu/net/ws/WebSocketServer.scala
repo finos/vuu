@@ -32,7 +32,7 @@ class WebSocketServer(options: VuuWebSocketOptions, factory: ViewServerHandlerFa
       val bootstrap = new ServerBootstrap()
         .group(pGroup, cGroup)
         .channel(transport.serverChannelClass)
-        .handler(new LoggingHandler(LogLevel.INFO))
+        .handler(new LoggingHandler(LogLevel.WARN))
         .childHandler(new WebSocketServerInitializer(options, factory))
 
       val ch = bootstrap.bind(options.bindAddress, options.wsPort).sync().channel()
