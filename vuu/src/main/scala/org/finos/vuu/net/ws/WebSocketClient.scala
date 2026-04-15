@@ -6,6 +6,8 @@ import io.netty.channel.{Channel, EventLoopGroup}
 import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import org.finos.vuu.client.VuuClientOptions
 
+import java.util.concurrent.TimeUnit
+
 class WebSocketClient(val options: VuuClientOptions)
                      (implicit lifecycle: LifecycleContainer) extends LifecycleEnabled with StrictLogging {
 
@@ -63,7 +65,7 @@ class WebSocketClient(val options: VuuClientOptions)
   private def cleanUp(): Unit = {
     channel.foreach { ch =>
       try {
-        ch.close().sync()
+        ch.close().await(2, TimeUnit.SECONDS)
       } catch {
         case e: Exception => logger.warn("Error closing channel", e)
       }
@@ -71,7 +73,7 @@ class WebSocketClient(val options: VuuClientOptions)
     }
     eventLoopGroup.foreach { group =>
       try {
-        group.shutdownGracefully().sync()
+        group.shutdownGracefully(1, 5, TimeUnit.SECONDS).sync()
       } catch {
         case e: Exception => logger.warn("Error closing eventLoopGroup", e)
       }

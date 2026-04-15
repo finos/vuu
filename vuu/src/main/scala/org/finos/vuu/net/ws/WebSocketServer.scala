@@ -8,6 +8,8 @@ import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import org.finos.vuu.core.VuuWebSocketOptions
 import org.finos.vuu.net.ViewServerHandlerFactory
 
+import java.util.concurrent.TimeUnit
+
 class WebSocketServer(options: VuuWebSocketOptions, factory: ViewServerHandlerFactory)
                      (implicit lifecycle: LifecycleContainer) extends LifecycleEnabled with StrictLogging {
 
@@ -66,7 +68,7 @@ class WebSocketServer(options: VuuWebSocketOptions, factory: ViewServerHandlerFa
   private def cleanUp(): Unit = {
     channel.foreach { ch =>
       try {
-        ch.close().sync()
+        ch.close().await(2, TimeUnit.SECONDS)
       } catch {
         case e: Exception => logger.warn("Error closing channel", e)
       }
