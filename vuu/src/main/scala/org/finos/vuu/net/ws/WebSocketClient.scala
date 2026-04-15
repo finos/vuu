@@ -49,7 +49,7 @@ class WebSocketClient(val options: VuuClientOptions)
   override def doStop(): Unit = synchronized {
     logger.debug("Stopping websocket client")
     cleanUp()
-    logger.info("Websocket server client")
+    logger.info("Websocket client stopped")
   }
 
   override def doInitialize(): Unit = {
