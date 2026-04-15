@@ -1,8 +1,7 @@
 package org.finos.vuu.net.ws
 
 import io.netty.handler.ssl.{SslContext, SslContextBuilder}
-import org.finos.vuu.net.ssl.{VuuSSLByCertAndKey, VuuSSLByPKCS, VuuSSLCipherSuiteOptions, VuuSSLDisabled, VuuSSLOptions}
-import org.finos.vuu.net.ssl.{VuuClientSSL, VuuClientSSLDisabled, VuuClientSSLOptions, VuuClientSSLWithTrustStore}
+import org.finos.vuu.net.ssl.{VuuClientSSL, VuuClientSSLDisabled, VuuClientSSLOptions, VuuClientSSLWithPKCS, VuuSSLByCertAndKey, VuuSSLByPKCS, VuuSSLCipherSuiteOptions, VuuSSLDisabled, VuuSSLOptions}
 import org.finos.vuu.util.PathChecker
 
 import java.io.{File, FileInputStream}
@@ -27,17 +26,13 @@ object WebSocketSSLContextFactory {
         Option.empty      
       case VuuClientSSL(cipherSuite) => 
         Option(createDefaultClientContext(cipherSuite))
-      case VuuClientSSLWithTrustStore(trustStorePath, trustStorePassword, trustStoreType, cipherSuite) => 
-        Option(createClientContextWithTrustStore(trustStorePath, trustStorePassword, trustStoreType, cipherSuite))
+      case VuuClientSSLWithPKCS(pkcsPath, pkcsPassword, cipherSuite) => 
+        Option(createPKCSClientContext(pkcsPath, pkcsPassword, cipherSuite))
     }
   }
 
   private def createPKCSContext(pkcsPath: String, pkcsPassword: String, cipherSuite: VuuSSLCipherSuiteOptions): SslContext = {
-    PathChecker.throwOnFileNotExists(pkcsPath, "vuu.pkcsPath, doesn't appear to exist")
-    val keyStore = KeyStore.getInstance("PKCS12")
-    Using(new FileInputStream(pkcsPath)) {
-      reader => keyStore.load(reader, pkcsPassword.toCharArray)
-    }
+    val keyStore = loadKeyStore(pkcsPath, pkcsPassword)
     val keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm)
     keyManagerFactory.init(keyStore, pkcsPassword.toCharArray)
     applyCipherSuite(SslContextBuilder.forServer(keyManagerFactory), cipherSuite)
@@ -58,19 +53,17 @@ object WebSocketSSLContextFactory {
     applyCipherSuite(SslContextBuilder.forClient(), cipherSuite)
   }
   
-  private def createClientContextWithTrustStore(trustStorePath: String, trustStorePassword: String, 
-                                                trustStoreType: String, cipherSuite: VuuSSLCipherSuiteOptions): SslContext = {
-    PathChecker.throwOnFileNotExists(trustStorePath, "vuu.trustStorePath, doesn't appear to exist")
-    val keyStore = KeyStore.getInstance(trustStoreType)
-    Using(new FileInputStream(trustStorePath)) {
-      reader => keyStore.load(reader, trustStorePassword.toCharArray)
-    }
+  private def createPKCSClientContext(pkcsPath: String,
+                                      pkcsPassword: String, 
+                                      cipherSuite: VuuSSLCipherSuiteOptions): SslContext = {
+    val keyStore = loadKeyStore(pkcsPath, pkcsPassword)
     val trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm)
     trustManagerFactory.init(keyStore)
     applyCipherSuite(SslContextBuilder.forClient().trustManager(trustManagerFactory), cipherSuite)
   }
   
-  private def applyCipherSuite(sslContextBuilder: SslContextBuilder, cipherSuite: VuuSSLCipherSuiteOptions): SslContext = {
+  private def applyCipherSuite(sslContextBuilder: SslContextBuilder, 
+                               cipherSuite: VuuSSLCipherSuiteOptions): SslContext = {
     if (cipherSuite.ciphers.nonEmpty) {
       sslContextBuilder.ciphers(cipherSuite.ciphers.asJava)
     }
@@ -80,6 +73,13 @@ object WebSocketSSLContextFactory {
     sslContextBuilder.build()
   }
 
-  
+  private def loadKeyStore(keyStorePath: String, keyStorePassword: String): KeyStore = {
+    PathChecker.throwOnFileNotExists(keyStorePath, "keystore doesn't appear to exist")
+    val keyStore = KeyStore.getInstance("PKCS12")
+    Using(new FileInputStream(keyStorePath)) {
+      reader => keyStore.load(reader, keyStorePassword.toCharArray)
+    }
+    keyStore
+  }
   
 }

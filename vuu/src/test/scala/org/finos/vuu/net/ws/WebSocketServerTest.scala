@@ -8,7 +8,7 @@ import org.finos.vuu.client.{ClientHelperFns, VuuClientOptions}
 import org.finos.vuu.core.*
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.net.WebSocketViewServerClient
-import org.finos.vuu.net.ssl.{VuuClientSSLDisabled, VuuClientSSLWithTrustStore, VuuSSLByCertAndKey, VuuSSLByPKCS, VuuSSLCipherSuiteOptions, VuuSSLDisabled}
+import org.finos.vuu.net.ssl.{VuuClientSSLDisabled, VuuClientSSLWithPKCS, VuuSSLByCertAndKey, VuuSSLByPKCS, VuuSSLCipherSuiteOptions, VuuSSLDisabled}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -19,11 +19,10 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
   private val certPath: String = getClass.getClassLoader.getResource("certs/cert.pem").getPath
   private val keyPath: String = getClass.getClassLoader.getResource("certs/key.pem").getPath
   private val pkcsPath: String = getClass.getClassLoader.getResource("certs/certificate.p12").getPath
-  private val trustStorePath: String = getClass.getClassLoader.getResource("certs/truststore.jks").getPath
+  private val trustStorePath: String = getClass.getClassLoader.getResource("certs/truststore.p12").getPath
   private val portCounter = new AtomicInteger(31820)
   private val pkcsPassword = "changeit"
   private val trustStorePassword = "changeit"
-  private val trustStoreType = "JKS"
 
   Feature("Check we can start the WebSocketServer with various configurations") {
 
@@ -265,7 +264,7 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
       .withPort(config.wsOptions.wsPort)
       .withSsl(config.wsOptions.sslOptions match {
         case VuuSSLDisabled => VuuClientSSLDisabled
-        case _ => VuuClientSSLWithTrustStore(trustStorePath, trustStorePassword, trustStoreType)
+        case _ => VuuClientSSLWithPKCS(trustStorePath, trustStorePassword)
       })
       .withCompression(config.wsOptions.compressionEnabled)
       .withNativeTransport(config.wsOptions.nativeTransportEnabled)

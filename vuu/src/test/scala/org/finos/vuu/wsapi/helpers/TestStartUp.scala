@@ -6,7 +6,7 @@ import org.finos.toolbox.time.Clock
 import org.finos.vuu.client.VuuClientOptions
 import org.finos.vuu.core.*
 import org.finos.vuu.core.module.{TableDefContainer, ViewServerModule}
-import org.finos.vuu.net.ssl.{VuuClientSSLDisabled, VuuClientSSLWithTrustStore, VuuSSLDisabled}
+import org.finos.vuu.net.ssl.{VuuClientSSLDisabled, VuuSSLDisabled}
 import org.finos.vuu.net.ws.WebSocketClient
 import org.finos.vuu.net.{ViewServerClient, WebSocketViewServerClient}
 import org.scalatest.concurrent.Eventually

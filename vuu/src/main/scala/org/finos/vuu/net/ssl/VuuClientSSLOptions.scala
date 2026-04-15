@@ -6,7 +6,6 @@ object VuuClientSSLDisabled extends VuuClientSSLOptions
 
 case class VuuClientSSL(cipherSuite: VuuSSLCipherSuiteOptions = VuuSSLCipherSuiteOptions()) extends VuuClientSSLOptions
 
-case class VuuClientSSLWithTrustStore(trustStorePath: String,
-                                      trustStorePassword: String,
-                                      trustStoreType: String,
-                                      cipherSuite: VuuSSLCipherSuiteOptions = VuuSSLCipherSuiteOptions()) extends VuuClientSSLOptions
+case class VuuClientSSLWithPKCS(pkcsPath: String,
+                                pkcsPassword: String,
+                                cipherSuite: VuuSSLCipherSuiteOptions = VuuSSLCipherSuiteOptions()) extends VuuClientSSLOptions

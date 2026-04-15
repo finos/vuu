@@ -6,7 +6,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.client.VuuClientOptions
 import org.finos.vuu.core.*
-import org.finos.vuu.net.ssl.{VuuClientSSLDisabled, VuuClientSSLWithTrustStore, VuuSSLByPKCS, VuuSSLDisabled}
+import org.finos.vuu.net.ssl.{VuuClientSSLDisabled, VuuClientSSLWithPKCS, VuuSSLByPKCS, VuuSSLDisabled}
 import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.concurrent.Futures.timeout
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -25,11 +25,10 @@ import javax.net.ssl.{SSLContext, SSLParameters, TrustManager, X509TrustManager}
 class WebSocketSecurityTest extends AnyFeatureSpec with Matchers with StrictLogging {
 
   private val pkcsPath: String = getClass.getClassLoader.getResource("certs/certificate.p12").getPath
-  private val trustStorePath: String = getClass.getClassLoader.getResource("certs/truststore.jks").getPath
+  private val trustStorePath: String = getClass.getClassLoader.getResource("certs/truststore.p12").getPath
   private val portCounter = AtomicInteger(31820)
   private val pkcsPassword = "changeit"
   private val trustStorePassword = "changeit"
-  private val trustStoreType = "JKS"
 
   Feature("Assorted security tests") {
 
@@ -148,7 +147,7 @@ class WebSocketSecurityTest extends AnyFeatureSpec with Matchers with StrictLogg
       .withPort(config.wsOptions.wsPort)
       .withSsl(config.wsOptions.sslOptions match {
         case VuuSSLDisabled => VuuClientSSLDisabled
-        case _ => VuuClientSSLWithTrustStore(trustStorePath, trustStorePassword, trustStoreType)
+        case _ => VuuClientSSLWithPKCS(trustStorePath, trustStorePassword)
       })
       .withCompression(config.wsOptions.compressionEnabled)
       .withNativeTransport(config.wsOptions.nativeTransportEnabled)
