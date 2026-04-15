@@ -1,5 +1,7 @@
 package org.finos.vuu.client
 
+import org.finos.vuu.net.ssl.{VuuClientSSLDisabled, VuuClientSSLOptions}
+
 import java.net.URI
 
 trait VuuClientOptions {

@@ -3,6 +3,7 @@ package org.finos.vuu.core
 import org.finos.vuu.core.module.ViewServerModule
 import org.finos.vuu.net.auth.LoginTokenService
 import org.finos.vuu.net.http.{HttpServerFactory, NoHttpServerFactory}
+import org.finos.vuu.net.ssl.{VuuSSLDisabled, VuuSSLOptions}
 import org.finos.vuu.plugin.Plugin
 
 trait VuuSecurityOptions {
@@ -44,11 +45,6 @@ object VuuJoinTableProviderOptions {
 }
 
 
-
-sealed trait VuuSSLOptions
-object VuuSSLDisabled extends VuuSSLOptions
-case class VuuSSLByCertAndKey(certPath: String, keyPath: String, passPhrase: Option[String] = None, cipherSuite: VuuSSLCipherSuiteOptions = VuuSSLCipherSuiteOptions()) extends VuuSSLOptions
-case class VuuSSLByPKCS(pkcsPath: String, pkcsPassword: String, cipherSuite: VuuSSLCipherSuiteOptions = VuuSSLCipherSuiteOptions()) extends VuuSSLOptions
 
 trait VuuWebSocketOptions {
   def wsPort: Int

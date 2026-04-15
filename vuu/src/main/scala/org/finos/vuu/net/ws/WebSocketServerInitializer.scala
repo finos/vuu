@@ -1,12 +1,14 @@
 package org.finos.vuu.net.ws
 
-import io.netty.channel.ChannelInitializer
+import io.netty.channel.{ChannelInitializer, ChannelPipeline}
 import io.netty.channel.socket.SocketChannel
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler
 import io.netty.handler.codec.http.{HttpObjectAggregator, HttpServerCodec}
 import org.finos.vuu.core.VuuWebSocketOptions
-import org.finos.vuu.net.ViewServerHandlerFactory;
+import org.finos.vuu.net.ViewServerHandlerFactory
+
+import java.net.URI;
 
 class WebSocketServerInitializer(val options: VuuWebSocketOptions,
                                  val factory: ViewServerHandlerFactory) extends ChannelInitializer[SocketChannel] {
@@ -16,10 +18,7 @@ class WebSocketServerInitializer(val options: VuuWebSocketOptions,
 
     val pipeline = ch.pipeline()
 
-    val sslContext = new WebServerSSLContextFactory().buildContext(options.sslOptions)
-    if (sslContext.nonEmpty) {
-      pipeline.addLast("ssl", sslContext.get.newHandler(ch.alloc()))
-    }
+    applySSL(ch, pipeline)
 
     pipeline.addLast("http-codec", new HttpServerCodec())
     
@@ -38,4 +37,13 @@ class WebSocketServerInitializer(val options: VuuWebSocketOptions,
 
     pipeline.addLast("error-handler", new WebSocketChannelExceptionHandler())
   }
+
+  private def applySSL(socketChannel: SocketChannel, channelPipeline: ChannelPipeline): Unit = {
+    WebSocketSSLContextFactory.buildContext(options.sslOptions) match {
+      case Some(sslContext) =>
+        channelPipeline.addLast("ssl", sslContext.newHandler(socketChannel.alloc()))
+      case None => //Nothing to do
+    }
+  }
+  
 }

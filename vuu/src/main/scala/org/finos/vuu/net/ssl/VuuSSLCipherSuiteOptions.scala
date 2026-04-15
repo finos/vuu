@@ -1,7 +1,5 @@
 package org.finos.vuu.net.ssl
 
-import org.finos.vuu.core.VuuSSLCipherSuiteOptionsImpl
-
 trait VuuSSLCipherSuiteOptions {
   def ciphers: List[String]
   def protocols: List[String]

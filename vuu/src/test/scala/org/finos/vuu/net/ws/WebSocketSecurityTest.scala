@@ -4,8 +4,9 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.client.{VuuClientOptions, VuuClientSSLByTrustStore, VuuClientSSLDisabled}
+import org.finos.vuu.client.VuuClientOptions
 import org.finos.vuu.core.*
+import org.finos.vuu.net.ssl.{VuuClientSSLDisabled, VuuClientSSLWithTrustStore, VuuSSLByPKCS, VuuSSLDisabled}
 import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.concurrent.Futures.timeout
 import org.scalatest.featurespec.AnyFeatureSpec
@@ -28,6 +29,7 @@ class WebSocketSecurityTest extends AnyFeatureSpec with Matchers with StrictLogg
   private val portCounter = AtomicInteger(31820)
   private val pkcsPassword = "changeit"
   private val trustStorePassword = "changeit"
+  private val trustStoreType = "JKS"
 
   Feature("Assorted security tests") {
 
@@ -146,7 +148,7 @@ class WebSocketSecurityTest extends AnyFeatureSpec with Matchers with StrictLogg
       .withPort(config.wsOptions.wsPort)
       .withSsl(config.wsOptions.sslOptions match {
         case VuuSSLDisabled => VuuClientSSLDisabled
-        case _ => VuuClientSSLByTrustStore(trustStorePath, trustStorePassword)
+        case _ => VuuClientSSLWithTrustStore(trustStorePath, trustStorePassword, trustStoreType)
       })
       .withCompression(config.wsOptions.compressionEnabled)
       .withNativeTransport(config.wsOptions.nativeTransportEnabled)

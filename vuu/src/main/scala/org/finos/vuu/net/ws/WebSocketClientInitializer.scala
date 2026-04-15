@@ -6,13 +6,9 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler
 import io.netty.handler.codec.http.websocketx.WebSocketVersion.V13
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler
 import io.netty.handler.codec.http.{DefaultHttpHeaders, HttpClientCodec, HttpObjectAggregator}
-import io.netty.handler.ssl.{SslContext, SslContextBuilder}
-import org.finos.vuu.client.{VuuClientOptions, VuuClientSSLByDefaultTruststore, VuuClientSSLByTrustStore, VuuClientSSLDisabled}
+import org.finos.vuu.client.VuuClientOptions
 
-import java.io.FileInputStream
 import java.net.URI
-import java.security.KeyStore
-import javax.net.ssl.TrustManagerFactory
 
 class WebSocketClientInitializer(val options: VuuClientOptions) extends ChannelInitializer[SocketChannel] {
 
@@ -41,24 +37,11 @@ class WebSocketClientInitializer(val options: VuuClientOptions) extends ChannelI
   }
 
   private def applySSL(uri: URI, socketChannel: SocketChannel, channelPipeline: ChannelPipeline): Unit = {
-    options.sslOptions match {
-      case VuuClientSSLDisabled => //Nothing to do
-      case VuuClientSSLByDefaultTruststore =>
-        val sslCtx: SslContext = SslContextBuilder.forClient().build()
-        channelPipeline.addLast("ssl", sslCtx.newHandler(socketChannel.alloc(), uri.getHost, uri.getPort))
-      case VuuClientSSLByTrustStore(trustStorePath, trustStorePassword) =>
-        val ks = KeyStore.getInstance("JKS")
-        val fis = new FileInputStream(trustStorePath)
-        try ks.load(fis, trustStorePassword.toCharArray)
-        finally fis.close()
-        val tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm)
-        tmf.init(ks)
-        val sslCtx: SslContext = SslContextBuilder.forClient()
-          .trustManager(tmf)
-          .build()
-        channelPipeline.addLast("ssl", sslCtx.newHandler(socketChannel.alloc(), uri.getHost, uri.getPort))
+    WebSocketSSLContextFactory.buildClientContext(options.sslOptions) match {
+      case Some(sslContext) =>
+        channelPipeline.addLast("ssl", sslContext.newHandler(socketChannel.alloc(), uri.getHost, uri.getPort))
+      case None => //Nothing to do
     }
-
   }
 
 }

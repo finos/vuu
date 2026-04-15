@@ -4,10 +4,11 @@ import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
-import org.finos.vuu.client.{ClientHelperFns, VuuClientOptions, VuuClientSSLByTrustStore, VuuClientSSLDisabled}
+import org.finos.vuu.client.{ClientHelperFns, VuuClientOptions}
 import org.finos.vuu.core.*
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.net.WebSocketViewServerClient
+import org.finos.vuu.net.ssl.{VuuClientSSLDisabled, VuuClientSSLWithTrustStore, VuuSSLByCertAndKey, VuuSSLByPKCS, VuuSSLCipherSuiteOptions, VuuSSLDisabled}
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -22,6 +23,7 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
   private val portCounter = new AtomicInteger(31820)
   private val pkcsPassword = "changeit"
   private val trustStorePassword = "changeit"
+  private val trustStoreType = "JKS"
 
   Feature("Check we can start the WebSocketServer with various configurations") {
 
@@ -263,7 +265,7 @@ class WebSocketServerTest extends AnyFeatureSpec with Matchers with StrictLoggin
       .withPort(config.wsOptions.wsPort)
       .withSsl(config.wsOptions.sslOptions match {
         case VuuSSLDisabled => VuuClientSSLDisabled
-        case _ => VuuClientSSLByTrustStore(trustStorePath, trustStorePassword)
+        case _ => VuuClientSSLWithTrustStore(trustStorePath, trustStorePassword, trustStoreType)
       })
       .withCompression(config.wsOptions.compressionEnabled)
       .withNativeTransport(config.wsOptions.nativeTransportEnabled)
