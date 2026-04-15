@@ -2,7 +2,7 @@ package org.finos.vuu.net.ws
 
 import com.typesafe.scalalogging.StrictLogging
 import io.netty.bootstrap.Bootstrap
-import io.netty.channel.*
+import io.netty.channel.{Channel, EventLoopGroup}
 import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import org.finos.vuu.client.VuuClientOptions
 

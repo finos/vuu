@@ -20,13 +20,13 @@ object WebSocketSSLContextFactory {
     }
   }
 
-  def buildClientContext(vuuClientSSLOptions: VuuClientSSLOptions): Option[SslContext] = {
+  def buildContext(vuuClientSSLOptions: VuuClientSSLOptions): Option[SslContext] = {
     vuuClientSSLOptions match {
-      case VuuClientSSLDisabled => 
-        Option.empty      
-      case VuuClientSSL(cipherSuite) => 
+      case VuuClientSSLDisabled =>
+        Option.empty
+      case VuuClientSSL(cipherSuite) =>
         Option(createDefaultClientContext(cipherSuite))
-      case VuuClientSSLWithPKCS(pkcsPath, pkcsPassword, cipherSuite) => 
+      case VuuClientSSLWithPKCS(pkcsPath, pkcsPassword, cipherSuite) =>
         Option(createPKCSClientContext(pkcsPath, pkcsPassword, cipherSuite))
     }
   }
@@ -52,17 +52,17 @@ object WebSocketSSLContextFactory {
   private def createDefaultClientContext(cipherSuite: VuuSSLCipherSuiteOptions): SslContext = {
     applyCipherSuite(SslContextBuilder.forClient(), cipherSuite)
   }
-  
+
   private def createPKCSClientContext(pkcsPath: String,
-                                      pkcsPassword: String, 
+                                      pkcsPassword: String,
                                       cipherSuite: VuuSSLCipherSuiteOptions): SslContext = {
     val keyStore = loadKeyStore(pkcsPath, pkcsPassword)
     val trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm)
     trustManagerFactory.init(keyStore)
     applyCipherSuite(SslContextBuilder.forClient().trustManager(trustManagerFactory), cipherSuite)
   }
-  
-  private def applyCipherSuite(sslContextBuilder: SslContextBuilder, 
+
+  private def applyCipherSuite(sslContextBuilder: SslContextBuilder,
                                cipherSuite: VuuSSLCipherSuiteOptions): SslContext = {
     if (cipherSuite.ciphers.nonEmpty) {
       sslContextBuilder.ciphers(cipherSuite.ciphers.asJava)

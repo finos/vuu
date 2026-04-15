@@ -37,7 +37,7 @@ class WebSocketClientInitializer(val options: VuuClientOptions) extends ChannelI
   }
 
   private def applySSL(uri: URI, socketChannel: SocketChannel, channelPipeline: ChannelPipeline): Unit = {
-    WebSocketSSLContextFactory.buildClientContext(options.sslOptions) match {
+    WebSocketSSLContextFactory.buildContext(options.sslOptions) match {
       case Some(sslContext) =>
         channelPipeline.addLast("ssl", sslContext.newHandler(socketChannel.alloc(), uri.getHost, uri.getPort))
       case None => //Nothing to do
