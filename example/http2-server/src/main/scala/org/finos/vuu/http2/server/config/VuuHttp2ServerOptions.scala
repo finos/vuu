@@ -1,6 +1,6 @@
 package org.finos.vuu.http2.server.config
 
-import org.finos.vuu.core.{VuuSSLDisabled, VuuSSLOptions}
+import org.finos.vuu.net.ssl.{VuuSSLDisabled, VuuSSLOptions}
 
 trait VuuHttp2ServerOptions {
 

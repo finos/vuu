@@ -3,6 +3,7 @@ package org.finos.vuu.core
 import org.finos.vuu.core.module.ViewServerModule
 import org.finos.vuu.net.auth.LoginTokenService
 import org.finos.vuu.net.http.{HttpServerFactory, NoHttpServerFactory}
+import org.finos.vuu.net.ssl.{VuuSSLDisabled, VuuSSLOptions}
 import org.finos.vuu.plugin.Plugin
 
 trait VuuSecurityOptions {
@@ -43,23 +44,7 @@ object VuuJoinTableProviderOptions {
   }
 }
 
-trait VuuSSLCipherSuiteOptions {
-  def ciphers: List[String]
-  def protocols: List[String]
-  def withCiphers(ciphers: List[String]) : VuuSSLCipherSuiteOptions
-  def withProtocols(protocols: List[String]) : VuuSSLCipherSuiteOptions
-}
 
-object VuuSSLCipherSuiteOptions {
-  def apply(): VuuSSLCipherSuiteOptions = {
-    VuuSSLCipherSuiteOptionsImpl(List(), List())
-  }
-}
-
-sealed trait VuuSSLOptions
-object VuuSSLDisabled extends VuuSSLOptions
-case class VuuSSLByCertAndKey(certPath: String, keyPath: String, passPhrase: Option[String] = None, cipherSuite: VuuSSLCipherSuiteOptions = VuuSSLCipherSuiteOptions()) extends VuuSSLOptions
-case class VuuSSLByPKCS(pkcsPath: String, pkcsPassword: String, cipherSuite: VuuSSLCipherSuiteOptions = VuuSSLCipherSuiteOptions()) extends VuuSSLOptions
 
 trait VuuWebSocketOptions {
   def wsPort: Int
@@ -135,10 +120,6 @@ case class VuuClientConnectionOptionsImpl(hasHeartbeat: Boolean) extends VuuClie
   override def withHeartbeatDisabled(): VuuClientConnectionOptions = this.copy(false)
 }
 
-case class VuuSSLCipherSuiteOptionsImpl(ciphers: List[String], protocols: List[String]) extends VuuSSLCipherSuiteOptions {
-  override def withCiphers(ciphers: List[String]): VuuSSLCipherSuiteOptions = this.copy(ciphers = ciphers)
-  override def withProtocols(protocols: List[String]): VuuSSLCipherSuiteOptions = this.copy(protocols = protocols)
-}
 
 case class VuuJoinProviderOptionsImpl(batchSize: Int, maxQueueSize: Int) extends VuuJoinTableProviderOptions {
   override def withBatchSize(batchSize: Int): VuuJoinTableProviderOptions = this.copy(batchSize = batchSize)

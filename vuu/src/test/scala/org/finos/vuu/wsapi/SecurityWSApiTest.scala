@@ -3,13 +3,15 @@ package org.finos.vuu.wsapi
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.DefaultClock
 import org.finos.vuu.api.{ColumnBuilder, Link, TableDef, ViewPortDef, VisualLinks}
+import org.finos.vuu.client.VuuClientOptions
 import org.finos.vuu.core.AbstractVuuServer
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.{ModuleFactory, ViewServerModule}
 import org.finos.vuu.core.table.{DataTable, TableContainer}
-import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcNames, RpcSuccessResult, RpcErrorResult, ViewPortContext}
+import org.finos.vuu.net.rpc.{DefaultRpcHandler, RpcErrorResult, RpcNames, RpcSuccessResult, ViewPortContext}
 import org.finos.vuu.net.ws.WebSocketClient
 import org.finos.vuu.net.*
+import org.finos.vuu.net.ssl.{VuuClientSSLDisabled, VuuSSLDisabled}
 import org.finos.vuu.provider.{Provider, ProviderContainer}
 import org.finos.vuu.viewport.{ViewPortRange, ViewPortTable}
 import org.finos.vuu.wsapi.helpers.TestExtension.ModuleFactoryExtension
@@ -298,9 +300,13 @@ class SecurityWSApiTest extends WebSocketApiTestBase {
   }
 
   private def createAttackingClient(): TestVuuClient = {
-    val uri = s"ws://localhost:${vuuServerConfig.wsOptions.wsPort}/${vuuServerConfig.wsOptions.uri}"
-    val port = vuuServerConfig.wsOptions.wsPort
-    val attackingWebSocketClient = new WebSocketClient(uri, port)(attackingLifeCycle)
+    val options = VuuClientOptions()
+      .withPath(vuuServerConfig.wsOptions.uri)
+      .withPort(vuuServerConfig.wsOptions.wsPort)
+      .withSslDisabled()
+      .withCompression(vuuServerConfig.wsOptions.compressionEnabled)
+      .withNativeTransport(vuuServerConfig.wsOptions.nativeTransportEnabled)
+    val attackingWebSocketClient = new WebSocketClient(options)(attackingLifeCycle)
     val attackingViewServerClient = new WebSocketViewServerClient(attackingWebSocketClient)(attackingLifeCycle)
     val attackingVuuClient: TestVuuClient = new TestVuuClient(attackingViewServerClient, vuuServerConfig.security.loginTokenService)
     attackingLifeCycle.start()

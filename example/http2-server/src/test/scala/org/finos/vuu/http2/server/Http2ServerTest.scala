@@ -3,7 +3,7 @@ package org.finos.vuu.http2.server
 import com.typesafe.scalalogging.StrictLogging
 import io.vertx.core.Vertx
 import io.vertx.ext.web.client.{HttpRequest, WebClient, WebClientOptions}
-import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSSLByPKCS, VuuSSLCipherSuiteOptions, VuuSSLDisabled}
+import org.finos.vuu.net.ssl.{VuuSSLByCertAndKey, VuuSSLByPKCS, VuuSSLCipherSuiteOptions, VuuSSLDisabled}
 import org.finos.vuu.http2.server.config.VuuHttp2ServerOptions
 import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.concurrent.Futures.timeout

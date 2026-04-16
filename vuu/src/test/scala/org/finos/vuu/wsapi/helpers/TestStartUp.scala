@@ -3,8 +3,10 @@ package org.finos.vuu.wsapi.helpers
 import org.finos.toolbox.jmx.{MetricsProvider, MetricsProviderImpl}
 import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.Clock
+import org.finos.vuu.client.VuuClientOptions
 import org.finos.vuu.core.*
 import org.finos.vuu.core.module.{TableDefContainer, ViewServerModule}
+import org.finos.vuu.net.ssl.{VuuClientSSLDisabled, VuuSSLDisabled}
 import org.finos.vuu.net.ws.WebSocketClient
 import org.finos.vuu.net.{ViewServerClient, WebSocketViewServerClient}
 import org.scalatest.concurrent.Eventually
@@ -17,7 +19,7 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
                   using val timeProvider: Clock,
                   val lifecycle: LifecycleContainer,
                   val tableDefContainer: TableDefContainer) extends Eventually with Matchers {
-
+    
   def startServerAndClient(): (TestVuuClient, VuuServerConfig) = {
 
     implicit val metrics: MetricsProvider = new MetricsProviderImpl
@@ -46,7 +48,13 @@ class TestStartUp(moduleFactoryFunc: () => ViewServerModule)(
 
     val viewServer = new VuuServer(config)
 
-    val client = new WebSocketClient(s"ws://localhost:$ws/websocket", ws) //todo review params - port specified twice
+    val options = VuuClientOptions()
+      .withPath(config.wsOptions.uri)
+      .withPort(config.wsOptions.wsPort)
+      .withSslDisabled()
+      .withCompression(config.wsOptions.compressionEnabled)
+      .withNativeTransport(config.wsOptions.nativeTransportEnabled)
+    val client = new WebSocketClient(options)
     val viewServerClient: ViewServerClient = new WebSocketViewServerClient(client)
     val vuuClient = new TestVuuClient(viewServerClient, config.security.loginTokenService)
 

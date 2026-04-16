@@ -7,8 +7,6 @@ import org.finos.toolbox.time.Clock;
 import org.finos.toolbox.time.DefaultClock;
 import org.finos.vuu.core.VuuClientConnectionOptions;
 import org.finos.vuu.core.VuuJoinTableProviderOptions;
-import org.finos.vuu.core.VuuSSLByCertAndKey;
-import org.finos.vuu.core.VuuSSLCipherSuiteOptions;
 import org.finos.vuu.core.VuuSecurityOptions;
 import org.finos.vuu.core.VuuServer;
 import org.finos.vuu.core.VuuServerConfig;
@@ -25,6 +23,8 @@ import org.finos.vuu.http2.server.config.AbsolutePathWebRoot;
 import org.finos.vuu.http2.server.config.VuuHttp2ServerOptions;
 import org.finos.vuu.module.JavaExampleModule;
 import org.finos.vuu.net.auth.LoginTokenService;
+import org.finos.vuu.net.ssl.VuuSSLByCertAndKey;
+import org.finos.vuu.net.ssl.VuuSSLCipherSuiteOptions;
 import org.finos.vuu.plugin.Plugin;
 import scala.Option;
 

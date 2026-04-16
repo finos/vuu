@@ -21,6 +21,7 @@ import org.finos.vuu.http2.server.VuuHttp2ServerFactory
 import org.finos.vuu.http2.server.config.{AbsolutePathWebRoot, VuuHttp2ServerOptions}
 import org.finos.vuu.net.auth.LoginTokenService
 import org.finos.vuu.net.http.HttpServerFactory
+import org.finos.vuu.net.ssl.VuuSSLByCertAndKey
 import org.finos.vuu.order.oms.OmsApi
 import org.finos.vuu.plugin.virtualized.VirtualizedTablePlugin
 

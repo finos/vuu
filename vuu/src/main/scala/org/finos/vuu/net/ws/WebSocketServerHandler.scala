@@ -5,24 +5,13 @@ import io.netty.channel.{ChannelHandlerContext, SimpleChannelInboundHandler}
 import io.netty.handler.codec.http.websocketx.{TextWebSocketFrame, WebSocketFrame}
 import org.finos.vuu.net.ViewServerHandler
 
-/**
- * Handles messages
- */
-class WebSocketServerHandler(val handler: ViewServerHandler) extends SimpleChannelInboundHandler[WebSocketFrame] with StrictLogging {
-
+class WebSocketServerHandler(val handler: ViewServerHandler) extends SimpleChannelInboundHandler[TextWebSocketFrame] with StrictLogging {
+    
   @Override
-  def channelRead0(ctx: ChannelHandlerContext, webSocketFrame: WebSocketFrame): Unit = {
-    webSocketFrame match {
-
-      case text: TextWebSocketFrame =>
-        val request = text.text()
-        logger.trace("[WS SERVER] on msg " + request)
-        handler.handle(request, ctx.channel())
-
-      case _ =>
-        val message = "Unsupported frame type: " + webSocketFrame.getClass.getName;
-        throw new UnsupportedOperationException(message);
-    }
+  def channelRead0(ctx: ChannelHandlerContext, textWebSocketFrame: TextWebSocketFrame): Unit = {
+    val text = textWebSocketFrame.text()
+    logger.trace(s"[WS SERVER] on msg $text")
+    handler.handle(text, ctx.channel())
   }
 
 }

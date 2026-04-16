@@ -10,9 +10,9 @@ import org.finos.toolbox.thread.Async
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.core.auths.VuuUser
 import org.finos.vuu.core.module.TableDefContainer
-import org.finos.vuu.core.{VuuClientConnectionOptions, VuuJoinTableProviderOptions, VuuSSLByCertAndKey, VuuSecurityOptions, VuuServer, VuuServerConfig, VuuThreadingOptions, VuuWebSocketOptions}
+import org.finos.vuu.core.{VuuClientConnectionOptions, VuuJoinTableProviderOptions, VuuSecurityOptions, VuuServer, VuuServerConfig, VuuThreadingOptions, VuuWebSocketOptions}
 import org.finos.vuu.http2.server.VuuHttp2ServerFactory
-import org.finos.vuu.http2.server.config.{AbsolutePathWebRoot, VuuHttp2ServerOptions, WebRootDisabled}
+import org.finos.vuu.http2.server.config.VuuHttp2ServerOptions
 import org.finos.vuu.net.auth.LoginTokenService
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers

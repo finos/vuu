@@ -6,9 +6,9 @@ import io.vertx.core.net.{KeyCertOptions, PemKeyCertOptions, PfxOptions}
 import io.vertx.core.{AbstractVerticle, Promise}
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.{BodyHandler, StaticHandler}
-import org.finos.vuu.core.{VuuSSLByCertAndKey, VuuSSLByPKCS, VuuSSLCipherSuiteOptions, VuuSSLDisabled, VuuSSLOptions}
 import org.finos.vuu.http2.server.config.{AbsolutePathWebRoot, ClassPathWebRoot, VuuHttp2ServerOptions, WebRootDisabled}
 import org.finos.vuu.net.rest.RestService
+import org.finos.vuu.net.ssl.{VuuSSLCipherSuiteOptions, VuuSSLDisabled, VuuSSLOptions, VuuSSLByCertAndKey, VuuSSLByPKCS}
 import org.finos.vuu.util.PathChecker
 
 import java.io.File
