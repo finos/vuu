@@ -21,8 +21,10 @@ interface ToastNotificationWithId extends ToastNotificationDescriptor {
 
 // animation times in milliseconds
 const toastOffsetTop = 60;
-const toastDisplayDuration = 6000;
-const horizontalTransitionDuration = 1000;
+// const toastDisplayDuration = 6000;
+const toastDisplayDuration = 6000000;
+// const horizontalTransitionDuration = 1000;
+const horizontalTransitionDuration = 100000000;
 
 const toastContainerContentGap = 10;
 // rightPadding is used together with the toastWidth to compute the toast position

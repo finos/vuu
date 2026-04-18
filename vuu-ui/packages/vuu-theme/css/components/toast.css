@@ -1,6 +1,6 @@
 .salt-theme.vuu-theme {
-
     .vuuToastNotification {
+    --vuuToastNotification-success-background: green;
         /* z-index: var(--salt-zIndex-notification); */
     }
 

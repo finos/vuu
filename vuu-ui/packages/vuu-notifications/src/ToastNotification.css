@@ -1,0 +1,17 @@
+.vuuToastNotification {
+
+    background: var(--vuuToastNotification-background, var(--toast-background));
+    border-radius: var(--vuuToastNotification-borderRadius, var(--salt-curve-100, 0));
+    box-sizing: border-box;
+    box-shadow: var(--salt-overlayable-shadow-popout);
+
+
+
+    &.vuuToastNotification-error {
+        --toast-background: var(--vuuToastNotification-error-background, var(--salt-container-primary-background));
+    }
+
+    &.vuuToastNotification-success {
+        --toast-background: var(--vuuToastNotification-success-background, var(--salt-container-primary-background));
+    }
+}

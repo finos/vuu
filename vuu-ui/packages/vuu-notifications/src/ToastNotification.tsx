@@ -1,14 +1,19 @@
 import cx from "clsx";
-import { Toast, ToastContent, useFloatingComponent } from "@salt-ds/core";
+import { useFloatingComponent } from "@salt-ds/core";
 import { useEffect, useMemo, useState } from "react";
 import type { ToastNotificationDescriptor } from "./NotificationsContext";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 
 const toastContainerRightPadding = 20;
-const toastDisplayDuration = 1200;
+// const toastDisplayDuration = 1200;
+const toastDisplayDuration = 1200000;
 const horizontalTransitionDuration = 400;
 export const TOAST_HEIGHT = 80;
 export const TOAST_WIDTH = 300;
 const verticalTransitionDuration = 300;
+
+import toastNotificationCss from "./ToastNotification.css";
 
 export type ToastNotificationProps = {
   top: number;
@@ -19,6 +24,13 @@ export type ToastNotificationProps = {
 const classBase = "vuuToastNotification";
 
 export const ToastNotification = (props: ToastNotificationProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-toast-notification",
+    css: toastNotificationCss,
+    window: targetWindow,
+  });
+
   const { top, notification, animated = true } = props;
 
   const { Component: FloatingComponent } = useFloatingComponent();
@@ -55,33 +67,34 @@ export const ToastNotification = (props: ToastNotificationProps) => {
     }
   }, [animated, pageWidth, slideIn]);
 
-  console.log(`left ${left}`);
-
   return (
     <FloatingComponent
-      className={cx(classBase, `${classBase}-${notification.type}`)}
-      position="absolute"
+      className={cx(
+        classBase,
+        `${classBase}-${notification.type}`,
+        `${classBase}-${notification.status}`,
+      )}
       left={left}
-      top={top}
       open
+      position="absolute"
+      top={top}
       style={{
         transition: animated
           ? `left ${horizontalTransitionDuration}ms, top ${verticalTransitionDuration}ms `
           : "none",
       }}
     >
-      <Toast
-        status={notification.status}
+      <div
         style={{
           height: TOAST_HEIGHT,
           width: TOAST_WIDTH,
         }}
       >
-        <ToastContent>
+        <div>
           <h3 className={`${classBase}-toastHeader`}>{notification.header}</h3>
           <div>{notification.content}</div>
-        </ToastContent>
-      </Toast>
+        </div>
+      </div>
     </FloatingComponent>
   );
 };

@@ -26,7 +26,7 @@ interface NotificationDescriptorBase<T extends NotificationType> {
 
 export interface ToastNotificationDescriptor
   extends NotificationDescriptorBase<"toast"> {
-  content: string;
+  content: ReactNode;
   header: string;
 }
 
