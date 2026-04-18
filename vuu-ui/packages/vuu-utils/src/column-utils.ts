@@ -1216,12 +1216,13 @@ export const setCalculatedColumnName = (
 
 export const setCalculatedColumnType = (
   column: ColumnDescriptor,
-  type: string,
+  serverDataType: VuuColumnDataType,
 ): ColumnDescriptor => {
   const [name, , expression] = column.name.split(":");
   return {
     ...column,
-    name: `${name}:${type}:${expression}`,
+    name: `${name}:${serverDataType}:${expression}`,
+    serverDataType,
   };
 };
 
