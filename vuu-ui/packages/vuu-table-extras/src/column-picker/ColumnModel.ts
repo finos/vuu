@@ -192,7 +192,12 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
     );
   }
 
-  updateColumn(column: ColumnDescriptor) {
+  updateColumn(
+    currentColumn: ColumnDescriptor,
+    newColumn: ColumnDescriptor,
+  ): void;
+  updateColumn(column: ColumnDescriptor): void;
+  updateColumn(column: ColumnDescriptor, newColumn: ColumnDescriptor = column) {
     const allIndex = this.allColumns.findIndex(
       (col) => col.name === column.name,
     );
@@ -210,9 +215,9 @@ export class ColumnModel extends EventEmitter<ColumnEvents> {
       this.#selectedColumns = this.#selectedColumns.toSpliced(
         selectedIndex,
         1,
-        column,
+        newColumn,
       );
-      this.allColumns = this.allColumns.toSpliced(allIndex, 1, column);
+      this.allColumns = this.allColumns.toSpliced(allIndex, 1, newColumn);
 
       this.notifyListeners(this.#selectedColumns, "column-settings", {
         type: SelectedColumnChangeType.ColumnUpdated,

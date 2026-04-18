@@ -16,6 +16,9 @@ import {
   updateColumnFormatting,
   updateColumnType,
   queryClosest,
+  isCalculatedColumn,
+  getCalculatedColumnDetails,
+  getServerDataType,
 } from "@vuu-ui/vuu-utils";
 import { VuuColumnDataType, VuuTable } from "@vuu-ui/vuu-protocol-types";
 import {
@@ -23,7 +26,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { DataValueTypeSimple } from "@vuu-ui/vuu-data-types";
@@ -37,8 +39,6 @@ export interface ColumnSettingsProps {
   column: ColumnDescriptor;
   columnModel: ColumnModel;
   onConfigChange?: (config: TableConfig) => void;
-  onCancelCreateColumn?: () => void;
-  onCreateCalculatedColumn?: (column: ColumnDescriptor) => void;
   vuuTable?: VuuTable;
 }
 
@@ -78,7 +78,8 @@ const booleanCellRenderers: CellRendererDescriptor[] = [];
 const getAvailableCellRenderers = (
   column: ColumnDescriptor,
 ): CellRendererDescriptor[] => {
-  switch (column.serverDataType) {
+  const serverDataType = getServerDataType(column);
+  switch (serverDataType) {
     case "char":
     case "string":
       return stringCellRenderers.concat(getRegisteredCellRenderers("string"));
@@ -103,37 +104,16 @@ const getAvailableCellRenderers = (
   }
 };
 
-const replaceColumn = (
-  tableConfig: TableConfig,
-  column: ColumnDescriptor,
-): TableConfig => ({
-  ...tableConfig,
-  columns: tableConfig.columns.map((col) =>
-    col.name === column.name ? column : col,
-  ),
-});
-
 export const useColumnSettings = ({
   column: columnProp,
   columnModel,
-  onCancelCreateColumn,
-  onConfigChange,
-  onCreateCalculatedColumn,
 }: Omit<ColumnSettingsProps, "vuuTable">) => {
   const [column, setColumn] = useState<ColumnDescriptor>(
     columnModel.getColumn(columnProp.name),
   );
-  const columnRef = useRef<ColumnDescriptor>(column);
-  const [inEditMode, setEditMode] = useState(column.name === "::");
-
-  const handleEditCalculatedcolumn = useCallback(() => {
-    columnRef.current = column;
-    setEditMode(true);
-  }, [column]);
 
   useEffect(() => {
     setColumn(columnProp);
-    setEditMode(columnProp.name === "::");
   }, [columnProp]);
 
   const availableRenderers = useMemo(() => {
@@ -233,9 +213,9 @@ export const useColumnSettings = ({
     (type: DataValueTypeSimple) => {
       const updatedColumn = updateColumnType(column, type);
       setColumn(updatedColumn);
-      onConfigChange(replaceColumn(tableConfig, updatedColumn));
+      columnModel.updateColumn(updatedColumn);
     },
-    [column, onConfigChange],
+    [column, columnModel],
   );
 
   // Changing the server data type applies only to calculated columns
@@ -264,29 +244,11 @@ export const useColumnSettings = ({
     navigateColumn({ moveBy: -1 });
   }, [navigateColumn]);
 
-  const handleSaveCalculatedColumn = useCallback(() => {
-    // TODO validate expression, unique name
-    onCreateCalculatedColumn(column);
-  }, [column, onCreateCalculatedColumn]);
-
-  const handleCancelEdit = useCallback(() => {
-    if (columnProp.name === "::") {
-      onCancelCreateColumn();
-    } else {
-      if (columnRef.current !== undefined && columnRef.current !== column) {
-        setColumn(columnRef.current);
-      }
-      setEditMode(false);
-    }
-  }, [column, columnProp.name, onCancelCreateColumn]);
-
   return {
     availableRenderers,
-    editCalculatedColumn: inEditMode,
     column,
     navigateNextColumn,
     navigatePrevColumn,
-    onCancel: handleCancelEdit,
     onChange: handleChange,
     onChangeCalculatedColumnName: handleChangeCalculatedColumnName,
     onChangeFormatting: handleChangeFormatting,
@@ -294,8 +256,6 @@ export const useColumnSettings = ({
     onChangeServerDataType: handleChangeServerDataType,
     onChangeToggleButton: handleChangeToggleButton,
     onChangeType: handleChangeType,
-    onEditCalculatedColumn: handleEditCalculatedcolumn,
     onInputCommit: handleInputCommit,
-    onSave: handleSaveCalculatedColumn,
   };
 };

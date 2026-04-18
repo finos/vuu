@@ -4,6 +4,7 @@ import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import {
   DragDropProvider,
   getColumnLabel,
+  isCalculatedColumn,
   useSortable,
 } from "@vuu-ui/vuu-utils";
 import cx from "clsx";
@@ -27,7 +28,7 @@ import {
   OptionProps,
 } from "@salt-ds/core";
 import { useHighlighting } from "@vuu-ui/vuu-table";
-import { IconButton } from "@vuu-ui/vuu-ui-controls";
+import { Icon, IconButton } from "@vuu-ui/vuu-ui-controls";
 import { ColumnChangeSource } from "./ColumnModel";
 import { ColumnPickerHookProps, useColumnPicker } from "./useColumnPicker";
 
@@ -66,7 +67,7 @@ const useSorting = (id: string, index: number) => {
 const SelectedColumnListItem = ({
   className: classNameProp,
   index,
-  column: item,
+  column,
   onRemove,
   searchPattern = "",
   ...optionProps
@@ -76,22 +77,25 @@ const SelectedColumnListItem = ({
   onRemove: MouseEventHandler<HTMLButtonElement>;
   searchPattern?: Lowercase<string>;
 }) => {
-  const { handleRef, ref } = useSorting(item.name, index);
-  const value = getColumnLabel(item as ColumnDescriptor);
+  const { handleRef, ref } = useSorting(column.name, index);
+  const value = getColumnLabel(column as ColumnDescriptor);
   const valueWithHighlighting = useHighlighting(value, searchPattern);
 
   const handleRemoveButtonClick = useCallback<
     MouseEventHandler<HTMLButtonElement>
-  >((e) => {
-    e.stopPropagation();
-    onRemove?.(e);
-  }, []);
+  >(
+    (e) => {
+      e.stopPropagation();
+      onRemove?.(e);
+    },
+    [onRemove],
+  );
 
   return (
     <Option
       {...optionProps}
       className={cx(classNameProp, classBaseListItem)}
-      data-name={item.name}
+      data-name={column.name}
       ref={ref}
     >
       <IconButton
@@ -101,6 +105,9 @@ const SelectedColumnListItem = ({
         ref={handleRef}
         size={16}
       />
+      {isCalculatedColumn(column.name) ? (
+        <Icon className="vuuCalculatedColumnIcon" name="function" />
+      ) : null}
       <span className={`${classBase}-text`}>{valueWithHighlighting}</span>
       <IconButton
         className={`${classBaseListItem}-action`}
@@ -210,10 +217,15 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
     }, 300);
   }, [columnModel]);
 
+  const oneOrMoreColumnsIsCalculated = selectedColumns.some((column) =>
+    isCalculatedColumn(column.name),
+  );
   return (
     <div
       {...htmlAttributes}
-      className={cx(classBase, className)}
+      className={cx(classBase, className, {
+        [`${classBase}-withCalculated`]: oneOrMoreColumnsIsCalculated,
+      })}
       ref={forwardedRef}
     >
       <form className={`${classBase}-search`} role="search">

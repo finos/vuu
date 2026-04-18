@@ -7,16 +7,12 @@ import {
 } from "@salt-ds/lab";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
+import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import type { TableProps } from "@vuu-ui/vuu-table";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import cx from "clsx";
-import {
-  HTMLAttributes,
-  SyntheticEvent,
-  useCallback,
-  useRef,
-  useState,
-} from "react";
+import { HTMLAttributes, SyntheticEvent, useCallback, useState } from "react";
+import { useEditCalculatedColumn } from "../calculated-column/useEditCalculatedColumn";
 import { ColumnPicker, ColumnPickerProps } from "../column-picker/ColumnPicker";
 import { ColumnSettingsPanel } from "../column-settings-panel/ColumnSettingsPanel";
 import {
@@ -25,9 +21,6 @@ import {
 } from "../table-settings-panel/TableSettingsPanel";
 
 import css from "./TabbedTableConfigPanel.css";
-import { useModal } from "@vuu-ui/vuu-ui-controls";
-import { CalculatedColumnPanel } from "../calculated-column/CalculatedColumnPanel";
-import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 
 const TabLabels = {
   "table-settings": "Table",
@@ -64,9 +57,7 @@ export const TabbedTableConfigPanel = ({
     window: targetWindow,
   });
 
-  const { showPrompt } = useModal();
   const [columns, setColumns] = useState<ColumnDescriptor[]>([]);
-  const calculatedColumnRef = useRef<ColumnDescriptor | undefined>(undefined);
 
   const [value, setValue] = useState<string>(selectedTab);
   const handleChange = useCallback(
@@ -83,37 +74,17 @@ export const TabbedTableConfigPanel = ({
     [],
   );
 
-  const handleChangeColumn = useCallback((column: ColumnDescriptor) => {
-    calculatedColumnRef.current = column;
+  const handleSaveCalculatedColumn = useCallback((column: ColumnDescriptor) => {
+    setColumns([column]);
   }, []);
 
-  const handleSaveColumn = useCallback(() => {
-    if (calculatedColumnRef.current) {
-      columnModel.addColumn(calculatedColumnRef.current, true);
-      calculatedColumnRef.current = undefined;
-    }
-  }, [columnModel]);
-
-  const onClickCreateCalculatedColumn = useCallback(() => {
-    console.log("onClickCreateCalculatedColumn");
-    if (vuuTable) {
-      calculatedColumnRef.current = { name: "::", serverDataType: "string" };
-      // TODO load this dynamically
-      showPrompt(
-        <CalculatedColumnPanel
-          column={calculatedColumnRef.current}
-          columnModel={columnModel}
-          onChangeColumn={handleChangeColumn}
-          vuuTable={vuuTable}
-        />,
-        {
-          confirmButtonLabel: "Save column",
-          onConfirm: handleSaveColumn,
-          title: "Calculated column",
-        },
-      );
-    }
-  }, [columnModel, handleChangeColumn, handleSaveColumn, showPrompt, vuuTable]);
+  const { onCreateCalculatedColumn, onEditCalculatedColumn } =
+    useEditCalculatedColumn({
+      columnModel,
+      calculatedColumn: columns[0],
+      onSaveColumn: handleSaveCalculatedColumn,
+      vuuTable,
+    });
 
   return (
     <div {...htmlAttributes} className={cx(classBase, className)}>
@@ -139,7 +110,7 @@ export const TabbedTableConfigPanel = ({
           <ColumnPicker
             allowCreateCalculatedColumn={allowCreateCalculatedColumn}
             columnModel={columnModel}
-            onClickCreateCalculatedColumn={onClickCreateCalculatedColumn}
+            onClickCreateCalculatedColumn={onCreateCalculatedColumn}
             onSelectionChange={handleSelectionChange}
             selected={columns}
           />
@@ -149,6 +120,7 @@ export const TabbedTableConfigPanel = ({
             <ColumnSettingsPanel
               column={columns[0]}
               columnModel={columnModel}
+              onClickEditCalculatedColumn={onEditCalculatedColumn}
             />
           ) : null}
         </TabNextPanel>

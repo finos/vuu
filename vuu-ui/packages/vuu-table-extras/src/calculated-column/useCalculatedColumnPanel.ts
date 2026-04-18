@@ -17,7 +17,7 @@ import { CalculatedColumnPanelProps } from "./CalculatedColumnPanel";
 
 export type ColumnExpressionHookProps = Pick<
   CalculatedColumnPanelProps,
-  "column" | "onChangeName" | "onChangeColumn" | "onChangeServerDataType"
+  "column" | "onChangeColumn" | "onChangeServerDataType"
 >;
 
 const applyDefaults = (column: ColumnDescriptor) => {
@@ -36,7 +36,6 @@ const applyDefaults = (column: ColumnDescriptor) => {
 export const useCalculatedColumnPanel = ({
   column: columnProp,
   onChangeColumn,
-  onChangeName: onChangeNameProp,
   onChangeServerDataType: onChangeServerDataTypeProp,
 }: ColumnExpressionHookProps) => {
   const [column, _setColumn] = useState<ColumnDescriptor>(
@@ -61,10 +60,9 @@ export const useCalculatedColumnPanel = ({
       // columnNameRef.current = newColumn.name;
       console.log(`name = ${newColumn.name}`);
       setColumn(newColumn);
-      onChangeNameProp?.(newColumn.name);
       onChangeColumn(newColumn);
     },
-    [column, onChangeColumn, onChangeNameProp, setColumn],
+    [column, onChangeColumn, setColumn],
   );
 
   const onChangeExpression = useCallback(
@@ -81,11 +79,9 @@ export const useCalculatedColumnPanel = ({
       const newColumn = setCalculatedColumnExpression(column, expression);
       setColumn(newColumn);
 
-      onChangeNameProp?.(newColumn.name);
-
       onChangeColumn(newColumn);
     },
-    [onChangeColumn, onChangeNameProp, setColumn],
+    [onChangeColumn, setColumn],
   );
 
   const onChangeServerDataType = useCallback(
@@ -93,18 +89,11 @@ export const useCalculatedColumnPanel = ({
       if (isVuuColumnDataType(serverDataType)) {
         const newColumn = setCalculatedColumnType(column, serverDataType);
         setColumn(newColumn);
-        onChangeNameProp?.(newColumn.name);
         onChangeServerDataTypeProp?.(serverDataType);
         onChangeColumn(newColumn);
       }
     },
-    [
-      column,
-      onChangeColumn,
-      onChangeNameProp,
-      onChangeServerDataTypeProp,
-      setColumn,
-    ],
+    [column, onChangeColumn, onChangeServerDataTypeProp, setColumn],
   );
 
   return {

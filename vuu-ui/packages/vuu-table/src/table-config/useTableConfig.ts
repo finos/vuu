@@ -33,20 +33,29 @@ export const useTableConfig = ({
         changeSource === "column-picker" ||
         changeSource === "column-settings"
       ) {
-        let newConfig: TableConfig | undefined = undefined;
-        setTableConfig((config) => (newConfig = { ...config, columns }));
-        if (changeDescriptor?.type === "column-removed") {
-          dataSource.columns = dataSource.columns.filter(
-            (name) => name !== changeDescriptor.column.name,
-          );
-          if (newConfig) {
-            onTableConfigChange?.(newConfig, changeDescriptor);
-          }
-        } else if (changeDescriptor?.type === "column-added") {
+        if (
+          changeDescriptor?.type === "calculated-column-added" ||
+          changeDescriptor?.type === "column-added"
+        ) {
           dataSource.columns = dataSource.columns.concat(
             changeDescriptor.column.name,
           );
+        } else if (changeDescriptor?.type === "column-removed") {
+          dataSource.columns = dataSource.columns.filter(
+            (name) => name !== changeDescriptor.column.name,
+          );
+        }
+
+        let newConfig: TableConfig | undefined = undefined;
+        setTableConfig((config) => (newConfig = { ...config, columns }));
+        if (
+          changeDescriptor?.type === "column-removed" ||
+          changeDescriptor?.type === "column-added" ||
+          changeDescriptor?.type === "calculated-column-added"
+        ) {
           if (newConfig) {
+            // calling onTableConfigChange will allow client to persist changes
+            // for future sessions
             onTableConfigChange?.(newConfig, changeDescriptor);
           }
         }

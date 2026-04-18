@@ -146,6 +146,11 @@ const VUU_COLUMN_DATA_TYPES: (string | undefined | null)[] = [
   "string",
   "char",
   "boolean",
+  "scaleddecimal2",
+  "scaleddecimal4",
+  "scaleddecimal6",
+  "scaleddecimal8",
+  "epochtimestamp",
 ];
 
 export const isVuuColumnDataType = (
@@ -1141,19 +1146,49 @@ export const addColumnToSubscribedColumns = (
   return subscribedColumns.concat(newColumn);
 };
 
+export function getServerDataType(
+  column: ColumnDescriptor,
+): VuuColumnDataType | undefined;
+export function getServerDataType(
+  column: ColumnDescriptor,
+  throwIfUndefined: true,
+): VuuColumnDataType;
+export function getServerDataType(
+  column: ColumnDescriptor,
+  throwIfUndefined = false,
+) {
+  if (isCalculatedColumn(column.name)) {
+    const { serverDataType } = getCalculatedColumnDetails(column);
+    if (isVuuColumnDataType(serverDataType)) {
+      return serverDataType;
+    } else if (throwIfUndefined) {
+      throw Error(
+        `[column-utils] getServerDataType, calculated column does not have valid type ${column.name}`,
+      );
+    }
+  } else if (isVuuColumnDataType(column.serverDataType)) {
+    return column.serverDataType;
+  } else if (throwIfUndefined) {
+    throw Error(
+      `[column-utils] getServerDataType, columns does not have valid type ${column.serverDataType}`,
+    );
+  }
+}
+
 const CalculatedColumnPattern = /.*:.*:.*/;
 
 export const isCalculatedColumn = (columnName?: string) =>
   columnName !== undefined && CalculatedColumnPattern.test(columnName);
 
 export const getCalculatedColumnDetails = (
-  column: ColumnDescriptor,
+  column: ColumnDescriptor | string,
 ): Partial<CalculatedColumn> => {
-  if (isCalculatedColumn(column.name)) {
-    const [name, serverDataType, expression] = column.name.split(/:=?/);
+  const columnName = typeof column === "string" ? column : column.name;
+  if (isCalculatedColumn(columnName)) {
+    const [name, serverDataType, expression] = columnName.split(/:=?/);
     if (serverDataType && !isVuuColumnDataType(serverDataType)) {
       throw Error(
-        `column-utils, getCalculatedColumnDetails ${serverDataType} is not valid type for column ${column.name}`,
+        `column-utils, getCalculatedColumnDetails ${serverDataType} is not valid type for column ${columnName}`,
       );
     }
     return {

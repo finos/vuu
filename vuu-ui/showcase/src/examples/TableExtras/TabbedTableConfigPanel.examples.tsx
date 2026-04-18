@@ -1,6 +1,7 @@
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { ColumnModel, TabbedTableConfigPanel } from "@vuu-ui/vuu-table-extras";
 import { TableConfig } from "@vuu-ui/vuu-table-types";
+import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
 import { useMemo } from "react";
 
 const tableSchema = getSchema("instruments");
@@ -29,13 +30,16 @@ export const DefaultConfigPanel = () => {
   );
 
   return (
-    <TabbedTableConfigPanel
-      allowCreateCalculatedColumn
-      columnModel={columnModel}
-      onDisplayAttributeChange={(displayAttributes) =>
-        console.log(JSON.stringify(displayAttributes))
-      }
-      config={tableDisplayAttributes}
-    />
+    <ModalProvider>
+      <TabbedTableConfigPanel
+        allowCreateCalculatedColumn
+        columnModel={columnModel}
+        config={tableDisplayAttributes}
+        onDisplayAttributeChange={(displayAttributes) =>
+          console.log(JSON.stringify(displayAttributes))
+        }
+        vuuTable={tableSchema.table}
+      />
+    </ModalProvider>
   );
 };

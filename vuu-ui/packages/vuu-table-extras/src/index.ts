@@ -33,7 +33,6 @@ export {
   tableSettingsFromColumnMenuPermissions,
   useTableAndColumnSettings,
 } from "./column-settings-panel/useTableAndColumnSettings";
-export { useTableSettings } from "./column-settings-panel/useTableSettings";
 export {
   DataSourceStats,
   type DataSourceStatsProps,

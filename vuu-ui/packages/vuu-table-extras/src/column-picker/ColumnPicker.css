@@ -1,5 +1,7 @@
 .vuuColumnPicker {
 
+    --label-margin-left: 0px;
+
     --columnpicker-background: var(--vuuColumnPicker-background, var(--salt-container-primary-background));
     background: var(--columnpicker-background);
     container-type: inline-size;
@@ -9,6 +11,10 @@
     height: var(--vuuColumnPicker-height, 100%);
     overflow: hidden;
     padding: var(--salt-spacing-300) 0;
+
+    &.vuuColumnPicker-withCalculated {
+        --label-margin-left: 8px;
+    }
 
     .saltListBox {
         background-color: inherit;
@@ -25,9 +31,20 @@
             --vuu-icon-color: var(--salt-content-secondary-foreground);
         }
 
+        .vuuCalculatedColumnIcon {
+            --vuu-icon-color: var(--salt-content-secondary-foreground);
+            left: 32px;
+            position: absolute;
+            top: 8px;
+        }
+
         .vuuHighlight {
             color: var(--vuu-color-blue-40);
             text-decoration: underline;
+        }
+
+        .vuuColumnPicker-text {
+            margin-left: var(--label-margin-left);
         }
 
     }

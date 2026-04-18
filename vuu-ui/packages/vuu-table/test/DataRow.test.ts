@@ -25,6 +25,17 @@ describe("DataRow", () => {
     const dataRow = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "AAO L"]);
     expect(dataRow.bbg).toEqual("AAO L");
   });
+
+  it("Factory supports calculated columns", () => {
+    const [DataRow] = dataRowFactory(
+      ["bbg", "pctFilled:double:filledQty / quantity"],
+      [{ name: "bbg", serverDataType: "string" }],
+    );
+    // prettier-ignore
+    const dataRow = DataRow([0, 0, false, false, 1, 0, "key-0", 0, 0, false, "AAO L", 95.5]);
+    expect(dataRow.bbg).toEqual("AAO L");
+    expect(dataRow["pctFilled:double:filledQty / quantity"]).toEqual(95.5);
+  });
   it("custom types that cannot be represented natively in JSON are transformed, scaleddecimal2", () => {
     const [DataRow] = dataRowFactory(
       ["price"],

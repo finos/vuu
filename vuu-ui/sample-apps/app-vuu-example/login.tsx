@@ -7,13 +7,22 @@ import "@vuu-ui/vuu-icons/index.css";
 import "@vuu-ui/vuu-theme/index.css";
 import "./login.css";
 
+import { Accent } from "@salt-ds/core";
+
+const vuuPurple = "purple" as Accent;
+
 const authProvider = new VuuAuthProvider("/api/authn");
 
 const container = document.getElementById("root");
 if (container) {
   const root = createRoot(container);
   root.render(
-    <SaltProviderNext theme="vuu-theme" density="high">
+    <SaltProviderNext
+      accent={vuuPurple}
+      corner="rounded"
+      theme="vuu-theme"
+      density="high"
+    >
       <LoginPanel onSubmit={authProvider.login} />
     </SaltProviderNext>,
   );

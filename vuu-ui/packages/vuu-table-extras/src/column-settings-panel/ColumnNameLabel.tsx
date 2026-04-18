@@ -14,7 +14,7 @@ const classBase = "vuuColumnNameLabel";
 
 export interface ColumnNameLabelProps {
   column: ColumnDescriptor;
-  onClick: MouseEventHandler;
+  onClick?: MouseEventHandler;
 }
 
 export const ColumnNameLabel = ({ column, onClick }: ColumnNameLabelProps) => {

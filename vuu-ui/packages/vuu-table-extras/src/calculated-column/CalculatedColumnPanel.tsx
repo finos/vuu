@@ -24,11 +24,6 @@ export interface CalculatedColumnPanelProps
   column: ColumnDescriptor;
   columnModel: ColumnModel;
   onChangeColumn: (column: ColumnDescriptor) => void;
-  /**
-   * Callback prop, invoked on every change to calculated column definition
-   * @param calculatedColumnName the full calculated column name
-   */
-  onChangeName?: (name: string) => void;
   onChangeServerDataType?: (name: VuuColumnDataType) => void;
   vuuTable: VuuTable;
 }
@@ -37,7 +32,6 @@ export const CalculatedColumnPanel = ({
   column: columnProp,
   columnModel,
   onChangeColumn,
-  onChangeName: onChangeNameProp,
   onChangeServerDataType: onChangeServerDataTypeProp,
   vuuTable,
 }: CalculatedColumnPanelProps) => {
@@ -47,7 +41,6 @@ export const CalculatedColumnPanel = ({
     useCalculatedColumnPanel({
       column: columnProp,
       onChangeColumn,
-      onChangeName: onChangeNameProp,
       onChangeServerDataType: onChangeServerDataTypeProp,
     });
   // The initial value to pass into the Expression Input. That is a
@@ -74,8 +67,10 @@ export const CalculatedColumnPanel = ({
 
   return (
     <div className={classBase}>
+      <div>{column.name}</div>
+
       <FormField data-field="column-name">
-        <FormFieldLabel>Column Name</FormFieldLabel>
+        <FormFieldLabel>Column Label</FormFieldLabel>
         <Input className="vuuInput" onChange={onChangeName} value={name} />
       </FormField>
 

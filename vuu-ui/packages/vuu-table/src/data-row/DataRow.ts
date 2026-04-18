@@ -11,6 +11,12 @@ import {
   DataRowOperation,
   DataRowOperations,
 } from "@vuu-ui/vuu-table-types";
+import {
+  getCalculatedColumnDetails,
+  getServerDataType,
+  isCalculatedColumn,
+  isVuuColumnDataType,
+} from "@vuu-ui/vuu-utils";
 
 type ColumnMapEntry = {
   index: number;
@@ -211,7 +217,17 @@ function createColumnMap(
   columns.forEach((name, i) => {
     const schemaColumn = schemaColumns.find((col) => col.name === name);
     if (schemaColumn) {
-      columnMap[name] = { index: i + 10, type: schemaColumn.serverDataType };
+      const serverDataType = getServerDataType(schemaColumn, true);
+      columnMap[name] = { index: i + 10, type: serverDataType };
+    } else if (isCalculatedColumn(name)) {
+      const { serverDataType } = getCalculatedColumnDetails(name);
+      if (isVuuColumnDataType(serverDataType)) {
+        columnMap[name] = { index: i + 10, type: serverDataType };
+      } else {
+        throw Error(
+          `[DataRow] calculated column with invalid serverDataType ${name}`,
+        );
+      }
     } else {
       throw Error(`[DataRow] dataRowFactory column not in schema ${name}`);
     }
@@ -236,15 +252,6 @@ export const dataRowFactory = (
   schemaColumns: readonly SchemaColumn[],
 ): [DataRowFunc, (columns: string[]) => void] => {
   let columnMap = createColumnMap(columns, schemaColumns);
-
-  columns.forEach((name, i) => {
-    const schemaColumn = schemaColumns.find((col) => col.name === name);
-    if (schemaColumn) {
-      columnMap[name] = { index: i + 10, type: schemaColumn.serverDataType };
-    } else {
-      throw Error(`[DataRow] dataRowFactory column not in schema ${name}`);
-    }
-  });
 
   const setColumns = (columns: string[]) => {
     // new columnMap will be used for all subsequently created DataRows

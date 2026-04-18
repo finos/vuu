@@ -1,6 +1,7 @@
-import { ColumnModel, ColumnPicker } from "@vuu-ui/vuu-table-extras";
 import { useContextPanel, useHideContextPanel } from "@vuu-ui/vuu-ui-controls";
 import { useCallback, useEffect, useRef } from "react";
+import { ColumnPicker } from "./ColumnPicker";
+import { ColumnModel } from "./ColumnModel";
 
 export interface TableColumnPickerHookProps {
   columnModel: ColumnModel;

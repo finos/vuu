@@ -4,7 +4,7 @@ import { ContextMenuProvider } from "@vuu-ui/vuu-context-menu";
 import type { LayoutChangeHandler } from "@vuu-ui/vuu-layout";
 import { LayoutProvider, StackLayout } from "@vuu-ui/vuu-layout";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
-import { ContextPanelProvider, ModalProvider } from "@vuu-ui/vuu-ui-controls";
+import { ModalProvider } from "@vuu-ui/vuu-ui-controls";
 import { VuuUser, logger, registerComponent } from "@vuu-ui/vuu-utils";
 import {
   type HTMLAttributes,

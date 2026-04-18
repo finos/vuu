@@ -80,6 +80,7 @@ export const BaseNumericFormattingSettings = ({
       <FormField data-field="decimals">
         <FormFieldLabel>Number of decimals</FormFieldLabel>
         <Input
+          bordered
           className="vuuInput"
           onChange={handleChangeDecimals}
           onKeyDown={handleInputKeyDown}
