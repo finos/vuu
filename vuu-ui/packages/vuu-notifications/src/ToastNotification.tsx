@@ -14,11 +14,12 @@ export const TOAST_WIDTH = 300;
 const verticalTransitionDuration = 300;
 
 import toastNotificationCss from "./ToastNotification.css";
+import { Icon } from "@vuu-ui/vuu-ui-controls";
 
 export type ToastNotificationProps = {
-  top: number;
-  notification: ToastNotificationDescriptor;
   animated?: boolean;
+  notification: ToastNotificationDescriptor;
+  top: number;
 };
 
 const classBase = "vuuToastNotification";
@@ -35,7 +36,14 @@ export const ToastNotification = (props: ToastNotificationProps) => {
 
   const { Component: FloatingComponent } = useFloatingComponent();
 
-  const { animationType = "slide-in,slide-out" } = notification;
+  const {
+    animationType = "slide-in,slide-out",
+    content,
+    dismiss = "automatic",
+    header,
+    icon,
+    status,
+  } = notification;
 
   const slideIn = animationType.includes("slide-in");
 
@@ -67,13 +75,14 @@ export const ToastNotification = (props: ToastNotificationProps) => {
     }
   }, [animated, pageWidth, slideIn]);
 
+  const iconName = icon === false ? undefined : (icon ?? status);
+
   return (
     <FloatingComponent
-      className={cx(
-        classBase,
-        `${classBase}-${notification.type}`,
-        `${classBase}-${notification.status}`,
-      )}
+      className={cx(classBase, `${classBase}-${notification.status}`, {
+        [`${classBase}-withIcon`]: icon !== false,
+        [`${classBase}-withContent`]: content !== undefined,
+      })}
       left={left}
       open
       position="absolute"
@@ -84,17 +93,9 @@ export const ToastNotification = (props: ToastNotificationProps) => {
           : "none",
       }}
     >
-      <div
-        style={{
-          height: TOAST_HEIGHT,
-          width: TOAST_WIDTH,
-        }}
-      >
-        <div>
-          <h3 className={`${classBase}-toastHeader`}>{notification.header}</h3>
-          <div>{notification.content}</div>
-        </div>
-      </div>
+      {iconName ? <Icon name={iconName} /> : null}
+      <h3 className={`${classBase}-header`}>{header}</h3>
+      {content ? <div className={`${classBase}-content`}>{content}</div> : null}
     </FloatingComponent>
   );
 };

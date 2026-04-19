@@ -78,16 +78,51 @@ export const NotificationsWithContext = () => (
 );
 
 export const SuccessNotificationToast = () => (
-  <ToastNotification
-    top={20}
-    animated={false}
-    notification={{
-      content: "[Layout Name] Saved Successfully",
-      header: "Layout Saved Successfully",
-      status: "success",
-      type: "toast",
-    }}
-  />
+  <>
+    <ToastNotification
+      top={20}
+      animated={false}
+      notification={{
+        header: "Header and Icon notification",
+        status: "success",
+        type: "toast",
+      }}
+    />
+
+    <ToastNotification
+      top={100}
+      animated={false}
+      notification={{
+        content: "Header, Content and Icon",
+        header: "Layout Saved Successfully",
+        status: "success",
+        type: "toast",
+      }}
+    />
+
+    <ToastNotification
+      top={200}
+      animated={false}
+      notification={{
+        icon: false,
+        header: "Header only",
+        status: "success",
+        type: "toast",
+      }}
+    />
+
+    <ToastNotification
+      top={300}
+      animated={false}
+      notification={{
+        content: "Header and Content without Icon",
+        icon: false,
+        header: "Layout Saved Successfully",
+        status: "success",
+        type: "toast",
+      }}
+    />
+  </>
 );
 
 export const ErrorNotificationToast = () => (
@@ -127,4 +162,25 @@ export const InfoNotificationToast = () => (
       type: "toast",
     }}
   />
+);
+
+export const CustomCssOverride = () => (
+  <>
+    <style>{`
+        .vuuToastNotification {
+          --vuuToast-grid-template-areas:
+          "toast-header toast-icon";
+          --vuuToast-gridTemplateColumns: auto 36px;
+        }
+    `}</style>
+    <ToastNotification
+      top={20}
+      animated={false}
+      notification={{
+        header: "This is Info Title",
+        status: "success",
+        type: "toast",
+      }}
+    />
+  </>
 );
