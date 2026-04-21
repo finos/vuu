@@ -29,11 +29,6 @@ export { useTableColumnPicker } from "./column-picker/useTableColumnPicker";
 export { ColumnSettingsPanel } from "./column-settings-panel/ColumnSettingsPanel";
 export { useColumnSettings } from "./column-settings-panel/useColumnSettings";
 export {
-  columnSettingsFromColumnMenuPermissions,
-  tableSettingsFromColumnMenuPermissions,
-  useTableAndColumnSettings,
-} from "./column-settings-panel/useTableAndColumnSettings";
-export {
   DataSourceStats,
   type DataSourceStatsProps,
 } from "./datasource-stats/DatasourceStats";

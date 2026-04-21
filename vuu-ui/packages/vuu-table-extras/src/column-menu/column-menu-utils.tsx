@@ -443,33 +443,6 @@ export const buildPinMenuItems = (
   return menuItems;
 };
 
-export const buildSettingsMenuItems = (
-  _: ColumnDescriptor,
-  menuActionClickHandler: MenuItemClickHandler,
-  allowColumnSettings = true,
-): MenuElements | null => {
-  if (!allowColumnSettings) {
-    return null;
-  }
-
-  const menuItems: MenuElements = [];
-
-  if (allowColumnSettings) {
-    menuItems.push(
-      <MenuItem
-        data-icon="settings"
-        data-menu-action-id="column-settings"
-        key="column-settings"
-        onClick={menuActionClickHandler}
-      >
-        Column settings ...
-      </MenuItem>,
-    );
-  }
-
-  return menuItems;
-};
-
 export function buildAggregationMenuItems(
   column: ColumnDescriptor,
   dataSource: DataSource,

@@ -38,12 +38,10 @@ export type SelectedColumnsChangeHandler = (
 
 export interface ColumnPickerHookProps {
   columnModel: ColumnModel;
-  selectionModel?: ColumnSelectionModel;
 }
 
 export const useColumnPicker = ({
   columnModel: model,
-  selectionModel = "none",
 }: ColumnPickerHookProps) => {
   const [, forceRender] = useState({});
   useEffect(() => {

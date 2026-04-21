@@ -1,4 +1,8 @@
-import { isValidNumber } from "@vuu-ui/vuu-utils";
+import {
+  isValidNumber,
+  useResizeObserver,
+  type ResizeHandler,
+} from "@vuu-ui/vuu-utils";
 import {
   CSSProperties,
   RefObject,
@@ -9,7 +13,6 @@ import {
   useState,
 } from "react";
 import { MeasuredContainerProps } from "./MeasuredContainer";
-import { useResizeObserver, ResizeHandler } from "./useResizeObserver";
 
 const ClientWidthHeight = ["clientHeight", "clientWidth"];
 const WidthOnly = ["clientWidth"];

@@ -14,6 +14,7 @@ import {
   Switch,
   ValidationStatus,
 } from "@salt-ds/core";
+import { DismissalStyle } from "@vuu-ui/vuu-notifications/src/NotificationsContext";
 
 // this example allows to fire notifications dynamically when wrapped in NotificationsProvider
 const Notifications = () => {
@@ -23,6 +24,7 @@ const Notifications = () => {
   >(undefined);
   const [header, setHeader] = useState<string>("Header");
   const [body, setBody] = useState<string>("Body");
+  const [dismissal, setDismissal] = useState<DismissalStyle>("automatic");
   const [showCloseButton, setShowCloseButton] = useState(false);
   const [icon, setIcon] = useState(true);
 
@@ -32,9 +34,10 @@ const Notifications = () => {
     showNotification({
       animationType,
       content: body,
+      dismissal,
       header,
-      icon,
-      showCloseButton,
+      icon: icon === false ? false : undefined,
+      showCloseButton: showCloseButton || undefined,
       status: type,
       type: "toast",
     });
@@ -116,6 +119,21 @@ const Notifications = () => {
         />
       </FormField>
       <FormField>
+        <FormFieldLabel>Dismissal</FormFieldLabel>
+        <Dropdown<DismissalStyle | "none">
+          bordered
+          selected={[dismissal]}
+          onSelectionChange={(_, [selectedItem]) => {
+            if (selectedItem) {
+              setDismissal(selectedItem as DismissalStyle);
+            }
+          }}
+        >
+          <Option value="automatic">Automatic</Option>
+          <Option value="manual">Manual</Option>
+        </Dropdown>
+      </FormField>
+      <FormField>
         <FormFieldLabel>Include Icon</FormFieldLabel>
         <Switch
           onChange={(event: ChangeEvent<HTMLInputElement>) =>
@@ -139,7 +157,6 @@ export const SuccessNotificationToast = () => (
   <>
     <ToastNotification
       top={20}
-      animated={false}
       notification={{
         header: "Header and Icon notification",
         status: "success",
@@ -149,7 +166,6 @@ export const SuccessNotificationToast = () => (
 
     <ToastNotification
       top={100}
-      animated={false}
       notification={{
         content: "Header, Content and Icon",
         header: "Layout Saved Successfully",
@@ -160,7 +176,6 @@ export const SuccessNotificationToast = () => (
 
     <ToastNotification
       top={200}
-      animated={false}
       notification={{
         icon: false,
         header: "Header only",
@@ -171,7 +186,6 @@ export const SuccessNotificationToast = () => (
 
     <ToastNotification
       top={300}
-      animated={false}
       notification={{
         content: "Header and Content without Icon",
         icon: false,
@@ -183,7 +197,6 @@ export const SuccessNotificationToast = () => (
 
     <ToastNotification
       top={400}
-      animated={false}
       notification={{
         content: "Header and Content without Icon",
         icon: false,
@@ -199,7 +212,6 @@ export const SuccessNotificationToast = () => (
 export const ErrorNotificationToast = () => (
   <ToastNotification
     top={20}
-    animated={false}
     notification={{
       content: "This didn't work",
       header: "This Didn't Work",
@@ -212,7 +224,6 @@ export const ErrorNotificationToast = () => (
 export const WarningNotificationToast = () => (
   <ToastNotification
     top={20}
-    animated={false}
     notification={{
       content: "This probably won't work",
       header: "This probably won't work",
@@ -225,7 +236,6 @@ export const WarningNotificationToast = () => (
 export const InfoNotificationToast = () => (
   <ToastNotification
     top={20}
-    animated={false}
     notification={{
       content: "This is Info Body",
       header: "This is Info Title",
@@ -246,7 +256,6 @@ export const CustomCssOverride = () => (
     `}</style>
     <ToastNotification
       top={20}
-      animated={false}
       notification={{
         header: "This is Info Title",
         status: "success",

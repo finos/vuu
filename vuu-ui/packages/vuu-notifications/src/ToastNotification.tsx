@@ -8,6 +8,8 @@ import type { ToastNotificationDescriptor } from "./NotificationsContext";
 
 import toastNotificationCss from "./ToastNotification.css";
 
+export type ToastHoverHandler = (id?: string) => void;
+
 export type ToastNotificationProps = {
   hidden?: boolean;
   id?: string;
@@ -15,6 +17,8 @@ export type ToastNotificationProps = {
   notification: ToastNotificationDescriptor;
   onMeasured?: (id: string, height: number, width: number) => void;
   onDismiss?: (id?: string) => void;
+  onHoverEntry?: ToastHoverHandler;
+  onHoverExit?: ToastHoverHandler;
   opacity?: number;
   top?: number;
 };
@@ -29,6 +33,8 @@ export const ToastNotification = ({
   onMeasured,
   top,
   notification,
+  onHoverEntry,
+  onHoverExit,
   opacity = 1,
 }: ToastNotificationProps) => {
   const targetWindow = useWindow();
@@ -40,8 +46,15 @@ export const ToastNotification = ({
 
   const { Component: FloatingComponent } = useFloatingComponent();
 
-  const { animationType, content, header, icon, showCloseButton, status } =
-    notification;
+  const {
+    animationType,
+    content,
+    dismissal,
+    header,
+    icon,
+    showCloseButton,
+    status,
+  } = notification;
 
   const iconName = icon === false ? undefined : (icon ?? status);
 
@@ -63,9 +76,22 @@ export const ToastNotification = ({
     onDismiss?.(id);
   }, [id, onDismiss]);
 
-  console.log(
-    `ToastNotification opacity=${opacity} hidden=${hidden} left=${left}`,
+  const handleMouseEnter = useCallback(
+    () => onHoverEntry?.(id),
+    [id, onHoverEntry],
   );
+  const handleMouseLeave = useCallback(
+    () => onHoverExit?.(id),
+    [id, onHoverExit],
+  );
+
+  if (dismissal === "manual" && showCloseButton === false) {
+    console.warn(
+      "[ToastNotification] invalid props, if dismissal is manual, showCloseButton should not be false",
+    );
+  }
+
+  const withCloseButton = showCloseButton || dismissal === "manual";
 
   return (
     <FloatingComponent
@@ -75,19 +101,22 @@ export const ToastNotification = ({
         [`${classBase}-withContent`]: content !== undefined,
         [`${classBase}-withIcon`]: icon !== false,
         [`${classBase}-withTransition`]: animationType !== undefined && !hidden,
-        [`${classBase}-withCloseButton`]: showCloseButton,
+        [`${classBase}-withCloseButton`]: withCloseButton,
       })}
       id={id}
       left={left}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       open
       position="absolute"
       ref={callbackRef}
+      role="alert"
       top={top}
     >
       {iconName ? <Icon name={iconName} /> : null}
       <h3 className={`${classBase}-header`}>{header}</h3>
       {content ? <div className={`${classBase}-content`}>{content}</div> : null}
-      {showCloseButton ? (
+      {withCloseButton ? (
         <IconButton
           className={`${classBase}-closeButton`}
           icon="close"

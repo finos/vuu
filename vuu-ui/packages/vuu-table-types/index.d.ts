@@ -436,12 +436,7 @@ export interface TableSettingsProps {
   permissions?: TableSettingsPermissions | boolean;
 }
 
-export interface SettingsPermissions {
-  allowColumnSettings: boolean;
-  allowTableSettings: boolean | TableSettingsPermissions;
-}
-
-export interface ColumnMenuPermissions extends SettingsPermissions {
+export interface ColumnMenuPermissions {
   allowSort?: boolean;
   allowGroup?: boolean;
   allowAggregation?: boolean;

@@ -1,10 +1,9 @@
 import cx from "clsx";
-import { HTMLAttributes, ReactNode, SyntheticEvent, useCallback } from "react";
+import { HTMLAttributes, ReactNode } from "react";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 
 import tableFooterCss from "./TableFooter.css";
-import { queryClosest } from "@vuu-ui/vuu-utils";
 
 export interface TableFooterProps extends HTMLAttributes<HTMLDivElement> {
   onInvokeAction?: (action: string) => void;
@@ -30,18 +29,6 @@ export const TableFooter = ({
     css: tableFooterCss,
     window: targetWindow,
   });
-
-  const handleAction = useCallback(
-    (e: SyntheticEvent<HTMLButtonElement>) => {
-      const {
-        dataset: { action },
-      } = queryClosest(e.target, "[data-action]", true);
-      if (action) {
-        onInvokeAction?.(action);
-      }
-    },
-    [onInvokeAction],
-  );
 
   return (
     <div {...htmlAttributes} className={cx(classBase, className)}>

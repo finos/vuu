@@ -14,7 +14,7 @@ import {
   NotificationsContext,
   ToastNotificationDescriptor,
 } from "./NotificationsContext";
-import { ToastNotification } from "./ToastNotification";
+import { ToastHoverHandler, ToastNotification } from "./ToastNotification";
 import { WorkspaceNotification } from "./WorkspaceNotification";
 import { MeasuredSize } from "@vuu-ui/vuu-ui-controls";
 
@@ -39,6 +39,7 @@ interface RuntimeToastNotification extends ToastNotificationDescriptor {
 // animation times in milliseconds
 const toastOffsetTop = 60;
 const toastDisplayDuration = 6000;
+const toastDisplayDurationPostHover = 2000;
 
 const toastContainerContentGap = 10;
 // rightPadding is used together with the toastWidth to compute the toast position
@@ -64,12 +65,10 @@ export const NotificationsCenter = ({
     [startupToastNotification],
   );
 
-  // TODO set up a resize observer
-  const pageWidth = useMemo(() => document.body.clientWidth, []);
-
   const [workspaceNotification, setWorkspaceNotification] =
     useState<ReactNode>(null);
 
+  const hoveredToastRef = useRef<string | undefined>(undefined);
   const notificationsRef = useRef<RuntimeToastNotification[]>(NO_NOTIFICATIONS);
   const [notifications, _setNotifications] =
     useState<RuntimeToastNotification[]>(toastNotifications);
@@ -135,6 +134,7 @@ export const NotificationsCenter = ({
   const onMeasured = useCallback(
     (id: string, height: number, width: number) => {
       let scheduledUpdate: RuntimeToastNotification | undefined = undefined;
+      const pageWidth = document.body.clientWidth;
 
       setNotifications(
         notificationsRef.current.map((n) => {
@@ -179,12 +179,11 @@ export const NotificationsCenter = ({
           }
         });
         requestAnimationFrame(() => {
-          console.log("raf");
           setNotifications(updateNotifications);
         });
       }
     },
-    [pageWidth, setNotifications],
+    [setNotifications],
   );
 
   useEffect(() => {
@@ -195,10 +194,11 @@ export const NotificationsCenter = ({
         const notification = notificationsRef.current.find((n) => n.id === id);
         if (notification?.transitionStatus === "exit") {
           setNotifications(notificationsRef.current.filter((n) => n.id !== id));
-        } else {
+        } else if (notification?.dismissal !== "manual") {
           setTimeout(() => {
             // In case notification has been manually cancelled ...
-            if (notification) {
+            if (notification && hoveredToastRef.current !== id) {
+              const pageWidth = document.body.clientWidth;
               setNotifications(
                 notificationsRef.current
                   .map((n) => {
@@ -227,13 +227,54 @@ export const NotificationsCenter = ({
         }
       }
     });
-  }, [pageWidth, setNotifications]);
+  }, [setNotifications]);
 
   const handleDismiss = useCallback(
     (id?: string) => {
       if (id) {
         setNotifications(notificationsRef.current.filter((n) => n.id !== id));
       }
+    },
+    [setNotifications],
+  );
+
+  const handleHoverEntry = useCallback<ToastHoverHandler>((id) => {
+    hoveredToastRef.current = id;
+  }, []);
+
+  const handleHoverExit = useCallback<ToastHoverHandler>(
+    (id) => {
+      hoveredToastRef.current = undefined;
+      const notification = notificationsRef.current.find((n) => n.id === id);
+      setTimeout(() => {
+        // In case notification has been manually cancelled ...
+        if (notification) {
+          const pageWidth = document.body.clientWidth;
+          setNotifications(
+            notificationsRef.current
+              .map((n) => {
+                if (n.id === id) {
+                  if (n.animationType?.includes("slide-out")) {
+                    return {
+                      ...n,
+                      transitionStatus: "exit" as TransitionStatus,
+                      left: pageWidth + toastContainerRightPadding,
+                    };
+                  } else {
+                    return {
+                      ...n,
+                      transitionStatus: "exit" as TransitionStatus,
+                      opacity: 0,
+                    };
+                  }
+                } else {
+                  return n;
+                }
+              })
+              .filter((v) => v !== null),
+          );
+        }
+      }, toastDisplayDurationPostHover);
     },
     [setNotifications],
   );
@@ -251,6 +292,8 @@ export const NotificationsCenter = ({
               key={id}
               left={left}
               notification={toast}
+              onHoverEntry={handleHoverEntry}
+              onHoverExit={handleHoverExit}
               onMeasured={onMeasured}
               onDismiss={handleDismiss}
               opacity={opacity}

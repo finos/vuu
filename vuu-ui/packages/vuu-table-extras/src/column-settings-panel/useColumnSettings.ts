@@ -16,8 +16,6 @@ import {
   updateColumnFormatting,
   updateColumnType,
   queryClosest,
-  isCalculatedColumn,
-  getCalculatedColumnDetails,
   getServerDataType,
 } from "@vuu-ui/vuu-utils";
 import { VuuColumnDataType, VuuTable } from "@vuu-ui/vuu-protocol-types";

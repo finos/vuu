@@ -72,6 +72,13 @@ export * from "./url-utils";
 export * from "./useId";
 export * from "./useLayoutEffectSkipFirst";
 export * from "./user-types";
+export {
+  WidthHeight,
+  WidthOnly,
+  useResizeObserver,
+  type measurements,
+  type ResizeHandler,
+} from "./useResizeObserver";
 export * from "./useStateRef";
 
 /** Context declarations hosted in utils to minimize intra package dependencies */

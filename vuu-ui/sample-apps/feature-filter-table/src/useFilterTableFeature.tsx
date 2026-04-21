@@ -66,7 +66,7 @@ export const useFilterTableFeature = ({
   });
 
   const {
-    "available-columns": availableColumnsFromState,
+    // "available-columns": availableColumnsFromState,
     "datasource-config": datasourceConfigFromState,
     "filter-config": filterConfigFromState,
     "table-config": tableConfigFromState,

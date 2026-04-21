@@ -304,7 +304,7 @@ const TableCore = ({
   id: idProp,
   lowerCaseSearchPattern,
   navigationStyle = "cell",
-  onAvailableColumnsChange,
+  // onAvailableColumnsChange,
   onConfigChange,
   onDataEdited: onDataEditedProp,
   onDragStart,

@@ -9,13 +9,11 @@ import {
 import { IconButton } from "@vuu-ui/vuu-ui-controls";
 import cx from "clsx";
 import { HTMLAttributes, MouseEventHandler, useCallback } from "react";
-import { defaultTableSettingsPermissions } from "../table-settings-panel/TableSettingsPanel";
 import { useTableContext } from "../table-provider/TableProvider";
 import {
   buildAggregationMenuItems,
   buildGroupMenu,
   buildPinMenuItems,
-  buildSettingsMenuItems,
   buildSortMenu,
   buildVisibilityMenuItems,
   ColumnMenuActionType,
@@ -34,8 +32,6 @@ const defaultColumnMenuPermissions: Readonly<ColumnMenuPermissions> = {
   allowHide: true,
   allowRemove: true,
   allowPin: true,
-  allowColumnSettings: true,
-  allowTableSettings: defaultTableSettingsPermissions,
 };
 
 export interface ColumnMenuProps extends HTMLAttributes<HTMLSpanElement> {
@@ -55,8 +51,6 @@ export const ColumnMenu = ({
     allowHide,
     allowRemove,
     allowPin,
-    allowColumnSettings,
-    allowTableSettings,
   } = defaultColumnMenuPermissions,
 }: ColumnMenuProps) => {
   const targetWindow = useWindow();
@@ -103,11 +97,6 @@ export const ColumnMenu = ({
     allowRemove,
   );
   const pinMenu = buildPinMenuItems(column, menuActionClickHandler, allowPin);
-  const settingsMenuItems = buildSettingsMenuItems(
-    column,
-    menuActionClickHandler,
-    allowColumnSettings,
-  );
 
   const handleClick = useCallback<MouseEventHandler<HTMLButtonElement>>(
     (evt) => {
@@ -136,7 +125,6 @@ export const ColumnMenu = ({
         {aggregationMenu}
         {visibilityMenuItems}
         {pinMenu}
-        {settingsMenuItems}
       </MenuPanel>
     </Menu>
   );
