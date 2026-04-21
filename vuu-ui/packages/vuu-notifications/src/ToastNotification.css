@@ -1,4 +1,5 @@
 .vuuToastNotification {
+    --toast-transition-duration: .4s;
     --padding-base: var(--vuuToast-padding, var(--salt-spacing-300));
 
     align-items: center;;
@@ -15,8 +16,21 @@
     grid-template-columns: auto;
     max-width: var(--vuuToast-maxWidth, 600px);
     min-width: var(--vuuToast-minWidth, 300px);
+    opacity: 1;
     padding: var(--padding-base);
     row-gap: var(--salt-spacing-100);
+    transition: opacity .4s;
+
+    &.vuuToastNotification-hidden {
+        visibility: hidden;
+    }
+
+    &.vuuToastNotification-withCloseButton {
+        grid-template-areas: var(--vuuToast-grid-template-areas, 
+        "toast-header close-button"
+        );
+        grid-template-columns: 1fr 36px;
+    }
 
     &.vuuToastNotification-withIcon {
         grid-template-areas: var(--vuuToast-grid-template-areas, 
@@ -25,11 +39,34 @@
         grid-template-columns: var(--vuuToast-gridTemplateColumns, 36px auto);
     }
 
+    &.vuuToastNotification-withIcon.vuuToastNotification-withCloseButton {
+        grid-template-areas: var(--vuuToast-grid-template-areas, 
+        "toast-icon toast-header close-button"
+        );
+        grid-template-columns: var(--vuuToast-gridTemplateColumns, 36px auto 36px);
+    }
+
     &.vuuToastNotification-withContent {
         grid-template-areas: var(--vuuToast-grid-template-areas, 
         "toast-header"
         "toast-content"
         );
+    }
+    &.vuuToastNotification-withContent.vuuToastNotification-withCloseButton {
+        grid-template-areas: var(--vuuToast-grid-template-areas, 
+        "toast-header close-button"
+        "toast-content close-button"
+        );
+        grid-template-columns: 1fr 36px;
+    }
+
+    &.vuuToastNotification-withTransition {
+        transition: top .2s ease-out, left var(--toast-transition-duration) ease-in, opacity .4s;
+    }
+
+    &.vuuToastNotification-transparent {
+        opacity: 0;
+        transition: top .2s ease-out, opacity .4s;
     }
 
     &.vuuToastNotification-withIcon.vuuToastNotification-withContent {
@@ -38,6 +75,14 @@
         "toast-icon toast-content"
         );
         grid-template-columns: var(--vuuToast-gridTemplateColumns, 36px auto);
+    }
+
+    &.vuuToastNotification-withIcon.vuuToastNotification-withContent.vuuToastNotification-withCloseButton {
+        grid-template-areas: var(--vuuToast-grid-template-areas, 
+        "toast-icon toast-header close-button"
+        "toast-icon toast-content close-button"
+        );
+        grid-template-columns: var(--vuuToast-gridTemplateColumns, 36px auto 36px);
     }
 
     &.vuuToastNotification-error {
@@ -49,6 +94,16 @@
         --toast-background: var(--vuuToast-success-background, var(--salt-container-primary-background));
         --toast-foreground: var(--vuuToast-success-foreground, var(--salt-content-primary-foreground));
         --vuu-icon-svg: var(--vuuToast-success-icon, var(--vuu-svg-tick));
+    }
+    &.vuuToastNotification-warning {
+        --toast-background: var(--vuuToast-warning-background, var(--salt-container-primary-background));
+        --toast-foreground: var(--vuuToast-warning-foreground, var(--salt-content-primary-foreground));
+        --vuu-icon-svg: var(--vuuToast-warning-icon, var(--vuu-svg-tick));
+    }
+    &.vuuToastNotification-info {
+        --toast-background: var(--vuuToast-info-background, var(--salt-container-primary-background));
+        --toast-foreground: var(--vuuToast-info-foreground, var(--salt-content-primary-foreground));
+        --vuu-icon-svg: var(--vuuToast-info-icon, var(--vuu-svg-tick));
     }
 
     .vuuIcon {
@@ -65,10 +120,17 @@
         justify-self: start;
         line-height: var(--salt-text-h3-lineHeight);
         margin: 0;
+        white-space: nowrap;
     }
 
     .vuuToastNotification-content {
         grid-area: toast-content;
         justify-self: start;
     }
+
+    .vuuToastNotification-closeButton {
+        grid-area: close-button;
+        justify-self: center;
+    }
+
 }

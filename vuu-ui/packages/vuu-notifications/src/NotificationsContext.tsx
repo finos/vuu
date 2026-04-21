@@ -12,8 +12,6 @@ export const NotificationType = {
 
 export type NotificationType = ValueOf<typeof NotificationType>;
 
-export type DismissType = "manual" | "automatic" | "both";
-
 export type NotificationAnimationType =
   | "slide-in"
   | "slide-out"
@@ -21,9 +19,9 @@ export type NotificationAnimationType =
 
 interface NotificationDescriptorBase<T extends NotificationType> {
   animationType?: NotificationAnimationType;
-  dismiss?: DismissType;
   icon?: string | false;
   renderPostRefresh?: boolean;
+  showCloseButton?: boolean;
   status: ValidationStatus;
   type: T;
 }

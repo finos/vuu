@@ -4,5 +4,9 @@
         --vuuToast-error-foreground: white;
         --vuuToast-success-background: var(--salt-status-success-bold-background);
         --vuuToast-success-foreground: white;
+        --vuuToast-warning-background: var(--salt-status-warning-bold-background);
+        --vuuToast-warning-foreground: white;
+        --vuuToast-info-background: var(--salt-status-info-bold-background);
+        --vuuToast-info-foreground: white;
     }
 }

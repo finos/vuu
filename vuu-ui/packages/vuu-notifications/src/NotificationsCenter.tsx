@@ -1,5 +1,12 @@
 import { getUniqueId, saveLocalEntity } from "@vuu-ui/vuu-utils";
-import { ReactNode, useCallback, useMemo, useState } from "react";
+import {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   isToastNotification,
   isWorkspaceNotification,
@@ -7,24 +14,31 @@ import {
   NotificationsContext,
   ToastNotificationDescriptor,
 } from "./NotificationsContext";
-import { TOAST_HEIGHT, ToastNotification } from "./ToastNotification";
+import { ToastNotification } from "./ToastNotification";
 import { WorkspaceNotification } from "./WorkspaceNotification";
+import { MeasuredSize } from "@vuu-ui/vuu-ui-controls";
 
+const ZeroSize: MeasuredSize = { height: 0, width: 0 };
+const toastContainerRightPadding = 20;
+const NO_NOTIFICATIONS: RuntimeToastNotification[] = [];
 export interface NotificationsCenterProps {
   notificationsContext: NotificationsContext;
   startupToastNotification?: ToastNotificationDescriptor;
 }
 
-interface ToastNotificationWithId extends ToastNotificationDescriptor {
+type TransitionStatus = "entry" | "exit";
+interface RuntimeToastNotification extends ToastNotificationDescriptor {
+  hidden: boolean;
   id: string;
+  left: number;
+  opacity?: number;
+  size: MeasuredSize;
+  transitionStatus?: TransitionStatus;
 }
 
 // animation times in milliseconds
 const toastOffsetTop = 60;
-// const toastDisplayDuration = 6000;
-const toastDisplayDuration = 6000000;
-// const horizontalTransitionDuration = 1000;
-const horizontalTransitionDuration = 100000000;
+const toastDisplayDuration = 6000;
 
 const toastContainerContentGap = 10;
 // rightPadding is used together with the toastWidth to compute the toast position
@@ -34,55 +48,81 @@ export const NotificationsCenter = ({
   notificationsContext,
   startupToastNotification,
 }: NotificationsCenterProps) => {
-  const toastNotifications = useMemo<ToastNotificationWithId[]>(
+  const toastNotifications = useMemo<RuntimeToastNotification[]>(
     () =>
       startupToastNotification
         ? [
             {
               ...startupToastNotification,
+              hidden: false,
               id: getUniqueId(),
+              left: -1,
+              size: ZeroSize,
             },
           ]
         : [],
     [startupToastNotification],
   );
 
+  // TODO set up a resize observer
+  const pageWidth = useMemo(() => document.body.clientWidth, []);
+
   const [workspaceNotification, setWorkspaceNotification] =
     useState<ReactNode>(null);
 
-  const [notifications, setNotifications] =
-    useState<ToastNotificationWithId[]>(toastNotifications);
+  const notificationsRef = useRef<RuntimeToastNotification[]>(NO_NOTIFICATIONS);
+  const [notifications, _setNotifications] =
+    useState<RuntimeToastNotification[]>(toastNotifications);
 
-  const showNotification = useCallback((notification: Notification) => {
-    if (isToastNotification(notification)) {
-      if (notification.renderPostRefresh) {
-        saveLocalEntity("startup-notification", {
-          ...notification,
-          expires: +new Date() + 10000,
-        });
-      } else {
-        const newNotification: ToastNotificationWithId = {
-          ...notification,
-          id: getUniqueId(),
-        };
-        setNotifications((prev) => prev.concat(newNotification));
-        setTimeout(
-          () => {
-            setNotifications((prev) =>
-              prev.filter((n) => n !== newNotification),
+  const setNotifications = useCallback(
+    (notifications: RuntimeToastNotification[]) => {
+      _setNotifications((notificationsRef.current = notifications));
+    },
+    [],
+  );
+
+  const showNotification = useCallback(
+    (notification: Notification) => {
+      if (isToastNotification(notification)) {
+        const { animationType = "none", renderPostRefresh } = notification;
+        if (renderPostRefresh) {
+          saveLocalEntity("startup-notification", {
+            ...notification,
+            expires: +new Date() + 10000,
+          });
+        } else {
+          if (animationType.includes("slide-in")) {
+            setNotifications(
+              notificationsRef.current.concat({
+                ...notification,
+                hidden: true,
+                id: getUniqueId(),
+                left: -1,
+                size: ZeroSize,
+              }),
             );
-          },
-          toastDisplayDuration + horizontalTransitionDuration * 2,
+          } else
+            setNotifications(
+              notificationsRef.current.concat({
+                ...notification,
+                hidden: false,
+                id: getUniqueId(),
+                left: -1,
+                opacity: 0,
+                size: ZeroSize,
+              }),
+            );
+        }
+      } else if (isWorkspaceNotification(notification)) {
+        setWorkspaceNotification(
+          <WorkspaceNotification>{notification.content}</WorkspaceNotification>,
         );
+      } else {
+        throw Error("[NotificationsCenter] invalid notification received");
       }
-    } else if (isWorkspaceNotification(notification)) {
-      setWorkspaceNotification(
-        <WorkspaceNotification>{notification.content}</WorkspaceNotification>,
-      );
-    } else {
-      throw Error("[NotificationsCenter] invalid notification received");
-    }
-  }, []);
+    },
+    [setNotifications],
+  );
 
   const hideNotification = useCallback(() => {
     setWorkspaceNotification(null);
@@ -92,16 +132,123 @@ export const NotificationsCenter = ({
     notificationsContext.setNotify(showNotification, hideNotification);
   }, [hideNotification, notificationsContext, showNotification]);
 
+  const onMeasured = useCallback(
+    (id: string, height: number, width: number) => {
+      let scheduledUpdate: RuntimeToastNotification | undefined = undefined;
+
+      setNotifications(
+        notificationsRef.current.map((n) => {
+          if (n.id === id) {
+            const slideIn = n.animationType?.includes("slide-in");
+            const newToast: RuntimeToastNotification = {
+              ...n,
+              hidden: slideIn ? true : false,
+              left: slideIn
+                ? pageWidth + width - toastContainerRightPadding
+                : pageWidth - width - toastContainerRightPadding,
+              size: { height, width },
+              transitionStatus: "entry",
+            };
+
+            if (slideIn) {
+              scheduledUpdate = {
+                ...newToast,
+                hidden: false,
+                left: pageWidth - width - toastContainerRightPadding,
+              };
+            } else {
+              scheduledUpdate = {
+                ...newToast,
+                opacity: 1,
+              };
+            }
+
+            return newToast;
+          } else {
+            return n;
+          }
+        }),
+      );
+
+      if (scheduledUpdate) {
+        const updateNotifications = notificationsRef.current.map((n) => {
+          if (n.id === scheduledUpdate?.id) {
+            return scheduledUpdate;
+          } else {
+            return n;
+          }
+        });
+        requestAnimationFrame(() => {
+          console.log("raf");
+          setNotifications(updateNotifications);
+        });
+      }
+    },
+    [pageWidth, setNotifications],
+  );
+
+  useEffect(() => {
+    // This handles both the entry transition and the exit transition
+    document.body.addEventListener("transitionend", (e) => {
+      const { classList, id } = e.target as HTMLElement;
+      if (classList?.contains("vuuToastNotification")) {
+        const notification = notificationsRef.current.find((n) => n.id === id);
+        if (notification?.transitionStatus === "exit") {
+          setNotifications(notificationsRef.current.filter((n) => n.id !== id));
+        } else {
+          setTimeout(() => {
+            // In case notification has been manually cancelled ...
+            if (notification) {
+              setNotifications(
+                notificationsRef.current
+                  .map((n) => {
+                    if (n.id === id) {
+                      if (n.animationType?.includes("slide-out")) {
+                        return {
+                          ...n,
+                          transitionStatus: "exit" as TransitionStatus,
+                          left: pageWidth + toastContainerRightPadding,
+                        };
+                      } else {
+                        return {
+                          ...n,
+                          transitionStatus: "exit" as TransitionStatus,
+                          opacity: 0,
+                        };
+                      }
+                    } else {
+                      return n;
+                    }
+                  })
+                  .filter((v) => v !== null),
+              );
+            }
+          }, toastDisplayDuration);
+        }
+      }
+    });
+  }, [pageWidth, setNotifications]);
+
   return (
     <>
       {workspaceNotification}
-      {notifications.map((notification, i) => (
-        <ToastNotification
-          top={toastOffsetTop + (TOAST_HEIGHT + toastContainerContentGap) * i}
-          notification={notification}
-          key={notification.id}
-        />
-      ))}
+      {notifications.map(
+        ({ hidden, id, left = 0, opacity, size, ...toast }, i) => {
+          const height = size ? size.height : 80;
+          return (
+            <ToastNotification
+              hidden={hidden}
+              id={id}
+              key={id}
+              left={left}
+              notification={toast}
+              onMeasured={onMeasured}
+              opacity={opacity}
+              top={toastOffsetTop + (height + toastContainerContentGap) * i}
+            />
+          );
+        },
+      )}
     </>
   );
 };
