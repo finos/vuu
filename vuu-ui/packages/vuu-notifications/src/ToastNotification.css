@@ -19,7 +19,7 @@
     opacity: 1;
     padding: var(--padding-base);
     row-gap: var(--salt-spacing-100);
-    transition: opacity .4s;
+    transition: opacity .4s, top;
 
     &.vuuToastNotification-hidden {
         visibility: hidden;
@@ -128,9 +128,12 @@
         justify-self: start;
     }
 
-    .vuuToastNotification-closeButton {
+    .vuuToastNotification-closeButton.saltButton {
         grid-area: close-button;
         justify-self: center;
+        .vuuIcon {
+            --vuu-icon-size: 16px;
+        }
     }
 
 }

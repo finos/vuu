@@ -229,6 +229,15 @@ export const NotificationsCenter = ({
     });
   }, [pageWidth, setNotifications]);
 
+  const handleDismiss = useCallback(
+    (id?: string) => {
+      if (id) {
+        setNotifications(notificationsRef.current.filter((n) => n.id !== id));
+      }
+    },
+    [setNotifications],
+  );
+
   return (
     <>
       {workspaceNotification}
@@ -243,6 +252,7 @@ export const NotificationsCenter = ({
               left={left}
               notification={toast}
               onMeasured={onMeasured}
+              onDismiss={handleDismiss}
               opacity={opacity}
               top={toastOffsetTop + (height + toastContainerContentGap) * i}
             />

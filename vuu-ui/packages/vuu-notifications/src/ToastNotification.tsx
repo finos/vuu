@@ -14,29 +14,29 @@ export type ToastNotificationProps = {
   left?: number;
   notification: ToastNotificationDescriptor;
   onMeasured?: (id: string, height: number, width: number) => void;
+  onDismiss?: (id?: string) => void;
   opacity?: number;
   top?: number;
 };
 
 const classBase = "vuuToastNotification";
 
-export const ToastNotification = (props: ToastNotificationProps) => {
+export const ToastNotification = ({
+  hidden,
+  id,
+  left,
+  onDismiss,
+  onMeasured,
+  top,
+  notification,
+  opacity = 1,
+}: ToastNotificationProps) => {
   const targetWindow = useWindow();
   useComponentCssInjection({
     testId: "vuu-toast-notification",
     css: toastNotificationCss,
     window: targetWindow,
   });
-
-  const {
-    hidden,
-    id,
-    left,
-    onMeasured,
-    top,
-    notification,
-    opacity = 1,
-  } = props;
 
   const { Component: FloatingComponent } = useFloatingComponent();
 
@@ -58,6 +58,10 @@ export const ToastNotification = (props: ToastNotificationProps) => {
     },
     [id, onMeasured],
   );
+
+  const handleDismiss = useCallback(() => {
+    onDismiss?.(id);
+  }, [id, onDismiss]);
 
   console.log(
     `ToastNotification opacity=${opacity} hidden=${hidden} left=${left}`,
@@ -87,6 +91,7 @@ export const ToastNotification = (props: ToastNotificationProps) => {
         <IconButton
           className={`${classBase}-closeButton`}
           icon="close"
+          onClick={handleDismiss}
           appearance="transparent"
           sentiment="neutral"
         />
