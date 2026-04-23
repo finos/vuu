@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@lezer/common": "^1.0.2",
-    "@lezer/lr": "1.4.2",
+    "@lezer/lr": "1.4.10",
     "@vuu-ui/vuu-utils": "2.0.0"
   }
 }
