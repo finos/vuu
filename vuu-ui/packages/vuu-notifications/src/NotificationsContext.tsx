@@ -12,6 +12,8 @@ export const NotificationType = {
 
 export type NotificationType = ValueOf<typeof NotificationType>;
 
+export type DismissalStyle = "automatic" | "manual";
+
 export type NotificationAnimationType =
   | "slide-in"
   | "slide-out"
@@ -19,14 +21,26 @@ export type NotificationAnimationType =
 
 interface NotificationDescriptorBase<T extends NotificationType> {
   animationType?: NotificationAnimationType;
+  /**
+   * 'automatic' dismissal means the Notification will be removed after a configurable delay
+   * (6 seconds by default). 'manual' means a close button will be rendered and user must
+   * manually dismiss by clicking the close button.
+   */
+  dismissal?: DismissalStyle;
+  /**
+   * A custom icon can be provided or false can be used to suppress rendering of any icon.
+   * Default icons will be rendered for the different status values.
+   */
+  icon?: string | false;
   renderPostRefresh?: boolean;
+  showCloseButton?: boolean;
   status: ValidationStatus;
   type: T;
 }
 
 export interface ToastNotificationDescriptor
   extends NotificationDescriptorBase<"toast"> {
-  content: string;
+  content?: ReactNode;
   header: string;
 }
 

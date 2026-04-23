@@ -1,4 +1,3 @@
-import { SchemaColumn } from "@vuu-ui/vuu-data-types";
 import { SimulTable } from "./SimulTableTemplate";
 import { toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { getSchema } from "@vuu-ui/vuu-data-test";
@@ -13,17 +12,8 @@ export const AllColumnsSubscribed = () => {
 };
 
 export const AllColumnsSubscribedNotAllRendered = () => {
-  const availableColumns: SchemaColumn[] = [
-    { name: "bbg", serverDataType: "string" },
-    { name: "currency", serverDataType: "string" },
-    { name: "description", serverDataType: "string" },
-    { name: "exchange", serverDataType: "string" },
-    { name: "lotSize", serverDataType: "int" },
-    { name: "ric", serverDataType: "string" },
-  ];
   const columns = [{ name: "bbg" }, { name: "lotSize" }, { name: "ric" }];
-
-  return <SimulTable availableColumns={availableColumns} columns={columns} />;
+  return <SimulTable columns={columns} />;
 };
 
 export const SomeColumnsSubscribedWithAutoSubscribeColumns = () => {
@@ -57,7 +47,6 @@ export const SomeColumnsSubscribedWithAutoSubscribeColumns = () => {
 
   return (
     <SimulTable
-      availableColumns={schema.columns}
       columns={columns}
       dataSource={dataSource}
       tableName={tableName}
@@ -111,7 +100,6 @@ export const WithAllowRemoveColumnsOnly = () => {
 
   return (
     <SimulTable
-      availableColumns={schema.columns}
       columns={columns}
       dataSource={dataSource}
       showColumnHeaderMenus={columnHeaderMenuPermissions}

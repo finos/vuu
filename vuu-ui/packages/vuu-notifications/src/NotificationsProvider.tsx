@@ -46,7 +46,6 @@ const NotificationsContext = React.createContext<NotificationsContext>(
 export const NotificationsProvider = (props: {
   children: ReactElement | ReactElement[];
 }) => {
-  console.log(`%c[NotificationsProvider]`, "color:green;font-weight: bold;");
   const context = useContext(NotificationsContext);
   const startupToastNotification = useMemo<
     ToastNotificationDescriptor | undefined

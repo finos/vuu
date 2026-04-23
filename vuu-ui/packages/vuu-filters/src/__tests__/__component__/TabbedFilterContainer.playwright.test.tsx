@@ -8,7 +8,7 @@ import {
   SavedFilterPanelFiveFiltersCustomStyles,
 } from "../../../../../showcase/src/examples/Filters/SavedFilters/SavedFilterPanel.examples";
 import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
-import { SaltProvider } from "@salt-ds/core";
+import { SaltProviderNext } from "@salt-ds/core";
 
 test.describe("Given two TabbedFilterContainers with different values for filterProvider", () => {
   test(`When a filter value is entered 
@@ -54,11 +54,11 @@ test.describe("Given two TabbedFilterContainers with different values for filter
       And Saved Filters Tab selected 
       Then no Filter pills are present`, async ({ mount, page }) => {
     await mount(
-      <SaltProvider>
+      <SaltProviderNext>
         <LocalDataSourceProvider>
           <MultipleTabbedFilterContainers />
         </LocalDataSourceProvider>
-      </SaltProvider>,
+      </SaltProviderNext>,
     );
 
     const combobox = page.getByTestId("ccy-1").getByRole("combobox");
@@ -125,7 +125,31 @@ test.describe("Given two TabbedFilterContainers with different values for filter
 
     await inputs.nth(0).focus();
     await inputs.nth(0).press("Home");
-    await page.keyboard.type("10:00:00");
+
+    await page.waitForTimeout(60);
+    await page.keyboard.press("1");
+
+    await page.waitForTimeout(60);
+    await page.keyboard.press("0");
+
+    await page.waitForTimeout(60);
+    await page.keyboard.press(":");
+
+    await page.waitForTimeout(60);
+    await page.keyboard.press("0");
+
+    await page.waitForTimeout(60);
+    await page.keyboard.press("0");
+
+    await page.waitForTimeout(60);
+    await page.keyboard.press(":");
+
+    await page.waitForTimeout(60);
+    await page.keyboard.press("0");
+
+    await page.waitForTimeout(60);
+    await page.keyboard.press("0");
+
     await expect(inputs.nth(0)).toHaveValue("10:00:00");
     await inputs.nth(0).press("Enter");
 

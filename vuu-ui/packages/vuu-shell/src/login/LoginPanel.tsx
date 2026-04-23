@@ -96,6 +96,7 @@ export const LoginPanel = ({
         <FormField>
           <FormFieldLabel>Password</FormFieldLabel>
           <VuuInput
+            bordered
             className={`${classBase}-password`}
             inputProps={{
               type: "password",

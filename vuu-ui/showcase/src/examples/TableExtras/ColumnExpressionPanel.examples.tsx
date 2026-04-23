@@ -1,24 +1,26 @@
-import { ColumnExpressionPanel } from "@vuu-ui/vuu-table-extras";
+import { CalculatedColumnPanel, ColumnModel } from "@vuu-ui/vuu-table-extras";
 import { getSchema } from "@vuu-ui/vuu-data-test";
-import { TableConfig } from "@vuu-ui/vuu-table-types";
-import { useMemo } from "react";
+import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import { useCallback, useMemo } from "react";
 
 const instrumentPrices = { module: "SIMUL", table: "instrumentPrices" };
 
-export const DefaultColumnExpressionPanel = () => {
-  const tableConfig = useMemo<TableConfig>(() => {
-    return {
-      columns: getSchema("instrumentPrices").columns,
-      rowSeparators: true,
-      zebraStripes: true,
-    };
+export const DefaultCalculatedColumnPanel = () => {
+  const columnModel = useMemo(() => {
+    const { columns } = getSchema("instrumentPrices");
+    return new ColumnModel(columns, columns.slice(0, 10));
+  }, []);
+
+  const handleChangeColumn = useCallback((column: ColumnDescriptor) => {
+    console.log(`change column ${JSON.stringify(column)}`);
   }, []);
 
   return (
     <div style={{ margin: 10, width: 300 }}>
-      <ColumnExpressionPanel
+      <CalculatedColumnPanel
         column={{ name: "::", serverDataType: "string" }}
-        tableConfig={tableConfig}
+        columnModel={columnModel}
+        onChangeColumn={handleChangeColumn}
         vuuTable={instrumentPrices}
       />
     </div>

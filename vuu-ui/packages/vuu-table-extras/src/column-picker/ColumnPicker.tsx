@@ -1,4 +1,13 @@
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
 import { ColumnDescriptor } from "@vuu-ui/vuu-table-types";
+import {
+  DragDropProvider,
+  getColumnLabel,
+  isCalculatedColumn,
+  useSortable,
+} from "@vuu-ui/vuu-utils";
+import cx from "clsx";
 import {
   ForwardedRef,
   forwardRef,
@@ -9,32 +18,35 @@ import {
   useMemo,
   useRef,
 } from "react";
-import cx from "clsx";
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
-import {
-  DragDropProvider,
-  getColumnLabel,
-  useSortable,
-} from "@vuu-ui/vuu-utils";
 
-import { Input, ListBox, Option, OptionProps } from "@salt-ds/core";
-import { ColumPickerHookProps, useColumnPicker } from "./useColumnPicker";
-import { IconButton } from "@vuu-ui/vuu-ui-controls";
+import {
+  Button,
+  Input,
+  ListBox,
+  ListBoxProps,
+  Option,
+  OptionProps,
+} from "@salt-ds/core";
 import { useHighlighting } from "@vuu-ui/vuu-table";
+import { Icon, IconButton } from "@vuu-ui/vuu-ui-controls";
+import { ColumnChangeSource } from "./ColumnModel";
+import { ColumnPickerHookProps, useColumnPicker } from "./useColumnPicker";
 
 import columnPickerCss from "./ColumnPicker.css";
-import { ColumnChangeSource } from "./ColumnModel";
 
 const classBase = "vuuColumnPicker";
 export const classBaseListItem = "vuuColumnPickerListItem";
 
 export interface ColumnPickerProps
-  extends ColumPickerHookProps,
-    HTMLAttributes<HTMLDivElement> {}
+  extends ColumnPickerHookProps,
+    Pick<ListBoxProps<ColumnDescriptor>, "selected" | "onSelectionChange">,
+    HTMLAttributes<HTMLDivElement> {
+  allowCreateCalculatedColumn?: boolean;
+  onClickCreateCalculatedColumn?: MouseEventHandler<HTMLButtonElement>;
+}
 
 const searchIcon = <span data-icon="search" />;
-const NO_SELECTION: string[] = [] as const;
+const NO_SELECTION: ColumnDescriptor[] = [] as const;
 
 const useSorting = (id: string, index: number) => {
   const { handleRef: sortableHandleRef, ref: sortableRef } = useSortable({
@@ -55,7 +67,7 @@ const useSorting = (id: string, index: number) => {
 const SelectedColumnListItem = ({
   className: classNameProp,
   index,
-  column: item,
+  column,
   onRemove,
   searchPattern = "",
   ...optionProps
@@ -65,15 +77,25 @@ const SelectedColumnListItem = ({
   onRemove: MouseEventHandler<HTMLButtonElement>;
   searchPattern?: Lowercase<string>;
 }) => {
-  const { handleRef, ref } = useSorting(item.name, index);
-  const value = getColumnLabel(item as ColumnDescriptor);
+  const { handleRef, ref } = useSorting(column.name, index);
+  const value = getColumnLabel(column as ColumnDescriptor);
   const valueWithHighlighting = useHighlighting(value, searchPattern);
+
+  const handleRemoveButtonClick = useCallback<
+    MouseEventHandler<HTMLButtonElement>
+  >(
+    (e) => {
+      e.stopPropagation();
+      onRemove?.(e);
+    },
+    [onRemove],
+  );
 
   return (
     <Option
       {...optionProps}
       className={cx(classNameProp, classBaseListItem)}
-      data-name={item.name}
+      data-name={column.name}
       ref={ref}
     >
       <IconButton
@@ -83,13 +105,16 @@ const SelectedColumnListItem = ({
         ref={handleRef}
         size={16}
       />
+      {isCalculatedColumn(column.name) ? (
+        <Icon className="vuuCalculatedColumnIcon" name="function" />
+      ) : null}
       <span className={`${classBase}-text`}>{valueWithHighlighting}</span>
       <IconButton
         className={`${classBaseListItem}-action`}
         data-embedded
         appearance="transparent"
         icon="cross"
-        onClick={onRemove}
+        onClick={handleRemoveButtonClick}
         size={16}
       />
     </Option>
@@ -132,7 +157,15 @@ const AvailableColumnListItem = ({
 };
 
 export const ColumnPicker = forwardRef(function ColumnPicker(
-  { columnModel, className, ...htmlAttributes }: ColumnPickerProps,
+  {
+    allowCreateCalculatedColumn,
+    columnModel,
+    className,
+    onClickCreateCalculatedColumn,
+    onSelectionChange,
+    selected = NO_SELECTION,
+    ...htmlAttributes
+  }: ColumnPickerProps,
   forwardedRef: ForwardedRef<HTMLDivElement>,
 ) {
   const targetWindow = useWindow();
@@ -184,10 +217,15 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
     }, 300);
   }, [columnModel]);
 
+  const oneOrMoreColumnsIsCalculated = selectedColumns.some((column) =>
+    isCalculatedColumn(column.name),
+  );
   return (
     <div
       {...htmlAttributes}
-      className={cx(classBase, className)}
+      className={cx(classBase, className, {
+        [`${classBase}-withCalculated`]: oneOrMoreColumnsIsCalculated,
+      })}
       ref={forwardedRef}
     >
       <form className={`${classBase}-search`} role="search">
@@ -205,8 +243,9 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
         <DragDropProvider onDragEnd={handleDragEnd}>
           <ListBox
             className={`${classBase}-selectedList`}
+            onSelectionChange={onSelectionChange}
             ref={listRef}
-            selected={NO_SELECTION}
+            selected={selected}
           >
             {selectedColumns.map((column, index) => (
               <SelectedColumnListItem
@@ -245,6 +284,13 @@ export const ColumnPicker = forwardRef(function ColumnPicker(
           ))}
         </ListBox>
       </div>
+      {allowCreateCalculatedColumn ? (
+        <div className={`${classBase}-column-buttons`}>
+          <Button onClick={onClickCreateCalculatedColumn}>
+            Create calculated column
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 });

@@ -96,6 +96,7 @@ export const ColumnFormattingPanel = ({
           {`Renderer (data type ${column.serverDataType})`}
         </FormFieldLabel>
         <Dropdown<CellRendererDescriptor>
+          bordered
           className={cx(`${classBase}-renderer`)}
           onSelectionChange={handleChangeRenderer}
           selected={selectedCellRenderer ? [selectedCellRenderer] : []}

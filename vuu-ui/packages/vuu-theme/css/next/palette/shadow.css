@@ -1,4 +1,4 @@
-.salt-theme.salt-theme-next.vuu-theme-next[data-mode="light"] {
+.salt-theme.salt-theme-next.vuu-theme[data-mode="light"] {
   --salt-shadow-lowest: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   --salt-shadow-lower: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
   --salt-shadow-low: 0 4px 8px 0 rgba(0, 0, 0, 0.15);
@@ -6,7 +6,7 @@
   --salt-shadow-medium: 0 12px 40px 0 rgba(0, 0, 0, 0.3);
 }
 
-.salt-theme.salt-theme-next.vuu-theme-next[data-mode="dark"] {
+.salt-theme.salt-theme-next.vuu-theme[data-mode="dark"] {
   --salt-shadow-lowest: 0 1px 3px 0 rgba(0, 0, 0, 0.5);
   --salt-shadow-lower: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
   --salt-shadow-low: 0 4px 8px 0 rgba(0, 0, 0, 0.55);

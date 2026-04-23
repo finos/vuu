@@ -11,7 +11,7 @@ import {
   ColumnLayout,
   ResizePhase,
   RuntimeColumnDescriptor,
-  TableAttributes,
+  TableDisplayAttributes,
   TableConfig,
   TableHeadings,
   TableSelectionModel,
@@ -92,7 +92,7 @@ const PinnedCheckboxColumnDescriptor = (width?: number): ColumnDescriptor => ({
  * derived initially from the TableConfig provided by user, along with the
  * data-related config from DataSource.
  */
-export interface TableModel extends TableAttributes {
+export interface TableModel extends TableDisplayAttributes {
   columns: RuntimeColumnDescriptor[];
   headings: TableHeadings;
 }
@@ -354,7 +354,7 @@ const getLabel = (
 };
 
 const columnDescriptorToRuntimeColumDescriptor =
-  (tableAttributes: TableAttributes, tableSchema?: TableSchema) =>
+  (tableAttributes: TableDisplayAttributes, tableSchema?: TableSchema) =>
   (column: ColumnDescriptor, ariaColIndex: number): RuntimeColumnDescriptor => {
     const { columnDefaultWidth = DEFAULT_COLUMN_WIDTH, columnFormatHeader } =
       tableAttributes;

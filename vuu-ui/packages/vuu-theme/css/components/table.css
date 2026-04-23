@@ -22,19 +22,50 @@
       background: var(--vuu-color-gray-15);
     }
 
-
     .vuuTableRow[aria-selected="true"] {
-
-    .vuuTableCell:focus {
-      outline: solid var(--salt-focused-outlineColor) 2px;
-      
-      /** This is to achieve a white background to outline dashes */
-      box-shadow: inset 0 0 0 var(--cell-outline-width) white;
-      border-bottom: none;
+      .vuuTableCell:focus {
+        outline: solid var(--salt-focused-outlineColor) 2px;
+        
+        /** This is to achieve a white background to outline dashes */
+        box-shadow: inset 0 0 0 var(--cell-outline-width) white;
+        border-bottom: none;
+      }
     }
+  }
+}
 
+.salt-theme.vuu-theme {
+  --vuuTableCell-contextOpen-outlineColor: var(--vuu-color-orange-50);
+  --vuuTableRow-selected-background: rgb(51,52,54);
 
+  &.salt-density-high {
+    --vuu-table-row-height: 20px;
+  }
+  &.salt-density-medium {
+    --vuu-table-row-height: 28px;
+  }
+  &.salt-density-low {
+    --vuu-table-row-height: 36px;
+  }
+  &.salt-density-touch {
+    --vuu-table-row-height: 48px;
   }
 
-}
+  .vuuTable {
+      --vuuTableRow-selectionDecorator-width: 4px;
+
+    .vuuTableRow-highlighted {
+      background: var(--vuu-color-gray-15);
+    }
+    
+    .vuuTableRow[aria-selected="true"] {
+      .vuuTableCell:focus {
+        outline: solid var(--salt-focused-outlineColor) 2px;
+        
+        /** This is to achieve a white background to outline dashes */
+        box-shadow: inset 0 0 0 var(--cell-outline-width) white;
+        border-bottom: none;
+      }
+    }
+  }
 }

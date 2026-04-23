@@ -4,6 +4,7 @@ import { Feature } from "@vuu-ui/vuu-shell";
 import FilterTableFeature from "../../features/FilterTable.feature";
 import { VuuBlotterHeader } from "./VuuBlotterHeader";
 import { type DynamicFeatureProps, registerComponent } from "@vuu-ui/vuu-utils";
+import { DemoTableContainer } from "../Table/DemoTableContainer";
 
 registerComponent("FilterTableFeature", FilterTableFeature, "view");
 
@@ -13,7 +14,7 @@ export const DefaultFilterTableFeature = () => {
 
   return (
     <div style={{ height: "100%" }}>
-      <LayoutProvider>
+      <DemoTableContainer>
         <View
           Header={VuuBlotterHeader}
           id="table-next-feature"
@@ -21,11 +22,10 @@ export const DefaultFilterTableFeature = () => {
           closeable
           header
           title="Instruments"
-          style={{ width: 700, height: 500 }}
         >
           <FilterTableFeature tableSchema={schema} />
         </View>
-      </LayoutProvider>
+      </DemoTableContainer>
     </div>
   );
 };

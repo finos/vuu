@@ -1,16 +1,11 @@
 import type {
-  DataSourceConfig,
   DataSourceConfigChangeHandler,
   DataSourceSubscribedMessage,
 } from "@vuu-ui/vuu-data-types";
 import type { RpcResult, VuuSortType } from "@vuu-ui/vuu-protocol-types";
 import {
   ColumnDisplayActionHandler,
-  columnSettingsFromColumnMenuPermissions,
-  TableSettingsActionHandler,
-  tableSettingsFromColumnMenuPermissions,
   useColumnActions,
-  useTableAndColumnSettings,
 } from "@vuu-ui/vuu-table-extras";
 import type {
   ColumnPinAction,
@@ -103,10 +98,6 @@ const zeroHeaderState = {
   count: 0,
 };
 
-const stripInternalProperties = (tableConfig: TableConfig): TableConfig => {
-  return tableConfig;
-};
-
 export interface TableHookProps
   extends MeasuredProps,
     Pick<
@@ -116,14 +107,12 @@ export interface TableHookProps
       | "allowSelectCheckboxRow"
       | "autoSelectFirstRow"
       | "autoSelectRowKey"
-      | "availableColumns"
       | "config"
       | "dataSource"
       | "disableFocus"
       | "highlightedIndex"
       | "id"
       | "navigationStyle"
-      | "onAvailableColumnsChange"
       | "onConfigChange"
       | "onDataEdited"
       | "onDragStart"
@@ -136,7 +125,6 @@ export interface TableHookProps
       | "renderBufferSize"
       | "revealSelected"
       | "scrollingApiRef"
-      | "showColumnHeaderMenus"
       | "showColumnHeaders"
       | "showPaginationControls"
     > {
@@ -155,21 +143,12 @@ const NULL_DRAG_DROP = {
 };
 const useNullDragDrop = () => NULL_DRAG_DROP;
 
-const addColumn = (
-  tableConfig: TableConfig,
-  column: ColumnDescriptor,
-): TableConfig => ({
-  ...tableConfig,
-  columns: tableConfig.columns.concat(column),
-});
-
 export const useTable = ({
   allowCellBlockSelection,
   allowSelectCheckboxRow,
   allowDragDrop = false,
   autoSelectFirstRow,
   autoSelectRowKey,
-  availableColumns,
   // colHeaderRowHeight,
   config,
   containerRef,
@@ -178,7 +157,6 @@ export const useTable = ({
   highlightedIndex: highlightedIndexProp,
   id,
   navigationStyle = "cell",
-  onAvailableColumnsChange,
   onConfigChange,
   onDataEdited: onDataEditedProp,
   onDragStart,
@@ -193,7 +171,6 @@ export const useTable = ({
   rowHeight,
   scrollingApiRef,
   selectionModel,
-  showColumnHeaderMenus = true,
   showColumnHeaders,
   showPaginationControls,
   size,
@@ -271,7 +248,7 @@ export const useTable = ({
   ]);
 
   const applyTableConfigChange = useCallback(
-    (config: TableConfig, changeType?: TableConfigChangeType) => {
+    (config: TableConfig, changeType: TableConfigChangeType) => {
       dispatchTableModelAction({
         availableWidth,
         selectionModel,
@@ -280,7 +257,7 @@ export const useTable = ({
         dataSource,
       });
       tableConfigRef.current = config;
-      onConfigChange?.(stripInternalProperties(config), changeType);
+      onConfigChange?.(config, changeType);
     },
     [
       availableWidth,
@@ -375,38 +352,6 @@ export const useTable = ({
   // avoids a hook dependency on requestScroll, important to avoid re-registering config handler
   requestScrollRef.current = requestScroll;
 
-  // TODO does this belong here ?
-  const handleConfigEditedInSettingsPanel = useCallback(
-    (tableConfig: TableConfig) => {
-      dispatchTableModelAction({
-        availableWidth,
-        dataSource,
-        selectionModel,
-        tableConfig,
-        type: "init",
-      });
-      tableConfigRef.current = tableConfig;
-      onConfigChange?.(stripInternalProperties(tableConfig));
-    },
-    [
-      availableWidth,
-      dataSource,
-      dispatchTableModelAction,
-      onConfigChange,
-      selectionModel,
-    ],
-  );
-
-  const handleDataSourceConfigChanged = useCallback(
-    (dataSourceConfig: DataSourceConfig) => {
-      dataSource.config = {
-        ...dataSource.config,
-        ...dataSourceConfig,
-      };
-    },
-    [dataSource],
-  );
-
   const handleConfigChange = useCallback<DataSourceConfigChangeHandler>(
     (config, _range, confirmed, changes) => {
       const scrollSensitiveChanges =
@@ -436,14 +381,6 @@ export const useTable = ({
       dataSource.removeListener("config", handleConfigChange);
     };
   }, [dataSource, dispatchTableModelAction, handleConfigChange]);
-
-  const handleCreateCalculatedColumn = useCallback(
-    (column: ColumnDescriptor) => {
-      dataSource.columns = dataSource.columns.concat(column.name);
-      applyTableConfigChange(addColumn(tableConfig, column));
-    },
-    [dataSource, tableConfig, applyTableConfigChange],
-  );
 
   //TODO careful with autoSubscribeColumns
   const removeColumn = useCallback(
@@ -475,7 +412,10 @@ export const useTable = ({
           hiddenColumns.includes(col.name) ? { ...col, hidden: true } : col,
         ),
       };
-      applyTableConfigChange(newTableConfig);
+      applyTableConfigChange(newTableConfig, {
+        type: "columns-hidden",
+        columns,
+      });
     },
     [tableConfig, applyTableConfigChange],
   );
@@ -498,29 +438,6 @@ export const useTable = ({
     },
     [tableConfig, applyTableConfigChange],
   );
-
-  const { showColumnSettingsPanel, showTableSettingsPanel } =
-    useTableAndColumnSettings({
-      availableColumns:
-        availableColumns ??
-        tableConfig.columns.map(({ name, serverDataType = "string" }) => ({
-          name,
-          serverDataType,
-        })),
-      onAvailableColumnsChange,
-      onConfigChange: handleConfigEditedInSettingsPanel,
-      onCreateCalculatedColumn: handleCreateCalculatedColumn,
-      onDataSourceConfigChange: handleDataSourceConfigChanged,
-      settingsPermissions: {
-        allowColumnSettings: columnSettingsFromColumnMenuPermissions(
-          showColumnHeaderMenus,
-        ),
-        allowTableSettings: tableSettingsFromColumnMenuPermissions(
-          showColumnHeaderMenus,
-        ),
-      },
-      tableConfig,
-    });
 
   const handleColumnDisplayAction = useCallback<ColumnDisplayActionHandler>(
     (action) => {
@@ -546,21 +463,9 @@ export const useTable = ({
     [hideColumns, pinColumn, removeColumn],
   );
 
-  const handleDisplaySettingsAction = useCallback<TableSettingsActionHandler>(
-    (action) => {
-      if (action.type === "column-settings") {
-        showColumnSettingsPanel(action);
-      } else {
-        showTableSettingsPanel();
-      }
-    },
-    [showColumnSettingsPanel, showTableSettingsPanel],
-  );
-
   const handleColumnAction = useColumnActions({
     dataSource,
     onColumnDisplayAction: handleColumnDisplayAction,
-    onDisplaySettingsAction: handleDisplaySettingsAction,
   });
 
   const handleSort = useCallback(
@@ -617,14 +522,17 @@ export const useTable = ({
                 width,
               });
               onConfigChange?.(
-                stripInternalProperties(
-                  updateTableConfig(tableConfig, {
-                    type: "col-size",
-                    column,
-                    columns,
-                    width,
-                  }),
-                ),
+                updateTableConfig(tableConfig, {
+                  type: "col-size",
+                  column,
+                  columns,
+                  width,
+                }),
+                {
+                  type: "column-resized",
+                  column,
+                  width,
+                },
               );
             }
           } else if (phase === "begin") {
@@ -648,6 +556,19 @@ export const useTable = ({
               column,
               width,
             });
+            onConfigChange?.(
+              updateTableConfig(tableConfig, {
+                type: "col-size",
+                column,
+                columns,
+                width,
+              }),
+              {
+                type: "column-resized",
+                column,
+                width,
+              },
+            );
           }
         } else {
           throw Error(
@@ -891,7 +812,11 @@ export const useTable = ({
         tableConfig: newTableConfig,
         dataSource,
       });
-      onConfigChange?.(stripInternalProperties(newTableConfig));
+      onConfigChange?.(newTableConfig, {
+        columnName,
+        columns,
+        type: "column-moved",
+      });
 
       setTimeout(() => {
         const headerCell = getHeaderCell(containerRef, columnName);

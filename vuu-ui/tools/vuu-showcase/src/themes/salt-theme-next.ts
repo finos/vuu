@@ -1,4 +1,5 @@
 import "@salt-ds/theme/css/global.css";
+import "@salt-ds/theme/index.css";
 import "@salt-ds/theme/css/theme-next.css";
 
 import "@fontsource/open-sans/300.css";

@@ -6,6 +6,7 @@ import {
 } from "@vuu-ui/vuu-table-types";
 import {
   ColumnFormattingPanel,
+  ColumnModel,
   ColumnSettingsPanel,
 } from "@vuu-ui/vuu-table-extras";
 import {
@@ -15,7 +16,7 @@ import {
   updateColumnType,
 } from "@vuu-ui/vuu-utils";
 import { useCallback, useMemo, useState } from "react";
-import { DataValueTypeSimple } from "@vuu-ui/vuu-data-types";
+import { DataValueTypeSimple, SchemaColumn } from "@vuu-ui/vuu-data-types";
 
 export const ColumnFormattingPanelDouble = () => {
   const [column, setColumn] = useState<ColumnDescriptor>({
@@ -115,99 +116,21 @@ export const ColumnFormattingPanelDateTime = () => {
   );
 };
 
-export const NewCalculatedColumnSettingsPanel = () => {
-  const schema = getSchema("parentOrders");
-  const [{ column, tableConfig }, setState] = useState<{
-    column: ColumnDescriptor;
-    tableConfig: TableConfig;
-  }>({
-    column: {
-      name: "::",
-      serverDataType: "string",
-    },
-    tableConfig: {
-      columns: schema.columns,
-    },
-  });
-  const onConfigChange = (config: TableConfig) => {
-    console.log(`config change ${JSON.stringify(config, null, 2)}`);
-  };
-  const handleCreateCalculatedColumn = useCallback(
-    (column: ColumnDescriptor) => {
-      console.log(
-        `create calculated column ${JSON.stringify(column, null, 2)}`,
-      );
-      setState((s) => ({
-        tableConfig: {
-          ...s.tableConfig,
-          columns: s.tableConfig.columns.concat(column),
-        },
-        column,
-      }));
-    },
-    [],
-  );
-
-  const handleCancelCreateColumn = useCallback(() => {
-    console.log("cancel create column");
-  }, []);
-
-  return (
-    <div
-      style={{
-        border: "solid 1px #ccc",
-        margin: 20,
-        padding: 16,
-        width: 270,
-      }}
-    >
-      <ColumnSettingsPanel
-        column={column}
-        onCancelCreateColumn={handleCancelCreateColumn}
-        onConfigChange={onConfigChange}
-        onCreateCalculatedColumn={handleCreateCalculatedColumn}
-        tableConfig={tableConfig}
-        vuuTable={schema.table}
-      />
-    </div>
-  );
-};
-
 export const CalculatedColumnSettingsPanel = () => {
-  const calculatedColumn = useMemo<ColumnDescriptor>(
-    () => ({
-      name: "ccyExchange:concatenate(currency,exchange):string",
+  const [calculatedColumn, columnModel] = useMemo(() => {
+    const calc: SchemaColumn = {
+      name: "ccyExchange:string:concatenate(currency,exchange)",
       serverDataType: "string",
-    }),
-    [],
-  );
+    };
+    const columns = getSchema("parentOrders").columns.concat(calc);
+    return [calc, new ColumnModel(columns, columns.slice(0, 10).concat(calc))];
+  }, []);
+
   const schema = getSchema("parentOrders");
-  const [{ column, tableConfig }, setState] = useState<{
-    column: ColumnDescriptor;
-    tableConfig: TableConfig;
-  }>({
-    column: calculatedColumn,
-    tableConfig: {
-      columns: (schema.columns as ColumnDescriptor[]).concat(calculatedColumn),
-    },
-  });
+  const [column] = useState<ColumnDescriptor>(calculatedColumn);
   const onConfigChange = (config: TableConfig) => {
     console.log(`config change ${JSON.stringify(config, null, 2)}`);
   };
-  const onCreateCalculatedColumn = (column: ColumnDescriptor) => {
-    console.log(`create calculated column ${JSON.stringify(column, null, 2)}`);
-    setState((s) => ({
-      tableConfig: {
-        ...s.tableConfig,
-        columns: s.tableConfig.columns.concat(column),
-      },
-      column,
-    }));
-  };
-
-  const handleCancelCreateColumn = useCallback(() => {
-    console.log("cancel create column");
-  }, []);
 
   return (
     <div
@@ -220,10 +143,8 @@ export const CalculatedColumnSettingsPanel = () => {
     >
       <ColumnSettingsPanel
         column={column}
-        onCancelCreateColumn={handleCancelCreateColumn}
+        columnModel={columnModel}
         onConfigChange={onConfigChange}
-        onCreateCalculatedColumn={onCreateCalculatedColumn}
-        tableConfig={tableConfig}
         vuuTable={schema.table}
       />
     </div>

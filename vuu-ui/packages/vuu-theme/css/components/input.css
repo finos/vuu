@@ -12,3 +12,18 @@
     display: none;
   }
 }
+
+.salt-theme.vuu-theme {
+
+  .saltInput {
+    --saltInput-outline: none;
+
+    .saltInput-activationIndicator {
+      display: none;
+    }
+  }
+
+  .saltStatusAdornment {
+    display: none;
+  }
+}

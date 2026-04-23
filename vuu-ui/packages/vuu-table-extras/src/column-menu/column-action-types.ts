@@ -3,10 +3,6 @@ import { ColumnDescriptor, ColumnDisplayAction } from "@vuu-ui/vuu-table-types";
 
 export type ColumnDisplayActionHandler = (action: ColumnDisplayAction) => void;
 
-export type DisplayTableSettingsAction = {
-  type: "table-settings";
-};
-
 export type DisplayColumnSettingsAction = {
   type: "column-settings";
   column: ColumnDescriptor;
@@ -14,9 +10,7 @@ export type DisplayColumnSettingsAction = {
   vuuTable?: VuuTable;
 };
 
-export type DisplaySettingsAction =
-  | DisplayTableSettingsAction
-  | DisplayColumnSettingsAction;
+export type DisplaySettingsAction = DisplayColumnSettingsAction;
 
 export type TableSettingsActionHandler = (
   action: DisplaySettingsAction,

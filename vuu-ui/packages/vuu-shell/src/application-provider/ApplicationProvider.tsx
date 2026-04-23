@@ -1,8 +1,9 @@
 import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import {
+  Accent,
   Density,
   Mode,
-  SaltProvider,
+  SaltProviderNext,
   ThemeContextProps,
   useDensity,
   useTheme,
@@ -27,6 +28,8 @@ export interface ApplicationProviderProps
   children: ReactNode;
   density?: Density;
 }
+
+const accentPurple = "purple" as Accent;
 
 const getThemeMode = (
   mode: Mode = "light",
@@ -86,13 +89,15 @@ export const ApplicationProvider = ({
         user: user ?? context.user,
       }}
     >
-      <SaltProvider
+      <SaltProviderNext
+        accent={accentPurple}
+        corner="rounded"
         theme={theme ?? inheritedTheme ?? "vuu-theme"}
         density={density}
         mode={getThemeMode(mode ?? inheritedMode, userSettings)}
       >
         {children}
-      </SaltProvider>
+      </SaltProviderNext>
     </ApplicationContext.Provider>
   ) : null;
 };

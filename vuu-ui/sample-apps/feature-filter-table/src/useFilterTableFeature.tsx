@@ -20,6 +20,7 @@ import {
 } from "@vuu-ui/vuu-filters";
 import { useViewContext } from "@vuu-ui/vuu-layout";
 import { VuuRange } from "@vuu-ui/vuu-protocol-types";
+import { useTableConfig } from "@vuu-ui/vuu-table";
 import { TableConfig, TableConfigChangeHandler } from "@vuu-ui/vuu-table-types";
 import {
   FilterTableFeatureProps,
@@ -65,7 +66,7 @@ export const useFilterTableFeature = ({
   });
 
   const {
-    "available-columns": availableColumnsFromState,
+    // "available-columns": availableColumnsFromState,
     "datasource-config": datasourceConfigFromState,
     "filter-config": filterConfigFromState,
     "table-config": tableConfigFromState,
@@ -149,7 +150,7 @@ export const useFilterTableFeature = ({
 
   const { getDefaultColumnConfig, handleRpcResponse } = useShellContext();
 
-  const tableConfig = useMemo(
+  const initialTableConfig = useMemo(
     () => ({
       ...defaultTableConfig,
       ...tableConfigFromState,
@@ -159,6 +160,15 @@ export const useFilterTableFeature = ({
     }),
     [getDefaultColumnConfig, tableConfigFromState, tableSchema],
   );
+
+  const { tableConfig, columnModel, onTableDisplayAttributeChange } =
+    useTableConfig({
+      // TODO saved available columns
+      availableColumns: tableSchema.columns,
+      config: initialTableConfig,
+      dataSource,
+      onTableConfigChange: handleTableConfigChange,
+    });
 
   const filterBarProps: Omit<
     FilterBarProps,
@@ -179,7 +189,6 @@ export const useFilterTableFeature = ({
   };
 
   const tableProps = {
-    availableColumns: availableColumnsFromState ?? tableSchema.columns,
     config: { ...tableConfig },
     dataSource,
     height: "auto",
@@ -213,9 +222,11 @@ export const useFilterTableFeature = ({
   });
 
   return {
+    columnModel,
     menuBuilder,
     filterBarProps,
     menuActionHandler,
+    onTableDisplayAttributeChange,
     tableProps,
   };
 };

@@ -7,7 +7,8 @@ import {
 } from "@salt-ds/core";
 import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 
-export interface HoverOverlayProps extends Pick<OverlayProps, "onOpenChange"> {
+export interface HoverOverlayProps
+  extends Pick<OverlayProps, "placement" | "onOpenChange"> {
   children: ReactNode;
   open?: boolean;
   trigger: ReactNode;
@@ -17,6 +18,7 @@ export const HoverOverlay = ({
   children,
   open: openProp = false,
   onOpenChange,
+  placement = "right",
   trigger,
 }: HoverOverlayProps) => {
   const [open, _setOpen] = useState(openProp);
@@ -88,7 +90,7 @@ export const HoverOverlay = ({
   }, [setOpen]);
 
   return (
-    <Overlay placement="right" onOpenChange={onOpenChange} open={open}>
+    <Overlay placement={placement} onOpenChange={onOpenChange} open={open}>
       <OverlayTrigger>
         <div
           onClick={handleClick}

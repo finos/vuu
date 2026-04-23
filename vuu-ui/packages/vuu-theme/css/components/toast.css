@@ -1,38 +1,12 @@
 .salt-theme.vuu-theme {
-
     .vuuToastNotification {
-        /* z-index: var(--salt-zIndex-notification); */
+        --vuuToast-error-background: var(--salt-status-error-bold-background);
+        --vuuToast-error-foreground: white;
+        --vuuToast-success-background: var(--salt-status-success-bold-background);
+        --vuuToast-success-foreground: white;
+        --vuuToast-warning-background: var(--salt-status-warning-bold-background);
+        --vuuToast-warning-foreground: white;
+        --vuuToast-info-background: var(--salt-status-info-bold-background);
+        --vuuToast-info-foreground: white;
     }
-
-    .saltToast {
-        --saltToast-borderRadius: 6px;
-        --saltToast-padding: var(--salt-spacing-200);
-
-        .vuuToastNotification-toastHeader {
-            margin-top:0;
-        }
-
-        .saltToast-iconContainer {
-            margin-right: var(--salt-spacing-200);
-        }
-
-        .saltIcon {
-            display: inline-block;
-        }
-
-        &.saltToast-error {
-            --saltToast-background: var(--salt-status-error-background);
-            color: white;
-        }
-        &.saltToast-success {
-            --saltToast-background: var(--salt-status-success-background);
-            color: white;
-        }
-        &.saltToast-info {
-            --saltToast-background: var(--salt-status-info-borderColor);
-            --toast-iconColor: white;
-            color: white;
-        }
-    }
-
 }

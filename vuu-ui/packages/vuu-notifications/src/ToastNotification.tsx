@@ -1,87 +1,130 @@
+import { useFloatingComponent } from "@salt-ds/core";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+import { Icon, IconButton } from "@vuu-ui/vuu-ui-controls";
 import cx from "clsx";
-import { Toast, ToastContent, useFloatingComponent } from "@salt-ds/core";
-import { useEffect, useMemo, useState } from "react";
+import { RefCallback, useCallback } from "react";
 import type { ToastNotificationDescriptor } from "./NotificationsContext";
 
-const toastContainerRightPadding = 20;
-const toastDisplayDuration = 1200;
-const horizontalTransitionDuration = 400;
-export const TOAST_HEIGHT = 80;
-export const TOAST_WIDTH = 300;
-const verticalTransitionDuration = 300;
+import toastNotificationCss from "./ToastNotification.css";
+
+export type ToastHoverHandler = (id?: string) => void;
 
 export type ToastNotificationProps = {
-  top: number;
+  hidden?: boolean;
+  id?: string;
+  left?: number;
   notification: ToastNotificationDescriptor;
-  animated?: boolean;
+  onMeasured?: (id: string, height: number, width: number) => void;
+  onDismiss?: (id?: string) => void;
+  onHoverEntry?: ToastHoverHandler;
+  onHoverExit?: ToastHoverHandler;
+  opacity?: number;
+  top?: number;
 };
 
 const classBase = "vuuToastNotification";
 
-export const ToastNotification = (props: ToastNotificationProps) => {
-  const { top, notification, animated = true } = props;
+export const ToastNotification = ({
+  hidden,
+  id,
+  left,
+  onDismiss,
+  onMeasured,
+  top,
+  notification,
+  onHoverEntry,
+  onHoverExit,
+  opacity = 1,
+}: ToastNotificationProps) => {
+  const targetWindow = useWindow();
+  useComponentCssInjection({
+    testId: "vuu-toast-notification",
+    css: toastNotificationCss,
+    window: targetWindow,
+  });
 
   const { Component: FloatingComponent } = useFloatingComponent();
 
-  const { animationType = "slide-in,slide-out" } = notification;
+  const {
+    animationType,
+    content,
+    dismissal,
+    header,
+    icon,
+    showCloseButton,
+    status,
+  } = notification;
 
-  const slideIn = animationType.includes("slide-in");
+  const iconName = icon === false ? undefined : (icon ?? status);
 
-  const pageWidth = useMemo(() => document.body.clientWidth, []);
-
-  const [left, setLeft] = useState(
-    slideIn
-      ? pageWidth + TOAST_WIDTH - toastContainerRightPadding
-      : pageWidth - TOAST_WIDTH - toastContainerRightPadding,
+  const callbackRef = useCallback<RefCallback<HTMLDivElement>>(
+    (el) => {
+      if (el) {
+        setTimeout(() => {
+          const { height, width } = el.getBoundingClientRect();
+          if (id) {
+            onMeasured?.(id, height, width);
+          }
+        }, 60);
+      }
+    },
+    [id, onMeasured],
   );
 
-  useEffect(() => {
-    if (slideIn) {
-      setTimeout(() =>
-        setLeft(pageWidth - TOAST_WIDTH - toastContainerRightPadding),
-      );
-    }
+  const handleDismiss = useCallback(() => {
+    onDismiss?.(id);
+  }, [id, onDismiss]);
 
-    if (animated) {
-      setTimeout(
-        () =>
-          setLeft(
-            document.body.clientWidth +
-              TOAST_WIDTH -
-              toastContainerRightPadding,
-          ),
-        toastDisplayDuration + horizontalTransitionDuration,
-      );
-    }
-  }, [animated, pageWidth, slideIn]);
+  const handleMouseEnter = useCallback(
+    () => onHoverEntry?.(id),
+    [id, onHoverEntry],
+  );
+  const handleMouseLeave = useCallback(
+    () => onHoverExit?.(id),
+    [id, onHoverExit],
+  );
 
-  console.log(`left ${left}`);
+  if (dismissal === "manual" && showCloseButton === false) {
+    console.warn(
+      "[ToastNotification] invalid props, if dismissal is manual, showCloseButton should not be false",
+    );
+  }
+
+  const withCloseButton = showCloseButton || dismissal === "manual";
 
   return (
     <FloatingComponent
-      className={cx(classBase, `${classBase}-${notification.type}`)}
-      position="absolute"
+      className={cx(classBase, `${classBase}-${notification.status}`, {
+        [`${classBase}-hidden`]: hidden,
+        [`${classBase}-transparent`]: opacity === 0,
+        [`${classBase}-withContent`]: content !== undefined,
+        [`${classBase}-withIcon`]: icon !== false,
+        [`${classBase}-withTransition`]: animationType !== undefined && !hidden,
+        [`${classBase}-withCloseButton`]: withCloseButton,
+      })}
+      id={id}
       left={left}
-      top={top}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       open
-      style={{
-        transition: animated
-          ? `left ${horizontalTransitionDuration}ms, top ${verticalTransitionDuration}ms `
-          : "none",
-      }}
+      position="absolute"
+      ref={callbackRef}
+      role="alert"
+      top={top}
     >
-      <Toast
-        status={notification.status}
-        style={{
-          height: TOAST_HEIGHT,
-          width: TOAST_WIDTH,
-        }}
-      >
-        <ToastContent>
-          <h3 className={`${classBase}-toastHeader`}>{notification.header}</h3>
-          <div>{notification.content}</div>
-        </ToastContent>
-      </Toast>
+      {iconName ? <Icon name={iconName} /> : null}
+      <h3 className={`${classBase}-header`}>{header}</h3>
+      {content ? <div className={`${classBase}-content`}>{content}</div> : null}
+      {withCloseButton ? (
+        <IconButton
+          className={`${classBase}-closeButton`}
+          icon="close"
+          onClick={handleDismiss}
+          appearance="transparent"
+          sentiment="neutral"
+        />
+      ) : null}
     </FloatingComponent>
   );
 };
