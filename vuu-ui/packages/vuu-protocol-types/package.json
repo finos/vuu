@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/vuu-protocol-types",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "main": "",
   "scripts": {
     "build": "node ../../scripts/run-build-typelib.mjs"
