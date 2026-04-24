@@ -169,7 +169,6 @@ export const useEditableText = <T extends string | number | boolean = string>({
 
   const handleFocus = useCallback<FocusEventHandler<HTMLElement>>(
     (e) => {
-      console.log(`[useEditableText] handleFocus`);
       e.target.addEventListener("vuu-begin-edit", beginEditHandler, true);
     },
     [beginEditHandler],
@@ -207,6 +206,7 @@ export const useEditableText = <T extends string | number | boolean = string>({
         {
           editType: "change",
           isValid: result?.ok !== false,
+          previousValue: initialValueRef.current,
           value: typedValue,
         },
         "change",

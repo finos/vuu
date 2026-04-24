@@ -181,6 +181,7 @@ export interface TableProps
    * In a Table with editable cells, this callback will be invoked every time
    * a user performs any edit operation on an editable field.
    */
+  // TODO can we scrap this and leavr it to the editTracker ?
   onDataEdited?: DataCellEditNotification;
 
   onDragStart?: DragStartHandler;

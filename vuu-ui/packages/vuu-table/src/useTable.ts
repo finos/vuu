@@ -40,6 +40,7 @@ import {
   PinState,
   toggleOrApplySort,
   updateColumn,
+  useEditTracker,
   useLayoutEffectSkipFirst,
   useStableReference,
 } from "@vuu-ui/vuu-utils";
@@ -851,6 +852,8 @@ export const useTable = ({
     [onDrop],
   );
 
+  const editTracker = useEditTracker();
+
   const handleDataEdited = useCallback(
     async (editState: DataCellEditEvent): Promise<RpcResult | undefined> => {
       const {
@@ -858,10 +861,13 @@ export const useTable = ({
         isValid = true,
         dataRow,
         columnName,
+        previousValue = "",
         value,
       } = editState;
       if (editType === "commit" && isValid) {
-        if (dataSource.rpcRequest) {
+        if (editTracker && dataRow && columnName) {
+          return editTracker.commit(dataRow.key, columnName);
+        } else if (dataSource.rpcRequest) {
           if (columnName && dataRow) {
             const response = await dataSource.rpcRequest({
               params: {
@@ -880,14 +886,18 @@ export const useTable = ({
           }
         } else {
           throw Error(
-            `[useTable] handleDataEdited, datasource does not support RPC`,
+            `[useTable] handleDataEdited, no editTracker installed and datasource does not support RPC`,
           );
         }
       } else {
-        onDataEditedProp?.(editState);
+        if (editTracker && dataRow && columnName) {
+          editTracker.edit(dataRow.key, columnName, previousValue, value);
+        } else {
+          onDataEditedProp?.(editState);
+        }
       }
     },
-    [dataSource, onDataEditedProp],
+    [dataSource, editTracker, onDataEditedProp],
   );
 
   const handleDragStartRow = useCallback<DragStartHandler>(
