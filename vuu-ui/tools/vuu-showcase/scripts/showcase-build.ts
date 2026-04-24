@@ -38,7 +38,7 @@ const cssInlinePlugin = {
     build.onLoad(
       {
         filter:
-          /packages\/(vuu|grid)-(context-menu|datatable|filters|layout|popups|shell|table-extras|ui-controls|table)\/.*.css$/,
+          /packages\/(vuu|grid)-(chart|context-menu|datatable|filters|layout|popups|shell|table-extras|ui-controls|table)\/.*.css$/,
       },
       async (args) => {
         const css = await fs.promises.readFile(args.path, "utf8");
@@ -57,10 +57,7 @@ if (!fs.existsSync(".showcase/prod")) {
 const esbuildConfig = {
   entryPoints,
   env: "production",
-  external: [
-    "./themes/salt-theme.ts",
-    "./themes/vuu-theme.ts",
-  ],
+  external: ["./themes/salt-theme.ts", "./themes/vuu-theme.ts"],
   name: "showcase",
   plugins: [cssInlinePlugin, mdx()],
   outdir: `${outdir}`,
