@@ -97,10 +97,24 @@ export class TickingArrayDataSource extends ArrayDataSource {
     if (table) {
       this.tableSchema = table.schema;
       table.on("insert", this.insert);
-      table.on("update", this.updateRow);
+      table.on("update", this.updateRowWithSessionCheck);
       table.on("delete", this.deleteRow);
     }
   }
+
+  updateRowWithSessionCheck = (
+    row: VuuRowDataItemType[],
+    columnName?: string,
+    sessionId?: string,
+  ) => {
+    if (sessionId && sessionId === this.viewport) {
+      this.updateRow(row, columnName);
+    } else if (sessionId) {
+      // ignore, its not for me
+    } else {
+      this.updateRow(row, columnName);
+    }
+  };
 
   async subscribe(
     subscribeProps: DataSourceSubscribeProps,

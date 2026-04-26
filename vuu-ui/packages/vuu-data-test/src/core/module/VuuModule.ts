@@ -21,6 +21,7 @@ import {
 } from "@vuu-ui/vuu-protocol-types";
 import { uuid } from "@vuu-ui/vuu-utils";
 import { Table, buildDataColumnMapFromSchema } from "../../Table";
+import { SessionTable } from "../../SessionTable";
 import { TickingArrayDataSource } from "../../TickingArrayDataSource";
 import { RuntimeVisualLink } from "../../RuntimeVisualLink";
 import moduleContainer from "./ModuleContainer";
@@ -29,7 +30,7 @@ export interface IVuuModule<T extends string = string> {
   createDataSource: (tableName: T) => DataSource;
 }
 
-export type SessionTableMap = Record<string, Table>;
+export type SessionTableMap = Record<string, SessionTable>;
 
 export type LocalDataMenuParameters = {
   selectedRowIds: string[];
@@ -59,6 +60,7 @@ export type RpcMenuService = {
 type Subscription = {
   viewportId: string;
   dataSource: DataSource;
+  sessionTableName?: string;
 };
 export abstract class VuuModule<T extends string = string>
   implements IVuuModule<T>
@@ -272,15 +274,15 @@ export abstract class VuuModule<T extends string = string>
     return this.#sessionTableMap;
   }
 
-  protected getSessionTable(sessionTableName: string): Table;
+  protected getSessionTable(sessionTableName: string): SessionTable;
   protected getSessionTable(
     sessionTableName: string,
     throwIfNotFound: true,
-  ): Table;
+  ): SessionTable;
   protected getSessionTable(
     sessionTableName: string,
     throwIfNotFound: false,
-  ): Table | undefined;
+  ): SessionTable | undefined;
   protected getSessionTable(sessionTableName: string, throwIfNotFound = true) {
     const sessionTable = this.#sessionTableMap[sessionTableName];
     if (sessionTable) {
@@ -339,7 +341,7 @@ export abstract class VuuModule<T extends string = string>
     if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
       const { viewPortId } = rpcRequest.context;
       const { column, data, key } = rpcRequest.params;
-      let targetTable = this.#sessionTableMap[viewPortId];
+      let targetTable: SessionTable | Table = this.#sessionTableMap[viewPortId];
       if (!targetTable) {
         const { dataSource } = this.getSubscriptionByViewport(viewPortId);
         if (dataSource.table) {
@@ -359,6 +361,91 @@ export abstract class VuuModule<T extends string = string>
     } else {
       throw Error(`[VuuModule] editCell invalid rpc type`);
     }
+  };
+
+  private enterEditMode: ServiceHandler = async (rpcRequest) => {
+    if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
+      const { viewPortId } = rpcRequest.context;
+      const subscription = this.getSubscriptionByViewport(viewPortId);
+      const {
+        dataSource: { table },
+      } = subscription;
+      if (table) {
+        const dataTable = this.tables[table.table as T];
+        if (dataTable) {
+          const sessionTableName = `session-${uuid()}`;
+          const sessionTable = SessionTable(dataTable, sessionTableName);
+          this.#sessionTableMap[sessionTableName] = sessionTable;
+          subscription.sessionTableName = sessionTableName;
+
+          return {
+            data: {
+              renderComponent: "inline-form",
+              table: {
+                module: table.module,
+                table: sessionTableName,
+              },
+            },
+            type: "SUCCESS_RESULT",
+          };
+        }
+      }
+    } else {
+      throw Error(`[VuuModule] endEditSession invalid rpc type`);
+    }
+
+    return {
+      type: "ERROR_RESULT",
+      errorMessage: "not implemented yet",
+    };
+  };
+
+  private exitEditMode: ServiceHandler = async (rpcRequest) => {
+    if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
+      const { viewPortId } = rpcRequest.context;
+      const { dataSource, sessionTableName } =
+        this.getSubscriptionByViewport(viewPortId);
+      if (sessionTableName && dataSource.table) {
+        const table = this.tables[dataSource.table.table as T];
+        const sessionTable = this.#sessionTableMap[sessionTableName];
+        delete this.#sessionTableMap[viewPortId];
+
+        if (rpcRequest.params.save === true) {
+          // apply changes to underlying table
+
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore TODO create a type for SessionTable
+          const updates = sessionTable.getSessionUpdates();
+          updates.forEach((rowUpdates, key) => {
+            const { cellUpdates, lastUpdateTimestamp } = rowUpdates;
+            const currentRow = table.findByKey(key);
+            const lastUpdateTimestampOnTable =
+              currentRow[table.map.vuuUpdatedTimestamp];
+            if (lastUpdateTimestamp !== lastUpdateTimestampOnTable) {
+              console.log("Houston WE HAVE a PROBLEM");
+            }
+            Object.entries(cellUpdates).forEach(([column, value]) => {
+              table.update(key, column, value);
+            });
+          });
+          updates.clear();
+        }
+
+        return {
+          type: "SUCCESS_RESULT",
+          data: undefined,
+        };
+      } else {
+        throw Error("[VuuModule], exitEditMode");
+      }
+    } else {
+      throw Error(`[VuuModule] endEditSession invalid rpc type`);
+    }
+
+    // return {
+    //   type: "ERROR_RESULT",
+    //   errorMessage: "not implemented yet",
+    // };
   };
 
   private beginBulkEdit: MenuServiceHandler = async (rpcRequest) => {
@@ -502,6 +589,14 @@ export abstract class VuuModule<T extends string = string>
     {
       rpcName: "VP_BULK_EDIT_END_RPC",
       service: this.endEditSession,
+    },
+    {
+      rpcName: "ENTER_EDIT_MODE",
+      service: this.enterEditMode,
+    },
+    {
+      rpcName: "EXIT_EDIT_MODE",
+      service: this.exitEditMode,
     },
     {
       rpcName: "editCell",

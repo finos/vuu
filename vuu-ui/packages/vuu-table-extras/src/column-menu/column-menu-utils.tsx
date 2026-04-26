@@ -46,12 +46,9 @@ export type ColumnDisplayColumnMenuActionType =
   | "unpin-column"
   | "hide-column";
 
-export type ColumnSettingsActionType = "column-settings";
-
 export type ColumnMenuActionType =
   | DataSourceColumnMenuActionType
-  | ColumnDisplayColumnMenuActionType
-  | ColumnSettingsActionType;
+  | ColumnDisplayColumnMenuActionType;
 
 export const isColumnMenuActionType = (
   value?: string,
@@ -78,7 +75,6 @@ export const isColumnMenuActionType = (
     "unpin-column",
     "hide-column",
     "remove-column",
-    "column-settings",
   ].includes(value);
 
 export const getColumnMenuActionType = (target: EventTarget | HTMLElement) => {
