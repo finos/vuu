@@ -17,7 +17,6 @@ import {
   setSortColumn,
 } from "@vuu-ui/vuu-utils";
 import { ColumnMenuActionType } from "./column-menu-utils";
-import { DisplaySettingsAction } from "./column-action-types";
 import { DataSource } from "@vuu-ui/vuu-data-types";
 
 export interface ContextMenuOptions {
@@ -28,7 +27,6 @@ export interface ContextMenuOptions {
 export interface ContextMenuHookProps {
   dataSource: DataSource;
   onColumnDisplayAction?: (action: ColumnDisplayAction) => void;
-  onDisplaySettingsAction?: (action: DisplaySettingsAction) => void;
 }
 
 const { Average, Count, Distinct, High, Low, Sum } = AggregationType;
@@ -36,7 +34,6 @@ const { Average, Count, Distinct, High, Low, Sum } = AggregationType;
 export const useColumnActions = ({
   dataSource,
   onColumnDisplayAction,
-  onDisplaySettingsAction,
 }: ContextMenuHookProps) => {
   /** return {boolean} used by caller to determine whether to forward to additional installed context menu handlers */
   const handleContextMenuAction: MenuActionHandler<
@@ -72,8 +69,6 @@ export const useColumnActions = ({
         case "pin-column-left": return onColumnDisplayAction?.({type: "pinColumn", column, pin: "left"}), true;
         case "pin-column-right": return onColumnDisplayAction?.({type: "pinColumn", column, pin: "right"}), true;
         case "unpin-column": return onColumnDisplayAction?.({type: "pinColumn", column, pin: false}), true
-        // 3) Table Admin options ...
-        case "column-settings": return onDisplaySettingsAction?.({type: "column-settings", column}), true
         default:
           logUnhandledMessage(columnMenuActionType, `[vuu-table-extras] useColumnActions handleContextMenuAction, unhandled columnMenuActionType`)
       }

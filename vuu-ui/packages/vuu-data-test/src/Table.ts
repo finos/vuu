@@ -6,7 +6,11 @@ import { UpdateGenerator } from "./rowUpdates";
 export type TableEvents = {
   delete: (key: string) => void;
   insert: (row: VuuRowDataItemType[]) => void;
-  update: (row: VuuRowDataItemType[], columnName?: string) => void;
+  update: (
+    row: VuuRowDataItemType[],
+    columnName?: string,
+    sessionId?: string,
+  ) => void;
 };
 
 export class Table extends EventEmitter<TableEvents> {
@@ -97,6 +101,13 @@ export class Table extends EventEmitter<TableEvents> {
       const row = this.#data[rowIndex];
       const newRow = row.slice();
       newRow[colIndex] = value;
+
+      const tsIndex = this.#dataMap.vuuUpdatedTimestamp;
+      if (typeof tsIndex === "number") {
+        const lastUpdated = Date.now();
+        newRow[tsIndex] = lastUpdated;
+      }
+
       this.#data[rowIndex] = newRow;
       this.emit("update", newRow, columnName);
     }

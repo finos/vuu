@@ -1,0 +1,27 @@
+{
+  "name": "@vuu-ui/vuu-chart",
+  "version": "2.1.0",
+  "description": "support for apache echarts using vuu data",
+  "main": "src/index.ts",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build:dev": "node ../../scripts/run-build.mjs",
+    "build": "node ../../scripts/run-build-rollup.mjs",
+    "type-defs": "node ../../scripts/build-type-defs.mjs"
+  },
+  "devDependencies": {
+    "@vuu-ui/vuu-data-types": "2.1.0",
+    "@vuu-ui/vuu-protocol-types": "2.1.0"
+  },
+  "dependencies": {
+    "@salt-ds/styles": "0.2.1",
+    "@salt-ds/window": "0.1.1",
+    "@vuu-ui/vuu-context-menu": "2.1.0",
+    "@vuu-ui/vuu-utils": "2.1.0"
+  },
+  "peerDependencies": {
+    "echarts": "6.0.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  }
+}

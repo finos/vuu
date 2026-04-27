@@ -32,6 +32,7 @@ export const buildAll = async () => {
   ];
   const wave3 = ["vuu-filters", "vuu-popups"];
   const wave4 = [
+    "vuu-chart",
     "vuu-context-menu",
     "vuu-datatable",
     "vuu-table",
