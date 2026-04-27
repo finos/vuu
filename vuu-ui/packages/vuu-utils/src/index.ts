@@ -22,6 +22,7 @@ export * from "./common-types";
 export * from "./component-registry";
 export * from "./cookie-utils";
 export * from "./css-utils";
+export { EditButtons, type EditButtonProps } from "./data-editing/EditButtons";
 export {
   DataEditingProvider,
   useEditTracker,

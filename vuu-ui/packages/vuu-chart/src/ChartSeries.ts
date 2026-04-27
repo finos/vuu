@@ -35,7 +35,8 @@ function getCategoriesAndSeries(
       let series = seriesMap.get(seriesColumn);
       if (!series) {
         series = {
-          id: "test-1",
+          //any reason we can't simply use col name here ?
+          id: seriesColumn,
           name: seriesColumn,
           label: seriesColumn,
           data: [],
