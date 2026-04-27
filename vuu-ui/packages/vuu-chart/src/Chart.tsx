@@ -2,10 +2,10 @@ import { useRef, useEffect, HTMLAttributes } from "react";
 import { init, getInstanceByDom } from "echarts";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
-
-import echartCss from "./Chart.css";
 import { ChartOptionsProps, useChartOptions } from "./useChartOptions";
 import { useChartContextMenu } from "./useChartContextMenu";
+
+import echartCss from "./Chart.css";
 
 type OptionSettings = {
   notMerge: boolean;
@@ -92,12 +92,14 @@ export const Chart = ({
       //   }
       //   resizeObserver.disconnect();
     };
-  }, [chartSettings, events]);
+  }, [chartSettings, events, onContextMenu]);
 
   useEffect(() => {
     if (chartRef.current) {
       // Re-render chart when option changes
       const chart = getInstanceByDom(chartRef.current);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       chart?.setOption(option, optionSettings);
     }
   }, [option, optionSettings]);

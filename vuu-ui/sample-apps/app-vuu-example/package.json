@@ -1,6 +1,6 @@
 {
   "name": "app-vuu-example",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -18,14 +18,14 @@
   "dependencies": {
     "@fontsource/open-sans": "^4.5.13",
     "@salt-ds/core": "1.54.1",
-    "@vuu-ui/vuu-data-local": "2.0.0",
-    "@vuu-ui/vuu-data-remote": "2.0.0",
-    "@vuu-ui/vuu-table-types": "2.0.0",
-    "@vuu-ui/vuu-data-react": "2.0.0",
-    "@vuu-ui/vuu-layout": "2.0.0",
-    "@vuu-ui/vuu-popups": "2.0.0",
-    "@vuu-ui/vuu-shell": "2.0.0",
-    "@vuu-ui/vuu-utils": "2.0.0",
+    "@vuu-ui/vuu-data-local": "2.1.0",
+    "@vuu-ui/vuu-data-remote": "2.1.0",
+    "@vuu-ui/vuu-table-types": "2.1.0",
+    "@vuu-ui/vuu-data-react": "2.1.0",
+    "@vuu-ui/vuu-layout": "2.1.0",
+    "@vuu-ui/vuu-popups": "2.1.0",
+    "@vuu-ui/vuu-shell": "2.1.0",
+    "@vuu-ui/vuu-utils": "2.1.0",
     "clsx": "^2.0.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
