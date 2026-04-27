@@ -1,4 +1,4 @@
-import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
+import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { getSchema, LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { Table } from "@vuu-ui/vuu-table";
@@ -15,7 +15,6 @@ const EditTableTemplate = ({ vuuTable }: { vuuTable: VuuTable }) => {
   const {
     dataSource,
     editMode,
-    editState,
     editTracker,
     onCancel,
     onSave,

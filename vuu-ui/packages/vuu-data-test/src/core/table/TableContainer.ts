@@ -31,8 +31,8 @@ class TableContainer {
   };
 
   // TODO this is problematic in that it assumes both tables are already created
-  // depends on the order in which modules are imnported
-  // Make this independent odf base table creation order
+  // depends on the order in which modules are imported
+  // Make this independent of base table creation order
   createJoinTable(
     joinTable: VuuTable,
     { table: t1 }: VuuTable,

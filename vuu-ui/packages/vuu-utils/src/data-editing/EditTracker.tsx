@@ -171,13 +171,4 @@ export class EditTracker extends EventEmitter<EditTrackerEvents> {
       throw Error(`[EditTracker] commit, key ${key} not found `);
     }
   }
-
-  hasEdit(key: string, columnName: string) {
-    const editsForKey = this.#rowEdits.get(key);
-    if (editsForKey) {
-      return editsForKey.has(columnName);
-    } else {
-      return false;
-    }
-  }
 }

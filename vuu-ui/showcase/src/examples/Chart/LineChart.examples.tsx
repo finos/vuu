@@ -1,10 +1,20 @@
-import { Chart, ChartSeries } from "@vuu-ui/vuu-chart";
+import { Chart, ChartContextMenuOptions } from "@vuu-ui/vuu-chart";
 import { TableSchema } from "@vuu-ui/vuu-data-types";
 import {
   Table as DataTable,
   TickingArrayDataSource,
 } from "@vuu-ui/vuu-data-test";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
+import {
+  ContextMenuProvider,
+  MenuActionHandler,
+  MenuBuilder,
+} from "@vuu-ui/vuu-context-menu";
+import {
+  TableContextMenuDef,
+  TableContextMenuOptions,
+  TableMenuLocation,
+} from "@vuu-ui/vuu-table-types";
 
 const ChartTableSchema: TableSchema = {
   columns: [
@@ -46,6 +56,37 @@ const table = new DataTable(
   { id: 0, date: 1, price: 2, volume: 3 },
 );
 
+const useContextMenu = (): TableContextMenuDef => {
+  const menuBuilder: MenuBuilder<TableMenuLocation, TableContextMenuOptions> =
+    useCallback((_location, options) => {
+      return [{ id: "cell-copy", label: "Copy text", options }];
+    }, []);
+
+  const menuActionHandler = useCallback<
+    MenuActionHandler<string, ChartContextMenuOptions>
+  >((menuItemId, options) => {
+    if (options) {
+      const { value } = options;
+      switch (menuItemId) {
+        case "cell-copy": {
+          navigator.clipboard.writeText(`${value}`);
+          return true;
+        }
+
+        default:
+          return false;
+      }
+    } else {
+      return false;
+    }
+  }, []);
+
+  return {
+    menuBuilder,
+    menuActionHandler,
+  };
+};
+
 export const SimpleLineChart = () => {
   const dataSource = useMemo(() => {
     return new TickingArrayDataSource({
@@ -54,13 +95,20 @@ export const SimpleLineChart = () => {
     });
   }, []);
 
+  const { menuBuilder, menuActionHandler } = useContextMenu();
+
   return (
     <div style={{ width: 800, height: 600 }}>
-      <Chart
-        categoryColumnName="date"
-        dataSource={dataSource}
-        seriesColumnNames={["price"]}
-      />
+      <ContextMenuProvider
+        menuActionHandler={menuActionHandler}
+        menuBuilder={menuBuilder}
+      >
+        <Chart
+          categoryColumnName="date"
+          dataSource={dataSource}
+          seriesColumnNames={["price"]}
+        />
+      </ContextMenuProvider>
     </div>
   );
 };

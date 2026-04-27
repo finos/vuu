@@ -110,12 +110,12 @@ export class BasketModule extends VuuModule<BasketsTableName> {
       tableMaps.basketTrading,
     ),
     basketTradingConstituent,
-    // basketTradingConstituentJoin: tableContainer.createJoinTable(
-    //   { module: "BASKET", table: "basketTradingConstituentJoin" },
-    //   { module: "BASKET", table: "basketTradingConstituent" },
-    //   { module: "SIMUL", table: "prices" },
-    //   "ric",
-    // ),
+    basketTradingConstituentJoin: tableContainer.createJoinTable(
+      { module: "BASKET", table: "basketTradingConstituentJoin" },
+      { module: "BASKET", table: "basketTradingConstituent" },
+      { module: "SIMUL", table: "prices" },
+      "ric",
+    ),
     priceStrategyType: createTable(
       schemas.priceStrategyType,
       [

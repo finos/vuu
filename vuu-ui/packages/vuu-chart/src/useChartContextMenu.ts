@@ -18,7 +18,7 @@ export type ChartContextMenuOptions = {
   value: VuuRowDataItemType;
 };
 
-export type EChartContextMenuHandlerParams = {
+type EChartContextMenuHandlerParams = {
   dataIndex: number;
   event: EChartContextMenuEvent;
   name: string;
@@ -27,43 +27,50 @@ export type EChartContextMenuHandlerParams = {
   value: number;
 };
 
-export interface ChartContextMenuHookProps {
+interface ChartContextMenuHookProps {
   allowContextMenu?: boolean;
-  categoryColumnName?: string;
+  categoryColumnName: string;
   dataSource: DataSource;
 }
 
 export const useChartContextMenu = ({
   categoryColumnName,
-  dataSource,
 }: ChartContextMenuHookProps) => {
   const showContextMenu = useContextMenu();
 
-  const onContextMenu = useCallback(
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //@ts-ignore
+  const onContextMenu = useCallback<any>(
     ({
-      dataIndex,
+      // dataIndex,
       event,
       name: categoryValue,
-      seriesId,
+      // seriesId,
       seriesName: valueColumn,
       value,
-      ...params
+      // ...params
     }: EChartContextMenuHandlerParams) => {
       event.stop();
-      console.log(
-        `on context menu [${dataIndex}] #${seriesId} ${categoryColumnName} = ${categoryValue}, ${valueColumn} = ${value}`,
-        {
-          params,
-        },
-      );
+      // console.log(
+      //   `on context menu [${dataIndex}] #${seriesId} ${categoryColumnName} = ${categoryValue}, ${valueColumn} = ${value}`,
+      //   {
+      //     params,
+      //   },
+      // );
+      const menuOptions: ChartContextMenuOptions = {
+        categoryColumn: categoryColumnName,
+        categoryValue,
+        valueColumn,
+        value,
+      };
 
-      //   const menuOptions: ChartContextMenuOptions = {
-      //     categoryColumn,
-      //     categoryValue,
-      //     valueColumn,
-      //   };
+      showContextMenu(event.event, "chart", menuOptions, {
+        onOpenChange: (isOpen: boolean) => {
+          console.log(`[useTableContextMenu] onOpenChange ${isOpen}`);
+        },
+      });
     },
-    [],
+    [categoryColumnName, showContextMenu],
   );
 
   return onContextMenu;

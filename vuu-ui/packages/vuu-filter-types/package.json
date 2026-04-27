@@ -1,6 +1,6 @@
 {
   "name": "@vuu-ui/vuu-filter-types",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "main": "",
   "scripts": {
     "build": "node ../../scripts/run-build-typelib.mjs"
@@ -9,10 +9,10 @@
   "author": "heswell",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@vuu-ui/vuu-data-types": "2.0.0",
-    "@vuu-ui/vuu-protocol-types": "2.0.0",
-    "@vuu-ui/vuu-table-types": "2.0.0",
-    "@vuu-ui/vuu-utils": "2.0.0"
+    "@vuu-ui/vuu-data-types": "2.1.0",
+    "@vuu-ui/vuu-protocol-types": "2.1.0",
+    "@vuu-ui/vuu-table-types": "2.1.0",
+    "@vuu-ui/vuu-utils": "2.1.0"
   },
   "dependencies": {},
   "peerDependencies": {}

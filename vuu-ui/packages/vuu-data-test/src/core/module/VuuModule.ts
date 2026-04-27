@@ -30,7 +30,7 @@ export interface IVuuModule<T extends string = string> {
   createDataSource: (tableName: T) => DataSource;
 }
 
-export type SessionTableMap = Record<string, SessionTable>;
+export type SessionTableMap = Record<string, SessionTable | Table>;
 
 export type LocalDataMenuParameters = {
   selectedRowIds: string[];
@@ -407,7 +407,9 @@ export abstract class VuuModule<T extends string = string>
         this.getSubscriptionByViewport(viewPortId);
       if (sessionTableName && dataSource.table) {
         const table = this.tables[dataSource.table.table as T];
-        const sessionTable = this.#sessionTableMap[sessionTableName];
+        const sessionTable = this.#sessionTableMap[
+          sessionTableName
+        ] as SessionTable;
         delete this.#sessionTableMap[viewPortId];
 
         if (rpcRequest.params.save === true) {
