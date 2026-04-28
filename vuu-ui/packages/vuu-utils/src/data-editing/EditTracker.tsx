@@ -148,6 +148,9 @@ export class EditTracker extends EventEmitter<EditTrackerEvents> {
     }
   }
 
+  //TODO alow a shortcut commit that allows a value, bypassing need
+  // for edit. Thids caters for boolean values, dropdown list etc
+  // that have no intermediate edit phase
   async commit(key: string, columnName: string) {
     const rowEditDetails = this.#rowEdits.get(key);
     if (rowEditDetails) {
@@ -159,7 +162,7 @@ export class EditTracker extends EventEmitter<EditTrackerEvents> {
           type: "RPC_REQUEST",
           rpcName: "editCell",
           params: {
-            column: `${columnName}`,
+            column: columnName,
             data: editedValue,
             key,
           },

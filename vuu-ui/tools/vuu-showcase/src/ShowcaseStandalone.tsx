@@ -9,6 +9,7 @@ import { LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import {
   Density,
   getUrlParameter,
+  ThemeLoadChecker,
   ThemeMode,
   TreeSourceNode,
 } from "@vuu-ui/vuu-utils";
@@ -71,13 +72,13 @@ export const ShowcaseStandalone = ({
 }: {
   treeSource: TreeSourceNode[];
 }) => {
+  console.log(`[ShowcaseStandalone] render`);
   const [, forceRefresh] = useState({});
   const densityRef = useRef<Density>("high");
   const themeModeRef = useRef<ThemeMode>("light");
   const dataLocationRef = useRef<DataLocation>("local");
 
   const [contentState, setContentState] = useState<ContentState | null>(null);
-  const [themeReady, setThemeReady] = useState(true);
 
   // We only need this once as entire page will refresh if theme changes
   const theme = useMemo(() => getUrlParameter("theme", "vuu-theme"), []);
@@ -104,10 +105,7 @@ export const ShowcaseStandalone = ({
 
   useMemo(() => {
     if (themeIsInstalled(theme)) {
-      console.log(`"attempt to to load theme ${theme}`);
-      loadTheme(theme).then(() => {
-        setThemeReady(true);
-      });
+      loadTheme(theme);
     }
   }, [theme]);
 
@@ -160,52 +158,44 @@ export const ShowcaseStandalone = ({
     }
   }, [treeSource]);
 
-  const wrapInSaltProvider = (children: ReactNode) => {
-    return (
-      <SaltProviderNext
-        accent={accentPurple}
-        corner="rounded"
-        theme={theme}
-        density={densityRef.current}
-        mode={themeModeRef.current}
-        actionFont={actionFont}
-        headingFont={headingFont}
-      >
-        {children}
-      </SaltProviderNext>
-    );
-  };
-
-  if (themeReady || theme === "no-theme") {
-    return wrapInSaltProvider(
-      dataLocationRef.current === "local" ? (
-        <LocalDataSourceProvider>
-          <div
-            className={cx("vuuShowcase-StandaloneRoot", {
-              "vuuShowcase-mdx": contentState?.isMDX,
-            })}
+  return (
+    <SaltProviderNext
+      accent={accentPurple}
+      corner="rounded"
+      theme={theme}
+      density={densityRef.current}
+      mode={themeModeRef.current}
+      actionFont={actionFont}
+      headingFont={headingFont}
+    >
+      <ThemeLoadChecker theme={theme}>
+        {dataLocationRef.current === "local" ? (
+          <LocalDataSourceProvider>
+            <div
+              className={cx("vuuShowcase-StandaloneRoot", {
+                "vuuShowcase-mdx": contentState?.isMDX,
+              })}
+            >
+              {contentState?.component}
+            </div>
+          </LocalDataSourceProvider>
+        ) : (
+          <VuuDataSourceProvider
+            authenticate={true}
+            autoConnect
+            autoLogin
+            websocketUrl="wss://localhost:8090/websocket"
           >
-            {contentState?.component}
-          </div>
-        </LocalDataSourceProvider>
-      ) : (
-        <VuuDataSourceProvider
-          authenticate={true}
-          autoConnect
-          autoLogin
-          websocketUrl="wss://localhost:8090/websocket"
-        >
-          <div
-            className={cx("vuuShowcase-StandaloneRoot", {
-              "vuuShowcase-mdx": contentState?.isMDX,
-            })}
-          >
-            {contentState?.component}
-          </div>
-        </VuuDataSourceProvider>
-      ),
-    );
-  } else {
-    return null;
-  }
+            <div
+              className={cx("vuuShowcase-StandaloneRoot", {
+                "vuuShowcase-mdx": contentState?.isMDX,
+              })}
+            >
+              {contentState?.component}
+            </div>
+          </VuuDataSourceProvider>
+        )}
+      </ThemeLoadChecker>
+    </SaltProviderNext>
+  );
 };

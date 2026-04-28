@@ -1,7 +1,10 @@
 import { useContextMenu } from "@vuu-ui/vuu-context-menu";
-import { DataSource } from "@vuu-ui/vuu-data-types";
+import { DataSourceRow } from "@vuu-ui/vuu-data-types";
 import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { useCallback } from "react";
+import { DataSourceValue } from "./ChartSeries";
+
+export type ChartMenuLocation = "canvas" | "series";
 
 type EChartContextMenuEvent = {
   event: PointerEvent;
@@ -14,23 +17,24 @@ type EChartContextMenuEvent = {
 export type ChartContextMenuOptions = {
   categoryColumn: string;
   categoryValue: VuuRowDataItemType;
+  row: DataSourceRow;
   valueColumn: string;
   value: VuuRowDataItemType;
 };
 
 type EChartContextMenuHandlerParams = {
+  data: DataSourceValue;
   dataIndex: number;
   event: EChartContextMenuEvent;
   name: string;
   seriesId: string;
   seriesName: string;
-  value: number;
+  value: DataSourceValue;
 };
 
 interface ChartContextMenuHookProps {
   allowContextMenu?: boolean;
   categoryColumnName: string;
-  dataSource: DataSource;
 }
 
 export const useChartContextMenu = ({
@@ -42,29 +46,26 @@ export const useChartContextMenu = ({
   //@ts-ignore
   const onContextMenu = useCallback<any>(
     ({
-      // dataIndex,
+      data,
       event,
       name: categoryValue,
-      // seriesId,
       seriesName: valueColumn,
-      value,
-      // ...params
+      value: keyedValue,
+      ...rest
     }: EChartContextMenuHandlerParams) => {
       event.stop();
-      // console.log(
-      //   `on context menu [${dataIndex}] #${seriesId} ${categoryColumnName} = ${categoryValue}, ${valueColumn} = ${value}`,
-      //   {
-      //     params,
-      //   },
-      // );
+      console.log({ rest });
+      const { row, value } = data;
+
       const menuOptions: ChartContextMenuOptions = {
         categoryColumn: categoryColumnName,
         categoryValue,
+        row,
         valueColumn,
         value,
       };
 
-      showContextMenu(event.event, "chart", menuOptions, {
+      showContextMenu(event.event, "series", menuOptions, {
         onOpenChange: (isOpen: boolean) => {
           console.log(`[useTableContextMenu] onOpenChange ${isOpen}`);
         },

@@ -110,6 +110,8 @@ export const useTableViewport = ({
   const inSituRowOffsetRef = useRef(0);
   const pctScrollTopRef = useRef(0);
 
+  console.log(`useTableViewport rowHeight = ${rowHeight}`);
+
   const { virtualContentHeight, pixelContentHeight, virtualisedExtent } =
     getViewportHeightProps(rowCount, rowHeight, size, showPaginationControls);
 
@@ -178,6 +180,8 @@ export const useTableViewport = ({
         count * rowHeight * (pixelContentHeight / virtualContentHeight);
 
       const viewportWidth = size.width;
+
+      console.log(`useTableViewport rowCount = ${rowCount}`);
 
       return {
         usesMeasuredHeaderHeight: headerHeight !== -1,

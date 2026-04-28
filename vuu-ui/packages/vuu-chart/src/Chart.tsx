@@ -48,7 +48,7 @@ export const Chart = ({
     seriesColumnNames,
   });
 
-  const onContextMenu = useChartContextMenu({ categoryColumnName, dataSource });
+  const onContextMenu = useChartContextMenu({ categoryColumnName });
 
   // Debounce resize event so it only fires periodically instead of constantly
   //   const resizeChart = useMemo(

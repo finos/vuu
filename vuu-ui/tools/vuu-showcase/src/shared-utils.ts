@@ -75,6 +75,7 @@ export const loadTheme = (themeName: string): Promise<void> =>
           ...document.adoptedStyleSheets,
           styleSheet,
         ];
+
         resolve();
       });
     };

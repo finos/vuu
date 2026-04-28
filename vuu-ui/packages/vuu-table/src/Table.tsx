@@ -622,6 +622,10 @@ export const Table = forwardRef(function Table(
     height: rowHeightProp,
   });
 
+  console.log(
+    `[Table] measured row height ${rowHeight}, rowHeightProp ${rowHeightProp}`,
+  );
+
   const { measuredHeight: footerHeight, measuredRef: footerRef } =
     useMeasuredHeight({});
 

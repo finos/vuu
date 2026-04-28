@@ -21,7 +21,11 @@ export const EditButtons = ({
 
   return (
     <>
-      <Button disabled={editState === "clean"} onClick={onSave}>
+      <Button
+        disabled={editState === "clean"}
+        onClick={onSave}
+        sentiment="accented"
+      >
         Save
       </Button>
       <Button onClick={onCancel}>Cancel</Button>

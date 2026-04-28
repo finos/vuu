@@ -148,17 +148,17 @@ export const useDataSource = ({
       } else if (message.type === "viewport-update") {
         if (typeof message.size === "number") {
           onSizeChange?.(message.size);
-          const size = dataRowWindow.data.length;
+          // const size = dataRowWindow.data.length;
           dataRowWindow.setRowCount(message.size);
           totalRowCountRef.current = message.size;
 
-          if (dataRowWindow.data.length < size) {
-            if (isMounted.current === false) {
-              console.log("setting state whilst unmounted");
-            }
+          // if (dataRowWindow.data.length < size) {
+          //   if (isMounted.current === false) {
+          //     console.log("setting state whilst unmounted");
+          //   }
 
-            forceUpdate({});
-          }
+          //   forceUpdate({});
+          // }
         }
         if (message.rows) {
           setData(message.rows);
@@ -225,6 +225,9 @@ export const useDataSource = ({
 
   const setRange = useCallback(
     (viewportRange: VuuRange) => {
+      console.log(
+        `[useDataSource] setRange ${viewportRange.from} - ${viewportRange.to}`,
+      );
       if (!rangeRef.current.equals(viewportRange)) {
         const range = Range(
           viewportRange.from,

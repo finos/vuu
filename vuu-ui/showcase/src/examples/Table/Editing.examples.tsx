@@ -6,20 +6,32 @@ import { DataSourceStats, TableFooter } from "@vuu-ui/vuu-table-extras";
 import { TableConfig } from "@vuu-ui/vuu-table-types";
 import { DataEditingProvider, useEditableTable } from "@vuu-ui/vuu-utils";
 import { EditButtons } from "@vuu-ui/vuu-utils/src/data-editing/EditButtons";
-import { useMemo } from "react";
+import { EditMode } from "@vuu-ui/vuu-utils/src/data-editing/useEditableTable";
+import { SyntheticEvent, useCallback, useMemo, useState } from "react";
 
 const INSTRUMENTS = { module: "SIMUL", table: "instruments" };
 const schema = getSchema("instruments");
 
 const EditTableTemplate = ({ vuuTable }: { vuuTable: VuuTable }) => {
-  const {
-    dataSource,
-    editMode,
-    editTracker,
-    onCancel,
-    onSave,
-    onToggleEditMode,
-  } = useEditableTable({
+  const [editMode, setEditMode] = useState<EditMode>("view");
+
+  const onToggleEditMode = useCallback(
+    async (e: SyntheticEvent<HTMLButtonElement>) => {
+      const toggleButton = e.target as HTMLButtonElement;
+      const editMode = toggleButton.value as EditMode;
+      setEditMode(editMode);
+    },
+    [],
+  );
+
+  const exitEditMode = useCallback(() => {
+    setEditMode("view");
+  }, []);
+
+  const { dataSource, editTracker, onCancel, onSave } = useEditableTable({
+    isEditMode: editMode === "edit",
+    onCancel: exitEditMode,
+    onSave: exitEditMode,
     table: vuuTable,
   });
   const config = useMemo<TableConfig>(

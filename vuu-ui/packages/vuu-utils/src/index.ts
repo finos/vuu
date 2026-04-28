@@ -98,3 +98,4 @@ export {
 export * from "./context-definitions/WorkspaceContext";
 export { PageVisibilityObserver } from "./PageVisibilityObserver";
 export * from "./ShellContext";
+export { ThemeLoadChecker } from "./theme-utils";

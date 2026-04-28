@@ -1,5 +1,5 @@
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { SyntheticEvent, useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { EditTracker } from "./EditTracker";
 import { useData } from "../context-definitions/DataProvider";
 import { DataSource } from "@vuu-ui/vuu-data-types";
@@ -7,16 +7,33 @@ import { isRpcSuccess } from "../protocol-message-utils";
 
 export type EditMode = "edit" | "view";
 
-export const useEditableTable = ({ table }: { table: VuuTable }) => {
+export interface EditableTableHookProps {
+  /**
+   * columns to be included in subscription. If not provided,
+   * default will be '*'
+   */
+  columns?: string[];
+  isEditMode: boolean;
+  onCancel: () => void;
+  onSave: () => void;
+  table: VuuTable;
+}
+
+export const useEditableTable = ({
+  columns,
+  isEditMode,
+  onCancel,
+  onSave,
+  table,
+}: EditableTableHookProps) => {
   const { VuuDataSource } = useData();
-  const [editMode, setEditMode] = useState<EditMode>("view");
   const [sessionDataSource, setSessionDataSource] = useState<
     DataSource | undefined
   >(undefined);
 
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ table });
-  }, [table, VuuDataSource]);
+    return new VuuDataSource({ columns, table });
+  }, [VuuDataSource, columns, table]);
 
   const editTracker = useMemo(() => new EditTracker(), []);
 
@@ -26,52 +43,44 @@ export const useEditableTable = ({ table }: { table: VuuTable }) => {
     }
   }, [dataSource, editTracker]);
 
-  const onCancel = useCallback(() => {
+  const handleCancel = useCallback(() => {
     editTracker.dataSource = dataSource;
     editTracker.cancelChanges();
-    setEditMode("view");
+    onCancel();
     setSessionDataSource(undefined);
     dataSource.resume?.();
-  }, [dataSource, editTracker]);
+  }, [dataSource, editTracker, onCancel]);
 
-  const onSave = useCallback(async () => {
+  const handleSave = useCallback(async () => {
     editTracker.dataSource = dataSource;
     const response = await editTracker.saveChanges();
     if (isRpcSuccess(response)) {
-      setEditMode("view");
+      onSave();
       setSessionDataSource(undefined);
       dataSource.resume?.();
     }
-  }, [dataSource, editTracker]);
+  }, [dataSource, editTracker, onSave]);
 
-  const onToggleEditMode = useCallback(
-    async (e: SyntheticEvent<HTMLButtonElement>) => {
-      const toggleButton = e.target as HTMLButtonElement;
-      const editMode = toggleButton.value as EditMode;
-      setEditMode(editMode);
-      if (editMode === "edit") {
-        const sessionTable = await editTracker.enterEditMode();
-        if (sessionTable && dataSource.tableSchema) {
-          dataSource.suspend?.(false);
-          const sessionDataSource = new VuuDataSource({
-            columns: dataSource.columns,
-            table: sessionTable,
-            viewport: sessionTable.table,
-          });
-          setSessionDataSource(sessionDataSource);
-          editTracker.dataSource = sessionDataSource;
-        }
+  useMemo(async () => {
+    if (isEditMode) {
+      const sessionTable = await editTracker.enterEditMode();
+      if (sessionTable && dataSource.tableSchema) {
+        dataSource.suspend?.(false);
+        const sessionDataSource = new VuuDataSource({
+          columns: dataSource.columns,
+          table: sessionTable,
+          viewport: sessionTable.table,
+        });
+        setSessionDataSource(sessionDataSource);
+        editTracker.dataSource = sessionDataSource;
       }
-    },
-    [VuuDataSource, dataSource, editTracker],
-  );
+    }
+  }, [VuuDataSource, dataSource, editTracker, isEditMode]);
 
   return {
     dataSource: sessionDataSource ?? dataSource,
-    editMode,
     editTracker,
-    onCancel,
-    onSave,
-    onToggleEditMode,
+    onCancel: handleCancel,
+    onSave: handleSave,
   };
 };

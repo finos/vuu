@@ -33,7 +33,6 @@ export const SessionTable = (table: Table, sessionId: string): SessionTable => {
     // dataSource will update its own cache
     const row = table.findByKey(key);
     if (row) {
-      const colIndex = table.map[columnName];
       const tsIndex = table.map.vuuUpdatedTimestamp;
 
       let updatesForRow = updates.get(key);
@@ -47,7 +46,14 @@ export const SessionTable = (table: Table, sessionId: string): SessionTable => {
       updatesForRow.cellUpdates[columnName] = value;
 
       const newRow = row.slice();
-      newRow[colIndex] = value;
+
+      for (const [columnName, value] of Object.entries(
+        updatesForRow.cellUpdates,
+      )) {
+        const colIndex = table.map[columnName];
+        newRow[colIndex] = value;
+      }
+
       table.emit("update", newRow, columnName, sessionId);
     } else {
       console.warn(`SessionTable update row ${key} not found`);

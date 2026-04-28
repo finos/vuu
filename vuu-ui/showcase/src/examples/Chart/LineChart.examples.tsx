@@ -1,4 +1,8 @@
-import { Chart, ChartContextMenuOptions } from "@vuu-ui/vuu-chart";
+import {
+  Chart,
+  ChartContextMenuOptions,
+  ChartMenuLocation,
+} from "@vuu-ui/vuu-chart";
 import { TableSchema } from "@vuu-ui/vuu-data-types";
 import {
   Table as DataTable,
@@ -57,7 +61,7 @@ const table = new DataTable(
 );
 
 const useContextMenu = (): TableContextMenuDef => {
-  const menuBuilder: MenuBuilder<TableMenuLocation, TableContextMenuOptions> =
+  const menuBuilder: MenuBuilder<ChartMenuLocation, ChartContextMenuOptions> =
     useCallback((_location, options) => {
       return [{ id: "cell-copy", label: "Copy text", options }];
     }, []);
@@ -69,7 +73,7 @@ const useContextMenu = (): TableContextMenuDef => {
       const { value } = options;
       switch (menuItemId) {
         case "cell-copy": {
-          navigator.clipboard.writeText(`${value}`);
+          console.log("lets do it");
           return true;
         }
 

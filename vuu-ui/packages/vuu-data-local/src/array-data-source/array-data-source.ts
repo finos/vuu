@@ -962,11 +962,11 @@ export class ArrayDataSource
       });
       this.lastRangeServed = {
         from: this.#range.from,
-        to: this.#range.to,
-        // to: Math.min(
-        //   this.#range.to,
-        //   this.#range.from + rowsWithinViewport.length,
-        // ),
+        // to: this.#range.to,
+        to: Math.min(
+          this.#range.to,
+          this.#range.from + rowsWithinViewport.length,
+        ),
       };
       // console.log(
       //   `%c[ArrayDataSource] lastRangeServed (${this.lastRangeServed.from}:${this.lastRangeServed.to})`,

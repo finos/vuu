@@ -3,20 +3,38 @@ import {
   DataSourceRow,
   DataSourceSubscribeCallback,
 } from "@vuu-ui/vuu-data-types";
+import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import {
   buildColumnMap,
   ColumnMap,
   EventEmitter,
   Range,
+  metadataKeys,
 } from "@vuu-ui/vuu-utils";
 
 type Series = {
   id: string;
   name: string;
   label: string;
-  data: number[];
+  data: DataSourceValue<number>[];
   type: "line";
 };
+
+const { KEY } = metadataKeys;
+
+export type DataSourceValue<T extends VuuRowDataItemType = number> = {
+  key: string;
+  readonly row: DataSourceRow;
+  value: T;
+};
+
+function DataSourceValue<T extends VuuRowDataItemType = number>(
+  key: string,
+  row: DataSourceRow,
+  value: T,
+): DataSourceValue<T> {
+  return { key, row, value };
+}
 
 function getCategoriesAndSeries(
   columnMap: ColumnMap,
@@ -44,7 +62,10 @@ function getCategoriesAndSeries(
         };
         seriesMap.set(seriesColumn, series);
       }
-      series.data.push(row[columnMap[seriesColumn]] as number);
+
+      const key = row[KEY] as string;
+      const value = row[columnMap[seriesColumn]] as number;
+      series.data.push(DataSourceValue(key, row, value));
     }
   });
 
