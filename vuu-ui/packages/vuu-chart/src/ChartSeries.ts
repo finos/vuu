@@ -17,8 +17,25 @@ type Series = {
   name: string;
   label: string;
   data: DataSourceValue<number>[];
+  lineStyle: {
+    width: number;
+  };
+  itemStyle: {
+    color: string | ItemColorFunction;
+  };
+  symbol: "emptyCircle" | "circle";
   type: "line";
 };
+
+export type ItemColorFunction = (params: {
+  color: string;
+  data: DataSourceValue;
+  dataIndex: number;
+  name: string;
+  seriesName: string;
+}) => string;
+
+const defaultItemColorFunction: ItemColorFunction = ({ color }) => color;
 
 const { KEY } = metadataKeys;
 
@@ -41,6 +58,7 @@ function getCategoriesAndSeries(
   data: DataSourceRow[],
   categoryColumn: string,
   seriesColumns: string[],
+  itemColorFunction = defaultItemColorFunction,
 ): [string[], Series[]] {
   const categoryValues: string[] = [];
   const seriesMap = new Map<string, Series>();
@@ -59,6 +77,13 @@ function getCategoriesAndSeries(
           label: seriesColumn,
           data: [],
           type: "line",
+          itemStyle: {
+            color: itemColorFunction,
+          },
+          lineStyle: {
+            width: 1.5,
+          },
+          symbol: "circle",
         };
         seriesMap.set(seriesColumn, series);
       }
@@ -82,6 +107,8 @@ export interface ChartSeriesConstructorProps {
    * By default, these are the x axis values.
    */
   category: string;
+
+  itemColorFunction?: ItemColorFunction;
   /**
    * The column names of the columns that define our data.
    * By default, these are the y axis values.
@@ -92,6 +119,7 @@ export interface ChartSeriesConstructorProps {
 export class ChartSeries extends EventEmitter<ChartEvents> {
   #categoryColumn: string;
   #columnMap: ColumnMap = {};
+  #itemColorFunction: ItemColorFunction | undefined;
   #dataSource: DataSource;
   #categoryCount = 0;
 
@@ -111,6 +139,7 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
           message.rows,
           this.#categoryColumn,
           this.#seriesColumns,
+          this.#itemColorFunction,
         );
         this.#dates = dates;
         this.#series = series;
@@ -120,10 +149,16 @@ export class ChartSeries extends EventEmitter<ChartEvents> {
     }
   };
 
-  constructor({ category, dataSource, series }: ChartSeriesConstructorProps) {
+  constructor({
+    category,
+    dataSource,
+    itemColorFunction,
+    series,
+  }: ChartSeriesConstructorProps) {
     super();
     this.#categoryColumn = category;
     this.#dataSource = dataSource;
+    this.#itemColorFunction = itemColorFunction;
     this.#seriesColumns = series;
 
     dataSource.subscribe({ range: Range(0, 1000) }, this.handleData);

@@ -6,12 +6,14 @@ import { ChartOptionsProps, useChartOptions } from "./useChartOptions";
 import { useChartContextMenu } from "./useChartContextMenu";
 
 import echartCss from "./Chart.css";
+import { ItemColorFunction } from "./ChartSeries";
 
 type OptionSettings = {
   notMerge: boolean;
 };
 
 type ChartSettings = {
+  renderer: "svg" | "canvas";
   useCoarsePointer: boolean;
 };
 
@@ -19,17 +21,19 @@ export interface ChartProps
   extends ChartOptionsProps,
     HTMLAttributes<HTMLDivElement> {
   chartSettings?: ChartSettings;
-  events?: unknown;
+  itemColorFunction?: ItemColorFunction;
   optionSettings?: OptionSettings;
+  palette?: string[];
 }
 
 export const Chart = ({
   categoryColumnName,
-  chartSettings = { useCoarsePointer: true }, // enables clicking near a line and still highlighting it
+  chartSettings = { useCoarsePointer: true, renderer: "svg" }, // enables clicking near a line and still highlighting it
   dataSource,
+  itemColorFunction,
   optionSettings = { notMerge: true }, // don't merge two options together when updating option
+  palette,
   style = { width: "100%", height: "100%" },
-  events = {},
   seriesColumnNames,
   ...htmlAttributes
 }: ChartProps) => {
@@ -44,6 +48,8 @@ export const Chart = ({
 
   const option = useChartOptions({
     categoryColumnName,
+    itemColorFunction,
+    palette,
     dataSource,
     seriesColumnNames,
   });
@@ -68,14 +74,6 @@ export const Chart = ({
 
     chart.on("contextmenu", onContextMenu);
 
-    // Set up event listeners
-    // for (const [key, handler] of Object.entries(events)) {
-    //   console.log(`register ${key} handler`);
-    //   chart.on(key, (param) => {
-    //     handler(param);
-    //   });
-    // }
-
     // Resize event listener
     // const resizeObserver = new ResizeObserver(() => {
     //   resizeChart();
@@ -92,7 +90,7 @@ export const Chart = ({
       //   }
       //   resizeObserver.disconnect();
     };
-  }, [chartSettings, events, onContextMenu]);
+  }, [chartSettings, onContextMenu]);
 
   useEffect(() => {
     if (chartRef.current) {
