@@ -1,5 +1,9 @@
 export { Chart, type ChartProps } from "./Chart";
-export { ChartSeries } from "./ChartSeries";
+export {
+  ChartSeries,
+  type DataSourceValue,
+  type ItemColorFunction,
+} from "./ChartSeries";
 export type {
   ChartContextMenuOptions,
   ChartMenuLocation,

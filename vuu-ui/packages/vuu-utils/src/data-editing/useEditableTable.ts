@@ -44,7 +44,7 @@ export const useEditableTable = ({
   }, [dataSource, editTracker]);
 
   const handleCancel = useCallback(() => {
-    editTracker.dataSource = dataSource;
+    // editTracker.dataSource = dataSource;
     editTracker.cancelChanges();
     onCancel();
     setSessionDataSource(undefined);
@@ -52,7 +52,7 @@ export const useEditableTable = ({
   }, [dataSource, editTracker, onCancel]);
 
   const handleSave = useCallback(async () => {
-    editTracker.dataSource = dataSource;
+    // editTracker.dataSource = dataSource;
     const response = await editTracker.saveChanges();
     if (isRpcSuccess(response)) {
       onSave();

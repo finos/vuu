@@ -181,8 +181,6 @@ export const useTableViewport = ({
 
       const viewportWidth = size.width;
 
-      console.log(`useTableViewport rowCount = ${rowCount}`);
-
       return {
         usesMeasuredHeaderHeight: headerHeight !== -1,
         appliedPageSize,
