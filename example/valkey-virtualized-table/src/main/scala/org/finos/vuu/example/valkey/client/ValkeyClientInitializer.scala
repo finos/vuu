@@ -6,17 +6,18 @@ import org.finos.vuu.example.valkey.client.options.ValkeyClientOptions
 class ValkeyClientInitializer(val options: ValkeyClientOptions) {
 
   def create() : UnifiedJedis = {
-    options.nodes.size match {
-      case 0 => throw new IllegalArgumentException("No nodes provided")
-      case 1 => createConnectionPoolClient()
-      case _ => createClusterClient()
+    options.nodes.toList match {
+      case Nil =>
+        createConnectionPoolClient(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT)
+      case (host, port) :: Nil =>
+        createConnectionPoolClient(host, port)
+      case _ =>
+        createClusterClient()
     }
   }
 
-  private def createConnectionPoolClient(): JedisPooled = {
+  private def createConnectionPoolClient(host: String, port: Int): JedisPooled = {
     val poolCfg = createConnectionPoolConfig()
-
-    val (host, port) = options.nodes.head
     new JedisPooled(poolCfg, host, port, options.timeoutMs)
   }
 
