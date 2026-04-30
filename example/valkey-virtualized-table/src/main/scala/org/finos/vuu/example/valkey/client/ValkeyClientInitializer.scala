@@ -3,9 +3,11 @@ package org.finos.vuu.example.valkey.client
 import io.valkey.*
 import org.finos.vuu.example.valkey.client.options.ValkeyClientOptions
 
+import scala.jdk.CollectionConverters.*
+
 class ValkeyClientInitializer(val options: ValkeyClientOptions) {
 
-  def create() : UnifiedJedis = {
+  def create(): UnifiedJedis = {
     options.nodes.toList match {
       case Nil =>
         createConnectionPoolClient(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT)
@@ -23,11 +25,9 @@ class ValkeyClientInitializer(val options: ValkeyClientOptions) {
 
   private def createClusterClient(): JedisCluster = {
     val poolCfg = createConnectionPoolConfig()
-
-    val hosts = new java.util.HashSet[HostAndPort]()
-    options.nodes.foreach { case (host, port) =>
-      hosts.add(new HostAndPort(host, port))
-    }
+    val hosts = options.nodes
+      .map { case (host, port) => new HostAndPort(host, port) }
+      .asJava
 
     new JedisCluster(hosts, options.timeoutMs, options.maxAttempts, poolCfg)
   }

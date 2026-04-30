@@ -23,9 +23,9 @@ object ValkeyClientOptions {
       nodes = Set(("localhost", 6379)),
       timeoutMs = 2_000,
       maxAttempts = Int.MaxValue,
-      maxTotal = 32,
-      maxIdle = 32,
-      minIdle = 16
+      maxTotal = 8,
+      maxIdle = 8,
+      minIdle = 4
     )
   }
 
