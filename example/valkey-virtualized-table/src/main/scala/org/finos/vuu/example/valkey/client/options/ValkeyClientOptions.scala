@@ -1,7 +1,5 @@
 package org.finos.vuu.example.valkey.client.options
 
-import io.valkey.Protocol
-
 trait ValkeyClientOptions {
 
   def nodes: Set[(String, Int)]
