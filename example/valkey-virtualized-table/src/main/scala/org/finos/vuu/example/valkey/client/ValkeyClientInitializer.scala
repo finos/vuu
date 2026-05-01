@@ -1,6 +1,6 @@
 package org.finos.vuu.example.valkey.client
 
-import io.valkey.*
+import io.valkey.{ConnectionPoolConfig, HostAndPort, JedisCluster, JedisPooled, Protocol, UnifiedJedis}
 import org.finos.vuu.example.valkey.client.options.ValkeyClientOptions
 
 import scala.jdk.CollectionConverters.*
