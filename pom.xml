@@ -56,6 +56,8 @@
         <scala.logging.version>3.9.6</scala.logging.version>
         <scalamock.version>7.5.5</scalamock.version>
         <scalatest.version>3.2.19</scalatest.version>
+        <testcontainers.version>2.0.3</testcontainers.version>
+        <testcontainers.scalatest.version>0.44.1</testcontainers.scalatest.version>
     </properties>
 
     <modules>

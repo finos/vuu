@@ -45,6 +45,7 @@ The second step (`npm run build:app`) builds the sample application. Application
 
 #### Prerequisites
 * **Java 17+**
+* **Docker Desktop** (or Podman Desktop in compatibility mode)
 * The example client code has already been installed and is ready in `deployed_apps`
 
 #### Linux & macOS
