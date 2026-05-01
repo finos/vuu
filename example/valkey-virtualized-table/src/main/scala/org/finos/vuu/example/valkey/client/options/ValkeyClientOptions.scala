@@ -1,5 +1,7 @@
 package org.finos.vuu.example.valkey.client.options
 
+import io.valkey.Protocol
+
 trait ValkeyClientOptions {
 
   def nodes: Set[(String, Int)]
@@ -9,6 +11,7 @@ trait ValkeyClientOptions {
   def maxIdle: Int
   def minIdle: Int
   def withNode(host: String, port: Int): ValkeyClientOptions
+  def withNodes(nodes: Set[(String, Int)]): ValkeyClientOptions
   def withTimeoutMs(timeoutMs: Int): ValkeyClientOptions
   def withMaxAttempts(maxAttempts: Int): ValkeyClientOptions
   def withMaxTotal(maxTotal: Int): ValkeyClientOptions
@@ -20,7 +23,7 @@ object ValkeyClientOptions {
 
   def apply(): ValkeyClientOptions = {
     ValkeyClientOptionsImpl(
-      nodes = Set(("localhost", 6379)),
+      nodes = Set((Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT)),
       timeoutMs = 2_000,
       maxAttempts = Int.MaxValue,
       maxTotal = 8,
@@ -38,10 +41,9 @@ private case class ValkeyClientOptionsImpl(nodes: Set[(String, Int)],
                                            maxIdle: Int,
                                            minIdle: Int) extends ValkeyClientOptions {
 
-  override def withNode(host: String, port: Int): ValkeyClientOptions =  {
-    val node = (host, port)
-    this.copy(nodes = nodes + node)
-  }
+  override def withNode(host: String, port: Int): ValkeyClientOptions = this.copy(nodes = Set((host, port)))
+
+  override def withNodes(nodes: Set[(String, Int)]): ValkeyClientOptions = this.copy(nodes = nodes)
 
   override def withTimeoutMs(timeoutMs: Int): ValkeyClientOptions = this.copy(timeoutMs = timeoutMs)
 
