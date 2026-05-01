@@ -23,7 +23,7 @@ object ValkeyClientOptions {
 
   def apply(): ValkeyClientOptions = {
     ValkeyClientOptionsImpl(
-      nodes = Set((Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT)),
+      nodes = Set.empty,
       timeoutMs = 2_000,
       maxAttempts = Int.MaxValue,
       maxTotal = 8,
