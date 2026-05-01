@@ -1,33 +1,31 @@
 package org.finos.vuu.example.valkey
 
-import org.finos.vuu.example.valkey.ValkeyContainer.{imageName, port}
-import org.testcontainers.containers.GenericContainer
+import com.dimafeng.testcontainers.GenericContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.utility.DockerImageName
+import org.testcontainers.containers.{GenericContainer => JavaGenericContainer}
 
-trait ValkeyContainer {
+class ValkeyContainer(tag: String = "8.0") extends GenericContainer(
+  ValkeyContainer.createContainer(tag)
+) {
 
-  def getConnectionString: String
-
-}
-
-object ValkeyContainer {
-
-  val imageName = "docker.io/valkey/valkey"
-  val port = 6379
-
-  def apply(tag: String = "8.0"): ValkeyContainer = {
-    ValkeyContainerImpl(DockerImageName.parse(s"$imageName:$tag"))
+  def getConnectionString: String = {
+    val host = container.getHost
+    val mappedPort = container.getMappedPort(ValkeyContainer.port)
+    s"valkey://$host:$mappedPort"
   }
 }
 
-private case class ValkeyContainerImpl(dockerImageName: DockerImageName) 
-  extends GenericContainer(dockerImageName) with ValkeyContainer {
+object ValkeyContainer {
+  val imageName = "valkey/valkey"
+  val port = 6379
 
-  dockerImageName.assertCompatibleWith(DockerImageName.parse(imageName))
+  private def createContainer(tag: String): JavaGenericContainer[_] = {
+    val c = new JavaGenericContainer(DockerImageName.parse(s"$imageName:$tag"))
+    c.withExposedPorts(port)
+    c.waitingFor(Wait.forListeningPort())
+    c
+  }
 
-  this.withExposedPorts(port)
-  this.waitingFor(Wait.forListeningPort())
-
-  override def getConnectionString: String = s"valkey://$getHost:${getMappedPort(port)}"
+  def apply(tag: String = "8.0"): ValkeyContainer = new ValkeyContainer(tag)
 }
