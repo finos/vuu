@@ -1,3 +1,4 @@
+import type { ValidationStatus } from "@salt-ds/core";
 import type {
   DataValueDescriptor,
   DataValueTypeSimple,
@@ -13,7 +14,6 @@ import type {
   VuuSortType,
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
-import { CellPos } from "@vuu-ui/vuu-table/src/table-dom-utils";
 import type { DateTimePattern, RowClassNameGenerator } from "@vuu-ui/vuu-utils";
 import type {
   ComponentType,
@@ -305,6 +305,12 @@ export interface ColumnDescriptor extends DataValueDescriptor {
   minWidth?: number;
   pin?: PinLocation | false;
   resizeable?: boolean;
+
+  /**
+   * Column and all cells will be rendered in selected state;
+   */
+
+  selected?: boolean;
   sortable?: boolean;
   /**
    * 'client' columns will not receive data from dataSource.
@@ -313,6 +319,8 @@ export interface ColumnDescriptor extends DataValueDescriptor {
    * default is 'server'
    */
   source?: "client" | "server";
+
+  status?: ValidationStatus;
   width?: number;
 }
 
