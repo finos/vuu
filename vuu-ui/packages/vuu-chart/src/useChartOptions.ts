@@ -2,6 +2,7 @@ import { type EChartsCoreOption } from "echarts";
 import { useMemo, useState } from "react";
 import { ChartSeries, ItemColorFunction } from "./ChartSeries";
 import { DataSource } from "@vuu-ui/vuu-data-types";
+import { itemsChanged } from "@vuu-ui/vuu-utils";
 
 const defaultPalette = [
   "#4676bf",
@@ -29,15 +30,23 @@ export const useChartOptions = ({
   const [, forceRender] = useState({});
 
   const chartSeries = useMemo(() => {
+    console.log("new ChartSeries");
     const cs = new ChartSeries({
-      category: categoryColumnName,
       itemColorFunction,
-      series: seriesColumnNames,
       dataSource,
     });
     cs.on("update", () => forceRender({}));
     return cs;
-  }, [categoryColumnName, dataSource, itemColorFunction, seriesColumnNames]);
+  }, [dataSource, itemColorFunction]);
+
+  useMemo(() => {
+    if (categoryColumnName !== chartSeries.categoryColumn) {
+      chartSeries.categoryColumn = categoryColumnName;
+    }
+    if (itemsChanged(seriesColumnNames, chartSeries.seriesColumnNames)) {
+      chartSeries.seriesColumnNames = seriesColumnNames;
+    }
+  }, [categoryColumnName, chartSeries, seriesColumnNames]);
 
   return {
     animation: false,
@@ -55,6 +64,9 @@ export const useChartOptions = ({
       right: 5,
     },
     series: chartSeries.series,
+    tooltip: {
+      trigger: "axis",
+    },
     xAxis: {
       data: chartSeries.categories,
     },

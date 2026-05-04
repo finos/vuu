@@ -8,7 +8,7 @@ import {
   Table as DataTable,
   TickingArrayDataSource,
 } from "@vuu-ui/vuu-data-test";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ContextMenuProvider,
   MenuActionHandler,
@@ -16,6 +16,7 @@ import {
 } from "@vuu-ui/vuu-context-menu";
 import { TableContextMenuDef } from "@vuu-ui/vuu-table-types";
 import { ItemColorFunction } from "@vuu-ui/vuu-chart/src/ChartSeries";
+import { Button } from "@salt-ds/core";
 
 const ChartTableSchema: TableSchema = {
   columns: [
@@ -90,6 +91,7 @@ const useContextMenu = (): TableContextMenuDef => {
 };
 
 export const SimpleLineChart = () => {
+  const [series, setSeries] = useState(["price", "volume"]);
   const dataSource = useMemo(() => {
     return new TickingArrayDataSource({
       columnDescriptors: ChartTableSchema.columns,
@@ -107,19 +109,28 @@ export const SimpleLineChart = () => {
   }, []);
 
   return (
-    <div style={{ width: 800, height: 600 }}>
-      <ContextMenuProvider
-        menuActionHandler={menuActionHandler}
-        menuBuilder={menuBuilder}
-      >
-        <Chart
-          categoryColumnName="date"
-          chartSettings={{ useCoarsePointer: true, renderer: "svg" }}
-          dataSource={dataSource}
-          itemColorFunction={itemColorFunction}
-          seriesColumnNames={["price", "volume"]}
-        />
-      </ContextMenuProvider>
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <div style={{ flex: "0 0 32px" }}>
+        <Button onClick={() => setSeries(["price"])}>Price Only</Button>
+        <Button onClick={() => setSeries(["volume"])}>Volume Only</Button>
+        <Button onClick={() => setSeries(["price", "volume"])}>
+          Price and Volume
+        </Button>
+      </div>
+      <div style={{ width: 800, height: 600 }}>
+        <ContextMenuProvider
+          menuActionHandler={menuActionHandler}
+          menuBuilder={menuBuilder}
+        >
+          <Chart
+            categoryColumnName="date"
+            chartSettings={{ useCoarsePointer: true, renderer: "svg" }}
+            dataSource={dataSource}
+            itemColorFunction={itemColorFunction}
+            seriesColumnNames={series}
+          />
+        </ContextMenuProvider>
+      </div>
     </div>
   );
 };

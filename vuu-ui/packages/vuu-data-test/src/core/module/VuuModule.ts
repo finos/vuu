@@ -403,14 +403,13 @@ export abstract class VuuModule<T extends string = string>
   private exitEditMode: ServiceHandler = async (rpcRequest) => {
     if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
       const { viewPortId } = rpcRequest.context;
-      const { dataSource, sessionTableName } =
-        this.getSubscriptionByViewport(viewPortId);
-      if (sessionTableName && dataSource.table) {
+      // the viewport Id is the session table name
+      const sessionTable = this.#sessionTableMap[viewPortId] as SessionTable;
+      delete this.#sessionTableMap[viewPortId];
+      const { dataSource } = this.getSubscriptionByViewport(viewPortId);
+
+      if (dataSource.table) {
         const table = this.tables[dataSource.table.table as T];
-        const sessionTable = this.#sessionTableMap[
-          sessionTableName
-        ] as SessionTable;
-        delete this.#sessionTableMap[viewPortId];
 
         if (rpcRequest.params.save === true) {
           // apply changes to underlying table

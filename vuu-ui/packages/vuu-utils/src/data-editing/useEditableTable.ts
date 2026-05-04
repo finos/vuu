@@ -10,17 +10,23 @@ export type EditMode = "edit" | "view";
 export interface EditableTableHookProps {
   /**
    * columns to be included in subscription. If not provided,
-   * default will be '*'
+   * default will be '*'. Ignored if dataSource prop present.
    */
   columns?: string[];
+  dataSource?: DataSource;
   isEditMode: boolean;
   onCancel: () => void;
   onSave: () => void;
+  /**
+   * If dataSource not provided, new DataSource
+   * will be created using table and columns
+   */
   table: VuuTable;
 }
 
 export const useEditableTable = ({
   columns,
+  dataSource: dataSourceProp,
   isEditMode,
   onCancel,
   onSave,
@@ -31,9 +37,16 @@ export const useEditableTable = ({
     DataSource | undefined
   >(undefined);
 
+  const clearSessionDataSource = useCallback(() => {
+    setSessionDataSource((dataSource) => {
+      dataSource?.unsubscribe();
+      return undefined;
+    });
+  }, []);
+
   const dataSource = useMemo(() => {
-    return new VuuDataSource({ columns, table });
-  }, [VuuDataSource, columns, table]);
+    return dataSourceProp ?? new VuuDataSource({ columns, table });
+  }, [VuuDataSource, columns, dataSourceProp, table]);
 
   const editTracker = useMemo(() => new EditTracker(), []);
 
@@ -47,19 +60,19 @@ export const useEditableTable = ({
     // editTracker.dataSource = dataSource;
     editTracker.cancelChanges();
     onCancel();
-    setSessionDataSource(undefined);
+    clearSessionDataSource();
     dataSource.resume?.();
-  }, [dataSource, editTracker, onCancel]);
+  }, [clearSessionDataSource, dataSource, editTracker, onCancel]);
 
   const handleSave = useCallback(async () => {
     // editTracker.dataSource = dataSource;
+    dataSource.resume?.();
     const response = await editTracker.saveChanges();
     if (isRpcSuccess(response)) {
       onSave();
-      setSessionDataSource(undefined);
-      dataSource.resume?.();
+      clearSessionDataSource();
     }
-  }, [dataSource, editTracker, onSave]);
+  }, [clearSessionDataSource, dataSource, editTracker, onSave]);
 
   useMemo(async () => {
     if (isEditMode) {

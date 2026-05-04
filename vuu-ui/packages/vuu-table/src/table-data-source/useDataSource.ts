@@ -88,19 +88,23 @@ export const useDataSource = ({
     [],
   );
 
-  useMemo(() => {
-    dataSource.on("resumed", () => {
-      // When we resume a dataSource (after switching tabs etc)
-      // client will receive rows. We may not have received any
-      // setRange calls at this point so dataWindow range will
-      //not yet be set. If the dataWindow range is already set,
-      // this is a no-op.
-      const { range } = dataSource;
-      if (range.to !== 0) {
-        dataRowWindow.setRange(dataSource.range.withBuffer);
-      }
-    });
+  const handleResume = useCallback(() => {
+    // When we resume a dataSource (after switching tabs etc)
+    // client will receive rows. We may not have received any
+    // setRange calls at this point so dataWindow range will
+    //not yet be set. If the dataWindow range is already set,
+    // this is a no-op.
+    const { range } = dataSource;
+    if (range.to !== 0) {
+      dataRowWindow.setRange(dataSource.range.withBuffer);
+    }
   }, [dataRowWindow, dataSource]);
+
+  useEffect(() => {
+    return () => {
+      dataSource.removeListener("resumed", handleResume);
+    };
+  }, [dataSource, handleResume]);
 
   const setData = useCallback(
     (updates: DataSourceRow[]) => {
@@ -161,6 +165,9 @@ export const useDataSource = ({
           // }
         }
         if (message.rows) {
+          console.log(
+            `#${message.clientViewportId} ${message.rows.length} rows`,
+          );
           setData(message.rows);
           if (autoSelect && rowAutoSelected.current === false) {
             // OR if no selected row in message.rows, e.g after a filter
@@ -188,11 +195,6 @@ export const useDataSource = ({
         onSizeChange?.(0);
         dataRowWindow.setRowCount(0);
         setData([]);
-
-        if (isMounted.current === false) {
-          console.log("setting state whilst unmounted");
-        }
-
         forceUpdate({});
       } else {
         console.log(`useDataSource unexpected message ${message.type}`);
@@ -225,9 +227,6 @@ export const useDataSource = ({
 
   const setRange = useCallback(
     (viewportRange: VuuRange) => {
-      console.log(
-        `[useDataSource] setRange ${viewportRange.from} - ${viewportRange.to}`,
-      );
       if (!rangeRef.current.equals(viewportRange)) {
         const range = Range(
           viewportRange.from,
@@ -268,7 +267,6 @@ export const useDataSource = ({
   );
 
   useEffect(() => {
-    isMounted.current = true;
     if (dataSource.status !== "initialising") {
       const { columns, tableSchema } = dataSource;
       if (tableSchema) {
@@ -278,7 +276,6 @@ export const useDataSource = ({
           `[useDataSource] a resumed dataSource must have a tableSchema`,
         );
       }
-
       dataSource.resume?.(datasourceMessageHandler);
 
       if (dataSource.range.from > 0) {
@@ -288,7 +285,6 @@ export const useDataSource = ({
       }
     }
     return () => {
-      isMounted.current = false;
       dataSource.suspend?.(
         suspenseProps?.escalateToDisable,
         suspenseProps?.escalateDelay,

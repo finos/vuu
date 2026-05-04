@@ -35,6 +35,10 @@
   }
 }
 
+.vuuTableInputCell-edited {
+  border-left:  solid var(--vuuTableInputCell-edited-color, black) 4px !important;
+}
+
 .vuuTableCell-error {
   .vuuTableInputCell {
     outline: var(--vuuTableCell-outline, solid red 2px);

@@ -6,6 +6,7 @@ import {
   getTypedValue,
   isRpcError,
   isRpcSuccess,
+  useEditTracker,
 } from "@vuu-ui/vuu-utils";
 import {
   FocusEventHandler,
@@ -28,6 +29,8 @@ export interface EditableTextHookProps<
 
 type EditState = {
   message?: string;
+  // Set once we commit an edit, cleared when edit session is ended.
+  previousValue?: string;
   value: string;
 };
 
@@ -39,6 +42,8 @@ export const useEditableText = <T extends string | number | boolean = string>({
   onEdit,
   type = "string",
 }: EditableTextHookProps<T>) => {
+  const { inEditMode } = useEditTracker(true);
+
   const [editState, setEditState] = useState<EditState>({
     value: stringValueOf(value),
   });
@@ -55,6 +60,7 @@ export const useEditableText = <T extends string | number | boolean = string>({
 
   const commit = useCallback(async () => {
     const { value } = editState;
+    console.log(`commit ${JSON.stringify(editState)}`);
     const result = clientSideEditValidationCheck?.(value, "*");
     if (result?.ok === false) {
       setEditState((state) => ({
@@ -63,21 +69,46 @@ export const useEditableText = <T extends string | number | boolean = string>({
       }));
       return false;
     } else {
-      setEditState((state) => ({ ...state, message: undefined }));
+      //save initial value,it could be reset by time async operation completes
+      const { current: initialValue } = initialValueRef;
       const typedValue = getTypedValue(value, type, true);
+      const previousValue = getTypedValue(initialValue, type);
       const response = await onEdit?.(
-        { editType: "commit", value: typedValue, isValid: true },
+        {
+          editType: "commit",
+          isValid: true,
+          previousValue,
+          value: typedValue,
+        },
         "commit",
       );
       if (isRpcSuccess(response)) {
         isDirtyRef.current = false;
+        setEditState(({ previousValue, value }) => ({
+          previousValue:
+            previousValue === value
+              ? undefined
+              : previousValue === undefined
+                ? initialValue
+                : previousValue,
+          value,
+        }));
         initialValueRef.current = value;
         return true;
       } else if (isRpcError(response)) {
-        setEditState((state) => ({
-          ...state,
-          message: response.errorMessage,
-        }));
+        if (response.errorMessage === "CHANGE_REVERTED") {
+          setEditState(({ value }) => ({
+            previousValue: undefined,
+            value,
+          }));
+          initialValueRef.current = value;
+          return true;
+        } else {
+          setEditState((state) => ({
+            ...state,
+            message: response.errorMessage,
+          }));
+        }
       }
     }
     return false;
@@ -224,6 +255,12 @@ export const useEditableText = <T extends string | number | boolean = string>({
   );
 
   return {
+    /**
+     * has the value been edited during this edit session
+     */
+    edited:
+      editState.previousValue !== undefined &&
+      editState.previousValue !== editState.value,
     //TODO why are we detecting commit here, why not use VuuInput ?
     inputProps: {
       onBlur: handleBlur,

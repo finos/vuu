@@ -46,7 +46,7 @@ const DataTableTemplate = ({
   ...props
 }: DataTableProps) => {
   const { VuuDataSource } = useData();
-  const [selectedColumn, setSelectedColumn] = useState<string>("none");
+  const [selectedColumn, setSelectedColumn] = useState<string[]>([]);
   const tableConfig = useMemo<TableConfig>(() => {
     return {
       columnSeparators: true,
@@ -54,7 +54,7 @@ const DataTableTemplate = ({
       zebraStripes: true,
       ...configProp,
       columns: schema.columns.map<ColumnDescriptor>((col) =>
-        col.name === selectedColumn
+        selectedColumn.includes(col.name)
           ? {
               ...col,
               selected: true,
@@ -64,8 +64,6 @@ const DataTableTemplate = ({
       ),
     };
   }, [configProp, schema.columns, selectedColumn]);
-
-  console.log({ columns: tableConfig.columns });
 
   const dataSource = useMemo(() => {
     return (
@@ -84,10 +82,8 @@ const DataTableTemplate = ({
   }, [dataSource]);
 
   const handleChangeSelectedColumn = useCallback(
-    (evt: SyntheticEvent, [selectedItem]: string[]) => {
-      if (selectedItem) {
-        setSelectedColumn(selectedItem);
-      }
+    (evt: SyntheticEvent, selectedItems: string[]) => {
+      setSelectedColumn(selectedItems);
     },
     [],
   );
@@ -108,12 +104,10 @@ const DataTableTemplate = ({
           <FormFieldLabel>Selected Coumn</FormFieldLabel>
           <Dropdown
             bordered
-            value={selectedColumn}
+            multiselect
+            selected={selectedColumn}
             onSelectionChange={handleChangeSelectedColumn}
           >
-            <Option key="none" value="none">
-              None
-            </Option>
             {schema.columns.map((column) => (
               <Option key={column.name} value={column.name}>
                 {column.name}

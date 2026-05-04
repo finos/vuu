@@ -17,12 +17,21 @@ export const DataEditingProvider = ({
   );
 };
 
-export const useEditTracker = () => {
+export function useEditTracker(
+  throwIfUnavailable: false | undefined,
+): EditTracker | undefined;
+export function useEditTracker(throwIfUnavailable: true): EditTracker;
+export function useEditTracker(throwIfUnavailable = false) {
   const editTracker = useContext(DataEditingContext);
   if (editTracker === undefined) {
-    console.warn(
-      "[useEditTracker] no DataEditingContext in scope. You need to enclose editable component(s) with DataEditingProvider",
-    );
+    const message =
+      "[useEditTracker] no DataEditingContext in scope. You need to enclose editable component(s) with DataEditingProvider";
+    if (throwIfUnavailable) {
+      throw Error(message);
+    } else {
+      console.warn(message);
+    }
+  } else {
+    return editTracker;
   }
-  return editTracker;
-};
+}

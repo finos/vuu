@@ -1,3 +1,6 @@
+import { DataValueDescriptor } from "@vuu-ui/vuu-data-types";
+import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
+
 export type valueChangeDirection = "up1" | "up2" | "down1" | "down2" | "";
 
 export const UP1 = "up1";
@@ -105,3 +108,18 @@ export function asInteger(
     throw Error(`parseIndex invalid value ${index}`);
   }
 }
+
+export const dataDescriptorTypeToVuuRowDataItemType = ({
+  serverDataType = "string",
+}: DataValueDescriptor): "string" | "number" | "boolean" => {
+  switch (serverDataType) {
+    case "double":
+    case "int":
+    case "long":
+      return "number";
+    case "boolean":
+      return "boolean";
+    default:
+      return "string";
+  }
+};

@@ -284,6 +284,7 @@ export class ArrayDataSource
   }
 
   unsubscribe() {
+    this.removeAllListeners();
     this.clientCallback = undefined;
     this.#status = "unsubscribed";
     this.emit("unsubscribed", this.viewport);

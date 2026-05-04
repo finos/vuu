@@ -27,7 +27,6 @@ export const useMeasuredHeight = ({
         if (lastMeasuredHeight.current !== newHeight) {
           if (isValidNumber(newHeight)) {
             lastMeasuredHeight.current = newHeight;
-            console.log(`[useMeasuredHeight] resizeObserver  ${newHeight}`);
             setMeasuredHeight(newHeight);
             onHeightMeasured?.(newHeight);
           }
@@ -41,7 +40,6 @@ export const useMeasuredHeight = ({
       if (el) {
         if (heightProp === 0) {
           const { height } = el.getBoundingClientRect();
-          console.log(`[useMeasuredHeight] initial height = ${height}`);
           resizeObserver.observe(el);
           // avoids tiny sub-pixel discrepancies
           const measuredHeight = Math.round(height);

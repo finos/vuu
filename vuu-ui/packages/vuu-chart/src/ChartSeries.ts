@@ -11,6 +11,7 @@ import {
   Range,
   metadataKeys,
 } from "@vuu-ui/vuu-utils";
+import { MovingDataRowWindow } from "./DataRowMovingWindow";
 
 type Series = {
   id: string;
@@ -102,66 +103,78 @@ export type ChartEvents = {
 };
 export interface ChartSeriesConstructorProps {
   dataSource: DataSource;
-  /**
-   * The column name of the column that defines our category axis.
-   * By default, these are the x axis values.
-   */
-  category: string;
-
   itemColorFunction?: ItemColorFunction;
-  /**
-   * The column names of the columns that define our data.
-   * By default, these are the y axis values.
-   */
-  series: string[];
 }
 
 export class ChartSeries extends EventEmitter<ChartEvents> {
-  #categoryColumn: string;
+  #categoryColumn = "";
   #columnMap: ColumnMap = {};
   #itemColorFunction: ItemColorFunction | undefined;
-  #dataSource: DataSource;
-  #categoryCount = 0;
+  #dataWindow = new MovingDataRowWindow(Range(0, 1000));
 
   #dates: string[] = [];
   #series: Series[] = [];
-  #seriesColumns: string[];
+  #seriesColumns: string[] = [];
 
   handleData: DataSourceSubscribeCallback = (message) => {
     if (message.type === "subscribed") {
       this.#columnMap = buildColumnMap(message.tableSchema.columns);
     } else if (message.type === "viewport-update") {
       if (message.mode === "size-only") {
-        this.#categoryCount = message.size ?? 0;
+        // ???
       } else if (message.rows) {
-        const [dates, series] = getCategoriesAndSeries(
-          this.#columnMap,
-          message.rows,
-          this.#categoryColumn,
-          this.#seriesColumns,
-          this.#itemColorFunction,
-        );
-        this.#dates = dates;
-        this.#series = series;
+        for (const row of message.rows) {
+          this.#dataWindow.add(row);
+        }
+        this.buildCategoriesAndSeries();
       }
     } else {
       console.warn(JSON.stringify(message));
     }
   };
 
-  constructor({
-    category,
-    dataSource,
-    itemColorFunction,
-    series,
-  }: ChartSeriesConstructorProps) {
-    super();
-    this.#categoryColumn = category;
-    this.#dataSource = dataSource;
-    this.#itemColorFunction = itemColorFunction;
-    this.#seriesColumns = series;
+  buildCategoriesAndSeries() {
+    if (this.#categoryColumn && this.#seriesColumns.length > 0) {
+      const [dates, series] = getCategoriesAndSeries(
+        this.#columnMap,
+        this.#dataWindow.data,
+        this.#categoryColumn,
+        this.#seriesColumns,
+        this.#itemColorFunction,
+      );
+      this.#dates = dates;
+      this.#series = series;
 
+      this.emit("update");
+    }
+  }
+
+  constructor({ dataSource, itemColorFunction }: ChartSeriesConstructorProps) {
+    super();
+    this.#itemColorFunction = itemColorFunction;
     dataSource.subscribe({ range: Range(0, 1000) }, this.handleData);
+  }
+
+  get categoryColumn() {
+    return this.#categoryColumn;
+  }
+
+  set categoryColumn(categoryColumn: string) {
+    this.#categoryColumn = categoryColumn;
+    if (this.#seriesColumns.length > 0) {
+      this.buildCategoriesAndSeries();
+    }
+  }
+
+  get seriesColumnNames() {
+    return this.#seriesColumns;
+  }
+
+  set seriesColumnNames(seriesColumnNames: string[]) {
+    this.#seriesColumns = seriesColumnNames;
+    if (this.#categoryColumn) {
+      this.buildCategoriesAndSeries();
+    }
   }
 
   get categories() {

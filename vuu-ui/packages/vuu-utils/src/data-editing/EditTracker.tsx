@@ -1,5 +1,9 @@
 import { DataSource } from "@vuu-ui/vuu-data-types";
-import type { VuuRowDataItemType, VuuTable } from "@vuu-ui/vuu-protocol-types";
+import type {
+  RpcResultError,
+  VuuRowDataItemType,
+  VuuTable,
+} from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter } from "../event-emitter";
 import { isRpcSuccess } from "../protocol-message-utils";
 
@@ -171,7 +175,10 @@ export class EditTracker extends EventEmitter<EditTrackerEvents> {
         return rpcResponse;
       }
     } else {
-      throw Error(`[EditTracker] commit, key ${key} not found `);
+      return {
+        errorMessage: "CHANGE_REVERTED",
+        type: "ERROR_RESULT",
+      } as RpcResultError;
     }
   }
 }

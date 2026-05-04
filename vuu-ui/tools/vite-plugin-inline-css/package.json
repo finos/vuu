@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-inline-css",
-  "version": "2.1.0",
+  "version": "2.1.0-alpha.10",
   "main": "src/index.js",
   "module": "src/index.js",
   "type": "module"
