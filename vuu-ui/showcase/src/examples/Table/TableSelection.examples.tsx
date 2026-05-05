@@ -1,19 +1,26 @@
+import {
+  Button,
+  Dropdown,
+  FormField,
+  FormFieldLabel,
+  Option,
+} from "@salt-ds/core";
 import { getSchema } from "@vuu-ui/vuu-data-test";
 import { TableSchema } from "@vuu-ui/vuu-data-types";
 import { Table, TableProps } from "@vuu-ui/vuu-table";
 import { DataSourceStats } from "@vuu-ui/vuu-table-extras";
 import {
+  ColumnDescriptor,
   ColumnLayout,
   SelectionChangeHandler,
   TableConfig,
   TableRowSelectHandler,
 } from "@vuu-ui/vuu-table-types";
 import { toColumnName, useData } from "@vuu-ui/vuu-utils";
-import { useCallback, useMemo } from "react";
+import { SyntheticEvent, useCallback, useMemo, useState } from "react";
 
 import "./Misc.examples.css";
 import "./TableSelection.examples.css";
-import { Button } from "@salt-ds/core";
 
 type DataTableProps = Partial<
   Omit<TableProps, "config"> & { config?: Partial<TableConfig> }
@@ -39,15 +46,26 @@ const DataTableTemplate = ({
   ...props
 }: DataTableProps) => {
   const { VuuDataSource } = useData();
+  const [selectedColumn, setSelectedColumn] = useState<string>("none");
   const tableConfig = useMemo<TableConfig>(() => {
     return {
       columnSeparators: true,
       rowSeparators: true,
       zebraStripes: true,
       ...configProp,
-      columns: schema.columns,
+      columns: schema.columns.map<ColumnDescriptor>((col) =>
+        col.name === selectedColumn
+          ? {
+              ...col,
+              selected: true,
+              status: "warning",
+            }
+          : col,
+      ),
     };
-  }, [configProp, schema]);
+  }, [configProp, schema.columns, selectedColumn]);
+
+  console.log({ columns: tableConfig.columns });
 
   const dataSource = useMemo(() => {
     return (
@@ -65,10 +83,44 @@ const DataTableTemplate = ({
     });
   }, [dataSource]);
 
+  const handleChangeSelectedColumn = useCallback(
+    (evt: SyntheticEvent, [selectedItem]: string[]) => {
+      if (selectedItem) {
+        setSelectedColumn(selectedItem);
+      }
+    },
+    [],
+  );
+
   return (
     <>
-      <div>
+      <div
+        style={{
+          alignItems: "center",
+          borderBottom: "solid 1px var(--salt-separable-secondary-borderColor)",
+          display: "flex",
+          gap: 24,
+          height: 32,
+        }}
+      >
         <Button onClick={deselectAll}>Deselect All</Button>
+        <FormField labelPlacement="left" style={{ width: 300 }}>
+          <FormFieldLabel>Selected Coumn</FormFieldLabel>
+          <Dropdown
+            bordered
+            value={selectedColumn}
+            onSelectionChange={handleChangeSelectedColumn}
+          >
+            <Option key="none" value="none">
+              None
+            </Option>
+            {schema.columns.map((column) => (
+              <Option key={column.name} value={column.name}>
+                {column.name}
+              </Option>
+            ))}
+          </Dropdown>
+        </FormField>
       </div>
       <Table
         {...props}
@@ -235,4 +287,9 @@ export const AutoSelectByKey = () => {
       navigationStyle="row"
     />
   );
+};
+
+/** tags=data-consumer */
+export const ColumnSelection = () => {
+  return <DataTableTemplate />;
 };

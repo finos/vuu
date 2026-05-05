@@ -1,4 +1,5 @@
 .vuuTableHeaderCell {
+  --selected-column-borderColor: var(--vuuTable-column-selected-borderColor, var(--salt-selectable-borderColor-selected));
   --cell-align: "flex-start";
   --vuuColumnHeaderPill-margin: 0;
   --vuuColumnHeaderPill-flex: 0 0 24px;
@@ -167,4 +168,46 @@
 
 .vuuTableHeaderCell:has(.saltCheckbox){
   padding-left: 6px;
+}
+
+
+.vuuTableHeaderCell.error {
+  --selected-column-borderColor: var(--salt-status-error-borderColor);
+}
+.vuuTableHeaderCell.info {
+  --selected-column-borderColor: var(--salt-status-info-borderColor);
+}
+.vuuTableHeaderCell.success {
+  --selected-column-borderColor: var(--salt-status-success-borderColor);
+}
+.vuuTableHeaderCell.warning {
+  --selected-column-borderColor: var(--salt-status-warning-borderColor);
+}
+
+.vuuTableHeaderCell-selected:after {
+    background-color: transparent;
+    border: solid 1px var(--selected-column-borderColor);
+    border-radius: 6px;
+
+  clip-path: polygon(
+    0px 0px,
+    0px 100%,
+    100% 100%,
+    100% 0px,
+    0px 0px,
+    2px 2px,
+    calc(100% - 2px) 2px,
+    calc(100% - 2px) calc(100% - 2px),
+    2px calc(100% - 2px),
+    2px 2px
+  );
+  box-sizing: border-box;
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  right: 1px;
+  height: calc(var(--table-height) - var(--horizontal-scrollbar-height) - 2px);
+  top: 1px;
+  width: calc(100% - 2px);
+    
 }
