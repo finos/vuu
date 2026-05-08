@@ -16,7 +16,7 @@
         <sttp.client4.version>4.0.12</sttp.client4.version>
         <typesafe.conf.version>1.4.5</typesafe.conf.version>
         <valkey-java.version>5.5.0</valkey-java.version>
-        <vertx.version>5.0.10</vertx.version>
+        <vertx.version>5.0.12</vertx.version>
     </properties>
 
     <modules>
