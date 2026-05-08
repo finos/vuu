@@ -11,10 +11,6 @@
     <artifactId>valkey-virtualized-table</artifactId>
     <name>${project.artifactId}</name>
 
-    <properties>
-        <maven.compiler.release>21</maven.compiler.release>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.finos.vuu</groupId>
@@ -35,9 +31,9 @@
         </dependency>
 
         <dependency>
-            <groupId>io.valkey</groupId>
-            <artifactId>valkey-java</artifactId>
-            <version>${valkey-java.version}</version>
+            <groupId>io.lettuce</groupId>
+            <artifactId>lettuce-core</artifactId>
+            <version>${lettuce.version}</version>
         </dependency>
 
         <dependency>

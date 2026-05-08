@@ -1,6 +1,5 @@
 package org.finos.vuu.example.valkey
 
-import io.valkey.{HostAndPort, HostAndPortMapper}
 import org.slf4j.LoggerFactory
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.output.Slf4jLogConsumer
@@ -18,19 +17,17 @@ class ValkeyClusterContainer
 
   withExposedPorts(internalPorts.toSeq.map(Int.box): _*)
 
-  withLogConsumer(new Slf4jLogConsumer(logger))
+  //withLogConsumer(new Slf4jLogConsumer(logger))
 
   waitingFor(Wait.forLogMessage(".*Valkey cluster is ready!.*", 1))
 
   def getPort: Int = getMappedPort(7000)
 
-  def getHostAndPortMapper: HostAndPortMapper = (hap: HostAndPort) => {
-    if (internalPorts.contains(hap.getPort)) {
-      // Only map if it's an internal port (7000, 7001, or 7002)
-      new HostAndPort(getHost, getMappedPort(hap.getPort))
+  def getHostAndPortMapper: (String, Int) => (String, Int) = (host: String, port: Int) => {
+    if (internalPorts.contains(port)) {
+      (getHost, getMappedPort(port))      
     } else {
-      // If it's already a mapped port (like 55108), return it unchanged
-      hap
+      (host, port)
     }
   }
 

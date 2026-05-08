@@ -1,24 +1,22 @@
 package org.finos.vuu.example.valkey.client.options
 
-import io.valkey.HostAndPortMapper
+import io.lettuce.core.RedisURI
+import io.lettuce.core.cluster.ClusterTopologyRefreshOptions
+
+import java.time.Duration
 
 trait ValkeyClientOptions {
 
   def nodes: Set[(String, Int)]
-  def timeoutMs: Int
-  def maxAttempts: Int
-  def maxTotal: Int
-  def maxIdle: Int
-  def minIdle: Int
-  def hostAndPortMapper: Option[HostAndPortMapper]
+  def timeout: Duration
+  def topologyRefreshPeriod: Duration
+  def hostAndPortMapper: Option[(String, Int) => (String, Int)]
+
   def withNode(host: String, port: Int): ValkeyClientOptions
   def withNodes(nodes: Set[(String, Int)]): ValkeyClientOptions
-  def withTimeoutMs(timeoutMs: Int): ValkeyClientOptions
-  def withMaxAttempts(maxAttempts: Int): ValkeyClientOptions
-  def withMaxTotal(maxTotal: Int): ValkeyClientOptions
-  def withMaxIdle(maxIdle: Int): ValkeyClientOptions
-  def withMinIdle(minIdle: Int): ValkeyClientOptions
-  def withHostAndPortMapper(hostAndPortMapper: HostAndPortMapper): ValkeyClientOptions
+  def withTimeout(timeout: Duration): ValkeyClientOptions
+  def withTopologyRefreshPeriod(period: Duration): ValkeyClientOptions
+  def withHostAndPortMapper(mapper: (String, Int) => (String, Int)): ValkeyClientOptions
 }
 
 object ValkeyClientOptions {
@@ -26,11 +24,8 @@ object ValkeyClientOptions {
   def apply(): ValkeyClientOptions = {
     ValkeyClientOptionsImpl(
       nodes = Set.empty,
-      timeoutMs = 2_000,
-      maxAttempts = Int.MaxValue,
-      maxTotal = 8,
-      maxIdle = 8,
-      minIdle = 4,
+      timeout = RedisURI.DEFAULT_TIMEOUT_DURATION,
+      topologyRefreshPeriod = ClusterTopologyRefreshOptions.DEFAULT_REFRESH_PERIOD_DURATION,
       None
     )
   }
@@ -38,26 +33,17 @@ object ValkeyClientOptions {
 }
 
 private case class ValkeyClientOptionsImpl(nodes: Set[(String, Int)],
-                                           timeoutMs: Int,
-                                           maxAttempts: Int,
-                                           maxTotal: Int,
-                                           maxIdle: Int,
-                                           minIdle: Int,
-                                           hostAndPortMapper: Option[HostAndPortMapper]) extends ValkeyClientOptions {
+                                           timeout: Duration,
+                                           topologyRefreshPeriod: Duration,
+                                           hostAndPortMapper: Option[(String, Int) => (String, Int)]) extends ValkeyClientOptions {
 
   override def withNode(host: String, port: Int): ValkeyClientOptions = this.copy(nodes = Set((host, port)))
 
   override def withNodes(nodes: Set[(String, Int)]): ValkeyClientOptions = this.copy(nodes = nodes)
 
-  override def withTimeoutMs(timeoutMs: Int): ValkeyClientOptions = this.copy(timeoutMs = timeoutMs)
+  override def withTimeout(timeout: Duration): ValkeyClientOptions = this.copy(timeout = timeout)
 
-  override def withMaxAttempts(maxAttempts: Int): ValkeyClientOptions = this.copy(maxAttempts = maxAttempts)
+  override def withTopologyRefreshPeriod(topologyRefreshPeriod: Duration): ValkeyClientOptions = this.copy(topologyRefreshPeriod = topologyRefreshPeriod)
 
-  override def withMaxTotal(maxTotal: Int): ValkeyClientOptions = this.copy(maxTotal = maxTotal)
-
-  override def withMaxIdle(maxIdle: Int): ValkeyClientOptions = this.copy(maxIdle = maxIdle)
-
-  override def withMinIdle(minIdle: Int): ValkeyClientOptions = this.copy(minIdle = minIdle)
-
-  override def withHostAndPortMapper(hostAndPortMapper: HostAndPortMapper): ValkeyClientOptions = this.copy(hostAndPortMapper = Option(hostAndPortMapper))
+  override def withHostAndPortMapper(hostAndPortMapper: (String, Int) => (String, Int)): ValkeyClientOptions = this.copy(hostAndPortMapper = Option(hostAndPortMapper))
 }

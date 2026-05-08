@@ -5,9 +5,7 @@ import org.finos.toolbox.lifecycle.LifecycleContainer
 import org.finos.toolbox.time.{Clock, DefaultClock}
 import org.finos.vuu.example.valkey.ValkeyTestBase
 import org.finos.vuu.example.valkey.client.options.ValkeyClientOptions
-import org.finos.vuu.example.valkey.common.ShardRouter
 
-import java.util
 
 class ValkeyClientTest extends ValkeyTestBase {
 
@@ -24,47 +22,26 @@ class ValkeyClientTest extends ValkeyTestBase {
         .withHostAndPortMapper(container.getHostAndPortMapper))
       lifecycle.start()
 
-      val jedis = client.getClient.get
+      var start = timeProvider.now()
 
-      insertOrder(jedis, "A1", 10, 1000, 1000000L, "VOD.L", "GBP", "alice")
-      insertOrder(jedis, "A2", 200, 5000, 2000000L, "AAPL.O", "USD", "bob")
-      insertOrder(jedis, "A3", 150, 3000, 1500000L, "MSFT.O", "USD", "charlie")
+      val keys = (1 to 1_000_000).map(i => s"A$i").toArray
 
-      var value: util.Map[String, String] = jedis.hgetAll(ShardRouter.shardedKey(orderHSetName,"A1"))
-      value.get("trader") shouldEqual "alice"
+      logger.info("Begin insertion")
 
-      value = jedis.hgetAll(ShardRouter.shardedKey(orderHSetName,"A2"))
-      value.get("trader") shouldEqual "bob"
+      insertOrders(client, keys)
 
-      value = jedis.hgetAll(ShardRouter.shardedKey(orderHSetName,"A3"))
-      value.get("trader") shouldEqual "charlie"
+      logger.info(s"Insert completed in ${timeProvider.now() - start} ms")
 
-      lifecycle.thread.stop()
-      lifecycle.stop()
-    }
+      start = timeProvider.now()
 
-    Scenario("Can insert and filter by index") {
+      iterateOrders(client, keys)
 
-      given metrics: MetricsProvider = MetricsProviderImpl()
-      given timeProvider: Clock = DefaultClock()
-      given lifecycle: LifecycleContainer = LifecycleContainer()
-
-      val client = ValkeyClient(ValkeyClientOptions()
-        .withNode(container.getHost, container.getPort)
-        .withHostAndPortMapper(container.getHostAndPortMapper))
-      lifecycle.start()
-
-      val jedis = client.getClient.get
-
-      insertOrder(jedis, "A1", 10, 1000, 1000000L, "VOD.L", "GBP", "alice")
-      insertOrder(jedis, "A2", 200, 5000, 2000000L, "AAPL.O", "USD", "bob")
-      insertOrder(jedis, "A3", 150, 3000, 1500000L, "MSFT.O", "USD", "charlie")
-
-      val ids = jedis.smembers("idx:{PENDING}")
+      logger.info(s"Checked all records in ${timeProvider.now() - start} ms")
 
       lifecycle.thread.stop()
       lifecycle.stop()
     }
+
 
   }
 

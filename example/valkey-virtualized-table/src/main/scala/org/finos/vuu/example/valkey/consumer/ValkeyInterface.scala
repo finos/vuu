@@ -27,24 +27,25 @@ private case class ValkeyInterfaceImpl(client: ValkeyClient) extends ValkeyInter
   
   override def getRow(table: String, key: String): Option[util.Map[String, String]] = {
       val shardedKey = ShardRouter.shardedKey(table, key)
-      client.getClient.map(f => f.hgetAll(shardedKey))
+      //client.getClient.map(f => f.hgetAll(shardedKey))
+      None
   }
 
   override def getKeys(table: String, filterSpec: FilterSpec, sortSpec: SortSpec): IndexedSeq[String] = {
     
-    val futures = ShardRouter.getShardTags.map { tag =>
-      CompletableFuture.supplyAsync(() => {
-        // Construct keys: idx-orders:{sX}:ric:VOD.L and idx-orders:{sX}:sort:quantity
-        val filterKey = concat(Prefix, tag, RicPart, ricBytes)
-        val sortKey = concat(Prefix, tag, SortPart)
-
-        // Valkey-Java Binary API: ZINTER on 2 keys
-        // Returns a Set[Tuple] (Member as Array[Byte], Score as Double)
-        // We ask for 'limit' from each shard to be safe
-        client.getClient.map(f => f.zinterWithScores(filterKey, sortKey).asScala)
-      }, executor)
-    }
-        
+//    val futures = ShardRouter.getShardTags.map { tag =>
+//      CompletableFuture.supplyAsync(() => {
+//        // Construct keys: idx-orders:{sX}:ric:VOD.L and idx-orders:{sX}:sort:quantity
+//        val filterKey = concat(Prefix, tag, RicPart, ricBytes)
+//        val sortKey = concat(Prefix, tag, SortPart)
+//
+//        // Valkey-Java Binary API: ZINTER on 2 keys
+//        // Returns a Set[Tuple] (Member as Array[Byte], Score as Double)
+//        // We ask for 'limit' from each shard to be safe
+//        client.getClient.map(f => f.zinterWithScores(filterKey, sortKey).asScala)
+//      }, executor)
+//    }
+//        
     Vector[String]()
   }
 

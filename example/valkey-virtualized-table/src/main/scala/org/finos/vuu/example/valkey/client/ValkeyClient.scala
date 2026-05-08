@@ -1,23 +1,29 @@
 package org.finos.vuu.example.valkey.client
 
 import com.typesafe.scalalogging.StrictLogging
-import io.valkey.JedisCluster
+import io.lettuce.core.cluster.RedisClusterClient
+import io.lettuce.core.cluster.api.StatefulRedisClusterConnection
 import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import org.finos.vuu.example.valkey.client.options.ValkeyClientOptions
 
 class ValkeyClient(val options: ValkeyClientOptions)
-                   (implicit lifecycle: LifecycleContainer) extends LifecycleEnabled with StrictLogging {
+                  (implicit lifecycle: LifecycleContainer)
+  extends LifecycleEnabled with StrictLogging {
 
-  private val valkeyClientInitializer = ValkeyClientInitializer(options)
-  @volatile private var client: Option[JedisCluster] = Option.empty
+  @volatile private var client: Option[RedisClusterClient] = None
+  @volatile private var connection: Option[StatefulRedisClusterConnection[String, String]] = None
 
   lifecycle(this)
 
-  def getClient: Option[JedisCluster] = client
+  def getConnection: Option[StatefulRedisClusterConnection[String, String]] =
+    connection
 
   override def doStart(): Unit = synchronized {
     try {
-      client = Option(valkeyClientInitializer.create())
+      val initializer = new ValkeyClientInitializer(options)
+      val (clusterClient, conn) = initializer.create()
+      client = Some(clusterClient)
+      connection = Some(conn)
     } catch {
       case e: Exception =>
         logger.error("Failed to start Valkey client", e)
@@ -26,13 +32,15 @@ class ValkeyClient(val options: ValkeyClientOptions)
   }
 
   override def doStop(): Unit = synchronized {
-    client.foreach { c =>
-      try {
-        c.close()
-      } catch {
-        case e: Exception => logger.warn("Error closing Valkey client", e)
-      }
+    try {
+      connection.foreach(_.close())
+      connection = None
+      client.foreach(_.shutdown())
       client = None
+    } catch {
+      case e: Exception =>
+        logger.error("Failed to stop Valkey client", e)
+        throw e
     }
   }
 
