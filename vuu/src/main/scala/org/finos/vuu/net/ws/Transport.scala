@@ -25,14 +25,16 @@ object Transport extends StrictLogging {
   def apply(nativeTransport: Boolean): Transport = {
     if (nativeTransport) {
       if (Epoll.isAvailable) {
-        logger.debug("Using EpollNativeTransport")
+        logger.info("Using EpollNativeTransport")
         return EpollNativeTransport
       } else if (KQueue.isAvailable) {
-        logger.debug("Using KQueueNativeTransport")
+        logger.info("Using KQueueNativeTransport")
         return KQueueNativeTransport
+      } else {
+        logger.warn("Native transport enabled, but no runtime found!")
       }
     }
-    logger.debug("Using NioTransport")
+    logger.info("Using NioTransport")
     NioTransport
   }
 }
