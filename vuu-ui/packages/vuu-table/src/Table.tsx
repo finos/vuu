@@ -362,6 +362,7 @@ const TableCore = ({
     columns,
     dataRows,
     draggableRow,
+    editSessionInProgress,
     focusCellPlaceholderKeyDown,
     focusCellPlaceholderRef,
     getRowOffset,
@@ -475,7 +476,9 @@ const TableCore = ({
       >
         <div
           {...tableProps}
-          className={`${classBase}-table`}
+          className={cx(`${classBase}-table`, {
+            [`${classBase}-editing`]: editSessionInProgress,
+          })}
           role="table"
           tabIndex={disableFocus ? undefined : -1}
         >

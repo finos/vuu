@@ -954,6 +954,7 @@ export const useTable = ({
     columns,
     dataRows,
     draggableRow,
+    editSessionInProgress: editTracker?.inEditMode,
     focusCellPlaceholderKeyDown,
     focusCellPlaceholderRef,
     getRowOffset,

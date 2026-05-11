@@ -4,6 +4,7 @@ import { EditTracker } from "./EditTracker";
 import { useData } from "../context-definitions/DataProvider";
 import { DataSource } from "@vuu-ui/vuu-data-types";
 import { isRpcSuccess } from "../protocol-message-utils";
+import { useLayoutEffectSkipFirst } from "../useLayoutEffectSkipFirst";
 
 export type EditMode = "edit" | "view";
 
@@ -37,6 +38,8 @@ export const useEditableTable = ({
     DataSource | undefined
   >(undefined);
 
+  console.log(`[usEditableTable] ${dataSourceProp?.viewport}`);
+
   const clearSessionDataSource = useCallback(() => {
     setSessionDataSource((dataSource) => {
       dataSource?.unsubscribe();
@@ -44,7 +47,12 @@ export const useEditableTable = ({
     });
   }, []);
 
+  useLayoutEffectSkipFirst(() => {
+    console.warn(`[useEditableTable] columns and or table changed`);
+  }, [columns, table]);
+
   const dataSource = useMemo(() => {
+    console.log(`[useEditableTable] create new dataSource`);
     return dataSourceProp ?? new VuuDataSource({ columns, table });
   }, [VuuDataSource, columns, dataSourceProp, table]);
 
@@ -65,7 +73,6 @@ export const useEditableTable = ({
   }, [clearSessionDataSource, dataSource, editTracker, onCancel]);
 
   const handleSave = useCallback(async () => {
-    // editTracker.dataSource = dataSource;
     dataSource.resume?.();
     const response = await editTracker.saveChanges();
     if (isRpcSuccess(response)) {
@@ -90,7 +97,10 @@ export const useEditableTable = ({
     }
   }, [VuuDataSource, dataSource, editTracker, isEditMode]);
 
+  console.log(`[usEditableTable] ${dataSource.viewport}`);
+
   return {
+    // DO we need to reset the dataSource or could useDataSOurce detect the sessiondataSOurce from the editSession ?
     dataSource: sessionDataSource ?? dataSource,
     editTracker,
     onCancel: handleCancel,

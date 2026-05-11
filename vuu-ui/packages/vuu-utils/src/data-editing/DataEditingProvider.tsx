@@ -18,7 +18,7 @@ export const DataEditingProvider = ({
 };
 
 export function useEditTracker(
-  throwIfUnavailable: false | undefined,
+  throwIfUnavailable?: false,
 ): EditTracker | undefined;
 export function useEditTracker(throwIfUnavailable: true): EditTracker;
 export function useEditTracker(throwIfUnavailable = false) {

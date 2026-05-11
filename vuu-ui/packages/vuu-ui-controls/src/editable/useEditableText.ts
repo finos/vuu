@@ -42,8 +42,6 @@ export const useEditableText = <T extends string | number | boolean = string>({
   onEdit,
   type = "string",
 }: EditableTextHookProps<T>) => {
-  const { inEditMode } = useEditTracker(true);
-
   const [editState, setEditState] = useState<EditState>({
     value: stringValueOf(value),
   });

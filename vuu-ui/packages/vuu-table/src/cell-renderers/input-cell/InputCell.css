@@ -36,7 +36,7 @@
 }
 
 .vuuTableInputCell-edited {
-  border-left:  solid var(--vuuTableInputCell-edited-color, black) 4px !important;
+  border-left:  solid var(--vuuTableInputCell-edited-color, var(--salt-editable-borderColor)) 4px !important;
 }
 
 .vuuTableCell-error {

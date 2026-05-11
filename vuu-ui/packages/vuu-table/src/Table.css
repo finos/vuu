@@ -4,6 +4,7 @@
   --vuu-table-col-heading-height: 25px;
   --vuu-table-footer-height: 0px;
   --vuu-table-row-background-selected: var(--vuuTableRow-background-selected, var(--salt-selectable-background-selected));
+  --vuu-table-row-background-highlighted: var(--vuuTableRow-background-highlighted, var(--salt-selectable-background-hover));
   --vuu-table-row-borderColor-selected: var(--vuuTableRow-borderColor-selected, var(--salt-selectable-borderColor-selected));
   --vuu-table-row-bookend-background-selected: var(--vuuTableRow-bookend-background-selected, var(--salt-selectable-background-selected));
   --vuu-table-row-height: var(--salt-size-base, 32px);
@@ -73,6 +74,11 @@
       height: var(--horizontal-scrollbar-height);
     }
   }
+
+  .vuuTable-editing {
+    --vuu-table-row-background-highlighted: transparent;
+  }
+
 }
 
 .vuuTable-zebra {
@@ -324,15 +330,13 @@
   width: 100%;
 }
 
-
 .vuuTableRow-even {
   --row-background: var(--table-zebraColor);
 }
 
 .vuuTableRow-highlighted {
-  background: var(--salt-selectable-background-hover);
+  background: var(--vuu-table-row-background-highlighted);
 }
-
 
 .vuuTableRow[aria-selected="true"] {
   background-color: var(--vuu-table-row-background-selected);
@@ -348,7 +352,6 @@
   transform: none !important;
   z-index: 1;
 }
-
 
 .vuuSelectionDecorator {
     background: var(--table-background);
@@ -468,4 +471,4 @@
             }
     }
 
-}
+}}

@@ -111,8 +111,10 @@ export class TickingArrayDataSource extends ArrayDataSource {
       this.updateRow(row, columnName);
     } else if (sessionId) {
       // ignore, its not for me
-    } else if (this.status !== "suspended") {
-      // Ignore updates to base table when we are suspended during an edit session
+    } else if (this.status === "suspended") {
+      // queue updates for deferred application, issue warnings when edits in progress
+      console.log("updates incoming from differenrt edit session");
+    } else {
       this.updateRow(row, columnName);
     }
   };

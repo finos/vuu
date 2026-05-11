@@ -12,13 +12,12 @@ import {
 import {
   DataEditingProvider,
   registerComponent,
-  stringIsValidNumber,
+  toColumnName,
   useEditableTable,
 } from "@vuu-ui/vuu-utils";
 import { EditButtons } from "@vuu-ui/vuu-utils/src/data-editing/EditButtons";
 import { EditMode } from "@vuu-ui/vuu-utils/src/data-editing/useEditableTable";
 import cx from "clsx";
-import { on } from "events";
 import { SyntheticEvent, useCallback, useMemo, useState } from "react";
 
 const INSTRUMENTS = { module: "SIMUL", table: "instruments" };
@@ -32,6 +31,8 @@ const EditTableTemplate = ({
   vuuTable: VuuTable;
 }) => {
   const [editMode, setEditMode] = useState<EditMode>("view");
+
+  const columns = useMemo(() => schema.columns.map(toColumnName), [schema]);
 
   const onToggleEditMode = useCallback(
     async (e: SyntheticEvent<HTMLButtonElement>) => {
@@ -47,6 +48,7 @@ const EditTableTemplate = ({
   }, []);
 
   const { dataSource, editTracker, onCancel, onSave } = useEditableTable({
+    columns,
     isEditMode: editMode === "edit",
     onCancel: exitEditMode,
     onSave: exitEditMode,
@@ -64,7 +66,7 @@ const EditTableTemplate = ({
                     editable: true,
                     type: editableType,
                   }
-                : col,
+                : { ...col, editable: true },
             ),
       columnDefaultWidth: 150,
       rowSeparators: true,
@@ -121,12 +123,13 @@ const EditTableTemplate = ({
   );
 };
 
+/** tags=data-consumer */
 export const EditableInstruments = () => {
   return (
-    <LocalDataSourceProvider>
+    <>
       <EditTableTemplate vuuTable={INSTRUMENTS} />
-      <EditTableTemplate vuuTable={INSTRUMENTS} />
-    </LocalDataSourceProvider>
+      {/* <EditTableTemplate vuuTable={INSTRUMENTS} /> */}
+    </>
   );
 };
 

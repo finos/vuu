@@ -130,6 +130,8 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     const { viewport = this.viewport || (this.viewport = uuid()) } =
       subscribeProps;
 
+    console.log(`[VuuDataSource] subscribe ${this.viewport}`);
+
     if (
       this.#status === "disabled" ||
       this.#status === "disabling" ||
