@@ -16,7 +16,7 @@
         <lettuce.version>7.5.1.RELEASE</lettuce.version>
         <sttp.client4.version>4.0.12</sttp.client4.version>
         <typesafe.conf.version>1.4.5</typesafe.conf.version>
-        <vertx.version>5.0.10</vertx.version>
+        <vertx.version>5.0.12</vertx.version>
     </properties>
 
     <modules>
