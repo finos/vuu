@@ -30,6 +30,8 @@ object Transport extends StrictLogging {
       } else if (KQueue.isAvailable) {
         logger.debug("Using KQueueNativeTransport")
         return KQueueNativeTransport
+      } else {
+        logger.warn("Native transport enabled, but no runtime found!")
       }
     }
     logger.debug("Using NioTransport")
