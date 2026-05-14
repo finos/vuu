@@ -38,8 +38,6 @@ export const useEditableTable = ({
     DataSource | undefined
   >(undefined);
 
-  console.log(`[usEditableTable] ${dataSourceProp?.viewport}`);
-
   const clearSessionDataSource = useCallback(() => {
     setSessionDataSource((dataSource) => {
       dataSource?.unsubscribe();
@@ -52,7 +50,6 @@ export const useEditableTable = ({
   }, [columns, table]);
 
   const dataSource = useMemo(() => {
-    console.log(`[useEditableTable] create new dataSource`);
     return dataSourceProp ?? new VuuDataSource({ columns, table });
   }, [VuuDataSource, columns, dataSourceProp, table]);
 
@@ -96,8 +93,6 @@ export const useEditableTable = ({
       }
     }
   }, [VuuDataSource, dataSource, editTracker, isEditMode]);
-
-  console.log(`[usEditableTable] ${dataSource.viewport}`);
 
   return {
     // DO we need to reset the dataSource or could useDataSOurce detect the sessiondataSOurce from the editSession ?

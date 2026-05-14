@@ -45,10 +45,6 @@ export const InputCell = ({
       <span className={`${classBase}-icon`} data-icon="error" />
     ) : undefined;
 
-  if (dataRow.index === 0 && column.name === "bbg") {
-    console.log(`[vuuTableInputCell ${column.name} edited ? ${edited}`);
-  }
-
   return (
     <Input
       {...editProps}

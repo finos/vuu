@@ -69,7 +69,6 @@ const useContextMenu = (): TableContextMenuDef => {
     MenuActionHandler<string, ChartContextMenuOptions>
   >((menuItemId, options) => {
     if (options) {
-      const { value } = options;
       switch (menuItemId) {
         case "cell-copy": {
           console.log("lets do it");

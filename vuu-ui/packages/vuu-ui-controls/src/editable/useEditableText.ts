@@ -6,7 +6,6 @@ import {
   getTypedValue,
   isRpcError,
   isRpcSuccess,
-  useEditTracker,
 } from "@vuu-ui/vuu-utils";
 import {
   FocusEventHandler,
@@ -58,7 +57,6 @@ export const useEditableText = <T extends string | number | boolean = string>({
 
   const commit = useCallback(async () => {
     const { value } = editState;
-    console.log(`commit ${JSON.stringify(editState)}`);
     const result = clientSideEditValidationCheck?.(value, "*");
     if (result?.ok === false) {
       setEditState((state) => ({
@@ -115,15 +113,10 @@ export const useEditableText = <T extends string | number | boolean = string>({
   const handleKeyDown = useCallback(
     async (evt: KeyboardEvent<HTMLElement>) => {
       const { key, target } = evt;
-      // console.log(`[useEditableText] handleKeyDown`);
       const input = target as HTMLInputElement;
       if (key === "Enter") {
-        // console.log(
-        //   `[useEditableText] ENTER isEditing ? ${isEditingRef.current}, isDirty ${isDirtyRef.current}`,
-        // );
         if (isEditingRef.current) {
           if (isDirtyRef.current) {
-            // console.log("    ...await commit");
             const commitSuccessful = await commit();
             if (commitSuccessful) {
               isEditingRef.current = false;
@@ -146,9 +139,6 @@ export const useEditableText = <T extends string | number | boolean = string>({
         key === "ArrowDown"
       ) {
         if (isEditingRef.current) {
-          // console.log(
-          //   `[useEditableText] handleKeydown, arrowkey whilst editing, stop propagation`,
-          // );
           evt.stopPropagation();
         } else {
           // console.log(
@@ -158,9 +148,6 @@ export const useEditableText = <T extends string | number | boolean = string>({
         }
       } else if (evt.key === "Escape") {
         if (isEditingRef.current) {
-          // console.log(
-          //   `[useEditableText] ESC whilst editing, dirty ? ${isDirtyRef.current}`,
-          // );
           if (isDirtyRef.current) {
             const { value: previousValue } = editState;
             isDirtyRef.current = false;
@@ -182,16 +169,12 @@ export const useEditableText = <T extends string | number | boolean = string>({
           isEditingRef.current = false;
           dispatchCustomEvent(input, "vuu-exit-edit-mode");
         }
-      } /* else if (isEditingRef.current === false && isCharacterKey(key)) {
-        isEditingRef.current = true;
-        dispatchCustomEvent(evt.target as HTMLElement, "vuu-enter-edit-mode");
-      }*/
+      }
     },
     [commit, editState, onEdit],
   );
 
   const beginEditHandler = useCallback((evt: Event) => {
-    // console.log("begin edit handler");
     isEditingRef.current = true;
     dispatchCustomEvent(evt.target as HTMLElement, "vuu-enter-edit-mode");
   }, []);
@@ -221,12 +204,6 @@ export const useEditableText = <T extends string | number | boolean = string>({
   const handleChange = useCallback<FormEventHandler>(
     (evt) => {
       const { value } = evt.target as HTMLInputElement;
-      const typedValue = getTypedValue(value, type, true);
-      // console.log(
-      //   `[useEditableText] handleChange '${value}' typedValue ${typedValue}
-      //     initial value ${initialValueRef.current}
-      //   `,
-      // );
       isDirtyRef.current = value !== initialValueRef.current;
       const result = clientSideEditValidationCheck?.(value, "change");
       setEditState({ value });
@@ -236,7 +213,7 @@ export const useEditableText = <T extends string | number | boolean = string>({
           editType: "change",
           isValid: result?.ok !== false,
           previousValue: initialValueRef.current,
-          value: typedValue,
+          value,
         },
         "change",
       );
@@ -249,7 +226,7 @@ export const useEditableText = <T extends string | number | boolean = string>({
         dispatchCustomEvent(evt.target as HTMLElement, "vuu-enter-edit-mode");
       }
     },
-    [clientSideEditValidationCheck, onEdit, type],
+    [clientSideEditValidationCheck, onEdit],
   );
 
   return {

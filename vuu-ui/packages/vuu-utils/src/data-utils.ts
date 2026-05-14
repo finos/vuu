@@ -1,5 +1,4 @@
 import { DataValueDescriptor } from "@vuu-ui/vuu-data-types";
-import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 
 export type valueChangeDirection = "up1" | "up2" | "down1" | "down2" | "";
 

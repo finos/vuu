@@ -58,8 +58,6 @@ export class EditTracker extends EventEmitter<EditTrackerEvents> {
   }
 
   set dataSource(ds: DataSource) {
-    console.log(`[EditTracker] set datasource ${ds.viewport}`);
-
     this.#dataSource = ds;
   }
 
@@ -70,10 +68,6 @@ export class EditTracker extends EventEmitter<EditTrackerEvents> {
 
   async enterEditMode() {
     this.#inEditMode = true;
-
-    console.log(
-      `[EditTracker] enterEditMode datasource ${this.#dataSource?.viewport}`,
-    );
 
     const rpcResponse = await this.#dataSource?.rpcRequest?.({
       type: "RPC_REQUEST",

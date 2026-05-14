@@ -165,9 +165,6 @@ export const useDataSource = ({
           // }
         }
         if (message.rows) {
-          console.log(
-            `#${message.clientViewportId} ${message.rows.length} rows`,
-          );
           setData(message.rows);
           if (autoSelect && rowAutoSelected.current === false) {
             // OR if no selected row in message.rows, e.g after a filter

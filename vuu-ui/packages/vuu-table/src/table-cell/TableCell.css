@@ -47,16 +47,9 @@
   &.vuuEditing {
     .saltInput-bordered {
       outline: dashed var(--salt-editable-borderColor-active) 2px;
+      outline-offset: -1px;
     }
   }
-}
-
-.vuuTableCell-editable.vuuEditing {
-  outline: var(
-    --vuuTableCell-outline,
-    dotted var(--salt-focused-outlineColor) 2px
-  );
-
 }
 
 .vuuTableRow-selected .vuuTableCell:not(.vuuTableCell-editable):focus {

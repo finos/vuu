@@ -24,12 +24,10 @@ export function useEditTracker(throwIfUnavailable: true): EditTracker;
 export function useEditTracker(throwIfUnavailable = false) {
   const editTracker = useContext(DataEditingContext);
   if (editTracker === undefined) {
-    const message =
-      "[useEditTracker] no DataEditingContext in scope. You need to enclose editable component(s) with DataEditingProvider";
     if (throwIfUnavailable) {
-      throw Error(message);
-    } else {
-      console.warn(message);
+      throw Error(
+        "[useEditTracker] no DataEditingContext in scope. You need to enclose editable component(s) with DataEditingProvider",
+      );
     }
   } else {
     return editTracker;
