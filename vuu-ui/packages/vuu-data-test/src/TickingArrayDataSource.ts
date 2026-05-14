@@ -167,9 +167,10 @@ export class TickingArrayDataSource extends ArrayDataSource {
       const {
         params: { column, starts },
       } = rpcRequest;
+      const data = await this.getTypeaheadSuggestions(column, starts);
       return {
         type: "SUCCESS_RESULT",
-        data: this.getTypeaheadSuggestions(column, starts),
+        data,
       } as RpcResultSuccess;
     } else {
       const rpcService = this.#rpcServices?.find(

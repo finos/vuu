@@ -48,13 +48,10 @@ const created = now;
 
 // const start = performance.now();
 // Create 100_000 Instruments
-const requiredInstrumentFields = ["ric", "price"] as const;
 const pricesData: Array<PricesDataRow> = instrumentsData.map((instrument) => {
-  const { ric, price: priceSeed } = requiredInstrumentFields.reduce(
-    (obj, f) => ({ ...obj, [f]: instrument[InstrumentColumnMap[f]] }),
-    {} as { ric: string; price: number },
-  );
   const spread = random(0, 10);
+  const ric = instrument[InstrumentColumnMap.ric];
+  const priceSeed = 100;
 
   const ask = priceSeed + spread / 2;
   const askSize = random(1000, 3000);
