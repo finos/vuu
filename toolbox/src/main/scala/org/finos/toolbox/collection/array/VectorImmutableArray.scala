@@ -13,9 +13,7 @@ object VectorImmutableArray {
 
   def from[T <: Object : ClassTag](iterable: IterableOnce[T]): ImmutableArray[T] = {
     val data = Vector.from(iterable)
-    val bitMap = new CopyOnWriteRoaringBitmap
-    bitMap.add(0L, data.length.toLong)
-    VectorImmutableArrayImpl(data, bitMap, data.length)
+    VectorImmutableArrayImpl(data, new CopyOnWriteRoaringBitmap, data.length)
   }
 
   def empty[T <: Object : ClassTag](): ImmutableArray[T] = {
@@ -24,15 +22,13 @@ object VectorImmutableArray {
 
   def of[T <: Object : ClassTag](element: T): ImmutableArray[T] = {
     val data = Vector(element)
-    val bitMap = new CopyOnWriteRoaringBitmap
-    bitMap.add(0)
-    VectorImmutableArrayImpl(data, bitMap, 1)
+    VectorImmutableArrayImpl(data, new CopyOnWriteRoaringBitmap, 1)
   }
 
 }
 
 private class VectorImmutableArrayImpl[T <: Object : ClassTag](private val data: Vector[T],
-                                                               private val activeIndices: CopyOnWriteRoaringBitmap,
+                                                               private val removedIndices: CopyOnWriteRoaringBitmap,
                                                                override val length: Int) extends VectorImmutableArray[T] {
 
   override def +(element: T): ImmutableArray[T] = add(element)
@@ -43,9 +39,7 @@ private class VectorImmutableArrayImpl[T <: Object : ClassTag](private val data:
 
   override def add(element: T): ImmutableArray[T] = {
     val newData = data.appended(element)
-    val newActive = activeIndices.clone()
-    newActive.add(data.length)
-    VectorImmutableArrayImpl(newData, newActive, length + 1)
+    VectorImmutableArrayImpl(newData, removedIndices, length + 1)
   }
 
   override def remove(element: T): ImmutableArray[T] = {
@@ -56,9 +50,7 @@ private class VectorImmutableArrayImpl[T <: Object : ClassTag](private val data:
 
   override def addAll(iterable: IterableOnce[T]): ImmutableArray[T] = {
     val newData = data.appendedAll(iterable)
-    val newActive = activeIndices.clone()
-    newActive.add(data.length.toLong, newData.length.toLong)
-    VectorImmutableArrayImpl(newData, newActive, length + (newData.length - data.length))
+    VectorImmutableArrayImpl(newData, removedIndices, length + (newData.length - data.length))
   }
 
   override def indexOf(element: T): Int = {
@@ -67,8 +59,8 @@ private class VectorImmutableArrayImpl[T <: Object : ClassTag](private val data:
     while (it.hasNext) {
       val current = it.next()
       if (current == element) {
-        if (activeIndices.contains(physicalIndex)) {
-          return activeIndices.rank(physicalIndex) - 1
+        if (!removedIndices.contains(physicalIndex)) {
+          return physicalIndex - removedIndices.rank(physicalIndex)
         }
       }
       physicalIndex += 1
@@ -80,14 +72,14 @@ private class VectorImmutableArrayImpl[T <: Object : ClassTag](private val data:
 
   override def apply(logicalIndex: Int): T = {
     checkIndex(logicalIndex)
-    val physicalIndex = activeIndices.select(logicalIndex)
+    val physicalIndex = logicalToPhysical(logicalIndex)
     data(physicalIndex)
   }
 
   override def set(logicalIndex: Int, element: T): ImmutableArray[T] = {
     checkIndex(logicalIndex)
-    val physicalIndex = activeIndices.select(logicalIndex)
-    VectorImmutableArrayImpl(data.updated(physicalIndex, element), activeIndices, length)
+    val physicalIndex = logicalToPhysical(logicalIndex)
+    VectorImmutableArrayImpl(data.updated(physicalIndex, element), removedIndices, length)
   }
 
   override def remove(logicalIndex: Int): ImmutableArray[T] = {
@@ -96,16 +88,54 @@ private class VectorImmutableArrayImpl[T <: Object : ClassTag](private val data:
   }
 
   override def iterator: Iterator[T] = new Iterator[T] {
-    private val it = activeIndices.getIntIterator
-    override def hasNext: Boolean = it.hasNext
-    override def next(): T = data(it.next())
+    private val remIt = removedIndices.getIntIterator
+    private var nextRem = if (remIt.hasNext) remIt.next() else -1
+    private var physIdx = -1
+    advance()
+
+    private def advance(): Unit = {
+      physIdx += 1
+      while (physIdx < data.length && physIdx == nextRem) {
+        physIdx += 1
+        nextRem = if (remIt.hasNext) remIt.next() else -1
+      }
+    }
+
+    override def hasNext: Boolean = physIdx < data.length
+
+    override def next(): T = {
+      val result = data(physIdx)
+      advance()
+      result
+    }
   }
 
   override def foreach[U](f: T => U): Unit = {
-    val it = activeIndices.getIntIterator
-    while (it.hasNext) {
-      f(data(it.next()))
+    val remIt = removedIndices.getIntIterator
+    var nextRem = if (remIt.hasNext) remIt.next() else -1
+    var physIdx = 0
+
+    while (physIdx < data.length) {
+      if (physIdx == nextRem) {
+        nextRem = if (remIt.hasNext) remIt.next() else -1
+      } else {
+        f(data(physIdx))
+      }
+      physIdx += 1
     }
+  }
+
+  private def logicalToPhysical(logicalIndex: Int): Int = {
+    if (removedIndices.isEmpty) return logicalIndex
+    var low = logicalIndex
+    var high = data.length - 1
+    while (low < high) {
+      val mid = low + (high - low) / 2
+      val logicalAtMid = mid - removedIndices.rank(mid)
+      if (logicalAtMid >= logicalIndex) high = mid
+      else low = mid + 1
+    }
+    low
   }
 
   private def checkIndex(logicalIndex: Int): Unit = {
@@ -114,13 +144,13 @@ private class VectorImmutableArrayImpl[T <: Object : ClassTag](private val data:
 
   private def doRemove(logicalIndex: Int): VectorImmutableArray[T] = {
     val newLength = length - 1
-    val physicalIndex = activeIndices.select(logicalIndex)
-    val newActive = activeIndices.clone()
-    newActive.remove(physicalIndex)
+    val physicalIndex = logicalToPhysical(logicalIndex)
+    val newRemoved = removedIndices.clone()
+    newRemoved.add(physicalIndex)
     if (shouldCompact) {
-      compact(newActive, newLength)
+      compact(newRemoved, newLength)
     } else {
-      VectorImmutableArrayImpl(data.updated(physicalIndex, null.asInstanceOf[T]), newActive, newLength)
+      VectorImmutableArrayImpl(data.updated(physicalIndex, null.asInstanceOf[T]), newRemoved, newLength)
     }
   }
 
@@ -135,17 +165,24 @@ private class VectorImmutableArrayImpl[T <: Object : ClassTag](private val data:
     }
   }
 
-  private def compact(newActive: CopyOnWriteRoaringBitmap, newLength: Int) = {
+  private def compact(newRemoved: CopyOnWriteRoaringBitmap, newLength: Int) = {
     val dataBuilder = Vector.newBuilder[T]
     dataBuilder.sizeHint(newLength)
-    val it = newActive.getIntIterator
-    while (it.hasNext) {
-      dataBuilder.addOne(data(it.next()))
+
+    val remIt = newRemoved.getIntIterator
+    var nextRem = if (remIt.hasNext) remIt.next() else -1
+    var physIdx = 0
+
+    while (physIdx < data.length) {
+      if (physIdx == nextRem) {
+        nextRem = if (remIt.hasNext) remIt.next() else -1
+      } else {
+        dataBuilder.addOne(data(physIdx))
+      }
+      physIdx += 1
     }
     val newData = dataBuilder.result()
-    val finalActive = new CopyOnWriteRoaringBitmap
-    finalActive.add(0L, newLength.toLong)
-    VectorImmutableArrayImpl(newData, finalActive, newLength)
+    VectorImmutableArrayImpl(newData, new CopyOnWriteRoaringBitmap, newLength)
   }
 
   private lazy val hash = MurmurHash3.orderedHash(this.iterator)
