@@ -43,9 +43,9 @@ private class VectorImmutableArrayImpl[T <: Object : ClassTag](private val data:
   }
 
   override def remove(element: T): ImmutableArray[T] = {
-    val logicalIndex = indexOf(element)
-    if (logicalIndex < 0) this
-    else doRemove(logicalIndex)
+    val physicalIndex = findPhysicalIndex(element)
+    if (physicalIndex < 0) this
+    else doRemovePhysical(physicalIndex)
   }
 
   override def addAll(iterable: IterableOnce[T]): ImmutableArray[T] = {
@@ -138,19 +138,34 @@ private class VectorImmutableArrayImpl[T <: Object : ClassTag](private val data:
     low
   }
 
+  private def findPhysicalIndex(element: T): Int = {
+    val it = data.iterator
+    var physIdx = 0
+    while (it.hasNext) {
+      if (it.next() == element && !removedIndices.contains(physIdx)) {
+        return physIdx
+      }
+      physIdx += 1
+    }
+    -1
+  }
+
   private def checkIndex(logicalIndex: Int): Unit = {
     if (logicalIndex < 0 || logicalIndex >= length) throw new IndexOutOfBoundsException(s"Index $logicalIndex")
   }
 
   private def doRemove(logicalIndex: Int): VectorImmutableArray[T] = {
+    doRemovePhysical(logicalToPhysical(logicalIndex))
+  }
+
+  private def doRemovePhysical(physicalIndex: Int): VectorImmutableArray[T] = {
     val newLength = length - 1
-    val physicalIndex = logicalToPhysical(logicalIndex)
     val newRemoved = removedIndices.clone()
     newRemoved.add(physicalIndex)
     if (shouldCompact) {
       compact(newRemoved, newLength)
     } else {
-      VectorImmutableArrayImpl(data.updated(physicalIndex, null.asInstanceOf[T]), newRemoved, newLength)
+      VectorImmutableArrayImpl(data, newRemoved, newLength)
     }
   }
 
