@@ -29,14 +29,18 @@ public class InMemDataTableBenchmark {
     public void removeRows(int size) {
         for (int i = 0; i < size; i++) {
             dataTable.processDelete(dataTable.primaryKeys().head());
+            benchmarkHelper.runJoinProviderIfRequired(i);
         }
+        benchmarkHelper.runJoinProvider();
     }
 
     public void updateRows(int size) {
         for (int i = 0; i < size; i++) {
             var existingRow = dataTable.pullRow(dataTable.primaryKeys().head());
             dataTable.processUpdate(existingRow);
+            benchmarkHelper.runJoinProviderIfRequired(i);
         }
+        benchmarkHelper.runJoinProvider();
     }
 
 }

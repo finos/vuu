@@ -25,30 +25,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.finos.vuu.benchmark.ColumnNames.ASK;
-import static org.finos.vuu.benchmark.ColumnNames.BID;
-import static org.finos.vuu.benchmark.ColumnNames.CLOSE;
-import static org.finos.vuu.benchmark.ColumnNames.CURRENCY;
-import static org.finos.vuu.benchmark.ColumnNames.EXCHANGE;
-import static org.finos.vuu.benchmark.ColumnNames.LAST;
-import static org.finos.vuu.benchmark.ColumnNames.MINOR_CURRENCY;
-import static org.finos.vuu.benchmark.ColumnNames.ORDER_ID;
-import static org.finos.vuu.benchmark.ColumnNames.QUANTITY;
-import static org.finos.vuu.benchmark.ColumnNames.RIC;
-import static org.finos.vuu.benchmark.ColumnNames.TRADER;
-import static org.finos.vuu.benchmark.ColumnNames.TRADE_TIME;
-import static org.finos.vuu.benchmark.TableDefs.CURRENCIES;
-import static org.finos.vuu.benchmark.TableDefs.CURRENCIES_NAME;
-import static org.finos.vuu.benchmark.TableDefs.ORDERS;
-import static org.finos.vuu.benchmark.TableDefs.ORDERS_NAME;
-import static org.finos.vuu.benchmark.TableDefs.ORDER_PRICES_CURRENCIES;
-import static org.finos.vuu.benchmark.TableDefs.PRICES;
-import static org.finos.vuu.benchmark.TableDefs.PRICES_CURRENCIES;
-import static org.finos.vuu.benchmark.TableDefs.PRICES_NAME;
+import static org.finos.vuu.benchmark.ColumnNames.*;
+import static org.finos.vuu.benchmark.TableDefs.*;
 import static org.finos.vuu.util.ScalaCollectionConverter.toScala;
 
 public class BenchmarkHelper {
 
+    private static final int MASK = 16_383;
     private final Clock clock = new DefaultClock();
     private final LifecycleContainer lifecycleContainer = new LifecycleContainer(clock);
     private final MetricsProvider metricsProvider = new MetricsProviderImpl();
@@ -78,7 +61,7 @@ public class BenchmarkHelper {
         rowBuilder.setString(dataTable.columnForName(CURRENCY), "GBP");
         rowBuilder.setString(dataTable.columnForName(MINOR_CURRENCY), "GBX");
         dataTable.processUpdate(rowBuilder.build());
-        joinProvider.runOnce();
+        runJoinProvider();
     }
 
     public void addPriceTableData(int size) {
@@ -102,11 +85,9 @@ public class BenchmarkHelper {
             rowBuilder.setDouble(lastColumn, i + 3.0);
             rowBuilder.setDouble(closeColumn, i + 4.0);
             dataTable.processUpdate(rowBuilder.build());
-            if (i % 10_000 == 0) {
-                joinProvider.runOnce();
-            }
+            runJoinProviderIfRequired(i);
         }
-        joinProvider.runOnce();
+        runJoinProvider();
     }
 
     public void addOrderTableData(int size) {
@@ -126,11 +107,9 @@ public class BenchmarkHelper {
             rowBuilder.setLong(tradeTimeColumn, clock.now());
             rowBuilder.setDouble(quantityColumn, i);
             dataTable.processUpdate(rowBuilder.build());
-            if (i % 10_000 == 0) {
-                joinProvider.runOnce();
-            }
+            runJoinProviderIfRequired(i);
         }
-        joinProvider.runOnce();
+        runJoinProvider();
     }
 
     public TreeBuilder createTreeBuilder() {
@@ -155,6 +134,16 @@ public class BenchmarkHelper {
                 AllowAllPermissionFilter$.MODULE$,
                 Option.empty(),
                 clock);
+    }
+
+    public void runJoinProviderIfRequired(int iteration) {
+        if ((iteration & MASK) == 0) {
+            runJoinProvider();
+        }
+    }
+
+    public void runJoinProvider() {
+        joinProvider.runOnce();
     }
 
 }
