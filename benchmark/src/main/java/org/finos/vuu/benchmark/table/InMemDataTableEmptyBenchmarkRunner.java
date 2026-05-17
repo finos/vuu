@@ -20,7 +20,7 @@ public class InMemDataTableEmptyBenchmarkRunner {
         benchmark = new InMemDataTableBenchmark(benchmarkHelper);
     }
 
-    @Benchmark
+    //@Benchmark
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 5)
     @Measurement(iterations = 5)

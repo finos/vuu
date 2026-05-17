@@ -21,7 +21,7 @@ public class InMemDataTableRemovalBenchmarkRunner {
         benchmark.addRows(insertSize);
     }
 
-    //@Benchmark
+    @Benchmark
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Warmup(iterations = 5)
     @Measurement(iterations = 5)
