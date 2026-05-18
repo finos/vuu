@@ -30,7 +30,7 @@ const getServerAPI = () => {
   throw Error("no DataProvider has been installed");
 };
 
-class NullDataSourceConstructor {
+export class NullDataSourceConstructor {
   constructor(_: DataSourceConstructorProps) {
     throw Error("no DataProvider has been installed");
   }

@@ -36,6 +36,7 @@ function cssInline(): PluginOption {
   const exclude = ["**/**.stories.tsx"];
   const include = [
     "**/packages/grid-layout/**/*.{tsx,jsx}",
+    "**/packages/vuu-chart/**/*.{tsx,jsx}",
     "**/packages/vuu-context-menu/**/*.{tsx,jsx}",
     "**/packages/vuu-datatable/**/*.{tsx,jsx}",
     "**/packages/vuu-data-react/**/*.{tsx,jsx}",
@@ -112,7 +113,7 @@ const server = await createServer({
   server: {
     proxy: {
       "/api/authn": {
-        target: "https://localhost:8443",
+        target: "http://localhost:8443",
         // target: "https://localhost:8090",
         secure: false,
       },

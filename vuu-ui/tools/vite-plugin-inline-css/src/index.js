@@ -16,6 +16,7 @@ export function cssInline() {
     "**/packages/vuu-notifications/**/*.{tsx,jsx}",
     "**/packages/vuu-popups/**/*.{tsx,jsx}",
     "**/packages/vuu-shell/**/*.{tsx,jsx}",
+    "**/packages/vuu-chart/**/*.{tsx,jsx}",
     "**/packages/vuu-table/**/*.{tsx,jsx}",
     "**/packages/vuu-table-extras/**/*.{tsx,jsx}",
     "**/packages/vuu-ui-controls/**/*.{tsx,jsx}",

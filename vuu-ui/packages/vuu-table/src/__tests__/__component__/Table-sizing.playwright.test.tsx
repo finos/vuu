@@ -124,7 +124,7 @@ test.describe("explicit sizing", () => {
     expect(await getDimensions(contentContainer)).toEqual([990, 625]);
 
     const table = page.getByRole("table");
-    expect(await getDimensions(table)).toEqual([987, 200025]);
+    expect(await getDimensions(table)).toEqual([990, 200025]);
 
     const vuuTable = page.getByTestId("table");
     await expect(await getDimensions(vuuTable)).toEqual([1000, 625]);
@@ -200,7 +200,7 @@ test.describe("maxViewportRowLimit", () => {
       expect(await getDimensions(contentContainer)).toEqual([590, 225]);
 
       const table = page.getByRole("table");
-      expect(await getDimensions(table)).toEqual([1008, 200025]);
+      expect(await getDimensions(table)).toEqual([908, 200025]);
 
       const vuuTable = page.getByTestId("table");
       await expect(await getDimensions(vuuTable)).toEqual([600, 235]);

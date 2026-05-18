@@ -7,6 +7,7 @@ import {
   CustomHeader,
   DataCellEditNotification,
   GroupToggleTarget,
+  HeaderCellProps,
   RowActionHandler,
   RowProps,
   SelectionChangeHandler,
@@ -81,6 +82,16 @@ export interface TableProps
    * A react function component that will be rendered if there are no rows to display
    */
   EmptyDisplay?: ComponentType;
+  /**
+   * A custom implementation of HeaderCell which will be rendered in place of the
+   * default HeaderCell. If provided, custom implementation is responsible for all
+   * header behaviour (if required) - sorting, resizing etc.
+   */
+  HeaderCell?: FC<HeaderCellProps>;
+  /**
+   * A custom Row implementation that will be rendered in place of the default
+   * Row.
+   */
   Row?: FC<RowProps>;
   /**
    * Allow a block of cells to be selected. Typically to be copied.
@@ -181,6 +192,7 @@ export interface TableProps
    * In a Table with editable cells, this callback will be invoked every time
    * a user performs any edit operation on an editable field.
    */
+  // TODO can we scrap this and leavr it to the editTracker ?
   onDataEdited?: DataCellEditNotification;
 
   onDragStart?: DragStartHandler;
@@ -285,6 +297,7 @@ export interface TableProps
 
 const TableCore = ({
   EmptyDisplay,
+  HeaderCell,
   Row = DefaultRow,
   allowCellBlockSelection,
   allowDragColumnHeader = true,
@@ -349,6 +362,7 @@ const TableCore = ({
     columns,
     dataRows,
     draggableRow,
+    editSessionInProgress,
     focusCellPlaceholderKeyDown,
     focusCellPlaceholderRef,
     getRowOffset,
@@ -462,12 +476,15 @@ const TableCore = ({
       >
         <div
           {...tableProps}
-          className={`${classBase}-table`}
+          className={cx(`${classBase}-table`, {
+            [`${classBase}-editing`]: editSessionInProgress,
+          })}
           role="table"
           tabIndex={disableFocus ? undefined : -1}
         >
           {showColumnHeaders ? (
             <TableHeader
+              HeaderCell={HeaderCell}
               allowDragColumnHeader={allowDragColumnHeader}
               allowSelectAll={allowSelectAll}
               allRowsSelected={allRowsSelected}
@@ -557,6 +574,7 @@ const TableCore = ({
 export const Table = forwardRef(function Table(
   {
     EmptyDisplay,
+    HeaderCell,
     Row,
     allowCellBlockSelection,
     allowDragColumnHeader,
@@ -714,6 +732,7 @@ export const Table = forwardRef(function Table(
       (footerHeight || showPaginationControls !== true) ? (
         <TableCore
           EmptyDisplay={EmptyDisplay}
+          HeaderCell={HeaderCell}
           Row={Row}
           allowCellBlockSelection={allowCellBlockSelection}
           allowDragColumnHeader={allowDragColumnHeader}

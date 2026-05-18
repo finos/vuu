@@ -130,6 +130,8 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     const { viewport = this.viewport || (this.viewport = uuid()) } =
       subscribeProps;
 
+    console.log(`[VuuDataSource] subscribe ${this.viewport}`);
+
     if (
       this.#status === "disabled" ||
       this.#status === "disabling" ||
@@ -253,9 +255,6 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     escalateToDisable = this._defaultSuspenseProps.escalateToDisable,
     escalateDelay = this._defaultSuspenseProps.escalateDelay,
   ) {
-    console.log(
-      `[VuuDataSuurce] suspend, current status ${this.#status}, escalateToDisable ? ${escalateToDisable}`,
-    );
     if (this.#status !== "unsubscribed") {
       info?.(`suspend #${this.viewport}, current status ${this.#status}`);
       if (this.viewport) {
@@ -272,7 +271,6 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
   }
 
   resume(callback?: DataSourceSubscribeCallback) {
-    console.log(`[VuuDataSource] resume, current status ${this.#status}`);
     const isDisabled = this.#status.startsWith("disabl");
     const isSuspended = this.#status === "suspended";
     info?.(`resume #${this.viewport}, current status ${this.#status}`);

@@ -1,4 +1,7 @@
 import { VuuSortType } from "@vuu-ui/vuu-protocol-types";
+import { useComponentCssInjection } from "@salt-ds/styles";
+import { useWindow } from "@salt-ds/window";
+
 import {
   DragDropProvider,
   DragOverlay,
@@ -21,14 +24,22 @@ import {
 import { isGroupColumn, isNotHidden } from "@vuu-ui/vuu-utils";
 import {
   cloneElement,
+  FC,
   isValidElement,
   memo,
   ReactElement,
   useMemo,
 } from "react";
-import { GroupHeaderCell, HeaderCell } from "../header-cell";
+import {
+  GroupHeaderCell,
+  HeaderCell as DefaultHeaderCell,
+} from "../header-cell";
 import { HeaderProvider } from "./HeaderProvider";
 import { useTableHeader } from "./useTableHeader";
+
+// We import headercell css once here so it is available to custom
+// headercell implementations.
+import headerCellCss from "../header-cell/HeaderCell.css";
 
 export type ColumnSortHandler = (
   column: ColumnDescriptor,
@@ -50,6 +61,7 @@ export interface TableHeaderProps
     | "onCheckBoxColumnHeaderClick"
     | "showColumnHeaderMenus"
   > {
+  HeaderCell?: FC<HeaderCellProps>;
   columns: RuntimeColumnDescriptor[];
   customHeader?: CustomHeader | CustomHeader[];
   headings: TableHeadings;
@@ -67,6 +79,7 @@ export interface TableHeaderProps
 
 export const TableHeader = memo(
   ({
+    HeaderCell = DefaultHeaderCell,
     allowDragColumnHeader,
     allowSelectAll,
     allRowsSelected,
@@ -86,6 +99,13 @@ export const TableHeader = memo(
     tableId,
     virtualColSpan = 0,
   }: TableHeaderProps) => {
+    const targetWindow = useWindow();
+    useComponentCssInjection({
+      testId: "vuu-table-header-cell",
+      css: headerCellCss,
+      window: targetWindow,
+    });
+
     const [customHeaders, customHeaderCount] = useMemo<
       [ReactElement | ReactElement[] | null, number]
     >(() => {

@@ -9,6 +9,7 @@ import { DockLayout, Drawer } from "@vuu-ui/vuu-layout";
 import { Table, TableProps, useHeaderProps } from "@vuu-ui/vuu-table";
 import {
   BaseRowProps,
+  HeaderCellProps,
   SelectionChangeHandler,
   TableConfig,
 } from "@vuu-ui/vuu-table-types";
@@ -17,6 +18,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { columnGenerator, rowGenerator } from "./SimpleTableDataGenerator";
 import { VuuRpcMenuRequest } from "@vuu-ui/vuu-protocol-types";
 import { useData } from "@vuu-ui/vuu-utils";
+import { useCell } from "@vuu-ui/vuu-table/src/useCell";
 
 type DataTableProps = Partial<
   Omit<TableProps, "config"> & { config?: Partial<TableConfig> }
@@ -366,6 +368,51 @@ export const MultipleCustomHeaders = () => {
     <Table
       config={config}
       customHeader={[SimpleCustomHeader, customHeader]}
+      dataSource={dataSource}
+      height={645}
+      renderBufferSize={10}
+      width={800}
+    />
+  );
+};
+
+const ExampleCustomHeaderCell = ({ column }: HeaderCellProps) => {
+  const classBase = "vuuTableHeaderCell";
+  const { className, style } = useCell(column, classBase, true);
+  return (
+    <div
+      className={className}
+      aria-colindex={column.ariaColIndex}
+      style={style}
+    >
+      {column.label}
+    </div>
+  );
+};
+
+export const CustomHeaderCell = () => {
+  const config = useMemo<TableConfig>(
+    () => ({
+      columns: columnGenerator(10),
+      rowSeparators: true,
+      zebraStripes: true,
+    }),
+    [],
+  );
+
+  const dataSource = useMemo<DataSource>(() => {
+    const generateRow = rowGenerator(config.columns.map((col) => col.name));
+    const data = new Array(200).fill(0).map((_, index) => generateRow(index));
+    return new ArrayDataSource({
+      columnDescriptors: config.columns,
+      data,
+    });
+  }, [config.columns]);
+
+  return (
+    <Table
+      HeaderCell={ExampleCustomHeaderCell}
+      config={config}
       dataSource={dataSource}
       height={645}
       renderBufferSize={10}

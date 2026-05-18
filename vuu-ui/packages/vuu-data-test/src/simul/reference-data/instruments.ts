@@ -37,7 +37,6 @@ export type InstrumentsDataRow = [
   exchange,
   string,
   number,
-  price,
   ric,
   date,
   date,
@@ -50,10 +49,9 @@ export const InstrumentColumnMap = {
   exchange: 3,
   string: 4,
   number: 5,
-  price: 6,
-  ric: 7,
-  vuuCreatedTimestamp: 8,
-  vuuUpdatedTimestamp: 9,
+  ric: 6,
+  vuuCreatedTimestamp: 7,
+  vuuUpdatedTimestamp: 8,
 } as const;
 
 const instrumentsData: InstrumentsDataRow[] = [];
@@ -63,27 +61,21 @@ const chars2 = Array.from("ABCEFGHKMN");
 const chars3 = Array.from("OPQRTUVWYZ");
 const chars4 = Array.from("OPQRTUVWYZ");
 
-const scaledDecimals = (fraction: string, decimals: number) => {
-  if (fraction.length > decimals) {
-    return fraction.slice(0, decimals);
-  } else if (fraction.length === decimals) {
-    return fraction;
-  } else {
-    return fraction.padEnd(decimals, "0");
-  }
-};
+// const scaledDecimals = (fraction: string, decimals: number) => {
+//   if (fraction.length > decimals) {
+//     return fraction.slice(0, decimals);
+//   } else if (fraction.length === decimals) {
+//     return fraction;
+//   } else {
+//     return fraction.padEnd(decimals, "0");
+//   }
+// };
 
-const ScaledDecimal = (value: number, decimals = 6) => {
-  const stringValue = value.toString();
-  const [integral, fraction = "0"] = stringValue.split(".");
-  return `${integral}${scaledDecimals(fraction, decimals)}`;
-};
-
-const randomPrice = () => {
-  const price = random(0, 10000);
-  const multiplier = random(1, 10);
-  return ScaledDecimal(price / multiplier);
-};
+// const ScaledDecimal = (value: number, decimals = 6) => {
+//   const stringValue = value.toString();
+//   const [integral, fraction = "0"] = stringValue.split(".");
+//   return `${integral}${scaledDecimals(fraction, decimals)}`;
+// };
 
 // const start = performance.now();
 // Create 10_000 Instruments
@@ -101,7 +93,6 @@ for (const char1 of chars1) {
         const lotSize = lotsizes[random(0, lotsizes.length - 1)];
 
         const exchange = locations[suffix][1];
-        const price = randomPrice();
 
         const timestamp = clock.now;
 
@@ -112,7 +103,6 @@ for (const char1 of chars1) {
           exchange,
           String(isin),
           lotSize,
-          price,
           ric,
           timestamp,
           timestamp,

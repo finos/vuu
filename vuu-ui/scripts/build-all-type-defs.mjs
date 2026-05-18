@@ -14,6 +14,7 @@ const packages = [
   "grid-layout",
   "vuu-context-menu",
   "vuu-codemirror",
+  "vuu-chart",
   "vuu-data-local",
   "vuu-data-react",
   "vuu-data-remote",

@@ -1,6 +1,4 @@
 import { Checkbox, useForkRef } from "@salt-ds/core";
-import { useComponentCssInjection } from "@salt-ds/styles";
-import { useWindow } from "@salt-ds/window";
 import { ColumnMenu } from "@vuu-ui/vuu-table-extras";
 import { HeaderCellProps } from "@vuu-ui/vuu-table-types";
 import { isTypeDescriptor, useSortable } from "@vuu-ui/vuu-utils";
@@ -16,8 +14,6 @@ import {
 import { SortIndicator } from "../column-header-pill";
 import { ColumnResizer, useTableColumnResize } from "../column-resizing";
 import { useCell } from "../useCell";
-
-import headerCellCss from "./HeaderCell.css";
 
 const classBase = "vuuTableHeaderCell";
 
@@ -40,12 +36,6 @@ export const HeaderCell = ({
   showColumnHeaderMenus = true,
   ...htmlAttributes
 }: HeaderCellProps) => {
-  const targetWindow = useWindow();
-  useComponentCssInjection({
-    testId: "vuu-header-cell",
-    css: headerCellCss,
-    window: targetWindow,
-  });
   const dragDropSortHook = allowDragColumnHeader ? useSortable : doNothing;
   const { ref: sortableRef } = dragDropSortHook({ id, index });
   const {

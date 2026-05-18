@@ -24,6 +24,7 @@ export const VuuDataSourceProvider = ({
     autoLogin,
     websocketUrl,
   });
+
   return (
     <DataProvider
       VuuDataSource={VuuDataSource}

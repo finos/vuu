@@ -3,7 +3,10 @@ import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
 import { useEditableText } from "@vuu-ui/vuu-ui-controls";
-import { registerComponent } from "@vuu-ui/vuu-utils";
+import {
+  dataDescriptorTypeToVuuRowDataItemType,
+  registerComponent,
+} from "@vuu-ui/vuu-utils";
 import cx from "clsx";
 
 import inputCellCss from "./InputCell.css";
@@ -25,10 +28,11 @@ export const InputCell = ({
   const dataValue = dataRow[column.name] as number | string;
   const { align = "left", clientSideEditValidationCheck } = column;
 
-  const { warningMessage, ...editProps } = useEditableText({
+  const { edited, warningMessage, ...editProps } = useEditableText({
     value: dataValue,
     onEdit,
     clientSideEditValidationCheck,
+    type: dataDescriptorTypeToVuuRowDataItemType(column),
   });
 
   const endAdornment =
@@ -46,6 +50,7 @@ export const InputCell = ({
       {...editProps}
       bordered
       className={cx(classBase, {
+        [`${classBase}-edited`]: edited,
         [`${classBase}-error`]: warningMessage !== undefined,
       })}
       endAdornment={endAdornment}

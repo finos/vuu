@@ -22,6 +22,13 @@ export * from "./common-types";
 export * from "./component-registry";
 export * from "./cookie-utils";
 export * from "./css-utils";
+export { EditButtons, type EditButtonProps } from "./data-editing/EditButtons";
+export {
+  DataEditingProvider,
+  useEditTracker,
+} from "./data-editing/DataEditingProvider";
+export { EditTracker, type EditState } from "./data-editing/EditTracker";
+export { useEditableTable } from "./data-editing/useEditableTable";
 export * from "./data-utils";
 export * from "./datasource/BaseDataSource";
 export * from "./datasource/datasource-action-utils";
@@ -73,9 +80,9 @@ export * from "./useId";
 export * from "./useLayoutEffectSkipFirst";
 export * from "./user-types";
 export {
+  useResizeObserver,
   WidthHeight,
   WidthOnly,
-  useResizeObserver,
   type measurements,
   type ResizeHandler,
 } from "./useResizeObserver";
@@ -91,3 +98,4 @@ export {
 export * from "./context-definitions/WorkspaceContext";
 export { PageVisibilityObserver } from "./PageVisibilityObserver";
 export * from "./ShellContext";
+export { ThemeLoadChecker } from "./theme-utils";

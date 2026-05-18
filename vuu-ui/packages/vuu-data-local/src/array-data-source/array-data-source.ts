@@ -284,6 +284,7 @@ export class ArrayDataSource
   }
 
   unsubscribe() {
+    this.removeAllListeners();
     this.clientCallback = undefined;
     this.#status = "unsubscribed";
     this.emit("unsubscribed", this.viewport);
@@ -816,7 +817,7 @@ export class ArrayDataSource
     return this.updateDataItem(keyValue, columnName, row[dataColIndex]);
   };
 
-  protected updateRow = (row: VuuRowDataItemType[]) => {
+  protected updateRow = (row: VuuRowDataItemType[], _columnName?: string) => {
     // TODO take sorting, filtering. grouping into account
     const keyValue = row[this.key];
     const dataIndex = this.#data.findIndex((row) => row[KEY] === keyValue);
@@ -962,11 +963,11 @@ export class ArrayDataSource
       });
       this.lastRangeServed = {
         from: this.#range.from,
-        to: this.#range.to,
-        // to: Math.min(
-        //   this.#range.to,
-        //   this.#range.from + rowsWithinViewport.length,
-        // ),
+        // to: this.#range.to,
+        to: Math.min(
+          this.#range.to,
+          this.#range.from + rowsWithinViewport.length,
+        ),
       };
       // console.log(
       //   `%c[ArrayDataSource] lastRangeServed (${this.lastRangeServed.from}:${this.lastRangeServed.to})`,

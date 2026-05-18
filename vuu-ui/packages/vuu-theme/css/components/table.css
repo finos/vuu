@@ -17,20 +17,6 @@
 
   .vuuTable {
       --vuuTableRow-selectionDecorator-width: 4px;
-
-    .vuuTableRow-highlighted {
-      background: var(--vuu-color-gray-15);
-    }
-
-    .vuuTableRow[aria-selected="true"] {
-      .vuuTableCell:focus {
-        outline: solid var(--salt-focused-outlineColor) 2px;
-        
-        /** This is to achieve a white background to outline dashes */
-        box-shadow: inset 0 0 0 var(--cell-outline-width) white;
-        border-bottom: none;
-      }
-    }
   }
 }
 
@@ -53,10 +39,6 @@
 
   .vuuTable {
       --vuuTableRow-selectionDecorator-width: 4px;
-
-    .vuuTableRow-highlighted {
-      background: var(--vuu-color-gray-15);
-    }
     
     .vuuTableRow[aria-selected="true"] {
       .vuuTableCell:focus {

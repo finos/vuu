@@ -4,12 +4,13 @@
   --freeze-control-active-button-color: var(--salt-palette-error-background);
   --freeze-control-badge-color: var(--salt-palette-success-background);
 
+  height: fit-content;
+
   .vuuFreezeControl-buttonRow {
     background-color: var(--salt-container-secondary-background);
     border: 1px solid var(--salt-container-secondary-borderColor);
     border-radius: 50px;
     display: flex;
-    height: var(--salt-size-base);
     overflow: hidden;
     white-space: nowrap;
   }
@@ -22,6 +23,10 @@
 
   .vuuFreezeControl-buttonWrapper-active {
     background-color: var(--freeze-control-active-button-color);
+  }
+
+  .saltToggleButtonGroup {
+    padding: var(--vuuFreezeControl-padding, 0px);
   }
 
   .vuuFreezeControl-buttonWrapper-active .saltToggleButton {

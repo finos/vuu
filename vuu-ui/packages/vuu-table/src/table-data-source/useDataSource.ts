@@ -88,19 +88,23 @@ export const useDataSource = ({
     [],
   );
 
-  useMemo(() => {
-    dataSource.on("resumed", () => {
-      // When we resume a dataSource (after switching tabs etc)
-      // client will receive rows. We may not have received any
-      // setRange calls at this point so dataWindow range will
-      //not yet be set. If the dataWindow range is already set,
-      // this is a no-op.
-      const { range } = dataSource;
-      if (range.to !== 0) {
-        dataRowWindow.setRange(dataSource.range.withBuffer);
-      }
-    });
+  const handleResume = useCallback(() => {
+    // When we resume a dataSource (after switching tabs etc)
+    // client will receive rows. We may not have received any
+    // setRange calls at this point so dataWindow range will
+    //not yet be set. If the dataWindow range is already set,
+    // this is a no-op.
+    const { range } = dataSource;
+    if (range.to !== 0) {
+      dataRowWindow.setRange(dataSource.range.withBuffer);
+    }
   }, [dataRowWindow, dataSource]);
+
+  useEffect(() => {
+    return () => {
+      dataSource.removeListener("resumed", handleResume);
+    };
+  }, [dataSource, handleResume]);
 
   const setData = useCallback(
     (updates: DataSourceRow[]) => {
@@ -148,17 +152,17 @@ export const useDataSource = ({
       } else if (message.type === "viewport-update") {
         if (typeof message.size === "number") {
           onSizeChange?.(message.size);
-          const size = dataRowWindow.data.length;
+          // const size = dataRowWindow.data.length;
           dataRowWindow.setRowCount(message.size);
           totalRowCountRef.current = message.size;
 
-          if (dataRowWindow.data.length < size) {
-            if (isMounted.current === false) {
-              console.log("setting state whilst unmounted");
-            }
+          // if (dataRowWindow.data.length < size) {
+          //   if (isMounted.current === false) {
+          //     console.log("setting state whilst unmounted");
+          //   }
 
-            forceUpdate({});
-          }
+          //   forceUpdate({});
+          // }
         }
         if (message.rows) {
           setData(message.rows);
@@ -188,11 +192,6 @@ export const useDataSource = ({
         onSizeChange?.(0);
         dataRowWindow.setRowCount(0);
         setData([]);
-
-        if (isMounted.current === false) {
-          console.log("setting state whilst unmounted");
-        }
-
         forceUpdate({});
       } else {
         console.log(`useDataSource unexpected message ${message.type}`);
@@ -265,7 +264,6 @@ export const useDataSource = ({
   );
 
   useEffect(() => {
-    isMounted.current = true;
     if (dataSource.status !== "initialising") {
       const { columns, tableSchema } = dataSource;
       if (tableSchema) {
@@ -275,7 +273,6 @@ export const useDataSource = ({
           `[useDataSource] a resumed dataSource must have a tableSchema`,
         );
       }
-
       dataSource.resume?.(datasourceMessageHandler);
 
       if (dataSource.range.from > 0) {
@@ -285,7 +282,6 @@ export const useDataSource = ({
       }
     }
     return () => {
-      isMounted.current = false;
       dataSource.suspend?.(
         suspenseProps?.escalateToDisable,
         suspenseProps?.escalateDelay,

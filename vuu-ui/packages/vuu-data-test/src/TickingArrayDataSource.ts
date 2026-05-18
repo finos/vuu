@@ -97,10 +97,27 @@ export class TickingArrayDataSource extends ArrayDataSource {
     if (table) {
       this.tableSchema = table.schema;
       table.on("insert", this.insert);
-      table.on("update", this.updateRow);
+      table.on("update", this.updateRowWithSessionCheck);
       table.on("delete", this.deleteRow);
     }
   }
+
+  updateRowWithSessionCheck = (
+    row: VuuRowDataItemType[],
+    columnName?: string,
+    sessionId?: string,
+  ) => {
+    if (sessionId && sessionId === this.viewport) {
+      this.updateRow(row, columnName);
+    } else if (sessionId) {
+      // ignore, its not for me
+    } else if (this.status === "suspended") {
+      // queue updates for deferred application, issue warnings when edits in progress
+      console.log("updates incoming from differenrt edit session");
+    } else {
+      this.updateRow(row, columnName);
+    }
+  };
 
   async subscribe(
     subscribeProps: DataSourceSubscribeProps,
@@ -150,9 +167,10 @@ export class TickingArrayDataSource extends ArrayDataSource {
       const {
         params: { column, starts },
       } = rpcRequest;
+      const data = await this.getTypeaheadSuggestions(column, starts);
       return {
         type: "SUCCESS_RESULT",
-        data: this.getTypeaheadSuggestions(column, starts),
+        data,
       } as RpcResultSuccess;
     } else {
       const rpcService = this.#rpcServices?.find(

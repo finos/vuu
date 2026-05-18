@@ -3,6 +3,7 @@ import { execWait, getCommandLineArg } from "./utils.mjs";
 const debug = getCommandLineArg("--debug");
 
 const packages = [
+  "vuu-chart",
   "vuu-codemirror",
   "vuu-context-menu",
   "vuu-data-local",

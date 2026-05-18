@@ -69,7 +69,7 @@ const instrumentPrices: InstrumentPricesDataRow[] = [];
 
 for (let i = 0; i < instrumentsData.length; i++) {
   // prettier-ignore
-  const [bbg,currency,description,exchange,isin,lotSize,/* skip price*/ ,ric] = instrumentsData[i];
+  const [bbg,currency,description,exchange,isin,lotSize,ric] = instrumentsData[i];
   const [ask, askSize, bid, bidSize, close, last, open, phase, , scenario] =
     pricesData[i];
 
