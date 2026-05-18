@@ -111,10 +111,8 @@ private class VectorImmutableArrayImpl[T <: Object : ClassTag](
     checkIndex(logicalIndex)
     val newLength = length - 1
 
-    // Determine the physical index of the element to remove
     val physicalIndex = if (activeIndices == null) logicalIndex else activeIndices.select(logicalIndex)
 
-    // Get/create active indices bitmap
     val newActive = if (activeIndices == null) {
       val bm = new CopyOnWriteRoaringBitmap
       bm.add(0L, data.length.toLong)
