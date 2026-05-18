@@ -20,6 +20,7 @@
     padding: var(--padding-base);
     row-gap: var(--salt-spacing-100);
     transition: opacity .4s, top;
+    z-index: var(--salt-zIndex-notification);
 
     &.vuuToastNotification-hidden {
         visibility: hidden;
