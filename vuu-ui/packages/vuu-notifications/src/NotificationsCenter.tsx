@@ -20,7 +20,6 @@ import { MeasuredSize } from "@vuu-ui/vuu-ui-controls";
 
 const ZeroSize: MeasuredSize = { height: 0, width: 0 };
 const toastContainerRightPadding = 20;
-const NO_NOTIFICATIONS: RuntimeToastNotification[] = [];
 export interface NotificationsCenterProps {
   notificationsContext: NotificationsContext;
   startupToastNotification?: ToastNotificationDescriptor;
@@ -45,23 +44,27 @@ const toastContainerContentGap = 10;
 // rightPadding is used together with the toastWidth to compute the toast position
 // at the beginning and at the end of the animation
 
+const RuntimeToast = (
+  toast: ToastNotificationDescriptor,
+): RuntimeToastNotification => {
+  const slidesIn = toast.animationType?.includes("slide-in") ? true : false;
+  return {
+    ...toast,
+    hidden: slidesIn,
+    id: getUniqueId(),
+    left: -1,
+    opacity: slidesIn ? undefined : 0,
+    size: ZeroSize,
+  };
+};
+
 export const NotificationsCenter = ({
   notificationsContext,
   startupToastNotification,
 }: NotificationsCenterProps) => {
   const toastNotifications = useMemo<RuntimeToastNotification[]>(
     () =>
-      startupToastNotification
-        ? [
-            {
-              ...startupToastNotification,
-              hidden: false,
-              id: getUniqueId(),
-              left: -1,
-              size: ZeroSize,
-            },
-          ]
-        : [],
+      startupToastNotification ? [RuntimeToast(startupToastNotification)] : [],
     [startupToastNotification],
   );
 
@@ -69,7 +72,8 @@ export const NotificationsCenter = ({
     useState<ReactNode>(null);
 
   const hoveredToastRef = useRef<string | undefined>(undefined);
-  const notificationsRef = useRef<RuntimeToastNotification[]>(NO_NOTIFICATIONS);
+  const notificationsRef =
+    useRef<RuntimeToastNotification[]>(toastNotifications);
   const [notifications, _setNotifications] =
     useState<RuntimeToastNotification[]>(toastNotifications);
 
@@ -83,34 +87,15 @@ export const NotificationsCenter = ({
   const showNotification = useCallback(
     (notification: Notification) => {
       if (isToastNotification(notification)) {
-        const { animationType = "none", renderPostRefresh } = notification;
-        if (renderPostRefresh) {
+        if (notification.renderPostRefresh) {
           saveLocalEntity("startup-notification", {
             ...notification,
             expires: +new Date() + 10000,
           });
         } else {
-          if (animationType.includes("slide-in")) {
-            setNotifications(
-              notificationsRef.current.concat({
-                ...notification,
-                hidden: true,
-                id: getUniqueId(),
-                left: -1,
-                size: ZeroSize,
-              }),
-            );
-          } else
-            setNotifications(
-              notificationsRef.current.concat({
-                ...notification,
-                hidden: false,
-                id: getUniqueId(),
-                left: -1,
-                opacity: 0,
-                size: ZeroSize,
-              }),
-            );
+          setNotifications(
+            notificationsRef.current.concat(RuntimeToast(notification)),
+          );
         }
       } else if (isWorkspaceNotification(notification)) {
         setWorkspaceNotification(
@@ -278,7 +263,6 @@ export const NotificationsCenter = ({
     },
     [setNotifications],
   );
-
   return (
     <>
       {workspaceNotification}

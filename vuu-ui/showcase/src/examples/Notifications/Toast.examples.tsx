@@ -26,6 +26,7 @@ const Notifications = () => {
   const [body, setBody] = useState<string>("Body");
   const [dismissal, setDismissal] = useState<DismissalStyle>("automatic");
   const [showCloseButton, setShowCloseButton] = useState(false);
+  const [renderPostRefresh, setPostRefresh] = useState(false);
   const [icon, setIcon] = useState(true);
 
   const { showNotification } = useNotifications();
@@ -37,10 +38,14 @@ const Notifications = () => {
       dismissal,
       header,
       icon: icon === false ? false : undefined,
+      renderPostRefresh,
       showCloseButton: showCloseButton || undefined,
       status: type,
       type: "toast",
     });
+    if (renderPostRefresh) {
+      location.reload();
+    }
   };
 
   return (
@@ -140,6 +145,15 @@ const Notifications = () => {
             setIcon(event.target.checked)
           }
           checked={icon}
+        />
+      </FormField>
+      <FormField>
+        <FormFieldLabel>Render Post Refresh</FormFieldLabel>
+        <Switch
+          onChange={(event: ChangeEvent<HTMLInputElement>) =>
+            setPostRefresh(event.target.checked)
+          }
+          checked={renderPostRefresh}
         />
       </FormField>
       <button onClick={handleNotification}>trigger notifications</button>
