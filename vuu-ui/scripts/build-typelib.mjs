@@ -4,10 +4,11 @@ import { createFolder, getCommandLineArg, readPackageJson } from "./utils.mjs";
 
 const defaultConfig = {
   distPath: `../../dist`,
-  licencePath: "../../../LICENSE",
 };
 
 const indexDTS = "index.d.ts";
+
+const LICENCE_PATH = "../../../LICENSE";
 
 export default async function main(customConfig) {
   const config = {
@@ -16,7 +17,7 @@ export default async function main(customConfig) {
   };
 
   const packageJson = readPackageJson();
-  const { distPath: DIST_PATH, licencePath: LICENCE_PATH } = config;
+  const { distPath: DIST_PATH } = config;
 
   const { name: scopedPackageName } = packageJson;
 
@@ -61,7 +62,7 @@ export default async function main(customConfig) {
           } else {
             resolve();
           }
-        }
+        },
       );
     });
   }
@@ -76,7 +77,7 @@ export default async function main(customConfig) {
             err,
           });
         }
-      }
+      },
     );
   }
 

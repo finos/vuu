@@ -17,7 +17,6 @@ import { buildWorker } from "./build-worker.mjs";
 const defaultConfig = {
   distPath: `../../dist`,
   jsx: "transform",
-  licencePath: "../../../LICENSE",
 };
 
 const workerTS = "src/worker.ts";
@@ -27,6 +26,7 @@ const indexDTS = "index.d.ts";
 const indexJS = "src/index.js";
 const indexCSS = "index.css";
 const README = "README.md";
+const LICENCE_PATH = "../../../LICENSE";
 
 const getDefaultFilesToPublish = ({
   includeJS,
@@ -51,7 +51,7 @@ export default async function main(customConfig) {
   };
 
   const packageJson = readPackageJson();
-  const { distPath: DIST_PATH, licencePath: LICENCE_PATH, target } = config;
+  const { distPath: DIST_PATH, target } = config;
 
   const { name: scopedPackageName } = packageJson;
 
