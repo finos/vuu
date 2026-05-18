@@ -1,5 +1,5 @@
-import { ConnectionManager } from "@vuu-ui/vuu-data-remote";
-import { DataProvider, useData } from "@vuu-ui/vuu-utils";
+import { ConnectionManager, VuuDataSource } from "@vuu-ui/vuu-data-remote";
+import { DataProvider } from "@vuu-ui/vuu-utils";
 import { ReactNode } from "react";
 import { useAutoLoginToVuuServer } from "./useAutoLoginToVuuServer";
 
@@ -18,8 +18,6 @@ export const VuuDataSourceProvider = ({
   children: ReactNode;
   websocketUrl?: string;
 }) => {
-  const { VuuDataSource } = useData();
-
   useAutoLoginToVuuServer({
     authenticate,
     autoConnect,
