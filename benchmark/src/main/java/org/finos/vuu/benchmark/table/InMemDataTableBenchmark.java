@@ -20,10 +20,10 @@ public class InMemDataTableBenchmark {
     }
 
     public void iterateRows(Blackhole bh) {
-        dataTable.primaryKeys().foreach(v1 -> {
-            bh.consume(dataTable.pullRow(v1));
-            return null;
-        });
+        var keys = dataTable.primaryKeys();
+        for (int i = 0; i < keys.size(); i++) {
+            bh.consume(dataTable.pullRow(keys.get(i)));
+        }
     }
 
     public void removeRows(int size) {
@@ -36,8 +36,9 @@ public class InMemDataTableBenchmark {
     }
 
     public void updateRows(int size) {
+        var keys = dataTable.primaryKeys();
         for (int i = 0; i < size; i++) {
-            var existingRow = dataTable.pullRow(dataTable.primaryKeys().head());
+            var existingRow = dataTable.pullRow(keys.get(i));
             dataTable.processUpdate(existingRow);
             benchmarkHelper.runJoinProviderIfRequired(i);
         }

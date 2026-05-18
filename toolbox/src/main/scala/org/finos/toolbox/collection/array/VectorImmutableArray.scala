@@ -154,6 +154,8 @@ private class VectorImmutableArrayImpl[T <: Object : ClassTag](
     }
   }
 
+  override def knownSize: Int = length
+
   private def checkIndex(logicalIndex: Int): Unit = {
     if (logicalIndex < 0 || logicalIndex >= length) throw new IndexOutOfBoundsException(s"Index $logicalIndex")
   }
