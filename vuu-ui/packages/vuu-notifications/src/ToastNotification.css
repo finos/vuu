@@ -89,6 +89,7 @@
     &.vuuToastNotification-error {
         --toast-background: var(--vuuToast-error-background, var(--salt-container-primary-background));
         --toast-foreground: var(--vuuToast-error-foreground, var(--salt-content-primary-foreground));
+        --vuu-icon-svg: var(--vuuToast-error-icon, var(--vuu-svg-info-circle));
     }
 
     &.vuuToastNotification-success {
@@ -99,12 +100,12 @@
     &.vuuToastNotification-warning {
         --toast-background: var(--vuuToast-warning-background, var(--salt-container-primary-background));
         --toast-foreground: var(--vuuToast-warning-foreground, var(--salt-content-primary-foreground));
-        --vuu-icon-svg: var(--vuuToast-warning-icon, var(--vuu-svg-tick));
+        --vuu-icon-svg: var(--vuuToast-warning-icon, var(--vuu-svg-info-circle));
     }
     &.vuuToastNotification-info {
         --toast-background: var(--vuuToast-info-background, var(--salt-container-primary-background));
         --toast-foreground: var(--vuuToast-info-foreground, var(--salt-content-primary-foreground));
-        --vuu-icon-svg: var(--vuuToast-info-icon, var(--vuu-svg-tick));
+        --vuu-icon-svg: var(--vuuToast-info-icon, var(--vuu-svg-info-circle));
     }
 
     .vuuIcon {
