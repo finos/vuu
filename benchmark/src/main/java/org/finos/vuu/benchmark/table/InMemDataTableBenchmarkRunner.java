@@ -27,7 +27,7 @@ public class InMemDataTableBenchmarkRunner {
     @Param({ "50000", "250000", "500000" })
     public int insertSize;
 
-    @Setup(Level.Invocation)
+    @Setup(Level.Iteration)
     public void setup() {
         benchmark = new InMemDataTableBenchmark(benchmarkHelper);
         benchmark.addRows(insertSize);
@@ -41,16 +41,6 @@ public class InMemDataTableBenchmarkRunner {
     @BenchmarkMode(Mode.SampleTime)
     public void iterateRows(Blackhole bh) throws IOException {
         benchmark.iterateRows(bh);
-    }
-
-    @Benchmark
-    @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    @Warmup(iterations = 5)
-    @Measurement(iterations = 5)
-    @Fork(1)
-    @BenchmarkMode(Mode.SampleTime)
-    public void removeRows() throws IOException {
-        benchmark.removeRows(insertSize);
     }
 
     @Benchmark
