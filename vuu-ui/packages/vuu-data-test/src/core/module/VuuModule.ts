@@ -26,6 +26,23 @@ import { TickingArrayDataSource } from "../../TickingArrayDataSource";
 import { RuntimeVisualLink } from "../../RuntimeVisualLink";
 import moduleContainer from "./ModuleContainer";
 
+const assertUpdateIsValid = (
+  schema: TableSchema,
+  column: string,
+  data: VuuRowDataItemType,
+) => {
+  const col = schema.columns.find((col) => col.name === column);
+  if (col) {
+    console.log(`data type ${col.serverDataType} data ${data}`);
+    // switch (col.serverDataType){
+    // }
+  } else {
+    throw Error(
+      `schema for table ${schema.table.table} does not include column ${column}`,
+    );
+  }
+};
+
 export interface IVuuModule<T extends string = string> {
   createDataSource: (tableName: T) => DataSource;
 }
@@ -349,12 +366,20 @@ export abstract class VuuModule<T extends string = string>
         }
       }
       if (targetTable) {
-        targetTable.update(key as string, column as string, data);
-
-        return {
-          type: "SUCCESS_RESULT",
-          data: undefined,
-        };
+        try {
+          assertUpdateIsValid(targetTable.schema, column as string, data);
+          targetTable.update(key as string, column as string, data);
+          return {
+            type: "SUCCESS_RESULT",
+            data: undefined,
+          };
+        } catch (e) {
+          const { message } = e as Error;
+          return {
+            type: "ERROR_RESULT",
+            errorMessage: message,
+          };
+        }
       } else {
         throw Error("[VuuModule] editCell unable to find table for dataSource");
       }

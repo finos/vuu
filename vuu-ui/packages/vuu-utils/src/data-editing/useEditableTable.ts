@@ -1,6 +1,6 @@
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { useCallback, useMemo, useState } from "react";
-import { EditTracker } from "./EditTracker";
+import { EditSession } from "./EditSession";
 import { useData } from "../context-definitions/DataProvider";
 import { DataSource } from "@vuu-ui/vuu-data-types";
 import { isRpcSuccess } from "../protocol-message-utils";
@@ -53,34 +53,34 @@ export const useEditableTable = ({
     return dataSourceProp ?? new VuuDataSource({ columns, table });
   }, [VuuDataSource, columns, dataSourceProp, table]);
 
-  const editTracker = useMemo(() => new EditTracker(), []);
+  const editSession = useMemo(() => new EditSession(), []);
 
   useMemo(() => {
     if (dataSource) {
-      editTracker.dataSource = dataSource;
+      editSession.dataSource = dataSource;
     }
-  }, [dataSource, editTracker]);
+  }, [dataSource, editSession]);
 
   const handleCancel = useCallback(() => {
     // editTracker.dataSource = dataSource;
-    editTracker.cancelChanges();
+    editSession.cancelChanges();
     onCancel();
     clearSessionDataSource();
     dataSource.resume?.();
-  }, [clearSessionDataSource, dataSource, editTracker, onCancel]);
+  }, [clearSessionDataSource, dataSource, editSession, onCancel]);
 
   const handleSave = useCallback(async () => {
     dataSource.resume?.();
-    const response = await editTracker.saveChanges();
+    const response = await editSession.saveChanges();
     if (isRpcSuccess(response)) {
       onSave();
       clearSessionDataSource();
     }
-  }, [clearSessionDataSource, dataSource, editTracker, onSave]);
+  }, [clearSessionDataSource, dataSource, editSession, onSave]);
 
   useMemo(async () => {
     if (isEditMode) {
-      const sessionTable = await editTracker.enterEditMode();
+      const sessionTable = await editSession.enterEditMode();
       if (sessionTable && dataSource.tableSchema) {
         dataSource.suspend?.(false);
         const sessionDataSource = new VuuDataSource({
@@ -89,15 +89,15 @@ export const useEditableTable = ({
           viewport: sessionTable.table,
         });
         setSessionDataSource(sessionDataSource);
-        editTracker.dataSource = sessionDataSource;
+        editSession.dataSource = sessionDataSource;
       }
     }
-  }, [VuuDataSource, dataSource, editTracker, isEditMode]);
+  }, [VuuDataSource, dataSource, editSession, isEditMode]);
 
   return {
     // DO we need to reset the dataSource or could useDataSOurce detect the sessiondataSOurce from the editSession ?
     dataSource: sessionDataSource ?? dataSource,
-    editTracker,
+    editSession,
     onCancel: handleCancel,
     onSave: handleSave,
   };

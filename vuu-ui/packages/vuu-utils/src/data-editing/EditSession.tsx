@@ -21,11 +21,11 @@ type RowEditDetails = {
   cellEdits: Map<string, CellEdit>;
 };
 
-type EditTrackerEvents = {
+type EditSessionEvents = {
   editState: (editState: EditState) => void;
 };
 
-export class EditTracker extends EventEmitter<EditTrackerEvents> {
+export class EditSession extends EventEmitter<EditSessionEvents> {
   #active = false;
   /**
    *  Row key => row edits

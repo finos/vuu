@@ -47,7 +47,7 @@ const EditTableTemplate = ({
     setEditMode("view");
   }, []);
 
-  const { dataSource, editTracker, onCancel, onSave } = useEditableTable({
+  const { dataSource, editSession, onCancel, onSave } = useEditableTable({
     columns,
     isEditMode: editMode === "edit",
     onCancel: exitEditMode,
@@ -99,7 +99,7 @@ const EditTableTemplate = ({
         </ToggleButtonGroup>
       </div>
       <div style={{ flex: "1 1 auto" }}>
-        <DataEditingProvider editTracker={editTracker}>
+        <DataEditingProvider editSession={editSession}>
           <Table
             config={config}
             dataSource={dataSource}
@@ -113,7 +113,7 @@ const EditTableTemplate = ({
           <DataSourceStats dataSource={dataSource} />
         ) : (
           <EditButtons
-            editTracker={editTracker}
+            editSession={editSession}
             onCancel={onCancel}
             onSave={onSave}
           />

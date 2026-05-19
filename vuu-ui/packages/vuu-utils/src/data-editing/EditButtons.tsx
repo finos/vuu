@@ -1,23 +1,23 @@
 import { Button } from "@salt-ds/core";
-import { EditState, EditTracker } from "./EditTracker";
+import { EditState, EditSession } from "./EditSession";
 import { useMemo, useState } from "react";
 
 export interface EditButtonProps {
-  editTracker?: EditTracker;
+  editSession?: EditSession;
   onCancel: () => void;
   onSave: () => void;
 }
 
 export const EditButtons = ({
-  editTracker,
+  editSession,
   onCancel,
   onSave,
 }: EditButtonProps) => {
   const [editState, setEditState] = useState<EditState>("clean");
 
   useMemo(() => {
-    editTracker?.on("editState", setEditState);
-  }, [editTracker]);
+    editSession?.on("editState", setEditState);
+  }, [editSession]);
 
   return (
     <>

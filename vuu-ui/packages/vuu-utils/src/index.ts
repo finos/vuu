@@ -25,9 +25,9 @@ export * from "./css-utils";
 export { EditButtons, type EditButtonProps } from "./data-editing/EditButtons";
 export {
   DataEditingProvider,
-  useEditTracker,
+  useEditSession,
 } from "./data-editing/DataEditingProvider";
-export { EditTracker, type EditState } from "./data-editing/EditTracker";
+export { EditSession, type EditState } from "./data-editing/EditSession";
 export { useEditableTable } from "./data-editing/useEditableTable";
 export * from "./data-utils";
 export * from "./datasource/BaseDataSource";
