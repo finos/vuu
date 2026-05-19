@@ -52,7 +52,7 @@ const RuntimeToast = (
     ...toast,
     hidden: slidesIn,
     id: getUniqueId(),
-    left: -1,
+    left: document.body.clientWidth,
     opacity: slidesIn ? undefined : 0,
     size: ZeroSize,
   };
