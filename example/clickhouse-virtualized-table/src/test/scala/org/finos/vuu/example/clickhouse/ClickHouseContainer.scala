@@ -24,8 +24,8 @@ object ClickHouseContainer {
     c.withExposedPorts(port)
     c.waitingFor(Wait.forHttp("/ping").forStatusCode(200))
 
-    val logConsumer = new Slf4jLogConsumer(logger)
-    c.withLogConsumer(logConsumer)
+    //val logConsumer = new Slf4jLogConsumer(logger)
+    //c.withLogConsumer(logConsumer)
     c
   }
 

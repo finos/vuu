@@ -48,10 +48,50 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
           |""".stripMargin
       )
 
-      // Insert 10 sample orders
-      for (i <- 1 to 10) {
-        val side = if (i % 2 == 0) "Buy" else "Sell"
-        client.executeUpdate(s"INSERT INTO orders (orderId, quantity, price, side, trader) VALUES ($i, ${i * 100}, ${i * 10}, '$side', 'trader-$i')")
+      // Insert sample orders via HTTP CSV API streaming from a temp file
+      val host = container.getHost
+      val port = container.getPort
+      val totalCount = 20_000_000
+
+      val tempDir = java.nio.file.Paths.get("example/clickhouse-virtualized-table/target/temp-csv")
+      java.nio.file.Files.createDirectories(tempDir)
+      val tempFile = java.nio.file.Files.createTempFile(tempDir, "orders", ".csv")
+
+      val fos = new java.io.FileOutputStream(tempFile.toFile)
+      val bos = new java.io.BufferedOutputStream(fos, 8 * 1024 * 1024) // 8MB buffer
+      val writer = new java.io.BufferedWriter(new java.io.OutputStreamWriter(bos, "UTF-8"))
+      try {
+        var currentId = 1
+        while (currentId <= totalCount) {
+          val side = if (currentId % 2 == 0) "Buy" else "Sell"
+          val price = currentId * 10L
+          val quantity = currentId
+          writer.write(currentId.toString)
+          writer.write(',')
+          writer.write(quantity.toString)
+          writer.write(',')
+          writer.write(price.toString)
+          writer.write(',')
+          writer.write(side)
+          writer.write(",trader-")
+          writer.write(currentId.toString)
+          writer.write('\n')
+          currentId += 1
+        }
+      } finally {
+        writer.close()
+      }
+
+      try {
+        org.finos.vuu.example.clickhouse.util.ClickHouseHttpIngester.ingestCsvFile(
+          host,
+          port,
+          "orders",
+          Seq("orderId", "quantity", "price", "side", "trader"),
+          tempFile
+        )
+      } finally {
+        java.nio.file.Files.deleteIfExists(tempFile)
       }
 
       withVuuServer(ClickHouseTableModule(client)) { vuuServer =>
@@ -60,7 +100,20 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
 
         vuuServer.login("testUser")
 
-        val viewport = vuuServer.createViewPort(ClickHouseTableModule.NAME, "clickhouseOrders", ViewPortRange(0, 5))
+        val table = vuuServer.tableContainer.getTable("clickhouseOrders")
+        val columns = org.finos.vuu.core.table.ViewPortColumnCreator.create(table, table.getTableDef.getColumns.map(_.name).toList)
+        val testServer = vuuServer.asInstanceOf[org.finos.vuu.test.impl.TestVuuServerImpl]
+        val viewport = testServer.viewPortContainer.create(
+          org.finos.vuu.client.messages.RequestId.oneNew(),
+          testServer.user,
+          testServer.session,
+          testServer.queue,
+          table,
+          ViewPortRange(0, 5),
+          columns,
+          sort = org.finos.vuu.net.SortSpec(List(org.finos.vuu.net.SortDef("price", 'A'))),
+          filterSpec = org.finos.vuu.net.FilterSpec("side = \"Buy\"")
+        )
 
         val virtualizedProvider = viewport.table.asTable.getProvider.asInstanceOf[VirtualizedProvider]
 
@@ -69,11 +122,11 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
         assertVpEq(combineQsForVp(viewport)) {
           Table(
             ("orderId" ,"quantity","price"   ,"side"    ,"trader"  ),
-            ("1"       ,100       ,10L       ,"Sell"    ,"trader-1"),
-            ("2"       ,200       ,20L       ,"Buy"     ,"trader-2"),
-            ("3"       ,300       ,30L       ,"Sell"    ,"trader-3"),
-            ("4"       ,400       ,40L       ,"Buy"     ,"trader-4"),
-            ("5"       ,500       ,50L       ,"Sell"    ,"trader-5")
+            ("10",10  ,100L,"Buy"     ,"trader-10"),
+            ("2",2  ,20L,"Buy"     ,"trader-2"),
+            ("4",4  ,40L,"Buy"     ,"trader-4"),
+            ("6",6  ,60L,"Buy"     ,"trader-6"),
+            ("8",8  ,80L,"Buy"     ,"trader-8")
           )
         }
       }

@@ -26,16 +26,33 @@ class ClickHouseVirtualizedDataProvider(client: ClickHouseClient)(implicit clock
     val startIndex = Math.max((range.from - 500), 0)
     val limit = (range.to - startIndex) + 500
 
-    logger.trace(s"[ClickHouseVirtualizedDataProvider] Loading orders from ClickHouse range $startIndex to ${startIndex + limit}")
+    val whereClause = if (viewPort.filterSpec != null && viewPort.filterSpec.filter != null && viewPort.filterSpec.filter.nonEmpty) {
+      val sqlFilter = viewPort.filterSpec.filter.replace("\"", "'")
+      s"WHERE $sqlFilter"
+    } else {
+      ""
+    }
 
-    // Get total size of orders
-    val totalSize = client.executeQuery("SELECT count() as cnt FROM orders") { rs =>
+    val orderByClause = if (viewPort.sortSpec != null && viewPort.sortSpec.sortDefs != null && viewPort.sortSpec.sortDefs.nonEmpty) {
+      val sortItems = viewPort.sortSpec.sortDefs.map { sd =>
+        val direction = if (sd.sortType == 'D') "DESC" else "ASC"
+        s"${sd.column} $direction"
+      }
+      s"ORDER BY ${sortItems.mkString(", ")}"
+    } else {
+      "ORDER BY orderId" // default sort
+    }
+
+    logger.trace(s"[ClickHouseVirtualizedDataProvider] Loading orders from ClickHouse range $startIndex to ${startIndex + limit} filter=$whereClause sort=$orderByClause")
+
+    // Get total size of orders matching filter
+    val totalSize = client.executeQuery(s"SELECT count() as cnt FROM orders $whereClause") { rs =>
       if (rs.next()) rs.getInt("cnt") else 0
     }
 
     // Load orders in the current range
     val orders = client.executeQuery(
-      s"SELECT orderId, quantity, price, side, trader FROM orders ORDER BY orderId LIMIT $limit OFFSET $startIndex"
+      s"SELECT orderId, quantity, price, side, trader FROM orders $whereClause $orderByClause LIMIT $limit OFFSET $startIndex"
     ) { rs =>
       val buffer = ListBuffer[(Int, (Long, Int, Long, String, String))]()
       var index = startIndex
