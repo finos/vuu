@@ -621,6 +621,17 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     return Promise.reject<T>();
   }
 
+  async beginEditSession() {
+    console.log("begin edit session");
+    this.suspend(false);
+
+    return await this?.rpcRequest?.({
+      type: "RPC_REQUEST",
+      rpcName: "beginEditSession",
+      params: {},
+    });
+  }
+
   async rpcRequest(rpcRequest: Omit<VuuRpcServiceRequest, "context">) {
     if (this.viewport && this.server) {
       return this.server?.rpcCall<RpcResultSuccess | RpcResultError>({

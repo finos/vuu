@@ -2,13 +2,12 @@ import {
   DataSource,
   DataSourceConfig,
   DataSourceVisualLinkCreatedMessage,
-  OpenDialogActionWithSchema,
+  EditSessionMode,
   TableSchema,
 } from "@vuu-ui/vuu-data-types";
 import {
   VuuMenu,
   VuuRowDataItemType,
-  VuuTable,
   VuuLink,
   LinkDescriptorWithLabel,
   VuuRpcMenuResponse,
@@ -19,9 +18,9 @@ import {
   RpcResultError,
   VuuRpcMenuRequest,
 } from "@vuu-ui/vuu-protocol-types";
-import { uuid } from "@vuu-ui/vuu-utils";
+import { isRpcSuccess, uuid } from "@vuu-ui/vuu-utils";
 import { Table, buildDataColumnMapFromSchema } from "../../Table";
-import { SessionTable } from "../../SessionTable";
+import { isProxySessionTable, SessionTable } from "../../SessionTable";
 import { TickingArrayDataSource } from "../../TickingArrayDataSource";
 import { RuntimeVisualLink } from "../../RuntimeVisualLink";
 import moduleContainer from "./ModuleContainer";
@@ -49,19 +48,12 @@ export interface IVuuModule<T extends string = string> {
 
 export type SessionTableMap = Record<string, SessionTable | Table>;
 
-export type LocalDataMenuParameters = {
-  selectedRowIds: string[];
-  table: VuuTable;
-};
-
 export type ServiceHandler = (
   rpcRequest: VuuRpcServiceRequest,
 ) => Promise<RpcResultSuccess | RpcResultError>;
 
 export type MenuServiceHandler = (
-  rpcRequest: VuuRpcMenuRequest & {
-    localDataParameters?: LocalDataMenuParameters;
-  },
+  rpcRequest: VuuRpcMenuRequest,
 ) => Promise<VuuRpcMenuResponse>;
 
 export type RpcService = {
@@ -388,18 +380,68 @@ export abstract class VuuModule<T extends string = string>
     }
   };
 
-  private enterEditMode: ServiceHandler = async (rpcRequest) => {
+  private beginEditSessionMenuHandler: MenuServiceHandler = async ({
+    rpcName,
+    type,
+    vpId,
+  }) => {
+    if (type === "VIEW_PORT_MENUS_SELECT_RPC") {
+      console.log(`rpcName ${rpcName}`);
+
+      const result = await this.beginEditSession({
+        context: {
+          type: "VIEWPORT_CONTEXT",
+          viewPortId: vpId,
+        },
+        params: {
+          editSessionMode: "selected-rows",
+        },
+        rpcName,
+        type: "RPC_REQUEST",
+      });
+      if (isRpcSuccess(result)) {
+        return {
+          type: "VIEW_PORT_MENU_RESP",
+          rpcName,
+          action: {
+            table: result.data.table,
+          },
+        };
+      } else {
+        return {
+          error: result.errorMessage,
+          rpcName,
+          type: "VIEW_PORT_MENU_REJ",
+          vpId,
+        };
+      }
+    } else {
+      return {
+        error: "no can do",
+        rpcName,
+        type: "VIEW_PORT_MENU_REJ",
+        vpId,
+      };
+    }
+  };
+
+  private beginEditSession: ServiceHandler = async (rpcRequest) => {
     if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
       const { viewPortId } = rpcRequest.context;
+      const { editSessionMode = "all-rows" } = rpcRequest.params;
       const subscription = this.getSubscriptionByViewport(viewPortId);
-      const {
-        dataSource: { table },
-      } = subscription;
-      if (table) {
-        const dataTable = this.tables[table.table as T];
-        if (dataTable) {
+      const { dataSource } = subscription;
+      const { table: vuuTable } = dataSource;
+      if (vuuTable) {
+        const sourceTable = this.tables[vuuTable.table as T];
+        if (sourceTable) {
           const sessionTableName = `session-${uuid()}`;
-          const sessionTable = SessionTable(dataTable, sessionTableName);
+          const sessionTable = this.createSessionTable(
+            sourceTable,
+            sessionTableName,
+            editSessionMode as EditSessionMode,
+            dataSource as TickingArrayDataSource,
+          );
           this.#sessionTableMap[sessionTableName] = sessionTable;
           subscription.sessionTableName = sessionTableName;
 
@@ -407,7 +449,7 @@ export abstract class VuuModule<T extends string = string>
             data: {
               renderComponent: "inline-form",
               table: {
-                module: table.module,
+                module: vuuTable.module,
                 table: sessionTableName,
               },
             },
@@ -425,36 +467,39 @@ export abstract class VuuModule<T extends string = string>
     };
   };
 
-  private exitEditMode: ServiceHandler = async (rpcRequest) => {
+  private endEditSession: ServiceHandler = async (rpcRequest) => {
     if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
       const { viewPortId } = rpcRequest.context;
       // the viewport Id is the session table name
-      const sessionTable = this.#sessionTableMap[viewPortId] as SessionTable;
+      const sessionTable = this.#sessionTableMap[viewPortId];
       delete this.#sessionTableMap[viewPortId];
       const { dataSource } = this.getSubscriptionByViewport(viewPortId);
 
       if (dataSource.table) {
-        const table = this.tables[dataSource.table.table as T];
+        const sourceTable = this.tables[dataSource.table.table as T];
 
         if (rpcRequest.params.save === true) {
-          // apply changes to underlying table
-
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore TODO create a type for SessionTable
-          const updates = sessionTable.getSessionUpdates();
-          updates.forEach((rowUpdates, key) => {
-            const { cellUpdates, lastUpdateTimestamp } = rowUpdates;
-            const currentRow = table.findByKey(key);
-            const lastUpdateTimestampOnTable =
-              currentRow[table.map.vuuUpdatedTimestamp];
-            if (lastUpdateTimestamp !== lastUpdateTimestampOnTable) {
-              console.log("Houston WE HAVE a PROBLEM");
-            }
-            Object.entries(cellUpdates).forEach(([column, value]) => {
-              table.update(key, column, value);
+          if (isProxySessionTable(sessionTable)) {
+            const updates = sessionTable.getSessionUpdates();
+            updates.forEach((rowUpdates, key) => {
+              const { cellUpdates, lastUpdateTimestamp } = rowUpdates;
+              const currentRow = sourceTable.findByKey(key);
+              const lastUpdateTimestampOnTable =
+                currentRow[sourceTable.map.vuuUpdatedTimestamp];
+              if (lastUpdateTimestamp !== lastUpdateTimestampOnTable) {
+                console.log("Houston WE HAVE a PROBLEM");
+              }
+              Object.entries(cellUpdates).forEach(([column, value]) => {
+                sourceTable.update(key, column, value);
+              });
             });
-          });
-          updates.clear();
+            updates.clear();
+          } else {
+            for (let i = 0; i < sessionTable.data.length; i++) {
+              const newRow = sessionTable.data[i];
+              sourceTable.updateRow(newRow);
+            }
+          }
         }
 
         return {
@@ -472,64 +517,6 @@ export abstract class VuuModule<T extends string = string>
     //   type: "ERROR_RESULT",
     //   errorMessage: "not implemented yet",
     // };
-  };
-
-  private beginBulkEdit: MenuServiceHandler = async (rpcRequest) => {
-    if (rpcRequest.localDataParameters) {
-      const { localDataParameters, vpId } = rpcRequest;
-      const selectedRowIds = localDataParameters.selectedRowIds;
-      const table = localDataParameters.table;
-
-      if (selectedRowIds && table) {
-        const dataTable = this.tables[table.table as T];
-        if (dataTable) {
-          const sessionTable = this.createSessionTableFromSelectedRows(
-            dataTable,
-            selectedRowIds,
-          );
-          const sessionTableName = `session-${uuid()}`;
-          this.#sessionTableMap[sessionTableName] = sessionTable;
-
-          return {
-            action: {
-              renderComponent: "grid",
-              table: {
-                module: table.module,
-                table: sessionTableName,
-              },
-              tableSchema: dataTable.schema,
-              type: "OPEN_DIALOG_ACTION",
-            } as OpenDialogActionWithSchema,
-            rpcName: "VP_BULK_EDIT_BEGIN_RPC",
-            type: "VIEW_PORT_MENU_RESP",
-            vpId,
-          } as VuuRpcMenuResponse;
-        } else {
-          return {
-            action: { type: "NO_ACTION" },
-            clientViewportId: "na",
-            error: "No Table found",
-            rpcName: "VP_BULK_EDIT_REJECT",
-            type: "VIEW_PORT_MENU_REJ",
-            vpId,
-          } as VuuRpcMenuResponse;
-        }
-      }
-    }
-    throw Error("openBulkEdits expects Table and selectedRowIds");
-  };
-
-  private endEditSession: ServiceHandler = async (rpcRequest) => {
-    if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
-      const { viewPortId } = rpcRequest.context;
-      delete this.#sessionTableMap[viewPortId];
-      return {
-        type: "SUCCESS_RESULT",
-        data: undefined,
-      };
-    } else {
-      throw Error(`[VuuModule] endEditSession invalid rpc type`);
-    }
   };
 
   // Bulk-edit with input in session table
@@ -556,36 +543,40 @@ export abstract class VuuModule<T extends string = string>
     }
   };
 
-  // Save session table data to main table
-  private saveBulkEdits: ServiceHandler = async (rpcRequest) => {
-    if (rpcRequest.context.type === "VIEWPORT_CONTEXT") {
-      const { viewPortId } = rpcRequest.context;
-      const sessionTable = this.getSessionTable(viewPortId);
-      const { table } = sessionTable.schema.table;
-      const baseTable = this.tables[table as T];
-      if (baseTable) {
-        for (let i = 0; i < sessionTable.data.length; i++) {
-          const newRow = sessionTable.data[i];
-          baseTable.updateRow(newRow);
-        }
-        return {
-          type: "SUCCESS_RESULT",
-          data: undefined,
-        };
-      } else {
-        throw Error(
-          `[VuuModule] saveBulkEdits session base table ${table} not found for session table ${sessionTable.name}`,
-        );
-      }
+  protected createSessionTable(
+    sourceTable: Table,
+    sessionTableName: string,
+    editSessionMode: EditSessionMode = "all-rows",
+    dataSource: TickingArrayDataSource,
+  ) {
+    if (editSessionMode === "all-rows") {
+      return this.createSessionTableWithAllRows(sourceTable, sessionTableName);
+    } else if (editSessionMode === "selected-rows") {
+      return this.createSessionTableFromSelectedRows(
+        sourceTable,
+        sessionTableName,
+        dataSource,
+      );
     } else {
-      throw Error("[BasketModule] createNewBasket invalid request type");
+      throw Error(
+        `[VuuModule] createSessionTable, invalid editSessionMode ${editSessionMode}`,
+      );
     }
-  };
+  }
+
+  protected createSessionTableWithAllRows(
+    sourceTable: Table,
+    sessionTableName: string,
+  ) {
+    return SessionTable(sourceTable, sessionTableName);
+  }
 
   protected createSessionTableFromSelectedRows(
     { data, map, schema }: Table,
-    selectedRowIds: string[],
+    sessionTableName: string,
+    dataSource: TickingArrayDataSource,
   ) {
+    const selectedRowIds = dataSource.getSelectedRowIds();
     const keyIndex = map[schema.key];
     const sessionData: VuuRowDataItemType[][] = [];
     for (let i = 0; i < selectedRowIds.length; i++) {
@@ -595,6 +586,8 @@ export abstract class VuuModule<T extends string = string>
         }
       }
     }
+    // Note we use the original table schema for the session table, including table name.
+    // This will later be used to retrieve source table
     return new Table(schema, sessionData, buildDataColumnMapFromSchema(schema));
   }
 
@@ -609,20 +602,12 @@ export abstract class VuuModule<T extends string = string>
       service: this.applyBulkEdits,
     },
     {
-      rpcName: "VP_BULK_EDIT_SUBMIT_RPC",
-      service: this.saveBulkEdits,
+      rpcName: "beginEditSession",
+      service: this.beginEditSession,
     },
     {
-      rpcName: "VP_BULK_EDIT_END_RPC",
+      rpcName: "endEditSession",
       service: this.endEditSession,
-    },
-    {
-      rpcName: "ENTER_EDIT_MODE",
-      service: this.enterEditMode,
-    },
-    {
-      rpcName: "EXIT_EDIT_MODE",
-      service: this.exitEditMode,
     },
     {
       rpcName: "editCell",
@@ -637,8 +622,8 @@ export abstract class VuuModule<T extends string = string>
    */
   #moduleMenuServices: RpcMenuService[] = [
     {
-      rpcName: "VP_BULK_EDIT_BEGIN_RPC",
-      service: this.beginBulkEdit,
+      rpcName: "beginEditSession",
+      service: this.beginEditSessionMenuHandler,
     },
   ];
 }

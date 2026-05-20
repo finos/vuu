@@ -3,6 +3,7 @@ import { ThemeSwitch } from "@vuu-ui/vuu-shell";
 import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import { DataLocation, Density, useShowcaseContext } from "./ShowcaseProvider";
 import { ThemePicker } from "./theme-picker/ThemePicker";
+import { DataSourcePicker } from "./data-source-picker/DataSourcePicker";
 
 export const ContentToolbar = () => {
   const {
@@ -30,14 +31,6 @@ export const ContentToolbar = () => {
       onChangeDensity(value as Density);
     },
     [onChangeDensity],
-  );
-
-  const handleDataLocationChange = useCallback(
-    (evt: SyntheticEvent) => {
-      const { value } = evt.target as HTMLInputElement;
-      onChangeDataLocation(value as DataLocation);
-    },
-    [onChangeDataLocation],
   );
 
   return (
@@ -69,22 +62,18 @@ export const ContentToolbar = () => {
       </ToggleButtonGroup>
 
       {dataConsumer ? (
-        <ToggleButtonGroup
-          className="vuuToggleButtonGroup"
-          data-variant="primary"
-          onChange={handleDataLocationChange}
-          value={dataLocation}
-        >
-          <ToggleButton value="local">Local Data</ToggleButton>
-          <ToggleButton value="remote">Remote Data</ToggleButton>
-        </ToggleButtonGroup>
+        <DataSourcePicker
+          dataLocation={dataLocation}
+          onDataLocationChange={onChangeDataLocation}
+        />
       ) : null}
 
       <Button
+        appearance="transparent"
         data-align="end"
         data-icon="open-in"
         onClick={launchStandaloneWindow}
-        variant="secondary"
+        sentiment="neutral"
       />
     </div>
   );

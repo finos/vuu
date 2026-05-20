@@ -82,7 +82,7 @@ export class SimulModule extends VuuModule<SimulTableName> {
             context: "selected-rows",
             filter: "",
             name: "Edit Rows",
-            rpcName: "VP_BULK_EDIT_BEGIN_RPC",
+            rpcName: "beginEditSession",
           },
         ],
       },

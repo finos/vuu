@@ -37,7 +37,7 @@ export const isGroupMenuItemDescriptor = (
 export const isOpenBulkEditResponse = (
   rpcResponse: Partial<VuuRpcResponse>,
 ): rpcResponse is MenuRpcResponse<OpenDialogActionWithSchema> =>
-  (rpcResponse as MenuRpcResponse).rpcName === "VP_BULK_EDIT_BEGIN_RPC";
+  (rpcResponse as MenuRpcResponse).rpcName === "beginEditSession";
 
 export const hasShowNotificationAction = (
   res: Partial<VuuRpcResponse>,

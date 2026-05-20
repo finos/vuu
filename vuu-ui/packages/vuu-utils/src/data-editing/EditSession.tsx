@@ -69,11 +69,9 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   async enterEditMode() {
     this.#inEditMode = true;
 
-    const rpcResponse = await this.#dataSource?.rpcRequest?.({
-      type: "RPC_REQUEST",
-      rpcName: "ENTER_EDIT_MODE",
-      params: {},
-    });
+    const rpcResponse = await this.#dataSource?.beginEditSession?.();
+
+    console.log({ rpcResponse });
 
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
@@ -94,7 +92,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   async cancelChanges() {
     const rpcResponse = await this.#dataSource?.rpcRequest?.({
       type: "RPC_REQUEST",
-      rpcName: "EXIT_EDIT_MODE",
+      rpcName: "endEditSession",
       params: {},
     });
     this.clear();
@@ -104,7 +102,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   async saveChanges() {
     const rpcResponse = await this.#dataSource?.rpcRequest?.({
       type: "RPC_REQUEST",
-      rpcName: "EXIT_EDIT_MODE",
+      rpcName: "endEditSession",
       params: { save: true },
     });
     this.clear();

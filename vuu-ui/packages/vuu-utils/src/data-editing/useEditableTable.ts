@@ -22,7 +22,7 @@ export interface EditableTableHookProps {
    * If dataSource not provided, new DataSource
    * will be created using table and columns
    */
-  table: VuuTable;
+  table?: VuuTable;
 }
 
 export const useEditableTable = ({
@@ -50,9 +50,13 @@ export const useEditableTable = ({
   }, [columns, table]);
 
   const dataSource = useMemo(() => {
+    // The dataSource would normally be managed by client and passed in, but for
+    // simple use cases we can create it here.
     return dataSourceProp ?? new VuuDataSource({ columns, table });
   }, [VuuDataSource, columns, dataSourceProp, table]);
 
+  // The editSession will be made available to all the edit controls in scope by
+  // wrapping the edit component with a DataEditingProvider.
   const editSession = useMemo(() => new EditSession(), []);
 
   useMemo(() => {
@@ -82,7 +86,7 @@ export const useEditableTable = ({
     if (isEditMode) {
       const sessionTable = await editSession.enterEditMode();
       if (sessionTable && dataSource.tableSchema) {
-        dataSource.suspend?.(false);
+        // dataSource.suspend?.(false);
         const sessionDataSource = new VuuDataSource({
           columns: dataSource.columns,
           table: sessionTable,

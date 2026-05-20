@@ -32,7 +32,7 @@ export const BulkEditDialog = ({
   const handleSubmit = useCallback(async () => {
     const response = await sessionDs?.rpcRequest?.({
       params: {},
-      rpcName: "VP_BULK_EDIT_SUBMIT_RPC",
+      rpcName: "endEditSession",
       type: "RPC_REQUEST",
     });
     if (response?.type === "SUCCESS_RESULT") {
