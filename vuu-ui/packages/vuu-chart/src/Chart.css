@@ -1,3 +1,41 @@
-.vuuEChart {
-    background-color: red;;
+
+.vuuChartTooltip {
+    background-color: var(--salt-container-primary-background) !important;
+    border-color:var(--salt-selectable-borderColor-selected) !important;
+    border-radius: 6px !important;
+    font-family: var(--salt-text-fontFamily)  !important;
+
+    &> div > div {
+        &>div:nth-child(1) {
+            /* Title */
+            color: var(--salt-content-primary-foreground) !important;
+        }
+
+        &>div:nth-child(2) > div {
+            &>div {
+                align-items: center;
+                display: flex;
+                /* Line item */
+                span:nth-child(1){
+                    /* icon */
+                    flex: 0 0 12px
+                }
+                span:nth-child(2){
+                    /* label */
+                    color: var(--salt-content-secondary-foreground)  !important;
+                    flex: 0 0 auto;
+                    font-size: var(--salt-text-label-fontSize) !important;
+                    text-transform: capitalize;
+                }
+                span:nth-child(3){
+                    /* value */
+                    flex: 1 1 auto;
+                    color: var(--salt-content-primary-foreground) !important;
+                    font-size: var(--salt-text-label-fontSize) !important;
+                    text-align: right;
+                }
+            }
+        }
+
+     }   
 }

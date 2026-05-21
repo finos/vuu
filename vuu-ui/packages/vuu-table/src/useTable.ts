@@ -40,7 +40,7 @@ import {
   PinState,
   toggleOrApplySort,
   updateColumn,
-  useEditTracker,
+  useEditSession,
   useLayoutEffectSkipFirst,
   useStableReference,
 } from "@vuu-ui/vuu-utils";
@@ -852,7 +852,7 @@ export const useTable = ({
     [onDrop],
   );
 
-  const editTracker = useEditTracker();
+  const editSession = useEditSession();
 
   const handleDataEdited = useCallback(
     async (editState: DataCellEditEvent): Promise<RpcResult | undefined> => {
@@ -865,8 +865,8 @@ export const useTable = ({
         value,
       } = editState;
       if (editType === "commit" && isValid) {
-        if (editTracker && dataRow && columnName) {
-          return editTracker.commit(dataRow.key, columnName);
+        if (editSession && dataRow && columnName) {
+          return editSession.commit(dataRow.key, columnName, value);
         } else if (dataSource.rpcRequest) {
           if (columnName && dataRow) {
             const response = await dataSource.rpcRequest({
@@ -886,18 +886,18 @@ export const useTable = ({
           }
         } else {
           throw Error(
-            `[useTable] handleDataEdited, no editTracker installed and datasource does not support RPC`,
+            `[useTable] handleDataEdited, no editSession installed and datasource does not support RPC`,
           );
         }
       } else {
-        if (editTracker && dataRow && columnName) {
-          editTracker.edit(dataRow.key, columnName, previousValue, value);
+        if (editSession && dataRow && columnName) {
+          editSession.edit(dataRow.key, columnName, previousValue, value);
         } else {
           onDataEditedProp?.(editState);
         }
       }
     },
-    [dataSource, editTracker, onDataEditedProp],
+    [dataSource, editSession, onDataEditedProp],
   );
 
   const handleDragStartRow = useCallback<DragStartHandler>(
@@ -954,7 +954,7 @@ export const useTable = ({
     columns,
     dataRows,
     draggableRow,
-    editSessionInProgress: editTracker?.inEditMode,
+    editSessionInProgress: editSession?.inEditMode,
     focusCellPlaceholderKeyDown,
     focusCellPlaceholderRef,
     getRowOffset,

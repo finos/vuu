@@ -1,8 +1,8 @@
-import { Input } from "@salt-ds/core";
+import { Input, Tooltip } from "@salt-ds/core";
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { TableCellRendererProps } from "@vuu-ui/vuu-table-types";
-import { useEditableText } from "@vuu-ui/vuu-ui-controls";
+import { Icon, useEditableText } from "@vuu-ui/vuu-ui-controls";
 import {
   dataDescriptorTypeToVuuRowDataItemType,
   registerComponent,
@@ -26,23 +26,27 @@ export const InputCell = ({
   });
 
   const dataValue = dataRow[column.name] as number | string;
-  const { align = "left", clientSideEditValidationCheck } = column;
+  const { align = "left" } = column;
 
   const { edited, warningMessage, ...editProps } = useEditableText({
-    value: dataValue,
+    column,
     onEdit,
-    clientSideEditValidationCheck,
     type: dataDescriptorTypeToVuuRowDataItemType(column),
+    value: dataValue,
   });
 
   const endAdornment =
     warningMessage && align === "left" ? (
-      <span className={`${classBase}-icon`} data-icon="error" />
+      <Tooltip content={warningMessage} placement="right">
+        <Icon className={`${classBase}-icon`} name="error" />
+      </Tooltip>
     ) : undefined;
 
   const startAdornment =
     warningMessage && align === "right" ? (
-      <span className={`${classBase}-icon`} data-icon="error" />
+      <Tooltip content={warningMessage} placement="left">
+        <Icon className={`${classBase}-icon`} name="error" />
+      </Tooltip>
     ) : undefined;
 
   return (

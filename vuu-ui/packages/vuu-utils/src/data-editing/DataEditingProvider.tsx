@@ -1,35 +1,35 @@
 import { createContext, ReactNode, useContext } from "react";
-import { EditTracker } from "./EditTracker";
+import { EditSession } from "./EditSession";
 
-const DataEditingContext = createContext<EditTracker | undefined>(undefined);
+const DataEditingContext = createContext<EditSession | undefined>(undefined);
 
 export const DataEditingProvider = ({
   children,
-  editTracker,
+  editSession,
 }: {
   children: ReactNode;
-  editTracker: EditTracker;
+  editSession: EditSession;
 }) => {
   return (
-    <DataEditingContext.Provider value={editTracker}>
+    <DataEditingContext.Provider value={editSession}>
       {children}
     </DataEditingContext.Provider>
   );
 };
 
-export function useEditTracker(
+export function useEditSession(
   throwIfUnavailable?: false,
-): EditTracker | undefined;
-export function useEditTracker(throwIfUnavailable: true): EditTracker;
-export function useEditTracker(throwIfUnavailable = false) {
-  const editTracker = useContext(DataEditingContext);
-  if (editTracker === undefined) {
+): EditSession | undefined;
+export function useEditSession(throwIfUnavailable: true): EditSession;
+export function useEditSession(throwIfUnavailable = false) {
+  const editSession = useContext(DataEditingContext);
+  if (editSession === undefined) {
     if (throwIfUnavailable) {
       throw Error(
-        "[useEditTracker] no DataEditingContext in scope. You need to enclose editable component(s) with DataEditingProvider",
+        "[useEditSession] no DataEditingContext in scope. You need to enclose editable component(s) with DataEditingProvider",
       );
     }
   } else {
-    return editTracker;
+    return editSession;
   }
 }

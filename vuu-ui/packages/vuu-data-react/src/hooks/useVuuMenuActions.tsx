@@ -414,8 +414,10 @@ export const useVuuMenuActions = ({
       const sessionDs = ds.createSessionDataSource?.(action.table);
       const handleSubmit = () => {
         sessionDs?.rpcRequest?.({
-          params: {},
-          rpcName: "VP_BULK_EDIT_SUBMIT_RPC",
+          params: {
+            save: true,
+          },
+          rpcName: "endEditSession",
           type: "RPC_REQUEST",
         });
         closeDialog();

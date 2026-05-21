@@ -6,6 +6,7 @@ import type {
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
   DataSourceVisualLinkCreatedMessage,
+  EditSessionMode,
 } from "@vuu-ui/vuu-data-types";
 import type {
   LinkDescriptorWithLabel,
@@ -160,6 +161,19 @@ export class TickingArrayDataSource extends ArrayDataSource {
     return Array.from(this.selectedRows);
   }
 
+  async beginEditSession(editSessionMode: EditSessionMode = "all-rows") {
+    console.log("begin edit session");
+    this.suspend();
+
+    return await this?.rpcRequest?.({
+      type: "RPC_REQUEST",
+      rpcName: "beginEditSession",
+      params: {
+        editSessionMode,
+      },
+    });
+  }
+
   async rpcRequest(
     rpcRequest: Omit<VuuRpcServiceRequest, "context">,
   ): Promise<RpcResultSuccess | RpcResultError> {
@@ -214,10 +228,6 @@ export class TickingArrayDataSource extends ArrayDataSource {
       return rpcService.service({
         ...rpcRequest,
         vpId: this.viewport,
-        localDataParameters: {
-          selectedRowIds: this.getSelectedRowIds(),
-          table: this.tableSchema.table,
-        },
       } as VuuRpcMenuRequest);
     } else {
       throw Error(

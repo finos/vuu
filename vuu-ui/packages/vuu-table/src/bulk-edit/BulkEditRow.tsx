@@ -1,7 +1,6 @@
 import { useComponentCssInjection } from "@salt-ds/styles";
 import { useWindow } from "@salt-ds/window";
 import { getDataItemEditControl } from "@vuu-ui/vuu-data-react";
-import { DataSource } from "@vuu-ui/vuu-data-types";
 import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import { BaseRowProps, ColumnDescriptor } from "@vuu-ui/vuu-table-types";
 import cx from "clsx";
@@ -22,14 +21,12 @@ export type EditValueChangeHandler = (
 export interface BulkEditProps
   extends Partial<BaseRowProps>,
     Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
-  dataSource: DataSource;
   onBulkChange: EditValueChangeHandler;
   onRowChange: (isValid: boolean) => void;
 }
 
 export const BulkEditRow = ({
   ariaRole,
-  dataSource,
   onBulkChange,
   onRowChange,
   ...htmlAttributes
@@ -85,7 +82,6 @@ export const BulkEditRow = ({
                   dataDescriptor: column,
                   errorMessage,
                   onCommit,
-                  table: dataSource.table,
                 })
               : null}
           </div>

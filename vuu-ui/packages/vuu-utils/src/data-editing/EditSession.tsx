@@ -21,11 +21,11 @@ type RowEditDetails = {
   cellEdits: Map<string, CellEdit>;
 };
 
-type EditTrackerEvents = {
+type EditSessionEvents = {
   editState: (editState: EditState) => void;
 };
 
-export class EditTracker extends EventEmitter<EditTrackerEvents> {
+export class EditSession extends EventEmitter<EditSessionEvents> {
   #active = false;
   /**
    *  Row key => row edits
@@ -69,11 +69,9 @@ export class EditTracker extends EventEmitter<EditTrackerEvents> {
   async enterEditMode() {
     this.#inEditMode = true;
 
-    const rpcResponse = await this.#dataSource?.rpcRequest?.({
-      type: "RPC_REQUEST",
-      rpcName: "ENTER_EDIT_MODE",
-      params: {},
-    });
+    const rpcResponse = await this.#dataSource?.beginEditSession?.();
+
+    console.log({ rpcResponse });
 
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
@@ -94,7 +92,7 @@ export class EditTracker extends EventEmitter<EditTrackerEvents> {
   async cancelChanges() {
     const rpcResponse = await this.#dataSource?.rpcRequest?.({
       type: "RPC_REQUEST",
-      rpcName: "EXIT_EDIT_MODE",
+      rpcName: "endEditSession",
       params: {},
     });
     this.clear();
@@ -104,7 +102,7 @@ export class EditTracker extends EventEmitter<EditTrackerEvents> {
   async saveChanges() {
     const rpcResponse = await this.#dataSource?.rpcRequest?.({
       type: "RPC_REQUEST",
-      rpcName: "EXIT_EDIT_MODE",
+      rpcName: "endEditSession",
       params: { save: true },
     });
     this.clear();
@@ -152,22 +150,22 @@ export class EditTracker extends EventEmitter<EditTrackerEvents> {
     }
   }
 
-  //TODO alow a shortcut commit that allows a value, bypassing need
-  // for edit. Thids caters for boolean values, dropdown list etc
-  // that have no intermediate edit phase
-  async commit(key: string, columnName: string) {
+  async commit(
+    key: string,
+    columnName: string,
+    typedValue: string | number | boolean,
+  ) {
     const rowEditDetails = this.#rowEdits.get(key);
     if (rowEditDetails) {
       const { cellEdits } = rowEditDetails;
       const cellEditValues = cellEdits.get(columnName);
       if (cellEditValues) {
-        const { editedValue } = cellEditValues;
         const rpcResponse = await this.#dataSource?.rpcRequest?.({
           type: "RPC_REQUEST",
           rpcName: "editCell",
           params: {
             column: columnName,
-            data: editedValue,
+            data: typedValue,
             key,
           },
         });

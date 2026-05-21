@@ -26,7 +26,7 @@ export interface BulkEditPanelProps extends HTMLAttributes<HTMLDivElement> {
    * The parent dataSource. This is where the edits will be applied once confirmed
    */
   parentDs: DataSource;
-  onValidationStatusChange: (isValid: boolean) => void;
+  onValidationStatusChange?: (isValid: boolean) => void;
   width?: number;
 }
 
@@ -56,13 +56,9 @@ export const BulkEditPanel = ({
 
   const bulkEditRow = useMemo(() => {
     return (
-      <BulkEditRow
-        dataSource={parentDs}
-        onBulkChange={onBulkChange}
-        onRowChange={onRowChange}
-      />
+      <BulkEditRow onBulkChange={onBulkChange} onRowChange={onRowChange} />
     );
-  }, [onBulkChange, onRowChange, parentDs]);
+  }, [onBulkChange, onRowChange]);
 
   return (
     <div

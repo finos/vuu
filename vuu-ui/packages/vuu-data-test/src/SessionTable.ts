@@ -11,6 +11,12 @@ export type SessionTable = Table & {
   getSessionUpdates: () => Map<string, RowUpdates>;
 };
 
+const isProxy = Symbol("proxy-session-table");
+
+export const isProxySessionTable = (
+  table: NonNullable<unknown>,
+): table is SessionTable => isProxy in table;
+
 // This doesn't really work because the session table is still connected to the base table data.
 // This means edits applied at the end of an edit session are then posted to other active sessions.
 
@@ -71,6 +77,9 @@ export const SessionTable = (table: Table, sessionId: string): SessionTable => {
   return new Proxy(table, {
     get(_obj, prop: string | symbol) {
       if (typeof prop === "symbol") {
+        if (prop === isProxy) {
+          return true;
+        }
         return undefined;
       }
 
@@ -80,6 +89,8 @@ export const SessionTable = (table: Table, sessionId: string): SessionTable => {
         return addEventListener;
       } else if (prop === "update") {
         return update;
+      } else if (prop === "isProxy") {
+        return true;
       }
 
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment

@@ -546,10 +546,15 @@ export declare type DataSourceSuspenseProps = {
   escalateDelay?: number;
 };
 
+export type EditSessionMode = "selected-rows" | "all-rows";
+
 export interface DataSource
   extends IEventEmitter<DataSourceEvents>,
     Partial<TypeaheadSuggestionProvider> {
   aggregations: VuuAggregation[];
+  beginEditSession?: (
+    editSessionMode?: EditSessionMode,
+  ) => Promise<RpcResult> | undefined;
   closeTreeNode: (keyOrIndex: string | number, cascade?: boolean) => void;
   columns: string[];
   config: WithBaseFilter<WithFullConfig>;

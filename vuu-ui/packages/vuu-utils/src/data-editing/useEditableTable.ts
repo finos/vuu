@@ -1,6 +1,6 @@
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { useCallback, useMemo, useState } from "react";
-import { EditTracker } from "./EditTracker";
+import { EditSession } from "./EditSession";
 import { useData } from "../context-definitions/DataProvider";
 import { DataSource } from "@vuu-ui/vuu-data-types";
 import { isRpcSuccess } from "../protocol-message-utils";
@@ -22,7 +22,7 @@ export interface EditableTableHookProps {
    * If dataSource not provided, new DataSource
    * will be created using table and columns
    */
-  table: VuuTable;
+  table?: VuuTable;
 }
 
 export const useEditableTable = ({
@@ -50,54 +50,66 @@ export const useEditableTable = ({
   }, [columns, table]);
 
   const dataSource = useMemo(() => {
-    return dataSourceProp ?? new VuuDataSource({ columns, table });
+    // The dataSource would normally be managed by client and passed in, but for
+    // simple use cases we can create it here.
+    if (dataSourceProp) {
+      return dataSourceProp;
+    } else if (table) {
+      return new VuuDataSource({ columns, table });
+    } else {
+      throw Error(
+        `useEditableTable unable to provide DataSource, neither dataSource nor table available as props`,
+      );
+    }
   }, [VuuDataSource, columns, dataSourceProp, table]);
 
-  const editTracker = useMemo(() => new EditTracker(), []);
+  // The editSession will be made available to all the edit controls in scope by
+  // wrapping the edit component with a DataEditingProvider.
+  const editSession = useMemo(() => new EditSession(), []);
 
   useMemo(() => {
     if (dataSource) {
-      editTracker.dataSource = dataSource;
+      editSession.dataSource = dataSource;
     }
-  }, [dataSource, editTracker]);
+  }, [dataSource, editSession]);
 
   const handleCancel = useCallback(() => {
     // editTracker.dataSource = dataSource;
-    editTracker.cancelChanges();
+    editSession.cancelChanges();
     onCancel();
     clearSessionDataSource();
     dataSource.resume?.();
-  }, [clearSessionDataSource, dataSource, editTracker, onCancel]);
+  }, [clearSessionDataSource, dataSource, editSession, onCancel]);
 
   const handleSave = useCallback(async () => {
     dataSource.resume?.();
-    const response = await editTracker.saveChanges();
+    const response = await editSession.saveChanges();
     if (isRpcSuccess(response)) {
       onSave();
       clearSessionDataSource();
     }
-  }, [clearSessionDataSource, dataSource, editTracker, onSave]);
+  }, [clearSessionDataSource, dataSource, editSession, onSave]);
 
   useMemo(async () => {
     if (isEditMode) {
-      const sessionTable = await editTracker.enterEditMode();
+      const sessionTable = await editSession.enterEditMode();
       if (sessionTable && dataSource.tableSchema) {
-        dataSource.suspend?.(false);
+        // dataSource.suspend?.(false);
         const sessionDataSource = new VuuDataSource({
           columns: dataSource.columns,
           table: sessionTable,
           viewport: sessionTable.table,
         });
         setSessionDataSource(sessionDataSource);
-        editTracker.dataSource = sessionDataSource;
+        editSession.dataSource = sessionDataSource;
       }
     }
-  }, [VuuDataSource, dataSource, editTracker, isEditMode]);
+  }, [VuuDataSource, dataSource, editSession, isEditMode]);
 
   return {
     // DO we need to reset the dataSource or could useDataSOurce detect the sessiondataSOurce from the editSession ?
     dataSource: sessionDataSource ?? dataSource,
-    editTracker,
+    editSession,
     onCancel: handleCancel,
     onSave: handleSave,
   };

@@ -96,9 +96,9 @@ export const useBulkEditPanel = ({
           );
         }
         if (rowState === true && errorsRef.current.length === 0) {
-          onValidationStatusChange(true);
+          onValidationStatusChange?.(true);
         } else {
-          onValidationStatusChange(false);
+          onValidationStatusChange?.(false);
         }
       }
     },
