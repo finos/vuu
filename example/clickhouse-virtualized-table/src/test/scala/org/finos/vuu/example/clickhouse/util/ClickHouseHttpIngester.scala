@@ -1,16 +1,20 @@
 package org.finos.vuu.example.clickhouse.util
 
 import com.typesafe.scalalogging.StrictLogging
+
 import java.net.URI
 import java.net.http.{HttpClient, HttpRequest, HttpResponse}
 import java.net.http.HttpRequest.BodyPublishers
+import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Path}
+import java.util.Base64
 
 object ClickHouseHttpIngester extends StrictLogging {
 
   private val httpClient = HttpClient.newHttpClient()
 
-  def ingestCsvFile(host: String, port: Int, tableName: String, columns: Seq[String], csvFile: Path): Unit = {
+  def ingestCsvFile(host: String, port: Int, username: String, password: String,
+                    tableName: String, columns: Seq[String], csvFile: Path): Unit = {
     val colsStr = columns.mkString("(", ",", ")")
     val query = s"INSERT INTO $tableName $colsStr FORMAT CSV"
     val uri = URI.create(s"http://$host:$port/?query=${java.net.URLEncoder.encode(query, "UTF-8")}")
@@ -20,13 +24,18 @@ object ClickHouseHttpIngester extends StrictLogging {
 
     val startTime = System.currentTimeMillis()
 
-    val request = HttpRequest.newBuilder()
+    val builder = HttpRequest.newBuilder()
       .uri(uri)
       .header("Content-Type", "text/csv")
       .POST(BodyPublishers.ofFile(csvFile))
-      .build()
 
-    val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+    if (username != null && username.nonEmpty) {
+      val cred = s"$username:${Option(password).getOrElse("")}"
+      val encoded = Base64.getEncoder.encodeToString(cred.getBytes(StandardCharsets.UTF_8))
+      builder.header("Authorization", s"Basic $encoded")
+    }
+    
+    val response = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString())
 
     val endTime = System.currentTimeMillis()
     val durationMs = endTime - startTime

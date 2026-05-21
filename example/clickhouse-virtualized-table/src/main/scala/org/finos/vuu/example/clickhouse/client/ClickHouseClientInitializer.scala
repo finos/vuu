@@ -6,6 +6,7 @@ import java.util.Properties
 
 class ClickHouseClientInitializer(val options: ClickHouseClientOptions) {
 
+  //TODO Move to clickhouse.client
   def create(): ClickHouseDataSource = {
     val properties = new Properties()
     properties.setProperty("user", options.username)

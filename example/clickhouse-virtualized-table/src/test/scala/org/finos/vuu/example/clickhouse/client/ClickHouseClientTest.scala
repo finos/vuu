@@ -25,7 +25,9 @@ class ClickHouseClientTest
 
       val client = ClickHouseClient(ClickHouseClientOptions()
         .withHost(container.getHost)
-        .withPort(container.getPort))
+        .withPort(container.getPort)
+        .withUsername(container.getUsername)
+        .withPassword(container.getPassword))
       
       lifecycle.start()
 

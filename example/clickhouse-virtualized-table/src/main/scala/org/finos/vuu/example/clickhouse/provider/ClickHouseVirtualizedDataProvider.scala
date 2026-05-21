@@ -46,12 +46,14 @@ class ClickHouseVirtualizedDataProvider(client: ClickHouseClient)(implicit clock
     logger.trace(s"[ClickHouseVirtualizedDataProvider] Loading orders from ClickHouse range $startIndex to ${startIndex + limit} filter=$whereClause sort=$orderByClause")
 
     // Get total size of orders matching filter
-    val totalSize = client.executeQuery(s"SELECT count() as cnt FROM orders $whereClause") { rs =>
+    val (sizeQueryMillis, totalSize) = timeIt {
+    client.executeQuery(s"SELECT count() as cnt FROM orders $whereClause") { rs =>
       if (rs.next()) rs.getInt("cnt") else 0
-    }
+    }}
 
     // Load orders in the current range
-    val orders = client.executeQuery(
+    val (dataQueryMillis, orders) = timeIt {
+      client.executeQuery(
       s"SELECT orderId, quantity, price, side, trader FROM orders $whereClause $orderByClause LIMIT $limit OFFSET $startIndex"
     ) { rs =>
       val buffer = ListBuffer[(Int, (Long, Int, Long, String, String))]()
@@ -66,7 +68,7 @@ class ClickHouseVirtualizedDataProvider(client: ClickHouseClient)(implicit clock
         index += 1
       }
       buffer.toList
-    }
+    }}
 
     viewPort.table.asTable match {
       case tbl: VirtualizedSessionTable =>
@@ -99,11 +101,9 @@ class ClickHouseVirtualizedDataProvider(client: ClickHouseClient)(implicit clock
         logger.trace("[ClickHouseVirtualizedDataProvider] Setting Primary Keys")
         val (millisSetKeys, _) = timeIt { viewPort.setKeys(new VirtualizedViewPortKeys(tableKeys)) }
 
-        if (logAt.shouldLog()) {
-          logger.debug(
-            s"[ClickHouseVirtualizedDataProvider] Complete runOnce millisRange = $millisRange millisSize=$millisSize millisRows=$millisRows millisGetKeys=$millisGetKeys millisSetKeys=$millisSetKeys"
+        logger.debug(
+            s"[ClickHouseVirtualizedDataProvider] Complete runOnce sizeQuery=$sizeQueryMillis dataQuery=$dataQueryMillis millisRange=$millisRange millisSize=$millisSize millisRows=$millisRows millisGetKeys=$millisGetKeys millisSetKeys=$millisSetKeys"
           )
-        }
       case _ =>
         logger.warn("[ClickHouseVirtualizedDataProvider] Table is not a VirtualizedSessionTable")
     }
