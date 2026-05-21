@@ -150,22 +150,22 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     }
   }
 
-  //TODO alow a shortcut commit that allows a value, bypassing need
-  // for edit. Thids caters for boolean values, dropdown list etc
-  // that have no intermediate edit phase
-  async commit(key: string, columnName: string) {
+  async commit(
+    key: string,
+    columnName: string,
+    typedValue: string | number | boolean,
+  ) {
     const rowEditDetails = this.#rowEdits.get(key);
     if (rowEditDetails) {
       const { cellEdits } = rowEditDetails;
       const cellEditValues = cellEdits.get(columnName);
       if (cellEditValues) {
-        const { editedValue } = cellEditValues;
         const rpcResponse = await this.#dataSource?.rpcRequest?.({
           type: "RPC_REQUEST",
           rpcName: "editCell",
           params: {
             column: columnName,
-            data: editedValue,
+            data: typedValue,
             key,
           },
         });

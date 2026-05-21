@@ -17,6 +17,7 @@ import {
   RpcResultSuccess,
   RpcResultError,
   VuuRpcMenuRequest,
+  VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
 import { isRpcSuccess, uuid } from "@vuu-ui/vuu-utils";
 import { Table, buildDataColumnMapFromSchema } from "../../Table";
@@ -400,12 +401,16 @@ export abstract class VuuModule<T extends string = string>
         type: "RPC_REQUEST",
       });
       if (isRpcSuccess(result)) {
+        const { table } = result.data as { table: VuuTable };
         return {
           type: "VIEW_PORT_MENU_RESP",
           rpcName,
           action: {
-            table: result.data.table,
+            renderComponent: "grid",
+            type: "OPEN_DIALOG_ACTION",
+            table,
           },
+          vpId,
         };
       } else {
         return {

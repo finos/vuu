@@ -1,4 +1,3 @@
-import type { DataValueValidationChecker } from "@vuu-ui/vuu-data-types";
 import { VuuRowDataItemType } from "@vuu-ui/vuu-protocol-types";
 import type {
   RuntimeColumnDescriptor,
@@ -24,7 +23,10 @@ import {
 export interface EditableTextHookProps<
   T extends VuuRowDataItemType = VuuRowDataItemType,
 > {
-  column: RuntimeColumnDescriptor;
+  column: Pick<
+    RuntimeColumnDescriptor,
+    "clientSideEditValidationCheck" | "label" | "name"
+  >;
   value?: T;
   onEdit?: TableCellEditHandler;
   type?: "string" | "number" | "boolean";

@@ -52,7 +52,15 @@ export const useEditableTable = ({
   const dataSource = useMemo(() => {
     // The dataSource would normally be managed by client and passed in, but for
     // simple use cases we can create it here.
-    return dataSourceProp ?? new VuuDataSource({ columns, table });
+    if (dataSourceProp) {
+      return dataSourceProp;
+    } else if (table) {
+      return new VuuDataSource({ columns, table });
+    } else {
+      throw Error(
+        `useEditableTable unable to provide DataSource, neither dataSource nor table available as props`,
+      );
+    }
   }, [VuuDataSource, columns, dataSourceProp, table]);
 
   // The editSession will be made available to all the edit controls in scope by

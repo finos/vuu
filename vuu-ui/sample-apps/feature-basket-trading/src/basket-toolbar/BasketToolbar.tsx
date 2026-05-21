@@ -72,6 +72,7 @@ export const BasketToolbar = ({
       value: basket?.units,
       onEdit: handleUnitsEdited,
       type: "number",
+      column: { name: "units", label: "Units" },
     });
 
   const handleSideCommit = useCallback<CommitHandler<HTMLButtonElement>>(

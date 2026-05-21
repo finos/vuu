@@ -866,7 +866,7 @@ export const useTable = ({
       } = editState;
       if (editType === "commit" && isValid) {
         if (editSession && dataRow && columnName) {
-          return editSession.commit(dataRow.key, columnName);
+          return editSession.commit(dataRow.key, columnName, value);
         } else if (dataSource.rpcRequest) {
           if (columnName && dataRow) {
             const response = await dataSource.rpcRequest({
