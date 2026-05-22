@@ -11,6 +11,7 @@ import type {
   TableSchema,
   WithBaseFilter,
   WithFullConfig,
+  EditSessionMode,
 } from "@vuu-ui/vuu-data-types";
 import type {
   LinkDescriptorWithLabel,
@@ -621,14 +622,15 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     return Promise.reject<T>();
   }
 
-  async beginEditSession() {
-    console.log("begin edit session");
+  async beginEditSession(editSessionMode: EditSessionMode = "all-rows") {
     this.suspend(false);
 
     return await this?.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "beginEditSession",
-      params: {},
+      params: {
+        editSessionMode,
+      },
     });
   }
 

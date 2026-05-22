@@ -1,4 +1,4 @@
-import { DataSource } from "@vuu-ui/vuu-data-types";
+import { DataSource, EditSessionMode } from "@vuu-ui/vuu-data-types";
 import type {
   RpcResultError,
   VuuRowDataItemType,
@@ -35,6 +35,11 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   #dataSource?: DataSource;
   #inEditMode = false;
 
+  constructor(dataSource: DataSource) {
+    super();
+    this.#dataSource = dataSource;
+  }
+
   get active() {
     return this.#active;
   }
@@ -66,18 +71,15 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     this.#editCount = 0;
   }
 
-  async enterEditMode() {
+  async enterEditMode(editSessionMode?: EditSessionMode) {
     this.#inEditMode = true;
 
-    const rpcResponse = await this.#dataSource?.beginEditSession?.();
-
-    console.log({ rpcResponse });
+    const rpcResponse =
+      await this.#dataSource?.beginEditSession?.(editSessionMode);
 
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
       return sessionTable;
-    } else {
-      console.log("fail");
     }
   }
 

@@ -1,24 +1,42 @@
-import { ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
+import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
+import {
+  ContextMenuProvider,
+  MenuActionHandler,
+  MenuBuilder,
+} from "@vuu-ui/vuu-context-menu";
 import { getSchema, LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
-import { InputCell, Table } from "@vuu-ui/vuu-table";
+import { BulkEditPanel, InputCell, Table } from "@vuu-ui/vuu-table";
 import { DataSourceStats, TableFooter } from "@vuu-ui/vuu-table-extras";
 import {
   DataValueTypeDescriptor,
   TableCellEditHandler,
   TableCellRendererProps,
   TableConfig,
+  TableContextMenuDef,
+  TableContextMenuOptions,
+  TableMenuLocation,
 } from "@vuu-ui/vuu-table-types";
+import { ModalProvider, useModal } from "@vuu-ui/vuu-ui-controls";
 import {
   DataEditingProvider,
   registerComponent,
   toColumnName,
+  useData,
   useEditableTable,
 } from "@vuu-ui/vuu-utils";
 import { EditButtons } from "@vuu-ui/vuu-utils/src/data-editing/EditButtons";
 import { EditMode } from "@vuu-ui/vuu-utils/src/data-editing/useEditableTable";
 import cx from "clsx";
-import { SyntheticEvent, useCallback, useMemo, useState } from "react";
+import {
+  ReactElement,
+  SyntheticEvent,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
+import { SimulTable } from "./SimulTableTemplate";
+import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 
 const INSTRUMENTS = { module: "SIMUL", table: "instruments" };
 const schema = getSchema("instruments");
@@ -47,13 +65,15 @@ const EditTableTemplate = ({
     setEditMode("view");
   }, []);
 
-  const { dataSource, editSession, onCancel, onSave } = useEditableTable({
-    columns,
-    isEditMode: editMode === "edit",
-    onCancel: exitEditMode,
-    onSave: exitEditMode,
-    table: vuuTable,
-  });
+  const { dataSource, editSession, onCancel, onSave, sessionDataSource } =
+    useEditableTable({
+      columns,
+      isEditMode: editMode === "edit",
+      onCancel: exitEditMode,
+      onSave: exitEditMode,
+      table: vuuTable,
+    });
+
   const config = useMemo<TableConfig>(
     () => ({
       columns:
@@ -103,7 +123,7 @@ const EditTableTemplate = ({
         <DataEditingProvider editSession={editSession}>
           <Table
             config={config}
-            dataSource={dataSource}
+            dataSource={sessionDataSource ?? dataSource}
             renderBufferSize={10}
             selectionModel="none"
           />
@@ -203,7 +223,8 @@ export const EditableInstrumentsCustomCellRenderer = () => {
 
   return (
     <LocalDataSourceProvider>
-      <style>{`
+      <NotificationsProvider>
+        <style>{`
         .CustomCell-up {
           --vuuTableInputCell-edited-color: green;
         }
@@ -212,124 +233,149 @@ export const EditableInstrumentsCustomCellRenderer = () => {
         }
       
       `}</style>
-      <EditTableTemplate editableType={editableType} vuuTable={INSTRUMENTS} />
-      <EditTableTemplate vuuTable={INSTRUMENTS} />
+        <EditTableTemplate editableType={editableType} vuuTable={INSTRUMENTS} />
+        <EditTableTemplate vuuTable={INSTRUMENTS} />
+      </NotificationsProvider>
     </LocalDataSourceProvider>
   );
 };
 
-// const useEditContextMenu = ({
-//   editSelectedRow,
-//   editSelectedRows,
-// }: {
-//   editSelectedRow: () => void;
-//   editSelectedRows: () => void;
-// }): TableContextMenuDef => {
-//   const menuBuilder: MenuBuilder<TableMenuLocation, TableContextMenuOptions> =
-//     useCallback((_location, options) => {
-//       if (options.selectedRows.length === 1) {
-//         return [{ id: "edit-row", label: "Edit row (local)", options }];
-//       } else if (options.selectedRows.length > 1) {
-//         return [{ id: "edit-rows", label: "Edit rows (local)", options }];
-//       } else {
-//         return [];
-//       }
-//     }, []);
+const useEditContextMenu = ({
+  editSelectedRow,
+  editSelectedRows,
+}: {
+  editSelectedRow: () => void;
+  editSelectedRows: () => void;
+}): TableContextMenuDef => {
+  const menuBuilder: MenuBuilder<TableMenuLocation, TableContextMenuOptions> =
+    useCallback((_location, options) => {
+      if (options.selectedRows.length === 1) {
+        return [{ id: "edit-row", label: "Edit row (local)", options }];
+      } else if (options.selectedRows.length > 1) {
+        return [{ id: "edit-rows", label: "Edit rows (local)", options }];
+      } else {
+        return [];
+      }
+    }, []);
 
-//   const menuActionHandler = useCallback<
-//     MenuActionHandler<string, TableContextMenuOptions>
-//   >(
-//     (menuItemId, options) => {
-//       if (options) {
-//         switch (menuItemId) {
-//           case "edit-row": {
-//             editSelectedRow();
-//             return true;
-//           }
-//           case "edit-rows": {
-//             editSelectedRows();
-//             return true;
-//           }
+  const menuActionHandler = useCallback<
+    MenuActionHandler<string, TableContextMenuOptions>
+  >(
+    (menuItemId, options) => {
+      if (options) {
+        switch (menuItemId) {
+          case "edit-row": {
+            editSelectedRow();
+            return true;
+          }
+          case "edit-rows": {
+            editSelectedRows();
+            return true;
+          }
 
-//           default:
-//             return false;
-//         }
-//       } else {
-//         return false;
-//       }
-//     },
-//     [editSelectedRow, editSelectedRows],
-//   );
+          default:
+            return false;
+        }
+      } else {
+        return false;
+      }
+    },
+    [editSelectedRow, editSelectedRows],
+  );
 
-//   return {
-//     menuBuilder,
-//     menuActionHandler,
-//   };
-// };
+  return {
+    menuBuilder,
+    menuActionHandler,
+  };
+};
 
-// export const BulkEditTableTemplate = () => {
-//   const { closeDialog, showDialog } = useModal();
-//   const { VuuDataSource } = useData();
+export const BulkEditTableTemplate = () => {
+  const { closeDialog, showDialog } = useModal();
+  const { VuuDataSource } = useData();
 
-//   const [editState, setEditState] = useState<{
-//     editing: boolean;
-//     dialog?: ReactElement;
-//   }>({ editing: false });
+  const [editState, setEditState] = useState<{
+    editing: boolean;
+    dialog?: ReactElement;
+  }>({ editing: false });
 
-//   const sourceTableDataSource = useMemo(
-//     () =>
-//       new VuuDataSource({
-//         columns: schema.columns.map(toColumnName),
-//         table: schema.table,
-//       }),
-//     [VuuDataSource],
-//   );
+  const sourceTableDataSource = useMemo(
+    () =>
+      new VuuDataSource({
+        columns: schema.columns.map(toColumnName),
+        table: schema.table,
+      }),
+    [VuuDataSource],
+  );
 
-//   const clearEditState = useCallback(() => {
-//     setEditState({ editing: false });
-//   }, []);
+  const clearEditState = useCallback(() => {
+    setEditState({ editing: false });
+  }, []);
 
-//   const editSelectedRow = useCallback(() => {
-//     console.log("edit selected row");
-//   }, []);
+  const exitEditMode = () => clearEditState();
 
-//   const editSelectedRows = useCallback(async () => {
-//     console.log("edit selected rows");
-//     setEditState({ editing: true });
+  const { dataSource, editSession, onCancel, onSave, sessionDataSource } =
+    useEditableTable({
+      dataSource: sourceTableDataSource,
+      editSessionMode: "selected-rows",
+      isEditMode: editState.editing,
+      onCancel: exitEditMode,
+      onSave: exitEditMode,
+    });
 
-//     showDialog(
-//       <DataEditingProvider editSession={editSession}>
-//         <BulkEditPanel parentDs={dataSource} sessionDs={sessionDs} />
-//       </DataEditingProvider>,
-//       "Edit rows",
-//       [
-//         <Button key="cancel" onClick={onCancel}>
-//           Cancel
-//         </Button>,
-//         <Button key="save" onClick={onSave}>
-//           Save
-//         </Button>,
-//       ],
-//     );
-//   }, [dataSource, VuuDataSource, showDialog, editSession, onCancel, onSave]);
+  const editSelectedRow = useCallback(() => {
+    console.log("edit selected row");
+  }, []);
 
-//   const contextMenuProps = useEditContextMenu({
-//     editSelectedRow,
-//     editSelectedRows,
-//   });
+  const editSelectedRows = useCallback(async () => {
+    setEditState({ editing: true });
+  }, []);
 
-//   return (
-//     <ContextMenuProvider {...contextMenuProps}>
-//       <SimulTable dataSource={dataSource} tableName="instruments" />
-//     </ContextMenuProvider>
-//   );
-// };
+  useMemo(() => {
+    if (sessionDataSource) {
+      showDialog(
+        <DataEditingProvider editSession={editSession}>
+          <BulkEditPanel parentDs={dataSource} sessionDs={sessionDataSource} />
+        </DataEditingProvider>,
+        "Edit rows",
+        [
+          <Button key="cancel" onClick={onCancel}>
+            Cancel
+          </Button>,
+          <Button key="save" onClick={onSave}>
+            Save
+          </Button>,
+        ],
+      );
+    } else {
+      closeDialog();
+    }
+  }, [
+    closeDialog,
+    dataSource,
+    editSession,
+    onCancel,
+    onSave,
+    sessionDataSource,
+    showDialog,
+  ]);
 
-// /** tags=data-consumer */
-// export const BulkEditTable = () => {
-//   return (
-//     <ModalProvider>
-//       <BulkEditTableTemplate />
-//     </ModalProvider>
-//   );
-// };
+  const contextMenuProps = useEditContextMenu({
+    editSelectedRow,
+    editSelectedRows,
+  });
+
+  return (
+    <ContextMenuProvider {...contextMenuProps}>
+      <SimulTable dataSource={dataSource} tableName="instruments" />
+    </ContextMenuProvider>
+  );
+};
+
+/** tags=data-consumer */
+export const BulkEditTable = () => {
+  return (
+    <ModalProvider>
+      <BulkEditTableTemplate />
+    </ModalProvider>
+  );
+};

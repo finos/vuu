@@ -13,9 +13,9 @@ export type SessionTable = Table & {
 
 const isProxy = Symbol("proxy-session-table");
 
-export const isProxySessionTable = (
-  table: NonNullable<unknown>,
-): table is SessionTable => isProxy in table;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const isProxySessionTable = (table: any): table is SessionTable =>
+  table[isProxy];
 
 // This doesn't really work because the session table is still connected to the base table data.
 // This means edits applied at the end of an edit session are then posted to other active sessions.
