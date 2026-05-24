@@ -72,7 +72,7 @@ export const useEditableTable = ({
 
   const handleCancel = useCallback(() => {
     // editTracker.dataSource = dataSource;
-    editSession.cancelChanges();
+    editSession.end();
     onCancel();
     clearSessionDataSource();
     dataSource.resume?.();
@@ -81,7 +81,7 @@ export const useEditableTable = ({
 
   const handleSave = useCallback(async () => {
     dataSource.resume?.();
-    const response = await editSession.saveChanges();
+    const response = await editSession.end(true);
     if (isRpcSuccess(response)) {
       onSave();
       clearSessionDataSource();
@@ -91,9 +91,8 @@ export const useEditableTable = ({
 
   useMemo(async () => {
     if (isEditMode) {
-      const sessionTable = await editSession.enterEditMode(editSessionMode);
+      const sessionTable = await editSession.begin(editSessionMode);
       if (sessionTable && dataSource.tableSchema) {
-        // dataSource.suspend?.(false);
         const sessionDataSource = new VuuDataSource({
           columns: dataSource.columns,
           table: sessionTable,

@@ -5,6 +5,7 @@ import {
   MenuBuilder,
 } from "@vuu-ui/vuu-context-menu";
 import { getSchema, LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { BulkEditPanel, InputCell, Table } from "@vuu-ui/vuu-table";
 import { DataSourceStats, TableFooter } from "@vuu-ui/vuu-table-extras";
@@ -36,7 +37,6 @@ import {
   useState,
 } from "react";
 import { SimulTable } from "./SimulTableTemplate";
-import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 
 const INSTRUMENTS = { module: "SIMUL", table: "instruments" };
 const schema = getSchema("instruments");

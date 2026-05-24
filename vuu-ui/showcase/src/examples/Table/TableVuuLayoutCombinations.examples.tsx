@@ -1,9 +1,32 @@
 import { LayoutProvider, Stack, View } from "@vuu-ui/vuu-layout";
-import { useState } from "react";
-import { TestTable } from "./Misc.examples";
+import { useMemo, useState } from "react";
+import { SimulTable } from "./SimulTableTemplate";
+import { useSessionDataSource } from "@vuu-ui/vuu-data-react";
+import { getSchema } from "@vuu-ui/vuu-data-test";
+import { toColumnName } from "@vuu-ui/vuu-utils";
+import { DataSource } from "@vuu-ui/vuu-data-types";
 
+const schema = getSchema("instruments");
+
+/** tags=data-consumer */
 export const TwoTabbedTables = () => {
   const [active, setActive] = useState(0);
+
+  const { getDataSource } = useSessionDataSource();
+
+  const [dataSource1, dataSource2] = useMemo<[DataSource, DataSource]>(() => {
+    return [
+      getDataSource("ds1", {
+        columns: schema.columns.map(toColumnName),
+        table: schema.table,
+      }),
+      getDataSource("ds2", {
+        columns: schema.columns.map(toColumnName),
+        table: schema.table,
+      }),
+    ];
+  }, [getDataSource]);
+
   return (
     <LayoutProvider>
       <Stack
@@ -17,10 +40,10 @@ export const TwoTabbedTables = () => {
         }}
       >
         <View title="Instruments 1">
-          <TestTable height="100%" width="100%" />
+          <SimulTable dataSource={dataSource1} height="100%" width="100%" />
         </View>
         <View title="Instruments 2">
-          <TestTable height="100%" width="100%" />
+          <SimulTable dataSource={dataSource2} height="100%" width="100%" />
         </View>
       </Stack>
     </LayoutProvider>

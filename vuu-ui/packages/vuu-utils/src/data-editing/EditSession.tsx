@@ -63,6 +63,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   }
 
   set dataSource(ds: DataSource) {
+    console.log(`[EditSession] set datasource ${ds.viewport}`);
     this.#dataSource = ds;
   }
 
@@ -71,7 +72,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     this.#editCount = 0;
   }
 
-  async enterEditMode(editSessionMode?: EditSessionMode) {
+  async begin(editSessionMode?: EditSessionMode) {
     this.#inEditMode = true;
 
     const rpcResponse =
@@ -80,7 +81,13 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
       return sessionTable;
+    } else {
+      ///
     }
+  }
+
+  async end(saveChanges = false) {
+    return saveChanges ? this.saveChanges() : this.cancelChanges();
   }
 
   get inEditMode() {
@@ -91,7 +98,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     return this.editCount === 0 ? "clean" : "dirty";
   }
 
-  async cancelChanges() {
+  private async cancelChanges() {
     const rpcResponse = await this.#dataSource?.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "endEditSession",
@@ -101,7 +108,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     return rpcResponse;
   }
 
-  async saveChanges() {
+  private async saveChanges() {
     const rpcResponse = await this.#dataSource?.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "endEditSession",
@@ -157,6 +164,7 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     columnName: string,
     typedValue: string | number | boolean,
   ) {
+    console.log(`[EditSession] commit ${this.#dataSource?.viewport}`);
     const rowEditDetails = this.#rowEdits.get(key);
     if (rowEditDetails) {
       const { cellEdits } = rowEditDetails;
