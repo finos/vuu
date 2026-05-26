@@ -358,7 +358,7 @@ export const useVuuMenuActions = ({
   );
 
   const showSessionEditingForm = useCallback(
-    (
+    async (
       ds: DataSource,
       action: OpenDialogAction & { tableSchema: TableSchema },
     ) => {
@@ -371,7 +371,7 @@ export const useVuuMenuActions = ({
         );
       }
 
-      const sessionDs = ds.createSessionDataSource?.(action.table);
+      const sessionDs = await ds.createSessionDataSource?.(action.table);
       const handleSubmit = () => {
         sessionDs?.rpcRequest?.({
           params: {
@@ -383,17 +383,12 @@ export const useVuuMenuActions = ({
         closeDialog();
       };
 
-      const handleChange = (isValid: boolean) => {
-        console.log("placeholder: ", isValid);
-      };
-
       if (sessionDs) {
         showDialog(
           <BulkEditPanel
             sessionDs={sessionDs}
             onSubmit={handleSubmit}
             parentDs={ds}
-            onValidationStatusChange={handleChange}
           />,
           "Multi Row Edit",
           [

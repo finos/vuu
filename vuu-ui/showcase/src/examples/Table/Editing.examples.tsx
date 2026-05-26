@@ -1,5 +1,6 @@
 import { Button, ToggleButton, ToggleButtonGroup } from "@salt-ds/core";
 import {
+  ContextMenuItemDescriptor,
   ContextMenuProvider,
   MenuActionHandler,
   MenuBuilder,
@@ -34,9 +35,11 @@ import {
   SyntheticEvent,
   useCallback,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { SimulTable } from "./SimulTableTemplate";
+import { EditSessionMode } from "@vuu-ui/vuu-data-types";
 
 const INSTRUMENTS = { module: "SIMUL", table: "instruments" };
 const schema = getSchema("instruments");
@@ -65,14 +68,13 @@ const EditTableTemplate = ({
     setEditMode("view");
   }, []);
 
-  const { dataSource, editSession, onCancel, onSave, sessionDataSource } =
-    useEditableTable({
-      columns,
-      isEditMode: editMode === "edit",
-      onCancel: exitEditMode,
-      onSave: exitEditMode,
-      table: vuuTable,
-    });
+  const { dataSource, editSession, onCancel, onSave } = useEditableTable({
+    columns,
+    isEditMode: editMode === "edit",
+    onCancel: exitEditMode,
+    onSave: exitEditMode,
+    table: vuuTable,
+  });
 
   const config = useMemo<TableConfig>(
     () => ({
@@ -123,7 +125,7 @@ const EditTableTemplate = ({
         <DataEditingProvider editSession={editSession}>
           <Table
             config={config}
-            dataSource={sessionDataSource ?? dataSource}
+            dataSource={dataSource}
             renderBufferSize={10}
             selectionModel="none"
           />
@@ -243,19 +245,35 @@ export const EditableInstrumentsCustomCellRenderer = () => {
 const useEditContextMenu = ({
   editSelectedRow,
   editSelectedRows,
+  insertRows,
 }: {
   editSelectedRow: () => void;
   editSelectedRows: () => void;
+  insertRows: () => void;
 }): TableContextMenuDef => {
   const menuBuilder: MenuBuilder<TableMenuLocation, TableContextMenuOptions> =
     useCallback((_location, options) => {
+      const menuOptions: ContextMenuItemDescriptor[] = [];
       if (options.selectedRows.length === 1) {
-        return [{ id: "edit-row", label: "Edit row (local)", options }];
+        menuOptions.push({
+          id: "edit-row",
+          label: "Edit row (local)",
+          options,
+        });
       } else if (options.selectedRows.length > 1) {
-        return [{ id: "edit-rows", label: "Edit rows (local)", options }];
-      } else {
-        return [];
+        menuOptions.push({
+          id: "edit-rows",
+          label: "Edit rows (local)",
+          options,
+        });
       }
+      menuOptions.push({
+        id: "insert-rows",
+        label: "Insert rows (local)",
+        options,
+      });
+
+      return menuOptions;
     }, []);
 
   const menuActionHandler = useCallback<
@@ -272,6 +290,10 @@ const useEditContextMenu = ({
             editSelectedRows();
             return true;
           }
+          case "insert-rows": {
+            insertRows();
+            return true;
+          }
 
           default:
             return false;
@@ -280,7 +302,7 @@ const useEditContextMenu = ({
         return false;
       }
     },
-    [editSelectedRow, editSelectedRows],
+    [editSelectedRow, editSelectedRows, insertRows],
   );
 
   return {
@@ -289,14 +311,15 @@ const useEditContextMenu = ({
   };
 };
 
-export const BulkEditTableTemplate = () => {
+const BulkEditTableTemplate = () => {
   const { closeDialog, showDialog } = useModal();
   const { VuuDataSource } = useData();
 
   const [editState, setEditState] = useState<{
     editing: boolean;
     dialog?: ReactElement;
-  }>({ editing: false });
+    editSessionMode: EditSessionMode;
+  }>({ editing: false, editSessionMode: "selected-rows" });
 
   const sourceTableDataSource = useMemo(
     () =>
@@ -308,15 +331,16 @@ export const BulkEditTableTemplate = () => {
   );
 
   const clearEditState = useCallback(() => {
-    setEditState({ editing: false });
-  }, []);
+    closeDialog();
+    setEditState({ editing: false, editSessionMode: "selected-rows" });
+  }, [closeDialog]);
 
-  const exitEditMode = () => clearEditState();
+  const exitEditMode = useCallback(() => clearEditState(), [clearEditState]);
 
   const { dataSource, editSession, onCancel, onSave, sessionDataSource } =
     useEditableTable({
       dataSource: sourceTableDataSource,
-      editSessionMode: "selected-rows",
+      editSessionMode: editState.editSessionMode,
       isEditMode: editState.editing,
       onCancel: exitEditMode,
       onSave: exitEditMode,
@@ -327,7 +351,11 @@ export const BulkEditTableTemplate = () => {
   }, []);
 
   const editSelectedRows = useCallback(async () => {
-    setEditState({ editing: true });
+    setEditState({ editing: true, editSessionMode: "selected-rows" });
+  }, []);
+
+  const insertRows = useCallback(async () => {
+    setEditState({ editing: true, editSessionMode: "empty-session-table" });
   }, []);
 
   useMemo(() => {
@@ -362,6 +390,7 @@ export const BulkEditTableTemplate = () => {
   const contextMenuProps = useEditContextMenu({
     editSelectedRow,
     editSelectedRows,
+    insertRows,
   });
 
   return (

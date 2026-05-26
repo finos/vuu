@@ -867,23 +867,6 @@ export const useTable = ({
       if (editType === "commit" && isValid) {
         if (editSession && dataRow && columnName) {
           return editSession.commit(dataRow.key, columnName, value);
-        } else if (dataSource.rpcRequest) {
-          if (columnName && dataRow) {
-            const response = await dataSource.rpcRequest({
-              params: {
-                column: columnName,
-                key: dataRow.key,
-                data: value,
-              },
-              rpcName: "editCell",
-              type: "RPC_REQUEST",
-            });
-            onDataEditedProp?.({
-              ...editState,
-              isValid: response?.type === "SUCCESS_RESULT",
-            });
-            return response;
-          }
         } else {
           throw Error(
             `[useTable] handleDataEdited, no editSession installed and datasource does not support RPC`,
@@ -897,7 +880,7 @@ export const useTable = ({
         }
       }
     },
-    [dataSource, editSession, onDataEditedProp],
+    [editSession, onDataEditedProp],
   );
 
   const handleDragStartRow = useCallback<DragStartHandler>(

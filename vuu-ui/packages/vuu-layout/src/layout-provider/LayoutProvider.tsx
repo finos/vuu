@@ -1,6 +1,5 @@
 import {
   VuuShellLocation,
-  logger,
   usePlaceholderJSON,
   type LayoutJSON,
 } from "@vuu-ui/vuu-utils";
@@ -33,8 +32,6 @@ import {
 } from "./LayoutProviderContext";
 import { useLayoutDragDrop } from "./useLayoutDragDrop";
 import { SaveAction } from "../layout-view/viewTypes";
-
-const { info } = logger("LayoutProvider");
 
 const isWorkspaceContainer = (props: LayoutProps) =>
   props.id === VuuShellLocation.WorkspaceContainer;
@@ -210,7 +207,6 @@ export const LayoutProvider = (props: LayoutProviderProps): ReactElement => {
 
   useEffect(() => {
     if (workspaceJSON) {
-      info?.("workspaceJSON changed. inject new layout into application");
       if (Array.isArray(workspaceJSON)) {
         const targetContainer = findTarget(
           state.current,

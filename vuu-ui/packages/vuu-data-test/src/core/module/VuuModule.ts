@@ -44,7 +44,7 @@ const assertUpdateIsValid = (
 };
 
 export interface IVuuModule<T extends string = string> {
-  createDataSource: (tableName: T) => DataSource;
+  createDataSource: (tableName: T, viewport?: string) => DataSource;
 }
 
 export type SessionTableMap = Record<string, SessionTable | Table>;
@@ -229,6 +229,9 @@ export abstract class VuuModule<T extends string = string>
     const table = this.tables[tableName];
     const sessionTable = this.#sessionTableMap[tableName];
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const vuuModule = this as IVuuModule<any>;
+
     const dataSource: DataSource = new TickingArrayDataSource({
       ...config,
       columnDescriptors,
@@ -244,6 +247,7 @@ export abstract class VuuModule<T extends string = string>
       sessionTables: this.#sessionTableMap,
       viewport,
       visualLinkService: this.visualLinkService,
+      vuuModule,
     });
 
     dataSource.on("unsubscribed", this.unregisterViewport);
@@ -441,25 +445,34 @@ export abstract class VuuModule<T extends string = string>
         const sourceTable = this.tables[vuuTable.table as T];
         if (sourceTable) {
           const sessionTableName = `session-${uuid()}`;
-          const sessionTable = this.createSessionTable(
-            sourceTable,
-            sessionTableName,
-            editSessionMode as EditSessionMode,
-            dataSource as TickingArrayDataSource,
-          );
-          this.#sessionTableMap[sessionTableName] = sessionTable;
-          subscription.sessionTableName = sessionTableName;
+          try {
+            const sessionTable = this.createSessionTable(
+              sourceTable,
+              sessionTableName,
+              editSessionMode as EditSessionMode,
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              dataSource as TickingArrayDataSource,
+            );
+            this.#sessionTableMap[sessionTableName] = sessionTable;
+            subscription.sessionTableName = sessionTableName;
 
-          return {
-            data: {
-              renderComponent: "inline-form",
-              table: {
-                module: vuuTable.module,
-                table: sessionTableName,
+            return {
+              data: {
+                renderComponent: "inline-form",
+                table: {
+                  module: vuuTable.module,
+                  table: sessionTableName,
+                },
               },
-            },
-            type: "SUCCESS_RESULT",
-          };
+              type: "SUCCESS_RESULT",
+            };
+          } catch (e) {
+            return {
+              type: "ERROR_RESULT",
+              errorMessage: (e as Error).message,
+            };
+          }
         }
       }
     } else {
@@ -562,6 +575,8 @@ export abstract class VuuModule<T extends string = string>
         sessionTableName,
         dataSource,
       );
+    } else if (editSessionMode === "empty-session-table") {
+      return this.createEmptySessionTable(sourceTable);
     } else {
       throw Error(
         `[VuuModule] createSessionTable, invalid editSessionMode ${editSessionMode}`,
@@ -574,6 +589,12 @@ export abstract class VuuModule<T extends string = string>
     sessionTableName: string,
   ) {
     return SessionTable(sourceTable, sessionTableName);
+  }
+
+  protected createEmptySessionTable({ schema }: Table) {
+    // Note we use the original table schema for the session table, including table name.
+    // This will later be used to retrieve source table
+    return new Table(schema, [], buildDataColumnMapFromSchema(schema));
   }
 
   protected createSessionTableFromSelectedRows(

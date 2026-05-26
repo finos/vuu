@@ -3,9 +3,9 @@ import { DataSource, EditSessionMode } from "@vuu-ui/vuu-data-types";
 import { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { useCallback, useMemo, useState } from "react";
 import { useData } from "../context-definitions/DataProvider";
-import { isRpcSuccess } from "../protocol-message-utils";
 import { useLayoutEffectSkipFirst } from "../useLayoutEffectSkipFirst";
 import { EditSession } from "./EditSession";
+// import { useNotifications } from "@vuu-ui/vuu-notifications";
 
 export type EditMode = "edit" | "view";
 
@@ -41,13 +41,6 @@ export const useEditableTable = ({
     DataSource | undefined
   >(undefined);
   // const { showNotification } = useNotifications();
-  const clearSessionDataSource = useCallback(() => {
-    setSessionDataSource((dataSource) => {
-      dataSource?.unsubscribe();
-      return undefined;
-    });
-  }, []);
-
   useLayoutEffectSkipFirst(() => {
     console.warn(`[useEditableTable] columns and or table changed`);
   }, [columns, table]);
@@ -72,35 +65,34 @@ export const useEditableTable = ({
 
   const handleCancel = useCallback(() => {
     // editTracker.dataSource = dataSource;
-    editSession.end();
-    onCancel();
-    clearSessionDataSource();
-    dataSource.resume?.();
-    editSession.dataSource = dataSource;
-  }, [clearSessionDataSource, dataSource, editSession, onCancel]);
+    try {
+      editSession.end();
+      onCancel();
+    } catch (e) {
+      //
+    }
+  }, [editSession, onCancel]);
 
   const handleSave = useCallback(async () => {
     dataSource.resume?.();
-    const response = await editSession.end(true);
-    if (isRpcSuccess(response)) {
+    try {
+      await editSession.end(true);
       onSave();
-      clearSessionDataSource();
-      editSession.dataSource = dataSource;
+    } catch (e) {
+      // cleanup
     }
-  }, [clearSessionDataSource, dataSource, editSession, onSave]);
+  }, [dataSource, editSession, onSave]);
 
   useMemo(async () => {
+    console.log(`[useEditableTable] editMode ${isEditMode}`);
     if (isEditMode) {
-      const sessionTable = await editSession.begin(editSessionMode);
-      if (sessionTable && dataSource.tableSchema) {
-        const sessionDataSource = new VuuDataSource({
-          columns: dataSource.columns,
-          table: sessionTable,
-          viewport: sessionTable.table,
-        });
-        setSessionDataSource(sessionDataSource);
-        editSession.dataSource = sessionDataSource;
-      } else {
+      try {
+        const sessionDataSource = await editSession.begin(editSessionMode);
+        if (sessionDataSource) {
+          setSessionDataSource(sessionDataSource);
+        }
+      } catch (e) {
+        console.error(e);
         // deal with error
         // showNotification?.({
         //   header: "Error unable to edit",
@@ -110,16 +102,7 @@ export const useEditableTable = ({
         onCancel();
       }
     }
-  }, [
-    VuuDataSource,
-    dataSource.columns,
-    dataSource.tableSchema,
-    editSession,
-    editSessionMode,
-    isEditMode,
-    onCancel,
-    // showNotification,
-  ]);
+  }, [editSession, editSessionMode, isEditMode, onCancel]);
 
   return {
     dataSource,

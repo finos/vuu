@@ -2,10 +2,8 @@ import { DataSource, EditSessionMode } from "@vuu-ui/vuu-data-types";
 import type {
   RpcResultError,
   VuuRowDataItemType,
-  VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
 import { EventEmitter } from "../event-emitter";
-import { isRpcSuccess } from "../protocol-message-utils";
 
 export type EditState = "clean" | "dirty";
 
@@ -32,12 +30,13 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
    */
   #rowEdits = new Map<string, RowEditDetails>();
   #editCount = 0;
-  #dataSource?: DataSource;
+  #sourceTableDataSource?: DataSource;
+  #sessionDataSource?: DataSource;
   #inEditMode = false;
 
   constructor(dataSource: DataSource) {
     super();
-    this.#dataSource = dataSource;
+    this.#sourceTableDataSource = dataSource;
   }
 
   get active() {
@@ -62,11 +61,6 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     }
   }
 
-  set dataSource(ds: DataSource) {
-    console.log(`[EditSession] set datasource ${ds.viewport}`);
-    this.#dataSource = ds;
-  }
-
   clear() {
     this.#rowEdits.clear();
     this.#editCount = 0;
@@ -75,19 +69,21 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
   async begin(editSessionMode?: EditSessionMode) {
     this.#inEditMode = true;
 
-    const rpcResponse =
-      await this.#dataSource?.beginEditSession?.(editSessionMode);
+    const sessionDataSource =
+      await this.#sourceTableDataSource?.beginEditSession?.(editSessionMode);
 
-    if (isRpcSuccess(rpcResponse)) {
-      const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
-      return sessionTable;
-    } else {
-      ///
-    }
+    this.#sessionDataSource = sessionDataSource;
+
+    return sessionDataSource;
+  }
+
+  get dataSource() {
+    return this.#sessionDataSource ?? this.#sourceTableDataSource;
   }
 
   async end(saveChanges = false) {
-    return saveChanges ? this.saveChanges() : this.cancelChanges();
+    await this.dataSource?.endEditSession?.(saveChanges);
+    this.clear();
   }
 
   get inEditMode() {
@@ -96,26 +92,6 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
 
   get editState(): EditState {
     return this.editCount === 0 ? "clean" : "dirty";
-  }
-
-  private async cancelChanges() {
-    const rpcResponse = await this.#dataSource?.rpcRequest?.({
-      type: "RPC_REQUEST",
-      rpcName: "endEditSession",
-      params: {},
-    });
-    this.clear();
-    return rpcResponse;
-  }
-
-  private async saveChanges() {
-    const rpcResponse = await this.#dataSource?.rpcRequest?.({
-      type: "RPC_REQUEST",
-      rpcName: "endEditSession",
-      params: { save: true },
-    });
-    this.clear();
-    return rpcResponse;
   }
 
   // TODO how do we deal with the '_edited' pattern
@@ -164,23 +140,17 @@ export class EditSession extends EventEmitter<EditSessionEvents> {
     columnName: string,
     typedValue: string | number | boolean,
   ) {
-    console.log(`[EditSession] commit ${this.#dataSource?.viewport}`);
     const rowEditDetails = this.#rowEdits.get(key);
     if (rowEditDetails) {
       const { cellEdits } = rowEditDetails;
       const cellEditValues = cellEdits.get(columnName);
       if (cellEditValues) {
-        const rpcResponse = await this.#dataSource?.rpcRequest?.({
-          type: "RPC_REQUEST",
-          rpcName: "editCell",
-          params: {
-            column: columnName,
-            data: typedValue,
-            key,
-          },
-        });
-
-        return rpcResponse;
+        try {
+          this.dataSource?.editCell?.(key, columnName, typedValue);
+        } catch (e) {
+          // ??
+          console.error(e);
+        }
       }
     } else {
       return {
