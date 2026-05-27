@@ -57,7 +57,7 @@ export const useEditableText = <T extends string | number | boolean = string>({
   useMemo(() => {
     if (initialValueRef.current !== value?.toString()) {
       initialValueRef.current = stringValueOf(value);
-      setEditState({ message: "", value: stringValueOf(value) });
+      setEditState({ message: undefined, value: stringValueOf(value) });
     }
   }, [value]);
 
@@ -75,6 +75,7 @@ export const useEditableText = <T extends string | number | boolean = string>({
       const { current: initialValue } = initialValueRef;
       try {
         const typedValue = getTypedValue(value, type, true);
+        console.log(`[useEditableText] typedValue = ${typedValue}`);
         const previousValue = getTypedValue(initialValue, type);
         const response = await onEdit?.(
           {

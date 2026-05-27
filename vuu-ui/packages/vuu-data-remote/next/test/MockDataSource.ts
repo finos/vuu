@@ -52,7 +52,6 @@ class MockDataSourceImpl extends BaseDataSource implements DataSource {
   suspend?: (() => void) | undefined;
   resume?: ((callback?: DataSourceSubscribeCallback) => void) | undefined;
   deleteRow?: DataSourceDeleteHandler | undefined;
-  createSessionDataSource?: ((table: VuuTable) => DataSource) | undefined;
   enable?: ((callback?: DataSourceSubscribeCallback) => void) | undefined;
   disable?: (() => void) | undefined;
   getChildRows?: ((rowKey: string) => DataSourceRow[]) | undefined;

@@ -3,6 +3,8 @@ import {
   ArrayDataSourceConstructorProps,
 } from "@vuu-ui/vuu-data-local";
 import type {
+  DataSource,
+  DataSourceCallbackMessage,
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
   DataSourceVisualLinkCreatedMessage,
@@ -19,15 +21,18 @@ import type {
   VuuRpcMenuRequest,
   VuuRpcMenuResponse,
   VuuRpcServiceRequest,
+  VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
-import { isTypeaheadRequest, Range } from "@vuu-ui/vuu-utils";
+import { isRpcSuccess, isTypeaheadRequest, Range } from "@vuu-ui/vuu-utils";
 import {
+  IVuuModule,
   RpcMenuService,
   RpcService,
   SessionTableMap,
 } from "./core/module/VuuModule";
 import { makeSuggestions } from "./makeSuggestions";
 import { Table } from "./Table";
+import { isInlineEditingSession } from "@vuu-ui/vuu-utils";
 
 export type VisualLinkHandler = (
   message: VuuCreateVisualLink | VuuRemoveVisualLink,
@@ -43,6 +48,7 @@ export interface TickingArrayDataSourceConstructorProps
   sessionTables?: SessionTableMap;
   table?: Table;
   visualLinkService?: VisualLinkHandler;
+  vuuModule?: IVuuModule;
 }
 
 type LinkSubscription = {
@@ -58,12 +64,14 @@ export class TickingArrayDataSource extends ArrayDataSource {
   #rpcServices: RpcService[] | undefined;
   // A reference to session tables hosted within client side module
   #sessionTables: SessionTableMap | undefined;
+  #sessionDataSource: DataSource | undefined = undefined;
   #table?: Table;
   #selectionLinkSubscribers: Map<string, LinkSubscription> | undefined;
   #visualLinkService?: VisualLinkHandler;
   #getVisualLinks?: (
     tableName: string,
   ) => LinkDescriptorWithLabel[] | undefined;
+  #vuuModule?: IVuuModule;
 
   constructor({
     data,
@@ -75,6 +83,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
     menu,
     visualLink,
     visualLinkService,
+    vuuModule,
     ...arrayDataSourceProps
   }: TickingArrayDataSourceConstructorProps) {
     if (data === undefined && table === undefined) {
@@ -94,6 +103,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
     this.#table = table;
     this.#visualLinkService = visualLinkService;
     this.#getVisualLinks = getVisualLinks;
+    this.#vuuModule = vuuModule;
 
     if (table) {
       this.tableSchema = table.schema;
@@ -161,17 +171,117 @@ export class TickingArrayDataSource extends ArrayDataSource {
     return Array.from(this.selectedRows);
   }
 
-  async beginEditSession(editSessionMode: EditSessionMode = "all-rows") {
-    console.log("begin edit session");
-    this.suspend();
+  handleSessionMessage = (msg: DataSourceCallbackMessage) => {
+    if (msg.type === "subscribed") {
+      console.log(`[VuuDataSource subscribed to session table]`);
+    } else if (msg.type === "viewport-update") {
+      if (msg.size !== undefined && msg.size !== this.size) {
+        this.emit("resize", msg.size);
+      }
+      console.log(`[VuuDataSource] clientCallback with ${msg.type}`);
+      this.clientCallback?.(msg);
+    }
+  };
 
-    return await this?.rpcRequest?.({
+  createSessionDataSource(sessionTable: VuuTable) {
+    if (this.#vuuModule) {
+      return this.#vuuModule?.createDataSource(
+        sessionTable.table,
+        sessionTable.table,
+      );
+    } else {
+      throw Error(
+        `[TickingArrayDataSource] unable to createSessionDataSource, not constructed with VuuModule`,
+      );
+    }
+  }
+
+  async beginEditSession(editSessionMode: EditSessionMode = "inline-all-rows") {
+    const rpcResponse = await this?.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "beginEditSession",
       params: {
         editSessionMode,
       },
     });
+
+    if (isRpcSuccess(rpcResponse)) {
+      const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
+
+      if (isInlineEditingSession(editSessionMode)) {
+        this.#sessionDataSource = this.#vuuModule?.createDataSource(
+          sessionTable.table,
+          sessionTable.table,
+        );
+
+        this.#sessionDataSource?.subscribe(
+          {
+            range: this.range,
+          },
+          this.handleSessionMessage,
+        );
+      } else {
+        return this.#vuuModule?.createDataSource(
+          sessionTable.table,
+          sessionTable.table,
+        );
+      }
+
+      // we need to route messages from the session datasource to listening
+      // client whilst still monitoring responses on the source table to which
+      // we are currently subscribed.
+    } else {
+      throw Error(
+        `[VuuDataSource] beginEditSession ${rpcResponse.errorMessage}`,
+      );
+      ///
+    }
+  }
+
+  async editCell(key: string, column: string, data: VuuRowDataItemType) {
+    console.log(
+      `[VuuDataSource] editCell ${this.#sessionDataSource?.viewport} rowKey ${key}, column ${column}, value ${data}`,
+    );
+
+    const rpcHost = this.#sessionDataSource ?? this;
+
+    const rpcResponse = await rpcHost.rpcRequest?.({
+      type: "RPC_REQUEST",
+      rpcName: "editCell",
+      params: {
+        column,
+        data,
+        key,
+      },
+    });
+
+    if (isRpcSuccess(rpcResponse)) {
+      console.log("edit succeeded");
+    } else {
+      throw Error("oh oh");
+    }
+  }
+
+  async endEditSession(saveChanges = false) {
+    console.log(`[VuuDataSource] endEditSession saveChanges ${saveChanges}`);
+
+    const type = "RPC_REQUEST";
+    const rpcName = "endEditSession";
+
+    const rpcHost = this.#sessionDataSource ?? this;
+
+    const rpcResponse = await rpcHost.rpcRequest?.(
+      saveChanges
+        ? { type, rpcName, params: { save: true } }
+        : { type, rpcName, params: {} },
+    );
+
+    if (isRpcSuccess(rpcResponse)) {
+      this.#sessionDataSource?.unsubscribe();
+      this.sendRowsToClient(true);
+    } else {
+      throw Error("oh oh");
+    }
   }
 
   async rpcRequest(
@@ -191,17 +301,6 @@ export class TickingArrayDataSource extends ArrayDataSource {
         (service) => service.rpcName === rpcRequest.rpcName,
       );
       if (rpcService) {
-        switch (rpcRequest.rpcName) {
-          case "VP_BULK_EDIT_COLUMN_CELLS_RPC": {
-            return rpcService.service({
-              ...rpcRequest,
-              context: {
-                type: "VIEWPORT_CONTEXT",
-                viewPortId: this.viewport,
-              },
-            });
-          }
-        }
         return rpcService.service({
           ...rpcRequest,
           context: {

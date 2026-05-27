@@ -3,7 +3,6 @@ import {
   type ContextMenuItemDescriptor,
   hasShowNotificationAction,
   isGroupMenuItemDescriptor,
-  isOpenBulkEditResponse,
   type MenuActionHandler,
   type MenuBuilder,
 } from "@vuu-ui/vuu-context-menu";
@@ -29,11 +28,7 @@ import type {
   VuuRpcResponse,
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
-import {
-  BulkEditDialog,
-  BulkEditPanel,
-  isTableLocation,
-} from "@vuu-ui/vuu-table";
+import { BulkEditPanel, isTableLocation } from "@vuu-ui/vuu-table";
 import type {
   ColumnDescriptor,
   DataRow,
@@ -46,7 +41,6 @@ import {
   isActionMessage,
   isCustomComponentActionMessage,
   isSessionTableActionMessage,
-  toColumnName,
   useData,
 } from "@vuu-ui/vuu-utils";
 import { useCallback } from "react";
@@ -106,12 +100,6 @@ export const isSelectionMenu = (
   options: VuuMenuItem,
 ): options is VuuSelectedRowsContextMenuItemOptions =>
   options.context === "selected-rows";
-
-const getColumnsFromOptions = (options: unknown) => {
-  if (options && typeof options === "object" && "columns" in options) {
-    return options.columns as VuuSelectedRowsContextMenuItemOptions["columns"];
-  }
-};
 
 const isVuuMenuItem = (menu: VuuMenuItem | VuuMenu): menu is VuuMenuItem =>
   "rpcName" in menu;
@@ -346,34 +334,6 @@ export const useVuuMenuActions = ({
   const { showDialog, closeDialog, showPrompt } = useModal();
   const { showNotification } = useNotifications();
 
-  const showBulkEditDialog = useCallback(
-    (ds: DataSource, table: VuuTable, columns?: ColumnDescriptor[]) => {
-      const sessionDs = new VuuDataSource({
-        columns: columns?.map(toColumnName),
-        table,
-        viewport: table.table,
-      });
-
-      const handleClose = () => {
-        sessionDs.unsubscribe();
-        closeDialog();
-      };
-
-      showDialog(
-        <BulkEditDialog
-          columns={columns}
-          sessionDs={sessionDs}
-          parentDs={ds}
-          closeDialog={handleClose}
-        />,
-        "Bulk Amend",
-      );
-
-      return true;
-    },
-    [VuuDataSource, closeDialog, showDialog],
-  );
-
   const showCustomComponentInDialog = useCallback(
     (componentId: string, ds: DataSource, table: VuuTable) => {
       const sessionDs = new VuuDataSource({
@@ -398,7 +358,7 @@ export const useVuuMenuActions = ({
   );
 
   const showSessionEditingForm = useCallback(
-    (
+    async (
       ds: DataSource,
       action: OpenDialogAction & { tableSchema: TableSchema },
     ) => {
@@ -411,7 +371,7 @@ export const useVuuMenuActions = ({
         );
       }
 
-      const sessionDs = ds.createSessionDataSource?.(action.table);
+      const sessionDs = await ds.createSessionDataSource?.(action.table);
       const handleSubmit = () => {
         sessionDs?.rpcRequest?.({
           params: {
@@ -423,17 +383,12 @@ export const useVuuMenuActions = ({
         closeDialog();
       };
 
-      const handleChange = (isValid: boolean) => {
-        console.log("placeholder: ", isValid);
-      };
-
       if (sessionDs) {
         showDialog(
           <BulkEditPanel
             sessionDs={sessionDs}
             onSubmit={handleSubmit}
             parentDs={ds}
-            onValidationStatusChange={handleChange}
           />,
           "Multi Row Edit",
           [
@@ -507,12 +462,6 @@ export const useVuuMenuActions = ({
                     header: title,
                     type: NotificationType.Toast,
                   });
-                } else if (isOpenBulkEditResponse(rpcResponse)) {
-                  showBulkEditDialog(
-                    dataSource,
-                    rpcResponse.action.table,
-                    getColumnsFromOptions(options),
-                  );
                 } else if (isSessionTableActionMessage(rpcResponse)) {
                   showSessionEditingForm(dataSource, rpcResponse.action);
                 } else if (isCustomComponentActionMessage(rpcResponse)) {
@@ -543,7 +492,6 @@ export const useVuuMenuActions = ({
       clientSideMenuActionHandler,
       dataSource,
       onRpcResponse,
-      showBulkEditDialog,
       showCustomComponentInDialog,
       showNotification,
       showSessionEditingForm,
