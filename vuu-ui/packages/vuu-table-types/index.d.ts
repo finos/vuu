@@ -60,6 +60,12 @@ export declare type TableSelectionModel =
   | "single"
   | "single-no-deselect"
   | "checkbox"
+  /**
+   * User may need to temporarily disable selection. In order to avoid a layout shift
+   * when checkboxes are removed, we have a 'checkbox-disabled' state, which means no
+   * selection will be in effect, but we preserve placeholders for the checkboxes.
+   */
+  | "checkbox-disabled"
   | "extended";
 
 export declare type TableHeading = { label: string; width: number };

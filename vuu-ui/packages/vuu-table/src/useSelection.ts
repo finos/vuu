@@ -62,13 +62,16 @@ export const useSelection = ({
   containerRef,
   dataSource,
   highlightedIndexRef,
-  selectionKeys = defaultSelectionKeys,
-  selectionModel,
   onSelect,
   onSelectionChange,
+  selectionKeys = defaultSelectionKeys,
+  selectionModel,
 }: SelectionHookProps) => {
   const lastActiveRef = useRef<RowIdentifier | undefined>(undefined);
   const [allRowsSelected, setAllRowsSelected] = useState(false);
+
+  const selectionAllowed =
+    selectionModel !== "none" && selectionModel !== "checkbox-disabled";
 
   const handleRowSelection = useCallback<RowSelectionEventHandler>(
     (selectedRowsCount) => {
@@ -179,6 +182,6 @@ export const useSelection = ({
     allRowsSelected,
     onCheckBoxColumnHeaderClick: handleCheckboxColumnHeaderClick,
     onKeyDown: handleKeyDown,
-    onRowClick: handleRowClick,
+    onRowClick: selectionAllowed ? handleRowClick : undefined,
   };
 };

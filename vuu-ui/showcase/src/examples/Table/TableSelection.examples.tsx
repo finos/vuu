@@ -15,6 +15,7 @@ import {
   SelectionChangeHandler,
   TableConfig,
   TableRowSelectHandler,
+  TableSelectionModel,
 } from "@vuu-ui/vuu-table-types";
 import { toColumnName, useData } from "@vuu-ui/vuu-utils";
 import { SyntheticEvent, useCallback, useMemo, useState } from "react";
@@ -40,12 +41,14 @@ const DataTableTemplate = ({
   rowHeight,
   rowSelectionBorder = true,
   schema = getSchema("instruments"),
-  selectionModel,
+  selectionModel = "none",
   viewportRowLimit,
   width = 1000,
   ...props
 }: DataTableProps) => {
   const { VuuDataSource } = useData();
+  const [tableSelectionModel, setTableSelectionModel] =
+    useState<TableSelectionModel>(selectionModel);
   const [selectedColumn, setSelectedColumn] = useState<string[]>([]);
   const tableConfig = useMemo<TableConfig>(() => {
     return {
@@ -81,6 +84,21 @@ const DataTableTemplate = ({
     });
   }, [dataSource]);
 
+  const toggleSelection = useCallback(() => {
+    setTableSelectionModel((selectionModel) => {
+      switch (selectionModel) {
+        case "checkbox":
+          return "checkbox-disabled";
+        case "checkbox-disabled":
+          return "checkbox";
+        case "none":
+          return selectionModel;
+        default:
+          return "none";
+      }
+    });
+  }, []);
+
   const handleChangeSelectedColumn = useCallback(
     (evt: SyntheticEvent, selectedItems: string[]) => {
       setSelectedColumn(selectedItems);
@@ -100,6 +118,7 @@ const DataTableTemplate = ({
         }}
       >
         <Button onClick={deselectAll}>Deselect All</Button>
+        <Button onClick={toggleSelection}>Toggle Selection</Button>
         <FormField labelPlacement="left" style={{ width: 300 }}>
           <FormFieldLabel>Selected Coumn</FormFieldLabel>
           <Dropdown
@@ -130,7 +149,7 @@ const DataTableTemplate = ({
         renderBufferSize={20}
         rowHeight={rowHeight}
         rowSelectionBorder={rowSelectionBorder}
-        selectionModel={selectionModel}
+        selectionModel={tableSelectionModel}
         viewportRowLimit={viewportRowLimit}
         width={width}
       />
