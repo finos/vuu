@@ -35,6 +35,7 @@ import { EditButtons } from "@vuu-ui/vuu-utils/src/data-editing/EditButtons";
 import { EditMode } from "@vuu-ui/vuu-utils/src/data-editing/useEditableTable";
 import cx from "clsx";
 import {
+  HTMLAttributes,
   ReactElement,
   SyntheticEvent,
   useCallback,
@@ -50,9 +51,15 @@ const schema = getSchema("instruments");
 
 const EditTableTemplate = ({
   editableType,
+  testId = "",
   vuuTable,
-}: {
+  ...htmlAttributes
+}: Omit<
+  HTMLAttributes<HTMLDivElement>,
+  "onDragStart" | "onDrop" | "onSelect"
+> & {
   editableType?: DataValueTypeDescriptor;
+  testId?: string;
   vuuTable: VuuTable;
 }) => {
   const [editMode, setEditMode] = useState<EditMode>("view");
@@ -120,14 +127,20 @@ const EditTableTemplate = ({
         }}
       >
         <ToggleButtonGroup onChange={onToggleEditMode} value={editMode}>
-          <ToggleButton value="view">View</ToggleButton>
-          <ToggleButton value="edit">Edit</ToggleButton>
+          <ToggleButton data-testid={`toggle-view${testId}`} value="view">
+            View
+          </ToggleButton>
+          <ToggleButton data-testid={`toggle-edit${testId}`} value="edit">
+            Edit
+          </ToggleButton>
         </ToggleButtonGroup>
       </div>
       <div style={{ flex: "1 1 auto" }}>
         <DataEditingProvider editSession={editSession}>
           <Table
+            {...htmlAttributes}
             config={config}
+            data-testid={`table${testId}`}
             dataSource={dataSource}
             renderBufferSize={10}
             selectionModel="none"
@@ -153,8 +166,8 @@ const EditTableTemplate = ({
 export const EditableInstruments = () => {
   return (
     <>
-      <EditTableTemplate vuuTable={INSTRUMENTS} />
-      <EditTableTemplate vuuTable={INSTRUMENTS} />
+      <EditTableTemplate testId="-1" vuuTable={INSTRUMENTS} />
+      <EditTableTemplate testId="-2" vuuTable={INSTRUMENTS} />
     </>
   );
 };

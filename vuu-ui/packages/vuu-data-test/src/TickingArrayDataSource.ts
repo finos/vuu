@@ -32,7 +32,7 @@ import {
 } from "./core/module/VuuModule";
 import { makeSuggestions } from "./makeSuggestions";
 import { Table } from "./Table";
-import { isInlineEditingSession } from "@vuu-ui/vuu-utils/src/data-editing/edit-utils";
+import { isInlineEditingSession } from "@vuu-ui/vuu-utils";
 
 export type VisualLinkHandler = (
   message: VuuCreateVisualLink | VuuRemoveVisualLink,

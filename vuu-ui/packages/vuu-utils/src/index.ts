@@ -22,11 +22,11 @@ export * from "./common-types";
 export * from "./component-registry";
 export * from "./cookie-utils";
 export * from "./css-utils";
-export { EditButtons, type EditButtonProps } from "./data-editing/EditButtons";
 export {
   DataEditingProvider,
   useEditSession,
 } from "./data-editing/DataEditingProvider";
+export { EditButtons, type EditButtonProps } from "./data-editing/EditButtons";
 export { EditSession, type EditState } from "./data-editing/EditSession";
 export { useEditableTable } from "./data-editing/useEditableTable";
 export * from "./data-utils";
@@ -96,6 +96,7 @@ export {
   useDataSource,
 } from "./context-definitions/DataSourceProvider";
 export * from "./context-definitions/WorkspaceContext";
+export { isInlineEditingSession } from "./data-editing/edit-utils";
 export { PageVisibilityObserver } from "./PageVisibilityObserver";
 export * from "./ShellContext";
 export { ThemeLoadChecker } from "./theme-utils";

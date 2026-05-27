@@ -3,15 +3,15 @@ import type {
   DataSourceCallbackMessage,
   DataSourceConstructorProps,
   DataSourceStatus,
-  DataSourceVisualLinkCreatedMessage,
-  OptimizeStrategy,
-  ServerAPI,
   DataSourceSubscribeCallback,
   DataSourceSubscribeProps,
+  DataSourceVisualLinkCreatedMessage,
+  EditSessionMode,
+  OptimizeStrategy,
+  ServerAPI,
   TableSchema,
   WithBaseFilter,
   WithFullConfig,
-  EditSessionMode,
 } from "@vuu-ui/vuu-data-types";
 import type {
   LinkDescriptorWithLabel,
@@ -28,12 +28,13 @@ import type {
   VuuRpcServiceRequest,
   VuuTable,
 } from "@vuu-ui/vuu-protocol-types";
-
+import { MenuRpcResponse } from "@vuu-ui/vuu-data-types";
 import {
   BaseDataSource,
   combineFilters,
   debounce,
   isConfigChanged,
+  isInlineEditingSession,
   isRpcSuccess,
   isSelectSuccessWithRowCount,
   isViewportMenusAction,
@@ -46,9 +47,6 @@ import {
 } from "@vuu-ui/vuu-utils";
 import ConnectionManager from "./ConnectionManager";
 import { isDataSourceConfigMessage } from "./data-source";
-
-import { MenuRpcResponse } from "@vuu-ui/vuu-data-types";
-import { isInlineEditingSession } from "@vuu-ui/vuu-utils/src/data-editing/edit-utils";
 
 type RangeRequest = (range: VuuRange) => void;
 
