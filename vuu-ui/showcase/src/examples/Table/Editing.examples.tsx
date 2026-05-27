@@ -5,7 +5,11 @@ import {
   MenuActionHandler,
   MenuBuilder,
 } from "@vuu-ui/vuu-context-menu";
-import { getSchema, LocalDataSourceProvider } from "@vuu-ui/vuu-data-test";
+import {
+  getSchema,
+  LocalDataSourceProvider,
+  SimulTableName,
+} from "@vuu-ui/vuu-data-test";
 import { NotificationsProvider } from "@vuu-ui/vuu-notifications";
 import type { VuuTable } from "@vuu-ui/vuu-protocol-types";
 import { BulkEditPanel, InputCell, Table } from "@vuu-ui/vuu-table";
@@ -35,11 +39,11 @@ import {
   SyntheticEvent,
   useCallback,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { SimulTable } from "./SimulTableTemplate";
 import { EditSessionMode } from "@vuu-ui/vuu-data-types";
+import { LayoutProvider, Stack, View } from "@vuu-ui/vuu-layout";
 
 const INSTRUMENTS = { module: "SIMUL", table: "instruments" };
 const schema = getSchema("instruments");
@@ -91,7 +95,6 @@ const EditTableTemplate = ({
                 : { ...col, editable: true },
             ),
       columnDefaultWidth: 150,
-
       rowSeparators: true,
       zebraStripes: true,
     }),
@@ -311,7 +314,11 @@ const useEditContextMenu = ({
   };
 };
 
-const BulkEditTableTemplate = () => {
+const BulkEditTableTemplate = ({
+  vuuTable = INSTRUMENTS,
+}: {
+  vuuTable?: VuuTable;
+}) => {
   const { closeDialog, showDialog } = useModal();
   const { VuuDataSource } = useData();
 
@@ -395,7 +402,10 @@ const BulkEditTableTemplate = () => {
 
   return (
     <ContextMenuProvider {...contextMenuProps}>
-      <SimulTable dataSource={dataSource} tableName="instruments" />
+      <SimulTable
+        dataSource={dataSource}
+        tableName={vuuTable.table as SimulTableName}
+      />
     </ContextMenuProvider>
   );
 };
@@ -405,6 +415,45 @@ export const BulkEditTable = () => {
   return (
     <ModalProvider>
       <BulkEditTableTemplate />
+    </ModalProvider>
+  );
+};
+
+const WithTabbedTablesTemplate = () => {
+  const [active, setActive] = useState(0);
+
+  return (
+    <LayoutProvider>
+      <Stack
+        active={active}
+        onTabSelectionChanged={setActive}
+        style={{
+          border: "solid 1px var(--salt-container-secondary-borderColor)",
+          height: 800,
+          margin: 10,
+          width: 600,
+        }}
+      >
+        <View title="Editable Instruments">
+          <EditTableTemplate vuuTable={INSTRUMENTS} />
+          <EditTableTemplate vuuTable={INSTRUMENTS} />
+        </View>
+        <View title="Editable Instruments">
+          <EditTableTemplate vuuTable={INSTRUMENTS} />
+        </View>
+        <View title="Editable Instruments (selected only)">
+          <BulkEditTableTemplate vuuTable={INSTRUMENTS} />
+        </View>
+      </Stack>
+    </LayoutProvider>
+  );
+};
+
+/** tags=data-consumer */
+export const WithTabbedTables = () => {
+  return (
+    <ModalProvider>
+      <WithTabbedTablesTemplate />
     </ModalProvider>
   );
 };

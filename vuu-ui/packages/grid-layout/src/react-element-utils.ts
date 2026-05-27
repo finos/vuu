@@ -19,7 +19,7 @@ export const addChildToStackedGridItem = (
   stackElement: ReactElement,
   childElement: ReactElement,
 ) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const stackProps: any = stackElement.props;
   if (Array.isArray(stackProps.children)) {
     console.log(`children is an array`);

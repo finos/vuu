@@ -183,7 +183,7 @@ export class TickingArrayDataSource extends ArrayDataSource {
     }
   };
 
-  async createSessionDataSource(sessionTable: VuuTable) {
+  createSessionDataSource(sessionTable: VuuTable) {
     if (this.#vuuModule) {
       return this.#vuuModule?.createDataSource(
         sessionTable.table,
@@ -197,9 +197,6 @@ export class TickingArrayDataSource extends ArrayDataSource {
   }
 
   async beginEditSession(editSessionMode: EditSessionMode = "inline-all-rows") {
-    console.log("begin edit session");
-    // this.suspend();
-
     const rpcResponse = await this?.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "beginEditSession",

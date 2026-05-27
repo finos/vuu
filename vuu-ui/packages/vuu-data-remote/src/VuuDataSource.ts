@@ -48,6 +48,7 @@ import ConnectionManager from "./ConnectionManager";
 import { isDataSourceConfigMessage } from "./data-source";
 
 import { MenuRpcResponse } from "@vuu-ui/vuu-data-types";
+import { isInlineEditingSession } from "@vuu-ui/vuu-utils/src/data-editing/edit-utils";
 
 type RangeRequest = (range: VuuRange) => void;
 
@@ -156,7 +157,6 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     }
 
     this.#status = "subscribing";
-    // this.#selectedRowsCount = selectionCount(selectedIndexValues);
 
     this.server = await ConnectionManager.serverAPI;
 
@@ -371,6 +371,9 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
         vpId: this.viewport,
       } as SelectRequest);
       if (isSelectSuccessWithRowCount(response)) {
+        console.log(
+          `[VuuDataSource] select selectedRowCount ${response.selectedRowCount}`,
+        );
         this.#selectedRowsCount = response.selectedRowCount;
         this.emit("row-selection", response.selectedRowCount);
       } else {
@@ -639,9 +642,12 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     return Promise.reject<T>();
   }
 
-  async beginEditSession(editSessionMode: EditSessionMode = "all-rows") {
-    this.suspend(false);
+  createSessionDataSource(sessionTable: VuuTable) {
+    //TODO filters, sort etc
+    return new VuuDataSource({ columns: this.columns, table: sessionTable });
+  }
 
+  async beginEditSession(editSessionMode: EditSessionMode = "inline-all-rows") {
     const rpcResponse = await this?.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "beginEditSession",
@@ -653,18 +659,26 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     if (isRpcSuccess(rpcResponse)) {
       const { table: sessionTable } = rpcResponse.data as { table: VuuTable };
 
-      this.#sessionDataSource = new VuuDataSource({
-        columns: this.columns,
-        table: sessionTable,
-        viewport: sessionTable.table,
-      });
+      if (isInlineEditingSession(editSessionMode)) {
+        this.#sessionDataSource = new VuuDataSource({
+          columns: this.columns,
+          table: sessionTable,
+          viewport: sessionTable.table,
+        });
 
-      this.#sessionDataSource.subscribe(
-        {
-          range: this.range,
-        },
-        this.handleSessionMessageFromServer,
-      );
+        this.#sessionDataSource.subscribe(
+          {
+            range: this.range,
+          },
+          this.handleSessionMessageFromServer,
+        );
+      } else {
+        return new VuuDataSource({
+          columns: this.columns,
+          table: sessionTable,
+          viewport: sessionTable.table,
+        });
+      }
 
       // we need to route messages from the session datasource to listening
       // client whilst still monitoring responses on the source table to which
@@ -682,7 +696,9 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
       `[VuuDataSource] editCell ${this.#sessionDataSource?.viewport} rowKey ${key}, column ${column}, value ${data}`,
     );
 
-    const rpcResponse = await this.#sessionDataSource?.rpcRequest?.({
+    const rpcHost = this.#sessionDataSource ?? this;
+
+    const rpcResponse = await rpcHost.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "editCell",
       params: {
@@ -705,7 +721,9 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     const type = "RPC_REQUEST";
     const rpcName = "endEditSession";
 
-    const rpcResponse = await this.#sessionDataSource?.rpcRequest?.(
+    const rpcHost = this.#sessionDataSource ?? this;
+
+    const rpcResponse = await rpcHost.rpcRequest?.(
       saveChanges
         ? { type, rpcName, params: { save: true } }
         : { type, rpcName, params: {} },
@@ -714,6 +732,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     if (isRpcSuccess(rpcResponse)) {
       console.log("edit succeeded");
       this.#sessionDataSource?.unsubscribe();
+      // how do we ensure rows sent to clicnt
     } else {
       throw Error("oh oh");
     }
