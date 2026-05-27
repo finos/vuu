@@ -769,7 +769,12 @@ export const useTable = ({
 
   const handleRowClick = useCallback<TableRowClickHandlerInternal>(
     (evt, dataRow, rangeSelect, keepExistingSelection) => {
-      selectionHookOnRowClick(evt, dataRow, rangeSelect, keepExistingSelection);
+      selectionHookOnRowClick?.(
+        evt,
+        dataRow,
+        rangeSelect,
+        keepExistingSelection,
+      );
       onRowClickProp?.(evt, dataRow);
     },
     [onRowClickProp, selectionHookOnRowClick],

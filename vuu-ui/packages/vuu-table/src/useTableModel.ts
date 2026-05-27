@@ -66,8 +66,12 @@ const getDataType = (
   }
 };
 
-const CheckboxColumnDescriptor = (width = 25): ColumnDescriptor => ({
+const CheckboxColumnDescriptor = (
+  selectionModel: TableSelectionModel,
+  width = 25,
+): ColumnDescriptor => ({
   allowColumnHeaderMenu: false,
+  className: selectionModel === "checkbox-disabled" ? "vuuDisabled" : undefined,
   label: "",
   name: "",
   width,
@@ -82,8 +86,11 @@ const CheckboxColumnDescriptor = (width = 25): ColumnDescriptor => ({
   },
 });
 
-const PinnedCheckboxColumnDescriptor = (width?: number): ColumnDescriptor => ({
-  ...CheckboxColumnDescriptor(width),
+const PinnedCheckboxColumnDescriptor = (
+  selectionModel: TableSelectionModel,
+  width?: number,
+): ColumnDescriptor => ({
+  ...CheckboxColumnDescriptor(selectionModel, width),
   pin: "left",
 });
 
@@ -288,7 +295,7 @@ function init(
 
   const runtimeColumns: RuntimeColumnDescriptor[] = [];
 
-  let colIndex = selectionModel === "checkbox" ? 2 : 1;
+  let colIndex = selectionModel?.startsWith("checkbox") ? 2 : 1;
   assertAllColumnsAreIncludedInSubscription(columns, dataSourceConfig.columns);
   for (const column of columns) {
     runtimeColumns.push(
@@ -299,15 +306,15 @@ function init(
     }
   }
 
-  if (selectionModel === "checkbox") {
+  if (selectionModel?.startsWith("checkbox")) {
     const somePinnedLeft = runtimeColumns.some((col) => col.pin === "left");
     runtimeColumns.splice(
       0,
       0,
       toRuntimeColumnDescriptor(
         somePinnedLeft
-          ? PinnedCheckboxColumnDescriptor(checkboxColumnWidth)
-          : CheckboxColumnDescriptor(checkboxColumnWidth),
+          ? PinnedCheckboxColumnDescriptor(selectionModel, checkboxColumnWidth)
+          : CheckboxColumnDescriptor(selectionModel, checkboxColumnWidth),
         1,
       ),
     );

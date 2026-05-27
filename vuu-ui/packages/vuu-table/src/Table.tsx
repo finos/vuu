@@ -486,7 +486,9 @@ const TableCore = ({
             <TableHeader
               HeaderCell={HeaderCell}
               allowDragColumnHeader={allowDragColumnHeader}
-              allowSelectAll={allowSelectAll}
+              allowSelectAll={
+                allowSelectAll && selectionModel !== "checkbox-disabled"
+              }
               allRowsSelected={allRowsSelected}
               // columns={scrollProps.columnsWithinViewport}
               columns={columns}

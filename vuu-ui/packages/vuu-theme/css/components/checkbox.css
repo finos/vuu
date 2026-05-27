@@ -1,5 +1,10 @@
 .salt-theme.vuu-theme {
 
+  .saltCheckbox {
+    .saltCheckboxIcon:not(.saltCheckboxIcon-checked,.saltCheckboxIcon-disabled) {
+        border-color: var(--vuu-color-gray-20);
+    }    
+  }
 
   .saltCheckbox:hover {
     .saltCheckboxIcon:not(.saltCheckboxIcon-checked,.saltCheckboxIcon-disabled) {
@@ -9,6 +14,16 @@
         color: var(--vuu-color-purple);
         border-color: var(--vuu-color-purple);
     }    
+  }
+
+  .vuuTableHeaderCell.vuuDisabled,
+  .vuuTableCell.vuuDisabled {
+    border-right-color: transparent;
+    pointer-events: none;
+    
+    .saltCheckbox {
+      visibility: hidden;
+    }
   }
 
 }
