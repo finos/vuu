@@ -1,12 +1,10 @@
 package org.finos.vuu.example.clickhouse.client
 
 import com.clickhouse.client.api.Client
-import com.clickhouse.client.api.query.{QueryResponse, Records}
+import com.clickhouse.client.api.query.Records
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import org.finos.vuu.example.clickhouse.client.options.ClickHouseClientOptions
-
-import java.sql.ResultSet
 
 class ClickHouseClient(val options: ClickHouseClientOptions)
                       (implicit lifecycle: LifecycleContainer) extends LifecycleEnabled with StrictLogging {
@@ -46,7 +44,7 @@ class ClickHouseClient(val options: ClickHouseClientOptions)
 
   override def doStart(): Unit = synchronized {
     try {
-      client = Option(initializer.create())
+      client = Some(initializer.create())
     } catch {
       case e: Exception =>
         logger.error("Failed to start ClickHouse client", e)
@@ -55,8 +53,14 @@ class ClickHouseClient(val options: ClickHouseClientOptions)
   }
 
   override def doStop(): Unit = synchronized {
-    client.foreach(_.close())
-    client = None
+    client.foreach { c =>
+      try {
+        c.close()
+      } catch {
+        case e: Exception => logger.warn("Error closing ClickHouse client", e)
+      }
+      client = None
+    }
   }
 
   override def doInitialize(): Unit = {}
