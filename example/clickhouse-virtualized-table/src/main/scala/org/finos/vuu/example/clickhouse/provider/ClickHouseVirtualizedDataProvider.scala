@@ -47,28 +47,39 @@ class ClickHouseVirtualizedDataProvider(client: ClickHouseClient)(implicit clock
 
     // Get total size of orders matching filter
     val (sizeQueryMillis, totalSize) = timeIt {
-    client.executeQuery(s"SELECT count() as cnt FROM orders $whereClause") { rs =>
-      if (rs.next()) rs.getInt("cnt") else 0
-    }}
+      client.executeQuery(s"SELECT count() as cnt FROM orders $whereClause") { records =>
+        val it = records.iterator()
+        if (it.hasNext) {
+          it.next().getLong("cnt").toInt
+        } else {
+          0
+        }
+      }
+    }
 
     // Load orders in the current range
     val (dataQueryMillis, orders) = timeIt {
       client.executeQuery(
-      s"SELECT orderId, quantity, price, side, trader FROM orders $whereClause $orderByClause LIMIT $limit OFFSET $startIndex"
-    ) { rs =>
-      val buffer = ListBuffer[(Int, (Long, Int, Long, String, String))]()
-      var index = startIndex
-      while (rs.next()) {
-        val orderId = rs.getLong("orderId")
-        val quantity = rs.getInt("quantity")
-        val price = rs.getLong("price")
-        val side = rs.getString("side")
-        val trader = rs.getString("trader")
-        buffer.append((index, (orderId, quantity, price, side, trader)))
-        index += 1
+        s"SELECT orderId, quantity, price, side, trader FROM orders $whereClause $orderByClause LIMIT $limit OFFSET $startIndex"
+      ) { records =>
+        val buffer = ListBuffer[(Int, (Long, Int, Long, String, String))]()
+        var index = startIndex
+
+        val it = records.iterator()
+        while (it.hasNext) {
+          val record = it.next()
+          val orderId = record.getLong("orderId")
+          val quantity = record.getInteger("quantity")
+          val price = record.getLong("price")
+          val side = record.getString("side")
+          val trader = record.getString("trader")
+
+          buffer.append((index, (orderId, quantity, price, side, trader)))
+          index += 1
+        }
+        buffer.toList
       }
-      buffer.toList
-    }}
+    }
 
     viewPort.table.asTable match {
       case tbl: VirtualizedSessionTable =>

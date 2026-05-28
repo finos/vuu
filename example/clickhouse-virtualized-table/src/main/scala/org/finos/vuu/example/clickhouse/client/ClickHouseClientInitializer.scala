@@ -1,21 +1,19 @@
 package org.finos.vuu.example.clickhouse.client
 
-import com.clickhouse.jdbc.ClickHouseDataSource
+import com.clickhouse.client.api.Client
 import org.finos.vuu.example.clickhouse.client.options.ClickHouseClientOptions
-import java.util.Properties
 
 class ClickHouseClientInitializer(val options: ClickHouseClientOptions) {
 
-  //TODO Move to clickhouse.client
-  def create(): ClickHouseDataSource = {
-    val properties = new Properties()
-    properties.setProperty("user", options.username)
-    properties.setProperty("password", options.password)
-    properties.setProperty("connection_timeout", options.timeoutMs.toString)
-    properties.setProperty("compress", "0")
+  def create(): Client = {
     
-    val url = s"jdbc:ch://${options.host}:${options.port}/${options.database}"
-    new ClickHouseDataSource(url, properties)
+    val builder = new Client.Builder()
+      .addEndpoint(options.endpoint)
+      .setUsername(options.username)
+      .setPassword(options.password)
+      .setConnectTimeout(options.timeoutMs)
+      
+    builder.build()
   }
 }
 

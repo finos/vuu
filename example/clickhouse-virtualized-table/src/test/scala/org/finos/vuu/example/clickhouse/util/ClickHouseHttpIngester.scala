@@ -13,11 +13,11 @@ object ClickHouseHttpIngester extends StrictLogging {
 
   private val httpClient = HttpClient.newHttpClient()
 
-  def ingestCsvFile(host: String, port: Int, username: String, password: String,
+  def ingestCsvFile(endpoint: String, username: String, password: String,
                     tableName: String, columns: Seq[String], csvFile: Path): Unit = {
     val colsStr = columns.mkString("(", ",", ")")
     val query = s"INSERT INTO $tableName $colsStr FORMAT CSV"
-    val uri = URI.create(s"http://$host:$port/?query=${java.net.URLEncoder.encode(query, "UTF-8")}")
+    val uri = URI.create(s"$endpoint/?query=${java.net.URLEncoder.encode(query, "UTF-8")}")
 
     val fileSize = Files.size(csvFile)
     logger.info(s"Starting HTTP CSV Ingestion to table '$tableName' from file: $csvFile ($fileSize bytes)")

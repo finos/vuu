@@ -12,8 +12,7 @@ import java.util.UUID
 class ClickHouseContainer(tag: String = "26.4") extends GenericContainer(
   ClickHouseContainer.createContainer(tag)
 ) {
-  def getHost: String = container.getHost
-  def getPort: Integer = container.getMappedPort(ClickHouseContainer.port)
+  def getEndpoint: String = s"http://${container.getHost}:${container.getMappedPort(ClickHouseContainer.port)}"
   def getUsername: String = ClickHouseContainer.username
   def getPassword: String = ClickHouseContainer.password
 }

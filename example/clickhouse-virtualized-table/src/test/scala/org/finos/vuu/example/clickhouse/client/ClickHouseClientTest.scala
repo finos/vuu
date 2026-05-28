@@ -24,8 +24,7 @@ class ClickHouseClientTest
       given lifecycle: LifecycleContainer = LifecycleContainer()
 
       val client = ClickHouseClient(ClickHouseClientOptions()
-        .withHost(container.getHost)
-        .withPort(container.getPort)
+        .withEndpoint(container.getEndpoint)
         .withUsername(container.getUsername)
         .withPassword(container.getPassword))
       
@@ -45,10 +44,11 @@ class ClickHouseClientTest
       client.executeUpdate("INSERT INTO test_table (id, val) VALUES (1, 'hello'), (2, 'world')")
 
       // Query data
-      val results = client.executeQuery("SELECT val FROM test_table ORDER BY id") { rs =>
+      val results = client.executeQuery("SELECT val FROM test_table ORDER BY id") { records =>
         val list = scala.collection.mutable.ListBuffer[String]()
-        while (rs.next()) {
-          list.append(rs.getString("val"))
+        val it = records.iterator()
+        while (it.hasNext) {
+          list.append(it.next().getString("val"))
         }
         list.toList
       }

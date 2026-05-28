@@ -1,15 +1,13 @@
 package org.finos.vuu.example.clickhouse.client.options
 
 trait ClickHouseClientOptions {
-  def host: String
-  def port: Int
+  def endpoint: String
   def database: String
   def username: String
   def password: String
   def timeoutMs: Int
 
-  def withHost(host: String): ClickHouseClientOptions
-  def withPort(port: Int): ClickHouseClientOptions
+  def withEndpoint(endpoint: String): ClickHouseClientOptions
   def withDatabase(database: String): ClickHouseClientOptions
   def withUsername(username: String): ClickHouseClientOptions
   def withPassword(password: String): ClickHouseClientOptions
@@ -19,8 +17,7 @@ trait ClickHouseClientOptions {
 object ClickHouseClientOptions {
   def apply(): ClickHouseClientOptions = {
     ClickHouseClientOptionsImpl(
-      host = "localhost",
-      port = 8123,
+      endpoint = "http://localhost:8123",
       database = "default",
       username = "default",
       password = "",
@@ -30,16 +27,14 @@ object ClickHouseClientOptions {
 }
 
 private case class ClickHouseClientOptionsImpl(
-  host: String,
-  port: Int,
+  endpoint: String,
   database: String,
   username: String,
   password: String,
   timeoutMs: Int
 ) extends ClickHouseClientOptions {
 
-  override def withHost(host: String): ClickHouseClientOptions = this.copy(host = host)
-  override def withPort(port: Int): ClickHouseClientOptions = this.copy(port = port)
+  override def withEndpoint(endpoint: String): ClickHouseClientOptions = this.copy(endpoint = endpoint)
   override def withDatabase(database: String): ClickHouseClientOptions = this.copy(database = database)
   override def withUsername(username: String): ClickHouseClientOptions = this.copy(username = username)
   override def withPassword(password: String): ClickHouseClientOptions = this.copy(password = password)

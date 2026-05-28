@@ -1,54 +1,44 @@
 package org.finos.vuu.example.clickhouse.client
 
+import com.clickhouse.client.api.Client
+import com.clickhouse.client.api.query.{QueryResponse, Records}
 import com.typesafe.scalalogging.StrictLogging
 import org.finos.toolbox.lifecycle.{LifecycleContainer, LifecycleEnabled}
 import org.finos.vuu.example.clickhouse.client.options.ClickHouseClientOptions
+
 import java.sql.ResultSet
 
 class ClickHouseClient(val options: ClickHouseClientOptions)
                       (implicit lifecycle: LifecycleContainer) extends LifecycleEnabled with StrictLogging {
 
   private val initializer = ClickHouseClientInitializer(options)
-  @volatile private var dataSource: Option[com.clickhouse.jdbc.ClickHouseDataSource] = Option.empty
+  @volatile private var client: Option[Client] = Option.empty
 
   lifecycle(this)
 
-  def executeQuery[T](sql: String)(action: ResultSet => T): T = {
-    dataSource match {
-      case Some(ds) =>
-        val connection = ds.getConnection()
+  def executeQuery[T](sql: String)(action: Records => T): T = {
+    client match {
+      case Some(c) =>
+        val response = c.queryRecords(sql).get()
         try {
-          val statement = connection.createStatement()
-          try {
-            val resultSet = statement.executeQuery(sql)
-            try {
-              action(resultSet)
-            } finally {
-              resultSet.close()
-            }
-          } finally {
-            statement.close()
-          }
+          action(response)
         } finally {
-          connection.close()
+          response.close()
         }
       case None => throw new IllegalStateException("ClickHouse client is not initialized.")
     }
   }
 
   def executeUpdate(sql: String): Int = {
-    dataSource match {
-      case Some(ds) =>
-        val connection = ds.getConnection()
+    client match {
+      case Some(c) =>
+        val response = c.query(sql).get()
         try {
-          val statement = connection.createStatement()
-          try {
-            statement.executeUpdate(sql)
-          } finally {
-            statement.close()
-          }
+          // ClickHouse native mutations/DDLs return execution metrics rather than JDBC row counts.
+          // You can inspect response.getMetrics if needed. Returning 1 to indicate success.
+          1
         } finally {
-          connection.close()
+          response.close()
         }
       case None => throw new IllegalStateException("ClickHouse client is not initialized.")
     }
@@ -56,7 +46,7 @@ class ClickHouseClient(val options: ClickHouseClientOptions)
 
   override def doStart(): Unit = synchronized {
     try {
-      dataSource = Option(initializer.create())
+      client = Option(initializer.create())
     } catch {
       case e: Exception =>
         logger.error("Failed to start ClickHouse client", e)
@@ -65,7 +55,8 @@ class ClickHouseClient(val options: ClickHouseClientOptions)
   }
 
   override def doStop(): Unit = synchronized {
-    dataSource = None
+    client.foreach(_.close())
+    client = None
   }
 
   override def doInitialize(): Unit = {}

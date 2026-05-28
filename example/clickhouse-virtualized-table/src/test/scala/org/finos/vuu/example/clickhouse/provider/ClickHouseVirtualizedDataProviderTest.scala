@@ -30,8 +30,7 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
       implicit val metricsProvider: MetricsProvider = new MetricsProviderImpl
 
       val client = ClickHouseClient(ClickHouseClientOptions()
-        .withHost(container.getHost)
-        .withPort(container.getPort)
+        .withEndpoint(container.getEndpoint)
         .withUsername(container.getUsername)
         .withPassword(container.getPassword))
 
@@ -142,8 +141,7 @@ class ClickHouseVirtualizedDataProviderTest extends VuuServerTestCase with ForAl
 
     try {
       org.finos.vuu.example.clickhouse.util.ClickHouseHttpIngester.ingestCsvFile(
-        container.getHost,
-        container.getPort,
+        container.getEndpoint,
         container.getUsername,
         container.getPassword,
         "orders",
