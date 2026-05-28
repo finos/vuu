@@ -6,10 +6,12 @@ import org.finos.toolbox.time.Clock
 import org.finos.toolbox.time.TimeIt.timeIt
 import org.finos.vuu.core.table.RowWithData
 import org.finos.vuu.example.clickhouse.client.ClickHouseClient
+import org.finos.vuu.example.clickhouse.provider.filter.ClickHouseFilterVisitor
 import org.finos.vuu.feature.ViewPortKeys
 import org.finos.vuu.plugin.virtualized.table.{VirtualizedRange, VirtualizedSessionTable, VirtualizedViewPortKeys}
 import org.finos.vuu.provider.VirtualizedProvider
 import org.finos.vuu.viewport.{ViewPort, ViewPortColumns}
+
 import scala.collection.mutable.ListBuffer
 
 class ClickHouseVirtualizedDataProvider(client: ClickHouseClient)(implicit clock: Clock)
@@ -27,8 +29,8 @@ class ClickHouseVirtualizedDataProvider(client: ClickHouseClient)(implicit clock
     val limit = (range.to - startIndex) + 500
 
     val whereClause = if (viewPort.filterSpec != null && viewPort.filterSpec.filter != null && viewPort.filterSpec.filter.nonEmpty) {
-      val sqlFilter = viewPort.filterSpec.filter.replace("\"", "'")
-      s"WHERE $sqlFilter"
+      val compiledFilter = org.finos.vuu.core.filter.FilterSpecParser.parse(viewPort.filterSpec.filter, new ClickHouseFilterVisitor())
+      if (compiledFilter.nonEmpty) s"WHERE $compiledFilter" else ""
     } else {
       ""
     }
@@ -112,9 +114,11 @@ class ClickHouseVirtualizedDataProvider(client: ClickHouseClient)(implicit clock
         logger.trace("[ClickHouseVirtualizedDataProvider] Setting Primary Keys")
         val (millisSetKeys, _) = timeIt { viewPort.setKeys(new VirtualizedViewPortKeys(tableKeys)) }
 
-        logger.debug(
+        if (logAt.shouldLog()) {
+          logger.debug(
             s"[ClickHouseVirtualizedDataProvider] Complete runOnce sizeQuery=$sizeQueryMillis dataQuery=$dataQueryMillis millisRange=$millisRange millisSize=$millisSize millisRows=$millisRows millisGetKeys=$millisGetKeys millisSetKeys=$millisSetKeys"
           )
+        }
       case _ =>
         logger.warn("[ClickHouseVirtualizedDataProvider] Table is not a VirtualizedSessionTable")
     }
