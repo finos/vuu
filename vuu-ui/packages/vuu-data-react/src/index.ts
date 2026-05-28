@@ -1,4 +1,5 @@
 export * from "./data-editing";
+export * from "./csv-upload";
 export * from "./datasource-provider";
 export { useLookupValues } from "./hooks/useLookupValues";
 export { useSessionDataSource } from "./hooks/useSessionDataSource";

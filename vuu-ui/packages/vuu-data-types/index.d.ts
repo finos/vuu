@@ -558,7 +558,8 @@ export type InlineEditSessionMode = "inline-all-rows";
 export type StandaloneEditSessionMode =
   | "selected-rows"
   | "all-rows"
-  | "empty-session-table";
+  | "empty-session-table"
+  | "csv-upload";
 export type EditSessionMode = InlineEditSessionMode | StandaloneEditSessionMode;
 
 export interface EditApi {

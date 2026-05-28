@@ -126,6 +126,29 @@ export default [
     label: "Apps",
     childNodes: [
       {
+        id: "Apps/CsvUploadRpcExample",
+        icon: "box",
+        label: "CsvUploadRpcExample",
+        childNodes: [
+          {
+            id: "Apps/CsvUploadRpcExample/CsvUploadRpcExample",
+            label: "CsvUploadRpcExample",
+            nodeData: {
+              componentName: "CsvUploadRpcExample",
+              path: "src/examples/Apps/CsvUploadRpcExample.examples.tsx",
+            },
+          },
+          {
+            id: "Apps/CsvUploadRpcExample/CsvUploadRpcLifecycleExample",
+            label: "CsvUploadRpcLifecycleExample",
+            nodeData: {
+              componentName: "CsvUploadRpcLifecycleExample",
+              path: "src/examples/Apps/CsvUploadRpcExample.examples.tsx",
+            },
+          },
+        ],
+      },
+      {
         id: "Apps/SampleApp",
         icon: "box",
         label: "SampleApp",
