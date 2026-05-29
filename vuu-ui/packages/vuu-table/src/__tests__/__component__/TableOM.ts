@@ -28,7 +28,15 @@ export class TableOM {
     return this.#locator.locator(`[aria-rowindex="${row}"]`);
   }
 
+  /**
+   * Locate cell by cell contents
+   * @param text
+   */
   locateCell(text: string): Locator;
+  /**
+   * Locate cell by aria row index and aria col index
+   * @param text
+   */
   locateCell(row: number, column: number): Locator;
   locateCell(rowOrText: number | string, column?: number) {
     if (typeof rowOrText === "number" && typeof column === "number") {
@@ -66,6 +74,45 @@ export class TableOM {
     return expect(this.#locator).toBeVisible();
   }
 
+  private getCellText(
+    arg1: number | Locator,
+    arg2: number | string,
+    arg3?: string | AriaRole,
+    arg4?: AriaRole,
+  ): [Locator, string, AriaRole | undefined] {
+    if (typeof arg1 == "number" && typeof arg2 === "number") {
+      return [this.locateCell(arg1, arg2), arg3 as string, arg4];
+    }
+    return [arg1 as Locator, arg2 as string, arg3 as AriaRole | undefined];
+  }
+
+  async assertCellValue(
+    cell: Locator,
+    text: string,
+    role?: AriaRole,
+  ): Promise<void>;
+  async assertCellValue(
+    row: number,
+    column: number,
+    text: string,
+    role?: AriaRole,
+  ): Promise<void>;
+  async assertCellValue(
+    arg1: number | Locator,
+    arg2: number | string,
+    arg3?: string | AriaRole,
+    arg4?: AriaRole,
+  ) {
+    const [cell, text, role] = this.getCellText(arg1, arg2, arg3, arg4);
+    const target = role ? cell.getByRole(role) : cell;
+
+    if (target) {
+      await expect(target).toHaveValue(text);
+    } else {
+      throw Error("TableOM, assertCellIsFocused, invalid parameters");
+    }
+  }
+
   async assertCellIsFocused(cell: Locator, role?: AriaRole): Promise<void>;
   async assertCellIsFocused(
     row: number,
@@ -87,6 +134,7 @@ export class TableOM {
           ? rowOrCell.getByRole(columnOrRole)
           : rowOrCell;
     }
+
     if (target) {
       await expect(target).toBeFocused();
     } else {
@@ -119,10 +167,13 @@ export class TableOM {
       }
     }
     if (target) {
+      const editControl = ".saltInput";
       if (editing) {
-        return expect(target).toContainClass("vuuEditing");
+        return expect(target.locator(editControl)).toContainClass("vuuEditing");
       } else {
-        return expect(target).not.toContainClass("vuuEditing");
+        return expect(target.locator(editControl)).not.toContainClass(
+          "vuuEditing",
+        );
       }
     } else {
       throw Error("TableOM, assertCellIsEditing, invalid parameters");

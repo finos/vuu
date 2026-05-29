@@ -3,16 +3,6 @@ import { KeyboardSensor, PointerSensor } from "@dnd-kit/dom";
 import { DragDropProvider, DragOverlay, useInstance } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
 
-export {
-  DragDropProvider,
-  DragOverlay,
-  KeyboardSensor,
-  PointerSensor,
-  RestrictToHorizontalAxis,
-  useInstance,
-  useSortable,
-};
-
 export * from "./array-utils";
 export * from "./box-utils";
 export * from "./broadcast-channel";
@@ -26,8 +16,13 @@ export {
   DataEditingProvider,
   useEditSession,
 } from "./data-editing/DataEditingProvider";
+export { getVuuEditMessage } from "./data-editing/edit-utils";
 export { EditButtons, type EditButtonProps } from "./data-editing/EditButtons";
-export { EditSession, type EditState } from "./data-editing/EditSession";
+export {
+  EditSession,
+  StaleUpdateError,
+  type EditState,
+} from "./data-editing/EditSession";
 export { useEditableTable } from "./data-editing/useEditableTable";
 export * from "./data-utils";
 export * from "./datasource/BaseDataSource";
@@ -87,6 +82,15 @@ export {
   type ResizeHandler,
 } from "./useResizeObserver";
 export * from "./useStateRef";
+export {
+  DragDropProvider,
+  DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
+  RestrictToHorizontalAxis,
+  useInstance,
+  useSortable,
+};
 
 /** Context declarations hosted in utils to minimize intra package dependencies */
 export { DataContext } from "./context-definitions/DataContext";

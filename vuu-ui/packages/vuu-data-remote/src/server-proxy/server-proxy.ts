@@ -435,17 +435,7 @@ export class ServerProxy {
     if (viewport.status === "subscribed") {
       info?.(`setViewRange ${message.range.from} - ${message.range.to}`);
 
-      // if (!serverRequest && !rows) {
-      //   console.log(
-      //     `%c[ServerProxy] no server request and no rows from cache`,
-      //     "color:red;font-weight:bold;",
-      //   );
-      // }
-
       if (serverRequest) {
-        // console.log(
-        //   `[ServerProxy] ==> CHANGE_VP_RANGE (${message.range.from}-${message.range.to}) => (${serverRequest.from}-${serverRequest.to})`,
-        // );
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         if (process.env.NODE_ENV === "development") {
@@ -462,10 +452,6 @@ export class ServerProxy {
 
       if (rows) {
         info?.(`setViewRange ${rows.length} rows returned from cache`);
-        // console.log(
-        //   `%c[ServerProxy] post rows to client ${rows.map((r) => r[0]).join(",")}`,
-        //   "color:brown",
-        // );
         this.postMessageToClient({
           mode: "update",
           type: "viewport-update",

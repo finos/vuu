@@ -42,6 +42,7 @@ import {
   itemsOrOrderChanged,
   logger,
   Range,
+  StaleUpdateError,
   throttle,
   uuid,
 } from "@vuu-ui/vuu-utils";
@@ -49,6 +50,8 @@ import ConnectionManager from "./ConnectionManager";
 import { isDataSourceConfigMessage } from "./data-source";
 
 type RangeRequest = (range: VuuRange) => void;
+
+const SESSION_TABLE_MSG_COLUMN = "vuuMsg";
 
 const { info, infoEnabled } = logger("VuuDataSource");
 
@@ -200,13 +203,24 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     } else if (message.type === "debounce-begin") {
       this.optimize = "debounce";
     } else {
-      if (
-        message.type === "viewport-update" &&
-        message.size !== undefined &&
-        message.size !== this.size
-      ) {
-        this.size = message.size;
-        this.emit("resize", message.size);
+      if (message.type === "viewport-update") {
+        if (message.size !== undefined && message.size !== this.size) {
+          this.size = message.size;
+          this.emit("resize", message.size);
+        }
+
+        if (
+          Array.isArray(message.rows) &&
+          message.rows.length > 0 &&
+          this.#sessionDataSource
+        ) {
+          this.emit("remote-update-during-local-edit", message.rows);
+          console.log(
+            `updates incoming whilst edit in progress ${this.viewport}`,
+          );
+          console.table(message.rows);
+          return;
+        }
       } else if (message.type === "viewport-clear") {
         this.size = 0;
         this.emit("resize", 0);
@@ -286,6 +300,19 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
     }
   }
 
+  /**
+   * Tell the server we wish to resume receiving messages. Server will send a
+   * snapshot of rows currently in cache. This can be used to update with
+   * latest data, e.g after an edit session during which we might have ignored
+   * some updates.
+   */
+  private sendResumeMessage() {
+    this.server?.send({
+      type: "resume",
+      viewport: this.viewport,
+    });
+  }
+
   resume(callback?: DataSourceSubscribeCallback) {
     const isDisabled = this.#status.startsWith("disabl");
     const isSuspended = this.#status === "suspended";
@@ -297,10 +324,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
       if (isDisabled) {
         this.enable();
       } else if (isSuspended) {
-        this.server?.send({
-          type: "resume",
-          viewport: this.viewport,
-        });
+        this.sendResumeMessage();
         this.#status = "subscribed";
         this.emit("resumed", this.viewport);
 
@@ -642,10 +666,13 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
 
   createSessionDataSource(sessionTable: VuuTable) {
     //TODO filters, sort etc
-    return new VuuDataSource({ columns: this.columns, table: sessionTable });
+    return new VuuDataSource({
+      columns: this.columns.concat(SESSION_TABLE_MSG_COLUMN),
+      table: sessionTable,
+    });
   }
 
-  async beginEditSession(editSessionMode: EditSessionMode = "inline-all-rows") {
+  async beginEditSession(editSessionMode: EditSessionMode = "all-rows") {
     const rpcResponse = await this?.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "beginEditSession",
@@ -659,10 +686,12 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
 
       if (isInlineEditingSession(editSessionMode)) {
         this.#sessionDataSource = new VuuDataSource({
-          columns: this.columns,
+          ...this.config,
           table: sessionTable,
           viewport: sessionTable.table,
         });
+
+        this.columns = this.columns.concat("vuuMsg");
 
         this.#sessionDataSource.subscribe(
           {
@@ -672,7 +701,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
         );
       } else {
         return new VuuDataSource({
-          columns: this.columns,
+          ...this.config,
           table: sessionTable,
           viewport: sessionTable.table,
         });
@@ -696,7 +725,7 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
 
     const rpcHost = this.#sessionDataSource ?? this;
 
-    const rpcResponse = await rpcHost.rpcRequest?.({
+    return rpcHost.rpcRequest?.({
       type: "RPC_REQUEST",
       rpcName: "editCell",
       params: {
@@ -705,35 +734,44 @@ export class VuuDataSource extends BaseDataSource implements DataSource {
         key,
       },
     });
-
-    if (isRpcSuccess(rpcResponse)) {
-      console.log("edit succeeded");
-    } else {
-      throw Error("oh oh");
-    }
   }
 
-  async endEditSession(saveChanges = false) {
+  async endEditSession(saveChanges = false, force = false) {
     console.log(`[VuuDataSource] endEditSession saveChanges ${saveChanges}`);
 
     const type = "RPC_REQUEST";
     const rpcName = "endEditSession";
 
-    const rpcHost = this.#sessionDataSource ?? this;
+    const sessionDataSource = this.#sessionDataSource;
+
+    const rpcHost = sessionDataSource ?? this;
+
+    if (sessionDataSource) {
+      // timing is important here. By breaking this reference before
+      // we send the endEdit RPC call, the application of session edits
+      // to the source table will be handled correctly.
+      this.#sessionDataSource = undefined;
+    }
 
     const rpcResponse = await rpcHost.rpcRequest?.(
       saveChanges
-        ? { type, rpcName, params: { save: true } }
+        ? { type, rpcName, params: { save: true, force } }
         : { type, rpcName, params: {} },
     );
 
     if (isRpcSuccess(rpcResponse)) {
-      console.log("edit succeeded");
-      this.#sessionDataSource?.unsubscribe();
-      // how do we ensure rows sent to clicnt
+      sessionDataSource?.unsubscribe();
     } else {
-      throw Error("oh oh");
+      if (rpcResponse?.errorMessage === "stale update") {
+        this.#sessionDataSource = sessionDataSource;
+        // sessionDataSource?.unsubscribe();
+        throw new StaleUpdateError(rpcResponse.errorMessage);
+      } else {
+        throw Error("unknown error");
+      }
     }
+
+    this.sendResumeMessage();
   }
 
   async rpcRequest(rpcRequest: Omit<VuuRpcServiceRequest, "context">) {

@@ -7,7 +7,6 @@ import { DataSource, DataValueType } from "@vuu-ui/vuu-data-types";
 import { Table, TableProps } from "@vuu-ui/vuu-table";
 import {
   ColumnDescriptor,
-  DataCellEditNotification,
   DefaultColumnConfiguration,
   RowActionHandler,
   TableConfig,
@@ -17,7 +16,7 @@ import {
   registerComponent,
   useData,
 } from "@vuu-ui/vuu-utils";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { DataSourceStats, DropdownCell } from "@vuu-ui/vuu-table-extras";
 import { IconButtonCell } from "@vuu-ui/vuu-table-extras";
 
@@ -63,29 +62,12 @@ const TableTemplate = ({
     schema,
   ]);
 
-  const handleDataEdited = useCallback<DataCellEditNotification>(
-    ({
-      editType = "commit",
-      isValid = true,
-      dataRow,
-      columnName,
-      value,
-      previousValue = value,
-    }) => {
-      console.log(
-        `data edited [${dataRow?.index}], ${columnName} ${previousValue} => ${value} (${editType}) isValid ${isValid}`,
-      );
-    },
-    [],
-  );
-
   return (
     <>
       <Table
         config={config}
         dataSource={dataSource}
         height={645}
-        onDataEdited={handleDataEdited}
         renderBufferSize={10}
         rowActionHandlers={rowActionHandlers}
         selectionModel={selectionModel}

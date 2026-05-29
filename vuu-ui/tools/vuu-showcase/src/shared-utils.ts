@@ -38,8 +38,8 @@ export const isComponentDescriptor = (
 export const isDocumentDescriptor = (val: unknown): val is DocumentDescriptor =>
   !!val &&
   typeof val === "object" &&
-  typeof val["name"] === "string" &&
-  typeof val["path"] === "string";
+  typeof val["path"] === "string" &&
+  val["path"].endsWith("mdx");
 
 export const getTargetTreeNode = <T = unknown>(
   url: URL,

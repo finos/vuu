@@ -155,14 +155,6 @@ export const useDataSource = ({
           // const size = dataRowWindow.data.length;
           dataRowWindow.setRowCount(message.size);
           totalRowCountRef.current = message.size;
-
-          // if (dataRowWindow.data.length < size) {
-          //   if (isMounted.current === false) {
-          //     console.log("setting state whilst unmounted");
-          //   }
-
-          //   forceUpdate({});
-          // }
         }
         if (message.rows) {
           setData(message.rows);
@@ -219,6 +211,9 @@ export const useDataSource = ({
   }, [dataSource, datasourceMessageHandler]);
 
   useMemo(() => {
+    console.log(
+      `reassign columns on dataRowFactpory dataSource columns has changed ${dataSource.columns.join(",")}`,
+    );
     setColumnsRef.current?.(dataSource.columns);
   }, [dataSource.columns]);
 

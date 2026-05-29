@@ -1,47 +1,20 @@
-import {
-  dispatchCustomEvent,
-  isCharacterKey,
-  queryClosest,
-} from "@vuu-ui/vuu-utils";
+import { isCharacterKey } from "@vuu-ui/vuu-utils";
 import {
   FocusEventHandler,
   KeyboardEvent as ReactKeyboardEvent,
   MouseEvent,
   useCallback,
 } from "react";
-import { cellIsTextInput, getAriaCellPos } from "./table-dom-utils";
-import { FocusCell } from "./useCellFocus";
+import { cellIsTextInput } from "./table-dom-utils";
 
 export interface CellEditingHookProps {
-  focusCell: FocusCell;
   navigate: () => void;
 }
 
-export const useCellEditing = ({
-  focusCell,
-  navigate,
-}: CellEditingHookProps) => {
+export const useCellEditing = ({ navigate }: CellEditingHookProps) => {
   const commitHandler = useCallback(() => {
     navigate();
   }, [navigate]);
-
-  const editModeHandler = useCallback(
-    (e: Event) => {
-      const tableCell = queryClosest<HTMLDivElement>(
-        e.target,
-        ".vuuTableCell",
-        true,
-      );
-      if (e.type === "vuu-exit-edit-mode") {
-        tableCell.classList.remove("vuuEditing");
-        const cellPos = getAriaCellPos(tableCell);
-        focusCell(cellPos, true);
-      } else {
-        tableCell.classList.add("vuuEditing");
-      }
-    },
-    [focusCell],
-  );
 
   const editInput = useCallback(
     (evt: MouseEvent<HTMLElement> | ReactKeyboardEvent<HTMLElement>) => {
@@ -52,7 +25,6 @@ export const useCellEditing = ({
 
       if (input) {
         input.focus();
-        input.select();
       }
     },
     [],
@@ -64,9 +36,6 @@ export const useCellEditing = ({
       const input = cellEl.querySelector("input");
       if (input) {
         input.focus();
-        input.select();
-        // need to put the input into edit mode
-        dispatchCustomEvent(input, "vuu-begin-edit");
       }
     },
     [],
@@ -101,20 +70,16 @@ export const useCellEditing = ({
     (e) => {
       const el = e.target as HTMLElement;
       el.removeEventListener("vuu-commit", commitHandler, true);
-      el.removeEventListener("vuu-enter-edit-mode", editModeHandler, true);
-      el.removeEventListener("vuu-exit-edit-mode", editModeHandler, true);
     },
-    [commitHandler, editModeHandler],
+    [commitHandler],
   );
 
   const handleFocus = useCallback<FocusEventHandler>(
     (e) => {
       const el = e.target as HTMLElement;
       el.addEventListener("vuu-commit", commitHandler, true);
-      el.addEventListener("vuu-enter-edit-mode", editModeHandler, true);
-      el.addEventListener("vuu-exit-edit-mode", editModeHandler, true);
     },
-    [commitHandler, editModeHandler],
+    [commitHandler],
   );
 
   return {
