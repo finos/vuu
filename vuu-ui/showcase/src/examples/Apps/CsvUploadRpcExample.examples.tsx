@@ -5,7 +5,7 @@ import {
   type CsvUploadPhase,
   type CsvUploadSessionEndResult,
   type CsvUploadSessionTable,
-} from "@vuu-ui/vuu-data-react";
+} from "@vuu-ui/vuu-table-extras";
 import type { DataSource } from "@vuu-ui/vuu-data-types";
 import { Button } from "@salt-ds/core";
 import { Table } from "@vuu-ui/vuu-table";
